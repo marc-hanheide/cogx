@@ -35,78 +35,78 @@ public:
     class PlaneEntry
     {
     public:
-        Plane3 plane;
-        vector<PointCloud::SurfacePoint> planePoints;        
-        vector<Vector3> hullPoints;
-        bool valid;
-        RGBValue dispColor;
+	Plane3 plane;
+	vector<PointCloud::SurfacePoint> planePoints;        
+	vector<Vector3> hullPoints;
+	bool valid;
+	RGBValue dispColor;
 
-        PlaneEntry() {
-            dispColor.r = 255;
-            dispColor.g = 255;
-            dispColor.b = 255;
-            dispColor.a = 0;
-            valid = false;
-        }
-        void clear() {
-            planePoints.clear();
-            hullPoints.clear();
-            valid = false;
-        }
-        void init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
-            pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
-            pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull);
+	PlaneEntry() {
+	    dispColor.r = 255;
+	    dispColor.g = 255;
+	    dispColor.b = 255;
+	    dispColor.a = 0;
+	    valid = false;
+	}
+	void clear() {
+	    planePoints.clear();
+	    hullPoints.clear();
+	    valid = false;
+	}
+	void init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
+		pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull);
     };
 
     class SOIEntry
     {
     public:
-        Sphere3 boundingSphere;
-        Box3 boundingBox;
-        std::vector<PointCloud::SurfacePoint> points;
-        std::vector<PointCloud::SurfacePoint> BGpoints;
-				std::string WMId;
-				CvHistogram* hist;
-        int numFramesNotSeen;
-        int numStableFrames;
-        bool hasMatch;
-        RGBValue dispColor;
+	Sphere3 boundingSphere;
+	Box3 boundingBox;
+	std::vector<PointCloud::SurfacePoint> points;
+	std::vector<PointCloud::SurfacePoint> BGpoints;
+	std::string WMId;
+	CvHistogram* hist;
+	int numFramesNotSeen;
+	int numStableFrames;
+	bool hasMatch;
+	RGBValue dispColor;
 
-        SOIEntry() {
-            hist = 0;
-            numFramesNotSeen = 0;
-            numStableFrames = 0;
-            hasMatch = false;
-            dispColor.r = rand()%255;
-            dispColor.g = rand()%255;
-            dispColor.b = rand()%255;
-            dispColor.a = 0;
-            //dispColor.float_value = GetRandomColor();
-        }
-        ~SOIEntry() {
-            cvReleaseHist(&hist);
-        }
-        void init(PlaneEntry &domPlane);
-        void calcHistogram();
-        double compare(SOIEntry &other);
-        double matchProbability(PlanePopOut::SOIEntry &other);
-        void updateFrom(SOIEntry &other);
-        VisionData::SOIPtr createWMSOI(ManagedComponent *comp);
+	SOIEntry() {
+	    hist = 0;
+	    numFramesNotSeen = 0;
+	    numStableFrames = 0;
+	    hasMatch = false;
+	    dispColor.r = rand()%255;
+	    dispColor.g = rand()%255;
+	    dispColor.b = rand()%255;
+	    dispColor.a = 0;
+	    //dispColor.float_value = GetRandomColor();
+	}
+	~SOIEntry() {
+	    cvReleaseHist(&hist);
+	}
+	void init(PlaneEntry &domPlane);
+	void calcHistogram();
+	double compare(SOIEntry &other);
+	double matchProbability(PlanePopOut::SOIEntry &other);
+	void updateFrom(SOIEntry &other);
+	VisionData::SOIPtr createWMSOI(ManagedComponent *comp);
     };
 
 private:
-		/**
+    /**
      * Camera ID from where to get images in case we want to display image and
      * backprojections etc. for visualisation.
      */
-		int camId;
-		/**
+    int camId;
+    /**
      * Rectified image from point cloud server, in case we want to display image and
      * backprojections etc. for visualisation.
      */
     IplImage *iplDispImage;
-		/**
-		 * If set to true, use own OpenGL visualisation.
+    /**
+     * If set to true, use own OpenGL visualisation.
      */
     bool doDisplay;
     /**
@@ -114,7 +114,7 @@ private:
      */
     TGThread::TomGineThread *tgRenderer;
 
-		/**
+    /**
      * CAST type PointCloud, all the points in the scene
      */
     PointCloud::SurfacePointSeq points;
@@ -122,15 +122,15 @@ private:
      * as above, but in PCL format
      */
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;
-		/**
+    /**
      * Core class: V4R Plane and SOI detection.
      */
     pclA::PlanePopout* planePopout;
-	  /**
+    /**
      * a SOI not seen for this time will be deleted from WM
      */
     int AgonalTime;
- 		/**
+    /**
      * only if a SOI has been seen longer than that, will it be added to WM
      */
     int StableTime;
@@ -141,18 +141,18 @@ private:
     /**
      * list of all tracked SOIs, where the stable ones have been added to WM 
      */
-		list<SOIEntry> trackedSOIs;
+    list<SOIEntry> trackedSOIs;
     /**
      * map of current SOIs. the SOI label as it is returned by the PlanePopout class
      * is used as the key.
      */
-		std::map<unsigned, SOIEntry> currentSOIs;
+    std::map<unsigned, SOIEntry> currentSOIs;
 
     void GetImageData();
     void GetPlaneAndSOIs();
     void TrackSOIs();
     void Points2Cloud(const PointCloud::SurfacePointSeq &points,
-        cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
+	    cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
     void DisplayInTG();
     // void SaveHistogramImg(CvHistogram* hist, std::string str);
 
@@ -163,18 +163,20 @@ private:
     bool m_bSendSois;
     // Color the points by labels or send the color from image
     bool m_bColorByLabel;
+    CMilliTimer m_tmSendPoints;
 
     class CDisplayClient: public cogx::display::CDisplayClient
-		{
-				PlanePopOut* pPopout;
-				public:
-				CDisplayClient() { pPopout = NULL; }
-				void setClientData(PlanePopOut* pPlanePopout) { pPopout = pPlanePopout; }
-				void handleEvent(const Visualization::TEvent &event); /*override*/
-				std::string getControlState(const std::string& ctrlId); /*override*/
-		};
+    {
+	PlanePopOut* pPopout;
+    public:
+	CDisplayClient() { pPopout = NULL; }
+	void setClientData(PlanePopOut* pPlanePopout) { pPopout = pPlanePopout; }
+	void handleEvent(const Visualization::TEvent &event); /*override*/
+	std::string getControlState(const std::string& ctrlId); /*override*/
+    };
     CDisplayClient m_display;
 
+    void startV11N();
     void SendImage();
     void SendPoints(bool bColorByLabels);
     void SendPlaneGrid();
@@ -193,7 +195,6 @@ protected:
      * called by the framework after configuration, before run loop
      */
     virtual void start();
-    void startV11N();
     /**
      * called by the framework to start compnent run loop
      */
@@ -214,7 +215,7 @@ public:
 }
 
 #endif
-// vim: set sw=4 ts=8 noet list :vim
+// vim: set sw=4 sts=4 ts=8 noet list :vim
 
 
 

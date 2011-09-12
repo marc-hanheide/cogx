@@ -38,34 +38,34 @@ extern "C"
 
 static long long gethrtime(void)
 {
-    timeval tv;
-    int ret;
-    long long v;
-    ret = gettimeofday(&tv, NULL);
-    if(ret!=0) return 0;  
-    v=1000000000LL; /* seconds->nanonseconds */
-    v*=tv.tv_sec;
-    v+=(tv.tv_usec*1000); /* microseconds->nanonseconds */
-    return v;
+  timeval tv;
+  int ret;
+  long long v;
+  ret = gettimeofday(&tv, NULL);
+  if(ret!=0) return 0;  
+  v=1000000000LL; /* seconds->nanonseconds */
+  v*=tv.tv_sec;
+  v+=(tv.tv_usec*1000); /* microseconds->nanonseconds */
+  return v;
 }
 
 #else
 
 static long long gethrtime(void)
 {
-    struct timespec sp;
-    int ret;
-    long long v;
+  struct timespec sp;
+  int ret;
+  long long v;
 #ifdef CLOCK_MONOTONIC_HR
-    ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
+  ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
 #else
-    ret=clock_gettime(CLOCK_MONOTONIC, &sp);
+  ret=clock_gettime(CLOCK_MONOTONIC, &sp);
 #endif
-    if(ret!=0) return 0;
-    v=1000000000LL; /* seconds->nanonseconds */
-    v*=sp.tv_sec;
-    v+=sp.tv_nsec;
-    return v;
+  if(ret!=0) return 0;
+  v=1000000000LL; /* seconds->nanonseconds */
+  v*=sp.tv_sec;
+  v+=sp.tv_nsec;
+  return v;
 }
 
 #endif
@@ -105,27 +105,27 @@ using namespace cdl;
  * which affects all source files including VisionUtils.h. So leave it here for now.
  */
 static inline void ConvertSurfacePoints2PCLCloud(const vector<PointCloud::SurfacePoint> &points,
-                                                 pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
-                                                 int width, int height)
+	pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud,
+	int width, int height)
 {
-  if((int)points.size() < width*height)
-      throw runtime_error(cast::exceptionMessage(__HERE__,
-          "need %d x %d points, have %d", width, height, (int)points.size()));
+    if((int)points.size() < width*height)
+	throw runtime_error(cast::exceptionMessage(__HERE__,
+		    "need %d x %d points, have %d", width, height, (int)points.size()));
 
-  pcl_cloud.width = width;
-  pcl_cloud.height = height;
-  pcl_cloud.points.resize(width*height);
-  for(size_t i = 0; i < pcl_cloud.points.size(); i++)
-  {
-    RGBValue color;
-    pcl_cloud.points[i].x = (float) points[i].p.x;
-    pcl_cloud.points[i].y = (float) points[i].p.y;
-    pcl_cloud.points[i].z = (float) points[i].p.z;
-    color.r = points[i].c.r;
-    color.g = points[i].c.g;
-    color.b = points[i].c.b;
-    pcl_cloud.points[i].rgb = color.float_value;
-  }
+    pcl_cloud.width = width;
+    pcl_cloud.height = height;
+    pcl_cloud.points.resize(width*height);
+    for(size_t i = 0; i < pcl_cloud.points.size(); i++)
+    {
+	RGBValue color;
+	pcl_cloud.points[i].x = (float) points[i].p.x;
+	pcl_cloud.points[i].y = (float) points[i].p.y;
+	pcl_cloud.points[i].z = (float) points[i].p.z;
+	color.r = points[i].c.r;
+	color.g = points[i].c.g;
+	color.b = points[i].c.b;
+	pcl_cloud.points[i].rgb = color.float_value;
+    }
 }
 
 /**
@@ -138,39 +138,39 @@ static double CompareHistKLD(CvHistogram* h1, CvHistogram* h2)
 
     for(int h = 0; h < h_bins; h++)
     {
-        for(int s = 0; s < s_bins; s++)
-        {
-            double v1 = cvQueryHistValue_2D( h1, h, s );
-            double v2 = cvQueryHistValue_2D( h2, h, s );
-            if (!iszero(v1) && !iszero(v2))
-              	KLD = (log10(v1/v2)*v1 + log10(v2/v1)*v2)/2 + KLD;
-        }
+	for(int s = 0; s < s_bins; s++)
+	{
+	    double v1 = cvQueryHistValue_2D( h1, h, s );
+	    double v2 = cvQueryHistValue_2D( h2, h, s );
+	    if (!iszero(v1) && !iszero(v2))
+		KLD = (log10(v1/v2)*v1 + log10(v2/v1)*v2)/2 + KLD;
+	}
     }
     return KLD;
 }
 
 void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
-    pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull)
+	pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull)
 {
     valid = true;
     plane = plane3(pcl_domplane->values[0],
-        pcl_domplane->values[1],
-        pcl_domplane->values[2],
-        pcl_domplane->values[3]);
+	    pcl_domplane->values[1],
+	    pcl_domplane->values[2],
+	    pcl_domplane->values[3]);
     normalisePlane(plane);        
     for (size_t i = 0; i < planepoints->indices.size(); i++)
     {
-        int index = planepoints->indices[i];
-        SurfacePoint p;
-        p.p = vector3(pcl_cloud->points[index].x, pcl_cloud->points[index].y, pcl_cloud->points[index].z);
-        p.c.r = pcl_cloud->points[index].r;
-      	p.c.g = pcl_cloud->points[index].g;
-        p.c.b = pcl_cloud->points[index].b;
-        planePoints.push_back(p);
+	int index = planepoints->indices[i];
+	SurfacePoint p;
+	p.p = vector3(pcl_cloud->points[index].x, pcl_cloud->points[index].y, pcl_cloud->points[index].z);
+	p.c.r = pcl_cloud->points[index].r;
+	p.c.g = pcl_cloud->points[index].g;
+	p.c.b = pcl_cloud->points[index].b;
+	planePoints.push_back(p);
     }
     for (size_t i = 0; i < tablehull->points.size(); i++)
-        hullPoints.push_back(vector3(tablehull->points[i].x, tablehull->points[i].y, tablehull->points[i].z));
+	hullPoints.push_back(vector3(tablehull->points[i].x, tablehull->points[i].y, tablehull->points[i].z));
 }
 
 void PlanePopOut::SOIEntry::init(PlaneEntry &domPlane)
@@ -178,11 +178,11 @@ void PlanePopOut::SOIEntry::init(PlaneEntry &domPlane)
     // bounding sphere
     setZero(boundingSphere.pos);
     for (size_t i = 0; i < points.size(); i++)
-        boundingSphere.pos += points[i].p;
+	boundingSphere.pos += points[i].p;
     boundingSphere.pos /= (double)points.size();
     boundingSphere.rad = 0.;
     for (size_t i = 0; i < points.size(); i++)
-        boundingSphere.rad = max(boundingSphere.rad, dist(boundingSphere.pos, points[i].p));
+	boundingSphere.rad = max(boundingSphere.rad, dist(boundingSphere.pos, points[i].p));
 
     // bounding box
     // TODO: actually we could get a better size estimate for the box
@@ -194,8 +194,8 @@ void PlanePopOut::SOIEntry::init(PlaneEntry &domPlane)
 
     // background points
     for (size_t i = 0; i < domPlane.planePoints.size(); i++)
-        if(pointInsideSphere(boundingSphere, domPlane.planePoints[i].p))
-            BGpoints.push_back(domPlane.planePoints[i]);
+	if(pointInsideSphere(boundingSphere, domPlane.planePoints[i].p))
+	    BGpoints.push_back(domPlane.planePoints[i]);
 
     calcHistogram();
 }
@@ -211,7 +211,7 @@ double PlanePopOut::SOIEntry::compare(PlanePopOut::SOIEntry &other)
     wS = 1.0 - wC;
     double distHistogram = abs(CompareHistKLD(hist, other.hist));
     double distSize = abs(boundingSphere.rad - other.boundingSphere.rad) /
-        max(boundingSphere.rad, other.boundingSphere.rad);
+	max(boundingSphere.rad, other.boundingSphere.rad);
     return wC*distHistogram + wS*distSize;
 }
 
@@ -264,11 +264,11 @@ void PlanePopOut::SOIEntry::calcHistogram()
     IplImage* tmp = cvCreateImage(cvSize(1, points.size()), 8, 3);
     for (size_t i = 0; i < points.size(); i++)
     {
-        CvScalar v;	  
-        v.val[0] = points[i].c.b;
-        v.val[1] = points[i].c.g;
-  	    v.val[2] = points[i].c.r;
-        cvSet2D(tmp, i, 0, v);
+	CvScalar v;	  
+	v.val[0] = points[i].c.b;
+	v.val[1] = points[i].c.g;
+	v.val[2] = points[i].c.r;
+	cvSet2D(tmp, i, 0, v);
     }
     IplImage* h_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
     IplImage* s_plane = cvCreateImage( cvGetSize(tmp), 8, 1 );
@@ -315,7 +315,7 @@ PlanePopOut::PlanePopOut()
 
 PlanePopOut::~PlanePopOut()
 {
-		delete planePopout;
+    delete planePopout;
     cvReleaseImage(&iplDispImage);
 }
 
@@ -334,37 +334,37 @@ void PlanePopOut::configure(const map<string,string> & _config)
 
     if((it = _config.find("--camId")) != _config.end())
     {
-				istringstream str(it->second);
-				str >> camId;
+	istringstream str(it->second);
+	str >> camId;
     }
     if((it = _config.find("--display")) != _config.end())
     {
-				doDisplay = true;
+	doDisplay = true;
     }
     if((it = _config.find("--agonalTime")) != _config.end())
     {
-				istringstream str(it->second);
-				str >> AgonalTime;
+	istringstream str(it->second);
+	str >> AgonalTime;
     }
     if((it = _config.find("--stableTime")) != _config.end())
     {
-				istringstream str(it->second);
-				str >> StableTime;
+	istringstream str(it->second);
+	str >> StableTime;
     }
 
     if(doDisplay)
     {
-				// startup window size
-				int winWidth = 640, winHeight = 480;
-				cv::Mat intrinsic = (cv::Mat_<double>(3,3) << winWidth,0,winWidth/2, 0,winWidth,winHeight/2, 0,0,1);
-				cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
-				cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
-				cv::Vec3d rotCenter(0,0,0.4);
-				// Initialize 3D render engine 
-				tgRenderer = new TGThread::TomGineThread(winWidth, winHeight);
-				tgRenderer->SetParameter(intrinsic);
-				tgRenderer->SetCamera(R, t, rotCenter);
-				tgRenderer->SetCoordinateFrame(0.5);
+	// startup window size
+	int winWidth = 640, winHeight = 480;
+	cv::Mat intrinsic = (cv::Mat_<double>(3,3) << winWidth,0,winWidth/2, 0,winWidth,winHeight/2, 0,0,1);
+	cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
+	cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
+	cv::Vec3d rotCenter(0,0,0.4);
+	// Initialize 3D render engine 
+	tgRenderer = new TGThread::TomGineThread(winWidth, winHeight);
+	tgRenderer->SetParameter(intrinsic);
+	tgRenderer->SetCamera(R, t, rotCenter);
+	tgRenderer->SetCoordinateFrame(0.5);
     }
 
 #ifdef FEAT_VISUALIZATION
@@ -395,6 +395,19 @@ void PlanePopOut::start()
     startPCCServerCommunication(*this);
 
 #ifdef FEAT_VISUALIZATION
+    startV11N();
+#endif
+
+    // @author: mmarko
+    // we want to receive GetStableSoisCommand-s
+    addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
+	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
+		&PlanePopOut::onAdd_GetStableSoisCommand));
+}
+
+#ifdef FEAT_VISUALIZATION
+void PlanePopOut::startV11N()
+{
     m_bSendPoints = false;
     m_bSendPlaneGrid = true;
     m_bSendImage = true;
@@ -446,6 +459,7 @@ void PlanePopOut::start()
     ss <<  "function render()\nend\n"
 	<< "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, ss.str());
+    m_tmSendPoints.restart();
 
     //Video::Image image;
     //m_display.setImage(ID_OBJECT_IMAGE, image);
@@ -474,16 +488,8 @@ void PlanePopOut::start()
 	<< "end\n";
 
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
-#endif
-
-    // @author: mmarko
-    // we want to receive GetStableSoisCommand-s
-    addChangeFilter(createLocalTypeFilter<VisionData::GetStableSoisCommand>(cdl::ADD),
-	    new MemberFunctionChangeReceiver<PlanePopOut>(this,
-		&PlanePopOut::onAdd_GetStableSoisCommand));
 }
 
-#ifdef FEAT_VISUALIZATION
 void PlanePopOut::CDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
     if (!pPopout) return;
@@ -545,20 +551,20 @@ string PlanePopOut::CDisplayClient::getControlState(const string& ctrlId)
 
 void PlanePopOut::SendImage()
 {
-    static CMilliTimer tm(true);
+    CMilliTimer tm(true);
 
     m_display.setImage(ID_OBJECT_IMAGE, iplDispImage);
 
-//     CvFont a;
-//     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
-//     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
-//     {
-// 	CvPoint p;
-// 	CvRect& rsoi = vSOIonImg.at(i);
-// 	p.x = (int)(rsoi.x+0.3 * rsoi.width);
-// 	p.y = (int)(rsoi.y+0.5 * rsoi.height);
-// 	cvPutText(ROIMaskImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
-//     }
+    //     CvFont a;
+    //     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
+    //     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
+    //     {
+    // 	CvPoint p;
+    // 	CvRect& rsoi = vSOIonImg.at(i);
+    // 	p.x = (int)(rsoi.x+0.3 * rsoi.width);
+    // 	p.y = (int)(rsoi.y+0.5 * rsoi.height);
+    // 	cvPutText(ROIMaskImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
+    //     }
 
     long long t1 = tm.elapsed();
     long long t2 = tm.elapsed();
@@ -566,12 +572,12 @@ void PlanePopOut::SendImage()
     long long t3 = tm.elapsed();
 
     if (1) {
-        ostringstream str;
-        str << "<h3>Plane popout - SendImage</h3>";
-        str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
-        str << "Size: " << size << " bytes.<br>";
-        str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
-        m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	ostringstream str;
+	str << "<h3>Plane popout - SendImage</h3>";
+	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+	str << "Size: " << size << " bytes.<br>";
+	str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
+	m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
     }
 }
 
@@ -580,18 +586,16 @@ void PlanePopOut::SendImage()
  */
 void PlanePopOut::SendPoints(bool bColorByLabels)
 {
-    static CMilliTimer tmSendPoints(true);
-
-    if (tmSendPoints.elapsed() < 500) // 2Hz
-        return;
-    tmSendPoints.restart();
+    if (m_tmSendPoints.elapsed() < 500) // 2Hz
+	return;
+    m_tmSendPoints.restart();
 
     int pointCnt = 0;
-    if (points.size() < 1) {
-        m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
-        m_display.setHtml("LOG", "log.PPO.SendPoints", "<h3>Plane popout - SendPoints</h3>No points");
-        return;
-    }
+    //if (points.size() < 1) {
+    //    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, "function render()\nend\n");
+    //    m_display.setHtml("LOG", "log.PPO.SendPoints", "<h3>Plane popout - SendPoints</h3>No points");
+    //    return;
+    //}
 
     std::ostringstream str;
     str.unsetf(ios::floatfield); // unset floatfield
@@ -599,50 +603,71 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
     str << "function render()\nglPointSize(2)\nglBegin(GL_POINTS)\n";
     str << "v=glVertex\nc=glColor\n";
 
-    /*if (dominantPlane.valid) {
-        str << "c(" << (float)dominantPlane.dispColor.r/255. << ","
-            << (float)dominantPlane.dispColor.g/255. << ","
-            << (float)dominantPlane.dispColor.b/255. << ")\n";
-        for(size_t i = 0; i < dominantPlane.planePoints.size(); i += 100) // HACK: save time
-        {
-      	    str << "v(" << (int)dominantPlane.planePoints[i].p.x << ","
-                << (int)dominantPlane.planePoints[i].p.y << ","
-                << (int)dominantPlane.planePoints[i].p.z << ")\n";
-            pointCnt++;
-        }
-    }*/
+#define FCHN(x) x/255.0
+    // (Approximately) Limit the number of points sent to the display server
+    const double MAX_IN_PLANE = 2000.0;
+    const double MAX_IN_SOI = 300.0;
+    if (dominantPlane.valid) {
+	str << "c("
+	    << FCHN(dominantPlane.dispColor.r) << ","
+	    << FCHN(dominantPlane.dispColor.g) << ","
+	    << FCHN(dominantPlane.dispColor.b) << ")\n";
+	
+	int pctLimit = floor(0.5 + 1000 * (MAX_IN_PLANE / dominantPlane.planePoints.size()));
+	if (pctLimit < 1) pctLimit = 1;
+	
+	for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
+	{
+	    if (rand() % 1000 > pctLimit)
+		continue;
+	    str << "v("
+		<< dominantPlane.planePoints[i].p.x << ","
+		<< dominantPlane.planePoints[i].p.y << ","
+		<< dominantPlane.planePoints[i].p.z << ")\n";
+	    pointCnt++;
+	}
+    }
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
-        str << "c(" << (float)it->dispColor.r/255. << ","
-            << (float)it->dispColor.g/255. << ","
-            << (float)it->dispColor.b/255. << ")\n";
-        for(size_t i = 0; i < it->points.size(); i++)
-        {
-      	    str << "v(" << it->points[i].p.x << ","
-                << it->points[i].p.y << ","
-                << it->points[i].p.z << ")\n";
-            pointCnt++;
-        }
+	str << "c(" 
+	    << FCHN(it->dispColor.r) << ","
+	    << FCHN(it->dispColor.g) << ","
+	    << FCHN(it->dispColor.b) << ")\n";
+
+	int pctLimit = floor(0.5 + 1000 * (MAX_IN_SOI / it->points.size()));
+	if (pctLimit < 1) pctLimit = 1;
+
+	for(size_t i = 0; i < it->points.size(); i++)
+	{
+	    if (rand() % 1000 > pctLimit)
+		continue;
+	    str << "v("
+		<< it->points[i].p.x << ","
+		<< it->points[i].p.y << ","
+		<< it->points[i].p.z << ")\n";
+	    pointCnt++;
+	}
     }
+#undef FCHN
     str << "glEnd()\n";
     str << "end\n";
 
     // logging
-    long long t1 = tmSendPoints.elapsed();
+    long long t1 = m_tmSendPoints.elapsed();
     string S = str.str();
-    long long t2 = tmSendPoints.elapsed();
+    long long t2 = m_tmSendPoints.elapsed();
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_POINTS, S);
-    long long t3 = tmSendPoints.elapsed();
+    long long t3 = m_tmSendPoints.elapsed();
     if (1) {
-        str.str("");
-        str.clear();
-        str << "<h3>Plane popout - SendPoints</h3>";
-        str << "Points: " << pointCnt << "<br>";
-        str << "Strlen: " << S.length() << "<br>";
-        str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
-        str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
-        str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
-        m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
+	str.str("");
+	str.clear();
+	str << "<h3>Plane popout - SendPoints</h3>";
+	str << "Points: " << pointCnt << "<br>";
+	str << "Strlen: " << S.length() << "<br>";
+	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+	str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
+	str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
+	m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
     }
 }
 
@@ -651,7 +676,7 @@ void PlanePopOut::SendPlaneGrid()
     static CMilliTimer tmSendPlaneGrid(true);
 
     if (tmSendPlaneGrid.elapsed() < 100) // 10Hz
-        return;
+	return;
     tmSendPlaneGrid.restart();
 
     CMilliTimer tm(true);
@@ -659,17 +684,17 @@ void PlanePopOut::SendPlaneGrid()
     str << "function render()\n";
 
     if (dominantPlane.valid) {
-        str << "glBegin(GL_LINE_LOOP)\n";
-        str << "glPointSize(2.0)\n";
-        str << "glColor(" << (float)dominantPlane.dispColor.r/255. << ","
-            << (float)dominantPlane.dispColor.g/255. << ","
-            << (float)dominantPlane.dispColor.b/255. << ")\n";
-        str << "v=glVertex\n";
-        for(size_t i = 0; i < dominantPlane.hullPoints.size(); i++)
-            str << "v(" << dominantPlane.hullPoints[i].x << ","
-                << dominantPlane.hullPoints[i].y << ","
-                << dominantPlane.hullPoints[i].z << ")\n";
-        str << "glEnd()\n";
+	str << "glBegin(GL_LINE_LOOP)\n";
+	str << "glPointSize(2.0)\n";
+	str << "glColor(" << (float)dominantPlane.dispColor.r/255. << ","
+	    << (float)dominantPlane.dispColor.g/255. << ","
+	    << (float)dominantPlane.dispColor.b/255. << ")\n";
+	str << "v=glVertex\n";
+	for(size_t i = 0; i < dominantPlane.hullPoints.size(); i++)
+	    str << "v(" << dominantPlane.hullPoints[i].x << ","
+		<< dominantPlane.hullPoints[i].y << ","
+		<< dominantPlane.hullPoints[i].z << ")\n";
+	str << "glEnd()\n";
     }
     str << "end\n";
 
@@ -679,13 +704,13 @@ void PlanePopOut::SendPlaneGrid()
     long long t2 = tm.elapsed_micros();
 
     if (1) {
-        str.str("");
-        str.clear();
-        str << "<h3>Plane popout - SendPlaneGrid</h3>";
-        str << "Strlen: " << S.length() << "<br>";
-        str << "Generated: " << t1 << "&mu;s from start (in " << t1 << "&mu;s).<br>";
-        str << "Sent: " << t2 << "&mu;s from start (in " << (t2-t1) << "&mu;s).<br>";
-        m_display.setHtml("LOG", "log.PPO.SendPlaneGrid", str.str());
+	str.str("");
+	str.clear();
+	str << "<h3>Plane popout - SendPlaneGrid</h3>";
+	str << "Strlen: " << S.length() << "<br>";
+	str << "Generated: " << t1 << "&mu;s from start (in " << t1 << "&mu;s).<br>";
+	str << "Sent: " << t2 << "&mu;s from start (in " << (t2-t1) << "&mu;s).<br>";
+	m_display.setHtml("LOG", "log.PPO.SendPlaneGrid", str.str());
     }
 }
 
@@ -712,25 +737,6 @@ void PlanePopOut::SendOverlays()
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_OVERLAY, str.str());
 }
 
-void PlanePopOut::SendSOI(PlanePopOut::SOIEntry& soi)
-{
-    ostringstream ss;
-    ss  << "setSoi('" << soi.WMId << "',"
-        << soi.boundingBox.pos.x << ","
-        << soi.boundingBox.pos.y << ","
-        << soi.boundingBox.pos.z << ","
-        << soi.boundingBox.size.x << ","
-        << soi.boundingBox.size.y << ","
-        << soi.boundingBox.size.z << ")\n";
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
-}
-
-void PlanePopOut::SendRemovedSOI(PlanePopOut::SOIEntry& soi)
-{
-    ostringstream ss;
-    ss  << "removeSoi('" << soi.WMId << "')";
-    m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, ss.str());
-}
 
 void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &sois)
 {
@@ -740,30 +746,30 @@ void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &soi
     str << "c(0.0,1.0,0.0)\n";
     for(size_t i = 0; i < sois.size(); i++)
     {
-        size_t n = sois[i]->points.size();
-        str << "glBegin(GL_LINE_LOOP)\n";
-        for(size_t j = 0; j < n/2; j++)
-            str << "v(" << sois[i]->points[j].x << ","
-                << sois[i]->points[j].y << ","
-                << sois[i]->points[j].z << ")\n";
-        str << "glEnd()\n";
-        str << "glBegin(GL_LINE_LOOP)\n";
-        for(size_t j = n/2; j < n; j++)
-            str << "v(" << sois[i]->points[j].x << ","
-                << sois[i]->points[j].y << ","
-                << sois[i]->points[j].z << ")\n";
-        str << "glEnd()\n";
-        str << "glBegin(GL_LINES)\n";
-        for(size_t j = 0; j < n/2; j++)
-        {
-            str << "v(" << sois[i]->points[j].x << ","
-                << sois[i]->points[j].y << ","
-                << sois[i]->points[j].z << ")\n";
-            str << "v(" << sois[i]->points[j + n/2].x << ","
-                << sois[i]->points[j + n/2].y << ","
-                << sois[i]->points[j + n/2].z << ")\n";
-        }
-        str << "glEnd()\n";
+	size_t n = sois[i]->points.size();
+	str << "glBegin(GL_LINE_LOOP)\n";
+	for(size_t j = 0; j < n/2; j++)
+	    str << "v(" << sois[i]->points[j].x << ","
+		<< sois[i]->points[j].y << ","
+		<< sois[i]->points[j].z << ")\n";
+	str << "glEnd()\n";
+	str << "glBegin(GL_LINE_LOOP)\n";
+	for(size_t j = n/2; j < n; j++)
+	    str << "v(" << sois[i]->points[j].x << ","
+		<< sois[i]->points[j].y << ","
+		<< sois[i]->points[j].z << ")\n";
+	str << "glEnd()\n";
+	str << "glBegin(GL_LINES)\n";
+	for(size_t j = 0; j < n/2; j++)
+	{
+	    str << "v(" << sois[i]->points[j].x << ","
+		<< sois[i]->points[j].y << ","
+		<< sois[i]->points[j].z << ")\n";
+	    str << "v(" << sois[i]->points[j + n/2].x << ","
+		<< sois[i]->points[j + n/2].y << ","
+		<< sois[i]->points[j + n/2].z << ")\n";
+	}
+	str << "glEnd()\n";
     }
     str << "end\n";
     m_display.setLuaGlObject(ID_OBJECT_3D, ID_PART_3D_SOI, str.str());
@@ -775,45 +781,40 @@ void PlanePopOut::runComponent()
     // TODO: why is that needed?
     sleepComponent(3000);
 
-    // note: this must be called in the run loop, not in configure or start as these are all different threads!
-    //     int argc = 1;
-    //     char argv0[] = "PlanePopOut";
-    //     char *argv[1] = {argv0};
-
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
 #endif
 
     try {
-        while(isRunning()) {
-      	    try{
-      					GetImageData();
-                GetPlaneAndSOIs();
-                log("have %d current sois", (int)currentSOIs.size());
-                TrackSOIs();
-                log("have %d tracked sois", (int)trackedSOIs.size());
-            }
-            catch (...) {
-                error(" *** PPO GetImageData or GetPlaneAndSOIs is FUCKED UP *** ");
-            }
+	while(isRunning()) {
+	    try{
+		GetImageData();
+		GetPlaneAndSOIs();
+		log("have %d current sois", (int)currentSOIs.size());
+		TrackSOIs();
+		log("have %d tracked sois", (int)trackedSOIs.size());
+	    }
+	    catch (...) {
+		error(" *** PPO GetImageData or GetPlaneAndSOIs HAS CRASHED *** ");
+	    }
 
 #ifdef FEAT_VISUALIZATION
-				    if (m_bSendImage)
-						    SendImage();
-            if (m_bSendPoints)
-                SendPoints(m_bColorByLabel);
-            if (m_bSendPlaneGrid)
-                SendPlaneGrid();
+	    if (m_bSendImage)
+		SendImage();
+	    if (m_bSendPoints)
+		SendPoints(m_bColorByLabel);
+	    if (m_bSendPlaneGrid)
+		SendPlaneGrid();
 #endif
-				    if (doDisplay)
-						    DisplayInTG();
+	    if (doDisplay)
+		DisplayInTG();
 
-            // HACK: need this stupid sleep to avoid hogging the CPU
-            sleepComponent(200);
-        }
+	    // HACK: need this stupid sleep to avoid hogging the CPU
+	    sleepComponent(200);
+	}
     }
     catch (...) {
-        error(" *** PPO isRunning is FUCKED UP *** ");
+	error(" *** PPO isRunning HAS CRASHED *** ");
     }
 }
 
@@ -821,31 +822,31 @@ void PlanePopOut::runComponent()
  * convert array of CAST surface points to OpenCV format
  */
 void PlanePopOut::Points2Cloud(const PointCloud::SurfacePointSeq &points,
-    cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
+	cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
 {
     cloud = cv::Mat_<cv::Point3f>(1, points.size());
     colCloud = cv::Mat_<cv::Point3f>(1, points.size());    
 
     for(unsigned i = 0; i<points.size(); i++)
     {
-				cv::Point3f p, cp;
-				p.x = (float) points[i].p.x;
-				p.y = (float) points[i].p.y;
-				p.z = (float) points[i].p.z;
-				if(false)/// HACK (points_label.at(i) == PPO_LABEL_PLANE)  //points belong to the dominant plane
-				{
-						cp.x = 255.0;	// change rgb to bgr
-						cp.y = 0.0;
-						cp.z = 0.0;
-				}
-				else
-				{
-						cp.x = (uchar) points[i].c.b;	// change rgb to bgr
-						cp.y = (uchar) points[i].c.g;
-						cp.z = (uchar) points[i].c.r;
-				}
-				cloud.at<cv::Point3f>(0, i) = p;
-				colCloud.at<cv::Point3f>(0, i) = cp;
+	cv::Point3f p, cp;
+	p.x = (float) points[i].p.x;
+	p.y = (float) points[i].p.y;
+	p.z = (float) points[i].p.z;
+	if(false)/// HACK (points_label.at(i) == PPO_LABEL_PLANE)  //points belong to the dominant plane
+	{
+	    cp.x = 255.0;	// change rgb to bgr
+	    cp.y = 0.0;
+	    cp.z = 0.0;
+	}
+	else
+	{
+	    cp.x = (uchar) points[i].c.b;	// change rgb to bgr
+	    cp.y = (uchar) points[i].c.g;
+	    cp.z = (uchar) points[i].c.r;
+	}
+	cloud.at<cv::Point3f>(0, i) = p;
+	colCloud.at<cv::Point3f>(0, i) = cp;
     }
 }
 
@@ -859,55 +860,55 @@ void PlanePopOut::DisplayInTG()
     int cnt = 0;
 
     /*Points2Cloud(points, cloud, colCloud);
-    tgRenderer->Clear();
-    tgRenderer->SetPointCloud(cloud, colCloud);
-    return;  // HACK*/
+      tgRenderer->Clear();
+      tgRenderer->SetPointCloud(cloud, colCloud);
+      return;  // HACK*/
 
     if (dominantPlane.valid)
-        for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
-            cnt++;
+	for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
+	    cnt++;
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
-        for(size_t i = 0; i < it->points.size(); i++)
-            cnt++;
+	for(size_t i = 0; i < it->points.size(); i++)
+	    cnt++;
     cloud = cv::Mat_<cv::Point3f>(1, cnt);
     colCloud = cv::Mat_<cv::Point3f>(1, cnt);    
     cnt = 0;
     if (dominantPlane.valid) {
-        for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
-        {
-            cv::Point3f p, cp;
-            p.x = (float)dominantPlane.planePoints[i].p.x;
-            p.y = (float)dominantPlane.planePoints[i].p.y;
-            p.z = (float)dominantPlane.planePoints[i].p.z;
-            //cp.x = dominantPlane.planePoints[i].p.r;
-            //cp.y = dominantPlane.planePoints[i].p.g;
-            //cp.z = dominantPlane.planePoints[i].p.b;
-            cp.x = (float)dominantPlane.dispColor.r;
-            cp.y = (float)dominantPlane.dispColor.g;
-            cp.z = (float)dominantPlane.dispColor.b;
-            cloud.at<cv::Point3f>(0, cnt) = p;
-            colCloud.at<cv::Point3f>(0, cnt) = cp;
-            cnt++;
-        }
+	for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
+	{
+	    cv::Point3f p, cp;
+	    p.x = (float)dominantPlane.planePoints[i].p.x;
+	    p.y = (float)dominantPlane.planePoints[i].p.y;
+	    p.z = (float)dominantPlane.planePoints[i].p.z;
+	    //cp.x = dominantPlane.planePoints[i].p.r;
+	    //cp.y = dominantPlane.planePoints[i].p.g;
+	    //cp.z = dominantPlane.planePoints[i].p.b;
+	    cp.x = (float)dominantPlane.dispColor.r;
+	    cp.y = (float)dominantPlane.dispColor.g;
+	    cp.z = (float)dominantPlane.dispColor.b;
+	    cloud.at<cv::Point3f>(0, cnt) = p;
+	    colCloud.at<cv::Point3f>(0, cnt) = cp;
+	    cnt++;
+	}
     }
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
-        for(size_t i = 0; i < it->points.size(); i++)
-        {
-		        cv::Point3f p, cp;
-		        p.x = (float)it->points[i].p.x;
-		        p.y = (float)it->points[i].p.y;
-		        p.z = (float)it->points[i].p.z;
-            //cp.x = it->points[i].p.r;
-				    //cp.y = it->points[i].p.g;
-				    //cp.z = it->points[i].p.b;
-				    cp.x = (float)it->dispColor.r;
-				    cp.y = (float)it->dispColor.g;
-				    cp.z = (float)it->dispColor.b;
-		        cloud.at<cv::Point3f>(0, cnt) = p;
-		        colCloud.at<cv::Point3f>(0, cnt) = cp;
-            cnt++;
-        }
+	for(size_t i = 0; i < it->points.size(); i++)
+	{
+	    cv::Point3f p, cp;
+	    p.x = (float)it->points[i].p.x;
+	    p.y = (float)it->points[i].p.y;
+	    p.z = (float)it->points[i].p.z;
+	    //cp.x = it->points[i].p.r;
+	    //cp.y = it->points[i].p.g;
+	    //cp.z = it->points[i].p.b;
+	    cp.x = (float)it->dispColor.r;
+	    cp.y = (float)it->dispColor.g;
+	    cp.z = (float)it->dispColor.b;
+	    cloud.at<cv::Point3f>(0, cnt) = p;
+	    colCloud.at<cv::Point3f>(0, cnt) = cp;
+	    cnt++;
+	}
     }
     tgRenderer->Clear();
     tgRenderer->SetPointCloud(cloud, colCloud);
@@ -928,10 +929,10 @@ void PlanePopOut::GetImageData()
 
 #ifdef FEAT_VISUALIZATION
     if (m_bSendImage) {
-				Video::Image image;
-				// get rectified image from point cloud server
-				getRectImage(camId, imageWidth, image);
-        iplDispImage = convertImageToIpl(image);
+	Video::Image image;
+	// get rectified image from point cloud server
+	getRectImage(camId, imageWidth, image);
+	iplDispImage = convertImageToIpl(image);
     }
 #endif
 }
@@ -944,97 +945,97 @@ void PlanePopOut::GetImageData()
 void PlanePopOut::GetPlaneAndSOIs()
 {
     try {
-        // clear plane and SOIs
-        dominantPlane.clear();
-        currentSOIs.clear();
+	// clear plane and SOIs
+	dominantPlane.clear();
+	currentSOIs.clear();
 
-        if (points.size() < PPO_MIN_POINTCLOUD_SIZE)
-            return;
+	if (points.size() < PPO_MIN_POINTCLOUD_SIZE)
+	    return;
 
-        // first convert to PCL format, for PCL based plane and SOI detection
-        // TODO get from cast-file!
-        int pointCloudWidth = 320;
-        int pointCloudHeight = 240;
-        pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-        ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
+	// first convert to PCL format, for PCL based plane and SOI detection
+	// TODO get from cast-file!
+	int pointCloudWidth = 320;
+	int pointCloudHeight = 240;
+	pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+	ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
 
-        log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
-        if (!planePopout->CalculateSOIs(pcl_cloud))
-	          return;
+	log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
+	if (!planePopout->CalculateSOIs(pcl_cloud))
+	    return;
 
-        // Dominant plane coefficients
-        pcl::ModelCoefficients::Ptr pcl_domplane;
-        // table hull points
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
-        // the indices of points on the dominant plane
-        pcl::PointIndices::Ptr planepoints;
-       	// detected SOIs: convex hull prisms, with first half of points the bottom
-        // and second half the top polygon
-        vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
+	// Dominant plane coefficients
+	pcl::ModelCoefficients::Ptr pcl_domplane;
+	// table hull points
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
+	// the indices of points on the dominant plane
+	pcl::PointIndices::Ptr planepoints;
+	// detected SOIs: convex hull prisms, with first half of points the bottom
+	// and second half the top polygon
+	vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
 
-        planePopout->GetSOIs(pcl_sois);
-        planePopout->GetDominantPlaneCoefficients(pcl_domplane);
-        planePopout->GetTableHulls(tablehull);
-        planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
-        planePopout->GetPlanePoints(planepoints); 
+	planePopout->GetSOIs(pcl_sois);
+	planePopout->GetDominantPlaneCoefficients(pcl_domplane);
+	planePopout->GetTableHulls(tablehull);
+	planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
+	planePopout->GetPlanePoints(planepoints); 
 
 #ifdef FEAT_VISUALIZATION
-        // NOTE: not nice having visualisiaton code here, but ok
-        if (m_bSendSois)
-            SendSOIs(pcl_sois);
+	// NOTE: not nice having visualisiaton code here, but ok
+	if (m_bSendSois)
+	    SendSOIs(pcl_sois);
 #endif
 
-        // fill our dominant plane structure
-        dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
+	// fill our dominant plane structure
+	dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
 
-        // fill our SOI structures
-        // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
-        // vertices of the bounding prism. We are however interested in all original
-        // points inside the SOI.
-        /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-        {
-            int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-            // if point is in any SOI
-            if(soi_label != 0) {
-                SurfacePoint p;
-                p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-                p.c.r = pcl_cloud->points[i].r;
-              	p.c.g = pcl_cloud->points[i].g;
-                p.c.b = pcl_cloud->points[i].b;
-                currentSOIs[soi_label].points.push_back(p);
-            }
-        }*/
+	// fill our SOI structures
+	// NOTE: the point clouds returned as SOIs by the PlanePopout class are the
+	// vertices of the bounding prism. We are however interested in all original
+	// points inside the SOI.
+	/*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+	  {
+	  int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+	// if point is in any SOI
+	if(soi_label != 0) {
+	SurfacePoint p;
+	p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+	p.c.r = pcl_cloud->points[i].r;
+	p.c.g = pcl_cloud->points[i].g;
+	p.c.b = pcl_cloud->points[i].b;
+	currentSOIs[soi_label].points.push_back(p);
+	}
+	}*/
 
-        // NOTE: the above does not work for some as yet unknown reason, so we essentially
-        // do the same thing "by hand"
-        for (size_t i = 0; i < pcl_sois.size(); i++)
-        {
-            // dummy call to create map entry
-            currentSOIs[i].hist = 0;
-            // NOTE: the following isPointIn2DPolygon() function needs the bottom
-            // polygon of SOI prism, i.e. only the first half of the points 
-            pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
-        }
-        for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-        {
-            for(size_t j = 0; j < pcl_sois.size(); j++)
-            {
-                if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j])) {
-                    SurfacePoint p;
-                    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-                    p.c.r = pcl_cloud->points[i].r;
-                  	p.c.g = pcl_cloud->points[i].g;
-                    p.c.b = pcl_cloud->points[i].b;
-                    currentSOIs[j].points.push_back(p);
-                }
-            }
-        }
-        for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
-            it->second.init(dominantPlane);
-        log("pcl_sois: %d  current sois: %d", (int)pcl_sois.size(), (int)currentSOIs.size());
+	// NOTE: the above does not work for some as yet unknown reason, so we essentially
+	// do the same thing "by hand"
+	for (size_t i = 0; i < pcl_sois.size(); i++)
+	{
+	    // dummy call to create map entry
+	    currentSOIs[i].hist = 0;
+	    // NOTE: the following isPointIn2DPolygon() function needs the bottom
+	    // polygon of SOI prism, i.e. only the first half of the points 
+	    pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
+	}
+	for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+	{
+	    for(size_t j = 0; j < pcl_sois.size(); j++)
+	    {
+		if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j])) {
+		    SurfacePoint p;
+		    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+		    p.c.r = pcl_cloud->points[i].r;
+		    p.c.g = pcl_cloud->points[i].g;
+		    p.c.b = pcl_cloud->points[i].b;
+		    currentSOIs[j].points.push_back(p);
+		}
+	    }
+	}
+	for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
+	    it->second.init(dominantPlane);
+	log("pcl_sois: %d  current sois: %d", (int)pcl_sois.size(), (int)currentSOIs.size());
     }
     catch (runtime_error &e) {
-        error(" *** PPO CalculateSOIs ... GetPlanePoints is FUCKED UP *** : %s", e.what());
+	error(" *** PPO CalculateSOIs ... GetPlanePoints HAS CRASHED *** : %s", e.what());
     }
 }
 
@@ -1046,10 +1047,10 @@ void PlanePopOut::TrackSOIs()
 {
     for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
     {
-        ostringstream str;
-        str << "current SOI " << jt->first << " at: "
-            << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
-        log("%s", str.str().c_str());
+	ostringstream str;
+	str << "current SOI " << jt->first << " at: "
+	    << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
+	log("%s", str.str().c_str());
     }
 
     // for each tracked SOI find the best match among current SOIs, if any
@@ -1057,73 +1058,64 @@ void PlanePopOut::TrackSOIs()
     // but for now we leave as is
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
-        int best = -1;
-        double best_match_prob = 0.;
-        for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
-        {
-            double match = it->matchProbability(jt->second);
-            if (match > PPO_MIN_MATCH_PROB && match > best_match_prob) {
-                best_match_prob = match;
-                best = (int)jt->first;
-            }
-        }
-        if (best != -1) {
-            it->updateFrom(currentSOIs[best]);
+	int best = -1;
+	double best_match_prob = 0.;
+	for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
+	{
+	    double match = it->matchProbability(jt->second);
+	    if (match > PPO_MIN_MATCH_PROB && match > best_match_prob) {
+		best_match_prob = match;
+		best = (int)jt->first;
+	    }
+	}
+	if (best != -1) {
+	    it->updateFrom(currentSOIs[best]);
 
-            // if the SOI is already in WM, overwrite it
-            if (!it->WMId.empty()) {
-                VisionData::SOIPtr wmsoi = it->createWMSOI(this);
-                overwriteWorkingMemory(it->WMId, wmsoi);
-            } else {
-                // only if it has been stable for some time, add it to WM
-                if (it->numStableFrames >= StableTime) {
-                    VisionData::SOIPtr wmsoi = it->createWMSOI(this);
-                    it->WMId = newDataID();
-                    addToWorkingMemory(it->WMId, wmsoi);
-#ifdef FEAT_VISUALIZATION
-                    // NOTE: not nice having visualisiaton code here, but ok
-                    if (m_bSendSois)
-                        SendSOI(*it);
-#endif
-                }
-            }
-        } else {
-            // no update, i.e. not seen
-            it->numFramesNotSeen++;
-            it->numStableFrames = 0;
-            it->hasMatch = false;
-        }
+	    // if the SOI is already in WM, overwrite it
+	    if (!it->WMId.empty()) {
+		VisionData::SOIPtr wmsoi = it->createWMSOI(this);
+		overwriteWorkingMemory(it->WMId, wmsoi);
+	    } else {
+		// only if it has been stable for some time, add it to WM
+		if (it->numStableFrames >= StableTime) {
+		    VisionData::SOIPtr wmsoi = it->createWMSOI(this);
+		    it->WMId = newDataID();
+		    addToWorkingMemory(it->WMId, wmsoi);
+		}
+	    }
+	} else {
+	    // no update, i.e. not seen
+	    it->numFramesNotSeen++;
+	    it->numStableFrames = 0;
+	    it->hasMatch = false;
+	}
     }
 
     // all current SOIs that were not used instantiate a new tracked SOI
     for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
     {
-        log("current soi %d found a matching tracked soi : %s",
-           (int)jt->first, (jt->second.hasMatch ? "yes" : "no"));
-        if (!jt->second.hasMatch) {
-            trackedSOIs.push_back(SOIEntry());
-            trackedSOIs.back().updateFrom(jt->second);
-            // NOTE: no WM action yet here. only once a SOI has been seen longer than StableTime
-            // will it be added to WM (see above)
-        }
+	log("current soi %d found a matching tracked soi : %s",
+		(int)jt->first, (jt->second.hasMatch ? "yes" : "no"));
+	if (!jt->second.hasMatch) {
+	    trackedSOIs.push_back(SOIEntry());
+	    trackedSOIs.back().updateFrom(jt->second);
+	    // NOTE: no WM action yet here. only once a SOI has been seen longer than StableTime
+	    // will it be added to WM (see above)
+	}
     }
 
     // now remove SOIs which have not been updated for a while
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); )
     {
-        if (it->numFramesNotSeen > AgonalTime) {
-            // if it was added to WM at all
-            if (!it->WMId.empty()) {
-                deleteFromWorkingMemory(it->WMId);
-#ifdef FEAT_VISUALIZATION
-                // NOTE: not nice having visualisiaton code here, but ok
-                SendRemovedSOI(*it);
-#endif
-            }
-            it = trackedSOIs.erase(it);
-        } else {
-            it++; 
-        }
+	if (it->numFramesNotSeen > AgonalTime) {
+	    // if it was added to WM at all
+	    if (!it->WMId.empty()) {
+		deleteFromWorkingMemory(it->WMId);
+	    }
+	    it = trackedSOIs.erase(it);
+	} else {
+	    it++; 
+	}
     }
 }
 
@@ -1137,8 +1129,8 @@ void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); )
     {
-				if (it->numStableFrames >= StableTime)
-            soiList.push_back(it->createWMSOI(this));
+	if (it->numStableFrames >= StableTime)
+	    soiList.push_back(it->createWMSOI(this));
     }
 }
 
@@ -1146,27 +1138,27 @@ void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChange& _wmc)
 {
     class CCmd:
-			public VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>
+	public VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>
     {
-		public:
-			  CCmd(cast::WorkingMemoryReaderComponent* pReader)
-				: VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
-		protected:
-			  virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
-			  virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
+	public:
+	    CCmd(cast::WorkingMemoryReaderComponent* pReader)
+		: VisionCommandNotifier<GetStableSoisCommand, GetStableSoisCommandPtr>(pReader) {}
+	protected:
+	    virtual void doFail() { pcmd->status = VisionData::VCFAILED; }
+	    virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
     } cmd(this);
 
     println("PlanePopOut: GetStableSoisCommand.");
 
     if (! cmd.read(_wmc.address)) {
-				debug("PlanePopOut: GetStableSoisCommand deleted while working...");
-				return;
+	debug("PlanePopOut: GetStableSoisCommand deleted while working...");
+	return;
     }
 
     // TODO: getComponentID || stereoServer->componentId
     if (cmd.pcmd->componentId != getComponentID()) {
-				debug("GetStableSoisCommand is not for me, but for '%s'.", cmd.pcmd->componentId.c_str());
-				return;
+	debug("GetStableSoisCommand is not for me, but for '%s'.", cmd.pcmd->componentId.c_str());
+	return;
     }
 
     debug("PlanePopOut: Will handle a GetStableSoisCommand.");
@@ -1178,7 +1170,8 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     debug("PlanePopOut: GetStableSoisCommand found %d SOIs.", cmd.pcmd->sois.size());
 }
 
-/*void PlanePopOut::SaveHistogramImg(CvHistogram* hist, string str)
+#if 0
+void PlanePopOut::SaveHistogramImg(CvHistogram* hist, string str)
 {
     int h_bins = 16, s_bins = 8;
 
@@ -1195,22 +1188,22 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     int bin_w = width / (h_bins * s_bins);
     for(int h = 0; h < h_bins; h++)
     {
-      for(int s = 0; s < s_bins; s++)
-      {
-        int i = h*s_bins + s;
-        // calculate the height of the bar
-        float bin_val = cvQueryHistValue_2D( hist, h, s );
-        int intensity = cvRound(bin_val*height/max_value);
+	for(int s = 0; s < s_bins; s++)
+	{
+	    int i = h*s_bins + s;
+	    // calculate the height of the bar
+	    float bin_val = cvQueryHistValue_2D( hist, h, s );
+	    int intensity = cvRound(bin_val*height/max_value);
 
-        // Get the RGB color of this bar
-        cvSet2D(hsv_color,0,0,cvScalar(h*180.f / h_bins,s*255.f/s_bins,255,0));
-        cvCvtColor(hsv_color,rgb_color,CV_HSV2RGB);
-        CvScalar color = cvGet2D(rgb_color,0,0);
+	    // Get the RGB color of this bar
+	    cvSet2D(hsv_color,0,0,cvScalar(h*180.f / h_bins,s*255.f/s_bins,255,0));
+	    cvCvtColor(hsv_color,rgb_color,CV_HSV2RGB);
+	    CvScalar color = cvGet2D(rgb_color,0,0);
 
-        cvRectangle( hist_img, cvPoint(i*bin_w,height),
-          cvPoint((i+1)*bin_w,height - intensity),
-          color, -1, 8, 0 );
-      }
+	    cvRectangle( hist_img, cvPoint(i*bin_w,height),
+		    cvPoint((i+1)*bin_w,height - intensity),
+		    color, -1, 8, 0 );
+	}
     }
     string path = str;
     path.insert(0,"/tmp/H-S-histogram_"); path.insert(path.length(),".jpg");
@@ -1219,7 +1212,8 @@ void PlanePopOut::onAdd_GetStableSoisCommand(const cast::cdl::WorkingMemoryChang
     cvReleaseImage(&hsv_color);
     cvReleaseImage(&rgb_color);
 }
-*/
+#endif
 
 }
+// vim: set sw=4 sts=4 ts=8 noet list :vim
 
