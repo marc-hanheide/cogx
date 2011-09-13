@@ -62,18 +62,6 @@ module FrontierInterface {
     float gatewayValue;
   };
 
-  sequence<byte> CellSeq;
-
-  struct LocalGridMap
-  {
-    double xCenter;
-    double yCenter;
-    double cellSize;
-
-    int size;
-    CellSeq data;
-  };
-
   /**
    * Container for data in a GridMap<double>
    * @author Kristoffer Sjöö
@@ -160,10 +148,10 @@ module FrontierInterface {
   };
 
   interface LocalMapInterface {
-    LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
+    SpatialData::LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
   };
   interface LocalMapInterfaceAsComponent extends cast::interfaces::CASTComponent {
-    LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
+    SpatialData::LocalGridMap getCombinedGridMap(SpatialData::PlaceIDSeq places);
   };
 
   interface HypothesisEvaluator {

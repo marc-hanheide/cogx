@@ -347,7 +347,7 @@ namespace spatial
   }
 
 
-  void VisualObjectSearch::IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  ){
+  void VisualObjectSearch::IcetoCureLGM(SpatialData::LocalGridMap icemap, CureObstMap* lgm  ){
     log("icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter, icemap.yCenter);
     int lp = 0;
     for(int x = -icemap.size ; x <= icemap.size; x++){
@@ -369,7 +369,7 @@ namespace spatial
       for (int i=0; i < 11; i++)
 	placestosearch.push_back(i);
       log("creating placeinterface proxy");
-      FrontierInterface::LocalGridMap combined_lgm;
+      SpatialData::LocalGridMap combined_lgm;
       log("getting combined lgm");
       FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
       for (unsigned int g = 0; g < placestosearch.size(); g++)
@@ -420,7 +420,7 @@ namespace spatial
     }
     else{
       log("creating placeinterface proxy for specific areas");
-      FrontierInterface::LocalGridMap combined_lgm;
+      SpatialData::LocalGridMap combined_lgm;
       log("getting combined lgm");
       FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<FrontierInterface::LocalMapInterface>("map.manager"));
       for (unsigned int g = 0; g < placestosearch.size(); g++)

@@ -130,7 +130,7 @@ class LocalMapManager : public cast::ManagedComponent,
     friend class EvaluationServer;
     
     class LocalMapServer: public FrontierInterface::LocalMapInterface {
-      virtual FrontierInterface::LocalGridMap getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
+      virtual SpatialData::LocalGridMap getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
 	  const Ice::Current &_context);
       LocalMapManager *m_pOwner;
       LocalMapServer(LocalMapManager *owner) : m_pOwner(owner)
@@ -248,7 +248,7 @@ private:
 	
   NavData::FNodePtr getCurrentNavNode();
   FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
-  void getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
+  void getCombinedGridMap(SpatialData::LocalGridMap &map, 
       const std::vector<NavData::FNodePtr> &nodes);
   Cure::Transformation3D getCameraToWorldTransform();
   void SaveNodeGridMaps();
