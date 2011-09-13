@@ -48,8 +48,11 @@ void PlaceholderExplorer::runComponent() {
     while(true) {
 
       placeId = findClosestPlaceholderInNodeGraph(currentPlace->id);
-      if(placeId < 0)
+      if(placeId < 0) {
+        /* Did not find a placeholder. Sleep and try again. */
+        sleep(1);
         break;
+      }
 
       // Have we updated this placeholders edge before?
       if(updatedPlaceholders.find(placeId) == updatedPlaceholders.end()) {
