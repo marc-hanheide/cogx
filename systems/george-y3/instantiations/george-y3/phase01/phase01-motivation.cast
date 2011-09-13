@@ -6,9 +6,9 @@
 # in a .hconf file will be used instead of host addresses defined here.
 # HOSTNAME  localhost      192.168.33.101
 HOSTNAME  Main           localhost
-HOSTNAME  PlayerHost     192.168.56.3
+#HOSTNAME  PlayerHost     192.168.56.3
 # HOSTNAME  PlayerHost     cca-0838
-# HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
 
