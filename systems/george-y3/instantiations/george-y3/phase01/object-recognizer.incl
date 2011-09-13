@@ -1,0 +1,19 @@
+# CAST include file
+
+VARDEFAULT recognizer_model_dir=instantiations/recognizer-models
+VARDEFAULT recognizer_models=<multiline>
+   %(recognizer_model_dir)/darjeeling.cm
+</multiline>
+VARDEFAULT recognizer_labels=<multiline>
+   darjeeling
+</multiline>
+
+SETVAR ObjectRecognizer3D3_params=<multiline>
+   --displayserver "display.srv"
+   --videoname videoserver --camid "0"
+   --models "%(recognizer_models)"
+   --labels "%(recognizer_labels)"
+   # --log
+</multiline>
+CPP MG Recognizer3D ObjectRecognizer3D3  %(ObjectRecognizer3D3_params)
+
