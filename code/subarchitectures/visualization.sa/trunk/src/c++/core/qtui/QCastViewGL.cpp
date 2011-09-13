@@ -45,6 +45,7 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    zRot = 0;
    zoomLevel = 0;
    m_pivot.set(0, 0, 0);
+   coBackground = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0).dark();
 }
 
 QCastViewGL::~QCastViewGL()
@@ -268,11 +269,7 @@ void QCastViewGL::setZRotation(float angle)
 
 void QCastViewGL::initializeGL()
 {
-   QColor qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
-   qglClearColor(qtPurple.dark());
-
-   //logo = new QtLogo(this, 64);
-   //logo->setColor(qtGreen.dark());
+   qglClearColor(coBackground);
 
    glEnable(GL_DEPTH_TEST);
    //glEnable(GL_CULL_FACE);
