@@ -136,7 +136,7 @@ enum VisionCommandStatus {
     // In case an exact pose can not be established (e.g. because the object
     // detector model does not allow pose calculation) just provide a simple
     // bounding volume.
-    // The position of the boundingSphere is relative to the object coord. sys.
+    // The position of the boundingSphere is relative to the robot ego coord. sys.
     cogx::Math::Sphere3 boundingSphere;
 
     // The time when the object was last observed, in any view
@@ -502,6 +502,13 @@ enum VisionCommandStatus {
     string componentId;
     SOISeq sois;
 
+    // the result passed on overwrite
+    VisionCommandStatus status;
+  };
+
+  // A LookAroundCommand will make the robot look in a new direction
+  // to see if there is anything interesting.
+  class LookAroundCommand {
     // the result passed on overwrite
     VisionCommandStatus status;
   };

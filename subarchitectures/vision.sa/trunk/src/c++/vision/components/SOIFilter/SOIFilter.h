@@ -213,6 +213,7 @@ private:
   void onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc);
 
   void onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc);
+  void onAdd_LookAroundCommand(const cdl::WorkingMemoryChange & _wmc);
   void onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
   void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
