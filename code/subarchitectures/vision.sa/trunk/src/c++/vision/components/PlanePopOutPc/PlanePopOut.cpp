@@ -543,8 +543,6 @@ void PlanePopOut::SendImage()
 {
     CMilliTimer tm(true);
 
-    m_display.setImage(guiid(ID_OBJECT_IMAGE), iplDispImage);
-
     //     CvFont a;
     //     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
     //     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
@@ -557,14 +555,17 @@ void PlanePopOut::SendImage()
     //     }
 
     long long t1 = tm.elapsed();
-    long long t2 = tm.elapsed();
+
     long size = iplDispImage->imageSize;
+    m_display.setImage(guiid(ID_OBJECT_IMAGE), iplDispImage);
+
+    long long t2 = tm.elapsed();
     long long t3 = tm.elapsed();
 
     if (1) {
 	ostringstream str;
 	str << "<h3>Plane popout - SendImage</h3>";
-	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+	//str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	str << "Size: " << size << " bytes.<br>";
 	str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
 	m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
@@ -767,26 +768,34 @@ void PlanePopOut::runComponent()
 {
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
-#endif
+
+    ::CRunningRate realRate;
 
     long tickMs = 1000 / 5; // run (at most) at 5Hz
-    CMilliTimer tmRunning(true);
+    ::CMilliTimer tmRunning(true);
 
     long sendPointsMs = 500; // send points at most every X ms
-    CMilliTimer tmSendPoints(true);
+    ::CMilliTimer tmSendPoints(true);
 
     long sendPlaneGridMs = 500; // send plane grid at most every X ms
-    CMilliTimer tmSendPlaneGrid(true);
+    ::CMilliTimer tmSendPlaneGrid(true);
 
     long sendImageMs = 750; // send image at most every X ms
-    CMilliTimer tmSendImage(true);
+    ::CMilliTimer tmSendImage(true);
+#endif
 
     try {
 	while(isRunning()) {
+#ifdef FEAT_VISUALIZATION
 	    long tickDelay = tickMs - tmRunning.elapsed();
-	    if (tickDelay > 0)
-		sleepComponent(tickDelay);
+	    if (tickDelay < 1) tickDelay = 1;
+	    sleepComponent(tickDelay);
 	    tmRunning.restart();
+	    realRate.tick();
+	    log("current rate: %.3g tps, ave. rate from start: %.3g tps", realRate.getRate(), realRate.getTotalRate());
+#else
+	    sleepComponent(200);
+#endif
 
 	    try{
 		GetImageData();
