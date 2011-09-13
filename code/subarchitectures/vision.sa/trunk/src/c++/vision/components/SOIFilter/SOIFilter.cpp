@@ -223,6 +223,10 @@ void SOIFilter::start()
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onAdd_AnalyzeProtoObjectCommand));
 
+  addChangeFilter(createLocalTypeFilter<VisionData::LookAroundCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onAdd_LookAroundCommand));
+
   addChangeFilter(createLocalTypeFilter<VisionData::ProtoObject>(cdl::ADD),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onAdd_ProtoObject));
@@ -407,6 +411,14 @@ void SOIFilter::onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange &
   debug("RECEIVED: AnalyzeProtoObjectCommand %s", _wmc.address.id.c_str());
   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
   m_EventQueue.push_back(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
+  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+}
+
+void SOIFilter::onAdd_LookAroundCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  debug("RECEIVED: LookAroundCommand %s", _wmc.address.id.c_str());
+  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
+  m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK_AROUND, cdl::ADD, _wmc));
   m_EventQueueMonitor.notify(); // works only if the monitor is locked here
 }
 
@@ -597,6 +609,7 @@ void SOIFilter::runComponent()
           soiProcessor.handle(pevent);
           break;
         case TYPE_CMD_LOOK:
+        case TYPE_CMD_LOOK_AROUND:
           moveProcessor.handle(pevent);
           break;
         case TYPE_CMD_ANALYZE:

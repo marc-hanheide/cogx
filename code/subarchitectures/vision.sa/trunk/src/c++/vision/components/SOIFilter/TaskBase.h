@@ -12,7 +12,10 @@
 namespace cast {
 
 enum {
-  TYPE_SOI = 1, TYPE_CMD_LOOK = 2, TYPE_CMD_ANALYZE = 3
+  TYPE_SOI = 1,
+  TYPE_CMD_LOOK = 2,
+  TYPE_CMD_LOOK_AROUND = 3,
+  TYPE_CMD_ANALYZE = 4,
 };
 
 struct WmEvent
