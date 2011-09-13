@@ -322,24 +322,6 @@ void LocalMapManager::start()
     log("connecting to PTU");
 	
     m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
-
-/*
-    Ice::CommunicatorPtr ic = getCommunicator();
-
-    Ice::Identity id;
-    id.name = "PTZServer";
-    id.category = "PTZServer";
-
-    std::ostringstream str;
-    str << ic->identityToString(id) 
-      << ":default"
-      << " -h localhost"
-      << " -p " << cast::cdl::CPPSERVERPORT;
-
-//    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-//    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
-    m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
-*/
   }
 }
 
@@ -1007,11 +989,11 @@ LocalMapManager::EvaluationServer::getHypothesisEvaluation(int hypID,
   return ret;
 }
 
-FrontierInterface::LocalGridMap
+SpatialData::LocalGridMap
 LocalMapManager::LocalMapServer::getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
     const Ice::Current &_context)
 {
-  FrontierInterface::LocalGridMap ret; 
+  SpatialData::LocalGridMap ret; 
 
   // Before locking this component, get all the node IDs from (possibly blocking)
   // interface
@@ -1035,7 +1017,7 @@ LocalMapManager::LocalMapServer::getCombinedGridMap(const SpatialData::PlaceIDSe
 }
 
 void 
-LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map, 
+LocalMapManager::getCombinedGridMap(SpatialData::LocalGridMap &map, 
     const vector<NavData::FNodePtr> &nodes)
 {
   vector<const CharMap *>maps;
@@ -1118,6 +1100,44 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
     }
   }
 
+
+
+  //This is all new stuff!
+  // Get obstacles we may have missed from kinect data
+  log("Adding kinect data to combined local gridmap");
+  SpatialData::MapInterfacePrx mapPrx(getIceServer<SpatialData::MapInterface>("spatial.control"));
+  SpatialData::LocalGridMap obstacleMap = mapPrx->getBoundedMap(minx, maxx, miny, maxy);
+
+  Cure::LocalGridMap<unsigned char> cureObstacleMap(obstacleMap.size, obstacleMap.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, obstacleMap.xCenter, obstacleMap.yCenter);
+
+  // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
+  int lp = 0;
+  for(int x = -obstacleMap.size ; x <= obstacleMap.size; x++){
+    for(int y = -obstacleMap.size ; y <= obstacleMap.size; y++){ 
+      cureObstacleMap(x,y) = (obstacleMap.data[lp]);
+      lp++;
+    }
+  }
+
+  for (int x = -newSize; x <= newSize; x++) {
+    for (int y = -newSize; y <= newSize; y++) {
+      if(newMap(x,y) == '0') { // We only add obstacles on current free space
+        double xw, yw; // World coordinates
+        int xi, yi; // obstaclemap coordinates
+        if (newMap.index2WorldCoords(x,y,xw,yw) != 0)
+          continue;
+
+        if (cureObstacleMap.worldCoords2Index(xw,yw,xi,yi) != 0)
+          continue;
+
+        if (cureObstacleMap(xi,yi) == '1') {
+          newMap(x,y) = '1';
+        }
+      }
+    }
+  }
+
+  // Add the data to the map we'll return
   for (int x = -newSize ; x <= newSize; x++){
     for (int y = -newSize ; y <= newSize; y++){
       map.data.push_back(newMap(x,y));
@@ -1127,7 +1147,7 @@ LocalMapManager::getCombinedGridMap(FrontierInterface::LocalGridMap &map,
   CharMap newMap2(newSize, cellSize, '2',
       CharMap::MAP1, cx, cy);
 
-  int lp = 0;
+  lp = 0;
   for(int x = -map.size ; x <= map.size; x++){
     for(int y = -map.size ; y <= map.size; y++){ 
       (newMap2)(x,y) = map.data[lp];

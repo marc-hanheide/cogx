@@ -398,6 +398,18 @@ module SpatialData {
   class SearchPlan{
 	  ViewPointSeq plan;
   };
+
+  sequence<byte> CellSeq;
+
+  struct LocalGridMap
+  {
+    double xCenter;
+    double yCenter;
+    double cellSize;
+
+    int size;
+    CellSeq data;
+  };
   
   /**
    * Command to process to viewpoint at the given WM address with the given object models (which should be sent to the recogniser).
@@ -418,9 +430,9 @@ class ProcessViewPointCommand {
   };
   
   interface MapInterface {
-    /* More to be added when necessary */
     bool isCircleObstacleFree(double x, double y, double radius);
     int findClosestNode(double x, double y);
+    LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
   };
 
 };

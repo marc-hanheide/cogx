@@ -83,7 +83,7 @@ public:
 	std::string convertLocation2Id(SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand);
 	void configure(const std::map<std::string, std::string>& _config);
 	void newViewPointGenerationCommand(const cast::cdl::WorkingMemoryChange &objID);
-	void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm  );
+	void IcetoCureLGM(SpatialData::LocalGridMap icemap, CureObstMap* lgm  );
 	void receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
 	 void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	 void newRobotPose(const cdl::WorkingMemoryChange &objID);

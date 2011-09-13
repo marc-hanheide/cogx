@@ -145,7 +145,7 @@ void newProcessViewPointCommand(const cast::cdl::WorkingMemoryChange &objID);
       bool isPointInsideTriangle(XVector3D p,XVector3D a,XVector3D b,XVector3D c);
       void FindBoundingRectangle(XVector3D a,XVector3D b,XVector3D c,int* rectangle);
       void InitializeMaps(SpatialData::PlaceIDSeq placestosearch);
-      void IcetoCureLGM(FrontierInterface::LocalGridMap icemap, CureObstMap* lgm);
+      void IcetoCureLGM(SpatialData::LocalGridMap icemap, CureObstMap* lgm);
       void ChangeMaps(std::string roomid);
       double GetPlaceIdFromNodeId(int nodeId);
 void setRot(double p11,double p12,double p13,double p21, double p22, double p23,double p31, double p32, double p33, Pose3 &p);      // keyed with room id

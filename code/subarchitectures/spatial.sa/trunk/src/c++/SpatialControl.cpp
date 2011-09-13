@@ -1495,6 +1495,48 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
+void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, double maxx, double miny, double maxy) {
+
+  int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
+  int lgmsize = m_lgm->getSize(); // Size of real gridmap
+
+  // Get the bounds as indices of m_lgm
+  m_lgm->worldCoords2Index(minx,miny, minxi, minyi);
+  m_lgm->worldCoords2Index(maxx,maxy, maxxi, maxyi);
+
+  // Make sure they are within the map boundaries
+  minxi = minxi < -lgmsize ? -lgmsize : minxi;
+  minyi = minyi < -lgmsize ? -lgmsize : minyi;
+  maxxi = maxxi > lgmsize ? lgmsize : maxxi;
+  maxyi = maxyi > lgmsize ? lgmsize : maxyi;
+
+  // Set map data
+  map.xCenter = (minx+maxx)/2;
+  map.yCenter = (miny+maxy)/2;
+  map.cellSize = m_lgm->getCellSize();
+
+  int sizeX = (maxxi-minxi)/2;
+  int sizeY = (maxyi-minyi)/2;
+  int newSize = sizeX > sizeY ? sizeX : sizeY;
+  map.size = newSize;
+
+  map.data.clear();
+  map.data.reserve(4*newSize*newSize + 4*newSize + 1);
+
+  for(int x = -newSize; x <= newSize; ++x) {
+    for(int y = -newSize; y <= newSize; ++y) {
+      // Make sure we only get data that was requested. Pad with 'unknown'.
+      if(x < -sizeX || x > sizeX ||
+           y < -sizeY || y > sizeY) {
+        map.data.push_back('2');
+      } else {
+        map.data.push_back((*m_lgm)(x,y));
+      }
+    }
+  }
+}
+
+
 FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
 {

@@ -340,7 +340,7 @@ void AVS_ContinualPlanner::generateViewCones(
 	// if we already don't have a room map for this then get the combined map
 	if (m_templateRoomBloxelMaps.count(newVPCommand->roomId) == 0) {
 		log("Creating a new BloxelMap for room: %d", newVPCommand->roomId);
-		FrontierInterface::LocalGridMap combined_lgm;
+		SpatialData::LocalGridMap combined_lgm;
 
 		vector<comadata::ComaRoomPtr> comarooms;
 		getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
@@ -895,7 +895,7 @@ if (WMAddress != ""){
 
 }
 
-void AVS_ContinualPlanner::IcetoCureLGM(FrontierInterface::LocalGridMap icemap,
+void AVS_ContinualPlanner::IcetoCureLGM(SpatialData::LocalGridMap icemap,
 		CureObstMap* lgm) {
 	log(
 			"icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",

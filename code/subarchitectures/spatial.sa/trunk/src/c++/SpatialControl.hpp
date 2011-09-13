@@ -101,6 +101,13 @@ class SpatialControl : public cast::ManagedComponent ,
         }
 
         virtual int findClosestNode(double x, double y, const Ice::Current &_context);
+        virtual SpatialData::LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy, const Ice::Current &_context) {
+          SpatialData::LocalGridMap ret;
+          m_pOwner->lockComponent();
+          m_pOwner->getBoundedMap(ret, minx, maxx, miny, maxy);
+          m_pOwner->unlockComponent();
+          return ret;
+        }
         SpatialControl *m_pOwner;
         MapServer(SpatialControl *owner) : m_pOwner(owner) {}
         friend class SpatialControl;
@@ -130,7 +137,7 @@ protected:
   void getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex) const;
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   virtual int findClosestNode(double x, double y);
-
+  void getBoundedMap(SpatialData::LocalGridMap &map, double minx, double maxx, double miny, double maxy);
   //REMOVEME
   void SaveGridMap();
 
