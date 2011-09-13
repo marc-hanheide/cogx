@@ -114,7 +114,6 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
    pLayout->setContentsMargins(4, 0, 4, 4);
    setLayout(pLayout);
 
-   // TODO: Also create toolbars for active views!
    if (! m_pDisplay) {
       if (pView->m_preferredContext == cogx::display::Context2D) {
          m_pDisplay = new QCastView(this);
@@ -157,19 +156,6 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
          m_viewPosMap.find(QString::fromStdString(pView->m_id));
       if (ivp != m_viewPosMap.end()) 
          m_pDisplay->setViewPosition(ivp.value());
-
-#if 0 // Moved to QCastMainFrame
-      // Toolbars are created after setModel and setView
-      CPtrVector<QToolBar> bars;
-      m_pDisplay->getToolbars(bars);
-      QToolBar *pBar;
-      FOR_EACH(pBar, bars) {
-         if (pBar) {
-            pBar->setParent(this);
-            pLayout->insertWidget(0, pBar);
-         }
-      }
-#endif
    }
 }
 

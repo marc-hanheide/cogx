@@ -32,6 +32,9 @@ private:
    float zRot;
    float zoomLevel;
 
+public:
+   QColor coBackground;
+
 private:
    struct Vector3
    {
