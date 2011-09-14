@@ -85,6 +85,16 @@ public:
 	    //dispColor.float_value = GetRandomColor();
 	}
 	~SOIEntry() {
+      if(hist != 0) {
+          if((hist->type & CV_MAGIC_MASK) != CV_HIST_MAGIC_VAL) {
+              printf("SOIEntry destructor: histogram is not a histogram\n");
+              throw runtime_error("SOIEntry destructor: histogram is not a histogram");
+          }
+          if(hist->bins == NULL) {
+              printf("SOIEntry destructor: histogram bins == NULL\n");
+              throw runtime_error("SOIEntry destructor: histogram bins == NULL");
+          }
+      }
 	    cvReleaseHist(&hist);
 	}
 	void init(PlaneEntry &domPlane);
