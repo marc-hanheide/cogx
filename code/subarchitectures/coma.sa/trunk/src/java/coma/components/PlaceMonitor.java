@@ -10,18 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
-
 import DefaultData.ChainGraphInferencerServerInterfacePrx;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.SpatialRelation;
+import SpatialProbabilities.JointProbabilityValue;
 import SpatialProbabilities.ProbabilityDistribution;
 import SpatialProperties.BinaryValue;
 import SpatialProperties.ConnectivityPathProperty;
 import SpatialProperties.DiscreteProbabilityDistribution;
 import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
+import SpatialProperties.PropertyValue;
+import SpatialProperties.RoomHumanAssertionPlaceProperty;
 
 import coma.aux.ComaHelper;
 import comadata.ComaReasonerInterfacePrx;
@@ -845,8 +846,8 @@ public class PlaceMonitor extends ManagedComponent {
 					// current place can be a seed for a new room
 					log(_currentplaceInstance + " serving as seed for a new room");
 					// create new room
-					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
-					// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
+					// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
+					ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
 					
 					// create new room on the reasoner
 					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
@@ -984,7 +985,31 @@ public class PlaceMonitor extends ManagedComponent {
 								// load ComaRoomWME in order to check if a new category was asserted
 								ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
 								log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
+
+								// for now, associate the RoomPlaceProperty with the seed place of the room
+								// that it has been resolved against -- later the assertion should be referenced
+								// by the place at which it was made/received -- and that place should be used instead.
+								// the current implementation does not account correctly for non-monotonic splits/merges of
+								// rooms!
+								for (String assertedRoomCat : _assertedRoomCats) {
+									// for each belief that expresses a human assertion about a room category
+									// we write a placeproperty -- ther is no check for duplicates at this point!
+									
+									RoomHumanAssertionPlaceProperty roomCatAssertion = new RoomHumanAssertionPlaceProperty(
+											Long.valueOf(_currRoom.seedPlaceInstance.replaceAll("\\D","")),
+											new SpatialProperties.ProbabilityDistribution(), new PropertyValue(),
+											true, false, assertedRoomCat);
+									
+									try {
+										addToWorkingMemory(newDataID(), roomCatAssertion);
+									} catch (AlreadyExistsOnWMException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									
+								}
 								
+								/*
 								// compare the set(!) of already known asserted room categories with the new set
 								HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
 								// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
@@ -1014,7 +1039,8 @@ public class PlaceMonitor extends ManagedComponent {
 										log("There was a PermissionException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
 										e.printStackTrace();
 									}
-								}								
+								}	
+								*/							
 							} else {
 								log("The ancestor points to a non-ComaRoom WME. Doing nothing.");
 							}
