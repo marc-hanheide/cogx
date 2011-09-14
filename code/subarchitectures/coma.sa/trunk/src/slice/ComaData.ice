@@ -45,7 +45,6 @@ module comadata {
     	int roomId;
     	string seedPlaceInstance;
     	PlaceIdSet containedPlaceIds;
-	labelList assertedLabels;
     	SpatialProbabilities::ProbabilityDistribution categories;
     };
     
