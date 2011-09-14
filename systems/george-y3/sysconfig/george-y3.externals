@@ -15,6 +15,7 @@
 ^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
 ^/code/subarchitectures/execution.sa/trunk              subarchitectures/execution.sa
 ^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
+^/code/subarchitectures/manipulation.sa/trunk           subarchitectures/manipulation.sa
 ^/code/subarchitectures/motivation.sa/trunk             subarchitectures/motivation.sa
 ^/code/subarchitectures/planner.sa/trunk                subarchitectures/planner.sa
 ^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
@@ -53,6 +54,7 @@
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/syscalb/trunk                        tools/syscalb
 ^/code/tools/testing/trunk                        tools/testing
+^/code/tools/v4r/trunk                            tools/v4r
 
 
 # importing to have access to dora systems for testing purposes
