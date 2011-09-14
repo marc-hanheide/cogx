@@ -806,6 +806,9 @@ void PlanePopOut::runComponent()
 		TrackSOIs();
 		log("have %d tracked sois", (int)trackedSOIs.size());
 	    }
+	    catch (exception& e) {
+		error(" *** PPO GetImageData or GetPlaneAndSOIs HAS CRASHED *** with\n%s\n ***", e.what());
+	    }
 	    catch (...) {
 		error(" *** PPO GetImageData or GetPlaneAndSOIs HAS CRASHED *** ");
 	    }
@@ -834,6 +837,9 @@ void PlanePopOut::runComponent()
 	    if (doDisplay)
 		DisplayInTG();
 	}
+    }
+    catch (exception& e) {
+	error(" *** PPO isRunning HAS CRASHED *** with\n%s\n ***", e.what());
     }
     catch (...) {
 	error(" *** PPO isRunning HAS CRASHED *** ");
