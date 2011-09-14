@@ -2,7 +2,8 @@
  * @author Kai ZHOU
  * @date June 2009
  *
- * Just receives stereo point clouds and displays them.
+ * This is a rewrite of the original plane poput, using the V4R library class
+ * PlanePopout, which is based on PCL.
  */
 
 #ifndef PLANE_POPOUT_H
