@@ -304,11 +304,11 @@ PlanePopOut::PlanePopOut()
     pclA::PlanePopout::Parameter par;
     // Minimum and maximum object height (default 0.005m, and 0.7m))
     // for origin in camera
-    //par.minObjectHeight = 0.005;
-    //par.maxObjectHeight = 1.;
+    par.minObjectHeight = 0.005;
+    par.maxObjectHeight = 1.;
     // for origin in robot ego
-    par.minObjectHeight = -1.;
-    par.maxObjectHeight = -0.05;
+    //par.minObjectHeight = -1.;
+    //par.maxObjectHeight = -0.05;
     //par.thrSacDistance = 0.03;
     planePopout = new pclA::PlanePopout(par);
 }
@@ -541,34 +541,44 @@ string PlanePopOut::CDisplayClient::getControlState(const string& ctrlId)
 
 void PlanePopOut::SendImage()
 {
-    CMilliTimer tm(true);
+    if(iplDispImage != 0) {
 
-    //     CvFont a;
-    //     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
-    //     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
-    //     {
-    // 	CvPoint p;
-    // 	CvRect& rsoi = vSOIonImg.at(i);
-    // 	p.x = (int)(rsoi.x+0.3 * rsoi.width);
-    // 	p.y = (int)(rsoi.y+0.5 * rsoi.height);
-    // 	cvPutText(ROIMaskImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
-    //     }
+	CMilliTimer tm(true);
 
-    long long t1 = tm.elapsed();
+	//     CvFont a;
+	//     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
+	//     for (unsigned int i=0 ; i<vSOIonImg.size() ; i++)
+	//     {
+	// 	CvPoint p;
+	// 	CvRect& rsoi = vSOIonImg.at(i);
+	// 	p.x = (int)(rsoi.x+0.3 * rsoi.width);
+	// 	p.y = (int)(rsoi.y+0.5 * rsoi.height);
+	// 	cvPutText(ROIMaskImg, vSOIid.at(i).c_str(), p, &a,CV_RGB(255,255,255));
+	//     }
 
-    long size = iplDispImage->imageSize;
-    m_display.setImage(guiid(ID_OBJECT_IMAGE), iplDispImage);
+	long long t1 = tm.elapsed();
 
-    long long t2 = tm.elapsed();
-    long long t3 = tm.elapsed();
+	long size = iplDispImage->imageSize;
+	m_display.setImage(guiid(ID_OBJECT_IMAGE), iplDispImage);
 
-    if (1) {
-	ostringstream str;
-	str << "<h3>Plane popout - SendImage</h3>";
-	//str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
-	str << "Size: " << size << " bytes.<br>";
-	str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
-	m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	long long t2 = tm.elapsed();
+	long long t3 = tm.elapsed();
+
+	if (1) {
+	    ostringstream str;
+	    str << "<h3>Plane popout - SendImage</h3>";
+	    //str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
+	    str << "Size: " << size << " bytes.<br>";
+	    str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
+	    m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	}
+    } else {
+	if (1) {
+	    ostringstream str;
+	    str << "<h3>Plane popout - SendImage</h3>";
+	    str << "no image to send<br>";
+	    m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	}
     }
 }
 
@@ -960,6 +970,7 @@ void PlanePopOut::GetImageData()
 	Video::Image image;
 	// get rectified image from point cloud server
 	getRectImage(camId, imageWidth, image);
+        cvReleaseImage(&iplDispImage);
 	iplDispImage = convertImageToIpl(image);
     }
 #endif
@@ -987,7 +998,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 	pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 	ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
 
-	log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
+	//log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
 	if (!planePopout->CalculateSOIs(pcl_cloud))
 	    return;
 
@@ -1060,7 +1071,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 	}
 	for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
 	    it->second.init(dominantPlane);
-	log("pcl_sois: %d  current sois: %d", (int)pcl_sois.size(), (int)currentSOIs.size());
+	//log("pcl_sois: %d  current sois: %d", (int)pcl_sois.size(), (int)currentSOIs.size());
     }
     catch (runtime_error &e) {
 	error(" *** PPO CalculateSOIs ... GetPlanePoints HAS CRASHED *** : %s", e.what());
@@ -1073,13 +1084,13 @@ void PlanePopOut::GetPlaneAndSOIs()
  */
 void PlanePopOut::TrackSOIs()
 {
-    for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
+    /*for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
     {
 	ostringstream str;
 	str << "current SOI " << jt->first << " at: "
 	    << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
 	log("%s", str.str().c_str());
-    }
+    }*/
 
     // for each tracked SOI find the best match among current SOIs, if any
     // NOTE: this is rather primitive, more elaborate schemes are possible
@@ -1109,6 +1120,7 @@ void PlanePopOut::TrackSOIs()
 		    VisionData::SOIPtr wmsoi = it->createWMSOI(this);
 		    it->WMId = newDataID();
 		    addToWorkingMemory(it->WMId, wmsoi);
+                    log("added SOI to WM");
 		}
 	    }
 	} else {
@@ -1139,6 +1151,7 @@ void PlanePopOut::TrackSOIs()
 	    // if it was added to WM at all
 	    if (!it->WMId.empty()) {
 		deleteFromWorkingMemory(it->WMId);
+                log("removed SOI from WM");
 	    }
 	    it = trackedSOIs.erase(it);
 	} else {
