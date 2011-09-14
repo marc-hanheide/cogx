@@ -304,11 +304,11 @@ PlanePopOut::PlanePopOut()
     pclA::PlanePopout::Parameter par;
     // Minimum and maximum object height (default 0.005m, and 0.7m))
     // for origin in camera
-    par.minObjectHeight = 0.005;
-    par.maxObjectHeight = 1.;
+    //par.minObjectHeight = 0.005;
+    //par.maxObjectHeight = 1.;
     // for origin in robot ego
-    //par.minObjectHeight = -1.;
-    //par.maxObjectHeight = -0.05;
+    par.minObjectHeight = -1.;
+    par.maxObjectHeight = -0.05;
     //par.thrSacDistance = 0.03;
     planePopout = new pclA::PlanePopout(par);
 }
