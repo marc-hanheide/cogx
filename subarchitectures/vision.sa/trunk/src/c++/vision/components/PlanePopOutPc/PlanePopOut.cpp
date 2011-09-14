@@ -78,6 +78,11 @@ static long long gethrtime(void)
 // the similarity of 2 SOIs higher than this will make the system treat these 2 SOI as the sam one
 #define Treshold_Comp2SOI	0.75
 
+// image size (i.e. width) of the point cloud and colour image to obtain from the
+// poin cloud server
+#define PPO_POINTCLOUD_WIdTH 320
+#define PPO_IMAGE_WIDTH      640
+
 // minimum number of points in a point cloud to do any processing
 #define PPO_MIN_POINTCLOUD_SIZE 100
 
@@ -995,8 +1000,8 @@ void PlanePopOut::DisplayInTG()
 void PlanePopOut::GetImageData()
 {
     // TODO get from cast-file!
-    int pointCloudWidth = 320;
-    int imageWidth = 640;
+    int pointCloudWidth = PPO_POINTCLOUD_WIdTH;
+    int imageWidth = PPO_IMAGE_WIDTH;
 
     points.clear();
     getCompletePoints(true, pointCloudWidth, points);
@@ -1028,7 +1033,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 
     // first convert to PCL format, for PCL based plane and SOI detection
     // TODO get from cast-file!
-    int pointCloudWidth = 320;
+    int pointCloudWidth = PPO_POINTCLOUD_WIdTH;
     int pointCloudHeight = 240;
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
