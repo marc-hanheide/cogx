@@ -60,3 +60,43 @@ inside the virtual machine. See
 
  https://codex.cs.bham.ac.uk/trac/cogx/wiki/documents/scenarios/george2/review
 
+
+Fake VisualLearner component
+----------------------------
+
+You can also build a fake VisualLearner that doesn't use Matlab, but doesn't do
+anything useful, either. It just adds some constant values to the appropriate
+WM entries. The fake component is built instead of the real one if the option
+BUILD_SA_VISION_VISLEARNER_FAKE is enabled in cmake.
+
+
+Phase 01
+========
+
+Goal: Run the 4 types of learning using 2 layered vision and (if possible) use
+the Katana arm as an aid for reference resolution.
+
+In simulation with Gazebo and Player:
+   - instantiations/george-y3/sim/gazebo/george-01.world
+   - instantiations/george-y3/sim/player/cogx-platform-sim.cfg
+
+Use one of the phase01-*.cast files, eg.: 
+   - instantiations/george-y3/phase01/phase01-motivation.cast
+
+
+Managing objects in the scene
+-----------------------------
+
+Check that the juggler.incl is included in the top cast file. This will include
+the GazeboJuggler component which will remove all the objects from the scene at
+startup. Then you can place individual objects back on the scene in the
+GazeboJuggler dialog. Press the yellow icon in the "CAST Viewer" window to
+show/hide the dialog window.
+  
+
+Analyze Proto Objects
+---------------------
+
+The system will analyze proto objects when the "Anal. PO" goal is enabled in
+"Motivation::ManualSelectFilter" window.
+
