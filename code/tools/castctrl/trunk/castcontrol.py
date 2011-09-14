@@ -27,6 +27,14 @@ from pconfig.manager import CServerManager
 LOGGER = logger.get()
 NOFILE_FILENAME = "<none>"
 
+class CLambdaThread(threading.Thread):
+    def __init__(self, data, func):
+        threading.Thread.__init__(self)
+        self.data = data
+        self.func = func
+    def run(self):
+        self.func(self.data)
+
 class CLogDisplayer:
     def __init__(self, qtext):
         self.log = messages.CLogMerger()
@@ -609,18 +617,12 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def stopLocalProcesses(self, procGroup):
-        class Stopper(threading.Thread):
-            def __init__(self, process):
-                threading.Thread.__init__(self)
-                self.p = process
-            def run(self): self.p.stop()
-
         LOGGER.log("Stopping %s" % procGroup.name)
         ts = []
         for name in procGroup.processlist:
             p = self._manager.getProcess(name)
             if p:
-                t = Stopper(p)
+                t = CLambdaThread(p, lambda x: x.stop())
                 ts.append(t)
                 t.start()
 
