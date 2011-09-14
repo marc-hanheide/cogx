@@ -217,9 +217,7 @@ void CameraMount::runComponent()
       }
     }
     // HACK: should get rid of need for sleep
-    // We will hardly be moving the pan tilt unit at first, so long update
-    // interval should not be a problem.
-    sleepComponent(1000);
+    sleepComponent(200);
   }
 }
 
