@@ -769,6 +769,7 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
 
+    // CMilliTimer, CRunningRate defined in v11n client
     ::CRunningRate realRate;
 
     long tickMs = 1000 / 5; // run (at most) at 5Hz
@@ -792,7 +793,8 @@ void PlanePopOut::runComponent()
 	    sleepComponent(tickDelay);
 	    tmRunning.restart();
 	    realRate.tick();
-	    log("current rate: %.3g tps, ave. rate from start: %.3g tps", realRate.getRate(), realRate.getTotalRate());
+	    //log("current rate: %.3g tps, ave. rate from start: %.3g tps",
+	    //        realRate.getRate(), realRate.getTotalRate());
 #else
 	    sleepComponent(200);
 #endif
