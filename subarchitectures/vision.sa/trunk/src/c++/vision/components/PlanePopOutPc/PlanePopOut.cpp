@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <stack>
 #include <vector>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 #ifdef __APPLE__
 #include <GL/glut.h> //nah: glut is installed via MacPorts and thus preferred
 #else
@@ -1123,7 +1124,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 void PlanePopOut::TrackSOIs()
 {
     // need to synchronise with GetStableSOIs
-    //lockComponent();
+    boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(trackedSOIsMutex);
 
     // for each tracked SOI find the best match among current SOIs, if any
     // NOTE: this is rather primitive, more elaborate schemes are possible
@@ -1204,15 +1205,13 @@ void PlanePopOut::TrackSOIs()
             << " stable: " << it->numStableFrames << " not seen:" << it->numFramesNotSeen;
 	log("%s", str.str().c_str());
     }
-
-    //unlockComponent();
 }
 
 // @author: mmarko
 void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 {
     // need to synchronise with TrackSOIs
-    //lockComponent();
+    boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(trackedSOIsMutex);
 
     // The component doesn't have any locking. We copy the object list to *reduce*
     // the amount of concurrent access from multiple threads to CurrentObjList.
@@ -1224,8 +1223,6 @@ void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 	if (it->numStableFrames >= StableTime)
 	    soiList.push_back(it->createWMSOI(this));
     }
-
-    //unlockComponent();
 }
 
 // @author: mmarko

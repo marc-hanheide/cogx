@@ -9,6 +9,7 @@
 #ifndef PLANE_POPOUT_H
 #define PLANE_POPOUT_H
 
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <cast/architecture/ManagedComponent.hpp>
@@ -148,6 +149,11 @@ private:
      * list of all tracked SOIs, where the stable ones have been added to WM 
      */
     list<SOIEntry> trackedSOIs;
+    /**
+     * TracSOIs and GetStableSOIs access the trackedSOIs list from two threads.
+     * So need a mutex for that.
+     */
+    boost::interprocess::interprocess_mutex trackedSOIsMutex;
     /**
      * map of current SOIs. the SOI label as it is returned by the PlanePopout class
      * is used as the key.
