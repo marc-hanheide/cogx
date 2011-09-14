@@ -173,7 +173,7 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
 	hullPoints.push_back(vector3(tablehull->points[i].x, tablehull->points[i].y, tablehull->points[i].z));
 }
 
-void PlanePopOut::SOIEntry::init(PlaneEntry &domPlane)
+void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
 {
     // bounding sphere
     setZero(boundingSphere.pos);
@@ -198,12 +198,15 @@ void PlanePopOut::SOIEntry::init(PlaneEntry &domPlane)
 	    BGpoints.push_back(domPlane.planePoints[i]);
 
     calcHistogram();
+
+    // this is a first frame in which the SOI has been seen
+    numStableFrames = 1;
 }
 
 /**
  * returns a comparison value between 0 and 1, with 0 being a perfect match
  */
-double PlanePopOut::SOIEntry::compare(PlanePopOut::SOIEntry &other)
+double PlanePopOut::SOIEntry::compare(const PlanePopOut::SOIEntry &other)
 {
     // weights for colour histogram match and size match
     double wC, wS;
@@ -218,7 +221,7 @@ double PlanePopOut::SOIEntry::compare(PlanePopOut::SOIEntry &other)
 /**
  * returns a matching probability between two SOIs
  */
-double PlanePopOut::SOIEntry::matchProbability(PlanePopOut::SOIEntry &other)
+double PlanePopOut::SOIEntry::matchProbability(const PlanePopOut::SOIEntry &other)
 {
     // NOTE: that this is of course not a proper probability
     // better probabilistic matches could be implemented
@@ -226,7 +229,25 @@ double PlanePopOut::SOIEntry::matchProbability(PlanePopOut::SOIEntry &other)
     return 1.0 - compare(other);
 }
 
-void PlanePopOut::SOIEntry::updateFrom(PlanePopOut::SOIEntry &other)
+PlanePopOut::SOIEntry& PlanePopOut::SOIEntry::operator= (const PlanePopOut::SOIEntry &other)
+{
+    boundingSphere = other.boundingSphere;
+    boundingBox = other.boundingBox;
+    points = other.points;
+    BGpoints = other.BGpoints;
+    WMId = other.WMId;
+    numFramesNotSeen = other.numFramesNotSeen;
+    numStableFrames = other.numStableFrames;
+    hasMatch = other.hasMatch;
+    // TODO: note that we should not need to delete hist, all hists are the same size anyway
+    cvReleaseHist(&hist);
+    if (other.hist != 0) 
+        cvCopyHist(other.hist, &hist);
+    dispColor = other.dispColor;
+    return *this;
+}
+
+void PlanePopOut::SOIEntry::updateFrom(const PlanePopOut::SOIEntry &other)
 {
     boundingSphere = other.boundingSphere;
     boundingBox = other.boundingBox;
@@ -234,15 +255,21 @@ void PlanePopOut::SOIEntry::updateFrom(PlanePopOut::SOIEntry &other)
     BGpoints = other.BGpoints;
     // TODO: note that we should not need to delete hist, all hists are the same size anyway
     cvReleaseHist(&hist);
-    cvCopyHist(other.hist, &hist);
+    if (other.hist != 0) 
+        cvCopyHist(other.hist, &hist);
     // this SOI has just been seen
     numFramesNotSeen = 0;
     numStableFrames++;
+    // and dispColor are not copied
+    // of course WMId is also not changed
+}
+
+void PlanePopOut::SOIEntry::establishMatch(PlanePopOut::SOIEntry &other)
+{
+    updateFrom(other);
     // these two SOIs are matched now
     hasMatch = true;
     other.hasMatch = true;
-    // and dispColor are not copied
-    // of course WMId is also not changed
 }
 
 SOIPtr PlanePopOut::SOIEntry::createWMSOI(ManagedComponent *comp)
@@ -310,6 +337,9 @@ PlanePopOut::PlanePopOut()
     par.minObjectHeight = -1.;
     par.maxObjectHeight = -0.05;
     //par.thrSacDistance = 0.03;
+    // filter points depending on z value (default = 0.5m - 1.5m)
+    par.minZ = 0.3;
+    par.maxZ = 1.5;
     planePopout = new pclA::PlanePopout(par);
 }
 
@@ -809,18 +839,23 @@ void PlanePopOut::runComponent()
 	    sleepComponent(200);
 #endif
 
-	    try{
+	    try {
 		GetImageData();
-		GetPlaneAndSOIs();
-		log("have %d current sois", (int)currentSOIs.size());
-		TrackSOIs();
-		log("have %d tracked sois", (int)trackedSOIs.size());
 	    }
 	    catch (exception& e) {
-		error(" *** PPO GetImageData or GetPlaneAndSOIs HAS CRASHED *** with\n%s\n ***", e.what());
+		error(" *** PPO GetImageData HAS CRASHED *** with: '%s'", e.what());
 	    }
-	    catch (...) {
-		error(" *** PPO GetImageData or GetPlaneAndSOIs HAS CRASHED *** ");
+	    try {
+		GetPlaneAndSOIs();
+	    }
+	    catch (exception& e) {
+		error(" *** PPO GetPlaneANdSOIs HAS CRASHED *** with: '%s'", e.what());
+	    }
+	    try {
+		TrackSOIs();
+	    }
+	    catch (exception& e) {
+		error(" *** PPO TrackSOIs HAS CRASHED *** with: '%s'", e.what());
 	    }
 
 #ifdef FEAT_VISUALIZATION
@@ -849,7 +884,7 @@ void PlanePopOut::runComponent()
 	}
     }
     catch (exception& e) {
-	error(" *** PPO isRunning HAS CRASHED *** with\n%s\n ***", e.what());
+	error(" *** PPO isRunning HAS CRASHED *** with '%s'", e.what());
     }
     catch (...) {
 	error(" *** PPO isRunning HAS CRASHED *** ");
@@ -983,98 +1018,101 @@ void PlanePopOut::GetImageData()
  */
 void PlanePopOut::GetPlaneAndSOIs()
 {
-    try {
-	// clear plane and SOIs
-	dominantPlane.clear();
-	currentSOIs.clear();
+    // clear plane and SOIs
+    dominantPlane.clear();
+    currentSOIs.clear();
 
-	if (points.size() < PPO_MIN_POINTCLOUD_SIZE)
-	    return;
+    if (points.size() < PPO_MIN_POINTCLOUD_SIZE)
+	return;
 
-	// first convert to PCL format, for PCL based plane and SOI detection
-	// TODO get from cast-file!
-	int pointCloudWidth = 320;
-	int pointCloudHeight = 240;
-	pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-	ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
+    // first convert to PCL format, for PCL based plane and SOI detection
+    // TODO get from cast-file!
+    int pointCloudWidth = 320;
+    int pointCloudHeight = 240;
+    pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+    ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
 
-	//log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
-	if (!planePopout->CalculateSOIs(pcl_cloud))
-	    return;
+    //log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
+    if (!planePopout->CalculateSOIs(pcl_cloud))
+	return;
 
-	// Dominant plane coefficients
-	pcl::ModelCoefficients::Ptr pcl_domplane;
-	// table hull points
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
-	// the indices of points on the dominant plane
-	pcl::PointIndices::Ptr planepoints;
-	// detected SOIs: convex hull prisms, with first half of points the bottom
-	// and second half the top polygon
-	vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
+    // Dominant plane coefficients
+    pcl::ModelCoefficients::Ptr pcl_domplane;
+    // table hull points
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
+    // the indices of points on the dominant plane
+    pcl::PointIndices::Ptr planepoints;
+    // detected SOIs: convex hull prisms, with first half of points the bottom
+    // and second half the top polygon
+    vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
 
-	planePopout->GetSOIs(pcl_sois);
-	planePopout->GetDominantPlaneCoefficients(pcl_domplane);
-	planePopout->GetTableHulls(tablehull);
-	planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
-	planePopout->GetPlanePoints(planepoints); 
+    planePopout->GetSOIs(pcl_sois);
+    planePopout->GetDominantPlaneCoefficients(pcl_domplane);
+    planePopout->GetTableHulls(tablehull);
+    planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
+    planePopout->GetPlanePoints(planepoints); 
 
 #ifdef FEAT_VISUALIZATION
-	// NOTE: not nice having visualisiaton code here, but ok
-	if (m_bSendSois)
-	    SendSOIs(pcl_sois);
+    // NOTE: not nice having visualisiaton code here, but ok
+    if (m_bSendSois)
+	SendSOIs(pcl_sois);
 #endif
 
-	// fill our dominant plane structure
-	dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
+    // fill our dominant plane structure
+    dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
 
-	// fill our SOI structures
-	// NOTE: the point clouds returned as SOIs by the PlanePopout class are the
-	// vertices of the bounding prism. We are however interested in all original
-	// points inside the SOI.
-	/*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-	  {
-	  int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-	// if point is in any SOI
-	if(soi_label != 0) {
-	SurfacePoint p;
-	p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-	p.c.r = pcl_cloud->points[i].r;
-	p.c.g = pcl_cloud->points[i].g;
-	p.c.b = pcl_cloud->points[i].b;
-	currentSOIs[soi_label].points.push_back(p);
-	}
-	}*/
+    // fill our SOI structures
+    // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
+    // vertices of the bounding prism. We are however interested in all original
+    // points inside the SOI.
+    /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+      {
+      int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+    // if point is in any SOI
+    if(soi_label != 0) {
+    SurfacePoint p;
+    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+    p.c.r = pcl_cloud->points[i].r;
+    p.c.g = pcl_cloud->points[i].g;
+    p.c.b = pcl_cloud->points[i].b;
+    currentSOIs[soi_label].points.push_back(p);
+    }
+    }*/
 
-	// NOTE: the above does not work for some as yet unknown reason, so we essentially
-	// do the same thing "by hand"
-	for (size_t i = 0; i < pcl_sois.size(); i++)
+    // NOTE: the above does not work for some as yet unknown reason, so we essentially
+    // do the same thing "by hand"
+    for (size_t i = 0; i < pcl_sois.size(); i++)
+    {
+	// dummy call to create map entry
+	currentSOIs[i].hist = 0;
+	// NOTE: the following isPointIn2DPolygon() function needs the bottom
+	// polygon of SOI prism, i.e. only the first half of the points 
+	pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
+    }
+    for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+    {
+	for(size_t j = 0; j < pcl_sois.size(); j++)
 	{
-	    // dummy call to create map entry
-	    currentSOIs[i].hist = 0;
-	    // NOTE: the following isPointIn2DPolygon() function needs the bottom
-	    // polygon of SOI prism, i.e. only the first half of the points 
-	    pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
-	}
-	for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-	{
-	    for(size_t j = 0; j < pcl_sois.size(); j++)
-	    {
-		if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j])) {
-		    SurfacePoint p;
-		    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-		    p.c.r = pcl_cloud->points[i].r;
-		    p.c.g = pcl_cloud->points[i].g;
-		    p.c.b = pcl_cloud->points[i].b;
-		    currentSOIs[j].points.push_back(p);
-		}
+	    if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j])) {
+		SurfacePoint p;
+		p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+		p.c.r = pcl_cloud->points[i].r;
+		p.c.g = pcl_cloud->points[i].g;
+		p.c.b = pcl_cloud->points[i].b;
+		currentSOIs[j].points.push_back(p);
 	    }
 	}
-	for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
-	    it->second.init(dominantPlane);
-	//log("pcl_sois: %d  current sois: %d", (int)pcl_sois.size(), (int)currentSOIs.size());
     }
-    catch (runtime_error &e) {
-	error(" *** PPO CalculateSOIs ... GetPlanePoints HAS CRASHED *** : %s", e.what());
+    for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
+	it->second.init(dominantPlane);
+
+    log("have %d current sois", (int)currentSOIs.size());
+    for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
+    {
+	ostringstream str;
+	str << "current SOI " << jt->first << " at: "
+	    << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
+	log("%s", str.str().c_str());
     }
 }
 
@@ -1084,13 +1122,8 @@ void PlanePopOut::GetPlaneAndSOIs()
  */
 void PlanePopOut::TrackSOIs()
 {
-    /*for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
-    {
-	ostringstream str;
-	str << "current SOI " << jt->first << " at: "
-	    << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
-	log("%s", str.str().c_str());
-    }*/
+    // need to synchronise with GetStableSOIs
+    //lockComponent();
 
     // for each tracked SOI find the best match among current SOIs, if any
     // NOTE: this is rather primitive, more elaborate schemes are possible
@@ -1099,16 +1132,19 @@ void PlanePopOut::TrackSOIs()
     {
 	int best = -1;
 	double best_match_prob = 0.;
+        it->hasMatch = false;
 	for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
 	{
-	    double match = it->matchProbability(jt->second);
-	    if (match > PPO_MIN_MATCH_PROB && match > best_match_prob) {
-		best_match_prob = match;
-		best = (int)jt->first;
+	    if (!jt->second.hasMatch) {
+		double match = it->matchProbability(jt->second);
+		if (match > PPO_MIN_MATCH_PROB && match > best_match_prob) {
+		    best_match_prob = match;
+		    best = (int)jt->first;
+		}
 	    }
 	}
 	if (best != -1) {
-	    it->updateFrom(currentSOIs[best]);
+	    it->establishMatch(currentSOIs[best]);
 
 	    // if the SOI is already in WM, overwrite it
 	    if (!it->WMId.empty()) {
@@ -1127,7 +1163,6 @@ void PlanePopOut::TrackSOIs()
 	    // no update, i.e. not seen
 	    it->numFramesNotSeen++;
 	    it->numStableFrames = 0;
-	    it->hasMatch = false;
 	}
     }
 
@@ -1137,8 +1172,9 @@ void PlanePopOut::TrackSOIs()
 	log("current soi %d found a matching tracked soi : %s",
 		(int)jt->first, (jt->second.hasMatch ? "yes" : "no"));
 	if (!jt->second.hasMatch) {
-	    trackedSOIs.push_back(SOIEntry());
-	    trackedSOIs.back().updateFrom(jt->second);
+	    trackedSOIs.push_back(jt->second);
+	    // NOTE: has_match of the current SOI and the new tracked SOI are not set true in this
+	    // case.
 	    // NOTE: no WM action yet here. only once a SOI has been seen longer than StableTime
 	    // will it be added to WM (see above)
 	}
@@ -1158,11 +1194,26 @@ void PlanePopOut::TrackSOIs()
 	    it++; 
 	}
     }
+
+    log("have %d tracked sois", (int)trackedSOIs.size());
+    for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
+    {
+	ostringstream str;
+	str << "tracked SOI at: "
+	    << it->boundingSphere.pos << " with " << it->points.size() << " points "
+            << " stable: " << it->numStableFrames << " not seen:" << it->numFramesNotSeen;
+	log("%s", str.str().c_str());
+    }
+
+    //unlockComponent();
 }
 
 // @author: mmarko
 void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 {
+    // need to synchronise with TrackSOIs
+    //lockComponent();
+
     // The component doesn't have any locking. We copy the object list to *reduce*
     // the amount of concurrent access from multiple threads to CurrentObjList.
     // TODO: implement locking of CurrentObjList.
@@ -1173,6 +1224,8 @@ void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 	if (it->numStableFrames >= StableTime)
 	    soiList.push_back(it->createWMSOI(this));
     }
+
+    //unlockComponent();
 }
 
 // @author: mmarko

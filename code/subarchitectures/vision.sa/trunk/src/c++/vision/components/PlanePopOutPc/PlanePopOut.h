@@ -36,73 +36,68 @@ public:
     class PlaneEntry
     {
     public:
-	Plane3 plane;
-	vector<PointCloud::SurfacePoint> planePoints;        
-	vector<Vector3> hullPoints;
-	bool valid;
-	RGBValue dispColor;
+        Plane3 plane;
+        vector<PointCloud::SurfacePoint> planePoints;        
+        vector<Vector3> hullPoints;
+        bool valid;
+        RGBValue dispColor;
 
-	PlaneEntry() {
-	    dispColor.r = 255;
-	    dispColor.g = 255;
-	    dispColor.b = 255;
-	    dispColor.a = 0;
-	    valid = false;
-	}
-	void clear() {
-	    planePoints.clear();
-	    hullPoints.clear();
-	    valid = false;
-	}
-	void init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
-		pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
-		pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull);
+        PlaneEntry() {
+            dispColor.r = 255;
+            dispColor.g = 255;
+            dispColor.b = 255;
+            dispColor.a = 0;
+            valid = false;
+        }
+        void clear() {
+            planePoints.clear();
+            hullPoints.clear();
+            valid = false;
+        }
+        void init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
+	        pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
+	        pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull);
     };
 
     class SOIEntry
     {
     public:
-	Sphere3 boundingSphere;
-	Box3 boundingBox;
-	std::vector<PointCloud::SurfacePoint> points;
-	std::vector<PointCloud::SurfacePoint> BGpoints;
-	std::string WMId;
-	CvHistogram* hist;
-	int numFramesNotSeen;
-	int numStableFrames;
-	bool hasMatch;
-	RGBValue dispColor;
+        Sphere3 boundingSphere;
+        Box3 boundingBox;
+        std::vector<PointCloud::SurfacePoint> points;
+        std::vector<PointCloud::SurfacePoint> BGpoints;
+        std::string WMId;
+        CvHistogram* hist;
+        int numFramesNotSeen;
+        int numStableFrames;
+        bool hasMatch;
+        RGBValue dispColor;
 
-	SOIEntry() {
-	    hist = 0;
-	    numFramesNotSeen = 0;
-	    numStableFrames = 0;
-	    hasMatch = false;
-	    dispColor.r = rand()%255;
-	    dispColor.g = rand()%255;
-	    dispColor.b = rand()%255;
-	    dispColor.a = 0;
-	    //dispColor.float_value = GetRandomColor();
-	}
-	~SOIEntry() {
-      if(hist != 0) {
-          if((hist->type & CV_MAGIC_MASK) != CV_HIST_MAGIC_VAL) {
-              printf("SOIEntry destructor: histogram is not a histogram\n");
-              throw runtime_error("SOIEntry destructor: histogram is not a histogram");
-          }
-          if(hist->bins == NULL) {
-              printf("SOIEntry destructor: histogram bins == NULL\n");
-              throw runtime_error("SOIEntry destructor: histogram bins == NULL");
-          }
-      }
-	    cvReleaseHist(&hist);
-	}
-	void init(PlaneEntry &domPlane);
-	void calcHistogram();
-	double compare(SOIEntry &other);
-	double matchProbability(PlanePopOut::SOIEntry &other);
-	void updateFrom(SOIEntry &other);
-	VisionData::SOIPtr createWMSOI(ManagedComponent *comp);
+        SOIEntry() {
+            hist = 0;
+            numFramesNotSeen = 0;
+            numStableFrames = 0;
+            hasMatch = false;
+            dispColor.r = rand()%255;
+            dispColor.g = rand()%255;
+            dispColor.b = rand()%255;
+            dispColor.a = 0;
+        }
+        SOIEntry(const SOIEntry &other) {
+            hist = 0;
+            *this = other;
+        }
+        ~SOIEntry() {
+            cvReleaseHist(&hist);
+        }
+        SOIEntry& operator= (const SOIEntry &other);
+        void init(const PlaneEntry &domPlane);
+        void calcHistogram();
+        double compare(const SOIEntry &other);
+        double matchProbability(const PlanePopOut::SOIEntry &other);
+        void updateFrom(const SOIEntry &other);
+        void establishMatch(SOIEntry &other);
+        VisionData::SOIPtr createWMSOI(ManagedComponent *comp);
     };
 
 private:
