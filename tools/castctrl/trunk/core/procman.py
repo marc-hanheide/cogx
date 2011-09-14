@@ -246,7 +246,7 @@ class CProcess(CProcessBase):
         log("Stopping process %s" % self.name)
         self._setStatus(CProcessBase.STOPPING)
         try:
-            for sig,tries in [(signal.SIGINT, 20), (signal.SIGTERM, 50), (signal.SIGKILL, 30)]:
+            for sig,tries in [(signal.SIGTERM, 100), (signal.SIGKILL, 20)]:
                 try:
                     os.kill(self.process.pid, sig) # self.process.send_signal(sig) # Not in 2.5
                     time.sleep(0.2)
