@@ -246,15 +246,14 @@ class CProcess(CProcessBase):
         log("Stopping process %s" % self.name)
         self._setStatus(CProcessBase.STOPPING)
         try:
-            # for sig in [signal.SIGQUIT, signal.SIGTERM, signal.SIGKILL]:
-            for sig,tries in [(signal.SIGTERM, 100), (signal.SIGKILL, 20)]:
+            for sig,tries in [(signal.SIGINT, 20), (signal.SIGTERM, 50), (signal.SIGKILL, 30)]:
                 try:
                     os.kill(self.process.pid, sig) # self.process.send_signal(sig) # Not in 2.5
-                    time.sleep(0.1)
+                    time.sleep(0.2)
                 except: pass
-                # tries = 100
                 while self.isRunning() and tries > 0:
-                    tries -= 1; time.sleep(0.1)
+                    tries -= 1
+                    time.sleep(0.1)
                 if self.isRunning():
                     warn("Process '%s' did not respond to SIG -%d." % (self.name, sig))
         except Exception:

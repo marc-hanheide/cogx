@@ -6,6 +6,7 @@
 import os, sys, time
 import re
 import tempfile
+import threading
 import ConfigParser
 from PyQt4 import QtCore, QtGui
 
@@ -608,10 +609,22 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def stopLocalProcesses(self, procGroup):
+        class Stopper(threading.Thread):
+            def __init__(self, process):
+                threading.Thread.__init__(self)
+                self.p = process
+            def run(self): self.p.stop()
+
         LOGGER.log("Stopping %s" % procGroup.name)
+        ts = []
         for name in procGroup.processlist:
             p = self._manager.getProcess(name)
-            if p: p.stop()
+            if p:
+                t = Stopper(p)
+                ts.append(t)
+                t.start()
+
+        for t in ts: t.join()
 
     def stopRemoteProcesses(self, procGroup):
         for h in self._remoteHosts: # See <URL:#remotestart>
