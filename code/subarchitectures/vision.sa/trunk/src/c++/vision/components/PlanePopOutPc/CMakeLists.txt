@@ -54,4 +54,5 @@ link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
     ${GLUT_LDFLAGS} ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} PCLUtils PCLFunctions PlanePopout)
+link_cast_component(${CAST_COMPONENT_NAME} pcl_segmentation)
 
