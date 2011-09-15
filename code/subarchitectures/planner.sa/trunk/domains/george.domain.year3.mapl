@@ -26,15 +26,15 @@
 
   (:functions
     (color ?v - VisualObject) - ColorName
-    (color-prob ?v - VisualObject ?c - ColorName) - number
+    (p-color ?v - VisualObject ?c - ColorName) - number
     (polar-question-color-threshold ?r - Robot) - number
 
     (shape ?v - VisualObject) - ShapeName
-    (shape-prob ?v - VisualObject ?s - ShapeName) - number
+    (p-shape ?v - VisualObject ?s - ShapeName) - number
     (polar-question-shape-threshold ?r - Robot) - number
 
     (type ?v - VisualObject) - TypeName
-    (type-prob ?v - VisualObject ?t - TypeName) - number
+    (p-type ?v - VisualObject ?t - TypeName) - number
     (polar-question-type-threshold ?r - Robot) - number
 
     (target-object ?vc - ViewCone) - ProtoObject
@@ -58,22 +58,22 @@
     :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
   )
 
-  (:init-rule set-color-prob
+  (:init-rule set-p-color
     :parameters (?v - VisualObject ?c - ColorName)
-    :precondition (= (color-prob ?v ?c) UNKNOWN)
-    :effect (assign (color-prob ?v ?c) 0)
+    :precondition (= (p-color ?v ?c) UNKNOWN)
+    :effect (assign (p-color ?v ?c) 0)
   )
 
-  (:init-rule set-shape-prob
+  (:init-rule set-p-shape
     :parameters (?v - VisualObject ?s - ShapeName)
-    :precondition (= (shape-prob ?v ?s) UNKNOWN)
-    :effect (assign (shape-prob ?v ?s) 0)
+    :precondition (= (p-shape ?v ?s) UNKNOWN)
+    :effect (assign (p-shape ?v ?s) 0)
   )
 
-  (:init-rule set-type-prob
+  (:init-rule set-p-type
     :parameters (?v - VisualObject ?t - TypeName)
-    :precondition (= (type-prob ?v ?t) UNKNOWN)
-    :effect (assign (type-prob ?v ?t) 0)
+    :precondition (= (p-type ?v ?t) UNKNOWN)
+    :effect (assign (p-type ?v ?t) 0)
   )
 
   (:init-rule set-polar-question-color-threshold
@@ -186,7 +186,7 @@
     :precondition
       (and
         (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
-        (>= (color-prob ?v ?c) (polar-question-color-threshold ?r))
+        (>= (p-color ?v ?c) (polar-question-color-threshold ?r))
         (learning-impossible)
       )
     :effect 
@@ -217,7 +217,7 @@
     :precondition
       (and
         (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
-        (>= (shape-prob ?v ?s) (polar-question-shape-threshold ?r))
+        (>= (p-shape ?v ?s) (polar-question-shape-threshold ?r))
         (learning-impossible)
       )
     :effect 
@@ -248,7 +248,7 @@
     :precondition
       (and
         (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
-        (>= (type-prob ?v ?t) (polar-question-type-threshold ?r))
+        (>= (p-type ?v ?t) (polar-question-type-threshold ?r))
         (learning-impossible)
       )
     :effect 
