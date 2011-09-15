@@ -388,18 +388,12 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   }
   
   initCameraParameters(image.camPars);
+  image.camPars = camPars[0];
   image.camPars.id = camIds[0];
-  image.camPars.width = imgWidth;
-  image.camPars.height = imgWidth*3/4;
-  image.camPars.fx = camPars[0].fx/scaleFactor;
-  image.camPars.fy = camPars[0].fy/scaleFactor;
-  image.camPars.cx = camPars[0].cx/scaleFactor;
-  image.camPars.cy = camPars[0].cy/scaleFactor;
+  changeImageSize(image.camPars, imgWidth, imgWidth*3/4);
  
-  Pose3 global_pose, zeroPose;
-  setIdentity(zeroPose);
-  transform(camPars[0].pose, zeroPose, global_pose);
-  image.camPars.pose = global_pose;
+  image.camPars.pose = camPars[0].pose;
+
   image.camPars.time = getCASTTime();
 
   unlockComponent();
