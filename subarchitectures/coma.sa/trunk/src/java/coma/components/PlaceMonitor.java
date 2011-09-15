@@ -83,6 +83,8 @@ public class PlaceMonitor extends ManagedComponent {
 	private String m_chaingraph_component_name;
 	private ChainGraphInferencerServerInterfacePrx m_chaingraphinferencer;
 	
+	private String m_spatial_sa_name;
+	
 	private HashSet<Long> m_placeholders;
 	private HashSet<Long> m_trueplaces;
 	private HashMap<Long, HashSet<WorkingMemoryAddress>> m_tempAdjacencyStore;
@@ -280,6 +282,12 @@ public class PlaceMonitor extends ManagedComponent {
 	private void processAddedPlace(WorkingMemoryChange _wmc) {
 		debug("Got a callback for an ADDed Place WME:");
 		try {
+			// initialize spatial.sa name!
+			if (m_spatial_sa_name==null) {
+				m_spatial_sa_name = _wmc.address.subarchitecture;
+				log("initialized spatial.sa name = " + m_spatial_sa_name);
+			}
+			
 			// read place struct from WM
 			Place _newPlaceNode = getMemoryEntry(_wmc.address, Place.class);
 			log("processAddedPlace() called: Place ID = " + _newPlaceNode.id + " " +
@@ -1001,7 +1009,13 @@ public class PlaceMonitor extends ManagedComponent {
 											true, false, assertedRoomCat);
 									
 									try {
-										addToWorkingMemory(newDataID(), roomCatAssertion);
+										if (m_spatial_sa_name!=null) {
+											addToWorkingMemory(new WorkingMemoryAddress(newDataID(), m_spatial_sa_name), roomCatAssertion);
+										}
+										else {
+											log("cannot add RoomHumanAssertionPlaceProperty to WM: spatial SA name is unknown!");
+										}
+										//addToWorkingMemory(newDataID(), roomCatAssertion);
 									} catch (AlreadyExistsOnWMException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
