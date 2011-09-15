@@ -387,6 +387,7 @@ public class CrowlWrapper {
 		return _returnSet;
 	}
 
+
 	
 	public Set<String> getInverseRelatedInstances(String _ins, String _rel) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
@@ -441,6 +442,27 @@ public class CrowlWrapper {
 		return _returnSet;
 	}
 
+	public Set<String> getRelations(String _ins1, String _ins2) {
+		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
+		String query = "SELECT DISTINCT ?rel WHERE " +
+//		" { " +
+		" { " + _ins1 + " ?rel " + _ins2+ " . }";
+		ResultSet results = (ResultSet) m_mycrowl.execute(query);
+		TreeSet<String> _returnSet = new TreeSet<String>();
+		if (results==null) return _returnSet;
+		while (results.hasNext()) {
+			QuerySolution _qs = (QuerySolution) results.next();
+			Resource _currAnswerRersource = _qs.getResource("?rel");
+			try {
+				_returnSet.add((_currAnswerRersource.toString()));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return _returnSet;
+	}
+	
 	public boolean areConceptsEquivalent(String _concept1, String _concept2) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String query = "ASK WHERE " +
@@ -499,6 +521,13 @@ public class CrowlWrapper {
 		return ((Boolean) m_mycrowl.execute(query)).booleanValue();
 	}
 
+	public boolean isSubRelation(String rel1, String rel2) {
+		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
+		String query = "ASK WHERE { " +
+		rel1 + " rdfs:subPropertyOf " + rel2 + " } ";
+		return ((Boolean) m_mycrowl.execute(query)).booleanValue();
+	}
+	
 	public boolean deleteInstance(String _instance) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
 		String query = "DELETE { " + _instance + " ?x ?y . " +
