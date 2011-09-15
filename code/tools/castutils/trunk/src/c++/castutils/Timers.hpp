@@ -190,6 +190,15 @@ public:
  * @author Marko Mahnič
  * @date September 2011
  *
+ * Use:
+ *    void MyComponent::runComponent() {
+ *       castutils::CCastPaceMaker<MyComponent> paceMaker(*this, 1000 / 15, 1); // ~15 Hz
+ *       while(isRunning()) {
+ *          paceMaker.sync();
+ *          // ... 
+ *       }
+ *    }
+ *
  * The CAST component must make sleepComponent public with
  *    using CASTComponent::sleepComponent;
  * in the class declaration.
