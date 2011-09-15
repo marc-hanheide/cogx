@@ -906,14 +906,12 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
   {
     initCameraParameters(image.camPars);
     image.camPars.id = side;
-    image.camPars.width = imgWidth;
-    image.camPars.height = imgWidth*3/4;
-
-    image.camPars.fx = stereoCam->cam[side].proj[0][0];
-    image.camPars.fy = stereoCam->cam[side].proj[1][1];
-    image.camPars.cx = stereoCam->cam[side].proj[0][2];
-    image.camPars.cy = stereoCam->cam[side].proj[1][2];
-//       changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
+    image.camPars.width = stereoCam->cam[side].width*stereoCam->sx;
+    image.camPars.height = stereoCam->cam[side].height*stereoCam->sy;
+    image.camPars.fx = stereoCam->cam[side].proj[0][0]*stereoCam->sx;
+    image.camPars.fy = stereoCam->cam[side].proj[1][1]*stereoCam->sy;
+    image.camPars.cx = stereoCam->cam[side].proj[0][2]*stereoCam->sx;
+    image.camPars.cy = stereoCam->cam[side].proj[1][2]*stereoCam->sy;
 
     // set stereo camera pose to pose of left (=0) camera
     stereoCam->pose = camPars[LEFT].pose;
@@ -938,13 +936,9 @@ void KinectStereoSeqServer::getRectImage(int side, int imgWidth, Video::Image& i
     initCameraParameters(image.camPars);
     image.camPars = camPars[side];
     image.camPars.id = side;
-    image.camPars.width = imgWidth;
-    image.camPars.height = imgWidth*3/4;
+    changeImageSize(image.camPars, imgWidth, imgWidth*3/4);
 
-    Pose3 global_pose, zeroPose;
-    setIdentity(zeroPose);
-    transform(camPars[side].pose, zeroPose, global_pose);
-    image.camPars.pose = global_pose;
+    image.camPars.pose = camPars[2].pose;
 
     image.camPars.time = getCASTTime();
   }
