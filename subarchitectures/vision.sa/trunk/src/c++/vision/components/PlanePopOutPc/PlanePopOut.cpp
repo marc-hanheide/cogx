@@ -815,11 +815,15 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
 
-    // CMilliTimer, CRunningRate defined in v11n client
+    // CMilliTimer, CRunningRate CCastPaceMaker defined in v11n client
     ::CRunningRate realRate;
 
+#if 0 // TODO: enable paceMaker
+    ::CCastPaceMaker<PlanePopOut> paceMaker(*this, 1000/5, 1);
+#else
     long tickMs = 1000 / 5; // run (at most) at 5Hz
     ::CMilliTimer tmRunning(true);
+#endif
 
     long sendPointsMs = 500; // send points at most every X ms
     ::CMilliTimer tmSendPoints(true);
@@ -834,13 +838,17 @@ void PlanePopOut::runComponent()
     try {
 	while(isRunning()) {
 #ifdef FEAT_VISUALIZATION
+#if 0
+	    paceMaker.sync();
+#else
 	    long tickDelay = tickMs - tmRunning.elapsed();
 	    if (tickDelay < 1) tickDelay = 1;
 	    sleepComponent(tickDelay);
 	    tmRunning.restart();
+#endif
 	    realRate.tick();
 	    //log("current rate: %.3g tps, ave. rate from start: %.3g tps",
-	    //        realRate.getRate(), realRate.getTotalRate());
+	    //      realRate.getRate(), realRate.getTotalRate());
 #else
 	    sleepComponent(200);
 #endif

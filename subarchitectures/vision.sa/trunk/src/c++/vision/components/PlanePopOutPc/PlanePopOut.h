@@ -217,6 +217,7 @@ protected:
 public:
     PlanePopOut();
     virtual ~PlanePopOut();
+    using CASTComponent::sleepComponent;
 
     /// When multiple point cloud servers are used one may want SOIs from only some of them.
     /// To disable SOI generation, add the parameter --generate-sois 0.
