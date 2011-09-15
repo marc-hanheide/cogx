@@ -102,6 +102,8 @@ public:
       hostname = m_standaloneHost;
    }
 
+   void resetServer(int secret);
+
    void createView(const std::string& id, Visualization::ViewType type, const std::vector<std::string>& objects);
    void enableDefaultView(const std::string& objectId, bool enable);
 
@@ -171,6 +173,12 @@ private:
 
 public:
    CDisplayServerI(CDisplayServer *pDisplayServer);
+
+   virtual void resetServer(int secret, const Ice::Current&)
+   {
+      m_pDisplayServer->resetServer(secret);
+      m_EventClients.clear();
+   }
 
    // These methods will be called by remote clients. They should just
    // pass the parameters to the worker (m_pDisplayServer) and return
@@ -249,16 +257,6 @@ public:
    virtual void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& matrix33, const Ice::Current&)
    {
-      //std::vector<double> tr;
-      //tr.push_back(transform.m00);
-      //tr.push_back(transform.m01);
-      //tr.push_back(transform.m02);
-      //tr.push_back(transform.m10);
-      //tr.push_back(transform.m11);
-      //tr.push_back(transform.m12);
-      //tr.push_back(transform.m20);
-      //tr.push_back(transform.m21);
-      //tr.push_back(transform.m22);
       m_pDisplayServer->setObjectTransform2D(id, partId, matrix33);
    }
 

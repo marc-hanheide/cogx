@@ -51,6 +51,8 @@ using namespace cast;
 
 namespace cogx { namespace display {
 
+long SECRET_TOKEN = 2349807;
+
 // -----------------------------------------------------------------
 // CDisplayServer
 // -----------------------------------------------------------------
@@ -129,6 +131,25 @@ void CDisplayServer::configure(const map<string,string> & _config)
    // so we start them in configure() instead of in start()
    debug("CDisplayServer Server: starting");
    startIceServer();
+
+   // send command to clear server objects, before other components start.
+   if (isUsingRemoteHost()) {
+      log("Resetting the standalone server");
+      try {
+
+         Ice::ObjectPrx prx = getIceServer(Visualization::V11NSTANDALONENAME,
+               toServantCategory<Visualization::DisplayInterface>(),
+               m_standaloneHost, Visualization::V11NSTANDALONEPORT);
+
+         Visualization::DisplayInterfacePrx pserver;
+         pserver = Visualization::DisplayInterfacePrx::checkedCast(prx);
+         pserver->resetServer(SECRET_TOKEN);
+      }
+      catch (...) {
+         println(" *** CDisplayServer could not connect standalone server on '%s'.",
+               m_standaloneHost.c_str());
+      }
+   }
 }
 
 void CDisplayServer::start()
@@ -172,6 +193,16 @@ void CDisplayServer::runComponent()
    debug("CDisplayServer Server: Running");
    run();
    debug("CDisplayServer Server: Done.");
+}
+
+void CDisplayServer::resetServer(int secret)
+{
+   if (SECRET_TOKEN != secret)
+      return;
+
+   //m_Model.removeAllViews();
+   m_Model.removeAllObjects();
+   // TODO: should also clear all GUI elements and dialogs
 }
 
 void CDisplayServer::createView(const std::string& id, Visualization::ViewType type,

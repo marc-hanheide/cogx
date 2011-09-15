@@ -44,6 +44,9 @@ module Visualization
 
    interface DisplayInterface
    {
+      // Used internally
+      void resetServer(int secret);
+
       // Get the parameters to connect to a remote Display Server
       void getStandaloneHost(out string hostname);
 
