@@ -12,6 +12,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <fstream>
 #include <cmath>
+#include <castutils/Timers.hpp>
 
 #define CAM_ID_DEFAULT 0
 
@@ -560,6 +561,16 @@ bool SOIFilter::movePtz(double pan, double tilt, double zoom)
   ptup.pose.zoom = zoom;
   log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
   ptzServer->setPose(ptup.pose);
+  castutils::CMilliTimer tm(true);
+  double eps = 1e-2;
+  while (tm.elapsed() < 3000) {
+    updateRobotPosePtz();
+    if (fabs(pan-m_RobotPose.pan) < eps && fabs(tilt-m_RobotPose.tilt) < eps)
+      break;
+    sleepComponent(100);
+    log("Waiting for PTU to reach destination. dpan=%g, dtilt=%g, tm=%ld",
+        fabs(pan-m_RobotPose.pan), fabs(tilt-m_RobotPose.tilt), tm.elapsed());
+  }
   return true;
 }
 
