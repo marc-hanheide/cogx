@@ -52,6 +52,12 @@ void loadCameraParametersFromSVSCalib(CameraParameters &cam,
 void saveCameraParameters(const CameraParameters &cam, const string &configfile);
 
 /**
+ * Output to a stream is taken to be a textual output, rather than a
+ * serialisation of the actual binary data.
+ */
+ostream& operator<<(ostream &os, const CameraParameters &cam);
+
+/**
  * Change image size, e.g. when using downscaled images.
  */
 void changeImageSize(CameraParameters &cam, int newWidth, int newHeight);
