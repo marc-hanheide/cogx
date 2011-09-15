@@ -87,6 +87,36 @@ void CDisplayModel::createView(const std::string& id, ERenderContext context,
    }
 }
 
+void CDisplayModel::removeView(const std::string& id)
+{
+   TViewMap::iterator itview = m_Views.find(id);
+
+   CDisplayView *pview = (itview == m_Views.end()) ? NULL : itview->second;
+   if (pview) {
+      DMESSAGE("Removing view: " << id);
+      CObserverList<CDisplayModelObserver>::ReadLock lock(modelObservers);
+      m_Views.erase(itview);
+      CDisplayModelObserver *pobsrvr;
+      FOR_EACH(pobsrvr, modelObservers) {
+         if (pobsrvr) pobsrvr->onViewRemoved(this, pview->m_id);
+      }
+      pview->removeAllObjects();
+   }
+}
+
+void CDisplayModel::removeAllViews()
+{
+   while (m_Views.size())
+      removeView(m_Views.begin()->second->m_id);
+}
+
+void CDisplayModel::removeAllObjects()
+{
+   while (m_Objects.size()) {
+      removeObject(m_Objects.begin()->second->m_id);
+   }
+}
+
 void CDisplayModel::enableDefaultView(const std::string& objectId, bool enable)
 {
    if (enable) {

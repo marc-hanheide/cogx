@@ -85,7 +85,7 @@ void CDisplayClient::connectToStandaloneHost(CASTComponent &owner)
             m_standaloneHost.c_str());
    }
    catch (...) {
-      owner.println(" *** CDisplayClient could not connect standalone server on to '%s'.",
+      owner.println(" *** CDisplayClient could not connect standalone server on '%s'.",
             m_standaloneHost.c_str());
    }
 }

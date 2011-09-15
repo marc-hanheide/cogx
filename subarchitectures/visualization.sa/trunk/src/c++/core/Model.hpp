@@ -87,7 +87,7 @@ class CGarbage
 {
    CPtrVector<CDisplayObject> m_objects;
    CPtrVector<CDisplayObjectPart> m_parts;
-   public:
+public:
    ~CGarbage()
    {
       m_objects.delete_all();
@@ -144,6 +144,9 @@ public:
    CGuiDialog* getDialog(const std::string &id);
    bool isValidView(CDisplayView *pView);
    void createView(const std::string& id, ERenderContext context, const std::vector<std::string>& objects);
+   void removeView(const std::string& id);
+   void removeAllViews();
+   void removeAllObjects();
 
    // Default views are created for objects that don't exist in any other
    // views. They are enabled by default. This function can be used to remove a
