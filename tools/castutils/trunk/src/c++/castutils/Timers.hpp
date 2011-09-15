@@ -32,7 +32,7 @@ public:
    }
    long long elapsed()
    {
-      return (long long) (elapsed_micros() / 1e6);
+      return (long long) (0.5 + elapsed_micros() / 1e3);
    }
 
    long long elapsed_micros()
