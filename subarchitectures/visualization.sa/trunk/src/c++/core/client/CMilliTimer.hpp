@@ -97,4 +97,81 @@ public:
    }
 };
 
+/**
+ * @author Marko Mahnič
+ * @date September 2011
+ */
+class CPaceMaker
+{
+private:
+   CMilliTimer timer;
+   long long nextTick;
+   long intervalDurationMs;
+   long minSleep;
+   long tickCount;
+   long tickLost;
+
+public:
+   CPaceMaker(long intervalMs, long minSleepMs=0)
+   {
+      intervalDurationMs = intervalMs;
+      minSleep = minSleepMs;
+      tickCount = -1;
+      tickLost = 0;
+   }
+   void sync()
+   {
+      ++tickCount;
+      if (tickCount == 0) {
+         timer.restart();
+         nextTick = intervalDurationMs;
+         return;
+      }
+      long long now = timer.elapsed();
+      long toSleep = nextTick - now;
+      if (toSleep >= 0) {
+         if (toSleep > intervalDurationMs) {
+            // XXX: sth's wrong; fix nextTick (normally this shouldn't happen)
+            toSleep = intervalDurationMs;
+         }
+         else nextTick += intervalDurationMs;
+      }
+      else {
+         nextTick = now + intervalDurationMs;
+         tickLost++;
+      }
+      if (toSleep < minSleep)
+         toSleep = minSleep;
+      if (toSleep > 0)
+         doSleep(toSleep);
+   }
+   double getTotalRate()
+   {
+      long long elapsed = timer.elapsed_micros();
+      if (elapsed < 1)
+         return 0;
+      return tickCount * 1e6 / elapsed;
+   }
+   virtual void doSleep(long milliSeconds) = 0;
+};
+
+// The CAST component must make sleepComponent public with
+//    using CASTComponent::sleepComponent;
+// in the class declaration.
+template<class TComponent>
+class CCastPaceMaker : public CPaceMaker
+{
+   TComponent* pComponent;
+public:
+   CCastPaceMaker(TComponent& component, long intervalMs, long minSleepMs=0)
+      : CPaceMaker(intervalMs, minSleepMs)
+   {
+      pComponent = &component;
+   }
+   void doSleep(long milliSeconds)
+   {
+      pComponent->sleepComponent(milliSeconds);
+   }
+};
+
 #endif /* end of include guard: CMILLITIMER_PEOJ4UOI */
