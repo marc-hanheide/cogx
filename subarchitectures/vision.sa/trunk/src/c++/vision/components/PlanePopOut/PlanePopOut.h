@@ -13,6 +13,7 @@
 #include <VisionData.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <castutils/Timers.hpp>
 #include "OpenSURF/surflib.h"
 #include "TomGineWraper/TomGineThread.hh"
 
@@ -124,7 +125,7 @@ private:
 	bool m_bSendSois;
 	// Color the poitns by labels or send the color from image
 	bool m_bColorByLabel;
-	CMilliTimer m_tmSendPoints;
+	castutils::CMilliTimer m_tmSendPoints;
 
 	class CDisplayClient: public cogx::display::CDisplayClient
 	{

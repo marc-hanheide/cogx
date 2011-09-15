@@ -366,12 +366,12 @@ std::string PlanePopOut::CDisplayClient::getControlState(const std::string& ctrl
 
 void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, const Video::Image& img, cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
-    //static CMilliTimer tmSendImage(true);
+    //static castutils::CMilliTimer tmSendImage(true);
     //if (tmSendImage.elapsed() < 500) // 2Hz
     //    return;
     //tmSendImage.restart();
 
-    CMilliTimer tm(true);
+    castutils::CMilliTimer tm(true);
     IplImage *iplImg = convertImageToIpl(img);
     Video::CameraParameters c = img.camPars;
 
@@ -423,7 +423,7 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 }
 
 void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &labels, bool bColorByLabels,
-	cogx::display::CDisplayClient& m_display, CMilliTimer& tmSendPoints, PlanePopOut *powner)
+	cogx::display::CDisplayClient& m_display, castutils::CMilliTimer& tmSendPoints, PlanePopOut *powner)
 {
     if (tmSendPoints.elapsed() < 500) // 2Hz
 	return;
@@ -493,12 +493,12 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
 
 void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner)
 {
-    static CMilliTimer tmSendPlaneGrid(true);
+    static castutils::CMilliTimer tmSendPlaneGrid(true);
     if (tmSendPlaneGrid.elapsed() < 100) // 10Hz
 	return;
     tmSendPlaneGrid.restart();
 
-    CMilliTimer tm(true);
+    castutils::CMilliTimer tm(true);
     std::ostringstream str;
     str << "function render()\n";
 
