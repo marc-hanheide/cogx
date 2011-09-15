@@ -1216,17 +1216,16 @@ void PlanePopOut::TrackSOIs()
 void PlanePopOut::GetStableSOIs(vector<SOIPtr>& soiList)
 {
     // need to synchronise with TrackSOIs
+    // TODO: (maybe) here we could use a read lock and a write lock in TrackSOIs
+    // TODO: trackedSOIs have to be (read-)locked in all places
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(trackedSOIsMutex);
 
-    // The component doesn't have any locking. We copy the object list to *reduce*
-    // the amount of concurrent access from multiple threads to CurrentObjList.
-    // TODO: implement locking of CurrentObjList.
-    list<SOIEntry> allTrackedSOIs = trackedSOIs;
-
-    for (list<SOIEntry>::iterator it = allTrackedSOIs.begin(); it != allTrackedSOIs.end(); it++)
+    for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
-	if (it->numStableFrames >= StableTime)
-	    soiList.push_back(it->createWMSOI(this));
+	if (it->numStableFrames >= StableTime) {
+	    SOIPtr ps = it->createWMSOI(this);
+	    soiList.push_back(ps);
+	}
     }
 }
 
