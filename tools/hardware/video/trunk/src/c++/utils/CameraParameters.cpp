@@ -292,6 +292,16 @@ void saveCameraParameters(const CameraParameters &cam, const string &configfile)
   ostr << "pose = " << cam.pose;
 }
 
+ostream& operator<<(ostream &os, const CameraParameters &cam)
+{
+  os << "w/h: "  << cam.width << " / " << cam.height
+     << "  fx/fy: " << cam.fx << " / " << cam.fy
+     << "  cx/cy: " << cam.cx << " / " << cam.cy
+     << "  dist: " << cam.k1 << " " << cam.k2 << " " << cam.k3
+     << " " << cam.p1 << " " << cam.p2;
+  return os;
+}
+
 void changeImageSize(CameraParameters &cam, int newWidth, int newHeight)
 {
   //assert(newWidth > 0);
