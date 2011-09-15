@@ -163,8 +163,6 @@ private:
     void GetImageData();
     void GetPlaneAndSOIs();
     void TrackSOIs();
-    void Points2Cloud(const PointCloud::SurfacePointSeq &points,
-	    cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud);
     void DisplayInTG();
     // void SaveHistogramImg(CvHistogram* hist, std::string str);
 

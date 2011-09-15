@@ -34,44 +34,6 @@ extern "C"
     }
 }
 
-
-#ifdef __APPLE__
-
-static long long gethrtime(void)
-{
-    timeval tv;
-    int ret;
-    long long v;
-    ret = gettimeofday(&tv, NULL);
-    if(ret!=0) return 0;  
-    v=1000000000LL; /* seconds->nanonseconds */
-    v*=tv.tv_sec;
-    v+=(tv.tv_usec*1000); /* microseconds->nanonseconds */
-    return v;
-}
-
-#else
-
-static long long gethrtime(void)
-{
-    struct timespec sp;
-    int ret;
-    long long v;
-#ifdef CLOCK_MONOTONIC_HR
-    ret=clock_gettime(CLOCK_MONOTONIC_HR, &sp);
-#else
-    ret=clock_gettime(CLOCK_MONOTONIC, &sp);
-#endif
-    if(ret!=0) return 0;
-    v=1000000000LL; /* seconds->nanonseconds */
-    v*=sp.tv_sec;
-    v+=sp.tv_nsec;
-    return v;
-}
-
-#endif
-
-
 // 0 send sparse points, 1 send dense points (recollect them after the segmentation)
 #define SendDensePoints  1
 
@@ -889,50 +851,13 @@ void PlanePopOut::runComponent()
 }
 
 /**
- * convert array of CAST surface points to OpenCV format
- */
-void PlanePopOut::Points2Cloud(const PointCloud::SurfacePointSeq &points,
-	cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
-{
-    cloud = cv::Mat_<cv::Point3f>(1, points.size());
-    colCloud = cv::Mat_<cv::Point3f>(1, points.size());    
-
-    for(unsigned i = 0; i<points.size(); i++)
-    {
-	cv::Point3f p, cp;
-	p.x = (float) points[i].p.x;
-	p.y = (float) points[i].p.y;
-	p.z = (float) points[i].p.z;
-	if(false)/// HACK (points_label.at(i) == PPO_LABEL_PLANE)  //points belong to the dominant plane
-	{
-	    cp.x = 255.0;	// change rgb to bgr
-	    cp.y = 0.0;
-	    cp.z = 0.0;
-	}
-	else
-	{
-	    cp.x = (uchar) points[i].c.b;	// change rgb to bgr
-	    cp.y = (uchar) points[i].c.g;
-	    cp.z = (uchar) points[i].c.r;
-	}
-	cloud.at<cv::Point3f>(0, i) = p;
-	colCloud.at<cv::Point3f>(0, i) = cp;
-    }
-}
-
-/**
  * Display in TomGine, i.e. own OpenGL rendering
  */
 void PlanePopOut::DisplayInTG()
 {
     cv::Mat_<cv::Point3f> cloud;
     cv::Mat_<cv::Point3f> colCloud;
-    int cnt = 0;
-
-    /*Points2Cloud(points, cloud, colCloud);
-      tgRenderer->Clear();
-      tgRenderer->SetPointCloud(cloud, colCloud);
-      return;  // HACK*/
+    int cnt = (int)points.size();
 
     if (dominantPlane.valid)
 	for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
@@ -942,6 +867,7 @@ void PlanePopOut::DisplayInTG()
 	    cnt++;
     cloud = cv::Mat_<cv::Point3f>(1, cnt);
     colCloud = cv::Mat_<cv::Point3f>(1, cnt);    
+
     cnt = 0;
     if (dominantPlane.valid) {
 	for(size_t i = 0; i < dominantPlane.planePoints.size(); i++)
@@ -950,9 +876,6 @@ void PlanePopOut::DisplayInTG()
 	    p.x = (float)dominantPlane.planePoints[i].p.x;
 	    p.y = (float)dominantPlane.planePoints[i].p.y;
 	    p.z = (float)dominantPlane.planePoints[i].p.z;
-	    //cp.x = dominantPlane.planePoints[i].p.r;
-	    //cp.y = dominantPlane.planePoints[i].p.g;
-	    //cp.z = dominantPlane.planePoints[i].p.b;
 	    cp.x = (float)dominantPlane.dispColor.r;
 	    cp.y = (float)dominantPlane.dispColor.g;
 	    cp.z = (float)dominantPlane.dispColor.b;
@@ -969,9 +892,6 @@ void PlanePopOut::DisplayInTG()
 	    p.x = (float)it->points[i].p.x;
 	    p.y = (float)it->points[i].p.y;
 	    p.z = (float)it->points[i].p.z;
-	    //cp.x = it->points[i].p.r;
-	    //cp.y = it->points[i].p.g;
-	    //cp.z = it->points[i].p.b;
 	    cp.x = (float)it->dispColor.r;
 	    cp.y = (float)it->dispColor.g;
 	    cp.z = (float)it->dispColor.b;
@@ -979,6 +899,22 @@ void PlanePopOut::DisplayInTG()
 	    colCloud.at<cv::Point3f>(0, cnt) = cp;
 	    cnt++;
 	}
+    }
+    // NOTE: it is important that these unlabeled points are added to the display cloud
+    // after the other points. This will let the plane and SOI points overwrite
+    // the unlabled points. (apparently points are drawn in reverse order)
+    for(size_t i = 0; i < points.size(); i++)
+    {
+	cv::Point3f p, cp;
+	p.x = (float) points[i].p.x;
+	p.y = (float) points[i].p.y;
+	p.z = (float) points[i].p.z;
+	cp.x = (uchar) points[i].c.b;	// change rgb to bgr
+	cp.y = (uchar) points[i].c.g;
+	cp.z = (uchar) points[i].c.r;
+	cloud.at<cv::Point3f>(0, cnt) = p;
+	colCloud.at<cv::Point3f>(0, cnt) = cp;
+        cnt++;
     }
     tgRenderer->Clear();
     tgRenderer->SetPointCloud(cloud, colCloud);
