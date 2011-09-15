@@ -1,6 +1,8 @@
 #include "CMilliTimer.hpp"
 #include <sys/time.h>
 
+namespace cogx { namespace display {
+
 CMilliTimer::CMilliTimer(bool bStart)
 {
    pStartTime = 0;
@@ -47,3 +49,5 @@ long long CMilliTimer::elapsed_micros()
    useconds  = (now.tv_sec - start.tv_sec) * 1000 * 1000 + (now.tv_usec - start.tv_usec);
    return useconds;
 }
+
+}} // namespace
