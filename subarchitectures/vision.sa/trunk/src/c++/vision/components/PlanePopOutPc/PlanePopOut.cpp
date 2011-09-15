@@ -17,10 +17,10 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cogxmath.h>
 #include <VideoUtils.h>
+#include <castutils/Timers.hpp>
 #include "../VisionUtils.h"
 #include "StereoCamera.h"
 #include "PlanePopOut.h"
-
 
 
 /**
@@ -579,7 +579,7 @@ void PlanePopOut::SendImage()
 {
     if(iplDispImage != 0) {
 
-	CMilliTimer tm(true);
+	castutils::CMilliTimer tm(true);
 
 	//     CvFont a;
 	//     cvInitFont( &a, CV_FONT_HERSHEY_PLAIN, 1, 1, 0 , 1 );
@@ -623,7 +623,7 @@ void PlanePopOut::SendImage()
  */
 void PlanePopOut::SendPoints(bool bColorByLabels)
 {
-    CMilliTimer tm(true);
+    castutils::CMilliTimer tm(true);
 
     int pointCnt = 0;
     std::ostringstream str;
@@ -704,7 +704,7 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 
 void PlanePopOut::SendPlaneGrid()
 {
-    CMilliTimer tm(true);
+    castutils::CMilliTimer tm(true);
     ostringstream str;
     str << "function render()\n";
     str << "if not showPlaneGrid then return end\n";
@@ -815,43 +815,26 @@ void PlanePopOut::runComponent()
 #ifdef FEAT_VISUALIZATION
     SendOverlays();
 
-    // CMilliTimer, CRunningRate CCastPaceMaker defined in v11n client
-    ::CRunningRate realRate;
+    castutils::CRunningRate realRate;
 
-#if 0 // TODO: enable paceMaker
-    ::CCastPaceMaker<PlanePopOut> paceMaker(*this, 1000/5, 1);
-#else
-    long tickMs = 1000 / 5; // run (at most) at 5Hz
-    ::CMilliTimer tmRunning(true);
-#endif
+    castutils::CCastPaceMaker<PlanePopOut> paceMaker(*this, 1000/5, 1);
 
     long sendPointsMs = 500; // send points at most every X ms
-    ::CMilliTimer tmSendPoints(true);
+    castutils::CMilliTimer tmSendPoints(true);
 
     long sendPlaneGridMs = 500; // send plane grid at most every X ms
-    ::CMilliTimer tmSendPlaneGrid(true);
+    castutils::CMilliTimer tmSendPlaneGrid(true);
 
     long sendImageMs = 750; // send image at most every X ms
-    ::CMilliTimer tmSendImage(true);
+    castutils::CMilliTimer tmSendImage(true);
 #endif
 
     try {
 	while(isRunning()) {
-#ifdef FEAT_VISUALIZATION
-#if 0
 	    paceMaker.sync();
-#else
-	    long tickDelay = tickMs - tmRunning.elapsed();
-	    if (tickDelay < 1) tickDelay = 1;
-	    sleepComponent(tickDelay);
-	    tmRunning.restart();
-#endif
 	    realRate.tick();
 	    //log("current rate: %.3g tps, ave. rate from start: %.3g tps",
 	    //      realRate.getRate(), realRate.getTotalRate());
-#else
-	    sleepComponent(200);
-#endif
 
 	    try {
 		GetImageData();
