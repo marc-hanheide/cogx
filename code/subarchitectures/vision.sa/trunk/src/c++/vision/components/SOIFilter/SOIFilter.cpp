@@ -488,26 +488,36 @@ void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 
 void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  VisualObjectRecordPtr pvorec = new VisualObjectRecord();
-  pvorec->addr = _wmc.address;
-  pvorec->pobj = new VisionData::VisualObject();
-  saveVisualObjectData(pobj, pvorec->pobj);
-  m_visualObjects[pvorec->addr] = pvorec;
+  try {
+    VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+    VisualObjectRecordPtr pvorec = new VisualObjectRecord();
+    pvorec->addr = _wmc.address;
+    pvorec->pobj = new VisionData::VisualObject();
+    saveVisualObjectData(pobj, pvorec->pobj);
+    m_visualObjects[pvorec->addr] = pvorec;
 
-  sendSyncAllProtoObjects();
+    sendSyncAllProtoObjects();
+  }
+  catch (exception& e) {
+    error(" **** onAdd_VisualObject: \n%s\n ****", e.what());
+  }
 }
 
 void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-  VisualObjectRecordPtr pvorec = new VisualObjectRecord();
-  pvorec->addr = _wmc.address;
-  pvorec->pobj = new VisionData::VisualObject();
-  saveVisualObjectData(pobj, pvorec->pobj);
-  m_visualObjects[pvorec->addr] = pvorec;
+  try {
+    VisualObjectPtr pobj = getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+    VisualObjectRecordPtr pvorec = new VisualObjectRecord();
+    pvorec->addr = _wmc.address;
+    pvorec->pobj = new VisionData::VisualObject();
+    saveVisualObjectData(pobj, pvorec->pobj);
+    m_visualObjects[pvorec->addr] = pvorec;
 
-  sendSyncAllProtoObjects();
+    sendSyncAllProtoObjects();
+  }
+  catch (exception& e) {
+    error(" **** onUpdate_VisualObject: \n%s\n ****", e.what());
+  }
 }
 
 void SOIFilter::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
@@ -686,12 +696,12 @@ ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const SOIPtr &psoi)
   return findProtoObjectAt(psoi->boundingSphere.pos);
 }
 
+// Find the VO object that is currently linked with PO
 VisualObjectRecordPtr SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
 {
   if (protoAddr.id == "") 
     return NULL;
 
-  // First check the visible objects
   typeof(m_visualObjects.begin()) itvo = m_visualObjects.begin();
   for(; itvo != m_visualObjects.end(); ++itvo) {
     VisualObjectRecordPtr& pvorec = itvo->second;
@@ -703,8 +713,17 @@ VisualObjectRecordPtr SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAdd
       return itvo->second;
   }
 
+  return NULL;
+}
+
+// Find the VO that was last linked with the PO
+VisualObjectRecordPtr SOIFilter::findHiddenVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
+{
+  if (protoAddr.id == "") 
+    return NULL;
+
   // The check the hidden objects
-  itvo = m_visualObjects.begin();
+  typeof(m_visualObjects.begin()) itvo = m_visualObjects.begin();
   for(; itvo != m_visualObjects.end(); ++itvo) {
     VisualObjectRecordPtr& pvorec = itvo->second;
     VisualObjectPtr& pobj = pvorec->pobj;

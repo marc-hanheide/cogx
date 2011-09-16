@@ -13,10 +13,17 @@
 
 namespace cogx {
 
-template<class T>
-cast::cdl::WorkingMemoryPointerPtr createWmPointer(
-    const cast::cdl::WorkingMemoryAddress& addr = cast::cdl::WorkingMemoryAddress())
+inline
+cast::cdl::WorkingMemoryPointerPtr nullWmPointer()
 {
+  return new cast::cdl::WorkingMemoryPointer(cast::cdl::WorkingMemoryAddress(), "");
+}
+
+template<class T>
+cast::cdl::WorkingMemoryPointerPtr createWmPointer(const cast::cdl::WorkingMemoryAddress& addr)
+{
+  if (addr.id.empty())
+    return nullWmPointer();
   return new cast::cdl::WorkingMemoryPointer(addr, cast::typeName<T>());
 }
 
