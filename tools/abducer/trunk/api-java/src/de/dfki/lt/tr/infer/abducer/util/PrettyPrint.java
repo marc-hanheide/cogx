@@ -55,7 +55,8 @@ public abstract class PrettyPrint {
 	 * @return escaped string if necessary
 	 */
 	public static String termStringEscape(String s) {
-		if (s.equals("") || s.contains("-") || s.contains(":") || !Character.isLowerCase(s.charAt(0))) {
+		if (s.equals("")
+			|| !s.matches("[a-z][a-zA-Z0-9]*")) {
 			return "'" + s + "'";
 		}
 		else {
