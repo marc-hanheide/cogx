@@ -2,8 +2,6 @@ package dialogue.execution.dora;
 
 import java.util.ArrayList;
 
-import javax.swing.JOptionPane;
-
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
@@ -17,6 +15,7 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
+import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.components.RoomMembershipMediator;
 import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
@@ -35,11 +34,11 @@ import execution.util.ComponentActionFactory;
  * 
  */
 public class DialogueActionInterface extends
-		dialogue.execution.DialogueActionInterface {
+		AbstractDialogueActionInterface {
 
 	public static class ReportPositionDialogue
 			extends
-			dialogue.execution.DialogueActionInterface.BeliefIntentionDialogueAction<ReportPosition> {
+			dialogue.execution.AbstractDialogueActionInterface.BeliefIntentionDialogueAction<ReportPosition> {
 
 		public ReportPositionDialogue(ManagedComponent _component) {
 			super(_component, ReportPosition.class);
@@ -120,7 +119,7 @@ public class DialogueActionInterface extends
 		@Override
 		protected void actionComplete() {
 			try {
-				((dialogue.execution.DialogueActionInterface) getComponent())
+				((dialogue.execution.AbstractDialogueActionInterface) getComponent())
 						.addBooleanFeature(getAction().beliefAddress,
 								"position-reported", true);
 			} catch (CASTException e) {
