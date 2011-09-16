@@ -84,6 +84,7 @@ struct ProtoObjectRecord : public IceUtil::SimpleShared
 {
   cdl::WorkingMemoryAddress addr;
   VisionData::ProtoObjectPtr pobj;
+  long long tmDisappeared;
 };
 typedef IceUtil::Handle<ProtoObjectRecord> ProtoObjectRecordPtr;
 
@@ -197,6 +198,7 @@ public:
   ProtoObjectRecordPtr findProtoObjectAt(const VisionData::SOIPtr &psoi);
   ProtoObjectRecordPtr findProtoObjectAt(const cogx::Math::Vector3 &pos);
   VisualObjectRecordPtr findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
+  VisualObjectRecordPtr findHiddenVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr);
   void updateRobotPosePtz();
   bool hasPtz() { return (ptzServer.get() != 0); }
   bool movePtz(double pan, double tilt, double zoom=0);

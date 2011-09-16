@@ -51,7 +51,7 @@ struct WmUnlocker
   }
   void unlockAll()
   {
-    for (int i = 0; i < locks.size(); ++i) {
+    for (int i = 0; i < (int) locks.size(); ++i) {
       try {
         pc->unlockEntry(locks[i]);
       }
@@ -111,6 +111,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       // XXX: Do we update the PO with the new SOI?
       // XXX: The object recognizer should verify if this is the same object
       psoirec->protoObjectAddr = pporec->addr;
+      MakeVisible(pporec->addr);
       return;
     }
 
@@ -123,6 +124,10 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pobj = createProtoObject();
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
     string objId = pSoiFilter->newDataID();
+
+    // link soi to po
+    psoirec->protoObjectAddr.id = objId;
+    psoirec->protoObjectAddr.subarchitecture = pSoiFilter->getSubarchitectureID();
 
     pobj->position = psoi->boundingSphere.pos;
 
@@ -267,10 +272,15 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 
   pSoiFilter->updateRobotPosePtz();
 
-  if (psoirec->psoi.get())
-  {
-    if (psoirec->protoObjectAddr.id.length() > 0) {
-      // the SOI is associated with a PO
+  if (! psoirec->psoi.get()) {
+    error("We have a SOI record without a SOI.");
+  }
+  else {
+    if (psoirec->protoObjectAddr.id.length() < 1) {
+      log("SOI is not associated with a PO");
+    }
+    else {
+      log("SOI belongs to PO: %s", psoirec->protoObjectAddr.id.c_str());
 
       // check if other SOIs are associated with this PO
       bool hasMoreSois = false;
@@ -283,8 +293,15 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
       }
 
       if (! hasMoreSois) {
-        // The PO is not visible any more
-        // TODO: MakeInvisible(psoirec->protoObjectAddr);
+        log("PO has no more SOIs -> invisible.");
+
+        // The PO is not visible any more. The robot may have turned the head
+        // or the object was removed. First of all we make the object
+        // invisible. Then we have to check if the object was removed.
+        //
+        // The condition for removed objects: we know that we could see the
+        // object from the current view cone, but it isn't there.
+        MakeInvisible(psoirec->protoObjectAddr);
       }
       else {
         log("PO %s has more SOIs", psoirec->protoObjectAddr.id.c_str());
@@ -295,7 +312,7 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 
 void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAddr)
 {
-  println("Make Invisible PO:%s", protoObjectAddr.id.c_str());
+  println("Make Invisible PO: %s", protoObjectAddr.id.c_str());
 
   ProtoObjectRecordPtr pporec;
   try {
@@ -309,6 +326,7 @@ void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAdd
   VisualObjectRecordPtr pvorec = pSoiFilter->findVisualObjectFor(pporec->addr);
   if (! pvorec.get()) {
     // Looks like no VO is associated with this PO => Nothing to do
+    log("Looks like the PO is already marked invisible.");
     return;
   }
 
@@ -322,9 +340,9 @@ void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAdd
       string ot;
       try {
         ot = "PO";
-        locker.lock(pporec->addr, cdl::LOCKEDOD);
+        locker.lock(pporec->addr, cdl::LOCKEDODR);
         ot = "VO";
-        locker.lock(pvorec->addr, cdl::LOCKEDOD);
+        locker.lock(pvorec->addr, cdl::LOCKEDODR);
       }
       catch(WmUnlocker::LockError& e) {
         // We may have a racing condition. Unlock all and retry.
@@ -349,7 +367,71 @@ void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAdd
       VisualObjectPtr pvo;
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
       pvo->lastProtoObject = pvo->protoObject;
-      pvo->protoObject = createWmPointer<VisionData::ProtoObject>();
+      pvo->protoObject = nullWmPointer();
+      pSoiFilter->overwriteWorkingMemory<VisionData::VisualObject>(pvorec->addr, pvo);
+      pSoiFilter->saveVisualObjectData(pvo, pvorec->pobj);
+    }
+    catch(std::exception& e) {
+      error(
+          "Something went wrong when updating the link between VO and PO."
+          " The error is: %s", e.what());
+    }
+    catch(...) {
+      error("Something went wrong when updating the link between VO and PO");
+    }
+    lockRetries = 0;
+    break;
+  }
+}
+
+void WmTaskExecutor_Soi::MakeVisible(cdl::WorkingMemoryAddress &protoObjectAddr)
+{
+  println("Make Visible PO: %s", protoObjectAddr.id.c_str());
+
+  VisualObjectRecordPtr pvorec = pSoiFilter->findVisualObjectFor(protoObjectAddr);
+  if (pvorec.get()) {
+    log("PO is already visible.");
+    return;
+  }
+
+  pvorec = pSoiFilter->findHiddenVisualObjectFor(protoObjectAddr);
+  if ( ! pvorec.get()) {
+    log("PO was not linked to a VO lately. **** Do we have to analyze it again? ****");
+    // TODO: this should probably trigger a new object analysis
+    return;
+  }
+
+  WmUnlocker locker(pSoiFilter);
+
+  println(" **** re-creating the link to PO in the VO");
+  long lockRetries = 5;
+  while (lockRetries > 0) {
+    --lockRetries;
+    try {
+      string ot;
+      try {
+        ot = "VO";
+        locker.lock(pvorec->addr, cdl::LOCKEDODR);
+      }
+      catch(WmUnlocker::LockError& e) {
+        // We may have a racing condition. Unlock all and retry.
+        locker.unlockAll();
+        usleep(100 * 1000);
+        if (lockRetries <= 0)
+          throw WmUnlocker::LockError("Could not lock VO");
+        continue;
+      }
+      catch(cast::DoesNotExistOnWMException){
+        error("An internal " + ot + "record exists for a non-existing wm-" + ot + ".");
+      }
+
+      // TODO: Update also the PO.VisualObjectPtr if it is different than in the past
+      // (can this actually happen?)
+
+      VisualObjectPtr pvo;
+      pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
+      pvo->lastProtoObject = pvo->protoObject;
+      pvo->protoObject = createWmPointer<VisionData::ProtoObject>(protoObjectAddr);
       pSoiFilter->overwriteWorkingMemory<VisionData::VisualObject>(pvorec->addr, pvo);
       pSoiFilter->saveVisualObjectData(pvo, pvorec->pobj);
     }

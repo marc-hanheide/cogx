@@ -102,10 +102,14 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   // find VO for this PO
-  VisualObjectRecordPtr pvorec = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
+  VisualObjectRecordPtr pvorec;
   VisualObjectPtr pvo;
   cast::cdl::WorkingMemoryAddress voAddr;
   bool bNewVo = false;
+
+  pvorec = pSoiFilter->findVisualObjectFor(cmd.pcmd->protoObjectAddr);
+  if (! pvorec.get())
+    pvorec = pSoiFilter->findHiddenVisualObjectFor(cmd.pcmd->protoObjectAddr);
 
   if (pvorec.get())
     voAddr = pvorec->addr;
