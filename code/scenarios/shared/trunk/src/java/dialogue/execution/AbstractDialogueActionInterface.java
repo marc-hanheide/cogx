@@ -55,7 +55,7 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * @author nah
  * 
  */
-public class AbstractDialogueActionInterface extends ManagedComponent {
+public abstract class AbstractDialogueActionInterface extends ManagedComponent {
 	protected LocalActionStateManager m_actionStateManager;
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
