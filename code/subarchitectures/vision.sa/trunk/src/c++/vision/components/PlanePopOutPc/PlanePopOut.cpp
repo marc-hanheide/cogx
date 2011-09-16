@@ -456,7 +456,8 @@ void PlanePopOut::startV11N()
     // on the server so that we can activate displays through GUI
     ostringstream ss;
     ss <<  "function render()\nend\n"
-	<< "setCamera('ppo.points.top', 0, 0, -0.5, 0, 0, 1, 0, -1, 0)\n";
+	<< "setCamera('ppo.robot.front', 4.0, 0, 4.0, -1, 0, -1, 0, 0, 1)\n"
+	<< "setCamera('ppo.points.top', 0, 0, 4.0, 0, 0, -1, -1, 0, 0)\n";
     m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_POINTS), ss.str());
 
     //Video::Image image;
