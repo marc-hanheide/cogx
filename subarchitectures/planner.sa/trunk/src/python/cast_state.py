@@ -24,11 +24,15 @@ QDL_VALUE = re.compile("<dora:(.*)>")
 
 class CASTState(object):
     def __init__(self, beliefs, domain, oldstate=None, component=None):
+        self.config = global_vars.config
         self.domain = domain
         self.beliefs = []
         #print beliefs
         for b in beliefs:
-            if isinstance(b, eubm.GroundedBelief) or isinstance(b, eubm.AssertedBelief):
+            if isinstance(b, eubm.PerceptBelief):
+                continue
+            if isinstance(b.estatus, bm.epstatus.PrivateEpistemicStatus) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus) \
+                    or isinstance(b, eubm.AssertedBelief):
                 self.beliefs.append(b)
 
         self.beliefdict = dict((b.id, b) for b in self.beliefs)
@@ -89,7 +93,7 @@ class CASTState(object):
             self.prob_state.set(f)
         self.objects |= self.generated_objects
         
-        self.state = self.prob_state.determinized_state(0.05, 0.95)
+        self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
                     
         self.generate_belief_state(self.prob_state, self.state)
 
@@ -131,7 +135,6 @@ class CASTState(object):
             
     def generate_belief_state(self, probstate, detstate):
         pnodes = pstatenode.PNode.from_state(probstate, detstate)
-        
         pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
         assert not det_lits, map(str, det_lits)
         # mapltask.init += det_lits
@@ -171,7 +174,7 @@ class CASTState(object):
         return results
             
     def generate_init_facts(self, problem, oldstate=None):
-        cstate = self.prob_state.determinized_state(0.05, 0.95)
+        cstate = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
 
         generated_facts = {}
         generated_objects = set()
@@ -469,7 +472,7 @@ class CASTState(object):
             self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
             #self.prob_state.apply_init_rules(domain = self.domain)
             #self.generated_objects = set(problem.objects) - self.objects
-            self.state = self.prob_state.determinized_state(0.05, 0.95)
+            self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
 
 
     def to_problem(self, slice_goals, deterministic=True, raw_problem=False):
@@ -481,7 +484,7 @@ class CASTState(object):
             opt_func = None
 
         if raw_problem:
-            det_state = self.raw_state.determinized_state(0.05, 0.95)
+            det_state = self.raw_state.determinized_state(0.05, self.config.uncertainty_threshold)
             prob_state = self.raw_state
             objects = self.raw_objects
         else:
