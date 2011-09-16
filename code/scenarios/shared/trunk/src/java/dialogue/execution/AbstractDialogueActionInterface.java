@@ -55,7 +55,7 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * @author nah
  * 
  */
-public class DialogueActionInterface extends ManagedComponent {
+public class AbstractDialogueActionInterface extends ManagedComponent {
 	protected LocalActionStateManager m_actionStateManager;
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
@@ -74,7 +74,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		public TriBool execute() {
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((DialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface) getComponent())
 						.askForFeatureThenSetDirect("color", getAction());
 				result = TriBool.TRITRUE;
 
@@ -247,7 +247,7 @@ public class DialogueActionInterface extends ManagedComponent {
 		protected Intention getIntention() {
 
 			WorkingMemoryAddress groundedBeliefAddress = getAction().beliefAddress;
-			WorkingMemoryAddress sharedBeliefAddress = ((DialogueActionInterface) getComponent())
+			WorkingMemoryAddress sharedBeliefAddress = ((AbstractDialogueActionInterface) getComponent())
 					.getSharedBeliefAddress(groundedBeliefAddress);
 
 			if (sharedBeliefAddress == null) {
@@ -412,7 +412,7 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((DialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface) getComponent())
 						.askForFeatureThenSetDirect("shape", getAction());
 				result = TriBool.TRITRUE;
 
@@ -438,7 +438,7 @@ public class DialogueActionInterface extends ManagedComponent {
 
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((DialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface) getComponent())
 						.askForFeatureThenSetDirect("identity", getAction());
 				result = TriBool.TRITRUE;
 
@@ -465,7 +465,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			TriBool result = TriBool.TRIFALSE;
 			try {
 
-				((DialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface) getComponent())
 						.askPolarFeatureThenSetDirect("shape", getAction());
 				result = TriBool.TRITRUE;
 
@@ -491,7 +491,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			TriBool result = TriBool.TRIFALSE;
 			try {
 
-				((DialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface) getComponent())
 						.askPolarFeatureThenSetDirect("color", getAction());
 				result = TriBool.TRITRUE;
 
@@ -517,7 +517,7 @@ public class DialogueActionInterface extends ManagedComponent {
 			TriBool result = TriBool.TRIFALSE;
 			try {
 
-				((DialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface) getComponent())
 						.askPolarFeatureThenSetDirect("identity", getAction());
 				result = TriBool.TRITRUE;
 
