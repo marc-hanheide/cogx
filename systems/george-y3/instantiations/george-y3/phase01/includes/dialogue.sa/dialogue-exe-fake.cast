@@ -1,1 +1,1 @@
-JAVA MG diag-exe dialogue.execution.DialogueActionInterface --fake-it
+JAVA MG diag-exe dialogue.execution.george.DialogueActionInterface --fake-it
