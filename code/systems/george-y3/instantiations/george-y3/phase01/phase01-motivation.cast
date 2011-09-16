@@ -40,6 +40,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 # INCLUDE includes/dialogue.sa/dialogue-base.cast
 # INCLUDE includes/dialogue.sa/dialogue-george.cast
 # INCLUDE includes/dialogue.sa/dialogue-exe.cast
+INCLUDE ../../includes/dialogue.sa/default+gui.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/planner-george.cast
