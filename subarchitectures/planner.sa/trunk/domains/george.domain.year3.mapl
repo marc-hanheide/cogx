@@ -21,21 +21,32 @@
     (shape-learned ?v - VisualObject)
     (type-learned ?v - VisualObject)
 
+    (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
+    (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
+    (allow-polar-type-question ?v - VisualObject ?t - TypeName ?r - Robot)
+
+    (color-gain-is-max ?v - VisualObject)
+    (shape-gain-is-max ?v - VisualObject)
+    (type-gain-is-max ?v - VisualObject)
+
     (learning-impossible)
   )
 
   (:functions
     (color ?v - VisualObject) - ColorName
-    (p-color ?v - VisualObject ?c - ColorName) - number
-    (polar-question-color-threshold ?r - Robot) - number
+    (polar-question-color-threshold ?r - Robot) - number ;; If max-gain-value-color is higher than this we allow a polar question
+    (max-gain-label-color ?v - VisualObject) - ColorName ;; This is the color with the highest potential gain for some object
+    (max-gain-value-color ?v - VisualObject) - number ;; This is the color-gain of max-gain-label-color
 
     (shape ?v - VisualObject) - ShapeName
-    (p-shape ?v - VisualObject ?s - ShapeName) - number
     (polar-question-shape-threshold ?r - Robot) - number
+    (max-gain-label-shape ?v - VisualObject) - ShapeName
+    (max-gain-value-shape ?v - VisualObject) - number
 
     (type ?v - VisualObject) - TypeName
-    (p-type ?v - VisualObject ?t - TypeName) - number
     (polar-question-type-threshold ?r - Robot) - number
+    (max-gain-label-type ?v - VisualObject) - TypeName
+    (max-gain-value-type ?v - VisualObject) - number
 
     (target-object ?vc - ViewCone) - ProtoObject
     (po-is-associated-with ?p - ProtoObject) - VisualObject
@@ -58,24 +69,6 @@
     :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
   )
 
-  (:init-rule set-p-color
-    :parameters (?v - VisualObject ?c - ColorName)
-    :precondition (= (p-color ?v ?c) UNKNOWN)
-    :effect (assign (p-color ?v ?c) 0)
-  )
-
-  (:init-rule set-p-shape
-    :parameters (?v - VisualObject ?s - ShapeName)
-    :precondition (= (p-shape ?v ?s) UNKNOWN)
-    :effect (assign (p-shape ?v ?s) 0)
-  )
-
-  (:init-rule set-p-type
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition (= (p-type ?v ?t) UNKNOWN)
-    :effect (assign (p-type ?v ?t) 0)
-  )
-
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
@@ -93,6 +86,25 @@
     :precondition (= (polar-question-type-threshold ?r) UNKNOWN)
     :effect (assign (polar-question-type-threshold ?r) 0.5)
   )
+
+  (:init-rule set-max-gain-value-color
+     :parameters (?v - VisualObject)
+     :precondition (= (max-gain-value-color ?v) UNKNOWN)
+     :effect (assign (max-gain-value-color ?v) 0)
+  )
+
+  (:init-rule set-max-gain-value-shape
+     :parameters (?v - VisualObject)
+     :precondition (= (max-gain-value-shape ?v) UNKNOWN)
+     :effect (assign (max-gain-value-shape ?v) 0)
+  )
+
+  (:init-rule set-max-gain-value-type
+     :parameters (?v - VisualObject)
+     :precondition (= (max-gain-value-type ?v) UNKNOWN)
+     :effect (assign (max-gain-value-type ?v) 0)
+  )
+  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -114,6 +126,27 @@
           (type-learned ?v)
         )
       )
+    )
+  )
+
+  (:derived (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
+    (and
+      (>= (max-gain-value-color ?v) (polar-question-color-threshold ?r))
+      (= (max-gain-label-color ?v) ?c)
+    )
+  )
+
+  (:derived (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
+    (and
+      (>= (max-gain-value-shape ?v) (polar-question-shape-threshold ?r))
+      (= (max-gain-label-shape ?v) ?s)
+    )
+  )
+
+  (:derived (allow-polar-type-question ?v - VisualObject ?t - TypeName ?r - Robot)
+    (and
+      (>= (max-gain-value-type ?v) (polar-question-type-threshold ?r))
+      (= (max-gain-label-type ?v) ?t)
     )
   )
 
@@ -146,17 +179,17 @@
 
   (:action analyze-proto-object
     :agent (?r - Robot)
-    :parameters (?vc - ViewCone ?po - ProtoObject)
+    :parameters (?vc - ViewCone ?p - ProtoObject)
     :precondition
       (and
         (= (current-viewcone ?r) ?vc)
-        (= (target-object ?vc) ?po)
-        (not (exists (?vo - visualobject) (= (po-is-associated-with ?po) ?vo)))
+        (= (target-object ?vc) ?p)
+        (not (exists (?vo - visualobject) (= (po-is-associated-with ?p) ?vo)))
         (learning-impossible)
       )
     :effect
       (and
-        (assign (po-is-associated-with ?po) VISUAL_OBJECT_DUMMY)
+        (assign (po-is-associated-with ?p) VISUAL_OBJECT_DUMMY)
         (increase (total-cost) 1)
       )
   )
@@ -170,7 +203,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
       )
     :effect 
@@ -185,8 +218,8 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
-        (>= (p-color ?v ?c) (polar-question-color-threshold ?r))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (allow-polar-color-question ?v ?c ?r)
         (learning-impossible)
       )
     :effect 
@@ -201,7 +234,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
       )
     :effect 
@@ -216,8 +249,8 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
-        (>= (p-shape ?v ?s) (polar-question-shape-threshold ?r))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (allow-polar-shape-question ?v ?s ?r)
         (learning-impossible)
       )
     :effect 
@@ -232,7 +265,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
-        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
       )
     :effect 
@@ -247,8 +280,8 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (exists (?po - ProtoObject) (= (po-is-associated-with ?po) ?v))
-        (>= (p-type ?v ?t) (polar-question-type-threshold ?r))
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (allow-polar-type-question ?v ?t ?r)
         (learning-impossible)
       )
     :effect 
@@ -269,10 +302,10 @@
       (and
 	(not (color-learned ?v))
         (attributed TUTOR (color ?v) ?c)
-        (exists (?po - ProtoObject) 
+        (exists (?p - ProtoObject) 
           (and 
-            (= (po-is-associated-with ?po) ?v)
-            (= (target-object (current-viewcone ?r)) ?po)
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
           )
         )
       )
@@ -290,10 +323,10 @@
       (and
 	(not (shape-learned ?v))
         (attributed TUTOR (shape ?v) ?s)
-        (exists (?po - ProtoObject) 
+        (exists (?p - ProtoObject) 
           (and 
-            (= (po-is-associated-with ?po) ?v)
-            (= (target-object (current-viewcone ?r)) ?po)
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
           )
         )
       )
@@ -311,10 +344,10 @@
       (and
 	(not (type-learned ?v))
         (attributed TUTOR (type ?v) ?t)
-        (exists (?po - ProtoObject) 
+        (exists (?p - ProtoObject) 
           (and 
-            (= (po-is-associated-with ?po) ?v)
-            (= (target-object (current-viewcone ?r)) ?po)
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
           )
         )
       )
