@@ -117,7 +117,7 @@ public:
    {
       int pos;
       if (numIntervals == 0) return 0;
-      if (numIntervals < 0 || numIntervals >= ticks.size())
+      if (numIntervals < 0 || numIntervals >= (int) ticks.size())
          pos = (tickInfoPos + 1) % ticks.size();
       else
          pos = (tickInfoPos - numIntervals) % ticks.size();
