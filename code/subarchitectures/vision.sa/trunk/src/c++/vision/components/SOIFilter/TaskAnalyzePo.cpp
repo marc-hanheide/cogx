@@ -30,10 +30,10 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
 
-  pSoiFilter->println("AnalyzeProtoObjectCommand %s", pEvent->wmc.address.id.c_str());
+  println("AnalyzeProtoObjectCommand %s", pEvent->wmc.address.id.c_str());
 
   if (! cmd.read(pEvent->wmc.address)) {
-    pSoiFilter->debug("analyze_task: AnalyzeProtoObjectCommand deleted while working.");
+    debug("analyze_task: AnalyzeProtoObjectCommand deleted while working.");
     return;
   }
 
@@ -43,14 +43,14 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   // XXX: a NullHandleException is raised if wrong object type is selected in execution GUI
 #endif
 
-  pSoiFilter->println("analyze_task: read po");
+  println("analyze_task: read po");
   // pobj - The proto object to segment
   ProtoObjectPtr pobj;
   try {
     pobj = pSoiFilter->getMemoryEntry<VisionData::ProtoObject>(cmd.pcmd->protoObjectAddr);
   }
   catch(cast::DoesNotExistOnWMException){
-    pSoiFilter->debug("analyze_task: ProtoObject deleted while working. Aborting task.");
+    debug("analyze_task: ProtoObject deleted while working. Aborting task.");
     cmd.fail();
     return;
   }
@@ -61,7 +61,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
    * complete then we remove it from the change filter list, but we DON'T
    * DELETE it. It will be moved to a deletion queue by the framework and
    * deleted later. */
-  pSoiFilter->debug("analyze_task: calling GetStableSoisCommand");
+  debug("analyze_task: calling GetStableSoisCommand");
   GetSoisCommandRcv* pGetSois;
   vector<SOIPtr> sois;
   pGetSois = new GetSoisCommandRcv(pSoiFilter, pSoiFilter->m_fineSource);
@@ -73,12 +73,12 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
 
   if (! bCompleted || sois.size() < 1)
   {
-    pSoiFilter->debug("analyze_task: No Fine SOIs. Aborting task.");
+    debug("analyze_task: No Fine SOIs. Aborting task.");
     cmd.fail();
     return;
   }
 
-  pSoiFilter->debug("analyze_task: Got some Fine SOIs.");
+  debug("analyze_task: Got some Fine SOIs.");
 
   // Find the SOI that is closesst to the PO
   // psoi - The fine SOI that represents the proto object
@@ -93,12 +93,12 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     }
   }
   if (dmin >= 0.2) {
-    pSoiFilter->println("analyze_task: SOI to be analyzed is far from PO (%.2lfm)", dmin);
+    println("analyze_task: SOI to be analyzed is far from PO (%.2lfm)", dmin);
   }
 
   bool bSegmented = pSoiFilter->m_segmenter.segmentObject(psoi, pobj->image, pobj->mask, pobj->points, pobj);
   if (! bSegmented) {
-    pSoiFilter->debug("analyze_task: Segmentation failed.");
+    debug("analyze_task: Segmentation failed.");
   }
 
   // find VO for this PO
@@ -115,11 +115,11 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(voAddr);
     }
     catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->debug("analyze_task: VisualObject deleted while working.");
+      debug("analyze_task: VisualObject deleted while working.");
     }
   }
   if (! pvo.get()) {
-    pSoiFilter->debug("analyze_task: creating new VisualObject.");
+    debug("analyze_task: creating new VisualObject.");
     pvo = createVisualObject();
     pvo->protoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
     pvo->lastProtoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
@@ -137,7 +137,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);	
   }
   catch(cast::DoesNotExistOnWMException){
-    pSoiFilter->debug("analyze_task (WRITE): ProtoObject deleted while working.");
+    debug("analyze_task (WRITE): ProtoObject deleted while working.");
   }
 
   // VO has to be written after PO (components usually access PO through VO)
@@ -147,7 +147,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
       else pSoiFilter->overwriteWorkingMemory(voAddr, pvo);	
     }
     catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->debug("analyze_task (WRITE): VisualObject deleted while working.");
+      debug("analyze_task (WRITE): VisualObject deleted while working.");
     }
   }
 
@@ -159,7 +159,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
 
 #if CATCH_NULL
   } catch ( IceUtil::NullHandleException& e ) { // DEBUGGING
-    pSoiFilter->println("CAUGHT NullHandleException");
+    println("CAUGHT NullHandleException");
   }
 #endif
 #undef CATCH_NULL

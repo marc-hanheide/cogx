@@ -47,6 +47,7 @@ SOIFilter::SOIFilter()
 
 #ifdef FEAT_VISUALIZATION
   m_segmenter.pDisplay = &m_display;
+  m_segmenter.setLoggingComponent(this);
   m_sProtoObjectView = "";
   m_bShowProtoObjects = false;
 #endif

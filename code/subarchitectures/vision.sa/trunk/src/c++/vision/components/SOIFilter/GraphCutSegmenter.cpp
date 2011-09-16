@@ -267,10 +267,11 @@ vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPo
   }
 
   // debug("0, size=%d", size);
-  IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
-  IplImage* dst = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
-  IplImage* srcL = cvCreateImage(cvSize(size*COLOR_SAMPLE_IMG_WIDTH , COLOR_SAMPLE_IMG_HEIGHT ), IPL_DEPTH_8U, 3);
-  // IplImage* dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
+  cv::Ptr<IplImage> src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
+  cv::Ptr<IplImage> dst = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 3);
+  cv::Ptr<IplImage> srcL = cvCreateImage(
+      cvSize(size*COLOR_SAMPLE_IMG_WIDTH , COLOR_SAMPLE_IMG_HEIGHT ), IPL_DEPTH_8U, 3);
+  // cv::Ptr<IplImage> dstL = cvCreateImage(cvGetSize(srcL), IPL_DEPTH_8U, 3);
 
   for(int i=0; i< size; i++)
   {
@@ -318,18 +319,13 @@ vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPo
 #ifdef FEAT_VISUALIZATION
   if (pDisplay)
   {
-    //pDisplay->setImage("Color Filtering", srcL);
-    //pDisplay->setImage("Obj HLS Colors", dstL);
+    //pDisplay->setImage("soif.Color Filtering 0", srcL);
+    //pDisplay->setImage("soif.Obj HLS Colors", dstL);
   }
 #else
   //cvShowImage("Color Filtering", srcL);
   //cvShowImage("Obj HLS Colors", dstL);
 #endif
-
-  cvReleaseImage(&srcL);
-  //cvReleaseImage(&dstL);
-  cvReleaseImage(&src);
-  cvReleaseImage(&dst);
 
   return hlsList;
 }
@@ -689,6 +685,8 @@ vector<unsigned char> GraphCutSegmenter::graphCut(int width, int height, int num
 // (review2010): Added pProto to fill the imageOrigin and imageSourceSize
 bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatch, SegmentMask &segMask, vector<SurfacePoint> &segPoints, ProtoObjectPtr& pProto)
 {
+  log("GraphCutSegmenter::segmentObject");
+
   Video::Image image, imageLarge;
   // The large image for the ProtoObject should be as large as possible
   pPcClient->getRectImage(LEFT, 1280, imageLarge);
@@ -698,6 +696,7 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
   // The scale is used to scale the patch and mask calculated on image
   // to the size of imageLarge.
   double inputScale = 1.0 * imageLarge.width / image.width;
+  bool protoObj = false; // return value
 
 #if defined(FEAT_VISUALIZATION)
   ostringstream ss;
@@ -708,241 +707,247 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
   ss << "Image for ProtoObject:" << imageLarge.width << "x" << imageLarge.height << "<br>";
 #endif
 
-  soiPtr->boundingSphere.rad *= DILATE_FACTOR;
+  try {
+    soiPtr->boundingSphere.rad *= DILATE_FACTOR;
 
-  ROIPtr roiPtr = projectSOI(image.camPars, *soiPtr);
+    ROIPtr roiPtr = projectSOI(image.camPars, *soiPtr);
 
-  IplImage *iplImg = convertImageToIpl(image);
-  //	IplImage *iplImg = cvCreateImage(cvGetSize(iplImgBGR),
-  //                          iplImgBGR->depth,
-  //                          iplImgBGR->nChannels);
+    IplImage *iplImg = convertImageToIpl(image);
+    //	IplImage *iplImg = cvCreateImage(cvGetSize(iplImgBGR),
+    //                          iplImgBGR->depth,
+    //                          iplImgBGR->nChannels);
 
-  //	cvCvtColor(iplImgBGR, iplImg, CV_BGR2RGB);	
+    //	cvCvtColor(iplImgBGR, iplImg, CV_BGR2RGB);	
 
-  CvRect rect;
+    CvRect rect;
 
-  rect.width = roiPtr->rect.width;
-  rect.height = roiPtr->rect.height;
-  rect.x = roiPtr->rect.pos.x - rect.width / 2;
-  rect.y = roiPtr->rect.pos.y - rect.height / 2;	
+    rect.width = roiPtr->rect.width;
+    rect.height = roiPtr->rect.height;
+    rect.x = roiPtr->rect.pos.x - rect.width / 2;
+    rect.y = roiPtr->rect.pos.y - rect.height / 2;	
 
-  cvSetImageROI(iplImg, rect);
-
-  // log("Calculated ROI x=%i, y=%i, width=%i, height=%i",
-  //    rect.x, rect.y, rect.width, rect.height);
+    debug("Calculated ROI x=%i, y=%i, width=%i, height=%i",
+       rect.x, rect.y, rect.width, rect.height);
 #if 1 && defined(FEAT_VISUALIZATION)
-  ss << "Calculated ROI x=" << rect.x << " y=" << rect.y
-    << " w=" << rect.width << " h=" << rect.height << "<br>";
+    ss << "Calculated ROI x=" << rect.x << " y=" << rect.y
+      << " w=" << rect.width << " h=" << rect.height << "<br>";
 #endif
 
+    cvSetImageROI(iplImg, rect);
 
-  double patchScale = 1.0; // Strange: = 1.0 * cvGetSize(iplImg).width / cvGetSize(iplImg).height;
-  //if ( patchScale > MAX_PATCH_SIZE) patchScale = sqrt(MAX_PATCH_SIZE / patchScale);
-  //else patchScale = 1.0;
+    double patchScale = 1.0; // Strange: = 1.0 * cvGetSize(iplImg).width / cvGetSize(iplImg).height;
+    //if ( patchScale > MAX_PATCH_SIZE) patchScale = sqrt(MAX_PATCH_SIZE / patchScale);
+    //else patchScale = 1.0;
 
-  CvSize sz = cvGetSize(iplImg); // actually this is the size of ROI(=rect), not of the whole image
-  sz.width  *= patchScale;
-  sz.height *= patchScale;
+    CvSize sz = cvGetSize(iplImg); // actually this is the size of ROI(=rect), not of the whole image
+    sz.width  *= patchScale;
+    sz.height *= patchScale;
 
-  // iplPatch: The patch obtained from the SOI
-  IplImage *iplPatch = cvCreateImage(sz, iplImg->depth, iplImg->nChannels);;
-  cvResize(iplImg, iplPatch, CV_INTER_LINEAR );
-
-  // debug("Adjusted ROI size(*patchScale)=%dx%d", sz.width, sz.height);
+    debug("Adjusted ROI size(*patchScale)=%dx%d", sz.width, sz.height);
 #if 1 && defined(FEAT_VISUALIZATION)
-  ss << "Adjusted ROI: " << " w=" << sz.width << " h=" << sz.height << "<br>";
+    ss << "Adjusted ROI: " << " w=" << sz.width << " h=" << sz.height << "<br>";
 #endif
 
-  IplImage *iplPatchHLS = cvCreateImage(sz, IPL_DEPTH_8U, iplPatch->nChannels);
-  cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
+    // iplPatch: The patch obtained from the SOI
+    IplImage *iplPatch = cvCreateImage(sz, iplImg->depth, iplImg->nChannels);;
+    cvResize(iplImg, iplPatch, CV_INTER_LINEAR );
 
-  vector<CvPoint> projPoints, bgProjPoints, errProjPoints;
-  vector<int>  hullPoints;    
+    IplImage *iplPatchHLS = cvCreateImage(sz, IPL_DEPTH_8U, iplPatch->nChannels);
+    cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
 
-  //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
-  project3DPoints(soiPtr->points, *roiPtr, patchScale, image.camPars, projPoints, hullPoints);
-  project3DPoints(soiPtr->BGpoints, *roiPtr, patchScale, image.camPars, bgProjPoints, hullPoints);
+    vector<CvPoint> projPoints, bgProjPoints, errProjPoints;
+    vector<int>  hullPoints;    
 
-  // log("window size %i vs %i vs %i", soiPtr->BGpoints.size(), soiPtr->points.size(), MAX_COLOR_SAMPLE);
-  CvSize colSize = cvSize(
-      min(
-        (int) max(soiPtr->BGpoints.size(), soiPtr->points.size()),
-        MAX_COLOR_SAMPLE)
-      *COLOR_SAMPLE_IMG_WIDTH,
-      COLOR_SAMPLE_IMG_HEIGHT*3);
+    //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
+    project3DPoints(soiPtr->points, *roiPtr, patchScale, image.camPars, projPoints, hullPoints);
+    project3DPoints(soiPtr->BGpoints, *roiPtr, patchScale, image.camPars, bgProjPoints, hullPoints);
 
-  colorFiltering = cvCreateImage(colSize,  IPL_DEPTH_8U, 3);
-  cvSetZero(colorFiltering);
+    // log("window size %i vs %i vs %i", soiPtr->BGpoints.size(), soiPtr->points.size(), MAX_COLOR_SAMPLE);
+    CvSize colSize = cvSize(
+        min(
+          (int) max(soiPtr->BGpoints.size(), soiPtr->points.size()),
+          MAX_COLOR_SAMPLE)
+        *COLOR_SAMPLE_IMG_WIDTH,
+        COLOR_SAMPLE_IMG_HEIGHT*3);
 
-  //  colorDest = bgColors; //HACK
-  filterFlag = false;
-  IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false); 
+    colorFiltering = cvCreateImage(colSize,  IPL_DEPTH_8U, 3);
+    cvSetZero(colorFiltering);
 
-  //  colorDest = objColors; //HACK
-  filterFlag = true;
-  IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
+    //  colorDest = bgColors; //HACK
+    filterFlag = false;
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false); 
 
-  SegmentMask smallSegMask;
-  smallSegMask.width  = iplPatch->width;   // == rect.width  * patchScale
-  smallSegMask.height = iplPatch->height;  // == rect.height * patchScale
+    //  colorDest = objColors; //HACK
+    filterFlag = true;
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
 
-  smallSegMask.data = graphCut(smallSegMask.width, smallSegMask.height, 3, costPatch, bgCostPatch);
+    SegmentMask smallSegMask;
+    smallSegMask.width  = iplPatch->width;   // == rect.width  * patchScale
+    smallSegMask.height = iplPatch->height;  // == rect.height * patchScale
 
-  segPoints = filter3DPoints(soiPtr->points, projPoints, errProjPoints, smallSegMask);
+    smallSegMask.data = graphCut(smallSegMask.width, smallSegMask.height, 3, costPatch, bgCostPatch);
 
-  segMask.width  = smallSegMask.width  * (inputScale / patchScale);
-  segMask.height = smallSegMask.height * (inputScale / patchScale);
+    segPoints = filter3DPoints(soiPtr->points, projPoints, errProjPoints, smallSegMask);
 
-  IplImage *smallIplMask = convertBytesToIpl(smallSegMask.data, smallSegMask.width, smallSegMask.height, 1);
-  IplImage *largeIplMask = cvCreateImage( cvSize(segMask.width, segMask.height), IPL_DEPTH_8U, 1);
-  cvResize(smallIplMask, largeIplMask, CV_INTER_NN);
+    segMask.width  = smallSegMask.width  * (inputScale / patchScale);
+    segMask.height = smallSegMask.height * (inputScale / patchScale);
 
-  convertIplToBytes(largeIplMask, segMask.data);
+    IplImage *smallIplMask = convertBytesToIpl(smallSegMask.data, smallSegMask.width, smallSegMask.height, 1);
+    IplImage *largeIplMask = cvCreateImage( cvSize(segMask.width, segMask.height), IPL_DEPTH_8U, 1);
+    cvResize(smallIplMask, largeIplMask, CV_INTER_NN);
+
+    convertIplToBytes(largeIplMask, segMask.data);
 
 #if 1 && defined(FEAT_VISUALIZATION)
-  ss << "--- Scale mask ---<br>";
-  ss << "Small Patch Size w=" << smallSegMask.width << " h=" << smallSegMask.height << "<br>";
-  ss << "Full Patch Size w=" << segMask.width << " h=" << segMask.height << "<br>";
+    ss << "--- Scale mask ---<br>";
+    ss << "Small Patch Size w=" << smallSegMask.width << " h=" << smallSegMask.height << "<br>";
+    ss << "Full Patch Size w=" << segMask.width << " h=" << segMask.height << "<br>";
 #endif
 
-  //Make the small and large segmentation masks displayable
-  bool protoObj = false;
-  for(int y = 0; y < smallIplMask->height; y++) {
-    int iRow = y*smallIplMask->widthStep;
-    int i = iRow;
-    for(int x = 0; x < smallIplMask->width; x++) {
-      if(smallIplMask->imageData[i] == 1) protoObj = true;
-      smallIplMask->imageData[i] *= 120;
-      i++;
-    }
-  }
-
-  for(int y = 0; y < largeIplMask->height; y++) {
-    int iRow = y*largeIplMask->widthStep;
-    int i = iRow;
-    for(int x = 0; x < largeIplMask->width; x++) {
-      largeIplMask->imageData[i] *= 120;
-      i++;
-    }
-  }
-
-  {
-    // XXX We assume that inputScale >= 1.0; otherwise the scaling will loose data
-    IplImage *iplFull = convertImageToIpl(imageLarge);
-    // Calculate rectLarge (in imageLarge) from rect (in image/small)
-    CvRect rectLarge;
-    rectLarge.x = rect.x * inputScale;
-    rectLarge.y = rect.y * inputScale;
-    rectLarge.width  = segMask.width;  // == rect.width  * inputScale
-    rectLarge.height = segMask.height; // == rect.height * inputScale
-
-    if (pProto.get()) { // (review2010)
-      pProto->sourceImageSize.x = imageLarge.width;
-      pProto->sourceImageSize.y = imageLarge.height;
-      pProto->imageOrigin.x = rectLarge.x;
-      pProto->imageOrigin.y = rectLarge.y;
+    //Make the small and large segmentation masks displayable
+    for(int y = 0; y < smallIplMask->height; y++) {
+      int iRow = y*smallIplMask->widthStep;
+      int i = iRow;
+      for(int x = 0; x < smallIplMask->width; x++) {
+        if(smallIplMask->imageData[i] == 1) protoObj = true;
+        smallIplMask->imageData[i] *= 120;
+        i++;
+      }
     }
 
-    CvSize sz = cvGetSize(iplFull);
+    for(int y = 0; y < largeIplMask->height; y++) {
+      int iRow = y*largeIplMask->widthStep;
+      int i = iRow;
+      for(int x = 0; x < largeIplMask->width; x++) {
+        largeIplMask->imageData[i] *= 120;
+        i++;
+      }
+    }
+
+    {
+      // XXX We assume that inputScale >= 1.0; otherwise the scaling will loose data
+      IplImage *iplFull = convertImageToIpl(imageLarge);
+      // Calculate rectLarge (in imageLarge) from rect (in image/small)
+      CvRect rectLarge;
+      rectLarge.x = rect.x * inputScale;
+      rectLarge.y = rect.y * inputScale;
+      rectLarge.width  = segMask.width;  // == rect.width  * inputScale
+      rectLarge.height = segMask.height; // == rect.height * inputScale
+
+      if (pProto.get()) { // (review2010)
+        pProto->sourceImageSize.x = imageLarge.width;
+        pProto->sourceImageSize.y = imageLarge.height;
+        pProto->imageOrigin.x = rectLarge.x;
+        pProto->imageOrigin.y = rectLarge.y;
+      }
+
+      CvSize sz = cvGetSize(iplFull);
 #if 1 && defined(FEAT_VISUALIZATION)
-    ss << "--- Scale patch ---<br>";
-    ss << "Full Image getSize w=" << sz.width << " h=" << sz.height << "<br>";
-    ss << "Full Image ROI x=" << rectLarge.x << " y=" << rectLarge.y
-      << " w=" << rectLarge.width << " h=" << rectLarge.height << "<br>";
+      ss << "--- Scale patch ---<br>";
+      ss << "Full Image getSize w=" << sz.width << " h=" << sz.height << "<br>";
+      ss << "Full Image ROI x=" << rectLarge.x << " y=" << rectLarge.y
+        << " w=" << rectLarge.width << " h=" << rectLarge.height << "<br>";
 #endif
 
-    cvSetImageROI(iplFull, rectLarge);
-    sz = cvGetSize(iplFull);
+      cvSetImageROI(iplFull, rectLarge);
+      sz = cvGetSize(iplFull);
 #if 1 && defined(FEAT_VISUALIZATION)
-    ss << "Full Patch Size w=" << sz.width << " h=" << sz.height << "<br>";
+      ss << "Full Patch Size w=" << sz.width << " h=" << sz.height << "<br>";
 #endif
-    IplImage *iplPatchFull = cvCreateImage(sz, iplFull->depth, iplFull->nChannels);
-    cvResize(iplFull, iplPatchFull, CV_INTER_LINEAR );
-    convertImageFromIpl(iplPatchFull, imgPatch);
-    cvReleaseImage(&iplFull);
-    cvReleaseImage(&iplPatchFull);
-  }
+      IplImage *iplPatchFull = cvCreateImage(sz, iplFull->depth, iplFull->nChannels);
+      cvResize(iplFull, iplPatchFull, CV_INTER_LINEAR );
+      convertImageFromIpl(iplPatchFull, imgPatch);
+      cvReleaseImage(&iplFull);
+      cvReleaseImage(&iplPatchFull);
+    }
 
-  if (doDisplay)
-  {
-    drawProjectedSOIPoints(iplPatch, projPoints, bgProjPoints, errProjPoints, hullPoints);
-    cvResetImageROI(iplImg);
-    cvRectangle(iplImg, cvPoint(roiPtr->rect.pos.x-1, roiPtr->rect.pos.y-1),
-        cvPoint(roiPtr->rect.pos.x+1, roiPtr->rect.pos.y+1),
-        CV_RGB(0,255,0));
-    cvRectangle(iplImg, cvPoint(rect.x, rect.y),
-        cvPoint(rect.x + rect.width, rect.y + rect.height),
-        CV_RGB(0,255,0));
+    if (doDisplay)
+    {
+      drawProjectedSOIPoints(iplPatch, projPoints, bgProjPoints, errProjPoints, hullPoints);
+      cvResetImageROI(iplImg);
+      cvRectangle(iplImg, cvPoint(roiPtr->rect.pos.x-1, roiPtr->rect.pos.y-1),
+          cvPoint(roiPtr->rect.pos.x+1, roiPtr->rect.pos.y+1),
+          CV_RGB(0,255,0));
+      cvRectangle(iplImg, cvPoint(rect.x, rect.y),
+          cvPoint(rect.x + rect.width, rect.y + rect.height),
+          CV_RGB(0,255,0));
 
 #ifdef FEAT_VISUALIZATION
-    if (pDisplay)
-    {
-      pDisplay->setImage("soif.Full image", iplImg);
-      pDisplay->setImage("soif.Color Filtering", colorFiltering);
-    }
+      if (pDisplay)
+      {
+        pDisplay->setImage("soif.Full image", iplImg);
+        pDisplay->setImage("soif.Color Filtering", colorFiltering);
+      }
 #else
-    cvShowImage("Full image", iplImg);
-    cvShowImage("Color Filtering", colorFiltering);
+      cvShowImage("Full image", iplImg);
+      cvShowImage("Color Filtering", colorFiltering);
 #endif
 
-    CvSize size = cvGetSize(iplPatch);
+      CvSize size = cvGetSize(iplPatch);
 
-    IplImage *tetraPatch = cvCreateImage(cvSize(size.width*2, size.height*2), IPL_DEPTH_8U, 3);
+      cv::Ptr<IplImage> tetraPatch = cvCreateImage(cvSize(size.width*2, size.height*2), IPL_DEPTH_8U, 3);
 
-    cvSetImageROI(tetraPatch, cvRect( 0, 0, size.width, size.height) );
-    cvCopyImage(iplPatch, tetraPatch);
-    cvSetImageROI(tetraPatch, cvRect( size.width, 0, size.width, size.height) );
-    cvCvtColor(smallIplMask, tetraPatch, CV_GRAY2RGB);
-    cvSetImageROI(tetraPatch, cvRect( 0, size.height, size.width, size.height) );
-    cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
-    cvSetImageROI(tetraPatch, cvRect( size.width, size.height, size.width, size.height) );
-    cvCvtColor(bgCostPatch, tetraPatch, CV_GRAY2RGB);
+      cvSetImageROI(tetraPatch, cvRect( 0, 0, size.width, size.height) );
+      cvCopyImage(iplPatch, tetraPatch);
+      cvSetImageROI(tetraPatch, cvRect( size.width, 0, size.width, size.height) );
+      cvCvtColor(smallIplMask, tetraPatch, CV_GRAY2RGB);
+      cvSetImageROI(tetraPatch, cvRect( 0, size.height, size.width, size.height) );
+      cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
+      cvSetImageROI(tetraPatch, cvRect( size.width, size.height, size.width, size.height) );
+      cvCvtColor(bgCostPatch, tetraPatch, CV_GRAY2RGB);
 
-    cvResetImageROI(tetraPatch);
+      cvResetImageROI(tetraPatch);
 
 #ifdef FEAT_VISUALIZATION
-    if (pDisplay)
-    {
-      pDisplay->setImage(ID_OBJ_LAST_SEGMENTATION, tetraPatch);
-      pDisplay->setImage("soif.Large segmentation mask", largeIplMask);
-    }
+      if (pDisplay)
+      {
+        pDisplay->setImage(ID_OBJ_LAST_SEGMENTATION, tetraPatch);
+        pDisplay->setImage("soif.Large segmentation mask", largeIplMask);
+      }
 #else
-    cvShowImage("Last ROI Segmentation", tetraPatch);
+      cvShowImage("Last ROI Segmentation", tetraPatch);
 #endif
-
-    cvReleaseImage(&tetraPatch);
-
 
 #if 0 // Barry Code
-    // temp HACK OUTPUT
-    string id =  newDataID();
-    string patchName = string("xdata/patch") + id + string(".bmp");
-    string segName = string("xdata/segmentation") + id + string(".bmp");
-    string listName = string("xdata/points") + id + string(".txt");
+      // temp HACK OUTPUT
+      string id =  newDataID();
+      string patchName = string("xdata/patch") + id + string(".bmp");
+      string segName = string("xdata/segmentation") + id + string(".bmp");
+      string listName = string("xdata/points") + id + string(".txt");
 
-    cvSaveImage(patchName.c_str(), iplPatch)
+      cvSaveImage(patchName.c_str(), iplPatch);
       cvSaveImage(segName.c_str(), segPatch);
 
-    filebuf points;
-    points.open(listName.c_str(), ios::out);
-    ostream os(&points);
+      filebuf points;
+      points.open(listName.c_str(), ios::out);
+      ostream os(&points);
 
-    for(size_t i = 0; i < soiPtr->points.size(); i++)
-      os << soiPtr->points[i].p.x << " " << soiPtr->points[i].p.y << " " << soiPtr->points[i].p.z << "\n";
+      for(size_t i = 0; i < soiPtr->points.size(); i++)
+        os << soiPtr->points[i].p.x << " " << soiPtr->points[i].p.y << " " << soiPtr->points[i].p.z << "\n";
 
-    points.close();
+      points.close();
 #endif
 
-  }
+    }
 
-  cvReleaseImage(&iplPatch);
-  cvReleaseImage(&iplImg);
-  cvReleaseImage(&iplPatchHLS);
-  cvReleaseImage(&smallIplMask);
-  cvReleaseImage(&largeIplMask);
-  cvReleaseImage(&costPatch);
-  cvReleaseImage(&bgCostPatch);
-  cvReleaseImage(&colorFiltering);
+    // TODO These should be outside of try/catch, or declared as cv::Ptr<IplImage>
+    cvReleaseImage(&iplPatch);
+    cvReleaseImage(&iplImg);
+    cvReleaseImage(&iplPatchHLS);
+    cvReleaseImage(&smallIplMask);
+    cvReleaseImage(&largeIplMask);
+    cvReleaseImage(&costPatch);
+    cvReleaseImage(&bgCostPatch);
+    cvReleaseImage(&colorFiltering);
+  }
+  catch (exception& e) {
+    error(" *** ERROR in GraphCutSegmenter::segmentObject ***");
+    error(" *** exception.what():\n%s\n", e.what());
+    error(" ***");
+#if defined(FEAT_VISUALIZATION)
+    ss << "<br> *** ERROR : <br>" << string(e.what()) << "<br> ***<br>";
+#endif
+  }
 
 #if 1 && defined(FEAT_VISUALIZATION)
     if (pDisplay)

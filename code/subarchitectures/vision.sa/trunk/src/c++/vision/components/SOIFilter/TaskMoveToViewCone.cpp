@@ -40,13 +40,13 @@ void WmTaskExecutor_MoveToViewCone::moveToViewCone(WmEvent *pEvent)
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
 
-  pSoiFilter->println("MoveToViewConeCommand %s", pEvent->wmc.address.id.c_str());
+  println("MoveToViewConeCommand %s", pEvent->wmc.address.id.c_str());
 
   if (!cmd.read(pEvent->wmc.address)) {
-    pSoiFilter->debug("move_to: MoveToViewConeCommand deleted while working.");
+    debug("move_to: MoveToViewConeCommand deleted while working.");
     return;
   }
-  pSoiFilter->debug("move_to: GOT A MoveToViewConeCommand");
+  debug("move_to: GOT A MoveToViewConeCommand");
 
   if (! pSoiFilter->hasPtz())
     cmd.fail();
@@ -60,7 +60,7 @@ void WmTaskExecutor_MoveToViewCone::moveToViewCone(WmEvent *pEvent)
       cmd.succeed();
     }
     catch (cast::DoesNotExistOnWMException) {
-      pSoiFilter->debug("move_to: ViewCone deleted while working.");
+      debug("move_to: ViewCone deleted while working.");
       cmd.fail();
     }
   }
@@ -79,13 +79,13 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
     virtual void doSucceed() { pcmd->status = VisionData::VCSUCCEEDED; }
   } cmd(pSoiFilter);
 
-  pSoiFilter->println("LookAroundCommand %s", pEvent->wmc.address.id.c_str());
+  println("LookAroundCommand %s", pEvent->wmc.address.id.c_str());
 
   if (!cmd.read(pEvent->wmc.address)) {
-    pSoiFilter->debug("move_to: LookAroundCommand deleted while working.");
+    debug("move_to: LookAroundCommand deleted while working.");
     return;
   }
-  pSoiFilter->debug("move_to: GOT A LookAroundCommand");
+  debug("move_to: GOT A LookAroundCommand");
 
   if (! pSoiFilter->hasPtz())
     cmd.fail();

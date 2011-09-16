@@ -11,6 +11,7 @@
 
 #include "GCoptimization.h"
 
+#include <castutils/CastLoggerMixin.hpp>
 #include <VisionData.hpp>
 #include <PointCloud.hpp>
 #include <PointCloudClient.h>
@@ -28,6 +29,7 @@ namespace cast
 {
 
 class GraphCutSegmenter
+  : public castutils::CCastLoggerMixin
 {
   /**
   * Segmentation tolerances for distance and hsl
