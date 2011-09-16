@@ -22,22 +22,44 @@ namespace cast {
 // Removes the successfully locked locks on destruction (eg. exiting scope)
 struct WmUnlocker
 {
+  class LockError: public std::exception
+  {
+    std::string reason;
+  public:
+    LockError(const std::string& error = "")
+    {
+      reason = error;
+    }
+    ~LockError() throw()
+    {
+    }
+    const char* what() const throw()
+    {
+      return reason.c_str();
+    }
+  };
+
   std::vector<cdl::WorkingMemoryAddress> locks;
   cast::WorkingMemoryAttachedComponent *pc;
   WmUnlocker(cast::WorkingMemoryAttachedComponent* pComponent) {
     pc = pComponent;
   }
   void lock(cdl::WorkingMemoryAddress& addr, cdl::WorkingMemoryPermissions perm) {
-    pc->lockEntry(addr, perm);
+    if (!pc->tryLockEntry(addr, perm))
+      throw LockError("Trying to lock object: " + addr.id);
     locks.push_back(addr);
   }
-  ~WmUnlocker() {
+  void unlockAll()
+  {
     for (int i = 0; i < locks.size(); ++i) {
       try {
         pc->unlockEntry(locks[i]);
       }
       catch(cast::DoesNotExistOnWMException){ }
     }
+  }
+  ~WmUnlocker() {
+    unlockAll();
   }
 };
 
@@ -53,17 +75,17 @@ struct WmUnlocker
  */
 void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
-  pSoiFilter->debug("SOIFilter::handle_add_soi");
+  debug("SOIFilter::handle_add_soi");
   SOIPtr psoi;
   try {
     psoi = pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
   }
   catch(cast::DoesNotExistOnWMException){
-    pSoiFilter->log("SOIFilter.add_soi: SOI deleted while working...");
+    log("SOIFilter.add_soi: SOI deleted while working...");
     return;
   }
 
-  pSoiFilter->println("Handle SOI %s", pEvent->wmc.address.id.c_str());
+  println("Handle SOI %s", pEvent->wmc.address.id.c_str());
 
   pSoiFilter->updateRobotPosePtz();
 
@@ -80,12 +102,12 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     // anything, except if we want to analyze the object in the center.
 
     ProtoObjectPtr pobj;
-    pSoiFilter->log("FIND SOI '%s'", psoirec->addr.id.c_str());
+    log("FIND SOI '%s'", psoirec->addr.id.c_str());
     ProtoObjectRecordPtr pporec = pSoiFilter->findProtoObjectAt(psoi);
     if (pporec.get())
       pobj = pporec->pobj;
     if (pobj.get()) {
-      pSoiFilter->log("SOI '%s' belongs to a known ProtoObject", psoirec->addr.id.c_str());
+      log("SOI '%s' belongs to a known ProtoObject", psoirec->addr.id.c_str());
       // XXX: Do we update the PO with the new SOI?
       // XXX: The object recognizer should verify if this is the same object
       psoirec->protoObjectAddr = pporec->addr;
@@ -93,7 +115,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     }
 
     if (psoi->boundingSphere.pos.x < 0.6 && psoi->boundingSphere.pos.z < 0.5) {
-      pSoiFilter->log("SOI '%s' could be the Katana arm.", psoirec->addr.id.c_str());
+      log("SOI '%s' could be the Katana arm.", psoirec->addr.id.c_str());
       // XXX: may be looking at the katana arm, ignore
       return;
     }
@@ -125,7 +147,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     double tiltDelta = 0;
     Video::CameraParameters camPars;
     if (! pSoiFilter->m_coarsePointCloud.getCameraParameters(Math::LEFT, camPars)) {
-      pSoiFilter->println("FAILED to get the camera parameters from '%s'",
+      println("FAILED to get the camera parameters from '%s'",
           pSoiFilter->m_coarsePcServer.c_str());
     }
     else {
@@ -144,6 +166,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       // how far from the center of the LEFT image is the SOI
       dirDelta  = -atan( (rcx - camPars.cx) / camPars.fx); // negative pan is to the right
       tiltDelta = -atan( (rcy - camPars.cy) / camPars.fy); // y is inverted between image and tilt
+      log("Angle to SOI: pan %g, tilt %g", dirDelta, tiltDelta);
 
 #if defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
       // draw the thing
@@ -189,7 +212,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pobj->desiredLocations.push_back(vcPtr);
 
     // Add PO to WM
-    pSoiFilter->debug("Adding new ProtoObject '%s'", objId.c_str());
+    debug("Adding new ProtoObject '%s'", objId.c_str());
     pSoiFilter->addToWorkingMemory(objId, pobj);
 
     // Now it is up to the planner to create a plan to move the robot
@@ -207,7 +230,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   }
   else if (psoi->sourceId == pSoiFilter->m_fineSource)
   {
-    pSoiFilter->error("*** Received a SOI from a source of fine SOIs. ***");
+    error("*** Received a SOI from a source of fine SOIs. ***");
     // This should never happen! Fine SOIs are retrieved with a WM command
     // in TaskAnalyzePo:
     //
@@ -229,14 +252,14 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
   const cdl::WorkingMemoryChange &wmc = pEvent->wmc;
   SoiRecordPtr psoirec;
 
-  pSoiFilter->println("Handle SOI %s DELETE", wmc.address.id.c_str());
+  println("Handle SOI %s DELETE", wmc.address.id.c_str());
 
   try {
     psoirec = pSoiFilter->m_sois.get(wmc.address);
   }
   catch(range_error &e) {
     // Unknown SOI, nothing to do
-    pSoiFilter->error("Removing a SOI that was not registered.");
+    error("Removing a SOI that was not registered.");
     return;
   }
 
@@ -261,7 +284,10 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 
       if (! hasMoreSois) {
         // The PO is not visible any more
-        MakeInvisible(psoirec->protoObjectAddr);
+        // TODO: MakeInvisible(psoirec->protoObjectAddr);
+      }
+      else {
+        log("PO %s has more SOIs", psoirec->protoObjectAddr.id.c_str());
       }
     }
   }
@@ -269,14 +295,14 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 
 void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAddr)
 {
-  pSoiFilter->println("Make Invisible PO:%s", protoObjectAddr.id.c_str());
+  println("Make Invisible PO:%s", protoObjectAddr.id.c_str());
 
   ProtoObjectRecordPtr pporec;
   try {
     pporec = pSoiFilter->m_protoObjects.get(protoObjectAddr);
   }
   catch(range_error& e) {
-    pSoiFilter->error("A deleted SOI belonged to an already deleted PO");
+    error("A deleted SOI belonged to an already deleted PO");
     return;
   }
 
@@ -289,41 +315,54 @@ void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAdd
   // We have a link between VO and PO => load both objects and remove the link
   WmUnlocker locker(pSoiFilter);
 
-  try {
-    ProtoObjectPtr ppo;
+  long lockRetries = 5;
+  while (lockRetries > 0) {
+    --lockRetries;
     try {
-      locker.lock(pporec->addr, cdl::LOCKEDOD);
-      // XXX: ppo->visualObject has info about the VO to link to when the PO re-appears
+      string ot;
+      try {
+        ot = "PO";
+        locker.lock(pporec->addr, cdl::LOCKEDOD);
+        ot = "VO";
+        locker.lock(pvorec->addr, cdl::LOCKEDOD);
+      }
+      catch(WmUnlocker::LockError& e) {
+        // We may have a racing condition. Unlock all and retry.
+        locker.unlockAll();
+        usleep(100 * 1000);
+        if (lockRetries <= 0)
+          throw WmUnlocker::LockError("Could not lock PO+VO");
+        continue;
+      }
+      catch(cast::DoesNotExistOnWMException){
+        error("An internal " + ot + "record exists for a non-existing wm-" + ot + ".");
+      }
+
+      ProtoObjectPtr ppo;
+      // NOTE: ppo->visualObject has info about the VO to link to when the PO re-appears
       // => so DON'T DELETE
       // ppo = pSoiFilter->getMemoryEntry<VisionData::ProtoObject>(pporec->addr);
       // ppo->visualObject.clear(); // why-oh-why is this a vector ...
       // pSoiFilter->overwriteWorkingMemory<VisionData::ProtoObject>(pporec->addr, ppo);
       // pSoiFilter->saveProtoObjectData(ppo, pporec->pobj);
-    }
-    catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->error("An internal PO record exists for a non-existing wm-PO.");
-    }
 
-    VisualObjectPtr pvo;
-    try {
-      locker.lock(pvorec->addr, cdl::LOCKEDOD);
+      VisualObjectPtr pvo;
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
       pvo->lastProtoObject = pvo->protoObject;
       pvo->protoObject = createWmPointer<VisionData::ProtoObject>();
       pSoiFilter->overwriteWorkingMemory<VisionData::VisualObject>(pvorec->addr, pvo);
       pSoiFilter->saveVisualObjectData(pvo, pvorec->pobj);
     }
-    catch(cast::DoesNotExistOnWMException){
-      pSoiFilter->error("An internal VO record exists for a non-existing wm-VO.");
+    catch(std::exception& e) {
+      error(
+          "Something went wrong when updating the link between VO and PO."
+          " The error is: %s", e.what());
     }
-  }
-  catch(std::exception& e) {
-    pSoiFilter->error(
-        "Something went wrong when updating the link between VO and PO."
-        " The error is: %s", e.what());
-  }
-  catch(...) {
-    pSoiFilter->error("Something went wrong when updating the link between VO and PO");
+    catch(...) {
+      error("Something went wrong when updating the link between VO and PO");
+    }
+    lockRetries = 0;
+    break;
   }
 }
 

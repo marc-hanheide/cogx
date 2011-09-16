@@ -5,6 +5,7 @@
  */
 
 #include "TaskBase.h"
+#include "SOIFilter.h"
 #include <IceUtil/IceUtil.h>
 
 namespace cast {
@@ -17,6 +18,12 @@ long long WmEvent::getEventOrder()
   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(g_OrderMonitor);
   ++g_order;
   return g_order;
+}
+
+WmTaskExecutor::WmTaskExecutor(SOIFilter* soif)
+  : castutils::CCastLoggerMixin(soif)
+{
+  pSoiFilter = soif;
 }
 
 } // namespace

@@ -8,6 +8,7 @@
 #define _SOIFILTER_TASKBASE_H_
 
 #include <cast/architecture/ManagedComponent.hpp>
+#include <castutils/CastLoggerMixin.hpp>
 
 namespace cast {
 
@@ -36,16 +37,14 @@ private:
 };
 
 class SOIFilter;
-class WmTaskExecutor
+class WmTaskExecutor:
+  public castutils::CCastLoggerMixin
 {
-   protected:
-      SOIFilter* pSoiFilter;
-   public:
-      WmTaskExecutor(SOIFilter* soif)
-      {
-         pSoiFilter = soif;
-      }
-      virtual void handle(WmEvent *pEvent) = 0;
+protected:
+  SOIFilter* pSoiFilter;
+public:
+  WmTaskExecutor(SOIFilter* soif);
+  virtual void handle(WmEvent *pEvent) = 0;
 };
 
 } // namespace
