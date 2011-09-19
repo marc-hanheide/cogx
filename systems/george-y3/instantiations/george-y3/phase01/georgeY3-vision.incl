@@ -61,7 +61,7 @@ SETVAR SOIFilter_Params=<multiline>
    --ptzserver "%(ptzServerComponent)"
    --scene3d "PlanePopout.3D"
    %(wmBlocking)
-   # --display 
+   --display 
    #--log --debug
 </multiline>
 CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
@@ -88,14 +88,27 @@ CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 ##### Monitors
 
 JAVA MG vis.SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
+
 JAVA MG vis.proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact --omit-fields "image mask points"
+
 JAVA MG vis.visual.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact --omit-fields "points2d model"
-JAVA MG vis.visual.cmd.analyze castutils.viewer.V11WMViewerComponent --subscribe "VisionData.AnalyzeProtoObjectCommand" --displayserver "display.srv" --generic-col --compact
-# JAVA MG vis.learning.tasks castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearningTask" --displayserver "display.srv"
-# JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.WMRemoteProcedureCall" --displayserver "display.srv"
+
+JAVA MG vis.cmd.analyze castutils.viewer.V11WMViewerComponent --subscribe "VisionData.AnalyzeProtoObjectCommand" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.moveToVc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.MoveToViewConeCommand" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.lookAround castutils.viewer.V11WMViewerComponent --subscribe "VisionData.LookAroundCommand" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.learnTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearningTask" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.learnRecogTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearnerRecognitionTask" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.status castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualConceptModelStatus" --displayserver "display.srv" --generic-col --compact
+
 JAVA MG vis.camparam castutils.viewer.V11WMViewerComponent --subscribe "Video.CameraParametersWrapper" --displayserver "display.srv" --generic-col --compact
 
 
+# JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.WMRemoteProcedureCall" --displayserver "display.srv"
 #JAVA MG percepts castutils.viewer.V11WMViewerComponent --subscribe "eu.cogx.beliefs.slice.PerceptBelief" --displayserver "display.srv"
 #JAVA MG beliefs castutils.viewer.V11WMViewerComponent --subscribe "eu.cogx.beliefs.slice.GroundedBelief" --displayserver "display.srv"
 
