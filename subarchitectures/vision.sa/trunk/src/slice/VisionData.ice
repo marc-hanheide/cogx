@@ -507,9 +507,11 @@ enum VisionCommandStatus {
   };
 
   // A LookAroundCommand will make the robot look in a new direction
-  // to see if there is anything interesting.
+  // to see if there is anything interesting. It will generate ViewCones that
+  // could be visited.
   class LookAroundCommand {
     // the result passed on overwrite
+    ViewConeSeq viewCones;
     VisionCommandStatus status;
   };
 
