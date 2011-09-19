@@ -12,7 +12,7 @@ cwd=$(pwd)
 if [ ! -e "tools/v4r/BUILD" ]; then
    mkdir -p "tools/v4r/BUILD"
    cd tools/v4r/BUILD
-   cmake ..
+   cmake -C ../cmake-settings-cogx.txt ..
    cd $cwd
 fi
 
