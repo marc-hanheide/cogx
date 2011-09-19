@@ -271,13 +271,28 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}
 
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
-ADD_CUSTOM_TARGET( ant_build ALL )
-	ADD_CUSTOM_COMMAND(
-		TARGET  ant_build
-		COMMAND ant -Dcastslice.dir=${CAST_SLICE_DIR} -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar -Dice.jar=${ICE_HOME}/share/java/Ice.jar WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-     	)
+   ADD_CUSTOM_TARGET( ant_build ALL )
+   ADD_CUSTOM_COMMAND(
+      TARGET  ant_build
+      COMMAND ant
+	 -Dcastslice.dir=${CAST_SLICE_DIR}
+	 -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar
+	 -Dice.jar=${ICE_HOME}/share/java/Ice.jar
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
 endif(DO_ANT)
+
+option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
+if(DO_V4R_MAKE)
+   add_custom_target( v4r_build ALL )
+   add_custom_command(
+      TARGET  v4r_build
+      COMMAND bash cmake/makev4r.sh
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+endif()
 
 MESSAGE(STATUS " * Build type: " ${CMAKE_BUILD_TYPE})
 MESSAGE(STATUS " * Do Ant: " ${DO_ANT})
+MESSAGE(STATUS " * Do make V4R: " ${DO_V4R_MAKE})
 MESSAGE(STATUS " * Use ccache: " ${USE_CCACHE})
