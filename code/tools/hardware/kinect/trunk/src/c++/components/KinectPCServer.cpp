@@ -160,7 +160,7 @@ void KinectPCServer::runComponent() {
 		log("Displaying window");
 		cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
 	}
-	cvWaitKey(100);
+	//cvWaitKey(100);
 
 	while(isRunning()) {
 		if (m_detectPersons) {
