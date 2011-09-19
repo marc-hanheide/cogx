@@ -23,7 +23,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 
 	private static final int TIME_WAIT_MS = 200;
 
-	private static final double TOLERANCE = 0.0005;
+	private static final double TOLERANCE = 0.001;
 
 	private static final int MAX_LOOPS = TIMEOUT_MS / TIME_WAIT_MS;
 
@@ -75,7 +75,6 @@ public class PanTiltZoomServer extends ManagedComponent {
 			SetPTZPoseCommand cmd = getMemoryEntry(_wmc.address,
 					SetPTZPoseCommand.class);
 
-			ptzInterface.setPose(cmd.pose);
 			logger.debug("moving to pose: " + cmd.pose.pan + ", " + cmd.pose.tilt);
 			
 			double different = Double.MAX_VALUE;
@@ -84,9 +83,7 @@ public class PanTiltZoomServer extends ManagedComponent {
 			
 			int loops = 0;
 			while (different >= TOLERANCE) {
-				currentPose = ptzInterface.getPose().pose;
-				different = ptzPosError(cmd.pose, currentPose);
-				logger.debug("Pan-Tilt motion diff: " + different);
+				ptzInterface.setPose(cmd.pose);
 				try {
 					Thread.sleep(TIME_WAIT_MS);
 					if (loops > MAX_LOOPS)
@@ -94,6 +91,9 @@ public class PanTiltZoomServer extends ManagedComponent {
 				} catch (InterruptedException e) {
 					logger.error(e);
 				}
+				currentPose = ptzInterface.getPose().pose;
+				different = ptzPosError(cmd.pose, currentPose);
+				logger.debug("Pan-Tilt motion diff: " + different);
 			}
 
 			if (ptzPosError(cmd.pose, currentPose) < TOLERANCE) {
