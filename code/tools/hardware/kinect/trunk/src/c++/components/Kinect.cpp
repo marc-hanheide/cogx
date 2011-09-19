@@ -109,8 +109,7 @@ bool Kinect::Init(const char *kinect_xml_file)
 
   rc = kinect::getDepthGenerator()->GetIntProperty("ZPD", depth_focal_length_SXGA);
   if (rc != XN_STATUS_OK)
-    printf("Kinect::Init: Error: Geting focal length failed.\n");
-
+    printf("Kinect::Init: Error: Geting depth focal length failed.\n");
 
   UserGenerator* userGenerator = kinect::getUserGenerator();
 
@@ -120,7 +119,6 @@ bool Kinect::Init(const char *kinect_xml_file)
 	  userGenerator->RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
 	 // userGenerator->GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
   }
-
 
   rgbWidth = 640;	/// TODO Get width and height from file!
   rgbHeight = 480;
@@ -133,7 +131,12 @@ bool Kinect::Init(const char *kinect_xml_file)
   
   centerX = (depWidth >> 1) - 0.5f;
   centerY = (depHeight >> 1) - 0.5f;
-  depth_focal_length_SXGA_ = (float)depth_focal_length_SXGA / pixel_size;
+
+  // PCL: This magic value is taken from a calibration routine, unless calibrated params are not supported we rely on thsi value!
+  const float rgb_focal_length_SXGA_ = 1050;
+//   depth_focal_length_SXGA_ = (float)depth_focal_length_SXGA / pixel_size;
+  depth_focal_length_SXGA_ = rgb_focal_length_SXGA_;
+  
   float output_x_resolution = rgbWidth;
   depthScale = output_x_resolution / (float)XN_SXGA_X_RES; 	// XN_SXGA_X_RES = 1280;
   depthFocalLength = depth_focal_length_SXGA_ * depthScale;
