@@ -50,11 +50,11 @@ echo "# also works with an existing CMakeCache.txt."
 mode="comment"
 if [ "$mode" == "nocomment" ]; then
    # Without descriptions
-   grep -e "\<AK.*:BOOL=" -e "\<APPS.*:BOOL=" -e "\<V4R.*:BOOL=" $fnin | \
+   grep -e "\<AK.*:BOOL=" -e "\<APPS.*:BOOL=" -e "\<V4R.*:BOOL=" -e "\<EXT_.*:BOOL=" -e "\<ENABLE_.*:BOOL=" $fnin | \
       sed -e "s/\\([^:]*\\):\\([^=]*\\)=\\(.*\\)$/set(\1 \3 CACHE \2 \"\")/"
 else
    # With descriptions
-   grep -B 1 -e "\<AK.*:BOOL=" -e "\<APPS.*:BOOL=" -e "\<V4R.*:BOOL=" $fnin | \
+   grep -B 1 -e "\<AK.*:BOOL=" -e "\<APPS.*:BOOL=" -e "\<V4R.*:BOOL=" -e "\<EXT_.*:BOOL=" -e "\<ENABLE_.*:BOOL=" $fnin | \
       tr "\"" "\'" | \
       sed -e "/^--/d" \
       -e "/\\/\\//N;""s/\\/\\/ *\\(.*\\)\\n\\([^:]*\\):\\([^=]*\\)=\\(.*\\)$/set(\2 \4 CACHE \3 \"\1\")/" \
