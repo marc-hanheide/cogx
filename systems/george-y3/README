@@ -34,6 +34,48 @@ between sed and the shell. Do the following:
   ccmake -C ../sysconfig/cmakecache/george-y3.txt  ..
 
 
+V4R library
+-----------
+
+The V4R library is built separately. By default it should be checked out into
+tools/v4r. To build it do:
+  
+   cd tools/v4r
+   mkdir BUILD
+   cd BUILD
+   cmake ..
+   make
+
+It may have to be configured manually to enable certain parts of the library.
+In this case use cmake-gui or ccmake.
+
+The library shouldn't be installed on the system. Instead the path to the
+include and lib files has to be set. This can be done in castcontrol.conf:
+
+   V4R_DIR=${COGX_ROOT}/tools/v4r
+
+   PATH=<pathlist>
+      # ...
+      ${PATH}
+      ${V4R_DIR}/bin
+   </pathlist>
+
+   LD_LIBRARY_PATH=<pathlist>
+      ${LD_LIBRARY_PATH}
+      ${V4R_DIR}/lib
+      # ...
+   </pathlist>
+
+Similar statements can be added to .profile, instead.
+
+It is also possible to build the library as a part of the main build using an
+external make process. This can be enabled with the option
+
+   DO_V4R_MAKE=ON
+
+in the CogX build configuration.
+
+
 Changing externals
 ==================
 
