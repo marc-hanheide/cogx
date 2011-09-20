@@ -115,16 +115,18 @@ public:
    //   0 - getRate returns 0
    double getRate(int numIntervals = -1)
    {
-      int pos;
+      int prevPos;
       if (numIntervals == 0) return 0;
       if (numIntervals < 0 || numIntervals >= (int) ticks.size())
-         pos = (tickInfoPos + 1) % ticks.size();
+         prevPos = (tickInfoPos + 1) % ticks.size();
       else
-         pos = (tickInfoPos - numIntervals) % ticks.size();
+         prevPos = (tickInfoPos - numIntervals) % ticks.size();
 
-      _tick_info_ now = ticks[tickInfoPos];
-      _tick_info_ then = ticks[pos];
-      return 1e6 * (now.tickCount - then.tickCount) / (now.useconds - then.useconds);
+      long long elapsed = ticks[tickInfoPos].useconds - ticks[prevPos].useconds;
+      if (elapsed < 1)
+         return 0;
+      long dticks = ticks[tickInfoPos].tickCount - ticks[prevPos].tickCount;
+      return 1e6 * dticks / elapsed;
    }
 };
 
