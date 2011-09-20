@@ -111,6 +111,7 @@ private:
    * Which camera to get images from
    */
   int camId;
+  bool m_bCameraMoving;
   /**
    * component ID of the video server to connect to
    */
@@ -205,6 +206,7 @@ public:
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
   void saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy);
+  bool isCameraStable();
 
 private:
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
@@ -219,6 +221,7 @@ private:
   void onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
   void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
+  void onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc);
   void connectPtz();
 
   IceUtil::Monitor<IceUtil::Mutex> m_FilterMonitor;

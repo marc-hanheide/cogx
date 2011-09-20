@@ -44,6 +44,7 @@ SOIFilter::SOIFilter()
   m_segmenter.pPcClient = &m_finePointCloud;
   m_snapper.logger = this;
   m_snapper.videoServer = videoServer;
+  m_bCameraMoving = false;
 
 #ifdef FEAT_VISUALIZATION
   m_segmenter.pDisplay = &m_display;
@@ -260,6 +261,13 @@ void SOIFilter::start()
   addChangeFilter(createGlobalTypeFilter<NavData::RobotPose2d>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onChange_RobotPose));  
+
+  addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onChange_CameraParameters));  
+  addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onChange_CameraParameters));  
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -364,7 +372,7 @@ void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogI
   if (dialogId == "PtuCtrl" && pFilter->ptzServer.get()) {
     //pFilter->println(" *** handleDialogCommand *** " + command);
     if (command == "sendStateToDialog") {
-      pFilter->println(" *** sendStateToDialog *** ");
+      pFilter->println(" *** PtuCtrl: sendStateToDialog *** ");
       ptz::PTZReading ptup;
       if (pFilter->ptzServer.get())
         ptup = pFilter->ptzServer->getPose();
@@ -533,7 +541,7 @@ void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
 
   ptz::PTZReading ptup;
   if (ptzServer.get())
-    ptup = ptzServer->getPose();
+    ptup = ptzServer->getPose(); // XXX: this is slow!
 
   {
     IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_FilterMonitor);
@@ -547,6 +555,44 @@ void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
     }
   }
   log("Got robot pose");
+}
+
+void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
+{
+  Video::CameraParametersWrapperPtr pcampar =
+    getMemoryEntry<Video::CameraParametersWrapper>(_wmc.address);
+  if (pcampar->cam.id != camId)
+    return;
+
+  // XXX: static, not thread safe
+  static castutils::CRunningRate rate;
+  static castutils::CMilliTimer endMoveTimeout;
+  static Vector3 prevrot = vector3(0, 0, 0);
+  rate.tick();
+
+  Vector3 rot;
+  toRotVector(pcampar->cam.pose.rot, rot);
+  Vector3 dr = rot - prevrot;
+  prevrot = rot;
+  double err = fabs(dr.x) + fabs(dr.y) + fabs(dr.z);
+    
+  if (err >= 0.01) {
+    log("Camera is MOVING. Sampling at %.2gHz.", rate.getRate());
+    //log("rot x: %.4g, y: %.4g, z: %.4g", rot.x, rot.y, rot.z);
+    m_bCameraMoving = true;
+    endMoveTimeout.restart();
+  }
+  else {
+    if (m_bCameraMoving && endMoveTimeout.elapsed() > 500) {
+      log("Camera STOPPED.");
+      m_bCameraMoving = false;
+    }
+  }
+}
+
+bool SOIFilter::isCameraStable()
+{
+  return ! m_bCameraMoving; // TODO && ! m_RobotMoving
 }
 
 void SOIFilter::updateRobotPosePtz()
