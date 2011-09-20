@@ -20,3 +20,5 @@ INCLUDE  ../../modules/gui-local.incl
 INCLUDE  dialogue-exe.cast
 
 #INCLUDE dialogue-dora-exe-fake.cast
+
+JAVA MG shared-tracker eu.cogx.sharedtracker.dora.SharedBeliefTracker --write-to-sa binder

@@ -5,8 +5,8 @@ VARDEFAULT planning_goal="(exists (?p - person) (kval (is-in ?p)))"
 
 COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config config.dora.ini
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
-INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
+INCLUDE planner-base.cast
+INCLUDE viz-plan.cast
 JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals %(planning_goal)
 # exection ####################################################################
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
