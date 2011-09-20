@@ -7,4 +7,4 @@ CPP MG	mlnengine MLNEngine --bsa binder.sa --inf "-ms -i subarchitectures/binder
 
 CPP MG	tester MLNTester --bsa binder.sa --rid "testid"  --log true # --display
 
-JAVA MG resultviewer castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "org.cognitivesystems.binder.mln.Result" --generic-col
+JAVA MG resultviewer castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "org.cognitivesystems.binder.mln.InferredResult" --generic-col

@@ -34,7 +34,9 @@ namespace cast
 class MLNClient : public MLNEvdProvider
 {
  private:
-  std::vector<std::string> m_evdEngIds;
+   map<string,MLNFact> m_filtFacts;
+   map<string,MLNFact> m_oldFacts;
+//  std::vector<std::string> m_evdEngIds;
   
 
  protected:

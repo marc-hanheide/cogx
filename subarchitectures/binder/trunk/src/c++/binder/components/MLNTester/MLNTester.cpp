@@ -99,9 +99,13 @@ void MLNTester::runComponent()
   // evidence from .db is not correctly initialized
   EvidencePtr evd = new Evidence();
   evd->engId = m_id;
-  evd->falseEvidence.push_back("percept(P1)");
-  evd->falseEvidence.push_back("percept(P2)");
-  evd->falseEvidence.push_back("percept(P3)");
+
+  evd->falseEvidence.push_back("percept(PH1)");
+  evd->falseEvidence.push_back("percept(PH2)");
+  evd->falseEvidence.push_back("percept(PH3)");
+  evd->falseEvidence.push_back("percept(PH4)");
+  evd->falseEvidence.push_back("percept(PH5)");
+  evd->falseEvidence.push_back("percept(PH6)");
   evd->initInfSteps = 400;
   evd->prevInfSteps = 0;
   evd->burnInSteps = 100;
@@ -138,8 +142,12 @@ void MLNTester::runComponent()
 	if(tstep == 3)
 	{
 	  EvidencePtr evd = new Evidence();
+	  Instance i;
+	  i.name="P1";
+	  i.type="perc";
+	  evd->newInstances.push_back(i);
 	  evd->engId = m_id;
-	  evd->trueEvidence.push_back("percept(P1)");
+//	  evd->trueEvidence.push_back("percept(P1)");
 	  evd->trueEvidence.push_back("feature(P1,VGreen)");
 	  evd->initInfSteps = 400;
 	  evd->prevInfSteps = 0;
@@ -168,8 +176,12 @@ void MLNTester::runComponent()
 	if(tstep == 25)
 	{
 	  EvidencePtr evd = new Evidence();
+	  Instance i;
+	  i.name="P2";
+	  i.type="perc";
+	  evd->newInstances.push_back(i);
 	  evd->engId = m_id;
-	  evd->trueEvidence.push_back("percept(P2)");
+//	  evd->trueEvidence.push_back("percept(P2)");
 //	  evd->trueEvidence.push_back("feature(P2,VRed)");
 	  evd->extPriors.push_back("feature(P2,VRed)");
 	  evd->priorWts.push_back(1);
@@ -182,7 +194,7 @@ void MLNTester::runComponent()
 	
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}
-	
+/*	
 	if(tstep == 40)
 	{
 	  LearnWtsPtr lw = new LearnWts();
@@ -194,13 +206,17 @@ void MLNTester::runComponent()
 	
 	  addToWorkingMemory(newDataID(), m_bindingSA, lw);
 	}
-	
+*/	
 	// and another red object
 	if(tstep == 50)
 	{
 	  EvidencePtr evd = new Evidence();
+	  Instance i;
+	  i.name="P3";
+	  i.type="perc";
+	  evd->newInstances.push_back(i);
 	  evd->engId = m_id;
-	  evd->trueEvidence.push_back("percept(P3)");
+//	  evd->trueEvidence.push_back("percept(P3)");
 	  evd->trueEvidence.push_back("feature(P3,VRed)");
 	  evd->initInfSteps = 400;
 	  evd->prevInfSteps = 0;
@@ -208,7 +224,7 @@ void MLNTester::runComponent()
   
 	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
 	}
-	
+/*	
 	if(tstep == 60)
 	{
 	  LearnWtsPtr lw = new LearnWts();
@@ -220,13 +236,17 @@ void MLNTester::runComponent()
 	
 	  addToWorkingMemory(newDataID(), m_bindingSA, lw);
 	}
-	
+*/	
 	// one of the red objects is removed
 	if(tstep == 75)
 	{
 	  EvidencePtr evd = new Evidence();
 	  evd->engId = m_id;
-	  evd->falseEvidence.push_back("percept(P2)");
+	  Instance inst;
+	  inst.name="P2";
+	  inst.type="perc";
+	  evd->removeInstances.push_back(inst);
+//	  evd->falseEvidence.push_back("percept(P2)");
 //	  evd->noEvidence.push_back("feature(P2,VRed)");
 	  evd->resetPriors.push_back("feature(P2,VRed)");
 	  evd->resetPriors.push_back("feature(P2,VBlue)");

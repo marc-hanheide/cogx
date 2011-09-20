@@ -10,16 +10,16 @@ resolution(perc)
 // objects are grounded
 // this keeps the size of the network managable even if the number of possible
 // percepts (|perc|) is significantly larger than 3
-perc={P1,P2,P3}
+perc={PH1,PH2,PH3,PH4,PH5,PH6}
 
 // -1.87115  feature(p,VRed)
--1.87115  feature(a1,VRed)
+-1.87115  feature(a1,VRed) v !percept(a1)
 
 // -1.87115  feature(p,VBlue)
--1.87115  feature(a1,VBlue)
+-1.87115  feature(a1,VBlue) v !percept(a1)
 
 // -1.87115  feature(p,VGreen)
--1.87115  feature(a1,VGreen)
+-1.87115  feature(a1,VGreen) v !percept(a1)
 
 // -1.87115  attribute(LRed)
 -1.87115  attribute(LRed)

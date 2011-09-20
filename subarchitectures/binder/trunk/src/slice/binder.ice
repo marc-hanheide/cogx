@@ -35,13 +35,21 @@ module binder {
 	
 module mln {
 
+	struct Instance {
+		string name;
+		string type;
+	};
+	
 	sequence<string> PredStrSeq;
 	sequence<string> IdSeq;
 	sequence<float> WeightSeq;
 	sequence<float> ProbSeq;
+	sequence<Instance> InstanceSeq;
 	
 	class Evidence {
 		string engId;
+		InstanceSeq newInstances;
+		InstanceSeq removeInstances;
 		PredStrSeq trueEvidence;
 		PredStrSeq falseEvidence;
 		PredStrSeq noEvidence;

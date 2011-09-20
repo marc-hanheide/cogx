@@ -415,6 +415,97 @@ class OnlineEngine
     }
   }
   
+  string addInstance(string type, string pred)
+  {
+  	const Domain* domain = inference_->getState()->getDomain();
+      
+    const PredicateTemplate* pt = domain->getPredicateTemplate(pred.c_str());
+    if (pt) {// && pt->getNumTerms() == 1 && pt->getTermTypeAsStr(0) == type.c_str()) {
+    	
+    	const Array<int>* inst = domain->getConstantsByType(type.c_str());
+    	
+    	for(int i=0; i<inst->size(); i++) {
+    		Predicate* p = new Predicate(pt);
+    		p->appendTerm(new Term(inst->item(i), (void*)p, true));
+    		assert(p->isGrounded());
+    		
+      		if(domain->getDB()->getValue(p) == FALSE ) {
+
+      			string placeh = string(domain->getConstantName(inst->item(i)));
+      			cout << "Activating constant placeholder '" << placeh << "." << endl;
+     			inference_->getState()->setAsEvidence(new GroundPredicate(p), true);		
+
+      			return placeh;
+      		}
+      	}   	
+    	cout << "WARNING: Too many instances. Could not add a new one." << endl;
+    	return "";
+    }
+    cout << "WARNING: Cannot form the predicate '" << pred <<"'." << endl;
+    return "";
+  }
+  
+  void removeInstance(string placeh, string pred)
+  {
+  	const Domain* domain = inference_->getState()->getDomain();
+      
+    const PredicateTemplate* pt = domain->getPredicateTemplate(pred.c_str());
+    if (pt) {// && pt->getNumTerms() == 1 && pt->getTermTypeAsStr(0) == type.c_str()) {
+    	
+    	Predicate* p = new Predicate(pt);
+    	int cid = domain->getConstantId(placeh.c_str());
+    	p->appendTerm(new Term(cid, (void*)p, true));
+    	assert(p->isGrounded());
+    		
+      	if(domain->getDB()->getValue(p) == TRUE ) {
+      		cout << "Deactivating constant placeholder '" << placeh << "." << endl;
+     		inference_->getState()->setAsEvidence(new GroundPredicate(p), false);		
+
+      		return;
+      	}
+      	cout << "WARNING: Placeholder costant '" << placeh << "' was not active." << endl;
+    	return;
+    }
+    cout << "WARNING: Cannot form the predicate '" << pred <<"'." << endl;
+  }
+/*  
+  void addInstance(string name, string type, string pred)
+  {
+  	const Domain* domain = inference_->getState()->getDomain();
+      
+    const PredicateTemplate* pt = domain->getPredicateTemplate(pred.c_str());
+    if (pt) {// && pt->getNumTerms() == 1 && pt->getTermTypeAsStr(0) == type.c_str()) {
+    	
+    	const Array<int>* inst = domain->getConstantsByType(type.c_str());
+    	ConstDualMap* cm = new ConstDualMap();
+    	bool inserted = false;
+    	
+    	for(int i=0; i<inst->size(); i++) {
+    		Predicate* p = new Predicate(pt);
+    		p->appendTerm(new Term(inst->item(i), (void*)p, true));
+    		assert(p->isGrounded());
+    		
+      		if(domain->getDB()->getValue(p) == FALSE && !inserted) {
+      			cout << "Replacing '" << string(domain->getConstantName(inst->item(i)))
+      				<< "' with '" << name << ";" << endl;
+      			cm->insert(name.c_str(), inst->item(i));
+      			inserted = true;
+      		}
+      		else
+      			cm->insert(domain->getConstantName(inst->item(i)), inst->item(i));
+      	}   	
+
+      	if(inserted) {
+      		inference_->getState()->setConstMap(cm);
+      		
+      		cout << "New instance successfully added." << endl;
+      	} else
+    		cout << "WARNING: Too many instances. Could not add a new one." << endl;
+    }
+    
+//  	inference_->getState()->addConstant(name, type);
+  }
+*/  
   void printNetwork(ostream& out)
   {
   	inference_->printNetwork(out);
@@ -885,6 +976,7 @@ class OnlineEngine
       // rest is constant1 , constant2 , ... )
     rest = rest.substr(leftPar+1);
     const PredicateTemplate* pt = domain->getPredicateTemplate(name.c_str());
+    
     if (pt)
     {
       Predicate* p = new Predicate(pt);
