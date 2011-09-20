@@ -8,6 +8,7 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <castutils/Timers.hpp>
 
 #include "cogxmath.h"
 #include "Video.hpp"
@@ -173,6 +174,8 @@ void CameraMount::runComponent()
   size_t size = camIds.size();
   bool camsAddedToWM[size];
 
+  castutils::CCastPaceMaker<CameraMount> paceMaker(*this, 1000/5, 1); // 5Hz
+
   for(size_t i = 0; i < size; i++)
     camsAddedToWM[i] = false;
   camWMIds.resize(camIds.size());
@@ -181,6 +184,8 @@ void CameraMount::runComponent()
 
   while(isRunning())
   {
+    paceMaker.sync();
+
     vector<Pose3> camPosesToEgo(camIds.size());
     cdl::CASTTime time;
     if(usePTZ)
@@ -216,8 +221,6 @@ void CameraMount::runComponent()
         camsAddedToWM[i] = true;
       }
     }
-    // HACK: should get rid of need for sleep
-    sleepComponent(200);
   }
 }
 
