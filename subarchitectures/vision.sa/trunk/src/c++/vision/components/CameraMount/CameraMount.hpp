@@ -100,6 +100,7 @@ protected:
 public:
   CameraMount();
   virtual ~CameraMount() {}
+  using CASTComponent::sleepComponent; // used by paceMaker in runComponent
 };
 
 #endif
