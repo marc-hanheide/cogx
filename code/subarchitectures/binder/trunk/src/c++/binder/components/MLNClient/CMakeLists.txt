@@ -11,7 +11,7 @@ SET(SOURCES MLNClient.cpp)
 
 add_cast_component(MLNClient ${SOURCES})
 
-link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder)
+link_cast_component(${CAST_COMPONENT_NAME}  BeliefsCAST Binder BeliefsCogX)
 
 
 

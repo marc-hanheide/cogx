@@ -35,20 +35,22 @@ class MLNEvdProvider :  public ManagedComponent
  private:
  
   /// List of MLN engine components we are providing evidence to
-  vector<string> m_evdEngIds;
+  vector<string> m_engIds;
   
   /// Name of the binder subarchitecture
   string m_bindingSA; 
   
-  /// Queue for WM entries containing serialized belief formulae
-  queue<MLNStatePtr> m_evdStQueue;
+  /// 
+  bool m_changedEvd;
   
-  vector<string> m_evdAtoms;
-  vector<double> m_probs;
-  vector<string> m_oldEvdAtoms;
-  vector<double> m_oldProbs;
+  vector<MLNFact> m_rawFacts;
+//  map<string,MLNFact> m_filtFacts;
+//  map<string,MLNFact> m_oldFacts;
   
-  map<string,string> m_instances;
+  string m_beliefType;
+  string m_epiStatus;
+  set<string> m_relevantKeys;
+  string m_instKey;
   size_t m_maxinst;
   
   /**
@@ -56,7 +58,7 @@ class MLNEvdProvider :  public ManagedComponent
    */
   void newEvdSt(const cdl::WorkingMemoryChange & _wmc)
   {
-	debug("A new MLNState WM entry ID %s ", _wmc.address.id.c_str());
+	log("A new MLNState WM entry ID %s ", _wmc.address.id.c_str());
 	
 	MLNStatePtr st; 
 	
@@ -66,11 +68,12 @@ class MLNEvdProvider :  public ManagedComponent
 	catch (DoesNotExistOnWMException e) {
 	  log("WARNING: the entry MLNState ID %s not in WM.", _wmc.address.id.c_str());
 	  return;
+	}
+  
+	m_rawFacts = st->facts;
+	m_changedEvd = true;
   }
   
-  qEvdStPush(st);
-
-}
  protected:
   /**
    * called by the framework to configure our component
@@ -94,8 +97,35 @@ class MLNEvdProvider :  public ManagedComponent
 		string token;
 	
 	  while(getline(ss, token, ',')) {
-	      m_evdEngIds.push_back(token);
+	      m_engIds.push_back(token);
 	  }
+	}
+	
+	if ((it = _config.find("--keys")) != _config.end()) {
+		stringstream ss(it->second);
+		string token;
+	
+	  while(getline(ss, token, ',')) {
+	      m_relevantKeys.insert(token);
+	  }
+	}
+	
+	if ((it = _config.find("--type")) != _config.end()) {
+	  m_beliefType = it->second;
+	} else {
+	 m_beliefType="";
+	}
+	
+	if ((it = _config.find("--inst")) != _config.end()) {
+	  m_instKey = it->second;
+	} else {
+	  m_instKey="percept";
+	}
+	
+	if ((it = _config.find("--estatus")) != _config.end()) {
+	  m_epiStatus = it->second;
+	} else {
+	 m_epiStatus="private";
 	}
   }
   /**
@@ -103,6 +133,7 @@ class MLNEvdProvider :  public ManagedComponent
    */
   virtual void start()
   {
+	m_changedEvd = true;
      // filters for belief updates
 	addChangeFilter(createGlobalTypeFilter<MLNState>(cdl::OVERWRITE),
 		new MemberFunctionChangeReceiver<MLNEvdProvider>(this,
@@ -119,110 +150,148 @@ class MLNEvdProvider :  public ManagedComponent
    */
   virtual void runComponent() = 0;
   
-  void qEvdStPush(MLNStatePtr st)
-  {
-	m_evdStQueue.push(st);
-  }
-  
-  void qEvdStPop()
-  {
-	m_evdStQueue.pop();
-  }
-  
-  MLNStatePtr qInfFront()
-  {
-	return m_evdStQueue.front();
-  }
-
-  bool qEvdStEmpty()
-  {
-	return m_evdStQueue.empty();
-  }
-  
   string getBindingSA()
   {
 	return m_bindingSA;
   }
   
-  void provideEvidence(string eid, MLNStatePtr evdSt)
+  map<string, MLNFact> filterFacts(vector<MLNFact> rawEvd)
   {
-	m_oldEvdAtoms = m_evdAtoms;
-	m_oldProbs = m_probs;
+	map<string, MLNFact> filtEvd;
 	
-	m_evdAtoms = evdSt->facts;
-	m_probs = evdSt->probs;
+	vector<MLNFact>::iterator it;
+	for (it=rawEvd.begin() ; it != rawEvd.end(); it++ ) {
+	  if(it->type == m_beliefType && it->estatus == m_epiStatus
+		  && (m_relevantKeys.count(it->key) || m_instKey == it->key)) {
+		filtEvd.insert(pair<string,MLNFact>(it->atom,*it));
+	  }
+	}
+	return filtEvd;
+  }
+  
+  vector<MLNFact> getRawFacts() {
+	return m_rawFacts;
+  }
+  
+  bool pendingEvdChanges() {
+	return m_changedEvd;
+  } 
+  
+  void resetEvdChanges() {
+	m_changedEvd=false;
+  }
+  
+  bool getEvdChanges(map<string, MLNFact> facts, map<string, MLNFact> oldFacts, EvidencePtr evd)
+  {
+//	EvidencePtr evd = new Evidence();
+	bool evdChanged = false;
 	
-	EvidencePtr evd = new Evidence();
-	
-	evd->engId = eid;
-	evd->initInfSteps = 400;
-	evd->prevInfSteps = 0;
-  	evd->burnInSteps = 100;
-	
+	map<string,MLNFact>::iterator it;
 	/// Remove obsolete evidence
-	for(int i=0; i < m_oldEvdAtoms.size(); i++)
+	for(it=oldFacts.begin(); it != oldFacts.end(); it++)
 	{
-	  if(!containsElement<string>(m_evdAtoms, m_oldEvdAtoms[i]) ) {
-		if(m_oldProbs[i] == 1 || m_oldProbs[i] == 0) {
-		  evd->noEvidence.push_back(m_oldEvdAtoms[i]);
+	  if(facts.find(it->first) == facts.end()) {
+		evdChanged = true;
+		if(it->second.prob == 1 || it->second.prob == 0) {
+		  if(it->second.key == m_instKey) {
+			Instance inst;
+			inst.name=it->second.id;
+			inst.type="perc";
+			evd->removeInstances.push_back(inst);
+		  } else  
+			evd->noEvidence.push_back(it->first);
 		}  
 		else {
-		  evd->resetPriors.push_back(m_oldEvdAtoms[i]);
+		  evd->resetPriors.push_back(it->first);
 		}
 	  }
 	}
 	  
 	///  Add new evidence
-	for(int i=0; i < m_evdAtoms.size(); i++)
+	for(it=facts.begin(); it != facts.end(); it++)
 	{
-	  size_t oldidx;
-	  if(!containsElement<string>(m_oldEvdAtoms, m_evdAtoms[i], oldidx) ) {
-		if(m_probs[i] == 1)
-		  evd->trueEvidence.push_back(m_evdAtoms[i]);
-		else if (m_probs[i] == 0)
-		  evd->falseEvidence.push_back(m_evdAtoms[i]);
+	  string atom = it->first;
+	  map<string,MLNFact>::iterator old = oldFacts.find(atom);
+	  double prob = it->second.prob;
+	  double oldProb = old->second.prob;  
+	  
+	  if(old == oldFacts.end()) {
+		evdChanged = true;
+		if(prob >= 1)
+		  if(it->second.key == m_instKey) {
+			Instance inst;
+			inst.name=it->second.id;
+			inst.type="perc";
+			evd->newInstances.push_back(inst);
+		  } else
+			evd->trueEvidence.push_back(atom);
+		else if (it->second.prob <= 0)
+		  evd->falseEvidence.push_back(atom);
 		else {
-		  evd->extPriors.push_back(m_evdAtoms[i]);
-		  evd->priorWts.push_back(m_probs[i]);
+		  evd->extPriors.push_back(atom);
+		  evd->priorWts.push_back(prob);
 		}
 	  }
 	  else
+	  ///  Modify existing evidence
 	  {
-		assert(oldidx < m_oldEvdAtoms.size());
-
-	    if(m_probs[i] == 1 && m_oldProbs[oldidx] != 1) {
-		  evd->trueEvidence.push_back(m_evdAtoms[i]);
-		  if(m_oldProbs[oldidx] != 0)
-			evd->resetPriors.push_back(m_evdAtoms[i]);
+	    if(prob >= 1 && oldProb < 1) {
+		  evdChanged = true;
+		  evd->trueEvidence.push_back(atom);
+		  if(oldProb > 0)
+			evd->resetPriors.push_back(atom);
 			
-		} else if(m_probs[i] == 0 && m_oldProbs[oldidx] != 0) {
-		  evd->falseEvidence.push_back(m_evdAtoms[i]);
-		  
-		  if(m_oldProbs[oldidx] != 1)
-			evd->resetPriors.push_back(m_evdAtoms[i]);
+		} else if(prob <= 0 && oldProb > 0) {
+		  evdChanged = true;
+		  evd->falseEvidence.push_back(atom);	  
+		  if(oldProb < 1)
+			evd->resetPriors.push_back(atom);
 			
-		} else if(m_probs[i] != 0 && m_probs[i] != 1 && (m_oldProbs[oldidx] == 0 || m_oldProbs[oldidx] == 1) ) {
-		  evd->extPriors.push_back(m_evdAtoms[i]);
-		  evd->priorWts.push_back(m_probs[i]);
-		  evd->noEvidence.push_back(m_evdAtoms[i]);
+		} else if(prob > 0 && prob < 1 && (oldProb == 0 || oldProb >= 1) ) {
+		  evdChanged = true;
+		  evd->extPriors.push_back(atom);
+		  evd->priorWts.push_back(prob);
+		  evd->noEvidence.push_back(atom);
 		}
-	  }
+	  }	
+	}
+	return evdChanged;
+  }
 	
-	 addToWorkingMemory(newDataID(), getBindingSA(), evd);	
+  void distributeEvd(EvidencePtr evd, int initSteps = 400,
+		int burnInSteps = 100, int prevSteps = 0)
+  {
+	evd->initInfSteps = initSteps;
+	evd->burnInSteps = burnInSteps;
+	evd->prevInfSteps = prevSteps;
+  	
+  	vector<string>::iterator id;
+  	for(id=m_engIds.begin(); id!=m_engIds.end(); id++)
+  	{
+	  evd->engId = *id;
+	  addToWorkingMemory(newDataID(), getBindingSA(), evd);
+	  log("Provided new evidence to MLN engine id %s", evd->engId.c_str());
+	}
+  }
+  
+  void distributeQuery(string query)
+  {
+	QueryPtr q = new Query();
+	q->atoms.push_back(query);
+  	
+  	vector<string>::iterator id;
+  	for(id=m_engIds.begin(); id!=m_engIds.end(); id++)
+  	{
+	  q->engId = *id;
+	  addToWorkingMemory(newDataID(), getBindingSA(), q);
+	  log("Provided new query '%s' to MLN engine id %s", query.c_str(), q->engId.c_str());
 	}
   }
   
   
-  void provideEvidence(vector<string> eids, MLNStatePtr evdSt)
+  string adaptAtom(string atom, string grd)
   {
-	vector<string>::iterator it;
-	for(it=eids.begin(); it < eids.end(); it++)
-	  provideEvidence(*it, evdSt);
-  }
-  
-  string adaptAtom(string fact, string grd)
-  {
-	return fact.replace(fact.find("__"), 2, grd);
+	return atom.replace(atom.find("__"), 2, grd);
   } 
   
  public:

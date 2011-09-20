@@ -44,6 +44,9 @@ class MLNEngine :  public ManagedComponent
   string m_resultWMId;
   vector<string> m_query;
   int m_infSteps;
+  
+  map<string,string> m_instances;
+  
   /**
    * Name of the binder subarchitecture
    */
@@ -132,7 +135,6 @@ class MLNEngine :  public ManagedComponent
 	m_evidenceQueue.push(data);
   }
 
-
   void queueNewQuery(QueryData data)
   {
 	m_queryQueue.push(data);
@@ -142,6 +144,30 @@ class MLNEngine :  public ManagedComponent
   {
 	m_learnWtsQueue.push(data);
   }
+  
+  void addInstConst(std::string instance, std::string constant) 
+  {
+	m_instances.insert(std::pair<std::string,std::string>(instance, constant));
+  }
+  
+  void removeInstConst(std::string instance)
+  {
+	m_instances.erase(instance);
+  }
+  
+  std::string getInstConst(std::string instance)
+  {
+	return m_instances[instance];
+  }
+  
+  bool existsInstConst(std::string instance)
+  {
+	return (m_instances.find(instance) != m_instances.end());
+  }
+  
+  std::vector<std::string> replaceInstWithConst(std::vector<std::string> predicates);
+  
+  std::vector<std::string> replaceConstWithInst(std::vector<std::string> predicates);
   
 
 protected:

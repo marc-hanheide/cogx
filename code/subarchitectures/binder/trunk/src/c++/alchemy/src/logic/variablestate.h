@@ -232,6 +232,10 @@ class VariableState
       mrf_ = new MRF(queries, allPredGndingsAreQueries, domain_,
                      domain_->getDB(), mln_, markHardGndClauses,
                      trackParentClauseWts, -1);
+      
+      default_mrf_ =  new MRF(queries, allPredGndingsAreQueries, domain_,
+                     domain_->getDB(), mln_, markHardGndClauses,
+                     trackParentClauseWts, -1);   
 
         //delete to save space. Can be deleted because no more gndClauses are
         //appended to gndPreds beyond this point
@@ -2747,6 +2751,11 @@ class VariableState
   long double getHardWt() { return hardWt_; }
   
   const Domain* getDomain() { return domain_; }
+  
+  void setConstMap(ConstDualMap* map) {
+  	domain_->setConstDualMap(map);
+  	reinit();
+  }
 
   const MLN* getMLN() { return mln_; }
 
@@ -2799,7 +2808,7 @@ class VariableState
   void setAsEvidence(const GroundPredicate* const & predicate,
                      const bool& trueEvidence)
   { 
-    if (vsdebug)
+    if (true) //(vsdebug)
     { 
       cout << "*sb****************************************************************" << endl;
       printNetwork(cout);
@@ -2833,8 +2842,9 @@ class VariableState
         	gndPredHashArray_.append((GroundPredicate*)predicate);
         	
         atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
-        cout << "idx " << atomIdx << endl;
         reinit();
+        cout << "idx " << atomIdx << endl;
+        
    }
          
 /*    }
@@ -2900,7 +2910,6 @@ class VariableState
     	  }  
         }
       }
-     
       reinit();
       
       gndClauseIndexes = getPosOccurenceArray(atomIdx + 1);
@@ -3031,7 +3040,13 @@ class VariableState
     	}
     
   }
-
+  
+  void addConstant(string name, string type)
+  {
+  	domain_->addConstant(name.c_str(), type.c_str());
+  	reinit();
+  }
+  
   /**
    * Sets a GroundPredicate to be query. If it is already present as query,
    * then nothing happens. If the predicate was evidence, then additional
@@ -3172,7 +3187,7 @@ class VariableState
 	  delete candClauses;
 	}
 	
-	if (true) //(vsdebug)
+	if (vsdebug)
     {
     	cout << "--- Newly added clauses after removal of predicate ";
       	predicate->print(cout, domain_);
@@ -3188,7 +3203,7 @@ class VariableState
     
     reinit();
     
-    if (true) //(vsdebug)
+    if (vsdebug)
     {
     	cout << "*** Grounded network after removal of predicate ";
     	predicate->print(cout, domain_); 
@@ -3391,7 +3406,8 @@ class VariableState
             (*gndClauses_)[addToIndex]->addWt(wt);
             if (parentWtPtr) {
               (*gndClauses_)[addToIndex]->incrementClauseFrequency(clauseId, 1,
-                                                                   invertWt);  cout << "GndClause # " << addToIndex << " increase clausFrq " << clauseId << endl;}
+                                                                   invertWt);
+            }
                                                                    
             delete newClause;
             continue;
@@ -3411,7 +3427,8 @@ class VariableState
           clauseHashArray[pos]->addWt(wt);
           if (parentWtPtr) {
             clauseHashArray[pos]->incrementClauseFrequency(clauseId, 1,
-                                                           invertWt);  cout << "GndClause # " << pos << " increase clausFrq " << clauseId << endl;}
+                                                           invertWt);
+          }
           delete newClause;
           continue;
         }
@@ -3419,7 +3436,8 @@ class VariableState
           // If here, then clause is not yet present        
         newClause->setWt(wt);
         if (parentWtPtr) {
-          newClause->incrementClauseFrequency(clauseId, 1, invertWt);  cout << "New clause " << " increase clausFrq " << clauseId << endl; }
+          newClause->incrementClauseFrequency(clauseId, 1, invertWt);
+        }
 
         if (true) //(vsdebug)
         {
@@ -3590,6 +3608,8 @@ class VariableState
     // MRF is used with eager states. If lazy, this stays NULL.
   MRF* mrf_;
     ////////// END: Information used only by eager version //////////
+  // The initial MRF (assumes one constant for a certain type)
+  MRF* default_mrf_;
 
     // Holds the new active clauses
   Array<GroundClause*> newClauses_;

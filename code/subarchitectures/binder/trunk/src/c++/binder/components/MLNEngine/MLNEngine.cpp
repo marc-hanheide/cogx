@@ -59,7 +59,7 @@ void MLNEngine::configure(const map<string,string> & _config)
   else
 	doDisplay = false;
 	
-  if ((it = _config.find("--rid")) != _config.end()) {
+  if ((it = _config.find("--eid")) != _config.end()) {
 	m_id=it->second;
   } else {
    m_id="mrf";
@@ -132,7 +132,7 @@ void MLNEngine::runComponent()
 
   int tstep = 0;
   bool first = true;
-  m_infSteps = 100;
+  m_infSteps = 0;
   m_oe->setMaxInferenceSteps(m_infSteps);
   m_oe->setMaxBurnIn(0);
   
@@ -142,7 +142,7 @@ void MLNEngine::runComponent()
   while(isRunning())
   {
   
-	sleep(0.1);
+	sleepComponent(300);
 	
 	while(!m_queryQueue.empty())
 	{
@@ -161,11 +161,20 @@ void MLNEngine::runComponent()
 	{
 	  log("Adding new evidence...");
 	  EvidencePtr evd = m_evidenceQueue.front().evidence;
-	
-	  m_oe->addTrueEvidence(evd->trueEvidence);
-	  m_oe->addFalseEvidence(evd->falseEvidence);
-	  m_oe->removeEvidence(evd->noEvidence);
-	
+
+	  vector<Instance>::iterator it;
+	  for(it=evd->newInstances.begin(); it!=evd->newInstances.end(); it++) {
+		string placeh = m_oe->addInstance(it->type, "percept");
+		if(!placeh.empty())
+		  addInstConst(it->name, placeh);
+		else
+		  log("WARNING: No free placeholder slots for instance %s", it->name.c_str());
+	  }
+
+	  m_oe->addTrueEvidence(replaceInstWithConst(evd->trueEvidence));
+	  m_oe->addFalseEvidence(replaceInstWithConst(evd->falseEvidence));
+	  m_oe->removeEvidence(replaceInstWithConst(evd->noEvidence));
+
 	  m_evidenceQueue.front().status=USED;
 	  m_removeQueue.push(m_evidenceQueue.front().addr);
 	  m_evidenceQueue.pop();
@@ -174,8 +183,17 @@ void MLNEngine::runComponent()
 	  m_oe->adaptProbs(evd->prevInfSteps);
 	  m_oe->setMaxInferenceSteps(evd->initInfSteps);
 	  m_oe->setMaxBurnIn(evd->burnInSteps);
-	  m_oe->setExtPriors(evd->extPriors, evd->priorWts);
-	  m_oe->resetPriors(evd->resetPriors);
+	  m_oe->setExtPriors(replaceInstWithConst(evd->extPriors), evd->priorWts);
+	  m_oe->resetPriors(replaceInstWithConst(evd->resetPriors));
+	  
+	  for(it=evd->removeInstances.begin(); it!=evd->removeInstances.end(); it++) {	
+		if(existsInstConst(it->name)) {
+		  m_oe->removeInstance(getInstConst(it->name), "percept");
+		  removeInstConst(it->name);
+		} else
+		  log("WARNING: No instance %s found", it->name.c_str());
+		
+	  }
 
 	  
   #ifdef FEAT_VISUALIZATION
@@ -187,7 +205,7 @@ void MLNEngine::runComponent()
 	
 	while(!m_learnWtsQueue.empty())
 	{
-	  log("Executing weight learning instrction...");
+	  log("Executing weight learning instruction...");
 	  LearnWtsPtr lw = m_learnWtsQueue.front().learnWts;
 
 
@@ -200,7 +218,7 @@ void MLNEngine::runComponent()
   #ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
-	  m_display.setHtml("MLNEngine", "eng Rules", "<pre>" + v11out.str() + "</pre>");
+	  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
   #endif
 	}
 	
@@ -229,13 +247,13 @@ void MLNEngine::runComponent()
 		probIt++;
 	  }
 	}
-
+	result->atoms = replaceConstWithInst(result->atoms);
 	overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
 	
 	while(!m_removeQueue.empty())
 	{
 	  debug("Removing evidence or query entry"); 
-	  deleteFromWorkingMemory(m_removeQueue.front());
+	  //deleteFromWorkingMemory(m_removeQueue.front());
 	
 	  m_removeQueue.pop();
 	}
@@ -309,7 +327,6 @@ void MLNEngine::newQuery(const cdl::WorkingMemoryChange & _wmc)
 	data.query=q;
 	data.addr= _wmc.address;
 	queueNewQuery(data);
-//	deleteFromWorkingMemory(_wmc.address);
   }
   else {
 	debug("Not mine.");
@@ -361,12 +378,41 @@ void MLNEngine::learnWts(const cdl::WorkingMemoryChange & _wmc)
 	data.learnWts=lw;
 	data.addr= _wmc.address;
 	queueLearnWts(data);
-//	deleteFromWorkingMemory(_wmc.address);
   }
   else {
 	debug("Not mine.");
 	return;
   }  
+}
+
+vector<string> MLNEngine::replaceInstWithConst(vector<string> predicates)
+{
+  vector<string>::iterator pred;
+  map<string,string>::iterator inst;
+  
+  for(inst=m_instances.begin(); inst!=m_instances.end(); inst++)
+	for(pred=predicates.begin(); pred!=predicates.end(); pred++) {
+	  
+	  size_t pos = pred->find(inst->first.c_str());
+	  if(pos!=string::npos)
+		pred->replace(pos, inst->first.size(), inst->second.c_str());
+	}
+  return predicates;
+}
+
+vector<string> MLNEngine::replaceConstWithInst(vector<string> predicates)
+{
+  vector<string>::iterator pred;
+  map<string,string>::iterator inst;
+  
+  for(inst=m_instances.begin(); inst!=m_instances.end(); inst++)
+	for(pred=predicates.begin(); pred!=predicates.end(); pred++) {
+	  
+	  size_t pos = pred->find(inst->second.c_str());
+	  if(pos!=string::npos)
+		pred->replace(pos, inst->second.size(), inst->first.c_str());
+	}
+  return predicates;
 }
 
 }

@@ -1,6 +1,6 @@
 // domains
 
-feat = {VRed, VBlue, VGreen} //, VYellow, VWhite, VBlack,
+col = {V_red, V_blue, V_green} //, VYellow, VWhite, VBlack,
 //		VCompact, VElongated, VFlat}
 //		VSpherical, VCylindrical, VConical, VCuboid}
 		
