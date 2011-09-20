@@ -13,7 +13,6 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import castutils.castextensions.WMEventQueue;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.util.NonBlockingActionExecutor;
@@ -21,9 +20,12 @@ import execution.util.NonBlockingActionExecutor;
 public abstract class PanAndLookExecutor<ActionType extends Action> extends
 		NonBlockingActionExecutor<ActionType> {
 
-	private static final double FIXED_TILT = -40 * Math.PI / 180.0;
+	// the angles that are put on the stack of command to look at (remember,
+	// it's a stack, so the order is somewhat reversed (last position is first)
+	private static final float[] FIXED_ANGLES = new float[] { 0, 45, 90, -45,
+			-90 };
 
-	private final int m_detections;
+	// private static final double FIXED_TILT = -40 * Math.PI / 180.0;
 
 	private final Stack<SetPTZPoseCommand> m_remainingCommands;
 	private final WorkingMemoryChangeReceiver m_afterDetect;
@@ -36,18 +38,12 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 
 		super(_component, _actCls);
 
-		m_detections = _detections;
 		m_remainingCommands = new Stack<SetPTZPoseCommand>();
 
-		getComponent().log(
-				"new PanAndLookExecutor for " + m_detections + " detections.");
+		for (float angle_deg : FIXED_ANGLES) {
+			SetPTZPoseCommand cmd = new SetPTZPoseCommand(new PTZPose(angle_deg
+					* Math.PI / 180.0, 0, 1), PTZCompletion.COMPINIT);
 
-		double increment = (Math.PI) / m_detections;
-		double pan = -Math.PI / 2.0;
-		for (int i = 0; i < m_detections; i++) {
-			SetPTZPoseCommand cmd = new SetPTZPoseCommand(
-					new PTZPose(pan, 0, 1), PTZCompletion.COMPINIT);
-			pan += increment;
 			m_remainingCommands.push(cmd);
 		}
 
@@ -117,29 +113,29 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 
 	abstract protected void publishActionOutcome();
 
-	@Override
-	protected void executionComplete(TriBool success) {
-		SetPTZPoseCommand ptzCommand = new SetPTZPoseCommand(new PTZPose(0,
-				FIXED_TILT, 1), PTZCompletion.COMPINIT);
-		String id = getComponent().newDataID();
-		WMEventQueue queue = new WMEventQueue();
-		getComponent().addChangeFilter(
-				ChangeFilterFactory.createIDFilter(id,
-						WorkingMemoryOperation.OVERWRITE), queue);
-		// wait for the command to overwritten
-		try {
-			getComponent().addToWorkingMemory(id, ptzCommand);
-			println("going back to original pose");
-			queue.take();
-			println("pose command overwritten");
-			getComponent().deleteFromWorkingMemory(id);
-		} catch (InterruptedException e) {
-			logException(e);
-		} catch (CASTException e) {
-			logException(e);
-		}
-		super.executionComplete(success);
-	}
+	// @Override
+	// protected void executionComplete(TriBool success) {
+	// SetPTZPoseCommand ptzCommand = new SetPTZPoseCommand(new PTZPose(0,
+	// FIXED_TILT, 1), PTZCompletion.COMPINIT);
+	// String id = getComponent().newDataID();
+	// WMEventQueue queue = new WMEventQueue();
+	// getComponent().addChangeFilter(
+	// ChangeFilterFactory.createIDFilter(id,
+	// WorkingMemoryOperation.OVERWRITE), queue);
+	// // wait for the command to overwritten
+	// try {
+	// getComponent().addToWorkingMemory(id, ptzCommand);
+	// println("going back to original pose");
+	// queue.take();
+	// println("pose command overwritten");
+	// getComponent().deleteFromWorkingMemory(id);
+	// } catch (InterruptedException e) {
+	// logException(e);
+	// } catch (CASTException e) {
+	// logException(e);
+	// }
+	// super.executionComplete(success);
+	// }
 
 	protected WorkingMemoryChangeReceiver getAfterDetectionReceiver() {
 		return m_afterDetect;
