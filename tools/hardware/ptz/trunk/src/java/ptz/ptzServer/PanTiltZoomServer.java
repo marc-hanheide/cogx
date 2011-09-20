@@ -16,16 +16,22 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import castutils.castextensions.WMEventQueue;
 
 public class PanTiltZoomServer extends ManagedComponent {
 
-	private static final int TIMEOUT_MS = 10000;
+	private static final int TIMEOUT_MS = 8000;
 
-	private static final int TIME_WAIT_MS = 200;
+	private static final int TIME_WAIT_MS = 100;
 
 	private static final double TOLERANCE = 0.001;
 
 	private static final int MAX_LOOPS = TIMEOUT_MS / TIME_WAIT_MS;
+
+	private static final PTZPose[] FIXED_INIT_POSES = new PTZPose[] {
+			new PTZPose(45 * Math.PI / 180, 25 * Math.PI / 180, 0),
+			new PTZPose(-45 * Math.PI / 180, -25 * Math.PI / 180, 0),
+			new PTZPose(0, 0, 0) };
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -65,9 +71,13 @@ public class PanTiltZoomServer extends ManagedComponent {
 	}
 
 	private double ptzPosError(PTZPose pos1, PTZPose pos2) {
-		double panError = 1-(Math.sin(pos1.pan)*Math.sin(pos2.pan) + Math.cos(pos1.pan)*Math.cos(pos2.pan)); 
-		double tiltError = 1-(Math.sin(pos1.tilt)*Math.sin(pos2.tilt) + Math.cos(pos1.tilt)*Math.cos(pos2.tilt)); 
-		return panError+tiltError;
+		double panError = 1 - (Math.sin(pos1.pan) * Math.sin(pos2.pan) + Math
+				.cos(pos1.pan)
+				* Math.cos(pos2.pan));
+		double tiltError = 1 - (Math.sin(pos1.tilt) * Math.sin(pos2.tilt) + Math
+				.cos(pos1.tilt)
+				* Math.cos(pos2.tilt));
+		return panError + tiltError;
 	}
 
 	private void movePTZ(WorkingMemoryChange _wmc) {
@@ -75,18 +85,19 @@ public class PanTiltZoomServer extends ManagedComponent {
 			SetPTZPoseCommand cmd = getMemoryEntry(_wmc.address,
 					SetPTZPoseCommand.class);
 
-			logger.debug("moving to pose: " + cmd.pose.pan + ", " + cmd.pose.tilt);
-			
+			logger.debug("moving to pose: " + cmd.pose.pan + ", "
+					+ cmd.pose.tilt);
+
 			double different = Double.MAX_VALUE;
 
 			PTZPose currentPose = null;
-			
+
 			int loops = 0;
 			while (different >= TOLERANCE) {
 				ptzInterface.setPose(cmd.pose);
 				try {
 					Thread.sleep(TIME_WAIT_MS);
-					if (loops > MAX_LOOPS)
+					if (loops++ > MAX_LOOPS)
 						break;
 				} catch (InterruptedException e) {
 					logger.error(e);
@@ -146,5 +157,24 @@ public class PanTiltZoomServer extends ManagedComponent {
 	 */
 	@Override
 	protected void runComponent() {
+		println("go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up");
+		for (PTZPose pose : FIXED_INIT_POSES) {
+			SetPTZPoseCommand cmd = new SetPTZPoseCommand(pose,
+					PTZCompletion.COMPINIT);
+			String id = newDataID();
+			WMEventQueue queue = new WMEventQueue();
+			addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+					WorkingMemoryOperation.OVERWRITE), queue);
+			try {
+				addToWorkingMemory(id, cmd);
+				queue.take();
+				removeChangeFilter(queue);
+				deleteFromWorkingMemory(id);
+			} catch (CASTException e) {
+				logException(e);
+			} catch (InterruptedException e) {
+				logException(e);
+			}
+		}
 	}
 }
