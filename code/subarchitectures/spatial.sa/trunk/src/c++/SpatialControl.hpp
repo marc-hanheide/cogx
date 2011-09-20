@@ -239,6 +239,8 @@ protected:
 
   bool m_firstScanAdded;
 
+  string m_waitingForPTZCommandID;
+
   bool m_UsePointCloud;
   double m_obstacleMinHeight;
   double m_obstacleMaxHeight;
@@ -262,8 +264,9 @@ private:
   void deleteInhibitor(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonData(const cast::cdl::WorkingMemoryChange &objID);
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
+  void overwrittenPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
 
-  bool MovePanTilt(double pan, double tilt, double tolerance);
+  void startMovePanTilt(double pan, double tilt, double tolerance);
 
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
