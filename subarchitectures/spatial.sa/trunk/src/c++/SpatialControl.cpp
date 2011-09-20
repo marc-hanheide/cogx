@@ -74,12 +74,14 @@ SpatialControl::SpatialControl()
 
   m_RobotServerHost = "localhost";
 
+  m_waitingForPTZCommandID = "";
+
   m_NumInhibitors = 0;
   m_SentInhibitStop = false;
 }
 
-bool
-SpatialControl::MovePanTilt(double pan, double tilt, double tolerance) 
+void
+SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance) 
 {
   ptz::SetPTZPoseCommandPtr newPTZPoseCommand = new ptz::SetPTZPoseCommand;
   newPTZPoseCommand->pose.pan = pan;
@@ -89,27 +91,31 @@ SpatialControl::MovePanTilt(double pan, double tilt, double tolerance)
   string cmdId = newDataID();
   addToWorkingMemory(cmdId, newPTZPoseCommand);
 
-  Rendezvous *rv = new Rendezvous(*this);
-  rv->addChangeFilter(createIDFilter(cmdId, cdl::WILDCARD));
+  m_waitingForPTZCommandID = cmdId;
+}
 
-  bool ret = false;
-  cdl::WorkingMemoryChange change = rv->wait();
-  try {
-    ptz::SetPTZPoseCommandPtr overwritten =
-      getMemoryEntry<ptz::SetPTZPoseCommand>(change.address);
-    if (overwritten->comp == ptz::SUCCEEDED) {
-      ret = true;
+void
+SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID) 
+{
+  if (objID.address.id == m_waitingForPTZCommandID) {
+    try {
+      ptz::SetPTZPoseCommandPtr overwritten =
+	getMemoryEntry<ptz::SetPTZPoseCommand>(objID.address);
+      if (overwritten->comp == ptz::SUCCEEDED) {
+
+      }
+      else {
+	log ("Warning! Failed to move PTZ before moving!");
+      }
+      deleteFromWorkingMemory(objID.address);
     }
-    deleteFromWorkingMemory(change.address);
-  }
-  catch (DoesNotExistOnWMException e)
-  {
-    log ("Error: SetPTZPoseCommand went missing! "); 
-  }
+    catch (DoesNotExistOnWMException e)
+    {
+      log ("Error: SetPTZPoseCommand went missing! "); 
+    }
 
-  delete rv;
-
-  return ret;
+    m_waitingForPTZCommandID = "";
+  }
 }
 
 SpatialControl::~SpatialControl() 
@@ -156,11 +162,11 @@ void SpatialControl::configure(const map<string,string>& _config)
       m_obstacleMaxHeight = atof(it->second.c_str());
     }
 
-    m_sendPTZCommands = false;
-    if (_config.find("--ctrl-ptu") != _config.end()) {
-      m_sendPTZCommands = true;
-      log("will use ptu");
-    }
+  }
+  m_sendPTZCommands = false;
+  if (_config.find("--ctrl-ptu") != _config.end()) {
+    m_sendPTZCommands = true;
+    log("will use ptu");
   }
 
   map<string,string>::const_iterator it = _config.find("-c");
@@ -333,6 +339,10 @@ void SpatialControl::start()
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::DELETE),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
                                                                &SpatialControl::deletePersonData));   
+
+  addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
+		  new MemberFunctionChangeReceiver<SpatialControl>(this,
+                                                               &SpatialControl::overwrittenPanTiltCommand));   
                /*                             
 		// connecting Pan-Tilt server                   
     Ice::CommunicatorPtr ic = getCommunicator();
@@ -844,6 +854,9 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
   // This component only manages one nav ctrl command at a time
   log("newNavCtrlCommand called");
   
+  //REMOVEME
+  SaveGridMap();
+
   shared_ptr<CASTData<NavData::InternalNavCommand> > oobj =
     getWorkingMemoryEntry<NavData::InternalNavCommand>(objID.address);
   
@@ -868,10 +881,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
     m_CurrentCmdAddress = objID.address;
 
     if (m_sendPTZCommands) {
-      bool success = MovePanTilt(0, -M_PI/4, 0);
-      if (!success) {
-	log("Warning: moving without PTU in desired positions!");
-      }
+      startMovePanTilt(0, -M_PI/4, 0);
     }
     
     m_commandType = oobj->getData()->cmd;
@@ -975,7 +985,9 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
                                      m_CurrentCmdFinalStatus);
       m_taskStatus = NothingToDo;
       
-    }else if(m_taskStatus == NewTask){
+    }else if(m_taskStatus == NewTask 
+	&& (m_commandType == NavData::lSTOPROBOT || m_waitingForPTZCommandID == ""))
+    {
 
       m_Mutex.lock();
       
