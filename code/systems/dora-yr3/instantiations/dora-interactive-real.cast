@@ -55,7 +55,7 @@ SETVAR or3d_ply_files=<multiline>
 SETVAR or3d_labels=cerealbox book
 
 ### CURE config file
-SETVAR spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 
 SETVAR playerhost=localhost
 SETVAR ptz_server=ptz.server
@@ -71,7 +71,7 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-COMPONENT CPP %(ptz_server) PlayerPTZServer --player-host %(playerhost) --ptz-device 0
+COMPONENT CPP ptz.server PlayerPTZServer --player-host %(playerhost) --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 INCLUDE includes/spatial.sa/spatial.cast
@@ -137,7 +137,7 @@ JAVA MG person.runner 	vision.components.PersonDetectorRunner
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/dora-interactive.cast
+INCLUDE includes/planner.sa/dora-interaction.cast
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/dialogue-dora.cast
