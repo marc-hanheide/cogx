@@ -1,4 +1,7 @@
-CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office,meetingroom --debug -c instantiations/cureconfig/cogxp3.ccf --log-path #--log-commands
-# Vivid Yellow: corridor, Strong Purple: kitchen, Vivid Orange: office, Very Light Blue: meetingroom
+VARDEFAULT vision_pcserver=
+# --pcserver pcserver
+VARDEFAULT conceptual_categories=anteroom,bathroom,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 
-#CPP GD peekabot.control SpatialPeekabotControl -c instantiations/cureconfig/cogxp3.ccf --retry-interval 10  --do-path-query
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories)
+

@@ -1,13 +1,26 @@
-VARDEFAULT goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
-VARDEFAULT planning_domain=dora-interactive.pddl
-VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
-#VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
-VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-semmap.xml"
-#VARDEFAULT default_knowledge="instantiations/defaultprobs/default_knowledge-tro-det.xml"
-VARDEFAULT discrete_room_cats=
-#VARDEFAULT discrete_room_cats=--discrete
-VARDEFAULT tour_places="0 9 4"
-VARDEFAULT logged_types=<multiline>
+
+### the default goal
+SETVAR planning_goal="(exists (?p - person) (kval (is-in ?p)))"
+#SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+
+### the plannig domain to use
+SETVAR planning_domain=dora-interactive.pddl
+
+### the default probabilities
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
+
+### the default knowledge to use
+SETVAR default_knowledge="instantiations/defaultprobs/default_knowledge-semmap.xml"
+
+### run coma mediators in a discretising way?
+SETVAR discrete_room_cats=
+#SETVAR discrete_room_cats=--discrete
+
+### places for the initial automatic tour:
+SETVAR tour_places="0 9 4"
+
+### all types to be logged from WMs
+SETVAR logged_types=<multiline>
   execution.slice.Action, 
   VisionData.VisualObject, 
   SpatialData.NavCommand, 
@@ -20,20 +33,37 @@ VARDEFAULT logged_types=<multiline>
   autogen.Planner.PlanningTask
 </multiline>
 
-VARDEFAULT siftroot_=./instantiations/sift-models
-VARDEFAULT plyroot_=./instantiations/ply-models
-VARDEFAULT or3d_sift_files=<multiline>
+### root for the sift-models
+SETVAR siftroot_=./instantiations/sift-models
+
+### root for the ply-models
+SETVAR plyroot_=./instantiations/ply-models
+
+### siftfiles
+SETVAR or3d_sift_files=<multiline>
    %(siftroot_)/frosties2.sift
    %(siftroot_)/re_book.sift
 </multiline>
-VARDEFAULT or3d_ply_files=<multiline>
+
+### ply files
+SETVAR or3d_ply_files=<multiline>
    %(plyroot_)/frosties2.ply
    %(plyroot_)/re_book.ply
 </multiline>
-VARDEFAULT or3d_labels=cerealbox book
 
+### object labels
+SETVAR or3d_labels=cerealbox book
 
-VARDEFAULT calib_root=instantiations/calibration/alu-robot-at-kth
+### CURE config file
+SETVAR spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+
+SETVAR playerhost=localhost
+SETVAR ptz_server=ptz.server
+
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+SETVAR vision_pcserver_host=pcserver
+SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
 
 HOST localhost
 
@@ -41,29 +71,17 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
+COMPONENT CPP %(ptz_server) PlayerPTZServer --player-host %(playerhost) --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
-CPP GD self.representer SelfRepresenter 
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
-CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --pcserver pcserver --room-categories anteroom,bathroom,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
+JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
+JAVA MG spatial-manual spatial.manual.ManualNavControl
 
-#--no-nodeclass #--no-areaclass #--log #--read-ptu
-
-CPP MG spatial.translation 	SpatialTranslation 
-CPP GD spatial.control 		SpatialControl -c instantiations/cureconfig/cogxp3.ccf  --log --pcserver pcserver --explore-range 2.0 --min-obstacle-height 0.25 #--debug --no-x-window 
-CPP GD slam.process 		SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
-CPP GD navgraph.process 	NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --filter-doors --min-door-width 0.7 --max-door-width 0.9#--no-file-output
-CPP GD place.manager 		PlaceManager --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2
-CPP GD map.manager 		LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --no-tentative-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls #--load-nodemap #--debug 
-CPP GD path.query 		PathQueryProcessor #--no-indirect-paths 
-
-JAVA MG exe-spatial 		spatial.execution.SpatialActionInterface  --detections 4
-JAVA MG spatial-manual 		spatial.manual.ManualNavControl
-
-####CPP GD relation.manager 	ObjectRelationManager -c instantiations/cureconfig/cogxp3.ccf --log --no-vision --display-objects-in-pb #--debug #--no-ptz --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05  --debug
-
-####CPP MG avs.cpplanner 		AVS_ContinualPlanner -c instantiations/cureconfig/cogxp3.ccf --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.1 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
+#CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --display-objects-in-pb 
+#CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --ctrl-ptu --gridsize 700 --cellsize 0.05  --cam-conedepth 5 --kernel-width-factor 0.7 --sampleawayfromobs 0.1 --log --queryhandler conceptual.queryhandler --ctrl-ptz --usepeekabot  --siftobjects "table cerealbox"
 
 
 # coma ######################################################################
@@ -78,15 +96,15 @@ JAVA MG pm-coma-in-place	eu.cogx.perceptmediator.components.RoomMembershipMediat
 INCLUDE includes/default.sa/default-base.cast
 INCLUDE includes/coma.sa/coma-defaultsa.cast
 
-CPP GD default.queryhandler 		DefaultQueryHandler
-CPP GD default.chaingraphinferencer 	DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(defaults)
+CPP GD default.queryhandler DefaultQueryHandler
+CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(conceptual_defaults)
 
 # Conceptual.SA  ############################################################
 INCLUDE includes/conceptual.sa/conceptual-base.cast
 CPP GD conceptual.queryhandler ConceptualQueryHandler
 
 CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
-CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placholder-rate 300 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox,computer,robot,stapler,toiletpaper  --opm-observation-model  # --save-graph conceptual.fg --save-graph-info conceptual.info 
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
 CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
 
 
@@ -102,57 +120,27 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
-CPP MG VideoServer 	OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "%(calib_root)/dora.right-not-proper.cal"
+CPP MG VideoServer 	OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "%(vision_calib_root)/dora.right-not-proper.cal"
 CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --camid 0
-CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(calib_root)/camcalib-kinect.xml" --create-viewcone
+CPP MG %(vision_pcserver_host) 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
 
-CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(calib_root)/ptu-pose-cam-left-sim.xml %(calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(calib_root)/ptu-pose-tilt-sim.xml --log --debug --ptzserver ptz.server
-####CPP MG pointcloudviewer PointCloudViewer --pcserver pcserver
+CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 
-JAVA MG ptzJavaServer 	ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
 
 
-CPP MG recognizer.3D 	ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 JAVA MG person.runner 	vision.components.PersonDetectorRunner
-JAVA MG pm.people 	eu.cogx.perceptmediator.dora.PersonMediator
-JAVA MG pt.people 	eu.cogx.percepttracker.dora.DoraPersonTracker
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini
-COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
-INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning 	eu.cogx.planner.facade.ManualPlanningTaskComponent --goals "(exists (?p - person) (kval (is-in ?p)));(and )"
-# exection ####################################################################
-JAVA MG manual-execution 	dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
-JAVA MG executor 		dora.execution.components.DoraExecutionMediator
+INCLUDE includes/planner.sa/dora-interactive.cast
 
 # dialogue ####################################################################
-####INCLUDE includes/dialogue.sa/dialogue-base.cast
-
-SETVAR parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
-SETVAR irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
-SETVAR dm_policy=subarchitectures/dialogue.sa/config/policies/yr2/fullpolicy_george.xml
-SETVAR irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
-SETVAR cplan_rules=subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf
-SETVAR realize_grammar=%(parsing_grammar)
-SETVAR realize_ngrams=subarchitectures/dialogue.sa/grammars/openccg/moloko.v6/ngram-corpus.txt
-
-INCLUDE  modules/main.incl
-
-INCLUDE  modules/context.incl
-
-INCLUDE  modules/asr-loquendo.incl
-INCLUDE  modules/nlu-all.incl
-INCLUDE  modules/manage-none.incl
-INCLUDE  modules/nlg-all.incl
-INCLUDE  modules/tts-mary.incl
-INCLUDE  modules/gui-local.incl
-INCLUDE includes/dialogue.sa/dialogue-exe.cast
+INCLUDE includes/dialogue.sa/dialogue-dora.cast
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)

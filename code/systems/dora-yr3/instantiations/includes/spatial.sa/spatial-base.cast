@@ -1,6 +1,7 @@
+VARDEFAULT playerhost=localhost
 
-COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
-COMPONENT CPP robot.server RobotbaseServerPlayer --player-host localhost --ctrl-ptu #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host %(playerhost) 
+COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(playerhost) --ctrl-ptu 
 
 SUBARCHITECTURE spatial.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
