@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ptz.ptzServer.PanTiltZoomGUI;
-
 import kinect.slice.KinectPerson;
 import kinect.slice.PersonDetectorInterface;
 import kinect.slice.PersonDetectorInterfacePrx;
