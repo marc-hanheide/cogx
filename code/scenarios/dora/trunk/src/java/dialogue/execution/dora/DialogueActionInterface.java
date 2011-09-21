@@ -21,6 +21,7 @@ import eu.cogx.perceptmediator.components.RoomMembershipMediator;
 import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
+import execution.components.AbstractActionInterface;
 import execution.slice.TriBool;
 import execution.slice.actions.ReportPosition;
 import execution.util.BlockingActionExecutor;
@@ -117,14 +118,15 @@ public class DialogueActionInterface extends
 		}
 
 		@Override
-		protected void actionComplete() {
+		protected TriBool actionComplete() {
 			try {
-				((dialogue.execution.AbstractDialogueActionInterface) getComponent())
+				((AbstractActionInterface) getComponent())
 						.addBooleanFeature(getAction().beliefAddress,
 								"position-reported", true);
 			} catch (CASTException e) {
 				logException("Problem while updating belief", e);
 			}
+			return TriBool.TRITRUE;
 		}
 
 	}
