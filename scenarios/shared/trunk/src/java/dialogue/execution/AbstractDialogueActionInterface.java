@@ -32,6 +32,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.SharedBelief;
+import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.AskForColour;
@@ -55,8 +56,8 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * @author nah
  * 
  */
-public abstract class AbstractDialogueActionInterface extends ManagedComponent {
-	protected LocalActionStateManager m_actionStateManager;
+public abstract class AbstractDialogueActionInterface extends AbstractActionInterface {
+	
 	private GroundedToSharedBeliefMap m_groundedToShared;
 
 	boolean madeup;
@@ -609,23 +610,6 @@ public abstract class AbstractDialogueActionInterface extends ManagedComponent {
 			addFeatureDirectly(_action, _feature, _action.value, 0d);
 		}
 		return false;
-	}
-
-	public void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
-			String _feature, boolean _value) throws DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
-
-		GroundedBelief belief = getMemoryEntry(_beliefAddress,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-
-		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
-
-		pb.getContent().put(_feature, fd);
-		overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
 	@Override

@@ -4,38 +4,22 @@
 package vision.execution;
 
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 
 import VisionData.DetectionCommand;
 import VisionData.ForegroundedModel;
 import VisionData.PeopleDetectionCommand;
-import VisionData.VisualLearningTask;
 import cast.CASTException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.perceptmediator.transferfunctions.VisualObjectTransferFunction;
+import execution.components.AbstractActionInterface;
 import execution.slice.TriBool;
 import execution.slice.actions.BackgroundModels;
-import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.ForegroundModels;
-import execution.slice.actions.LearnColour;
-import execution.slice.actions.LearnIdentity;
-import execution.slice.actions.LearnShape;
 import execution.slice.actions.RecogniseForegroundedModels;
-import execution.slice.actions.UnlearnColour;
-import execution.slice.actions.UnlearnIdentity;
-import execution.slice.actions.UnlearnShape;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
@@ -45,12 +29,13 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * Component to listen to planner actions the trigger the vision sa as
  * appropriate. Must be run from the vision sa.
  * 
+ * This looks like mostly Dora now. 
+ * 
  * @author nah
  * 
  */
-public class VisionActionInterface extends ManagedComponent {
+public class VisionActionInterface extends AbstractActionInterface {
 
-	private LocalActionStateManager m_actionStateManager;
 
 	/**
 	 * An action executor to handle object detection.
@@ -223,155 +208,8 @@ public class VisionActionInterface extends ManagedComponent {
 
 	}
 
-	public static abstract class LearnInstructionExecutor<ActionType extends BeliefPlusStringAction>
-			extends NonBlockingCompleteOnOperationExecutor<ActionType> {
 
-		private final String m_concept;
-		private final String m_featurePostfix;
-		private final double m_weight;
-
-		public LearnInstructionExecutor(ManagedComponent _component,
-				Class<ActionType> _actCls, String _concept, double _weight, String _featurePostfix) {
-			super(_component, _actCls);
-			m_concept = _concept;
-			m_weight = _weight;
-			m_featurePostfix = _featurePostfix;
-
-		}
-
-		protected boolean acceptAction(ActionType _action) {
-			return true;
-		}
-
-		@Override
-		protected VisionActionInterface getComponent() {
-			return (VisionActionInterface) super.getComponent();
-		}
-
-		@Override
-		public void executeAction() {
-			try {
-				WorkingMemoryAddress beliefID = getAction().beliefAddress;
-
-				VisualLearningTask cmd = null;
-
-				//TODO put back in
-//				cmd = new VisualLearningTask(getComponent().getVisualObjectID(
-//						beliefID), beliefID.id, m_concept,
-//						new String[] { getAction().value },
-//						new double[] { m_weight });
-
-				getComponent().log(
-						"got the vis obj id: "
-								+ getComponent().getVisualObjectID(beliefID));
-								
-								// Hack  by Alen
-//				getComponent().addBooleanFeature(getAction().beliefAddress,
-//						m_concept + m_featurePostfix, true);				
-
-				addThenCompleteOnOverwrite(cmd);
-				
-//				getComponent().sleepComponent(10000);
-				
-			} catch (CASTException e) {
-				getComponent().logException(e);
-			}
-		}
-
-		@Override
-		protected void actionComplete() {
-			try {
-				getComponent().addBooleanFeature(getAction().beliefAddress,
-						m_concept + m_featurePostfix, true);
-				// Hack  by Alen
-//				getComponent().sleepComponent(10000);		
-			} catch (CASTException e) {
-				logException(e);
-			}
-		}
-	}
-
-	public static class LearnColourExecutor extends
-			LearnInstructionExecutor<LearnColour> {
-
-		public LearnColourExecutor(ManagedComponent _component) {
-			super(_component, LearnColour.class, "color", 1, "-learned");
-		}
-	}
-
-	public static class LearnShapeExecutor extends
-			LearnInstructionExecutor<LearnShape> {
-
-		public LearnShapeExecutor(ManagedComponent _component) {
-			super(_component, LearnShape.class, "shape", 1, "-learned");
-		}
-
-	}
-
-	public static class LearnIdentityExecutor extends
-			LearnInstructionExecutor<LearnIdentity> {
-
-		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class, "ident", 1, "-learned");
-		}
-	}
-
-	public static class UnlearnColourExecutor extends
-			LearnInstructionExecutor<UnlearnColour> {
-
-		public UnlearnColourExecutor(ManagedComponent _component) {
-			super(_component, UnlearnColour.class, "color", -1, "-unlearned");
-		}
-	}
-
-	public static class UnlearnShapeExecutor extends
-			LearnInstructionExecutor<UnlearnShape> {
-
-		public UnlearnShapeExecutor(ManagedComponent _component) {
-			super(_component, UnlearnShape.class, "shape", -1, "-unlearned");
-		}
-
-	}
-
-	public static class UnlearnIdentityExecutor extends
-			LearnInstructionExecutor<UnlearnIdentity> {
-
-		public UnlearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, UnlearnIdentity.class, "ident", -1,  "-unlearned");
-		}
-	}
-
-	@Override
-	protected void configure(Map<String, String> _config) {
-	}
-
-	private String getVisualObjectID(WorkingMemoryAddress _beliefID)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-
-		GroundedBelief belief = getMemoryEntry(_beliefID, GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-		return pb.getContent()
-				.get(VisualObjectTransferFunction.VISUAL_OBJECT_ID)
-				.getDistribution().getMostLikely().getProposition();
-	}
-
-	private void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
-			String _feature, boolean _value) throws DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
-
-		GroundedBelief belief = getMemoryEntry(_beliefAddress,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-
-		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
-
-		pb.getContent().put(_feature, fd);
-		overwriteWorkingMemory(_beliefAddress, pb.get());
-	}
+	
 
 	private final Hashtable<String, WorkingMemoryAddress> m_foregroundedModels;
 
@@ -413,26 +251,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 		// learning executors
 
-		m_actionStateManager.registerActionType(LearnColour.class,
-				new ComponentActionFactory<LearnColourExecutor>(this,
-						LearnColourExecutor.class));
-		m_actionStateManager.registerActionType(LearnShape.class,
-				new ComponentActionFactory<LearnShapeExecutor>(this,
-						LearnShapeExecutor.class));
-		m_actionStateManager.registerActionType(LearnIdentity.class,
-				new ComponentActionFactory<LearnIdentityExecutor>(this,
-						LearnIdentityExecutor.class));
-
-		m_actionStateManager.registerActionType(UnlearnColour.class,
-				new ComponentActionFactory<UnlearnColourExecutor>(this,
-						UnlearnColourExecutor.class));
-		m_actionStateManager.registerActionType(UnlearnShape.class,
-				new ComponentActionFactory<UnlearnShapeExecutor>(this,
-						UnlearnShapeExecutor.class));
-		m_actionStateManager.registerActionType(UnlearnIdentity.class,
-				new ComponentActionFactory<UnlearnIdentityExecutor>(this,
-						UnlearnIdentityExecutor.class));
-
+		
 	}
 
 }
