@@ -20,6 +20,10 @@ import castutils.castextensions.WMEventQueue;
 
 public class PanTiltZoomServer extends ManagedComponent {
 
+	private static final String KEY_PAN = "--pan";
+
+	private static final String KEY_TILT = "--tilt";
+
 	private static final int TIMEOUT_MS = 8000;
 
 	private static final int TIME_WAIT_MS = 100;
@@ -30,14 +34,19 @@ public class PanTiltZoomServer extends ManagedComponent {
 
 	private static final PTZPose[] FIXED_INIT_POSES = new PTZPose[] {
 			new PTZPose(45 * Math.PI / 180, 25 * Math.PI / 180, 0),
-			new PTZPose(-45 * Math.PI / 180, -25 * Math.PI / 180, 0),
-			new PTZPose(0, 0, 0) };
+			new PTZPose(-45 * Math.PI / 180, -25 * Math.PI / 180, 0) };
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private PTZInterfacePrx ptzInterface = null;
 
 	private String ptzServerComponent;
+
+	private boolean doTheShake;
+
+	private double startPan;
+
+	private double startTilt;
 
 	private void addPanTiltCommandListener() {
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
@@ -136,6 +145,23 @@ public class PanTiltZoomServer extends ManagedComponent {
 			ptzServerComponent = "ptz.server";
 		}
 
+		if (config.containsKey("--shake")) {
+			doTheShake = true;
+		} else {
+			doTheShake = false;
+		}
+
+		if (config.containsKey(KEY_PAN)) {
+			startPan = Double.parseDouble(config.get(KEY_PAN));
+		} else {
+			startPan = 0.0;
+		}
+		if (config.containsKey(KEY_TILT)) {
+			startTilt = Double.parseDouble(config.get(KEY_TILT));
+		} else {
+			startTilt = 0.0;
+		}
+
 	}
 
 	/**
@@ -157,28 +183,46 @@ public class PanTiltZoomServer extends ManagedComponent {
 	 */
 	@Override
 	protected void runComponent() {
-		println("go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up");
-
-		//nah: added locking, so any commands received will be buffered
 		lockComponent();
-		for (PTZPose pose : FIXED_INIT_POSES) {
-			SetPTZPoseCommand cmd = new SetPTZPoseCommand(pose,
-					PTZCompletion.COMPINIT);
-			String id = newDataID();
-			WMEventQueue queue = new WMEventQueue();
-			addChangeFilter(ChangeFilterFactory.createIDFilter(id,
-					WorkingMemoryOperation.OVERWRITE), queue);
-			try {
-				addToWorkingMemory(id, cmd);
-				queue.take();
-				removeChangeFilter(queue);
-				deleteFromWorkingMemory(id);
-			} catch (CASTException e) {
-				logException(e);
-			} catch (InterruptedException e) {
-				logException(e);
+		if (doTheShake) {
+			println("go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up");
+			for (PTZPose pose : FIXED_INIT_POSES) {
+				SetPTZPoseCommand cmd = new SetPTZPoseCommand(pose,
+						PTZCompletion.COMPINIT);
+				String id = newDataID();
+				WMEventQueue queue = new WMEventQueue();
+				addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+						WorkingMemoryOperation.OVERWRITE), queue);
+				try {
+					addToWorkingMemory(id, cmd);
+					queue.take();
+					removeChangeFilter(queue);
+					deleteFromWorkingMemory(id);
+				} catch (CASTException e) {
+					logException(e);
+				} catch (InterruptedException e) {
+					logException(e);
+				}
 			}
 		}
+		// go to initial pose
+		SetPTZPoseCommand cmd = new SetPTZPoseCommand(new PTZPose(startPan,
+				startTilt, 0.0), PTZCompletion.COMPINIT);
+		String id = newDataID();
+		WMEventQueue queue = new WMEventQueue();
+		addChangeFilter(ChangeFilterFactory.createIDFilter(id,
+				WorkingMemoryOperation.OVERWRITE), queue);
+		try {
+			addToWorkingMemory(id, cmd);
+			queue.take();
+			removeChangeFilter(queue);
+			deleteFromWorkingMemory(id);
+		} catch (CASTException e) {
+			logException(e);
+		} catch (InterruptedException e) {
+			logException(e);
+		}
+
 		unlockComponent();
 	}
 }
