@@ -10,6 +10,7 @@
 #include "../../VisionUtils.h"
 #include <Video.hpp>
 #include <Math.hpp>
+#include <castutils/Timers.hpp>
 
 #include <string>
 
@@ -112,6 +113,13 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       // XXX: The object recognizer should verify if this is the same object
       psoirec->protoObjectAddr = pporec->addr;
       MakeVisible(pporec->addr);
+      return;
+    }
+
+    // XXX: CONFIG min/max distance could be an option
+    double dsoi = length(psoi->boundingSphere.pos);
+    if (dsoi > 3.0) {
+      log("SOI '%s' is too far (%.3gm)", psoirec->addr.id.c_str(), dsoi);
       return;
     }
 
@@ -301,6 +309,14 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
         //
         // The condition for removed objects: we know that we could see the
         // object from the current view cone, but it isn't there.
+        castutils::CMilliTimer tmwait;
+        while( ! pSoiFilter->isCameraStable()) {
+          pSoiFilter->sleepComponent(100);
+          if (tmwait.elapsed() > 5000) {
+            println("delete_soi: waiting for camera to stop moving");
+            tmwait.restart();
+          }
+        }
 
         MakeInvisible(psoirec->protoObjectAddr);
 
@@ -314,6 +330,9 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
           // We add this to a queue and do the check after a while because the
           // camera may be moving.
           // TODO: pSoiFilter->queueCheckPoVisibility(psoirec->protoObjectAddr);
+          //if ( pSoiFilter->isPointVisible(pporec->pobj->position) ) {
+          //  pSoiFilter->deleteFromWorkingMemory(psoirec->protoObjectAddr);
+          //}
         }
         catch(range_error& e) {}
       }
