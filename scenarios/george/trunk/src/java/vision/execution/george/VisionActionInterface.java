@@ -13,6 +13,7 @@ import VisionData.AnalyzeProtoObjectCommand;
 import VisionData.MoveToViewConeCommand;
 import VisionData.ViewCone;
 import VisionData.VisionCommandStatus;
+import VisionData.VisualLearningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -29,13 +30,22 @@ import cast.core.CASTUtils;
 import cogx.Math.Vector3;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
+import execution.slice.actions.BeliefPlusStringAction;
+import execution.slice.actions.LearnColour;
+import execution.slice.actions.LearnIdentity;
+import execution.slice.actions.LearnShape;
+import execution.slice.actions.UnlearnColour;
+import execution.slice.actions.UnlearnIdentity;
+import execution.slice.actions.UnlearnShape;
 import execution.slice.actions.george.yr3.AnalyzeProtoObject;
 import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteFromStatusExecutor;
+import execution.util.NonBlockingCompleteOnOperationExecutor;
 
 /**
  * Component to listen to planner actions the trigger the vision sa as
@@ -44,15 +54,13 @@ import execution.util.NonBlockingCompleteFromStatusExecutor;
  * @author nah
  * 
  */
-public class VisionActionInterface extends ManagedComponent {
-
-	private LocalActionStateManager m_actionStateManager;
+public class VisionActionInterface extends AbstractActionInterface {
 
 	private WorkingMemoryAddress m_viewStateAddress;
 
 	private String m_ptzServerComponent;
 
-	//determine whether to fake the robot pose
+	// determine whether to fake the robot pose
 	private boolean m_fakeRobotPose;
 
 	public static class MoveToViewConeExecutor
@@ -114,6 +122,138 @@ public class VisionActionInterface extends ManagedComponent {
 			}
 		}
 
+	}
+
+	public static abstract class LearnInstructionExecutor<ActionType extends BeliefPlusStringAction>
+			extends NonBlockingCompleteOnOperationExecutor<ActionType> {
+
+		private final String m_concept;
+		private final String m_featurePostfix;
+		private final double m_weight;
+
+		public LearnInstructionExecutor(ManagedComponent _component,
+				Class<ActionType> _actCls, String _concept, double _weight,
+				String _featurePostfix) {
+			super(_component, _actCls);
+			m_concept = _concept;
+			m_weight = _weight;
+			m_featurePostfix = _featurePostfix;
+
+		}
+
+		protected boolean acceptAction(ActionType _action) {
+			return true;
+		}
+
+		@Override
+		protected VisionActionInterface getComponent() {
+			return (VisionActionInterface) super.getComponent();
+		}
+
+		@Override
+		public void executeAction() {
+			try {
+				WorkingMemoryAddress beliefID = getAction().beliefAddress;
+
+				VisualLearningTask cmd = null;
+
+				WorkingMemoryPointer visualObectPtr = ((VisionActionInterface) getComponent())
+						.getFirstAncestorOfBelief(getAction().beliefAddress);
+
+				cmd = new VisualLearningTask(visualObectPtr, beliefID.id,
+						m_concept, new String[] { getAction().value },
+						new double[] { m_weight },
+						VisionCommandStatus.VCREQUESTED);
+
+				// Hack by Alen - is this still needed in year 3?
+				// getComponent().addBooleanFeature(getAction().beliefAddress,
+				// m_concept + m_featurePostfix, true);
+
+				addThenCompleteOnOverwrite(cmd);
+
+				// getComponent().sleepComponent(10000);
+
+			} catch (CASTException e) {
+				getComponent().logException(e);
+			}
+		}
+
+		public VisualLearningTask getTask() throws DoesNotExistOnWMException {
+			return getCommandObject(VisualLearningTask.class);
+		}
+		
+		@Override
+		protected TriBool actionComplete() {
+			try {
+				getComponent().addBooleanFeature(getAction().beliefAddress,
+						m_concept + m_featurePostfix, true);
+				
+				VisionCommandStatus status = getTask().status;
+				if(status == VisionCommandStatus.VCSUCCEEDED) {
+					return TriBool.TRITRUE;
+				}
+				else {
+					return TriBool.TRIFALSE;
+				}
+				// Hack by Alen
+				// getComponent().sleepComponent(10000);
+			} catch (CASTException e) {
+				logException(e);
+			}
+			finally {
+				return TriBool.TRIFALSE;
+			}
+		}
+	}
+
+	public static class LearnColourExecutor extends
+			LearnInstructionExecutor<LearnColour> {
+
+		public LearnColourExecutor(ManagedComponent _component) {
+			super(_component, LearnColour.class, "color", 1, "-learned");
+		}
+	}
+
+	public static class LearnShapeExecutor extends
+			LearnInstructionExecutor<LearnShape> {
+
+		public LearnShapeExecutor(ManagedComponent _component) {
+			super(_component, LearnShape.class, "shape", 1, "-learned");
+		}
+
+	}
+
+	public static class LearnIdentityExecutor extends
+			LearnInstructionExecutor<LearnIdentity> {
+
+		public LearnIdentityExecutor(ManagedComponent _component) {
+			super(_component, LearnIdentity.class, "ident", 1, "-learned");
+		}
+	}
+
+	public static class UnlearnColourExecutor extends
+			LearnInstructionExecutor<UnlearnColour> {
+
+		public UnlearnColourExecutor(ManagedComponent _component) {
+			super(_component, UnlearnColour.class, "color", -1, "-unlearned");
+		}
+	}
+
+	public static class UnlearnShapeExecutor extends
+			LearnInstructionExecutor<UnlearnShape> {
+
+		public UnlearnShapeExecutor(ManagedComponent _component) {
+			super(_component, UnlearnShape.class, "shape", -1, "-unlearned");
+		}
+
+	}
+
+	public static class UnlearnIdentityExecutor extends
+			LearnInstructionExecutor<UnlearnIdentity> {
+
+		public UnlearnIdentityExecutor(ManagedComponent _component) {
+			super(_component, UnlearnIdentity.class, "ident", -1, "-unlearned");
+		}
 	}
 
 	public static class AnalyzeProtoObjectExecutor
@@ -222,7 +362,7 @@ public class VisionActionInterface extends ManagedComponent {
 		if (m_ptzServerComponent == null) {
 			m_ptzServerComponent = "ptz.server";
 		}
-		
+
 		m_fakeRobotPose = _config.containsKey("--fake-pose");
 	}
 
@@ -237,6 +377,26 @@ public class VisionActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(AnalyzeProtoObject.class,
 				new ComponentActionFactory<AnalyzeProtoObjectExecutor>(this,
 						AnalyzeProtoObjectExecutor.class));
+
+		m_actionStateManager.registerActionType(LearnColour.class,
+				new ComponentActionFactory<LearnColourExecutor>(this,
+						LearnColourExecutor.class));
+		m_actionStateManager.registerActionType(LearnShape.class,
+				new ComponentActionFactory<LearnShapeExecutor>(this,
+						LearnShapeExecutor.class));
+		m_actionStateManager.registerActionType(LearnIdentity.class,
+				new ComponentActionFactory<LearnIdentityExecutor>(this,
+						LearnIdentityExecutor.class));
+
+		m_actionStateManager.registerActionType(UnlearnColour.class,
+				new ComponentActionFactory<UnlearnColourExecutor>(this,
+						UnlearnColourExecutor.class));
+		m_actionStateManager.registerActionType(UnlearnShape.class,
+				new ComponentActionFactory<UnlearnShapeExecutor>(this,
+						UnlearnShapeExecutor.class));
+		m_actionStateManager.registerActionType(UnlearnIdentity.class,
+				new ComponentActionFactory<UnlearnIdentityExecutor>(this,
+						UnlearnIdentityExecutor.class));
 
 		addChangeFilter(
 				ChangeFilterFactory.createGlobalTypeFilter(RobotPose2d.class),
@@ -255,6 +415,7 @@ public class VisionActionInterface extends ManagedComponent {
 
 	}
 
+	
 	private static ViewCone createViewConeFromPosition(RobotPose2d _pose,
 			PTZReading _ptz) {
 		ViewCone vc = new ViewCone();
@@ -285,17 +446,20 @@ public class VisionActionInterface extends ManagedComponent {
 					RobotPose2d.class);
 			ViewCone vc = createViewConeFromPosition(currentRobotPose,
 					currentPTZPose);
-			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(),
+					getSubarchitectureID());
 			addToWorkingMemory(wma, vc);
-			recordCurrentViewCone(new WorkingMemoryPointer(wma, CASTUtils.typeName(vc)));
+			recordCurrentViewCone(new WorkingMemoryPointer(wma,
+					CASTUtils.typeName(vc)));
 		}
 		return false;
 	}
-	
+
 	@Override
 	protected void runComponent() {
-		if(m_fakeRobotPose) {
-			getLogger().warn("Faking robot pose. Don't use when real robot poses are being generated");
+		if (m_fakeRobotPose) {
+			getLogger()
+					.warn("Faking robot pose. Don't use when real robot poses are being generated");
 			RobotPose2d pose = new RobotPose2d(getCASTTime(), 0, 0, 0, null);
 			try {
 				addToWorkingMemory(newDataID(), pose);
