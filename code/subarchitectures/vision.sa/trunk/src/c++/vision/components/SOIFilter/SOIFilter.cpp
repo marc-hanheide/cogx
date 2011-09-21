@@ -12,7 +12,6 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <fstream>
 #include <cmath>
-#include <castutils/Timers.hpp>
 
 #define CAM_ID_DEFAULT 0
 
@@ -602,6 +601,51 @@ bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
   return Video::isPointVisible(m_cameraParams, pos);
 }
 
+// Check the objects that are curently marked invisible.
+// If an invisible object should be visible (it is in the view volume), assume
+// it was removed and delete the ProtoObject.
+void SOIFilter::checkInvisibleObjects()
+{
+  if ( ! isCameraStable()) sleepComponent(50);
+  if ( ! isCameraStable()) return;
+
+  typeof(m_protoObjects.begin()) itpo;
+  for(itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
+    ProtoObjectRecordPtr& pporec = itpo->second;
+    ProtoObjectPtr& pobj = pporec->pobj;
+
+    if (pporec->tmDisappeared.elapsed() < 1000)
+      continue;
+
+    bool bVisible = false;
+    typeof(m_sois.begin()) it;
+    for (it = m_sois.begin(); it != m_sois.end(); ++it) {
+      if (it->second->protoObjectAddr == pporec->addr) {
+        bVisible = true;
+        break;
+      }
+    }
+    if (bVisible) continue;
+
+    Vector3& pos = pporec->pobj->position;
+    log("TODO: Check Visibility of PO '%s' at (%.3g %.3g %3g) -> (%s)",
+        pporec->addr.id.c_str(),
+        pos.x, pos.y, pos.z,
+        isPointVisible(pporec->pobj->position) ? "IN" : "OUT");
+  }
+}
+
+void SOIFilter::queueCheckVisibilityOf_PO(const cdl::WorkingMemoryAddress& protoObjectAddr)
+{
+  ProtoObjectRecordPtr pporec;
+  try {
+    pporec = m_protoObjects.get(protoObjectAddr);
+    // for now just mark the time the object was queued
+    pporec->tmDisappeared.restart();
+  }
+  catch(range_error& e) {}
+}
+
 void SOIFilter::updateRobotPosePtz()
 {
   if (ptzServer.get()) {
@@ -643,6 +687,7 @@ void SOIFilter::runComponent()
   WmTaskExecutor_Soi soiProcessor(this);
   WmTaskExecutor_MoveToViewCone moveProcessor(this);
   WmTaskExecutor_Analyze analysisProcessor(this);
+  castutils::CMilliTimer tmCheckVisibility(true);
 
   while(isRunning())
   {
@@ -654,7 +699,7 @@ void SOIFilter::runComponent()
 
       // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
       if (m_EventQueue.size() < 1)
-        m_EventQueueMonitor.timedWait(IceUtil::Time::seconds(2));
+        m_EventQueueMonitor.timedWait(IceUtil::Time::milliSeconds(600));
 
       // SYNC: Continue with a locked monitor
 
@@ -694,6 +739,11 @@ void SOIFilter::runComponent()
           error(" ***** Event with an unknown type of object '%d'", pevent->objectType);
       };
       delete pevent;
+    }
+
+    if (tmCheckVisibility.elapsed() > 1000) {
+      checkInvisibleObjects();
+      tmCheckVisibility.restart();
     }
   }
 
