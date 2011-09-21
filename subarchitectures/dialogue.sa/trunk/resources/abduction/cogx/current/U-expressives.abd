@@ -2,19 +2,19 @@
 % ENGAGEMENT
 %-------------------------------------------------------------------------
 
-understand : event : utter(S, H, Nom) <-
+understand : event : utter(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, greeting),
 	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(['engagement-open', agent(S), agent(H)])) / p(1.0).
+	int : agent(Int, Speaker) / p(1.0),
+	int : post(Int, state(['engagement-open'|_])) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : event : utter(S, H, Nom) <-
+understand : event : utter(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, closing),
 	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(['engagement-closed', agent(S), agent(H)])) / p(1.0).
+	int : agent(Int, Speaker) / p(1.0),
+	int : post(Int, state(['engagement-closed'|_])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
