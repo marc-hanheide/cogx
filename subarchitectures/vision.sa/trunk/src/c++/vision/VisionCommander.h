@@ -48,6 +48,7 @@ public:
       pcmd = pComponent->getMemoryEntry<T>(addr);
     }
     catch(cast::DoesNotExistOnWMException){
+      pComponent->println("VisionCommandNotifier: Command deleted before read (id=%s).", addr.id.c_str());
       return false;
     }
     return true;
@@ -62,13 +63,15 @@ public:
       try {
         pComponent->overwriteWorkingMemory(addr, pcmd);
       }
-      catch(cast::DoesNotExistOnWMException){}
+      catch(cast::DoesNotExistOnWMException) {
+        pComponent->println("VisionCommandNotifier: Command deleted before overwrite (id=%s).", addr.id.c_str());
+      }
+      catch(...) {
+        pComponent->println("VisionCommandNotifier: Error in overwrite (id=%s).", addr.id.c_str());
+      }
     }
     else {
-      try {
-        pComponent->debug("VisionCommandNotifier destroyed without an overwrite (id=%s).", addr.id.c_str());
-      }
-      catch(...){}
+      pComponent->log("VisionCommandNotifier destroyed without an overwrite (id=%s).", addr.id.c_str());
     }
   }
   void fail() { doWrite = true; doFail(); }
