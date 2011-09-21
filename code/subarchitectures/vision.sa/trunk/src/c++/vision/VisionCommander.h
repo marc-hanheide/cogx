@@ -64,6 +64,12 @@ public:
       }
       catch(cast::DoesNotExistOnWMException){}
     }
+    else {
+      try {
+        pComponent->debug("VisionCommandNotifier destroyed without an overwrite (id=%s).", addr.id.c_str());
+      }
+      catch(...){}
+    }
   }
   void fail() { doWrite = true; doFail(); }
   void succeed() { doWrite = true; doSucceed(); }
