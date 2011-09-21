@@ -158,6 +158,9 @@ public class PanTiltZoomServer extends ManagedComponent {
 	@Override
 	protected void runComponent() {
 		println("go through a sequence of commands to help with a pan-tilt player bug, that seems to choke when the pan-tilt is not at 0.0 at start up");
+
+		//nah: added locking, so any commands received will be buffered
+		lockComponent();
 		for (PTZPose pose : FIXED_INIT_POSES) {
 			SetPTZPoseCommand cmd = new SetPTZPoseCommand(pose,
 					PTZCompletion.COMPINIT);
@@ -176,5 +179,6 @@ public class PanTiltZoomServer extends ManagedComponent {
 				logException(e);
 			}
 		}
+		unlockComponent();
 	}
 }
