@@ -20,6 +20,18 @@
 
 package de.dfki.lt.tr.cast.dialogue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -45,9 +57,8 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.interpret.BasicProofConvertor;
-import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
-import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
+import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognitionResult;
 import de.dfki.lt.tr.dialogue.interpret.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
@@ -57,41 +68,29 @@ import de.dfki.lt.tr.dialogue.slice.interpret.Interpretation;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.infer.abducer.proof.AssertedQuery;
 import de.dfki.lt.tr.infer.abducer.proof.ProofWithCost;
 import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A CAST component/wrapper of the class IntentionManagement. The component
  * listens for finalised PackingLFs appearing on the working memory for
  * intention recognition, and the robot's I-intentions for intention
  * realisation.
- *
+ * 
  * Command-line options:
- *
- *   --ruleset FN ...  path to the file FN containing one file name on each
- *                     line. Those files must be located in the same directory
- *                     as FN and are loaded by the abducer (please refer to the
- *                     abducer user manual for their syntax).
- *
+ * 
+ * --ruleset FN ... path to the file FN containing one file name on each line.
+ * Those files must be located in the same directory as FN and are loaded by the
+ * abducer (please refer to the abducer user manual for their syntax).
+ * 
  * @author Miroslav Janicek
  */
-public class CommunicativeIntentionRecognizer
-extends AbstractDialogueComponent {
+public class CommunicativeIntentionRecognizer extends AbstractDialogueComponent {
 
 	public final static int DEFAULT_TIMEOUT = 250;
 	private int timeout = DEFAULT_TIMEOUT;
@@ -103,7 +102,8 @@ extends AbstractDialogueComponent {
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
 	private String abd_serverName = "AbducerServer";
-	private String abd_endpoints = "default -p 9100";
+	private int abd_port = 9100;
+	private String abd_endpoints = "default -p " + abd_port;
 
 	private ConcurrentHashMap<WorkingMemoryAddress, ResolutionRequest> requested = new ConcurrentHashMap<WorkingMemoryAddress, ResolutionRequest>();
 	private ConcurrentHashMap<WorkingMemoryAddress, Interpretation> iprets = new ConcurrentHashMap<WorkingMemoryAddress, Interpretation>();
@@ -112,51 +112,49 @@ extends AbstractDialogueComponent {
 	public void start() {
 		super.start();
 
-		
 		irecog = new IntentionRecognition(abd_serverName, abd_endpoints,
-			new BasicProofConvertor(this.getLogger(".pconv"), new IdentifierGenerator() {
-				@Override
-				public String newIdentifier() {
-					return newDataID();
-				}
-			}, IntentionManagementConstants.thisAgent, "dialogue", "binder"),
-			timeout,
-			this.getLogger(".worker"));
+				new BasicProofConvertor(this.getLogger(".pconv"),
+						new IdentifierGenerator() {
+							@Override
+							public String newIdentifier() {
+								return newDataID();
+							}
+						}, IntentionManagementConstants.thisAgent, "dialogue",
+						"binder"), timeout, this.getLogger(".worker"));
 
 		initialiseContext();
 		files.add(dumpFile);
 
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(SelectedLogicalForm.class, WorkingMemoryOperation.ADD),
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				SelectedLogicalForm.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleSelectedLogicalForm(_wmc);
 					}
-		});
+				});
 
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(Interpretation.class, WorkingMemoryOperation.WILDCARD),
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				Interpretation.class, WorkingMemoryOperation.WILDCARD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleInterpretation(_wmc);
 					}
-		});
+				});
 
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(ResolutionResult.class, WorkingMemoryOperation.OVERWRITE),
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				ResolutionResult.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
 						handleResolutionResultOverwrite(_wmc);
 					}
-		});
+				});
 	}
 
 	@Override
-	public void configure(Map<String, String> _config)
-	{
+	public void configure(Map<String, String> _config) {
 		if (_config.containsKey("--ruleset")) {
 			rulesetFile = _config.get("--ruleset");
 		}
@@ -164,26 +162,35 @@ extends AbstractDialogueComponent {
 			String timeoutStr = _config.get("--timeout");
 			timeout = Integer.parseInt(timeoutStr);
 		}
+		if (_config.containsKey("--dumpfile")) {
+			dumpFile = _config.get("--dumpfile");
+		}
+		
+		String abducerHost = _config.get("--abd-host");
+		if (abducerHost != null) {
+			abd_endpoints = "default -h " + abducerHost + " -p " + abd_port;
+		}
 
 		if (rulesetFile != null) {
 			try {
-				BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
-				String parentAbsPath = (new File((new File(rulesetFile)).getParent()).getCanonicalPath());
+				BufferedReader f = new BufferedReader(new FileReader(
+						rulesetFile));
+				String parentAbsPath = (new File(
+						(new File(rulesetFile)).getParent()).getCanonicalPath());
 				if (parentAbsPath == null) {
-					parentAbsPath = "";  // rulefile is in `/'
+					parentAbsPath = ""; // rulefile is in `/'
 				}
-				log("will be looking for abducer rulefiles in `" + parentAbsPath + "'");
+				log("will be looking for abducer rulefiles in `"
+						+ parentAbsPath + "'");
 				String file = null;
 				while ((file = f.readLine()) != null) {
 					file = parentAbsPath + File.separator + file;
 					files.add(file);
 				}
 				f.close();
-			}
-			catch (FileNotFoundException e) {
+			} catch (FileNotFoundException e) {
 				log("ruleset filename not found");
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				log("I/O exception while reading files from list");
 				e.printStackTrace();
 			}
@@ -192,10 +199,13 @@ extends AbstractDialogueComponent {
 
 	private void handleSelectedLogicalForm(WorkingMemoryChange _wmc) {
 		try {
-			CASTData<SelectedLogicalForm> data = getMemoryEntryWithData(_wmc.address, SelectedLogicalForm.class);
+			CASTData<SelectedLogicalForm> data = getMemoryEntryWithData(
+					_wmc.address, SelectedLogicalForm.class);
 			SelectedLogicalForm arg = data.getData();
 
-			getLogger().info("got a SelectedLogicalForm: " + LFUtils.lfToString(arg.lform));
+			getLogger().info(
+					"got a SelectedLogicalForm: "
+							+ LFUtils.lfToString(arg.lform));
 
 			String taskID = newTaskID();
 			ProcessingData pd = new ProcessingData(newProcessingDataId());
@@ -203,8 +213,7 @@ extends AbstractDialogueComponent {
 			addProposedTask(taskID, pd);
 			String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 			proposeInformationProcessingTask(taskID, taskGoal);
-		}
-		catch (SubarchitectureComponentException ex) {
+		} catch (SubarchitectureComponentException ex) {
 			getLogger().warn("component exception", ex);
 		}
 	}
@@ -213,7 +222,8 @@ extends AbstractDialogueComponent {
 		if (requested.containsKey(_wmc.address)) {
 			try {
 				log("got a watched ResolutionResult");
-//				ResolutionResult rresult = getMemoryEntry(_wmc.address, ResolutionResult.class);
+				// ResolutionResult rresult = getMemoryEntry(_wmc.address,
+				// ResolutionResult.class);
 				CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
 				// okay, now remove it
@@ -227,8 +237,7 @@ extends AbstractDialogueComponent {
 				addProposedTask(taskID, pd);
 				String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
-			}
-			catch (SubarchitectureComponentException ex) {
+			} catch (SubarchitectureComponentException ex) {
 				getLogger().warn("component exception", ex);
 			}
 		}
@@ -236,14 +245,14 @@ extends AbstractDialogueComponent {
 
 	private void handleInterpretation(WorkingMemoryChange _wmc) {
 		try {
-			log("got an WM change for Interpretation: (" + _wmc.address.id + "): " + _wmc.operation.toString());
+			log("got an WM change for Interpretation: (" + _wmc.address.id
+					+ "): " + _wmc.operation.toString());
 			if (_wmc.operation == WorkingMemoryOperation.DELETE) {
 				iprets.remove(_wmc.address);
-			}
-			else {
+			} else {
 				CASTData data = getWorkingMemoryEntry(_wmc.address.id);
 
-				Interpretation ipret = (Interpretation)data.getData();
+				Interpretation ipret = (Interpretation) data.getData();
 				iprets.put(_wmc.address, ipret);
 
 				String taskID = newTaskID();
@@ -254,8 +263,7 @@ extends AbstractDialogueComponent {
 				String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 				proposeInformationProcessingTask(taskID, taskGoal);
 			}
-		}
-		catch (SubarchitectureComponentException ex) {
+		} catch (SubarchitectureComponentException ex) {
 			ex.printStackTrace();
 		}
 	}
@@ -268,7 +276,9 @@ extends AbstractDialogueComponent {
 		List<WorkingMemoryAddress> toRemove = new LinkedList<WorkingMemoryAddress>();
 
 		for (WorkingMemoryAddress wma : iprets.keySet()) {
-			IntentionRecognitionResult irr = IntentionRecognitionResult.extractFromInterpretation(irecog.getProofConvertor(), iprets.get(wma), this.getLogger());
+			IntentionRecognitionResult irr = IntentionRecognitionResult
+					.extractFromInterpretation(irecog.getProofConvertor(),
+							iprets.get(wma), this.getLogger());
 			iprets.get(wma);
 
 			String nom = rr.nom;
@@ -277,23 +287,29 @@ extends AbstractDialogueComponent {
 				log("interpretation of (" + wma.id + ") might have changed");
 
 				// TODO: add resolution result to the proofs
-				IntentionRecognitionResult new_irr = irecog.reinterpret(irr, rr);
+				IntentionRecognitionResult new_irr = irecog
+						.reinterpret(irr, rr);
 
 				if (new_irr != null) {
 					log("scheduling (" + wma.id + ") for processing");
 					irr = new_irr;
 
 					Interpretation ipret = irr.toInterpretation();
-					CASTData<Interpretation> data = new CASTData(wma.id, ipret);  // TODO: what is the id here?
+					CASTData<Interpretation> data = new CASTData(wma.id, ipret); // TODO:
+																					// what
+																					// is
+																					// the
+																					// id
+																					// here?
 					String taskID = newTaskID();
-					ProcessingData pd = new ProcessingData(newProcessingDataId());
+					ProcessingData pd = new ProcessingData(
+							newProcessingDataId());
 					pd.add(data);
 					pd.setWorkingMemoryAddress(wma);
 					addProposedTask(taskID, pd);
 					String taskGoal = DialogueGoals.INTENTION_RECOGNITION_TASK;
 					proposeInformationProcessingTask(taskID, taskGoal);
-				}
-				else {
+				} else {
 					log("scheduling (" + wma.id + ") for removal");
 					toRemove.add(wma);
 				}
@@ -304,14 +320,11 @@ extends AbstractDialogueComponent {
 			try {
 				log("removing Interpretation (" + wma.id + ")");
 				deleteFromWorkingMemory(wma);
-			}
-			catch (DoesNotExistOnWMException ex) {
+			} catch (DoesNotExistOnWMException ex) {
 				ex.printStackTrace();
-			}
-			catch (PermissionException ex) {
+			} catch (PermissionException ex) {
 				ex.printStackTrace();
-			}
-			catch (UnknownSubarchitectureException ex) {
+			} catch (UnknownSubarchitectureException ex) {
 				ex.printStackTrace();
 			}
 		}
@@ -331,8 +344,7 @@ extends AbstractDialogueComponent {
 	}
 
 	@Override
-	public void executeTask(ProcessingData data)
-	throws DialogueException {
+	public void executeTask(ProcessingData data) throws DialogueException {
 
 		Iterator<CASTData> iter = data.getData();
 		if (iter.hasNext()) {
@@ -342,8 +354,10 @@ extends AbstractDialogueComponent {
 				SelectedLogicalForm slf = (SelectedLogicalForm) body;
 				LogicalForm lf = slf.lform;
 				initialiseContext();
-//				irecog.updateReferentialHypotheses(slf.refs);
-				IntentionRecognitionResult ri = irecog.logicalFormToInterpretation(lf, new TimeInterval(slf.ival));
+				// irecog.updateReferentialHypotheses(slf.refs);
+				IntentionRecognitionResult ri = irecog
+						.logicalFormToInterpretation(lf, new TimeInterval(
+								slf.ival));
 				if (ri != null) {
 
 					Interpretation ipret = ri.toInterpretation();
@@ -351,26 +365,26 @@ extends AbstractDialogueComponent {
 						String id = newDataID();
 						log("writing the interpretation (" + id + ") to the WM");
 						addToWorkingMemory(id, ipret);
-					}
-					catch (AlreadyExistsOnWMException ex) {
+					} catch (AlreadyExistsOnWMException ex) {
 						ex.printStackTrace();
 					}
 
-					log("found " + ri.getResolutionRequests().size() + " references to be resolved");
+					log("found " + ri.getResolutionRequests().size()
+							+ " references to be resolved");
 					for (ResolutionRequest rr : ri.getResolutionRequests()) {
 						try {
-							log("requesting recognition of this reference:\n" + ReferenceUtils.resolutionRequestToString(rr));
-							WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), this.getSubarchitectureID());
+							log("requesting recognition of this reference:\n"
+									+ ReferenceUtils
+											.resolutionRequestToString(rr));
+							WorkingMemoryAddress wma = new WorkingMemoryAddress(
+									newDataID(), this.getSubarchitectureID());
 							addToWorkingMemory(wma, rr);
 							requested.put(wma, rr);
-						}
-						catch (DoesNotExistOnWMException ex) {
+						} catch (DoesNotExistOnWMException ex) {
 							ex.printStackTrace();
-						}
-						catch (UnknownSubarchitectureException ex) {
+						} catch (UnknownSubarchitectureException ex) {
 							ex.printStackTrace();
-						}
-						catch (AlreadyExistsOnWMException ex) {
+						} catch (AlreadyExistsOnWMException ex) {
 							ex.printStackTrace();
 						}
 					}
@@ -380,114 +394,117 @@ extends AbstractDialogueComponent {
 			if (body instanceof Interpretation) {
 				assert (data.getWorkingMemoryAddress() != null);
 
-				log("processing an Interpretation (" + data.getWorkingMemoryAddress().id + ")");
+				log("processing an Interpretation ("
+						+ data.getWorkingMemoryAddress().id + ")");
 				Interpretation ipret = (Interpretation) body;
 
 				if (ipret.ungroundedNoms.isEmpty() && !hasAssertions(ipret)) {
 					log("hurray! this is a grounded interpretation");
-					IntentionRecognitionResult ri = IntentionRecognitionResult.extractFromInterpretation(irecog.getProofConvertor(), ipret, this.getLogger());
+					IntentionRecognitionResult ri = IntentionRecognitionResult
+							.extractFromInterpretation(
+									irecog.getProofConvertor(), ipret,
+									this.getLogger());
 
 					// we won't track it any longer
 					WorkingMemoryAddress wma = data.getWorkingMemoryAddress();
 					try {
-						log("removing the interpretation (" + wma.id + ") from the WM");
+						log("removing the interpretation (" + wma.id
+								+ ") from the WM");
 						deleteFromWorkingMemory(wma);
-					}
-					catch (DoesNotExistOnWMException ex) {
+					} catch (DoesNotExistOnWMException ex) {
 						ex.printStackTrace();
-					}
-					catch (PermissionException ex) {
+					} catch (PermissionException ex) {
 						ex.printStackTrace();
-					}
-					catch (UnknownSubarchitectureException ex) {
+					} catch (UnknownSubarchitectureException ex) {
 						ex.printStackTrace();
 					}
 
-					log("recognised " + ri.getIntentions().size() + " intentions and " + (ri.getPreconditionBeliefs().size() + ri.getPostconditionBeliefs().size()) + " beliefs");
+					log("recognised "
+							+ ri.getIntentions().size()
+							+ " intentions and "
+							+ (ri.getPreconditionBeliefs().size() + ri
+									.getPostconditionBeliefs().size())
+							+ " beliefs");
 					for (dBelief b : ri.getPreconditionBeliefs()) {
-						log("adding belief " + b.id + " to binder WM:\n" + BeliefIntentionUtils.beliefToString(b));
+						log("adding belief " + b.id + " to binder WM:\n"
+								+ BeliefIntentionUtils.beliefToString(b));
 						try {
 							addToWorkingMemory(b.id, "binder", b);
-						}
-						catch (AlreadyExistsOnWMException ex) {
+						} catch (AlreadyExistsOnWMException ex) {
 							ex.printStackTrace();
-						}
-						catch (UnknownSubarchitectureException ex) {
+						} catch (UnknownSubarchitectureException ex) {
 							ex.printStackTrace();
 						}
 					}
 					for (dBelief b : ri.getPostconditionBeliefs()) {
-						log("adding belief " + b.id + " to dialogue WM:\n" + BeliefIntentionUtils.beliefToString(b));
+						log("adding belief " + b.id + " to dialogue WM:\n"
+								+ BeliefIntentionUtils.beliefToString(b));
 						try {
 							addToWorkingMemory(b.id, b);
-						}
-						catch (AlreadyExistsOnWMException ex) {
+						} catch (AlreadyExistsOnWMException ex) {
 							ex.printStackTrace();
 						}
 					}
 					for (Intention i : ri.getIntentions()) {
-						log("adding communicative intention " + i.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(i));
+						log("adding communicative intention " + i.id
+								+ " to dialogue WM:\n"
+								+ BeliefIntentionUtils.intentionToString(i));
 						try {
 							CommunicativeIntention cit = new CommunicativeIntention();
 							cit.intent = i;
 							addToWorkingMemory(newDataID(), cit);
-//							addToWorkingMemory(i.id, i);
-						}
-						catch (AlreadyExistsOnWMException ex) {
+							// addToWorkingMemory(i.id, i);
+						} catch (AlreadyExistsOnWMException ex) {
 							ex.printStackTrace();
 						}
 					}
 
 					if (ri.getNominalReference() == null) {
 						log("the communication act does not specify topic");
-					}
-					else {
-						log("topic: (" + ri.getNominalReference().nominal + ", " + BeliefIntentionUtils.dFormulaToString(ri.getNominalReference().referent) + ")");
+					} else {
+						log("topic: ("
+								+ ri.getNominalReference().nominal
+								+ ", "
+								+ BeliefIntentionUtils.dFormulaToString(ri
+										.getNominalReference().referent) + ")");
 					}
 
 					// register the dialogue move
-					DialogueMove dm = new DialogueMove(IntentionManagementConstants.humanAgent, ipret.lform, ri.getNominalReference());
+					DialogueMove dm = new DialogueMove(
+							IntentionManagementConstants.humanAgent,
+							ipret.lform, ri.getNominalReference());
 					try {
 						addToWorkingMemory(newDataID(), dm);
-					}
-					catch (AlreadyExistsOnWMException ex) {
+					} catch (AlreadyExistsOnWMException ex) {
 						ex.printStackTrace();
 					}
-				}
-				else {
+				} else {
 					if (isUngroundable(ipret)) {
 						log("interpretation ungroundable");
-/*
-						try {
-							log("removing interpretation " + data.getWorkingMemoryAddress().id + " from WM");
-							deleteFromWorkingMemory(data.getWorkingMemoryAddress());
-						}
-						catch (DoesNotExistOnWMException ex) {
-							ex.printStackTrace();
-						}
-						catch (PermissionException ex) {
-							ex.printStackTrace();
-						}
-						catch (UnknownSubarchitectureException ex) {
-							ex.printStackTrace();
-						}
-*/
+						/*
+						 * try { log("removing interpretation " +
+						 * data.getWorkingMemoryAddress().id + " from WM");
+						 * deleteFromWorkingMemory
+						 * (data.getWorkingMemoryAddress()); } catch
+						 * (DoesNotExistOnWMException ex) {
+						 * ex.printStackTrace(); } catch (PermissionException
+						 * ex) { ex.printStackTrace(); } catch
+						 * (UnknownSubarchitectureException ex) {
+						 * ex.printStackTrace(); }
+						 */
 						log("will generate a notification");
 						CommunicativeIntention cit = generateUngroundableIntention(ipret);
 						if (cit != null) {
 							try {
 								addToWorkingMemory(newDataID(), cit);
-							}
-							catch (AlreadyExistsOnWMException ex) {
+							} catch (AlreadyExistsOnWMException ex) {
 								ex.printStackTrace();
 							}
-						}
-						else {
+						} else {
 							log("failed to generate the notification!");
 						}
 
-					}
-					else {
+					} else {
 						log("interpretation not grounded yet, will wait for it");
 					}
 				}
@@ -498,14 +515,14 @@ extends AbstractDialogueComponent {
 				ResolutionResult rr = (ResolutionResult) body;
 				reexamineInterpretations(rr);
 			}
-		}
-		else {
+		} else {
 			log("no data for processing");
 		}
 		log("task done");
 	}
 
-	private CommunicativeIntention generateUngroundableIntention(Interpretation ipret) {
+	private CommunicativeIntention generateUngroundableIntention(
+			Interpretation ipret) {
 		Intention it = new Intention();
 		it.id = newDataID();
 		it.estatus = new PrivateEpistemicStatus("self");
@@ -516,15 +533,21 @@ extends AbstractDialogueComponent {
 		ags.add("self");
 
 		// construct the postcondition (the state)
-		ComplexFormula inState = new ComplexFormula(0, new LinkedList<dFormula>(), BinaryOp.conj);
-		inState.forms.add(new ElementaryFormula(0, "referring-failure-announced"));
+		ComplexFormula inState = new ComplexFormula(0,
+				new LinkedList<dFormula>(), BinaryOp.conj);
+		inState.forms.add(new ElementaryFormula(0,
+				"referring-failure-announced"));
 
 		ModalFormula state = new ModalFormula(0, "state", inState);
 
-		ComplexFormula post = new ComplexFormula(0, new LinkedList<dFormula>(), BinaryOp.conj);
+		ComplexFormula post = new ComplexFormula(0, new LinkedList<dFormula>(),
+				BinaryOp.conj);
 		post.forms.add(state);
 
-		IntentionalContent itc = new IntentionalContent(ags, new ComplexFormula(0, new LinkedList<dFormula>(), BinaryOp.conj), post, 1.0f);
+		IntentionalContent itc = new IntentionalContent(
+				ags,
+				new ComplexFormula(0, new LinkedList<dFormula>(), BinaryOp.conj),
+				post, 1.0f);
 		it.content.add(itc);
 		it.frame = new AbstractFrame();
 
