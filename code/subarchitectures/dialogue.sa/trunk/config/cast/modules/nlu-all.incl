@@ -10,4 +10,4 @@ JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.ParseSelection --log tr
 JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.DiscourseReferenceResolution --log true
 
 # intention recognition
-JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset %(irecog_abd_domain) --log true --timeout 250
+JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset %(irecog_abd_domain) --log true --abd-host %(host:AbducerHost)  --dumpfile %(dump_file)

@@ -1,6 +1,6 @@
 # Basic dialogue.sa setup.
 
-SUBARCHITECTURE  dialogue
+SUBARCHITECTURE  dialogue %(host:AbducerHost)
 
 JAVA WM			cast.architecture.SubarchitectureWorkingMemory
 JAVA TM			cast.architecture.AlwaysPositiveTaskManager
