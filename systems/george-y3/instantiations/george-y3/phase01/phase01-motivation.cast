@@ -5,12 +5,14 @@
 # If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
 # in a .hconf file will be used instead of host addresses defined here.
 # HOSTNAME  localhost      192.168.33.101
+# HOSTNAME  Main           192.168.56.1
 HOSTNAME  Main           localhost
-#HOSTNAME  PlayerHost     192.168.56.3
-# HOSTNAME  PlayerHost     cca-0838
-HOSTNAME  PlayerHost     [Main]
+# HOSTNAME  PlayerHost     192.168.56.3
+# HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
+# HOSTNAME  AbducerHost    192.168.56.3
+HOSTNAME  AbducerHost    [Main]
 
 HOST     [Main]
 
@@ -36,10 +38,7 @@ CPP MG vc-costs ViewConeMoveCostGenerator
 INCLUDE includes/binder.sa/binder-base.cast
 
 
-# # dialogue ####################################################################
-# INCLUDE includes/dialogue.sa/dialogue-base.cast
-# INCLUDE includes/dialogue.sa/dialogue-george.cast
-# INCLUDE includes/dialogue.sa/dialogue-exe.cast
+# dialogue ###################################################################
 INCLUDE includes/dialogue.sa/INCL/default+gui.cast
 INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
@@ -53,8 +52,8 @@ JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
 JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
-INCLUDE includes/motivation.sa/motivation.cast
-INCLUDE includes/motivation.sa/motivation-goals-george.cast
+# INCLUDE includes/motivation.sa/motivation.cast
+# INCLUDE includes/motivation.sa/motivation-goals-george.cast
 
 
 # visualization ##########################################################
