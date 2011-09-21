@@ -3,6 +3,7 @@ package execution.util;
 import Ice.ObjectImpl;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -72,17 +73,32 @@ public abstract class NonBlockingCompleteOnOperationExecutor<ActionType extends 
 
 	/**
 	 * Called when the action has completed to allow any cleanup
+	 * @return TODO
 	 */
-	protected void actionComplete() {
-
+	protected TriBool actionComplete() {
+		return TriBool.TRITRUE;
 	}
 
+	/**
+	 * Retreive the input command object from WM.
+	 * 
+	 * @param <T>
+	 * @param _cmdCls
+	 * @return
+	 * @throws DoesNotExistOnWMException
+	 */
+	protected <T extends ObjectImpl> T getCommandObject(Class<T> _cmdCls) throws DoesNotExistOnWMException {
+		if(m_cmdID == null) {
+			throw new RuntimeException("Command not set yet");
+		}
+		return getComponent().getMemoryEntry(m_cmdID, _cmdCls);
+	}
+	
 	@Override
 	public void workingMemoryChanged(WorkingMemoryChange _wmc)
 			throws CASTException {
-		// always succeed, regardless of actual detections.
-		actionComplete();
-		executionComplete(TriBool.TRITRUE);
+		TriBool result = actionComplete();
+		executionComplete(result);
 	}
 
 }
