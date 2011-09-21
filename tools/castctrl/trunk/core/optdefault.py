@@ -30,13 +30,14 @@ CAST_ICE_CONFIG=${CAST_INSTALL_ROOT}/${CAST_CONFIG_PATH}
 
 ICE_CONFIG=${CAST_ICE_CONFIG}
 
-V4R_DIR=${HOME}/projects/acin # TODO: the path to the TUW ACIN V4R library
+V4R_DIR=${COGX_ROOT}/tools/v4r
 
 PATH=<pathlist>
    ${COGX_ROOT}/output/bin
    ${CUDA_ROOT}/bin
    ${MERCURY_ROOT}/bin
    ${PATH}
+   ${V4R_DIR}/bin
 </pathlist>
 
 LD_LIBRARY_PATH=<pathlist>
