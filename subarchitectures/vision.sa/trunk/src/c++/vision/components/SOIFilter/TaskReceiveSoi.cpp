@@ -326,13 +326,7 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
           pporec = pSoiFilter->m_protoObjects.get(psoirec->protoObjectAddr);
           pporec->pobj->position = psoirec->psoi->boundingSphere.pos;
 
-          // Check if the object should be present in the scene.
-          // We add this to a queue and do the check after a while because the
-          // camera may be moving.
-          // TODO: pSoiFilter->queueCheckPoVisibility(psoirec->protoObjectAddr);
-          //if ( pSoiFilter->isPointVisible(pporec->pobj->position) ) {
-          //  pSoiFilter->deleteFromWorkingMemory(psoirec->protoObjectAddr);
-          //}
+          pSoiFilter->queueCheckVisibilityOf_PO(psoirec->protoObjectAddr);
         }
         catch(range_error& e) {}
       }

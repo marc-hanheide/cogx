@@ -34,6 +34,7 @@
 # include <opencv/highgui.h>
 #endif
 
+#include <castutils/Timers.hpp>
 #include <VisionData.hpp>
 #include <NavData.hpp>
 #include <PTZServer.hpp>
@@ -84,7 +85,8 @@ struct ProtoObjectRecord : public IceUtil::SimpleShared
 {
   cdl::WorkingMemoryAddress addr;
   VisionData::ProtoObjectPtr pobj;
-  long long tmDisappeared;
+  castutils::CMilliTimer tmDisappeared;
+  ProtoObjectRecord() : tmDisappeared(true) {}
 };
 typedef IceUtil::Handle<ProtoObjectRecord> ProtoObjectRecordPtr;
 
@@ -226,6 +228,7 @@ private:
   void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
   void onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc);
   void connectPtz();
+  void checkInvisibleObjects();
 
   IceUtil::Monitor<IceUtil::Mutex> m_FilterMonitor;
 
@@ -263,6 +266,7 @@ protected:
 public:
   SOIFilter();
   virtual ~SOIFilter() {}
+  void queueCheckVisibilityOf_PO(const cdl::WorkingMemoryAddress& protoObjectAddr);
   using CASTComponent::sleepComponent;
 };
 
