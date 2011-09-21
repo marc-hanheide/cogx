@@ -260,6 +260,7 @@ protected:
 public:
   SOIFilter();
   virtual ~SOIFilter() {}
+  using CASTComponent::sleepComponent;
 };
 
 } // namespace
