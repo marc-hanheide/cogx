@@ -11,6 +11,8 @@
 
 #include "../../VisionUtils.h"
 
+#include <castutils/Timers.hpp>
+
 using namespace std;
 using namespace VisionData;
 using namespace cogx;
@@ -53,6 +55,15 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     debug("analyze_task: ProtoObject deleted while working. Aborting task.");
     cmd.fail();
     return;
+  }
+
+  castutils::CMilliTimer tmwait;
+  while( ! pSoiFilter->isCameraStable()) {
+    pSoiFilter->sleepComponent(100);
+    if (tmwait.elapsed() > 5000) {
+      println("analyze_task: waiting for camera to stop moving");
+      tmwait.restart();
+    }
   }
 
   /* Asynchronous call through a working memory entry.
