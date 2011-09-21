@@ -581,11 +581,13 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
     //log("rot x: %.4g, y: %.4g, z: %.4g", rot.x, rot.y, rot.z);
     m_bCameraMoving = true;
     endMoveTimeout.restart();
+    m_cameraParams = pcampar->cam;
   }
   else {
     if (m_bCameraMoving && endMoveTimeout.elapsed() > 500) {
       log("Camera STOPPED.");
       m_bCameraMoving = false;
+      m_cameraParams = pcampar->cam;
     }
   }
 }
@@ -593,6 +595,11 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
 bool SOIFilter::isCameraStable()
 {
   return ! m_bCameraMoving; // TODO && ! m_RobotMoving
+}
+
+bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
+{
+  return Video::isPointVisible(m_cameraParams, pos);
 }
 
 void SOIFilter::updateRobotPosePtz()

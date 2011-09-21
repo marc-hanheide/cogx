@@ -112,6 +112,8 @@ private:
    */
   int camId;
   bool m_bCameraMoving;
+  Video::CameraParameters m_cameraParams;
+
   /**
    * component ID of the video server to connect to
    */
@@ -207,6 +209,7 @@ public:
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
   void saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy);
   bool isCameraStable();
+  bool isPointVisible(const cogx::Math::Vector3 &pos);
 
 private:
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
