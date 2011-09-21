@@ -20,6 +20,17 @@
 
 package de.dfki.lt.tr.cast.dialogue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -39,16 +50,6 @@ import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A CAST component/wrapper of the class IntentionManagement. The component
@@ -78,7 +79,8 @@ extends AbstractDialogueComponent {
 	private HashMap<String, EpistemicObject> epObjs = new HashMap<String, EpistemicObject>();
 
 	private String abd_serverName = "AbducerServer";
-	private String abd_endpoints = "default -p 9100";
+	private int abd_port = 9100;
+	private String abd_endpoints = "default -p " + abd_port;
 
 	@Override
 	public void start() {
@@ -114,7 +116,15 @@ extends AbstractDialogueComponent {
 			String timeoutStr = _config.get("--timeout");
 			timeout = Integer.parseInt(timeoutStr);
 		}
-
+		if (_config.containsKey("--dumpfile")) {
+			dumpFile = _config.get("--dumpfile");
+		}
+		
+		String abducerHost = _config.get("--abd-host");
+		if (abducerHost != null) {
+			abd_endpoints = "default -h " + abducerHost + " -p " + abd_port;
+		}
+		
 		if (rulesetFile != null) {
 			try {
 				BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
