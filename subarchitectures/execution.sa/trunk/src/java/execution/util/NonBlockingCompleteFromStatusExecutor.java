@@ -82,8 +82,10 @@ public abstract class NonBlockingCompleteFromStatusExecutor<ActionType extends A
 		// allow cleanup
 		actionComplete();
 		try {
-			executionComplete(executionResult(getComponent().getMemoryEntry(
-					_wmc.address, getCommandClass())));
+			TriBool result = executionResult(getComponent().getMemoryEntry(
+					_wmc.address, getCommandClass()));
+			log("Result of " + m_cmdCls + " was " + result);
+			executionComplete(result);
 		} catch (WMException e) {
 			logException(e);
 			executionComplete(TriBool.TRIFALSE);
