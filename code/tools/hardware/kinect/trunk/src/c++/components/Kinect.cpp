@@ -276,7 +276,7 @@ bool Kinect::GetFrame(IplImage **iplImg, IplImage **iplDepthImg)
 //   else
 //   {
 //     printf("Kinect::GetFrame: Warning: No image data available!\n");
-//     return false;
+    return false;
 //   }
 }
 
@@ -325,7 +325,7 @@ bool Kinect::NextFrame()
   {
     depImage = cv::Mat(depHeight, depWidth, CV_16S);
     short *d  = depImage.ptr<short>(0);
-    for(unsigned co=0; co<depHeight*depWidth; co++)
+    for(int co=0; co<depHeight*depWidth; co++)
       d[co] = pDepthMD->Data()[co];
   }
   else
@@ -338,7 +338,7 @@ bool Kinect::NextFrame()
     pImageMD = kinect::getImageMetaData();
     grayImage = cv::Mat(rgbHeight, rgbWidth, CV_8UC1);
     uchar *d  = grayImage.ptr<uchar>();
-    for(unsigned co=0; co<rgbHeight*rgbWidth; co++)
+    for(int co=0; co<rgbHeight*rgbWidth; co++)
       d[co] = pImageMD->Data()[co];
 
     rgbImage = cv::Mat(rgbHeight, rgbWidth, CV_8UC3);
@@ -412,9 +412,9 @@ cv::Point3f Kinect::WorldToColor(unsigned x, unsigned y)
 {
   uchar *ptr = rgbImage.data;
   cv::Point3f col;
-  col.x = ptr[(y*rgbWidth + x)*3 +2];	// change red and blue channel
+  col.x = ptr[(y*rgbWidth + x)*3];
   col.y = ptr[(y*rgbWidth + x)*3 +1];
-  col.z = ptr[(y*rgbWidth + x)*3];
+  col.z = ptr[(y*rgbWidth + x)*3 +2];
   return col;
 }
 
@@ -440,9 +440,10 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
 {
   cloud = cv::Mat_<cv::Point3f>(rgbHeight/scale, rgbWidth/scale);
   colCloud = cv::Mat_<cv::Point3f>(rgbHeight/scale, rgbWidth/scale);
-  for(unsigned row = 0; row<depHeight; row+=scale)
+  int rgb2depthRatio = rgbWidth/depWidth;                 /// TODO Bei 1280 Auflösung gibt es eine Verzerrung in z-Richtung?
+  for(int row = 0; row<depHeight; row+=scale)
   {
-    for(unsigned col = 0; col<depWidth; col+=scale)
+    for(int col = 0; col<depWidth; col+=scale)
     {
       int col4tel = col/scale;
       int row4tel = row/scale;
@@ -450,13 +451,12 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
       if(depth != shadow_value && depth != no_sample_value)
       {
         cloud.at<cv::Point3f>(row4tel, col4tel) = DepthToWorld(col, row, (int) depth);
-
-        int rgb2depthRatio = rgbWidth/depWidth;									/// TODO Bei 1280 Auflösung gibt es eine Verzerrung in z-Richtung?
         colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
       }
       else {
-        /* Initialize points if we have no valid data */
+        /* Initialize points if we have no valid data (to transmit via ice-interface) */
         cloud.at<cv::Point3f>(row4tel, col4tel) = cv::Point3f(FLT_MAX, FLT_MAX, FLT_MAX);
+        colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
       }
     }
   }
