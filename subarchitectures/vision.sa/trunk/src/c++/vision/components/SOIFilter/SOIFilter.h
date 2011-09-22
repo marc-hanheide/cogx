@@ -192,6 +192,7 @@ public:
   // The proto objects are kept locally so that we can match them by position with SOIs.
   // We don't keep all PO data locally! (see saveProtoObjectData)
   mmap<cdl::WorkingMemoryAddress, ProtoObjectRecordPtr> m_protoObjects;
+  IceUtil::RWRecMutex m_protoObjectMapMutex;
 
   // The visual objects are kept locally so that we can match them to POs.
   // We don't keep all VO data locally! (see saveVisualObjectData)
