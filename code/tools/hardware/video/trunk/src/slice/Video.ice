@@ -105,6 +105,9 @@ module Video {
   /**
    * *sigh* Need this wrapper CLASS around CameraParameters STRUCT, cause
    * otherwise it just won't work bla bla bla
+   * 
+   * NOTE: CameraMount only fills pose and time. The video server will fill the
+   * rest.
    */
   class CameraParametersWrapper {
     CameraParameters cam;
