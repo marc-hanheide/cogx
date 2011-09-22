@@ -96,7 +96,7 @@ void WmTaskExecutor_MoveToViewCone::lookAround(WmEvent *pEvent)
       continue;
 
     bool retry = false;
-    for (int i = 0; i < cmd.pcmd->viewCones.size(); i++) {
+    for (unsigned int i = 0; i < cmd.pcmd->viewCones.size(); i++) {
       ViewConePtr &pvc = cmd.pcmd->viewCones[i];
       double vcpan = pvc->viewDirection - pvc->anchor.z;
       if (fabs(vcpan - pan) * 180 / M_PI < 20) {

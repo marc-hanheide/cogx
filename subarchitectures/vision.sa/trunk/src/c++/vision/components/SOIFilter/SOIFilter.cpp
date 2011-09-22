@@ -166,6 +166,7 @@ void SOIFilter::connectPtz() {
 
 #define IDC_SOIF_PROTOOBJECTS "popout.show.protoobjects"
 #define ID_PART_3D_PO     "PO:"
+#define IDDLG_PTUCTRL "PtuCtrl"
 
 void SOIFilter::start()
 {
@@ -193,7 +194,7 @@ void SOIFilter::start()
     m_display.addAction(m_sProtoObjectView, act);
   }
 
-  m_display.addDialog("PtuCtrl", res_ptucontroller_ui, res_ptucontroller_js, "PtuController ptuctrl");
+  m_display.addDialog(IDDLG_PTUCTRL, res_ptucontroller_ui, res_ptucontroller_js, "PtuController ptuctrl");
 
 #else
   if (doDisplay)
@@ -349,7 +350,7 @@ void SOIFilter::sendRemoveProtoObject(const cdl::WorkingMemoryAddress& addr)
 void SOIFilter::CSfDisplayClient::onDialogValueChanged(const std::string& dialogId,
     const std::string& name, const std::string& value)
 {
-  if (dialogId == "PtuCtrl" && pFilter->ptzServer.get()) {
+  if (dialogId == IDDLG_PTUCTRL && pFilter->ptzServer.get()) {
     if (name == "PTZ") {
       pFilter->println(" *** PTZ *** ");
       double pan, tilt, zoom;
@@ -368,22 +369,27 @@ void SOIFilter::CSfDisplayClient::onDialogValueChanged(const std::string& dialog
 void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogId,
     const std::string& command, const std::string& params)
 {
-  if (dialogId == "PtuCtrl" && pFilter->ptzServer.get()) {
+  if (dialogId == IDDLG_PTUCTRL && pFilter->ptzServer.get()) {
     //pFilter->println(" *** handleDialogCommand *** " + command);
-    if (command == "sendStateToDialog") {
-      pFilter->println(" *** PtuCtrl: sendStateToDialog *** ");
-      ptz::PTZReading ptup;
-      if (pFilter->ptzServer.get())
-        ptup = pFilter->ptzServer->getPose();
-      ostringstream ss;
-      ss << "ptuctrl.ui.wctrls.spinPan.value=" << ptup.pose.pan * 180 / M_PI << ";";
-      ss << "ptuctrl.ui.wctrls.spinTilt.value=" << ptup.pose.tilt * 180 / M_PI << ";";
-      ss << "ptuctrl.ui.wctrls.spinZoom.value=" << ptup.pose.zoom << ";";
-
-      execInDialog(dialogId, ss.str());
-    }
+    if (command == "sendStateToDialog")
+      sendPtuStateToDialog();
   }
 }
+
+void SOIFilter::CSfDisplayClient::sendPtuStateToDialog()
+{
+  pFilter->log("PtuCtrl: sendStateToDialog");
+  ptz::PTZReading ptup;
+  if (pFilter->ptzServer.get())
+    ptup = pFilter->ptzServer->getPose();
+  ostringstream ss;
+  ss << "ptuctrl.ui.wctrls.spinPan.value=" << ptup.pose.pan * 180 / M_PI << ";";
+  ss << "ptuctrl.ui.wctrls.spinTilt.value=" << ptup.pose.tilt * 180 / M_PI << ";";
+  ss << "ptuctrl.ui.wctrls.spinZoom.value=" << ptup.pose.zoom << ";";
+
+  execInDialog(IDDLG_PTUCTRL, ss.str());
+}
+
 #endif
 
 void SOIFilter::onAdd_SOI(const cdl::WorkingMemoryChange & _wmc)
@@ -587,6 +593,7 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
       log("Camera STOPPED.");
       m_bCameraMoving = false;
       m_cameraParams = pcampar->cam;
+      m_display.sendPtuStateToDialog();
     }
   }
 }
@@ -612,7 +619,7 @@ void SOIFilter::checkInvisibleObjects()
   typeof(m_protoObjects.begin()) itpo;
   for(itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectRecordPtr& pporec = itpo->second;
-    ProtoObjectPtr& pobj = pporec->pobj;
+    //ProtoObjectPtr& pobj = pporec->pobj;
 
     if (pporec->tmDisappeared.elapsed() < 1000)
       continue;
