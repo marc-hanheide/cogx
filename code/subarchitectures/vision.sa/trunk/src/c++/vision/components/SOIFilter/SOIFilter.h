@@ -172,6 +172,7 @@ private:
     std::string getControlState(const std::string& ctrlId);
     void onDialogValueChanged(const std::string& dialogId, const std::string& name, const std::string& value);
     void handleDialogCommand(const std::string& dialogId, const std::string& command, const std::string& params);
+    void sendPtuStateToDialog();
   };
   bool m_bShowProtoObjects;
   std::string m_sProtoObjectView;
