@@ -46,6 +46,12 @@ public:
   virtual void getImageSize(Ice::Int& width, Ice::Int& height, const Ice::Current&);
 
   /**
+   * @brief Fills the camera parameters for camera camId.
+   * @return Returns true if the camera exists, false otherwise.
+   */
+  bool getCameraParameters(Ice::Int camId, Video::CameraParameters& camPars, const Ice::Current&);
+
+  /**
    * @brief Returns the frame rate in [ms], must be > 0.
    * Note that all video sources have the same frame rate.
    */
@@ -276,6 +282,12 @@ public:
    * classes will have to do internally.
    */
   virtual void getImageSize(int &width, int &height) = 0;
+
+  /**
+   * @brief Fills the camera parameters for camera camId.
+   * @return Returns true if the camera exists, false otherwise.
+   */
+  virtual bool getCameraParameters(int camId, Video::CameraParameters& camPars);
 
   /**
    * @brief Returns the frame rate in [ms], must be > 0. \n
