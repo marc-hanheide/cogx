@@ -118,7 +118,7 @@ public class DialogueActionInterface extends
 		}
 
 		@Override
-		protected TriBool actionComplete() {
+		protected void actionComplete() {
 			try {
 				((AbstractActionInterface) getComponent())
 						.addBooleanFeature(getAction().beliefAddress,
@@ -126,7 +126,6 @@ public class DialogueActionInterface extends
 			} catch (CASTException e) {
 				logException("Problem while updating belief", e);
 			}
-			return TriBool.TRITRUE;
 		}
 
 	}
