@@ -1,5 +1,5 @@
 //predicate declarations
-feature(perc,feat)
+color(perc,col)
 // resolved(perc)
 percept(perc)
 attribute(attr)
@@ -12,14 +12,14 @@ resolution(perc)
 // percepts (|perc|) is significantly larger than 3
 perc={PH1,PH2,PH3,PH4,PH5,PH6}
 
-// -1.87115  feature(p,VRed)
--1.87115  feature(a1,VRed) v !percept(a1)
+// -1.87115  color(p,V_red)
+-1.87115  color(a1,V_red) v !percept(a1)
 
-// -1.87115  feature(p,VBlue)
--1.87115  feature(a1,VBlue) v !percept(a1)
+// -1.87115  color(p,V_blue)
+-1.87115  color(a1,V_blue) v !percept(a1)
 
-// -1.87115  feature(p,VGreen)
--1.87115  feature(a1,VGreen) v !percept(a1)
+// -1.87115  color(p,V_green)
+-1.87115  color(a1,V_green) v !percept(a1)
 
 // -1.87115  attribute(LRed)
 -1.87115  attribute(LRed)
@@ -30,62 +30,62 @@ perc={PH1,PH2,PH3,PH4,PH5,PH6}
 // -1.87115  attribute(LGreen)
 -1.87115  attribute(LGreen)
 
-// 0       percept(p) ^ feature(p,VRed) ^ attribute(LRed) => resolution(p)
-1       !feature(a1,VRed) v !attribute(LRed) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_red) ^ attribute(LRed) => resolution(p)
+1       !color(a1,V_red) v !attribute(LRed) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VBlue) ^ attribute(LRed) => resolution(p)
--2       !feature(a1,VBlue) v !attribute(LRed) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_blue) ^ attribute(LRed) => resolution(p)
+-2       !color(a1,V_blue) v !attribute(LRed) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VGreen) ^ attribute(LRed) => resolution(p)
--2       !feature(a1,VGreen) v !attribute(LRed) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_green) ^ attribute(LRed) => resolution(p)
+-2       !color(a1,V_green) v !attribute(LRed) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VRed) ^ attribute(LBlue) => resolution(p)
--2       !feature(a1,VRed) v !attribute(LBlue) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_red) ^ attribute(LBlue) => resolution(p)
+-2       !color(a1,V_red) v !attribute(LBlue) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VBlue) ^ attribute(LBlue) => resolution(p)
-1       !feature(a1,VBlue) v !attribute(LBlue) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_blue) ^ attribute(LBlue) => resolution(p)
+1       !color(a1,V_blue) v !attribute(LBlue) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VGreen) ^ attribute(LBlue) => resolution(p)
--2       !feature(a1,VGreen) v !attribute(LBlue) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_green) ^ attribute(LBlue) => resolution(p)
+-2       !color(a1,V_green) v !attribute(LBlue) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VRed) ^ attribute(LGreen) => resolution(p)
--2       !feature(a1,VRed) v !attribute(LGreen) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_red) ^ attribute(LGreen) => resolution(p)
+-2       !color(a1,V_red) v !attribute(LGreen) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VBlue) ^ attribute(LGreen) => resolution(p)
--2       !feature(a1,VBlue) v !attribute(LGreen) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_blue) ^ attribute(LGreen) => resolution(p)
+-2       !color(a1,V_blue) v !attribute(LGreen) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VGreen) ^ attribute(LGreen) => resolution(p)
-1       !feature(a1,VGreen) v !attribute(LGreen) v resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_green) ^ attribute(LGreen) => resolution(p)
+1       !color(a1,V_green) v !attribute(LGreen) v resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VRed) ^ attribute(LRed) => !resolution(p)
--1       !feature(a1,VRed) v !attribute(LRed) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_red) ^ attribute(LRed) => !resolution(p)
+-1       !color(a1,V_red) v !attribute(LRed) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VBlue) ^ attribute(LRed) => !resolution(p)
-2       !feature(a1,VBlue) v !attribute(LRed) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_blue) ^ attribute(LRed) => !resolution(p)
+2       !color(a1,V_blue) v !attribute(LRed) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VGreen) ^ attribute(LRed) => !resolution(p)
-2       !feature(a1,VGreen) v !attribute(LRed) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_green) ^ attribute(LRed) => !resolution(p)
+2       !color(a1,V_green) v !attribute(LRed) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VRed) ^ attribute(LBlue) => !resolution(p)
-2       !feature(a1,VRed) v !attribute(LBlue) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_red) ^ attribute(LBlue) => !resolution(p)
+2       !color(a1,V_red) v !attribute(LBlue) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VBlue) ^ attribute(LBlue) => !resolution(p)
--1       !feature(a1,VBlue) v !attribute(LBlue) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_blue) ^ attribute(LBlue) => !resolution(p)
+-1       !color(a1,V_blue) v !attribute(LBlue) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VGreen) ^ attribute(LBlue) => !resolution(p)
-2       !feature(a1,VGreen) v !attribute(LBlue) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_green) ^ attribute(LBlue) => !resolution(p)
+2       !color(a1,V_green) v !attribute(LBlue) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VRed) ^ attribute(LGreen) => !resolution(p)
-2       !feature(a1,VRed) v !attribute(LGreen) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_red) ^ attribute(LGreen) => !resolution(p)
+2       !color(a1,V_red) v !attribute(LGreen) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VBlue) ^ attribute(LGreen) => !resolution(p)
-2       !feature(a1,VBlue) v !attribute(LGreen) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_blue) ^ attribute(LGreen) => !resolution(p)
+2       !color(a1,V_blue) v !attribute(LGreen) v !resolution(a1) v !percept(a1)
 
-// 0       percept(p) ^ feature(p,VGreen) ^ attribute(LGreen) => !resolution(p)
--1       !feature(a1,VGreen) v !attribute(LGreen) v !resolution(a1) v !percept(a1)
+// 0       percept(p) ^ color(p,V_green) ^ attribute(LGreen) => !resolution(p)
+-1       !color(a1,V_green) v !attribute(LGreen) v !resolution(a1) v !percept(a1)
 
-// -5.61346  feature(a1,a2)
--5.61346  feature(a1,a2)
+// -5.61346  color(a1,a2)
+-5.61346  color(a1,a2)
 
 // -5.61346  attribute(a1)
 -5.61346  attribute(a1)

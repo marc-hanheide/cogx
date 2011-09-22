@@ -39,14 +39,14 @@ void MLNEngine::configure(const map<string,string> & _config)
   
   map<string,string>::const_iterator it;
   
-  if ((it = _config.find("--inf")) != _config.end()) {
+  if ((it = _config.find("--inf-str")) != _config.end()) {
 //	istringstream str(it->second);
 	m_inferenceString = it->second;
   } else {
 	m_inferenceString=""; //"-ms -i subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-out.mln -e subarchitectures/binder.sa/src/c++/alchemy/exdata/univ-test.db -q student -maxSteps 1000 -burnMaxSteps 100";
   }
   
-  if ((it = _config.find("--bsa")) != _config.end()) {
+  if ((it = _config.find("--sa")) != _config.end()) {
 	m_bindingSA=it->second;
   } else {
    m_bindingSA="binder.sa";
@@ -59,10 +59,10 @@ void MLNEngine::configure(const map<string,string> & _config)
   else
 	doDisplay = false;
 	
-  if ((it = _config.find("--eid")) != _config.end()) {
+  if ((it = _config.find("--id")) != _config.end()) {
 	m_id=it->second;
   } else {
-   m_id="mrf";
+   m_id=getComponentID() ;
   }
   #ifdef FEAT_VISUALIZATION
 	m_display.configureDisplayClient(_config);
@@ -75,14 +75,11 @@ void MLNEngine::start()
   //filters
 //  BindingWorkingMemoryReader::start();
 
-  const char *name = "MLNSemaphore";
-  named_semaphore(open_or_create, name, 0);
-  m_queuesNotEmpty = new named_semaphore(open_only, name);
   log("MLNEngine active");
 
   if (doDisplay)
   {
-	cout << "MLNEngine active" << endl;
+	log("MRF initialized");
   }
 
  // filters for belief updates
@@ -112,12 +109,8 @@ void MLNEngine::start()
   m_oe = new OnlineEngine(m_inferenceString);
   m_oe->init();
   m_oe->saveAllCounts(true);
-  
-  m_resultWMId = newDataID();
-  InferredResultPtr result = new InferredResult();
-  addToWorkingMemory(m_resultWMId, m_bindingSA, result);
-  
-  cout << "MRF initialized" << endl;
+   
+  log("MRF initialized");
   
   m_query.clear();
   
@@ -128,21 +121,24 @@ void MLNEngine::start()
 }
 
 void MLNEngine::runComponent()
-{
+{ 
+  sleepComponent(1000);
+  m_resultWMId = newDataID();
+  InferredResultPtr result = new InferredResult();
+  result->engId = m_id;
+  
+  addToWorkingMemory(m_resultWMId, m_bindingSA, result);
 
   int tstep = 0;
   bool first = true;
-  m_infSteps = 0;
+  m_infSteps = 50;
   m_oe->setMaxInferenceSteps(m_infSteps);
-  m_oe->setMaxBurnIn(0);
-  
-  InferredResultPtr result = new InferredResult();
-  result->engId = m_id;
+  m_oe->setMaxBurnIn(0); 
  
   while(isRunning())
   {
   
-	sleepComponent(300);
+	sleepComponent(200);
 	
 	while(!m_queryQueue.empty())
 	{
@@ -199,7 +195,7 @@ void MLNEngine::runComponent()
   #ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
-	  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+	  m_display.setHtml("MRFView." + m_id, "Rules", "<pre>" + v11out.str() + "</pre>");
   #endif
 	}
 	
@@ -218,7 +214,7 @@ void MLNEngine::runComponent()
   #ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
-	  m_display.setHtml("MLNEngine", "MRF Rules", "<pre>" + v11out.str() + "</pre>");
+	  m_display.setHtml("MRFView." + m_id, "Rules", "<pre>" + v11out.str() + "</pre>");
   #endif
 	}
 	
@@ -253,25 +249,16 @@ void MLNEngine::runComponent()
 	while(!m_removeQueue.empty())
 	{
 	  debug("Removing evidence or query entry"); 
-	  //deleteFromWorkingMemory(m_removeQueue.front());
+	  deleteFromWorkingMemory(m_removeQueue.front());
 	
 	  m_removeQueue.pop();
 	}
 	
-	cout << "Samples: " << m_oe->getNumSamples() << endl;
-	cout << "Num true cnts: " << m_oe->getClauseTrueCnts(0) << endl;
+	debug("Samples: %i", m_oe->getNumSamples());
+	debug("Num true cnts: %i", m_oe->getClauseTrueCnts(0));
 	
-  //	ptime t(second_clock::universal_time() + seconds(1));
 
 	}
-
-  log("Removing semaphore ...");
-  m_queuesNotEmpty->remove("MLNSemaphore");
-  delete m_queuesNotEmpty;
-
-  if (doDisplay)
-  {
-  }
 }
 
 void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)

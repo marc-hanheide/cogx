@@ -5,39 +5,28 @@
  * Markov logic network engine listener.
  */
 
-#ifndef MLN_LISTENER_H
-#define MLN_LISTENER_H
+#ifndef ABS_MLN_LISTENER_H
+#define ABS_MLN_LISTENER_H
 
-#include <vector>
-#include <string>
-#include <queue>
-#include <map>
-#include <algorithm>
+#include <AbsMLNClient.h>
 
-#include <boost/interprocess/sync/named_semaphore.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <MLNUtils.h>
-
-#include <cast/architecture/ManagedComponent.hpp>
-
-#include <binder.hpp>
 
 namespace cast
 {
 
 using namespace org::cognitivesystems::binder::mln;
 
-class MLNListener :  public ManagedComponent
+class AbsMLNListener :  public AbsMLNClient
 {
  private:
  
-  /// List of MLN engine components we are listening to
-  std::vector<std::string> m_infEngIds;
+  /// List of MLN engines components we are listening to
+  std::vector<std::string> m_lEngIds;
   
-  /// Name of the binder subarchitecture
-  std::string m_bindingSA; 
+  /// Flag that signals there is a change in the inference result 
+  bool m_changedInf;
   
-  std::queue<org::cognitivesystems::binder::mln::InferredResultPtr> m_infQueue; 
+  InferredResultPtr m_lastResult;
   
   /**
    * callback function called whenever there is a new InferredResult
@@ -45,6 +34,7 @@ class MLNListener :  public ManagedComponent
   void newInferredResult(const cdl::WorkingMemoryChange & _wmc)
   {
 	debug("An overwriten InferredResult WM entry ID %s ", _wmc.address.id.c_str());
+	m_changedInf = true;
 	
 	InferredResultPtr inf; 
 	
@@ -54,17 +44,18 @@ class MLNListener :  public ManagedComponent
 	catch (DoesNotExistOnWMException e) {
 	  log("WARNING: the entry InferredResult ID %s not in WM.", _wmc.address.id.c_str());
 	  return;
-  }
+	}
   		
-  debug("Got an inference update for MLN engine ID %s", inf->engId.c_str());
+	debug("Got an inference update for MLN engine ID %s", inf->engId.c_str());
   
-  if( containsElement<string>(m_infEngIds, inf->engId)) {
+   if( containsElement<string>(m_lEngIds, inf->engId)) {
 	qInfPush(inf);
   }
   else {
 	debug("Not listening to to MLN engine ID %s", inf->engId.c_str());
 	return;
-  }  
+  }
+  m_changedInf = true; 
 }
  protected:
   /**
@@ -73,23 +64,16 @@ class MLNListener :  public ManagedComponent
   virtual void configure(const std::map<std::string,std::string> & _config)
   {
   //  BindingWorkingMemoryWriter::configure(_config);
-	ManagedComponent::configure(_config);
+	AbsMLNClient::configure(_config);
 	
 	map<string,string>::const_iterator it;
 	
-	
-	if ((it = _config.find("--bsa")) != _config.end()) {
-	  m_bindingSA = it->second;
-	} else {
-	 m_bindingSA="binder.sa";
-	}
-	
-	if ((it = _config.find("--rids")) != _config.end()) {
+	if ((it = _config.find("--inf-ids")) != _config.end()) {
 		stringstream ss(it->second);
 		string token;
 	
 	  while(getline(ss, token, ',')) {
-	      m_infEngIds.push_back(token);
+	      m_lEngIds.push_back(token);
 	  }
 	}
   }
@@ -100,10 +84,10 @@ class MLNListener :  public ManagedComponent
   {
    // filters for belief updates
 	addChangeFilter(createGlobalTypeFilter<InferredResult>(cdl::OVERWRITE),
-		new MemberFunctionChangeReceiver<MLNListener>(this,
-		  &MLNListener::newInferredResult));
+		new MemberFunctionChangeReceiver<AbsMLNListener>(this,
+		  &AbsMLNListener::newInferredResult));
 			
-	log("MLNListener initialized");
+	log("AbsMLNListener initialized");
   }
   /**
    * called by the framework to start compnent run loop
@@ -153,7 +137,7 @@ class MLNListener :  public ManagedComponent
   }
   
  public:
-  virtual ~MLNListener() {}
+  virtual ~AbsMLNListener() {}
 };
 
 }

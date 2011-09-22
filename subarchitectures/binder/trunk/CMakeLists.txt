@@ -4,7 +4,7 @@ project (BINDER)
 option(BUILD_SA_BINDING_MLNENGINE "build MLN engine" YES)
 if (BUILD_SA_BINDING_MLNENGINE)
 add_subdirectory (src/c++/binder/components/MLNEngine)
-add_subdirectory (src/c++/binder/components/MLNClient)
+add_subdirectory (src/c++/binder/components/MLNClients)
 endif (BUILD_SA_BINDING_MLNENGINE)
 
 option(BUILD_SA_BINDING_MLNTESTER "build MLN tester" NO)
