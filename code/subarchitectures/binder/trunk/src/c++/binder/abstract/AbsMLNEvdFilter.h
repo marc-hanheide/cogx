@@ -1,27 +1,15 @@
 /**
  * @author Alen Vrecko
- * @date May 2011
+ * @date September 2011
  *
- * Markov logic network engine listener.
+ * A component that filters beliefs and packs the changes into evidence fot Markov logic network engine.
  */
 
-#ifndef MLN_EVD_PROVIDER_H
-#define MLN_EVD_PROVIDER_H
+#ifndef ABST_MLN_EVD_FILTER_H
+#define ABST_MLN_EVD_FILTER_H
 
-#include <vector>
-#include <string>
-#include <queue>
-#include <map>
-#include <algorithm>
+#include <AbsMLNClient.h>
 
-#include <boost/interprocess/sync/named_semaphore.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <MLNUtils.h>
-
-#include <cast/architecture/ManagedComponent.hpp>
-
-#include <binder.hpp>
-#include <beliefs_cogx.hpp>
 
 namespace cast
 {
@@ -30,33 +18,24 @@ using namespace org::cognitivesystems::binder::mln;
 using namespace eu::cogx::mln::slice;
 using namespace std;
 
-class MLNEvdProvider :  public ManagedComponent
+class AbsMLNEvdFilter :  public AbsMLNClient
 {
  private:
- 
-  /// List of MLN engine components we are providing evidence to
-  vector<string> m_engIds;
   
-  /// Name of the binder subarchitecture
-  string m_bindingSA; 
-  
-  /// 
-  bool m_changedEvd;
+  /// Flag that signals there is a change in the fact collection 
+  bool m_changedFacts;
   
   vector<MLNFact> m_rawFacts;
-//  map<string,MLNFact> m_filtFacts;
-//  map<string,MLNFact> m_oldFacts;
   
   string m_beliefType;
   string m_epiStatus;
   set<string> m_relevantKeys;
   string m_instKey;
-  size_t m_maxinst;
   
   /**
-   * callback function called whenever there is a new InferredResult
+   * callback function called whenever there is a change in fact collection
    */
-  void newEvdSt(const cdl::WorkingMemoryChange & _wmc)
+  void newFactSt(const cdl::WorkingMemoryChange & _wmc)
   {
 	log("A new MLNState WM entry ID %s ", _wmc.address.id.c_str());
 	
@@ -71,7 +50,7 @@ class MLNEvdProvider :  public ManagedComponent
 	}
   
 	m_rawFacts = st->facts;
-	m_changedEvd = true;
+	m_changedFacts = true;
   }
   
  protected:
@@ -81,25 +60,9 @@ class MLNEvdProvider :  public ManagedComponent
   virtual void configure(const std::map<std::string,std::string> & _config)
   {
   //  BindingWorkingMemoryWriter::configure(_config);
-	ManagedComponent::configure(_config);
+	AbsMLNClient::configure(_config);
 	
 	map<string,string>::const_iterator it;
-	
-	
-	if ((it = _config.find("--bsa")) != _config.end()) {
-	  m_bindingSA = it->second;
-	} else {
-	 m_bindingSA="binder.sa";
-	}
-	
-	if ((it = _config.find("--eids")) != _config.end()) {
-		stringstream ss(it->second);
-		string token;
-	
-	  while(getline(ss, token, ',')) {
-	      m_engIds.push_back(token);
-	  }
-	}
 	
 	if ((it = _config.find("--keys")) != _config.end()) {
 		stringstream ss(it->second);
@@ -133,52 +96,47 @@ class MLNEvdProvider :  public ManagedComponent
    */
   virtual void start()
   {
-	m_changedEvd = true;
+	m_changedFacts = true;
      // filters for belief updates
 	addChangeFilter(createGlobalTypeFilter<MLNState>(cdl::OVERWRITE),
-		new MemberFunctionChangeReceiver<MLNEvdProvider>(this,
-		  &MLNEvdProvider::newEvdSt));
+		new MemberFunctionChangeReceiver<AbsMLNEvdFilter>(this,
+		  &AbsMLNEvdFilter::newFactSt));
 		  
 	addChangeFilter(createGlobalTypeFilter<MLNState>(cdl::ADD),
-		new MemberFunctionChangeReceiver<MLNEvdProvider>(this,
-		  &MLNEvdProvider::newEvdSt));
+		new MemberFunctionChangeReceiver<AbsMLNEvdFilter>(this,
+		  &AbsMLNEvdFilter::newFactSt));
 			
-	log("An instance of MLNEvdProvider initialized");
+	log("An instance of MLNEvdFilter initialized");
   }
   /**
    * called by the framework to start compnent run loop
    */
   virtual void runComponent() = 0;
   
-  string getBindingSA()
+  map<string, MLNFact> filterFacts(vector<MLNFact> rawFact)
   {
-	return m_bindingSA;
-  }
-  
-  map<string, MLNFact> filterFacts(vector<MLNFact> rawEvd)
-  {
-	map<string, MLNFact> filtEvd;
+	map<string, MLNFact> filtFact;
 	
 	vector<MLNFact>::iterator it;
-	for (it=rawEvd.begin() ; it != rawEvd.end(); it++ ) {
+	for (it=rawFact.begin() ; it != rawFact.end(); it++ ) {
 	  if(it->type == m_beliefType && it->estatus == m_epiStatus
 		  && (m_relevantKeys.count(it->key) || m_instKey == it->key)) {
-		filtEvd.insert(pair<string,MLNFact>(it->atom,*it));
+		filtFact.insert(pair<string,MLNFact>(it->atom,*it));
 	  }
 	}
-	return filtEvd;
+	return filtFact;
   }
   
   vector<MLNFact> getRawFacts() {
 	return m_rawFacts;
   }
   
-  bool pendingEvdChanges() {
-	return m_changedEvd;
+  bool pendingFactChanges() {
+	return m_changedFacts;
   } 
   
-  void resetEvdChanges() {
-	m_changedEvd=false;
+  void resetFactChanges() {
+	m_changedFacts=false;
   }
   
   bool getEvdChanges(map<string, MLNFact> facts, map<string, MLNFact> oldFacts, EvidencePtr evd)
@@ -257,37 +215,6 @@ class MLNEvdProvider :  public ManagedComponent
 	}
 	return evdChanged;
   }
-	
-  void distributeEvd(EvidencePtr evd, int initSteps = 400,
-		int burnInSteps = 100, int prevSteps = 0)
-  {
-	evd->initInfSteps = initSteps;
-	evd->burnInSteps = burnInSteps;
-	evd->prevInfSteps = prevSteps;
-  	
-  	vector<string>::iterator id;
-  	for(id=m_engIds.begin(); id!=m_engIds.end(); id++)
-  	{
-	  evd->engId = *id;
-	  addToWorkingMemory(newDataID(), getBindingSA(), evd);
-	  log("Provided new evidence to MLN engine id %s", evd->engId.c_str());
-	}
-  }
-  
-  void distributeQuery(string query)
-  {
-	QueryPtr q = new Query();
-	q->atoms.push_back(query);
-  	
-  	vector<string>::iterator id;
-  	for(id=m_engIds.begin(); id!=m_engIds.end(); id++)
-  	{
-	  q->engId = *id;
-	  addToWorkingMemory(newDataID(), getBindingSA(), q);
-	  log("Provided new query '%s' to MLN engine id %s", query.c_str(), q->engId.c_str());
-	}
-  }
-  
   
   string adaptAtom(string atom, string grd)
   {
@@ -295,7 +222,7 @@ class MLNEvdProvider :  public ManagedComponent
   } 
   
  public:
-  virtual ~MLNEvdProvider() {}
+  virtual ~AbsMLNEvdFilter() {}
 };
 
 }

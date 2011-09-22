@@ -4,7 +4,7 @@
  */
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
-#include "MLNClient.h"
+#include "MLNBeliefEvdFilter.h"
 
 /**
  * The function called to create a new instance of our component.
@@ -13,7 +13,7 @@ extern "C"
 {
   cast::CASTComponentPtr newComponent()
   {
-    return new cast::MLNClient();
+    return new cast::MLNBeliefEvdFilter();
   }
 }
 
@@ -23,16 +23,12 @@ namespace cast
 using namespace std;
 using namespace cdl;
 
-using namespace boost::interprocess;
-using namespace boost::posix_time;
-
 using namespace org::cognitivesystems::binder::mln;
 
-void MLNClient::configure(const map<string,string> & _config)
+void MLNBeliefEvdFilter::configure(const map<string,string> & _config)
 {
 //  BindingWorkingMemoryWriter::configure(_config);
-//  MLNListener::configure(_config);
-  MLNEvdProvider::configure(_config);
+  AbsMLNEvdFilter::configure(_config);
     
   map<string,string>::const_iterator it;
 /* 
@@ -47,17 +43,17 @@ void MLNClient::configure(const map<string,string> & _config)
  */
 }
 
-void MLNClient::start()
+void MLNBeliefEvdFilter::start()
 {
   //must call super start to ensure that the reader sets up change
   //filters  
 //  MLNListener::start();
-  MLNEvdProvider::start();
+  AbsMLNEvdFilter::start();
   
-  log("MLNClient active");
+  log("MLNBeliefEvdFilter active");
 }
 
-void MLNClient::runComponent()
+void MLNBeliefEvdFilter::runComponent()
 {
   sleep(3);
   
@@ -75,29 +71,14 @@ void MLNClient::runComponent()
   evd->trueEvidence.push_back("attribute(LRed)");
   evd->falseEvidence.push_back("percept(PH1)");
   evd->falseEvidence.push_back("percept(PH2)");
-//  evd->falseEvidence.push_back("percept(PH3)");
-//  evd->falseEvidence.push_back("percept(PH4)");
-//  evd->falseEvidence.push_back("percept(PH5)");
-//  evd->falseEvidence.push_back("percept(PH6)");
+  evd->falseEvidence.push_back("percept(PH3)");
+  evd->falseEvidence.push_back("percept(PH4)");
+  evd->falseEvidence.push_back("percept(PH5)");
+  evd->falseEvidence.push_back("percept(PH6)");
   evd->initInfSteps = 400;
   evd->prevInfSteps = 0;
   evd->burnInSteps = 100;
 
-  distributeEvd(evd);
-  
-  sleep(5);
-  
-  evd = new Evidence();
-  Instance i;
-  i.name="T:T";
-  i.type="perc";
-  evd->newInstances.push_back(i);
-
-  evd->trueEvidence.push_back("color(T:T,V_red)");
-  evd->initInfSteps = 400;
-  evd->prevInfSteps = 0;
-  evd->burnInSteps = 100;
-  
   distributeEvd(evd);
   
   while(isRunning())	  
@@ -112,8 +93,8 @@ void MLNClient::runComponent()
 	}*/
 	
 	
-	if(pendingEvdChanges()) {
-		resetEvdChanges();
+	if(pendingFactChanges()) {
+		resetFactChanges();
 		
 		m_filtFacts = filterFacts(getRawFacts());
 		if(m_filtFacts.size()) {

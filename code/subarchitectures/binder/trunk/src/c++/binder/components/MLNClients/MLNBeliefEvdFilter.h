@@ -1,29 +1,14 @@
 /**
  * @author Alen Vrecko
- * @date May 2011
+ * @date September 2011
  *
- * Markov logic network engine tester.
+ * A component that filters beliefs and provides evidence to a Markov logic network engine.
  */
 
-#ifndef MLN_CLIENT_H
-#define MLN_CLIENT_H
+#ifndef MLN_BELIEF_EVD_FILTER_H
+#define MLN_BELIEF_EVD_FILTER_H
 
-//#include <vector>
-//#include <string>
-//#include <queue>
-//#include <map>
-//#include <algorithm>
-
-//#include <boost/interprocess/sync/named_semaphore.hpp>
-//#include <boost/date_time/posix_time/posix_time.hpp>
-
-//#include <../../MLNUtils.h>
-#include <MLNListener.h>
-#include <MLNEvdProvider.h>
-//#include <cast/architecture/ManagedComponent.hpp>
-
-//#include <beliefs_cast.hpp>
-//#include <binder.hpp>
+#include <AbsMLNEvdFilter.h>
 
 
 //using namespace de::dfki::lt::tr::beliefs::slice;
@@ -31,7 +16,7 @@
 namespace cast
 {
 
-class MLNClient : public MLNEvdProvider
+class MLNBeliefEvdFilter : public AbsMLNEvdFilter
 {
  private:
    map<string,MLNFact> m_filtFacts;
@@ -54,7 +39,7 @@ class MLNClient : public MLNEvdProvider
   virtual void runComponent();
 
  public:
-  virtual ~MLNClient() {}
+  virtual ~MLNBeliefEvdFilter() {}
 };
 
 }
