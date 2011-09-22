@@ -52,8 +52,8 @@ JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
 JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
-# INCLUDE includes/motivation.sa/motivation.cast
-# INCLUDE includes/motivation.sa/motivation-goals-george.cast
+INCLUDE includes/motivation.sa/motivation.cast
+INCLUDE includes/motivation.sa/motivation-goals-george.cast
 
 
 # visualization ##########################################################
