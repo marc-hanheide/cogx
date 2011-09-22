@@ -45,7 +45,6 @@ import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteFromStatusExecutor;
-import execution.util.NonBlockingCompleteOnOperationExecutor;
 
 /**
  * Component to listen to planner actions the trigger the vision sa as
@@ -125,7 +124,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 	}
 
 	public static abstract class LearnInstructionExecutor<ActionType extends BeliefPlusStringAction>
-			extends NonBlockingCompleteOnOperationExecutor<ActionType> {
+			extends
+			NonBlockingCompleteFromStatusExecutor<ActionType, VisualLearningTask> {
 
 		private final String m_concept;
 		private final String m_featurePostfix;
@@ -134,7 +134,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 		public LearnInstructionExecutor(ManagedComponent _component,
 				Class<ActionType> _actCls, String _concept, double _weight,
 				String _featurePostfix) {
-			super(_component, _actCls);
+			super(_component, _actCls, VisualLearningTask.class);
 			m_concept = _concept;
 			m_weight = _weight;
 			m_featurePostfix = _featurePostfix;
@@ -143,6 +143,15 @@ public class VisionActionInterface extends AbstractActionInterface {
 
 		protected boolean acceptAction(ActionType _action) {
 			return true;
+		}
+
+		@Override
+		protected TriBool executionResult(VisualLearningTask _cmd) {
+			if (_cmd.status == VisionCommandStatus.VCSUCCEEDED) {
+				return TriBool.TRITRUE;
+			} else {
+				return TriBool.TRIFALSE;
+			}
 		}
 
 		@Override
@@ -178,31 +187,18 @@ public class VisionActionInterface extends AbstractActionInterface {
 			}
 		}
 
-		public VisualLearningTask getTask() throws DoesNotExistOnWMException {
-			return getCommandObject(VisualLearningTask.class);
-		}
-		
 		@Override
-		protected TriBool actionComplete() {
+		protected void actionComplete() {
 			try {
 				getComponent().addBooleanFeature(getAction().beliefAddress,
 						m_concept + m_featurePostfix, true);
-				
-				VisionCommandStatus status = getTask().status;
-				if(status == VisionCommandStatus.VCSUCCEEDED) {
-					return TriBool.TRITRUE;
-				}
-				else {
-					return TriBool.TRIFALSE;
-				}
+
 				// Hack by Alen
 				// getComponent().sleepComponent(10000);
 			} catch (CASTException e) {
 				logException(e);
 			}
-			finally {
-				return TriBool.TRIFALSE;
-			}
+
 		}
 	}
 
@@ -415,7 +411,6 @@ public class VisionActionInterface extends AbstractActionInterface {
 
 	}
 
-	
 	private static ViewCone createViewConeFromPosition(RobotPose2d _pose,
 			PTZReading _ptz) {
 		ViewCone vc = new ViewCone();
