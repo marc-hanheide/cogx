@@ -21,6 +21,10 @@
     (shape-learned ?v - VisualObject)
     (type-learned ?v - VisualObject)
 
+    (color-unlearned ?v - VisualObject)
+    (shape-unlearned ?v - VisualObject)
+    (type-unlearned ?v - VisualObject)
+
     (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
     (allow-polar-type-question ?v - VisualObject ?t - TypeName ?r - Robot)
@@ -30,6 +34,17 @@
     (type-gain-is-max ?v - VisualObject)
 
     (learning-impossible)
+    (unlearning-impossible)
+
+    (curiosity-satisfied)
+
+    (general-color-question-answered ?v - VisualObject)
+    (general-shape-question-answered ?v - VisualObject)
+    (general-type-question-answered ?v - VisualObject)
+
+    (polar-color-question-answered ?v - VisualObject ?c - ColorName)
+    (polar-shape-question-answered ?v - VisualObject ?s - ShapeName)
+    (polar-type-question-answered ?v - VisualObject ?t - TypeName)
   )
 
   (:functions
@@ -110,6 +125,38 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; to satisfy the curiosity is the "standard" goal, i.e. whenever George wants to learn stuff about objects
+
+  (:derived (curiosity-satisfied)
+    (and
+      (forall (?p - ProtoObject) (exists (?v - VisualObject) (and (= (po-is-associated-with ?p) ?v) (color-learned ?v))))
+      (unlearning-impossible)
+    )
+  )
+
+;; this mirrors learning-impossible, but it doesn't work currently
+
+  (:derived (unlearning-impossible)
+    (forall (?v - VisualObject)
+      (and
+        (or
+	  (forall (?c - ColorName) (not (neg-attributed TUTOR (color ?v) ?c)))
+          (color-unlearned ?v)
+        )
+        (or
+          (forall (?s - ShapeName) (not (neg-attributed TUTOR (shape ?v) ?s)))
+          (shape-unlearned ?v)
+        )
+        (or
+          (forall (?t - TypeName) (not (neg-attributed TUTOR (type ?v) ?t)))
+          (type-unlearned ?v)
+        )
+      )
+    )
+  )
+
+;; learning is impossible if nothing had been attributed by the TUTOR for all VisualObjects
+
   (:derived (learning-impossible)
     (forall (?v - VisualObject)
       (and
@@ -128,6 +175,9 @@
       )
     )
   )
+
+;; A polar question is allowed for the color/shape with the max gain only,
+;; and only if this gain is higher than some threshold
 
   (:derived (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (and
@@ -174,7 +224,7 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;                  ANALYZE                ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;        ANALYZE PROTO OBJECT             ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (:action analyze-proto-object
@@ -357,4 +407,269 @@
 	(increase (total-cost) 1)
       )
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                  UNLEARNING             ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action unlearn-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+	(not (color-unlearned ?v))
+        (neg-attributed TUTOR (color ?v) ?c)
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+      )
+    :effect 
+      (and
+	(color-unlearned ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action unlearn-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+	(not (shape-unlearned ?v))
+        (neg-attributed TUTOR (shape ?v) ?s)
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+      )
+    :effect 
+      (and
+	(shape-unlearned ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action unlearn-type
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+	(not (type-unlearned ?v))
+        (neg-attributed TUTOR (type ?v) ?t)
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+      )
+    :effect 
+      (and
+	(type-unlearned ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;          QUESTION ANSWERING             ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action answer-general-color-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+	(attributed TUTOR (color ?v) ?c)
+      )
+    :effect 
+      (and  
+        (general-color-question-answered ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-general-shape-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+	(attributed TUTOR (shape ?v) ?s)
+      )
+    :effect 
+      (and  
+        (general-shape-question-answered ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-general-type-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+	(attributed TUTOR (type ?v) ?t)
+      )
+    :effect 
+      (and  
+        (general-type-question-answered ?v)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-color-question-positively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+	(attributed TUTOR (color ?v) ?c)
+      )
+    :effect 
+      (and  
+        (polar-color-question-answered ?v ?c)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-color-question-negatively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+	(not (attributed TUTOR (color ?v) ?c))
+        (exists 
+          (?c2 - ColorName)
+          (and 
+            (attributed TUTOR (color ?v) ?c2)
+            (not (= ?c2 UNKNOWN_COLOR))
+          )
+        )
+      )
+    :effect 
+      (and  
+        (polar-color-question-answered ?v ?c)
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-shape-question-positively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (attributed TUTOR (shape ?v) ?s)
+      )
+    :effect 
+      (and  
+        (polar-shape-question-answered ?v ?s)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-shape-question-negatively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (not (attributed TUTOR (shape ?v) ?s))
+        (exists 
+          (?s2 - ShapeName)
+          (and 
+            (attributed TUTOR (shape ?v) ?s2)
+            (not (= ?s2 UNKNOWN_SHAPE))
+          )
+        )
+      )
+    :effect 
+      (and  
+        (polar-shape-question-answered ?v ?s)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-type-question-positively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+        (attributed TUTOR (type ?v) ?t)
+      )
+    :effect 
+      (and  
+        (polar-type-question-answered ?v ?t)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-type-question-negatively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+        (not (attributed TUTOR (type ?v) ?t))
+        (exists 
+          (?t2 - TypeName)
+          (and 
+            (attributed TUTOR (type ?v) ?t2)
+            (not (= ?t2 UNKNOWN_TYPE))
+          )
+        )
+      )
+    :effect 
+      (and  
+        (polar-type-question-answered ?v ?t)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-color-question-impossible
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (not (exists (?c - ColorName) (attributed TUTOR (color ?v) ?c)))
+      )
+    :effect
+      (and
+        (general-color-question-answered ?v)
+        (forall (?c - ColorName) (polar-color-question-answered ?v ?c))
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-shape-question-impossible
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (not (exists (?s - ShapeName) (attributed TUTOR (shape ?v) ?s)))
+      )
+    :effect
+      (and
+        (general-shape-question-answered ?v)
+        (forall (?s - ShapeName) (polar-shape-question-answered ?v ?s))
+	(increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-type-question-impossible
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (not (exists (?t - TypeName) (attributed TUTOR (type ?v) ?t)))
+      )
+    :effect
+      (and
+        (general-type-question-answered ?v)
+        (forall (?t - TypeName) (polar-type-question-answered ?v ?t))
+	(increase (total-cost) 1)
+      )
+  )
+
+
 )
