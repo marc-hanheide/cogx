@@ -139,6 +139,7 @@ module Video {
   interface VideoInterface {
     int getNumCameras();
     void getImageSize(out int width, out int height);
+    bool getCameraParameters(int camId, out CameraParameters camPars);
     int getFramerateMilliSeconds();
     void getImage(int camId, out Image img);
     void getImages(out ImageSeq images);

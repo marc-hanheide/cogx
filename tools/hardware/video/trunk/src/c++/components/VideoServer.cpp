@@ -32,6 +32,11 @@ void VideoServerI::getImageSize(Ice::Int& width, Ice::Int& height, const Ice::Cu
   height = (Ice::Int)h;
 }
 
+bool VideoServerI::getCameraParameters(Ice::Int camId, Video::CameraParameters& camPars, const Ice::Current&)
+{
+  return vidSrv->getCameraParameters(camId, camPars);
+}
+
 Ice::Int VideoServerI::getFramerateMilliSeconds(const Ice::Current&)
 {
   return (Ice::Int)vidSrv->getFramerateMilliSeconds();
@@ -224,6 +229,19 @@ void VideoServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
   }
 }
 
+bool VideoServer::getCameraParameters(int camId, Video::CameraParameters& cameraParams)
+{
+  for(size_t i = 0; i < camPars.size(); i++)
+  {
+    if(camId == camPars[i].id)
+    {
+      cameraParams = camPars[i];
+      return true;
+    }
+  }
+  return false;
+}
+
 void VideoServer::startReceiveImages(const std::string &receiverComponentId,
     const vector<int> &camIds, int width, int height)
 {
@@ -329,9 +347,9 @@ void VideoServer::runComponent()
 {
   vector<Image> frames;
   string myid = getComponentID();
-  const int reportDelay = CMilliTimer::seconds(30);
+  const int reportDelay = Video::CMilliTimer::seconds(30);
   long long now = m_timer.elapsed();
-  long long tmNextReport = now + CMilliTimer::seconds(5);
+  long long tmNextReport = now + Video::CMilliTimer::seconds(5);
   long long tmLastReport = now;
   int sendCount = 0;
   while(isRunning())
