@@ -129,7 +129,7 @@
 
   (:derived (curiosity-satisfied)
     (and
-      (forall (?p - ProtoObject) (exists (?v - VisualObject) (and (= (po-is-associated-with ?p) ?v) (color-learned ?v))))
+      (forall (?p - ProtoObject) (exists (?v - VisualObject) (and (= (po-is-associated-with ?p) ?v) (color-learned ?v) (shape-learned ?v))))
       (unlearning-impossible)
     )
   )
