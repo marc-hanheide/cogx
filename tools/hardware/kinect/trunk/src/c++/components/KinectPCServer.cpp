@@ -15,6 +15,7 @@
 #include <cast/core/CASTUtils.hpp>
 #include "KinectPCServer.h"
 #include <highgui.h>
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -402,15 +403,10 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
 
 bool KinectPCServer::getCameraParameters(Ice::Int side /*not used*/, Video::CameraParameters& _camPars)
 {
-
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
-  // TODO: we don't need the image! This is an expensive way to obtain the width
-  IplImage *rgbImage;
-  kinect->GetColorImage(&rgbImage);
-  int imgWidth = rgbImage->width;
+  int imgWidth = kinect->GetRgbImageWidth(); //rgbImage->width;
   double scaleFactor = camPars[0].width / imgWidth;
-  cvReleaseImage(&rgbImage);
 
   initCameraParameters(_camPars);
   _camPars.id = camIds[0];

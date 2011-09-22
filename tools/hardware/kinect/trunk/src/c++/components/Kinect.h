@@ -58,7 +58,9 @@ public:
   bool NextFrame();  
   bool GetColorImage(IplImage **rgbIplImg);
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
-
+  int GetRgbImageWidth() {return rgbWidth;}
+  int GetDepthImageWidth() {return depWidth;}
+  
   cv::Mat grayImage;                    ///< captured gray image (bayer pattered)
   cv::Mat rgbImage;                     ///< captured rgb image
   cv::Mat depImage;                     ///< captured depth image
