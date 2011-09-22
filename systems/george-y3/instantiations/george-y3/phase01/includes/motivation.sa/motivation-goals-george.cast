@@ -1,6 +1,7 @@
 JAVA MG goal-generator.po  eu.cogx.goals.george.ProtoObjectMotiveGenerator
+JAVA MG goal-generator.vo  eu.cogx.goals.george.VisualObjectMotiveGenerator
 
-JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter" 
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter" 
 
 # year 2
 # JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
