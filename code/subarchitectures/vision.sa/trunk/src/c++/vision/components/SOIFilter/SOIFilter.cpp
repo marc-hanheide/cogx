@@ -299,10 +299,10 @@ std::string SOIFilter::CSfDisplayClient::getControlState(const std::string& ctrl
 
 void SOIFilter::sendSyncAllProtoObjects()
 {
-  // copy to minimize race conditions
-  std::map<cdl::WorkingMemoryAddress, ProtoObjectRecordPtr> objs = m_protoObjects;
-  typeof(objs.begin()) it = objs.begin();
-  for (; it != objs.end(); ++it) {
+  IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
+
+  typeof(m_protoObjects.begin()) it = m_protoObjects.begin();
+  for (; it != m_protoObjects.end(); ++it) {
     ProtoObjectRecordPtr& pporec = it->second;
 
     if (!pporec->pobj.get() || !m_bShowProtoObjects)
@@ -464,10 +464,14 @@ void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
   pporec->addr = _wmc.address;
   pporec->pobj = new VisionData::ProtoObject();
   saveProtoObjectData(pobj, pporec->pobj);
-  m_protoObjects[pporec->addr] = pporec;
 
-  if (m_bShowProtoObjects) {
-    sendProtoObject(pporec->addr, pobj);
+  {
+    IceUtil::RWRecMutex::WLock lock(m_protoObjectMapMutex);
+    m_protoObjects[pporec->addr] = pporec;
+
+    if (m_bShowProtoObjects) {
+      sendProtoObject(pporec->addr, pobj);
+    }
   }
 }
 
@@ -478,7 +482,15 @@ void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
   pporec->addr = _wmc.address;
   pporec->pobj = new VisionData::ProtoObject();
   saveProtoObjectData(pobj, pporec->pobj);
-  m_protoObjects[pporec->addr] = pporec;
+
+  {
+    IceUtil::RWRecMutex::WLock lock(m_protoObjectMapMutex);
+    m_protoObjects[pporec->addr] = pporec;
+
+    if (m_bShowProtoObjects) {
+      sendProtoObject(_wmc.address, pobj);
+    }
+  }
 
   if (m_snapper.m_bAutoSnapshot) {
     // XXX: Added to saveSnapshot with SurfacePatches
@@ -486,14 +498,14 @@ void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
     m_snapper.m_LastProtoObject = pobj;
     m_snapper.saveSnapshot();
   }
-  if (m_bShowProtoObjects) {
-    sendProtoObject(_wmc.address, pobj);
-  }
 }
 
 void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
 {
-  m_protoObjects.erase(_wmc.address);
+  {
+    IceUtil::RWRecMutex::WLock lock(m_protoObjectMapMutex);
+    m_protoObjects.erase(_wmc.address);
+  }
   if (m_bShowProtoObjects) {
     sendRemoveProtoObject(_wmc.address);
   }
@@ -586,13 +598,13 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
     //log("rot x: %.4g, y: %.4g, z: %.4g", rot.x, rot.y, rot.z);
     m_bCameraMoving = true;
     endMoveTimeout.restart();
-    m_cameraParams = pcampar->cam;
+    m_cameraParams.pose = pcampar->cam.pose; // only pose is valid
   }
   else {
     if (m_bCameraMoving && endMoveTimeout.elapsed() > 500) {
       log("Camera STOPPED.");
       m_bCameraMoving = false;
-      m_cameraParams = pcampar->cam;
+      m_cameraParams.pose = pcampar->cam.pose; // only pose is valid
       m_display.sendPtuStateToDialog();
     }
   }
@@ -605,7 +617,27 @@ bool SOIFilter::isCameraStable()
 
 bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
 {
-  return Video::isPointVisible(m_cameraParams, pos);
+  Video::CameraParameters params;
+  if (! videoServer->getCameraParameters(camId, params))
+    return false;
+
+#if 0 // DEBUGGING
+  //Vector3 rota, rotb;
+  //toRotVector(m_cameraParams.pose.rot, rota);
+  //toRotVector(params.pose.rot, rotb);
+  //Vector3 dr = rotb - rota;
+  //double err = fabs(dr.x) + fabs(dr.y) + fabs(dr.z);
+  //if (err >= 0.01) {
+  //  log("isPointVisible: Camera has MOVED, %.4g", err);
+  //  log("rot from mount: %.4g, %.4g, %.4g", rota.x, rota.y, rota.z);
+  //  log("rot from video: %.4g, %.4g, %.4g", rotb.x, rotb.y, rotb.z);
+  //}
+  //ostringstream ss;
+  //ss << m_cameraParams;
+  //m_display.setHtml("soif.CamPars", "0", ss.str());
+#endif // DEBUGGING
+
+  return Video::isPointVisible(params, pos);
 }
 
 // Check the objects that are curently marked invisible.
@@ -616,6 +648,7 @@ void SOIFilter::checkInvisibleObjects()
   if ( ! isCameraStable()) sleepComponent(50);
   if ( ! isCameraStable()) return;
 
+  IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
   typeof(m_protoObjects.begin()) itpo;
   for(itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectRecordPtr& pporec = itpo->second;
@@ -635,10 +668,21 @@ void SOIFilter::checkInvisibleObjects()
     if (bVisible) continue;
 
     Vector3& pos = pporec->pobj->position;
+#if 0
     log("TODO: Check Visibility of PO '%s' at (%.3g %.3g %3g) -> (%s)",
         pporec->addr.id.c_str(),
         pos.x, pos.y, pos.z,
         isPointVisible(pporec->pobj->position) ? "IN" : "OUT");
+#endif
+    if (isPointVisible(pporec->pobj->position)) {
+      // the object should be visible, but there is no SOI -> removed -> delete PO
+      try {
+        deleteFromWorkingMemory(pporec->addr);
+      }
+      catch(cast::DoesNotExistOnWMException){
+        debug("check_invisible: ProtoObject already deleted from WM.");
+      }
+    }
   }
 }
 
@@ -646,6 +690,7 @@ void SOIFilter::queueCheckVisibilityOf_PO(const cdl::WorkingMemoryAddress& proto
 {
   ProtoObjectRecordPtr pporec;
   try {
+    IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
     pporec = m_protoObjects.get(protoObjectAddr);
     // for now just mark the time the object was queued
     pporec->tmDisappeared.restart();
@@ -768,6 +813,7 @@ void SOIFilter::runComponent()
 // psoi is calculated at pSoiFilter->m_RobotPose
 ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
 {
+  IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
   typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
   double dmin = 1e99;
   double d;
