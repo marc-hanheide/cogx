@@ -24,16 +24,33 @@ public class VisualObjectMotiveGenerator extends
 
 	private static final int MAX_PLANNING_TIME = 30;
 
-	// TODO share this correctly with other components
-	public static final String COLOUR_KEY = "color";
-	public static final String COLOUR_LEARNT_KEY = COLOUR_KEY + "-learned";
+	// TODO share these correctly with other components
+	public static final String LEARNT_POSTFIX_KEY = "-learned";
 
+	public static final String COLOUR_KEY = "color";
+	public static final String COLOUR_LEARNT_KEY = COLOUR_KEY
+			+ LEARNT_POSTFIX_KEY;
+	public static final String SHAPE_KEY = "shape";
+	public static final String SHAPE_LEARNT_KEY = SHAPE_KEY
+			+ LEARNT_POSTFIX_KEY;
+	public static final String IDENTITY_KEY = "identity";
+	public static final String IDENTITY_LEARNT_KEY = IDENTITY_KEY
+			+ LEARNT_POSTFIX_KEY;
+
+	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
 	private boolean m_shapeEnabled = true;
-	private boolean m_identityEnabled = true;
+	private boolean m_identityEnabled = false;
 
 	public VisualObjectMotiveGenerator() {
 		super(VO_TYPE, LearnObjectFeatureMotive.class, GroundedBelief.class);
+	}
+
+	private boolean motiveFeatureLearnt(String _featureKey,
+			String _featureLearntPredicate, LearnObjectFeatureMotive _motive,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+		return _motive.feature.equals(_featureKey)
+				&& _belief.getContent().containsKey(_featureLearntPredicate);
 	}
 
 	@Override
@@ -42,19 +59,23 @@ public class VisualObjectMotiveGenerator extends
 		if (_motive.feature == null) {
 			getLogger().warn("LearnObjectFeatureMotive.feature is null",
 					getLogAdditions());
+			return null;
 		} else {
+
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 					.create(GroundedBelief.class, _newEntry);
 
-			// if this is a colour motive and colour has been learnt for the
-			// object then stop
-			if (_motive.feature.equals(COLOUR_KEY) && colourLearnt(belief)) {
+			if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
+					COLOUR_LEARNT_KEY, _motive, belief))
+					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
+							SHAPE_LEARNT_KEY, _motive, belief))
+					|| (m_identityEnabled && motiveFeatureLearnt(IDENTITY_KEY,
+							IDENTITY_LEARNT_KEY, _motive, belief))) {
 				return null;
 			} else {
 				return _motive;
 			}
 		}
-		return _motive;
 
 	}
 
@@ -69,8 +90,24 @@ public class VisualObjectMotiveGenerator extends
 	protected void checkForAdditions(WorkingMemoryAddress addr,
 			GroundedBelief newEntry, List<LearnObjectFeatureMotive> newAdditions) {
 		if (m_colourEnabled) {
-			LearnObjectFeatureMotive motive = generateLearnColourMotive(addr,
-					newEntry);
+			LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+					COLOUR_KEY, COLOUR_LEARNT_KEY, addr, newEntry);
+			if (motive != null) {
+				newAdditions.add(motive);
+			}
+		}
+
+		if (m_shapeEnabled) {
+			LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+					SHAPE_KEY, SHAPE_LEARNT_KEY, addr, newEntry);
+			if (motive != null) {
+				newAdditions.add(motive);
+			}
+		}
+
+		if (m_identityEnabled) {
+			LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+					IDENTITY_KEY, IDENTITY_LEARNT_KEY, addr, newEntry);
 			if (motive != null) {
 				newAdditions.add(motive);
 			}
@@ -78,8 +115,10 @@ public class VisualObjectMotiveGenerator extends
 
 	}
 
-	private LearnObjectFeatureMotive generateLearnColourMotive(
+	private LearnObjectFeatureMotive generateLearnFeatureMotive(
+			String _featureKey, String _featureLearntPredicate,
 			WorkingMemoryAddress _wma, GroundedBelief _newEntry) {
+
 		assert (_newEntry.type.equals(VO_TYPE));
 
 		log("checkForAddition(): check belief " + _newEntry.id
@@ -90,16 +129,17 @@ public class VisualObjectMotiveGenerator extends
 
 		LearnObjectFeatureMotive result = null;
 
-		if (!colourLearnt(belief)) {
+		if (!belief.getContent().containsKey(_featureLearntPredicate)) {
 			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
-			result.goal = new Goal(100f, beliefPredicateGoal(COLOUR_LEARNT_KEY,
-					belief), false);
-			result.feature = COLOUR_KEY;
+			result.goal = new Goal(100f, beliefPredicateGoal(
+					_featureLearntPredicate, belief), false);
+			result.feature = _featureKey;
 			log("goal is " + result.goal.goalString + " with inf-gain "
 					+ result.informationGain);
 		}
 		return result;
+
 	}
 
 	private LearnObjectFeatureMotive newLearnObjectFeatureMotive(
@@ -114,11 +154,6 @@ public class VisualObjectMotiveGenerator extends
 		result.referenceEntry = _refEntry;
 		result.status = MotiveStatus.UNSURFACED;
 		return result;
-	}
-
-	private boolean colourLearnt(
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief) {
-		return belief.getContent().containsKey(COLOUR_LEARNT_KEY);
 	}
 
 	private static String beliefPredicateGoal(String _predicate,
