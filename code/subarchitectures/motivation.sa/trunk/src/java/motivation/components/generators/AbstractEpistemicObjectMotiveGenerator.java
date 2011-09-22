@@ -32,7 +32,7 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 5;
 
 	private static final int DEFAULT_MAX_PLANNING_TIME = 60;
-	final Map<WorkingMemoryAddress, WorkingMemoryAddress> bel2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
+	final Map<WorkingMemoryAddress, List<WorkingMemoryAddress>> bel2motivesMap = new HashMap<WorkingMemoryAddress, List<WorkingMemoryAddress>>();
 	final Class<M> motiveClass;
 	final Class<T> epistemicClass;
 	private WorkingMemoryAddress robotBeliefAddr = null;

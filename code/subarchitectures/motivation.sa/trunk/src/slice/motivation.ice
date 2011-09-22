@@ -134,6 +134,15 @@ module motivation {
     	};
 
 		class AnalyzeProtoObjectMotive extends Motive {};
+
+		class LearnObjectFeatureMotive extends Motive {
+			/**
+			* The feature to learn.
+			*/
+			string feature;
+			
+		};
+
     	
     	class PlanProxy {
     	    cast::cdl::WorkingMemoryAddress planAddress;

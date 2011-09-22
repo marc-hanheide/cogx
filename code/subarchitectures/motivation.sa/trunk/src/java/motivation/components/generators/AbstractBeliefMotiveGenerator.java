@@ -4,6 +4,7 @@
 package motivation.components.generators;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -12,7 +13,10 @@ import motivation.slice.Motive;
 import autogen.Planner.Completion;
 import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.DoesNotExistOnWMException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
@@ -32,6 +36,7 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 
 	WMEventQueue wmcQueue = new WMEventQueue();
 	String beliefType;
+	List<M> newAdditions;
 
 	/**
 	 * 
@@ -40,121 +45,151 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 			Class<M> motiveClass, Class<T> beliefClass) {
 		super(motiveClass, beliefClass);
 		this.beliefType = beliefType;
+		newAdditions = new ArrayList<M>();
 	}
 
 	public void beliefChanged(WorkingMemoryChange wmc) throws CASTException {
-		M motive = null;
 		switch (wmc.operation) {
 		case ADD: {
 			T newEntry = getMemoryEntry(wmc.address, epistemicClass);
 			// if we don't deal with this type, bugger off
-			if (!newEntry.type.equals(beliefType))
+			if (!newEntry.type.equals(beliefType)) {
 				break;
-			log("relevant ADD event: " + CASTUtils.toString(wmc));
-			motive = checkForAddition(wmc.address, newEntry);
-
-			if (motive != null) {
-				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
-						getSubarchitectureID());
-				assignCosts(motive);
-				addToWorkingMemory(motive.thisEntry, motive);
-				bel2motiveMap.put(wmc.address, motive.thisEntry);
 			}
+			log("relevant ADD event: " + CASTUtils.toString(wmc));
+
+			checkForAdditions(wmc, newEntry);
 
 			break;
 		}
 		case OVERWRITE: {
 			T newEntry = getMemoryEntry(wmc.address, epistemicClass);
 			// if we don't deal with this type, bugger off
-			if (!newEntry.type.equals(beliefType))
+			if (!newEntry.type.equals(beliefType)) {
 				break;
+			}
 			log("relevant OVERWRITE event: " + CASTUtils.toString(wmc));
-			WorkingMemoryAddress correspondingWMA = bel2motiveMap
+			List<WorkingMemoryAddress> correspondingWMAs = bel2motivesMap
 					.get(wmc.address);
-			if (correspondingWMA == null) {
-				motive = checkForAddition(wmc.address, newEntry);
-				if (motive != null) {
-					motive.thisEntry = new WorkingMemoryAddress(newDataID(),
-							getSubarchitectureID());
-					assignCosts(motive);
-					addToWorkingMemory(motive.thisEntry, motive);
-					bel2motiveMap.put(wmc.address, motive.thisEntry);
-				}
-
+			if (correspondingWMAs == null) {
+				checkForAdditions(wmc, newEntry);
 			} else {
-				try {
-					getLogger().debug(
-							"AbstractBeliefMotiveGenerator: locking and reading corresponding motive "
-									+ correspondingWMA.id);
-					lockEntry(correspondingWMA,
-							WorkingMemoryPermissions.LOCKEDOD);
-					motive = getMemoryEntry(correspondingWMA, motiveClass);
-					getLogger().debug(
-							"AbstractBeliefMotiveGenerator: motive read, status is "
-									+ motive.status.name());
 
-					motive = checkForUpdate(newEntry, motive);
+	
 
-					if (motive == null) {
-						deleteFromWorkingMemory(correspondingWMA);
-						bel2motiveMap.remove(wmc.address);
-					} else {
-						assignCosts(motive);
-						overwriteWorkingMemory(correspondingWMA, motive);
-					}
+				//need an explicit iterator to allow removal 
+				for (Iterator<WorkingMemoryAddress> i = correspondingWMAs.iterator() ; i.hasNext() ;) {
+					WorkingMemoryAddress correspondingWMA = i.next();
+					try {
+						getLogger().debug(
+								"AbstractBeliefMotiveGenerator: locking and reading corresponding motive "
+										+ correspondingWMA.id);
+						lockEntry(correspondingWMA,
+								WorkingMemoryPermissions.LOCKEDOD);
+						M motive = getMemoryEntry(correspondingWMA, motiveClass);
+						getLogger().debug(
+								"AbstractBeliefMotiveGenerator: motive read, status is "
+										+ motive.status.name());
 
-				} catch (CASTException e) {
-					logException(e);
-				} finally {
-					if (holdsLock(correspondingWMA.id,
-							correspondingWMA.subarchitecture))
-						try {
-							unlockEntry(correspondingWMA);
-						} catch (CASTException e) {
-							getLogger().warn(
-									"when unlocking an object, can be ignored",
-									e);
+						motive = checkForUpdate(newEntry, motive);
+
+						if (motive == null) {
+							deleteFromWorkingMemory(correspondingWMA);
+							//remove the motive from the list
+							i.remove();
+							if (bel2motivesMap.get(wmc.address).isEmpty()) {
+								bel2motivesMap.remove(wmc.address);
+							}
+						} else {
+							assignCosts(motive);
+							overwriteWorkingMemory(correspondingWMA, motive);
 						}
+
+					} catch (CASTException e) {
+						logException(e);
+					} finally {
+						if (holdsLock(correspondingWMA.id,
+								correspondingWMA.subarchitecture))
+							try {
+								unlockEntry(correspondingWMA);
+							} catch (CASTException e) {
+								getLogger()
+										.warn("when unlocking an object, can be ignored",
+												e);
+							}
+					}
 				}
 			}
 			break;
 		}
 		case DELETE: {
-			WorkingMemoryAddress correspondingWMA = bel2motiveMap
+			List<WorkingMemoryAddress> correspondingWMAs = bel2motivesMap
 					.get(wmc.address);
-			if (correspondingWMA != null) {
-				log("relevant DELETE event: " + CASTUtils.toString(wmc)
-						+ " causing DELETION of "
-						+ CASTUtils.toString(correspondingWMA));
-				try {
-					lockEntry(correspondingWMA,
-							WorkingMemoryPermissions.LOCKEDOD);
-					deleteFromWorkingMemory(correspondingWMA);
-					bel2motiveMap.remove(wmc.address);
-				} catch (CASTException e) {
-					logException(e);
-					throw (e);
-				} finally {
-					if (holdsLock(correspondingWMA.id,
-							correspondingWMA.subarchitecture))
-						try {
-							unlockEntry(correspondingWMA);
-						} catch (CASTException e) {
-							getLogger().warn(
-									"when unlocking an object, can be ignored",
-									e);
-						}
+			for (WorkingMemoryAddress correspondingWMA : correspondingWMAs) {
+				if (correspondingWMA != null) {
+					log("relevant DELETE event: " + CASTUtils.toString(wmc)
+							+ " causing DELETION of "
+							+ CASTUtils.toString(correspondingWMA));
+					try {
+						lockEntry(correspondingWMA,
+								WorkingMemoryPermissions.LOCKEDOD);
+						deleteFromWorkingMemory(correspondingWMA);
+
+					} catch (CASTException e) {
+						logException(e);
+						throw (e);
+					} finally {
+						if (holdsLock(correspondingWMA.id,
+								correspondingWMA.subarchitecture))
+							try {
+								unlockEntry(correspondingWMA);
+							} catch (CASTException e) {
+								getLogger()
+										.warn("when unlocking an object, can be ignored",
+												e);
+							}
+					}
 				}
 			}
+			bel2motivesMap.remove(wmc.address);
 			break;
 		}
 		}
 
 	}
 
+	private void checkForAdditions(WorkingMemoryChange wmc, T newEntry)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		assert(newAdditions != null);
+		assert(newAdditions.isEmpty());
+		
+		checkForAdditions(wmc.address, newEntry, newAdditions);
+
+		if (!newAdditions.isEmpty()) {
+			ArrayList<WorkingMemoryAddress> motiveAddresses = new ArrayList<WorkingMemoryAddress>(
+					newAdditions.size());
+			for (M motive : newAdditions) {
+				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
+						getSubarchitectureID());
+				assignCosts(motive);
+				addToWorkingMemory(motive.thisEntry, motive);
+				motiveAddresses.add(motive.thisEntry);
+			}
+			bel2motivesMap.put(wmc.address, motiveAddresses);
+			newAdditions.clear();
+		}
+	}
+
+	protected void checkForAdditions(WorkingMemoryAddress addr, T newEntry,
+			List<M> newAdditions) {
+		newAdditions.add(checkForAddition(addr, newEntry));
+	}
+
 	protected abstract M checkForAddition(WorkingMemoryAddress addr, T newEntry);
 
-	protected abstract M checkForUpdate(T newEntry, M motive);
+	protected abstract M checkForUpdate(T newEntry, M existingMotive);
 
 	/*
 	 * (non-Javadoc)
@@ -237,13 +272,12 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 			// lockComponent();
 
 			List<WorkingMemoryAddress> addresses = new ArrayList<WorkingMemoryAddress>(
-					bel2motiveMap.keySet());
+					bel2motivesMap.keySet());
 
 			for (WorkingMemoryAddress wma : addresses) {
 				WorkingMemoryChange wmc = new WorkingMemoryChange(
-						WorkingMemoryOperation.OVERWRITE,
-						"SpatialFacade.PlaceChangedHandler", wma,
-						CASTUtils.typeName(epistemicClass),
+						WorkingMemoryOperation.OVERWRITE, getComponentID(),
+						wma, CASTUtils.typeName(epistemicClass),
 						new String[] { CASTUtils.typeName(epistemicClass) },
 						getCASTTime());
 				try {

@@ -3,6 +3,7 @@
  */
 package motivation.components.generators;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import motivation.slice.Motive;
@@ -26,6 +27,9 @@ public abstract class DeprecatedAbstractBeliefMotiveGenerator<M extends Motive, 
 
 	final WMView<T> beliefView;
 
+	final Map<WorkingMemoryAddress, WorkingMemoryAddress> bel2motiveMap = new HashMap<WorkingMemoryAddress, WorkingMemoryAddress>();
+
+	
 	/**
 	 * 
 	 */
