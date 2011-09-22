@@ -196,7 +196,7 @@ public class PlaceMonitor extends ManagedComponent {
 			log("initiating connection to Ice server " + m_chaingraph_component_name);
 			try {
 				m_chaingraphinferencer = getIceServer(m_chaingraph_component_name, DefaultData.ChainGraphInferencerServerInterface.class , DefaultData.ChainGraphInferencerServerInterfacePrx.class);
-				log("initiated comareasoner connection");
+				log("initiated chaingraph connection");
 				
 				// query chaingraph inferencer for object and room categories
 				String[] objCats = m_chaingraphinferencer.getObjectCategories();
@@ -507,7 +507,6 @@ public class PlaceMonitor extends ManagedComponent {
 			String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
 			String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
 			
-			// m_comareasoner
 		}
 		
 		/*
