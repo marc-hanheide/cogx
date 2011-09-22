@@ -401,27 +401,14 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   unlockComponent();
 }
 
-bool KinectPCServer::getCameraParameters(Ice::Int side /*not used*/, Video::CameraParameters& _camPars)
+bool KinectPCServer::getCameraParameters(Ice::Int side, Video::CameraParameters& _camPars)
 {
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
   int imgWidth = kinect->GetRgbImageWidth(); //rgbImage->width;
-  double scaleFactor = camPars[0].width / imgWidth;
-
   initCameraParameters(_camPars);
-  _camPars.id = camIds[0];
-  _camPars.width  = imgWidth;
-  _camPars.height = imgWidth * 3/4;
-  _camPars.fx = camPars[0].fx/scaleFactor;
-  _camPars.fy = camPars[0].fy/scaleFactor;
-  _camPars.cx = camPars[0].cx/scaleFactor;
-  _camPars.cy = camPars[0].cy/scaleFactor;
-
-  Pose3 global_pose, zeroPose;
-  setIdentity(zeroPose);
-  transform(camPars[0].pose, zeroPose, global_pose);
-  _camPars.pose = global_pose;
-  _camPars.time = getCASTTime();
+  _camPars = camPars[0];
+  changeImageSize(_camPars, imgWidth, imgWidth*3/4);
 
   unlockComponent(); // TODO: remove
 
