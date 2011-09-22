@@ -9,6 +9,7 @@
     <pathelement path="${ice.jar}"/>
     <pathelement path="${cast.jar}"/>
     <pathelement path="${log4j.jar}" />
+		<pathelement path="${projectroot.dir}/tools/castutils/src/java" />
   </path>
 
   <!-- Controls where the output goes -->
@@ -59,7 +60,7 @@
   <target name="compile" depends="compile-slice" description="compiles the source code">
     <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
       <classpath refid="build.classpath"/> </javac>
-  </target>
+    </target>
 
   <!-- =================================================================== -->
   <!-- Cleanup                                                             -->
