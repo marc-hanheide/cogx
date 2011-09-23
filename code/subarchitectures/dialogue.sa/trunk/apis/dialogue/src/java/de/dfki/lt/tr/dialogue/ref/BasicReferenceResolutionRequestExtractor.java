@@ -11,11 +11,6 @@ import org.apache.log4j.Logger;
 public class BasicReferenceResolutionRequestExtractor
 implements ReferenceResolutionRequestExtractor {
 
-	public static final String SORT_DISCOURSE = "discourse";
-	public static final String SORT_OBJECT = "object";
-	public static final String SORT_PLACE = "place";
-	public static final String SORT_INDETERMINATE = "indeterminate";
-
 	private final Logger logger;
 
 	public BasicReferenceResolutionRequestExtractor(Logger logger) {
@@ -34,35 +29,35 @@ implements ReferenceResolutionRequestExtractor {
 		return new ReferenceResolutionRequest(nomvar, sort, cmap.toConstraintList(), ival.toIce());
 	}
 
-	private void tryAddToConstraintMap(ConstraintMap cmap, String feature, String value) {
+	private static void tryAddToConstraintMap(ConstraintMap cmap, String feature, String value) {
 		cmap.contentMap().put(feature.toLowerCase(), value);
 	}
 
 	// (box1_1:thing ^ box ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(red1_1:q-color ^ red)
 	// (object1_2:thing ^ object ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(red1_2:q-color ^ red))
 
-	private String getSort(LogicalForm lf, String nomvar) {
+	private static String getSort(LogicalForm lf, String nomvar) {
 		LFNominal nom = LFUtils.lfGetNominal(lf, nomvar);
 		String sort = nom.sort;
 		String prop = nom.prop.prop;
 		if (prop.equals("it")) {
-			return SORT_DISCOURSE;
+			return ReferenceResolver.SORT_DISCOURSE;
 		}
 		if (prop.equals("context")) {
-			return SORT_INDETERMINATE;
+			return ReferenceResolver.SORT_INDETERMINATE;
 		}
 
 		if (sort.equals("thing")) {
-			return SORT_OBJECT;
+			return ReferenceResolver.SORT_OBJECT;
 		}
 		if (sort.equals("e-place")) {
-			return SORT_PLACE;
+			return ReferenceResolver.SORT_PLACE;
 		}
 
 		return sort;
 	}
 
-	public void traverseNominal(ConstraintMap cmap, LogicalForm lf, String nomvar) {
+	public static void traverseNominal(ConstraintMap cmap, LogicalForm lf, String nomvar) {
 		LFNominal nom = LFUtils.lfGetNominal(lf, nomvar);
 		if (nom != null) {
 
@@ -92,7 +87,7 @@ implements ReferenceResolutionRequestExtractor {
 		}
 	}
 
-	public String getPropertyName(LFNominal nom) {
+	public static String getPropertyName(LFNominal nom) {
 		if (nom.sort.equals("q-color")) {
 			return "color";
 		}

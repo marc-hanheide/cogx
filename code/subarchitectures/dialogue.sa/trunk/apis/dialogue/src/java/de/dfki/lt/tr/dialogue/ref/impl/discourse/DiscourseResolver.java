@@ -1,18 +1,14 @@
-package de.dfki.lt.tr.cast.dialogue;
+package de.dfki.lt.tr.dialogue.ref.impl.discourse;
 
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
-import de.dfki.lt.tr.dialogue.ref.Constraint;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 public class DiscourseResolver implements ReferenceResolver {
@@ -25,9 +21,8 @@ public class DiscourseResolver implements ReferenceResolver {
 
 	@Override
 	public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr) {
-		Map<String, String> constraints = constraintsToMap(rr.constraints);
 		ReferenceResolutionResult result = newEmptyResolutionResult(rr);
-		if (constraints.get("Type").equals("it")) {
+		if (rr.sort.equals(SORT_DISCOURSE)) {
 			dFormula referent = getTopReferent();
 			if (referent != null) {
 				EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent), referent, 0.9F);
@@ -42,10 +37,12 @@ public class DiscourseResolver implements ReferenceResolver {
 	}
 
 	protected dFormula getTopReferent() {
-		DialogueMove top = dst.peek();
-		if (top != null) {
-			if (top.topic != null) {
-				return top.topic.referent;
+		if (!dst.empty()) {
+			DialogueMove top = dst.peek();
+			if (top != null) {
+				if (top.topic != null) {
+					return top.topic.referent;
+				}
 			}
 		}
 		return null;
@@ -56,14 +53,6 @@ public class DiscourseResolver implements ReferenceResolver {
 		epst.cgagents.add(ag1);
 		epst.cgagents.add(ag2);
 		return epst;
-	}
-
-	public static Map<String, String> constraintsToMap(List<Constraint> constraints) {
-		Map<String, String> result = new HashMap<String, String>();
-		for (Constraint c : constraints) {
-			assert result.put(c.feature, c.value) == null;
-		}
-		return result;
 	}
 
 	public static ReferenceResolutionResult newEmptyResolutionResult(ReferenceResolutionRequest rr) {
