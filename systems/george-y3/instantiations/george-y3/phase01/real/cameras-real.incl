@@ -46,9 +46,10 @@ CPP MG stereoserver StereoServer %(StereoServer_Params)
 # cam offset
 VARDEFAULT ptzServerComponent=ptz.server
 SETVAR camera_mount_params=<multiline>
-   --camids "0"
-   #--fixed_pan_tilt "0 -54.0"
-   --cam_poses_xml "%(camera_config_dir)/campose-left.xml"
+   --camids "0 1 2"
+   --cam_poses_xml "%(camera_config_dir)/ptu-pose-cam-left-sim.xml %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml %(camera_config_dir)/campose-kinect2left-tuw-11-05-11.xml"
+   --reference_cam_id "0"
+   --invert_poses
    --pt_base_xml   %(camera_config_dir)/ptu-pose-base-sim.xml
    --pt_pan_xml    %(camera_config_dir)/ptu-pose-pan-sim.xml
    --pt_tilt_xml   %(camera_config_dir)/ptu-pose-tilt-sim.xml
@@ -76,6 +77,6 @@ SETVAR KinectPCServer_Params=<multiline>
 CPP MG pcserver KinectPCServer %(KinectPCServer_Params)
 
 # to move the PTU to a given position
-CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
+#CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
 
 JAVA MG ptz.wmi.server ptz.ptzServer.PanTiltZoomServer # --testGUI
