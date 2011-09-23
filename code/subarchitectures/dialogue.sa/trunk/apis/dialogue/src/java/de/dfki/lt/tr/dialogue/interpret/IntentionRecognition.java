@@ -146,31 +146,35 @@ public class IntentionRecognition {
 				List<MarkedQuery> to_add = new ArrayList<MarkedQuery>();
 				to_add.add(mq);
 
-				if (mq.atom.a.predSym.equals(ConversionUtils.predsym_IS_REFERENCE) && mq instanceof AssertedQuery && mq.atom.a.args.size() == 2) {
-					ModalisedAtom old_ma = mq.atom;
-					Term nomTerm = old_ma.a.args.get(0);
-					Term varTerm = old_ma.a.args.get(1);
+				if (mq instanceof AssertedQuery) {
+					AssertedReferenceAtom aratom = AssertedReferenceAtom.fromModalisedAtom(mq.atom);
+					if (aratom != null) {
+						
+						Term nomTerm = aratom.getNominalTerm();
+						Term varTerm = aratom.getReferentTerm();
+//						Term epstTerm = aratom.getEpStTerm();
 
-					if (nomTerm instanceof FunctionTerm && varTerm instanceof VariableTerm) {
-						String nom = ((FunctionTerm) nomTerm).functor;
-						if (rr.nom.equals(nom)) {
-							to_add = new ArrayList<MarkedQuery>();
+						if (nomTerm instanceof FunctionTerm && varTerm instanceof VariableTerm) {
+							String nom = ((FunctionTerm) nomTerm).functor;
+							if (rr.nom.equals(nom)) {
+								to_add = new ArrayList<MarkedQuery>();
 
-							UnsolvedQuery new_mq = new UnsolvedQuery(old_ma, new NullAssumabilityFunction());
-/*
-							UnsolvedQuery resolves_mq = new UnsolvedQuery(
-								TermAtomFactory.modalisedAtom(
-									new Modality[] {Modality.Understanding},
-									TermAtomFactory.atom("resolves_to_epobject", new Term[] {
-										nomTerm,
-										varTerm,
-										TermAtomFactory.var("EpSt")
-									})),
-								new NamedAssumabilityFunction("reference_resolution"));
+								UnsolvedQuery new_mq = new UnsolvedQuery(aratom.toModalisedAtom(), new NullAssumabilityFunction());
+	/*
+								UnsolvedQuery resolves_mq = new UnsolvedQuery(
+									TermAtomFactory.modalisedAtom(
+										new Modality[] {Modality.Understanding},
+										TermAtomFactory.atom("resolves_to_epobject", new Term[] {
+											nomTerm,
+											varTerm,
+											TermAtomFactory.var("EpSt")
+										})),
+									new NamedAssumabilityFunction("reference_resolution"));
 
-							to_add.add(resolves_mq);
- */
-							to_add.add(new_mq);
+								to_add.add(resolves_mq);
+	 */
+								to_add.add(new_mq);
+							}
 						}
 					}
 				}

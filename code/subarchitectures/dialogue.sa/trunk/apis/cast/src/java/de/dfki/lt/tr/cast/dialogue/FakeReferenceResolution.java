@@ -41,7 +41,7 @@ extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 			ReferenceResolutionResult result = newEmptyResolutionResult(rr);
 
 			dFormula referent = new PointerFormula(0, wmptr.address, wmptr.type);
-			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent), referent, 0.9F);
+			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(newSharedEpistemicStatus(IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent), referent, 0.9F);
 			result.hypos.add(hypo);
 
 			return result;
