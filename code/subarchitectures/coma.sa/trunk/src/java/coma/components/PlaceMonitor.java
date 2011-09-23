@@ -1,6 +1,5 @@
 package coma.components;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import DefaultData.ChainGraphInferencerServerInterfacePrx;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import SpatialData.SpatialRelation;
-import SpatialProbabilities.JointProbabilityValue;
 import SpatialProbabilities.ProbabilityDistribution;
 import SpatialProperties.BinaryValue;
 import SpatialProperties.ConnectivityPathProperty;
@@ -189,6 +187,9 @@ public class PlaceMonitor extends ManagedComponent {
 			log("Connection to the coma reasoner Ice server at "+ m_comareasoner_component_name + " failed! Exiting. (Specify the coma reasoner component name using --reasoner-name)");
 			System.exit(-1);
 		}	
+		
+		// create default scene instance
+		m_comareasoner.addInstance("dora:defaultScene", "dora:Scene");
 		
 		// connection to chaingraph inferencer
 
@@ -500,26 +501,24 @@ public class PlaceMonitor extends ManagedComponent {
 		String objInsName = "dora:" + _objProp.category.toLowerCase() + _wmc.address.id;
 		String objCatName = "dora:" + ComaHelper.firstCap(_objProp.category);
 		
-		String placeName = "dora:place" + _objProp.placeId;
+		String placeInsName = "dora:place" + _objProp.placeId;
 		
+		m_comareasoner.addInstance(objInsName, objCatName);
+		m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
+				
 		// check if the object is immediately in the room or related via a supportObject
-		if (_objProp.supportObjectCategory.equals("") && _objProp.relation.equals(SpatialRelation.INROOM)) {
+		if ((!_objProp.supportObjectCategory.equals("")) && 
+				(_objProp.relation.equals(SpatialRelation.ON) || _objProp.relation.equals(SpatialRelation.INOBJECT))) {
 			String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
 			String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
 			
-		}
-		
-		/*
-		for (String _currObjType : objCats) {
-			String _addQuery = 
-				"INSERT { dora:" + ComaHelper.firstCapRestSmall(_currObjType) + 
-				" rdfs:subClassOf " + 
-				" dora:Object }";
-			m_comareasoner.executeSPARQL(_addQuery);
-			log("executed " + _addQuery);
-		}
-		*/
-
+			m_comareasoner.addInstance(suppobjInsName, suppobjCatName);
+			m_comareasoner.addRelation(suppobjInsName, "dora:observableFromPlace", placeInsName);
+			m_comareasoner.addRelation(
+					objInsName, 
+					(_objProp.relation.equals(SpatialRelation.ON) ? "dora:on" : "dora:in"), 
+					suppobjInsName);
+		}	
 	}
 		
 //	private boolean createObject(ObjectPlaceProperty _objProp) {
@@ -859,6 +858,7 @@ public class PlaceMonitor extends ManagedComponent {
 					// create new room on the reasoner
 					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
 					log("created new instance " + "dora:room" + _newRoom.roomId +  " of concept dora:PhysicalRoom");
+					m_comareasoner.addRelation("dora:room" + _newRoom.roomId, "dora:in", "dora:defaultScene");
 					
 					// now initialize the room concepts
 					// changed for Dora yr2!

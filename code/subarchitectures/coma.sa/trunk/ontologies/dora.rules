@@ -110,7 +110,7 @@
 [objectContainmentRule:
   (?a rdf:type dora:Object),
   (?b rdf:type dora:Place),
-  (?a dora:in ?b),
+  (?a dora:observableFromPlace ?b),
   (?b dora:constituentOfRoom ?c)
   ->
   (?a dora:in ?c)]
