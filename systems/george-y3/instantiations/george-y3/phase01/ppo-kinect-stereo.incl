@@ -1,0 +1,40 @@
+# CAST include file
+
+# Plane Pop Out: two PPO instances with Point Clouds from Kinect (coarse) and Stereo Server (fine)
+
+# NOTE: kinect_config_file is set in cameras-X.incl
+# NOTE: stereo_config_file is set in cameras-X.incl
+
+VARDEFAULT coarsePointCloud=kinect.server
+SETVAR CoarsePlanePopOut_Params=<multiline>
+   --generate-sois true
+   --pcserver "%(coarsePointCloud)"
+   --stereoconfig %(kinect_config_file)
+   --displayserver "display.srv"
+   #--minObjHeight 0.015
+   #--totalPoints 8000
+   #--LeastPointsInOneObj 40
+   #--agonalTime 10
+   #--stableTime 2 
+   #--display
+   #--log
+</multiline>
+CPP MG vis.ppo.coarse PlanePopOutPc %(CoarsePlanePopOut_Params)
+VARDEFAULT coarseSoiSource=vis.ppo.coarse
+
+VARDEFAULT finePointCloud=stereoserver
+SETVAR FinePlanePopOut_Params=<multiline>
+   --generate-sois false
+   --pcserver "%(finePointCloud)"
+   --stereoconfig %(stereo_config_file)
+   --displayserver "display.srv"
+   --minObjHeight 0.015
+   --totalPoints 8000
+   --LeastPointsInOneObj 40
+   --agonalTime 10
+   --stableTime 5 
+   #--display
+   # --log
+</multiline>
+CPP MG vis.ppo.fine PlanePopOutPc %(FinePlanePopOut_Params) 
+VARDEFAULT fineSoiSource=vis.ppo.fine
