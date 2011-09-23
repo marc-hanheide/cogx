@@ -35,6 +35,7 @@ CPP MG vc-costs ViewConeMoveCostGenerator
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
 
+INCLUDE georgeY3-mln.incl
 
 # # dialogue ####################################################################
 # INCLUDE includes/dialogue.sa/dialogue-base.cast
@@ -45,7 +46,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+#JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
 # JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
 JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
@@ -63,6 +64,7 @@ JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "dis
 JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
 JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
 
+
 # manipulation #####################################################################
 SUBARCHITECTURE manipulation.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
@@ -75,5 +77,5 @@ CPP MG manipulation.playerArmBridge PlayerArmBridge --log
 # as discussed in the tutorial and controls the arm.
 # Here you have to give the correct clibration file
 # with "--testGUI" you can try out the different commands
-JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/george-y3/calibration/example-arm-pose.xml" --armName "simulation" --testGUI
-CPP MG pointingtest PointingTest
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/george-y3/calibration/example-arm-pose.xml" --armName "simulation" #--testGUI
+CPP MG armManager ArmManager
