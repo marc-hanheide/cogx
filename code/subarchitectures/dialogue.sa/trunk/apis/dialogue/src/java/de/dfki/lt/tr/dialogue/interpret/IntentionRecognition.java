@@ -24,7 +24,6 @@ import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
-import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.infer.abducer.lang.DisjointDeclaration;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
@@ -123,7 +122,7 @@ public class IntentionRecognition {
 
 		ProofWithCost pwc = AbducerUtils.bestAbductiveProof(abd_recog, ProofUtils.newUnsolvedProof(g), timeout);
 		if (pwc != null) {
-			List<ReferenceResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(lf, pwc.proof, ival);
+			List<ReferenceResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(pconv.getReferenceResolutionRequestExtractor(), lf, pwc.proof, ival);
 			return pconv.proofToIntentionRecognitionResult(lf, pwc, lf.preferenceScore, ival, rcs);
 		}
 		else {
@@ -230,42 +229,6 @@ public class IntentionRecognition {
 			DisjointDeclaration dd = new DisjointDeclaration();
 			dd.atoms = new ArrayList<ModalisedAtom>(dj);
 			logger.debug("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
-			abd_recog.getEngineProxy().addDisjointDeclaration(dd);
-		}
-	}
-
-	public void updateReferentialHypotheses(List<NominalEpistemicReferenceHypothesis> refHypos) {
-		abd_recog.getEngineProxy().clearAssumabilityFunction("reference_resolution");
-		Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
-
-		for (NominalEpistemicReferenceHypothesis ehypo : refHypos) {
-
-			ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
-					TermAtomFactory.atom("resolves_to_belief", new Term[] {
-						TermAtomFactory.term(ehypo.eref.ref.nominal),
-						ConversionUtils.stateFormulaToTerm(ehypo.eref.ref.referent),
-						ConversionUtils.epistemicStatusToTerm(ehypo.eref.epst)
-					} ));
-
-			logger.debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + ehypo.prob);
-			abd_recog.getEngineProxy().addAssumable("reference_resolution", rma, (float) -Math.log(ehypo.prob));
-
-			Set<ModalisedAtom> dj = disj.get(ehypo.eref.ref.nominal);
-			if (dj != null) {
-				dj.add(rma);
-			}
-			else {
-				dj = new HashSet<ModalisedAtom>();
-				dj.add(rma);
-			}
-			disj.put(ehypo.eref.ref.nominal, dj);
-		}
-
-		for (String nom : disj.keySet()) {
-			Set<ModalisedAtom> dj = disj.get(nom);
-			DisjointDeclaration dd = new DisjointDeclaration();
-			dd.atoms = new ArrayList<ModalisedAtom>(dj);
-			logger.debug("adding a disjoint declaration for " + nom + " (" + dj.size() + " entries)");
 			abd_recog.getEngineProxy().addDisjointDeclaration(dd);
 		}
 	}

@@ -1,12 +1,12 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import de.dfki.lt.tr.dialogue.ref.newiface.ReferenceResolver;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import de.dfki.lt.tr.dialogue.interpret.ReferenceUtils;
+import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 

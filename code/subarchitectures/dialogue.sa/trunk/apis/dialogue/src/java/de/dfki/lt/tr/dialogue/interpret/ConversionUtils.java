@@ -20,6 +20,7 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.util.BeliefFormulaFactory;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
@@ -45,6 +46,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
@@ -704,7 +706,7 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	static List<ReferenceResolutionRequest> extractReferenceRequests(LogicalForm lf, List<MarkedQuery> proof, TimeInterval ival) {
+	static List<ReferenceResolutionRequest> extractReferenceRequests(ReferenceResolutionRequestExtractor extractor, LogicalForm lf, List<MarkedQuery> proof, TimeInterval ival) {
 		List<ReferenceResolutionRequest> result = new ArrayList<ReferenceResolutionRequest>();
 
 		List<ModalisedAtom> matoms = ProofUtils.filterStripByModalityPrefix(ProofUtils.stripMarking(proof), Arrays.asList(new Modality[] {Modality.Understanding}));
@@ -718,7 +720,7 @@ public abstract class ConversionUtils {
 
 				LFNominal lfNom = LFUtils.lfGetNominal(lf, nom);
 
-				result.add(ReferenceUtils.nominalToConstraints(lfNom, ival));
+				result.add(extractor.extractReferenceResolutionRequest(lfNom, ival));
 			}
 		}
 		return result;

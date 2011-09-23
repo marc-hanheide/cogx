@@ -53,7 +53,8 @@ import de.dfki.lt.tr.dialogue.interpret.BasicProofConvertor;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognition;
 import de.dfki.lt.tr.dialogue.interpret.IntentionRecognitionResult;
-import de.dfki.lt.tr.dialogue.interpret.ReferenceUtils;
+import de.dfki.lt.tr.dialogue.ref.BasicReferenceResolutionRequestExtractor;
+import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
@@ -163,7 +164,9 @@ extends AbstractDialogueComponent {
 							public String newIdentifier() {
 								return newDataID();
 							}
-						}, IntentionManagementConstants.thisAgent, "dialogue",
+						},
+						new BasicReferenceResolutionRequestExtractor(this.getLogger(".extractor")),
+						IntentionManagementConstants.thisAgent, "dialogue",
 						"binder"), timeout, this.getLogger(".worker"));
 
 		initialiseContext();

@@ -12,6 +12,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
@@ -42,13 +43,21 @@ implements ProofConvertor {
 	private String commitSA;
 
 	private final IdentifierGenerator<String> idGen;
+	
+	private final ReferenceResolutionRequestExtractor extractor;
 
-	public BasicProofConvertor(Logger logger, IdentifierGenerator<String> idGen, String thisAgent, String dialogueSA, String commitSA) {
+	public BasicProofConvertor(Logger logger, IdentifierGenerator<String> idGen, ReferenceResolutionRequestExtractor extractor, String thisAgent, String dialogueSA, String commitSA) {
 		this.logger = logger;
 		this.idGen = idGen;
 		this.dialogueSA = dialogueSA;
 		this.commitSA = commitSA;
 		this.thisAgent = thisAgent;
+		this.extractor = extractor;
+	}
+
+	@Override
+	public ReferenceResolutionRequestExtractor getReferenceResolutionRequestExtractor() {
+		return extractor;
 	}
 
 	@Override

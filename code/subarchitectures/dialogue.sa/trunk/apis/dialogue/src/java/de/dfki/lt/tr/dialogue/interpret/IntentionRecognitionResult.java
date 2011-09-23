@@ -75,7 +75,7 @@ public class IntentionRecognitionResult {
 	public static IntentionRecognitionResult extractFromInterpretation(ProofConvertor pconv, Interpretation ipret, Logger logger) {
 		if (!ipret.proofs.isEmpty()) {
 			ProofWithCost pwc = ipret.proofs.get(0);
-			List<ReferenceResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
+			List<ReferenceResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(pconv.getReferenceResolutionRequestExtractor(), ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
 
 			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, new TimeInterval(ipret.ival), rcs);
 		}

@@ -1,6 +1,6 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import de.dfki.lt.tr.dialogue.ref.newiface.ReferenceResolver;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
