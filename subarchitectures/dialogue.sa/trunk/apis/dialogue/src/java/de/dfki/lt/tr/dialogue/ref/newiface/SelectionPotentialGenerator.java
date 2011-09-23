@@ -22,7 +22,7 @@ package de.dfki.lt.tr.dialogue.ref.newiface;
 
 import de.dfki.lt.tr.dialogue.ref.Constraint;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
-import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.TimeConversions;
 import de.dfki.lt.tr.dialogue.ref.newiface.scorers.IntervalScorer;
 import de.dfki.lt.tr.dialogue.ref.newiface.scorers.MixtureScorer;
@@ -41,7 +41,7 @@ implements PotentialGenerator {
 		this.selections = selections;
 	}
 
-	public Potential getHypos(ResolutionRequest rr) {
+	public Potential getHypos(ReferenceResolutionRequest rr) {
 		Potential pot = new MapPotential();
 
 		List<EpistemicReferenceHypothesis> result = new ArrayList<EpistemicReferenceHypothesis>();

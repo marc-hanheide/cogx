@@ -30,31 +30,26 @@ import cast.SubarchitectureComponentException;
 import java.io.File;
 import java.util.Map;
 
-import javax.sound.sampled.LineUnavailableException;
-import javax.xml.datatype.DatatypeConfigurationException;
 
 //CAST
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
 
 // Dialogue API Slice
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.slice.produce.ProductionLF;
-import de.dfki.lt.tr.dialogue.slice.lf.*;
 
 //Dialogue API CAST
-import de.dfki.lt.tr.cast.ProcessingData;
-import de.dfki.lt.tr.cast.dialogue.DialogueGoals;
 
 // Dialogue API
-import de.dfki.lt.tr.dialogue.asr.SphinxASREngine;
-import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.dialogue.cplanwrapper.CPlanWrapper;
-import java.util.Iterator;
+import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
+import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
+import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 
 /**
  * Provides a CAST component for the content planner. The content planner takes as input a (proto) logical form,
@@ -77,147 +72,100 @@ import java.util.Iterator;
 public class ContentPlanner
 extends AbstractDialogueComponent
 {
-	/* Relation for the canned text */
-	private String cannedText  = "";
+	private CPlanWrapper planner;
+	private	String contentRel;
+	private String cannedTextRel;
 
-	private CPlanWrapper planner = null;
-	private	String contentRel = null;
-
-
-	/**
-	 * Starts up the component. The planner is configured and started
-	 * already in the configure method (which is called before start).
-	 * The start method registers a listener for ContentPlanningGoal objects on the WM
-	 *
-	 * @see #configure(Map)
-	 */
+	public ContentPlanner() {
+		planner = null;
+		contentRel = null;
+		cannedTextRel = null;
+	}
 
 	@Override
-    public void start() {
-        super.start();
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(ContentPlanningGoal.class,  WorkingMemoryOperation.ADD),
-				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleWorkingMemoryChange(_wmc, DialogueGoals.CONTENTPLANNING_TASK);
-					}
-				});
-    } // end start
+	public void onConfigure(Map<String, String> args) {
+		super.onConfigure(args);
 
-
-	private void handleWorkingMemoryChange(WorkingMemoryChange _wmc, String taskGoal) {
-		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
-			ContentPlanningGoal cpg = (ContentPlanningGoal)data.getData();
-
-			ProcessingData pd = new ProcessingData(newProcessingDataId());
-			pd.add(data);
-			String taskID = newTaskID();
-			addProposedTask(taskID, pd);
-//			System.out.println("ID: " + taskID);
-//			System.out.println("goal: " + taskGoal);
-			proposeInformationProcessingTask(taskID, taskGoal);
+		if (args.containsKey("--domainFile")) {
+			// TODO the second argument should be the path to the directory where
+			// the function plugin jar(s) can be found
+			File domainFile = new File(args.get("--domainFile"));
+			planner = new CPlanWrapper(domainFile, null);
 		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
+		if (args.containsKey("--contentRel")) {
+			contentRel = args.get("--contentRel");
+		}
+		if (args.containsKey("--cannedText")) {
+			cannedTextRel = args.get("--cannedText");
+		}
+		else {
+			cannedTextRel = "CannedText";
 		}
 	}
 
-    /**
-     * Configuration of the content planner
-     * Available flags:
-     * <ul>
-     * <li> <tt>--domainFile</tt> pointer to the top file to be loaded
-     * <li> <tt>--contentRel</tt> name of the content relation (if any) in a production LF
-     * </ul>
-     */
-
 	@Override
-    public void configure (Map<String, String> _config)
-    {
-    	if (_config.containsKey("--domainFile"))
-    	{
-    	  // TODO the second argument should be the path to the directory where
-    	  // the function plugin jar(s) can be found
-    		File domainFile = new File(_config.get("--domainFile"));
-   			planner = new CPlanWrapper(domainFile, null);
-    	}
-    	if (_config.containsKey("--contentRel"))
-    	{
-    		contentRel = _config.get("--contentRel");
-    	}
-    	if (_config.containsKey("--cannedText"))
-    	{
-    		cannedText = _config.get("--cannedText");
-    	} else {
-    		cannedText = "CannedText";
-    	}
-    
-    } // end
-
-    /**
-     * Given a content planning goal, the content planner is called to produce a full logical form realizing that goal.
-     * If a <tt>contentRel</tt> was specified in the component configuration, then the logical form under that relation under the root
-     * is written as ProductionLF to working memory. Otherwise, the complete logical form as provided by the planner is stored on
-     * working memory.
-     *
-     */
-
-	@Override
-	public void executeTask (ProcessingData data)
-	throws DialogueException
-	{
-    	try {
-			Iterator<CASTData> iter = data.getData();
-			while (iter.hasNext()) {
-	    		// Get the proto structure from the data
-				CASTData pdata = iter.next();
-				ContentPlanningGoal goal = (ContentPlanningGoal) pdata.getData();
-				//goal.lform=LFUtils.convertFromString("@d1:dvp(c-goal ^ <CannedText>is_this_Utoeya)");
-//				goal.lform=LFUtils.convertFromString("@d1:dvp(c-goal ^ <SpeechAct>question ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <Salient>true ^ object ^ <InfoStatus>familiar) ^ <Type>(r1:e-place ^ <Questioned>true ^ room )))");
-				String canned = LFUtils.lfNominalGetFeature(goal.lform.root, cannedText);
-				log("Canned text feature value ["+goal.lform.root.nomVar+"]: "+canned);
-				// Put the goal to the content planner
-				if (planner != null && canned.equals(""))
-				{				
-					LogicalForm output = planner.callContentPlanner(goal.lform);				
-					ProductionLF productionLF = new ProductionLF();
-					if (contentRel != null)
-					{
-						try {
-							// retrieve the subtree from under the contentRel relation under the root of the LF
-							LFRelation crel = LFUtils.lfNominalGetRelation(output.root,contentRel);
-							LFNominal croot = LFUtils.lfGetNominal(output,crel.dep);
-							LogicalForm content = LFUtils.lfConstructSubtree(croot,output);
-							// store it in the production LF
-							productionLF.lform = content;
-						} catch (NullPointerException npe) {
-							System.out.println(npe.getStackTrace());
-						}
-					} else {
-						productionLF.lform = output;
+	public void onStart() {
+		super.onStart();
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(ContentPlanningGoal.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						handleContentPlanningGoalAdd(_wmc);
 					}
-					productionLF.plfid = newId("cp");
-					productionLF.topic = goal.topic;
-					// Put the resulting logical form onto WM
-					log("adding the production LF to the WM: " + LFUtils.lfToString(productionLF.lform));
-					addToWorkingMemory(newDataID(),productionLF);
-				} else {
-					// Put the resulting logical form onto WM
-					ProductionLF productionLF = new ProductionLF();
-					productionLF.lform = goal.lform;
-					productionLF.topic = goal.topic;
-					log("adding the canned text LF to the WM: " + LFUtils.lfToString(productionLF.lform));
-					addToWorkingMemory(newDataID(),productionLF);
-				} // if ..else check for canned text
-			} // end while
-    	}
-    	catch (Exception e) {
-    		e.printStackTrace();
-    		throw new DialogueException(e.getMessage());
-    	} // end try..catch overwriting working memory
-	} // end executeTask
+				});
+	}
 
 
-} // end class
+	private void handleContentPlanningGoalAdd(WorkingMemoryChange _wmc) {
+		addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
+
+			@Override
+			public void execute(WorkingMemoryAddress addr) {
+				try {
+					ContentPlanningGoal goal = getMemoryEntry(addr, ContentPlanningGoal.class);
+					String canned = LFUtils.lfNominalGetFeature(goal.lform.root, cannedTextRel);
+					log("Canned text feature value [" + goal.lform.root.nomVar + "]: \"" + canned + "\"");
+
+					if (planner != null && canned.equals("")) {				
+						LogicalForm output = planner.callContentPlanner(goal.lform);				
+						ProductionLF productionLF = new ProductionLF();
+
+						if (contentRel != null)	{
+							try {
+								// retrieve the subtree from under the contentRel relation under the root of the LF
+								LFRelation crel = LFUtils.lfNominalGetRelation(output.root,contentRel);
+								LFNominal croot = LFUtils.lfGetNominal(output,crel.dep);
+								LogicalForm content = LFUtils.lfConstructSubtree(croot,output);
+
+								productionLF.lform = content;
+							}
+							catch (NullPointerException ex) {
+								getLogger().error("null in constructing a ProductionLF");
+								System.out.println(ex.getStackTrace());
+							}
+						} else {
+							productionLF.lform = output;
+						}
+						productionLF.plfid = newDataID();
+						productionLF.topic = goal.topic;
+
+						getLogger().info("adding the production LF to the WM: " + LFUtils.lfToString(productionLF.lform));
+						addToWorkingMemory(newDataID(), productionLF);
+					}
+					else {
+						String id = newDataID();
+
+						ProductionLF productionLF = new ProductionLF(id, goal.lform, goal.topic);
+
+						getLogger().info("adding the canned text LF to the WM: " + LFUtils.lfToString(productionLF.lform));
+						addToWorkingMemory(id, productionLF);
+					}
+				}
+				catch (SubarchitectureComponentException ex) {
+					getLogger().error("component exception", ex);
+				}
+			}
+		});
+	}
+
+}

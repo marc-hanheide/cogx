@@ -11,7 +11,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
@@ -52,7 +52,7 @@ implements ProofConvertor {
 	}
 
 	@Override
-	public IntentionRecognitionResult proofToIntentionRecognitionResult(LogicalForm lf, ProofWithCost pwc, float probBound, TimeInterval ival, List<ResolutionRequest> rrqs) {
+	public IntentionRecognitionResult proofToIntentionRecognitionResult(LogicalForm lf, ProofWithCost pwc, float probBound, TimeInterval ival, List<ReferenceResolutionRequest> rrqs) {
 
 		LinkedList<EpistemicObject> results = new LinkedList<EpistemicObject>();
 		List<dBelief> bels_pre = new LinkedList<dBelief>();

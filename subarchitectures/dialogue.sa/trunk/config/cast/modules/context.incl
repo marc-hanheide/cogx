@@ -1,1 +1,1 @@
-JAVA MG   ref-monitor  de.dfki.lt.tr.cast.dialogue.ReferenceMonitor --dumpfile %(dump_file) --log true
+JAVA MG   ctx-monitor  de.dfki.lt.tr.cast.dialogue.ContextMonitor --dumpfile %(dump_file) --log true

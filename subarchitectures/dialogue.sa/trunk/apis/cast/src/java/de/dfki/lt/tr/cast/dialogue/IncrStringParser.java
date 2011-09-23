@@ -111,7 +111,7 @@ import opennlp.ccg.parse.ParseException;
 
 
 public class IncrStringParser
-extends AbstractDialogueComponent {
+extends AbstractDialogueComponentUsingTaskManager {
 
 	// Processing Data id counter
 	private int pdIdCounter;

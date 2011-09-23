@@ -21,8 +21,8 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
-import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
-import de.dfki.lt.tr.dialogue.ref.ResolutionResult;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalEpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
@@ -123,7 +123,7 @@ public class IntentionRecognition {
 
 		ProofWithCost pwc = AbducerUtils.bestAbductiveProof(abd_recog, ProofUtils.newUnsolvedProof(g), timeout);
 		if (pwc != null) {
-			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(lf, pwc.proof, ival);
+			List<ReferenceResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(lf, pwc.proof, ival);
 			return pconv.proofToIntentionRecognitionResult(lf, pwc, lf.preferenceScore, ival, rcs);
 		}
 		else {
@@ -132,7 +132,7 @@ public class IntentionRecognition {
 		}
 	}
 
-	public IntentionRecognitionResult reinterpret(IntentionRecognitionResult irr, ResolutionResult rr) {
+	public IntentionRecognitionResult reinterpret(IntentionRecognitionResult irr, ReferenceResolutionResult rr) {
 
 		logger.info("reinterpreting");
 
@@ -194,7 +194,7 @@ public class IntentionRecognition {
 		}
 	}
 
-	public void updateReferenceResolution(ResolutionResult rr) {
+	public void updateReferenceResolution(ReferenceResolutionResult rr) {
 
 		logger.info("updating reference resolution");
 

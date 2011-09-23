@@ -3,6 +3,7 @@ package de.dfki.lt.tr.cast.dialogue;
 import cast.AlreadyExistsOnWMException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
+import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
@@ -29,67 +30,106 @@ import java.util.List;
 import java.util.Map;
 
 public class StandbyModeManager
-extends ManagedComponent
-{
+extends AbstractDialogueComponent {
+
+	public static final String DEFAULT_UNLOCK_PHRASE = "resume listening";
+	public static final double DEFAULT_UNLOCK_THRESHOLD = 0.7;
+
 	private WorkingMemoryAddress current = null;
 	private String unlockPhrase = "resume listening";
 	private double unlockThreshold = 0.7;
 
+	public StandbyModeManager(String unlockPhrase, double unlockThreshold) {
+		this.unlockPhrase = unlockPhrase;
+		this.unlockThreshold = unlockThreshold;
+		current = null;
+	}
+
+	public StandbyModeManager() {
+		this(DEFAULT_UNLOCK_PHRASE, DEFAULT_UNLOCK_THRESHOLD);
+	}
+
 	@Override
-	protected void start() {
+	protected void onConfigure(Map<String, String> _config) {
+		super.onConfigure(_config);
+		if (_config.containsKey("--unlock-phrase")) {
+			unlockPhrase = _config.get("--unlock-phrase");
+		}
+		if (_config.containsKey("--unlock-threshold")) {
+			try {
+				unlockThreshold = Float.parseFloat(_config.get("--unlock-threshold"));
+			}
+			catch (NumberFormatException ex) {
+				getLogger().error("wrong format for threshold", ex);
+			}
+		}
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(StandbyMode.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleStandby(_wmc);
+						addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
+							@Override
+							public void execute(WorkingMemoryAddress addr) {
+								log("StandbyMode ADD -> turning on local standby mode");
+								current = addr;
+							}
+						});
 					}
 				});
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(StandbyMode.class, WorkingMemoryOperation.DELETE),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleStandby(_wmc);
+						addTask(new ProcessingTaskWithoutData() {
+							@Override
+							public void execute() {
+								log("StandbyMode DELETE -> turning off local standby mode");
+								current = null;
+							}
+						});
 					}
 				});
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(InitialPhonString.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleInitialPhonString(_wmc);
+						addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
+							@Override
+							public void execute(WorkingMemoryAddress addr) {
+								handleInitialPhonString(addr);
+							}
+						});
 					}
 				});
 		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(InitialNoise.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						handleInitialNoise(_wmc);
+						addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
+							@Override
+							public void execute(WorkingMemoryAddress addr) {
+								handleInitialNoise(addr);
+							}
+						});
 					}
 				});
 	}
 
-	private void handleStandby(WorkingMemoryChange _wmc) {
-		if (_wmc.operation == WorkingMemoryOperation.ADD) {
-			log("StandbyMode ADD -> turning on local standby mode");
-			current = _wmc.address;
-		}
-		else if (_wmc.operation == WorkingMemoryOperation.DELETE) {
-			log("StandbyMode DELETE -> turning off local standby mode");
-			current = null;
-		}
-		else {
-			log("ignoring " + _wmc.operation.toString() + " event for StandbyMode");
-		}
-	}
-
-	private void handleInitialPhonString(WorkingMemoryChange _wmc) {
+	private void handleInitialPhonString(WorkingMemoryAddress addr) {
 		try {
-			InitialPhonString ips = getMemoryEntry(_wmc.address, InitialPhonString.class);
+			InitialPhonString ips = getMemoryEntry(addr, InitialPhonString.class);
 
 			if (onStandby()) {
 				if (isUnlockPhonString(ips.ps)) {
 					log("yippieh! no more silence!");
 					deleteFromWorkingMemory(current);
-					CommunicativeIntention cit = generateResumedIntention();
+					CommunicativeIntention cit = generateResumedIntention(newDataID());
 					if (cit != null) {
 						addToWorkingMemory(newDataID(), cit);
 					}
@@ -103,23 +143,14 @@ extends ManagedComponent
 				addToWorkingMemory(ips.ps.id, ips.ps);
 			}
 		}
-		catch (AlreadyExistsOnWMException ex) {
-			ex.printStackTrace();
-		}
-		catch (DoesNotExistOnWMException ex) {
-			ex.printStackTrace();
-		}
-		catch (UnknownSubarchitectureException ex) {
-			ex.printStackTrace();
-		}
-		catch (PermissionException ex) {
-			ex.printStackTrace();
+		catch (SubarchitectureComponentException ex) {
+			getLogger().error("subarchitecture component exception", ex);
 		}
 	}
 
-	private void handleInitialNoise(WorkingMemoryChange _wmc) {
+	private void handleInitialNoise(WorkingMemoryAddress addr) {
 		try {
-			InitialNoise in = getMemoryEntry(_wmc.address, InitialNoise.class);
+			InitialNoise in = getMemoryEntry(addr, InitialNoise.class);
 			if (onStandby()) {
 				log("ignoring a Noise");
 			}
@@ -128,14 +159,8 @@ extends ManagedComponent
 				addToWorkingMemory(newDataID(), in.n);
 			}
 		}
-		catch (AlreadyExistsOnWMException ex) {
-			ex.printStackTrace();
-		}
-		catch (DoesNotExistOnWMException ex) {
-			ex.printStackTrace();
-		}
-		catch (UnknownSubarchitectureException ex) {
-			ex.printStackTrace();
+		catch (SubarchitectureComponentException ex) {
+			getLogger().error("subarchitecture component exception", ex);
 		}
 	}
 
@@ -153,9 +178,9 @@ extends ManagedComponent
 	}
 
 
-	private CommunicativeIntention generateResumedIntention() {
+	private static CommunicativeIntention generateResumedIntention(String id) {
 		Intention it = new Intention();
-		it.id = newDataID();
+		it.id = id;
 		it.estatus = new PrivateEpistemicStatus("self");
 		it.content = new LinkedList<IntentionalContent>();
 
@@ -180,19 +205,4 @@ extends ManagedComponent
 		return cit;
 	}
 
-	@Override
-	protected void configure(Map<String, String> _config) {
-		super.configure(_config);
-		if (_config.containsKey("--unlock-phrase")) {
-			unlockPhrase = _config.get("--unlock-phrase");
-		}
-		if (_config.containsKey("--unlock-threshold")) {
-			try {
-				unlockThreshold = Float.parseFloat(_config.get("--unlock-threshold"));
-			}
-			catch (NumberFormatException e) {
-				log("wrong format for threshold");
-			}
-		}
-	}
 }

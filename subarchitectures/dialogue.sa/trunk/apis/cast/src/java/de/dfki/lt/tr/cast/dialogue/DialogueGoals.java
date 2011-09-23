@@ -34,53 +34,19 @@ package de.dfki.lt.tr.cast.dialogue;
 
 public class DialogueGoals {
 
-	// Speech recognition 
-	public static final String ASR_TASK = "speech.rec";
+	// Parsing
+	public static final String INCREMENTAL_PARSING_STEP_TASK = "incrParsingStep";
 
-    // Parsing
-    public static final String INCREMENTAL_PARSING_STEP_TASK = "incrParsingStep";
-    
-    // Packing
-    public static final String PACKEDLF_PROCESSING_TASK = "packedLFprocessingStep";
-    
-    // Parse selection 
-    public static final String PARSESELECTION_TASK = "parseselection";
+	// Packing
+	public static final String PACKEDLF_PROCESSING_TASK = "packedLFprocessingStep";
 
-    // Referential readings determination
-    public static final String REFERENTIALREADINGS_TASK = "referentialReadings";			
-	
-    // Discourse Referents Binding
-    public static final String DISCREFBINDING_TASK = "discRefBinding";	
- 
-    // Event Structure Interpretation
-    public static final String EVENSTRUCTUREINTERPRETATION_TASK = "eventStructureInt";		
-
-    // Dialogue Move Interpretation
-    public static final String DIALOGUEMOVEINTERPRETATION_TASK = "dialogueMoveInt";		
-	   		         
-	// Dialogue Production
-	public static final String DIALPLAN_TASK = "dialPlan";
-
-	// Content planning
-	public static final String CONTENTPLANNING_TASK = "contentPlanning";		
-	
 	// Realization 
 	public static final String REALIZATION_TASK = "realization";	
 	
 	// Speech synthesis
 	public static final String SPEECHSYNTHESIS_TASK = "speechSynth";
 
-	// Intention recognition
-	public static final String INTENTION_RECOGNITION_TASK = "intentionRecognition";
-
 	// Intention realisation
 	public static final String INTENTION_REALISATION_TASK = "intentionRealisation";
-
-	// Reference resolution
-	public static final String REFERENCE_RESOLUTION_TASK = "referenceResolution";
-
-	public static final String BELIEF_MODEL_UPDATE_TASK = "beliefModelUpdate";
-
-	public static final String INTENTION_MIRRORING_TASK = "intentionMirroringTask";
 
 } // end class

@@ -23,7 +23,7 @@ package de.dfki.lt.tr.dialogue.interpret;
 import de.dfki.lt.tr.dialogue.slice.ref.NominalReference;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.slice.interpret.Interpretation;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
@@ -44,7 +44,7 @@ public class IntentionRecognitionResult {
 	private final List<dBelief> pre;
 	private final List<dBelief> post;
 	private NominalReference nref;
-	private final List<ResolutionRequest> rrs;
+	private final List<ReferenceResolutionRequest> rrs;
 	private final List<ProofWithCost> proofs;
 	private final List<String> ungroundedNoms;
 
@@ -52,7 +52,7 @@ public class IntentionRecognitionResult {
 		ints = new LinkedList<Intention>();
 		pre = new LinkedList<dBelief>();
 		post = new LinkedList<dBelief>();
-		rrs = new LinkedList<ResolutionRequest>();
+		rrs = new LinkedList<ReferenceResolutionRequest>();
 		nref = null;
 		this.lf = lf;
 		this.ival = ival;
@@ -66,7 +66,7 @@ public class IntentionRecognitionResult {
 
 	public Interpretation toInterpretation() {
 		Set<String> ungrounded = new TreeSet<String>();
-		for (ResolutionRequest rr : rrs) {
+		for (ReferenceResolutionRequest rr : rrs) {
 			ungrounded.add(rr.nom);
 		}
 		return new Interpretation(lf, ival.toIce(), proofs, new ArrayList<String>(ungrounded));
@@ -75,7 +75,7 @@ public class IntentionRecognitionResult {
 	public static IntentionRecognitionResult extractFromInterpretation(ProofConvertor pconv, Interpretation ipret, Logger logger) {
 		if (!ipret.proofs.isEmpty()) {
 			ProofWithCost pwc = ipret.proofs.get(0);
-			List<ResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
+			List<ReferenceResolutionRequest> rcs = ConversionUtils.extractReferenceRequests(ipret.lform, pwc.proof, new TimeInterval(ipret.ival));
 
 			return pconv.proofToIntentionRecognitionResult(ipret.lform, pwc, ipret.lform.preferenceScore, new TimeInterval(ipret.ival), rcs);
 		}
@@ -105,7 +105,7 @@ public class IntentionRecognitionResult {
 	}
 
 	@Deprecated
-	public List<ResolutionRequest> getResolutionRequests() {
+	public List<ReferenceResolutionRequest> getResolutionRequests() {
 		return rrs;
 	}
 

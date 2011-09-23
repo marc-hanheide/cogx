@@ -29,14 +29,21 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
-public class SimpleParseSelection implements ParseSelector {
+public class SimpleParseSelector implements ParseSelector {
 
-	private Logger logger = null;
+	private Logger logger;
+	private static LFPacking packingTool = new LFPacking();
 
-	static LFPacking packingTool = new LFPacking();
+	public SimpleParseSelector() {
+		logger = null;
+	}
 
-	public SimpleParseSelection(Logger _logger) {
-		logger = _logger;
+	public SimpleParseSelector(Logger logger) {
+		this.logger = logger;
+	}
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
 	}
 
 	/**
