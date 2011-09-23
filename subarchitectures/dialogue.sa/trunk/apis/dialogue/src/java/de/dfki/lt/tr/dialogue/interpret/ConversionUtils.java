@@ -711,12 +711,13 @@ public abstract class ConversionUtils {
 
 		List<ModalisedAtom> matoms = ProofUtils.filterStripByModalityPrefix(ProofUtils.stripMarking(proof), Arrays.asList(new Modality[] {Modality.Understanding}));
 		for (ModalisedAtom matom : matoms) {
-			if (matom.a.predSym.equals(predsym_IS_REFERENCE) && matom.a.args.size() == 2
-					&& matom.a.args.get(0) instanceof FunctionTerm
-					&& matom.a.args.get(1) instanceof VariableTerm) {
+			AssertedReferenceAtom aratom = AssertedReferenceAtom.fromModalisedAtom(matom);
+			if (aratom != null
+					&& aratom.getNominalTerm() instanceof FunctionTerm
+					&& aratom.getReferentTerm() instanceof VariableTerm) {
 
-				String nom = ((FunctionTerm) matom.a.args.get(0)).functor;
-				VariableTerm varTerm = (VariableTerm) matom.a.args.get(1);
+				String nom = ((FunctionTerm) aratom.getNominalTerm()).functor;
+//				VariableTerm varTerm = (VariableTerm) aratom.getReferentTerm();
 
 				result.add(extractor.extractReferenceResolutionRequest(lf, nom, ival));
 			}

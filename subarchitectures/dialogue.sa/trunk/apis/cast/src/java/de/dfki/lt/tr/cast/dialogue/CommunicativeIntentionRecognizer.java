@@ -238,14 +238,14 @@ extends AbstractDialogueComponent {
 
 	private void handleResolutionResultOverwrite(WorkingMemoryChange _wmc) {
 		if (requested.containsKey(_wmc.address)) {
-			getLogger().debug("got a watched ReferenceResolutionResult");
+			getLogger().debug("got a watched ReferenceResolutionResult, scheduling it for examination");
 			addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
 
 				@Override
 				public void execute(WorkingMemoryAddress addr) {
 					try {
-						ReferenceResolutionResult rresult = getMemoryEntry(addr, ReferenceResolutionResult.class);
 						getLogger().info("processing a ReferenceResolutionResult");
+						ReferenceResolutionResult rresult = getMemoryEntry(addr, ReferenceResolutionResult.class);
 						reexamineInterpretations(rresult);
 					}
 					catch (SubarchitectureComponentException ex) {
@@ -373,7 +373,15 @@ extends AbstractDialogueComponent {
 
 		List<WorkingMemoryAddress> toRemove = new LinkedList<WorkingMemoryAddress>();
 
+		String s = "these are the currently ungrounded Interpretations: { ";
 		for (WorkingMemoryAddress wma : iprets.keySet()) {
+			s += wmaToString(wma) + " ";
+		}
+		s += "}";
+		getLogger().debug(s);
+
+		for (WorkingMemoryAddress wma : iprets.keySet()) {
+			getLogger().debug("checking whether Interpretation " + wmaToString(wma) + " has changed");
 			IntentionRecognitionResult irr = IntentionRecognitionResult.extractFromInterpretation(
 					irecog.getProofConvertor(),
 					iprets.get(wma),
