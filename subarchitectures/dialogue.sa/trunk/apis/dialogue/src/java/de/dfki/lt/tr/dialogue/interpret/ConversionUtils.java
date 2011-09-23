@@ -718,9 +718,7 @@ public abstract class ConversionUtils {
 				String nom = ((FunctionTerm) matom.a.args.get(0)).functor;
 				VariableTerm varTerm = (VariableTerm) matom.a.args.get(1);
 
-				LFNominal lfNom = LFUtils.lfGetNominal(lf, nom);
-
-				result.add(extractor.extractReferenceResolutionRequest(lfNom, ival));
+				result.add(extractor.extractReferenceResolutionRequest(lf, nom, ival));
 			}
 		}
 		return result;
