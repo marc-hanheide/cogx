@@ -38,8 +38,4 @@ public abstract class ReferenceUtils {
 		return s;
 	}
 
-	private static void log(String s) {
-		logger.debug(s);
-	}
-
 }
