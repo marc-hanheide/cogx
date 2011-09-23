@@ -21,7 +21,7 @@ extends ManagedComponent {
 		EAT_POISON_PILL = new ProcessingTaskWithoutData() {
 			@Override
 			public void execute() {
-				getLogger().info("swallowing the poison pill");
+				getLogger().debug("swallowing the poison pill");
 				running = false;
 			}
 		};
