@@ -1,0 +1,27 @@
+# CAST config file
+# Part of the SUBARCHITECTURE "binder.sa"
+
+JAVA MG MLNSerializer eu.cogx.mln.MLNSerializer
+
+SETVAR evdFilter_params=<multiline>
+   --sa binder
+   --evd-ids mlnEngine1
+   --type VisualObject
+   --keys color
+   --inst percept
+   --estatus private
+</multiline>
+CPP MG evdFilter MLNBeliefEvdFilter %(evdFilter_params)
+	
+SETVAR mlnEngine1_params=<multiline>
+	--sa binder
+	--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow color,attribute,percept "
+	--standalone-display-host localhost
+</multiline>
+CPP MG mlnEngine1 MLNEngine %(mlnEngine1_params)
+
+##### Monitors
+
+JAVA MG MLNFactStatus castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "eu.cogx.mln.slice.MLNState"  --generic-col --compact
+JAVA MG MLNEvidence castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "org.cognitivesystems.binder.mln.Evidence"  --generic-col --compact
+JAVA MG MLNInference castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "org.cognitivesystems.binder.mln.InferredResult" --generic-col --compact
