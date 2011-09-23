@@ -43,7 +43,7 @@ import cast.core.CASTData;
  * @since   061027
  * @author  Geert-Jan M. Kruijff (gj@dfki.de)
 */ 
-
+@Deprecated
 public class ProcessingData {
 
 	//=================================================================

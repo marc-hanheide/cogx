@@ -1,8 +1,10 @@
 package de.dfki.lt.tr.cast.dialogue;
 
+import de.dfki.lt.tr.dialogue.ref.impl.discourse.DiscourseResolver;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
@@ -22,18 +24,18 @@ extends AbstractReferenceResolutionComponent<DiscourseResolver> {
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						addTask(newAddDialogueTask(_wmc));
+						handleAddDialogueTask(_wmc);
 					}
 				});
 	}
 
-	protected ProcessingTaskWithData<WorkingMemoryChange> newAddDialogueTask(WorkingMemoryChange wmc) {
-		return new ProcessingTaskWithData<WorkingMemoryChange>(wmc) {
+	protected void handleAddDialogueTask(WorkingMemoryChange wmc) {
+		addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(wmc.address) {
 
 			@Override
-			public void execute(WorkingMemoryChange wmc) {
+			public void execute(WorkingMemoryAddress addr) {
 				try {
-					DialogueMove dm = getMemoryEntry(wmc.address, DialogueMove.class);
+					DialogueMove dm = getMemoryEntry(addr, DialogueMove.class);
 					getResolver().addDialogueMove(dm);
 				}
 				catch (SubarchitectureComponentException ex) {
@@ -41,7 +43,7 @@ extends AbstractReferenceResolutionComponent<DiscourseResolver> {
 				}
 			}
 
-		};
+		});
 	}
 
 }

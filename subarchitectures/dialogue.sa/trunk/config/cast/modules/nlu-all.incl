@@ -6,8 +6,7 @@ JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.StandbyModeManager --un
 # phonological string -> linguistic meaning
 JAVA MG	parser	             de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar %(parsing_grammar) --log true
 JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.SimpleParseSelection --log true
-#JAVA MG ref-resolution       de.dfki.lt.tr.cast.dialogue.GUIAwareReferenceResolution --log true
-JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.DiscourseReferenceResolution --log true
+JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.FakeReferenceResolution
 
 # intention recognition
 JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset %(irecog_abd_domain) --log true --abd-host %(host:AbducerHost)  --dumpfile %(dump_file)

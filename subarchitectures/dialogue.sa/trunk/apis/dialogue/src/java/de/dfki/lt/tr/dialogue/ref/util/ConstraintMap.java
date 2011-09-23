@@ -37,7 +37,8 @@ public class ConstraintMap {
 		Map<String, String> map = new HashMap<String, String>();
 
 		for (Constraint c : constraints) {
-			map.put(c.feature, c.value);
+			String oldValue = map.put(c.feature, c.value);
+			assert oldValue == null;
 		}
 
 		return new ConstraintMap(map);
