@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <stack>
 #include <vector>
+#include <fstream>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #ifdef __APPLE__
 #include <GL/glut.h> //nah: glut is installed via MacPorts and thus preferred
@@ -19,6 +20,7 @@
 #include <VideoUtils.h>
 #include <castutils/Timers.hpp>
 #include "../VisionUtils.h"
+#include "VideoUtils.h"
 #include "StereoCamera.h"
 #include "PlanePopOut.h"
 
@@ -176,14 +178,18 @@ void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
  */
 double PlanePopOut::SOIEntry::compare(const PlanePopOut::SOIEntry &other)
 {
-    // weights for colour histogram match and size match
-    double wC, wS;
-    wC = 1.0;
-    wS = 1.0 - wC;
+    // weights for colour histogram, size and position match
+    double wC = 0.2, wS = 0.2, wP = 0.6;
+    // just make sure they sum to 1
+    double s = wC + wS + wP;
+    wC /= s;
+    wS /= s;
+    wP /= s;
     double distHistogram = abs(CompareHistKLD(hist, other.hist));
     double distSize = abs(boundingSphere.rad - other.boundingSphere.rad) /
 	max(boundingSphere.rad, other.boundingSphere.rad);
-    return wC*distHistogram + wS*distSize;
+    double distPos = dist(boundingSphere.pos, other.boundingSphere.pos)/(2.*boundingSphere.rad);
+    return wC*distHistogram + wS*distSize + wP*distPos;
 }
 
 /**
