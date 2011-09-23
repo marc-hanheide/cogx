@@ -1,9 +1,12 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.infer.abducer.lang.Atom;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,6 +32,13 @@ public class AssertedReferenceAtom {
 
 	public Term getEpStTerm() {
 		return epstTerm;
+	}
+
+	public static AssertedReferenceAtom newAssertedReferenceAtom(String nominal, dFormula referent, EpistemicStatus epst) {
+		return new AssertedReferenceAtom(
+				TermAtomFactory.term(nominal),
+				ConversionUtils.stateFormulaToTerm(referent),
+				ConversionUtils.epistemicStatusToTerm(epst));
 	}
 
 	public static AssertedReferenceAtom fromModalisedAtom(ModalisedAtom matom) {

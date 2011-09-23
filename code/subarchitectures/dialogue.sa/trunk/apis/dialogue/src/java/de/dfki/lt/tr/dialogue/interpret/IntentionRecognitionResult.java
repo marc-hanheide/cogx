@@ -46,9 +46,8 @@ public class IntentionRecognitionResult {
 	private NominalReference nref;
 	private final List<ReferenceResolutionRequest> rrs;
 	private final List<ProofWithCost> proofs;
-	private final List<String> ungroundedNoms;
 
-	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> proofs, List<String> ungroundedNoms) {
+	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> proofs) {
 		ints = new LinkedList<Intention>();
 		pre = new LinkedList<dBelief>();
 		post = new LinkedList<dBelief>();
@@ -57,11 +56,6 @@ public class IntentionRecognitionResult {
 		this.lf = lf;
 		this.ival = ival;
 		this.proofs = proofs;
-		this.ungroundedNoms = ungroundedNoms;
-	}
-
-	public IntentionRecognitionResult(LogicalForm lf, TimeInterval ival, List<ProofWithCost> proofs) {
-		this(lf, ival, proofs, new ArrayList<String>());
 	}
 
 	public Interpretation toInterpretation() {
@@ -128,9 +122,12 @@ public class IntentionRecognitionResult {
 		return ival;
 	}
 
-	@Deprecated
-	public List<String> getUngroundedNominals() {
-		return ungroundedNoms;
+	public Set<String> getUngroundedNominals() {
+		Set<String> ungrounded = new TreeSet<String>();
+		for (ReferenceResolutionRequest rr : rrs) {
+			ungrounded.add(rr.nom);
+		}
+		return ungrounded;
 	}
 
 }

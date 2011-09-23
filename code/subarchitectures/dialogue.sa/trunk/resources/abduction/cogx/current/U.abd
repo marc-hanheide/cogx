@@ -24,8 +24,11 @@ person(S, H, Nom, H) <-
 % TOPIC
 %-------------------------------------------------------------------------
 
-understand : is_reference(Nom, Ref, EpSt) <-
-	understand : resolves_to_epobject(Nom, Ref, _EpSt) / reference_resolution.
+understand : is_reference(Nom, Referent, EpSt) <-
+	understand : resolves_to_epobject(Nom, Referent, EpSt) / reference_resolution,
+	understand : about(Nom, Referent, EpSt),
+	int : pre(Int, belief(Nom, EpSt, fv(mark, 'referring-expression'))) / p(1.0).
+%	int : pre(Int, belief(Nom, EpSt, fv(about, Ref))) / p(1.0).
 
 understand : is_reference(Nom, Ref, _EpSt) <-
 	understand : unknown_reference(Nom, Ref) / p(0.55),
@@ -35,116 +38,10 @@ understand : is_reference(Nom, Ref, _EpSt) <-
 
 understand : topic(S, H, EpSt, Int, Ref, Nom) <-
 	?( understand : is_reference(Ref, X, EpSt) ).
+%	int : pre(Int, belief(Ref, EpSt, fv(about, X))) / p(1.0).
 
 understand : topic(S, H, shared(S, H), Int, Ref, Nom) <-
 	does_not_specify_topic(Nom) / p(0.001).
-
-% the X
-% resolved against shared beliefs
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-%	i : sort(Nom, thing),
-%	i : prop(Nom, Prop),
-	i : feat_Delimitation(Nom, unique),
-%	i : feat_Quantification(Nom, specific),
-	i : feat_Num(Nom, sg),
-	EpSt = shared(S, H),
-	try_topic_objecttype(S, H, EpSt, Int, Ref, Nom),
-	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
-	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
-	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
-	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
-
-% the X
-% resolved against attributed beliefs
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-%	i : sort(Nom, thing),
-%	i : prop(Nom, Prop),
-	i : feat_Delimitation(Nom, unique),
-%	i : feat_Quantification(Nom, specific),
-	i : feat_Num(Nom, sg),
-	EpSt = shared(S, H),
-	try_topic_objecttype(S, H, EpSt, Int, Ref, Nom),
-	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
-	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
-	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
-%	shared_to_attrib(EpSt, attrib(H, S)),
-	try_topic_reference_resolution(S, H, attrib(H, S), Int, Ref, Nom).
-
-shared_to_attrib(shared(A, B), attrib(A, B)).
-shared_to_attrib(shared(A, B), attrib(B, A)).
-
-% a X
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-%	i : sort(Nom, thing),
-%	i : prop(Nom, Prop),
-	i : feat_Delimitation(Nom, existential),
-%	i : feat_Quantification(Nom, specific),
-	i : feat_Num(Nom, sg),
-%	EpSt = attrib(H, S),
-	try_topic_objecttype(S, H, EpSt, Int, Ref, Nom),
-	try_topic_proximity(S, H, EpSt, Int, Ref, Nom),
-	try_restr_modifier(S, H, EpSt, Int, Ref, Nom),
-	try_restr_compound(S, H, EpSt, Int, Ref, Nom),
-	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
-
-% "it"
-% resolved against shared beliefs
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, thing),
-	i : prop(Nom, it),
-	i : feat_Num(Nom, sg),
-	% XXX: have the epst bound dynamically depending on the refexp
-%	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0).
-%	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0),
-	EpSt = shared(S, H),
-	try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom).
-
-% "it"
-% resolved against attributed beliefs
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, thing),
-	i : prop(Nom, it),
-	i : feat_Num(Nom, sg),
-	% XXX: have the epst bound dynamically depending on the refexp
-%	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0).
-%	int : pre(Int, belief(Ref, shared(S, H), fv(saliency, salient))) / p(1.0),
-	EpSt = attrib(H, S),
-	try_topic_reference_resolution(S, H, attrib(H, S), Int, Ref, Nom).
-
-% colour
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, 'q-color'),
-	i : prop(Nom, Prop),
-	int : pre(Int, belief(Ref, EpSt, fv(color, Prop))) / p(1.0).
-
-% size
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, 'q-size'),
-	i : prop(Nom, Prop),
-	int : pre(Int, belief(Ref, EpSt, fv(size, Prop))) / p(1.0).
-
-% shape
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, 'q-shape'),
-	i : prop(Nom, Prop),
-	int : pre(Int, belief(Ref, EpSt, fv(shape, Prop))) / p(1.0).
-
-% place
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, 'e-place'),
-	i : prop(Nom, Prop),
-	i : feat_Delimitation(Nom, unique),
-	i : feat_Num(Nom, sg),
-	i : feat_Quantification(Nom, specific),
-	assert_modifier(S, H, Int, Ref, Nom),
-	int : pre(Int, belief(Ref, EpSt, fv(inRoom, Prop))) / p(1.0).
-
-% material
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, Sort),
-	i : prop(Nom, Prop),
-	valid_material(Sort, Prop, Material),
-	int : pre(Int, belief(Ref, EpSt, fv(material, Material))) / p(1.0).
 
 %-------------------------------------------------------------------------
 
