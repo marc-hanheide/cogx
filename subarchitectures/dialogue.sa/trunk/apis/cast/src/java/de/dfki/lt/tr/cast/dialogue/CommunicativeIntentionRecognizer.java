@@ -259,6 +259,7 @@ extends AbstractDialogueComponent {
 	private void handleInterpretation(WorkingMemoryChange _wmc) {
 		log("got an WM change for Interpretation: " + wmaToString(_wmc.address) + ": " + _wmc.operation.toString());
 		if (_wmc.operation == WorkingMemoryOperation.DELETE) {
+			getLogger().info("removing Interpretation " + wmaToString(_wmc.address) + " from the map");
 			iprets.remove(_wmc.address);
 		}
 		else {
@@ -356,6 +357,8 @@ extends AbstractDialogueComponent {
 
 						} else {
 							log("interpretation not grounded yet, will wait for it");
+							getLogger().info("adding Interpretation " + wmaToString(addr) + " to the map");
+							iprets.put(addr, ipret);
 						}
 					}
 				}
@@ -367,15 +370,21 @@ extends AbstractDialogueComponent {
 	}
 
 	private void reexamineInterpretations(ReferenceResolutionResult rr) {
-		getLogger().info("reexamining interpretations");
+		String nominal = rr.nom;
+		getLogger().info("reexamining interpretations (looking for nominal " + nominal + " there)");
 
 		irecog.updateReferenceResolution(rr);
 
 		List<WorkingMemoryAddress> toRemove = new LinkedList<WorkingMemoryAddress>();
 
-		String s = "these are the currently ungrounded Interpretations: { ";
+		String s = "these are the currently ungrounded Interpretations: {\n";
 		for (WorkingMemoryAddress wma : iprets.keySet()) {
-			s += wmaToString(wma) + " ";
+			Interpretation i = iprets.get(wma);
+			s += "  " + wmaToString(wma) + " -> { ";
+			for (String nom : i.ungroundedNoms) {
+				s += nom + " ";
+			}
+			s += "}\n";
 		}
 		s += "}";
 		getLogger().debug(s);
@@ -389,9 +398,14 @@ extends AbstractDialogueComponent {
 
 			iprets.get(wma);
 
-			String nom = rr.nom;
+			s = "these are the ungrounded nominals here: { ";
+			for (String nom : irr.getUngroundedNominals()) {
+				s += nom + " ";
+			}
+			s += "}";
+			getLogger().debug(s);
 
-			if (irr.getUngroundedNominals().remove(nom)) {
+			if (irr.getUngroundedNominals().remove(nominal)) {
 				log("the interpretation of " + wmaToString(wma) + " might have changed");
 
 				// TODO: add resolution result to the proofs
@@ -413,6 +427,9 @@ extends AbstractDialogueComponent {
 					log("scheduling " + wmaToString(wma) + " for removal");
 					toRemove.add(wma);
 				}
+			}
+			else {
+				getLogger().debug("seems that " + wmaToString(wma) + " is unaffected");
 			}
 		}
 

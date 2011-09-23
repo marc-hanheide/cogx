@@ -188,7 +188,7 @@ public class IntentionRecognition {
 
 		if (!new_pwcs.isEmpty()) {
 			logger.info("got " + new_pwcs.size() + " proofs after reinterpretation");
-			IntentionRecognitionResult new_irr = new IntentionRecognitionResult(irr.getLogicalForm(), irr.getInterval(), new_pwcs, irr.getUngroundedNominals());
+			IntentionRecognitionResult new_irr = new IntentionRecognitionResult(irr.getLogicalForm(), irr.getInterval(), new_pwcs);
 			return new_irr;
 		}
 		else {
@@ -207,12 +207,7 @@ public class IntentionRecognition {
 		String nom = rr.nom;
 		for (EpistemicReferenceHypothesis hypo : rr.hypos) {
 
-			ModalisedAtom rma = TermAtomFactory.modalisedAtom(new Modality[] {Modality.Understanding},
-					TermAtomFactory.atom(ConversionUtils.predsym_RESOLVES_TO_EPOBJECT, new Term[] {
-						TermAtomFactory.term(nom),
-						ConversionUtils.stateFormulaToTerm(hypo.referent),
-						ConversionUtils.epistemicStatusToTerm(hypo.epst)
-					} ));
+			ModalisedAtom rma = AssertedReferenceAtom.newAssertedReferenceAtom(nom, hypo.referent, hypo.epst).toModalisedAtom();
 
 			logger.debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
 			abd_recog.getEngineProxy().addAssumable("reference_resolution", rma, (float) -Math.log(hypo.score));
