@@ -1,8 +1,6 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import cast.AlreadyExistsOnWMException;
-import cast.core.CASTData;
-import de.dfki.lt.tr.cast.ProcessingData;
+import cast.SubarchitectureComponentException;
 import de.dfki.lt.tr.dialogue.asr.LoquendoClient;
 import de.dfki.lt.tr.dialogue.asr.loquendo.result.RecognitionResult;
 import de.dfki.lt.tr.dialogue.asr.loquendo.result.Hypothesis;
@@ -16,9 +14,7 @@ import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.asr.Noise;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
 import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
-import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.meta.TRResultListener;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -28,43 +24,33 @@ import java.util.Map;
  */
 public class LoquendoASR
 extends AbstractDialogueComponent
-implements TRResultListener {
+implements TRResultListener<RecognitionResult> {
 
-	public static final String defaultServerName = "LoquendoASRServer";
-	public static final String defaultServerEndpoint = "tcp -p 9021";
+	public static final String DEFAULT_LOQSERVER_NAME = "LoquendoASRServer";
+	public static final String DEFAULT_LOQSERVER_ENDPOINT = "tcp -p 9021";
 
 	private LoquendoClient client = null;
 
-	private String serverName = defaultServerName;
-	private String serverEndpoint = defaultServerEndpoint;
+	private String serverName = DEFAULT_LOQSERVER_NAME;
+	private String serverEndpoint = DEFAULT_LOQSERVER_ENDPOINT;
 	
 	private float threshold = 0.2f;
 
 	private final int FRAME_RATE = 10;  // length of a frame in ms
 	private final int VOICEDETECT_CORRECTION = 100;  // in ms
 
-	/**
-	 * Starts up the component. The engine is configured and started
-	 * already in the configure method (which is called before start).
-	 *
-	 * @see #configure(Map)
-	 */
-
-	@Override
-	public void start() {
-		super.start();
-		if (client != null) {
-			client.start();
-		}
+	public LoquendoASR(String serverName, String serverEndpoint) {
+		this.serverName = serverName;
+		this.serverEndpoint = serverEndpoint;
+		client = null;
 	}
 
+	public LoquendoASR() {
+		this(DEFAULT_LOQSERVER_NAME, DEFAULT_LOQSERVER_ENDPOINT);
+	}
 
-    /**
-     * Uses the component configuration arguments to configure the ASR engine,
-     * and starts the engine (<tt>run</tt>) once it has been configured.
-     */
 	@Override
-	public void configure (Map<String, String> _config) {
+	public void onConfigure(Map<String, String> _config) {
 		if (_config.containsKey("--serverName")) {
 			serverName = _config.get("--serverName");
 		}
@@ -79,6 +65,7 @@ implements TRResultListener {
 		if (_config.containsKey("--serverEndpoint")) {
 			serverEndpoint = _config.get("--serverEndpoint");
 		}
+
 		try {
 			client = new LoquendoClient(serverName, serverEndpoint, this.getLogger(".client"));
 			client.registerNotification(this);
@@ -89,71 +76,60 @@ implements TRResultListener {
 	}
 
 	@Override
-	public void executeTask(ProcessingData data)
-	throws DialogueException {
-		try {
-			Iterator<CASTData> dit = data.getData();
-			while (dit.hasNext()) {
-				CASTData d = dit.next();
-				if (d.getData() instanceof Noise) {
-					Noise noise = (Noise)d.getData();
-					addToWorkingMemory(newDataID(), new InitialNoise(noise));
-				}
-				if (d.getData() instanceof PhonString) {
-					PhonString pstr = (PhonString)d.getData();
-					addToWorkingMemory(newDataID(), new InitialPhonString(pstr));
-				}
-			}
+	public void onStart() {
+		super.onStart();
+		if (client != null) {
+			client.start();
 		}
-		catch (AlreadyExistsOnWMException ex) {
-			getLogger().error("already exists on WM", ex);
+		else {
+			getLogger().info("no client found, going to die");
+			scheduleOwnDeath();
 		}
 	}
 
-	/**
-	 * Called whenever the ASR engine produces a RecognitionResult.
-	 *
-	 * @param object the recognition result
-	 */
 	@Override
-	public void notify(Object rr) {
-		if (rr instanceof RecognitionResult) {
-			getLogger().info("notify: got a RecognitionResult: " + rr.getClass().getCanonicalName());
+	public void notify(RecognitionResult rr) {
+		addTask(new ProcessingTaskWithData<RecognitionResult>(rr) {
 
-			if (rr instanceof NoRecognitionResult) {
-				getLogger().debug("ignoring a NoRecognitionResult");
-			}
-			else if (rr instanceof NBestList) {
-				PhonString pstr = nBestListToPhonString((NBestList)rr);
-				if (pstr != null) {
-					
-					getLogger().info("Recognised phonological string: " + pstr.wordSequence + " [" + pstr.confidenceValue + "], rejectionAdvice=" + (pstr.maybeOOV ? "true" : "false"));
+			@Override
+			public void execute(RecognitionResult rr) {
+				getLogger().info("notify: got a RecognitionResult: " + rr.getClass().getCanonicalName());
 
-					String taskID = newTaskID();
-					ProcessingData pd = new ProcessingData(newProcessingDataId());
-					if (pstr.confidenceValue > threshold) {
+				if (rr instanceof NoRecognitionResult) {
+					getLogger().debug("ignoring a NoRecognitionResult");
+				}
+				else if (rr instanceof NBestList) {
+					NBestList nbestlist = (NBestList) rr;
+		
+					PhonString pstr = nBestListToPhonString(nbestlist);
+					if (pstr != null) {
 
-						pd.add(new CASTData<PhonString> ("emptyid", pstr));
+						try {
+							getLogger().info("recognised phonological string: " + pstr.wordSequence + " [" + pstr.confidenceValue + "], rejectionAdvice=" + (pstr.maybeOOV ? "true" : "false"));
+
+							String taskID = newTaskID();
+							if (pstr.confidenceValue > threshold) {
+								addToWorkingMemory(newDataID(), new InitialPhonString(pstr));
+							}
+							else {
+								getLogger().debug("phonological string below minimal threshold, will forward a Noise object");
+								Noise noise = nBestListToNoise(nbestlist);
+								addToWorkingMemory(newDataID(), new InitialNoise(noise));
+							}
+						}
+						catch (SubarchitectureComponentException ex) {
+							getLogger().error("subarchitecture component exception", ex);
+						}
 					}
 					else {
-						getLogger().debug("phonological string below minimal threshold, will forward a Noise object");
-						pd.add(new CASTData<Noise> ("emptyid", nBestListToNoise((NBestList) rr)));
+						getLogger().warn("got a NULL in phonstring extraction, ignoring");
 					}
-					addProposedTask(taskID, pd);
-					String taskGoal = DialogueGoals.ASR_TASK;
-					proposeInformationProcessingTask(taskID, taskGoal);
 				}
 				else {
-					getLogger().warn("got a NULL in phonstring extraction");
+					getLogger().warn("don't know how to treat a " + rr.getClass().getCanonicalName());
 				}
 			}
-			else {
-				getLogger().warn("don't know how to treat a " + rr.getClass().getCanonicalName());
-			}
-		}
-		else {
-			getLogger().error("notify: not a RecognitionResult: " + rr.getClass().getCanonicalName());
-		}
+		});
 	}
 
 	public PhonString nBestListToPhonString(NBestList nbl) {

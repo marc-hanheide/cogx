@@ -26,29 +26,29 @@ import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
-import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.parseselection.ParseSelector;
-import de.dfki.lt.tr.dialogue.parseselection.SimpleParseSelection;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parse.PackedLFs;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
-import de.dfki.lt.tr.dialogue.util.DialogueException;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
-import java.util.Iterator;
 
-public class ParseSelection
+public abstract class AbstractParseSelectionComponent<T extends ParseSelector>
 extends AbstractDialogueComponent {
 
-	private ParseSelector selector = null;
+	private final T selector;
+
+	public AbstractParseSelectionComponent(T selector) {
+		if (selector == null) {
+			throw new NullPointerException("selector null");
+		}
+		this.selector = selector;
+	}
 
 	@Override
-	public void start() {
+	public void onStart() {
+		super.onStart();
 
-		selector = new SimpleParseSelection(this.getLogger(".simple"));
-
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.ADD),
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -56,8 +56,7 @@ extends AbstractDialogueComponent {
 					}
 		});
 
-		addChangeFilter(
-				ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class,  WorkingMemoryOperation.OVERWRITE),
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(PackedLFs.class, WorkingMemoryOperation.OVERWRITE),
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -65,50 +64,46 @@ extends AbstractDialogueComponent {
 					}
 		});
 
+	}
+
+	public final T getSelector() {
+		return selector;
 	}
 
 	private void handlePackedLFs(WorkingMemoryChange _wmc) {
 		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
+			PackedLFs plf = getMemoryEntry(_wmc.address, PackedLFs.class);
+			if (isFinalized(plf)) {
+				addTask(new ProcessingTaskWithData<PackedLFs>(plf) {
 
-			PackedLFs arg = (PackedLFs)data.getData();
-			if (arg.finalized == 1) {
-				String taskID = newTaskID();
-				ProcessingData pd = new ProcessingData(newProcessingDataId());
-				pd.add(data);
-				addProposedTask(taskID, pd);
-				String taskGoal = DialogueGoals.PARSESELECTION_TASK;
-				proposeInformationProcessingTask(taskID, taskGoal);
+					@Override
+					public void execute(PackedLFs plf) {
+						LogicalForm lf = selector.selectParse(plf);
+						if (lf != null) {
+							getLogger().info("selected the following LF: [" + LFUtils.lfToString(lf) + "]");
+							SelectedLogicalForm slf = new SelectedLogicalForm(lf, plf.phonStringIval);
+							try {
+								addToWorkingMemory(newDataID(), slf);
+							}
+							catch (AlreadyExistsOnWMException ex) {
+								getLogger().error("already exists on WM exception", ex);
+							}
+						}
+						else {
+							getLogger().warn("no parse found");
+						}
+					}
+
+				});
 			}
 		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
+		catch (SubarchitectureComponentException ex) {
+			getLogger().error("subarchitecture component exception", ex);
 		}
 	}
 
-	@Override
-	public void executeTask(ProcessingData data) throws DialogueException {
-		Iterator<CASTData> iter = data.getData();
-		if (iter.hasNext()) {
-			Object body = iter.next().getData();
-			if (body instanceof PackedLFs) {
-				PackedLFs plf = (PackedLFs)body;
-				LogicalForm lf = selector.selectParse(plf);
-				if (lf != null) {
-					log("selected the following LF: [" + LFUtils.lfToString(lf) + "]");
-					SelectedLogicalForm slf = new SelectedLogicalForm(lf, plf.phonStringIval);
-					try {
-						addToWorkingMemory(newDataID(), slf);
-					}
-					catch (AlreadyExistsOnWMException ex) {
-						ex.printStackTrace();
-					}
-				}
-				else {
-					log("no parse found, should generate an event here!");
-				}
-			}
-		}
+	private static boolean isFinalized(PackedLFs arg) {
+		return arg.finalized == 1;
 	}
 
 /*
@@ -124,4 +119,5 @@ extends AbstractDialogueComponent {
 		return e;
 	}
  */
+
 }

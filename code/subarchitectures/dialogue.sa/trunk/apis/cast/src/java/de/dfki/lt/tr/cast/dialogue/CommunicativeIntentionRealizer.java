@@ -67,7 +67,7 @@ import de.dfki.lt.tr.dialogue.util.LFUtils;
  * @author Miroslav Janicek
  */
 public class CommunicativeIntentionRealizer
-extends AbstractDialogueComponent {
+extends AbstractDialogueComponentUsingTaskManager {
 
 	public final static int DEFAULT_TIMEOUT = 250;
 	private int timeout = DEFAULT_TIMEOUT;

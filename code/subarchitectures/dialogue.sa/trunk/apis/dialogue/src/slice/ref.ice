@@ -18,14 +18,14 @@ module ref {
 
 	["java:type:java.util.ArrayList<Constraint>"] sequence<Constraint> ConstraintSeq;
 
-	class ResolutionRequest {
+	class ReferenceResolutionRequest {
 		string nom;
 		string sort;
 		ConstraintSeq constraints;
 		de::dfki::lt::tr::dialogue::slice::time::Interval ival;
 	};
 
-	["java:type:java.util.ArrayList<ResolutionRequest>"] sequence<ResolutionRequest> ResolutionRequestSeq;
+//	["java:type:java.util.ArrayList<ResolutionRequest>"] sequence<ResolutionRequest> ResolutionRequestSeq;
 
 	class EpistemicReferenceHypothesis {
 		de::dfki::lt::tr::beliefs::slice::epstatus::EpistemicStatus epst;
@@ -36,7 +36,7 @@ module ref {
 
 	["java:type:java.util.ArrayList<EpistemicReferenceHypothesis>"] sequence<EpistemicReferenceHypothesis> EpistemicReferenceHypothesisSeq;
 
-	class ResolutionResult {
+	class ReferenceResolutionResult {
 		string nom;
 		EpistemicReferenceHypothesisSeq hypos;
 	};

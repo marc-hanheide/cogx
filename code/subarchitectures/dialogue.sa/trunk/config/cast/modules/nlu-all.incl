@@ -5,7 +5,7 @@ JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.StandbyModeManager --un
 
 # phonological string -> linguistic meaning
 JAVA MG	parser	             de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar %(parsing_grammar) --log true
-JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.ParseSelection --log true
+JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.SimpleParseSelection --log true
 #JAVA MG ref-resolution       de.dfki.lt.tr.cast.dialogue.GUIAwareReferenceResolution --log true
 JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.DiscourseReferenceResolution --log true
 

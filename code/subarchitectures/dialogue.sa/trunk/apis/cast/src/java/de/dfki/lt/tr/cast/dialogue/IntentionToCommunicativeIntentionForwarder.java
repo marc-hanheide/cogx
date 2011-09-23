@@ -23,34 +23,22 @@ package de.dfki.lt.tr.cast.dialogue;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
-import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
-import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
-import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
-import de.dfki.lt.tr.dialogue.util.DialogueException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 public class IntentionToCommunicativeIntentionForwarder
 extends AbstractDialogueComponent {
 
 	@Override
-	public void start() {
-		super.start();
+	public void onStart() {
+		super.onStart();
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(Intention.class, WorkingMemoryOperation.ADD),
@@ -71,63 +59,39 @@ extends AbstractDialogueComponent {
 	}
 
 	private void handleIntention(WorkingMemoryChange _wmc) {
-		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
+		addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
 
-			Intention it = (Intention)data.getData();
-			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1
-					&& (
-						(it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent)
-							&& it.estatus instanceof PrivateEpistemicStatus)
-						||
-						(it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent)
-							&& it.estatus instanceof SharedEpistemicStatus)
-					   )) {
-
-				String taskID = newTaskID();
-				ProcessingData pd = new ProcessingData(newProcessingDataId());
-				pd.add(data);
-				addProposedTask(taskID, pd);
-				String taskGoal = DialogueGoals.INTENTION_MIRRORING_TASK;
-				proposeInformationProcessingTask(taskID, taskGoal);
-			}
-			else {
-				log("ignoring an intention that is not the robot's private");
-			}
-		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void executeTask(ProcessingData data)
-	throws DialogueException {
-		Iterator<CASTData> iter = data.getData();
-		if (iter.hasNext()) {
-			Object body = iter.next().getData();
-
-			if (body instanceof Intention) {
-				Intention it = (Intention) body;
-				log("forwarding a private intention to communicative intention");
-
-				// set private epistemic status
-				CommunicativeIntention cit = new CommunicativeIntention();
-				cit.intent = it;
+			@Override
+			public void execute(WorkingMemoryAddress addr) {
 				try {
-					log("adding communicative intention " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
-					addToWorkingMemory(newDataID(), cit);
-//					addToWorkingMemory(it.id, it);
+					Intention it = getMemoryEntry(addr, Intention.class);
+
+					if (it.content.size() == 1 && it.content.get(0).agents.size() == 1
+							&& (
+								(it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent)
+									&& it.estatus instanceof PrivateEpistemicStatus)
+								||
+								(it.content.get(0).agents.get(0).equals(IntentionManagementConstants.thisAgent)
+									&& it.estatus instanceof SharedEpistemicStatus)
+							   )) {
+
+						getLogger().info("forwarding a private intention to communicative intention");
+
+						// set private epistemic status
+						CommunicativeIntention cit = new CommunicativeIntention();
+						cit.intent = it;
+						log("adding communicative intention for " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
+						addToWorkingMemory(newDataID(), cit);
+					}
+					else {
+						getLogger().debug("ignoring an intention that is not the robot's private");
+					}
 				}
-				catch (Exception e) {
-					e.printStackTrace();
-					throw new DialogueException(e.getMessage());
+				catch (SubarchitectureComponentException ex) {
+					getLogger().error("component exception", ex);
 				}
 			}
-		}
-		else {
-			log("no data for processing");
-		}
+		});
 	}
 
 }

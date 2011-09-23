@@ -33,7 +33,7 @@ package de.dfki.lt.tr.meta;
  */
 
 
-public interface TRResultListener {
+public interface TRResultListener<T> {
 
 	/**
 	 * Notification of the instance implementing the interface, that 
@@ -42,6 +42,6 @@ public interface TRResultListener {
 	 * @param object
 	 */
 	
-	public void notify (Object object);
+	public void notify(T object);
 	
 } // end interface

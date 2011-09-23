@@ -23,6 +23,7 @@ package de.dfki.lt.tr.cast.dialogue;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
@@ -42,14 +43,13 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.util.DialogueException;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 public class CommunicativeIntentionMirror
 extends AbstractDialogueComponent {
 
 	@Override
-	public void start() {
-		super.start();
+	public void onStart() {
+		super.onStart();
 
 		addChangeFilter(
 				ChangeFilterFactory.createLocalTypeFilter(CommunicativeIntention.class, WorkingMemoryOperation.ADD),
@@ -62,76 +62,51 @@ extends AbstractDialogueComponent {
 	}
 
 	private void handleCommunicativeIntention(WorkingMemoryChange _wmc) {
-		try {
-			CASTData data = getWorkingMemoryEntry(_wmc.address.id);
+		addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
 
-			CommunicativeIntention cit = (CommunicativeIntention)data.getData();
-			Intention it = cit.intent;
-			if (it.content.size() == 1 && it.content.get(0).agents.size() == 1 && it.content.get(0).agents.get(0).equals(IntentionManagementConstants.humanAgent) && it.estatus instanceof AttributedEpistemicStatus) {
-				String taskID = newTaskID();
-				ProcessingData pd = new ProcessingData(newProcessingDataId());
-				pd.add(data);
-				addProposedTask(taskID, pd);
-				String taskGoal = DialogueGoals.INTENTION_MIRRORING_TASK;
-				proposeInformationProcessingTask(taskID, taskGoal);
-			}
-			else {
-				log("ignoring a communicative intention");
-			}
-		}
-		catch (SubarchitectureComponentException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void executeTask(ProcessingData data)
-	throws DialogueException {
-		Iterator<CASTData> iter = data.getData();
-		if (iter.hasNext()) {
-			Object body = iter.next().getData();
-
-			if (body instanceof CommunicativeIntention) {
-				CommunicativeIntention cit = (CommunicativeIntention) body;
-				Intention it = cit.intent;
-				log("mirroring a communicative intention");
-
-				// set private epistemic status
-				it.id = newDataID();
-				PrivateEpistemicStatus epst = new PrivateEpistemicStatus();
-				epst.agent = IntentionManagementConstants.thisAgent;
-				it.estatus = epst;
-
-				for (IntentionalContent itc : it.content) {
-					// make it the robot's intention
-					itc.agents = new LinkedList<String>();
-					itc.agents.add(IntentionManagementConstants.thisAgent);
-
-					// make sure that the pre- and post-condition formulas are mirrored
-					swapPropositionsInFormula(itc.preconditions, IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent);
-					swapPropositionsInFormula(itc.postconditions, IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent);
-				}
-
+			@Override
+			public void execute(WorkingMemoryAddress addr) {
 				try {
-					log("adding communicative intention " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
-					addToWorkingMemory(newDataID(), cit);
-//					addToWorkingMemory(it.id, it);
+					CommunicativeIntention cit = getMemoryEntry(addr, CommunicativeIntention.class);
+					Intention it = cit.intent;
+					if (it.content.size() == 1
+							&& it.content.get(0).agents.size() == 1
+							&& it.content.get(0).agents.get(0).equals(IntentionManagementConstants.humanAgent)
+							&& it.estatus instanceof AttributedEpistemicStatus) {
+
+						getLogger().info("mirroring a communicative intention");
+
+						// set private epistemic status
+						it.id = newDataID();
+						PrivateEpistemicStatus epst = new PrivateEpistemicStatus();
+						epst.agent = IntentionManagementConstants.thisAgent;
+						it.estatus = epst;
+
+						for (IntentionalContent itc : it.content) {
+							// make it the robot's intention
+							itc.agents = new LinkedList<String>();
+							itc.agents.add(IntentionManagementConstants.thisAgent);
+
+							// make sure that the pre- and post-condition formulas are mirrored
+							swapPropositionsInFormula(itc.preconditions, IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent);
+							swapPropositionsInFormula(itc.postconditions, IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent);
+						}
+
+						getLogger().info("adding communicative intention for " + it.id + " to dialogue WM:\n" + BeliefIntentionUtils.intentionToString(it));
+						addToWorkingMemory(newDataID(), cit);
+					}
+					else {
+						getLogger().debug("ignoring a communicative intention");
+					}
 				}
-				catch (Exception e) {
-					e.printStackTrace();
-					throw new DialogueException(e.getMessage());
+				catch (SubarchitectureComponentException ex) {
+					getLogger().error("component exception", ex);
 				}
 			}
-			else {
-				log("oops! got a " + body.getClass().getCanonicalName() + " in the intention mirror");
-			}
-		}
-		else {
-			log("no data for processing");
-		}
+		});
 	}
 
-	private void swapPropositionsInFormula(dFormula f, String ag1, String ag2) {
+	public static void swapPropositionsInFormula(dFormula f, String ag1, String ag2) {
 		if (f instanceof ComplexFormula) {
 			ComplexFormula cf = (ComplexFormula) f;
 			for (dFormula ff : cf.forms) {

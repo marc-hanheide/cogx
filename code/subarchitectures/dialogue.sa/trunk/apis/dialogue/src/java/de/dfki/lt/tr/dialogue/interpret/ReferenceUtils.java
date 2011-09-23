@@ -3,8 +3,8 @@ package de.dfki.lt.tr.dialogue.interpret;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.Constraint;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
-import de.dfki.lt.tr.dialogue.ref.ResolutionRequest;
-import de.dfki.lt.tr.dialogue.ref.ResolutionResult;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.time.Interval;
@@ -19,7 +19,7 @@ public abstract class ReferenceUtils {
 
 	private static Logger logger = Logger.getLogger("reference-utils");
 
-	public static String resolutionRequestToString(ResolutionRequest rr) {
+	public static String resolutionRequestToString(ReferenceResolutionRequest rr) {
 		String s = "";
 
 		s += rr.nom + " <- {\n";
@@ -34,7 +34,7 @@ public abstract class ReferenceUtils {
 		return s;
 	}
 
-	public static String resolutionResultToString(ResolutionResult rr) {
+	public static String resolutionResultToString(ReferenceResolutionResult rr) {
 		String s = "";
 
 		s += rr.nom + " -> {\n";
@@ -46,7 +46,7 @@ public abstract class ReferenceUtils {
 		return s;
 	}
 
-	static ResolutionRequest nominalToConstraints(LFNominal nom, TimeInterval ival) {
+	public static ReferenceResolutionRequest nominalToConstraints(LFNominal nom, TimeInterval ival) {
 		List<Constraint> cs = new ArrayList<Constraint>();
 		Iterator<Feature> iter = LFUtils.lfNominalGetFeatures(nom);
 		log("converting nominal to constraints");
@@ -64,7 +64,7 @@ public abstract class ReferenceUtils {
 			cs.add(c);
 		}
 		log("conversion done");
-		return new ResolutionRequest(nom.nomVar, sort, cs, ival.toIce());
+		return new ReferenceResolutionRequest(nom.nomVar, sort, cs, ival.toIce());
 	}
 
 	private static void log(String s) {

@@ -3,7 +3,7 @@ package de.dfki.lt.tr.dialogue.ref.newiface;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
-import de.dfki.lt.tr.dialogue.ref.ResolutionResult;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,8 +11,8 @@ import java.util.Map.Entry;
 
 public class ResolutionResultFactory {
 
-	public static ResolutionResult potentialToResolutionResult(String nom, Potential pot) {
-		return new ResolutionResult(nom, potentialToEpistemicRefHypos(pot));
+	public static ReferenceResolutionResult potentialToResolutionResult(String nom, Potential pot) {
+		return new ReferenceResolutionResult(nom, potentialToEpistemicRefHypos(pot));
 	}
 
 	private static List<EpistemicReferenceHypothesis> potentialToEpistemicRefHypos(Potential pot) {
