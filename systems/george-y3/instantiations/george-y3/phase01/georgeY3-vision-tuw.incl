@@ -3,7 +3,7 @@
 
 # NOTE: stereo_config_file is set in cameras-X.incl
 
-VARDEFAULT coarsePointCloud=pcserver
+VARDEFAULT coarsePointCloud=kinect.server
 SETVAR CoarsePlanePopOut_Params=<multiline>
    --pcserver "%(coarsePointCloud)"
    --displayserver "display.srv"
