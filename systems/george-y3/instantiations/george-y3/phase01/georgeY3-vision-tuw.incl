@@ -5,32 +5,22 @@
 
 VARDEFAULT coarsePointCloud=pcserver
 SETVAR CoarsePlanePopOut_Params=<multiline>
-   --generate-sois true
    --pcserver "%(coarsePointCloud)"
-   --stereoconfig %(stereo_config_file)
    --displayserver "display.srv"
-   #--minObjHeight 0.015
-   #--totalPoints 8000
-   #--LeastPointsInOneObj 40
-   #--agonalTime 10
-   #--stableTime 2 
+   --agonalTime 2
+   --stableTime 2 
    --display
-   #--log
+   --log
 </multiline>
 CPP MG vis.ppo.coarse PlanePopOutPc %(CoarsePlanePopOut_Params)
 VARDEFAULT coarsePcSource=vis.ppo.coarse
 
 VARDEFAULT finePointCloud=stereoserver
 SETVAR FinePlanePopOut_Params=<multiline>
-   --generate-sois false
    --pcserver "%(finePointCloud)"
-   --stereoconfig %(stereo_config_file)
    --displayserver "display.srv"
-   --minObjHeight 0.015
-   --totalPoints 8000
-   --LeastPointsInOneObj 40
-   --agonalTime 10
-   --stableTime 5 
+   --agonalTime 2
+   --stableTime 2 
    #--display
    # --log
 </multiline>
@@ -67,7 +57,7 @@ SETVAR SOIFilter_Params=<multiline>
 CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 
 
-INCLUDE  includes/vision.sa/vision-visual-learner.cast
+#INCLUDE  includes/vision.sa/vision-visual-learner.cast
 
 # ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
 # Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
