@@ -7,15 +7,15 @@ SETVAR evdFilter_params=<multiline>
    --sa binder
    --evd-ids mlnEngine1
    --type VisualObject
-   --keys color
-   --inst percept
-   --estatus private
+   --keys prv_color,attr_color,shr_color,estatus
+   --inst belief
+   --estatus all
 </multiline>
 CPP MG evdFilter MLNBeliefEvdFilter %(evdFilter_params)
 	
 SETVAR mlnEngine1_params=<multiline>
 	--sa binder
-	--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow color,attribute,percept "
+	--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow prv_color,attr_color,shr_color,constraint,belief,estatus"
 	--standalone-display-host localhost
 </multiline>
 CPP MG mlnEngine1 MLNEngine %(mlnEngine1_params)
