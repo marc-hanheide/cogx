@@ -77,10 +77,6 @@ void MLNEngine::start()
 
   log("MLNEngine active");
 
-  if (doDisplay)
-  {
-	log("MRF initialized");
-  }
 
  // filters for belief updates
 //  addChangeFilter(createGlobalTypeFilter<dBelief>(cdl::ADD),
@@ -160,7 +156,7 @@ void MLNEngine::runComponent()
 
 	  vector<Instance>::iterator it;
 	  for(it=evd->newInstances.begin(); it!=evd->newInstances.end(); it++) {
-		string placeh = m_oe->addInstance(it->type, "percept");
+		string placeh = m_oe->addInstance("bel", it->type);
 		if(!placeh.empty())
 		  addInstConst(it->name, placeh);
 		else
@@ -184,7 +180,7 @@ void MLNEngine::runComponent()
 	  
 	  for(it=evd->removeInstances.begin(); it!=evd->removeInstances.end(); it++) {	
 		if(existsInstConst(it->name)) {
-		  m_oe->removeInstance(getInstConst(it->name), "percept");
+		  m_oe->removeInstance(getInstConst(it->name), it->type);
 		  removeInstConst(it->name);
 		} else
 		  log("WARNING: No instance %s found", it->name.c_str());
@@ -249,7 +245,7 @@ void MLNEngine::runComponent()
 	while(!m_removeQueue.empty())
 	{
 	  debug("Removing evidence or query entry"); 
-	  deleteFromWorkingMemory(m_removeQueue.front());
+//	  deleteFromWorkingMemory(m_removeQueue.front());
 	
 	  m_removeQueue.pop();
 	}

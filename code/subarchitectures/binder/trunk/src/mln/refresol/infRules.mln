@@ -7,9 +7,9 @@ resolution(p1) ^ resolution(p2) => p1 = p2.
 //(exist p percept(p) ) => (exist q resolution(q)).
 
 // a resolution can be only about a percept that exists ...
-resolution(p) => percept(p).
+resolution(p) => belief(p).
 // ... and if there is something attributed
-resolution(p) => exist f attribute(f).
+resolution(p) => exist f constraint(f).
 
 
 

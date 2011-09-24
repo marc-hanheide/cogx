@@ -68,13 +68,14 @@ void MLNBeliefEvdFilter::runComponent()
 
   EvidencePtr evd = new Evidence();
 
-  evd->trueEvidence.push_back("attribute(LRed)");
-  evd->falseEvidence.push_back("percept(PH1)");
-  evd->falseEvidence.push_back("percept(PH2)");
-  evd->falseEvidence.push_back("percept(PH3)");
-  evd->falseEvidence.push_back("percept(PH4)");
-  evd->falseEvidence.push_back("percept(PH5)");
-  evd->falseEvidence.push_back("percept(PH6)");
+  evd->trueEvidence.push_back("constraint(A_red)");
+  evd->falseEvidence.push_back("belief(PH1)");
+  evd->falseEvidence.push_back("belief(PH2)");
+  evd->falseEvidence.push_back("belief(PH3)");
+  evd->falseEvidence.push_back("belief(PH4)");
+  evd->falseEvidence.push_back("belief(PH5)");
+  evd->falseEvidence.push_back("belief(PH6)");
+
   evd->initInfSteps = 400;
   evd->prevInfSteps = 0;
   evd->burnInSteps = 100;
