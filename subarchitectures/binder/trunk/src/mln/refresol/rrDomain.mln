@@ -1,15 +1,16 @@
 // domains
 
-col = {V_red, V_blue, V_green} //, VYellow, VWhite, VBlack,
+pcol = {P_red, P_blue, P_green} //, VYellow, VWhite, VBlack,
 //		VCompact, VElongated, VFlat}
 //		VSpherical, VCylindrical, VConical, VCuboid}
 		
-attr = {LRed, LBlue, LGreen} //, LYellow, LWhite, LBlack,
+acol = {A_red, A_blue, A_green} //, LYellow, LWhite, LBlack,
 //		LCompact, LElongated, LFlat,
 //		LColaCan, LDish, LBox, LBall, LApple, LTube}
 //		LSpherical, LCylindrical, LConical, LCuboid, LBook, LWizHat}
-		
-perc = {0, ..., 0}
+
+statusType = {Private, Attributed, Shared}		
+bel = {0, ..., 0}
 
 // afeat =	{ASlide, ARoll, ATopple}
 		

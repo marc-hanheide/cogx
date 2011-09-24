@@ -10,7 +10,6 @@
 
 #include <AbsMLNClient.h>
 
-
 namespace cast
 {
 
@@ -18,6 +17,8 @@ using namespace org::cognitivesystems::binder::mln;
 using namespace eu::cogx::mln::slice;
 using namespace std;
 
+const string EPI_STATUS_ALL = "all";
+const string DEFAULT_INSTANCE_KEY = "belief";
 class AbsMLNEvdFilter :  public AbsMLNClient
 {
  private:
@@ -30,7 +31,7 @@ class AbsMLNEvdFilter :  public AbsMLNClient
   string m_beliefType;
   string m_epiStatus;
   set<string> m_relevantKeys;
-  string m_instKey;
+  set<string> m_instKeys;
   
   /**
    * callback function called whenever there is a change in fact collection
@@ -80,15 +81,20 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	}
 	
 	if ((it = _config.find("--inst")) != _config.end()) {
-	  m_instKey = it->second;
+	  stringstream ss(it->second);
+	  string token;
+	
+	  while(getline(ss, token, ',')) {
+	      m_instKeys.insert(token);
+	  }
 	} else {
-	  m_instKey="percept";
+	  m_instKeys.insert(DEFAULT_INSTANCE_KEY);
 	}
 	
 	if ((it = _config.find("--estatus")) != _config.end()) {
 	  m_epiStatus = it->second;
 	} else {
-	 m_epiStatus="private";
+	 m_epiStatus=EPI_STATUS_ALL;
 	}
   }
   /**
@@ -119,8 +125,9 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	
 	vector<MLNFact>::iterator it;
 	for (it=rawFact.begin() ; it != rawFact.end(); it++ ) {
-	  if(it->type == m_beliefType && it->estatus == m_epiStatus
-		  && (m_relevantKeys.count(it->key) || m_instKey == it->key)) {
+	  if(it->type == m_beliefType
+		&& (m_epiStatus == EPI_STATUS_ALL || it->estatus == m_epiStatus)
+		&& (m_relevantKeys.count(it->key) || m_instKeys.count(it->key))) {
 		filtFact.insert(pair<string,MLNFact>(it->atom,*it));
 	  }
 	}
@@ -141,7 +148,6 @@ class AbsMLNEvdFilter :  public AbsMLNClient
   
   bool getEvdChanges(map<string, MLNFact> facts, map<string, MLNFact> oldFacts, EvidencePtr evd)
   {
-//	EvidencePtr evd = new Evidence();
 	bool evdChanged = false;
 	
 	map<string,MLNFact>::iterator it;
@@ -151,10 +157,10 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	  if(facts.find(it->first) == facts.end()) {
 		evdChanged = true;
 		if(it->second.prob == 1 || it->second.prob == 0) {
-		  if(it->second.key == m_instKey) {
+		  if(m_instKeys.count(it->second.key)) {
 			Instance inst;
 			inst.name=it->second.id;
-			inst.type="perc";
+			inst.type=it->second.key;
 			evd->removeInstances.push_back(inst);
 		  } else  
 			evd->noEvidence.push_back(it->first);
@@ -176,10 +182,10 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	  if(old == oldFacts.end()) {
 		evdChanged = true;
 		if(prob >= 1)
-		  if(it->second.key == m_instKey) {
+		  if(m_instKeys.count(it->second.key)) {
 			Instance inst;
 			inst.name=it->second.id;
-			inst.type="perc";
+			inst.type=it->second.key;
 			evd->newInstances.push_back(inst);
 		  } else
 			evd->trueEvidence.push_back(atom);
