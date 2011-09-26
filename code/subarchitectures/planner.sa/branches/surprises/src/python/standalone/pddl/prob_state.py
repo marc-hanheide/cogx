@@ -176,10 +176,15 @@ class ProbabilisticState(State):
                     yield Fact(svar, k), v
         return itertools.chain(*(fact_iter(svar, dist) for svar,dist in self.iteritems()))
 
-    def deterministic(self):
+    def deterministic(self, threshold = None):
         for svar, val in self.iteritems():
             if val.value:
                 yield Fact(svar, val.value)
+            elif threshold is not None:
+                assert threshold > 0.5
+                for value, p in val.iteritems():
+                    if p > threshold and value != UNKNOWN:
+                        yield Fact(svar, value)
 
     def is_det(self, svar):
         if svar not in self:

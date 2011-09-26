@@ -2,7 +2,7 @@ from collections import defaultdict
 import time
 
 from scope import Scope
-import predicates, conditions, effects, actions, axioms, domain, problem
+import predicates, conditions, effects, actions, axioms, domain, problem, utils
 import visitors
 import mapltypes as types
 import builtin
@@ -1175,6 +1175,8 @@ class MAPLCompiler(Translator):
         def visitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
                 if eff.predicate in (mapl.update, mapl.update_fail):
+                    return None
+                if utils.is_functional(eff) and eff.args[0].function == mapl.failure_cost:
                     return None
                 if eff.predicate == mapl.knowledge:
                     e2 = eff.copy()

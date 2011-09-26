@@ -4,8 +4,9 @@
   (:types
    conegroup - object
    robot - agent
-   person robot - movable
+   person robot - location
    label category spatial_relation place room visualobject - concept
+   visualobject room - location
    place_status polar_reply concept - object
    )
 
@@ -62,10 +63,11 @@
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
-   (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - number
+   (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
    ;; === room properties ===
    (category ?r - room) - category
+   (identity ?r - room) - category
    (roomid ?r - room) - number
    (virtual-category ?r - room) - category
 
@@ -83,7 +85,7 @@
 
    ;; === object properties ===
    (label ?o - visualobject) - label
-   (related-to ?o - visualobject) - (either visualobject room)
+   (related-to ?o - visualobject) - location
    (relation ?o - visualobject) -  spatial_relation
 
    ;; === conegroup properties ===
@@ -107,6 +109,7 @@
    placeholder trueplace - place_status
    in on - spatial_relation
    yes no dontknow - polar_reply
+   tutor - agent
    )
 
 
@@ -223,7 +226,7 @@
            :parameters (?l - label ?r - room ?c - category)
            :precondition (and (= (category ?r) ?c)
                               (defined (dora__inroom ?l ?c))
-                              (not (defined (p-obj_exists ?l in ?r))))
+                              (not (defined (p-obj_exists ?l in ?r ?c))))
            :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -234,7 +237,7 @@
                               (= (related-to ?o) ?r)
                               (= (relation ?o) in)
                               (defined (dora__inobject ?l1 ?l2 ?c))
-                              (not (defined (p-obj_exists ?l1 in ?o))))
+                              (not (defined (p-obj_exists ?l1 in ?o ?c))))
            :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -245,7 +248,7 @@
                               (= (related-to ?o) ?r)
                               (= (relation ?o) in)
                               (defined (dora__on ?l1 ?l2 ?c))
-                              (not (defined (p-obj_exists ?l1 on ?o))))
+                              (not (defined (p-obj_exists ?l1 on ?o ?c))))
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
 
@@ -254,15 +257,17 @@
   (:dtrule object_existence_room
            :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
            :precondition (and (= (category ?where) ?c)
-                              (defined (p-obj_exists ?l ?rel ?where)))
-           :effect (probabilistic (p-obj_exists ?l ?rel ?where) (and (assign (obj_exists ?l ?rel ?where) true)))
+                              (defined (p-obj_exists ?l ?rel ?where ?c)))
+           :effect (probabilistic (p-obj_exists ?l ?rel ?where ?c) (and (assign (obj_exists ?l ?rel ?where) true)))
            )
 
   ;; use posterior information from conceptual.sa
   (:dtrule object_existence_object
-           :parameters (?l - label ?rel - spatial_relation ?where - visualobject)
-           :precondition (and (defined (p-obj_exists ?l ?rel ?where)))
-           :effect (probabilistic (p-obj_exists ?l ?rel ?where) (and (assign (obj_exists ?l ?rel ?where) true)))
+           :parameters (?l - label ?rel - spatial_relation ?where - visualobject ?r - room ?c - category)
+           :precondition (and (= (related-to ?where) ?r)
+                              (= (category ?r) ?c)
+                              (defined (p-obj_exists ?l ?rel ?where ?c)))
+           :effect (probabilistic (p-obj_exists ?l ?rel ?where ?c) (and (assign (obj_exists ?l ?rel ?where) true)))
            )
 
   ;; p(?label IN ?room | category(?room) = ?cat)
@@ -406,6 +411,40 @@
                          (increase (total-cost) 4))
             )
 
+   (:action request-put-on-robot
+            :agent (?a - robot)
+            :parameters (?l - label)
+            :variables (?p - person ?pl - place ?r - room ?o - visualobject)
+            :precondition (and (not (done))
+                            (= (is-in ?a) ?pl)
+                            (= (is-in ?p) ?pl)
+                            (= (in-room ?pl) ?r)
+                            (trans_related ?o ?r)
+                            (kval ?a (related-to ?o))
+                            (= (label ?o) ?l))
+            :effect (and 
+                     (assign (related-to ?o) ?a)
+                     (assign (relation ?o) on)
+                     (increase (total-cost) 10))
+            )
+
+   (:action request-pick-up
+            :agent (?a - robot)
+            :parameters (?l - label)
+            :variables (?p - person ?pl - place ?o - visualobject)
+            :precondition (and (not (done))
+                            (= (is-in ?a) ?pl)
+                            (= (is-in ?p) ?pl)
+                            (= (related-to ?o) ?a)
+                            (= (relation ?o) on)
+                            (= (label ?o) ?l))
+            :effect (and 
+                     (assign (related-to ?o) ?p)
+                     ;; (assign (relation ?o) on)
+                     (increase (total-cost) 10))
+            )
+
+
    ;; Abstract search action for the CP planner
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
@@ -498,13 +537,37 @@
                           )
              )
 
+   (:action ask-for-category-polar
+            :agent (?a - robot)
+            :parameters (?r - room ?c - category)
+            :variables (?h - person ?p - place)
+            :precondition (and (not (done))
+                               (= (is-in ?h) ?p)                               
+                               (= (is-in ?a) ?p)
+                               (= (in-room ?p) ?r))
+            :effect (and 
+                     (increase (total-cost) 5)
+                     (assign (failure-cost) 30))
+            )
+
+   (:observe room-category
+             :agent (?a - robot)
+             :parameters (?h - person ?c - category ?p - place ?r - room)
+             :execution (ask-for-category-polar ?a ?r ?c ?h ?p)
+             :precondition (and
+                            (= (is-in ?h) ?p))
+                                
+             :effect (and (when (= (category ?r) ?c)
+                            (probabilistic 0.95 (observed (identity ?r) ?c))))
+             )
+
    (:action look-for-people
             :agent (?a - robot)
             :variables (?p - place)
             :precondition (and (not (done))
                             (= (is-in ?a) ?p))
             :effect (and 
-                     (increase (total-cost) 10))
+                     (increase (total-cost) 3))
             )
 
    (:observe person
@@ -516,7 +579,7 @@
              :effect (and (when (= (is-in ?p) ?pl)
                             (probabilistic 0.7 (observed (does-exist ?p) true)))
                           (when (not (= (is-in ?p) ?pl))
-                            (probabilistic 0.1 (observed (does-exist ?p) true)))
+                            (probabilistic 0.05 (observed (does-exist ?p) true)))
                           )
              )
 

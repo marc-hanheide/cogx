@@ -388,7 +388,8 @@ class TypedObject(object):
         return self.__class__(self.name, self.type)
 
     def __str__(self):
-        return "%s - %s" % (self.name, self.type)
+        # return "%s - %s" % (self.name, self.type)
+        return "%s" % (self.name)
 
     def __hash__(self):
         return self.hash
@@ -467,6 +468,9 @@ class Parameter(TypedObject):
         """Returns the TypedObject this Parameter is instantiated with
         (None if it is not instantiated)."""
         return self.instantiated
+
+    def __str__(self):
+        return "%s - %s" % (self.name, self.type)
     
     # def __hash__(self):
     #     return hash(id(self))

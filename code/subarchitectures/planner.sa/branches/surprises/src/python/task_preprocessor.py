@@ -177,13 +177,17 @@ def gen_fact_tuples(beliefs):
       yield SVarDistribution(feat, elems, vals)
       
   for bel in beliefs:
+    print "Belief:", bel.id
+    print "   ep. status:", type(bel.estatus)
     #always treat CondIndependentDistribList as list of relations
     if isinstance(bel.content, distribs.CondIndependentDistribList):
+      print "   is list"
       for dist in bel.content.distribs:
         for fact in decode_relation(dist):
           yield fact
 
     elif bel.type == "relation":
+      print "   is relation"
       for fact in decode_relation(bel.content):
         yield fact
 
@@ -191,6 +195,7 @@ def gen_fact_tuples(beliefs):
       factdict = defaultdict(list)
       attributed_object = None
       for feat, val, prob in extract_features(bel.content):
+        print feat, val, prob
         if feat == "about":
           attributed_object = val
         factdict[str(feat)].append((val, prob))
@@ -199,6 +204,7 @@ def gen_fact_tuples(beliefs):
         yield SVarDistribution("existence",  [attributed_object], [])
         agent = pddl.TypedObject("tutor",pddl.mapl.t_agent)
         for feat,vals in factdict.iteritems():
+          print "attributed:", agent, feat, attributed_object, vals
           yield AttributedSVarDistribution(agent, feat, [attributed_object], vals)
       else:
         obj = belief_to_object(bel)

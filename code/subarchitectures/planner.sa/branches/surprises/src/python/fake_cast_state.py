@@ -1,6 +1,7 @@
 from itertools import chain
 from standalone import config
 from standalone.pddl import prob_state
+import standalone.globals as global_vars
 
 import cast_state
 
@@ -11,6 +12,7 @@ BINDER_SA = "binder"
 
 class FakeCASTState(cast_state.CASTState):
     def __init__(self, problem, domain, component=None):
+        self.config = global_vars.config
         self.domain = domain
         self.problem = problem
         #self.beliefs = beliefs

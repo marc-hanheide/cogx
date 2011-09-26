@@ -3,9 +3,14 @@ from itertools import chain, product, izip
 
 from collections import defaultdict
 from standalone import config, pddl
-from standalone.pddl import state, conditions, dtpddl, mapl, translators, visitors, effects
+from standalone.pddl import state, conditions, dtpddl, mapl, translators, visitors, effects, utils
 
 log = config.logger("plangraph")
+
+FACT_STATICALLY_FALSE = 0
+FACT_STATICALLY_TRUE = 1
+FACT_CURRENTLY_FALSE = 2
+FACT_CURRENTLY_TRUE = 3
 
 def instantiation_function(action, problem, check_callback, force_callback, clear_callback):
     def args_visitor(term, results):
@@ -46,7 +51,8 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
                 cond.uninstantiate()
                 yield result
         
-        #print [a.name for a in mapping.iterkeys()]
+        # print "mapping:", [(a.name, a.is_instantiated(), id(a)) for a in mapping.iterkeys()]
+        
         forced = []
         def check(cond):
             if not cond or cond in checked:
@@ -75,6 +81,7 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
                     # checked.add(cond)
                     # return True
                 else:
+                    # print cond.pddl_str(), [(a.name, a.is_instantiated(), id(a)) for a in free_args[cond]]
                     next_candidates.append([a for a in free_args[cond] if not a.is_instantiated()])
             elif isinstance(cond, conditions.Truth):
                 return True
@@ -97,7 +104,7 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
             elif isinstance(cond, conditions.QuantifiedCondition):
                 combinations = product(*map(lambda a: list(problem.get_all_objects(a.type)), cond.args))
                 results = list(instantianteAndCheck(cond, combinations, lambda: check(cond.condition)))
-                if isinstance(cond, conditions.Conjunction):
+                if isinstance(cond, conditions.UniversalCondition):
                     if any(c == False for c in results):
                         return False
                     if all(c == True for c in results):
@@ -125,11 +132,11 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
         if forced:
             svar, val, lit = forced[0]
             checked.add(lit)
-            #print "Forced %s = %s" % (str(svar), val.name)
+            # print "Forced %s = %s" % (str(svar), val.name)
             return (svar, val)
         if next_candidates:
             next_candidates = sorted(next_candidates, key=lambda l: len(l))
-            #print "Next:", next_candidates[0][0]
+            # print "Next:", next_candidates[0][0]
             return next_candidates[0][0], None
         #print self, [a.get_instance().name for a in  args]
         return True, None
@@ -144,7 +151,14 @@ class EffectGenerator(object):
             self.prepare_dict(a)
 
     def prepare_dict(self, action):
-        for lit in visitors.visit(action.effect, visitors.collect_literals, []):
+        @visitors.collect
+        def collect_noncond_literals(elem, results):
+            if isinstance(elem, pddl.Literal):
+                return elem
+            elif isinstance(elem, effects.ConditionalEffect):
+                return []
+
+        for lit in visitors.visit(action.effect, collect_noncond_literals, []):
             function_arg = None
             if any(isinstance(a, pddl.predicates.FunctionVariableTerm) for a in lit.args):
                 modality = lit.predicate
@@ -212,13 +226,14 @@ class EffectGenerator(object):
                 yield action, mapping
 
 class UnaryOp(object):
-    def __init__(self, action, args, effect, preconds, all_preconds):
+    def __init__(self, action, args, effect, preconds, all_preconds, all_facts):
         self.action = action
         self.args = args
         self.effect = effect
         self.preconds = preconds
         self.all_preconds = all_preconds
         self.unsat_preconds = len(preconds)
+        self.all_facts = all_facts
         self.expanded = False
         self.initialised = False
         self.key = None
@@ -226,19 +241,22 @@ class UnaryOp(object):
     def __str__(self):
         return "(%s %s) => %s" % (self.action.name, " ".join(str(a) for a in self.args), str(self.effect))
 
+    def action_key(self):
+        return (self.action, self.args)
+
     @staticmethod
-    def unify_with_parent(c_ops, action, args, preconds, st):
+    def unify_with_parent(c_ops, action, args, all_preconds, unsat_preconds, all_checked_facts):
         mapping = dict(zip(action.args, args))
         for op in c_ops:
             if all(mapping[action[a.name]] == val for a, val in zip(op.action.args, op.args)):
                 # print "merge", op, action.name, map(str,args)
-                all_preconds = preconds | op.all_preconds
-                unsat_preconds = set(f for f in all_preconds if f not in st and f.svar.modality != mapl.commit)
-                yield UnaryOp(action, args, op.effect, unsat_preconds, all_preconds)
+                all_preconds = all_preconds | op.all_preconds
+                unsat_preconds = unsat_preconds | op.preconds
+                yield UnaryOp(action, args, op.effect, unsat_preconds, all_preconds, all_checked_facts | op.all_facts)
         
     @staticmethod
-    def build_ops(action, args, preconds, st):
-        unsat_preconds = set(f for f in preconds if f not in st and f.svar.modality != mapl.commit)
+    def build_ops(action, args, all_preconds, unsat_preconds, all_checked_facts):
+        # unsat_preconds = set(f for f in preconds if f not in st and f.svar.modality != mapl.commit)
         # if any("not_fully" in p.svar.function.name for p in preconds):
         #     import debug
         #     debug.set_trace()
@@ -248,9 +266,9 @@ class UnaryOp(object):
                 continue
             eff =  state.Fact.from_literal(lit)
             found = True
-            yield UnaryOp(action, args, eff, unsat_preconds, preconds)
+            yield UnaryOp(action, args, eff, unsat_preconds, all_preconds, all_checked_facts)
         if not found:
-            yield UnaryOp(action, args, None, unsat_preconds, preconds)
+            yield UnaryOp(action, args, None, unsat_preconds, all_preconds, all_checked_facts)
             
 
 def action_from_axiom(axiom, domain):
@@ -350,14 +368,196 @@ def split_disjunction(action, domain, nonstatic):
             # print da.name, dis.pddl_str()
         return result
     return [action]
-        
-            
-def instantiate(actions, start, stat, domain, start_actions=[]):
-    def get_nonstatic(a):
-        return visitors.visit(a.effect, visitors.collect_non_builtins, [])
 
+
+def get_observe_effects(action, observes, prob_functions = None):
+    def can_observe(a, o):
+        if not o.execution:
+            return True
+        for ex in o.execution:
+            if ex.negated:
+                return ex.action != a
+            if ex.action == a:
+                return ex
+        return False
+
+    @visitors.collect
+    def atom_visitor(elem, results):
+        if isinstance(elem, conditions.LiteralCondition):
+            if elem.predicate != dtpddl.observed and (prob_functions is None or utils.get_function(elem) in prob_functions):
+                return [elem]
+
+    @visitors.collect
+    def effect_visitor(elem, results):
+        if isinstance(elem, effects.ConditionalEffect):
+            return elem.condition.visit(atom_visitor)
+
+    @visitors.copy
+    def det_condition(elem, results):
+        if isinstance(elem, conditions.LiteralCondition):
+            if elem.predicate != dtpddl.observed and (prob_functions is None or utils.get_function(elem) in prob_functions):
+                return pddl.conditions.Truth()
+        
+    new_args = set()
+    sensors = []
+    for o in observes:
+        match = can_observe(action, o)
+        if not match:
+            continue
+        if match == True:
+            #sensor with no relation to a concrete action
+            #not yet supported
+            continue
+
+        sensable_atoms = []
+        det_cond = None
+        if o.precondition:
+            sensable_atoms += o.precondition.visit(atom_visitor)
+            det_cond = o.precondition.visit(det_condition)
+        sensable_atoms += o.effect.visit(effect_visitor)
+        
+        #temporarily rename parameters
+        renamings = {}
+        for arg in o.args:
+            if arg.name in action:
+                oldname = arg.name
+                i=1
+                while arg.name in action:
+                    o.rename(arg, "%s%d" % (oldname, i))
+                    i+=1
+                renamings[arg.name] = oldname
+
+        mapping = dict(zip(match.args, action.args))
+        o.instantiate(mapping)
+
+        if det_condition:
+            for a in det_cond.free():
+                if not a.is_instantiated():
+                    new_args.add(a)
+        
+        for atom in sensable_atoms:
+            assert utils.is_functional(atom)
+            term = atom.args[0]
+            value = atom.args[1]
+            for arg in term.args:
+                if isinstance(arg, pddl.VariableTerm) and not arg.is_instantiated():
+                    new_args.add(arg.object)
+
+            if isinstance(value, pddl.VariableTerm) and not value.is_instantiated() and value.object not in new_args:
+                new_args.add(value.object)
+                s_term = atom.args[0].copy_instance()
+                sensors.append(mapl.SenseEffect(s_term, action))
+            # elif any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
+            else:
+                # print map(str, atom.visit(visitors.collect_free_vars))
+                s_atom = atom.copy_instance()
+                # s_atom.set_scope(action)
+                sensors.append((mapl.SenseEffect(s_atom, action), det_cond))
+        o.uninstantiate()
+
+        #undo renamings
+        for name, oldname in renamings.iteritems():
+            arg = o[name]
+            o.rename(arg, oldname)
+    return sensors, new_args
+
+def add_sensors(action, domain, prob_functions):
+    sensors, new_args = get_observe_effects(action, domain.observe, prob_functions)
+    if isinstance(action, mapl.MAPLAction) and action.sensors:
+        sensors += [(a, None) for a in action.sensors]
+
+    a2 = action.copy()
+    if new_args:
+        new_args = a2.copy_args(new_args)
+        a2.args += new_args
+        a2.vars += new_args
+
+    # print a2.name, [a.name for a in a2.args]
+    sense_effects = []
+    for s, cond in sensors:
+        eff = s.conditional_knowledge_effect(cond)
+        eff.set_scope(a2)
+        # print eff.pddl_str()
+        # print eff.pddl_str(), [(a.name, id(a)) for a in eff.visit(visitors.collect_free_vars)]
+        sense_effects.append(eff)
+
+    a2.effect = effects.ConjunctiveEffect.join([a2.effect] + sense_effects)
+    # print a2.name, a2.effect.pddl_str()
+    # print [(a.name, id(a)) for a in a2.effect.visit(visitors.collect_free_vars)]
+    return a2
+
+class OpCache(object):
+    def __init__(self, stat):
+        self.state = stat.copy()
+        self.ops = {}
+        self.relevant_facts = defaultdict(set)
+
+    def set_fact(self, fact):
+        if fact not in self.state:
+            self.fact_changed(fact)
+            delfact = state.Fact(fact.svar, self.state[fact.svar])
+            self.fact_changed(delfact)
+            self.state.set(fact)
+
+    def unset_fact(self, fact):
+        if fact in self.state and fact.svar in self.state:
+            del self.state[fact.svar]
+            self.fact_changed(fact)
+            delfact = state.Fact(fact.svar, self.state[fact.svar])
+            self.fact_changed(delfact)
+            
+    def fact_changed(self, fact):
+        # print "changed:", fact
+        for k in self.relevant_facts[fact]:
+            # print "invalidate:", k
+            if k in self.ops:
+                del self.ops[k]
+        del self.relevant_facts[fact]
+
+    def new_state(self, stat):
+        for f in self.state.iterfacts():
+            if f not in stat:
+                self.fact_changed(f)
+                
+        for f in stat.iterfacts():
+            if f not in self.state:
+                self.fact_changed(f)
+
+    def add_op(self, op, key):
+        if key not in self.ops:
+            self.ops[key] =  []
+        self.ops[key].append(op)
+        # print op
+        for f in op.all_facts:
+            # print "   ", f
+            self.relevant_facts[f].add(key)
+
+    def has_ops(self, key):
+        return key in self.ops
+
+    def get_ops(self, key):
+        return self.ops[key]
+
+    def print_keys(self):
+        def keystr(action, args):
+            return "(%s %s) (%s %s)" % (action.name, " ".join(a.name for a in args), hash(action), hash (args))
+        return ", ".join(keystr(a, args) for a, args in self.ops.iterkeys())
+
+cache = None
+action_cache = None
+
+def init_cache(state):
+    global cache
+    cache = OpCache(state)
+
+def preprocess_actions(actions, domain, prob_functions=None):
+    action_dict = {}
     new_id = [0]
     cond_actions = {}
+
+    def get_nonstatic(a):
+        return visitors.visit(a.effect, visitors.collect_non_builtins, [])
+    
     def create_conditional_effects(action):
         @pddl.visitors.collect
         def get_ceffs(elem, results):
@@ -365,10 +565,9 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
                 return elem
 
         ceffs = pddl.visitors.visit(action.effect, get_ceffs, [])
-        if isinstance(action, mapl.MAPLAction) and action.sensors:
-            ceffs += action.conditional_knowledge_effect().visit(get_ceffs)
 
         for ceff in ceffs:
+            # print "conditional effect:", ceff.pddl_str()
             ca = pddl.Action("%s_ceff_%d" % (action.name, new_id[0]) , [], None, None, domain)
             new_id[0] += 1
             ca.args = ca.copy_args(set(ceff.visit(pddl.visitors.collect_free_vars)))
@@ -379,26 +578,52 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
             yield ca
 
     actions = actions + [action_from_axiom(a, domain) for a in domain.axioms]
-    for ga, _ in start_actions:
-        if ga not in actions:
-            actions.append(ga)
-    
+
     nonstatic = set(sum((get_nonstatic(a) for a in actions), [])) | set([mapl.commit, mapl.knowledge, mapl.direct_knowledge, mapl.indomain, mapl.i_indomain])
 
-    new_start_actions = []
     new_actions = []
     for a in actions:
-        ex_a = extract_exists(a, domain)
+        sense_a = add_sensors(a, domain, prob_functions)
+        ex_a = extract_exists(sense_a, domain)
         res = split_disjunction(ex_a, domain, nonstatic)
+        action_dict[a] = res
         new_actions += res
-        for sa, mapping in start_actions:
-            if a == sa:
-                for new in res:
-                    new_start_actions.append((new, mapping))
-    start_actions = new_start_actions
-    actions = new_actions
+
+    new_actions += sum((list(create_conditional_effects(a)) for a in new_actions), [])
+    return new_actions, action_dict, cond_actions
     
-    actions += sum((list(create_conditional_effects(a)) for a in actions), [])
+
+def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=None, check_fn=None):
+    def get_nonstatic(a):
+        return visitors.visit(a.effect, visitors.collect_non_builtins, [])
+
+    t0 = time.time()
+    t1 = t0
+
+    global cache, action_cache
+
+    if action_cache is None:
+        for ga, _ in start_actions:
+            if ga not in actions:
+                actions.append(ga)
+
+        actions, action_dict, cond_actions = preprocess_actions(actions, domain, prob_functions)
+        action_cache = (actions, action_dict, cond_actions)
+    else:
+        actions, action_dict, cond_actions = action_cache
+        
+
+    new_start_actions = []
+    for sa, mapping in start_actions:
+        for a in action_dict[sa]:
+            m2 = dict((a[k.name], v) for k,v in mapping.iteritems())
+            new_start_actions.append((a, m2))
+    start_actions = new_start_actions
+        
+    if cache is None:
+        cache = OpCache(stat)
+
+    # print "time for initialisation: %.3f" % (time.time()-t1)
 
     # for a, map in start_actions:
     #     print a.name, map
@@ -408,36 +633,55 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
     def get_objects(arg):
         return list(stat.problem.get_all_objects(arg.type))
 
-    fact_by_cond = defaultdict(set)
-    def check_func(fact, cond):
-        # if fact.svar.modality == pddl.mapl.hyp and prob_state is not None:
-        #     svar = fact.svar.nonmodal()
-        #     val = fact.svar.modal_args[0]
-        #     if prob_state.is_det(svar):
-        #         return prob_state[svar] == val
-        #     return prob_state[svar][val] > 0
+    def default_check_fn(fact):
         if fact.svar.modality == pddl.mapl.commit:
-            nvar = fact.svar.nonmodal()
-            if nvar in stat and nvar.function not in nonstatic:
-                nval = fact.svar.modal_args[0]
-                return stat[nvar] == nval
-            fact_by_cond[cond].add(fact)
-            return True
+            fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
+
         if (fact.svar.function in nonstatic and not fact.svar.modality) or fact.svar.modality in nonstatic:
-            fact_by_cond[cond].add(fact)
-            return True
+            if fact in stat:
+                return FACT_CURRENTLY_TRUE
+            else:
+                return FACT_CURRENTLY_FALSE
         else:
-            # exst = stat.get_extended_state([fact.svar])
-            #TODO: handle all possible conditions
-            if stat[fact.svar] != fact.value:
-                return False
+            if fact in stat:
+                return FACT_STATICALLY_TRUE
+            else:
+                return FACT_STATICALLY_FALSE
+
+    nonstatic = set(sum((get_nonstatic(a) for a in actions), [])) | set([mapl.commit, mapl.knowledge, mapl.direct_knowledge, mapl.indomain, mapl.i_indomain])
+    
+    if check_fn is None:
+        check_fn = default_check_fn
+
+    fact_by_cond = defaultdict(set)
+    all_checked_facts = set()
+    def check_func(fact, cond):
+        all_checked_facts.add(fact)
+        result = check_fn(fact)
+        if result == FACT_STATICALLY_TRUE:
             return True
-
-    def all_facts():
+        elif result == FACT_STATICALLY_FALSE:
+            # print "statically false:", fact
+            return False
+        elif result == FACT_CURRENTLY_TRUE:
+            fact_by_cond[cond].add((fact, result))
+            return True
+        elif result == FACT_CURRENTLY_FALSE:
+            fact_by_cond[cond].add((fact, result))
+            return True
+                
+    def all_relevant_facts():
+        relevant = set()
+        missing = set()
         for fs in fact_by_cond.itervalues():
-            for fact in fs:
-                yield fact
-
+            for fact, fact_status in fs:
+                if fact_status == FACT_CURRENTLY_FALSE:
+                    missing.add(fact)
+                    relevant.add(fact)
+                elif fact_status == FACT_CURRENTLY_TRUE:
+                    relevant.add(fact)
+        return relevant, missing
+                
     def clear_func(cond):
         fact_by_cond[cond] = set()
             
@@ -450,36 +694,43 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
     waiting_cond_ops = defaultdict(list)
     unary_successors = defaultdict(list)
     applicable_ops = []
-    def add_unary(action, args, preconds):
-        uops_gen = UnaryOp.build_ops(action, args, preconds, stat)
+    def add_unary(action, args, all_preconds, unsat_preconds):
+        uops_gen = UnaryOp.build_ops(action, args, all_preconds, unsat_preconds, all_checked_facts)
         if action in waiting_cond_ops:
-            uops_gen = chain(uops_gen, UnaryOp.unify_with_parent(waiting_cond_ops[action], action, args, preconds, stat))
-            
+            uops_gen = chain(uops_gen, UnaryOp.unify_with_parent(waiting_cond_ops[action], action, args, all_preconds, unsat_preconds, all_checked_facts))
+        
         for uop in uops_gen:
-            # print uop, map(str, uop.preconds)
             # print map(str, uop.preconds), "=>", uop, uop.unsat_preconds
             if action not in cond_actions:
-                for pre in uop.all_preconds:
+                # print "uop:", uop, map(str, uop.preconds), uop.unsat_preconds
+                for pre in uop.preconds:
+                    # print "   ", pre
                     unary_successors[pre].append(uop)
-                if not uop.preconds:
-                    unary_successors[None].append(uop)
                 if uop.unsat_preconds == 0:
+                    unary_successors[None].append(uop)
                     applicable_ops.append(uop)
+                yield uop
             else:
                 # print "waiting:", uop
                 waiting_cond_ops[cond_actions[action]].append(uop)
 
-                
+    # print cache.print_keys()
+
+    ops_by_action_key = defaultdict(list)
+    ops_by_partial_key = defaultdict(list)
 
     action_predecessors = defaultdict(set)
     goal_actions = set()
+
+    fact_count = 0
+    action_count = 0
     
     open = ["start"] + list(start)
-    closed = set()
+    closed = set(start)
     closed_actions = set()
     all_actions = set()
     active_cond_actions = []
-    while open:
+    while open or active_cond_actions:
         if active_cond_actions:
             next_actions = active_cond_actions
             active_cond_actions = []
@@ -490,15 +741,59 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
             else:
                 next_actions = effect_gen.action_from_fact(fact)
         # print "*",fact
-            
+        fact_count += 1
+
+        cache_key = fact
+        if fact != "start" and cache.has_ops(cache_key):
+            # print "cache hit:", fact
+            for op in cache.get_ops(cache_key):
+                all_actions.add(op.action_key)
+                op.unsat_preconds = len(op.preconds)
+                for pre in op.preconds:
+                    unary_successors[pre].append(op)
+                    if pre not in closed:
+                        closed.add(pre)
+                        open.append(pre)
+                if op.unsat_preconds == 0:
+                    unary_successors[None].append(op)
+                    applicable_ops.append(op)
+
+            continue
+        # else:
+        #     print "no hit:", fact
+        
+        all_checked_facts = set()
         for action, mapping in next_actions:
             # print action.name, map(str, (mapping.get(a,a) for a in action.args))
-            action_key  = (action, tuple(mapping.get(a,a) for a in action.args))
-            if  action_key in closed_actions:
+            partial_action_key  = (action.name, tuple(mapping.get(a,a) for a in action.args))
+            # cache_key = partial_action_key
+            # if cache.has_ops(cache_key):
+            #     print "cache hit:", action.name, map(str, (mapping.get(a,a) for a in action.args))
+            #     for op in cache.get_ops(cache_key):
+            #         all_actions.add(op.action_key)
+            #         op.unsat_preconds = len(op.preconds)
+            #         for pre in op.preconds:
+            #             unary_successors[pre].append(op)
+            #             if pre not in closed:
+            #                 closed.add(pre)
+            #                 open.append(pre)
+            #         if op.unsat_preconds == 0:
+            #             unary_successors[None].append(op)
+            #             applicable_ops.append(op)
+                
+            #     closed_actions.add(partial_action_key)
+            #     continue
+            # # else:
+            # #     print "no hit:", action.name, map(str, (mapping.get(a,a) for a in action.args))
+                
+            if  partial_action_key in closed_actions:
+                for op in ops_by_partial_key[partial_action_key]:
+                    cache.add_op(op, cache_key)
                 continue
-            closed_actions.add(action_key)
+            closed_actions.add(partial_action_key)
             
             fact_by_cond.clear()
+            # all_checked_facts = set()
             if any(isinstance(a.type, pddl.types.ProxyType) for a in action.args):
                 action.instantiate(mapping, stat.problem)
                 arg_lists = [get_objects(a) for a in action.args]
@@ -508,18 +803,23 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
 
             # import debug
             # debug.set_trace()
-                
             func = instantiation_function(action, stat.problem, check_func, force_func, clear_func)
             for full_mapping in action.smart_instantiate(func, action.args, arg_lists, stat.problem, mapping):
                 action_key  = (action, tuple(full_mapping.get(a,a) for a in action.args))
                 if fact == "start":
                     goal_actions.add(action_key)
                 if action_key in all_actions:
+                    # for op in ops_by_action_key[action_key]:
+                    #     cache.add_op(op, cache_key)
                     continue
 
                 all_actions.add(action_key)
-                relevant_facts = set(all_facts())
-                add_unary(action, action_key[1], relevant_facts)
+                relevant_facts, missing_facts = all_relevant_facts()
+                for op in add_unary(action, action_key[1], relevant_facts, missing_facts):
+                    # ops_by_action_key[action_key].append(op)
+                    ops_by_partial_key[partial_action_key].append(op)
+                    cache.add_op(op, cache_key)
+                action_count += 1
 
                 if action in cond_actions:
                     dep_action = cond_actions[action]
@@ -541,37 +841,61 @@ def instantiate(actions, start, stat, domain, start_actions=[]):
                 new_ops.add(o)
         unary_successors[prop] = new_ops
 
+    applicable_ops = [o for o in applicable_ops if o.effect in closed or (o.action, o.args) in goal_actions]
+    # print "time for instantiation: %.3f" % (time.time()-t0)
+    # print "explored %d facts and instantiated %d actions" % (fact_count, action_count)
+
     # for (action, args), pred in action_predecessors.iteritems():
     #     print "%s => (%s %s)" % (", ".join(str(f) for f in pred), action.name, " ".join(a.name for a in args))
     # print len(all_actions)
+    # print "after:", cache.print_keys()
     return unary_successors, applicable_ops
 
-def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
-    unary_successors, applicable_ops = instantiate(actions, start, stat, domain, start_actions)
+def explore(actions, start, stat, domain, start_actions=[], prob_state=None, prob_functions=None, check_fn=None):
+    t0 = time.time()
+    unary_successors, applicable_ops = instantiate(actions, start, stat, domain, start_actions, prob_functions, check_fn)
+    t1 = time.time()
     
-    def is_goal_action(op):
-        for action, mapping in start_actions:
-            if op.action.name == action.name:
-                # print op, [mapping.get(a,a2).name for a,a2 in zip(action.args, op.args)], all(mapping.get(a,a2) == a2 for a,a2 in zip(action.args, op.args))
-                if all(mapping.get(a,a2) == a2 for a,a2 in zip(action.args, op.args)):
-                    return True
-        return False
+    # def is_goal_action(op):
+    #     for action, mapping in start_actions:
+    #         if op.action.name == action.name:
+    #             # print op, [mapping.get(a,a2).name for a,a2 in zip(action.args, op.args)], all(mapping.get(a,a2) == a2 for a,a2 in zip(action.args, op.args))
+    #             if all(mapping.get(a,a2) == a2 for a,a2 in zip(action.args, op.args)):
+    #                 return True
+    #     return False
     
     goal = set(start)
-    facts = set(goal)
+    facts = set()
     actions = set()
+
+    ga_count = 0
+    for ops in unary_successors.itervalues():
+        for op in ops:
+            if op.effect in start:
+                ga_count += 1
+
+    def is_goal_action(op):
+        # print op
+        return op.effect in start
+
+    def goal_reached():
+        return ga_count < 0
+
+    # print map(str, start)
     
     reached_by = {}
     forward_open = applicable_ops[:]
     # print map(str, applicable_ops)
-    forward_closed = set(forward_open)
-    while forward_open:
+    forward_closed = set()
+    while forward_open and not goal_reached():
         next = forward_open.pop(0)
-        if next.effect in reached_by:
+        if next.effect in reached_by and next.effect not in start:
             continue
         next.expanded = True
+        forward_closed.add(next.effect)
 
         if is_goal_action(next):
+            ga_count -= 1
             # print "goal!"
             goal |= next.preconds
             facts |= next.all_preconds
@@ -584,13 +908,20 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
         for succ in unary_successors[next.effect]:
             if succ.expanded:
                 continue
-            # print "  ", succ, next.effect, succ.unsat_preconds 
+            if succ.effect in forward_closed and succ.effect not in start:
+                # print "  sat:", succ# , map(str, forward_closed)
+                continue
 
             succ.unsat_preconds -= 1
-            if succ.unsat_preconds == 0 and succ.effect not in forward_closed:
-                # print " *", succ, next.effect
+            if succ.unsat_preconds == 0:
+                # print " *", succ
                 forward_open.append(succ)
-                forward_closed.add(succ)
+                forward_closed.add(succ.effect)
+                # forward_closed.add(succ)
+            # else:
+            #     print "  ", succ, succ.unsat_preconds 
+
+    # print "time for relaxed plangraph: %.3f" % (time.time()-t1)
 
     #extract relaxed plan:
     while goal:
@@ -600,12 +931,14 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None):
         next = reached_by[fact]
         actions.add((next.action, next.args))
         goal |= (next.preconds - facts)
+        # print next, map(str, next.all_preconds)
         facts |= next.all_preconds
 
     log.debug("relaxed plan:")
     for a, args in actions:
         log.debug("(%s %s)", a.name, " ".join(str(ar) for ar in args))
 
+    # print "total time  for exploration: %.3f" % (time.time()-t0)
     return [a for a in actions if not a[0].name.startswith("axiom_")], facts
         
 

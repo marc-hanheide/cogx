@@ -370,5 +370,7 @@ class ObjectTerm(Term):
     args = []
     def __init__(self, name):
         self.name = name
+    def __hash__(self):
+        return hash(self.name)
     def __str__(self):
         return self.name

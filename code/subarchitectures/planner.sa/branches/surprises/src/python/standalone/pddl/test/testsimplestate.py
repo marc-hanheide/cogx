@@ -136,10 +136,10 @@ class StateTest(unittest.TestCase):
         self.assertEqual(fact3, Fact.from_literal(Literal(self.pred1, [self.c1, self.c2, self.c1], negated=True)))
         self.assertEqual(kfact2, Fact.from_literal(Literal(mapl.knowledge, [self.agent, term2])))
         
-        self.assertEqual(str(fact1), "func1(c1 c2 c1) = true - boolean")
-        self.assertEqual(str(fact2), "func2(c1 c2) = c1 - type1")
-        self.assertEqual(str(fact3), "pred1(c1 c2 c1) = false - boolean")
-        self.assertEqual(str(kfact2), "kval(func2(c1 c2), agent) = true - boolean")
+        self.assertEqual(str(fact1), "func1(c1 c2 c1) = true")
+        self.assertEqual(str(fact2), "func2(c1 c2) = c1")
+        self.assertEqual(str(fact3), "pred1(c1 c2 c1) = false")
+        self.assertEqual(str(kfact2), "kval(func2(c1 c2), agent) = true")
         
     def testLiteralInstantiation(self):
         """Testing instantiation of literals"""

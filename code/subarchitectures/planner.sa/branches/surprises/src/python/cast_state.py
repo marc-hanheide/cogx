@@ -24,11 +24,15 @@ QDL_VALUE = re.compile("<dora:(.*)>")
 
 class CASTState(object):
     def __init__(self, beliefs, domain, oldstate=None, component=None):
+        self.config = global_vars.config
         self.domain = domain
         self.beliefs = []
         #print beliefs
         for b in beliefs:
-            if isinstance(b, eubm.GroundedBelief) or isinstance(b, eubm.AssertedBelief):
+            if isinstance(b, eubm.PerceptBelief):
+                continue
+            if isinstance(b.estatus, bm.epstatus.PrivateEpistemicStatus) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus) \
+                    or isinstance(b, eubm.AssertedBelief):
                 self.beliefs.append(b)
 
         self.beliefdict = dict((b.id, b) for b in self.beliefs)
@@ -72,14 +76,19 @@ class CASTState(object):
         #for f in self.facts:
         #    print f
 
+        problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
+        self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
+        
         if component and global_vars.config.enable_conceptual_query:
            if self.facts:
                cfacts, cobjects = self.get_conceptual_data(component, self.facts)
+               for o in cobjects:
+                   problem.add_object(o)
+               for f in cfacts:
+                   self.prob_state.set(f)
                self.facts += cfacts
                self.objects |= cobjects
             
-        problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
-        self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
         self.raw_state = prob_state.ProbabilisticState(self.facts, problem)
         self.raw_objects = set(self.objects)
 
@@ -89,7 +98,7 @@ class CASTState(object):
             self.prob_state.set(f)
         self.objects |= self.generated_objects
         
-        self.state = self.prob_state.determinized_state(0.05, 0.95)
+        self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
                     
         self.generate_belief_state(self.prob_state, self.state)
 
@@ -115,7 +124,7 @@ class CASTState(object):
             
         cp_domain = dt_compiler.translate(self.domain, prob_functions=self.get_prob_functions())
 
-        print map(str, cp_domain.requirements)
+        # print map(str, cp_domain.requirements)
 
         actions = []
         for n in self.pnodes:
@@ -131,7 +140,6 @@ class CASTState(object):
             
     def generate_belief_state(self, probstate, detstate):
         pnodes = pstatenode.PNode.from_state(probstate, detstate)
-        
         pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
         assert not det_lits, map(str, det_lits)
         # mapltask.init += det_lits
@@ -171,7 +179,7 @@ class CASTState(object):
         return results
             
     def generate_init_facts(self, problem, oldstate=None):
-        cstate = self.prob_state.determinized_state(0.05, 0.95)
+        cstate = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
 
         generated_facts = {}
         generated_objects = set()
@@ -284,31 +292,52 @@ class CASTState(object):
         log.debug("querying conceptual.sa")
 
         roomdict = {}
+        room_categories = {}
         if not "roomid" in self.domain.functions or not "obj_exists" in self.domain.functions:
             return
         
         roomid_func = self.domain.functions["roomid"][0]
+        category_func = self.domain.functions["category"][0]
         exists_func = self.domain.functions["p-obj_exists"][0]
         label_t = exists_func.args[0].type
+        category_t = category_func.type
         in_rel = self.domain["in"]
         on_rel = self.domain["on"]
         
         for svar, val in bel_facts:
             if svar.function == roomid_func and not svar.modality:
                 roomdict[int(val.value)] = svar.args[0]
+            if svar.function == category_func and not svar.modality:
+                room_categories[svar.args[0]] = val
+                
+        for rid, rbel in roomdict.iteritems():
+            room_categories[rid] = room_categories[rbel]
 
         extract_obj_at_object = re.compile("room([0-9]+)_object_([-a-zA-Z]+)_([a-zA-Z]+)_([a-zA-Z]+)-([0-9a-zA-Z:]+)_unexplored")
         extract_obj_in_room = re.compile("room([0-9]+)_object_([-a-zA-Z]+)_unexplored")
+        extract_room_id = re.compile("room([0-9]+)_category")
         results = []
                 
         facts = []
         objects = set([])
-        
+
+        results = []
         try:
-            results = component.getConceptual().query("p(room*_object_*_unexplored=exists)")
+            for roomid in roomdict.iterkeys():
+                results += component.getConceptual().query("p(room%d_category,room%d_object_*_unexplored=exists)" % (roomid, roomid))
+            #p(room*_category,room0_object_toiletpaper_unexplored)
         except Exception, e:
             log.warning("Error when calling the conceptual query server: %s", str(e))
             return facts, objects
+
+        def match_room(key):
+            match = extract_room_id.search(key)
+            if match:
+                room_id = int(match.group(1))
+                if room_id not in roomdict:
+                    return
+
+                return room_id
 
         def match_obj_in_room(key):
             match = extract_obj_in_room.search(key)
@@ -321,8 +350,8 @@ class CASTState(object):
                 
                 room_obj = roomdict[room_id]
                 label_obj = pddl.TypedObject(label, label_t)
-                svar = state.StateVariable(exists_func, [label_obj, in_rel, room_obj])
-                return svar, [label_obj]
+                # svar = state.StateVariable(exists_func, [label_obj, in_rel, room_obj])
+                return [label_obj, in_rel, room_obj], [label_obj]
 
         def match_obj_at_obj(key):
             match = extract_obj_at_object.search(key)
@@ -338,8 +367,8 @@ class CASTState(object):
                 label_obj = pddl.TypedObject(label, label_t)
                 rel_obj = on_rel if rel == "on" else in_rel
                 
-                svar = state.StateVariable(exists_func, [label_obj, rel_obj, supp_obj])
-                return svar, [label_obj]
+                # svar = state.StateVariable(exists_func, [label_obj, rel_obj, supp_obj])
+                return [label_obj, rel_obj, supp_obj], [label_obj]
 
         def first_match(key, functions):
             for f in functions:
@@ -349,12 +378,35 @@ class CASTState(object):
             return None, None
         
         for entry in results:
+            room = None
+            room_category_pos = None
+            svar_args = None
+            new_objs = None
+            
             for key, pos in entry.variableNameToPositionMap.iteritems():
-                svar, new_objs = first_match(key, [match_obj_at_obj, match_obj_in_room])
-                if not svar:
+                room_id = match_room(key)
+                if room_id is not None:
+                    room = roomdict[room_id]
+                    room_category_pos = pos
                     continue
-                p = entry.massFunction[pos].probability
                 
+                svar_args, new_objs = first_match(key, [match_obj_at_obj, match_obj_in_room])
+                if svar_args is None:
+                    continue
+
+            if room is None or svar_args is None:
+                continue
+
+            for value in entry.massFunction:
+                category = value.variableValues[room_category_pos].value
+                c_svar = state.StateVariable(category_func, [room])
+                c_value = pddl.TypedObject(category, category_t)
+                c_prob = self.prob_state.prob(c_svar, c_value)
+                if c_prob < 0.0001:
+                    continue
+                p = value.probability / c_prob
+                
+                svar = state.StateVariable(exists_func, svar_args + [c_value])
                 fact = state.Fact(svar, pddl.types.TypedNumber(p))
                 facts.append(fact)
                 objects |= set(new_objs)
@@ -469,7 +521,7 @@ class CASTState(object):
             self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
             #self.prob_state.apply_init_rules(domain = self.domain)
             #self.generated_objects = set(problem.objects) - self.objects
-            self.state = self.prob_state.determinized_state(0.05, 0.95)
+            self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
 
 
     def to_problem(self, slice_goals, deterministic=True, raw_problem=False):
@@ -481,7 +533,7 @@ class CASTState(object):
             opt_func = None
 
         if raw_problem:
-            det_state = self.raw_state.determinized_state(0.05, 0.95)
+            det_state = self.raw_state.determinized_state(0.05, self.config.uncertainty_threshold)
             prob_state = self.raw_state
             objects = self.raw_objects
         else:
@@ -502,7 +554,7 @@ class CASTState(object):
             cp_domain = self.domain
 
         problem = pddl.Problem("cogxtask", objects, facts, None, cp_domain, opt, opt_func )
-        print map(str, objects)
+        # print map(str, objects)
 
         if not raw_problem:
             if deterministic:
@@ -571,6 +623,9 @@ class CASTState(object):
         
         filtered_facts = []
         for svar, value in facts:
+            if svar.modality == pddl.mapl.attributed:
+                value = svar.modal_args[1]
+                svar = svar.nonmodal()
             assert svar.modality is None
             n_args = [replace_object(a) for a in svar.args]
             

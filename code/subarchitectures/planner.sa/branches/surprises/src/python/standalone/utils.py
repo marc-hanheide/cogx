@@ -7,6 +7,7 @@ import os
 from itertools import *
 import inspect
 import time
+from contextlib import contextmanager
 
 from subprocess import PIPE, STDOUT
 
@@ -48,7 +49,11 @@ class Enum(object):
         return self.names
 
     
-
+@contextmanager
+def log_time(name, log_fn):
+    t = time.time()
+    yield
+    log_fn("%s took %.2f sec", name, time.time()-t)
 
 def update(x, **entries):
     """Update a dict; or an object with slots; according to entries.

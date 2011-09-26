@@ -2,7 +2,7 @@ import itertools, math
 from itertools import chain
 from collections import defaultdict
 
-import parser, predicates, conditions, effects, actions, scope, visitors, translators, writer, problem, state, mapl
+import parser, predicates, conditions, effects, actions, scope, visitors, translators, writer, problem, state, mapl, utils
 import mapltypes as types
 import builtin
 
@@ -255,6 +255,14 @@ class Observation(actions.Action):
         return observe
 
 class DTPDDLWriter(writer.Writer):
+    def write_term(self, term):
+        if isinstance(term, (predicates.ConstantTerm, predicates.VariableTerm)):
+            if term.get_type().equal_or_subtype_of(types.t_number):
+                if isinstance(term.object.name, float):
+                    return "%.16f" % term.object.name
+                
+        return writer.Writer.write_term(self, term)
+
     def write_observe(self, action):
         strings = [action.name]
         #TODO: this is really a bit of a hack...
@@ -505,8 +513,8 @@ class DTRule(scope.Scope):
             terms, vals = zip(*facts)
             variables = [(t.function, t.args) for t in terms]
             rules.append(DTRule(action.name, action.args[:], conds, variables, [(p, vals)], action.parent))
-        for r in rules:
-            print r
+        # for r in rules:
+        #     print r
         return rules
 
     def __str__(self):
@@ -874,14 +882,14 @@ class DT2MAPLCompiler(translators.Translator):
                 value = atom.args[1]
                 for arg in term.args:
                     if isinstance(arg, predicates.VariableTerm) and not arg.is_instantiated():
-                        print a.name, "-", map(str, a.args), "-", map(str, a.vars)
+                        # print a.name, "-", map(str, a.args), "-", map(str, a.vars)
                         new_arg = a.copy_args([arg.object])[0]
                         a.args.append(new_arg)
                         a.vars = a.vars + [new_arg]
                         mapping[arg] = new_arg
                         observe.uninstantiate()
                         observe.instantiate(mapping)
-                        print a.name, "-", map(str, a.args), "-", map(str, a.vars)
+                        # print a.name, "-", map(str, a.args), "-", map(str, a.vars)
                         
                 # if atom.predicate in (builtin.equals, builtin.eq):
                 #     lhs = atom
@@ -1155,6 +1163,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
 
 class DTPDDLCompiler(translators.Translator):
     def __init__(self, copy=True, **kwargs):
+        self.orig_domain = None
         self.depends = [translators.MAPLCompiler(**kwargs)]
         self.set_copy(copy)
 
@@ -1173,9 +1182,16 @@ class DTPDDLCompiler(translators.Translator):
         cost_term = action.get_total_cost()
         if cost_term is None:
             return action.copy(newdomain=domain)
-            
+                
         a2 = action.copy(newdomain=domain)
         a2.set_total_cost(None)
+
+        if self.orig_domain is None:
+            self.orig_domain = self.get_original(domain)
+        orig_action = self.orig_domain.get_action(action.name)
+        fct = predicates.Term(mapl.failure_cost,[])
+        fail_cost_term = orig_action.get_effects(fct)
+
         b = Builder(a2)
 
         try:
@@ -1183,12 +1199,40 @@ class DTPDDLCompiler(translators.Translator):
         except:
             #FIXME: HACK!!!!! EVIL EVIL HACK!!!! JUST FOR TESTING
             new_reward_eff = b.effect("assign", ("reward",), -10)
+
+        a2.effect = effects.ConjunctiveEffect.join([a2.effect, new_reward_eff])
+        
+        if fail_cost_term:
+            done_fn = domain.predicates["done"]
+            done_fn = done_fn[0] if done_fn else None
             
-        if isinstance(a2.effect, effects.ConjunctiveEffect):
-            a2.effect.parts.append(new_reward_eff)
-        else:
-            new_eff = b.con(a2.effect, new_reward_eff)
-            a2.effect = new_eff
+            # print "has failure cost term:", fail_cost_term
+            try:
+                new_fail_reward_eff = b.effect("assign", ("reward",), predicates.Term(-fail_cost_term.object.value))
+            except:
+                #FIXME: HACK!!!!! EVIL EVIL HACK!!!! JUST FOR TESTING
+                new_fail_reward_eff = b.effect("assign", ("reward",), -10)
+            cond = a2.precondition
+            eff = a2.effect
+            a2.precondition = b.cond("not", (done_fn,)) if done_fn else None
+            a2.effect = None
+            @visitors.replace
+            def remove_fail_costs(eff, parts):
+                if isinstance(eff, effects.SimpleEffect):
+                    if utils.is_functional(eff) and eff.args[0] == fct:
+                        return False
+            @visitors.replace
+            def remove_done_precond(cond, parts):
+                if isinstance(cond, conditions.LiteralCondition):
+                    if cond.predicate == done_fn:
+                        return False
+            eff.visit(remove_fail_costs)
+            cond.visit(remove_done_precond)
+
+            c1 = effects.ConditionalEffect(cond, eff)
+            c2 = effects.ConditionalEffect(cond.negate(), new_fail_reward_eff)
+            a2.effect = effects.ConjunctiveEffect([c1, c2])
+        
         return a2
 
     def translate_domain(self, _domain):
@@ -1220,6 +1264,7 @@ class DTPDDLCompiler(translators.Translator):
         return dom
 
     def translate_problem(self, _problem):
+        self.orig_domain = self.get_original(_problem).domain
         p2 = translators.Translator.translate_problem(self, _problem)
         p2.optimization = 'maximize'
         p2.opt_func = Builder(p2)('reward')
