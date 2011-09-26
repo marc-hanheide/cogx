@@ -1,3 +1,4 @@
+import time
 from itertools import chain
 from collections import defaultdict
 
@@ -11,9 +12,11 @@ class PNode(object):
     def __init__(self, svar, children):
         self.svar = svar
         self.parent = None
-        self.children = children
+        self._children = children
+        self.is_unified = False
+        self.reachable_dict = {}
         
-        for p, nodes, facts in self.children.itervalues():
+        for p, nodes, facts in self._children.itervalues():
             for n in nodes:
                 n.parent = self
         
@@ -25,6 +28,13 @@ class PNode(object):
     def is_expanded(self):
         return True
 
+    def get_children(self):
+        if not self.is_unified:
+            self.unify_branches()
+        return self._children
+        
+    children = property(get_children)
+    
     @staticmethod
     def from_effect(peff, rules=[], stat=None):
         def get_children(eff):
@@ -93,9 +103,69 @@ class PNode(object):
     
     def hash(self):
         hashes = []
-        for val, (p, nodes, facts) in self.children.iteritems():
+        for val, (p, nodes, facts) in self._children.iteritems():
             hashes.append(hash((p, frozenset([n.hash() for n in nodes]), frozenset(facts.iteritems()))))
         return hash(frozenset(hashes))
+    
+    def check_node(self, facts, stat, qgraph, eval_fn=None, parent_facts={}):
+        # print "check:", self, map(str, facts)
+        def sub_eval_fn(it):
+            # print "returning iterator"
+            return it
+        def check_fn(facts):
+            fset = set(facts)
+            # print "facts:", map(str, fset)
+            for val, (p, nodes, nfacts) in self.children.iteritems():
+                new_parent_facts = parent_facts.copy()
+                factgen = (state.Fact(s,v) for s,v in chain(nfacts.iteritems(), [state.Fact(self.svar, val,)]))
+                for f in factgen:
+                    # print "..",f
+                    if f in fset:
+                        # print "yeaH!"
+                        fset.discard(f)
+                        yield True, f
+                    new_parent_facts[f.svar] = f.value
+                for n in nodes:
+                    # print "descend:", n
+                    for res, f in n.check_node([f for f in facts if f.svar not in parent_facts], stat, qgraph, sub_eval_fn, new_parent_facts):
+                        # print "from children", f, res
+                        if res:
+                            fset.discard(f)
+                        yield res, f
+            for f in fset:
+                yield False, f
+
+        def fact_iter(facts):
+            # print "  start iterating:", map(str, facts)
+            remaining = []
+            for f in facts:
+                # print "   test:", f
+                if f in self.reachable_dict:
+                    # print "    cached", f, self.reachable_dict[f]
+                    yield self.reachable_dict[f], f
+                else:
+                    remaining.append(f)
+            if remaining:
+                # print "   not cached:", map(str, remaining)
+                for res, f in check_fn(remaining):
+                    prev_res = self.reachable_dict.get(f, None)
+                    if prev_res is None or (prev_res is False and res is True):
+                        self.reachable_dict[f] = res
+                        # print self, f, res
+                        yield res, f
+            
+        if eval_fn is None:
+            # def anyfn(x):
+            #     for res, f in x:
+            #         print "  ", res, f
+            #         if res:
+            #             return True
+            #     return False
+            eval_fn = lambda x: any(res for res, f in x)
+            # eval_fn = anyfn
+        # print "start eval", map(str, facts)
+
+        return eval_fn(fact_iter(facts))
 
     @staticmethod
     def unify_nodes(nodes):
@@ -152,7 +222,7 @@ class PNode(object):
 
         # print "unify:", self
 
-        for p, nodes, facts in self.children.itervalues():
+        for p, nodes, facts in self._children.itervalues():
             new_nodes =  []
             for n in PNode.unify_nodes(nodes):
                 n.parent = self
@@ -173,9 +243,9 @@ class PNode(object):
             #         nodes.append(newnode)
 
     def consolidate(self, nodedict):
-        for val, (p, nodes, facts) in self.children.iteritems():
+        for val, (p, nodes, facts) in self._children.iteritems():
             nodes = [n.consolidate(nodedict) for n in nodes]
-            self.children[val] = (p, nodes, facts)
+            self._children[val] = (p, nodes, facts)
         
         if self.hash() in nodedict:
             #print "duplicate found"
@@ -186,11 +256,11 @@ class PNode(object):
     def replace_branch_var(self, svar):
         self.svar = svar
         children_new = {}
-        for val, (p, nodes, facts) in self.children.iteritems():
+        for val, (p, nodes, facts) in self._children.iteritems():
             newval = facts[svar]
             del facts[svar]
             children_new[newval] = (p, nodes, facts)
-        self.children = children_new
+        self._children = children_new
 
     def get_branches_for_fact(self, fact):
         if fact.svar == self.svar:
@@ -502,9 +572,14 @@ class PNode(object):
 
         return actions
 
-    def to_init(self, selected_facts=None, observable_facts=None):
+    def to_init(self, selected_facts=None, observable_facts=None, filter_fn=None, parent_facts={}):
         def make_unknown(val):
             return pddl.TypedObject("other-%s" % val.type.name, val.type)
+
+        if filter_fn and not filter_fn(self, parent_facts):
+            return None, False
+
+        t0 = time.time()
         
         selected_svars = set(f.svar for f in selected_facts) if selected_facts is not None else None
         observable = False if observable_facts is not None else True
@@ -518,7 +593,9 @@ class PNode(object):
             if p < 0.0001:
                 continue
             ceff = pddl.ConjunctiveEffect([])
+            new_parent_facts = parent_facts.copy()
             for svar, val in chain(facts.iteritems(), [(self.svar, val)]):
+                new_parent_facts[svar] = val
                 #if svar.function == selected:
                 #    continue
                 f = state.Fact(svar, val)
@@ -533,13 +610,14 @@ class PNode(object):
                 eff = f.as_literal(_class=pddl.SimpleEffect)
                 ceff.parts.append(eff)
             for n in nodes:
-                eff, obs = n.to_init(selected_facts, observable_facts)
+                eff, obs = n.to_init(selected_facts, observable_facts, filter_fn, new_parent_facts)
                 if eff:
                     ceff.parts.append(eff)
                 if obs:
                     observable = True
             if ceff.parts:
                 effs.append((pddl.Term(p*normalize), ceff))
+        # print "%s took: %.2f secs" % (self, time.time()-t0)
         if effs and observable:
             return effects.ProbabilisticEffect(effs), observable
         return None, False
@@ -556,6 +634,7 @@ class LazyPNode(PNode):
         self.parent = None
         self._children = None
         self.svar = branch
+        self.reachable_dict = {}
 
     def simplify(self):
         return [], {}, False
@@ -626,6 +705,36 @@ class LazyPNode(PNode):
         return self._children
             
     children = property(get_children)
+
+    
+    def check_node(self, facts, state, qgraph, eval_fn=None, parent_facts={}):
+        # print "check:", self
+        def state_query_fn(svar):
+            return parent_facts.get(svar, state[svar])
+        def check_fn(facts):
+            rule = self.rule
+            args = [self.mapping.get(a,a) for a in rule.args]
+            for f in facts:
+                # print "|",["%s=%s" % x for x in parent_facts.iteritems()]
+                yield qgraph.query_reachability(rule, args, f, state.problem, state_query_fn), f
+
+        def fact_iter(facts):
+            remaining = []
+            for f in facts:
+                if f in self.reachable_dict:
+                    yield self.reachable_dict[f], f
+                else:
+                    remaining.append(f)
+            if remaining:
+                for res, f in check_fn(remaining):
+                    self.reachable_dict[f] = res
+                    # print self, map(str, f), res
+                    yield res, f
+            
+        if eval_fn is None:
+            eval_fn = lambda x: any(res for res, f in x)
+
+        return eval_fn(fact_iter(facts))
 
     @staticmethod
     def from_rule(rule, rules, fixed_facts, stat):

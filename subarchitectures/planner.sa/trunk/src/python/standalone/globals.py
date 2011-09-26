@@ -2,6 +2,7 @@
 All global data is stored here (hopefully not too much).
 """
 from os.path import abspath, join, dirname
+import time
 import utils
 
 src_path = abspath(dirname(__file__))  # where this file resides
@@ -22,6 +23,15 @@ CMAKE_CONFIG_FN = "config.auto"
 config_autogen = load_config_file(CMAKE_CONFIG_FN)
 config = load_config_file(CONFIG_FN, **config_autogen.__dict__)
 config.__dict__.update(config_autogen.__dict__)
+
+start_time = None
+
+def set_time():
+    global start_time
+    start_time = time.time()
+
+def get_time():
+    return time.time() - start_time
 
 def update_config(fn, cfg_path=src_path):
     global config

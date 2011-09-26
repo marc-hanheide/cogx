@@ -39,8 +39,8 @@
   (:dtrule sample_existence
            :parameters (?l - label ?r - room ?c - category)
            :precondition (= (category ?r) ?c)
-           :effect (probabilistic (p-ex-in-room ?l ?c) (assign (ex-in-room ?l ?r) true) 
-                                                       (assign (ex-in-room ?l ?r) false))
+           :effect (probabilistic (p-ex-in-room ?l ?c) (assign (ex-in-room ?l ?r) true) )
+                                                       ;; (assign (ex-in-room ?l ?r) false))
            )
 
   (:dtrule sample_is_in
