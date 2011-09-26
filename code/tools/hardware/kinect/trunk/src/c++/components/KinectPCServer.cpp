@@ -37,7 +37,9 @@ KinectPCServer::KinectPCServer() {
     fovPlanes[i] = NULL;
     senses[i] = 0;
   }
+#ifdef KINECT_USER_DETECTOR
   personDetectServer=new PersonDetectServerI(this);
+#endif
 }
 
 KinectPCServer::~KinectPCServer() {
@@ -86,12 +88,12 @@ void KinectPCServer::configure(const map<string, string> & _config)
     m_createViewCone = true;
   }
 
-
+#ifdef KINECT_USER_DETECTOR
   m_detectPersons = false;
   if (_config.find("--detect-persons") != _config.end()) {
 	  m_detectPersons = true;
   }
-
+#endif
 	if ((it = _config.find("--kconfig")) != _config.end()) {
 		istringstream str(it->second);
 		str >> kinectConfig;
@@ -108,7 +110,9 @@ void KinectPCServer::configure(const map<string, string> & _config)
      kinect->StartCapture(0); 	// start capturing
      depthGenerator = kinect::getDepthGenerator();
      imageGenerator = kinect::getImageGenerator();
+#ifdef KINECT_USER_DETECTOR
      userGenerator = kinect::getUserGenerator();
+#endif
      m_saveToFile = false;
      if ((it = _config.find("--save-to-file")) != _config.end()) {
        m_saveToFile = true;
@@ -138,15 +142,20 @@ void KinectPCServer::configure(const map<string, string> & _config)
   log("Capturing from kinect sensor started.");
 
 
+#ifdef KINECT_USER_DETECTOR
   registerIceServer<kinect::slice::PersonDetectorInterface, PersonDetectServerI>(personDetectServer);
   println("PersonDetectServer registered");
+#endif
 }
+
+#ifdef KINECT_USER_DETECTOR
 
 kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& cur) {
 	kinect::slice::PersonsDict persons;
 	return pcSrv->detectPersons();
 }
 
+#endif
 /**
 * @brief Configure the component
 */
@@ -157,6 +166,7 @@ void KinectPCServer::start()
 
 void KinectPCServer::runComponent() {
 	log("I am running ");
+	kinect->NextFrame();
 	if(m_displayImage){
 		log("Displaying window");
 		cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
@@ -164,9 +174,11 @@ void KinectPCServer::runComponent() {
 	//cvWaitKey(100);
 
 	while(isRunning()) {
+#ifdef KINECT_USER_DETECTOR
 		if (m_detectPersons) {
 			detectPersons();
 		}
+#endif
 		if (m_saveToFile) {
 			saveNextFrameToFile();
 		}
@@ -174,6 +186,7 @@ void KinectPCServer::runComponent() {
 	}
 }
 
+#ifdef KINECT_USER_DETECTOR
 ::kinect::slice::PersonsDict KinectPCServer::detectPersons() {
 	::kinect::slice::PersonsDict persons;
 	if (userGenerator==NULL || !userGenerator->IsValid()) {
@@ -216,6 +229,8 @@ void KinectPCServer::runComponent() {
 	unlockComponent();
 	return persons;
 }
+
+#endif
 
 void KinectPCServer::saveNextFrameToFile() {
   kinect->NextFrame();
@@ -313,13 +328,13 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<Poin
 {
   lockComponent();
 
-  if (!suspendReading) {
+
+  cv::Mat_<cv::Point3f> cloud;
+  cv::Mat_<cv::Point3f> colCloud;  if (!suspendReading) {
     kinect->NextFrame();
     lastValidCamPose=camPars[0].pose;
   }
-  
-  cv::Mat_<cv::Point3f> cloud;
-  cv::Mat_<cv::Point3f> colCloud;
+
   kinect->Get3dWorldPointCloud(cloud, colCloud);
 
   Pose3 global_kinect_pose;
@@ -369,12 +384,19 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
 {
   lockComponent();
 
+  if (!suspendReading) {
+    kinect->NextFrame();
+    lastValidCamPose=camPars[0].pose;
+  }
+
   double scaleFactor = 1.;
   IplImage *rgbImage;
   kinect->GetColorImage(&rgbImage);
+  log("got color image from Kinect");
 
   if(imgWidth != rgbImage->width)
   {
+	log("needs to be resized");
     IplImage *resized;
     scaleFactor = (double) rgbImage->width / (double) imgWidth;
     resized = cvCreateImage(cvSize(imgWidth, (int) (rgbImage->height/scaleFactor)), IPL_DEPTH_8U, 3);
@@ -385,6 +407,7 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   }
   else
   {
+	log("no need to be resized");
     convertImageFromIpl(rgbImage, image);
     cvReleaseImage(&rgbImage);
   }
