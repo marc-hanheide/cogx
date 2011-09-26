@@ -14,12 +14,11 @@
 #include <string>
 #include <sstream>
 
-#include "PeopleDetector.hpp"
+#include "PCPeopleDetector.hpp"
 
 #define DONT_SAVE_FRAMES
 
 using namespace std;
-using namespace Laser;
 using namespace cast;
 using namespace VisionData;
 
@@ -28,61 +27,30 @@ using namespace VisionData;
  */
 extern "C" {
 cast::CASTComponentPtr newComponent() {
-	return new PeopleDetector();
+	return new PCPeopleDetector();
 }
 }
 
-PeopleDetector::PeopleDetector() :
+PCPeopleDetector::PCPeopleDetector() :
 	deinterlacing(false), m_numDetectionAttempts(1), m_runContinuously(false) {
 }
 
-PeopleDetector::~PeopleDetector() {
+PCPeopleDetector::~PCPeopleDetector() {
 }
 
-void PeopleDetector::configure(
+void PCPeopleDetector::configure(
 		const std::map<std::string, std::string> & config) {
 	//println("configure");
+	// first let the base classes configure themselves
+	configureServerCommunication(config);
 
 	std::map<std::string, std::string>::const_iterator it;
-
-	if ((it = config.find("--videoname")) != config.end()) {
-		videoServerName = it->second;
-	}
-
-	if ((it = config.find("--camid")) != config.end()) {
-		std::istringstream str(it->second);
-		str >> camId;
-	}
-
-	if ((it = config.find("--deinterlace")) != config.end()) {
-		std::istringstream str(it->second);
-		str >> deinterlacing;
-	} else
-		deinterlacing = false;
-
-	if ((it = config.find("--sleepForSync")) != config.end()) {
-		std::istringstream str(it->second);
-		str >> sleepForSync;
-	} else
-		sleepForSync = 0;
 
 	if ((it = config.find("--trackerThreshold")) != config.end()) {
 		std::istringstream str(it->second);
 		str >> trackerThreshold;
 	} else
 		trackerThreshold = 1.0;
-
-	if ((it = config.find("--removeAfterFrames")) != config.end()) {
-		std::istringstream str(it->second);
-		str >> removeAfterFrames;
-	} else
-		removeAfterFrames = 15;
-
-	if ((it = config.find("--removeAfterDistance")) != config.end()) {
-		std::istringstream str(it->second);
-		str >> removeAfterDistance;
-	} else
-		removeAfterDistance = 1.0;
 
 	if ((it = config.find("--faceCascade")) != config.end()) {
 		face_cascade = (CvHaarClassifierCascade*) cvLoad(it->second.c_str(), 0,
@@ -97,25 +65,6 @@ void PeopleDetector::configure(
 	} else {
 		fullbody_cascade = NULL;
 	}
-
-	if ((it = config.find("--laser-server-name")) != config.end()) {
-		std::istringstream str(it->second);
-		//str >> m_IceServerName;
-	}
-	//log("Using m_IceServerName=%s", m_IceServerName.c_str());
-
-	if ((it = config.find("--laser-server-host")) != config.end()) {
-		std::istringstream str(it->second);
-		//str >> m_IceServerHost;
-	}
-	//log("Using m_IceServerHost=%s", m_IceServerHost.c_str());
-
-	if ((it = config.find("--laser-server-port")) != config.end()) {
-		std::istringstream str(it->second);
-		//str >> m_IceServerPort;
-	}
-	//log("Using m_IceServerPort=%d", m_IceServerPort);
-
 
 	if ((it = config.find("--numattempts")) != config.end()) {
 		istringstream istr(it->second);
@@ -132,34 +81,24 @@ void PeopleDetector::configure(
 		log("running on demand");
 	}
 
-	// sanity checks: Have all important things be configured? Is the
-	// configuration consistent?
-	if (videoServerName.empty()) {
-		throw runtime_error(exceptionMessage(__HERE__, "no video server name given"));
-	}
-
 }
 
-void PeopleDetector::start() {
+void PCPeopleDetector::start() {
 
 	// we want to receive PeopleDetectionCommand
 	addChangeFilter(createGlobalTypeFilter<PeopleDetectionCommand> (cdl::ADD),
-			new MemberFunctionChangeReceiver<PeopleDetector> (this,
-					&PeopleDetector::receiveDetectionCommand));
-
-	// get connection to the video server
-	m_videoServer = getIceServer<Video::VideoInterface> (videoServerName);
-
-	// and the same for the laser server
-	m_laserServer = LaserClientUtils::getServerPrx(*this, "localhost",
-			cast::cdl::CPPSERVERPORT, "LaserServer");
+			new MemberFunctionChangeReceiver<PCPeopleDetector> (this,
+					&PCPeopleDetector::receiveDetectionCommand));
 
 	upper_storage = cvCreateMemStorage(0);
 	face_storage = cvCreateMemStorage(0);
 	fullbody_storage = cvCreateMemStorage(0);
+
+	startPCCServerCommunication(*this);
+
 }
 
-void PeopleDetector::receiveDetectionCommand(
+void PCPeopleDetector::receiveDetectionCommand(
 		const cdl::WorkingMemoryChange & _wmc) {
 	PeopleDetectionCommandPtr cmd = getMemoryEntry<PeopleDetectionCommand> (
 			_wmc.address);
@@ -191,24 +130,24 @@ inline Tp limit(Tp a, Tp2 left, Tp3 right) {
 		a = right;
 	return a;
 }
-
-// Deinterlaces an Opencv IplImage. It assumes the image is in colour RGB format.
-// Done in-place, using a fast blending method.
-void deinterlaceImg(IplImage * img) {
-	for (int y = 0; y < img->height - 2; y += 2) {
-		for (int x = 0; x < img->width; x++) {
-			CvScalar s1, s2;
-			s1 = cvGet2D(img, y, x);
-			s2 = cvGet2D(img, y + 2, x);
-
-			s1.val[0] = (s1.val[0] + s2.val[0]) / 2;
-			s1.val[1] = (s1.val[1] + s2.val[1]) / 2;
-			s1.val[2] = (s1.val[2] + s2.val[2]) / 2;
-
-			cvSet2D(img, y + 1, x, s1);
-		}
-	}
-}
+//
+//// Deinterlaces an Opencv IplImage. It assumes the image is in colour RGB format.
+//// Done in-place, using a fast blending method.
+//void deinterlaceImg(IplImage * img) {
+//	for (int y = 0; y < img->height - 2; y += 2) {
+//		for (int x = 0; x < img->width; x++) {
+//			CvScalar s1, s2;
+//			s1 = cvGet2D(img, y, x);
+//			s2 = cvGet2D(img, y + 2, x);
+//
+//			s1.val[0] = (s1.val[0] + s2.val[0]) / 2;
+//			s1.val[1] = (s1.val[1] + s2.val[1]) / 2;
+//			s1.val[2] = (s1.val[2] + s2.val[2]) / 2;
+//
+//			cvSet2D(img, y + 1, x, s1);
+//		}
+//	}
+//}
 
 struct PersonRecord {
 	int scanIndex;
@@ -226,7 +165,7 @@ struct PersonRecord {
 	}
 };
 
-void PeopleDetector::runComponent() {
+void PCPeopleDetector::runComponent() {
 	if (m_runContinuously) {
 		while (isRunning()) {
 			lockComponent();
@@ -236,7 +175,7 @@ void PeopleDetector::runComponent() {
 	}
 }
 
-void PeopleDetector::runDetection() {
+void PCPeopleDetector::runDetection() {
 	log("running detection");
 
 	static int cnt = 0;
@@ -247,18 +186,43 @@ void PeopleDetector::runDetection() {
 
 	// Capture an image from the camera
 	Video::Image image;
-	m_videoServer->getImage(camId, image);
-	//log("got image");
+	getRectImage(0, 640, image);
+
+	log("got image");
 
 	IplImage * imgt = convertImageToIpl(image);
-	//log("converted");
+	log("converted");
 
-	// If the image is interlaced, this removes the horizontal
-	// stripes fast blending. This is needed on the b21 because
-	// interlacing is messing with the detectors.
-	if (deinterlacing) {
-		deinterlaceImg(imgt);
+	CvSize img_sz = cvGetSize(imgt);
+	IplImage * img = cvCreateImage(img_sz, IPL_DEPTH_8U, 1);
+	cvCvtColor(imgt, img, CV_RGB2GRAY);
+	cvReleaseImage(&imgt);
+
+	log("converted to greyscale");
+
+	CvSeq * face = NULL, *full = NULL;
+
+	// Run the detectors.
+	// The fullbody detector looks for people who are further away and their full body is visible, so it
+	// can't find things that are very close. The face detector compensates for that by looking only for
+	// large faces that are close by.
+	// NB: This code is meant to work with the latest stable of OpenCV. Their latest svn code also supports
+	// a flag CV_HAAR_DO_ROUGH_SEARCH which should speed up processing in this step, which you are free to
+	// add when that code is out and about (you know, | it with the canny flag).
+	if (face_cascade) {
+		face = cvHaarDetectObjects(img, face_cascade, face_storage, 1.5, 3,
+				CV_HAAR_DO_CANNY_PRUNING, cvSize(60, 60));
 	}
+
+	println("face cascade done");
+
+	if (fullbody_cascade) {
+		full = cvHaarDetectObjects(img, fullbody_cascade, fullbody_storage,
+				1.5, 2, CV_HAAR_DO_CANNY_PRUNING, cvSize(60, 120));
+	}
+
+	println("full body cascade done");
+
 
 	//log("deinterlaced");
 
@@ -268,6 +232,7 @@ void PeopleDetector::runDetection() {
 	// you sit around waiting the lower your total fps.
 	sleepComponent(sleepForSync);
 
+#ifdef DISABLED
 	// Pull laser scan.
 	Laser::Scan2d scan = m_laserServer->pullScan2d();
 
@@ -705,6 +670,6 @@ void PeopleDetector::runDetection() {
 	}
 
 	cvReleaseImage(&img);
-
+#endif
 }
 
