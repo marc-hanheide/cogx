@@ -10,13 +10,13 @@ int_id(i1).
 %-------------------------------------------------------------------------
 
 	% the speaker
-person(S, H, Nom, S) <-
+person(S, _H, Nom, S) <-
 	i : sort(Nom, person),
 	i : prop(Nom, 'I'),
 	i : feat_Num(Nom, sg).
 
 	% the hearer
-person(S, H, Nom, H) <-
+person(_S, H, Nom, H) <-
 	i : sort(Nom, person),
 	i : prop(Nom, you).
 
@@ -25,41 +25,29 @@ person(S, H, Nom, H) <-
 %-------------------------------------------------------------------------
 
 understand : is_reference(Nom, Referent, EpSt) <-
-	understand : resolves_to_epobject(Nom, Referent, EpSt) / reference_resolution,
+%	understand : resolves_to_epobject(Nom, Referent, EpSt) / reference_resolution,
 	understand : about(Nom, Referent, EpSt),
-	int : pre(Int, belief(Nom, EpSt, fv(mark, 'referring-expression'))) / p(1.0).
+	int : pre(i1, belief(Nom, EpSt, fv(mark, 'referring-expression'))) / p(1.0).  % XXX Int
 %	int : pre(Int, belief(Nom, EpSt, fv(about, Ref))) / p(1.0).
 
-understand : is_reference(Nom, Ref, _EpSt) <-
-	understand : unknown_reference(Nom, Ref) / p(0.55),
-	? understand : ungroundable(Nom, Ref).
+understand : is_reference(Nom, Referent, _EpSt) <-
+	understand : unknown_reference(Nom, Referent) / p(0.55),
+	? understand : ungroundable(Nom, Referent).
 
 %-------------------------------------------------------------------------
 
-understand : topic(S, H, EpSt, Int, Ref, Nom) <-
-	?( understand : is_reference(Ref, X, EpSt) ).
-%	int : pre(Int, belief(Ref, EpSt, fv(about, X))) / p(1.0).
-
-understand : topic(S, H, shared(S, H), Int, Ref, Nom) <-
-	does_not_specify_topic(Nom) / p(0.001).
+understand : topic(_S, _H, EpSt, _Int, RefNom, _Nom) <-
+	? understand : is_reference(RefNom, _Referent, EpSt).
 
 %-------------------------------------------------------------------------
 
-try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
-	is_not_reference(Ref) / p(0.05).  % effectively the threshold for ref
-
-try_topic_reference_resolution(S, H, EpSt, Int, Ref, Nom) <-
-	get_topic_referent(S, H, EpSt, Int, Ref, Nom, _BId).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-get_topic_referent(S, H, attrib(H, S), Int, Ref, Nom, 'pointer-to'('topic-referent')) <-
+get_topic_referent(S, H, attrib(H, S), _Int, Ref, _Nom, 'pointer-to'('topic-referent')) <-
 	is_not_reference(Ref) / p(0.5).
 
 %get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'('topic-referent')) <-
 %	is_not_reference(Ref) / p(1.0).
 
-get_topic_referent(_S, _H, EpSt, Int, Ref, Nom, BId) <-
+get_topic_referent(_S, _H, EpSt, Int, Ref, _Nom, BId) <-
 %	EpSt = shared(S, H),
 	understand : about(Ref, BId, EpSt),
 %	understand : about(Ref, BId),
@@ -81,47 +69,19 @@ understand : about(Ref, BId, shared(A, B)) <-
 understand : about(Ref, BId, shared(A, B)) <-
 	understand : resolves_to_belief(Ref, BId, shared(B, A)) / reference_resolution.
 
+understand : about(RefNom, BeliefId, EpSt) <-
+	is_epst_variant(EpSt, RefEpSt),
+	understand : is_reference(RefNom, BeliefId, RefEpSt) / reference_resolution.
+%	understand : resolves_to_epobject(RefNom, BeliefId, RefEpSt) / reference_resolution.
+
+is_epst_variant(private(A), private(A)).
+is_epst_variant(attrib(A, B), attrib(A, B)).
+is_epst_variant(shared(A, B), shared(A, B)).
+is_epst_variant(shared(A, B), shared(B, A)).
+
 %understand : about(Ref, BId, EpSt) <-
 %	understand : resolves_to_belief(Ref, BId, EpSt) / reference_resolution.
 %	understand : resolves_to_belief(Ref, BId) / reference_resolution.
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-try_topic_objecttype(S, H, EpSt, Int, Ref, Nom) <-
-	has_no_topic_objecttype(Nom) / p(0.5).
-
-try_topic_objecttype(S, H, EpSt, Int, Ref, Nom) <-
-	i : sort(Nom, Sort),
-	i : prop(Nom, Prop),
-	valid_objecttype(Sort, Prop, Type),
-	int : pre(Int, belief(Ref, EpSt, fv(objecttype, Prop))) / p(1.0).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-try_topic_proximity(S, H, EpSt, Int, Ref, Nom) <-
-	has_no_topic_proximity(Nom) / p(0.5).
-
-try_topic_proximity(S, H, EpSt, Int, Ref, Nom) <-
-	i : feat_Proximity(Nom, Proximity),
-	int : pre(Int, belief(Ref, EpSt, fv(proximity, Proximity))) / p(1.0).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-try_restr_modifier(S, H, EpSt, Int, Ref, Nom) <-
-	has_no_restr_modifier(Nom) / p(0.5).
-
-try_restr_modifier(S, H, EpSt, Int, Ref, Nom) <-
-	i : rel_Modifier(Nom, ModNom),
-	understand : topic(S, H, EpSt, Int, Ref, ModNom).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-try_restr_compound(S, H, EpSt, Int, Ref, Nom) <-
-	has_no_restr_compound(Nom) / p(0.5).
-
-try_restr_compound(S, H, EpSt, Int, Ref, Nom) <-
-	i : rel_Compound(Nom, ModNom),
-	understand : topic(S, H, EpSt, Int, Ref, ModNom).
 
 %-------------------------------------------------------------------------
 % ASSERTION EFFECT
@@ -222,7 +182,7 @@ understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-try_scope_modifier(S, H, Int, Ref, Polarity, Nom) <-
+try_scope_modifier(_S, _H, _Int, _Ref, _Polarity, Nom) <-
 	has_no_scope_modifier(Nom) / p(0.5).
 
 try_scope_modifier(S, H, Int, Ref, Polarity, Nom) <-
@@ -231,7 +191,7 @@ try_scope_modifier(S, H, Int, Ref, Polarity, Nom) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-try_scope_compound(S, H, Int, Ref, Polarity, Nom) <-
+try_scope_compound(_S, _H, _Int, _Ref, _Polarity, Nom) <-
 	has_no_scope_compound(Nom) / p(0.5).
 
 try_scope_compound(S, H, Int, Ref, Polarity, Nom) <-
