@@ -75,7 +75,7 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 
 	@Override
 	protected void publishActionOutcome() {
-		PersonObservation po = new PersonObservation(0.0);
+		PersonObservation po = new PersonObservation(0.0, 0.0, 0.0);
 		synchronized (observations) {
 			for (Person p : observations) {
 				po.existProb += p.existProb;

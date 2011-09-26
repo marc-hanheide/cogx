@@ -27,12 +27,11 @@ public class PersonDetectorRunner extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
 	private static final String GUI_KEY = "--gui";
-	private static final String PCSERVER_DEFAULT = "pcserver";
 	private static final String SERVER_KEY = "--server";
 	private static final String CONTINUOUS_FREQ_KEY = "--continuous";
 	private static final String INTEGRATE_DETECTIONS_KEY = "--integrate-detections";
 	private static final long TIME_BETWEEN_DETECTIONS = 100;
-	private String serverId = PCSERVER_DEFAULT;
+	private String serverId = null;
 	private PersonDetectorInterfacePrx server = null;
 	private long continuousFreq = -1;
 	private int integrateDetections = 1;
@@ -51,7 +50,7 @@ public class PersonDetectorRunner extends ManagedComponent implements
 					.get(INTEGRATE_DETECTIONS_KEY));
 		}
 		if (config.containsKey(GUI_KEY)) {
-			useGui =true;
+			useGui = true;
 		}
 	}
 
@@ -96,6 +95,8 @@ public class PersonDetectorRunner extends ManagedComponent implements
 	}
 
 	private synchronized Map<Integer, KinectPerson> queryServer() {
+		if (server == null)
+			return new HashMap<Integer, KinectPerson>();
 		Map<Integer, KinectPerson> persons = new HashMap<Integer, KinectPerson>();
 		// integrate multiple detections
 		for (int i = 0; i < integrateDetections; i++) {
@@ -115,11 +116,13 @@ public class PersonDetectorRunner extends ManagedComponent implements
 	@Override
 	protected void start() {
 		try {
-			server = getIceServer(serverId, PersonDetectorInterface.class,
-					PersonDetectorInterfacePrx.class);
-			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-					PeopleDetectionCommand.class, WorkingMemoryOperation.ADD),
-					this);
+			if (serverId != null) {
+				server = getIceServer(serverId, PersonDetectorInterface.class,
+						PersonDetectorInterfacePrx.class);
+				addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+						PeopleDetectionCommand.class,
+						WorkingMemoryOperation.ADD), this);
+			}
 		} catch (CASTException e) {
 			logException(e);
 		}
