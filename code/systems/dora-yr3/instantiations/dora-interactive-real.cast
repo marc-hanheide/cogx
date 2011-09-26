@@ -12,6 +12,9 @@ SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
 ### the default knowledge to use
 SETVAR default_knowledge="instantiations/defaultprobs/default_knowledge-semmap.xml"
 
+### the Haar-like face detector file to use
+SETVAR face_detector=/usr/local/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml
+
 ### run coma mediators in a discretising way?
 SETVAR discrete_room_cats=
 #SETVAR discrete_room_cats=--discrete
@@ -130,7 +133,7 @@ JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI --shake
 
 CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
-JAVA MG person.runner 	vision.components.PersonDetectorRunner
+CPP MG recognizer.people PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
