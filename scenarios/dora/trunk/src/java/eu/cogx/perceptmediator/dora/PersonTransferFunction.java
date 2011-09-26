@@ -18,6 +18,7 @@ import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
@@ -81,6 +82,8 @@ public class PersonTransferFunction
 			WMPointer ptr = WMPointer.create(placeBel, CASTUtils
 					.typeName(Place.class));
 			result.put(IS_IN, ptr.getAsFormula());
+			result.put("posX", DoubleFormula.create(from.posX).getAsFormula());
+			result.put("posY", DoubleFormula.create(from.posY).getAsFormula());
 		} catch (CASTException e) {
 			component.logException(e);
 		} catch (InterruptedException e) {

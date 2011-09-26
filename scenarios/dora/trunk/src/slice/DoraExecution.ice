@@ -11,6 +11,8 @@ module execution {
 
 	module person {
 		class PersonObservation {
+			double posX;
+			double posY;
 			double existProb;
 		};
 	};
