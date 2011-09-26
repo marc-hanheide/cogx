@@ -146,17 +146,17 @@
     )
   )
 
-;; this mirrors learning-impossible, but it doesn't work currently
+;; unlearning is impossible, if nothing has been neg-attributed by the tutor that hasn't been unlearned already
 
   (:derived (unlearning-impossible)
     (forall (?v - VisualObject)
       (and
         (or
-	  (forall (?c - ColorName) (not (neg-attributed TUTOR (color ?v) ?c)))
+	  (not (exists (?c - ColorName) (neg-attributed TUTOR (color ?v) ?c)))
           (color-unlearned ?v)
         )
         (or
-          (forall (?s - ShapeName) (not (neg-attributed TUTOR (shape ?v) ?s)))
+          (not (exists (?s - ShapeName) (neg-attributed TUTOR (shape ?v) ?s)))
           (shape-unlearned ?v)
         )
         ;;(or
@@ -195,6 +195,8 @@
     (and
       (>= (max-gain-value-color ?v) (polar-question-color-threshold ?r))
       (= (max-gain-label-color ?v) ?c)
+      (learning-impossible)
+      (unlearning-impossible)
     )
   )
 
@@ -202,6 +204,8 @@
     (and
       (>= (max-gain-value-shape ?v) (polar-question-shape-threshold ?r))
       (= (max-gain-label-shape ?v) ?s)
+      (learning-impossible)
+      (unlearning-impossible)
     )
   )
 
@@ -227,6 +231,7 @@
       (and
         (= (current-viewcone ?r) ?vc1)
         (learning-impossible)
+        (unlearning-impossible)
       )
     :effect
       (and
@@ -249,6 +254,7 @@
         (= (target-object ?vc) ?p)
         (not (exists (?vo - visualobject) (= (po-is-associated-with ?p) ?vo)))
         (learning-impossible)
+        (unlearning-impossible)
       )
     :effect
       (and
@@ -268,6 +274,7 @@
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
+        (unlearning-impossible)
       )
     :effect 
       (and 
@@ -283,7 +290,6 @@
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
-        (learning-impossible)
       )
     :effect 
       (and 
@@ -299,6 +305,7 @@
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
+        (unlearning-impossible)
       )
     :effect 
       (and 
@@ -314,7 +321,6 @@
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
-        (learning-impossible)
       )
     :effect 
       (and 
@@ -330,6 +336,7 @@
   ;;     (and
   ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
   ;;       (learning-impossible)
+  ;;       (unlearning-impossible)
   ;;     )
   ;;   :effect 
   ;;     (and 
@@ -346,6 +353,7 @@
   ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
   ;;       (allow-polar-type-question ?v ?t ?r)
   ;;       (learning-impossible)
+  ;;       (unlearning-impossible)
   ;;     )
   ;;   :effect 
   ;;     (and 
@@ -363,6 +371,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (unlearning-impossible)
 	(not (color-learned ?v))
         (attributed TUTOR (color ?v) ?c)
         (exists (?p - ProtoObject) 
@@ -384,6 +393,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition 
       (and
+        (unlearning-impossible)
 	(not (shape-learned ?v))
         (attributed TUTOR (shape ?v) ?s)
         (exists (?p - ProtoObject) 
@@ -432,7 +442,7 @@
       (and
 	(not (color-unlearned ?v))
         (neg-attributed TUTOR (color ?v) ?c)
-        (exists (?p - ProtoObject) 
+        (exists (?p - ProtoObject)
           (and 
             (= (po-is-associated-with ?p) ?v)
             (= (target-object (current-viewcone ?r)) ?p)
