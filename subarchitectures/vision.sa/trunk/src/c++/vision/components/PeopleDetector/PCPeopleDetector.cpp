@@ -17,10 +17,14 @@
 #include "PCPeopleDetector.hpp"
 
 #define DONT_SAVE_FRAMES
+#define SUB_WINDOW 0.2
+#define FACE_DIAMETER 0.18
 
 using namespace std;
 using namespace cast;
 using namespace VisionData;
+using namespace PointCloud;
+using namespace cogx::Math;
 
 /**
  * The function called to create a new instance of our component.
@@ -43,6 +47,8 @@ void PCPeopleDetector::configure(
 	//println("configure");
 	// first let the base classes configure themselves
 	configureServerCommunication(config);
+
+	m_display.configureDisplayClient(config);
 
 	std::map<std::string, std::string>::const_iterator it;
 
@@ -95,6 +101,10 @@ void PCPeopleDetector::start() {
 	fullbody_storage = cvCreateMemStorage(0);
 
 	startPCCServerCommunication(*this);
+
+	//cvNamedWindow(getComponentID().c_str(), 1);
+    m_display.connectIceClient(*this);
+
 
 }
 
@@ -196,7 +206,6 @@ void PCPeopleDetector::runDetection() {
 	CvSize img_sz = cvGetSize(imgt);
 	IplImage * img = cvCreateImage(img_sz, IPL_DEPTH_8U, 1);
 	cvCvtColor(imgt, img, CV_RGB2GRAY);
-	cvReleaseImage(&imgt);
 
 	log("converted to greyscale");
 
@@ -213,16 +222,94 @@ void PCPeopleDetector::runDetection() {
 		face = cvHaarDetectObjects(img, face_cascade, face_storage, 1.5, 3,
 				CV_HAAR_DO_CANNY_PRUNING, cvSize(60, 60));
 	}
+	// Loop through full-body detections and find the corresponding Z value from the laser
+	// data. It is assumed that the shape closest to the camera within the detection window
+	// is in fact the person to be tracked.
+	bool validDetection = false;
+	PersonPtr person;
+	for (int i = 0; !validDetection && face && i < face->total; i++) {
+		CvRect* rect = (CvRect*) cvGetSeqElem(face, i);
+		CvPoint tl;
+		tl.x = rect->x;
+		tl.y = rect->y;
+		CvPoint br;
 
-	println("face cascade done");
-
-	if (fullbody_cascade) {
-		full = cvHaarDetectObjects(img, fullbody_cascade, fullbody_storage,
-				1.5, 2, CV_HAAR_DO_CANNY_PRUNING, cvSize(60, 120));
+		br.x = rect->x + rect->width;
+		br.y = rect->y + rect->height;
+		println("detected a face at %d %d (%dx%d)", rect->x, rect->y,
+				rect->width, rect->height);
+		SurfacePointSeq points;
+		getPoints(true, 640, points);
+		println("got points %d", points.size());
+		double avg_distance = 0.0;
+		int count = 0;
+		Vector3 centerOfMass = vector3(0.0, 0.0, 0.0);
+		for (int i = 0; i < points.size(); i++) {
+			Vector3 v = points.at(i).p;
+			Vector2 projected(projectPoint(image.camPars, v));
+			if (projected.x > tl.x + rect->width * SUB_WINDOW && projected.x
+					< br.x - rect->width * SUB_WINDOW && projected.y > tl.y
+					+ rect->height * SUB_WINDOW && projected.y < br.y
+					- rect->height * SUB_WINDOW) {
+				avg_distance += sqrt(v.y * v.y + v.x * v.x);
+				centerOfMass.x += v.x;
+				centerOfMass.y += v.y;
+				centerOfMass.z += v.z;
+				count++;
+				//log("point: %f %f %f", v.x, v.y, v.z);
+			}
+		}
+		if (count > 0) {
+			avg_distance /= count;
+			centerOfMass.x /= count;
+			centerOfMass.y /= count;
+			centerOfMass.z /= count;
+			double size = projectSize(image.camPars, centerOfMass,
+					FACE_DIAMETER);
+			double sizeRatio = size / rect->width;
+			println("count=%d, dist=%f, x=%f, y=%f, z=%f, size ratio=%f",
+					count, avg_distance, centerOfMass.x, centerOfMass.y,
+					centerOfMass.z, sizeRatio);
+			if (sizeRatio > 0.8 && sizeRatio < 1.2) {
+				person = new Person();
+				person->distance=avg_distance;
+				person->angle=atan2(centerOfMass.y,centerOfMass.x);
+				println("person distance=%f, angle=%f",
+						person->distance, person->angle*180.0/M_PI);
+				validDetection = true;
+			}
+		}
+		if (validDetection) {
+			cvRectangle(imgt, tl, br, cvScalar(0.0, 255.0, 0.0, 255.0), 2);
+			CvFont font = cvFont(1.0,2);
+			char buf[255];
+			sprintf(buf,"distance=%.2f,angle=%.2f",
+					person->distance, person->angle*180.0/M_PI);
+			cvPutText(imgt,buf, cvPoint(tl.x+1,(tl.y+br.y)/2), &font,cvScalar(0.0,255.0,0.0,255.0));
+		}
+		else {
+			cvRectangle(imgt, tl, br, cvScalar(255.0, 0.0, 0.0, 255.0), 2);
+		}
 	}
 
-	println("full body cascade done");
+	m_display.setImage(getComponentID(), imgt);
+	//cvShowImage(getComponentID().c_str(), imgt);
 
+	if (validDetection) {
+	}
+
+	//cvSaveImage(("./out/" + IntToStr((float)count++) +".bmp").c_str(), iplImage);
+
+	// needed to make the window appear
+	// (an odd behaviour of OpenCV windows!)
+	cvWaitKey(10);
+
+	//	if (fullbody_cascade) {
+	//		full = cvHaarDetectObjects(img, fullbody_cascade, fullbody_storage,
+	//				1.5, 2, CV_HAAR_DO_CANNY_PRUNING, cvSize(60, 120));
+	//	}
+	//
+	//	println("full body cascade done");
 
 	//log("deinterlaced");
 
@@ -230,7 +317,9 @@ void PCPeopleDetector::runDetection() {
 	// network latencies can desync the two so the detection/tracking
 	// can be messed up. Use this with care, however, because the longer
 	// you sit around waiting the lower your total fps.
-	sleepComponent(sleepForSync);
+	cvReleaseImage(&imgt);
+	cvReleaseImage(&img);
+	sleepComponent(100);
 
 #ifdef DISABLED
 	// Pull laser scan.
@@ -382,7 +471,7 @@ void PCPeopleDetector::runDetection() {
 			// things around the person (assuming the detector mostly finds fullbody regions this should work
 			// pretty well most of the time).
 			for (int j = int(rect->x + rect->width / 2.5); j < int(rect->x
-					+ rect->width - rect->width / 2.5); j++) {
+							+ rect->width - rect->width / 2.5); j++) {
 				if (closest > zbuffer[j]) {
 					closest = zbuffer[j];
 					index = j;
@@ -408,7 +497,7 @@ void PCPeopleDetector::runDetection() {
 			}
 
 			if (!found)
-				newDetections.push_back(r);
+			newDetections.push_back(r);
 		}
 
 		// Same exact thing for face detections. It is assumed that a face must also have a body to
@@ -424,7 +513,7 @@ void PCPeopleDetector::runDetection() {
 			// Stretch the face by a constant amount to make sure we don't get stuck on the background
 			// between the person's legs.
 			for (int j = int(rect->x - rect->width / 2.5); j < int(rect->x
-					+ rect->width + rect->width / 2.5); j++) {
+							+ rect->width + rect->width / 2.5); j++) {
 				if (closest > zbuffer[j]) {
 					closest = zbuffer[j];
 					index = j;
@@ -446,7 +535,7 @@ void PCPeopleDetector::runDetection() {
 			}
 
 			if (!found)
-				newDetections.push_back(r);
+			newDetections.push_back(r);
 		}
 
 		// This will contain all the objects being tracked that are still active
@@ -465,7 +554,7 @@ void PCPeopleDetector::runDetection() {
 				temp.distanceMoved = 0;
 				detections[i] = temp;
 				if (d < removeAfterDistance)
-					continue;
+				continue;
 			}
 
 			bool isBeingTracked = false;
