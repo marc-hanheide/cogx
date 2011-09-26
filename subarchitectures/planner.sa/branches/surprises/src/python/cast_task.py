@@ -36,6 +36,8 @@ PLANNER_DT = 1
 
 WAIT_FOR_ACTION_TIMEOUT = 2000
 
+FAKE_ACTION_FAILURE = "search_for_object_in_room"
+
 # status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
 #                    PlanningStatusEnum.RUNNING : Planner.Completion.INPROGRESS, \
 #                    PlanningStatusEnum.PLAN_AVAILABLE : Planner.Completion.SUCCEEDED, \
@@ -204,6 +206,11 @@ class CASTTask(object):
         self.cp_task.replan()
         self.process_cp_plan()
 
+    def handle_task_failure(self):
+        last_plan = self.plan_history[-1]
+        for n in last_plan.topological_sort():
+            print n, n.status
+
     def process_cp_plan(self):
         plan = self.get_plan()
         
@@ -211,6 +218,19 @@ class CASTTask(object):
             self.plan_history.append(plan)
             self.update_status(TaskStateEnum.FAILED)
             return
+
+        if FAKE_ACTION_FAILURE is not None:
+            ordered_plan = plan.topological_sort()
+            for pnode in ordered_plan:
+                if pnode.action.name == FAKE_ACTION_FAILURE:
+                    pnode.status = plans.ActionStatusEnum.FAILED
+                    break
+                else:
+                    pnode.status = plans.ActionStatusEnum.EXECUTED
+            self.plan_history.append(plan)
+            self.handle_task_failure()
+            return
+        
 
         total_prob = reduce(lambda x,y: x*y, (n.prob for n in plan.nodes_iter()), 1.0)
         if total_prob < self.component.min_p:
