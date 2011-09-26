@@ -132,7 +132,10 @@ private:
     /**
      * Core class: V4R Plane and SOI detection.
      */
-    pclA::PlanePopout* planePopout;
+    pclA::PlanePopout* m_planePopout;
+    static IceUtil::Mutex m_planePopoutMutex; // global lock because of libqhull thread-un-safety
+    static int m_componentCount;       // lock only if componentCount > 1
+
     /**
      * a SOI not seen for this time will be deleted from WM
      */
@@ -159,6 +162,7 @@ private:
      * is used as the key.
      */
     std::map<unsigned, SOIEntry> currentSOIs;
+    bool m_bWriteSoisToWm;
 
     void GetImageData();
     void GetPlaneAndSOIs();

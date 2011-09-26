@@ -297,6 +297,9 @@ void PlanePopOut::SOIEntry::calcHistogram()
     cvReleaseImage(&tmp);
 }
 
+int PlanePopOut::m_componentCount = 0;
+IceUtil::Mutex PlanePopOut::m_planePopoutMutex;
+
 PlanePopOut::PlanePopOut()
 {
     iplDispImage = 0;
@@ -314,13 +317,16 @@ PlanePopOut::PlanePopOut()
     // filter points depending on z value (default = 0.5m - 1.5m)
     par.minZ = 0.3;
     par.maxZ = 1.5;
-    planePopout = new pclA::PlanePopout(par);
+    m_planePopout = new pclA::PlanePopout(par);
+    m_componentCount++;
 }
 
 PlanePopOut::~PlanePopOut()
 {
-    delete planePopout;
+    if (m_planePopout)
+	delete m_planePopout;
     cvReleaseImage(&iplDispImage);
+    m_componentCount--;
 }
 
 
@@ -355,6 +361,13 @@ void PlanePopOut::configure(const map<string,string> & _config)
 	istringstream str(it->second);
 	str >> StableTime;
     }
+
+    m_bWriteSoisToWm = true;
+    if((it = _config.find("--generate-sois")) != _config.end())
+    {
+	m_bWriteSoisToWm = ! (it->second == "0" || it->second == "false" || it->second == "no");
+    }
+    println("%s write SOIs to WM", m_bWriteSoisToWm ? "WILL" : "WILL NOT"); 
 
     if(doDisplay)
     {
@@ -951,6 +964,24 @@ void PlanePopOut::GetImageData()
 #endif
 }
 
+
+#define LOG_SHOW_PCL_LOCKS 0
+#if LOG_SHOW_PCL_LOCKS
+class LockerDebug {
+public:
+    IceUtil::Mutex::Lock lock;
+    CASTComponent* pc;
+    LockerDebug(IceUtil::Mutex& mutex, CASTComponent* pComponent): lock(mutex) {
+	pc = pComponent;
+	pc->log("*** LOCKED ***");
+    }
+    ~LockerDebug() {
+	pc->log("*** UN-LOCKED ***");
+    }
+};
+#endif
+
+
 /**
  * Dominant plane detection and Euclidean Clustering
  * On return, we have dominentPlane valid and updated (if any could be found)
@@ -972,10 +1003,6 @@ void PlanePopOut::GetPlaneAndSOIs()
     pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
 
-    //log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
-    if (!planePopout->CalculateSOIs(pcl_cloud))
-	return;
-
     // Dominant plane coefficients
     pcl::ModelCoefficients::Ptr pcl_domplane;
     // table hull points
@@ -986,11 +1013,32 @@ void PlanePopOut::GetPlaneAndSOIs()
     // and second half the top polygon
     vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
 
-    planePopout->GetSOIs(pcl_sois);
-    planePopout->GetDominantPlaneCoefficients(pcl_domplane);
-    planePopout->GetTableHulls(tablehull);
-    planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
-    planePopout->GetPlanePoints(planepoints); 
+    {
+	// libqhull which is used by PCL is not thread-safe.
+	// When multiple instances of PPO are calling PCL, we lock to avoid crashes.
+	// This will not prevent conflicts with other components using PCL.
+#if LOG_SHOW_PCL_LOCKS
+	auto_ptr<LockerDebug> pcllock;
+	if (m_componentCount > 1) {
+	    pcllock = auto_ptr<LockerDebug>(new LockerDebug(m_planePopoutMutex, this));
+	}
+#else
+	auto_ptr<IceUtil::Mutex::Lock> pcllock;
+	if (m_componentCount > 1) {
+	   pcllock = auto_ptr<IceUtil::Mutex::Lock>(new IceUtil::Mutex::Lock(m_planePopoutMutex));
+	}
+#endif
+
+	//log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
+	if (!m_planePopout->CalculateSOIs(pcl_cloud))
+	    return;
+
+	m_planePopout->GetSOIs(pcl_sois);
+	m_planePopout->GetDominantPlaneCoefficients(pcl_domplane);
+	m_planePopout->GetTableHulls(tablehull);
+	m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
+	m_planePopout->GetPlanePoints(planepoints); 
+    }
 
 #ifdef FEAT_VISUALIZATION
     // NOTE: not nice having visualisiaton code here, but ok
@@ -1046,14 +1094,16 @@ void PlanePopOut::GetPlaneAndSOIs()
     for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
 	it->second.init(dominantPlane);
 
+#if 0
     log("have %d current sois", (int)currentSOIs.size());
     for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
     {
-	ostringstream str;
-	str << "current SOI " << jt->first << " at: "
-	    << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
-	log("%s", str.str().c_str());
+       ostringstream str;
+       str << "current SOI " << jt->first << " at: "
+	   << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
+       log("%s", str.str().c_str());
     }
+#endif
 }
 
 /**
@@ -1086,17 +1136,19 @@ void PlanePopOut::TrackSOIs()
 	if (best != -1) {
 	    it->establishMatch(currentSOIs[best]);
 
-	    // if the SOI is already in WM, overwrite it
-	    if (!it->WMId.empty()) {
-		VisionData::SOIPtr wmsoi = it->createWMSOI(this);
-		overwriteWorkingMemory(it->WMId, wmsoi);
-	    } else {
-		// only if it has been stable for some time, add it to WM
-		if (it->numStableFrames >= StableTime) {
+	    if (m_bWriteSoisToWm) {
+		// if the SOI is already in WM, overwrite it
+		if (!it->WMId.empty()) {
 		    VisionData::SOIPtr wmsoi = it->createWMSOI(this);
-		    it->WMId = newDataID();
-		    addToWorkingMemory(it->WMId, wmsoi);
-                    log("added SOI to WM");
+		    overwriteWorkingMemory(it->WMId, wmsoi);
+		} else {
+		    // only if it has been stable for some time, add it to WM
+		    if (it->numStableFrames >= StableTime) {
+			VisionData::SOIPtr wmsoi = it->createWMSOI(this);
+			it->WMId = newDataID();
+			addToWorkingMemory(it->WMId, wmsoi);
+			log("added SOI to WM");
+		    }
 		}
 	    }
 	} else {
@@ -1109,8 +1161,10 @@ void PlanePopOut::TrackSOIs()
     // all current SOIs that were not used instantiate a new tracked SOI
     for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
     {
+#if 0
 	log("current soi %d found a matching tracked soi : %s",
 		(int)jt->first, (jt->second.hasMatch ? "yes" : "no"));
+#endif
 	if (!jt->second.hasMatch) {
 	    trackedSOIs.push_back(jt->second);
 	    // NOTE: has_match of the current SOI and the new tracked SOI are not set true in this
@@ -1125,9 +1179,11 @@ void PlanePopOut::TrackSOIs()
     {
 	if (it->numFramesNotSeen > AgonalTime) {
 	    // if it was added to WM at all
-	    if (!it->WMId.empty()) {
-		deleteFromWorkingMemory(it->WMId);
-                log("removed SOI from WM");
+	    if (m_bWriteSoisToWm) {
+		if (!it->WMId.empty()) {
+		    deleteFromWorkingMemory(it->WMId);
+		    log("removed SOI from WM");
+		}
 	    }
 	    it = trackedSOIs.erase(it);
 	} else {
@@ -1135,6 +1191,7 @@ void PlanePopOut::TrackSOIs()
 	}
     }
 
+#if 0
     log("have %d tracked sois", (int)trackedSOIs.size());
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
@@ -1144,6 +1201,7 @@ void PlanePopOut::TrackSOIs()
             << " stable: " << it->numStableFrames << " not seen:" << it->numFramesNotSeen;
 	log("%s", str.str().c_str());
     }
+#endif
 }
 
 // @author: mmarko
