@@ -128,19 +128,19 @@ $(GARCHIVEDIR)/%: $(GARCHIVEDIR)
 # rule to extract uncompressed tarballs
 tar-extract-%:
 	@echo " ==> Extracting $(DOWNLOADDIR)/$*"
-	@tar -xf $(DOWNLOADDIR)/$* -C $(EXTRACTDIR)
+	@tar --no-same-owner -xf $(DOWNLOADDIR)/$* -C $(EXTRACTDIR)
 	@$(MAKECOOKIE)
 
 # rule to extract files with tar xzf
 tar-gz-extract-%:
 	@echo " ==> Extracting $(DOWNLOADDIR)/$*"
-	@gzip -dc $(DOWNLOADDIR)/$* | tar -xf - -C $(EXTRACTDIR)
+	@gzip -dc $(DOWNLOADDIR)/$* | tar  --no-same-owner -xf - -C $(EXTRACTDIR)
 	@$(MAKECOOKIE)
 
 # rule to extract files with tar and bzip
 tar-bz-extract-%:
 	@echo " ==> Extracting $(DOWNLOADDIR)/$*"
-	@bzip2 -dc $(DOWNLOADDIR)/$* | tar -xf - -C $(EXTRACTDIR)
+	@bzip2 -dc $(DOWNLOADDIR)/$* | tar --no-same-owner -xf  - -C $(EXTRACTDIR)
 	@$(MAKECOOKIE)
 
 # rule to extract files with unzip
