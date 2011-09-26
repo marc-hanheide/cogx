@@ -5,14 +5,13 @@
 #include <PointCloudClient.h>
 #include <CDisplayClient.hpp>
 
-
 #include <highgui.h>
 #include <cvaux.h>
 
 namespace cast {
 
 /**
- * Written by Costas Cristofi and Marc Hanheide at Birmingham.
+ * Written by Marc Hanheide based on code by Costas Cristofi at Birmingham.
  */
 class PCPeopleDetector: public ManagedComponent, public cast::PointCloudClient {
 	bool deinterlacing;
