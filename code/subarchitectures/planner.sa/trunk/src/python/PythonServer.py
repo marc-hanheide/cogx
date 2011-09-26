@@ -253,6 +253,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   @pdbdebug
   def registerTask(self, task_desc, current=None):
     log.info("Planner PythonServer: New PlanningTask received:")
+    standalone.globals.set_time()
 
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn)
     self.tasks[task.id] = task
@@ -265,6 +266,16 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.m_display.update_task(task)
       self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
 
+  def get_new_attributed_beliefs(self, beliefs):
+      import de.dfki.lt.tr.beliefs.slice as bm
+      
+      result = []
+      for entry in beliefs:
+          if isinstance(entry.belief.estatus, bm.epstatus.AttributedEpistemicStatus) \
+                  and entry.belief.id not in self.address_dict:
+              result.append(entry.belief)
+      return result
+
   def process_beliefs(self, beliefs):
       result = []
       for entry in beliefs:
@@ -275,8 +286,10 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   @pdbdebug
   def updateState(self, state, percepts, current=None):
       log.debug("recieved state update.")
+      new_attributed = self.get_new_attributed_beliefs(state)
       self.beliefs = self.process_beliefs(state)
       for task in self.tasks.itervalues():
+          task.percepts += new_attributed
           task.percepts += self.process_beliefs(percepts)
           if task.internal_state == TaskStateEnum.WAITING_FOR_BELIEF:
               self.updateWaitingTask(task)
@@ -287,6 +300,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           log.warning("goal became invalid while waiting for action effects.")
           return
 
+      standalone.globals.set_time()
       task.wait_update()
 
   @pdbdebug
@@ -295,6 +309,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           log.warning("Warning: received update for task %d, but no such task found.", task_desc.id)
           return
       
+      standalone.globals.set_time()
       task = self.tasks[task_desc.id]
       task.wait_timeout()
       
@@ -304,6 +319,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           log.warning("Warning: received update for task %d, but no such task found.", task_desc.id)
           return
       
+      standalone.globals.set_time()
       log.info("received task update")
       if task_desc.executionStatus in (Planner.Completion.SUCCEEDED, Planner.Completion.FAILED, Planner.Completion.ABORTED):
           log.info("task %d is done.", task_desc.id)
@@ -362,6 +378,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       import cast_state
       import task_preprocessor as tp
       
+      standalone.globals.set_time()
       log.debug("Loading domain %s.", self.domain_fn)
       domain = pddl.load_domain(self.domain_fn)
       state = cast_state.CASTState([e.belief for e in beliefs], domain, component=self)

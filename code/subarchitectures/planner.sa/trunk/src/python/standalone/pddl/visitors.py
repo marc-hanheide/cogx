@@ -48,7 +48,7 @@ def collect(f):
         else:
             input = results
         result = f(elem, input)
-        if result:
+        if result is not None:
             if not isinstance(result, list):
                 return [result]
             return result
@@ -100,6 +100,18 @@ def collect_literals(elem, results):
     if isinstance(elem, predicates.Literal):
         return elem
 
+@collect
+def collect_conditions(elem, results):
+    """Return a list of all conditions"""
+    if isinstance(elem, conditions.LiteralCondition):
+        return elem
+
+@collect
+def collect_effects(elem, results):
+    """Return a list of all effects"""
+    if isinstance(elem, effects.SimpleEffect):
+        return elem
+    
 @collect
 def collect_functions(elem, results=[]):
     if elem.__class__ == predicates.FunctionTerm:

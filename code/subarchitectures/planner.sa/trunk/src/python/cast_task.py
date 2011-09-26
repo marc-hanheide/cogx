@@ -5,7 +5,7 @@ from collections import defaultdict
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
 
-from standalone import task, dt_problem, plans, plan_postprocess, pddl, config
+from standalone import task, dt_problem, plans, plan_postprocess, pddl, config, domain_query_graph
 import standalone.globals as global_vars
 from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum, Struct
@@ -102,6 +102,7 @@ class CASTTask(object):
         w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
         w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
 
+        log.debug("Planning task created: %.2f sec", global_vars.get_time())
         
     def update_status(self, status):
         self.internal_state = status
@@ -117,6 +118,13 @@ class CASTTask(object):
         self.domain = t.translate(domain)
         if global_vars.config.enable_switching_planner:
             self.domain.dt_rules = [r.copy(self.domain) for r in domain.dt_rules]
+            
+            t0 = time.time()
+            self.qgraph = domain_query_graph.QueryGraph(self.domain.dt_rules, self.domain)
+            # print "\n\n------------------------------------------------------------------------------------\n\n"
+            # self.action_qgraph = domain_query_graph.QueryGraph(self.domain.actions, self.domain)
+            # self.action_qgraph = domain_query_graph.QueryGraph(self.domain.dt_rules + self.domain.actions, self.domain)
+            log.debug("total time for constructing query graph: %f", time.time()-t0)
 
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
@@ -167,7 +175,9 @@ class CASTTask(object):
     def run(self):
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
+        log.debug("Planning done: %.2f sec", global_vars.get_time())
         self.process_cp_plan()
+        log.debug("Plan processing done: %.2f sec", global_vars.get_time())
 
     def retry(self):
         # self.state = cast_state.CASTState(beliefs, self.domain, component=self.component)
@@ -223,7 +233,7 @@ class CASTTask(object):
         if "partial-observability" in self.domain.requirements:
             log.debug("creating dt task")
             # self.dt_task = dt_problem.DTProblem(plan, self.domain)
-            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.fail_count, self.state.get_prob_functions(), self.relevant_facts, self.domain)
+            self.dt_task = dt_problem.DTProblem(plan, self.state.pnodes, self.qgraph, self.fail_count, self.state.get_prob_functions(), self.relevant_facts, self.domain)
             # self.dt_task.initialize(self.state.prob_state)
 
             for pnode in plan.nodes_iter():
@@ -364,8 +374,13 @@ class CASTTask(object):
         def get_observations():
             result = []
             for fact in self.state.convert_percepts(self.percepts):
-                pred = "observed-%s" % fact.svar.function.name
-                obs = Planner.Observation(pred, [a.name for a in fact.svar.args] + [fact.value.name])
+                if fact.svar.modality == pddl.mapl.attributed:
+                    svar = fact.svar.nonmodal()
+                    value = fact.svar.modal_args[1]
+                else:
+                    svar, value = fact
+                pred = "observed-%s" % svar.function.name
+                obs = Planner.Observation(pred, [a.name for a in svar.args] + [value.name])
                 result.append(obs)
                 log.info("%d: delivered observation (%s %s)", self.id, obs.predicate, " ".join(a for a in obs.arguments))
             return result
@@ -428,9 +443,11 @@ class CASTTask(object):
             self.cp_task.set_plan(None, update_status=True)
             self.update_status(TaskStateEnum.FAILED)
             return
-
+        
         self.step += 1
         self.cp_task.replan()
+        log.debug("Continual planning step done: %.2f sec", global_vars.get_time())
+        
         if self.cp_task.get_plan() != plan:
             problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
             self.write_cp_problem(problem_fn)
@@ -485,7 +502,7 @@ class CASTTask(object):
         log.debug("got action from DT: (%s %s)", action.name, " ".join(action.arguments))
         #log.debug("state is: %s", self.cp_task.get_state())
 
-        if pddl_action.name in set(a.name for a in self.dt_task.goal_actions):
+        if self.dt_task.is_goal_action(pddl_action.name):
             log.info("Goal action recieved. DT task completed")
             self.dt_done()
             return
@@ -607,6 +624,7 @@ class CASTTask(object):
         
         self.cp_task.mapltask = new_cp_problem
         self.cp_task.set_state(self.state.state)
+        log.debug("State update done: %.2f sec", global_vars.get_time())
         
         return True
 

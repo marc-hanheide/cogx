@@ -359,7 +359,7 @@ class Scope(dict):
 
             # print next, [str(v) for v,_ in stack], len(stack), len(args)
             if next == True and len(stack) == len(args):
-#                print ["%s=%s" % (s[0].name, mapping[s[0]]) for s in stack]
+                # print ["%s=%s" % (s[0].name, mapping[s[0]]) for s in stack]
                 yield mapping
                 next = False
             elif nextval:
