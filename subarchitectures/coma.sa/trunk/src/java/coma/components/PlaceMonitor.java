@@ -498,13 +498,15 @@ public class PlaceMonitor extends ManagedComponent {
 		// _objProp.supportObjectCategory; // category of the supporting/related object or "" if INROOM
 		// _objProp.supportObjectId; // unique id of the supporting object
 		
-		String objInsName = "dora:" + _objProp.category.toLowerCase() + _wmc.address.id;
+		String objInsName = "dora:" + _objProp.category.toLowerCase() + _wmc.address.id.replace(":", "_");
 		String objCatName = "dora:" + ComaHelper.firstCap(_objProp.category);
 		
 		String placeInsName = "dora:place" + _objProp.placeId;
 		
 		m_comareasoner.addInstance(objInsName, objCatName);
+		log("executed addInstance( " + objInsName + ", " + objCatName +" )");
 		m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
+		log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
 				
 		// check if the object is immediately in the room or related via a supportObject
 		if ((!_objProp.supportObjectCategory.equals("")) && 
