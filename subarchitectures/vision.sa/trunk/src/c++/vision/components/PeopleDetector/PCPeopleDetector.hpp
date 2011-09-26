@@ -14,12 +14,9 @@ namespace cast {
  * Written by Marc Hanheide based on code by Costas Cristofi at Birmingham.
  */
 class PCPeopleDetector: public ManagedComponent, public cast::PointCloudClient {
-	bool deinterlacing;
-	int sleepForSync;
-	double xscale, xcentre;
-	double trackerThreshold;
-	int removeAfterFrames;
-	double removeAfterDistance;
+
+	static const float DETECTWINDOW_PADDING_PROPORTION=0.2;
+	static const float FACE_DIAMETER=0.2;
 
 	/**
 	 * How many frames to use when triggered on demand. Default 5.
@@ -31,17 +28,15 @@ class PCPeopleDetector: public ManagedComponent, public cast::PointCloudClient {
 	 */
 	bool m_runContinuously;
 
+	/** maximum distance to see people */
+	double maxDist;
+
 	cogx::display::CDisplayClient m_display;
 public:
 	/**
 	 * Constructor
 	 */
 	PCPeopleDetector();
-
-	/**
-	 * Destructor
-	 */
-	~PCPeopleDetector();
 
 	/**
 	 * Run the people detector for a single frame.
