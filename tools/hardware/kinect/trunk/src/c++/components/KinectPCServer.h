@@ -19,13 +19,17 @@
 #include "VideoUtils.h"
 #include <cast/core/CASTTimer.hpp>
 #include "cv.h"
+
+#ifdef KINECT_USER_DETECTOR
 #include "../autogen/KinectPersonDetect.hpp"
+#endif
 
 namespace cast
 {
 
 class KinectPCServer;
 
+#ifdef KINECT_USER_DETECTOR
 class PersonDetectServerI : public kinect::slice::PersonDetectorInterface {
 private:
 	KinectPCServer* pcSrv;
@@ -36,6 +40,7 @@ public:
 	kinect::slice::PersonsDict getPersons(const Ice::Current&);
 
 };
+#endif
 
 /**
  * @brief Video device simply wrapping the Kinect API.
@@ -43,7 +48,9 @@ public:
 class KinectPCServer : public PointCloudServer
 {
 private:
+#ifdef KINECT_USER_DETECTOR
   kinect::slice::PersonDetectorInterfacePtr personDetectServer;
+#endif
   std::string kinectConfig;                     ///< Kinect configuration file
   CvSize captureSize;                           ///< Size of captured images from kinect
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
@@ -54,12 +61,16 @@ private:
 
   DepthGenerator* depthGenerator;
   ImageGenerator* imageGenerator;
+#ifdef KINECT_USER_DETECTOR
   UserGenerator* userGenerator;
+#endif
   DepthMetaData depthMD;
   ImageMetaData imageMD;
 
   bool m_saveToFile;
+#ifdef KINECT_USER_DETECTOR
   bool m_detectPersons;
+#endif
   bool m_displayImage;
   std::string m_saveDirectory;
   int m_lastframe;
@@ -103,9 +114,13 @@ public:
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   bool isPointInViewCone(const cogx::Math::Vector3& point);
-    kinect::slice::PersonsDict detectPersons();
+#ifdef KINECT_USER_DETECTOR
+kinect::slice::PersonsDict detectPersons();
+#endif
     void saveNextFrameToFile();
+#ifdef KINECT_USER_DETECTOR
     static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
+#endif
 };
 
 

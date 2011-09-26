@@ -4,6 +4,11 @@ include_directories(.)
 include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(${OPENCV_CFLAGS})
 
+option(BUILD_KINECT_USER_DETECTOR "Build the Kinect User Generator in KinectPCServer." NO)
+if (BUILD_KINECT_USER_DETECTOR)
+	add_definitions(-DKINECT_USER_DETECTOR)
+endif (BUILD_KINECT_USER_DETECTOR)
+ 
   SET(HEADERS
 	Capture.h
 	Device.h
@@ -23,7 +28,11 @@ include_directories(${OPENCV_CFLAGS})
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils Kinect)
 
   add_cast_component(KinectPCServer KinectPCServer.cpp)
-  link_cast_component(${CAST_COMPONENT_NAME} VideoUtils Kinect KinectPersonDetect OpenNI PointCloud PointCloudServer ${OPENCV_LDFLAGS})
+  
+  link_cast_component(${CAST_COMPONENT_NAME} VideoUtils Kinect  OpenNI PointCloud PointCloudServer ${OPENCV_LDFLAGS})
+  if (BUILD_KINECT_USER_DETECTOR)
+  	link_cast_component(${CAST_COMPONENT_NAME} KinectPersonDetect)
+  endif (BUILD_KINECT_USER_DETECTOR)
 
   add_cast_component(KinectStereoServer KinectStereoServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils Kinect PointCloud PointCloudServer)
