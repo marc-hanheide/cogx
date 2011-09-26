@@ -48,14 +48,20 @@ class NumericConstant(FunctionalExpression):
     def instantiate(self, var_mapping, init_facts):
         return self
 
+init_pne_cache = None
+    
 class PrimitiveNumericExpression(FunctionalExpression):
     parts = ()
     def __init__(self, symbol, args):
         self.symbol = symbol
         self.args = tuple(args)
+        self._hash = hash((self.symbol,)+ self.args)
+        # print self, hash(self), hash(self.symbol), map(repr, args), hash(self.args)
     def __eq__(self, other):
         return (self.__class__ == other.__class__ and self.symbol == other.symbol
                 and self.args == other.args)
+    def __hash__(self):
+        return self._hash
     def __str__(self):
         return "%s %s(%s)" % ("PNE", self.symbol, ", ".join(map(str, self.args)))
     def dump(self, indent="  "):
@@ -65,18 +71,27 @@ class PrimitiveNumericExpression(FunctionalExpression):
     def _dump(self):
         return str(self)
     def  instantiate(self, var_mapping, init_facts):
+        global init_pne_cache
+        if init_pne_cache is None:
+            init_pne_cache = {}
+            for fact in init_facts:
+                if isinstance(fact, FunctionAssignment):
+                    # print fact.fluent, hash(fact.fluent)
+                    init_pne_cache[fact.fluent] = fact.expression
+        
         args = [conditions.ObjectTerm(var_mapping.get(arg.name, arg.name))
                 for arg in self.args]
         pne = PrimitiveNumericExpression(self.symbol, args)
         assert not self.symbol == "total-cost"
         # We know this expression is constant. Substitute it by corresponding 
         # initialization from task.
-        for fact in init_facts:
-            if isinstance(fact, FunctionAssignment):
-                if fact.fluent == pne:
-                    return fact.expression
+        return init_pne_cache.get(pne, None)
+        # for fact in init_facts:
+        #     if isinstance(fact, FunctionAssignment):
+        #         if fact.fluent == pne:
+        #             return fact.expression
         #assert False, "Could not find instantiation for PNE!"
-        return None
+        # return None
 
 class FunctionAssignment(object):
     def __init__(self, fluent, expression):

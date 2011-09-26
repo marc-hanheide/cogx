@@ -176,6 +176,12 @@ class Domain(Scope):
             self.objects_by_type[type] = set(o for o in self.constants if o.is_instance_of(type) and o != builtin.UNKNOWN)
         for obj in self.objects_by_type[type]:
             yield obj
+
+    def get_nonstatic_functions(self):
+        import visitors, utils
+        def get_nonstatic(a):
+            return [utils.get_function(l) for l in  visitors.visit(a.effect, visitors.collect_literals, [])]
+        return set(sum((get_nonstatic(a) for a in self.actions), [])) | set(a.predicate for a in self.axioms)
         
     @hook
     def add_action(self, action):

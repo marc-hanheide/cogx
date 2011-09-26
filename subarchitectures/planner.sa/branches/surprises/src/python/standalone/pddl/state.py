@@ -85,6 +85,7 @@ class StateVariable(object):
         assert len(function.args) == len(args)
         for a, fa in zip(args, function.args):
             assert a.is_instance_of(fa.type), "%s not of type %s" % (str(a), str(fa))
+            assert isinstance(a, types.TypedObject)
         self.args = tuple(args)
 
         self.modality = modality
@@ -129,6 +130,9 @@ class StateVariable(object):
     def nonmodal(self):
         """Return a copy of this StateVariable without any modality."""
         return StateVariable(self.function, self.args, None, [])
+
+    def all_args(self):
+        return chain(self.args, self.modal_args)
     
     def get_args(self):
         """Return a list of arguments like they would be supplied to
@@ -189,7 +193,7 @@ class StateVariable(object):
         return s
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.hash == other.hash
+        return isinstance(other, StateVariable) and self.hash == hash(other)
         #return self.__class__ == other.__class__ and self.function == other.function and all(map(lambda a,b: a==b, self.args, other.args)) and self.modality == other.modality and all(map(lambda a,b: a==b, self.modal_args, other.modal_args))
 
     def __ne__(self, other):
@@ -282,7 +286,6 @@ class StateVariable(object):
             return StateVariable(function, args, literal.predicate, modal_args)
             
         return StateVariable(function, args)
-    
 
 class Fact(tuple):
     """This class represents an assignment of a value to a
@@ -306,6 +309,12 @@ class Fact(tuple):
 
     def to_init(self):
         return self.as_literal(useEqual=True)
+
+    def all_args(self):
+        return chain(self.svar.all_args(), [self.value])
+    
+    def negated(self):
+        return False
 
     def match_literal(self, lit):
         if lit.predicate in assignment_ops + [eq, equals]:
@@ -439,7 +448,8 @@ class Fact(tuple):
         return Fact(tup[0], tup[1])
 
 class NegatedFact(Fact):
-    pass
+    def negated(self):
+        return True
     
 class State(dict):
     """This class represents a complete planning state. It is a

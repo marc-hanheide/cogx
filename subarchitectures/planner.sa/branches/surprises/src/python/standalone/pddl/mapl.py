@@ -45,6 +45,8 @@ update = Predicate("update", [p, Parameter("?v", types.ProxyType(p)), ], builtin
 p = Parameter("?f", types.FunctionType(t_object))
 update_fail = Predicate("update-failed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
+failure_cost = predicates.Function("failure-cost", [], builtin.t_number, builtin=True)
+
 # shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 
 modal_predicates = [knowledge, indomain,\
@@ -64,6 +66,7 @@ mapl_predicates = modal_predicates + nonmodal_predicates
 default_types = mapl_types
 default_constants = [builtin.TRUE, builtin.FALSE, builtin.UNKNOWN]
 default_predicates = mapl_predicates
+default_functions = [failure_cost]
 
 default_compiler = translators.MAPLCompiler
 dependencies = ['modal-predicates']
@@ -183,10 +186,13 @@ class SenseEffect(object):
             return None
         return conditions.LiteralCondition(commit, [term, value])
 
-    def conditional_knowledge_effect(self):
+    def conditional_knowledge_effect(self, add_condition=None):
         cc = self.commit_condition()
-        if not cc:
+        if not cc and not add_condition:
             return self.knowledge_effect()
+        elif add_condition:
+            cc = conditions.Conjunction.new(cc)
+            cc.parts.append(add_condition)
         return effects.ConditionalEffect(cc, self.knowledge_effect())
     
     def is_boolean(self):

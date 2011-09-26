@@ -166,7 +166,7 @@ class DTTest(common.PddlTest):
         
         dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
 
-        t = dtpddl.DT2MAPLCompiler()
+        t = dtpddl.DT2MAPLCompilerFD()
         dom2 = t.translate(dom)
         prob2 = t.translate(prob)
 
@@ -177,8 +177,13 @@ class DTTest(common.PddlTest):
     def testMDTTPDDLtoDTPDDL(self):
         """Testing compilation of DTPDDL/MAPL to DTPDDL"""
         import dtpddl
-        
+
+        # import pdb
         dom, prob = self.load("testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+        # try:
+        #     dom, prob = pdb.runcall(self.load, "testdata/switchtest-tfd.pddl", "testdata/switchtest-tfd-problem.pddl")
+        # except:
+        #     pdb.post_mortem()
 
         supported = adl_support + ['action-costs', 'partial-observability', 'fluents', 'mapl']
         t1 = dom.compile_to(supported)

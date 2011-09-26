@@ -221,7 +221,7 @@ public:
 //     {
 //     }
     
-    static bool ith_exists(int type_index, ID_TYPE object_index)
+    static bool ith_exists(Runtime_Thread type_index, ID_TYPE object_index)
     {
         auto _searchable = indexed__Traversable_Collection.find(type_index);
         if(_searchable != indexed__Traversable_Collection.end()){
@@ -229,20 +229,20 @@ public:
             
             if(object_index < searchable.size()){
                 return true;
-            } // else {
+            } else {
                 
-//                 WARNING("Testing existence of thing failed:: "<<type_index<<std::endl
-//                         <<object_index<<" out of range :: "<<searchable.size());
-// //                 for(uint i =0 ; i < searchable.size(); i++){
-// //                     std::cerr<<"Got :: "
-// //                         <<make_ith<>(type_index, i)<<std::endl;
-// //                 }
+                WARNING("Testing existence of thing failed:: "<<type_index<<std::endl
+                        <<object_index<<" out of range :: "<<searchable.size());
+                for(uint i =0 ; i < searchable.size(); i++){
+                    std::cerr<<"Got :: "
+                        <<make_ith<>(type_index, i)<<std::endl;
+                }
                 
-//             }
+            }
             
-        }//  else {
-//             WARNING("Testing existence on non-existent thread :: "<<type_index);
-//         }
+        }  else {
+            WARNING("Testing existence on non-existent thread :: "<<type_index);
+        }
         
 
         return false;
@@ -434,6 +434,8 @@ public:
                 = CXX__PTR_ANNOTATION(Searchable_Collection)(new Searchable_Collection());
             
             _searchable_Collection = indexed__Searchable_Collection.find(runtime_Thread);   
+            VERBOSER(20000, "setting runtime thread :: "<<runtime_Thread);
+
         }
 
         traversable_Collection = indexed__Traversable_Collection[runtime_Thread];
@@ -466,7 +468,7 @@ private:
             
         if(map_iterator
            == searchable_Collection->end()){
-//             std::cerr<<"NEW ENTRY..."<<wrapped_contents<<std::endl;
+            // std::cerr<<"NEW ENTRY..."<<wrapped_contents<<std::endl;
             traversable_Collection->push_back(wrapped_contents);
             assert(traversable_Collection->size());
 //             assert(traversable_Collection->size() - 1 >= 0);
@@ -476,6 +478,7 @@ private:
 
 //             std::cerr<<(*traversable_Collection)[index]<<std::endl;
 //             {char ch; std::cin>>ch;};
+            // std::cerr<<"NEW ENTRY..." << index << " : " <<wrapped_contents<<std::endl;
             
             map_iterator = searchable_Collection->find(wrapped_contents);
             assert(map_iterator != searchable_Collection->end());

@@ -59,7 +59,7 @@ public:
     /* Is there an argument in \member{arguments} guarded by the
      * argument \class{std::string}. This is not constant because the
      * argument is cached in the \member{lastGuardTest}.*/
-    bool got_guard(std::string&&);
+    bool got_guard(const std::string&);
     
     /* Return the argument of the last queried std::string (via
      * \function{gotGuard}) as an \type{int}.*/

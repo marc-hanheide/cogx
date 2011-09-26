@@ -210,6 +210,10 @@ void Problem_Grounding::ground_objective_function()
             objective_index
                 = objective_function.cxx_get<Formula::State_Ground_Function>()
                 ->get__id();
+
+            // VERBOSER(20000, "Objective ID :: "<<objective_index);
+            // VERBOSER(20000, "Thread :: "<<formula_runtime_Thread);
+
             
             if(!Formula::State_Ground_Function::
                ith_exists(formula_runtime_Thread,
