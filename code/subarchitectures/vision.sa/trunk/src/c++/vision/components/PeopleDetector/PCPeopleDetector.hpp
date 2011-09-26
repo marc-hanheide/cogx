@@ -3,6 +3,8 @@
 #include <cast/core/CASTComponent.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <PointCloudClient.h>
+#include <CDisplayClient.hpp>
+
 
 #include <highgui.h>
 #include <cvaux.h>
@@ -30,6 +32,7 @@ class PCPeopleDetector: public ManagedComponent, public cast::PointCloudClient {
 	 */
 	bool m_runContinuously;
 
+	cogx::display::CDisplayClient m_display;
 public:
 	/**
 	 * Constructor
