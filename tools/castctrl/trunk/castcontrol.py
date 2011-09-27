@@ -592,11 +592,12 @@ class CCastControlWnd(QtGui.QMainWindow):
 
             extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
             command = self._options.xe(csi.getCommand(), environ=extenv)
+            workdir = self._options.xe(csi.workdir, environ=extenv) if csi.workdir != None else None
             params = csi.getParameters()
             if params:
                 for k,v in params.items():
                     params[k] = self._options.xe(v, environ=extenv)
-            p.start(command=command, params=params, workdir=csi.workdir, allowTerminate=not csi.isServer)
+            p.start(command=command, params=params, workdir=workdir, allowTerminate=not csi.isServer)
             time.sleep(0.3)
 
     def startRemoteProcesses(self, procGroup):
