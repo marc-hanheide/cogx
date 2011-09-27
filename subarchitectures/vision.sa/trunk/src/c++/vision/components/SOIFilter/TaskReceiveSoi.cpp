@@ -79,8 +79,11 @@ struct WmUnlocker
  */
 void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
-  if (pEvent->pRetry)
+  long retryMs = 1000;
+  if (pEvent->pRetry) {
     log("SOIFilter::handle_add_soi, RETRY %ld", pEvent->pRetry->retryCount);
+    retryMs = 1000 + pEvent->pRetry->retryCount * 200;
+  }
   else
     debug("SOIFilter::handle_add_soi");
   SOIPtr psoi;
@@ -102,7 +105,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   pSoiFilter->saveSoiData(psoi, psoirec->psoi);
   pSoiFilter->m_sois[psoirec->addr] = psoirec;
 
-  if (psoi->sourceId == pSoiFilter->m_coarseSource /*|| psoi->sourceId == SOURCE_FAKE_SOI*/)
+  if (psoi->sourceId == pSoiFilter->m_coarseSource)
   {
     // Verify all known proto objects if they are at the same location as the SOI;
     // In this case, we are looking at a known PO and don't have to do
@@ -179,10 +182,6 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       pobj->image.camPars = camPars; // XXX: Where do we need camPars again? In segmentation?
 
       ROIPtr roiPtr = projectSOI(camPars, *psoi);
-      //if (psoi->sourceId == SOURCE_FAKE_SOI) {
-      //  roiPtr->rect.pos.x = 640 * psoi->boundingBox.pos.x;
-      //  roiPtr->rect.pos.y = 480 * psoi->boundingBox.pos.y;
-      //}
 
       // Center of the projected SOI ... Math::Rect2.pos IS the center
       rcx = roiPtr->rect.pos.x;
@@ -196,7 +195,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
         ss << "  roiCx: (" << rcx << ", " << rcy << ")";
         log(ss.str());
 
-        if (pSoiFilter->retryEvent(pEvent, 1200, 10))
+        if (pSoiFilter->retryEvent(pEvent, retryMs, 10))
           log("Projected SOI out of bouds. WILL RETRY LATER.");
         else
           error("Projected SOI out of bouds. NO MORE RETRIES. ABORTING.");
