@@ -39,7 +39,7 @@ IFS=$'\n'
 # initial cache - regular expressions
 # set(SOMETHING OFF CACHE BOOL "comment")
 rxident='\([a-zA-Z0-9_]\+\)'
-rxboolv='\([A-Z]\+\)'
+rxboolv='\([A-Z0-1]\+\)'
 rxtype='\([A-Z]\+\)'
 rxcomment='\"\(.*\)\"'
 ws='[[:blank:]]\+'
@@ -94,7 +94,7 @@ function addMissingValues()
    done
    )
    leftlines=$(echo "$leftlines" | grep -v "^${ws0}$")
-   
+
    echo $fnout
    echo "" >> $fnout
    for l in $leftlines; do
