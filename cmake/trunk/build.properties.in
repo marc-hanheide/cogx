@@ -11,6 +11,7 @@ beliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs/src/slice
 castbeliefslice.dir=${CMAKE_SOURCE_DIR}/tools/beliefs/apis/beliefs+cast/src/slice
 executionslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/execution.sa/src/slice
 motivationslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/motivation.sa/src/slice
+visionslice.dir=${CMAKE_SOURCE_DIR}/subarchitectures/vision.sa/src/slice
 abducerslice.dir=${CMAKE_SOURCE_DIR}/tools/abducer/slice
 jar.dir=${CMAKE_SOURCE_DIR}/output/jar
 output.dir=${CMAKE_SOURCE_DIR}/output/classes
