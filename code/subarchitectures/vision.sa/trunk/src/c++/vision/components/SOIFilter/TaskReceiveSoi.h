@@ -16,6 +16,7 @@ class WmTaskExecutor_Soi: public WmTaskExecutor
 protected:
    virtual void handle_add_soi(WmEvent *pEvent);
    virtual void handle_delete_soi(WmEvent *pEvent);
+   virtual void handle_update_soi(WmEvent *pEvent);
    void MakeVisible(cdl::WorkingMemoryAddress &protoObjectAddr);
    void MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAddr);
 
@@ -26,7 +27,7 @@ public:
    {
       if (pEvent->change == cdl::ADD) handle_add_soi(pEvent);
       else if (pEvent->change == cdl::DELETE) handle_delete_soi(pEvent);
-      // TODO: UPDATE to update the position; could cause too much data transfer ... 
+      else if (pEvent->change == cdl::OVERWRITE) handle_update_soi(pEvent);
    }
 };
 

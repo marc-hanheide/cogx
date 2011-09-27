@@ -326,16 +326,38 @@ void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const Vis
     ss << "glColor(0.0, 1.0, 0.0, 0.3)\n";
   else
     ss << "glColor(0.2, 0.2, 0.2, 0.3)\n";
+
   ss << "glTranslate("
     << pobj->position.x << ","
     << pobj->position.y << ","
     << pobj->position.z << ")\n";
   ss << "StdModel:box(0.05,0.05,0.05)\n";
+
   if (bHasVo)
     ss << "glColor(0.0, 1.0, 0.0)\n";
   else
     ss << "glColor(0.2, 0.2, 0.2)\n";
+
   ss << "showLabel(0, 0, 0.06, 'PO:" << addr.id << "', 12);\n";
+
+  ss << "glColor(0.8, 0.9, 0.1)\n";
+  typeof(m_sois.begin()) it;
+  for (it = m_sois.begin(); it != m_sois.end(); ++it) {
+    if (it->second->protoObjectAddr == addr) {
+      Vector3& pos = it->second->psoi->boundingSphere.pos;
+      ss << "glBegin(GL_LINES)\n"
+        << "glVertex("
+        << pobj->position.x << ","
+        << pobj->position.y << ","
+        << pobj->position.z << ")\n"
+        << "glVertex("
+        << pos.x << ","
+        << pos.y << ","
+        << pos.z << ")\n"
+        << "glEnd()\n";
+    }
+  }
+
   ss << "glPopMatrix()\n";
   ss << "end\n";
   m_display.setLuaGlObject(m_sProtoObjectView, ID_PART_3D_PO + addr.id, ss.str());
@@ -648,34 +670,46 @@ void SOIFilter::checkInvisibleObjects()
   if ( ! isCameraStable()) sleepComponent(50);
   if ( ! isCameraStable()) return;
 
-  IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
-  typeof(m_protoObjects.begin()) itpo;
-  for(itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
-    ProtoObjectRecordPtr& pporec = itpo->second;
-    //ProtoObjectPtr& pobj = pporec->pobj;
+  vector<ProtoObjectRecordPtr> toDelete;
 
-    if (pporec->tmDisappeared.elapsed() < 1000)
-      continue;
+  // Collect objects to delete. We delete them later when m_protoObjectMapMutex is
+  // unlocked to avoid waiting for unlock in onDelete_ProtoObject.
+  {
+    IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
+    typeof(m_protoObjects.begin()) itpo;
+    for(itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
+      ProtoObjectRecordPtr& pporec = itpo->second;
+      //ProtoObjectPtr& pobj = pporec->pobj;
 
-    bool bVisible = false;
-    typeof(m_sois.begin()) it;
-    for (it = m_sois.begin(); it != m_sois.end(); ++it) {
-      if (it->second->protoObjectAddr == pporec->addr) {
-        bVisible = true;
-        break;
+      if (pporec->tmDisappeared.elapsed() < 1000)
+        continue;
+
+      bool bVisible = false;
+      typeof(m_sois.begin()) it;
+      for (it = m_sois.begin(); it != m_sois.end(); ++it) {
+        if (it->second->protoObjectAddr == pporec->addr) {
+          bVisible = true;
+          break;
+        }
       }
-    }
-    if (bVisible) continue;
+      if (bVisible) continue;
 
-    Vector3& pos = pporec->pobj->position;
+      toDelete.push_back(pporec);
+    }
+  }
+
+  typeof(toDelete.begin()) itpo;
+  for(itpo = toDelete.begin(); itpo != toDelete.end(); ++itpo) {
+    ProtoObjectRecordPtr& pporec = *itpo;
 #if 0
+    Vector3& pos = pporec->pobj->position;
     log("TODO: Check Visibility of PO '%s' at (%.3g %.3g %3g) -> (%s)",
         pporec->addr.id.c_str(),
         pos.x, pos.y, pos.z,
         isPointVisible(pporec->pobj->position) ? "IN" : "OUT");
 #endif
     if (isPointVisible(pporec->pobj->position)) {
-      // the object should be visible, but there is no SOI -> removed -> delete PO
+      // the object should be visible, but there is no SOI -> assume removed from scene -> delete PO
       try {
         deleteFromWorkingMemory(pporec->addr);
       }
@@ -696,6 +730,104 @@ void SOIFilter::queueCheckVisibilityOf_PO(const cdl::WorkingMemoryAddress& proto
     pporec->tmDisappeared.restart();
   }
   catch(range_error& e) {}
+}
+
+// Queue an event to be processed again later.
+bool SOIFilter::retryEvent(WmEvent* pEvent, long milliSeconds, long nRetries)
+{
+  IceUtil::RWRecMutex::WLock lock(m_retryQueueMutex);
+
+  if (pEvent->pRetry)
+    pEvent->pRetry->tmToWaitMs = milliSeconds;
+  else
+    pEvent->pRetry = new EventRetryInfo(milliSeconds, nRetries);
+
+  pEvent->pRetry->tmWaiting.restart();
+  bool valid = pEvent->pRetry->retriesLeft > 0; 
+
+  for (unsigned int i = 0; i < m_EventRetryQueue.size(); i++) {
+    if (m_EventRetryQueue[i] == pEvent)
+      return valid;
+  }
+  m_EventRetryQueue.push_back(pEvent);
+
+  return valid;
+}
+
+// Find events that can be retried.
+// Move events from retry queue to evnet queue.
+// XXX: this will introduce event order inconsistencies (eg. update after delete) !!!
+void SOIFilter::checkRetryEvents()
+{
+  if (m_EventRetryQueue.size() < 1)
+    return;
+
+  IceUtil::RWRecMutex::RLock lock(m_retryQueueMutex);
+  vector<unsigned int> ready_i;
+  vector<WmEvent*> ready;
+  {
+    for (unsigned int i = 0; i < m_EventRetryQueue.size(); i++) {
+      WmEvent* pEvent = m_EventRetryQueue[i];
+      if (pEvent->pRetry->isReady()) {
+        ready.push_back(pEvent);
+        ready_i.push_back(i);
+      }
+    }
+  }
+
+  if (ready.size() < 1)
+    return;
+
+  // Try to obtain a write lock (WLock m_retryQueueMutex)
+  if (!lock.timedUpgrade(IceUtil::Time::milliSeconds(200)))
+    return;
+
+  for (int i = ready_i.size() - 1; i >= 0; i--)
+    m_EventRetryQueue.erase(m_EventRetryQueue.begin() + ready_i[i]);
+
+  lock.downgrade();
+
+  IceUtil::Monitor<IceUtil::Mutex>::Lock eqlock(m_EventQueueMonitor);
+  for (unsigned int i = 0; i < ready.size(); i++) {
+    WmEvent* pEvent = ready[i];
+    if (pEvent->pRetry->retriesLeft <= 0)
+      delete pEvent;
+    else {
+      pEvent->pRetry->retriesLeft--;
+      pEvent->pRetry->retryCount++;
+      m_EventQueue.push_back(pEvent);
+    }
+  }
+}
+
+long SOIFilter::getMillisToRetryEvent(long defaultMs)
+{
+  if (m_EventRetryQueue.size() < 1)
+    return defaultMs;
+
+  long minms = defaultMs;
+  IceUtil::RWRecMutex::RLock lock(m_retryQueueMutex);
+
+  for (unsigned int i = 0; i < m_EventRetryQueue.size(); i++) {
+    WmEvent* pEvent = m_EventRetryQueue[i];
+    long mtr = pEvent->pRetry->millisToReady();
+    if (mtr < minms)
+      minms = mtr;
+    if (minms <= 1)
+      return 1;
+  }
+  return minms;
+}
+
+bool SOIFilter::isRetryEvent(WmEvent* pEvent)
+{
+  IceUtil::RWRecMutex::RLock lock(m_retryQueueMutex);
+
+  for (unsigned int i = 0; i < m_EventRetryQueue.size(); i++) {
+    if (pEvent == m_EventRetryQueue[i])
+      return true;
+  }
+  return false;
 }
 
 void SOIFilter::updateRobotPosePtz()
@@ -745,13 +877,14 @@ void SOIFilter::runComponent()
   {
     std::deque<WmEvent*> tasks;
     tasks.clear();
+    checkRetryEvents();
     {
       // SYNC: Lock the monitor
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
 
       // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
       if (m_EventQueue.size() < 1)
-        m_EventQueueMonitor.timedWait(IceUtil::Time::milliSeconds(600));
+        m_EventQueueMonitor.timedWait(IceUtil::Time::milliSeconds(getMillisToRetryEvent(600)));
 
       // SYNC: Continue with a locked monitor
 
@@ -790,7 +923,8 @@ void SOIFilter::runComponent()
         default:
           error(" ***** Event with an unknown type of object '%d'", pevent->objectType);
       };
-      delete pevent;
+      if (! isRetryEvent(pevent))
+        delete pevent;
     }
 
     if (tmCheckVisibility.elapsed() > 1000) {

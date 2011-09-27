@@ -76,7 +76,10 @@ struct WmUnlocker
  */
 void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 {
-  debug("SOIFilter::handle_add_soi");
+  if (pEvent->pRetry)
+    log("SOIFilter::handle_add_soi, RETRY %ld", pEvent->pRetry->retryCount);
+  else
+    debug("SOIFilter::handle_add_soi");
   SOIPtr psoi;
   try {
     psoi = pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
@@ -96,7 +99,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   pSoiFilter->saveSoiData(psoi, psoirec->psoi);
   pSoiFilter->m_sois[psoirec->addr] = psoirec;
 
-  if (psoi->sourceId == pSoiFilter->m_coarseSource || psoi->sourceId == SOURCE_FAKE_SOI)
+  if (psoi->sourceId == pSoiFilter->m_coarseSource /*|| psoi->sourceId == SOURCE_FAKE_SOI*/)
   {
     // Verify all known proto objects if they are at the same location as the SOI;
     // In this case, we are looking at a known PO and don't have to do
@@ -158,28 +161,50 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
 
     double dirDelta = 0;
     double tiltDelta = 0;
+    double rcx = 0;
+    double rcy = 0;
     Video::CameraParameters camPars;
     if (! pSoiFilter->m_coarsePointCloud.getCameraParameters(Math::LEFT, camPars)) {
-      println("FAILED to get the camera parameters from '%s'",
+      error("FAILED to get the camera parameters from '%s'",
           pSoiFilter->m_coarsePcServer.c_str());
     }
     else {
+      // getCameraParameters sometimes returns invalid values. In this case we try to
+      // get new parameters and calculate a new projectSOI.
+      // xxx: unfortunately we have to wait for a long time for the parameters to become stable again,
+      // but maybe we get lucky.
       pobj->image.camPars = camPars; // XXX: Where do we need camPars again? In segmentation?
 
       ROIPtr roiPtr = projectSOI(camPars, *psoi);
-      if (psoi->sourceId == SOURCE_FAKE_SOI) {
-        roiPtr->rect.pos.x = 640 * psoi->boundingBox.pos.x;
-        roiPtr->rect.pos.y = 480 * psoi->boundingBox.pos.y;
-      }
+      //if (psoi->sourceId == SOURCE_FAKE_SOI) {
+      //  roiPtr->rect.pos.x = 640 * psoi->boundingBox.pos.x;
+      //  roiPtr->rect.pos.y = 480 * psoi->boundingBox.pos.y;
+      //}
 
       // Center of the projected SOI ... Math::Rect2.pos IS the center
-      double rcx = roiPtr->rect.pos.x;
-      double rcy = roiPtr->rect.pos.y;
+      rcx = roiPtr->rect.pos.x;
+      rcy = roiPtr->rect.pos.y;
+
+      if (fabs(rcx) > 2*camPars.width || fabs(rcy) > 2*camPars.height) {
+        ostringstream ss;
+        Math::Vector3 pos = psoi->boundingSphere.pos;
+        ss << "SOI: (" << pos.x << ", " << pos.y << ", " << pos.z << ")";
+        ss << "  CAMERA: " << camPars;
+        ss << "  roiCx: (" << rcx << ", " << rcy << ")";
+        log(ss.str());
+
+        if (pSoiFilter->retryEvent(pEvent, 1200, 10))
+          log("Projected SOI out of bouds. WILL RETRY LATER.");
+        else
+          error("Projected SOI out of bouds. NO MORE RETRIES. ABORTING.");
+        return;
+      }
 
       // how far from the center of the LEFT image is the SOI
-      dirDelta  = -atan( (rcx - camPars.cx) / camPars.fx); // negative pan is to the right
-      tiltDelta = -atan( (rcy - camPars.cy) / camPars.fy); // y is inverted between image and tilt
+      dirDelta  = -atan2( (rcx - camPars.cx), camPars.fx); // negative pan is to the right
+      tiltDelta = -atan2( (rcy - camPars.cy), camPars.fy); // y is inverted between image and tilt
       log("Angle to SOI: pan %g, tilt %g", dirDelta, tiltDelta);
+
 
 #if defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
       // draw the thing
@@ -210,7 +235,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
     pBetterVc->tilt = pCurVc->tilt + tiltDelta;
     pBetterVc->target = createWmPointer<ProtoObject>(cast::makeWorkingMemoryAddress(objId,
-        pSoiFilter->getSubarchitectureID()));
+          pSoiFilter->getSubarchitectureID()));
 
     // Address at which new view cone will be stored
     cdl::WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(),
@@ -472,6 +497,36 @@ void WmTaskExecutor_Soi::MakeVisible(cdl::WorkingMemoryAddress &protoObjectAddr)
     }
     lockRetries = 0;
     break;
+  }
+}
+
+void WmTaskExecutor_Soi::handle_update_soi(WmEvent *pEvent)
+{
+  // DEBUGGING
+  debug("SOIFilter::handle_update_soi");
+  const cdl::WorkingMemoryChange &wmc = pEvent->wmc;
+  SoiRecordPtr psoirec;
+  try {
+    psoirec = pSoiFilter->m_sois.get(wmc.address);
+  }
+  catch(range_error &e) {
+    // Unknown SOI, nothing to do
+    error("Updating a SOI that was not registered.");
+    return;
+  }
+
+  SOIPtr psoi;
+  try {
+    psoi = pSoiFilter->getMemoryEntry<VisionData::SOI>(pEvent->wmc.address);
+  }
+  catch(cast::DoesNotExistOnWMException){
+    log("SOIFilter.add_soi: SOI deleted while working...");
+    return;
+  }
+
+  double dist = Math::dist(psoi->boundingSphere.pos, psoirec->psoi->boundingSphere.pos);
+  if (dist > 0.12) {
+    error("SOI %s MOVED for %.4gm.", wmc.address.id.c_str(), dist);
   }
 }
 
