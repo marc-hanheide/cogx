@@ -71,7 +71,7 @@ public:
 };
 
 /** 
- * Cached SOI data
+ * Cached data
  */	
 struct SoiRecord: public IceUtil::SimpleShared
 {
@@ -161,6 +161,11 @@ private:
   IceUtil::Monitor<IceUtil::Mutex> m_EventQueueMonitor;
 
 private:
+  // time-based queue
+  std::vector<WmEvent*> m_EventRetryQueue;
+  IceUtil::RWRecMutex m_retryQueueMutex;
+
+private:
 #ifdef FEAT_VISUALIZATION
   class CSfDisplayClient: public cogx::display::CDisplayClient
   {
@@ -182,11 +187,6 @@ private:
 public:
   CSfDisplayClient m_display;
 #endif
-
-private:
-  void onAdd_SOI(const cdl::WorkingMemoryChange & _wmc);
-  void onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc);
-  void onDelete_SOI(const cdl::WorkingMemoryChange & _wmc);
 
 public:
   // The proto objects are kept locally so that we can match them by position with SOIs.
@@ -215,10 +215,22 @@ public:
   bool isCameraStable();
   bool isPointVisible(const cogx::Math::Vector3 &pos);
 
+public:
+  bool retryEvent(WmEvent* pEvent, long milliSeconds, long nRetries=1);
 private:
+  void checkRetryEvents();
+  long getMillisToRetryEvent(long defaultMs);
+  bool isRetryEvent(WmEvent* pEvent);
+
+private:
+  void onAdd_SOI(const cdl::WorkingMemoryChange & _wmc);
+  void onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc);
+  void onDelete_SOI(const cdl::WorkingMemoryChange & _wmc);
+
   void onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
   void onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc);
+
   void onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc);
   void onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc);
   void onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc);
