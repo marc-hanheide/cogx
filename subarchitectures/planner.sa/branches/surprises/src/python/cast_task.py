@@ -67,10 +67,15 @@ class CASTTask(object):
         self.dt_task = None
         self.step = 0
         self.plan_history = []
+        self.plan_state_history = []
         self.fail_count = defaultdict(lambda: 0)
+        self.failure_simulated = False
 
         self.load_domain(domain_fn)
-        if problem_fn:
+        if component.history_fn:
+            self.load_history(component.history_fn, component)
+            self.failure_simulated = True
+        elif problem_fn:
             import fake_cast_state
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
@@ -106,6 +111,7 @@ class CASTTask(object):
 
         log.debug("Planning task created: %.2f sec", global_vars.get_time())
         
+        
     def update_status(self, status):
         self.internal_state = status
         self.status = status_dict[status]
@@ -127,6 +133,61 @@ class CASTTask(object):
             # self.action_qgraph = domain_query_graph.QueryGraph(self.domain.actions, self.domain)
             # self.action_qgraph = domain_query_graph.QueryGraph(self.domain.dt_rules + self.domain.actions, self.domain)
             log.debug("total time for constructing query graph: %f", time.time()-t0)
+
+    def load_history(self, history_fn, component):
+        import re
+        import fake_cast_state
+        from standalone import plan_postprocess
+        
+        def read_file(fn):
+            read_problem=True
+            problem=[]
+            plan=[]
+            for l in open(fn):
+                l = l.strip()
+                if l == "END_PROBLEM":
+                    read_problem = False
+                elif l == "END_PLAN":
+                    yield problem, plan
+                    problem = []
+                    plan = []
+                    read_problem = True
+                elif read_problem:
+                    problem.append(l)
+                else:
+                    plan.append(l)
+
+        PDDL_REXP = re.compile("\((.*)\)")
+        def extract_action(line):
+            action, status = line.split(",")
+            status = plans.ActionStatusEnum.__dict__[status.strip()]
+            return PDDL_REXP.search(action).group(1).lower().strip(), status
+            
+        log.info("Loading history: %s.", history_fn)
+        _task = None
+        for prob_str, plan_str in read_file(history_fn):
+            problem = pddl.parser.Parser.parse_as(prob_str, pddl.Problem, self.domain)
+            self.state = fake_cast_state.FakeCASTState(problem, self.domain, component=component)
+            goal_from_pddl = Planner.Goal(importance=-1.0, goalString=problem.goal.pddl_str(), isInPlan=False)
+            self.slice_goals = [goal_from_pddl]
+            cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
+            _task = task.Task(0, cp_problem)
+            _task.set_state(self.state.state)
+            actions = []
+            actions_status = {}
+            for l in plan_str:
+                action, status = extract_action(l)
+                actions_status[action] = status
+                if action == "init" or action == "goal":
+                    continue
+                actions.append(action)
+                
+            plan = plan_postprocess.make_po_plan(list(enumerate(actions)), _task)
+            for n in plan.nodes_iter():
+                key = "%s %s" % (n.action.name, " ".join(a.name for a in n.full_args))
+                n.status = actions_status[key.strip()]
+            self.plan_history.append(plan)
+        
 
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
@@ -175,6 +236,9 @@ class CASTTask(object):
             os.system("%s %s" % (show_dot_script, dot_fn))
 
     def run(self):
+        if self.failure_simulated:
+            self.handle_task_failure()
+            return
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
         log.debug("Planning done: %.2f sec", global_vars.get_time())
@@ -210,6 +274,24 @@ class CASTTask(object):
         last_plan = self.plan_history[-1]
         for n in last_plan.topological_sort():
             print n, n.status
+
+    def write_history(self):
+        history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))
+        f = open(history_fn, "w")
+        
+        for state, plan in self.plan_state_history:
+            problem, _, _ = self.state.to_problem(self.slice_goals, deterministic=False, raw_problem=True)
+            w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+            _, prob_str = w.write(init_prob)
+            f.write(problem)
+            f.write("\nEND_PROBLEM\n")
+            for pnode in plan.topological_sort():
+                s = "(%s %s), %s" % (pnode.action.name, " ".join(a.name for a in pnode.full_args), pnode.status)
+                f.write(s)
+                f.write("\n")
+            f.write("\nEND_PLAN\n")
+        f.close()
+
 
     def process_cp_plan(self):
         plan = self.get_plan()
@@ -436,7 +518,7 @@ class CASTTask(object):
   
     def monitor_cp(self):
         assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION)
-            
+        
         # if self.dt_planning_active():
         #     self.process_cp_plan()
         #     return
@@ -472,6 +554,8 @@ class CASTTask(object):
             problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
             self.write_cp_problem(problem_fn)
             self.plan_history.append(plan)
+            self.plan_state_history.append((plan, self.state))
+            self.write_history()
             
         if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
             log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))

@@ -208,7 +208,15 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       if not path.exists(self.problem_fn):
           log.error("Could not find specified problem %s. Using planning state from CAST.", config["--problem"])
           self.problem_fn = None
-      
+
+    if "--history" in config:
+      self.history_fn = path.join(standalone.globals.config.problem_dir, config["--history"])
+      if not path.exists(self.history_fn):
+          self.history_fn = path.join(standalone.globals.config.domain_dir, config["--history"])
+      if not path.exists(self.history_fn):
+          log.error("Could not find specified history %s. Using planning state from CAST.", config["--history"])
+          self.history_fn = None
+          
   def getClient(self):
     if not self.client:
       self.client = self.getIceServer(self.client_name, Planner.CppServer, Planner.CppServerPrx)
