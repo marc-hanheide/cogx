@@ -1,5 +1,6 @@
 package spatial.execution;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,6 +16,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import execution.slice.actions.LookForPeople;
 import execution.slice.person.PersonObservation;
+import facades.SpatialFacade;
 
 /**
  * Executor which
@@ -75,10 +77,12 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 
 	@Override
 	protected void publishActionOutcome() {
-		PersonObservation po = new PersonObservation(0.0, 0.0, 0.0);
+		PersonObservation po = new PersonObservation(new ArrayList<Person>(),
+				0.0, -1, 0.0, 0.0, 0.0, 0.0);
 		synchronized (observations) {
 			for (Person p : observations) {
 				po.existProb += p.existProb;
+				po.persons.add(p);
 			}
 			po.existProb /= observations.size();
 			try {

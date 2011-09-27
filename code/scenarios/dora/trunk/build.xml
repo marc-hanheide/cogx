@@ -41,6 +41,12 @@
 				<pathelement path="${plannerslice.dir}" />
 				<pathelement path="${beliefslice.dir}" />
 				<pathelement path="${executionslice.dir}" />
+				<pathelement path="${visionslice.dir}" />
+                                <pathelement path="${basedir}/../../tools/hardware/video/src/slice" />
+                                <pathelement path="${basedir}/../../tools/hardware/laser/src/slice"/>
+                                <pathelement path="${basedir}/../../tools/math/src/slice" />
+                                <pathelement path="${basedir}/../../tools/hardware/pointCloud/src/slice" />
+
 			</includepath>
 		</slice2java>
 	</target>
