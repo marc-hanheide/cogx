@@ -119,8 +119,10 @@ mary.setCommand("""
 
 
 golem = Server("Golem", label="Golem")
-golem.filenameField("CONFIG", label="Configuration", filter="Golem Config (*.cfg);;All files (*)")
-golem.setCommand("golem [CONFIG]")
+#golem.filenameField("CONFIG", label="Configuration", filter="Golem Config (*.cfg);;All files (*)")
+golem.setVar("CMD_GOLEM_WORKDIR", "/usr/local/bin/Golem")
+golem.setVar("CMD_GOLEM", "${CMD_GOLEM_WORKDIR}/tinyIce")
+golem.setCommand("${CMD_GOLEM}", workdir="${CMD_GOLEM_WORKDIR}")
 
 
 # * An external sever must be configured to run on an agent
