@@ -5,15 +5,21 @@
 #include <Execution.ice>
 //#include <beliefs.ice>
 #include <Planner.ice>
+#include <VisionData.ice>
 
 module execution {
   module slice {
 
 	module person {
+		["java:type:java.util.ArrayList<VisionData.Person>:java.util.List<VisionData.Person>"] sequence<VisionData::Person> PersonSeq;
 		class PersonObservation {
-			double posX;
-			double posY;
+			PersonSeq persons;
 			double existProb;
+			int placeId;
+			double robotX;
+			double robotY;
+			double robotTheta;
+			double pan;		
 		};
 	};
 
