@@ -947,14 +947,14 @@ void SOIFilter::runComponent()
 // psoi is calculated at pSoiFilter->m_RobotPose
 ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
 {
-  IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
-  typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
   double dmin = 1e99;
   double d;
   ProtoObjectRecordPtr pBest;
   const Vector3& p0 = pos;
-  log("Find PO near (%.4lf, %.4lf, %.4lf)", p0.x, p0.y, p0.z);
+  log("Find PO near (%.4g, %.4g, %.4g)", p0.x, p0.y, p0.z);
 
+  IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
+  typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
   for(; itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectRecordPtr& pporec = itpo->second;
     ProtoObjectPtr& pobj = pporec->pobj;
@@ -966,7 +966,7 @@ ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
     Vector3& p1 = pobj->position;
 
     d = dist(p0, p1);
-    log("PO %s (%.4lf, %.4lf, %.4lf): %.4lf", itpo->first.id.c_str(), p1.x, p1.y, p1.z, d);
+    log("PO %s, d=%.4g (%.4g, %.4g, %.4g)", itpo->first.id.c_str(), d, p1.x, p1.y, p1.z);
     if (d < dmin) {
       dmin = d;
       pBest = pporec;
