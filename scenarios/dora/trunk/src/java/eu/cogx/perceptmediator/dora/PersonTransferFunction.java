@@ -82,8 +82,8 @@ public class PersonTransferFunction
 			WMPointer ptr = WMPointer.create(placeBel, CASTUtils
 					.typeName(Place.class));
 			result.put(IS_IN, ptr.getAsFormula());
-			result.put("posX", DoubleFormula.create(from.posX).getAsFormula());
-			result.put("posY", DoubleFormula.create(from.posY).getAsFormula());
+//			result.put("posX", DoubleFormula.create(from.posX).getAsFormula());
+//			result.put("posY", DoubleFormula.create(from.posY).getAsFormula());
 		} catch (CASTException e) {
 			component.logException(e);
 		} catch (InterruptedException e) {
