@@ -65,11 +65,14 @@ struct WmUnlocker
 };
 
 /*
- * TODO: 2 step VisualObject generation.
+ * 2 step VisualObject generation.
+ *
  *   1. If the SOI comes from coarseSource, create a proto-object with the
  *      desired ViewCones
+ *
  *   2. If the SOI comes from fineSource, we need to know which PO it belongs
  *      to (SOI matching by position), then we update the PO and create the VO.
+ *      This is done in AnalyzeProtoObjectCommand.
  * 
  * When there is a single source, all SOIs come from this source: first through
  * WM filters, then through the GetStableSoisCommand.
