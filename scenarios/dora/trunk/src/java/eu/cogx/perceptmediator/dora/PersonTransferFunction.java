@@ -55,7 +55,8 @@ public class PersonTransferFunction
 
 	@Override
 	protected Map<String, Formula> getFeatureValueMapping(
-			WorkingMemoryChange wmc, PersonObservation from) throws BeliefException {
+			WorkingMemoryChange wmc, PersonObservation from)
+			throws BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
@@ -82,8 +83,14 @@ public class PersonTransferFunction
 			WMPointer ptr = WMPointer.create(placeBel, CASTUtils
 					.typeName(Place.class));
 			result.put(IS_IN, ptr.getAsFormula());
-//			result.put("posX", DoubleFormula.create(from.posX).getAsFormula());
-//			result.put("posY", DoubleFormula.create(from.posY).getAsFormula());
+			result
+					.put("posX", DoubleFormula.create(from.robotX)
+							.getAsFormula());
+			result
+					.put("posY", DoubleFormula.create(from.robotY)
+							.getAsFormula());
+			result.put("posTheta", DoubleFormula.create(from.robotTheta)
+					.getAsFormula());
 		} catch (CASTException e) {
 			component.logException(e);
 		} catch (InterruptedException e) {
@@ -98,7 +105,8 @@ public class PersonTransferFunction
 			WorkingMemoryChange wmc, PersonObservation from) {
 
 		super.fillBelief(belief, wmc, from);
-		belief.setType(SimpleDiscreteTransferFunction.getBeliefTypeFromCastType(Person.class));
+		belief.setType(SimpleDiscreteTransferFunction
+				.getBeliefTypeFromCastType(Person.class));
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(true, (from.existProb > PROB_EPS) ? 1.0 : 0.0);
 		belief.getContent().put(EXISTS, fd);
