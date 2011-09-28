@@ -47,6 +47,8 @@ public:
 	 * Do detection on demand.
 	 */
 	void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
+    static const float MIN_RATIO = 0.7;
+    static const float MAX_RATIO = 1.2;
 
 protected:
 

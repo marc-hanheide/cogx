@@ -203,7 +203,7 @@ void PCPeopleDetector::runDetection() {
 				log("count=%d, dist=%f, x=%f, y=%f, z=%f, size ratio=%f",
 						count, avg_distance, centerOfMass.x, centerOfMass.y,
 						centerOfMass.z, sizeRatio);
-				if (sizeRatio > 0.8 && sizeRatio < 1.2 && avg_distance
+				if (sizeRatio > MIN_RATIO && sizeRatio < MAX_RATIO && avg_distance
 						<= maxDist) {
 					person->distance = avg_distance;
 					person->angle = atan2(centerOfMass.y, centerOfMass.x);
