@@ -1,23 +1,23 @@
 package facades;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-
-//import comadata.ComaRoom;
+import java.util.concurrent.TimeUnit;
 
 import FrontierInterface.PlaceInterface;
 import FrontierInterface.PlaceInterfacePrx;
-import Ice.ObjectImpl;
+import NavData.RobotPose2d;
 import SpatialData.PathQueryStatus;
 import SpatialData.PathTransitionCostRequest;
 import SpatialData.Place;
+import SpatialProperties.PlaceContainmentAgentProperty;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.CASTHelper;
@@ -25,9 +25,12 @@ import castutils.castextensions.WMEntryQueue;
 import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
-import castutils.castextensions.WMEntrySet.ChangeHandler;
 
-public class SpatialFacade extends CASTHelper implements ChangeHandler {
+/**
+ * @author cogx
+ * 
+ */
+public class SpatialFacade extends CASTHelper {
 
 	public interface PlaceChangedHandler {
 		void update(Place p);
@@ -48,19 +51,18 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		public void run() {
 			try {
 				places.start();
-//				rooms.start();
+				// rooms.start();
 			} catch (UnknownSubarchitectureException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				component.logException(e1);
 			}
 			WMEventQueue agentChangeEventQueue = new WMEventQueue();
-			// TODO reintroduce handling of place changing
-//			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
-//					PlaceContainmentAgentProperty, WorkingMemoryOperation.ADD), agentChangeEventQueue);
-//			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
-//					PlaceContainmentAgentProperty.class, WorkingMemoryOperation.OVERWRITE), agentChangeEventQueue);
+			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
+					PlaceContainmentAgentProperty.class,
+					WorkingMemoryOperation.ADD), agentChangeEventQueue);
+			component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
+					PlaceContainmentAgentProperty.class,
+					WorkingMemoryOperation.OVERWRITE), agentChangeEventQueue);
 
-			
 			// initialize current place
 			while (currentPlace == null && !interrupted())
 				currentPlace = getPlaceInterface().getCurrentPlace();
@@ -68,8 +70,13 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 
 			while (!interrupted()) {
 				try {
-					// wait for the next change
-					agentChangeEventQueue.take();
+					// wait for the next change (wait 500ms to allow this to be
+					// properly shutdown on interrupts)
+					WorkingMemoryChange event = agentChangeEventQueue.poll(500,
+							TimeUnit.MILLISECONDS);
+					// if it was just a time out continue waiting
+					if (event == null)
+						continue;
 
 					Place place = getPlaceInterface().getCurrentPlace();
 
@@ -82,7 +89,6 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 				} catch (InterruptedException e) {
 					break;
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 					break;
 				}
@@ -90,61 +96,57 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		}
 
 	}
-	
+
+	private static final String PLACE_MANAGER = "place.manager";
+	private static final String SPATIAL_SA = "spatial.sa";
+
+	/**
+	 * get the singleton reference
+	 * 
+	 * @param component
+	 * @return the singleton
+	 * @throws CASTException
+	 */
+	public static SpatialFacade get(ManagedComponent component)
+			throws CASTException {
+		if (singleton == null) {
+			singleton = new SpatialFacade(component);
+		}
+		return singleton;
+	}
+
+	String placeManager = PLACE_MANAGER;
+
+	String spatialSA = SPATIAL_SA;
+
 	SpatialCheckThread spatialCheckThread;
+
 	static private SpatialFacade singleton;
-	private Place currentPlace;
-	private Set<PlaceChangedHandler> placeCheckerCallables = null;
-	private PlaceInterfacePrx placeInterface;
+
+	Place currentPlace;
+
+	Set<PlaceChangedHandler> placeCheckerCallables = null;
+	PlaceInterfacePrx placeInterface;
 	ManagedComponent component;
 	WMView<Place> places;
 
-	//	WMView<ComaRoom> rooms;
+	/**
+	 * @param component
+	 * @throws CASTException
+	 */
+	SpatialFacade(ManagedComponent component) throws CASTException {
+		super(component);
+		this.component = component;
 
-	// TODO: reintroduce rooms!
-	//	/**
-//	 * returns room a given place is in
-//	 * 
-//	 * @return room the place is in
-//	 */
-//	public ComaRoom getRoom(Place p) {
-//		for (ComaRoom cr : new HashSet<ComaRoom>(rooms.values())) {
-//			for (int i = 0; i < cr.containedPlaceIds.length; i++) {
-//				if (cr.containedPlaceIds[i] == p.id) {
-//					return cr;
-//				}
-//
-//			}
-//		}
-//		return null;
-//	}
+		places = WMView.create(component, Place.class, SPATIAL_SA);
 
-//	/**
-//	 * returns all places belonging to the room
-//	 * 
-//	 * @return set of places
-//	 */
-//	public Set<Place> getPlaces(ComaRoom cr) {
-//		Set<Place> result = new HashSet<Place>();
-//		for (int i = 0; i < cr.containedPlaceIds.length; i++) {
-//			for (Place p : new HashSet<Place>(places.values())) {
-//				if (p.id == cr.containedPlaceIds[i]) {
-//					result.add(p);
-//				}
-//			}
-//		}
-//		return result;
-//	}
+		this.spatialCheckThread = new SpatialCheckThread();
 
-//	/**
-//	 * returns current room
-//	 * 
-//	 * @return current room
-//	 */
-//	public ComaRoom getRoom() throws InterruptedException {
-//		Place currentPlace = getPlace();
-//		return getRoom(currentPlace);
-//	}
+		placeInterface = null; // lazy init
+		placeCheckerCallables = Collections
+				.synchronizedSet(new HashSet<PlaceChangedHandler>());
+
+	}
 
 	/**
 	 * retrieves the current place
@@ -161,19 +163,14 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		return currentPlace;
 	}
 
-	private synchronized void setPlace(Place p) {
-		currentPlace = p;
-		notifyAll();
-	}
-
-	/** get a proxy to the placeInterface as a singleton */
-	synchronized PlaceInterfacePrx getPlaceInterface() {
+	
+	public synchronized PlaceInterfacePrx getPlaceInterface() {
 
 		while (placeInterface == null) {
 			try {
 				println("trying to connect to PlaceInterface server");
 
-				placeInterface = component.getIceServer("place.manager",
+				placeInterface = component.getIceServer(PLACE_MANAGER,
 						PlaceInterface.class, PlaceInterfacePrx.class);
 				log("PlaceInterface initialized... ");
 				// Thread.sleep(3000);
@@ -204,75 +201,82 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		return placeInterface;
 	}
 
+	/**
+	 * @return the placeManager
+	 */
+	public String getPlaceManager() {
+		return placeManager;
+	}
 
 	/**
-	 * get the singleton reference
+	 * get the current metric robot pose. NOTE: This is not the "official" way
+	 * as the exact pose should be hidden to other components.
 	 * 
-	 * @param component
-	 * @return the singleton
+	 * @return the pose
 	 * @throws CASTException
 	 */
-	public static SpatialFacade get(ManagedComponent component)
-			throws CASTException {
-		if (singleton == null) {
-			singleton = new SpatialFacade(component);
+	public RobotPose2d getPose() throws CASTException {
+		List<RobotPose2d> poses = new ArrayList<RobotPose2d>(1);
+		try {
+			component.getMemoryEntries(RobotPose2d.class, poses, SPATIAL_SA);
+			if (poses.size() < 1) {
+				component.getLogger().warn(
+						SpatialFacade.class.getSimpleName()
+								+ " failed to get pose from working memory");
+				throw new CASTException("there is no "
+						+ RobotPose2d.class.getSimpleName() + " on "
+						+ SPATIAL_SA);
+			}
+			return poses.get(0);
+		} catch (CASTException e) {
+			component.logException("in " + SpatialFacade.class.getSimpleName()
+					+ " when trying to receive pose", e);
+			throw (e);
 		}
-		return singleton;
-	}
-
-	public synchronized void registerPlaceChangedCallback(
-			PlaceChangedHandler callable) {
-		placeCheckerCallables.add(callable);
 	}
 
 	/**
-	 * @param component
-	 * @throws CASTException
+	 * @return the spatialSA
 	 */
-	SpatialFacade(ManagedComponent component) throws CASTException {
-		super(component);
-		this.component = component;
-		
-		
-		places = WMView.create(component, Place.class, "spatial.sa");
-//		rooms = WMView.create(component, ComaRoom.class,"coma");
-		
-		
-		this.spatialCheckThread = new SpatialCheckThread();
-
-		placeInterface = null; // lazy init
-		placeCheckerCallables = Collections
-				.synchronizedSet(new HashSet<PlaceChangedHandler>());
-		
+	public String getSpatialSA() {
+		return spatialSA;
 	}
 
+	/**
+	 * query costs by planning a route to a place
+	 * 
+	 * @param from
+	 *            place ID to start from
+	 * @param to
+	 *            place ID to go to
+	 * @return costs
+	 */
 	public synchronized double queryCosts(long from, long to) {
 		PathTransitionCostRequest ptcr = new PathTransitionCostRequest(from,
 				to, 1.0, PathQueryStatus.QUERYPENDING);
 		String id = component.newDataID();
-		WMEntryQueue<PathTransitionCostRequest> resultQueue = new WMEntryQueue<PathTransitionCostRequest>(component, PathTransitionCostRequest.class);
+		WMEntryQueue<PathTransitionCostRequest> resultQueue = new WMEntryQueue<PathTransitionCostRequest>(
+				component, PathTransitionCostRequest.class);
 		try {
 			component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
-					id, "spatial.sa", WorkingMemoryOperation.OVERWRITE),
+					id, SPATIAL_SA, WorkingMemoryOperation.OVERWRITE),
 					resultQueue);
-			component.addToWorkingMemory(id, "spatial.sa", ptcr);
+			component.addToWorkingMemory(id, SPATIAL_SA, ptcr);
 			while (ptcr.status == PathQueryStatus.QUERYPENDING) {
-				WMEntryQueueElement<PathTransitionCostRequest> elem = resultQueue.take();
-				log("PathTransitionCostRequest.status="
-						+ ptcr.status.name());
+				WMEntryQueueElement<PathTransitionCostRequest> elem = resultQueue
+						.take();
+				log("PathTransitionCostRequest.status=" + ptcr.status.name());
 				if (elem.getEntry() == null)
 					return Double.MAX_VALUE;
 				ptcr = elem.getEntry();
 			}
 			if (ptcr.status == PathQueryStatus.QUERYCOMPLETED) {
-				log("we found a path and computed costs of "
-						+ ptcr.cost);
+				log("we found a path and computed costs of " + ptcr.cost);
 				if (ptcr.cost > 1E99)
 					return Double.MAX_VALUE;
 				return ptcr.cost;
 			} else {
-				println("could not find path from " + from + " to "
-						+ to);
+				println("could not find path from " + from + " to " + to);
 			}
 
 		} catch (CASTException e) {
@@ -284,7 +288,7 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 			e.printStackTrace();
 		} finally {
 			try {
-				component.deleteFromWorkingMemory(id, "spatial.sa");
+				component.deleteFromWorkingMemory(id, SPATIAL_SA);
 			} catch (CASTException e) {
 				// ignore as it was only during GC
 			}
@@ -293,11 +297,35 @@ public class SpatialFacade extends CASTHelper implements ChangeHandler {
 		return Double.MAX_VALUE;
 	}
 
-	@Override
-	public void entryChanged(Map<WorkingMemoryAddress, ObjectImpl> map,
-			WorkingMemoryChange wmc, ObjectImpl newMotive, ObjectImpl oldMotive)
-			throws CASTException {
+	/**
+	 * register a callback that is called whenever the robot changes place
+	 * 
+	 * @param callable
+	 */
+	public synchronized void registerPlaceChangedCallback(
+			PlaceChangedHandler callable) {
+		placeCheckerCallables.add(callable);
+	}
 
+	private synchronized void setPlace(Place p) {
+		currentPlace = p;
+		notifyAll();
+	}
+
+	/**
+	 * @param placeManager
+	 *            the placeManager to set
+	 */
+	public void setPlaceManager(String placeManager) {
+		this.placeManager = placeManager;
+	}
+
+	/**
+	 * @param spatialSA
+	 *            the spatialSA to set
+	 */
+	public void setSpatialSA(String spatialSA) {
+		this.spatialSA = spatialSA;
 	}
 
 }
