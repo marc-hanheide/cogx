@@ -40,6 +40,7 @@ namespace ptz {
 
   public:
     PlayerPTZServer();
+      static const float MAX_SPEED = 3.0;
     
   };
 

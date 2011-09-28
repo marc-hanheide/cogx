@@ -102,7 +102,7 @@ namespace ptz {
 
      //debug("PlayerPTZServer::setPose %f %f %f",_pose.pan,_pose.tilt,m_defaultZoom);
      lockComponent();
-     playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, m_defaultZoom, 0.5, 0.5);
+     playerc_ptz_set_ws(m_ptzProxy.get(), _pose.pan, _pose.tilt, m_defaultZoom, MAX_SPEED, MAX_SPEED);
 
      unlockComponent();
   }
