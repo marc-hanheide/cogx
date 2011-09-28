@@ -140,6 +140,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     cast.core.CASTComponent.__init__(self)
     self.domain_fn = TEST_DOMAIN_FN
     self.problem_fn = None
+    self.history_fn = None
     self.client = None
     self.dt = None
     self.hfc = None
