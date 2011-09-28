@@ -17,7 +17,7 @@ CPP GD path.query PathQueryProcessor #--no-indirect-paths
 CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors 
 
 JAVA MG experiment vision.components.ObservationModelExperiment --set-angleStep 45 --set-radiusStart 0.75 --set-radiusStop 1.5 --set-radiusStep 0.25
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 
 # Vision ######################################################################

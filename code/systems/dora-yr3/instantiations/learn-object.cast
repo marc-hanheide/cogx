@@ -37,5 +37,5 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --display --camid
 # mode can be RECOGNIZE or LEARN
 CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "%(or3d_labels)" --mode LEARN
 
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 

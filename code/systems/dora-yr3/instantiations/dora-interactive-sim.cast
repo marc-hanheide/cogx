@@ -126,7 +126,7 @@ INCLUDE includes/vision.sa/vision-mediators-dora.cast
 
 CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
 

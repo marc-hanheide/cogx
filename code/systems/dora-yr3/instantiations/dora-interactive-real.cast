@@ -128,7 +128,7 @@ CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/Ki
 
 CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI --shake
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake
 
 
 CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
