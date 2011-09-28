@@ -1,4 +1,4 @@
-package ptz.ptzServer;
+package eu.cogx.ptz;
 
 import java.awt.Component;
 import java.awt.Container;
