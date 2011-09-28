@@ -23,10 +23,14 @@ INCLUDE  includes/spatial.sa/spatial-base.cast
 
 # vision #################################################################
 INCLUDE  includes/vision.sa/vision-base.cast
+
 # Configure the cameras (internal, external parameters; stereo config; position)
 INCLUDE  sim/cameras-sim.incl
-# Include othere vision components
+#INCLUDE  real/cameras-real.incl
+
+# Include other vision components
 INCLUDE  georgeY3-vision.incl
+
 # belief mediators, execution
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators.cast
