@@ -173,6 +173,7 @@ void CameraMount::runComponent()
 {
   size_t size = camIds.size();
   bool camsAddedToWM[size];
+  Pose3 oldPoses[size];
 
   castutils::CCastPaceMaker<CameraMount> paceMaker(*this, 1000/5, 1); // 5Hz
 
@@ -213,12 +214,18 @@ void CameraMount::runComponent()
       camParms->cam.time = time;
       if(camsAddedToWM[i])
       {
-        overwriteWorkingMemory(camWMIds[i], camParms);
+//        if (equals(oldPoses[i], camParms->cam.pose, 1e-4)) {
+//        	log("no update on cam pose as it didn't change significantly");
+//        } else {
+            overwriteWorkingMemory(camWMIds[i], camParms);
+            oldPoses[i]=camParms->cam.pose;
+//        }
       }
       else
       {
         addToWorkingMemory(camWMIds[i], camParms);
         camsAddedToWM[i] = true;
+    	oldPoses[i]=camParms->cam.pose;
       }
     }
   }
