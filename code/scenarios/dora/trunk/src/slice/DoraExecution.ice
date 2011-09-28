@@ -15,7 +15,7 @@ module execution {
 		class PersonObservation {
 			PersonSeq persons;
 			double existProb;
-			int placeId;
+			long placeId;
 			double robotX;
 			double robotY;
 			double robotTheta;
