@@ -92,13 +92,22 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 				RobotPose2d pose = spatialFacade.getPose();
 				po.robotX = pose.x;
 				po.robotY = pose.y;
-				po.robotTheta = pose.theta;
 				po.placeId = spatialFacade.getPlace().id;
 				
+				double avgAngle=0.0;
 				for (Person p : observations) {
 					po.existProb += p.existProb;
 					po.persons.add(p);
+					if (p.existProb>0.5)
+					avgAngle+=p.angle;
 				}
+				avgAngle/=observations.size();
+				
+				po.robotTheta=pose.theta+avgAngle;
+				while (po.robotTheta>Math.PI)
+					po.robotTheta-=Math.PI*2;
+				while (po.robotTheta<-Math.PI)
+					po.robotTheta+=Math.PI*2;
 				
 				po.existProb /= observations.size();
 				getComponent().addToWorkingMemory(getComponent().newDataID(),
