@@ -298,7 +298,8 @@ ostream& operator<<(ostream &os, const CameraParameters &cam)
      << "  fx/fy: " << cam.fx << " / " << cam.fy
      << "  cx/cy: " << cam.cx << " / " << cam.cy
      << "  dist: " << cam.k1 << " " << cam.k2 << " " << cam.k3
-     << " " << cam.p1 << " " << cam.p2;
+     << " " << cam.p1 << " " << cam.p2
+     << " pose: " << cam.pose;
   return os;
 }
 
