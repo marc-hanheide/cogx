@@ -34,5 +34,5 @@ CPP MG recognizer.3D ObjectRecognizer3D --no-learning --videoname VideoServer --
 JAVA MG estimator castutils.experimentation.ManualObservationModelEstimatorComponent --label "%(or3d_labels)"
 
 
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 

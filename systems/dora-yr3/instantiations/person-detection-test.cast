@@ -11,7 +11,7 @@ SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 # With pan tilt
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 # Without pan tilt
 CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instantiations/kinect/camPose/campose-kinect.xml" --fixed_pan_tilt "0 -0.52324971"

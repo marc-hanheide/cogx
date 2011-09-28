@@ -70,7 +70,7 @@ INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
 CPP MG CameraMount CameraMount --use_ptz --camids "0" --fixed_cam_poses_xml "instantiations/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -0.785398175" --cam_poses_xml instantiations/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/calibration/ptu-pose-tilt-sim.xml --log --debug --ptzserver ptz.server
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 

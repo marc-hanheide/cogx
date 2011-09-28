@@ -13,7 +13,7 @@ SUBARCHITECTURE vision.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 # With pan tilt
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI --shake
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake
 
 CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 

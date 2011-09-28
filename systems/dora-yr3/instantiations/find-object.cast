@@ -35,6 +35,6 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --lab
 
 CPP MG Recognizer3DDriver DummyDriver --labels "%(or3d_labels)"
 
-JAVA MG ptzJavaServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
 
