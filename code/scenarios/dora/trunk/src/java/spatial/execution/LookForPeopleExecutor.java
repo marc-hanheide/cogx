@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import NavData.RobotPose2d;
 import VisionData.PeopleDetectionCommand;
 import VisionData.Person;
 import cast.AlreadyExistsOnWMException;
@@ -28,6 +29,7 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 
 	Set<Person> observations = Collections
 			.synchronizedSet(new HashSet<Person>());
+	private SpatialFacade spatialFacade;
 
 	class ObservationCollector implements WorkingMemoryChangeReceiver {
 
@@ -45,6 +47,12 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 
 	public LookForPeopleExecutor(ManagedComponent _component, int _detections) {
 		super(_component, LookForPeople.class, _detections);
+		try {
+			spatialFacade = SpatialFacade.get(getComponent());
+		} catch (CASTException e) {
+			logException(e);
+			throw new RuntimeException(e.message);
+		}
 	}
 
 	@Override
@@ -80,18 +88,27 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 		PersonObservation po = new PersonObservation(new ArrayList<Person>(),
 				0.0, -1, 0.0, 0.0, 0.0, 0.0);
 		synchronized (observations) {
-			for (Person p : observations) {
-				po.existProb += p.existProb;
-				po.persons.add(p);
-			}
-			po.existProb /= observations.size();
 			try {
+				RobotPose2d pose = spatialFacade.getPose();
+				po.robotX = pose.x;
+				po.robotY = pose.y;
+				po.robotTheta = pose.theta;
+				po.placeId = spatialFacade.getPlace().id;
+				
+				for (Person p : observations) {
+					po.existProb += p.existProb;
+					po.persons.add(p);
+				}
+				
+				po.existProb /= observations.size();
 				getComponent().addToWorkingMemory(getComponent().newDataID(),
 						po);
-			} catch (AlreadyExistsOnWMException e) {
-				getComponent().logException(e);
+				observations.clear();
+			} catch (CASTException e1) {
+				logException(e1);
+			} catch (InterruptedException e) {
+				logException(e);
 			}
-			observations.clear();
 		}
 	}
 
