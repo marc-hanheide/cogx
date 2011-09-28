@@ -244,6 +244,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException, ConsistencyException,
 			PermissionException {
+		try {
 		PointerFormula placePtr = (PointerFormula) (pb.getContent().get(
 				PersonTransferFunction.IS_IN).getDistribution().getMostLikely()
 				.get());
@@ -270,6 +271,9 @@ public class DoraPersonTracker extends ManagedComponent implements
 		} else {
 			handleSuccessiveObservation(event, from, roomAdr,
 					placeDistribution, wmaGrounded, existDistribution);
+		}
+		} catch (NullPointerException e) {
+			logException(e);
 		}
 	}
 
