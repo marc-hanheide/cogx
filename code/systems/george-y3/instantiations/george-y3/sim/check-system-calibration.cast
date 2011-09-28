@@ -27,5 +27,5 @@ CPP MG checksystemcalibration CheckSystemCalibration --videoname VideoServer --c
 
 # use the PTZ GUI to move the pan tilt to the fixed position for which the cameras were calibrated, as given
 # above in --fixed_pan_tilt and --fixed_cam_poses_xml
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 

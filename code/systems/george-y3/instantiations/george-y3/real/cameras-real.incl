@@ -78,4 +78,4 @@ CPP MG pcserver KinectPCServer %(KinectPCServer_Params)
 # to move the PTU to a given position
 CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
 
-JAVA MG ptz.wmi.server ptz.ptzServer.PanTiltZoomServer # --testGUI
+JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer # --testGUI

@@ -56,11 +56,13 @@ CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 
 ##### Monitors
 
-JAVA MG vis.SOIs castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
+JAVA MG vis.e.SOI castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
 
-JAVA MG vis.proto.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact --omit-fields "image mask points"
+JAVA MG vis.e.proto.object castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact --omit-fields "image mask points"
 
-JAVA MG vis.visual.objects castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact --omit-fields "points2d model"
+JAVA MG vis.e.visual.object castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact --omit-fields "points2d model"
+
+JAVA MG vis.e.view.cone castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ViewCone" --displayserver "display.srv" --generic-col --compact
 
 JAVA MG vis.cmd.analyze castutils.viewer.V11WMViewerComponent --subscribe "VisionData.AnalyzeProtoObjectCommand" --displayserver "display.srv" --generic-col --compact
 

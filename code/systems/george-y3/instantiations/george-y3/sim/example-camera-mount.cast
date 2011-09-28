@@ -24,5 +24,5 @@ CPP TM AlwaysPositiveTaskManager
 # base - pan joint - tilt joint - cam offset.
 CPP MG CameraMount CameraMount --camids "0" --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -0.785398175" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml # --log --debug
 
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 

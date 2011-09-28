@@ -24,7 +24,7 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --dis
 # mode can be RECOGNIZE or LEARN
 CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-schokomusli-sim" --mode LEARN
 
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 CPP MG turntable GazeboTurntable --label "cereals1_model" --displayserver "display.srv"
 
