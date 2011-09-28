@@ -9,6 +9,7 @@
 #define EIGEN2_SUPPORT
 
 #include <cmath>
+#include <fstream>
 #include <algorithm>
 #include <Eigen/LeastSquares>
 #include <Eigen/Geometry>
@@ -414,12 +415,7 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   
   initCameraParameters(image.camPars);
   image.camPars = camPars[0];
-  image.camPars.id = camIds[0];
   changeImageSize(image.camPars, imgWidth, imgWidth*3/4);
- 
-  image.camPars.pose = camPars[0].pose;
-
-  image.camPars.time = getCASTTime();
 
   unlockComponent();
 }
