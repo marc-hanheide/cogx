@@ -339,7 +339,7 @@ void StereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
 
   convertImageFromIpl(imgSet.rectColorImg[side], image);
   initCameraParameters(image.camPars);
-  image.camPars.id = side;
+  image.camPars.id = camIds[side];
   image.camPars.width = stereoCam->cam[side].width;
   image.camPars.height = stereoCam->cam[side].height;
   image.camPars.fx = stereoCam->cam[side].proj[0][0];
@@ -372,7 +372,8 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
   lockComponent(); // TODO: CASTComponent::Lock lock(this);
 
   StereoCamera *stereoCam = stereoCams[0];
-  camPars.id = side;
+  initCameraParameters(camPars);
+  camPars.id = camIds[side];
   camPars.width = stereoCam->cam[side].width;
   camPars.height = stereoCam->cam[side].height;
   camPars.fx = stereoCam->cam[side].proj[0][0];
@@ -380,8 +381,15 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
   camPars.cx = stereoCam->cam[side].proj[0][2];
   camPars.cy = stereoCam->cam[side].proj[1][2];
 
-  Pose3 global_pose;
-  transform(stereoCam->pose, stereoCam->cam[side].pose, global_pose);
+  Pose3 ideal_pose, rel_pose, global_pose;
+  setIdentity(global_pose);
+  // pose of ideal left/right camera w.r.t. to actual left/right camera
+  // the pose is a rotation given by the rectification matrix
+  setRow33(ideal_pose.rot, (double*)stereoCam->cam[side].rect);
+  // get from ideal left/right pose to real left/right pose
+  transform(stereoCam->cam[side].pose, ideal_pose, rel_pose);
+  // get from relative left/right pose to global left/right pose
+  transform(stereoCam->pose, rel_pose, global_pose);
   camPars.pose = global_pose;
   camPars.time = getCASTTime();
 
