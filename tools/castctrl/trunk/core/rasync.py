@@ -12,15 +12,18 @@ RSYNC_CONFIG="""
    path = %(COGX_ROOT)s
    hosts allow = %(CASTCTRL_HOST)s
    exclude = .svn/ .git/ .bzr/ .hg/ \\
-             /BUILD/ /Build/ /build/ /logs/ /output/ \\
+             BUILD/ /Build/ /build/ /logs/ /output/ \\
+             /tools/v4r/lib/ /tools/v4r/bin/ \\
+             /tools/abducer/bin/ \\
              + */ - /* /*.conf /*.ini /*.sh \\
-             *.~* *.*~ *.o *.so \\
-             abducer-pb abducer-server protocol.pb.h protocol.pb.cc
+             *.~* *.*~ *.o *.so
    secrets file = %(PASSWD)s
    # less secure
    use chroot = false
    read only = false
+   munge symlinks = false
 """
+#  protocol.pb.h protocol.pb.cc
 RSYNC_PORT = 10873
 
 # The sender
@@ -74,6 +77,8 @@ class CRemoteSync:
             }
             cmd = " ".join(["rsync -r --update --compress",
                 # "--dry-run",
+                "--delete",
+                "--links --safe-links",
                 "--verbose",
                 "--password-file=%(PASSWD)s",
                 "%(ROOT)s/ rsync://%(USER)s@%(HOST)s:%(PORT)d/cogxsource"
