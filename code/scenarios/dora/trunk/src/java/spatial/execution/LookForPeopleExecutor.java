@@ -39,8 +39,10 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 			Person p = getComponent()
 					.getMemoryEntry(arg0.address, Person.class);
 			synchronized (observations) {
+				println("added observation of person");
 				observations.add(p);
 			}
+			getComponent().removeChangeFilter(this);
 		}
 
 	}
@@ -86,30 +88,27 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 	@Override
 	protected void publishActionOutcome() {
 		PersonObservation po = new PersonObservation(new ArrayList<Person>(),
-				0.0, -1, 0.0, 0.0, 0.0, 0.0);
+				0.0, -1, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
 		synchronized (observations) {
 			try {
 				RobotPose2d pose = spatialFacade.getPose();
 				po.robotX = pose.x;
 				po.robotY = pose.y;
 				po.placeId = spatialFacade.getPlace().id;
-				
-				double avgAngle=0.0;
+				po.persons.addAll(observations);
+				po.existProb = 0;
 				for (Person p : observations) {
-					po.existProb += p.existProb;
-					po.persons.add(p);
-					if (p.existProb>0.5)
-					avgAngle+=p.angle;
+					if (p.existProb > 0.5) {
+						po.existProb = p.existProb;
+						po.robotTheta = pose.theta + p.angle;
+						// correct the angles if necessary
+						while (po.robotTheta > Math.PI)
+							po.robotTheta -= Math.PI * 2;
+						while (po.robotTheta < -Math.PI)
+							po.robotTheta += Math.PI * 2;
+						break;
+					}
 				}
-				avgAngle/=observations.size();
-				
-				po.robotTheta=pose.theta+avgAngle;
-				while (po.robotTheta>Math.PI)
-					po.robotTheta-=Math.PI*2;
-				while (po.robotTheta<-Math.PI)
-					po.robotTheta+=Math.PI*2;
-				
-				po.existProb /= observations.size();
 				getComponent().addToWorkingMemory(getComponent().newDataID(),
 						po);
 				observations.clear();
