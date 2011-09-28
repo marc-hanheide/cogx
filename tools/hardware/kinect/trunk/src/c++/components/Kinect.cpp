@@ -7,6 +7,7 @@
  */
 
 
+#include <fstream>
 #include "Kinect.h"
 #include <ni/XnCodecIDs.h>
 
@@ -396,8 +397,11 @@ bool Kinect::GetImages(cv::Mat &rgbImg, cv::Mat &depImg)
 cv::Point3f Kinect::DepthToWorld(int x, int y, int depthValue)
 {
   cv::Point3f result;
-  result.x = (x - centerX) * depthValue * constant;
-  result.y = (y - centerY) * depthValue * constant;
+  // NOTE: the depth image was mapped to the color image, so we
+  // have to use the intrinsic parameters of the color camera here.
+  // These are the magic numbers 525, 320, 240
+  result.x = (x - 320) * depthValue * 0.001 / 525;
+  result.y = (y - 240) * depthValue * 0.001 / 525;
   result.z = depthValue * 0.001;
   return result;
 }
