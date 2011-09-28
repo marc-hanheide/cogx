@@ -21,7 +21,7 @@ CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inif
 
 CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli-sim.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli-sim.sift" --labels "example-cereals-schokomusli-sim" --initpose "[1.000000 0.000000 1.400000][0 0 1.57]" --displayserver "display.srv" --log
 
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 # viewing and debugging
 

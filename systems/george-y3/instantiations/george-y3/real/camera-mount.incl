@@ -20,5 +20,5 @@ SETVAR camera_mount_params=<multiline>
 </multiline>
 CPP MG CameraMount CameraMount %(camera_mount_params)
 
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 

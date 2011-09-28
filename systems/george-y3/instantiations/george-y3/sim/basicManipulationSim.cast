@@ -53,7 +53,7 @@ CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --ply
 CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # this component creats a simple GUI to access the PTZ Unit
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 # manipulation #####################################################################
 SUBARCHITECTURE manipulation.sa

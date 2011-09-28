@@ -8,5 +8,5 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 # use the PTZ GUI to move the pan tilt e.g. to a fixed position from which to calibrate camera poses
-JAVA MG ptzServer ptz.ptzServer.PanTiltZoomServer --testGUI
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
