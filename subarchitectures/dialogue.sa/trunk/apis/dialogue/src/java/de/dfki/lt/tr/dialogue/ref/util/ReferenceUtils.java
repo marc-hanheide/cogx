@@ -1,10 +1,12 @@
 package de.dfki.lt.tr.dialogue.ref.util;
 
+import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.ref.Constraint;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
+import java.util.LinkedList;
 import org.apache.log4j.Logger;
 
 public abstract class ReferenceUtils {
@@ -36,6 +38,10 @@ public abstract class ReferenceUtils {
 		s += "}";
 
 		return s;
+	}
+
+	public static ReferenceResolutionResult newEmptyResolutionResult(ReferenceResolutionRequest rr, WorkingMemoryAddress origin, String method) {
+		return new ReferenceResolutionResult(rr.nom, origin, method, new LinkedList<EpistemicReferenceHypothesis>());
 	}
 
 }

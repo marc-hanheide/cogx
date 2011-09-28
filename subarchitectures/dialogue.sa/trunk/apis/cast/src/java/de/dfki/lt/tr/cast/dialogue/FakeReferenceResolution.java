@@ -12,6 +12,7 @@ import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
+import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import java.util.LinkedList;
 
 public class FakeReferenceResolution
@@ -37,8 +38,8 @@ extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 		}
 
 		@Override
-		public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr) {
-			ReferenceResolutionResult result = newEmptyResolutionResult(rr);
+		public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr, WorkingMemoryAddress origin) {
+			ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, "fake");
 
 			dFormula referent = new PointerFormula(0, wmptr.address, wmptr.type);
 			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(newSharedEpistemicStatus(IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent), referent, 0.9F);
@@ -54,10 +55,6 @@ extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 		epst.cgagents.add(ag1);
 		epst.cgagents.add(ag2);
 		return epst;
-	}
-
-	public static ReferenceResolutionResult newEmptyResolutionResult(ReferenceResolutionRequest rr) {
-		return new ReferenceResolutionResult(rr.nom, new LinkedList<EpistemicReferenceHypothesis>());
 	}
 
 }

@@ -1,5 +1,6 @@
 package de.dfki.lt.tr.dialogue.ref.potential;
 
+import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.ref.Referent;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -12,8 +13,8 @@ import java.util.Map.Entry;
 
 public class ResolutionResultFactory {
 
-	public static ReferenceResolutionResult potentialToResolutionResult(String nom, Potential pot) {
-		return new ReferenceResolutionResult(nom, potentialToEpistemicRefHypos(pot));
+	public static ReferenceResolutionResult potentialToResolutionResult(String nom, Potential pot, WorkingMemoryAddress origin, String method) {
+		return new ReferenceResolutionResult(nom, origin, method, potentialToEpistemicRefHypos(pot));
 	}
 
 	private static List<EpistemicReferenceHypothesis> potentialToEpistemicRefHypos(Potential pot) {
