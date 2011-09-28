@@ -88,7 +88,6 @@ public abstract class ConversionUtils {
 	public static final String predsym_AGENT = "agent";
 	public static final String predsym_PRECONDITION = "pre";
 	public static final String predsym_POSTCONDITION = "post";
-	public static final String predsym_IS_REFERENCE = "is_reference";
 	public static final String predsym_RESOLVES_TO_BELIEF = "resolves_to_belief";
 	public static final String predsym_RESOLVES_TO_EPOBJECT = "resolves_to_epobject";
 	public static final String predsym_TOPIC_SWITCH_MARK = "topic_switch_mark";

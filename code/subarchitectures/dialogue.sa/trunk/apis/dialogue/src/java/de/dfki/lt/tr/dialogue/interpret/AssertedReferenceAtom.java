@@ -10,7 +10,10 @@ import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.LinkedList;
 import java.util.List;
 
-public class AssertedReferenceAtom {
+public class AssertedReferenceAtom
+implements InterpretableAtom {
+
+	public static final String predsym_IS_REFERENCE = "is_reference";
 
 	private final Term nominalTerm;
 	private final Term referentTerm;
@@ -42,7 +45,7 @@ public class AssertedReferenceAtom {
 	}
 
 	public static AssertedReferenceAtom fromModalisedAtom(ModalisedAtom matom) {
-		if (matom.a.predSym.equals(ConversionUtils.predsym_IS_REFERENCE) && matom.a.args.size() == 3) {
+		if (matom.a.predSym.equals(predsym_IS_REFERENCE) && matom.a.args.size() == 3) {
 			Term nomTerm = matom.a.args.get(0);
 			Term varTerm = matom.a.args.get(1);
 			Term epstTerm = matom.a.args.get(2);
@@ -53,6 +56,7 @@ public class AssertedReferenceAtom {
 		}
 	}
 
+	@Override
 	public ModalisedAtom toModalisedAtom() {
 		List<Modality> m = new LinkedList<Modality>();
 		m.add(Modality.Understanding);
@@ -62,7 +66,7 @@ public class AssertedReferenceAtom {
 		args.add(referentTerm);
 		args.add(epstTerm);
 
-		return new ModalisedAtom(m, new Atom(ConversionUtils.predsym_IS_REFERENCE, args));
+		return new ModalisedAtom(m, new Atom(predsym_IS_REFERENCE, args));
 	}
 
 }

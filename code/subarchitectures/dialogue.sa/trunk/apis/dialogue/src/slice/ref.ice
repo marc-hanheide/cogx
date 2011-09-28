@@ -1,6 +1,7 @@
 #ifndef REF_ICE
 #define REF_ICE
 
+#include <cast/slice/CDL.ice>
 #include <beliefs.ice>
 #include <time.ice>
 
@@ -38,6 +39,8 @@ module ref {
 
 	class ReferenceResolutionResult {
 		string nom;
+		cast::cdl::WorkingMemoryAddress requestAddress;
+		string method;
 		EpistemicReferenceHypothesisSeq hypos;
 	};
 

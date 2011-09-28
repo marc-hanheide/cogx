@@ -208,7 +208,7 @@ implements ReferenceResolver {
 	}
 
 	@Override
-	public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr, WorkingMemoryAddress origin) {
+		throw new UnsupportedOperationException("This class is obsolete and unsupported.");
 	}
 }

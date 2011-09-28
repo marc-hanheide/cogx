@@ -46,7 +46,7 @@ extends AbstractDialogueComponent {
 				public void execute(WorkingMemoryChange _wmc) {
 					try {
 						getLogger().debug("will act on the ReferenceResolutionRequest [" + _wmc.address.id + "," + _wmc.address.subarchitecture + "]");
-						ReferenceResolutionResult res = resolver.resolve(rr);
+						ReferenceResolutionResult res = resolver.resolve(rr, _wmc.address);
 						if (res != null) {
 							getLogger().debug("overwriting the request " + wmaToString(_wmc.address) + " with result:\n" + ReferenceUtils.resolutionResultToString(res));
 							overwriteWorkingMemory(_wmc.address, res);
