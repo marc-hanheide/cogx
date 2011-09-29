@@ -605,7 +605,6 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
 
   // XXX: static, not thread safe
   static castutils::CRunningRate rate;
-  static castutils::CMilliTimer endMoveTimeout;
   static Vector3 prevrot = vector3(0, 0, 0);
   rate.tick();
 
@@ -619,12 +618,13 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
     log("Camera is MOVING. Sampling at %.2gHz.", rate.getRate());
     //log("rot x: %.4g, y: %.4g, z: %.4g", rot.x, rot.y, rot.z);
     m_bCameraMoving = true;
-    endMoveTimeout.restart();
+    m_endMoveTimeout.restart();
     m_cameraParams.pose = pcampar->cam.pose; // only pose is valid
   }
   else {
-    if (m_bCameraMoving && endMoveTimeout.elapsed() > 500) {
+    if (m_bCameraMoving && m_endMoveTimeout.elapsed() > 500) {
       log("Camera STOPPED.");
+      m_endMoveTimeout.restart();
       m_bCameraMoving = false;
       m_cameraParams.pose = pcampar->cam.pose; // only pose is valid
       m_display.sendPtuStateToDialog();
@@ -632,9 +632,9 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
   }
 }
 
-bool SOIFilter::isCameraStable()
+bool SOIFilter::isCameraStable(unsigned long milliSeconds)
 {
-  return ! m_bCameraMoving; // TODO && ! m_RobotMoving
+  return ! m_bCameraMoving && m_endMoveTimeout.elapsed() >= milliSeconds; // TODO && ! m_RobotMoving
 }
 
 bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
@@ -667,8 +667,8 @@ bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
 // it was removed and delete the ProtoObject.
 void SOIFilter::checkInvisibleObjects()
 {
-  if ( ! isCameraStable()) sleepComponent(50);
-  if ( ! isCameraStable()) return;
+  if ( ! isCameraStable(2000)) sleepComponent(50);
+  if ( ! isCameraStable(2000)) return;
 
   vector<ProtoObjectRecordPtr> toDelete;
 
@@ -872,12 +872,15 @@ void SOIFilter::runComponent()
   WmTaskExecutor_MoveToViewCone moveProcessor(this);
   WmTaskExecutor_Analyze analysisProcessor(this);
   castutils::CMilliTimer tmCheckVisibility(true);
+  int addSoiCount;
 
   while(isRunning())
   {
     std::deque<WmEvent*> tasks;
     tasks.clear();
+
     checkRetryEvents();
+
     {
       // SYNC: Lock the monitor
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
@@ -887,6 +890,20 @@ void SOIFilter::runComponent()
         m_EventQueueMonitor.timedWait(IceUtil::Time::milliSeconds(getMillisToRetryEvent(600)));
 
       // SYNC: Continue with a locked monitor
+
+      // count (important) events in queue
+      addSoiCount = 0;
+      typeof(m_EventQueue.begin()) it;
+      for(it = m_EventQueue.begin(); it != m_EventQueue.end(); it++) {
+        WmEvent* pevent = *it;
+        switch (pevent->objectType)
+        {
+          case TYPE_SOI:
+            if (pevent->change == cdl::ADD)
+              addSoiCount++;
+            break;
+        }
+      }
 
 #if 0
       // Process whole queue at once
@@ -927,8 +944,12 @@ void SOIFilter::runComponent()
         delete pevent;
     }
 
-    if (tmCheckVisibility.elapsed() > 1000) {
-      checkInvisibleObjects();
+    if (tmCheckVisibility.elapsed() > 1000)
+    {
+      // We check for invisible objects only when there are no add-soi events in queue.
+      // This is to prevent POs being deleted to quickly after a camera move.
+      if (addSoiCount < 1 && isCameraStable(4000))
+        checkInvisibleObjects();
       tmCheckVisibility.restart();
     }
   }
@@ -958,8 +979,10 @@ ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
   for(; itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectRecordPtr& pporec = itpo->second;
     ProtoObjectPtr& pobj = pporec->pobj;
-    if (!pobj.get())
+    if (!pobj.get()) {
+      error("PO record without a PO (%s).", itpo->first.id.c_str());
       continue;
+    }
 
     // XXX: We assume that pobj->cameraLocation is at pSoiFilter->m_RobotPose
     //   => we only compare robo-centric positions

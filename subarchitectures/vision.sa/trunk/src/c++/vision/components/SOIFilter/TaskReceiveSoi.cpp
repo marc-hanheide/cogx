@@ -95,7 +95,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
     return;
   }
 
-  println("Handle SOI %s", pEvent->wmc.address.id.c_str());
+  println("Handle SOI %s ADD", pEvent->wmc.address.id.c_str());
 
   pSoiFilter->updateRobotPosePtz();
 
@@ -337,7 +337,7 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
         // The condition for removed objects: we know that we could see the
         // object from the current view cone, but it isn't there.
         castutils::CMilliTimer tmwait;
-        while( ! pSoiFilter->isCameraStable()) {
+        while( ! pSoiFilter->isCameraStable(1000)) {
           pSoiFilter->sleepComponent(100);
           if (tmwait.elapsed() > 5000) {
             println("delete_soi: waiting for camera to stop moving");

@@ -58,7 +58,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   castutils::CMilliTimer tmwait;
-  while( ! pSoiFilter->isCameraStable()) {
+  while( ! pSoiFilter->isCameraStable(1000)) {
     pSoiFilter->sleepComponent(100);
     if (tmwait.elapsed() > 5000) {
       println("analyze_task: waiting for camera to stop moving");
