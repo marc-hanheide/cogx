@@ -265,7 +265,7 @@ void PlanePopOut::SOIEntry::calcHistogram()
     IplImage* tmp = cvCreateImage(cvSize(1, points.size()), 8, 3);
     for (size_t i = 0; i < points.size(); i++)
     {
-	CvScalar v;	  
+	CvScalar v;
 	v.val[0] = points[i].c.b;
 	v.val[1] = points[i].c.g;
 	v.val[2] = points[i].c.r;
@@ -435,37 +435,38 @@ void PlanePopOut::startV11N()
     m_display.installEventReceiver();
 
     Visualization::ActionInfo act;
+    string cid = " (" + getComponentID() + ")";
 
     //act.id = IDC_POPOUT_LABEL_COLOR;
-    //act.label = "Color by label";
+    //act.label = "Color by label" + cid;
     //act.iconLabel = "Color";
     //act.iconSvg = "text:Co";
     //act.checkable = true;
     //m_display.addAction(ID_OBJECT_3D, act);
 
     act.id = guiid(IDC_POPOUT_POINTS);
-    act.label = "Toggle Update 3D Points";
+    act.label = "Toggle Update 3D Points" + cid;
     act.iconLabel = "3D Points";
     act.iconSvg = "text:Pts";
     act.checkable = true;
     m_display.addAction(ID_OBJECT_3D, act);
 
     act.id = guiid(IDC_POPOUT_SOIS);
-    act.label = "Toggle Update SOIs";
+    act.label = "Toggle Update SOIs" + cid;
     act.iconLabel = "SOIs";
     act.iconSvg = "text:Soi";
     act.checkable = true;
     m_display.addAction(ID_OBJECT_3D, act);
 
     act.id = guiid(IDC_POPOUT_PLANEGRID);
-    act.label = "Toggle Update Convex Hull of Principal Plane";
+    act.label = "Toggle Update Convex Hull of Principal Plane" + cid;
     act.iconLabel = "Plane Hull";
     act.iconSvg = "text:Hul";
     act.checkable = true;
     m_display.addAction(ID_OBJECT_3D, act);
 
     act.id = guiid(IDC_POPOUT_IMAGE);
-    act.label = "Toggle Update Image";
+    act.label = "Toggle Update Image" + cid;
     act.iconLabel = "Image";
     act.iconSvg = "text:Img";
     act.checkable = true;
@@ -475,6 +476,7 @@ void PlanePopOut::startV11N()
     // on the server so that we can activate displays through GUI
     ostringstream ss;
     ss <<  "function render()\nend\n"
+	<< "setCamera('ppo.robot.head', -1.0, 0, 3.0, 1, 0, -1, 0, 0, 1)\n"
 	<< "setCamera('ppo.robot.front', 4.0, 0, 4.0, -1, 0, -1, 0, 0, 1)\n"
 	<< "setCamera('ppo.points.top', 0, 0, 4.0, 0, 0, -1, -1, 0, 0)\n";
     m_display.setLuaGlObject(ID_OBJECT_3D, guiid(ID_PART_3D_POINTS), ss.str());
