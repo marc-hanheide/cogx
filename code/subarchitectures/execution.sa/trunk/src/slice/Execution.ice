@@ -252,6 +252,9 @@ module execution {
       class ReportPosition extends SingleBeliefAction {
       };    
 
+      class EngageWithHuman extends SingleBeliefAction {
+      };
+
 
       /**
        * comsys action
