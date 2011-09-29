@@ -118,27 +118,55 @@ Phase 01
 Goal: Run the 4 types of learning using 2 layered vision and (if possible) use
 the Katana arm as an aid for reference resolution.
 
-In simulation with Gazebo and Player:
+
+In simulation with Gazebo and Player
+------------------------------------
+
+* Server configuration:
    - instantiations/george-y3/sim/gazebo/george-01.world
    - instantiations/george-y3/sim/player/cogx-platform-sim.cfg
 
-Use one of the phase01-*.cast files, eg.: 
+* Use one of the phase01-*.cast files, eg.: 
    - instantiations/george-y3/phase01/phase01-motivation.cast
+
+* Select the PPO configuration in georgey3-vision.incl, include one of the ppo-* files:
+   - ppo-stereo-1.incl
+   - ppo-stereo-2.incl
+
+* Check that the Gazebo Juggler is enabled (juggler.incl included)
 
 
 Managing objects in the scene
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Check that the juggler.incl is included in the top cast file. This will include
 the GazeboJuggler component which will remove all the objects from the scene at
 startup. Then you can place individual objects back on the scene in the
 GazeboJuggler dialog. Press the yellow icon in the "CAST Viewer" window to
 show/hide the dialog window.
-  
+
+
+On the real robot
+-----------------
+
+* Server configuration:
+   - instantiations/george-y3/real/player/cogx-platform.cfg
+
+* Use one of the phase01-*.cast files, eg.: 
+   - instantiations/george-y3/phase01/phase01-motivation.cast
+
+* Check that the Gazebo Juggler is disabled (juggler.incl NOT included)
+
+* Select the PPO configuration in georgey3-vision.incl, include one of the ppo-* files:
+   - ppo-stereo-1.incl
+   - ppo-stereo-2.incl
+   - ppo-kinect-stereo.incl
+
 
 Analyze Proto Objects
 ---------------------
 
 The system will analyze proto objects when the "Anal. PO" goal is enabled in
 "Motivation::ManualSelectFilter" window.
+
 
