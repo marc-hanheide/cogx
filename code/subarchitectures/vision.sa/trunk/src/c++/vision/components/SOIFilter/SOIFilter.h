@@ -114,6 +114,7 @@ private:
    */
   int camId;
   bool m_bCameraMoving;
+  castutils::CMilliTimer m_endMoveTimeout;
   Video::CameraParameters m_cameraParams;
 
   /**
@@ -212,7 +213,7 @@ public:
   void saveProtoObjectData(VisionData::ProtoObjectPtr& poOrig, VisionData::ProtoObjectPtr& poCopy);
   void saveVisualObjectData(VisionData::VisualObjectPtr& voOrig, VisionData::VisualObjectPtr& voCopy);
   void saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy);
-  bool isCameraStable();
+  bool isCameraStable(unsigned long milliSeconds = 0);
   bool isPointVisible(const cogx::Math::Vector3 &pos);
 
 public:
