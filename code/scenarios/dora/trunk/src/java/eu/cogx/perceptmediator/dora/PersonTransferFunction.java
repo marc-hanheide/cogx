@@ -40,6 +40,9 @@ public class PersonTransferFunction
 		extends
 		DependentLinkingDiscreteTransferFunction<PersonObservation, PerceptBelief, GroundedBelief> {
 
+	public static final String ATTR_POS_THETA = "posTheta";
+	public static final String ATTR_POS_Y = "posY";
+	public static final String ATTR_POS_X = "posX";
 	private static final double PROB_EPS = 0.001;
 	public static final String EXISTS = "does-exist";
 	public static final String IS_IN = "is-in";
@@ -84,12 +87,12 @@ public class PersonTransferFunction
 					.typeName(Place.class));
 			result.put(IS_IN, ptr.getAsFormula());
 			result
-					.put("posX", DoubleFormula.create(from.robotX)
+					.put(ATTR_POS_X, DoubleFormula.create(from.robotX)
 							.getAsFormula());
 			result
-					.put("posY", DoubleFormula.create(from.robotY)
+					.put(ATTR_POS_Y, DoubleFormula.create(from.robotY)
 							.getAsFormula());
-			result.put("posTheta", DoubleFormula.create(from.robotTheta)
+			result.put(ATTR_POS_THETA, DoubleFormula.create(from.robotTheta)
 					.getAsFormula());
 		} catch (CASTException e) {
 			component.logException(e);
