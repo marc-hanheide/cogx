@@ -573,8 +573,9 @@ class MAPLWriter(writer.Writer):
     def write_action(self, action):
         strings = [action.name]
         params = [a for a in action.args if a not in action.agents and a not in action.vars]
-        
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+
+        if action.agents:
+            strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if params:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
         if action.vars:
@@ -599,7 +600,8 @@ class MAPLWriter(writer.Writer):
         strings = [action.name]
 
         params = [a for a in action.args if a not in action.agents and a not in action.vars]
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+        if action.agents:
+            strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if params:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
         vars = [a for a in action.vars if a.name != "?duration"]
