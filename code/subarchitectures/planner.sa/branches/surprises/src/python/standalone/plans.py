@@ -91,6 +91,7 @@ class PlanNode(object):
 class DummyAction(object):
     def __init__(self, name):
         self.name = name
+        self.replan = None
     def __str__(self):
         return str(self.name)
 
@@ -179,7 +180,7 @@ class MAPLPlan(networkx.MultiDiGraph):
             visit(n)
 
     def predecessors_iter(self, node, link_type=None):
-        if link_type and not isinstance(link_type, (list, tuple)):
+        if link_type and not isinstance(link_type, (set, list, tuple)):
             link_type = [link_type]
         for p in networkx.MultiDiGraph.predecessors_iter(self, node):
             if not link_type or any(e['type'] in link_type for e in self[p][node].itervalues()):
@@ -191,7 +192,7 @@ class MAPLPlan(networkx.MultiDiGraph):
         return [p for p in self.predecessors_iter(node, link_type)]
 
     def successors_iter(self, node, link_type=None):
-        if link_type and not isinstance(link_type, (list, tuple)):
+        if link_type and not isinstance(link_type, (set, list, tuple)):
             link_type = [link_type]
         for s in networkx.MultiDiGraph.successors_iter(self, node):
             if not link_type or any(e['type'] in link_type for e in self[node][s].itervalues()):
@@ -267,6 +268,10 @@ class MAPLPlan(networkx.MultiDiGraph):
                 attrs["style"] = "dashed"
                 attrs["color"] = "darkgreen"
                 attrs["label"] = str(data['svar'])
+                # continue
+            elif data['type'] == 'unexpected':
+                attrs["color"] = "red"
+                attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
             else:
                 attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
                 

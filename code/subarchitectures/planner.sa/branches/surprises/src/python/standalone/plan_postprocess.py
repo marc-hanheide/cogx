@@ -216,7 +216,7 @@ def make_po_plan(actions, task):
             log.trace("%s depends on %s", pnode, frontier[svar])
 
         for svar, val in pnode.effects:
-            if svar.function in (pddl.builtin.total_cost,):
+            if svar.function in (pddl.builtin.total_cost, pddl.dtpddl.probability):
                 continue
             if state[svar] != val:
                 if svar in readers:
