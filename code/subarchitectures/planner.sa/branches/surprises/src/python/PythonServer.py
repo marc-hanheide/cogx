@@ -77,7 +77,7 @@ class CASTLoggerProxy(object):
         if args:
             msg = msg % args
             
-        self.log.error(msg)
+        #self.log.error(msg)
 
     def critical(self, msg, *args, **kwargs):
         self.connect()
@@ -148,7 +148,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.planner = None
     self.tasks = {}
     self.dt_tasks = {}
-    
+    self.expl_rules_fn = None
+
     self.beliefs = None
     self.address_dict = {}
 
@@ -201,6 +202,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       if not path.exists(self.domain_fn):
           log.error("Could not find specified domain %s. Using default domain %s", config["--domain"], TEST_DOMAIN_FN)
           self.domain_fn = TEST_DOMAIN_FN
+
+    if "--expl_rules" in config:
+      self.expl_rules_fn = path.join(standalone.globals.config.domain_dir, config["--expl_rules"])
+      if not path.exists(self.expl_rules_fn):
+          log.error("Could not find specified explanations rule set %s. Will not be able to determine explanations for failures!", config["--expl_rules"])
 
     if "--problem" in config:
       self.problem_fn = path.join(standalone.globals.config.problem_dir, config["--problem"])
@@ -264,7 +270,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     log.info("Planner PythonServer: New PlanningTask received:")
     standalone.globals.set_time()
 
-    task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn)
+    task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn, expl_rules_fn=self.expl_rules_fn)
     self.tasks[task.id] = task
     if task.status != Planner.Completion.FAILED:
         task.run()
