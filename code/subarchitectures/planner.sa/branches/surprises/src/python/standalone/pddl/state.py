@@ -307,6 +307,9 @@ class Fact(tuple):
     def to_effect(self):
         return self.as_literal(_class=effects.SimpleEffect)
 
+    def to_condition(self):
+        return self.as_literal(_class=conditions.LiteralCondition)
+    
     def to_init(self):
         return self.as_literal(useEqual=True)
 
