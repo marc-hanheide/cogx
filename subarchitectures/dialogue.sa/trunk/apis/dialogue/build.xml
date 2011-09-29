@@ -102,7 +102,7 @@
   <target name="slice-src" depends="prepare"
           description="generates source from slice">
     <slice2java tie="true" outputdir="${generated.dir}">
-      <fileset dir="${slice.dir}" includes="lf.ice,time.ice,dialogue.ice,ref.ice,asr-loquendo.ice,intentions.ice"/>
+      <fileset dir="${slice.dir}" includes="lf.ice,time.ice,dialogue.ice,ref.ice,asr-loquendo.ice,intentions.ice,abduction.ice,production.ice"/>
       <includepath>
         <pathelement path="${castslice.dir}"/>
         <pathelement path="${slice.dir}"/>

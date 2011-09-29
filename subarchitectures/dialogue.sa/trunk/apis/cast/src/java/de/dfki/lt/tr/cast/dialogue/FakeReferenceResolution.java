@@ -13,6 +13,7 @@ import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
 import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
+import de.dfki.lt.tr.dialogue.util.EpistemicStatusFactory;
 import java.util.LinkedList;
 
 public class FakeReferenceResolution
@@ -42,19 +43,12 @@ extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 			ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, "fake");
 
 			dFormula referent = new PointerFormula(0, wmptr.address, wmptr.type);
-			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(newSharedEpistemicStatus(IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent), referent, 0.9F);
+			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(EpistemicStatusFactory.newSharedEpistemicStatus(IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent), referent, 0.9F);
 			result.hypos.add(hypo);
 
 			return result;
 		}
 		
-	}
-
-	public static SharedEpistemicStatus newSharedEpistemicStatus(String ag1, String ag2) {
-		SharedEpistemicStatus epst = new SharedEpistemicStatus(new LinkedList<String>());
-		epst.cgagents.add(ag1);
-		epst.cgagents.add(ag2);
-		return epst;
 	}
 
 }
