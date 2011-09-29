@@ -571,6 +571,9 @@ class MAPLWriter(writer.Writer):
         return self.section(":types", strings)
 
     def write_action(self, action):
+        if not isinstance(action, MAPLAction):
+            return writer.Writer.write_action(self, action)
+        
         strings = [action.name]
         params = [a for a in action.args if a not in action.agents and a not in action.vars]
 
