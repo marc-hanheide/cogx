@@ -15,7 +15,7 @@ class CMilliTimer
 {
    void* pStartTime;
 public:
-   CMilliTimer(bool bStart=false)
+   CMilliTimer(bool bStart=true)
    {
       pStartTime = 0;
       if (bStart) restart();
@@ -77,8 +77,9 @@ private:
 public:
    // default: 10 intervals of 3s = 30s running average
    CRunningRate(int numIntervals=10, long intervalDurationMs=3000)
+      : timer(false)
    {
-      tickCount = -1;
+      tickCount = -1; // will restart the timer on the first tick
       tickInfoPos = 0;
       if (numIntervals < 5) numIntervals = 5;
       if (numIntervals > 100) numIntervals = 100;
@@ -122,10 +123,12 @@ public:
       else
          prevPos = (tickInfoPos - numIntervals) % ticks.size();
 
-      long long elapsed = ticks[tickInfoPos].useconds - ticks[prevPos].useconds;
+      _tick_info_& prev = ticks[prevPos];
+      _tick_info_& now = ticks[tickInfoPos];
+      long long elapsed = now.useconds - prev.useconds;
+      long dticks = now.tickCount - prev.tickCount;
       if (elapsed < 1)
          return 0;
-      long dticks = ticks[tickInfoPos].tickCount - ticks[prevPos].tickCount;
       return 1e6 * dticks / elapsed;
    }
 };
@@ -146,10 +149,11 @@ private:
 
 public:
    CPaceMaker(long intervalMs, long minSleepMs=0)
+      : timer(false)
    {
       intervalDurationMs = intervalMs;
       minSleep = minSleepMs;
-      tickCount = -1;
+      tickCount = -1; // will restart the timer on the first tick
       tickLost = 0;
    }
    void sync()
