@@ -591,7 +591,10 @@ class MAPLWriter(writer.Writer):
             strings += self.write_sense_effect(se)
             
         return self.section(":action", strings)
-        
+
+    def write_init_rule(self, rule):
+        return writer.Writer.write_action(self, rule, head=":init-rule")
+    
     def write_durative_action(self, action):
         strings = [action.name]
 
@@ -643,6 +646,10 @@ class MAPLWriter(writer.Writer):
             strings.append("")
             const = [c for c in domain.constants if c not in (types.TRUE, types.FALSE, types.UNKNOWN)]
             strings += self.write_objects("constants", const)
+
+        for r in domain.init_rules:
+            strings.append("")
+            strings += self.write_init_rule(r)
             
         for a in domain.axioms:
             strings.append("")

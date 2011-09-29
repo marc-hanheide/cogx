@@ -119,7 +119,7 @@ class Writer(object):
             return []
         return self.section(":functions", strings)
     
-    def write_action(self, action):
+    def write_action(self, action, head=":action"):
         strings = [action.name]
         if action.args:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(action.args)], parens=False)
@@ -130,7 +130,7 @@ class Writer(object):
         if action.effect:
             strings += self.section(":effect", self.write_effect(action.effect), parens=False)
 
-        return self.section(":action", strings)
+        return self.section(head, strings)
 
     def write_axiom(self, axiom):
         strings = ["(%s %s)" % (axiom.predicate.name, self.write_typelist(axiom.args))]
