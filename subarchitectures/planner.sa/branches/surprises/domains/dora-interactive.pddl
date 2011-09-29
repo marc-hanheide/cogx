@@ -108,6 +108,7 @@
   (:constants
    placeholder trueplace - place_status
    in on - spatial_relation
+   container - label
    yes no dontknow - polar_reply
    tutor - agent
    )
@@ -152,6 +153,7 @@
                                            (assign (virtual-category ?r) ?c))
                               )
               )
+
 
   (:init-rule default_search_costs_for_room
               :parameters (?l - label  ?r - room)

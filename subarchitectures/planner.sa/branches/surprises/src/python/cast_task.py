@@ -11,6 +11,7 @@ from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum, Struct
 
 import cast_state
+import explanations
 
 TaskStateEnum = Enum("INITIALISED",
                      "PROCESSING",
@@ -58,7 +59,7 @@ def fval_to_str(fval):
     assert False
 
 class CASTTask(object):
-    def __init__(self, planning_task, beliefs, domain_fn, component, problem_fn=None):
+    def __init__(self, planning_task, beliefs, domain_fn, component, problem_fn=None, expl_rules_fn=None):
         self.component = component
 
         self.init_state = None
@@ -71,6 +72,7 @@ class CASTTask(object):
         self.plan_state_history = []
         self.fail_count = defaultdict(lambda: 0)
         self.failure_simulated = False
+        self.expl_rules_fn = expl_rules_fn
 
         self.load_domain(domain_fn)
         if component.history_fn:
@@ -400,10 +402,9 @@ class CASTTask(object):
         return plan
             
     def handle_task_failure(self):
-        self.merge_plans(self.plan_history)
-        last_plan = self.plan_history[-1]
-        for n in last_plan.topological_sort():
-            print n, n.status
+        #self.merge_plans(self.plan_history)
+        last_plan = self.plan_history[-1].topological_sort()
+        explanations.handle_failure(last_plan, self.state.state.problem, self.init_state, self.state.state, self.expl_rules_fn, self.cp_task)
 
     def write_history(self):
         history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))

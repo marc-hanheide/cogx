@@ -259,7 +259,7 @@ class Writer(object):
         for a in domain.axioms:
             strings.append("")
             strings += self.write_axiom(a)
-        
+
         for a in domain.actions:
             strings.append("")
             if isinstance(a, durative.DurativeAction):
