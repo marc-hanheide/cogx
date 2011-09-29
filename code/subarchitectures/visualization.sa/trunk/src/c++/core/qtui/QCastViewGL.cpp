@@ -24,14 +24,16 @@
 
 const int ZOOM_RANGE = 5; // -N .. N
 
+namespace la = linalgebra;
+
 void QCastViewGL::Camera::normalize()
 {
    if (view.length() <= 0 || up.length() <= 0) return; // bad camera
-   QCastViewGL::Vector3 n = normal();
+   la::Vector3 n = normal();
    if (n.length() == 0) return; // bad camera
    view.normalize();
 
-   QCastViewGL::Vector3 newup = view.cross(n);
+   la::Vector3 newup = view.cross(n);
    newup.normalize();
    up = newup;
 }
@@ -125,7 +127,7 @@ void QCastViewGL::onCameraItemChanged(int index)
 {
    CPtrVector<cogx::display::CDisplayCamera> cameras;
    pView->getCameras(cameras);
-   if (index >= cameras.size()) return;
+   if (index >= (int) cameras.size()) return;
    selectCamera(cameras[index]);
 }
 
@@ -173,10 +175,10 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
    // pBar->parent will be reset in QViewContainer
    QToolBar *pBar = new QToolBar(QString::fromStdString(pView->m_id), this);
    if (pBar) {
-      int nc = cameras.size();
+      unsigned int nc = cameras.size();
       if (nc > 3) nc = 3;
       cogx::display::CDisplayCamera* pCamera;
-      for (int i= 0; i < nc; i++) {
+      for (unsigned int i= 0; i < nc; i++) {
          QToolButton *pBut = new QToolButton(pBar);
          pCamera = cameras[i];
          QString text = QString::fromStdString(pCamera->name);
@@ -194,7 +196,7 @@ void QCastViewGL::getToolbars(CPtrVector<QToolBar>& toolbars)
             pBut->setMenu(pMenu);
             pBut->setPopupMode(QToolButton::MenuButtonPopup);
 
-            for (int j = 0; j < cameras.size(); j++) {
+            for (unsigned int j = 0; j < cameras.size(); j++) {
                if (i == j) {
                   pMenu->addAction(pAct);
                   pAct->setParent(pMenu);   // parent MUST be menu, see onCameraChangeAction
@@ -226,7 +228,7 @@ static void qNormalizeAngle(float &angle)
    if (angle < 0) angle += 360;
 }
 
-void QCastViewGL::setCameraEye(const Vector3 &e)
+void QCastViewGL::setCameraEye(const la::Vector3 &e)
 {
    m_camera.eye = e;
    emit cameraEyeChanged(e);
@@ -306,8 +308,7 @@ void QCastViewGL::resizeGL(int width, int height)
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    if (1) {
-      const float PI = 3.14159265;
-      const float PI2 = PI / 2;
+      // const float PI = M_PI; // 3.14159265; const float PI2 = PI / 2;
       const float x[3] = {0, 0.5, 1};
       const float zoomangles[3] = {170, 50, 5}; // at x[]
       const float A = 1.0 / ((x[0] - x[1]) * (x[0] - x[2]));
@@ -353,7 +354,7 @@ void QCastViewGL::paintGL()
       glMatrixMode(GL_MODELVIEW);
       glLoadIdentity();
 
-      Vector3 &e = m_camera.eye, &v = m_camera.view, &u = m_camera.up;
+      la::Vector3 &e = m_camera.eye, &v = m_camera.view, &u = m_camera.up;
       gluLookAt(e.x, e.y, e.z, e.x + v.x, e.y + v.y, e.z + v.z, u.x, u.y, u.z);
 
       glRotatef(xRot, 1.0, 0.0, 0.0);
@@ -391,17 +392,25 @@ void QCastViewGL::mouseMoveEvent(QMouseEvent *event)
       }
       else {
          // orbit around current pivot
-         Vector3 dir = m_camera.normal()*dx + m_camera.up*dy;
+#if 0 // TODO ENABLE
+         const double dang = -M_PI / 36;
+         m_camera.orbit(m_pivot, m_camera.up, dx * dang);
+         m_camera.orbit(m_pivot, m_camera.normal(), dy * dang);
+         emit cameraEyeChanged(m_camera.eye);
+         updateGL();
+#else
+         la::Vector3 dir = m_camera.normal()*dx + m_camera.up*dy;
          //std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
 
          // very simple approach: keep the radius
          double R = (m_camera.eye - m_pivot).length();
-         Vector3 neweye = m_camera.eye + dir * (R/36);
+         la::Vector3 neweye = m_camera.eye + dir * (R/36);
          dir = neweye - m_pivot;
          dir.normalize();
          m_camera.view = dir * -1;
          m_camera.normalize();
          setCameraEye(dir * R);
+#endif
       }
    }
    //printf("dx: %lf, dy: %lf, xRot: %f, yRot: %f, zRot: %f\n", dx, dy, xRot, yRot, zRot);
