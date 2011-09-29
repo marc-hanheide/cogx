@@ -127,7 +127,7 @@ public class WMLogger extends ManagedComponent {
 								+ _wmc.operation);
 				break;
 			}
-			logger.info("<WM_OP><WMC>"+wmcXML+"</WMC><CONTENT>" + contentXML+"</CONTENT></WM_OP>");
+			logger.debug("<WM_OP><WMC>"+wmcXML+"</WMC><CONTENT>" + contentXML+"</CONTENT></WM_OP>");
 
 		} catch(CASTException e) {
 			logger.warn("CASTException caught: ", e);
