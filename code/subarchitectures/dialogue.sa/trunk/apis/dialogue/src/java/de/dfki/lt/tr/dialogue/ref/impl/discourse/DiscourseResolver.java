@@ -2,7 +2,6 @@ package de.dfki.lt.tr.dialogue.ref.impl.discourse;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolver;
-import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
@@ -10,7 +9,7 @@ import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.slice.discourse.DialogueMove;
-import java.util.LinkedList;
+import de.dfki.lt.tr.dialogue.util.EpistemicStatusFactory;
 import java.util.Stack;
 
 public class DiscourseResolver implements ReferenceResolver {
@@ -28,7 +27,7 @@ public class DiscourseResolver implements ReferenceResolver {
 		if (rr.sort.equals(SORT_DISCOURSE)) {
 			dFormula referent = getTopReferent();
 			if (referent != null) {
-				EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent), referent, 0.9F);
+				EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(EpistemicStatusFactory.newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent), referent, 0.9F);
 				result.hypos.add(hypo);
 			}
 		}
@@ -49,13 +48,6 @@ public class DiscourseResolver implements ReferenceResolver {
 			}
 		}
 		return null;
-	}
-
-	public static SharedEpistemicStatus newSharedEpistemicStatus(String ag1, String ag2) {
-		SharedEpistemicStatus epst = new SharedEpistemicStatus(new LinkedList<String>());
-		epst.cgagents.add(ag1);
-		epst.cgagents.add(ag2);
-		return epst;
 	}
 
 }

@@ -14,12 +14,21 @@ module intentions {
 dictionary<string, string> StringContentMap;
 dictionary<string, cast::cdl::WorkingMemoryPointer> PointerContentMap;
 
+enum ProcessingState {
+	READY,
+	INPROGRESS,
+	NEEDUPDATE,
+	ACHIEVED,
+	FAILED
+};
+
 class BaseIntention {
 	StringContentMap stringContent;
 	PointerContentMap pointerContent;
 };
 
 class InterpretedIntention extends BaseIntention {
+	ProcessingState state;
 //	WorkingMemoryAddress origin;
 	string agent;
 	float confidence;

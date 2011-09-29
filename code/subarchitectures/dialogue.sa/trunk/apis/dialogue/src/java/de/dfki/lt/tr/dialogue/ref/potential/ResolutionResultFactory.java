@@ -2,10 +2,10 @@ package de.dfki.lt.tr.dialogue.ref.potential;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.ref.Referent;
-import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
+import de.dfki.lt.tr.dialogue.util.EpistemicStatusFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +30,7 @@ public class ResolutionResultFactory {
 			assert (f != null);
 			assert (score > 0.0);
 
-			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(new PrivateEpistemicStatus("self"), f, score);
+			EpistemicReferenceHypothesis hypo = new EpistemicReferenceHypothesis(EpistemicStatusFactory.newPrivateEpistemicStatus("self"), f, score);
 			result.add(hypo);
 		}
 

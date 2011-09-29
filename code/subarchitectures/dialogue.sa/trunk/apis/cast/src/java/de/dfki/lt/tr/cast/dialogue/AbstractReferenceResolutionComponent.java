@@ -49,7 +49,7 @@ extends AbstractDialogueComponent {
 						ReferenceResolutionResult res = resolver.resolve(rr, _wmc.address);
 						if (res != null) {
 							getLogger().debug("overwriting the request " + wmaToString(_wmc.address) + " with result:\n" + ReferenceUtils.resolutionResultToString(res));
-							overwriteWorkingMemory(_wmc.address, res);
+							addToWorkingMemory(newDataID(), res);
 						}
 						else {
 							getLogger().warn("unable to resolve the reference (got null)");

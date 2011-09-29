@@ -217,34 +217,6 @@ module parseselection {
 
 };
 
-module interpret {
-
-	dictionary<string, de::dfki::lt::tr::dialogue::ref::ConstraintSeq> StringToConstraintSeqDict;
-
-	class Interpretation {
-		lf::LogicalForm lform;
-		time::Interval ival;
-		de::dfki::lt::tr::infer::abducer::proof::ProofWithCostSeq proofs;
-		stringSeq ungroundedNoms;
-//		de::dfki::lt::tr::dialogue::ref::ResolutionRequestSeq rrs;
-//		StringToConstraintSeqDict cts;
-	};
-
-//	class UngroundedIntentionalContent extends de::dfki::lt::tr::beliefs::slice::intentions::IntentionalContent {
-//		VarConstraints varctrs;
-//	};
-
-//	["java:type:java.util.ArrayList<UngroundedIntentionalContent>"] sequence<UngroundedIntentionalContent> UngroundedIntentionalContentSeq;
-
-//	class UngroundedIntention {
-//		UngroundedIntentionalContentSeq alt;
-//
-//		lf::LogicalForm lform;
-//		time::Interval ival;
-//	};
-
-};
-
 // ===================================================================
 // MODULE REF
 // ===================================================================
