@@ -59,6 +59,10 @@ SETVAR or3d_labels=cerealbox book
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 
+### SPATIAL.SA DOOR DETECTION SETTINGS
+SETVAR spatial_min_door_width=0.8
+SETVAR spatial_max_door_width=1.2
+
 SETVAR playerhost=localhost
 SETVAR ptz_server=ptz.server
 
