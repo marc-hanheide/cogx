@@ -24,6 +24,7 @@ import execution.slice.ActionExecutionException;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
+import execution.slice.actions.EngageWithHuman;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForPeople;
@@ -233,6 +234,11 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			return act;
 
+		} else if (_plannedAction.name
+				.equals("engage")) {
+			assert _plannedAction.arguments.length == 2 : "engage is expected to be of arity 2";
+			return createSingleBeliefAction(EngageWithHuman.class,
+					_plannedAction.arguments[1]);
 		} else if (_plannedAction.name
 				.equals("report_position")) {
 			assert _plannedAction.arguments.length == 2 : "report_position is expected to be of arity 2";

@@ -96,22 +96,22 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 				});
 
 		// use these to harvest beliefs
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
-				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-							throws CASTException {
-						try {
-							// FIXME: horribly inefficient I guess
-							removeStableBelief(_wmc.address);
-							addStableBelief(_wmc.address,
-									getMemoryEntry(_wmc.address, dBelief.class));
-						} catch (CASTException e) {
-							logException("Carry on regardless", e);
-						}
-					}
-				});
+//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+//				GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
+//				new WorkingMemoryChangeReceiver() {
+//					@Override
+//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+//							throws CASTException {
+//						try {
+//							// FIXME: horribly inefficient I guess
+//							removeStableBelief(_wmc.address);
+//							addStableBelief(_wmc.address,
+//									getMemoryEntry(_wmc.address, dBelief.class));
+//						} catch (CASTException e) {
+//							logException("Carry on regardless", e);
+//						}
+//					}
+//				});
 
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				GroundedBelief.class, WorkingMemoryOperation.DELETE),
