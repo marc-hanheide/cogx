@@ -23,9 +23,11 @@ import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import execution.components.AbstractActionInterface;
 import execution.slice.TriBool;
+import execution.slice.actions.EngageWithHuman;
 import execution.slice.actions.ReportPosition;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
+import execution.util.DoNothingActionExecutorFactory;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -34,8 +36,7 @@ import execution.util.ComponentActionFactory;
  * @author nah
  * 
  */
-public class DialogueActionInterface extends
-		AbstractDialogueActionInterface {
+public class DialogueActionInterface extends AbstractDialogueActionInterface {
 
 	public static class ReportPositionDialogue
 			extends
@@ -72,13 +73,13 @@ public class DialogueActionInterface extends
 				WMPointer placePointer = WMPointer
 						.create(gb
 								.getContent()
-								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
+								.get(
+										eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
 								.getDistribution().getMostLikely().get());
 
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										placePointer.getVal(),
+						.create(GroundedBelief.class, getComponent()
+								.getMemoryEntry(placePointer.getVal(),
 										GroundedBelief.class));
 
 				WMPointer roomPointer = WMPointer.create(placeBelief
@@ -86,9 +87,8 @@ public class DialogueActionInterface extends
 						.getDistribution().getMostLikely().get());
 
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										roomPointer.getVal(),
+						.create(GroundedBelief.class, getComponent()
+								.getMemoryEntry(roomPointer.getVal(),
 										GroundedBelief.class));
 
 				// start with a default room
@@ -120,9 +120,8 @@ public class DialogueActionInterface extends
 		@Override
 		protected void actionComplete() {
 			try {
-				((AbstractActionInterface) getComponent())
-						.addBooleanFeature(getAction().beliefAddress,
-								"position-reported", true);
+				((AbstractActionInterface) getComponent()).addBooleanFeature(
+						getAction().beliefAddress, "position-reported", true);
 			} catch (CASTException e) {
 				logException("Problem while updating belief", e);
 			}
@@ -161,25 +160,24 @@ public class DialogueActionInterface extends
 				WMPointer placePointer = WMPointer
 						.create(gb
 								.getContent()
-								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
+								.get(
+										eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
 								.getDistribution().getMostLikely().get());
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										placePointer.getVal(),
+						.create(GroundedBelief.class, getComponent()
+								.getMemoryEntry(placePointer.getVal(),
 										GroundedBelief.class));
-				int placeID = placeBelief.getContent()
-						.get(PlaceTransferFunction.PLACE_ID_ID)
-						.getDistribution().getMostLikely().getInteger();
+				int placeID = placeBelief.getContent().get(
+						PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+						.getMostLikely().getInteger();
 
 				WMPointer roomPointer = WMPointer.create(placeBelief
 						.getContent().get(RoomMembershipMediator.ROOM_PROPERTY)
 						.getDistribution().getMostLikely().get());
 
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class,
-								getComponent().getMemoryEntry(
-										roomPointer.getVal(),
+						.create(GroundedBelief.class, getComponent()
+								.getMemoryEntry(roomPointer.getVal(),
 										GroundedBelief.class));
 
 				// start with a default room
@@ -194,24 +192,22 @@ public class DialogueActionInterface extends
 
 				String message = "the " + objectIdent + " is in the " + room
 						+ ", at place " + placeID;
-				
-//				JOptionPane.showMessageDialog(null, message);
-				
-				//HACK  for direct verbalisation of object location
-				
+
+				// JOptionPane.showMessageDialog(null, message);
+
+				// HACK for direct verbalisation of object location
+
 				String ttsID = getComponent().newDataID();
-				SpokenOutputItem tts = new SpokenOutputItem(ttsID, message, "", null);
+				SpokenOutputItem tts = new SpokenOutputItem(ttsID, message, "",
+						null);
 				getComponent().addToWorkingMemory(ttsID, "dialogue", tts);
-				
-				//END HACK
-				
-				
+
+				// END HACK
+
 				((DialogueActionInterface) getComponent()).addBooleanFeature(
 						getAction().beliefAddress, "position-reported", true);
-				
-				result = TriBool.TRITRUE;
 
-				
+				result = TriBool.TRITRUE;
 
 			} catch (CASTException e) {
 				logException(e);
@@ -226,16 +222,19 @@ public class DialogueActionInterface extends
 	protected void start() {
 		super.start();
 
+		// TODO: this is a hack, we need a proper executor for this (ticket #296)
+		m_actionStateManager.registerActionType(EngageWithHuman.class,
+				new DoNothingActionExecutorFactory(this));
+
 		if (m_fakeIt) {
 			m_actionStateManager.registerActionType(ReportPosition.class,
 					new ComponentActionFactory<DirectReportPosition>(this,
 							DirectReportPosition.class));
-		
+
 		} else {
 			m_actionStateManager.registerActionType(ReportPosition.class,
 					new ComponentActionFactory<ReportPositionDialogue>(this,
 							ReportPositionDialogue.class));
 		}
 	}
-
 }
