@@ -4,6 +4,8 @@ VARDEFAULT planning_problem=dora-avs-p1-init.pddl
 # VARDEFAULT planning_problem=dora-avs-p1-viewcones.pddl
 # VARDEFAULT planning_problem=dora-interactive1.pddl
 
+VARDEFAULT expl_rules=explanations-dora.pddl
+
 #VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO.txt"
 # VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-TRO-det.txt"
 VARDEFAULT defaults="instantiations/defaultprobs/defaultprobs-DOESNOTEXIST.txt"
@@ -45,11 +47,11 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --debug --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini --problem %(planning_problem)
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --debug --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini --problem %(planning_problem) --expl_rules %(expl_rules)
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals "(and )"
+# INCLUDE includes/planner.sa/viz-plan.cast
+# JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --goals "(and )"
 # exection ####################################################################
 #JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
 #JAVA MG executor dora.execution.components.DoraExecutionMediator
