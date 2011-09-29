@@ -17,8 +17,8 @@
 #define QCASTVIEWGL_9ZC8AKWT
 
 #include "QCastViewBase.hpp"
+#include "linalgebra.hpp"
 #include <QGLWidget>
-#include <cmath>
 
 // class QCastViewGL: public QGLWidget, public cogx::display::CDisplayModelObserver
 class QCastViewGL: public QGLWidget, public QCastViewBase
@@ -36,64 +36,32 @@ public:
    QColor coBackground;
 
 private:
-   struct Vector3
-   {
-      double x, y, z;
-      Vector3(double _x=0, double _y=0, double _z=0) {
-         x = _x;
-         y = _y;
-         z = _z;
-      }
-
-      void set(double _x, double _y, double _z) {
-         x = _x;
-         y = _y;
-         z = _z;
-      }
-
-      Vector3 operator+ (const Vector3& v) {
-         return Vector3( x+v.x, y+v.y, z+v.z );
-      }
-
-      Vector3 operator- (const Vector3& v) {
-         return Vector3( x-v.x, y-v.y, z-v.z );
-      }
-
-      Vector3 operator* (double s) {
-         return Vector3( s*x, s*y, s*z );
-      }
-
-      Vector3 dot(const Vector3& v) {
-         return Vector3( x*v.x, y*v.y, z*v.z );
-      }
-
-      Vector3 cross(const Vector3& v) {
-         return Vector3( y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x );
-      }
-      double length() {
-         return sqrt(x*x + y*y + z*z);
-      }
-      void normalize() {
-         double s = length();
-         if (s == 0) return;
-         x = x / s;
-         y = y / s;
-         z = z / s;
-      }
-   };
 
    struct Camera {
-      Vector3 eye;  // eye point = origin of camera
-      Vector3 view; // view direction of the camera (unit vector)
-      Vector3 up;   // up vector of the camera (unit vector)
+      linalgebra::Vector3 eye;  // eye point = origin of camera
+      linalgebra::Vector3 view; // view direction of the camera (unit vector)
+      linalgebra::Vector3 up;   // up vector of the camera (unit vector)
       Camera(): eye(0, 0, 0), view(0, 0, 1), up(0, 1, 0) {}
-      Vector3 normal() {
+
+      linalgebra::Vector3 normal() {
          return up.cross(view);
       }
       void normalize();
+
+      void orbit(linalgebra::Vector3 vPivot, linalgebra::Vector3 vAxis, double fAngle)
+      {
+         linalgebra::Vector3 d = eye - vPivot;
+
+         d.rotate(fAngle, vAxis);
+         eye = vPivot + d;
+
+         view.rotate(fAngle, vAxis);
+         up.rotate(fAngle, vAxis);
+         //normal.rotate(fAngle, vAxis);
+      }
    };
    Camera m_camera;
-   Vector3 m_pivot;
+   linalgebra::Vector3 m_pivot;
 
 public:
    QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
@@ -111,7 +79,7 @@ public:
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView); /*override*/
 
 public slots:
-   void setCameraEye(const Vector3 &e);
+   void setCameraEye(const linalgebra::Vector3 &e);
    void setXRotation(float angle);
    void setYRotation(float angle);
    void setZRotation(float angle);
@@ -122,7 +90,7 @@ private slots:
    void onActConfigureCameras();
 
 signals:
-   void cameraEyeChanged(const Vector3 &e);
+   void cameraEyeChanged(const linalgebra::Vector3 &e);
    void xRotationChanged(float angle);
    void yRotationChanged(float angle);
    void zRotationChanged(float angle);
