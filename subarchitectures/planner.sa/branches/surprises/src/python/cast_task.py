@@ -61,6 +61,7 @@ class CASTTask(object):
     def __init__(self, planning_task, beliefs, domain_fn, component, problem_fn=None):
         self.component = component
 
+        self.init_state = None
         self.id = planning_task.id
         self.dt_id = None
         self.slice_goals = planning_task.goals
@@ -80,10 +81,12 @@ class CASTTask(object):
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
             self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component)
+            self.init_state = self.state
             goal_from_pddl = Planner.Goal(importance=-1.0, goalString=add_problem.goal.pddl_str(), isInPlan=False)
             self.slice_goals = [goal_from_pddl]
         else:
             self.state = cast_state.CASTState(beliefs, self.domain, component=component)
+            self.init_state = self.state
             
         self.percepts = []
 
@@ -162,12 +165,14 @@ class CASTTask(object):
             action, status = line.split(",")
             status = plans.ActionStatusEnum.__dict__[status.strip()]
             return PDDL_REXP.search(action).group(1).lower().strip(), status
-            
+
         log.info("Loading history: %s.", history_fn)
         _task = None
         for prob_str, plan_str in read_file(history_fn):
             problem = pddl.parser.Parser.parse_as(prob_str, pddl.Problem, self.domain)
             self.state = fake_cast_state.FakeCASTState(problem, self.domain, component=component)
+            if self.init_state is None:
+                self.init_state = self.state
             goal_from_pddl = Planner.Goal(importance=-1.0, goalString=problem.goal.pddl_str(), isInPlan=False)
             self.slice_goals = [goal_from_pddl]
             cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
@@ -187,6 +192,7 @@ class CASTTask(object):
                 key = "%s %s" % (n.action.name, " ".join(a.name for a in n.full_args))
                 n.status = actions_status[key.strip()]
             self.plan_history.append(plan)
+            self.plan_state_history.append((plan, self.state))
         
 
     def wait(self, timeout, update_callback, timeout_callback):
@@ -270,7 +276,131 @@ class CASTTask(object):
         self.cp_task.replan()
         self.process_cp_plan()
 
+    def merge_plans(self, _plans):
+        nodedict = {}
+        latest_node = {}
+        all_nodes = defaultdict(set)
+        def add_node(n):
+            key = (n.action.name,)+tuple(n.full_args)
+            nodedict[key] = n
+            all_nodes[key].add(n)
+            
+        def get_node(n):
+            key = (n.action.name,)+tuple(n.full_args)
+            if key not in nodedict:
+                nodedict[key] = n
+            # latest_node[key] = n
+            all_nodes[key].add(n)
+            return nodedict[key]
+        
+        # def latest(n):
+        #     key = (n.action.name,)+tuple(n.full_args)
+        #     return latest[key]
+
+        plan_dict = {}
+        def get_incoming_links(n):
+            plan = plan_dict[n]
+            for pred in plan.predecessors_iter(n):
+                for e in plan[pred][n].itervalues():
+                    yield pred, e["svar"], e["val"], e["type"]
+
+        def has_link(plan, n1, n2, svar, val, type):
+            if n2 not in plan[n1]:
+                return False
+            for e in plan[n1][n2].itervalues():
+                if e["svar"] == svar and e["val"] == val and e["type"] == type:
+                    return True
+            return False
+            
+        plan = plans.MAPLPlan(self.init_state.state, self.cp_task.get_goal())
+        get_node(plan.init_node)
+        get_node(plan.goal_node)
+
+        written = {}
+        executed = []
+        unexecuted = []
+
+        for p in _plans:
+            for n in p.topological_sort():
+                plan_dict[n] = p
+                if n.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
+                    executed.append(n)
+                else:
+                    unexecuted.append(n)
+
+        def add_links(n, new_n):
+            print new_n
+            for pred, svar, val, type in get_incoming_links(n):
+                new_p = get_node(pred)
+                print "    ", pred, svar, val, type
+                if new_p == plan.init_node and svar in written and not n.is_virtual():
+                    real_p, expected_val = written[svar]
+                    print "        ", real_p
+                    new_p = real_p
+                    if val == expected_val:
+                        type = "depends"
+                        # plan.add_edge(real_p, new_n, svar=svar, val=val, type = "depends")
+                    else:
+                        type = "unexpected"
+                        # plan.add_edge(real_p, new_n, svar=svar, val=val, type = "unexpected")
+                if not has_link(plan, new_p, new_n, svar, val, type):
+                    plan.add_edge(new_p, new_n, svar=svar, val=val, type=type)
+
+        i = 0
+        for n in executed:
+            n.time = i
+            i += 1
+            if n.is_virtual() or isinstance(n, plans.DummyNode):
+                new_n = get_node(n)
+            else:
+                add_node(n)
+                new_n = n
+                
+            if new_n not in plan:
+                plan.add_node(new_n)
+
+            add_links(n, new_n)
+
+            for svar, val in n.effects:
+                written[svar] = (n, val)
+            
+
+        written.clear()
+        for n in unexecuted:
+            n.time = i
+            i += 1
+            new_n = get_node(n)
+            if new_n not in plan:
+                plan.add_node(new_n)
+
+            add_links(n, new_n)
+
+        # G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+        # G.layout(prog='dot')
+        # G.draw("plan.pdf")
+
+        redundant = set()
+        r_plan = plan.topological_sort()
+        r_plan.reverse()
+        for n in r_plan:
+            if n.status == plans.ActionStatusEnum.EXECUTABLE and n != plan.goal_node:
+                print n
+                succ_iter = list(plan.successors_iter(n, link_type = ("depends", "unexpected")))
+                print "    ",map(str, succ_iter)
+                if all(succ in redundant or succ.status != plans.ActionStatusEnum.EXECUTABLE for succ in succ_iter):
+                    print "redundant", n
+                    redundant.add(n)
+
+        for n in redundant:
+            plan.remove_node(n)
+
+        G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+        G.layout(prog='dot')
+        G.draw("plan.pdf")
+        return plan
+            
     def handle_task_failure(self):
+        self.merge_plans(self.plan_history)
         last_plan = self.plan_history[-1]
         for n in last_plan.topological_sort():
             print n, n.status
