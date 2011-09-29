@@ -255,6 +255,9 @@ module execution {
       class EngageWithHuman extends SingleBeliefAction {
       };
 
+      class TurnToHuman extends SingleBeliefAction {
+      };
+
 
       /**
        * comsys action
