@@ -50,7 +50,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 import execution.slice.Action;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskPolarIdentity;
-import execution.slice.actions.EngageWithHuman;
+import execution.slice.actions.TurnToHuman;
 import execution.util.ActionMonitor;
 
 /**
@@ -1101,7 +1101,7 @@ public class ActionInterfaceFrame extends JFrame {
 		WorkingMemoryAddress beliefAddr = getSelectedObjectBeliefAddress();
 		if (beliefAddr != null) {
 			m_exeMan.executeSingleBeliefAction(beliefAddr, new MonitorPanel(),
-					EngageWithHuman.class);
+					TurnToHuman.class);
 		}
 	}
 

@@ -37,17 +37,11 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.factories.specific.FormulaDistributionFactory;
-import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.perceptmediator.dora.PersonTransferFunction;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.CreateRelationalConesForModel;
-import execution.slice.actions.EngageWithHuman;
+import execution.slice.actions.TurnToHuman;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
@@ -703,140 +697,6 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 	}
 
-	private class TurnToPersonExecutor implements ActionExecutor,
-			WorkingMemoryChangeReceiver {
-
-		private ExecutionCompletionCallback m_callback;
-		private boolean m_isComplete = false;
-		private WorkingMemoryAddress m_navCmdAddr;
-		private CASTIndependentFormulaDistributionsBelief<GroundedBelief> m_humanBelief;
-		private WorkingMemoryAddress m_humanBeliefAddr;
-
-		public boolean accept(Action _action) {
-			m_humanBeliefAddr = ((EngageWithHuman) _action).beliefAddress;
-			try {
-				m_humanBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, getMemoryEntry(
-								m_humanBeliefAddr, GroundedBelief.class));
-			} catch (CASTException e) {
-				logException(e);
-				return false;
-			}
-			return true;
-		}
-
-		public TriBool execute() {
-			return null;
-		}
-
-		public void execute(ExecutionCompletionCallback _callback) {
-			try {
-				double posX = m_humanBelief.getContent().get(
-						PersonTransferFunction.ATTR_POS_X).getDistribution()
-						.getMostLikely().getDouble();
-				double posY = m_humanBelief.getContent().get(
-						PersonTransferFunction.ATTR_POS_Y).getDistribution()
-						.getMostLikely().getDouble();
-				double posTheta = m_humanBelief.getContent().get(
-						PersonTransferFunction.ATTR_POS_THETA)
-						.getDistribution().getMostLikely().getDouble();
-				// else create the command and send it off, ignoring path
-				// transition
-				// probs for now
-				NavCommand cmd = newNavCommand();
-				cmd.cmd = CommandType.GOTOPOSITION;
-				cmd.destId = new long[] {};
-				cmd.angle = new double[] {};
-				cmd.distance = new double[] {};
-				cmd.pose = new double[] { posX, posY, posTheta };
-				cmd.tolerance = new double[] { 0.1, 0.1, Math.PI * 10.0 / 180.0 };
-
-				// going to add locally for the time being, but using wma to
-				// allow
-				// this to be changed later
-				m_navCmdAddr = new WorkingMemoryAddress(newDataID(),
-						getSubarchitectureID());
-				addChangeFilter(ChangeFilterFactory.createAddressFilter(
-						m_navCmdAddr, WorkingMemoryOperation.OVERWRITE), this);
-				m_callback = _callback;
-
-				try {
-					addToWorkingMemory(m_navCmdAddr, cmd);
-				} catch (CASTException e) {
-					logException(e);
-					_callback.executionComplete(TriBool.TRIFALSE);
-				}
-
-			} catch (NullPointerException e) {
-				logException(e);
-				_callback.executionComplete(TriBool.TRIFALSE);
-				return;
-			} catch (BeliefException e) {
-				logException(e);
-				_callback.executionComplete(TriBool.TRIFALSE);
-				return;
-			}
-
-		}
-
-		public boolean isBlockingAction() {
-			return false;
-		}
-
-		@Override
-		public void stopExecution() {
-			// remove overwrite receiver
-			if (!m_isComplete) {
-				try {
-					log("aborting execution");
-					removeChangeFilter(this);
-					// reread
-					lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);
-					NavCommand navCmd = getMemoryEntry(m_navCmdAddr,
-							NavCommand.class);
-					navCmd.comp = Completion.COMMANDABORTED;
-					overwriteWorkingMemory(m_navCmdAddr, navCmd);
-					unlockEntry(m_navCmdAddr);
-
-				} catch (DoesNotExistOnWMException e) {
-					//
-					// e.printStackTrace();
-				} catch (SubarchitectureComponentException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		public void workingMemoryChanged(WorkingMemoryChange _wmc)
-				throws CASTException {
-
-			// read in the nav cmd
-			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
-			NavCommand cmd = getMemoryEntry(_wmc.address, NavCommand.class);
-			if (cmd.comp == Completion.COMMANDFAILED) {
-				log("command failed by the looks of this: " + cmd.comp);
-				m_isComplete = true;
-				m_callback.executionComplete(TriBool.TRIFALSE);
-				deleteFromWorkingMemory(_wmc.address);
-				removeChangeFilter(this);
-			} else if (cmd.comp == Completion.COMMANDSUCCEEDED) {
-				log("command completed by the looks of this: " + cmd.comp);
-				m_isComplete = true;
-				m_callback.executionComplete(TriBool.TRITRUE);
-				deleteFromWorkingMemory(_wmc.address);
-				removeChangeFilter(this);
-				FormulaDistribution fd = FormulaDistribution.create();
-				fd.add(true, 1.0);
-				m_humanBelief.getContent().put("engaged", fd);
-				overwriteWorkingMemory(m_humanBeliefAddr, m_humanBelief.get());
-				
-			} else {
-				log("command in progress: " + cmd.comp);
-				unlockEntry(_wmc.address);
-			}
-		}
-	}
-
 	public class LookForPeopleExecutorFactory implements ActionExecutorFactory {
 
 		private final ManagedComponent m_component;
@@ -848,6 +708,21 @@ public class SpatialActionInterface extends ManagedComponent {
 		@Override
 		public ActionExecutor getActionExecutor() {
 			return new LookForPeopleExecutor(m_component, m_detections);
+		}
+
+	}
+
+	public class TurnToPersonExecutorFactory implements ActionExecutorFactory {
+
+		private final ManagedComponent m_component;
+
+		public TurnToPersonExecutorFactory(ManagedComponent _component) {
+			m_component = _component;
+		}
+
+		@Override
+		public ActionExecutor getActionExecutor() {
+			return new TurnToPersonExecutor(m_component);
 		}
 
 	}
@@ -931,13 +806,8 @@ public class SpatialActionInterface extends ManagedComponent {
 					}
 				});
 
-		m_actionStateManager.registerActionType(EngageWithHuman.class,
-				new ActionExecutorFactory() {
-					@Override
-					public ActionExecutor getActionExecutor() {
-						return new TurnToPersonExecutor();
-					}
-				});
+		m_actionStateManager.registerActionType(TurnToHuman.class,
+				new TurnToPersonExecutorFactory(this));
 
 		m_actionStateManager.registerActionType(ExplorePlace.class,
 				new ActionExecutorFactory() {
