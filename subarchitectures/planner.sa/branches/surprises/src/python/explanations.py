@@ -138,7 +138,7 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
     print "\n".join(w.write_problem(expl_problem))
     
     cp_task.mapltask = expl_problem
-    cp_task.set_state(init_state.state)
+    cp_task.set_state(pddl.state.State.from_problem(expl_problem))
     cp_task.set_plan(None)
     cp_task.mark_changed()
     cp_task.replan()
