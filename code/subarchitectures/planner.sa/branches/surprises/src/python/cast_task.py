@@ -404,7 +404,12 @@ class CASTTask(object):
     def handle_task_failure(self):
         #self.merge_plans(self.plan_history)
         last_plan = self.plan_history[-1].topological_sort()
-        explanations.handle_failure(last_plan, self.state.state.problem, self.init_state, self.state.state, self.expl_rules_fn, self.cp_task)
+        endstate = self.state.state
+        for a in last_plan:
+            if a.status == plans.ActionStatusEnum.EXECUTED:
+                for f in a.effects:
+                    endstate.set(f)
+        explanations.handle_failure(last_plan, self.state.state.problem, self.init_state, endstate, self.expl_rules_fn, self.cp_task)
 
     def write_history(self):
         history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))
