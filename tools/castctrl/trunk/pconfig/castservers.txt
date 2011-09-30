@@ -27,7 +27,6 @@ cast_cpp.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"
 cast_cpp.setCommand("[COMMAND]")
 cast_cpp.setVar("CMD_CPP_SERVER_DEBUG", "${CMD_CPP_SERVER}")
 cast_cpp.enabled = True
-cast_cpp.termWithSigInt = True
 
 def cppParamProcessor(name, value, serverInfo):
     if name == "COMMAND":
