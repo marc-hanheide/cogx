@@ -65,6 +65,8 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     domain_orig = problem.domain
     expl_domain = domain_orig.copy_skeleton()
     expl_domain.name += "-explanations"
+    expl_domain.axioms = [a.copy(newdomain=expl_domain) for a in domain_orig.axioms]
+    print [a.predicate.name for a in domain_orig.axioms]
     dtypes = expl_domain.types
     # add additional types
     for t in ["action", "phase"]:
