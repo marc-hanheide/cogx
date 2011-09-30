@@ -51,7 +51,7 @@ def build_operator_for_ground_action(i, action, args):
     action.instantiate(args, expl_domain)
     if action.precondition:
         new_op.precondition = action.precondition.copy(copy_instance=True)
-    new_op.precondition = pddl.Conjunction([]) # TEST
+    #new_op.precondition = pddl.Conjunction([]) # TEST
     if action.effect:
         new_op.effect = action.effect.copy(copy_instance=True)
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
@@ -116,9 +116,9 @@ def build_explanation_problem(problem, init_state, observed_state):
     p.init.append(pddl.Builder(p).init("=", ("phase",), "apply_rules"))
     p.init.append(pddl.Builder(p).init("=", ("enabled",), "action_000"))
 
-    # gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
-    # goal = pddl.Conjunction(gfacts)
-    goal = pddl.Conjunction([])  # TEST
+    gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
+    goal = pddl.Conjunction(gfacts)
+    #goal = pddl.Conjunction([])  # TEST
     if not isinstance(goal, pddl.Conjunction):
         goal = pddl.Conjunction([goal])
     goal.parts.append(str2cond("(= (phase) achieve_goal)", expl_domain))

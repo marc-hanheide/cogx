@@ -12,15 +12,8 @@
 (:action unknown-container-in-room
  :parameters (?r - room ?cont - visualobject)
  :precondition (and 
-    (not (exists (?cont2 - visualobject) (and
-       (= (label ?cont2) container) 
-       (= (related-to ?cont2 ) ?r) (= (relation ?cont2 ) in)
-    )))
-    (not (exists (?r2 - room) (and
-       (= (related-to ?cont ) ?r2) (= (relation ?cont ) in)
-    ))))
+    (= (label ?cont) container))
  :effect (and 
-     (assign (label ?cont) container)
      (assign (related-to ?cont ) ?r) (assign (relation ?cont ) in)
     )
 )
