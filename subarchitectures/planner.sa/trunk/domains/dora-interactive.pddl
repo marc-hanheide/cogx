@@ -3,7 +3,7 @@
 
   (:types
    conegroup - object
-   robot - agent
+   robot - planning_agent
    person robot - location
    label category spatial_relation place room visualobject - concept
    visualobject room - location
@@ -70,6 +70,7 @@
    (identity ?r - room) - category
    (roomid ?r - room) - number
    (virtual-category ?r - room) - category
+   (virtual-place ?r - room) - place
 
    ;; === place properties ===
    (placestatus ?n - place) - place_status
@@ -143,15 +144,26 @@
 
   ;; create dummy rooms
   (:init-rule rooms
-              :parameters(?c - category)
-              :precondition (not (exists (?r - room)
-                                         (and (= (virtual-category ?r) ?c)
-                                              (is-virtual ?r))))
+              :parameters(?p - place)
+              :precondition (and (= (placestatus ?p) placeholder)
+                                 (not (exists (?r - room)
+                                              (and (= (virtual-place ?r) ?p)
+                                                   (is-virtual ?r)))))
               :effect (create (?r - room) (and
                                            (is-virtual ?r)
-                                           (assign (virtual-category ?r) ?c))
+                                           (assign (virtual-place ?r) ?p))
                               )
               )
+  ;; (:init-rule rooms
+  ;;             :parameters(?c - category)
+  ;;             :precondition (not (exists (?r - room)
+  ;;                                        (and (= (virtual-category ?r) ?c)
+  ;;                                             (is-virtual ?r))))
+  ;;             :effect (create (?r - room) (and
+  ;;                                          (is-virtual ?r)
+  ;;                                          (assign (virtual-category ?r) ?c))
+  ;;                             )
+  ;;             )
 
   (:init-rule default_search_costs_for_room
               :parameters (?l - label  ?r - room)
@@ -229,6 +241,7 @@
                               (not (defined (p-obj_exists ?l in ?r ?c))))
            :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
+
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_in_obj
            :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category)
@@ -239,6 +252,7 @@
                               (defined (dora__inobject ?l1 ?l2 ?c))
                               (not (defined (p-obj_exists ?l1 in ?o ?c))))
            :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
+
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_on_obj
@@ -309,11 +323,19 @@
   (:dtrule room_from_placeholder
            :parameters (?p - place ?r - room ?c - category)
            :precondition (and (= (placestatus ?p) placeholder)
-                              (= (virtual-category ?r) ?c)
+                              (= (virtual-place ?r) ?p)
                               (= (leads_to_room ?p ?c) true)
                               (is-virtual ?r))
            :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                            (assign (category ?r) ?c))))
+  ;; (:dtrule room_from_placeholder
+  ;;          :parameters (?p - place ?r - room ?c - category)
+  ;;          :precondition (and (= (placestatus ?p) placeholder)
+  ;;                             (= (virtual-category ?r) ?c)
+  ;;                             (= (leads_to_room ?p ?c) true)
+  ;;                             (is-virtual ?r))
+  ;;          :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
+  ;;                                          (assign (category ?r) ?c))))
 
   ;; (:action explore_place
   ;;          :agent (?a - robot)
