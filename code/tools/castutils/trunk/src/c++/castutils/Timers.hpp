@@ -14,22 +14,32 @@ namespace castutils {
 class CMilliTimer
 {
    void* pStartTime;
+   long long timeout;
 public:
    CMilliTimer(bool bStart=true)
    {
       pStartTime = 0;
+      timeout = 0;
       if (bStart) restart();
    }
+
    ~CMilliTimer()
    {
       if (pStartTime) delete (timeval*)pStartTime;
    }
+
+   void setTimeout(double milliSeconds)
+   {
+      timeout = milliSeconds * 1000;
+   }
+
    void restart()
    {
       if (pStartTime) delete (timeval*)pStartTime;
       pStartTime = new timeval;
       gettimeofday((timeval*)pStartTime, 0);
    }
+
    long long elapsed()
    {
       return (long long) (0.5 + elapsed_micros() / 1e3);
@@ -47,6 +57,11 @@ public:
 
       useconds  = (now.tv_sec - start.tv_sec) * 1000 * 1000 + (now.tv_usec - start.tv_usec);
       return useconds;
+   }
+
+   bool isTimeoutReached()
+   {
+      return elapsed_micros() > timeout;
    }
 };
 
