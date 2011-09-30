@@ -34,6 +34,7 @@ def add_explanation_rules(expl_rules_fn):
         type = j.get("terminal").token
         if type == ":action":
             a = pddl.Action.parse(j.reset(), expl_domain)
+            a.name = "_rule_" + a.name
             a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
             expl_domain.actions.append(a)
         elif type == ":init-rule":
@@ -43,13 +44,14 @@ def add_explanation_rules(expl_rules_fn):
 
 def build_operator_for_ground_action(i, action, args):
     action_t = expl_domain.types["action"]
-    action_id = "action%d" % i
+    action_id = "action_" + str(i).zfill(3)
     expl_domain.add_constant(types.TypedObject(action_id, action_t))
     name = "_"+action_id
     new_op = pddl.Action(name, [], None, None, None, None)
     action.instantiate(args, expl_domain)
     if action.precondition:
         new_op.precondition = action.precondition.copy(copy_instance=True)
+    new_op.precondition = pddl.Conjunction([]) # TEST
     if action.effect:
         new_op.effect = action.effect.copy(copy_instance=True)
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
@@ -89,16 +91,15 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         a = n.action
         if isinstance(a, plans.DummyAction):
             continue
-        i += 1
         a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
         if last_action:
             last_action.extend_effect(enabled_last)
         last_action = a2
         expl_domain.add_action(last_action)
-        break # TEST: stop after one action
         if n.status == plans.ActionStatusEnum.FAILED:
             # once we've reached the failure, stop enforced execution simulation
             break
+        i += 1
     last_action.extend_effect(str2eff("(assign (phase) achieve_goal)", expl_domain))
     add_explanation_rules(expl_rules_fn)
     # add action to switch phases
@@ -107,20 +108,17 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
 
 
 def build_explanation_problem(problem, init_state, observed_state):
-    facts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
-    #goal = pddl.Conjunction(facts)
-    print "testing with empty goal (except enforced exec)"
-    goal = pddl.Conjunction([])  # TEST
     assert expl_domain is not None
     p = problem.copy(newdomain=expl_domain)
     p.objects = set()
-    p.init = [f.to_init() for f in init_state.state.iterfacts()]
-    # p.init = [] # TEST
-    f = pddl.Builder(p).init("=", ("phase",), "apply_rules")
-    print "fffffffff", f
-    p.init.append(f)
-    
 
+    p.init = [f.to_init() for f in init_state.state.iterfacts()]
+    p.init.append(pddl.Builder(p).init("=", ("phase",), "apply_rules"))
+    p.init.append(pddl.Builder(p).init("=", ("enabled",), "action_000"))
+
+    # gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
+    # goal = pddl.Conjunction(gfacts)
+    goal = pddl.Conjunction([])  # TEST
     if not isinstance(goal, pddl.Conjunction):
         goal = pddl.Conjunction([goal])
     goal.parts.append(str2cond("(= (phase) achieve_goal)", expl_domain))
@@ -141,6 +139,7 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
     cp_task.set_state(pddl.state.State.from_problem(expl_problem))
     cp_task.set_plan(None)
     cp_task.mark_changed()
+    print "planning"
     cp_task.replan()
     plan = cp_task.get_plan()
     print plan

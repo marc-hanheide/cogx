@@ -404,7 +404,7 @@ class CASTTask(object):
     def handle_task_failure(self):
         #self.merge_plans(self.plan_history)
         last_plan = self.plan_history[-1].topological_sort()
-        endstate = self.state.state
+        endstate = self.state.state.copy()
         for a in last_plan:
             if a.status == plans.ActionStatusEnum.EXECUTED:
                 for f in a.effects:
