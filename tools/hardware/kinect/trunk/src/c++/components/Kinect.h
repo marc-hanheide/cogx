@@ -9,18 +9,28 @@
 #ifndef Z_KINECT_H
 #define Z_KINECT_H
 
+#include "Capture.h"
+
 #include <cstdio>
 #include <iostream>
 
 #include <opencv/cxcore.h>
 #include <opencv/cv.h>
 
-#include "Capture.h"
+#include <IceUtil/IceUtil.h>
+
+#define KINECT_CAST_LOGGING
+#ifdef KINECT_CAST_LOGGING
+#include <castutils/CastLoggerMixin.hpp>
+#endif
 
 namespace Kinect
 {
 
 class Kinect
+#ifdef KINECT_CAST_LOGGING
+  : public castutils::CCastLoggerMixin
+#endif
 {
 private:
   bool ni_pause;                        ///< Set pause
@@ -41,15 +51,21 @@ private:
   XnUInt64 shadow_value;                ///< Return value for shadow point
   XnUInt64 no_sample_value;             ///< Return value for no sample
 
+  IceUtil::RWRecMutex m_kinectMutex;
+
   bool Init(const char *kinect_xml_file);
   void MapMetaData2IplImage(const MapMetaData* pImageMD, IplImage **iplImg);
   void DepthMetaData2IplImage(const DepthMetaData* pDepthMD, IplImage **iplImg);
   void rgbUndistort(cv::Mat src);
   void depUndistort(cv::Mat src);
   cv::Point3f DepthToWorld(int x, int y, int depthValue);
+  cv::Point3f WorldToColorInternal(unsigned x, unsigned y);
   
 public:
   Kinect(const char *kinect_xml_file);
+#ifdef KINECT_CAST_LOGGING
+  Kinect(cast::CASTComponent* pComponent, const char *kinect_xml_file);
+#endif
   ~Kinect();
 
   void StartCapture(int delay);
@@ -57,13 +73,17 @@ public:
   bool GetFrame(IplImage **iplImg, IplImage **iplDepthImg);
   bool NextFrame();  
   bool GetColorImage(IplImage **rgbIplImg);
+  bool GetDepthImage(IplImage **depthIplImg);
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
   int GetRgbImageWidth() {return rgbWidth;}
   int GetDepthImageWidth() {return depWidth;}
   
+private:
   cv::Mat grayImage;                    ///< captured gray image (bayer pattered)
   cv::Mat rgbImage;                     ///< captured rgb image
   cv::Mat depImage;                     ///< captured depth image
+
+public:
   int frameNumber;
 
   const DepthMetaData* getNextDepthMD();
