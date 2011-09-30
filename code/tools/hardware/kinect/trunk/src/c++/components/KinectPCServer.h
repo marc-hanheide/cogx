@@ -30,14 +30,15 @@ namespace cast
 class KinectPCServer;
 
 #ifdef KINECT_USER_DETECTOR
-class PersonDetectServerI : public kinect::slice::PersonDetectorInterface {
+class PersonDetectServerI : public kinect::slice::PersonDetectorInterface
+{
 private:
-	KinectPCServer* pcSrv;
+  KinectPCServer* pcSrv;
 
 public:
-	PersonDetectServerI(KinectPCServer *_ptCloud) : pcSrv(_ptCloud) {}
+  PersonDetectServerI(KinectPCServer *_ptCloud) : pcSrv(_ptCloud) {}
 
-	kinect::slice::PersonsDict getPersons(const Ice::Current&);
+  kinect::slice::PersonsDict getPersons(const Ice::Current&);
 
 };
 #endif
@@ -100,11 +101,11 @@ protected:
 
   virtual void receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc);
 
-  
+
 public:
   KinectPCServer();
   virtual ~KinectPCServer();
-  
+
   // *********************************** Point Cloud Server *********************************** //
   void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete);
   void getRectImage(int side, int imgWidth, Video::Image& image);
@@ -115,11 +116,11 @@ public:
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   bool isPointInViewCone(const cogx::Math::Vector3& point);
 #ifdef KINECT_USER_DETECTOR
-kinect::slice::PersonsDict detectPersons();
+  kinect::slice::PersonsDict detectPersons();
 #endif
-    void saveNextFrameToFile();
+  void saveNextFrameToFile();
 #ifdef KINECT_USER_DETECTOR
-    static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
+  static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
 #endif
 };
 
