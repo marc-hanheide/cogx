@@ -91,6 +91,7 @@ private:
   /* Sense of the normals for the planes above */
   int senses[N_PLANES];
 
+  void deleteViewConePlanes();
   bool createViewCone();
   Eigen::Hyperplane<double, 3>* createPlane(std::vector<cv::Point3f>&, cogx::Math::Pose3& pose);
 

@@ -23,7 +23,7 @@ void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator& generator, XnUserID nId, 
 	printf("Lost user %d\n", nId);
 }
 
-
+#define LOCK_KINECT
 
 namespace Kinect
 {
@@ -42,6 +42,20 @@ Kinect::Kinect(const char *kinect_xml_file)
     exit(0);
   }
 }
+
+#ifdef KINECT_CAST_LOGGING
+Kinect::Kinect(cast::CASTComponent* pComponent, const char *kinect_xml_file)
+  : CCastLoggerMixin(pComponent)
+{
+  ni_pause = false;
+  
+  if(!Init(kinect_xml_file))
+  {
+    printf("Kinect: Error: Initialisation not successful! Abort!\n");
+    exit(0);
+  }
+}
+#endif
 
 /**
  * @brief Destructor of Class Kinect
@@ -221,7 +235,7 @@ void Kinect::DepthMetaData2IplImage(const DepthMetaData* pDepthMD, IplImage **ip
 //   }
 }
 
-/**							/// TODO überarbeiten: NextFrame verwenden und dann xx2IplImage ausführen!
+/** /// TODO überarbeiten: NextFrame verwenden und dann xx2IplImage ausführen!
  * @brief Get Frame from the Kinect sensor
  * @param iplImg Video image as ipl image.
  * @param iplDepthImg Depth image as ipl-image.
@@ -316,8 +330,14 @@ bool Kinect::NextFrame()
     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
     return false;
   }
-    
+
   kinect::readFrame();  // read next frame
+
+#ifdef LOCK_KINECT
+  //log("NextFrame Write Lock");
+  IceUtil::RWRecMutex::WLock lock(m_kinectMutex);
+  //log("NextFrame Write Lock OK");
+#endif
 
   // get depth image
   const DepthMetaData* pDepthMD = kinect::getDepthMetaData();
@@ -368,6 +388,22 @@ bool Kinect::NextFrame()
  */
 bool Kinect::GetColorImage(IplImage **rgbIplImg)
 {
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+
+  (*rgbIplImg) = cvCreateImage(cvSize(rgbWidth, rgbHeight), IPL_DEPTH_8U, 3);
+  IplImage tmp = rgbImage;
+  cvCopy(&tmp, (*rgbIplImg));
+  return true;
+}
+
+bool Kinect::GetDepthImage(IplImage **rgbIplImg)
+{
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+
   (*rgbIplImg) = cvCreateImage(cvSize(rgbWidth, rgbHeight), IPL_DEPTH_8U, 3);
   IplImage tmp = rgbImage;
   cvCopy(&tmp, (*rgbIplImg));
@@ -382,6 +418,10 @@ bool Kinect::GetColorImage(IplImage **rgbIplImg)
  */
 bool Kinect::GetImages(cv::Mat &rgbImg, cv::Mat &depImg)
 {
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+
   rgbImg = rgbImage;
   depImg = depImage;
   return true;
@@ -412,7 +452,7 @@ cv::Point3f Kinect::DepthToWorld(int x, int y, int depthValue)
  * @param y y-coordinate in depth image
  * @return Returns the color as 3d point.
  */
-cv::Point3f Kinect::WorldToColor(unsigned x, unsigned y)
+cv::Point3f Kinect::WorldToColorInternal(unsigned x, unsigned y)
 {
   uchar *ptr = rgbImage.data;
   cv::Point3f col;
@@ -420,6 +460,14 @@ cv::Point3f Kinect::WorldToColor(unsigned x, unsigned y)
   col.y = ptr[(y*rgbWidth + x)*3 +1];
   col.z = ptr[(y*rgbWidth + x)*3 +2];
   return col;
+}
+
+cv::Point3f Kinect::WorldToColor(unsigned x, unsigned y)
+{
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+  return WorldToColorInternal(x, y);
 }
 
 /**
@@ -430,6 +478,10 @@ cv::Point3f Kinect::WorldToColor(unsigned x, unsigned y)
  */
 cv::Point3f Kinect::Get3dWorldPoint(unsigned x, unsigned y)
 {
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+
   short depth = depImage.at<short>(y, x);
   return DepthToWorld(x, y, (int) depth);;
 }
@@ -442,6 +494,10 @@ cv::Point3f Kinect::Get3dWorldPoint(unsigned x, unsigned y)
  */
 void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud, int scale)
 {
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+
   cloud = cv::Mat_<cv::Point3f>(rgbHeight/scale, rgbWidth/scale);
   colCloud = cv::Mat_<cv::Point3f>(rgbHeight/scale, rgbWidth/scale);
   int rgb2depthRatio = rgbWidth/depWidth;                 /// TODO Bei 1280 Auflösung gibt es eine Verzerrung in z-Richtung?
@@ -455,12 +511,12 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
       if(depth != shadow_value && depth != no_sample_value)
       {
         cloud.at<cv::Point3f>(row4tel, col4tel) = DepthToWorld(col, row, (int) depth);
-        colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
+        colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColorInternal(col*rgb2depthRatio, row*rgb2depthRatio);
       }
       else {
         /* Initialize points if we have no valid data (to transmit via ice-interface) */
         cloud.at<cv::Point3f>(row4tel, col4tel) = cv::Point3f(FLT_MAX, FLT_MAX, FLT_MAX);
-        colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColor(col*rgb2depthRatio, row*rgb2depthRatio);
+        colCloud.at<cv::Point3f>(row4tel, col4tel) = WorldToColorInternal(col*rgb2depthRatio, row*rgb2depthRatio);
       }
     }
   }

@@ -56,9 +56,7 @@ KinectPCServer::~KinectPCServer()
     delete kinect;
 
   /* Delete the view cone planes */
-  for (int i = 0; i < N_PLANES; i++)
-    if (fovPlanes[i])
-      delete fovPlanes[i];
+  deleteViewConePlanes();
 }
 
 /**
@@ -116,7 +114,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
   // init kinect hardware driver
   CvSize size;
   const char* name = kinectConfig.c_str();
-  kinect = new Kinect::Kinect(name);
+  kinect = new Kinect::Kinect(this, name);
   kinect->GetColorVideoSize(size);
   captureSize.width = size.width;
   captureSize.height = size.height;
@@ -170,6 +168,18 @@ kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& c
 }
 
 #endif
+
+void KinectPCServer::deleteViewConePlanes()
+{
+  for (int i = 0; i < N_PLANES; i++) {
+    senses[i] = 0;
+    if (fovPlanes[i]) {
+      delete fovPlanes[i];
+      fovPlanes[i] = NULL;
+    }
+  }
+}
+
 /**
 * @brief Configure the component
 */
@@ -187,6 +197,12 @@ void KinectPCServer::runComponent()
     cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
   }
   //cvWaitKey(100);
+
+  if (m_createViewCone) {
+    // Create the initila view cone
+    deleteViewConePlanes();
+    createViewCone();
+  }
 
   castutils::CCastPaceMaker<KinectPCServer> paceMaker(*this, 1000/20, 1); // run at 20Hz
   castutils::CMilliTimer tmUpdateViewCone;
@@ -210,13 +226,7 @@ void KinectPCServer::runComponent()
       tmUpdateViewCone.restart();
 
       /* Delete old view cone planes */
-      for (int i = 0; i < N_PLANES; i++) {
-        senses[i] = 0;
-        if (fovPlanes[i]) {
-          delete fovPlanes[i];
-          fovPlanes[i] = NULL;
-        }
-      }
+      deleteViewConePlanes();
       bool hasAllPlanes = createViewCone();
       if (!hasAllPlanes)
         log("Failed to get a complete view cone!");
@@ -277,7 +287,8 @@ void KinectPCServer::saveNextFrameToFile()
   if(kinect->frameNumber == m_lastframe){
     return;
   }
-  IplImage* rgb_data = new IplImage(kinect->rgbImage);
+  IplImage* rgb_data; // = new IplImage(kinect->rgbImage);
+  kinect->GetColorImage(&rgb_data);
   // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
   if(m_displayImage){
     cvShowImage("Kinect RGB",rgb_data);
@@ -291,6 +302,8 @@ void KinectPCServer::saveNextFrameToFile()
 
   cvSaveImage(buf, rgb_data);
 
+  // TODO: enable when Kinect is thread-safe
+#if 0
   short*d = kinect->depImage.ptr<short>(0);
   for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
   {
@@ -307,12 +320,15 @@ void KinectPCServer::saveNextFrameToFile()
   log("Saving Kinect frame # %d",kinect->frameNumber);
   cvSaveImage(buf2, depth_data);
   m_lastframe = kinect->frameNumber;
-  delete rgb_data;
+#endif 
+  cvReleaseImage(&rgb_data);
   cvReleaseImage(&depth_data);
 }
 
 bool KinectPCServer::createViewCone()
 {
+  //log("Updating View Cone");
+
   kinect::changeRegistration(0);
   if (!suspendReading) {
     kinect->NextFrame();
