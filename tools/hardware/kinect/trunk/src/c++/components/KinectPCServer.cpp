@@ -21,9 +21,10 @@
  * The function called to create a new instance of our component.
  */
 extern "C" {
-cast::CASTComponentPtr newComponent() {
-	return new cast::KinectPCServer();
-}
+  cast::CASTComponentPtr newComponent()
+  {
+    return new cast::KinectPCServer();
+  }
 }
 
 namespace cast {
@@ -33,7 +34,8 @@ using namespace cogx;
 using namespace cogx::Math;
 using namespace cast::cdl;
 
-KinectPCServer::KinectPCServer() {
+KinectPCServer::KinectPCServer()
+{
   for (int i = 0; i < N_PLANES; i++) {
     fovPlanes[i] = NULL;
     senses[i] = 0;
@@ -43,8 +45,9 @@ KinectPCServer::KinectPCServer() {
 #endif
 }
 
-KinectPCServer::~KinectPCServer() {
-	delete kinect;
+KinectPCServer::~KinectPCServer()
+{
+  delete kinect;
 
   /* Delete the view cone planes */
   for (int i = 0; i < N_PLANES; i++)
@@ -57,8 +60,9 @@ KinectPCServer::~KinectPCServer() {
  * @param camIdx which camera
  * @param size video resolution
  */
-void KinectPCServer::getResolution(int camIdx, CvSize &size) {
-	kinect->GetColorVideoSize(size);
+void KinectPCServer::getResolution(int camIdx, CvSize &size)
+{
+  kinect->GetColorVideoSize(size);
 }
 
 /**
@@ -69,20 +73,22 @@ void KinectPCServer::getResolution(int camIdx, CvSize &size) {
  * @return true if the requested resolution could be set, false if another
  *        reslution was chosen
  */
-bool KinectPCServer::setResolution(int camIdx, CvSize &size) {
-	log("setResolution: warning: Not yet implemented! Defined by kinect camera calibration file!\n");
-	return false;
+bool KinectPCServer::setResolution(int camIdx, CvSize &size)
+{
+  log("setResolution: warning: Not yet implemented! Defined by kinect camera calibration file!\n");
+  return false;
 }
 
 /**
  * @brief Configure the component
  */
 void KinectPCServer::configure(const map<string, string> & _config)
-		throw (runtime_error) {
-	// configure the point cloud server
-	PointCloudServer::configure(_config);
+  throw (runtime_error)
+{
+  // configure the point cloud server
+  PointCloudServer::configure(_config);
 
-	map<string, string>::const_iterator it;
+  map<string, string>::const_iterator it;
 
   m_createViewCone = false;
   if (_config.find("--create-viewcone") != _config.end()) {
@@ -92,54 +98,54 @@ void KinectPCServer::configure(const map<string, string> & _config)
 #ifdef KINECT_USER_DETECTOR
   m_detectPersons = false;
   if (_config.find("--detect-persons") != _config.end()) {
-	  m_detectPersons = true;
+    m_detectPersons = true;
   }
 #endif
-	if ((it = _config.find("--kconfig")) != _config.end()) {
-		istringstream str(it->second);
-		str >> kinectConfig;
-	} else{
-		throw runtime_error(exceptionMessage(__HERE__, "no kinect config file (kconfig) specified."));
-	}
-		// init kinect hardware driver
-	 CvSize size;
-	 const char* name = kinectConfig.c_str();
-	 kinect = new Kinect::Kinect(name);
-	 kinect->GetColorVideoSize(size);
-	 captureSize.width = size.width;
-	 captureSize.height = size.height;
-     kinect->StartCapture(0); 	// start capturing
-     depthGenerator = kinect::getDepthGenerator();
-     imageGenerator = kinect::getImageGenerator();
+  if ((it = _config.find("--kconfig")) != _config.end()) {
+    istringstream str(it->second);
+    str >> kinectConfig;
+  } else{
+    throw runtime_error(exceptionMessage(__HERE__, "no kinect config file (kconfig) specified."));
+  }
+  // init kinect hardware driver
+  CvSize size;
+  const char* name = kinectConfig.c_str();
+  kinect = new Kinect::Kinect(name);
+  kinect->GetColorVideoSize(size);
+  captureSize.width = size.width;
+  captureSize.height = size.height;
+  kinect->StartCapture(0); // start capturing
+  depthGenerator = kinect::getDepthGenerator();
+  imageGenerator = kinect::getImageGenerator();
 #ifdef KINECT_USER_DETECTOR
-     userGenerator = kinect::getUserGenerator();
+  userGenerator = kinect::getUserGenerator();
 #endif
-     m_saveToFile = false;
-     if ((it = _config.find("--save-to-file")) != _config.end()) {
-       m_saveToFile = true;
+  m_saveToFile = false;
+  if ((it = _config.find("--save-to-file")) != _config.end()) {
+    m_saveToFile = true;
 
-       if ((it = _config.find("--save-directory")) != _config.end()) {
-       	std::istringstream str(it->second);
-        str >> m_saveDirectory;
-    	//check if the last char is / if yes remove
-        if (m_saveDirectory[m_saveDirectory.size()-1] == '/'){
-       	 m_saveDirectory.erase(m_saveDirectory.size()-1);
-        }
-        log("Will be saving scans to %s", m_saveDirectory.c_str());
-       }
-       else
-       {
-       	log("You haven't specified a save directory! (usage: --save-directory)");
-       	abort();
-       }
-     }
- 
-     m_displayImage = false;
-     if ((it = _config.find("--display-rgb")) != _config.end()) {
-     log("Will display Kinect RGB image \n");
-       m_displayImage= true;
- }
-     m_lastframe = -1;
+    if ((it = _config.find("--save-directory")) != _config.end()) {
+      std::istringstream str(it->second);
+      str >> m_saveDirectory;
+      //check if the last char is / if yes remove
+      if (m_saveDirectory[m_saveDirectory.size()-1] == '/'){
+        m_saveDirectory.erase(m_saveDirectory.size()-1);
+      }
+      log("Will be saving scans to %s", m_saveDirectory.c_str());
+    }
+    else
+    {
+      log("You haven't specified a save directory! (usage: --save-directory)");
+      abort();
+    }
+  }
+
+  m_displayImage = false;
+  if ((it = _config.find("--display-rgb")) != _config.end()) {
+    log("Will display Kinect RGB image \n");
+    m_displayImage= true;
+  }
+  m_lastframe = -1;
   log("Capturing from kinect sensor started.");
 
 
@@ -151,9 +157,10 @@ void KinectPCServer::configure(const map<string, string> & _config)
 
 #ifdef KINECT_USER_DETECTOR
 
-kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& cur) {
-	kinect::slice::PersonsDict persons;
-	return pcSrv->detectPersons();
+kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& cur)
+{
+  kinect::slice::PersonsDict persons;
+  return pcSrv->detectPersons();
 }
 
 #endif
@@ -165,75 +172,78 @@ void KinectPCServer::start()
   PointCloudServer::start();
 }
 
-void KinectPCServer::runComponent() {
-	log("I am running ");
-	kinect->NextFrame();
-	if(m_displayImage){
-		log("Displaying window");
-		cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
-	}
-	//cvWaitKey(100);
+void KinectPCServer::runComponent()
+{
+  log("I am running ");
+  kinect->NextFrame();
+  if(m_displayImage){
+    log("Displaying window");
+    cvNamedWindow("Kinect RGB",CV_WINDOW_AUTOSIZE);
+  }
+  //cvWaitKey(100);
 
-	while(isRunning()) {
+  while(isRunning()) {
 #ifdef KINECT_USER_DETECTOR
-		if (m_detectPersons) {
-			detectPersons();
-		}
+    if (m_detectPersons) {
+      detectPersons();
+    }
 #endif
-		if (m_saveToFile) {
-			saveNextFrameToFile();
-		}
-		sleepComponent(50);
-	}
+    if (m_saveToFile) {
+      saveNextFrameToFile();
+    }
+    sleepComponent(50);
+  }
 }
 
 #ifdef KINECT_USER_DETECTOR
-::kinect::slice::PersonsDict KinectPCServer::detectPersons() {
-	::kinect::slice::PersonsDict persons;
-	if (userGenerator==NULL || !userGenerator->IsValid()) {
-		println("we don't have a valid userGenerator");
-		return persons;
-	}
-	lockComponent();
+::kinect::slice::PersonsDict KinectPCServer::detectPersons()
+{
+  ::kinect::slice::PersonsDict persons;
+  if (userGenerator==NULL || !userGenerator->IsValid()) {
+    println("we don't have a valid userGenerator");
+    return persons;
+  }
+  lockComponent();
   if (!suspendReading) {
     kinect->NextFrame();
   }
-	int count=userGenerator->GetNumberOfUsers();
-	XnUserID aUsers[count];
-	XnUInt16 nUsers=count;
+  int count=userGenerator->GetNumberOfUsers();
+  XnUserID aUsers[count];
+  XnUInt16 nUsers=count;
 
-	userGenerator->GetUsers(aUsers, nUsers);
-	for (int i=0; i<count; i++) {
-		xn::SceneMetaData smd;
-		userGenerator->GetUserPixels(aUsers[i], smd);
+  userGenerator->GetUsers(aUsers, nUsers);
+  for (int i=0; i<count; i++) {
+    xn::SceneMetaData smd;
+    userGenerator->GetUserPixels(aUsers[i], smd);
 
-		int xRes=smd.LabelMap().XRes();
-		int yRes=smd.LabelMap().YRes();
-		long pixelCount=0;
-		for (int y=0;y<yRes; y++) {
-			for (int x=0;x<xRes; x++) {
-				int v=smd.LabelMap()(x,y);
-				if (v==aUsers[i])
-					pixelCount++;
-			}
-		}
-		double pixelRatio = ((double) pixelCount)/(xRes*yRes);
-		log("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
-		if (pixelRatio > RELATIVE_MINIMUM_PERSON_AREA) {
-			kinect::slice::KinectPersonPtr person = new kinect::slice::KinectPerson;
-			person->size=pixelCount;
-			persons[aUsers[i]] = person;
+    int xRes=smd.LabelMap().XRes();
+    int yRes=smd.LabelMap().YRes();
+    long pixelCount=0;
+    for (int y=0;y<yRes; y++) {
+      for (int x=0;x<xRes; x++) {
+        int v=smd.LabelMap()(x,y);
+        if (v==aUsers[i])
+          pixelCount++;
+      }
+    }
+    double pixelRatio = ((double) pixelCount)/(xRes*yRes);
+    log("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
+    if (pixelRatio > RELATIVE_MINIMUM_PERSON_AREA) {
+      kinect::slice::KinectPersonPtr person = new kinect::slice::KinectPerson;
+      person->size=pixelCount;
+      persons[aUsers[i]] = person;
 
-		}
-	}
-	log("number of users in image: %d", persons.size());
-	unlockComponent();
-	return persons;
+    }
+  }
+  log("number of users in image: %d", persons.size());
+  unlockComponent();
+  return persons;
 }
 
 #endif
 
-void KinectPCServer::saveNextFrameToFile() {
+void KinectPCServer::saveNextFrameToFile()
+{
   kinect->NextFrame();
   if(kinect->frameNumber == m_lastframe){
     return;
@@ -252,7 +262,7 @@ void KinectPCServer::saveNextFrameToFile() {
 
   cvSaveImage(buf, rgb_data);
 
-  short*d = kinect->depImage.ptr<short>(0);	
+  short*d = kinect->depImage.ptr<short>(0);
   for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
   {
     short value = d[i]/16;
@@ -278,7 +288,7 @@ bool KinectPCServer::createViewCone()
   if (!suspendReading) {
     kinect->NextFrame();
   }
-  
+
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
   kinect->Get3dWorldPointCloud(cloud, colCloud);
@@ -292,26 +302,26 @@ bool KinectPCServer::createViewCone()
     cv::Mat_<cv::Point3f> colOrRow;
     Eigen::Vector3d axis(0, 0, 0);
     switch (i) {
-    case PLANE_LEFT:
-      /* Grab left column */
-       colOrRow = cloud.col(0);
-       axis = Eigen::Vector3d(0, 1, 0);
-      break;
-    case PLANE_TOP:
-      /* Grab top row */
-      colOrRow = cloud.row(0);
-      axis = Eigen::Vector3d(0, 0, 1);
-      break;
-    case PLANE_RIGHT:
-      /* Grab right column (NOTE: ignore deadzone of 8 pixels) */
-      colOrRow = cloud.col(cloud.size().width - 9);
-      axis = Eigen::Vector3d(0, 1, 0);
-      break;
-    case PLANE_BOTTOM:
-      /* Grab bottom row */
-      colOrRow = cloud.row(cloud.size().height - 1);
-       axis = Eigen::Vector3d(0, 0, 1);
-      break;
+      case PLANE_LEFT:
+        /* Grab left column */
+        colOrRow = cloud.col(0);
+        axis = Eigen::Vector3d(0, 1, 0);
+        break;
+      case PLANE_TOP:
+        /* Grab top row */
+        colOrRow = cloud.row(0);
+        axis = Eigen::Vector3d(0, 0, 1);
+        break;
+      case PLANE_RIGHT:
+        /* Grab right column (NOTE: ignore deadzone of 8 pixels) */
+        colOrRow = cloud.col(cloud.size().width - 9);
+        axis = Eigen::Vector3d(0, 1, 0);
+        break;
+      case PLANE_BOTTOM:
+        /* Grab bottom row */
+        colOrRow = cloud.row(cloud.size().height - 1);
+        axis = Eigen::Vector3d(0, 0, 1);
+        break;
     }
     std::vector<cv::Point3f> cvPoints(colOrRow.begin(), colOrRow.end());
     fovPlanes[i] = createPlane(cvPoints, global_kinect_pose);
@@ -325,10 +335,10 @@ bool KinectPCServer::createViewCone()
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
-void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth, vector<PointCloud::SurfacePoint> &points, bool complete)
+void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
+    vector<PointCloud::SurfacePoint> &points, bool complete)
 {
   lockComponent();
-
 
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;  if (!suspendReading) {
@@ -397,7 +407,7 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
 
   if(imgWidth != rgbImage->width)
   {
-	log("needs to be resized");
+    log("needs to be resized");
     IplImage *resized;
     scaleFactor = (double) rgbImage->width / (double) imgWidth;
     resized = cvCreateImage(cvSize(imgWidth, (int) (rgbImage->height/scaleFactor)), IPL_DEPTH_8U, 3);
@@ -408,11 +418,11 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   }
   else
   {
-	log("no need to be resized");
+    log("no need to be resized");
     convertImageFromIpl(rgbImage, image);
     cvReleaseImage(&rgbImage);
   }
-  
+
   initCameraParameters(image.camPars);
   image.camPars = camPars[0];
   changeImageSize(image.camPars, imgWidth, imgWidth*3/4);
@@ -437,11 +447,11 @@ bool KinectPCServer::getCameraParameters(Ice::Int side, Video::CameraParameters&
 void KinectPCServer::getDisparityImage(int imgWidth, Video::Image& image)
 {
   printf("KinectPCServer::getDisparityImage: Warning: Not yet implemented!\n");
-/*
-	lockComponent();
-	convertImageFromIpl(disparityImg, image);
-	unlockComponent();
-*/
+  /*
+     lockComponent();
+     convertImageFromIpl(disparityImg, image);
+     unlockComponent();
+   */
 }
 
 void KinectPCServer::getRangePoints(Laser::Scan2d &KRdata)
@@ -476,30 +486,30 @@ void KinectPCServer::getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth)
 
 void KinectPCServer::receiveImages(const vector<Video::Image>& images)
 {
-//   lockComponent();
+  //   lockComponent();
   printf("KinectPCServer::receiveImages: Warning: Not yet implemented!\n");
   //stereoProcessing();
-//   unlockComponent();
+  //   unlockComponent();
 }
 
 void KinectPCServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
 {
-	PointCloudServer::receiveCameraParameters(_wmc);
-	
-	if (m_createViewCone)
-	{
-		/* Delete old view cone planes */
-		for (int i = 0; i < N_PLANES; i++) {
-			senses[i] = 0;
-			if (fovPlanes[i]) {
-				delete fovPlanes[i];
-				fovPlanes[i] = NULL;
-			}
-		}
-		bool hasAllPlanes = createViewCone();
-		if (!hasAllPlanes)
-			log("Failed to get a complete view cone!");
-	}
+  PointCloudServer::receiveCameraParameters(_wmc);
+
+  if (m_createViewCone)
+  {
+    /* Delete old view cone planes */
+    for (int i = 0; i < N_PLANES; i++) {
+      senses[i] = 0;
+      if (fovPlanes[i]) {
+        delete fovPlanes[i];
+        fovPlanes[i] = NULL;
+      }
+    }
+    bool hasAllPlanes = createViewCone();
+    if (!hasAllPlanes)
+      log("Failed to get a complete view cone!");
+  }
 }
 
 bool KinectPCServer::isPointInViewCone(const Vector3& point)
@@ -524,33 +534,38 @@ bool KinectPCServer::isPointInViewCone(const Vector3& point)
   return inView;
 }
 
-class CvToGlobal {
+class CvToGlobal
+{
   Pose3& global_pose;
-  public:
-    CvToGlobal(Pose3& pose) : global_pose(pose) {}
-    Vector3 operator()(const cv::Point3f& p) {
-      Vector3 v;
-      v.x = p.x;
-      v.y = p.y;
-      v.z = p.z;
-      v = transform(global_pose, v);
-      return v;
-    }
+public:
+  CvToGlobal(Pose3& pose) : global_pose(pose) {}
+  Vector3 operator()(const cv::Point3f& p) {
+    Vector3 v;
+    v.x = p.x;
+    v.y = p.y;
+    v.z = p.z;
+    v = transform(global_pose, v);
+    return v;
+  }
 };
-class Vector3ToVector3d {
-  public:
-    Eigen::Vector3d operator()(const Vector3& p) {
-      return Eigen::Vector3d(p.x, p.y, p.z);
-    }
+class Vector3ToVector3d
+{
+public:
+  Eigen::Vector3d operator()(const Vector3& p) {
+    return Eigen::Vector3d(p.x, p.y, p.z);
+  }
 };
-class InvalidPointFilter {
-  public:
+class InvalidPointFilter
+{
+public:
   bool operator()(const cv::Point3f& p) const {
     return p.x == FLT_MAX || p.y == FLT_MAX || p.z == FLT_MAX;
   }
 };
 
-Eigen::Hyperplane<double, 3>* KinectPCServer::createPlane(std::vector<cv::Point3f>& cvPoints, Pose3& global_kinect_pose) {
+Eigen::Hyperplane<double, 3>* KinectPCServer::createPlane(std::vector<cv::Point3f>& cvPoints,
+    Pose3& global_kinect_pose)
+{
   Eigen::Hyperplane<double, 3>* plane = NULL;
 
   /* Filter invalid points */
