@@ -59,11 +59,6 @@ KinectPCServer::~KinectPCServer()
   for (int i = 0; i < N_PLANES; i++)
     if (fovPlanes[i])
       delete fovPlanes[i];
-
-#ifdef KINECT_USER_DETECTOR
-  if (personDetectServer)
-    delete personDetectServer;
-#endif
 }
 
 /**
