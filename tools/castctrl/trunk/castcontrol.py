@@ -3,7 +3,7 @@
 # Author: Marko Mahnič
 # Created: June 2009
 
-import os, sys, time
+import os, sys, time, signal
 import re
 import tempfile
 import threading
@@ -483,7 +483,10 @@ class CCastControlWnd(QtGui.QMainWindow):
             elif csi.group == 'C': self.procGroupC.addProcess(csi.name)
             else: self.procGroupA.addProcess(csi.name)
             # the command will be evaluated at startup
-            self._manager.addProcess(procman.CProcess(csi.name, command=None))
+            proc = procman.CProcess(csi.name, command=None)
+            if csi.termWithSigInt:
+                proc.killSignals = [signal.SIGINT]
+            self._manager.addProcess(proc)
 
         if os.path.exists(self.fnhist):
             cfg = ConfigParser.RawConfigParser()
