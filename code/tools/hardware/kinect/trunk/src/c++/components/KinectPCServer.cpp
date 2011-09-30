@@ -8,13 +8,14 @@
 
 #define EIGEN2_SUPPORT
 
+#include "KinectPCServer.h"
+#include <cast/core/CASTUtils.hpp>
+#include <castutils/Timers.hpp>
 #include <cmath>
 #include <fstream>
 #include <algorithm>
 #include <Eigen/LeastSquares>
 #include <Eigen/Geometry>
-#include <cast/core/CASTUtils.hpp>
-#include "KinectPCServer.h"
 #include <highgui.h>
 
 /**
@@ -40,19 +41,29 @@ KinectPCServer::KinectPCServer()
     fovPlanes[i] = NULL;
     senses[i] = 0;
   }
+
 #ifdef KINECT_USER_DETECTOR
   personDetectServer=new PersonDetectServerI(this);
 #endif
+
+  m_createViewCone = false;
+  m_viewConeNeedsUpdate = false;
 }
 
 KinectPCServer::~KinectPCServer()
 {
-  delete kinect;
+  if (kinect)
+    delete kinect;
 
   /* Delete the view cone planes */
   for (int i = 0; i < N_PLANES; i++)
     if (fovPlanes[i])
       delete fovPlanes[i];
+
+#ifdef KINECT_USER_DETECTOR
+  if (personDetectServer)
+    delete personDetectServer;
+#endif
 }
 
 /**
@@ -182,16 +193,39 @@ void KinectPCServer::runComponent()
   }
   //cvWaitKey(100);
 
+  castutils::CCastPaceMaker<KinectPCServer> paceMaker(*this, 1000/20, 1); // run at 20Hz
+  castutils::CMilliTimer tmUpdateViewCone;
+  tmUpdateViewCone.setTimeout(500); // update the view cone at most at 2Hz
+
   while(isRunning()) {
+    paceMaker.sync();
+
 #ifdef KINECT_USER_DETECTOR
     if (m_detectPersons) {
       detectPersons();
     }
 #endif
+
     if (m_saveToFile) {
       saveNextFrameToFile();
     }
-    sleepComponent(50);
+
+    if (m_viewConeNeedsUpdate && tmUpdateViewCone.isTimeoutReached()) {
+      m_viewConeNeedsUpdate = false;
+      tmUpdateViewCone.restart();
+
+      /* Delete old view cone planes */
+      for (int i = 0; i < N_PLANES; i++) {
+        senses[i] = 0;
+        if (fovPlanes[i]) {
+          delete fovPlanes[i];
+          fovPlanes[i] = NULL;
+        }
+      }
+      bool hasAllPlanes = createViewCone();
+      if (!hasAllPlanes)
+        log("Failed to get a complete view cone!");
+    }
   }
 }
 
@@ -341,7 +375,8 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
   lockComponent();
 
   cv::Mat_<cv::Point3f> cloud;
-  cv::Mat_<cv::Point3f> colCloud;  if (!suspendReading) {
+  cv::Mat_<cv::Point3f> colCloud;
+  if (!suspendReading) {
     kinect->NextFrame();
     lastValidCamPose=camPars[0].pose;
   }
@@ -498,17 +533,7 @@ void KinectPCServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _w
 
   if (m_createViewCone)
   {
-    /* Delete old view cone planes */
-    for (int i = 0; i < N_PLANES; i++) {
-      senses[i] = 0;
-      if (fovPlanes[i]) {
-        delete fovPlanes[i];
-        fovPlanes[i] = NULL;
-      }
-    }
-    bool hasAllPlanes = createViewCone();
-    if (!hasAllPlanes)
-      log("Failed to get a complete view cone!");
+    m_viewConeNeedsUpdate = true;
   }
 }
 

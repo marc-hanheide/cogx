@@ -76,6 +76,7 @@ private:
   std::string m_saveDirectory;
   int m_lastframe;
   bool m_createViewCone;
+  bool m_viewConeNeedsUpdate;
   int m_subSampleScale;
 
   enum {
@@ -105,6 +106,7 @@ protected:
 public:
   KinectPCServer();
   virtual ~KinectPCServer();
+  using CASTComponent::sleepComponent;
 
   // *********************************** Point Cloud Server *********************************** //
   void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete);
