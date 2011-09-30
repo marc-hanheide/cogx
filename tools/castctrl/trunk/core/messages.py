@@ -78,10 +78,9 @@ class CAnsiPainter(object):
                 elif code >= 40 and code <= 49: styles["background"] = CAnsiPainter.backgrName[code-40]
 
             newstyle = ";".join(["%s:%s" % (k, v) for k,v in styles.iteritems() if len(v) > 0])
-            if newstyle == "": newstyle=None
             if newstyle == laststyle: parts[i] = ""
             else:
-                if newstyle == None: stag = ""
+                if newstyle == "": stag = ""
                 else: stag = "<span style='%s'>" % newstyle
                 if laststyle == None: parts[i] = stag
                 else: parts[i] = "</span>" + stag
