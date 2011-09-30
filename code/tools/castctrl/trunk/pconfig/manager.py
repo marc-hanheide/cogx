@@ -13,6 +13,7 @@ class CServerInfo(CPropertySet):
         self.isServer = True
         self.workdir = None
         self.defaultVars = []
+        self.termWithSigInt = False
         self._paramPreprocess = None
 
         if 'group' in kwargs: self.group = kwargs['group']

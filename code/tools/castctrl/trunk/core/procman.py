@@ -83,6 +83,7 @@ class CProcessBase(object):
         self.status = CProcessBase.STOPPED # 0 stoped; > 0 pid; < 0 error state; see getStatusStr()
         self.error = CProcessBase.OK
         self.observers = []
+        self.killSignals = [signal.SIGTERM]
         if self.name == None: self.name = "?"
         pass
 
@@ -246,7 +247,8 @@ class CProcess(CProcessBase):
         log("Stopping process %s" % self.name)
         self._setStatus(CProcessBase.STOPPING)
         try:
-            for sig,tries in [(signal.SIGTERM, 100), (signal.SIGKILL, 20)]:
+            sigList = [(s, 100) for s in self.killSignals] + [(signal.SIGKILL, 20)]
+            for sig,tries in sigList:
                 try:
                     os.kill(self.process.pid, sig) # self.process.send_signal(sig) # Not in 2.5
                     time.sleep(0.2)
