@@ -58,7 +58,7 @@ class PlanNode(object):
         self.original_replan = set()
         self.explanations = {}
         
-        if not isinstance(action, DummyAction):
+        if isinstance(action, pddl.mapl.MAPLAction):
             num = len(action.agents) + len(action.params)
             self.args = args[:num]
         else:
