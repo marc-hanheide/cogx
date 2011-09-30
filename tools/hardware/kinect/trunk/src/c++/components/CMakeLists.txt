@@ -3,21 +3,22 @@ find_package(OpenCV REQUIRED)
 include_directories(.)
 include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(${OPENCV_CFLAGS})
+include_directories(${COGX_ROOT}/tools/castutils/src/c++)
 
 option(BUILD_KINECT_USER_DETECTOR "Build the Kinect User Generator in KinectPCServer." NO)
 if (BUILD_KINECT_USER_DETECTOR)
-	add_definitions(-DKINECT_USER_DETECTOR)
+   add_definitions(-DKINECT_USER_DETECTOR)
 endif (BUILD_KINECT_USER_DETECTOR)
- 
+
   SET(HEADERS
-	Capture.h
-	Device.h
-	Kinect.h
+     Capture.h
+     Device.h
+     Kinect.h
   )
   SET(SOURCES 
-	Capture.cpp
-	Device.cpp
-	Kinect.cpp
+     Capture.cpp
+     Device.cpp
+     Kinect.cpp
   )
   add_cast_component(${PROJECT_NAME} ${SOURCES})
   link_cast_component(${CAST_COMPONENT_NAME} OpenNI)
@@ -28,10 +29,10 @@ endif (BUILD_KINECT_USER_DETECTOR)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils Kinect)
 
   add_cast_component(KinectPCServer KinectPCServer.cpp)
-  
+
   link_cast_component(${CAST_COMPONENT_NAME} VideoUtils Kinect  OpenNI PointCloud PointCloudServer ${OPENCV_LDFLAGS})
   if (BUILD_KINECT_USER_DETECTOR)
-  	link_cast_component(${CAST_COMPONENT_NAME} KinectPersonDetect)
+     link_cast_component(${CAST_COMPONENT_NAME} KinectPersonDetect)
   endif (BUILD_KINECT_USER_DETECTOR)
 
   add_cast_component(KinectStereoServer KinectStereoServer.cpp)
