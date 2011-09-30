@@ -114,7 +114,7 @@ def getRWDescription(action, args, _state, time):
     effects = []
     if action.effect:
         effects.append(action.effect)
-    if action.sensors:
+    if isinstance(action, pddl.mapl.MAPLAction) and action.sensors:
         # print "action %s has sensors" % action.name
         if cond_keffs:
             effects.append(action.conditional_knowledge_effect())
