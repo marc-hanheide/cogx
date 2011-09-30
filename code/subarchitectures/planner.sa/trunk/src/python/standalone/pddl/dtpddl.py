@@ -1132,7 +1132,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
         
         for r in domain.dt_rules:
             for p, values in r.values:
-                agent = predicates.Parameter("?a", mapl.t_agent)
+                agent = predicates.Parameter("?a", mapl.t_planning_agent)
                 i = action_count[r]
                 action_count[r] += 1
                 a = mapl.MAPLAction("__commit-%s-%d" % (r.name,i), [agent], r.args, [], None, None, None, [], domain)

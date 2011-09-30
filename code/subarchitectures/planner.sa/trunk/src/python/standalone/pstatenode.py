@@ -535,7 +535,7 @@ class PNode(object):
             PNode.actionid += 1
             domain.add_constant(val)
                 
-            agent = pddl.Parameter("?a", mapl.t_agent)
+            agent = pddl.Parameter("?a", mapl.t_planning_agent)
             a = mapl.MAPLAction(name, [agent], [], [], pddl.Conjunction([]), None, pddl.ConjunctiveEffect([]), [], domain)
             if use_this:
                 actions.append(a)
