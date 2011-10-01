@@ -266,8 +266,9 @@ module engine {
 
 		// Start proving the goal.
 		void startProvingWithMethod(proof::MarkedQuerySeq g, ProofSearchMethod method);
-		void startProving(proof::MarkedQuerySeq g);  // for backward compatibility
-
+		// for backward compatibility
+		void startProving(proof::MarkedQuerySeq g);  
+		
 		// If timeout > 0, it will be the maximum interval (in miliseconds)
 		// to wait for the results -- after this interval has expired,
 		// the best available result will be provided. If timeout == 0,
