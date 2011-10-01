@@ -142,6 +142,10 @@ module motivation {
 			string feature;
 			
 		};
+		
+			class LookAtViewConeMotive extends Motive {
+	    	    cast::cdl::WorkingMemoryAddress coneAddr;				
+			};
 
     	
     	class PlanProxy {

@@ -75,10 +75,9 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 				checkForAdditions(wmc, newEntry);
 			} else {
 
-	
-
-				//need an explicit iterator to allow removal 
-				for (Iterator<WorkingMemoryAddress> i = correspondingWMAs.iterator() ; i.hasNext() ;) {
+				// need an explicit iterator to allow removal
+				for (Iterator<WorkingMemoryAddress> i = correspondingWMAs
+						.iterator(); i.hasNext();) {
 					WorkingMemoryAddress correspondingWMA = i.next();
 					try {
 						getLogger().debug(
@@ -95,7 +94,7 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 
 						if (motive == null) {
 							deleteFromWorkingMemory(correspondingWMA);
-							//remove the motive from the list
+							// remove the motive from the list
 							i.remove();
 							if (bel2motivesMap.get(wmc.address).isEmpty()) {
 								bel2motivesMap.remove(wmc.address);
@@ -125,33 +124,39 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 		case DELETE: {
 			List<WorkingMemoryAddress> correspondingWMAs = bel2motivesMap
 					.get(wmc.address);
-			for (WorkingMemoryAddress correspondingWMA : correspondingWMAs) {
-				if (correspondingWMA != null) {
-					log("relevant DELETE event: " + CASTUtils.toString(wmc)
-							+ " causing DELETION of "
-							+ CASTUtils.toString(correspondingWMA));
-					try {
-						lockEntry(correspondingWMA,
-								WorkingMemoryPermissions.LOCKEDOD);
-						deleteFromWorkingMemory(correspondingWMA);
+			if (correspondingWMAs != null) {
+				for (WorkingMemoryAddress correspondingWMA : correspondingWMAs) {
+					if (correspondingWMA != null) {
+						log("relevant DELETE event: " + CASTUtils.toString(wmc)
+								+ " causing DELETION of "
+								+ CASTUtils.toString(correspondingWMA));
+						try {
+							lockEntry(correspondingWMA,
+									WorkingMemoryPermissions.LOCKEDOD);
+							deleteFromWorkingMemory(correspondingWMA);
 
-					} catch (CASTException e) {
-						logException(e);
-						throw (e);
-					} finally {
-						if (holdsLock(correspondingWMA.id,
-								correspondingWMA.subarchitecture))
-							try {
-								unlockEntry(correspondingWMA);
-							} catch (CASTException e) {
-								getLogger()
-										.warn("when unlocking an object, can be ignored",
-												e);
-							}
+						} catch (CASTException e) {
+							logException(e);
+							throw (e);
+						} finally {
+							if (holdsLock(correspondingWMA.id,
+									correspondingWMA.subarchitecture))
+								try {
+									unlockEntry(correspondingWMA);
+								} catch (CASTException e) {
+									getLogger()
+											.warn("when unlocking an object, can be ignored",
+													e);
+								}
+						}
 					}
 				}
+
+				bel2motivesMap.remove(wmc.address);
 			}
-			bel2motivesMap.remove(wmc.address);
+			else {
+				log("deleted belief had no corresponding motives, even though it did have earlier (i think)");
+			}
 			break;
 		}
 		}
@@ -162,22 +167,28 @@ public abstract class AbstractBeliefMotiveGenerator<M extends Motive, T extends 
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
 
-		assert(newAdditions != null);
-		assert(newAdditions.isEmpty());
-		
+		assert (newAdditions != null);
+		assert (newAdditions.isEmpty());
+
 		checkForAdditions(wmc.address, newEntry, newAdditions);
 
 		if (!newAdditions.isEmpty()) {
 			ArrayList<WorkingMemoryAddress> motiveAddresses = new ArrayList<WorkingMemoryAddress>(
 					newAdditions.size());
 			for (M motive : newAdditions) {
-				motive.thisEntry = new WorkingMemoryAddress(newDataID(),
-						getSubarchitectureID());
-				assignCosts(motive);
-				addToWorkingMemory(motive.thisEntry, motive);
-				motiveAddresses.add(motive.thisEntry);
+				if (motive != null) {
+					motive.thisEntry = new WorkingMemoryAddress(newDataID(),
+							getSubarchitectureID());
+					assignCosts(motive);
+					addToWorkingMemory(motive.thisEntry, motive);
+					motiveAddresses.add(motive.thisEntry);
+				}
 			}
-			bel2motivesMap.put(wmc.address, motiveAddresses);
+
+			if (!motiveAddresses.isEmpty()) {
+				bel2motivesMap.put(wmc.address, motiveAddresses);
+			}
+
 			newAdditions.clear();
 		}
 	}
