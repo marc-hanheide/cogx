@@ -114,6 +114,8 @@ public class SerialPlanExecutor extends Thread {
 		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
 				m_planningTaskAddress, WorkingMemoryOperation.DELETE),
 				m_stopCallback);
+		
+		
 		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
 				m_planProxyAddress, WorkingMemoryOperation.DELETE),
 				m_stopCallback);
@@ -161,6 +163,12 @@ public class SerialPlanExecutor extends Thread {
 			stopExecution();
 			planComplete(ExecutionState.COMPLETED);
 			m_component.log("and read that plan complete");
+		}
+		// execution deemed failed by the planner
+		else if (_planningTask.executionStatus == Completion.FAILED) {
+			stopExecution();
+			planComplete(ExecutionState.HALTED);
+			m_component.log("and read that planner thinks that execution has failed (probably too many failures)");
 		}
 		// execution deemed complete by the planner
 		else if (_planningTask.planningStatus == Completion.FAILED) {
@@ -334,7 +342,6 @@ public class SerialPlanExecutor extends Thread {
 		m_component.log("plan complete");
 		try {
 			m_component.deleteFromWorkingMemory(m_planProxyAddress);
-//			m_component.log("plan deleted proxy");
 			m_component.log("executor deleted proxy");
 		} catch (DoesNotExistOnWMException e) {
 			m_component
