@@ -15,13 +15,10 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import motivation.slice.AnalyzeProtoObjectMotive;
-import motivation.slice.CannedTextMotive;
 import motivation.slice.LearnObjectFeatureMotive;
+import motivation.slice.LookAtViewConeMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
-import motivation.slice.RobotInitiativeMotive;
-import motivation.slice.RobotNonSituatedMotive;
-import motivation.slice.TutorInitiativeMotive;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryChange;
 
@@ -49,24 +46,29 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 
 	private JSlider jAnalyzePOPrioritySlider = null;
 	private JSlider jLearnVOPrioritySlider = null;
-	
+	private JSlider jLookAroundPrioritySlider = null;
+
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
-		if (motive instanceof CannedTextMotive)
-			return MotivePriority.values()[jcannedPrioritySlider.getValue()];
-		else if (motive instanceof RobotInitiativeMotive)
-			return MotivePriority.values()[jRobotInitiativePrioritySlider
-					.getValue()];
-		else if (motive instanceof TutorInitiativeMotive)
-			return MotivePriority.values()[jTutorInitiativePrioritySlider
-					.getValue()];
-		else if (motive instanceof RobotNonSituatedMotive)
-			return MotivePriority.values()[jRobotNonSituatedPrioritySlider
-					.getValue()];
-		else if (motive instanceof AnalyzeProtoObjectMotive)
+		// if (motive instanceof CannedTextMotive)
+		// return MotivePriority.values()[jcannedPrioritySlider.getValue()];
+		// else if (motive instanceof RobotInitiativeMotive)
+		// return MotivePriority.values()[jRobotInitiativePrioritySlider
+		// .getValue()];
+		// else if (motive instanceof TutorInitiativeMotive)
+		// return MotivePriority.values()[jTutorInitiativePrioritySlider
+		// .getValue()];
+		// else if (motive instanceof RobotNonSituatedMotive)
+		// return MotivePriority.values()[jRobotNonSituatedPrioritySlider
+		// .getValue()];
+		// else
+		if (motive instanceof AnalyzeProtoObjectMotive)
 			return MotivePriority.values()[jAnalyzePOPrioritySlider.getValue()];
 		else if (motive instanceof LearnObjectFeatureMotive)
 			return MotivePriority.values()[jLearnVOPrioritySlider.getValue()];
+		else if (motive instanceof LookAtViewConeMotive)
+			return MotivePriority.values()[jLookAroundPrioritySlider.getValue()];
+
 		else
 			return MotivePriority.NORMAL;
 	}
@@ -142,18 +144,21 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 			// gridLayout.setColumns(1);
 			jMotivesPanel = new JPanel();
 			jMotivesPanel.setLayout(gridLayout);
-			jMotivesPanel.add(new JLabel("canned Goal"));
-			jMotivesPanel.add(getJSlidercanned());
-			jMotivesPanel.add(new JLabel("Robot Init."));
-			jMotivesPanel.add(getJSliderRobotInitiative());
-			jMotivesPanel.add(new JLabel("Tutor Init."));
-			jMotivesPanel.add(getJSliderTutorInitiative());
-			jMotivesPanel.add(new JLabel("Robot NonSit."));
-			jMotivesPanel.add(getJSliderRobotNonSituated());
-			jMotivesPanel.add(new JLabel("Anal. PO"));
+//			jMotivesPanel.add(new JLabel("canned Goal"));
+//			jMotivesPanel.add(getJSlidercanned());
+//			jMotivesPanel.add(new JLabel("Robot Init."));
+//			jMotivesPanel.add(getJSliderRobotInitiative());
+//			jMotivesPanel.add(new JLabel("Tutor Init."));
+//			jMotivesPanel.add(getJSliderTutorInitiative());
+//			jMotivesPanel.add(new JLabel("Robot NonSit."));
+//			jMotivesPanel.add(getJSliderRobotNonSituated());
+			jMotivesPanel.add(new JLabel("Analyse PO"));
 			jMotivesPanel.add(getJSliderAnalyzePO());
-			jMotivesPanel.add(new JLabel("Learn"));
+			jMotivesPanel.add(new JLabel("Robot Init."));
 			jMotivesPanel.add(getJSliderLearnVO());
+			jMotivesPanel.add(new JLabel("Look Around"));
+			jMotivesPanel.add(getJSliderLookAround());
+
 			jMotivesPanel.add(getPresetPanel());
 		}
 		return jMotivesPanel;
@@ -282,7 +287,7 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 		}
 		return jAnalyzePOPrioritySlider;
 	}
-	
+
 	private JSlider getJSliderLearnVO() {
 		if (jLearnVOPrioritySlider == null) {
 			jLearnVOPrioritySlider = createPrioritySlider();
@@ -290,13 +295,24 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 		return jLearnVOPrioritySlider;
 	}
 
+	private JSlider getJSliderLookAround() {
+		if (jLookAroundPrioritySlider == null) {
+			jLookAroundPrioritySlider = createPrioritySlider();
+		}
+		return jLookAroundPrioritySlider;
+	}
+
 	@Override
 	public void start() {
 		jFrame.setVisible(true);
 		jFrame.pack();
 		jFrame.setSize(800, 600);
-		jAnalyzePOPrioritySlider.setValue(1);
-		jLearnVOPrioritySlider.setValue(1);
+
+		// default start-up slider values
+		jAnalyzePOPrioritySlider.setValue(0);
+		jLearnVOPrioritySlider.setValue(0);
+		jLookAroundPrioritySlider.setValue(1);
+
 	}
 
 	@Override

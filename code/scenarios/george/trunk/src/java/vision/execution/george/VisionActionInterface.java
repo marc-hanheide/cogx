@@ -102,13 +102,21 @@ public class VisionActionInterface extends AbstractActionInterface {
 			}
 		}
 
+
 		@Override
 		protected TriBool executionResult(MoveToViewConeCommand _cmd) {
 
 			try {
 				if (_cmd.status == VisionCommandStatus.VCSUCCEEDED) {
+
+					//tell the planner that we're now looking at this
 					((VisionActionInterface) getComponent())
 							.recordCurrentViewCone(_cmd.target);
+		
+					//record that we have looked at it
+					((VisionActionInterface) getComponent()).addBooleanFeature(
+							getAction().beliefAddress, "looked-at", true);
+		
 					return TriBool.TRITRUE;
 				} else {
 					((VisionActionInterface) getComponent())
