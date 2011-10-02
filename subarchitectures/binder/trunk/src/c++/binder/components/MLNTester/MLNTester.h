@@ -21,8 +21,10 @@
 
 #include <beliefs_cast.hpp>
 #include <binder.hpp>
+#include <ref.hpp>
 
 using namespace de::dfki::lt::tr::beliefs::slice;
+using namespace de::dfki::lt::tr::dialogue::ref;
 
 namespace cast
 {

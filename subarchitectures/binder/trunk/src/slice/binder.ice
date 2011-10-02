@@ -48,6 +48,10 @@ module mln {
 	
 	class Evidence {
 		string engId;
+		
+		string setToken;
+		string resetToken;
+		
 		InstanceSeq newInstances;
 		InstanceSeq removeInstances;
 		PredStrSeq trueEvidence;
@@ -72,6 +76,9 @@ module mln {
 		string engId;
 		PredStrSeq atoms;
 		ProbSeq probs;
+		string token;
+		int tokenSamples; // number of samples since the token was introduced
+		int overallSamples; // number of samples since the last evidence change (including tokens)
 	};
 	
 	class LearnWts {

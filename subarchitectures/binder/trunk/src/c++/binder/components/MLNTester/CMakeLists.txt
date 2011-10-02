@@ -2,6 +2,7 @@ include_directories(.)
 include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen)
 include_directories(${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/cpp/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/binder.sa/src/c++/binder/autogen)
+include_directories(${COGX_ROOT}/subarchitectures/dialogue.sa/apis/dialogue/src/c++/autogen)
 
 #SET(ALCHEMY_ROOT ${COGX_ROOT}/subarchitectures/binder.sa/src/c++/alchemy)
 #SET(ALCHEMY_SRC ${ALCHEMY_ROOT}/src)
@@ -45,7 +46,7 @@ SET(SOURCES MLNTester.cpp)
 add_cast_component(MLNTester ${SOURCES} )
 
 #add_dependencies(${CAST_COMPONENT_NAME} alchemy) 
-link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder)
+link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder RefSlice)
 
 
 

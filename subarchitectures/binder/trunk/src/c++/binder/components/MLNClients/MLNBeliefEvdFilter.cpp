@@ -61,27 +61,27 @@ void MLNBeliefEvdFilter::runComponent()
   // leave the .db file from command line empty, because it does
   // not work online if the evidence is initialized there
 
-  distributeQuery("resolution");
+//  distributeQuery("resolution");
   // initial evidence - we treat percepts as close-world predicates;
   // again "-cw" option in command line doesn't help, beacuse the
   // evidence from .db is not correctly initialized
-
+/*
   EvidencePtr evd = new Evidence();
 
-  evd->trueEvidence.push_back("constraint(A_red)");
-  evd->falseEvidence.push_back("belief(PH1)");
-  evd->falseEvidence.push_back("belief(PH2)");
-  evd->falseEvidence.push_back("belief(PH3)");
-  evd->falseEvidence.push_back("belief(PH4)");
-  evd->falseEvidence.push_back("belief(PH5)");
-  evd->falseEvidence.push_back("belief(PH6)");
+  evd->trueEvidence.push_back("color_constraint(A_red)");
+  evd->falseEvidence.push_back("belief(Blf1)");
+  evd->falseEvidence.push_back("belief(Blf2)");
+  evd->falseEvidence.push_back("belief(Blf3)");
+  evd->falseEvidence.push_back("belief(Blf4)");
+  evd->falseEvidence.push_back("belief(Blf5)");
+  evd->falseEvidence.push_back("belief(Blf6)");
 
   evd->initInfSteps = 400;
   evd->prevInfSteps = 0;
   evd->burnInSteps = 100;
 
   distributeEvd(evd);
-  
+*/  
   while(isRunning())	  
   {
 /*	log("Timestep: %i", tstep);  
@@ -103,7 +103,7 @@ void MLNBeliefEvdFilter::runComponent()
 			EvidencePtr evd = new Evidence();
 			
 			if(getEvdChanges(m_filtFacts, m_oldFacts, evd)) {
-				distributeEvd(evd);
+				distributeEvd(evd, "");
 				m_oldFacts = m_filtFacts;
 			    log("New MLN evidence provided");
 			}
