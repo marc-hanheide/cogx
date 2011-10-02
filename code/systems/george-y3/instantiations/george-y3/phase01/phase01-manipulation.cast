@@ -34,8 +34,9 @@ CPP MG vc-costs ViewConeMoveCostGenerator
 
 # binder #################################################################
 INCLUDE includes/binder.sa/binder-base.cast
-
 INCLUDE georgeY3-mln.incl
+
+CPP MG mlnTester MLNTester --bsa binder
 
 # # dialogue ####################################################################
 # INCLUDE includes/dialogue.sa/dialogue-base.cast
