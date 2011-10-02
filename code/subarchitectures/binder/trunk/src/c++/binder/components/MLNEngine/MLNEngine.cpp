@@ -6,6 +6,9 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "MLNEngine.h"
 
+#define DEFAULT_INSTANCE_TYPE "belief"
+#define DEFAULT_INFERENCE_STEPS 50
+#define DEFAULT_INFERENCE_PAUSE 250
 /**
  * The function called to create a new instance of our component.
  */
@@ -32,12 +35,16 @@ using namespace de::dfki::lt::tr::beliefs::slice::logicalcontent;
 using namespace de::dfki::lt::tr::beliefs::slice::sitbeliefs;
 using namespace org::cognitivesystems::binder::mln;
 
+
 void MLNEngine::configure(const map<string,string> & _config)
 {
 //  BindingWorkingMemoryWriter::configure(_config);
   ManagedComponent::configure(_config);
   
   map<string,string>::const_iterator it;
+  
+  m_query.clear();
+  m_defaultInfSteps = DEFAULT_INFERENCE_STEPS;
   
   if ((it = _config.find("--inf-str")) != _config.end()) {
 //	istringstream str(it->second);
@@ -58,11 +65,26 @@ void MLNEngine::configure(const map<string,string> & _config)
   }
   else
 	doDisplay = false;
+		
+  if ((it = _config.find("--queries")) != _config.end()) {
+		stringstream ss(it->second);
+		string token;
+	
+	  while(getline(ss, token, ',')) {
+	      m_query.push_back(token);
+	  }
+	}
 	
   if ((it = _config.find("--id")) != _config.end()) {
 	m_id=it->second;
   } else {
    m_id=getComponentID() ;
+  }
+  
+  if ((it = _config.find("--instance-type")) != _config.end()) {
+	m_instanceType=it->second;
+  } else {
+   m_instanceType=DEFAULT_INSTANCE_TYPE;
   }
   #ifdef FEAT_VISUALIZATION
 	m_display.configureDisplayClient(_config);
@@ -97,7 +119,6 @@ void MLNEngine::start()
 	  new MemberFunctionChangeReceiver<MLNEngine>(this,
 		&MLNEngine::learnWts));
 		
-
 //  addChangeFilter(createGlobalTypeFilter<Belief>(cdl::OVERWRITE),
 //	  new MemberFunctionChangeReceiver<MLNEngine>(this,
 //		&MLNEngine::updatedBelief));
@@ -106,9 +127,7 @@ void MLNEngine::start()
   m_oe->init();
   m_oe->saveAllCounts(true);
    
-  log("MRF initialized");
-  
-  m_query.clear();
+  log("MLN engine ID '%s': MRF initialized", m_id.c_str());
   
 #ifdef FEAT_VISUALIZATION
 	m_display.connectIceClient(*this);
@@ -119,22 +138,28 @@ void MLNEngine::start()
 void MLNEngine::runComponent()
 { 
   sleepComponent(1000);
+  
+  // Initialize the result WM entry
   m_resultWMId = newDataID();
   InferredResultPtr result = new InferredResult();
   result->engId = m_id;
+  result->token = "";
+  result->tokenSamples = 0;
+  result->overallSamples = 0;
   
   addToWorkingMemory(m_resultWMId, m_bindingSA, result);
 
+  // Init
   int tstep = 0;
   bool first = true;
-  m_infSteps = 50;
+  m_infSteps = m_defaultInfSteps;
   m_oe->setMaxInferenceSteps(m_infSteps);
   m_oe->setMaxBurnIn(0); 
+  
+  log("MLN engine ID '%s' initialized", m_id.c_str());
  
   while(isRunning())
   {
-  
-	sleepComponent(200);
 	
 	while(!m_queryQueue.empty())
 	{
@@ -156,7 +181,7 @@ void MLNEngine::runComponent()
 
 	  vector<Instance>::iterator it;
 	  for(it=evd->newInstances.begin(); it!=evd->newInstances.end(); it++) {
-		string placeh = m_oe->addInstance("bel", it->type);
+		string placeh = m_oe->addInstance(m_instanceType, it->type);
 		if(!placeh.empty())
 		  addInstConst(it->name, placeh);
 		else
@@ -169,11 +194,10 @@ void MLNEngine::runComponent()
 
 	  m_evidenceQueue.front().status=USED;
 	  m_removeQueue.push(m_evidenceQueue.front().addr);
-	  m_evidenceQueue.pop();
-	
+	  m_evidenceQueue.pop();	
 
 	  m_oe->adaptProbs(evd->prevInfSteps);
-	  m_oe->setMaxInferenceSteps(evd->initInfSteps);
+//	  m_oe->setMaxInferenceSteps(evd->initInfSteps);
 	  m_oe->setMaxBurnIn(evd->burnInSteps);
 	  m_oe->setExtPriors(replaceInstWithConst(evd->extPriors), evd->priorWts);
 	  m_oe->resetPriors(replaceInstWithConst(evd->resetPriors));
@@ -186,13 +210,26 @@ void MLNEngine::runComponent()
 		  log("WARNING: No instance %s found", it->name.c_str());
 		
 	  }
-
 	  
   #ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
 	  m_display.setHtml("MRFView." + m_id, "Rules", "<pre>" + v11out.str() + "</pre>");
-  #endif
+  #endif	  
+	  
+	  m_infSteps = evd->initInfSteps;
+	  
+	  if(!evd->setToken.empty()) {
+		m_token = evd->setToken;
+		m_tokenSamples = 0;
+	  }
+		
+	  if(!evd->resetToken.empty() && evd->resetToken == m_token) {
+		m_token = "";
+		m_tokenSamples = 0;
+	  }
+	  
+	  m_overallSamples = 0;
 	}
 	
 	while(!m_learnWtsQueue.empty())
@@ -207,11 +244,11 @@ void MLNEngine::runComponent()
 	
 	  m_oe->genLearnWts(lw->trueEvidence, lw->falseEvidence, lw->noEvidence, 1);
 	  	  
-  #ifdef FEAT_VISUALIZATION
+	#ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
 	  m_display.setHtml("MRFView." + m_id, "Rules", "<pre>" + v11out.str() + "</pre>");
-  #endif
+	#endif
 	}
 	
   //  InferredResultPtr result = new InferredResult();
@@ -219,12 +256,16 @@ void MLNEngine::runComponent()
 	
   //  m_oe->setMaxInferenceSteps(5000);
 	if(!first) m_oe->restoreCnts();
-	
+	m_oe->setMaxInferenceSteps(m_infSteps);
 	m_oe->infer(m_query, result->atoms, result->probs);
 	m_oe->saveCnts();
+	
 	first=false;
+	m_tokenSamples += m_infSteps;
+	m_overallSamples += m_infSteps;
 
-	m_oe->setMaxInferenceSteps(m_infSteps);
+	// restore the default values for inference samples and burn in samples
+	m_infSteps = m_defaultInfSteps;	
 	m_oe->setMaxBurnIn(0);
 	
 	if(doDisplay) {
@@ -239,7 +280,12 @@ void MLNEngine::runComponent()
 		probIt++;
 	  }
 	}
+	
 	result->atoms = replaceConstWithInst(result->atoms);
+	result->token = m_token;
+	result->tokenSamples = m_tokenSamples;
+	result->overallSamples =  m_overallSamples;
+	
 	overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
 	
 	while(!m_removeQueue.empty())
@@ -249,12 +295,12 @@ void MLNEngine::runComponent()
 	
 	  m_removeQueue.pop();
 	}
-	
-	debug("Samples: %i", m_oe->getNumSamples());
-	debug("Num true cnts: %i", m_oe->getClauseTrueCnts(0));
-	
 
-	}
+//	debug("Samples: %i", m_oe->getNumSamples());
+//	debug("Num true cnts: %i", m_oe->getClauseTrueCnts(0));
+	 
+	sleepComponent(DEFAULT_INFERENCE_PAUSE);
+  }
 }
 
 void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)
@@ -377,8 +423,11 @@ vector<string> MLNEngine::replaceInstWithConst(vector<string> predicates)
 	for(pred=predicates.begin(); pred!=predicates.end(); pred++) {
 	  
 	  size_t pos = pred->find(inst->first.c_str());
-	  if(pos!=string::npos)
+	  if(pos!=string::npos) { 
+		debug("Replacing belief ID %s with constant %s in predicate %s",
+				inst->first.c_str(), inst->second.c_str(), pred->c_str());
 		pred->replace(pos, inst->first.size(), inst->second.c_str());
+	  }
 	}
   return predicates;
 }

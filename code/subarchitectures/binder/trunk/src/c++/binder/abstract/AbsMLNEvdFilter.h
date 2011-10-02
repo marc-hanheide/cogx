@@ -29,7 +29,7 @@ class AbsMLNEvdFilter :  public AbsMLNClient
   vector<MLNFact> m_rawFacts;
   
   string m_beliefType;
-  string m_epiStatus;
+  set<string> m_epiStatuses;
   set<string> m_relevantKeys;
   set<string> m_instKeys;
   
@@ -63,6 +63,10 @@ class AbsMLNEvdFilter :  public AbsMLNClient
   //  BindingWorkingMemoryWriter::configure(_config);
 	AbsMLNClient::configure(_config);
 	
+	m_epiStatuses.clear();
+	m_relevantKeys.clear();
+	m_instKeys.clear();
+	
 	map<string,string>::const_iterator it;
 	
 	if ((it = _config.find("--keys")) != _config.end()) {
@@ -91,10 +95,13 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	  m_instKeys.insert(DEFAULT_INSTANCE_KEY);
 	}
 	
-	if ((it = _config.find("--estatus")) != _config.end()) {
-	  m_epiStatus = it->second;
-	} else {
-	 m_epiStatus=EPI_STATUS_ALL;
+	if ((it = _config.find("--epstatus")) != _config.end()) {
+	  stringstream ss(it->second);
+	  string token;
+	  
+	  while(getline(ss, token, ',')) {
+	      m_epiStatuses.insert(token);
+	  }
 	}
   }
   /**
@@ -126,7 +133,7 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	vector<MLNFact>::iterator it;
 	for (it=rawFact.begin() ; it != rawFact.end(); it++ ) {
 	  if(it->type == m_beliefType
-		&& (m_epiStatus == EPI_STATUS_ALL || it->estatus == m_epiStatus)
+		&& (m_epiStatuses.empty() || m_epiStatuses.count(it->estatus))
 		&& (m_relevantKeys.count(it->key) || m_instKeys.count(it->key))) {
 		filtFact.insert(pair<string,MLNFact>(it->atom,*it));
 	  }

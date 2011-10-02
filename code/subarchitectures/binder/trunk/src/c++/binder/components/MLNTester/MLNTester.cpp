@@ -84,7 +84,7 @@ void MLNTester::start()
 void MLNTester::runComponent()
 {
   sleep(3);
-  
+ /* 
   // init mrf
   // leave the .db file from command line empty, because it does
   // not work online if the evidence is initialized there
@@ -111,11 +111,15 @@ void MLNTester::runComponent()
   evd->burnInSteps = 100;
   
   addToWorkingMemory(newDataID(), m_bindingSA, evd);
-  
+	};
+ */
+ 
   int tstep = 0;
   while(isRunning())
   {
-	log("Timestep: %i", tstep);  
+		log("Timestep: %i", tstep);  
+	
+/*	
 	while(!m_resultQueue.empty()) // here we process incoming results
 	{
 	  log("Got a new result...");
@@ -136,133 +140,54 @@ void MLNTester::runComponent()
 	
 	  m_resultQueue.pop();
 	}
+*/
+/*
+	  class ReferenceResolutionRequest {
+		string nom;
+		string sort;
+		ConstraintSeq constraints;
+		de::dfki::lt::tr::dialogue::slice::time::Interval ival;
+		
+		class Constraint {
+		string feature;
+		string value;
+	};
+*/
 	
 	// now we add as evidence an object that we perceive 
 	// and its property
-	if(tstep == 3)
-	{
-	  EvidencePtr evd = new Evidence();
-	  Instance i;
-	  i.name="P1";
-	  i.type="perc";
-	  evd->newInstances.push_back(i);
-	  evd->engId = m_id;
-//	  evd->trueEvidence.push_back("percept(P1)");
-	  evd->trueEvidence.push_back("feature(P1,VGreen)");
-	  evd->initInfSteps = 400;
-	  evd->prevInfSteps = 0;
-	  evd->burnInSteps = 100;
-  
-	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
-	}	
+		if(tstep == 30)
+		{
+			ReferenceResolutionRequestPtr rrr = new ReferenceResolutionRequest();
+			rrr->nom = "";
+			rrr->sort = "";
+		
+			ConstraintPtr con = new Constraint();
+			con->feature = "color";
+			con->value = "red";
+		
+			rrr->constraints.push_back(con);
+		
+			addToWorkingMemory(newDataID(), m_bindingSA, rrr);
+		}
+		
+		if(tstep == 60)
+		{
+			ReferenceResolutionRequestPtr rrr = new ReferenceResolutionRequest();
+			rrr->nom = "";
+			rrr->sort = "";
+		
+			ConstraintPtr con = new Constraint();
+			con->feature = "color";
+			con->value = "blue";
+		
+			rrr->constraints.push_back(con);
+		
+			addToWorkingMemory(newDataID(), m_bindingSA, rrr);
+		}
 	
-	// we add attributed property as evidence
-	if(tstep == 7)
-	{
-	  EvidencePtr evd = new Evidence();
-	  evd->engId = m_id;
-	
-	  evd->trueEvidence.push_back("attribute(LRed)");	
-	  
-	  evd->initInfSteps = 400;
-	  evd->prevInfSteps = 0;
-  	  evd->burnInSteps = 100;
-  	  
-	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
-	}
-	
-
-	// we now see another red object
-	if(tstep == 25)
-	{
-	  EvidencePtr evd = new Evidence();
-	  Instance i;
-	  i.name="P2";
-	  i.type="perc";
-	  evd->newInstances.push_back(i);
-	  evd->engId = m_id;
-//	  evd->trueEvidence.push_back("percept(P2)");
-//	  evd->trueEvidence.push_back("feature(P2,VRed)");
-	  evd->extPriors.push_back("feature(P2,VRed)");
-	  evd->priorWts.push_back(1);
-	  evd->extPriors.push_back("feature(P2,VBlue)");
-	  evd->priorWts.push_back(-1);
-  //	evd->noEvidence.push_back("");
-  	  evd->initInfSteps = 400;
-	  evd->prevInfSteps = 0;
-  	  evd->burnInSteps = 100;
-	
-	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
-	}
-/*	
-	if(tstep == 40)
-	{
-	  LearnWtsPtr lw = new LearnWts();
-	  lw->engId = m_id;
-	  lw->trueEvidence.push_back("resolution(P2)");
-	  lw->trueEvidence.push_back("feature(P2,VRed)");
-	  lw->falseEvidence.push_back("resolution(P1)");
-	  lw->falseEvidence.push_back("resolution(P3)");
-	
-	  addToWorkingMemory(newDataID(), m_bindingSA, lw);
-	}
-*/	
-	// and another red object
-	if(tstep == 50)
-	{
-	  EvidencePtr evd = new Evidence();
-	  Instance i;
-	  i.name="P3";
-	  i.type="perc";
-	  evd->newInstances.push_back(i);
-	  evd->engId = m_id;
-//	  evd->trueEvidence.push_back("percept(P3)");
-	  evd->trueEvidence.push_back("feature(P3,VRed)");
-	  evd->initInfSteps = 400;
-	  evd->prevInfSteps = 0;
-	  evd->burnInSteps = 100;
-  
-	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
-	}
-/*	
-	if(tstep == 60)
-	{
-	  LearnWtsPtr lw = new LearnWts();
-	  lw->engId = m_id;
-	  lw->trueEvidence.push_back("resolution(P3)");
-	  lw->trueEvidence.push_back("feature(P2,VRed)");
-	  lw->falseEvidence.push_back("resolution(P1)");
-	  lw->falseEvidence.push_back("resolution(P2)");
-	
-	  addToWorkingMemory(newDataID(), m_bindingSA, lw);
-	}
-*/	
-	// one of the red objects is removed
-	if(tstep == 75)
-	{
-	  EvidencePtr evd = new Evidence();
-	  evd->engId = m_id;
-	  Instance inst;
-	  inst.name="P2";
-	  inst.type="perc";
-	  evd->removeInstances.push_back(inst);
-//	  evd->falseEvidence.push_back("percept(P2)");
-//	  evd->noEvidence.push_back("feature(P2,VRed)");
-	  evd->resetPriors.push_back("feature(P2,VRed)");
-	  evd->resetPriors.push_back("feature(P2,VBlue)");
-	  evd->initInfSteps = 400;
-	  evd->prevInfSteps = 0;
-	  evd->burnInSteps = 100;
-  
-	  addToWorkingMemory(newDataID(), m_bindingSA, evd);
-	}
-	
-	tstep++;
-	sleep(1);
-  }
-
-  if (doDisplay)
-  {
+		tstep++;
+		sleep(1);
   }
 }
 
