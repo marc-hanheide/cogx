@@ -150,12 +150,11 @@ public class IntentionRecognition {
 					AssertedReferenceAtom aratom = AssertedReferenceAtom.fromModalisedAtom(mq.atom);
 					if (aratom != null) {
 						
-						Term nomTerm = aratom.getNominalTerm();
 						Term varTerm = aratom.getReferentTerm();
 //						Term epstTerm = aratom.getEpStTerm();
 
-						if (nomTerm instanceof FunctionTerm && varTerm instanceof VariableTerm) {
-							String nom = ((FunctionTerm) nomTerm).functor;
+						if (varTerm instanceof VariableTerm) {
+							String nom = aratom.getNominal();
 							if (rr.nom.equals(nom)) {
 								to_add = new ArrayList<MarkedQuery>();
 

@@ -13,8 +13,11 @@ module lt {
 module tr { 
 module dialogue { 
 module slice { 
-
 module interpret {
+
+	class InterpretationRequest {
+		de::dfki::lt::tr::infer::abducer::lang::ModalisedAtom goal;
+	};
 
 	["java:type:java.util.ArrayList<String>"] sequence<string> stringSeq;
 

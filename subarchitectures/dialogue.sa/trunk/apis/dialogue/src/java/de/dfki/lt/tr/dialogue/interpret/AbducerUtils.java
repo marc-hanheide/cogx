@@ -17,6 +17,12 @@ import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
 import de.dfki.lt.tr.infer.abducer.util.ProofUtils;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -228,6 +234,45 @@ public abstract class AbducerUtils {
 		catch (SyntaxErrorException ex) {
 			engineLog(abd.getEngineName(), "syntax error: " + ex.error + " in " + ex.filename + " on line " + ex.line);
 		}
+	}
+
+	public static String getAbducerServerEndpointString(String host, int port) {
+		String s = "default -p " + port;
+		if (host != null && !host.equals("")) {
+			s += " -h " + host;
+		}
+		return s;
+	}
+
+	public static List<String> getAbducerRuleFiles(Logger logger, String rulesetFile) {
+		if (rulesetFile == null) {
+			throw new NullPointerException("ruleset filename is null");
+		}
+
+		List<String> result = new ArrayList<String>();
+
+		try {
+			BufferedReader f = new BufferedReader(new FileReader(rulesetFile));
+			String parentAbsPath = (new File((new File(rulesetFile)).getParent()).getCanonicalPath());
+			if (parentAbsPath == null) {
+				parentAbsPath = ""; // rulefile is in `/'
+			}
+			logger.info("will be looking for abducer rulefiles in `" + parentAbsPath + "'");
+			String file = null;
+			while ((file = f.readLine()) != null) {
+				file = parentAbsPath + File.separator + file;
+				result.add(file);
+			}
+			f.close();
+		}
+		catch (FileNotFoundException ex) {
+			logger.error("ruleset filename not found", ex);
+		}
+		catch (IOException ex) {
+			logger.error("I/O exception while reading files from list", ex);
+		}
+
+		return result;
 	}
 
 	private static void log(String logname, String str) {
