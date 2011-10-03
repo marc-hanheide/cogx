@@ -10,7 +10,6 @@
 
 #include "KinectPCServer.h"
 #include <cast/core/CASTUtils.hpp>
-#include <castutils/Timers.hpp>
 #include <cmath>
 #include <fstream>
 #include <algorithm>
@@ -48,6 +47,7 @@ KinectPCServer::KinectPCServer()
 
   m_createViewCone = false;
   m_viewConeNeedsUpdate = false;
+  m_tmUpdateViewCone.setTimeout(500); // update the view cone at most at 2Hz
 }
 
 KinectPCServer::~KinectPCServer()
@@ -169,17 +169,6 @@ kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& c
 
 #endif
 
-void KinectPCServer::deleteViewConePlanes()
-{
-  for (int i = 0; i < N_PLANES; i++) {
-    senses[i] = 0;
-    if (fovPlanes[i]) {
-      delete fovPlanes[i];
-      fovPlanes[i] = NULL;
-    }
-  }
-}
-
 /**
 * @brief Configure the component
 */
@@ -198,15 +187,7 @@ void KinectPCServer::runComponent()
   }
   //cvWaitKey(100);
 
-  if (m_createViewCone) {
-    // Create the initila view cone
-    deleteViewConePlanes();
-    createViewCone();
-  }
-
   castutils::CCastPaceMaker<KinectPCServer> paceMaker(*this, 1000/20, 1); // run at 20Hz
-  castutils::CMilliTimer tmUpdateViewCone;
-  tmUpdateViewCone.setTimeout(500); // update the view cone at most at 2Hz
 
   while(isRunning()) {
     paceMaker.sync();
@@ -219,17 +200,6 @@ void KinectPCServer::runComponent()
 
     if (m_saveToFile) {
       saveNextFrameToFile();
-    }
-
-    if (m_viewConeNeedsUpdate && tmUpdateViewCone.isTimeoutReached()) {
-      m_viewConeNeedsUpdate = false;
-      tmUpdateViewCone.restart();
-
-      /* Delete old view cone planes */
-      deleteViewConePlanes();
-      bool hasAllPlanes = createViewCone();
-      if (!hasAllPlanes)
-        log("Failed to get a complete view cone!");
     }
   }
 }
@@ -325,6 +295,17 @@ void KinectPCServer::saveNextFrameToFile()
   cvReleaseImage(&depth_data);
 }
 
+void KinectPCServer::deleteViewConePlanes()
+{
+  for (int i = 0; i < N_PLANES; i++) {
+    senses[i] = 0;
+    if (fovPlanes[i]) {
+      delete fovPlanes[i];
+      fovPlanes[i] = NULL;
+    }
+  }
+}
+
 bool KinectPCServer::createViewCone()
 {
   //log("Updating View Cone");
@@ -377,6 +358,41 @@ bool KinectPCServer::createViewCone()
   }
 
   return fovPlanes[0] && fovPlanes[1] && fovPlanes[2] && fovPlanes[3];
+}
+
+bool KinectPCServer::isPointInViewCone(const Vector3& point)
+{
+  lockComponent();
+
+  if (m_viewConeNeedsUpdate && m_tmUpdateViewCone.isTimeoutReached()) {
+    m_viewConeNeedsUpdate = false;
+    m_tmUpdateViewCone.restart();
+
+    /* Delete old view cone planes */
+    deleteViewConePlanes();
+    bool hasAllPlanes = createViewCone();
+    if (!hasAllPlanes)
+      log("Failed to get a complete view cone!");
+  }
+
+  /* Make sure we have a complete view cone */
+  for (int i = 0; i < N_PLANES; i++) {
+    if (fovPlanes[i] == NULL) {
+      unlockComponent();
+      return false;
+    }
+  }
+
+  Eigen::Vector3d p(point.x, point.y, point.z);
+
+  bool inView = senses[PLANE_LEFT] * fovPlanes[PLANE_LEFT]->signedDistance(p) >= 0 &&
+    senses[PLANE_TOP] * fovPlanes[PLANE_TOP]->signedDistance(p) >= 0 &&
+    senses[PLANE_RIGHT] * fovPlanes[PLANE_RIGHT]->signedDistance(p) <= 0 &&
+    senses[PLANE_BOTTOM] * fovPlanes[PLANE_BOTTOM]->signedDistance(p) <= 0;
+
+  unlockComponent();
+
+  return inView;
 }
 
 // ########################## Point Cloud Server Implementations ########################## //
@@ -546,28 +562,6 @@ void KinectPCServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _w
   {
     m_viewConeNeedsUpdate = true;
   }
-}
-
-bool KinectPCServer::isPointInViewCone(const Vector3& point)
-{
-  lockComponent();
-  /* Make sure we have a complete view cone */
-  for (int i = 0; i < N_PLANES; i++) {
-    if (fovPlanes[i] == NULL) {
-      unlockComponent();
-      return false;
-    }
-  }
-
-  Eigen::Vector3d p(point.x, point.y, point.z);
-
-  bool inView = senses[PLANE_LEFT] * fovPlanes[PLANE_LEFT]->signedDistance(p) >= 0 &&
-    senses[PLANE_TOP] * fovPlanes[PLANE_TOP]->signedDistance(p) >= 0 &&
-    senses[PLANE_RIGHT] * fovPlanes[PLANE_RIGHT]->signedDistance(p) <= 0 &&
-    senses[PLANE_BOTTOM] * fovPlanes[PLANE_BOTTOM]->signedDistance(p) <= 0;
-  unlockComponent();
-
-  return inView;
 }
 
 class CvToGlobal
