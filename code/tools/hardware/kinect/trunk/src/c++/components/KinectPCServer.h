@@ -9,16 +9,19 @@
 #ifndef KINECT_PC_SERVER_H
 #define KINECT_PC_SERVER_H
 
+
+#include "Kinect.h"
+#include "PointCloudServer.h"
+#include <VideoUtils.h>
+#include <castutils/Timers.hpp>
+#include <cast/core/CASTTimer.hpp>
+
+#include <cv.h>
+#include <Eigen/Geometry>
+
 #include <vector>
 #include <sys/time.h>
 
-#include <Eigen/Geometry>
-
-#include "PointCloudServer.h"
-#include "Kinect.h"
-#include "VideoUtils.h"
-#include <cast/core/CASTTimer.hpp>
-#include "cv.h"
 
 #ifdef KINECT_USER_DETECTOR
 #include "../autogen/KinectPersonDetect.hpp"
@@ -90,6 +93,7 @@ private:
   Eigen::Hyperplane<double, 3>* fovPlanes[N_PLANES];
   /* Sense of the normals for the planes above */
   int senses[N_PLANES];
+  castutils::CMilliTimer m_tmUpdateViewCone;
 
   void deleteViewConePlanes();
   bool createViewCone();
