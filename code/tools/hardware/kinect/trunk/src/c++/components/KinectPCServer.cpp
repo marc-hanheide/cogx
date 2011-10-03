@@ -259,42 +259,29 @@ void KinectPCServer::saveNextFrameToFile()
   if(kinect->frameNumber == m_lastframe){
     return;
   }
-  IplImage* rgb_data; // = new IplImage(kinect->rgbImage);
+  IplImage* rgb_data = 0; // = new IplImage(kinect->rgbImage);
   kinect->GetColorImage(&rgb_data);
   if(m_displayImage){
     cvShowImage("Kinect RGB",rgb_data);
     cvWaitKey(5);
   }
-  IplImage* depth_data = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
   char buf[256];
   CASTTime timeNow = getCASTTime();
-  sprintf(buf, "%s/frame_%d_rgb_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
+  sprintf(buf, "%s/frame_%04d_rgb_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
 
   cvSaveImage(buf, rgb_data);
+  cvReleaseImage(&rgb_data);
 
-  // TODO: enable when Kinect is thread-safe
-#if 0
-  // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
-  short*d = kinect->depImage.ptr<short>(0);
-  for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
-  {
-    short value = d[i]/16;
-    char value_pt1 = d[i]>>8;
-    char value_pt2 = d[i]&0xFF;
-    depth_data->imageData[3*i+0]=(char)value_pt1;
-    depth_data->imageData[3*i+1]=(char)value_pt2;
-    depth_data->imageData[3*i+2]=(char)value;
-  }
-  char buf2[256];
-  sprintf(buf2,"%s/frame_%d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
+  IplImage* depth_data = 0;
+  kinect->GetDepthImageRgb(&depth_data);
+  sprintf(buf,"%s/frame_%04d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
   log("Saving Kinect frame # %d",kinect->frameNumber);
-  cvSaveImage(buf2, depth_data);
-  m_lastframe = kinect->frameNumber;
-#endif 
-  cvReleaseImage(&rgb_data);
+  cvSaveImage(buf, depth_data);
   cvReleaseImage(&depth_data);
+
+  m_lastframe = kinect->frameNumber;
 }
 
 void KinectPCServer::deleteViewConePlanes()

@@ -7,10 +7,11 @@
  */
 
 
-#include <fstream>
 #include "Kinect.h"
 #include <ni/XnCodecIDs.h>
 
+#include <fstream>
+#include <climits>
 
 // Callback: New user was detected
 void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
@@ -383,8 +384,8 @@ bool Kinect::NextFrame()
 
 /**
  * @brief Get color image as openCV iplImage from the Kinect sensor
- * @param iplImg Video image as ipl image.
- * @return Return true, if both images are captured successful.
+ * @param rgbIplImg Video image as ipl image. A new image will be allocated.
+ * @return Return true, if image is captured successful.
  */
 bool Kinect::GetColorImage(IplImage **rgbIplImg)
 {
@@ -398,15 +399,49 @@ bool Kinect::GetColorImage(IplImage **rgbIplImg)
   return true;
 }
 
-bool Kinect::GetDepthImage(IplImage **rgbIplImg)
+/**
+ * @brief Get depth image as openCV RGB iplImage from the Kinect sensor
+ * @param iplImg Depth image as ipl image. A new image will be allocated. 
+ * @return Return true, if image is captured successful.
+ */
+bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg)
 {
 #ifdef LOCK_KINECT
   IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
 #endif
 
-  (*rgbIplImg) = cvCreateImage(cvSize(rgbWidth, rgbHeight), IPL_DEPTH_8U, 3);
-  IplImage tmp = rgbImage;
-  cvCopy(&tmp, (*rgbIplImg));
+  (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
+  short* d = depImage.ptr<short>(0);
+  for(int i = 0; i < depImage.rows*depImage.cols; i++)
+  {
+    char value_pt1 = ((d[i] >> 8) & 0x0f) << 2;
+    char value_pt2 = d[i] & 0xff;
+    char value = (d[i] >> 3) & 0xff;
+    (*rgbIplImg)->imageData[3*i+0] = (char)value_pt1;
+    (*rgbIplImg)->imageData[3*i+1] = (char)value_pt2;
+    (*rgbIplImg)->imageData[3*i+2] = (char)value;
+  }
+  return true;
+}
+
+/**
+ * @brief Get depth image as openCV GS iplImage from the Kinect sensor
+ * @param iplImg Depth image as ipl image. A new image will be allocated. 
+ * @return Return true, if image is captured successful.
+ */
+bool Kinect::GetDepthImageGs(IplImage **gsIplImg)
+{
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+
+  (*gsIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 1);
+  short* d = depImage.ptr<short>(0);
+  for(int i = 0; i < depImage.rows*depImage.cols; i++)
+  {
+    char value = (d[i] >> 3) & 0xff;
+    (*gsIplImg)->imageData[i] = value;
+  }
   return true;
 }
 
