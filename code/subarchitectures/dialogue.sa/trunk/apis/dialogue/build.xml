@@ -11,6 +11,7 @@
     <pathelement path="${ice.jar}"/>
     <pathelement path="${cast.jar}"/>
     <pathelement path="${antice.jar}"/>
+          <pathelement path="${log4j.jar}"/>
   </path>
 
 
@@ -91,7 +92,6 @@
     <copy todir="${jar.dir}" file="./lib/jsapi.jar"/>
     <copy todir="${jar.dir}" file="./lib/tags.jar"/>
     <copy todir="${jar.dir}" file="./lib/sphinx4.jar"/>
-    <copy todir="${jar.dir}" file="./lib/log4j-1.2.jar"/>
   </target>
 
   <!-- =================================================================== -->
