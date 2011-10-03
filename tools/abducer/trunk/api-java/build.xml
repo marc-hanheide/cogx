@@ -6,6 +6,7 @@
 	<property name="debug" value="true" />
 
 	<path id="build.classpath">
+		<fileset dir="${jar.dir}" includes="*.jar" />
 		<pathelement path="${ice.jar}" />
 	</path>
 
@@ -13,7 +14,7 @@
 	<property name="slice.dir" value="${abducer.dir}/slice" />
 
 	<property name="generated.dir" value="./src-generated" />
-	<property name="jar.dir" value="./jar" />
+	<property name="localjar.dir" value="./jar" />
 	<property name="output.dir" value="./classes" />
 
 	<property name="javadoc.dir" value="${abducer.dir}/doc/javadoc"/>
@@ -23,7 +24,11 @@
 	<target name="prepare" description="prepare output directories">
 		<mkdir dir="${generated.dir}" />
 		<mkdir dir="${output.dir}" />
-		<mkdir dir="${jar.dir}" />
+		<mkdir dir="${localjar.dir}" />
+	</target>
+
+	<target name="expandlibs" depends="prepare">
+		<copy todir="${jar.dir}" file="./lib/log4j-1.2.jar" />
 	</target>
 
 	<target name="slice" depends="prepare" description="generate sources from Slice">
@@ -43,7 +48,7 @@
 		</javac>
 	</target>
 
-	<target name="compile" depends="compile-slice,compile-src"
+	<target name="compile" depends="expandlibs,compile-slice,compile-src"
 			description="compile all" />
 
 
@@ -76,14 +81,14 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar destfile="${jar.dir}/abducer-util.jar"
+		<jar destfile="${localjar.dir}/abducer-util.jar"
 				basedir ="${output.dir}" />
 	</target>
 
 	<target name="clean">
 		<delete dir="${generated.dir}"/>
 		<delete dir="${output.dir}"/>
-		<delete dir="${jar.dir}"/>
+		<delete dir="${localjar.dir}"/>
 	</target>
 
 </project>
