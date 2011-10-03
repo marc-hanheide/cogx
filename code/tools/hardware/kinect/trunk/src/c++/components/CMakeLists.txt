@@ -10,6 +10,12 @@ if (BUILD_KINECT_USER_DETECTOR)
    add_definitions(-DKINECT_USER_DETECTOR)
 endif (BUILD_KINECT_USER_DETECTOR)
 
+include_directories(
+   .
+   ${VISUALIZATION_INCLUDE_DIRS}
+   )
+add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+
   SET(HEADERS
      Capture.h
      Device.h
@@ -30,7 +36,10 @@ endif (BUILD_KINECT_USER_DETECTOR)
 
   add_cast_component(KinectPCServer KinectPCServer.cpp)
 
-  link_cast_component(${CAST_COMPONENT_NAME} VideoUtils Kinect  OpenNI PointCloud PointCloudServer ${OPENCV_LDFLAGS})
+  link_cast_component(${CAST_COMPONENT_NAME} VideoUtils
+     Kinect  OpenNI PointCloud PointCloudServer
+     ${VISUALIZATION_LIBRARIES}
+     ${OPENCV_LDFLAGS})
   if (BUILD_KINECT_USER_DETECTOR)
      link_cast_component(${CAST_COMPONENT_NAME} KinectPersonDetect)
   endif (BUILD_KINECT_USER_DETECTOR)

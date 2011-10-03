@@ -73,7 +73,7 @@ public:
   bool GetFrame(IplImage **iplImg, IplImage **iplDepthImg);
   bool NextFrame();  
   bool GetColorImage(IplImage **rgbIplImg);
-  bool GetDepthImageRgb(IplImage **rgbIplImg);
+  bool GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv=true);
   bool GetDepthImageGs(IplImage **gsIplImg);
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
   int GetRgbImageWidth() {return rgbWidth;}

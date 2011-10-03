@@ -98,7 +98,6 @@ void KinectPCServer::configure(const map<string, string> & _config)
   m_createViewCone = false;
   if (_config.find("--create-viewcone") != _config.end()) {
     m_createViewCone = true;
-    m_viewConeNeedsUpdate = true;
   }
 
 #ifdef KINECT_USER_DETECTOR
@@ -159,6 +158,14 @@ void KinectPCServer::configure(const map<string, string> & _config)
   registerIceServer<kinect::slice::PersonDetectorInterface, PersonDetectServerI>(personDetectServer);
   println("PersonDetectServer registered");
 #endif
+
+#ifdef FEAT_VISUALIZATION
+  m_bUseV11n = false;
+  if ((it = _config.find("--displayserver")) != _config.end()) {
+    m_bUseV11n = true;
+  }
+  m_display.configureDisplayClient(_config);
+#endif
 }
 
 #ifdef KINECT_USER_DETECTOR
@@ -177,6 +184,10 @@ kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& c
 void KinectPCServer::start()
 {
   PointCloudServer::start();
+
+#ifdef FEAT_VISUALIZATION
+  m_display.connectIceClient(*this);
+#endif
 }
 
 void KinectPCServer::runComponent()
@@ -190,6 +201,10 @@ void KinectPCServer::runComponent()
   //cvWaitKey(100);
 
   castutils::CCastPaceMaker<KinectPCServer> paceMaker(*this, 1000/20, 1); // run at 20Hz
+#ifdef FEAT_VISUALIZATION
+  castutils::CMilliTimer tmV11nUpdate;
+  tmV11nUpdate.setTimeout(2000);
+#endif
 
   while(isRunning()) {
     paceMaker.sync();
@@ -203,6 +218,19 @@ void KinectPCServer::runComponent()
     if (m_saveToFile) {
       saveNextFrameToFile();
     }
+
+#ifdef FEAT_VISUALIZATION
+    if (m_bUseV11n && tmV11nUpdate.isTimeoutReached()) {
+      tmV11nUpdate.restart();
+      if (kinect) {
+        kinect->NextFrame();
+        IplImage* pimg = 0; // = new IplImage(kinect->rgbImage);
+        kinect->GetDepthImageRgb(&pimg);
+        m_display.setImage("kinect.depth.rgb", pimg);
+        cvReleaseImage(&pimg);
+      }
+    }
+#endif
   }
 }
 
@@ -274,7 +302,7 @@ void KinectPCServer::saveNextFrameToFile()
   cvReleaseImage(&rgb_data);
 
   IplImage* depth_data = 0;
-  kinect->GetDepthImageRgb(&depth_data);
+  kinect->GetDepthImageRgb(&depth_data, /*use-hsv=*/false);
   sprintf(buf,"%s/frame_%04d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
   log("Saving Kinect frame # %d",kinect->frameNumber);
