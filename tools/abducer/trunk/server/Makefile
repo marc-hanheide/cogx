@@ -143,8 +143,8 @@ abducer.h abducer.cc: $(SLICE_PATH)/abducer.ice
 	mv $*.pb.cc $*.pb-$(PROTOBUF_VERSION).cc
 	ln -s $*.pb-$(PROTOBUF_VERSION).h $*.pb.h
 
-%.m: %.proto
-	mprotoc --out . $*.proto
+#%.m: %.proto
+#	mprotoc --out . $*.proto
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
