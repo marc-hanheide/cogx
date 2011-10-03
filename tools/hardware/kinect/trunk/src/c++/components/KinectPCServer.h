@@ -97,6 +97,7 @@ private:
 
   void deleteViewConePlanes();
   bool createViewCone();
+  void checkUpdateViewCone();
   Eigen::Hyperplane<double, 3>* createPlane(std::vector<cv::Point3f>&, cogx::Math::Pose3& pose);
 
 

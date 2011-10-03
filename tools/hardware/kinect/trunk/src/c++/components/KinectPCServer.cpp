@@ -48,6 +48,7 @@ KinectPCServer::KinectPCServer()
   m_createViewCone = false;
   m_viewConeNeedsUpdate = false;
   m_tmUpdateViewCone.setTimeout(500); // update the view cone at most at 2Hz
+  m_tmUpdateViewCone.restart();
 }
 
 KinectPCServer::~KinectPCServer()
@@ -97,6 +98,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
   m_createViewCone = false;
   if (_config.find("--create-viewcone") != _config.end()) {
     m_createViewCone = true;
+    m_viewConeNeedsUpdate = true;
   }
 
 #ifdef KINECT_USER_DETECTOR
@@ -360,10 +362,9 @@ bool KinectPCServer::createViewCone()
   return fovPlanes[0] && fovPlanes[1] && fovPlanes[2] && fovPlanes[3];
 }
 
-bool KinectPCServer::isPointInViewCone(const Vector3& point)
+// Check if the view cone has to be updated and update it.
+void KinectPCServer::checkUpdateViewCone()
 {
-  lockComponent();
-
   if (m_viewConeNeedsUpdate && m_tmUpdateViewCone.isTimeoutReached()) {
     m_viewConeNeedsUpdate = false;
     m_tmUpdateViewCone.restart();
@@ -374,6 +375,14 @@ bool KinectPCServer::isPointInViewCone(const Vector3& point)
     if (!hasAllPlanes)
       log("Failed to get a complete view cone!");
   }
+
+}
+
+bool KinectPCServer::isPointInViewCone(const Vector3& point)
+{
+  lockComponent();
+
+  checkUpdateViewCone();
 
   /* Make sure we have a complete view cone */
   for (int i = 0; i < N_PLANES; i++) {
