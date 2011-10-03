@@ -10,6 +10,7 @@
           </fileset>
           <pathelement path="${ice.jar}"/>
          <pathelement path="${cast.jar}"/>
+          <pathelement path="${log4j.jar}"/>
 	 </path>
 
 	<!-- Controls where the output goes -->
