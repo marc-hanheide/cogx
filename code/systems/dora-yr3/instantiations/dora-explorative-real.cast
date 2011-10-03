@@ -1,7 +1,6 @@
 
 ### the default goal
-SETVAR planning_goal="(exists (?p - person) (kval (is-in ?p)))"
-#SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 
 ### the plannig domain to use
 SETVAR planning_domain=dora-interactive.pddl
@@ -68,10 +67,10 @@ SETVAR ptz_server=ptz.server
 
 SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 
-SETVAR vision_pcserver_host=
-SETVAR vision_pcserver=
+SETVAR vision_pcserver_host=pcserver
+SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
 
-SETVAR no_placeholders=--no-placeholders
+SETVAR no_placeholders=
 
 HOST localhost
 
@@ -79,8 +78,7 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-INCLUDE includes/spatial.sa/spatial-blobfinder.cast
-COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
+COMPONENT CPP ptz.server PlayerPTZServer --player-host %(playerhost) --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 INCLUDE includes/spatial.sa/spatial.cast
@@ -129,16 +127,17 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators-dora.cast
+CPP MG VideoServer 	OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "%(vision_calib_root)/dora.right-not-proper.cal"
+CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --camid 0
+CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
 
 CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 
-JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake
 
-JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
 
-CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
-JAVA MG recognizer.people vision.components.BlobbyPeopleDetector --label-person 255,255,0
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -147,7 +146,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/planner.sa/dora-interaction.cast
 
 # dialogue ####################################################################
-INCLUDE includes/dialogue.sa/dialogue-dora.cast
+#### INCLUDE includes/dialogue.sa/dialogue-dora.cast
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)

@@ -1,7 +1,6 @@
 
 ### the default goal
-SETVAR planning_goal="(exists (?p - person) (kval (is-in ?p)))"
-#SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 
 ### the plannig domain to use
 SETVAR planning_domain=dora-interactive.pddl
@@ -71,7 +70,7 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 SETVAR vision_pcserver_host=
 SETVAR vision_pcserver=
 
-SETVAR no_placeholders=--no-placeholders
+SETVAR no_placeholders=
 
 HOST localhost
 
@@ -138,7 +137,6 @@ JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0
 
 CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
-JAVA MG recognizer.people vision.components.BlobbyPeopleDetector --label-person 255,255,0
 
 # binder ######################################################################
 INCLUDE includes/binder.sa/binder-base.cast
@@ -147,7 +145,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/planner.sa/dora-interaction.cast
 
 # dialogue ####################################################################
-INCLUDE includes/dialogue.sa/dialogue-dora.cast
+#### INCLUDE includes/dialogue.sa/dialogue-dora.cast
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
