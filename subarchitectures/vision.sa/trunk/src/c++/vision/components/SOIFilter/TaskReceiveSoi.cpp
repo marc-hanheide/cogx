@@ -422,6 +422,7 @@ void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAdd
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
       pvo->lastProtoObject = pvo->protoObject;
       pvo->protoObject = nullWmPointer();
+      pvo->presence = VisionData::VopWasVISIBLE;
       pSoiFilter->overwriteWorkingMemory<VisionData::VisualObject>(pvorec->addr, pvo);
       pSoiFilter->saveVisualObjectData(pvo, pvorec->pobj);
     }
@@ -486,6 +487,7 @@ void WmTaskExecutor_Soi::MakeVisible(cdl::WorkingMemoryAddress &protoObjectAddr)
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
       pvo->lastProtoObject = pvo->protoObject;
       pvo->protoObject = createWmPointer<VisionData::ProtoObject>(protoObjectAddr);
+      pvo->presence = VisionData::VopVISIBLE;
       pSoiFilter->overwriteWorkingMemory<VisionData::VisualObject>(pvorec->addr, pvo);
       pSoiFilter->saveVisualObjectData(pvo, pvorec->pobj);
     }

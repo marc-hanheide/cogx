@@ -712,6 +712,7 @@ void SOIFilter::checkInvisibleObjects()
       // the object should be visible, but there is no SOI -> assume removed from scene -> delete PO
       try {
         deleteFromWorkingMemory(pporec->addr);
+        // TODO: mark the appropriate VO with pvo->presence = VisionData::VopREMOVED;
       }
       catch(cast::DoesNotExistOnWMException){
         debug("check_invisible: ProtoObject already deleted from WM.");
