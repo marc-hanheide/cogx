@@ -71,6 +71,7 @@ void initVisualObject(VisionData::VisualObject& vo)
   cogx::Math::setIdentity(vo.pose);
   vo.detectionConfidence = 0;
   memset(&vo.boundingSphere, 0, sizeof(vo.boundingSphere));
+  vo.presence = VisionData::VopUNKNOWN;
   // Geometry Model - has only sequences
   vo.salience = 0;
   vo.identGain = 0;

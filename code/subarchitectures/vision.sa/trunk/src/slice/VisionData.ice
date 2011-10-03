@@ -111,14 +111,30 @@ enum VisionCommandStatus {
     FaceSeq faces;
   };
 
+  // @see: VisualObject::presence
+  enum VisualObjectPresence {
+    VopUNKNOWN,
+    VopVISIBLE,
+    VopWasVISIBLE,
+    VopREMOVED
+  };
+
   class VisualObject {
     // 3D position and orientation, in the robot ego coordinate system (ECS).
     // TODO: when the robot moves, it will take the ECS with it. We should tie object poses
     // to anchors instead of the ECS. The other option is to update the positions of all objects.
     cogx::Math::Pose3 pose;
 
-    // pose covariance matrix
-    // PoseVar3 var;
+    // 2011-10-03: apparently the link to PO is not enough for some VO uses so the following
+    // states are aded:
+    //   UNKNOWN - default when the object is created with createVisualObject()
+    //   VISIBLE - the object is visible; the VO is visible and linked to a PO (via protoObject)
+    //   WAS_VISIBLE - the camera turned and the object is no longer in view; the PO is still
+    //      in WM, but the link in protoObject is empty; the field lastProtoObject holds the
+    //      previous value of protoObject
+    //   REMOVED - the object was removed from the scene; the PO was removed from WM; the link in 
+    //      protoObject is empty; the link in lastProtoObject may be invalid.
+    VisualObjectPresence presence;
 
     // The *visible* proto object associated with this VO.
     cast::cdl::WorkingMemoryPointer protoObject;
@@ -138,6 +154,9 @@ enum VisionCommandStatus {
     // bounding volume.
     // The position of the boundingSphere is relative to the robot ego coord. sys.
     cogx::Math::Sphere3 boundingSphere;
+
+    // pose covariance matrix
+    // PoseVar3 var;
 
     // The time when the object was last observed, in any view
     cast::cdl::CASTTime time;
