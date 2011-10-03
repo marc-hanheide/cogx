@@ -261,7 +261,6 @@ void KinectPCServer::saveNextFrameToFile()
   }
   IplImage* rgb_data; // = new IplImage(kinect->rgbImage);
   kinect->GetColorImage(&rgb_data);
-  // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
   if(m_displayImage){
     cvShowImage("Kinect RGB",rgb_data);
     cvWaitKey(5);
@@ -276,6 +275,7 @@ void KinectPCServer::saveNextFrameToFile()
 
   // TODO: enable when Kinect is thread-safe
 #if 0
+  // Doing new IplImage(kinect->depImage); actually causes the depth map stored as a binary image for some reason
   short*d = kinect->depImage.ptr<short>(0);
   for(int i = 0; i < kinect->depImage.rows*kinect->depImage.cols; i++)
   {
