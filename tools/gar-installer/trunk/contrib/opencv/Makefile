@@ -16,6 +16,7 @@ LIBDEPS =
 #        libdc1394-utils@ubuntu \
 #        cmake@ubuntu \
 #        libgtk2.0-dev@ubuntu
+# libv4l-dev
 
 MFLAGS=$(MFLAGS_NUMCPU)
 
