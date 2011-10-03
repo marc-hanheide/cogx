@@ -70,9 +70,11 @@ SETVAR KinectPCServer_Params=<multiline>
    #--stereoconfig "%(CameraConfigs_01)"
    --camconfigs %(kinect_config_file)
    #--imgsize "320 240" --maxdisp "96"
-   #--displayserver "display.srv"
    #--logimages
    #--display
+   --create-viewcone
+   # --save-to-file --save-directory "/tmp"
+   --displayserver "display.srv"
 </multiline>
 CPP MG kinect.server KinectPCServer %(KinectPCServer_Params)
 
