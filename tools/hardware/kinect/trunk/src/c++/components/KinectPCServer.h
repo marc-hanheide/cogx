@@ -27,6 +27,10 @@
 #include "../autogen/KinectPersonDetect.hpp"
 #endif
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 namespace cast
 {
 
@@ -100,6 +104,19 @@ private:
   void checkUpdateViewCone();
   Eigen::Hyperplane<double, 3>* createPlane(std::vector<cv::Point3f>&, cogx::Math::Pose3& pose);
 
+#ifdef FEAT_VISUALIZATION
+  class DisplayClient: public cogx::display::CDisplayClient
+  {
+    //KinectPCServer* pPcServer;
+  public:
+    DisplayClient() { /*pViewer = NULL;*/ }
+    //void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
+    //void handleEvent(const Visualization::TEvent &event); [>override<]
+    //std::string getControlState(const std::string& ctrlId); [>override<]
+  };
+  DisplayClient m_display;
+  bool m_bUseV11n;
+#endif
 
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config) throw(std::runtime_error);

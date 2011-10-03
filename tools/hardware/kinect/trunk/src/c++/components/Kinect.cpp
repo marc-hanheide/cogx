@@ -404,22 +404,39 @@ bool Kinect::GetColorImage(IplImage **rgbIplImg)
  * @param iplImg Depth image as ipl image. A new image will be allocated. 
  * @return Return true, if image is captured successful.
  */
-bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg)
+bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
 {
 #ifdef LOCK_KINECT
   IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
 #endif
 
-  (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
-  short* d = depImage.ptr<short>(0);
-  for(int i = 0; i < depImage.rows*depImage.cols; i++)
-  {
-    char value_pt1 = ((d[i] >> 8) & 0x0f) << 2;
-    char value_pt2 = d[i] & 0xff;
-    char value = (d[i] >> 3) & 0xff;
-    (*rgbIplImg)->imageData[3*i+0] = (char)value_pt1;
-    (*rgbIplImg)->imageData[3*i+1] = (char)value_pt2;
-    (*rgbIplImg)->imageData[3*i+2] = (char)value;
+  if (useHsv) {
+    (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
+    short* d = depImage.ptr<short>(0);
+    for(int i = 0; i < depImage.rows*depImage.cols; i++)
+    {
+      // depth mask = 0x7ff
+      char h = (d[i] >> 3) & 0xff;
+      char v = 0xff - ((d[i] & 0x7ff) >> 4);
+      char s = 0xff - ((d[i] & 0x07f));
+      (*rgbIplImg)->imageData[3*i+0] = (char)h;
+      (*rgbIplImg)->imageData[3*i+1] = (char)s;
+      (*rgbIplImg)->imageData[3*i+2] = (char)v;
+    }
+    cvCvtColor(*rgbIplImg, *rgbIplImg, CV_HSV2RGB);
+  }
+  else {
+    (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
+    short* d = depImage.ptr<short>(0);
+    for(int i = 0; i < depImage.rows*depImage.cols; i++)
+    {
+      char value_pt1 = ((d[i] >> 8) & 0x0f) << 2;
+      char value_pt2 = d[i] & 0xff;
+      char value = (d[i] >> 3) & 0xff;
+      (*rgbIplImg)->imageData[3*i+0] = (char)value_pt1;
+      (*rgbIplImg)->imageData[3*i+1] = (char)value_pt2;
+      (*rgbIplImg)->imageData[3*i+2] = (char)value;
+    }
   }
   return true;
 }
