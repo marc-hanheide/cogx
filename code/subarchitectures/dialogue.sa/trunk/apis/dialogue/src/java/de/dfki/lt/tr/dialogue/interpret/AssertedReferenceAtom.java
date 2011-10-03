@@ -3,6 +3,7 @@ package de.dfki.lt.tr.dialogue.interpret;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.infer.abducer.lang.Atom;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
@@ -15,18 +16,18 @@ implements InterpretableAtom {
 
 	public static final String predsym_IS_REFERENCE = "is_reference";
 
-	private final Term nominalTerm;
+	private final String nominal;
 	private final Term referentTerm;
 	private final Term epstTerm;
 
-	private AssertedReferenceAtom(Term nominalTerm, Term referentTerm, Term epstTerm) {
-		this.nominalTerm = nominalTerm;
+	private AssertedReferenceAtom(String nominal, Term referentTerm, Term epstTerm) {
+		this.nominal = nominal;
 		this.referentTerm = referentTerm;
 		this.epstTerm = epstTerm;
 	}
 
-	public Term getNominalTerm() {
-		return nominalTerm;
+	public String getNominal() {
+		return nominal;
 	}
 
 	public Term getReferentTerm() {
@@ -39,7 +40,7 @@ implements InterpretableAtom {
 
 	public static AssertedReferenceAtom newAssertedReferenceAtom(String nominal, dFormula referent, EpistemicStatus epst) {
 		return new AssertedReferenceAtom(
-				TermAtomFactory.term(nominal),
+				nominal,
 				ConversionUtils.stateFormulaToTerm(referent),
 				ConversionUtils.epistemicStatusToTerm(epst));
 	}
@@ -49,7 +50,13 @@ implements InterpretableAtom {
 			Term nomTerm = matom.a.args.get(0);
 			Term varTerm = matom.a.args.get(1);
 			Term epstTerm = matom.a.args.get(2);
-			return new AssertedReferenceAtom(nomTerm, varTerm, epstTerm);
+			if (nomTerm instanceof FunctionTerm) {
+				String nominal = ((FunctionTerm) nomTerm).functor;
+				return new AssertedReferenceAtom(nominal, varTerm, epstTerm);
+			}
+			else {
+				return null;
+			}
 		}
 		else {
 			return null;
@@ -62,7 +69,7 @@ implements InterpretableAtom {
 		m.add(Modality.Understanding);
 
 		List<Term> args = new LinkedList<Term>();
-		args.add(nominalTerm);
+		args.add(TermAtomFactory.term(nominal));
 		args.add(referentTerm);
 		args.add(epstTerm);
 
