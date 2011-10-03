@@ -1,0 +1,65 @@
+diff --speed-large-files --minimal -ru OpenCV-2.2.0.orig/cvconfig.h.cmake OpenCV-2.2.0/cvconfig.h.cmake
+--- OpenCV-2.2.0.orig/cvconfig.h.cmake	2010-12-05 03:35:23.000000000 +0000
++++ OpenCV-2.2.0/cvconfig.h.cmake	2011-10-03 11:58:08.302708547 +0100
+@@ -19,6 +19,9 @@
+ /* V4L2 capturing support */
+ #cmakedefine HAVE_CAMV4L2
+ 
++/* V4L/V4L2 capturing support via libv4l */
++#cmakedefine HAVE_LIBV4L
++
+ /* Carbon windowing environment */
+ #cmakedefine HAVE_CARBON
+ 
+diff --speed-large-files --minimal -ru OpenCV-2.2.0.orig/modules/highgui/src/cap.cpp OpenCV-2.2.0/modules/highgui/src/cap.cpp
+--- OpenCV-2.2.0.orig/modules/highgui/src/cap.cpp	2010-12-05 03:35:24.000000000 +0000
++++ OpenCV-2.2.0/modules/highgui/src/cap.cpp	2011-10-03 12:01:57.023842689 +0100
+@@ -171,7 +171,7 @@
+             if (capture)
+                 return capture;
+         #endif
+-        #if defined (HAVE_CAMV4L) || defined (HAVE_CAMV4L2)
++        #if defined HAVE_LIBV4L || (defined (HAVE_CAMV4L) && defined (HAVE_CAMV4L2))
+             capture = cvCreateCameraCapture_V4L (index);
+             if (capture)
+                 return capture;
+Only in OpenCV-2.2.0/modules/highgui/src: cap.cpp.orig
+Only in OpenCV-2.2.0/modules/highgui/src: cap.cpp.rej
+diff --speed-large-files --minimal -ru OpenCV-2.2.0.orig/modules/highgui/src/cap_libv4l.cpp OpenCV-2.2.0/modules/highgui/src/cap_libv4l.cpp
+--- OpenCV-2.2.0.orig/modules/highgui/src/cap_libv4l.cpp	2010-12-05 03:35:25.000000000 +0000
++++ OpenCV-2.2.0/modules/highgui/src/cap_libv4l.cpp	2011-10-03 11:58:08.302708547 +0100
+@@ -224,7 +224,7 @@
+ #include "highgui.h"
+ #include "precomp.hpp"
+ 
+-#if !defined WIN32 && defined HAVE_CAMV4L && defined HAVE_CAMV4L2
++#if !defined WIN32 && defined HAVE_LIBV4L
+ 
+ #define CLEAR(x) memset (&(x), 0, sizeof (x))
+ 
+@@ -241,8 +241,12 @@
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ 
++#ifdef HAVE_CAMV4L
+ #include <linux/videodev.h>
++#endif
++#ifdef HAVE_CAMV4L2
+ #include <linux/videodev2.h>
++#endif
+ 
+ #include <libv4l1.h>
+ #include <libv4l2.h>
+diff --speed-large-files --minimal -ru OpenCV-2.2.0.orig/modules/highgui/src/cap_v4l.cpp OpenCV-2.2.0/modules/highgui/src/cap_v4l.cpp
+--- OpenCV-2.2.0.orig/modules/highgui/src/cap_v4l.cpp	2010-12-05 03:35:25.000000000 +0000
++++ OpenCV-2.2.0/modules/highgui/src/cap_v4l.cpp	2011-10-03 11:56:30.410223095 +0100
+@@ -214,7 +214,9 @@
+ #include <sys/types.h>
+ #include <sys/mman.h>
+ 
++#ifdef HAVE_CAMV4L
+ #include <linux/videodev.h>
++#endif
+ 
+ #include <string.h>
+ #include <stdlib.h>
