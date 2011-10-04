@@ -1,6 +1,6 @@
 
 ### the default goal
-SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 
 ### the plannig domain to use
 SETVAR planning_domain=dora-interactive.pddl
@@ -44,16 +44,18 @@ SETVAR plyroot_=./instantiations/ply-models
 SETVAR or3d_sift_files=<multiline>
    %(siftroot_)/frosties2.sift
    %(siftroot_)/re_book.sift
+   %(siftroot_)/table.sift
 </multiline>
 
 ### ply files
 SETVAR or3d_ply_files=<multiline>
    %(plyroot_)/frosties2.ply
    %(plyroot_)/re_book.ply
+   %(plyroot_)/table.ply
 </multiline>
 
 ### object labels
-SETVAR or3d_labels=cerealbox book
+SETVAR or3d_labels=cerealbox book table
 
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
@@ -121,7 +123,7 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # Categorical.SA ############################################################
 
-####INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
+INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 
 
 # Vision ######################################################################
@@ -134,6 +136,12 @@ CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(visi
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+VARDEFAULT fake_tables=<multiline>
+   --geometry-hack 
+   --pos-table "2.5, 1.0, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "1.0, -1.0, 8.0, 8.0"
+</multiline>
+
+JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
 
 CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
