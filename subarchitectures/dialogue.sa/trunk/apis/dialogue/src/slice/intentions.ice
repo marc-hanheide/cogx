@@ -12,7 +12,7 @@ module slice {
 module intentions {
 
 dictionary<string, string> StringContentMap;
-dictionary<string, cast::cdl::WorkingMemoryPointer> PointerContentMap;
+dictionary<string, cast::cdl::WorkingMemoryAddress> AddressContentMap;
 
 enum ProcessingState {
 	READY,
@@ -24,7 +24,7 @@ enum ProcessingState {
 
 class BaseIntention {
 	StringContentMap stringContent;
-	PointerContentMap pointerContent;
+	AddressContentMap addressContent;
 };
 
 class InterpretedIntention extends BaseIntention {
