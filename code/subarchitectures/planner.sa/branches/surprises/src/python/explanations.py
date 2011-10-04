@@ -20,8 +20,17 @@ def str2cond(fstr, scope):
 def str2eff(fstr, scope=None):
     return pddl.parser.Parser.parse_as([fstr], pddl.effects.Effect, scope)
 
+def replace_or_append(elements, elmt):
+    old = [e for e in elements if e.name == elmt.name]
+    for e in old:
+        print "replacing %s with altered version for explanation processing" % e.name
+        elements.remove(e)
+        asads
+    elements.append(elmt)
+
 def add_explanation_rules(expl_rules_fn):
     global expl_domain
+    expl_domain.alternatives = {}
     p = pddl.parser.Parser.parse_file(expl_rules_fn)
     it = iter(p.root)
     it.get("rules")
@@ -35,11 +44,11 @@ def add_explanation_rules(expl_rules_fn):
         type = j.get("terminal").token
         if type == ":action":
             a = pddl.mapl.MAPLAction.parse(j.reset(), expl_domain)
-            a.name = "_rule_" + a.name
             a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
-            expl_domain.actions.append(a)
+            replace_or_append(expl_domain.actions, a)
         elif type == ":init-rule":
-            expl_domain.init_rules.append(pddl.InitRule.parse(j.reset(), expl_domain))
+            a = pddl.mapl.InitRule.parse(j.reset(), expl_domain) 
+            replace_or_append(expl_domain.init_rules, a)
         else:
             raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
 
@@ -68,10 +77,12 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     expl_domain.name += "-explanations"
     expl_domain.axioms = [a.copy(newdomain=expl_domain) for a in domain_orig.axioms]
     print [a.predicate.name for a in domain_orig.axioms]
+
     dtypes = expl_domain.types
     # add additional types
     for t in ["action", "phase"]:
         dtypes[t] = pddl.Type(t, [pddl.builtin.t_object])
+
     # add additional functions
     action_t = dtypes["action"]
     phase_t = dtypes["phase"]
@@ -79,6 +90,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     phase_f = pddl.predicates.Function("phase", [], phase_t)
     for f in [enabled_f, phase_f]:
         expl_domain.functions.add(f)
+
     # add objects from problem to domain as constants
     for obj in problem.objects:
         expl_domain.add_constant(obj)
@@ -86,10 +98,13 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         expl_domain.add_constant(types.TypedObject(phase, phase_t))
     ar_condition = str2cond("(= (phase) apply_rules)", expl_domain)
     se_condition = str2cond("(= (phase) simulate_execution)", expl_domain)
+
+    # add rules for generating alternative initial states
+    add_explanation_rules(expl_rules_fn)
+
    # extract actions from old plan
     last_action = None
     i = 0
-
     for n in last_plan:
         # iterate through plan, create action constants to enfore simulated re-execution during monitoring
         a = n.action
@@ -99,6 +114,10 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             #print "virtual action:", w.write_action(a)  
             expl_domain.add_action(a)
             continue
+        try:
+            a = expl_domain.get_action(a.name)  # look for alternative in expl_domain
+        except KeyError:
+            pass
         a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
         if last_action:
             last_action.extend_effect(enabled_last)
@@ -109,9 +128,6 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             break
         i += 1
     last_action.extend_effect(str2eff("(assign (phase) achieve_goal)", expl_domain))
-
-    add_explanation_rules(expl_rules_fn)
-
     # add action to switch phases
     switch_action = pddl.parser.Parser.parse_as(SWITCH_OP.splitlines(), pddl.Action, expl_domain)
     expl_domain.add_action(switch_action)
