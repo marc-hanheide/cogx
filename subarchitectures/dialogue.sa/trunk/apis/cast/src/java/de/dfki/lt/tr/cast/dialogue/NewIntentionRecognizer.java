@@ -13,14 +13,24 @@ import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.ReferenceGatherer;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
+import de.dfki.lt.tr.dialogue.ref.BasicReferenceResolutionRequestExtractor;
+import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequestExtractor;
+import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
+import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
+import de.dfki.lt.tr.dialogue.time.TimeInterval;
+import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
+import de.dfki.lt.tr.infer.abducer.lang.DisjointDeclaration;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
@@ -38,10 +48,14 @@ import de.dfki.lt.tr.infer.abducer.proof.pruners.LengthPruner;
 import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 public class NewIntentionRecognizer
 extends AbstractInterpretationManager<InterpretedUserIntention> {
@@ -62,9 +76,14 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 	private final Map<String, SelectedLogicalForm> nomToLFMap;
 
+	private final ReferenceResolutionRequestExtractor rrExtractor;
+	private final Map<WorkingMemoryAddress, ReferenceGatherer> gatherers;
+
 	public NewIntentionRecognizer() {
 		super();
 		nomToLFMap = new HashMap<String, SelectedLogicalForm>();
+		rrExtractor = new BasicReferenceResolutionRequestExtractor(getLogger());
+		gatherers = new HashMap<WorkingMemoryAddress, ReferenceGatherer>();
 	}
 
 	@Override
@@ -174,6 +193,28 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 						});
 					}
 				});
+
+		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+				ReferenceResolutionResult.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						try {
+							getLogger().info("got a ReferenceResolutionResult");
+							ReferenceResolutionResult result = getMemoryEntry(_wmc.address, ReferenceResolutionResult.class);
+							ReferenceGatherer gatherer = gatherers.get(result.requestAddress);
+							if (gatherer != null) {
+								gatherer.addResult(result);
+							}
+							else {
+								getLogger().error("gatherer is null!");
+							}
+						}
+						catch (SubarchitectureComponentException ex) {
+							logException(ex);
+						}
+					}
+				});
 	}
 
 	public class ExpandLFAssertionSolver extends AbstractAssertionSolver<FromLFAtom> {
@@ -249,7 +290,94 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 		@Override
 		public ContextUpdate solveFromParsed(AssertedReferenceAtom a) {
-			throw new UnsupportedOperationException("Not supported yet.");
+			String nominal = a.getNominal();
+			if (nominal == null) {
+				getLogger().error("nominal undetermined");
+				return null;
+			}
+
+			SelectedLogicalForm slf = findSelectedLogicalFormByContainedNominal(nominal);
+			if (slf == null) {
+				getLogger().error("no LF containing " + nominal + "found");
+				return null;
+			}
+
+			ReferenceResolutionRequest rr = rrExtractor.extractReferenceResolutionRequest(slf.lform, nominal, new TimeInterval(slf.ival));
+			if (rr == null) {
+				getLogger().error("extracted ReferenceResolutionRequest is null");
+				return null;
+			}
+
+			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+			ReferenceGatherer gatherer = new ReferenceGatherer(wma, rr);
+			gatherers.put(wma, gatherer);
+
+			ReferenceResolutionResult result = null;
+
+			try {
+				getLogger().info("adding a ReferenceResolutionRequest to the WM: " + ReferenceUtils.resolutionRequestToString(rr));
+				addToWorkingMemory(wma, rr);
+				
+				// TODO register this as added?
+				result = gatherer.getResultFuture().get();
+			}
+			catch (SubarchitectureComponentException ex) {
+				logException(ex);
+			}
+			catch (InterruptedException ex) {
+				logException(ex);
+			}
+			catch (ExecutionException ex) {
+				logException(ex);
+			}
+
+			if (result != null) {
+				final ReferenceResolutionResult refs = result;
+				getLogger().info("got a reference resolution result:\n" + ReferenceUtils.resolutionResultToString(result));
+				return new ContextUpdate() {
+
+					@Override
+					public void doUpdate(AbductionEnginePrx engine) {
+						getLogger().info("updating reference resolution");
+
+						engine.clearAssumabilityFunction("reference_resolution");
+						Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
+
+						String nom = refs.nom;
+						for (EpistemicReferenceHypothesis hypo : refs.hypos) {
+
+							ModalisedAtom rma = AssertedReferenceAtom.newAssertedReferenceAtom(nom, hypo.referent, hypo.epst).toModalisedAtom();
+
+							getLogger().debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
+							engine.addAssumable("reference_resolution", rma, (float) -Math.log(hypo.score));
+
+							Set<ModalisedAtom> dj = disj.get(nom);
+							if (dj != null) {
+								dj.add(rma);
+							}
+							else {
+								dj = new HashSet<ModalisedAtom>();
+								dj.add(rma);
+							}
+							disj.put(nom, dj);
+						}
+
+						for (String n : disj.keySet()) {
+							Set<ModalisedAtom> dj = disj.get(n);
+							DisjointDeclaration dd = new DisjointDeclaration();
+							dd.atoms = new ArrayList<ModalisedAtom>(dj);
+							getLogger().debug("adding a disjoint declaration for " + n + " (" + dj.size() + " entries)");
+							engine.addDisjointDeclaration(dd);
+						}
+						getLogger().info("done context update for reference resolution");
+					}
+
+				};
+			}
+			else {
+				getLogger().error("result was null");
+				return null;
+			}
 		}
 
 	};
@@ -273,6 +401,17 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 	protected WorkingMemoryAddress newWorkingMemoryAddress() {
 		return new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+	}
+
+	protected SelectedLogicalForm findSelectedLogicalFormByContainedNominal(String nominal) {
+		SelectedLogicalForm result = null;
+		for (SelectedLogicalForm slf : nomToLFMap.values()) {
+			LogicalForm lf = slf.lform;
+			if (LFUtils.lfHasNomvar(lf, nominal)) {
+				return slf;
+			}
+		}
+		return result;
 	}
 
 }
