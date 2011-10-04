@@ -67,7 +67,7 @@ VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 SETVAR spatial_min_door_width=0.8
 SETVAR spatial_max_door_width=1.2
 
-SETVAR playerhost=localhost
+SETVAR playerhost= %(host:localhost)
 SETVAR ptz_server=ptz.server
 
 SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
@@ -79,8 +79,10 @@ SETVAR no_placeholders=--no-placeholders
 
 HOST localhost
 
+SETVAR displaysrv_param_redirect=--redirect-to-host %(host:localhost)
+
 # Visualization.SA ##########################################################
-INCLUDE includes/visualization.sa/v11n-base.cast
+INCLUDE includes/visualization.sa/v11n-base-p.cast
 
 # Spatial.SA ################################################################
 COMPONENT CPP ptz.server PlayerPTZServer --player-host %(playerhost) --ptz-device 0
