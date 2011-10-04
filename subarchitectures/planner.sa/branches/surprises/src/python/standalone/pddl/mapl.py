@@ -333,7 +333,12 @@ class MAPLAction(actions.Action):
         it.get(":action")
         name = it.get().token.string
 
-        it.get(":agent")
+        try:
+            it.get(":agent")
+        except parser.UnexpectedTokenError:
+            ## not a mapl action?
+            return actions.Action.parse(it.reset(), scope)
+            
         agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
 
         next = it.get()
