@@ -12,7 +12,6 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import castutils.castextensions.IceXMLSerializer;
-
 import edu.ksu.cis.bnj.ver3.core.BeliefNetwork;
 import edu.ksu.cis.bnj.ver3.core.BeliefNode;
 import edu.ksu.cis.bnj.ver3.core.CPF;
@@ -38,23 +37,23 @@ public class PersonReasoningEngine {
 
 	public static final String NODE_PERSON_EXISTS_IN_ROOM = "person_exists";
 
-	private static final double OBS_MODEL_FALSE_POS_PROB = 0.1;
-	private static final double OBS_MODEL_TRUE_POS_PROB = 0.6;
+	private static final double OBS_MODEL_FALSE_POS_PROB = 0.001;
+	private static final double OBS_MODEL_TRUE_POS_PROB = 0.7;
 
-	private static final double EXISTS_AT_PLACE_TRUE = 0.99;
+	private static final double EXISTS_AT_PLACE_TRUE = 1.0;
 
 	private static final double PRIOR_PERSON_EXISTS_IN_ROOM = 0.5;
 
 	public static void main(String[] argv) {
 		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
 		Collection<Boolean> placeObs;
-		placeObs = Arrays.asList();
+		placeObs = Arrays.asList(false,false,false);
 		allObs.put("p1", placeObs);
-		placeObs = Arrays.asList();
+		placeObs = Arrays.asList(false, false, false);
 		allObs.put("p2", placeObs);
-		placeObs = Arrays.asList();
+		placeObs = Arrays.asList(false, false, false);
 		allObs.put("p3", placeObs);
-		placeObs = Arrays.asList();
+		placeObs = Arrays.asList(false, false, false);
 		allObs.put("p4", placeObs);
 
 		PersonReasoningEngine pre = new PersonReasoningEngine();
