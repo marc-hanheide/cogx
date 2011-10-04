@@ -469,7 +469,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
       obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
   obj->pose = pose;
   obj->componentID = getComponentID();
-
+	obj->affordance="";
   if(newModel){
 		addToWorkingMemory(rec_entry.visualObjectID, obj);
 		addTrackerCommand(ADDMODEL, rec_entry.visualObjectID);
