@@ -38,6 +38,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import execution.slice.Action;
+import execution.slice.actions.PointToObject;
 import execution.slice.actions.george.yr3.AnalyzeProtoObject;
 import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ActionMonitor;
@@ -92,7 +93,9 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private JRadioButton m_focusViewConeAction;
 	private JRadioButton m_analyseProtoObjectAction;
+	private JRadioButton m_pointTpObjectAction;
 
+	
 	// private JRadioButton m_askForColourAction;
 	// private JRadioButton m_askForShapeAction;
 	// private JRadioButton m_askForIdentityAction;
@@ -228,6 +231,8 @@ public class ActionInterfaceFrame extends JFrame {
 
 			m_focusViewConeAction = new JRadioButton("focus viewcone");
 			m_analyseProtoObjectAction = new JRadioButton("analyse protoobject");
+			m_pointTpObjectAction = new JRadioButton("point to visualobject");
+
 			// m_askForColourAction = new JRadioButton("ask for colour");
 			// m_askForShapeAction = new JRadioButton("ask for shape");
 			// m_askForIdentityAction = new JRadioButton("ask for identity");
@@ -243,7 +248,8 @@ public class ActionInterfaceFrame extends JFrame {
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_focusViewConeAction);
 			actionGroup.add(m_analyseProtoObjectAction);
-
+			actionGroup.add(m_pointTpObjectAction);
+			
 			// actionGroup.add(m_learnColourAction);
 			// actionGroup.add(m_learnShapeAction);
 			// actionGroup.add(m_learnIdentityAction);
@@ -263,7 +269,8 @@ public class ActionInterfaceFrame extends JFrame {
 
 			m_beliefsActionPanel.add(m_focusViewConeAction, null);
 			m_beliefsActionPanel.add(m_analyseProtoObjectAction, null);
-
+			m_beliefsActionPanel.add(m_pointTpObjectAction, null);
+			
 			// m_beliefsActionPanel.add(m_learnColourAction, null);
 			// m_beliefsActionPanel.add(m_learnShapeAction, null);
 			// m_beliefsActionPanel.add(m_learnIdentityAction, null);
@@ -416,6 +423,9 @@ public class ActionInterfaceFrame extends JFrame {
 			else if (m_analyseProtoObjectAction.isSelected()) {
 				analyseProtoObject();
 			}
+			else if (m_pointTpObjectAction.isSelected()) {
+				pointToObject();
+			}
 			// if (m_learnColourAction.isSelected()) {
 			// learnColour();
 			// } else if (m_learnShapeAction.isSelected()) {
@@ -564,6 +574,21 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
+
+	private void pointToObject() throws CASTException {
+
+		// TODO assume for now that this is a visualobject belief
+		String beliefID = getSelectedBeliefID();
+
+		if (beliefID != null) {
+			println("go pointy");
+			m_exeMan.executeSingleBeliefAction(new WorkingMemoryAddress(
+					beliefID, "binder"), new MonitorPanel(),
+					PointToObject.class);
+		}
+	}
+
+	
 	private void askForShape() throws CASTException {
 		String beliefID = getSelectedBeliefID();
 		if (beliefID != null) {
@@ -874,6 +899,7 @@ public class ActionInterfaceFrame extends JFrame {
 	}
 
 	public void addBelief(WorkingMemoryAddress _address, dBelief _belief) {
+		try {
 		println(_belief.type);
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, _belief);
@@ -885,6 +911,10 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 		m_beliefTableModel.addRow(new Object[] { _address.id, _belief.type });
 		pack();
+		}
+		catch(ClassCastException e) {
+			m_exeMan.logException("can't collect this type of belief",e);
+		}
 
 	}
 
