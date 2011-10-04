@@ -406,7 +406,7 @@ class CASTTask(object):
         last_plan = self.plan_history[-1].topological_sort()
         endstate = self.state.state.copy()
         for a in last_plan:
-            if a.status == plans.ActionStatusEnum.EXECUTED:
+            if a.status == plans.ActionStatusEnum.EXECUTED and not a.is_virtual():
                 for f in a.effects:
                     endstate.set(f)
         explanations.handle_failure(last_plan, self.state.state.problem, self.init_state, endstate, self.expl_rules_fn, self.cp_task)

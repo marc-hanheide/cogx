@@ -144,7 +144,7 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
 
     relevant = set()
     for n in last_plan:
-        if n.status != plans.ActionStatusEnum.EXECUTABLE:
+        if n.status != plans.ActionStatusEnum.EXECUTABLE and not n.is_virtual():
             relevant |= n.effects
 
     gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
