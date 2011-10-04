@@ -101,7 +101,7 @@ def build_operator_for_ground_action(i, action, args):
     return new_op, enabled_eff
 
 def build_explanation_domain(last_plan, problem, expl_rules_fn):
-    global se_condition, expl_domain
+    global se_condition, expl_domain, commitments
     domain_orig = problem.domain
     expl_domain = domain_orig.copy_skeleton()
     expl_domain.domain_orig = domain_orig
@@ -133,6 +133,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     # add rules for generating alternative initial states
     add_explanation_rules(expl_rules_fn)
 
+    commitments = set()
    # extract actions from old plan
     last_action = None
     i = 0
@@ -142,6 +143,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         if isinstance(a, plans.DummyAction):
             continue
         if n.is_virtual():
+            for eff in n.effects:
+                if eff.svar.modality == pddl.mapl.commit:
+                    commitments.add(pddl.state.Fact(eff.svar.as_modality(pddl.mapl.committed), pddl.TRUE))
             #print "virtual action:", w.write_action(a)  
             expl_domain.add_action(a)
             continue
@@ -180,6 +184,7 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
 
     gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
     gfacts += [f.to_condition().negate() for f in relevant if f.svar not in observed_state]
+    gfacts += [f.to_condition() for f in commitments]
     goal = pddl.Conjunction(gfacts)
     #goal = pddl.Conjunction([])  # TEST
     if not isinstance(goal, pddl.Conjunction):
