@@ -12,6 +12,7 @@
 (:action unknown-container-in-room
  :parameters (?r - room ?cont - visualobject)
  :precondition (and 
+                    (not (started))
     (= (label ?cont) container))
  :effect (and 
      (assign (related-to ?cont ) ?r) (assign (relation ?cont ) in)
@@ -19,9 +20,12 @@
 )
 
 (:action object_possibly_in_container
- :parameters (?o ?cont - visualobject ?r - room)
+ :parameters (?o ?cont - visualobject ?l - label ?r - room)
  :precondition (and (= (label ?cont) container) 
-     (= (related-to ?cont) ?r) (= (relation ?cont ) in)
+                    (= (label ?o) ?l)
+                    (poss (obj_exists ?l in ?r) true)
+                    (= (related-to ?cont) ?r) (= (relation ?cont ) in)
+                    (not (started))
     )
  :effect (and 
      (assign (related-to ?o) ?cont) (assign (relation ?o) in)
