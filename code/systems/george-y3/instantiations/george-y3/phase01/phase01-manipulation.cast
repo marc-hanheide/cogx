@@ -4,13 +4,20 @@
 # Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
 # If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
 # in a .hconf file will be used instead of host addresses defined here.
-# HOSTNAME  localhost      192.168.33.101
+
+# Default settings
 HOSTNAME  Main           localhost
-#HOSTNAME  PlayerHost     192.168.56.3
-# HOSTNAME  PlayerHost     cca-0838
 HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
+
+# Nick's settings
+# HOSTNAME  localhost      192.168.56.1
+# HOSTNAME  Main           localhost
+# HOSTNAME  PlayerHost     192.168.56.3
+# HOSTNAME  PeekabotHost   [Main]
+# HOSTNAME  DisplayHost    [Main]
+
 
 HOST     [Main]
 
@@ -48,13 +55,13 @@ INCLUDE includes/planner.sa/planner-george.cast
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
 #JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
-# JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
+JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
 JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
 JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
 
 INCLUDE includes/motivation.sa/motivation.cast
-INCLUDE includes/motivation.sa/motivation-goals-george.cast
+# INCLUDE includes/motivation.sa/motivation-goals-george.cast
 
 
 # visualization ##########################################################
@@ -80,3 +87,5 @@ CPP MG manipulation.playerArmBridge PlayerArmBridge --log
 # with "--testGUI" you can try out the different commands
 JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/george-y3/calibration/example-arm-pose.xml" --armName "simulation" #--testGUI
 CPP MG armManager ArmManager
+# This compenent creates commands for the ArmManager from the planner
+JAVA MG exe.manipulation manipulation.execution.george.ManipulationActionInterface --log
