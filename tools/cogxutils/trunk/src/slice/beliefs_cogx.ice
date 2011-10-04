@@ -11,16 +11,20 @@ module cogx {
 module mln {
 
 module slice {
-sequence<string> TypeSeq;
-sequence<string> IdSeq;
-sequence<string> FactSeq;
-sequence<double> FactProbSeq;
+
+struct MLNFact {
+	string type;
+	string estatus;
+	string key;
+	string id;
+	string atom;
+	double prob;
+};
+
+sequence<MLNFact> MLNFactSeq;
 
 class MLNState {
-	TypeSeq types;
-	IdSeq ids;
-	FactSeq facts;
-	FactProbSeq probs;
+	MLNFactSeq facts;
 };
 };
 };
