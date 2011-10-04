@@ -335,7 +335,9 @@ class CCastControlWnd(QtGui.QMainWindow):
                 comps = coff; cond = "not m.component in"
                 extra = ["''"]
             # New log4j form for component id: 'SA.ID'; the old form was 'ID'.
-            comps = extra + [ "'%s.%s'" % (c.subarch, c.cid) for c in comps ]
+            comps = extra + [
+                "'%s.%s'" % (c.subarch, c.cid) for c in comps ] + [
+                    "'%s.%s.main'" % (c.subarch, c.cid) for c in comps ]
             comps = ",".join(comps)
             if flt != "": flt = "(" + flt + ") and "
             flt = flt + "(" + cond + " [" + comps + "])"
