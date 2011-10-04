@@ -61,7 +61,7 @@ void ArmManager::start()
     
 //  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::DELETE),
 //    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveDeletedObject));
-	 addChangeFilter(createGlobalTypeFilter<ArmMovementTask>(cdl::ADD),
+	addChangeFilter(createGlobalTypeFilter<ArmMovementTask>(cdl::ADD),
     new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveNewCommand));
 	    
   addChangeFilter(createGlobalTypeFilter<FarArmMovementCommand>(cdl::OVERWRITE),
@@ -95,22 +95,53 @@ void ArmManager::runComponent()
     {
       cdl::WorkingMemoryAddress addr;
       
-      armAction action = m_actionQueue.front();
+      addr = m_actionQueue.front();
       m_actionQueue.pop();
       
-      switch (action.type) {
+      ArmMovementTaskPtr task;
+	  	try {
+				task = getMemoryEntry<ArmMovementTask>(addr);
+  		}
+  		catch (DoesNotExistOnWMException e) {
+				log("WARNING: the arm movement task entry ID %s was removed before it could be processed.", addr.id.c_str());
+				exit;
+  		}
+      
+      switch (task->taskType) {
       	case POINTOBJ0:
-      	  addr = action.objAddr;
-      	  m_pointing_now = pointAtObject(addr);
 //      	  m_pointing_now = addFarArmMovementCommand(addr);
+      	  m_pointing_now = pointAtObject(task->objPointerSeq[0]->address);
+      	  
+      	  if(m_pointing_now)
+      	  	task->status = MCSUCCEEDED;
+      	  else
+      	  	task->status = MCFAILED;
+      	  
       	  break;
       	case RETRACTARM:
-      	  if(m_pointing_now)
-      	  	m_pointing_now = addMoveToHomeCommand();
+ /*     	  if(!m_pointing_now) {
+    	  		task->status = MCFAILED;
+      	  	break;
+      	  } */
+      	  if(addMoveToHomeCommand()) {
+      	  	m_pointing_now = false;
+      	  	task->status = MCSUCCEEDED;
+      	  } else
+      	  	task->status = MCFAILED;
+  				
       	  break;
       	default:
       	  error("Arm command not known");
-      };
+      	  task->status = MCFAILED;
+      }
+      
+      try {
+	  		overwriteWorkingMemory(addr, task);
+  		}
+  		catch (DoesNotExistOnWMException e) {
+				log("WARNING: could not overwrite WM entry ID '%s'.", addr.id.c_str());
+				exit;
+  		}
     }
   }
 }
@@ -125,7 +156,7 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
 	
 	double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
 	double fact = (dist - POINTING_OFFSET)/dist;
-	log("Calculation pointing pose x:%f y:%f dist: %f fact:%f xp:%f yp:%f",
+	debug("Calculation pointing pose x:%f y:%f dist: %f fact:%f xp:%f yp:%f",
 		pointingPose.pos.x, pointingPose.pos.y, dist, fact,
 		pointingPose.pos.x*fact, pointingPose.pos.y*fact);
 	pointingPose.pos.x*=fact;
@@ -149,23 +180,11 @@ bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
 void ArmManager::receiveNewCommand(const cdl::WorkingMemoryChange &_wmc)
 {	
 		log("received a new ArmMovementTask");
-		ArmMovementTaskPtr task;
-	  
-	  try {
-			task = getMemoryEntry<ArmMovementTask>(_wmc.address);
-  	}
-  	catch (DoesNotExistOnWMException e) {
-			log("WARNING: the arm movement task entry ID %s was removed before it could be processed.", _wmc.address.id.c_str());
-			return;
-  	}
+		
   	
 		IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
-		armAction action;
-		action.type = task->taskType;
-			
-	  if(!task->objPointerSeq.empty())
-			action.objAddr = task->objPointerSeq[0]->address; 	
-  	m_actionQueue.push(action);
+
+  	m_actionQueue.push(_wmc.address);
     m_queueMonitor.notify();
     
 //	addFarArmMovementCommand(_wmc.address);

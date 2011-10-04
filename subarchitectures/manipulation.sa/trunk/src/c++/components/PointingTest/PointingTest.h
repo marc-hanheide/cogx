@@ -88,6 +88,7 @@ private:
   bool addMoveArmToPose(cogx::Math::Pose3 pose);
   
   void receiveNewObject(const cdl::WorkingMemoryChange &_wmc);
+  void receiveMoveConfirm(const cdl::WorkingMemoryChange &_wmc);
   void receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc);
   void overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc);
   void overwriteMoveToHomeCommand(const cdl::WorkingMemoryChange & _wmc);

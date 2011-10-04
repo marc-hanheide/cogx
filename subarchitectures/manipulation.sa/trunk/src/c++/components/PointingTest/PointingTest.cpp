@@ -58,6 +58,9 @@ void PointingTest::start()
 debug("setting filters for VisualObject");
   addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::ADD),
     new MemberFunctionChangeReceiver<PointingTest>(this, &PointingTest::receiveNewObject));
+    
+  addChangeFilter(createGlobalTypeFilter<ArmMovementTask>(cdl::OVERWRITE),
+    new MemberFunctionChangeReceiver<PointingTest>(this, &PointingTest::receiveMoveConfirm));  
   
 /*    
   addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::DELETE),
@@ -126,7 +129,7 @@ Pose3 PointingTest::pointingPose(const Pose3 objPose)
 	
 	double dist = sqrt(sqr(pointingPose.pos.x) + sqr(pointingPose.pos.y));
 	double fact = (dist - POINTING_OFFSET)/dist;
-	log("Calculation pointing pose x:%f y:%f dist: %f fact:%f xp:%f yp:%f",
+	debug("Calculation pointing pose x:%f y:%f dist: %f fact:%f xp:%f yp:%f",
 		pointingPose.pos.x, pointingPose.pos.y, dist, fact,
 		pointingPose.pos.x*fact, pointingPose.pos.y*fact);
 	pointingPose.pos.x*=fact;
@@ -146,6 +149,32 @@ bool PointingTest::pointAtObject(cdl::WorkingMemoryAddress addr)
 	return addMoveArmToPose(pointingPose(objPose));
 		
 }
+
+
+void PointingTest::receiveMoveConfirm(const cdl::WorkingMemoryChange &_wmc)
+{
+	ArmMovementTaskPtr task;
+	try {
+				task = getMemoryEntry<ArmMovementTask>(_wmc.address);
+  		}
+  		catch (DoesNotExistOnWMException e) {
+				log("WARNING: the arm movement task entry ID %s was removed before it could be processed.", _wmc.address.id.c_str());
+				return;
+  		}
+  if(task->taskType == POINTOBJ0 && task->status == MCSUCCEEDED) {  			
+  	ArmMovementTaskPtr rtask = new ArmMovementTask();
+		rtask->taskType = RETRACTARM;
+		rtask->status = MCREQUESTED;
+		
+		addToWorkingMemory(newDataID(), getSubarchitectureID(), rtask);
+	}
+	
+	if(task->status == MCSUCCEEDED) {
+		deleteFromWorkingMemory(_wmc.address);
+		debug("Manupulation task succedded");
+	}
+}
+
 
 void PointingTest::receiveNewObject(const cdl::WorkingMemoryChange &_wmc)
 {

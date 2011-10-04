@@ -9,7 +9,7 @@
 #ifndef ARM_MANAGER_H
 #define ARM_MANAGER_H
 
-#define POINTING_OFFSET 0.1
+#define POINTING_OFFSET 0.3
 
 #include <cast/architecture/ManagedComponent.hpp>
 
@@ -47,17 +47,13 @@ private:
 	
 	cdl::WorkingMemoryAddress m_pointedObjAddr;
 	
-//	enum armActionType {
-//		POINT_OBJ,
-//		RETRACT
-//	};
-	
+/*	
 	struct armAction {
 		ManipulationTaskType type;
 		cdl::WorkingMemoryAddress objAddr;
 	};
-		
-	std::queue<armAction> m_actionQueue;
+*/		
+	std::queue<cdl::WorkingMemoryAddress> m_actionQueue;
 	IceUtil::Monitor<IceUtil::Mutex> m_queueMonitor;
 
 #ifdef FEAT_VISUALIZATION
