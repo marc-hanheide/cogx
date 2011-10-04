@@ -40,7 +40,7 @@ public class PersonReasoningEngine {
 	private static final double OBS_MODEL_FALSE_POS_PROB = 0.001;
 	private static final double OBS_MODEL_TRUE_POS_PROB = 0.7;
 
-	private static final double EXISTS_AT_PLACE_TRUE = 1.0;
+	private static final double EXISTS_AT_PLACE_TRUE = 0.999;
 
 	private static final double PRIOR_PERSON_EXISTS_IN_ROOM = 0.5;
 
