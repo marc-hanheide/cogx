@@ -20,8 +20,9 @@ import eu.cogx.beliefs.slice.GroundedBelief;
  */
 public class DiscreteComaRoomTransferFunction extends ComaRoomTransferFunction {
 
-	public DiscreteComaRoomTransferFunction(ManagedComponent component) {
-		super(component);
+	public DiscreteComaRoomTransferFunction(ManagedComponent component,
+			double hasPersonProbability) {
+		super(component, hasPersonProbability);
 	}
 
 	@Override

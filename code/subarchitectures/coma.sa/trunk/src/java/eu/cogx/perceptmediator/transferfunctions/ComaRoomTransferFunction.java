@@ -32,10 +32,13 @@ public class ComaRoomTransferFunction extends
 
 	public static final String ROOM_ID = "RoomId";
 	public static final String CATEGORY_ID = "category";
-	public ComaRoomTransferFunction(ManagedComponent component) {
+	private final double hasPersonProbability;
+
+	public ComaRoomTransferFunction(ManagedComponent component,
+			double hasPersonProbability) {
 		super(component, Logger.getLogger(ComaRoomTransferFunction.class),
 				GroundedBelief.class);
-		// TODO Auto-generated constructor stub
+		this.hasPersonProbability = hasPersonProbability;
 	}
 
 	@Override
@@ -65,19 +68,19 @@ public class ComaRoomTransferFunction extends
 					"Coma room without a category yet, not mediating!");
 			return;
 		}
-//		logger.info("fill belief with coma categories");
+		// logger.info("fill belief with coma categories");
 		IndependentFormulaDistributions distr = belief.getContent();
 		FormulaDistribution fd = FormulaDistribution.create();
 		for (JointProbabilityValue jp : from.categories.massFunction) {
 			String value = ((SpatialProbabilities.StringRandomVariableValue) (jp.variableValues[0])).value;
-//			logger.info("adding " + value + " (" + jp.probability + ")");
+			// logger.info("adding " + value + " (" + jp.probability + ")");
 			fd.add(value, jp.probability);
 		}
-		//assert (fd.size() > 0);
+		// assert (fd.size() > 0);
 		distr.put(CATEGORY_ID, fd);
-		
-		FormulaDistribution fd_person=FormulaDistribution.create();
-		fd_person.add(true, 0.5);
+
+		FormulaDistribution fd_person = FormulaDistribution.create();
+		fd_person.add(true, hasPersonProbability);
 		distr.put("contains-a-person-prior", fd_person);
 	}
 

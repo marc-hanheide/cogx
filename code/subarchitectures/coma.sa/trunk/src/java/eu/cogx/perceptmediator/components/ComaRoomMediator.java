@@ -12,8 +12,15 @@ import eu.cogx.perceptmediator.transferfunctions.DiscreteComaRoomTransferFunctio
 
 public class ComaRoomMediator extends PerceptMediatorComponent {
 
-	private static final String DISCRETE_CONFIG = "--discrete";
+	public static final double DEFAULT_HAS_PERSON_PROBABILITY = 0.5;
+
+	public static final String HAS_PERSON_CONFIG = "--has-person";
+
+	public static final String DISCRETE_CONFIG = "--discrete";
+
 	private ComaRoomTransferFunction transferFunction = null;
+
+	private double hasPersonProbability;
 
 	/*
 	 * (non-Javadoc)
@@ -25,10 +32,19 @@ public class ComaRoomMediator extends PerceptMediatorComponent {
 	@Override
 	protected void configure(Map<String, String> config) {
 
+		if (config.containsKey(HAS_PERSON_CONFIG)) {
+			hasPersonProbability = Double.parseDouble(config
+					.get(HAS_PERSON_CONFIG));
+		} else {
+			hasPersonProbability = DEFAULT_HAS_PERSON_PROBABILITY;
+		}
+
 		if (config.containsKey(DISCRETE_CONFIG))
-			transferFunction = new DiscreteComaRoomTransferFunction(this);
+			transferFunction = new DiscreteComaRoomTransferFunction(this,
+					hasPersonProbability);
 		else
-			transferFunction = new ComaRoomTransferFunction(this);
+			transferFunction = new ComaRoomTransferFunction(this,
+					hasPersonProbability);
 
 		println("using " + transferFunction.getClass().getSimpleName()
 				+ " as transfer function.");
@@ -40,7 +56,8 @@ public class ComaRoomMediator extends PerceptMediatorComponent {
 	}
 
 	@Override
-	protected PerceptBindingMediator<ComaRoom, GroundedBelief> getMediator(String _toSA) {
+	protected PerceptBindingMediator<ComaRoom, GroundedBelief> getMediator(
+			String _toSA) {
 		return PerceptBindingMediator.create(this, _toSA, ComaRoom.class,
 				GroundedBelief.class, transferFunction);
 	}
