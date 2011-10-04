@@ -20,6 +20,7 @@
 
 package de.dfki.lt.tr.dialogue.interpret;
 
+import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;

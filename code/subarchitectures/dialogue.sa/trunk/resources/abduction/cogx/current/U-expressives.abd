@@ -2,28 +2,28 @@
 % ENGAGEMENT
 %-------------------------------------------------------------------------
 
-understand : event : utter(Speaker, _Hearer, Nom) <-
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, greeting),
-	int_id(Int),
+	? understand : i : intention(Nom, Int),
 	int : agent(Int, Speaker) / p(1.0),
-	int : post(Int, state(['engagement-open'|_])) / p(1.0).
+	int : string_content(Int, type, 'engagement-opening') / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : event : utter(Speaker, _Hearer, Nom) <-
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, closing),
-	int_id(Int),
+	? understand : i : intention(Nom, Int),
 	int : agent(Int, Speaker) / p(1.0),
-	int : post(Int, state(['engagement-closed'|_])) / p(1.0).
+	int : string_content(Int, type, 'engagement-closing') / p(1.0).
 
 %-------------------------------------------------------------------------
 
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, communication),
 	i : prop(Nom, thank),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state([thanked, agent(S), patient(H)])) / p(1.0).
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'thanking') / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -31,12 +31,16 @@ appreciation_marker(fine).
 appreciation_marker(right).
 appreciation_marker(cool).
 
-understand : event : utter(S, H, Nom) <-
-	i : sort(Nom, marker),
+appreciation_sort(marker).
+appreciation_sort('q-attitude').
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, Sort),
 	i : prop(Nom, Prop),
+	appreciation_sort(Sort),
 	appreciation_marker(Prop),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state([appreciated, agent(S), patient(H)])) / p(1.0).
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'appreciation') / p(1.0).
 
 %-------------------------------------------------------------------------

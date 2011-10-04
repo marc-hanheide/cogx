@@ -1,12 +1,15 @@
-package de.dfki.lt.tr.dialogue.interpret;
+package de.dfki.lt.tr.dialogue.interpret.atoms;
 
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
+import de.dfki.lt.tr.dialogue.interpret.InterpretableAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Atom;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +17,7 @@ import java.util.List;
 public class AssertedReferenceAtom
 implements InterpretableAtom {
 
-	public static final String predsym_IS_REFERENCE = "is_reference";
+	public static final String PRED_SYMBOL = "is_reference";
 
 	private final String nominal;
 	private final Term referentTerm;
@@ -46,7 +49,7 @@ implements InterpretableAtom {
 	}
 
 	public static AssertedReferenceAtom fromModalisedAtom(ModalisedAtom matom) {
-		if (matom.a.predSym.equals(predsym_IS_REFERENCE) && matom.a.args.size() == 3) {
+		if (matom.a.predSym.equals(PRED_SYMBOL) && matom.a.args.size() == 3) {
 			Term nomTerm = matom.a.args.get(0);
 			Term varTerm = matom.a.args.get(1);
 			Term epstTerm = matom.a.args.get(2);
@@ -73,7 +76,16 @@ implements InterpretableAtom {
 		args.add(referentTerm);
 		args.add(epstTerm);
 
-		return new ModalisedAtom(m, new Atom(predsym_IS_REFERENCE, args));
+		return new ModalisedAtom(m, new Atom(PRED_SYMBOL, args));
+	}
+
+	public static class Matcher implements ModalisedAtomMatcher<AssertedReferenceAtom> {
+
+		@Override
+		public AssertedReferenceAtom match(ModalisedAtom matom) {
+			return fromModalisedAtom(matom);
+		}
+
 	}
 
 }

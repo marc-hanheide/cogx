@@ -25,7 +25,7 @@ utt_head(Nom) <-
 
 % fallback goal
 % TODO: is it an appropriate one?
-generate : event : utter(robot, H, Int) <-
+generate : event : from_logical_form(robot, H, Int) <-
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, clarification) / -1.0,
 	i : feat_Modality(Nom, speech) / -1.0,
@@ -34,7 +34,7 @@ generate : event : utter(robot, H, Int) <-
 
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['error-reported'|T])),
@@ -47,7 +47,7 @@ generate : event : utter(S, H, Int) <-
 %-------------------------------------------------------------------------
 
 % the XY object is Z
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
@@ -93,7 +93,7 @@ generate : ascribe_property(Nom, UsedNom, inRoom(_C)) <-
 % @d1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^ <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ <Salient>true ^ context)  ^ <Type>(b3:thing ^ <InfoStatus>new ^ <Color>red ^ box))) 
 
 % the XY object is Z
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
@@ -130,7 +130,7 @@ expand_featlist(Nom, [shape(S) | T]) <-
 % POLAR QUESTIONS
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
@@ -165,7 +165,7 @@ maybe_add_hypo(Nom, [], question).
 % WH- QUESTIONS
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(TargetNom),
@@ -228,7 +228,7 @@ generate : object_description(Int, Nom, PrivBId) <-
 %generate : get_label(PrivBId, Label) <-
 %	bel : 
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
 	dummy_nom2(ContentNom),
 	dummy_nom3(ActorNom),
@@ -308,13 +308,13 @@ generate : complex_ex(Nom) <-
 % HACKS
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['question-answered', agent(H), about(AboutBel), feature(Feat), hypo(Hypo)])),
 	generate : feat_hypo_hack(Feat, Hypo, CannedTextList),
 	event : produce_text(CannedTextList) / -20.0.
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['question-answered', agent(H), about(AboutBel), feature(Feat)])),
 	generate : feat_hack(Feat, CannedText),
@@ -328,14 +328,14 @@ generate : feat_hack(identity, what_room_is_this).
 
 % XXX HACK XXX
 % find me a box -> what size is this
-%generate : event : utter(S, H, Int) <-
+%generate : event : from_logical_form(S, H, Int) <-
 %	utt_head(Nom),
 %	i : int : agent(Int, [S]),
 %	i : int : post(Int, state(['found' | T])),
 %	i : feat_CannedText(Nom, 'yummy_yummy_yummy!_dora_likes_sweets') / -1.0,
 %	event : produce(r, Nom) / -1.0.
 
-%generate : event : utter(S, H, Int) <-
+%generate : event : from_logical_form(S, H, Int) <-
 %	utt_head(Nom),
 %	dummy_nom2(ContentNom),
 %	dummy_nom3(TargetNom),
@@ -353,7 +353,7 @@ generate : feat_hack(identity, what_room_is_this).
 
 % XXX HACK XXX
 % bring me a box -> it is blue
-%generate : event : utter(S, H, Int) <-
+%generate : event : from_logical_form(S, H, Int) <-
 %	utt_head(Nom),
 %	dummy_nom2(ContentNom),
 %	dummy_nom3(TargetNom),
@@ -375,7 +375,7 @@ generate : feat_hack(identity, what_room_is_this).
 
 % XXX HACK XXX
 % go left -> please show me something red
-%generate : event : utter(S, H, Int) <-
+%generate : event : from_logical_form(S, H, Int) <-
 %	utt_head(Nom),
 %	dummy_nom2(ContentNom),
 %	dummy_nom3(ActorNom),
@@ -395,14 +395,14 @@ generate : feat_hack(identity, what_room_is_this).
 % ENGAGEMENT
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['engagement-open'|T])),
 	utt_head(Nom),
 	i : feat_SpeechAct(Nom, greeting) / -1.0,
 	event : produce(r, Nom) / -1.0.
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['engagement-closed'|T])),
 	utt_head(Nom),
@@ -414,7 +414,7 @@ generate : event : utter(S, H, Int) <-
 % THANKING
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['acknowledged'|T])),
 	utt_head(Nom),
@@ -422,7 +422,7 @@ generate : event : utter(S, H, Int) <-
 	i : feat_CannedText(Nom, 'ok_thanks') / -1.0,
 	event : produce(r, Nom) / -1.0.
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['thanked'|T])),
 	utt_head(Nom),
@@ -434,7 +434,7 @@ generate : event : utter(S, H, Int) <-
 % NEW OBJECT SEEN
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['new-object-announced', 'about-shared'(SharedBId)])),
 	bel : ancestor(SharBId, PrivBId, _T),
@@ -450,7 +450,7 @@ generate : event : utter(S, H, Int) <-
 tail_to_certainty([], certain).
 tail_to_certainty([certainty(C)], C).
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['verified'|T])),
 	tail_to_certainty(T, Cert),
@@ -462,7 +462,7 @@ generate : event : utter(S, H, Int) <-
 verification_certainty_to_cannedtext(certain, yes).
 verification_certainty_to_cannedtext(uncertain, probably_yes).
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['falsified'|T])),
 	tail_to_certainty(T, Cert),
@@ -474,7 +474,7 @@ generate : event : utter(S, H, Int) <-
 falsification_certainty_to_cannedtext(certain, no).
 falsification_certainty_to_cannedtext(uncertain, probably_no).
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['uncertainty-expressed'|T])),
 	utt_head(Nom),
@@ -483,7 +483,7 @@ generate : event : utter(S, H, Int) <-
 	i : feat_CannedText(Nom, 'I_am_not_sure') / -1.0,
 	event : produce(r, Nom) / -1.0.
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['knowing-disconfirmed'|T])),
 	utt_head(Nom),
@@ -497,7 +497,7 @@ generate : event : utter(S, H, Int) <-
 % NEW STUFF
 %-------------------------------------------------------------------------
 
-generate : event : utter(S, H, Int) <-
+generate : event : from_logical_form(S, H, Int) <-
 	i : int : agent(Int, [S]),
 	i : int : post(Int, state(['found-object', agent(H), class(Class)])),
 	event : produce_text([should, 'I', find, a, Class]) / -1.0.
