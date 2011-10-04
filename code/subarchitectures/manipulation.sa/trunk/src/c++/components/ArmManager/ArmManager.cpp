@@ -56,22 +56,24 @@ void ArmManager::start()
   m_repeat_arm_movement = false;
   m_pointing_now = false;
 
-  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::ADD),
-    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveNewObject));
+//  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::ADD),
+//    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveNewObject));
     
-  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::DELETE),
-    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveDeletedObject));
-    
+//  addChangeFilter(createGlobalTypeFilter<VisualObject>(cdl::DELETE),
+//    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveDeletedObject));
+	 addChangeFilter(createGlobalTypeFilter<ArmMovementTask>(cdl::ADD),
+    new MemberFunctionChangeReceiver<ArmManager>(this, &ArmManager::receiveNewCommand));
+	    
   addChangeFilter(createGlobalTypeFilter<FarArmMovementCommand>(cdl::OVERWRITE),
-	new MemberFunctionChangeReceiver<ArmManager>(this,
+		new MemberFunctionChangeReceiver<ArmManager>(this,
 		&ArmManager::overwriteFarArmMovementCommand));
 		
   addChangeFilter(createGlobalTypeFilter<MoveArmToHomePositionCommand>(cdl::OVERWRITE),
-	new MemberFunctionChangeReceiver<ArmManager>(this,
+		new MemberFunctionChangeReceiver<ArmManager>(this,
 		&ArmManager::overwriteMoveToHomeCommand));
 		
   addChangeFilter(createGlobalTypeFilter<MoveArmToPose>(cdl::OVERWRITE),
-	new MemberFunctionChangeReceiver<ArmManager>(this,
+		new MemberFunctionChangeReceiver<ArmManager>(this,
 		&ArmManager::overwriteMoveToPose));
 }
 
@@ -97,12 +99,12 @@ void ArmManager::runComponent()
       m_actionQueue.pop();
       
       switch (action.type) {
-      	case POINT_OBJ:
+      	case POINTOBJ0:
       	  addr = action.objAddr;
       	  m_pointing_now = pointAtObject(addr);
 //      	  m_pointing_now = addFarArmMovementCommand(addr);
       	  break;
-      	case RETRACT:
+      	case RETRACTARM:
       	  if(m_pointing_now)
       	  	m_pointing_now = addMoveToHomeCommand();
       	  break;
@@ -144,15 +146,25 @@ bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
 		
 }
 
-void ArmManager::receiveNewObject(const cdl::WorkingMemoryChange &_wmc)
-{
-  try {
-	log("received a new VisualObject");
-	
-	IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
-	armAction action;
-	action.type = POINT_OBJ;
-	action.objAddr = _wmc.address;
+void ArmManager::receiveNewCommand(const cdl::WorkingMemoryChange &_wmc)
+{	
+		log("received a new ArmMovementTask");
+		ArmMovementTaskPtr task;
+	  
+	  try {
+			task = getMemoryEntry<ArmMovementTask>(_wmc.address);
+  	}
+  	catch (DoesNotExistOnWMException e) {
+			log("WARNING: the arm movement task entry ID %s was removed before it could be processed.", _wmc.address.id.c_str());
+			return;
+  	}
+  	
+		IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
+		armAction action;
+		action.type = task->taskType;
+			
+	  if(!task->objPointerSeq.empty())
+			action.objAddr = task->objPointerSeq[0]->address; 	
   	m_actionQueue.push(action);
     m_queueMonitor.notify();
     
@@ -181,13 +193,10 @@ void ArmManager::receiveNewObject(const cdl::WorkingMemoryChange &_wmc)
 
 	addToWorkingMemory(newDataID(), cmd);
 */	
-	log("added movement command");
-  }
-  catch (const std::exception& e) {
-        log("exception: %s",e.what());
-  }
+		log("added movement command");
 }
 
+/*
 void ArmManager::receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc)
 {
   try {
@@ -195,7 +204,7 @@ void ArmManager::receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc)
 	
 	IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
 	armAction action;
-	action.type = RETRACT;
+	action.type = RETRACTARM;
 //	action.objAddr = _wmc.address;
   	m_actionQueue.push(action);
     m_queueMonitor.notify();
@@ -206,6 +215,7 @@ void ArmManager::receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc)
         log("exception: %s",e.what());
   }
 }
+*/
 
 bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) { //, cogx::Math::Vector3 offset){
 	
