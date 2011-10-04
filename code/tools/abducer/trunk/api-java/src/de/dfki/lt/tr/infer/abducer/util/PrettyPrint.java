@@ -56,7 +56,7 @@ public abstract class PrettyPrint {
 	 */
 	public static String termStringEscape(String s) {
 		if (s.equals("")
-			|| !s.matches("[a-z][a-zA-Z0-9]*")) {
+			|| !s.matches("[a-z][a-zA-Z0-9_]*")) {
 			return "'" + s + "'";
 		}
 		else {
@@ -171,22 +171,38 @@ public abstract class PrettyPrint {
 	 * @param proof
 	 * @return the string representation of proof
 	 */
-	 public static String proofToString(List<MarkedQuery> proof) {
-		 String s = "[";
-		 Iterator<MarkedQuery> iter = proof.iterator();
-		 if (iter.hasNext()) {
-			 s += "\n";
-		 }
-		 while (iter.hasNext()) {
-			 MarkedQuery mq = iter.next();
-			 s += markedQueryToMarkingString(mq) + ": ";
-			 s += modalisedAtomToString(mq.atom);
-			 s += iter.hasNext() ? "," : "";
-			 s += "\n";
-		 }
-		 s += "]";
-		 return s;
-	 }
+	public static String proofToString(List<MarkedQuery> proof) {
+		String s = "[";
+		Iterator<MarkedQuery> iter = proof.iterator();
+		if (iter.hasNext()) {
+			s += "\n";
+		}
+		while (iter.hasNext()) {
+			MarkedQuery mq = iter.next();
+			s += markedQueryToMarkingString(mq) + ": ";
+			s += modalisedAtomToString(mq.atom);
+			s += iter.hasNext() ? "," : "";
+			s += "\n";
+			}
+		s += "]";
+		return s;
+	}
+
+	public static String listOfModalisedAtomsToString(List<ModalisedAtom> matoms) {
+		String s = "[";
+		Iterator<ModalisedAtom> iter = matoms.iterator();
+		if (iter.hasNext()) {
+			s += "\n";
+		}
+		while (iter.hasNext()) {
+			ModalisedAtom matom = iter.next();
+			s += modalisedAtomToString(matom);
+			s += iter.hasNext() ? "," : "";
+			s += "\n";
+			}
+		s += "]";
+		return s;
+	}
 
 	/**
 	 * Return the string representation of a marked query marking.
