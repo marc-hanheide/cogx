@@ -18,6 +18,8 @@
 #endif
 
 #include <manipulation.hpp>
+#include <execution/manipulation_exe.hpp>
+
 #include <VisionData.hpp>
 #include <Pose3.h>
 
@@ -30,6 +32,7 @@ namespace cogx
 using namespace std;
 using namespace cast;
 using namespace manipulation::slice;
+using namespace manipulation::execution::slice;
 
 /**
  * Provides a bridge between Golem path planning and a player actarray interface.
@@ -44,13 +47,13 @@ private:
 	
 	cdl::WorkingMemoryAddress m_pointedObjAddr;
 	
-	enum armActionType {
-		POINT_OBJ,
-		RETRACT
-	};
+//	enum armActionType {
+//		POINT_OBJ,
+//		RETRACT
+//	};
 	
 	struct armAction {
-		armActionType type;
+		ManipulationTaskType type;
 		cdl::WorkingMemoryAddress objAddr;
 	};
 		
@@ -84,7 +87,7 @@ private:
   bool addMoveToHomeCommand();
   bool addMoveArmToPose(cogx::Math::Pose3 pose);
   
-  void receiveNewObject(const cdl::WorkingMemoryChange &_wmc);
+  void receiveNewCommand(const cdl::WorkingMemoryChange &_wmc);
   void receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc);
   void overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange & _wmc);
   void overwriteMoveToHomeCommand(const cdl::WorkingMemoryChange & _wmc);
