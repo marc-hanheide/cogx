@@ -28,8 +28,6 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cogx.Math.Vector3;
-import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
-import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
@@ -114,7 +112,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 							.recordCurrentViewCone(_cmd.target);
 		
 					//record that we have looked at it
-					((VisionActionInterface) getComponent()).addBooleanFeature(
+					((AbstractActionInterface) getComponent()).addBooleanFeature(
 							getAction().beliefAddress, "looked-at", true);
 		
 					return TriBool.TRITRUE;
@@ -163,8 +161,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 		}
 
 		@Override
-		protected VisionActionInterface getComponent() {
-			return (VisionActionInterface) super.getComponent();
+		protected AbstractActionInterface getComponent() {
+			return (AbstractActionInterface) super.getComponent();
 		}
 
 		@Override
@@ -335,30 +333,6 @@ public class VisionActionInterface extends AbstractActionInterface {
 			overwriteWorkingMemory(m_viewStateAddress, rbt);
 		}
 	}
-
-	private WorkingMemoryPointer getFirstAncestorOfBelief(
-			WorkingMemoryAddress _beliefAddress)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-
-		GroundedBelief belief = getMemoryEntry(_beliefAddress,
-				GroundedBelief.class);
-
-		CASTBeliefHistory hist = (CASTBeliefHistory) belief.hist;
-		return hist.ancestors.get(0);
-	}
-
-	// private String getPropositionFromBelief(
-	// WorkingMemoryAddress _beliefAddress, String _index)
-	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-	//
-	// GroundedBelief belief = getMemoryEntry(_beliefAddress,
-	// GroundedBelief.class);
-	// CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb =
-	// CASTIndependentFormulaDistributionsBelief
-	// .create(GroundedBelief.class, belief);
-	// return pb.getContent().get(_index).getDistribution().getMostLikely()
-	// .getProposition();
-	// }
 
 	@Override
 	protected void configure(Map<String, String> _config) {

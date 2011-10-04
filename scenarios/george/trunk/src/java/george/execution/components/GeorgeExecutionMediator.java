@@ -15,6 +15,7 @@ import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.LearnColour;
 import execution.slice.actions.LearnIdentity;
 import execution.slice.actions.LearnShape;
+import execution.slice.actions.PointToObject;
 import execution.slice.actions.UnlearnColour;
 import execution.slice.actions.UnlearnIdentity;
 import execution.slice.actions.UnlearnShape;
@@ -46,13 +47,19 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			throws CASTException {
 
 		if (_plannedAction.name.equals("move-to-viewcone")) {
-			assert _plannedAction.arguments.length == 3 : "move-to-viewcone  is expected to be of arity 2";
+			assert _plannedAction.arguments.length == 3 : "move-to-viewcone  is expected to be of arity 3";
 			return createSingleBeliefAction(MoveToViewCone.class,
 					_plannedAction.arguments[2]);
 		} else if (_plannedAction.name.equals("analyze-proto-object")) {
-			assert _plannedAction.arguments.length == 3 : "analyze-proto-object  is expected to be of arity 2";
+			assert _plannedAction.arguments.length == 3 : "analyze-proto-object  is expected to be of arity 3";
 			return createSingleBeliefAction(AnalyzeProtoObject.class,
 					_plannedAction.arguments[2]);
+		} else if (_plannedAction.name.equals("point-to-object-color") || _plannedAction.name.equals("point-to-object-shape")) {
+
+			assert _plannedAction.arguments.length == 3 : "point-to-object-* is expected to be of arity 3";
+			return createSingleBeliefAction(PointToObject.class,
+					_plannedAction.arguments[1]);
+
 		} else if (_plannedAction.name
 				.equals("ask-for-an-objects-color-general")) {
 
