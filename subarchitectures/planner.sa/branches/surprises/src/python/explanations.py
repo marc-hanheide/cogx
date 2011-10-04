@@ -109,7 +109,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     expl_domain.add_action(switch_action)
 
 
-def build_explanation_problem(problem, init_state, observed_state):
+def build_explanation_problem(problem, last_plan, init_state, observed_state):
     assert expl_domain is not None
     p = problem.copy(newdomain=expl_domain)
     p.objects = set()
@@ -118,7 +118,13 @@ def build_explanation_problem(problem, init_state, observed_state):
     p.init.append(pddl.Builder(p).init("=", ("phase",), "apply_rules"))
     p.init.append(pddl.Builder(p).init("=", ("enabled",), "action_000"))
 
+    relevant = set()
+    for n in last_plan:
+        if n.status != plans.ActionStatusEnum.EXECUTABLE:
+            relevant |= n.effects
+
     gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
+    gfacts += [f.to_condition().negate() for f in relevant if f.svar not in observed_state]
     goal = pddl.Conjunction(gfacts)
     #goal = pddl.Conjunction([])  # TEST
     if not isinstance(goal, pddl.Conjunction):
@@ -132,7 +138,7 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
     w = pddl.mapl.MAPLWriter()
 
     build_explanation_domain(last_plan, problem, expl_rules_fn)
-    expl_problem = build_explanation_problem(problem, init_state, observed_state)
+    expl_problem = build_explanation_problem(problem, last_plan, init_state, observed_state)
 
     # print "\n".join(w.write_domain(expl_domain))
     print "\n".join(w.write_problem(expl_problem))
