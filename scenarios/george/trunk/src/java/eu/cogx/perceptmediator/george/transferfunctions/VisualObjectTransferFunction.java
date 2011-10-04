@@ -66,6 +66,26 @@ public class VisualObjectTransferFunction extends
 		fd.add((float) from.salience, 1.0);
 		distr.put("salience", fd);
 
+		// The status of the VO: unknow, visible, was_visible, removed
+		String status;
+		fd = FormulaDistribution.create();
+		switch(from.presence) {
+			case VopVISIBLE:
+			 	status = "visible";
+			 	break;
+			case VopWasVISIBLE:
+			 	status = "was-visible";
+			 	break;
+			case VopREMOVED:
+			 	status = "removed";
+			 	break;
+			default:
+			 	status = "unknown";
+			 	break;
+		}
+		fd.add(status, 1.0);
+		distr.put("presence", fd);
+
 		fillConcept("color", distr, from.colorLabels, from.colorDistrib,
 				from.colorGains, from.colorGain, from.colorAmbiguity);
 		fillConcept("shape", distr, from.shapeLabels, from.shapeDistrib,
