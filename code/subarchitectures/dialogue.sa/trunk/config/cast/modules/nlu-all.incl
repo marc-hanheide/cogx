@@ -9,5 +9,5 @@ JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.SimpleParseSelection
 JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.FakeReferenceResolution
 
 # intention recognition
-#JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost)  --dumpfile %(dump_file)
-JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost)
+JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost)  --dumpfile %(dump_file)
+#JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost)
