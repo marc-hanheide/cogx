@@ -20,13 +20,37 @@ def str2cond(fstr, scope):
 def str2eff(fstr, scope=None):
     return pddl.parser.Parser.parse_as([fstr], pddl.effects.Effect, scope)
 
-def replace_or_append(elements, elmt):
-    old = [e for e in elements if e.name == elmt.name]
-    for e in old:
-        print "replacing %s with altered version for explanation processing" % e.name
-        elements.remove(e)
-        asads
-    elements.append(elmt)
+# def replace_or_append(elements, elmt):
+#     old = [e for e in elements if e.name == elmt.name]
+#     for e in old:
+#         print "replacing %s with altered version for explanation processing" % e.name
+#         elements.remove(e)
+#         asads
+#     elements.append(elmt)
+
+# def add_explanation_rules(expl_rules_fn):
+#     global expl_domain
+#     expl_domain.alternatives = {}
+#     p = pddl.parser.Parser.parse_file(expl_rules_fn)
+#     it = iter(p.root)
+#     it.get("rules")
+#     j = iter(it.get(list, "(domain 'domain identifier')"))
+#     j.get("domain")
+#     domname = j.get(None, "domain identifier").token.string
+#     # check that domain name matches the planning domain
+#     # tbd
+#     for elem in it:
+#         j = iter(elem)
+#         type = j.get("terminal").token
+#         if type == ":action":
+#             a = pddl.mapl.MAPLAction.parse(j.reset(), expl_domain)
+#             a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
+#             replace_or_append(expl_domain.actions, a)
+#         elif type == ":init-rule":
+#             a = pddl.mapl.InitRule.parse(j.reset(), expl_domain) 
+#             replace_or_append(expl_domain.init_rules, a)
+#         else:
+#             raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
 
 def add_explanation_rules(expl_rules_fn):
     global expl_domain
@@ -44,13 +68,19 @@ def add_explanation_rules(expl_rules_fn):
         type = j.get("terminal").token
         if type == ":action":
             a = pddl.mapl.MAPLAction.parse(j.reset(), expl_domain)
-            a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
-            replace_or_append(expl_domain.actions, a)
+            alist = expl_domain.actions
         elif type == ":init-rule":
             a = pddl.mapl.InitRule.parse(j.reset(), expl_domain) 
-            replace_or_append(expl_domain.init_rules, a)
+            alist = expl_domain.init_rules
         else:
             raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
+        try:
+            expl_domain.domain_orig.get_action(a.name)
+            expl_domain.alternatives[a.name] = a
+        except KeyError:
+            alist.append(a)
+            if isinstance(a, pddl.mapl.MAPLAction):
+                a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
 
 def build_operator_for_ground_action(i, action, args):
     action_t = expl_domain.types["action"]
@@ -74,6 +104,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     global se_condition, expl_domain
     domain_orig = problem.domain
     expl_domain = domain_orig.copy_skeleton()
+    expl_domain.domain_orig = domain_orig
     expl_domain.name += "-explanations"
     expl_domain.axioms = [a.copy(newdomain=expl_domain) for a in domain_orig.axioms]
     print [a.predicate.name for a in domain_orig.axioms]
@@ -115,7 +146,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             expl_domain.add_action(a)
             continue
         try:
-            a = expl_domain.get_action(a.name)  # look for alternative in expl_domain
+            a = expl_domain.alternatives[a.name]
         except KeyError:
             pass
         a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
