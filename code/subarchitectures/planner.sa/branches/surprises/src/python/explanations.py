@@ -34,7 +34,7 @@ def add_explanation_rules(expl_rules_fn):
         j = iter(elem)
         type = j.get("terminal").token
         if type == ":action":
-            a = pddl.Action.parse(j.reset(), expl_domain)
+            a = pddl.mapl.MAPLAction.parse(j.reset(), expl_domain)
             a.name = "_rule_" + a.name
             a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
             expl_domain.actions.append(a)
