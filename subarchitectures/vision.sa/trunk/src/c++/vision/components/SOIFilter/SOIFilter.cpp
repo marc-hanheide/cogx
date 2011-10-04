@@ -712,10 +712,22 @@ void SOIFilter::checkInvisibleObjects()
       // the object should be visible, but there is no SOI -> assume removed from scene -> delete PO
       try {
         deleteFromWorkingMemory(pporec->addr);
-        // TODO: mark the appropriate VO with pvo->presence = VisionData::VopREMOVED;
       }
       catch(cast::DoesNotExistOnWMException){
         debug("check_invisible: ProtoObject already deleted from WM.");
+      }
+
+      // Mark the appropriate VO as REMOVED.  XXX: the object could be deleted, if this is preferred.
+      VisualObjectRecordPtr pvorec = findVisualObjectFor(pporec->addr);
+      if (pvorec) {
+        try {
+          VisualObjectPtr pvobj = getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
+          pvobj->presence = VisionData::VopREMOVED;
+          overwriteWorkingMemory(pvorec->addr, pvobj);
+        }
+        catch(cast::DoesNotExistOnWMException){
+          debug("check_invisible: VisualObject for a removed PO does not exist in WM.");
+        }
       }
     }
   }
