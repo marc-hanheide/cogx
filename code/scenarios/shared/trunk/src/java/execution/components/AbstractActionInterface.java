@@ -6,8 +6,10 @@ import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryPointer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.util.LocalActionStateManager;
 
@@ -35,6 +37,16 @@ public abstract class AbstractActionInterface extends ManagedComponent {
 			
 				pb.getContent().put(_feature, fd);
 				overwriteWorkingMemory(_beliefAddress, pb.get());
+			}
+
+	protected WorkingMemoryPointer getFirstAncestorOfBelief(WorkingMemoryAddress _beliefAddress)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+			
+				GroundedBelief belief = getMemoryEntry(_beliefAddress,
+						GroundedBelief.class);
+			
+				CASTBeliefHistory hist = (CASTBeliefHistory) belief.hist;
+				return hist.ancestors.get(0);
 			}
 
 }
