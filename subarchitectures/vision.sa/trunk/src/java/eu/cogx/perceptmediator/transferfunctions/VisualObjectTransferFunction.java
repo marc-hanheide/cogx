@@ -66,6 +66,26 @@ public class VisualObjectTransferFunction extends
 		IndependentFormulaDistributions distr = belief.getContent();
 		FormulaDistribution fd;
 
+		// The status of the VO: unknow, visible, was_visible, removed
+		String status;
+		fd = FormulaDistribution.create();
+		switch(from.presence) {
+			case VopVISIBLE:
+			 	status = "visible";
+			 	break;
+			case VopWasVISIBLE:
+			 	status = "was-visible";
+			 	break;
+			case VopREMOVED:
+			 	status = "removed";
+			 	break;
+			default:
+			 	status = "unknown";
+			 	break;
+		}
+		fd.add(status, 1.0);
+		distr.put("presence", fd);
+
 		fd = FormulaDistribution.create();
 		fd.add((float) from.salience, 1.0);
 		distr.put("salience", fd);
