@@ -5,6 +5,7 @@ from standalone.pddl.builtin import t_number
 # some globals that will be used all over the module once set
 expl_domain = None
 se_condition = None
+w = None
 
 SWITCH_OP = """
   (:action _switch_phase_simulate_execution
@@ -46,7 +47,7 @@ def build_operator_for_ground_action(i, action, args):
     action_t = expl_domain.types["action"]
     action_id = "action_" + str(i).zfill(3)
     expl_domain.add_constant(types.TypedObject(action_id, action_t))
-    name = "_"+action_id
+    name = "_%s_%s" % (action_id, action.name)
     new_op = pddl.Action(name, [], None, None, None, None)
     action.instantiate(args, expl_domain)
     if action.precondition:
@@ -88,10 +89,15 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
    # extract actions from old plan
     last_action = None
     i = 0
-    # iterate through plan, create action constants to enfore simulated re-execution during monitoring
+
     for n in last_plan:
+        # iterate through plan, create action constants to enfore simulated re-execution during monitoring
         a = n.action
         if isinstance(a, plans.DummyAction):
+            continue
+        if n.is_virtual():
+            #print "virtual action:", w.write_action(a)  
+            expl_domain.add_action(a)
             continue
         a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
         if last_action:
@@ -103,7 +109,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             break
         i += 1
     last_action.extend_effect(str2eff("(assign (phase) achieve_goal)", expl_domain))
+
     add_explanation_rules(expl_rules_fn)
+
     # add action to switch phases
     switch_action = pddl.parser.Parser.parse_as(SWITCH_OP.splitlines(), pddl.Action, expl_domain)
     expl_domain.add_action(switch_action)
@@ -135,12 +143,13 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
     
 
 def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn, cp_task):
+    global w
     w = pddl.mapl.MAPLWriter()
 
     build_explanation_domain(last_plan, problem, expl_rules_fn)
-    expl_problem = build_explanation_problem(problem, last_plan, init_state, observed_state)
+    print "\n".join(w.write_domain(expl_domain))
 
-    # print "\n".join(w.write_domain(expl_domain))
+    expl_problem = build_explanation_problem(problem, last_plan, init_state, observed_state)
     print "\n".join(w.write_problem(expl_problem))
     
     cp_task.mapltask = expl_problem
