@@ -16,6 +16,9 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEventQueue;
+import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
@@ -25,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
 import eu.cogx.mln.slice.MLNState;
+import eu.cogx.mln.slice.MLNFact;
 
 public class MLNSerializer extends ManagedComponent {
 
@@ -34,10 +38,31 @@ public class MLNSerializer extends ManagedComponent {
 	private String stateId = null;
 	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
 
-	static void addToMLN(dBelief bel, Vector<String> types,
-			Vector<String> ids, Vector<String> facts,
-			Vector<Double> probs) throws BeliefException {
-
+	static void addToMLN(dBelief bel, Vector<MLNFact> facts) throws BeliefException {		
+		MLNFact bfact = new MLNFact();
+		MLNFact sfact = new MLNFact();
+		
+		bfact.prob = sfact.prob = 1;				
+		bfact.type = sfact.type = bel.type;	
+		bfact.id = sfact.id = bel.id;
+		bfact.key = "belief";
+		sfact.key = "epstatus";		
+		
+		if(bel.estatus instanceof PrivateEpistemicStatus) {
+			bfact.estatus = sfact.estatus = "private";
+			sfact.atom = sfact.key + "(" + sfact.id + ", " + "Private)";
+		} else if(bel.estatus instanceof AttributedEpistemicStatus) {
+			bfact.estatus = sfact.estatus = "attributed";
+			sfact.atom = sfact.key + "(" + sfact.id + ", " + "Attributed)";
+		} else if(bel.estatus instanceof SharedEpistemicStatus) {			
+			bfact.estatus = sfact.estatus = "shared";
+			sfact.atom = sfact.key + "(" + sfact.id + ", " + "Shared)";
+		}	
+		bfact.atom = bfact.key + "(" + bfact.id + ")";
+		
+		facts.add(bfact);	
+		facts.add(sfact);
+		
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, bel);
 		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet()) {
@@ -45,12 +70,13 @@ public class MLNSerializer extends ManagedComponent {
 				if (b.getType().equals("relation")) {
 					// not looking at relations yet
 				} else {
-					double logProb = weight(v.getProbability());
-					probs.add(logProb);
-					
-					types.add(bel.type);
-					ids.add(b.getId());
-					
+					MLNFact fact = new MLNFact();
+					fact.prob = weight(v.getProbability());				
+					fact.type = bel.type;
+//					fact.key = d.getKey();
+					fact.id = b.getId();
+					fact.estatus = bfact.estatus;
+						
 					String formula = v.getFormula().toString();
 					if (v.getFormula().get() instanceof PointerFormula) {
 						PointerFormula pf = (PointerFormula) v.getFormula()
@@ -61,8 +87,20 @@ public class MLNSerializer extends ManagedComponent {
 								.getFormula().get();
 						formula = pf.prop;
 					}
-					facts.add("   " + d.getKey() + "(" + b.getType() + "_" + b.getId() + ", "
-							+ formula + ")");
+					if(bel.estatus instanceof PrivateEpistemicStatus) {
+						fact.key = "private_" + d.getKey();
+						fact.atom = fact.key + "(" + b.getId() + ", P_" + formula + ")";
+					} else if(bel.estatus instanceof AttributedEpistemicStatus) {
+						fact.key = "attributed_" + d.getKey();
+						fact.atom = fact.key + "(" + b.getId() + ", A_" + formula + ")";
+					} else if(bel.estatus instanceof SharedEpistemicStatus) {
+						fact.key = d.getKey();
+						fact.atom = fact.key + "(" + b.getId() + ", P_" + formula + ")";
+					}
+					
+//					fact.atom = "   " + d.getKey() + "(" + b.getType() + "_" + b.getId() + ", V_"
+//							+ formula + ")";		
+					facts.add(fact);
 				}
 			}
 		}
@@ -84,10 +122,7 @@ public class MLNSerializer extends ManagedComponent {
 	protected void runComponent() {
 		
 		while (isRunning()) {
-			Vector<String> types = new Vector<String>();
-			Vector<String> ids = new Vector<String>();
-			Vector<String> facts = new Vector<String>();
-			Vector<Double> probs = new Vector<Double>();
+			Vector<MLNFact> facts = new Vector<MLNFact>();
 			
 			try {
 				queue.take();
@@ -102,7 +137,7 @@ public class MLNSerializer extends ManagedComponent {
 					dBelief b;
 					try {
 						b = getMemoryEntry(adr, dBelief.class);
-						addToMLN(b, types, ids, facts, probs);
+						addToMLN(b, facts);
 					} catch (DoesNotExistOnWMException e) {
 						// ignore this, it could happen
 					} catch (Exception e) {
@@ -110,13 +145,11 @@ public class MLNSerializer extends ManagedComponent {
 					}
 				}
 				
-				MLNState mlnState = new MLNState(types.toArray(new String[0]),
-					ids.toArray(new String[0]), facts.toArray(new String[0]),
-					toDoubleArray(probs));
+				MLNState mlnState = new MLNState(facts.toArray(new MLNFact[0]));
 				
-				for (int i = 0; i < probs.size(); i++)
-					log(mlnState.types[i] + " | " + mlnState.ids[i] + " | " +
-						mlnState.probs[i] + " | " + mlnState.facts[i]);
+				for (int i = 0; i < facts.size(); i++)
+					log(mlnState.facts[i].type + " | " + mlnState.facts[i].id + " | " +
+						mlnState.facts[i].prob + " | " + mlnState.facts[i].atom);
 				if (stateId == null) {
 					stateId = newDataID();
 					addToWorkingMemory(stateId, mlnState);
@@ -179,17 +212,13 @@ public class MLNSerializer extends ManagedComponent {
 		fd.add("VBlue", 0.1);
 
 		b.getContent().put("color", fd);
-		Vector<String> types = new Vector<String>();
-		Vector<String> ids = new Vector<String>();
-		Vector<String> facts = new Vector<String>();
-		Vector<Double> probs = new Vector<Double>();
-		addToMLN(b.get(), types, ids,facts, probs);
-		MLNState mlnState = new MLNState(types.toArray(new String[0]),
-				ids.toArray(new String[0]), facts.toArray(new String[0]),
-				toDoubleArray(probs));
-		
 
-		for (int i = 0; i < probs.size(); i++)
-			System.out.println(mlnState.probs[i] +" "+mlnState.facts[i]);
+		Vector<MLNFact> facts = new Vector<MLNFact>();
+		addToMLN(b.get(), facts);
+		
+		MLNState mlnState = new MLNState(facts.toArray(new MLNFact[0]));
+		
+		for (int i = 0; i < facts.size(); i++)
+			System.out.println(mlnState.facts[i].prob +" "+mlnState.facts[i].atom);
 	}
 }
