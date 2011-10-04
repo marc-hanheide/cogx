@@ -258,6 +258,9 @@ module execution {
       class TurnToHuman extends SingleBeliefAction {
       };
 
+      class PointToObject extends SingleBeliefAction {
+      };
+
 
       /**
        * comsys action
