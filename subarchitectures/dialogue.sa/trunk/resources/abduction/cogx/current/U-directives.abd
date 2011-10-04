@@ -3,7 +3,7 @@
 %-------------------------------------------------------------------------
 
 % is X Y
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, ascription),
 	i : 'feat_Mood'(Nom, int),
 	i : 'feat_Tense'(Nom, pres),
@@ -29,7 +29,7 @@ understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 % @{be1_1:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Restr>(context1_1:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(what1_1:entity ^ what) ^ <Subject>(context1_1:entity) ^ <Wh-Restr>(what1_1:entity))
 
 % what is X
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, ascription),
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
@@ -45,7 +45,7 @@ understand : event : utter(S, H, Nom) <-
 	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
 
 % do you know what X is
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, cognition),
 	i : prop(Nom, know),
 	i : feat_Mood(Nom, int),
@@ -67,7 +67,7 @@ understand : event : utter(S, H, Nom) <-
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 % what X is Y
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 %	i : sort(Nom, ascription),  % XXX garbage
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
@@ -82,7 +82,7 @@ understand : event : utter(S, H, Nom) <-
 	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
 
 % what is the X of Y
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
 	i : rel_Subject(Nom, SubjNom),
@@ -110,7 +110,7 @@ understand : wh_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 % can you see the box:
 % @{see1_3:perception}(see ^ <Mood>int ^ <Tense>pres ^ <Modifier>(can1_3:modal ^ can) ^ <Patient>(box1_3:thing ^ box ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Actor>(you1_3:person ^ you ^ <Num>sg) ^ <Subject>(you1_3:person))
 
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, perception),
 	i : prop(Nom, see),
 	i : feat_Tense(Nom, pres),
@@ -127,7 +127,7 @@ understand : event : utter(S, H, Nom) <-
 %-------------------------------------------------------------------------
 
 % what do you see
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, perception),
 	i : prop(Nom, see),
 	i : feat_Tense(Nom, pres),
@@ -144,7 +144,7 @@ understand : event : utter(S, H, Nom) <-
 % COMMAND: ACTION-NON-MOTION
 %-------------------------------------------------------------------------
 
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, 'action-non-motion'),
 	int_id(Int),
 	int : agent(Int, S) / p(1.0),
@@ -183,7 +183,7 @@ determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
 %-------------------------------------------------------------------------
 
 % go to X
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, 'action-motion'),
 %	i : feat_Mood(Nom, imp),
 	i : rel_Actor(Nom, ActorNom),
@@ -212,7 +212,7 @@ m_action_effects(S, H, EpSt, Int, Ref, turn) <-
 %-------------------------------------------------------------------------
 
 % go DIRECTION
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, 'action-motion'),
 %	i : feat_Mood(Nom, imp),
 	i : rel_Actor(Nom, ActorNom),
@@ -251,7 +251,7 @@ m_action_effects_direction(S, H, Int, Dir, turn) <-
 %-------------------------------------------------------------------------
 
 % stop
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 %	i : sort(Nom, 'action-motion'),
 	i : feat_Mood(Nom, imp),
 	i : prop(Nom, stop),

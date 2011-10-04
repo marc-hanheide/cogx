@@ -8,10 +8,13 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
-import de.dfki.lt.tr.dialogue.interpret.AssertedReferenceAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
+import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
@@ -33,6 +36,7 @@ import de.dfki.lt.tr.infer.abducer.proof.ProofInterpreter;
 import de.dfki.lt.tr.infer.abducer.proof.ProofPruner;
 import de.dfki.lt.tr.infer.abducer.proof.pruners.LengthPruner;
 import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
+import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -114,9 +118,10 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 		AssertionSolverCascade solvers = new AssertionSolverCascade();
 		solvers.addSolver(new ExpandLFAssertionSolver());
+		solvers.addSolver(new IntentionIDAssertionSolver());
 		solvers.addSolver(new ReferenceResolutionAssertionSolver());
 
-		ProofInterpreter<InterpretedUserIntention> interpreter = new InterpretedUserIntentionProofInterpreter(	);
+		ProofInterpreter<InterpretedUserIntention> interpreter = new InterpretedUserIntentionProofInterpreter(getLogger());
 
 		final WorkingMemoryWriterComponent committer = this;
 
@@ -125,7 +130,7 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 			@Override
 			public void onSuccessfulInterpretation(InterpretedUserIntention i) {
 				try {
-					getLogger().debug("going to commit the interpretation");
+					getLogger().debug("going to commit the following:\n" + i.toString());
 					i.commit(committer);
 				}
 				catch (SubarchitectureComponentException ex) {
@@ -171,23 +176,17 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 				});
 	}
 
-	public class ExpandLFAssertionSolver extends AbstractAssertionSolver<String> {
+	public class ExpandLFAssertionSolver extends AbstractAssertionSolver<FromLFAtom> {
 
-		@Override
-		public String parseFromModalisedAtom(ModalisedAtom matom) {
-			if (matom.a.predSym.contains("from_logical_form") && matom.a.args.size() == 3
-					&& matom.a.args.get(2) instanceof FunctionTerm) {
-
-				String nominal = ((FunctionTerm) matom.a.args.get(2)).functor;
-				return nominal;
-			}
-			return null;
+		public ExpandLFAssertionSolver() {
+			super(new FromLFAtom.Matcher());
 		}
 
 		@Override
-		public ContextUpdate solveFromParsed(String a) {
-			getLogger().info("solving an LF assertion for nominal \"" + a + "\"");
-			final LogicalForm lf = nomToLFMap.get(a).lform;
+		public ContextUpdate solveFromParsed(FromLFAtom a) {
+			String nominal = a.getNominal();
+			getLogger().info("solving an LF assertion for nominal \"" + nominal + "\"");
+			final LogicalForm lf = nomToLFMap.get(nominal).lform;
 			return new ContextUpdate() {
 
 				@Override
@@ -203,11 +202,49 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 	};
 
-	public class ReferenceResolutionAssertionSolver extends AbstractAssertionSolver<AssertedReferenceAtom> {
+	public class IntentionIDAssertionSolver extends AbstractAssertionSolver<IntentionIDAtom> {
+
+		public IntentionIDAssertionSolver() {
+			super(new IntentionIDAtom.Matcher());
+		}
 
 		@Override
-		public AssertedReferenceAtom parseFromModalisedAtom(ModalisedAtom matom) {
-			return AssertedReferenceAtom.fromModalisedAtom(matom);
+		public ContextUpdate solveFromParsed(IntentionIDAtom a) {
+			final String nominal = a.getNominal();
+			if (nominal == null) {
+				getLogger().error("undetermined nominal");
+				return null;
+			}
+
+			final WorkingMemoryAddress wma = newWorkingMemoryAddress();
+
+			getLogger().info("generated a new intention WMA: " + wmaToString(wma));
+			return new ContextUpdate() {
+
+				@Override
+				public void doUpdate(AbductionEnginePrx engine) {
+					ModalisedAtom newFact = TermAtomFactory.modalisedAtom(
+							new Modality[] {
+								Modality.Understanding,
+								Modality.Truth
+							},
+							TermAtomFactory.atom("intention", new Term[] {
+								TermAtomFactory.term(nominal),
+								ConversionUtils.workingMemoryAddressToTerm(wma)
+							}));
+					getLogger().debug("adding the ID to the abduction context: " + PrettyPrint.modalisedAtomToString(newFact));
+					engine.addFact(newFact);
+				}
+				
+			};
+		}
+
+	};
+
+	public class ReferenceResolutionAssertionSolver extends AbstractAssertionSolver<AssertedReferenceAtom> {
+
+		public ReferenceResolutionAssertionSolver() {
+			super(new AssertedReferenceAtom.Matcher());
 		}
 
 		@Override
@@ -232,6 +269,10 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 				}));
 
 		return goal;
+	}
+
+	protected WorkingMemoryAddress newWorkingMemoryAddress() {
+		return new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
 	}
 
 }

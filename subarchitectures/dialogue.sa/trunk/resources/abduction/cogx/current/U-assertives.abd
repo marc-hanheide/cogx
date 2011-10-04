@@ -3,7 +3,7 @@
 %-------------------------------------------------------------------------
 
 % X is Y
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, ascription),
 	i : 'feat_Mood'(Nom, ind),
 	i : 'feat_Tense'(Nom, pres),
@@ -25,7 +25,7 @@ understand : event : utter(S, H, Nom) <-
 %-------------------------------------------------------------------------
 
 % there is X
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, presentational),
 	i : feat_Mood(Nom, ind),
 	i : feat_Tense(Nom, pres),
@@ -39,7 +39,7 @@ understand : event : utter(S, H, Nom) <-
 %-------------------------------------------------------------------------
 
 % I see X
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, perception),
 	i : prop(Nom, see),
 	i : feat_Mood(Nom, ind),
@@ -52,7 +52,7 @@ understand : event : utter(S, H, Nom) <-
 %-------------------------------------------------------------------------
 
 % (I) don't know
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, cognition),
 	i : prop(Nom, know),
 	i : feat_Polarity(Nom, neg),
@@ -64,7 +64,7 @@ understand : event : utter(S, H, Nom) <-
 % YES/NO CONFIRMATIONS
 %-------------------------------------------------------------------------
 
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, Marker),
 	marker_to_polarity(Marker, Polarity),
@@ -90,7 +90,7 @@ marker_to_polarity('No', neg).
 % SHORT ANSWERS TO WH- QUESTIONS
 %-------------------------------------------------------------------------
 
-understand : event : utter(S, H, Nom) <-
+understand : event : from_logical_form(S, H, Nom) <-
 	i : int : agent(qud, [H]),
 %	i : int : pre(qud, belief(SharedBId)),
 	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat)])),
