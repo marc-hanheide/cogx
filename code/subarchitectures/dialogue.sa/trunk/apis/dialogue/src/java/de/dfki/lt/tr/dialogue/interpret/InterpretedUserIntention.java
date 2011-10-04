@@ -50,11 +50,11 @@ implements CASTProcessingResult, WellFormedTestable {
 
 	public static InterpretedIntention newEmptyInterpretedIntention() {
 		Map<String, String> stringContent = new HashMap<String, String>();
-		Map<String, WorkingMemoryPointer> pointerContent = new HashMap<String, WorkingMemoryPointer>();
+		Map<String, WorkingMemoryAddress> addressPointer = new HashMap<String, WorkingMemoryAddress>();
 		String agent = "";
 		float confidence = (float) 1.0;
 
-		return new InterpretedIntention(stringContent, pointerContent, ProcessingState.READY, agent, confidence);
+		return new InterpretedIntention(stringContent, addressPointer, ProcessingState.READY, agent, confidence);
 	}
 
 	@Override
@@ -73,8 +73,8 @@ implements CASTProcessingResult, WellFormedTestable {
 		}
 		s += "  }\n";
 		s += "  pointerContent = {\n";
-		for (String key : iint.pointerContent.keySet()) {
-			s += "    \"" + key + "\" -> \"" + wmpToString(iint.pointerContent.get(key)) + "\"\n";
+		for (String key : iint.addressContent.keySet()) {
+			s += "    \"" + key + "\" -> \"" + wmaToString(iint.addressContent.get(key)) + "\"\n";
 		}
 		s += "  }\n";
 		s += "}";
@@ -84,15 +84,6 @@ implements CASTProcessingResult, WellFormedTestable {
 	public static String wmaToString(WorkingMemoryAddress wma) {
 		if (wma != null) {
 			return "[" + wma.id + "," + wma.subarchitecture + "]";
-		}
-		else {
-			return "NULL";
-		}
-	}
-
-	public static String wmpToString(WorkingMemoryPointer ptr) {
-		if (ptr != null) {
-			return "[" + wmaToString(ptr.address) + ", " + ptr.type + "]";
 		}
 		else {
 			return "NULL";
