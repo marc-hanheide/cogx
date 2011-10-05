@@ -55,6 +55,9 @@
 	<condition property="build.visualization_sa">
 		<equals arg1="${build_sa_visualization}" arg2="ON" />
 	</condition>
+	<condition property="build.manipulation_sa">
+		<equals arg1="${build_sa_manipulation}" arg2="ON" />
+	</condition>
 	<condition property="build.shared">
 		<equals arg1="${build_shared}" arg2="ON" />
 	</condition>
@@ -95,6 +98,9 @@
 	<target name="sa.visualization" if="build.visualization_sa">
 	  <ant target="${target}" dir="subarchitectures/visualization.sa" />
 	</target>
+	<target name="sa.manipulation" if="build.manipulation_sa">
+	  <ant target="${target}" dir="subarchitectures/manipulation.sa" />
+	</target>	
 	<target name="sa.planner" if="build.planner_sa">
 	  <ant target="${target}" dir="subarchitectures/planner.sa" />
 	</target>
@@ -176,6 +182,9 @@
 		<antcall target="sa.execution">
 		  <param name="target" value="${target}" />
 		</antcall>
+		<antcall target="sa.manipulation">
+		  <param name="target" value="${target}" />
+		</antcall>		
 		<antcall target="shared">
 		  <param name="target" value="${target}" />
 		</antcall>
