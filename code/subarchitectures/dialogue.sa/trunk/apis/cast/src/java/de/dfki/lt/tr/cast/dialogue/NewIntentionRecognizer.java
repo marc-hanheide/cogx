@@ -75,7 +75,7 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 	private String rulesetFile = "/dev/null";
 
-	private int timeout;
+	private int timeout = 250;
 
 	private final Map<String, SelectedLogicalForm> nomToLFMap;
 
