@@ -264,7 +264,7 @@ class Action(Scope):
         elif old:
             return JunctionType([old, new_part], scope=old.scope)
         else:
-            return JunctionType([new_part], scope=old.scope)
+            return JunctionType([new_part], scope=self)
 
     def extend_precondition(self, new_cond):
         self.precondition = self._extend_precond_or_effect(self.precondition, new_cond, conditions.Conjunction)

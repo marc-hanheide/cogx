@@ -7,6 +7,8 @@ expl_domain = None
 se_condition = None
 w = None
 
+ignored_functions = set()
+
 SWITCH_OP = """
   (:action _switch_phase_simulate_execution
    :precondition (= (phase) apply_rules)
@@ -100,6 +102,21 @@ def build_operator_for_ground_action(i, action, args):
     enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
     return new_op, enabled_eff
 
+def build_operator_for_new_facts(i, node):
+    action_t = expl_domain.types["action"]
+    action_id = "action_" + str(i).zfill(3)
+    expl_domain.add_constant(types.TypedObject(action_id, action_t))
+    name = "_%s_%s" % (action_id, node.action.name)
+    new_op = pddl.Action(name, [], None, None, expl_domain, None)
+    new_op.effect = pddl.ConjunctiveEffect([f.to_effect() for f in node.effects if f.svar.get_type() != pddl.t_number], new_op)
+    print new_op.effect.pddl_str()
+    enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
+    for cond in [se_condition, enabled_cond]:
+        new_op.extend_precondition(cond)
+    enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
+    return new_op, enabled_eff
+    
+
 def build_explanation_domain(last_plan, problem, expl_rules_fn):
     global se_condition, expl_domain, commitments
     domain_orig = problem.domain
@@ -140,7 +157,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     for n in last_plan:
         # iterate through plan, create action constants to enfore simulated re-execution during monitoring
         a = n.action
-        if isinstance(a, plans.DummyAction):
+        if isinstance(a, plans.DummyAction) and not a.name.startswith("new_facts"):
+            continue
+        if n.status == plans.ActionStatusEnum.EXECUTABLE:
             continue
         if n.is_virtual():
             for eff in n.effects:
@@ -153,7 +172,10 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             a = expl_domain.alternatives[a.name]
         except KeyError:
             pass
-        a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
+        if a.name.startswith("new_facts"):
+            a2, enabled_last = build_operator_for_new_facts(i, n)
+        else:
+            a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
         if last_action:
             last_action.extend_effect(enabled_last)
         last_action = a2
@@ -182,8 +204,17 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
         if n.status != plans.ActionStatusEnum.EXECUTABLE and not n.is_virtual():
             relevant |= n.effects
 
-    gfacts = [f.as_literal(useEqual=True, _class=pddl.conditions.LiteralCondition) for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
-    gfacts += [f.to_condition().negate() for f in relevant if f.svar not in observed_state]
+    gfacts = [f.to_condition() for f in observed_state.iterfacts() if not f.value.is_instance_of(t_number)]
+    # for f in sorted(observed_state.iterfacts(), key=str):
+    #     print ":", f
+    def filter_fn(fact):
+        if fact.svar.function in ignored_functions:
+            return False
+        return f.value != pddl.FALSE and f.svar.get_type() == pddl.t_boolean
+    extstate = observed_state.get_extended_state(set(f.svar for f in relevant)) #evaluate axioms
+    gfacts += [f.to_condition().negate() for f in relevant if f.svar not in extstate and filter_fn(f)]
+    for f in sorted(relevant,key=str):
+        print f, observed_state[f.svar]
     gfacts += [f.to_condition() for f in commitments]
     goal = pddl.Conjunction(gfacts)
     #goal = pddl.Conjunction([])  # TEST
@@ -197,6 +228,9 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
 def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn, cp_task):
     global w
     w = pddl.mapl.MAPLWriter()
+
+    if "started" in problem.domain.predicates:
+        ignored_functions.add(problem.domain.predicates["started"][0])
 
     build_explanation_domain(last_plan, problem, expl_rules_fn)
     print "\n".join(w.write_domain(expl_domain))

@@ -28,10 +28,28 @@
                     (not (started))
     )
  :effect (and 
+          (assign (probability) 0.5)
      (assign (related-to ?o) ?cont) (assign (relation ?o) in)
     )
 )
 
+(:action obj_not_in_room
+         :parameters (?l - label ?r - room ?c - category)
+         :precondition (and (poss (category ?r) ?c)
+                            (defined (dora__inroom ?l ?c)))
+         :effect (and (assign (probability) (dora__not_inroom ?l ?c))
+                      (poss (obj_exists ?l in ?r) false)))
+
+(:action sample_object_unknown
+         :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room))
+         :precondition (and (= (label ?o) ?l)
+                            (is-virtual ?o)
+                            (not (exists (?rel2 - spatial_relation ?where2 - (either visualobject room))
+                                         (poss (obj_exists ?l ?rel ?where) true)))
+                            (poss (obj_exists ?l ?rel ?where) false))
+         :effect (and (poss (related-to ?o) unknown-room)
+                      (poss (relation ?o) unknown-relation))
+         )
 
 (:action create_cones_in_room
          :agent (?a - robot)

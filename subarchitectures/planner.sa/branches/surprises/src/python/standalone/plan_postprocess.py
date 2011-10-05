@@ -188,6 +188,7 @@ def make_po_plan(actions, task):
     ignored_soft_goals = set()
     
     state = task.get_state().copy()
+    plan.init_node.effects = set(state.iterfacts())
     
     for starttime, action in actions:
         t1 = time.time()
