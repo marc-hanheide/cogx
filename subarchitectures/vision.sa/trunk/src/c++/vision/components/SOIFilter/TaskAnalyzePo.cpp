@@ -158,6 +158,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   // VO has to be written after PO (components usually access PO through VO)
   if (pvo.get() && voAddr.id != "") {
     try {
+      pvo->presence = VisionData::VopVISIBLE;
       if (bNewVo) pSoiFilter->addToWorkingMemory(voAddr, pvo);
       else pSoiFilter->overwriteWorkingMemory(voAddr, pvo);	
     }
