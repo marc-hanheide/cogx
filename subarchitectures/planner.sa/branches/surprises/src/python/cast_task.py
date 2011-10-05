@@ -243,11 +243,31 @@ class CASTTask(object):
             show_dot_script = abspath(join(self.component.get_path(), "show_dot.sh"))
             os.system("%s %s" % (show_dot_script, dot_fn))
 
+    def write_history(self):
+        history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))
+        f = open(history_fn, "w")
+        
+        for plan, state in self.plan_state_history:
+            problem, _, _ = state.to_problem(self.slice_goals, deterministic=False)
+            w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+            _, prob_str = w.write(problem)
+            for l in prob_str:
+                f.write(l)
+                f.write("\n")
+            f.write("END_PROBLEM\n")
+            for pnode in plan.topological_sort():
+                s = "(%s %s), %s" % (pnode.action.name, " ".join(a.name for a in pnode.full_args), pnode.status)
+                f.write(s)
+                f.write("\n")
+            f.write("END_PLAN\n")
+        f.close()
+            
     def run(self):
         if self.failure_simulated:
             self.handle_task_failure()
             return
         self.update_status(TaskStateEnum.PROCESSING)
+        self.plan_state = self.state
         self.cp_task.replan()
         log.debug("Planning done: %.2f sec", global_vars.get_time())
         self.process_cp_plan()
@@ -738,8 +758,9 @@ class CASTTask(object):
             problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
             self.write_cp_problem(problem_fn)
             self.plan_history.append(plan)
-            self.plan_state_history.append((plan, self.state))
+            self.plan_state_history.append((plan, self.plan_state))
             self.write_history()
+            self.plan_state = self.state
             
         if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
             log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))

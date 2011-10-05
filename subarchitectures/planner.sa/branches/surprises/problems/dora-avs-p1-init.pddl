@@ -104,7 +104,7 @@
         (= (dora__inroom box meetingroom) 0.0111)
         (= (dora__inroom box office) 0.4993)
         (= (dora__inroom cerealbox corridor) 0.0219)
-        (= (dora__inroom cerealbox kitchen) 0.381)
+        (= (dora__inroom cerealbox kitchen) 0.981)
         (= (dora__inroom cerealbox meetingroom) 0.0060)
         (= (dora__inroom cerealbox office) 0.0529)
         (= (dora__inroom counter corridor) 0.0587)

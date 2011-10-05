@@ -3,7 +3,7 @@
 
   (:types
    conegroup - object
-   robot - agent
+   robot - planning_agent
    person robot - location
    label category spatial_relation place room visualobject - concept
    visualobject room - location
@@ -254,7 +254,6 @@
                               (not (defined (p-obj_exists ?l in ?r ?c))))
            :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
-  ;; (assign (obj_in_room ?l ?r)
 
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_in_obj
@@ -267,7 +266,6 @@
                               (not (defined (p-obj_exists ?l1 in ?o ?c))))
            :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
 
-  ;; (assign (obj_in_room ?l ?r)
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_on_obj
