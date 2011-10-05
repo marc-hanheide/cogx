@@ -107,13 +107,14 @@
   ->
   (?b dora:possiblySameRoomAs ?c)]
   
-[objectContainmentRule:
-  (?a rdf:type dora:Object),
-  (?b rdf:type dora:Place),
-  (?a dora:observableFromPlace ?b),
-  (?b dora:constituentOfRoom ?c)
-  ->
-  (?a dora:in ?c)]
+# not necessary because objects aren't related via places
+#[objectContainmentRule:
+#  (?a rdf:type dora:Object),
+#  (?b rdf:type dora:Place),
+#  (?a dora:observableFromPlace ?b),
+#  (?b dora:constituentOfRoom ?c)
+#  ->
+#  (?a dora:in ?c)]
   
 #[bottomUpRoomFormation:
 #  (?x rdf:type dora:Place),
