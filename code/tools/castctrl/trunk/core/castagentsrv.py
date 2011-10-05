@@ -112,6 +112,29 @@ class CAgentI(CastAgent.Agent):
         f.write(propText)
         f.close()
 
+    def getCmakeCache(self, current=None):
+        if not self._checkBuildDir():
+            return "# *** FAILED: getCmakeCache: no BUILD dir ***"
+
+        bdir = os.path.join(rasync.COGX_ROOT, "BUILD")
+        (result, errors) = procman.xrun_capture("../tools/scripts/cmake-freeze", workdir=bdir)
+
+        s = "\n".join(result)
+
+        return s
+
+    def applyCmakeCache(self, cmakeCache, current=None):
+        if not self._checkBuildDir():
+            return
+
+        bdir = os.path.join(rasync.COGX_ROOT, "BUILD")
+        bfile = os.path.join(bdir, "_initcache.txt")
+        f = open(bfile, "w")
+        f.write(cmakeCache)
+        f.close()
+
+        procman.xrun_wait("../tools/scripts/cmake-apply . _initcache.txt", workdir=bdir)
+
     def startRsync(self, srcHost, current=None):
         p = self.manager.getProcess("RSYNC")
         if not p:

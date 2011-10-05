@@ -22,6 +22,8 @@ module castcontrol{
          int stopProcess(string name);
          void setLog4jClientProperties(string propText);
          void setLog4jServerProperties(int port, string propText);
+         string getCmakeCache();
+         void applyCmakeCache(string cmakeCache);
 
          bool startRsync(string srcHost);
          bool stopRsync();

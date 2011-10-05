@@ -148,6 +148,8 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
         # def stopProcess(self, name, current=None):
         # def setLog4jClientProperties(self, propText, current=None):
         # def setLog4jServerProperties(self, port, propText, current=None):
+        # def getCmakeCache(self, current=None):
+        # def applyCmakeCache(self, cmakeCache, current=None):
         # def startRsync(self, srcHost, current=None):
         # def stopRsync(self, current=None):
         # def startBuild(self, target, current=None):
@@ -178,6 +180,12 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
 
         def setLog4jServerProperties(self, port, propText, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.Agent._op_setLog4jServerProperties.invoke(self, ((port, propText), _ctx))
+
+        def getCmakeCache(self, _ctx=None):
+            return _M_icemodule.castcontrol.CastAgent.Agent._op_getCmakeCache.invoke(self, ((), _ctx))
+
+        def applyCmakeCache(self, cmakeCache, _ctx=None):
+            return _M_icemodule.castcontrol.CastAgent.Agent._op_applyCmakeCache.invoke(self, ((cmakeCache, ), _ctx))
 
         def startRsync(self, srcHost, _ctx=None):
             return _M_icemodule.castcontrol.CastAgent.Agent._op_startRsync.invoke(self, ((srcHost, ), _ctx))
@@ -210,6 +218,8 @@ if not _M_icemodule.castcontrol.CastAgent.__dict__.has_key('Agent'):
     Agent._op_stopProcess = IcePy.Operation('stopProcess', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_int, ())
     Agent._op_setLog4jClientProperties = IcePy.Operation('setLog4jClientProperties', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), None, ())
     Agent._op_setLog4jServerProperties = IcePy.Operation('setLog4jServerProperties', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_int), ((), IcePy._t_string)), (), None, ())
+    Agent._op_getCmakeCache = IcePy.Operation('getCmakeCache', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), IcePy._t_string, ())
+    Agent._op_applyCmakeCache = IcePy.Operation('applyCmakeCache', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), None, ())
     Agent._op_startRsync = IcePy.Operation('startRsync', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_bool, ())
     Agent._op_stopRsync = IcePy.Operation('stopRsync', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (), (), IcePy._t_bool, ())
     Agent._op_startBuild = IcePy.Operation('startBuild', Ice.OperationMode.Normal, Ice.OperationMode.Normal, False, (), (((), IcePy._t_string),), (), IcePy._t_bool, ())

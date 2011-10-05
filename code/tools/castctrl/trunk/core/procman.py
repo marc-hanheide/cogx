@@ -568,3 +568,28 @@ def xrun_wait(cmdline, workdir=None):
         os.chdir(cwd)
     log("")
 
+def xrun_capture(cmdline, workdir=None):
+    # XRUN may create zombies.
+    cmds = cmdlineToArray(cmdline)
+    log("CMD: %s" % (cmdline))
+    cwd = os.getcwd()
+    result = None
+    errors = None
+    try:
+        std = tempfile.TemporaryFile()
+        err = tempfile.TemporaryFile()
+        if workdir != None: os.chdir(workdir)
+        rv = subp.call(cmds, stdout=std, stderr=err)
+        std.seek(0)
+        result = std.readlines()
+        std.close()
+        err.seek(0)
+        errors = err.readlines()
+        err.close()
+        for ln in errors: error(ln)
+    except Exception, e:
+        error("xrun_capture Internal: %s" % e)
+    finally:
+        os.chdir(cwd)
+    return (result, errors)
+
