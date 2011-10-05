@@ -11,5 +11,8 @@ PLAYER_JOB=$!
 
 trap "kill ${PLAYER_JOB} ${ABDUCER_JOB} ${AGENT_JOB}; sleep 2; kill -q -9 ${PLAYER_JOB} ${ABDUCER_JOB} ${AGENT_JOB} 2>/dev/null" INT TERM EXIT
 
+dc1394_reset_bus
+
+
 wait
 
