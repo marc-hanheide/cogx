@@ -44,6 +44,7 @@ std::map<T, std::set<T>>& transitive_closure(std::map<T, std::set<T>>& to_be_clo
     
     bool something_changed = false;
     do{
+        something_changed = false;
         for(auto p = domain.begin(); p != domain.end(); p++){
             /*transitive closure implies reflexivity.*/
             to_be_closed[*p].insert(*p);
@@ -54,7 +55,7 @@ std::map<T, std::set<T>>& transitive_closure(std::map<T, std::set<T>>& to_be_clo
 
                 assert( to_be_closed[*p].find(*q) != to_be_closed[*p].end());
                     
-                std::vector<T> difference;
+                std::vector<T> difference(to_be_closed[*q].size());
                 auto end_pointer =
                     std::set_difference(to_be_closed[*q].begin(), to_be_closed[*q].end()
                                         , range.begin(), range.end()
