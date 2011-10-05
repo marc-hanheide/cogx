@@ -24,6 +24,7 @@ import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
+import execution.slice.actions.EngageWithHuman;
 import execution.slice.actions.ForegroundModels;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
@@ -265,6 +266,16 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	}
 
+	public WorkingMemoryAddress triggerEngagementAction(
+			WorkingMemoryAddress _beliefAddress, boolean _engage, ActionMonitor _monitor)
+			throws CASTException {
+		EngageWithHuman act = newActionInstance(EngageWithHuman.class);
+		act.beliefAddress = _beliefAddress;
+		act.disengage = !_engage;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
 	
 	public WorkingMemoryAddress executeSingleBeliefAction(WorkingMemoryAddress _beliefID,
 			ActionMonitor _monitor, Class<? extends SingleBeliefAction> _actionCls) throws CASTException {
@@ -285,7 +296,6 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	@Override
 	public boolean isPaused() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

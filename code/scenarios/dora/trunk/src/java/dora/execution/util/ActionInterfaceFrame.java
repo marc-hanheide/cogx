@@ -682,16 +682,14 @@ public class ActionInterfaceFrame extends JFrame {
 	 * @throws CASTException
 	 */
 	private void foregroundModels() throws CASTException {
-		m_exeMan
-				.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.foregroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
 	 * @throws CASTException
 	 */
 	private void backgroundModels() throws CASTException {
-		m_exeMan
-				.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
+		m_exeMan.backgroundModels(getSelectedObjectModels(), new MonitorPanel());
 	}
 
 	/**
@@ -845,26 +843,26 @@ public class ActionInterfaceFrame extends JFrame {
 			IndependentFormulaDistributionsBelief<dBelief> _belief)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		String label = _belief.getContent().get(
-				ViewPointTransferFunction.OBJECT_LABEL_ID).getDistribution()
-				.getMostLikely().getProposition();
+		String label = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
+				.getDistribution().getMostLikely().getProposition();
 
-		Double prob = _belief.getContent().get(
-				ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+		Double prob = _belief.getContent()
+				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
 				.getDistribution().getMostLikely().getDouble();
 
 		String beliefAddr = toAddressString(_address);
 
-		WMPointer pointer = WMPointer.create(_belief.getContent().get(
-				LocalizedAgentTransferFunction.IS_IN).getDistribution()
+		WMPointer pointer = WMPointer.create(_belief.getContent()
+				.get(LocalizedAgentTransferFunction.IS_IN).getDistribution()
 				.getMostLikely().get());
 
 		IndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = IndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(pointer
-						.get().pointer, GroundedBelief.class));
+				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
+						pointer.get().pointer, GroundedBelief.class));
 
-		long placeID = placeBelief.getContent().get(
-				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = placeBelief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
 		m_coneTableModel
@@ -996,12 +994,12 @@ public class ActionInterfaceFrame extends JFrame {
 	public void addPlaceBelief(WorkingMemoryAddress _address,
 			IndependentFormulaDistributionsBelief<dBelief> _belief) {
 
-		long placeID = _belief.getContent().get(
-				PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		long placeID = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 				.getMostLikely().getInteger();
 
-		String status = _belief.getContent().get(
-				PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
+		String status = _belief.getContent()
+				.get(PlaceTransferFunction.PLACE_STATUS_ID).getDistribution()
 				.getMostLikely().getProposition();
 
 		String addr = toAddressString(_address);
@@ -1102,13 +1100,26 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefAddr != null) {
 			m_exeMan.executeSingleBeliefAction(beliefAddr, new MonitorPanel(),
 					TurnToHuman.class);
+
+			// UNTESTED!
+			// nah: to try the dialogue stuff, replace the above line with one
+			// of these, or alternative add a sleep or some check on the result
+			// of the previous action (the addr of which is returned, or use the
+			// monitor thingy)
+			// to open dialogue
+			// m_exeMan.triggerEngagementAction(beliefAddr, true, new
+			// MonitorPanel());
+			// to close dialogue
+			// m_exeMan.triggerEngagementAction(beliefAddr, false, new
+			// MonitorPanel());
 		}
 	}
 
 	private void askPolarIdentity() throws CASTException {
 		WorkingMemoryAddress beliefAddr = getSelectedRoomBeliefAddress();
 		if (beliefAddr != null) {
-			m_exeMan.executeSingleBeliefPlusStringAction(beliefAddr,
+			m_exeMan.executeSingleBeliefPlusStringAction(
+					beliefAddr,
 					getFeatureValue(beliefAddr.id + ":"
 							+ beliefAddr.subarchitecture, "identity",
 							"asked for"), new MonitorPanel(),
