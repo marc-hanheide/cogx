@@ -114,7 +114,7 @@ class CConsoleAgent:
             else:
                 cmd = self._options.xe("${CMD_PLAYER}")
                 cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
-                self.manager.addProcess(procman.CProcess("player", cmd))
+                self.manager.addProcess(procman.CProcess("Player", cmd))
 
         if appOptions.golem_cfg != None:
             if not os.path.exists(appOptions.golem_cfg):
@@ -125,7 +125,7 @@ class CConsoleAgent:
                 wkd = self._options.xe("${CMD_GOLEM_WORKDIR}")
                 if not os.path.exists(wkd):
                     wkd = None
-                self.manager.addProcess(procman.CProcess("golem", cmd, workdir=wkd))
+                self.manager.addProcess(procman.CProcess("Golem", cmd, workdir=wkd))
 
         if appOptions.gazebo_world != None:
             if not os.path.exists(appOptions.gazebo_world):
@@ -135,16 +135,16 @@ class CConsoleAgent:
                 cmd = cmd.replace("[GUI]", "")
                 cmd = cmd.replace("[PHYSICS]", "")
                 cmd = cmd.replace("[WORLD]", appOptions.gazebo_world)
-                self.manager.addProcess(procman.CProcess("gazebo", cmd))
+                self.manager.addProcess(procman.CProcess("Gazebo", cmd))
             pass
 
         if appOptions.abducer != None and appOptions.abducer:
-            cmd = self._options.xe("${CMD_ABDUCER}")
-            self.manager.addProcess(procman.CProcess("abducer", cmd))
+            cmd = self._options.xe("${CMD_ABDUCER_SERVER}")
+            self.manager.addProcess(procman.CProcess("Abducer", cmd))
 
         if appOptions.display_srv != None and appOptions.display_srv:
             cmd = self._options.xe("${CMD_DISPLAY_SERVER}")
-            self.manager.addProcess(procman.CProcess("display", cmd))
+            self.manager.addProcess(procman.CProcess("Display", cmd))
 
         if appOptions.can_build:
             cmd = "make [TARGET]"
