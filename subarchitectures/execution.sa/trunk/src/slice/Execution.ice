@@ -253,6 +253,8 @@ module execution {
       };    
 
       class EngageWithHuman extends SingleBeliefAction {
+		//if true, generate a disengagement instead of an engagement
+		bool disengage;
       };
 
       class TurnToHuman extends SingleBeliefAction {
