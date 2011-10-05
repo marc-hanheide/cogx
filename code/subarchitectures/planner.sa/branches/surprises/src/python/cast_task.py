@@ -1,4 +1,4 @@
-import os, time
+import os, time, itertools
 from os.path import abspath, join
 from collections import defaultdict
 
@@ -313,8 +313,30 @@ class CASTTask(object):
                 if e["svar"] == svar and e["val"] == val and e["type"] == type:
                     return True
             return False
+
+        def all_objects(pnode):
+            for f in itertools.chain(pnode.preconds, pnode.effects):
+                for obj in itertools.chain(f.svar.args, f.svar.modal_args, [f.value]):
+                    yield obj
+            for obj in pnode.full_args:
+                yield obj
+
+        def state_diff(old, new):
+            facts = []
+            for f in new.iterfacts():
+                if f not in old:
+                    facts.append(f)
+            for f in old.iterfacts():
+                if f.svar not in new and f.svar.function not in (pddl.builtin.total_cost,):
+                    if f.svar.get_type() == pddl.t_boolean:
+                        facts.append(pddl.state.Fact(f.svar, pddl.FALSE))
+                    # else:
+                    #     facts.append(pddl.state.Fact(f.svar, pddl.UNKNOWN))
+            return facts
             
         plan = plans.MAPLPlan(self.init_state.state, self.cp_task.get_goal())
+        init_problem = self.init_state.state.problem.copy()
+        current_state = self.init_state.state.copy()
         get_node(plan.init_node)
         get_node(plan.goal_node)
 
@@ -324,6 +346,9 @@ class CASTTask(object):
 
         for p in _plans:
             for n in p.topological_sort():
+                for o in all_objects(n):
+                    if o not in init_problem:
+                        init_problem.add_object(o)
                 plan_dict[n] = p
                 if n.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
                     executed.append(n)
@@ -331,7 +356,7 @@ class CASTTask(object):
                     unexecuted.append(n)
 
         def add_links(n, new_n):
-            print new_n
+            # print new_n
             for pred, svar, val, type in get_incoming_links(n):
                 new_p = get_node(pred)
                 print "    ", pred, svar, val, type
@@ -352,9 +377,31 @@ class CASTTask(object):
         for n in executed:
             n.time = i
             i += 1
-            if n.is_virtual() or isinstance(n, plans.DummyNode):
+            print "===", n
+            if n.is_virtual() or n.action.name == "goal":
                 new_n = get_node(n)
+            elif n.action.name == "init":
+                new_st = pddl.state.State(n.effects, init_problem)
+                # extstate = new_st.get_extended_state()
+                # print map(str, 
+                diff_facts = state_diff(current_state, new_st)
+                new_n = plans.DummyNode("new_facts-%d" % i, [], i, n.status)
+                print [str(f) for f in diff_facts if f.svar.modality is None]
+                new_n.effects = set(diff_facts)
+                add_node(new_n)
+                for eff in new_n.effects:
+                    if eff.svar in written:
+                        real_p, expected_val = written[eff.svar]
+                        if new_st.get_extended_state([eff.svar])[eff.svar] == expected_val: #handle axioms
+                            continue
+                        assert eff.value != expected_val
+                        if not real_p.action.name.startswith("new_facts"):
+                            plan.add_edge(real_p, new_n, svar=eff.svar, val=eff.value, type="unexpected")
+                current_state = new_st
+                        
             else:
+                for eff in n.effects:
+                    current_state.set(eff)
                 add_node(n)
                 new_n = n
                 
@@ -364,7 +411,7 @@ class CASTTask(object):
             add_links(n, new_n)
 
             for svar, val in n.effects:
-                written[svar] = (n, val)
+                written[svar] = (new_n, val)
             
 
         written.clear()
@@ -386,11 +433,11 @@ class CASTTask(object):
         r_plan.reverse()
         for n in r_plan:
             if n.status == plans.ActionStatusEnum.EXECUTABLE and n != plan.goal_node:
-                print n
+                # print n
                 succ_iter = list(plan.successors_iter(n, link_type = ("depends", "unexpected")))
-                print "    ",map(str, succ_iter)
+                # print "    ",map(str, succ_iter)
                 if all(succ in redundant or succ.status != plans.ActionStatusEnum.EXECUTABLE for succ in succ_iter):
-                    print "redundant", n
+                    # print "redundant", n
                     redundant.add(n)
 
         for n in redundant:
@@ -399,17 +446,18 @@ class CASTTask(object):
         G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
         G.layout(prog='dot')
         G.draw("plan.pdf")
-        return plan
+        return plan, init_problem
             
     def handle_task_failure(self):
-        #self.merge_plans(self.plan_history)
-        last_plan = self.plan_history[-1].topological_sort()
+        merged_plan, merged_problem = self.merge_plans(self.plan_history)
+        # last_plan = self.plan_history[-1].topological_sort()
+        last_plan = merged_plan.topological_sort()
         endstate = self.state.state.copy()
-        for a in last_plan:
-            if a.status == plans.ActionStatusEnum.EXECUTED and not a.is_virtual():
-                for f in a.effects:
-                    endstate.set(f)
-        explanations.handle_failure(last_plan, self.state.state.problem, self.init_state, endstate, self.expl_rules_fn, self.cp_task)
+        # for a in last_plan:
+        #     if a.status == plans.ActionStatusEnum.EXECUTED and not a.is_virtual():
+        #         for f in a.effects:
+        #             endstate.set(f)
+        explanations.handle_failure(last_plan, merged_problem, self.init_state, endstate, self.expl_rules_fn, self.cp_task)
 
     def write_history(self):
         history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))

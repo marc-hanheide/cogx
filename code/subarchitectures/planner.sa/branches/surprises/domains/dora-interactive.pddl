@@ -58,6 +58,8 @@
    (dora__inobject ?l1 ?l2 - label ?c - category) - number
    (dora__on ?l1 ?l2 - label ?c - category) - number
 
+   (dora__not_inroom ?l - label ?c - category) - number
+
    ;; === inferred knowledge ===
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
@@ -70,6 +72,7 @@
    (identity ?r - room) - category
    (roomid ?r - room) - number
    (virtual-category ?r - room) - category
+   (virtual-place ?r - room) - place
 
    ;; === place properties ===
    (placestatus ?n - place) - place_status
@@ -111,6 +114,9 @@
    container - label
    yes no dontknow - polar_reply
    tutor - agent
+   unknown-relation - spatial_relation
+   unknown-room - room
+   unkonw-object - visualobject
    )
 
 
@@ -144,15 +150,26 @@
 
   ;; create dummy rooms
   (:init-rule rooms
-              :parameters(?c - category)
-              :precondition (not (exists (?r - room)
-                                         (and (= (virtual-category ?r) ?c)
-                                              (is-virtual ?r))))
+              :parameters(?p - place)
+              :precondition (and (= (placestatus ?p) placeholder)
+                                 (not (exists (?r - room)
+                                              (and (= (virtual-place ?r) ?p)
+                                                   (is-virtual ?r)))))
               :effect (create (?r - room) (and
                                            (is-virtual ?r)
-                                           (assign (virtual-category ?r) ?c))
+                                           (assign (virtual-place ?r) ?p))
                               )
               )
+  ;; (:init-rule rooms
+  ;;             :parameters(?c - category)
+  ;;             :precondition (not (exists (?r - room)
+  ;;                                        (and (= (virtual-category ?r) ?c)
+  ;;                                             (is-virtual ?r))))
+  ;;             :effect (create (?r - room) (and
+  ;;                                          (is-virtual ?r)
+  ;;                                          (assign (virtual-category ?r) ?c))
+  ;;                             )
+  ;;             )
 
 
   (:init-rule default_search_costs_for_room
@@ -183,6 +200,12 @@
               :precondition (> ?svar 0.0001)
               :effect (defined ?svar))
 
+
+ (:init-rule negated-probs
+             :parameters (?l - label  ?c - category)
+             :precondition (defined (dora__inroom ?l ?c))
+             :effect (assign (dora__not_inroom ?l ?c) (- 1.0 (dora__inroom ?l ?c)))
+             )
 
   (:derived (attached_to_room ?p - place ?r - room)
             (exists (?p2 - place) (and (= (in-room ?p2) ?r)
@@ -231,6 +254,8 @@
                               (not (defined (p-obj_exists ?l in ?r ?c))))
            :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
 
+  ;; (assign (obj_in_room ?l ?r)
+
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_in_obj
            :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category)
@@ -241,6 +266,8 @@
                               (defined (dora__inobject ?l1 ?l2 ?c))
                               (not (defined (p-obj_exists ?l1 in ?o ?c))))
            :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
+
+  ;; (assign (obj_in_room ?l ?r)
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
   (:dtrule obj_on_obj
@@ -253,6 +280,7 @@
                               (not (defined (p-obj_exists ?l1 on ?o ?c))))
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
+  ;; (assign (obj_in_room ?l ?r)
 
   ;; use posterior information from conceptual.sa 
   ;; force commitment to a room category to help the heuristic
@@ -311,11 +339,19 @@
   (:dtrule room_from_placeholder
            :parameters (?p - place ?r - room ?c - category)
            :precondition (and (= (placestatus ?p) placeholder)
-                              (= (virtual-category ?r) ?c)
+                              (= (virtual-place ?r) ?p)
                               (= (leads_to_room ?p ?c) true)
                               (is-virtual ?r))
            :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                            (assign (category ?r) ?c))))
+  ;; (:dtrule room_from_placeholder
+  ;;          :parameters (?p - place ?r - room ?c - category)
+  ;;          :precondition (and (= (placestatus ?p) placeholder)
+  ;;                             (= (virtual-category ?r) ?c)
+  ;;                             (= (leads_to_room ?p ?c) true)
+  ;;                             (is-virtual ?r))
+  ;;          :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
+  ;;                                          (assign (category ?r) ?c))))
 
   ;; (:action explore_place
   ;;          :agent (?a - robot)
@@ -463,7 +499,7 @@
                                (poss (relation ?o) in)
                                (not (done)))
             :effect (and (increase (total-cost) (search_cost ?l in ?r)))
-            :sense (related-to ?o)
+            :sense (= (related-to ?o) ?r)
             )
                      
 
