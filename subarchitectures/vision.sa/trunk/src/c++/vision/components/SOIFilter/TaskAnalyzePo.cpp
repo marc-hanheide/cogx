@@ -137,7 +137,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
     debug("analyze_task: creating new VisualObject.");
     pvo = createVisualObject();
     pvo->protoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
-    pvo->lastProtoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
+    pvo->lastProtoObject = pvo->protoObject;
     pvo->pose.pos = pobj->position;
 
     voAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(), pSoiFilter->getSubarchitectureID());
