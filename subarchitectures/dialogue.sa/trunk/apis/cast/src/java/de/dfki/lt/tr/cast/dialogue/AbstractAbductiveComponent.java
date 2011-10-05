@@ -1,11 +1,6 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import cast.SubarchitectureComponentException;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.dialogue.interpret.PartialInterpretation;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
@@ -20,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public abstract class AbstractInterpretationManager<T>
+public abstract class AbstractAbductiveComponent<T>
 extends AbstractDialogueComponent {
 
 	private final Map<WorkingMemoryAddress, PartialInterpretation> interpretations;
@@ -29,7 +24,7 @@ extends AbstractDialogueComponent {
 
 	private AbductionEnginePrx engine;
 
-	public AbstractInterpretationManager() {
+	public AbstractAbductiveComponent() {
 		interpretations = new HashMap<WorkingMemoryAddress, PartialInterpretation>();
 		executor = Executors.newSingleThreadExecutor();
 	}
@@ -75,31 +70,9 @@ extends AbstractDialogueComponent {
 			return;
 		}
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
-				InterpretationRequest.class, WorkingMemoryOperation.ADD),
-				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
-
-							@Override
-							public void execute(WorkingMemoryAddress addr) {
-								try {
-									InterpretationRequest inprRequest = getMemoryEntry(addr, InterpretationRequest.class);
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(context.getPruner(), addr, inprRequest));
-								}
-								catch (SubarchitectureComponentException ex) {
-									logException(ex);
-								}
-							}
-							
-						});
-					}
-				});
-
 	}
 
-	private void addNewPartialInterpretation(WorkingMemoryAddress origin, PartialInterpretation pinpr) {
+	protected final void addNewPartialInterpretation(WorkingMemoryAddress origin, PartialInterpretation pinpr) {
 		getLogger().info("adding a new partial interpretation");
 		interpretations.put(origin, pinpr);
 		addTask(expandInterpretationTask(pinpr));
@@ -154,7 +127,8 @@ extends AbstractDialogueComponent {
 		});
 	}
 
-	private PartialInterpretation interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request) {
+	protected PartialInterpretation interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request) {
 		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner);
 	}
+
 }

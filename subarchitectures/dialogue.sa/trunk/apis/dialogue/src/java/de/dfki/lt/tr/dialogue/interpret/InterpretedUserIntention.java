@@ -4,6 +4,7 @@ import cast.SubarchitectureComponentException;
 import cast.architecture.WorkingMemoryWriterComponent;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.ProcessingState;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -106,7 +107,7 @@ implements CASTProcessingResult, WellFormedTestable {
 	@Override
 	public String toString() {
 		String s = "[interpreted-user-intention struct:\n";
-		s += wmaToString(wma) + " ... " + interpretedIntentionToString(iint, wma) + "\n";
+		s += wmaToString(wma) + " ... " + interpretedIntentionToString(iint) + "\n";
 		s += "\n";
 		s += newBeliefs.size() + " beliefs need to be created:\n";
 		for (WorkingMemoryAddress addr : newBeliefs.keySet()) {
@@ -119,22 +120,29 @@ implements CASTProcessingResult, WellFormedTestable {
 		return s;
 	}
 
-	public static String interpretedIntentionToString(InterpretedIntention iint, WorkingMemoryAddress addr) {
+	public static String interpretedIntentionToString(InterpretedIntention iint) {
 		String s = "(InterpretedIntention\n";
 		s += "  state = " + iint.state.toString() + "\n";
 		s += "  agent = " + iint.agent + "\n";
 		s += "  confidence = " + iint.confidence + "\n";
-		s += "  stringContent = {\n";
-		for (String key : iint.stringContent.keySet()) {
-			s += "    \"" + key + "\" -> \"" + iint.stringContent.get(key) + "\"\n";
-		}
-		s += "  }\n";
-		s += "  pointerContent = {\n";
-		for (String key : iint.addressContent.keySet()) {
-			s += "    \"" + key + "\" -> " + wmaToString(iint.addressContent.get(key)) + "\n";
-		}
-		s += "  }\n";
+		s += baseIntentionToString(iint, "  ") + "\n";
 		s += ")";
+		return s;
+	}
+
+	public static String baseIntentionToString(BaseIntention bint, String indent) {
+		String s = indent + "(\n";
+		s += indent + "  stringContent = {\n";
+		for (String key : bint.stringContent.keySet()) {
+			s += indent + "    \"" + key + "\" -> \"" + bint.stringContent.get(key) + "\"\n";
+		}
+		s += indent + "  }\n";
+		s += indent + "  pointerContent = {\n";
+		for (String key : bint.addressContent.keySet()) {
+			s += indent + "    \"" + key + "\" -> " + wmaToString(bint.addressContent.get(key)) + "\n";
+		}
+		s += indent + "  }\n";
+		s += indent + ")";
 		return s;
 	}
 

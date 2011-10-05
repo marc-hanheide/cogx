@@ -14,6 +14,7 @@ import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.PartialInterpretation;
 import de.dfki.lt.tr.dialogue.interpret.ReferenceGatherer;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
@@ -29,6 +30,7 @@ import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
+import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
@@ -61,12 +63,13 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class NewIntentionRecognizer
-extends AbstractInterpretationManager<InterpretedUserIntention> {
+extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 	public final String DEFAULT_ABD_SERVER_NAME = "AbducerServer";
 	public final int DEFAULT_ABD_PORT = 9100;
 	public final String DEFAULT_ABD_ENDPOINT_CONFIG = "default";
 	public final String DEFAULT_ENGINE_NAME = "intention-recognition";
+	public final int DEFAULT_TIMEOUT = 250;
 
 	private String abd_serverName = DEFAULT_ABD_SERVER_NAME;
 	private List<String> files = new LinkedList<String>();
@@ -75,18 +78,28 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 	private String rulesetFile = "/dev/null";
 
-	private int timeout = 250;
+	private int timeout = DEFAULT_TIMEOUT;
 
 	private final Map<String, SelectedLogicalForm> nomToLFMap;
 
 	private final ReferenceResolutionRequestExtractor rrExtractor;
 	private final Map<WorkingMemoryAddress, ReferenceGatherer> gatherers;
 
+	private final IdentifierGenerator<String> idGen;
+	private final String idPrefix = "irecog";
+	private int idIndex = 0;
+
 	public NewIntentionRecognizer() {
 		super();
 		nomToLFMap = new HashMap<String, SelectedLogicalForm>();
 		rrExtractor = new BasicReferenceResolutionRequestExtractor(getLogger());
 		gatherers = new HashMap<WorkingMemoryAddress, ReferenceGatherer>();
+		idGen = new IdentifierGenerator<String>() {
+			@Override
+			public String newIdentifier() {
+				return idPrefix + ":" + idIndex++;
+			}
+		};
 	}
 
 	@Override
@@ -183,11 +196,11 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 							@Override
 							public void execute(WorkingMemoryAddress addr) {
 								try {
-									getLogger().info("converting the SelectedLogicalForm to an InterpretationRequest");
+									getLogger().info("converting the SelectedLogicalForm to a partial interpretation");
 									SelectedLogicalForm slf = getMemoryEntry(addr, SelectedLogicalForm.class);
 									nomToLFMap.put(slf.lform.root.nomVar, slf);
 									InterpretationRequest inprRequest = new InterpretationRequest(selectedLFToGoal(slf));
-									addToWorkingMemory(newDataID(), inprRequest);
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);
@@ -440,7 +453,7 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 	}
 
 	protected WorkingMemoryAddress newWorkingMemoryAddress() {
-		return new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+		return new WorkingMemoryAddress(idGen.newIdentifier(), getSubarchitectureID());
 	}
 
 	protected SelectedLogicalForm findSelectedLogicalFormByContainedNominal(String nominal) {
