@@ -6,6 +6,7 @@
 
 #include "TaskReceiveSoi.h"
 #include "SOIFilter.h"
+#include "WmUnlocker.h"
 
 #include "../../VisionUtils.h"
 #include <Video.hpp>
@@ -19,50 +20,6 @@ using namespace VisionData;
 using namespace cogx;
 
 namespace cast {
-
-// Removes the successfully locked locks on destruction (eg. exiting scope)
-struct WmUnlocker
-{
-  class LockError: public std::exception
-  {
-    std::string reason;
-  public:
-    LockError(const std::string& error = "")
-    {
-      reason = error;
-    }
-    ~LockError() throw()
-    {
-    }
-    const char* what() const throw()
-    {
-      return reason.c_str();
-    }
-  };
-
-  std::vector<cdl::WorkingMemoryAddress> locks;
-  cast::WorkingMemoryAttachedComponent *pc;
-  WmUnlocker(cast::WorkingMemoryAttachedComponent* pComponent) {
-    pc = pComponent;
-  }
-  void lock(cdl::WorkingMemoryAddress& addr, cdl::WorkingMemoryPermissions perm) {
-    if (!pc->tryLockEntry(addr, perm))
-      throw LockError("Trying to lock object: " + addr.id);
-    locks.push_back(addr);
-  }
-  void unlockAll()
-  {
-    for (int i = 0; i < (int) locks.size(); ++i) {
-      try {
-        pc->unlockEntry(locks[i]);
-      }
-      catch(cast::DoesNotExistOnWMException){ }
-    }
-  }
-  ~WmUnlocker() {
-    unlockAll();
-  }
-};
 
 /*
  * 2 step VisualObject generation.
@@ -420,7 +377,7 @@ void WmTaskExecutor_Soi::MakeInvisible(cdl::WorkingMemoryAddress &protoObjectAdd
 
       VisualObjectPtr pvo;
       pvo = pSoiFilter->getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
-      pvo->lastProtoObject = pvo->protoObject;
+      // set this when setting protoObject: pvo->lastProtoObject = pvo->protoObject; 
       pvo->protoObject = nullWmPointer();
       pvo->presence = VisionData::VopWasVISIBLE;
       pSoiFilter->overwriteWorkingMemory<VisionData::VisualObject>(pvorec->addr, pvo);

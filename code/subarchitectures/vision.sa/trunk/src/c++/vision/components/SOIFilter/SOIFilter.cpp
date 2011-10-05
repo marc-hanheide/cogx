@@ -8,6 +8,7 @@
 #include "TaskReceiveSoi.h"
 #include "TaskMoveToViewCone.h"
 #include "TaskAnalyzePo.h"
+#include "WmUnlocker.h"
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <fstream>
@@ -709,25 +710,50 @@ void SOIFilter::checkInvisibleObjects()
         isPointVisible(pporec->pobj->position) ? "IN" : "OUT");
 #endif
     if (isPointVisible(pporec->pobj->position)) {
+      log("PO '%s' was removed.", pporec->addr.id.c_str());
+      WmUnlocker locker(this);
+
+      // Mark the appropriate VO as REMOVED.  XXX: the object could be deleted, if this is preferred.
+      VisualObjectRecordPtr pvorec = findVisualObjectFor(pporec->addr);
+      if (! pvorec)
+        pvorec = findHiddenVisualObjectFor(pporec->addr);
+
+      if (! pvorec) {
+        error("A visible PO-rec has no associated VO-rec.");
+      }
+      else {
+        log("VO '%s': presence = VopREMOVED", pvorec->addr.id.c_str());
+        int lockRetries = 5;
+        while (lockRetries > 0) {
+          --lockRetries;
+          try {
+            locker.lock(pvorec->addr, cdl::LOCKEDODR);
+
+            VisualObjectPtr pvobj = getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
+            pvobj->presence = VisionData::VopREMOVED;
+            overwriteWorkingMemory(pvorec->addr, pvobj);
+            break;
+          }
+          catch(WmUnlocker::LockError& e) {
+            locker.unlockAll();
+            sleepComponent(100);
+            if (lockRetries > 0)
+              continue;
+            println("RemoveInvisible: Could not lock VO");
+          }
+          catch(cast::DoesNotExistOnWMException){
+            println("RemoveInvisible: An internal VO record exists for a non-existing wm-VO.");
+          }
+          break;
+        }
+      }
+
       // the object should be visible, but there is no SOI -> assume removed from scene -> delete PO
       try {
         deleteFromWorkingMemory(pporec->addr);
       }
       catch(cast::DoesNotExistOnWMException){
-        debug("check_invisible: ProtoObject already deleted from WM.");
-      }
-
-      // Mark the appropriate VO as REMOVED.  XXX: the object could be deleted, if this is preferred.
-      VisualObjectRecordPtr pvorec = findVisualObjectFor(pporec->addr);
-      if (pvorec) {
-        try {
-          VisualObjectPtr pvobj = getMemoryEntry<VisionData::VisualObject>(pvorec->addr);
-          pvobj->presence = VisionData::VopREMOVED;
-          overwriteWorkingMemory(pvorec->addr, pvobj);
-        }
-        catch(cast::DoesNotExistOnWMException){
-          debug("check_invisible: VisualObject for a removed PO does not exist in WM.");
-        }
+        println("check_invisible: ProtoObject already deleted from WM.");
       }
     }
   }
