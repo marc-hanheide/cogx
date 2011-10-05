@@ -281,8 +281,8 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 									+ " (" + toWMA.id + ")");
 							wm2wmMap.put(ev.address, toWMA);
 						} else {
-							getLogger()
-									.warn("failed to create a corresponding belief for "
+							getLogger().warn(
+									"failed to create a corresponding belief for "
 											+ from.type);
 						}
 					} else {
@@ -435,7 +435,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 
 		start();
 		try {
-			while (true) {
+			while (component.isRunning()) {
 				try {
 					final WorkingMemoryChange ev = entryQueue.take();
 					switch (ev.operation) {
@@ -460,13 +460,18 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 
 						if (shouldPropagateDeletion) {
 							WorkingMemoryAddress adr = wm2wmMap.get(ev.address);
-							try {
-								component.lockEntry(adr,
-										WorkingMemoryPermissions.LOCKEDODR);
-								component.deleteFromWorkingMemory(adr);
-								log("deleted belief " + CASTUtils.toString(adr));
-							} catch (CASTException e) {
-								component.unlockEntry(adr);
+							
+							//nah: this could be null if we don't track this entry
+							if (adr != null) {
+								try {
+									component.lockEntry(adr,
+											WorkingMemoryPermissions.LOCKEDODR);
+									component.deleteFromWorkingMemory(adr);
+									log("deleted belief "
+											+ CASTUtils.toString(adr));
+								} catch (CASTException e) {
+									component.unlockEntry(adr);
+								}
 							}
 
 						}
