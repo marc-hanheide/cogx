@@ -239,6 +239,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 2 : "engage is expected to be of arity 2";
 			return createSingleBeliefAction(TurnToHuman.class,
 					_plannedAction.arguments[1]);
+			
 		} else if (_plannedAction.name
 				.equals("report_position")) {
 			assert _plannedAction.arguments.length == 2 : "report_position is expected to be of arity 2";

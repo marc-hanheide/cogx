@@ -1,6 +1,7 @@
 package dialogue.execution.dora;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -12,6 +13,7 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
@@ -37,6 +39,8 @@ import execution.util.DoNothingActionExecutorFactory;
  * 
  */
 public class DialogueActionInterface extends AbstractDialogueActionInterface {
+
+	private static final String INTENTION_TYPE_KEY = "type";
 
 	public static class ReportPositionDialogue
 			extends
@@ -73,13 +77,13 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 				WMPointer placePointer = WMPointer
 						.create(gb
 								.getContent()
-								.get(
-										eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
+								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
 								.getDistribution().getMostLikely().get());
 
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, getComponent()
-								.getMemoryEntry(placePointer.getVal(),
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										placePointer.getVal(),
 										GroundedBelief.class));
 
 				WMPointer roomPointer = WMPointer.create(placeBelief
@@ -87,8 +91,9 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 						.getDistribution().getMostLikely().get());
 
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, getComponent()
-								.getMemoryEntry(roomPointer.getVal(),
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										roomPointer.getVal(),
 										GroundedBelief.class));
 
 				// start with a default room
@@ -160,24 +165,25 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 				WMPointer placePointer = WMPointer
 						.create(gb
 								.getContent()
-								.get(
-										eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
+								.get(eu.cogx.perceptmediator.dora.VisualObjectTransferFunction.IS_IN)
 								.getDistribution().getMostLikely().get());
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, getComponent()
-								.getMemoryEntry(placePointer.getVal(),
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										placePointer.getVal(),
 										GroundedBelief.class));
-				int placeID = placeBelief.getContent().get(
-						PlaceTransferFunction.PLACE_ID_ID).getDistribution()
-						.getMostLikely().getInteger();
+				int placeID = placeBelief.getContent()
+						.get(PlaceTransferFunction.PLACE_ID_ID)
+						.getDistribution().getMostLikely().getInteger();
 
 				WMPointer roomPointer = WMPointer.create(placeBelief
 						.getContent().get(RoomMembershipMediator.ROOM_PROPERTY)
 						.getDistribution().getMostLikely().get());
 
 				CASTIndependentFormulaDistributionsBelief<GroundedBelief> roomBelief = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, getComponent()
-								.getMemoryEntry(roomPointer.getVal(),
+						.create(GroundedBelief.class,
+								getComponent().getMemoryEntry(
+										roomPointer.getVal(),
 										GroundedBelief.class));
 
 				// start with a default room
@@ -218,11 +224,58 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 		}
 	}
 
+	/**
+	 * Executor for generating engagement and disengagement dialogues (assuming
+	 * I can do both in one struct). First pass just writes out intention then
+	 * returns succcess.
+	 */
+	public static class HumanEngagementExecutor extends
+			BlockingActionExecutor<EngageWithHuman> {
+
+		public HumanEngagementExecutor(ManagedComponent _component) {
+			super(_component, EngageWithHuman.class);
+		}
+
+		@Override
+		public TriBool execute() {
+
+			IntentionToAct actint = new IntentionToAct(
+					new HashMap<String, String>(),
+					new HashMap<String, WorkingMemoryAddress>());
+
+			if (getAction().disengage) {
+				actint.stringContent.put(INTENTION_TYPE_KEY,
+						"engagement-closing");
+			} else {
+				actint.stringContent.put(INTENTION_TYPE_KEY,
+						"engagement-opening");
+			}
+
+			try {
+				getComponent().addToWorkingMemory(newWorkingMemoryAddress(),
+						actint);
+				log("added intention to WM, not sleeping for 5 seconds");
+				Thread.sleep(5000);
+				return TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			} catch (InterruptedException e) {
+				logException(e);
+			}
+
+			return TriBool.TRIFALSE;
+
+		}
+
+	}
+
 	@Override
 	protected void start() {
 		super.start();
 
-		// TODO: this is a hack, we need a proper executor for this (ticket #296)
+		// TODO: this is a hack, we need a proper executor for this (ticket
+		// #296)
 		m_actionStateManager.registerActionType(EngageWithHuman.class,
 				new DoNothingActionExecutorFactory(this));
 
