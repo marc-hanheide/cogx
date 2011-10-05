@@ -74,6 +74,8 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 
 SETVAR vision_pcserver_host=pcserver
 SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
+# disable use of Kinect data for navigation:
+SETVAR spatial_pcserver=--pcserver %(vision_pcserver_host)
 
 SETVAR no_placeholders=--no-placeholders
 
