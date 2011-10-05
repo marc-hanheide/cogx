@@ -21,7 +21,9 @@ import SpatialProperties.GatewayPlaceProperty;
 import SpatialProperties.ObjectPlaceProperty;
 import SpatialProperties.PropertyValue;
 import SpatialProperties.RoomHumanAssertionPlaceProperty;
+import VisionData.VisualObject;
 
+import coma.aux.ComaGBeliefHelper;
 import coma.aux.ComaHelper;
 import comadata.ComaReasonerInterfacePrx;
 import comadata.ComaRoom;
@@ -40,6 +42,8 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTData;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
 import de.dfki.lt.tr.beliefs.slice.distribs.DistributionValues;
@@ -52,6 +56,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
  * This is a simple monitor that replicates spatial WM entries, *PLACES*, inside coma.
@@ -160,18 +165,28 @@ public class PlaceMonitor extends ManagedComponent {
 				new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
 			throws CASTException {
-				processAddedBelief(_wmc);
+				processAddedDBelief(_wmc);
+			}
+		});
+
+		// track grounded beliefs of objects (and ignore grounded beliefs about rooms)
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(GroundedBelief.class, WorkingMemoryOperation.ADD), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
+			throws CASTException {
+				processAddedGBelief(_wmc);
 			}
 		});
 
 		// track objects found by AVS
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
-				new WorkingMemoryChangeReceiver() {
-			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
-			throws CASTException {
-				processAddedObjectProperty(_wmc);
-			}
-		});
+		// now done via GroundedBeliefs
+		//addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ObjectPlaceProperty.class, WorkingMemoryOperation.ADD), 
+		//		new WorkingMemoryChangeReceiver() {
+		//	public void workingMemoryChanged(WorkingMemoryChange _wmc) 
+		//	throws CASTException {
+		//		processAddedObjectProperty(_wmc);
+		//	}
+		//});
 
 		
 		// initialize ice server connections
@@ -462,67 +477,319 @@ public class PlaceMonitor extends ManagedComponent {
 		maintainRooms();
 	}
 	
-	private void processAddedObjectProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		log("processAddedObjectProperty() called.");
-		// get object from WM
-		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
-		debug("got a callback for an ADDED ObjectPlaceProperty for " + 
-				_objProp.category + " with relation "+ _objProp.relation.toString() + " to support object " +
-				_objProp.supportObjectId + " of category " + _objProp.supportObjectCategory +
-				" observed from a place with ID " + _objProp.placeId + 
-				" with a probability of ");
-		
-		
-		if (_objProp.inferred) {
-			debug("the added ObjectPlaceProperty was inferred from conceptual and not observed by AVS. Doing nothing.");
-			return;
-		}
-		
-		DiscreteProbabilityDistribution dpd = (DiscreteProbabilityDistribution) _objProp.distribution;
-		if (!((((BinaryValue) dpd.data[0].value).value == true && dpd.data[0].probability > 0.5)
-				|| (((BinaryValue) dpd.data[1].value).value == true && dpd.data[1].probability > 0.5)))  {
-			debug("The ObjectPlaceProperty object observation has a probability <= 0.5. Doing nothing.");
-			return;
-		}
-		
-		log("ready to add an object to the coma KB.");
-		// TODO add object to coma KB!!!
-		
-		// _objProp.category; // cat of the obj
-		// _objProp.distribution; // 
-		// _objProp.inferred; // must be false, otherwise it is inferred by conceptual
-		// _objProp.mapValue; // ignore max a posteriori
-		// _objProp.mapValueReliable; // ignore max a posteriori
-		// _objProp.placeId; // place from which it was seen
-		// _objProp.relation; // enum := ON, INOBJECT, INROOM
-		// _objProp.supportObjectCategory; // category of the supporting/related object or "" if INROOM
-		// _objProp.supportObjectId; // unique id of the supporting object
-		
-		String objInsName = "dora:" + _objProp.category.toLowerCase() + _wmc.address.id.replace(":", "_");
-		String objCatName = "dora:" + ComaHelper.firstCap(_objProp.category);
-		
-		String placeInsName = "dora:place" + _objProp.placeId;
-		
-		m_comareasoner.addInstance(objInsName, objCatName);
-		log("executed addInstance( " + objInsName + ", " + objCatName +" )");
-		m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
-		log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
-				
-		// check if the object is immediately in the room or related via a supportObject
-		if ((!_objProp.supportObjectCategory.equals("")) && 
-				(_objProp.relation.equals(SpatialRelation.ON) || _objProp.relation.equals(SpatialRelation.INOBJECT))) {
-			String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
-			String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
+	//	private boolean createObject(ObjectPlaceProperty _objProp) {
+	//		// establish the ontology member names
+	//		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
+	//		String placeIns = "dora:place"+_objProp.placeId;
+	//		String inRel = "dora:in";
+	//		String containsRel = "dora:contains";
+	//		
+	//		log("createObject of category " + category + " in place " + placeIns + " called.");
+	//		
+	//		// check whether the given place already contains an instance of the given category
+	//		String [] objsInPlace = m_comareasoner.getRelatedInstancesByRelation(placeIns, containsRel);
+	//		for (String obj : objsInPlace) {
+	//			if (obj.startsWith(":")) obj = "dora" + obj;
+	//			if (m_comareasoner.isInstanceOf(obj, category)) {
+	//				log("object of the given category already exists in the given place - doing nothing else.");
+	//				return false;
+	//				// if such an object exists, don't create a new instance!
+	//			}
+	//		}
+	//		
+	//		String objIns = "dora:object" + m_objectIndexCounter++; 
+	//		
+	//		log("going to add new instance " + objIns + " of category " + category);
+	//		m_comareasoner.addInstance(objIns, category);
+	//		log("going to add new relation " + objIns + " " + inRel + " " + placeIns);
+	//		m_comareasoner.addRelation(objIns, inRel, placeIns);
+	//		return true;
+	//	}
+	
+		/**
+		 * This method is invoked whenever a new dBelief is written to some WorkingMemory.
+		 * 
+		 * It is meant to handle cases in which a user/human-asserted belief about a room category/label 
+		 * is added to WM. This is the case, e.g., when a human answers a question about a room category.
+		 * 
+		 * @param _wmc
+		 * @throws DoesNotExistOnWMException
+		 * @throws UnknownSubarchitectureException
+		 */
+		private void processAddedDBelief(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+			// get dBelief from WM
+			dBelief _belief = getMemoryEntry(_wmc.address, dBelief.class);
+			log("processAddedDBelief() called: got a callback for an ADDED dBelief");
 			
-			m_comareasoner.addInstance(suppobjInsName, suppobjCatName);
-			m_comareasoner.addRelation(suppobjInsName, "dora:observableFromPlace", placeInsName);
-			m_comareasoner.addRelation(
-					objInsName, 
-					(_objProp.relation.equals(SpatialRelation.ON) ? "dora:on" : "dora:in"), 
-					suppobjInsName);
-		}	
-	}
+			// we are only interested in certain dBeliefs
+			EpistemicStatus _epi= _belief.estatus;
+			if (_epi instanceof AttributedEpistemicStatus) {
+				// only react on human-asserted facts
+				if (((AttributedEpistemicStatus) _epi).attribagents.contains("human") && (_belief.type.equals("fact"))) {
+					log("received a belief of type fact attributed by a human");
+					
+					// the rest that follows makes some ugly assumptions about the structure within the human-attributed factual belief
+					if (_belief.content instanceof CondIndependentDistribs) {
+						// this try has the intention of catching bad class cast operations 
+						// -- which are the result of not met assumptions regarding the belief structure
+						try {
+						HashSet<String> _assertedRoomCats = new HashSet<String>(); 
+					
+						DistributionValues identityVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("identity")).values;
+						for (FormulaProbPair _currPair : ((FormulaValues) identityVals).values) {
+							log("current identity: " + ((ElementaryFormula) _currPair.val).prop + " with " + _currPair.prob);
+							if (_currPair.prob>=0.5) _assertedRoomCats.add(((ElementaryFormula) _currPair.val).prop);
+						}
+						StringBuffer _assertedLabels = new StringBuffer();
+						for (String _label : _assertedRoomCats) {
+							_assertedLabels.append(_label).append(" ");
+						}
+						
+						// this should be WMPs -- but the type field does not seem to be properly set anyway
+						HashSet<WorkingMemoryAddress> _gBeliefs = new HashSet<WorkingMemoryAddress>();
+						DistributionValues aboutVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("about")).values;
+						for (FormulaProbPair _currPair : ((FormulaValues) aboutVals).values) {
+							log("current about: WMID=" + ((PointerFormula) _currPair.val).pointer.id + "WMSA=" + ((PointerFormula) _currPair.val).pointer.subarchitecture + " with " + _currPair.prob);
+							if (_currPair.prob>=0.5) _gBeliefs.add(new WorkingMemoryAddress(((PointerFormula) _currPair.val).pointer.id, ((PointerFormula) _currPair.val).pointer.subarchitecture));
+						} 
+						
+						for (WorkingMemoryAddress _gBelief : _gBeliefs) {
+							GroundedBelief _currBelief = getMemoryEntry(_gBelief, GroundedBelief.class);
+							
+							// ok, the following iterator code works, 
+							// but it might be jumping on false conclusions in case there exist multiple ancestors
+							for (WorkingMemoryPointer _wmp : ((CASTBeliefHistory) _currBelief.hist).ancestors) {
+								// naive sanity checking!
+								if (_wmp.type.contains("ComaRoom")) {
+									// load ComaRoomWME in order to check if a new category was asserted
+									ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
+									log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
 		
+									// for now, associate the RoomPlaceProperty with the seed place of the room
+									// that it has been resolved against -- later the assertion should be referenced
+									// by the place at which it was made/received -- and that place should be used instead.
+									// the current implementation does not account correctly for non-monotonic splits/merges of
+									// rooms!
+									for (String assertedRoomCat : _assertedRoomCats) {
+										// for each belief that expresses a human assertion about a room category
+										// we write a placeproperty -- ther is no check for duplicates at this point!
+										
+										RoomHumanAssertionPlaceProperty roomCatAssertion = new RoomHumanAssertionPlaceProperty(
+												Long.valueOf(_currRoom.seedPlaceInstance.replaceAll("\\D","")),
+												new SpatialProperties.ProbabilityDistribution(), new PropertyValue(),
+												true, false, assertedRoomCat);
+										
+										try {
+											if (m_spatial_sa_name!=null) {
+												addToWorkingMemory(new WorkingMemoryAddress(newDataID(), m_spatial_sa_name), roomCatAssertion);
+											}
+											else {
+												log("cannot add RoomHumanAssertionPlaceProperty to WM: spatial SA name is unknown!");
+											}
+											//addToWorkingMemory(newDataID(), roomCatAssertion);
+										} catch (AlreadyExistsOnWMException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										
+									}
+									
+									/*
+									// compare the set(!) of already known asserted room categories with the new set
+									HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
+									// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
+									if (!prevKnownAssertedRoomCats.equals(_assertedRoomCats)) {
+										log("there are new asserted room categories not previosuly known.");
+										HashSet<String> allKnownAssertedRoomsCats = new HashSet<String>();
+										allKnownAssertedRoomsCats.addAll(prevKnownAssertedRoomCats);
+										allKnownAssertedRoomsCats.addAll(_assertedRoomCats);
+										String[] newAssertedLabels = allKnownAssertedRoomsCats.toArray(new String[allKnownAssertedRoomsCats.size()]);
+									
+										// if there is a new room category, we need to overwrite the room WME
+										_currRoom.assertedLabels = newAssertedLabels; //uncomment this
+										_currRoom.categories=new ProbabilityDistribution();
+										// overwriting must be safe: lock + unlock WME
+										debug("locking ComaRoom WME.");
+										lockEntry(_wmp.address, WorkingMemoryPermissions.LOCKEDODR);
+										try {
+											debug("overwriting ComaRoom WME.");
+											overwriteWorkingMemory(_wmp.address,_currRoom);
+											debug("unlocking ComaRoom WME.");
+											unlockEntry(_wmp.address);
+											log("successfully overwritten ComaRoom WMD with new asserted labels.");
+										} catch (ConsistencyException e) {
+											log("There was a ConsistencyException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
+											e.printStackTrace();
+										} catch (PermissionException e) {
+											log("There was a PermissionException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
+											e.printStackTrace();
+										}
+									}	
+									*/							
+								} else {
+									log("The ancestor points to a non-ComaRoom WME. Doing nothing.");
+								}
+							}						
+						}
+						} catch (ClassCastException cce) {
+							log("Caught a ClassCastException. This means some assumption was not met. Doing nothing. Here's the transcript: " + cce.getStackTrace());
+							cce.printStackTrace();
+						}
+					} else {
+						debug("the belief content is not of type CondIndependentDistribs. Don't know what to do. Doing nothing.");
+					}
+				} else {
+					debug("the attributed dBelief is not a human-asserted fact. Doing nothing.");
+				}
+			} else {
+				debug("the added dBelief WME does not have an AttributedEpistemicStatus. Doing nothing.");
+			}
+		}
+
+
+	/**
+	 * This method is invoked whenever a new GroundedBelief is written to some WorkingMemory.
+	 * 
+	 * It is meant to handle cases when an object is found (e.g., by AVS etc).
+	 * It currently ignores GroundedBeliefs about ComaRooms 
+	 * (they're based on what is generated in here anyway).
+	 * 
+	 * @param _wmc
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
+	private void processAddedGBelief(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		// get GroundedBelief from WM
+		GroundedBelief _belief = getMemoryEntry(_wmc.address, GroundedBelief.class);
+		log("processAddedGBelief() called: got a callback for an ADDED GroundedBelief");
+		
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = 
+			CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, _belief);
+		
+		// check if it's a VisualObject:
+        if (gbProxy.getType().equals(
+                SimpleDiscreteTransferFunction
+                        .getBeliefTypeFromCastType(VisualObject.class))) {
+        	log("the ADDED GroundedBelief is about a VisualObject. Going to process it.");
+        	
+        	// first lock it
+        	lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
+        	
+        	// process further
+        	processVisObjGBelief(_belief);
+        	
+        	//add change filters
+        	// add an OVERWRITE address filter
+        	addChangeFilter(ChangeFilterFactory.createAddressFilter(_wmc.address,WorkingMemoryOperation.OVERWRITE), 
+        			new WorkingMemoryChangeReceiver() {
+    			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
+    			throws CASTException {
+    				processOverwrittenVisObjGBelief(_wmc);
+    			}
+    		});
+        	// add a DELETE address filter
+			final String objInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(_belief);
+        	addChangeFilter(ChangeFilterFactory.createAddressFilter(_wmc.address,WorkingMemoryOperation.DELETE), 
+        			new WorkingMemoryChangeReceiver() {
+    			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
+    			throws CASTException {
+    				// if GBelief is deleted, delete the corresponding instance from coma!
+    				log("Got a callback for a DELETED VisualObject GroundedBelief. " +
+    						"Going to delete the corresponding instance from coma ABox");
+    		        m_comareasoner.deleteInstance(objInsName);
+    		        log("deleted instance " + objInsName);}
+    		});
+        	
+        	// finally, unlock the entry
+        	try {
+				unlockEntry(_wmc.address);
+			} catch (ConsistencyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        } else {
+        	log("the GroundedBelief is not about a VisualObject... discarding it!");
+        }
+	}
+	
+	/**
+	 * This method handles GroundedBeliefs about VisualObjects when they are added or overwritten...
+	 * The method reads the GB and creates a corresponding coma ontology instance.
+	 * This method is called from the processAddedGBelief() and processOverwrittenVisObjGBelief callback methods.
+	 * 
+	 * If the GroundedBelief is not about a VisualObject, the method returns immediately
+	 * and no processing is done.
+	 * 
+	 * @param gbelief
+	 * @throws UnknownSubarchitectureException 
+	 * @throws DoesNotExistOnWMException 
+	 */
+	private void processVisObjGBelief(GroundedBelief gbelief) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = 
+			CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, gbelief);
+		
+		// check if it's a VisualObject:
+        if (!(gbProxy.getType().equals(
+                SimpleDiscreteTransferFunction
+                        .getBeliefTypeFromCastType(VisualObject.class)))) {
+        	log("the GroundedBelief is not about a VisualObject. Aborting!");
+        	return;
+        }
+
+        // Step 1
+        // create the individual for the GroundedBelief
+
+        String objCatName = "dora:" + ComaHelper.firstCap(ComaGBeliefHelper.getGBeliefCategory(gbelief));
+        String objInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbelief);
+        
+		m_comareasoner.addInstance(objInsName, objCatName);
+		log("executed addInstance(" + objInsName + ", " + objCatName +")");
+		
+		// Step 2
+		// create the relation with which the individual is spatially located
+		// NB the related-to individual is NOT created explicitly (esp. no typing is done!)
+		// it is just created implicitly by being in object position of the added relation!
+		// this relies on the related-to object to be handled by the same ADD event callback mechanism!
+		
+		// get the most-likely related-to GroundedBelief
+		WMPointer _ptr = WMPointer.create(gbProxy.getContent().get(
+		"related-to").getDistribution().getMostLikely().get());
+		// get the belief it is related to (either another VO or a ComaRoom)
+		GroundedBelief gbOfRelatedObjectInWM = getMemoryEntry(_ptr.get().pointer, GroundedBelief.class);
+		// get the coma individual name for it
+		String relateeInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbOfRelatedObjectInWM);
+		String relationName = "dora:" + gbProxy.getContent().get("relation"
+                //VisualObjectTransferFunction.RELATION
+                )
+                .getDistribution().getMostLikely().getProposition();
+		
+		m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
+		log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
+
+		// this code is deprecated: relation to place is not maintained, and not needed
+   		//m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
+   		//log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
+	}
+	
+	
+	private void processOverwrittenVisObjGBelief(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		// get GroundedBelief from WM
+		GroundedBelief gbelief = getMemoryEntry(_wmc.address, GroundedBelief.class);
+		log("processAddedGBelief() called: got a callback for an OVERWRITTEN GroundedBelief");
+		
+        // Step 1
+        // create the individual for the GroundedBelief
+        String objInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbelief);
+
+        // hmmmmmmm, perhaps simply delete the instance, and re-run the addedVisObj method
+        m_comareasoner.deleteInstance(objInsName);
+        log("deleted instance " + objInsName);
+        
+        processVisObjGBelief(gbelief);        
+	}
+	
+	
+	
 //	private boolean createObject(ObjectPlaceProperty _objProp) {
 //		// establish the ontology member names
 //		String category = "dora:" + ComaHelper.firstCap(((SpatialProperties.StringValue)_objProp.mapValue).value);
@@ -936,266 +1203,6 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	
 	
-	/**
-	 * This method is invoked whenever a new dBelief is written to some WorkingMemory.
-	 * 
-	 * It is meant to handle cases in which a user/human-asserted belief about a room category/label 
-	 * is added to WM. This is the case, e.g., when a human answers a question about a room category.
-	 * 
-	 * @param _wmc
-	 * @throws DoesNotExistOnWMException
-	 * @throws UnknownSubarchitectureException
-	 */
-	private void processAddedBelief(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		// get dBelief from WM
-		dBelief _belief = getMemoryEntry(_wmc.address, dBelief.class);
-		log("processAddedBelief() called: got a callback for an ADDED dBelief");
-		
-		// we are only interested in certain dBeliefs
-		EpistemicStatus _epi= _belief.estatus;
-		if (_epi instanceof AttributedEpistemicStatus) {
-			// only react on human-asserted facts
-			if (((AttributedEpistemicStatus) _epi).attribagents.contains("human") && (_belief.type.equals("fact"))) {
-				log("received a belief of type fact attributed by a human");
-				
-				// the rest that follows makes some ugly assumptions about the structure within the human-attributed factual belief
-				if (_belief.content instanceof CondIndependentDistribs) {
-					// this try has the intention of catching bad class cast operations 
-					// -- which are the result of not met assumptions regarding the belief structure
-					try {
-					HashSet<String> _assertedRoomCats = new HashSet<String>(); 
-				
-					DistributionValues identityVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("identity")).values;
-					for (FormulaProbPair _currPair : ((FormulaValues) identityVals).values) {
-						log("current identity: " + ((ElementaryFormula) _currPair.val).prop + " with " + _currPair.prob);
-						if (_currPair.prob>=0.5) _assertedRoomCats.add(((ElementaryFormula) _currPair.val).prop);
-					}
-					StringBuffer _assertedLabels = new StringBuffer();
-					for (String _label : _assertedRoomCats) {
-						_assertedLabels.append(_label).append(" ");
-					}
-					
-					// this should be WMPs -- but the type field does not seem to be properly set anyway
-					HashSet<WorkingMemoryAddress> _gBeliefs = new HashSet<WorkingMemoryAddress>();
-					DistributionValues aboutVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("about")).values;
-					for (FormulaProbPair _currPair : ((FormulaValues) aboutVals).values) {
-						log("current about: WMID=" + ((PointerFormula) _currPair.val).pointer.id + "WMSA=" + ((PointerFormula) _currPair.val).pointer.subarchitecture + " with " + _currPair.prob);
-						if (_currPair.prob>=0.5) _gBeliefs.add(new WorkingMemoryAddress(((PointerFormula) _currPair.val).pointer.id, ((PointerFormula) _currPair.val).pointer.subarchitecture));
-					} 
-					
-					for (WorkingMemoryAddress _gBelief : _gBeliefs) {
-						GroundedBelief _currBelief = getMemoryEntry(_gBelief, GroundedBelief.class);
-						
-						// ok, the following iterator code works, 
-						// but it might be jumping on false conclusions in case there exist multiple ancestors
-						for (WorkingMemoryPointer _wmp : ((CASTBeliefHistory) _currBelief.hist).ancestors) {
-							// naive sanity checking!
-							if (_wmp.type.contains("ComaRoom")) {
-								// load ComaRoomWME in order to check if a new category was asserted
-								ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
-								log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
-
-								// for now, associate the RoomPlaceProperty with the seed place of the room
-								// that it has been resolved against -- later the assertion should be referenced
-								// by the place at which it was made/received -- and that place should be used instead.
-								// the current implementation does not account correctly for non-monotonic splits/merges of
-								// rooms!
-								for (String assertedRoomCat : _assertedRoomCats) {
-									// for each belief that expresses a human assertion about a room category
-									// we write a placeproperty -- ther is no check for duplicates at this point!
-									
-									RoomHumanAssertionPlaceProperty roomCatAssertion = new RoomHumanAssertionPlaceProperty(
-											Long.valueOf(_currRoom.seedPlaceInstance.replaceAll("\\D","")),
-											new SpatialProperties.ProbabilityDistribution(), new PropertyValue(),
-											true, false, assertedRoomCat);
-									
-									try {
-										if (m_spatial_sa_name!=null) {
-											addToWorkingMemory(new WorkingMemoryAddress(newDataID(), m_spatial_sa_name), roomCatAssertion);
-										}
-										else {
-											log("cannot add RoomHumanAssertionPlaceProperty to WM: spatial SA name is unknown!");
-										}
-										//addToWorkingMemory(newDataID(), roomCatAssertion);
-									} catch (AlreadyExistsOnWMException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									
-								}
-								
-								/*
-								// compare the set(!) of already known asserted room categories with the new set
-								HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
-								// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
-								if (!prevKnownAssertedRoomCats.equals(_assertedRoomCats)) {
-									log("there are new asserted room categories not previosuly known.");
-									HashSet<String> allKnownAssertedRoomsCats = new HashSet<String>();
-									allKnownAssertedRoomsCats.addAll(prevKnownAssertedRoomCats);
-									allKnownAssertedRoomsCats.addAll(_assertedRoomCats);
-									String[] newAssertedLabels = allKnownAssertedRoomsCats.toArray(new String[allKnownAssertedRoomsCats.size()]);
-								
-									// if there is a new room category, we need to overwrite the room WME
-									_currRoom.assertedLabels = newAssertedLabels; //uncomment this
-									_currRoom.categories=new ProbabilityDistribution();
-									// overwriting must be safe: lock + unlock WME
-									debug("locking ComaRoom WME.");
-									lockEntry(_wmp.address, WorkingMemoryPermissions.LOCKEDODR);
-									try {
-										debug("overwriting ComaRoom WME.");
-										overwriteWorkingMemory(_wmp.address,_currRoom);
-										debug("unlocking ComaRoom WME.");
-										unlockEntry(_wmp.address);
-										log("successfully overwritten ComaRoom WMD with new asserted labels.");
-									} catch (ConsistencyException e) {
-										log("There was a ConsistencyException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
-										e.printStackTrace();
-									} catch (PermissionException e) {
-										log("There was a PermissionException when trying to overwrite the ComaRoom id="+_currRoom.roomId+" WME. " + e.getStackTrace());
-										e.printStackTrace();
-									}
-								}	
-								*/							
-							} else {
-								log("The ancestor points to a non-ComaRoom WME. Doing nothing.");
-							}
-						}						
-					}
-					} catch (ClassCastException cce) {
-						log("Caught a ClassCastException. This means some assumption was not met. Doing nothing. Here's the transcript: " + cce.getStackTrace());
-						cce.printStackTrace();
-					}
-				} else {
-					debug("the belief content is not of type CondIndependentDistribs. Don't know what to do. Doing nothing.");
-				}
-			} else {
-				debug("the attributed dBelief is not a human-asserted fact. Doing nothing.");
-			}
-		} else {
-			debug("the added dBelief WME does not have an AttributedEpistemicStatus. Doing nothing.");
-		}
-	}
-	
-	/* private boolean maintainRoomProxy(ComaRoom _comaRoom, String _wmid) {
-		log("maintainRoomProxy() called");
-		
-		if (m_proxyMarshall!=null) {
-			// current room UID:
-			String _currRoomUID = "area"+_comaRoom.roomId;
-			
-			// check if proxy already exists
-			if (m_existingRoomProxies.contains(_currRoomUID)) {
-				log("updating an existing room proxy.");
-				
-			} else {
-				log("creating a new room proxy.");
-				m_proxyMarshall.addProxy("room", _currRoomUID, 1, 
-						new WorkingMemoryPointer(new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
-				m_existingRoomProxies.add(_currRoomUID);
-				
-				// room ID:
-				Feature _roomIDFtr = new Feature();
-				_roomIDFtr.featlabel = "roomID";
-				_roomIDFtr.alternativeValues = new FeatureValue[1];
-				_roomIDFtr.alternativeValues[0] = new IntegerValue(1, getCASTTime(), _comaRoom.roomId);
-				m_proxyMarshall.addFeature("room", _currRoomUID, _roomIDFtr);
-			}
-			
-			// areaclasses
-			// first clean existing areaclass facts
-			String _areaclassFeatlabel = "areaclass";
-			m_proxyMarshall.deleteFeature("room", _currRoomUID, _areaclassFeatlabel);
-			// now create individual feature-value pairs for all concepts
-			boolean _unknown = true;
-			if (_comaRoom.concepts.length!=0) {
-				for (String _currConcept : _comaRoom.concepts) {
-					if (_currConcept.equals("owl:Thing") 
-							|| _currConcept.endsWith("PhysicalRoom") 
-							|| _currConcept.endsWith("Portion_of_Space") 
-							|| _currConcept.endsWith("Portion_of_space")) {
-						continue;
-					}
-					_currConcept = _currConcept.replace(":", "");
-					log("current concept for proxy feature areaclass: " + _currConcept);
-					FeatureValue[] _alternativeValues = new FeatureValue[1];
-					_alternativeValues[0] = new StringValue(1, getCASTTime(), _currConcept);
-					Feature _classFtr = new Feature(_areaclassFeatlabel, _alternativeValues);
-					m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
-					_unknown = false;
-//					log("TEMPORARY HACK: exiting loop over all area classes until the binder can handle multiple identical features!");
-//					break;
-				}
-			} 
-			if (_unknown) {
-				log("areaclass set to unknown.");
-				FeatureValue[] _alternativeValues = new FeatureValue[1];
-				_alternativeValues[0] = new StringValue(1, getCASTTime(), "unknown");
-				Feature _classFtr = new Feature(_areaclassFeatlabel, _alternativeValues);
-				m_proxyMarshall.addFeature("room", _currRoomUID, _classFtr);
-			}
-			
-			
-			m_proxyMarshall.commitFeatures("room", _currRoomUID);
-			log("maintained proxy for " + _currRoomUID);
-
-			// containment
-			HashSet<String> prevKnownRels = m_existingRelationProxies.remove(_currRoomUID);
-			if (prevKnownRels==null) prevKnownRels=new HashSet<String>();
-			HashSet<String> trueKnownRels = new HashSet<String>();
-			for (long _currContPlID : _comaRoom.containedPlaceIds) {
-				String _relUID = _comaRoom.roomId + ":" + _currContPlID;
-				if (prevKnownRels.remove(_relUID)) {
-					// the relation was known before,
-					// so it is already on the binder
-					// doing nothing
-				} else {
-					m_proxyMarshall.addRelation("contains", _relUID, 
-							"room", _currRoomUID, "place", new Long(_currContPlID).toString(), 
-							1, new WorkingMemoryPointer(new WorkingMemoryAddress(_wmid, this.getSubarchitectureID()), _comaRoom.ice_id()));
-					Feature _containsFtr = new Feature();
-					_containsFtr.featlabel = "contains";
-					_containsFtr.alternativeValues = new FeatureValue[1];
-					_containsFtr.alternativeValues[0] = new BooleanValue(1, getCASTTime(), true);
-					m_proxyMarshall.addFeature("contains", _relUID, _containsFtr);
-					m_proxyMarshall.commitFeatures("contains", _relUID);
-				}
-				trueKnownRels.add(_relUID);
-			}
-			// now each remaining relation must be deleted because it no longer holds
-			for (String _obsoleteRel : prevKnownRels) {
-				m_proxyMarshall.deleteProxy("contains", _obsoleteRel);
-				String[] _rel = _obsoleteRel.split(":");
-				m_comareasoner.deleteRelation("dora:place" + _rel[1], "dora:constituentOfRoom", "dora:room" + _rel[0]);
-				log("deleted obsolete containment relations from binder and reasoner: " +
-						"dora:place" + _rel[1] + " dora:constituentOfRoom " + "dora:room" + _rel[0]);
-			}
-			// update the set of known relations
-			m_existingRelationProxies.put(_currRoomUID, trueKnownRels);
-			
-			return true;
-		} else return false;
-	} */
-	
-	/* private boolean deleteRoomProxy(ComaRoom _comaRoom, String _wmid) {
-		if (m_proxyMarshall!=null) {
-			// current room UID: * This class, for the time being, also contains the interface to the mighty *BINDER*!
-
-			String _currRoomUID = "area"+_comaRoom.roomId;
-
-			// first delete its relations:
-			HashSet<String> prevKnownRels = m_existingRelationProxies.remove(_currRoomUID);
-			for (String _obsoleteRel : prevKnownRels) {
-				m_proxyMarshall.deleteProxy("contains", _obsoleteRel);
-			}
-			
-			// then delete the actual room proxy
-			m_proxyMarshall.deleteProxy("room", _currRoomUID);
-			m_existingRoomProxies.remove(_currRoomUID);
-			logRoom(_comaRoom, "deleted room proxy for: ", _wmid);
-			return true;
-		} else return false;
-	} */
-	
 	private void logRoom(ComaRoom _room, String _prefix, String _wmid) {
 		if (_wmid==null) _wmid="";
 		
@@ -1232,6 +1239,68 @@ public class PlaceMonitor extends ManagedComponent {
 				//  " | room concepts: " + _areaConcepts +							
 				 (_wmid.equals("") ? " | WME ID: " + _wmid : "") +
 				 "]]");
+	}
+
+
+	private void processAddedObjectProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		log("processAddedObjectProperty() called.");
+		// get object from WM
+		ObjectPlaceProperty _objProp = getMemoryEntry(_wmc.address, ObjectPlaceProperty.class);
+		debug("got a callback for an ADDED ObjectPlaceProperty for " + 
+				_objProp.category + " with relation "+ _objProp.relation.toString() + " to support object " +
+				_objProp.supportObjectId + " of category " + _objProp.supportObjectCategory +
+				" observed from a place with ID " + _objProp.placeId + 
+				" with a probability of ");
+		
+		
+		if (_objProp.inferred) {
+			debug("the added ObjectPlaceProperty was inferred from conceptual and not observed by AVS. Doing nothing.");
+			return;
+		}
+		
+		DiscreteProbabilityDistribution dpd = (DiscreteProbabilityDistribution) _objProp.distribution;
+		if (!((((BinaryValue) dpd.data[0].value).value == true && dpd.data[0].probability > 0.5)
+				|| (((BinaryValue) dpd.data[1].value).value == true && dpd.data[1].probability > 0.5)))  {
+			debug("The ObjectPlaceProperty object observation has a probability <= 0.5. Doing nothing.");
+			return;
+		}
+		
+		log("ready to add an object to the coma KB.");
+		// TODO add object to coma KB!!!
+		
+		// _objProp.category; // cat of the obj
+		// _objProp.distribution; // 
+		// _objProp.inferred; // must be false, otherwise it is inferred by conceptual
+		// _objProp.mapValue; // ignore max a posteriori
+		// _objProp.mapValueReliable; // ignore max a posteriori
+		// _objProp.placeId; // place from which it was seen
+		// _objProp.relation; // enum := ON, INOBJECT, INROOM
+		// _objProp.supportObjectCategory; // category of the supporting/related object or "" if INROOM
+		// _objProp.supportObjectId; // unique id of the supporting object
+		
+		String objInsName = "dora:" + _objProp.category.toLowerCase() + _wmc.address.id.replace(":", "_");
+		String objCatName = "dora:" + ComaHelper.firstCap(_objProp.category);
+		
+		String placeInsName = "dora:place" + _objProp.placeId;
+		
+		m_comareasoner.addInstance(objInsName, objCatName);
+		log("executed addInstance( " + objInsName + ", " + objCatName +" )");
+		m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
+		log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
+				
+		// check if the object is immediately in the room or related via a supportObject
+		if ((!_objProp.supportObjectCategory.equals("")) && 
+				(_objProp.relation.equals(SpatialRelation.ON) || _objProp.relation.equals(SpatialRelation.INOBJECT))) {
+			String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
+			String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
+			
+			m_comareasoner.addInstance(suppobjInsName, suppobjCatName);
+			m_comareasoner.addRelation(suppobjInsName, "dora:observableFromPlace", placeInsName);
+			m_comareasoner.addRelation(
+					objInsName, 
+					(_objProp.relation.equals(SpatialRelation.ON) ? "dora:on" : "dora:in"), 
+					suppobjInsName);
+		}	
 	}
 	
 
