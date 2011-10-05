@@ -54,6 +54,14 @@ def cmdlineToArray(cmd):
 
     return res
 
+class CLambdaThread(threading.Thread):
+    def __init__(self, data, func):
+        threading.Thread.__init__(self)
+        self.data = data
+        self.func = func
+    def run(self):
+        self.func(self.data)
+
 class CProcessObserver(object):
     def notifyStatusChange(self, process, old, new):
         pass
@@ -474,7 +482,13 @@ class CProcessManager(object):
         self.proclist = []
 
     def stopAll(self):
-        for proc in self.proclist: proc.stop()
+        ts = []
+        for p in self.proclist:
+            t = CLambdaThread(p, lambda x: x.stop())
+            ts.append(t)
+            t.start()
+
+        for t in ts: t.join()
 
 
     def stopReaderThread(self):
