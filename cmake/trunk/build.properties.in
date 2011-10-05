@@ -29,6 +29,8 @@ build_sa_vision=${BUILD_SA_VISION}
 build_sa_coma=${BUILD_SA_COMA}
 build_sa_dialogue=${BUILD_SA_DIALOGUE}
 build_sa_visualization=${BUILD_SA_V11N}
+build_sa_manipulation=${BUILD_SA_MANIPULATION}
+
 build_dora=${BUILD_DORA}
 build_george=${BUILD_GEORGE}
 build_shared=${BUILD_SCENARIO_SHARED}
