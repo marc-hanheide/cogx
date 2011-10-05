@@ -286,7 +286,7 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
-	private static dBelief emptyCondIndepDistribBelief(String id, EpistemicStatus epst) {
+	public static dBelief newEmptyCondIndepDistribBelief(String id, EpistemicStatus epst) {
 		dBelief b = new dBelief();
 		b.frame = new AbstractFrame();
 		b.id = id;
@@ -344,7 +344,7 @@ public abstract class ConversionUtils {
 		}
 		// we need to add a new belief
 		String newId = idGen.newIdentifier();
-		dBelief b = emptyCondIndepDistribBelief(newId, epst);
+		dBelief b = newEmptyCondIndepDistribBelief(newId, epst);
 		// XXX we should actually check success here
 		foldTermAsContent(epst, lingRef, TermAtomFactory.term(functor_FEATVAL, new Term[] {TermAtomFactory.term(IntentionManagementConstants.discRefModality), TermAtomFactory.term(lingRef)}), b);
 		if (usedRefs.containsKey(lingRef)) {

@@ -7,6 +7,7 @@ import cast.architecture.WorkingMemoryWriterComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
@@ -16,6 +17,8 @@ import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter
 import de.dfki.lt.tr.dialogue.interpret.ReferenceGatherer;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.ReferentOfAtom;
 import de.dfki.lt.tr.dialogue.ref.BasicReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
@@ -138,6 +141,7 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 		AssertionSolverCascade solvers = new AssertionSolverCascade();
 		solvers.addSolver(new ExpandLFAssertionSolver());
 		solvers.addSolver(new IntentionIDAssertionSolver());
+		solvers.addSolver(new NewBeliefAssertionSolver());
 		solvers.addSolver(new ReferenceResolutionAssertionSolver());
 
 		ProofInterpreter<InterpretedUserIntention> interpreter = new InterpretedUserIntentionProofInterpreter(getLogger());
@@ -194,7 +198,7 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 					}
 				});
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				ReferenceResolutionResult.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
@@ -282,6 +286,42 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 
 	};
 
+	public class NewBeliefAssertionSolver extends AbstractAssertionSolver<NewBeliefAtom> {
+
+		public NewBeliefAssertionSolver() {
+			super(new NewBeliefAtom.Matcher());
+		}
+
+		@Override
+		public ContextUpdate solveFromParsed(NewBeliefAtom a) {
+//			if (a.getIntentionAddress() == null) {
+//				getLogger().error("intention address is null");
+//				return null;
+//			}
+			if (a.getBeliefAddress() != null) {
+				getLogger().error("working memory address is already set");
+				return null;
+			}
+
+			WorkingMemoryAddress newWma = newWorkingMemoryAddress();
+			final NewBeliefAtom newAtom = new NewBeliefAtom(a.getIntentionAddress(), newWma, a.getEpistemicStatus());
+
+			getLogger().info("generated a new belief WMA: " + wmaToString(newWma));
+
+			return new ContextUpdate() {
+
+				@Override
+				public void doUpdate(AbductionEnginePrx engine) {
+					ModalisedAtom matom = newAtom.toModalisedAtom();
+					getLogger().debug("adding the ID to the context: " + PrettyPrint.modalisedAtomToString(matom));
+					engine.addFact(matom);
+				}
+				
+			};
+		}
+
+	}
+
 	public class ReferenceResolutionAssertionSolver extends AbstractAssertionSolver<AssertedReferenceAtom> {
 
 		public ReferenceResolutionAssertionSolver() {
@@ -346,7 +386,7 @@ extends AbstractInterpretationManager<InterpretedUserIntention> {
 						String nom = refs.nom;
 						for (EpistemicReferenceHypothesis hypo : refs.hypos) {
 
-							ModalisedAtom rma = AssertedReferenceAtom.newAssertedReferenceAtom(nom, hypo.referent, hypo.epst).toModalisedAtom();
+							ModalisedAtom rma = ReferentOfAtom.newReferentOfAtom(nom, hypo.referent, hypo.epst).toModalisedAtom();
 
 							getLogger().debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
 							engine.addAssumable("reference_resolution", rma, (float) -Math.log(hypo.score));

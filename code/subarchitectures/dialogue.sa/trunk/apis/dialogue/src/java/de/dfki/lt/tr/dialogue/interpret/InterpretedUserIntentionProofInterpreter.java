@@ -1,9 +1,15 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
 import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.dialogue.interpret.atoms.AddressContentAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AgentAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.BeliefContentAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.StringContentAtom;
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomInterpreter;
 import java.util.List;
@@ -73,8 +79,72 @@ extends AbstractWellFormedTestingProofInterpreter<InterpretedUserIntention> {
 				return new Runnable() {
 					@Override
 					public void run() {
-						getLogger().debug("setting key-value pair");
+						getLogger().debug("setting key-value pair for string content: \"" + key + "\" -> \"" + value + "\"");
 						iui.addStringContent(key, value);
+					}
+				};
+			}
+
+		};
+
+		ModalisedAtomInterpreter<AddressContentAtom, Runnable> itAddressContent
+				= new ModalisedAtomInterpreter<AddressContentAtom, Runnable>(new AddressContentAtom.Matcher()) {
+
+			@Override
+			public Runnable actOn(AddressContentAtom matchResult) {
+				final String key = matchResult.getKey();
+				final WorkingMemoryAddress value = matchResult.getValue();
+				if (key == null || value == null) {
+					return null;
+				}
+				return new Runnable() {
+					@Override
+					public void run() {
+						getLogger().debug("setting key-value pair for address content: \"" + key + "\" -> " + wmaToString(value));
+						iui.addAddressContent(key, value);
+					}
+				};
+			}
+
+		};
+
+		ModalisedAtomInterpreter<NewBeliefAtom, Runnable> itBeliefEpst
+				= new ModalisedAtomInterpreter<NewBeliefAtom, Runnable>(new NewBeliefAtom.Matcher()) {
+
+			@Override
+			public Runnable actOn(NewBeliefAtom matchResult) {
+				final WorkingMemoryAddress beliefWma = matchResult.getBeliefAddress();
+				final EpistemicStatus epst = matchResult.getEpistemicStatus();
+				if (beliefWma == null || epst == null) {
+					return null;
+				}
+				return new Runnable() {
+					@Override
+					public void run() {
+						getLogger().debug("setting epistemic status for " + wmaToString(beliefWma) + ": " + BeliefIntentionUtils.epistemicStatusToString(epst) + "\"");
+						iui.setBeliefEpistemicStatus(beliefWma, epst);
+					}
+				};
+			}
+
+		};
+
+		ModalisedAtomInterpreter<BeliefContentAtom, Runnable> itBeliefContent
+				= new ModalisedAtomInterpreter<BeliefContentAtom, Runnable>(new BeliefContentAtom.Matcher()) {
+
+			@Override
+			public Runnable actOn(BeliefContentAtom matchResult) {
+				final WorkingMemoryAddress beliefWma = matchResult.getBeliefAddress();
+				final String key = matchResult.getKey();
+				final dFormula value = matchResult.getValue();
+				if (beliefWma == null || key == null || value == null) {
+					return null;
+				}
+				return new Runnable() {
+					@Override
+					public void run() {
+						getLogger().debug("setting belief content for " + wmaToString(beliefWma) + ": \"" + key + "\" -> \"" + BeliefIntentionUtils.dFormulaToString(value) + "\"");
+						iui.addBeliefContent(beliefWma, key, value);
 					}
 				};
 			}
@@ -84,6 +154,9 @@ extends AbstractWellFormedTestingProofInterpreter<InterpretedUserIntention> {
 		fireForFirst(matoms, itIntID);
 		fireForFirst(matoms, itAgName);
 		fireForAll(matoms, itStringContent);
+		fireForAll(matoms, itAddressContent);
+		fireForAll(matoms, itBeliefEpst);
+		fireForAll(matoms, itBeliefContent);
 
 		return iui;
 	}
@@ -105,6 +178,10 @@ extends AbstractWellFormedTestingProofInterpreter<InterpretedUserIntention> {
 				result.run();
 			}
 		}
+	}
+
+	public static String wmaToString(WorkingMemoryAddress wma) {
+		return "[" + wma.id + "," + wma.subarchitecture + "]";
 	}
 
 }
