@@ -5,14 +5,14 @@
 # If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
 # in a .hconf file will be used instead of host addresses defined here.
 # HOSTNAME  localhost      192.168.33.101
-HOSTNAME  Main           192.168.56.1
-# HOSTNAME  Main           localhost
-HOSTNAME  PlayerHost     192.168.56.3
-# HOSTNAME  PlayerHost     [Main]
+# HOSTNAME  Main           192.168.56.1
+HOSTNAME  Main           localhost
+# HOSTNAME  PlayerHost     192.168.56.3
+HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
-HOSTNAME  AbducerHost    192.168.56.3
-# HOSTNAME  AbducerHost    [Main]
+#HOSTNAME  AbducerHost    192.168.56.3
+HOSTNAME  AbducerHost    [Main]
 
 HOST     [Main]
 
@@ -64,8 +64,10 @@ INCLUDE includes/motivation.sa/motivation-goals-george.cast
 SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
 INCLUDE  includes/visualization.sa/v11n-base-p.cast
 
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
-JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
-JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
 JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+
+JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
+
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
 
