@@ -74,3 +74,10 @@ INROOM computer singleoffice 0.5790428
 INROOM robot singleoffice 0.1
 INROOM stapler singleoffice 0.8038152
 INROOM toiletpaper singleoffice 0.1
+
+COST_INROOM book 200
+COST_INROOM cerealbox 200
+COST_INROOM computer 200
+COST_INROOM robot 200
+COST_INROOM stapler 200
+COST_INROOM toiletpaper 200
