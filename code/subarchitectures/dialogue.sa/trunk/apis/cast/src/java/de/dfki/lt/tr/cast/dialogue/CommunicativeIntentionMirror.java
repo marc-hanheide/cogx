@@ -26,7 +26,6 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTData;
 import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.intentions.CommunicativeIntention;
@@ -37,11 +36,8 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
-import de.dfki.lt.tr.cast.ProcessingData;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
-import de.dfki.lt.tr.dialogue.util.DialogueException;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 public class CommunicativeIntentionMirror
