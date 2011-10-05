@@ -152,7 +152,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 
 		randomTurn();
 
-		triggerDetection();
+		
 	}
 
 	private void randomTurn() {
@@ -171,8 +171,7 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 								|| nc.comp == Completion.COMMANDFAILED
 								|| nc.comp == Completion.COMMANDSUCCEEDED) {
 							println("random turn completed");
-							getComponent()
-									.deleteFromWorkingMemory(arg0.address);
+							triggerDetection();
 							// getComponent().removeChangeFilter(chgFilter);
 						}
 					} catch (CASTException e) {
