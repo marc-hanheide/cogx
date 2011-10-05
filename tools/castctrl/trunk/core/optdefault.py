@@ -105,6 +105,8 @@ CMD_LOG4J_SERVER=<multiline>
 
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
+CMD_GAZEBO=gazebo  [GUI]  [PHYSICS]  [WORLD]
+
 # Abducer Server
 ABDUCER_ROOT=${COGX_ROOT}/tools/abducer
 CMD_ABDUCER_SERVER=<multiline>

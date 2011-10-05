@@ -608,6 +608,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def startRemoteProcesses(self, procGroup):
         log4 = self._getLog4jConfig()
         log4config = "".join(open(log4.clientConfigFile).readlines())
+        print procGroup.processlist
 
         # XXX Processes could be started for each host separately;  (id=remotestart)
         # Each process on each host could be started separately;
@@ -911,6 +912,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
 
             self.startLocalProcesses(self.procGroupA)
+            self.startRemoteProcesses(self.procGroupA)
         finally:
             QtGui.QApplication.restoreOverrideCursor()
 
@@ -918,6 +920,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def onStopExternalServers(self):
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            self.stopRemoteProcesses(self.procGroupA)
             self.stopLocalProcesses(self.procGroupA)
             self.checkStopLog4jServer()
         finally:
