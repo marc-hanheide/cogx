@@ -254,7 +254,7 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 			try {
 				getComponent().addToWorkingMemory(newWorkingMemoryAddress(),
 						actint);
-				log("added intention to WM, not sleeping for 5 seconds");
+				log("added intention to WM, now sleeping for 5 seconds");
 				Thread.sleep(5000);
 				return TriBool.TRITRUE;
 
