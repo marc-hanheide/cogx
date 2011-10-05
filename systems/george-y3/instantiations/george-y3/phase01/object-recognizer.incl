@@ -15,5 +15,5 @@ SETVAR ObjectRecognizer3D3_params=<multiline>
    --labels "%(recognizer_labels)"
    # --log
 </multiline>
-CPP MG Recognizer3D ObjectRecognizer3D3  %(ObjectRecognizer3D3_params)
+192.168.56.3 CPP MG Recognizer3D ObjectRecognizer3D3  %(ObjectRecognizer3D3_params)
 

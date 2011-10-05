@@ -1,4 +1,1 @@
-JAVA MG exe.vision vision.execution.george.VisionActionInterface --fake-pose
-
-
-
+JAVA MG exe.vision vision.execution.george.VisionActionInterface --fake-pose --log 
