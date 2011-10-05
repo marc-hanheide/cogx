@@ -5,17 +5,22 @@ import java.util.Stack;
 import ptz.PTZCompletion;
 import ptz.PTZPose;
 import ptz.SetPTZPoseCommand;
+import SpatialData.CommandType;
+import SpatialData.Completion;
+import SpatialData.NavCommand;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import execution.slice.Action;
 import execution.slice.TriBool;
 import execution.util.NonBlockingActionExecutor;
+import facades.SpatialFacade;
 
 public abstract class PanAndLookExecutor<ActionType extends Action> extends
 		NonBlockingActionExecutor<ActionType> {
@@ -145,7 +150,51 @@ public abstract class PanAndLookExecutor<ActionType extends Action> extends
 	public void executeAction() {
 		getComponent().log("execute action!");
 
+		randomTurn();
+
 		triggerDetection();
+	}
+
+	private void randomTurn() {
+		try {
+			String spatialSA = SpatialFacade.get(getComponent()).getSpatialSA();
+			String id = getComponent().newDataID();
+			final WorkingMemoryChangeReceiver chgFilter = new WorkingMemoryChangeReceiver() {
+
+				@Override
+				public void workingMemoryChanged(WorkingMemoryChange arg0)
+						throws CASTException {
+					try {
+						NavCommand nc = getComponent().getMemoryEntry(
+								arg0.address, NavCommand.class);
+						if (nc.comp == Completion.COMMANDABORTED
+								|| nc.comp == Completion.COMMANDFAILED
+								|| nc.comp == Completion.COMMANDSUCCEEDED) {
+							println("random turn completed");
+							getComponent()
+									.deleteFromWorkingMemory(arg0.address);
+							// getComponent().removeChangeFilter(chgFilter);
+						}
+					} catch (CASTException e) {
+						logException(e);
+					}
+				}
+			};
+			getComponent().addChangeFilter(
+					ChangeFilterFactory.createAddressFilter(id, spatialSA,
+							WorkingMemoryOperation.OVERWRITE), chgFilter);
+			NavCommand cmd = SpatialActionInterface.newNavCommand();
+			cmd.cmd = CommandType.TURN;
+			cmd.destId = new long[] {};
+			cmd.angle = new double[] { Math.random() * Math.PI - Math.PI / 2 };
+			cmd.distance = new double[] {};
+			cmd.pose = new double[] {};
+			cmd.tolerance = new double[] { 0.1, 0.1, Math.PI * 10.0 / 180.0 };
+			getComponent().addToWorkingMemory(
+					new WorkingMemoryAddress(id, spatialSA), cmd);
+		} catch (CASTException e) {
+			logException(e);
+		}
 	}
 
 	/**
