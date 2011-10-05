@@ -11,7 +11,9 @@ import autogen.Planner.Goal;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class VisualObjectMotiveGenerator extends
@@ -65,7 +67,12 @@ public class VisualObjectMotiveGenerator extends
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 					.create(GroundedBelief.class, _newEntry);
 
-			if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
+			// only generate things if the VO is actually visible
+
+			if (!visualObjectIsVisible(belief)) {
+				return null;
+			}
+			else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
 					COLOUR_LEARNT_KEY, _motive, belief))
 					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
 							SHAPE_LEARNT_KEY, _motive, belief))
@@ -86,54 +93,71 @@ public class VisualObjectMotiveGenerator extends
 				"The single motive version should not be called directly for this generator");
 	}
 
-	@Override
-	protected void checkForAdditions(WorkingMemoryAddress addr,
-			GroundedBelief newEntry, List<LearnObjectFeatureMotive> newAdditions) {
-		if (m_colourEnabled) {
-			LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
-					COLOUR_KEY, COLOUR_LEARNT_KEY, addr, newEntry);
-			if (motive != null) {
-				newAdditions.add(motive);
-			}
-		}
+	protected boolean visualObjectIsVisible(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+		FormulaDistribution fd = _belief.getContent().get(
+				VisualObjectTransferFunction.PRESENCE_KEY);
+		String presenceValue = fd.getDistribution().firstValue()
+				.getProposition();
 
-		if (m_shapeEnabled) {
-			LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
-					SHAPE_KEY, SHAPE_LEARNT_KEY, addr, newEntry);
-			if (motive != null) {
-				newAdditions.add(motive);
-			}
-		}
-
-		if (m_identityEnabled) {
-			LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
-					IDENTITY_KEY, IDENTITY_LEARNT_KEY, addr, newEntry);
-			if (motive != null) {
-				newAdditions.add(motive);
-			}
-		}
-
+		log("visual object presence: " + presenceValue);
+		return presenceValue
+				.equals(VisualObjectTransferFunction.PRESENCE_VISIBLE);
 	}
 
-	private LearnObjectFeatureMotive generateLearnFeatureMotive(
-			String _featureKey, String _featureLearntPredicate,
-			WorkingMemoryAddress _wma, GroundedBelief _newEntry) {
+	@Override
+	protected void checkForAdditions(WorkingMemoryAddress addr,
+			GroundedBelief _newEntry,
+			List<LearnObjectFeatureMotive> newAdditions) {
 
 		assert (_newEntry.type.equals(VO_TYPE));
-
-		log("checkForAddition(): check belief " + _newEntry.id
-				+ " for addition");
 
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, _newEntry);
 
+		// only generate things if the VO is actually visible
+
+		if (visualObjectIsVisible(belief)) {
+
+			if (m_colourEnabled) {
+				LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+						COLOUR_KEY, COLOUR_LEARNT_KEY, addr, belief);
+				if (motive != null) {
+					newAdditions.add(motive);
+				}
+			}
+
+			if (m_shapeEnabled) {
+				LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+						SHAPE_KEY, SHAPE_LEARNT_KEY, addr, belief);
+				if (motive != null) {
+					newAdditions.add(motive);
+				}
+			}
+
+			if (m_identityEnabled) {
+				LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+						IDENTITY_KEY, IDENTITY_LEARNT_KEY, addr, belief);
+				if (motive != null) {
+					newAdditions.add(motive);
+				}
+			}
+
+		}
+	}
+
+	private LearnObjectFeatureMotive generateLearnFeatureMotive(
+			String _featureKey, String _featureLearntPredicate,
+			WorkingMemoryAddress _wma,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+
 		LearnObjectFeatureMotive result = null;
 
-		if (!belief.getContent().containsKey(_featureLearntPredicate)) {
+		if (!_belief.getContent().containsKey(_featureLearntPredicate)) {
 			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
 			result.goal = new Goal(100f, beliefPredicateGoal(
-					_featureLearntPredicate, belief), false);
+					_featureLearntPredicate, _belief), false);
 			result.feature = _featureKey;
 			log("goal is " + result.goal.goalString + " with inf-gain "
 					+ result.informationGain);
