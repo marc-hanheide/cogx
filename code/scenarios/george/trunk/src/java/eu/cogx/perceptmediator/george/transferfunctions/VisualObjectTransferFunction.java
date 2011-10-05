@@ -28,6 +28,13 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 public class VisualObjectTransferFunction extends
 		SimpleDiscreteTransferFunction<VisualObject, GroundedBelief> {
 
+	public static final String PRESENCE_VISIBLE = "visible";
+	public static final String PRESENCE_UNKNOWN = "unknown";
+	public static final String PRESENCE_REMOVED = "removed";
+	public static final String PRESENCE_WAS_VISIBLE = "was-visible";
+	
+	public static final String PRESENCE_KEY = "presence";
+
 	static Logger logger = Logger.getLogger(VisualObjectTransferFunction.class);
 
 	public VisualObjectTransferFunction(ManagedComponent component) {
@@ -71,20 +78,20 @@ public class VisualObjectTransferFunction extends
 		fd = FormulaDistribution.create();
 		switch(from.presence) {
 			case VopVISIBLE:
-			 	status = "visible";
+			 	status = PRESENCE_VISIBLE;
 			 	break;
 			case VopWasVISIBLE:
-			 	status = "was-visible";
+			 	status = PRESENCE_WAS_VISIBLE;
 			 	break;
 			case VopREMOVED:
-			 	status = "removed";
+			 	status = PRESENCE_REMOVED;
 			 	break;
 			default:
-			 	status = "unknown";
+			 	status = PRESENCE_UNKNOWN;
 			 	break;
 		}
 		fd.add(status, 1.0);
-		distr.put("presence", fd);
+		distr.put(PRESENCE_KEY, fd);
 
 		fillConcept("color", distr, from.colorLabels, from.colorDistrib,
 				from.colorGains, from.colorGain, from.colorAmbiguity);
