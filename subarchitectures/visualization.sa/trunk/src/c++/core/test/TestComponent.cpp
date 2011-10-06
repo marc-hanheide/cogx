@@ -34,7 +34,6 @@ extern "C"
 namespace cogx { namespace test {
 
 using namespace std;
-using namespace VisionData;
 
 #include "res/test_calc.inc"
 

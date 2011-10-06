@@ -22,6 +22,7 @@ package si.unilj.fri.cogx.v11n.core;
 import java.util.Map;
 
 import Ice.ObjectPrx;
+import Ice.ConnectionRefusedException;
 import Visualization.ActionInfo;
 import Visualization.DisplayInterface;
 import Visualization.DisplayInterfacePrx;
@@ -116,7 +117,11 @@ public class DisplayClient {
 			m_Server = DisplayInterfacePrxHelper.checkedCast(prx);
 			owner.println("DisplayClient(java) connected to standalone server on '" + m_standaloneHost + "'.");
 
-		} catch (Throwable t) {
+		}
+		catch (Ice.ConnectionRefusedException e) {
+			owner.println("*** Failed to connect to Standalone Display Server. Connection Refused.");
+		}
+	   	catch (Throwable t) {
 			if (t.toString().indexOf("No description for:") >= 0) {
 				owner.println("*** DisplayClient(java): DisplayServer not found.");
 			}
@@ -155,7 +160,11 @@ public class DisplayClient {
 						owner.debug("DisplayClient(java) Redirecting connection to standalone display server.");
 						connectToStandaloneHost(owner);
 					}
-				} catch (Throwable t) {
+				}
+				catch (Ice.ConnectionRefusedException e) {
+					owner.println("*** Failed to connect to Display Server. Connection Refused.");
+				}
+			   	catch (Throwable t) {
 					m_Owner.logException(t);
 				}
 			}

@@ -49,8 +49,8 @@ include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 
 add_cast_component(VisualizationTest ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
-   VisionData Video VideoUtils
    DisplayServer DisplayClient VisualizationData
+   Video VideoUtils
    ${OPENCV_LDFLAGS}
    ${LIBPLOT_LIBS}
    )

@@ -17,8 +17,8 @@ if(BUILD_SA_V11N_CLIENT)
       CMilliTimer.cpp
       )
    link_cast_component(${CAST_COMPONENT_NAME}
-      VisualizationData Math Video VideoUtils
-      # CogxIceAutogen
+      ${VISUALIZATION_LIBRARIES}
+      Math Video VideoUtils
       ${OPENCV_LDFLAGS}
       )
 
