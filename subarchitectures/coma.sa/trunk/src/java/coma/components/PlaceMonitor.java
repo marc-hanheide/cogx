@@ -55,6 +55,7 @@ import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
@@ -727,7 +728,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private void processVisObjGBelief(GroundedBelief gbelief) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = 
 			CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, gbelief);
-		
+		try {
 		// check if it's a VisualObject:
         if (!(gbProxy.getType().equals(
                 SimpleDiscreteTransferFunction
@@ -763,7 +764,9 @@ public class PlaceMonitor extends ManagedComponent {
 			m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
 			log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
 		}
-
+		} catch (BeliefException e1) {
+			logException(e1);
+		}
 		// this code is deprecated: relation to place is not maintained, and not needed
    		//m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
    		//log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
