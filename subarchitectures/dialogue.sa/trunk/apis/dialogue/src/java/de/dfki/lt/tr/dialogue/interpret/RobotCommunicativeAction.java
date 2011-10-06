@@ -78,6 +78,14 @@ implements CASTProcessingResult, WellFormedTestable {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		String s = "(RobotCommunicativeAction\n";
+		s += "  protoLF = " + (protoLF != null ? LFUtils.lfToString(protoLF) : "NULL") + "\n";
+		s += ")";
+		return s;
+	}
+
 	public static String wmaToString(WorkingMemoryAddress wma) {
 		if (wma != null) {
 			return "[" + wma.id + "," + wma.subarchitecture + "]";
