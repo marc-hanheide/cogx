@@ -135,10 +135,10 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 		return new AbstractProofInterpretationContext<RobotCommunicativeAction>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(RobotCommunicativeAction i) {
+			public void onSuccessfulInterpretation(RobotCommunicativeAction ract) {
 				try {
-					getLogger().debug("going to commit the following:\n" + i.toString());
-					i.commit(committer);
+					getLogger().debug("going to commit the following:\n" + ract.toString());
+					ract.commit(committer);
 				}
 				catch (SubarchitectureComponentException ex) {
 					logException(ex);

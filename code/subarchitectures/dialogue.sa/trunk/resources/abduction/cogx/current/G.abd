@@ -41,13 +41,13 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %-------------------------------------------------------------------------
 
-generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'engagement-closing'),
 
-%	event : produce_text([goodbye, Hearer]) / -1.0.
-	utt_head(Nom),
-	i : feat_CannedText(Nom, goodbye_human) / -1.0,
-	event : produce(r, Nom) / -1.0.
+	event : produce_text([goodbye, Hearer]) / -1.0.
+%	utt_head(Nom),
+%	i : feat_CannedText(Nom, goodbye_human) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 % YES / NO
@@ -97,10 +97,12 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
 
-	utt_head(Nom),
-	i : feat_CannedText(Nom, Location) / -1.0,
-%	i : feat_CannedText(Nom, reporting_back) / -1.0,
-	event : produce(r, Nom) / -1.0.
+	event : produce_text([the, Category, is, Relation, Location]) / -1.0.
+
+%	utt_head(Nom),
+%	i : feat_CannedText(Nom, Location) / -1.0,
+%%	i : feat_CannedText(Nom, reporting_back) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 % Other stuff.
