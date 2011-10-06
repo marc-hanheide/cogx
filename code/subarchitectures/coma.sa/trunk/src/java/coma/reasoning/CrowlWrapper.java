@@ -266,6 +266,28 @@ public class CrowlWrapper {
 		return _returnSet;
 	}
 
+	public Set<String> getInstancesByPropertyValue(String _property, String _value) {
+		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
+		String _query = "SELECT ?ins WHERE { " +
+		" ?ins " +
+		" " + _property + 
+		" " + _value + " }";
+//		System.out.println(_query);
+		ResultSet results = (ResultSet) m_mycrowl.execute(_query);
+		TreeSet<String> _returnSet = new TreeSet<String>();
+		while (results.hasNext()) {
+			QuerySolution _qs = (QuerySolution) results.next();
+			Resource _currAnswerRersource = _qs.getResource("?ins");
+			try {
+				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+			} catch (ConfigError e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return _returnSet;
+	}
+
 	
 	public Set<String> getInstancesByNumberTag(Integer _number) {
 		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");

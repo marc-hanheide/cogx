@@ -3,6 +3,8 @@ package coma.refex;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
@@ -10,12 +12,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 //import coma.gui.ABoxGraph;
-import coma.reasoning.CrowlWrapper;
 import coma.refex.GREAttributeTemplateFiller.GREAttribute;
+import comadata.ComaReasonerInterfacePrx;
 
 public class ComaGREAlgorithm {
 
-	private CrowlWrapper m_parentReasoner;
+	private ComaReasonerInterfacePrx m_parentReasoner;
 	private LinkedList<GREAttribute> m_prefAtt;
 	private int m_startIndex = 42;
 	private boolean m_logging = false;
@@ -28,13 +30,16 @@ public class ComaGREAlgorithm {
 	private String activeModel;
 
 	private Properties parameters;
+	
+	public final static String NAME_PROPERTY = "dora:hasName"; 
+	public final static String NUMBER_TAG_PROPERTY = "dora:hasNumber"; 
 
 	// private String topologicalParentRelation = "dora:topoIncluded";
 	// private String topologicalDescendantRelation = "dora:topoIncludesTrans";
 	// private String onRelation = "dora:on";
 	// private String ownRelation = "dora:own";
 
-	public ComaGREAlgorithm(CrowlWrapper _parentReasoner, String path) {
+	public ComaGREAlgorithm(ComaReasonerInterfacePrx _parentReasoner, String path) {
 		m_prefAtt = new LinkedList<GREAttribute>();
 		m_prefAtt.add(GREAttribute.TYPE);
 		// m_prefAtt.add(GREAttribute.TOPOLOGICAL_IN);
@@ -110,8 +115,8 @@ public class ComaGREAlgorithm {
 
 	public String generateRefEx(String _intdRef, String _origin, int _index) {
 		// log("generateRefEx called for " + _intdRef + " and " + _origin);
-		_intdRef = handelURI(_intdRef);
-		_origin = handelURI(_origin);
+//		_intdRef = handelURI(_intdRef);
+//		_origin = handelURI(_origin);
 		TreeSet<String> _contextSet = new TreeSet<String>();
 		_contextSet.addAll(createContextSet(_intdRef, _origin));
 		TreeSet<String> _contrastSet = new TreeSet<String>();
@@ -276,7 +281,7 @@ public class ComaGREAlgorithm {
 
 		case NUMBER_TAG:
 			log("NUMBER_TAG");
-			Integer _bestNumber = findBestValueNumber(_intdRef, _contrastSet);
+			String _bestNumber = findBestValueNumber(_intdRef, _contrastSet);
 			if (_bestNumber == null)
 				break;
 			// if we have a good name, we can check whether that name
@@ -458,7 +463,7 @@ public class ComaGREAlgorithm {
 		// init context
 		TreeSet<String> context = new TreeSet<String>();
 		context.add(_a);
-		context.addAll(handelURI(getReasoner().getRelatedInstances(_a,
+		context.addAll(Arrays.asList(getReasoner().getRelatedInstancesByRelation(_a,
 				parameters.getProperty("topologicalDescendantRelation"))));
 
 		// some logging
@@ -479,21 +484,17 @@ public class ComaGREAlgorithm {
 				log("current Q: " + stringQToString(q));
 				String node = q.poll();
 				// log("current node: " + node);
-				Set<String> parents = handelURI(getReasoner()
-						.getRelatedInstances(
-								node,
-								parameters
-										.getProperty("topologicalParentRelation")));
+				Set<String> parents = new TreeSet<String>(Arrays.asList(getReasoner().
+						getRelatedInstancesByRelation(node,
+								parameters.getProperty("topologicalParentRelation"))));
 				log("current node's parents: " + stringsetToString(parents));
 				for (String parent : parents) {
 					log("current parent: " + parent);
 					q.add(parent);
 					context
-							.addAll(handelURI(getReasoner()
-									.getRelatedInstances(
-											parent,
-											parameters
-													.getProperty("topologicalDescendantRelation"))));
+							.addAll(Arrays.asList(getReasoner()
+									.getRelatedInstancesByRelation(parent,
+											parameters.getProperty("topologicalDescendantRelation"))));
 					context.add(parent);
 					log("current context: " + stringsetToString(context));
 				}
@@ -530,11 +531,11 @@ public class ComaGREAlgorithm {
 		if (false) { // getReasoner().getBasicLevelConcepts(_intdRef).size() >
 			// 0) {
 			log("basic lvl con was non empty!");
-			_bestCons.addAll(handelURI(getReasoner().getBasicLevelConcepts(
+			_bestCons.addAll(Arrays.asList(getReasoner().getBasicLevelConcepts(
 					_intdRef)));
 		} else {
 			log("basic lvl con was emtpy, let's check for most specific con instead");
-			_bestCons.addAll(handelURI(getReasoner().getMostSpecificConcepts(
+			_bestCons.addAll(Arrays.asList(getReasoner().getMostSpecificConcepts(
 					_intdRef)));
 		}
 		log(stringsetToString(_bestCons));
@@ -582,15 +583,15 @@ public class ComaGREAlgorithm {
 		String retInstance = null;
 		TreeSet<String> _potentiallyRuledOut = new TreeSet<String>();
 
-		for (String vOwner : handelURI(getReasoner()
-				.getInverseRelatedInstances(_intdRef,
+		for (String vOwner : Arrays.asList(getReasoner()
+				.getInverseRelatedInstancesByRelation(_intdRef,
 						parameters.getProperty("own")))) {
-			for (String _vName : getReasoner().getNames(vOwner)) {
+			for (String _vName : getReasoner().getPropertyValues(vOwner, NAME_PROPERTY)) {
 				// log("current owner: " + vOwner +
-				// " -- current name of the owner: " + _vName);
+				// " -- current name of the owner: " + _vName); 
 
 				// the name must uniquely identify a person in the context!!!
-				if (handelURI(getReasoner().getInstancesByName(_vName)).size() > 1)
+				if (Arrays.asList(getReasoner().getInstancesByPropertyValue(NAME_PROPERTY, _vName)).size() > 1)
 					continue;
 				// ok, we now have a unique name
 
@@ -640,7 +641,7 @@ public class ComaGREAlgorithm {
 		// log(_intdRef + " has this many names: " +
 		// getReasoner().getNames(_intdRef).size());
 
-		for (String _vName : handelURI(getReasoner().getNames(_intdRef))) {
+		for (String _vName : Arrays.asList(getReasoner().getPropertyValues(_intdRef, NAME_PROPERTY))) {
 			// let's check whether the user knows the intd ref under that name
 			if (!userKnows(_intdRef, _vName))
 				continue;
@@ -666,14 +667,14 @@ public class ComaGREAlgorithm {
 	 * @param _contrastSet
 	 * @return
 	 */
-	public Integer findBestValueNumber(String _intdRef, Set<String> _contrastSet) {
-		Integer retNumber = null;
+	public String findBestValueNumber(String _intdRef, Set<String> _contrastSet) {
+		String retNumber = null;
 		TreeSet<String> _potentiallyRuledOut = new TreeSet<String>();
 
 		// log(_intdRef + " has this many numbers: " +
 		// getReasoner().getNumberTags(_intdRef).size());
 
-		for (Integer _vNumTag : getReasoner().getNumberTags(_intdRef)) {
+		for (String _vNumTag : getReasoner().getPropertyValues(_intdRef, NUMBER_TAG_PROPERTY)) {
 			// let's check whether the user knows the intd ref under that name
 			if (!userKnows(_intdRef, _vNumTag.toString()))
 				continue;
@@ -707,16 +708,16 @@ public class ComaGREAlgorithm {
 
 		TreeSet<String> _potentiallyRuledOut = new TreeSet<String>();
 
-		Set<String> allRelatedInstances = handelURI(getReasoner()
-				.getRelatedInstances(_intdRef));
+		Set<String> allRelatedInstances = new TreeSet<String>(Arrays.asList(getReasoner()
+				.getRelatedInstances(_intdRef)));
 
 		for (String _currRelIns : allRelatedInstances) {
 			// let's check whether we are actually still in the context!
 			if (!_contextSet.contains(_currRelIns))
 				continue;
 
-			Set<String> _allCurrRels = handelURI(getReasoner().getRelations(
-					_intdRef, _currRelIns));
+			Set<String> _allCurrRels = new TreeSet<String>(Arrays.asList(getReasoner().getRelationsBetweenInstances(
+					_intdRef, _currRelIns)));
 			for (String _currRel : _allCurrRels) {
 				// let's make sure we don't get downwards loops!
 				if (!getReasoner().isSubRelation(_currRel,
@@ -761,8 +762,8 @@ public class ComaGREAlgorithm {
 		while (_bestTopoContainer == null
 				&& (!_currentTopoLevelQueue.isEmpty())) {
 			String _currentTopoLevel = _currentTopoLevelQueue.removeFirst();
-			for (String _vContainer : handelURI(getReasoner()
-					.getRelatedInstances(_currentTopoLevel,
+			for (String _vContainer : Arrays.asList(getReasoner()
+					.getRelatedInstancesByRelation(_currentTopoLevel,
 							parameters.getProperty("topologicalParentRelation")))) {
 				log("current topoContainer is: " + _vContainer);
 				// let's check whether we are actually still in the context!
@@ -816,8 +817,8 @@ public class ComaGREAlgorithm {
 		while (_bestTopoContainer == null
 				&& (!_currentTopoLevelQueue.isEmpty())) {
 			String _currentTopoLevel = _currentTopoLevelQueue.removeFirst();
-			for (String _vContainer : handelURI(getReasoner()
-					.getImmediateRelatedInstances(_currentTopoLevel,
+			for (String _vContainer : Arrays.asList(getReasoner()
+					.getImmediateRelatedInstancesByRelation(_currentTopoLevel,
 							parameters.getProperty("in")))) {
 				// let's check whether we are actually still in the context!
 				if (!_contextSet.contains(_vContainer))
@@ -867,8 +868,8 @@ public class ComaGREAlgorithm {
 		while (_bestTopoContainer == null
 				&& (!_currentTopoLevelQueue.isEmpty())) {
 			String _currentTopoLevel = _currentTopoLevelQueue.removeFirst();
-			for (String _vContainer : handelURI(getReasoner()
-					.getImmediateRelatedInstances(_currentTopoLevel,
+			for (String _vContainer : Arrays.asList(getReasoner()
+					.getImmediateRelatedInstancesByRelation(_currentTopoLevel,
 							parameters.getProperty("on")))) {
 				// let's check whether we are actually still in the context!
 				if (!_contextSet.contains(_vContainer))
@@ -947,8 +948,8 @@ public class ComaGREAlgorithm {
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
 			log("ret set (copy of contrast set): " + stringsetToString(retSet));
-			Set<String> toberemovedIns = handelURI(getReasoner().getInstances(
-					_concept));
+			Set<String> toberemovedIns = new TreeSet<String>(Arrays.asList(getReasoner().getAllInstances(
+					_concept)));
 			log("instances of " + _concept + " are: "
 					+ stringsetToString(toberemovedIns));
 			retSet.removeAll(toberemovedIns);
@@ -973,8 +974,8 @@ public class ComaGREAlgorithm {
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
 			retSet
-					.removeAll(handelURI(getReasoner()
-							.getInstancesByName(_name)));
+					.removeAll(Arrays.asList(getReasoner()
+							.getInstancesByPropertyValue(NAME_PROPERTY, _name)));
 		}
 		return retSet;
 		// TODO user knows omitted!
@@ -987,14 +988,14 @@ public class ComaGREAlgorithm {
 	 * @param _contrastSet
 	 * @return
 	 */
-	public Set<String> rulesOutNumber(Integer _number, Set<String> _contrastSet) {
+	public Set<String> rulesOutNumber(String _number, Set<String> _contrastSet) {
 		TreeSet<String> retSet = new TreeSet<String>();
 		if (_number == null)
 			return null;
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
-			retSet.removeAll(handelURI(getReasoner().getInstancesByNumberTag(
-					_number)));
+			retSet.removeAll(Arrays.asList(getReasoner().getInstancesByPropertyValue(
+					NUMBER_TAG_PROPERTY, _number)));
 		}
 		return retSet;
 		// TODO user knows omitted!
@@ -1013,7 +1014,7 @@ public class ComaGREAlgorithm {
 			return null;
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
-			retSet.removeAll(handelURI(getReasoner().getRelatedInstances(
+			retSet.removeAll(Arrays.asList(getReasoner().getRelatedInstancesByRelation(
 					_owner, parameters.getProperty("own"))));
 		}
 		return retSet;
@@ -1034,7 +1035,7 @@ public class ComaGREAlgorithm {
 			return null;
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
-			retSet.removeAll(handelURI(getReasoner().getRelatedInstances(
+			retSet.removeAll(Arrays.asList(getReasoner().getRelatedInstancesByRelation(
 					_container,
 					parameters.getProperty("topologicalDescendantRelation"))));
 			log("rulesOutTopoContainer(" + _container + ") yields: " + retSet);
@@ -1057,8 +1058,7 @@ public class ComaGREAlgorithm {
 			return null;
 		else {
 			for (String _contrastIns : _contrastSet) {
-				if (!getReasoner().areInstancesRelated(_contrastIns, _objIns,
-						_rel)) {
+				if (!getReasoner().areInstancesRelated(_contrastIns, _rel, _objIns)) {
 					retSet.add(_contrastIns);
 				}
 			}
@@ -1081,7 +1081,7 @@ public class ComaGREAlgorithm {
 			return null;
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
-			retSet.removeAll(handelURI(getReasoner().getRelatedInstances(
+			retSet.removeAll(Arrays.asList(getReasoner().getRelatedInstancesByRelation(
 					_container,
 					parameters.getProperty("topologicalDescendantRelation"))));
 		}
@@ -1103,15 +1103,15 @@ public class ComaGREAlgorithm {
 			return null;
 		else {
 			retSet.addAll((TreeSet) _contrastSet);
-			retSet.removeAll(handelURI(getReasoner()
-					.getInverseRelatedInstances(_container,
+			retSet.removeAll(Arrays.asList(getReasoner()
+					.getInverseRelatedInstancesByRelation(_container,
 							parameters.getProperty("on"))));
 		}
 		return retSet;
 		// TODO user knows omitted!
 	}
 
-	public final CrowlWrapper getReasoner() {
+	public final ComaReasonerInterfacePrx getReasoner() {
 		return m_parentReasoner;
 	}
 
@@ -1156,6 +1156,7 @@ public class ComaGREAlgorithm {
 		return returnString;
 	}
 
+	/*
 	private Set<String> handelURI(Set<String> inSet) {
 		// log("handelURI Set<String> called.");
 		TreeSet<String> retSet = new TreeSet<String>();
@@ -1192,12 +1193,13 @@ public class ComaGREAlgorithm {
 		}
 
 	}
+	*/
 
 	//public void showGraph(int h, int v) {
 	//	graph.update();
 	//	graph.showABox(h, v);
 	//}
-
+	/*
 	private TreeSet<String> oldcreateContextSet(String _intdRef, String _origin) {
 		log(Integer.valueOf(getReasoner().getInstances("owl:Thing").size())
 				.toString());
@@ -1314,6 +1316,7 @@ public class ComaGREAlgorithm {
 		log("done creating context set -- has size:" + _context.size());
 		return _context;
 	}
+	*/
 
 	//public void export(String path) {
 	//	DotExport export = new DotExport(m_parentReasoner,new File(path),parameters);
