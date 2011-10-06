@@ -19,6 +19,8 @@ SETVAR face_detector=/usr/local/share/opencv/haarcascades/haarcascade_frontalfac
 SETVAR discrete_room_cats=
 #SETVAR discrete_room_cats=--discrete
 
+SETVAR room_has_person=0.9
+
 ### places for the initial automatic tour:
 SETVAR tour_places="0 9 4"
 
@@ -45,16 +47,18 @@ SETVAR plyroot_=./instantiations/ply-models
 SETVAR or3d_sift_files=<multiline>
    %(siftroot_)/frosties2.sift
    %(siftroot_)/re_book.sift
+   %(siftroot_)/table.sift
 </multiline>
 
 ### ply files
 SETVAR or3d_ply_files=<multiline>
    %(plyroot_)/frosties2.ply
    %(plyroot_)/re_book.ply
+   %(plyroot_)/table.ply
 </multiline>
 
 ### object labels
-SETVAR or3d_labels=cerealbox book
+SETVAR or3d_labels=cerealbox book table
 
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
@@ -97,7 +101,7 @@ JAVA MG spatial-manual spatial.manual.ManualNavControl
 INCLUDE includes/coma.sa/coma-base.cast
 INCLUDE includes/coma.sa/coma-crowl.cast
 
-JAVA MG pm-coma			eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats)
+JAVA MG pm-coma			eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats) --has-person %(room_has_person)
 JAVA MG pm-coma-in-place	eu.cogx.perceptmediator.components.RoomMembershipMediator
 
 
@@ -135,6 +139,12 @@ CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(visi
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
 
 JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+VARDEFAULT fake_tables=<multiline>
+   --geometry-hack 
+   --pos-table "2.5, 1.0, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "1.0, -1.0, 8.0, 8.0"
+</multiline>
+
+JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
 
 CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
