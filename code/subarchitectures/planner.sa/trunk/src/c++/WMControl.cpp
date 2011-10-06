@@ -474,18 +474,16 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
 }
 
 void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
-// !!! HACK HACK HACK (Wed Jun 30 14:28:15 2010, marc)!!!
-// removed for compatibilty with new beliefs
-/*
-    BOOST_FOREACH(dBeliefPtr bel, beliefs) {
+    BOOST_FOREACH(BeliefEntry entry, beliefs) {
+        dBeliefPtr bel = entry.belief;
         try {
             if (bel->id == "temporary") {
                 CASTTime time = getCASTTime();
-                framing::TemporalInterval interval;
-		
-                interval.startTime = time;
-                interval.endTime = time;
-                bel->frame = new framing::SimpleSpatioTemporalFrame("here", interval);
+                framing::CASTTemporalIntervalPtr interval = new framing::CASTTemporalInterval();
+                interval->start = time;
+                interval->end = time;
+                // framing::SimpleSpatioTemporalFramePtr frame = 
+                bel->frame = new framing::SpatioTemporalFrame("here", interval, 1.0);
                 bel->id = newDataID();
 
                 WorkingMemoryAddress wma;
@@ -495,9 +493,7 @@ void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
                 log("added belief  %s to working memory", bel->id.c_str());
             }
             else {
-                WorkingMemoryAddress wma;
-                wma.id = bel->id;
-                wma.subarchitecture = BINDER_SA;
+                WorkingMemoryAddress wma = entry.address;
                 if (existsOnWorkingMemory(wma)) {
                     dBeliefPtr oldBelief = getMemoryEntry<dBelief>(wma);
 				
@@ -526,7 +522,6 @@ void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
             log("Consistency exception when trying to update belief %s", bel->id.c_str());
         }
     }
-*/
 }
 
 void WMControl::updateStatus(int id, Completion status) {

@@ -590,7 +590,7 @@ class CASTTask(object):
             self.cp_task.get_state().set(fact)
         #TODO: create new state?
         beliefs = self.state.update_beliefs(diffstate)
-        self.component.getClient().updateBeliefState(beliefs)
+        self.component.update_cast_beliefs(beliefs)
 
     def compute_solution_likelihood(self):
         from standalone import relaxed_exploration
