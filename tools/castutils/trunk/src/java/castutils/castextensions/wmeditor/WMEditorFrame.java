@@ -6,8 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.UUID;
@@ -160,6 +158,8 @@ public class WMEditorFrame extends javax.swing.JFrame {
 	private JButton jnewIDButton;
 	private JButton jGetButton;
 	private JEditorPane jEditorPane;
+	private JScrollPane jScrollPane3;
+	private JScrollPane jScrollPane2;
 	private JTextField jWMFilterTextField;
 	private JTextField jTemplateFilterTextField;
 	private JButton jTemplateStoreButton;
@@ -299,9 +299,11 @@ public class WMEditorFrame extends javax.swing.JFrame {
 					{
 						jEditorPane = new JEditorPane();
 						jScrollPane1.setViewportView(jEditorPane);
-						jEditorPane.setText("jEditorPane");
+						jEditorPane.setText("");
 						jEditorPane.setPreferredSize(new java.awt.Dimension(
 								503, 216));
+						jEditorPane.setFont(new java.awt.Font("DejaVu Sans Mono",0,9));
+						jEditorPane.setBackground(Color.WHITE);
 					}
 				}
 				{
@@ -431,8 +433,8 @@ public class WMEditorFrame extends javax.swing.JFrame {
 				jStatusBar = new JTextField();
 				getContentPane().add(jStatusBar, BorderLayout.SOUTH);
 				jStatusBar.setText("set the status here");
-				jStatusBar.setEditable(false);
 				jStatusBar.setBackground(new java.awt.Color(229, 229, 229));
+				jStatusBar.setEditable(false);
 			}
 			{
 				jSplitPane1 = new JSplitPane();
@@ -485,26 +487,32 @@ public class WMEditorFrame extends javax.swing.JFrame {
 
 						}
 						{
-							ListModel jList1Model = new DefaultComboBoxModel(
-									new String[] {});
-							jWMList = new JList();
-							jWMEntriesPanel.add(jWMList, BorderLayout.CENTER);
-							jWMList.setModel(jList1Model);
-							jWMList.setPreferredSize(new java.awt.Dimension(
-									183, 251));
-							jWMList.setLayout(null);
-							jWMList.setSize(160, 343);
-							jWMList.addMouseListener(new MouseAdapter() {
-								public void mouseClicked(MouseEvent evt) {
-									try {
-										listener.selectedEntry();
-									} catch (RuntimeException e) {
-										setStatus(e);
-									} catch (CASTException e) {
-										setStatus(e);
+							jScrollPane2 = new JScrollPane();
+							jWMEntriesPanel.add(jScrollPane2, BorderLayout.CENTER);
+							jScrollPane2.setPreferredSize(new java.awt.Dimension(190, 410));
+							{
+								ListModel jList1Model = new DefaultComboBoxModel(
+										new String[] {});
+								jWMList = new JList();
+								jScrollPane2.setViewportView(jWMList);
+								jWMList.setModel(jList1Model);
+								jWMList.setPreferredSize(new java.awt.Dimension(
+										183, 251));
+								jWMList.setLayout(null);
+								jWMList.setSize(160, 343);
+								jWMList.setFont(new java.awt.Font("DejaVu Sans Mono",0,9));
+								jWMList.addMouseListener(new MouseAdapter() {
+									public void mouseClicked(MouseEvent evt) {
+										try {
+											listener.selectedEntry();
+										} catch (RuntimeException e) {
+											setStatus(e);
+										} catch (CASTException e) {
+											setStatus(e);
+										}
 									}
-								}
-							});
+								});
+							}
 						}
 						{
 							jWMUpdateButton = new JButton();
@@ -533,27 +541,32 @@ public class WMEditorFrame extends javax.swing.JFrame {
 								.setPreferredSize(new java.awt.Dimension(160,
 										380));
 						{
-							ListModel jTemplateListModel = new DefaultComboBoxModel(
-									new String[] {});
-							jTemplateList = new JList();
-							jTemplatesPanel.add(jTemplateList,
-									BorderLayout.CENTER);
-							GridLayout jTemplateListLayout = new GridLayout(1,
-									1);
-							jTemplateListLayout.setHgap(5);
-							jTemplateListLayout.setVgap(5);
-							jTemplateListLayout.setColumns(1);
-							jTemplateList.setModel(jTemplateListModel);
-							jTemplateList.setLayout(null);
-							jTemplateList
-									.setPreferredSize(new java.awt.Dimension(
-											183, 251));
-							jTemplateList.setSize(160, 343);
-							jTemplateList.addMouseListener(new MouseAdapter() {
-								public void mouseClicked(MouseEvent evt) {
-									listener.selectedTemplate();
-								}
-							});
+							jScrollPane3 = new JScrollPane();
+							jTemplatesPanel.add(jScrollPane3, BorderLayout.CENTER);
+							jScrollPane3.setPreferredSize(new java.awt.Dimension(190, 417));
+							{
+								ListModel jTemplateListModel = new DefaultComboBoxModel(
+										new String[] {});
+								jTemplateList = new JList();
+								jScrollPane3.setViewportView(jTemplateList);
+								GridLayout jTemplateListLayout = new GridLayout(1,
+										1);
+								jTemplateListLayout.setHgap(5);
+								jTemplateListLayout.setVgap(5);
+								jTemplateListLayout.setColumns(1);
+								jTemplateList.setModel(jTemplateListModel);
+								jTemplateList.setLayout(null);
+								jTemplateList
+								.setPreferredSize(new java.awt.Dimension(
+										183, 251));
+								jTemplateList.setSize(160, 343);
+								jTemplateList.setFont(new java.awt.Font("DejaVu Sans Mono",0,9));
+								jTemplateList.addMouseListener(new MouseAdapter() {
+									public void mouseClicked(MouseEvent evt) {
+										listener.selectedTemplate();
+									}
+								});
+							}
 						}
 						{
 							jTemplatesButtonsPanel = new JPanel();
