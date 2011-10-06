@@ -2,34 +2,46 @@
 % QUESTION
 %-------------------------------------------------------------------------
 
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% POLAR QUESTIONS
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 % is X Y
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : sort(Nom, ascription),
 	i : 'feat_Mood'(Nom, int),
 	i : 'feat_Tense'(Nom, pres),
 	i : 'rel_Subject'(Nom, SubjNom),
 	i : 'rel_Cop-Restr'(Nom, RestrNom),
 	i : 'rel_Cop-Scope'(Nom, ScopeNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'polar') / p(1.0),
 	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
-	understand : polar_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
+	understand : polar_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
-%	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Nom, BId),
-	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop), hypo(Value)])) / p(1.0).
+	int : string_content(Int, feature, Prop) / p(1.0),
+	int : string_content(Int, hypothesis, Value) / p(1.0).
 
-%-------------------------------------------------------------------------
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% WH- QUESTIONS
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Asking to describe an object.
 
 % @{be1_1:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Restr>(context1_1:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(what1_1:entity ^ what) ^ <Subject>(context1_1:entity) ^ <Wh-Restr>(what1_1:entity))
 
 % what is X
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : sort(Nom, ascription),
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
@@ -37,15 +49,22 @@ understand : event : from_logical_form(S, H, Nom) <-
 		i : 'rel_Cop-Scope'(Nom, WhNom),
 	i : rel_Subject(Nom, SubjNom),
 	i : 'rel_Wh-Restr'(Nom, WhNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
-	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
-	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
+%	int_id(Int),
+%	int : agent(Int, S) / p(1.0),
+%	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
+%	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
+%	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
+%	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'description-request') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
 
 % do you know what X is
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : sort(Nom, cognition),
 	i : prop(Nom, know),
 	i : feat_Mood(Nom, int),
@@ -56,18 +75,19 @@ understand : event : from_logical_form(S, H, Nom) <-
 %	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
 %	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
 %	i : 'rel_Wh-Restr'(Nom, SubjNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
-	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
-	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
 
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'description-request') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Asking about feature values.
 
 % what X is Y
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 %	i : sort(Nom, ascription),  % XXX garbage
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
@@ -76,69 +96,38 @@ understand : event : from_logical_form(S, H, Nom) <-
 %	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		i : rel_Scope(WhNom, ScopeNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
-	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, ScopeNom).
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'open') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, RestrNom),
+	understand : wh_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom).
 
 % what is the X of Y
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
 	i : rel_Subject(Nom, SubjNom),
 		i : rel_Owner(SubjNom, ScopeNom),
-	i : 'rel_Wh-Restr'(Nom, WhNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : topic(S, H, EpSt, Int, SubjNom, ScopeNom),
-	understand : wh_query_scope(S, H, EpSt, Int, SubjNom, SubjNom).
+	i : 'rel_Wh-Restr'(Nom, _WhNom),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'open') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom),
+	understand : wh_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : wh_query_scope(S, H, EpSt, Int, Ref, Nom) <-
+understand : wh_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
 	wh_query_prop(Nom, Prop),
-%	int : pre(Int, belief(Ref, attrib(S, H), fv(Prop, not(unknown)))) / p(1.0),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-	get_topic_referent(S, H, EpSt, Int, Ref, Nom, BId),
-	int : post(Int, state(['question-answered', agent(H), about(BId), feature(Prop)])) / p(1.0).
-
-%-------------------------------------------------------------------------
-
-% do you see the box:
-% @{see1_4:perception}(see ^ <Mood>int ^ <Tense>pres ^ <Patient>(box1_4:thing ^ box ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Actor>(you1_4:person ^ you ^ <Num>sg) ^ <Subject>(you1_4:person))
-
-% can you see the box:
-% @{see1_3:perception}(see ^ <Mood>int ^ <Tense>pres ^ <Modifier>(can1_3:modal ^ can) ^ <Patient>(box1_3:thing ^ box ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Actor>(you1_3:person ^ you ^ <Num>sg) ^ <Subject>(you1_3:person))
-
-understand : event : from_logical_form(S, H, Nom) <-
-	i : sort(Nom, perception),
-	i : prop(Nom, see),
-	i : feat_Tense(Nom, pres),
-	i : feat_Mood(Nom, int),
-	i : rel_Actor(Nom, ActorNom),
-		person(S, H, ActorNom, H),
-	i : rel_Patient(Nom, PatientNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : topic(S, H, EpSt, Int, PatientNom, PatientNom),
-	get_topic_referent(S, H, EpSt, Int, PatientNom, PatientNom, BId),
-	int : post(Int, state(['question-answered', agent(H), about(BId), 'feature-defined'(about)])) / p(1.0).
-
-%-------------------------------------------------------------------------
-
-% what do you see
-understand : event : from_logical_form(S, H, Nom) <-
-	i : sort(Nom, perception),
-	i : prop(Nom, see),
-	i : feat_Tense(Nom, pres),
-	i : feat_Mood(Nom, int),
-	i : rel_Actor(Nom, ActorNom),
-		person(S, H, ActorNom, H),
-	i : 'rel_Wh-Restr'(Nom, WhNom),
-		i : prop(WhNom, what),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(['scene-description', agent(H)])) / p(1.0).
+	int : string_content(Int, feature, Prop) / p(1.0).
 
 %-------------------------------------------------------------------------
 % COMMAND: ACTION-NON-MOTION
@@ -182,47 +171,49 @@ determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
 % COMMAND: ACTION-MOTION
 %-------------------------------------------------------------------------
 
-% go to X
-understand : event : from_logical_form(S, H, Nom) <-
-	i : sort(Nom, 'action-motion'),
-%	i : feat_Mood(Nom, imp),
-	i : rel_Actor(Nom, ActorNom),
-%		i : prop(ActorNom, addressee),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	i : rel_Modifier(Nom, ModifNom),
-		i : rel_Anchor(ModifNom, AnchorNom),
-		understand : topic(S, H, EpSt, Int, AnchorNom, AnchorNom),
-	i : prop(Nom, ActionProp),
-	m_action_effects(S, H, EpSt, Int, AnchorNom, ActionProp).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-m_action_effects(S, H, EpSt, Int, Ref, go) <-
-	get_topic_referent(S, H, shared(S, H), Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
-	int : post(Int, state([position, agent(H), 'location-of'(BId)])) / p(1.0).
-
-m_action_effects(S, H, EpSt, Int, Ref, move) <-
-	m_action_effect(S, H, Int, Ref, go).
-
-m_action_effects(S, H, EpSt, Int, Ref, turn) <-
-	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
-	int : post(Int, state(['orientation-towards', agent(H), 'location-of'(BId)])) / p(1.0).
+%% go to X
+%understand : event : from_logical_form(S, H, Nom) <-
+%	i : sort(Nom, 'action-motion'),
+%%	i : feat_Mood(Nom, imp),
+%	i : rel_Actor(Nom, ActorNom),
+%%		i : prop(ActorNom, addressee),
+%	int_id(Int),
+%	int : agent(Int, S) / p(1.0),
+%	i : rel_Modifier(Nom, ModifNom),
+%		i : rel_Anchor(ModifNom, AnchorNom),
+%		understand : topic(S, H, EpSt, Int, AnchorNom, AnchorNom),
+%	i : prop(Nom, ActionProp),
+%	m_action_effects(S, H, EpSt, Int, AnchorNom, ActionProp).
+%
+%%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+%
+%m_action_effects(S, H, EpSt, Int, Ref, go) <-
+%	get_topic_referent(S, H, shared(S, H), Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+%	int : post(Int, state([position, agent(H), 'location-of'(BId)])) / p(1.0).
+%
+%m_action_effects(S, H, EpSt, Int, Ref, move) <-
+%	m_action_effect(S, H, Int, Ref, go).
+%
+%m_action_effects(S, H, EpSt, Int, Ref, turn) <-
+%	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+%	int : post(Int, state(['orientation-towards', agent(H), 'location-of'(BId)])) / p(1.0).
 
 %-------------------------------------------------------------------------
 
 % go DIRECTION
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, 'action-motion'),
 %	i : feat_Mood(Nom, imp),
-	i : rel_Actor(Nom, ActorNom),
+	i : rel_Actor(Nom, _ActorNom),
 %		i : prop(ActorNom, addressee),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
 	i : rel_Modifier(Nom, ModifNom),
 		understand : direction(ModifNom, Dir),
 	i : prop(Nom, ActionProp),
-	m_action_effects_direction(S, H, Int, Dir, ActionProp).
+	int : string_content(Int, class, 'motion') / p(1.0),
+	m_action_effects_direction(Int, Dir, ActionProp).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -239,26 +230,27 @@ valid_direction(right, right).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-m_action_effects_direction(S, H, Int, Dir, go) <-
-	int : post(Int, state([motion, 'agent'(H), 'direction'(Dir)])) / p(1.0).  % XXX
+m_action_effects_direction(Int, Dir, go) <-
+	int : string_content(Int, type, 'move-direction') / p(1.0),
+	int : string_content(Int, direction, Dir) / p(1.0).
 
-m_action_effects_direction(S, H, Int, Dir, move) <-
-	m_action_effects_direction(S, H, Int, Dir, go).
+m_action_effects_direction(Int, Dir, move) <-
+	m_action_effects_direction(Int, Dir, go).
 
-m_action_effects_direction(S, H, Int, Dir, turn) <-
-	int : post(Int, state([turn, 'agent'(H), 'direction'(Dir)])) / p(1.0).  % XXX
+m_action_effects_direction(Int, Dir, turn) <-
+	int : string_content(Int, type, 'turn-direction') / p(1.0),
+	int : string_content(Int, direction, Dir) / p(1.0).
 
 %-------------------------------------------------------------------------
 
 % stop
-understand : event : from_logical_form(S, H, Nom) <-
-%	i : sort(Nom, 'action-motion'),
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : feat_Mood(Nom, imp),
 	i : prop(Nom, stop),
-%	i : rel_Actor(Nom, ActorNom),
-%		i : prop(ActorNom, addressee),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(['stop-motion', agent(H)])) / p(1.0).  % XXX
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'motion') / p(1.0),
+	int : string_content(Int, type, 'stop') / p(1.0).
 
 %-------------------------------------------------------------------------

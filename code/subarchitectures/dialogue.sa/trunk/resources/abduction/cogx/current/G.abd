@@ -4,6 +4,15 @@
 % the given query/nominal in the resulting proof.
 %-------------------------------------------------------------------------
 
+%-------------------------------------------------------------------------
+% GENERAL INTERPRETATION
+%-------------------------------------------------------------------------
+
+generate : event : utter(Speaker, Hearer, IntAddr) <-
+	? generate : event : from_intention(Speaker, Hearer, IntAddr).
+
+%-------------------------------------------------------------------------
+
 % The following dummy facts are bound to nominals in the rules for generation.
 dummy_nom1(dn1_1).
 dummy_nom2(dn1_2).
@@ -18,6 +27,38 @@ utt_head(Nom) <-
 	dummy_nom1(Nom),
 	i : sort(Nom, dvp) / p(1.0),
 	i : prop(Nom, 'c-goal') / p(1.0).
+
+%-------------------------------------------------------------------------
+% ENGAGEMENT
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'engagement-opening'),
+
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, greeting) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'engagement-closing'),
+
+%	event : produce_text([goodbye, Hearer]) / -1.0.
+	utt_head(Nom),
+	i : feat_CannedText(Nom, goodbye_human) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%-------------------------------------------------------------------------
+% YES / NO
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(Speaker, Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'engagement-opening'),
+
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, greeting) / -1.0,
+	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 % ERRORS & COMPLAINTS

@@ -3,7 +3,7 @@
 %-------------------------------------------------------------------------
 
 % X is Y
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : sort(Nom, ascription),
 	i : 'feat_Mood'(Nom, ind),
 	i : 'feat_Tense'(Nom, pres),
@@ -11,16 +11,13 @@ understand : event : from_logical_form(S, H, Nom) <-
 	i : 'rel_Subject'(Nom, SubjNom),
 	i : 'rel_Cop-Restr'(Nom, RestrNom),
 	i : 'rel_Cop-Scope'(Nom, ScopeNom),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
-	understand : assertion_effect(S, H, Int, SubjNom, Polarity, ScopeNom).
 
-	% mirroring
-%	mirror_id(MInt),
-%	int : agent(MInt, H) / -0.1,
-%	understand : topic(H, S, EpSt, MInt, SubjNom, RestrNom),
-%	understand : assertion_effect(H, S, MInt, SubjNom, Polarity, ScopeNom).
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'ascription') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, RestrNom),
+	understand : assertion_effect(Speaker, Hearer, Int, SubjNom, Polarity, ScopeNom).
 
 %-------------------------------------------------------------------------
 
