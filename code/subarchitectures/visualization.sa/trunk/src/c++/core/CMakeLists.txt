@@ -210,6 +210,7 @@ if(BUILD_SA_V11N_CLIENT)
    find_package(OpenCV REQUIRED)
    include_directories(${OPENCV_INCLUDE_DIRS})
    include_directories(client)
+   include_directories(${VISUALIZATION_INCLUDE_DIRS})
    link_directories(${OPENCV_LIBRARY_DIRS})
    add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
@@ -219,8 +220,8 @@ if(BUILD_SA_V11N_CLIENT)
       client/CMilliTimer.cpp
       )
    link_cast_component(${CAST_COMPONENT_NAME}
-      VisualizationData Math Video VideoUtils
-      # CogxIceAutogen
+      ${VISUALIZATION_LIBRARIES}
+      Math Video VideoUtils
       ${OPENCV_LDFLAGS}
       )
 endif(BUILD_SA_V11N_CLIENT)
