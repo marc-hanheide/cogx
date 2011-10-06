@@ -102,14 +102,47 @@ public class ComaReasoner extends ManagedComponent {
 			return m_reasoner.getRelatedInstances(instance, relation).toArray(new String[0]);
 		}
 		
+		public String[] getImmediateRelatedInstancesByRelation(String instance,
+				String relation, Current current) {
+			return m_reasoner.getImmediateRelatedInstances(instance, relation).toArray(new String[0]);
+		}
+
+		public String[] getInverseRelatedInstancesByRelation(String instance,
+				String relation, Current current) {
+			return m_reasoner.getInverseRelatedInstances(instance, relation).toArray(new String[0]);
+		}
+
+		public String[] getInstancesByPropertyValue(String property,
+				String value, Current current) {
+			return m_reasoner.getInstancesByPropertyValue(property, value).toArray(new String[0]);
+		}
+
 		public String[] getAllConcepts(String instance, Current __current) {
 			return m_reasoner.getAllConcepts(instance).toArray(new String[0]);
+		}
+		public String[] getBasicLevelConcepts(String instance, Current current) {
+			return m_reasoner.getBasicLevelConcepts(instance).toArray(new String[0]);
+		}
+
+		public String[] getMostSpecificConcepts(String instance, Current current) {
+			return m_reasoner.getMostSpecificConcepts(instance).toArray(new String[0]);
 		}
 
 		public String[] getAllSubconcepts(String concept, Current current) {
 			return m_reasoner.getAllSubConcepts(concept).toArray(new String[0]);
 		}
 		
+		public String[] getPropertyValues(String instance, String property,
+				Current current) {
+			return m_reasoner.getPropertyValues(instance, property).toArray(new String[0]);
+		}
+
+		@Override
+		public String[] getRelationsBetweenInstances(String instance1,
+				String instance2, Current current) {
+			return m_reasoner.getRelations(instance1, instance2).toArray(new String[0]);
+		}
+
 		public boolean addInstance(String instance, String concept, Current __current) {
 			try {
 				m_reasoner.addInstance(instance, concept);
@@ -135,6 +168,18 @@ public class ComaReasoner extends ManagedComponent {
 
 		public boolean isInstanceOf(String instance, String concept, Current __current) {
 			return m_reasoner.isInstanceOf(instance, concept);
+		}
+
+		@Override
+		public boolean areInstancesRelated(String instance1, String relation,
+				String instance2, Current current) {
+			return m_reasoner.areInstancesRelated(instance1, instance2, relation);
+		}
+
+		@Override
+		public boolean isSubRelation(String relation1, String relation2,
+				Current current) {
+			return m_reasoner.isSubRelation(relation1, relation2);
 		}
 
 		public String executeSPARQL(String sparqlQuery, Current current) {
