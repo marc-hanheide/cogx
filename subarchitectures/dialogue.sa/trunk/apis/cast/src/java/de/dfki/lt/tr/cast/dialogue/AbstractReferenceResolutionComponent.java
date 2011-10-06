@@ -48,7 +48,7 @@ extends AbstractDialogueComponent {
 						getLogger().debug("will act on the ReferenceResolutionRequest [" + _wmc.address.id + "," + _wmc.address.subarchitecture + "]");
 						ReferenceResolutionResult res = resolver.resolve(rr, _wmc.address);
 						if (res != null) {
-							getLogger().debug("overwriting the request " + wmaToString(_wmc.address) + " with result:\n" + ReferenceUtils.resolutionResultToString(res));
+							getLogger().debug("adding a new result in response to " + wmaToString(_wmc.address) + ":\n" + ReferenceUtils.resolutionResultToString(res));
 							addToWorkingMemory(newDataID(), res);
 						}
 						else {

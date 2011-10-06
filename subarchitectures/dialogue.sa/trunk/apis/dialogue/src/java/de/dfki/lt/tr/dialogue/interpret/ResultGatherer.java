@@ -10,68 +10,48 @@ import java.util.concurrent.TimeoutException;
 public class ResultGatherer<T extends CASTResult> {
 
 	private final WorkingMemoryAddress wma;
-	private final ResultFuture future;
+	private final ResultCombinator<T> combinator;
+	private final CountDownLatch latch;
 
-	public ResultGatherer(WorkingMemoryAddress wma) {
+	public ResultGatherer(WorkingMemoryAddress wma, ResultCombinator<T> combinator) {
 		this.wma = wma;
-		future = new ResultFuture();
+		this.combinator = combinator;
+		latch = new CountDownLatch(1);
 	}
 
 	public synchronized void addResult(T result) {
-		if (!future.isDone()) {
-			future.setResult(result);
-			future.finish();
+		if (result.getRequestAddress().equals(wma)) {
+			if (!isStabilized()) {
+				combinator.addResult(result);
+				if (combinator.resultsSufficient()) {
+					stabilize();
+				}
+			}
 		}
 	}
 
-//	public void gathered() {
-//		future.finished();
-//	}
-
-	public Future<T> getResultFuture() {
-		return future;
+	public T getResult() {
+		return combinator.toResult();
 	}
 
-	private class ResultFuture implements Future<T> {
+	private void stabilize() {
+		latch.countDown();
+	}
 
-		private T result = null;
-		private CountDownLatch latch = new CountDownLatch(1);
+	synchronized public boolean isStabilized() {
+		return latch.getCount() == 0;
+	}
 
-		public void finish() {
-			latch.countDown();
+	public T ensureStabilization(long l, TimeUnit tu) {
+		if (!isStabilized()) {
+			try {
+				latch.await(l, tu);
+			}
+			catch (InterruptedException ex) {
+				// was interrupted, never mind!
+			}
 		}
-
-		public void setResult(T result) {
-			this.result = result;
-		}
-
-		@Override
-		public boolean cancel(boolean bln) {
-			throw new UnsupportedOperationException("Not supported.");
-		}
-
-		@Override
-		public boolean isCancelled() {
-			throw new UnsupportedOperationException("Not supported.");
-		}
-
-		@Override
-		public synchronized boolean isDone() {
-			return latch.getCount() == 0;
-		}
-
-		@Override
-		public T get() throws InterruptedException, ExecutionException {
-			latch.await();
-			return result;
-		}
-
-		@Override
-		public T get(long l, TimeUnit tu) throws InterruptedException, ExecutionException, TimeoutException {
-			latch.await(l, tu);
-			return result;
-		}
-		
+		return getResult();
 	}
 
 }

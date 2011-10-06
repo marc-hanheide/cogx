@@ -11,6 +11,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
+import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
@@ -44,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class NewIntentionRealizer
 extends AbstractAbductiveComponent<RobotCommunicativeAction> {
@@ -272,7 +274,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 			}
 
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
-			ResultGatherer<ReferenceGenerationResultWrapper> gatherer = new ResultGatherer(wma);
+			ResultGatherer<ReferenceGenerationResultWrapper> gatherer = new ResultGatherer(wma, new FirstComeFirstServeCombinator<ReferenceGenerationResultWrapper>());
 			gatherers.put(wma, gatherer);
 
 			ReferenceGenerationResultWrapper result = null;
@@ -280,19 +282,13 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 			try {
 				getLogger().info("adding a ReferenceGenerationRequest to the WM: " + ProductionUtils.referenceGenerationRequestToString(request));
 				addToWorkingMemory(wma, request);
-				
-				// TODO register this as added?
-				result = gatherer.getResultFuture().get();
 			}
 			catch (SubarchitectureComponentException ex) {
 				logException(ex);
 			}
-			catch (InterruptedException ex) {
-				logException(ex);
-			}
-			catch (ExecutionException ex) {
-				logException(ex);
-			}
+			result = gatherer.ensureStabilization(500, TimeUnit.MILLISECONDS);
+			stopGathererObservation(wma);
+
 
 			if (result != null) {
 				final ReferenceGenerationResult refs = result.getResult();
@@ -323,6 +319,17 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 		}
 		
 	};
+
+
+	public void stopGathererObservation(WorkingMemoryAddress wma) {
+		gatherers.remove(wma);
+		try {
+			deleteFromWorkingMemory(wma);
+		}
+		catch (SubarchitectureComponentException ex) {
+			logException(ex);
+		}
+	}
 
 	private static class ReferenceGenerationResultWrapper extends CASTResultWrapper<ReferenceGenerationResult> {
 
