@@ -309,9 +309,9 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 		jFrame.setSize(800, 600);
 
 		// default start-up slider values
-		jAnalyzePOPrioritySlider.setValue(0);
+		jAnalyzePOPrioritySlider.setValue(1);
 		jLearnVOPrioritySlider.setValue(0);
-		jLookAroundPrioritySlider.setValue(1);
+		jLookAroundPrioritySlider.setValue(0);
 
 	}
 
