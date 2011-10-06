@@ -6,8 +6,8 @@ JAVA MG pm-viewpoint 	eu.cogx.perceptmediator.dora.ViewPointMediator
 
 # property mediators
 JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.GatewayPropertyMediator
-JAVA MG pm-space 	eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator
-JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator
+####JAVA MG pm-space 	eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator
+####JAVA MG pm-border 	eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator
 
 
 # relation mediators:
