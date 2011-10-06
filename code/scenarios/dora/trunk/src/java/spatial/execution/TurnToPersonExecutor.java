@@ -122,7 +122,7 @@ public class TurnToPersonExecutor extends
 	private void initiateDialogAction() throws CASTException {
 
 		EngageWithHuman ewh = new EngageWithHuman(ActionStatus.PENDING,
-				TriBool.TRIINDETERMINATE, m_humanBeliefAddr);
+				TriBool.TRIINDETERMINATE, m_humanBeliefAddr, true);
 		m_dlgActionAddr = new WorkingMemoryAddress(getComponent().newDataID(),
 				getComponent().getSubarchitectureID());
 		getComponent().addChangeFilter(
