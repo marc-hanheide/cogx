@@ -100,6 +100,11 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     m_bNoPTZ = true;
   }
 
+  if((it = _config.find("--ptzserver")) != _config.end())
+  {
+    m_ptzServerComponent = it->second;
+  }
+
   m_planeModelFilename = "";
   it = _config.find("--plane-model-file");
   if (it != _config.end()) {
@@ -217,22 +222,25 @@ void ObjectRelationManager::start()
 
 //  m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
   if (!m_bNoPTZ) {
-    log("connecting to PTU");
-    Ice::CommunicatorPtr ic = getCommunicator();
-
-    Ice::Identity id;
-    id.name = "PTZServer";
-    id.category = "PTZServer";
-
-    std::ostringstream str;
-    str << ic->identityToString(id) 
-      << ":default"
-      << " -h localhost"
-      << " -p " << cast::cdl::CPPSERVERPORT;
-
-    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
-    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+    m_ptzInterface = getIceServer<ptz::PTZInterface>(m_ptzServerComponent);
   }
+//  if (!m_bNoPTZ) {
+//    log("connecting to PTU");
+//    Ice::CommunicatorPtr ic = getCommunicator();
+//
+//    Ice::Identity id;
+//    id.name = "PTZServer";
+//    id.category = "PTZServer";
+//
+//    std::ostringstream str;
+//    str << ic->identityToString(id) 
+//      << ":default"
+//      << " -h localhost"
+//      << " -p " << cast::cdl::CPPSERVERPORT;
+//
+//    Ice::ObjectPrx base = ic->stringToProxy(str.str());    
+//    m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+//  }
 
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){

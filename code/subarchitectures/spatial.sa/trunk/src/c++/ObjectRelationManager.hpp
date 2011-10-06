@@ -155,6 +155,8 @@ protected:
       int *objectInObjectVal, int *objectOnObjectVal, int *objectDirectlyOnObjectVal);
 
   ptz::PTZInterfacePrx m_ptzInterface;
+  std::string m_ptzServerComponent;
+
 
   DensitySampler m_sampler;
 
