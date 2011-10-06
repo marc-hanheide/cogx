@@ -36,6 +36,7 @@ public abstract class BlockingActionExecutor<ActionType extends Action> extends 
 	public boolean accept(Action _action) {
 		if(_action.getClass().equals(m_actCls)) {
 			m_action = m_actCls.cast(_action);
+			log("accepted action: " + m_actCls);
 			return true;
 		}
 		else {
