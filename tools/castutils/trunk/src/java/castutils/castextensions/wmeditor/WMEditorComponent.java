@@ -246,10 +246,12 @@ public class WMEditorComponent extends ManagedComponent implements
 	private void updateEntryList() {
 		List<String> listData = new ArrayList<String>();
 		for (WorkingMemoryChange e : wmElemMap.values()) {
-			String text = e.type + ": " + e.address.id + "@"
+			
+			String[] parts=e.type.split("::");
+			String text = parts[parts.length-1] + ": " + e.address.id + "@"
 					+ e.address.subarchitecture;
 			if (wmEntriesListFilter.length() == 0
-					|| e.type.contains(wmEntriesListFilter)) {
+					|| text.contains(wmEntriesListFilter)) {
 				listData.add(text);
 			}
 			list2WmaMap.put(text, e.address);
