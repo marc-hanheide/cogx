@@ -4,3 +4,4 @@ INCLUDE modules/nlu-irecog.incl
 INCLUDE modules/manage-mirror.incl
 INCLUDE modules/nlg-ireal.incl
 INCLUDE modules/refres-fake.incl
+INCLUDE modules/refgen-fake.incl

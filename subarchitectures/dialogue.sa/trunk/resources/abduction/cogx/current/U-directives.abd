@@ -49,6 +49,7 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 		i : 'rel_Cop-Scope'(Nom, WhNom),
 	i : rel_Subject(Nom, SubjNom),
 	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, what),
 %	int_id(Int),
 %	int : agent(Int, S) / p(1.0),
 %	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
@@ -122,6 +123,28 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : string_content(Int, subtype, 'open') / p(1.0),
 	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom),
 	understand : wh_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% HACKING:
+% where is X (testing for Dora)
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, _RestrNom),  % XXX garbage
+		i : 'rel_Cop-Scope'(Nom, WhNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, where),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+%	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'location-report') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
