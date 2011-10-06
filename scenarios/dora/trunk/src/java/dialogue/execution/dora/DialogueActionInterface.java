@@ -1,39 +1,24 @@
 package dialogue.execution.dora;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import cast.CASTException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
-import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
-import cast.cdl.WorkingMemoryAddress;
-import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import dialogue.execution.AbstractDialogueActionInterface;
-import dialogue.execution.AbstractDialogueActionInterface.BeliefIntentionDialogueAction;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.components.RoomMembershipMediator;
 import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
-import execution.components.AbstractActionInterface;
 import execution.slice.TriBool;
 import execution.slice.actions.EngageWithHuman;
 import execution.slice.actions.ReportPosition;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
-import execution.util.DoNothingActionExecutorFactory;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
