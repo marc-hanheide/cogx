@@ -41,7 +41,7 @@ public class VisualObjectMotiveGenerator extends
 
 	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
-	private boolean m_shapeEnabled = true;
+	private boolean m_shapeEnabled = false;
 	private boolean m_identityEnabled = false;
 
 	public VisualObjectMotiveGenerator() {
@@ -71,8 +71,7 @@ public class VisualObjectMotiveGenerator extends
 
 			if (!visualObjectIsVisible(belief)) {
 				return null;
-			}
-			else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
+			} else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
 					COLOUR_LEARNT_KEY, _motive, belief))
 					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
 							SHAPE_LEARNT_KEY, _motive, belief))
