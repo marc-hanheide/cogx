@@ -110,6 +110,23 @@ class CASTState(object):
         for f in commit_facts:
             self.state.set(f)
 
+    # def mapl_domain(self, domain, stat=None):
+    #     if stat is None:
+    #         stat = self.prob_state
+        
+    #     if not global_vars.config.enable_switching_planner:
+    #         return domain
+        
+    #     if global_vars.config.base_planner.name == "TFD" or global_vars.config.base_planner.name == "Downward":
+    #         dt_compiler = pddl.dtpddl.DT2MAPLCompiler ()
+    #     elif global_vars.config.base_planner.name == "ProbDownward":
+    #         dt_compiler = pddl.dtpddl.DT2MAPLCompilerFD(nodes=self.pnodes)
+    #     else:
+    #         assert False, "Only TFD and modified Fast Downward (ProbDownward) are supported"
+            
+    #     cp_domain = dt_compiler.translate(domain, prob_functions=self.get_prob_functions())
+    #     return cp_domain
+
     def translate_domain(self, stat):
         
         if not global_vars.config.enable_switching_planner:
@@ -728,8 +745,8 @@ class CASTState(object):
             dist_dict = {}
             for i, arg in enumerate(arg_values):
                 feat = "element%d" % i
-                pair = distribs.FeatureValueProbPair(arg, 1.0)
-                dist_dict[feat] = distribs.BasicProbDistribution(feat, distribs.FeatureValues([pair])) 
+                pair = distribs.FormulaProbPair(arg, 1.0)
+                dist_dict[feat] = distribs.BasicProbDistribution(feat, distribs.FormulaValues([pair])) 
             dist = distribs.CondIndependentDistribs(dist_dict)
             result = bm.sitbeliefs.dBelief(frame, eps, "temporary", "relation", dist, hist)
             return result
@@ -752,7 +769,7 @@ class CASTState(object):
             dist, parent = get_value_dist(bel.content, feature)
             if not dist:
                 if isinstance(parent, distribs.CondIndependentDistribs):
-                    dist = distribs.FeatureValues()
+                    dist = distribs.FormulaValues()
                     parent.distribs[feature] = distribs.BasicProbDistribution(feature, dist)
                 else:
                     continue
@@ -763,7 +780,7 @@ class CASTState(object):
                 dist.variance = 0;
             else:
                 fval = self.featvalue_from_object(val)
-                pair = distribs.FeatureValueProbPair(fval, 1.0)
+                pair = distribs.FormulaProbPair(fval, 1.0)
                 dist.values = [pair]
 
             if bel.id != "temporary":
