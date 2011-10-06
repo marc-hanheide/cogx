@@ -12,14 +12,15 @@ module production {
 
 	class ReferenceGenerationRequest {
 		cast::cdl::WorkingMemoryAddress obj;
-		cast::cdl::WorkingMemoryAddress room;
 	};
 
 	["java:type:java.util.ArrayList<String>"] sequence<string> stringSeq;
 
 	class ReferenceGenerationResult {
 		cast::cdl::WorkingMemoryAddress requestAddress;
-		stringSeq wordList;
+		string category;
+		string relation;
+		string location;
 	};
 
 };

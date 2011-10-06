@@ -11,8 +11,9 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
-import de.dfki.lt.tr.dialogue.interpret.RobotsIntentionToAct;
-import de.dfki.lt.tr.dialogue.interpret.RobotsIntentionToActProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
+import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeActionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.atoms.FromIntentionAtom;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
@@ -20,8 +21,10 @@ import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.proof.AbstractAssertionSolver;
 import de.dfki.lt.tr.infer.abducer.proof.AbstractProofInterpretationContext;
 import de.dfki.lt.tr.infer.abducer.proof.AssertionSolverCascade;
+import de.dfki.lt.tr.infer.abducer.proof.ContextUpdate;
 import de.dfki.lt.tr.infer.abducer.proof.EngineProofExpander;
 import de.dfki.lt.tr.infer.abducer.proof.ProofExpander;
 import de.dfki.lt.tr.infer.abducer.proof.ProofInterpretationContext;
@@ -30,12 +33,13 @@ import de.dfki.lt.tr.infer.abducer.proof.ProofPruner;
 import de.dfki.lt.tr.infer.abducer.proof.pruners.LengthPruner;
 import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class NewIntentionRealizer
-extends AbstractAbductiveComponent<RobotsIntentionToAct> {
+extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 
 	public final String DEFAULT_ABD_SERVER_NAME = "AbducerServer";
 	public final int DEFAULT_ABD_PORT = 9100;
@@ -52,8 +56,11 @@ extends AbstractAbductiveComponent<RobotsIntentionToAct> {
 
 	private int timeout = DEFAULT_TIMEOUT;
 
+	private final Map<WorkingMemoryAddress, IntentionToAct> wmaToInt;
+
 	public NewIntentionRealizer() {
 		super();
+		wmaToInt = new HashMap<WorkingMemoryAddress, IntentionToAct>();
 	}
 
 	@Override
@@ -101,24 +108,24 @@ extends AbstractAbductiveComponent<RobotsIntentionToAct> {
 	}
 
 	@Override
-	protected ProofInterpretationContext<RobotsIntentionToAct> initContext() {
+	protected ProofInterpretationContext<RobotCommunicativeAction> initContext() {
 		ProofPruner pruner = new LengthPruner(3);
 		ProofExpander expander = new EngineProofExpander(getEngine(), timeout);
 
 		AssertionSolverCascade solvers = new AssertionSolverCascade();
-//		solvers.addSolver(new ExpandLFAssertionSolver());
+		solvers.addSolver(new ExpandIntentionAssertionSolver());
 //		solvers.addSolver(new IntentionIDAssertionSolver());
 //		solvers.addSolver(new NewBeliefAssertionSolver());
 //		solvers.addSolver(new ReferenceResolutionAssertionSolver());
 
-		ProofInterpreter<RobotsIntentionToAct> interpreter = new RobotsIntentionToActProofInterpreter(getLogger());
+		ProofInterpreter<RobotCommunicativeAction> interpreter = new RobotCommunicativeActionProofInterpreter(getLogger());
 
 		final WorkingMemoryWriterComponent committer = this;
 
-		return new AbstractProofInterpretationContext<RobotsIntentionToAct>(pruner, expander, solvers, interpreter) {
+		return new AbstractProofInterpretationContext<RobotCommunicativeAction>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(RobotsIntentionToAct i) {
+			public void onSuccessfulInterpretation(RobotCommunicativeAction i) {
 				try {
 					getLogger().debug("going to commit the following:\n" + i.toString());
 					i.commit(committer);
@@ -152,7 +159,7 @@ extends AbstractAbductiveComponent<RobotsIntentionToAct> {
 								try {
 									getLogger().info("converting the IntentionToAct to a partial interpretation");
 									IntentionToAct actint = getMemoryEntry(addr, IntentionToAct.class);
-//									nomToLFMap.put(slf.lform.root.nomVar, slf);
+									wmaToInt.put(addr, actint);
 									InterpretationRequest inprRequest = new InterpretationRequest(intentionToActToGoal(actint, addr));
 									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest));
 								}
@@ -181,5 +188,35 @@ extends AbstractAbductiveComponent<RobotsIntentionToAct> {
 		return goal;
 	}
 
-	
+	public class ExpandIntentionAssertionSolver extends AbstractAssertionSolver<FromIntentionAtom> {
+
+		public ExpandIntentionAssertionSolver() {
+			super(new FromIntentionAtom.Matcher());
+		}
+
+		@Override
+		public ContextUpdate solveFromParsed(FromIntentionAtom a) {
+			final WorkingMemoryAddress wma = a.getAddress();
+			if (wma == null) {
+				return null;
+			}
+			getLogger().info("solving an intention expansion assertion for " + wmaToString(wma));
+			final IntentionToAct actint = wmaToInt.get(wma);
+			assert actint != null;
+
+			return new ContextUpdate() {
+
+				@Override
+				public void doUpdate(AbductionEnginePrx engine) {
+					getLogger().debug("updating the abduction context for the solved intention expansion");
+					for (ModalisedAtom fact : RobotCommunicativeAction.intentionToActToFacts(wma, actint)) {
+						engine.addFact(fact);
+					}
+				}
+
+			};
+		}
+
+	};
+
 }
