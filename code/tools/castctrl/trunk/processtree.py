@@ -18,8 +18,12 @@ class CTreeItem:
         return []
 
     def row(self):
-        if self.parentItem:
-            return self.parentItem.getChildList().index(self)
+        try:
+            if self.parentItem:
+                return self.parentItem.getChildList().index(self)
+        except ValueError:
+            print "CTreeItem::row FAILED in self.parentItem.getChildList().index(self)"
+            return 0
         return 0
 
     def color(self):
