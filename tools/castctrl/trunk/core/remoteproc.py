@@ -42,10 +42,16 @@ class CRemoteProcess(CProcessBase):
         return "Not started"
 
     def start(self):
-        self.manager.agentProxy.startProcess(self.name)
+        try:
+            self.manager.agentProxy.startProcess(self.name)
+        except Ice.ConnectionRefusedException:
+            pass
 
     def stop(self):
-        self.manager.agentProxy.stopProcess(self.name)
+        try:
+            self.manager.agentProxy.stopProcess(self.name)
+        except Ice.ConnectionRefusedException:
+            pass
 
     def _readMessages(self):
         msgs = self.manager.agentProxy.readMessages(self.name)
