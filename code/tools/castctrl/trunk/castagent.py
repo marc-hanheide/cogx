@@ -119,13 +119,13 @@ class CConsoleAgent:
         if appOptions.golem_cfg != None:
             if not os.path.exists(appOptions.golem_cfg):
                 LOGGER.warn("Golem configuration file '%s' not found." % appOptions.golem_cfg)
-            else:
-                cmd = self._options.xe("${CMD_GOLEM}")
-                cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
-                wkd = self._options.xe("${CMD_GOLEM_WORKDIR}")
-                if not os.path.exists(wkd):
-                    wkd = None
-                self.manager.addProcess(procman.CProcess("Golem", cmd, workdir=wkd))
+
+            cmd = self._options.xe("${CMD_GOLEM}")
+            cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
+            wkd = self._options.xe("${CMD_GOLEM_WORKDIR}")
+            if not os.path.exists(wkd):
+                wkd = None
+            self.manager.addProcess(procman.CProcess("Golem", cmd, workdir=wkd))
 
         if appOptions.gazebo_world != None:
             if not os.path.exists(appOptions.gazebo_world):
@@ -149,6 +149,10 @@ class CConsoleAgent:
         if appOptions.peekabot != None and appOptions.peekabot:
             cmd = self._options.xe("${CMD_PEEKABOT}")
             self.manager.addProcess(procman.CProcess("Peekabot", cmd))
+
+        if appOptions.text2speech != None and appOptions.text2speech:
+            cmd = self._options.xe("${CMD_SPEECH_SERVER}")
+            self.manager.addProcess(procman.CProcess("Mary.tts", cmd))
 
         if appOptions.can_build:
             cmd = "make [TARGET]"
@@ -210,38 +214,62 @@ def parseOptions():
     #parser.add_option("-v", "--verbose", action="store", type="int", dest="verbose")
     #parser.add_option("-q", "--quiet", action="store_const", const=0, dest="verbose")
     parser.add_option("-p", "--port", action="store", type="int", default=castagentsrv.SLAVE_PORT, dest="port",
-        help="Set the port number on which this agent will be listening. Default=%d." % castagentsrv.SLAVE_PORT)
+            help="Set the port number on which this agent will be listening. Default=%d." % castagentsrv.SLAVE_PORT)
 
     parser.add_option("-c", "--config", action="store", type="string", default="castcontrol.conf", dest="config",
-        help="Set a configuration file. Default=castcontrol.conf.")
-
-    parser.add_option("", "--player", action="store", type="string", default=None, dest="player_cfg",
-        help="Set the Player configuration file. If not set, Player won't be started by this agent.")
-
-    parser.add_option("", "--golem", action="store", type="string", default=None, dest="golem_cfg",
-        help="Set the Golem configuration file. If not set, Golem won't be started by this agent.")
-
-    parser.add_option("", "--gazebo-world", action="store", type="string", default=None, dest="gazebo_world",
-        help="Set the Gazebo world file. If not set, Gazebo won't be started by this agent.")
-
-    parser.add_option("", "--peekabot", action="store_true", dest="peekabot", default=False,
-        help="If set, Peekabot will be started by this agent.")
-
-    parser.add_option("", "--abducer", action="store_true", dest="abducer", default=False,
-        help="If set, Abducer will be started by this agent.")
-
-    parser.add_option("", "--display-server", action="store_true", dest="display_srv", default=False,
-        help="If set, Display Server will be started by this agent.")
+            help="Set a configuration file. Default=castcontrol.conf.")
 
     parser.add_option("", "--build", action="store_true", dest="can_build", default=False,
-        help="Build the project when required by the remote process.")
+            help="Build the project when required by the remote process.")
 
     parser.add_option("", "--rsync", action="store_true", dest="can_rsync", default=False,
-        help="Allow the agent to receive code from the remote process via rsync into current directory.")
+            help="Allow the agent to receive code from the remote process via rsync into current directory.")
 
     parser.add_option("", "--rsync-port", action="store", type="int", dest="rsync_port",
-        default=RSYNC_DAEMON.port,
-        help="The rsync daemon will serve on this port (default=%d)." % RSYNC_DAEMON.port)
+            default=RSYNC_DAEMON.port,
+            help="The rsync daemon will serve on this port (default=%d)." % RSYNC_DAEMON.port)
+
+    parser.add_option("", "--player", action="store", type="string", default=None, dest="player_cfg",
+            help=
+            "Set the Player configuration file. If not set, Player won't be started by this agent. "
+            "Env: CMD_PLAYER"
+           )
+
+    parser.add_option("", "--golem", action="store", type="string", default=None, dest="golem_cfg",
+            help=
+            "Set the Golem configuration file. If not set, Golem won't be started by this agent. "
+            "Env: CMD_GOLEM, CMD_GOLEM_WORKDIR"
+           )
+
+    parser.add_option("", "--gazebo-world", action="store", type="string", default=None, dest="gazebo_world",
+            help=
+            "Set the Gazebo world file. If not set, Gazebo won't be started by this agent. "
+            "Env: CMD_GAZEBO"
+           )
+
+    parser.add_option("", "--peekabot", action="store_true", dest="peekabot", default=False,
+            help=
+            "If set, Peekabot will be started by this agent. "
+            "Env: CMD_PEEKABOT"
+           )
+
+    parser.add_option("", "--abducer", action="store_true", dest="abducer", default=False,
+            help=
+            "If set, Abducer will be started by this agent. "
+            "Env: CMD_ABDUCER"
+           )
+
+    parser.add_option("", "--text2speech", action="store_true", dest="text2speech", default=False,
+            help=
+            "If set, Text To Speech server (Mary) will be started by this agent. "
+            "Env: CMD_SPEECH_SERVER"
+           )
+
+    parser.add_option("", "--display-server", action="store_true", dest="display_srv", default=False,
+            help=
+            "If set, Display Server will be started by this agent. "
+            "Env: CMD_DISPLAY_SERVER"
+           )
 
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
