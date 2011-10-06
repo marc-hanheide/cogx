@@ -3,7 +3,6 @@ package castutils.castextensions.wmeditor;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,9 +14,6 @@ import java.util.StringTokenizer;
 
 import javax.swing.DefaultComboBoxModel;
 
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.error.YAMLException;
 
 import cast.CASTException;
@@ -29,20 +25,17 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import castutils.castextensions.wmeditor.WMEditorFrame.EditorActionListener;
+import castutils.castextensions.wmeditor.serializer.Serializer;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
-public class WMEditorComponent extends ManagedComponent implements
+public abstract class WMEditorComponent extends ManagedComponent implements
 		EditorActionListener, WorkingMemoryChangeReceiver {
 
-	private static final String HISTORYFILE = WMEditorComponent.class
-			.getSimpleName()
-			+ ".hist";
+	
 	private WMEditorFrame gui;
 	Map<String, String> templates = new HashMap<String, String>();
-
-	final Yaml yaml;
 
 	Map<WorkingMemoryAddress, WorkingMemoryChange> wmElemMap = Collections
 			.synchronizedMap(new HashMap<WorkingMemoryAddress, WorkingMemoryChange>());
@@ -54,13 +47,8 @@ public class WMEditorComponent extends ManagedComponent implements
 	private String templateListFilter = "";
 	private String wmEntriesListFilter = "";
 
-	public WMEditorComponent() {
-		DumperOptions dumperOptions = new DumperOptions();
-		dumperOptions.setDefaultFlowStyle(FlowStyle.BLOCK);
-		dumperOptions.setIndent(4);
-		dumperOptions.setWidth(1000);
-		yaml = new Yaml(dumperOptions);
-	}
+	protected abstract Serializer getSerializer();
+	protected abstract String getTemplateFile();
 
 	/*
 	 * (non-Javadoc)
@@ -111,14 +99,14 @@ public class WMEditorComponent extends ManagedComponent implements
 		gui = new WMEditorFrame(this);
 		gui.setVisible(true);
 		gui.getjEditorPane().setText(
-				yaml.dump(CASTIndependentFormulaDistributionsBelief.create(
+				getSerializer().dump(CASTIndependentFormulaDistributionsBelief.create(
 						GroundedBelief.class).get()));
 		gui.getjSAComboBox().setModel(
 				new DefaultComboBoxModel(
 						new String[] { getSubarchitectureID() }));
 		try {
-			FileReader fr = new FileReader(HISTORYFILE);
-			templates = yaml.loadAs(fr, Map.class);
+			FileReader fr = new FileReader(getTemplateFile());
+			templates = (Map<String, String>) getSerializer().load(fr);
 			fr.close();
 			updateTemplateList();
 		} catch (IOException e) {
@@ -134,9 +122,9 @@ public class WMEditorComponent extends ManagedComponent implements
 		String sa = (String) gui.getjSAComboBox().getModel().getSelectedItem();
 		Ice.Object obj;
 		obj = getMemoryEntry(id, sa, Ice.Object.class);
-		StringWriter sw = new StringWriter();
-		yaml.dump(obj, sw);
-		gui.getjEditorPane().setText(sw.toString());
+		
+		String str=getSerializer().dump(obj);
+		gui.getjEditorPane().setText(str);
 	}
 
 	@Override
@@ -164,11 +152,11 @@ public class WMEditorComponent extends ManagedComponent implements
 		Ice.Object obj = null;
 		switch ((WorkingMemoryOperation) gui.getjOPComboBox().getSelectedItem()) {
 		case ADD:
-			obj = (Ice.Object) yaml.load(gui.getjEditorPane().getText());
+			obj = (Ice.Object) getSerializer().load(gui.getjEditorPane().getText());
 			addToWorkingMemory(new WorkingMemoryAddress(id, sa), obj);
 			break;
 		case OVERWRITE:
-			obj = (Ice.Object) yaml.load(gui.getjEditorPane().getText());
+			obj = (Ice.Object) getSerializer().load(gui.getjEditorPane().getText());
 			try {
 				lockEntry(id, sa, WorkingMemoryPermissions.LOCKEDOD);
 				getMemoryEntry(id, sa, Ice.Object.class);
@@ -194,7 +182,7 @@ public class WMEditorComponent extends ManagedComponent implements
 
 	@Override
 	public void addTemplate() {
-		Object obj = yaml.load(gui.getjEditorPane().getText());
+		Object obj = getSerializer().load(gui.getjEditorPane().getText());
 		String key = obj.getClass().getSimpleName() + "(#"
 				+ System.currentTimeMillis() + ")";
 
@@ -202,7 +190,7 @@ public class WMEditorComponent extends ManagedComponent implements
 			key = obj.getClass().getSimpleName() + " ["+((dBelief) obj).type + "] (#"
 					+ System.currentTimeMillis() + ")";
 
-		templates.put(key, yaml.dump(obj));
+		templates.put(key, getSerializer().dump(obj));
 
 		updateTemplateList();
 		writeTemplateFile();
@@ -231,8 +219,8 @@ public class WMEditorComponent extends ManagedComponent implements
 	 */
 	private void writeTemplateFile() {
 		try {
-			FileWriter fw = new FileWriter(HISTORYFILE);
-			fw.write(yaml.dump(templates));
+			FileWriter fw = new FileWriter(getTemplateFile());
+			fw.write(getSerializer().dump(templates));
 
 			fw.close();
 		} catch (IOException e1) {
