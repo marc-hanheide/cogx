@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Show CAST version 
+# Note: cast client does't recognize --version, but it will print the version anyway
+bash @ROOTDIR@/tools/scripts/cast-client-start --version 2> /dev/null | grep "Release:"
+
+# Show the configured IP4 interfaces
+ifconfig | grep "inet \|^[a-z]"
+
+# Start the agent
+python @BINDIR@/castctrl/castagent $*
