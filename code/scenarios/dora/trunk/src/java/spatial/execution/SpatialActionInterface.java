@@ -690,6 +690,14 @@ public class SpatialActionInterface extends ManagedComponent {
 				m_callback.executionComplete(TriBool.TRITRUE);
 				deleteFromWorkingMemory(_wmc.address);
 				removeChangeFilter(this);
+			} else if (cmd.comp == Completion.COMMANDABORTED) {
+				log("command aborted by the looks of this: " + cmd.comp);
+				m_isComplete = true;
+				// FIXME: We should really check the cmd's status for success/failure,
+				// But the planner performs better if we always signal TRITRUE here.
+				m_callback.executionComplete(TriBool.TRITRUE);
+				deleteFromWorkingMemory(_wmc.address);
+				removeChangeFilter(this);
 			} else {
 				log("command in progress: " + cmd.comp);
 				unlockEntry(_wmc.address);
