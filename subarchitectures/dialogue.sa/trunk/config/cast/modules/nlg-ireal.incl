@@ -1,0 +1,4 @@
+VARDEFAULT irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+
+# intention realisation
+JAVA MG	int-realizer         de.dfki.lt.tr.cast.dialogue.NewIntentionRealizer --ruleset %(irealize_abd_domain) --timeout 250 --abd-host %(host:AbducerHost)
