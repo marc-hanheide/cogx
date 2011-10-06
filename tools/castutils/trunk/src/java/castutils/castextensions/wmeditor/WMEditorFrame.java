@@ -233,7 +233,12 @@ public class WMEditorFrame extends javax.swing.JFrame {
 
 			@Override
 			public void addTemplate() {
-				// TODO Auto-generated method stub
+				String[] testStr = new String[100];
+				for (int i=0; i<testStr.length; i++) {
+					testStr[i]=Integer.toString(i);
+				}
+				getjTemplateList().setListData(testStr);
+
 
 			}
 
@@ -245,7 +250,11 @@ public class WMEditorFrame extends javax.swing.JFrame {
 
 			@Override
 			public void updateWMList() {
-				// TODO Auto-generated method stub
+				String[] testStr = new String[100];
+				for (int i=0; i<testStr.length; i++) {
+					testStr[i]=Integer.toString(i);
+				}
+				getjWMList().setListData(testStr);
 
 			}
 
@@ -294,14 +303,10 @@ public class WMEditorFrame extends javax.swing.JFrame {
 				{
 					final JScrollPane jScrollPane1 = new JScrollPane();
 					jMainPanel.add(jScrollPane1, BorderLayout.CENTER);
-					jScrollPane1.setPreferredSize(new java.awt.Dimension(572,
-							216));
 					{
 						jEditorPane = new JEditorPane();
 						jScrollPane1.setViewportView(jEditorPane);
 						jEditorPane.setText("");
-						jEditorPane.setPreferredSize(new java.awt.Dimension(
-								503, 216));
 						jEditorPane.setFont(new java.awt.Font("DejaVu Sans Mono",0,9));
 						jEditorPane.setBackground(Color.WHITE);
 					}
@@ -392,8 +397,8 @@ public class WMEditorFrame extends javax.swing.JFrame {
 						jOPPanel.add(jOPComboBox);
 						jOPComboBox.setModel(jOPComboBoxModel);
 						jOPComboBox.setSize(120, 22);
-						jOPComboBox.setPreferredSize(new java.awt.Dimension(
-								124, 22));
+//						jOPComboBox.setPreferredSize(new java.awt.Dimension(
+//								124, 22));
 					}
 				}
 				{
@@ -409,8 +414,8 @@ public class WMEditorFrame extends javax.swing.JFrame {
 						jGetButton = new JButton();
 						jExecutePanel.add(jGetButton);
 						jGetButton.setText("get");
-						jGetButton.setPreferredSize(new java.awt.Dimension(133,
-								32));
+//						jGetButton.setPreferredSize(new java.awt.Dimension(133,
+//								32));
 						jGetButton.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent evt) {
 								jGetButtonActionPerformed(evt);
@@ -438,10 +443,10 @@ public class WMEditorFrame extends javax.swing.JFrame {
 			}
 			{
 				jSplitPane1 = new JSplitPane();
-				getContentPane().add(jSplitPane1, BorderLayout.WEST);
-				jSplitPane1.setPreferredSize(new java.awt.Dimension(1020, 508));
+				getContentPane().add(jSplitPane1, BorderLayout.CENTER);
+//				jSplitPane1.setPreferredSize(new java.awt.Dimension(1020, 508));
 				jSplitPane1.add(jMainPanel, JSplitPane.RIGHT);
-				jMainPanel.setPreferredSize(new java.awt.Dimension(900, 507));
+//				jMainPanel.setPreferredSize(new java.awt.Dimension(900, 507));
 				{
 					jLeftTabbedPane = new JTabbedPane();
 					jSplitPane1.add(jLeftTabbedPane, JSplitPane.LEFT);
@@ -496,10 +501,6 @@ public class WMEditorFrame extends javax.swing.JFrame {
 								jWMList = new JList();
 								jScrollPane2.setViewportView(jWMList);
 								jWMList.setModel(jList1Model);
-								jWMList.setPreferredSize(new java.awt.Dimension(
-										183, 251));
-								jWMList.setLayout(null);
-								jWMList.setSize(160, 343);
 								jWMList.setFont(new java.awt.Font("DejaVu Sans Mono",0,9));
 								jWMList.addMouseListener(new MouseAdapter() {
 									public void mouseClicked(MouseEvent evt) {
@@ -556,10 +557,7 @@ public class WMEditorFrame extends javax.swing.JFrame {
 								jTemplateListLayout.setColumns(1);
 								jTemplateList.setModel(jTemplateListModel);
 								jTemplateList.setLayout(null);
-								jTemplateList
-								.setPreferredSize(new java.awt.Dimension(
-										183, 251));
-								jTemplateList.setSize(160, 343);
+
 								jTemplateList.setFont(new java.awt.Font("DejaVu Sans Mono",0,9));
 								jTemplateList.addMouseListener(new MouseAdapter() {
 									public void mouseClicked(MouseEvent evt) {
