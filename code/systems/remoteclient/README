@@ -1,0 +1,60 @@
+
+== Installation ==
+
+Client machine:
+{{{
+svn co https://codex.cs.bham.ac.uk/svn/nah/cogx/code/systems/remoteclient
+cd remoteclient/bin
+make
+}}}
+
+
+=== First run ===
+
+Client machine:
+{{{
+cd remoteclient
+./ccagent --rsync --build
+}}}
+
+Development machine:
+{{{
+cd systems/mysystem
+./castcontrol
+}}}
+
+Select a .hconf file with the IP of the client machine:
+{{{
+# example .hconf
+HOST  myhost   192.168.47.23
+}}}
+
+Press the button "Discover agents". The machine should be listed in the process tree.
+
+In the "Build" tab select "Build: " = "Remote" and press "Synchronize". This
+operation may take a while. CAST Control is not responsive while synchronizing.
+
+Select "Build.Make Install" from the menu.
+
+
+=== Configure the remote host build process ===
+
+Client machine:
+{{{
+cd remoteclient/BUILD
+ccmake ..
+}}}
+
+or
+
+{{{
+cd remoteclient
+./castcontrol
+}}}
+
+Select "Build.Configure with CMake" from the menu.
+
+Some parts of the build may have to be configured manually (like the V4R library).
+
+The scripts cmake-freeze and cmake-apply may be useful in the process.
+
