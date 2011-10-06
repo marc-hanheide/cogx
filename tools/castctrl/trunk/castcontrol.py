@@ -6,6 +6,7 @@
 import os, sys, time, signal
 import re
 import tempfile
+import copy
 import threading
 import ConfigParser
 from PyQt4 import QtCore, QtGui
@@ -35,8 +36,9 @@ class CLambdaThread(threading.Thread):
     def run(self):
         self.func(self.data)
 
-class CLogDisplayer:
+class CLogDisplayer(threading.Thread):
     def __init__(self, qtext):
+        threading.Thread.__init__(self, name="CLogDisplayer")
         self.log = messages.CLogMerger()
         self.qtext = qtext
         doc = qtext.document()
@@ -46,6 +48,9 @@ class CLogDisplayer:
         self.showError = True
         self.reError = re.compile(r"\b(error)\b", re.IGNORECASE)
         self.reWarning = re.compile(r"\b(warning)\b", re.IGNORECASE)
+        self._isRunning = False
+        self._qtextQueue = []
+        self._qtextLock = threading.Lock()
 
     def _markWords(self, text):
         text = self.reError.sub(r'<span style="background-color: yellow;"> \1 </span>', text)
@@ -56,34 +61,72 @@ class CLogDisplayer:
         doc = self.qtext.document()
         doc.setMaximumBlockCount(count)
 
-    def pullLogs(self):
+    def _pullLogsInternal(self):
         mods = False
         self.log.merge()
         msgs = self.log.getNewMessages(200)
         if len(msgs) > 0:
             pntr = messages.CAnsiPainter()
-            for m in msgs:
-                if m.msgtype == messages.CMessage.CASTLOG:
-                    self.qtext.append(pntr.paint(m.getText()))
-                else:
-                    text = m.getText()
-                    co = None
-                    if m.msgtype == messages.CMessage.WARNING:
-                        if not self.showWarning: continue
-                        co = "blue"
-                    elif m.msgtype == messages.CMessage.ERROR:
-                        if not self.showError: continue
-                        text = self._markWords(text)
-                        co = "red"
-                    elif m.msgtype == messages.CMessage.FLUSHMSG:
-                        if not self.showFlush: continue
-                        text = self._markWords(text)
-                        co = "grey"
-                    # text = m.source + ": " + text
-                    if co == None: self.qtext.append(text)
-                    else: self.qtext.append("<font color=%s>%s</font> " % (co, text))
-            mods = True
+            try:
+                self._qtextLock.acquire(True)
+                for m in msgs:
+                    if m.msgtype == messages.CMessage.CASTLOG:
+                        self._qtextQueue.append(pntr.paint(m.getText()))
+                    else:
+                        text = m.getText()
+                        co = None
+                        if m.msgtype == messages.CMessage.WARNING:
+                            if not self.showWarning: continue
+                            co = "blue"
+                        elif m.msgtype == messages.CMessage.ERROR:
+                            if not self.showError: continue
+                            text = self._markWords(text)
+                            co = "red"
+                        elif m.msgtype == messages.CMessage.FLUSHMSG:
+                            if not self.showFlush: continue
+                            text = self._markWords(text)
+                            co = "grey"
+                        # text = m.source + ": " + text
+                        if co == None: self._qtextQueue.append(text)
+                        else: self._qtextQueue.append("<font color=%s>%s</font> " % (co, text))
+                mods = True
+            finally:
+               self._qtextLock.release()
+
         return mods
+
+    def run(self):
+        self._isRunning = True
+        while self._isRunning:
+            self._pullLogsInternal()
+            time.sleep(0.5)
+        self._pullLogsInternal()
+
+    def shutdown(self):
+        self._isRunning = False
+
+    def pullLogs(self):
+        if len(self._qtextQueue) < 1:
+            return False
+
+        if not self._qtextLock.acquire(False): # nonblocking
+            time.sleep(0.05)
+            if not self._qtextLock.acquire(False): # nonblocking
+                return False
+        try:
+            if len(self._qtextQueue) < 50:
+                msgs = self._qtextQueue
+                self._qtextQueue = []
+            else:
+                msgs = self._qtextQueue[:50]
+                self._qtextQueue = self._qtextQueue[50:]
+        finally:
+            self._qtextLock.release()
+
+        for m in msgs:
+            self.qtext.append(m)
+
+        return True
 
     def clearOutput(self):
         self.qtext.document().clear()
@@ -99,6 +142,30 @@ class CLogDisplayer:
     def saveLogs(self, stream): # TODO: save all available messages from currently registered sourcess
         # maybe: restart, pullRawLogs-->stream, clearOutput, restart
         pass
+
+
+class CRemoteMessagePump(threading.Thread):
+    def __init__(self, ccwindow):
+        threading.Thread.__init__(self, name="CRemoteMessagePump")
+        self._isRunning = False
+        self.castcontrol = ccwindow
+
+    def run(self):
+        self._isRunning = True
+        while self._isRunning:
+            time.sleep(0.5)
+            hosts = copy.copy(self.castcontrol._remoteHosts)
+            for rpm in hosts:
+                try:
+                    rpm.updateProcessList()
+                    rpm.pumpRemoteMessages()
+                    time.sleep(0.05)
+                except Exception:
+                    pass
+
+    def shutdown(self):
+        self._isRunning = False
+
 
 class CProcessGroup:
     def __init__(self, name):
@@ -135,6 +202,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._manager = procman.CProcessManager()
         self._remoteHosts = []
         self._pumpRemoteMessages = True
+        self._remoteMessagePump = CRemoteMessagePump(self)
+        self._remoteMessagePump.start()
 
         root = self._options.xe("${COGX_ROOT}")
         if len(root) > 64: root = "..." + root[-64:]
@@ -143,10 +212,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.setMaxBlockCount(self._userOptions.maxMainLogLines)
         self.mainLog.log.addSource(LOGGER)
+        self.mainLog.start()
 
         self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
         self.buildLog.setMaxBlockCount(self._userOptions.maxBuildLogLines)
         self.buildLog.showFlush = True
+        self.buildLog.start()
 
         self._processModel = processtree.CProcessTreeModel()
         self.ui.processTree.setModel(self._processModel)
@@ -160,7 +231,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         # Auxiliary components
         self.tmStatus = QtCore.QTimer()
         QtCore.QObject.connect(self.tmStatus, QtCore.SIGNAL("timeout()"), self.statusUpdate)
-        self.tmStatus.start(632)
+        self.tmStatus.start(412)
 
         self._connect_signals()
         LOGGER.log("CAST Control initialized")
@@ -511,14 +582,14 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
         self.mainLog.pullLogs()
         self.buildLog.pullLogs()
-        for rpm in self._remoteHosts: #TODO: read in background, at most 1 per second
-            rpm.updateProcessList()
-            if self._pumpRemoteMessages: rpm.pumpRemoteMessages()
 
     def closeEvent(self, event):
         self._manager.stopAll()
         self._manager.stopReaderThread()
         time.sleep(0.2)
+        self._remoteMessagePump.shutdown()
+        self.mainLog.shutdown()
+        self.buildLog.shutdown()
         def getitems(cmbx, count=30, hasNullFile=False):
             mx = cmbx.count()
             lst = []
