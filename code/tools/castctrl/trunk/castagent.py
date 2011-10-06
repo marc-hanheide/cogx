@@ -146,6 +146,10 @@ class CConsoleAgent:
             cmd = self._options.xe("${CMD_DISPLAY_SERVER}")
             self.manager.addProcess(procman.CProcess("Display", cmd))
 
+        if appOptions.peekabot != None and appOptions.peekabot:
+            cmd = self._options.xe("${CMD_PEEKABOT}")
+            self.manager.addProcess(procman.CProcess("Peekabot", cmd))
+
         if appOptions.can_build:
             cmd = "make [TARGET]"
             proc = procman.CProcess("BUILD", cmd)
@@ -220,10 +224,13 @@ def parseOptions():
     parser.add_option("", "--gazebo-world", action="store", type="string", default=None, dest="gazebo_world",
         help="Set the Gazebo world file. If not set, Gazebo won't be started by this agent.")
 
-    parser.add_option("", "--abducer", action="store_true", default=None, dest="abducer",
+    parser.add_option("", "--peekabot", action="store_true", dest="peekabot", default=False,
+        help="If set, Peekabot will be started by this agent.")
+
+    parser.add_option("", "--abducer", action="store_true", dest="abducer", default=False,
         help="If set, Abducer will be started by this agent.")
 
-    parser.add_option("", "--display-server", action="store_true", default=None, dest="display_srv",
+    parser.add_option("", "--display-server", action="store_true", dest="display_srv", default=False,
         help="If set, Display Server will be started by this agent.")
 
     parser.add_option("", "--build", action="store_true", dest="can_build", default=False,
