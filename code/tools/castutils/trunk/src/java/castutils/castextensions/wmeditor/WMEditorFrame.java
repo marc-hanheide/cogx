@@ -287,6 +287,7 @@ public class WMEditorFrame extends javax.swing.JFrame {
 			this.setTitle("working memory editor");
 			{
 				jMainPanel = new JPanel();
+				
 				BorderLayout jPanel1Layout = new BorderLayout();
 				jMainPanel.setLayout(jPanel1Layout);
 				getContentPane().add(jMainPanel, BorderLayout.CENTER);
@@ -436,8 +437,9 @@ public class WMEditorFrame extends javax.swing.JFrame {
 			{
 				jSplitPane1 = new JSplitPane();
 				getContentPane().add(jSplitPane1, BorderLayout.WEST);
-				jSplitPane1.setPreferredSize(new java.awt.Dimension(687, 415));
+				jSplitPane1.setPreferredSize(new java.awt.Dimension(1020, 508));
 				jSplitPane1.add(jMainPanel, JSplitPane.RIGHT);
+				jMainPanel.setPreferredSize(new java.awt.Dimension(900, 507));
 				{
 					jLeftTabbedPane = new JTabbedPane();
 					jSplitPane1.add(jLeftTabbedPane, JSplitPane.LEFT);
