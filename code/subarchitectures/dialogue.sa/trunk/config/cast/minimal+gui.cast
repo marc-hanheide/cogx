@@ -1,0 +1,2 @@
+INCLUDE  minimal.cast
+INCLUDE  modules/gui-local.incl
