@@ -390,6 +390,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			}
 
 			result = gatherer.ensureStabilization(500, TimeUnit.MILLISECONDS);
+			final String nom = getNominalInTheRequest(wma);
+			assert nom != null;
 			stopGathererObservation(wma);
 			
 
@@ -405,7 +407,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 						engine.clearAssumabilityFunction("reference_resolution");
 						Map<String, Set<ModalisedAtom>> disj = new HashMap<String, Set<ModalisedAtom>>();
 
-						String nom = refs.nom;
+//						String nom = refs.nom;
 						for (EpistemicReferenceHypothesis hypo : refs.hypos) {
 
 							ModalisedAtom rma = ReferentOfAtom.newReferentOfAtom(nom, hypo.referent, hypo.epst).toModalisedAtom();
@@ -443,6 +445,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		}
 
 	};
+
+	@Deprecated
+	public String getNominalInTheRequest(WorkingMemoryAddress wma) {
+		try {
+			ReferenceResolutionRequest request = getMemoryEntry(wma, ReferenceResolutionRequest.class);
+			return request.nom;
+		}
+		catch (SubarchitectureComponentException ex) {
+			logException(ex);
+			return null;
+		}
+	}
 
 	public void stopGathererObservation(WorkingMemoryAddress wma) {
 		gatherers.remove(wma);
