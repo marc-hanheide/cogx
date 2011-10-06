@@ -50,6 +50,11 @@ wsrhs='[[:blank:]]\\\+'
 # Read initial cache
 ic_lines=$(grep -e "^set(" $init)
 
+if [ "" == "$ic_lines" ]; then
+   echo "No cmake set() expressions found"
+   exit
+fi
+
 # From initial cache: create sed expressions from initial cache lines.
 # @param 1: lines from initial cache
 # @param 2: an experssion to be created
@@ -88,11 +93,15 @@ function addMissingValues()
       sed -e "s/^$rxident:$rxtype=.*/-e \/^set(\1${wsrhs}\/d/" )
    #echo "$cmc_lines"
 
-   local leftlines=$(
-   for l in $ic_lines; do
-      echo $(echo $l | sed $cmc_lines)
-   done
-   )
+   if [ -n "$cmc_lines" ]; then
+      local leftlines=$(
+      for l in $ic_lines; do
+         echo $(echo $l | sed $cmc_lines)
+      done
+      )
+   else
+      leftlines="$ic_lines"
+   fi
    leftlines=$(echo "$leftlines" | grep -v "^${ws0}$")
    
    echo $fnout
