@@ -28,9 +28,9 @@ understand : is_reference(RefNom, ReferentAddr, EpSt) <-
 	epst_variant(EpSt, RefEpSt),
 	understand : referent_of(RefNom, ReferentAddr, RefEpSt) / reference_resolution.
 
-understand : is_reference(Nom, Referent, _EpSt) <-
-	understand : unknown_reference(Nom, Referent) / p(0.55),
-	? understand : ungroundable(Nom, Referent).
+%understand : is_reference(Nom, Referent, _EpSt) <-
+%	understand : unknown_reference(Nom, Referent) / p(0.55),
+%	? understand : ungroundable(Nom, Referent).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
