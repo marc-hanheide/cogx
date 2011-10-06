@@ -1,27 +1,23 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
 import cast.cdl.WorkingMemoryAddress;
-import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
-import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class ReferenceGatherer {
+public class ResultGatherer<T extends CASTResult> {
 
 	private final WorkingMemoryAddress wma;
-	private final ReferenceResolutionRequest request;
 	private final ResultFuture future;
 
-	public ReferenceGatherer(WorkingMemoryAddress wma, ReferenceResolutionRequest request) {
+	public ResultGatherer(WorkingMemoryAddress wma) {
 		this.wma = wma;
-		this.request = request;
 		future = new ResultFuture();
 	}
 
-	public synchronized void addResult(ReferenceResolutionResult result) {
+	public synchronized void addResult(T result) {
 		if (!future.isDone()) {
 			future.setResult(result);
 			future.finish();
@@ -32,20 +28,20 @@ public class ReferenceGatherer {
 //		future.finished();
 //	}
 
-	public Future<ReferenceResolutionResult> getResultFuture() {
+	public Future<T> getResultFuture() {
 		return future;
 	}
 
-	private class ResultFuture implements Future<ReferenceResolutionResult> {
+	private class ResultFuture implements Future<T> {
 
-		private ReferenceResolutionResult result = null;
+		private T result = null;
 		private CountDownLatch latch = new CountDownLatch(1);
 
 		public void finish() {
 			latch.countDown();
 		}
 
-		public void setResult(ReferenceResolutionResult result) {
+		public void setResult(T result) {
 			this.result = result;
 		}
 
@@ -65,13 +61,13 @@ public class ReferenceGatherer {
 		}
 
 		@Override
-		public ReferenceResolutionResult get() throws InterruptedException, ExecutionException {
+		public T get() throws InterruptedException, ExecutionException {
 			latch.await();
 			return result;
 		}
 
 		@Override
-		public ReferenceResolutionResult get(long l, TimeUnit tu) throws InterruptedException, ExecutionException, TimeoutException {
+		public T get(long l, TimeUnit tu) throws InterruptedException, ExecutionException, TimeoutException {
 			latch.await(l, tu);
 			return result;
 		}

@@ -7,15 +7,14 @@ import cast.architecture.WorkingMemoryWriterComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
+import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
-import de.dfki.lt.tr.dialogue.interpret.PartialInterpretation;
-import de.dfki.lt.tr.dialogue.interpret.ReferenceGatherer;
+import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
@@ -36,7 +35,6 @@ import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
 import de.dfki.lt.tr.infer.abducer.lang.DisjointDeclaration;
-import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
@@ -83,7 +81,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	private final Map<String, SelectedLogicalForm> nomToLFMap;
 
 	private final ReferenceResolutionRequestExtractor rrExtractor;
-	private final Map<WorkingMemoryAddress, ReferenceGatherer> gatherers;
+	private final Map<WorkingMemoryAddress, ResultGatherer<ReferenceResolutionResultWrapper>> gatherers;
 
 	private final IdentifierGenerator<String> idGen;
 	private final String idPrefix = "irecog";
@@ -93,7 +91,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		super();
 		nomToLFMap = new HashMap<String, SelectedLogicalForm>();
 		rrExtractor = new BasicReferenceResolutionRequestExtractor(getLogger());
-		gatherers = new HashMap<WorkingMemoryAddress, ReferenceGatherer>();
+		gatherers = new HashMap<WorkingMemoryAddress, ResultGatherer<ReferenceResolutionResultWrapper>>();
 		idGen = new IdentifierGenerator<String>() {
 			@Override
 			public String newIdentifier() {
@@ -219,9 +217,9 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 						try {
 							getLogger().info("got a ReferenceResolutionResult");
 							ReferenceResolutionResult result = getMemoryEntry(_wmc.address, ReferenceResolutionResult.class);
-							ReferenceGatherer gatherer = gatherers.get(result.requestAddress);
+							ResultGatherer<ReferenceResolutionResultWrapper> gatherer = gatherers.get(result.requestAddress);
 							if (gatherer != null) {
-								gatherer.addResult(result);
+								gatherer.addResult(new ReferenceResolutionResultWrapper(result));
 							}
 							else {
 								getLogger().error("gatherer is null!");
@@ -362,10 +360,10 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			}
 
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
-			ReferenceGatherer gatherer = new ReferenceGatherer(wma, rr);
+			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma);
 			gatherers.put(wma, gatherer);
 
-			ReferenceResolutionResult result = null;
+			ReferenceResolutionResultWrapper result = null;
 
 			try {
 				getLogger().info("adding a ReferenceResolutionRequest to the WM: " + ReferenceUtils.resolutionRequestToString(rr));
@@ -385,8 +383,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			}
 
 			if (result != null) {
-				final ReferenceResolutionResult refs = result;
-				getLogger().info("got a reference resolution result:\n" + ReferenceUtils.resolutionResultToString(result));
+				final ReferenceResolutionResult refs = result.getResult();
+				getLogger().info("got a reference resolution result:\n" + ReferenceUtils.resolutionResultToString(refs));
 				return new ContextUpdate() {
 
 					@Override
@@ -465,6 +463,19 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			}
 		}
 		return result;
+	}
+
+	private static class ReferenceResolutionResultWrapper extends CASTResultWrapper<ReferenceResolutionResult> {
+
+		public ReferenceResolutionResultWrapper(ReferenceResolutionResult result) {
+			super(result);
+		}
+
+		@Override
+		public WorkingMemoryAddress getRequestAddress() {
+			return getResult().requestAddress;
+		}
+		
 	}
 
 }

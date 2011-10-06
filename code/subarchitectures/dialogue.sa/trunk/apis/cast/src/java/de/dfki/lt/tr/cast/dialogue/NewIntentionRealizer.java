@@ -9,11 +9,17 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
+import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
+import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeActionProofInterpreter;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromIntentionAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.GenerateReferringExpressionAtom;
+import de.dfki.lt.tr.dialogue.production.ProductionUtils;
+import de.dfki.lt.tr.dialogue.production.ReferenceGenerationRequest;
+import de.dfki.lt.tr.dialogue.production.ReferenceGenerationResult;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
@@ -37,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class NewIntentionRealizer
 extends AbstractAbductiveComponent<RobotCommunicativeAction> {
@@ -57,10 +64,12 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 	private int timeout = DEFAULT_TIMEOUT;
 
 	private final Map<WorkingMemoryAddress, IntentionToAct> wmaToInt;
+	private final Map<WorkingMemoryAddress, ResultGatherer<ReferenceGenerationResultWrapper>> gatherers;
 
 	public NewIntentionRealizer() {
 		super();
 		wmaToInt = new HashMap<WorkingMemoryAddress, IntentionToAct>();
+		gatherers = new HashMap<WorkingMemoryAddress, ResultGatherer<ReferenceGenerationResultWrapper>>();
 	}
 
 	@Override
@@ -114,6 +123,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 
 		AssertionSolverCascade solvers = new AssertionSolverCascade();
 		solvers.addSolver(new ExpandIntentionAssertionSolver());
+		solvers.addSolver(new ReferenceGenerationAssertionSolver());
 //		solvers.addSolver(new IntentionIDAssertionSolver());
 //		solvers.addSolver(new NewBeliefAssertionSolver());
 //		solvers.addSolver(new ReferenceResolutionAssertionSolver());
@@ -171,6 +181,29 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 						});
 					}
 				});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				ReferenceGenerationResult.class, WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+						try {
+							getLogger().info("got a ReferenceGenerationResult");
+							ReferenceGenerationResult result = getMemoryEntry(_wmc.address, ReferenceGenerationResult.class);
+							ResultGatherer<ReferenceGenerationResultWrapper> gatherer = gatherers.get(result.requestAddress);
+							if (gatherer != null) {
+								gatherer.addResult(new ReferenceGenerationResultWrapper(result));
+							}
+							else {
+								getLogger().error("gatherer is null!");
+							}
+						}
+						catch (SubarchitectureComponentException ex) {
+							logException(ex);
+						}
+					}
+				});
+
 	}
 	
 	public static ModalisedAtom intentionToActToGoal(IntentionToAct actint, WorkingMemoryAddress wma) {
@@ -218,5 +251,90 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 		}
 
 	};
+
+	public class ReferenceGenerationAssertionSolver extends AbstractAssertionSolver<GenerateReferringExpressionAtom> {
+
+		public ReferenceGenerationAssertionSolver() {
+			super(new GenerateReferringExpressionAtom.Matcher());
+		}
+
+		@Override
+		public ContextUpdate solveFromParsed(GenerateReferringExpressionAtom a) {
+			final WorkingMemoryAddress beliefAddr = a.getBeliefAddress();
+			if (beliefAddr == null) {
+				return null;
+			}
+
+			ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr);
+			if (request == null) {
+				getLogger().error("extracted ReferenceGenerationRequest is null");
+				return null;
+			}
+
+			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+			ResultGatherer<ReferenceGenerationResultWrapper> gatherer = new ResultGatherer(wma);
+			gatherers.put(wma, gatherer);
+
+			ReferenceGenerationResultWrapper result = null;
+
+			try {
+				getLogger().info("adding a ReferenceGenerationRequest to the WM: " + ProductionUtils.referenceGenerationRequestToString(request));
+				addToWorkingMemory(wma, request);
+				
+				// TODO register this as added?
+				result = gatherer.getResultFuture().get();
+			}
+			catch (SubarchitectureComponentException ex) {
+				logException(ex);
+			}
+			catch (InterruptedException ex) {
+				logException(ex);
+			}
+			catch (ExecutionException ex) {
+				logException(ex);
+			}
+
+			if (result != null) {
+				final ReferenceGenerationResult refs = result.getResult();
+				getLogger().info("got a reference generation result:\n" + ProductionUtils.referenceGenerationResultToString(refs));
+				return new ContextUpdate() {
+
+					@Override
+					public void doUpdate(AbductionEnginePrx engine) {
+						getLogger().info("updating the context for the generated RE");
+
+						GenerateReferringExpressionAtom greAtom = new GenerateReferringExpressionAtom(
+								beliefAddr,
+								refs.category,
+								refs.relation,
+								refs.location);
+
+						ModalisedAtom matom = greAtom.toModalisedAtom();
+						engine.addFact(matom);
+					}
+
+				};
+			}
+			else {
+				getLogger().error("result was null");
+				return null;
+			}
+
+		}
+		
+	};
+
+	private static class ReferenceGenerationResultWrapper extends CASTResultWrapper<ReferenceGenerationResult> {
+
+		public ReferenceGenerationResultWrapper(ReferenceGenerationResult result) {
+			super(result);
+		}
+
+		@Override
+		public WorkingMemoryAddress getRequestAddress() {
+			return getResult().requestAddress;
+		}
+		
+	}
 
 }

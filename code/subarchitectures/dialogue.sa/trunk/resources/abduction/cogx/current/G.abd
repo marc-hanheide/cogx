@@ -87,6 +87,24 @@ generate : event : from_logical_form(S, H, Int) <-
 % ASSERTIONS
 %-------------------------------------------------------------------------
 
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Reporting on a location.
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'assertion'),
+	i : int : string_content(IntAddr, subtype, 'location-report'),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
+
+	utt_head(Nom),
+	i : feat_CannedText(Nom, Location) / -1.0,
+%	i : feat_CannedText(Nom, reporting_back) / -1.0,
+	event : produce(r, Nom) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Other stuff.
+
 % the XY object is Z
 generate : event : from_logical_form(S, H, Int) <-
 	utt_head(Nom),
@@ -431,25 +449,6 @@ generate : feat_hack(identity, what_room_is_this).
 %		i : sort(ContentNom, 'q-color') / -1.0,
 %		i : prop(ContentNom, red) / -1.0,
 %	event : produce(r, Nom) / -1.0.
-
-%-------------------------------------------------------------------------
-% ENGAGEMENT
-%-------------------------------------------------------------------------
-
-generate : event : from_logical_form(S, H, Int) <-
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['engagement-open'|T])),
-	utt_head(Nom),
-	i : feat_SpeechAct(Nom, greeting) / -1.0,
-	event : produce(r, Nom) / -1.0.
-
-generate : event : from_logical_form(S, H, Int) <-
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['engagement-closed'|T])),
-	utt_head(Nom),
-%	i : feat_SpeechAct(Nom, closing) / -1.0,
-	i : feat_CannedText(Nom, goodbye_darling) / -1.0,
-	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 % THANKING

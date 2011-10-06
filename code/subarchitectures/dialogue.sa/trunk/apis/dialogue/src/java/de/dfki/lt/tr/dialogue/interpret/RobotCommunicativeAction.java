@@ -61,6 +61,20 @@ implements CASTProcessingResult, WellFormedTestable {
 				})));
 		}
 
+		for (String key : actint.addressContent.keySet()) {
+			WorkingMemoryAddress value = actint.addressContent.get(key);
+
+			result.add(TermAtomFactory.modalisedAtom(new Modality[] {
+					Modality.Truth,
+					Modality.Intention
+				},
+				TermAtomFactory.atom("address_content", new Term[] {
+					ConversionUtils.workingMemoryAddressToTerm(wma),
+					TermAtomFactory.term(key),
+					ConversionUtils.workingMemoryAddressToTerm(value)
+				})));
+		}
+
 		return result;
 	}
 
