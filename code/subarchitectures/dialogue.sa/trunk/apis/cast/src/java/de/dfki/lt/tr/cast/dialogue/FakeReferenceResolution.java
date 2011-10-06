@@ -49,7 +49,7 @@ extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 		public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr, WorkingMemoryAddress origin) {
 			ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, "fake");
 
-			EpistemicStatus epst = EpistemicStatusFactory.newSharedEpistemicStatus(IntentionManagementConstants.humanAgent, IntentionManagementConstants.thisAgent);
+			EpistemicStatus epst = EpistemicStatusFactory.newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent);
 			double score = 0.9;
 			for (WorkingMemoryPointer wmptr : wmptrs) {
 				dFormula referent = new PointerFormula(0, wmptr.address, wmptr.type);

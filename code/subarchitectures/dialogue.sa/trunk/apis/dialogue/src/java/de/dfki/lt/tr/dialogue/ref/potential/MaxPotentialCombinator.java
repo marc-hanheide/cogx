@@ -18,7 +18,8 @@ implements PotentialCombinator {
 		addPotential(p);
 	}
 
-	public void addPotential(Potential p) {
+	@Override
+	public final void addPotential(Potential p) {
 		Iterator<Entry<Referent, Double>> iter = p.positiveElementsIterator();
 		while (iter.hasNext()) {
 			Entry<Referent, Double> rs = iter.next();
@@ -28,6 +29,7 @@ implements PotentialCombinator {
 		}
 	}
 
+	@Override
 	public Potential toPotential() {
 		return pot;
 	}

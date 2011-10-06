@@ -1,6 +1,9 @@
 package de.dfki.lt.tr.cast.dialogue;
 
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.architecture.WorkingMemoryWriterComponent;
@@ -11,9 +14,11 @@ import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
+import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.ResultCombinator;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
@@ -59,6 +64,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NewIntentionRecognizer
 extends AbstractAbductiveComponent<InterpretedUserIntention> {
@@ -214,20 +223,26 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				new WorkingMemoryChangeReceiver() {
 					@Override
 					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						try {
-							getLogger().info("got a ReferenceResolutionResult");
-							ReferenceResolutionResult result = getMemoryEntry(_wmc.address, ReferenceResolutionResult.class);
-							ResultGatherer<ReferenceResolutionResultWrapper> gatherer = gatherers.get(result.requestAddress);
-							if (gatherer != null) {
-								gatherer.addResult(new ReferenceResolutionResultWrapper(result));
+						addTask(new ProcessingTaskWithData<WorkingMemoryAddress>(_wmc.address) {
+
+							@Override
+							public void execute(WorkingMemoryAddress addr) {
+								try {
+									getLogger().info("got a ReferenceResolutionResult");
+									ReferenceResolutionResult result = getMemoryEntry(addr, ReferenceResolutionResult.class);
+									ResultGatherer<ReferenceResolutionResultWrapper> gatherer = gatherers.get(result.requestAddress);
+									if (gatherer != null) {
+										gatherer.addResult(new ReferenceResolutionResultWrapper(result));
+									}
+									else {
+										getLogger().error("gatherer is null!");
+									}
+								}
+								catch (SubarchitectureComponentException ex) {
+									logException(ex);
+								}
 							}
-							else {
-								getLogger().error("gatherer is null!");
-							}
-						}
-						catch (SubarchitectureComponentException ex) {
-							logException(ex);
-						}
+						});
 					}
 				});
 	}
@@ -360,7 +375,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			}
 
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
-			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma);
+			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma, new FirstComeFirstServeCombinator<ReferenceResolutionResultWrapper>());
+			assert gatherer != null;
 			gatherers.put(wma, gatherer);
 
 			ReferenceResolutionResultWrapper result = null;
@@ -368,19 +384,14 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			try {
 				getLogger().info("adding a ReferenceResolutionRequest to the WM: " + ReferenceUtils.resolutionRequestToString(rr));
 				addToWorkingMemory(wma, rr);
-				
-				// TODO register this as added?
-				result = gatherer.getResultFuture().get();
 			}
 			catch (SubarchitectureComponentException ex) {
 				logException(ex);
 			}
-			catch (InterruptedException ex) {
-				logException(ex);
-			}
-			catch (ExecutionException ex) {
-				logException(ex);
-			}
+
+			result = gatherer.ensureStabilization(500, TimeUnit.MILLISECONDS);
+			stopGathererObservation(wma);
+			
 
 			if (result != null) {
 				final ReferenceResolutionResult refs = result.getResult();
@@ -433,6 +444,16 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 	};
 
+	public void stopGathererObservation(WorkingMemoryAddress wma) {
+		gatherers.remove(wma);
+		try {
+			deleteFromWorkingMemory(wma);
+		}
+		catch (SubarchitectureComponentException ex) {
+			logException(ex);
+		}
+	}
+
 	public static ModalisedAtom selectedLFToGoal(SelectedLogicalForm slf) {
 		LogicalForm lf = slf.lform;
 
@@ -475,7 +496,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		public WorkingMemoryAddress getRequestAddress() {
 			return getResult().requestAddress;
 		}
-		
+
 	}
 
 }
