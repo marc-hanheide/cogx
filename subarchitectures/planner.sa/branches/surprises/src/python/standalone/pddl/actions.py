@@ -262,9 +262,9 @@ class Action(Scope):
             old.parts.append(new_part)
             return old
         elif old:
-            return JunctionType([old, new_part], scope=old.scope)
+            return JunctionType([old, new_part], scope=old.get_scope())
         else:
-            return JunctionType([new_part], scope=self)
+            return JunctionType([new_part], scope=None)
 
     def extend_precondition(self, new_cond):
         self.precondition = self._extend_precond_or_effect(self.precondition, new_cond, conditions.Conjunction)

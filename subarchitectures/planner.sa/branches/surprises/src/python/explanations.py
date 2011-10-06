@@ -9,10 +9,17 @@ w = None
 
 ignored_functions = set()
 
-SWITCH_OP = """
+SWITCH_OP1 = """
   (:action _switch_phase_simulate_execution
    :precondition (= (phase) apply_rules)
    :effect (and (assign (phase) simulate_execution))
+  )
+"""
+
+SWITCH_OP2 = """
+  (:action _switch_phase_apply_rules
+   :precondition (= (phase) make_alternative_assumptions)
+   :effect (and (assign (phase) apply_rules))
   )
 """
 
@@ -21,38 +28,6 @@ def str2cond(fstr, scope):
 
 def str2eff(fstr, scope=None):
     return pddl.parser.Parser.parse_as([fstr], pddl.effects.Effect, scope)
-
-# def replace_or_append(elements, elmt):
-#     old = [e for e in elements if e.name == elmt.name]
-#     for e in old:
-#         print "replacing %s with altered version for explanation processing" % e.name
-#         elements.remove(e)
-#         asads
-#     elements.append(elmt)
-
-# def add_explanation_rules(expl_rules_fn):
-#     global expl_domain
-#     expl_domain.alternatives = {}
-#     p = pddl.parser.Parser.parse_file(expl_rules_fn)
-#     it = iter(p.root)
-#     it.get("rules")
-#     j = iter(it.get(list, "(domain 'domain identifier')"))
-#     j.get("domain")
-#     domname = j.get(None, "domain identifier").token.string
-#     # check that domain name matches the planning domain
-#     # tbd
-#     for elem in it:
-#         j = iter(elem)
-#         type = j.get("terminal").token
-#         if type == ":action":
-#             a = pddl.mapl.MAPLAction.parse(j.reset(), expl_domain)
-#             a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
-#             replace_or_append(expl_domain.actions, a)
-#         elif type == ":init-rule":
-#             a = pddl.mapl.InitRule.parse(j.reset(), expl_domain) 
-#             replace_or_append(expl_domain.init_rules, a)
-#         else:
-#             raise ParseError(type, "Unknown section identifier: '%s'." % type.string)
 
 def add_explanation_rules(expl_rules_fn):
     global expl_domain
@@ -81,7 +56,7 @@ def add_explanation_rules(expl_rules_fn):
             expl_domain.alternatives[a.name] = a
         except KeyError:
             alist.append(a)
-            if isinstance(a, pddl.mapl.MAPLAction):
+            if isinstance(a, pddl.Action):
                 a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
 
 def build_operator_for_ground_action(i, action, args):
@@ -142,8 +117,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     # add objects from problem to domain as constants
     for obj in problem.objects:
         expl_domain.add_constant(obj)
-    for phase in ["apply_rules", "simulate_execution", "achieve_goal"]:
+    for phase in ["make_alternative_assumptions", "apply_rules", "simulate_execution", "achieve_goal"]:
         expl_domain.add_constant(types.TypedObject(phase, phase_t))
+    aa_condition = str2cond("(= (phase) make_alternative_assumptions)", expl_domain)
     ar_condition = str2cond("(= (phase) apply_rules)", expl_domain)
     se_condition = str2cond("(= (phase) simulate_execution)", expl_domain)
 
@@ -165,6 +141,8 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             for eff in n.effects:
                 if eff.svar.modality == pddl.mapl.commit:
                     commitments.add(pddl.state.Fact(eff.svar.as_modality(pddl.mapl.committed), pddl.TRUE))
+            a = a.copy()
+            a.extend_precondition(ar_condition)
             #print "virtual action:", w.write_action(a)  
             expl_domain.add_action(a)
             continue
@@ -186,8 +164,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         i += 1
     last_action.extend_effect(str2eff("(assign (phase) achieve_goal)", expl_domain))
     # add action to switch phases
-    switch_action = pddl.parser.Parser.parse_as(SWITCH_OP.splitlines(), pddl.Action, expl_domain)
-    expl_domain.add_action(switch_action)
+    for swop in [SWITCH_OP1, SWITCH_OP2]:
+        switch_action = pddl.parser.Parser.parse_as(swop.splitlines(), pddl.Action, expl_domain)
+        expl_domain.add_action(switch_action)
 
 
 def build_explanation_problem(problem, last_plan, init_state, observed_state):
