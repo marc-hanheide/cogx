@@ -1,6 +1,6 @@
 package dialogue.execution;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
@@ -10,28 +10,12 @@ import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
-import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
-import cast.core.CASTUtils;
-import castutils.slice.GroundedToSharedBeliefMap;
-import de.dfki.lt.tr.beliefs.data.CASTFrame;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
-import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
-import de.dfki.lt.tr.beliefs.slice.intentions.Intention;
-import de.dfki.lt.tr.beliefs.slice.intentions.IntentionalContent;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.BinaryOp;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ComplexFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.SharedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.TriBool;
@@ -47,7 +31,6 @@ import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
-import execution.util.NonBlockingCompleteOnOperationExecutor;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -56,40 +39,19 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * @author nah
  * 
  */
-public abstract class AbstractDialogueActionInterface extends AbstractActionInterface {
-	
-	private GroundedToSharedBeliefMap m_groundedToShared;
+public abstract class AbstractDialogueActionInterface extends
+		AbstractActionInterface {
+
+	protected static final String INTENTION_TYPE_KEY = "type";
+
+	// private GroundedToSharedBeliefMap m_groundedToShared;
 
 	boolean madeup;
-	
+
 	protected boolean m_fakeIt;
 
-	public static class DirectColourAnswer extends
-			BlockingActionExecutor<AskForColour> {
-
-		public DirectColourAnswer(ManagedComponent _component) {
-			super(_component, AskForColour.class);
-		}
-
-		@Override
-		public TriBool execute() {
-			TriBool result = TriBool.TRIFALSE;
-			try {
-				((AbstractDialogueActionInterface) getComponent())
-						.askForFeatureThenSetDirect("color", getAction());
-				result = TriBool.TRITRUE;
-
-			} catch (CASTException e) {
-				logException(e);
-			}
-
-			return result;
-		}
-
-	}
-
 	public abstract static class IntentionDialogueAction<T extends Action>
-			extends NonBlockingCompleteOnOperationExecutor<T> {
+			extends BlockingActionExecutor<T> {
 
 		public IntentionDialogueAction(ManagedComponent _component,
 				Class<T> _cls) {
@@ -97,112 +59,59 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 		}
 
 		/**
-		 * List of postconditions, just containing (ModalFormula "agent"
-		 * (ElementaryFormula "human"))
-		 * 
-		 * @param _groundedBeliefAddress
-		 * @param _sharedBeliefAddress
-		 * @return
+		 * Hack to provide the same interface as the non-blocking version.
 		 */
-		ArrayList<dFormula> getPostconditions() {
-			ArrayList<dFormula> postconditions = new ArrayList<dFormula>();
-			// postconditions.add(new ModalFormula(-1, "agent",
-			// PropositionFormula
-			// .create("human").get()));
-			return postconditions;
+		protected void actionComplete() {
 		}
-
-		/**
-		 * Empty list of preconditions.
-		 * 
-		 * @param _groundedBeliefAddress
-		 * @param _sharedBeliefAddress
-		 * @return
-		 */
-		ArrayList<dFormula> getPreconditions() {
-			ArrayList<dFormula> preconditions = new ArrayList<dFormula>();
-			return preconditions;
-		}
-
-		/**
-		 * Get the intention to be the action. If null is returned, failure is
-		 * reported to the planner.
-		 * 
-		 * @return
-		 */
-		protected Intention getIntention() {
-			Intention intention = createEmptyIntention();
-			((ComplexFormula) intention.content.get(0).preconditions).forms = getPreconditions();
-
-			ModalFormula state = new ModalFormula(-1, "state",
-					new ComplexFormula(-1, getPostconditions(), BinaryOp.conj));
-			ArrayList<dFormula> states = new ArrayList<dFormula>();
-			states.add(state);
-
-			((ComplexFormula) intention.content.get(0).postconditions).forms = states;
-
-			// ((ComplexFormula) intention.content.get(0).postconditions).forms
-			// = getPostconditions();
-			return intention;
-		}
-
-		/**
-		 * Creates and empty intention with ComplexFormluas for precondition and
-		 * postcondition but with null valued formula lists.
-		 * 
-		 * @return
-		 */
-		protected Intention createEmptyIntention() {
-			// TODO sweet-talk marc into writing proxies for this too
-			Intention robotIntention = new Intention();
-			robotIntention.frame = CASTFrame.create().get();
-			robotIntention.estatus = new PrivateEpistemicStatus(
-					org.cognitivesystems.binder.thisAgent.value);
-
-			// actual content
-			IntentionalContent content = new IntentionalContent();
-			content.probValue = 1f;
-			content.agents = new ArrayList<String>();
-			content.agents.add(org.cognitivesystems.binder.thisAgent.value);
-
-			// precondition
-			ComplexFormula preconditions = new ComplexFormula(-1, null,
-					BinaryOp.conj);
-			content.preconditions = preconditions;
-
-			// postcondition
-			ComplexFormula postconditions = new ComplexFormula(-1, null,
-					BinaryOp.conj);
-
-			ModalFormula state = new ModalFormula(-1, "state", postconditions);
-
-			ComplexFormula states = new ComplexFormula(-1,
-					new ArrayList<dFormula>(1), BinaryOp.conj);
-			states.forms.add(state);
-
-			content.postconditions = states;
-
-			robotIntention.content = new ArrayList<IntentionalContent>(1);
-			robotIntention.content.add(content);
-			return robotIntention;
-		}
-
+		
 		@Override
-		public void executeAction() {
-			Intention robotIntention = getIntention();
-			if (robotIntention != null) {
-				assert(robotIntention.id == null);
-				robotIntention.id = getComponent().newDataID();
-				addThenCompleteOnDelete(robotIntention.id,robotIntention);
-			} else {
-				
-				println("returning fail due to null intention");
-				executionComplete(TriBool.TRIFALSE);
+		public TriBool execute() {
+			log("IntentionDialogueAction.execute()");
+
+			IntentionToAct actint = new IntentionToAct(
+					new HashMap<String, String>(),
+					new HashMap<String, WorkingMemoryAddress>());
+
+			addStringContent(actint.stringContent);
+			addAddressContent(actint.addressContent);
+
+			try {
+				getComponent().addToWorkingMemory(newWorkingMemoryAddress(),
+						actint);
+				log("added intention to WM, now sleeping for 20 seconds then returning true");
+				Thread.sleep(20000);
+				actionComplete();
+				return TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			} catch (InterruptedException e) {
+				logException(e);
 			}
+
+			return TriBool.TRIFALSE;
+
+		}
+
+		protected void addAddressContent(
+				Map<String, WorkingMemoryAddress> _addressContent) {
+
+		}
+
+		protected void addStringContent(Map<String, String> _stringContent) {
+
 		}
 
 	}
 
+	/**
+	 * Generates an intention with the belief from the action in the "about"
+	 * address content.
+	 * 
+	 * @author nah
+	 * 
+	 * @param <T>
+	 */
 	public abstract static class BeliefIntentionDialogueAction<T extends SingleBeliefAction>
 			extends IntentionDialogueAction<T> {
 
@@ -211,191 +120,118 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 			super(_component, _cls);
 		}
 
-		/**
-		 * List of postconditions, just containing (ModalFormula "agent"
-		 * (ElementaryFormula "human"))
-		 * 
-		 * @param _groundedBeliefAddress
-		 * @param _sharedBeliefAddress
-		 * @return
-		 */
-		protected ArrayList<dFormula> getPostconditions(
-				WorkingMemoryAddress _groundedBeliefAddress,
-				WorkingMemoryAddress _sharedBeliefAddress) {
-			return super.getPostconditions();
-		}
-
-		/**
-		 * Adds the precondition that the shared belief exists.
-		 * 
-		 * @param _groundedBeliefAddress
-		 * @param _sharedBeliefAddress
-		 * @return
-		 */
-		protected ArrayList<dFormula> getPreconditions(
-				WorkingMemoryAddress _groundedBeliefAddress,
-				WorkingMemoryAddress _sharedBeliefAddress) {
-
-			ArrayList<dFormula> preconditions = super.getPreconditions();
-
-			preconditions.add(new ModalFormula(-1, "belief", WMPointer.create(
-					_sharedBeliefAddress,
-					CASTUtils.typeName(SharedBelief.class)).get()));
-			return preconditions;
-
-		}
-
-		protected Intention getIntention() {
-
-			WorkingMemoryAddress groundedBeliefAddress = getAction().beliefAddress;
-			WorkingMemoryAddress sharedBeliefAddress = ((AbstractDialogueActionInterface) getComponent())
-					.getSharedBeliefAddress(groundedBeliefAddress);
-
-			if (sharedBeliefAddress == null) {
-				println("Giving up because no shared belief yet for: "
-						+ groundedBeliefAddress);
-				return null;
-			}
-
-			Intention intention = createEmptyIntention();
-			((ComplexFormula) intention.content.get(0).preconditions).forms = getPreconditions(
-					groundedBeliefAddress, sharedBeliefAddress);
-
-			ModalFormula state = new ModalFormula(-1, "state",
-					new ComplexFormula(-1, getPostconditions(
-							groundedBeliefAddress, sharedBeliefAddress),
-							BinaryOp.conj));
-			ArrayList<dFormula> states = new ArrayList<dFormula>();
-			states.add(state);
-
-			((ComplexFormula) intention.content.get(0).postconditions).forms = states;
-
-			// ((ComplexFormula) intention.content.get(0).postconditions).forms
-			// = getPostconditions(
-			// groundedBeliefAddress, sharedBeliefAddress);
-			return intention;
+		@Override
+		protected void addAddressContent(
+				Map<String, WorkingMemoryAddress> _addressContent) {
+			_addressContent.put("about", getAction().beliefAddress);
 		}
 
 	}
 
-	public abstract static class FeatureRequestDialogueAction<T extends SingleBeliefAction>
+	/**
+	 * 
+	 * Ask for a feature of the object in question
+	 * 
+	 * @author nah
+	 * 
+	 * @param <T>
+	 */
+	public abstract static class OpenFeatureQuestion<T extends SingleBeliefAction>
 			extends BeliefIntentionDialogueAction<T> {
 
 		private final String m_feature;
 
-		public FeatureRequestDialogueAction(ManagedComponent _component,
-				Class<T> _cls, String _feature) {
+		public OpenFeatureQuestion(ManagedComponent _component, Class<T> _cls,
+				String _feature) {
 			super(_component, _cls);
 			m_feature = _feature;
 		}
 
-		protected ArrayList<dFormula> getPostconditions(
-				WorkingMemoryAddress _groundedBeliefAddress,
-				WorkingMemoryAddress _sharedBeliefAddress) {
-
-			ArrayList<dFormula> postconditions = super.getPostconditions(
-					_groundedBeliefAddress, _sharedBeliefAddress);
-
-			postconditions.add(PropositionFormula.create("question-answered")
-					.get());
-
-			postconditions
-					.add(new ModalFormula(
-							-1,
-							"agent",
-							PropositionFormula
-									.create(org.cognitivesystems.binder.humanAgent.value)
-									.get()));
-
-			postconditions.add(new ModalFormula(-1, "about", WMPointer.create(
-					_groundedBeliefAddress,
-					CASTUtils.typeName(GroundedBelief.class)).get()));
-			postconditions.add(new ModalFormula(-1, "feature",
-					PropositionFormula.create(m_feature).get()));
-
-			return postconditions;
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			_stringContent.put(INTENTION_TYPE_KEY, "question");
+			_stringContent.put("subtype", "open");
+			_stringContent.put("feature", m_feature);
 		}
 
 	}
 
-	public abstract static class AskForPolarDialogue<T extends BeliefPlusStringAction>
-			extends FeatureRequestDialogueAction<T> {
+	public abstract static class PolarFeatureQuestion<T extends BeliefPlusStringAction>
+			extends OpenFeatureQuestion<T> {
 
-		public AskForPolarDialogue(ManagedComponent _component, Class<T> _cls,
+		public PolarFeatureQuestion(ManagedComponent _component, Class<T> _cls,
 				String _feature) {
 			super(_component, _cls, _feature);
 		}
 
 		@Override
-		protected ArrayList<dFormula> getPostconditions(
-				WorkingMemoryAddress _groundedBeliefAddress,
-				WorkingMemoryAddress _sharedBeliefAddress) {
-			ArrayList<dFormula> postconditions = super.getPostconditions(
-					_groundedBeliefAddress, _sharedBeliefAddress);
-			postconditions.add(new ModalFormula(-1, "hypo", PropositionFormula
-					.create(getAction().value).get()));
-			return postconditions;
+		protected void addStringContent(Map<String, String> _stringContent) {
+			super.addStringContent(_stringContent);
+			_stringContent.put("hypothesis", getAction().value);
 		}
 
 	}
 
-	public static class AskForObjectWithFeatureValueDialogue extends
-			IntentionDialogueAction<AskForObjectWithFeatureValue> {
-
-		public AskForObjectWithFeatureValueDialogue(ManagedComponent _component) {
-			super(_component, AskForObjectWithFeatureValue.class);
-		}
-
-		@Override
-		ArrayList<dFormula> getPostconditions() {
-			ArrayList<dFormula> postconditions = super.getPostconditions();
-			postconditions.add(PropositionFormula.create("object-shown").get());
-			postconditions.add(new ModalFormula(-1, "feature",
-					PropositionFormula.create(getAction().feature).get()));
-			postconditions.add(new ModalFormula(-1, "hypo", PropositionFormula
-					.create(getAction().value).get()));
-			return postconditions;
-		}
-
-	}
-
+	//
+	// @Deprecated
+	// public static class AskForObjectWithFeatureValueDialogue extends
+	// IntentionDialogueAction<AskForObjectWithFeatureValue> {
+	//
+	// public AskForObjectWithFeatureValueDialogue(ManagedComponent _component)
+	// {
+	// super(_component, AskForObjectWithFeatureValue.class);
+	// }
+	//
+	// @Override
+	// ArrayList<dFormula> getPostconditions() {
+	// ArrayList<dFormula> postconditions = super.getPostconditions();
+	// postconditions.add(PropositionFormula.create("object-shown").get());
+	// postconditions.add(new ModalFormula(-1, "feature",
+	// PropositionFormula.create(getAction().feature).get()));
+	// postconditions.add(new ModalFormula(-1, "hypo", PropositionFormula
+	// .create(getAction().value).get()));
+	// return postconditions;
+	// }
+	//
+	// }
+	//
 	public static class AskForColourValueDialogue extends
-			FeatureRequestDialogueAction<AskForColour> {
+			OpenFeatureQuestion<AskForColour> {
 		public AskForColourValueDialogue(ManagedComponent _component) {
 			super(_component, AskForColour.class, "color");
 		}
 	}
 
 	public static class AskForShapeValueDialogue extends
-			FeatureRequestDialogueAction<AskForShape> {
+			OpenFeatureQuestion<AskForShape> {
 		public AskForShapeValueDialogue(ManagedComponent _component) {
 			super(_component, AskForShape.class, "shape");
 		}
 	}
 
 	public static class AskForIdentityValueDialogue extends
-			FeatureRequestDialogueAction<AskForIdentity> {
+			OpenFeatureQuestion<AskForIdentity> {
 		public AskForIdentityValueDialogue(ManagedComponent _component) {
 			super(_component, AskForIdentity.class, "identity");
 		}
 	}
 
 	public static class AskForColourPolarDialogue extends
-			AskForPolarDialogue<AskPolarColour> {
+			PolarFeatureQuestion<AskPolarColour> {
 		public AskForColourPolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarColour.class, "color");
 		}
 	}
 
 	public static class AskForShapePolarDialogue extends
-			AskForPolarDialogue<AskPolarShape> {
+			PolarFeatureQuestion<AskPolarShape> {
 		public AskForShapePolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarShape.class, "shape");
 		}
 	}
 
 	public static class AskForIdentityPolarDialogue extends
-			AskForPolarDialogue<AskPolarIdentity> {
+			PolarFeatureQuestion<AskPolarIdentity> {
 		public AskForIdentityPolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarIdentity.class, "identity");
 		}
@@ -546,9 +382,29 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 		}
 	}
 
-	
+	public static class DirectColourAnswer extends
+			BlockingActionExecutor<AskForColour> {
 
-	
+		public DirectColourAnswer(ManagedComponent _component) {
+			super(_component, AskForColour.class);
+		}
+
+		@Override
+		public TriBool execute() {
+			TriBool result = TriBool.TRIFALSE;
+			try {
+				((AbstractDialogueActionInterface) getComponent())
+						.askForFeatureThenSetDirect("color", getAction());
+				result = TriBool.TRITRUE;
+
+			} catch (CASTException e) {
+				logException(e);
+			}
+
+			return result;
+		}
+
+	}
 
 	private void addFeatureDirectly(SingleBeliefAction _action,
 			String _feature, String _value, double _prob)
@@ -614,6 +470,7 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 
 	@Override
 	protected void start() {
+
 		m_actionStateManager = new LocalActionStateManager(this);
 
 		// DoNothingActionExecutorFactory derelictFactory = new
@@ -650,7 +507,7 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 					new ComponentActionFactory<DirectAskForObject>(this,
 							DirectAskForObject.class));
 
-			} else {
+		} else {
 
 			m_actionStateManager.registerActionType(AskForColour.class,
 					new ComponentActionFactory<AskForColourValueDialogue>(this,
@@ -676,34 +533,33 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 					new ComponentActionFactory<AskForIdentityPolarDialogue>(
 							this, AskForIdentityPolarDialogue.class));
 
-			m_actionStateManager
-					.registerActionType(
-							AskForObjectWithFeatureValue.class,
-							new ComponentActionFactory<AskForObjectWithFeatureValueDialogue>(
-									this,
-									AskForObjectWithFeatureValueDialogue.class));
+			// m_actionStateManager
+			// .registerActionType(
+			// AskForObjectWithFeatureValue.class,
+			// new ComponentActionFactory<AskForObjectWithFeatureValueDialogue>(
+			// this,
+			// AskForObjectWithFeatureValueDialogue.class));
 
-			
+			// // TODO replace this with one of Marc's magic thingys
+			// WorkingMemoryChangeReceiver updater = new
+			// WorkingMemoryChangeReceiver() {
+			//
+			// @Override
+			// public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			// throws CASTException {
+			// m_groundedToShared = getMemoryEntry(_wmc.address,
+			// GroundedToSharedBeliefMap.class);
+			// }
+			// };
 
-			// TODO replace this with one of Marc's magic thingys
-			WorkingMemoryChangeReceiver updater = new WorkingMemoryChangeReceiver() {
-
-				@Override
-				public void workingMemoryChanged(WorkingMemoryChange _wmc)
-						throws CASTException {
-					m_groundedToShared = getMemoryEntry(_wmc.address,
-							GroundedToSharedBeliefMap.class);
-				}
-			};
-
-			// look for the map between grounded and shared beliefs
-			addChangeFilter(
-					ChangeFilterFactory.createGlobalTypeFilter(
-							GroundedToSharedBeliefMap.class,
-							WorkingMemoryOperation.ADD), updater);
-			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-					GroundedToSharedBeliefMap.class,
-					WorkingMemoryOperation.OVERWRITE), updater);
+			// // look for the map between grounded and shared beliefs
+			// addChangeFilter(
+			// ChangeFilterFactory.createGlobalTypeFilter(
+			// GroundedToSharedBeliefMap.class,
+			// WorkingMemoryOperation.ADD), updater);
+			// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+			// GroundedToSharedBeliefMap.class,
+			// WorkingMemoryOperation.OVERWRITE), updater);
 
 		}
 
@@ -714,15 +570,15 @@ public abstract class AbstractDialogueActionInterface extends AbstractActionInte
 		m_fakeIt = _config.containsKey("--fake-it");
 	}
 
-	private WorkingMemoryAddress getSharedBeliefAddress(
-			WorkingMemoryAddress _groundedBeliefAddress) {
-		WorkingMemoryAddress addr = null;
-		if (m_groundedToShared != null) {
-			addr = m_groundedToShared.map.get(_groundedBeliefAddress);
-		} else {
-			println("trying to get shared belief address before map has been generated");
-		}
-		return addr;
-	}
+	// private WorkingMemoryAddress getSharedBeliefAddress(
+	// WorkingMemoryAddress _groundedBeliefAddress) {
+	// WorkingMemoryAddress addr = null;
+	// if (m_groundedToShared != null) {
+	// addr = m_groundedToShared.map.get(_groundedBeliefAddress);
+	// } else {
+	// println("trying to get shared belief address before map has been generated");
+	// }
+	// return addr;
+	// }
 
 }
