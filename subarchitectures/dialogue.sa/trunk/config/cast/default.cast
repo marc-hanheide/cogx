@@ -1,3 +1,4 @@
 INCLUDE minimal.cast
 INCLUDE modules/nlu-irecog.incl
 INCLUDE modules/nlg-ireal.incl
+INCLUDE modules/manage-intmgr.incl

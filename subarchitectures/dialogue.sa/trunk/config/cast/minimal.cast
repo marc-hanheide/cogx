@@ -12,7 +12,6 @@ INCLUDE  modules/main.incl
 INCLUDE  modules/context.incl
 
 INCLUDE  modules/nlu-noirecog.incl
-INCLUDE  modules/manage-none.incl
 INCLUDE  modules/nlg-noireal.incl
 INCLUDE  modules/tts-mary.incl
 INCLUDE  modules/asr-loquendo.incl
