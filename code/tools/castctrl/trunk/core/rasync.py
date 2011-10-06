@@ -15,6 +15,8 @@ RSYNC_CONFIG="""
              BUILD/ /Build/ /build/ /logs/ /output/ /bin/ \\
              /tools/v4r/lib/ /tools/v4r/bin/ \\
              /tools/abducer/bin/ \\
+             + /CMakeLists.txt \\
+             + /build.xml \\
              + */ - /* /*.conf /*.ini /*.sh \\
              *.~* *.*~ *.o *.so
    secrets file = %(PASSWD)s
