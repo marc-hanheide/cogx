@@ -137,7 +137,6 @@ public class ComaReasoner extends ManagedComponent {
 			return m_reasoner.getPropertyValues(instance, property).toArray(new String[0]);
 		}
 
-		@Override
 		public String[] getRelationsBetweenInstances(String instance1,
 				String instance2, Current current) {
 			return m_reasoner.getRelations(instance1, instance2).toArray(new String[0]);
@@ -170,13 +169,13 @@ public class ComaReasoner extends ManagedComponent {
 			return m_reasoner.isInstanceOf(instance, concept);
 		}
 
-		@Override
+		
 		public boolean areInstancesRelated(String instance1, String relation,
 				String instance2, Current current) {
 			return m_reasoner.areInstancesRelated(instance1, instance2, relation);
 		}
 
-		@Override
+		
 		public boolean isSubRelation(String relation1, String relation2,
 				Current current) {
 			return m_reasoner.isSubRelation(relation1, relation2);
