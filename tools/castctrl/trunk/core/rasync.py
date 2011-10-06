@@ -13,8 +13,8 @@ RSYNC_CONFIG="""
    hosts allow = %(CASTCTRL_HOST)s
    exclude = .svn/ .git/ .bzr/ .hg/ \\
              BUILD/ /Build/ /build/ /logs/ /output/ /bin/ \\
-             /tools/v4r/lib/ /tools/v4r/bin/ \\
-             /tools/abducer/bin/ \\
+             /tools/v4r/lib/* /tools/v4r/bin/* \\
+             /tools/abducer/bin/* \\
              + /CMakeLists.txt \\
              + /build.xml \\
              + */ - /* /*.conf /*.ini /*.sh \\
