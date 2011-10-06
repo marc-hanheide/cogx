@@ -32,12 +32,13 @@ utt_head(Nom) <-
 % ENGAGEMENT
 %-------------------------------------------------------------------------
 
-generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'engagement-opening'),
 
-	utt_head(Nom),
-	i : feat_SpeechAct(Nom, greeting) / -1.0,
-	event : produce(r, Nom) / -1.0.
+	event : produce_text([hello, Hearer]) / -1.0.
+%	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, greeting) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 
@@ -53,12 +54,12 @@ generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
 % YES / NO
 %-------------------------------------------------------------------------
 
-generate : event : from_intention(Speaker, Hearer, IntAddr) <-
-	i : int : string_content(IntAddr, type, 'engagement-opening'),
-
-	utt_head(Nom),
-	i : feat_SpeechAct(Nom, greeting) / -1.0,
-	event : produce(r, Nom) / -1.0.
+%generate : event : from_intention(Speaker, Hearer, IntAddr) <-
+%	i : int : string_content(IntAddr, type, 'engagement-opening'),
+%
+%	utt_head(Nom),
+%	i : feat_SpeechAct(Nom, greeting) / -1.0,
+%	event : produce(r, Nom) / -1.0.
 
 %-------------------------------------------------------------------------
 % ERRORS & COMPLAINTS
@@ -191,22 +192,32 @@ expand_featlist(Nom, [shape(S) | T]) <-
 % POLAR QUESTIONS
 %-------------------------------------------------------------------------
 
-generate : event : from_logical_form(S, H, Int) <-
-	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	dummy_nom3(TargetNom),
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat), hypo(Hypo)])),
-	generate : dialogue_move_topic(TargetNom, About) / 0.0,
-	i : feat_SpeechAct(Nom, clarification) / -1.0,
-	i : feat_Modality(Nom, vision) / -1.0,
-	i : rel_Target(Nom, TargetNom) / -1.0,
-		generate : object_description(Int, TargetNom, About),
-	i : rel_Content(Nom, ContentNom) / -1.0,
-		feat_to_sort(Feat, FeatSort),
-		i : sort(ContentNom, FeatSort) / -1.0,
-		i : prop(ContentNom, Hypo) / -1.0,
-	event : produce(r, Nom) / -1.0.
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat), hypo(Hypo)])),
+%	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+%	i : feat_SpeechAct(Nom, clarification) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Target(Nom, TargetNom) / -1.0,
+%		generate : object_description(Int, TargetNom, About),
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		feat_to_sort(Feat, FeatSort),
+%		i : sort(ContentNom, FeatSort) / -1.0,
+%		i : prop(ContentNom, Hypo) / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, feature, Feature),
+	i : int : string_content(IntAddr, hypothesis, Hypo),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+%	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
+
+	event : produce_text([is, this, Hypo]) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -226,21 +237,30 @@ maybe_add_hypo(Nom, [], question).
 % WH- QUESTIONS
 %-------------------------------------------------------------------------
 
-generate : event : from_logical_form(S, H, Int) <-
-	utt_head(Nom),
-	dummy_nom2(ContentNom),
-	dummy_nom3(TargetNom),
-	i : int : agent(Int, [S]),
-	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat)])),
-	generate : dialogue_move_topic(TargetNom, About) / 0.0,
-	i : feat_SpeechAct(Nom, question) / -1.0,
-	i : feat_Modality(Nom, vision) / -1.0,
-	i : rel_Target(Nom, TargetNom) / -1.0,
-		generate : object_description(Int, TargetNom, About),
-	i : rel_Content(Nom, ContentNom) / -1.0,
-		feat_to_sort(Feat, FeatSort),
-		i : sort(ContentNom, FeatSort) / -1.0,
-	event : produce(r, Nom) / -1.0.
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+%	utt_head(Nom),
+%	dummy_nom2(ContentNom),
+%	dummy_nom3(TargetNom),
+%	i : int : agent(Int, [S]),
+%	i : int : post(Int, state(['question-answered', agent(H), about(About), feature(Feat)])),
+%	generate : dialogue_move_topic(TargetNom, About) / 0.0,
+%	i : feat_SpeechAct(Nom, question) / -1.0,
+%	i : feat_Modality(Nom, vision) / -1.0,
+%	i : rel_Target(Nom, TargetNom) / -1.0,
+%		generate : object_description(Int, TargetNom, About),
+%	i : rel_Content(Nom, ContentNom) / -1.0,
+%		feat_to_sort(Feat, FeatSort),
+%		i : sort(ContentNom, FeatSort) / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'open'),
+	i : int : string_content(IntAddr, feature, Feature),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+%	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
+
+	event : produce_text([what, Feature, is, this]) / -1.0.
 
 %-------------------------------------------------------------------------
 % OBJECT DESCRIPTIONS
