@@ -95,6 +95,7 @@ config.set_logging_factory(CASTLoggerProxy)
 #import de.dfki.lt.tr.beliefs.slice ## must be imported *before* Planner
 from autogen import Planner
 import cast.core
+import cast.cdl
 
 import standalone
 from standalone import pddl
@@ -140,6 +141,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     cast.core.CASTComponent.__init__(self)
     self.domain_fn = TEST_DOMAIN_FN
     self.problem_fn = None
+    self.history_fn = None
     self.client = None
     self.dt = None
     self.hfc = None
@@ -147,7 +149,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.planner = None
     self.tasks = {}
     self.dt_tasks = {}
-    
+    self.expl_rules_fn = None
+
     self.beliefs = None
     self.address_dict = {}
 
@@ -200,6 +203,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       if not path.exists(self.domain_fn):
           log.error("Could not find specified domain %s. Using default domain %s", config["--domain"], TEST_DOMAIN_FN)
           self.domain_fn = TEST_DOMAIN_FN
+
+    if "--expl_rules" in config:
+      self.expl_rules_fn = path.join(standalone.globals.config.domain_dir, config["--expl_rules"])
+      if not path.exists(self.expl_rules_fn):
+          log.error("Could not find specified explanations rule set %s. Will not be able to determine explanations for failures!", config["--expl_rules"])
 
     if "--problem" in config:
       self.problem_fn = path.join(standalone.globals.config.problem_dir, config["--problem"])
@@ -256,6 +264,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     standalone.globals.set_time()
 
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn)
+    # task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn, expl_rules_fn=self.expl_rules_fn)
     self.tasks[task.id] = task
     if task.status != Planner.Completion.FAILED:
         task.run()
@@ -428,3 +437,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.getClient().updateStatus(task.id, status)
 
   
+  def update_cast_beliefs(self, beliefs):
+      temp_address = cast.cdl.WorkingMemoryAddress("temporary", "temporary")
+      entries = [Planner.BeliefEntry(self.address_dict.get(b.id, temp_address), b) for b in beliefs]
+      self.getClient().updateBeliefState(entries)
