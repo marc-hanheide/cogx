@@ -8,6 +8,8 @@ import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;
 public class FromLFAtom
 implements InterpretableAtom {
 
+	public static final String PRED_SYMBOL = "from_logical_form";
+
 	private final String nominal;
 
 	public FromLFAtom(String nominal) {
@@ -27,7 +29,7 @@ implements InterpretableAtom {
 
 		@Override
 		public FromLFAtom match(ModalisedAtom matom) {
-			if (matom.a.predSym.contains("from_logical_form") && matom.a.args.size() == 3
+			if (matom.a.predSym.contains(PRED_SYMBOL) && matom.a.args.size() == 3
 					&& matom.a.args.get(2) instanceof FunctionTerm) {
 
 				String nominal = ((FunctionTerm) matom.a.args.get(2)).functor;
