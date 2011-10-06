@@ -752,19 +752,17 @@ public class PlaceMonitor extends ManagedComponent {
 		// this relies on the related-to object to be handled by the same ADD event callback mechanism!
 		
 		// get the most-likely related-to GroundedBelief
-		WMPointer _ptr = WMPointer.create(gbProxy.getContent().get(
-		"related-to").getDistribution().getMostLikely().get());
+		WMPointer relateePtr = ComaGBeliefHelper.getGBeliefRelatee(gbelief);
 		// get the belief it is related to (either another VO or a ComaRoom)
-		GroundedBelief gbOfRelatedObjectInWM = getMemoryEntry(_ptr.get().pointer, GroundedBelief.class);
-		// get the coma individual name for it
-		String relateeInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbOfRelatedObjectInWM);
-		String relationName = "dora:" + gbProxy.getContent().get("relation"
-                //VisualObjectTransferFunction.RELATION
-                )
-                .getDistribution().getMostLikely().getProposition();
-		
-		m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
-		log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
+		if (relateePtr!=null) {
+			GroundedBelief gbOfRelatedObjectInWM = getMemoryEntry(relateePtr.get().pointer, GroundedBelief.class);
+			// get the coma individual name for it
+			String relateeInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbOfRelatedObjectInWM);
+			String relationName = "dora:" + ComaGBeliefHelper.getGBeliefRelation(gbelief);
+
+			m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
+			log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
+		}
 
 		// this code is deprecated: relation to place is not maintained, and not needed
    		//m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
