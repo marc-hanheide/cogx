@@ -2,6 +2,7 @@
 #include <cast/core/CASTUtils.hpp>
 #include <VisionData.hpp>
 #include <Pose3.h>
+#include <VisionUtils.h>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -47,7 +48,7 @@ AVSMainWidget::processConeGroup()
 void AVSMainWidget::postVisualObjectClicked(){
 	m_component->log("postVisualObjectClicked");
 	QString objectlabel = ui.lineEdit_3->text();
-	VisionData::VisualObjectPtr obj = new VisionData::VisualObject;
+	VisionData::VisualObjectPtr obj =  cogx::createVisualObject();
   // create a very simple distribution: label and unknown
   obj->identLabels.push_back(objectlabel.toStdString());
   obj->identLabels.push_back("unknown");
