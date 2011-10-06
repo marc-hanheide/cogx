@@ -96,13 +96,13 @@
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-color-threshold ?r) 0.0)
+    :effect (assign (polar-question-color-threshold ?r) 0.4)
   )
 
   (:init-rule set-learn-autonomous-color-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-color-threshold ?r) 0.1)
+    :effect (assign (learn-autonomous-color-threshold ?r) 0.8)
   )
 
   (:init-rule set-polar-question-shape-threshold
