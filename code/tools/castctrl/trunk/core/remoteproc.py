@@ -46,12 +46,16 @@ class CRemoteProcess(CProcessBase):
             self.manager.agentProxy.startProcess(self.name)
         except Ice.ConnectionRefusedException:
             pass
+        except Ice.TimeOutException:
+            print "Remote process", slef.name, "start() timed out"
 
     def stop(self):
         try:
             self.manager.agentProxy.stopProcess(self.name)
         except Ice.ConnectionRefusedException:
             pass
+        except Ice.TimeOutException:
+            print "Remote process", slef.name, "stop() timed out"
 
     def _readMessages(self):
         msgs = self.manager.agentProxy.readMessages(self.name)
