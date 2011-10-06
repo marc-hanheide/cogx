@@ -49,6 +49,8 @@
     (clarify-object-reference-type ?t - TypeName)
 
     (pointed-at ?v - VisualObject)
+
+    (arm-in-retract-position ?r - Robot)
   )
 
   (:functions
@@ -94,13 +96,13 @@
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-color-threshold ?r) 0.4)
+    :effect (assign (polar-question-color-threshold ?r) 0.0)
   )
 
   (:init-rule set-learn-autonomous-color-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-color-threshold ?r) 0.8)
+    :effect (assign (learn-autonomous-color-threshold ?r) 0.1)
   )
 
   (:init-rule set-polar-question-shape-threshold
@@ -160,7 +162,18 @@
 
   (:derived (curiosity-satisfied)
     (and
-      (forall (?p - ProtoObject) (exists (?v - VisualObject) (and (= (po-is-associated-with ?p) ?v) (color-learned ?v) (shape-learned ?v))))
+      (forall 
+        (?p - ProtoObject) 
+        (exists 
+          (?v - VisualObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v) 
+            (color-learned ?v) 
+            ;;(shape-learned ?v)
+            ;;(type-learned ?v)
+          )
+        )
+      )
       (unlearning-impossible)
     )
   )
@@ -588,48 +601,92 @@
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition 
-      (and
-        (attributed TUTOR (color ?v) ?c)
-        (not (pointed-at ?v))
+      (or
+        (and
+          (attributed TUTOR (color ?v) ?c)
+          (not (pointed-at ?v))
+        )
+        (and
+          (allow-autonomous-color-learning ?v ?c ?r)
+          (color-learned ?v)
+          (not (pointed-at ?v))
+        )
       )
     :effect 
       (and
         (clarify-object-reference-color ?c)
         (pointed-at ?v)
-        (increase (total-cost) 1)
+        (not (arm-in-retract-position ?r))
+        (update (arm-in-retract-position ?r) false)
+        (increase (total-cost) 2)
       )
   )
 
   (:action point-to-object-shape
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?s - ShapeName)
-    :precondition 
-      (and
-        (attributed TUTOR (shape ?v) ?s)
-        (not (pointed-at ?v))
-      )
+    :precondition
+      (or
+        (and
+          (attributed TUTOR (shape ?v) ?s)
+          (not (pointed-at ?v))
+        )
+        (and
+          (allow-autonomous-shape-learning ?v ?s ?r)
+          (shape-learned ?v)
+          (not (pointed-at ?v))
+        )
+      )        
     :effect 
       (and
         (clarify-object-reference-shape ?s)
         (pointed-at ?v)
-        (increase (total-cost) 1)
+        (not (arm-in-retract-position ?r))
+        (update (arm-in-retract-position ?r) false)
+        (increase (total-cost) 2)
       )
   )
 
   (:action point-to-object-type
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?t - TypeName)
-    :precondition 
-      (and
-        (attributed TUTOR (type ?v) ?t)
-        (not (pointed-at ?v))
+    :precondition
+      (or
+        (and
+          (attributed TUTOR (type ?v) ?t)
+          (not (pointed-at ?v))
+        )
+        (and
+          (allow-autonomous-type-learning ?v ?t ?r)
+          (shape-learned ?v)
+          (not (pointed-at ?v))
+        )
       )
     :effect 
       (and
         (clarify-object-reference-type ?t)
         (pointed-at ?v)
+        (not (arm-in-retract-position ?r))
+        (update (arm-in-retract-position ?r) false)
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action retract-arm
+    :agent (?r - Robot)
+    :precondition
+      (and
+        (not (arm-in-retract-position ?r))
+      )
+    :effect
+      (and
+        (arm-in-retract-position ?r)
+        (update (arm-in-retract-position ?r) true)
         (increase (total-cost) 1)
       )
   )
+
+  
+
 
 )
