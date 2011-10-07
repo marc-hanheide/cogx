@@ -88,7 +88,7 @@ public class LookForPeopleExecutor extends PanAndLookExecutor<LookForPeople> {
 	@Override
 	protected void publishActionOutcome() {
 		PersonObservation po = new PersonObservation(new ArrayList<Person>(),
-				0.0, -1, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+				0.0, -1, Double.NaN, Double.NaN, Double.NaN, Double.NaN, "informant");
 		synchronized (observations) {
 			try {
 				RobotPose2d pose = spatialFacade.getPose();
