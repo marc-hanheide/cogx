@@ -10,14 +10,14 @@ module tr {
 module dialogue { 
 module production { 
 
+	["java:type:java.util.ArrayList<String>"] sequence<string> stringSeq;
+
 	class ReferenceGenerationRequest {
 		cast::cdl::WorkingMemoryAddress obj;
 		bool shortNP;
 		bool spatialRelation;
-		string disabledProperty;
+		stringSeq disabledProperties;
 	};
-
-	["java:type:java.util.ArrayList<String>"] sequence<string> stringSeq;
 
 	class ReferenceGenerationResult {
 		cast::cdl::WorkingMemoryAddress requestAddress;

@@ -267,7 +267,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 				return null;
 			}
 
-			final ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr, a.getHasShortNP(), a.getHasSpatialRelation(), a.getDisabledProp());
+			final ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr, a.getHasShortNP(), a.getHasSpatialRelation(), a.getDisabledProps());
 			if (request == null) {
 				getLogger().error("extracted ReferenceGenerationRequest is null");
 				return null;
@@ -304,7 +304,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 								request.shortNP,
 								request.spatialRelation,
 								refs.refEx,
-								request.disabledProperty);
+								request.disabledProperties);
 
 						ModalisedAtom matom = greAtom.toModalisedAtom();
 						engine.addFact(matom);

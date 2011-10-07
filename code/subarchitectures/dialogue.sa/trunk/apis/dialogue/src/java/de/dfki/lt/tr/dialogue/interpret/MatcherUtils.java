@@ -5,6 +5,8 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
+import java.util.LinkedList;
+import java.util.List;
 
 public class MatcherUtils {
 
@@ -93,6 +95,27 @@ public class MatcherUtils {
 			else {
 				throw new TermParsingException("EpistemicStatus", t);
 			}
+		}
+		else {
+			return null;
+		}
+	}
+
+	public static List<String> parseTermToListOfStrings(Term t) throws TermParsingException {
+		List<Term> listTerms = ConversionUtils.listTermToListOfTerms(t);
+		if (listTerms != null) {
+			List<String> strings = new LinkedList<String>();
+			for (Term tt : listTerms) {
+				String s = parseTermToString(tt);
+				if (s != null) {
+					strings.add(s);
+				}
+				else {
+					throw new TermParsingException("List<String>", t);
+				}
+			}
+			return strings;
+			
 		}
 		else {
 			return null;

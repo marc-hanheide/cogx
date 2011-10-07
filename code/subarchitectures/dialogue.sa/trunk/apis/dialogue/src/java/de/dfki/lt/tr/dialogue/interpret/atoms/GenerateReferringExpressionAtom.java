@@ -21,14 +21,14 @@ implements InterpretableAtom {
 	private final Boolean shortNP;
 	private final Boolean spatialRelation;
 	private final String refEx;
-	private final String disabledProp;
+	private final List<String> disabledProps;
 
-	public GenerateReferringExpressionAtom(WorkingMemoryAddress beliefAddr, Boolean shortNP, Boolean spatialRelation, String refEx, String disabledProp) {
+	public GenerateReferringExpressionAtom(WorkingMemoryAddress beliefAddr, Boolean shortNP, Boolean spatialRelation, String refEx, List<String> disabledProps) {
 		this.beliefAddr = beliefAddr;
 		this.shortNP = shortNP;
 		this.spatialRelation = spatialRelation;
 		this.refEx = refEx;
-		this.disabledProp = disabledProp;
+		this.disabledProps = disabledProps;
 	}
 
 	public WorkingMemoryAddress getBeliefAddress() {
@@ -47,8 +47,8 @@ implements InterpretableAtom {
 		return refEx;
 	}
 
-	public String getDisabledProp() {
-		return disabledProp;
+	public List<String> getDisabledProps() {
+		return disabledProps;
 	}
 
 	@Override
@@ -62,7 +62,7 @@ implements InterpretableAtom {
 					shortNP == null ? TermAtomFactory.var("ShortNP") : TermAtomFactory.term(shortNP == true ? "yes" : "no"),
 					spatialRelation == null ? TermAtomFactory.var("SpatialRelation") : TermAtomFactory.term(spatialRelation == true ? "yes" : "no"),
 					refEx == null ? TermAtomFactory.var("RefEx") : TermAtomFactory.term(refEx),
-					disabledProp == null ? TermAtomFactory.var("DisabledProperty") : TermAtomFactory.term(disabledProp)
+					disabledProps == null ? TermAtomFactory.var("DisabledProperties") : ConversionUtils.listStringsToTerm(disabledProps)
 				}));
 	}
 
@@ -80,9 +80,9 @@ implements InterpretableAtom {
 					Boolean hasShortNP = MatcherUtils.parseTermToBoolean(args.get(1));
 					Boolean hasSpatialRelation = MatcherUtils.parseTermToBoolean(args.get(2));
 					String refEx = MatcherUtils.parseTermToString(args.get(3));
-					String disabledProp = MatcherUtils.parseTermToString(args.get(4));
+					List<String> disabledProps = MatcherUtils.parseTermToListOfStrings(args.get(4));
 
-					return new GenerateReferringExpressionAtom(beliefAddr, hasShortNP, hasSpatialRelation, refEx, disabledProp);
+					return new GenerateReferringExpressionAtom(beliefAddr, hasShortNP, hasSpatialRelation, refEx, disabledProps);
 				}
 				catch (TermParsingException ex) {
 					return null;

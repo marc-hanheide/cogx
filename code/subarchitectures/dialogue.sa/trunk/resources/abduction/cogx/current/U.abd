@@ -89,6 +89,9 @@ understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 	polarprop(Prop, Polarity, PolarPropFormula),
 
 	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	int : string_content(Int, 'asserted-feature', color) / p(1.0),
+	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
 	int : belief_content(AssertedBelief, color, PolarPropFormula) / p(1.0).
 
 understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
@@ -97,6 +100,9 @@ understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 	polarprop(Prop, Polarity, PolarPropFormula),
 
 	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	int : string_content(Int, 'asserted-feature', shape) / p(1.0),
+	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
 	int : belief_content(AssertedBelief, shape, PolarPropFormula) / p(1.0).
 
 understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
@@ -105,6 +111,9 @@ understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 	polarprop(Prop, Polarity, PolarPropFormula),
 
 	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	int : string_content(Int, 'asserted-feature', size) / p(1.0),
+	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
 	int : belief_content(AssertedBelief, size, PolarPropFormula) / p(1.0).
 
 understand : assertion_effect(Speaker, Hearer, Int, Ref, Polarity, Nom) <-
@@ -118,6 +127,9 @@ understand : assertion_effect(Speaker, Hearer, Int, Ref, Polarity, Nom) <-
 	polarprop(Prop, Polarity, PolarPropFormula),
 
 	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	int : string_content(Int, 'asserted-feature', type) / p(1.0),
+	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
 	int : belief_content(AssertedBelief, type, PolarPropFormula) / p(1.0).
 
 understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
@@ -126,6 +138,9 @@ understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 	polarprop(Prop, Polarity, PolarPropFormula),
 
 	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	int : string_content(Int, 'asserted-feature', identity) / p(1.0),
+	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
 	int : belief_content(AssertedBelief, identity, PolarPropFormula) / p(1.0).
 
 %-------------------------------------------------------------------------
