@@ -42,6 +42,7 @@ public class VisualObjectTransferFunction
 	public static final String LABEL_ID = "label";
 	public static final String IS_IN = "related-to";
 	public static final String CONE = "from-cone";
+	public static final String RELATION = "relation";
 	private static final double BLOODY_THRESHOLD_ACCORDING_TO_MICHI = 0.08;
     
     private WorkingMemoryAddress lastViewconeAddress = null;
@@ -144,7 +145,7 @@ public class VisualObjectTransferFunction
             fd4.add(cone.get(), 1.0);
             
             belief.getContent().put(IS_IN, fd1);
-            belief.getContent().put("relation", fd2);
+            belief.getContent().put(RELATION, fd2);
             belief.getContent().put(CONE, fd4);
         }
 	}
