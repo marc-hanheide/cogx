@@ -7,7 +7,7 @@
 #include "MLNEngine.h"
 
 #define DEFAULT_INSTANCE_TYPE "belief"
-#define DEFAULT_INFERENCE_STEPS 50
+#define DEFAULT_INFERENCE_STEPS 0
 #define DEFAULT_INFERENCE_PAUSE 250
 /**
  * The function called to create a new instance of our component.
@@ -255,38 +255,42 @@ void MLNEngine::runComponent()
   //  result->engId = m_id;
 	
   //  m_oe->setMaxInferenceSteps(5000);
-	if(!first) m_oe->restoreCnts();
-	m_oe->setMaxInferenceSteps(m_infSteps);
-	m_oe->infer(m_query, result->atoms, result->probs);
-	m_oe->saveCnts();
+	if(m_infSteps > 0)
+	{
+	  if(!first) m_oe->restoreCnts();
+	  m_oe->setMaxInferenceSteps(m_infSteps);
+	  m_oe->infer(m_query, result->atoms, result->probs);
+	  m_oe->saveCnts();
 	
-	first=false;
-	m_tokenSamples += m_infSteps;
-	m_overallSamples += m_infSteps;
+	  first=false;
+	  m_tokenSamples += m_infSteps;
+	  m_overallSamples += m_infSteps;
 
-	// restore the default values for inference samples and burn in samples
-	m_infSteps = m_defaultInfSteps;	
-	m_oe->setMaxBurnIn(0);
 	
-	if(doDisplay) {
-	  // Print true atoms
-	  cout << endl;
-	  cout << "Time step " << ++tstep << " non-zero atoms: " << endl;
-	  vector<string>::const_iterator it = result->atoms.begin();
-	  vector<float>::const_iterator probIt = result->probs.begin();
-	  for (; it != result->atoms.end(); it++)
-	  {
-		cout << (*it) << " " << (*probIt) << endl;
-		probIt++;
+	  if(doDisplay) {
+	   // Print true atoms
+	    cout << endl;
+	    cout << "Time step " << ++tstep << " non-zero atoms: " << endl;
+	    vector<string>::const_iterator it = result->atoms.begin();
+	    vector<float>::const_iterator probIt = result->probs.begin();
+	    for (; it != result->atoms.end(); it++)
+	    {
+		  cout << (*it) << " " << (*probIt) << endl;
+		  probIt++;
+	    }
 	  }
+	
+	  result->atoms = replaceConstWithInst(result->atoms);
+	  result->token = m_token;
+	  result->tokenSamples = m_tokenSamples;
+	  result->overallSamples =  m_overallSamples;
+	
+	  overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
 	}
 	
-	result->atoms = replaceConstWithInst(result->atoms);
-	result->token = m_token;
-	result->tokenSamples = m_tokenSamples;
-	result->overallSamples =  m_overallSamples;
-	
-	overwriteWorkingMemory(m_resultWMId, m_bindingSA, result);
+	// restore the default values for inference samples and burn in samples
+	m_infSteps = m_defaultInfSteps;	
+	m_oe->setMaxBurnIn(0);	
 	
 	while(!m_removeQueue.empty())
 	{
