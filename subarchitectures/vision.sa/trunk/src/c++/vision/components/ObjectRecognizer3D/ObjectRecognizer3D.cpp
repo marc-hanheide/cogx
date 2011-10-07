@@ -440,7 +440,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 		Model model;
 		modelloader.LoadPly(model, rec_entry.plyfile.c_str());
 
-		obj = new VisionData::VisualObject;
+		obj = new cogx::createVisualObject();
 		obj->model = new VisionData::GeometryModel;
 		convertModel2Geometry(model, obj->model);
 		rec_entry.visualObjectID = newDataID();
