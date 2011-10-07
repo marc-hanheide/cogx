@@ -22,6 +22,7 @@ import execution.components.AbstractExecutionManager;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.CreateConesForModel;
+import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
 import execution.slice.actions.DetectPeople;
 import execution.slice.actions.EngageWithHuman;
@@ -29,7 +30,7 @@ import execution.slice.actions.ForegroundModels;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForObjects;
 import execution.slice.actions.LookForPeople;
-import execution.slice.actions.ProcessCone;
+import execution.slice.actions.ProcessConeGroupAction;
 import execution.slice.actions.ProcessConesAtPlace;
 import execution.slice.actions.RecogniseForegroundedModels;
 import execution.slice.actions.ReportPosition;
@@ -171,19 +172,34 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	public WorkingMemoryAddress triggerConeGeneration(String _model,
-			long[] _placeIDs, ActionMonitor _monitor) throws CASTException {
-		CreateConesForModel act = newActionInstance(CreateConesForModel.class);
+			int _roomId, ActionMonitor _monitor) throws CASTException {
+        CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
 		act.model = _model;
-		act.placeIDs = _placeIDs;
+        act.relation = "inroom";
+        act.roomID = _roomId;
+		m_currentActionAddress = triggerExecution(act, _monitor);
+		return m_currentActionAddress;
+	}
+
+	public WorkingMemoryAddress triggerConeGenerationOnObject(String _model, String _supportModel,
+                                                              WorkingMemoryAddress _supportObject, int _roomId, ActionMonitor _monitor) 
+        throws CASTException {
+        CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
+        act.model = _model;
+        act.supportObjectCategory = _supportModel;
+        act.relation = "on";
+        act.supportObject = _supportObject.id; 
+        act.roomID = _roomId;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
 
 	public WorkingMemoryAddress triggerProccesCone(
-			WorkingMemoryAddress _coneAddr, ActionMonitor _monitor)
+        WorkingMemoryAddress _coneAddr, int _coneID, ActionMonitor _monitor)
 			throws CASTException {
-		ProcessCone act = newActionInstance(ProcessCone.class);
-		act.coneAddress = _coneAddr;
+		ProcessConeGroupAction act = newActionInstance(ProcessConeGroupAction.class);
+        act.coneGroupID = _coneID;
+        act.coneGroupBeliefID = _coneAddr;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
