@@ -33,6 +33,7 @@ import cast.core.CASTUtils;
 
 import comadata.ComaRoom;
 
+import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
@@ -82,10 +83,9 @@ public class ActionInterfaceFrame extends JFrame {
 	private DefaultTableModel m_coneTableModel;
 
 	private JPanel m_placesActionPanel;
-	private JRadioButton m_generateConesForPlacesAction;
 	private JRadioButton m_generateConesForRoomAction;
 	private JRadioButton m_processConeAction;
-	private JRadioButton m_processConesAtPlaceAction;
+	// private JRadioButton m_processConesAtPlaceAction;
 
 	private JRadioButton m_goAction;
 	private JRadioButton m_detectObjectsAction;
@@ -93,6 +93,7 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_lookForObjectsAction;
 	private JRadioButton m_lookForPeopleAction;
 
+	private JRadioButton m_generateConesOnObject;
 	private JRadioButton m_foregroundModelsAction;
 	private JRadioButton m_backgroundModelsAction;
 	private JRadioButton m_recogniseForegroundedModelsAction;
@@ -127,8 +128,9 @@ public class ActionInterfaceFrame extends JFrame {
 	private static final String COMAROOMTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ComaRoom.class));
 
-	private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
-			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
+	// private static final String VIEWPOINTTYPE = SimpleDiscreteTransferFunction
+	// 		.getBeliefTypeFromCastType(CASTUtils.typeName(ViewPoint.class));
+	private static final String VIEWPOINTTYPE = "conegroup";
 
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
@@ -265,15 +267,15 @@ public class ActionInterfaceFrame extends JFrame {
 			m_placesActionPanel.setLayout(new GridLayout(0, 1));
 
 			m_goAction = new JRadioButton("go to place");
-			m_generateConesForPlacesAction = new JRadioButton(
-					"generate cones in selected places");
+			// m_generateConesForPlacesAction = new JRadioButton(
+			// 		"generate cones in selected places");
 
 			m_generateConesForRoomAction = new JRadioButton(
 					"generate cones in selected room");
 
 			m_processConeAction = new JRadioButton("process selected cone");
-			m_processConesAtPlaceAction = new JRadioButton(
-					"process all cones at place");
+			// m_processConesAtPlaceAction = new JRadioButton(
+			// 		"process all cones at place");
 
 			m_askForIdentityAction = new JRadioButton("ask for identity");
 			m_askPolarIdentityAction = new JRadioButton("ask polar identity");
@@ -282,18 +284,18 @@ public class ActionInterfaceFrame extends JFrame {
 
 			ButtonGroup actionGroup = new ButtonGroup();
 			actionGroup.add(m_goAction);
-			actionGroup.add(m_generateConesForPlacesAction);
+			// actionGroup.add(m_generateConesForPlacesAction);
 			actionGroup.add(m_generateConesForRoomAction);
 			actionGroup.add(m_processConeAction);
-			actionGroup.add(m_processConesAtPlaceAction);
+			// actionGroup.add(m_processConesAtPlaceAction);
 			actionGroup.add(m_askForIdentityAction);
 			actionGroup.add(m_askPolarIdentityAction);
 
 			m_placesActionPanel.add(m_goAction);
-			m_placesActionPanel.add(m_generateConesForPlacesAction);
+			// m_placesActionPanel.add(m_generateConesForPlacesAction);
 			m_placesActionPanel.add(m_generateConesForRoomAction);
 			m_placesActionPanel.add(m_processConeAction);
-			m_placesActionPanel.add(m_processConesAtPlaceAction);
+			// m_placesActionPanel.add(m_processConesAtPlaceAction);
 			m_placesActionPanel.add(m_askForIdentityAction);
 			m_placesActionPanel.add(m_askPolarIdentityAction);
 
@@ -313,8 +315,9 @@ public class ActionInterfaceFrame extends JFrame {
 			m_detectPeopleAction = new JRadioButton("detect people");
 			m_lookForObjectsAction = new JRadioButton("look for objects");
 			m_lookForPeopleAction = new JRadioButton("look for people");
-			m_foregroundModelsAction = new JRadioButton("foreground models");
-			m_backgroundModelsAction = new JRadioButton("background models");
+            m_generateConesOnObject = new JRadioButton("generate cones on selected object");
+			// m_foregroundModelsAction = new JRadioButton("foreground models");
+			// m_backgroundModelsAction = new JRadioButton("background models");
 			m_recogniseForegroundedModelsAction = new JRadioButton(
 					"recognise foregrounded models");
 
@@ -329,8 +332,9 @@ public class ActionInterfaceFrame extends JFrame {
 			actionGroup.add(m_detectPeopleAction);
 			actionGroup.add(m_lookForObjectsAction);
 			actionGroup.add(m_lookForPeopleAction);
-			actionGroup.add(m_foregroundModelsAction);
-			actionGroup.add(m_backgroundModelsAction);
+            actionGroup.add(m_generateConesOnObject);
+			// actionGroup.add(m_foregroundModelsAction);
+			// actionGroup.add(m_backgroundModelsAction);
 			actionGroup.add(m_recogniseForegroundedModelsAction);
 			actionGroup.add(m_reportPosition);
 			actionGroup.add(m_engageWithHuman);
@@ -343,10 +347,12 @@ public class ActionInterfaceFrame extends JFrame {
 					new GridBagConstraints());
 			m_objectsActionPanel.add(m_lookForPeopleAction,
 					new GridBagConstraints());
-			m_objectsActionPanel.add(m_foregroundModelsAction,
+			m_objectsActionPanel.add(m_generateConesOnObject,
 					new GridBagConstraints());
-			m_objectsActionPanel.add(m_backgroundModelsAction,
-					new GridBagConstraints());
+			// m_objectsActionPanel.add(m_foregroundModelsAction,
+			// 		new GridBagConstraints());
+			// m_objectsActionPanel.add(m_backgroundModelsAction,
+			// 		new GridBagConstraints());
 
 			m_objectsActionPanel.add(m_recogniseForegroundedModelsAction,
 					new GridBagConstraints());
@@ -399,16 +405,17 @@ public class ActionInterfaceFrame extends JFrame {
 		m_exeMan.println("go() called: " + tabIndex);
 
 		if (tabIndex == 0) {
-			if (m_generateConesForPlacesAction.isSelected()) {
-				generateConesForPlaces();
-			} else if (m_processConeAction.isSelected()) {
+			// if (m_generateConesForPlacesAction.isSelected()) {
+			// 	generateConesForPlaces();
+			// } else 
+            if (m_processConeAction.isSelected()) {
 				processCone();
 			} else if (m_goAction.isSelected()) {
 				goToPlace();
 			} else if (m_generateConesForRoomAction.isSelected()) {
 				generateConesInRoom();
-			} else if (m_processConesAtPlaceAction.isSelected()) {
-				processConesAtPlace();
+			// } else if (m_processConesAtPlaceAction.isSelected()) {
+			// 	processConesAtPlace();
 			} else if (m_askForIdentityAction.isSelected()) {
 				askForIdentity();
 			} else if (m_askPolarIdentityAction.isSelected()) {
@@ -428,10 +435,12 @@ public class ActionInterfaceFrame extends JFrame {
 				lookForObjects();
 			} else if (m_lookForPeopleAction.isSelected()) {
 				lookForPeople();
-			} else if (m_foregroundModelsAction.isSelected()) {
-				foregroundModels();
-			} else if (m_backgroundModelsAction.isSelected()) {
-				backgroundModels();
+			} else if (m_generateConesOnObject.isSelected()) {
+				generateConesOnObject();
+			// } else if (m_foregroundModelsAction.isSelected()) {
+			// 	foregroundModels();
+			// } else if (m_backgroundModelsAction.isSelected()) {
+			// 	backgroundModels();
 			} else if (m_recogniseForegroundedModelsAction.isSelected()) {
 				recogniseForegroundedModels();
 			} else if (m_reportPosition.isSelected()) {
@@ -532,17 +541,17 @@ public class ActionInterfaceFrame extends JFrame {
 	 */
 	private void generateConesForPlaces() throws CASTException {
 
-		long[] placeIDs = getSelectedPlaces();
-		if (placeIDs.length > 0) {
+		// long[] placeIDs = getSelectedPlaces();
+		// if (placeIDs.length > 0) {
 
-			m_exeMan.triggerConeGeneration((String) JOptionPane
-					.showInputDialog(this,
-							"What object should the cones be generated for?"),
-					placeIDs, new MonitorPanel());
+		// 	m_exeMan.triggerConeGeneration((String) JOptionPane
+		// 			.showInputDialog(this,
+		// 					"What object should the cones be generated for?"),
+		// 			placeIDs, new MonitorPanel());
 
-		} else {
-			m_exeMan.println("no places selected, doing nothing");
-		}
+		// } else {
+		// 	m_exeMan.println("no places selected, doing nothing");
+		// }
 	}
 
 	/**
@@ -566,10 +575,48 @@ public class ActionInterfaceFrame extends JFrame {
 			m_exeMan.triggerConeGeneration((String) JOptionPane
 					.showInputDialog(this,
 							"What object should the cones be generated for?"),
-					room.containedPlaceIds, new MonitorPanel());
+					room.roomId, new MonitorPanel());
 
 		} else {
 			m_exeMan.println("no room selected, doing nothing");
+		}
+	}
+
+	/**
+	 * @throws CASTException
+	 */
+	private void generateConesOnObject() throws CASTException {
+
+		int selectedRow = m_objectBeliefsTable.getSelectedRow();
+		if (selectedRow >= 0) {
+
+			WorkingMemoryAddress objectBeliefAddress = addressFromString((String) m_objectBeliefsTableModel
+					.getValueAt(selectedRow, OBJ_ADDR_COLUMN));
+
+			IndependentFormulaDistributionsBelief<GroundedBelief> ob = IndependentFormulaDistributionsBelief
+					.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
+							objectBeliefAddress, GroundedBelief.class));
+
+            String support_label = ob.getContent().get(VisualObjectTransferFunction.LABEL_ID)
+				.getDistribution().getMostLikely().getProposition();
+            WMPointer roomPointer = WMPointer.create(ob.getContent()
+                                                     .get("related-to").getDistribution()
+                                                     .getMostLikely().get());
+			IndependentFormulaDistributionsBelief<GroundedBelief> rb = IndependentFormulaDistributionsBelief
+                .create(GroundedBelief.class, m_exeMan.getMemoryEntry(
+                            roomPointer.getVal(), GroundedBelief.class));
+
+
+			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(m_exeMan,
+					rb, ComaRoom.class);
+
+
+			m_exeMan.triggerConeGenerationOnObject((String) JOptionPane
+                                           .showInputDialog(this, "What object should the cones be generated for?"), 
+                                           support_label, objectBeliefAddress, room.roomId, new MonitorPanel());
+
+		} else {
+			m_exeMan.println("no object selected, doing nothing");
 		}
 	}
 
@@ -613,10 +660,13 @@ public class ActionInterfaceFrame extends JFrame {
 			// ViewPoint GBs come directly from data, no percept belief middle
 			// ground
 
-			WorkingMemoryPointer perceptPointer = BeliefUtils
-					.getMostRecentAncestorPointer(gb);
+			// WorkingMemoryPointer perceptPointer = BeliefUtils
+			// 		.getMostRecentAncestorPointer(gb);
 
-			m_exeMan.triggerProccesCone(perceptPointer.address,
+			// Get the ID 
+			Formula coneGroupIDProperty = gb.getContent().get("id").getDistribution().firstValue();
+
+			m_exeMan.triggerProccesCone(beliefAddress, coneGroupIDProperty.getInteger(),
 					new MonitorPanel());
 		} else {
 			m_exeMan.println("no cone selected, doing nothing");
@@ -843,30 +893,33 @@ public class ActionInterfaceFrame extends JFrame {
 			IndependentFormulaDistributionsBelief<dBelief> _belief)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
-		String label = _belief.getContent()
-				.get(ViewPointTransferFunction.OBJECT_LABEL_ID)
+        try {
+		String label = _belief.getContent().get("cg-label")
 				.getDistribution().getMostLikely().getProposition();
 
-		Double prob = _belief.getContent()
-				.get(ViewPointTransferFunction.OBJECT_PROBABILITY_ID)
+		Double prob = _belief.getContent().get("p-visible")
 				.getDistribution().getMostLikely().getDouble();
 
 		String beliefAddr = toAddressString(_address);
 
 		WMPointer pointer = WMPointer.create(_belief.getContent()
-				.get(LocalizedAgentTransferFunction.IS_IN).getDistribution()
-				.getMostLikely().get());
+                                             .get("cg-related-to").getDistribution()
+                                             .getMostLikely().get());
 
-		IndependentFormulaDistributionsBelief<GroundedBelief> placeBelief = IndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
-						pointer.get().pointer, GroundedBelief.class));
-
-		long placeID = placeBelief.getContent()
-				.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
-				.getMostLikely().getInteger();
+		// IndependentFormulaDistributionsBelief<GroundedBelief> relatedBelief = IndependentFormulaDistributionsBelief
+		// 		.create(GroundedBelief.class, m_exeMan.getMemoryEntry(
+		// 				pointer.get().pointer, GroundedBelief.class));
+        
+		// long placeID = placeBelief.getContent()
+		// 		.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+		// 		.getMostLikely().getInteger();
+		String relatedAddress = toAddressString(pointer.get().pointer);
 
 		m_coneTableModel
-				.addRow(new Object[] { label, prob, placeID, beliefAddr });
+				.addRow(new Object[] { label, prob, relatedAddress, beliefAddr });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 		// pack();
 
