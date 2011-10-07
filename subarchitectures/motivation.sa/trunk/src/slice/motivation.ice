@@ -94,6 +94,12 @@ module motivation {
     	class TutorInitiativeMotive extends Motive {
     	};
 
+    	class TutorInitiativeLearningMotive extends TutorInitiativeMotive {
+    	};
+    	class TutorInitiativeQuestionMotive extends TutorInitiativeMotive {
+    	};
+
+
 		class RobotNonSituatedMotive extends Motive {
     	};
 

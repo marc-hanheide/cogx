@@ -16,14 +16,13 @@ import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
-import de.dfki.lt.tr.beliefs.slice.epobject.EpistemicObject;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T extends EpistemicObject>
+public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T extends Ice.Object>
 		extends ManagedComponent {
 	// TODO: BAAAAAAAD
 	public static final String ROBOT_BELIEF_TYPE = "Robot"; 
