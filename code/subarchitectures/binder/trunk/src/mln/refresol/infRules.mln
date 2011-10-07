@@ -9,7 +9,7 @@ belief(b) ^ belief (b') ^ resolution(b) ^ resolution(b') => b = b'.
 // a resolution can be only about a belief that exists ...
 resolution(p) => belief(p).
 // ... and if there is a constraint
-resolution(b) => exist c color_constraint(c) v exist s shape_constraint(s).
+//resolution(b) => exist c color_constraint(c) v exist s shape_constraint(s).
 
 
 // rules for attributed beliefs

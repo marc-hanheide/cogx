@@ -201,7 +201,7 @@ void MLNEngine::runComponent()
 	  m_oe->setMaxBurnIn(evd->burnInSteps);
 	  m_oe->setExtPriors(replaceInstWithConst(evd->extPriors), evd->priorWts);
 	  m_oe->resetPriors(replaceInstWithConst(evd->resetPriors));
-	  
+
 	  for(it=evd->removeInstances.begin(); it!=evd->removeInstances.end(); it++) {	
 		if(existsInstConst(it->name)) {
 		  m_oe->removeInstance(getInstConst(it->name), it->type);
@@ -210,7 +210,7 @@ void MLNEngine::runComponent()
 		  log("WARNING: No instance %s found", it->name.c_str());
 		
 	  }
-	  
+
   #ifdef FEAT_VISUALIZATION
 	  ostringstream v11out;
 	  m_oe->printNetwork(v11out);
@@ -427,6 +427,7 @@ vector<string> MLNEngine::replaceInstWithConst(vector<string> predicates)
 		debug("Replacing belief ID %s with constant %s in predicate %s",
 				inst->first.c_str(), inst->second.c_str(), pred->c_str());
 		pred->replace(pos, inst->first.size(), inst->second.c_str());
+		debug("...resulting in  predicate %s", pred->c_str());
 	  }
 	}
   return predicates;

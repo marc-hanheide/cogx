@@ -1,5 +1,5 @@
 // Only close world atoms here
-
+/*
 !epstatus(Blf1,Private)
 !epstatus(Blf2,Private)
 !epstatus(Blf3,Private)
@@ -27,3 +27,4 @@
 !belief(Blf4)
 !belief(Blf5)
 !belief(Blf6)
+*/

@@ -10,6 +10,7 @@ epstatus(t_belief, t_status)
 
 color_constraint(t_attr_color)
 shape_constraint(t_attr_shape)
+type_constraint(t_attr_type)
 resolution(t_belief)
 
 // temporary solution for the 'openworldness' of number of private beliefs
@@ -19,13 +20,13 @@ resolution(t_belief)
 // private beliefs (|bel|) is significantly larger than 	
 
 // -1.87115  color(p,P_red)
--1.87115  color(a1,P_red) v !belief(a1) v !epstatus(a1,Shared)
+//-1.87115  color(a1,P_red) v !belief(a1) v !epstatus(a1,Shared)
 
 // -1.87115  color(p,P_blue)
--1.87115  color(a1,P_blue) v !belief(a1) v !epstatus(a1,Shared)
+//-1.87115  color(a1,P_blue) v !belief(a1) v !epstatus(a1,Shared)
 
 // -1.87115  color(p,P_green)
--1.87115  color(a1,P_green) v !belief(a1) v !epstatus(a1,Shared)
+//-1.87115  color(a1,P_green) v !belief(a1) v !epstatus(a1,Shared)
 
 // -1.87115  color_constraint(A_red)
 -1.87115  color_constraint(A_red)
@@ -90,8 +91,20 @@ resolution(t_belief)
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_green) => !resolution(p)
 -1       !color(a1,P_green) v !color_constraint(A_green) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
 
+
+1       !shape(a1,P_compact) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !shape(a1,P_compact) v !shape_constraint(A_elongated) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+1       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !shape(a1,P_elongated) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+
+-1       !shape(a1,P_compact) v !shape_constraint(A_compact) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !shape(a1,P_compact) v !shape_constraint(A_elongated) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-1       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !shape(a1,P_elongated) v !shape_constraint(A_compact) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+
 // -5.61346  color(a1,a2)
 -5.61346  color(a1,a2)
+-5.61346  shape(a1,a2)
 
 // -5.61346  color_constraint(a1)
 -5.61346  color_constraint(a1)
