@@ -112,8 +112,11 @@ public class ExplorePlaceGenerator extends
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see motivation.components.generators.AbstractBeliefMotiveGenerator#start()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * motivation.components.generators.AbstractBeliefMotiveGenerator#start()
 	 */
 	@Override
 	protected void start() {
@@ -180,7 +183,7 @@ public class ExplorePlaceGenerator extends
 		motive.goal = new Goal(computeImportance(motive), "(= (placestatus '"
 				+ belief.getId() + "') trueplace)", false);
 		log("goal is " + motive.goal.goalString);
-		//assignCosts(motive);
+		// assignCosts(motive);
 
 	}
 

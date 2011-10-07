@@ -167,7 +167,7 @@ public class PatrolPlaceGenerator extends
 		}
 
 	}
-	
+
 	/**
 	 * assigns costs to the motive
 	 * 
@@ -194,7 +194,6 @@ public class PatrolPlaceGenerator extends
 			logException(e);
 		}
 	}
-
 
 	float computeImportance(PatrolMotive m) {
 		if (m.informationGain < 0)
