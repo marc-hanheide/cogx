@@ -64,6 +64,31 @@ public class ComaGREAlgorithm {
 		}
 		// graph = new ABoxGraph(_parentReasoner, parameters);
 	}
+	
+	public ComaGREAlgorithm(ComaReasonerInterfacePrx _parentReasoner) {
+		m_prefAtt = new LinkedList<GREAttribute>();
+		m_prefAtt.add(GREAttribute.TYPE);
+		// m_prefAtt.add(GREAttribute.TOPOLOGICAL_IN);
+		// m_prefAtt.add(GREAttribute.TOPOLOGICAL_ON);
+		m_prefAtt.add(GREAttribute.TOPOLOGICAL_INCLUSION);
+		// m_prefAtt.add(GREAttribute.OWNERSHIP);
+		// m_prefAtt.add(GREAttribute.NAME);
+		// m_prefAtt.add(GREAttribute.NUMBER_TAG);
+		m_parentReasoner = _parentReasoner;
+
+		parameters = new Properties();
+		parameters.put("topologicalParentRelation", "dora:topoIncluded");
+		parameters.put("topologicalDescendantRelation", "dora:topoIncludesTrans");
+		parameters.put("topConcept", "dora:Scene");
+		parameters.put("on", "dora:on");
+		parameters.put ("in", "dora:in");
+		//http\://www.w3.org/1999/02/22-rdf-syntax-ns = rdf
+		//http\://www.w3.org/2001/XMLSchema = xsd 
+		//http\://www.w3.org/2000/01/rdf-schema = rdfs
+		//http\://www.w3.org/2002/07/owl = owl
+		//http\://dora.cogx.eu = dora
+		//http\://cogx.eu/anchorexp.owl = anchor
+	}
 
 	public void setGlobalAnchor(String _a) {
 		this.anchor_modelG = _a;
@@ -101,6 +126,24 @@ public class ComaGREAlgorithm {
 			throw new Exception("set the global anchor first!");
 		return "G@" + generateRefEx(_intdRef, anchor_modelG, m_startIndex++);
 	}
+	
+	public String generateRefExGCannedTextString(String _intdRef) throws Exception {
+		log("GRE with model G, a=" + anchor_modelG);
+		this.activeModel = "G";
+		if (anchor_modelG == null)
+			throw new Exception("set the global anchor first!");
+		 
+		String refEx = generateRefExCannedText(_intdRef, anchor_modelG);
+		if (refEx.contains(" ^ <Unique>true")) {
+			refEx.replace(" ^ <Unique>true", "");
+			refEx = "the " + refEx;
+		} else if (refEx.contains(" ^ <Unique>false")) {
+			refEx.replace(" ^ <Unique>false", "");
+			refEx = "a " + refEx;
+		}
+		return refEx;
+	}
+
 
 	public String generateRefEx(String _intdRef, String _origin) {
 		setGlobalAnchor(_origin);
@@ -112,6 +155,27 @@ public class ComaGREAlgorithm {
 		}
 		return "FAIL";
 	}
+	
+	public String generateRefExCannedText(String _intdRef, String _origin) {
+		// log("generateRefEx called for " + _intdRef + " and " + _origin);
+//		_intdRef = handelURI(_intdRef);
+//		_origin = handelURI(_origin);
+		TreeSet<String> _contextSet = new TreeSet<String>();
+		_contextSet.addAll(createContextSet(_intdRef, _origin));
+		TreeSet<String> _contrastSet = new TreeSet<String>();
+		_contrastSet.addAll(_contextSet);
+
+		// sanity:
+		if (_contrastSet.contains(_intdRef)) {
+			_contrastSet.remove(_intdRef);
+		}
+
+		LinkedList<GREAttribute> _attributes = new LinkedList<GREAttribute>();
+		_attributes = (LinkedList<GREAttribute>) m_prefAtt.clone();
+
+		return "TODO"; // makeRefExCannedText(_intdRef, _origin, _contextSet, _contrastSet,	_attributes, false);
+	}
+
 
 	public String generateRefEx(String _intdRef, String _origin, int _index) {
 		// log("generateRefEx called for " + _intdRef + " and " + _origin);
@@ -137,6 +201,236 @@ public class ComaGREAlgorithm {
 						_attributes, false, _index);
 	}
 
+	/*
+	private String makeRefExCannedText(
+			// String _refExSoFar,
+			String _intdRef, String _origin, Set<String> _contextSet,
+			Set<String> _contrastSet,
+			LinkedList<GREAttribute> _remainingAttributes,
+			boolean _typeIncluded) {
+		log("makeRefExCannedText called with r = " + _intdRef + " a = " + _origin
+				+ " context = " + stringsetToString(_contextSet)
+				+ " contrast = " + stringsetToString(_contrastSet));
+
+		log("!!! setting anchor to intRef " + _intdRef);
+		anchor_modelA = _intdRef;
+		anchor_modelR = _intdRef;
+
+		String dependentREanchor = _intdRef;
+
+		GREAttributeTemplateFiller _GRETemplateFiller = new GREAttributeTemplateFiller();
+
+		TreeSet<String> ruledOut = new TreeSet<String>();
+
+		// base case for recursion
+		if (_contrastSet.isEmpty()) {
+			log("contrast set is emtpy!");
+			if (_typeIncluded)
+				return " ^ <Unique>true";
+			else {
+				return " ^ "
+						+ _GRETemplateFiller.fillTemplate(GREAttribute.TYPE,
+								findBestValueCon(_intdRef, _contrastSet))
+						+ " ^ <Unique>true";
+			}
+		}
+
+		if (_remainingAttributes.isEmpty()) {
+			log("no more attributes to check. contrast set has size: "
+					+ _contrastSet.size() + ". contrast set = "
+					+ stringsetToString(_contrastSet) + "... still exiting.");
+			if (_typeIncluded)
+				return " ^ <Unique>false";
+			else {
+				return " ^ "
+						+ _GRETemplateFiller.fillTemplate(GREAttribute.TYPE,
+								findBestValueCon(_intdRef, _contrastSet))
+						+ " ^ <Unique>false";
+			}
+		}
+
+		GREAttribute currAtt = _remainingAttributes.removeFirst();
+
+		switch (currAtt) {
+		case TYPE:
+			log("TYPE");
+			String _bestCon = findBestValueCon(_intdRef, _contrastSet);
+			if (_bestCon == null) {
+				log("could not find best con value -- break");
+				break;
+			}
+			ruledOut.clear();
+			ruledOut.addAll((TreeSet<String>) rulesOutCon(_bestCon,
+					_contrastSet));
+			if (ruledOut != null && (!ruledOut.isEmpty())) {
+				_contrastSet.removeAll(ruledOut);
+
+				return _GRETemplateFiller
+				.fillTemplate(currAtt, _bestCon)
+				+ makeRefExCannedText(_intdRef, _origin, _contextSet,
+						_contrastSet, _remainingAttributes, true);
+
+			}
+			break; // exit the switch block
+
+		case TOPOLOGICAL_INCLUSION:
+			log("TOPOLOGICAL_INCLUSION");
+			// here I have to be careful to only take into account
+			// "human spatial concepts"
+
+			// get the immediate container
+			// check if that one is a "human concept", if not, I'd say, move one
+			// up
+			// and then generate a ref ex for that one
+			String[] _bestRelation = findBestValueRelation(_intdRef,
+					_contrastSet, _contextSet);
+			if (_bestRelation == null) {
+				log("there is no best relation-> breaking");
+				break;
+			} else {
+				log("best topological_inclusion relation: " + _bestRelation[0]
+						+ " / " + _bestRelation[1]);
+			}
+			ruledOut.clear();
+			ruledOut.addAll((TreeSet<String>) rulesOutRelation(
+					_bestRelation[0], _bestRelation[1], _contrastSet));
+			if (ruledOut != null && (!ruledOut.isEmpty())) {
+				// ok, check if we can actually generate a prepositional phrase
+				// that makes sense to humans
+				// 1) check if it's an "on" or "in" relation
+				// 2a) fill in the template with the correct preposition
+				// 2b) if none of the 2 can be inferred, we cannot produce a
+				// good RefEx
+
+				// boolean _isOnRelation = m_parentReasoner.areInstancesRelated(
+				// _intdRef, _bestContainer, parameters.getProperty("on"));
+				// boolean _isInRelation = getReasoner()
+				// .areInstancesRelated(
+				// _intdRef, _bestContainer, parameters.getProperty("in"));
+
+				// if (!_isInRelation && !_isOnRelation) {
+				// cannot produce meaningful RefEx using this attribute
+				// because I do not have a "human spatial proposition"
+				// log("don't know a 'human spatial preposition.... breaking");
+				// break; // exit the switch block
+				// }
+				String _topPrepositionName = _bestRelation[1];
+
+				// String _topPrepositionName = (_isOnRelation ? parameters
+				// .getProperty("on") : parameters
+				// .getProperty("topologicalParentRelation"));
+
+				_contrastSet.removeAll(ruledOut);
+				return _GRETemplateFiller.fillTemplate(currAtt,
+								generateRefExCannedText(_bestRelation[0], _origin)
+										+ ";" + _topPrepositionName) +
+						// _contextSet, _contrastSet, _remainingAttributes,
+						// false, "new recursion level from TOPO")) + ")" +
+						makeRefExCannedText(_intdRef, _origin, _contextSet, _contrastSet,
+								_remainingAttributes, _typeIncluded);
+			} else {
+				log("ruled out empty... breaking");
+			}
+			break; // exit the switch block
+
+		case TOPOLOGICAL_IN:
+			log("TOPOLOGICAL_IN");
+			// here I have to be careful to only take into account
+			// "human spatial concepts"
+
+			// get the immediate container
+			// check if that one is a "human concept", if not, I'say, move one
+			// up
+			// and then generate a ref ex for that one
+			String _bestInContainer = findBestValueInContainer(_intdRef,
+					_contrastSet, _contextSet);
+			if (_bestInContainer == null) {
+				log("there is no best container -> breaking");
+				break;
+			}
+			ruledOut.clear();
+			ruledOut.addAll((TreeSet<String>) rulesOutInContainer(
+					_bestInContainer, _contrastSet));
+			if (ruledOut != null && (!ruledOut.isEmpty())) {
+				// ok, check if we can actually generate a prepositional phrase
+				// that makes sense to humans
+				// 1) check if it's an "on" or "in" relation
+				// 2a) fill in the template with the correct preposition
+				// 2b) if none of the 2 can be inferred, we cannot produce a
+				// good RefEx
+
+				String _topPrepositionName = (parameters.getProperty("in"));
+
+				_contrastSet.removeAll(ruledOut);
+				return " ^ "
+						+ _GRETemplateFiller.fillTemplate(currAtt,
+								generateRefEx(_bestInContainer, _origin,
+										_index++)
+										+ ";" + _topPrepositionName) +
+						// _contextSet, _contrastSet, _remainingAttributes,
+						// false, "new recursion level from TOPO")) + ")" +
+						makeRefEx(_intdRef, _origin, _contextSet, _contrastSet,
+								_remainingAttributes, _typeIncluded, _index);
+			} else {
+				log("ruled out empty... breaking");
+			}
+			break; // exit the switch block
+
+		case TOPOLOGICAL_ON:
+			log("TOPOLOGICAL_ON");
+			// here I have to be careful to only take into account
+			// "human spatial concepts"
+
+			// get the immediate container
+			// check if that one is a "human concept", if not, I'say, move one
+			// up
+			// and then generate a ref ex for that one
+			String _bestOnContainer = findBestValueOnContainer(_intdRef,
+					_contrastSet, _contextSet);
+			if (_bestOnContainer == null) {
+				log("there is no best container -> breaking");
+				break;
+			}
+			ruledOut.clear();
+			ruledOut.addAll((TreeSet<String>) rulesOutOnContainer(
+					_bestOnContainer, _contrastSet));
+			if (ruledOut != null && (!ruledOut.isEmpty())) {
+				// ok, check if we can actually generate a prepositional phrase
+				// that makes sense to humans
+				// 1) check if it's an "on" or "in" relation
+				// 2a) fill in the template with the correct preposition
+				// 2b) if none of the 2 can be inferred, we cannot produce a
+				// good RefEx
+
+				String _topPrepositionName = (parameters.getProperty("on"));
+
+				_contrastSet.removeAll(ruledOut);
+				return " ^ "
+						+ _GRETemplateFiller.fillTemplate(currAtt,
+								generateRefEx(_bestOnContainer, _origin,
+										_index++)
+										+ ";" + _topPrepositionName) +
+						// _contextSet, _contrastSet, _remainingAttributes,
+						// false, "new recursion level from TOPO")) + ")" +
+						makeRefEx(_intdRef, _origin, _contextSet, _contrastSet,
+								_remainingAttributes, _typeIncluded, _index);
+			} else {
+				log("ruled out empty... breaking");
+			}
+			break; // exit the switch block
+
+		default:
+			log("got an attribute that I cannot handle... DEFAULT = will go to next iteration round.");
+			return makeRefEx(_intdRef, _origin, _contextSet, _contrastSet,
+					_remainingAttributes, _typeIncluded, _index);
+		}
+
+		log("end makeRefEx reached with nothing new to add :-( going to next iteration round.");
+		return makeRefEx(_intdRef, _origin, _contextSet, _contrastSet,
+				_remainingAttributes, _typeIncluded, _index);
+	}	
+	*/
+	
 	private String makeRefEx(
 			// String _refExSoFar,
 			String _intdRef, String _origin, Set<String> _contextSet,
