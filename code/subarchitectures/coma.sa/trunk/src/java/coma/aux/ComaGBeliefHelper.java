@@ -33,6 +33,7 @@ public final class ComaGBeliefHelper {
 			cat = gbProxy.getContent().get(
 					ComaRoomTransferFunction.CATEGORY_ID)
 					.getDistribution().getMostLikely().getProposition();
+			if (cat==null) cat = "room";
 		} else if (gbProxy.getType().equals(
 				SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(VisualObject.class))) {
@@ -68,7 +69,7 @@ public final class ComaGBeliefHelper {
 		} else if (gbProxy.getType().equals(
 				SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(VisualObject.class))) {
-			insName = "object" + gbProxy.getId();
+			insName = "object" + gbProxy.getId().replace(":","_");
 		}
 		return insName;		
 	}
