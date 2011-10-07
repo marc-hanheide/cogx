@@ -5,9 +5,11 @@ import de.dfki.lt.tr.cast.dialogue.FakeReferringExpressionGeneration.FakeGenerat
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationRequest;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationResult;
 import de.dfki.lt.tr.dialogue.production.ReferringExpressionGenerator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class FakeReferringExpressionGeneration
 extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
@@ -19,11 +21,22 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 
 	public static class FakeGenerator implements ReferringExpressionGenerator {
 
+		private final Map<String, String> props;
+		private final String type;
+
+		public FakeGenerator() {
+			props = new HashMap<String, String>();
+			props.put("color", "red");
+			props.put("shape", "elongated");
+			
+			type = "object";
+		}
+
 		@Override
 		public ReferenceGenerationResult generate(ReferenceGenerationRequest request, WorkingMemoryAddress requestAddr) {
 			List<String> phrases = new LinkedList<String>();
 			if (request.shortNP) {
-				phrases.add("the cornflakes");
+				phrases.add(getShortNP(request.disabledProperty));
 			}
 			if (request.spatialRelation) {
 				phrases.add("on the table in the kitchen");
@@ -44,6 +57,18 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 				}
 			}
 			return sb.toString();
+		}
+
+		private String getShortNP(String disabled) {
+			List<String> words = new LinkedList<String>();
+			words.add("the");
+			for (String key : props.keySet()) {
+				if (disabled != null && !key.equals(disabled)) {
+					words.add(props.get(key));
+				}
+			}
+			words.add(type);
+			return join(" ", words);
 		}
 
 	}

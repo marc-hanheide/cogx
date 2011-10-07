@@ -14,6 +14,7 @@ module production {
 		cast::cdl::WorkingMemoryAddress obj;
 		bool shortNP;
 		bool spatialRelation;
+		string disabledProperty;
 	};
 
 	["java:type:java.util.ArrayList<String>"] sequence<string> stringSeq;
