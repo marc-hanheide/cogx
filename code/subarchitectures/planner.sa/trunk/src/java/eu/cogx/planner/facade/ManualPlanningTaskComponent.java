@@ -31,6 +31,10 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 	private static final String CONFIG_GOALS = "--goals";
 
 	ManualPlanningTaskFrame frame;
+	protected ManualPlanningTaskFrame getFrame() {
+		return frame;
+	}
+
 	WMView<GroundedBelief> view;
 	PlannerFacade planner;
     List<String> goals = null;
