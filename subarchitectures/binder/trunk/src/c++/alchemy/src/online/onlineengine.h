@@ -451,15 +451,19 @@ class OnlineEngine
       
     const PredicateTemplate* pt = domain->getPredicateTemplate(pred.c_str());
     if (pt) {// && pt->getNumTerms() == 1 && pt->getTermTypeAsStr(0) == type.c_str()) {
-    	
+/*    	
     	Predicate* p = new Predicate(pt);
     	int cid = domain->getConstantId(placeh.c_str());
     	p->appendTerm(new Term(cid, (void*)p, true));
     	assert(p->isGrounded());
-    		
-      	if(domain->getDB()->getValue(p) == TRUE ) {
+*/
+    		GroundPredicate* gp = NULL;
+      	parseGroundPredicate(pred + "(" + placeh + ")", gp);
+      	
+      	if(domain->getDB()->getValue(gp) == TRUE ) {
       		cout << "Deactivating constant placeholder '" << placeh << "." << endl;
-     		inference_->getState()->setAsEvidence(new GroundPredicate(p), false);		
+      		inference_->getState()->setAsQuery(gp);
+     			inference_->getState()->setAsEvidence(gp, false); //new GroundPredicate(p), false);		
 
       		return;
       	}

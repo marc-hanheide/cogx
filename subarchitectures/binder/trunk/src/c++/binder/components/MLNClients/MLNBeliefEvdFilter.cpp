@@ -65,23 +65,37 @@ void MLNBeliefEvdFilter::runComponent()
   // initial evidence - we treat percepts as close-world predicates;
   // again "-cw" option in command line doesn't help, beacuse the
   // evidence from .db is not correctly initialized
-/*
+  
   EvidencePtr evd = new Evidence();
 
-  evd->trueEvidence.push_back("color_constraint(A_red)");
+ // evd->trueEvidence.push_back("color_constraint(A_red)");
   evd->falseEvidence.push_back("belief(Blf1)");
   evd->falseEvidence.push_back("belief(Blf2)");
   evd->falseEvidence.push_back("belief(Blf3)");
   evd->falseEvidence.push_back("belief(Blf4)");
   evd->falseEvidence.push_back("belief(Blf5)");
   evd->falseEvidence.push_back("belief(Blf6)");
-
+  
+  evd->falseEvidence.push_back("epstatus(Blf1,Attributed)");
+  evd->falseEvidence.push_back("epstatus(Blf2,Attributed)");
+  evd->falseEvidence.push_back("epstatus(Blf3,Attributed)");
+  evd->falseEvidence.push_back("epstatus(Blf4,Attributed)");
+  evd->falseEvidence.push_back("epstatus(Blf5,Attributed)");
+  evd->falseEvidence.push_back("epstatus(Blf6,Attributed)");
+  
+  evd->falseEvidence.push_back("epstatus(Blf1,Shared)");
+  evd->falseEvidence.push_back("epstatus(Blf2,Shared)");
+  evd->falseEvidence.push_back("epstatus(Blf3,Shared)");
+  evd->falseEvidence.push_back("epstatus(Blf4,Shared)");
+  evd->falseEvidence.push_back("epstatus(Blf5,Shared)");
+  evd->falseEvidence.push_back("epstatus(Blf6,Shared)");
+  
   evd->initInfSteps = 400;
   evd->prevInfSteps = 0;
   evd->burnInSteps = 100;
 
   distributeEvd(evd);
-*/  
+  
   while(isRunning())	  
   {
 /*	log("Timestep: %i", tstep);  
@@ -98,17 +112,16 @@ void MLNBeliefEvdFilter::runComponent()
 		resetFactChanges();
 		
 		m_filtFacts = filterFacts(getRawFacts());
-		if(m_filtFacts.size()) {
+//		if(m_filtFacts.size()) {
 			log("Processing belief changes");
 			EvidencePtr evd = new Evidence();
 			
 			if(getEvdChanges(m_filtFacts, m_oldFacts, evd)) {
 				distributeEvd(evd, "");
 				m_oldFacts = m_filtFacts;
-			    log("New MLN evidence provided");
-			}
-		} else
-			log("No relevant beliefs found");	
+			  log("New MLN evidence provided");
+			} else
+				log("No relevant beliefs found");	
 	}
 	sleepComponent(200);
   }

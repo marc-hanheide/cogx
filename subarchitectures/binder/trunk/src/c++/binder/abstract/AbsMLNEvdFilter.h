@@ -169,6 +169,8 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 			inst.name=it->second.id;
 			inst.type=it->second.key;
 			evd->removeInstances.push_back(inst);
+		  } else if(it->second.key == "epstatus") {
+			evd->falseEvidence.push_back(it->first);
 		  } else  
 			evd->noEvidence.push_back(it->first);
 		}  

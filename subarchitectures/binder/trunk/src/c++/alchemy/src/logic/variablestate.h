@@ -3127,9 +3127,12 @@ class VariableState
       	{
       		GroundClause* clause = (*candClauses)[j];
       		
-      		cout << "clause # " << j << ": ";
-        	clause->print(cout, domain_, &gndPredHashArray_);
-        	cout << endl;
+      		if (true) //vsdebug)
+      		{
+      			cout << "clause # " << j << ": ";
+      			clause->print(cout, domain_, &gndPredHashArray_);
+        		cout << endl;
+        	}
 			
 			int pos=-1;
 			int idx = atomIdx + 1;
@@ -3192,13 +3195,12 @@ class VariableState
     	cout << "--- Newly added clauses after removal of predicate ";
       	predicate->print(cout, domain_);
       	cout << " as evidence ---" << endl;
-		cout <<  "--------------------------------------------------------------------------------------" << endl;    
-      	for (int i = 0; i < newClauses_.size(); i++)
-        {
+				cout <<  "--------------------------------------------------------------------------------------" << endl;    
+      	for (int i = 0; i < newClauses_.size(); i++) {
         	(newClauses_)[i]->print(cout, domain_, &gndPredHashArray_);
       		cout << endl;
-    	}
-		cout <<  "--------------------------------------------------------------------------------------" << endl;
+    		}
+				cout <<  "--------------------------------------------------------------------------------------" << endl;
     }
     
     reinit();
@@ -3208,9 +3210,9 @@ class VariableState
     	cout << "*** Grounded network after removal of predicate ";
     	predicate->print(cout, domain_); 
     	cout << " as evidence ***" << endl;
-		cout << "************************************************************************" << endl;
-		printNetwork(cout);
-		cout << "************************************************************************" << endl;
+			cout << "************************************************************************" << endl;
+			printNetwork(cout);
+			cout << "************************************************************************" << endl;
     }
      
   }
