@@ -3,8 +3,6 @@ package coma.components;
 import java.awt.Component;
 import java.util.Map;
 
-import sun.applet.GetMemberPluginCallRequest;
-
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
