@@ -352,7 +352,17 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       else:
           task.action_executed_cp(task_desc.plan)
 
-    
+
+  @pdbdebug
+  def notifyFailure(self, task_desc, current=None):
+      if task_desc.id not in self.tasks:
+          log.warning("Warning: received update for task %d, but no such task found.", task_desc.id)
+          return
+      
+      standalone.globals.set_time()
+      task = self.tasks[task_desc.id]
+      task.handle_task_failure()
+          
   @pdbdebug
   def start_dt_planning(self, task):
       assert task.dt_id is None, "There is already a DT task (%d) for task %d" % (task.dt_id, task.id)
@@ -392,7 +402,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       domain = pddl.load_domain(self.domain_fn)
       state = cast_state.CASTState([e.belief for e in beliefs], domain, component=self)
       cstate = state.state
-      goalstrings = tp.transform_goal_string(goal, state.namedict).split("\n")
+      goalstrings = tp.transform_goal_string(goal, state.castname_to_obj).split("\n")
       try:
           pddl_goal = pddl.parser.Parser.parse_as(goalstrings, pddl.conditions.Condition, cstate.problem)
       except Exception, e:
