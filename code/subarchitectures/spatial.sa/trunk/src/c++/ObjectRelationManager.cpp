@@ -674,7 +674,8 @@ ObjectRelationManager::newObject(const cdl::WorkingMemoryAddress &wmAddress)
     // Generate new object model
     // Check if box geometry is provided in VisualObject struct
     // If it is, generate object model based on that information
-    if (observedObject->model->vertices.size() == 1) {
+    if (observedObject->model != 0 && 
+	observedObject->model->vertices.size() == 1) {
       log("Object model has 1 vertex");
       Vector3 cornerInfo = observedObject->model->vertices[0].pos;
 
@@ -712,7 +713,7 @@ ObjectRelationManager::newObject(const cdl::WorkingMemoryAddress &wmAddress)
       }
     }
     else {
-      log("Object model has more than 1 vertices");
+      log("Object model does not have 1 vertex");
       // Couln't get geometry from GeometryModel. Generate one based
       // on label instead
       m_objectModels[visualObjectID] = generateNewObjectModel(obsLabel);
