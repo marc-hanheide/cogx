@@ -4,10 +4,12 @@ import java.util.List;
 
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
 import motivation.slice.LearnObjectFeatureMotive;
+import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import VisionData.VisualObject;
 import autogen.Planner.Goal;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -167,24 +169,40 @@ public class VisualObjectMotiveGenerator extends
 
 	private LearnObjectFeatureMotive newLearnObjectFeatureMotive(
 			WorkingMemoryAddress _refEntry) {
-		LearnObjectFeatureMotive result = new LearnObjectFeatureMotive();
-		result.created = getCASTTime();
-		result.updated = result.created;
-		result.correspondingUnion = "";
-		result.maxExecutionTime = MAX_EXECUTION_TIME;
-		result.maxPlanningTime = MAX_PLANNING_TIME;
-		result.priority = MotivePriority.UNSURFACE;
-		result.referenceEntry = _refEntry;
-		result.status = MotiveStatus.UNSURFACED;
-		return result;
+		return newMotive(LearnObjectFeatureMotive.class, _refEntry,
+				getCASTTime());
 	}
 
-	private static String beliefPredicateGoal(String _predicate,
+	public static <T extends Motive> T newMotive(Class<T> _cls,
+			WorkingMemoryAddress _refEntry, CASTTime _time) {
+		try {
+			T result = _cls.newInstance();
+			result.created = _time;
+			result.updated = result.created;
+			result.correspondingUnion = "";
+			result.maxExecutionTime = MAX_EXECUTION_TIME;
+			result.maxPlanningTime = MAX_PLANNING_TIME;
+			result.priority = MotivePriority.UNSURFACE;
+			result.referenceEntry = _refEntry;
+			result.status = MotiveStatus.UNSURFACED;
+
+			return result;
+		} catch (Exception e) {
+			// should never happen
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String beliefPredicateGoal(String _predicate,
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+		return beliefPredicateGoal(_predicate, _belief.getId());
+	}
+
+	public static String beliefPredicateGoal(String _predicate, String _beliefID) {
 		StringBuilder sb = new StringBuilder("(");
 		sb.append(_predicate);
 		sb.append(" '");
-		sb.append(_belief.getId());
+		sb.append(_beliefID);
 		sb.append("')");
 		return sb.toString();
 	}

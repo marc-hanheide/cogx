@@ -53,6 +53,10 @@ import execution.util.NonBlockingCompleteFromStatusExecutor;
  */
 public class VisionActionInterface extends AbstractActionInterface {
 
+	public static final String LEARNED_FEATURE_POSTFIX = "-learned";
+	public static final String UNLEARNED_FEATURE_POSTFIX = "-unlearned";
+
+	
 	private WorkingMemoryAddress m_viewStateAddress;
 
 	private String m_ptzServerComponent;
@@ -211,8 +215,9 @@ public class VisionActionInterface extends AbstractActionInterface {
 	public static class LearnColourExecutor extends
 			LearnInstructionExecutor<LearnColour> {
 
+
 		public LearnColourExecutor(ManagedComponent _component) {
-			super(_component, LearnColour.class, "color", 1, "-learned");
+			super(_component, LearnColour.class, "color", 1, LEARNED_FEATURE_POSTFIX);
 		}
 	}
 
@@ -220,7 +225,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<LearnShape> {
 
 		public LearnShapeExecutor(ManagedComponent _component) {
-			super(_component, LearnShape.class, "shape", 1, "-learned");
+			super(_component, LearnShape.class, "shape", 1, LEARNED_FEATURE_POSTFIX);
 		}
 
 	}
@@ -229,7 +234,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<LearnIdentity> {
 
 		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class, "ident", 1, "-learned");
+			super(_component, LearnIdentity.class, "ident", 1, LEARNED_FEATURE_POSTFIX);
 		}
 	}
 
@@ -237,7 +242,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<UnlearnColour> {
 
 		public UnlearnColourExecutor(ManagedComponent _component) {
-			super(_component, UnlearnColour.class, "color", -1, "-unlearned");
+			super(_component, UnlearnColour.class, "color", -1, UNLEARNED_FEATURE_POSTFIX);
 		}
 	}
 
@@ -245,7 +250,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<UnlearnShape> {
 
 		public UnlearnShapeExecutor(ManagedComponent _component) {
-			super(_component, UnlearnShape.class, "shape", -1, "-unlearned");
+			super(_component, UnlearnShape.class, "shape", -1, UNLEARNED_FEATURE_POSTFIX);
 		}
 
 	}
