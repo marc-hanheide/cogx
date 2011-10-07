@@ -9,6 +9,7 @@ from standalone import task, dt_problem, plans, plan_postprocess, pddl, config, 
 import standalone.globals as global_vars
 from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum, Struct
+from standalone.pddl import state
 
 import cast_state
 import explanations
@@ -37,7 +38,7 @@ PLANNER_DT = 1
 
 WAIT_FOR_ACTION_TIMEOUT = 2000
 
-FAKE_ACTION_FAILURE = "search_for_object_in_room"
+FAKE_ACTION_FAILURE = None#"search_for_object_in_room"
 
 # status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
 #                    PlanningStatusEnum.RUNNING : Planner.Completion.INPROGRESS, \
@@ -178,6 +179,7 @@ class CASTTask(object):
             goal_from_pddl = Planner.Goal(importance=-1.0, goalString=problem.goal.pddl_str(), isInPlan=False)
             self.slice_goals = [goal_from_pddl]
             cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
+            
             _task = task.Task(0, cp_problem)
             _task.set_state(self.state.state)
             actions = []
@@ -302,25 +304,29 @@ class CASTTask(object):
         nodedict = {}
         latest_node = {}
         all_nodes = defaultdict(set)
+        virtual_mappings = {}
+        
         def add_node(n):
-            key = (n.action.name,)+tuple(n.full_args)
+            key = (n.action.name,)+tuple(virtual_mappings.get(a,a) for a in  n.full_args)
             nodedict[key] = n
             all_nodes[key].add(n)
             
         def get_node(n):
-            key = (n.action.name,)+tuple(n.full_args)
+            key = (n.action.name,)+tuple(virtual_mappings.get(a,a) for a in  n.full_args)
             if key not in nodedict:
                 nodedict[key] = n
             # latest_node[key] = n
             all_nodes[key].add(n)
             return nodedict[key]
-        
+
         # def latest(n):
         #     key = (n.action.name,)+tuple(n.full_args)
         #     return latest[key]
 
         plan_dict = {}
         def get_incoming_links(n):
+            if n not in plan_dict:
+                return
             plan = plan_dict[n]
             for pred in plan.predecessors_iter(n):
                 for e in plan[pred][n].itervalues():
@@ -353,6 +359,63 @@ class CASTTask(object):
                     # else:
                     #     facts.append(pddl.state.Fact(f.svar, pddl.UNKNOWN))
             return facts
+
+        virtual_p = self.domain.predicates['is-virtual'][0] if 'is-virtual' in self.domain.predicates else None
+
+        def is_virtual_fact(fact):
+            if "virtual" in fact.svar.function.name:
+                return True
+            return False
+
+        virtual_objects = []
+        virtual_facts = defaultdict(set)
+        used_virtual_objects = []
+        def canonical_vo(o):
+            if o in virtual_objects:
+                return pddl.TypedObject("virtual-%s" % str(o.type), o.type)
+            return o
+            
+        def add_virtual_objects(init_node):
+            for f in init_node.effects:
+                if f.svar.function == virtual_p and f.svar.args[0] not in virtual_objects:
+                    virtual_objects.append(f.svar.args[0])
+
+        def add_virtual_object_facts(fact):
+            if is_virtual_fact(fact):
+                return
+            for o in fact.svar.args:
+                if o in virtual_objects:
+                    vo_svar = state.StateVariable(fact.svar.function, map(canonical_vo, fact.svar.args), fact.svar.modality, map(canonical_vo, fact.svar.modal_args))
+                    virtual_facts[o].add(state.Fact(vo_svar, canonical_vo(fact.value)))
+
+        def objects_match(new, old):
+            d = dict(virtual_facts[old])
+            if new.type != old.type:
+                return False
+            for f in virtual_facts[new]:
+                if d.get(f.svar, f.value) != f.value:
+                    print "mismatch:", f, d[f.svar]
+                    return False
+            return True
+
+        def mapped_svar(svar):
+            return state.StateVariable(svar.function, [virtual_mappings.get(o,o) for o in svar.args],\
+                                           svar.modality, [virtual_mappings.get(o,o) for o in svar.modal_args])
+
+        def mapped_fact(fact):
+            return state.Fact(mapped_svar(fact.svar), virtual_mappings.get(fact.value, fact.value))
+
+        def mapped_node(pnode):
+            
+            new = plans.PlanNode(pnode.action, [virtual_mappings.get(o,o) for o in pnode.args], pnode.time, pnode.status)
+
+            new.preconds = set(map(mapped_fact, pnode.preconds))
+            new.effects = set(map(mapped_fact, pnode.effects))
+            new.original_preconds = set(map(mapped_fact, pnode.original_preconds))
+
+            new.full_args = [virtual_mappings.get(o,o) for o in pnode.full_args]
+            return new
+
             
         plan = plans.MAPLPlan(self.init_state.state, self.cp_task.get_goal())
         init_problem = self.init_state.state.problem.copy()
@@ -363,9 +426,20 @@ class CASTTask(object):
         written = {}
         executed = []
         unexecuted = []
+        last_plan = None
 
         for p in _plans:
+            if not isinstance(p, plans.MAPLPlan):
+                continue
+            last_plan = p
             for n in p.topological_sort():
+                if n.action.name == 'init':
+                    add_virtual_objects(n)
+                    
+                if n.action.name == 'init' or n.is_virtual():
+                    for f in n.effects:
+                        add_virtual_object_facts(f)
+                    
                 for o in all_objects(n):
                     if o not in init_problem:
                         init_problem.add_object(o)
@@ -375,9 +449,27 @@ class CASTTask(object):
                 else:
                     unexecuted.append(n)
 
+        current_state_node = plans.DummyNode("init", [], 0, plans.ActionStatusEnum.EXECUTED)
+        current_state_node.effects = set(self.state.state.iterfacts())
+        executed.append(current_state_node)
+
+        print "virtual objects:", map(str, virtual_objects)
+        for o in virtual_objects:
+            for uo in used_virtual_objects:
+                if objects_match(o, uo):
+                    virtual_mappings[o] = uo
+                    print "map", o, "to", uo
+                    break
+            if o not in virtual_mappings:
+                used_virtual_objects.append(o)
+
+        print "used_vos", map(str, used_virtual_objects)
+
         def add_links(n, new_n):
             # print new_n
             for pred, svar, val, type in get_incoming_links(n):
+                svar = mapped_svar(svar)
+                val = virtual_mappings.get(val, val)
                 new_p = get_node(pred)
                 print "    ", pred, svar, val, type
                 if new_p == plan.init_node and svar in written and not n.is_virtual():
@@ -397,17 +489,19 @@ class CASTTask(object):
         for n in executed:
             n.time = i
             i += 1
+            mapped_n = mapped_node(n)
             print "===", n
             if n.is_virtual() or n.action.name == "goal":
-                new_n = get_node(n)
+                new_n =  get_node(mapped_n)
             elif n.action.name == "init":
-                new_st = pddl.state.State(n.effects, init_problem)
+                new_st = pddl.state.State(mapped_n.effects, init_problem)
                 # extstate = new_st.get_extended_state()
                 # print map(str, 
                 diff_facts = state_diff(current_state, new_st)
                 new_n = plans.DummyNode("new_facts-%d" % i, [], i, n.status)
                 print [str(f) for f in diff_facts if f.svar.modality is None]
                 new_n.effects = set(diff_facts)
+                new_n.preconds = set()
                 add_node(new_n)
                 for eff in new_n.effects:
                     if eff.svar in written:
@@ -417,20 +511,22 @@ class CASTTask(object):
                         assert eff.value != expected_val
                         if not real_p.action.name.startswith("new_facts"):
                             plan.add_edge(real_p, new_n, svar=eff.svar, val=eff.value, type="unexpected")
+                            new_n.preconds.add(eff)
                 current_state = new_st
                         
             else:
-                for eff in n.effects:
+                for eff in mapped_n.effects:
                     current_state.set(eff)
-                add_node(n)
-                new_n = n
+                add_node(mapped_n)
+                new_n = mapped_n
                 
             if new_n not in plan:
+                print "add:", new_n
                 plan.add_node(new_n)
 
             add_links(n, new_n)
 
-            for svar, val in n.effects:
+            for svar, val in new_n.effects:
                 written[svar] = (new_n, val)
             
 
@@ -438,7 +534,7 @@ class CASTTask(object):
         for n in unexecuted:
             n.time = i
             i += 1
-            new_n = get_node(n)
+            new_n = get_node(mapped_node(n))
             if new_n not in plan:
                 plan.add_node(new_n)
 
@@ -463,21 +559,37 @@ class CASTTask(object):
         for n in redundant:
             plan.remove_node(n)
 
-        G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+        final_plan_actions = set(get_node(n) for n in last_plan.nodes_iter())
+
+        def node_decorator(node):
+            if node.status == plans.ActionStatusEnum.EXECUTABLE and node.action.name != 'goal' and node not in final_plan_actions:
+                return {"ignore" : True}
+            if node.is_virtual():
+                return {"fillcolor" : "darkslategray2"}
+
+        def edge_decorator(n1,n2, data):
+            if data['svar'].function.name in ('started',):
+                return {'style' : 'invis', 'label' : '', 'ignore' : False}
+            
+        G = plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
         G.layout(prog='dot')
         G.draw("plan.pdf")
-        return plan, init_problem
+
+        merged_init_state = pddl.state.State([mapped_fact(f) for f in self.init_state.state.iterfacts()], init_problem)
+        merged_final_state = pddl.state.State([mapped_fact(f) for f in self.state.state.iterfacts() if not is_virtual_fact(f)], init_problem)
+        
+        return plan, merged_init_state, merged_final_state
             
     def handle_task_failure(self):
-        merged_plan, merged_problem = self.merge_plans(self.plan_history)
+        merged_plan, init_state, final_state = self.merge_plans(self.plan_history)
         # last_plan = self.plan_history[-1].topological_sort()
-        last_plan = merged_plan.topological_sort()
-        endstate = self.state.state.copy()
+        # last_plan = merged_plan.topological_sort()
+        # endstate = self.state.state.copy()
         # for a in last_plan:
         #     if a.status == plans.ActionStatusEnum.EXECUTED and not a.is_virtual():
         #         for f in a.effects:
         #             endstate.set(f)
-        explanations.handle_failure(last_plan, merged_problem, self.init_state, endstate, self.expl_rules_fn, self.cp_task)
+        explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task)
 
     def write_history(self):
         history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))

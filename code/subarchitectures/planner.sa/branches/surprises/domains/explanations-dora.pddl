@@ -28,8 +28,9 @@
                     (not (started))
     )
  :effect (and 
-          (assign (probability) 0.5)
-     (assign (related-to ?o) ?cont) (assign (relation ?o) in)
+          (assign (probability) 0.9)
+          (poss (related-to ?o) ?cont)
+          (poss (relation ?o) in)
     )
 )
 
