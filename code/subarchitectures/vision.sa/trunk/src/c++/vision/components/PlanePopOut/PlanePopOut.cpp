@@ -418,7 +418,7 @@ void SendImage(PointCloud::SurfacePointSeq& points, std::vector <int> &labels, c
 	str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
 	if (bSaveImage)
 	    str << "Saved: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
-	m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	m_display.setHtml("INFO", "log.PPO.SendImage", str.str());
     }
 }
 
@@ -487,7 +487,7 @@ void SendPoints(const PointCloud::SurfacePointSeq& points, std::vector<int> &lab
 	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
 	str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
-	m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
+	m_display.setHtml("INFO", "log.PPO.SendPoints", str.str());
     }
 }
 
@@ -530,7 +530,7 @@ void SendPlaneGrid(cogx::display::CDisplayClient& m_display, PlanePopOut *powner
 	str << "Strlen: " << S.length() << "<br>";
 	str << "Generated: " << t1 << "&mu;s from start (in " << t1 << "&mu;s).<br>";
 	str << "Sent: " << t2 << "&mu;s from start (in " << (t2-t1) << "&mu;s).<br>";
-	m_display.setHtml("LOG", "log.PPO.SendPlaneGrid", str.str());
+	m_display.setHtml("INFO", "log.PPO.SendPlaneGrid", str.str());
     }
 }
 

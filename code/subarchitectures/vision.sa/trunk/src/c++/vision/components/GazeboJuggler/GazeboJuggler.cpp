@@ -191,7 +191,7 @@ void GazeboJuggler::prepareObjects()
         ss << ", ";
     }
     ss << "<br>";
-    m_display.setHtml("LOG", "GazeboJuggler", ss.str());
+    m_display.setHtml("INFO", "GazeboJuggler", ss.str());
   }
 
   ss.str("");

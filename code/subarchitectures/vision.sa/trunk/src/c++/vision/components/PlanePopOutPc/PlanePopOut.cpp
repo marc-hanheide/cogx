@@ -590,14 +590,14 @@ void PlanePopOut::SendImage()
 	    //str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	    str << "Size: " << size << " bytes.<br>";
 	    str << "Sent: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
-	    m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	    m_display.setHtml("INFO", "log.PPO.SendImage", str.str());
 	}
     } else {
 	if (1) {
 	    ostringstream str;
 	    str << "<h3>Plane popout - SendImage</h3>";
 	    str << "no image to send<br>";
-	    m_display.setHtml("LOG", "log.PPO.SendImage", str.str());
+	    m_display.setHtml("INFO", "log.PPO.SendImage", str.str());
 	}
     }
 }
@@ -682,7 +682,7 @@ void PlanePopOut::SendPoints(bool bColorByLabels)
 	str << "Generated: " << t1 << "ms from start (in " << t1 << "ms).<br>";
 	str << "Converted: " << t2 << "ms from start (in " << (t2-t1) << "ms).<br>";
 	str << "Sent: " << t3 << "ms from start (in " << (t3-t2) << "ms).<br>";
-	m_display.setHtml("LOG", "log.PPO.SendPoints", str.str());
+	m_display.setHtml("INFO", "log.PPO.SendPoints", str.str());
     }
 }
 
@@ -723,7 +723,7 @@ void PlanePopOut::SendPlaneGrid()
 	str << "Strlen: " << S.length() << "<br>";
 	str << "Generated: " << t1 << "&mu;s from start (in " << t1 << "&mu;s).<br>";
 	str << "Sent: " << t2 << "&mu;s from start (in " << (t2-t1) << "&mu;s).<br>";
-	m_display.setHtml("LOG", "log.PPO.SendPlaneGrid", str.str());
+	m_display.setHtml("INFO", "log.PPO.SendPlaneGrid", str.str());
     }
 }
 
@@ -803,22 +803,23 @@ void PlanePopOut::runComponent()
 
     castutils::CCastPaceMaker<PlanePopOut> paceMaker(*this, 1000/5, 1);
 
-    long sendPointsMs = 500; // send points at most every X ms
     castutils::CMilliTimer tmSendPoints(true);
+    tmSendPoints.setTimeout(500);
 
-    long sendPlaneGridMs = 500; // send plane grid at most every X ms
     castutils::CMilliTimer tmSendPlaneGrid(true);
+    tmSendPlaneGrid.setTimeout(500);
 
-    long sendImageMs = 750; // send image at most every X ms
     castutils::CMilliTimer tmSendImage(true);
+    tmSendImage.setTimeout(750);
+
+    castutils::CMilliTimer tmSendStatus(true);
+    tmSendStatus.setTimeout(3000);
 #endif
 
     try {
 	while(isRunning()) {
 	    paceMaker.sync();
 	    realRate.tick();
-	    //log("current rate: %.3g tps, ave. rate from start: %.3g tps",
-	    //      realRate.getRate(), realRate.getTotalRate());
 
 	    try {
 		GetImageData();
@@ -841,20 +842,30 @@ void PlanePopOut::runComponent()
 
 #ifdef FEAT_VISUALIZATION
 	    if (m_bSendImage) {
-		if (tmSendImage.elapsed() > sendImageMs) {
+		if (tmSendImage.isTimeoutReached()) {
 		    SendImage();
 		    tmSendImage.restart();
 		}
 	    }
 
+	    if (tmSendStatus.isTimeoutReached()) {
+		ostringstream ss;
+		ss.precision(4); // set the _maximum_ precision
+		ss << "<h3>PlanePopOut (" << getComponentID() << ") processing rate</h3>";
+		ss << "current: " << realRate.getRate() << " tests/s<br>";
+		ss << "from start: " << realRate.getTotalRate() << " tests/s<br>";
+		m_display.setHtml("INFO", "ppo.rate/" + getComponentID(), ss.str());
+		tmSendStatus.restart();
+	    }
+
 	    if (m_bSendPoints) {
-		if (tmSendPoints.elapsed() > sendPointsMs) {
+		if (tmSendPoints.isTimeoutReached()) {
 		    SendPoints(m_bColorByLabel);
 		    tmSendPoints.restart();
 		}
 	    }
 	    if (m_bSendPlaneGrid) {
-		if (tmSendPlaneGrid.elapsed() > sendPlaneGridMs) {
+		if (tmSendPlaneGrid.isTimeoutReached()) {
 		    SendPlaneGrid();
 		    tmSendPlaneGrid.restart();
 		}

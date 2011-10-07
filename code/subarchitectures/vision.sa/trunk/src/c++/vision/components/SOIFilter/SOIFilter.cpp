@@ -10,6 +10,8 @@
 #include "TaskAnalyzePo.h"
 #include "WmUnlocker.h"
 
+#include <castutils/Timers.hpp>
+
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <fstream>
 #include <cmath>
@@ -910,13 +912,22 @@ void SOIFilter::runComponent()
   WmTaskExecutor_Soi soiProcessor(this);
   WmTaskExecutor_MoveToViewCone moveProcessor(this);
   WmTaskExecutor_Analyze analysisProcessor(this);
-  castutils::CMilliTimer tmCheckVisibility(true);
+
   int addSoiCount;
+
+  castutils::CMilliTimer tmCheckVisibility(true);
+  tmCheckVisibility.setTimeout(1000);
+
+  castutils::CMilliTimer tmSendStatus(true);
+  tmSendStatus.setTimeout(3100);
+
+  castutils::CRunningRate realRate;
 
   while(isRunning())
   {
     std::deque<WmEvent*> tasks;
     tasks.clear();
+    realRate.tick();
 
     checkRetryEvents();
 
@@ -983,13 +994,23 @@ void SOIFilter::runComponent()
         delete pevent;
     }
 
-    if (tmCheckVisibility.elapsed() > 1000)
+    if (tmCheckVisibility.isTimeoutReached())
     {
       // We check for invisible objects only when there are no add-soi events in queue.
       // This is to prevent POs being deleted to quickly after a camera move.
       if (addSoiCount < 1 && isCameraStable(4000))
         checkInvisibleObjects();
       tmCheckVisibility.restart();
+    }
+
+    if (tmSendStatus.isTimeoutReached()) {
+      ostringstream ss;
+      ss.precision(4); // set the _maximum_ precision
+      ss << "<h3>SOI Filter (" << getComponentID() << ") processing rate</h3>";
+      ss << "current: " << realRate.getRate() << " checks/s<br>";
+      ss << "from start: " << realRate.getTotalRate() << " checks/s<br>";
+      m_display.setHtml("INFO", "soif.rate/" + getComponentID(), ss.str());
+      tmSendStatus.restart();
     }
   }
 
