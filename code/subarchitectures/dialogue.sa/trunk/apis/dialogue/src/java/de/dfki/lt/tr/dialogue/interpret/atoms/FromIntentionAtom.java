@@ -1,11 +1,9 @@
 package de.dfki.lt.tr.dialogue.interpret.atoms;
 
 import cast.cdl.WorkingMemoryAddress;
-import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.InterpretableAtom;
 import de.dfki.lt.tr.dialogue.interpret.MatcherUtils;
 import de.dfki.lt.tr.dialogue.interpret.TermParsingException;
-import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
 import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;

@@ -49,8 +49,13 @@ epst_variant(shared(A, B), shared(B, A)).
 
 understand : topic(_S, _H, EpSt, Int, RefNom, _Nom) <-
 	? understand : is_reference(RefNom, ReferentAddr, EpSt),
-	mark(referent, ReferentAddr) / p(1.0),
-	int : address_content(Int, about, ReferentAddr) / p(1.0).
+	aboutness(Int, ReferentAddr).
+
+%-------------------------------------------------------------------------
+
+aboutness(Int, Addr) <-
+	mark(referent, Addr) / p(1.0),
+	int : address_content(Int, about, Addr) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -83,161 +88,22 @@ beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief) <-
 
 %-------------------------------------------------------------------------
 
-understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
-	i : sort(Nom, 'q-color'),
-	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarPropFormula),
+string_content_for_assertion(Int, Feature, Value, Polarity) <-
+	int : string_content(Int, 'asserted-feature', Feature) / p(1.0),
+	int : string_content(Int, 'asserted-value', Value) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
 
+intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity) <-
+	polarprop(Value, Polarity, PolarPropFormula),
 	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
-	int : string_content(Int, 'asserted-feature', color) / p(1.0),
-	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
-	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
-	int : belief_content(AssertedBelief, color, PolarPropFormula) / p(1.0).
-
-understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
-	i : sort(Nom, 'q-shape'),
-	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarPropFormula),
-
-	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
-	int : string_content(Int, 'asserted-feature', shape) / p(1.0),
-	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
-	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
-	int : belief_content(AssertedBelief, shape, PolarPropFormula) / p(1.0).
-
-understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
-	i : sort(Nom, 'q-size'),
-	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarPropFormula),
-
-	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
-	int : string_content(Int, 'asserted-feature', size) / p(1.0),
-	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
-	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
-	int : belief_content(AssertedBelief, size, PolarPropFormula) / p(1.0).
-
-understand : assertion_effect(Speaker, Hearer, Int, Ref, Polarity, Nom) <-
-	i : sort(Nom, thing),
-	i : prop(Nom, Prop),
-	i : feat_Delimitation(Nom, existential),
-	i : feat_Num(Nom, sg),
-	i : feat_Quantification(Nom, specific),
-	try_scope_modifier(Speaker, Hearer, Int, Ref, Polarity, Nom),
-	try_scope_compound(Speaker, Hearer, Int, Ref, Polarity, Nom),
-	polarprop(Prop, Polarity, PolarPropFormula),
-
-	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
-	int : string_content(Int, 'asserted-feature', type) / p(1.0),
-	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
-	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
-	int : belief_content(AssertedBelief, type, PolarPropFormula) / p(1.0).
-
-understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
-	i : sort(Nom, 'e-place'),
-	i : prop(Nom, Prop),
-	polarprop(Prop, Polarity, PolarPropFormula),
-
-	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
-	int : string_content(Int, 'asserted-feature', identity) / p(1.0),
-	int : string_content(Int, 'asserted-value', Prop) / p(1.0),
-	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0),
-	int : belief_content(AssertedBelief, identity, PolarPropFormula) / p(1.0).
+	string_content_for_assertion(Int, Feature, Value, Polarity),
+	int : belief_content(AssertedBelief, Feature, PolarPropFormula) / p(1.0).
 
 %-------------------------------------------------------------------------
-% Old implementation.
 
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, 'q-color'),
-%	i : prop(Nom, Prop),
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(color, PolarProp))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(color, PolarProp))) / p(1.0).
-%%	int : post(Int, state(Ref, [grounded, about(X), color])) / p(1.0).
-%
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, 'q-shape'),
-%	i : prop(Nom, Prop),
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(shape, PolarProp))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(shape, PolarProp))) / p(1.0).
-%
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, 'q-size'),
-%	i : prop(Nom, Prop),
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(size, PolarProp))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(size, PolarProp))) / p(1.0).
-%
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, thing),
-%	i : prop(Nom, Prop),
-%	i : feat_Delimitation(Nom, unique),
-%	i : feat_Num(Nom, sg),
-%	i : feat_Quantification(Nom, specific),
-%	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
-%	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0),
-%	int : pre(Int, belief(Ref, shared(S, H), fv(objecttype, PolarProp))) / p(1.0).
-%
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, thing),
-%	i : prop(Nom, Prop),
-%	i : feat_Delimitation(Nom, existential),
-%	i : feat_Num(Nom, sg),
-%	i : feat_Quantification(Nom, specific),
-%	try_scope_modifier(S, H, Int, Ref, Polarity, Nom),
-%	try_scope_compound(S, H, Int, Ref, Polarity, Nom),
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(objecttype, PolarProp))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(objecttype, PolarProp))) / p(1.0).
-%
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, 'e-place'),
-%	i : prop(Nom, Prop),
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(identity, PolarProp))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(identity, PolarProp))) / p(1.0).
-%
-%%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%%	i : sort(Nom, 'm-location'),
-%%	i : prop(Nom, Prop),
-%%	polarprop(Prop, Polarity, PolarProp),
-%%	int : pre(Int, belief(Ref, attrib(H, S), fv(location, PolarProp))) / p(1.0),
-%%	int : post(Int, belief(Ref, shared(S, H), fv(location, PolarProp))) / p(1.0).
-%
-%%mod_location_sort('m-location').
-%%mod_location_sort('m-whereto').
-%%
-%%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%%	i : sort(Nom, Sort),
-%%		mod_location_sort(Sort),
-%%	i : prop(Nom, context),
-%%		i : feat_Proximity(Nom, 'm-proximal'),
-%%	Prop = here,
-%%	polarprop(Prop, Polarity, PolarProp),
-%%	int : pre(Int, belief(Ref, attrib(H, S), fv(location, PolarProp))) / p(1.0),
-%%	int : post(Int, belief(Ref, shared(S, H), fv(location, PolarProp))) / p(1.0).
-%
-%% cornflakes
-%understand : assertion_effect(S, H, Int, Ref, Polarity, Nom) <-
-%	i : sort(Nom, _Sort),
-%	i : prop(Nom, Prop),
-%	Prop = cornflakes,
-%	polarprop(Prop, Polarity, PolarProp),
-%	int : pre(Int, belief(Ref, attrib(H, S), fv(material, PolarProp))) / p(1.0),
-%	int : post(Int, belief(Ref, shared(S, H), fv(material, PolarProp))) / p(1.0).
+understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
+	polar_query_prop(Nom, Feature, Value),
+	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

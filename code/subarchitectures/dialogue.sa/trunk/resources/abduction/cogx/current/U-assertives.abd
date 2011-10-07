@@ -61,22 +61,32 @@ understand : event : from_logical_form(S, H, Nom) <-
 % YES/NO CONFIRMATIONS
 %-------------------------------------------------------------------------
 
-understand : event : from_logical_form(S, H, Nom) <-
+polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity) <-
+	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'polar'),
+	i : int : string_content(QUDAddr, feature, Feature),
+	i : int : string_content(QUDAddr, hypothesis, Value),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	aboutness(Int, BeliefAddr),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+
+	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
+
+%-------------------------------------------------------------------------
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : sort(Nom, marker),
 	i : prop(Nom, Marker),
 	marker_to_polarity(Marker, Polarity),
-	i : int : agent(qud, [H]),
-%	i : int : pre(qud, belief(SharedBId)),
-	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat), hypo(Hypo)])),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : resolves_to_belief(Nom, PrivBId, private(H)) / p(1.0),  % XXX
-	int : pre(Int, belief(Nom, shared(S, H), fv(mark, 'referring-expression'))) / p(1.0),
-	int : pre(Int, belief(Nom, attrib(H, S), fv(mark, assertion))) / p(1.0),
-	polarprop(Hypo, Polarity, PolHypo),
-	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, PolHypo))) / p(1.0),
-	int : post(Int, belief(Nom, shared(S, H), fv(Feat, PolHypo))) / p(1.0),
-	int : pointer(given, assertion, 'referring-expression') / p(1.0).
+
+	? understand : i : intention(Nom, Int),
+
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'answer') / p(1.0),
+
+	? polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Featurex, Value, Polarity).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -87,30 +97,26 @@ marker_to_polarity('No', neg).
 % SHORT ANSWERS TO WH- QUESTIONS
 %-------------------------------------------------------------------------
 
+wh_question_under_discussion(QUDAddr, Nom, Int, Feature) <-
+	i : wh_question_under_discussion(QUDAddr, Nom, Int, Feature),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'open'),
+	i : int : string_content(QUDAddr, feature, Feature),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	aboutness(Int, BeliefAddr).
+
+%-------------------------------------------------------------------------
+
 understand : event : from_logical_form(Speaker, Hearer, Nom) <-
-	i : int : agent(qud, [H]),
-%	i : int : pre(qud, belief(SharedBId)),
-	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat)])),
-	polar_query_prop(Nom, Feat, Value),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	understand : resolves_to_belief(Nom, PrivBId, private(H)) / p(1.0),  % XXX
-	int : pre(Int, belief(Nom, shared(S, H), fv(mark, 'referring-expression'))) / p(1.0),
-	int : pre(Int, belief(Nom, attrib(H, S), fv(mark, assertion))) / p(1.0),
-	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, Value))) / p(1.0),
-	int : post(Int, belief(Nom, shared(S, H), fv(Feat, Value))) / p(1.0),
-	int : pointer(given, assertion, 'referring-expression') / p(1.0).
+	polar_query_prop(Nom, Feature, Value),
 
-%	i : int : agent(qud, [H]),
-%%	i : int : pre(qud, belief(SharedBId)),
-%	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat)])),
-%	polar_query_prop(Nom, Feat, Value),
-%	int_id(Int),
-%	int : agent(Int, S) / p(1.0),
-%	understand : resolves_to_belief(Nom, PrivBId, private(H)) / p(1.0),  % XXX
-%	int : pre(Int, belief(Nom, shared(S, H), fv(mark, 'referring-expression'))) / p(1.0),
-%	int : pre(Int, belief(Nom, attrib(H, S), fv(mark, assertion))) / p(1.0),
-%	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, Value))) / p(1.0),
-%	int : post(Int, belief(Nom, shared(S, H), fv(Feat, Value))) / p(1.0),
-%	int : pointer(given, assertion, 'referring-expression') / p(1.0).
+	? understand : i : intention(Nom, Int),
 
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'answer') / p(1.0),
+
+	? wh_question_under_discussion(QUDAddr, Nom, Int, Feature),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+
+	intention_effect(Speaker, Hearer, Int, Feature, Value, pos).

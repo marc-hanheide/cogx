@@ -1,7 +1,5 @@
 package de.dfki.lt.tr.cast.dialogue;
 
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -10,6 +8,8 @@ import cast.architecture.WorkingMemoryWriterComponent;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import castutils.castextensions.WMView;
+import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
@@ -18,11 +18,13 @@ import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
-import de.dfki.lt.tr.dialogue.interpret.ResultCombinator;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
+import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.QUDOpenAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.QUDPolarAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.ReferentOfAtom;
 import de.dfki.lt.tr.dialogue.ref.BasicReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
@@ -31,11 +33,14 @@ import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
+import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
+import de.dfki.lt.tr.dialogue.util.BasicNominalRemapper;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
+import de.dfki.lt.tr.dialogue.util.NominalRemapper;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
@@ -59,15 +64,12 @@ import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class NewIntentionRecognizer
 extends AbstractAbductiveComponent<InterpretedUserIntention> {
@@ -87,7 +89,9 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 	private int timeout = DEFAULT_TIMEOUT;
 
-	private final Map<String, SelectedLogicalForm> nomToLFMap;
+	private final Map<String, RemappedSLF> nomToLFMap;
+//	private final Map<String, String> renamedNomToNom;
+//	private final Map<String, NominalRemapper> nomToRemapper;
 
 	private final ReferenceResolutionRequestExtractor rrExtractor;
 	private final Map<WorkingMemoryAddress, ResultGatherer<ReferenceResolutionResultWrapper>> gatherers;
@@ -95,10 +99,14 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	private final IdentifierGenerator<String> idGen;
 	private final String idPrefix = "irecog";
 	private int idIndex = 0;
+	private int remapIndex = 1;
+
+	private WMView<IntentionToAct> openIntentionsToAct = null;
 
 	public NewIntentionRecognizer() {
 		super();
-		nomToLFMap = new HashMap<String, SelectedLogicalForm>();
+		nomToLFMap = new HashMap<String, RemappedSLF>();
+//		renamedNomToNom = new HashMap<String, String>();
 		rrExtractor = new BasicReferenceResolutionRequestExtractor(getLogger());
 		gatherers = new HashMap<WorkingMemoryAddress, ResultGatherer<ReferenceResolutionResultWrapper>>();
 		idGen = new IdentifierGenerator<String>() {
@@ -107,6 +115,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				return idPrefix + ":" + idIndex++;
 			}
 		};
+//		nomToRemapper = new HashMap<String, NomToRemapper>();
 	}
 
 	@Override
@@ -163,6 +172,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		solvers.addSolver(new IntentionIDAssertionSolver());
 		solvers.addSolver(new NewBeliefAssertionSolver());
 		solvers.addSolver(new ReferenceResolutionAssertionSolver());
+		solvers.addSolver(new WhQUDAssertionSolver());
+		solvers.addSolver(new PolarQUDAssertionSolver());
 
 		ProofInterpreter<InterpretedUserIntention> interpreter = new InterpretedUserIntentionProofInterpreter(getLogger());
 
@@ -205,7 +216,6 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 								try {
 									getLogger().info("converting the SelectedLogicalForm to a partial interpretation");
 									SelectedLogicalForm slf = getMemoryEntry(addr, SelectedLogicalForm.class);
-									nomToLFMap.put(slf.lform.root.nomVar, slf);
 									InterpretationRequest inprRequest = new InterpretationRequest(selectedLFToGoal(slf));
 									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest));
 								}
@@ -245,6 +255,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 						});
 					}
 				});
+
+		openIntentionsToAct = WMView.create(this, IntentionToAct.class);
+		try {
+			openIntentionsToAct.start();
+		}
+		catch (UnknownSubarchitectureException ex) {
+			logException(ex);
+			scheduleOwnDeath();
+		}
 	}
 
 	public class ExpandLFAssertionSolver extends AbstractAssertionSolver<FromLFAtom> {
@@ -257,13 +276,17 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		public ContextUpdate solveFromParsed(FromLFAtom a) {
 			String nominal = a.getNominal();
 			getLogger().info("solving an LF assertion for nominal \"" + nominal + "\"");
-			final LogicalForm lf = nomToLFMap.get(nominal).lform;
+//			String originalNom = renamedNomToNom.get(nominal);
+//			assert originalNom != null;
+			RemappedSLF remapped = nomToLFMap.get(nominal);
+			final LogicalForm lf = remapped.slf.lform;
+			final NominalRemapper remapper = remapped.remapper;
 			return new ContextUpdate() {
 
 				@Override
 				public void doUpdate(AbductionEnginePrx engine) {
 					getLogger().debug("updating the abduction context for the solved LF assertion");
-					for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
+					for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf, remapper)) {
 						engine.addFact(fact);
 					}
 				}
@@ -362,17 +385,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				return null;
 			}
 
-			SelectedLogicalForm slf = findSelectedLogicalFormByContainedNominal(nominal);
-			if (slf == null) {
-				getLogger().error("no LF containing " + nominal + "found");
+			RemappedSLF remapped = findSelectedLogicalFormByContainedNominal(nominal);
+			if (remapped == null) {
+				getLogger().error("no LF containing " + nominal + " (after unmapping) found");
 				return null;
 			}
 
-			ReferenceResolutionRequest rr = rrExtractor.extractReferenceResolutionRequest(slf.lform, nominal, new TimeInterval(slf.ival));
+			ReferenceResolutionRequest rr = rrExtractor.extractReferenceResolutionRequest(remapped.slf.lform, remapped.remapper.unremap(nominal), new TimeInterval(remapped.slf.ival));
 			if (rr == null) {
 				getLogger().error("extracted ReferenceResolutionRequest is null");
 				return null;
 			}
+			rr.nom = remapped.remapper.remap(rr.nom);
 
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
 			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma, new FirstComeFirstServeCombinator<ReferenceResolutionResultWrapper>());
@@ -446,6 +470,94 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 	};
 
+	public class WhQUDAssertionSolver extends AbstractAssertionSolver<QUDOpenAtom> {
+
+		public WhQUDAssertionSolver() {
+			super(new QUDOpenAtom.Matcher());
+		}
+
+		@Override
+		public ContextUpdate solveFromParsed(QUDOpenAtom a) {
+			final String nominal = a.getNominal();
+			if (nominal == null) {
+				getLogger().error("nominal undetermined");
+				return null;
+			}
+			final WorkingMemoryAddress intWma = a.getIntentionAddress();
+//			if (intWma == null) {
+//				getLogger().error("intention address undetermined");
+//				return null;
+//			}
+
+			final Set<WorkingMemoryAddress> wmas = openIntentionsToAct.keySet();
+			getLogger().debug("got " + wmas.size() + " open IntentionsToAct");
+
+			return new ContextUpdate() {
+
+				@Override
+				public void doUpdate(AbductionEnginePrx engine) {
+					for (WorkingMemoryAddress wma : wmas) {
+						IntentionToAct actint = openIntentionsToAct.get(wma);
+						if (actint != null) {
+							getLogger().debug("expanding IntentionToAct " + wmaToString(wma));
+							ModalisedAtom matom = new QUDOpenAtom(wma, nominal, intWma, null).toModalisedAtom();
+							engine.addFact(matom);
+							for (ModalisedAtom fact : RobotCommunicativeAction.intentionToActToFacts(wma, actint)) {
+								engine.addFact(fact);
+							}
+						}
+					}
+				}
+				
+			};
+		}
+		
+	};
+
+	public class PolarQUDAssertionSolver extends AbstractAssertionSolver<QUDPolarAtom> {
+
+		public PolarQUDAssertionSolver() {
+			super(new QUDPolarAtom.Matcher());
+		}
+
+		@Override
+		public ContextUpdate solveFromParsed(QUDPolarAtom a) {
+			final String nominal = a.getNominal();
+			if (nominal == null) {
+				getLogger().error("nominal undetermined");
+				return null;
+			}
+			final WorkingMemoryAddress intWma = a.getIntentionAddress();
+//			if (intWma == null) {
+//				getLogger().error("intention address undetermined");
+//				return null;
+//			}
+
+			final Set<WorkingMemoryAddress> wmas = openIntentionsToAct.keySet();
+			getLogger().debug("got " + wmas.size() + " open IntentionsToAct");
+
+			return new ContextUpdate() {
+
+				@Override
+				public void doUpdate(AbductionEnginePrx engine) {
+					for (WorkingMemoryAddress wma : wmas) {
+						IntentionToAct actint = openIntentionsToAct.get(wma);
+						if (actint != null) {
+							getLogger().debug("expanding IntentionToAct " + wmaToString(wma));
+							ModalisedAtom matom = new QUDPolarAtom(null, null, wma, nominal, intWma, null, null, null).toModalisedAtom();
+							engine.addFact(matom);
+							for (ModalisedAtom fact : RobotCommunicativeAction.intentionToActToFacts(wma, actint)) {
+								engine.addFact(fact);
+							}
+						}
+					}
+				}
+				
+			};
+		}
+		
+	};
+
 	@Deprecated
 	public String getNominalInTheRequest(WorkingMemoryAddress wma) {
 		try {
@@ -468,8 +580,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		}
 	}
 
-	public static ModalisedAtom selectedLFToGoal(SelectedLogicalForm slf) {
+	public ModalisedAtom selectedLFToGoal(SelectedLogicalForm slf) {
 		LogicalForm lf = slf.lform;
+
+		NominalRemapper remapper = new BasicNominalRemapper(remapIndex++);
+		String nom = lf.root.nomVar;
+		String newNom = remapper.remap(nom);
+//		renamedNomToNom.put(newNom, nom);
+
+		nomToLFMap.put(newNom, new RemappedSLF(slf, remapper));
 
 		ModalisedAtom goal = TermAtomFactory.modalisedAtom(
 				new Modality[] {
@@ -479,7 +598,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				TermAtomFactory.atom("utter", new Term[] {
 					TermAtomFactory.term(IntentionManagementConstants.humanAgent),
 					TermAtomFactory.term(IntentionManagementConstants.thisAgent),
-					TermAtomFactory.term(lf.root.nomVar)
+					TermAtomFactory.term(newNom)
 				}));
 
 		return goal;
@@ -489,12 +608,17 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		return new WorkingMemoryAddress(idGen.newIdentifier(), getSubarchitectureID());
 	}
 
-	protected SelectedLogicalForm findSelectedLogicalFormByContainedNominal(String nominal) {
-		SelectedLogicalForm result = null;
-		for (SelectedLogicalForm slf : nomToLFMap.values()) {
-			LogicalForm lf = slf.lform;
-			if (LFUtils.lfHasNomvar(lf, nominal)) {
-				return slf;
+	private RemappedSLF findSelectedLogicalFormByContainedNominal(String nominal) {
+		RemappedSLF result = null;
+		for (RemappedSLF remapped : nomToLFMap.values()) {
+			LogicalForm lf = remapped.slf.lform;
+			NominalRemapper remapper = remapped.remapper;
+			Iterator<LFNominal> iter = LFUtils.lfGetNominals(lf);
+			while (iter.hasNext()) {
+				LFNominal lfn = iter.next();
+				if (remapper.remap(lfn.nomVar).equals(nominal)) {
+					return remapped;
+				}
 			}
 		}
 		return result;
@@ -511,6 +635,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			return getResult().requestAddress;
 		}
 
+	}
+
+	private static class RemappedSLF {
+		public final SelectedLogicalForm slf;
+		public final NominalRemapper remapper;
+		public RemappedSLF(SelectedLogicalForm slf, NominalRemapper remapper) {
+			this.slf = slf;
+			this.remapper = remapper;
+		}
 	}
 
 }
