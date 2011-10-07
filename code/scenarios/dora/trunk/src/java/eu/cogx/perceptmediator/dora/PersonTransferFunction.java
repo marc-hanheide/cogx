@@ -63,7 +63,7 @@ public class PersonTransferFunction
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
 		// TODO: we should use a DoubleValue here!
-		result.put(PERSON_ID, PropositionFormula.create(wmc.address.id)
+		result.put(PERSON_ID, PropositionFormula.create(from.identifier)
 				.getAsFormula());
 		// result.put("distance", DoubleFormula.create(from.distance)
 		// .getAsFormula());
@@ -94,6 +94,7 @@ public class PersonTransferFunction
 							.getAsFormula());
 			result.put(ATTR_POS_THETA, DoubleFormula.create(from.robotTheta)
 					.getAsFormula());
+			
 		} catch (CASTException e) {
 			component.logException(e);
 		} catch (InterruptedException e) {
