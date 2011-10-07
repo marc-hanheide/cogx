@@ -56,6 +56,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
+import de.dfki.lt.tr.dialogue.production.ReferenceGenerationRequest;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
@@ -708,6 +709,26 @@ public class PlaceMonitor extends ManagedComponent {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
+			/*
+			try {
+				ReferenceGenerationRequest _fakeGREReq1 = new ReferenceGenerationRequest(_wmc.address, false, false, new LinkedList<String>());
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq1);
+
+				ReferenceGenerationRequest _fakeGREReq2 = new ReferenceGenerationRequest(_wmc.address, false, true, new LinkedList<String>());
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq2);
+
+				ReferenceGenerationRequest _fakeGREReq3 = new ReferenceGenerationRequest(_wmc.address, true, false, new LinkedList<String>());
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq3);
+
+				ReferenceGenerationRequest _fakeGREReq4 = new ReferenceGenerationRequest(_wmc.address, true, true, new LinkedList<String>());
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq4);
+			} catch (AlreadyExistsOnWMException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			*/
+			
         } else {
         	log("the GroundedBelief is not about a VisualObject... discarding it!");
         }
@@ -783,9 +804,10 @@ public class PlaceMonitor extends ManagedComponent {
         String objInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbelief);
 
         // hmmmmmmm, perhaps simply delete the instance, and re-run the addedVisObj method
-        m_comareasoner.deleteInstance(objInsName);
-        log("deleted instance " + objInsName);
-        
+        if (!objInsName.equals("dora:")) {
+        	m_comareasoner.deleteInstance(objInsName);
+        	log("deleted instance " + objInsName);
+        }
         processVisObjGBelief(gbelief);        
 	}
 	

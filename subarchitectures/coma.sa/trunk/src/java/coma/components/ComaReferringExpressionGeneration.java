@@ -1,23 +1,27 @@
 package coma.components;
 
-import java.awt.Component;
 import java.util.Map;
+
+import VisionData.VisualObject;
 
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
-import cast.architecture.WorkingMemoryAttachedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.cast.dialogue.AbstractReferringExpressionGenerationComponent;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationRequest;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationResult;
 import de.dfki.lt.tr.dialogue.production.ReferringExpressionGenerator;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
+import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import coma.aux.ComaGBeliefHelper;
 import coma.components.ComaReferringExpressionGeneration.ComaREGenerator;
 import coma.refex.ComaGREAlgorithm;
 import comadata.ComaReasonerInterfacePrx;
+import comadata.ComaRoom;
 
 public class ComaReferringExpressionGeneration extends
 		AbstractReferringExpressionGenerationComponent<ComaREGenerator> {
@@ -73,6 +77,93 @@ public class ComaReferringExpressionGeneration extends
 		
 		@Override
 		public ReferenceGenerationResult generate(ReferenceGenerationRequest request, WorkingMemoryAddress requestAddr) {
+			// should we produce a short NP or a full refex?
+			if (request.shortNP) {
+				try {
+					GroundedBelief referentGBelief = component.getMemoryEntry(request.obj, GroundedBelief.class);
+					if (!request.spatialRelation) {
+						return new ReferenceGenerationResult(requestAddr, 
+								"the " + ComaGBeliefHelper.getGBeliefCategory(referentGBelief));
+					} else {
+						GroundedBelief gbOfRelatedObjectInWM = component.getMemoryEntry(ComaGBeliefHelper.
+								getGBeliefRelatee(referentGBelief).get().pointer, GroundedBelief.class);
+						
+						return new ReferenceGenerationResult(requestAddr, 
+								ComaGBeliefHelper.getGBeliefRelation(referentGBelief) + " the " + 
+								ComaGBeliefHelper.getGBeliefCategory(gbOfRelatedObjectInWM));
+					}
+				} catch (DoesNotExistOnWMException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					GroundedBelief referentGBelief = component.getMemoryEntry(request.obj, GroundedBelief.class);
+					if (!request.spatialRelation) {
+						return new ReferenceGenerationResult(requestAddr, 
+								generateRefExFromGBeliefs(referentGBelief));
+					} else {
+						GroundedBelief gbOfRelatedObjectInWM = component.getMemoryEntry(ComaGBeliefHelper.
+								getGBeliefRelatee(referentGBelief).get().pointer, GroundedBelief.class);
+						
+						return new ReferenceGenerationResult(requestAddr, 
+								ComaGBeliefHelper.getGBeliefRelation(referentGBelief)  +
+								generateRefExFromGBeliefs(gbOfRelatedObjectInWM));
+					}
+				} catch (DoesNotExistOnWMException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}
+			
+			// we should only end here if sth was wrong...
+			return new ReferenceGenerationResult(requestAddr, "the thingy"); 
+		}
+		
+		private String generateRefExFromGBeliefs(GroundedBelief referentGB) {
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = 
+				CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, referentGB);
+		
+			if (gbProxy.getType().equals(
+					SimpleDiscreteTransferFunction
+					.getBeliefTypeFromCastType(ComaRoom.class))) {
+				return "the " + ComaGBeliefHelper.getGBeliefCategory(referentGB); 
+			} else if (gbProxy.getType().equals(
+					SimpleDiscreteTransferFunction
+					.getBeliefTypeFromCastType(VisualObject.class))) {
+
+				GroundedBelief relateeGB = null;
+				try {
+					relateeGB = component.getMemoryEntry(ComaGBeliefHelper.
+							getGBeliefRelatee(referentGB).get().pointer, GroundedBelief.class);
+				} catch (DoesNotExistOnWMException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnknownSubarchitectureException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (relateeGB!=null) {
+					return "the " +  ComaGBeliefHelper.getGBeliefCategory(referentGB) + " " +
+					ComaGBeliefHelper.getGBeliefRelation(referentGB) + " " +
+					generateRefExFromGBeliefs(relateeGB);
+				} else {
+					return "the " + ComaGBeliefHelper.getGBeliefCategory(referentGB);
+				}
+			}
+			return "the thingy";
+		}
+
+		public ReferenceGenerationResult generateWithComaGRE(ReferenceGenerationRequest request, WorkingMemoryAddress requestAddr) {
 			// should we produce a short NP or a full refex?
 			if (request.shortNP) {
 				try {
