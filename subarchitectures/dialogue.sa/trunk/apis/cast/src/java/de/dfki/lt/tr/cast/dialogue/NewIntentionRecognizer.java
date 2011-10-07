@@ -389,7 +389,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				logException(ex);
 			}
 
-			result = gatherer.ensureStabilization(500, TimeUnit.MILLISECONDS);
+			result = gatherer.ensureStabilization(5, TimeUnit.SECONDS);
 			final String nom = getNominalInTheRequest(wma);
 			assert nom != null;
 			stopGathererObservation(wma);

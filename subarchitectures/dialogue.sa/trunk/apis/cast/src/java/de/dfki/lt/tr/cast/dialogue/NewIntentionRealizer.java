@@ -267,7 +267,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 				return null;
 			}
 
-			final ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr, a.getHasShortNP(), a.getHasSpatialRelation());
+			final ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr, a.getHasShortNP(), a.getHasSpatialRelation(), a.getDisabledProp());
 			if (request == null) {
 				getLogger().error("extracted ReferenceGenerationRequest is null");
 				return null;
@@ -286,7 +286,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 			catch (SubarchitectureComponentException ex) {
 				logException(ex);
 			}
-			result = gatherer.ensureStabilization(500, TimeUnit.MILLISECONDS);
+			result = gatherer.ensureStabilization(5, TimeUnit.SECONDS);
 			stopGathererObservation(wma);
 
 
@@ -303,7 +303,8 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 								beliefAddr,
 								request.shortNP,
 								request.spatialRelation,
-								refs.refEx);
+								refs.refEx,
+								request.disabledProperty);
 
 						ModalisedAtom matom = greAtom.toModalisedAtom();
 						engine.addFact(matom);
