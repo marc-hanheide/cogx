@@ -5,7 +5,7 @@
   (:types
     Robot - agent
     VisualObject ProtoObject ViewCone ConceptName - object
-    ColorName ShapeName TypeName - ConceptName
+    ColorName ShapeName TypeName Visibility - ConceptName
   )
 
   (:constants
@@ -13,6 +13,7 @@
     UNKNOWN_COLOR - ColorName
     UNKNOWN_SHAPE - ShapeName
     UNKNOWN_TYPE - TypeName
+    REMOVED - Visibility
     TUTOR - agent
   )
 
@@ -77,6 +78,8 @@
 
     (current-viewcone ?r - Robot) - ViewCone
     (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
+
+    (presence ?v - VisualObject) - Visibility
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
