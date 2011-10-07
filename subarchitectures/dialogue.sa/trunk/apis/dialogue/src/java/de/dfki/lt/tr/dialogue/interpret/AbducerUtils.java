@@ -6,6 +6,7 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.lf.Feature;
 import de.dfki.lt.tr.dialogue.slice.lf.LFRelation;
 
+import de.dfki.lt.tr.dialogue.util.NominalRemapper;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
@@ -39,11 +40,11 @@ public abstract class AbducerUtils {
 	 * @param lf
 	 * @return set of corresponding facts
 	 */
-	public static List<ModalisedAtom> lfToFacts(Modality[] modality, LogicalForm lf) {
+	public static List<ModalisedAtom> lfToFacts(Modality[] modality, LogicalForm lf, NominalRemapper remapper) {
 		List<ModalisedAtom> facts = new LinkedList<ModalisedAtom>();
 		Iterator<LFNominal> it = LFUtils.lfGetNominals(lf);
 		while (it.hasNext()) {
-			addNomToFactList(facts, modality, it.next());
+			addNomToFactList(facts, modality, it.next(), remapper);
 		}
 		return facts;
 	}
@@ -54,9 +55,9 @@ public abstract class AbducerUtils {
 	 * @param mod modal context
 	 * @param nom the nominal
 	 */
-	private static void addNomToFactList(List<ModalisedAtom> facts, Modality[] mod, LFNominal nom) {
+	private static void addNomToFactList(List<ModalisedAtom> facts, Modality[] mod, LFNominal nom, NominalRemapper remapper) {
 		// nominal term
-		Term nomTerm = TermAtomFactory.term(nom.nomVar);
+		Term nomTerm = TermAtomFactory.term(remapper.remap(nom.nomVar));
 		
 		// sort
 		facts.add(TermAtomFactory.modalisedAtom(
@@ -95,7 +96,7 @@ public abstract class AbducerUtils {
 					mod,
 					TermAtomFactory.atom("rel_" + rel.mode, new Term[] {
 						nomTerm, 
-						TermAtomFactory.term(rel.dep)
+						TermAtomFactory.term(remapper.remap(rel.dep))
 					})));
 		}
 	}

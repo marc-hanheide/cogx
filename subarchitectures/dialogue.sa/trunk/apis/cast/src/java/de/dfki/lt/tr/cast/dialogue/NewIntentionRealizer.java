@@ -22,6 +22,7 @@ import de.dfki.lt.tr.dialogue.production.ProductionUtils;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationRequest;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationResult;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
+import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;

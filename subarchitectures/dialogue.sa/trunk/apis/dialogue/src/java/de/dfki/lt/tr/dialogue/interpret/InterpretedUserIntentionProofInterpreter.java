@@ -76,6 +76,10 @@ extends AbstractWellFormedTestingProofInterpreter<InterpretedUserIntention> {
 				if (key == null || value == null) {
 					return null;
 				}
+				if (!iui.getAddress().equals(matchResult.getIntentionWMA())) {
+					return null;
+				}
+
 				return new Runnable() {
 					@Override
 					public void run() {

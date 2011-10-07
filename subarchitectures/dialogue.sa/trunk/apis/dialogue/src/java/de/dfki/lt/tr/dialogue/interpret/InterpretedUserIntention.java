@@ -52,6 +52,10 @@ implements CASTProcessingResult, WellFormedTestable {
 		this.wma = wma;
 	}
 
+	public WorkingMemoryAddress getAddress() {
+		return wma;
+	}
+
 	public void setAgent(String s) {
 		iint.agent = s;
 	}

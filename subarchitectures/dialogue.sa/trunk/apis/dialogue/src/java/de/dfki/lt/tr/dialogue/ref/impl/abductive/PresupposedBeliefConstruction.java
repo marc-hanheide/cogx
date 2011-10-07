@@ -23,6 +23,7 @@ package de.dfki.lt.tr.dialogue.ref.impl.abductive;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
+import de.dfki.lt.tr.dialogue.util.NoOpNominalRemapper;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
@@ -70,7 +71,7 @@ public class PresupposedBeliefConstruction {
 
 	public Map<String, Map<String, String>> extractPresuppositions(LogicalForm lf) {
 		log("expanding LF into facts");
-		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
+		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf, NoOpNominalRemapper.INSTANCE)) {
 			abd.getEngineProxy().addFact(fact);
 		}
 

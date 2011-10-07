@@ -26,6 +26,7 @@ import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
+import de.dfki.lt.tr.dialogue.util.NoOpNominalRemapper;
 import de.dfki.lt.tr.infer.abducer.lang.DisjointDeclaration;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
@@ -106,7 +107,7 @@ public class IntentionRecognition {
 	 * @return recognised intentions and beliefs when successful, null if error occurred
 	 */
 	public IntentionRecognitionResult logicalFormToInterpretation(LogicalForm lf, TimeInterval ival) {
-		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf)) {
+		for (ModalisedAtom fact : AbducerUtils.lfToFacts(new Modality[] {Modality.Truth}, lf, NoOpNominalRemapper.INSTANCE)) {
 			abd_recog.getEngineProxy().addFact(fact);
 		}
 
