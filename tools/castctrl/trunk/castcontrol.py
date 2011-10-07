@@ -971,7 +971,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onStartCastClient(self):
         log4 = self.log4j.getConfig(self.configuredHosts)
-        hasServer = self.mustUseServer
+        hasServer = self.log4j.mustUseServer
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
