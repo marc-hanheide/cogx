@@ -4,12 +4,15 @@ import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.InterpretableAtom;
+import de.dfki.lt.tr.dialogue.interpret.MatcherUtils;
+import de.dfki.lt.tr.dialogue.interpret.TermParsingException;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
 import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.util.List;
 
 public class NewBeliefAtom
 implements InterpretableAtom {
@@ -58,43 +61,18 @@ implements InterpretableAtom {
 			if (matom.a.predSym.equals(PRED_SYMBOL)
 					&& matom.a.args.size() == 3) {
 
-				Term intentionAddrTerm = matom.a.args.get(1);
-				Term beliefAddrTerm = matom.a.args.get(1);
-				Term epstTerm = matom.a.args.get(2);
+				List<Term> args = matom.a.args;
 
-				WorkingMemoryAddress intentionAddr = null;
-				WorkingMemoryAddress beliefAddr = null;
-				EpistemicStatus epst = null;
+				try {
+					WorkingMemoryAddress intentionAddr = MatcherUtils.parseTermToWorkingMemoryAddress(args.get(0));
+					WorkingMemoryAddress beliefAddr = MatcherUtils.parseTermToWorkingMemoryAddress(args.get(1));
+					EpistemicStatus epst = MatcherUtils.parseTermToEpistemicObject(args.get(2));
 
-				if (intentionAddrTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) intentionAddrTerm;
-					intentionAddr = ConversionUtils.termToWorkingMemoryAddress(intentionAddrTerm);
-					if (intentionAddr == null) {
-						// unparseable!
-						return null;
-					}
+					return new NewBeliefAtom(intentionAddr, beliefAddr, epst);
 				}
-
-				if (beliefAddrTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) beliefAddrTerm;
-					beliefAddr = ConversionUtils.termToWorkingMemoryAddress(beliefAddrTerm);
-					if (beliefAddr == null) {
-						// unparseable!
-						return null;
-					}
+				catch (TermParsingException ex) {
+					return null;
 				}
-
-				if (epstTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) epstTerm;
-					epst = ConversionUtils.termToEpistemicStatus(ft);
-					if (epst == null) {
-						// unparseable!
-						return null;
-					}
-				}
-
-				return new NewBeliefAtom(intentionAddr, beliefAddr, epst);
-
 			}
 
 			return null;

@@ -3,12 +3,15 @@ package de.dfki.lt.tr.dialogue.interpret.atoms;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.InterpretableAtom;
+import de.dfki.lt.tr.dialogue.interpret.MatcherUtils;
+import de.dfki.lt.tr.dialogue.interpret.TermParsingException;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
 import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.util.List;
 
 public class AgentAtom
 implements InterpretableAtom {
@@ -50,34 +53,18 @@ implements InterpretableAtom {
 			if (matom.a.predSym.equals(PRED_SYMBOL)
 					&& matom.a.args.size() == 2) {
 
-				Term wmaTerm = matom.a.args.get(0);
-				Term agTerm = matom.a.args.get(1);
+				List<Term> args = matom.a.args;
 
-				WorkingMemoryAddress wma = null;
-				String agName = null;
+				try {
+					WorkingMemoryAddress wma = MatcherUtils.parseTermToWorkingMemoryAddress(args.get(0));
+					String agName = MatcherUtils.parseTermToString(args.get(1));
 
-				if (wmaTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) wmaTerm;
-					wma = ConversionUtils.termToWorkingMemoryAddress(wmaTerm);
-					if (wma == null) {
-						// unparseable!
-						return null;
-					}
+					return new AgentAtom(wma, agName);
+
 				}
-
-				if (agTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) agTerm;
-					if (isConstTerm(ft)) {
-						agName = ft.functor;
-					}
-					else {
-						// unparseable!
-						return null;
-					}
+				catch (TermParsingException ex) {
+					return null;
 				}
-				
-				return new AgentAtom(wma, agName);
-
 			}
 
 			return null;
