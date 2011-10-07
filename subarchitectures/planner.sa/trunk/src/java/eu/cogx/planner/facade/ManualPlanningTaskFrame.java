@@ -3,17 +3,18 @@
  */
 package eu.cogx.planner.facade;
 
-import java.util.List;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -21,16 +22,35 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.text.BadLocationException;
-import javax.swing.JTextArea;
-import javax.swing.JToggleButton;
-import javax.swing.JCheckBox;
-import java.awt.GridBagLayout;
 
+
+/**
+* This code was edited or generated using CloudGarden's Jigloo
+* SWT/Swing GUI Builder, which is free for non-commercial
+* use. If Jigloo is being used commercially (ie, by a corporation,
+* company or business for any purpose whatever) then you
+* should purchase a license for each developer using Jigloo.
+* Please visit www.cloudgarden.com for details.
+* Use of Jigloo implies acceptance of these licensing terms.
+* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
+* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
+* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+*/
 /**
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
 public class ManualPlanningTaskFrame extends JFrame {
+
+	{
+		//Set Look & Feel
+		try {
+			javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 	public static interface SubmitListener {
 		String submit(TableModel beliefTableModel, boolean execute);
@@ -43,6 +63,15 @@ public class ManualPlanningTaskFrame extends JFrame {
 	private JTable jBeliefsTable = null;
 	private final SubmitListener listener;
 	private TableModel beliefTableModel;
+	public TableModel getBeliefTableModel() {
+		return beliefTableModel;
+	}
+
+	public void setBeliefTableModel(TableModel beliefTableModel) {
+		this.beliefTableModel = beliefTableModel;
+	}
+
+
 	private JPanel jButtonPanel = null;
 	private JTextField jGoalTextEditField = null;
 	private JButton jButtonSubmit = null;
@@ -151,7 +180,7 @@ public class ManualPlanningTaskFrame extends JFrame {
 	 * 
 	 * @return javax.swing.JPanel
 	 */
-	private JPanel getJButtonPanel() {
+	public JPanel getJButtonPanel() {
 		if (jButtonPanel == null) {
 			GridLayout gridLayout = new GridLayout(0, 1);
 			gridLayout.setColumns(1);
