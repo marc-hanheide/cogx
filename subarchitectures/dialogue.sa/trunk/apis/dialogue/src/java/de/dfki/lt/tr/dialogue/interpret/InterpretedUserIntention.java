@@ -86,10 +86,15 @@ implements CASTProcessingResult, WellFormedTestable {
 
 	@Override
 	public void commit(final WorkingMemoryWriterComponent component) throws SubarchitectureComponentException {
-		component.getLogger().debug("about to write an InterpretedIntention to the WM");
 
 		// determine which beliefs are to be added
+		for (WorkingMemoryAddress addr : newBeliefs.keySet()) {
+			dBelief bel = newBeliefs.get(addr);
+			component.getLogger().debug("adding a dBelief to " + wmaToString(addr));
+			component.addToWorkingMemory(addr, bel);
+		}
 
+		component.getLogger().debug("adding an InterpretedIntention to " + wmaToString(wma));
 		component.addToWorkingMemory(wma, iint);
 	}
 

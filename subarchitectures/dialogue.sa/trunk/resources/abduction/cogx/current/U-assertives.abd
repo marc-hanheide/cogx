@@ -87,7 +87,7 @@ marker_to_polarity('No', neg).
 % SHORT ANSWERS TO WH- QUESTIONS
 %-------------------------------------------------------------------------
 
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : int : agent(qud, [H]),
 %	i : int : pre(qud, belief(SharedBId)),
 	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat)])),
@@ -100,4 +100,17 @@ understand : event : from_logical_form(S, H, Nom) <-
 	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, Value))) / p(1.0),
 	int : post(Int, belief(Nom, shared(S, H), fv(Feat, Value))) / p(1.0),
 	int : pointer(given, assertion, 'referring-expression') / p(1.0).
+
+%	i : int : agent(qud, [H]),
+%%	i : int : pre(qud, belief(SharedBId)),
+%	i : int : post(qud, state(['question-answered', agent(S), about(PrivBId), feature(Feat)])),
+%	polar_query_prop(Nom, Feat, Value),
+%	int_id(Int),
+%	int : agent(Int, S) / p(1.0),
+%	understand : resolves_to_belief(Nom, PrivBId, private(H)) / p(1.0),  % XXX
+%	int : pre(Int, belief(Nom, shared(S, H), fv(mark, 'referring-expression'))) / p(1.0),
+%	int : pre(Int, belief(Nom, attrib(H, S), fv(mark, assertion))) / p(1.0),
+%	int : pre(Int, belief(Nom, attrib(H, S), fv(Feat, Value))) / p(1.0),
+%	int : post(Int, belief(Nom, shared(S, H), fv(Feat, Value))) / p(1.0),
+%	int : pointer(given, assertion, 'referring-expression') / p(1.0).
 
