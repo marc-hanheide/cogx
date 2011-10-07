@@ -26,7 +26,7 @@ public class CategorizeRoomGoalGenerator extends
 	 * the maximum costs to drop we assign if information gain is really high
 	 * (~1) in seconds
 	 */
-	//private static final double MAX_COSTS_TO_DROP = 5 * 60;
+	// private static final double MAX_COSTS_TO_DROP = 5 * 60;
 
 	public CategorizeRoomGoalGenerator() {
 		super(COMATYPE, CategorizeRoomMotive.class, GroundedBelief.class);
@@ -53,11 +53,12 @@ public class CategorizeRoomGoalGenerator extends
 
 	private boolean isCategorized(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief) {
-		FormulaDistribution catForm=belief.getContent().get(ComaRoomTransferFunction.CATEGORY_ID);
-		if (catForm==null) {
+		FormulaDistribution catForm = belief.getContent().get(
+				ComaRoomTransferFunction.CATEGORY_ID);
+		if (catForm == null) {
 			return false;
 		} else {
-			if (catForm.size()==0)
+			if (catForm.size() == 0)
 				return false;
 		}
 		return true;
@@ -74,7 +75,7 @@ public class CategorizeRoomGoalGenerator extends
 		if (!isCategorized(belief)) {
 			fillValues(belief, motive);
 			return motive;
-		}else {
+		} else {
 			return null;
 		}
 
