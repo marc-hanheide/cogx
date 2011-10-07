@@ -167,7 +167,8 @@ INCLUDE includes/planner.sa/dora-interaction.cast
 
 
 # viewing and debugging #######################################################
-JAVA MG wmeditor.yaml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation,execution.slice.Action"
+JAVA MG wmeditor.yaml castutils.castextensions.wmeditor.YAMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation,execution.slice.Action"
+JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation,execution.slice.Action"
 
 
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact
