@@ -12,7 +12,17 @@ public class ProductionUtils {
 		s += "  about = \"" + wmaToString(request.obj) + "\"\n";
 		s += "  shortNP = " + Boolean.toString(request.shortNP) + "\n";
 		s += "  spatialRelation = " + Boolean.toString(request.spatialRelation) + "\n";
-		s += "  disabledProperty = \"" + request.disabledProperty + "\"\n";
+		s += "  disabledProperties = \n";
+		if (request.disabledProperties == null) {
+			s += "NULL\n";
+		}
+		else {
+			s += "[\n";
+			for (String prop : request.disabledProperties) {
+				s += "    \"" + prop + "\"\n";
+			}
+		s += "]\n";
+		}
 		s += ")";
 		return s;
 	}

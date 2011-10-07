@@ -36,7 +36,7 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 		public ReferenceGenerationResult generate(ReferenceGenerationRequest request, WorkingMemoryAddress requestAddr) {
 			List<String> phrases = new LinkedList<String>();
 			if (request.shortNP) {
-				phrases.add(getShortNP(request.disabledProperty));
+				phrases.add(getShortNP(request.disabledProperties));
 			}
 			if (request.spatialRelation) {
 				phrases.add("on the table in the kitchen");
@@ -45,11 +45,11 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 			return new ReferenceGenerationResult(requestAddr, join(" ", phrases));
 		}
 
-		private String getShortNP(String disabled) {
+		private String getShortNP(List<String> disabledProps) {
 			List<String> words = new LinkedList<String>();
 			words.add("the");
 			for (String key : props.keySet()) {
-				if (disabled != null && !key.equals(disabled)) {
+				if (disabledProps != null && !disabledProps.contains(key)) {
 					words.add(props.get(key));
 				}
 			}

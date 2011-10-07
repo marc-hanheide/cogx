@@ -207,6 +207,14 @@ public abstract class ConversionUtils {
 		return null;
 	}
 
+	public static Term listStringsToTerm(List<String> l) {
+		List<Term> terms = new LinkedList<Term>();
+		for (String s : l) {
+			terms.add(TermAtomFactory.term(s));
+		}
+		return listToTerm(terms);
+	}
+
 	public static dFormula uniTermToFormula(Term t) {
 
 		if (t instanceof FunctionTerm) {
@@ -507,57 +515,6 @@ public abstract class ConversionUtils {
 		}
 		return null;
 	}
-
-	/* FIXME: this is very ugly and should be rewritten */
-	private static FunctionTerm dFormulaToRPV(dFormula f) {
-		String objRef = "";
-		String objProp = "";
-		FunctionTerm valTerm = null;
-		String propVal = "";
-		if (f instanceof ComplexFormula) {
-			ComplexFormula cplxF = (ComplexFormula)f;
-			if (cplxF.forms.size() == 2) {
-				dFormula arg1 = cplxF.forms.get(0);
-				dFormula arg2 = cplxF.forms.get(1);
-				if (arg1 instanceof ModalFormula && arg2 instanceof ModalFormula) {
-					ModalFormula m1 = (ModalFormula)arg1;
-					ModalFormula m2 = (ModalFormula)arg2;
-					if (m1.op.equals(IntentionManagementConstants.discRefModality) && m1.form instanceof ElementaryFormula) {
-						ElementaryFormula eF = (ElementaryFormula)m1.form;
-						objRef = eF.prop;
-					}
-					else {
-						return null;
-					}
-					objProp = m2.op;
-					if (m2.form instanceof ElementaryFormula) {
-						ElementaryFormula eF = (ElementaryFormula)m2.form;
-						valTerm = TermAtomFactory.term(eF.prop);
-					}
-					else if (m2.form instanceof NegatedFormula) {
-						NegatedFormula nF = (NegatedFormula)m2.form;
-						if (nF.negForm instanceof ElementaryFormula) {
-							ElementaryFormula eF = (ElementaryFormula)nF.negForm;
-							valTerm = TermAtomFactory.term(functor_NOT, new Term[] {TermAtomFactory.term(eF.prop)});
-						}
-						else {
-							return null;
-						}
-					}
-					else {
-						return null;
-					}
-					return TermAtomFactory.term(functor_RPV, new Term[] {
-						TermAtomFactory.term(objRef),
-						TermAtomFactory.term(objProp),
-						valTerm
-					});
-				}
-			}
-		}
-		return null;
-	}
-
 
 	public static Term listToTerm(List<Term> ts) {
 		return iteratorToTerm(ts.iterator());
