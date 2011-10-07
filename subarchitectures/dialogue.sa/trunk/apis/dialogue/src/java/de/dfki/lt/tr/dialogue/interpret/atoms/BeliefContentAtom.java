@@ -4,12 +4,15 @@ import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.InterpretableAtom;
+import de.dfki.lt.tr.dialogue.interpret.MatcherUtils;
+import de.dfki.lt.tr.dialogue.interpret.TermParsingException;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Modality;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
 import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
+import java.util.List;
 
 public class BeliefContentAtom
 implements InterpretableAtom {
@@ -58,47 +61,20 @@ implements InterpretableAtom {
 			if (matom.a.predSym.equals(PRED_SYMBOL)
 					&& matom.a.args.size() == 3) {
 
-				Term beliefAddrTerm = matom.a.args.get(0);
-				Term keyTerm = matom.a.args.get(1);
-				Term valueTerm = matom.a.args.get(2);
+				List<Term> args = matom.a.args;
 
-				WorkingMemoryAddress wma = null;
-				String key = null;
-				dFormula value = null;
+				try {
+					WorkingMemoryAddress wma = MatcherUtils.parseTermToWorkingMemoryAddress(args.get(0));
+					String key = MatcherUtils.parseTermToString(args.get(1));
+					dFormula value = MatcherUtils.parseTermToDFormula(args.get(2));
 
-				if (beliefAddrTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) beliefAddrTerm;
-					wma = ConversionUtils.termToWorkingMemoryAddress(beliefAddrTerm);
-					if (wma == null) {
-						// unparseable!
-						return null;
-					}
+					return new BeliefContentAtom(wma, key, value);
 				}
-
-				if (keyTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) keyTerm;
-					if (isConstTerm(ft)) {
-						key = ft.functor;
-					}
-					else {
-						// unparseable!
-						return null;
-					}
+				catch (TermParsingException ex) {
+					return null;
 				}
-
-				if (valueTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) valueTerm;
-					value = ConversionUtils.uniTermToFormula(ft);
-					if (value == null) {
-						// unparseable!
-						return null;
-					}
-				}
-
-				return new BeliefContentAtom(wma, key, value);
 
 			}
-
 			return null;
 		}
 

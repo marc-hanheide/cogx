@@ -3,10 +3,13 @@ package de.dfki.lt.tr.dialogue.interpret.atoms;
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.InterpretableAtom;
+import de.dfki.lt.tr.dialogue.interpret.MatcherUtils;
+import de.dfki.lt.tr.dialogue.interpret.TermParsingException;
 import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
 import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
 import de.dfki.lt.tr.infer.abducer.lang.Term;
 import de.dfki.lt.tr.infer.abducer.proof.ModalisedAtomMatcher;
+import java.util.List;
 
 public class FromIntentionAtom
 implements InterpretableAtom {
@@ -34,20 +37,16 @@ implements InterpretableAtom {
 		public FromIntentionAtom match(ModalisedAtom matom) {
 			if (matom.a.predSym.contains(PRED_SYMBOL) && matom.a.args.size() == 3) {
 
-				Term wmaTerm = matom.a.args.get(2);
+				List<Term> args = matom.a.args;
 
-				WorkingMemoryAddress wma = null;
-
-				if (wmaTerm instanceof FunctionTerm) {
-					FunctionTerm ft = (FunctionTerm) wmaTerm;
-					wma = ConversionUtils.termToWorkingMemoryAddress(wmaTerm);
-					if (wma == null) {
-						// unparseable!
-						return null;
-					}
+				try {
+					WorkingMemoryAddress wma = MatcherUtils.parseTermToWorkingMemoryAddress(args.get(2));
+					return new FromIntentionAtom(wma);
+				}
+				catch (TermParsingException ex) {
+					return null;
 				}
 
-				return new FromIntentionAtom(wma);
 			}
 			return null;
 		}
