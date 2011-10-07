@@ -35,7 +35,7 @@ utt_head(Nom) <-
 generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'engagement-opening'),
 
-	event : produce_text([hello, Hearer]) / -1.0.
+	event : produce_text([hello, Hearer, '0_7']) / -1.0.
 %	utt_head(Nom),
 %	i : feat_SpeechAct(Nom, greeting) / -1.0,
 %	event : produce(r, Nom) / -1.0.
