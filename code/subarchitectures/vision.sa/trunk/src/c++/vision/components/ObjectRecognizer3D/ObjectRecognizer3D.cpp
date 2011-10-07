@@ -2,7 +2,7 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "ObjectRecognizer3D.h"
 #include <VideoUtils.h>
-
+#include <VisionUtils.h>
 /**
  * The function called to create a new instance of our component.
  */
@@ -440,7 +440,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 		Model model;
 		modelloader.LoadPly(model, rec_entry.plyfile.c_str());
 
-		obj = new cogx::createVisualObject();
+		obj = cogx::createVisualObject();
 		obj->model = new VisionData::GeometryModel;
 		convertModel2Geometry(model, obj->model);
 		rec_entry.visualObjectID = newDataID();
