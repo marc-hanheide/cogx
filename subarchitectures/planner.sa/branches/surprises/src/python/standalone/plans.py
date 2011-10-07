@@ -231,7 +231,7 @@ class MAPLPlan(networkx.MultiDiGraph):
         nodes = self.topological_sort()
         return "\n".join(map(str, nodes))
 
-    def to_dot(self, name="plan", ranks=[]):
+    def to_dot(self, name="plan", ranks=[], node_deco=None, edge_deco=None):
         from pygraphviz import AGraph
         def declare_rank(same_rank_list):
             same_rank_list = ['"%s"' % r for r in same_rank_list]
@@ -257,11 +257,20 @@ class MAPLPlan(networkx.MultiDiGraph):
             elif isinstance(n.action, pddl.mapl.MAPLAction) and n.action.sensors:
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded"
-                
-            G.add_node(n, **attrs)
+
+            if node_deco:
+                d = node_deco(n)
+                if d:
+                    attrs.update(d)
+            
+            if not attrs.get('ignore', False):
+                G.add_node(n, **attrs)
+
 
         for n1,n2, data in self.edges_iter(data=True):
             if n1 == self.init_node:
+                continue
+            if n1 not in G or n2 not in G:
                 continue
             attrs = {}
             if data['type'] == 'prevent_threat':
@@ -274,10 +283,16 @@ class MAPLPlan(networkx.MultiDiGraph):
                 attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
             else:
                 attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
+            
+            if edge_deco:
+                d = edge_deco(n1, n2, data)
+                if d:
+                    attrs.update(d)
                 
-            G.add_edge(n1, n2, **attrs)
+            if not attrs.get('ignore', False):
+                G.add_edge(n1, n2, **attrs)
 
         for rank, nodes in ranks.iteritems():
-            G.add_subgraph(nodes, rank='same', label="rank %d" % rank)
+            G.add_subgraph([n for n in nodes if n in G], rank='same', label="rank %d" % rank)
 
         return G
