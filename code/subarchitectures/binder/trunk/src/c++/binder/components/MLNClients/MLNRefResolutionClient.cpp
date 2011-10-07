@@ -136,7 +136,7 @@ void MLNRefResolutionClient::runComponent()
 			InferredResultPtr infRes = getInfResult();
 			log("New inference result available from MLN engine ID %s", getInfEngineID().c_str());
 		
-			if(infRes->token == m_constraintAddr.id && infRes->tokenSamples >= 500) {
+			if(infRes->token == m_constraintAddr.id && infRes->tokenSamples >= 400) {
 				vector<EpistemicReferenceHypothesisPtr> hypos = getHypothesisList(infRes);
 		
 				if(!hypos.empty()) {
