@@ -267,7 +267,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 				return null;
 			}
 
-			ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr);
+			final ReferenceGenerationRequest request = new ReferenceGenerationRequest(beliefAddr, a.getHasShortNP(), a.getHasSpatialRelation());
 			if (request == null) {
 				getLogger().error("extracted ReferenceGenerationRequest is null");
 				return null;
@@ -301,9 +301,9 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 
 						GenerateReferringExpressionAtom greAtom = new GenerateReferringExpressionAtom(
 								beliefAddr,
-								refs.category,
-								refs.relation,
-								refs.location);
+								request.shortNP,
+								request.spatialRelation,
+								refs.refEx);
 
 						ModalisedAtom matom = greAtom.toModalisedAtom();
 						engine.addFact(matom);

@@ -96,9 +96,10 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, subtype, 'location-report'),
 	i : int : address_content(IntAddr, about, BeliefAddr),
 
-	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
+	? generate : reference_generation(BeliefAddr, no, yes, RelationRE),
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE),
 
-	event : produce_text([the, Category, is, Relation, Location]) / -1.0.
+	event : produce_text([ObjectRE, is, RelationRE]) / -1.0.
 
 %	utt_head(Nom),
 %	i : feat_CannedText(Nom, Location) / -1.0,

@@ -10,6 +10,8 @@ public class ProductionUtils {
 		}
 		String s = "(GRE request\n";
 		s += "  about = \"" + wmaToString(request.obj) + "\"\n";
+		s += "  shortNP = " + Boolean.toString(request.shortNP) + "\n";
+		s += "  spatialRelation = " + Boolean.toString(request.spatialRelation) + "\n";
 		s += ")";
 		return s;
 	}
@@ -19,9 +21,7 @@ public class ProductionUtils {
 			return "NULL";
 		}
 		String s = "(GRE result (in response to " + wmaToString(result.requestAddress) + ")\n";
-		s += "  category = \"" + result.category + "\"\n";
-		s += "  relation = \"" + result.relation + "\"\n";
-		s += "  location = \"" + result.location + "\"\n";
+		s += "  refEx = \"" + result.refEx + "\"\n";
 		s += ")";
 		return s;
 	}
