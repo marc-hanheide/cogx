@@ -45,6 +45,18 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 			return new ReferenceGenerationResult(requestAddr, join(" ", phrases));
 		}
 
+		private String getShortNP(String disabled) {
+			List<String> words = new LinkedList<String>();
+			words.add("the");
+			for (String key : props.keySet()) {
+				if (disabled != null && !key.equals(disabled)) {
+					words.add(props.get(key));
+				}
+			}
+			words.add(type);
+			return join(" ", words);
+		}
+
 		public static String join(String separator, List<String> args) {
 			StringBuilder sb = new StringBuilder();
 			if (args != null) {
@@ -57,18 +69,6 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 				}
 			}
 			return sb.toString();
-		}
-
-		private String getShortNP(String disabled) {
-			List<String> words = new LinkedList<String>();
-			words.add("the");
-			for (String key : props.keySet()) {
-				if (disabled != null && !key.equals(disabled)) {
-					words.add(props.get(key));
-				}
-			}
-			words.add(type);
-			return join(" ", words);
 		}
 
 	}
