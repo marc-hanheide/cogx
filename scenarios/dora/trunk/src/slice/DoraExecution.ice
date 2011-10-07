@@ -19,7 +19,8 @@ module execution {
 			double robotX;
 			double robotY;
 			double robotTheta;
-			double pan;		
+			double pan;
+			string identifier;		
 		};
 	};
 
