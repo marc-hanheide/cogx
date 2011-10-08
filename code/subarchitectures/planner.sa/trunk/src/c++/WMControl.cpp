@@ -540,6 +540,7 @@ void WMControl::updateStatus(int id, Completion status) {
         if (task->planningRetries >= MAX_PLANNING_RETRIES) {
             log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);
             task->executionStatus = FAILED;
+            pyServer->notifyFailure(task);
         }
         else if (task->id != m_active_task_id) {
             log("Planning failed for non-active task.");

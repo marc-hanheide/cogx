@@ -159,6 +159,7 @@ module autogen {
       void registerTask(PlanningTask task);
       void executeTask(PlanningTask task);
       void updateTask(PlanningTask task);
+      void notifyFailure(PlanningTask task);
       void taskTimedOut(PlanningTask task);
       void updateState(BeliefSeq state, BeliefSeq percepts);
       bool queryGoal(BeliefSeq state, string goal);
