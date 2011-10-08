@@ -99,10 +99,15 @@ CMD_GOLEM=${CMD_GOLEM_WORKDIR}/TinyIce
 
 CMD_PEEKABOT=peekabot
 
-CMD_LOG4J_SERVER=<multiline>
+CMD_LOG4J_CAST_SERVER=<multiline>
+   java -ea -classpath ${CLASSPATH} cast.core.logging.LoggingServer
+</multiline>
+CMD_LOG4J_SOCKET_SERVER=<multiline>
    java -ea -classpath ${CLASSPATH}
    org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
 </multiline>
+# default for CAST before version 2.1.16
+CMD_LOG4J_SERVER=${CMD_LOG4J_SOCKET_SERVER}
 
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
@@ -161,7 +166,9 @@ EDITOR=internal
 """
 log4joptions="""
 
-# Startup configuration for org.apache.log4j.net.SimpleSocketServer 
+# Startup configuration for the following servers:
+#   - org.apache.log4j.net.SimpleSocketServer
+#   - cast.core.logging.IceAppender
 # rootLogger entries are the following: level, consoleAppender-id, xmlFileAppender-id
 [LOG4J.SimpleSocketServer.conf]
 log4j.rootLogger=TRACE, srvConsole, srvXmlFile
@@ -196,11 +203,16 @@ log4j.appender.cliConsole.layout=cast.core.logging.ComponentLayout
 log4j.appender.cliConsole.layout.ConversionPattern=%S[%P %i: %m]%n%E
 #log4j.appender.cliConsole.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
 
+# Used when clients are configured to send messages to a SocketAppender
 [LOG4J.client.socket]
 log4j.appender.cliSocketApp=org.apache.log4j.net.SocketAppender
-# TODO: $LEVEL could be MAX of all levels in SimpleSocketServer
-# log4j.appender.SocketApp.Threshold=${LEVEL}
 log4j.appender.cliSocketApp.Port=${PORT}
 log4j.appender.cliSocketApp.RemoteHost=${HOST}
+
+# Used when clients are configured to send messages to an IceAppender (CAST logger)
+[LOG4J.client.IceAppender]
+log4j.loggerFactory=cast.core.logging.ComponentLoggerFactory
+log4j.appender.cliSocketApp=cast.core.logging.IceAppender
+log4j.appender.cliSocketApp.Host=${HOST}
 
 """
