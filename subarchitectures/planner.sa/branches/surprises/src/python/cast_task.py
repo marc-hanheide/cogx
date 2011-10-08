@@ -485,6 +485,7 @@ class CASTTask(object):
                 if not has_link(plan, new_p, new_n, svar, val, type):
                     plan.add_edge(new_p, new_n, svar=svar, val=val, type=type)
 
+        first_init = False
         i = 0
         for n in executed:
             n.time = i
@@ -493,6 +494,9 @@ class CASTTask(object):
             print "===", n
             if n.is_virtual() or n.action.name == "goal":
                 new_n =  get_node(mapped_n)
+            elif n.action.name == "init" and not first_init:
+                new_n =  get_node(mapped_n)
+                first_init = True
             elif n.action.name == "init":
                 new_st = pddl.state.State(mapped_n.effects, init_problem)
                 # extstate = new_st.get_extended_state()

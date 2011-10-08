@@ -272,6 +272,22 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
 
     print "done"
 
+
+def get_causal_relations(node):
+    node.action.instantiate(node.full_args)
+    @pddl.visitors.collect
+    def get_ceffs(elem, results):
+        if isinstance(elem, pddl.effects.ConditionalEffect):
+            return elem
+        
+    for ceff in pddl.visitors.visit(node.action.effect, get_ceffs, []):
+        conds = ceff.condition.visit(pddl.visitors.collect_literals)
+        effs = ceff.effect.visit(pddl.visitors.collect_literals)
+        c_facts = [pddl.state.Fact.from_literal(l) for l in conds]
+        e_facts = [pddl.state.Fact.from_literal(l) for l in effs]
+        yield c_facts, e_facts
+    node.action.uninstantiate()
+    
       
 def postprocess_explanations(expl_plan, exec_plan):
     real_exec_actions = [n for n in exec_plan.topological_sort() if not n.is_virtual() and not n.status == plans.ActionStatusEnum.EXECUTABLE and n != exec_plan.init_node]
@@ -309,7 +325,14 @@ def postprocess_explanations(expl_plan, exec_plan):
             svars.add(f.svar)
             if fact_filter(f) and f not in other.effects:
                 changed.append(f)
-        deleted = [f for f in other.effects if fact_filter(f) and f.svar not in svars]
+        deleted = []
+        for f in other.effects:
+            if fact_filter(f) and f.svar not in svars:
+                if f.svar.get_type() == pddl.t_boolean:
+                    val = pddl.TRUE if f.value == pddl.FALSE else pddl.FALSE
+                    deleted.append(pddl.state.Fact(f.svar, val))
+                else:
+                    deleted.append(pddl.state.Fact(f.svar, pddl.UNKNOWN))
         return changed, deleted
 
     def get_conflict_link_target(n, eff):
@@ -321,8 +344,10 @@ def postprocess_explanations(expl_plan, exec_plan):
                         return node_mapping[succ]
                     return expl_plan.goal_node
         return None
-                            
+
+    explanations = set()
     written = {}
+    commitments = {}
     for n in expl_plan.topological_sort():
         if "new_facts" in n.action.name:
             for eff in n.effects:
@@ -336,9 +361,37 @@ def postprocess_explanations(expl_plan, exec_plan):
             succ = get_conflict_link_target(n, f)
             if succ:
                 expl_plan.add_edge(n, succ, svar=f.svar, val=f.value, type="repaired")
+            for cconds, ceffs in get_causal_relations(n):
+                eff_val = None
+                for eff in ceffs:
+                    if eff.svar == f.svar:
+                        eff_val = eff.value
+                        break
+                if eff_val is not None:
+                    negated = (eff_val != f.value)
+                    print "changed effect:", eff, negated
+                    for c in cconds:
+                        print c
+                        if c.svar.modality == pddl.mapl.commit:
+                            cvar = c.svar.nonmodal()
+                            cval = c.svar.modal_args[0]
+                            val, pred = commitments.get(cvar, (None,None))
+                            print "commit:", cvar, cval, val
+                        else:
+                            cvar, cval  = c
+                            val, pred = written.get(cvar, (None,None))
+                            print "written:", svar, cval, val
+                        if val is not None:
+                            if (val == cval and not negated) or (val != cval and negated):
+                                expl_plan.add_edge(pred, n, svar=cvar, val=val, type="repaired")
+                                explanations.add(pred)
+
             
         for eff in n.effects:
             written[eff.svar] = (eff.value, n)
+            if eff.svar.modality == pddl.mapl.commit:
+                commitments[eff.svar.nonmodal()] = (eff.svar.modal_args[0], n)
+                print "commitment:", eff
             
 
     def node_decorator(node):
@@ -346,8 +399,8 @@ def postprocess_explanations(expl_plan, exec_plan):
             return {"ignore" : True}
         # if node.status == plans.ActionStatusEnum.EXECUTABLE and node.action.name != 'goal' and node not in final_plan_actions:
         #     return {"ignore" : True}
-        if node in commit_conflicts:
-            return {"fillcolor" : "pink"}
+        if node in commit_conflicts or node in explanations:
+            return {"fillcolor" : "green"}
         if node.is_virtual():
             return {"fillcolor" : "darkslategray2"}
         if "explained" in node.action.name:
@@ -363,7 +416,7 @@ def postprocess_explanations(expl_plan, exec_plan):
         if data['type'] == 'prevent_threat':
             return {'style' : 'invis', 'label' : ''}
         if data['type'] == 'repaired':
-            return {'color' : 'cyan3'}
+            return {'color' : 'green'}
         
     G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
     G.layout(prog='dot')
