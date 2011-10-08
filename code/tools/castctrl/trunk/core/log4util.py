@@ -21,6 +21,35 @@ class CLog4Config:
         # log4jproperties is a link that points to a client config file
         self.logPropLink = "log4j.properties"
 
+        serverAppenders = {
+            'srvConsole': ('LOG4J.SimpleSocketServer.console'), # params: level
+            'srvXmlFile': ('LOG4J.SimpleSocketServer.xmlfile'), # params: level, filename
+        }
+
+        # These settings names reflect the settings in default_log4jsrv.txt
+        # ( appender-name, ini-section )
+        servers = {}
+        servers['console'] = {
+            'envvar': None, # no need to start it
+            'appenders': None,
+            'client-connect': ('LOG4J.client.console') # params: level
+        }
+        servers['socket-server'] = {
+            'envvar': 'CMD_LOG4J_SOCKET_SERVER',
+            'appenders': serverAppenders,
+            'client-connect': ('LOG4J.client.socket') # params: hostname
+        }
+        servers['cast-server'] = {
+            'envvar': 'CMD_LOG4J_CAST_SERVER',
+            'appenders': serverAppenders,
+            'client-connect': ('LOG4J.client.IceAppender') # params: hostname
+        }
+        self.servers = servers
+
+        self.selectedServer = 'cast-server'
+        self.startServer = True
+
+
     @property
     def logFile(self):
         return os.path.join(self._logDir, self._logFile)
@@ -110,6 +139,7 @@ class CLog4Config:
 
         result.insert(0, ",".join(lnroot))
 
+        self._prepareLogDir()
         try:
             f = open(self.serverConfigFile, "w")
             f.write("\n".join(result))

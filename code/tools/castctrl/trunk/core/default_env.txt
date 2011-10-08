@@ -97,10 +97,15 @@ CMD_GOLEM=${CMD_GOLEM_WORKDIR}/TinyIce
 
 CMD_PEEKABOT=peekabot
 
-CMD_LOG4J_SERVER=<multiline>
+CMD_LOG4J_CAST_SERVER=<multiline>
+   java -ea -classpath ${CLASSPATH} cast.core.logging.LoggingServer
+</multiline>
+CMD_LOG4J_SOCKET_SERVER=<multiline>
    java -ea -classpath ${CLASSPATH}
    org.apache.log4j.net.SimpleSocketServer [LOG4J_PORT] [LOG4J_SERVER_CONFIG]
 </multiline>
+# default for CAST before version 2.1.16
+CMD_LOG4J_SERVER=${CMD_LOG4J_SOCKET_SERVER}
 
 CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
