@@ -30,6 +30,8 @@ import de.dfki.lt.tr.beliefs.util.ProbFormula;
 import eu.cogx.mln.slice.MLNState;
 import eu.cogx.mln.slice.MLNFact;
 
+import static java.lang.System.out;
+
 public class MLNSerializer extends ManagedComponent {
 
 	WMEventQueue queue = new WMEventQueue();
@@ -38,7 +40,20 @@ public class MLNSerializer extends ManagedComponent {
 	private String stateId = null;
 	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
 
-	static void addToMLN(dBelief bel, Vector<MLNFact> facts) throws BeliefException {		
+	static void addToMLN(dBelief bel, Vector<MLNFact> facts) throws BeliefException {
+		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
+				.create(dBelief.class, bel);	
+		// Do not add anything if not visible	
+		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet())
+			if(d.getKey().equals("presence")) {
+				for (ProbFormula v : d.getValue()) {
+					ElementaryFormula pf = (ElementaryFormula) v.getFormula().get();
+					if(pf.prop.equals("removed") && v.getProbability() > 0.8) {
+						return;
+					}
+				}
+		}
+
 		MLNFact bfact = new MLNFact();
 		MLNFact sfact = new MLNFact();
 		
@@ -63,8 +78,7 @@ public class MLNSerializer extends ManagedComponent {
 		facts.add(bfact);	
 		facts.add(sfact);
 		
-		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
-				.create(dBelief.class, bel);
+		
 		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet()) {
 			for (ProbFormula v : d.getValue()) {
 				if (b.getType().equals("relation")) {
