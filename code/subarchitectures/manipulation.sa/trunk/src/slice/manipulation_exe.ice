@@ -2,6 +2,7 @@
 #define MANIPULATION_EXE_ICE
 
 #include <cast/slice/CDL.ice>
+#include <Math.ice>
 
 module manipulation {
 	module execution {
@@ -18,7 +19,8 @@ module manipulation {
 		
 		enum ManipulationTaskType {
   		RETRACTARM,
-  		POINTOBJ0
+  		POINTOBJ0,
+  		IDLE
 		};
 		
 		sequence<cast::cdl::WorkingMemoryPointer> WMPointerSeq; 
@@ -30,6 +32,15 @@ module manipulation {
 
     	// RESPONSE
     	ManipulationTaskStatus status;
+  	};
+  	
+  	class ArmStatus {
+  		cogx::Math::Pose3 currentPose;
+  		cogx::Math::Pose3 targetPose;
+    
+    	ManipulationTaskType currentTask;
+    	ManipulationTaskType lastTask;
+    	ManipulationTaskStatus lastStatus;
   	};
 		
 	};
