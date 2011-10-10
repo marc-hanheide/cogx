@@ -247,5 +247,10 @@ public class TurnToPersonExecutor extends
 		m_humanBelief.getContent().put("engaged", fd);
 		getComponent().overwriteWorkingMemory(m_humanBeliefAddr,
 				m_humanBelief.get());
+		fd=FormulaDistribution.create();
+		fd.add(!b, 1.0);
+		m_humanBelief.getContent().put("unresponsive", fd);
+		getComponent().overwriteWorkingMemory(m_humanBeliefAddr,
+				m_humanBelief.get());
 	}
 }
