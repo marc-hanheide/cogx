@@ -7,6 +7,7 @@ from predicates import Predicate, Function, Literal, Term, FunctionTerm, Variabl
 from conditions import LiteralCondition, Conjunction, Disjunction, ExistentialCondition, UniversalCondition
 from effects import SimpleEffect, ConjunctiveEffect, UniversalEffect, ConditionalEffect
 from actions import Action
+from mapl import InitRule
 from domain import Domain
 from problem import Problem
 from builder import Builder

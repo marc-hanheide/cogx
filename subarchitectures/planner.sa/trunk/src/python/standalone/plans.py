@@ -58,7 +58,7 @@ class PlanNode(object):
         self.original_replan = set()
         self.explanations = {}
         
-        if not isinstance(action, DummyAction):
+        if isinstance(action, pddl.mapl.MAPLAction):
             num = len(action.agents) + len(action.params)
             self.args = args[:num]
         else:
@@ -91,6 +91,7 @@ class PlanNode(object):
 class DummyAction(object):
     def __init__(self, name):
         self.name = name
+        self.replan = None
     def __str__(self):
         return str(self.name)
 
@@ -179,7 +180,7 @@ class MAPLPlan(networkx.MultiDiGraph):
             visit(n)
 
     def predecessors_iter(self, node, link_type=None):
-        if link_type and not isinstance(link_type, (list, tuple)):
+        if link_type and not isinstance(link_type, (set, list, tuple)):
             link_type = [link_type]
         for p in networkx.MultiDiGraph.predecessors_iter(self, node):
             if not link_type or any(e['type'] in link_type for e in self[p][node].itervalues()):
@@ -191,7 +192,7 @@ class MAPLPlan(networkx.MultiDiGraph):
         return [p for p in self.predecessors_iter(node, link_type)]
 
     def successors_iter(self, node, link_type=None):
-        if link_type and not isinstance(link_type, (list, tuple)):
+        if link_type and not isinstance(link_type, (set, list, tuple)):
             link_type = [link_type]
         for s in networkx.MultiDiGraph.successors_iter(self, node):
             if not link_type or any(e['type'] in link_type for e in self[node][s].itervalues()):
@@ -230,7 +231,7 @@ class MAPLPlan(networkx.MultiDiGraph):
         nodes = self.topological_sort()
         return "\n".join(map(str, nodes))
 
-    def to_dot(self, name="plan", ranks=[]):
+    def to_dot(self, name="plan", ranks=[], node_deco=None, edge_deco=None):
         from pygraphviz import AGraph
         def declare_rank(same_rank_list):
             same_rank_list = ['"%s"' % r for r in same_rank_list]
@@ -256,23 +257,42 @@ class MAPLPlan(networkx.MultiDiGraph):
             elif isinstance(n.action, pddl.mapl.MAPLAction) and n.action.sensors:
                 attrs["shape"] = "box"
                 attrs["style"] += ", rounded"
-                
-            G.add_node(n, **attrs)
+
+            if node_deco:
+                d = node_deco(n)
+                if d:
+                    attrs.update(d)
+            
+            if not attrs.get('ignore', False):
+                G.add_node(n, **attrs)
+
 
         for n1,n2, data in self.edges_iter(data=True):
             if n1 == self.init_node:
+                continue
+            if n1 not in G or n2 not in G:
                 continue
             attrs = {}
             if data['type'] == 'prevent_threat':
                 attrs["style"] = "dashed"
                 attrs["color"] = "darkgreen"
                 attrs["label"] = str(data['svar'])
-            else:
+                # continue
+            elif data['type'] == 'unexpected':
+                attrs["color"] = "red"
                 attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
+            elif 'svar' in data and 'val' in data:
+                attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
+            
+            if edge_deco:
+                d = edge_deco(n1, n2, data)
+                if d:
+                    attrs.update(d)
                 
-            G.add_edge(n1, n2, **attrs)
+            if not attrs.get('ignore', False):
+                G.add_edge(n1, n2, **attrs)
 
         for rank, nodes in ranks.iteritems():
-            G.add_subgraph(nodes, rank='same', label="rank %d" % rank)
+            G.add_subgraph([n for n in nodes if n in G], rank='same', label="rank %d" % rank)
 
         return G

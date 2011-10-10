@@ -267,6 +267,32 @@ class StateVariable(object):
             value = ConstantTerm(TRUE if not literal.negated else FALSE)
                 
         return function, litargs, modality, modal_args, value
+
+    def match_literal(self, lit):
+        modality = None
+        modal_args = []
+        if lit.predicate in assignment_ops + [eq, equals]:
+            function = lit.args[0].function
+            svar_args = [a.object for a in lit.args[0].args]
+        elif not any (isinstance(a, FunctionTerm) for a in lit.args):
+            function = lit.predicate
+            svar_args = [a.object for a in lit.args]
+        else:
+            function, svar_args, modality, modal_args, _ = StateVariable.svar_args_from_literal(lit)
+
+        
+        if function != self.function and modality != self.modality:
+            return None
+        
+        mapping = {}
+        for arg, val in chain(zip(svar_args, self.args), zip(modal_args, self.modal_args)):
+            if isinstance(arg, types.Parameter) and val.is_instance_of(arg.type):
+                mapping[arg] = val
+            elif arg != val:
+                mapping = None
+                break
+        return mapping
+    
     
     @staticmethod
     def from_literal(literal, state=None):
@@ -307,6 +333,9 @@ class Fact(tuple):
     def to_effect(self):
         return self.as_literal(_class=effects.SimpleEffect)
 
+    def to_condition(self):
+        return self.as_literal(_class=conditions.LiteralCondition)
+    
     def to_init(self):
         return self.as_literal(useEqual=True)
 
@@ -317,6 +346,8 @@ class Fact(tuple):
         return False
 
     def match_literal(self, lit):
+        modality = None
+        modal_args = []
         if lit.predicate in assignment_ops + [eq, equals]:
             function = lit.args[0].function
             svar_args = [a.object for a in lit.args[0].args]
@@ -326,13 +357,14 @@ class Fact(tuple):
             svar_args = [a.object for a in lit.args]
             val_arg = FALSE if lit.negated else TRUE
         else:
-            return None
+            function, svar_args, modality, modal_args, val_arg = StateVariable.svar_args_from_literal(lit)
+
         
-        if function != self.svar.function:
+        if function != self.svar.function and modality != self.svar.modality:
             return None
         
         mapping = {}
-        for arg, val in chain(zip(svar_args, self.svar.args), [(val_arg, self.value)]):
+        for arg, val in chain(zip(svar_args, self.svar.args), zip(modal_args, self.svar.modal_args), [(val_arg, self.value)]):
             if isinstance(arg, types.Parameter) and val.is_instance_of(arg.type):
                 mapping[arg] = val
             elif arg != val:

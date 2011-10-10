@@ -19,7 +19,7 @@ extern "C" {
     }
 }
 
-static const int MAX_PLANNING_RETRIES = 1;
+static const int MAX_PLANNING_RETRIES = 3;
 static const int MAX_EXEC_RETRIES = 1;
 static const int REPLAN_DELAY = 3000;
 static const int PLANNER_UPDATE_DELAY = 200;

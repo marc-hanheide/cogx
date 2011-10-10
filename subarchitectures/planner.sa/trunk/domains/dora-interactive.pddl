@@ -58,6 +58,8 @@
    (dora__inobject ?l1 ?l2 - label ?c - category) - number
    (dora__on ?l1 ?l2 - label ?c - category) - number
 
+   (dora__not_inroom ?l - label ?c - category) - number
+
    ;; === inferred knowledge ===
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
@@ -109,8 +111,12 @@
   (:constants
    placeholder trueplace - place_status
    in on - spatial_relation
+   container - label
    yes no dontknow - polar_reply
    tutor - agent
+   unknown-relation - spatial_relation
+   unknown-room - room
+   unkonw-object - visualobject
    )
 
 
@@ -165,6 +171,7 @@
   ;;                             )
   ;;             )
 
+
   (:init-rule default_search_costs_for_room
               :parameters (?l - label  ?r - room)
               :precondition (= (search_cost ?l in ?r) unknown)
@@ -193,6 +200,12 @@
               :precondition (> ?svar 0.0001)
               :effect (defined ?svar))
 
+
+ (:init-rule negated-probs
+             :parameters (?l - label  ?c - category)
+             :precondition (defined (dora__inroom ?l ?c))
+             :effect (assign (dora__not_inroom ?l ?c) (- 1.0 (dora__inroom ?l ?c)))
+             )
 
   (:derived (attached_to_room ?p - place ?r - room)
             (exists (?p2 - place) (and (= (in-room ?p2) ?r)
@@ -265,6 +278,7 @@
                               (not (defined (p-obj_exists ?l1 on ?o ?c))))
            :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
 
+  ;; (assign (obj_in_room ?l ?r)
 
   ;; use posterior information from conceptual.sa 
   ;; force commitment to a room category to help the heuristic
@@ -483,7 +497,7 @@
                                (poss (relation ?o) in)
                                (not (done)))
             :effect (and (increase (total-cost) (search_cost ?l in ?r)))
-            :sense (related-to ?o)
+            :sense (= (related-to ?o) ?r)
             )
                      
 
@@ -569,7 +583,7 @@
                                (= (in-room ?p) ?r))
             :effect (and 
                      (increase (total-cost) 5)
-                     (assign (failure-cost) 30))
+                     (assign (failure-cost) 100))
             )
 
    (:observe room-category

@@ -969,38 +969,39 @@ class DT2MAPLCompiler(translators.Translator):
         return actions
 
     def translate_action(self, action, prob_functions, domain=None):
-        agent_term = predicates.VariableTerm(action.agents[0])
-        
-        @visitors.replace
-        def condition_visitor(cond, results):
-            if isinstance(cond, conditions.LiteralCondition):
-                if translators.get_function(cond) in prob_functions:
-                    conds = [translators.set_modality(cond, mapl.commit),
-                             translators.set_modality(cond, mapl.knowledge, [agent_term])]
-                    return conditions.Conjunction(conds)
-               
-        # dep_conditions = set()
-        @visitors.replace
-        def ceff_condition_visitor(cond, results):
-            if isinstance(cond, conditions.LiteralCondition):
-                if translators.get_function(cond) in prob_functions:
-                    conds = [translators.set_modality(cond, mapl.commit),
-                             translators.set_modality(cond, mapl.knowledge, [agent_term])]
-                    # dep_conditions.add(translators.set_modality(cond.copy(), mapl.committed))
-                    return conditions.Conjunction(conds)
-                
-        @visitors.replace
-        def effect_visitor(eff, results):
-            # if isinstance(eff, effects.SimpleEffect) and eff.predicate == builtin.num_assign:
-            #     if eff.args[0].function == reward:
-            #         term = FunctionTerm(builtin.total_cost, [])
-            #         value = -eff.args[1].object.value + 1
-            #         return effects.SimpleEffect(builtin.increase, [term, predicates.Term(value) ])
-            if isinstance(eff, effects.ConditionalEffect):
-                eff.condition.visit(ceff_condition_visitor)
+        if isinstance(action, mapl.MAPLAction):
+            agent_term = predicates.VariableTerm(action.agents[0])
 
-        visitors.visit(action.precondition, condition_visitor)
-        visitors.visit(action.effect, effect_visitor)
+            @visitors.replace
+            def condition_visitor(cond, results):
+                if isinstance(cond, conditions.LiteralCondition):
+                    if translators.get_function(cond) in prob_functions:
+                        conds = [translators.set_modality(cond, mapl.commit),
+                                 translators.set_modality(cond, mapl.knowledge, [agent_term])]
+                        return conditions.Conjunction(conds)
+
+            # dep_conditions = set()
+            @visitors.replace
+            def ceff_condition_visitor(cond, results):
+                if isinstance(cond, conditions.LiteralCondition):
+                    if translators.get_function(cond) in prob_functions:
+                        conds = [translators.set_modality(cond, mapl.commit),
+                                 translators.set_modality(cond, mapl.knowledge, [agent_term])]
+                        # dep_conditions.add(translators.set_modality(cond.copy(), mapl.committed))
+                        return conditions.Conjunction(conds)
+
+            @visitors.replace
+            def effect_visitor(eff, results):
+                # if isinstance(eff, effects.SimpleEffect) and eff.predicate == builtin.num_assign:
+                #     if eff.args[0].function == reward:
+                #         term = FunctionTerm(builtin.total_cost, [])
+                #         value = -eff.args[1].object.value + 1
+                #         return effects.SimpleEffect(builtin.increase, [term, predicates.Term(value) ])
+                if isinstance(eff, effects.ConditionalEffect):
+                    eff.condition.visit(ceff_condition_visitor)
+
+            visitors.visit(action.precondition, condition_visitor)
+            visitors.visit(action.effect, effect_visitor)
         # if dep_conditions:
         #     action.effect = effects.ConjunctiveEffect.join([action.effect] + list(dep_conditions))
 
@@ -1203,15 +1204,16 @@ class DTPDDLCompiler(translators.Translator):
         a2.effect = effects.ConjunctiveEffect.join([a2.effect, new_reward_eff])
         
         if fail_cost_term:
+            fail_cost_term = fail_cost_term[0]
             done_fn = domain.predicates["done"]
             done_fn = done_fn[0] if done_fn else None
             
             # print "has failure cost term:", fail_cost_term
-            try:
-                new_fail_reward_eff = b.effect("assign", ("reward",), predicates.Term(-fail_cost_term.object.value))
-            except:
-                #FIXME: HACK!!!!! EVIL EVIL HACK!!!! JUST FOR TESTING
-                new_fail_reward_eff = b.effect("assign", ("reward",), -10)
+            # try:
+            new_fail_reward_eff = b.effect("assign", ("reward",), predicates.Term(-fail_cost_term.object.value))
+            # except:
+            #     #FIXME: HACK!!!!! EVIL EVIL HACK!!!! JUST FOR TESTING
+            #     new_fail_reward_eff = b.effect("assign", ("reward",), -10)
             cond = a2.precondition
             eff = a2.effect
             a2.precondition = b.cond("not", (done_fn,)) if done_fn else None

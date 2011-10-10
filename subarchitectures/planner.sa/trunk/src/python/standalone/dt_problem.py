@@ -606,6 +606,9 @@ class DTProblem(object):
                 states = self.compute_states(fdict, limit)#, filter_func=fact_filter)
             # for s in states.iterkeys():
             #     print map(str, s)
+            # print ["%s=%s" %(k, map(str,v)) for k,v in fdict.iteritems()]
+            # for f, p in states.iteritems():
+            #     print "P(%s) = %.3f" % (map(str, f), p)
             tsize = len(states)
             log.debug("new state size: %d" % tsize)
             if tsize <= limit:
@@ -807,6 +810,9 @@ class DTProblem(object):
                 #     assert isinstance(f, state.Fact)
                 return [f for res, f in it if res]
             rel_facts = n.check_node(facts, self.detstate, self.qgraph, eval_fn=collect_fn, parent_facts=parent_facts)
+            # if any(f.svar.function.name == "visible_from" for f in rel_facts):
+            #     print n#, map(str, facts)
+            #     print "              ", map(str, rel_facts)
             return len(rel_facts) > 0, rel_facts
                 
         def build_state(node, rel_facts, parent_facts={}):
