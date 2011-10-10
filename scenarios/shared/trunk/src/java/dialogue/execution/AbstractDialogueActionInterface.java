@@ -81,6 +81,8 @@ public abstract class AbstractDialogueActionInterface extends
 					new HashMap<String, String>(),
 					new HashMap<String, WorkingMemoryAddress>());
 
+			((AbstractDialogueActionInterface) getComponent()).enableASR();
+
 			addStringContent(actint.stringContent);
 			addAddressContent(actint.addressContent);
 
@@ -95,6 +97,8 @@ public abstract class AbstractDialogueActionInterface extends
 			} catch (CASTException e) {
 				logException(e);
 				executionComplete(TriBool.TRIFALSE);
+			} finally {
+				((AbstractDialogueActionInterface) getComponent()).disableASR();
 			}
 		}
 
@@ -134,9 +138,13 @@ public abstract class AbstractDialogueActionInterface extends
 						InterpretedIntention interpretedIntention = getComponent()
 								.getMemoryEntry(e.address,
 										InterpretedIntention.class);
-						WorkingMemoryAddress correspAddress = interpretedIntention.addressContent.get("answer-to");
-						if (correspAddress==null) {
-							getComponent().getLogger().warn("this InterpretedIntention was not an answer to anything, hence, we wait further...");
+						WorkingMemoryAddress correspAddress = interpretedIntention.addressContent
+								.get("answer-to");
+						if (correspAddress == null) {
+							getComponent()
+									.getLogger()
+									.warn(
+											"this InterpretedIntention was not an answer to anything, hence, we wait further...");
 							continue;
 						}
 						println("check if the received InterpretedIntention matches the one we are waiting for");
@@ -598,6 +606,21 @@ public abstract class AbstractDialogueActionInterface extends
 		fd.add(_value, _prob);
 		pb.getContent().put(_feature, fd);
 		overwriteWorkingMemory(_action.beliefAddress, pb.get());
+	}
+
+	/**
+	 * called when the robot should STOP listening 
+	 */
+	public void disableASR() {
+		println("disbaling ASR not implemented in " + AbstractDialogueActionInterface.class.toString());
+		
+	}
+
+	/**
+	 * called when the robot should listen 
+	 */
+	public void enableASR() {
+		println("enbaling ASR not implemented in " + AbstractDialogueActionInterface.class.toString());
 	}
 
 	private static String askForFeatureValue(String _feature) {
