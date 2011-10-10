@@ -630,7 +630,7 @@
                                (= (in-room ?p) ?r))
             :effect (and 
                      (increase (total-cost) 5))
-                     (assign (failure-cost) 100))
+                     (assign (failure-cost) 100)
             )
 
    (:observe room-category
