@@ -83,7 +83,6 @@ public abstract class AbstractDialogueActionInterface extends
 				WorkingMemoryAddress id = newWorkingMemoryAddress();
 				prepareCheckAndResponse(id);
 				getComponent().addToWorkingMemory(id, actint);
-				log("added intention to WM, now sleeping for 20 seconds then returning true");
 				TriBool res = waitAndCheckResponse(id);
 				actionComplete();
 				return res;
@@ -102,6 +101,7 @@ public abstract class AbstractDialogueActionInterface extends
 
 		protected TriBool waitAndCheckResponse(WorkingMemoryAddress id) {
 			try {
+				log("added intention to WM, now sleeping for 20 seconds then returning true");
 				Thread.sleep(20000);
 			} catch (InterruptedException e) {
 				logException(e);
