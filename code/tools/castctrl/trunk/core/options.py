@@ -180,18 +180,21 @@ class CCastOptions(object):
         # Parse defaults to discover missing variables
         defaults = self._parseEnvironmentScript(defaults)
         enew = {}
+        enew_order = []
         for (k, v, isPath) in defaults:
             if not k in self.environ:
                 v = _xe(v, self.environ, keepUnknown=True)
                 if isPath: v = self._cleanPathList(v)
                 enew[k] = v
+                enew_order.append(k)
         if len(enew) < 1:
             return self.environ.copy()
 
         # Rebuild the environment: strtup, defaults, environscript
         edef = self._mergeEnvironment(startup_environ, [])
-        for k,v in enew.items():
-            edef[k] = _xe(v, edef)
+        for k in enew_order:
+            if k in enew:
+                edef[k] = _xe(enew[k], edef)
         edef = self._mergeEnvironment(edef, self.environscript)
 
         return edef
