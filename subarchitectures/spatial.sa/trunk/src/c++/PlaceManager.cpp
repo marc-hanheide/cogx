@@ -878,6 +878,8 @@ bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)
 
   // Add connectivity property (one-way)
   createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
+  m_hypotheticalConnectivities.push_back(pair<int, int>(currentPlaceID, newPlaceID));
+
   p.m_data->status = SpatialData::PLACEHOLDER;
   p.m_WMid = newDataID();
   log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
@@ -2096,6 +2098,7 @@ PlaceManager::deletePlaceProperties(int placeID)
   {
     //TODO: Delete connectivity properties
   }
+
   log("deletePlaceProperties exited");
 }
 
@@ -2255,6 +2258,31 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
       done = true;
     }
   }
+
+  // Need to make sure that no hypothetical connectivities remain, only
+  // real ones (from the node map)
+  {
+    for (list<pair<int, int> >::iterator it = m_hypotheticalConnectivities.begin();
+	it != m_hypotheticalConnectivities.end(); it++) {
+      if (it->second == placeID) {
+	// Hypothetical edge leading to new Place; 
+	// Check if there's a connectivity property in the
+	// opposite direction
+	// If so, that edge has already been processed
+	// and we can keep it
+	// Otherwise, the hypothesis should be discarded
+
+	string placeIDstr = concatenatePlaceIDs(it->second, it->first);
+	if (m_placeIDsToConnectivityWMID.count(placeIDstr) == 0) {
+	  deleteConnectivityProperty(it->first, it->second);
+	}
+
+	it = m_hypotheticalConnectivities.erase(it);
+      }
+    }
+  }
+
+
   m_HypIDToWMIDMap.erase(hypothesisID);
   m_PlaceIDToHypMap.erase(placeID);
 
@@ -2296,7 +2324,7 @@ PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID
       new SpatialProperties::FloatValue;
     SpatialProperties::FloatValuePtr costValue2 = 
       new SpatialProperties::FloatValue;
-    costValue1->value = m_hypPathLength;
+    costValue1->value = cost;
     costValue2->value = numeric_limits<double>::infinity();
 
     SpatialProperties::ValueProbabilityPair pair1 =
@@ -2322,7 +2350,6 @@ PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID
 
     string newID = newDataID();
     addToWorkingMemory<SpatialProperties::ConnectivityPathProperty>(newID, connectivityProp1);
-
     set<int> &place1Connectivities = m_connectivities[place1ID];
     place1Connectivities.insert(place2ID); 
 
