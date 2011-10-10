@@ -39,10 +39,10 @@ import execution.slice.actions.AskPolarShape;
 import execution.slice.actions.BeliefPlusFeatureValueAction;
 import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.SingleBeliefAction;
+import execution.slice.actions.VerifyReference;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
-import execution.util.NonBlockingActionExecutor;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -63,18 +63,27 @@ public abstract class AbstractDialogueActionInterface extends
 	protected boolean m_fakeIt;
 
 	public abstract static class IntentionDialogueAction<T extends Action>
-			extends NonBlockingActionExecutor<T> {
+			extends BlockingActionExecutor<T> {
 
 		private static final int DLG_TIMEOUT = 20;
 		WMEventQueue eventQueue = new WMEventQueue();
 
+		// the tribool to return on a timeout
+		private final TriBool m_timeoutResponse;
+
+		public IntentionDialogueAction(ManagedComponent _component,
+				Class<T> _cls, TriBool _timeoutResponse) {
+			super(_component, _cls);
+			m_timeoutResponse = _timeoutResponse;
+		}
+
 		public IntentionDialogueAction(ManagedComponent _component,
 				Class<T> _cls) {
-			super(_component, _cls);
+			this(_component, _cls, TriBool.TRIFALSE);
 		}
 
 		@Override
-		public void executeAction() {
+		public TriBool execute() {
 			log("IntentionDialogueAction.execute()");
 
 			IntentionToAct actint = new IntentionToAct(
@@ -85,21 +94,19 @@ public abstract class AbstractDialogueActionInterface extends
 
 			addStringContent(actint.stringContent);
 			addAddressContent(actint.addressContent);
-
+			TriBool res = TriBool.TRIFALSE;
 			try {
 				WorkingMemoryAddress id = newWorkingMemoryAddress();
 				prepareCheckAndResponse(id);
 				getComponent().addToWorkingMemory(id, actint);
-				TriBool res = waitAndCheckResponse(id);
+				res = waitAndCheckResponse(id);
 				actionComplete();
-				executionComplete(res);
-
 			} catch (CASTException e) {
 				logException(e);
-				executionComplete(TriBool.TRIFALSE);
 			} finally {
 				((AbstractDialogueActionInterface) getComponent()).disableASR();
 			}
+			return res;
 		}
 
 		@Override
@@ -132,7 +139,7 @@ public abstract class AbstractDialogueActionInterface extends
 							TimeUnit.SECONDS);
 					if (e == null) {
 						println("didn't get the intention in time... action failed");
-						return TriBool.TRIFALSE;
+						return m_timeoutResponse;
 					} else {
 						println("got human intention to engage... check if it is the right one");
 						InterpretedIntention interpretedIntention = getComponent()
@@ -143,14 +150,13 @@ public abstract class AbstractDialogueActionInterface extends
 						if (correspAddress == null) {
 							getComponent()
 									.getLogger()
-									.warn(
-											"this InterpretedIntention was not an answer to anything, hence, we wait further...");
+									.warn("this InterpretedIntention was not an answer to anything, hence, we wait further...");
 							continue;
 						}
 						println("check if the received InterpretedIntention matches the one we are waiting for");
 						if (correspAddress.equals(id)) {
 							println("yes, it matched!");
-							return TriBool.TRITRUE;
+							return checkResponse(interpretedIntention);
 						}
 
 					}
@@ -166,6 +172,19 @@ public abstract class AbstractDialogueActionInterface extends
 					logException(e);
 				}
 			}
+			return TriBool.TRITRUE;
+		}
+
+		/**
+		 * Called when the matching response to an intention is received. The
+		 * return result is passed back to the planner as the result of the
+		 * action.
+		 * 
+		 * @param interpretedIntention
+		 * @return
+		 */
+		protected TriBool checkResponse(
+				InterpretedIntention interpretedIntention) {
 			return TriBool.TRITRUE;
 		}
 
@@ -196,6 +215,11 @@ public abstract class AbstractDialogueActionInterface extends
 			super(_component, _cls);
 		}
 
+		public BeliefIntentionDialogueAction(ManagedComponent _component,
+				Class<T> _cls, TriBool _timeoutResponse) {
+			super(_component, _cls, _timeoutResponse);
+		}
+
 		@Override
 		protected void addAddressContent(
 				Map<String, WorkingMemoryAddress> _addressContent) {
@@ -210,6 +234,11 @@ public abstract class AbstractDialogueActionInterface extends
 		public FeatureValueQuestionAnswer(ManagedComponent _component,
 				Class<T> _cls) {
 			super(_component, _cls);
+		}
+
+		public FeatureValueQuestionAnswer(ManagedComponent _component,
+				Class<T> _cls, TriBool _timeoutResponse) {
+			super(_component, _cls, _timeoutResponse);
 		}
 
 		@Override
@@ -339,11 +368,69 @@ public abstract class AbstractDialogueActionInterface extends
 		}
 	}
 
+	public static class VerifyReferenceExecutor extends
+			BeliefIntentionDialogueAction<VerifyReference> {
+
+		public VerifyReferenceExecutor(ManagedComponent _component) {
+			super(_component, VerifyReference.class);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			super.addStringContent(_stringContent);
+
+			// stringContent:
+			// "type" -> "question"
+			// "subtype" -> "verification"
+			//
+
+			_stringContent.put(INTENTION_TYPE_KEY, "question");
+			_stringContent.put("subtype", "verification");
+		}
+
+		@Override
+		protected void addAddressContent(
+				Map<String, WorkingMemoryAddress> _addressContent) {
+			super.addAddressContent(_addressContent);
+
+			// addressContent:
+			// "about" -> the WMA of the GroundedBelief you want to verify
+			// "verification-of" -> the WMA of the intention the GroundedBelief
+			// is
+			// pointed from (the interpretation we'd like to verify)
+
+			// TODO start here, working out how to keep track of verification-of
+			// pointer across multiple calls of the executor
+			// _addressContent.put("verification-of", ?);
+		}
+
+		@Override
+		protected TriBool checkResponse(
+				InterpretedIntention interpretedIntention) {
+			// TODO Handle matched response looking like this:
+			// stringContent:
+			// type -> "verification"
+			// polarity -> "pos" | "neg"
+			//
+			// addressContent:
+			// "answer-to" -> the IntentionToAct asking "do you mean this one"
+			// "about" -> the "this one" in the IntentionToAct
+			// "verification-of" -> same as above
+
+			// case: pos - return true, and don't touch the belief
+			// case neg - return true, but remove the
+			// "is-potential-object-in-question" feature
+
+			return super.checkResponse(interpretedIntention);
+		}
+
+	}
+
 	public static class AnswerOpenQuestionExecutor extends
 			FeatureValueQuestionAnswer<AnswerOpenQuestion> {
 
 		public AnswerOpenQuestionExecutor(ManagedComponent _component) {
-			super(_component, AnswerOpenQuestion.class);
+			super(_component, AnswerOpenQuestion.class, TriBool.TRITRUE);
 		}
 
 		@Override
@@ -381,7 +468,7 @@ public abstract class AbstractDialogueActionInterface extends
 			FeatureValueQuestionAnswer<AnswerPolarQuestion> {
 
 		public AnswerPolarQuestionExecutor(ManagedComponent _component) {
-			super(_component, AnswerPolarQuestion.class);
+			super(_component, AnswerPolarQuestion.class, TriBool.TRITRUE);
 		}
 
 		@Override
@@ -609,18 +696,20 @@ public abstract class AbstractDialogueActionInterface extends
 	}
 
 	/**
-	 * called when the robot should STOP listening 
+	 * called when the robot should STOP listening
 	 */
 	public void disableASR() {
-		println("disbaling ASR not implemented in " + AbstractDialogueActionInterface.class.toString());
-		
+		println("disbaling ASR not implemented in "
+				+ AbstractDialogueActionInterface.class.toString());
+
 	}
 
 	/**
-	 * called when the robot should listen 
+	 * called when the robot should listen
 	 */
 	public void enableASR() {
-		println("enbaling ASR not implemented in " + AbstractDialogueActionInterface.class.toString());
+		println("enbaling ASR not implemented in "
+				+ AbstractDialogueActionInterface.class.toString());
 	}
 
 	private static String askForFeatureValue(String _feature) {
@@ -763,6 +852,12 @@ public abstract class AbstractDialogueActionInterface extends
 							AnswerOpenQuestion.class,
 							new ComponentActionFactory<AnswerOpenQuestion, AnswerOpenQuestionExecutor>(
 									this, AnswerOpenQuestionExecutor.class));
+
+			m_actionStateManager
+					.registerActionType(
+							AnswerPolarQuestion.class,
+							new ComponentActionFactory<AnswerPolarQuestion, AnswerPolarQuestionExecutor>(
+									this, AnswerPolarQuestionExecutor.class));
 
 			// m_actionStateManager
 			// .registerActionType(
