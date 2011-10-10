@@ -57,12 +57,12 @@ public class SimpleDialogueActionInterface extends
 
 		if (m_fakeIt) {
 			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<DirectReportPosition>(this,
+					new ComponentActionFactory<ReportPosition,DirectReportPosition>(this,
 							DirectReportPosition.class));
 
 		} else {
 			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<ReportPositionDialogue>(this,
+					new ComponentActionFactory<ReportPosition,ReportPositionDialogue>(this,
 							ReportPositionDialogue.class));
 		}
 	}

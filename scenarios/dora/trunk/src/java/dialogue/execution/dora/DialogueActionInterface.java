@@ -174,20 +174,26 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 		super.start();
 
 		if (m_fakeIt) {
-			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<DirectReportPosition>(this,
-							DirectReportPosition.class));
+			m_actionStateManager
+					.registerActionType(
+							ReportPosition.class,
+							new ComponentActionFactory<ReportPosition, DirectReportPosition>(
+									this, DirectReportPosition.class));
 
 		} else {
-			m_actionStateManager.registerActionType(ReportPosition.class,
-					new ComponentActionFactory<ReportPositionDialogue>(this,
-							ReportPositionDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							ReportPosition.class,
+							new ComponentActionFactory<ReportPosition, ReportPositionDialogue>(
+									this, ReportPositionDialogue.class));
 
 			// TODO: ticket #296
 
-			m_actionStateManager.registerActionType(EngageWithHuman.class,
-					new ComponentActionFactory<HumanEngagementExecutor>(this,
-							HumanEngagementExecutor.class));
+			m_actionStateManager
+					.registerActionType(
+							EngageWithHuman.class,
+							new ComponentActionFactory<EngageWithHuman, HumanEngagementExecutor>(
+									this, HumanEngagementExecutor.class));
 
 		}
 	}
