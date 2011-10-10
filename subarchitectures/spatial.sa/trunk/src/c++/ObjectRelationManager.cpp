@@ -469,8 +469,6 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  //This is insane.
-  //sleepComponent(2000);
 
   SpatialGridMap::GridMapData def;
   def.occupancy = SpatialGridMap::UNKNOWN;
@@ -530,8 +528,6 @@ void ObjectRelationManager::runComponent()
 
 		processPriorRequest(fakePriorRequest); 
   }
-  // alper: Commented out below, one question: why?
-  //sleepComponent(2000);
 
   int counter = 0;
   while (isRunning()) {
@@ -550,6 +546,7 @@ void ObjectRelationManager::runComponent()
     if (m_bDetectObjects) {
       lockComponent();
 
+      // Will not occur until robotpose is overwritten the first time
       if (!m_bRecognitionIssuedThisStop &&
 	  m_timeSinceLastMoved > m_recognitionTimeThreshold) {
 	log("Issuing recognition commands");
