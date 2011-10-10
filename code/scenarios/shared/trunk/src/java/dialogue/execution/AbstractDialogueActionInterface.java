@@ -80,21 +80,33 @@ public abstract class AbstractDialogueActionInterface extends
 			addAddressContent(actint.addressContent);
 
 			try {
-				getComponent().addToWorkingMemory(newWorkingMemoryAddress(),
-						actint);
+				WorkingMemoryAddress id = newWorkingMemoryAddress();
+				prepareCheckAndResponse(id);
+				getComponent().addToWorkingMemory(id, actint);
 				log("added intention to WM, now sleeping for 20 seconds then returning true");
-				Thread.sleep(20000);
+				TriBool res = waitAndCheckResponse(id);
 				actionComplete();
-				return TriBool.TRITRUE;
+				return res;
 
 			} catch (CASTException e) {
-				logException(e);
-			} catch (InterruptedException e) {
 				logException(e);
 			}
 
 			return TriBool.TRIFALSE;
 
+		}
+
+		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
+			
+		}
+
+		protected TriBool waitAndCheckResponse(WorkingMemoryAddress id) {
+			try {
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				logException(e);
+			}
+			return TriBool.TRITRUE;
 		}
 
 		protected void addAddressContent(
