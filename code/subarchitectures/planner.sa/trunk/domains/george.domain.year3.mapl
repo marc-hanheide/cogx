@@ -66,13 +66,17 @@
 
     (arm-not-in-resting-position ?r - Robot)
 
-    (global-color-question-answered)
-    (global-shape-question-answered)
-    (global-type-question-answered)
+    (global-color-question-answered ?v - VisualObject)
+    (global-shape-question-answered ?v - VisualObject)
+    (global-type-question-answered ?v - VisualObject)
 
-    (polar-color-question-answered ?c - ColorName)
-    (polar-shape-question-answered ?s - ShapeName)
-    (polar-type-question-answered ?t - TypeName)
+    (polar-color-question-answered ?v - VisualObject ?c - ColorName)
+    (polar-shape-question-answered ?v - VisualObject ?s - ShapeName)
+    (polar-type-question-answered ?v - VisualObject ?t - TypeName)
+
+    ;; (object-refering-question-answered-color ?c - ColorName)
+    ;; (object-refering-question-answered-shape ?s - ShapeName)
+    ;; (object-refering-question-answered-color ?t - TypeName)
   )
 
   (:functions
@@ -80,7 +84,7 @@
     (polar-question-color-threshold ?r - Robot) - number     ;; If max-gain-value-color is higher than this we allow a polar question
     (learn-autonomous-color-threshold ?r - Robot) - number   ;; If max-gain-value-color is higher than this we learn autonomously
     (convinced-of-color-threshold ?r - Robot) - number       ;; If max-gain-value-color is higher than this we answer convinced
-    (believe-in-color-threshold ?r - Robot) - number          ;; If max-gain-value-color is lower than this we answer we dont know
+    (believe-in-color-threshold ?r - Robot) - number         ;; If max-gain-value-color is lower than this we answer we dont know
     (max-gain-label-color ?v - VisualObject) - ColorName     ;; This is the color with the highest potential gain for some object
     (max-gain-value-color ?v - VisualObject) - number        ;; This is the color-gain of max-gain-label-color
 
@@ -728,7 +732,7 @@
       )
     :effect
       (and
-        (global-color-question-answered)
+        (global-color-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -745,7 +749,7 @@
       )
     :effect
       (and
-        (global-color-question-answered)
+        (global-color-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -761,7 +765,7 @@
       )
     :effect
       (and
-        (global-color-question-answered)
+        (global-color-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -777,7 +781,7 @@
       )
     :effect
       (and
-        (global-shape-question-answered)
+        (global-shape-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -794,7 +798,7 @@
       )
     :effect
       (and
-        (global-shape-question-answered)
+        (global-shape-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -810,7 +814,7 @@
       )
     :effect
       (and
-        (global-shape-question-answered)
+        (global-shape-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -826,7 +830,7 @@
       )
     :effect
       (and
-        (global-type-question-answered)
+        (global-type-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -843,7 +847,7 @@
       )
     :effect
       (and
-        (global-type-question-answered)
+        (global-type-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -859,7 +863,7 @@
       )
     :effect
       (and
-        (global-type-question-answered)
+        (global-type-question-answered ?v)
         (increase (total-cost) 1)
       )
   )
@@ -879,7 +883,7 @@
       )
     :effect
       (and
-        (polar-color-question-answered ?c)
+        (polar-color-question-answered ?v ?c)
         (increase (total-cost) 1)
       )
   )
@@ -896,7 +900,7 @@
       )
     :effect
       (and
-        (polar-color-question-answered ?c)
+        (polar-color-question-answered ?v ?c)
         (increase (total-cost) 1)
       )
   )
@@ -918,7 +922,7 @@
       )
     :effect
       (and
-        (polar-color-question-answered ?c)
+        (polar-color-question-answered ?v ?c)
         (increase (total-cost) 2)
       )
   )
@@ -934,7 +938,7 @@
       )
     :effect
       (and
-        (polar-shape-question-answered ?s)
+        (polar-shape-question-answered ?v ?s)
         (increase (total-cost) 1)
       )
   )
@@ -951,7 +955,7 @@
       )
     :effect
       (and
-        (polar-shape-question-answered ?s)
+        (polar-shape-question-answered ?v ?s)
         (increase (total-cost) 1)
       )
   )
@@ -973,7 +977,7 @@
       )
     :effect
       (and
-        (polar-shape-question-answered ?s)
+        (polar-shape-question-answered ?v ?s)
         (increase (total-cost) 2)
       )
   )
@@ -989,7 +993,7 @@
       )
     :effect
       (and
-        (polar-type-question-answered ?t)
+        (polar-type-question-answered ?v ?t)
         (increase (total-cost) 1)
       )
   )
@@ -1006,7 +1010,7 @@
       )
     :effect
       (and
-        (polar-type-question-answered ?t)
+        (polar-type-question-answered ?v ?t)
         (increase (total-cost) 1)
       )
   )
@@ -1028,9 +1032,28 @@
       )
     :effect
       (and
-        (polar-type-question-answered ?t)
+        (polar-type-question-answered ?v ?t)
         (increase (total-cost) 2)
       )
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;     OBJECT QUESTIONS     ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  ;; (:action answer-object-refering-question
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?c - ColorName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (= (currently-points-at ?r) ?v)
+  ;;       (= (max-gain-label-color ?v) ?c)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (object-refering-question-answered-color ?c - ColorName)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )     
 
 )
