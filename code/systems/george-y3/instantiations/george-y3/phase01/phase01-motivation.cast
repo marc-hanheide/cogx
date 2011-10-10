@@ -43,7 +43,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 
 
 # dialogue ###################################################################
-INCLUDE includes/dialogue.sa/INCL/default+gui.cast
+INCLUDE includes/dialogue.sa/INCL/george-live.cast
 INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
 # planning and motivation #####################################################
