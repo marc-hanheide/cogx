@@ -1052,7 +1052,7 @@
       )
     :effect
       (and
-        (object-refering-color-question-answered ?v- VisualObject ?c - ColorName)
+        (object-refering-color-question-answered ?v ?c)
         (increase (total-cost) 1)
       )
   )
@@ -1068,7 +1068,7 @@
       )
     :effect
       (and
-        (object-refering-shape-question-answered ?v- VisualObject ?s - ShapeName)
+        (object-refering-shape-question-answered ?v ?s)
         (increase (total-cost) 1)
       )
   )
@@ -1084,7 +1084,7 @@
       )
     :effect
       (and
-        (object-refering-type-question-answered ?v- VisualObject ?t - TypeName)
+        (object-refering-type-question-answered ?v ?t)
         (increase (total-cost) 1)
       )
   )
