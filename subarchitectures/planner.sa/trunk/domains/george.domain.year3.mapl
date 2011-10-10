@@ -67,18 +67,24 @@
     (color ?v - VisualObject) - ColorName
     (polar-question-color-threshold ?r - Robot) - number     ;; If max-gain-value-color is higher than this we allow a polar question
     (learn-autonomous-color-threshold ?r - Robot) - number   ;; If max-gain-value-color is higher than this we learn autonomously
+    (convinced-of-color-threshold ?r - Robot) - number       ;; If max-gain-value-color is higher than this we answer convinced
+    (believe-in-color-threshold ?r - Robot) - number          ;; If max-gain-value-color is lower than this we answer we dont know
     (max-gain-label-color ?v - VisualObject) - ColorName     ;; This is the color with the highest potential gain for some object
     (max-gain-value-color ?v - VisualObject) - number        ;; This is the color-gain of max-gain-label-color
 
     (shape ?v - VisualObject) - ShapeName
     (polar-question-shape-threshold ?r - Robot) - number
     (learn-autonomous-shape-threshold ?r - Robot) - number
+    (convinced-of-shape-threshold ?r - Robot) - number
+    (believe-in-shape-threshold ?r - Robot) - number
     (max-gain-label-shape ?v - VisualObject) - ShapeName
     (max-gain-value-shape ?v - VisualObject) - number
 
     (type ?v - VisualObject) - TypeName
     (polar-question-type-threshold ?r - Robot) - number
     (learn-autonomous-type-threshold ?r - Robot) - number
+    (convinced-of-type-threshold ?r - Robot) - number
+    (believe-in-type-threshold ?r - Robot) - number
     (max-gain-label-type ?v - VisualObject) - TypeName
     (max-gain-value-type ?v - VisualObject) - number
 
@@ -700,20 +706,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;           QUESTION ANSWERING            ;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (:action answer-global-color-question
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;    GLOBAL QUESTIONS      ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
+  (:action answer-global-color-question-convinced
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
-      (or
-        (and
-          (attributed TUTOR (color ?v) ?c)
-        )
-        (and
-          (allow-autonomous-color-learning ?v ?c ?r)
-          (color-learned ?v)
-        )
+      (and
+        (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
@@ -722,18 +727,44 @@
       )
   )
 
-  (:action answer-global-shape-question
+  (:action answer-global-color-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
+        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
+      )
+    :effect
+      (and
+        (global-color-question-answered ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-color-question-unknown
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
+      )
+    :effect
+      (and
+        (global-color-question-answered ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-shape-question-convinced
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
-      (or
-        (and
-          (attributed TUTOR (shape ?v) ?s)
-        )
-        (and
-          (allow-autonomous-shape-learning ?v ?s ?r)
-          (shape-learned ?v)
-        )
+      (and
+        (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
@@ -742,18 +773,44 @@
       )
   )
 
-  (:action answer-global-type-question
+    (:action answer-global-shape-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
+        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
+      )
+    :effect
+      (and
+        (global-shape-question-answered ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-shape-question-unknown
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
+      )
+    :effect
+      (and
+        (global-shape-question-answered ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-type-question-convinced
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
-      (or
-        (and
-          (attributed TUTOR (type ?v) ?t)
-        )
-        (and
-          (allow-autonomous-type-learning ?v ?t ?r)
-          (type-learned ?v)
-        )
+      (and
+        (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
@@ -762,18 +819,64 @@
       )
   )
 
+    (:action answer-global-type-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (and
+        (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
+        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?t)
+      )
+    :effect
+      (and
+        (global-type-question-answered ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-type-question-unknown
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (and
+        (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?t)
+      )
+    :effect
+      (and
+        (global-type-question-answered ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;     POLAR QUESTIONS      ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+
   (:action answer-polar-color-question-positively
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
-      (or
-        (and
-          (attributed TUTOR (color ?v) ?c)
-        )
-        (and
-          (allow-autonomous-color-learning ?v ?c ?r)
-          (color-learned ?v)
-        )
+      (and
+        (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
+      )
+    :effect
+      (and
+        (polar-color-question-answered ?v ?c)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-color-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
+        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
@@ -784,10 +887,20 @@
 
   (:action answer-polar-color-question-negatively
     :agent (?r - Robot)
-    :parameters (?v - VisualObject)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (or
+        (and
+          (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
+          (= (max-gain-label-color ?v) ?c)
+        )
+        (
+          (not (= (max-gain-label-color ?v) ?c))
+        )
+      )
     :effect
       (and
-        (forall (?c - ColorName) (polar-color-question-answered ?v ?c) )
+        (polar-color-question-answered ?v ?c)
         (increase (total-cost) 2)
       )
   )
@@ -796,14 +909,25 @@
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
-      (or
-        (and
-          (attributed TUTOR (shape ?v) ?s)
-        )
-        (and
-          (allow-autonomous-shape-learning ?v ?s ?r)
-          (shape-learned ?v)
-        )
+      (and
+        (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
+      )
+    :effect
+      (and
+        (polar-shape-question-answered ?v ?s)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-shape-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
+        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
@@ -814,26 +938,47 @@
 
   (:action answer-polar-shape-question-negatively
     :agent (?r - Robot)
-    :parameters (?v - VisualObject)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (or
+        (and
+          (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
+          (= (max-gain-label-shape ?v) ?s)
+        )
+        (
+          (not (= (max-gain-label-shape ?v) ?s))
+        )
+      )
     :effect
       (and
-        (forall (?s - ShapeName) (polar-shape-question-answered ?v ?s))
+        (polar-shape-question-answered ?v ?s)
         (increase (total-cost) 2)
       )
   )
 
-  (:action answer-polar-type-question-positively
+    (:action answer-polar-type-question-positively
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
-      (or
-        (and
-          (attributed TUTOR (type ?v) ?t)
-        )
-        (and
-          (allow-autonomous-type-learning ?v ?t ?r)
-          (type-learned ?v)
-        )
+      (and
+        (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?t)
+      )
+    :effect
+      (and
+        (polar-type-question-answered ?v ?t)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-type-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (and
+        (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
+        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
@@ -844,12 +989,22 @@
 
   (:action answer-polar-type-question-negatively
     :agent (?r - Robot)
-    :parameters (?v - VisualObject)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (or
+        (and
+          (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
+          (= (max-gain-label-type ?v) ?t)
+        )
+        (
+          (not (= (max-gain-label-type ?v) ?t))
+        )
+      )
     :effect
       (and
-        (forall (?t - TypeName) (polar-type-question-answered ?v ?t))
+        (polar-type-question-answered ?v ?t)
         (increase (total-cost) 2)
       )
-  ) 
+  )
 
 )
