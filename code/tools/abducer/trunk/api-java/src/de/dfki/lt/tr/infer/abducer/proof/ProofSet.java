@@ -51,7 +51,7 @@ public class ProofSet {
 		return false;
 	}
 
-	void removeProof(Proof p) {
+	public void removeProof(Proof p) {
 		proofs.remove(p);
 	}
 
