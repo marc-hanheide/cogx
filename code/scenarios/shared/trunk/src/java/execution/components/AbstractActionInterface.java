@@ -17,36 +17,38 @@ import execution.util.LocalActionStateManager;
  * Some things that seem common across all CogX action interfaces.
  * 
  * @author nah
- *
+ * 
  */
 public abstract class AbstractActionInterface extends ManagedComponent {
 
 	protected LocalActionStateManager m_actionStateManager;
 
-	public void addBooleanFeature(WorkingMemoryAddress _beliefAddress, String _feature, boolean _value)
-			throws DoesNotExistOnWMException, ConsistencyException,
-			PermissionException, UnknownSubarchitectureException {
-			
-				GroundedBelief belief = getMemoryEntry(_beliefAddress,
-						GroundedBelief.class);
-				CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-						.create(GroundedBelief.class, belief);
-			
-				FormulaDistribution fd = FormulaDistribution.create();
-				fd.add(_value, 1);
-			
-				pb.getContent().put(_feature, fd);
-				overwriteWorkingMemory(_beliefAddress, pb.get());
-			}
+	public void addBooleanFeature(WorkingMemoryAddress _beliefAddress,
+			String _feature, boolean _value) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
 
-	protected WorkingMemoryPointer getFirstAncestorOfBelief(WorkingMemoryAddress _beliefAddress)
+		GroundedBelief belief = getMemoryEntry(_beliefAddress,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+
+		pb.getContent().put(_feature, fd);
+		overwriteWorkingMemory(_beliefAddress, pb.get());
+	}
+
+	protected WorkingMemoryPointer getFirstAncestorOfBelief(
+			WorkingMemoryAddress _beliefAddress)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-			
-				GroundedBelief belief = getMemoryEntry(_beliefAddress,
-						GroundedBelief.class);
-			
-				CASTBeliefHistory hist = (CASTBeliefHistory) belief.hist;
-				return hist.ancestors.get(0);
-			}
+
+		GroundedBelief belief = getMemoryEntry(_beliefAddress,
+				GroundedBelief.class);
+
+		CASTBeliefHistory hist = (CASTBeliefHistory) belief.hist;
+		return hist.ancestors.get(0);
+	}
 
 }
