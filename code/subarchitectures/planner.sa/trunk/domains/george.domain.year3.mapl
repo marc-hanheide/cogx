@@ -66,7 +66,7 @@
     (clarify-object-reference-shape ?s - ShapeName)
     (clarify-object-reference-type ?t - TypeName)
 
-    (is-object-in-question ?v - VisualObject)
+    (is-object-in-question ?v - VisualObject ?r - Robot)
     (is-potential-object-in-question ?v - VisualObject)
 
     (global-color-question-answered)
@@ -722,7 +722,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
@@ -738,7 +738,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
@@ -755,7 +755,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
@@ -771,7 +771,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
@@ -787,7 +787,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
@@ -804,7 +804,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
@@ -820,7 +820,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
@@ -836,7 +836,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
@@ -853,7 +853,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
@@ -873,7 +873,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
@@ -889,7 +889,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
@@ -907,12 +907,12 @@
     :precondition
       (or
         (and
-          (is-object-in-question ?v)
+          (is-object-in-question ?v ?r)
           (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
           (= (max-gain-label-color ?v) ?c)
         )
         (and
-          (is-object-in-question ?v)
+          (is-object-in-question ?v ?r)
           (not (= (max-gain-label-color ?v) ?c))
         )
       )
@@ -928,7 +928,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
@@ -944,7 +944,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
@@ -962,12 +962,12 @@
     :precondition
       (or
         (and
-          (is-object-in-question ?v)
+          (is-object-in-question ?v ?r)
           (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
           (= (max-gain-label-shape ?v) ?s)
         )
         (and
-          (is-object-in-question ?v)
+          (is-object-in-question ?v ?r)
           (not (= (max-gain-label-shape ?v) ?s))
         )
       )
@@ -983,7 +983,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
@@ -999,7 +999,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v)
+        (is-object-in-question ?v ?r)
         (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
@@ -1017,12 +1017,12 @@
     :precondition
       (or
         (and
-          (is-object-in-question ?v)
+          (is-object-in-question ?v ?r)
           (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
           (= (max-gain-label-type ?v) ?t)
         )
         (and
-          (is-object-in-question ?v)
+          (is-object-in-question ?v ?r)
           (not (= (max-gain-label-type ?v) ?t))
         )
       )
