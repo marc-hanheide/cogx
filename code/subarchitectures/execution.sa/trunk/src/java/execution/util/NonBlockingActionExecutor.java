@@ -13,7 +13,7 @@ import execution.slice.TriBool;
  * 
  */
 public abstract class NonBlockingActionExecutor<ActionType extends Action>
-		extends ComponentActionExecutor {
+		extends ComponentActionExecutor<ActionType> {
 
 	private ExecutionCompletionCallback m_callback;
 	private final Class<ActionType> m_actCls;
@@ -39,7 +39,7 @@ public abstract class NonBlockingActionExecutor<ActionType extends Action>
 		return m_actCls.cast(m_action);
 	}
 
-	protected Class<ActionType> getActionClass() {
+	public Class<ActionType> getActionClass() {
 		return m_actCls;
 	}
 

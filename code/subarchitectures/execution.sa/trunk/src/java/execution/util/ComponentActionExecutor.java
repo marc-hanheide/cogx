@@ -2,8 +2,9 @@ package execution.util;
 
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import execution.slice.Action;
 
-public abstract class ComponentActionExecutor implements ActionExecutor {
+public abstract class ComponentActionExecutor<ActionClass extends Action> implements ActionExecutor<ActionClass> {
 
 	private final ManagedComponent m_component;
 

@@ -3,6 +3,7 @@ package execution.util;
 import java.lang.reflect.Constructor;
 
 import cast.architecture.ManagedComponent;
+import execution.slice.Action;
 
 /**
  * Create factory that can create action executor which can be constructed using
@@ -12,8 +13,8 @@ import cast.architecture.ManagedComponent;
  * 
  * @param <ExecutorType>
  */
-public class ComponentActionFactory<ExecutorType extends ActionExecutor>
-		implements ActionExecutorFactory {
+public class ComponentActionFactory<ActionType extends Action, ExecutorType extends ActionExecutor<ActionType>>
+		implements ActionExecutorFactory<ActionType> {
 
 	private final ManagedComponent m_component;
 	private Class<ExecutorType> m_exeClass;
@@ -29,15 +30,11 @@ public class ComponentActionFactory<ExecutorType extends ActionExecutor>
 	}
 
 	@Override
-	public ActionExecutor getActionExecutor() {
+	public ActionExecutor<ActionType> getActionExecutor() {
 		try {
-			
-			
-			
 			Constructor<ExecutorType> constructor = m_exeClass
 					.getConstructor(ManagedComponent.class);
 			return constructor.newInstance(m_component);
-
 		} catch (Exception e) {
 			for(Constructor<?> c : m_exeClass.getConstructors()) {
 				m_component.println(c);

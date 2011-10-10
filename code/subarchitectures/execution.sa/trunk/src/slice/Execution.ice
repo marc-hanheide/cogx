@@ -223,6 +223,14 @@ module execution {
 	class AnswerFeatureValueQuestion extends BeliefPlusFeatureValueAction {
 		ConfidenceLevel confidence;
 	};
+	
+	class AnswerOpenQuestion extends AnswerFeatureValueQuestion {
+	
+	};
+
+	class AnswerPolarQuestion extends AnswerFeatureValueQuestion {
+	
+	};
 
 
       class AskForColour extends SingleBeliefAction {

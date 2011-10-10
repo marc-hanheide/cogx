@@ -13,11 +13,16 @@ public class TestActionExecutor extends ManagedComponent {
 
 	private LocalActionStateManager m_actionStateManager;
 
-	private class LogExecutor extends Thread implements ActionExecutor {
+	private class LogExecutor extends Thread implements ActionExecutor<Action> {
 
 		private LogMessage m_lm;
 		private ExecutionCompletionCallback m_callback;
 
+		@Override
+		public Class<Action> getActionClass() {
+			return Action.class;
+		}
+		
 		public boolean accept(Action _action) {
 			m_lm = (LogMessage) _action;
 			return true;
@@ -55,9 +60,14 @@ public class TestActionExecutor extends ManagedComponent {
 
 	}
 
-	private class PrintExecutor implements ActionExecutor {
+	private class PrintExecutor implements ActionExecutor<Action> {
 
 		private PrintMessage m_pm;
+
+		@Override
+		public Class<Action> getActionClass() {
+			return Action.class;
+		}
 
 		public boolean accept(Action _action) {
 			m_pm = (PrintMessage) _action;
