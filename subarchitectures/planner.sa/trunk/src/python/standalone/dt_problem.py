@@ -625,7 +625,7 @@ class DTProblem(object):
         for f in selected:
             if f in dependencies:
                 relevant_facts |= set(dependencies[f])
-        return selected, dependencies
+        return selected, relevant_facts
         
         
 
