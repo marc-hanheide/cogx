@@ -1,4 +1,4 @@
 INCLUDE default+gui.cast
 
-#INCLUDE modules/refres-fake.cast
-INCLUDE modules/refgen-belprop.cast
+#INCLUDE modules/refres-fake.incl
+INCLUDE modules/refgen-belprop.incl
