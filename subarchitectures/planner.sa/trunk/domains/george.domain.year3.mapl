@@ -10,7 +10,6 @@
 
   (:constants
     VISUAL_OBJECT_DUMMY - VisualObject
-    ARM_RETRACT_POSITION_DUMMY - VisualObject
 
     UNKNOWN_COLOR - ColorName
     RED - ColorName
@@ -64,6 +63,8 @@
 
     (is-object-in-question ?v - VisualObject ?r - Robot)
     (is-potential-object-in-question ?v - VisualObject)
+
+    (arm-not-in-resting-position ?r - Robot)
 
     (global-color-question-answered)
     (global-shape-question-answered)
@@ -219,12 +220,6 @@
     :effect (looked-at ?vc)
   )
 
-  (:init-rule set-currently-points-at
-    :parameters (?r - Robot)
-    :precondition (= (currently-points-at ?r) UNKNOWN)
-    :effect (assign (currently-points-at ?r) ARM_RETRACT_POSITION_DUMMY)
-  )
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -350,7 +345,7 @@
     (and
       (is-potential-object-in-question ?v)
       (not (exists (?v1 - VisualObject) (and (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
-      (= (currently-points-at ?r) ARM_RETRACT_POSITION_DUMMY)
+      (not (arm-not-in-resting-position ?r))
     )
   )
 
@@ -682,6 +677,8 @@
     :effect
       (and
         (assign (currently-points-at ?r) ?v)
+        (arm-not-in-resting-position)
+        (update (arm-not-in-resting-position) true)
         (increase (total-cost) 1)
       )
   )
@@ -705,7 +702,9 @@
     :agent (?r - Robot)
     :effect
       (and
-        (assign (currently-points-at ?r) ARM_RETRACT_POSITION_DUMMY)
+        (assign (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
+        (not (arm-not-in-resting-position))
+        (update (arm-not-in-resting-position) false)
         (increase (total-cost) 1)
       )
   )
