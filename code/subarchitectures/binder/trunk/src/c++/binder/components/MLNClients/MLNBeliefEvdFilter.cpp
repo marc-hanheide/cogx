@@ -6,6 +6,10 @@
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include "MLNBeliefEvdFilter.h"
 
+#define DEFAULT_SLEEP_PERIOD 100
+#define DEFAULT_INFERENCE_STEPS 500
+#define DEFAULT_BURNIN_STEPS 100
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -90,9 +94,9 @@ void MLNBeliefEvdFilter::runComponent()
   evd->falseEvidence.push_back("epstatus(Blf5,Shared)");
   evd->falseEvidence.push_back("epstatus(Blf6,Shared)");
   
-  evd->initInfSteps = 400;
+  evd->initInfSteps = DEFAULT_INFERENCE_STEPS;
   evd->prevInfSteps = 0;
-  evd->burnInSteps = 100;
+  evd->burnInSteps = DEFAULT_BURNIN_STEPS;
 
   distributeEvd(evd);
   
@@ -123,7 +127,7 @@ void MLNBeliefEvdFilter::runComponent()
 			} else
 				log("No relevant beliefs found");	
 	}
-	sleepComponent(200);
+	sleepComponent(DEFAULT_SLEEP_PERIOD);
   }
 
 }

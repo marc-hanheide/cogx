@@ -56,7 +56,9 @@ void MLNRefResolutionClient::newConstraints(const cdl::WorkingMemoryChange & _wm
 
 void MLNRefResolutionClient::removeConstraints(const cdl::WorkingMemoryChange & _wmc)
 {
+	debug("Reference resolution request deleted %s %s", _wmc.address.id.c_str(), m_constraintAddr.id.c_str());
 	if(_wmc.address == m_constraintAddr) {
+		debug("Adding evidence for constraint removal");
 		EvidencePtr evd = new Evidence();
 		evd->noEvidence = m_currentConstraints;
 		m_currentConstraints.clear();
@@ -148,7 +150,7 @@ void MLNRefResolutionClient::runComponent()
 					addToWorkingMemory(newDataID(), getBindingSA(), rrResult);
 					
 					log("Reference resolution for request ID '%s' added", m_constraintAddr.id.c_str());
-					m_constraintAddr.id = "no constraint";				
+//					m_constraintAddr.id = "no constraint";				
 				}
 			}
 		}
@@ -211,7 +213,8 @@ bool MLNRefResolutionClient::makeHypothesis(string id, double prob, EpistemicRef
 	
 	PointerFormulaPtr f = new PointerFormula();
 	f->id = rand();
-	f->pointer = wma;
+	history::CASTBeliefHistory* hist = dynamic_cast<history::CASTBeliefHistory*>(b->hist.get());
+	f->pointer = hist->ancestors[0]->address;
 	f->type = "dBelief";
 	
 	h = new EpistemicReferenceHypothesis();

@@ -14,6 +14,7 @@
 #include <beliefs_cast.hpp>
 
 using namespace de::dfki::lt::tr::dialogue::ref;
+using namespace de::dfki::lt::tr::beliefs::slice;
 using namespace de::dfki::lt::tr::beliefs::slice::sitbeliefs;
 using namespace de::dfki::lt::tr::beliefs::slice::logicalcontent;
 
