@@ -123,6 +123,18 @@
     :effect (assign (learn-autonomous-color-threshold ?r) 0.8)
   )
 
+  (:init-rule set-convinced-of-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (convinced-of-color-threshold ?r) UNKNOWN)
+    :effect (assign (convinced-of-color-threshold ?r) 0.66)
+  )
+
+  (:init-rule set-believe-in-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (believe-in-color-threshold ?r) UNKNOWN)
+    :effect (assign (believe-in-color-threshold ?r) 0.33)
+  )
+
   (:init-rule set-polar-question-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-shape-threshold ?r) UNKNOWN)
@@ -135,6 +147,18 @@
     :effect (assign (learn-autonomous-shape-threshold ?r) 0.8)
   )
 
+  (:init-rule set-convinced-of-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (convinced-of-shape-threshold ?r) UNKNOWN)
+    :effect (assign (convinced-of-shape-threshold ?r) 0.66)
+  )
+
+  (:init-rule set-believe-in-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (believe-in-shape-threshold ?r) UNKNOWN)
+    :effect (assign (believe-in-shape-threshold ?r) 0.33)
+  )
+
   (:init-rule set-polar-question-type-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-type-threshold ?r) UNKNOWN)
@@ -145,6 +169,18 @@
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-type-threshold ?r) UNKNOWN)
     :effect (assign (learn-autonomous-type-threshold ?r) 0.8)
+  )
+
+  (:init-rule set-convinced-of-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (convinced-of-type-threshold ?r) UNKNOWN)
+    :effect (assign (convinced-of-type-threshold ?r) 0.66)
+  )
+
+  (:init-rule set-believe-in-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (believe-in-type-threshold ?r) UNKNOWN)
+    :effect (assign (believe-in-type-threshold ?r) 0.33)
   )
 
   (:init-rule set-max-gain-value-color
