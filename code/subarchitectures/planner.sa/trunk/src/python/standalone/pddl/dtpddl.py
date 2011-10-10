@@ -344,10 +344,11 @@ class DTPDDLWriter(writer.Writer):
         return strings
 
 class DTRule(scope.Scope):
-    def __init__(self, name, args, conditions, variables, values, domain):
+    def __init__(self, name, args, conditions, variables, values, costs, domain):
         scope.Scope.__init__(self, args, domain)
         self.name = name
         self.args = args
+        self.costs = costs
         self.conditions = [c.copy(new_scope=self) for c in conditions]
         self.variables = [(f, self.lookup(a)) for f,a in variables]
         self.values = [(self.lookup([p])[0], self.lookup(vals)) for p, vals in values]
@@ -366,7 +367,7 @@ class DTRule(scope.Scope):
         if not newdomain:
             newdomain = self.parent
             
-        r = DTRule(self.name, [], [], [], [], newdomain)
+        r = DTRule(self.name, [], [], [], [],  self.costs, newdomain)
         r.args = r.copy_args(self.args)
         
         r.conditions = [c.copy(new_scope=r) for c in self.conditions]
@@ -487,6 +488,8 @@ class DTRule(scope.Scope):
         @visitors.collect
         def extract_terms_with_prob(eff, results):
             if isinstance(eff, effects.SimpleEffect):
+                if eff.predicate in builtin.numeric_ops:
+                    return
                 assert eff.predicate in builtin.assignment_ops
                 term = eff.args[0]
                 value = eff.args[1]
@@ -508,11 +511,13 @@ class DTRule(scope.Scope):
         for p, term, value in visitors.visit(action.effect, extract_terms_with_prob, []):
             values[p].append((term, value))
 
+        cost_term = action.get_total_cost()
+
         rules = []
         for p, facts in values.iteritems():
             terms, vals = zip(*facts)
             variables = [(t.function, t.args) for t in terms]
-            rules.append(DTRule(action.name, action.args[:], conds, variables, [(p, vals)], action.parent))
+            rules.append(DTRule(action.name, action.args[:], conds, variables, [(p, vals)], cost_term, action.parent))
         # for r in rules:
         #     print r
         return rules
@@ -1156,7 +1161,10 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                 
                 a.precondition = conditions.Conjunction(cparts)
                 a.effect = effects.ConjunctiveEffect(commit_effects + [prob_eff], a)
-                a.set_total_cost(0)
+                if r.costs is None:
+                    a.set_total_cost(0)
+                else:
+                    a.set_total_cost(r.costs)
 
                 actions.append(a)
             
