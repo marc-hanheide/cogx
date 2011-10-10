@@ -60,6 +60,10 @@ extern "C"
 // minimium match probability of 2 SOIs to consider them equal
 #define PPO_MIN_MATCH_PROB 0.75
 
+// angular threshold for considering a plane to be normal to a given up vector:
+// cosine of max allowed angle between up vector and plane normal vector
+#define PPO_UP_DIRECTION_THR 0.985
+
 namespace cast
 {
 using namespace std;
@@ -128,7 +132,7 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
 	    pcl_domplane->values[1],
 	    pcl_domplane->values[2],
 	    pcl_domplane->values[3]);
-    normalisePlane(plane);        
+    normalisePlane(plane);
     for (size_t i = 0; i < planepoints->indices.size(); i++)
     {
 	int index = planepoints->indices[i];
@@ -318,6 +322,11 @@ PlanePopOut::PlanePopOut()
     par.minZ = 0.3;
     par.maxZ = 1.5;
     m_planePopout = new pclA::PlanePopout(par);
+
+    // we are interested in horizontal planes, i.e. with normal vector pointing
+    // in positive z direction.
+    upVector = vector3(0., 0., 1.);
+
     m_componentCount++;
 }
 
@@ -1053,10 +1062,18 @@ void PlanePopOut::GetPlaneAndSOIs()
 	m_planePopout->GetPlanePoints(planepoints); 
     }
 
+    // check if the plane is normal to the up vector
+    Vector3 n = vector3(pcl_domplane->values[0],
+                        pcl_domplane->values[1],
+                        pcl_domplane->values[2]);
+    normalise(n);
+    if(dot(upVector, n) < PPO_UP_DIRECTION_THR)
+        return;
+
 #ifdef FEAT_VISUALIZATION
     // NOTE: not nice having visualisiaton code here, but ok
     if (m_bSendSois)
-	SendSOIs(pcl_sois);
+        SendSOIs(pcl_sois);
 #endif
 
     // fill our dominant plane structure
