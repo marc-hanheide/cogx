@@ -145,6 +145,15 @@ private:
      */
     int StableTime;
     /**
+     * The "up" direction for planes, e.g. (0 0 1) for horizontal planes.
+     * This vector is used to prune found planes not normal to this vector.
+     * In the future this might (and should) also be used to define what we mean
+     * by "on" in "the SOI is on the table", rather then "below". Right now this
+     * is determined rather cunfusingly by par.minObjectHeight, par.maxObjectHeight
+     * (see constructor).
+     */
+    Vector3 upVector;
+    /**
      * the single dominant plane, including its points and convec hull
      */
     PlaneEntry dominantPlane;
