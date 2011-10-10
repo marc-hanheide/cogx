@@ -287,6 +287,8 @@ module execution {
       class PointToObject extends SingleBeliefAction {
       };
 
+	class VerifyReference extends SingleBeliefAction {
+	};
 
       /**
        * comsys action
