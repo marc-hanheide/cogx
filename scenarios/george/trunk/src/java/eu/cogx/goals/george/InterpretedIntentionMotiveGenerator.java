@@ -10,9 +10,14 @@ import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import eu.cogx.beliefs.slice.SharedBelief;
 
@@ -24,25 +29,24 @@ public class InterpretedIntentionMotiveGenerator
 		super(TutorInitiativeMotive.class, InterpretedIntention.class);
 	}
 
-	// @Override
-	// protected void start() {
-	// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-	// InterpretedIntention.class, WorkingMemoryOperation.ADD),
-	// new WorkingMemoryChangeReceiver() {
-	//
-	// @Override
-	// public void workingMemoryChanged(WorkingMemoryChange _wmc)
-	// throws CASTException {
-	// newInterpretedIntention(
-	// _wmc.address,
-	// getMemoryEntry(_wmc.address,
-	// InterpretedIntention.class));
-	//
-	// }
-	// });
-	// }
+	@Override
+	protected void start() {
+		super.start();
+//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+//				BaseIntention.class, WorkingMemoryOperation.ADD),
+//				new WorkingMemoryChangeReceiver() {
+//
+//					@Override
+//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+//							throws CASTException {
+//						logIntention(getMemoryEntry(_wmc.address,
+//								BaseIntention.class));
+//
+//					}
+//				});
+	}
 
-	private void logIntention(InterpretedIntention _intention) {
+	private void logIntention(BaseIntention _intention) {
 		println("stringContent");
 		for (String key : _intention.stringContent.keySet()) {
 			println(key + " -> " + _intention.stringContent.get(key));
@@ -59,6 +63,7 @@ public class InterpretedIntentionMotiveGenerator
 	private TutorInitiativeLearningMotive newAssertionIntention(
 			InterpretedIntention _intention) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException, AlreadyExistsOnWMException {
+
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("ascription")) {
 			return tutorDrivenAscription(_intention);
@@ -85,12 +90,15 @@ public class InterpretedIntentionMotiveGenerator
 		// [gg.ii: addressContent]
 		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
 
+		log("question intention");
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("open")) {
+			log("open question intention");
 			return openQuestion(_intention.stringContent.get("feature"),
 					getGroundedBeliefAddress(_intention.addressContent
 							.get("about")));
 		} else if (subtype.equals("polar")) {
+			log("polar question intention");			
 			return polarQuestion(_intention.stringContent.get("feature"),
 					_intention.stringContent.get("hypothesis"),
 					getGroundedBeliefAddress(_intention.addressContent
@@ -118,19 +126,6 @@ public class InterpretedIntentionMotiveGenerator
 
 	private TutorInitiativeQuestionMotive openQuestion(String _feature,
 			WorkingMemoryAddress _groundedBeliefAddress) {
-
-		// [LOG gg.ii: unknown InterpretedIntention type]
-		// [gg.ii: stringContent]
-		// [gg.ii: subtype -> open]
-		// [gg.ii: subclass -> info-request]
-		// [gg.ii: class -> communication]
-		// [gg.ii: feature -> color]
-		// [gg.ii: type -> question]
-		// [gg.ii: ]
-		// [gg.ii: addressContent]
-		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
-
-		// global-color-question-answered (VisualObject)
 
 		String predicate = CASTUtils.concatenate("global-", _feature,
 				"-question-answered");
@@ -224,10 +219,11 @@ public class InterpretedIntentionMotiveGenerator
 			logException(e);
 		}
 
-		log("unknown InterpretedIntention type");
-		logIntention(_intention);
 		if (motive != null) {
 			motive.referenceEntry = _addr;
+		} else {
+			log("unknown InterpretedIntention type");
+			logIntention(_intention);
 		}
 		return motive;
 

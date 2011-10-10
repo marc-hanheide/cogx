@@ -5,6 +5,9 @@ import cast.CASTException;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
+import execution.slice.ConfidenceLevel;
+import execution.slice.actions.AnswerOpenQuestion;
+import execution.slice.actions.AnswerPolarQuestion;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForObjectWithFeatureValue;
@@ -54,7 +57,8 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 3 : "analyze-proto-object  is expected to be of arity 3";
 			return createSingleBeliefAction(AnalyzeProtoObject.class,
 					_plannedAction.arguments[2]);
-		} else if (_plannedAction.name.equals("point-to-object-color") || _plannedAction.name.equals("point-to-object-shape")) {
+		} else if (_plannedAction.name.equals("point-to-object-color")
+				|| _plannedAction.name.equals("point-to-object-shape")) {
 
 			assert _plannedAction.arguments.length == 3 : "point-to-object-* is expected to be of arity 3";
 			return createSingleBeliefAction(PointToObject.class,
@@ -139,10 +143,102 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 2 : "ask-for-and-object-with-ident is expected to be of arity 2";
 			return createAskForAction("ident",
 					(ElementaryFormula) _plannedAction.arguments[1]);
+		} else if (_plannedAction.name
+				.equals("answer-global-color-question-convinced")) {
+			return createAnswerOpenAction(_plannedAction, "color",
+					ConfidenceLevel.CONFIDENT);
+		} else if (_plannedAction.name
+				.equals("answer-global-color-question-believing")) {
+			return createAnswerOpenAction(_plannedAction, "color",
+					ConfidenceLevel.UNSURE);
+		} else if (_plannedAction.name
+				.equals("answer-global-color-question-unknown")) {
+			return createAnswerOpenAction(_plannedAction, "color",
+					ConfidenceLevel.UNKNOWN);
+		} else if (_plannedAction.name
+				.equals("answer-global-shape-question-convinced")) {
+			return createAnswerOpenAction(_plannedAction, "shape",
+					ConfidenceLevel.CONFIDENT);
+		} else if (_plannedAction.name
+				.equals("answer-global-shape-question-believing")) {
+			return createAnswerOpenAction(_plannedAction, "shape",
+					ConfidenceLevel.UNSURE);
+		} else if (_plannedAction.name
+				.equals("answer-global-shape-question-unknown")) {
+			return createAnswerOpenAction(_plannedAction, "shape",
+					ConfidenceLevel.UNKNOWN);
+		} else if (_plannedAction.name
+				.equals("answer-global-type-question-convinced")) {
+			return createAnswerOpenAction(_plannedAction, "type",
+					ConfidenceLevel.CONFIDENT);
+		} else if (_plannedAction.name
+				.equals("answer-global-type-question-believing")) {
+			return createAnswerOpenAction(_plannedAction, "type",
+					ConfidenceLevel.UNSURE);
+		} else if (_plannedAction.name
+				.equals("answer-global-type-question-unknown")) {
+			return createAnswerOpenAction(_plannedAction, "type",
+					ConfidenceLevel.UNKNOWN);
+		} else if (_plannedAction.name
+				.equals("answer-polar-color-question-positively")) {
+			return createAnswerPolarAction(_plannedAction, "color",
+					ConfidenceLevel.CONFIDENT);
+		} else if (_plannedAction.name
+				.equals("answer-polar-color-question-believing")) {
+			return createAnswerPolarAction(_plannedAction, "color",
+					ConfidenceLevel.UNSURE);
+		} else if (_plannedAction.name
+				.equals("answer-polar-color-question-negatively")) {
+			return createAnswerPolarAction(_plannedAction, "color",
+					ConfidenceLevel.UNKNOWN);
+		} else if (_plannedAction.name
+				.equals("answer-polar-shape-question-positively")) {
+			return createAnswerPolarAction(_plannedAction, "shape",
+					ConfidenceLevel.CONFIDENT);
+		} else if (_plannedAction.name
+				.equals("answer-polar-shape-question-believing")) {
+			return createAnswerPolarAction(_plannedAction, "shape",
+					ConfidenceLevel.UNSURE);
+		} else if (_plannedAction.name
+				.equals("answer-polar-shape-question-negatively")) {
+			return createAnswerPolarAction(_plannedAction, "shape",
+					ConfidenceLevel.UNKNOWN);
+		} else if (_plannedAction.name
+				.equals("answer-polar-type-question-positively")) {
+			return createAnswerPolarAction(_plannedAction, "type",
+					ConfidenceLevel.CONFIDENT);
+		} else if (_plannedAction.name
+				.equals("answer-polar-type-question-believing")) {
+			return createAnswerPolarAction(_plannedAction, "type",
+					ConfidenceLevel.UNSURE);
+		} else if (_plannedAction.name
+				.equals("answer-polar-type-question-negatively")) {
+			return createAnswerPolarAction(_plannedAction, "type",
+					ConfidenceLevel.UNKNOWN);
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
+	}
+
+	private AnswerOpenQuestion createAnswerOpenAction(Action _plannedAction,
+			String _feature, ConfidenceLevel _confidence) throws CASTException {
+		assert _plannedAction.arguments.length == 3 : "question answer actions are  expected to be of arity 3";
+		AnswerOpenQuestion cmd = createBeliefFeatureValueAction(
+				AnswerOpenQuestion.class, _plannedAction.arguments[1],
+				_feature, (ElementaryFormula) _plannedAction.arguments[2]);
+		cmd.confidence = _confidence;
+		return cmd;
+	}
+
+	private AnswerPolarQuestion createAnswerPolarAction(Action _plannedAction,
+			String _feature, ConfidenceLevel _confidence) throws CASTException {
+		assert _plannedAction.arguments.length == 3 : "question answer actions are  expected to be of arity 3";
+		AnswerPolarQuestion cmd = createBeliefFeatureValueAction(
+				AnswerPolarQuestion.class, _plannedAction.arguments[1],
+				_feature, (ElementaryFormula) _plannedAction.arguments[2]);
+		cmd.confidence = _confidence;
+		return cmd;
 	}
 
 	/**
