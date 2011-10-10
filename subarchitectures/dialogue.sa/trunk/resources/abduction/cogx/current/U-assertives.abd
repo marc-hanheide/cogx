@@ -49,28 +49,28 @@ understand : event : from_logical_form(S, H, Nom) <-
 %-------------------------------------------------------------------------
 
 % (I) don't know
-understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
-	i : sort(Nom, cognition),
-	i : prop(Nom, know),
-	i : feat_Polarity(Nom, neg),
-
-	? understand : i : intention(Nom, Int),
-
-	int : agent(Int, Speaker) / p(1.0),
-	int : string_content(Int, type, 'assertion') / p(1.0),
-	int : string_content(Int, subtype, 'answer-unknown') / p(1.0),
-
-	doesnt_matter_under_discussion(_QUDAddr, Nom, Int, _Feature).
+%understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+%	i : sort(Nom, cognition),
+%	i : prop(Nom, know),
+%	i : feat_Polarity(Nom, neg),
+%
+%	? understand : i : intention(Nom, Int),
+%
+%	int : agent(Int, Speaker) / p(1.0),
+%	int : string_content(Int, type, 'assertion') / p(1.0),
+%	int : string_content(Int, subtype, 'answer-unknown') / p(1.0),
+%
+%	doesnt_matter_under_discussion(_QUDAddr, Nom, Int, _Feature).
 
 %-------------------------------------------------------------------------
 % YES/NO CONFIRMATIONS
 %-------------------------------------------------------------------------
 
-doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
-	? polar_question_under_discussion(_Speaker, _Hearer, QUDAddr, Nom, Int, Feature, unknown, _Polarity).
-
-doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
-	? wh_question_under_discussion(QUDAddr, Nom, Int, Feature).
+%doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
+%	? polar_question_under_discussion(_Speaker, _Hearer, QUDAddr, Nom, Int, Feature, unknown, _Polarity).
+%
+%doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
+%	? wh_question_under_discussion(QUDAddr, Nom, Int, Feature).
 
 %-------------------------------------------------------------------------
 
@@ -86,15 +86,15 @@ polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Val
 
 	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
 
-polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, unknown, Polarity) <-
-	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
-	i : int : string_content(QUDAddr, type, 'question'),
-	i : int : string_content(QUDAddr, subtype, 'polar'),
-	i : int : string_content(QUDAddr, feature, Feature),
-	i : int : string_content(QUDAddr, hypothesis, Value),
-	i : int : address_content(QUDAddr, about, BeliefAddr),
-	aboutness(Int, BeliefAddr),
-	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0).
+%polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, unknown, Polarity) <-
+%	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
+%	i : int : string_content(QUDAddr, type, 'question'),
+%	i : int : string_content(QUDAddr, subtype, 'polar'),
+%	i : int : string_content(QUDAddr, feature, Feature),
+%	i : int : string_content(QUDAddr, hypothesis, Value),
+%	i : int : address_content(QUDAddr, about, BeliefAddr),
+%	aboutness(Int, BeliefAddr),
+%	int : address_content(Int, 'answer-to', QUDAddr) / p(0.5).
 
 %-------------------------------------------------------------------------
 
