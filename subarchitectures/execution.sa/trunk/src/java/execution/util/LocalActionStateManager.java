@@ -31,8 +31,8 @@ import execution.util.ActionExecutor.ExecutionCompletionCallback;
  * instance of {@link ActionExecutor} for each action that needs to be executed
  * of the given type.
  * 
- * The object should only be constructed with a component that is already running (i.e. in
- * or past the start method
+ * The object should only be constructed with a component that is already
+ * running (i.e. in or past the start method
  * 
  * @author nah
  * 
@@ -45,10 +45,11 @@ public class LocalActionStateManager extends Thread {
 	 * @author nah
 	 * 
 	 */
-	private static class ExecutorWrapper extends Pair<ActionExecutor, Action> {
+	private static class ExecutorWrapper extends
+			Pair<ActionExecutor<?>, Action> {
 		private final WorkingMemoryAddress m_address;
 
-		public ExecutorWrapper(ActionExecutor _a, Action _b,
+		public ExecutorWrapper(ActionExecutor<?> _a, Action _b,
 				WorkingMemoryAddress _address) {
 			super(_a, _b);
 			m_address = _address;
@@ -92,7 +93,7 @@ public class LocalActionStateManager extends Thread {
 	/**
 	 * Map of classes to factories used to generate the execution objects.
 	 */
-	private HashMap<String, ActionExecutorFactory> m_executorFactories;
+	private HashMap<String, ActionExecutorFactory<? extends Action>> m_executorFactories;
 
 	public LocalActionStateManager(ManagedComponent _component) {
 
@@ -106,11 +107,12 @@ public class LocalActionStateManager extends Thread {
 	}
 
 	public <Type extends Action> void registerActionType(
-			Class<Type> _actionCls, ActionExecutorFactory _executionFactory) {
+			Class<Type> _actionCls,
+			ActionExecutorFactory<Type> _executionFactory) {
 
 		// lazy creation
 		if (m_executorFactories == null) {
-			m_executorFactories = new HashMap<String, ActionExecutorFactory>();
+			m_executorFactories = new HashMap<String, ActionExecutorFactory<?>>();
 		}
 
 		m_executorFactories.put(CASTUtils.typeName(_actionCls),
@@ -129,9 +131,9 @@ public class LocalActionStateManager extends Thread {
 	}
 
 	private class StopExecutionReceiver implements WorkingMemoryChangeReceiver {
-		private final ActionExecutor m_executor;
+		private final ActionExecutor<?> m_executor;
 
-		public StopExecutionReceiver(ActionExecutor _executor) {
+		public StopExecutionReceiver(ActionExecutor<?> _executor) {
 			m_executor = _executor;
 		}
 
@@ -144,15 +146,17 @@ public class LocalActionStateManager extends Thread {
 
 	}
 
-	protected void newActionReceived(WorkingMemoryChange _wmc)
-			throws ActionExecutionException, DoesNotExistOnWMException,
-			UnknownSubarchitectureException, ConsistencyException,
-			PermissionException {
+	protected <ActionClass extends Action> void newActionReceived(
+			WorkingMemoryChange _wmc) throws ActionExecutionException,
+			DoesNotExistOnWMException, UnknownSubarchitectureException,
+			ConsistencyException, PermissionException {
 		assert (m_executorFactories != null);
-		ActionExecutorFactory actFact = m_executorFactories.get(_wmc.type);
+		ActionExecutorFactory<ActionClass> actFact = (ActionExecutorFactory<ActionClass>) m_executorFactories
+				.get(_wmc.type);
+
 		assert (actFact != null);
 
-		ActionExecutor executor = actFact.getActionExecutor();
+		ActionExecutor<ActionClass> executor = actFact.getActionExecutor();
 		if (executor == null) {
 			throw new ActionExecutionException("ActionExecutorFactory for "
 					+ _wmc.type + " return null");
@@ -163,17 +167,28 @@ public class LocalActionStateManager extends Thread {
 			m_executorQueue = new ConcurrentLinkedQueue<ExecutorWrapper>();
 		}
 
-		Action action = m_component.getMemoryEntry(_wmc.address, Action.class);
-		if (executor.accept(action)) {
-			actionAccepted(_wmc.address, action);
-			m_executorQueue.add(new ExecutorWrapper(executor, action,
-					_wmc.address));
-		}
+		try {
+			Action action = m_component.getMemoryEntry(_wmc.address, Action.class);
 
-		// store a receiver to handle action stopping when action is deleted
-		m_component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
-				_wmc.address, WorkingMemoryOperation.DELETE),
-				new StopExecutionReceiver(executor));
+			m_component.println("object from WM class: " + action.getClass());
+			
+			if (executor.accept(executor.getActionClass().cast(action))) {
+				actionAccepted(_wmc.address, action);
+				m_executorQueue.add(new ExecutorWrapper(executor, action,
+						_wmc.address));
+			}
+
+			// store a receiver to handle action stopping when action is deleted
+			m_component.addChangeFilter(ChangeFilterFactory
+					.createAddressFilter(_wmc.address,
+							WorkingMemoryOperation.DELETE),
+					new StopExecutionReceiver(executor));
+		} catch (ClassCastException e) {
+			m_component.logException(
+					"Cast failure from wm entry type " + _wmc.type
+							+ " to configured type "
+							+ executor.getActionClass(), e);
+		}
 	}
 
 	/**
@@ -228,7 +243,7 @@ public class LocalActionStateManager extends Thread {
 				try {
 					ExecutorWrapper executorWrapper = m_executorQueue.poll();
 					assert (executorWrapper != null); // should never be
-					ActionExecutor executor = executorWrapper.m_first;
+					ActionExecutor<?> executor = executorWrapper.m_first;
 					assert (executor != null);
 
 					if (executor.isBlockingAction()) {
@@ -242,8 +257,7 @@ public class LocalActionStateManager extends Thread {
 						m_component.unlockComponent();
 
 					} else {
-						executor
-								.execute(new ExecutionCallback(executorWrapper));
+						executor.execute(new ExecutionCallback(executorWrapper));
 					}
 				} catch (CASTException e) {
 					m_component.println(e.message);

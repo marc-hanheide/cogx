@@ -12,7 +12,7 @@ import execution.slice.TriBool;
  * @author nah
  * 
  */
-public interface ActionExecutor {
+public interface ActionExecutor<ActionClass extends Action> {
 
 	public interface ExecutionCompletionCallback {
 		void executionComplete(TriBool _success);
@@ -24,7 +24,7 @@ public interface ActionExecutor {
 	 * @param _action
 	 * @return
 	 */
-	boolean accept(Action _action);
+	boolean accept(ActionClass _action);
 
 	/**
 	 * Informs controller whether action execution blocks (i.e. only executes in
@@ -56,5 +56,11 @@ public interface ActionExecutor {
 	 * Blocking actions cannot currently be executed.
 	 */
 	void stopExecution();
+	
+	/**
+	 * Get the action class supported by this executor.
+	 * @return
+	 */
+	Class<ActionClass> getActionClass();
 
 }
