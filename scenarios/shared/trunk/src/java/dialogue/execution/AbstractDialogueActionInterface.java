@@ -18,7 +18,10 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
+import execution.slice.ConfidenceLevel;
 import execution.slice.TriBool;
+import execution.slice.actions.AnswerOpenQuestion;
+import execution.slice.actions.AnswerPolarQuestion;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForObjectWithFeatureValue;
@@ -26,6 +29,7 @@ import execution.slice.actions.AskForShape;
 import execution.slice.actions.AskPolarColour;
 import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.AskPolarShape;
+import execution.slice.actions.BeliefPlusFeatureValueAction;
 import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
@@ -63,7 +67,7 @@ public abstract class AbstractDialogueActionInterface extends
 		 */
 		protected void actionComplete() {
 		}
-		
+
 		@Override
 		public TriBool execute() {
 			log("IntentionDialogueAction.execute()");
@@ -124,6 +128,38 @@ public abstract class AbstractDialogueActionInterface extends
 		protected void addAddressContent(
 				Map<String, WorkingMemoryAddress> _addressContent) {
 			_addressContent.put("about", getAction().beliefAddress);
+		}
+
+	}
+
+	public abstract static class FeatureValueQuestionAnswer<T extends BeliefPlusFeatureValueAction>
+			extends BeliefIntentionDialogueAction<T> {
+
+		public FeatureValueQuestionAnswer(ManagedComponent _component,
+				Class<T> _cls) {
+			super(_component, _cls);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			// stringContent:
+			// "type" -> "assertion"
+			// "subtype" -> "answer" | "inform"
+			// "feature" -> "color" | "shape" | "type"
+			// "value" -> value of the feature
+			//
+			// addressContent:
+			// "about" -> the WM address of the object in question
+			// "answer-to" -> the WM address of the question's
+			// InterpretedIntention (only when subtype=answer)
+			//
+
+			// ignoring answer/answer-to for now
+
+			_stringContent.put(INTENTION_TYPE_KEY, "assertion");
+			_stringContent.put("subtype", "inform");
+			_stringContent.put("feature", getAction().feature);
+			_stringContent.put("value", getAction().value);
 		}
 
 	}
@@ -229,6 +265,82 @@ public abstract class AbstractDialogueActionInterface extends
 		public AskForShapePolarDialogue(ManagedComponent _component) {
 			super(_component, AskPolarShape.class, "shape");
 		}
+	}
+
+	public static class AnswerOpenQuestionExecutor extends
+			FeatureValueQuestionAnswer<AnswerOpenQuestion> {
+
+		public AnswerOpenQuestionExecutor(ManagedComponent _component) {
+			super(_component, AnswerOpenQuestion.class);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			super.addStringContent(_stringContent);
+
+			ConfidenceLevel confidence = getAction().confidence;
+			if (confidence == ConfidenceLevel.CONFIDENT) {
+				_stringContent.put("certainty", "high");
+			} else if (confidence == ConfidenceLevel.UNSURE) {
+				_stringContent.put("certainty", "low");
+			} else {
+				_stringContent.put("subtype", "answer-unknown");
+			}
+		}
+
+		@Override
+		protected void actionComplete() {
+			try {
+				// global-type-question-answered
+				String answeredPredictate = "global-" + getAction().feature
+						+ "-question-answered";
+				// record that we have looked at it
+
+				((AbstractActionInterface) getComponent()).addBooleanFeature(
+						getAction().beliefAddress, answeredPredictate, true);
+			} catch (CASTException e) {
+				getComponent().logException(e);
+			}
+		}
+
+	}
+
+	public static class AnswerPolarQuestionExecutor extends
+			FeatureValueQuestionAnswer<AnswerPolarQuestion> {
+
+		public AnswerPolarQuestionExecutor(ManagedComponent _component) {
+			super(_component, AnswerPolarQuestion.class);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			super.addStringContent(_stringContent);
+
+			ConfidenceLevel confidence = getAction().confidence;
+			if (confidence == ConfidenceLevel.CONFIDENT) {
+				_stringContent.put("certainty", "high");
+			} else if (confidence == ConfidenceLevel.UNSURE) {
+				_stringContent.put("certainty", "low");
+			} else {
+				_stringContent.put("subtype", "answer-unknown");
+			}
+		}
+
+		@Override
+		protected void actionComplete() {
+			try {
+				// global-type-question-answered
+				String answeredPredictate = "global-" + getAction().feature
+						+ "-question-answered";
+				// record that we have looked at it
+
+				((AbstractActionInterface) getComponent()).addBooleanFeature(
+						getAction().beliefAddress, answeredPredictate, true);
+			} catch (CASTException e) {
+				getComponent().logException(e);
+			}
+		}
+
 	}
 
 	public static class AskForIdentityPolarDialogue extends
@@ -479,60 +591,89 @@ public abstract class AbstractDialogueActionInterface extends
 		// this);
 
 		if (m_fakeIt) {
-			m_actionStateManager.registerActionType(AskForColour.class,
-					new ComponentActionFactory<DirectColourAnswer>(this,
-							DirectColourAnswer.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForColour.class,
+							new ComponentActionFactory<AskForColour, DirectColourAnswer>(
+									this, DirectColourAnswer.class));
 
 			m_actionStateManager.registerActionType(AskForShape.class,
-					new ComponentActionFactory<DirectShapeAnswer>(this,
-							DirectShapeAnswer.class));
+					new ComponentActionFactory<AskForShape, DirectShapeAnswer>(
+							this, DirectShapeAnswer.class));
 
-			m_actionStateManager.registerActionType(AskForIdentity.class,
-					new ComponentActionFactory<DirectIdentityAnswer>(this,
-							DirectIdentityAnswer.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForIdentity.class,
+							new ComponentActionFactory<AskForIdentity, DirectIdentityAnswer>(
+									this, DirectIdentityAnswer.class));
 
-			m_actionStateManager.registerActionType(AskPolarColour.class,
-					new ComponentActionFactory<DirectPolarColourAnswer>(this,
-							DirectPolarColourAnswer.class));
+			m_actionStateManager
+					.registerActionType(
+							AskPolarColour.class,
+							new ComponentActionFactory<AskPolarColour, DirectPolarColourAnswer>(
+									this, DirectPolarColourAnswer.class));
 
-			m_actionStateManager.registerActionType(AskPolarShape.class,
-					new ComponentActionFactory<DirectPolarShapeAnswer>(this,
-							DirectPolarShapeAnswer.class));
+			m_actionStateManager
+					.registerActionType(
+							AskPolarShape.class,
+							new ComponentActionFactory<AskPolarShape, DirectPolarShapeAnswer>(
+									this, DirectPolarShapeAnswer.class));
 
-			m_actionStateManager.registerActionType(AskPolarIdentity.class,
-					new ComponentActionFactory<DirectPolarIdentityAnswer>(this,
-							DirectPolarIdentityAnswer.class));
+			m_actionStateManager
+					.registerActionType(
+							AskPolarIdentity.class,
+							new ComponentActionFactory<AskPolarIdentity, DirectPolarIdentityAnswer>(
+									this, DirectPolarIdentityAnswer.class));
 
-			m_actionStateManager.registerActionType(
-					AskForObjectWithFeatureValue.class,
-					new ComponentActionFactory<DirectAskForObject>(this,
-							DirectAskForObject.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForObjectWithFeatureValue.class,
+							new ComponentActionFactory<AskForObjectWithFeatureValue, DirectAskForObject>(
+									this, DirectAskForObject.class));
 
 		} else {
 
-			m_actionStateManager.registerActionType(AskForColour.class,
-					new ComponentActionFactory<AskForColourValueDialogue>(this,
-							AskForColourValueDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForColour.class,
+							new ComponentActionFactory<AskForColour, AskForColourValueDialogue>(
+									this, AskForColourValueDialogue.class));
 
-			m_actionStateManager.registerActionType(AskForShape.class,
-					new ComponentActionFactory<AskForShapeValueDialogue>(this,
-							AskForShapeValueDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForShape.class,
+							new ComponentActionFactory<AskForShape, AskForShapeValueDialogue>(
+									this, AskForShapeValueDialogue.class));
 
-			m_actionStateManager.registerActionType(AskForIdentity.class,
-					new ComponentActionFactory<AskForIdentityValueDialogue>(
-							this, AskForIdentityValueDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForIdentity.class,
+							new ComponentActionFactory<AskForIdentity, AskForIdentityValueDialogue>(
+									this, AskForIdentityValueDialogue.class));
 
-			m_actionStateManager.registerActionType(AskPolarColour.class,
-					new ComponentActionFactory<AskForColourPolarDialogue>(this,
-							AskForColourPolarDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskPolarColour.class,
+							new ComponentActionFactory<AskPolarColour, AskForColourPolarDialogue>(
+									this, AskForColourPolarDialogue.class));
 
-			m_actionStateManager.registerActionType(AskPolarShape.class,
-					new ComponentActionFactory<AskForShapePolarDialogue>(this,
-							AskForShapePolarDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskPolarShape.class,
+							new ComponentActionFactory<AskPolarShape, AskForShapePolarDialogue>(
+									this, AskForShapePolarDialogue.class));
 
-			m_actionStateManager.registerActionType(AskPolarIdentity.class,
-					new ComponentActionFactory<AskForIdentityPolarDialogue>(
-							this, AskForIdentityPolarDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskPolarIdentity.class,
+							new ComponentActionFactory<AskPolarIdentity, AskForIdentityPolarDialogue>(
+									this, AskForIdentityPolarDialogue.class));
+
+			m_actionStateManager
+					.registerActionType(
+							AnswerOpenQuestion.class,
+							new ComponentActionFactory<AnswerOpenQuestion, AnswerOpenQuestionExecutor>(
+									this, AnswerOpenQuestionExecutor.class));
 
 			// m_actionStateManager
 			// .registerActionType(

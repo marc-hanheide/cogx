@@ -29,13 +29,12 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * Component to listen to planner actions the trigger the vision sa as
  * appropriate. Must be run from the vision sa.
  * 
- * This looks like mostly Dora now. 
+ * This looks like mostly Dora now.
  * 
  * @author nah
  * 
  */
 public class VisionActionInterface extends AbstractActionInterface {
-
 
 	/**
 	 * An action executor to handle object detection.
@@ -208,9 +207,6 @@ public class VisionActionInterface extends AbstractActionInterface {
 
 	}
 
-
-	
-
 	private final Hashtable<String, WorkingMemoryAddress> m_foregroundedModels;
 
 	public VisionActionInterface() {
@@ -223,35 +219,42 @@ public class VisionActionInterface extends AbstractActionInterface {
 
 		// direct dections
 
-		m_actionStateManager.registerActionType(DetectObjects.class,
-				new ComponentActionFactory<DetectObjectsActionExecutor>(this,
-						DetectObjectsActionExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						DetectObjects.class,
+						new ComponentActionFactory<DetectObjects, DetectObjectsActionExecutor>(
+								this, DetectObjectsActionExecutor.class));
 
-		m_actionStateManager.registerActionType(DetectPeople.class,
-				new ComponentActionFactory<DetectPeopleActionExecutor>(this,
-						DetectPeopleActionExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						DetectPeople.class,
+						new ComponentActionFactory<DetectPeople, DetectPeopleActionExecutor>(
+								this, DetectPeopleActionExecutor.class));
 
 		// model loading
 
-		m_actionStateManager.registerActionType(ForegroundModels.class,
-				new ComponentActionFactory<ForegroundModelExecutor>(this,
-						ForegroundModelExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						ForegroundModels.class,
+						new ComponentActionFactory<ForegroundModels, ForegroundModelExecutor>(
+								this, ForegroundModelExecutor.class));
 
-		m_actionStateManager.registerActionType(BackgroundModels.class,
-				new ComponentActionFactory<BackgroundModelExecutor>(this,
-						BackgroundModelExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						BackgroundModels.class,
+						new ComponentActionFactory<BackgroundModels, BackgroundModelExecutor>(
+								this, BackgroundModelExecutor.class));
 
 		// actions with loaded models
 
 		m_actionStateManager
 				.registerActionType(
 						RecogniseForegroundedModels.class,
-						new ComponentActionFactory<RecogniseForegroundedModelsExecutor>(
+						new ComponentActionFactory<RecogniseForegroundedModels, RecogniseForegroundedModelsExecutor>(
 								this, RecogniseForegroundedModelsExecutor.class));
 
 		// learning executors
 
-		
 	}
 
 }
