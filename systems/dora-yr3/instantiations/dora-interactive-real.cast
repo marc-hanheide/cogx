@@ -1,6 +1,6 @@
 
 ### the default goal
-SETVAR planning_goal="(exists (?p - person) (kval (is-in ?p)))"
+SETVAR planning_goal="(exists (?p - person) (kval (is-in ?p)));(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 #SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 
 ### the plannig domain to use
@@ -75,10 +75,9 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 SETVAR vision_pcserver_host=pcserver
 SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
 # disable use of Kinect data for navigation:
-SETVAR spatial_pcserver=
-#--pcserver %(vision_pcserver_host)
+SETVAR spatial_pcserver=--pcserver %(vision_pcserver_host)
 
-SETVAR no_placeholders=--no-placeholders
+SETVAR no_placeholders=#--no-placeholders
 
 HOST localhost
 
