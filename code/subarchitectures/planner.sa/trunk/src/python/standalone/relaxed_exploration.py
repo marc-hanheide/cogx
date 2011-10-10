@@ -206,6 +206,7 @@ class EffectGenerator(object):
         #(modality, None) contains modal actions
         entries = chain(self.funcdict[(fact.svar.modality, fact.svar.function)], self.funcdict[(fact.svar.modality, None)])
         for svar_args, modal_args, val_arg, func_arg, action in entries:
+            # print action.name
             mapping = {}
             #modal action:
             if func_arg is not None:
@@ -221,7 +222,7 @@ class EffectGenerator(object):
                 elif arg != val:
                     mapping = None
                     break
-            if mapping:
+            if mapping is not None:
                 # print "gen:", fact, action.name, map(str, mapping.values())
                 yield action, mapping
 

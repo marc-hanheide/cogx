@@ -309,7 +309,7 @@ class CASTState(object):
         log.debug("querying conceptual.sa")
 
         roomdict = {}
-        room_categories = {}
+        # room_categories = {}
         if not "roomid" in self.domain.functions or not "obj_exists" in self.domain.functions:
             return
         
@@ -324,11 +324,12 @@ class CASTState(object):
         for svar, val in bel_facts:
             if svar.function == roomid_func and not svar.modality:
                 roomdict[int(val.value)] = svar.args[0]
-            if svar.function == category_func and not svar.modality:
-                room_categories[svar.args[0]] = val
+            # if svar.function == category_func and not svar.modality:
+            #     room_categories[svar.args[0]] = val
                 
-        for rid, rbel in roomdict.iteritems():
-            room_categories[rid] = room_categories[rbel]
+        # for rid, rbel in roomdict.iteritems():
+        #     if rbel in room_categories:
+        #         room_categories[rid] = room_categories[rbel]
 
         extract_obj_at_object = re.compile("room([0-9]+)_object_([-a-zA-Z]+)_([a-zA-Z]+)_([a-zA-Z]+)-([0-9a-zA-Z:]+)_unexplored")
         extract_obj_in_room = re.compile("room([0-9]+)_object_([-a-zA-Z]+)_unexplored")
