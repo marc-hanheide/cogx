@@ -930,7 +930,7 @@
           (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
           (= (max-gain-label-color ?v) ?c)
         )
-        (
+        (and
           (not (= (max-gain-label-color ?v) ?c))
         )
       )
@@ -981,7 +981,7 @@
           (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
           (= (max-gain-label-shape ?v) ?s)
         )
-        (
+        (and
           (not (= (max-gain-label-shape ?v) ?s))
         )
       )
@@ -1032,7 +1032,7 @@
           (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
           (= (max-gain-label-type ?v) ?t)
         )
-        (
+        (and
           (not (= (max-gain-label-type ?v) ?t))
         )
       )
