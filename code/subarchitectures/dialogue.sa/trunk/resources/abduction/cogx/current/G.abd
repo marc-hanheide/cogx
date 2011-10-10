@@ -107,6 +107,18 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 %	event : produce(r, Nom) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Basic George assertion.
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'assertion'),
+	i : int : string_content(IntAddr, 'asserted-value', Value),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+
+	event : produce_text([the, ObjectRE, is, Value]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 % Other stuff.
 
 % the XY object is Z
