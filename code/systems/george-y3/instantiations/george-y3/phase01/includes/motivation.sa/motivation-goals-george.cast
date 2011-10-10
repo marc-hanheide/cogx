@@ -1,7 +1,7 @@
-JAVA MG gg.po  eu.cogx.goals.george.ProtoObjectMotiveGenerator
-JAVA MG gg.vo  eu.cogx.goals.george.VisualObjectMotiveGenerator
-JAVA MG gg.ii eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log
-# JAVA MG goal-generator.look eu.cogx.goals.george.LookAroundMotiveGenerator
+JAVA MG gg.po 		eu.cogx.goals.george.ProtoObjectMotiveGenerator
+JAVA MG gg.vo 		eu.cogx.goals.george.VisualObjectMotiveGenerator
+JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log
+JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter" 
 
 # year 2
