@@ -170,30 +170,51 @@ class CRemoteMessagePump(threading.Thread):
 class CLog4jExecutor:
     def __init__(self, qtInterface, ccOptions):
         self.ui = qtInterface
+        self.widget = self.ui.frmLoggingSettings
         self.options = ccOptions
         self.startedOnHost = None
+
+        self._connect_signals()
+
+    def _connect_signals(self):
+        connect = self.widget.connect
+        ui = self.ui
+        connect(ui.cbLog4jServerHost, QtCore.SIGNAL("activated(int)"), self.onLog4jHostCbItemActivated)
         pass
 
-    @property
-    def mustStartServer(self):
-        return self.ui.cbLog4jMode.currentIndex() == 0
-
-    @property
-    def mustUseServer(self):
-        return self.ui.cbLog4jMode.currentIndex() in [0, 1]
-
     def createServerModes(self):
-        self.log4jModes = [
-            "Start and Connect to log4j Server",
-            "Connect to log4j Server",
-            "Log to Console (No Server)"]
+        log4 = log4util.CLog4Config()
+        self.log4jModes = [v for v in log4.servers.values()]
+        self.log4jModes.sort(key=lambda x: x['order'])
+
+        class PyStructWrapper:
+            def __init__(self, adict):
+                self.data = adict
+
         cb = self.ui.cbLog4jMode
         cb.blockSignals(True)
         cb.clear()
         for item in self.log4jModes:
-            cb.addItem(item)
+            cb.addItem(item['name'], QtCore.QVariant(PyStructWrapper(item)))
+
         cb.blockSignals(False)
 
+
+    # returns the selected server config, one of the CLog4Config.server items
+    def getCurrentServerMode(self):
+        i = self.ui.cbLog4jMode.currentIndex()
+        d = self.ui.cbLog4jMode.itemData(i).toPyObject()
+        return d.data
+
+    @property
+    def mustStartServer(self):
+        sm = self.getCurrentServerMode()
+        return sm['envvar'] != None and self.ui.ckStartLogServer.isChecked()
+
+    @property
+    def mustUseServer(self):
+        sm = self.getCurrentServerMode()
+        return sm['envvar'] != None
 
     @property
     def serverHost(self):
@@ -252,7 +273,16 @@ class CLog4jExecutor:
         opts.setOption("log4jServerOutfile", self.serverOutfile)
         opts.setOption("log4jConsoleLevel", self.consoleLevel)
         opts.setOption("log4jXmlFileLevel", self.xmlFileLevel)
-        opts.setOption("log4jServerMode", self.ui.cbLog4jMode.currentIndex())
+
+        try:
+            sm = self.getCurrentServerMode()
+            opts.setOption("log4jServerMode", "%s" % sm['id'])
+        except:
+            print "Failed to save log4jServerMode"
+
+        opts.setOption("log4jXmlFileLevel", self.xmlFileLevel)
+        opts.setOption("log4jStartServer", 1 if self.ui.ckStartLogServer.isChecked() else 0)
+
 
     def restoreOptions(self):
         opts = self.options
@@ -281,11 +311,25 @@ class CLog4jExecutor:
         self.ui.log4jFileLevelCmbx.setCurrentIndex(log4jlevels.index(val))
 
         self.createServerModes()
+        cb = self.ui.cbLog4jMode
         val = opts.getOption('log4jServerMode')
-        if not val: val = 0
+        if not val: val = ''
+        selected = 0
+        try:
+            for i in xrange(cb.count()):
+                d = cb.itemData(i).toPyObject()
+                if d.data['id'] == val:
+                    selected = i
+                    break
+        except:
+            print "Failed to restore log4jServerMode"
+        cb.setCurrentIndex(selected)
+
+        val = opts.getOption('log4jStartServer')
+        if not val: val = 1
         else: val = int(val)
-        if val < 0 or val >= len(self.log4jModes): val = 0
-        self.ui.cbLog4jMode.setCurrentIndex(val)
+        self.ui.ckStartLogServer.setCheckState(2 if val else 0)
+
 
 
     def getConfig(self, configuredHosts):
@@ -296,6 +340,9 @@ class CLog4jExecutor:
             log4.setServerXmlFileLevel(self.xmlFileLevel)
             log4.setServerPort(self.serverPort)
             log4.serverHost = configuredHosts.expandHostName(self.serverHost)
+            sm = self.getCurrentServerMode()
+            log4.selectedServer = sm['id']
+            log4.startServer = self.ui.ckStartLogServer.isChecked()
             return log4
         except Exception as e:
             dlg = QtGui.QErrorMessage(self)
@@ -305,9 +352,26 @@ class CLog4jExecutor:
 
 
     def createLocalProcess(self):
-        p = procman.CProcess(procman.LOG4J_PROCESS, self.options.xe("${CMD_LOG4J_SERVER}"))
+        log4 = log4util.CLog4Config() # we only need logServerDir, so we don't use getConfig
+        p = procman.CProcess(procman.LOG4J_PROCESS, None, workdir=log4.logServerDir)
         p.messageProcessor = log4util.CLog4MessageProcessor()
         return p
+
+
+    def _configureServerProcess(self, p):
+        if not self.isLog4jProcess(p): return
+        if p.isRunning():
+            print "Can't configure log4j server while it's running"
+            return
+
+        sm = self.getCurrentServerMode()
+        if sm == None: return
+        cmdvarname = sm['envvar']
+        cmd = self.options.getEnvVar(cmdvarname)
+        if cmd == None:
+            cmd = self.options.getDefaultEnvVar(cmdvarname)
+        if cmd != None:
+            p.command = self.options.xe(cmd)
 
 
     def isLog4jProcess(self, p):
@@ -326,6 +390,7 @@ class CLog4jExecutor:
             p = localManager.getProcess(procman.LOG4J_PROCESS)
             if p != None:
                 log4.prepareServerConfig()
+                self._configureServerProcess(p)
                 LOGGER.log("Log4j STARTING 2")
                 p.start( params = {
                     "LOG4J_PORT": log4.serverPort,
@@ -467,7 +532,6 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.connect(self.ui.actStartTerminal, QtCore.SIGNAL("triggered()"), self.onStartTerminal)
         self.connect(self.ui.clientConfigCmbx, QtCore.SIGNAL("activated(int)"), self.onClientConfigChanged)
         self.connect(self.ui.hostConfigCmbx, QtCore.SIGNAL("activated(int)"), self.onHostConfigChanged)
-        self.connect(self.ui.cbLog4jServerHost, QtCore.SIGNAL("activated(int)"), self.log4j.onLog4jHostCbItemActivated)
 
         # Process actions
         self.connect(self.ui.actStartCastServers, QtCore.SIGNAL("triggered()"), self.onStartCastServers)
@@ -845,8 +909,7 @@ class CCastControlWnd(QtGui.QMainWindow):
     def startServers(self):
         self._options.checkConfigFile()
         log4 = self.log4j.getConfig(self.configuredHosts)
-        hasServer = self.log4j.mustUseServer
-        log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+        log4.prepareClientConfig()
 
         if self.ui.actEnableCleanupScript.isChecked():
             self.runCleanupScript()
@@ -974,7 +1037,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         hasServer = self.log4j.mustUseServer
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-            log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+            log4.prepareClientConfig()
 
             if self.ui.ckAutoClearLog.isChecked():
                 self.mainLog.clearOutput()
@@ -1019,8 +1082,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             self.startLog4jServer()
 
-            hasServer = self.log4j.mustUseServer
-            log4.prepareClientConfig(console=(not hasServer), socketServer=hasServer)
+            log4.prepareClientConfig()
 
             self.startLocalProcesses(self.procGroupA)
             self.startRemoteProcesses(self.procGroupA)

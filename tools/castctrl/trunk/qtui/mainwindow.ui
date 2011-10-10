@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
+    <width>772</width>
     <height>550</height>
    </rect>
   </property>
@@ -557,7 +557,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QFrame" name="frame_8">
+            <widget class="QFrame" name="frmLoggingSettings">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                <horstretch>0</horstretch>
@@ -598,7 +598,7 @@
                    <enum>Qt::Horizontal</enum>
                   </property>
                   <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -621,19 +621,19 @@
                 <item>
                  <widget class="QComboBox" name="cbLog4jMode">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
                   <item>
                    <property name="text">
-                    <string>Start and Connect to log4j Server</string>
+                    <string>Log4j Server</string>
                    </property>
                   </item>
                   <item>
                    <property name="text">
-                    <string>Connect to log4j Server</string>
+                    <string>CAST Log Server</string>
                    </property>
                   </item>
                   <item>
@@ -644,9 +644,19 @@
                  </widget>
                 </item>
                 <item>
+                 <widget class="QCheckBox" name="ckStartLogServer">
+                  <property name="text">
+                   <string>Start server</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <spacer name="horizontalSpacer_4">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::MinimumExpanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -1592,8 +1602,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>750</width>
-     <height>20</height>
+     <width>772</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCast">

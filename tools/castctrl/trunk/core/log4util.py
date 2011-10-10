@@ -12,7 +12,7 @@ class CLog4Config:
     def __init__(self):
         self._logDir = os.path.abspath("./logs")
         self._logFile = "cast-log.xml"
-        self._serverConf = "cctmp.SimpleSocketServer.conf"
+        self._serverConf = "cctmp.log4server.conf"
         self._clientConf = "cctmp.log4client.conf"
         self.serverXmlFileLevel = "TRACE"
         self.serverConsoleLevel = "LOG"
@@ -22,37 +22,51 @@ class CLog4Config:
         self.logPropLink = "log4j.properties"
 
         serverAppenders = {
-            'srvConsole': ('LOG4J.SimpleSocketServer.console'), # params: level
-            'srvXmlFile': ('LOG4J.SimpleSocketServer.xmlfile'), # params: level, filename
+            'console': ('LOG4J.SimpleSocketServer.console', ), # params: level
+            'xmlfile': ('LOG4J.SimpleSocketServer.xmlfile', ), # params: level, filename
         }
 
         # These settings names reflect the settings in default_log4jsrv.txt
         # ( appender-name, ini-section )
         servers = {}
         servers['console'] = {
+            'id': 'console',
+            'order': 0,
+            'name': 'Console',
             'envvar': None, # no need to start it
             'appenders': None,
-            'client-connect': ('LOG4J.client.console') # params: level
+            'client-connect': ('LOG4J.client.console', ) # params: level
         }
         servers['socket-server'] = {
+            'id': 'socket-server',
+            'order': 10,
+            'name': 'Log4j Socket Server',
             'envvar': 'CMD_LOG4J_SOCKET_SERVER',
             'appenders': serverAppenders,
-            'client-connect': ('LOG4J.client.socket') # params: hostname
+            'client-connect': ('LOG4J.client.socket', ) # params: hostname
         }
         servers['cast-server'] = {
+            'id': 'cast-server',
+            'order': 11,
+            'name': 'CAST Log Server',
             'envvar': 'CMD_LOG4J_CAST_SERVER',
             'appenders': serverAppenders,
-            'client-connect': ('LOG4J.client.IceAppender') # params: hostname
+            'client-connect': ('LOG4J.client.IceAppender', ) # params: hostname
         }
         self.servers = servers
 
-        self.selectedServer = 'cast-server'
+        self.selectedServer = 'socket-server' # TODO: change to cast-server whwn 2.1.16 published
         self.startServer = True
 
 
     @property
     def logFile(self):
-        return os.path.join(self._logDir, self._logFile)
+        # MUST be relative if used on a remote agent, so _logDir can't be used
+        return self._logFile
+
+    @property
+    def logServerDir(self):
+        return self._logDir
 
     @property
     def serverConfigFile(self):
@@ -73,7 +87,7 @@ class CLog4Config:
 
     def setXmlLogFilename(self, filename):
         path = os.path.abspath(filename)
-        self._logDir = os.path.dirname(path)
+        #self._logDir = os.path.dirname(path)
         self._logFile = os.path.basename(path)
         if self._logFile == "":
             self._logFile = "cast-log.xml"
@@ -84,6 +98,15 @@ class CLog4Config:
                 os.makedirs(self._logDir)
         except Exception as e:
             logger.get().error("%s" % e)
+
+    def _removeComments(self, items, removeAll=False):
+        clean = []
+        for ln in items:
+            ln = ln.strip()
+            if ln.startswith("#"):
+                if removeAll or not ln.startswith("#+"): continue
+            clean.append(ln)
+        return clean
 
     def _prepareLogFile(self):
         opts = options.getCastOptions()
@@ -96,48 +119,59 @@ class CLog4Config:
             ln = ln.replace('${USER}', user)
             ln = ln.replace('${NOW}', now)
             result.append(ln)
+        result = self._removeComments(result)
 
         try:
-            f = open(self.logFile, 'w')
+            f = open(os.path.join(self._logDir, self._logFile), 'w')
             f.write("\n".join(result))
             f.close()
         except Exception as e:
             logger.get().error("%s" % e)
 
+
+    def _insertRootLogger(self, configLines):
+        definedAppenders = {}
+        for ln in configLines:
+            if not ln.startswith("log4j.appender."): continue
+            parts = ln.split('=')[0].split('.')
+            definedAppenders[parts[2]] = 1
+        definedAppenders = definedAppenders.keys()
+
+        configLines.insert(0, ",".join(["log4j.rootLogger=TRACE"] + definedAppenders))
+        pass
+
+
     def prepareServerConfig(self):
-        opts = options.getCastOptions()
-        conf = opts.getSection("LOG4J.SimpleSocketServer.conf")
         result = []
-        lnroot = ""
-        for ln in conf:
-            if ln.strip().startswith("log4j.rootLogger="):
-                lnroot = ln.strip()
-                continue
-            result.append(ln.strip())
+        opts = options.getCastOptions()
 
-        if lnroot == "": lnroot = "log4j.rootLogger=TRACE"
-        rootparts = lnroot.split(',')
-        lnroot = [rootparts[0]]
+        # define appenders
+        sm = self.servers[self.selectedServer]
+        appenders = sm['appenders']
+        for k,appndr in appenders.items():
+            result.append("#+ Section: " + appndr[0])
+            level = self.serverConsoleLevel
+            if k == 'console' and level != 'OFF':
+                conf = opts.getSection(appndr[0])
+                for ln in conf:
+                    ln = ln.replace('${LEVEL}', level)
+                    result.append(ln)
 
-        level = self.serverConsoleLevel
-        if level != 'OFF':
-            if len(rootparts) > 0: lnroot.append(rootparts[1])
-            conf = opts.getSection("LOG4J.SimpleSocketServer.console")
-            for ln in conf:
-                ln = ln.replace('${LEVEL}', level)
-                result.append(ln)
+            level = self.serverXmlFileLevel
+            if k == 'xmlfile' and level != 'OFF':
+                self._prepareLogFile()
+                conf = opts.getSection(appndr[0])
+                for ln in conf:
+                    ln = ln.replace('${LEVEL}', level)
+                    ln = ln.replace('${LOGFILE}', self.logFile)
+                    result.append(ln)
 
-        level = self.serverXmlFileLevel
-        if level != 'OFF':
-            if len(rootparts) > 1: lnroot.append(rootparts[2])
-            self._prepareLogFile()
-            conf = opts.getSection("LOG4J.SimpleSocketServer.xmlfile")
-            for ln in conf:
-                ln = ln.replace('${LEVEL}', level)
-                ln = ln.replace('${LOGFILE}', self.logFile)
-                result.append(ln)
+        # cleanup
+        result = [ln.strip() for ln in result if not ln.strip().startswith("log4j.rootLogger=")]
+        result = self._removeComments(result)
 
-        result.insert(0, ",".join(lnroot))
+        # setup rootLogger
+        self._insertRootLogger(result)
 
         self._prepareLogDir()
         try:
@@ -147,41 +181,42 @@ class CLog4Config:
         except Exception as e:
             logger.get().error("%s" % e)
 
-    def prepareClientConfig(self, console = True, socketServer = True):
+        serverLink = os.path.join(self.logServerDir, self.logPropLink)
+        try:
+            if os.path.exists(serverLink):
+                st = os.lstat(serverLink)
+                if not stat.S_ISLNK(st.st_mode):
+                    os.rename(self.logPropLink, os.tempnam(self._logDir, "srv." + self.logPropLink))
+                os.remove(serverLink)
+            os.symlink(self.serverConfigFile, serverLink)
+        except Exception as e:
+            logger.get().error("%s" % e)
+
+
+    def prepareClientConfig(self):
         opts = options.getCastOptions()
-        clientfile = self.clientConfigFile
-        conf = opts.getSection("LOG4J.client.conf")
+        sm = self.servers[self.selectedServer]
         result = []
-        lnroot = ""
+
+        appndr = sm['client-connect']
+        conf = opts.getSection(appndr[0])
+        result.append("#+ Section: " + appndr[0])
         for ln in conf:
-            if ln.strip().startswith("log4j.rootLogger="):
-                lnroot = ln.strip()
-                continue
-            result.append(ln.strip())
-
-        if lnroot == "": lnroot = "log4j.rootLogger=TRACE"
-        rootparts = lnroot.split(',')
-        lnroot = [rootparts[0]]
-
-        level = self.serverConsoleLevel
-        if console and level != 'OFF':
-            if len(rootparts) > 0: lnroot.append(rootparts[1])
-            conf = opts.getSection("LOG4J.client.console")
-            for ln in conf:
-                ln = ln.replace('${LEVEL}', level)
-                result.append(ln)
-
-        if socketServer:
-            if len(rootparts) > 1: lnroot.append(rootparts[2])
-            conf = opts.getSection("LOG4J.client.socket")
-            for ln in conf:
-                #ln = ln.replace('${LEVEL}', level) # NOT YET; MAX(serverConsoleLevel, serverXmlFileLevel)
+            if sm['id'] == 'console':
+                ln = ln.replace('${LEVEL}', self.serverConsoleLevel)
+            else:
                 ln = ln.replace('${PORT}', self.serverPort)
                 ln = ln.replace('${HOST}', self.serverHost)
-                result.append(ln)
+            result.append(ln)
 
-        result.insert(0, ",".join(lnroot))
+        # cleanup
+        result = [ln.strip() for ln in result if not ln.strip().startswith("log4j.rootLogger=")]
+        result = self._removeComments(result)
 
+        # setup rootLogger
+        self._insertRootLogger(result)
+
+        clientfile = self.clientConfigFile
         self._prepareLogDir()
         try:
             f = open(clientfile, "w")
@@ -194,11 +229,12 @@ class CLog4Config:
             if os.path.exists(self.logPropLink):
                 st = os.lstat(self.logPropLink)
                 if not stat.S_ISLNK(st.st_mode):
-                    os.rename(self.logPropLink, os.tempnam(self._logDir, self.logPropLink))
+                    os.rename(self.logPropLink, os.tempnam(self._logDir, "cli." + self.logPropLink))
                 os.remove(self.logPropLink)
             os.symlink(clientfile, self.logPropLink)
         except Exception as e:
             logger.get().error("%s" % e)
+
 
 class CLog4MessageProcessor:
     reMsg = re.compile("^\s*\[[A-Z]+\s+([^:]+):")

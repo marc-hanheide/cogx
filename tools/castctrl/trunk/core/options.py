@@ -49,6 +49,13 @@ def _xe(shexpr, env=None, keepUnknown=False):
 
     return shexpr
 
+
+def _getEnvVar(variable, env):
+    if env.has_key(variable):
+        return env[variable]
+    return None
+
+
 class CUserOptions(object):
     def __init__(self):
         self.textEditCmd = "gvim --servername GVIM --remote-silent %l[+:] %s"
@@ -112,7 +119,8 @@ class CCastOptions(object):
         self.mruCfgCast = []
         self.mruCfgHosts = []
         self.options = {}
-        self.environmentDefault = [s for s in optdefault.environment.split("\n")]
+        self.environmentScriptDefault = [s for s in optdefault.environment.split("\n")]
+        self._environmentDefault = None
         self._environscript = None
         self._xenviron = None
         self._tempNewEnv = None # temp environ used for merging
@@ -127,7 +135,7 @@ class CCastOptions(object):
     @property
     def environscript(self):
         if self._environscript == None:
-            self._environscript = [ln for ln in self.environmentDefault]
+            self._environscript = [ln for ln in self.environmentScriptDefault]
         return self._environscript
 
     @property
@@ -136,10 +144,24 @@ class CCastOptions(object):
             self._xenviron = self._mergeEnvironment(startup_environ, self.environscript)
         return self._xenviron
 
+    @property
+    def environmentDefault(self):
+        if self._environmentDefault == None:
+            self._environmentDefault = self._mergeEnvironment(startup_environ, self.environmentScriptDefault)
+        return self._environmentDefault
+
     def xe(self, shexpr, environ=None):
         if not environ:
             environ = self.environ
         return _xe(shexpr, environ)
+
+    def getEnvVar(self, variable, environ=None):
+        if not environ:
+            environ = self.environ
+        return _getEnvVar(variable, environ)
+
+    def getDefaultEnvVar(self, variable):
+        return _getEnvVar(variable, self.environmentDefault)
 
     def getExtendedEnviron(self, defaults=None):
         """

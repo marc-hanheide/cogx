@@ -20,7 +20,7 @@ RSYNC_DAEMON = rasync.CRSyncDaemonConfig()
 
 # Ice servant
 class CAgentI(CastAgent.Agent):
-    logDir = "./logs"
+    logDir = os.path.abspath("./logs")
     clientfile = os.path.join(logDir, "ccatmp.log4client.conf")
     serverfile = os.path.join(logDir, "ccatmp.log4server.conf")
 
@@ -72,14 +72,16 @@ class CAgentI(CastAgent.Agent):
         if not p:
             return 0
         params = None
+        workdir = None
 
         if processName == procman.LOG4J_PROCESS:
             params = {
-                    "LOG4J_PORT": self.log4jport,
-                    "LOG4J_SERVER_CONFIG": CAgentI.serverfile
-                   }
+                      "LOG4J_PORT": self.log4jport,
+                      "LOG4J_SERVER_CONFIG": CAgentI.serverfile
+                     }
+            workdir = CAgentI.logDir
 
-        p.start(params=params)
+        p.start(params=params, workdir=workdir)
         return 1
 
     def stopProcess(self, processName, current=None):
@@ -100,17 +102,24 @@ class CAgentI(CastAgent.Agent):
         f.close()
         if os.path.exists(logPropLink):
             if not os.path.islink(logPropLink):
-                os.rename(logPropLink, os.tempnam(CAgentI.logDir, logPropLink))
+                os.rename(logPropLink, os.tempnam(CAgentI.logDir, "cli." + logPropLink))
             os.remove(logPropLink)
         os.symlink(CAgentI.clientfile, logPropLink)
 
     def setLog4jServerProperties(self, port, propText, current=None):
         self.log4jport = port
+        logPropLink = "log4j.properties"
         if not os.path.exists(CAgentI.logDir):
             os.makedirs(CAgentI.logDir)
         f = open(CAgentI.serverfile, 'w')
         f.write(propText)
         f.close()
+        serverLink = os.path.join(CAgentI.logDir, logPropLink)
+        if os.path.exists(serverLink):
+            if not os.path.islink(serverLink):
+                os.rename(serverLink, os.tempnam(CAgentI.logDir, "srv." + logPropLink))
+            os.remove(serverLink)
+        os.symlink(CAgentI.serverfile, serverLink)
 
     def getCmakeCache(self, current=None):
         if not self._checkBuildDir():
