@@ -10,6 +10,7 @@
 
   (:constants
     VISUAL_OBJECT_DUMMY - VisualObject
+    ARM_RETRACT_POSITION_DUMMY - VisualObject
 
     UNKNOWN_COLOR - ColorName
     RED - ColorName
@@ -64,8 +65,6 @@
     (clarify-object-reference-color ?c - ColorName)
     (clarify-object-reference-shape ?s - ShapeName)
     (clarify-object-reference-type ?t - TypeName)
-
-    (has-pointed-at ?v - VisualObject)
 
     (is-object-in-question ?v - VisualObject)
     (is-potential-object-in-question ?v - VisualObject)
@@ -346,10 +345,11 @@
     )
   )
 
-  (:derived (is-object-in-question ?v - VisualObject)
+  (:derived (is-object-in-question ?v - VisualObject ?r - Robot)
     (and
       (is-potential-object-in-question ?v)
       (not (exists (?v1 - VisualObject) (and (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
+      (= (currently-points-at ?r) ARM_RETRACT_POSITION_DUMMY)
     )
   )
 
@@ -678,20 +678,16 @@
   (:action point-to-object
     :agent (?r - Robot)
     :parameters (?v - VisualObject)
-    :precondition 
-      (and
-        (not (has-pointed-at ?v))
-      )
-    :effect 
+    :effect
       (and
         (assign (currently-points-at ?r) ?v)
-        (increase (total-cost) 2)
+        (increase (total-cost) 1)
       )
   )
 
   (:action verify-reference
     :agent (?r - Robot)
-    :parameters (?v - VisualObject ?c - ColorName)
+    :parameters (?v - VisualObject)
     :precondition 
       (and
         (= (currently-points-at ?r) ?v)
@@ -700,6 +696,16 @@
     :effect 
       (and
         (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action retract-arm
+    :agent (?r - Robot)
+    :effect
+      (and
+        (assign (currently-points-at ?r) ARM_RETRACT_POSITION_DUMMY)
+        (increase (total-cost) 1)
       )
   )
 
