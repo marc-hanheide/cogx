@@ -51,6 +51,7 @@ import execution.slice.actions.ProcessConeGroupAction;
 import execution.slice.actions.ProcessConesAtPlace;
 import execution.util.ActionExecutor;
 import execution.util.ActionExecutorFactory;
+import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteOnOperationExecutor;
@@ -63,11 +64,12 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * 
  */
 public class SpatialActionInterface extends ManagedComponent {
-	private class AlwaysSucceedsExecutor implements ActionExecutor {
 
-		@Override
-		public boolean accept(Action _action) {
-			return true;
+	private class AlwaysSucceedsExecutor extends
+			BlockingActionExecutor<ExplorePlace> {
+
+		public AlwaysSucceedsExecutor(ManagedComponent _component) {
+			super(_component, ExplorePlace.class);
 		}
 
 		@Override
@@ -75,18 +77,13 @@ public class SpatialActionInterface extends ManagedComponent {
 			return TriBool.TRITRUE;
 		}
 
-		@Override
-		public void execute(ExecutionCompletionCallback _callback) {
+	}
 
-		}
+	private class AlwaysSucceedsExecutorFactory extends
+			ComponentActionFactory<ExplorePlace, AlwaysSucceedsExecutor> {
 
-		@Override
-		public boolean isBlockingAction() {
-			return true;
-		}
-
-		@Override
-		public void stopExecution() {
+		public AlwaysSucceedsExecutorFactory(ManagedComponent _component) {
+			super(_component, AlwaysSucceedsExecutor.class);
 		}
 
 	}
@@ -336,8 +333,8 @@ public class SpatialActionInterface extends ManagedComponent {
 				}
 
 				// sort to start with most likely place to find an object
-				Collections.sort(vps, ViewPointProbabilityComparator
-						.getInstance());
+				Collections.sort(vps,
+						ViewPointProbabilityComparator.getInstance());
 			}
 		}
 		return vps;
@@ -597,7 +594,7 @@ public class SpatialActionInterface extends ManagedComponent {
 	//
 	// }
 
-	private class GoToPlaceExecutor implements ActionExecutor,
+	private class GoToPlaceExecutor implements ActionExecutor<GoToPlace>,
 			WorkingMemoryChangeReceiver {
 
 		private ExecutionCompletionCallback m_callback;
@@ -605,8 +602,13 @@ public class SpatialActionInterface extends ManagedComponent {
 		private WorkingMemoryAddress m_navCmdAddr;
 		private long m_placeID;
 
-		public boolean accept(Action _action) {
-			m_placeID = ((GoToPlace) _action).placeID;
+		@Override
+		public Class<GoToPlace> getActionClass() {
+			return GoToPlace.class;
+		}
+
+		public boolean accept(GoToPlace _action) {
+			m_placeID = _action.placeID;
 			return true;
 		}
 
@@ -693,8 +695,10 @@ public class SpatialActionInterface extends ManagedComponent {
 			} else if (cmd.comp == Completion.COMMANDABORTED) {
 				log("command aborted by the looks of this: " + cmd.comp);
 				m_isComplete = true;
-				// FIXME: We should really check the cmd's status for success/failure,
-				// But the planner performs better if we always signal TRITRUE here.
+				// FIXME: We should really check the cmd's status for
+				// success/failure,
+				// But the planner performs better if we always signal TRITRUE
+				// here.
 				m_callback.executionComplete(TriBool.TRITRUE);
 				deleteFromWorkingMemory(_wmc.address);
 				removeChangeFilter(this);
@@ -705,7 +709,8 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 	}
 
-	public class LookForPeopleExecutorFactory implements ActionExecutorFactory {
+	public class LookForPeopleExecutorFactory implements
+			ActionExecutorFactory<LookForPeople> {
 
 		private final ManagedComponent m_component;
 
@@ -714,13 +719,14 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 
 		@Override
-		public ActionExecutor getActionExecutor() {
+		public ActionExecutor<LookForPeople> getActionExecutor() {
 			return new LookForPeopleExecutor(m_component, m_detections);
 		}
 
 	}
 
-	public class TurnToPersonExecutorFactory implements ActionExecutorFactory {
+	public class TurnToPersonExecutorFactory implements
+			ActionExecutorFactory<TurnToHuman> {
 
 		private final ManagedComponent m_component;
 
@@ -729,13 +735,14 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 
 		@Override
-		public ActionExecutor getActionExecutor() {
+		public ActionExecutor<TurnToHuman> getActionExecutor() {
 			return new TurnToPersonExecutor(m_component);
 		}
 
 	}
 
-	public class LookForObjectsExecutorFactory implements ActionExecutorFactory {
+	public class LookForObjectsExecutorFactory implements
+			ActionExecutorFactory<LookForObjects> {
 
 		private final ManagedComponent m_component;
 
@@ -744,7 +751,7 @@ public class SpatialActionInterface extends ManagedComponent {
 		}
 
 		@Override
-		public ActionExecutor getActionExecutor() {
+		public ActionExecutor<LookForObjects> getActionExecutor() {
 			return new LookForObjectsExecutor(m_component, m_detections);
 		}
 
@@ -807,9 +814,9 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager = new LocalActionStateManager(this);
 
 		m_actionStateManager.registerActionType(GoToPlace.class,
-				new ActionExecutorFactory() {
+				new ActionExecutorFactory<GoToPlace>() {
 					@Override
-					public ActionExecutor getActionExecutor() {
+					public ActionExecutor<GoToPlace> getActionExecutor() {
 						return new GoToPlaceExecutor();
 					}
 				});
@@ -817,41 +824,47 @@ public class SpatialActionInterface extends ManagedComponent {
 		m_actionStateManager.registerActionType(TurnToHuman.class,
 				new TurnToPersonExecutorFactory(this));
 
+		final AlwaysSucceedsExecutorFactory alwaysExplore = new AlwaysSucceedsExecutorFactory(
+				this);
+
 		m_actionStateManager.registerActionType(ExplorePlace.class,
-				new ActionExecutorFactory() {
-					@Override
-					public ActionExecutor getActionExecutor() {
-						return new AlwaysSucceedsExecutor();
-					}
-				});
+				alwaysExplore);
 
 		m_actionStateManager.registerActionType(LookForObjects.class,
 				new LookForObjectsExecutorFactory(this));
 		m_actionStateManager.registerActionType(LookForPeople.class,
 				new LookForPeopleExecutorFactory(this));
 
-		m_actionStateManager.registerActionType(CreateConesForModel.class,
-				new ComponentActionFactory<ViewConeGenerationExecutor>(this,
-						ViewConeGenerationExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						CreateConesForModel.class,
+						new ComponentActionFactory<CreateConesForModel, ViewConeGenerationExecutor>(
+								this, ViewConeGenerationExecutor.class));
 
 		m_actionStateManager
 				.registerActionType(
 						CreateRelationalConesForModel.class,
-						new ComponentActionFactory<RelationalViewConeGenerationExecutor>(
+						new ComponentActionFactory<CreateRelationalConesForModel, RelationalViewConeGenerationExecutor>(
 								this,
 								RelationalViewConeGenerationExecutor.class));
 
-		m_actionStateManager.registerActionType(ProcessConeGroupAction.class,
-				new ComponentActionFactory<ConeGroupProcessExecutor>(this,
-						ConeGroupProcessExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						ProcessConeGroupAction.class,
+						new ComponentActionFactory<ProcessConeGroupAction, ConeGroupProcessExecutor>(
+								this, ConeGroupProcessExecutor.class));
 
-		m_actionStateManager.registerActionType(ProcessCone.class,
-				new ComponentActionFactory<ViewConeProcessExecutor>(this,
-						ViewConeProcessExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						ProcessCone.class,
+						new ComponentActionFactory<ProcessCone, ViewConeProcessExecutor>(
+								this, ViewConeProcessExecutor.class));
 
-		m_actionStateManager.registerActionType(ProcessConesAtPlace.class,
-				new ComponentActionFactory<ProcessAllViewConesAtPlaceExecutor>(
-						this, ProcessAllViewConesAtPlaceExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						ProcessConesAtPlace.class,
+						new ComponentActionFactory<ProcessConesAtPlace, ProcessAllViewConesAtPlaceExecutor>(
+								this, ProcessAllViewConesAtPlaceExecutor.class));
 
 		// add a listener to check for place ids, for checking purposes
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Place.class,

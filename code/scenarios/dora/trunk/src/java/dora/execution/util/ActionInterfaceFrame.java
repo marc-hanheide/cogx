@@ -1153,7 +1153,7 @@ public class ActionInterfaceFrame extends JFrame {
 		if (beliefAddr != null) {
 			m_exeMan.executeSingleBeliefAction(beliefAddr, new MonitorPanel(),
 					TurnToHuman.class);
-
+			
 			// UNTESTED!
 			// nah: to try the dialogue stuff, replace the above line with one
 			// of these, or alternative add a sleep or some check on the result
