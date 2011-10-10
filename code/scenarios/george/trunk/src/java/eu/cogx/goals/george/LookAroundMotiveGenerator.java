@@ -1,6 +1,7 @@
 package eu.cogx.goals.george;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -41,39 +42,50 @@ public class LookAroundMotiveGenerator extends
 		@Override
 		public void run() {
 
-			if (System.currentTimeMillis() - m_lastSystemActivity < BOREDOM_THRESHOLD) {
-				println("not bored yet");
-				return;
+			lockComponent();
+
+			// only generate cones if none are waiting to be looked at
+			if (m_myCones.isEmpty()) {
+
+				if (System.currentTimeMillis() - m_lastSystemActivity < BOREDOM_THRESHOLD) {
+					println("not bored yet");
+					return;
+				}
+
+				try {
+
+					println("ok, bored now, asking for some cones to look at");
+
+					LookAroundCommand cmd = new LookAroundCommand(null,
+							VisionCommandStatus.VCREQUESTED);
+
+					WorkingMemoryAddress cmdAddr = new WorkingMemoryAddress(
+							newDataID(), VISION_SA);
+					addChangeFilter(ChangeFilterFactory.createAddressFilter(
+							cmdAddr, WorkingMemoryOperation.OVERWRITE), this);
+					addToWorkingMemory(cmdAddr, cmd);
+				} catch (CASTException e) {
+					logException(e);
+				}
 			}
 
-			try {
-
-				println("ok, bored now, asking for some cones to look at");
-
-				// TODO make some kind of cone cleanup work
-				// // cleaning up old cones
-				// for (WorkingMemoryAddress coneAddr : m_myCones) {
-				// deleteFromWorkingMemory(coneAddr);
-				// }
-
-				LookAroundCommand cmd = new LookAroundCommand(null,
-						VisionCommandStatus.VCREQUESTED);
-
-				WorkingMemoryAddress cmdAddr = new WorkingMemoryAddress(
-						newDataID(), VISION_SA);
-				addChangeFilter(ChangeFilterFactory.createAddressFilter(
-						cmdAddr, WorkingMemoryOperation.OVERWRITE), this);
-				addToWorkingMemory(cmdAddr, cmd);
-			} catch (CASTException e) {
-				logException(e);
-			}
+			unlockComponent();
 
 		}
 
 		@Override
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
-			println("got some cones back");
+			log("got some cones back");
+			
+			// Don't clean up, because it ruins the "current_viewcone" belief of
+			// the robot and thus makes it impossible to find further plans.
+			//
+			// // create the reciever to clean up this mess
+			// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+			// LookAtViewConeMotive.class, WorkingMemoryOperation.DELETE),
+			// new CleanupReceiver());
+
 			LookAroundCommand cmd = getMemoryEntry(_wmc.address,
 					LookAroundCommand.class);
 			for (ViewCone vc : cmd.viewCones) {
@@ -110,8 +122,11 @@ public class LookAroundMotiveGenerator extends
 
 	private long m_lastSystemActivity;
 
+	private boolean m_fired;
+
 	public LookAroundMotiveGenerator() {
 		super(VC_TYPE, LookAtViewConeMotive.class, GroundedBelief.class);
+		m_fired = false;
 	}
 
 	@Override
@@ -198,15 +213,45 @@ public class LookAroundMotiveGenerator extends
 			log("ViewCone belief is still not looked at, so leaving motive unchanged.");
 			return _existingMotive;
 		} else {
-			// TODO make some kind of cone cleanup work
-			// try {
-			// log("ViewCone belief is now looked at, so removing motive and viewcone.");
-			// deleteFromWorkingMemory(_existingMotive.coneAddr);
-			// } catch (Exception e) {
-			// logException(e);
-			// }
+			log("ViewCone belief has been looked at, so removing motive.");
+			m_myCones.remove(_existingMotive.coneAddr);
 			return null;
 		}
 	}
+
+	// /**
+	// * Cleans up this component's view cones when no look around motives are
+	// * left.
+	// *
+	// * TODO parameterise based on newly added VCs.
+	// *
+	// * @author nah
+	// *
+	// */
+	// private class CleanupReceiver implements WorkingMemoryChangeReceiver {
+	// @Override
+	// public void workingMemoryChanged(WorkingMemoryChange arg0)
+	// throws CASTException {
+	//
+	// // see if there are any look around motives left
+	//
+	// if (!hasAvailableMotives()) {
+	//
+	// Iterator<WorkingMemoryAddress> i = m_myCones.iterator();
+	//
+	// while (i.hasNext()) {
+	// log("cleaning up cone");
+	// deleteFromWorkingMemory(i.next());
+	// i.remove();
+	// }
+	//
+	// removeChangeFilter(this);
+	//
+	// } else {
+	// println("some motives still available");
+	// }
+	// }
+	//
+	// }
 
 }

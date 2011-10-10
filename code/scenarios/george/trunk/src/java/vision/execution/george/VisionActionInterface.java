@@ -56,7 +56,6 @@ public class VisionActionInterface extends AbstractActionInterface {
 	public static final String LEARNED_FEATURE_POSTFIX = "-learned";
 	public static final String UNLEARNED_FEATURE_POSTFIX = "-unlearned";
 
-	
 	private WorkingMemoryAddress m_viewStateAddress;
 
 	private String m_ptzServerComponent;
@@ -104,21 +103,21 @@ public class VisionActionInterface extends AbstractActionInterface {
 			}
 		}
 
-
 		@Override
 		protected TriBool executionResult(MoveToViewConeCommand _cmd) {
 
 			try {
 				if (_cmd.status == VisionCommandStatus.VCSUCCEEDED) {
 
-					//tell the planner that we're now looking at this
+					// tell the planner that we're now looking at this
 					((VisionActionInterface) getComponent())
 							.recordCurrentViewCone(_cmd.target);
-		
-					//record that we have looked at it
-					((AbstractActionInterface) getComponent()).addBooleanFeature(
-							getAction().beliefAddress, "looked-at", true);
-		
+
+					// record that we have looked at it
+					((AbstractActionInterface) getComponent())
+							.addBooleanFeature(getAction().beliefAddress,
+									"looked-at", true);
+
 					return TriBool.TRITRUE;
 				} else {
 					((VisionActionInterface) getComponent())
@@ -215,9 +214,9 @@ public class VisionActionInterface extends AbstractActionInterface {
 	public static class LearnColourExecutor extends
 			LearnInstructionExecutor<LearnColour> {
 
-
 		public LearnColourExecutor(ManagedComponent _component) {
-			super(_component, LearnColour.class, "color", 1, LEARNED_FEATURE_POSTFIX);
+			super(_component, LearnColour.class, "color", 1,
+					LEARNED_FEATURE_POSTFIX);
 		}
 	}
 
@@ -225,7 +224,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<LearnShape> {
 
 		public LearnShapeExecutor(ManagedComponent _component) {
-			super(_component, LearnShape.class, "shape", 1, LEARNED_FEATURE_POSTFIX);
+			super(_component, LearnShape.class, "shape", 1,
+					LEARNED_FEATURE_POSTFIX);
 		}
 
 	}
@@ -234,7 +234,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<LearnIdentity> {
 
 		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class, "ident", 1, LEARNED_FEATURE_POSTFIX);
+			super(_component, LearnIdentity.class, "ident", 1,
+					LEARNED_FEATURE_POSTFIX);
 		}
 	}
 
@@ -242,7 +243,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<UnlearnColour> {
 
 		public UnlearnColourExecutor(ManagedComponent _component) {
-			super(_component, UnlearnColour.class, "color", -1, UNLEARNED_FEATURE_POSTFIX);
+			super(_component, UnlearnColour.class, "color", -1,
+					UNLEARNED_FEATURE_POSTFIX);
 		}
 	}
 
@@ -250,7 +252,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 			LearnInstructionExecutor<UnlearnShape> {
 
 		public UnlearnShapeExecutor(ManagedComponent _component) {
-			super(_component, UnlearnShape.class, "shape", -1, UNLEARNED_FEATURE_POSTFIX);
+			super(_component, UnlearnShape.class, "shape", -1,
+					UNLEARNED_FEATURE_POSTFIX);
 		}
 
 	}
@@ -353,33 +356,43 @@ public class VisionActionInterface extends AbstractActionInterface {
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
 
-		m_actionStateManager.registerActionType(MoveToViewCone.class,
-				new ComponentActionFactory<MoveToViewConeExecutor>(this,
-						MoveToViewConeExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						MoveToViewCone.class,
+						new ComponentActionFactory<MoveToViewCone, MoveToViewConeExecutor>(
+								this, MoveToViewConeExecutor.class));
 
-		m_actionStateManager.registerActionType(AnalyzeProtoObject.class,
-				new ComponentActionFactory<AnalyzeProtoObjectExecutor>(this,
-						AnalyzeProtoObjectExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						AnalyzeProtoObject.class,
+						new ComponentActionFactory<AnalyzeProtoObject, AnalyzeProtoObjectExecutor>(
+								this, AnalyzeProtoObjectExecutor.class));
 
 		m_actionStateManager.registerActionType(LearnColour.class,
-				new ComponentActionFactory<LearnColourExecutor>(this,
-						LearnColourExecutor.class));
+				new ComponentActionFactory<LearnColour, LearnColourExecutor>(
+						this, LearnColourExecutor.class));
 		m_actionStateManager.registerActionType(LearnShape.class,
-				new ComponentActionFactory<LearnShapeExecutor>(this,
-						LearnShapeExecutor.class));
-		m_actionStateManager.registerActionType(LearnIdentity.class,
-				new ComponentActionFactory<LearnIdentityExecutor>(this,
-						LearnIdentityExecutor.class));
+				new ComponentActionFactory<LearnShape, LearnShapeExecutor>(
+						this, LearnShapeExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						LearnIdentity.class,
+						new ComponentActionFactory<LearnIdentity, LearnIdentityExecutor>(
+								this, LearnIdentityExecutor.class));
 
-		m_actionStateManager.registerActionType(UnlearnColour.class,
-				new ComponentActionFactory<UnlearnColourExecutor>(this,
-						UnlearnColourExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						UnlearnColour.class,
+						new ComponentActionFactory<UnlearnColour, UnlearnColourExecutor>(
+								this, UnlearnColourExecutor.class));
 		m_actionStateManager.registerActionType(UnlearnShape.class,
-				new ComponentActionFactory<UnlearnShapeExecutor>(this,
-						UnlearnShapeExecutor.class));
-		m_actionStateManager.registerActionType(UnlearnIdentity.class,
-				new ComponentActionFactory<UnlearnIdentityExecutor>(this,
-						UnlearnIdentityExecutor.class));
+				new ComponentActionFactory<UnlearnShape, UnlearnShapeExecutor>(
+						this, UnlearnShapeExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						UnlearnIdentity.class,
+						new ComponentActionFactory<UnlearnIdentity, UnlearnIdentityExecutor>(
+								this, UnlearnIdentityExecutor.class));
 
 		addChangeFilter(
 				ChangeFilterFactory.createGlobalTypeFilter(RobotPose2d.class),
