@@ -22,6 +22,7 @@ import execution.slice.actions.PointToObject;
 import execution.slice.actions.UnlearnColour;
 import execution.slice.actions.UnlearnIdentity;
 import execution.slice.actions.UnlearnShape;
+import execution.slice.actions.VerifyReference;
 import execution.slice.actions.george.yr3.AnalyzeProtoObject;
 import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ActionConverter;
@@ -215,6 +216,10 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 				.equals("answer-polar-type-question-negatively")) {
 			return createAnswerPolarAction(_plannedAction, "type",
 					ConfidenceLevel.UNKNOWN);
+		} else if (_plannedAction.name.equals("verify-reference")) {
+			assert _plannedAction.arguments.length == 2 : "verify-reference is expected to be of arity 2";
+			return createSingleBeliefAction(VerifyReference.class,
+					_plannedAction.arguments[1]);
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
