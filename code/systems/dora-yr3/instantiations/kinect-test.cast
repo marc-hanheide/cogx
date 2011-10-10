@@ -1,0 +1,38 @@
+
+SETVAR playerhost= %(host:localhost)
+SETVAR ptz_server=ptz.server
+
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+SETVAR vision_pcserver_host=pcserver
+SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
+SETVAR spatial_pcserver=--pcserver %(vision_pcserver_host)
+HOST localhost
+
+SETVAR displaysrv_param_redirect=--redirect-to-host %(host:localhost)
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base-p.cast
+
+# Spatial.SA ################################################################
+COMPONENT CPP ptz.server PlayerPTZServer --player-host %(playerhost) --ptz-device 0
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial.cast
+
+
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+
+CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
+
+CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake
+
+
+# viewing and debugging #######################################################
+JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation,execution.slice.Action"
+
+# viewing and debugging #######################################################
