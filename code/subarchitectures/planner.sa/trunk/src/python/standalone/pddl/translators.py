@@ -999,12 +999,12 @@ class ModalPredicateCompiler(Translator):
             if isinstance(cond, conditions.LiteralCondition):
                 return self.translate_literal(cond, domain)
         
-        if new_args:
+        if new_args is not None:
             args = new_args
         else:
             args = [types.Parameter(p.name, p.type) for p in axiom.args]
 
-        if new_pred:
+        if new_pred is not None:
             pred = new_pred
         else:
             pred = domain.predicates.get(axiom.predicate.name, args)

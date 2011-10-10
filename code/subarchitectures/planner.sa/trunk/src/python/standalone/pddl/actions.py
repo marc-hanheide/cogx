@@ -256,6 +256,21 @@ class Action(Scope):
         a = Action(self.name, [], None, None, newdomain)
         a.args = a.copy_args(self.args)
         return a
+
+    def _extend_precond_or_effect(self, old, new_part, JunctionType):
+        if isinstance(old, JunctionType):
+            old.parts.append(new_part)
+            return old
+        elif old:
+            return JunctionType([old, new_part], scope=old.get_scope())
+        else:
+            return JunctionType([new_part], scope=None)
+
+    def extend_precondition(self, new_cond):
+        self.precondition = self._extend_precond_or_effect(self.precondition, new_cond, conditions.Conjunction)
+    
+    def extend_effect(self, new_eff):
+        self.effect = self._extend_precond_or_effect(self.effect, new_eff, effects.ConjunctiveEffect)
     
     @staticmethod
     def parse(it, scope):

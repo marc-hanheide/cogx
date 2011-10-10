@@ -55,7 +55,7 @@ class Effect(object):
                 vars = results[0]
                 return [p for p in vars if p not in eff.args]
             if eff.__class__ == ConditionalEffect:
-                return results + list(eff.condition.free())
+                return sum(results, []) + list(eff.condition.free())
             return sum(results, [])
         return set(self.visit(visitor))
     

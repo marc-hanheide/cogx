@@ -114,7 +114,7 @@ def getRWDescription(action, args, _state, time):
     effects = []
     if action.effect:
         effects.append(action.effect)
-    if action.sensors:
+    if isinstance(action, pddl.mapl.MAPLAction) and action.sensors:
         # print "action %s has sensors" % action.name
         if cond_keffs:
             effects.append(action.conditional_knowledge_effect())
@@ -188,6 +188,7 @@ def make_po_plan(actions, task):
     ignored_soft_goals = set()
     
     state = task.get_state().copy()
+    plan.init_node.effects = set(state.iterfacts())
     
     for starttime, action in actions:
         t1 = time.time()

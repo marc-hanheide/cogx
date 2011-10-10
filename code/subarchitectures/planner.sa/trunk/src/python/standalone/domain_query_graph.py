@@ -383,12 +383,13 @@ class QueryGraph(pddl.scope.Scope):
             if mapping is None:
                 return False
                 
-            for c2 in constraints2:
+            for c2 in constraints2.itervalues():
                 #need to find one constraint in c1 for each one in c2
                 matched = False
-                for c1 in constraints1:
+                for c1 in constraints1.itervalues():
                     m2 = c2.match(c1, mapping, canonical_matching)
                     if m2 is not None:
+                        # print "match:", c1, c2
                         matched = True
                         mapping = m2
                         break
@@ -406,9 +407,11 @@ class QueryGraph(pddl.scope.Scope):
             canonical_mapping = {}
 
             for n in nodes:
+                # print n
                 mapping = {}
                 action_mapping = dict((utils.to_object(a), ("action", i)) for i, a in enumerate(n.args))
                 for n2, eff, mapping in search_node(n, fact, mapping):
+                    # print "  ",n2
                     constraints = dict((c.svar, c) for c in self.get_relevant_constraints(eff, chain(n2.conditions, n2.constraints)))
                     effect_mapping = dict((a, ("effect", i)) for i, a in enumerate(eff.all_args()))
                     new_canon_map = canonical_mapping.copy()
@@ -422,7 +425,7 @@ class QueryGraph(pddl.scope.Scope):
                         if constraints_match(constraints, cset2, eff, eff2, new_canon_map):
                             matched = True
                             new_csets.append((cset2, eff2))
-                            # print "found existing match"
+                            # print "found existing match (superseding it)"
                         elif constraints_match(cset2, constraints, eff2, eff, new_canon_map):
                             pass
                             # print "found existing match"
@@ -441,6 +444,11 @@ class QueryGraph(pddl.scope.Scope):
             # print ["%s = %s %d" % (a.name, tag, i) for a, (tag, i) in canonical_mapping.iteritems()]
             # print fact, "in", n
 
+            # for constraints, eff in csets:
+            #     print
+            #     print map(str, constraints.itervalues())
+            #     print eff
+
             def build_dtree(dvars, csets):
                 if not csets:
                     return []
@@ -458,6 +466,7 @@ class QueryGraph(pddl.scope.Scope):
                         val = constraints[svar].value
                         if val.__class__ == pddl.TypedObject or val in canonical_mapping:
                             child_dict[val].append((constraints, eff))
+                            # print "grounded:", eff, svar, val
                         else:
                             all_vals.append((constraints, eff))
                             # print "not grounded:", eff, svar, val
@@ -466,7 +475,7 @@ class QueryGraph(pddl.scope.Scope):
                 node_children = [(val, build_dtree(dvars, childsets)) for val, childsets in child_dict.iteritems()]
                 if not node_children or not any(nodes for _, nodes in node_children):
                     return all_trees
-
+                # print "dvar:", svar
                 return all_trees + [DecisionNode(svar, node_children, None)]
 
             def print_dtree(node, level=0):
@@ -483,7 +492,7 @@ class QueryGraph(pddl.scope.Scope):
             droots = build_dtree(decision_vars, csets)
             # print "--"
             # for node in droots:
-                # print_dtree(node)
+            #     print_dtree(node)
 
             canonical_mapping = dict((k,v) for k,v in canonical_mapping.iteritems() if isinstance(k, pddl.Parameter))
 
@@ -504,6 +513,8 @@ class QueryGraph(pddl.scope.Scope):
 
         mapping = dict((a, get_mapping(*v)) for a,v in canonical_mapping.iteritems() if get_mapping(*v).is_instance_of(a.type) )
         self.instantiate(mapping, problem)
+
+        # print "\n", fact, "    ", action.name
         # print ["%s = %s" % (a, v) for a, v in mapping.iteritems()]
         # print ["%s = %s" % (repr(a), v) for a, v in mapping.iteritems()]
         

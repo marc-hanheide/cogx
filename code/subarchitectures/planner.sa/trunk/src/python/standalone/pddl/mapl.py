@@ -333,7 +333,12 @@ class MAPLAction(actions.Action):
         it.get(":action")
         name = it.get().token.string
 
-        it.get(":agent")
+        try:
+            it.get(":agent")
+        except parser.UnexpectedTokenError:
+            ## not a mapl action?
+            return actions.Action.parse(it.reset(), scope)
+            
         agent = predicates.parse_arg_list(iter(it.get(list, "agent parameter")), scope.types)
 
         next = it.get()
@@ -571,10 +576,14 @@ class MAPLWriter(writer.Writer):
         return self.section(":types", strings)
 
     def write_action(self, action):
+        if not isinstance(action, MAPLAction):
+            return writer.Writer.write_action(self, action)
+        
         strings = [action.name]
         params = [a for a in action.args if a not in action.agents and a not in action.vars]
-        
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+
+        if action.agents:
+            strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if params:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
         if action.vars:
@@ -591,12 +600,16 @@ class MAPLWriter(writer.Writer):
             strings += self.write_sense_effect(se)
             
         return self.section(":action", strings)
-        
+
+    def write_init_rule(self, rule):
+        return writer.Writer.write_action(self, rule, head=":init-rule")
+    
     def write_durative_action(self, action):
         strings = [action.name]
 
         params = [a for a in action.args if a not in action.agents and a not in action.vars]
-        strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
+        if action.agents:
+            strings += self.section(":agent", ["(%s)" % self.write_typelist(action.agents)], parens=False)
         if params:
             strings += self.section(":parameters", ["(%s)" % self.write_typelist(params)], parens=False)
         vars = [a for a in action.vars if a.name != "?duration"]
@@ -643,6 +656,10 @@ class MAPLWriter(writer.Writer):
             strings.append("")
             const = [c for c in domain.constants if c not in (types.TRUE, types.FALSE, types.UNKNOWN)]
             strings += self.write_objects("constants", const)
+
+        for r in domain.init_rules:
+            strings.append("")
+            strings += self.write_init_rule(r)
             
         for a in domain.axioms:
             strings.append("")
