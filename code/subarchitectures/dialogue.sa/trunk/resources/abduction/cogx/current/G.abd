@@ -116,7 +116,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
 
-	event : produce_text([the, ObjectRE, is, Value]) / -1.0.
+	event : produce_text([ObjectRE, is, Value]) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 % Other stuff.
