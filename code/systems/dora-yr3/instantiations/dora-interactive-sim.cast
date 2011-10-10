@@ -157,7 +157,8 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/planner.sa/dora-interaction.cast
 
 # dialogue ####################################################################
-INCLUDE includes/dialogue.sa/dialogue-dora.cast
+INCLUDE includes/dialogue.sa/INCL/dora-live.cast
+INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
