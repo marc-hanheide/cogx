@@ -162,38 +162,6 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 		private static final int ENGAGEMENT_TIMEOUT_SECONDS = 8;
 		WMEventQueue queue = new WMEventQueue();
 
-		@Override
-		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
-			getComponent().addChangeFilter(
-					ChangeFilterFactory.createTypeFilter(
-							InterpretedIntention.class,
-							WorkingMemoryOperation.ADD), queue);
-		}
-
-		@Override
-		protected TriBool waitAndCheckResponse(WorkingMemoryAddress id) {
-			try {
-				// if we received an update we're happy
-				println("wait for the intention of the human to pop up for " + ENGAGEMENT_TIMEOUT_SECONDS + " seconds");
-				WorkingMemoryChange e = queue.poll(ENGAGEMENT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-				if (e == null) {
-					println("didn't get the intention in time... action failed");
-					return TriBool.TRIFALSE;
-				} else {
-					println("got human intention to engage... action succeeded");
-				}
-			} catch (InterruptedException e) {
-				logException(e);
-			} finally {
-				try {
-					getComponent().removeChangeFilter(queue);
-				} catch (SubarchitectureComponentException e) {
-					logException(e);
-				}
-			}
-
-			return TriBool.TRITRUE;
-		}
 
 		public HumanEngagementExecutor(ManagedComponent _component) {
 			super(_component, EngageWithHuman.class);
