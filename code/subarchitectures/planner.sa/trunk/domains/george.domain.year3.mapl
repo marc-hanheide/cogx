@@ -65,17 +65,19 @@
     (clarify-object-reference-shape ?s - ShapeName)
     (clarify-object-reference-type ?t - TypeName)
 
-    (pointed-at ?v - VisualObject)
+    ;; (pointed-at ?v - VisualObject)
 
-    (arm-in-retract-position ?r - Robot)
+    ;; (arm-in-retract-position ?r - Robot)
 
-    (global-color-question-answered ?v - VisualObject)
-    (global-shape-question-answered ?v - VisualObject)
-    (global-type-question-answered ?v - VisualObject)
+    (is-object-in-question ?v - VisualObject)
 
-    (polar-color-question-answered ?v - VisualObject ?c - ColorName)
-    (polar-shape-question-answered ?v - VisualObject ?s - ShapeName)
-    (polar-type-question-answered ?v - VisualObject ?t - TypeName)
+    (global-color-question-answered)
+    (global-shape-question-answered)
+    (global-type-question-answered)
+
+    (polar-color-question-answered ?c - ColorName)
+    (polar-shape-question-answered ?s - ShapeName)
+    (polar-type-question-answered ?t - TypeName)
   )
 
   (:functions
@@ -666,94 +668,94 @@
 ;;;;;;;;;;;;;;;;;          REFERENCE RESOLUTION           ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (:action point-to-object-color
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?c - ColorName)
-    :precondition 
-      (or
-        (and
-          (attributed TUTOR (color ?v) ?c)
-          (not (pointed-at ?v))
-        )
-        (and
-          (allow-autonomous-color-learning ?v ?c ?r)
-          (color-learned ?v)
-          (not (pointed-at ?v))
-        )
-      )
-    :effect 
-      (and
-        (clarify-object-reference-color ?c)
-        (pointed-at ?v)
-        (not (arm-in-retract-position ?r))
-        (update (arm-in-retract-position ?r) false)
-        (increase (total-cost) 2)
-      )
-  )
+  ;; (:action point-to-object-color
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?c - ColorName)
+  ;;   :precondition 
+  ;;     (or
+  ;;       (and
+  ;;         (attributed TUTOR (color ?v) ?c)
+  ;;         (not (pointed-at ?v))
+  ;;       )
+  ;;       (and
+  ;;         (allow-autonomous-color-learning ?v ?c ?r)
+  ;;         (color-learned ?v)
+  ;;         (not (pointed-at ?v))
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (clarify-object-reference-color ?c)
+  ;;       (pointed-at ?v)
+  ;;       (not (arm-in-retract-position ?r))
+  ;;       (update (arm-in-retract-position ?r) false)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
 
-  (:action point-to-object-shape
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?s - ShapeName)
-    :precondition
-      (or
-        (and
-          (attributed TUTOR (shape ?v) ?s)
-          (not (pointed-at ?v))
-        )
-        (and
-          (allow-autonomous-shape-learning ?v ?s ?r)
-          (shape-learned ?v)
-          (not (pointed-at ?v))
-        )
-      )        
-    :effect 
-      (and
-        (clarify-object-reference-shape ?s)
-        (pointed-at ?v)
-        (not (arm-in-retract-position ?r))
-        (update (arm-in-retract-position ?r) false)
-        (increase (total-cost) 2)
-      )
-  )
+  ;; (:action point-to-object-shape
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?s - ShapeName)
+  ;;   :precondition
+  ;;     (or
+  ;;       (and
+  ;;         (attributed TUTOR (shape ?v) ?s)
+  ;;         (not (pointed-at ?v))
+  ;;       )
+  ;;       (and
+  ;;         (allow-autonomous-shape-learning ?v ?s ?r)
+  ;;         (shape-learned ?v)
+  ;;         (not (pointed-at ?v))
+  ;;       )
+  ;;     )        
+  ;;   :effect 
+  ;;     (and
+  ;;       (clarify-object-reference-shape ?s)
+  ;;       (pointed-at ?v)
+  ;;       (not (arm-in-retract-position ?r))
+  ;;       (update (arm-in-retract-position ?r) false)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
 
-  (:action point-to-object-type
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition
-      (or
-        (and
-          (attributed TUTOR (type ?v) ?t)
-          (not (pointed-at ?v))
-        )
-        (and
-          (allow-autonomous-type-learning ?v ?t ?r)
-          (shape-learned ?v)
-          (not (pointed-at ?v))
-        )
-      )
-    :effect 
-      (and
-        (clarify-object-reference-type ?t)
-        (pointed-at ?v)
-        (not (arm-in-retract-position ?r))
-        (update (arm-in-retract-position ?r) false)
-        (increase (total-cost) 2)
-      )
-  )
+  ;; (:action point-to-object-type
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (or
+  ;;       (and
+  ;;         (attributed TUTOR (type ?v) ?t)
+  ;;         (not (pointed-at ?v))
+  ;;       )
+  ;;       (and
+  ;;         (allow-autonomous-type-learning ?v ?t ?r)
+  ;;         (shape-learned ?v)
+  ;;         (not (pointed-at ?v))
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (clarify-object-reference-type ?t)
+  ;;       (pointed-at ?v)
+  ;;       (not (arm-in-retract-position ?r))
+  ;;       (update (arm-in-retract-position ?r) false)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
 
-  (:action retract-arm
-    :agent (?r - Robot)
-    :precondition
-      (and
-        (not (arm-in-retract-position ?r))
-      )
-    :effect
-      (and
-        (arm-in-retract-position ?r)
-        (update (arm-in-retract-position ?r) true)
-        (increase (total-cost) 1)
-      )
-  )
+  ;; (:action retract-arm
+  ;;   :agent (?r - Robot)
+  ;;   :precondition
+  ;;     (and
+  ;;       (not (arm-in-retract-position ?r))
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (arm-in-retract-position ?r)
+  ;;       (update (arm-in-retract-position ?r) true)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;           QUESTION ANSWERING            ;;;;;;;;;;;;;;;;;;;;;;;
@@ -768,12 +770,13 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
-        (global-color-question-answered ?v)
+        (global-color-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -783,13 +786,14 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
-        (global-color-question-answered ?v)
+        (global-color-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -799,12 +803,13 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
-        (global-color-question-answered ?v)
+        (global-color-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -814,12 +819,13 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
-        (global-shape-question-answered ?v)
+        (global-shape-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -829,13 +835,14 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
-        (global-shape-question-answered ?v)
+        (global-shape-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -845,12 +852,13 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
-        (global-shape-question-answered ?v)
+        (global-shape-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -860,12 +868,13 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
-        (global-type-question-answered ?v)
+        (global-type-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -875,13 +884,14 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
-        (global-type-question-answered ?v)
+        (global-type-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -891,12 +901,13 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
-        (global-type-question-answered ?v)
+        (global-type-question-answered)
         (increase (total-cost) 1)
       )
   )
@@ -910,12 +921,13 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
-        (polar-color-question-answered ?v ?c)
+        (polar-color-question-answered ?c)
         (increase (total-cost) 1)
       )
   )
@@ -925,13 +937,14 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
         (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
         (= (max-gain-label-color ?v) ?c)
       )
     :effect
       (and
-        (polar-color-question-answered ?v ?c)
+        (polar-color-question-answered ?c)
         (increase (total-cost) 1)
       )
   )
@@ -942,16 +955,18 @@
     :precondition
       (or
         (and
+          (is-object-in-question ?v)
           (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
           (= (max-gain-label-color ?v) ?c)
         )
         (and
+          (is-object-in-question ?v)
           (not (= (max-gain-label-color ?v) ?c))
         )
       )
     :effect
       (and
-        (polar-color-question-answered ?v ?c)
+        (polar-color-question-answered ?c)
         (increase (total-cost) 2)
       )
   )
@@ -961,12 +976,13 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
-        (polar-shape-question-answered ?v ?s)
+        (polar-shape-question-answered ?s)
         (increase (total-cost) 1)
       )
   )
@@ -976,13 +992,14 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
         (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
         (= (max-gain-label-shape ?v) ?s)
       )
     :effect
       (and
-        (polar-shape-question-answered ?v ?s)
+        (polar-shape-question-answered ?s)
         (increase (total-cost) 1)
       )
   )
@@ -993,16 +1010,18 @@
     :precondition
       (or
         (and
+          (is-object-in-question ?v)
           (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
           (= (max-gain-label-shape ?v) ?s)
         )
         (and
+          (is-object-in-question ?v)
           (not (= (max-gain-label-shape ?v) ?s))
         )
       )
     :effect
       (and
-        (polar-shape-question-answered ?v ?s)
+        (polar-shape-question-answered ?s)
         (increase (total-cost) 2)
       )
   )
@@ -1012,12 +1031,13 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
-        (polar-type-question-answered ?v ?t)
+        (polar-type-question-answered ?t)
         (increase (total-cost) 1)
       )
   )
@@ -1027,13 +1047,14 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (is-object-in-question ?v)
         (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
         (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
         (= (max-gain-label-type ?v) ?t)
       )
     :effect
       (and
-        (polar-type-question-answered ?v ?t)
+        (polar-type-question-answered ?t)
         (increase (total-cost) 1)
       )
   )
@@ -1044,16 +1065,18 @@
     :precondition
       (or
         (and
+          (is-object-in-question ?v)
           (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
           (= (max-gain-label-type ?v) ?t)
         )
         (and
+          (is-object-in-question ?v)
           (not (= (max-gain-label-type ?v) ?t))
         )
       )
     :effect
       (and
-        (polar-type-question-answered ?v ?t)
+        (polar-type-question-answered ?t)
         (increase (total-cost) 2)
       )
   )
