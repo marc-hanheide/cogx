@@ -74,6 +74,11 @@ public class ManualPlanningTaskFrame extends JFrame {
 
 	private JPanel jButtonPanel = null;
 	private JTextField jGoalTextEditField = null;
+	public JTextField getjGoalTextEditField() {
+		return jGoalTextEditField;
+	}
+
+
 	private JButton jButtonSubmit = null;
 	private JPanel jGoalsPanel = null;
 	private JScrollPane jGoalsScrollPane = null;

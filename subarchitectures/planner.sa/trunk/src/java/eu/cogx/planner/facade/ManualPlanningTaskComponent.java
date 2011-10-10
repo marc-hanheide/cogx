@@ -28,16 +28,21 @@ import eu.cogx.planner.facade.ManualPlanningTaskFrame.SubmitListener;
  */
 public class ManualPlanningTaskComponent extends ManagedComponent implements
 		SubmitListener {
+	public static final String OVERSUBSCRIPTION_MODE = "--oversubscription-mode";
+
 	private static final String CONFIG_GOALS = "--goals";
 
 	ManualPlanningTaskFrame frame;
+
 	protected ManualPlanningTaskFrame getFrame() {
 		return frame;
 	}
 
 	WMView<GroundedBelief> view;
 	PlannerFacade planner;
-    List<String> goals = null;
+	List<String> goals = null;
+
+	private boolean m_oversubscription;
 
 	/*
 	 * (non-Javadoc)
@@ -46,13 +51,18 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 	 */
 	@Override
 	protected void configure(Map<String, String> config) {
-        goals = new LinkedList<String>();
+		goals = new LinkedList<String>();
 		if (config.containsKey(CONFIG_GOALS)) {
-			StringTokenizer st = new StringTokenizer(config.get(CONFIG_GOALS), ";");
+			StringTokenizer st = new StringTokenizer(config.get(CONFIG_GOALS),
+					";");
 			while (st.hasMoreTokens()) {
 				goals.add(st.nextToken());
 			}
 		}
+		if (config.containsKey(OVERSUBSCRIPTION_MODE))
+			m_oversubscription = true;
+		else
+			m_oversubscription = false;
 	}
 
 	/*
@@ -99,18 +109,62 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 	@Override
 	public String submit(TableModel goalsTable, boolean shouldExecutePlan) {
 		log("submit:" + goalsTable);
+		if (m_oversubscription)
+			return submitAllGoals(goalsTable, shouldExecutePlan);
+		else
+			return submitOneGoal(goalsTable, shouldExecutePlan);
+
+	}
+
+	private String submitOneGoal(TableModel goalsTable,
+			boolean shouldExecutePlan) {
 		LinkedList<Goal> goals = new LinkedList<Goal>();
-		for (int i=0; i<goalsTable.getRowCount(); i++) {
-			Object goalObj=goalsTable.getValueAt(i, 0);
-			Object impObj=goalsTable.getValueAt(i, 1);
-			if (goalObj!=null && goalObj instanceof String && ((String) goalObj).length()>0) {
-				int importance=-1;
-				if (impObj!=null && impObj instanceof String) {
+		Goal g = new Goal(-1, this.frame.getjGoalTextEditField().getText(),
+				false);
+		goals.add(g);
+
+		try {
+			WMEntryQueueElement<PlanningTask> res = planner.plan(goals,
+					shouldExecutePlan).get();
+			if (res == null)
+				return "PLANNING FAILED";
+			else {
+				if (shouldExecutePlan) {
+					addToWorkingMemory(newDataID(), new PlanProxy(res
+							.getEvent().address));
+				}
+				String resultString = res.getEntry().planningStatus.name()
+						+ " costs=" + res.getEntry().costs + ", goals:";
+				for (Goal gr : res.getEntry().goals) {
+					resultString += " [" + gr.goalString + ", " + gr.isInPlan
+							+ "]";
+				}
+				return resultString;
+			}
+		} catch (Exception e) {
+			logException(e);
+			return e.getMessage();
+		}
+	}
+
+	private String submitAllGoals(TableModel goalsTable,
+			boolean shouldExecutePlan) {
+		LinkedList<Goal> goals = new LinkedList<Goal>();
+		for (int i = 0; i < goalsTable.getRowCount(); i++) {
+			Object goalObj = goalsTable.getValueAt(i, 0);
+			Object impObj = goalsTable.getValueAt(i, 1);
+			if (goalObj != null && goalObj instanceof String
+					&& ((String) goalObj).length() > 0) {
+				int importance = -1;
+				if (impObj != null && impObj instanceof String) {
 					try {
-					importance=Integer.parseInt((String) impObj);
-					} catch(NumberFormatException e) {
-						getLogger().warn("could not parse importance integer from" + (String) impObj + ". taken default -1.");
-						importance=-1;
+						importance = Integer.parseInt((String) impObj);
+					} catch (NumberFormatException e) {
+						getLogger().warn(
+								"could not parse importance integer from"
+										+ (String) impObj
+										+ ". taken default -1.");
+						importance = -1;
 					}
 				}
 				Goal g = new Goal(importance, (String) goalObj, false);
@@ -119,16 +173,20 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 		}
 
 		try {
-			WMEntryQueueElement<PlanningTask> res=planner.plan(goals, shouldExecutePlan).get();
-			if (res==null)
+			WMEntryQueueElement<PlanningTask> res = planner.plan(goals,
+					shouldExecutePlan).get();
+			if (res == null)
 				return "PLANNING FAILED";
 			else {
 				if (shouldExecutePlan) {
-					addToWorkingMemory(newDataID(), new PlanProxy(res.getEvent().address));
+					addToWorkingMemory(newDataID(), new PlanProxy(res
+							.getEvent().address));
 				}
-				String resultString=res.getEntry().planningStatus.name()+" costs=" + res.getEntry().costs+ ", goals:";
-				for (Goal g: res.getEntry().goals) {
-					resultString+=" ["+g.goalString + ", " + g.isInPlan +"]";
+				String resultString = res.getEntry().planningStatus.name()
+						+ " costs=" + res.getEntry().costs + ", goals:";
+				for (Goal g : res.getEntry().goals) {
+					resultString += " [" + g.goalString + ", " + g.isInPlan
+							+ "]";
 				}
 				return resultString;
 			}
@@ -136,7 +194,6 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 			logException(e);
 			return e.getMessage();
 		}
-
 	}
 
 }
