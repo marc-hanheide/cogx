@@ -723,6 +723,14 @@ public class PlaceMonitor extends ManagedComponent {
 
 				ReferenceGenerationRequest _fakeGREReq4 = new ReferenceGenerationRequest(_wmc.address, true, true, new LinkedList<String>());
 				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq4);
+				
+				LinkedList<String> _omissionList = new LinkedList<String>();
+				_omissionList.add("identity");
+				ReferenceGenerationRequest _fakeGREReq5 = new ReferenceGenerationRequest(_wmc.address, true, false, _omissionList);
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq5);
+
+				ReferenceGenerationRequest _fakeGREReq6 = new ReferenceGenerationRequest(_wmc.address, true, true, _omissionList);
+				addToWorkingMemory(new WorkingMemoryAddress(newDataID(), getSubarchitectureID()), _fakeGREReq6);
 			} catch (AlreadyExistsOnWMException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -779,11 +787,14 @@ public class PlaceMonitor extends ManagedComponent {
 		if (relateePtr!=null) {
 			GroundedBelief gbOfRelatedObjectInWM = getMemoryEntry(relateePtr.get().pointer, GroundedBelief.class);
 			// get the coma individual name for it
-			String relateeInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbOfRelatedObjectInWM);
-			String relationName = "dora:" + ComaGBeliefHelper.getGBeliefRelation(gbelief);
-
-			m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
-			log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
+			try {
+				String relateeInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbOfRelatedObjectInWM);
+				String relationName = "dora:" + ComaGBeliefHelper.getGBeliefRelation(gbelief);
+				m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
+				log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
+			} catch (de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException e) {
+				logException(e);
+			}
 		}
 		} catch (BeliefException e1) {
 			logException(e1);

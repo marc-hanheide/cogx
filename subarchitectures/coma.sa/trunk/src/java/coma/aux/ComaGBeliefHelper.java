@@ -65,7 +65,7 @@ public final class ComaGBeliefHelper {
 				.getBeliefTypeFromCastType(ComaRoom.class))) {
 			insName = "room" + gbProxy.getContent().get(
 					ComaRoomTransferFunction.ROOM_ID)
-					.getDistribution().getMostLikely().getProposition();
+					.getDistribution().getMostLikely().getInteger();
 		} else if (gbProxy.getType().equals(
 				SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(VisualObject.class))) {
