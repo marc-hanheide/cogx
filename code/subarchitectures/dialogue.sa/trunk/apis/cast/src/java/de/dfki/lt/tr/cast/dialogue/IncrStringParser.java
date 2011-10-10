@@ -50,6 +50,7 @@ import de.dfki.lt.tr.dialogue.parse.PackedLFParseResults;
 import de.dfki.lt.tr.dialogue.parse.OpenCCGGrammar;
 import de.dfki.lt.tr.dialogue.parse.preprocess.BasicPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.CapitalizationPhonStringPreprocessor;
+import de.dfki.lt.tr.dialogue.parse.preprocess.ParaphrasingPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.PhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
 import de.dfki.lt.tr.dialogue.slice.lf.PackedLogicalForm;
@@ -207,6 +208,7 @@ extends AbstractDialogueComponentUsingTaskManager {
 			throw new IllegalStateException(ex);
 		}
 
+		preprocessors.add(new ParaphrasingPhonStringPreprocessor());
 		preprocessors.add(new CapitalizationPhonStringPreprocessor());
 		preprocessors.add(new BasicPhonStringPreprocessor());
         	
