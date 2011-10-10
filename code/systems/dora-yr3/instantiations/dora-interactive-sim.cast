@@ -158,7 +158,7 @@ INCLUDE includes/planner.sa/dora-interaction.cast
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/INCL/dora-live.cast
-INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
+INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
@@ -167,7 +167,7 @@ INCLUDE includes/dialogue.sa/dialogue-exe-fake.cast
 #JAVA MG plannerstopwatch castutils.experimentation.PlannerStopWatch 
 
 # viewing and debugging #######################################################
-JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation,execution.slice.Action"
+JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject, VisionData.Person, execution.slice.person.PersonObservation, execution.slice.Action, de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention, de.dfki.lt.tr.dialogue.slice.StandbyMode"
 
 # viewing and debugging #######################################################
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact
