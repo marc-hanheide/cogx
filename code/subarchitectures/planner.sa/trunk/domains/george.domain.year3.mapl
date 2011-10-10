@@ -677,8 +677,8 @@
     :effect
       (and
         (assign (currently-points-at ?r) ?v)
-        (arm-not-in-resting-position)
-        (update (arm-not-in-resting-position) true)
+        (arm-not-in-resting-position ?r)
+        (update (arm-not-in-resting-position ?r) true)
         (increase (total-cost) 1)
       )
   )
@@ -703,8 +703,8 @@
     :effect
       (and
         (assign (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
-        (not (arm-not-in-resting-position))
-        (update (arm-not-in-resting-position) false)
+        (not (arm-not-in-resting-position ?r))
+        (update (arm-not-in-resting-position ?r) false)
         (increase (total-cost) 1)
       )
   )
