@@ -1,3 +1,6 @@
+SETVAR mary_voice=dfki-prudence-hsmm
+#SETVAR mary_voice=dfki-poppy-hsmm
+
 INCLUDE default+gui.cast
 
 INCLUDE modules/refres-fake.incl
