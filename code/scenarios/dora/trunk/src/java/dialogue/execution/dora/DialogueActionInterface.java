@@ -1,20 +1,20 @@
 package dialogue.execution.dora;
 
+import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
-import cast.SubarchitectureComponentException;
-import cast.architecture.ChangeFilterFactory;
+import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEventQueue;
+import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.dialogue.slice.StandbyMode;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -36,6 +36,9 @@ import execution.util.ComponentActionFactory;
  * 
  */
 public class DialogueActionInterface extends AbstractDialogueActionInterface {
+
+	WMView<StandbyMode> standbyModeView = WMView
+			.create(this, StandbyMode.class);
 
 	public static class ReportPositionDialogue extends
 			BeliefIntentionDialogueAction<ReportPosition> {
@@ -159,9 +162,7 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 	 */
 	public static class HumanEngagementExecutor extends
 			IntentionDialogueAction<EngageWithHuman> {
-		private static final int ENGAGEMENT_TIMEOUT_SECONDS = 8;
 		WMEventQueue queue = new WMEventQueue();
-
 
 		public HumanEngagementExecutor(ManagedComponent _component) {
 			super(_component, EngageWithHuman.class);
@@ -182,6 +183,12 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 	@Override
 	protected void start() {
 		super.start();
+
+		try {
+			standbyModeView.start();
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+		}
 
 		if (m_fakeIt) {
 			m_actionStateManager
@@ -206,5 +213,41 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 									this, HumanEngagementExecutor.class));
 
 		}
+	}
+
+	@Override
+	protected void runComponent() {
+		// make the robot deaf initially
+		disableASR();
+		super.runComponent();
+	}
+
+	@Override
+	public void disableASR() {
+		StandbyMode sbm = new StandbyMode();
+		try {
+			addToWorkingMemory(newDataID(), sbm);
+		} catch (AlreadyExistsOnWMException e) {
+			logException(e);
+		}
+		println("disabled ASR processing... robot is deaf now");
+	}
+
+	/* (non-Javadoc)
+	 * @see dialogue.execution.AbstractDialogueActionInterface#enableASR()
+	 */
+	@Override
+	public void enableASR() {
+		Set<WorkingMemoryAddress> wmaSets = new HashSet<WorkingMemoryAddress>(
+				standbyModeView.keySet());
+		try {
+			for (WorkingMemoryAddress wma : wmaSets) {
+				deleteFromWorkingMemory(wma);
+			}
+			println("enabled ASR processing... robot is listening now");
+		} catch (CASTException e) {
+			logException(e);
+		}
+
 	}
 }
