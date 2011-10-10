@@ -25,6 +25,8 @@
    ;; (cones-exist ?l - label ?r - room)
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
 
+   (any-engaged)
+
    ;;virtual predicates
    (cones_created  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
 
@@ -85,6 +87,8 @@
    (associated-room ?p - person) - room
    (does-exist ?p - person) - boolean
    (contains-a-person-prior ?r - room) - boolean
+
+   (engaged ?p - person) - boolean
 
    ;; === object properties ===
    (label ?o - visualobject) - label
@@ -207,6 +211,14 @@
              :effect (assign (dora__not_inroom ?l ?c) (- 1.0 (dora__inroom ?l ?c)))
              )
 
+ (:init-rule reset-engaged
+             :effect (not (any-engaged)))
+
+ (:init-rule engaged
+             :parameters (?p - person)
+             :precondition (= (engaged ?p) true)
+             :effect (any-engaged))
+
   (:derived (attached_to_room ?p - place ?r - room)
             (exists (?p2 - place) (and (= (in-room ?p2) ?r)
                                        (connected ?p2 ?p))))
@@ -220,6 +232,7 @@
             (or (poss (related-to ?o) ?where)
                 (exists (?o2 - visualobject) (and (poss (related-to ?o) ?o2)
                                                  (trans_related ?o2 ?where)))))
+
 
   (:derived (cones_exist ?l - label ?rel - spatial_relation ?where - (either visualobject room))
             (exists (?c - conegroup) (and (= (cg-label ?c) ?l)
@@ -365,6 +378,7 @@
            :parameters (?o - visualobject)
            :variables (?p - place ?h - person)
            :precondition (and (kval ?a (related-to ?o))
+                              ;; (any-engaged)
                               (= (is-in ?h) ?p)
                               (= (is-in ?a) ?p))
            :effect (and (position-reported ?o)
@@ -378,6 +392,7 @@
             :precondition (and (or (connected ?from ?to)
                                    (connected ?to ?from))
                                (not (done))
+                               (not (any-engaged))
                                (= (is-in ?a) ?from))
             :effect (and (assign (is-in ?a) ?to)
                          (assign (placestatus ?to) trueplace)
@@ -394,6 +409,7 @@
                                (or (connected ?via ?to)
                                    (connected ?to ?via))
                                (not (done))
+                               (not (any-engaged))
                                (= (is-in ?a) ?from))
             :effect (and (assign (is-in ?a) ?to)
                          (assign (placestatus ?to) trueplace)
@@ -447,38 +463,38 @@
                          (increase (total-cost) 4))
             )
 
-   (:action request-put-on-robot
-            :agent (?a - robot)
-            :parameters (?l - label)
-            :variables (?p - person ?pl - place ?r - room ?o - visualobject)
-            :precondition (and (not (done))
-                            (= (is-in ?a) ?pl)
-                            (= (is-in ?p) ?pl)
-                            (= (in-room ?pl) ?r)
-                            (trans_related ?o ?r)
-                            (kval ?a (related-to ?o))
-                            (= (label ?o) ?l))
-            :effect (and 
-                     (assign (related-to ?o) ?a)
-                     (assign (relation ?o) on)
-                     (increase (total-cost) 10))
-            )
+   ;; (:action request-put-on-robot
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?l - label)
+   ;;          :variables (?p - person ?pl - place ?r - room ?o - visualobject)
+   ;;          :precondition (and (not (done))
+   ;;                          (= (is-in ?a) ?pl)
+   ;;                          (= (is-in ?p) ?pl)
+   ;;                          (= (in-room ?pl) ?r)
+   ;;                          (trans_related ?o ?r)
+   ;;                          (kval ?a (related-to ?o))
+   ;;                          (= (label ?o) ?l))
+   ;;          :effect (and 
+   ;;                   (assign (related-to ?o) ?a)
+   ;;                   (assign (relation ?o) on)
+   ;;                   (increase (total-cost) 10))
+   ;;          )
 
-   (:action request-pick-up
-            :agent (?a - robot)
-            :parameters (?l - label)
-            :variables (?p - person ?pl - place ?o - visualobject)
-            :precondition (and (not (done))
-                            (= (is-in ?a) ?pl)
-                            (= (is-in ?p) ?pl)
-                            (= (related-to ?o) ?a)
-                            (= (relation ?o) on)
-                            (= (label ?o) ?l))
-            :effect (and 
-                     (assign (related-to ?o) ?p)
-                     ;; (assign (relation ?o) on)
-                     (increase (total-cost) 10))
-            )
+   ;; (:action request-pick-up
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?l - label)
+   ;;          :variables (?p - person ?pl - place ?o - visualobject)
+   ;;          :precondition (and (not (done))
+   ;;                          (= (is-in ?a) ?pl)
+   ;;                          (= (is-in ?p) ?pl)
+   ;;                          (= (related-to ?o) ?a)
+   ;;                          (= (relation ?o) on)
+   ;;                          (= (label ?o) ?l))
+   ;;          :effect (and 
+   ;;                   (assign (related-to ?o) ?p)
+   ;;                   ;; (assign (relation ?o) on)
+   ;;                   (increase (total-cost) 10))
+   ;;          )
 
 
    ;; Abstract search action for the CP planner
@@ -495,6 +511,7 @@
                                    (cones_exist ?l in ?r))
                                (poss (related-to ?o) ?r)
                                (poss (relation ?o) in)
+                               (not (any-engaged))
                                (not (done)))
             :effect (and (increase (total-cost) (search_cost ?l in ?r)))
             :sense (= (related-to ?o) ?r)
@@ -536,6 +553,7 @@
                                    (cones_exist ?l ?rel ?o))
                                (poss (related-to ?o2) ?o)
                                (poss (relation ?o2) ?rel)
+                               (not (any-engaged))
                                (not (done)))
             :effect (and (increase (total-cost) (search_cost ?l ?rel ?o)))
             :sense (related-to ?o2)
@@ -551,6 +569,7 @@
             :parameters (?c - conegroup)
             :variables (?p - place)
             :precondition (and (not (done))
+                               (not (any-engaged))
                                (= (cg-place ?c) ?p)
                                (= (is-in ?a) ?p))
             :effect (and 
@@ -573,16 +592,44 @@
                           )
              )
 
+   ;; (:action engage
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?h - person)
+   ;;          :variables ( ?p - place)
+   ;;          :precondition (and (not (done))
+   ;;                             (not (any-engaged))
+   ;;                             (= (is-in ?h) ?p)                               
+   ;;                             (= (is-in ?a) ?p))
+   ;;          :effect (and 
+   ;;                   (any-engaged)
+   ;;                   (increase (total-cost) 1)
+   ;;                   (assign (failure-cost) 100))
+   ;;          )
+
+   ;; (:action disengage
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?h - person)
+   ;;          :variables (?p - place)
+   ;;          :precondition (and (not (done))
+   ;;                             (any-engaged)
+   ;;                             (= (is-in ?h) ?p)                               
+   ;;                             (= (is-in ?a) ?p))
+   ;;          :effect (and 
+   ;;                   (not (any-engaged))
+   ;;                   (increase (total-cost) 1))
+   ;;          )
+
    (:action ask-for-category-polar
             :agent (?a - robot)
             :parameters (?r - room ?c - category)
             :variables (?h - person ?p - place)
             :precondition (and (not (done))
+                               ;; (any-engaged)
                                (= (is-in ?h) ?p)                               
                                (= (is-in ?a) ?p)
                                (= (in-room ?p) ?r))
             :effect (and 
-                     (increase (total-cost) 5)
+                     (increase (total-cost) 5))
                      (assign (failure-cost) 100))
             )
 
@@ -615,7 +662,7 @@
              :effect (and (when (= (is-in ?p) ?pl)
                             (probabilistic 0.7 (observed (does-exist ?p) true)))
                           (when (not (= (is-in ?p) ?pl))
-                            (probabilistic 0.05 (observed (does-exist ?p) true)))
+                            (probabilistic 0.001 (observed (does-exist ?p) true)))
                           )
              )
 
