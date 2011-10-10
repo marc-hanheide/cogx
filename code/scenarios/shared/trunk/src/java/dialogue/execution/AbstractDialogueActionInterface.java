@@ -2,6 +2,7 @@ package dialogue.execution;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
@@ -9,12 +10,18 @@ import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
+import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
+import castutils.castextensions.WMEventQueue;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
+import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
@@ -35,6 +42,7 @@ import execution.slice.actions.SingleBeliefAction;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
+import execution.util.NonBlockingActionExecutor;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -55,21 +63,18 @@ public abstract class AbstractDialogueActionInterface extends
 	protected boolean m_fakeIt;
 
 	public abstract static class IntentionDialogueAction<T extends Action>
-			extends BlockingActionExecutor<T> {
+			extends NonBlockingActionExecutor<T> {
+
+		private static final int DLG_TIMEOUT = 20;
+		WMEventQueue eventQueue = new WMEventQueue();
 
 		public IntentionDialogueAction(ManagedComponent _component,
 				Class<T> _cls) {
 			super(_component, _cls);
 		}
 
-		/**
-		 * Hack to provide the same interface as the non-blocking version.
-		 */
-		protected void actionComplete() {
-		}
-
 		@Override
-		public TriBool execute() {
+		public void executeAction() {
 			log("IntentionDialogueAction.execute()");
 
 			IntentionToAct actint = new IntentionToAct(
@@ -85,26 +90,73 @@ public abstract class AbstractDialogueActionInterface extends
 				getComponent().addToWorkingMemory(id, actint);
 				TriBool res = waitAndCheckResponse(id);
 				actionComplete();
-				return res;
+				executionComplete(res);
 
 			} catch (CASTException e) {
 				logException(e);
+				executionComplete(TriBool.TRIFALSE);
 			}
+		}
 
-			return TriBool.TRIFALSE;
+		@Override
+		public void stopExecution() {
+			// TODO Auto-generated method stub
 
 		}
 
-		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
+		/**
+		 * Hack to provide the same interface as the non-blocking version.
+		 */
+		protected void actionComplete() {
+		}
 
+		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
+			getComponent().addChangeFilter(
+					ChangeFilterFactory.createTypeFilter(
+							InterpretedIntention.class,
+							WorkingMemoryOperation.ADD), eventQueue);
 		}
 
 		protected TriBool waitAndCheckResponse(WorkingMemoryAddress id) {
 			try {
-				log("added intention to WM, now sleeping for 20 seconds then returning true");
-				Thread.sleep(20000);
+				boolean gotAnswer = false;
+				// if we received an update we're happy
+				println("wait for the intention of the human to pop up for "
+						+ DLG_TIMEOUT + " seconds");
+				while (!gotAnswer) {
+					WorkingMemoryChange e = eventQueue.poll(DLG_TIMEOUT,
+							TimeUnit.SECONDS);
+					if (e == null) {
+						println("didn't get the intention in time... action failed");
+						return TriBool.TRIFALSE;
+					} else {
+						println("got human intention to engage... check if it is the right one");
+						InterpretedIntention interpretedIntention = getComponent()
+								.getMemoryEntry(e.address,
+										InterpretedIntention.class);
+						WorkingMemoryAddress correspAddress = interpretedIntention.addressContent.get("answer-to");
+						if (correspAddress==null) {
+							getComponent().getLogger().warn("this InterpretedIntention was not an answer to anything, hence, we wait further...");
+							continue;
+						}
+						println("check if the received InterpretedIntention matches the one we are waiting for");
+						if (correspAddress.equals(id)) {
+							println("yes, it matched!");
+							return TriBool.TRITRUE;
+						}
+
+					}
+				}
 			} catch (InterruptedException e) {
 				logException(e);
+			} catch (CASTException e) {
+				logException(e);
+			} finally {
+				try {
+					getComponent().removeChangeFilter(eventQueue);
+				} catch (SubarchitectureComponentException e) {
+					logException(e);
+				}
 			}
 			return TriBool.TRITRUE;
 		}
