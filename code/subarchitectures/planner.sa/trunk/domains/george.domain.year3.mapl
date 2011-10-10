@@ -74,9 +74,9 @@
     (polar-shape-question-answered ?v - VisualObject ?s - ShapeName)
     (polar-type-question-answered ?v - VisualObject ?t - TypeName)
 
-    ;; (object-refering-question-answered-color ?c - ColorName)
-    ;; (object-refering-question-answered-shape ?s - ShapeName)
-    ;; (object-refering-question-answered-color ?t - TypeName)
+    (object-refering-color-question-answered ?v - VisualObject ?c - ColorName)
+    (object-refering-shape-question-answered ?v - VisualObject ?s - ShapeName)
+    (object-refering-type-question-answered ?v - VisualObject ?t - TypeName)
   )
 
   (:functions
@@ -1041,19 +1041,52 @@
 ;;;;;;;;;;;;     OBJECT QUESTIONS     ;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; (:action answer-object-refering-question
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?c - ColorName)
-  ;;   :precondition
-  ;;     (and
-  ;;       (= (currently-points-at ?r) ?v)
-  ;;       (= (max-gain-label-color ?v) ?c)
-  ;;     )
-  ;;   :effect
-  ;;     (and
-  ;;       (object-refering-question-answered-color ?c - ColorName)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )     
+  (:action answer-object-refering-color-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (= (currently-points-at ?r) ?v)
+        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
+      )
+    :effect
+      (and
+        (object-refering-color-question-answered ?v- VisualObject ?c - ColorName)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-object-refering-shape-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (= (currently-points-at ?r) ?v)
+        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
+      )
+    :effect
+      (and
+        (object-refering-shape-question-answered ?v- VisualObject ?s - ShapeName)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-object-refering-type-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (and
+        (= (currently-points-at ?r) ?v)
+        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?t)
+      )
+    :effect
+      (and
+        (object-refering-type-question-answered ?v- VisualObject ?t - TypeName)
+        (increase (total-cost) 1)
+      )
+  )
 
 )
