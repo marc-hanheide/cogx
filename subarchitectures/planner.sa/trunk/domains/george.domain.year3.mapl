@@ -10,11 +10,26 @@
 
   (:constants
     VISUAL_OBJECT_DUMMY - VisualObject
+
     UNKNOWN_COLOR - ColorName
+    RED - ColorName
+    GREEN - ColorName
+    BLUE - ColorName
+    YELLOW - ColorName
+    ORANGE - ColorName
+    WHITE - ColorName
+    BLACK - ColorName
+    PINK - ColorName
+
     UNKNOWN_SHAPE - ShapeName
+    COMPACT - ShapeName
+    ELONGATED - ShapeName
+
     UNKNOWN_TYPE - TypeName
+
     VISIBLE - Visibility
     REMOVED - Visibility
+
     TUTOR - agent
   )
 
