@@ -22,7 +22,6 @@ import de.dfki.lt.tr.dialogue.production.ProductionUtils;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationRequest;
 import de.dfki.lt.tr.dialogue.production.ReferenceGenerationResult;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
-import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.engine.FileReadErrorException;
 import de.dfki.lt.tr.infer.abducer.engine.SyntaxErrorException;
@@ -45,7 +44,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class NewIntentionRealizer
@@ -160,7 +158,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 	public void onStart() {
 		super.onStart();
 
-		addChangeFilter(ChangeFilterFactory.createLocalTypeFilter(
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				IntentionToAct.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
 					@Override
