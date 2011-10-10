@@ -6,6 +6,7 @@ package motivation.components.generators;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -39,12 +40,12 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	/**
 	 * 
 	 */
-	protected AbstractWMEntryMotiveGenerator(
-			Class<M> motiveClass, Class<T> beliefClass) {
+	protected AbstractWMEntryMotiveGenerator(Class<M> motiveClass,
+			Class<T> beliefClass) {
 		super(motiveClass, beliefClass);
 		newAdditions = new ArrayList<M>();
 	}
-	
+
 	protected boolean processEntry(T _entry) {
 		return true;
 	}
@@ -99,7 +100,18 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 							i.remove();
 							if (bel2motivesMap.get(wmc.address).isEmpty()) {
 								bel2motivesMap.remove(wmc.address);
+								log("removing belief ref from map");
+
 							}
+
+							println("bel2mm size: " + bel2motivesMap.size());
+							for (Entry<WorkingMemoryAddress, List<WorkingMemoryAddress>> workingMemoryAddress : bel2motivesMap
+									.entrySet()) {
+								println("bel2mm size: "
+										+ workingMemoryAddress.getValue()
+												.size());
+							}
+
 						} else {
 							assignCosts(motive);
 							overwriteWorkingMemory(correspondingWMA, motive);
@@ -154,8 +166,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 				}
 
 				bel2motivesMap.remove(wmc.address);
-			}
-			else {
+			} else {
 				log("deleted belief had no corresponding motives, even though it did have earlier (i think)");
 			}
 			break;
@@ -214,7 +225,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 			try {
 				WorkingMemoryChange wmc = wmcQueue.take();
 				if (wmc.type.equals(CASTUtils.typeName(epistemicClass))) {
-					// lockComponent();
+					lockComponent();
 					getLogger().trace(
 							"new change for "
 									+ AbstractWMEntryMotiveGenerator.class
@@ -227,7 +238,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 			} catch (CASTException e) {
 				logException(e);
 			} finally {
-				// unlockComponent();
+				unlockComponent();
 			}
 		}
 	}

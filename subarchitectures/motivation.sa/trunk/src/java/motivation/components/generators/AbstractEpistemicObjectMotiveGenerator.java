@@ -78,4 +78,12 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 		return robotBeliefAddr;
 	}
 
+	
+	/**
+	 * Returns true if this generator still has any motives on WM.
+	 * @return
+	 */
+	protected boolean hasAvailableMotives() {
+		return !bel2motivesMap.isEmpty();
+	}
 }
