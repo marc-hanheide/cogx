@@ -168,6 +168,7 @@ public abstract class AbstractDialogueActionInterface extends
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
 			_stringContent.put("hypothesis", getAction().value);
+			_stringContent.put("subtype", "polar");
 		}
 
 	}
