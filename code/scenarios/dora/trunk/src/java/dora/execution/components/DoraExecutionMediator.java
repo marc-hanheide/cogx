@@ -1,5 +1,7 @@
 package dora.execution.components;
 
+import java.util.Map;
+
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.event.ChangeEvent;
@@ -24,13 +26,13 @@ import execution.slice.ActionExecutionException;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
-import execution.slice.actions.TurnToHuman;
 import execution.slice.actions.ExplorePlace;
 import execution.slice.actions.GoToPlace;
 import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessConeGroupAction;
 import execution.slice.actions.ProcessConesAtPlace;
 import execution.slice.actions.ReportPosition;
+import execution.slice.actions.TurnToHuman;
 import execution.util.ActionConverter;
 
 /**
@@ -42,27 +44,38 @@ import execution.util.ActionConverter;
 public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 		implements ActionConverter {
 
-	protected boolean m_paused=false;
+	protected boolean m_paused = false;
+	private boolean m_gui = false;
 
 	@Override
 	protected void start() {
 		super.start();
 
+		if (m_gui) {
 			JFrame jFrame = new JFrame("execution pauser");
 			final JCheckBox jCheckbox = new JCheckBox("pause execution");
 			jCheckbox.addChangeListener(new ChangeListener() {
-				
+
 				@Override
 				public void stateChanged(ChangeEvent arg0) {
-					m_paused=jCheckbox.isSelected();
-					
+					m_paused = jCheckbox.isSelected();
+
 				}
 			});
 			jFrame.add(jCheckbox);
 			jFrame.pack();
 			jFrame.setVisible(true);
+		}
 
+	}
 
+	@Override
+	protected void configure(Map<String, String> config) {
+
+		super.configure(config);
+		if (config.containsKey("--gui")) {
+			m_gui = true;
+		}
 	}
 
 	/**
@@ -75,7 +88,8 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 	 */
 	public execution.slice.Action toSystemAction(Action _plannedAction)
 			throws CASTException {
-		if (_plannedAction.name.equals("move") || _plannedAction.name.equals("move_direct")) {
+		if (_plannedAction.name.equals("move")
+				|| _plannedAction.name.equals("move_direct")) {
 			assert _plannedAction.arguments.length == 2 : "move action arity is expected to be 2";
 
 			GoToPlace act = newActionInstance(GoToPlace.class);
@@ -83,11 +97,11 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			// read the belief from WM
 			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
-					.create(dBelief.class,
-							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+					.create(dBelief.class, getMemoryEntry(beliefPtr.getVal(),
+							dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent()
-					.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+			Formula placeProperty = placeUnion.getContent().get(
+					PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 					.firstValue();
 			act.placeID = placeProperty.getInteger();
 
@@ -100,11 +114,11 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			// read the belief from WM
 			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
-					.create(dBelief.class,
-							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+					.create(dBelief.class, getMemoryEntry(beliefPtr.getVal(),
+							dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent()
-					.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+			Formula placeProperty = placeUnion.getContent().get(
+					PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 					.firstValue();
 			act.placeID = placeProperty.getInteger();
 
@@ -129,9 +143,8 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[2]);
 
 			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class,
-							getMemoryEntry(roomBeliefAddress,
-									GroundedBelief.class));
+					.create(GroundedBelief.class, getMemoryEntry(
+							roomBeliefAddress, GroundedBelief.class));
 
 			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
 					ComaRoom.class);
@@ -148,41 +161,40 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[2]);
 
 			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class,
-							getMemoryEntry(roomBeliefAddress,
-									GroundedBelief.class));
+					.create(GroundedBelief.class, getMemoryEntry(
+							roomBeliefAddress, GroundedBelief.class));
 
 			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
 					ComaRoom.class);
 
 			CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
-            act.relation = "inroom";
-            act.roomID = room.roomId;
+			act.relation = "inroom";
+			act.roomID = room.roomId;
 
 			return act;
 
 		} else if (_plannedAction.name.equals("create_cones_at_object")) {
-            //args: agent, label, support label, relation, object, room
+			// args: agent, label, support label, relation, object, room
 			assert _plannedAction.arguments.length == 6 : "create_cones action arity is expected to be 3";
 
 			WorkingMemoryAddress objectBeliefAddress = addressFromFormula(_plannedAction.arguments[4]);
 			WorkingMemoryAddress roomBeliefAddress = addressFromFormula(_plannedAction.arguments[5]);
 
 			IndependentFormulaDistributionsBelief<GroundedBelief> gb = IndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class,
-							getMemoryEntry(roomBeliefAddress,
-									GroundedBelief.class));
+					.create(GroundedBelief.class, getMemoryEntry(
+							roomBeliefAddress, GroundedBelief.class));
 
 			ComaRoom room = BeliefUtils.getMostRecentPerceptAncestor(this, gb,
 					ComaRoom.class);
 
 			CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[1]);
-            act.supportObjectCategory = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
-            act.relation = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[3]);
-            act.supportObject = objectBeliefAddress.id; //FIXME: check if this works
-            act.roomID = room.roomId;
+			act.supportObjectCategory = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
+			act.relation = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[3]);
+			act.supportObject = objectBeliefAddress.id; // FIXME: check if this
+			// works
+			act.roomID = room.roomId;
 
 			return act;
 
@@ -195,11 +207,11 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			// read the belief from WM
 			IndependentFormulaDistributionsBelief<dBelief> placeUnion = IndependentFormulaDistributionsBelief
-					.create(dBelief.class,
-							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+					.create(dBelief.class, getMemoryEntry(beliefPtr.getVal(),
+							dBelief.class));
 
-			Formula placeProperty = placeUnion.getContent()
-					.get(PlaceTransferFunction.PLACE_ID_ID).getDistribution()
+			Formula placeProperty = placeUnion.getContent().get(
+					PlaceTransferFunction.PLACE_ID_ID).getDistribution()
 					.firstValue();
 			act.placeID = placeProperty.getInteger();
 
@@ -216,37 +228,34 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			// Belief of cone group
 			WMPointer beliefPtr = WMPointer.create(_plannedAction.arguments[1]);
 
-			
 			// read the belief from WM
 			IndependentFormulaDistributionsBelief<dBelief> coneGroupUnion = IndependentFormulaDistributionsBelief
-					.create(dBelief.class,
-							getMemoryEntry(beliefPtr.getVal(), dBelief.class));
+					.create(dBelief.class, getMemoryEntry(beliefPtr.getVal(),
+							dBelief.class));
 
-			// Get the ID 
-			Formula coneGroupIDProperty = coneGroupUnion.getContent()
-					.get("id").getDistribution()
-					.firstValue();
+			// Get the ID
+			Formula coneGroupIDProperty = coneGroupUnion.getContent().get("id")
+					.getDistribution().firstValue();
 			act.coneGroupID = coneGroupIDProperty.getInteger();
 
-            act.coneGroupBeliefID = beliefPtr.getVal();
-			// act.coneGroupBeliefID.id = stringFromElementaryFormula((ElementaryFormula)_plannedAction.arguments[2]);
+			act.coneGroupBeliefID = beliefPtr.getVal();
+			// act.coneGroupBeliefID.id =
+			// stringFromElementaryFormula((ElementaryFormula)_plannedAction.arguments[2]);
 			// act.coneGroupBeliefID.subarchitecture = "binder";
 
 			return act;
 
-		} else if (_plannedAction.name
-				.equals("engage")) {
+		} else if (_plannedAction.name.equals("engage")) {
 			assert _plannedAction.arguments.length == 2 : "engage is expected to be of arity 2";
 			return createSingleBeliefAction(TurnToHuman.class,
 					_plannedAction.arguments[1]);
-			
-		} else if (_plannedAction.name
-				.equals("report_position")) {
+
+		} else if (_plannedAction.name.equals("report_position")) {
 			assert _plannedAction.arguments.length == 2 : "report_position is expected to be of arity 2";
 			return createSingleBeliefAction(ReportPosition.class,
 					_plannedAction.arguments[1]);
 		}
-        System.out.println(_plannedAction.name);
+		System.out.println(_plannedAction.name);
 		throw new ActionExecutionException("No conversion available for: "
 				+ _plannedAction.fullName);
 
@@ -259,7 +268,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 	}
 
 	@Override
-	public boolean isPaused() {		
+	public boolean isPaused() {
 		return m_paused;
 	}
 
