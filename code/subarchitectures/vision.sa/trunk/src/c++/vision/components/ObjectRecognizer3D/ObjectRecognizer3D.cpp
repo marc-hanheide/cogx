@@ -489,7 +489,7 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
 std::string ObjectRecognizer3D::loadEmptyVisualModelToWM(std::string &label){
 
   log("creating empty object %s", label.c_str());
-  VisionData::VisualObjectPtr obj = new VisionData::VisualObject();
+  VisionData::VisualObjectPtr obj = cogx::createVisualObject();
 
   // create a very simple distribution: label and unknown
   obj->identLabels.push_back(label);
