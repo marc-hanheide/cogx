@@ -8,18 +8,17 @@ import vision.execution.george.VisionActionInterface;
 import autogen.Planner.Goal;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
-import eu.cogx.beliefs.slice.SharedBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 
 public class InterpretedIntentionMotiveGenerator
 		extends
@@ -32,18 +31,18 @@ public class InterpretedIntentionMotiveGenerator
 	@Override
 	protected void start() {
 		super.start();
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-//				BaseIntention.class, WorkingMemoryOperation.ADD),
-//				new WorkingMemoryChangeReceiver() {
-//
-//					@Override
-//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-//							throws CASTException {
-//						logIntention(getMemoryEntry(_wmc.address,
-//								BaseIntention.class));
-//
-//					}
-//				});
+		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+		// BaseIntention.class, WorkingMemoryOperation.ADD),
+		// new WorkingMemoryChangeReceiver() {
+		//
+		// @Override
+		// public void workingMemoryChanged(WorkingMemoryChange _wmc)
+		// throws CASTException {
+		// logIntention(getMemoryEntry(_wmc.address,
+		// BaseIntention.class));
+		//
+		// }
+		// });
 	}
 
 	private void logIntention(BaseIntention _intention) {
@@ -95,14 +94,12 @@ public class InterpretedIntentionMotiveGenerator
 		if (subtype.equals("open")) {
 			log("open question intention");
 			return openQuestion(_intention.stringContent.get("feature"),
-					getGroundedBeliefAddress(_intention.addressContent
-							.get("about")));
+					_intention.addressContent.get("about"));
 		} else if (subtype.equals("polar")) {
-			log("polar question intention");			
+			log("polar question intention");
 			return polarQuestion(_intention.stringContent.get("feature"),
 					_intention.stringContent.get("hypothesis"),
-					getGroundedBeliefAddress(_intention.addressContent
-							.get("about")));
+					_intention.addressContent.get("about"));
 		} else {
 			log("unknown InterpretedIntention type");
 			logIntention(_intention);
@@ -112,17 +109,45 @@ public class InterpretedIntentionMotiveGenerator
 
 	private TutorInitiativeQuestionMotive polarQuestion(String _feature,
 			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddress) {
-		// TODO Auto-generated method stub
-		return null;
+		// [LOG gg.ii: polar question intention]
+		// [LOG gg.ii: unknown InterpretedIntention type]
+		// [gg.ii: stringContent]
+		// [gg.ii: subtype -> polar]
+		// [gg.ii: subclass -> info-request]
+		// [gg.ii: class -> communication]
+		// [gg.ii: feature -> color]
+		// [gg.ii: type -> question]
+		// [gg.ii: hypothesis -> red]
+
+		String predicate = CASTUtils.concatenate("polar-", _feature,
+				"-question-answered");
+
+		TutorInitiativeQuestionMotive motive = VisualObjectMotiveGenerator
+				.newMotive(TutorInitiativeQuestionMotive.class, null,
+						getCASTTime());
+
+		// String goal = VisualObjectMotiveGenerator.beliefPredicateGoal(
+		// predicate, _groundedBeliefAddress.id);
+		// String goal = predicate;
+
+		String goal = "(exists (?v - VisualObject) (and (" + predicate + " ?v "
+				+ _hypothesis + ")))";
+
+		motive.goal = new Goal(100f, goal, false);
+
+		log("goal is " + motive.goal.goalString + " with inf-gain "
+				+ motive.informationGain);
+
+		return motive;
 	}
 
-	private WorkingMemoryAddress getGroundedBeliefAddress(
-			WorkingMemoryAddress _sharedBeliefAddress)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		SharedBelief belief = getMemoryEntry(_sharedBeliefAddress,
-				SharedBelief.class);
-		return ((CASTBeliefHistory) belief.hist).ancestors.get(0).address;
-	}
+	// private WorkingMemoryAddress getGroundedBeliefAddress(
+	// WorkingMemoryAddress _sharedBeliefAddress)
+	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+	// SharedBelief belief = getMemoryEntry(_sharedBeliefAddress,
+	// SharedBelief.class);
+	// return ((CASTBeliefHistory) belief.hist).ancestors.get(0).address;
+	// }
 
 	private TutorInitiativeQuestionMotive openQuestion(String _feature,
 			WorkingMemoryAddress _groundedBeliefAddress) {
@@ -134,8 +159,12 @@ public class InterpretedIntentionMotiveGenerator
 				.newMotive(TutorInitiativeQuestionMotive.class, null,
 						getCASTTime());
 
-		String goal = VisualObjectMotiveGenerator.beliefPredicateGoal(
-				predicate, _groundedBeliefAddress.id);
+		// String goal = VisualObjectMotiveGenerator.beliefPredicateGoal(
+		// predicate, _groundedBeliefAddress.id);
+		// String goal = predicate;
+
+		String goal = "(exists (?v - VisualObject) (and (" + predicate
+				+ " ?v)))";
 
 		motive.goal = new Goal(100f, goal, false);
 
@@ -201,7 +230,7 @@ public class InterpretedIntentionMotiveGenerator
 	 */
 	private String groundedBeliefID(InterpretedIntention _intention)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		return getGroundedBeliefAddress(_intention.addressContent.get("about")).id;
+		return _intention.addressContent.get("about").id;
 	}
 
 	@Override
@@ -215,18 +244,64 @@ public class InterpretedIntentionMotiveGenerator
 			} else if (type.equals("question")) {
 				motive = newQuestionIntention(_intention);
 			}
+
+			if (motive != null) {
+				motive.referenceEntry = _addr;
+
+				// mark referents
+				markReferent(_intention.addressContent.get("about"));
+
+			} else {
+				log("unknown InterpretedIntention type");
+				logIntention(_intention);
+			}
 		} catch (CASTException e) {
+			// reset in case of error
+			motive = null;
 			logException(e);
 		}
 
-		if (motive != null) {
-			motive.referenceEntry = _addr;
-		} else {
-			log("unknown InterpretedIntention type");
-			logIntention(_intention);
-		}
 		return motive;
 
+	}
+
+	public void addBooleanFeature(WorkingMemoryAddress _groundedBeliefAddr,
+			String _feature, boolean _value) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+
+		pb.getContent().put(_feature, fd);
+		overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
+	}
+
+	/**
+	 * Mark the referred-to belief as a potential referent in question answering.
+	 * 
+	 * TODO handle multiple intentions/ambiguous referents
+	 * 
+	 * @param _groundedBeliefAddr
+	 * @throws DoesNotExistOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 * @throws UnknownSubarchitectureException
+	 */
+	private void markReferent(WorkingMemoryAddress _groundedBeliefAddr)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
+		println("marking referent");
+		addBooleanFeature(_groundedBeliefAddr,
+				"is-potential-object-in-question", true);
+		// planning won't work without this in place anyway, but it probably
+		// isn't required on faster machines
+		sleepComponent(1000);
 	}
 
 	@Override
