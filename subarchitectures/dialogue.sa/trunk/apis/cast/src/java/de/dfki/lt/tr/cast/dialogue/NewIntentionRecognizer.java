@@ -317,7 +317,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 				@Override
 				public void doUpdate(AbductionEnginePrx engine) {
-					ModalisedAtom newFact = TermAtomFactory.modalisedAtom(
+
+					ModalisedAtom matom = TermAtomFactory.modalisedAtom(
 							new Modality[] {
 								Modality.Understanding,
 								Modality.Truth
@@ -326,8 +327,12 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 								TermAtomFactory.term(nominal),
 								ConversionUtils.workingMemoryAddressToTerm(wma)
 							}));
-					getLogger().debug("adding the ID to the abduction context: " + PrettyPrint.modalisedAtomToString(newFact));
-					engine.addFact(newFact);
+
+					engine.clearAssumabilityFunction("intention_creation");
+
+					double weight = 1.0;
+					getLogger().debug("adding intention ID atom to the assumability function: " + PrettyPrint.modalisedAtomToString(matom) + " @ " + weight);
+					engine.addAssumable("intention_creation", matom, (float) weight);
 				}
 				
 			};
@@ -342,7 +347,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		}
 
 		@Override
-		public ContextUpdate solveFromParsed(NewBeliefAtom a) {
+		public ContextUpdate solveFromParsed(final NewBeliefAtom a) {
 //			if (a.getIntentionAddress() == null) {
 //				getLogger().error("intention address is null");
 //				return null;
@@ -352,7 +357,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				return null;
 			}
 
-			WorkingMemoryAddress newWma = newWorkingMemoryAddress();
+			final WorkingMemoryAddress newWma = newWorkingMemoryAddress();
 			final NewBeliefAtom newAtom = new NewBeliefAtom(a.getIntentionAddress(), newWma, a.getEpistemicStatus());
 
 			getLogger().info("generated a new belief WMA: " + wmaToString(newWma));
@@ -361,9 +366,21 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 				@Override
 				public void doUpdate(AbductionEnginePrx engine) {
-					ModalisedAtom matom = newAtom.toModalisedAtom();
-					getLogger().debug("adding the ID to the context: " + PrettyPrint.modalisedAtomToString(matom));
-					engine.addFact(matom);
+					ModalisedAtom matom = TermAtomFactory.modalisedAtom(
+							new Modality[] {
+								Modality.Understanding
+							},
+							TermAtomFactory.atom("new_belief_id", new Term[] {
+								ConversionUtils.workingMemoryAddressToTerm(newWma),
+								ConversionUtils.epistemicStatusToTerm(a.getEpistemicStatus())
+							}));
+
+					engine.clearAssumabilityFunction("belief_creation");
+
+					double weight = 1.0;
+					getLogger().debug("adding belief ID atom to the assumability function: " + PrettyPrint.modalisedAtomToString(matom) + " @ " + weight);
+					engine.addAssumable("belief_creation", matom, (float) weight);
+
 				}
 				
 			};

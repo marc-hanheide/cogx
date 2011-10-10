@@ -6,6 +6,14 @@ understand : event : utter(S, H, Nom) <-
 	? understand : event : from_logical_form(S, H, Nom).
 
 %-------------------------------------------------------------------------
+
+understand : i : intention(Int, Nom) <-
+	understand : i : intention(Int, Nom) / intention_creation.
+
+understand : new_belief(Int, BelAddr, EpSt) <-
+	understand : new_belief_id(BelAddr, EpSt) / belief_creation.
+
+%-------------------------------------------------------------------------
 % PERSONS
 %-------------------------------------------------------------------------
 
