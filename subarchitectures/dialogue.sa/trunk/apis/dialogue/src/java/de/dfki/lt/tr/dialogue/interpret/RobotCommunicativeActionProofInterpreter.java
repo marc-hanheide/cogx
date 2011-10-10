@@ -33,7 +33,8 @@ extends AbstractWellFormedTestingProofInterpreter<RobotCommunicativeAction> {
 //		NominalReference nr = null;
 
 		if (events.size() == 1 && events.get(0).a.predSym.equals("produce_text") && events.get(0).a.args.size() == 1) {
-			List<Term> terms = ConversionUtils.listTermToListOfTerms(events.get(0).a.args.get(0));
+//			List<Term> terms = ConversionUtils.listTermToListOfTerms(events.get(0).a.args.get(0));
+			List<Term> terms = flattenListOfTerms(events.get(0).a.args.get(0));
 
 			List<String> words = new LinkedList<String>();
 			for (Term t : terms) {
@@ -62,6 +63,23 @@ extends AbstractWellFormedTestingProofInterpreter<RobotCommunicativeAction> {
 		ra.setProtoLF(lf);
 		return ra;
 	}
+
+	public static List<Term> flattenListOfTerms(Term t) {
+		List<Term> result = new LinkedList<Term>();
+
+		List<Term> asList = ConversionUtils.listTermToListOfTerms(t);
+		if (asList != null) {
+			for (Term tt : asList) {
+				result.addAll(flattenListOfTerms(tt));
+			}
+		}
+		else {
+			result.add(t);
+		}
+
+		return result;
+	}
+
 
 	// Sun should burn in hell for not having such a function in the standard library!
 	public static String join(String separator, List<String> args) {

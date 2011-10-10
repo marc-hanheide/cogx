@@ -112,12 +112,24 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'assertion'),
 	i : int : string_content(IntAddr, 'asserted-value', Value),
+	i : int : string_content(IntAddr, 'asserted-feature', Feature),
+	i : int : string_content(IntAddr, 'asserted-polarity', Polarity),
 	i : int : address_content(IntAddr, about, BeliefAddr),
 
 	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
-%	value
+	verbalised_feature_value(Feature, Value, Polarity, VerbalisedValue),
 
-	event : produce_text([ObjectRE, is, Value]) / -1.0.
+	event : produce_text([ObjectRE, is, VerbalisedValue]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+verbalised_feature_value(Feat, Val, neg, [not, VerbVal]) <-
+	verbalised_feature_value(Feat, Val, pos, VerbVal).
+
+verbalised_feature_value(color, X, pos, [X]).
+verbalised_feature_value(shape, X, pos, [X]).
+verbalised_feature_value(objecttype, X, pos, [a, X]).
+verbalised_feature_value(identity, X, pos, [a, X]).
 
 %-------------------------------------------------------------------------
 % POLAR QUESTIONS
@@ -132,14 +144,15 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
 	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, [Feature]),
+	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
 
-	event : produce_text([is, ObjectRE, Hypo]) / -1.0.
+	event : produce_text([is, ObjectRE, VerbalisedHypo]) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 verbalised_feature(color, color).
 verbalised_feature(shape, shape).
-verbalised_feature(type, object).
+verbalised_feature(objecttype, object).
 verbalised_feature(identity, room).
 
 %-------------------------------------------------------------------------
