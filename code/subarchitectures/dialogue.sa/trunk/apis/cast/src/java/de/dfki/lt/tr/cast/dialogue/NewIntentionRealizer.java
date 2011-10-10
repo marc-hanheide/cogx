@@ -13,9 +13,11 @@ import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
+import de.dfki.lt.tr.dialogue.interpret.MaximumReadingsTerminationCondition;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeActionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.TerminationCondition;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromIntentionAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.GenerateReferringExpressionAtom;
 import de.dfki.lt.tr.dialogue.production.ProductionUtils;
@@ -61,6 +63,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 	private String abd_engineName = DEFAULT_ENGINE_NAME;
 
 	private String rulesetFile = "/dev/null";
+	private final TerminationCondition condition = new MaximumReadingsTerminationCondition(3);
 
 	private int timeout = DEFAULT_TIMEOUT;
 
@@ -172,7 +175,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 									IntentionToAct actint = getMemoryEntry(addr, IntentionToAct.class);
 									wmaToInt.put(addr, actint);
 									InterpretationRequest inprRequest = new InterpretationRequest(intentionToActToGoal(actint, addr));
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest));
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, condition));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);
