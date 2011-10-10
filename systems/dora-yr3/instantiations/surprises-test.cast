@@ -4,6 +4,7 @@ VARDEFAULT planning_domain=dora-interactive.pddl
 VARDEFAULT planning_problem=dora-interactive-avs-viewcones.pddl
 # VARDEFAULT planning_problem=dora-avs-p1-init.pddl
 # VARDEFAULT planning_problem=dora-interactive1.pddl
+VARDEFAULT history_file=history1-9.pddl
 
 VARDEFAULT expl_rules=explanations-dora.pddl
 
@@ -47,7 +48,7 @@ HOST localhost
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # planning and motivation #####################################################
-COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --debug --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini --problem %(planning_problem)  --expl_rules %(expl_rules)
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --debug --nodot --pdb  --low-p-threshold 0.01 --default %(defaults) --config config.dora.ini --history %(history_file)  --expl_rules %(expl_rules)
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE includes/planner.sa/planner-base.cast
 INCLUDE includes/planner.sa/viz-plan.cast
