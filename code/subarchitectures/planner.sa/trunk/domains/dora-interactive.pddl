@@ -353,9 +353,10 @@
                               (= (virtual-place ?r) ?p)
                               (= (leads_to_room ?p ?c) true)
                               (is-virtual ?r))
-           :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
-                                           (assign (category ?r) ?c))))
-  ;; (:dtrule room_from_placeholder
+           :effect (and (probabilistic 1.0 (and (assign (in-room ?p) ?r)
+                                                (assign (category ?r) ?c)))
+                        (increase (total-cost) 10))
+           )                                                                                                                                                   ;; (:dtrule room_from_placeholder
   ;;          :parameters (?p - place ?r - room ?c - category)
   ;;          :precondition (and (= (placestatus ?p) placeholder)
   ;;                             (= (virtual-category ?r) ?c)
