@@ -62,10 +62,6 @@
 
     (looked-at ?vc - ViewCone)
 
-    (clarify-object-reference-color ?c - ColorName)
-    (clarify-object-reference-shape ?s - ShapeName)
-    (clarify-object-reference-type ?t - TypeName)
-
     (is-object-in-question ?v - VisualObject ?r - Robot)
     (is-potential-object-in-question ?v - VisualObject)
 
@@ -222,7 +218,12 @@
     :precondition (= (current-viewcone ?r) ?vc)
     :effect (looked-at ?vc)
   )
-  
+
+  (:init-rule set-currently-points-at
+    :parameters (?r - Robot)
+    :precondition (= (currently-points-at ?r) UNKNOWN)
+    :effect (assign (currently-points-at ?r) ARM_RETRACT_POSITION_DUMMY)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
