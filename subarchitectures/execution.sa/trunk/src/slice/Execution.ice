@@ -24,6 +24,13 @@ module execution {
       TRIINDETERMINATE
     };
 
+    enum ConfidenceLevel {
+      CONFIDENT,
+      UNSURE,
+      UNKNOWN
+    };
+
+
 
     /**
      * Enum for action state transitons.
@@ -207,6 +214,15 @@ module execution {
 	string feature;	
 	string value;	
       };
+
+	 class BeliefPlusFeatureValueAction extends BeliefPlusStringAction {
+	string feature;	
+      };
+
+
+	class AnswerFeatureValueQuestion extends BeliefPlusFeatureValueAction {
+		ConfidenceLevel confidence;
+	};
 
 
       class AskForColour extends SingleBeliefAction {
