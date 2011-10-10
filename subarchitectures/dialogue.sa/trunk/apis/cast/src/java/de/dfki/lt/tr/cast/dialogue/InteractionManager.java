@@ -35,7 +35,11 @@ extends AbstractDialogueComponent {
 							public void execute(WorkingMemoryAddress addr) {
 								try {
 									InterpretedIntention iint = getMemoryEntry(addr, InterpretedIntention.class);
-									
+	
+									WorkingMemoryAddress wma = iint.addressContent.get("answer-to");
+									if (wma != null && wma.equals(lastQUD)) {
+										ensureQUDIsNull();
+									} 
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);

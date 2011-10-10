@@ -18,8 +18,10 @@ import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
+import de.dfki.lt.tr.dialogue.interpret.MaximumReadingsTerminationCondition;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
+import de.dfki.lt.tr.dialogue.interpret.TerminationCondition;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
@@ -100,6 +102,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	private final String idPrefix = "irecog";
 	private int idIndex = 0;
 	private int remapIndex = 1;
+	private final TerminationCondition condition = new MaximumReadingsTerminationCondition(3);
 
 	private WMView<IntentionToAct> openIntentionsToAct = null;
 
@@ -217,7 +220,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 									getLogger().info("converting the SelectedLogicalForm to a partial interpretation");
 									SelectedLogicalForm slf = getMemoryEntry(addr, SelectedLogicalForm.class);
 									InterpretationRequest inprRequest = new InterpretationRequest(selectedLFToGoal(slf));
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest));
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, condition));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);

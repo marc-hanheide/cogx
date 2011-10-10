@@ -9,13 +9,15 @@ import org.apache.log4j.Logger;
 public class PartialInterpretation {
 
 	private final ProofSet proofs;
+	private final TerminationCondition cond;
 
-	private PartialInterpretation(Logger logger, ProofPruner pruner, Proof initialProof) {
+	private PartialInterpretation(Logger logger, ProofPruner pruner, Proof initialProof, TerminationCondition cond) {
 		proofs = new ProofSet(logger, pruner, initialProof);
+		this.cond = cond;
 	}
 
-	public static PartialInterpretation fromModalisedAtom(Logger logger, ModalisedAtom matom, ProofPruner pruner) {
-		return new PartialInterpretation(logger, pruner, new Proof(matom));
+	public static PartialInterpretation fromModalisedAtom(Logger logger, ModalisedAtom matom, ProofPruner pruner, TerminationCondition cond) {
+		return new PartialInterpretation(logger, pruner, new Proof(matom), cond);
 	}
 
 	public ProofSet getProofSet() {

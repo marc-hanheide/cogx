@@ -1,0 +1,64 @@
+%-------------------------------------------------------------------------
+% ASSERTIONS
+%-------------------------------------------------------------------------
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Reporting on a location.
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'assertion'),
+	i : int : string_content(IntAddr, subtype, 'location-report'),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+	? generate : reference_generation(BeliefAddr, no, yes, RelationRE, []),
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+
+	event : produce_text([ObjectRE, is, RelationRE]) / -1.0.
+
+%	utt_head(Nom),
+%	i : feat_CannedText(Nom, Location) / -1.0,
+%%	i : feat_CannedText(Nom, reporting_back) / -1.0,
+%	event : produce(r, Nom) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Basic George assertion.
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'assertion'),
+	i : int : string_content(IntAddr, 'asserted-value', Value),
+	i : int : string_content(IntAddr, 'asserted-feature', Feature),
+	i : int : string_content(IntAddr, 'asserted-polarity', Polarity),
+%	i : int : string_content(IntAddr, 'asserted-certainty', Certainty),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, [Feature]),
+	verbalised_feature_value(Feature, Value, Polarity, VerbalisedValue),
+	verbalised_certainty(low, Copula),
+
+	event : produce_text([ObjectRE, Copula, VerbalisedValue]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+verbalised_feature_value(Feat, Val, neg, [not, VerbVal]) <-
+	verbalised_feature_value(Feat, Val, pos, VerbVal).
+
+verbalised_feature_value(color, X, pos, [X]).
+verbalised_feature_value(shape, X, pos, [X]).
+verbalised_feature_value(objecttype, X, pos, [a, X]).
+verbalised_feature_value(identity, X, pos, [a, X]).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+verbalised_certainty(high, [is]).
+verbalised_certainty(low, [might, be]).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% I don't know
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'assertion'),
+	i : int : string_content(IntAddr, subtype, 'answer-unknown'),
+%	i : int : string_content(IntAddr, 'asserted-certainty', Certainty),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+	event : produce_text(['I', 'do', 'not', 'know']) / -5.0.

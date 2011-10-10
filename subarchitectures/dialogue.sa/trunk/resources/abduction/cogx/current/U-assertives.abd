@@ -16,7 +16,7 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, type, 'assertion') / p(1.0),
 	int : string_content(Int, subtype, 'ascription') / p(1.0),
-	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, RestrNom),
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, RestrNom),
 	understand : assertion_effect(Speaker, Hearer, Int, SubjNom, Polarity, ScopeNom).
 
 %-------------------------------------------------------------------------
@@ -49,16 +49,29 @@ understand : event : from_logical_form(S, H, Nom) <-
 %-------------------------------------------------------------------------
 
 % (I) don't know
-understand : event : from_logical_form(S, H, Nom) <-
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, cognition),
 	i : prop(Nom, know),
 	i : feat_Polarity(Nom, neg),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	int : post(Int, state(['knowing-disconfirmed'])) / p(1.0).
+
+	? understand : i : intention(Nom, Int),
+
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'answer-unknown') / p(1.0),
+
+	doesnt_matter_under_discussion(_QUDAddr, Nom, Int, _Feature).
 
 %-------------------------------------------------------------------------
 % YES/NO CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
+	? polar_question_under_discussion(_Speaker, _Hearer, QUDAddr, Nom, Int, Feature, unknown, _Polarity).
+
+doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
+	? wh_question_under_discussion(QUDAddr, Nom, Int, Feature).
+
 %-------------------------------------------------------------------------
 
 polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity) <-
@@ -73,6 +86,16 @@ polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Val
 
 	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
 
+polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, unknown, Polarity) <-
+	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'polar'),
+	i : int : string_content(QUDAddr, feature, Feature),
+	i : int : string_content(QUDAddr, hypothesis, Value),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	aboutness(Int, BeliefAddr),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0).
+
 %-------------------------------------------------------------------------
 
 understand : event : from_logical_form(Speaker, Hearer, Nom) <-
@@ -86,7 +109,7 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : string_content(Int, type, 'assertion') / p(1.0),
 	int : string_content(Int, subtype, 'answer') / p(1.0),
 
-	? polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Featurex, Value, Polarity).
+	? polar_question_under_discussion(Speaker, Hearer, _QUDAddr, Nom, Int, _Feature, _Value, Polarity).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -2,6 +2,7 @@ package de.dfki.lt.tr.cast.dialogue;
 
 import cast.cdl.WorkingMemoryAddress;
 import de.dfki.lt.tr.dialogue.interpret.PartialInterpretation;
+import de.dfki.lt.tr.dialogue.interpret.TerminationCondition;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.infer.abducer.engine.AbductionEnginePrx;
 import de.dfki.lt.tr.infer.abducer.proof.Assertion;
@@ -127,8 +128,8 @@ extends AbstractDialogueComponent {
 		});
 	}
 
-	protected PartialInterpretation interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request) {
-		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner);
+	protected PartialInterpretation interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, TerminationCondition cond) {
+		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner, cond);
 	}
 
 }
