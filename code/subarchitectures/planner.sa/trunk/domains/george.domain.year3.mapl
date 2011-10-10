@@ -65,11 +65,10 @@
     (clarify-object-reference-shape ?s - ShapeName)
     (clarify-object-reference-type ?t - TypeName)
 
-    ;; (pointed-at ?v - VisualObject)
-
-    ;; (arm-in-retract-position ?r - Robot)
+    (has-pointed-at ?v - VisualObject)
 
     (is-object-in-question ?v - VisualObject)
+    (is-potential-object-in-question ?v - VisualObject)
 
     (global-color-question-answered)
     (global-shape-question-answered)
@@ -109,6 +108,7 @@
     (po-is-associated-with ?p - ProtoObject) - VisualObject
 
     (current-viewcone ?r - Robot) - ViewCone
+    (currently-points-at ?r - Robot) - VisualObject
     (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
 
     (presence ?v - VisualObject) - Visibility
@@ -343,6 +343,13 @@
       (= (max-gain-label-type ?v) ?t)
       (learning-impossible)
       (unlearning-impossible)
+    )
+  )
+
+  (:derived (is-object-in-question ?v - VisualObject)
+    (and
+      (is-potential-object-in-question ?v)
+      (not (exists (?v1 - VisualObject) (and (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
     )
   )
 
@@ -668,94 +675,33 @@
 ;;;;;;;;;;;;;;;;;          REFERENCE RESOLUTION           ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; (:action point-to-object-color
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?c - ColorName)
-  ;;   :precondition 
-  ;;     (or
-  ;;       (and
-  ;;         (attributed TUTOR (color ?v) ?c)
-  ;;         (not (pointed-at ?v))
-  ;;       )
-  ;;       (and
-  ;;         (allow-autonomous-color-learning ?v ?c ?r)
-  ;;         (color-learned ?v)
-  ;;         (not (pointed-at ?v))
-  ;;       )
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (clarify-object-reference-color ?c)
-  ;;       (pointed-at ?v)
-  ;;       (not (arm-in-retract-position ?r))
-  ;;       (update (arm-in-retract-position ?r) false)
-  ;;       (increase (total-cost) 2)
-  ;;     )
-  ;; )
+  (:action point-to-object
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition 
+      (and
+        (not (has-pointed-at ?v))
+      )
+    :effect 
+      (and
+        (assign (currently-points-at ?r) ?v)
+        (increase (total-cost) 2)
+      )
+  )
 
-  ;; (:action point-to-object-shape
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?s - ShapeName)
-  ;;   :precondition
-  ;;     (or
-  ;;       (and
-  ;;         (attributed TUTOR (shape ?v) ?s)
-  ;;         (not (pointed-at ?v))
-  ;;       )
-  ;;       (and
-  ;;         (allow-autonomous-shape-learning ?v ?s ?r)
-  ;;         (shape-learned ?v)
-  ;;         (not (pointed-at ?v))
-  ;;       )
-  ;;     )        
-  ;;   :effect 
-  ;;     (and
-  ;;       (clarify-object-reference-shape ?s)
-  ;;       (pointed-at ?v)
-  ;;       (not (arm-in-retract-position ?r))
-  ;;       (update (arm-in-retract-position ?r) false)
-  ;;       (increase (total-cost) 2)
-  ;;     )
-  ;; )
-
-  ;; (:action point-to-object-type
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?t - TypeName)
-  ;;   :precondition
-  ;;     (or
-  ;;       (and
-  ;;         (attributed TUTOR (type ?v) ?t)
-  ;;         (not (pointed-at ?v))
-  ;;       )
-  ;;       (and
-  ;;         (allow-autonomous-type-learning ?v ?t ?r)
-  ;;         (shape-learned ?v)
-  ;;         (not (pointed-at ?v))
-  ;;       )
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (clarify-object-reference-type ?t)
-  ;;       (pointed-at ?v)
-  ;;       (not (arm-in-retract-position ?r))
-  ;;       (update (arm-in-retract-position ?r) false)
-  ;;       (increase (total-cost) 2)
-  ;;     )
-  ;; )
-
-  ;; (:action retract-arm
-  ;;   :agent (?r - Robot)
-  ;;   :precondition
-  ;;     (and
-  ;;       (not (arm-in-retract-position ?r))
-  ;;     )
-  ;;   :effect
-  ;;     (and
-  ;;       (arm-in-retract-position ?r)
-  ;;       (update (arm-in-retract-position ?r) true)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action verify-reference
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+        (= (currently-points-at ?r) ?v)
+        (is-potential-object-in-question ?v)
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+      )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;           QUESTION ANSWERING            ;;;;;;;;;;;;;;;;;;;;;;;
