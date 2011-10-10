@@ -10,7 +10,7 @@ understand : event : utter(S, H, Nom) <-
 understand : i : intention(Int, Nom) <-
 	understand : i : intention(Int, Nom) / intention_creation.
 
-understand : new_belief(Int, BelAddr, EpSt) <-
+understand : new_belief(_Int, BelAddr, EpSt) <-
 	understand : new_belief_id(BelAddr, EpSt) / belief_creation.
 
 %-------------------------------------------------------------------------
@@ -187,6 +187,9 @@ wh_query_prop(Nom, objecttype) <-
 %	i : feat_Delimitation(Nom, existential),
 	i : feat_Num(Nom, sg),
 	i : feat_Quantification(Nom, specific).
+
+wh_query_prop(Nom, identity) <-
+	i : sort(Nom, 'e-place').
 
 %-------------------------------------------------------------------------
 
