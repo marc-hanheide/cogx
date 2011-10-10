@@ -47,10 +47,10 @@ INROOM bookcase meetingroom 0.015040721
 INROOM bookcase office 0.5326703
 INROOM bookcase corridor 0.0878
 
-INROOM cerealbox kitchen 0.0381
-INROOM cerealbox meetingroom 0.006
-INROOM cerealbox office 0.0529
-INROOM cerealbox corridor 0.0219
+INROOM cerealbox kitchen 0.581
+INROOM cerealbox meetingroom 0.06
+INROOM cerealbox office 0.2529
+INROOM cerealbox corridor 0.0519
 
 INROOM paperclip kitchen 0.0726
 INROOM paperclip meetingroom 0.0
