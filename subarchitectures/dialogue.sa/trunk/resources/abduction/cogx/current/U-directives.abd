@@ -21,12 +21,12 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : string_content(Int, subclass, 'info-request') / p(1.0),
 	int : string_content(Int, type, 'question') / p(1.0),
 	int : string_content(Int, subtype, 'polar') / p(1.0),
-	understand : topic(S, H, EpSt, Int, SubjNom, RestrNom),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, RestrNom),
 	understand : polar_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-understand : polar_query_scope(S, H, EpSt, Int, Ref, Nom) <-
+understand : polar_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
 	polar_query_prop(Nom, Prop, Value),
 	int : string_content(Int, feature, Prop) / p(1.0),
 	int : string_content(Int, hypothesis, Value) / p(1.0).
@@ -45,24 +45,18 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : sort(Nom, ascription),
 	i : feat_Mood(Nom, int),
 	i : feat_Tense(Nom, pres),
-	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
-		i : 'rel_Cop-Scope'(Nom, WhNom),
+	i : 'rel_Cop-Restr'(Nom, _RestrNom),  % XXX garbage
+	i : 'rel_Cop-Scope'(Nom, WhNom),
 	i : rel_Subject(Nom, SubjNom),
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		i : prop(WhNom, what),
-%	int_id(Int),
-%	int : agent(Int, S) / p(1.0),
-%	understand : topic(S, H, EpSt, Int, SubjNom, SubjNom),
-%	int : pre(Int, belief(SubjNom, EpSt, fv(mark, 'topic-referent'))) / p(1.0),
-%	get_topic_referent(S, H, EpSt, Int, SubjNom, SubjNom, BId),
-%	int : post(Int, state(['object-described', agent(H), about(BId)])) / p(1.0).
 
 	? understand : i : intention(Nom, Int),
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, class, 'communication') / p(1.0),
 	int : string_content(Int, subclass, 'info-request') / p(1.0),
 	int : string_content(Int, type, 'description-request') / p(1.0),
-	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
 
 % do you know what X is
 understand : event : from_logical_form(Speaker, Hearer, Nom) <-
@@ -82,10 +76,12 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : string_content(Int, class, 'communication') / p(1.0),
 	int : string_content(Int, subclass, 'info-request') / p(1.0),
 	int : string_content(Int, type, 'description-request') / p(1.0),
-	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 % Asking about feature values.
+
+% @{be1_7:ascription}(be ^ <Mood>int ^ <Tense>pres ^ <Wh-Restr>(what1_7:specifier ^ what ^ <Scope>(color1_7:quality ^ color)) ^ <Cop-Restr>(context1_7:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(color1_7:quality) ^ <Subject>(context1_7:entity))
 
 % what X is Y
 understand : event : from_logical_form(Speaker, Hearer, Nom) <-
@@ -94,7 +90,7 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : feat_Tense(Nom, pres),
 %	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
 	i : rel_Subject(Nom, SubjNom),
-%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
 	i : 'rel_Wh-Restr'(Nom, WhNom),
 		i : rel_Scope(WhNom, ScopeNom),
 
@@ -104,7 +100,7 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : string_content(Int, subclass, 'info-request') / p(1.0),
 	int : string_content(Int, type, 'question') / p(1.0),
 	int : string_content(Int, subtype, 'open') / p(1.0),
-	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, RestrNom),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom),
 	understand : wh_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom).
 
 % what is the X of Y
@@ -144,7 +140,47 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 %	int : string_content(Int, subclass, 'info-request') / p(1.0),
 	int : string_content(Int, type, 'assertion') / p(1.0),
 	int : string_content(Int, subtype, 'location-report') / p(1.0),
-	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : wh_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
+	wh_query_prop(Nom, Prop),
+	int : string_content(Int, feature, Prop) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% which object is blue
+%@{be1_2:ascription}(be ^ <Mood>int ^ <Tense>pres ^ <Cop-Scope>(blue1_2:q-color ^ blue) ^ <Cop-Restr>(object1_2:thing ^ object ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Subject>(object1_2:thing) ^ <Wh-Restr>(which1_2:specifier ^ which ^ <Scope>(object1_2:thing)))
+
+% what is blue
+% @{be1_3:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Scope>(blue1_3:q-color ^ blue) ^ <Cop-Restr>(what1_3:entity ^ what) ^ <Subject>(what1_3:entity) ^ <Wh-Restr>(what1_3:entity))
+
+% what object is Feat
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : 'rel_Cop-Scope'(Nom, FeatNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : rel_Scope(WhNom, SubjNom),
+
+	polar_query_prop(FeatNom, Feature, Value),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'determination') / p(1.0),
+	int : string_content(Int, feature, Feature) / p(1.0),
+	int : string_content(Int, value, Value) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : non_referring_object(Nom) <-
+	i : prop(Nom, object).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -166,8 +202,8 @@ understand : event : from_logical_form(S, H, Nom) <-
 	i : prop(Nom, Prop),
 	nm_intention_postcondition(Int, S, H, Class, Prop).
 
-nm_intention_postcondition(Int, S, H, Class, find) <-
-	int : post(Int, state(['found-object', agent(H), class(Class)])) / p(1.0).
+nm_intention_postcondition(Int, _Speaker, Hearer, Class, find) <-
+	int : post(Int, state(['found-object', agent(Hearer), class(Class)])) / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -182,7 +218,7 @@ find_patient(Nom, RefNom) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-determine_recipient(Nom, Default, _, Hearer, Default) <-
+determine_recipient(_Nom, Default, _, _Hearer, Default) <-
 	default_recipient(Default) / p(0.5).
 
 determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
