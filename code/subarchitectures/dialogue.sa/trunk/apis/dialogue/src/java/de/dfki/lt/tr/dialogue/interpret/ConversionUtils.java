@@ -249,6 +249,11 @@ public abstract class ConversionUtils {
 			}
 
 			// modal formula
+			if (ft.functor.equals(functor_NOT) && ft.args.size() == 1) {
+				return BeliefFormulaFactory.newNegatedFormula(uniTermToFormula(ft.args.get(0)));
+			}
+
+			// modal formula
 			if (ft.args.size() == 1) {
 				return BeliefFormulaFactory.newModalFormula(ft.functor, uniTermToFormula(ft.args.get(0)));
 			}
