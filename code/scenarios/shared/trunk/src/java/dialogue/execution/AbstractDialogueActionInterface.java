@@ -97,7 +97,7 @@ public abstract class AbstractDialogueActionInterface extends
 		}
 
 		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
-			
+
 		}
 
 		protected TriBool waitAndCheckResponse(WorkingMemoryAddress id) {
@@ -170,8 +170,8 @@ public abstract class AbstractDialogueActionInterface extends
 
 			_stringContent.put(INTENTION_TYPE_KEY, "assertion");
 			_stringContent.put("subtype", "inform");
-			_stringContent.put("feature", getAction().feature);
-			_stringContent.put("value", getAction().value);
+			_stringContent.put("assertion-feature", getAction().feature);
+			_stringContent.put("assertion-value", getAction().value);
 		}
 
 	}
@@ -334,7 +334,9 @@ public abstract class AbstractDialogueActionInterface extends
 			} else if (confidence == ConfidenceLevel.UNSURE) {
 				_stringContent.put("certainty", "low");
 			} else {
-				_stringContent.put("subtype", "answer-unknown");
+				// high confidence in a negative answer
+				_stringContent.put("certainty", "high");
+
 			}
 		}
 
@@ -342,7 +344,7 @@ public abstract class AbstractDialogueActionInterface extends
 		protected void actionComplete() {
 			try {
 				// global-type-question-answered
-				String answeredPredictate = "global-" + getAction().feature
+				String answeredPredictate = "polar-" + getAction().feature
 						+ "-question-answered";
 				// record that we have looked at it
 
