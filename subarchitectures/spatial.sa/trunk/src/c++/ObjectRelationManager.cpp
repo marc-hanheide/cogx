@@ -469,7 +469,8 @@ void ObjectRelationManager::runComponent()
 {
   log("I am running!");
 
-  sleepComponent(2000);
+  //This is insane.
+  //sleepComponent(2000);
 
   SpatialGridMap::GridMapData def;
   def.occupancy = SpatialGridMap::UNKNOWN;
@@ -529,8 +530,8 @@ void ObjectRelationManager::runComponent()
 
 		processPriorRequest(fakePriorRequest); 
   }
-
-  sleepComponent(2000);
+  // alper: Commented out below, one question: why?
+  //sleepComponent(2000);
 
   int counter = 0;
   while (isRunning()) {
