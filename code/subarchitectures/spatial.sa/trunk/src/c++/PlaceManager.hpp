@@ -190,6 +190,9 @@ class PlaceManager : public cast::ManagedComponent
     std::map<int, std::set<int> > m_connectivities; // Keeps track of the
     					// connectivity properties maintained
     std::map<std::string, std::string> m_placeIDsToConnectivityWMID;
+    std::list<std::pair<int, int> > m_hypotheticalConnectivities; // Keeps track of hypothetical connectivities
+    								// which may be deleted on upgrading placeholders
+
     std::map<int, std::string> m_gatewayProperties;
     IceUtil::Mutex m_PlacePropsMutex;
 
