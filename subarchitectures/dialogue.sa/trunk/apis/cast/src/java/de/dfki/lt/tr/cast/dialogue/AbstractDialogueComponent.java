@@ -94,7 +94,7 @@ public abstract class AbstractDialogueComponent extends ManagedComponent {
 
 	public abstract static class ProcessingTaskWithDataAndComponent<T, C extends CASTComponent> extends
 			ProcessingTaskWithData<T> {
-		private C m_component;
+		private final C m_component;
 
 		public ProcessingTaskWithDataAndComponent(T _data,
 				C _component) {
