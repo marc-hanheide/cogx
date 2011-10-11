@@ -108,7 +108,8 @@ public abstract class AbstractDialogueActionInterface extends
 				prepareCheckAndResponse(id);
 				getComponent().addToWorkingMemory(id, actint);
 				res = waitAndCheckResponse(id);
-				actionComplete();
+				if (res==TriBool.TRITRUE)
+					actionComplete();
 			} catch (CASTException e) {
 				logException(e);
 			} finally {
