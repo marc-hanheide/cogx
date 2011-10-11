@@ -619,6 +619,10 @@ void AVS_ContinualPlanner::generateViewCones(
 	vector<ViewPointGenerator::SensingAction> viewcones =
 			coneGenerator.getBest3DViewCones();
 
+      if(viewcones.size() == 0){
+        this->getLogger()->warn("No available viewcones. This is probably because you need to tune parameters such as, m_awayfromobstacles or you have a crappy map. Returning without doing anything.");
+        return;
+ }
 	log("got %d cones..", viewcones.size());
 
 	// normalizing cone probabilities

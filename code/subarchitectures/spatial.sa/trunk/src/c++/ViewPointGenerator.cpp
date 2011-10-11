@@ -59,12 +59,15 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 	vector<SensingAction> result3DVCList;
 	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold)){
 	vector<pair<unsigned int, double> > ordered2DVClist = getOrdered2DCandidateViewCones();
-	vector<SensingAction> unordered3DVCList, ordered3DVCList,  tmp;
+	
+  if (ordered2DVClist.size() == 0)
+ {
+   return result3DVCList;
+  }
+  vector<SensingAction> unordered3DVCList, ordered3DVCList,  tmp;
 
 	SensingAction sample;
 		std::vector<SensingAction> samplepoints;
-
-
 
 		// We have the VC candidate list ordered according to their 2D pdf sums
 		// now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
@@ -198,6 +201,10 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
 	m_component->log("ViewPointGenerator::getOrdered3DCandidateViewCones");
 	std::vector<std::vector<pair<int, int> > > VCones;
 	m_samples2D = sample2DGrid();
+	vector<pair<unsigned int, double> > orderedVClist, tmp;
+  if(m_samples2D.size() == 0){
+    return orderedVClist;
+  }
 	VCones = calculate2DConesRegion();
 	CurePDFMap* lgmpdf  = new CurePDFMap(lgm->getSize(),lgm->getCellSize() ,0, CureObstMap::MAP1,lgm->getCentXW(), lgm->getCentYW());
     m_component->log("BloxelMap size: %d, %d LGMPDF size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgmpdf->getSize());
@@ -224,7 +231,6 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
 
 	double sum;
 		int x, y;
-		vector<pair<unsigned int, double> > orderedVClist, tmp;
 		vector<unsigned int>::iterator it;
 		for (unsigned int i = 0; i < VCones.size(); i++) {
 			sum = 0;
