@@ -2,10 +2,12 @@ package dialogue.execution;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
@@ -22,6 +24,8 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
@@ -124,7 +128,7 @@ public abstract class AbstractDialogueActionInterface extends
 		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
 			getComponent().addChangeFilter(
 					ChangeFilterFactory.createTypeFilter(
-							InterpretedIntention.class,
+							PossibleInterpretedIntentions.class,
 							WorkingMemoryOperation.ADD), eventQueue);
 		}
 
@@ -141,22 +145,51 @@ public abstract class AbstractDialogueActionInterface extends
 						println("didn't get the intention in time... action failed");
 						return m_timeoutResponse;
 					} else {
-						println("got human intention to engage... check if it is the right one");
-						InterpretedIntention interpretedIntention = getComponent()
+						println("got human intention... check if it is the right one");
+						PossibleInterpretedIntentions possInterpretedIntentions = getComponent()
 								.getMemoryEntry(e.address,
-										InterpretedIntention.class);
-						WorkingMemoryAddress correspAddress = interpretedIntention.addressContent
+										PossibleInterpretedIntentions.class);
+						InterpretedIntention bestIntention = null;
+						WorkingMemoryAddress bestIntentionWMA = null;
+						float mostLikely = -1.0f;
+						// find most likely intention
+						for (Entry<WorkingMemoryAddress, InterpretedIntention> i : possInterpretedIntentions.intentions
+								.entrySet()) {
+							if (i.getValue().confidence > mostLikely) {
+								bestIntention = i.getValue();
+								mostLikely = i.getValue().confidence;
+								bestIntentionWMA = i.getKey();
+							}
+						}
+						if (bestIntention == null) {
+							getComponent()
+									.getLogger()
+									.warn(
+											"no best intention found, we wait further...");
+							continue;
+						}
+						WorkingMemoryAddress correspAddress = bestIntention.addressContent
 								.get("answer-to");
 						if (correspAddress == null) {
 							getComponent()
 									.getLogger()
-									.warn("this InterpretedIntention was not an answer to anything, hence, we wait further...");
+									.warn(
+											"this InterpretedIntention was not an answer to anything, hence, we wait further...");
 							continue;
 						}
 						println("check if the received InterpretedIntention matches the one we are waiting for");
 						if (correspAddress.equals(id)) {
 							println("yes, it matched!");
-							return checkResponse(interpretedIntention);
+							if (checkResponse(bestIntention) == TriBool.TRITRUE) {
+								submitCorrespondingBeliefs(
+										possInterpretedIntentions,
+										bestIntention);
+								getComponent().addToWorkingMemory(
+										bestIntentionWMA, bestIntention);
+								return TriBool.TRITRUE;
+							} else {
+								return TriBool.TRIFALSE;
+							}
 						}
 
 					}
@@ -173,6 +206,21 @@ public abstract class AbstractDialogueActionInterface extends
 				}
 			}
 			return TriBool.TRITRUE;
+		}
+
+		private void submitCorrespondingBeliefs(
+				PossibleInterpretedIntentions possInterpretedIntentions,
+				InterpretedIntention bestIntention)
+				throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+				UnknownSubarchitectureException {
+			for (WorkingMemoryAddress wma : bestIntention.addressContent
+					.values()) {
+				dBelief belief = possInterpretedIntentions.beliefs.get(wma);
+				if (belief != null) {
+					debug("found a matching belief for this intention");
+					getComponent().addToWorkingMemory(wma, belief);
+				}
+			}
 		}
 
 		/**
