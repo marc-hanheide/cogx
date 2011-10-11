@@ -144,7 +144,7 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       rcx = roiPtr->rect.pos.x;
       rcy = roiPtr->rect.pos.y;
 
-      if (fabs(rcx) > 2*camPars.width || fabs(rcy) > 2*camPars.height) {
+      if (isnan(rcx) || isnan(rcy) || fabs(rcx) > 2*camPars.width || fabs(rcy) > 2*camPars.height) {
         ostringstream ss;
         Math::Vector3 pos = psoi->boundingSphere.pos;
         ss << "SOI: (" << pos.x << ", " << pos.y << ", " << pos.z << ")";
