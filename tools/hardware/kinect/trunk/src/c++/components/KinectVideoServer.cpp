@@ -98,7 +98,6 @@ void KinectVideoServer::Timer::increment()
 
 KinectVideoServer::KinectVideoServer()
 {
-  framerateMillis = 0;
 }
 
 KinectVideoServer::~KinectVideoServer()
@@ -111,7 +110,7 @@ KinectVideoServer::~KinectVideoServer()
 
 /**
  * @brief Get video resolution for given camera.
- * @param camIdx which camera					/// TODO unused
+ * @param camIdx which camera
  * @param size video resolution
  */
 void KinectVideoServer::getResolution(int camIdx, CvSize &size)
@@ -206,80 +205,6 @@ void KinectVideoServer::init(const vector<int> &dev_nums) throw(runtime_error)
   retrievedImages.resize(dev_nums.size());
   for(size_t i = 0; i < dev_nums.size(); i++)
     retrievedImages[i] = 0;
-
-//   captures.resize(dev_nums.size());
-//   for(size_t i = 0; i < dev_nums.size(); i++)
-//   {
-//     captures[i] = cvCreateCameraCapture(dev_class + dev_nums[i]);
-//     if(captures[i] == 0)
-//       throw runtime_error(exceptionMessage(__HERE__,
-//         "failed to create capture for video device %d", dev_nums[i]));
-//     if(bayer.empty())
-//     {
-//       bayerCvt = CV_COLORCVT_MAX;
-//     }
-//     else
-//     {
-//       if(bayer == "BGGR")
-//         bayerCvt = CV_BayerBG2RGB;
-//       else if(bayer == "GBBR")
-//         bayerCvt = CV_BayerGB2RGB;
-//       else if(bayer == "RGGB")
-//         bayerCvt = CV_BayerRG2RGB;
-//       else if(bayer == "GRRB")
-//         bayerCvt = CV_BayerGR2RGB;
-//       else
-//         throw runtime_error(exceptionMessage(__HERE__,
-//             "invalid bayer order '%s', must be one of 'BGGR' 'GBBR' 'RGGB' 'GRRB'",
-//             bayer.c_str()));
-//       // the default in opencv is CV_CAP_PROP_CONVERT_RGB=1 which causes
-//       // cameras with bayer encoding to be converted from mono to rgb
-//       // without using the bayer functions. CV_CAP_PROP_CONVERT_RGB=0
-//       // keeps the original format.
-//       cvSetCaptureProperty(captures[i], CV_CAP_PROP_CONVERT_RGB, 0.0);
-//     }
-//   }
-
-  // if capture size was not set by config, use what is currently set in the cameras
-//   if(captureSize.width == 0 || captureSize.width == 0)
-//   {
-//     // get currently set resolution of first camera and set it to all other
-//     // cameras so all cameras will have same resolution
-//     getResolution(0, captureSize);
-//     for(size_t i = 1; i < captures.size(); i++)
-//       if(!setResolution(i, captureSize))
-//         throw runtime_error(exceptionMessage(__HERE__,
-//               "failed to set all cameras to identical resolutions"));
-//     log("using currently set video resolution %d x %d\n",
-//         captureSize.width, captureSize.height);
-//   }
-//   else
-//   {
-//     log("setting video resolution to %d x %d\n", captureSize.width, captureSize.height);
-//     // set resolution for first camera, where we don't care whether our
-//     // requested resolution was actually set
-//     setResolution(0, captureSize);
-//     // set for all other cameras to the same resolution (whatever it was)
-//     // and insist they are the same
-//     for(size_t i = 1; i < captures.size(); i++)
-//       if(!setResolution(i, captureSize))
-//         throw runtime_error(exceptionMessage(__HERE__,
-//               "failed to set all cameras to identical resolutions"));
-//     log("using available video resolution %d x %d\n", captureSize.width, captureSize.height);
-//   }
-
-  // frames per second
-  double fps = 100000000.; //cvGetCaptureProperty(captures[0], CV_CAP_PROP_FPS);					/// TODO fps not correct
-
-  if(fps > 0.)
-    framerateMillis = (int)(1000./fps);  // milliseconds per frame
-  else
-    // just some huge value (better than 0. as that might result in divides by zero somewhere)
-    framerateMillis = 1000000;
-
-  // to make sure we have images in the capture's buffer
-  //grabFramesInternal();
-  printf("KinectVideoServer::init: end!\n");
 }
 
 void KinectVideoServer::configure(const map<string,string> & _config) throw(runtime_error)
@@ -297,7 +222,7 @@ void KinectVideoServer::configure(const map<string,string> & _config) throw(runt
   }
   else printf("KinectVideoServer::configure: Warning: No Kinect calibration file specified.\n");
 
-  if((it = _config.find("--devnums")) != _config.end())						/// TODO unused?
+  if((it = _config.find("--devnums")) != _config.end())
   {
     istringstream str(it->second);
     int dev;
@@ -308,11 +233,11 @@ void KinectVideoServer::configure(const map<string,string> & _config) throw(runt
     dev_nums.push_back(0);  // assume 0 as default device
 
     
-  if((it = _config.find("--imgsize")) != _config.end())						/// TODO Size ist durch config-file vorgegeben.
-  {
-    istringstream str(it->second);
+//  if((it = _config.find("--imgsize")) != _config.end())
+//  {
+//    istringstream str(it->second);
 //     str >> captureSize.width >> captureSize.height;
-  }
+//  }
 
 
   // do some initialisation based on configured items
@@ -334,6 +259,7 @@ void KinectVideoServer::retrieveFrameInternal(int camIdx, int width, int height,
 {
   if(retrievedImages[camIdx] == 0)
   {
+    kinect->NextFrame();
     if(!kinect->GetColorImage(&retrievedImages[camIdx]))
     {
       printf("KinectVideoServer::retrieveFrameInternal: Warning: Could not get Color image from kinect sensor.\n");
@@ -353,19 +279,8 @@ void KinectVideoServer::retrieveFrameInternal(int camIdx, int width, int height,
     
 //     changeImageSize(frame.camPars, captureSize.width, captureSize.height);								// TODO we have to change the size?
   }
-//   else																/// TODO if witdh / height != capture width / height
-//   {
-//     char id[16];
-//     sprintf(id, "frame%d", camIdx);
-//     // use image cache to avoid allocate/deallocating all the time
-//     IplImage *tmp = m_imageCache.getImage(id, width, height, IPL_DEPTH_8U, 3);
-//     cvResize(retrievedImages[camIdx], tmp);
-//     copyImage(tmp, frame);
-// 
-//     // adjust to scaled image size
-//     changeImageSize(frame.camPars, width, height);
-//   }
-//   printf("KinectServer::retrieveFrameInternal: end!\n");
+  else throw runtime_error(exceptionMessage(__HERE__, "image size conversion not yet implemented!"));    
+
   cvReleaseImage(&retrievedImages[camIdx]);
 }
 
@@ -381,7 +296,6 @@ void KinectVideoServer::retrieveFrames(const std::vector<int> &camIds, int width
 
 void KinectVideoServer::retrieveFrames(int width, int height, std::vector<Video::Image> &frames)
 {
-// printf("KinectVideoServer::retrieveFrames: start 1!\n");
   frames.resize(getNumCameras());
   for(size_t i = 0; i < getNumCameras(); i++)
     retrieveFrameInternal(i, width, height, frames[i]);
@@ -389,7 +303,6 @@ void KinectVideoServer::retrieveFrames(int width, int height, std::vector<Video:
 
 void KinectVideoServer::retrieveFrame(int camId, int width, int height, Video::Image &frame)
 {
-// printf("KinectVideoServer::retrieveFrame: start!\n");
   size_t i = getCamIndex(camIds[camId]);
   retrieveFrameInternal(i, width, height, frame);
 }
@@ -401,14 +314,14 @@ void KinectVideoServer::retrieveHRFrames(std::vector<Video::Image> &frames)
 
 void KinectVideoServer::getImageSize(int &width, int &height)
 {
-  printf("KinectVideoServer::getImageSize: Not yet implemented! Was ist der Unterschied zu getResolution?\n");
   width = captureSize.width;
   height = captureSize.height;
 }
 
 int KinectVideoServer::getFramerateMilliSeconds()
 {
-  return framerateMillis;
+  printf("KinectVideoServer::getFramerateMilliSeconds: not yet implemented!\n");
+  return -1;
 }
 
 /**
