@@ -165,6 +165,7 @@ private:
 	peekabot::PolygonProxy m_ProxyPathEndMarker;
 	peekabot::GroupProxy m_ProxyViewpointGenCommands;
 	peekabot::GroupProxy m_ProxyDetectionCommands;
+	peekabot::GroupProxy m_ProxyViewCones;
 
 	peekabot::ObjectProxy m_ProxyCam;
 	peekabot::HingeProxy m_ProxyPan;
@@ -189,7 +190,9 @@ private:
 	bool m_ShowCommands;
 	bool m_NonUniqueObjects;
   bool m_ShowPointCloud;
-	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+  bool m_ShowViewCones;
+
+  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 	int m_currGoalPlace;
 
 	double m_FovH; // horisontal fov in degs

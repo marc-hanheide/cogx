@@ -106,6 +106,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowPlaceholders = (_config.find("--no-placeholders") == _config.end());
   m_ShowRoomId = (_config.find("--no-roomid") == _config.end());
   m_ShowRoomCategory = (_config.find("--no-areaclass") == _config.end());
+  m_ShowViewCones = (_config.find("--no-viewcones") == _config.end());
 
   m_ShowPath = (_config.find("--log-path") != _config.end());
   m_ShowCommands = (_config.find("--log-commands") != _config.end());
@@ -2463,7 +2464,6 @@ void DisplayNavInPB::connectPeekabot()
 	    peekabot::REPLACE_ON_CONFLICT);
       }
 
-      m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
       m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
 
       s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
@@ -2556,19 +2556,24 @@ void DisplayNavInPB::connectPeekabot()
                        "labels",
                        peekabot::REPLACE_ON_CONFLICT);
 
-      if (m_ShowPath) {
-    m_ProxyTrajectory.add(m_PeekabotClient,
-                     "trajectory",
-                     peekabot::REPLACE_ON_CONFLICT);
+    if (m_ShowPath) {
+      m_ProxyTrajectory.add(m_PeekabotClient,
+          "trajectory",
+          peekabot::REPLACE_ON_CONFLICT);
 
-	m_ProxyPathLog.add(m_ProxyTrajectory, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-	m_ProxyPathLog.set_line_width(5);
-      }
+      m_ProxyPathLog.add(m_ProxyTrajectory, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+      m_ProxyPathLog.set_line_width(5);
+    }
 
+    if (m_ShowViewCones){
+      log("Showing viewcones in Peekabot");
+      m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
+    }
 
     createRobotFOV();
     log("Connection to Peekabot established");
 
+    
   } catch(std::exception &e) {
     log("Caught exception when connecting to peekabot (%s)",
         e.what());
