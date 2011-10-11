@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Oct 11 12:04:30 2011
+# Created: Tue Oct 11 12:47:58 2011
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,7 +18,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(772, 550)
+        MainWindow.resize(780, 550)
         MainWindow.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
@@ -86,8 +86,19 @@ class Ui_MainWindow(object):
         self.ckAutoClearLog = QtGui.QCheckBox(self.tabLogs)
         self.ckAutoClearLog.setObjectName(_fromUtf8("ckAutoClearLog"))
         self.horizontalLayout_21.addWidget(self.ckAutoClearLog)
-        spacerItem1 = QtGui.QSpacerItem(88, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_21.addItem(spacerItem1)
+        self.label_2 = QtGui.QLabel(self.tabLogs)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.horizontalLayout_21.addWidget(self.label_2)
+        self.txtFnComponentLevels = QtGui.QLineEdit(self.tabLogs)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.txtFnComponentLevels.sizePolicy().hasHeightForWidth())
+        self.txtFnComponentLevels.setSizePolicy(sizePolicy)
+        self.txtFnComponentLevels.setObjectName(_fromUtf8("txtFnComponentLevels"))
+        self.horizontalLayout_21.addWidget(self.txtFnComponentLevels)
         self.verticalLayout.addLayout(self.horizontalLayout_21)
         self.mainLogfileTxt = CCastTextEdit(self.tabLogs)
         self.mainLogfileTxt.setUndoRedoEnabled(False)
@@ -685,7 +696,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.frame_6)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 772, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 780, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuCast = QtGui.QMenu(self.menubar)
         self.menuCast.setObjectName(_fromUtf8("menuCast"))
@@ -868,6 +879,7 @@ class Ui_MainWindow(object):
         self.buildBar.addAction(self.actCancelBuild)
         self.buildBar.addSeparator()
         self.buildBar.addAction(self.actRunMakeClean)
+        self.label_2.setBuddy(self.txtFnComponentLevels)
         self.label_5.setBuddy(self.txtLocalHost)
         self.label_10.setBuddy(self.hostConfigCmbx)
         self.label_6.setBuddy(self.clientConfigCmbx)
@@ -898,6 +910,21 @@ class Ui_MainWindow(object):
         self.ckShowFlushMsgs.setText(QtGui.QApplication.translate("MainWindow", "Flushed", None, QtGui.QApplication.UnicodeUTF8))
         self.ckAutoClearLog.setToolTip(QtGui.QApplication.translate("MainWindow", "Clear the log output when the client process starts", None, QtGui.QApplication.UnicodeUTF8))
         self.ckAutoClearLog.setText(QtGui.QApplication.translate("MainWindow", "AutoClear", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Levels:", None, QtGui.QApplication.UnicodeUTF8))
+        self.txtFnComponentLevels.setToolTip(QtGui.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Liberation Sans\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Set the filename of the file with logging levels for individual components. These settings will be appended to the log4j.properties file for clients. The file contains log4j options in the form:</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">&lt;sa-id&gt;.&lt;component-id&gt;=LOGLEVEL</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">eg.:</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Courier New,courier\';\">vision.sa.videoserver=INFO</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Courier New,courier\';\"></p>\n"
+"<p>Log levels:</p>\n"
+"<p>ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLogs), QtGui.QApplication.translate("MainWindow", "Logs", None, QtGui.QApplication.UnicodeUTF8))
         self.lblBuildMode.setText(QtGui.QApplication.translate("MainWindow", "Build:", None, QtGui.QApplication.UnicodeUTF8))
         self.cbRemoteBuildMode.setItemText(0, QtGui.QApplication.translate("MainWindow", "Local and Remote", None, QtGui.QApplication.UnicodeUTF8))
