@@ -142,9 +142,9 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 		for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
 			InterpretedIntention iint = pii.intentions.get(addr);
 
-			System.out.println("possible interpretation: "
-					+ InterpretedUserIntention
-							.interpretedIntentionToString(iint));
+//			System.out.println("most confident intention: "
+//					+ InterpretedUserIntention
+//							.interpretedIntentionToString(iint));
 
 			if (iint.confidence > best) {
 				bestAddr = addr;
