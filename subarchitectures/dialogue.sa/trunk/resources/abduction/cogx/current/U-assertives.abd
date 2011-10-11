@@ -13,6 +13,9 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	i : 'rel_Cop-Scope'(Nom, ScopeNom),
 
 	? understand : i : intention(Nom, Int),
+
+	not_anaphoric(Nom) / p(0.2),
+
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, type, 'assertion') / p(1.0),
 	int : string_content(Int, subtype, 'ascription') / p(1.0),
