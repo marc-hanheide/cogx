@@ -47,13 +47,14 @@ extends AbstractReferringExpressionGenerationComponent<FakeGenerator> {
 
 		private String getShortNP(List<String> disabledProps) {
 			List<String> words = new LinkedList<String>();
-			words.add("the");
+/*			words.add("the");
 			for (String key : props.keySet()) {
 				if (disabledProps != null && !disabledProps.contains(key)) {
 					words.add(props.get(key));
 				}
 			}
-			words.add(type);
+			words.add(type); */
+			words.add("this");
 			return join(" ", words);
 		}
 
