@@ -8,6 +8,7 @@ import execution.slice.ActionExecutionException;
 import execution.slice.ConfidenceLevel;
 import execution.slice.actions.AnswerOpenQuestion;
 import execution.slice.actions.AnswerPolarQuestion;
+import execution.slice.actions.ArmToHomePos;
 import execution.slice.actions.AskForColour;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskForObjectWithFeatureValue;
@@ -66,8 +67,7 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 		} else if (_plannedAction.name.equals("retract-arm")) {
                         assert _plannedAction.arguments.length == 1 : "retract-arm is expected to be of arity 1";
-
-                        return createSingleBeliefAction(PointToObject.class,null);
+                        return createSingleBeliefAction(ArmToHomePos.class,null);
 
                 } else if (_plannedAction.name
 				.equals("ask-for-an-objects-color-general")) {
