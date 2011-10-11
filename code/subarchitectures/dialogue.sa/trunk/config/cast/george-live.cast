@@ -1,3 +1,5 @@
+SETVAR mary_voice=dfki-obadiah-hsmm
+
 INCLUDE default+gui.cast
 
 #INCLUDE modules/refres-fake.incl
