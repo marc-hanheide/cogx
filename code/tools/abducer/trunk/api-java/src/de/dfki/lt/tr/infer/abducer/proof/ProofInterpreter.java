@@ -5,6 +5,6 @@ import java.util.List;
 
 public interface ProofInterpreter<T> {
 
-	public T interpret(List<ModalisedAtom> matoms);
+	public T interpret(List<ModalisedAtom> matoms, double cost);
 
 }

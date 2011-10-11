@@ -76,7 +76,7 @@ implements Comparable<Proof> {
 		for (MarkedQuery q : proof) {
 			matoms.add(q.atom);
 		}
-		return interpreter.interpret(matoms);
+		return interpreter.interpret(matoms, getCost());
 	}
 
 	public boolean hasAssertions() {
