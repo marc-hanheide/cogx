@@ -129,7 +129,18 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # Categorical.SA ############################################################
 
-INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
+SUBARCHITECTURE categorical.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD  ProsilicaVideoServer ProsilicaServer --videoname video --camids "0" --devnums "0"
+
+CPP GD categorical.dataprovider CategoricalDataProvider --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg --laser-robot-servers-hostname %(host:localhost)  --correct-scans --convert-scans-to-sick --display-gridmap
+CPP GD categorical.visualprocessor CategoricalVisualProcessor --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg 
+CPP GD categorical.appearanceintegrator CategoricalAppearanceIntegrator --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg --placemanager place.manager
+CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg
+CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg --placemanager place.manager
+CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg --placemanager place.manager
+
 
 
 # Vision ######################################################################
@@ -158,6 +169,7 @@ INCLUDE includes/planner.sa/dora-interaction.cast
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/INCL/dora-live.cast
 INCLUDE includes/dialogue.sa/dialogue-exe.cast
+JAVA MG verbalisation verbalisation.DoraVerbalisation
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
