@@ -89,6 +89,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	public final String DEFAULT_ENGINE_NAME = "intention-recognition";
 	public final int DEFAULT_TIMEOUT = 250;
 
+	public final int DEFAULT_MAX_READINGS = 1;
+
 	private String abd_serverName = DEFAULT_ABD_SERVER_NAME;
 	private List<String> files = new LinkedList<String>();
 	private String abd_endpoints;
@@ -110,7 +112,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	private final String idPrefix = "irecog";
 	private int idIndex = 0;
 	private int remapIndex = 1;
-	private final TerminationCondition condition = new MaximumReadingsTerminationCondition(2);
+	private TerminationCondition condition = null;
+	private int maxReadings = DEFAULT_MAX_READINGS;
 
 	private WMView<IntentionToAct> openIntentionsToAct = null;
 	private final WMAddressTranslatorFactory translatorFactory;
@@ -153,6 +156,13 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			String timeoutStr = args.get("--timeout");
 			timeout = Integer.parseInt(timeoutStr);
 		}
+		if (args.containsKey("--max-readings")) {
+			String readingsStr = args.get("--max-readings");
+			maxReadings = Integer.parseInt(readingsStr);
+		}
+
+		getLogger().debug("will only look at the " + maxReadings + " best reading(s)");
+		condition = new MaximumReadingsTerminationCondition(maxReadings);
 
 		String abd_host = args.get("--abd-host");
 		abd_endpoints = AbducerUtils.getAbducerServerEndpointString(abd_host, DEFAULT_ABD_PORT);
