@@ -58,14 +58,18 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 3 : "analyze-proto-object  is expected to be of arity 3";
 			return createSingleBeliefAction(AnalyzeProtoObject.class,
 					_plannedAction.arguments[2]);
-		} else if (_plannedAction.name.equals("point-to-object-color")
-				|| _plannedAction.name.equals("point-to-object-shape")) {
-
-			assert _plannedAction.arguments.length == 3 : "point-to-object-* is expected to be of arity 3";
+		} else if (_plannedAction.name.equals("point-to-object")) {
+                    
+			assert _plannedAction.arguments.length == 2 : "point-to-object is expected to be of arity 2";
 			return createSingleBeliefAction(PointToObject.class,
 					_plannedAction.arguments[1]);
 
-		} else if (_plannedAction.name
+		} else if (_plannedAction.name.equals("retract-arm")) {
+                        assert _plannedAction.arguments.length == 1 : "retract-arm is expected to be of arity 1";
+
+                        return createSingleBeliefAction(PointToObject.class,null);
+
+                } else if (_plannedAction.name
 				.equals("ask-for-an-objects-color-general")) {
 
 			assert _plannedAction.arguments.length == 2 : "ask-for-an-objects-color-general is expected to be of arity 2";
