@@ -77,6 +77,10 @@
     (object-refering-color-question-answered ?v - VisualObject ?c - ColorName)
     (object-refering-shape-question-answered ?v - VisualObject ?s - ShapeName)
     (object-refering-type-question-answered ?v - VisualObject ?t - TypeName)
+
+    (color-excluded-for-reference-resolution ?r - Robot)
+    (shape-excluded-for-reference-resolution ?r - Robot)
+    (type-excluded-for-reference-resolution ?r - Robot)
   )
 
   (:functions
@@ -702,6 +706,84 @@
       )
   )
 
+  (:action verify-reference-by-describing-its-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+        (not (color-excluded-for-reference-resolution ?r))
+        (is-potential-object-in-question ?v)
+        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
+        (= (max-gain-label-color ?v) ?c)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (>= (max-gain-value-color ?v1) (believe-in-color-threshold ?r))
+            (exists (?c1 - ColorName) (and (= (max-gain-label-color ?v) ?c1) (not (= ?c ?c1))))
+          )
+        )            
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action verify-reference-by-describing-its-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (not (shape-excluded-for-reference-resolution ?r))
+        (is-potential-object-in-question ?v)
+        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
+        (= (max-gain-label-shape ?v) ?s)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (>= (max-gain-value-shape ?v1) (believe-in-shape-threshold ?r))
+            (exists (?s1 - ShapeName) (and (= (max-gain-label-shape ?v) ?s1) (not (= ?s ?s1))))
+          )
+        )            
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action verify-reference-by-describing-its-type
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+        (not (type-excluded-for-reference-resolution ?r))
+        (is-potential-object-in-question ?v)
+        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
+        (= (max-gain-label-type ?v) ?s)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (>= (max-gain-value-type ?v1) (believe-in-type-threshold ?r))
+            (exists (?t1 - TypeName) (and (= (max-gain-label-type ?v) ?t1) (not (= ?t ?t1))))
+          )
+        )            
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
+
   (:action retract-arm
     :agent (?r - Robot)
     :effect
@@ -719,7 +801,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;    GLOBAL QUESTIONS      ;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; These are answers to questions of the form "What color is object v?"
 
   (:action answer-global-color-question-convinced
     :agent (?r - Robot)
@@ -870,7 +954,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;     POLAR QUESTIONS      ;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; These are answers to questions of the form "Is object v of color c?"
 
   (:action answer-polar-color-question-positively
     :agent (?r - Robot)
