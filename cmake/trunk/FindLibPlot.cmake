@@ -3,6 +3,7 @@ IF (WIN32)
 	MESSAGE ("NOT Available")
 ELSE (WIN32)
 	FIND_PATH( LIBPLOT_INCLUDE_PATH plot.h
+		PATHS
 		/usr/include
 		/usr/local/include
 		/sw/include
