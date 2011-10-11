@@ -3362,6 +3362,7 @@ def be-forms (args) {
   noun(wall, thing,)
     
   noun(pizza, thing,) 
+  noun(cerealbox, thing,) 
   noun(thing, thing,) 
   noun(book, thing,) 
   noun(ball, thing,) 
@@ -3382,6 +3383,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun(mug, thing,) 
   noun(cup, thing,) 
   noun(jug, thing,) 
+  noun(stapler, thing,) 
   noun(keyboard, thing,) 
   noun(laptop, thing,) 
   noun(screen, thing,) 
@@ -3425,6 +3427,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
  
   noun(chocolate, thing,)
   noun(tea, thing,) 
+  noun(juice, thing,) 
   noun(coffee, thing,) 
   noun-irr(cornflakes, cornflakes, thing,)
   noun-irr(cookies, cookies, thing,)
@@ -3433,6 +3436,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   #-- e-substance --#
 
   noun-mass(tea, e-substance,)
+  noun-mass(juice, e-substance,)
   noun-mass(coffee, e-substance,)
   noun-mass(chocolate, e-substance,) 
   noun-mass(cornflakes, e-substance,)
@@ -3457,12 +3461,14 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun(place, e-place,) 
   noun(office, e-place,) 
   noun(room, e-place,)   
-  noun(hall, e-place,)  _noun(hall, hallway, e-place,) _noun(hall, corridor, e-place,)
+  noun(hall, e-place,)   
+  noun(corridor, e-place,)  _noun(corridor, hallway, e-place,)
   noun(bathroom, e-place,) _noun(bathroom, washroom, e-place,) _noun(bathroom, toilet, e-place,) _noun(bathroom, wc, e-place,)
   noun(lab, e-place,)  _noun(lab, laboratory, e-place,) 
   noun(kitchen, e-place,) 
   noun(library, e-place,)
   noun(livingroom, e-place,)
+  noun(meetingroom, e-place,)
   noun(recreationroom, e-place,)
   noun(library, e-place,)
   
