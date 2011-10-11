@@ -287,6 +287,9 @@ module execution {
       class PointToObject extends SingleBeliefAction {
       };
 
+      class ArmToHomePos extends SingleBeliefAction {
+      };
+
 	class VerifyReference extends SingleBeliefAction {
 	};
 
