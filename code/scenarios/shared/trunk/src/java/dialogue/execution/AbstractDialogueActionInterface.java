@@ -70,20 +70,24 @@ public abstract class AbstractDialogueActionInterface extends
 			extends BlockingActionExecutor<T> {
 
 		private static final int DLG_TIMEOUT = 20;
+
+		private final int m_timeoutSeconds;
+
 		WMEventQueue eventQueue = new WMEventQueue();
 
 		// the tribool to return on a timeout
 		private final TriBool m_timeoutResponse;
 
 		public IntentionDialogueAction(ManagedComponent _component,
-				Class<T> _cls, TriBool _timeoutResponse) {
+				Class<T> _cls, int _timeoutSeconds, TriBool _timeoutResponse) {
 			super(_component, _cls);
+			m_timeoutSeconds = _timeoutSeconds;
 			m_timeoutResponse = _timeoutResponse;
 		}
 
 		public IntentionDialogueAction(ManagedComponent _component,
 				Class<T> _cls) {
-			this(_component, _cls, TriBool.TRIFALSE);
+			this(_component, _cls, DLG_TIMEOUT, TriBool.TRIFALSE);
 		}
 
 		@Override
@@ -137,9 +141,9 @@ public abstract class AbstractDialogueActionInterface extends
 				boolean gotAnswer = false;
 				// if we received an update we're happy
 				println("wait for the intention of the human to pop up for "
-						+ DLG_TIMEOUT + " seconds");
+						+ m_timeoutSeconds + " seconds");
 				while (!gotAnswer) {
-					WorkingMemoryChange e = eventQueue.poll(DLG_TIMEOUT,
+					WorkingMemoryChange e = eventQueue.poll(m_timeoutSeconds,
 							TimeUnit.SECONDS);
 					if (e == null) {
 						println("didn't get the intention in time... action failed");
@@ -164,8 +168,7 @@ public abstract class AbstractDialogueActionInterface extends
 						if (bestIntention == null) {
 							getComponent()
 									.getLogger()
-									.warn(
-											"no best intention found, we wait further...");
+									.warn("no best intention found, we wait further...");
 							continue;
 						}
 						WorkingMemoryAddress correspAddress = bestIntention.addressContent
@@ -173,8 +176,7 @@ public abstract class AbstractDialogueActionInterface extends
 						if (correspAddress == null) {
 							getComponent()
 									.getLogger()
-									.warn(
-											"this InterpretedIntention was not an answer to anything, hence, we wait further...");
+									.warn("this InterpretedIntention was not an answer to anything, hence, we wait further...");
 							continue;
 						}
 						println("check if the received InterpretedIntention matches the one we are waiting for");
@@ -264,8 +266,8 @@ public abstract class AbstractDialogueActionInterface extends
 		}
 
 		public BeliefIntentionDialogueAction(ManagedComponent _component,
-				Class<T> _cls, TriBool _timeoutResponse) {
-			super(_component, _cls, _timeoutResponse);
+				Class<T> _cls, int _timeoutSeconds, TriBool _timeoutResponse) {
+			super(_component, _cls, _timeoutSeconds, _timeoutResponse);
 		}
 
 		@Override
@@ -279,14 +281,12 @@ public abstract class AbstractDialogueActionInterface extends
 	public abstract static class FeatureValueQuestionAnswer<T extends BeliefPlusFeatureValueAction>
 			extends BeliefIntentionDialogueAction<T> {
 
+		//how long to block the planner after reporting the answer
+		private static final int ANSWER_TIMEOUT_SECS = 2;
+		
 		public FeatureValueQuestionAnswer(ManagedComponent _component,
 				Class<T> _cls) {
-			super(_component, _cls);
-		}
-
-		public FeatureValueQuestionAnswer(ManagedComponent _component,
-				Class<T> _cls, TriBool _timeoutResponse) {
-			super(_component, _cls, _timeoutResponse);
+			super(_component, _cls, ANSWER_TIMEOUT_SECS, TriBool.TRITRUE);
 		}
 
 		@Override
@@ -478,7 +478,7 @@ public abstract class AbstractDialogueActionInterface extends
 			FeatureValueQuestionAnswer<AnswerOpenQuestion> {
 
 		public AnswerOpenQuestionExecutor(ManagedComponent _component) {
-			super(_component, AnswerOpenQuestion.class, TriBool.TRITRUE);
+			super(_component, AnswerOpenQuestion.class);
 		}
 
 		@Override
@@ -516,7 +516,7 @@ public abstract class AbstractDialogueActionInterface extends
 			FeatureValueQuestionAnswer<AnswerPolarQuestion> {
 
 		public AnswerPolarQuestionExecutor(ManagedComponent _component) {
-			super(_component, AnswerPolarQuestion.class, TriBool.TRITRUE);
+			super(_component, AnswerPolarQuestion.class);
 		}
 
 		@Override
