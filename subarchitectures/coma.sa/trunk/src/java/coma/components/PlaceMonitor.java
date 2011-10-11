@@ -53,6 +53,7 @@ import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.epstatus.EpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.NegatedFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
@@ -535,68 +536,86 @@ public class PlaceMonitor extends ManagedComponent {
 						// this try has the intention of catching bad class cast operations 
 						// -- which are the result of not met assumptions regarding the belief structure
 						try {
-						HashSet<String> _assertedRoomCats = new HashSet<String>(); 
-					
-						DistributionValues identityVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("identity")).values;
-						for (FormulaProbPair _currPair : ((FormulaValues) identityVals).values) {
-							log("current identity: " + ((ElementaryFormula) _currPair.val).prop + " with " + _currPair.prob);
-							if (_currPair.prob>=0.5) _assertedRoomCats.add(((ElementaryFormula) _currPair.val).prop);
-						}
-						StringBuffer _assertedLabels = new StringBuffer();
-						for (String _label : _assertedRoomCats) {
-							_assertedLabels.append(_label).append(" ");
-						}
-						
-						// this should be WMPs -- but the type field does not seem to be properly set anyway
-						HashSet<WorkingMemoryAddress> _gBeliefs = new HashSet<WorkingMemoryAddress>();
-						DistributionValues aboutVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("about")).values;
-						for (FormulaProbPair _currPair : ((FormulaValues) aboutVals).values) {
-							log("current about: WMID=" + ((PointerFormula) _currPair.val).pointer.id + "WMSA=" + ((PointerFormula) _currPair.val).pointer.subarchitecture + " with " + _currPair.prob);
-							if (_currPair.prob>=0.5) _gBeliefs.add(new WorkingMemoryAddress(((PointerFormula) _currPair.val).pointer.id, ((PointerFormula) _currPair.val).pointer.subarchitecture));
-						} 
-						
-						for (WorkingMemoryAddress _gBelief : _gBeliefs) {
-							GroundedBelief _currBelief = getMemoryEntry(_gBelief, GroundedBelief.class);
-							
-							// ok, the following iterator code works, 
-							// but it might be jumping on false conclusions in case there exist multiple ancestors
-							for (WorkingMemoryPointer _wmp : ((CASTBeliefHistory) _currBelief.hist).ancestors) {
-								// naive sanity checking!
-								if (_wmp.type.contains("ComaRoom")) {
-									// load ComaRoomWME in order to check if a new category was asserted
-									ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
-									log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
-		
-									// for now, associate the RoomPlaceProperty with the seed place of the room
-									// that it has been resolved against -- later the assertion should be referenced
-									// by the place at which it was made/received -- and that place should be used instead.
-									// the current implementation does not account correctly for non-monotonic splits/merges of
-									// rooms!
-									for (String assertedRoomCat : _assertedRoomCats) {
-										// for each belief that expresses a human assertion about a room category
-										// we write a placeproperty -- ther is no check for duplicates at this point!
-										
-										RoomHumanAssertionPlaceProperty roomCatAssertion = new RoomHumanAssertionPlaceProperty(
-												Long.valueOf(_currRoom.seedPlaceInstance.replaceAll("\\D","")),
-												new SpatialProperties.ProbabilityDistribution(), new PropertyValue(),
-												true, false, assertedRoomCat);
-										
-										try {
-											if (m_spatial_sa_name!=null) {
-												addToWorkingMemory(new WorkingMemoryAddress(newDataID(), m_spatial_sa_name), roomCatAssertion);
-											}
-											else {
-												log("cannot add RoomHumanAssertionPlaceProperty to WM: spatial SA name is unknown!");
-											}
-											//addToWorkingMemory(newDataID(), roomCatAssertion);
-										} catch (AlreadyExistsOnWMException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										
+							HashSet<String> _assertedRoomCats = new HashSet<String>(); 
+
+							DistributionValues identityVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("identity")).values;
+							for (FormulaProbPair _currPair : ((FormulaValues) identityVals).values) {
+								if (_currPair.val instanceof ElementaryFormula) {
+									log("current identity: " + ((ElementaryFormula) _currPair.val).prop + " with " + _currPair.prob);
+									if (_currPair.prob>=0.5) {
+										String assertionCat = ((ElementaryFormula) _currPair.val).prop;
+										if (assertionCat.equals("hall")) assertionCat = "corridor";
+										_assertedRoomCats.add(assertionCat);
 									}
-									
-									/*
+								} else if (_currPair.val instanceof NegatedFormula) {
+									log("current identity: NOT " + ((ElementaryFormula) ((NegatedFormula) _currPair.val)
+											.negForm).prop + " with " + _currPair.prob);
+									if (_currPair.prob>=0.5) {
+										// TODO handle negative feedback according to distribution, mapValue, mapValueReliable!
+										String assertionCat = ((ElementaryFormula) ((NegatedFormula) _currPair.val)
+												.negForm).prop;
+										if (assertionCat.equals("hall")) assertionCat = "corridor";
+										_assertedRoomCats.add("!" + assertionCat);
+									}
+								} else {
+									log("the received answer was neither a ElementaryFormula nor a NegatedFormula...");
+								}
+								
+							}
+							StringBuffer _assertedLabels = new StringBuffer();
+							for (String _label : _assertedRoomCats) {
+								_assertedLabels.append(_label).append(" ");
+							}
+
+							// this should be WMPs -- but the type field does not seem to be properly set anyway
+							HashSet<WorkingMemoryAddress> _gBeliefs = new HashSet<WorkingMemoryAddress>();
+							DistributionValues aboutVals = ((BasicProbDistribution) ((CondIndependentDistribs) _belief.content).distribs.get("about")).values;
+							for (FormulaProbPair _currPair : ((FormulaValues) aboutVals).values) {
+								log("current about: WMID=" + ((PointerFormula) _currPair.val).pointer.id + "WMSA=" + ((PointerFormula) _currPair.val).pointer.subarchitecture + " with " + _currPair.prob);
+								if (_currPair.prob>=0.5) _gBeliefs.add(new WorkingMemoryAddress(((PointerFormula) _currPair.val).pointer.id, ((PointerFormula) _currPair.val).pointer.subarchitecture));
+							} 
+
+							for (WorkingMemoryAddress _gBelief : _gBeliefs) {
+								GroundedBelief _currBelief = getMemoryEntry(_gBelief, GroundedBelief.class);
+
+								// ok, the following iterator code works, 
+								// but it might be jumping on false conclusions in case there exist multiple ancestors
+								for (WorkingMemoryPointer _wmp : ((CASTBeliefHistory) _currBelief.hist).ancestors) {
+									// naive sanity checking!
+									if (_wmp.type.contains("ComaRoom")) {
+										// load ComaRoomWME in order to check if a new category was asserted
+										ComaRoom _currRoom = getMemoryEntry(_wmp.address, ComaRoom.class);
+										log("Room with ID: " + _currRoom.roomId + " has new attributed labels: " + _assertedLabels.toString());
+
+										// for now, associate the RoomPlaceProperty with the seed place of the room
+										// that it has been resolved against -- later the assertion should be referenced
+										// by the place at which it was made/received -- and that place should be used instead.
+										// the current implementation does not account correctly for non-monotonic splits/merges of
+										// rooms!
+										for (String assertedRoomCat : _assertedRoomCats) {
+											// for each belief that expresses a human assertion about a room category
+											// we write a placeproperty -- there is no check for duplicates at this point!
+											RoomHumanAssertionPlaceProperty roomCatAssertion = new RoomHumanAssertionPlaceProperty(
+													Long.valueOf(_currRoom.seedPlaceInstance.replaceAll("\\D","")),
+													new SpatialProperties.ProbabilityDistribution(), new PropertyValue(), // new StringValue(assertedRoomCat) ???
+													true, false, assertedRoomCat);
+
+											try {
+												if (m_spatial_sa_name!=null) {
+													addToWorkingMemory(new WorkingMemoryAddress(newDataID(), m_spatial_sa_name), roomCatAssertion);
+												}
+												else {
+													log("cannot add RoomHumanAssertionPlaceProperty to WM: spatial SA name is unknown!");
+												}
+												//addToWorkingMemory(newDataID(), roomCatAssertion);
+											} catch (AlreadyExistsOnWMException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+
+										}
+
+										/*
 									// compare the set(!) of already known asserted room categories with the new set
 									HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(Arrays.asList(_currRoom.assertedLabels)); // uncomment this
 									// HashSet<String> prevKnownAssertedRoomCats = new HashSet<String>(); // comment this out
@@ -606,7 +625,7 @@ public class PlaceMonitor extends ManagedComponent {
 										allKnownAssertedRoomsCats.addAll(prevKnownAssertedRoomCats);
 										allKnownAssertedRoomsCats.addAll(_assertedRoomCats);
 										String[] newAssertedLabels = allKnownAssertedRoomsCats.toArray(new String[allKnownAssertedRoomsCats.size()]);
-									
+
 										// if there is a new room category, we need to overwrite the room WME
 										_currRoom.assertedLabels = newAssertedLabels; //uncomment this
 										_currRoom.categories=new ProbabilityDistribution();
@@ -627,15 +646,15 @@ public class PlaceMonitor extends ManagedComponent {
 											e.printStackTrace();
 										}
 									}	
-									*/							
-								} else {
-									log("The ancestor points to a non-ComaRoom WME. Doing nothing.");
-								}
-							}						
-						}
+										 */							
+									} else {
+										log("The ancestor points to a non-ComaRoom WME. Doing nothing.");
+									}
+								}						
+							}
 						} catch (ClassCastException cce) {
 							log("Caught a ClassCastException. This means some assumption was not met. Doing nothing. Here's the transcript: " + cce.getStackTrace());
-							cce.printStackTrace();
+							logException(cce);
 						}
 					} else {
 						debug("the belief content is not of type CondIndependentDistribs. Don't know what to do. Doing nothing.");
