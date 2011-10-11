@@ -790,7 +790,7 @@
         (not (type-excluded-for-reference-resolution ?r))
         (is-potential-object-in-question ?v)
         (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?s)
+        (= (max-gain-label-type ?v) ?t)
         (forall 
           (?v1 - VisualObject) 
           (or 
