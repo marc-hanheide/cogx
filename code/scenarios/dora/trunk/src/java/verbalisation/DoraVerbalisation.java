@@ -126,52 +126,25 @@ public class DoraVerbalisation extends ManagedComponent implements
 	// }
 	// };
 
-	private static final TextGenerator<ViewPointGenerationCommand> VIEW_POINT_CMD_GENERATOR = new TextGenerator<ViewPointGenerationCommand>() {
-		@Override
-		public String toText(ViewPointGenerationCommand _i) {
-			return "Generating view points for object " + _i.label;
-		}
-	};
-
-	private static final TextGenerator<ProcessViewPointCommand> PROCESS_SINGLE_VIEWPOINT_GENERATOR = new TextGenerator<ProcessViewPointCommand>() {
-
-		@Override
-		public String toText(ProcessViewPointCommand _i) {
-			StringBuffer sb = new StringBuffer(
-					"Processing view point to look for");
-			for (String model : _i.objectModels) {
-				sb.append(" a ");
-				sb.append(model);
-			}
-			return sb.toString();
-		}
-	};
-
 	private static final TextGenerator<VisualObject> VISUAL_OBJECT_GENERATOR = new TextGenerator<VisualObject>() {
 		@Override
 		public String toText(VisualObject _i) {
-			for (int i=0; i<_i.identLabels.length; i++) {
+			for (int i = 0; i < _i.identLabels.length; i++) {
 				if (_i.identLabels[i].equals("unknown")) {
-					if (_i.identDistrib[i]>=1-0.08) {
+					if (_i.identDistrib[i] >= 1 - 0.08) {
 						return "There is no " + _i.identLabels[0] + " here";
 					} else {
 						return "That looks like " + _i.identLabels[0];
 					}
 				}
 			}
-			return "something is wrong in " + DoraVerbalisation.class.getSimpleName();
-//			if (_i.detectionConfidence > 0.08) {
-//				return "That looks like " + _i.identLabels[0];
-//			} else {
-//				return "";
-//			}
-		}
-	};
-
-	private static Accessor<Motive, MotiveStatus> MOTIVE_STATUS_ACCESSOR = new Accessor<Motive, MotiveStatus>() {
-		@Override
-		public MotiveStatus access(Motive _entry) {
-			return _entry.status;
+			return "something is wrong in "
+					+ DoraVerbalisation.class.getSimpleName();
+			// if (_i.detectionConfidence > 0.08) {
+			// return "That looks like " + _i.identLabels[0];
+			// } else {
+			// return "";
+			// }
 		}
 	};
 
@@ -222,14 +195,15 @@ public class DoraVerbalisation extends ManagedComponent implements
 		}
 	};
 
-	private static TextGenerator<ReportPosition> REPORT_OBJECTFOUND_GENERATOR = new TextGenerator<ReportPosition>() {
-		@Override
-		public String toText(ReportPosition _i) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("I found the object");
-			return sb.toString();
-		}
-	};
+	// private static TextGenerator<ReportPosition> REPORT_OBJECTFOUND_GENERATOR
+	// = new TextGenerator<ReportPosition>() {
+	// @Override
+	// public String toText(ReportPosition _i) {
+	// StringBuilder sb = new StringBuilder();
+	// sb.append("I found the object");
+	// return sb.toString();
+	// }
+	// };
 
 	private static TextGenerator<CreateRelationalConesForModel> GENERATE_VIEWCONES = new TextGenerator<CreateRelationalConesForModel>() {
 		@Override
@@ -289,8 +263,8 @@ public class DoraVerbalisation extends ManagedComponent implements
 				PlaceStatus.TRUEPLACE, PLACE_EXPLORED_GENERATOR);
 		//
 		// // when places are deleted (i.e. exploration could be carried out)
-		// m_verbals.verbaliseOnDeletion(Place.class,
-		// PLACE_EXPLORATION_FAILED_GENERATOR);
+		m_verbals.verbaliseOnDeletion(Place.class,
+				PLACE_EXPLORATION_FAILED_GENERATOR);
 
 		// // when navigation is told to move the robot
 		// m_verbals.verbaliseOnAddition(NavCommand.class, NAV_CMD_GENERATOR);
@@ -300,8 +274,8 @@ public class DoraVerbalisation extends ManagedComponent implements
 		m_verbals.verbaliseOnAddition(ProcessConeGroupAction.class,
 				PROCESS_VIEWCONES);
 
-		m_verbals.verbaliseOnAddition(ReportPosition.class,
-				REPORT_OBJECTFOUND_GENERATOR);
+		// m_verbals.verbaliseOnAddition(ReportPosition.class,
+		// REPORT_OBJECTFOUND_GENERATOR);
 
 		// // when plan execution is triggered
 		m_verbals.verbaliseCannedTextOnAddition(PlanProxy.class,
@@ -333,13 +307,13 @@ public class DoraVerbalisation extends ManagedComponent implements
 		m_verbals.verbaliseCannedTextOnAddition(GatewayPlaceProperty.class,
 				"Ah ha. Looks like there is a door here");
 
-		// when spatial is asked for new viewpoints
-		m_verbals.verbaliseOnAddition(ViewPointGenerationCommand.class,
-				VIEW_POINT_CMD_GENERATOR);
-
-		// when spatial is asked for new viewpoints
-		m_verbals.verbaliseOnAddition(ProcessViewPointCommand.class,
-				PROCESS_SINGLE_VIEWPOINT_GENERATOR);
+		// // when spatial is asked for new viewpoints
+		// m_verbals.verbaliseOnAddition(ViewPointGenerationCommand.class,
+		// VIEW_POINT_CMD_GENERATOR);
+		//
+		// // when spatial is asked for new viewpoints
+		// m_verbals.verbaliseOnAddition(ProcessViewPointCommand.class,
+		// PROCESS_SINGLE_VIEWPOINT_GENERATOR);
 
 		addChangeFilter(
 				ChangeFilterFactory.createGlobalTypeFilter(Place.class), this);
