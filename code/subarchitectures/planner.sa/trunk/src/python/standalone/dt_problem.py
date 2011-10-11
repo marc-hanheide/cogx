@@ -432,7 +432,7 @@ class DTProblem(object):
                     if fact.svar.modality == pddl.mapl.commit:
                         fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
 
-                    if init_fact.svar == fact.svar and init_fact.value != fact.value:
+                    if init_fact.svar == fact.svar and ((init_fact.value != fact.value) ^ fact.negated()):
                         # print "constraint %s violated: %s" % (init_fact, fact)
                         return relaxed_exploration.FACT_STATICALLY_FALSE
 
@@ -473,7 +473,7 @@ class DTProblem(object):
             cfact = state.Fact(fact.svar.as_modality(mapl.commit, [fact.value]), pddl.TRUE)
             relaxed_exploration.cache.set_fact(fact)
             relaxed_exploration.cache.set_fact(cfact)
-            for agent_obj in self.state.problem.get_all_objects(mapl.t_agent):
+            for agent_obj in self.state.problem.get_all_objects(mapl.t_planning_agent):
                 goal_facts.append(state.Fact(fact.svar.as_modality(mapl.direct_knowledge, [agent_obj]), pddl.TRUE))
             actions, explored_facts = relaxed_exploration.explore(self.domain.actions, set(goal_facts), self.detstate, self.domain, prob_functions = self.prob_functions, check_fn=make_check_fn(fact))
             relaxed_exploration.cache.unset_fact(fact)

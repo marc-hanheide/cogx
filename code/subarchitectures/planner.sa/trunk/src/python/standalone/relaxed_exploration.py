@@ -62,7 +62,11 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
                     v = cond.args[-1]
                     if all(a.is_instantiated() for a in cond.args[0].args if isinstance(a, pddl.VariableTerm)) and  isinstance(v, pddl.VariableTerm) and not v.is_instantiated():
                         svar = state.StateVariable.from_literal(cond)
-                        val = force_callback(svar, cond)
+                        negated = pddl.utils.is_functional(cond) and cond.negated
+                        if not negated:
+                            val = force_callback(svar, cond)
+                        else:
+                            val == pddl.UNKNOWN
                         if val:
                             forced.append((v.object, val, cond))
                         elif val == pddl.UNKNOWN:
@@ -640,14 +644,14 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
 
         if (fact.svar.function in nonstatic and not fact.svar.modality) or fact.svar.modality in nonstatic:
             if fact in stat:
-                return FACT_CURRENTLY_TRUE
+                return FACT_CURRENTLY_TRUE ^ fact.negated()
             else:
-                return FACT_CURRENTLY_FALSE
+                return FACT_CURRENTLY_FALSE ^ fact.negated()
         else:
             if fact in stat:
-                return FACT_STATICALLY_TRUE
+                return FACT_STATICALLY_TRUE ^ fact.negated()
             else:
-                return FACT_STATICALLY_FALSE
+                return FACT_STATICALLY_FALSE ^ fact.negated()
 
     nonstatic = set(sum((get_nonstatic(a) for a in actions), [])) | set([mapl.commit, mapl.knowledge, mapl.direct_knowledge, mapl.indomain, mapl.i_indomain])
     
@@ -735,7 +739,9 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
         if active_cond_actions:
             next_actions = active_cond_actions
             active_cond_actions = []
+            is_cond_action = True
         else:
+            is_cond_action = False
             fact = open.pop(0)
             if fact == "start":
                 next_actions = start_actions
@@ -745,7 +751,7 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
         fact_count += 1
 
         cache_key = fact
-        if fact != "start" and cache.has_ops(cache_key):
+        if fact != "start" and cache.has_ops(cache_key) and not is_cond_action:
             # print "cache hit:", fact
             for op in cache.get_ops(cache_key):
                 all_actions.add(op.action_key)
@@ -765,7 +771,7 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
         
         all_checked_facts = set()
         for action, mapping in next_actions:
-            # print action.name, map(str, (mapping.get(a,a) for a in action.args))
+            print action.name, map(str, (mapping.get(a,a) for a in action.args))
             partial_action_key  = (action.name, tuple(mapping.get(a,a) for a in action.args))
             # cache_key = partial_action_key
             # if cache.has_ops(cache_key):
@@ -902,7 +908,7 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
             facts |= next.all_preconds
             actions.add((next.action, next.args))
         
-        # print next#, "=>", map(str, unary_successors[next.effect])
+        print next#, "=>", map(str, unary_successors[next.effect])
         if next.effect:
             reached_by[next.effect] = next
 
@@ -915,12 +921,12 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
 
             succ.unsat_preconds -= 1
             if succ.unsat_preconds == 0:
-                # print " *", succ
+                print " *", succ
                 forward_open.append(succ)
                 forward_closed.add(succ.effect)
                 # forward_closed.add(succ)
-            # else:
-            #     print "  ", succ, succ.unsat_preconds 
+            else:
+                print "  ", succ, succ.unsat_preconds 
 
     # print "time for relaxed plangraph: %.3f" % (time.time()-t1)
 

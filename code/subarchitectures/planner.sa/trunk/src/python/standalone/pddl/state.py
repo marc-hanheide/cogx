@@ -561,9 +561,9 @@ class State(dict):
         if isinstance(key, Fact):
             if not dict.__contains__(self, key.svar):
                 if isinstance(key.svar.function, Predicate):
-                    return key.value == FALSE
-                return key.value == UNKNOWN
-            return self[key.svar] == key.value
+                    return (key.value == FALSE) ^ key.negated()
+                return (key.value == UNKNOWN) ^ key.negated()
+            return (self[key.svar] == key.value) ^ key.negated()
         return dict.__contains__(self, key)
 
     def __str__(self):

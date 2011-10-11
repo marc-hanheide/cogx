@@ -179,6 +179,20 @@ class MAPLPlan(networkx.MultiDiGraph):
         for n in self.nodes_iter():
             visit(n)
 
+    def incoming_links(self, n):
+        if n not in self:
+            return
+        for pred in self.predecessors_iter(n):
+            for e in self[pred][n].itervalues():
+                yield pred, e.get("svar",None), e.get("val",None), e.get("type",None)
+
+    def outgoing_links(self, n):
+        if n not in self:
+            return
+        for succ in self.successors_iter(n):
+            for e in self[n][succ].itervalues():
+                yield succ, e.get("svar",None), e.get("val",None), e.get("type",None)
+                
     def predecessors_iter(self, node, link_type=None):
         if link_type and not isinstance(link_type, (set, list, tuple)):
             link_type = [link_type]
@@ -248,6 +262,8 @@ class MAPLPlan(networkx.MultiDiGraph):
             attrs["style"] = "filled"
             if n.status == ActionStatusEnum.EXECUTED:
                 attrs["fillcolor"] = "grey"
+            elif n.status == ActionStatusEnum.FAILED:
+                attrs["fillcolor"] = "tomato1"
             else:
                 attrs["fillcolor"] = "white"
                 
