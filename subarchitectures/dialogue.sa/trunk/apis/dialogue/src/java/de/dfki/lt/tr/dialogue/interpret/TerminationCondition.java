@@ -1,7 +1,7 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
-public interface TerminationCondition {
+public interface TerminationCondition<T> {
 
-	public boolean reached();
+	public boolean reached(PartialInterpretation<T> pinpr);
 
 }
