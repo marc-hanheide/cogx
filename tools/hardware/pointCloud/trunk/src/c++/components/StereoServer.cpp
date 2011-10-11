@@ -349,7 +349,7 @@ void StereoServer::getRectImage(int side, int imgWidth, Video::Image& image)
   changeImageSize(image.camPars, stereoCam->inImgSize.width, stereoCam->inImgSize.height);
 
   Pose3 ideal_pose, rel_pose, global_pose;
-  setIdentity(global_pose);
+  setIdentity(ideal_pose);
   // pose of ideal left/right camera w.r.t. to actual left/right camera
   // the pose is a rotation given by the rectification matrix
   setRow33(ideal_pose.rot, (double*)stereoCam->cam[side].rect);
@@ -382,7 +382,7 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
   camPars.cy = stereoCam->cam[side].proj[1][2];
 
   Pose3 ideal_pose, rel_pose, global_pose;
-  setIdentity(global_pose);
+  setIdentity(ideal_pose);
   // pose of ideal left/right camera w.r.t. to actual left/right camera
   // the pose is a rotation given by the rectification matrix
   setRow33(ideal_pose.rot, (double*)stereoCam->cam[side].rect);
