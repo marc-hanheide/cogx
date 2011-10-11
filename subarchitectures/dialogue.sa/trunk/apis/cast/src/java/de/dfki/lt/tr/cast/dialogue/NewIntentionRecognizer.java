@@ -226,6 +226,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 				if (!listIpret.isEmpty()) {
 					PossibleInterpretedIntentions pii = createPossibleInterpretedIntentions(translatorFactory, listIpret);
+					getLogger().debug("normalizing confidences");
+					normalizeConfidences(pii);
 					getLogger().debug("adding the following to the WM:\n" + possibleInterpretedIntentionsToString(pii));
 					try {
 						addToWorkingMemory(newDataID(), pii);
@@ -290,6 +292,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		s += "}\n";
 		s += ")";
 		return s;
+	}
+
+	public void normalizeConfidences(PossibleInterpretedIntentions pii) {
+		double sum = 0.0;
+		for (InterpretedIntention iint : pii.intentions.values()) {
+			sum += iint.confidence;
+		}
+
+		for (InterpretedIntention iint : pii.intentions.values()) {
+			assert sum > 0.0;
+			iint.confidence = (float) ((double) iint.confidence / sum);
+		}
 	}
 
 	@Override
