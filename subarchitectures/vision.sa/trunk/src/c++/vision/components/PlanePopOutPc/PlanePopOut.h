@@ -1,6 +1,7 @@
 /**
  * @author Kai ZHOU
  * @date June 2009
+ * NOP
  *
  * This is a rewrite of the original plane poput, using the V4R library class
  * PlanePopout, which is based on PCL.
@@ -144,15 +145,6 @@ private:
      * only if a SOI has been seen longer than that, will it be added to WM
      */
     int StableTime;
-    /**
-     * The "up" direction for planes, e.g. (0 0 1) for horizontal planes.
-     * This vector is used to prune found planes not normal to this vector.
-     * In the future this might (and should) also be used to define what we mean
-     * by "on" in "the SOI is on the table", rather then "below". Right now this
-     * is determined rather cunfusingly by par.minObjectHeight, par.maxObjectHeight
-     * (see constructor).
-     */
-    Vector3 upVector;
     /**
      * the single dominant plane, including its points and convec hull
      */
