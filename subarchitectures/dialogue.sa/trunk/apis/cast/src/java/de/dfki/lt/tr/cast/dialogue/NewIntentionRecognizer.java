@@ -34,6 +34,7 @@ import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.QUDOpenAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.QUDPolarAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.ReferentOfAtom;
+import de.dfki.lt.tr.dialogue.interpret.atoms.TypeOfQUDAtom;
 import de.dfki.lt.tr.dialogue.ref.BasicReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.ref.EpistemicReferenceHypothesis;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
@@ -208,6 +209,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		solvers.addSolver(new ReferenceResolutionAssertionSolver());
 		solvers.addSolver(new WhQUDAssertionSolver());
 		solvers.addSolver(new PolarQUDAssertionSolver());
+		solvers.addSolver(new TypeOfQUDAssertionSolver());
 
 		ProofInterpreter<InterpretedUserIntention> interpreter = new InterpretedUserIntentionProofInterpreter(getLogger());
 
@@ -652,6 +654,52 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 						if (actint != null) {
 							getLogger().debug("expanding IntentionToAct " + wmaToString(wma));
 							ModalisedAtom matom = new QUDPolarAtom(null, null, wma, nominal, intWma, null, null, null).toModalisedAtom();
+							engine.addFact(matom);
+							for (ModalisedAtom fact : RobotCommunicativeAction.intentionToActToFacts(wma, actint)) {
+								engine.addFact(fact);
+							}
+						}
+					}
+				}
+				
+			};
+		}
+		
+	};
+
+	public class TypeOfQUDAssertionSolver extends AbstractAssertionSolver<TypeOfQUDAtom> {
+
+		public TypeOfQUDAssertionSolver() {
+			super(new TypeOfQUDAtom.Matcher());
+		}
+
+		@Override
+		public ContextUpdate solveFromParsed(TypeOfQUDAtom a) {
+//			final String nominal = a.getNominal();
+//			if (nominal == null) {
+//				getLogger().error("nominal undetermined");
+//				return null;
+//			}
+			final WorkingMemoryAddress intWma = a.getIntentionAddress();
+//			if (intWma == null) {
+//				getLogger().error("intention address undetermined");
+//				return null;
+//			}
+
+			final Set<WorkingMemoryAddress> wmas = openIntentionsToAct.keySet();
+			getLogger().debug("got " + wmas.size() + " open IntentionsToAct");
+
+			return new ContextUpdate() {
+
+				@Override
+				public void doUpdate(AbductionEnginePrx engine) {
+					for (WorkingMemoryAddress wma : wmas) {
+						IntentionToAct actint = openIntentionsToAct.get(wma);
+						String type = actint.stringContent.get("type");
+
+						if (type != null && actint != null) {
+							getLogger().debug("expanding IntentionToAct " + wmaToString(wma));
+							ModalisedAtom matom = new TypeOfQUDAtom(wma, intWma, type).toModalisedAtom();
 							engine.addFact(matom);
 							for (ModalisedAtom fact : RobotCommunicativeAction.intentionToActToFacts(wma, actint)) {
 								engine.addFact(fact);

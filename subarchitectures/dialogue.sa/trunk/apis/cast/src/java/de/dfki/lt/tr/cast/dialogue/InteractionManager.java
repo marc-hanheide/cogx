@@ -6,6 +6,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import java.util.Map;
@@ -61,10 +62,9 @@ extends AbstractDialogueComponent {
 							public void execute(WorkingMemoryAddress addr) {
 								try {
 									IntentionToAct actint = getMemoryEntry(addr, IntentionToAct.class);
-									if (actint.stringContent.get("type").equals("question")) {
-										// it's a QUD!
+									if (isQUD(actint)) {
 										ensureQUDIsNull();
-										lastQUD = addr;
+										setQUD(addr);
 									}
 								}
 								catch (SubarchitectureComponentException ex) {
@@ -80,6 +80,7 @@ extends AbstractDialogueComponent {
 	public void ensureQUDIsNull() {
 		try {
 			if (lastQUD != null) {
+				getLogger().debug("removing the QUD " + wmaToString(lastQUD) + " from the WM");
 				deleteFromWorkingMemory(lastQUD);
 			}
 		}
@@ -87,6 +88,21 @@ extends AbstractDialogueComponent {
 			logException(ex);
 		}
 		lastQUD = null;
+	}
+
+	public boolean isQUD(BaseIntention bint) {
+		if (bint.stringContent.get("type").equals("question")) {
+			return true;
+		}
+		if (bint.stringContent.get("type").equals("engagement-opening")) {
+			return true;
+		}
+		return false;
+	}
+
+	public void setQUD(WorkingMemoryAddress wma) {
+		getLogger().debug("setting QUD to " + wmaToString(wma));
+		lastQUD = wma;
 	}
 
 }
