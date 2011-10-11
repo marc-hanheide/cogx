@@ -281,9 +281,9 @@ public abstract class AbstractDialogueActionInterface extends
 	public abstract static class FeatureValueQuestionAnswer<T extends BeliefPlusFeatureValueAction>
 			extends BeliefIntentionDialogueAction<T> {
 
-		//how long to block the planner after reporting the answer
+		// how long to block the planner after reporting the answer
 		private static final int ANSWER_TIMEOUT_SECS = 2;
-		
+
 		public FeatureValueQuestionAnswer(ManagedComponent _component,
 				Class<T> _cls) {
 			super(_component, _cls, ANSWER_TIMEOUT_SECS, TriBool.TRITRUE);
@@ -906,6 +906,12 @@ public abstract class AbstractDialogueActionInterface extends
 							AnswerPolarQuestion.class,
 							new ComponentActionFactory<AnswerPolarQuestion, AnswerPolarQuestionExecutor>(
 									this, AnswerPolarQuestionExecutor.class));
+
+			m_actionStateManager
+					.registerActionType(
+							VerifyReference.class,
+							new ComponentActionFactory<VerifyReference, VerifyReferenceExecutor>(
+									this, VerifyReferenceExecutor.class));
 
 			// m_actionStateManager
 			// .registerActionType(
