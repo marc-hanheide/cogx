@@ -17,6 +17,8 @@ module VisionData {
   sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
   sequence<string> IdSeq;
 
+  const string IDENTITYxUNKNOWN = "unknown";
+
 /**
 * Enum for reporting status of vision commands. 
 */

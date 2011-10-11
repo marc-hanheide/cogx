@@ -306,7 +306,7 @@ void ObjectRecognizer3D::objectLoationToVisualObject(P::ObjectLocation &objLoc,
 {
   // create a very simple distribution: label and unknown
   visObj->identLabels.push_back(objLoc.idObject);
-  visObj->identLabels.push_back("unknown");
+  visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
   // note: distribution must of course sum to 1
   visObj->identDistrib.push_back(objLoc.conf);
   visObj->identDistrib.push_back(1. - objLoc.conf);
