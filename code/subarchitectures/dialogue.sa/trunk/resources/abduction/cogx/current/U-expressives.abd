@@ -30,6 +30,15 @@ understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, communication),
 	i : prop(Nom, thank),
 	? understand : i : intention(Nom, Int),
+	human_initiative(Nom) / p(0.8),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'thanking') / p(1.0).
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, communication),
+	i : prop(Nom, thank),
+	? understand : i : intention(Nom, Int),
+	? type_of_question_under_discussion(_QUDAddr, Int, 'assertion'),
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, type, 'thanking') / p(1.0).
 

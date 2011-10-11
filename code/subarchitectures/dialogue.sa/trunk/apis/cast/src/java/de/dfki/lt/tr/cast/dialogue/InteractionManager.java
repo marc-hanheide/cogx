@@ -97,6 +97,9 @@ extends AbstractDialogueComponent {
 		if (bint.stringContent.get("type").equals("engagement-opening")) {
 			return true;
 		}
+		if (bint.stringContent.get("type").equals("assertion")) {
+			return true;
+		}
 		return false;
 	}
 
