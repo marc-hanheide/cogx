@@ -58,6 +58,8 @@
     (unlearning-impossible)
 
     (curiosity-satisfied)
+    ;; (searched-for-objects)
+    ;; (test)
 
     (looked-at ?vc - ViewCone)
 
@@ -252,6 +254,25 @@
     )
   )
 
+ ; (:derived (searched-for-objects)
+ ;   (and
+ ;     (forall
+ ;       (?vc - ViewCone)
+ ;       (or
+ ;         (exists (?p - ProtoObject) (= (target-object ?vc) ?p))
+ ;         (looked-at ?vc)
+ ;       )
+ ;     )
+ ;   )
+ ; )
+
+ ; (:derived (test)
+ ;   (and
+ ;    (when (not (curiosity-satisfied)) (curiosity-satisfied))
+ ;    (when (curiosity-satisfied) (searched-for-objects))
+ ;  )
+ ;)
+
 ;; unlearning is impossible, if nothing has been neg-attributed by the tutor that hasn't been unlearned already
 
   (:derived (unlearning-impossible)
@@ -417,8 +438,8 @@
         (learning-impossible)
         (unlearning-impossible)
         (or
-          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
           (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         )
       )
     :effect 
@@ -436,8 +457,8 @@
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
         (or
-          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
           (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         )
       )
     :effect 
@@ -456,8 +477,8 @@
         (learning-impossible)
         (unlearning-impossible)
         (or
-          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
           (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         )
       )
     :effect 
@@ -475,8 +496,8 @@
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
         (or
-          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
           (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         )
       )
     :effect 
@@ -495,8 +516,8 @@
         (learning-impossible)
         (unlearning-impossible)
         (or
-          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
           (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         )
       )
     :effect 
@@ -516,8 +537,8 @@
         (learning-impossible)
         (unlearning-impossible)
         (or
-          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
           (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         )
       )
     :effect 
