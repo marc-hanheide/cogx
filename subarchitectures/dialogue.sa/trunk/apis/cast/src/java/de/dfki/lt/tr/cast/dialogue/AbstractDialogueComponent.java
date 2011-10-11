@@ -119,7 +119,12 @@ public abstract class AbstractDialogueComponent extends ManagedComponent {
 	}
 
 	public static String wmaToString(WorkingMemoryAddress wma) {
-		return "[" + wma.id + "," + wma.subarchitecture + "]";
+		if (wma != null) {
+			return "[" + wma.id + "," + wma.subarchitecture + "]";
+		}
+		else {
+			return "NULL";
+		}
 	}
 
 }

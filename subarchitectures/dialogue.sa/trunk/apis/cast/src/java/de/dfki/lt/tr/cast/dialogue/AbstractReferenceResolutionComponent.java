@@ -13,15 +13,24 @@ import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 public abstract class AbstractReferenceResolutionComponent<T extends ReferenceResolver>
 extends AbstractDialogueComponent {
 
-	private final T resolver;
+	private T resolver;
 
-	public AbstractReferenceResolutionComponent(T resolver) {
+	public AbstractReferenceResolutionComponent() {
 		super();
-		this.resolver = resolver;
+		this.resolver = null;
 	}
 
 	@Override
 	protected void onStart() {
+		super.onStart();
+
+		resolver = initResolver();
+		if (resolver == null) {
+			getLogger().fatal("got a null resolver! will die.");
+			scheduleOwnDeath();
+			return;
+		}
+
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ReferenceResolutionRequest.class, WorkingMemoryOperation.ADD), 
 				new WorkingMemoryChangeReceiver() {
 					@Override
@@ -30,6 +39,8 @@ extends AbstractDialogueComponent {
 					};
 		});
 	}
+
+	protected abstract T initResolver();
 
 	protected final T getResolver() {
 		return resolver;

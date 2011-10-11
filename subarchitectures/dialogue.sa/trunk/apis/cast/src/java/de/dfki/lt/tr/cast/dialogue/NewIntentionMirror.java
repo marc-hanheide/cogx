@@ -37,8 +37,9 @@ extends AbstractDialogueComponent {
 
 					IntentionToAct actint = new IntentionToAct(intint.stringContent, intint.addressContent);
 
-					getLogger().info("adding an IntentionToAct to dialogue WM:\n" + InterpretedUserIntention.baseIntentionToString(actint, ""));
-					addToWorkingMemory(newDataID(), actint);
+					WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
+					getLogger().info("adding an IntentionToAct " + wmaToString(wma) + ":\n" + InterpretedUserIntention.baseIntentionToString(actint, ""));
+					addToWorkingMemory(wma, actint);
 				}
 				catch (SubarchitectureComponentException ex) {
 					getLogger().error("component exception", ex);
