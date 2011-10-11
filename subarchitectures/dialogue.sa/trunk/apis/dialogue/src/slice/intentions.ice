@@ -2,6 +2,7 @@
 #define INTENTIONS_ICE
 
 #include <cast/slice/CDL.ice>
+#include <beliefs.ice>
 
 module de {
 module dfki {
@@ -36,6 +37,14 @@ class InterpretedIntention extends BaseIntention {
 
 class IntentionToAct extends BaseIntention {
 //	WorkingMemoryAddress origin;
+};
+
+dictionary<cast::cdl::WorkingMemoryAddress, InterpretedIntention> AddressToIntentionMap;
+dictionary<cast::cdl::WorkingMemoryAddress, sitbeliefs::dBelief> AddressToBeliefMap;
+
+class PossibleInterpretedIntentions {
+	AddressToIntentionMap intentions;
+	AddressToBeliefMap beliefs;
 };
 
 };

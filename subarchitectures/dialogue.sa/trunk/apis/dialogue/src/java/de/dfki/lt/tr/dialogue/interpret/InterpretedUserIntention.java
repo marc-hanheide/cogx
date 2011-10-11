@@ -164,4 +164,47 @@ implements CASTProcessingResult, WellFormedTestable {
 		}
 	}
 
+	public Map<WorkingMemoryAddress, dBelief> toBeliefs(WMAddressTranslator translator) {
+		Map<WorkingMemoryAddress, dBelief> bels = new HashMap<WorkingMemoryAddress, dBelief>();
+
+		for (WorkingMemoryAddress addr : newBeliefs.keySet()) {
+			dBelief bel = newBeliefs.get(addr);
+			bels.put(translator.translate(addr), bel);
+		}
+
+		return bels;
+	}
+
+	public InterpretedIntention toIntention(WMAddressTranslator translator) {
+		InterpretedIntention intention = cloneIntention(iint);
+
+		Map<String, WorkingMemoryAddress> newAddressContent = new HashMap<String, WorkingMemoryAddress>();
+		for (String key : iint.addressContent.keySet()) {
+			WorkingMemoryAddress addr = iint.addressContent.get(key);
+			if (newBeliefs.containsKey(addr)) {
+				// need to translate it
+				addr = translator.translate(addr);
+			}
+			newAddressContent.put(key, addr);
+		}
+		intention.addressContent = newAddressContent;
+
+		return intention;
+	}
+
+	public static InterpretedIntention cloneIntention(InterpretedIntention iint) {
+		InterpretedIntention newInt = newEmptyInterpretedIntention();
+		newInt.agent = iint.agent;
+		newInt.confidence = iint.confidence;
+		newInt.state = iint.state;
+		newInt.stringContent.putAll(iint.stringContent);
+		newInt.addressContent.putAll(iint.addressContent);
+
+		return newInt;
+	}
+
+	public void setConfidence(double confidence) {
+		iint.confidence = (float) confidence;
+	}
+
 }

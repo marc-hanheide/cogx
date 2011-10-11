@@ -10,11 +10,15 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
+import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
+import de.dfki.lt.tr.dialogue.interpret.GeneratedWMAddressTranslator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
@@ -22,6 +26,8 @@ import de.dfki.lt.tr.dialogue.interpret.MaximumReadingsTerminationCondition;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
 import de.dfki.lt.tr.dialogue.interpret.TerminationCondition;
+import de.dfki.lt.tr.dialogue.interpret.WMAddressTranslator;
+import de.dfki.lt.tr.dialogue.interpret.WMAddressTranslatorFactory;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
@@ -40,6 +46,7 @@ import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.parseselection.SelectedLogicalForm;
 import de.dfki.lt.tr.dialogue.time.TimeInterval;
 import de.dfki.lt.tr.dialogue.util.BasicNominalRemapper;
+import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import de.dfki.lt.tr.dialogue.util.IdentifierGenerator;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
 import de.dfki.lt.tr.dialogue.util.NominalRemapper;
@@ -99,17 +106,20 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	private final Map<WorkingMemoryAddress, ResultGatherer<ReferenceResolutionResultWrapper>> gatherers;
 
 	private final IdentifierGenerator<String> idGen;
+	private final IdentifierGenerator<WorkingMemoryAddress> wmaGen;
 	private final String idPrefix = "irecog";
 	private int idIndex = 0;
 	private int remapIndex = 1;
 	private final TerminationCondition condition = new MaximumReadingsTerminationCondition(2);
 
 	private WMView<IntentionToAct> openIntentionsToAct = null;
+	private final WMAddressTranslatorFactory translatorFactory;
 
 	public NewIntentionRecognizer() {
 		super();
 		nomToLFMap = new HashMap<String, RemappedSLF>();
 //		renamedNomToNom = new HashMap<String, String>();
+//		nomToRemapper = new HashMap<String, NomToRemapper>();
 		rrExtractor = new BasicReferenceResolutionRequestExtractor(getLogger());
 		gatherers = new HashMap<WorkingMemoryAddress, ResultGatherer<ReferenceResolutionResultWrapper>>();
 		idGen = new IdentifierGenerator<String>() {
@@ -118,7 +128,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				return idPrefix + ":" + idIndex++;
 			}
 		};
-//		nomToRemapper = new HashMap<String, NomToRemapper>();
+		wmaGen = new IdentifierGenerator<WorkingMemoryAddress>() {
+			@Override
+			public WorkingMemoryAddress newIdentifier() {
+				return new WorkingMemoryAddress(idGen.newIdentifier(), getSubarchitectureID());
+			}
+		};
+		translatorFactory = new WMAddressTranslatorFactory() {
+			@Override
+			public WMAddressTranslator newTranslator() {
+				return new GeneratedWMAddressTranslator(wmaGen);
+			}
+		};
 	}
 
 	@Override
@@ -187,11 +208,20 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			@Override
 			public void onSuccessfulInterpretation(List<InterpretedUserIntention> listIpret) {
 				getLogger().debug("got " + listIpret.size() + " interpretations.");
-				for (int i = 0; i < listIpret.size(); i++) {
-					getLogger().debug("interpretation " + (i + 1) + "/" + listIpret.size() + ": " + listIpret.get(i));
-				}
+//				for (int i = 0; i < listIpret.size(); i++) {
+//					getLogger().debug("interpretation " + (i + 1) + "/" + listIpret.size() + ": " + listIpret.get(i));
+//				}
 
 				if (!listIpret.isEmpty()) {
+					PossibleInterpretedIntentions pii = createPossibleInterpretedIntentions(translatorFactory, listIpret);
+					getLogger().debug("adding the following to the WM:\n" + possibleInterpretedIntentionsToString(pii));
+					try {
+						addToWorkingMemory(newDataID(), pii);
+					}
+					catch (SubarchitectureComponentException ex) {
+						logException(ex);
+					}
+/*
 					getLogger().debug("will now commit the first interpretation");
 					InterpretedUserIntention ipret = listIpret.get(0);
 					try {
@@ -200,6 +230,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 					catch (SubarchitectureComponentException ex) {
 						logException(ex);
 					}
+ */
 				}
 				else {
 					getLogger().warn("didn't get any interpretations at all!");
@@ -212,6 +243,41 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			}
 			
 		};
+	}
+
+	public PossibleInterpretedIntentions createPossibleInterpretedIntentions(WMAddressTranslatorFactory translatorFactory, List<InterpretedUserIntention> listIpret) {
+		PossibleInterpretedIntentions pii = new PossibleInterpretedIntentions(
+				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
+				new HashMap<WorkingMemoryAddress, dBelief>()
+				);
+
+		for (InterpretedUserIntention iui : listIpret) {
+			WMAddressTranslator translator = translatorFactory.newTranslator();
+			WorkingMemoryAddress wma = translator.translate(iui.getAddress());
+			pii.intentions.put(wma, iui.toIntention(translator));
+			pii.beliefs.putAll(iui.toBeliefs(translator));
+		}
+		
+		return pii;
+	}
+
+	public String possibleInterpretedIntentionsToString(PossibleInterpretedIntentions pii) {
+		String s = "(PossibleInterpretedIntentions\n";
+		s += "intentions {\n";
+		for (WorkingMemoryAddress wma : pii.intentions.keySet()) {
+			InterpretedIntention ii = pii.intentions.get(wma);
+			s += wmaToString(wma) + " ... " + InterpretedUserIntention.interpretedIntentionToString(ii) + "\n";
+		}
+		s += "}\n";
+		s += "\n";
+		s += "beliefs {\n";
+		for (WorkingMemoryAddress wma : pii.beliefs.keySet()) {
+			dBelief bel = pii.beliefs.get(wma);
+			s += wmaToString(wma) + " ... " + BeliefIntentionUtils.beliefToString(bel) + "\n";
+		}
+		s += "}\n";
+		s += ")";
+		return s;
 	}
 
 	@Override
@@ -468,7 +534,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 							ModalisedAtom rma = ReferentOfAtom.newReferentOfAtom(nom, hypo.referent, hypo.epst).toModalisedAtom();
 
 							getLogger().debug("adding reference hypothesis: " + PrettyPrint.modalisedAtomToString(rma) + " @ p=" + hypo.score);
-							engine.addAssumable("reference_resolution", rma, (float) -Math.log(hypo.score));
+							engine.addAssumable("reference_resolution", rma, (float) AbducerUtils.probToWeight(hypo.score));
 
 							Set<ModalisedAtom> dj = disj.get(nom);
 							if (dj != null) {
