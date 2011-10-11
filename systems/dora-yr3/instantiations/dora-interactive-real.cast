@@ -58,7 +58,7 @@ SETVAR or3d_ply_files=<multiline>
 </multiline>
 
 ### object labels
-SETVAR or3d_labels=cerealbox book
+SETVAR or3d_labels=cerealbox book table
 
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
@@ -94,7 +94,7 @@ INCLUDE includes/spatial.sa/spatial.cast
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 
 JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3 
-JAVA MG spatial-manual spatial.manual.ManualNavControl
+####JAVA MG spatial-manual spatial.manual.ManualNavControl
 
 CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --display-objects-in-pb --ptzserver %(ptz_server)
 CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler --usepeekabot  --siftobjects "table cerealbox" ######--ctrl-ptz 
@@ -142,7 +142,7 @@ CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/Ki
 
 CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 
-JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake --tilt "-0.7854"
 
 
 CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
@@ -156,7 +156,8 @@ INCLUDE includes/binder.sa/binder-base.cast
 INCLUDE includes/planner.sa/dora-interaction.cast
 
 # dialogue ####################################################################
-INCLUDE includes/dialogue.sa/dialogue-dora.cast
+INCLUDE includes/dialogue.sa/INCL/dora-live.cast
+INCLUDE includes/dialogue.sa/dialogue-exe.cast
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
@@ -165,7 +166,7 @@ INCLUDE includes/dialogue.sa/dialogue-dora.cast
 #JAVA MG plannerstopwatch castutils.experimentation.PlannerStopWatch 
 
 # viewing and debugging #######################################################
-JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation,execution.slice.Action"
+JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject, VisionData.Person, execution.slice.person.PersonObservation, execution.slice.Action, de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention, de.dfki.lt.tr.dialogue.slice.StandbyMode"
 
 # viewing and debugging #######################################################
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact
