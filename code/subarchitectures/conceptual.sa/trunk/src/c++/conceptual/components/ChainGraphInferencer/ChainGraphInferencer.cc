@@ -1296,14 +1296,23 @@ void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int roo
 {
 	// Find the assertion value id
 	int humanAssertionValueId = -1;
+	std::string correctedHumanAssertion;
+	bool negated=false;
+	if (humanAssertion[0]=='!') {
+		// negated assertion, remove first '!'
+		correctedHumanAssertion = humanAssertion.substr(1);
+		negated = true;
+	} else {
+		correctedHumanAssertion = humanAssertion;
+	}
 	for (unsigned int i=0; i<_humanAssertions.size(); ++i)
 	{
-		if (humanAssertion == _humanAssertions[i])
+		if (correctedHumanAssertion == _humanAssertions[i])
 			humanAssertionValueId = i;
 	}
 	if (humanAssertionValueId<0)
 	{
-		error("Human assertion '%s' not recognized!", humanAssertion.c_str());
+		error("Human assertion '%s' not recognized!", correctedHumanAssertion.c_str());
 		return;
 	}
 
@@ -1335,12 +1344,15 @@ void ChainGraphInferencer::createDaiObservedHumanAssertionPropertyFactor(int roo
 	for (unsigned int i1 = 0; i1<dv1.var.states(); ++i1)
 	{
 		string var1ValueName = dv1.valueIdToName[i1]; // Room category
-		double probability = getProbabilityValue(factor, var1ValueName, humanAssertion);
+		double probability = getProbabilityValue(factor, var1ValueName, correctedHumanAssertion);
 		if (probability<0)
 			throw CASTException(exceptionMessage(__HERE__,
-					"Probability not found for values '%s' and '%s'", var1ValueName.c_str(), humanAssertion.c_str()));
+					"Probability not found for values '%s' and '%s'", var1ValueName.c_str(), correctedHumanAssertion.c_str()));
 
-		daiFactor.set(index, probability);
+		if (negated)
+			daiFactor.set(index, 1.0 - probability);
+		else
+			daiFactor.set(index, probability);
 		++index;
 	}
 
