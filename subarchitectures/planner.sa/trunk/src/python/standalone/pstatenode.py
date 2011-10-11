@@ -98,7 +98,11 @@ class PNode(object):
             children[val] = (p, nodes, facts)
             p_total += p
 
-        assert p_total <= 1.0001, "p(%s) = %.4f (%s)" % (str(svar), p_total, peff.pddl_str())
+        if p_total > 1.0:
+            for val, (p, nodes, facts) in children.iteritems():
+                children[val] = (p/p_total, nodes, facts)
+
+        # assert p_total <= 1.0001, "p(%s) = %.4f (%s)" % (str(svar), p_total, peff.pddl_str())
         return PNode(svar, children)
     
     def hash(self):
