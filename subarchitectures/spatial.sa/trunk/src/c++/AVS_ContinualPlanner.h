@@ -88,7 +88,9 @@ public:
 	 void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	 void newRobotPose(const cdl::WorkingMemoryChange &objID);
 	 void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
-	 void MovePanTilt(double pan, double tilt, double tolerance);
+	 void startMovePanTilt(double pan, double tilt, double tolerance);
+	 void overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID);
+//	 void MovePanTilt(double pan, double tilt, double tolerance);
 	 void owtNavCommand(const cast::cdl::WorkingMemoryChange &objID);
 	 void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label,
 		std::string visualObjectID);
@@ -137,7 +139,10 @@ private:
 	CureObstMap* m_currentCureObstMap;
 
 	std::vector<std::string> generatedLocations;
-	ptz::PTZInterfacePrx m_ptzInterface;
+	//ptz::PTZInterfacePrx m_ptzInterface;
+
+	std::string m_waitingForPTZCommandID;
+	enum {NO_WAITING, WAITING_TO_RECOGNIZE, WAITING_TO_RETURN} m_ptzWaitingStatus;
 
 	bool m_usePTZ;
 	bool m_ignoreTilt;
@@ -205,3 +210,4 @@ private:
 };
 
 #endif /* AVS_CONTINUALPLANNER_H_ */
+
