@@ -180,6 +180,7 @@ class CLog4jExecutor:
         connect = self.widget.connect
         ui = self.ui
         connect(ui.cbLog4jServerHost, QtCore.SIGNAL("activated(int)"), self.onLog4jHostCbItemActivated)
+        connect(ui.cbLog4jMode, QtCore.SIGNAL("activated(int)"), self.onModeCbItemActivated)
         pass
 
     def createServerModes(self):
@@ -266,6 +267,28 @@ class CLog4jExecutor:
         value = "%s" % cb.itemData(index).toString()
         cb.setEditText(value)
 
+
+    def onModeCbItemActivated(self, index):
+        self._updateControlStates()
+
+
+    def _updateControlStates(self):
+        sm = self.getCurrentServerMode()
+        hasServer = sm['envvar'] != None
+        hasConsole = True
+        hasXmlFile = hasServer
+
+        def _enableItemsInLayout(layout, enabled=True):
+            for i in xrange(layout.count()):
+                qli = layout.itemAt(i)
+                w = qli.widget()
+                if w: w.setEnabled(enabled)
+
+        _enableItemsInLayout(self.ui.horzLayoutHost, hasServer)
+        _enableItemsInLayout(self.ui.horzLayoutConsoleLevel, hasConsole)
+        _enableItemsInLayout(self.ui.horzLayoutXmlLevel, hasXmlFile)
+        self.ui.ckStartLogServer.setEnabled(hasServer)
+
     def saveOptions(self):
         opts = self.options
         opts.setOption("log4jServerHost", self.serverHost)
@@ -329,6 +352,8 @@ class CLog4jExecutor:
         if not val: val = 1
         else: val = int(val)
         self.ui.ckStartLogServer.setCheckState(2 if val else 0)
+
+        self._updateControlStates()
 
 
 

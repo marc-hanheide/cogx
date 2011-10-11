@@ -669,7 +669,7 @@
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_17">
+               <layout class="QHBoxLayout" name="horzLayoutHost">
                 <item>
                  <widget class="QLabel" name="label">
                   <property name="font">
@@ -753,7 +753,7 @@
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_19">
+               <layout class="QHBoxLayout" name="horzLayoutConsoleLevel">
                 <item>
                  <widget class="QLabel" name="label_12">
                   <property name="text">
@@ -842,7 +842,7 @@
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <layout class="QHBoxLayout" name="horzLayoutXmlLevel">
                 <item>
                  <widget class="QLabel" name="label_16">
                   <property name="sizePolicy">
