@@ -165,7 +165,6 @@ private:
 	peekabot::PolygonProxy m_ProxyPathEndMarker;
 	peekabot::GroupProxy m_ProxyViewpointGenCommands;
 	peekabot::GroupProxy m_ProxyDetectionCommands;
-	peekabot::GroupProxy m_ProxyViewCones;
 
 	peekabot::ObjectProxy m_ProxyCam;
 	peekabot::HingeProxy m_ProxyPan;
