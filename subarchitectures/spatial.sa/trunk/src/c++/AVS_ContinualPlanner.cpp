@@ -414,19 +414,48 @@ void AVS_ContinualPlanner::generateViewCones(
 		log("Throwing away all known space in LGMap of this room belonging to another room");
 		FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface> ("place.manager"));
 		log("got interface");
-		FrontierInterface::PlaceMembership placemem;
-				for (int x = -lgm->getSize(); x < lgm->getSize(); x = x + 10) {
-			for (int y = -lgm->getSize(); y < lgm->getSize(); y = y + 10) {
-				if ((*lgm)(x,y) != '2'){
-					lgm->index2WorldCoords(x,y,xW,yW);
-          log("asking for place membershipf this position");
-					placemem = agg->getPlaceMembership(xW,yW);
-          log("got placemembership");
-					if(currentRoomPlaceIds.find(placemem.placeID) == currentRoomPlaceIds.end()){
-						(*lgm)(x,y) = '2';
-					}
-				}
+
+		vector<SpatialData::PlacePtr> placesInMap;
+		getMemoryEntries<SpatialData::Place>(placesInMap, "spatial.sa");
+
+		vector<NavData::FNodePtr> nodesForPlaces;
+		for (unsigned int i = 0; i < placesInMap.size(); i++) {
+		  nodesForPlaces.push_back(agg->getNodeFromPlaceID(placesInMap[i]->id));
+		}
+
+		for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
+		  for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
+		    if ((*lgm)(x,y) != '2'){
+		      lgm->index2WorldCoords(x,y,xW,yW);
+		      double minDistance = FLT_MAX;
+		      unsigned int closestNodeIndex = 0;
+
+		      for (unsigned int i = 0; i < nodesForPlaces.size(); i++) {
+			try {
+			  if (nodesForPlaces[i] != 0) {
+			    double nX = nodesForPlaces[i]->x;
+			    double nY = nodesForPlaces[i]->y;
+
+			    double distance = (xW - nX)*(xW-nX) + (yW-nY)*(yW-nY);
+			    if (distance < minDistance) {
+			      closestNodeIndex = i;
+			      minDistance = distance;
+			    }
+			  }
 			}
+			catch (IceUtil::NullHandleException e) {
+			  log("Error! FNode suddenly disappeared!");
+			}
+		      }
+
+		      SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIndex];
+
+		      //					placemem = agg->getPlaceMembership(xW,yW);
+		      if(currentRoomPlaceIds.find(closestPlace->id) == currentRoomPlaceIds.end()){
+			(*lgm)(x,y) = '2';
+		      }
+		    }
+		  }
 		}
 		log("removed");
 		cout << " done " << endl;
