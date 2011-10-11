@@ -12,6 +12,8 @@ import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
@@ -840,7 +842,47 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 				result.getResult().requestAddress = added.getResult().requestAddress;
 			}
 
-			result.getResult().hypos.addAll(added.getResult().hypos);
+			for (EpistemicReferenceHypothesis hypo : added.getResult().hypos) {
+				addHypo(hypo);
+			}
+			adjustMaximum();
+		}
+
+		private void adjustMaximum() {
+			double max = 0.0;
+			for (EpistemicReferenceHypothesis h : result.getResult().hypos) {
+				if (h.score > max) {
+					max = h.score;
+				}
+			}
+			if (max > 0.0 && max > 1.0) {
+				for (EpistemicReferenceHypothesis h : result.getResult().hypos) {
+					h.score /= max;
+				}
+			}
+		}
+
+		private void addHypo(EpistemicReferenceHypothesis hypo) {
+			WorkingMemoryAddress hypoWMA = formulaToWMA(hypo.referent);
+
+			if (hypoWMA != null) {
+				boolean boosted = false;
+				for (EpistemicReferenceHypothesis h : result.getResult().hypos) {
+					if (!boosted) {
+						WorkingMemoryAddress oldWMA = formulaToWMA(h.referent);
+						if (oldWMA != null && oldWMA.equals(hypoWMA)) {
+							h.score += hypo.score;
+							boosted = true;
+						}
+					}
+				}
+				if (!boosted) {
+					result.getResult().hypos.add(hypo);
+				}
+			}
+			else {
+				result.getResult().hypos.add(hypo);
+			}
 		}
 
 		@Override
@@ -853,6 +895,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			return count >= minCount;
 		}
 		
+	}
+
+	public static WorkingMemoryAddress formulaToWMA(dFormula f) {
+		WorkingMemoryAddress wma = null;
+		if (f instanceof PointerFormula) {
+			PointerFormula pf = (PointerFormula) f;
+			wma = pf.pointer;
+		}
+		return wma;
 	}
 
 }
