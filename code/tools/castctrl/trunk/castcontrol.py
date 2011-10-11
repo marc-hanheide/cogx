@@ -305,6 +305,7 @@ class CLog4jExecutor:
 
         opts.setOption("log4jXmlFileLevel", self.xmlFileLevel)
         opts.setOption("log4jStartServer", 1 if self.ui.ckStartLogServer.isChecked() else 0)
+        opts.setOption("log4jComponentLevelsFile", "%s" % self.ui.txtFnComponentLevels.text())
 
 
     def restoreOptions(self):
@@ -353,6 +354,9 @@ class CLog4jExecutor:
         else: val = int(val)
         self.ui.ckStartLogServer.setCheckState(2 if val else 0)
 
+        val = opts.getOption("log4jComponentLevelsFile")
+        if val != "": self.ui.txtFnComponentLevels.setText(val)
+
         self._updateControlStates()
 
 
@@ -368,9 +372,10 @@ class CLog4jExecutor:
             sm = self.getCurrentServerMode()
             log4.selectedServer = sm['id']
             log4.startServer = self.ui.ckStartLogServer.isChecked()
+            log4.loggerLevelsFilename = "%s" % self.ui.txtFnComponentLevels.text()
             return log4
         except Exception as e:
-            dlg = QtGui.QErrorMessage(self)
+            dlg = QtGui.QErrorMessage(self.widget)
             dlg.setModal(True)
             dlg.showMessage("Had some problems preparing the log file.\n%s" % e)
         return None

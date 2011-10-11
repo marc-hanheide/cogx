@@ -20,6 +20,7 @@ class CLog4Config:
         self.serverHost = "localhost"
         # log4jproperties is a link that points to a client config file
         self.logPropLink = "log4j.properties"
+        self.loggerLevelsFilename = ""
 
         serverAppenders = {
             'console': ('LOG4J.SimpleSocketServer.console', ), # params: level
@@ -208,6 +209,16 @@ class CLog4Config:
                 ln = ln.replace('${PORT}', self.serverPort)
                 ln = ln.replace('${HOST}', self.serverHost)
             result.append(ln)
+
+        if os.path.exists(self.loggerLevelsFilename):
+            f = open(self.loggerLevelsFilename)
+            lines = self._removeComments(f.readlines())
+            f.close()
+            for ln in lines:
+                ln = ln.strip()
+                if ln == "": continue
+                if not ln.startswith("#"):
+                    result.append("log4j.logger." + ln)
 
         # cleanup
         result = [ln.strip() for ln in result if not ln.strip().startswith("log4j.rootLogger=")]
