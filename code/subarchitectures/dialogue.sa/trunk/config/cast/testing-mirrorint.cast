@@ -1,6 +1,7 @@
 SETVAR mary_voice=dfki-obadiah-hsmm
+SETVAR max_readings=2
 
-INCLUDE  default+gui.cast
+INCLUDE default+gui.cast
 
 INCLUDE modules/manage-mirror.incl
 INCLUDE modules/refres-fake.incl
