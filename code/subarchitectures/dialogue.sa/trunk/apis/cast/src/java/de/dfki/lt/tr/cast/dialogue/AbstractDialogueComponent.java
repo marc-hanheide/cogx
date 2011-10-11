@@ -2,12 +2,13 @@ package de.dfki.lt.tr.cast.dialogue;
 
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTComponent;
+
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public abstract class AbstractDialogueComponent
-extends ManagedComponent {
+public abstract class AbstractDialogueComponent extends ManagedComponent {
 
 	private boolean running;
 	private final BlockingQueue<ProcessingTask> taskQueue;
@@ -65,8 +66,7 @@ extends ManagedComponent {
 				Runnable r = taskQueue.take();
 				r.run();
 			}
-		}
-		catch (InterruptedException ex) {
+		} catch (InterruptedException ex) {
 			getLogger().warn("interrupted, exiting runComponent", ex);
 		}
 	}
@@ -74,7 +74,8 @@ extends ManagedComponent {
 	public interface ProcessingTask extends Runnable {
 	}
 
-	public abstract static class ProcessingTaskWithData<T> implements ProcessingTask {
+	public abstract static class ProcessingTaskWithData<T> implements
+			ProcessingTask {
 
 		private final T data;
 
@@ -91,7 +92,23 @@ extends ManagedComponent {
 
 	}
 
-	public abstract static class ProcessingTaskWithoutData implements ProcessingTask {
+	public abstract static class ProcessingTaskWithDataAndComponent<T, C extends CASTComponent> extends
+			ProcessingTaskWithData<T> {
+		private C m_component;
+
+		public ProcessingTaskWithDataAndComponent(T _data,
+				C _component) {
+			super(_data);
+			m_component = _component;
+		}
+
+		public C getComponent() {
+			return m_component;
+		}
+	}
+
+	public abstract static class ProcessingTaskWithoutData implements
+			ProcessingTask {
 
 		public abstract void execute();
 
