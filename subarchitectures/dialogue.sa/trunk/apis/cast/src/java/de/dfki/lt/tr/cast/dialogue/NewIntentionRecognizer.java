@@ -229,8 +229,10 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 				if (!listIpret.isEmpty()) {
 					PossibleInterpretedIntentions pii = createPossibleInterpretedIntentions(translatorFactory, listIpret);
+					pii = prunePossibleInterpretedIntentions(pii);
 					getLogger().debug("normalizing confidences");
 					normalizeConfidences(pii);
+					getLogger().debug("after pruning and normalization: " + pii.intentions.size() + " alternative intentions");
 					getLogger().debug("adding the following to the WM:\n" + possibleInterpretedIntentionsToString(pii));
 					try {
 						addToWorkingMemory(newDataID(), pii);
@@ -307,6 +309,44 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			assert sum > 0.0;
 			iint.confidence = (float) ((double) iint.confidence / sum);
 		}
+	}
+
+	public PossibleInterpretedIntentions prunePossibleInterpretedIntentions(PossibleInterpretedIntentions pii) {
+		PossibleInterpretedIntentions newPii = pii;
+
+		getLogger().debug("pruning the possible intentions");
+		WorkingMemoryAddress addr = IntentionUnpacker.mostConfidentIntentionAddress(pii);
+		InterpretedIntention iint = pii.intentions.get(addr);
+
+		if (iint.stringContent.get("type").equals("question")
+				&& iint.stringContent.get("subtype").equals("open")) {
+
+			// this is the case we can handle
+			getLogger().debug("okay, this seems to be an open question -> we should be able to handle multiple intentions here");
+		}
+		else {
+			// we cannot handle anything else: prrrune!
+			getLogger().debug("will prune the PossibleInterpretedIntentions");
+			newPii = extractFromRoot(addr, pii);
+		}
+		getLogger().debug("pruning finished");
+		return newPii;
+	}
+
+	public PossibleInterpretedIntentions extractFromRoot(WorkingMemoryAddress wma, PossibleInterpretedIntentions pii) {
+		PossibleInterpretedIntentions newPii = new PossibleInterpretedIntentions(
+				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
+				new HashMap<WorkingMemoryAddress, dBelief>());
+
+		InterpretedIntention iint = pii.intentions.get(wma);
+		newPii.intentions.put(wma, iint);
+		for (WorkingMemoryAddress addr : iint.addressContent.values()) {
+			if (pii.beliefs.containsKey(addr)) {
+				newPii.beliefs.put(addr, pii.beliefs.get(addr));
+			}
+		}
+		
+		return newPii;
 	}
 
 	@Override
