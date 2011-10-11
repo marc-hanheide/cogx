@@ -150,3 +150,16 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
 
 	intention_effect(Speaker, Hearer, Int, Feature, Value, pos).
+
+%-------------------------------------------------------------------------
+% Anaphoric reference.
+
+%@{be1_2:ascription}(be ^ <Mood>ind ^ <Tense>pres ^ <Cop-Scope>(red1_2:q-color ^ red) ^ <Cop-Restr>(it1_2:thing ^ it ^ <Num>sg) ^ <Subject>(it1_2:thing))
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : rel_Subject(Nom, SubjNom),
+		i : prop(SubjNom, it),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+
+	understand : event : from_logical_form(Speaker, Hearer, ScopeNom).
