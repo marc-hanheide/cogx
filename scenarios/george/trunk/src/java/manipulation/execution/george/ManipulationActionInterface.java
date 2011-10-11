@@ -8,6 +8,7 @@ import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import execution.components.AbstractActionInterface;
 import execution.slice.TriBool;
+import execution.slice.actions.ArmToHomePos;
 import execution.slice.actions.PointToObject;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
@@ -22,13 +23,12 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 		public PointToObjectExecutor(ManagedComponent _component) {
 			super(_component, PointToObject.class, ArmMovementTask.class);
 		}
-		
+
 		@Override
 		protected TriBool executionResult(ArmMovementTask _cmd) {
-			if(_cmd.status == ManipulationTaskStatus.MCSUCCEEDED) {
+			if (_cmd.status == ManipulationTaskStatus.MCSUCCEEDED) {
 				return TriBool.TRITRUE;
-			}
-			else {
+			} else {
 				return TriBool.TRIFALSE;
 			}
 		}
@@ -43,7 +43,8 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 				if (visObjPtr == null) {
 					getComponent()
 							.getLogger()
-							.warn("Action failed because VisualObject pointer was null",
+							.warn(
+									"Action failed because VisualObject pointer was null",
 									getComponent().getLogAdditions());
 					executionComplete(TriBool.TRIFALSE);
 				} else {
@@ -52,7 +53,7 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 							+ " yielded VO addr "
 							+ CASTUtils.toString(visObjPtr.address));
 					ArmMovementTask cmd = new ArmMovementTask();
-					cmd.objPointerSeq = new WorkingMemoryPointer[] {visObjPtr};
+					cmd.objPointerSeq = new WorkingMemoryPointer[] { visObjPtr };
 					cmd.taskType = ManipulationTaskType.POINTOBJ0;
 					cmd.status = ManipulationTaskStatus.MCREQUESTED;
 					addThenCompleteOnOverwrite(cmd);
@@ -61,16 +62,48 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 				logException(e);
 				executionComplete(TriBool.TRIFALSE);
 			}
-			
+
+		}
+	}
+
+	public static class ArmToHomePosExecutor
+			extends
+			NonBlockingCompleteFromStatusExecutor<ArmToHomePos, ArmMovementTask> {
+
+		public ArmToHomePosExecutor(ManagedComponent _component) {
+			super(_component, ArmToHomePos.class, ArmMovementTask.class);
+		}
+
+		@Override
+		protected TriBool executionResult(ArmMovementTask _cmd) {
+			if (_cmd.status == ManipulationTaskStatus.MCSUCCEEDED) {
+				return TriBool.TRITRUE;
+			} else {
+				return TriBool.TRIFALSE;
+			}
+		}
+
+		@Override
+		public void executeAction() {
+			ArmMovementTask cmd = new ArmMovementTask();
+			cmd.taskType = ManipulationTaskType.RETRACTARM;
+			cmd.status = ManipulationTaskStatus.MCREQUESTED;
+			addThenCompleteOnOverwrite(cmd);
+
 		}
 	}
 
 	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
-		m_actionStateManager.registerActionType(PointToObject.class,
-				new ComponentActionFactory<PointToObject,PointToObjectExecutor>(this,
-						PointToObjectExecutor.class));
+		m_actionStateManager
+				.registerActionType(
+						PointToObject.class,
+						new ComponentActionFactory<PointToObject, PointToObjectExecutor>(
+								this, PointToObjectExecutor.class));
+		m_actionStateManager.registerActionType(ArmToHomePos.class,
+				new ComponentActionFactory<ArmToHomePos, ArmToHomePosExecutor>(
+						this, ArmToHomePosExecutor.class));
 	}
 
 }

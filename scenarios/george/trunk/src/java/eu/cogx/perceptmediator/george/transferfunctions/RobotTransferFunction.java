@@ -13,6 +13,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
+import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
@@ -29,8 +30,10 @@ import execution.slice.Robot;
 public class RobotTransferFunction extends
 		DependentDiscreteTransferFunction<Robot, GroundedBelief> {
 
+	public static final String ARM_IN_RESTING_POSITION_PRED = "arm-in-resting-position";
 	public static final String CURRENT_VIEWCONE_ID = "current-viewcone";
 	public static final String NO_VIEWCONE_CONSTANT = "no_viewcone";
+	private boolean firstRun = true;
 	static Logger logger = Logger.getLogger(RobotTransferFunction.class);
 
 	public RobotTransferFunction(ManagedComponent component,
@@ -49,14 +52,16 @@ public class RobotTransferFunction extends
 			WorkingMemoryAddress vcBelAddr = getReferredBelief(new BeliefAncestorMatchingFunction(
 					from.currentViewCone));
 			// pointer to belief for proto object
-			result.put(
-					CURRENT_VIEWCONE_ID,
-					WMPointer.create(vcBelAddr,
-							CASTUtils.typeName(GroundedBelief.class))
-							.getAsFormula());
+			result.put(CURRENT_VIEWCONE_ID, WMPointer.create(vcBelAddr,
+					CASTUtils.typeName(GroundedBelief.class)).getAsFormula());
+		} else {
+			result.put(CURRENT_VIEWCONE_ID, PropositionFormula.create(
+					NO_VIEWCONE_CONSTANT).getAsFormula());
 		}
-		else {
-			result.put(CURRENT_VIEWCONE_ID, PropositionFormula.create(NO_VIEWCONE_CONSTANT).getAsFormula());
+		if (firstRun) {
+			result.put(ARM_IN_RESTING_POSITION_PRED, BoolFormula.create(true)
+					.getAsFormula());
+			firstRun = false;
 		}
 		return result;
 	}
