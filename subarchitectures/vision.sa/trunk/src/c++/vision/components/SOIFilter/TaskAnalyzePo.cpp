@@ -168,8 +168,35 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   // Start other recognition tasks
-  LearnerRecognitionTaskRcv* pTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
-  pTask->deleteOnCompletion();
+  // Visual Learner - overwrites on completion
+  try {
+    LearnerRecognitionTaskRcv* pTask = new LearnerRecognitionTaskRcv(pSoiFilter, cmd.pcmd->protoObjectAddr, voAddr);
+    pTask->deleteOnCompletion();
+  }
+  catch(...) {
+      log("analyze_task: caught an unknown exception creating LearnerRecognitionTaskRcv.");
+  }
+
+  // Identity recognition commands don't return any status; they just change the VO
+  try {
+    VisionData::RecognitionCommandPtr pcmd = new VisionData::RecognitionCommand();
+    pcmd->visualObject = createWmPointer<VisionData::VisualObject>(voAddr);
+    if (bNewVo || pvo->identLabels.size() == 0 || pvo->identLabels[0] == VisionData::IDENTITYxUNKNOWN) {
+      // TODO: try with all known objects
+    }
+    else {
+      for (int i = 0; i < pvo->identLabels.size(); i++) {
+        if (pvo->identLabels[i] == VisionData::IDENTITYxUNKNOWN) continue;
+        pcmd->labels.push_back(pvo->identLabels[i]);
+      }
+    }
+    pSoiFilter->addToWorkingMemory(pSoiFilter->newDataID(), pcmd);
+  }
+  catch(...) {
+      log("analyze_task: caught an unknown exception writing (identity-) RecognitionCommand.");
+  }
+
+
 
   cmd.succeed();
 
