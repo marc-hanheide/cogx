@@ -58,6 +58,7 @@ AVS_ContinualPlanner::AVS_ContinualPlanner() :
 	m_currentVPGenerationCommand = new SpatialData::RelationalViewPointGenerationCommand;
 	m_currentConeGroup = 0;
 
+	m_waitingForPTZCommandID = "";
 }
 
 AVS_ContinualPlanner::~AVS_ContinualPlanner() {
@@ -68,6 +69,23 @@ void AVS_ContinualPlanner::runComponent() {
 	log("I am running");
 
 	while(isRunning()){
+
+	  if (m_ptzWaitingStatus != NO_WAITING && m_waitingForPTZCommandID == "") {
+
+	    if (m_ptzWaitingStatus == WAITING_TO_RECOGNIZE) {
+	      Recognize();
+	    }
+
+	    else if (m_ptzWaitingStatus == WAITING_TO_RETURN) {
+	      m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+	      log("Overwriting command to change status to: SUCCESS");
+	      overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+	    }
+
+	    m_ptzWaitingStatus = NO_WAITING;
+
+	  }
+
 		if(m_gotNewGenerateViewCone){
 			generateViewCones(m_currentVPGenerationCommand, m_generateViewConesCommandWMAddress);
 
@@ -161,6 +179,10 @@ void AVS_ContinualPlanner::start() {
 			new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,
 					&AVS_ContinualPlanner::newRobotPose));
 
+	addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
+	    new MemberFunctionChangeReceiver<AVS_ContinualPlanner>(this,
+	      &AVS_ContinualPlanner::overwrittenPanTiltCommand));   
+
 
       addChangeFilter(createGlobalTypeFilter<
 	VisionData::ARTagCommand> (cdl::OVERWRITE),
@@ -184,10 +206,11 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	    getMemoryEntry<VisionData::ARTagCommand>(objID.address);
 	log("Overwritten ARTagCommand: %s", newObj->label.c_str());
 	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
-	MovePanTilt(0.0,0.0,0.08);
-	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
-	log("Overwriting command to change status to: SUCCESS");
-	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+	m_ptzWaitingStatus = WAITING_TO_RETURN;
+	startMovePanTilt(0.0,0.0,0.08);
+//	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+//	log("Overwriting command to change status to: SUCCESS");
+//	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 	}
 }
 
@@ -201,10 +224,11 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 
-	MovePanTilt(0.0,0.0,0.08);
-	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
-	log("Overwriting command to change status to: SUCCESS");
-	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+	startMovePanTilt(0.0,0.0,0.08);
+	m_ptzWaitingStatus = WAITING_TO_RETURN;
+//	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+//	log("Overwriting command to change status to: SUCCESS");
+//	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 	}
 }
 
@@ -391,11 +415,13 @@ void AVS_ContinualPlanner::generateViewCones(
 		FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface> ("place.manager"));
 		log("got interface");
 		FrontierInterface::PlaceMembership placemem;
-				for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
-			for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
+				for (int x = -lgm->getSize(); x < lgm->getSize(); x = x + 10) {
+			for (int y = -lgm->getSize(); y < lgm->getSize(); y = y + 10) {
 				if ((*lgm)(x,y) != '2'){
 					lgm->index2WorldCoords(x,y,xW,yW);
+          log("asking for place membershipf this position");
 					placemem = agg->getPlaceMembership(xW,yW);
+          log("got placemembership");
 					if(currentRoomPlaceIds.find(placemem.placeID) == currentRoomPlaceIds.end()){
 						(*lgm)(x,y) = '2';
 					}
@@ -619,10 +645,6 @@ void AVS_ContinualPlanner::generateViewCones(
 	vector<ViewPointGenerator::SensingAction> viewcones =
 			coneGenerator.getBest3DViewCones();
 
-      if(viewcones.size() == 0){
-        this->getLogger()->warn("No available viewcones. This is probably because you need to tune parameters such as, m_awayfromobstacles or you have a crappy map. Returning without doing anything.");
-        return;
- }
 	log("got %d cones..", viewcones.size());
 
 	// normalizing cone probabilities
@@ -1270,21 +1292,21 @@ void AVS_ContinualPlanner::configure(
 		m_queryHandlerName = it->second;
 	}
 
-	if (m_usePTZ) {
-			log("connecting to PTU");
-			Ice::CommunicatorPtr ic = getCommunicator();
-
-			Ice::Identity id;
-			id.name = "PTZServer";
-			id.category = "PTZServer";
-
-			std::ostringstream str;
-			str << ic->identityToString(id) << ":default" << " -h localhost"
-					<< " -p " << cast::cdl::CPPSERVERPORT;
-
-			Ice::ObjectPrx base = ic->stringToProxy(str.str());
-			m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
-		}
+//	if (m_usePTZ) {
+//			log("connecting to PTU");
+//			Ice::CommunicatorPtr ic = getCommunicator();
+//
+//			Ice::Identity id;
+//			id.name = "PTZServer";
+//			id.category = "PTZServer";
+//
+//			std::ostringstream str;
+//			str << ic->identityToString(id) << ":default" << " -h localhost"
+//					<< " -p " << cast::cdl::CPPSERVERPORT;
+//
+//			Ice::ObjectPrx base = ic->stringToProxy(str.str());
+//			m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
+//		}
 
 	if ((it = _config.find("--siftobjects")) != _config.end()) {
 		istringstream istr(it->second);
@@ -1386,8 +1408,9 @@ void AVS_ContinualPlanner::owtNavCommand(
 		// it means we've reached viewcone position
 		if(!m_runInSimulation){
 			log("Not running in simulation mode, moving pan tilt");
-			MovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
-			Recognize();
+			startMovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
+			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+//			Recognize();
 		}
 		if(m_runInSimulation){
 		log("Updating the %s bloxel map", m_currentConeGroup->bloxelMapId.c_str());
@@ -1397,7 +1420,7 @@ void AVS_ContinualPlanner::owtNavCommand(
 		overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 		}
 	}
-	if (cmd->comp == SpatialData::COMMANDFAILED) {
+	else if (cmd->comp == SpatialData::COMMANDFAILED) {
 				// it means we've failed to reach the viewcone position
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 				m_currentProcessConeGroup->status = SpatialData::FAILED;
@@ -1440,61 +1463,98 @@ void AVS_ContinualPlanner::addRecognizer3DCommand(
 	log("added to WM");
 }
 
+void
+AVS_ContinualPlanner::startMovePanTilt(double pan, double tilt, double tolerance) 
+{
+  ptz::SetPTZPoseCommandPtr newPTZPoseCommand = new ptz::SetPTZPoseCommand;
+  newPTZPoseCommand->pose.pan = pan;
+  newPTZPoseCommand->pose.tilt = tilt;
+  newPTZPoseCommand->comp = ptz::COMPINIT;
 
-void AVS_ContinualPlanner::MovePanTilt(double pan, double tilt, double tolerance) {
+  string cmdId = newDataID();
+  addToWorkingMemory(cmdId, newPTZPoseCommand);
 
-	if (m_usePTZ) {
-		log(" Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
-		ptz::PTZPose p;
-		ptz::PTZReading ptuPose;
-		p.pan = pan;
-		p.tilt = tilt;
-
-		p.zoom = 0;
-		m_ptzInterface->setPose(p);
-		bool run = true;
-		ptuPose = m_ptzInterface->getPose();
-		double actualpan = ptuPose.pose.pan;
-		double actualtilt = ptuPose.pose.tilt;
-
-		while (run) {
-
-			m_ptzInterface->setPose(p);
-			ptuPose = m_ptzInterface->getPose();
-			actualpan = ptuPose.pose.pan;
-			actualtilt = ptuPose.pose.tilt;
-
-			log("desired pan tilt is: %f %f", pan, tilt);
-			log("actual pan tilt is: %f %f", actualpan, actualtilt);
-			log("tolerance is: %f", tolerance);
-
-			//check that pan falls in tolerance range
-			if (actualpan < (pan + tolerance) && actualpan > (pan - tolerance)) {
-				run = false;
-			}
-
-			//only check tilt if pan is ok
-
-			if (!run) {
-				if (m_ignoreTilt) {
-					run = false;
-				} else {
-					if (actualtilt < (tilt + tolerance) && actualtilt > (tilt
-							- tolerance)) {
-						run = false;
-					} else {
-						//if the previous check fails, loop again
-						run = true;
-					}
-				}
-			}
-
-			usleep(100000);
-		}
-		log("Moved.");
-		sleep(1);
-	}
+  m_waitingForPTZCommandID = cmdId;
 }
+
+void
+AVS_ContinualPlanner::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID) 
+{
+  if (objID.address.id == m_waitingForPTZCommandID) {
+    try {
+      ptz::SetPTZPoseCommandPtr overwritten =
+	getMemoryEntry<ptz::SetPTZPoseCommand>(objID.address);
+      if (overwritten->comp == ptz::SUCCEEDED) {
+
+      }
+      else {
+	log ("Warning! Failed to move PTZ before moving!");
+      }
+      deleteFromWorkingMemory(objID.address);
+    }
+    catch (DoesNotExistOnWMException e)
+    {
+      log ("Error: SetPTZPoseCommand went missing! "); 
+    }
+
+    m_waitingForPTZCommandID = "";
+  }
+}
+
+//void AVS_ContinualPlanner::MovePanTilt(double pan, double tilt, double tolerance) {
+//
+//	if (m_usePTZ) {
+//		log(" Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
+//		ptz::PTZPose p;
+//		ptz::PTZReading ptuPose;
+//		p.pan = pan;
+//		p.tilt = tilt;
+//
+//		p.zoom = 0;
+//		m_ptzInterface->setPose(p);
+//		bool run = true;
+//		ptuPose = m_ptzInterface->getPose();
+//		double actualpan = ptuPose.pose.pan;
+//		double actualtilt = ptuPose.pose.tilt;
+//
+//		while (run) {
+//
+//			m_ptzInterface->setPose(p);
+//			ptuPose = m_ptzInterface->getPose();
+//			actualpan = ptuPose.pose.pan;
+//			actualtilt = ptuPose.pose.tilt;
+//
+//			log("desired pan tilt is: %f %f", pan, tilt);
+//			log("actual pan tilt is: %f %f", actualpan, actualtilt);
+//			log("tolerance is: %f", tolerance);
+//
+//			//check that pan falls in tolerance range
+//			if (actualpan < (pan + tolerance) && actualpan > (pan - tolerance)) {
+//				run = false;
+//			}
+//
+//			//only check tilt if pan is ok
+//
+//			if (!run) {
+//				if (m_ignoreTilt) {
+//					run = false;
+//				} else {
+//					if (actualtilt < (tilt + tolerance) && actualtilt > (tilt
+//							- tolerance)) {
+//						run = false;
+//					} else {
+//						//if the previous check fails, loop again
+//						run = true;
+//					}
+//				}
+//			}
+//
+//			usleep(100000);
+//		}
+//		log("Moved.");
+//		sleep(1);
+//	}
+//}
 
 void AVS_ContinualPlanner::addARTagCommand(){
 	//todo: add new AR tag command
@@ -1713,3 +1773,4 @@ void AVS_ContinualPlanner::displayPDF(BloxelMap map){
 
 
 } //namespace
+
