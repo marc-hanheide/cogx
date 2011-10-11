@@ -293,12 +293,26 @@ class CASTTask(object):
         # domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
         # w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
         # w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
-        problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
-        self.write_cp_problem(problem_fn)
-        
+        plan = self.cp_task.get_plan()
+
         self.cp_task.mark_changed()
         self.update_status(TaskStateEnum.PROCESSING)
         self.cp_task.replan()
+        if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
+            self.cp_task.set_plan(None)
+            self.cp_task.mark_changed()
+            self.cp_task.replan()
+            
+
+        if self.cp_task.get_plan() != plan:
+            problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
+            self.write_cp_problem(problem_fn)
+            if plan is not None:
+                self.plan_history.append(plan)
+                self.plan_state_history.append((plan, self.plan_state))
+                self.write_history()
+            self.plan_state = self.state
+        
         self.process_cp_plan()
 
     def merge_plans(self, _plans):
@@ -395,7 +409,7 @@ class CASTTask(object):
                 return False
             for f in virtual_facts[new]:
                 if d.get(f.svar, f.value) != f.value:
-                    print "mismatch:", f, d[f.svar]
+                    # print "mismatch:", f, d[f.svar]
                     return False
             return True
 
@@ -458,17 +472,17 @@ class CASTTask(object):
         current_state_node.effects = set(self.state.state.iterfacts())
         executed.append(current_state_node)
 
-        print "virtual objects:", map(str, virtual_objects)
+        # print "virtual objects:", map(str, virtual_objects)
         for o in virtual_objects:
             for uo in used_virtual_objects:
                 if objects_match(o, uo):
                     virtual_mappings[o] = uo
-                    print "map", o, "to", uo
+                    # print "map", o, "to", uo
                     break
             if o not in virtual_mappings:
                 used_virtual_objects.append(o)
 
-        print "used_vos", map(str, used_virtual_objects)
+        # print "used_vos", map(str, used_virtual_objects)
 
         def add_links(n, new_n):
             # print new_n
@@ -476,10 +490,10 @@ class CASTTask(object):
                 svar = mapped_svar(svar)
                 val = virtual_mappings.get(val, val)
                 new_p = get_node(pred)
-                print "    ", pred, svar, val, type
+                # print "    ", pred, svar, val, type
                 if new_p == plan.init_node and svar in written and not n.is_virtual():
                     real_p, expected_val = written[svar]
-                    print "        ", real_p
+                    # print "        ", real_p
                     new_p = real_p
                     if val == expected_val:
                         type = "depends"
@@ -490,6 +504,7 @@ class CASTTask(object):
                 if not has_link(plan, new_p, new_n, svar, val, type):
                     plan.add_edge(new_p, new_n, svar=svar, val=val, type=type)
 
+        used_objects = set()
         prev_init_node = None
         conflicting_svars = defaultdict(set)
         prev_was_init = False
@@ -498,7 +513,7 @@ class CASTTask(object):
             n.time = i
             i += 1
             mapped_n = mapped_node(n)
-            print "===", n
+            # print "===", n
             if n.is_virtual() or n.action.name == "goal":
                 new_n =  get_node(mapped_n)
                 prev_was_init = False
@@ -514,7 +529,7 @@ class CASTTask(object):
                 # print map(str, 
                 diff_facts = state_diff(current_state, new_st)
                 new_n = plans.DummyNode("new_facts-%d" % i, [], i, n.status)
-                print [str(f) for f in diff_facts if f.svar.modality is None]
+                # print [str(f) for f in diff_facts if f.svar.modality is None]
                 new_n.effects = set(diff_facts)
                 new_n.preconds = set()
                 add_node(new_n)
@@ -540,10 +555,13 @@ class CASTTask(object):
                 prev_was_init = False
                 
             if new_n not in plan:
-                print "add:", new_n
+                # print "add:", new_n
                 plan.add_node(new_n)
 
             add_links(n, new_n)
+            for f in itertools.chain(new_n.preconds, new_n.effects):
+                for o in itertools.chain(f.svar.args, f.svar.modal_args, [f.value]):
+                    used_objects.add(o)
 
             for svar, val in new_n.effects:
                 written[svar] = (new_n, val)
@@ -602,6 +620,10 @@ class CASTTask(object):
         G.layout(prog='dot')
         G.draw("plan.pdf")
 
+        for o in used_objects:
+            if o not in init_problem:
+                init_problem.add_object(o)
+
         merged_init_state = pddl.state.State([mapped_fact(f) for f in self.init_state.state.iterfacts()], init_problem)
         merged_final_state = pddl.state.State([mapped_fact(f) for f in self.state.state.iterfacts() if not is_virtual_fact(f)], init_problem)
         
@@ -624,7 +646,6 @@ class CASTTask(object):
         plan = self.get_plan()
         
         if plan is None:
-            self.plan_history.append(plan)
             self.update_status(TaskStateEnum.FAILED)
             return
 
@@ -644,7 +665,7 @@ class CASTTask(object):
         total_prob = reduce(lambda x,y: x*y, (n.prob for n in plan.nodes_iter()), 1.0)
         if total_prob < self.component.min_p:
             log.warning("total probability %.4f below threshold %.4f. Task failed", total_prob, self.component.min_p)
-            self.plan_history.append(plan)
+            # self.plan_history.append(plan)
             self.cp_task.set_plan(None)
             self.update_status(TaskStateEnum.FAILED)
             return
@@ -860,6 +881,7 @@ class CASTTask(object):
 
         def wait_for_effect():
             self.cp_task.replan()
+            log.debug("Continual planning done: %.2f sec", global_vars.get_time())
             if self.cp_task.get_plan() != plan:
                 self.plan_history.append(plan)
                 self.plan_state_history.append((plan, self.plan_state))
@@ -873,8 +895,8 @@ class CASTTask(object):
 
         def wait_timeout():
             log.info("Wait for %s timed out. Plan failed.", str(self.cp_task.pending_action))
-            self.plan_history.append(plan)
-            self.cp_task.set_plan(None, update_status=True)
+            # self.plan_history.append(plan)
+            # self.cp_task.set_plan(None, update_status=True)
             self.update_status(TaskStateEnum.FAILED)
             return
         
@@ -962,7 +984,7 @@ class CASTTask(object):
             for pnode in self.dt_task.subplan_actions:
                 pnode.status = plans.ActionStatusEnum.FAILED
             self.plan_history.append(self.dt_task)
-            self.cp_task.set_plan(None, update_status=True)
+            # self.cp_task.set_plan(None, update_status=True)
             self.component.cancel_dt_session(self)
             self.update_status(TaskStateEnum.FAILED)
             return
