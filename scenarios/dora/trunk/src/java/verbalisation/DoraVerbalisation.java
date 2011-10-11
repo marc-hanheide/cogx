@@ -31,6 +31,9 @@ import castutils.castextensions.Accessor;
 import comadata.ComaRoom;
 
 import execution.slice.actions.CreateRelationalConesForModel;
+import execution.slice.actions.DetectPeople;
+import execution.slice.actions.LookForObjectsPrxHolder;
+import execution.slice.actions.LookForPeople;
 import execution.slice.actions.ProcessConeGroupAction;
 import execution.slice.actions.ReportPosition;
 
@@ -114,6 +117,13 @@ public class DoraVerbalisation extends ManagedComponent implements
 				return "looking for object " + _i.label;
 			}
 			return "";
+		}
+	};
+
+	private static final TextGenerator<LookForPeople> RECOGNIZER_PEOPLE_COMMAND_GENERATOR = new TextGenerator<LookForPeople>() {
+		@Override
+		public String toText(LookForPeople _i) {
+			return "let's see if there's is someone here" ;
 		}
 	};
 
@@ -225,7 +235,7 @@ public class DoraVerbalisation extends ManagedComponent implements
 		@Override
 		public String toText(ProcessConeGroupAction _i) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("searching view cones");
+			sb.append("searching in view cone");
 
 			return sb.toString();
 		}
@@ -298,6 +308,8 @@ public class DoraVerbalisation extends ManagedComponent implements
 				VISUAL_OBJECT_GENERATOR);
 		m_verbals.verbaliseOnOverwrite(VisualObject.class,
 				VISUAL_OBJECT_GENERATOR);
+		m_verbals.verbaliseOnAddition(LookForPeople.class,
+				RECOGNIZER_PEOPLE_COMMAND_GENERATOR);
 
 		m_verbals.verbaliseCannedTextOnAddition(ComaRoom.class,
 				"I discovered a new room");
