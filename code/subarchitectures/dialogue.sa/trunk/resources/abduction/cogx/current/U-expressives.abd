@@ -11,8 +11,8 @@ understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 
 understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	i : sort(Nom, greeting),
-	? understand : i : intention(Nom, Int),
 	? type_of_question_under_discussion(_QUDAddr, Int, 'engagement-opening'),
+	? understand : i : intention(Nom, Int),
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, type, 'engagement-opening') / p(1.0).
 

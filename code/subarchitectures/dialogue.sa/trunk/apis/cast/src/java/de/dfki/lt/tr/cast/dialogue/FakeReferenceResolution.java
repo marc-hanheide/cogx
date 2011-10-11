@@ -21,7 +21,12 @@ public class FakeReferenceResolution
 extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 
 	public FakeReferenceResolution() {
-		super(new FakeReferenceResolver());
+		super();
+	}
+
+	@Override
+	protected FakeReferenceResolver initResolver() {
+		return new FakeReferenceResolver();
 	}
 
 	@Override
@@ -47,14 +52,14 @@ extends AbstractReferenceResolutionComponent<FakeReferenceResolver> {
 
 		@Override
 		public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr, WorkingMemoryAddress origin) {
-			ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, "fake");
+			ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, ReferenceResolver.SORT_OBJECT);
 
 			EpistemicStatus epst = EpistemicStatusFactory.newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent);
-			double score = 0.9;
+			double score = 0.7;
 			for (WorkingMemoryPointer wmptr : wmptrs) {
 				dFormula referent = new PointerFormula(0, wmptr.address, wmptr.type);
 				result.hypos.add(new EpistemicReferenceHypothesis(epst, referent, score));
-				score *= 0.9;
+				score *= 0.85;
 			}
 
 			return result;

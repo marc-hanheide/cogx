@@ -23,6 +23,7 @@ import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntentionProofInterpreter;
 import de.dfki.lt.tr.dialogue.interpret.MaximumReadingsTerminationCondition;
+import de.dfki.lt.tr.dialogue.interpret.ResultCombinator;
 import de.dfki.lt.tr.dialogue.interpret.ResultGatherer;
 import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
 import de.dfki.lt.tr.dialogue.interpret.TerminationCondition;
@@ -522,7 +523,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			rr.nom = remapped.remapper.remap(rr.nom);
 
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
-			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma, new FirstComeFirstServeCombinator<ReferenceResolutionResultWrapper>());
+			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma, new MixingCombinator(2));
 			assert gatherer != null;
 			gatherers.put(wma, gatherer);
 
@@ -714,8 +715,10 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 						if (type != null && actint != null) {
 							getLogger().debug("expanding IntentionToAct " + wmaToString(wma));
 							ModalisedAtom matom = new TypeOfQUDAtom(wma, intWma, type).toModalisedAtom();
+							getLogger().debug("will add the following fact: " + PrettyPrint.modalisedAtomToString(matom));
 							engine.addFact(matom);
 							for (ModalisedAtom fact : RobotCommunicativeAction.intentionToActToFacts(wma, actint)) {
+								getLogger().debug("will add the following fact: " + PrettyPrint.modalisedAtomToString(fact));
 								engine.addFact(fact);
 							}
 						}
@@ -813,6 +816,43 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			this.slf = slf;
 			this.remapper = remapper;
 		}
+	}
+
+	private class MixingCombinator implements ResultCombinator<ReferenceResolutionResultWrapper> {
+
+		private final int minCount;
+		private int count = 0;
+		private ReferenceResolutionResultWrapper result;
+		
+		public MixingCombinator(int minCount) {
+			this.minCount = minCount;
+			ReferenceResolutionResult rr = new ReferenceResolutionResult(null, null, "combined", new LinkedList<EpistemicReferenceHypothesis>());
+			result = new ReferenceResolutionResultWrapper(rr);
+		}
+
+		@Override
+		synchronized public void addResult(ReferenceResolutionResultWrapper added) {
+			++count;
+			if (result.getResult().nom == null) {
+				result.getResult().nom = added.getResult().nom;
+			}
+			if (result.getResult().requestAddress == null) {
+				result.getResult().requestAddress = added.getResult().requestAddress;
+			}
+
+			result.getResult().hypos.addAll(added.getResult().hypos);
+		}
+
+		@Override
+		public ReferenceResolutionResultWrapper toResult() {
+			return result;
+		}
+
+		@Override
+		public boolean resultsSufficient() {
+			return count >= minCount;
+		}
+		
 	}
 
 }
