@@ -1537,7 +1537,6 @@ int SpatialControl::findClosestNode(double x, double y) {
 }
 
 void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, double maxx, double miny, double maxy) {
-
   int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
   int lgmsize = m_lgm->getSize(); // Size of real gridmap
 
@@ -1545,13 +1544,7 @@ void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, 
   m_lgm->worldCoords2Index(minx,miny, minxi, minyi);
   m_lgm->worldCoords2Index(maxx,maxy, maxxi, maxyi);
 
-  // Make sure they are within the map boundaries
-  minxi = minxi < -lgmsize ? -lgmsize : minxi;
-  minyi = minyi < -lgmsize ? -lgmsize : minyi;
-  maxxi = maxxi > lgmsize ? lgmsize : maxxi;
-  maxyi = maxyi > lgmsize ? lgmsize : maxyi;
-
-  // Set map data
+  // Set map metadata
   map.xCenter = (minx+maxx)/2;
   map.yCenter = (miny+maxy)/2;
   map.cellSize = m_lgm->getCellSize();
@@ -1561,22 +1554,32 @@ void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, 
   int newSize = sizeX > sizeY ? sizeX : sizeY;
   map.size = newSize;
 
-  map.data.clear();
-  map.data.reserve(4*newSize*newSize + 4*newSize + 1);
+  // Get the square that we will actually loop over
+  int xiCenter, yiCenter;
+  m_lgm->worldCoords2Index(map.xCenter, map.yCenter, xiCenter, yiCenter);
+  minxi = xiCenter-newSize;
+  minyi = yiCenter-newSize;
+  maxxi = xiCenter+newSize;
+  maxyi = yiCenter+newSize;
 
-  for(int x = -newSize; x <= newSize; ++x) {
-    for(int y = -newSize; y <= newSize; ++y) {
+  // Set the map data
+  map.data.clear();
+  map.data.reserve((maxxi-minxi)*(maxxi-minxi)+(maxxi-minxi)*2+1);
+
+  for(int x = minxi; x <= maxxi; ++x) {
+    for(int y = minyi; y <= maxyi; ++y) {
       // Make sure we only get data that was requested. Pad with 'unknown'.
-      if(x < -sizeX || x > sizeX ||
-           y < -sizeY || y > sizeY) {
+      if(x < -sizeX+xiCenter || x > sizeX+xiCenter ||
+           y < -sizeY+yiCenter || y > sizeY+yiCenter ||
+           x < -lgmsize || x > lgmsize ||
+           y < -lgmsize || y > lgmsize) {
         map.data.push_back('2');
       } else {
         map.data.push_back((*m_lgm)(x,y));
-      }
+      }    
     }
   }
 }
-
 
 FrontierInterface::FrontierPtSeq
 SpatialControl::getFrontiers()
