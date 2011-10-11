@@ -189,44 +189,6 @@ understand : wh_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
 	int : string_content(Int, feature, Prop) / p(1.0).
 
 %-------------------------------------------------------------------------
-% COMMAND: ACTION-NON-MOTION
-%-------------------------------------------------------------------------
-
-understand : event : from_logical_form(S, H, Nom) <-
-	i : sort(Nom, 'action-non-motion'),
-	int_id(Int),
-	int : agent(Int, S) / p(1.0),
-	find_patient(Nom, RefNom),
-		i : sort(RefNom, thing),
-		i : prop(RefNom, Class),
-	i : prop(Nom, Prop),
-	nm_intention_postcondition(Int, S, H, Class, Prop).
-
-nm_intention_postcondition(Int, _Speaker, Hearer, Class, find) <-
-	int : post(Int, state(['found-object', agent(Hearer), class(Class)])) / p(1.0).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-% NOTE: this is a hack. A proper parse would be sufficiently clear.
-find_patient(Nom, RefNom) <-
-	i : 'rel_Patient'(Nom, RefNom),
-	i : sort(RefNom, thing).
-
-find_patient(Nom, RefNom) <-
-	i : 'rel_Recipient'(Nom, RefNom),
-	i : sort(RefNom, thing).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-determine_recipient(_Nom, Default, _, _Hearer, Default) <-
-	default_recipient(Default) / p(0.5).
-
-determine_recipient(Nom, _Default, Speaker, _, Speaker) <-
-	i : rel_Recipient(Nom, RecpNom),
-		i : sort(RecpNom, person),
-		i : prop(RecpNom, 'I').
-
-%-------------------------------------------------------------------------
 % COMMAND: ACTION-MOTION
 %-------------------------------------------------------------------------
 
