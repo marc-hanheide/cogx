@@ -98,6 +98,8 @@ void ObjectRecognizer3D::start()
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
   m_display.installEventReceiver();
+  m_display.addButton(getComponentID(), string("button.det.all"),
+      string("Detect all"));
   for(map<string,string>::iterator it = objectWMIds.begin(); it != objectWMIds.end(); it++)
   {
     m_display.addButton(getComponentID(), string("button.det.") + it->first,
@@ -114,28 +116,37 @@ void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent
 {
   if(event.type == Visualization::evButtonClick)
   {
-    for(map<string,string>::iterator it = pRec->objectWMIds.begin(); it !=
-        pRec->objectWMIds.end(); it++)
+    if(event.sourceId == "button.det.all")
     {
-      ostringstream id;
-      id << "button.det." << it->first;
-      if(event.sourceId == "button.det." + it->first)
+      DetectionCommandPtr det_cmd = new DetectionCommand;
+      det_cmd->labels.clear();
+      pRec->addToWorkingMemory(pRec->newDataID(), det_cmd);
+    }
+    else
+    {
+      for(map<string,string>::iterator it = pRec->objectWMIds.begin(); it !=
+          pRec->objectWMIds.end(); it++)
       {
-        DetectionCommandPtr det_cmd = new DetectionCommand;
-        det_cmd->labels.push_back(it->first);
-        pRec->addToWorkingMemory(pRec->newDataID(), det_cmd);
-      }
-      else if(event.sourceId == "button.rec." + it->first)
-      {
-        RecognitionCommandPtr rec_cmd = new RecognitionCommand;
-        rec_cmd->labels.push_back(it->first);
-        cast::cdl::WorkingMemoryAddress addr;
-        // HACK
-        addr.subarchitecture = "vision.sa";
-        addr.id = "1:6";
-        rec_cmd->visualObject =
-          createWmPointer<VisionData::VisualObject>(addr);
-        pRec->addToWorkingMemory(pRec->newDataID(), rec_cmd);
+        ostringstream id;
+        id << "button.det." << it->first;
+        if(event.sourceId == "button.det." + it->first)
+        {
+          DetectionCommandPtr det_cmd = new DetectionCommand;
+          det_cmd->labels.push_back(it->first);
+          pRec->addToWorkingMemory(pRec->newDataID(), det_cmd);
+        }
+        else if(event.sourceId == "button.rec." + it->first)
+        {
+          RecognitionCommandPtr rec_cmd = new RecognitionCommand;
+          rec_cmd->labels.push_back(it->first);
+          cast::cdl::WorkingMemoryAddress addr;
+          // HACK
+          addr.subarchitecture = "vision.sa";
+          addr.id = "1:6";
+          rec_cmd->visualObject =
+            createWmPointer<VisionData::VisualObject>(addr);
+          pRec->addToWorkingMemory(pRec->newDataID(), rec_cmd);
+        }
       }
     }
   }
@@ -211,7 +222,18 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   cv::Mat col = cv::cvarrToMat(iplImage);
 
   vector<P::ObjectLocation> objects;
-  recognize(det_cmd->labels, col, image.camPars, cv::Mat(), objects);
+  vector<string> labels;
+  // if no labels are specified we recognise all our known labels
+  if(!det_cmd->labels.empty())
+  {
+    labels = det_cmd->labels;
+  }
+  else
+  {
+    for(map<string,string>::iterator it = objectWMIds.begin(); it != objectWMIds.end(); it++)
+      labels.push_back(it->first);
+  }
+  recognize(labels, col, image.camPars, cv::Mat(), objects);
 
   // reading off results
   for(size_t i = 0; i < objects.size(); i++)
@@ -243,6 +265,12 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   log("done DetectionCommand");
 }
 
+/**
+ * Recognizes a given object, as being one of the given labels.
+ * Will fetch that object from WM and use its bounding sphere to produce a mask
+ * image for the recognizer. Then ask recognizer if it recognizes any of the
+ * given labels.
+ */
 void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   log("Receiving RecognitionCommand");
@@ -269,7 +297,18 @@ void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChang
   cv::waitKey(100);
 
   vector<P::ObjectLocation> objects;
-  recognize(rec_cmd->labels, col, image.camPars, mask, objects);
+  vector<string> labels;
+  // if no labels are specified we recognise all our known labels
+  if(!rec_cmd->labels.empty())
+  {
+    labels = rec_cmd->labels;
+  }
+  else
+  {
+    for(map<string,string>::iterator it = objectWMIds.begin(); it != objectWMIds.end(); it++)
+      labels.push_back(it->first);
+  }
+  recognize(labels, col, image.camPars, cv::Mat(), objects);
 
   if(objects.size() > 0)
   {
