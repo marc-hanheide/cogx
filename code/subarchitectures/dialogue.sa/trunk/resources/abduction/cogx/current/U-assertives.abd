@@ -74,6 +74,13 @@ understand : event : from_logical_form(S, H, Nom) <-
 
 %-------------------------------------------------------------------------
 
+type_of_question_under_discussion(QUDAddr, Int, Type) <-
+	i : type_of_question_under_discussion(QUDAddr, Int, Type),
+	i : int : string_content(QUDAddr, type, Type),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0).
+
+%-------------------------------------------------------------------------
+
 polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity) <-
 	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
 	i : int : string_content(QUDAddr, type, 'question'),
