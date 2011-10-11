@@ -139,13 +139,24 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 		return new AbstractProofInterpretationContext<RobotCommunicativeAction>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(RobotCommunicativeAction ract) {
-				try {
-					getLogger().debug("going to commit the following:\n" + ract.toString());
-					ract.commit(committer);
+			public void onSuccessfulInterpretation(List<RobotCommunicativeAction> listIpret) {
+				getLogger().debug("got " + listIpret.size() + " interpretations.");
+				for (int i = 0; i < listIpret.size(); i++) {
+					getLogger().debug("interpretation " + i + "/" + listIpret.size() + ": " + listIpret.get(i));
 				}
-				catch (SubarchitectureComponentException ex) {
-					logException(ex);
+
+				if (!listIpret.isEmpty()) {
+					getLogger().debug("will now commit the first interpretation");
+					RobotCommunicativeAction ipret = listIpret.get(0);
+					try {
+						ipret.commit(committer);
+					}
+					catch (SubarchitectureComponentException ex) {
+						logException(ex);
+					}
+				}
+				else {
+					getLogger().warn("didn't get any interpretations at all!");
 				}
 			}
 

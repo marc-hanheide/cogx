@@ -1,7 +1,7 @@
 package de.dfki.lt.tr.dialogue.interpret;
 
-public class MaximumReadingsTerminationCondition
-implements TerminationCondition {
+public class MaximumReadingsTerminationCondition<T>
+implements TerminationCondition<T> {
 
 	private final int limit;
 
@@ -10,8 +10,8 @@ implements TerminationCondition {
 	}
 
 	@Override
-	public boolean reached() {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public boolean reached(PartialInterpretation<T> pinpr) {
+		return pinpr.getInterpretations().size() >= limit;
 	}
 	
 }

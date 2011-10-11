@@ -19,14 +19,14 @@ import java.util.concurrent.Executors;
 public abstract class AbstractAbductiveComponent<T>
 extends AbstractDialogueComponent {
 
-	private final Map<WorkingMemoryAddress, PartialInterpretation> interpretations;
+	private final Map<WorkingMemoryAddress, PartialInterpretation<T>> interpretations;
 	private ProofInterpretationContext<T> context;
 	private final Executor executor;
 
 	private AbductionEnginePrx engine;
 
 	public AbstractAbductiveComponent() {
-		interpretations = new HashMap<WorkingMemoryAddress, PartialInterpretation>();
+		interpretations = new HashMap<WorkingMemoryAddress, PartialInterpretation<T>>();
 		executor = Executors.newSingleThreadExecutor();
 	}
 
@@ -73,17 +73,17 @@ extends AbstractDialogueComponent {
 
 	}
 
-	protected final void addNewPartialInterpretation(WorkingMemoryAddress origin, PartialInterpretation pinpr) {
+	protected final void addNewPartialInterpretation(WorkingMemoryAddress origin, PartialInterpretation<T> pinpr) {
 		getLogger().info("adding a new partial interpretation");
 		interpretations.put(origin, pinpr);
 		addTask(expandInterpretationTask(pinpr));
 	}
 
-	private ProcessingTask expandInterpretationTask(PartialInterpretation pinpr) {
-		return new ProcessingTaskWithData<PartialInterpretation>(pinpr) {
+	private ProcessingTask expandInterpretationTask(PartialInterpretation<T> pinpr) {
+		return new ProcessingTaskWithData<PartialInterpretation<T>>(pinpr) {
 
 			@Override
-			public void execute(PartialInterpretation arg) {
+			public void execute(PartialInterpretation<T> arg) {
 				ProofSet proofs = arg.getProofSet();
 				ExpansionStepResult<T> result = proofs.expansionStep(getContext());
 				if (result.isFinished()) {
@@ -91,11 +91,21 @@ extends AbstractDialogueComponent {
 					T value = result.getValue();
 					if (value != null) {
 						// okay, got a result
-						getContext().onSuccessfulInterpretation(value);
+						boolean finished = arg.addInterpretation(value);
+
+						if (finished) {
+							getContext().onSuccessfulInterpretation(arg.getInterpretations());
+						}
+						else {
+							addTask(expandInterpretationTask(arg));
+						}
 					}
 					else {
+						// the ultimate termination condition?
+						getContext().onSuccessfulInterpretation(arg.getInterpretations());
+
 						// no result for this one
-						getContext().onNoInterpretation();
+//						getContext().onNoInterpretation();
 					}
 				}
 				else {
@@ -108,7 +118,7 @@ extends AbstractDialogueComponent {
 		};
 	}
 
-	private void actOnAssertion(final Assertion a, final PartialInterpretation pinpr) {
+	private void actOnAssertion(final Assertion a, final PartialInterpretation<T> pinpr) {
 		// it might actually be useful to use the future here
 		executor.execute(new Runnable() {
 
@@ -128,7 +138,7 @@ extends AbstractDialogueComponent {
 		});
 	}
 
-	protected PartialInterpretation interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, TerminationCondition cond) {
+	protected PartialInterpretation<T> interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, TerminationCondition<T> cond) {
 		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner, cond);
 	}
 
