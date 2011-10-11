@@ -78,7 +78,7 @@ public class ProofSet {
 
 		if (p.isStable()) {
 			logger.trace("proof is stable");
-			T interpretation = ctx.getInterpreter().interpret(p.toModalisedAtoms());
+			T interpretation = ctx.getInterpreter().interpret(p.toModalisedAtoms(), p.getCost());
 			if (interpretation == null) {
 				// interpretation step failed
 				logger.trace("interpretation returned null -> removing the proof (will continue)");
