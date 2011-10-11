@@ -416,6 +416,10 @@
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
         (unlearning-impossible)
+        (or
+          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
+          (= (currently-points-at ?r) ?v)
+        )
       )
     :effect 
       (and 
@@ -431,6 +435,10 @@
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
+        (or
+          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
+          (= (currently-points-at ?r) ?v)
+        )
       )
     :effect 
       (and 
@@ -447,6 +455,10 @@
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
         (unlearning-impossible)
+        (or
+          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
+          (= (currently-points-at ?r) ?v)
+        )
       )
     :effect 
       (and 
@@ -462,6 +474,10 @@
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
+        (or
+          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
+          (= (currently-points-at ?r) ?v)
+        )
       )
     :effect 
       (and 
@@ -478,6 +494,10 @@
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (learning-impossible)
         (unlearning-impossible)
+        (or
+          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
+          (= (currently-points-at ?r) ?v)
+        )
       )
     :effect 
       (and 
@@ -495,6 +515,10 @@
         (allow-polar-type-question ?v ?t ?r)
         (learning-impossible)
         (unlearning-impossible)
+        (or
+          (not (exists (?v1 - VisualObject) (not (= ?v ?v1))))
+          (= (currently-points-at ?r) ?v)
+        )
       )
     :effect 
       (and 
