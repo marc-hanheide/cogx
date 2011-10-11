@@ -1,9 +1,14 @@
 package eu.cogx.goals.george;
 
-import motivation.components.generators.AbstractWMEntryMotiveGenerator;
 import motivation.slice.TutorInitiativeMotive;
+import cast.AlreadyExistsOnWMException;
+import cast.ConsistencyException;
+import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.cast.dialogue.IntentionUnpacker;
@@ -19,10 +24,12 @@ import de.dfki.lt.tr.cast.dialogue.IntentionUnpacker;
  */
 public class PossibleInterpretationsMotiveGenerator
 		extends
-		AbstractWMEntryMotiveGenerator<TutorInitiativeMotive, PossibleInterpretedIntentions> {
+		AbstractInterpretedIntentionMotiveGenerator<PossibleInterpretedIntentions> {
+
+	private static final double DISAMBIGUATION_CONFIDENCE_THRESHOLD = 0.6;
 
 	public PossibleInterpretationsMotiveGenerator() {
-		super(TutorInitiativeMotive.class, PossibleInterpretedIntentions.class);
+		super(PossibleInterpretedIntentions.class);
 	}
 
 	@Override
@@ -31,17 +38,62 @@ public class PossibleInterpretationsMotiveGenerator
 
 		// for now, just spit out most probable intention, then return null (so
 		// no motive is generated)
-
+		TutorInitiativeMotive motive = null;
 		try {
-			println("unpacking most confident of " + _pii.intentions.size()
-					+ " possible interpretations");
-			IntentionUnpacker.unpackMostConfidentIntention(this, _pii);
+
+			if (neeedsDisambiguation(_pii)) {
+				println("generating motive to disambiguate");
+				motive = generateDisambiguationMotive(_piiAddr, _pii);
+			} else {
+				println("unpacking most confident of " + _pii.intentions.size()
+						+ " possible interpretations");
+				IntentionUnpacker.unpackMostConfidentIntention(this, _pii);
+			}
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
 		}
 
-		return null;
+		return motive;
 
+	}
+
+	private TutorInitiativeMotive generateDisambiguationMotive(
+			WorkingMemoryAddress _piiAddr, PossibleInterpretedIntentions _pii)
+			throws DoesNotExistOnWMException, AlreadyExistsOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		// get most confident intention
+		InterpretedIntention mostConfidentIntention = IntentionUnpacker
+				.getMostConfidentIntention(_pii);
+
+		// generate a motive structure based on most confident interpretation
+		// this relies on the goal strings being existentially quantified rather
+		// than referencing a particular belief
+
+		// TODO Make this smarter next year...
+		TutorInitiativeMotive motive = generateMotiveFromIntention(_piiAddr,
+				mostConfidentIntention);
+
+		// mark referents from /all/ interpretations.
+
+		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
+			InterpretedIntention iint = _pii.intentions.get(addr);
+			markReferent(iint.addressContent.get("about"));
+		}
+
+		return motive;
+	}
+
+	private boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
+		// TODO something more principled
+		if (_pii.intentions.size() == 1) {
+			return false;
+		} else {
+			InterpretedIntention mostConfidentIntention = IntentionUnpacker
+					.getMostConfidentIntention(_pii);
+			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;
+		}
 	}
 
 	@Override
@@ -49,6 +101,23 @@ public class PossibleInterpretationsMotiveGenerator
 			PossibleInterpretedIntentions newEntry,
 			TutorInitiativeMotive existingMotive) {
 		return existingMotive;
+	}
+
+	@Override
+	protected String getPolarQuestionGoalString(String _feature,
+			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddr) {
+		String predicate = CASTUtils.concatenate("polar-", _feature,
+				"-question-answered");
+		return "(exists (?v - VisualObject) (and (" + predicate + " ?v "
+				+ _hypothesis + ")))";
+	}
+
+	@Override
+	protected String getOpenQuestionGoalString(String _feature,
+			WorkingMemoryAddress _groundedBeliefAddr) {
+		String predicate = CASTUtils.concatenate("global-", _feature,
+				"-question-answered");
+		return "(exists (?v - VisualObject) (and (" + predicate + " ?v)))";
 	}
 
 }
