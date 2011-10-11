@@ -56,9 +56,7 @@ private:
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
   std::vector<IplImage*> retrievedImages;       ///< pointers to retrieved images for each device (dev_nums)
 
-  int framerateMillis;                          ///< framerate in milliseconds 					TODO Unused
-//   Timer timer;                                 ///< Timer to measure actual frame rate.			TODO Reimplement?
-  std::vector<cast::cdl::CASTTime> grabTimes;   ///< time stamps when Ipl images were captured			TODO Unused, because no grabFrames()
+  std::vector<cast::cdl::CASTTime> grabTimes;   ///< time stamps when Ipl images were captured			TODO Unused!
 
   void getResolution(int camIdx, CvSize &size);
   bool setResolution(int camIdx, CvSize &size);
