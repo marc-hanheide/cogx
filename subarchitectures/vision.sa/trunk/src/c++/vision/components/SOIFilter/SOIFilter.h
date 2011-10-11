@@ -242,6 +242,9 @@ private:
 
   void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
   void onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc);
+#ifdef FEAT_TRACK_ARM
+  void onChange_ArmPosition(const cdl::WorkingMemoryChange & _wmc);
+#endif
   void connectPtz();
   void checkInvisibleObjects();
 
