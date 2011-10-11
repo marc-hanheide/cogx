@@ -236,6 +236,7 @@ protected:
 
   bool m_sendPTZCommands;
   ptz::PTZInterfacePrx m_ptzInterface;
+  bool m_ptzInNavigationPose;
 
   bool m_firstScanAdded;
 
@@ -245,6 +246,7 @@ protected:
   double m_obstacleMinHeight;
   double m_obstacleMaxHeight;
   bool m_DisplayCureObstacleMap;
+
 
 protected:
   /* 
@@ -264,6 +266,7 @@ private:
   void deleteInhibitor(const cast::cdl::WorkingMemoryChange &objID);
   void newPersonData(const cast::cdl::WorkingMemoryChange &objID);
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
+  void newPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
   void overwrittenPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
 
   void startMovePanTilt(double pan, double tilt, double tolerance);

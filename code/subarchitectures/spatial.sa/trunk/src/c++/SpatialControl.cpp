@@ -94,27 +94,42 @@ SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance)
   m_waitingForPTZCommandID = cmdId;
 }
 
+void SpatialControl::newPanTiltCommand(const cdl::WorkingMemoryChange &objID) {
+  m_ptzInNavigationPose = false; // Wait until the command is done before checking the pose
+}
+
 void
 SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID) 
 {
-  if (objID.address.id == m_waitingForPTZCommandID) {
-    try {
-      ptz::SetPTZPoseCommandPtr overwritten =
-	getMemoryEntry<ptz::SetPTZPoseCommand>(objID.address);
-      if (overwritten->comp == ptz::SUCCEEDED) {
+  try {
+    ptz::SetPTZPoseCommandPtr overwritten =
+      getMemoryEntry<ptz::SetPTZPoseCommand>(objID.address);
 
-      }
-      else {
-	log ("Warning! Failed to move PTZ before moving!");
+    if (objID.address.id == m_waitingForPTZCommandID) {
+      if (overwritten->comp != ptz::SUCCEEDED) {
+        log ("Warning! Failed to move PTZ before moving!");
       }
       deleteFromWorkingMemory(objID.address);
-    }
-    catch (DoesNotExistOnWMException e)
-    {
-      log ("Error: SetPTZPoseCommand went missing! "); 
+      m_waitingForPTZCommandID = "";
     }
 
-    m_waitingForPTZCommandID = "";
+    // Check if the tilt is now in the 'navigation pose' (-45 degrees)
+    m_ScanQueueMutex.lock();
+    /* WARNING (FIXME):
+     * For some reason we still get garbage from the kinect when
+     * reading.pose.tilt has _just_ been set to -45, so sleep for a little bit
+     * while hogging the laser scan lock, which will stop updateGridmaps(). */
+    usleep(1000000);
+    m_ScanQueueMutex.unlock();
+
+    if(overwritten->pose.tilt < -M_PI/4 + 0.05 && overwritten->pose.tilt > -M_PI/4 -0.05)
+      m_ptzInNavigationPose = true;
+    else
+      m_ptzInNavigationPose = false;
+  }
+  catch (DoesNotExistOnWMException e)
+  {
+    log ("Error: SetPTZPoseCommand went missing! "); 
   }
 }
 
@@ -340,6 +355,9 @@ void SpatialControl::start()
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
                                                                &SpatialControl::deletePersonData));   
 
+  addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<SpatialControl>(this,
+                                                               &SpatialControl::newPanTiltCommand));   
   addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
                                                                &SpatialControl::overwrittenPanTiltCommand));   
@@ -357,7 +375,15 @@ void SpatialControl::start()
     Ice::ObjectPrx base = ic->stringToProxy(str.str());    
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
  */
-  
+
+  m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
+  ptz::PTZReading reading = m_ptzInterface->getPose();
+
+  if(reading.pose.tilt < -M_PI/4 + 0.05 && reading.pose.tilt > -M_PI/4 -0.05)
+    m_ptzInNavigationPose = true;
+  else
+    m_ptzInNavigationPose = false;
+
   log("SpatialControl started");
   
 }
@@ -496,6 +522,10 @@ void SpatialControl::updateGridMaps()
 	Cure::Pose3D LscanPose;
   Cure::Pose3D lpW;
  	int xi,yi;
+
+  /* Don't update the gridmaps when the ptz does not have the right tilt */
+  if(!m_ptzInNavigationPose)
+    return;
 
   /* Update a temporary local map so we don't hog the lock */
   Cure::LocalGridMap<unsigned char> tmp_lgm(*m_lgm);
