@@ -41,7 +41,7 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 			@Override
 			public void execute(WorkingMemoryAddress addr) {
 				try {
-					unpackIntention(getComponent(), addr);
+					unpackMostConfidentIntention(getComponent(), addr);
 				} catch (SubarchitectureComponentException ex) {
 					getLogger().error("component exception", ex);
 				}
@@ -59,16 +59,35 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 	 * @throws UnknownSubarchitectureException
 	 * @throws AlreadyExistsOnWMException
 	 */
-	public static void unpackIntention(ManagedComponent _component,
+	public static void unpackMostConfidentIntention(ManagedComponent _component,
 			WorkingMemoryAddress addr) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException, AlreadyExistsOnWMException {
+	
+		
 		PossibleInterpretedIntentions pii = _component.getMemoryEntry(addr,
 				PossibleInterpretedIntentions.class);
 
+		unpackMostConfidentIntention(_component, pii);
+	}
+
+	/**
+	 * @param _component
+	 * @param pii
+	 * @throws AlreadyExistsOnWMException
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
+	public static void unpackMostConfidentIntention(
+			ManagedComponent _component, PossibleInterpretedIntentions pii)
+			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
 		WorkingMemoryAddress iintAddr = mostConfidentIntentionAddress(pii);
 		unpackIntention(_component, iintAddr, pii);
 	}
 
+	
+	
+	
 	/**
 	 * Unpack the intention with the given address.
 	 * 
