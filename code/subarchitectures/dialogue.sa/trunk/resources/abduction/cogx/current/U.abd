@@ -66,22 +66,6 @@ aboutness(Int, Addr) <-
 	int : address_content(Int, about, Addr) / p(1.0).
 
 %-------------------------------------------------------------------------
-
-get_topic_referent(S, H, attrib(H, S), _Int, Ref, _Nom, 'pointer-to'('topic-referent')) <-
-	is_not_reference(Ref) / p(0.5).
-
-%get_topic_referent(attrib(S, H), Int, Ref, Nom, 'pointer-to'('topic-referent')) <-
-%	is_not_reference(Ref) / p(1.0).
-
-get_topic_referent(_S, _H, EpSt, Int, Ref, _Nom, BId) <-
-%	EpSt = shared(S, H),
-	understand : about(Ref, BId, EpSt),
-%	understand : about(Ref, BId),
-	int : pre(Int, belief(Ref, EpSt, fv(mark, 'referring-expression'))) / p(1.0).
-%	int : pre(Int, belief(Ref, EpSt, fv(about, BId))) / p(1.0),
-%	int : pre(Int, belief(Ref, EpSt, mark(refexp))) / p(1.0).
-
-%-------------------------------------------------------------------------
 % ASSERTION EFFECT
 %-------------------------------------------------------------------------
 
@@ -112,24 +96,6 @@ intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity) <-
 understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
 	polar_query_prop(Nom, Feature, Value),
 	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-try_scope_modifier(_S, _H, _Int, _Ref, _Polarity, Nom) <-
-	has_no_scope_modifier(Nom) / p(0.5).
-
-try_scope_modifier(S, H, Int, Ref, Polarity, Nom) <-
-	i : rel_Modifier(Nom, ModNom),
-	understand : assertion_effect(S, H, Int, Ref, Polarity, ModNom).
-
-%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-try_scope_compound(_S, _H, _Int, _Ref, _Polarity, Nom) <-
-	has_no_scope_compound(Nom) / p(0.5).
-
-try_scope_compound(S, H, Int, Ref, Polarity, Nom) <-
-	i : rel_Compound(Nom, ModNom),
-	understand : assertion_effect(S, H, Int, Ref, Polarity, ModNom).
 
 %-------------------------------------------------------------------------
 % QUESTIONS
@@ -197,7 +163,7 @@ polarity(Nom, Polarity) <-
 	i : feat_Polarity(Nom, Polarity).
 
 polarity(Nom, pos) <-
-	polarity_positive(Nom) / p(0.5).
+	polarity_positive(Nom) / p(0.9).
 
 %-------------------------------------------------------------------------
 

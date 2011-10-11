@@ -22,7 +22,7 @@ extends AbstractWellFormedTestingProofInterpreter<RobotCommunicativeAction> {
 	}
 
 	@Override
-	protected RobotCommunicativeAction interpretWithoutWellFormednessTest(List<ModalisedAtom> matoms) {
+	protected RobotCommunicativeAction interpretWithoutWellFormednessTest(List<ModalisedAtom> matoms, double cost) {
 
 		RobotCommunicativeAction ra = new RobotCommunicativeAction();
 

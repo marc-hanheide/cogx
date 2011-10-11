@@ -287,4 +287,12 @@ public abstract class AbducerUtils {
 		log("engine." + engName, str);
 	}
 
+	public static double weightToProb(double weight) {
+		return Math.exp(-weight);
+	}
+
+	public static double probToWeight(double prob) {
+		return -Math.log(prob);
+	}
+
 }

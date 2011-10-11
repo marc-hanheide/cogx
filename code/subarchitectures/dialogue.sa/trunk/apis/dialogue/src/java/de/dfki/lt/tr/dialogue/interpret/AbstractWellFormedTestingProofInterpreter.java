@@ -19,13 +19,13 @@ implements ProofInterpreter<T> {
 		return logger;
 	}
 
-	protected abstract T interpretWithoutWellFormednessTest(List<ModalisedAtom> matoms);
+	protected abstract T interpretWithoutWellFormednessTest(List<ModalisedAtom> matoms, double cost);
 
 	@Override
-	public final T interpret(List<ModalisedAtom> matoms) {
+	public final T interpret(List<ModalisedAtom> matoms, double cost) {
 		logger.debug("going to interpret the proof: " + PrettyPrint.listOfModalisedAtomsToString(matoms));
 		
-		T result = interpretWithoutWellFormednessTest(matoms);
+		T result = interpretWithoutWellFormednessTest(matoms, cost);
 
 		if (result == null) {
 			logger.warn("interpretation is null, will be scrapped");

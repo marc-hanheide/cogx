@@ -23,8 +23,11 @@ extends AbstractWellFormedTestingProofInterpreter<InterpretedUserIntention> {
 	}
 
 	@Override
-	protected InterpretedUserIntention interpretWithoutWellFormednessTest(List<ModalisedAtom> matoms) {
+	protected InterpretedUserIntention interpretWithoutWellFormednessTest(List<ModalisedAtom> matoms, double confidence) {
 		final InterpretedUserIntention iui = new InterpretedUserIntention();
+		double prob = AbducerUtils.weightToProb(confidence);
+		getLogger().debug("confidence=" + confidence + "; therefore prob=" + prob);
+		iui.setConfidence(prob);
 
 		ModalisedAtomInterpreter<IntentionIDAtom, Runnable> itIntID
 				= new ModalisedAtomInterpreter<IntentionIDAtom, Runnable>(new IntentionIDAtom.Matcher()) {
