@@ -49,7 +49,7 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 
 		});
 	}
-	
+
 	/**
 	 * Unpack the most confident intention.
 	 * 
@@ -59,11 +59,11 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 	 * @throws UnknownSubarchitectureException
 	 * @throws AlreadyExistsOnWMException
 	 */
-	public static void unpackMostConfidentIntention(ManagedComponent _component,
-			WorkingMemoryAddress addr) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, AlreadyExistsOnWMException {
-	
-		
+	public static void unpackMostConfidentIntention(
+			ManagedComponent _component, WorkingMemoryAddress addr)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			AlreadyExistsOnWMException {
+
 		PossibleInterpretedIntentions pii = _component.getMemoryEntry(addr,
 				PossibleInterpretedIntentions.class);
 
@@ -85,9 +85,6 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 		unpackIntention(_component, iintAddr, pii);
 	}
 
-	
-	
-	
 	/**
 	 * Unpack the intention with the given address.
 	 * 
@@ -103,7 +100,8 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 			PossibleInterpretedIntentions _interpretations)
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
-		InterpretedIntention iint = _interpretations.intentions.get(_intentionAddr);
+		InterpretedIntention iint = _interpretations.intentions
+				.get(_intentionAddr);
 
 		for (WorkingMemoryAddress belAddr : iint.addressContent.values()) {
 			if (_interpretations.beliefs.containsKey(belAddr)) {
@@ -123,6 +121,19 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 		_component.addToWorkingMemory(_intentionAddr, iint);
 	}
 
+	/**
+	 * @param _pii
+	 * @return
+	 */
+	public static InterpretedIntention getMostConfidentIntention(
+			PossibleInterpretedIntentions _pii) {
+		WorkingMemoryAddress intentionAddress = IntentionUnpacker
+				.mostConfidentIntentionAddress(_pii);
+		InterpretedIntention mostConfidentIntention = _pii.intentions
+				.get(intentionAddress);
+		return mostConfidentIntention;
+	}
+
 	public static WorkingMemoryAddress mostConfidentIntentionAddress(
 			PossibleInterpretedIntentions pii) {
 		WorkingMemoryAddress bestAddr = null;
@@ -130,6 +141,11 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 
 		for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
 			InterpretedIntention iint = pii.intentions.get(addr);
+
+			System.out.println("possible interpretation: "
+					+ InterpretedUserIntention
+							.interpretedIntentionToString(iint));
+
 			if (iint.confidence > best) {
 				bestAddr = addr;
 				best = iint.confidence;
