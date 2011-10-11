@@ -237,6 +237,8 @@ protected:
   bool m_sendPTZCommands;
   ptz::PTZInterfacePrx m_ptzInterface;
   bool m_ptzInNavigationPose;
+  cast::cdl::CASTTime m_lastPtzNavPoseCompletion;
+
 
   bool m_firstScanAdded;
 

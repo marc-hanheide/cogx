@@ -114,18 +114,12 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
     }
 
     // Check if the tilt is now in the 'navigation pose' (-45 degrees)
-    m_ScanQueueMutex.lock();
-    /* WARNING (FIXME):
-     * For some reason we still get garbage from the kinect when
-     * reading.pose.tilt has _just_ been set to -45, so sleep for a little bit
-     * while hogging the laser scan lock, which will stop updateGridmaps(). */
-    usleep(1000000);
-    m_ScanQueueMutex.unlock();
-
     if(overwritten->pose.tilt < -M_PI/4 + 0.05 && overwritten->pose.tilt > -M_PI/4 -0.05)
       m_ptzInNavigationPose = true;
-    else
+    else 
       m_ptzInNavigationPose = false;
+
+    m_lastPtzNavPoseCompletion = getCASTTime();
   }
   catch (DoesNotExistOnWMException e)
   {
@@ -384,6 +378,8 @@ void SpatialControl::start()
   else
     m_ptzInNavigationPose = false;
 
+  m_lastPtzNavPoseCompletion = getCASTTime();
+
   log("SpatialControl started");
   
 }
@@ -523,10 +519,6 @@ void SpatialControl::updateGridMaps()
   Cure::Pose3D lpW;
  	int xi,yi;
 
-  /* Don't update the gridmaps when the ptz does not have the right tilt */
-  if(!m_ptzInNavigationPose)
-    return;
-
   /* Update a temporary local map so we don't hog the lock */
   Cure::LocalGridMap<unsigned char> tmp_lgm(*m_lgm);
   Cure::GridLineRayTracer<unsigned char> tmp_glrt(tmp_lgm);
@@ -585,8 +577,15 @@ void SpatialControl::updateGridMaps()
 
   /* Update height map */
   cdl::CASTTime frameTime = getCASTTime();
+  double time = frameTime.s+frameTime.us/1000000.0;
+  double lastptztime = m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us/1000000.0;
   bool hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
-  if (hasScanPose) {
+  /* WARNING (FIXME):
+   * For some reason we seem to get old kinect data when we have _just_ moved
+   * the pantilt to -45 degrees some times, causing garbage to appear on the
+   * map. For now, we wait for 1 second before doing anything with the kinect
+   * data to make sure we get fresh data. */
+  if (hasScanPose && m_ptzInNavigationPose && time-lastptztime > 1) {
     PointCloud::SurfacePointSeq points;
     getPoints(true, 640/4, points);
     std::sort(points.begin(), points.end(), ComparePoints());
