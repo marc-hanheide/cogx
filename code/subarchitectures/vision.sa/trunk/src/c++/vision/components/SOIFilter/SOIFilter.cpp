@@ -16,6 +16,11 @@
 #include <fstream>
 #include <cmath>
 
+#ifdef FEAT_TRACK_ARM
+#include <execution/manipulation_exe.hpp>
+namespace ArmIce = manipulation::execution::slice;
+#endif
+
 #define CAM_ID_DEFAULT 0
 
 /**
@@ -271,6 +276,15 @@ void SOIFilter::start()
   addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onChange_CameraParameters));  
+
+#ifdef FEAT_TRACK_ARM
+  addChangeFilter(createGlobalTypeFilter<ArmIce::ArmStatus>(cdl::ADD),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onChange_ArmPosition));  
+  addChangeFilter(createGlobalTypeFilter<ArmIce::ArmStatus>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<SOIFilter>(this,
+        &SOIFilter::onChange_ArmPosition));  
+#endif
 }
 
 #ifdef FEAT_VISUALIZATION
@@ -634,6 +648,12 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
     }
   }
 }
+
+#ifdef FEAT_TRACK_ARM
+void SOIFilter::onChange_ArmPosition(const cdl::WorkingMemoryChange & _wmc)
+{
+}
+#endif
 
 bool SOIFilter::isCameraStable(unsigned long milliSeconds)
 {
