@@ -87,6 +87,8 @@ public class ProofSet {
 			}
 			else {
 				logger.trace("END-expansion: a non-null interpretation found");
+				logger.trace("removing the proof");
+				proofs.remove(p);
 				return ExpansionStepResult.successResult(interpretation);
 			}
 		}

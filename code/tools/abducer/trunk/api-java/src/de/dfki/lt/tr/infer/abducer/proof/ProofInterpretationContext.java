@@ -1,5 +1,7 @@
 package de.dfki.lt.tr.infer.abducer.proof;
 
+import java.util.List;
+
 public interface ProofInterpretationContext<T> {
 
 	public ProofPruner getPruner();
@@ -10,7 +12,7 @@ public interface ProofInterpretationContext<T> {
 
 	public ProofInterpreter<T> getInterpreter();
 
-	public void onSuccessfulInterpretation(T interpretation);
+	public void onSuccessfulInterpretation(List<T> interpretation);
 
 	public void onNoInterpretation();
 
