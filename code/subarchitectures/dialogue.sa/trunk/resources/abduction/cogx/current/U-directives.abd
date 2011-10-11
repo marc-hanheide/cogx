@@ -221,20 +221,26 @@ understand : wh_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
 
 %-------------------------------------------------------------------------
 
-% go DIRECTION
+% search around
+% @{search1_1:action-non-motion}(search ^ <Mood>imp ^ <Actor>(addressee1_1:entity ^ addressee) ^ <Modifier>(around1_1:m-direction ^ around) ^ <Subject>(addressee1_1:entity))
+
+% look around
+% @{look1_1:perception}(look ^ <Mood>imp ^ <Actor>(addressee1_1:entity ^ addressee) ^ <Modifier>(around1_1:m-direction ^ around) ^ <Subject>(addressee1_1:entity))
+
+look_around_verb(look).
+look_around_verb(search).
+
+% look DIRECTION
 understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
-	i : sort(Nom, 'action-motion'),
-%	i : feat_Mood(Nom, imp),
-	i : rel_Actor(Nom, _ActorNom),
-%		i : prop(ActorNom, addressee),
+	i : prop(Nom, Verb),
+	look_around_verb(Verb),
+	i : rel_Modifier(Nom, ModNom),
+		i : prop(ModNom, around),
 
 	? understand : i : intention(Nom, Int),
 	int : agent(Int, Speaker) / p(1.0),
-	i : rel_Modifier(Nom, ModifNom),
-		understand : direction(ModifNom, Dir),
-	i : prop(Nom, ActionProp),
-	int : string_content(Int, class, 'motion') / p(1.0),
-	m_action_effects_direction(Int, Dir, ActionProp).
+	int : string_content(Int, class, 'complex-action') / p(1.0),
+	int : string_content(Int, type, 'look-around') / p(1.0).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
