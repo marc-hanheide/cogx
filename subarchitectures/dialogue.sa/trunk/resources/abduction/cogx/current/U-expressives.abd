@@ -68,6 +68,6 @@ understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	? understand : i : intention(Nom, Int),
 	? type_of_question_under_discussion(_QUDAddr, Int, 'assertion'),
 	int : agent(Int, Speaker) / p(1.0),
-	int : string_content(Int, type, 'appreciation') / p(1.0).
+	int : string_content(Int, type, 'acknowledgment') / p(1.0).
 
 %-------------------------------------------------------------------------

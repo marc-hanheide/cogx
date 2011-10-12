@@ -66,7 +66,6 @@ extends AbstractReferenceResolutionComponent<LastMentionedReferenceResolver> {
 						});
 					}
 				});
-
 	}
 
 	private void setLastMentioned(WorkingMemoryAddress wma) {
