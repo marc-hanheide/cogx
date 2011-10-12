@@ -218,7 +218,7 @@ void SpatialControl::configure(const map<string,string>& _config)
     m_MaxExplorationRange = (atof(it->second.c_str()));
   }
 
-  m_MaxCatExplorationRange = 1.5;
+  m_MaxCatExplorationRange = 5.6;
   it = _config.find("--cat-explore-range");
   if (it != _config.end()) {
     m_MaxCatExplorationRange = (atof(it->second.c_str()));
