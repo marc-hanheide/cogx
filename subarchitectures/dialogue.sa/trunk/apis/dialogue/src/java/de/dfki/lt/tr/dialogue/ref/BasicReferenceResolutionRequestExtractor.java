@@ -75,7 +75,7 @@ implements ReferenceResolutionRequestExtractor {
 
 				// try for saliency
 				if (!LFUtils.lfNominalGetFeature(nom, "Proximity").equals("") || prop.equals("it")) {
-					tryAddToConstraintMap(cmap, "salient", "true");
+					tryAddToConstraintMap(cmap, "salience", "high");
 				}
 			}
 
