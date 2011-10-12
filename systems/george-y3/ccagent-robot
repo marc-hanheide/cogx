@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./ccagent --player=instantiations/george-y3/real/player/cogx-platform.cfg  --text2speech
