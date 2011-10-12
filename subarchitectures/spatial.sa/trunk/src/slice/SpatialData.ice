@@ -433,6 +433,7 @@ class ProcessViewPointCommand {
     bool isCircleObstacleFree(double x, double y, double radius);
     int findClosestNode(double x, double y);
     LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
+    DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount);
   };
 
 };

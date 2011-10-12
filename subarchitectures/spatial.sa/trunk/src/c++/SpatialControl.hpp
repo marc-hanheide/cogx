@@ -104,10 +104,22 @@ class SpatialControl : public cast::ManagedComponent ,
         virtual SpatialData::LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy, const Ice::Current &_context) {
           SpatialData::LocalGridMap ret;
           m_pOwner->lockComponent();
-          m_pOwner->getBoundedMap(ret, minx, maxx, miny, maxy);
+          m_pOwner->getBoundedMap(ret, m_pOwner->m_lgm, minx, maxx, miny, maxy);
           m_pOwner->unlockComponent();
           return ret;
         }
+
+        /* Hack for 2011 review */
+        virtual SpatialData::DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount, const Ice::Current &_context) {
+          SpatialData::DoubleOpt ret;
+
+          m_pOwner->lockComponent();
+          ret = m_pOwner->getGridMapRaytrace(startAngle, angleStep, beamCount);
+          m_pOwner->unlockComponent();
+
+          return ret;
+        }
+
         SpatialControl *m_pOwner;
         MapServer(SpatialControl *owner) : m_pOwner(owner) {}
         friend class SpatialControl;
@@ -137,14 +149,17 @@ protected:
   void getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex) const;
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   virtual int findClosestNode(double x, double y);
-  void getBoundedMap(SpatialData::LocalGridMap &map, double minx, double maxx, double miny, double maxy);
+  void getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy);
+  std::vector<double> getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount);
+
   //REMOVEME
   void SaveGridMap();
 
-  void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY);
+  void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight);
   void updateGridMaps();
 
   double m_MaxExplorationRange; 
+  double m_MaxCatExplorationRange; 
 
   Cure::LocalMap m_LMap;
   Cure::NavGraph m_NavGraph;
@@ -155,6 +170,7 @@ protected:
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayObstacleMap;
+  Cure::XDisplayLocalGridMap<unsigned char>* m_displayCategoricalMap;
 
   Cure::FrontierFinder<unsigned char>* m_FrontierFinder;
   std::list<Cure::FrontierPt> m_Frontiers;
@@ -165,6 +181,9 @@ protected:
   Cure::LocalGridMap<unsigned char>* m_lgm;
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
+
+  Cure::LocalGridMap<unsigned char>* m_categoricalMap; // Hack for review 2011
+  Cure::LocalGridMap<double>* m_categoricalKHMap;
 
   Cure::LocalGridMap<unsigned char>* m_binaryMap;
   Cure::LocalGridMap<unsigned char>* m_obstacleMap; 

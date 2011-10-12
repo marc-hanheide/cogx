@@ -214,22 +214,29 @@ void SpatialControl::configure(const map<string,string>& _config)
     m_MaxExplorationRange = (atof(it->second.c_str()));
   }
 
+  m_MaxCatExplorationRange = 1.5;
+  it = _config.find("--cat-explore-range");
+  if (it != _config.end()) {
+    m_MaxCatExplorationRange = (atof(it->second.c_str()));
+  }
+
   it = _config.find("--robot-server-host");
   if (it != _config.end()) {
     std::istringstream str(it->second);
     str >> m_RobotServerHost;
   }
 
-  m_lgm = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_lgmKH = new Cure::LocalGridMap<double>(200, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
+  m_lgm = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmKH = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
-  m_binaryMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+  m_categoricalMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_categoricalKHMap = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
+  m_binaryMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
 
   m_DisplayCureObstacleMap = false;
   if (_config.find("--display-cure-obstacle-map") != _config.end()) {
     m_DisplayCureObstacleMap = true;
-    m_obstacleMap = new Cure::LocalGridMap<unsigned char>(200, 0.05, 1, Cure::LocalGridMap<unsigned char>::MAP1);
+    m_obstacleMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, 1, Cure::LocalGridMap<unsigned char>::MAP1);
     m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
   }
 
@@ -243,6 +250,18 @@ void SpatialControl::configure(const map<string,string>& _config)
   } else {
     m_Displaylgm = 0;
     println("Will NOT use X window to show the exploration map");
+  }
+
+  if(_config.find("--show-binary-map") != _config.end()) {
+    m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+  } else {
+    m_displayBinaryMap = 0;
+  }
+
+  if(_config.find("--show-categorical-map") != _config.end()) {
+    m_displayCategoricalMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_categoricalMap);
+  } else {
+    m_displayCategoricalMap = 0;
   }
 
   double maxGotoV = 0.5;
@@ -462,7 +481,7 @@ const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
   return *m_lgm;
 }
 
-void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int minX, int maxX, int minY, int maxY)
+void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight)
 {
   int xi, yi;
 
@@ -478,10 +497,10 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, int m
   /* Project the height map on to the local map */
   for (xi = minX; xi <= maxX; xi++) {
     for (yi = minY; yi <= maxY; yi++) {
-      if ((*m_lgmKH)(xi, yi) > m_obstacleMinHeight && (*m_lgmKH)(xi, yi) < m_obstacleMaxHeight) {
+      if ((*heightMap)(xi, yi) > obstacleMinHeight && (*heightMap)(xi, yi) < obstacleMaxHeight) {
         lgm(xi, yi) = '1';
       }
-      else if ((*m_lgmKH)(xi, yi) != FLT_MAX) {
+      else if ((*heightMap)(xi, yi) != FLT_MAX) {
         // Don't overwrite obstacles seen by the laser with (possibly old)
         // free space from the point cloud
         if (lgm(xi, yi) == '1')
@@ -514,6 +533,7 @@ class ComparePoints {
 };
 void SpatialControl::updateGridMaps()
 {
+  double maxCatHeight = 0.3;
   Cure::Pose3D scanPose;
 	Cure::Pose3D LscanPose;
   Cure::Pose3D lpW;
@@ -523,12 +543,20 @@ void SpatialControl::updateGridMaps()
   Cure::LocalGridMap<unsigned char> tmp_lgm(*m_lgm);
   Cure::GridLineRayTracer<unsigned char> tmp_glrt(tmp_lgm);
 
+  Cure::LocalGridMap<unsigned char> tmp_catlgm(*m_categoricalMap);
+  Cure::GridLineRayTracer<unsigned char> tmp_catglrt(tmp_catlgm);
+  
+
   /* Local reference so we don't have to dereference the pointer all the time */
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
+  Cure::LocalGridMap<double>& lgmcatKH = *m_categoricalKHMap;
 
   /* Bounding box for laser scan */
   double laserMinX = INT_MAX, laserMaxX = INT_MIN;
   double laserMinY = INT_MAX, laserMaxY = INT_MIN;
+
+  double laserCatMinX = INT_MAX, laserCatMaxX = INT_MIN;
+  double laserCatMinY = INT_MAX, laserCatMaxY = INT_MIN;
 
   /* Add all queued laser scans */
   m_ScanQueueMutex.lock();
@@ -538,6 +566,11 @@ void SpatialControl::updateGridMaps()
       tmp_glrt.addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
       tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NavController::getRobotWidth(), '0');                                  
+
+      tmp_catglrt.addScan(m_LScanQueue.front(), lpW, m_MaxCatExplorationRange);
+      tmp_catlgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0');                                  
+
       m_firstScanAdded = true;
 
       /* Update bounding box */
@@ -549,6 +582,15 @@ void SpatialControl::updateGridMaps()
         laserMinY = LscanPose.getY();
       if (LscanPose.getY() > laserMaxY)
         laserMaxY = LscanPose.getY();
+
+      if (LscanPose.getX() < laserCatMinX)
+        laserCatMinX = LscanPose.getX();
+      if (LscanPose.getX() > laserCatMaxX)
+        laserCatMaxX = LscanPose.getX();
+      if (LscanPose.getY() < laserCatMinY)
+        laserCatMinY = LscanPose.getY();
+      if (LscanPose.getY() > laserCatMaxY)
+        laserCatMaxY = LscanPose.getY();
     }
     m_LScanQueue.pop();
   }
@@ -561,6 +603,12 @@ void SpatialControl::updateGridMaps()
   laserMinY -= m_MaxExplorationRange;
   laserMaxX += m_MaxExplorationRange;
   laserMaxY += m_MaxExplorationRange;
+
+  laserCatMinX -= m_MaxCatExplorationRange;
+  laserCatMinY -= m_MaxCatExplorationRange;
+  laserCatMaxX += m_MaxCatExplorationRange;
+  laserCatMaxY += m_MaxCatExplorationRange;
+
   int laserMinXi, laserMinYi, laserMaxXi, laserMaxYi;
   if (tmp_lgm.worldCoords2Index(laserMinX, laserMinY, laserMinXi, laserMinYi) != 0) {
     laserMinXi = -tmp_lgm.getSize() + 1;
@@ -569,6 +617,16 @@ void SpatialControl::updateGridMaps()
   if (tmp_lgm.worldCoords2Index(laserMaxX, laserMaxY, laserMaxXi, laserMaxYi) != 0) {
     laserMaxXi = tmp_lgm.getSize() - 1;
     laserMaxYi = tmp_lgm.getSize() - 1;
+  }
+
+  int laserCatMinXi, laserCatMinYi, laserCatMaxXi, laserCatMaxYi;
+  if(tmp_catlgm.worldCoords2Index(laserCatMinX, laserCatMinY, laserCatMinXi, laserCatMinYi) != 0) {
+    laserCatMinXi = -tmp_catlgm.getSize() + 1;
+    laserCatMinYi = -tmp_catlgm.getSize() + 1;
+  }
+  if(tmp_catlgm.worldCoords2Index(laserCatMaxX, laserCatMaxY, laserCatMaxXi, laserCatMaxYi) != 0) {
+    laserCatMaxXi = -tmp_catlgm.getSize() - 1;
+    laserCatMaxYi = -tmp_catlgm.getSize() - 1;
   }
 
   /* Bounding box for new point cloud data */
@@ -604,6 +662,11 @@ void SpatialControl::updateGridMaps()
         /* Check if we can safely remove an old obstacle */
         bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
         bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
+
+        bool oldcatObstacle = (lgmcatKH(xi, yi) > m_obstacleMinHeight  && lgmcatKH(xi,yi) < maxCatHeight);
+        bool newcatObstacle = (pZ > m_obstacleMinHeight && pZ < maxCatHeight);
+
+        bool updateHeightMap = true;
         if (oldObstacle && !newObstacle) {
           /* Undo robot pose transform since it is not known by the point cloud */
           Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
@@ -614,10 +677,33 @@ void SpatialControl::updateGridMaps()
           oldPoint.z = to.X[2];
           /* If the old obstable is not currently in view don't remove it */
           if (!isPointInViewCone(oldPoint))
-            continue;
+            updateHeightMap = false;
         }
         /* If the above tests passed update the height map */ 
-        lgmKH(xi, yi) = pZ;
+        if(updateHeightMap)
+          lgmKH(xi, yi) = pZ;
+
+        // Again for categorical gridmap
+        updateHeightMap = true;
+        if (oldcatObstacle && !newcatObstacle) {
+          /* Undo robot pose transform since it is not known by the point cloud */
+          Cure::Vector3D old(pX, pY, lgmcatKH(xi, yi));
+          scanPose.transform(old, to);
+          cogx::Math::Vector3 oldPoint;
+          oldPoint.x = to.X[0];
+          oldPoint.y = to.X[1];
+          oldPoint.z = to.X[2];
+          /* If the old obstable is not currently in view don't remove it */
+          if (!isPointInViewCone(oldPoint))
+            updateHeightMap = false;
+        }
+        /* If the point is above the limit we care about, ignore it */
+        if (pZ > maxCatHeight)
+          updateHeightMap = false;
+
+        /* If the above tests passed update the height map */ 
+        if(updateHeightMap)
+          lgmcatKH(xi, yi) = pZ;
 
         /* Update bounding box */
         if (xi < pointcloudMinXi)
@@ -633,14 +719,20 @@ void SpatialControl::updateGridMaps()
 
     /* Project the height map onto the 2D obstacle map */ 
     if (pointcloudMinXi != INT_MAX && pointcloudMinYi != INT_MAX && pointcloudMaxXi != INT_MIN && pointcloudMaxYi != INT_MIN) {
-      blitHeightMap(tmp_lgm, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi);
+      blitHeightMap(tmp_lgm, m_lgmKH, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
       tmp_lgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+          0.55*Cure::NavController::getRobotWidth(), '0'); 
+
+      blitHeightMap(tmp_catlgm, m_categoricalKHMap, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, maxCatHeight);
+      tmp_catlgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
           0.55*Cure::NavController::getRobotWidth(), '0'); 
     }
   }
 
   /* Project the height map onto the 2D obstacle map */ 
-  blitHeightMap(tmp_lgm, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi);
+  blitHeightMap(tmp_lgm, m_lgmKH, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
+
+  blitHeightMap(tmp_catlgm, m_categoricalKHMap, laserCatMinXi, laserCatMaxXi, laserCatMinYi, laserCatMaxYi, m_obstacleMinHeight, maxCatHeight);
 
   const int deltaN = 3;
   double d = tmp_lgm.getCellSize()/deltaN;
@@ -672,6 +764,7 @@ void SpatialControl::updateGridMaps()
   /* Copy the temporary map */
   m_MapsMutex.lock();
   *m_lgm = tmp_lgm;
+  *m_categoricalMap = tmp_catlgm;
   m_MapsMutex.unlock();
 }
 
@@ -691,8 +784,13 @@ void SpatialControl::runComponent()
 			m_Displaylgm->updateDisplay(&currentPose,
 						                      &m_NavGraph, 
 						                      &m_Frontiers);
-      m_displayBinaryMap->updateDisplay(&currentPose);
 		}
+
+    if(m_displayBinaryMap)
+      m_displayBinaryMap->updateDisplay(&currentPose);
+
+    if(m_displayCategoricalMap)
+      m_displayCategoricalMap->updateDisplay(&currentPose);
 
     if(m_DisplayCureObstacleMap) {
       // Clear out obstacle map (that's used for visualization only)
@@ -1536,18 +1634,56 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
-void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, double maxx, double miny, double maxy) {
-  int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
-  int lgmsize = m_lgm->getSize(); // Size of real gridmap
+vector<double> SpatialControl::getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount) {
+  vector<double> raytrace;
+  raytrace.resize(beamCount);
 
-  // Get the bounds as indices of m_lgm
-  m_lgm->worldCoords2Index(minx,miny, minxi, minyi);
-  m_lgm->worldCoords2Index(maxx,maxy, maxxi, maxyi);
+  // Get current pose
+  double xytheta[3];
+  m_TOPP.getPose().getXYTheta(xytheta);
+  double theta = xytheta[2];
+
+  // Raytrace in the gridmap
+  double cellSize = m_categoricalMap->getCellSize();
+  double angle = startAngle + theta;
+  for(size_t i=0; i<beamCount; ++i)
+  {
+    raytrace[i] = m_MaxCatExplorationRange;
+    for(double r=0; r<=m_MaxCatExplorationRange; r+=(cellSize/2.0))
+    {
+      double x = r * cos(angle) + xytheta[0];
+      double y = r * sin(angle) + xytheta[1];
+
+      int xCell = static_cast<int>(round(x/cellSize));
+      int yCell = static_cast<int>(round(y/cellSize));
+
+      if(xCell < -300 || xCell > 300 || yCell < -300 || yCell > 300)
+        printf("From raytrace. x: %f, y: %f\n", x,y);
+
+      if((*m_categoricalMap)(xCell,yCell) != '0')
+      {
+        raytrace[i] = r;
+        break;
+      }
+    }
+    angle+=angleStep;
+  }
+
+  return raytrace;
+}
+
+void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char>* gridmap, double minx, double maxx, double miny, double maxy) {
+  int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
+  int lgmsize = gridmap->getSize(); // Size of real gridmap
+
+  // Get the bounds as indices of gridmap
+  gridmap->worldCoords2Index(minx,miny, minxi, minyi);
+  gridmap->worldCoords2Index(maxx,maxy, maxxi, maxyi);
 
   // Set map metadata
   map.xCenter = (minx+maxx)/2;
   map.yCenter = (miny+maxy)/2;
-  map.cellSize = m_lgm->getCellSize();
+  map.cellSize = gridmap->getCellSize();
 
   int sizeX = (maxxi-minxi)/2;
   int sizeY = (maxyi-minyi)/2;
@@ -1556,7 +1692,7 @@ void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, 
 
   // Get the square that we will actually loop over
   int xiCenter, yiCenter;
-  m_lgm->worldCoords2Index(map.xCenter, map.yCenter, xiCenter, yiCenter);
+  gridmap->worldCoords2Index(map.xCenter, map.yCenter, xiCenter, yiCenter);
   minxi = xiCenter-newSize;
   minyi = yiCenter-newSize;
   maxxi = xiCenter+newSize;
@@ -1575,8 +1711,8 @@ void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, double minx, 
            y < -lgmsize || y > lgmsize) {
         map.data.push_back('2');
       } else {
-        map.data.push_back((*m_lgm)(x,y));
-      }    
+        map.data.push_back((*gridmap)(x,y));
+      }
     }
   }
 }
