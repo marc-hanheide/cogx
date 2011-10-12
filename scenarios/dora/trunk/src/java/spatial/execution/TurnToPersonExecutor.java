@@ -31,6 +31,9 @@ public class TurnToPersonExecutor extends
 		NonBlockingActionExecutor<TurnToHuman> implements
 		WorkingMemoryChangeReceiver {
 
+	public static final String UNRESPONSIVE = "unresponsive";
+	public static final String ENGAGED = "engaged";
+
 	public TurnToPersonExecutor(ManagedComponent component) {
 		super(component, TurnToHuman.class);
 	}
@@ -244,12 +247,12 @@ public class TurnToPersonExecutor extends
 			UnknownSubarchitectureException {
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(b, 1.0);
-		m_humanBelief.getContent().put("engaged", fd);
+		m_humanBelief.getContent().put(ENGAGED, fd);
 		getComponent().overwriteWorkingMemory(m_humanBeliefAddr,
 				m_humanBelief.get());
 		fd=FormulaDistribution.create();
 		fd.add(!b, 1.0);
-		m_humanBelief.getContent().put("unresponsive", fd);
+		m_humanBelief.getContent().put(UNRESPONSIVE, fd);
 		getComponent().overwriteWorkingMemory(m_humanBeliefAddr,
 				m_humanBelief.get());
 	}
