@@ -17,7 +17,6 @@
 #include <cmath>
 
 #ifdef FEAT_TRACK_ARM
-#include <execution/manipulation_exe.hpp>
 namespace ArmIce = manipulation::execution::slice;
 #endif
 
@@ -52,6 +51,11 @@ SOIFilter::SOIFilter()
   m_snapper.logger = this;
   m_snapper.videoServer = videoServer;
   m_bCameraMoving = false;
+  m_minSoiDistance = 0.5; // robot body
+  m_maxSoiDistance = 3.0;
+#ifdef FEAT_TRACK_ARM
+  m_minArmDistance = 0.3;
+#endif
 
 #ifdef FEAT_VISUALIZATION
   m_segmenter.pDisplay = &m_display;
@@ -159,6 +163,32 @@ void SOIFilter::configure(const map<string,string> & _config)
   {
     ptzServerName = it->second;
   }
+
+  if((it = _config.find("--min-soi-dist")) != _config.end())
+  {
+    istringstream iss(it->second);
+    iss >> m_minSoiDistance;
+  }
+
+  if((it = _config.find("--max-soi-dist")) != _config.end()) {
+    istringstream iss(it->second);
+    iss >> m_maxSoiDistance;
+  }
+
+  if (m_minSoiDistance >= m_maxSoiDistance || m_minSoiDistance < 0 || m_maxSoiDistance < 0) {
+    error("SOI distance limits are not consistent! 0 <= %.4gm < %.4gm", m_minSoiDistance, m_maxSoiDistance);
+  }
+  else {
+    println("SOI limits are:  (%.4gm,  %.4gm) ", m_minSoiDistance, m_maxSoiDistance);
+  }
+
+#ifdef FEAT_TRACK_ARM
+  if((it = _config.find("--min-arm-dist")) != _config.end()) {
+    istringstream iss(it->second);
+    iss >> m_minArmDistance;
+  }
+  println("Min distance from the arm: %.4gm", m_minArmDistance);
+#endif
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);
@@ -652,6 +682,7 @@ void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
 #ifdef FEAT_TRACK_ARM
 void SOIFilter::onChange_ArmPosition(const cdl::WorkingMemoryChange & _wmc)
 {
+  m_pArmStatus = getMemoryEntry<ArmIce::ArmStatus>(_wmc.address);
 }
 #endif
 
@@ -662,9 +693,12 @@ bool SOIFilter::isCameraStable(unsigned long milliSeconds)
 
 bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
 {
-  Video::CameraParameters params;
-  if (! videoServer->getCameraParameters(camId, params))
-    return false;
+  return m_coarsePointCloud.isPointVisible(pos);
+
+  // OLD
+  //Video::CameraParameters params;
+  //if (! videoServer->getCameraParameters(camId, params))
+  //  return false;
 
 #if 0 // DEBUGGING
   //Vector3 rota, rotb;
@@ -682,7 +716,7 @@ bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
   //m_display.setHtml("soif.CamPars", "0", ss.str());
 #endif // DEBUGGING
 
-  return Video::isPointVisible(params, pos);
+  //return Video::isPointVisible(params, pos);
 }
 
 // Check the objects that are curently marked invisible.
