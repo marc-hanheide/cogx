@@ -49,22 +49,31 @@ public class PersonReasoningEngine {
 	public static void main(String[] argv) {
 		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
 		Collection<Boolean> placeObs;
-		placeObs = Arrays.asList(false,false,false);
+		placeObs = Arrays.asList(true);
 		allObs.put("p1", placeObs);
-		placeObs = Arrays.asList(false, false, false);
+		placeObs = Arrays.asList();
 		allObs.put("p2", placeObs);
-		placeObs = Arrays.asList(false, false, false);
+		placeObs = Arrays.asList();
 		allObs.put("p3", placeObs);
-		placeObs = Arrays.asList(false, false, false);
+		placeObs = Arrays.asList();
 		allObs.put("p4", placeObs);
+		placeObs = Arrays.asList();
+		allObs.put("p5", placeObs);
+		placeObs = Arrays.asList();
+		allObs.put("p6", placeObs);
+		placeObs = Arrays.asList();
+		allObs.put("p7", placeObs);
 
 		PersonReasoningEngine pre = new PersonReasoningEngine();
 		pre.submit(allObs);
 		for (BeliefNode n : pre.getNetwork().getNodes()) {
 			CPF res = pre.getInferenceEngine().queryMarginal(n);
 
-			System.out.println("queryMarginal for " + n.getName() + ": "
-					+ res.get(0).getExpr());
+			System.out.print("queryMarginal for " + n.getName() + ": ");
+			for (int i=0; i < res.size(); i++) {
+				System.out.print(res.get(i).getExpr()+" ");
+			}
+			System.out.println();	
 
 		}
 
