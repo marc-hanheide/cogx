@@ -626,8 +626,7 @@ public abstract class AbstractDialogueActionInterface extends
 						+ "-question-answered";
 				// record that we have looked at it
 
-				((AbstractActionInterface) getComponent()).addBooleanFeature(
-						getAction().beliefAddress, answeredPredictate, true);
+				((AbstractActionInterface) getComponent()).addStringFeature(getAction().beliefAddress, answeredPredictate, getAction().value);
 			} catch (CASTException e) {
 				getComponent().logException(e);
 			}

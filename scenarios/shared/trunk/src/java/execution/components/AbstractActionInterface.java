@@ -40,6 +40,23 @@ public abstract class AbstractActionInterface extends ManagedComponent {
 		overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
+        public void addStringFeature(WorkingMemoryAddress _beliefAddress,
+                                     String _feature, String _value) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		GroundedBelief belief = getMemoryEntry(_beliefAddress,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+
+		pb.getContent().put(_feature, fd);
+		overwriteWorkingMemory(_beliefAddress, pb.get());
+	}
+
 	protected WorkingMemoryPointer getFirstAncestorOfBelief(
 			WorkingMemoryAddress _beliefAddress)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
