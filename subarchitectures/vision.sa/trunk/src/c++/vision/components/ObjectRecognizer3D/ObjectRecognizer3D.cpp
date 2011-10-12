@@ -471,20 +471,20 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
   VisionData::VisualObjectPtr obj;
 
   if(newModel){
-		// Load geometry
-		ModelLoader modelloader;
-		Model model;
-		modelloader.LoadPly(model, rec_entry.plyfile.c_str());
+    // Load geometry
+    ModelLoader modelloader;
+    Model model;
+    modelloader.LoadPly(model, rec_entry.plyfile.c_str());
 
-		obj = cogx::createVisualObject();
-		obj->model = new VisionData::GeometryModel;
-		convertModel2Geometry(model, obj->model);
-		rec_entry.visualObjectID = newDataID();
+    obj = cogx::createVisualObject();
+    obj->model = new VisionData::GeometryModel;
+    convertModel2Geometry(model, obj->model);
+    rec_entry.visualObjectID = newDataID();
   }else{
-		obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
-		// these arrays are modified and need to be cleared first
-		obj->identLabels.clear();
-		obj->identDistrib.clear();
+    obj = getMemoryEntry<VisualObject>(rec_entry.visualObjectID);
+    // these arrays are modified and need to be cleared first
+    obj->identLabels.clear();
+    obj->identDistrib.clear();
   }
 
   // create a very simple distribution: label and unknown
@@ -505,16 +505,16 @@ void ObjectRecognizer3D::loadVisualModelToWM(RecEntry &rec_entry,
       obj->identAmbiguity -= obj->identDistrib[i]*::log(obj->identDistrib[i]);
   obj->pose = pose;
   obj->componentID = getComponentID();
-	obj->affordance="";
+  obj->affordance="";
   if(newModel){
-		addToWorkingMemory(rec_entry.visualObjectID, obj);
-		addTrackerCommand(ADDMODEL, rec_entry.visualObjectID);
-		log("Add model to working memory: '%s' id: %s", obj->identLabels[0].c_str(), rec_entry.visualObjectID.c_str());
-	}else{
-		overwriteWorkingMemory(rec_entry.visualObjectID, obj);
-		addTrackerCommand(OVERWRITE, rec_entry.visualObjectID);
-		log("Overwriting VisualObject '%s'", getComponentID().c_str());
-	}
+    addToWorkingMemory(rec_entry.visualObjectID, obj);
+    addTrackerCommand(ADDMODEL, rec_entry.visualObjectID);
+    log("Add model to working memory: '%s' id: %s", obj->identLabels[0].c_str(), rec_entry.visualObjectID.c_str());
+  }else{
+    overwriteWorkingMemory(rec_entry.visualObjectID, obj);
+    addTrackerCommand(OVERWRITE, rec_entry.visualObjectID);
+    log("Overwriting VisualObject '%s'", getComponentID().c_str());
+  }
 }
 
 /**
@@ -559,22 +559,22 @@ std::string ObjectRecognizer3D::loadEmptyVisualModelToWM(std::string &label){
  */
 void ObjectRecognizer3D::initInStart(){
 
-	m_task = RECSTOP;
+  m_task = RECSTOP;
   m_wait4data = false;
   m_delete_command_from_wm = false;
 
   if(m_showCV){
-		cvNamedWindow(getComponentID().c_str(), 1 );
-		cvWaitKey(10);
-	}
+    cvNamedWindow(getComponentID().c_str(), 1 );
+    cvWaitKey(10);
+  }
 
   log("loading models ...");
-	std::map<std::string,RecEntry>::iterator it;
-	for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
-		log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
-		(*it).second.object = new(P::Object3D);
-		(*it).second.learn = !sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
-	}
+  std::map<std::string,RecEntry>::iterator it;
+  for(it = m_recEntries.begin(); it!=m_recEntries.end(); it++){
+    log("Loading Sift Model '%s'", (*it).second.siftfile.c_str());
+    (*it).second.object = new(P::Object3D);
+    (*it).second.learn = !sift_model_learner.LoadModel((*it).second.siftfile.c_str(),(*(*it).second.object));
+  }
   log("... done loading models");
 }
 
@@ -584,7 +584,7 @@ void ObjectRecognizer3D::initInStart(){
  */
 void ObjectRecognizer3D::initInRun(){
 
-	m_detect = new(P::ODetect3D);
+  m_detect = new(P::ODetect3D);
 
   videoServer->getImage(camId, m_image);
   m_iplImage = convertImageToIpl(m_image);
@@ -610,95 +610,95 @@ void ObjectRecognizer3D::initInRun(){
 
   m_detect->SetCameraParameter(C);
 
- // string empty;
- // addTrackerCommand(VisionData::START, empty);
+  // string empty;
+  // addTrackerCommand(VisionData::START, empty);
 
   cvReleaseMat(&C);
 }
 
 void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
-	log("Learning sift model '%s': hit space bar", m_rec_cmd->label.c_str());
-	VisionData::Vertex vertex;
+  log("Learning sift model '%s': hit space bar", m_rec_cmd->label.c_str());
+  VisionData::Vertex vertex;
   VisionData::VertexSeq vertexlist;
 
   // Start tracking
   addTrackerCommand(VisionData::START, m_rec_cmd->visualObjectID);
 
   if(m_starttask){
-  	addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
-  	m_starttask = false;
+    addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
+    m_starttask = false;
   }else{
-		addTrackerCommand(VisionData::UNLOCK, m_rec_cmd->visualObjectID);
-	}
+    addTrackerCommand(VisionData::UNLOCK, m_rec_cmd->visualObjectID);
+  }
 
-	int key;
-	do{
-			key = cvWaitKey ( 100 );
-	}while( isRunning() && (m_wait4data || ((char)key)!=' ' && ((char)key!='s') && ((char)key!='q')) );
+  int key;
+  do{
+    key = cvWaitKey ( 100 );
+  }while( isRunning() && (m_wait4data || ((char)key)!=' ' && ((char)key!='s') && ((char)key!='q')) );
 
-	if((char)key==' '){
+  if((char)key==' '){
 
-		// 	Lock model
-		addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
+    // 	Lock model
+    addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
 
-		// 	Grab image from VideoServer
-		videoServer->getImage(camId, m_image);
-		m_iplImage = convertImageToIpl(m_image);
-		m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
-		cvConvertImage( m_iplImage, m_iplGray );
+    // 	Grab image from VideoServer
+    videoServer->getImage(camId, m_image);
+    m_iplImage = convertImageToIpl(m_image);
+    m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
+    cvConvertImage( m_iplImage, m_iplGray );
 
-		// 	Calculate SIFTs from image
-		sift.Operate(m_iplGray,m_image_keys);
+    // 	Calculate SIFTs from image
+    sift.Operate(m_iplGray,m_image_keys);
 
-		// 	Convert 2D image points to 3D model points
-		vertexlist.clear();
-		for(unsigned i=0; i<m_image_keys.Size(); i++ ){
-			vertex.texCoord.x = m_image_keys[i]->p.x;
-			vertex.texCoord.y = m_image_keys[i]->p.y;
-			vertexlist.push_back(vertex);
-		}
+    // 	Convert 2D image points to 3D model points
+    vertexlist.clear();
+    for(unsigned i=0; i<m_image_keys.Size(); i++ ){
+      vertex.texCoord.x = m_image_keys[i]->p.x;
+      vertex.texCoord.y = m_image_keys[i]->p.y;
+      vertexlist.push_back(vertex);
+    }
 
-		get3DPointFromTrackerModel(m_rec_cmd->visualObjectID, vertexlist);
+    get3DPointFromTrackerModel(m_rec_cmd->visualObjectID, vertexlist);
 
-		while( isRunning() && m_wait4data ){
-			sleepComponent(100);
-		}
+    while( isRunning() && m_wait4data ){
+      sleepComponent(100);
+    }
 
-	}else if((char)key=='s'){
+  }else if((char)key=='s'){
 
-		//	Save sift model
-		log("Saving model to file '%s'", m_recEntries[m_label].siftfile.c_str());
-		sift_model_learner.SaveModel(m_recEntries[m_label].siftfile.c_str(),(*m_recEntries[m_label].object));
+    //	Save sift model
+    log("Saving model to file '%s'", m_recEntries[m_label].siftfile.c_str());
+    sift_model_learner.SaveModel(m_recEntries[m_label].siftfile.c_str(),(*m_recEntries[m_label].object));
 
-		// Clean up
-		addTrackerCommand(VisionData::REMOVEMODEL, m_rec_cmd->visualObjectID);
-		cvReleaseImage(&m_iplImage);
-		cvReleaseImage(&m_iplGray);
-		for (unsigned i=0; i<m_image_keys.Size(); i++)
-			delete(m_image_keys[i]);
-		m_image_keys.Clear();
+    // Clean up
+    addTrackerCommand(VisionData::REMOVEMODEL, m_rec_cmd->visualObjectID);
+    cvReleaseImage(&m_iplImage);
+    cvReleaseImage(&m_iplGray);
+    for (unsigned i=0; i<m_image_keys.Size(); i++)
+      delete(m_image_keys[i]);
+    m_image_keys.Clear();
 
-		vertexlist.clear();
+    vertexlist.clear();
 
-		// Quit learning
-		m_task = RECSTOP;
-		log("Sift Model learned");
- 	}else if((char)key=='q'){
+    // Quit learning
+    m_task = RECSTOP;
+    log("Sift Model learned");
+  }else if((char)key=='q'){
 
- 		// Clean up
- 		addTrackerCommand(VisionData::REMOVEMODEL, m_rec_cmd->visualObjectID);
-		cvReleaseImage(&m_iplImage);
-		cvReleaseImage(&m_iplGray);
-		for (unsigned i=0; i<m_image_keys.Size(); i++)
-			delete(m_image_keys[i]);
-		m_image_keys.Clear();
+    // Clean up
+    addTrackerCommand(VisionData::REMOVEMODEL, m_rec_cmd->visualObjectID);
+    cvReleaseImage(&m_iplImage);
+    cvReleaseImage(&m_iplGray);
+    for (unsigned i=0; i<m_image_keys.Size(); i++)
+      delete(m_image_keys[i]);
+    m_image_keys.Clear();
 
-		vertexlist.clear();
+    vertexlist.clear();
 
-		// Quit learning
-		m_task = RECSTOP;
-		log("Learning Sift Model canceled");
- 	}
+    // Quit learning
+    m_task = RECSTOP;
+    log("Learning Sift Model canceled");
+  }
 }
 
 void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
@@ -708,29 +708,29 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
   if(m_recEntries.find(m_label) == m_recEntries.end())
   {
     log("%s: Unknown model", m_label.c_str());
-         std::string newID = loadEmptyVisualModelToWM(m_label);
- m_rec_cmd->confidence = 0.;
+    std::string newID = loadEmptyVisualModelToWM(m_label);
+    m_rec_cmd->confidence = 0.;
     m_rec_cmd->visualObjectID = newID;
-}
+  }
   else
   {
-	log("%s: Detecting object", m_label.c_str());
-	// 	if(m_starttask){
-	// 		m_starttask = false;
-	// 	}else{
-	// 		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
-	// 	}
+    log("%s: Detecting object", m_label.c_str());
+    // 	if(m_starttask){
+    // 		m_starttask = false;
+    // 	}else{
+    // 		addTrackerCommand(REMOVEMODEL, m_recEntries[m_label].visualObjectID);
+    // 	}
 
-	// 	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
+    // 	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
 
-	// Grab image from VideoServer
-	videoServer->getImage(camId, m_image);
-	m_iplImage = convertImageToIpl(m_image);
-	m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
-	cvConvertImage( m_iplImage, m_iplGray );
+    // Grab image from VideoServer
+    videoServer->getImage(camId, m_image);
+    m_iplImage = convertImageToIpl(m_image);
+    m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
+    cvConvertImage( m_iplImage, m_iplGray );
 
-	// Calculate SIFTs from image
-	sift.Operate(m_iplGray,m_image_keys);
+    // Calculate SIFTs from image
+    sift.Operate(m_iplGray,m_image_keys);
 
     m_detect->SetDebugImage(m_iplImage);
     if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
@@ -753,7 +753,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       if(m_recEntries[m_label].object->conf < m_confidence)
       {
         log("Found object %s with below threshold conf %f at:\n%s\n",
-          m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
+            m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         // set confidence to 0 to indicate that we consider the object not detected
         // NOTE: this threshold is stupid. let the caller decide, what to do with the result.
         // m_recEntries[m_label].object->conf = 0.;
@@ -763,7 +763,7 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       else
       {
         log("Found object %s with conf %f at:\n%s\n",
-          m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
+            m_label.c_str(), m_recEntries[m_label].object->conf, toString(B).c_str());
         P::SDraw::DrawPoly(m_iplImage, m_recEntries[m_label].object->contour.v, CV_RGB(0,255,0), 2);
         m_detect->DrawInlier(m_iplImage, CV_RGB(255,0,0));
       }
@@ -775,27 +775,27 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     }
 
 #ifdef FEAT_VISUALIZATION
-  m_display.setImage(getComponentID(), m_iplImage);
+    m_display.setImage(getComponentID(), m_iplImage);
 #endif
 
-	if(m_showCV){
-		cvShowImage(getComponentID().c_str(), m_iplImage);
-		cvWaitKey(50);
-	}
+    if(m_showCV){
+      cvShowImage(getComponentID().c_str(), m_iplImage);
+      cvWaitKey(50);
+    }
 
-	cvReleaseImage(&m_iplImage);
-	cvReleaseImage(&m_iplGray);
-	for (unsigned i=0; i<m_image_keys.Size(); i++)
-	  delete(m_image_keys[i]);
-	m_image_keys.Clear();
+    cvReleaseImage(&m_iplImage);
+    cvReleaseImage(&m_iplGray);
+    for (unsigned i=0; i<m_image_keys.Size(); i++)
+      delete(m_image_keys[i]);
+    m_image_keys.Clear();
   }
 
-// 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
+  // 	addTrackerCommand(VisionData::UNLOCK, m_recEntries[m_label].visualObjectID);
 
-	// Send result to WM
-	overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
+  // Send result to WM
+  overwriteWorkingMemory(m_rec_cmd_id, m_rec_cmd);
 
-	m_task = RECSTOP;
+  m_task = RECSTOP;
 }
 
 
