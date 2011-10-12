@@ -5,10 +5,11 @@ import java.util.Date;
 
 /**
  * class for storing a single run in a network
+ * 
  * @author ken
- *
+ * 
  */
-public class PathRun implements Serializable{
+public class PathRun implements Serializable {
 
 	/**
 	 * 
@@ -19,21 +20,34 @@ public class PathRun implements Serializable{
 
 	public PathRun(Date timeStart) {
 		this.timeStart = timeStart;
-		
+
 	}
-	public void setTimeTaken(Date currentDate){
+
+	public void setTimeTaken(Date currentDate) {
 		timeTaken = currentDate.getTime() - timeStart.getTime();
 	}
 
+	/**
+	 * will return 0 if the run was a failiure
+	 * 
+	 * @return
+	 */
 	public long timeTaken() {
+
 		return timeTaken;
 	}
 
 	public Date timeStarted() {
 		return timeStart;
 	}
+
 	@Override
-	public String toString(){
-		return "Run beginning at "+ timeStart + " took "+ timeTaken;
+	public String toString() {
+		if (timeTaken != 0) {
+			return "Run beginning at " + timeStart + " took " + timeTaken;
+		} else {
+			return "Run beginning at" + timeStart + " has failed";
+
+		}
 	}
 }
