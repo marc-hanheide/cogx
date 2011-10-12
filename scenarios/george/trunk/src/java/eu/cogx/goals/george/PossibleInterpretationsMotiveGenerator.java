@@ -40,14 +40,24 @@ public class PossibleInterpretationsMotiveGenerator
 		// no motive is generated)
 		TutorInitiativeMotive motive = null;
 		try {
+			InterpretedIntention mostConfidentIntention = IntentionUnpacker
+					.getMostConfidentIntention(_pii);
 
-			if (neeedsDisambiguation(_pii)) {
-				println("generating motive to disambiguate");
-				motive = generateDisambiguationMotive(_piiAddr, _pii);
-			} else {
-				println("unpacking most confident of " + _pii.intentions.size()
-						+ " possible interpretations");
-				IntentionUnpacker.unpackMostConfidentIntention(this, _pii);
+			//filter out answers and maybe other types later?
+			if (!mostConfidentIntention.stringContent.get("subtype").contains(
+					"answer")) {
+
+				if (neeedsDisambiguation(_pii)) {
+					println("generating motive to disambiguate");
+					motive = generateDisambiguationMotive(_piiAddr, _pii);
+				} else {
+
+					println("unpacking most confident of "
+							+ _pii.intentions.size()
+							+ " possible interpretations");
+
+					IntentionUnpacker.unpackMostConfidentIntention(this, _pii);
+				}
 			}
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
@@ -90,11 +100,11 @@ public class PossibleInterpretationsMotiveGenerator
 		if (_pii.intentions.size() == 1) {
 			return false;
 		} else {
-			
+
 			for (InterpretedIntention ii : _pii.intentions.values()) {
 				logIntention(ii);
 			}
-			
+
 			InterpretedIntention mostConfidentIntention = IntentionUnpacker
 					.getMostConfidentIntention(_pii);
 			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;

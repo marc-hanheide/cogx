@@ -27,7 +27,9 @@ public class InterpretedIntentionMotiveGenerator extends
 		try {
 			motive = generateMotiveFromIntention(_addr, _intention);
 			// mark referents of chosen intention
-			markReferent(_intention.addressContent.get("about"));
+			if (motive != null) {
+				markReferent(_intention.addressContent.get("about"));
+			}
 		} catch (CASTException e) {
 			// reset in case of exception in markReferent
 			motive = null;
