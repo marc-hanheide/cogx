@@ -148,8 +148,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		}
 
 			}
-		m_component->log("Returning %d 3D viewcones", result3DVCList.size());
-		printf("Returning %d 3D viewcones \n", result3DVCList.size());
+		m_component->log("Returning %d 3D viewcones \n", result3DVCList.size());
 				for (unsigned int i=0; i < result3DVCList.size(); i++){
 				for (unsigned int i=0; i < result3DVCList.size(); i++){
 					m_component->log("3DCone #%d, sum: %f", i, result3DVCList[i].totalprob);

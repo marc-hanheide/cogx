@@ -635,7 +635,11 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser
       m_Mutex.lock();
       m_Glrt1->addScan(cureScan, lpW, m_MaxLaserRangeForCombinedMaps);      
       m_Glrt2->addScan(cureScan, lpW, m_MaxLaserRangeForCombinedMaps);      
-      if (m_isUsingSeparateGridMaps) {
+      m_lgm1->setValueInsideCircle(m_SlamRobotPose.getX(), m_SlamRobotPose.getY(),
+      0.55*0.40, '0');                                  
+  m_lgm2->setValueInsideCircle(m_SlamRobotPose.getX(), m_SlamRobotPose.getY(),
+      0.55*0.45, '0');                                  
+    if (m_isUsingSeparateGridMaps) {
         m_Glrt1_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
         m_Glrt2_alt->addScan(cureScan, lpW, m_MaxLaserRangeForPlaceholders);      
       }

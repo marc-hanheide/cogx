@@ -61,7 +61,7 @@ PlaceManager::~PlaceManager()
 void
 PlaceManager::configure(const std::map<std::string, std::string>& _config)
 {
-  debug("Configure entered");
+  log("Configure entered");
 
   if(_config.find("--no-local-maps") != _config.end()) {
     m_useLocalMaps = false;
@@ -214,7 +214,7 @@ PlaceManager::stop()
 void 
 PlaceManager::runComponent()
 {
-  debug("PlaceManager::runComponent: now at start of runComponent");
+  log("PlaceManager::runComponent: now at start of runComponent");
 
   Rendezvous *rv = new Rendezvous(*this);
   rv->addChangeFilter(
@@ -235,10 +235,10 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   try {
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
-    debug("newNavNode called");
+    log("newNavNode called");
 
     if (m_firstMovementRegistered) {
-    	debug("");
+    	log("");
       
       if (oobj != 0) {
 	processPlaceArrival(false);
@@ -275,13 +275,13 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException) {
     log("Error! Nav node missing from WM!");
   }
-  debug("newNavNode exited");
+  log("newNavNode exited");
 }
 
 void
 PlaceManager::cancelMovement(bool failed = false)
 {
-  debug("CancelMovement called");
+  log("CancelMovement called");
 
   m_goalPlaceForCurrentPath = -1;
   m_isPathFollowing = false;
@@ -292,17 +292,17 @@ PlaceManager::cancelMovement(bool failed = false)
   for (vector<CASTData<SpatialData::NavCommand> >::iterator it =
       commands.begin(); it != commands.end(); it++) {
     try {
-      debug("locking");
+      log("locking");
       lockEntry(it->getID(), cdl::LOCKEDODR);
-      debug("locked");
+      log("locked");
       SpatialData::NavCommandPtr ptr = it->getData();
       if (ptr->cmd == SpatialData::GOTOPLACE &&
           ptr->comp == SpatialData::COMMANDINPROGRESS) {
         ptr->status = failed ? SpatialData::TARGETUNREACHABLE : SpatialData::UNKNOWN;
-        debug("overwrite 1: %s", it->getID().c_str());
+        log("overwrite 1: %s", it->getID().c_str());
         overwriteWorkingMemory<SpatialData::NavCommand>(it->getID(), ptr);
       }
-      debug("unlocking");
+      log("unlocking");
       unlockEntry(it->getID());
     }
     catch (IceUtil::NullHandleException e) {
@@ -314,13 +314,13 @@ PlaceManager::cancelMovement(bool failed = false)
       log("Error! ConsistencyException in cancelMovement!");
     }
   }
-  debug("CancelMovement exited");
+  log("CancelMovement exited");
 }
 
 void 
 PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("modifiedNavNode called");
+  log("modifiedNavNode called");
   try {
     lockEntry(objID.address.id, cdl::LOCKEDODR);
     NavData::FNodePtr oobj =
@@ -333,7 +333,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	  m_PlaceIDToNodeMap.begin();
 	  it != m_PlaceIDToNodeMap.end(); it++){
 	NavData::FNodePtr node = it->second;
-	debug("nodeID = %i", node->nodeId);
+	log("nodeID = %i", node->nodeId);
 	if (node->nodeId == oobj->nodeId) {
 	  if (oobj->gateway == 1) {
 	    // Has gained gateway status; add gateway property to WM
@@ -362,7 +362,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	  }
 
 	  unlockEntry(objID.address.id);
-	  debug("modifiedNavNode exited");
+	  log("modifiedNavNode exited");
 	  return;
 	}
       }
@@ -379,13 +379,13 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException e) {
     log("Couldn't find supposedly modified node!");
   }
-  debug("modifiedNavNode exited");
+  log("modifiedNavNode exited");
 }
 
 void 
 PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("deletedNavNode called");
+  log("deletedNavNode called");
   //TODO: This will never work!
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(objID.address);
@@ -402,18 +402,18 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	map<int, PlaceHolder>::iterator it2 = m_Places.find(placeID);
 	if(it2 != m_Places.end()) {
 	  deleteFromWorkingMemory(m_Places[placeID].m_WMid);
-	  debug("deletedNavNode exited");
+	  log("deletedNavNode exited");
 	  return;
 	}
 	m_PlaceIDToNodeMap.erase(it);
-	debug("deletedNavNode exited");
+	log("deletedNavNode exited");
 	return;
       }
     }
 
     log("WARNING: Did not find the node to delete!!!");
   }
-  debug("deletedNavNode exited");
+  log("deletedNavNode exited");
 }
 
 void
@@ -461,7 +461,7 @@ PlaceManager::processEdge(NavData::AEdgePtr oobj)
 void 
 PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("newEdge called");
+  log("newEdge called");
   try {
     lockEntry(objID.address.id, cdl::LOCKEDODR);
     NavData::AEdgePtr oobj =
@@ -489,13 +489,13 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
   } catch (DoesNotExistOnWMException e) {
     log("Error! edge object disappeared!");
   }
-  debug("newEdge exited");
+  log("newEdge exited");
 }
 
 void 
 PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("modifiedEdge called");
+  log("modifiedEdge called");
   // This will probably never be called...
   /*
      shared_ptr<CASTData<NavData::AEdge> > oobj =
@@ -505,7 +505,7 @@ PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 
   // Look for the place in the internal vector
    */
-  debug("modifiedEdge exited");
+  log("modifiedEdge exited");
 }
 
 void 
@@ -513,7 +513,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 {
 	// Commented out as for the AVS IROS paper, the AVS is creating the objectplaceproperties!
 
-/**  debug("newObject called");
+/**  log("newObject called");
   try {
     lockEntry(objID.address, cdl::LOCKEDODR);
     vector<NavData::FNodePtr> nodes;
@@ -527,7 +527,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
     catch (DoesNotExistOnWMException e) {
       log("Error! New ObjData couldn't be read!");
       unlockEntry(objID.address);
-      debug("newObject exited");
+      log("newObject exited");
       return;
     }
       
@@ -595,21 +595,21 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 	catch (DoesNotExistOnWMException e) {
 	  log("Error! Failed to create new object property!");
 	  unlockEntry(objID.address.id);
-	  debug("newObject exited");
+	  log("newObject exited");
 	  return;
 	}
       }
       else {
 	log("Could not find Place for object!");
 	unlockEntry(objID.address.id);
-	debug("newObject exited");
+	log("newObject exited");
 	return;
       }
     }
     else {
       log("Could not find Node for object!");
       unlockEntry(objID.address.id);
-      debug("newObject exited");
+      log("newObject exited");
       return;
     }
     unlockEntry(objID.address.id);
@@ -617,7 +617,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
   catch (DoesNotExistOnWMException e) {
     log ("Object disappeared!");
   }
-  debug("newObject exited"); */
+  log("newObject exited"); */
 }
 
 void 
@@ -645,7 +645,7 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 	    double dy = doorY - nodeHyp->y;
 	    double distSq = dx*dx+dy*dy;
 	    double gatewayness = GATEWAY_FUNCTION(distSq);
-	    debug("newDoorHypothesis calling setOrUpgradePlaceholderGatewayProperty");
+	    log("newDoorHypothesis calling setOrUpgradePlaceholderGatewayProperty");
 	    setOrUpgradePlaceholderGatewayProperty(hypID, placeholder->id, gatewayness);
 	  }
 	}
@@ -670,7 +670,7 @@ bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int cur
     try {
       if (curPlaceId < 0 || extantHyp->originPlaceID == curPlaceId) {
         double distanceSq = (extantHyp->x - x)*(extantHyp->x - x) + (extantHyp->y - y)*(extantHyp->y - y);
-        debug("2distanceSq = %f", distanceSq);
+        log("2distanceSq = %f", distanceSq);
         if (distanceSq < minDistanceSq) {
           minDistanceSq = distanceSq;
           minDistID = extantHyp->hypID;
@@ -747,7 +747,7 @@ std::vector<pair <double,double> >
 PlaceManager::getPlaceholderPositionsFromFrontiers(
     FrontierInterface::FrontierPtSeq frontiers,
     int placeId) {
-  debug("Entered getplaceholderpositionsfromfrontiers\n");
+  log("Entered getplaceholderpositionsfromfrontiers\n");
 
   std::vector<pair <double,double> > ret;
 
@@ -992,7 +992,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
               foundFSIt = m_freeSpaceProperties.find(placeholder->id);
             if (foundFSIt != m_freeSpaceProperties.end()) {
               try {
-                debug("lock 6");
+                log("lock 6");
                 lockEntry(foundFSIt->second, cdl::LOCKEDODR);
                 SpatialProperties::AssociatedSpacePlaceholderPropertyPtr
                   freeProp = getMemoryEntry
@@ -1006,7 +1006,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                   freeProp->mapValue = freespacevalue;
                   freeProp->mapValueReliable = 1;
 
-                  debug("overwrite 2: %s", foundFSIt->second.c_str());
+                  log("overwrite 2: %s", foundFSIt->second.c_str());
                   bool done = false;
                   while (!done) {
                     try {
@@ -1020,7 +1020,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                   }
                 }
                 unlockEntry(foundFSIt->second);
-                debug("unlock 6");
+                log("unlock 6");
               }
               catch(DoesNotExistOnWMException e) {
                 log("Property missing!");
@@ -1071,7 +1071,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
               foundUnexpIt = m_borderProperties.find(placeholder->id);
             if (foundUnexpIt != m_borderProperties.end()) {
               try {
-                debug("lock 7");
+                log("lock 7");
                 lockEntry(foundUnexpIt->second, cdl::LOCKEDODR);
                 SpatialProperties::AssociatedBorderPlaceholderPropertyPtr
                   borderProp = getMemoryEntry
@@ -1084,7 +1084,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                   borderProp->placeId = placeholder->id;
                   borderProp->mapValue = bordervalue;
                   borderProp->mapValueReliable = 1;
-                  debug("overwrite 3: %s", foundUnexpIt->second.c_str());
+                  log("overwrite 3: %s", foundUnexpIt->second.c_str());
                   bool done = false;
                   while (!done) {
                     try {
@@ -1099,7 +1099,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                 }
 
                 unlockEntry(foundUnexpIt->second);
-                debug("unlock 7");
+                log("unlock 7");
               }
               catch(DoesNotExistOnWMException e) {
                 log("Property missing!");
@@ -1150,7 +1150,7 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
       try {
         // if (extantHyp->originPlaceID == currentPlaceID) {
         double distanceSq = (extantHyp->x - frontierX)*(extantHyp->x - frontierX) + (extantHyp->y - frontierY)*(extantHyp->y - frontierY);
-        debug("2distanceSq = %f", distanceSq);
+        log("2distanceSq = %f", distanceSq);
         if (distanceSq < minDistanceSq) {
           minDistanceSq = distanceSq;
           minDistID = extantHyp->hypID;
@@ -1196,7 +1196,7 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
 
 void PlaceManager::evaluateUnexploredPaths()
 {
-  debug("Entering evaluateUnexplorePaths");
+  log("Entering evaluateUnexplorePaths");
   m_PlaceholderMutex.lock();
   if(!m_bNoPlaceholders) {
     NavData::FNodePtr curNode = getCurrentNavNode();
@@ -1254,14 +1254,14 @@ void PlaceManager::evaluateUnexploredPaths()
   }
 
   m_PlaceholderMutex.unlock();
-  debug("Exiting evaluateUnexplorePaths");
+  log("Exiting evaluateUnexplorePaths");
 }
 
 void
 PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
     int placeholderID, double value)
 {
-  debug("setOrUpgradePlaceholderGatewayProperty(%i,%i,%f) called", hypothesisID, placeholderID, value);
+  log("setOrUpgradePlaceholderGatewayProperty(%i,%i,%f) called", hypothesisID, placeholderID, value);
   m_PlacePropsMutex.lock();
 
   SpatialProperties::BinaryValuePtr gatewaynessValue =
@@ -1304,14 +1304,14 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
 	SpatialProperties::DiscreteProbabilityDistributionPtr discDistr =
 	  SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast(gwProp->distribution);
 	double currentProb = discDistr->data[0].probability;
-	debug("Comparing with existing probability: %f", currentProb);
+	log("Comparing with existing probability: %f", currentProb);
 	if (currentProb < value) {
 	  gwProp->distribution = discDistr;
 	  gwProp->placeId = placeholderID;
 	  gwProp->mapValue = gatewaynessMapValue;
 	  gwProp->mapValueReliable = 1;
 
-	  debug("overwrite: %s", foundFSIt->second.c_str());
+	  log("overwrite: %s", foundFSIt->second.c_str());
 	  bool done = false;
 	  while (!done) {
 	    try {
@@ -1340,7 +1340,7 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
     gwProp->mapValueReliable = 1;
 
     string newID = newDataID();
-    debug("Adding new GWPlaceholderProperty");
+    log("Adding new GWPlaceholderProperty");
     addToWorkingMemory<SpatialProperties::GatewayPlaceholderProperty>
       (newID, gwProp);
     m_placeholderGatewayProperties[placeholderID] = newID;
@@ -1381,19 +1381,19 @@ SpatialData::PlacePtr PlaceManager::getCurrentPlace() {
 NavData::FNodePtr
 PlaceManager::getCurrentNavNode()
 {
-  debug("getCurrentNavNode called");
+  log("getCurrentNavNode called");
   vector<NavData::FNodePtr> nodes;
-  debug("1");
+  log("1");
   getMemoryEntries<NavData::FNode>(nodes, 0);
 
   vector<NavData::RobotPose2dPtr> robotPoses;
-  debug("2");
+  log("2");
   getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
-  debug("3");
+  log("3");
 
   if (robotPoses.size() == 0) {
     log("Could not find RobotPose!");
-    debug("getCurrentNavNode exited");
+    log("getCurrentNavNode exited");
     return 0;
   }
 
@@ -1419,14 +1419,14 @@ PlaceManager::getCurrentNavNode()
       log("Error! FNode suddenly disappeared!");
     }
   }
-  debug("getCurrentNavNode exited");
+  log("getCurrentNavNode exited");
   return ret;
 }
 
 FrontierInterface::PlaceMembership
 PlaceManager::getPlaceMembership(double inX, double inY)
 {
-  debug("getPlaceMembership called");
+  log("getPlaceMembership called");
   vector<NavData::FNodePtr> nodes;
   getMemoryEntries<NavData::FNode>(nodes, 0);
 
@@ -1456,22 +1456,22 @@ PlaceManager::getPlaceMembership(double inX, double inY)
   ret.placeID = place->id;
   ret.confidence = 1.0;
 
-  debug("getPlaceMembership exited");
+  log("getPlaceMembership exited");
   return ret;
 }
 
 FrontierInterface::NodeHypothesisPtr
 PlaceManager::getHypFromPlaceID(int placeID)
 {
-  debug("getHypFromPlaceID called");
+  log("getHypFromPlaceID called");
   map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
     m_PlaceIDToHypMap.find(placeID);
   if (it == m_PlaceIDToHypMap.end()) {
-    debug("getHypFromPlaceID exited");
+    log("getHypFromPlaceID exited");
     return 0;
   }
   else {
-    debug("getHypFromPlaceID exited");
+    log("getHypFromPlaceID exited");
     return it->second;
   }
 }
@@ -1479,15 +1479,15 @@ PlaceManager::getHypFromPlaceID(int placeID)
 NavData::FNodePtr
 PlaceManager::getNodeFromPlaceID(int placeID)
 {
-  debug("getNodeFromPlaceID called");
+  log("getNodeFromPlaceID called");
   map<int, NavData::FNodePtr>::iterator it =
     m_PlaceIDToNodeMap.find(placeID);
   if (it == m_PlaceIDToNodeMap.end()) {
-    debug("getNodeFromPlaceID exited");
+    log("getNodeFromPlaceID exited");
     return 0;
   }
   else {
-    debug("getNodeFromPlaceID exited");
+    log("getNodeFromPlaceID exited");
     return it->second;
   }
 }
@@ -1495,7 +1495,7 @@ PlaceManager::getNodeFromPlaceID(int placeID)
 SpatialData::PlacePtr 
 PlaceManager::getPlaceFromNodeID(int nodeID)
 {
-  debug("getPlaceFromNodeID called");
+  log("getPlaceFromNodeID called");
   for(map<int, NavData::FNodePtr>::iterator it =
       m_PlaceIDToNodeMap.begin();
       it != m_PlaceIDToNodeMap.end(); it++) {
@@ -1503,19 +1503,19 @@ PlaceManager::getPlaceFromNodeID(int nodeID)
       map<int, PlaceHolder>::iterator it2 = m_Places.find(it->first);
       if (it2 != m_Places.end()) {
 	SpatialData::PlacePtr ret = getMemoryEntry<SpatialData::Place>(it2->second.m_WMid);
-	debug("getPlaceFromNodeID exited");
+	log("getPlaceFromNodeID exited");
 	return ret;
       }
     }
   }
-  debug("getPlaceFromNodeID exited");
+  log("getPlaceFromNodeID exited");
   return 0;
 }
 
 SpatialData::PlacePtr 
 PlaceManager::getPlaceFromHypID(int hypID)
 {
-  debug("getPlaceFromHypID called");
+  log("getPlaceFromHypID called");
   for(map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
       m_PlaceIDToHypMap.begin();
       it != m_PlaceIDToHypMap.end(); it++) {
@@ -1523,19 +1523,19 @@ PlaceManager::getPlaceFromHypID(int hypID)
       map<int, PlaceHolder>::iterator it2 = m_Places.find(it->first);
       if (it2 != m_Places.end()) {
 	SpatialData::PlacePtr ret = getMemoryEntry<SpatialData::Place>(it2->second.m_WMid);
-	debug("getPlaceFromHypID exited");
+	log("getPlaceFromHypID exited");
 	return ret;
       }
     }
   }
-  debug("getPlaceFromHypID exited");
+  log("getPlaceFromHypID exited");
   return 0;
 }
 
 void 
 PlaceManager::beginPlaceTransition(int goalPlaceID)
 {
-  debug("beginPlaceTransition called; goal place ID=%i", goalPlaceID);
+  log("beginPlaceTransition called; goal place ID=%i", goalPlaceID);
   // Check whether the transition is an explored or unexplored edge
   // Store where it was we came from
   map<int, FrontierInterface::NodeHypothesisPtr>::iterator it =
@@ -1547,7 +1547,7 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
     if (it2 == m_PlaceIDToNodeMap.end()) {
       // Goal is unknown
       log("Could not find supposed goal Place!");
-      debug("beginPlaceTransition exited");
+      log("beginPlaceTransition exited");
       return;
     }
   }
@@ -1562,13 +1562,13 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
 
   m_goalPlaceForCurrentPath = goalPlaceID;
   m_isPathFollowing = true;
-  debug("beginPlaceTransition exited");
+  log("beginPlaceTransition exited");
 }
 
 void 
 PlaceManager::endPlaceTransition(int failed)
 {
-  debug("endPlaceTransition called");
+  log("endPlaceTransition called");
   if (m_isPathFollowing) {
     log("  We were still trying to follow a path; must have failed");
     m_isPathFollowing = false;
@@ -1580,15 +1580,15 @@ PlaceManager::endPlaceTransition(int failed)
     // m_PlaceToNodeIDMap/m_PlaceToHypIDMap members
     processPlaceArrival(failed);
   }
-  debug("endPlaceTransition exited");
+  log("endPlaceTransition exited");
 }
 
 void 
 PlaceManager::processPlaceArrival(bool failed) 
 {
   try {
-    debug("processPlaceArrival called");
-    debug("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
+    log("processPlaceArrival called");
+    log("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
 
     int wasHeadingForPlace = m_goalPlaceForCurrentPath;
     int wasComingFromNode = m_startNodeForCurrentPath;
@@ -1643,7 +1643,7 @@ PlaceManager::processPlaceArrival(bool failed)
           else {
             log("Missing placeholder! Cancelling movement!");
             cancelMovement();
-            debug("processPlaceArrival exited");
+            log("processPlaceArrival exited");
             return;
           }
         }
@@ -1758,10 +1758,10 @@ PlaceManager::processPlaceArrival(bool failed)
           //Check the previous Place for NodeHypotheses matching this one
           bool foundHypothesis = 0;
 
-          debug("processPlaceArrival:1");
+          log("processPlaceArrival:1");
           vector<FrontierInterface::NodeHypothesisPtr> hyps;
           getMemoryEntries<FrontierInterface::NodeHypothesis>(hyps);
-          debug("processPlaceArrival:2");
+          log("processPlaceArrival:2");
 
           if (wasComingFromNode >= 0) {
             SpatialData::PlacePtr prevPlace = getPlaceFromNodeID(wasComingFromNode);
@@ -1785,7 +1785,7 @@ PlaceManager::processPlaceArrival(bool failed)
                         log("Could not find placeholder to upgrade");
                         m_goalPlaceForCurrentPath = -1;
                         m_isPathFollowing = false;
-                        debug("processPlaceArrival exited");
+                        log("processPlaceArrival exited");
                         return;
                       }
 
@@ -1803,7 +1803,7 @@ PlaceManager::processPlaceArrival(bool failed)
                         log("Could not find Placeholder placeholder!");
                         m_goalPlaceForCurrentPath = -1;
                         m_isPathFollowing = false;
-                        debug("processPlaceArrival exited");
+                        log("processPlaceArrival exited");
                         return;
                       }
                       foundHypothesis = true;
@@ -1857,7 +1857,7 @@ PlaceManager::processPlaceArrival(bool failed)
 
       log("Calling evaluateUnexploredPaths from processPlaceArrival!");
       evaluateUnexploredPaths();
-      debug("evaluateUnexploredPaths exited");
+      log("evaluateUnexploredPaths exited");
 
       //Once any new Placeholders have been added, it's safe to stop the robot
       //and signal the client component that we're done moving
@@ -1880,7 +1880,7 @@ PlaceManager::processPlaceArrival(bool failed)
     cout<<e.message<<endl;
     abort();
   }
-  debug("processPlaceArrival exited");
+  log("processPlaceArrival exited");
 }
 
 
@@ -1941,7 +1941,7 @@ PlaceManager::PlaceServer::endPlaceTransition(int failed, const Ice::Current &_c
    if it's close to the robot. Ignore placeholders that are far away.*/
 void
 PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords) {
-  debug("refreshPlaceholders() called");
+  log("refreshPlaceholders() called");
 
   vector<SpatialData::PlacePtr> places;
   getMemoryEntries<SpatialData::Place>(places);
@@ -1996,13 +1996,13 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
   }
   places.clear(); /* May contain dangling pointers */
 
-  debug("refreshPlaceholders() exited");
+  log("refreshPlaceholders() exited");
 }
 
 void PlaceManager::deletePlaceholder(int placeId) {
   // TODO: Delete connectivities
   
-  debug("deletePlaceholder entered");
+  log("deletePlaceholder entered");
   std::map<int, PlaceHolder>::iterator it = m_Places.find(placeId);
   if (it != m_Places.end()) {
     SpatialData::PlacePtr place = it->second.m_data;
@@ -2039,7 +2039,7 @@ void PlaceManager::deletePlaceholder(int placeId) {
     if (placeId == m_goalPlaceForCurrentPath)
       cancelMovement(true);
   }
-  debug("deletePlaceholder exited");
+  log("deletePlaceholder exited");
 }
 
 void 
@@ -2224,15 +2224,15 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
   log("  Upgrading Place %d from Placeholder status; associating with node %d", placeID, newNode->nodeId);
   string goalPlaceWMID = placeholder.m_WMid;
   try {
-    debug("lock 1");
+    log("lock 1");
     lockEntry(goalPlaceWMID, cdl::LOCKEDODR);
     deletePlaceholderProperties(placeID);
     placeholder.m_data->status = SpatialData::TRUEPLACE;
-    debug("overwrite 4: %s", goalPlaceWMID.c_str());
+    log("overwrite 4: %s", goalPlaceWMID.c_str());
     overwriteWorkingMemory(goalPlaceWMID, placeholder.m_data);
     m_PlaceIDToNodeMap[placeID] = newNode;
     unlockEntry(goalPlaceWMID);
-    debug("unlock 1");
+    log("unlock 1");
   }
   catch (DoesNotExistOnWMException e) {
     log("The Place has disappeared! Re-adding it!");
