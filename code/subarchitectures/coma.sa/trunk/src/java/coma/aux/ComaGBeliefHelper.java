@@ -33,13 +33,14 @@ public final class ComaGBeliefHelper {
 			cat = gbProxy.getContent().get(
 					ComaRoomTransferFunction.CATEGORY_ID)
 					.getDistribution().getMostLikely().getProposition();
-			if (cat==null) cat = "room";
+			if (cat==null || cat.equals("")) cat = "room";
 		} else if (gbProxy.getType().equals(
 				SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(VisualObject.class))) {
 			cat = gbProxy.getContent().get("label")
 			//VisualObjectTransferFunction.LABEL_ID)
 			.getDistribution().getMostLikely().getProposition();
+			if (cat==null || cat.equals("")) cat = "object";
 		}
 		return cat;
 	}
