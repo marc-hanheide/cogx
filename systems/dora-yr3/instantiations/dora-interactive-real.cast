@@ -1,13 +1,13 @@
 
 ### the default goal
-SETVAR planning_goal="(exists (?p - person) (kval (is-in ?p)));(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o))));"
 #SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 
 ### the plannig domain to use
 SETVAR planning_domain=dora-interactive.pddl
 
 ### the default probabilities
-SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-indirect.txt"
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-direct.txt"
 
 ### the default knowledge to use
 SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-review.xml"
@@ -97,7 +97,7 @@ JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3
 ####JAVA MG spatial-manual spatial.manual.ManualNavControl
 
 CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --display-objects-in-pb --ptzserver %(ptz_server)
-CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler --usepeekabot  --siftobjects "table cerealbox" ######--ctrl-ptz 
+CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler --usepeekabot  --siftobjects "table cerealbox"
 
 
 # coma ######################################################################
