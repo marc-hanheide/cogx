@@ -44,7 +44,7 @@ public class PersonReasoningEngine {
 
 	private static final double EXISTS_AT_PLACE_TRUE = 0.999;
 
-	private static final double PRIOR_PERSON_EXISTS_IN_ROOM = 0.5;
+	private static final double PRIOR_PERSON_EXISTS_IN_ROOM = 0.9;
 
 	public static void main(String[] argv) {
 		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
