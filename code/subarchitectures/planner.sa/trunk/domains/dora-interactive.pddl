@@ -87,7 +87,7 @@
    (leads_to_room ?p - place ?c - category) - boolean
 
    ;; === person properties ===
-   (associated-room ?p - person) - room
+   (associated-with ?p - person) - room
    (does-exist ?p - person) - boolean
    (contains-a-person-prior ?r - room) - boolean
 
@@ -150,10 +150,10 @@
                                               (or (and (= (in-room ?pl) ?r)
                                                        (in-domain (is-in ?p) ?pl))
                                                   (and (is-virtual ?p)
-                                                       (= (associated-room ?p) ?r))))))
+                                                       (= (associated-with ?p) ?r))))))
               :effect (create (?p - person) (and
                                              (is-virtual ?p)
-                                             (assign (associated-room ?p) ?r))
+                                             (assign (associated-with ?p) ?r))
                               )
               )
 
@@ -179,13 +179,6 @@
   ;;                                          (assign (virtual-category ?r) ?c))
   ;;                             )
   ;;             )
-
-  (:init-rule associate_person
-              :parameters (?h - person ?p - place ?r - room)
-              :precondition (and (= (in-room ?p) ?r)
-                                 (in-domain (is-in ?h) ?p))
-              :effect (assign (associated-room ?h) ?r)
-              )
 
 
   (:init-rule default_search_costs_for_room
@@ -328,7 +321,7 @@
            :parameters (?p - person ?pl - place ?r - room)
            :precondition (and (= (contains-a-person-prior ?r) true)
                               (= (in-room ?pl) ?r)
-                              (= (associated-room ?p) ?r)
+                              (= (associated-with ?p) ?r)
                               (is-virtual ?p))
            :effect (probabilistic 1.0 (assign (is-in ?p) ?pl))) ;; will automatically be normalised
 

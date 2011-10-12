@@ -358,8 +358,10 @@ class Fact(tuple):
             val_arg = FALSE if lit.negated else TRUE
         else:
             function, svar_args, modality, modal_args, val_arg = StateVariable.svar_args_from_literal(lit)
+            svar_args = [a.object for a in svar_args]
+            modal_args = [a.object for a in modal_args]
+            val_arg = val_arg.object
 
-        
         if function != self.svar.function and modality != self.svar.modality:
             return None
         

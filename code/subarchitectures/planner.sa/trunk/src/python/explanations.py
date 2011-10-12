@@ -32,6 +32,17 @@ SWITCH_OP2 = """
   )
 """
 
+
+compatible_axiom = """
+(:derived (compatible ?svar - (function object)  ?val - (typeof ?svar))
+          (or (poss ?svar ?val)
+              (not (exists (?val2 - (typeof ?svar)) (poss ?svar ?val2))))
+)
+"""
+p = pddl.Parameter("?f", types.FunctionType(pddl.t_object))
+compatible = pddl.Predicate("compatible", [p, pddl.Parameter("?v", pddl.types.ProxyType(p)), ])
+state_rules = []
+
 def str2cond(fstr, scope):
     return pddl.parser.Parser.parse_as([fstr], pddl.conditions.Condition, scope)
 
@@ -64,9 +75,12 @@ def add_explanation_rules(expl_rules_fn):
             expl_domain.domain_orig.get_action(a.name)
             expl_domain.alternatives[a.name] = a
         except KeyError:
-            alist.append(a)
-            if isinstance(a, pddl.Action):
-                a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
+            if a.name.startswith("state_rule"):
+                state_rules.append(a)
+            else:
+                alist.append(a)
+                if isinstance(a, pddl.Action):
+                    a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
 
 def build_operator_for_ground_action(i, action, args):
     action_t = expl_domain.types["action"]
@@ -92,23 +106,46 @@ def possible_cond_effect(fact):
     def get_ceffs(elem, results):
         if isinstance(elem, pddl.effects.ConditionalEffect):
             return elem.effect.visit(pddl.visitors.collect_effects)
-    print fact
     for a in expl_domain.actions:
         for eff in pddl.visitors.visit(a.effect, get_ceffs, []):
-            print eff
             if fact.svar.match_literal(eff) is not None:
-                print "yeah"
                 return True
     return False
 
+def possible_commit_effect(fact):
+    if fact.svar.modality is not None or isinstance(fact.svar.function, pddl.Predicate):
+        return False
+    poss_var = fact.svar.as_modality(pddl.mapl.commit, [fact.value])
+    for a in expl_domain.actions:
+        if "new_facts" not in a.name:
+            for eff in pddl.visitors.visit(a.effect, pddl.visitors.collect_effects, []):
+                if poss_var.match_literal(eff) is not None:
+                    return True
+    return False
+
+def state_rule_conditions(fact):
+    pre = None
+    for r in state_rules:
+        mapping = fact.match_literal(r.effect)
+        if mapping is not None:
+            r.instantiate(mapping, expl_domain)
+            pre = r.precondition.copy(copy_instance=True)
+            r.uninstantiate()
+            break
+    return pddl.visitors.visit(pre, pddl.visitors.collect_conditions, [])
+
 def build_operator_for_new_facts(i, node):
+    compatibility_conds = set(pddl.state.Fact(f.svar.as_modality(compatible, [f.value]), pddl.TRUE) for f in node.preconds if possible_commit_effect(f))
     node.preconds = set(f for f in node.preconds if possible_cond_effect(f))
+
+    rule_conditions = sum((state_rule_conditions(f) for f in node.effects if fact_filter(f)), [])
+    
     action_t = expl_domain.types["action"]
     action_id = "action_" + str(i).zfill(3)
     expl_domain.add_constant(types.TypedObject(action_id, action_t))
     name = "_%s_%s" % (action_id, node.action.name)
     new_op = pddl.Action(name, [], None, None, expl_domain, None)
-    new_op.precondition = pddl.Conjunction([f.to_condition() for f in node.preconds if fact_filter(f)], new_op)
+    new_op.precondition = pddl.Conjunction(rule_conditions + [f.to_condition() for f in chain(node.preconds, compatibility_conds) if fact_filter(f)], new_op)
     new_op.effect = pddl.ConjunctiveEffect([f.to_effect() for f in node.effects if f not in node.preconds and fact_filter(f)], new_op)
     add_ops = []
     for i, pre in enumerate(node.preconds):
@@ -116,7 +153,7 @@ def build_operator_for_new_facts(i, node):
         new_op2 = pddl.Action(name, [], None, None, expl_domain, None)
         new_op2.effect = pre.to_effect()
         # new_op2.precondition = pddl.Conjunction([f.to_condition() for f in node.preconds if fact_filter(f)], new_op2)
-        new_op2.set_total_cost(pddl.Term(100))
+        new_op2.set_total_cost(pddl.Term(500))
         add_ops.append(new_op2)
     
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
@@ -134,7 +171,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     expl_domain.domain_orig = domain_orig
     expl_domain.name += "-explanations"
     expl_domain.axioms = [a.copy(newdomain=expl_domain) for a in domain_orig.axioms]
-    print [a.predicate.name for a in domain_orig.axioms]
+    # print [a.predicate.name for a in domain_orig.axioms]
 
     dtypes = expl_domain.types
     # add additional types
@@ -148,6 +185,8 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     phase_f = pddl.predicates.Function("phase", [], phase_t)
     for f in [enabled_f, phase_f]:
         expl_domain.functions.add(f)
+    expl_domain.predicates.add(compatible)
+    expl_domain.axioms.append(pddl.parser.Parser.parse_as(compatible_axiom.splitlines(), pddl.axioms.Axiom, expl_domain))
 
     # add objects from problem to domain as constants
     for obj in problem.objects:
@@ -158,6 +197,12 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     ar_condition = str2cond("(= (phase) apply_rules)", expl_domain)
     se_condition = str2cond("(= (phase) simulate_execution)", expl_domain)
 
+    for t in expl_domain.types.itervalues():
+        if t in (pddl.t_object, pddl.t_boolean, pddl.t_number) + tuple(pddl.mapl.mapl_types):
+            continue
+        unknown_obj = pddl.TypedObject("unknown-%s" % t.name, t)
+        expl_domain.add_constant(unknown_obj)
+
     # add rules for generating alternative initial states
     add_explanation_rules(expl_rules_fn)
 
@@ -165,7 +210,8 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
    # extract actions from old plan
     last_actions = []
     i = 0
-    for n in last_plan:
+    for n in last_plan.topological_sort():
+        print "***",n
         # iterate through plan, create action constants to enfore simulated re-execution during monitoring
         a = n.action
         if isinstance(a, plans.DummyAction) and not a.name.startswith("new_facts"):
@@ -173,9 +219,10 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         if n.status == plans.ActionStatusEnum.EXECUTABLE:
             continue
         if n.is_virtual():
-            for eff in n.effects:
-                if eff.svar.modality == pddl.mapl.commit:
-                    commitments.add(pddl.state.Fact(eff.svar.as_modality(pddl.mapl.committed), pddl.TRUE))
+            for succ, svar, val, type in last_plan.outgoing_links(n):
+                if svar.modality == pddl.mapl.commit and not succ.is_virtual():
+                    # print "link:", n, succ, svar, val
+                    commitments.add(pddl.state.Fact(svar.as_modality(pddl.mapl.committed), pddl.TRUE))
             a = a.copy()
             a.extend_precondition(ar_condition)
             #print "virtual action:", w.write_action(a)  
@@ -197,9 +244,9 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             op.extend_effect(enabled_last)
             
         last_actions = a2
-        if n.status == plans.ActionStatusEnum.FAILED:
-            # once we've reached the failure, stop enforced execution simulation
-            break
+        # if n.status == plans.ActionStatusEnum.FAILED:
+        #     # once we've reached the failure, stop enforced execution simulation
+        #     break
         i += 1
     for op in last_actions:
         op.extend_effect(str2eff("(assign (phase) achieve_goal)", expl_domain))
@@ -253,7 +300,7 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
 
     sorted_plan = last_plan.topological_sort()
 
-    build_explanation_domain(sorted_plan, problem, expl_rules_fn)
+    build_explanation_domain(last_plan, problem, expl_rules_fn)
     # print "\n".join(w.write_domain(expl_domain))
 
     expl_problem = build_explanation_problem(problem, sorted_plan, init_state, observed_state)
@@ -379,6 +426,8 @@ def postprocess_explanations(expl_plan, exec_plan):
                             cvar = c.svar.nonmodal()
                             cval = c.svar.modal_args[0]
                             val, pred = commitments.get(cvar, (None,None))
+                            if c.value == pddl.FALSE:
+                                negated = not negated
                             print "commit:", cvar, cval, val
                         else:
                             cvar, cval  = c
@@ -402,7 +451,10 @@ def postprocess_explanations(expl_plan, exec_plan):
             return {"ignore" : True}
         # if node.status == plans.ActionStatusEnum.EXECUTABLE and node.action.name != 'goal' and node not in final_plan_actions:
         #     return {"ignore" : True}
-        if node in commit_conflicts or node in explanations:
+        if "new_facts" in node.action.name:
+            return {"label" : "Observations"}
+        # if node in commit_conflicts or node in explanations:
+        if node in explanations:
             return {"fillcolor" : "green"}
         if node.is_virtual():
             return {"fillcolor" : "darkslategray2"}

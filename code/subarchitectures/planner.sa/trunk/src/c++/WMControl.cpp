@@ -270,6 +270,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         if (task->executionRetries >= MAX_EXEC_RETRIES) {
             log("Action %s failed, retries exhausted.", action->name.c_str());
             task->executionStatus = FAILED;
+            pyServer->notifyFailure(task);
         }
         else {
         log("Action %s failed, replanning.", action->name.c_str());
@@ -325,6 +326,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         }
     }
     else {
+        log("deleted belief at %s", wmc.address.id.c_str());
         m_currentState.erase(wmc.address.id);
     }
     m_new_updates = true;

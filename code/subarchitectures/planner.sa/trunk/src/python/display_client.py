@@ -116,7 +116,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
 
         self.setHtml(STATE_ID, "state", html);
         
-    def update_task(self, task):
+    def update_task(self, task, append=False):
         id = "%04d" % task.id
         
         html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.internal_state)
@@ -180,7 +180,10 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         
         # A multi-part HTML document.
         # Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).
-        self.setHtml(TASKS_ID, "0000", html);
+        if append:
+            self.setHtml(TASKS_ID, id, html);
+        else:
+            self.setHtml(TASKS_ID, "0000", html);
 
         # Test of gui elements
         # Messages will be added to the document when events happen (see handleEvent).
@@ -188,7 +191,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         #self.m_display.addButton("v11n.python.setHtml", "button.test", "Test Button");
 
     def remove_task(self, task):
-        pass
+        self.update_task(task, append=True)
         #id = "%04d" % task.id
         #self.setHtml(TASKS_ID, id, "");
 
