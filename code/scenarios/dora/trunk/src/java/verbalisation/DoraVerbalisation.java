@@ -3,6 +3,8 @@ package verbalisation;
 import java.util.HashMap;
 import java.util.Map;
 
+import autogen.Planner.PlannerVerbalisation;
+
 import motivation.slice.CategorizeRoomMotive;
 import motivation.slice.ExploreMotive;
 import motivation.slice.Motive;
@@ -240,6 +242,16 @@ public class DoraVerbalisation extends ManagedComponent implements
 		}
 	};
 
+	private static TextGenerator<PlannerVerbalisation> PLANNER_VERB_GEN = new TextGenerator<PlannerVerbalisation>() {
+		@Override
+		public String toText(PlannerVerbalisation _i) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(_i.phrase);
+
+			return sb.toString();
+		}
+	};
+
 	private final VerbalisationFacade m_verbals;
 
 	private final HashMap<Long, PlaceStatus> m_placeIDToStatus;
@@ -293,6 +305,13 @@ public class DoraVerbalisation extends ManagedComponent implements
 		// when a recognition command is triggered�
 		m_verbals.verbaliseOnAddition(DetectionCommand.class,
 				DETECTION_COMMAND_GENERATOR);
+
+		
+		
+		m_verbals.verbaliseOnAddition(PlannerVerbalisation.class,
+				PLANNER_VERB_GEN);
+
+		
 		m_verbals.verbaliseOnAddition(Recognizer3DCommand.class,
 				RECOGNIZER_COMMAND_GENERATOR);
 
