@@ -18,11 +18,13 @@ import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
+import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
@@ -218,7 +220,10 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			act.model = stringFromElementaryFormula((ElementaryFormula) _plannedAction.arguments[2]);
 
 			return act;
-
+		}else if (_plannedAction.name.equals("ask-for-category-polar")) {
+			assert _plannedAction.arguments.length == 3 : "ask-for-category-polar action arity is expected to be 3";
+			AskPolarIdentity act = createBeliefPlusStringAction(AskPolarIdentity.class, _plannedAction.arguments[1], _plannedAction.arguments[2]);
+			return act;
 		} else if (_plannedAction.name.equals("process_conegroup")) {
 			assert _plannedAction.arguments.length == 2 : "process_conegroup action arity is expected to be 2";
 			// cone group, place
