@@ -177,6 +177,31 @@ understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	int : string_content(Int, feature, Feature) / p(1.0),
 	int : string_content(Int, value, Value) / p(1.0).
 
+% @{be1_1:ascription}(be ^ <Mood>int ^ <Tense>pres ^ <Cop-Restr>(object1_1:thing ^ object ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(blue1_1:q-color ^ blue)) ^ <Cop-Scope>(context1_1:entity ^ context ^ <Delimitation>unique) ^ <Subject>(object1_1:thing) ^ <Wh-Restr>(which1_1:specifier ^ which ^ <Scope>(context1_1:entity))
+
+% which is the Feat object
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, SubjNom),
+		i : rel_Modifier(SubjNom, FeatNom),
+	i : 'rel_Cop-Scope'(Nom, CtxNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, which),
+		i : rel_Scope(WhNom, CtxNom),
+
+	polar_query_prop(FeatNom, Feature, Value),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'determination') / p(1.0),
+	int : string_content(Int, feature, Feature) / p(1.0),
+	int : string_content(Int, value, Value) / p(1.0).
+
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 understand : non_referring_object(Nom) <-
