@@ -31,6 +31,9 @@ module PointCloud {
     void getRangePoints(out Laser::Scan2d KRdata); /* kinect range data returns back like laser sensor */
     bool getCameraParameters(int side, out Video::CameraParameters camPars);
     bool isPointInViewCone(cogx::Math::Vector3 point);
+
+    // Check if the point is visible by all cameras that generate the point cloud.
+    bool isPointVisible(cogx::Math::Vector3 point);
   };
 
 };

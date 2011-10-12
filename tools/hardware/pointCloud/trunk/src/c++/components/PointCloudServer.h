@@ -49,6 +49,7 @@ public:
   virtual void getRangePoints(Laser::Scan2d &KRdata, const Ice::Current&);
   virtual bool getCameraParameters(Ice::Int camId, Video::CameraParameters& camPars, const Ice::Current&);
   virtual bool isPointInViewCone(const cogx::Math::Vector3&, const Ice::Current&);
+  virtual bool isPointVisible(const cogx::Math::Vector3&, const Ice::Current&);
 };
 
 
@@ -122,6 +123,8 @@ public:
   virtual void getDepthMap(cast::cdl::CASTTime &time, vector<int>& data) {}
   virtual bool isPointInViewCone(const cogx::Math::Vector3& point) { return true; }
 
+  // @brief Check if the point is visible by all cameras that generate the point cloud.
+  virtual bool isPointVisible(const cogx::Math::Vector3&);
 
   /**
    * @brief Get camera parameters of one camera

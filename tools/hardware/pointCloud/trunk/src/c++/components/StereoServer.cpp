@@ -398,6 +398,26 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
   return true;
 }
 
+// @author: mmarko
+bool StereoServer::isPointVisible(const cogx::Math::Vector3& point)
+{
+  Video::CameraParameters camPars;
+
+  if (!getCameraParameters(LEFT, camPars) || ! Video::isPointVisible(camPars, point)) {
+      //log("Point is NOT visible in camera %d", camPars.id);
+      return false;
+  }
+  log("Point is visible in camera %d", camPars.id);
+
+  if (!getCameraParameters(RIGHT, camPars) || ! Video::isPointVisible(camPars, point)) {
+      //log("Point is NOT visible in camera %d", camPars.id);
+      return false;
+  }
+  //log("Point is visible in camera %d", camPars.id);
+
+  return true;
+}
+
 void StereoServer::getDisparityImage(int imgWidth, Video::Image& image)        /// TODO Reimplement?
 {
   throw runtime_error(exceptionMessage(__HERE__, "not implemented"));

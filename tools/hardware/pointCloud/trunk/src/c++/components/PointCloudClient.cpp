@@ -83,4 +83,9 @@ bool PointCloudClient::isPointInViewCone(const cogx::Math::Vector3& point)
   return pointCloudServer->isPointInViewCone(point);
 }
 
+bool PointCloudClient::isPointVisible(const cogx::Math::Vector3& point)
+{
+  return pointCloudServer->isPointVisible(point);
+}
+
 }
