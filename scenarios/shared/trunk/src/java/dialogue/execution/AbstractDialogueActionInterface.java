@@ -20,6 +20,7 @@ import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMEventQueue;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
@@ -489,26 +490,45 @@ public abstract class AbstractDialogueActionInterface extends
 
 			String polarity = interpretedIntention.stringContent
 					.get("asserted-polarity");
+			
+			println("verification polarity: " + polarity);
 			if (polarity.equals("pos")) {
+			
+
+				println("positive polarity: ");
+				
 				// this is the thing we care about
+				// get the list of all potential intentions and thus referents
+
+				WorkingMemoryAddress correctReferentAddr = interpretedIntention.addressContent
+						.get("about");
+
+				WorkingMemoryAddress piiAddr = interpretedIntention.addressContent
+						.get("verification-of");
+
+				PossibleInterpretedIntentions pii = getComponent()
+						.getMemoryEntry(piiAddr,
+								PossibleInterpretedIntentions.class);
+				
+				println("number of iis in pii found on WM: " + pii.intentions.size());
+				
+				
+				
+				for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
+					InterpretedIntention iint = pii.intentions.get(addr);
+					WorkingMemoryAddress potentialReferentAddr = iint.addressContent
+							.get("about");
+					if (!potentialReferentAddr.equals(correctReferentAddr)) {
+						unmarkReferent(potentialReferentAddr);
+					}
+				}
+
 			} else {
 				// this is the wrong thing
 
-				println("removing reference from belief");
-				GroundedBelief belief = getComponent().getMemoryEntry(
-						getAction().beliefAddress, GroundedBelief.class);
-
-				if (!((AbstractDialogueActionInterface) getComponent())
-						.removeQuestionReference(getAction().beliefAddress,
-								belief)) {
-					getComponent()
-							.getLogger()
-							.warn("Verified belief didn't have field"
-									+ AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION,
-									getComponent().getLogAdditions());
-				}
-				
+				unmarkReferent(getAction().beliefAddress);
 			}
+			return TriBool.TRITRUE;
 
 			// <de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
 			// <stringContent>
@@ -553,7 +573,26 @@ public abstract class AbstractDialogueActionInterface extends
 			// <confidence>1.0</confidence>
 			// </de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
 
-			return super.checkResponse(interpretedIntention);
+			}
+
+		private void unmarkReferent(WorkingMemoryAddress _refGroundBelAddr)
+				throws DoesNotExistOnWMException,
+				UnknownSubarchitectureException, ConsistencyException,
+				PermissionException {
+			println("removing reference marker from belief at "
+					+ CASTUtils.toString(_refGroundBelAddr));
+			GroundedBelief belief = getComponent().getMemoryEntry(
+					getAction().beliefAddress, GroundedBelief.class);
+
+			if (!((AbstractDialogueActionInterface) getComponent())
+					.removeQuestionReference(getAction().beliefAddress, belief)) {
+				getComponent()
+						.getLogger()
+						.warn("Verified belief didn't have field"
+								+ AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION,
+								getComponent().getLogAdditions());
+			}
+
 		}
 	}
 
