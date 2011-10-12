@@ -195,7 +195,7 @@ public abstract class AbstractDialogueActionInterface extends
 										bestIntention);
 								getComponent().addToWorkingMemory(
 										bestIntentionWMA, bestIntention);
-								VerbalisationUtils.verbaliseString(this.getComponent(), "dialogue");
+								VerbalisationUtils.verbaliseString(this.getComponent(), "ok");
 								return TriBool.TRITRUE;
 							} else {
 								return TriBool.TRIFALSE;
