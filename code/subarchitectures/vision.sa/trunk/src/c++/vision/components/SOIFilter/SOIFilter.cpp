@@ -53,6 +53,7 @@ SOIFilter::SOIFilter()
   m_bCameraMoving = false;
   m_minSoiDistance = 0.5; // robot body
   m_maxSoiDistance = 3.0;
+  m_identityRecognizerVersion = 3;
 #ifdef FEAT_TRACK_ARM
   m_minArmDistance = 0.3;
 #endif
@@ -189,6 +190,12 @@ void SOIFilter::configure(const map<string,string> & _config)
   }
   println("Min distance from the arm: %.4gm", m_minArmDistance);
 #endif
+
+  if((it = _config.find("--identity-recognizer-version")) != _config.end()) {
+    istringstream iss(it->second);
+    iss >> m_identityRecognizerVersion;
+  }
+  println("Using 3D object recognizer version %d", m_identityRecognizerVersion);
 
 #ifdef FEAT_VISUALIZATION
   m_display.configureDisplayClient(_config);

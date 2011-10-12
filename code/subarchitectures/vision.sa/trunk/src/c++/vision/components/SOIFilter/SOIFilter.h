@@ -131,6 +131,7 @@ private:
 public:
   std::string m_coarsePcServer;  // periferial vision (eg. Kinect)
   std::string m_finePcServer;    // detailed vision (eg. stereo gear)
+  int m_identityRecognizerVersion;  // 2 - prepared for review 2010, 3 - prepared for review 2011
 
   /**
    * Identifiers of SOI sources. (plane pop-out)

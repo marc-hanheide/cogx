@@ -110,7 +110,7 @@ void ObjectRecognizer3D2::runComponent(){
       string objId = m_recTask->visualObjectAddr.id;
       VisualObjectPtr obj = getMemoryEntry<VisualObject>(objId);
       recognizeSiftModel(sift, obj, m_recTask);
-      if(OVERWRITE_VISUAL_OBJECT)
+      if(OVERWRITE_VISUAL_OBJECT || obj->overwriteVisualObject)
         overwriteWorkingMemory(objId, obj);
       overwriteWorkingMemory(m_recTaskId, m_recTask);
       m_recTaskId.clear();

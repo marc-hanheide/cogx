@@ -11,6 +11,7 @@
 
 #include "../../VisionUtils.h"
 
+#include <ObjectRecognizerSrv.hpp>
 #include <castutils/Timers.hpp>
 
 using namespace std;
@@ -178,25 +179,63 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   }
 
   // Identity recognition commands don't return any status; they just change the VO
-  try {
-    VisionData::RecognitionCommandPtr pcmd = new VisionData::RecognitionCommand();
-    pcmd->visualObject = createWmPointer<VisionData::VisualObject>(voAddr);
-    if (bNewVo || pvo->identLabels.size() == 0 || pvo->identLabels[0] == VisionData::IDENTITYxUNKNOWN) {
-      // TODO: try with all known objects
-    }
-    else {
-      for (int i = 0; i < pvo->identLabels.size(); i++) {
-        if (pvo->identLabels[i] == VisionData::IDENTITYxUNKNOWN) continue;
-        pcmd->labels.push_back(pvo->identLabels[i]);
+  if (pSoiFilter->m_identityRecognizerVersion == 1) {
+    try {
+      // TODO: add recognition command to the recognizer
+      VisionData::DetectionCommandPtr pcmd = new VisionData::DetectionCommand();
+      //pcmd->visualObject = createWmPointer<VisionData::VisualObject>(voAddr);
+      if (bNewVo || pvo->identLabels.size() == 0 || pvo->identLabels[0] == VisionData::IDENTITYxUNKNOWN) {
+        // try with all known objects
+        // NOTE: the assumption is that the recognizer will try to recognize all
+        // known models if there is no label in identLabels
       }
+      else {
+        for (int i = 0; i < pvo->identLabels.size(); i++) {
+          if (pvo->identLabels[i] == VisionData::IDENTITYxUNKNOWN) continue;
+          pcmd->labels.push_back(pvo->identLabels[i]);
+        }
+      }
+      pSoiFilter->addToWorkingMemory(pSoiFilter->newDataID(), pcmd);
     }
-    pSoiFilter->addToWorkingMemory(pSoiFilter->newDataID(), pcmd);
+    catch(...) {
+      log("analyze_task: caught an unknown exception writing (identity-) DetectionCommand.");
+    }
   }
-  catch(...) {
+  else if (pSoiFilter->m_identityRecognizerVersion == 2) {
+    try {
+      ObjectRecognizerIce::ObjectRecognitionTaskPtr pcmd = new ObjectRecognizerIce::ObjectRecognitionTask();
+      pcmd->visualObjectAddr = voAddr;
+      pcmd->overwriteVisualObject = true;
+      pSoiFilter->addToWorkingMemory(pSoiFilter->newDataID(), pcmd);
+    }
+    catch(...) {
+      log("analyze_task: caught an unknown exception writing (identity-) RecognitionTask.");
+    }
+  }
+  else if (pSoiFilter->m_identityRecognizerVersion == 3) {
+    try {
+      VisionData::RecognitionCommandPtr pcmd = new VisionData::RecognitionCommand();
+      pcmd->visualObject = createWmPointer<VisionData::VisualObject>(voAddr);
+      if (bNewVo || pvo->identLabels.size() == 0 || pvo->identLabels[0] == VisionData::IDENTITYxUNKNOWN) {
+        // try with all known objects
+        // NOTE: the assumption is that the recognizer will try to recognize all
+        // known models if there is no label in identLabels
+      }
+      else {
+        for (int i = 0; i < pvo->identLabels.size(); i++) {
+          if (pvo->identLabels[i] == VisionData::IDENTITYxUNKNOWN) continue;
+          pcmd->labels.push_back(pvo->identLabels[i]);
+        }
+      }
+      pSoiFilter->addToWorkingMemory(pSoiFilter->newDataID(), pcmd);
+    }
+    catch(...) {
       log("analyze_task: caught an unknown exception writing (identity-) RecognitionCommand.");
+    }
   }
-
-
+  else {
+    error("analyze_task: Unknown version of 3D recognizer: %d", pSoiFilter->m_identityRecognizerVersion);
+  }
 
   cmd.succeed();
 
