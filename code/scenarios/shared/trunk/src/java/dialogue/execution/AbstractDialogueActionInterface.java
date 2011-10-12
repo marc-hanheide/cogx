@@ -28,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator;
 import execution.components.AbstractActionInterface;
@@ -192,6 +193,7 @@ public abstract class AbstractDialogueActionInterface extends
 										bestIntention);
 								getComponent().addToWorkingMemory(
 										bestIntentionWMA, bestIntention);
+								VerbalisationUtils.verbaliseString(this.getComponent(), "dialogue");
 								return TriBool.TRITRUE;
 							} else {
 								return TriBool.TRIFALSE;
