@@ -61,6 +61,7 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 public class DoraPersonTracker extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
+	public static final String ASSOCIATED_WITH = "associated-with";
 	WMEventQueue evQueue = new WMEventQueue();
 	public static final String UPDATE_ON_MOVE = "--update-on-move";
 	// create a view of all places and room beliefs
@@ -467,7 +468,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 		FormulaDistribution fd = FormulaDistribution.create();
 		fd.add(WMPointer.create(roomAdr,
 				CASTUtils.typeName(GroundedBelief.class)).get(), 1.0);
-		gb.getContent().put("associated-with", fd);
+		gb.getContent().put(ASSOCIATED_WITH, fd);
 	}
 
 	@Override
