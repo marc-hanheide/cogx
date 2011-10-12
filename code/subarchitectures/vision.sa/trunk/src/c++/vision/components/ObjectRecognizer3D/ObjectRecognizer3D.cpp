@@ -224,7 +224,7 @@ void ObjectRecognizer3D::runComponent(){
   		if (m_recCommandList.empty())
 				sleepComponent(500);
 			else {
-				CASTComponent::Lock lock(this); // assuming that the lock will be released relatively quickly
+				lockComponent();
 				m_rec_cmd = m_recCommandList.front();
 				m_recCommandList.erase(m_recCommandList.begin());
 				m_rec_cmd_id = m_recCommandID.front();
@@ -288,6 +288,7 @@ void ObjectRecognizer3D::runComponent(){
 					}
 				}
 				m_starttask = true;
+				unlockComponent();
 			}
 
   	}
@@ -324,7 +325,7 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   try {
   DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
   
-	CASTComponent::Lock lock(this);
+	// CASTComponent::Lock lock(this);
   for(size_t i = 0; i < det_cmd->labels.size(); i++)
   {
     Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
@@ -356,7 +357,7 @@ void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChang
 			}
 		}
 
-		CASTComponent::Lock lock(this);
+		//CASTComponent::Lock lock(this);
 		for(size_t i = 0; i < labels.size(); i++)
 		{
 			Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
@@ -377,7 +378,7 @@ void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChan
 	Recognizer3DCommandPtr rec_cmd = getMemoryEntry<Recognizer3DCommand>(_wmc.address);
 
 	log("ID is %s", rec_cmd->visualObjectID.c_str());
-	CASTComponent::Lock lock(this);
+	// CASTComponent::Lock lock(this);
 	m_recCommandList.push_back(rec_cmd);
 	m_recCommandID.push_back(_wmc.address.id);
 }
@@ -446,11 +447,9 @@ void ObjectRecognizer3D::get3DPointFromTrackerModel(std::string& modelID, Vision
 	track_cmd->pointOnModel.assign(vertexlist.size(), 0);
 	track_cmd->points = vertexlist;
 
-	{
-		CASTComponent::Lock lock(this);
-		// XXX: why is m_wait4data locked here and not elsewhere?
-		m_wait4data = true;
-	}
+	lockComponent();
+	m_wait4data = true;
+	unlockComponent();
 
 	addToWorkingMemory(newDataID(), track_cmd);
 }
