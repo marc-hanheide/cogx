@@ -4,6 +4,7 @@ shape(t_belief, t_shape)
 
 attributed_color(t_belief, t_attr_color)
 attributed_shape(t_belief, t_attr_shape)
+attributed_salience(t_belief, t_attr_salience)
 
 belief(t_belief)
 epstatus(t_belief, t_status)
