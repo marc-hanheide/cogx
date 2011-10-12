@@ -57,16 +57,14 @@
     (learning-impossible)
     (unlearning-impossible)
 
-    (curiosity-satisfied)
-    ;; (searched-for-objects)
-    ;; (test)
+    (curiosity-satisfied ?r - Robot)
 
     (looked-at ?vc - ViewCone)
 
     (is-object-in-question ?v - VisualObject ?r - Robot)
     (is-potential-object-in-question ?v - VisualObject)
 
-    (arm-not-in-resting-position ?r - Robot)
+    (arm-in-resting-position ?r - Robot)
 
     (global-color-question-answered ?v - VisualObject)
     (global-shape-question-answered ?v - VisualObject)
@@ -173,13 +171,13 @@
   (:init-rule set-convinced-of-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (convinced-of-shape-threshold ?r) UNKNOWN)
-    :effect (assign (convinced-of-shape-threshold ?r) 0.66)
+    :effect (assign (convinced-of-shape-threshold ?r) 0.2)
   )
 
   (:init-rule set-believe-in-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (believe-in-shape-threshold ?r) UNKNOWN)
-    :effect (assign (believe-in-shape-threshold ?r) 0.33)
+    :effect (assign (believe-in-shape-threshold ?r) 0.1)
   )
 
   (:init-rule set-polar-question-type-threshold
@@ -236,7 +234,7 @@
 
 ;; to satisfy the curiosity is the "standard" goal, i.e. whenever George wants to learn stuff about objects
 
-  (:derived (curiosity-satisfied)
+  (:derived (curiosity-satisfied ?r - Robot)
     (and
       (forall 
         (?p - ProtoObject) 
@@ -251,27 +249,9 @@
         )
       )
       (unlearning-impossible)
+      (arm-in-resting-position ?r)
     )
   )
-
- ; (:derived (searched-for-objects)
- ;   (and
- ;     (forall
- ;       (?vc - ViewCone)
- ;       (or
- ;         (exists (?p - ProtoObject) (= (target-object ?vc) ?p))
- ;         (looked-at ?vc)
- ;       )
- ;     )
- ;   )
- ; )
-
- ; (:derived (test)
- ;   (and
- ;    (when (not (curiosity-satisfied)) (curiosity-satisfied))
- ;    (when (curiosity-satisfied) (searched-for-objects))
- ;  )
- ;)
 
 ;; unlearning is impossible, if nothing has been neg-attributed by the tutor that hasn't been unlearned already
 
@@ -374,7 +354,7 @@
     (and
       (is-potential-object-in-question ?v)
       (not (exists (?v1 - VisualObject) (and (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
-      (not (arm-not-in-resting-position ?r))
+      (arm-in-resting-position ?r)
     )
   )
 
@@ -727,11 +707,16 @@
   (:action point-to-object
     :agent (?r - Robot)
     :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (not (= ?v VISUAL_OBJECT_DUMMY))
+      )
     :effect
       (and
         (assign (currently-points-at ?r) ?v)
-        (arm-not-in-resting-position ?r)
-        (update (arm-not-in-resting-position ?r) true)
+        (update (currently-points-at ?r) ?v)
+        (not (arm-in-resting-position ?r))
+        (update (arm-in-resting-position ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -831,11 +816,15 @@
 
   (:action retract-arm
     :agent (?r - Robot)
+    :precondition
+      (and
+        (forall (?p - ProtoObject) (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v)))
+      )
     :effect
       (and
         (assign (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
-        (not (arm-not-in-resting-position ?r))
-        (update (arm-not-in-resting-position ?r) false)
+        (arm-in-resting-position ?r)
+        (update (arm-in-resting-position ?r) true)
         (increase (total-cost) 1)
       )
   )
