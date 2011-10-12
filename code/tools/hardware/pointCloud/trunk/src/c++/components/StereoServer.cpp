@@ -399,6 +399,11 @@ bool StereoServer::getCameraParameters(int side, Video::CameraParameters& camPar
 }
 
 // @author: mmarko
+// 2011-10-12 NOTE: We override the default function because isPointVisible
+// didn't work with the default PointCloudServer::isPointVisible. The point was
+// correctly visible in camera with camPars[0], but invisible in camera with
+// camPars[1].  CameraParameters returned by getCameraParameters() seem to work
+// better.
 bool StereoServer::isPointVisible(const cogx::Math::Vector3& point)
 {
   Video::CameraParameters camPars;
