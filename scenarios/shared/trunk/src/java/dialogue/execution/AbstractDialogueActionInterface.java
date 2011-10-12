@@ -30,7 +30,6 @@ import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -61,6 +60,9 @@ import execution.util.LocalActionStateManager;
  */
 public abstract class AbstractDialogueActionInterface extends
 		AbstractActionInterface {
+
+	// FIXME: hacky, but this must not be in scenarios/george!
+	public static final String IS_POTENTIAL_OBJECT_IN_QUESTION = "is-potential-object-in-question";
 
 	protected static final String INTENTION_TYPE_KEY = "type";
 
@@ -591,7 +593,7 @@ public abstract class AbstractDialogueActionInterface extends
 				getComponent()
 						.getLogger()
 						.warn("Verified belief didn't have field"
-								+ AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION,
+								+ IS_POTENTIAL_OBJECT_IN_QUESTION,
 								getComponent().getLogAdditions());
 			}
 
@@ -914,10 +916,9 @@ public abstract class AbstractDialogueActionInterface extends
 				.create(GroundedBelief.class, _belief);
 		if (belief
 				.getContent()
-				.containsKey(
-						AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION)) {
+				.containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
 			belief.getContent()
-					.remove(AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION);
+					.remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
 			overwriteWorkingMemory(_beliefAddr, belief.get());
 			return true;
 		} else {
