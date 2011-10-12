@@ -140,6 +140,7 @@ public:
   void receiveImages(const std::vector<Video::Image>& images);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);;
   bool isPointInViewCone(const cogx::Math::Vector3& point);
+  bool isPointVisible(const cogx::Math::Vector3& point);
 #ifdef KINECT_USER_DETECTOR
   kinect::slice::PersonsDict detectPersons();
 #endif
