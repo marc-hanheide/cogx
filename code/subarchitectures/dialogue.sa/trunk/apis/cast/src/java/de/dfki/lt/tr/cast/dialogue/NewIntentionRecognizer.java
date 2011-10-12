@@ -584,11 +584,18 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 			final String nom = getNominalInTheRequest(wma);
 			assert nom != null;
 			stopGathererObservation(wma);
-			
+
+			getLogger().debug("got " + gatherer.getNumOfResults() + " results in total");
+			if (gatherer.wasStabilizedByResult()) {
+				getLogger().info("reason for resume: the results were good enough");
+			}
+			else {
+				getLogger().info("reason for resume: timeouted while listening in hope for better results");
+			}
 
 			if (result != null) {
 				final ReferenceResolutionResult refs = result.getResult();
-				getLogger().info("got a reference resolution result:\n" + ReferenceUtils.resolutionResultToString(refs));
+				getLogger().info("this is the gathered reference resolution result:\n" + ReferenceUtils.resolutionResultToString(refs));
 				return new ContextUpdate() {
 
 					@Override

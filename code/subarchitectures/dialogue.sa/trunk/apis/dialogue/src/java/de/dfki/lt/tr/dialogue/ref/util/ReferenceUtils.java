@@ -31,7 +31,7 @@ public abstract class ReferenceUtils {
 	public static String resolutionResultToString(ReferenceResolutionResult rr) {
 		String s = "";
 
-		s += rr.nom + " -> {\n";
+		s += rr.nom + " (method=\"" + rr.method + "\") -> {\n";
 		for (EpistemicReferenceHypothesis hypo : rr.hypos) {
 			s += "  (" + BeliefIntentionUtils.dFormulaToString(hypo.referent) + "  | " + BeliefIntentionUtils.epistemicStatusToString(hypo.epst)+ ") = " + hypo.score + "\n";
 		}
