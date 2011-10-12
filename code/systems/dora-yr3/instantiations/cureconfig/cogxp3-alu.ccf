@@ -32,7 +32,7 @@ JOYSTICK_PANTILTHOME_ID
 # These ids tell the system the id of the EW (right-left) and the NS
 # (forw-back) axes on the joystick
 JOYSTICK_DRIVESAXES_IDS
-2 3
+0 1
 
 # This button when pressed in comb with the DEADSWITCH allows you to make
 # the translation of the robot motion 0, ie allows you to spin in place easily

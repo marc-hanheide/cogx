@@ -1,6 +1,6 @@
 
 ### the default goal
-SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o))));"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM))"
 #SETVAR planninggoal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
 
 ### the plannig domain to use
