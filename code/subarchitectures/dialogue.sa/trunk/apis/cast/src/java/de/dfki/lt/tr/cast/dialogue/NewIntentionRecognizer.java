@@ -319,7 +319,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		InterpretedIntention iint = pii.intentions.get(addr);
 
 		if (iint.stringContent.get("type").equals("question")
-				&& iint.stringContent.get("subtype").equals("open")) {
+				&& (iint.stringContent.get("subtype").equals("open")
+					|| iint.stringContent.get("subtype").equals("polar"))) {
 
 			// this is the case we can handle
 			getLogger().debug("okay, this seems to be an open question -> we should be able to handle multiple intentions here");
