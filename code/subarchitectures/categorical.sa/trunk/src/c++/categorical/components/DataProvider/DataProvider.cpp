@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <algorithm>
 
 
 using namespace std;
@@ -1150,7 +1151,9 @@ void CategoricalDataProvider::getGridmapScan(std::vector<double> &ranges, double
 {
   SpatialData::MapInterfacePrx mapPrx(getIceServer<SpatialData::MapInterface>("spatial.control"));
   vector<double> virtScan = mapPrx->getGridmapRaytrace(startAngle, angleStep, beamCount);
-	medianFilter(virtScan, ranges, 51);
+//	medianFilter(virtScan, ranges, 51);
+  ranges.clear();
+  ranges.insert(ranges.end(), virtScan.begin(), virtScan.end());
 }
 
 void CategoricalDataProvider::medianFilter(const std::vector<double> &in, std::vector<double> &out, unsigned int order)
