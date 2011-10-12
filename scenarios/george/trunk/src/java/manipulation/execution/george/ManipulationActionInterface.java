@@ -88,6 +88,7 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 			ArmMovementTask cmd = new ArmMovementTask();
 			cmd.taskType = ManipulationTaskType.RETRACTARM;
 			cmd.status = ManipulationTaskStatus.MCREQUESTED;
+			cmd.objPointerSeq=new WorkingMemoryPointer[0];
 			addThenCompleteOnOverwrite(cmd);
 
 		}
