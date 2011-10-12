@@ -25,6 +25,7 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cogx.Math.Vector3;
@@ -62,6 +63,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 
 	// determine whether to fake the robot pose
 	private boolean m_fakeRobotPose;
+	// is the arm resting at system startup?
+	private boolean m_armIsRestingInitially;
 
 	public static class MoveToViewConeExecutor
 			extends
@@ -332,13 +335,19 @@ public class VisionActionInterface extends AbstractActionInterface {
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException, ConsistencyException,
 			PermissionException {
-		Robot rbt = new Robot(_viewconePtr);
+
+		// This component is in charge of adding the inital robot struct
 		if (m_viewStateAddress == null) {
 			m_viewStateAddress = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
+			Robot rbt = new Robot(_viewconePtr, m_armIsRestingInitially);
 			addToWorkingMemory(m_viewStateAddress, rbt);
 		} else {
+			lockEntry(m_viewStateAddress, WorkingMemoryPermissions.LOCKEDODR);
+			Robot rbt = getMemoryEntry(m_viewStateAddress, Robot.class);
+			rbt.currentViewCone = _viewconePtr;
 			overwriteWorkingMemory(m_viewStateAddress, rbt);
+			unlockEntry(m_viewStateAddress);
 		}
 	}
 
@@ -350,6 +359,9 @@ public class VisionActionInterface extends AbstractActionInterface {
 		}
 
 		m_fakeRobotPose = _config.containsKey("--fake-pose");
+
+		// TODO allow for configuration, but default should be true
+		m_armIsRestingInitially = true;
 	}
 
 	@Override

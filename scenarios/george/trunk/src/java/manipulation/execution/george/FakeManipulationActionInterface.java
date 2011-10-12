@@ -1,8 +1,5 @@
 package manipulation.execution.george;
 
-import manipulation.execution.slice.ArmMovementTask;
-import manipulation.execution.slice.ManipulationTaskStatus;
-import manipulation.execution.slice.ManipulationTaskType;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -19,45 +16,36 @@ import execution.slice.Robot;
 import execution.slice.TriBool;
 import execution.slice.actions.ArmToHomePos;
 import execution.slice.actions.PointToObject;
+import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
-import execution.util.NonBlockingCompleteFromStatusExecutor;
 
-public class ManipulationActionInterface extends AbstractActionInterface {
+public class FakeManipulationActionInterface extends AbstractActionInterface {
 
 	private static final boolean ARM_IS_RESTING = true;
 
-	public static class PointToObjectExecutor
-			extends
-			NonBlockingCompleteFromStatusExecutor<PointToObject, ArmMovementTask> {
+	public static class PointToObjectExecutor extends
+			BlockingActionExecutor<PointToObject> {
 
 		public PointToObjectExecutor(ManagedComponent _component) {
-			super(_component, PointToObject.class, ArmMovementTask.class);
+			super(_component, PointToObject.class);
 		}
 
-		@Override
-		protected TriBool executionResult(ArmMovementTask _cmd) {
-			if (_cmd.status == ManipulationTaskStatus.MCSUCCEEDED) {
-				return TriBool.TRITRUE;
-			} else {
-				return TriBool.TRIFALSE;
-			}
-		}
-
-		@Override
 		protected void actionComplete() {
 			try {
-				((ManipulationActionInterface)getComponent()).updateArmRestingState(!ManipulationActionInterface.ARM_IS_RESTING);
+				((FakeManipulationActionInterface) getComponent())
+						.updateArmRestingState(!FakeManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
-				logException("Problem updating robot state",e);
+				logException("Problem updating robot state", e);
 			}
 		}
 
 		@Override
-		public void executeAction() {
+		public TriBool execute() {
+
 			try {
 
-				WorkingMemoryPointer visObjPtr = ((ManipulationActionInterface) getComponent())
+				WorkingMemoryPointer visObjPtr = ((FakeManipulationActionInterface) getComponent())
 						.getFirstAncestorOfBelief(getAction().beliefAddress);
 
 				if (visObjPtr == null) {
@@ -65,58 +53,53 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 							.getLogger()
 							.warn("Action failed because VisualObject pointer was null",
 									getComponent().getLogAdditions());
-					executionComplete(TriBool.TRIFALSE);
+					return TriBool.TRIFALSE;
 				} else {
 					log("belief addr "
 							+ CASTUtils.toString(getAction().beliefAddress)
 							+ " yielded VO addr "
 							+ CASTUtils.toString(visObjPtr.address));
-					ArmMovementTask cmd = new ArmMovementTask();
-					cmd.objPointerSeq = new WorkingMemoryPointer[] { visObjPtr };
-					cmd.taskType = ManipulationTaskType.POINTOBJ0;
-					cmd.status = ManipulationTaskStatus.MCREQUESTED;
-					addThenCompleteOnOverwrite(cmd);
+
+					println("FAKE ARM STUFF: sleeping, updating robot state, then returning true");
+					Thread.sleep(3000);
+					actionComplete();
+					return TriBool.TRITRUE;
+
 				}
 			} catch (Exception e) {
 				logException(e);
-				executionComplete(TriBool.TRIFALSE);
+				return TriBool.TRIFALSE;
 			}
 
 		}
 	}
 
-	public static class ArmToHomePosExecutor
-			extends
-			NonBlockingCompleteFromStatusExecutor<ArmToHomePos, ArmMovementTask> {
+	public static class ArmToHomePosExecutor extends
+			BlockingActionExecutor<ArmToHomePos> {
 
 		public ArmToHomePosExecutor(ManagedComponent _component) {
-			super(_component, ArmToHomePos.class, ArmMovementTask.class);
+			super(_component, ArmToHomePos.class);
 		}
 
 		@Override
-		protected TriBool executionResult(ArmMovementTask _cmd) {
-			if (_cmd.status == ManipulationTaskStatus.MCSUCCEEDED) {
-				return TriBool.TRITRUE;
-			} else {
-				return TriBool.TRIFALSE;
+		public TriBool execute() {
+			println("FAKE ARM STUFF: sleeping, updating robot state, then returning true");
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				logException(e);
 			}
+			actionComplete();
+			return TriBool.TRITRUE;
+
 		}
 
-		@Override
-		public void executeAction() {
-			ArmMovementTask cmd = new ArmMovementTask();
-			cmd.taskType = ManipulationTaskType.RETRACTARM;
-			cmd.status = ManipulationTaskStatus.MCREQUESTED;
-			cmd.objPointerSeq = new WorkingMemoryPointer[0];
-			addThenCompleteOnOverwrite(cmd);
-		}
-		
-		@Override
 		protected void actionComplete() {
 			try {
-				((ManipulationActionInterface)getComponent()).updateArmRestingState(!ManipulationActionInterface.ARM_IS_RESTING);
+				((FakeManipulationActionInterface) getComponent())
+						.updateArmRestingState(!FakeManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
-				logException("Problem updating robot state",e);
+				logException("Problem updating robot state", e);
 			}
 		}
 	}
