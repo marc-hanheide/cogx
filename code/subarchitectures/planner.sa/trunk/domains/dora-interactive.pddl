@@ -636,17 +636,17 @@
    ;;          )
 
 
-   (:action sense-category
-            :agent (?a - robot)
-            :parameters (?r - room)
-            :variables ( ?p - place  ?c - category)
-            :precondition (and (not (done))
-                               (= (is-in ?a) ?p)
-                               (= (in-room ?p) ?r)
-                               (poss (category ?r) ?c))
-            :effect (and (increase (total-cost) 5))
-            :sense (category ?r)
-            )
+   ;; (:action sense-category
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?r - room)
+   ;;          :variables ( ?p - place  ?c - category)
+   ;;          :precondition (and (not (done))
+   ;;                             (= (is-in ?a) ?p)
+   ;;                             (= (in-room ?p) ?r)
+   ;;                             (poss (category ?r) ?c))
+   ;;          :effect (and (increase (total-cost) 5))
+   ;;          :sense (category ?r)
+   ;;          )
 
    (:action ask-for-category-polar
             :agent (?a - robot)
