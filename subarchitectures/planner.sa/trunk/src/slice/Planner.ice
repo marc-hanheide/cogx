@@ -71,6 +71,10 @@ module autogen {
       string predicate; 
       stringSeq arguments;
     };
+
+    class PlannerVerbalisation {
+          string phrase;
+    };
     
 
     sequence<Observation> ObservationSeq;
@@ -152,6 +156,7 @@ module autogen {
       void setChangeFilter(int id, StateChangeFilter filter);
       void waitForChanges(int id, int timeout);
       bool queryGoal(string goal);
+      void verbalise(string phrase);
     };
 
     interface PythonServer extends cast::interfaces::CASTComponent

@@ -599,6 +599,13 @@ void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
     }
 }
 
+void WMControl::verbalise(const string& phrase) {
+    string id = newDataID();
+    PlannerVerbalisationPtr verb = new PlannerVerbalisation(phrase);
+    addToWorkingMemory(id, verb);
+    log("saying: %s", phrase.c_str());
+}
+
 WMControl::InternalCppServer::InternalCppServer(WMControl* Parent) {
     parent = Parent;
 }
@@ -625,4 +632,8 @@ void WMControl::InternalCppServer::waitForChanges(int id, int timeout, const Ice
 
 bool WMControl::InternalCppServer::queryGoal(const string& goal, const Ice::Current&) {
     return parent->queryGoal(goal);
+}
+
+void WMControl::InternalCppServer::verbalise(const string& phrase, const Ice::Current&) {
+    return parent->verbalise(phrase);
 }

@@ -39,6 +39,7 @@ protected:
     void newPercept(const cast::cdl::WorkingMemoryChange& wmc);
     void taskChanged(const cast::cdl::WorkingMemoryChange& wmc);
     void taskRemoved(const cast::cdl::WorkingMemoryChange& wmc);
+    void verbalise(const std::string& phrase);
 
     class InternalCppServer : public CppServer {
     public:
@@ -50,6 +51,7 @@ protected:
         virtual void setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&);
         virtual void waitForChanges(int id, int timeout, const Ice::Current&);
         virtual bool queryGoal(const std::string& goal, const Ice::Current&);
+        virtual void verbalise(const std::string& phrase, const Ice::Current&);
 
     protected:
         WMControl* parent;
