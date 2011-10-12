@@ -270,6 +270,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   def registerTask(self, task_desc, current=None):
     log.info("Planner PythonServer: New PlanningTask received:")
     standalone.globals.set_time()
+    self.verbalise("Got a new task")
 
     task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn, expl_rules_fn=self.expl_rules_fn)
     # task = CASTTask(task_desc, self.beliefs, self.domain_fn, self, problem_fn=self.problem_fn, expl_rules_fn=self.expl_rules_fn)
@@ -459,3 +460,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       temp_address = cast.cdl.WorkingMemoryAddress("temporary", "temporary")
       entries = [Planner.BeliefEntry(self.address_dict.get(b.id, temp_address), b) for b in beliefs]
       self.getClient().updateBeliefState(entries)
+
+  def verbalise(self, phrase):
+      self.getClient().verbalise(phrase)
+      
