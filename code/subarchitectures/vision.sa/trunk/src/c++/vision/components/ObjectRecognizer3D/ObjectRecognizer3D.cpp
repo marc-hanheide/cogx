@@ -224,7 +224,7 @@ void ObjectRecognizer3D::runComponent(){
   		if (m_recCommandList.empty())
 				sleepComponent(500);
 			else {
-				CASTComponent::Lock lock(this);
+				CASTComponent::Lock lock(this); // assuming that the lock will be released relatively quickly
 				m_rec_cmd = m_recCommandList.front();
 				m_recCommandList.erase(m_recCommandList.begin());
 				m_rec_cmd_id = m_recCommandID.front();
@@ -320,7 +320,7 @@ void ObjectRecognizer3D::receiveImages(const std::vector<Video::Image>& images){
  * Recognizer3DCommands with one label each.
  */
 void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc){
-  log("Receiving receiveDetectionCommand");
+  log("Receiving DetectionCommand");
   try {
   DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
   
@@ -339,24 +339,37 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   }
 }
 
+// @author: mmarko
 void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChange & _wmc){
-  log("Receiving receiveDetectionCommand");
-  try {
-  RecognitionCommandPtr det_cmd = getMemoryEntry<RecognitionCommand>(_wmc.address);
-  
-	CASTComponent::Lock lock(this);
-  for(size_t i = 0; i < det_cmd->labels.size(); i++)
-  {
-    Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
-    rec_cmd->cmd = RECOGNIZE;
-    rec_cmd->label = det_cmd->labels[i];
-    m_recCommandList.push_back(rec_cmd);
-    // note: here we add (multiple times) the WM Id of the detection command
-    m_recCommandID.push_back(_wmc.address.id);
-  }
-  } catch (const DoesNotExistOnWMException& e) {
-	  getLogger()->warn("detection command has already disappeared. not detecting.");
-  }
+	log("Receiving RecognitionCommand");
+	try {
+		RecognitionCommandPtr det_cmd = getMemoryEntry<RecognitionCommand>(_wmc.address);
+
+		// When there are no labels in the list, try to recognize all known labels.
+		vector<string> labels;
+		if (det_cmd->labels.size() > 0)
+			labels = det_cmd->labels;
+		else {
+			map<string,RecEntry>::iterator it;
+			for(it = m_recEntries.begin(); it != m_recEntries.end(); it++) {
+				labels.push_back(it->first);
+			}
+		}
+
+		CASTComponent::Lock lock(this);
+		for(size_t i = 0; i < labels.size(); i++)
+		{
+			Recognizer3DCommandPtr rec_cmd = new Recognizer3DCommand();
+			rec_cmd->cmd = RECOGNIZE;
+			rec_cmd->label = labels[i];
+			rec_cmd->visualObjectID = det_cmd->visualObject->address.id;
+			m_recCommandList.push_back(rec_cmd);
+			// note: here we add (multiple times) the WM Id of the detection command
+			m_recCommandID.push_back(_wmc.address.id);
+		}
+	} catch (const DoesNotExistOnWMException& e) {
+		getLogger()->warn("recognition command has already disappeared. not detecting.");
+	}
 }
 
 void ObjectRecognizer3D::receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc){
