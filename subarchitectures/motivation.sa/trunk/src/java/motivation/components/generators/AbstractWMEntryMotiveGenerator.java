@@ -50,6 +50,15 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 		return true;
 	}
 
+	protected String conjoinGoalStrings(String[] _goalStrings) {
+		StringBuilder sb = new StringBuilder("(and ");
+		for (String goalString : _goalStrings) {
+			sb.append(goalString);
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+	
 	public void beliefChanged(WorkingMemoryChange wmc) throws CASTException {
 		switch (wmc.operation) {
 		case ADD: {
