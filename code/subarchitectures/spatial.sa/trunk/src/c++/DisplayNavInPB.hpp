@@ -194,6 +194,8 @@ private:
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 	int m_currGoalPlace;
 
+	std::map<std::string, std::string> m_peekabotObjectFiles;
+
 	double m_FovH; // horisontal fov in degs
 	double m_FovV; // vertical fov in degs
 	std::vector<double> previouscenter;

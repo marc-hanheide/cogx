@@ -116,6 +116,21 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     str >> m_LaserServerHost;
   }
 
+  if (_config.find("--object-models") != _config.end()) {
+    std::istringstream str(_config.find("--object-models")->second);
+
+    while (!str.eof()) {
+      std::string objCategory;
+      std::string objFilename;
+
+      str >> objCategory >> objFilename;
+      if (objCategory == "" || objFilename == "") {
+	continue;
+      }
+      m_peekabotObjectFiles[objCategory] = objFilename;
+    }
+  }
+
   if (_config.find("--fov-hor") != _config.end()) {
     std::istringstream str(_config.find("--fov-hor")->second);
     str >> m_FovH;
@@ -1479,52 +1494,75 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 
   peekabot::CylinderProxy sp;
   peekabot::LabelProxy text;
-  peekabot::ModelProxy objProxy;
-  peekabot::CubeProxy centerProxy;
 
-  char filename[128];
-  if (objData->category == "borland_book") {
-    sprintf(filename, "book_cpp.pbmf");
-  } else {
-    sprintf(filename, "%s.pbmf", objData->category.c_str());
-  }
+  if (m_peekabotObjectFiles.count(objData->category) > 0) {
 
-  if (m_NonUniqueObjects) {
-    objProxy.add(m_ProxyObjects, objData->category, filename);
-  } else {
-    objProxy.add(m_ProxyObjects, objData->category, filename,
-                 peekabot::REPLACE_ON_CONFLICT);
-  }
+    peekabot::ModelProxy objProxy;
 
-  if (objData->angles.empty()) {
-
-    if (m_RobotPose) {
-
-      objProxy.set_pose(objData->x, objData->y, objData->z,
-                        atan2(objData->y - m_RobotPose->y,
-                              objData->x - m_RobotPose->x), 0, 0);
+    if (m_NonUniqueObjects) {
+      objProxy.add(m_ProxyObjects, objData->category, 
+	  m_peekabotObjectFiles[objData->category].c_str());
     } else {
-      // Assume robot is at 0,0,0
-      objProxy.set_pose(objData->x, objData->y, objData->z,
-                        atan2(objData->y - 0,
-                              objData->x - 0), 0, 0);
+      objProxy.add(m_ProxyObjects, objData->category, 
+	  m_peekabotObjectFiles[objData->category].c_str(),
+	  peekabot::REPLACE_ON_CONFLICT);
     }
 
-  } else {
-    double ang[3] = {0,0,0};
-    for (unsigned int i = 0; i < objData->angles.size(); i++) {
-      ang[i] = objData->angles[i];
+    if (objData->angles.empty()) {
+
+      if (m_RobotPose) {
+
+	objProxy.set_pose(objData->x, objData->y, objData->z,
+	    atan2(objData->y - m_RobotPose->y,
+	      objData->x - m_RobotPose->x), 0, 0);
+      } else {
+	// Assume robot is at 0,0,0
+	objProxy.set_pose(objData->x, objData->y, objData->z,
+	    atan2(objData->y - 0,
+	      objData->x - 0), 0, 0);
+      }
+
+    } else {
+      double ang[3] = {0,0,0};
+      for (unsigned int i = 0; i < objData->angles.size(); i++) {
+	ang[i] = objData->angles[i];
+      }
+      objProxy.set_pose(objData->x, objData->y, objData->z,
+	  ang[0], ang[1], ang[2]);
     }
-    objProxy.set_pose(objData->x, objData->y, objData->z,
-                      ang[0], ang[1], ang[2]);
+    text.add(objProxy,"label");
+  }
+  else {
+    // Add a center marker just in case the model file did not exist
+    peekabot::CubeProxy centerProxy;
+    centerProxy.add(m_ProxyObjects, objData->category);
+    centerProxy.set_scale(0.02, 0.08, 0.18);
+    centerProxy.set_color(0,1,0);
+    if (objData->angles.empty()) {
+
+      if (m_RobotPose) {
+
+	centerProxy.set_pose(objData->x, objData->y, objData->z,
+	    atan2(objData->y - m_RobotPose->y,
+	      objData->x - m_RobotPose->x), 0, 0);
+      } else {
+	// Assume robot is at 0,0,0
+	centerProxy.set_pose(objData->x, objData->y, objData->z,
+	    atan2(objData->y - 0,
+	      objData->x - 0), 0, 0);
+      }
+
+    } else {
+      double ang[3] = {0,0,0};
+      for (unsigned int i = 0; i < objData->angles.size(); i++) {
+	ang[i] = objData->angles[i];
+      }
+      centerProxy.set_pose(objData->x, objData->y, objData->z,
+	  ang[0], ang[1], ang[2]);
+    }
+    text.add(centerProxy,"label");
   }
 
-  // Add a center marker just in case the model file did not exist
-  centerProxy.add(objProxy, "center");
-  centerProxy.set_scale(0.05, 0.05, 0.05);
-  centerProxy.set_color(0,1,0);
-
-  text.add(objProxy,"label");
   text.set_text(objData->category);
   text.set_position(0, 0, 0.5);
   text.set_rotation(-M_PI_2,0,M_PI_2);
