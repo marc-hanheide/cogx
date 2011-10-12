@@ -1,0 +1,12 @@
+
+HOST  Robot     192.168.54.1
+HOST  Desktop   192.168.54.2
+
+
+HOSTNAME  Main           [Desktop]
+HOSTNAME  PlayerHost     [Robot]
+HOSTNAME  PeekabotHost   [Desktop]
+HOSTNAME  DisplayHost    [Desktop]
+HOSTNAME  AbducerHost    [Desktop]
+
+SA vision.sa   [Robot]
