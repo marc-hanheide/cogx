@@ -1,9 +1,6 @@
 COST_INROOM cerealbox 200
 COST_ON cerealbox table 30
 
-COST_INROOM stapler 200
-COST_ON stapler table 30
-
 COST_INROOM book 200
 COST_ON book table 30
 
@@ -15,6 +12,22 @@ COST_ON coffee table 30
 
 COST_INROOM juice 200
 COST_ON juice table 30
+
+COST_INROOM pizza 200
+COST_ON pizza table 30
+
+COST_INROOM joystick 200
+COST_ON joystick table 30
+
+INROOM joystick corridor 0.0
+INROOM joystick kitchen 0.15371014
+INROOM joystick meetingroom 0.0
+INROOM joystick office 0.46623915
+
+INROOM pizza corridor 0.025235098
+INROOM pizza kitchen 0.48782033
+INROOM pizza meetingroom 0.04198787
+INROOM pizza office 0.26994422
 
 INROOM juice corridor 0.024542753
 INROOM juice kitchen 0.4768059
@@ -41,11 +54,6 @@ INROOM cerealbox meetingroom 0.06
 INROOM cerealbox office 0.2529
 INROOM cerealbox corridor 0.0519
 
-INROOM stapler kitchen 0.1750
-INROOM stapler meetingroom 0.0110
-INROOM stapler office 0.4025
-INROOM stapler corridor 0.0035
-
 INROOM book kitchen 0.0366
 INROOM book meetingroom 0.0154
 INROOM book office 0.1285
@@ -55,11 +63,6 @@ ON cerealbox table kitchen 0.3
 ON cerealbox table meetingroom 0.03
 ON cerealbox table office 0.03
 ON cerealbox table corridor 0.03
-
-ON stapler table kitchen 0.03
-ON stapler table meetingroom 0.03
-ON stapler table office 0.6
-ON stapler table corridor 0.05
 
 ON book table kitchen 0.03
 ON book table meetingroom 0.3
