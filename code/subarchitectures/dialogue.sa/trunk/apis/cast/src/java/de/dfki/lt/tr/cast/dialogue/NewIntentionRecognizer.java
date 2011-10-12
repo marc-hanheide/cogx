@@ -323,11 +323,11 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 					|| iint.stringContent.get("subtype").equals("polar"))) {
 
 			// this is the case we can handle
-			getLogger().debug("okay, this seems to be an open question -> we should be able to handle multiple intentions here");
+			getLogger().debug("okay, this seems to be an open/polar question -> we should be able to handle multiple intentions here");
 		}
 		else {
 			// we cannot handle anything else: prrrune!
-			getLogger().debug("will prune the PossibleInterpretedIntentions");
+			getLogger().debug("this is not an open/polar question -> will prune the PossibleInterpretedIntentions to be sure");
 			newPii = extractFromRoot(addr, pii);
 		}
 		getLogger().debug("pruning finished");
