@@ -882,6 +882,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 		@Override
 		synchronized public void addResult(ReferenceResolutionResultWrapper added) {
+			getLogger().debug("got a new reference resolution result: " + ReferenceUtils.resolutionResultToString(added.getResult()));
 			++count;
 			if (result.getResult().nom == null) {
 				result.getResult().nom = added.getResult().nom;
