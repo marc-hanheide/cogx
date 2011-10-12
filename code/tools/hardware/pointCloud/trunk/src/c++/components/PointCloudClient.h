@@ -52,6 +52,9 @@ public:
   void getDisparityImage(int imgWidth, Video::Image& image);
   bool getCameraParameters(Ice::Int side, Video::CameraParameters& camPars);
   bool isPointInViewCone(const cogx::Math::Vector3&);
+
+  // @brief Check if the point is visible by all cameras that generate the point cloud.
+  bool isPointVisible(const cogx::Math::Vector3&);
 };
 
 }
