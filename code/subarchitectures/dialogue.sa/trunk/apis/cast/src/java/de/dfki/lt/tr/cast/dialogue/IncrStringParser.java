@@ -50,6 +50,7 @@ import de.dfki.lt.tr.dialogue.parse.PackedLFParseResults;
 import de.dfki.lt.tr.dialogue.parse.OpenCCGGrammar;
 import de.dfki.lt.tr.dialogue.parse.preprocess.BasicPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.CapitalizationPhonStringPreprocessor;
+import de.dfki.lt.tr.dialogue.parse.preprocess.InterpunctionPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.ParaphrasingPhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.parse.preprocess.PhonStringPreprocessor;
 import de.dfki.lt.tr.dialogue.slice.asr.PhonString;
@@ -211,6 +212,7 @@ extends AbstractDialogueComponentUsingTaskManager {
 		preprocessors.add(new ParaphrasingPhonStringPreprocessor());
 		preprocessors.add(new CapitalizationPhonStringPreprocessor());
 		preprocessors.add(new BasicPhonStringPreprocessor());
+		preprocessors.add(new InterpunctionPhonStringPreprocessor());
         	
 		// register change filters for PhonString, which triggers parsing
 		addChangeFilter(
