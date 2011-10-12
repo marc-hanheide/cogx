@@ -306,3 +306,29 @@ understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
 	int : string_content(Int, type, 'stop') / p(1.0).
 
 %-------------------------------------------------------------------------
+% HACKS
+%-------------------------------------------------------------------------
+
+% did you mean X
+%@{mean1_1:cognition}(mean ^ <Mood>int ^ <Tense>past ^ <Actor>(you1_1:person ^ you ^ <Num>sg) ^ <Event>(context1_1:event ^ context ^ <Delimitation>unique ^ <Proximity>proximal ^ <Quantification>specific) ^ <Subject>(you1_1:person))
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, mean),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, past),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	get_obj_nom(Nom, ObjNom),
+
+	? understand : i : intention(Nom, Int),
+	understand : topic(Speaker, Hearer, _EpSt, Int, ObjNom, ObjNom),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'verification') / p(1.0),
+	int : address_content(Int, 'verification-of', Int) / p(1.0).
+
+get_obj_nom(Nom, ObjNom) <-
+	i : rel_Event(Nom, ObjNom).
+
+get_obj_nom(Nom, ObjNom) <-
+	i : rel_Patient(Nom, ObjNom).

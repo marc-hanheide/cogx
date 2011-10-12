@@ -314,13 +314,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	public PossibleInterpretedIntentions prunePossibleInterpretedIntentions(PossibleInterpretedIntentions pii) {
 		PossibleInterpretedIntentions newPii = pii;
 
-		getLogger().debug("pruning the possible intentions");
+		getLogger().debug("will see whether the possible intentions need to be pruned");
 		WorkingMemoryAddress addr = IntentionUnpacker.mostConfidentIntentionAddress(pii);
 		InterpretedIntention iint = pii.intentions.get(addr);
 
-		if (iint.stringContent.get("type").equals("question")
-				&& (iint.stringContent.get("subtype").equals("open")
-					|| iint.stringContent.get("subtype").equals("polar"))) {
+		getLogger().debug("I'll look this intention:\n" + InterpretedUserIntention.interpretedIntentionToString(iint));
+
+		if (stringEquals(iint.stringContent.get("type"), "question")
+				&& (stringEquals(iint.stringContent.get("subtype"), "open")
+					|| stringEquals(iint.stringContent.get("subtype"), "polar"))) {
 
 			// this is the case we can handle
 			getLogger().debug("okay, this seems to be an open/polar question -> we should be able to handle multiple intentions here");
@@ -332,6 +334,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		}
 		getLogger().debug("pruning finished");
 		return newPii;
+	}
+
+	public static boolean stringEquals(String s1, String s2) {
+		if (s1 != null && s2 != null) {
+			return s1.equals(s2);
+		}
+		else {
+			return false;
+		}
 	}
 
 	public PossibleInterpretedIntentions extractFromRoot(WorkingMemoryAddress wma, PossibleInterpretedIntentions pii) {
