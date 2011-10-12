@@ -113,7 +113,7 @@ public class PossibleInterpretationsMotiveGenerator
 			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddr) {
 		String predicate = CASTUtils.concatenate("polar-", _feature,
 				"-question-answered");
-		return "(exists (?v - VisualObject) (and (" + predicate + " ?v "
+		return "(exists (?v - VisualObject) (and (= (" + predicate + " ?v) "
 				+ _hypothesis + ")))";
 	}
 
