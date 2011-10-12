@@ -530,6 +530,24 @@ bool KinectPCServer::getCameraParameters(Ice::Int side, Video::CameraParameters&
   return true;
 }
 
+// @author: mmarko
+// 2011-10-12 NOTE: we override this because we are not sure how many cameras
+// there are in PointCloudServer::camPars for KinectPCServer. We only need
+// the parameters of the LEFT (= color) camera.
+bool KinectPCServer::isPointVisible(const cogx::Math::Vector3& point)
+{
+  Video::CameraParameters camPars;
+
+  if (!getCameraParameters(LEFT, camPars) || ! Video::isPointVisible(camPars, point)) {
+      //log("Point is NOT visible in camera %d", camPars.id);
+      return false;
+  }
+  //log("Point is visible in camera %d", camPars.id);
+
+
+  return true;
+}
+
 void KinectPCServer::getDisparityImage(int imgWidth, Video::Image& image)
 {
   printf("KinectPCServer::getDisparityImage: Warning: Not yet implemented!\n");
