@@ -1,5 +1,8 @@
 package eu.cogx.goals.george;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import motivation.components.generators.AbstractWMEntryMotiveGenerator;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
@@ -12,6 +15,7 @@ import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
@@ -21,6 +25,8 @@ import eu.cogx.beliefs.slice.GroundedBelief;
 
 public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.Object>
 		extends AbstractWMEntryMotiveGenerator<TutorInitiativeMotive, T> {
+
+	public static final String IS_POTENTIAL_OBJECT_IN_QUESTION = "is-potential-object-in-question";
 
 	public AbstractInterpretedIntentionMotiveGenerator(Class<T> _entryCls) {
 		super(TutorInitiativeMotive.class, _entryCls);
@@ -41,6 +47,50 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		//
 		// }
 		// });
+	}
+
+	private WorkingMemoryAddress m_robotBeliefAddr;
+
+	// TODO sanitise between Dora and George
+	@Override
+	protected WorkingMemoryAddress getRobotBeliefAddr() {
+		if (m_robotBeliefAddr == null) {
+			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
+			try {
+				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
+						"binder", 0);
+			} catch (UnknownSubarchitectureException e) {
+				logException(e);
+				return null;
+			}
+
+			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
+				if (beliefEntry.getData().type.equals("Robot")) {
+					m_robotBeliefAddr = new WorkingMemoryAddress(
+							beliefEntry.getID(), "binder");
+					break;
+				}
+			}
+			if (m_robotBeliefAddr == null) {
+				getLogger().warn("unable to find belief '" + "Robot" + "'");
+			}
+		}
+		return m_robotBeliefAddr;
+
+	}
+
+	protected String getAdditionalGoals() throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		println("fetching robot belief from " + getRobotBeliefAddr());
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class,
+						getMemoryEntry(getRobotBeliefAddr(),
+								GroundedBelief.class));
+
+		return VisualObjectMotiveGenerator.beliefPredicateGoal(
+				"arm-in-resting-position", belief);
+
 	}
 
 	protected void logIntention(BaseIntention _intention) {
@@ -143,7 +193,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	private TutorInitiativeQuestionMotive polarQuestion(String _feature,
-			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddress) {
+			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddress)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// [LOG gg.ii: polar question intention]
 		// [LOG gg.ii: unknown InterpretedIntention type]
 		// [gg.ii: stringContent]
@@ -158,10 +209,12 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				.newMotive(TutorInitiativeQuestionMotive.class, null,
 						getCASTTime());
 
+		String goalString = conjoinGoalStrings(new String[] {
+				getAdditionalGoals(),
+				getPolarQuestionGoalString(_feature, _hypothesis,
+						_groundedBeliefAddress) });
 
-
-		motive.goal = new Goal(100f, getPolarQuestionGoalString(_feature,
-				_hypothesis, _groundedBeliefAddress), false);
+		motive.goal = new Goal(100f, goalString, false);
 
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
@@ -178,15 +231,18 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// }
 
 	private TutorInitiativeQuestionMotive openQuestion(String _feature,
-			WorkingMemoryAddress _groundedBeliefAddress) {
+			WorkingMemoryAddress _groundedBeliefAddress)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
 		TutorInitiativeQuestionMotive motive = VisualObjectMotiveGenerator
 				.newMotive(TutorInitiativeQuestionMotive.class, null,
 						getCASTTime());
 
-	
-		motive.goal = new Goal(100f, getOpenQuestionGoalString(_feature,
-				_groundedBeliefAddress), false);
+		String goalString = conjoinGoalStrings(new String[] {
+				getAdditionalGoals(),
+				getOpenQuestionGoalString(_feature, _groundedBeliefAddress) });
+
+		motive.goal = new Goal(100f, goalString, false);
 
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
@@ -290,7 +346,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			PermissionException, UnknownSubarchitectureException {
 		println("marking referent");
 		addBooleanFeature(_groundedBeliefAddr,
-				"is-potential-object-in-question", true);
+				IS_POTENTIAL_OBJECT_IN_QUESTION, true);
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
 		sleepComponent(1000);
