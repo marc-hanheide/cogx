@@ -70,9 +70,9 @@
     (global-shape-question-answered ?v - VisualObject)
     (global-type-question-answered ?v - VisualObject)
 
-    (polar-color-question-answered ?v - VisualObject ?c - ColorName)
-    (polar-shape-question-answered ?v - VisualObject ?s - ShapeName)
-    (polar-type-question-answered ?v - VisualObject ?t - TypeName)
+    ;; (polar-color-question-answered ?v - VisualObject ?c - ColorName)
+    ;; (polar-shape-question-answered ?v - VisualObject ?s - ShapeName)
+    ;; (polar-type-question-answered ?v - VisualObject ?t - TypeName)
 
     (object-refering-color-question-answered ?v - VisualObject ?c - ColorName)
     (object-refering-shape-question-answered ?v - VisualObject ?s - ShapeName)
@@ -116,6 +116,10 @@
     (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
 
     (presence ?v - VisualObject) - Visibility
+
+    (polar-color-question-answered ?v - VisualObject) - ColorName
+    (polar-shape-question-answered ?v - VisualObject) - ShapeName
+    (polar-type-question-answered ?v - VisualObject) - TypeName
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -153,7 +157,7 @@
   (:init-rule set-believe-in-color-threshold
     :parameters (?r - Robot)
     :precondition (= (believe-in-color-threshold ?r) UNKNOWN)
-    :effect (assign (believe-in-color-threshold ?r) 0.1)
+    :effect (assign (believe-in-color-threshold ?r) 0.33)
   )
 
   (:init-rule set-polar-question-shape-threshold
@@ -171,13 +175,13 @@
   (:init-rule set-convinced-of-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (convinced-of-shape-threshold ?r) UNKNOWN)
-    :effect (assign (convinced-of-shape-threshold ?r) 0.2)
+    :effect (assign (convinced-of-shape-threshold ?r) 0.66)
   )
 
   (:init-rule set-believe-in-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (believe-in-shape-threshold ?r) UNKNOWN)
-    :effect (assign (believe-in-shape-threshold ?r) 0.1)
+    :effect (assign (believe-in-shape-threshold ?r) 0.33)
   )
 
   (:init-rule set-polar-question-type-threshold
@@ -823,6 +827,7 @@
     :effect
       (and
         (assign (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
+        (update (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
         (arm-in-resting-position ?r)
         (update (arm-in-resting-position ?r) true)
         (increase (total-cost) 1)
@@ -1003,7 +1008,8 @@
       )
     :effect
       (and
-        (polar-color-question-answered ?v ?c)
+        ;; (polar-color-question-answered ?v ?c)
+        (assign (polar-color-question-answered ?v) ?c)
         (increase (total-cost) 1)
       )
   )
@@ -1020,7 +1026,8 @@
       )
     :effect
       (and
-        (polar-color-question-answered ?v ?c)
+        ;; (polar-color-question-answered ?v ?c)
+        (assign (polar-color-question-answered ?v) ?c)
         (increase (total-cost) 1)
       )
   )
@@ -1042,7 +1049,8 @@
       )
     :effect
       (and
-        (polar-color-question-answered ?v ?c)
+        ;; (polar-color-question-answered ?v ?c)
+        (assign (polar-color-question-answered ?v) ?c)
         (increase (total-cost) 2)
       )
   )
@@ -1058,7 +1066,8 @@
       )
     :effect
       (and
-        (polar-shape-question-answered ?v ?s)
+        ;;(polar-shape-question-answered ?v ?s)
+        (assign (polar-shape-question-answered ?v) ?s)
         (increase (total-cost) 1)
       )
   )
@@ -1075,7 +1084,8 @@
       )
     :effect
       (and
-        (polar-shape-question-answered ?v ?s)
+        ;; (polar-shape-question-answered ?v ?s)
+        (assign (polar-shape-question-answered ?v) ?s)
         (increase (total-cost) 1)
       )
   )
@@ -1097,7 +1107,8 @@
       )
     :effect
       (and
-        (polar-shape-question-answered ?v ?s)
+        ;; (polar-shape-question-answered ?v ?s)
+        (assign (polar-shape-question-answered ?v) ?s)
         (increase (total-cost) 2)
       )
   )
@@ -1113,7 +1124,8 @@
       )
     :effect
       (and
-        (polar-type-question-answered ?v ?t)
+        ;; (polar-type-question-answered ?v ?t)
+        (assign (polar-type-question-answered ?v) ?t)
         (increase (total-cost) 1)
       )
   )
@@ -1130,7 +1142,8 @@
       )
     :effect
       (and
-        (polar-type-question-answered ?v ?t)
+        ;; (polar-type-question-answered ?v ?t)
+        (assign (polar-type-question-answered ?v) ?t)
         (increase (total-cost) 1)
       )
   )
@@ -1152,7 +1165,8 @@
       )
     :effect
       (and
-        (polar-type-question-answered ?v ?t)
+        ;; (polar-type-question-answered ?v ?t)
+        (assign (polar-type-question-answered ?v) ?t)
         (increase (total-cost) 2)
       )
   )
