@@ -108,6 +108,7 @@ private:
 
   void receiveTrackingCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
+  void receiveRecognitionCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveRecognizer3DCommand(const cdl::WorkingMemoryChange & _wmc);
   void PostFake3DObject(const cdl::WorkingMemoryChange & _wmc);
 
