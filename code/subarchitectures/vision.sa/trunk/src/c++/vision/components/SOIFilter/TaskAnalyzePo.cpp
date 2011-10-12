@@ -11,7 +11,10 @@
 
 #include "../../VisionUtils.h"
 
+#define USE_RECOGNIZER_V2 0
+#if USE_RECOGNIZER_V2
 #include <ObjectRecognizerSrv.hpp>
+#endif
 #include <castutils/Timers.hpp>
 
 using namespace std;
@@ -201,6 +204,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
       log("analyze_task: caught an unknown exception writing (identity-) DetectionCommand.");
     }
   }
+#if USE_RECOGNIZER_V2
   else if (pSoiFilter->m_identityRecognizerVersion == 2) {
     try {
       ObjectRecognizerIce::ObjectRecognitionTaskPtr pcmd = new ObjectRecognizerIce::ObjectRecognitionTask();
@@ -212,6 +216,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
       log("analyze_task: caught an unknown exception writing (identity-) RecognitionTask.");
     }
   }
+#endif
   else if (pSoiFilter->m_identityRecognizerVersion == 3) {
     try {
       VisionData::RecognitionCommandPtr pcmd = new VisionData::RecognitionCommand();
