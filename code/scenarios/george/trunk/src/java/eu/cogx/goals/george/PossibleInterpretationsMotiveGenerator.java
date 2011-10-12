@@ -26,7 +26,7 @@ public class PossibleInterpretationsMotiveGenerator
 		extends
 		AbstractInterpretedIntentionMotiveGenerator<PossibleInterpretedIntentions> {
 
-	private static final double DISAMBIGUATION_CONFIDENCE_THRESHOLD = 0.6;
+	private static final double DISAMBIGUATION_CONFIDENCE_THRESHOLD = 0.9;
 
 	public PossibleInterpretationsMotiveGenerator() {
 		super(PossibleInterpretedIntentions.class);
@@ -90,6 +90,11 @@ public class PossibleInterpretationsMotiveGenerator
 		if (_pii.intentions.size() == 1) {
 			return false;
 		} else {
+			
+			for (InterpretedIntention ii : _pii.intentions.values()) {
+				logIntention(ii);
+			}
+			
 			InterpretedIntention mostConfidentIntention = IntentionUnpacker
 					.getMostConfidentIntention(_pii);
 			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;

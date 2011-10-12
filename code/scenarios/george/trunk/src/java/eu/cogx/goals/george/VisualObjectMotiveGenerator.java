@@ -198,6 +198,7 @@ public class VisualObjectMotiveGenerator extends
 		return beliefPredicateGoal(_predicate, _belief.getId());
 	}
 
+	
 	public static String beliefPredicateGoal(String _predicate, String _beliefID) {
 		StringBuilder sb = new StringBuilder("(");
 		sb.append(_predicate);
