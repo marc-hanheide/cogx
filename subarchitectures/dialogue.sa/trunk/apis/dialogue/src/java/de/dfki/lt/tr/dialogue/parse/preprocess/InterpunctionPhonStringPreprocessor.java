@@ -6,7 +6,7 @@ public class InterpunctionPhonStringPreprocessor implements PhonStringPreprocess
 
 	@Override
 	public void apply(PhonString ps) {
-		ps.wordSequence = ps.wordSequence.replaceAll("[.,]", "");
+		ps.wordSequence = ps.wordSequence.replaceAll("[.,!?]", "");
 	}
 	
 }
