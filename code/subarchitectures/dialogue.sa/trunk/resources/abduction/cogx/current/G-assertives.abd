@@ -39,6 +39,14 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+string_content_certainty(IntAddr, Certainty) <-
+	i : int : string_content(IntAddr, 'asserted-certainty', Certainty).
+
+string_content_certainty(IntAddr, low) <-
+	assume_low_certainty(IntAddr) / 0.5.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 verbalised_feature_value(Feat, Val, neg, [not, VerbVal]) <-
 	verbalised_feature_value(Feat, Val, pos, VerbVal).
 
