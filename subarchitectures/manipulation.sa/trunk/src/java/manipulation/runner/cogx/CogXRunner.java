@@ -436,6 +436,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	public void updateWorkingMemoryCommand(WorkingMemoryAddress adress,
 			ManipulationExternalCommand cmd) {
 		try {
+                        getMemoryEntry(adress, ManipulationExternalCommand.class);
 			overwriteWorkingMemory(adress, cmd);
 		} catch (DoesNotExistOnWMException e) {
 			logger.error(e);
