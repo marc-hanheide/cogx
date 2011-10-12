@@ -110,7 +110,6 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
         log ("Warning! Failed to move PTZ before moving!");
       }
       deleteFromWorkingMemory(objID.address);
-      m_waitingForPTZCommandID = "";
     }
 
     // Check if the tilt is now in the 'navigation pose' (-45 degrees)
@@ -119,12 +118,17 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
     else 
       m_ptzInNavigationPose = false;
 
+    log("PTZ in navigation pose: %d", m_ptzInNavigationPose);
+
     m_lastPtzNavPoseCompletion = getCASTTime();
   }
   catch (DoesNotExistOnWMException e)
   {
     log ("Error: SetPTZPoseCommand went missing! "); 
   }
+
+  if (objID.address.id == m_waitingForPTZCommandID)
+      m_waitingForPTZCommandID = "";
 }
 
 SpatialControl::~SpatialControl() 
@@ -396,6 +400,8 @@ void SpatialControl::start()
     m_ptzInNavigationPose = true;
   else
     m_ptzInNavigationPose = false;
+
+  log("PTZ in navigation pose: %d", m_ptzInNavigationPose);
 
   m_lastPtzNavPoseCompletion = getCASTTime();
 
