@@ -93,8 +93,22 @@ polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Val
 	i : int : address_content(QUDAddr, about, BeliefAddr),
 	aboutness(Int, BeliefAddr),
 	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+	int : string_content(Int, subtype, 'answer') / p(1.0),
 
 	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
+
+% verification polar question
+polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity) <-
+	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'verification'),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	i : int : address_content(QUDAddr, 'verification-of', _IntSetAddr),
+	aboutness(Int, BeliefAddr),
+	int : string_content(Int, subtype, 'verification-answer') / p(1.0),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
 
 %polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, unknown, Polarity) <-
 %	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
@@ -117,7 +131,6 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, type, 'assertion') / p(1.0),
-	int : string_content(Int, subtype, 'answer') / p(1.0),
 
 	? polar_question_under_discussion(Speaker, Hearer, _QUDAddr, Nom, Int, _Feature, _Value, Polarity).
 
