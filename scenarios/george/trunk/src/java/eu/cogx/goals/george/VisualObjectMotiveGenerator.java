@@ -207,4 +207,15 @@ public class VisualObjectMotiveGenerator extends
 		sb.append("')");
 		return sb.toString();
 	}
+
+        public static String beliefFunctionGoal(String _predicate, String _beliefID, String _value) {
+		StringBuilder sb = new StringBuilder("(= (");
+		sb.append(_predicate);
+		sb.append(" '");
+		sb.append(_beliefID);
+                sb.append("') ");
+                sb.append(_value);
+		sb.append(")");
+		return sb.toString();
+	}
 }

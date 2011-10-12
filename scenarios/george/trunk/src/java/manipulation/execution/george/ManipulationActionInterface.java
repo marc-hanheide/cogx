@@ -140,9 +140,7 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
-		m_actionStateManager
-				.registerActionType(
-						PointToObject.class,
+		m_actionStateManager.registerActionType(PointToObject.class,
 						new ComponentActionFactory<PointToObject, PointToObjectExecutor>(
 								this, PointToObjectExecutor.class));
 		m_actionStateManager.registerActionType(ArmToHomePos.class,
