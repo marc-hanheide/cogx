@@ -112,7 +112,6 @@ public class VisualObjectTransferFunction
 
         Formula related_to = null;
         Formula relation = null;
-        Formula label = null;
         Formula cone = null;
         log("check if we have pending cone actions");
         
@@ -122,7 +121,7 @@ public class VisualObjectTransferFunction
 
 					related_to = coneGroupBelief.getContent().get("cg-related-to").getDistribution().getMostLikely();
 					relation = coneGroupBelief.getContent().get("cg-relation").getDistribution().getMostLikely();
-					label = coneGroupBelief.getContent().get("cg-label").getDistribution().getMostLikely();
+//					label = coneGroupBelief.getContent().get("cg-label").getDistribution().getMostLikely();
                     cone = WMPointer.create(lastViewconeAddress, "conegroup").getAsFormula();
 
 					log("we found the cone group that belongs to this cone: "

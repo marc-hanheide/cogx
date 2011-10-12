@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import spatial.execution.TurnToPersonExecutor;
+
 import SpatialData.Place;
 import VisionData.Person;
 import cast.CASTException;
@@ -18,6 +20,7 @@ import cast.core.CASTUtils;
 import castutils.castextensions.WMContentWaiter;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.BoolFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
@@ -62,7 +65,11 @@ public class PersonTransferFunction
 			throws BeliefException {
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
-		// TODO: we should use a DoubleValue here!
+		if (from.identifier.equals("commander")) {
+			println("the 'commander' is automatically engaged");
+			result.put(TurnToPersonExecutor.ENGAGED, BoolFormula.create(true).getAsFormula());
+			result.put(TurnToPersonExecutor.UNRESPONSIVE, BoolFormula.create(false).getAsFormula());
+		}
 		result.put(PERSON_ID, PropositionFormula.create(from.identifier)
 				.getAsFormula());
 		// result.put("distance", DoubleFormula.create(from.distance)

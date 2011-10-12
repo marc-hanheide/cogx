@@ -162,7 +162,6 @@ public class DialogueActionInterface extends AbstractDialogueActionInterface {
 	 */
 	public static class HumanEngagementExecutor extends
 			IntentionDialogueAction<EngageWithHuman> {
-		WMEventQueue queue = new WMEventQueue();
 
 		public HumanEngagementExecutor(ManagedComponent _component) {
 			super(_component, EngageWithHuman.class);

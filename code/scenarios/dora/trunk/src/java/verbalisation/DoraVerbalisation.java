@@ -187,9 +187,8 @@ public class DoraVerbalisation extends ManagedComponent implements
 		@Override
 		public String toText(Place _i) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("Created Place ");
+			sb.append("I explored place hypothesis ");
 			sb.append(_i.id);
-			sb.append(" from an existing hypothesis");
 			return sb.toString();
 		}
 	};
@@ -235,7 +234,7 @@ public class DoraVerbalisation extends ManagedComponent implements
 		@Override
 		public String toText(ProcessConeGroupAction _i) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("searching in view cone");
+			sb.append("searching in a view cone");
 
 			return sb.toString();
 		}
@@ -327,8 +326,6 @@ public class DoraVerbalisation extends ManagedComponent implements
 		// m_verbals.verbaliseOnAddition(ProcessViewPointCommand.class,
 		// PROCESS_SINGLE_VIEWPOINT_GENERATOR);
 
-		addChangeFilter(
-				ChangeFilterFactory.createGlobalTypeFilter(Place.class), this);
 		addChangeFilter(
 				ChangeFilterFactory.createGlobalTypeFilter(Place.class), this);
 	}
