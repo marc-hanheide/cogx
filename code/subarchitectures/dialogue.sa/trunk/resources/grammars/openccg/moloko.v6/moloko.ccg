@@ -3385,6 +3385,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun(jug, thing,) 
   noun(stapler, thing,) 
   noun(keyboard, thing,) 
+  noun(joystick, thing,) 
   noun(laptop, thing,) 
   noun(screen, thing,) 
   noun(computer, thing,) 

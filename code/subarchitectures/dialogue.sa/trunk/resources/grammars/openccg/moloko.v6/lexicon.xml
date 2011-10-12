@@ -19,6 +19,7 @@
       </atomcat>
     </entry>
     <member stem="up"/>
+    <member stem="cup" pred="up"/>
   </family>
   <family name="Noun" pos="Noun" closed="true">
     <entry name="Entry-1">
@@ -68,6 +69,7 @@
     <member stem="researcher-noun-n" pred="researcher"/>
     <member stem="pirate-noun-n" pred="pirate"/>
     <member stem="victim-noun-n" pred="victim"/>
+    <member stem="rowboat-noun-n" pred="Robot"/>
     <member stem="Borland-noun-n" pred="Borland"/>
     <member stem="dog-noun-n" pred="dog"/>
     <member stem="cat-noun-n" pred="cat"/>
@@ -102,10 +104,14 @@
     <member stem="car-noun-n" pred="car"/>
     <member stem="wall-noun-n" pred="wall"/>
     <member stem="pizza-noun-n" pred="pizza"/>
+    <member stem="cerealbox-noun-n" pred="cerealbox"/>
     <member stem="book-noun-n" pred="book"/>
     <member stem="ball-noun-n" pred="ball"/>
     <member stem="block-noun-n" pred="block"/>
     <member stem="box-noun-n" pred="box"/>
+    <member stem="box2-noun-n" pred="box"/>
+    <member stem="box3-noun-n" pred="box"/>
+    <member stem="box4-noun-n" pred="box"/>
     <member stem="bucket-noun-n" pred="bucket"/>
     <member stem="pin-noun-n" pred="pin"/>
     <member stem="cube-noun-n" pred="cube"/>
@@ -114,7 +120,9 @@
     <member stem="mug-noun-n" pred="mug"/>
     <member stem="cup-noun-n" pred="cup"/>
     <member stem="jug-noun-n" pred="jug"/>
+    <member stem="stapler-noun-n" pred="stapler"/>
     <member stem="keyboard-noun-n" pred="keyboard"/>
+    <member stem="joystick-noun-n" pred="joystick"/>
     <member stem="laptop-noun-n" pred="laptop"/>
     <member stem="screen-noun-n" pred="screen"/>
     <member stem="computer-noun-n" pred="computer"/>
@@ -164,11 +172,13 @@
     <member stem="food-mass-n" pred="food"/>
     <member stem="chocolate-noun-n" pred="chocolate"/>
     <member stem="tea-noun-n" pred="tea"/>
+    <member stem="juice-noun-n" pred="juice"/>
     <member stem="coffee-noun-n" pred="coffee"/>
     <member stem="cornflakes-noun-n" pred="cornflakes"/>
     <member stem="cookies-noun-n" pred="cookies"/>
     <member stem="water-noun-n" pred="water"/>
     <member stem="tea-mass-n" pred="tea"/>
+    <member stem="juice-mass-n" pred="juice"/>
     <member stem="coffee-mass-n" pred="coffee"/>
     <member stem="chocolate-mass-n" pred="chocolate"/>
     <member stem="cornflakes-mass-n" pred="cornflakes"/>
@@ -186,8 +196,8 @@
     <member stem="office-noun-n" pred="office"/>
     <member stem="room-noun-n" pred="room"/>
     <member stem="hall-noun-n" pred="hall"/>
-    <member stem="hallway-noun-n" pred="hall"/>
-    <member stem="corridor-noun-n" pred="hall"/>
+    <member stem="corridor-noun-n" pred="corridor"/>
+    <member stem="hallway-noun-n" pred="corridor"/>
     <member stem="bathroom-noun-n" pred="bathroom"/>
     <member stem="washroom-noun-n" pred="bathroom"/>
     <member stem="toilet-noun-n" pred="bathroom"/>
@@ -197,6 +207,7 @@
     <member stem="kitchen-noun-n" pred="kitchen"/>
     <member stem="library-noun-n" pred="library"/>
     <member stem="livingroom-noun-n" pred="livingroom"/>
+    <member stem="meetingroom-noun-n" pred="meetingroom"/>
     <member stem="recreationroom-noun-n" pred="recreationroom"/>
     <member stem="secretariat-noun-n" pred="secretariat"/>
     <member stem="lobby-noun-n" pred="lobby"/>
@@ -2978,6 +2989,8 @@
       </atomcat>
     </entry>
     <member stem="now-adv" pred="now"/>
+    <member stem="now2-adv" pred="now"/>
+    <member stem="now3-adv" pred="now"/>
     <member stem="today-adv" pred="today"/>
     <member stem="yesterday-adv" pred="yesterday"/>
     <member stem="tomorrow-adv" pred="tomorrow"/>
@@ -14706,6 +14719,7 @@
     <member stem="butxx-du" pred="but"/>
     <member stem="andxx-du" pred="and"/>
     <member stem="soxx-du" pred="so"/>
+    <member stem="thenxx-du" pred="and"/>
     <member stem="finexx-du" pred="fine"/>
     <member stem="goodxx-du" pred="good"/>
     <member stem=",xx-du" pred=","/>
