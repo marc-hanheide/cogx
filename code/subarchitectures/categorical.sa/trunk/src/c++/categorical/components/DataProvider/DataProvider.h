@@ -154,8 +154,8 @@ private: // Data processing
    * Always makes a copy of the data. */
   void convertImageRGB24(const Video::Image &src, CategoricalData::ImageData &dest) const;
 
-
-
+  void getGridmapScan(std::vector<double> &ranges, double startAngle, double angleStep, unsigned int beamCount);
+  void medianFilter(const std::vector<double> &in, std::vector<double> &out, unsigned int order);
 private: // Configuration
 
   /** Name of the config file group. */

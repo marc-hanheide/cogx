@@ -8,11 +8,12 @@
 #include "DataProvider.h"
 #include "shared/ConfigFile.h"
 #include "shared/CastTools.h"
-#include "LaserCorrector.h"
+#include "medflt.h"
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cast/core/CASTUtils.hpp>
 #include <ConvertImage.h>
+#include "SpatialData.hpp"
 // Std
 #include <math.h>
 #include <limits.h>
@@ -55,9 +56,6 @@ CategoricalDataProvider::CategoricalDataProvider(): _cfgGroup("DataProvider")
   pthread_mutex_init(&_scanQueueMutex, 0);
   pthread_mutex_init(&_odometryQueueMutex, 0);
 
-  // Laser corrector
-  _laserCorrector = new CategoricalLaserCorrector(10.0, 0.1, 10, 51, 5.6);
-
   // Other
   _frameNo=0;
   _lastGrabTimestamp.s=0;
@@ -73,8 +71,6 @@ CategoricalDataProvider::~CategoricalDataProvider()
   pthread_mutex_destroy(&_signalMutex);
   pthread_mutex_destroy(&_scanQueueMutex);
   pthread_mutex_destroy(&_odometryQueueMutex);
-
-  delete _laserCorrector;
 }
 
 
@@ -265,7 +261,6 @@ void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &inScan)
 		  return;
 	  }
 
-	  _laserCorrector->addScan(x, y, theta, scan.ranges, scan.startAngle, scan.angleStep);
 	  if (_convertScansToSick)
 	  {
 		  const double sickStartAngle = -1.5708;
@@ -273,10 +268,10 @@ void CategoricalDataProvider::receiveScan2d(const Laser::Scan2d &inScan)
 		  const int sickCount = 181;
 		  scan.startAngle = sickStartAngle;
 		  scan.angleStep = sickAngleStep;
-		  _laserCorrector->getCorrectedScan(scan.ranges, scan.startAngle, scan.angleStep, sickCount);
+		  getGridmapScan(scan.ranges, scan.startAngle, scan.angleStep, sickCount);
 	  }
 	  else
-		  _laserCorrector->getCorrectedScan(scan.ranges, scan.startAngle, scan.angleStep, scan.ranges.size());
+		  getGridmapScan(scan.ranges, scan.startAngle, scan.angleStep, scan.ranges.size());
   }
 
   pthread_mutex_lock(&_scanQueueMutex);
@@ -1150,3 +1145,20 @@ void CategoricalDataProvider::pullImageFromSocket(CategoricalData::Image *image)
 }
 
  */
+
+void CategoricalDataProvider::getGridmapScan(std::vector<double> &ranges, double startAngle, double angleStep, unsigned int beamCount) 
+{
+  SpatialData::MapInterfacePrx mapPrx(getIceServer<SpatialData::MapInterface>("spatial.control"));
+  vector<double> virtScan = mapPrx->getGridmapRaytrace(startAngle, angleStep, beamCount);
+	medianFilter(virtScan, ranges, 51);
+}
+
+void CategoricalDataProvider::medianFilter(const std::vector<double> &in, std::vector<double> &out, unsigned int order)
+{
+	TMedianFilter1D<double> flt;
+	flt.SetWindowSize(order);
+	flt.Execute(in, true);
+	out.resize(in.size());
+	for(int j=0; j<flt.Count(); j++)
+		out[j]=flt[j];
+}
