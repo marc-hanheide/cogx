@@ -229,6 +229,10 @@ enum VisionCommandStatus {
    * Ask the 3D object recognizer to recognize a given as yet unknown visual
    * object, using only the image region defined by the bounding sphere of that
    * object. It checks for all labels given in the list.
+   * 
+   * If the list of labels is empty, it will check all the labels known to the
+   * recognizer.
+   *
    * @author Michael Zillich
    */
   class RecognitionCommand {
