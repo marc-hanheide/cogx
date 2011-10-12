@@ -16,6 +16,7 @@ import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -27,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -108,7 +110,7 @@ public abstract class AbstractDialogueActionInterface extends
 				prepareCheckAndResponse(id);
 				getComponent().addToWorkingMemory(id, actint);
 				res = waitAndCheckResponse(id);
-				if (res==TriBool.TRITRUE)
+				if (res == TriBool.TRITRUE)
 					actionComplete();
 			} catch (CASTException e) {
 				logException(e);
@@ -233,9 +235,11 @@ public abstract class AbstractDialogueActionInterface extends
 		 * 
 		 * @param interpretedIntention
 		 * @return
+		 * @throws SubarchitectureComponentException
 		 */
 		protected TriBool checkResponse(
-				InterpretedIntention interpretedIntention) {
+				InterpretedIntention interpretedIntention)
+				throws SubarchitectureComponentException {
 			return TriBool.TRITRUE;
 		}
 
@@ -450,12 +454,21 @@ public abstract class AbstractDialogueActionInterface extends
 
 			// TODO start here, working out how to keep track of verification-of
 			// pointer across multiple calls of the executor
-			// _addressContent.put("verification-of", ?);
+			_addressContent
+					.put("verification-of",
+							((AbstractDialogueActionInterface) getComponent()).m_lastPossibleIntentionsAddition);
 		}
 
+		/**
+		 * Input is the matching response
+		 * 
+		 * @throws UnknownSubarchitectureException
+		 * @throws DoesNotExistOnWMException
+		 */
 		@Override
 		protected TriBool checkResponse(
-				InterpretedIntention interpretedIntention) {
+				InterpretedIntention interpretedIntention)
+				throws SubarchitectureComponentException {
 			// TODO Handle matched response looking like this:
 			// stringContent:
 			// type -> "verification"
@@ -470,9 +483,78 @@ public abstract class AbstractDialogueActionInterface extends
 			// case neg - return true, but remove the
 			// "is-potential-object-in-question" feature
 
+			assert (getAction().beliefAddress
+					.equals(interpretedIntention.addressContent.get("about")));
+			// In the yes case I got:
+
+			String polarity = interpretedIntention.stringContent
+					.get("asserted-polarity");
+			if (polarity.equals("pos")) {
+				// this is the thing we care about
+			} else {
+				// this is the wrong thing
+
+				println("removing reference from belief");
+				GroundedBelief belief = getComponent().getMemoryEntry(
+						getAction().beliefAddress, GroundedBelief.class);
+
+				if (!((AbstractDialogueActionInterface) getComponent())
+						.removeQuestionReference(getAction().beliefAddress,
+								belief)) {
+					getComponent()
+							.getLogger()
+							.warn("Verified belief didn't have field"
+									+ AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION,
+									getComponent().getLogAdditions());
+				}
+				
+			}
+
+			// <de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
+			// <stringContent>
+			// <entry>
+			// <string>subtype</string>
+			// <string>verification-answer</string>
+			// </entry>
+			// <entry>
+			// <string>asserted-polarity</string>
+			// <string>pos</string>
+			// </entry>
+			// <entry>
+			// <string>type</string>
+			// <string>assertion</string>
+			// </entry>
+			// </stringContent>
+			// <addressContent>
+			// <entry>
+			// <string>answer-to</string>
+			// <cast.cdl.WorkingMemoryAddress>
+			// <id>0:x</id>
+			// <subarchitecture>dialogue</subarchitecture>
+			// </cast.cdl.WorkingMemoryAddress>
+			// </entry>
+			// <entry>
+			// <string>verification-of</string>
+			// <cast.cdl.WorkingMemoryAddress>
+			// <id>1:r</id>
+			// <subarchitecture>dialogue</subarchitecture>
+			// </cast.cdl.WorkingMemoryAddress>
+			// </entry>
+			// <entry>
+			// <string>about</string>
+			// <cast.cdl.WorkingMemoryAddress>
+			// <id>1:T</id>
+			// <subarchitecture>binder</subarchitecture>
+			// </cast.cdl.WorkingMemoryAddress>
+			// </entry>
+			// </addressContent>
+			// <state>READY</state>
+			// <agent>human</agent>
+			// <confidence>1.0</confidence>
+			// </de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
+
 			return super.checkResponse(interpretedIntention);
 		}
-
 	}
 
 	public static class AnswerOpenQuestionExecutor extends
@@ -777,6 +859,33 @@ public abstract class AbstractDialogueActionInterface extends
 	}
 
 	/**
+	 * @param belief
+	 * @throws DoesNotExistOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 * @throws UnknownSubarchitectureException
+	 */
+	protected boolean removeQuestionReference(WorkingMemoryAddress _beliefAddr,
+			GroundedBelief _belief) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, _belief);
+		if (belief
+				.getContent()
+				.containsKey(
+						AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION)) {
+			belief.getContent()
+					.remove(AbstractInterpretedIntentionMotiveGenerator.IS_POTENTIAL_OBJECT_IN_QUESTION);
+			overwriteWorkingMemory(_beliefAddr, belief.get());
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * @throws DoesNotExistOnWMException
 	 * @throws ConsistencyException
 	 * @throws PermissionException
@@ -808,8 +917,23 @@ public abstract class AbstractDialogueActionInterface extends
 		return false;
 	}
 
+	private WorkingMemoryAddress m_lastPossibleIntentionsAddition;
+
 	@Override
 	protected void start() {
+
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(
+						PossibleInterpretedIntentions.class,
+						WorkingMemoryOperation.ADD),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						m_lastPossibleIntentionsAddition = _wmc.address;
+					}
+				});
 
 		m_actionStateManager = new LocalActionStateManager(this);
 
