@@ -6,9 +6,14 @@ public class CapitalizationPhonStringPreprocessor implements PhonStringPreproces
 
 	@Override
 	public void apply(PhonString ps) {
-		if (ps.wordSequence.equals("no")) {
-			ps.wordSequence = "No";
+		String newWordSequence = ps.wordSequence;
+
+		newWordSequence = newWordSequence.toLowerCase();
+
+		if (newWordSequence.equals("no")) {
+			newWordSequence = "No";
 		}
+		ps.wordSequence = newWordSequence;
 	}
 	
 }
