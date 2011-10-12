@@ -308,8 +308,8 @@ public abstract class AbstractDialogueActionInterface extends
 
 			_stringContent.put(INTENTION_TYPE_KEY, "assertion");
 			_stringContent.put("subtype", "inform");
-			_stringContent.put("assertion-feature", getAction().feature);
-			_stringContent.put("assertion-value", getAction().value);
+			_stringContent.put("asserted-feature", getAction().feature);
+			_stringContent.put("asserted-value", getAction().value);
 		}
 
 	}
