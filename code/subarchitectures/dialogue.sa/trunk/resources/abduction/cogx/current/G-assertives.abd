@@ -25,8 +25,8 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'assertion'),
-	i : int : string_content(IntAddr, 'assertion-value', Value),
-	i : int : string_content(IntAddr, 'assertion-feature', Feature),
+	i : int : string_content(IntAddr, 'asserted-value', Value),
+	i : int : string_content(IntAddr, 'asserted-feature', Feature),
 %	i : int : string_content(IntAddr, 'asserted-polarity', Polarity),
 %	i : int : string_content(IntAddr, 'certainty', Certainty),
 	i : int : address_content(IntAddr, about, BeliefAddr),
