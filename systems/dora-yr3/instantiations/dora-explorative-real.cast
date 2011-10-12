@@ -18,7 +18,7 @@ SETVAR face_detector=/usr/local/share/opencv/haarcascades/haarcascade_frontalfac
 SETVAR discrete_room_cats=
 #SETVAR discrete_room_cats=--discrete
 
-SETVAR room_has_person=0.2
+SETVAR room_has_person=0.9
 
 ### places for the initial automatic tour:
 SETVAR tour_places="0 9 4"
