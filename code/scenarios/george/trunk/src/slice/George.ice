@@ -10,10 +10,11 @@ module execution {
   module slice {
 
 	/*
-	* Class used to store information about last viewcone moved to. Hopefully name should change.
+	* Class used to store information about robot state. All accesses must be surrounded by lockEntry/unlockEntry as it is updated by multiple components.
 	*/
 	class Robot {
 			cast::cdl::WorkingMemoryPointer currentViewCone;
+			bool armIsResting;
 	};
 
     module actions {
