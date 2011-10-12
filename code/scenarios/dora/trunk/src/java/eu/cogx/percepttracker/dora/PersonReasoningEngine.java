@@ -33,6 +33,8 @@ import edu.ksu.cis.bnj.ver3.core.values.ValueZero;
  * 
  */
 public class PersonReasoningEngine {
+	public static final String LOCALISED = "localised";
+
 	public static final String NODE_PERSON_EXISTS_IN_PLACE_PREFIX = "exists_";
 
 	public static final String NODE_PERSON_EXISTS_IN_ROOM = "person_exists";
@@ -83,7 +85,7 @@ public class PersonReasoningEngine {
 			Map<String, Collection<Boolean>> observations) {
 
 		String[] values = observations.keySet().toArray(new String[0]);
-		BeliefNode isInPlace = new BeliefNode("localised", new Discrete(values));
+		BeliefNode isInPlace = new BeliefNode(LOCALISED, new Discrete(values));
 		for (int i = 0; i < isInPlace.getCPF().size(); i++) {
 			isInPlace.getCPF().put(i,
 					new ValueDouble(1.0 / isInPlace.getCPF().size()));

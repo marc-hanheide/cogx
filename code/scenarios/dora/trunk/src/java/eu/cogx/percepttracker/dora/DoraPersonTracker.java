@@ -29,6 +29,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import castutils.castextensions.BeliefWaiter;
+import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
 
 import comadata.ComaRoom;
@@ -60,6 +61,7 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 public class DoraPersonTracker extends ManagedComponent implements
 		WorkingMemoryChangeReceiver {
 
+	WMEventQueue evQueue = new WMEventQueue();
 	public static final String UPDATE_ON_MOVE = "--update-on-move";
 	// create a view of all places and room beliefs
 	WMView<GroundedBelief> spatialBeliefs = WMBeliefView.create(this,
@@ -107,18 +109,25 @@ public class DoraPersonTracker extends ManagedComponent implements
 			Map<String, Vector<Double>> marginals) {
 
 		FormulaDistribution placeDistribution = FormulaDistribution.create();
-
+		int i=0;
 		for (WorkingMemoryAddress wmaPlaceInRoom : placesInRoomAdr.keySet()) {
+//			log("looking up marginals for place " + wmaPlaceInRoom.id);
+//			Vector<Double> marginalForPlace = marginals
+//					.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_PLACE_PREFIX
+//							+ wmaPlaceInRoom.id);
+//			assert (marginalForPlace != null);
 			log("looking up marginals for place " + wmaPlaceInRoom.id);
 			Vector<Double> marginalForPlace = marginals
-					.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_PLACE_PREFIX
-							+ wmaPlaceInRoom.id);
+					.get(PersonReasoningEngine.LOCALISED);
+			Vector<Double> marginalForExist = marginals
+			.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_ROOM);
 			assert (marginalForPlace != null);
+
 			placeDistribution.add(WMPointer.create(
 					wmaPlaceInRoom,
 					SimpleDiscreteTransferFunction
 							.getBeliefTypeFromCastType(Place.class)).get(),
-					marginalForPlace.get(0));
+					marginalForPlace.get(i++)*marginalForExist.get(0));
 		}
 		return placeDistribution;
 	}
@@ -126,14 +135,38 @@ public class DoraPersonTracker extends ManagedComponent implements
 	private WorkingMemoryAddress findRoomForPlace(WorkingMemoryAddress placeAdr) {
 		println("looking up placeAdr " + placeAdr.id
 				+ " in spatialBeliefs of size " + spatialBeliefs.size());
-		GroundedBelief placeBel = spatialBeliefs.get(placeAdr);
-		assert (placeBel != null);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belPrx = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, placeBel);
-		PointerFormula placePtr = (PointerFormula) belPrx.getContent().get(
-				RoomMembershipMediator.ROOM_PROPERTY).getDistribution()
-				.getMostLikely().get();
-		return placePtr.pointer;
+		FormulaDistribution rp = null;
+		while (isRunning()) {
+			GroundedBelief placeBel;
+			try {
+				placeBel = getMemoryEntry(placeAdr, GroundedBelief.class);
+
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> belPrx = CASTIndependentFormulaDistributionsBelief
+						.create(GroundedBelief.class, placeBel);
+				rp = belPrx.getContent().get(
+						RoomMembershipMediator.ROOM_PROPERTY);
+				if (rp == null) {
+					try {
+						getLogger().warn(
+								"have to wait for place being properly set");
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						logException(e);
+					}
+				} else {
+					PointerFormula placePtr = (PointerFormula) belPrx
+							.getContent().get(
+									RoomMembershipMediator.ROOM_PROPERTY)
+							.getDistribution().getMostLikely().get();
+					return placePtr.pointer;
+				}
+			} catch (CASTException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		}
+		return null;
 
 	}
 
@@ -217,7 +250,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 	 * @param wmaGrounded
 	 * @param existsDistribution
 	 * @param gb
-	 * @param v 
+	 * @param v
 	 * @throws DoesNotExistOnWMException
 	 * @throws ConsistencyException
 	 * @throws PermissionException
@@ -331,6 +364,21 @@ public class DoraPersonTracker extends ManagedComponent implements
 	}
 
 	@Override
+	protected void runComponent() {
+		while (isRunning()) {
+			WorkingMemoryChange wmc;
+			try {
+				wmc = evQueue.take();
+				sleepComponent(200);
+				updatedRobotPosition(wmc.address);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
 	protected void start() {
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				PerceptBelief.class, WorkingMemoryOperation.ADD), this);
@@ -339,15 +387,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 		if (updateOnPlaceChange) {
 			addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 					PlaceContainmentAgentProperty.class,
-					WorkingMemoryOperation.OVERWRITE),
-					new WorkingMemoryChangeReceiver() {
-
-						@Override
-						public void workingMemoryChanged(
-								WorkingMemoryChange arg0) throws CASTException {
-							updatedRobotPosition(arg0.address);
-						}
-					});
+					WorkingMemoryOperation.OVERWRITE), evQueue);
 		}
 		try {
 			spatialBeliefs.start();
@@ -391,21 +431,24 @@ public class DoraPersonTracker extends ManagedComponent implements
 			}
 
 			Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr = getPlaceBeliefsForRoom(roomAdr);
+			try {
+				lockComponent();
+				log("compute marginals");
+				Map<String, Vector<Double>> marginals = getMarginals(placesInRoomAdr);
+				FormulaDistribution placeDistribution = computePlaceDistribution(
+						placesInRoomAdr, marginals);
+				FormulaDistribution existsDistribution = computeExistDistribution(marginals);
 
-			log("compute marginals");
-			Map<String, Vector<Double>> marginals = getMarginals(placesInRoomAdr);
-			FormulaDistribution placeDistribution = computePlaceDistribution(
-					placesInRoomAdr, marginals);
-			FormulaDistribution existsDistribution = computeExistDistribution(marginals);
+				CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = getGroundedBelief(wmaGrounded);
+				log("we have to update the person in room " + roomAdr.id);
 
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = getGroundedBelief(wmaGrounded);
-			log("we have to update the person in room " + roomAdr.id);
-			
-			addRoomReference(roomAdr, gb);
+				addRoomReference(roomAdr, gb);
 
-			
-			updateGroundedBelief(placeDistribution, wmaGrounded,
-					existsDistribution, gb);
+				updateGroundedBelief(placeDistribution, wmaGrounded,
+						existsDistribution, gb);
+			} finally {
+				unlockComponent();
+			}
 		} catch (CASTException e) {
 			logException(e);
 		} catch (InterruptedException e) {
@@ -422,7 +465,8 @@ public class DoraPersonTracker extends ManagedComponent implements
 	private void addRoomReference(WorkingMemoryAddress roomAdr,
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb) {
 		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(WMPointer.create(roomAdr, CASTUtils.typeName(GroundedBelief.class)).get(),1.0);
+		fd.add(WMPointer.create(roomAdr,
+				CASTUtils.typeName(GroundedBelief.class)).get(), 1.0);
 		gb.getContent().put("associated-with", fd);
 	}
 
