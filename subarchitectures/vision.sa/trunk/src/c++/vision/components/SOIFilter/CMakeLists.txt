@@ -6,10 +6,13 @@ include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/components)
 include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 
-# TODO: add an option to turn manipulation on/off and define FEAT_TRACK_ARM.
+# TODO: add an option to turn manipulation on/off.
 # We need manipulation.sa/icefiles for SOIFilter to track the postion of the arm.
-include_directories(${COGX_ROOT}/subarchitectures/manipulation.sa/src/c++/autogen)
-add_definitions(-DFEAT_TRACK_ARM)
+if(1)
+   include_directories(${COGX_ROOT}/subarchitectures/manipulation.sa/src/c++/autogen)
+   add_definitions(-DFEAT_TRACK_ARM)
+   set(ARM_TRACKING_LIBRARIES ManipulationExeData)
+endif()
 
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
@@ -35,7 +38,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    VisionData VideoUtils
    PointCloud PointCloudClient
    PTZ NavData
-   ManipulationExeData
    ${VISUALIZATION_LIBRARIES}
    ${LIBPLOT_LIBS}
+   ${ARM_TRACKING_LIBRARIES}
    )

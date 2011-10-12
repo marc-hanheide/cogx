@@ -40,6 +40,10 @@
 #include <PTZServer.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 
+#ifdef FEAT_TRACK_ARM
+#include <execution/manipulation_exe.hpp>
+#endif
+
 #include <IceUtil/IceUtil.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -201,6 +205,15 @@ public:
 
   // The sois are kept locally so register the SOI-PO connections.
   mmap<cdl::WorkingMemoryAddress, SoiRecordPtr> m_sois;
+
+  // The SOIs are ignored if distance from 0 to SOI center is outside of these bounds.
+  double m_minSoiDistance;
+  double m_maxSoiDistance;
+#ifdef FEAT_TRACK_ARM
+  // Distance from the katana arm
+  double m_minArmDistance;
+  manipulation::execution::slice::ArmStatusPtr m_pArmStatus;
+#endif
 
 public:
   ProtoObjectRecordPtr findProtoObjectAt(const VisionData::SOIPtr &psoi);

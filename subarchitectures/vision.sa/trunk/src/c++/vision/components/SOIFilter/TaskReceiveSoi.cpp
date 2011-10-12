@@ -82,18 +82,35 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
       return;
     }
 
-    // XXX: CONFIG min/max distance could be an option
-    double dsoi = length(psoi->boundingSphere.pos);
-    if (dsoi > 3.0) {
-      log("SOI '%s' is too far (%.3gm)", psoirec->addr.id.c_str(), dsoi);
+    const Math::Vector3& soiPos = psoi->boundingSphere.pos;
+    double dsoi = Math::length(soiPos);
+    if (dsoi > pSoiFilter->m_maxSoiDistance) {
+      log("SOI '%s' is too far (d=%.3gm).", psoirec->addr.id.c_str(), dsoi);
       return;
     }
 
-    if (psoi->boundingSphere.pos.x < 0.6 && psoi->boundingSphere.pos.z < 0.5) {
-      log("SOI '%s' could be the Katana arm.", psoirec->addr.id.c_str());
-      // XXX: may be looking at the katana arm, ignore
+    if (dsoi < pSoiFilter->m_minSoiDistance) {
+      log("SOI '%s' could be part of the robot (d=%.3gm).", psoirec->addr.id.c_str(), dsoi);
       return;
     }
+
+#ifdef FEAT_TRACK_ARM
+    // Test if SOI belongs to the arm
+    if (pSoiFilter->m_pArmStatus.get() && pSoiFilter->m_minArmDistance > 0) {
+      const Math::Vector3& armPos = pSoiFilter->m_pArmStatus->currentPose.pos;
+      // quick and dirty test:
+      //    1. the SOI is within reach of the end of the arm (EOA)
+      //    2. the distnace of the SOI to the line (0, EOA) is less than m_minArmDistance
+      double maxDist = Math::length(armPos) + pSoiFilter->m_minArmDistance / 2;
+      if (dsoi <= maxDist) {
+        double dline = Math::distPointToLine(soiPos, Math::vector3(0, 0, 0), armPos);
+        if (dline < pSoiFilter->m_minSoiDistance) {
+          log("SOI '%s' could be the arm (d0=%.3gm, dline=%.3gm).", psoirec->addr.id.c_str(), dsoi, dline);
+          return;
+        }
+      }
+    }
+#endif
 
     pobj = createProtoObject();
     pSoiFilter->m_snapper.m_LastProtoObject = pobj;
