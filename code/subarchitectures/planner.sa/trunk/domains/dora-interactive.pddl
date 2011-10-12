@@ -113,6 +113,10 @@
    ;; If an object can only be seen from one CG, the following would be possible:
    (visible_from ?o - visualobject) - conegroup
 
+
+   ;; === explanation properties ===
+   (entity-exists ?o - object) - boolean
+
    )
 
   (:constants
@@ -696,7 +700,7 @@
             :precondition (and (not (done))
                             (= (is-in ?a) ?p))
             :effect (and 
-                     (increase (total-cost) 3))
+                     (increase (total-cost) 10))
             )
 
    (:observe person
