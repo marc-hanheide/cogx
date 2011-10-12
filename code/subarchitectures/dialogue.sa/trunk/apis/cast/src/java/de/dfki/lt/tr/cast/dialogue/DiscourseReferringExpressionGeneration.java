@@ -94,7 +94,7 @@ extends AbstractReferringExpressionGenerationComponent<DiscursiveGenerator> {
 				words.add("it");
 			}
 			else {
-				words.add("this");
+				words.add("the object");
 			}
 			return join(" ", words);
 		}
