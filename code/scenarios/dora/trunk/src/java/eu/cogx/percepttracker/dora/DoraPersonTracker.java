@@ -193,7 +193,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 		newGB.getContent().put(PersonTransferFunction.IS_IN, placeDistribution);
 		newGB.getContent().put(PersonTransferFunction.EXISTS,
 				existsDistribution);
-
+		addRoomReference(roomAdr, newGB);
 		addToWorkingMemory(wma, newGB.get());
 	}
 
@@ -207,6 +207,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = getGroundedBelief(wmaGrounded);
 		log("we have found a person in the same room, " + roomAdr.id);
 		manageHistory(event, from, gb.get());
+		addRoomReference(roomAdr, gb);
 		updateGroundedBelief(placeDistribution, wmaGrounded,
 				existsDistribution, gb);
 	}
@@ -216,6 +217,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 	 * @param wmaGrounded
 	 * @param existsDistribution
 	 * @param gb
+	 * @param v 
 	 * @throws DoesNotExistOnWMException
 	 * @throws ConsistencyException
 	 * @throws PermissionException
@@ -398,6 +400,10 @@ public class DoraPersonTracker extends ManagedComponent implements
 
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = getGroundedBelief(wmaGrounded);
 			log("we have to update the person in room " + roomAdr.id);
+			
+			addRoomReference(roomAdr, gb);
+
+			
 			updateGroundedBelief(placeDistribution, wmaGrounded,
 					existsDistribution, gb);
 		} catch (CASTException e) {
@@ -407,6 +413,17 @@ public class DoraPersonTracker extends ManagedComponent implements
 		} catch (NullPointerException e) {
 			logException(e);
 		}
+	}
+
+	/**
+	 * @param roomAdr
+	 * @param gb
+	 */
+	private void addRoomReference(WorkingMemoryAddress roomAdr,
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb) {
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(WMPointer.create(roomAdr, CASTUtils.typeName(GroundedBelief.class)).get(),1.0);
+		gb.getContent().put("associated-with", fd);
 	}
 
 	@Override
