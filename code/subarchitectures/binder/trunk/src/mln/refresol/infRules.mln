@@ -11,8 +11,11 @@ resolution(p) => belief(p).
 // ... and if there is a constraint
 //resolution(b) => exist c color_constraint(c) v exist s shape_constraint(s).
 
+attributed_salience(b, A_high) => resolution(b).
+1 attributed_salience(b, A_low) => resolution(b)
+-2 attributed_salience(a, b)
 
 // rules for attributed beliefs
-4 belief(b) ^ epstatus(b, Attributed) ^ attributed_color(b, c) ^ color_constraint(c) => resolution(b)
-4 belief(b) ^ epstatus(b, Attributed) ^ attributed_shape(b, c) ^ shape_constraint(c) => resolution(b)
-2 belief(b) ^ epstatus(b, Attributed) => !resolution(b)
+//4 belief(b) ^ epstatus(b, Attributed) ^ attributed_color(b, c) ^ color_constraint(c) => resolution(b)
+//4 belief(b) ^ epstatus(b, Attributed) ^ attributed_shape(b, c) ^ shape_constraint(c) => resolution(b)
+//2 belief(b) ^ epstatus(b, Attributed) => !resolution(b)
