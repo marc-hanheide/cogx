@@ -1,5 +1,7 @@
 package exploration;
 
+import gA.GeneticAlgorithm;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -47,24 +49,11 @@ public class TourFinder {
 			index++;
 		}
 		TourFinder tF = new TourFinder(pathTimes, 0);
-		// Vector<PathTimes> times = tF.getBestPath();
-		Vector<PathTimes> travelled = new Vector<PathTimes>();
-		Vector<PathTimes> blocked = new Vector<PathTimes>();
-		blocked.add(pathTimes.get(10));
-		blocked.add(pathTimes.get(17));
-		blocked.add(pathTimes.get(42));
-		for (int i = 0; i < 10; i++) {
-			travelled.add(pathTimes.get(i));
+		Vector<PathTimes> pT = tF.getBestPath(0);
+		for (PathTimes path : pT) {
+			System.out.println(path.getA() + " " + path.getB());
 		}
-
-		Vector<PathTimes> times = tF.generateSimplePath(pathTimes, blocked,
-				travelled, 0);
-		System.out.println("times " + times.size());
-		System.out.println("pathTimes " + pathTimes.size());
-		for (PathTimes pT : times) {
-			System.out.println(pT.getA() + " " + pT.getB());
-
-		}
+		System.out.println(evaluatePath(pT, 0));
 
 	}
 
@@ -72,10 +61,10 @@ public class TourFinder {
 		this.startPos = startPos;
 		standard = copy(pathTimes);
 		others = new Vector<Vector<PathTimes>>();
-		Vector<PathTimes> temp = copy(pathTimes);
-		others.add(generateSimplePath(temp, startPos));
-		// temp = copy(pathTimes);
-		// others.add(generateRandomPath(temp, startPos));
+		// Vector<PathTimes> temp = copy(pathTimes);
+		GeneticAlgorithm GA = new GeneticAlgorithm(pathTimes, 200, 60, startPos);
+		others.add(GA.getBest());
+
 	}
 
 	/**
@@ -84,7 +73,7 @@ public class TourFinder {
 	 * @param pathTimes
 	 * @return
 	 */
-	public Vector<PathTimes> copy(Vector<PathTimes> pathTimes) {
+	public static Vector<PathTimes> copy(Vector<PathTimes> pathTimes) {
 		Vector<PathTimes> temp = new Vector<PathTimes>();
 		for (PathTimes path : pathTimes) {
 			temp.add(path);
@@ -98,9 +87,22 @@ public class TourFinder {
 	 * @return the best of all the paths (i.e the one that is shortest) there is
 	 *         an error somewhere, so I'm just returning the computed one
 	 */
-	public Vector<PathTimes> getBestPath() {
+	public Vector<PathTimes> getBestPath(int pos) {
 
-		return others.get(0);
+		Vector<PathTimes> bestPath = standard;
+		int best = evaluatePath(standard, pos);
+		for (Vector<PathTimes> path : others) {
+			int current = evaluatePath(path, pos);
+			System.out.println(current);
+			if (current < best) {
+				System.out.println("new best found");
+				System.out.println(best);
+				best = current;
+				bestPath = path;
+			}
+		}
+
+		return bestPath;
 	}
 
 	/**
@@ -110,7 +112,8 @@ public class TourFinder {
 	 * @param pos
 	 * @return
 	 */
-	public Vector<PathTimes> getPathsFromNode(Vector<PathTimes> paths, int pos) {
+	public static Vector<PathTimes> getPathsFromNode(Vector<PathTimes> paths,
+			int pos) {
 		Vector<PathTimes> temp = new Vector<PathTimes>();
 		for (PathTimes path : paths) {
 			if ((path.getA() == pos) || (path.getB() == pos)) {
@@ -127,7 +130,8 @@ public class TourFinder {
 	 * @param paths
 	 * @return
 	 */
-	public Vector<Vector<PathTimes>> convertToNodes(Vector<PathTimes> paths) {
+	public static Vector<Vector<PathTimes>> convertToNodes(
+			Vector<PathTimes> paths) {
 		Vector<Vector<PathTimes>> nodes = new Vector<Vector<PathTimes>>();
 		for (int i = 0; i < paths.size(); i++) {
 			nodes.add(getPathsFromNode(paths, i));
@@ -256,6 +260,7 @@ public class TourFinder {
 			int pos = (int) (pathTimes.size() * ran);
 			temp.add(pathTimes.remove(pos));
 		}
+		System.out.println("random path generated");
 		return temp;
 	}
 
@@ -264,12 +269,29 @@ public class TourFinder {
 	 * 
 	 * @return
 	 */
-	public int evaluatePath(Vector<PathTimes> pathTimes, int startPos) {
+	public static int evaluatePath(Vector<PathTimes> pathTimes, int startPos) {
 
 		int cost = 0;
 		for (PathTimes path : pathTimes) {
-			cost += distFromPaths(pathTimes, startPos, path.getA());
-			startPos = path.getB();
+			if (startPos == path.getA()) {
+				cost += distFromPaths(pathTimes, startPos, path.getA());
+				startPos = path.getB();
+			} else {
+				if (startPos == path.getB()) {
+					cost += distFromPaths(pathTimes, startPos, path.getB());
+					startPos = path.getA();
+				} else {
+					int distA = distFromPaths(pathTimes, startPos, path.getA());
+					int distB = distFromPaths(pathTimes, startPos, path.getB());
+					if (distA < distB) {
+						cost += distA;
+						startPos = path.getB();
+					} else {
+						cost += distB;
+						startPos = path.getA();
+					}
+				}
+			}
 
 		}
 
@@ -319,6 +341,73 @@ public class TourFinder {
 		}
 
 		return cost;
+	}
+
+	/**
+	 * returns the number of nodes traversed through the list of path times from
+	 * the start position till the end one
+	 * 
+	 * @param pathTimes
+	 * @param startPos
+	 * @param endPos
+	 * @return
+	 */
+	public static int distFromPaths(Vector<PathTimes> pathTimes,
+			Vector<PathTimes> blocked, int startPos, int endPos) {
+		Vector<Integer> visited = new Vector<Integer>();
+		Vector<Integer> toVisit = new Vector<Integer>();
+		Vector<Integer> temp = new Vector<Integer>();
+		Vector<PathTimes> pathTimesC = copy(pathTimes);
+		for (PathTimes pT : blocked) {
+			pathTimesC.remove(pT);
+		}
+		toVisit.add(new Integer(startPos));
+		int cost = 0;
+		while (!toVisit.contains(endPos)) {
+			for (PathTimes path : pathTimesC) {
+				if (toVisit.contains(path.getA())) {
+
+					if (!visited.contains(path.getB())) {
+						temp.add(path.getB());
+					}
+
+				} else {
+					if (toVisit.contains(path.getB())) {
+
+						if (!visited.contains(path.getA())) {
+							temp.add(path.getA());
+						}
+
+					}
+				}
+			}
+			toVisit.clear();
+			for (Integer in : temp) {
+				toVisit.add(in);
+			}
+			temp.clear();
+			cost++;
+		}
+
+		return cost;
+	}
+
+	public Vector<PathTimes> generatePath(Vector<PathTimes> pathTimes,
+			Vector<PathTimes> blocked, Vector<PathTimes> travelled, int startPos) {
+
+		Vector<PathTimes> temp = generateSimplePath(pathTimes, blocked,
+				travelled, startPos);
+		Vector<PathTimes> evolved = copy(temp);
+		GeneticAlgorithm gA = new GeneticAlgorithm(evolved, 200, 60, startPos);
+		evolved = gA.getBest();
+		int gACost = evaluatePath(evolved, startPos);
+		int otherCost = evaluatePath(temp, startPos);
+		if (otherCost > gACost) {
+			return evolved;
+		} else {
+			return temp;
+		}
+
 	}
 
 	/**
@@ -429,22 +518,108 @@ public class TourFinder {
 				temp.clear();
 
 			}
-			if ( toVisit.isEmpty()) {//there is no where left to look
-				
+			if (toVisit.isEmpty()) {// there is no where left to look
+
 				System.out.println("incomplete path has been generated");
 				return simple;
 			}
 			count++;
 
 		}
-		// System.out.println("path times " + pathTimes.size());
-		// System.out.println("simple " + simple.size());
 
-		// for (PathTimes pT : simple) {
-		// System.out.println(pT.getA() + " " + pT.getB());
-		//
-		// }
 		return simple;
 	}
 
+	/**
+	 * given a start and end point, will look over a provided list of paths for
+	 * a route ignores any paths that are listed as blocked this is not the
+	 * fastest route time wise, but the first one found
+	 * 
+	 * @param from
+	 * @param to
+	 * @param pathTimes
+	 * @param blocked
+	 * @return
+	 */
+	public static Vector<PathTimes> route(int from, int to,
+			Vector<PathTimes> pathTimes, Vector<PathTimes> blocked) {
+		Vector<Integer> toVisit = new Vector<Integer>();
+		Vector<Integer> visitedNode = new Vector<Integer>();
+		Vector<PathTimes> visited = new Vector<PathTimes>();
+		Vector<PathTimes> pathTimesC = copy(pathTimes);
+		Vector<Integer> temp = new Vector<Integer>();
+		for (PathTimes bloc : blocked) {
+			pathTimesC.remove(bloc);
+		}
+		Vector<Vector<PathTimes>> pathFromNodes = convertToNodes(pathTimesC);
+		boolean found = false;
+		toVisit.add(from);
+
+		while (!found) {
+
+			for (Integer node : toVisit) {
+
+				if (found) {
+					break;
+				}
+				if (!visitedNode.contains(node)) {
+					visitedNode.add(node);
+				}
+				for (PathTimes path : pathFromNodes.get(node)) {
+					if (found) {
+						break;
+					}
+					if (!visited.contains(path)) {
+
+						if (!visitedNode.contains(path.getA())) {
+							temp.add(path.getA());
+							visited.add(path);
+							if (path.getA() == to) {
+								found = true;
+
+							}
+						}
+
+						if (!visitedNode.contains(path.getB())) {
+							temp.add(path.getB());
+							visited.add(path);
+							if (path.getB() == to) {
+								found = true;
+
+							}
+						}
+
+					}
+				}
+
+			}
+			toVisit.clear();
+			for (Integer node : temp) {
+				if (!visitedNode.contains(node)) {
+					toVisit.add(node);
+				}
+			}
+
+		}
+
+		Vector<PathTimes> route = new Vector<PathTimes>();
+		int pos = to;
+		while (pos != from) {
+			for (PathTimes p : visited) {
+				if (p.getA() == pos) {
+					pos = p.getB();
+					route.insertElementAt(p, 0);
+					break;
+				}
+				if (p.getB() == pos) {
+					pos = p.getA();
+					route.insertElementAt(p, 0);
+					break;
+				}
+
+			}
+		}
+
+		return route;
+	}
 }

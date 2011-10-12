@@ -1,13 +1,13 @@
 package util;
 
-import javax.swing.Timer;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Vector;
+
+import javax.swing.Timer;
 
 import NavData.FNode;
 import NavData.RobotPose2d;
@@ -30,12 +30,14 @@ import exploration.PathTimesWrapper;
 
 /**
  * abstract superclass for classes who want to travel a graph
+ * 
  * @author kenslaptop
- *
+ * 
  */
 public abstract class CastComponent extends ManagedComponent {
 
-	protected Vector<PathTimes> pathTimes; // the connections between nodes as well as the times to travel them
+	protected Vector<PathTimes> pathTimes; // the connections between nodes as
+	// well as the times to travel them
 	protected Vector<FNode> nodes; // the nodes of a map
 	protected double x;// the robot's x co-ordinate
 	protected double y;// the robot's y co-ordinate
@@ -44,31 +46,33 @@ public abstract class CastComponent extends ManagedComponent {
 	protected boolean start;
 	protected double heading;
 	protected boolean loaded;
-	
-	
+
 	/**
 	 * announces that this component is running
 	 */
 	@Override
-	public void runComponent(){
-		println(getClass().getName()+" is running ");
-		
+	public void runComponent() {
+		println(getClass().getName() + " is running ");
+
 	}
-	
+
 	/**
 	 * goes to the given place (where the place is the nodeId of an FNode/Place
 	 * 
 	 * @param place
 	 */
-	public void goTo(int place) {
+	public Completion goTo(int place) {
 
 		NavCommand nav = createNavCommand(place);
-		pos = place;
+		
 
 		try {
 			println("heading to " + nav.destId[0]);
-
-			executeNavCommand(nav);
+			Completion comp = executeNavCommand(nav);
+			if (comp == Completion.COMMANDSUCCEEDED) {
+				pos = place;
+			}
+			return comp;
 
 		} catch (CASTException e) {
 			println("error");
@@ -79,8 +83,9 @@ public abstract class CastComponent extends ManagedComponent {
 			println(e);
 			e.printStackTrace();
 		}
+		return null;
 	}
-	
+
 	/**
 	 * create a NavCommand to send the robot to the provided node modified from
 	 * TourGiver
@@ -94,7 +99,7 @@ public abstract class CastComponent extends ManagedComponent {
 				new double[0], new double[0], StatusError.UNKNOWN,
 				Completion.COMMANDPENDING);
 	}
-	
+
 	/**
 	 * code copied from TourGiver the robot will execute the provided navCommand
 	 * 
@@ -125,7 +130,7 @@ public abstract class CastComponent extends ManagedComponent {
 		removeChangeFilter(queue);
 		return completion;
 	}
-	
+
 	/**
 	 * create a NavCommand to turn the robot the provided amount modified from
 	 * TurnAndLookExecutor
@@ -142,8 +147,7 @@ public abstract class CastComponent extends ManagedComponent {
 
 		return cmd;
 	}
-	
-	
+
 	/**
 	 * add an FNode filter this will look at working memory and report if any
 	 * FNodes are added
@@ -175,7 +179,7 @@ public abstract class CastComponent extends ManagedComponent {
 
 		});
 	}
-	
+
 	/**
 	 * add a Pose filter this will look at working memory and report if the
 	 * robot's pose is modified
@@ -213,8 +217,7 @@ public abstract class CastComponent extends ManagedComponent {
 				});
 
 	}
-	
-	
+
 	/**
 	 * loads a set of path times from file
 	 * 
@@ -244,7 +247,7 @@ public abstract class CastComponent extends ManagedComponent {
 		println("load finished");
 
 	}
-	
+
 	/**
 	 * prints out the paths and their times to the command line
 	 */
@@ -253,10 +256,11 @@ public abstract class CastComponent extends ManagedComponent {
 			println(times);
 		}
 	}
-	
+
 	/**
-	 * given an x and a y coordinate, as well as Vector of nodes,
-	 *  will find the node closest to the (x,y) coordinate
+	 * given an x and a y coordinate, as well as Vector of nodes, will find the
+	 * node closest to the (x,y) coordinate
+	 * 
 	 * @param x
 	 * @param y
 	 * @param nodes
@@ -276,6 +280,5 @@ public abstract class CastComponent extends ManagedComponent {
 		}
 		return closest;
 	}
-	
-	
+
 }

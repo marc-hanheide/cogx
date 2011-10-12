@@ -16,6 +16,7 @@ import javax.swing.Timer;
 
 import util.CastComponent;
 import NavData.FNode;
+import SpatialData.Completion;
 import SpatialData.NavCommand;
 import SpatialProperties.PathProperty;
 import cast.CASTException;
@@ -38,8 +39,7 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 	private String running = "running";
 	private String idle = "idle";
 	private Vector<PathProperty> tempPaths;
-	
-	
+
 	public GraphExplorer() {
 		timer = new Timer(10000, this);
 		tempPaths = new Vector<PathProperty>();
@@ -50,8 +50,6 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 		heading = 0;
 		start = true;
 	}
-
-	
 
 	/**
 	 * adds in filters and begins the timer
@@ -82,7 +80,7 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 		convertToPathTimes();
 		if (nodes.size() > 1) {
 			goTo(getClosestNode(x, y, nodes));
-						simpleRun();
+			simpleRun();
 
 			printPathTimes();
 		} else {
@@ -135,20 +133,22 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 		return false;
 	}
 
-	
-
 	/**
 	 * runs through the provided lists of paths and saves them
 	 * 
+	 * 
 	 * @param paths
 	 */
-	public void runPaths(Vector<PathTimes> paths) {
-		int index = 0;
+	public void runPaths(Vector<PathTimes> paths, Vector<PathTimes> visited,
+			Vector<PathTimes> blocked) throws PathRunFailure {
+
 		for (PathTimes path : paths) {
+
 			int a;
 			int b;
-			if (TourFinder.distFromPaths(paths, pos, path.getA()) < TourFinder
-					.distFromPaths(paths, pos, path.getB())) {
+
+			if (TourFinder.distFromPaths(pathTimes, pos, path.getA()) < TourFinder
+					.distFromPaths(pathTimes, pos, path.getB())) {
 				// getA() is closer
 				a = path.getA();
 				b = path.getB();
@@ -157,26 +157,36 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 				a = path.getB();
 				b = path.getA();
 			}
+
 			if (pos != a) {
-				goTo(a);
+				goTo(pos);
+				Vector<PathTimes> pT = TourFinder.route(pos, a, pathTimes,
+						blocked);
+				runPaths(pT, visited, blocked);
 
 			}
+
 			turnToNode(b);
+			println("facing next node, commencing path run");
 			PathRun newPath = new PathRun(new Date(System.currentTimeMillis()));
-			goTo(b);
-			newPath.setTimeTaken(new Date(System.currentTimeMillis()));
+			Completion comp = goTo(b);
 			path.add(newPath);
-			index++;
-			println(index + " out of " + pathTimes.size() + " completed");
+			if (!visited.contains(path)) {
+				visited.add(path);
+			}
+			if (comp == Completion.COMMANDSUCCEEDED) {
+				newPath.setTimeTaken(new Date(System.currentTimeMillis()));
+				save();
+			} else {
+				blocked.add(path);
+				save();
+				throw new PathRunFailure(visited, blocked, " path run failed");
+			}
+
+			println(visited.size() + " out of " + pathTimes.size()
+					+ " completed");
 		}
 		save();
-	}
-
-	/**
-	 * runs through each path in the order they came in
-	 */
-	public void naiveRun() {
-		runPaths(pathTimes);
 	}
 
 	/**
@@ -184,10 +194,27 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 	 * simply how the paths were found
 	 */
 	public void simpleRun() {
+		TourFinder tF = new TourFinder(pathTimes, pos);
+		Vector<PathTimes> times = tF.getBestPath(pos);
+		Vector<PathTimes> blocked = new Vector<PathTimes>();
+		Vector<PathTimes> visited = new Vector<PathTimes>();
+		boolean success = false;
 
-		Vector<PathTimes> times = new TourFinder(pathTimes, pos).getBestPath();
-
-		runPaths(times);
+		while (!success) {
+			println("path times length " + times.size());
+			success = true;
+			try {
+				runPaths(times, visited, blocked);
+			} catch (PathRunFailure e) {
+				success = false;
+				times = tF.generatePath(times, blocked, visited, pos);
+				println("problem in route, trying new one");
+				println("i think I'm at position " + pos);
+				println("oh don't blame me, you coded it");
+				println("blocked " + blocked.size());
+				println("visited " + visited.size());
+			}
+		}
 	}
 
 	/**
@@ -288,8 +315,6 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 		return angle1 - angle2;
 	}
 
-	
-
 	/**
 	 * add a Path filter this will look at working memory and report if any
 	 * Paths are added
@@ -323,10 +348,6 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 				});
 	}
 
-	
-
-	
-
 	/**
 	 * saves a set of path times to file
 	 */
@@ -350,7 +371,5 @@ public class GraphExplorer extends CastComponent implements ActionListener {
 		}
 
 	}
-
-
 
 }
