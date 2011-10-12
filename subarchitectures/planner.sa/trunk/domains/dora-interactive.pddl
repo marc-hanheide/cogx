@@ -355,16 +355,17 @@
 
 
   ;; Assign virtual room to a placeholder
-  ;; (:dtrule room_from_placeholder
-  ;;          :parameters (?p - place ?r - room ?c - category)
-  ;;          :precondition (and (= (placestatus ?p) placeholder)
-  ;;                             (= (virtual-place ?r) ?p)
-  ;;                             (= (leads_to_room ?p ?c) true)
-  ;;                             (is-virtual ?r))
-  ;;          :effect (and (probabilistic 1.0 (and (assign (in-room ?p) ?r)
-  ;;                                               (assign (category ?r) ?c)))
-  ;;                       (increase (total-cost) 10))
-  ;;          )                                                                                                                                                 
+  (:dtrule room_from_placeholder
+           :parameters (?p - place ?r - room ?c - category)
+           :precondition (and (= (placestatus ?p) placeholder)
+                              (= (virtual-place ?r) ?p)
+                              (= (leads_to_room ?p ?c) true)
+                              (is-virtual ?r))
+           :effect (and (probabilistic 1.0 (and (assign (in-room ?p) ?r)
+                                                (assign (category ?r) ?c)))
+                        (increase (total-cost) 10))
+           )                                                                                                                                              
+   
   ;; (:dtrule room_from_placeholder
   ;;          :parameters (?p - place ?r - room ?c - category)
   ;;          :precondition (and (= (placestatus ?p) placeholder)
@@ -596,6 +597,17 @@
                             (probabilistic 0.05 (observed (related-to ?o) ?where)))
                           )
              )
+
+
+   ;; (:observe abstract_observe_object_in_room
+   ;;           :agent (?a - robot)
+   ;;           :parameters (?l - label ?r - room ?p - place ?o - visualobject)
+   ;;           :execution (search_for_object_in_room ?a ?l ?r ?p ?o)
+   ;;           :precondition (and (= (label ?o) ?l))
+                                
+   ;;           :effect (and (when (= (related-to ?o) ?r)
+   ;;                          (probabilistic 0.9 (observed (related-to ?o) ?r))))
+   ;;           )
 
    (:action engage
             :agent (?a - robot)
