@@ -1,0 +1,13 @@
+sudo ifconfig eth0 192.168.0.11  mtu 1500  txqueuelen 10000
+sudo route del -net 192.168.0.0 netmask 255.255.255.0 dev eth0
+sudo route add -net 192.168.0.0 netmask 255.255.255.0 dev eth0
+sudo ifconfig eth0 192.168.0.11  mtu 1500  txqueuelen 10000
+
+./tools/hardware/video/src/c++/components/prosilica/bin-pc/x64/CLIpConfig -s -i 192.168.1.23 -u 37105
+
+sudo ifconfig eth0 192.168.1.4  mtu 1500  txqueuelen 10000
+sudo route del -net 192.168.1.0 netmask 255.255.255.0 dev eth0
+sudo route add -net 192.168.1.0 netmask 255.255.255.0 dev eth0
+sudo ifconfig eth0 192.168.1.4  mtu 1500  txqueuelen 10000
+sudo /sbin/sysctl -w net.ipv4.tcp_sack=0
+
