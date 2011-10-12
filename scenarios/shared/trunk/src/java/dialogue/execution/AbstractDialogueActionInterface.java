@@ -153,7 +153,7 @@ public abstract class AbstractDialogueActionInterface extends
 					WorkingMemoryChange e = eventQueue.poll(m_timeoutSeconds,
 							TimeUnit.SECONDS);
 					if (e == null) {
-						println("didn't get the intention in time... action failed");
+						println("didn't get the intention in time... action halting");
 						return m_timeoutResponse;
 					} else {
 						println("got human intention... check if it is the right one");
@@ -292,7 +292,7 @@ public abstract class AbstractDialogueActionInterface extends
 			extends BeliefIntentionDialogueAction<T> {
 
 		// how long to block the planner after reporting the answer
-		private static final int ANSWER_TIMEOUT_SECS = 2;
+		private static final int ANSWER_TIMEOUT_SECS = 5;
 
 		public FeatureValueQuestionAnswer(ManagedComponent _component,
 				Class<T> _cls) {
