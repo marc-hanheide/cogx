@@ -21,12 +21,11 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
 
 public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.Object>
 		extends AbstractWMEntryMotiveGenerator<TutorInitiativeMotive, T> {
-
-	public static final String IS_POTENTIAL_OBJECT_IN_QUESTION = "is-potential-object-in-question";
 
 	public AbstractInterpretedIntentionMotiveGenerator(Class<T> _entryCls) {
 		super(TutorInitiativeMotive.class, _entryCls);
@@ -346,7 +345,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			PermissionException, UnknownSubarchitectureException {
 		println("marking referent");
 		addBooleanFeature(_groundedBeliefAddr,
-				IS_POTENTIAL_OBJECT_IN_QUESTION, true);
+				AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION, true);
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
 		sleepComponent(1000);
