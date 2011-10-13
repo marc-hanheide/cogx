@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class NewIntentionRealizer
-extends AbstractAbductiveComponent<RobotCommunicativeAction> {
+extends AbstractAbductiveComponent<RobotCommunicativeAction, String> {
 
 	public final String DEFAULT_ABD_SERVER_NAME = "AbducerServer";
 	public final int DEFAULT_ABD_PORT = 9100;
@@ -121,7 +121,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 	}
 
 	@Override
-	protected ProofInterpretationContext<RobotCommunicativeAction> initContext() {
+	protected ProofInterpretationContext<RobotCommunicativeAction, String> initContext() {
 		ProofPruner pruner = new LengthPruner(3);
 		ProofExpander expander = new EngineProofExpander(getEngine(), timeout);
 
@@ -136,10 +136,10 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 
 		final WorkingMemoryWriterComponent committer = this;
 
-		return new AbstractProofInterpretationContext<RobotCommunicativeAction>(pruner, expander, solvers, interpreter) {
+		return new AbstractProofInterpretationContext<RobotCommunicativeAction, String>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(List<RobotCommunicativeAction> listIpret, double asrConfidence) {
+			public void onSuccessfulInterpretation(List<RobotCommunicativeAction> listIpret, double asrConfidence, String arg) {
 				getLogger().debug("got " + listIpret.size() + " interpretations.");
 				for (int i = 0; i < listIpret.size(); i++) {
 					getLogger().debug("interpretation " + i + "/" + listIpret.size() + ": " + listIpret.get(i));
@@ -186,7 +186,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 									IntentionToAct actint = getMemoryEntry(addr, IntentionToAct.class);
 									wmaToInt.put(addr, actint);
 									InterpretationRequest inprRequest = new InterpretationRequest(intentionToActToGoal(actint, addr));
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, 1.0, condition));
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, 1.0, "", condition));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);

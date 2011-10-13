@@ -8,6 +8,7 @@ import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
+import de.dfki.lt.tr.dialogue.interpret.Rephraser;
 import de.dfki.lt.tr.dialogue.slice.asr.UnclarifiedPhonString;
 import de.dfki.lt.tr.dialogue.slice.asr.UnclarifiedPossibleInterpretedIntentions;
 import java.util.Map;
@@ -21,9 +22,12 @@ extends AbstractDialogueComponent {
 
 	private PossibleInterpretedIntentions currentlyUnclarified;
 
+	private final Rephraser rephraser;
+
 	public ASRClarifier() {
 		this.threshold = DEFAULT_THRESHOLD;
 		currentlyUnclarified = null;
+		rephraser = new BasicRephraser();
 	}
 
 	@Override
@@ -37,6 +41,7 @@ extends AbstractDialogueComponent {
 			}
 		}
 
+		threshold = 1.1f;
 		getLogger().debug("using " + threshold + " for the ASR confidence threshold");
 	}
 
@@ -133,7 +138,7 @@ extends AbstractDialogueComponent {
 					}
 					else {
 						getLogger().debug("we're BELOW the threshold, will attempt to clarify this");
-						VerbalisationUtils.verbaliseString(getComponent(), "did you mean X");
+						VerbalisationUtils.verbaliseString(getComponent(), "did you " + rephraser.rephrase(upii));
 						setCurrentlyUnclarified(upii.pii);
 					}
 				}
@@ -143,6 +148,15 @@ extends AbstractDialogueComponent {
 			}
 
 		});
+	}
+
+	private static class BasicRephraser implements Rephraser {
+
+		@Override
+		public String rephrase(UnclarifiedPossibleInterpretedIntentions pii) {
+			return "say " + pii.phonStringWordList;
+		}
+		
 	}
 
 }

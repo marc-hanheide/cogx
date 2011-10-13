@@ -358,7 +358,8 @@ extends AbstractDialogueComponentUsingTaskManager {
 								new NonStandardRulesAppliedForLF[0],
 								phonString.confidenceValue,
 								phonString.maybeOOV,
-								phonString.ival
+								phonString.ival,
+								phonString.wordSequence
 								);
 
 						log("Add the newly formed PackedLF to working memory, finalized is ["+results.finalized+"]");
@@ -432,7 +433,8 @@ extends AbstractDialogueComponentUsingTaskManager {
 								new NonStandardRulesAppliedForLF[0],
 								plfs.phonStringConfidence,
 								plfs.phonStringMaybeOOV,
-								plfs.phonStringIval);
+								plfs.phonStringIval,
+								plfs.phonStringWordList);
 
 							log("Updating PackedLF in working memory, finalized flag is [" + results.finalized + "]");
 							try {

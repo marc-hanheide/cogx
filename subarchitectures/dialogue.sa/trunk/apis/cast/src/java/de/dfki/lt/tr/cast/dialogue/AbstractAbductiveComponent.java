@@ -16,17 +16,17 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public abstract class AbstractAbductiveComponent<T>
+public abstract class AbstractAbductiveComponent<T, U>
 extends AbstractDialogueComponent {
 
-	private final Map<WorkingMemoryAddress, PartialInterpretation<T>> interpretations;
-	private ProofInterpretationContext<T> context;
+	private final Map<WorkingMemoryAddress, PartialInterpretation<T, U>> interpretations;
+	private ProofInterpretationContext<T, U> context;
 	private final Executor executor;
 
 	private AbductionEnginePrx engine;
 
 	public AbstractAbductiveComponent() {
-		interpretations = new HashMap<WorkingMemoryAddress, PartialInterpretation<T>>();
+		interpretations = new HashMap<WorkingMemoryAddress, PartialInterpretation<T, U>>();
 		executor = Executors.newSingleThreadExecutor();
 	}
 
@@ -47,9 +47,9 @@ extends AbstractDialogueComponent {
 	/**
 	 * Called after {@code onConfigure()}.
 	 */
-	protected abstract ProofInterpretationContext<T> initContext();
+	protected abstract ProofInterpretationContext<T, U> initContext();
 
-	protected final ProofInterpretationContext<T> getContext() {
+	protected final ProofInterpretationContext<T, U> getContext() {
 		return context;
 	}
 
@@ -73,17 +73,17 @@ extends AbstractDialogueComponent {
 
 	}
 
-	protected final void addNewPartialInterpretation(WorkingMemoryAddress origin, PartialInterpretation<T> pinpr) {
+	protected final void addNewPartialInterpretation(WorkingMemoryAddress origin, PartialInterpretation<T, U> pinpr) {
 		getLogger().info("adding a new partial interpretation");
 		interpretations.put(origin, pinpr);
 		addTask(expandInterpretationTask(pinpr));
 	}
 
-	private ProcessingTask expandInterpretationTask(PartialInterpretation<T> pinpr) {
-		return new ProcessingTaskWithData<PartialInterpretation<T>>(pinpr) {
+	private ProcessingTask expandInterpretationTask(PartialInterpretation<T, U> pinpr) {
+		return new ProcessingTaskWithData<PartialInterpretation<T, U>>(pinpr) {
 
 			@Override
-			public void execute(PartialInterpretation<T> arg) {
+			public void execute(PartialInterpretation<T, U> arg) {
 				ProofSet proofs = arg.getProofSet();
 				ExpansionStepResult<T> result = proofs.expansionStep(getContext());
 				if (result.isFinished()) {
@@ -94,7 +94,7 @@ extends AbstractDialogueComponent {
 						boolean finished = arg.addInterpretation(value);
 
 						if (finished) {
-							getContext().onSuccessfulInterpretation(arg.getInterpretations(), arg.getPriorConfidence());
+							getContext().onSuccessfulInterpretation(arg.getInterpretations(), arg.getPriorConfidence(), arg.getArgument());
 						}
 						else {
 							addTask(expandInterpretationTask(arg));
@@ -102,7 +102,7 @@ extends AbstractDialogueComponent {
 					}
 					else {
 						// the ultimate termination condition?
-						getContext().onSuccessfulInterpretation(arg.getInterpretations(), arg.getPriorConfidence());
+						getContext().onSuccessfulInterpretation(arg.getInterpretations(), arg.getPriorConfidence(), arg.getArgument());
 
 						// no result for this one
 //						getContext().onNoInterpretation();
@@ -118,7 +118,7 @@ extends AbstractDialogueComponent {
 		};
 	}
 
-	private void actOnAssertion(final Assertion a, final PartialInterpretation<T> pinpr) {
+	private void actOnAssertion(final Assertion a, final PartialInterpretation<T, U> pinpr) {
 		// it might actually be useful to use the future here
 		executor.execute(new Runnable() {
 
@@ -138,8 +138,8 @@ extends AbstractDialogueComponent {
 		});
 	}
 
-	protected PartialInterpretation<T> interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, double priorConfidence, TerminationCondition<T> cond) {
-		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner, priorConfidence, cond);
+	protected PartialInterpretation<T, U> interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, double priorConfidence, U arg, TerminationCondition<T> cond) {
+		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner, priorConfidence, arg, cond);
 	}
 
 }

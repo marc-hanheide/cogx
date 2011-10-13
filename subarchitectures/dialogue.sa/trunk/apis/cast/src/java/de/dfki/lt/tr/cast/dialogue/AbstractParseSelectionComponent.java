@@ -81,7 +81,7 @@ extends AbstractDialogueComponent {
 						LogicalForm lf = selector.selectParse(plf);
 						if (lf != null) {
 							getLogger().info("selected the following LF: [" + LFUtils.lfToString(lf) + "]");
-							SelectedLogicalForm slf = new SelectedLogicalForm(lf, plf.phonStringIval);
+							SelectedLogicalForm slf = new SelectedLogicalForm(lf, plf.phonStringIval, plf.phonStringWordList);
 							try {
 								addToWorkingMemory(newDataID(), slf);
 							}

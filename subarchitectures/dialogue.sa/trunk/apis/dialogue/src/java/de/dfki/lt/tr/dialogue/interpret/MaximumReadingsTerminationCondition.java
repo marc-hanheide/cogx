@@ -10,7 +10,7 @@ implements TerminationCondition<T> {
 	}
 
 	@Override
-	public boolean reached(PartialInterpretation<T> pinpr) {
+	public boolean reached(PartialInterpretation<T, ?> pinpr) {
 		return pinpr.getInterpretations().size() >= limit;
 	}
 	
