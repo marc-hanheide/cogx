@@ -48,20 +48,20 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// }
 		// });
 
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-//				TutorInitiativeMotive.class, WorkingMemoryOperation.DELETE),
-//				new WorkingMemoryChangeReceiver() {
-//
-//					@Override
-//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-//							throws CASTException {
-//						println("SOMEONE DELETED MY INTENTION");
-//						println(CASTUtils.toString(_wmc));
-//					}
-//				});
+		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+		// TutorInitiativeMotive.class, WorkingMemoryOperation.DELETE),
+		// new WorkingMemoryChangeReceiver() {
+		//
+		// @Override
+		// public void workingMemoryChanged(WorkingMemoryChange _wmc)
+		// throws CASTException {
+		// println("SOMEONE DELETED MY INTENTION");
+		// println(CASTUtils.toString(_wmc));
+		// }
+		// });
 	}
 
-	// TODO HACK sanitise between Dora and George	
+	// TODO HACK sanitise between Dora and George
 	private WorkingMemoryAddress m_robotBeliefAddr;
 
 	// TODO HACK sanitise between Dora and George
@@ -469,4 +469,20 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		}
 	}
 
+	protected void cleanBelief(WorkingMemoryAddress _groundedBeliefAddr)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			ConsistencyException, PermissionException {
+
+		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		// remove marking for reference
+		unmarkReferent(gb);
+		// remove potential results of learning and dialoguate
+		removeActionEffects(gb);
+
+		overwriteWorkingMemory(_groundedBeliefAddr, gb.get());
+	}
 }

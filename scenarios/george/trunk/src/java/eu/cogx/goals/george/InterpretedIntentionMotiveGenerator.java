@@ -2,16 +2,10 @@ package eu.cogx.goals.george;
 
 import motivation.slice.TutorInitiativeMotive;
 import cast.CASTException;
-import cast.ConsistencyException;
-import cast.DoesNotExistOnWMException;
-import cast.PermissionException;
 import cast.SubarchitectureComponentException;
-import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
-import eu.cogx.beliefs.slice.GroundedBelief;
 
 public class InterpretedIntentionMotiveGenerator extends
 		AbstractInterpretedIntentionMotiveGenerator<InterpretedIntention> {
@@ -88,22 +82,7 @@ public class InterpretedIntentionMotiveGenerator extends
 
 	}
 
-	protected void cleanBelief(WorkingMemoryAddress _groundedBeliefAddr)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
-			ConsistencyException, PermissionException {
-		
-		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
 
-		//remove marking for reference
-		unmarkReferent(gb);
-		//remove potential results of learning and dialoguate
-		removeActionEffects(gb);
-		
-		overwriteWorkingMemory(_groundedBeliefAddr, gb.get());
-	}
 
 
 }

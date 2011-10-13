@@ -157,4 +157,21 @@ public class PossibleInterpretationsMotiveGenerator
 				+ getAscriptionPredicate(feature, learn) + " ?v)))";
 	}
 
+	@Override
+	protected void motiveWasDeleted(TutorInitiativeMotive _motive)
+			throws SubarchitectureComponentException {
+
+		println("cleaning beliefs after disambiguation goal");
+		
+		PossibleInterpretedIntentions _pii = getMemoryEntry(
+				_motive.referenceEntry, PossibleInterpretedIntentions.class);
+
+		// clean up all beliefs involved in action
+		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
+			InterpretedIntention iint = _pii.intentions.get(addr);
+			cleanBelief(iint.addressContent.get("about"));
+		}
+
+	}
+
 }
