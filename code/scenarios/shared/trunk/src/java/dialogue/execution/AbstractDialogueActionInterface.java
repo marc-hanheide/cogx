@@ -388,9 +388,7 @@ public abstract class AbstractDialogueActionInterface extends
 			String feature = _ii.stringContent.get("asserted-feature");
 			String value = _ii.stringContent.get("asserted-value");
 			try {
-				
-				
-				
+
 				((AbstractDialogueActionInterface) getComponent())
 						.addStringFeature(getAction().beliefAddress,
 								"attributed-" + feature, value);
@@ -580,7 +578,7 @@ public abstract class AbstractDialogueActionInterface extends
 				// this is the wrong thing
 
 				unmarkReferent(getAction().beliefAddress);
-				
+
 			}
 			return TriBool.TRITRUE;
 
@@ -647,16 +645,10 @@ public abstract class AbstractDialogueActionInterface extends
 			}
 
 		}
-	
-	
-	
-	
+
 	}
 
-	
-	
-	
-	public abstract static class VerifyReferenceExecutor extends
+	public static class VerifyReferenceExecutor extends
 			AbstractVerifyReferenceExecutor<VerifyReference> {
 
 		public VerifyReferenceExecutor(ManagedComponent _component) {
@@ -675,7 +667,7 @@ public abstract class AbstractDialogueActionInterface extends
 		@Override
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
-			_stringContent.put("description",getAction().value);
+			_stringContent.put("description", getAction().value);
 		}
 
 	}
@@ -1000,21 +992,21 @@ public abstract class AbstractDialogueActionInterface extends
 
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, _belief);
-		
-		//HACK - this is the more efficient place to do this
+
+		// HACK - this is the more efficient place to do this
 		belief.getContent().remove("attributed-color");
-		belief.getContent().remove("attributed-shape");		
+		belief.getContent().remove("attributed-shape");
 		belief.getContent().remove("attributed-type");
-		//END HACK
-		
+		// END HACK
+
 		boolean result = false;
 		if (belief.getContent().containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
 			belief.getContent().remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
 			result = true;
-		} 
+		}
 
 		overwriteWorkingMemory(_beliefAddr, belief.get());
-		
+
 		return result;
 	}
 
@@ -1051,6 +1043,17 @@ public abstract class AbstractDialogueActionInterface extends
 	}
 
 	private WorkingMemoryAddress m_lastPossibleIntentionsAddition;
+
+//	public static void main(String[] args) throws SecurityException,
+//			NoSuchMethodException {
+//
+//		DialogueActionInterface diag = new DialogueActionInterface();
+//		Constructor<VerifyReferenceExecutor> constructor = VerifyReferenceExecutor.class
+//				.getConstructor(ManagedComponent.class);
+//	
+//		System.out.println("asdasds");
+//	
+//	}
 
 	@Override
 	protected void start() {
