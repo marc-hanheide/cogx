@@ -125,49 +125,49 @@
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-color-threshold ?r) 0.4)
+    :effect (assign (polar-question-color-threshold ?r) 0.5)
   )
 
   (:init-rule set-learn-autonomous-color-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-color-threshold ?r) 0.98)
+    :effect (assign (learn-autonomous-color-threshold ?r) 0.95)
   )
 
   (:init-rule set-convinced-of-color-threshold
     :parameters (?r - Robot)
     :precondition (= (convinced-of-color-threshold ?r) UNKNOWN)
-    :effect (assign (convinced-of-color-threshold ?r) 0.66)
+    :effect (assign (convinced-of-color-threshold ?r) 0.75)
   )
 
   (:init-rule set-believe-in-color-threshold
     :parameters (?r - Robot)
     :precondition (= (believe-in-color-threshold ?r) UNKNOWN)
-    :effect (assign (believe-in-color-threshold ?r) 0.33)
+    :effect (assign (believe-in-color-threshold ?r) 0.4)
   )
 
   (:init-rule set-polar-question-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-shape-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-shape-threshold ?r) 0.4)
+    :effect (assign (polar-question-shape-threshold ?r) 0.5)
   )
 
   (:init-rule set-learn-autonomous-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-shape-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-shape-threshold ?r) 0.98)
+    :effect (assign (learn-autonomous-shape-threshold ?r) 0.95)
   )
 
   (:init-rule set-convinced-of-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (convinced-of-shape-threshold ?r) UNKNOWN)
-    :effect (assign (convinced-of-shape-threshold ?r) 0.66)
+    :effect (assign (convinced-of-shape-threshold ?r) 0.75)
   )
 
   (:init-rule set-believe-in-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (believe-in-shape-threshold ?r) UNKNOWN)
-    :effect (assign (believe-in-shape-threshold ?r) 0.33)
+    :effect (assign (believe-in-shape-threshold ?r) 0.4)
   )
 
   (:init-rule set-polar-question-type-threshold
@@ -334,6 +334,7 @@
     :effect 
       (and
         (assign (attributed-color ?v) (color ?v))
+        ;; (assign (attributed-color ?v) UNKNOWN_COLOR)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
@@ -353,7 +354,7 @@
       )
     :effect 
       (and
-        (assign (attributed-color ?v) ?c)
+        (assign (attributed-color ?v) ?c)        
         (is-potential-object-in-question ?v)
         (increase (total-cost) 1)
       )
@@ -373,6 +374,7 @@
     :effect 
       (and 
         (assign (attributed-shape ?v) (shape ?v))
+        ;; (assign (attributed-shape ?v) UNKNOWN_SHAPE)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
@@ -398,44 +400,44 @@
       )
   )
 
-  (:action ask-for-an-objects-type-general
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject)
-    :precondition
-      (and
-        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        (or
-          (= (currently-points-at ?r) ?v)
-          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        )
-      )
-    :effect 
-      (and 
-        (assign (attributed-type ?v) (type ?v))
-        (is-potential-object-in-question ?v)
-        (increase (total-cost) 2)
-      )
-  )
+  ;; (:action ask-for-an-objects-type-general
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject)
+  ;;   :precondition
+  ;;     (and
+  ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       (or
+  ;;         (= (currently-points-at ?r) ?v)
+  ;;         (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and 
+  ;;       (assign (attributed-type ?v) (type ?v))
+  ;;       (is-potential-object-in-question ?v)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
 
-  (:action ask-for-an-objects-type-polar
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition
-      (and
-        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        (allow-polar-type-question ?v ?t ?r)
-        (or
-          (= (currently-points-at ?r) ?v)
-          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        )
-      )
-    :effect 
-      (and 
-        (assign (attributed-type ?v) ?t)
-        (is-potential-object-in-question ?v)
-        (increase (total-cost) 1)
-      )
-  )
+  ;; (:action ask-for-an-objects-type-polar
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       (allow-polar-type-question ?v ?t ?r)
+  ;;       (or
+  ;;         (= (currently-points-at ?r) ?v)
+  ;;         (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and 
+  ;;       (assign (attributed-type ?v) ?t)
+  ;;       (is-potential-object-in-question ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;                   LEARNING              ;;;;;;;;;;;;;;;;;;;;;;;
@@ -603,7 +605,7 @@
             (not (is-potential-object-in-question ?v1))
             (and
               (>= (color-prob ?v1) (believe-in-color-threshold ?r))
-              (exists (?c1 - ColorName) (and (= (color ?v) ?c1) (not (= ?c ?c1))))
+              (not (= ?c (color ?v1)))
             )
           )
         )
@@ -630,7 +632,7 @@
             (not (is-potential-object-in-question ?v1))
             (and
               (>= (shape-prob ?v1) (believe-in-shape-threshold ?r))
-              (exists (?s1 - ShapeName) (and (= (shape ?v) ?s1) (not (= ?s ?s1))))
+              (not (= ?s (shape ?v1)))
             )
           )
         )
