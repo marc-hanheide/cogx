@@ -67,9 +67,9 @@ class SpatialControl : public cast::ManagedComponent ,
                    public OdometryReceiver,
                    public Cure::NavController,                  
                    public Cure::NavControllerEventListener,
-		   						 public Cure::FrontierExplorerEventListener,
-		   						 public Cure::LocalMap,
-									 public cast::PointCloudClient
+		   public Cure::FrontierExplorerEventListener,
+		   public Cure::LocalMap,
+		   public cast::PointCloudClient
 {
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
@@ -258,6 +258,7 @@ protected:
   bool m_ptzInNavigationPose;
   cast::cdl::CASTTime m_lastPtzNavPoseCompletion;
 
+  int camId;
 
   bool m_firstScanAdded;
 
@@ -291,6 +292,8 @@ private:
   void overwrittenPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
 
   void startMovePanTilt(double pan, double tilt, double tolerance);
+
+  bool isPointVisible(const cogx::Math::Vector3 &pos);
 
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
