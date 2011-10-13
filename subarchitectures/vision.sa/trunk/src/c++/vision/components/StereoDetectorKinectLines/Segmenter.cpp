@@ -1,16 +1,16 @@
 /**
- * @file SegLearner.cpp
+ * @file Segmenter.cpp
  * @author Andreas Richtsfeld
  * @date 2011
  * @version 0.1
- * @brief Get properties to learn how to segment.
+ * @brief Segment a RGB-D image from the kinect.
  */
 
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <opencv/highgui.h>
-#include "SegLearner.h"
+#include "Segmenter.h"
 
 #include "Gestalt3D.h"
 #include "StereoBase.h"
@@ -38,7 +38,7 @@ using namespace Video;
  */
 extern "C" {
   cast::CASTComponentPtr newComponent() {
-    return new cast::SegLearner();
+    return new cast::Segmenter();
   }
 }
 
@@ -53,14 +53,14 @@ namespace cast
  * @brief Called by the framework to configure the component.
  * @param _config Configuration
  */
-void SegLearner::configure(const map<string,string> & _config)
+void Segmenter::configure(const map<string,string> & _config)
 {
   // first let the base classes configure themselves (for point clouds)
   configureServerCommunication(_config);
 
   // for one vision core: only lines
-  runtime = 600;                                    // processing time for image => we need no incremental processing (only line calculation)
-  cannyAlpha = 0.75;                                // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
+  runtime = 10;                 // 10ms processing time for image => we need no incremental processing (only line calculation)
+  cannyAlpha = 0.75;            // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
   cannyOmega = 0.001;
   
   vcore = new Z::VisionCore();                      // New vision core
@@ -70,6 +70,9 @@ void SegLearner::configure(const map<string,string> & _config)
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CORNERS);
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CLOSURES);
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_RECTANGLES);
+
+//  learner = new Z::Learner();                       // Learner for features
+//  svmFileCreator = new Z::SVMFileCreator();         // Creator training files for SVM
 
   showImages = false;
   single = false;
@@ -191,28 +194,28 @@ void SegLearner::configure(const map<string,string> & _config)
     tgRenderer = new TomGine::tgTomGineThread(1280, 1024);
     tgRenderer->SetCamera(intrinsic);
     tgRenderer->SetCamera(R, t);
-    tgRenderer->SetRotationCenter(rotCenter);      /// TODO funktioniert nicht => Wieso?
+    tgRenderer->SetRotationCenter(rotCenter);
     tgRenderer->SetCoordinateFrame();
   }
   else 
     cvShowImage("Control window", iplImage_k);
-
-
-  kcore = new Z::KinectCore(vcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
-  // TODO Enable/Disable KinectPrinciples?
   
-  //   learner = new Z::Learner();                       // Learner for features
-  svmFileCreator = new Z::SVMFileCreator();         // Creator training files for SVM
-  planePopout = new pclA::PlanePopout();
+  kcore = new Z::KinectCore(vcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
+  kcore->InitKinectPrinciplesForSegmenter();
+  // TODO Enable/Disable KinectPrinciples?
 
-
+//   planePopout = new pclA::PlanePopout();
+  relations = new Z::CalculateRelations();
+  relations->Initialize(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
+  svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
+  graphCutter = new Z::GraphCut(kcore, relations);
 }
 
 
 /**
  * @brief Called by the framework after configuration, before run loop.
  */
-void SegLearner::start()
+void Segmenter::start()
 {
   // start point cloud communication
   startPCCServerCommunication(*this);
@@ -228,7 +231,7 @@ void SegLearner::start()
  * @brief Called by the framework to start component run loop.
  * @TODO LOCKT DEN SPEICHERBEREICH IM WM NICHT, SOLANGE GEARBEITET WIRD
  */
-void SegLearner::runComponent()
+void Segmenter::runComponent()
 { 
   while(single && isRunning()){
     SingleShotMode();
@@ -239,8 +242,6 @@ void SegLearner::runComponent()
 
   if(showImages)
   {
-    cvReleaseImage(&iplImage_l);
-    cvReleaseImage(&iplImage_r);
     cvReleaseImage(&iplImage_k);
 
     log("destroy openCV windows.");
@@ -254,7 +255,7 @@ void SegLearner::runComponent()
 /**
  * @brief Get images with the resolution, defined in the cast file, from video server.
  */
-void SegLearner::GetImageData()
+void Segmenter::GetImageData()
 {
   pointCloudWidth = 320;
   pointCloudHeight = pointCloudWidth *3/4;
@@ -262,17 +263,14 @@ void SegLearner::GetImageData()
   kinectImageHeight = kinectImageWidth *3/4;
  
   points.resize(0);
-  getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+  getCompletePoints(false, pointCloudWidth, points);      // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+//   getPoints(false, pointCloudWidth, points);           /// TODO für KinectStereoSeqServer => einbauen von getCompletePoints!!!!
   
   ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth, pointCloudHeight, true);
   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
 
   // get rectified images from point cloud server
-//  getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
-//  getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
   getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
-//  iplImage_l = convertImageToIpl(image_l);
-//  iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
 
   if(showImages)
@@ -291,108 +289,115 @@ void SegLearner::GetImageData()
 /**
  *  @brief Process data from stereo or Kinect.
  */
-void SegLearner::processImage()
+void Segmenter::processImage()
 {  
-// printf("\nLearnPrincipleDistributions::processImage: start\n");
-// static struct timespec start, last, current;
-// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-// printf("Runtime for StereoDetectorKinectLines::Since last processImage call: %4.3f\n", timespec_diff(&start, &last));
-// last = start;
+printf("\nSegmenter::processImage: start\n");
 
   log("Process new images with runtime: %ums", runtime);
   kcore->ClearResults();
-  score->ClearResults();
+printf("\nSegmenter::processImage: after clear\n");
+//   score->ClearResults();
   vcore->ClearGestalts();
   sois.clear();
 
-// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-// printf("Runtime for StereoDetectorKinectLines::Clear cores: %4.3f\n", timespec_diff(&current, &last));
-// last = current;
+static struct timespec start, last, current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+last = start;
 
   /// Get kinect data
   GetImageData();
 
-// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-// printf("Runtime for StereoDetectorKinectLines::GetImageData: %4.3f\n", timespec_diff(&current, &last));
-// last = current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter::GetImageData: %4.3f\n", timespec_diff(&current, &last));
+last = current;
 
   /// Run vision core
   vcore->NewImage(iplImage_k);
   vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter::VisionCore: %4.3f\n", timespec_diff(&current, &last));
+last = current;
 
   /// Run stereo core
   // Stereo core calculations (TODO needs perfekt calibration => solve problem)
 //   score->ProcessStereoImage(runtime, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
 
   /// Run kinect core
-printf("Run Kinect Core: start\n");
   kcore->Process(iplImage_k, kinect_point_cloud, pcl_cloud);
-printf("Run Kinect Core: end\n");
-  
-  /// Run plane popout TODO Move planePopout completely to learner => is not neccessary to have it here!
-printf("Run plane-popout: start\n");
-  planePopout->CalculateSOIs(pcl_cloud);
-  planePopout->GetSOIs(sois, soi_labels);
-  if(!planePopout->CalculateROIMask()) 
-    printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
-  kcore->SetObjectLabels(planePopout);    // Set object labels for kinect-Gestalts
-printf("Run plane-popout: end\n");
 
-  
-  /// Set object labels for kinect-Gestalts
-  kcore->SetObjectLabels(planePopout);
-  
-  tgRenderer->Clear();
-  tgRenderer->Update();
-  kcore->DrawObjects3D(tgRenderer);
-  tgRenderer->Update();
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter::KinectCore processing: %4.3f\n", timespec_diff(&current, &last));
+last = current;  
 
-  /// TODO Verwenden wir den Learner noch mal???
-  /// Run learner
-//   learner->Process(planePopout, kcore, tgRenderer);
-// 
-//   /// Write results of learner to the console
-//   double mean, variance, st_devi;
-//   learner->GetPosProximityBetweenPatches(mean, variance, st_devi);
-//   printf("Pos proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-//   learner->GetNegProximityBetweenPatches(mean, variance, st_devi);
-//   printf("Neg proximity: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-// 
-//   // Color similarity between patches
-//   learner->GetPosColorSimilarityBetweenPatches(mean, variance, st_devi);
-//   printf("Pos color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-//   learner->GetNegColorSimilarityBetweenPatches(mean, variance, st_devi);
-//   printf("Neg color: mean / variance / st-devi: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-// 
-//   // Coplanarity between patches
-//   learner->GetPosCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
-//   printf("Pos normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-//   learner->GetNegCoplanarityNormalsBetweenPatches(mean, variance, st_devi);
-//   printf("Neg normals: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-// 
-//   learner->GetPosCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
-//   printf("Pos distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-//   learner->GetNegCoplanarityDistanceBetweenPatches(mean, variance, st_devi);
-//   printf("Neg distance: %4.3f / %4.3f / %4.3f\n", mean, variance, st_devi);
-// 
-//   // write results of learner to a file
-//   learner->WriteResults2File();
+  /// Run plane popout
+//   planePopout->CalculateSOIs(pcl_cloud);
+//   planePopout->GetSOIs(sois);
+//   if(!planePopout->CalculateROIMask()) 
+//     printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
+//   kcore->SetObjectLabels(planePopout);    // Set object labels for kinect-Gestalts
+// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+// printf("Runtime for SegTester::PlanePopout: %4.3f\n", timespec_diff(&current, &last));
+// last = current;  
+
+  /// CalculateRelations
+  std::vector<Z::Relation> relation_vector;
+  relations->CalcAllRelations(relation_vector);   // without ground-truth
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter: CalculateRelations: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+
+  /// SVM-Prediction
+  for(unsigned i=0; i<relation_vector.size(); i++)
+  {
+    std::vector<double> probability;
+    relation_vector[i].prediction = svmPredictor->GetResult(relation_vector[i].type, relation_vector[i].rel_value, relation_vector[i].rel_probability);
+    relations->AddPrediction(i, relation_vector[i].prediction);
+    relations->AddProbability(i, relation_vector[i].rel_probability);
+  }
+//   relations->PrintResults();
+  relations->ConstrainRelations();
+//   relations->PrintRelations();
   
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter: Prediction: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+  /// Graph cutter
+  graphCutter->Initialize();
+  graphCutter->Cut();
+  graphCutter->CopyGroupIDToFeatures();
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for Segmenter: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
+last = current;
+
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
   
-  /// Calculate relations between features and write it to file for SVM learning!
-  svmFileCreator->Process(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
   
   /// Draw VisionCore image
   if(showImages)
   {
+    tgRenderer->Clear();
+    tgRenderer->Update();
+    kcore->DrawObjects3D(tgRenderer);
+    tgRenderer->Update();
+    
 //     Z::SetActiveDrawArea(iplImage_k);
 //     vcore->DrawGestalts(Z::Gestalt::LINE, 1);
 //     cvShowImage("Kinect", iplImage_k);
 
 //     tgRenderer->Clear();
-//   tgRenderer->Update();
+//     tgRenderer->Update();
 //     tgRenderer->AddPointCloud(kinect_point_cloud);
-//   tgRenderer->Update();
+//     tgRenderer->Update();
   }
 }
 
@@ -404,6 +409,7 @@ printf("Run plane-popout: end\n");
 void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
 {
   image = cv::Mat_<cv::Vec3b>(iplImage.height, iplImage.width); 
+  
   for (int v = 0; v < iplImage.height; ++v)
   {
     uchar *d = (uchar*) iplImage.imageData + v*iplImage.widthStep;
@@ -423,9 +429,10 @@ void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
  * Catch keyboard events and change displayed results:\n
  *   F9 ... Process single shot \n
  *   
- *   1 ...
- *   2 ...
- *   3 ...
+ *   1 ... Show point cloud
+ *   2 ... Show SOIs
+ *   3 ... Show object ground truth
+ *   4 ... Show graph-cut result
  *   
  *   q ... 
  *   w ...
@@ -435,27 +442,20 @@ void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
  *   
  *   
  */
-void SegLearner::SingleShotMode()
+void Segmenter::SingleShotMode()
 {
-  sleepComponent(10);
+//   sleepComponent(10);
   int key = 0;
-  key = cvWaitKey(20);
+  key = cvWaitKey(100);
   
   if (key == 65471 || key == 1114047) // F2
   {
-//     const char* text = score->GetGestaltListInfo();
-//     printf("\n%s\n", text);
     const char* text = kcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
 
   if (key == 65472 || key == 1114048) // F3
   {
-//     if(showSingleGestalt && showID != -1 && (mouseSide == 0 || mouseSide == 1)) 
-//     {
-//       const char* text = (score->GetMonoCore(mouseSide))->GetInfo(showType, showID);
-//       log("Gestalt infos:\n%s\n", text);
-//     }
     const char* text = vcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
@@ -468,8 +468,8 @@ void SegLearner::SingleShotMode()
 
   if (key == 65478 || key == 1114054) // F9
   {
-//     log("process images in single shot mode.");
-    printf("\nLearnPrincipleDistributions::Process: Learn from next image!\n");
+    log("Segmenter::Process: Single shot mode: try to segment image.");
+    printf("\nSegmenter::Process: Try to segment image!\n");
     lockComponent();
     processImage();
     unlockComponent();
@@ -513,6 +513,7 @@ void SegLearner::SingleShotMode()
             if(i >= top) i=bottom;
             cv::Vec4f s = soi_hull[j];
             cv::Vec4f e = soi_hull[i];
+        //     color.float_value = s[3];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
           for(unsigned j=0; j < bottom; j++)
@@ -522,7 +523,7 @@ void SegLearner::SingleShotMode()
             cv::Vec4f e = soi_hull[i];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
-          tgRenderer->Update();
+          tgRenderer->Update(); 
         }
       }
       break;
@@ -535,7 +536,14 @@ void SegLearner::SingleShotMode()
       tgRenderer->Update();
       break;
       
-
+    case '4':
+      log("Show GRAPH-CUT");
+      tgRenderer->Clear();
+      tgRenderer->Update();
+      kcore->DrawGraphCut3D(tgRenderer);
+      tgRenderer->Update();
+      break;
+      
     case 'q':
       log("Show PATCHES");
       for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::PATCH); i++)
@@ -550,57 +558,47 @@ void SegLearner::SingleShotMode()
       {
         tgRenderer->Clear();
         tgRenderer->Update();
-        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, false);
         tgRenderer->Update();
       }
       break;    
     case 'w':
       log("Show SEGMENTS");
-      for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::SEGMENT); i++)
-      {
-        cv::Mat_<cv::Vec3b> kinect_image;
-        ConvertImage(*iplImage_k, kinect_image);                                              /// TODO Convert image after drawing into it!
-        kcore->DrawGestalts3DToImage(kinect_image, Z::Gestalt3D::SEGMENT, camPars[2]);
-        cv::imshow("3D-Gestalts", kinect_image);
-      }
-      {
-        Z::SetActiveDrawArea(iplImage_k);
-        vcore->DrawGestalts(Z::Gestalt::SEGMENT, 1);
-        cvShowImage("Kinect", iplImage_k);
-      }
       if(showImages)
       {
         tgRenderer->Clear();
         tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
-        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT, false);
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT, true);
         tgRenderer->Update();
       }
       break;
     case 'e':
       log("Show LINES");
-      for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::LINE); i++)
-      {
-        cv::Mat_<cv::Vec3b> kinect_image;
-        ConvertImage(*iplImage_k, kinect_image);                                              /// TODO Convert image after drawing into it!
-        line_image = kinect_image;
-        kcore->DrawGestalts3DToImage(line_image, Z::Gestalt3D::LINE, camPars[2]);
-        cv::imshow("3D-Gestalt", line_image);
-      }      
+//       for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::LINE); i++)
+//       {
+//         cv::Mat_<cv::Vec3b> kinect_image;
+//         ConvertImage(*iplImage_k, kinect_image);                                              /// TODO Convert image after drawing into it!
+//         line_image = kinect_image;
+//         kcore->DrawGestalts3DToImage(line_image, Z::Gestalt3D::LINE, camPars[2]);
+//         cv::imshow("3D-Gestalt", line_image);
+//       }
       if(showImages)
       {
         tgRenderer->Clear();
         tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
-        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE);
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE, true);
         tgRenderer->Update();
       }
       break;
     case 'r':
       log("Show COLLINEARITIES");
       tgRenderer->Clear();
+      tgRenderer->Update();
       tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::COLLINEARITY);
+      tgRenderer->Update();
       break;
 //     case 't':
 //       break;
@@ -624,13 +622,6 @@ void SegLearner::SingleShotMode()
     case 'x':
       log("End Single-Shot mode!");
       single = false;
-      break;
-      
-    case '^':
-      log("Add labels!");
-      static bool drawNodeID = false;
-      drawNodeID = !drawNodeID;
-      kcore->DrawNodeID(drawNodeID);
       break;
   }
 }

@@ -60,10 +60,11 @@ private:
   Z::VisionCore *vcore;                                     ///< VisionCore
   Z::StereoCore *score;                                     ///< Stereo core
   Z::KinectCore *kcore;                                     ///< Kinect core
-  Z::CalculateRelations *relations;                         ///< Calculate relations between features.
-  Z::Learner *learner;                                      ///< Learner
-  Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
-  Z::GraphCut *graphCutter;                                 ///< Graph cutter
+  pclA::PlanePopout *planePopout;                           ///< Plane popout
+//  Z::CalculateRelations *relations;                         ///< Calculate relations between features.
+//  Z::Learner *learner;                                      ///< Learner
+//  Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
+//  Z::GraphCut *graphCutter;                                 ///< Graph cutter
   
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?

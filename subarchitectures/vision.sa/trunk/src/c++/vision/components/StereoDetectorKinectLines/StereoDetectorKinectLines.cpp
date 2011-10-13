@@ -59,7 +59,7 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
   configureServerCommunication(_config);
 
   // for one vision core: only lines
-  runtime = 600;                          // processing time for image => we need no incremental processing (only line calculation)
+  runtime = 10;                          // processing time for image => we need no incremental processing (only line calculation)
   cannyAlpha = 0.75;                      // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
   cannyOmega = 0.001;
   
@@ -71,8 +71,8 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CLOSURES);
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_RECTANGLES);
 
-  kcore = new Z::KinectCore();            // New kinect core
-  learner = new Z::Learner();             // Learner for features
+  kcore = new Z::KinectCore(vcore);       // New kinect core
+//  learner = new Z::Learner();             // Learner for features
 
   showImages = false;
   single = false;
@@ -199,9 +199,10 @@ void StereoDetectorKinectLines::configure(const map<string,string> & _config)
 //   tgRenderer->SetRotationCenter(rotCenter);
   tgRenderer->SetCoordinateFrame();
   
-  relations = new Z::CalculateRelations();
-  svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
-  graphCutter = new Z::GraphCut(kcore, relations);
+//   planePopout = new pclA::PlanePopout();
+//   relations = new Z::CalculateRelations();
+//   svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
+//   graphCutter = new Z::GraphCut(kcore, relations);
 }
 
 /**
@@ -361,8 +362,6 @@ printf("Runtime for StereoDetectorKinectLines: KinectCore: %4.3f\n", timespec_di
 last = current;
 
   /// Run plane popout TODO Move planePopout completely to learner => is not neccessary to have it here!
-//   pclA::PlanePopout *planePopout;
-//   planePopout = new pclA::PlanePopout();
 //   planePopout->CalculateSOIs(pcl_cloud);
 //   planePopout->GetSOIs(sois);
 //   if(!planePopout->CalculateROIMask()) 
