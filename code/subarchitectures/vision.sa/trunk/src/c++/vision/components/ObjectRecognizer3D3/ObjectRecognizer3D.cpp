@@ -9,6 +9,7 @@
 #include <VisionUtils.h>
 #include "ObjectRecognizer3D.h"
 
+
 /**
  * The function called to create a new instance of our component.
  */
@@ -29,7 +30,10 @@ using namespace std;
 
 ObjectRecognizer3D::ObjectRecognizer3D()
 {
-	camId = 0;
+  camId = 0;
+  P::RecogniserCore::Parameter paramRecogniser = P::RecogniserCore::Parameter(640,480,5000,100,0.01,2.,5., false, .35, .15, .8);
+  P::LearnerCore::Parameter paramLearner = P::LearnerCore::Parameter(640,480,1000,50,0.01,2, 15., .35, .15, 2., false, false, .01, .05);
+  recogniser = new P::RecogniserThread(P::RecogniserThread::SIFT_GC,paramRecogniser,paramLearner);
 }
 
 ObjectRecognizer3D::~ObjectRecognizer3D()
@@ -77,6 +81,7 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
 
 void ObjectRecognizer3D::start()
 {
+printf("ObjectRecognizer3D::start: start!\n");
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
@@ -91,8 +96,10 @@ void ObjectRecognizer3D::start()
   addChangeFilter(createLocalTypeFilter<VisionData::RecognitionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveRecognitionCommand));
+printf("ObjectRecognizer3D::start: 1!\n");
 
-  initRecognizer();
+//  initRecognizer();
+printf("ObjectRecognizer3D::start: 2!\n");
 
 #ifdef FEAT_VISUALIZATION        
   m_display.connectIceClient(*this);
@@ -108,6 +115,7 @@ void ObjectRecognizer3D::start()
         string("Recognize ") + it->first);
   }
 #endif
+printf("ObjectRecognizer3D::start: end!\n");
 }
 
 
@@ -153,22 +161,54 @@ void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent
 }
 #endif
 
-void ObjectRecognizer3D::initRecognizer()
-{
-  cv::Ptr<P::KeypointDetector> detector = new P::KeypointDetectorSURF();          // SURF
-  cv::Ptr<cv::DescriptorExtractor> extractor = new cv::SurfDescriptorExtractor(3, 4, true);
-  cv::Ptr<cv::DescriptorMatcher> matcher = new cv::BruteForceMatcher<cv::L2<float> >();
-  // note that recogniser is a smart pointer that takes care of freeing memory
-  recogniser = new P::RecogniserCore(detector, extractor, matcher, P::RecogniserCore::Parameter());
-}
+// /*void ObjectRecognizer3D::initRecognizer()
+// {
+// printf("ObjectRecognizer3D::initRecognizer: start!\n");
+// 
+// //  cv::Ptr<P::KeypointDetector> detector = new P::KeypointDetectorSURF();          // SURF
+// //  cv::Ptr<cv::DescriptorExtractor> extractor = new cv::SurfDescriptorExtractor(3, 4, true);
+// //  cv::Ptr<cv::DescriptorMatcher> matcher = new cv::BruteForceMatcher<cv::L2<float> >();
+//   // note that recogniser is a smart pointer that takes care of freeing memory
+// 
+//   // for Review 2011 with Sift
+//   cv::Ptr<P::PSiftGPU> sift;
+//   sift = new P::PSiftGPU(P::PSiftGPU::Parameter(0.6,0.8,1));
+//   cv::Ptr<P::KeypointDetector> detector = &(*sift);  detector.addref();
+//   cv::Ptr<cv::DescriptorExtractor> extractor = &(*sift); extractor.addref();
+//   cv::Ptr<cv::DescriptorMatcher> matcher = new cv::BruteForceMatcher<cv::L2<float> >();
+// 
+// printf("ObjectRecognizer3D::initRecognizer: start 2!\n");
+//   
+//   int imageWidth = 0;
+//   int imageHeight = 0;
+//   videoServer->getImageSize(imageWidth, imageHeight);
+// 
+// //  P::RecogniserCore::Parameter paramRecogniser = 
+// //        P::RecogniserCore::Parameter(imageWidth,imageHeight,5000,50,0.01,2.,10,false, 0.3);
+// 
+//   // for Review 2011 with SIFT
+//   P::RecogniserCore::Parameter paramRecogniser = 
+//       P::RecogniserCore::Parameter(640,480,5000,100,0.01,2.,5., false, .35, .15, .8);
+// 
+// printf("ObjectRecognizer3D::initRecognizer: start 3!\n");
+// 
+//   recogniser = new P::RecogniserCore(detector, extractor, matcher, paramRecogniser/*P::RecogniserCore::Parameter()*/);
+// 
+// printf("ObjectRecognizer3D::initRecognizer: end!\n");
+// }*/
+
+
 
 void ObjectRecognizer3D::recognize(vector<string> &labels, cv::Mat &colImg,
     Video::CameraParameters &camPars, cv::Mat mask,
     vector<P::ObjectLocation> &objects)
 {
+printf("ObjectRecognizer3D::recognize: start\n");
   cv::Mat grayImg;
   cv::cvtColor(colImg, grayImg, CV_RGB2GRAY);
   IplImage displayImg = colImg; // cheap: no copy
+
+printf("ObjectRecognizer3D::recognize: start 2\n");
 
   // first clear model list of recognizer and add only those models we are currently
   // interested in
@@ -176,9 +216,16 @@ void ObjectRecognizer3D::recognize(vector<string> &labels, cv::Mat &colImg,
   vector<cv::Ptr<P::CModel> > models(labels.size());
   for(size_t i = 0; i < labels.size(); i++)
     cmhandler.Load(modelFiles[labels[i]], models[i]);
-  recogniser->Clear();
+printf("ObjectRecognizer3D::recognize: start 2-1 start\n");
+  recogniser->ClearRecogniser();
+
+printf("ObjectRecognizer3D::recognize: start 2-1 end\n");
   for(size_t i = 0; i < models.size(); i++)
-    recogniser->AddModel(models[i]);
+    recogniser->AddModelRecogniser(models[i]);
+
+  recogniser->OptimizeCodebook();
+
+printf("ObjectRecognizer3D::recognize: start 3\n");
 
   // get camera parameters into recogniser
   // TODO; set actual distortion
@@ -190,14 +237,21 @@ void ObjectRecognizer3D::recognize(vector<string> &labels, cv::Mat &colImg,
   intrinsic.at<double>(2, 2) = 1.;
   recogniser->SetCameraParameter(intrinsic, distortion);
 
+printf("ObjectRecognizer3D::recognize: start 4\n");
+
   // the actual recognition
   // set the debug image to draw stuff into
-  recogniser->dbg = &displayImg;
+  recogniser->SetDebugImage(colImg);
   recogniser->Recognise(grayImg, objects);
 
-#ifdef FEAT_VISUALIZATION
-  m_display.setImage(getComponentID(), &displayImg);
-#endif
+printf("ObjectRecognizer3D::recognize: start 5\n");
+
+// #ifdef FEAT_VISUALIZATION
+//   m_display.setImage(getComponentID(), &displayImg);
+// #endif
+
+printf("ObjectRecognizer3D::recognize: end\n");
+
 }
 
 /**
@@ -212,6 +266,10 @@ void ObjectRecognizer3D::recognize(vector<string> &labels, cv::Mat &colImg,
  */
 void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc)
 {
+//   initRecognizer();
+
+  sleepComponent(1000);
+
   log("Receiving DetectionCommand");
   DetectionCommandPtr det_cmd = getMemoryEntry<DetectionCommand>(_wmc.address);
 
@@ -245,20 +303,21 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
     // if have recognised that object previously, overwrite WM entry
     if(!objectWMIds[objects[i].idObject].empty())
     {
-      wmObj = getMemoryEntry<VisualObject>(objectWMIds[objects[i].idObject]);
-      objectLoationToVisualObject(objects[i], wmObj);
       log("overwriting WM entry with address '%s'",
           objectWMIds[objects[i].idObject].c_str());
+      wmObj = getMemoryEntry<VisualObject>(objectWMIds[objects[i].idObject]);
+      objectLoationToVisualObject(objects[i], wmObj);
       overwriteWorkingMemory(objectWMIds[objects[i].idObject], wmObj);
-    }
+   }
     // otherwise create new WM entry
     else
     {
       wmObj = createVisualObject();
-      objectLoationToVisualObject(objects[i], wmObj);
-      objectWMIds[objects[i].idObject] = newDataID();
       log("adding WM entry with address '%s'",
           objectWMIds[objects[i].idObject].c_str());
+      objectLoationToVisualObject(objects[i], wmObj);
+      objectWMIds[objects[i].idObject] = newDataID();
+printf("The new visual object with id: %s\n", objects[i].idObject.c_str()); 
       addToWorkingMemory(objectWMIds[objects[i].idObject], wmObj);
     }
   }
