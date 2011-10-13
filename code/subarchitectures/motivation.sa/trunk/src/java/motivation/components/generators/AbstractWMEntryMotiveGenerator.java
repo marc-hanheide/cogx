@@ -17,6 +17,7 @@ import autogen.Planner.PlanningTask;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
+import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.WorkingMemoryChangeReceiver;
@@ -206,7 +207,11 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 				throws CASTException {
 			assert (_wmc.operation == WorkingMemoryOperation.DELETE);
 			assert (CASTUtils.typeName(m_motive).equals(_wmc.type));
-			motiveWasDeleted(m_motive);
+			try {
+				motiveWasDeleted(m_motive);
+			} catch (SubarchitectureComponentException e) {
+				logException(e);
+			}
 			removeChangeFilter(this);
 		}
 
@@ -218,8 +223,10 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	 * 
 	 * @param _motive
 	 *            The motive that was deleted
+	 * @throws SubarchitectureComponentException
 	 */
-	protected void motiveWasDeleted(M _motive) {
+	protected void motiveWasDeleted(M _motive)
+			throws SubarchitectureComponentException {
 
 	}
 
