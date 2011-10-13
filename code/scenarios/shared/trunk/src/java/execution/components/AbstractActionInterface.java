@@ -40,8 +40,8 @@ public abstract class AbstractActionInterface extends ManagedComponent {
 		overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
-        public void addStringFeature(WorkingMemoryAddress _beliefAddress,
-                                     String _feature, String _value) throws DoesNotExistOnWMException,
+	public void addStringFeature(WorkingMemoryAddress _beliefAddress,
+			String _feature, String _value) throws DoesNotExistOnWMException,
 			ConsistencyException, PermissionException,
 			UnknownSubarchitectureException {
 

@@ -388,6 +388,9 @@ public abstract class AbstractDialogueActionInterface extends
 			String feature = _ii.stringContent.get("asserted-feature");
 			String value = _ii.stringContent.get("asserted-value");
 			try {
+				
+				
+				
 				((AbstractDialogueActionInterface) getComponent())
 						.addStringFeature(getAction().beliefAddress,
 								"attributed-" + feature, value);
