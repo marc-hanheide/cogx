@@ -44,20 +44,30 @@ SETVAR plyroot_=./instantiations/ply-models
 
 ### siftfiles
 SETVAR or3d_sift_files=<multiline>
-   %(siftroot_)/frosties2.sift
-   %(siftroot_)/re_book.sift
-   %(siftroot_)/table.sift
+   %(siftroot_)/rumblepad.sift
+   %(siftroot_)/pizza.sift
+   %(siftroot_)/juice.sift
+   %(siftroot_)/coffee.sift
+   %(siftroot_)/lipton.sift
+   %(siftroot_)/kellogs.sift
+   %(siftroot_)/AI.sift
+   %(siftroot_)/XXX
 </multiline>
 
 ### ply files
 SETVAR or3d_ply_files=<multiline>
-   %(plyroot_)/frosties2.ply
-   %(plyroot_)/re_book.ply
+   %(plyroot_)/rumplepad.ply
+   %(plyroot_)/pizza.ply
+   %(plyroot_)/juice.ply
+   %(plyroot_)/coffee.ply
+   %(plyroot_)/lipton.ply
+   %(plyroot_)/kellogs.ply
+   %(plyroot_)/AI.ply
    %(plyroot_)/table.ply
 </multiline>
 
 ### object labels
-SETVAR or3d_labels=cerealbox book table
+SETVAR or3d_labels=joystick pizza juice coffee tea cerealbox book table
 
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
