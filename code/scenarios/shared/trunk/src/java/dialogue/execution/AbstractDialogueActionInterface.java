@@ -580,6 +580,7 @@ public abstract class AbstractDialogueActionInterface extends
 				// this is the wrong thing
 
 				unmarkReferent(getAction().beliefAddress);
+				
 			}
 			return TriBool.TRITRUE;
 
@@ -646,8 +647,15 @@ public abstract class AbstractDialogueActionInterface extends
 			}
 
 		}
+	
+	
+	
+	
 	}
 
+	
+	
+	
 	public abstract static class VerifyReferenceExecutor extends
 			AbstractVerifyReferenceExecutor<VerifyReference> {
 
@@ -992,13 +1000,22 @@ public abstract class AbstractDialogueActionInterface extends
 
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, _belief);
+		
+		//HACK - this is the more efficient place to do this
+		belief.getContent().remove("attributed-color");
+		belief.getContent().remove("attributed-shape");		
+		belief.getContent().remove("attributed-type");
+		//END HACK
+		
+		boolean result = false;
 		if (belief.getContent().containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
 			belief.getContent().remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
-			overwriteWorkingMemory(_beliefAddr, belief.get());
-			return true;
-		} else {
-			return false;
-		}
+			result = true;
+		} 
+
+		overwriteWorkingMemory(_beliefAddr, belief.get());
+		
+		return result;
 	}
 
 	/**
