@@ -1086,7 +1086,6 @@ class Clause
       countNumTrueGroundingsForAllComb(gndPredIndexes, gndPred, actual, flipped,
                                        domain, hasUnknownPreds, sampleClauses,
                                        tiedClauses);
-    //cout << "numTrueGndActual = " << numTrueGndActual << endl;
     
       //count # true groundings when gndPred is held to opposite value
     double numTrueGndOpp = 0.0;
@@ -1103,11 +1102,11 @@ class Clause
       int oldTrueOne = 0;
       if (oldTruePred)
         oldTrueOne = domain->getIndexOfPredInBlock(oldTruePred, blockIdx);
-//cout << "oldTrueOne " << oldTrueOne << endl;
+
       assert(oldTrueOne > -1);
 
       int newTrueOne = (oldTrueOne <= combo) ? combo + 1 : combo;
-//cout << "newTrueOne " << newTrueOne << endl;
+
       const Predicate* newTruePred =
         domain->getPredInBlock(newTrueOne, blockIdx);
 
@@ -1158,7 +1157,6 @@ class Clause
 
       db->setValue(gndPred, actual);
     }
-    //cout << "numTrueGndOpp    = " << numTrueGndOpp << endl;
 
     deleteVarIdToVarsGroundedType();
     return numTrueGndOpp - numTrueGndActual;
@@ -2407,34 +2405,28 @@ class Clause
                                      const Database* const & db,
                                      bool const & ignoreActivePreds)
   {
-//cout << "ignoreActivePreds " << ignoreActivePreds << endl;
-//cout << "lit "; lit->printWithStrVar(cout, db->getDomain()); cout << endl;
       // If atom has been deactivated, then we don't want any clauses that
       // it's in
     if (db->getDeactivatedStatus(lit)) return false;
     bool active = false;
     if (!ignoreActivePreds)
       active = db->getActiveStatus(lit);
-//cout << "active " << active << endl;
+
     TruthValue tv = db->getValue(lit);
     lit->setTruthValue(tv);
-//cout << "tv  " << tv << endl;
+
     if (!active && db->sameTruthValueAndSense(tv, lit->getSense()))
       return false;
 
-    for (int i = 0; i < subseqLits.size(); i++)
-    {
-//cout << "subseqLit " << i << " ";
-//subseqLits[i]->printWithStrVar(cout, db->getDomain());
-//cout << endl;
-    if (!ignoreActivePreds)
-      active = db->getActiveStatus(subseqLits[i]);
-//cout << "active " << active << endl;
-    tv = db->getValue(subseqLits[i]);
-    subseqLits[i]->setTruthValue(tv);
-//cout << "tv  " << tv << endl;
-    if (!active && db->sameTruthValueAndSense(tv,subseqLits[i]->getSense()))
-      return false;
+    for (int i = 0; i < subseqLits.size(); i++) {
+		  if (!ignoreActivePreds)
+		    active = db->getActiveStatus(subseqLits[i]);
+
+		  tv = db->getValue(subseqLits[i]);
+		  subseqLits[i]->setTruthValue(tv);
+
+		  if (!active && db->sameTruthValueAndSense(tv,subseqLits[i]->getSense()))
+		    return false;
     }
     return true;
   }
@@ -2463,10 +2455,6 @@ class Clause
         // and we want to ignore it.
       evidence = db->getEvidenceStatus(lit);
 
-//cout << "Lit: ";
-//lit->printWithStrVar(cout, db->getDomain());
-//cout << " ev. " << evidence << " act. " << active << " stvas "
-//<< db->sameTruthValueAndSense(tv, lit->getSense()) << endl;
       if (evidence && db->sameTruthValueAndSense(tv, lit->getSense()))
         return false;
         // Any active atom in clause or any true non-active atom
@@ -2537,8 +2525,6 @@ class Clause
     for (int i = 0; i < arr.size(); i++)
     {
   	  clauseLits[i] = arr[i].second;
-  	  //cout << clauseLits[i]->getSense() << " " << clauseLits[i]->getName()
-      //     << endl;
     }
   }
 
@@ -2989,10 +2975,6 @@ public:
         // and we want to ignore it.
       evidence = db->getEvidenceStatus(lit);
 
-      //cout << "Lit: ";
-			//lit->printWithStrVar(cout, db->getDomain());
-			//cout << " ev. " << evidence << " stvas "
-			//<< db->sameTruthValueAndSense(tv, lit->getSense()) <<  endl;
       if (evidence && db->sameTruthValueAndSense(tv, lit->getSense()))
         return false;
     }
