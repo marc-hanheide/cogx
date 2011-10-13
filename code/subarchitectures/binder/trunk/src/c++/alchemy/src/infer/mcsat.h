@@ -125,7 +125,7 @@ class MCSAT : public MCMC
     Timer timer1;
     assert(numChains_ == 1);
 
-    cout << "Initializing MC-SAT with MaxWalksat on hard clauses..." << endl;
+//    cout << "Initializing MC-SAT with MaxWalksat on hard clauses..." << endl;
     
     state_->eliminateSoftClauses();
     state_->setInferenceMode(state_->MODE_HARD);
@@ -206,7 +206,7 @@ class MCSAT : public MCMC
       timer1.reset();
     }
 
-    cout << "Running MC-SAT sampling..." << endl;
+//    cout << "Running MC-SAT sampling..." << endl;
       // Sampling loop
     int sample = 0;
     int numSamplesPerPred = 0;
@@ -218,11 +218,11 @@ class MCSAT : public MCMC
       { 
         currentTimeSec = timer.time();
         secondsElapsed = currentTimeSec - startTimeSec;
-        cout << "Sample (per pred) " << sample << ", time elapsed = ";
+/*        cout << "Sample (per pred) " << sample << ", time elapsed = ";
         Timer::printTime(cout, secondsElapsed);
         cout << ", num. preds = " << state_->getNumAtoms();
 		cout << ", num. clauses = " << state_->getNumClauses();
-		cout << endl;		
+		cout << endl;		*/
       }
 
         // For each node, generate the node's new truth value
@@ -235,7 +235,7 @@ class MCSAT : public MCMC
         if (   (burnMaxSteps_ >= 0 && sample >= burnMaxSteps_)
             || (maxSeconds_ > 0 && secondsElapsed >= maxSeconds_))
         {
-          cout << "Done burning. " << sample << " samples." << endl;
+//         cout << "Done burning. " << sample << " samples." << endl;
           burningIn = false;
           sample = 0;
         }
@@ -245,14 +245,14 @@ class MCSAT : public MCMC
         if (   (maxSteps_ >= 0 && sample >= maxSteps_)
             || (maxSeconds_ > 0 && secondsElapsed >= maxSeconds_)) 
         {
-          cout << "Done MC-SAT sampling. " << sample << " samples."             
-               << endl;
+//         cout << "Done MC-SAT sampling. " << sample << " samples."             
+ //              << endl;
           done = true;
         }
       }
 	  cout.flush();
     } // while (!done)
-
+/*
     cout << "Final ground predicate number: " << state_->getNumAtoms() << endl;
     cout << "Final ground clause number: " << state_->getNumClauses() << endl;
 
@@ -263,7 +263,7 @@ class MCSAT : public MCMC
     //Timer::printTime(cout, upSecondsElapsed_); cout << endl;
 
     cout<< "Time taken for SampleSat = "; 
-    Timer::printTime(cout, ssSecondsElapsed_); cout << endl;
+    Timer::printTime(cout, ssSecondsElapsed_); cout << endl;*/
 
       // Update gndPreds probability that it is true
     for (int i = 0; i < state_->getNumAtoms(); i++)
