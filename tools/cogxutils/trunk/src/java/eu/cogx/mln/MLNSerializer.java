@@ -44,16 +44,21 @@ public class MLNSerializer extends ManagedComponent {
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
 				.create(dBelief.class, bel);	
 		// Do not add anything if not visible	
-		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet())
+		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet()) {
 			if(d.getKey().equals("presence")) {
 				for (ProbFormula v : d.getValue()) {
 					ElementaryFormula pf = (ElementaryFormula) v.getFormula().get();
-					if(pf.prop.equals("removed") && v.getProbability() > 0.8) {
-						return;
-					}
+					if(pf.prop.equals("removed") && v.getProbability() > 0.8)
+						return;	
 				}
+			}
+			// HACK: Filtering out phantom shared beliefs
+			if(d.getKey().equals("color")) {
+				if(d.getValue().size() == 0) 
+						return;	
+			}
 		}
-
+		
 		MLNFact bfact = new MLNFact();
 		MLNFact sfact = new MLNFact();
 		
