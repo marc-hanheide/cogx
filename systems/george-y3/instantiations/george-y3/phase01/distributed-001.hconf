@@ -1,12 +1,21 @@
 
-HOST  Robot     192.168.54.1
-HOST  Desktop   192.168.54.2
+HOST  KaisLaptop     192.168.54.1
+HOST  PetersLaptop   192.168.54.2
+HOST  MarkosLaptop   192.168.54.3
 
+HOST  RobotServer    [KaisLaptop]
+HOST  VisionServer   [KaisLaptop]
+HOST  PlannerServer  [PetersLaptop]
 
-HOSTNAME  Main           [Desktop]
-HOSTNAME  PlayerHost     [Robot]
-HOSTNAME  PeekabotHost   [Desktop]
-HOSTNAME  DisplayHost    [Desktop]
-HOSTNAME  AbducerHost    [Desktop]
+HOST  Main           [MarkosLaptop]
 
-SA vision.sa   [Robot]
+HOST  PlayerHost     [RobotServer]
+HOST  PeekabotHost   [Main]
+HOST  DisplayHost    [Main]
+HOST  SecondDisplayHost    [VisionServer]
+HOST  AbducerHost    [Main]
+
+SA vision.sa   [VisionServer]
+SA planning.sa [PlannerServer]
+
+ID laser.server [RobotServer] 0
