@@ -131,13 +131,13 @@
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-color-threshold ?r) 0.4)
+    :effect (assign (polar-question-color-threshold ?r) 1.4)
   )
 
   (:init-rule set-learn-autonomous-color-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-color-threshold ?r) 0.98)
+    :effect (assign (learn-autonomous-color-threshold ?r) 1.98)
   )
 
   (:init-rule set-convinced-of-color-threshold
@@ -371,8 +371,6 @@
     :precondition
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        ;; (learning-impossible)
-        ;; (unlearning-impossible)
         (or
           (= (currently-points-at ?r) ?v)
           (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
@@ -381,6 +379,7 @@
     :effect 
       (and
         (assign (attributed-color ?v) (color ?v))
+        (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
   )
@@ -399,8 +398,8 @@
       )
     :effect 
       (and
-        ;; (attributed TUTOR (color ?v) ?c)
         (assign (attributed-color ?v) ?c)
+        (is-potential-object-in-question ?v)
         (increase (total-cost) 1)
       )
   )
@@ -411,7 +410,6 @@
     :precondition
       (and
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        ;; (learning-impossible)
         (or
           (= (currently-points-at ?r) ?v)
           (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
@@ -420,6 +418,7 @@
     :effect 
       (and 
         (assign (attributed-shape ?v) (shape ?v))
+        (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
   )
@@ -438,8 +437,8 @@
       )
     :effect 
       (and 
-        ;;(attributed TUTOR (shape ?v) ?s)
         (assign (attributed-shape ?v) ?s)
+        (is-potential-object-in-question ?v)
         (increase (total-cost) 1)
       )
   )
@@ -460,6 +459,7 @@
   ;;   :effect 
   ;;     (and 
   ;;       (assign (attributed-type ?v) (type ?v))
+  ;;       (is-potential-object-in-question ?v)
   ;;       (increase (total-cost) 2)
   ;;     )
   ;; )
@@ -481,6 +481,7 @@
   ;;   :effect 
   ;;     (and 
   ;;       (assign (attributed-type ?v) ?t)
+  ;;       (is-potential-object-in-question ?v)
   ;;       (increase (total-cost) 1)
   ;;     )
   ;; )
@@ -504,7 +505,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          ;; (is-object-in-question ?v)
+          (is-object-in-question ?v)
         )
         (and
           (allow-autonomous-color-learning ?v ?c ?r)
@@ -520,6 +521,7 @@
     :effect 
       (and
 	(color-learned ?v)
+        (forall (?v - VisualObject) (not (is-potential-object-in-question ?v)))
 	(increase (total-cost) 1)
       )
   )
@@ -539,7 +541,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          ;; (is-object-in-question ?v)
+          (is-object-in-question ?v)
         )
         (and
           (allow-autonomous-shape-learning ?v ?s ?r)
@@ -555,6 +557,7 @@
     :effect 
       (and
 	(shape-learned ?v)
+        (forall (?v - VisualObject) (not (is-potential-object-in-question ?v)))
 	(increase (total-cost) 1)
       )
   )
@@ -590,6 +593,7 @@
   ;;   :effect 
   ;;     (and
   ;;       (type-learned ?v)
+  ;;       (forall (?v - VisualObject) (not (is-potential-object-in-question ?v)))
   ;;       (increase (total-cost) 1)
   ;;     )
   ;; )
