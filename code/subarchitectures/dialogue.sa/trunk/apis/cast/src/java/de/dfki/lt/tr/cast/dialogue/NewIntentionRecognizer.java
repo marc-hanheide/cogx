@@ -19,7 +19,6 @@ import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
 import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
-import de.dfki.lt.tr.dialogue.interpret.FirstComeFirstServeCombinator;
 import de.dfki.lt.tr.dialogue.interpret.GeneratedWMAddressTranslator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
 import de.dfki.lt.tr.dialogue.interpret.InterpretedUserIntention;
@@ -86,7 +85,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class NewIntentionRecognizer
-extends AbstractAbductiveComponent<InterpretedUserIntention> {
+extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 	public final String DEFAULT_ABD_SERVER_NAME = "AbducerServer";
 	public final int DEFAULT_ABD_PORT = 9100;
@@ -202,7 +201,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 	}
 
 	@Override
-	protected ProofInterpretationContext<InterpretedUserIntention> initContext() {
+	protected ProofInterpretationContext<InterpretedUserIntention, String> initContext() {
 		ProofPruner pruner = new LengthPruner(3);
 		ProofExpander expander = new EngineProofExpander(getEngine(), timeout);
 
@@ -219,10 +218,10 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 		final WorkingMemoryWriterComponent committer = this;
 
-		return new AbstractProofInterpretationContext<InterpretedUserIntention>(pruner, expander, solvers, interpreter) {
+		return new AbstractProofInterpretationContext<InterpretedUserIntention, String>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(List<InterpretedUserIntention> listIpret, double asrConfidence) {
+			public void onSuccessfulInterpretation(List<InterpretedUserIntention> listIpret, double asrConfidence, String arg) {
 				getLogger().debug("got " + listIpret.size() + " interpretations.");
 				getLogger().debug("NLP confidence = " + asrConfidence);
 //				for (int i = 0; i < listIpret.size(); i++) {
@@ -237,7 +236,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 					getLogger().debug("after pruning and normalization: " + pii.intentions.size() + " alternative intentions");
 					getLogger().debug("adding the following to the WM (as unclarified):\n" + possibleInterpretedIntentionsToString(pii));
 					try {
-						addToWorkingMemory(newDataID(), new UnclarifiedPossibleInterpretedIntentions(pii, (float) asrConfidence));
+						addToWorkingMemory(newDataID(), new UnclarifiedPossibleInterpretedIntentions(pii, arg, (float) asrConfidence));
 					}
 					catch (SubarchitectureComponentException ex) {
 						logException(ex);
@@ -382,7 +381,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 									getLogger().info("converting the SelectedLogicalForm to a partial interpretation");
 									SelectedLogicalForm slf = getMemoryEntry(addr, SelectedLogicalForm.class);
 									InterpretationRequest inprRequest = new InterpretationRequest(selectedLFToGoal(slf));
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, slf.lform.preferenceScore, condition));
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, slf.lform.preferenceScore, slf.phonStringWordList, condition));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);

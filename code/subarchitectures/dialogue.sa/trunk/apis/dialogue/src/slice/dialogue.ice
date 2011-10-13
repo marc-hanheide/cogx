@@ -200,6 +200,7 @@ module parse {
 		float phonStringConfidence;
 		bool phonStringMaybeOOV;
 		time::Interval phonStringIval;
+		string phonStringWordList;
 	}; 
 
 }; 
@@ -213,6 +214,7 @@ module parseselection {
 	class SelectedLogicalForm {
 		lf::LogicalForm lform;
 		time::Interval ival;
+		string phonStringWordList;
 	};
 
 };

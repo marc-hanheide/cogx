@@ -20,6 +20,7 @@ class UnclarifiedPhonString {
 
 class UnclarifiedPossibleInterpretedIntentions {
 	de::dfki::lt::tr::beliefs::slice::intentions::PossibleInterpretedIntentions pii;
+	string phonStringWordList;
 	float asrConfidence;
 };
 
