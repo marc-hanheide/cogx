@@ -292,6 +292,11 @@ module execution {
 
 	class VerifyReference extends SingleBeliefAction {
 	};
+	
+	class VerifyReferenceByFeatureValue extends BeliefPlusFeatureValueAction {
+	};
+
+
 
       /**
        * comsys action
