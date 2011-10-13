@@ -433,11 +433,17 @@ class OnlineEngine
 
       			string placeh = string(domain->getConstantName(inst->item(i)));
       			cout << "Activating constant placeholder '" << placeh << "." << endl;
-     			inference_->getState()->setAsEvidence(new GroundPredicate(p), true);		
-
+      			
+      			GroundPredicate* gp = NULL;
+      			parseGroundPredicate(pred + "(" + placeh + ")", gp);
+      			
+     				inference_->getState()->setAsEvidence(gp, true);		
+						delete p;
       			return placeh;
       		}
-      	}   	
+      		delete p;
+      	}
+      	   	
     	cout << "WARNING: Too many instances. Could not add a new one." << endl;
     	return "";
     }
@@ -462,7 +468,8 @@ class OnlineEngine
       	
       	if(domain->getDB()->getValue(gp) == TRUE ) {
       		cout << "Deactivating constant placeholder '" << placeh << "." << endl;
-      		inference_->getState()->setAsQuery(gp);
+     		inference_->getState()->setAsQuery(gp);
+     		parseGroundPredicate(pred + "(" + placeh + ")", gp);
      			inference_->getState()->setAsEvidence(gp, false); //new GroundPredicate(p), false);		
 
       		return;
