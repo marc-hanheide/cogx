@@ -662,6 +662,8 @@ public abstract class AbstractDialogueActionInterface extends
 			} else {
 				_stringContent.put("subtype", "answer-unknown");
 			}
+			
+//			_stringContent.put("polarity","pos");
 		}
 
 		@Override
