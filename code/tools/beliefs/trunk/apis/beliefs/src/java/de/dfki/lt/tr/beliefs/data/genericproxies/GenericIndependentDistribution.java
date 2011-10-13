@@ -162,7 +162,12 @@ public class GenericIndependentDistribution<T extends Distribution<?>> extends
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
 	public T remove(Object arg0) {
-		return _factory.create(_content.distribs.remove(arg0));
+		ProbDistribution removed = _content.distribs.remove(arg0);
+		if (removed != null) {
+			return _factory.create(removed);
+		} else {
+			return null;
+		}
 	}
 
 	/**
