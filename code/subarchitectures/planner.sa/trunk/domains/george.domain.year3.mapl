@@ -61,7 +61,7 @@
 
     (looked-at ?vc - ViewCone)
 
-    (is-object-in-question ?v - VisualObject ?r - Robot)
+    (is-object-in-question ?v - VisualObject)
     (is-potential-object-in-question ?v - VisualObject)
 
     (arm-in-resting-position ?r - Robot)
@@ -80,32 +80,29 @@
   )
 
   (:functions
-    (color ?v - VisualObject) - ColorName
+    (color ?v - VisualObject) - ColorName                    ;; We believe the object is of this color...
+    (color-prob ?v - VisualObject) - number                  ;; ...with this probability
     (attributed-color ?v - VisualObject) - ColorName         ;; This was attributed to the object by the tutor
-    (polar-question-color-threshold ?r - Robot) - number     ;; If max-gain-value-color is higher than this we allow a polar question
-    (learn-autonomous-color-threshold ?r - Robot) - number   ;; If max-gain-value-color is higher than this we learn autonomously
-    (convinced-of-color-threshold ?r - Robot) - number       ;; If max-gain-value-color is higher than this we answer convinced
-    (believe-in-color-threshold ?r - Robot) - number         ;; If max-gain-value-color is lower than this we answer we dont know
-    (max-gain-label-color ?v - VisualObject) - ColorName     ;; This is the color with the highest potential gain for some object
-    (max-gain-value-color ?v - VisualObject) - number        ;; This is the color-gain of max-gain-label-color
+    (polar-question-color-threshold ?r - Robot) - number     ;; If color-prob is higher than this we allow a polar question
+    (learn-autonomous-color-threshold ?r - Robot) - number   ;; If color-prob is higher than this we learn autonomously
+    (convinced-of-color-threshold ?r - Robot) - number       ;; If color-prob is higher than this we answer convinced
+    (believe-in-color-threshold ?r - Robot) - number         ;; If color-prob is lower than this we answer we dont know
 
     (shape ?v - VisualObject) - ShapeName
+    (shape-prob ?v - VisualObject) - number
     (attributed-shape ?v - VisualObject) - ShapeName
     (polar-question-shape-threshold ?r - Robot) - number
     (learn-autonomous-shape-threshold ?r - Robot) - number
     (convinced-of-shape-threshold ?r - Robot) - number
     (believe-in-shape-threshold ?r - Robot) - number
-    (max-gain-label-shape ?v - VisualObject) - ShapeName
-    (max-gain-value-shape ?v - VisualObject) - number
 
     (type ?v - VisualObject) - TypeName
+    (type-prob ?v - VisualObject) - number
     (attributed-type ?v - VisualObject) - TypeName
     (polar-question-type-threshold ?r - Robot) - number
     (learn-autonomous-type-threshold ?r - Robot) - number
     (convinced-of-type-threshold ?r - Robot) - number
     (believe-in-type-threshold ?r - Robot) - number
-    (max-gain-label-type ?v - VisualObject) - TypeName
-    (max-gain-value-type ?v - VisualObject) - number
 
     (target-object ?vc - ViewCone) - ProtoObject
     (po-is-associated-with ?p - ProtoObject) - VisualObject
@@ -144,7 +141,7 @@
   (:init-rule set-learn-autonomous-color-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-color-threshold ?r) 0.8)
+    :effect (assign (learn-autonomous-color-threshold ?r) 1.1)
   )
 
   (:init-rule set-convinced-of-color-threshold
@@ -207,28 +204,46 @@
     :effect (assign (believe-in-type-threshold ?r) 0.33)
   )
 
-  (:init-rule set-max-gain-value-color
-    :parameters (?v - VisualObject)
-    :precondition (= (max-gain-value-color ?v) UNKNOWN)
-    :effect (assign (max-gain-value-color ?v) 0)
-  )
-
-  (:init-rule set-max-gain-value-shape
-    :parameters (?v - VisualObject)
-    :precondition (= (max-gain-value-shape ?v) UNKNOWN)
-    :effect (assign (max-gain-value-shape ?v) 0)
-  )
-
-  (:init-rule set-max-gain-value-type
-    :parameters (?v - VisualObject)
-    :precondition (= (max-gain-value-type ?v) UNKNOWN)
-    :effect (assign (max-gain-value-type ?v) 0)
-  )
-
   (:init-rule set-looked-at-of-initial-viewcone
     :parameters (?r - Robot ?vc - ViewCone)
     :precondition (= (current-viewcone ?r) ?vc)
     :effect (looked-at ?vc)
+  )
+
+  (:init-rule set-color-prob
+    :parameters (?v - VisualObject)
+    :precondition (= (color-prob ?v) UNKNOWN)
+    :effect (assign (color-prob ?v) 0)
+  )
+
+  (:init-rule set-shape-prob
+    :parameters (?v - VisualObject)
+    :precondition (= (shape-prob ?v) UNKNOWN)
+    :effect (assign (shape-prob ?v) 0)
+  )
+
+  (:init-rule set-type-prob
+    :parameters (?v - VisualObject)
+    :precondition (= (type-prob ?v) UNKNOWN)
+    :effect (assign (type-prob ?v) 0)
+  )
+
+  (:init-rule set-attributed-color
+    :parameters (?v - VisualObject)
+    :precondition (= (attributed-color ?v) UNKNOWN)
+    :effect (assign (attributed-color ?v) UNKNOWN_COLOR)
+  )
+
+  (:init-rule set-attributed-shape
+    :parameters (?v - VisualObject)
+    :precondition (= (attributed-shape ?v) UNKNOWN)
+    :effect (assign (attributed-shape ?v) UNKNOWN_SHAPE)
+  )
+
+  (:init-rule set-attributed-type
+    :parameters (?v - VisualObject)
+    :precondition (= (attributed-type ?v) UNKNOWN)
+    :effect (assign (attributed-type ?v) UNKNOWN_TYPE)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -251,31 +266,34 @@
           )
         )
       )
-      ;; (unlearning-impossible)
+      (unlearning-impossible)
       (arm-in-resting-position ?r)
     )
   )
 
 ;; unlearning is impossible, if nothing has been neg-attributed by the tutor that hasn't been unlearned already
 
-  ;; (:derived (unlearning-impossible)
-    ;; (forall (?v - VisualObject)
-      ;; (and
-  ;;       (or
-  ;;         (not (exists (?c - ColorName) (neg-attributed TUTOR (color ?v) ?c)))
-  ;;         (color-unlearned ?v)
-  ;;       )
-  ;;       (or
-  ;;         (not (exists (?s - ShapeName) (neg-attributed TUTOR (shape ?v) ?s)))
-  ;;         (shape-unlearned ?v)
-  ;;       )
-  ;;       (or
-  ;;         (forall (?t - TypeName) (not (neg-attributed TUTOR (type ?v) ?t)))
-  ;;         (type-unlearned ?v)
-  ;;       )
-  ;;     )
-  ;;   )
-  ;; )
+  (:derived (unlearning-impossible)
+    (forall (?v - VisualObject)
+      (and
+        (or
+          (= (attributed-color ?v) UNKNOWN_COLOR)
+          (= (attributed-color ?v) (color ?v))
+          (color-unlearned ?v)
+        )
+        (or
+          (= (attributed-shape ?v) UNKNOWN_SHAPE)
+          (= (attributed-shape ?v) (shape ?v))
+          (shape-unlearned ?v)
+        )
+        (or
+          (= (attributed-type ?v) UNKNOWN_TYPE)
+          (= (attributed-type ?v) (type ?v))
+          (type-unlearned ?v)
+        )
+      )
+    )
+  )
 
 ;; learning is impossible if nothing had been attributed by the TUTOR for all VisualObjects
 
@@ -283,18 +301,15 @@
     (forall (?v - VisualObject)
       (and
         (or
-	  ;; (forall (?c - ColorName) (not (attributed TUTOR (color ?v) ?c)))
-          (not (exists (?c - ColorName) (= (attributed-color ?v) ?c)))
+          (= (attributed-color ?v) UNKNOWN_COLOR)
           (color-learned ?v)
         )
         (or
-          ;; (forall (?s - ShapeName) (not (attributed TUTOR (shape ?v) ?s)))
-          (not (exists (?s - ShapeName) (= (attributed-shape ?v) ?s)))
+          (= (attributed-shape ?v) UNKNOWN_SHAPE)
           (shape-learned ?v)
         )
         (or
-          ;; (forall (?t - TypeName) (not (attributed TUTOR (type ?v) ?t)))
-          (not (exists (?t - TypeName) (= (attributed-type ?v) ?t)))
+          (= (attributed-type ?v) UNKNOWN_TYPE)
           (type-learned ?v)
         )
       )
@@ -306,8 +321,8 @@
 
   (:derived (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (and
-      (>= (max-gain-value-color ?v) (polar-question-color-threshold ?r))
-      (= (max-gain-label-color ?v) ?c)
+      (= (color ?v) ?c)
+      (>= (color-prob ?v) (polar-question-color-threshold ?r))
       (learning-impossible)
       (unlearning-impossible)
     )
@@ -315,8 +330,8 @@
 
   (:derived (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
     (and
-      (>= (max-gain-value-shape ?v) (polar-question-shape-threshold ?r))
-      (= (max-gain-label-shape ?v) ?s)
+      (= (shape ?v) ?s)
+      (>= (shape-prob ?v) (polar-question-shape-threshold ?r))
       (learning-impossible)
       (unlearning-impossible)
     )
@@ -324,15 +339,17 @@
 
   (:derived (allow-polar-type-question ?v - VisualObject ?t - TypeName ?r - Robot)
     (and
-      (>= (max-gain-value-type ?v) (polar-question-type-threshold ?r))
-      (= (max-gain-label-type ?v) ?t)
+      (= (type ?v) ?t)
+      (>= (type-prob ?v) (polar-question-type-threshold ?r))
+      (learning-impossible)
+      (unlearning-impossible)
     )
   )
 
   (:derived (allow-autonomous-color-learning ?v - VisualObject ?c - ColorName ?r - Robot)
     (and
-      (>= (max-gain-value-color ?v) (learn-autonomous-color-threshold ?r))
-      (= (max-gain-label-color ?v) ?c)
+      (>= (color-prob ?v) (learn-autonomous-color-threshold ?r))
+      (= (color ?v) ?c)
       (learning-impossible)
       (unlearning-impossible)
     )
@@ -340,8 +357,8 @@
 
   (:derived (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
     (and
-      (>= (max-gain-value-shape ?v) (learn-autonomous-shape-threshold ?r))
-      (= (max-gain-label-shape ?v) ?s)
+      (>= (shape-prob ?v) (learn-autonomous-shape-threshold ?r))
+      (= (shape ?v) ?s)
       (learning-impossible)
       (unlearning-impossible)
     )
@@ -349,18 +366,17 @@
 
   (:derived (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
     (and
-      (>= (max-gain-value-type ?v) (learn-autonomous-shape-threshold ?r))
-      (= (max-gain-label-type ?v) ?t)
+      (>= (type-prob ?v) (learn-autonomous-shape-threshold ?r))
+      (= (type ?v) ?t)
       (learning-impossible)
       (unlearning-impossible)
     )
   )
 
-  (:derived (is-object-in-question ?v - VisualObject ?r - Robot)
+  (:derived (is-object-in-question ?v - VisualObject)
     (and
       (is-potential-object-in-question ?v)
       (not (exists (?v1 - VisualObject) (and (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
-      ;;(arm-in-resting-position ?r)
     )
   )
 
@@ -560,7 +576,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          (is-object-in-question ?v ?r)
+          (is-object-in-question ?v)
         )
         (and
           (allow-autonomous-color-learning ?v ?c ?r)
@@ -596,7 +612,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          (is-object-in-question ?v ?r)
+          (is-object-in-question ?v)
         )
         (and
           (allow-autonomous-shape-learning ?v ?s ?r)
@@ -631,7 +647,7 @@
               (= (target-object (current-viewcone ?r)) ?p)
             )
           )
-          (is-object-in-question ?v ?r)
+          (is-object-in-question ?v)
         )
         (and
           (allow-autonomous-type-learning ?v ?t ?r)
@@ -655,71 +671,74 @@
 ;;;;;;;;;;;;;;;;;                  UNLEARNING             ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; (:action unlearn-color
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?c - ColorName)
-  ;;   :precondition
-  ;;     (and
-  ;;       (not (color-unlearned ?v))
-  ;;       (neg-attributed TUTOR (color ?v) ?c)
-  ;;       (exists (?p - ProtoObject)
-  ;;         (and 
-  ;;           (= (po-is-associated-with ?p) ?v)
-  ;;           (= (target-object (current-viewcone ?r)) ?p)
-  ;;         )
-  ;;       )
-  ;;       (is-object-in-question ?v ?r)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (color-unlearned ?v)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action unlearn-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (not (color-unlearned ?v))
+        (not (= (attributed-color ?v) (color ?v)))
+        (not (= ?c UNKNOWN_COLOR))
+        (exists (?p - ProtoObject)
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+        (is-object-in-question ?v)
+      )
+    :effect 
+      (and
+        (color-unlearned ?v)
+        (increase (total-cost) 1)
+      )
+  )
 
-  ;; (:action unlearn-shape
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?s - ShapeName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (shape-unlearned ?v))
-  ;;       (neg-attributed TUTOR (shape ?v) ?s)
-  ;;       (exists (?p - ProtoObject) 
-  ;;         (and 
-  ;;           (= (po-is-associated-with ?p) ?v)
-  ;;           (= (target-object (current-viewcone ?r)) ?p)
-  ;;         )
-  ;;       )
-  ;;       (is-object-in-question ?v ?r)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (shape-unlearned ?v)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action unlearn-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (not (shape-unlearned ?v))
+        (not (= (attributed-shape ?v) (shape ?v)))
+        (not (= ?s UNKNOWN_SHAPE))
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+        (is-object-in-question ?v)
+      )
+    :effect 
+      (and
+        (shape-unlearned ?v)
+        (increase (total-cost) 1)
+      )
+  )
 
-  ;; (:action unlearn-type
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?t - TypeName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (type-unlearned ?v))
-  ;;       (neg-attributed TUTOR (type ?v) ?t)
-  ;;       (exists (?p - ProtoObject) 
-  ;;         (and 
-  ;;           (= (po-is-associated-with ?p) ?v)
-  ;;           (= (target-object (current-viewcone ?r)) ?p)
-  ;;         )
-  ;;       )
-  ;;       (is-object-in-question ?v ?r)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (type-unlearned ?v)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action unlearn-type
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (and
+        (not (type-unlearned ?v))
+        (not (= (attributed-type ?v) (type ?v)))
+        (not (= ?t UNKNOWN_TYPE))
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+        (is-object-in-question ?v)
+      )
+    :effect 
+      (and
+        (type-unlearned ?v)
+        (increase (total-cost) 1)
+      )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;          REFERENCE RESOLUTION           ;;;;;;;;;;;;;;;;;;;;;;;
@@ -764,15 +783,15 @@
   ;;     (and
   ;;       (not (color-excluded-for-reference-resolution ?r))
   ;;       (is-potential-object-in-question ?v)
-  ;;       (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
-  ;;       (= (max-gain-label-color ?v) ?c)
+  ;;       (>= (color-prob ?v) (believe-in-color-threshold ?r))
+  ;;       (= (color ?v) ?c)
   ;;       (forall 
   ;;         (?v1 - VisualObject) 
   ;;         (or 
   ;;           (= ?v ?v1)
   ;;           (not (is-potential-object-in-question ?v1))
-  ;;           (>= (max-gain-value-color ?v1) (believe-in-color-threshold ?r))
-  ;;           (exists (?c1 - ColorName) (and (= (max-gain-label-color ?v) ?c1) (not (= ?c ?c1))))
+  ;;           (>= (color-prob ?v1) (believe-in-color-threshold ?r))
+  ;;           (exists (?c1 - ColorName) (and (= (color ?v) ?c1) (not (= ?c ?c1))))
   ;;         )
   ;;       )            
   ;;     )
@@ -790,15 +809,15 @@
   ;;     (and
   ;;       (not (shape-excluded-for-reference-resolution ?r))
   ;;       (is-potential-object-in-question ?v)
-  ;;       (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
-  ;;       (= (max-gain-label-shape ?v) ?s)
+  ;;       (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+  ;;       (= (shape ?v) ?s)
   ;;       (forall 
   ;;         (?v1 - VisualObject) 
   ;;         (or 
   ;;           (= ?v ?v1)
   ;;           (not (is-potential-object-in-question ?v1))
-  ;;           (>= (max-gain-value-shape ?v1) (believe-in-shape-threshold ?r))
-  ;;           (exists (?s1 - ShapeName) (and (= (max-gain-label-shape ?v) ?s1) (not (= ?s ?s1))))
+  ;;           (>= (shape-prob ?v1) (believe-in-shape-threshold ?r))
+  ;;           (exists (?s1 - ShapeName) (and (= (shape ?v) ?s1) (not (= ?s ?s1))))
   ;;         )
   ;;       )            
   ;;     )
@@ -816,15 +835,15 @@
   ;;     (and
   ;;       (not (type-excluded-for-reference-resolution ?r))
   ;;       (is-potential-object-in-question ?v)
-  ;;       (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-  ;;       (= (max-gain-label-type ?v) ?t)
+  ;;       (>= (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
   ;;       (forall 
   ;;         (?v1 - VisualObject) 
   ;;         (or 
   ;;           (= ?v ?v1)
   ;;           (not (is-potential-object-in-question ?v1))
-  ;;           (>= (max-gain-value-type ?v1) (believe-in-type-threshold ?r))
-  ;;           (exists (?t1 - TypeName) (and (= (max-gain-label-type ?v) ?t1) (not (= ?t ?t1))))
+  ;;           (>= (type-prob ?v1) (believe-in-type-threshold ?r))
+  ;;           (exists (?t1 - TypeName) (and (= (type ?v) ?t1) (not (= ?t ?t1))))
   ;;         )
   ;;       )            
   ;;     )
@@ -866,9 +885,9 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
-        (= (max-gain-label-color ?v) ?c)
+        (is-object-in-question ?v)
+        (>= (color-prob ?v) (convinced-of-color-threshold ?r))
+        (= (color ?v) ?c)
       )
     :effect
       (and
@@ -882,10 +901,10 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
-        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
-        (= (max-gain-label-color ?v) ?c)
+        (is-object-in-question ?v)
+        (< (color-prob ?v) (convinced-of-color-threshold ?r))
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
       )
     :effect
       (and
@@ -899,9 +918,9 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
-        (= (max-gain-label-color ?v) ?c)
+        (is-object-in-question ?v)
+        (< (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
       )
     :effect
       (and
@@ -915,9 +934,9 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
-        (= (max-gain-label-shape ?v) ?s)
+        (is-object-in-question ?v)
+        (>= (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (= (shape ?v) ?s)
       )
     :effect
       (and
@@ -931,10 +950,10 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
-        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
-        (= (max-gain-label-shape ?v) ?s)
+        (is-object-in-question ?v)
+        (< (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
       )
     :effect
       (and
@@ -948,9 +967,9 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
-        (= (max-gain-label-shape ?v) ?s)
+        (is-object-in-question ?v)
+        (< (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
       )
     :effect
       (and
@@ -964,9 +983,9 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?t)
+        (is-object-in-question ?v)
+        (>= (type-prob ?v) (convinced-of-type-threshold ?r))
+        (= (type ?v) ?t)
       )
     :effect
       (and
@@ -980,10 +999,10 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
-        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?t)
+        (is-object-in-question ?v)
+        (< (type-prob ?v) (convinced-of-type-threshold ?r))
+        (>= (type-prob ?v) (believe-in-type-threshold ?r))
+        (= (type ?v) ?t)
       )
     :effect
       (and
@@ -997,9 +1016,9 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?t)
+        (is-object-in-question ?v)
+        (< (type-prob ?v) (believe-in-type-threshold ?r))
+        (= (type ?v) ?t)
       )
     :effect
       (and
@@ -1019,9 +1038,9 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (>= (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
-        (= (max-gain-label-color ?v) ?c)
+        (is-object-in-question ?v)
+        (>= (color-prob ?v) (convinced-of-color-threshold ?r))
+        (= (color ?v) ?c)
       )
     :effect
       (and
@@ -1036,10 +1055,10 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-color ?v) (convinced-of-color-threshold ?r))
-        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
-        (= (max-gain-label-color ?v) ?c)
+        (is-object-in-question ?v)
+        (< (color-prob ?v) (convinced-of-color-threshold ?r))
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
       )
     :effect
       (and
@@ -1055,13 +1074,13 @@
     :precondition
       (or
         (and
-          (is-object-in-question ?v ?r)
-          (< (max-gain-value-color ?v) (believe-in-color-threshold ?r))
-          (= (max-gain-label-color ?v) ?c)
+          (is-object-in-question ?v)
+          (< (color-prob ?v) (believe-in-color-threshold ?r))
+          (= (color ?v) ?c)
         )
         (and
-          (is-object-in-question ?v ?r)
-          (not (= (max-gain-label-color ?v) ?c))
+          (is-object-in-question ?v)
+          (not (= (color ?v) ?c))
         )
       )
     :effect
@@ -1077,9 +1096,9 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (>= (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
-        (= (max-gain-label-shape ?v) ?s)
+        (is-object-in-question ?v)
+        (>= (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (= (shape ?v) ?s)
       )
     :effect
       (and
@@ -1094,10 +1113,10 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-shape ?v) (convinced-of-shape-threshold ?r))
-        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
-        (= (max-gain-label-shape ?v) ?s)
+        (is-object-in-question ?v)
+        (< (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
       )
     :effect
       (and
@@ -1113,13 +1132,13 @@
     :precondition
       (or
         (and
-          (is-object-in-question ?v ?r)
-          (< (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
-          (= (max-gain-label-shape ?v) ?s)
+          (is-object-in-question ?v)
+          (< (shape-prob ?v) (believe-in-shape-threshold ?r))
+          (= (shape ?v) ?s)
         )
         (and
-          (is-object-in-question ?v ?r)
-          (not (= (max-gain-label-shape ?v) ?s))
+          (is-object-in-question ?v)
+          (not (= (shape ?v) ?s))
         )
       )
     :effect
@@ -1135,9 +1154,9 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (>= (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?t)
+        (is-object-in-question ?v)
+        (>= (type-prob ?v) (convinced-of-type-threshold ?r))
+        (= (type ?v) ?t)
       )
     :effect
       (and
@@ -1152,10 +1171,10 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
-        (is-object-in-question ?v ?r)
-        (< (max-gain-value-type ?v) (convinced-of-type-threshold ?r))
-        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?t)
+        (is-object-in-question ?v)
+        (< (type-prob ?v) (convinced-of-type-threshold ?r))
+        (>= (type-prob ?v) (believe-in-type-threshold ?r))
+        (= (type ?v) ?t)
       )
     :effect
       (and
@@ -1171,13 +1190,13 @@
     :precondition
       (or
         (and
-          (is-object-in-question ?v ?r)
-          (< (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-          (= (max-gain-label-type ?v) ?t)
+          (is-object-in-question ?v)
+          (< (type-prob ?v) (believe-in-type-threshold ?r))
+          (= (type ?v) ?t)
         )
         (and
-          (is-object-in-question ?v ?r)
-          (not (= (max-gain-label-type ?v) ?t))
+          (is-object-in-question ?v)
+          (not (= (type ?v) ?t))
         )
       )
     :effect
@@ -1198,8 +1217,8 @@
     :precondition
       (and
         (= (currently-points-at ?r) ?v)
-        (>= (max-gain-value-color ?v) (believe-in-color-threshold ?r))
-        (= (max-gain-label-color ?v) ?c)
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
       )
     :effect
       (and
@@ -1214,8 +1233,8 @@
     :precondition
       (and
         (= (currently-points-at ?r) ?v)
-        (>= (max-gain-value-shape ?v) (believe-in-shape-threshold ?r))
-        (= (max-gain-label-shape ?v) ?s)
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
       )
     :effect
       (and
@@ -1230,8 +1249,8 @@
     :precondition
       (and
         (= (currently-points-at ?r) ?v)
-        (>= (max-gain-value-type ?v) (believe-in-type-threshold ?r))
-        (= (max-gain-label-type ?v) ?t)
+        (>= (type-prob ?v) (believe-in-type-threshold ?r))
+        (= (type ?v) ?t)
       )
     :effect
       (and
