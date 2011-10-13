@@ -152,7 +152,7 @@ void MLNEngine::runComponent()
 
   // Init
   int tstep = 0;
-  bool resetCnt = true;
+  bool first = true;
   m_infSteps = m_defaultInfSteps;
   m_oe->setMaxInferenceSteps(m_infSteps);
   m_oe->setMaxBurnIn(0); 
@@ -219,7 +219,6 @@ void MLNEngine::runComponent()
   #endif	  
 	  
 	  m_infSteps = evd->initInfSteps;
-	  resetCnt = true;
 	  
 	  if(!evd->setToken.empty()) {
 		m_token = evd->setToken;
@@ -259,15 +258,15 @@ void MLNEngine::runComponent()
   //  m_oe->setMaxInferenceSteps(5000);
 	if(m_infSteps > 0 && m_overallSamples < DEFAULT_MAX_SAMPLES)
 	{
-	  if(!resetCnt) m_oe->restoreCnts();
+	  if(!first) m_oe->restoreCnts();
 	  m_oe->setMaxInferenceSteps(m_infSteps);
 	  m_oe->infer(m_query, result->atoms, result->probs);
 	  m_oe->saveCnts();
 	
-	  resetCnt=false; 
+	  first=false;
+	  m_tokenSamples += m_infSteps;
 	  m_overallSamples += m_infSteps;
-	  if(m_token.empty())
-		m_tokenSamples += m_infSteps;
+
 	
 	  if(doDisplay) {
 	   // Print true atoms
