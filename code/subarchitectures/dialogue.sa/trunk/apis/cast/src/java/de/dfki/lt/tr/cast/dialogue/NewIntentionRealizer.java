@@ -139,7 +139,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 		return new AbstractProofInterpretationContext<RobotCommunicativeAction>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(List<RobotCommunicativeAction> listIpret) {
+			public void onSuccessfulInterpretation(List<RobotCommunicativeAction> listIpret, double asrConfidence) {
 				getLogger().debug("got " + listIpret.size() + " interpretations.");
 				for (int i = 0; i < listIpret.size(); i++) {
 					getLogger().debug("interpretation " + i + "/" + listIpret.size() + ": " + listIpret.get(i));
@@ -186,7 +186,7 @@ extends AbstractAbductiveComponent<RobotCommunicativeAction> {
 									IntentionToAct actint = getMemoryEntry(addr, IntentionToAct.class);
 									wmaToInt.put(addr, actint);
 									InterpretationRequest inprRequest = new InterpretationRequest(intentionToActToGoal(actint, addr));
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, condition));
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, 1.0, condition));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);

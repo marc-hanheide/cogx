@@ -12,16 +12,18 @@ public class PartialInterpretation<T> {
 
 	private final ProofSet proofs;
 	private final TerminationCondition<T> cond;
-	private final List<T> interpretations; 
+	private final List<T> interpretations;
+	private final double priorConfidence;
 
-	private PartialInterpretation(Logger logger, ProofPruner pruner, Proof initialProof, TerminationCondition<T> cond) {
+	private PartialInterpretation(Logger logger, ProofPruner pruner, Proof initialProof, double priorConfidence, TerminationCondition<T> cond) {
 		proofs = new ProofSet(logger, pruner, initialProof);
 		this.cond = cond;
 		interpretations = new LinkedList<T>();
+		this.priorConfidence = priorConfidence;
 	}
 
-	public static PartialInterpretation fromModalisedAtom(Logger logger, ModalisedAtom matom, ProofPruner pruner, TerminationCondition cond) {
-		return new PartialInterpretation(logger, pruner, new Proof(matom), cond);
+	public static PartialInterpretation fromModalisedAtom(Logger logger, ModalisedAtom matom, ProofPruner pruner, double priorConfidence, TerminationCondition cond) {
+		return new PartialInterpretation(logger, pruner, new Proof(matom), priorConfidence, cond);
 	}
 
 	public ProofSet getProofSet() {
@@ -35,6 +37,10 @@ public class PartialInterpretation<T> {
 	public boolean addInterpretation(T ipr) {
 		interpretations.add(ipr);
 		return cond.reached(this);
+	}
+
+	public double getPriorConfidence() {
+		return priorConfidence;
 	}
 
 }

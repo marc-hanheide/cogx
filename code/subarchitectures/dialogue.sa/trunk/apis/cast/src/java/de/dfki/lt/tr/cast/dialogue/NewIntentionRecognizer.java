@@ -44,6 +44,7 @@ import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequestExtractor;
 import de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult;
 import de.dfki.lt.tr.dialogue.ref.util.ReferenceUtils;
+import de.dfki.lt.tr.dialogue.slice.asr.UnclarifiedPossibleInterpretedIntentions;
 import de.dfki.lt.tr.dialogue.slice.interpret.InterpretationRequest;
 import de.dfki.lt.tr.dialogue.slice.lf.LFNominal;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
@@ -221,8 +222,9 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 		return new AbstractProofInterpretationContext<InterpretedUserIntention>(pruner, expander, solvers, interpreter) {
 
 			@Override
-			public void onSuccessfulInterpretation(List<InterpretedUserIntention> listIpret) {
+			public void onSuccessfulInterpretation(List<InterpretedUserIntention> listIpret, double asrConfidence) {
 				getLogger().debug("got " + listIpret.size() + " interpretations.");
+				getLogger().debug("NLP confidence = " + asrConfidence);
 //				for (int i = 0; i < listIpret.size(); i++) {
 //					getLogger().debug("interpretation " + (i + 1) + "/" + listIpret.size() + ": " + listIpret.get(i));
 //				}
@@ -233,9 +235,9 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 					getLogger().debug("normalizing confidences");
 					normalizeConfidences(pii);
 					getLogger().debug("after pruning and normalization: " + pii.intentions.size() + " alternative intentions");
-					getLogger().debug("adding the following to the WM:\n" + possibleInterpretedIntentionsToString(pii));
+					getLogger().debug("adding the following to the WM (as unclarified):\n" + possibleInterpretedIntentionsToString(pii));
 					try {
-						addToWorkingMemory(newDataID(), pii);
+						addToWorkingMemory(newDataID(), new UnclarifiedPossibleInterpretedIntentions(pii, (float) asrConfidence));
 					}
 					catch (SubarchitectureComponentException ex) {
 						logException(ex);
@@ -378,7 +380,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 									getLogger().info("converting the SelectedLogicalForm to a partial interpretation");
 									SelectedLogicalForm slf = getMemoryEntry(addr, SelectedLogicalForm.class);
 									InterpretationRequest inprRequest = new InterpretationRequest(selectedLFToGoal(slf));
-									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, condition));
+									addNewPartialInterpretation(addr, interpretationRequestToPartialInterpretation(getContext().getPruner(), addr, inprRequest, slf.lform.preferenceScore, condition));
 								}
 								catch (SubarchitectureComponentException ex) {
 									logException(ex);
