@@ -52,10 +52,18 @@ public class InterpretedIntentionMotiveGenerator extends
 	protected String getPolarQuestionGoalString(String _feature,
 			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddr) {
 		String predicate = CASTUtils.concatenate("polar-", _feature,
-                                                         "-question-answered");
-
-		String goal = VisualObjectMotiveGenerator.beliefFunctionGoal(predicate, _groundedBeliefAddr.id,_hypothesis);
-		return goal;
+				"-question-answered");
+		return VisualObjectMotiveGenerator.beliefFunctionGoal(predicate,
+				_groundedBeliefAddr.id, _hypothesis);
 	}
+
+	@Override
+	protected String getAscriptionGoalString(String feature, boolean learn,
+			String groundedBeliefID) {
+
+		return VisualObjectMotiveGenerator.beliefPredicateGoal(
+				getAscriptionPredicate(feature, learn), groundedBeliefID);
+	}
+
 
 }

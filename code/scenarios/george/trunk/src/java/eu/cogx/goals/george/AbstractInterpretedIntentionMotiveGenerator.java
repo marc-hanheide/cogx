@@ -10,11 +10,16 @@ import motivation.slice.TutorInitiativeQuestionMotive;
 import vision.execution.george.VisionActionInterface;
 import autogen.Planner.Goal;
 import cast.AlreadyExistsOnWMException;
+import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -46,6 +51,18 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		//
 		// }
 		// });
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				TutorInitiativeMotive.class, WorkingMemoryOperation.DELETE),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						println("SOMEONE DELETED MY INTENTION");
+						println(CASTUtils.toString(_wmc));
+					}
+				});
 	}
 
 	private WorkingMemoryAddress m_robotBeliefAddr;
@@ -108,7 +125,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	protected TutorInitiativeLearningMotive newAssertionIntention(
 			InterpretedIntention _intention) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, AlreadyExistsOnWMException {
+			UnknownSubarchitectureException, AlreadyExistsOnWMException,
+			ConsistencyException, PermissionException {
 
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("ascription")) {
@@ -255,7 +273,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	private TutorInitiativeLearningMotive tutorDrivenAscription(
 			InterpretedIntention _intention) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, AlreadyExistsOnWMException {
+			UnknownSubarchitectureException, AlreadyExistsOnWMException,
+			ConsistencyException, PermissionException {
 
 		// [gg.ii: tutorDrivenAscription]
 		// [gg.ii: stringContent]
@@ -272,12 +291,14 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		String feature = _intention.stringContent.get("asserted-feature");
 		String polarity = _intention.stringContent.get("asserted-polarity");
-		String postfix;
+		String value = _intention.stringContent.get("asserted-value");
+
+		boolean learn;
 
 		if (polarity.equals("pos")) {
-			postfix = VisionActionInterface.LEARNED_FEATURE_POSTFIX;
+			learn = true;
 		} else {
-			postfix = VisionActionInterface.UNLEARNED_FEATURE_POSTFIX;
+			learn = false;
 		}
 
 		println("tutorDrivenAscription");
@@ -287,16 +308,39 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				.newMotive(TutorInitiativeLearningMotive.class, null,
 						getCASTTime());
 
-		String goal = VisualObjectMotiveGenerator.beliefPredicateGoal(feature
-				+ postfix, groundedBeliefID(_intention));
+		String goalString = conjoinGoalStrings(new String[] {
+				getAdditionalGoals(),
+				getAscriptionGoalString(feature, learn,
+						groundedBeliefID(_intention)) });
 
-		motive.goal = new Goal(100f, goal, false);
+		// HACK used later for adding attribution to all possible referentss
+		motive.resultPredicate = getAscriptionPredicate(feature, learn);
+		motive.resultValue = value;
+		// HACK END
+
+		motive.goal = new Goal(100f, goalString, false);
 
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
 
+		// HACK or NOT-HACK? add attributed feature into ground belief
+		addAttribution(_intention.addressContent.get("about"), feature, value,
+				learn);
+
 		return motive;
 	}
+
+	protected String getAscriptionPredicate(String feature, boolean learn) {
+
+		String postfix = VisionActionInterface.LEARNED_FEATURE_POSTFIX;
+		if (!learn) {
+			postfix = VisionActionInterface.UNLEARNED_FEATURE_POSTFIX;
+		}
+		return feature + postfix;
+	}
+
+	protected abstract String getAscriptionGoalString(String feature,
+			boolean learn, String groundedBeliefID);
 
 	/**
 	 * Get the id of the belief that this intention is "about".
@@ -328,6 +372,23 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
 	}
 
+	public void addStringFeature(WorkingMemoryAddress _groundedBeliefAddr,
+			String _feature, String _value) throws DoesNotExistOnWMException,
+			ConsistencyException, PermissionException,
+			UnknownSubarchitectureException {
+
+		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+
+		pb.getContent().put(_feature, fd);
+		overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
+	}
+
 	/**
 	 * Mark the referred-to belief as a potential referent in question
 	 * answering.
@@ -344,8 +405,26 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
 		println("marking referent");
-		addBooleanFeature(_groundedBeliefAddr,
-				AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION, true);
+		addBooleanFeature(
+				_groundedBeliefAddr,
+				AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
+				true);
+		// planning won't work without this in place anyway, but it probably
+		// isn't required on faster machines
+		sleepComponent(1000);
+	}
+
+	protected void addAttribution(WorkingMemoryAddress _groundedBeliefAddr,
+			String _feature, String _value, boolean _polarity)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
+
+		String attributionPredication = "attributed-" + _feature;
+		println("adding attribution: (" + attributionPredication + " " + _value
+				+ ")");
+
+		addStringFeature(_groundedBeliefAddr, attributionPredication, _value);
+
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
 		sleepComponent(1000);
