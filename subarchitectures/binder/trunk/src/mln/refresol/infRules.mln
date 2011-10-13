@@ -3,7 +3,7 @@
 // resolution should be unique
 //!resolution(b) v !resolution(b') v (b = b') v !belief(b) v !belief (b').
 color(b, c) ^ color(b, c') => (c = c').
-
+shape(b, s) ^ shape(b, s') => (s = s').
 // if there exist a belief there must be a resolution (not really necessary)
 //(exist p belief(p) ) => (exist q resolution(q)).
 0.2 belief(b) ^ !belief(b') => resolution(b)
