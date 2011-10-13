@@ -68,6 +68,8 @@ void VL_setClfStartConfig(const std::string& absConfigPath)
    ClfStartConfig = absConfigPath;
 }
 
+static int count = 0;
+
 void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
       vector<int> &labelConcepts, vector<double> &probs, vector<double> &gains)
 {
@@ -77,17 +79,32 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
    gains.clear();
 
    string attr;
-   attr = "red";
-   labels.push_back(attr);
-   labelConcepts.push_back(labelConceptMap[attr]);
-   probs.push_back(1.0);
-   gains.push_back(0.2);
+   if(count %2 == 0) {
+       attr = "red";
+       labels.push_back(attr);
+       labelConcepts.push_back(labelConceptMap[attr]);
+       probs.push_back(0.45);
+       gains.push_back(0.2);
 
-   attr = "compact";
-   labels.push_back(attr);
-   labelConcepts.push_back(labelConceptMap[attr]);
-   probs.push_back(1.0);
-   gains.push_back(0.2);
+       attr = "compact";
+       labels.push_back(attr);
+       labelConcepts.push_back(labelConceptMap[attr]);
+       probs.push_back(0.8);
+       gains.push_back(0.2);
+   } else {
+       attr = "blue";
+       labels.push_back(attr);
+       labelConcepts.push_back(labelConceptMap[attr]);
+       probs.push_back(0.99);
+       gains.push_back(0.2);
+
+       attr = "compact";
+       labels.push_back(attr);
+       labelConcepts.push_back(labelConceptMap[attr]);
+       probs.push_back(0.55);
+       gains.push_back(0.2);
+   }
+   ++count;
 }
 
 void VL_update_model(ProtoObject &Object, std::vector<string>& labels, std::vector<double>& weights)
