@@ -609,9 +609,9 @@ class CASTTask(object):
 
         def edge_decorator(n1,n2, data):
             if data['type'] == 'order':
-                return {'style' : 'invis', 'label' : '', 'ignore' : False}
+                return {'style' : 'invis', 'label' : ''}
             if data['svar'].function.name in ('started',):
-                return {'style' : 'invis', 'label' : '', 'ignore' : False}
+                return {'style' : 'invis', 'label' : ''}
             cval = conflicting_svars.get((n1, data['svar']), None)
             if cval is not None and cval != data['val'] :
                 return {'color' : 'red'}
