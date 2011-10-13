@@ -30,7 +30,7 @@ SelectMatchesMRF::~SelectMatchesMRF()
 /**
  * Create delaunay neighbourhood graph
  */
-void SelectMatchesMRF::CreateGraph(vector<PKeypointMRF> &keys)
+void SelectMatchesMRF::CreateGraph(std::vector<PKeypointMRF> &keys)
 {
   // init
   CvPoint2D32f pt;
@@ -87,7 +87,7 @@ void SelectMatchesMRF::CreateGraph(vector<PKeypointMRF> &keys)
 /**
  * InitKeypoints
  */
-void SelectMatchesMRF::InitKeypoints(const vector<cv::KeyPoint> &queryKeys, vector<PKeypointMRF> &mrfKeys)
+void SelectMatchesMRF::InitKeypoints(const std::vector<cv::KeyPoint> &queryKeys, std::vector<PKeypointMRF> &mrfKeys)
 {
   mrfKeys.resize(queryKeys.size());
 
@@ -101,7 +101,7 @@ void SelectMatchesMRF::InitKeypoints(const vector<cv::KeyPoint> &queryKeys, vect
 /**
  * InitKeypoints
  */
-void SelectMatchesMRF::InitKeypoints(const vector<cv::Ptr<PKeypoint> > &queryKeys, vector<PKeypointMRF> &mrfKeys)
+void SelectMatchesMRF::InitKeypoints(const std::vector<cv::Ptr<PKeypoint> > &queryKeys, std::vector<PKeypointMRF> &mrfKeys)
 {
   mrfKeys.resize(queryKeys.size());
 
@@ -115,9 +115,9 @@ void SelectMatchesMRF::InitKeypoints(const vector<cv::Ptr<PKeypoint> > &queryKey
 /**
  * InitCosts
  */
-void SelectMatchesMRF::InitCosts(const vector<vector<cv::DMatch> > &matches, vector<PKeypointMRF> &mrfKeys)
+void SelectMatchesMRF::InitCosts(const std::vector<std::vector<cv::DMatch> > &matches, std::vector<PKeypointMRF> &mrfKeys)
 {
-  set<unsigned>::iterator it;
+  std::set<unsigned>::iterator it;
 
   CreateGraph(mrfKeys);
 
@@ -135,11 +135,11 @@ void SelectMatchesMRF::InitCosts(const vector<vector<cv::DMatch> > &matches, vec
 /**
  * Msg
  */
-void SelectMatchesMRF::Msg(PKeypointMRF &key, vector<PKeypointMRF> &keys, const vector<cv::Ptr<PKeypoint> > &trainKeys, const vector<vector<cv::DMatch> > &matches)
+void SelectMatchesMRF::Msg(PKeypointMRF &key, std::vector<PKeypointMRF> &keys, const std::vector<cv::Ptr<PKeypoint> > &trainKeys, const std::vector<std::vector<cv::DMatch> > &matches)
 {
   unsigned idx;
   double prob, cost, minCost, sqrMin, mot1[2], mot2[2];
-  set<unsigned>::iterator it;
+  std::set<unsigned>::iterator it;
 
   for (unsigned i=0; i<key.tmpCost.size(); i++)
   {
@@ -175,15 +175,15 @@ void SelectMatchesMRF::Msg(PKeypointMRF &key, vector<PKeypointMRF> &keys, const 
 /**
  * Operate
  */
-void SelectMatchesMRF::Operate(const vector<cv::Ptr<PKeypoint> > &queryKeys, 
-        const vector<cv::Ptr<PKeypoint> > &trainKeys, const vector<vector<cv::DMatch> > &matches, 
-        vector<int> &selected)
+void SelectMatchesMRF::Operate(const std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+        const std::vector<cv::Ptr<PKeypoint> > &trainKeys, const std::vector<std::vector<cv::DMatch> > &matches, 
+        std::vector<int> &selected)
 {
   selected.clear();
   if (queryKeys.size()!=matches.size())
     return;
 
-  vector<PKeypointMRF> mrfKeys;
+  std::vector<PKeypointMRF> mrfKeys;
   InitKeypoints(queryKeys, mrfKeys);
   InitCosts(matches, mrfKeys);
 
@@ -221,16 +221,16 @@ void SelectMatchesMRF::Operate(const vector<cv::Ptr<PKeypoint> > &queryKeys,
 /**
  * Operate
  */
-void SelectMatchesMRF::Operate(const vector<cv::KeyPoint> &queryKeys, 
-        const vector<cv::KeyPoint> &trainKeys, 
-        const vector<vector<cv::DMatch> > &matches, vector<int> &selected)
+void SelectMatchesMRF::Operate(const std::vector<cv::KeyPoint> &queryKeys, 
+        const std::vector<cv::KeyPoint> &trainKeys, 
+        const std::vector<std::vector<cv::DMatch> > &matches, std::vector<int> &selected)
 {
   selected.clear();
   if (queryKeys.size()!=matches.size())
     return;
 
-  vector<PKeypointMRF> mrfKeys;
-  vector<cv::Ptr<PKeypoint> > pTrainKeys(trainKeys.size());
+  std::vector<PKeypointMRF> mrfKeys;
+  std::vector<cv::Ptr<PKeypoint> > pTrainKeys(trainKeys.size());
 
   InitKeypoints(queryKeys, mrfKeys);
   InitCosts(matches, mrfKeys);

@@ -44,7 +44,7 @@ void View::copyTo(cv::Ptr<View> &dst)
   dst->vr = vr;
   dst->center = center;
 
-  vector< cv::Ptr<PKeypoint> > keys;
+  std::vector< cv::Ptr<PKeypoint> > keys;
 
   //copy keypoint
   dst->keys.resize(keys.size());
@@ -52,10 +52,9 @@ void View::copyTo(cv::Ptr<View> &dst)
   {
     keys[i]->id = i;
     dst->keys[i] = new PKeypoint(*keys[i]);
-    dst->keys[i]->view = dst;
   }
   //copy links
-  set<PKeypoint*>::iterator it;
+  std::set<PKeypoint*>::iterator it;
   for (unsigned i=0; i<keys.size(); i++)
   {
     for (it=keys[i]->links.begin(); it!=keys[i]->links.end(); it++)
@@ -70,7 +69,7 @@ void View::copyTo(cv::Ptr<View> &dst)
 /**
  * stream to file
  */
-void View::save(ofstream &os)
+void View::save(std::ofstream &os)
 {
   os<<id<<' '<<idx<<' '<<time<<' '<<pose<<' '<<vr.x<<' '<<vr.y<<' '<<vr.z<<' '<<center.x<<' '<<center.y<<'\n';
 
@@ -99,7 +98,7 @@ void View::save(ofstream &os)
 /**
  * stream to file
  */
-void View::load(ifstream &is)
+void View::load(std::ifstream &is)
 {
   unsigned tmp, tmp2;
 

@@ -219,7 +219,7 @@ bool arGTPatternDetector::InsertEllipseAt(int x, int y, vector<RTE::CzEllipse> &
   EPNode &p = GetNode(x,y,param);
   PHom::MapPoint(&p.pos.x, H, &pt.x);
   #ifdef DEBUG
-  cv::circle(dbg, pt, 2, CV_RGB(255,0,0), 2);
+  //cv::circle(dbg, pt, 2, CV_RGB(255,0,0), 2);
   #endif
 
   for (unsigned i=0; i<ells.size(); i++)

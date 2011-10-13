@@ -6,6 +6,7 @@
 #define P_SELECT_MATCHES_MRF_HH
 
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
 #include "v4r/PGeometry/PHomography.hh"
 #include "v4r/PMath/PVector.hh"
 #include "v4r/PMath/PMath.hh"
@@ -35,12 +36,12 @@ public:
 private:
   double INV_SQR_SIGMA2;
 
-  void InitKeypoints(const vector<cv::KeyPoint> &queryKeys, vector<PKeypointMRF> &mrfKeys);
-  void InitKeypoints(const vector<cv::Ptr<PKeypoint> > &queryKeys, vector<PKeypointMRF> &mrfKeys);
-  void InitCosts(const vector<vector<cv::DMatch> > &matches, vector<PKeypointMRF> &mrfKeys);
-  void CreateGraph(vector<PKeypointMRF> &keys);
-  void Msg(PKeypointMRF &key, vector<PKeypointMRF> &keys, 
-        const vector<cv::Ptr<PKeypoint> > &trainKeys, const vector<vector<cv::DMatch> > &matches);
+  void InitKeypoints(const std::vector<cv::KeyPoint> &queryKeys, std::vector<PKeypointMRF> &mrfKeys);
+  void InitKeypoints(const std::vector<cv::Ptr<PKeypoint> > &queryKeys, std::vector<PKeypointMRF> &mrfKeys);
+  void InitCosts(const std::vector<std::vector<cv::DMatch> > &matches, std::vector<PKeypointMRF> &mrfKeys);
+  void CreateGraph(std::vector<PKeypointMRF> &keys);
+  void Msg(PKeypointMRF &key, std::vector<PKeypointMRF> &keys, 
+        const std::vector<cv::Ptr<PKeypoint> > &trainKeys, const std::vector<std::vector<cv::DMatch> > &matches);
 
 
 
@@ -50,11 +51,11 @@ public:
   cv::Mat dbg;
   SelectMatchesMRF(Parameter p=Parameter());
   ~SelectMatchesMRF();
-  void Operate(const vector<cv::Ptr<PKeypoint> > &queryKeys, 
-        const vector<cv::Ptr<PKeypoint> > &trainKeys, const vector<vector<cv::DMatch> > &matches, 
-        vector<int> &selected);
-  void Operate(const vector<cv::KeyPoint> &queryKeys, const vector<cv::KeyPoint> &trainKeys, 
-        const vector<vector<cv::DMatch> > &matches, vector<int> &selected);
+  void Operate(const std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+        const std::vector<cv::Ptr<PKeypoint> > &trainKeys, const std::vector<std::vector<cv::DMatch> > &matches, 
+        std::vector<int> &selected);
+  void Operate(const std::vector<cv::KeyPoint> &queryKeys, const std::vector<cv::KeyPoint> &trainKeys, 
+        const std::vector<std::vector<cv::DMatch> > &matches, std::vector<int> &selected);
 };
 
 

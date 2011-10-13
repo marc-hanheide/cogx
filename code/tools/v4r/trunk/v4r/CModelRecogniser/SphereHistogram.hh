@@ -10,7 +10,7 @@
 #include <opencv2/core/core.hpp>
 #include <iostream>
 #include "v4r/PGeometry/SPlane3D.hh"
-#include "ConfValues.hh"
+#include "ProbModel.hh"
 
 namespace P
 {
@@ -48,7 +48,7 @@ public:
   void Release();
   void Init(unsigned subdevisions);
   void Insert(cv::Point3d n, double weight, unsigned id);
-  void InsertMax(unsigned idx, cv::Point3d vr, ConfValues &pred);
+  void InsertMax(unsigned idx, cv::Point3d vr, ProbModel &pred);
   double GetMax();
   void Normalise(double norm);
   void Normalise();

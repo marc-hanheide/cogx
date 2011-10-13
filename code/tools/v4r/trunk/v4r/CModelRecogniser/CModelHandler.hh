@@ -15,7 +15,7 @@
 #include <v4r/PGeometry/Pose.hh>
 #include "PKeypoint.hh"
 #include "CModel.hh"
-#include "ConfValues.hh"
+#include "ProbModel.hh"
 #include "SphereHistogram.hh"
 
 

@@ -11,7 +11,7 @@
 #define MS_LAMBDA 200 //40 //50 //100       // threshold  (flat part of the kernel)
 #define MS_SIGMA 30 //40 //30 //10 //10 //20 //50         // sigma (gaussian part of the kernel)
 #define MS_THR_PRUNING 5 //1 //5 //20   // threshold for early pruning of clusters
-#define MS_INIT_PCENT 1.    // [0..1] defines initialisation points
+#define MS_INIT_PCENT .2    // [0..1] defines initialisation points
 
 
 

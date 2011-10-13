@@ -408,7 +408,7 @@ void ItMoSPlanes::CalcLSHomography(vector< cv::Ptr<Plane> > &planes, int method,
       }
     }
 
-    plane.H = findHomography(cv::Mat(pts1), cv::Mat(pts2), mask, method, param.inlDist);
+    plane.H = cv::findHomography(cv::Mat(pts1), cv::Mat(pts2), mask, method, param.inlDist);
 
     if (filter)
     {
@@ -633,7 +633,11 @@ void ItMoSPlanes::CopyDescriptors(const cv::Mat_<float> &descs, vector< cv::Ptr<
 
     for (unsigned j=0; j<plane.keys.size(); j++)
     {
-      plane.descriptors.row(j) = descs.row(plane.keys[j]->id);
+      for (unsigned k=0; k<descs.cols; k++)
+        plane.descriptors(j,k) = descs(plane.keys[j]->id,k);
+
+      //plane.descriptors(j) = descs(plane.keys[j]->id)+0;
+      //descs.row(plane.keys[j]->id).copyTo( plane.descriptors.row(j) );
     }
   }
 }
@@ -837,7 +841,23 @@ void ItMoSPlanes::SetLastKeypoints(vector<cv::Ptr<P::PKeypoint> > &svKeys, vecto
 
     for (unsigned j=0; j<plane.keys.size(); j++)
       plane.lastKeys[j] = svKeys[plane.keys[j]->bw->id];
+
+    MeanKeys(plane.keys, plane.center);
   }
+}
+
+/**
+ * MeanKeys
+ */
+void ItMoSPlanes::MeanKeys(vector< cv::Ptr<P::PKeypoint> > &keys, cv::Point2d &ptMean)
+{
+  ptMean = cv::Point2d(0.,0.);
+  for (unsigned i=0; i<keys.size(); i++)
+  {
+    ptMean += keys[i]->pt;
+  }
+  ptMean.x /= (double)keys.size();
+  ptMean.y /= (double)keys.size();
 }
 
 
@@ -887,8 +907,8 @@ bool ItMoSPlanes::Operate(const vector<cv::Ptr<P::PKeypoint> > &ks, const cv::Ma
   GetSelectedQueryKeys(keys, matches, selectedMatches, selectedKeys);
 
   #ifdef DEBUG
-  cout<<"selectedKeys.size()="<<selectedKeys.size()<<endl;
-  /*if (!dbg.empty())
+  /*cout<<"selectedKeys.size()="<<selectedKeys.size()<<endl;
+  if (!dbg.empty())
   {
     P::KeypointDetector::Draw(dbg, selectedKeys, CV_RGB(0,0,255), 2);
     for (unsigned i=0; i<selectedKeys.size();i++)
@@ -937,6 +957,16 @@ bool ItMoSPlanes::Operate(const vector<cv::Ptr<P::PKeypoint> > &ks, const cv::Ma
       }
 
       //CalcLSHomography(tentPlanes, CV_LMEDS, false);
+
+      /*ConstrainedMatching(tentPlanes, keys, svKeys, matches, selectedMatches, 1., true);
+      SetTrackingLinks(keys, svKeys, matches, selectedMatches);
+      GetSelectedQueryKeys(keys, matches, selectedMatches, selectedKeys);
+      CreateGraph(selectedKeys);
+      AccumulateKeys(keys, tentPlanes);
+      SelectPlanes(tentPlanes, tentPlanes);
+      for (unsigned i=0; i<selectedKeys.size();i++)
+        cv::line(dbg, selectedKeys[i]->bw->pt, selectedKeys[i]->pt, CV_RGB(255,255,255));*/
+
       ReleaseInteractions(tentPlanes);
       CopyDescriptors(descs, tentPlanes);
 
@@ -976,7 +1006,7 @@ bool ItMoSPlanes::Operate(const vector<cv::Ptr<P::PKeypoint> > &ks, const cv::Ma
  * Draw
  */
 static map<unsigned, CvScalar> cols;
-void ItMoSPlanes::Draw(cv::Mat &image, vector< cv::Ptr<Plane> > &planes)
+void ItMoSPlanes::Draw(cv::Mat &image, vector< cv::Ptr<Plane> > &planes, unsigned detail)
 {
   cv::Scalar col;
   /*cols[0] = CV_RGB(255,0,0);
@@ -991,6 +1021,8 @@ void ItMoSPlanes::Draw(cv::Mat &image, vector< cv::Ptr<Plane> > &planes)
   cols[9] = CV_RGB(128,128,0);
   cols[9] = CV_RGB(0,128,128);
   cols[9] = CV_RGB(128,0,128);*/
+
+  string tag("id=");
 
   for (unsigned i=0; i<planes.size(); i++)
   {
@@ -1009,9 +1041,17 @@ void ItMoSPlanes::Draw(cv::Mat &image, vector< cv::Ptr<Plane> > &planes)
     for (unsigned j=0; j<plane.keys.size(); j++)
     {
       cv::circle(image, plane.keys[j]->pt, 2, col, 2);
-      if (plane.lastKeys.size()==plane.keys.size())
+      if (detail>1 && plane.lastKeys.size()==plane.keys.size())
         cv::line(image, plane.lastKeys[j]->pt, plane.keys[j]->pt, CV_RGB(255,255,255));
     }
+
+    if (detail>0)
+    {
+      cv::putText(image, tag+toString(plane.id), plane.center, cv::FONT_HERSHEY_SIMPLEX, 0.6, CV_RGB(255,255,255), 2);
+      cv::putText(image, tag+toString(plane.id), plane.center, cv::FONT_HERSHEY_SIMPLEX, 0.6, col, 1);
+    }
+
+    
     //cv::imshow("Image",image);
     //cv::waitKey(0);
   }

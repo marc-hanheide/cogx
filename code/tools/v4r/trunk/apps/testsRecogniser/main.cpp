@@ -82,8 +82,8 @@ public:
     //param2 = P::arDetectGTPose::Parameter(9, 19.4,19.4, 4 ,0, -6, 2, -4, 4, 5.);
     param1 = P::arDetectGTPose::Parameter(9, 28.92, 28.8, -5, 0, -1, 11, -4, 4, 5.);
     param2 = P::arDetectGTPose::Parameter(9, 28.92, 28.8, 4 ,0, -10, 2, -4, 4, 5.);
-    detector = P::arDetectGTPose("/home/mz/work/v4r/trunk/v4r/EllCalib/pattern/1.pat",
-                                 "/home/mz/work/v4r/trunk/v4r/EllCalib/pattern/2.pat", param1,param2);
+    detector = P::arDetectGTPose("/home/hannes/XWorks/v4r/v4r/EllCalib/pattern/1.pat",
+                                 "/home/hannes/XWorks/v4r/v4r/EllCalib/pattern/2.pat", param1,param2);
   }
   ~OpenNIProcessor ()
   {
@@ -122,7 +122,7 @@ void OpenNIProcessor::TryLoadObject(const string &file)
 void OpenNIProcessor::SetMagicKinectCamera(P::RecogniserThread &recogniser, cv::Mat &cam, cv::Mat &distCoeffs)
 {
   cam = cv::Mat::zeros(3,3,CV_64F);
-  distCoeffs = cv::Mat::zeros(4,1,CV_64F);
+  //distCoeffs = cv::Mat::zeros(5,1,CV_64F);
 
   cam.at<double>(0,0) = cam.at<double>(1,1) = 525;
   cam.at<double>(0,2) = 320;
@@ -171,7 +171,7 @@ void OpenNIProcessor::DrawLearning(P::CModel &model, cv::Ptr<TomGine::tgTomGineT
     P::View &view = *model.views[i];
     for (unsigned j=0; j<view.keys.size(); j++)
     {
-      double *d = &view.keys[j]->pos.x;
+      double *d = &view.keys[j]->pos->pt.x;
       win->AddPoint3D(d[0],d[1],d[2], 255,255,255, 2);
     }
   }
@@ -186,7 +186,7 @@ void OpenNIProcessor::CallbackCloud (const pcl::PointCloud<pcl::PointXYZRGB>::Co
 {
   //cout<<"Have a new image: "<<_cloud->width<<"x"<<_cloud->height<<endl;
   pthread_mutex_lock(&mutData);
-  pclA::ConvertPCLCloud2Image(*_cloud, shImage);
+  pclA::ConvertPCLCloud2Image(_cloud, shImage);
   pclA::CopyPointCloud(*_cloud, *shCloud);
   pthread_mutex_unlock(&mutData);
   usleep(10000);
@@ -200,7 +200,7 @@ void OpenNIProcessor::run ()
 
   interface = new pcl::OpenNIGrabber();
 
-  boost::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr&)> f =
+  boost::function<void (const pcl::PointCloud<pcl::PointXYZRGB>::Ptr&)> f =
     boost::bind (&OpenNIProcessor::CallbackCloud, this, _1);
 
   interface->registerCallback (f);

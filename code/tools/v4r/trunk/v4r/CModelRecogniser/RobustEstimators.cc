@@ -37,9 +37,9 @@ RobustEstimators::~RobustEstimators()
 /**
  * Get matches
  */
-bool RobustEstimators::GetPoints(vector< cv::Ptr<PKeypoint> > &keys, 
-       vector< cv::Ptr<PKeypoint> > &model, vector<cv::DMatch> &matches, 
-       vector<PKeypoint*> &ptsImage, vector<PKeypoint*> &ptsModel)
+bool RobustEstimators::GetPoints(std::vector< cv::Ptr<PKeypoint> > &keys, 
+       std::vector< cv::Ptr<PKeypoint> > &model, std::vector<cv::DMatch> &matches, 
+       std::vector<PKeypoint*> &ptsImage, std::vector<PKeypoint*> &ptsModel)
 {
   ptsImage.clear();
   ptsModel.clear();
@@ -64,7 +64,7 @@ bool RobustEstimators::GetPoints(vector< cv::Ptr<PKeypoint> > &keys,
 /**
  * GetRandIdx
  */
-void RobustEstimators::GetRandIdx(unsigned size, unsigned num, vector<unsigned> &idx)
+void RobustEstimators::GetRandIdx(unsigned size, unsigned num, std::vector<unsigned> &idx)
 {
   unsigned temp;
   idx.clear();
@@ -80,7 +80,7 @@ void RobustEstimators::GetRandIdx(unsigned size, unsigned num, vector<unsigned> 
 /**
  * Count inlier
  */
-void RobustEstimators::CountInlier(vector<PKeypoint*> &ptsImage, vector<PKeypoint*> &ptsModel, Pose &pose, double &cnt)
+void RobustEstimators::CountInlier(std::vector<PKeypoint*> &ptsImage, std::vector<PKeypoint*> &ptsModel, Pose &pose, double &cnt)
 {
   cnt=0;
   double dist, sqrInlDist = PMath::Sqr(param.inlDistRansac);
@@ -88,7 +88,7 @@ void RobustEstimators::CountInlier(vector<PKeypoint*> &ptsImage, vector<PKeypoin
   
   for (unsigned i=0; i<ptsImage.size(); i++)
   {
-    PMat::MulAdd3( pose.R.ptr<double>(), &ptsModel[i]->pos.x, pose.t.ptr<double>(), pos);
+    PMat::MulAdd3( pose.R.ptr<double>(), &ptsModel[i]->pos->pt.x, pose.t.ptr<double>(), pos);
     ProjectPoint2Image(pos, param.intrinsic.ptr<double>(), pt);
 
     dist = PVec::DistanceSqr2(pt,&ptsImage[i]->pt.x);
@@ -110,7 +110,7 @@ void RobustEstimators::CountInlier(vector<PKeypoint*> &ptsImage, vector<PKeypoin
 /**
  * Count inlier
  */
-void RobustEstimators::CountInlier3D(vector<PKeypoint*> &ptsImage, vector<PKeypoint*> &ptsModel, Pose &pose, double &cnt)
+void RobustEstimators::CountInlier3D(std::vector<PKeypoint*> &ptsImage, std::vector<PKeypoint*> &ptsModel, Pose &pose, double &cnt)
 {
   cnt=0;
   double cnt3D=0;
@@ -120,7 +120,7 @@ void RobustEstimators::CountInlier3D(vector<PKeypoint*> &ptsImage, vector<PKeypo
   
   for (unsigned i=0; i<ptsImage.size(); i++)
   {
-    PMat::MulAdd3( pose.R.ptr<double>(), &ptsModel[i]->pos.x, pose.t.ptr<double>(), pos);
+    PMat::MulAdd3( pose.R.ptr<double>(), &ptsModel[i]->pos->pt.x, pose.t.ptr<double>(), pos);
     ProjectPoint2Image(pos, param.intrinsic.ptr<double>(), pt);
 
     dist = PVec::DistanceSqr2(pt,&ptsImage[i]->pt.x);
@@ -129,7 +129,7 @@ void RobustEstimators::CountInlier3D(vector<PKeypoint*> &ptsImage, vector<PKeypo
       if (pos[2]>0)
       {
         cnt += param.inlDistRansac-sqrt(dist);
-        if (ptsImage[i]->Have3D() && PVec::DistanceSqr3(pos, &ptsImage[i]->pos.x) < sqrInlThr3D)
+        if (ptsImage[i]->Have3D() && PVec::DistanceSqr3(pos, &ptsImage[i]->pos->pt.x) < sqrInlThr3D)
           cnt3D+=param.inlDistRansac;
       }
       else
@@ -147,13 +147,13 @@ void RobustEstimators::CountInlier3D(vector<PKeypoint*> &ptsImage, vector<PKeypo
 /**
  * RANSAC pose
  */
-void RobustEstimators::FitPoseRANSAC(vector<PKeypoint*> &ptsImage, vector<PKeypoint*> &ptsModel, Pose &pose, double &conf, bool check3D)
+void RobustEstimators::FitPoseRANSAC(std::vector<PKeypoint*> &ptsImage, std::vector<PKeypoint*> &ptsModel, Pose &pose, double &conf, bool check3D)
 {
   int k=0;
   int numPoints = ptsModel.size();
   double eps = ((double)NUM_RANSAC_POINTS)/(double)numPoints;
   double inl, inls = 0;
-  vector<unsigned> idx;
+  std::vector<unsigned> idx;
   double pts3D[NUM_RANSAC_POINTS*3];
   double pts2D[NUM_RANSAC_POINTS*2];
   double rod[3], t[3];
@@ -169,7 +169,7 @@ void RobustEstimators::FitPoseRANSAC(vector<PKeypoint*> &ptsImage, vector<PKeypo
 
   srand(1);
   double *d;
-  vector<unsigned> ids;
+  std::vector<unsigned> ids;
   bool ok;
 
   #ifdef DEBUG
@@ -189,7 +189,7 @@ void RobustEstimators::FitPoseRANSAC(vector<PKeypoint*> &ptsImage, vector<PKeypo
       if (!Contains(ids,ptsModel[idx[i]]->id))
       {
         ids.push_back(ptsModel[idx[i]]->id);
-        d =  &ptsModel[idx[i]]->pos.x;
+        d =  &ptsModel[idx[i]]->pos->pt.x;
 
         pts3D[3*i+0] = d[0];
         pts3D[3*i+1] = d[1];
@@ -246,14 +246,14 @@ void RobustEstimators::FitPoseRANSAC(vector<PKeypoint*> &ptsImage, vector<PKeypo
     int col = 170 - 170*acInl[i]/(ptsModel.size()*.7);
     if (!dbgWin.empty()) dbgWin->AddPoint3D(pt3[0],pt3[1],pt3[2], col,col,col,20-(int)((double)col)/170.*20);
   }*/
-  cout<<"Iter="<<k<<", inl="<<inls<<"/"<<numPoints<<endl;
+  std::cout<<"Iter="<<k<<", inl="<<inls<<"/"<<numPoints<<std::endl;
   #endif
 }
 
 /**
  * CountInlier
  */
-void RobustEstimators::CountInlier(vector<PKeypoint*> &moKeys, vector<PKeypoint*> &imKeys, double H[9], double &inl)
+void RobustEstimators::CountInlier(std::vector<PKeypoint*> &moKeys, std::vector<PKeypoint*> &imKeys, double H[9], double &inl)
 {
   inl=0;
   cv::Point2d pt;
@@ -271,8 +271,8 @@ void RobustEstimators::CountInlier(vector<PKeypoint*> &moKeys, vector<PKeypoint*
 /**
  * GetInlier
  */
-void RobustEstimators::GetInlier(vector<PKeypoint*> &moKeys, vector<PKeypoint*> &imKeys, double H[9],
-                               vector<unsigned> &idxInlier)
+void RobustEstimators::GetInlier(std::vector<PKeypoint*> &moKeys, std::vector<PKeypoint*> &imKeys, double H[9],
+                               std::vector<unsigned> &idxInlier)
 {
   cv::Point2d pt;
   idxInlier.clear();
@@ -293,7 +293,7 @@ void RobustEstimators::GetInlier(vector<PKeypoint*> &moKeys, vector<PKeypoint*> 
 /**
  * Local optimized ransac for pose estimation
  */
-void RobustEstimators::FitPoseLoRANSAC(vector<PKeypoint*> &ptsImage, vector<PKeypoint*> &ptsModel, Pose &pose, double &sig)
+void RobustEstimators::FitPoseLoRANSAC(std::vector<PKeypoint*> &ptsImage, std::vector<PKeypoint*> &ptsModel, Pose &pose, double &sig)
 {
   // int ransac
   sig=3;
@@ -302,7 +302,7 @@ void RobustEstimators::FitPoseLoRANSAC(vector<PKeypoint*> &ptsImage, vector<PKey
   double sigAff, svSigAff=0., sigPose, svSigPose=0;
   double eps = sig/(double)num;
   double *d, rod[3], H[9];
-  vector<unsigned> idxKeys, idxInlier, idsModel;
+  std::vector<unsigned> idxKeys, idxInlier, idsModel;
   Pose tmpPose(true);
   CvMat matRod = cvMat(3,1,CV_64F, rod);
   CvMat matt = tmpPose.t;
@@ -345,7 +345,7 @@ void RobustEstimators::FitPoseLoRANSAC(vector<PKeypoint*> &ptsImage, vector<PKey
             if (!Contains(idsModel,ptsModel[idxInlier[idxKeys[j]]]->id))
             {
               idsModel.push_back(ptsModel[idxInlier[idxKeys[j]]]->id);
-              d =  &ptsModel[idxInlier[idxKeys[j]]]->pos.x;
+              d =  &ptsModel[idxInlier[idxKeys[j]]]->pos->pt.x;
 
               pts3D[3*j+0] = d[0];
               pts3D[3*j+1] = d[1];
@@ -383,7 +383,7 @@ void RobustEstimators::FitPoseLoRANSAC(vector<PKeypoint*> &ptsImage, vector<PKey
   }
 
   #ifdef DEBUG
-  cout<<"Number of lo-ransac trials: "<<k<<", inl="<<sig<<"/"<<num<<endl;
+  std::cout<<"Number of lo-ransac trials: "<<k<<", inl="<<sig<<"/"<<num<<std::endl;
   #endif
 }
 
@@ -394,13 +394,13 @@ void RobustEstimators::FitPoseLoRANSAC(vector<PKeypoint*> &ptsImage, vector<PKey
 /**
  * Robust estimation of the pose using RANSAC
  */
-double RobustEstimators::RansacPose(vector< cv::Ptr<PKeypoint> > &keys, vector< cv::Ptr<PKeypoint> > &model, vector<cv::DMatch> &matches, Pose &pose, bool check3D)
+double RobustEstimators::RansacPose(std::vector< cv::Ptr<PKeypoint> > &keys, std::vector< cv::Ptr<PKeypoint> > &model, std::vector<cv::DMatch> &matches, Pose &pose, bool check3D)
 {
-  if (param.intrinsic.empty()) throw runtime_error("RobustEstimators::RansacPose Need camera parameter!");
+  if (param.intrinsic.empty()) throw std::runtime_error("RobustEstimators::RansacPose Need camera parameter!");
 
   double conf=0.;
-  vector<PKeypoint*> ptsModel;
-  vector<PKeypoint*> ptsImage;
+  std::vector<PKeypoint*> ptsModel;
+  std::vector<PKeypoint*> ptsImage;
 
   if (GetPoints(keys,model,matches,ptsImage,ptsModel))
   {
@@ -420,14 +420,14 @@ double RobustEstimators::RansacPose(vector< cv::Ptr<PKeypoint> > &keys, vector< 
  * Local optimized ransac for pose estimation
  * a significance value is returned (number of inlier weighted with error of the inlier)
  */
-double RobustEstimators::LoRansacPose( vector< cv::Ptr<PKeypoint> > &keys, 
-         vector< cv::Ptr<PKeypoint> > &model, vector<cv::DMatch> &matches, Pose &pose)
+double RobustEstimators::LoRansacPose( std::vector< cv::Ptr<PKeypoint> > &keys, 
+         std::vector< cv::Ptr<PKeypoint> > &model, std::vector<cv::DMatch> &matches, Pose &pose)
 {
-  if (param.intrinsic.empty()) throw runtime_error("RobustEstimators::RansacPose need camera parameter!");
+  if (param.intrinsic.empty()) throw std::runtime_error("RobustEstimators::RansacPose need camera parameter!");
 
   double sig=0.;
-  vector<PKeypoint*> ptsModel;
-  vector<PKeypoint*> ptsImage;
+  std::vector<PKeypoint*> ptsModel;
+  std::vector<PKeypoint*> ptsImage;
 
   if (GetPoints(keys,model,matches,ptsImage,ptsModel))
   {
@@ -457,7 +457,7 @@ void RobustEstimators::SetCameraParameter(const cv::Mat &_intrinsic, const cv::M
 /**
  * Draw inlier
  */
-void RobustEstimators::DrawInlier(cv::Mat &img, vector< cv::Ptr<PKeypoint> > &keys, vector< cv::Ptr<PKeypoint> > &model, vector<cv::DMatch> &matches, Pose &pose)
+void RobustEstimators::DrawInlier(cv::Mat &img, std::vector< cv::Ptr<PKeypoint> > &keys, std::vector< cv::Ptr<PKeypoint> > &model, std::vector<cv::DMatch> &matches, Pose &pose)
 {
   if (pose.empty())
     return;
@@ -469,7 +469,7 @@ void RobustEstimators::DrawInlier(cv::Mat &img, vector< cv::Ptr<PKeypoint> > &ke
   {
     if (model[matches[i].trainIdx]->Have3D())
     {
-      double *pt3 = &model[matches[i].trainIdx]->pos.x; 
+      double *pt3 = &model[matches[i].trainIdx]->pos->pt.x; 
       PMat::MulAdd3( pose.R.ptr<double>(), pt3, pose.t.ptr<double>(), pos);
       ProjectPoint2Image(pos, param.intrinsic.ptr<double>(), pt);
 

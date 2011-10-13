@@ -58,7 +58,7 @@ public:
               double dwLeaf = 0.02,
               double dwLeafObj = 0.01,
               int nb = 10,
-              double thrSac = 0.05,
+              double thrSac = 0.01,
               double normalDistWeight = 0.1,
               double minObjH = 0.005,
               double maxObjH = 0.7,
@@ -82,6 +82,7 @@ public:
         
     unsigned IsInSOI(const pcl::PointXYZRGB &p);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr GetSoi() {return soi;}
+    unsigned GetLabel() {return label;}
   };
   
 protected:
@@ -93,7 +94,7 @@ protected:
 private:
   Parameter param;
 
-  bool valid_computation;                                           ///< Set to true, after first calculation!
+  bool valid_computation;                                           ///< true, after first calculation!
 
   pcl::PointIndices popouts;                                        ///< Popout indices (unclustered)
 
@@ -107,7 +108,7 @@ private:
   pcl::KdTree<pcl::PointXYZRGB>::Ptr normalsTree, clustersTree;
   pcl::VoxelGrid<pcl::PointXYZRGB> grid, gridObjects;
   pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> n3d;
-  pcl::SACSegmentationFromNormals<pcl::PointXYZRGB, pcl::Normal> seg;
+  pcl::SACSegmentation/*FromNormals*/<pcl::PointXYZRGB/*, pcl::Normal*/> seg;
   pcl::ProjectInliers<pcl::PointXYZRGB> proj;
   pcl::ConvexHull<pcl::PointXYZRGB> hull;
   pcl::ExtractPolygonalPrismData<pcl::PointXYZRGB> prism;
@@ -120,26 +121,22 @@ public:
   PlanePopout(Parameter _param = Parameter());
   ~PlanePopout();
 
-  bool CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
+  void CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
 
   bool CalculateROIMask();
 
   ushort IsInROI(int x, int y);
 
-  void GetTableHulls(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_tablehulls) {_tablehulls = tableHull;}
-  void GetPlanePoints(pcl::PointIndices::Ptr &_planepointsindices) {_planepointsindices = tableInliers;}
+  void GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois,
+               std::vector<unsigned> &labels);
 
-  void GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois);
-  
   unsigned IsInSOI(float x, float y, float z);
   unsigned IsInSOI(const cv::Point3f &p) {return IsInSOI(p.x, p.y, p.z);}
 
   void GetDominantPlaneCoefficients(pcl::ModelCoefficients::Ptr &dpc) {dpc = tableCoefficients;}
 
-  bool DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
+  void DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
                     pcl::PointIndices &popout);
-  
-  bool CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, pcl::ModelCoefficients::Ptr dpc);
 
   void FilterZ(const cv::Mat_<cv::Vec4f> &cloud,                                                                /// TODO Move to pcl functions!!!
                pcl::PointCloud<pcl::PointXYZRGB> &filtered);
@@ -148,24 +145,25 @@ public:
   void FilterZ(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
                pcl::PointCloud<pcl::PointXYZRGB> &filtered);
                
-  void ConvertPopout2Mat(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,                                        /// TODO Auch abgeschlossene Funktion!!!
+  void ConvertPopout2Mat(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,                                        /// TODO Move to pcl functions!!!
                          const pcl::PointIndices &popout,
                          cv::Mat_<cv::Vec4f> &matCloud);
                          
-  void LabelClusters(const cv::Mat_<cv::Vec4f> &cloud, 
+  void LabelClusters(const cv::Mat_<cv::Vec4f> &cloud, 								/// TODO private?
                      cv::Mat_<ushort> &labels,
-                     vector<unsigned> &sizeClusters);
-  void CreateMaskAll(const cv::Mat_<ushort> &labels,
-                     const vector<unsigned> &sizeClusters,
+                     std::vector<unsigned> &sizeClusters);
+  void CreateMaskAll(const cv::Mat_<ushort> &labels,								/// TODO private?
+                     const std::vector<unsigned> &sizeClusters,
                      cv::Mat_<uchar> &mask);
-  void CreateMaskLargest(const cv::Mat_<ushort> &labels,
-                         const vector<unsigned> &sizeClusters,
+  void CreateMaskLargest(const cv::Mat_<ushort> &labels,							/// TODO private?
+                         const std::vector<unsigned> &sizeClusters,
                          cv::Mat_<uchar> &mask);
-  void CreateMaskId(const cv::Mat_<ushort> &labels,
+  void CreateMaskId(const cv::Mat_<ushort> &labels,								/// TODO private?
                     const ushort id,
                     cv::Mat_<uchar> &mask);
                     
 private:
+
   
 };
 

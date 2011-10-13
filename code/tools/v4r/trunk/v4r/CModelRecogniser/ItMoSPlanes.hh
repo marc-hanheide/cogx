@@ -7,12 +7,15 @@
 
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 #include "v4r/PGeometry/PHomography.hh"
 #include "v4r/PMath/PVector.hh"
 #include "v4r/PMath/PMath.hh"
+#include "v4r/PCore/toString.hpp"
 #include "PKeypoint.hh"
 #include "Plane.hh"
 #include "KeypointDetector.hh"
@@ -118,6 +121,8 @@ private:
         vector<cv::Ptr<P::PKeypoint> > &trainKeys, vector<vector<cv::DMatch> > &matches, 
         vector<int> &selectedMatches, double inlDist, bool markOutlier);
   void SetLastKeypoints(vector<cv::Ptr<P::PKeypoint> > &svKeys, vector< cv::Ptr<Plane> > &planes);
+  void MeanKeys(vector< cv::Ptr<P::PKeypoint> > &keys, cv::Point2d &ptMean);
+
 
 
   inline bool Contains(const vector<int> &idx, int id);
@@ -136,7 +141,7 @@ public:
   bool Operate(const vector< cv::Ptr<P::PKeypoint> > &keys, const cv::Mat_<float> &descs, 
                vector< cv::Ptr<Plane> > &planes);
   //vector<cv::DMatch>& GetMatches(){ return matches; }
-  void Draw(cv::Mat &image, vector< cv::Ptr<Plane> > &planes);
+  void Draw(cv::Mat &image, vector< cv::Ptr<Plane> > &planes, unsigned detail=0);
 };
 
 

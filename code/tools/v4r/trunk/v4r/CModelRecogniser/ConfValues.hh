@@ -31,25 +31,25 @@ public:
   ConfValues(const cv::Mat &cam, const cv::Mat &disto, double _inlDist=1.);
   ~ConfValues();
 
-  double SupportingPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
-  double WeightedSupportingPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
-  double MatchedPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose);
-  double WeightedMatchedPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose);
+  double SupportingPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
+  double WeightedSupportingPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
+  double MatchedPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose);
+  double WeightedMatchedPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose);
   double WeightedMatchedPointsPerView(MatchPairs &mp, unsigned sizeView, Pose &pose);
 
 
-  double SupportingPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
-  double WeightedSupportingPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
-  double MatchedPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose);
-  double WeightedMatchedPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose);
+  double SupportingPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
+  double WeightedSupportingPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose);
+  double MatchedPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose);
+  double WeightedMatchedPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose);
   double WeightedMatchedPointsPerXX(MatchPairs &mp, Pose &pose);
 
 

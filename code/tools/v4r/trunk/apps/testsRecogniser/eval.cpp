@@ -23,6 +23,7 @@
 #include <v4r/CModelRecogniser/ObjectLocation.hh>
 #include <v4r/EllCalib/arDetectGTPose.hh>
 #include <v4r/PMath/PMath.hh>
+#include <v4r/PGeometry/Pose.hh>
 #include "TgModelProbSphere.hh"
 
 
@@ -37,8 +38,8 @@ using namespace std;
 #define PC_FILE_NAME "log/pointcloud_%04d.pcd"
 #define IM_FILE_NAME "log/image_%04d.jpg"
 
-#define USE_SURF_CC       // use cpu-surf and cpu-matcher or ...
-//#define USE_SIFT_GC     // use gpu-sift and cpu-matcher or ...
+//#define USE_SURF_CC       // use cpu-surf and cpu-matcher or ...
+#define USE_SIFT_GC     // use gpu-sift and cpu-matcher or ...
 //#define USE_SIFT_GG     // use gpu-sift and gpu-matcher    
 
 
@@ -47,7 +48,13 @@ void ComputeViewRay(P::Pose &pose, cv::Point3d &center, cv::Point3d &vr);
 bool GetImagePointFromCloud(cv::Point2f &ptImg, cv::Mat_<cv::Vec4f> &matCloud, cv::Point3f &pt);
 void DoStatistics(vector<double> &dists, double &mean, double &sigma);
 void DoMeanStatistics(vector<double> &means, vector<double> &sigmas);
-void TransformPointCloud(const vector<cv::Vec4f> &vecCloud, P::Pose &pose, cv::Mat_<cv::Vec4f> &cloud);
+
+void SelectPopout(const cv::Mat &cam, P::Pose &pose, const cv::Mat_<ushort> &labels, 
+      const std::vector<unsigned> &sizeClusters, cv::Point3d boxCenter, double boxSize, 
+      cv::Mat_<uchar> &mask);
+void DrawFillPoly(cv::Mat &img, vector<cv::Point> &vs);
+
+
 
 
 
@@ -107,8 +114,7 @@ public:
   pcl::PointIndices popouts;
 
   cv::Ptr<pcl::Grabber> interface;
-
-  pclA::PlanePopout planePopout;
+  cv::Ptr<pclA::PlanePopout> planePopout;
   cv::Ptr<P::RecogniserThread> recogniser;
   P::CModelHandler cmhandler;
   cv::Ptr<P::CModel> model;
@@ -134,15 +140,15 @@ public:
   {
     #ifdef USE_SURF_CC
     P::RecogniserCore::Parameter paramRecogniser = 
-      P::RecogniserCore::Parameter(640,480,5000,50,0.01,2.,10,true, 0.3);
+      P::RecogniserCore::Parameter(640,480, 5000,100,0.01,2.,5., false, .3, .15, .8);
     P::LearnerCore::Parameter paramLearner = 
-      P::LearnerCore::Parameter(640,480,.25,.4,1000,50,0.01,2,false,3,false,20.,false, 0.3);
+      P::LearnerCore::Parameter(640,480,1000,50,0.01,2, 5., .3, .15, 2., false, false, .01, .1);
     recogniser = new P::RecogniserThread(P::RecogniserThread::SURF_CC,paramRecogniser,paramLearner);
     #else
     P::RecogniserCore::Parameter paramRecogniser = 
-      P::RecogniserCore::Parameter(640,480,5000,50,0.01,2.,10,true, 0.4);
+      P::RecogniserCore::Parameter(640,480,5000,100,0.01,2.,5., false, .35, .15, .8);
     P::LearnerCore::Parameter paramLearner = 
-      P::LearnerCore::Parameter(640,480,.25,.4,1000,50,0.01,2,false,3,false,20.,false, 0.4);
+      P::LearnerCore::Parameter(640,480,1000,50,0.01,2, 5., .2, .1, 2., false, false, .01, .1);
     #ifdef USE_SIFT_GC
     recogniser = new P::RecogniserThread(P::RecogniserThread::SIFT_GC,paramRecogniser,paramLearner);
     #else //USE_SIFT_GG
@@ -155,12 +161,18 @@ public:
     cloudFiltered.reset (new pcl::PointCloud<pcl::PointXYZRGB>());
     tableCoefficients.reset (new pcl::ModelCoefficients());
     SetMagicKinectCamera(*recogniser, cam, distCoeffs);
-    //param1 = P::arDetectGTPose::Parameter(9, 19.4,19.4, -5, 0, -1, 7, -4, 4, 5.);
-    //param2 = P::arDetectGTPose::Parameter(9, 19.4,19.4, 4 ,0, -6, 2, -4, 4, 5.);
-    param1 = P::arDetectGTPose::Parameter(9, 28.92, 28.8, -5, 0, -1, 11, -4, 4, 5.);
-    param2 = P::arDetectGTPose::Parameter(9, 28.92, 28.8, 4 ,0, -10, 2, -4, 4, 5.);
+    //param1 = P::arDetectGTPose::Parameter(9, 28.92, 28.8, -5, 0, -1, 11, -4, 4, 5.);
+    //param2 = P::arDetectGTPose::Parameter(9, 28.92, 28.8, 4 ,0, -10, 2, -4, 4, 5.);
+    param1 = P::arDetectGTPose::Parameter(9, 28.75, 28.75, -5, 0, -1, 11, -4, 4, 5.); //kth
+    param2 = P::arDetectGTPose::Parameter(9, 28.75, 28.75, 4 ,0, -10, 2, -4, 4, 5.);
+
     detector = P::arDetectGTPose("../v4r/EllCalib/pattern/1.pat",
                                  "../v4r/EllCalib/pattern/2.pat", param1,param2);
+    double sacThr = 0.08;	// SAC threshold
+    double eucThr = 0.01;	// Euclidean clustering threshold (cclabeling)
+    planePopout = new pclA::PlanePopout(pclA::PlanePopout::Parameter(0.0, 1.0, 
+                        0.02, 0.01, 10, sacThr, 0.1, 0.005, 0.7, eucThr, 100));
+
   }
   ~OpenNIProcessor ()
   {
@@ -236,7 +248,7 @@ void OpenNIProcessor::TryLoadObject(const string &file)
 void OpenNIProcessor::SetMagicKinectCamera(P::RecogniserThread &recogniser, cv::Mat &cam, cv::Mat &distCoeffs)
 {
   cam = cv::Mat::zeros(3,3,CV_64F);
-  distCoeffs = cv::Mat::zeros(4,1,CV_64F);
+  //distCoeffs = cv::Mat::zeros(5,1,CV_64F);
 
   cam.at<double>(0,0) = cam.at<double>(1,1) = 525;
   cam.at<double>(0,2) = 320;
@@ -272,7 +284,7 @@ void OpenNIProcessor::DrawLearning(P::CModel &model, cv::Ptr<TomGine::tgTomGineT
         win->AddPoint3D(d[0],d[1],d[2], 0,0,255);
       }
 
-      //win->SetPointCloud(0, cv::Mat(model.views[idView]->pointcloud) );
+      win->SetPointCloud(0, cv::Mat(model.views[idView]->pointcloud) );
     }
   }
  
@@ -300,8 +312,11 @@ void OpenNIProcessor::DrawLearning(P::CModel &model, cv::Ptr<TomGine::tgTomGineT
     P::View &view = *model.views[i];
     for (unsigned j=0; j<view.keys.size(); j++)
     {
-      double *d = &view.keys[j]->pos.x;
-      win->AddPoint3D(d[0],d[1],d[2], 255,255,255, 2);
+      if (!view.keys[j]->pos.empty())
+      {
+        double *d = &view.keys[j]->pos->pt.x;
+        win->AddPoint3D(d[0],d[1],d[2], 255,255,255, 2);
+      }
     }
   }
   win->Update();
@@ -475,7 +490,7 @@ void OpenNIProcessor::run ()
 
     if(cloud.get()!=0)
     {
-      pclA::ConvertPCLCloud2Image(*cloud, image);
+      pclA::ConvertPCLCloud2Image(cloud, image);
       image.copyTo(dbg);
 
       if (cfg&LOG_POINTCLOUDS)
@@ -491,12 +506,13 @@ void OpenNIProcessor::run ()
       switch (mode)
       {
         case 1:
+          recogniser->SetDebugImage(dbg);
           recogniser->Recognise(image,objects);        // recognise !!
 
-          if (eval)
+          if (eval!=eval)            ///HACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           {
             pose = P::Pose();
-            detector.dbg = dbg;
+            detector.dbg = cv::Mat();//dbg;
             if(detector.GetPose(image, cam, distCoeffs, pose.R, pose.t, pattern))
             {
               pose.t *= 0.001;
@@ -510,25 +526,29 @@ void OpenNIProcessor::run ()
           }
           break;
         case 2:
-          planePopout.FilterZ(cloud, *cloudFiltered);
-          planePopout.DetectPopout(cloudFiltered, popouts);
-          planePopout.ConvertPopout2Mat(*cloud, popouts, matCloud);
-          planePopout.LabelClusters(matCloud, labels, sizeClusters);
-          planePopout.CreateMaskLargest(labels, sizeClusters, mask);
-          //planePopout.CreateMaskAll(labels, sizeClusters, mask);
-
           pose = P::Pose();
           detector.dbg = dbg;
+          mask = cv::Mat(image.rows,image.cols,CV_8U);
+          
           if(detector.GetPose(image, cam, distCoeffs, pose.R, pose.t, pattern) && !pose.empty())
           {
             pose.t *= 0.001;
-          }
 
-          int status = recogniser->Learn(image, matCloud, pose.R, pose.t, filename, mask);
+            planePopout->FilterZ(cloud, *cloudFiltered);
+            planePopout->DetectPopout(cloudFiltered, popouts);
+            planePopout->ConvertPopout2Mat(*cloud, popouts, matCloud);
+            planePopout->LabelClusters(matCloud, labels, sizeClusters);
+            SelectPopout(cam, pose, labels, sizeClusters, cv::Point3d(0.,0.,0.), 0.2, mask);
+            //planePopout->CreateMaskAll(labels, sizeClusters, mask);
+
+            recogniser->SetDebugImage(dbg);
+            int status = recogniser->Learn(image, matCloud, pose.R, pose.t, filename, mask);
+          }
 
           recogniser->GetModelLearn(model);
 
-          DrawLearning(*model, dbgWin);
+          DrawLearning(*model, dbgWin, model->views.size()-1);
+
           cv::imshow("Mask",mask);
           break;
       }
@@ -541,6 +561,11 @@ void OpenNIProcessor::run ()
         case 27:
           stop=true;
           break; 
+        case 'p':
+            recogniser->SetReferenceObjectPose(objects[0].pose);
+            cout<<"Set reference object pose!!!!!"<<endl;
+            cv::waitKey(1000);
+          break;
         case 'r':
           mode=1;
           cntImagesEval=0;
@@ -715,6 +740,81 @@ void DoMeanStatistics(vector<double> &means, vector<double> &sigmas)
     cout<<"mean-mean="<<mean<<", mean-sigma="<<sigma<<endl;
   }
 }
+
+/**
+ * Select popout within roi
+ */
+void SelectPopout(const cv::Mat &cam,  P::Pose &pose, const cv::Mat_<ushort> &labels, 
+      const std::vector<unsigned> &sizeClusters, cv::Point3d boxCenter, double boxSize, 
+      cv::Mat_<uchar> &mask)
+{
+  mask = cv::Mat::zeros(labels.rows,labels.cols,CV_8U);
+  
+  if (sizeClusters.size()==0) return;
+
+  cv::Mat_<uchar> roi(labels.rows,labels.cols);
+  cv::Point2f pt;
+  cv::Point3f objPos;
+  vector<cv::Point> pts;
+  vector<cv::Point> hull;
+
+  // project roi to image...
+  for (int x=-1; x<=1; x+=2)
+    for (int y=-1; y<=1; y+=2)
+      for (int z=0; z<=1; z++)
+      {
+        cv::Point3f pt3(boxCenter.x+boxSize*x, boxCenter.y+boxSize*y,boxCenter.z+boxSize*z);
+        PMat::MulAdd3(pose.R.ptr<double>(), &pt3.x, pose.t.ptr<double>(), &objPos.x);
+        P::ProjectPoint2Image(&objPos.x, cam.ptr<double>(), &pt.x);
+        pts.push_back( cv::Point((int)(pt.x+.5),(int)(pt.y+.5)) );
+      }
+
+  convexHull(pts, hull, false, true);
+  DrawFillPoly(roi, hull);
+
+  //count labels in roi...
+  vector<unsigned> cntLabels(sizeClusters.size(),0);
+  for (int v=0; v<labels.rows; v++)
+    for (int u=0; u<labels.cols; u++)
+      if (roi(v,u)>0)
+        cntLabels[labels(v,u)]++;
+
+  // get max...
+  double max=DBL_MIN;
+  short label;
+  for (unsigned i=1; i<cntLabels.size(); i++)
+    if (cntLabels[i]>max)
+    {
+      max = cntLabels[i];
+      label = i;
+    }
+
+  // set mask..
+   for (int v=0; v<labels.rows; v++)
+    for (int u=0; u<labels.cols; u++)
+      if (labels(v,u)==label)
+        mask(v,u) = 255;
+}
+
+void DrawFillPoly(cv::Mat &img, vector<cv::Point> &vs)
+{
+  CvPoint *pts[1];
+  int npts[1];
+  pts[0] = (CvPoint*)cvAlloc(vs.size()*sizeof(pts[0][0]));
+  npts[0]=vs.size();
+
+  for (unsigned i=0; i<vs.size(); i++){
+    pts[0][i].x=vs[i].x;
+    pts[0][i].y=vs[i].y;
+  }
+
+  IplImage iplImg(img);
+  cvFillPoly(&iplImg, pts, npts, 1, CV_RGB(255,255,255) );
+
+  cvFree(&pts[0]);
+}
+
+
 
 /*cv::Point3f ptCloud, pos;
 pclA::ConvertPCLCloud2CvMat(*cloud, matCloud);

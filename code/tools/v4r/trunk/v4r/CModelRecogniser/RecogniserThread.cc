@@ -31,19 +31,19 @@ void* ThreadRecognise(void* c)
       matcher = new cv::BruteForceMatcher<cv::L2<float> >();
       break;
     case RecogniserThread::SURF_CG:
-      sift = new P::PSiftGPU();
+      sift = new P::PSiftGPU(P::PSiftGPU::Parameter(0.6,0.8,1));
       detector = new P::KeypointDetectorSURF();
       extractor = new cv::SurfDescriptorExtractor(3,4,true);
       matcher = &(*sift);   matcher.addref();
       break;
     case RecogniserThread::SIFT_GG:
-      sift = new P::PSiftGPU();
+      sift = new P::PSiftGPU(P::PSiftGPU::Parameter(0.6,0.8,1));
       detector = &(*sift);  detector.addref();
       extractor = &(*sift); extractor.addref();
       matcher = &(*sift);   matcher.addref();
       break;
     case RecogniserThread::SIFT_GC:
-      sift = new P::PSiftGPU();
+      sift = new P::PSiftGPU(P::PSiftGPU::Parameter(0.6,0.8,1));
       detector = &(*sift);  detector.addref();
       extractor = &(*sift); extractor.addref();
       matcher = new cv::BruteForceMatcher<cv::L2<float> >();
@@ -96,15 +96,16 @@ void* ThreadRecognise(void* c)
         pthread_mutex_unlock(&tt->mutShare);
         break;
 
-      case RecogniserThread::DETECT_KEYPOINTS:
+      case RecogniserThread::SET_DEBUG_IMAGE:
         pthread_mutex_lock(&tt->mutShare);
-        learner->DetectKeypoints(tt->timage, tt->tkeys, tt->tmask);
+        learner->dbg = tt->imDebug;
+        recogniser->dbg = tt->imDebug;
         pthread_mutex_unlock(&tt->mutShare);
         break;
 
-      case RecogniserThread::INSERT_TO_MODEL:
+      case RecogniserThread::SET_REF_POSE:
         pthread_mutex_lock(&tt->mutShare);
-        learner->InsertToModel(tt->tkeys, tt->tR, tt->tT, tt->toid);
+        learner->SetReferenceObjectPose(tt->tPose);
         pthread_mutex_unlock(&tt->mutShare);
         break;
 
@@ -280,40 +281,6 @@ void RecogniserThread::GetViewRays(vector<cv::Point3d> &vr)
 }
 
 /**
- * DetectKeypoints
- */
-void RecogniserThread::DetectKeypoints(const cv::Mat &image,vector<cv::Ptr<PKeypoint> > &keys, cv::Mat mask)
-{
-  pthread_mutex_lock(&mutShare);
-  cmd = DETECT_KEYPOINTS;
-  timage = image, tmask = mask;
-  pthread_mutex_unlock(&mutShare);
-
-  sem_post(&startOperate);
-  sem_wait(&operated);
-
-  pthread_mutex_lock(&mutShare);
-  keys = tkeys;
-  pthread_mutex_unlock(&mutShare);
-}
-
-/**
- * InsertToModel
- */
-int RecogniserThread::InsertToModel(const vector<cv::Ptr<PKeypoint> > &keys,cv::Mat R,cv::Mat T, const string &oid)
-{
-  pthread_mutex_lock(&mutShare);
-  cmd = INSERT_TO_MODEL;
-  tkeys = keys, tR = R, tT = T, toid = oid;
-  pthread_mutex_unlock(&mutShare);
-
-  sem_post(&startOperate);
-  sem_wait(&operated);
-
-  return tstatus;
-}
-
-/**
  * SetCameraParameter
  */
 void RecogniserThread::SetCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_distortion)
@@ -328,11 +295,31 @@ void RecogniserThread::SetCameraParameter(const cv::Mat &_intrinsic, const cv::M
 }
 
 /**
- * LoadVocabularyTree
+ * SetCameraParameter
  */
-void RecogniserThread::LoadVocabularyTree(const string &filename)
+void RecogniserThread::SetDebugImage(cv::Mat &img)
 {
-  cout<<"No vocabulary tree used in this version!"<<endl;
+  pthread_mutex_lock(&mutShare);
+  cmd = SET_DEBUG_IMAGE;
+  imDebug = img;
+  pthread_mutex_unlock(&mutShare);
+
+  sem_post(&startOperate);
+  sem_wait(&operated);
+}
+
+/**
+ * Set reference object pose to continue learning
+ */
+void RecogniserThread::SetReferenceObjectPose(const P::Pose &pose)
+{
+  pthread_mutex_lock(&mutShare);
+  cmd = SET_REF_POSE;
+  tPose = pose;
+  pthread_mutex_unlock(&mutShare);
+
+  sem_post(&startOperate);
+  sem_wait(&operated);
 }
 
 /**

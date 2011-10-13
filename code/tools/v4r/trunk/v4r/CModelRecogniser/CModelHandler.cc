@@ -55,9 +55,9 @@ void CModelHandler::ComputeViewRay(Pose &pose, cv::Point3d &objCenter, cv::Point
  */
 void CModelHandler::RenewProbSphere(const cv::Mat &cam, const cv::Mat &distCoeffs, CModel &model)
 {
-  model.viewHist = new SphereHistogram(2); 
+  model.viewHist = new SphereHistogram(3); 
 
-  ConfValues predProb(cam, distCoeffs);
+  ProbModel predProb;
   
   cv::Point3d vr;
 

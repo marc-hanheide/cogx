@@ -64,8 +64,8 @@ public:
 
     Parameter(bool wh=true, bool bl=true, bool deWh=false, bool deBl=false, bool ring=true, bool _ellSubPx=true)
       : whiteElls(wh), blackElls(bl), decodeWhite(deWh), decodeBlack(deBl), detRings(ring), ellSubPx(_ellSubPx),
-        thrRing(1.), iMinEllipseDiameter(2), iMaxEllipseDiameter(200), dRadiusInOut(3.), 
-        iMinContrast(10), dMaxContrastDev(35.), dMaxQuotient(4.), dMinSupport(0.6), dMaxHypFiterror(1.),
+        thrRing(1.), iMinEllipseDiameter(2.), iMaxEllipseDiameter(200), dRadiusInOut(3.), 
+        iMinContrast(10), dMaxContrastDev(40.), dMaxQuotient(4.), dMinSupport(0.6), dMaxHypFiterror(1.),
         dMaxFiterror(1.), iSobelApertureSize(3), iCannyLow(70), iCannyHigh(140), bGaussSmooth(true), 
         iLinkingGrowCount(10), dDualEllipseMinGradient(30), iDualEllipseBorder(3), eMarkerCode(0), 
         dMarkerQuotientOuterInner(3.), dMarkerDestInnerRadius(12), iMarkerRingWidth(10), 

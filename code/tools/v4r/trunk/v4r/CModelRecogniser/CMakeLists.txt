@@ -8,29 +8,33 @@ SET(SOURCE_CPP
   CBEntry.cc
   CModel.cc
   CModelHandler.cc
-  ConfValues.cc
+  ProbModel.cc
   fams.cpp
   IMCluster.cc
   KeypointDetector.cc
   KeypointDetectorSIFT.cc
   KeypointDetectorSURF.cc
-  MatchFilter.cc
+#  MatchFilter.cc
   MeanShift.cc
   MeanShiftFAMS.cc
-  MSCodebook.cc
-  RobustEstimators.cc
+  MeanShiftCodebook.cc
+  MeanCodebook.cc
+#  RobustEstimators.cc
   SphereHistogram.cc
-  VocabularyTree.cc
+#  VocabularyTree.cc
   LearnerCore.cc
   RecogniserCore.cc
   RecogniserThread.cc
   PSiftGPU.cc
-  ItMoSPlanes.cc
-  Plane.cc
+#  ItMoSPlanes.cc
+#  Plane.cc
   KeypointDetectorFAST.cc
-  SelectMatchesMRF.cc
-  PKeypointMRF.cc
-  MergePlanesHF.cc
+  Point3dProjs.cc
+#  SelectMatchesMRF.cc
+#  PKeypointMRF.cc
+#  MergePlanesHF.cc
+#  IsPlaneGraph.cc
+#  GraphFrame.cc
 )
 
 SET(SOURCE_H
@@ -41,38 +45,46 @@ SET(SOURCE_H
   CModel.hh
   CModelHandler.hh
   Codebook.hh
-  ConfValues.hh
+  ProbModel.hh
   fams.h
   IMCluster.hh
   KeypointDetector.hh
   KeypointDetectorSIFT.hh
   KeypointDetectorSURF.hh
   LearnerCore.hh
-  MatchFilter.hh
+#  MatchFilter.hh
   MeanShiftBase.hh
   MeanShiftFAMS.hh
   MeanShift.hh
-  MSCodebook.hh
+  MeanShiftCodebook.hh
+  MeanCodebook.hh
   ObjectLocation.hh
   polygontest_cv.h
-  RobustEstimators.hh
+#  RobustEstimators.hh
   SphereHistogram.hh
-  VocabularyTree.hh
+#  VocabularyTree.hh
   RecogniserCore.hh
   RecogniserThread.hh
   PSiftGPU.hh
-  ItMoSPlanes.hh
-  Plane.hh
+#  ItMoSPlanes.hh
+#  Plane.hh
   KeypointDetectorFAST.hh
-  SelectMatchesMRF.hh
-  PKeypointMRF.hh
-  MergePlanesHF.hh
+  Point3dProjs.hh
+#  SelectMatchesMRF.hh
+#  PKeypointMRF.hh
+#  MergePlanesHF.hh
+#  IsPlaneGraph.hh
+#  GraphFrame.hh
 )
+
+#add_subdirectory(./svm)
 
 add_library(CModelRecogniser SHARED ${SOURCE_CPP})
 target_link_libraries(CModelRecogniser ${OPENCV_LIBRARIES} PGeometry PMath siftgpu)
+#target_link_libraries(CModelRecogniser ${OPENCV_LIBRARIES} PGeometry PMath siftgpu SVMClassify)
 
-add_subdirectory(example)
+
+#add_subdirectory(example)
 
 ENDIF(V4R_CMODEL_RECOGNISER)
 

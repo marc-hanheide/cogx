@@ -15,6 +15,7 @@
 #include "PKeypoint.hh"
 #include "SphereHistogram.hh"
 #include "View.hh"
+#include "Point3dProjs.hh"
 #include <v4r/PGeometry/Pose.hh>
 
 
@@ -26,9 +27,11 @@ class CModel
 public:
   string id;
 
-  vector<cv::Ptr<View> > views;     // learned views
+  std::vector<cv::Ptr<View> > views;     // learned views
   cv::Ptr<SphereHistogram> viewHist;
   cv::Point3d center;               // object center
+
+  std::vector< cv::Ptr<Point3dProjs> > points;   // 3d points and projections
   
   Pose pose;                        // current pose
 

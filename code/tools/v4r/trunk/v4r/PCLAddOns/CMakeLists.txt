@@ -21,10 +21,14 @@ SET(SOURCE_H
   PlanePopout.hh
 )
 
-add_library(PlanePopout SHARED ${SOURCE_CPP})
-target_link_libraries(PlanePopout ${OPENCV_LIBRARIES} ${PCL_LIBRARIES} PCLFunctions)
+add_library(v4rplanepopout SHARED ${SOURCE_CPP})
+target_link_libraries(v4rplanepopout ${OPENCV_LIBRARIES} ${PCL_LIBRARIES} v4rpclfunctions)
 
 add_subdirectory(example)
+
+add_library(v4rmodelfitter SHARED ModelFitter.cpp)
+target_link_libraries(v4rmodelfitter ${OPENCV_LIBRARIES} ${PCL_LIBRARIES} v4rpclfunctions)
+
 
 ENDIF(V4R_PCL_ADD_ONS)
 

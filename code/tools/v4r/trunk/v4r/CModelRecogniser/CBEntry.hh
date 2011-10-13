@@ -10,9 +10,11 @@
 #include <float.h>
 #include <opencv2/core/core.hpp>
 #include <vector>
-#include <map>
+#include <set>
 #include "v4r/PMath/PMath.hh"
 #include "View.hh"
+#include "CModel.hh"
+#include "Occurrence.hh"
 
 
 namespace P
@@ -23,29 +25,36 @@ class CBEntry
 {
 public:
   float sqrThr;
+  float sqrSigma;
 
-  vector<float> data;
+  std::vector<float> data;
 
-  map<unsigned, vector<unsigned> > idxViewKeys;     //<idxView, vector<idxKey> >
+  std::vector< Occurrence > occurrences;
+  std::set<unsigned> objects;
+
   const unsigned &N;
-  unsigned ni;
   float wi;
 
   CBEntry(unsigned &_N, float _sqrThr);
-  CBEntry(unsigned &_N, float *d, unsigned size, unsigned vidx, unsigned kidx, float _sqrThr);
+  CBEntry(unsigned &_N, float *d, unsigned size, unsigned idxObject, unsigned idxView, 
+          unsigned idxKey, float _sqrThr);
   ~CBEntry();
 
-  void InsertMeanShift(vector<cv::Ptr<View> > &views, unsigned vidx, unsigned kidx, float invSqrSigma);
+  void InsertMeanShift(std::vector<cv::Ptr<CModel> > &objs, unsigned oidx, unsigned vidx, 
+    unsigned kidx, float invSqrSigma);
+  bool InsertMean(std::vector<cv::Ptr<CModel> > &objs, unsigned oidx, unsigned vidx, 
+    unsigned kidx, float thrSqrSigma);
 
-  inline unsigned mi(unsigned vidx){return idxViewKeys[vidx].size();}
-  inline unsigned Ni(){return idxViewKeys.size();}
+  inline unsigned Ni(){return objects.size();}
 
   inline void copyTo(float *d);
   inline void SetZero();
   inline void Mul(float d);
   inline void Add(const CBEntry &d);
+  inline void Add(const float *d);
   inline void AddMul(float *v, float num);
   inline float DistSqr(const CBEntry &d);
+  inline float CombinedSqrSigma(float *d, unsigned size);
 
   static void SetZero(float *d, unsigned size);
   static void Mul(float m, float *d, unsigned size);
@@ -87,11 +96,18 @@ inline void CBEntry::Mul(float d)
 inline void CBEntry::Add(const CBEntry &d)
 {
   if (data.size() != d.data.size())
-    throw runtime_error ("CBEntry::Add : Wrong descriptor size!");
+    throw std::runtime_error ("CBEntry::Add : Wrong descriptor size!");
 
   for (unsigned i=0; i<data.size(); i++)
     data[i] += d.data[i];
 }
+
+inline void CBEntry::Add(const float *d)
+{
+  for (unsigned i=0; i<data.size(); i++)
+    data[i] += d[i];
+}
+
 
 inline float CBEntry::DistSqr(const CBEntry &d)
 {
@@ -137,6 +153,14 @@ inline float CBEntry::DistSqr(float *d1, float *d2, unsigned size)
     distsq += PMath::Sqr(*d1 - *d2);
 
   return distsq;
+}
+
+inline float CBEntry::CombinedSqrSigma(float *d, unsigned size)
+{
+  return 1./(occurrences.size()+1.) * (
+              occurrences.size()*sqrSigma + 
+              occurrences.size()/(occurrences.size()+1.) *
+                CBEntry::DistSqr(d, &data[0], data.size()));
 }
 
 

@@ -63,9 +63,10 @@
    #define BOOL bool
    #define UCHAR uchar
    
-   #define OCV_CV_H "opencv/cv.h"
-   #define OCV_CXCORE_H "opencv/cxcore.h"
-   #define OCV_HIGHGUI_H "opencv/highgui.h"
+   #define OCV_CV_H <opencv2/imgproc/imgproc_c.h>
+   #define OCV_IMGPROC_H <opencv2/imgproc/imgproc.hpp>
+   #define OCV_CXCORE_H <opencv2/core/core.hpp>
+   #define OCV_HIGHGUI_H <opencv2/highgui/highgui.hpp>
 
    #define __THROW_EXCEPT throw()
 

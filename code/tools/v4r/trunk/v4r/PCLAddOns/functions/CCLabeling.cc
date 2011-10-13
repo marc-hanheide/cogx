@@ -71,7 +71,7 @@ ushort CCLabeling::Union(Label *x, Label* y)
  * Operate
  * @param cluster_size <label,size_of_cluster>
  */
-void CCLabeling::Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, vector<unsigned> &cluster_size)
+void CCLabeling::Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, std::vector<unsigned> &cluster_size)
 {
   //struct timespec start1, end1, start2, end2;
   //clock_gettime(CLOCK_REALTIME, &start1);
@@ -80,7 +80,7 @@ void CCLabeling::Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &lab
   labels = cv::Mat_<ushort>(cloud.rows, cloud.cols);
   labels.setTo(0);
   
-  vector<Label*> setLabels;
+  std::vector<Label*> setLabels;
   setLabels.push_back(new Label(setLabels.size()));
   float sqrThr = param.thr*param.thr;
 
@@ -128,9 +128,9 @@ void CCLabeling::Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &lab
 
   // second pass...
   ushort la1, cnt=0;
-  map<ushort, ushort> smartLabels;           // <source, target> 
-  map<ushort, ushort>::iterator it;
-  vector<ushort> minLabels(setLabels.size());  // id look up table
+  std::map<ushort, ushort> smartLabels;           // <source, target> 
+  std::map<ushort, ushort>::iterator it;
+  std::vector<ushort> minLabels(setLabels.size());  // id look up table
   for (unsigned i=0; i<setLabels.size(); i++)
   {
     la1 = Find(setLabels[i])->id;
@@ -169,10 +169,10 @@ void CCLabeling::Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &lab
 /**
  * FilterClusterSize
  */
-void CCLabeling::FilterClusterSize(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, vector<unsigned> &cluster_size)
+void CCLabeling::FilterClusterSize(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, std::vector<unsigned> &cluster_size)
 {
   if (cloud.size()!=labels.size())
-    throw runtime_error ("CCLabeling::FilterClusterSize: Point cloud mat and label mat must have equal size!");
+    throw std::runtime_error ("CCLabeling::FilterClusterSize: Point cloud mat and label mat must have equal size!");
 
   float bad_point = std::numeric_limits<float>::quiet_NaN ();
 
@@ -197,7 +197,7 @@ void CCLabeling::FilterClusterSize(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> 
 /**
  * Filter depending on a minimum cluster size and create mask
  */
-void CCLabeling::CreateMask(const cv::Mat_<ushort> &labels, const vector<unsigned> &cluster_size, cv::Mat_<uchar> &mask)
+void CCLabeling::CreateMask(const cv::Mat_<ushort> &labels, const std::vector<unsigned> &cluster_size, cv::Mat_<uchar> &mask)
 {
   mask = cv::Mat::zeros(labels.rows, labels.cols, CV_8U);
 
@@ -219,10 +219,10 @@ void CCLabeling::CreateMask(const cv::Mat_<ushort> &labels, const vector<unsigne
 /**
  * FilterLargestCluster
  */
-void CCLabeling::FilterLargestCluster(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, vector<unsigned> &cluster_size)
+void CCLabeling::FilterLargestCluster(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, std::vector<unsigned> &cluster_size)
 {
   if (cloud.size()!=labels.size())
-    throw runtime_error ("CCLabeling::FilterLargestCluster: Point cloud mat and label mat must have equal size!");
+    throw std::runtime_error ("CCLabeling::FilterLargestCluster: Point cloud mat and label mat must have equal size!");
 
   ushort maxLabel, max=0;
   float bad_point = std::numeric_limits<float>::quiet_NaN ();
