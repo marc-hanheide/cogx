@@ -46,6 +46,7 @@ private:
 	map<string, string> modelFiles;
   map<string, string> objectWMIds;
 
+  vector<cv::Ptr<P::CModel> > models;
   cv::Ptr<P::RecogniserThread> recogniser;
 
 #ifdef FEAT_VISUALIZATION

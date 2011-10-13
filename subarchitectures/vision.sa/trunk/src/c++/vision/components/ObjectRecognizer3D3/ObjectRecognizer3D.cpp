@@ -2,6 +2,7 @@
  * @author Michael Zillich
  * @date August 2011
  * @brief Recognise trained 3D models
+ * - HACK hard coded image size
  */
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -31,6 +32,7 @@ using namespace std;
 ObjectRecognizer3D::ObjectRecognizer3D()
 {
   camId = 0;
+  // HACK hard coded image size!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   P::RecogniserCore::Parameter paramRecogniser = P::RecogniserCore::Parameter(640,480,5000,100,0.01,2.,5., false, .35, .15, .8);
   P::LearnerCore::Parameter paramLearner = P::LearnerCore::Parameter(640,480,1000,50,0.01,2, 15., .35, .15, 2., false, false, .01, .05);
   recogniser = new P::RecogniserThread(P::RecogniserThread::SIFT_GC,paramRecogniser,paramLearner);
@@ -68,11 +70,23 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
 		throw runtime_error(exceptionMessage(__HERE__, "No models given"));
 
   std::string label, model;
+  models.clear();
+  P::CModelHandler cmhandler;
+
   while(labeliss >> label && modeliss >> model)
   {
-		modelFiles[label] = model;
+    modelFiles[label] = model;
     objectWMIds[label] = "";
+    models.push_back(new P::CModel() );
+    cmhandler.Load(model, models.back());
   }
+
+  recogniser->ClearRecogniser();
+
+  for(size_t i = 0; i < models.size(); i++)
+    recogniser->AddModelRecogniser(models[i]);
+
+  recogniser->OptimizeCodebook();
 
 #ifdef FEAT_VISUALIZATION	
   m_display.configureDisplayClient(_config);
@@ -81,7 +95,6 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config)
 
 void ObjectRecognizer3D::start()
 {
-printf("ObjectRecognizer3D::start: start!\n");
   // get connection to the video server
   videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
@@ -96,10 +109,8 @@ printf("ObjectRecognizer3D::start: start!\n");
   addChangeFilter(createLocalTypeFilter<VisionData::RecognitionCommand>(cdl::ADD),
       new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
         &ObjectRecognizer3D::receiveRecognitionCommand));
-printf("ObjectRecognizer3D::start: 1!\n");
 
 //  initRecognizer();
-printf("ObjectRecognizer3D::start: 2!\n");
 
 #ifdef FEAT_VISUALIZATION        
   m_display.connectIceClient(*this);
@@ -115,7 +126,6 @@ printf("ObjectRecognizer3D::start: 2!\n");
         string("Recognize ") + it->first);
   }
 #endif
-printf("ObjectRecognizer3D::start: end!\n");
 }
 
 
@@ -203,29 +213,10 @@ void ObjectRecognizer3D::recognize(vector<string> &labels, cv::Mat &colImg,
     Video::CameraParameters &camPars, cv::Mat mask,
     vector<P::ObjectLocation> &objects)
 {
-printf("ObjectRecognizer3D::recognize: start\n");
   cv::Mat grayImg;
   cv::cvtColor(colImg, grayImg, CV_RGB2GRAY);
   IplImage displayImg = colImg; // cheap: no copy
 
-printf("ObjectRecognizer3D::recognize: start 2\n");
-
-  // first clear model list of recognizer and add only those models we are currently
-  // interested in
-  P::CModelHandler cmhandler;
-  vector<cv::Ptr<P::CModel> > models(labels.size());
-  for(size_t i = 0; i < labels.size(); i++)
-    cmhandler.Load(modelFiles[labels[i]], models[i]);
-printf("ObjectRecognizer3D::recognize: start 2-1 start\n");
-  recogniser->ClearRecogniser();
-
-printf("ObjectRecognizer3D::recognize: start 2-1 end\n");
-  for(size_t i = 0; i < models.size(); i++)
-    recogniser->AddModelRecogniser(models[i]);
-
-  recogniser->OptimizeCodebook();
-
-printf("ObjectRecognizer3D::recognize: start 3\n");
 
   // get camera parameters into recogniser
   // TODO; set actual distortion
@@ -237,20 +228,14 @@ printf("ObjectRecognizer3D::recognize: start 3\n");
   intrinsic.at<double>(2, 2) = 1.;
   recogniser->SetCameraParameter(intrinsic, distortion);
 
-printf("ObjectRecognizer3D::recognize: start 4\n");
-
   // the actual recognition
   // set the debug image to draw stuff into
   recogniser->SetDebugImage(colImg);
   recogniser->Recognise(grayImg, objects);
 
-printf("ObjectRecognizer3D::recognize: start 5\n");
-
 // #ifdef FEAT_VISUALIZATION
 //   m_display.setImage(getComponentID(), &displayImg);
 // #endif
-
-printf("ObjectRecognizer3D::recognize: end\n");
 
 }
 
