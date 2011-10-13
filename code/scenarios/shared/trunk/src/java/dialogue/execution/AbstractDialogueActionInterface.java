@@ -662,8 +662,8 @@ public abstract class AbstractDialogueActionInterface extends
 			} else {
 				_stringContent.put("subtype", "answer-unknown");
 			}
-			
-//			_stringContent.put("polarity","pos");
+
+			// _stringContent.put("polarity","pos");
 		}
 
 		@Override
@@ -697,12 +697,14 @@ public abstract class AbstractDialogueActionInterface extends
 			ConfidenceLevel confidence = getAction().confidence;
 			if (confidence == ConfidenceLevel.CONFIDENT) {
 				_stringContent.put("certainty", "high");
+				_stringContent.put("polarity", "pos");
 			} else if (confidence == ConfidenceLevel.UNSURE) {
 				_stringContent.put("certainty", "low");
+				_stringContent.put("polarity", "pos");				
 			} else {
 				// high confidence in a negative answer
 				_stringContent.put("certainty", "high");
-
+				_stringContent.put("polarity", "neg");
 			}
 		}
 
