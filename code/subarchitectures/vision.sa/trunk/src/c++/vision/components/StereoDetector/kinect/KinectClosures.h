@@ -24,7 +24,7 @@ private:
   int numClosures;              ///< Number of extracted 3D plane patches
   
 public:
-  KinectClosures(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p);
+  KinectClosures(KinectCore *kc, VisionCore *vc);
   ~KinectClosures() {}
 
   int Num3DGestalts() {return numClosures;}

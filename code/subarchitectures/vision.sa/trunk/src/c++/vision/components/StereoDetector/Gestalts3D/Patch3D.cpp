@@ -13,30 +13,45 @@
 namespace Z
 {
 
+
 /**
  * @brief Constructor of class Patch3D for Kinect.
  * @param _p All points of the patch
  * @param _h_p Convex hull points of the patch
  */
-Patch3D::Patch3D(std::vector<cv::Vec4f> _p, std::vector<cv::Vec4f> _h_p) : Gestalt3D(Gestalt3D::PATCH)
+Patch3D::Patch3D(std::vector<cv::Vec4f> _points, 
+                 std::vector<int> _indexes, 
+                 std::vector<cv::Vec4f> _hull_points) : Gestalt3D(Gestalt3D::PATCH)
 {
-  points = _p;
-  hull_points = _h_p;
+  radius = 0.;
+  points = _points;
+  indexes = _indexes;
+  hull_points = _hull_points;
   
-  center3D.x = 0.;
-  center3D.y = 0.;
-  center3D.z = 0.;
-  for(unsigned i=0; i< points.size(); i++)          /// TODO Schlechte Berechnung, vor allem bei vielen Punkten
+  int num_hull_points = hull_points.size();
+  center3D = cv::Vec3f(0.,0.,0.);
+  for(unsigned i=0; i< num_hull_points; i++)          /// TODO Schlechte Berechnung, vor allem bei vielen Punkten
   {
-    center3D.x += points[i][0];
-    center3D.y += points[i][1];
-    center3D.z += points[i][2];
+    center3D[0] += hull_points[i][0];
+    center3D[1] += hull_points[i][1];
+    center3D[2] += hull_points[i][2];
   }
-  center3D.x = center3D.x / points.size();
-  center3D.y = center3D.y / points.size();
-  center3D.z = center3D.z / points.size();
+  center3D[0] = center3D[0] / num_hull_points;
+  center3D[1] = center3D[1] / num_hull_points;
+  center3D[2] = center3D[2] / num_hull_points;
 
   CalculatePlaneNormal();
+  
+  cv::Vec3f p;
+  for(unsigned i=0; i<hull_points.size(); i++)
+  {
+    p[0] = hull_points[i][0] - center3D[0];
+    p[1] = hull_points[i][1] - center3D[1];
+    p[2] = hull_points[i][2] - center3D[2];
+    double length = cv::norm(p);
+    if(length > radius)
+      radius = length;
+  }
   
   int nr_bins = 10;
   hist = new ColorHistogram(nr_bins, points);
@@ -62,8 +77,8 @@ void Patch3D::CalculatePlaneNormal()
   normal.z = cross[2]/norm;
   
   // Check if normal goes into direction of camera (opening angle < PI/2
-  double norm_center = sqrt(center3D.x*center3D.x + center3D.y*center3D.y + center3D.z*center3D.z);
-  double dot_p_center = normal.x*center3D.x + normal.y*center3D.y + normal.z*center3D.z;
+  double norm_center = cv::norm(center3D); //sqrt(center3D.x*center3D.x + center3D.y*center3D.y + center3D.z*center3D.z);
+  double dot_p_center = normal.x*center3D[0] + normal.y*center3D[1] + normal.z*center3D[2];
   double angle = acos(dot_p_center/(norm_center));
   if(angle < 1.57)
     normal = -normal;
@@ -124,12 +139,41 @@ double Patch3D::DistancePoint2Plane(double a, double b, double c, double d, doub
     return (fabs(a*x + b*y + c*z - d) / sqrt(a*a + b*b + c*c));
 }
 
+/**
+ * @brief Calculate normal distance from point to plane.
+ * @param x-y-z Point coordinate
+ */
 double Patch3D::CalculatePointDistance(double x, double y, double z)
 {
-  double np = normal.x*center3D.x + normal.y*center3D.y + normal.z*center3D.z;
+  double np = normal.x*center3D[0] + normal.y*center3D[1] + normal.z*center3D[2];
   return DistancePoint2Plane(normal.x, normal.y, normal.z, np, x, y, z);
 }
 
+/**
+ * @brief Compare two patches for coplanarity. Extract difference of normals and
+ * the distance of the planes 
+ * @param p Patch to compare with
+ * @param n0n1 Angle between the two plane normals
+ * @param ppn0 Angle between center point line and first patch
+ * @param ppn1 Angle between center point line and second patch
+ */
+void Patch3D::CalculateCoplanarity2(Patch3D *p, double &n0n1, double &ppn0, double &ppn1)
+{
+  // direction from patch center to patch center
+  cv::Point3f pp = center3D - p->center3D;
+  double norm_pp = cv::norm(pp);
+  cv::Point3f pp_dir;
+  pp_dir.x = pp.x/norm_pp;
+  pp_dir.y = pp.y/norm_pp;
+  pp_dir.z = pp.z/norm_pp;  
+  
+  n0n1 = acos(normal.x*p->normal.x + normal.y*p->normal.y + normal.z*p->normal.z);
+  ppn0 = acos(pp_dir.x*normal.x + pp_dir.y*normal.y + pp_dir.z*normal.z);
+  ppn1 = acos(pp_dir.x*p->normal.x + pp_dir.y*p->normal.y + pp_dir.z*p->normal.z);
+
+}
+  
+  
 /**
  * @brief Compare two patches for coplanarity. Extract difference of normals and
  * the distance of the planes 
@@ -139,6 +183,7 @@ double Patch3D::CalculatePointDistance(double x, double y, double z)
  */
 void Patch3D::CalculateCoplanarity(Patch3D *p, double &normal_angle, double &plane_distance)
 {
+printf("Patch3D::CalculateCoplanarity: Warning: antiquated!\n");
   // direction from patch center to patch center
   cv::Point3f pp = center3D - p->center3D;
   double norm_pp = cv::norm(pp);
@@ -153,14 +198,14 @@ void Patch3D::CalculateCoplanarity(Patch3D *p, double &normal_angle, double &pla
   double ang0 = acos(pp_dir.x*normal.x + pp_dir.y*normal.y + pp_dir.z*normal.z);
   double ang1 = acos(pp_dir.x*p->normal.x + pp_dir.y*p->normal.y + pp_dir.z*p->normal.z);
   
-// printf("ang0-ang1: %4.3f-%4.3f\n", ang0, ang1);
-  if(ang0 > M_PI/2.) ang0 = M_PI - ang0;
-  if(ang1 > M_PI/2.) ang1 = M_PI - ang1;
-// printf("  g0-ang1: %4.3f-%4.3f\n", ang0, ang1);
+printf("ang0-ang1: %4.3f-%4.3f\n", ang0, ang1);
+//   if(ang0 > M_PI/2.) ang0 = M_PI - ang0;
+//   if(ang1 > M_PI/2.) ang1 = M_PI - ang1;
+// printf("        : %4.3f-%4.3f\n", ang0, ang1);
   ang0 = fabs(ang0 - M_PI/2.);
   ang1 = fabs(ang1 - M_PI/2.);
   
-// printf("     ang1: %4.3f-%4.3f\n", ang0, ang1);
+printf("     ang1: %4.3f-%4.3f\n", ang0, ang1);
   normal_angle = ang0 + ang1;
 // printf("     norm: %4.3f\n", normal_angle);
   
@@ -183,8 +228,8 @@ void Patch3D::CalculateCoplanarity(Patch3D *p, double &normal_angle, double &pla
   meanNormal.y = meanNormal.y/norm;
   meanNormal.z = meanNormal.z/norm;
   
-  double np = meanNormal.x*center3D.x + meanNormal.y*center3D.y + meanNormal.z*center3D.z;
-  plane_distance = DistancePoint2Plane(meanNormal.x, meanNormal.y, meanNormal.z, np, p->center3D.x, p->center3D.y, p->center3D.z);
+  double np = meanNormal.x*center3D[0] + meanNormal.y*center3D[1] + meanNormal.z*center3D[2];
+  plane_distance = DistancePoint2Plane(meanNormal.x, meanNormal.y, meanNormal.z, np, p->center3D[0], p->center3D[1], p->center3D[2]);
 }
 
 /**
@@ -224,49 +269,49 @@ printf("Patch3D::GetLinks: Not yet implemented!\n");
 /**
  * @brief Draw this 3D Gestalt to the TomGine render engine.
  * @param tgRenderer Render engine
+ * @param randomColor Use random color
  * @param use_color Use specific color, or random color
- * @param float color
+ * @param float color value as float
  */
-void Patch3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color, float color)
+void Patch3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, 
+                            bool randomColor, bool use_color, float color)
 {
-  if(use_color)
+  RGBValue col;
+  if(randomColor) col.float_value = GetRandomColor();
+  else if(use_color) col.float_value = color;
+  
+  std::vector<cv::Vec4f> col_points;
+  for(unsigned i=0; i<points.size(); i++)
   {
-    RGBValue col;
-    col.float_value = color;
-    std::vector<cv::Vec4f> col_points, col_hull_points;
-    for(unsigned i=0; i<points.size(); i++)
-    {
-      col_points.push_back(points[i]);
-      col_points[i][3] = color;
-    }
-    tgRenderer->AddPointCloud(col_points);
+    col_points.push_back(points[i]);
+    if(!use_color && !randomColor) col.float_value = points[i][3];
+    col_points[i][3] = col.float_value;
+  }
+  tgRenderer->AddPointCloud(col_points);
     
-    // add convex hull of patch
-    for(unsigned j=0; j < hull_points.size(); j++)
-    {
-      int k = j+1;
-      if(k == hull_points.size()) k=0;
-      cv::Vec4f s = hull_points[j];
-      cv::Vec4f e = hull_points[k];
-      tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
-                            col.r, col.g, col.b, 2);
-    }  
-  }    
-  else
+  // add convex hull of patch
+  for(unsigned j=0; j < hull_points.size(); j++)
   {
-    tgRenderer->AddPointCloud(points);
-    // add convex hull of patch
-    for(unsigned j=0; j < hull_points.size(); j++)
-    {
-      int k = j+1;
-      if(k == hull_points.size()) k=0;
-      cv::Vec4f s = hull_points[j];
-      cv::Vec4f e = hull_points[k];
-      RGBValue col;
-      col.float_value = hull_points[j][3];
-      tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
-                            col.r, col.g, col.b, 2);
-    }  
+    int k = j+1;
+    if(k == hull_points.size()) k=0;
+    cv::Vec4f s = hull_points[j];
+    cv::Vec4f e = hull_points[k];
+    if(!use_color && !randomColor) col.float_value = hull_points[j][3];
+    tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
+                          col.r, col.g, col.b, 2);
+  }  
+  
+  if(drawNodeID)
+  {
+    char label[5];
+    snprintf(label, 5, "%u", GetNodeID());
+    tgRenderer->AddLabel3D(label, 14, center3D[0], center3D[1], center3D[2]);
+  }
+  if(false)  // print object label!
+  {
+    char label[5];
+    snprintf(label, 5, "%u", GetObjectLabel());
+    tgRenderer->AddLabel3D(label, 14, center3D[0], center3D[1], center3D[2]);
   }
 }
 
@@ -321,10 +366,10 @@ void Patch3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraPar
     }  
   }
   
-  double c_u = camPars.fx*center3D.x + camPars.cx*center3D.z;
-  double c_v = camPars.fy*center3D.y + camPars.cy*center3D.z;
-  int c_x = (int) (c_u / center3D.z);
-  int c_y = (int) (c_v / center3D.z);
+  double c_u = camPars.fx*center3D[0] + camPars.cx*center3D[2];
+  double c_v = camPars.fy*center3D[1] + camPars.cy*center3D[2];
+  int c_x = (int) (c_u / center3D[2]);
+  int c_y = (int) (c_v / center3D[2]);
     
   char labl[5];
   snprintf(labl, 5, "%u", GetNodeID());

@@ -20,13 +20,10 @@ static double MAXIMUM_DISTANCE = 0.05;    ///< Maximum depth distance between po
  * @brief Constructor of StereoLines: Calculate stereo matching of Lines
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-KinectCollinearities::KinectCollinearities(KinectCore *kc, 
-                                           VisionCore *vc, 
-                                           IplImage *iplI, 
-                                           cv::Mat_<cv::Vec4f> &p) 
-                     : KinectBase(kc, vc, iplI, p)
+KinectCollinearities::KinectCollinearities(KinectCore *kc, VisionCore *vc) 
+                     : KinectBase(kc, vc)
 {
-  numLines = 0;
+  numColls = 0;
 }
 
 /**
@@ -34,7 +31,7 @@ KinectCollinearities::KinectCollinearities(KinectCore *kc,
  */
 void KinectCollinearities::ClearResults()
 {
-  numLines = 0;
+  numColls = 0;
 }
 
 /**
@@ -85,18 +82,17 @@ bool KinectCollinearities::CheckLineValidity(Z::Collinearity *col, Z::Line3D *li
     bool line_finished = false;
     edgels3d.clear();
 
-    Z::Line *l = col->line[side];
+//     Z::Line *l = col->line[side];
     unsigned start_index = col->line[side]->idx[col->near_point[side]];
     unsigned end_index = col->line[side]->idx[Other(col->near_point[side])];
 
     int crem = 1;   // increment or decrement
     if(start_index > end_index) crem = -1;
-// printf(" Start/end index: %u to %u\n", start_index, end_index);
 
     for(unsigned idx = start_index; idx != end_index+crem; idx += crem)
     {
       VEC::Vector2 edgePoint2D = col->line[side]->seg->edgels[idx].p / scale;
-      cv::Vec4f point3D = points.at<cv::Vec4f>(edgePoint2D.y, edgePoint2D.x);
+      cv::Vec4f point3D = kcore->GetPointCloud().at<cv::Vec4f>(edgePoint2D.y, edgePoint2D.x);
 
       if(point3D[2] > 0.001 && !line_finished)    // z-value is positive
       {
@@ -139,7 +135,7 @@ bool KinectCollinearities::CheckLineValidity(Z::Collinearity *col, Z::Line3D *li
          (edgels3d[0][1] - edgels3d[edgels3d.size()-1][1]) != 0 ||
          (edgels3d[0][2] - edgels3d[edgels3d.size()-1][2]) != 0)
       {
-        line[side] = new Z::Line3D(col->line[0]->ID(), edgels3d);   /// TODO why again a new line?
+        line[side] = new Z::Line3D(col->line[0]->ID(), edgels3d);   /// TODO We create here new lines for each col => not Line3D of KinectCore!!!!
         succeed[side] = true;
       }
     }
@@ -157,9 +153,9 @@ void KinectCollinearities::Process()
 {
   bool succeed3D = true;
   
-  int point_cloud_width = points.cols;
-  int point_cloud_height = points.rows;
-  scale = iplImg->width/point_cloud_width;
+  int point_cloud_width = kcore->GetPointCloudWidth();
+//   int point_cloud_height = kcore->points.rows;
+  scale = kcore->GetImageWidth()/point_cloud_width;
   
   // Get collinearities
   unsigned nrCols = vcore->NumGestalts(Z::Gestalt::COLLINEARITY);

@@ -36,10 +36,10 @@ SVMFileCreator::~SVMFileCreator()
 /**
  * @brief Process the relation extraction algorithm
  */
-void SVMFileCreator::Process(KinectCore *kc,
-                             double cam_fx, double cam_fy, double cam_cx, double cam_cy)
+void SVMFileCreator::Process(KinectCore *kc)
 {
   kcore = kc;
+  kcore->GetCameraParameters(cam_fx, cam_fy, cam_cx, cam_cy);
   
   std::vector<Relation> relation_vector;
   relations->Initialize(kc, cam_fx, cam_fy, cam_cx, cam_cy);
@@ -54,7 +54,6 @@ void SVMFileCreator::Process(KinectCore *kc,
  */
 void SVMFileCreator::WriteResults2File(std::vector<Relation> &rel)
 {
-  
   FILE *PPfile = fopen("PP-Trainingsset.txt", "w");
   FILE *PLfile = fopen("PL-Trainingsset.txt", "w");
   FILE *LLfile = fopen("LL-Trainingsset.txt", "w");

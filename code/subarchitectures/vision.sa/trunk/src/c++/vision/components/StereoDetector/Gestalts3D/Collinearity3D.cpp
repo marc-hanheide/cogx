@@ -7,7 +7,7 @@
  */
 
 #include "Collinearity3D.h"
-//#include "VisionUtils.h"
+#include "../../../VisionUtils.h"
 
 namespace Z
 {
@@ -93,24 +93,27 @@ printf("Collinearity3D::GetLinks: Not yet implemented!\n");
 
 /**
  * @brief Draw this 3D Gestalt to the TomGine render engine.
- * @param tgRenderer Render engine
+ * @param tgRenderer TomGine render engine
+ * @param use_color Use the delivered color
+ * @param color Color as float value
  */
-void Collinearity3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor)
+void Collinearity3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color, float color)
 {
-  line[0]->DrawGestalt3D(tgRenderer);
-  line[1]->DrawGestalt3D(tgRenderer);
+// printf("Collinearity3D::DrawGestalt3D: Time to implement!\n");
+// printf("Collinearity3D::DrawGestalt3D: NodeIDs: %u-%u\n", line[0]->GetNodeID(), line[1]->GetNodeID());
+// printf("Collinearity3D::DrawGestalt3D: NodeIDs: %u-%u\n", line[0]->GetNodeID(), line[1]->GetNodeID());
   
-  RGBValue color;
-  if(randomColor)
-  {
-    color.r = 255;  //std::rand()%255;
-    color.g = 0;    //std::rand()%255;
-    color.b = 0;    //std::rand()%255;
-  }
-
-  tgRenderer->AddLine3D(point[0][0], point[0][1], point[0][2], point[1][0], point[1][1], point[1][2], color.r, color.g, color.b, 5);
-  tgRenderer->AddLine3D(point[2][0], point[2][1], point[2][2], point[1][0], point[1][1], point[1][2], color.r, color.g, color.b, 5);
-  tgRenderer->AddPoint3D(point[1][0], point[1][1], point[1][2], 255, 0, 0, 5);
+  RGBValue col;
+  if(randomColor) col.float_value = GetRandomColor();
+  else if(use_color) col.float_value = color;
+  else col.float_value = point[0][3];
+  
+  line[0]->DrawGestalt3D(tgRenderer, true, col.float_value);
+  line[1]->DrawGestalt3D(tgRenderer, true, col.float_value);
+  
+  tgRenderer->AddLine3D(point[0][0], point[0][1], point[0][2], point[1][0], point[1][1], point[1][2], col.r, col.g, col.b, 2);
+  tgRenderer->AddLine3D(point[2][0], point[2][1], point[2][2], point[1][0], point[1][1], point[1][2], col.r, col.g, col.b, 2);
+  tgRenderer->AddPoint3D(point[1][0], point[1][1], point[1][2], 255, 0, 0, 2);
 }
 
 /**

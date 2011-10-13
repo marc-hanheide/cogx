@@ -37,6 +37,10 @@ public:
     KINECT_COLLINEARITIES,
     KINECT_CLOSURES,
     KINECT_RECTANGLES,
+    KINECT_PCL_MODELS,
+    KINECT_PCL_EDGELS,
+    KINECT_PCL_SEGMENTS,
+    KINECT_PCL_LINES,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };                                          ///< Type of Kinect Gestalts
@@ -44,8 +48,6 @@ public:
 protected:
   KinectCore *kcore;                          ///< Kinect core
   VisionCore *vcore;                          ///< Left and right vision core
-  IplImage *iplImg;                           ///< Kinect iplImage
-  cv::Mat_<cv::Vec4f> points;                 ///< Kinect point cloud
   Type type;                                  ///< KinectBase Type
 
 private:
@@ -53,13 +55,10 @@ private:
   bool masking;                               ///< TODO masking
 
 public:
-  KinectBase(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p);
+  KinectBase(KinectCore *kc, VisionCore *vc);
   void EnablePrinciple(bool status);
   bool IsEnabled() {return enabled;}
 
-  int GetImageWidth() {return iplImg->width;}
-  int GetPCWidth() {return points.cols;}
-  
   static Type EnumType(const char *type_name);
   static const char* TypeName(Type t);
   static const int KinectTypeNameLength(Type t);

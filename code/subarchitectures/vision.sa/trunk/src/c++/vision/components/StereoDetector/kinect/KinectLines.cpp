@@ -21,8 +21,8 @@ static double MAXIMUM_DISTANCE = 0.05;
  * @brief Constructor of StereoLines: Calculate stereo matching of Lines
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-KinectLines::KinectLines(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p) 
-                       : KinectBase(kc, vc, iplI, p)
+KinectLines::KinectLines(KinectCore *kc, VisionCore *vc) 
+                       : KinectBase(kc, vc)
 {
   numLines = 0;
 }
@@ -78,12 +78,13 @@ void KinectLines::ClearResults()
 void KinectLines::Process()
 {
   cv::Vec4f last_point;
-  int point_cloud_width = points.cols;
-  int point_cloud_height = points.rows;
-  double scale = iplImg->width/point_cloud_width;
+  int point_cloud_width = kcore->GetPointCloudWidth();
+  int point_cloud_height = kcore->GetPointCloudHeight();
+  double scale = kcore->GetImageWidth()/point_cloud_width;
   int nrLines = vcore->NumGestalts(Z::Gestalt::LINE);
 
-// printf("We have %u lines!\n", nrLines);
+// printf("KinectLines::Process: We have %u lines!\n", nrLines);
+// printf("KinectLines::Process: point-cloud: %u-%u\n", point_cloud_width, point_cloud_height);
 
   for(unsigned i=0; i<nrLines; i++)
   {
@@ -100,7 +101,7 @@ void KinectLines::Process()
 
       if((int) edgePoint2D.x >= 0 && (int) edgePoint2D.x < point_cloud_width && (int) edgePoint2D.y >= 0. && (int) edgePoint2D.y < point_cloud_height)
       {
-        cv::Vec4f point3D = points.at<cv::Vec4f>(edgePoint2D.y, edgePoint2D.x);
+        cv::Vec4f point3D = kcore->GetPointCloud().at<cv::Vec4f>(edgePoint2D.y, edgePoint2D.x);
 
         if(point3D[2] > 0.001)    // z-value is positive
         {
@@ -161,7 +162,6 @@ void KinectLines::Process()
       }
     }
   }
-  
 }
 
 

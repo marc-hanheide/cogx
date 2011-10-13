@@ -27,7 +27,7 @@ public:
   cv::Vec4f point[3];                   ///< Start/Intersection/End point of the collinearity in 3D (with color).   /// TODO not yet implemented!
 
   
-  std::vector<cv::Vec4f> points;               ///< Points of the edge in 3D (with color).
+  std::vector<cv::Vec4f> points;        ///< Points of the edge in 3D (with color).
 //  Vertex3D point[2];                      ///< Start/end point of the 3D line
   
 //  Vertex3D isct3D[2];                     ///< 3D intersection point [START/END]
@@ -40,7 +40,8 @@ public:
   
   bool GetLinks(vector<GraphLink> &links);
   
-  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor = true);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color = false, float color = 0.0);
+  
   void PrintGestalt3D();
 };
 

@@ -24,7 +24,7 @@ private:
   int numRectangles;              ///< Number of extracted 3D rectangles
   
 public:
-  KinectRectangles(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p);
+  KinectRectangles(KinectCore *kc, VisionCore *vc);
   ~KinectRectangles() {}
 
   int Num3DGestalts() {return numRectangles;}

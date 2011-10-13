@@ -21,9 +21,9 @@ Line3D::Line3D(unsigned _vs3ID, std::vector<cv::Vec4f> &_p) : Gestalt3D(Gestalt3
   vs3ID = _vs3ID;
   point[0] = _p[0];
   point[1] = _p[_p.size()-1];
-  center3D.x = (point[0][0]+point[1][0]) / 2;
-  center3D.y = (point[0][1]+point[1][1]) / 2;
-  center3D.z = (point[0][2]+point[1][2]) / 2;
+  center3D[0] = (point[0][0]+point[1][0]) / 2;
+  center3D[1] = (point[0][1]+point[1][1]) / 2;
+  center3D[2] = (point[0][2]+point[1][2]) / 2;
   dir.x = point[1][0] - point[0][0];
   dir.y = point[1][1] - point[0][1];
   dir.z = point[1][2] - point[0][2];
@@ -100,15 +100,18 @@ printf("Line3D::GetLinks: Not yet implemented!\n");
  * @param tgRenderer Render engine
  * @param use_color Use the color value
  */
-void Line3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color, float color)
+void Line3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color, float color)
 {
   RGBValue col;
-  if(use_color) col.float_value = color;
+  if(randomColor) col.float_value = GetRandomColor();
+  else if(use_color) col.float_value = color;
   else col.float_value = point[0][3];
 
-  tgRenderer->AddLine3D(point[0][0], point[0][1], point[0][2], point[1][0], point[1][1], point[1][2], col.r, col.g, col.b, 5);
+  tgRenderer->AddLine3D(point[0][0], point[0][1], point[0][2], 
+                        point[1][0], point[1][1], point[1][2], 
+                        col.r, col.g, col.b, 2);
   
-  if(true)    /// TODO Add label switch
+  if(drawNodeID)
   {
     char label[5];
     snprintf(label, 5, "%u", GetNodeID());
@@ -125,20 +128,14 @@ void Line3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color,
  * @param image Image
  * @param camPars Camera parameters
  */
-void Line3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars)
+void Line3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters &camPars)
 {
-  // get random color
-//   RGBValue color;
-//   color.r = std::rand()%255;
-//   color.g = std::rand()%255;
-//   color.b = std::rand()%255;
-  
-  static int times = 10;          /// TODO Write only every 10th line to image! Remove later!
-  times--;
-  
-  if(times == 0)
-  {
-    times = 10;
+//   static int times = 1;          /// TODO Write only every 10th line to image! Remove later!
+//   times--;
+//   
+//   if(times == 0)
+//   {
+//     times = 10;
     
   double u1, v1, u2, v2;
   double scale = 1;
@@ -164,15 +161,14 @@ void Line3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraPara
     
   cv::line(image, cv::Point(x1, y1), cv::Point(x2, y2), CV_RGB(std::rand()%255, std::rand()%255, std::rand()%255), 2);
   
-  double c_u = camPars.fx*center3D.x + camPars.cx*center3D.z;
-  double c_v = camPars.fy*center3D.y + camPars.cy*center3D.z;
-  int c_x = (int) (c_u / center3D.z);
-  int c_y = (int) (c_v / center3D.z);
-    
-  char labl[5];
-  snprintf(labl, 5, "%u", GetNodeID());
-  cv::putText(image, string(labl), cv::Point(c_x, c_y), cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,0,0), 1);
-  }
+//   char labl[5];
+//   double c_u = camPars.fx*center3D.x + camPars.cx*center3D.z;
+//   double c_v = camPars.fy*center3D.y + camPars.cy*center3D.z;
+//   int c_x = (int) (c_u / center3D.z);
+//   int c_y = (int) (c_v / center3D.z);
+//   snprintf(labl, 5, "%u", GetNodeID());
+//   cv::putText(image, string(labl), cv::Point(c_x, c_y), cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,0,0), 1);
+//   }
 }
 
 /**

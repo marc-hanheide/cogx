@@ -23,8 +23,8 @@ namespace Z
  * @param iplI Ipl-Image
  * @param p Point matrix
  */
-KinectRectangles::KinectRectangles(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p) 
-                : KinectBase(kc, vc, iplI, p)
+KinectRectangles::KinectRectangles(KinectCore *kc, VisionCore *vc) 
+                : KinectBase(kc, vc)
 {
   numRectangles = 0;
 }
@@ -44,12 +44,12 @@ void KinectRectangles::ClearResults()
 void KinectRectangles::Process()
 {
   int minimum_points_per_plane = 15;
-  int point_cloud_width = points.cols;
-  int point_cloud_height = points.rows;
-  double scale = iplImg->width/point_cloud_width;
+  int point_cloud_width = kcore->GetPointCloudWidth();
+  int point_cloud_height = kcore->GetPointCloudHeight();
+  double scale = kcore->GetImageWidth()/point_cloud_width;
 
-  pcl::PointCloud<pcl::PointXYZRGB> pcl_rectangle_points;   // all points inside of the rectangle
-  pcl::PointCloud<pcl::PointXYZRGB> pcl_rectangle_jcts;     // all jcts of the rectangle (hull points)
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_rectangle_points;   // all points inside of the rectangle
+//  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_rectangle_jcts;     // all jcts of the rectangle (hull points)
 
   int nrRectangles = vcore->NumGestalts(Z::Gestalt::RECTANGLE);
   for(unsigned i=0; i<nrRectangles; i++)
@@ -75,7 +75,7 @@ void KinectRectangles::Process()
         int y = (int)(r->isct[i].y/scale + 0.5);
 
         if(x>0 && x < point_cloud_width && y > 0 && y < point_cloud_height)
-          rectangle_jcts.push_back(points.at<cv::Vec4f>(y, x));
+          rectangle_jcts.push_back(kcore->GetPointCloud().at<cv::Vec4f>(y, x));
       }
         
       minX = (int) minX/scale+0.5;
@@ -91,7 +91,7 @@ void KinectRectangles::Process()
           p.x = p_x*scale;
           p.y = p_y*scale;
           if (r->Inside(p))
-            rectangle_points.push_back(points.at<cv::Vec4f>(p_y, p_x));
+            rectangle_points.push_back(kcore->GetPointCloud().at<cv::Vec4f>(p_y, p_x));
         }
       }
       
@@ -100,14 +100,14 @@ void KinectRectangles::Process()
   // int nr_points = pcl_rectangle_points.size();
       pclA::RemoveZeros(pcl_rectangle_points);
 
-      if(pcl_rectangle_points.size() > minimum_points_per_plane)
+      if(pcl_rectangle_points->size() > minimum_points_per_plane)
       {
-        pclA::ConvertCvVec2PCLCloud(rectangle_jcts, pcl_rectangle_jcts);
+//        pclA::ConvertCvVec2PCLCloud(rectangle_jcts, pcl_rectangle_jcts);
         
         // make singel SAC segmentation with 0.02m distance
         std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;                  // model_coefficients for SAC
         std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;         // planes from SAC
-        pclA::SingleSACSegmentation(pcl_rectangle_points.makeShared(), pcl_plane_clouds, model_coefficients, false, 1.5, 0.02, 100, minimum_points_per_plane);
+        pclA::SingleSACModelSegmentation(pcl_rectangle_points, pcl_plane_clouds, model_coefficients, pcl::SACMODEL_PLANE, false, 1.5, 0.02, 100, minimum_points_per_plane);
         
   /// TODO TODO TODO TODO Unused: How many points are valid (in %) => indicates something? pruning with this value?
   // int nr_points_wo =pcl_plane_clouds[0]->points.size();
@@ -131,12 +131,12 @@ void KinectRectangles::Process()
           
           // convert plane point cloud (inliers) to vector point cloud
           std::vector<cv::Vec4f> cv_vec_plane;
-          pclA::ConvertPCLCloud2CvVec(*pcl_plane_clouds[0], cv_vec_plane);
+          pclA::ConvertPCLCloud2CvVec(pcl_plane_clouds[0], cv_vec_plane);
           
           if(pcl_convex_hulls.size() >0) 
           {
             std::vector<cv::Vec4f> hull_points;
-            pclA::ConvertPCLCloud2CvVec(*pcl_convex_hulls[0], hull_points, true);         /// TODO Random color
+            pclA::ConvertPCLCloud2CvVec(pcl_convex_hulls[0], hull_points, true);         /// TODO Random color
 
             Z::Rectangle3D *r3d = new Z::Rectangle3D(cv_vec_plane, hull_points);
             kcore->NewGestalt3D(r3d);

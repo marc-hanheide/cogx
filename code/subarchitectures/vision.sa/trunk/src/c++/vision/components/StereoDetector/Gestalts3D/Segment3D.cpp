@@ -13,11 +13,28 @@ namespace Z
 
 /**
  * @brief Constructor of class Segment3D for Kinect.
+ * @param _vs3ID Id from vs3
+ * @param _p Edge points
+ * @param _es Edge-support (color, depth, mask, curvature)
  */
-Segment3D::Segment3D(unsigned _vs3ID, std::vector<cv::Vec4f> &_p) : Gestalt3D(Gestalt3D::SEGMENT)
+Segment3D::Segment3D(unsigned _vs3ID, 
+                     std::vector<cv::Vec4f> &_points, 
+                     std::vector<int> &_indexes,
+                     std::vector<cv::Vec4f> &_es) : Gestalt3D(Gestalt3D::SEGMENT)
 {
   vs3ID = _vs3ID;
-  points = _p;
+  points = _points;
+  indexes = _indexes;
+  edge_support = _es;
+  point[0][0] = points[0][0];
+  point[0][1] = points[0][1];
+  point[0][2] = points[0][2];
+  point[1][0] = points[points.size()-1][0];
+  point[1][1] = points[points.size()-1][1];
+  point[1][2] = points[points.size()-1][2];
+  center3D[0] = (points[0][0] + points[points.size()-1][0])/2.;
+  center3D[1] = (points[0][1] + points[points.size()-1][1])/2.;
+  center3D[2] = (points[0][2] + points[points.size()-1][2])/2.;
 }
 
 
@@ -74,21 +91,84 @@ printf("Segment3D::GetLinks: Not yet implemented!\n");
 /**
  * @brief Draw this 3D Gestalt to the TomGine render engine.
  * @param tgRenderer Render engine
+ * @param randomColor Use a random color
+ * @param use_color Use the delivered color
+ * @param color Color as float value
  */
-void Segment3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor)
+void Segment3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color, float color)
 {
-  RGBValue color;
-  if(randomColor)
-  {
-    color.r = std::rand()%255;
-    color.g = std::rand()%255;
-    color.b = std::rand()%255;
-  }
-
+  RGBValue col;
+  if(randomColor) col.float_value = GetRandomColor();
+  else if(use_color) col.float_value = color;
+  
   for(unsigned idx=0; idx<points.size()-1; idx++)
   {
-    if(!randomColor) color.float_value = points[idx][3];
-    tgRenderer->AddLine3D(points[idx][0], points[idx][1], points[idx][2], points[idx+1][0], points[idx+1][1], points[idx+1][2], color.r, color.g, color.b, 1);
+    if(!use_color && ! randomColor)
+    {
+//       col.float_value = points[idx][3];
+      col.r = 255;
+      col.g = 255;
+      col.b = 255;
+      // We use colors from the edge support
+      if(edge_support[idx][1] > edge_support[idx][2])
+      {
+        if(edge_support[idx][1] > edge_support[idx][3]) {       // depth .. 1
+          col.g = (1-edge_support[idx][1])*255;
+          col.b = (1-edge_support[idx][1])*255;
+        }
+        else {                                                  // curvature ..3
+          col.r = (1-edge_support[idx][3])*255;
+          col.g = (1-edge_support[idx][3])*255;
+        }
+      } else if(edge_support[idx][2] > edge_support[idx][3]) {  // mask .. 2
+          col.r = (1-edge_support[idx][2])*255;
+          col.b = (1-edge_support[idx][2])*255;
+        }
+        
+    }
+    tgRenderer->AddLine3D(points[idx][0], points[idx][1], points[idx][2], 
+                          points[idx+1][0], points[idx+1][1], points[idx+1][2], 
+                          col.r, col.g, col.b, 5);
+  }
+  if(drawNodeID)
+  {
+    char label[5];
+    snprintf(label, 5, "%u", GetNodeID());
+    tgRenderer->AddLabel3D(label, 14, center3D[0], center3D[1], center3D[2]);
+  }
+}
+
+/**
+ * @brief Draw this 3D Gestalt to an image
+ * @param image Image
+ * @param camPars Camera parameters
+ */
+void Segment3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters &camPars)
+{
+  double u1, v1, u2, v2;
+  double scale = 1;
+
+  CvScalar color = CV_RGB(std::rand()%255, std::rand()%255, std::rand()%255);
+  for(unsigned i=0; i<points.size()-1; i++)
+  {
+    
+    if(image.cols !=0) scale = camPars.width / image.cols; /// image width
+    u1 = camPars.fx*points[i][0]/scale + camPars.cx*points[i][2]/scale;
+    v1 = camPars.fy*points[i][1]/scale + camPars.cy*points[i][2]/scale;
+    u1 /= points[i][2];
+    v1 /= points[i][2];
+    
+    if(image.cols !=0) scale = camPars.width / image.cols; /// image width
+    u2 = camPars.fx*points[i+1][0]/scale + camPars.cx*points[i+1][2]/scale;
+    v2 = camPars.fy*points[i+1][1]/scale + camPars.cy*points[i+1][2]/scale;
+    u2 /= points[i+1][2];
+    v2 /= points[i+1][2];
+    
+    int x1 = (int) u1;
+    int y1 = (int) v1;
+    int x2 = (int) u2;
+    int y2 = (int) v2;
+    cv::line(image, cv::Point(x1, y1), cv::Point(x2, y2), color, 2);
   }
 }
 

@@ -31,7 +31,7 @@ public:
   
 private:
 
-  struct svm_node *x;                           ///< node of svm TODO Rename to node
+  struct svm_node *node;                        ///< node of svm
   int max_nr_attr;                              ///< Maximum attributes = maximum size of feature vector
 
   int max_type_svm;                             ///< Maximum types of SVM's

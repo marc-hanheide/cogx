@@ -23,8 +23,7 @@ namespace Z
  * @param iplI Ipl-Image
  * @param p Point matrix
  */
-KinectPatches::KinectPatches(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p) 
-                             : KinectBase(kc, vc, iplI, p)
+KinectPatches::KinectPatches(KinectCore *kc, VisionCore *vc) : KinectBase(kc, vc)
 {
   numPatches = 0;
 }
@@ -43,43 +42,49 @@ void KinectPatches::ClearResults()
  */
 void KinectPatches::Process()
 {
-// printf("KinectPatches::Process: start!\n");
-// struct timespec start, current;
-// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+printf("KinectPatches::Process: Antiquated: Use KinectModels instead.\n");
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;
+  pclA::ConvertCvMat2PCLCloud(kcore->GetPointCloud(), pcl_cloud);
 
-  pcl::PointCloud<pcl::PointXYZRGB> pcl_cloud;
-  pclA::ConvertCvMat2PCLCloud(points, pcl_cloud);
-
-// printf("KinectPatches::Process: pcl_cloud.points: %u\n", pcl_cloud.points.size());
-  
   // preprocess point cloud
   bool useVoxelGrid = false;
   double vg_size = 0.005;                  // 0.005 - 0.01
-  pclA::PreProcessPointCloud(pcl_cloud, useVoxelGrid, vg_size);
+  std::vector<int> pcl_model_cloud_indexes; // TODO be careful => not initialized!
+  pclA::PreProcessPointCloud(pcl_cloud, pcl_model_cloud_indexes, useVoxelGrid, vg_size);
 
-  bool sac_optimal_distance = true;
-  double sac_optimal_weight_factor = 1.5; // with/out voxelgrid: 1.5 / 3
-  double sac_distance = 0.005;            // with/out voxelgrid: 0.005 / 0.01
-  int sac_max_iterations = 250;
-  int sac_min_inliers = 25;
-  double ec_cluster_tolerance = 0.015;    // 15mm
-  int ec_min_cluster_size = 25;
-  int ec_max_cluster_size = 1000000;
+//   bool sac_optimal_distance = true;
+//   double sac_optimal_weight_factor = 1.5; // with/out voxelgrid: 1.5 / 3
+//   double sac_distance = 0.005;            // with/out voxelgrid: 0.005 / 0.01
+//   int sac_max_iterations = 250;           // 250
+//   int sac_min_inliers = 15;
+//   double ec_cluster_tolerance = 0.025;    // 15mm
+//   int ec_min_cluster_size = 15;
+//   int ec_max_cluster_size = 1000000;
 
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;
   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
 
 // printf("KinectPatches::Process: Fit Planes Recursive: start: Nr of points: %u\n", pcl_cloud.points.size());
-   pclA::FitPlanesRecursive(pcl_cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
-                            sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
 
-//   pclA::FitPlanesRecursiveWithNormals(pcl_cloud.makeShared(), pcl_plane_clouds, model_coefficients, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
-//                            sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size);
+struct timespec start, current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
 
-// printf("KinectPatches::ProcessFit Planes Recursive: end: nr_patches: %u!\n", pcl_plane_clouds.size());
+  pclA::FitModelRecursive(pcl_cloud, pcl_plane_clouds, model_coefficients, pcl::SACMODEL_PLANE/*, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
+                          sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size*/);
 
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for processing kinect PATCHES: FitModelRecursive %4.3f\n", timespec_diff(&current, &start));
+start=current;
 
-  // calculate convex hulls
+//   pclA::FitModelRecursiveWithNormals(pcl_cloud.makeShared(), pcl_plane_clouds, model_coefficients, pcl::SACMODEL_PLANE/*, sac_optimal_distance, sac_optimal_weight_factor, sac_distance, sac_max_iterations, 
+//                           sac_min_inliers, ec_cluster_tolerance, ec_min_cluster_size, ec_max_cluster_size*/);
+// 
+// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+// printf("Runtime for processing kinect PATCHES: FitModelRecursiveWithNormals %4.3f\n", timespec_diff(&current, &start));
+// start=current;
+                          
+
+  // Calculate convex hulls
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_hulls;
   pclA::GetConvexHulls(pcl_plane_clouds, model_coefficients, pcl_hulls);
 
@@ -89,14 +94,17 @@ void KinectPatches::Process()
   pclA::ConvertPCLClouds2CvVecs(pcl_plane_clouds, cv_vec_planes);
   pclA::ConvertPCLClouds2CvVecs(pcl_hulls, cv_vec_hulls, true);
   
-// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-// printf("Runtime for processing kinect PATCHES: %4.3f\n", timespec_diff(&current, &start));
-// start=current;
-
   // create Patch3D´s
   for(unsigned i=0; i<cv_vec_planes.size(); i++)
   {
-    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], cv_vec_hulls[i]);
+    std::vector<int> indexes; // TODO TODO TODO We do not have indexes here!!!
+//     cv::Mat_<cv::Vec3b> patch_mask = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
+//     cv::Mat_<cv::Vec3b> patch_edges = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
+//     pclA::ConvertIndexes2Mask(pcl_model_cloud_indexes[i], patch_mask);
+//     pclA::ConvertMask2Edges(patch_mask, patch_edges);
+//     pclA::ConvertEdges2Indexes(patch_edges, indexes);
+
+    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], indexes, cv_vec_hulls[i]);
     kcore->NewGestalt3D(p3d);
     numPatches++;
   }

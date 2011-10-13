@@ -38,6 +38,10 @@ public:
     RECTANGLE,
     FLAP,
     ELLIPSE,
+    PCL_EDGEL,
+    PCL_LINE,
+    PCL_CYLINDER,
+    PCL_SPHERE,
     MAX_TYPE,
     UNDEF = MAX_TYPE
   };
@@ -55,6 +59,8 @@ protected:
   unsigned nodeID;          // Unique ID of the Gestalt (used for graph building/SVM/Learning)
   unsigned objectLabel;     // Object label from Plane-Popout (ground truth data)
   unsigned graphCutLabel;   // Labels from the graph cut
+  
+  bool drawNodeID;          // true, to draw the nodeID on the render-engine
 
 public:
   static const char* TypeName(Type t);
@@ -82,11 +88,18 @@ public:
   void SetGraphCutLabel(const unsigned i) {graphCutLabel = i;}
   unsigned GetGraphCutLabel() {return graphCutLabel;}
 
-  
+  void DrawNodeID(bool draw) {drawNodeID = draw;}
+
+  virtual cv::Vec3f GetCenter3D() {return cv::Vec3f(0.,0.,0.);}                                     /// TODO later pure virtual!
+
   virtual bool GetLinks(vector<GraphLink> &links) {return false;}                                                 /// TODO ARI: noch notwendig?
 //  virtual void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor) {}                            // TODO pure virtual
-  virtual void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color = false, float color = 0.0) {}   // 
-  virtual void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars) {}              // TODO pure virtual ???
+  virtual void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, 
+                             bool randomColor, 
+                             bool use_color = false, 
+                             float color = 0.0) {}   // 
+  virtual void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, 
+                                     Video::CameraParameters &camPars) {}              // TODO pure virtual ???
 
   virtual void PrintGestalt3D() {}                                                                                // TODO pure virtual
 };

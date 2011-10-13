@@ -234,8 +234,8 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
       Array<VoteImage::Elem> iscts;
       unsigned sline;
       for(unsigned i=0; i<=100; i++)
-	if(vote_img->Extend(sline, iscts))
-	  InformNewIntersection(sline, iscts);
+        if(vote_img->Extend(sline, iscts))
+          InformNewIntersection(sline, iscts);
       clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cur);
     } while(timespec_diff(&cur, &start) < (double)runtime_ms/1000.);
 // printf("VisionCore::ProcessImage: stop incremental processing after: %4.2f\n", timespec_diff(&cur, &start));
@@ -245,7 +245,7 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
     // ------------------------------ //
     for(int i = 0; i < GestaltPrinciple::MAX_TYPE; i++)
       if(IsEnabledGestaltPrinciple((GestaltPrinciple::Type)i))
-	principles[i]->PostOperate();
+        principles[i]->PostOperate();
   }
   catch (exception &e)
   {
@@ -393,11 +393,11 @@ const char* VisionCore::GetGestaltTypeName(Gestalt::Type type)
 const char* VisionCore::GetGestaltListInfo()
 {
   const unsigned info_size = 10000;
-  static char info_text[info_size] = "";
-  int n = 0;
+  static char info_text[info_size] = "  VISION CORE GESTALT LIST INFO\n  XXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n";
+  int n = 64;
 
   for(int i=0; i < Gestalt::MAX_TYPE; i++)
-    n += snprintf(info_text + n, info_size - n, "%s %u\n", GetGestaltTypeName((Gestalt::Type)i), gestalts[i].Size());
+    n += snprintf(info_text + n, info_size - n, "  %s %u\n", GetGestaltTypeName((Gestalt::Type)i), gestalts[i].Size());
 
   return info_text;
 }
