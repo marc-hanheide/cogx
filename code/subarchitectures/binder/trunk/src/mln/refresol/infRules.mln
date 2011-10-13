@@ -5,15 +5,15 @@
 
 // if there exist a belief there must be a resolution (not really necessary)
 //(exist p belief(p) ) => (exist q resolution(q)).
-0.5 belief(a) ^ !belief(b) => resolution(a)
+0.5 belief(b) ^ !belief(b') => resolution(b)
 // a resolution can be only about a belief that exists ...
-resolution(p) => belief(p).
+resolution(b) => belief(b).
 // ... and if there is a constraint
 //resolution(b) => exist c color_constraint(c) v exist s shape_constraint(s).
 
-salience_constraint(b, A_high) => resolution(b).
-1.3 salience_constraint(b, A_low) => resolution(b)
--2 salience_constraint(a, b)
+belief(b) ^ salience_constraint(A_high) => !resolution(b).
+3 belief(b) ^ salience_constraint(A_low) => !resolution(b)
+-4  salience_constraint(s)
 
 // rules for attributed beliefs
 //4 belief(b) ^ epstatus(b, Attributed) ^ attributed_color(b, c) ^ color_constraint(c) => resolution(b)
