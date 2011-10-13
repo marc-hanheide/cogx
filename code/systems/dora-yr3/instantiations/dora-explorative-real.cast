@@ -49,7 +49,7 @@ SETVAR or3d_sift_files=<multiline>
    %(siftroot_)/juice.sift
    %(siftroot_)/coffee.sift
    %(siftroot_)/lipton.sift
-   %(siftroot_)/kellogs.sift
+   %(siftroot_)/kelloggs.sift
    %(siftroot_)/AI.sift
    %(siftroot_)/XXX
 </multiline>
@@ -61,7 +61,7 @@ SETVAR or3d_ply_files=<multiline>
    %(plyroot_)/juice.ply
    %(plyroot_)/coffee.ply
    %(plyroot_)/lipton.ply
-   %(plyroot_)/kellogs.ply
+   %(plyroot_)/kelloggs.ply
    %(plyroot_)/AI.ply
    %(plyroot_)/table.ply
 </multiline>
