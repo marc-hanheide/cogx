@@ -94,7 +94,7 @@ extends AbstractDialogueComponent {
 						boolean finished = arg.addInterpretation(value);
 
 						if (finished) {
-							getContext().onSuccessfulInterpretation(arg.getInterpretations());
+							getContext().onSuccessfulInterpretation(arg.getInterpretations(), arg.getPriorConfidence());
 						}
 						else {
 							addTask(expandInterpretationTask(arg));
@@ -102,7 +102,7 @@ extends AbstractDialogueComponent {
 					}
 					else {
 						// the ultimate termination condition?
-						getContext().onSuccessfulInterpretation(arg.getInterpretations());
+						getContext().onSuccessfulInterpretation(arg.getInterpretations(), arg.getPriorConfidence());
 
 						// no result for this one
 //						getContext().onNoInterpretation();
@@ -138,8 +138,8 @@ extends AbstractDialogueComponent {
 		});
 	}
 
-	protected PartialInterpretation<T> interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, TerminationCondition<T> cond) {
-		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner, cond);
+	protected PartialInterpretation<T> interpretationRequestToPartialInterpretation(ProofPruner pruner, WorkingMemoryAddress wma, InterpretationRequest request, double priorConfidence, TerminationCondition<T> cond) {
+		return PartialInterpretation.fromModalisedAtom(getLogger(), request.goal, pruner, priorConfidence, cond);
 	}
 
 }
