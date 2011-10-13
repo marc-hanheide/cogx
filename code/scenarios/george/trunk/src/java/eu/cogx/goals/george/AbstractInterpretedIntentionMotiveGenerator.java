@@ -34,6 +34,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 	public AbstractInterpretedIntentionMotiveGenerator(Class<T> _entryCls) {
 		super(TutorInitiativeMotive.class, _entryCls);
+		monitorMotivesForDeletion(true);
 	}
 
 	@Override
@@ -435,5 +436,41 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// InterpretedIntention newEntry, TutorInitiativeMotive existingMotive) {
 	// return existingMotive;
 	// }
+
+	/**
+	 * Removes reference flag from belief. Does not update on WM.
+	 * 
+	 * @param _gb
+	 */
+	protected void unmarkReferent(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _gb) {
+
+		_gb.getContent()
+				.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
+
+	}
+
+	private static final String[] POTENTIAL_ACTION_EFFECTS = new String[] {
+			"global-color-question-answered", "global-shape-question-answered",
+			"global-type-question-answered",
+			"object-refering-color-question-answered",
+			"object-refering-shape-question-answered",
+			"object-refering-type-question-answered", "color-learned",
+			"shape-learned", "type-learned", "color-unlearned",
+			"shape-unlearned", "type-unlearned",
+			"polar-color-question-answered", "polar-shape-question-answered",
+			"polar-type-question-answered" };
+
+	protected void removeActionEffects(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb) {
+
+		for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
+			FormulaDistribution removed = gb.getContent().remove(
+					potentialEffect);
+			if (removed != null) {
+				log("removed effect from belief: " + potentialEffect);
+			}
+		}
+	}
 
 }
