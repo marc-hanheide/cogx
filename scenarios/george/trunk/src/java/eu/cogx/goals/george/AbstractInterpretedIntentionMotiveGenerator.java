@@ -10,16 +10,11 @@ import motivation.slice.TutorInitiativeQuestionMotive;
 import vision.execution.george.VisionActionInterface;
 import autogen.Planner.Goal;
 import cast.AlreadyExistsOnWMException;
-import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
-import cast.architecture.ChangeFilterFactory;
-import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryChange;
-import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -413,7 +408,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				true);
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
-		sleepComponent(1000);
+		sleepComponent(500);
 	}
 
 	protected void addAttribution(WorkingMemoryAddress _groundedBeliefAddr,
@@ -429,7 +424,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
-		sleepComponent(1000);
+		sleepComponent(500);
 	}
 
 	// @Override

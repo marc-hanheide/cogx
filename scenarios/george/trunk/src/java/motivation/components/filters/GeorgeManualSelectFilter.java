@@ -40,7 +40,7 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 
 	private JPanel jMotivesPanel = null;
 
-	private JSlider jcannedPrioritySlider = null;
+//	private JSlider jcannedPrioritySlider = null;
 	private JSlider jRobotInitiativePrioritySlider = null;
 	private JSlider jTutorInitiativePrioritySlider = null;
 	private JSlider jRobotNonSituatedPrioritySlider = null;
@@ -177,11 +177,11 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					jcannedPrioritySlider.setValue(0);
-					jRobotInitiativePrioritySlider.setValue(0);
-					jTutorInitiativePrioritySlider.setValue(0);
-					jRobotNonSituatedPrioritySlider.setValue(0);
+					// default start-up slider values
 					jAnalyzePOPrioritySlider.setValue(0);
+					jLearnVOPrioritySlider.setValue(0);
+					jLookAroundPrioritySlider.setValue(0);
+					jTutorInitiativePrioritySlider.setValue(0);
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -197,10 +197,12 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					jcannedPrioritySlider.setValue(1);
-					jRobotInitiativePrioritySlider.setValue(1);
-					jTutorInitiativePrioritySlider.setValue(1);
-					jRobotNonSituatedPrioritySlider.setValue(1);
+					// default start-up slider values
+					jAnalyzePOPrioritySlider.setValue(1);
+					jLearnVOPrioritySlider.setValue(2);
+					jLookAroundPrioritySlider.setValue(0);
+					jTutorInitiativePrioritySlider.setValue(3);
+
 					component.checkAll();
 				} catch (CASTException e1) {
 					component.println("unexpected exception in checkAll: ");
@@ -237,17 +239,17 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 
 	}
 
-	/**
-	 * This method initializes jExplorePrioritySlider
-	 * 
-	 * @return javax.swing.JSlider
-	 */
-	private JSlider getJSlidercanned() {
-		if (jcannedPrioritySlider == null) {
-			jcannedPrioritySlider = createPrioritySlider();
-		}
-		return jcannedPrioritySlider;
-	}
+//	/**
+//	 * This method initializes jExplorePrioritySlider
+//	 * 
+//	 * @return javax.swing.JSlider
+//	 */
+//	private JSlider getJSlidercanned() {
+//		if (jcannedPrioritySlider == null) {
+//			jcannedPrioritySlider = createPrioritySlider();
+//		}
+//		return jcannedPrioritySlider;
+//	}
 
 	/**
 	 * This method initializes jExplorePrioritySlider
@@ -316,7 +318,7 @@ public class GeorgeManualSelectFilter implements MotiveFilter {
 		jAnalyzePOPrioritySlider.setValue(1);
 		jLearnVOPrioritySlider.setValue(0);
 		jLookAroundPrioritySlider.setValue(0);
-		jTutorInitiativePrioritySlider.setValue(2);
+		jTutorInitiativePrioritySlider.setValue(3);
 
 	}
 
