@@ -1,5 +1,6 @@
 package eu.cogx.goals.george;
 
+import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeMotive;
 import cast.AlreadyExistsOnWMException;
 import cast.ConsistencyException;
@@ -43,7 +44,7 @@ public class PossibleInterpretationsMotiveGenerator
 			InterpretedIntention mostConfidentIntention = IntentionUnpacker
 					.getMostConfidentIntention(_pii);
 
-			//filter out answers and maybe other types later?
+			// filter out answers and maybe other types later?
 			if (!mostConfidentIntention.stringContent.get("subtype").contains(
 					"answer")) {
 
@@ -92,6 +93,19 @@ public class PossibleInterpretationsMotiveGenerator
 			markReferent(iint.addressContent.get("about"));
 		}
 
+		// if this is an attributed belief task, mark attributions in all
+		// referents too
+		if (motive instanceof TutorInitiativeLearningMotive) {
+
+			TutorInitiativeLearningMotive tilm = (TutorInitiativeLearningMotive) motive;
+
+			for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
+				InterpretedIntention iint = _pii.intentions.get(addr);
+				addStringFeature(iint.addressContent.get("about"),
+						tilm.resultPredicate, tilm.resultValue);
+			}
+		}
+
 		return motive;
 	}
 
@@ -133,6 +147,14 @@ public class PossibleInterpretationsMotiveGenerator
 		String predicate = CASTUtils.concatenate("global-", _feature,
 				"-question-answered");
 		return "(exists (?v - VisualObject) (and (" + predicate + " ?v)))";
+	}
+
+	@Override
+	protected String getAscriptionGoalString(String feature, boolean learn,
+			String groundedBeliefID) {
+
+		return "(exists (?v - VisualObject) (and ("
+				+ getAscriptionPredicate(feature, learn) + " ?v)))";
 	}
 
 }
