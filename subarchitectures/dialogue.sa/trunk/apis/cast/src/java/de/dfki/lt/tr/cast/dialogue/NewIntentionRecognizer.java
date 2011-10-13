@@ -322,9 +322,13 @@ extends AbstractAbductiveComponent<InterpretedUserIntention> {
 
 		getLogger().debug("I'll look this intention:\n" + InterpretedUserIntention.interpretedIntentionToString(iint));
 
-		if (stringEquals(iint.stringContent.get("type"), "question")
+		if ((stringEquals(iint.stringContent.get("type"), "question")
 				&& (stringEquals(iint.stringContent.get("subtype"), "open")
-					|| stringEquals(iint.stringContent.get("subtype"), "polar"))) {
+					|| stringEquals(iint.stringContent.get("subtype"), "polar"))
+			
+			)
+			||
+			(stringEquals(iint.stringContent.get("type"), "assertion") && stringEquals(iint.stringContent.get("subtype"), "ascription"))) {
 
 			// this is the case we can handle
 			getLogger().debug("okay, this seems to be an open/polar question -> we should be able to handle multiple intentions here");
