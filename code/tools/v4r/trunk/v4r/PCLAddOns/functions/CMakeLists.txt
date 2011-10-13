@@ -9,6 +9,6 @@ SET(SOURCE_H
   PCLFunctions.h
 )
 
-add_library(v4rpclfunctions SHARED ${SOURCE_CPP})
-target_link_libraries(v4rpclfunctions ${OPENCV_LIBRARIES} ${PCL_LIBRARIES} v4rpclutils)
+add_library(PCLFunctions SHARED ${SOURCE_CPP})
+target_link_libraries(PCLFunctions ${OPENCV_LIBRARIES} ${PCL_LIBRARIES} PCLUtils)
 
