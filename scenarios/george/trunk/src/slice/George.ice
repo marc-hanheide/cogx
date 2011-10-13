@@ -15,6 +15,8 @@ module execution {
 	class Robot {
 			cast::cdl::WorkingMemoryPointer currentViewCone;
 			bool armIsResting;
+			bool excludeColor;
+			bool excludeShape;
 	};
 
     module actions {

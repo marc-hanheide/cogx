@@ -64,6 +64,11 @@ public class RobotTransferFunction extends
 
 		result.put(ARM_IN_RESTING_POSITION_PRED, BoolFormula.create(from.armIsResting)
 				.getAsFormula());
+		
+		
+		result.put("exclude-color-description", BoolFormula.create(from.excludeColor).getAsFormula());
+		result.put("exclude-shape-description", BoolFormula.create(from.excludeShape).getAsFormula());
+		
 		return result;
 	}
 

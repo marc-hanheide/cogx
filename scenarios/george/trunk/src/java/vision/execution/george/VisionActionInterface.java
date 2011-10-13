@@ -340,7 +340,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 		if (m_viewStateAddress == null) {
 			m_viewStateAddress = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
-			Robot rbt = new Robot(_viewconePtr, m_armIsRestingInitially);
+			Robot rbt = new Robot(_viewconePtr, m_armIsRestingInitially, false, false);
 			addToWorkingMemory(m_viewStateAddress, rbt);
 		} else {
 			lockEntry(m_viewStateAddress, WorkingMemoryPermissions.LOCKEDODR);
