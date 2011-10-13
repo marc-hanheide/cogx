@@ -1,18 +1,27 @@
 //predicate declarations
+default(t_dummy)
+
 color(t_belief, t_color)
 shape(t_belief, t_shape)
+salience(t_belief)
+type(t_belief, t_attr_type)
+room-type(t_belief, t_attr_type)
 
-attributed_color(t_belief, t_attr_color)
-attributed_shape(t_belief, t_attr_shape)
-attributed_salience(t_belief, t_attr_salience)
+//attributed_color(t_belief, t_attr_color)
+//attributed_shape(t_belief, t_attr_shape)
+
 
 belief(t_belief)
-epstatus(t_belief, t_status)
+//epstatus(t_belief, t_status)
 
 color_constraint(t_attr_color)
 shape_constraint(t_attr_shape)
+salience_constraint(t_belief, t_attr_salience)
 type_constraint(t_attr_type)
+
 resolution(t_belief)
+
+
 
 // temporary solution for the 'openworldness' of number of private beliefs
 // the predicate prv_belief makes sure that only the (non-unit) rules of perceived
@@ -20,109 +29,83 @@ resolution(t_belief)
 // this keeps the size of the network managable even if the number of possible
 // private beliefs (|bel|) is significantly larger than 	
 
-// -1.87115  color(p,P_red)
--1.87115  color(a1,P_red) v !epstatus(a1,Shared)
+// -5.61346  color(a1,a2)
+-1.4 color(a1,a2) v !belief(a1)
+-0.5  shape(a1,a2) v !belief(a1)
 
-// -1.87115  color(p,P_blue)
--1.87115  color(a1,P_blue) v !epstatus(a1,Shared)
-
-// -1.87115  color(p,P_green)
--1.87115  color(a1,P_green) v !epstatus(a1,Shared)
-
-// -1.87115  color_constraint(A_red)
--1.87115  color_constraint(A_red)
-
-// -1.87115  color_constraint(A_blue)
--1.87115  color_constraint(A_blue)
-
-// -1.87115  color_constraint(A_green)
--1.87115  color_constraint(A_green)
-
-// -1.87115  color_constraint(A_red)
--1.87115  shape_constraint(A_compact)
-
-// -1.87115  color_constraint(A_blue)
--1.87115  shape_constraint(A_elongated)
+//-5.61346  color_constraint(a1)
+-1.4  color_constraint(a1)
+-0.5 shape_constraint(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_red) => resolution(p)
-1       !color(a1,P_red) v !color_constraint(A_red) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2      !color(a1,P_red) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_blue) ^ color_constraint(A_red) => resolution(p)
--2       !color(a1,P_blue) v !color_constraint(A_red) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_blue) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_red) => resolution(p)
--2       !color(a1,P_green) v !color_constraint(A_red) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_green) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_blue) => resolution(p)
--2       !color(a1,P_red) v !color_constraint(A_blue) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_red) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_blue) ^ color_constraint(A_blue) => resolution(p)
-1       !color(a1,P_blue) v !color_constraint(A_blue) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_blue) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_blue) => resolution(p)
--2       !color(a1,P_green) v !color_constraint(A_blue) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_green) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_green) => resolution(p)
--2       !color(a1,P_red) v !color_constraint(A_green) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_red) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_blue) ^ color_constraint(A_green) => resolution(p)
--2       !color(a1,P_blue) v !color_constraint(A_green) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_blue) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_green) => resolution(p)
-1       !color(a1,P_green) v !color_constraint(A_green) v resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_green) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_red) => !resolution(p)
--1       !color(a1,P_red) v !color_constraint(A_red) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_red) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_blue) ^ color_constraint(A_red) => !resolution(p)
-2       !color(a1,P_blue) v !color_constraint(A_red) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_blue) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_red) => !resolution(p)
-2       !color(a1,P_green) v !color_constraint(A_red) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_green) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_blue) => !resolution(p)
-2       !color(a1,P_red) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_red) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_blue) ^ color_constraint(A_blue) => !resolution(p)
--1       !color(a1,P_blue) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_blue) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_blue) => !resolution(p)
-2       !color(a1,P_green) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_green) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_green) => !resolution(p)
-2       !color(a1,P_red) v !color_constraint(A_green) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_red) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_blue) ^ color_constraint(A_green) => !resolution(p)
-2       !color(a1,P_blue) v !color_constraint(A_green) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+2       !color(a1,P_blue) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
 
 // 0       prv_belief(p) ^ color(p,P_green) ^ color_constraint(A_green) => !resolution(p)
--1       !color(a1,P_green) v !color_constraint(A_green) v !resolution(a1) v !belief(a1) v !epstatus(a1,Shared)
+-2       !color(a1,P_green) v !color_constraint(A_green) v !resolution(a1) v !belief(a1) 
 
 
-1       !shape(a1,P_compact) v !shape_constraint(A_compact) v resolution(a1) v !epstatus(a1,Shared)
--2       !shape(a1,P_compact) v !shape_constraint(A_elongated) v resolution(a1) v !epstatus(a1,Shared)
-1       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v resolution(a1) v !epstatus(a1,Shared)
--2       !shape(a1,P_elongated) v !shape_constraint(A_compact) v resolution(a1) v !epstatus(a1,Shared)
+2       !shape(a1,P_compact) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1)
+-2       !shape(a1,P_compact) v !shape_constraint(A_elongated) v resolution(a1) v !belief(a1)
+2       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v resolution(a1) v !belief(a1)
+-2       !shape(a1,P_elongated) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1)
 
--1       !shape(a1,P_compact) v !shape_constraint(A_compact) v !resolution(a1) v !epstatus(a1,Shared)
-2       !shape(a1,P_compact) v !shape_constraint(A_elongated) v !resolution(a1) v !epstatus(a1,Shared)
--1       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v !resolution(a1) v !epstatus(a1,Shared)
-2       !shape(a1,P_elongated) v !shape_constraint(A_compact) v !resolution(a1) v !epstatus(a1,Shared)
+-2       !shape(a1,P_compact) v !shape_constraint(A_compact) v !resolution(a1) v !belief(a1)
+2       !shape(a1,P_compact) v !shape_constraint(A_elongated) v !resolution(a1) v !belief(a1)
+-2       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v !resolution(a1) v !belief(a1)
+2       !shape(a1,P_elongated) v !shape_constraint(A_compact) v !resolution(a1) v !belief(a1)
 
-// -5.61346  color(a1,a2)
--5.61346  color(a1,a2)
--5.61346  shape(a1,a2)
-
-// -5.61346  color_constraint(a1)
--5.61346  color_constraint(a1)
--5.61346  shape_constraint(a1)
 
 // -7.23121  resolution(a1)
 //-7.23121  resolution(a1)
 
 // -7.23121  prv_belief(a1)
--7.23121  belief(a1)
-
-// -7.23121  resolved(a1)
-//-7.23121  resolved(a1)
+//-7.23121  belief(a1)
 

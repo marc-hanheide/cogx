@@ -1,19 +1,19 @@
 // Inference rules
 
 // resolution should be unique
-belief(b) ^ belief (b') ^ resolution(b) ^ resolution(b') => b = b'.
+!resolution(b) v !resolution(b') v (b = b') v !belief(b) v !belief (b').
 
 // if there exist a belief there must be a resolution (not really necessary)
 //(exist p belief(p) ) => (exist q resolution(q)).
-
+0.5 belief(a) ^ !belief(b) => resolution(a)
 // a resolution can be only about a belief that exists ...
 resolution(p) => belief(p).
 // ... and if there is a constraint
 //resolution(b) => exist c color_constraint(c) v exist s shape_constraint(s).
 
-attributed_salience(b, A_high) => resolution(b).
-1 attributed_salience(b, A_low) => resolution(b)
--2 attributed_salience(a, b)
+salience_constraint(b, A_high) => resolution(b).
+1.3 salience_constraint(b, A_low) => resolution(b)
+-2 salience_constraint(a, b)
 
 // rules for attributed beliefs
 //4 belief(b) ^ epstatus(b, Attributed) ^ attributed_color(b, c) ^ color_constraint(c) => resolution(b)
