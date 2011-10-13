@@ -24,7 +24,7 @@ private:
   int numPatches;              ///< Number of extracted 3D plane patches
   
 public:
-  KinectPatches(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p);
+  KinectPatches(KinectCore *kc, VisionCore *vc);
   ~KinectPatches() {}
 
   int Num3DGestalts() {return numPatches;}

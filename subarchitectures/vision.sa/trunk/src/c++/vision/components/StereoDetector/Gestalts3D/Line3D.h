@@ -13,6 +13,8 @@
 #include "StereoTypes.h"
 #include "StereoCore.h"
 
+#include "../../../VisionUtils.h"
+
 namespace Z
 {
 
@@ -23,7 +25,7 @@ class Line3D : public Gestalt3D
 {
 public:
   cv::Vec4f point[2];                   ///< Start/End point of the line in 3D (with color).
-  cv::Point3f center3D;                 ///< 3D center point of the line
+  cv::Vec3f center3D;                 ///< 3D center point of the line
   cv::Point3f dir;                      ///< Direction of the line
   std::vector<cv::Vec4f> edge;          ///< Edge of the line (Segment3D edgels)
 
@@ -36,14 +38,12 @@ public:
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
   
   bool GetLinks(vector<GraphLink> &links);
-  cv::Point3f GetCenter3D() {return center3D;}
+  cv::Vec3f GetCenter3D() {return center3D;}
   void GetCenter3D(cv::Point3f &c) {c = center3D;}
   cv::Point3f GetDirection() {return dir;}
 
-//   void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor) {DrawGestalt3D(tgRenderer, false, 0);}
-//   void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor = true);
-  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool use_color = false, float color = 0.0);
-  void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color = false, float color = 0.0);
+  void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters &camPars);
   void PrintGestalt3D();
 
   double LLProximity(Line3D *l);

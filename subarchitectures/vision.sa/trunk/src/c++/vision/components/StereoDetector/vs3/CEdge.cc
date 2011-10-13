@@ -244,11 +244,11 @@ void CEdge::Angle(IplImage *dx, IplImage *dy, IplImage *angle)
 void CEdge::Canny(IplImage *indx, IplImage *indy, IplImage *idst, double lowThr, double highThr)
 {
   if(!IsImage16SC1(indx) || !IsImage16SC1(indy))
-    throw std::runtime_error("CEdge::Angle: Input images should be IPL_DEPTH_16S, 1 channel!");
+    throw std::runtime_error("CEdge::Canny: Input images should be IPL_DEPTH_16S, 1 channel!");
   if(!IsImage8UC1(idst))
-    throw std::runtime_error("CEdge::Angle: Output image should be IPL_DEPTH_8U, 1 channel!");
+    throw std::runtime_error("CEdge::Canny: Output image should be IPL_DEPTH_8U, 1 channel!");
   if (!IsImageSizeEqual(indx,indy) || !IsImageSizeEqual(indx,idst))
-    throw std::runtime_error("CEdge::Angle: Size of images must be equal!");
+    throw std::runtime_error("CEdge::Canny: Size of images must be equal!");
 
   CvMat dxstub, *dx = (CvMat*)indx;
   CvMat dystub, *dy = (CvMat*)indy;

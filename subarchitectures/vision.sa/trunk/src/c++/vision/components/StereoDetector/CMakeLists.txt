@@ -15,9 +15,6 @@ link_directories(${V4R_DIR}/lib)
 
 
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision)
-#include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine)
-#include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGine)
-#include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/components/TomGine/TomGineWraper)
 
 include_directories(matas)
 include_directories(math)
@@ -56,11 +53,11 @@ SET(SOURCES
 )
 add_cast_component(StereoDetector ${SOURCES} ${HEADERS})
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDLearner SDGraphCut)
-link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow) #TomGine TomGineWraper)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)# GLWindow) #TomGine TomGineWraper)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 
-target_link_libraries(${CAST_COMPONENT_NAME} PlanePopout PCLUtils PCLFunctions v4rtomgine)
+target_link_libraries(${CAST_COMPONENT_NAME} v4rplanepopout v4rpclfunctions v4rtomgine)
 endif (HAVE_V4R)
 endif (HAVE_PCL_LIBRARY)
 

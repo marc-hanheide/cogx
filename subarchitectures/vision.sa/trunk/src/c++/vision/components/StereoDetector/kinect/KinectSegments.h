@@ -26,7 +26,7 @@ private:
   int numSegments;              ///< Number of extracted 3D segments
   
 public:
-  KinectSegments(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p);
+  KinectSegments(KinectCore *kc, VisionCore *vc);
   ~KinectSegments() {}
 
   int Num3DGestalts() {return numSegments;}

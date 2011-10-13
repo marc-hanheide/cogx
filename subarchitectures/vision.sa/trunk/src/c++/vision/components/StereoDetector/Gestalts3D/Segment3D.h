@@ -13,29 +13,45 @@
 #include "StereoTypes.h"
 #include "StereoCore.h"
 
+#include "../../../VisionUtils.h"
+
 namespace Z
 {
 
 /**
- * @brief Class Line3D
+ * @brief Class Segment3D
  */
 class Segment3D : public Gestalt3D
 {
-public:
-  std::vector<cv::Vec4f> points;               ///< Points of the edge in 3D (with color).
-//  Vertex3D point[2];                      ///< Start/end point of the 3D line
-  
-//  Vertex3D isct3D[2];                     ///< 3D intersection point [START/END]
-//  Vertex3D armPoints3D[2];             ///< 3D arm points
-//  Vector3 armDir3D[2];                 ///< 3D direction of the 3 arms of the L-Junction
+private:
+  std::vector<cv::Vec4f> points;              ///< Points of the edge in 3D (with color).
+  std::vector<int> indexes;                   ///< Indexes of the point cloud refering to the image space.
+  std::vector<cv::Vec4f> edge_support;        ///< Support of color-, depth-, mask-, curvature-edges
+  cv::Vec3f point[2];                         ///< Start/End point of the segment in 3D
+  cv::Vec3f center3D;                         ///< 3D center point
 
-  Segment3D(unsigned _vs3ID, std::vector<cv::Vec4f> &_p);
-  Segment3D(unsigned vs3IDleft, unsigned vs3IDright);
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
+
+public:
+  Segment3D(unsigned _vs3ID, 
+            std::vector<cv::Vec4f> &_points,
+            std::vector<int> &_indexes,
+            std::vector<cv::Vec4f> &_es);
+  Segment3D(unsigned vs3IDleft, unsigned vs3IDright);
   
   bool GetLinks(vector<GraphLink> &links);
+  cv::Vec3f GetCenter3D() {return center3D;}
+  void GetCenter3D(cv::Vec3f &c) {c = center3D;}
+  cv::Vec3f GetStartPoint() {return point[0];}
+  cv::Vec3f GetEndPoint() {return point[0];}
+  void GetPoints(std::vector<cv::Vec4f> &p) {p = points;}
+  double GetEdgeSupportDepth(int idx) {return (double) edge_support[idx][1];}
+  double GetEdgeSupportMask(int idx) {return (double) edge_support[idx][2];}
+  double GetEdgeSupportCurvature(int idx) {return (double) edge_support[idx][3];}
+  void GetIndexes(std::vector<int> &_indexes) {_indexes = indexes;}
   
-  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor = true);
+  void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color = false, float color = 0.0);
+  void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters &camPars);
   void PrintGestalt3D();
 };
 

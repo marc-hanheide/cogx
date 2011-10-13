@@ -21,8 +21,8 @@ static double MAXIMUM_DISTANCE = 0.05;
  * @brief Constructor of StereoLines: Calculate stereo matching of Lines
  * @param vc Vision core of calculated LEFT and RIGHT stereo image
  */
-KinectSegments::KinectSegments(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p) 
-                             : KinectBase(kc, vc, iplI, p)
+KinectSegments::KinectSegments(KinectCore *kc, VisionCore *vc) 
+                             : KinectBase(kc, vc)
 {
   numSegments = 0;
 }
@@ -42,10 +42,10 @@ void KinectSegments::ClearResults()
 void KinectSegments::Process()
 {
   cv::Vec4f last_point;
-  int point_cloud_width = points.cols;
-  int point_cloud_height = points.rows;
+  int pc_width = kcore->GetPointCloudWidth();
+  int pc_height = kcore->GetPointCloudHeight();
   
-  double scale = iplImg->width/point_cloud_width;
+  double scale = kcore->GetImageWidth()/pc_width;
   int nrSegments = vcore->NumGestalts(Z::Gestalt::SEGMENT);
   
   for(unsigned i=0; i<nrSegments; i++)
@@ -54,16 +54,19 @@ void KinectSegments::Process()
 
     Z::Segment *s = (Z::Segment*) vcore->Gestalts(Z::Gestalt::SEGMENT, i);
     VEC::Vector2 edgePoint2D;
-    vector<cv::Vec4f> edgels3d;
+    std::vector<cv::Vec4f> edgels3d;
+    std::vector<int> indexes;
+    std::vector<cv::Vec4f> edgels3dEdgeSupport;   /// TODO Be careful: EMPTY !!!
 
 // printf("\nsegment: %u\n", i);
     for(unsigned j=0; j<s->edgels.Size(); j++)
     {
       edgePoint2D = s->edgels[j].p / scale;
 
-      if((int) edgePoint2D.x >= 0 && (int) edgePoint2D.x < point_cloud_width && (int) edgePoint2D.y >= 0. && (int) edgePoint2D.y < point_cloud_height)
+      if((int) edgePoint2D.x >= 0 && (int) edgePoint2D.x < pc_width && 
+         (int) edgePoint2D.y >= 0. && (int) edgePoint2D.y < pc_height)
       {
-        cv::Vec4f point3D = points.at<cv::Vec4f>(edgePoint2D.y, edgePoint2D.x);
+        cv::Vec4f point3D = kcore->GetPointCloud().at<cv::Vec4f>(edgePoint2D.y, edgePoint2D.x);
 
         if(point3D[2] > 0.001)    // z-value is positive
         {
@@ -71,6 +74,7 @@ void KinectSegments::Process()
           {
 // printf("  edgel %u added\n", j);
             edgels3d.push_back(point3D);
+            indexes.push_back(edgePoint2D.y*pc_width + edgePoint2D.x);
             last_point = point3D;
             firstPoint = false;
           }
@@ -82,16 +86,18 @@ void KinectSegments::Process()
             {
 // printf("  edgel %u added\n", j);
               edgels3d.push_back(point3D);
+              indexes.push_back(edgePoint2D.y*pc_width + edgePoint2D.x);
             }
             else 
             {
               if(edgels3d.size() > 1)
               {
 // printf("    => new segment, because of broken edge\n");
-                Z::Segment3D *s3d = new Z::Segment3D(s->ID(), edgels3d);
+                Z::Segment3D *s3d = new Z::Segment3D(s->ID(), edgels3d, indexes, edgels3dEdgeSupport);
                 kcore->NewGestalt3D(s3d);
               }
               edgels3d.clear();
+              indexes.clear();
               last_point = point3D;
             }
             last_point = point3D;
@@ -106,7 +112,7 @@ void KinectSegments::Process()
     if(edgels3d.size() > 1)
     {
 // printf("    => new segment, because end of edge reached\n");
-      Z::Segment3D *s3d = new Z::Segment3D(s->ID(), edgels3d);
+      Z::Segment3D *s3d = new Z::Segment3D(s->ID(), edgels3d, indexes, edgels3dEdgeSupport);
       kcore->NewGestalt3D(s3d);
     }
   }

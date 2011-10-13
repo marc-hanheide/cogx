@@ -19,10 +19,14 @@ static const char type_names[][NAME_LENGTH] = {
   "KINECT_COLLINEARITIES",
   "KINECT_CLOSURES",
   "KINECT_RECTANGLES",
+  "KINECT_PCL_MODELS",
+  "KINECT_PCL_EDGELS",
+  "KINECT_PCL_SEGMENTS",
+  "KINECT_PCL_LINES",
   "UNDEF"
   };
 
-static const int stereo_type_names_length[] = {13, 14, 11, 21, 5};
+static const int stereo_type_names_length[] = {13, 14, 11, 21, 14, 16, 17, 17, 18, 15, 5};
 
 /**
  * @brief Returns the length of the name of a given stereo type.
@@ -59,12 +63,10 @@ KinectBase::Type KinectBase::EnumType(const char *type_name)
 /**
  * @brief Constructor of the kinect base.
  */
-KinectBase::KinectBase(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p)
+KinectBase::KinectBase(KinectCore *kc, VisionCore *vc)
 {
   kcore = kc;
   vcore = vc;
-  iplImg = iplI;
-  points = p;
   enabled = false;                      // disabled by default
 }
 

@@ -23,8 +23,8 @@ namespace Z
  * @param iplI Ipl-Image
  * @param p Point matrix
  */
-KinectClosures::KinectClosures(KinectCore *kc, VisionCore *vc, IplImage *iplI, cv::Mat_<cv::Vec4f> &p) 
-                             : KinectBase(kc, vc, iplI, p)
+KinectClosures::KinectClosures(KinectCore *kc, VisionCore *vc) 
+                             : KinectBase(kc, vc)
 {
   numClosures = 0;
 }
@@ -45,12 +45,11 @@ void KinectClosures::Process()
 {
 // printf("Process KinectClosures: start!\n");
   int minimum_points_per_plane = 15;
-  int point_cloud_width = GetPCWidth();
-  int point_cloud_height = point_cloud_width * 3/4;
-  double scale = GetImageWidth()/point_cloud_width;
+  int point_cloud_width = kcore->GetPointCloudWidth();
+  int point_cloud_height = kcore->GetPointCloudHeight();
+  double scale = kcore->GetImageWidth()/point_cloud_width;
 
-  pcl::PointCloud<pcl::PointXYZRGB> pcl_closure_points;   // all points inside of the closure
-  pcl::PointCloud<pcl::PointXYZRGB> pcl_closure_jcts;     // all jcts of the closure (hull points)
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_closure_points;   // all points inside of the closure
 
   int nrClosures = vcore->NumGestalts(Z::Gestalt::CLOSURE);
   for(unsigned i=0; i<nrClosures; i++)
@@ -77,7 +76,7 @@ void KinectClosures::Process()
           int y = (int)(c->jcts[i]->isct.y/scale + 0.5);
 
           if(x>0 && x < point_cloud_width && y > 0 && y < point_cloud_height)
-            closure_jcts.push_back(points.at<cv::Vec4f>(y, x));
+            closure_jcts.push_back(kcore->GetPointCloud().at<cv::Vec4f>(y, x));
         }
       }
 
@@ -98,9 +97,9 @@ void KinectClosures::Process()
           p.x = p_x*scale;    // TODO Wieder rückrechnen auf 640x480 Bilder? Was wenn Bilder andere Größe haben?
           p.y = p_y*scale;
           
-          if(p.x < GetImageWidth())
+          if(p.x < kcore->GetImageWidth())
             if (c->Inside(p))
-              closure_points.push_back(points.at<cv::Vec4f>(p_y, p_x));
+              closure_points.push_back(kcore->GetPointCloud().at<cv::Vec4f>(p_y, p_x));
         }
       }
 // printf("Process KinectClosures: 2 => min/max x/y: %u-%u / %u-%u!\n", minX, maxX, minY, maxY);
@@ -110,14 +109,14 @@ void KinectClosures::Process()
   // int nr_points = pcl_closure_points.size();
       pclA::RemoveZeros(pcl_closure_points);
 
-      if(pcl_closure_points.size() > minimum_points_per_plane)
+      if(pcl_closure_points->size() > minimum_points_per_plane)
       {
-        pclA::ConvertCvVec2PCLCloud(closure_jcts, pcl_closure_jcts);
+//        pclA::ConvertCvVec2PCLCloud(closure_jcts, pcl_closure_jcts);
         
         // make singel SAC segmentation with 0.02m distance
         std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;                  // model_coefficients for SAC
         std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_plane_clouds;         // planes from SAC
-        pclA::SingleSACSegmentation(pcl_closure_points.makeShared(), pcl_plane_clouds, model_coefficients, false, 1.5, 0.02, 100, minimum_points_per_plane);
+        pclA::SingleSACModelSegmentation(pcl_closure_points, pcl_plane_clouds, model_coefficients, pcl::SACMODEL_PLANE, false, 1.5, 0.02, 100, minimum_points_per_plane);
 // printf("Process KinectClosures: after sac 1!\n");
         
   /// TODO TODO TODO TODO Unused: How many points are valid (in %) => indicates something? pruning with this value?
@@ -143,12 +142,12 @@ void KinectClosures::Process()
 
           // convert plane point cloud (inliers) to vector point cloud
           std::vector<cv::Vec4f> cv_vec_plane;
-          pclA::ConvertPCLCloud2CvVec(*pcl_plane_clouds[0], cv_vec_plane);
+          pclA::ConvertPCLCloud2CvVec(pcl_plane_clouds[0], cv_vec_plane);
           
           if(pcl_convex_hulls.size() >0) 
           {
             std::vector<cv::Vec4f> hull_points;
-            pclA::ConvertPCLCloud2CvVec(*pcl_convex_hulls[0], hull_points, true);   /// TODO With random color
+            pclA::ConvertPCLCloud2CvVec(pcl_convex_hulls[0], hull_points, true);   /// TODO With random color
 
             Z::Closure3D *c3d = new Z::Closure3D(cv_vec_plane, hull_points);
             kcore->NewGestalt3D(c3d);
@@ -161,7 +160,6 @@ void KinectClosures::Process()
     }
     else printf("KinectClosures::Process: Warning: Closure is masked.\n");
   }
-printf("Process KinectClosures: end!\n");
 }
 
 

@@ -2692,11 +2692,13 @@ static char* readline(FILE *input)
 
 svm_model *svm_load_model(const char *model_file_name)
 {
+// printf("svm: svm_load_model: 1\n");
 	FILE *fp = fopen(model_file_name,"rb");
 	if(fp==NULL) return NULL;
+// printf("svm: svm_load_model: 2\n");
 	
 	// read parameters
-
+// printf("svm: svm_load_model: 3\n");
 	svm_model *model = Malloc(svm_model,1);
 	svm_parameter& param = model->param;
 	model->rho = NULL;
@@ -2705,6 +2707,7 @@ svm_model *svm_load_model(const char *model_file_name)
 	model->label = NULL;
 	model->nSV = NULL;
 
+// printf("svm: svm_load_model: 4\n");
 	char cmd[81];
 	while(1)
 	{
@@ -2819,14 +2822,20 @@ svm_model *svm_load_model(const char *model_file_name)
 		}
 	}
 
+// printf("svm: svm_load_model: 4.1\n");
+
 	// read sv_coef and SV
 
 	int elements = 0;
 	long pos = ftell(fp);
+// printf("svm: svm_load_model: 4.1.1\n");
 
 	max_line_len = 1024;
+// printf("svm: svm_load_model: 4.1.2\n");
 	line = Malloc(char,max_line_len);
+// printf("svm: svm_load_model: 4.1.3\n");
 	char *p,*endptr,*idx,*val;
+// printf("svm: svm_load_model: 4.1.4\n");
 
 	while(readline(fp)!=NULL)
 	{
@@ -2840,6 +2849,7 @@ svm_model *svm_load_model(const char *model_file_name)
 		}
 	}
 	elements += model->l;
+// printf("svm: svm_load_model: 4.2\n");
 
 	fseek(fp,pos,SEEK_SET);
 
@@ -2852,12 +2862,16 @@ svm_model *svm_load_model(const char *model_file_name)
 	model->SV = Malloc(svm_node*,l);
 	svm_node *x_space = NULL;
 	if(l>0) x_space = Malloc(svm_node,elements);
+  
+// printf("svm: svm_load_model: 4.3\n");
 
 	int j=0;
 	for(i=0;i<l;i++)
 	{
+// printf("svm: svm_load_model: 4.3.1\n");
 		readline(fp);
 		model->SV[i] = &x_space[j];
+// printf("svm: svm_load_model: 4.3.2\n");
 
 		p = strtok(line, " \t");
 		model->sv_coef[0][i] = strtod(p,&endptr);
@@ -2866,6 +2880,7 @@ svm_model *svm_load_model(const char *model_file_name)
 			p = strtok(NULL, " \t");
 			model->sv_coef[k][i] = strtod(p,&endptr);
 		}
+// printf("svm: svm_load_model: 4.3.3\n");
 
 		while(1)
 		{
@@ -2879,14 +2894,20 @@ svm_model *svm_load_model(const char *model_file_name)
 
 			++j;
 		}
+// printf("svm: svm_load_model: 4.3.4\n");
 		x_space[j++].index = -1;
 	}
+// printf("svm: svm_load_model: 5\n");
 	free(line);
+
+// printf("svm: svm_load_model: 6\n");
 
 	if (ferror(fp) != 0 || fclose(fp) != 0)
 		return NULL;
 
+// printf("svm: svm_load_model: 7\n");
 	model->free_sv = 1;	// XXX
+// printf("svm: svm_load_model: 8\n");
 	return model;
 }
 

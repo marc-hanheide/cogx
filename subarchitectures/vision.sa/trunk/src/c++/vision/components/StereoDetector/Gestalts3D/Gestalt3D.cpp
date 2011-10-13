@@ -13,7 +13,7 @@ namespace Z
 
 static const int NAME_LENGTH = 40;
 static const char type_names[][NAME_LENGTH] = {
-  "PATCH",
+  "PATCH",        /// TODO PCL-Patch ??? 
   "SEGMENT",
   "COLLINEARITY",
   "LJUNCTION",
@@ -23,9 +23,13 @@ static const char type_names[][NAME_LENGTH] = {
   "RECTANGLE",
   "FLAP",
   "ELLIPSE",
+  "PCL_EDGEL",
+  "PCL_LINE",
+  "PCL_CYLINDER",
+  "PCL_SPHERE",
   "UNDEF"
 };
-static const int type_names_length[] = {5, 7, 12, 9, 6, 4, 7, 9, 4, 7, 5};
+static const int type_names_length[] = {5, 7, 12, 9, 6, 4, 7, 9, 4, 7, 9, 8, 13, 11, 5};
  
 
 /**
@@ -74,6 +78,7 @@ Gestalt3D::Gestalt3D(Type _type)
   nodeID = -1;
   objectLabel = -1;
   graphCutLabel = -1;
+  drawNodeID = false;
 }
 
 }

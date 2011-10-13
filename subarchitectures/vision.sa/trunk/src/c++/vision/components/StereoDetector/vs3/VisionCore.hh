@@ -39,15 +39,15 @@ using namespace VEC;
 class VisionCore
 {
 private:
-  Config config;						///< configuration of the perceptual grouping
-  const IplImage *img;						///< iplImage
-  double realRuntime;						///< Estimated runtime
-  VoteImage *vote_img;						///< Vote image for all Gestalt principles.
+  Config config;              ///< configuration of the perceptual grouping
+  const IplImage *img;        ///< iplImage
+  double realRuntime;         ///< Estimated runtime
+  VoteImage *vote_img;        ///< Vote image for all Gestalt principles.
 
 
-  GestaltPrinciple* principles[GestaltPrinciple::MAX_TYPE];	///< principle list 
-  Array<Gestalt*> gestalts[Gestalt::MAX_TYPE];			///< gestalt list 
-  Array<Gestalt*> ranked_gestalts[Gestalt::MAX_TYPE];		///< ranked_gestalt list
+  GestaltPrinciple* principles[GestaltPrinciple::MAX_TYPE];   ///< principle list 
+  Array<Gestalt*> gestalts[Gestalt::MAX_TYPE];                ///< gestalt list 
+  Array<Gestalt*> ranked_gestalts[Gestalt::MAX_TYPE];         ///< ranked_gestalt list
 
   void InitGestaltPrinciples();
 

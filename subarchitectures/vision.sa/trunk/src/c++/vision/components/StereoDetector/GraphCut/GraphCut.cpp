@@ -114,12 +114,12 @@ if(debug) printf("THRESHOLD: %4.3f\n", threshold[0]);
   
   
   /// for each edge, in non-decreasing weight order...
-  for (int i = 0; i < num_edges; i++) 
+  for (unsigned i = 0; i < num_edges; i++) 
   {
  
 if(debug) {
 u->printAll();
-for (int i = 0; i < num_edges; i++) 
+for (unsigned i = 0; i < num_edges; i++) 
 {
   E::Edge *pedge = &edges[i];
   printf("all edges: %u: %u-%u with thrd: %4.3f => universe: %u-%u\n", i, pedge->a, pedge->b, threshold[i], u->find(pedge->a), u->find(pedge->b));
@@ -161,7 +161,7 @@ if(debug)printf("%4.3f (size: %u)\n", threshold[a], u->size(a));
 //   }
 /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO Was sagen hier die NumComponents???
   int num_components = u->num_sets();
-  printf("GraphCut::Cut: number of components: %u\n", num_components);
+  printf("GraphCut::Cut: number of components: %u ??? What does that mean?\n", num_components);
 // 
 // 
 

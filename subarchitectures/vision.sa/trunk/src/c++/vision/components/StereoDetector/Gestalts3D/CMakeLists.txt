@@ -17,6 +17,9 @@ SET(HEADERS
   Line3D.h
   LJunction3D.h
   Patch3D.h
+  PclCylinder3D.h
+  PclLine3D.h
+  PclSphere3D.h
   Rectangle3D.h
   Segment3D.h
 )
@@ -31,6 +34,9 @@ SET(SOURCES
   Line3D.cpp
   LJunction3D.cpp
   Patch3D.cpp
+  PclCylinder3D.cpp
+  PclLine3D.cpp
+  PclSphere3D.cpp
   Rectangle3D.cpp
   Segment3D.cpp
 )

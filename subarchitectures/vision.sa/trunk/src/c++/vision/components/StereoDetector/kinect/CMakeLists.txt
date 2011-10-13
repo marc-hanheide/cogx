@@ -13,6 +13,11 @@ SET(HEADERS
   KinectCore.h
   KinectLines.h
   KinectPatches.h
+#  KinectPclCylinders.h
+  KinectPclEdges.h
+  KinectPclLines.h
+  KinectPclModels.h
+  KinectPclSegments.h
   KinectRectangles.h
   KinectSegments.h
 )
@@ -24,12 +29,17 @@ SET(SOURCES
   KinectCore.cpp
   KinectLines.cpp
   KinectPatches.cpp
+#  KinectPclCylinders.cpp
+  KinectPclEdges.cpp
+  KinectPclLines.cpp
+  KinectPclModels.cpp
+  KinectPclSegments.cpp
   KinectSegments.cpp
   KinectRectangles.cpp
 )
 
 add_cast_component(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} v4rtomgine v4rrgbdsegment v4rmodelfitter)
 
 #ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 #INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
