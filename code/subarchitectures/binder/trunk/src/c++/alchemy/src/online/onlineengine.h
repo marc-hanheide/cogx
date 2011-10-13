@@ -468,8 +468,8 @@ class OnlineEngine
       	
       	if(domain->getDB()->getValue(gp) == TRUE ) {
       		cout << "Deactivating constant placeholder '" << placeh << "." << endl;
-     		inference_->getState()->setAsQuery(gp);
-     		parseGroundPredicate(pred + "(" + placeh + ")", gp);
+     			inference_->getState()->setAsQuery(gp);
+     			parseGroundPredicate(pred + "(" + placeh + ")", gp);
      			inference_->getState()->setAsEvidence(gp, false); //new GroundPredicate(p), false);		
 
       		return;
@@ -617,9 +617,6 @@ class OnlineEngine
 		{
 		  int idx = (*indexClauses)[j]->index;
 		  Clause* c = (*indexClauses)[j]->clause;
-		  cout << "idx " << idx << ": ";
-		  c->printWithWtAndStrVar(cout, domains[0]);
-		  cout << endl;
 		}
 	  }
 

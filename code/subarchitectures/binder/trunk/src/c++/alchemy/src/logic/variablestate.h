@@ -197,7 +197,7 @@ class VariableState
       newClauses_.clear();
 
       baseNumAtoms_ = gndPredHashArray_.size();
-      cout << "Number of Baseatoms = " << baseNumAtoms_ << endl;
+      cout << "Number of Base atoms = " << baseNumAtoms_ << endl;
       cout << "Default => Cost\t" << "******\t" << " Clause Cnt\t" << endl;
       cout << "           " << defaultCost << "\t" << "******\t" << defaultCnt
            << "\t" << endl << endl;
@@ -1374,7 +1374,7 @@ class VariableState
    */
   void addNewClauses(int addType, Array<GroundClause*> & clauses)
   {
-    if (true)//vsdebug)
+    if (vsdebug)
       cout << "Adding " << clauses.size() << " new clauses.." << endl;
 
       // Must be in mc-sat to add dead or sat
@@ -1391,8 +1391,8 @@ class VariableState
 
       //gndClauses_->append(clauses);
     for (int i = 0; i < clauses.size(); i++)
-    {cout << "appending " << i;
-      gndClauses_->append(clauses[i]);clauses[i]->print(cout, domain_, &gndPredHashArray_); cout << endl;
+    {
+      gndClauses_->append(clauses[i]);
       clauses[i]->appendToGndPreds(&gndPredHashArray_);
     }
 
@@ -1403,7 +1403,7 @@ class VariableState
       // If no new atoms or clauses have been added, then do nothing
     if (numAtoms == oldNumAtoms && numClauses == oldNumClauses) return;
 
-    if (true)//vsdebug) cout << "Clauses: " << numClauses << endl;
+    if (vsdebug) cout << "Clauses: " << numClauses << endl;
       // atomIdx starts at 1
     atom_.growToSize(numAtoms + 1, false);
 
@@ -2819,7 +2819,7 @@ class VariableState
     Database* db = domain_->getDB();
     int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
     reinit();
-    if (true) {//vsdebug)
+    if (vsdebug) {
       cout << "Setting predicate '"; predicate->print(cout, domain_);
       cout << "' (atom idx " << atomIdx << ") as "
       	<< (trueEvidence ? "positive" : "negative" ) << " evidence" << endl;
@@ -2855,7 +2855,7 @@ class VariableState
       // or a unit clause
       GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i]-deleted];
 			if (!trueEvidence || gc->getNumGroundPredicates() == 1) {          
-        if (true) { //vsdebug) {
+        if (vsdebug) {
           cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
           cout << endl;
         }
@@ -2867,7 +2867,7 @@ class VariableState
         delete gc;
         deleted++;
 			} else {
-        if (true) { //vsdebug) {
+        if (vsdebug) {
           cout << "Removing gnd pred " << -(atomIdx + 1)
                << " from ground clause " << gndClauseIndexes[i] << endl;
       	}
@@ -2884,7 +2884,6 @@ class VariableState
         for(int i=0; i<gndClauses_->size(); i++)
     				if(gc->logicSame((*gndClauses_)[i]))
     					pos=i;
-    		cout << "+pos=" << pos << endl;
         // if equivalent caluse exists merge the new clause with it
         if(pos >=0 && !(*gndClauses_)[pos]->isHardClause()) {
   				IntBoolPairItr itr;
@@ -2918,7 +2917,7 @@ class VariableState
       // or a unit clause
       GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
       if (trueEvidence || gc->getNumGroundPredicates() == 1) {
-      	if (true) { //vsdebug) {
+      	if (vsdebug) {
             cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
             cout << endl;
         }
@@ -2928,7 +2927,7 @@ class VariableState
         delete gc;
         deleted++;
       }	else {
-        if (true) { //vsdebug) {
+        if (vsdebug) {
         	cout << "Removing gnd pred " << -(atomIdx + 1)
 							<< " from ground clause " << gndClauseIndexes[i] << endl;
 				}
@@ -2941,7 +2940,7 @@ class VariableState
         for(int i=0; i<gndClauses_->size(); i++)
     				if(gc->logicSame((*gndClauses_)[i]))
     					pos=i;
-        cout << "-pos=" << pos << endl;
+    					
         if(pos >=0)	{
     			IntBoolPairItr itr;
     			IntBoolPair *flist = gc->getClauseFrequencies();
@@ -2993,7 +2992,6 @@ class VariableState
   void setClausePrior(const GroundPredicate* const & predicate, double wt)
   {
   	int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
-    cout << "idx " << atomIdx << endl;
     assert(atomIdx >= -1);
       // If evidence, do nothing
     if ( atomIdx == -1)
@@ -3013,7 +3011,6 @@ class VariableState
   void resetClausePrior(const GroundPredicate* const & predicate)
   {
   	int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
-    cout << "idx " << atomIdx << endl;
     assert(atomIdx >= -1);
       // If evidence, do nothing
     if ( atomIdx == -1)
@@ -3066,7 +3063,7 @@ class VariableState
     gndPredHashArray_.append((GroundPredicate*)predicate);
     int atomIdx = gndPredHashArray_.find((GroundPredicate*)predicate);
     Predicate* p = predicate->createEquivalentPredicate(domain_);
-  cout << " atomix " << atomIdx << endl; 
+
     GroundClauseHashArray clauseHashArray;        
     clauseHashArray.clear();        
     Array<GroundClause*>* candClauses = new Array<GroundClause*>;
@@ -3077,7 +3074,7 @@ class VariableState
     	Clause *fclause = (Clause *) (*indexClauses)[i]->clause;
     	const int clauseId = mln_->findClauseIdx(fclause);
     	
-    	if (true ) {//vsdebug) {
+    	if (vsdebug) {
       	cout << "Getting grounded clauses for FO clause Id " << clauseId << ":";
       	fclause->print(cout, domain_);
       	cout << endl;
@@ -3095,7 +3092,7 @@ class VariableState
     	{
     		GroundClause* clause = (*candClauses)[j];
     		
-    		if (true) {//vsdebug) {
+    		if (vsdebug) {
     			cout << "clause # " << j << ": ";
     			clause->print(cout, domain_, &gndPredHashArray_);
       		cout << endl;
@@ -3108,7 +3105,6 @@ class VariableState
     				if(clause->logicSame((*gndClauses_)[i], -idx))
     					pos=i;    		
 //    			clause->appendGndPred(-idx);
-    			cout << "+ pos " << pos << ": " << endl;
 	    	}
 	    	if(!truthval && clause->containsGndPred(idx)) {
 //    			clause->removeGndPred(idx);		    		
@@ -3116,14 +3112,10 @@ class VariableState
     				if(clause->logicSame((*gndClauses_)[i], idx))
     					pos=i;  
 //    			clause->appendGndPred(idx);
-    			cout << "- pos " << pos << ": " << endl;
 	    	}
 	  			
 				if(pos>=0) {
-				GroundClause* oldClause = (*gndClauses_)[pos];
-cout << "old grounded clause # " << j << ": ";
-oldClause->print(cout, domain_, &gndPredHashArray_);
-cout << endl;				
+				GroundClause* oldClause = (*gndClauses_)[pos];			
 					
 					if(oldClause->getClauseFrequency(clauseId) > 0) {
 						if(oldClause->getSumOfClauseFrequencies() > 1) {
@@ -3161,7 +3153,7 @@ oldClause->print(cout, domain_, &gndPredHashArray_);	cout << endl;*/
     candClauses->clear();
 		delete candClauses;
 	
-		if (true) {//vsdebug)	{
+		if (vsdebug)	{
     	cout << "--- Newly added clauses after removal of predicate ";
       predicate->print(cout, domain_);
       cout << " as evidence ---" << endl;
@@ -3173,7 +3165,7 @@ oldClause->print(cout, domain_, &gndPredHashArray_);	cout << endl;*/
 			cout <<  "--------------------------------------------------------------------------------------" << endl;
     }
     reinit();
-    cout << "done" << endl;
+
     if (vsdebug)	{
     	cout << "*** Grounded network after removal of predicate ";
     	predicate->print(cout, domain_); 
@@ -3329,7 +3321,7 @@ oldClause->print(cout, domain_, &gndPredHashArray_);	cout << endl;*/
 
       const double* parentWtPtr = NULL;
       if (!fclause->isHardClause()) parentWtPtr = fclause->getWtPtr();
-      cout << "Parent wt " << *parentWtPtr << endl;
+//      cout << "Parent wt " << *parentWtPtr << endl;
       const int clauseId = mln_->findClauseIdx(fclause);
       newClauses->clear();
 
@@ -3482,7 +3474,8 @@ oldClause->print(cout, domain_, &gndPredHashArray_);	cout << endl;*/
     }
     assert(sumSoftWts >= 0);
       // Add constant so weight isn't zero if no soft clauses present
-    hardWt_ = sumSoftWts + 20.0;
+    hardWt_ = sumSoftWts + 10.0;
+    cout << "Sum of soft weights is " << sumSoftWts << ". ";
     cout << "Set hard weight to " << hardWt_ << endl;
   }
 
