@@ -35,6 +35,7 @@ using namespace cogx::Math;
 class PlanePopOut : public PointCloudClient, public ManagedComponent
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW     /// for 32-bit systems for pcl mandatory
     class PlaneEntry
     {
     public:
