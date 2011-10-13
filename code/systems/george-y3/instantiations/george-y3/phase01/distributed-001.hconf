@@ -1,21 +1,23 @@
+# CAST Control host configuration file
 
 HOST  KaisLaptop     192.168.54.1
 HOST  PetersLaptop   192.168.54.2
 HOST  MarkosLaptop   192.168.54.3
 
+HOST  Main           [MarkosLaptop]
 HOST  RobotServer    [KaisLaptop]
 HOST  VisionServer   [KaisLaptop]
 HOST  PlannerServer  [PetersLaptop]
 
-HOST  Main           [MarkosLaptop]
 
-HOST  PlayerHost     [RobotServer]
-HOST  PeekabotHost   [Main]
-HOST  DisplayHost    [Main]
+# special hosts  mentioned in the .cast files
+HOST  PlayerHost           [RobotServer]
+HOST  PeekabotHost         [Main]
+HOST  DisplayHost          [Main]
 HOST  SecondDisplayHost    [VisionServer]
-HOST  AbducerHost    [Main]
+HOST  AbducerHost          [Main]
 
-SA vision.sa   [VisionServer]
-SA planning.sa [PlannerServer]
+SA vision.sa      [VisionServer]
+SA planning.sa    [PlannerServer]
 
-ID laser.server [RobotServer] 0
+ID laser.server   [RobotServer] 0
