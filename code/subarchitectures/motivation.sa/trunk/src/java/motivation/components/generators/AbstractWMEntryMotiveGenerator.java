@@ -19,6 +19,7 @@ import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -58,7 +59,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 		sb.append(")");
 		return sb.toString();
 	}
-	
+
 	public void beliefChanged(WorkingMemoryChange wmc) throws CASTException {
 		switch (wmc.operation) {
 		case ADD: {
@@ -184,6 +185,54 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 
 	}
 
+	/**
+	 * Registered to return the motive after it was deleted, useful for cleanup
+	 * on planner-determine successful cases.
+	 * 
+	 * @author nah
+	 * 
+	 */
+	private class MotiveDeletionChangeReceiver implements
+			WorkingMemoryChangeReceiver {
+
+		private final M m_motive;
+
+		public MotiveDeletionChangeReceiver(M _motive) {
+			m_motive = _motive;
+		}
+
+		@Override
+		public void workingMemoryChanged(WorkingMemoryChange _wmc)
+				throws CASTException {
+			assert (_wmc.operation == WorkingMemoryOperation.DELETE);
+			assert (CASTUtils.typeName(m_motive).equals(_wmc.type));
+			motiveWasDeleted(m_motive);
+			removeChangeFilter(this);
+		}
+
+	}
+
+	/**
+	 * Registered to return the motive after it was deleted, useful for cleanup
+	 * on planner-determine successful cases.
+	 * 
+	 * @param _motive
+	 *            The motive that was deleted
+	 */
+	protected void motiveWasDeleted(M _motive) {
+
+	}
+
+	private boolean m_monitorMotivesForDeletion = false;
+
+	public boolean isMonitoringMotivesForDeletion() {
+		return m_monitorMotivesForDeletion;
+	}
+
+	public void monitorMotivesForDeletion(boolean _monitorMotivesForDeletion) {
+		this.m_monitorMotivesForDeletion = _monitorMotivesForDeletion;
+	}
+
 	private void checkForAdditions(WorkingMemoryChange wmc, T newEntry)
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
@@ -201,6 +250,13 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 					motive.thisEntry = new WorkingMemoryAddress(newDataID(),
 							getSubarchitectureID());
 					assignCosts(motive);
+					if (isMonitoringMotivesForDeletion()) {
+						addChangeFilter(
+								ChangeFilterFactory.createAddressFilter(
+										motive.thisEntry,
+										WorkingMemoryOperation.DELETE),
+								new MotiveDeletionChangeReceiver(motive));
+					}
 					addToWorkingMemory(motive.thisEntry, motive);
 					motiveAddresses.add(motive.thisEntry);
 				}
