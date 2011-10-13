@@ -944,6 +944,12 @@ class CCastControlWnd(QtGui.QMainWindow):
         if self.ui.actEnableCleanupScript.isChecked():
             self.runCleanupScript()
 
+        class AbusedGroupInterface:
+            def __init__(self, proclist):
+                self.processlist = proclist
+
+        self.startRemoteProcesses(AbusedGroupInterface(["cleanup-pre-cast"]))
+
         self.startLocalProcesses(self.procGroupB)
         self.startRemoteProcesses(self.procGroupB)
 

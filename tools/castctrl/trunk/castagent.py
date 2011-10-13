@@ -166,10 +166,12 @@ class CConsoleAgent:
             p = procman.CProcess("RSYNC", cmd)
             self.manager.addProcess(p)
 
-        #self.manager.addProcess(procman.CProcess("peekabot", self._options.xe("${CMD_PEEKABOT}")))
-        #self.procBuild = procman.CProcess("BUILD", 'make [target]', workdir=self._options.xe("${COGX_BUILD_DIR}"))
-        #self.procBuild.allowTerminate = True
-        #self.manager.addProcess(self.procBuild)
+        if  appOptions.cleanup_script != None:
+            cmd = "sh " + appOptions.cleanup_script
+            p = procman.CProcess("cleanup-pre-cast", cmd)
+            p.allowTerminate = True
+            self.manager.addProcess(p)
+
 
 
     def _initMessagePump(self, appOptions):
@@ -269,6 +271,11 @@ def parseOptions():
             help=
             "If set, Display Server will be started by this agent. "
             "Env: CMD_DISPLAY_SERVER"
+           )
+
+    parser.add_option("", "--cleanup-script", action="store", type="string", default=None, dest="cleanup_script",
+            help=
+            "Set the cleanup script. The script will be executed before the CAST servers are started."
            )
 
     (options, args) = parser.parse_args()
