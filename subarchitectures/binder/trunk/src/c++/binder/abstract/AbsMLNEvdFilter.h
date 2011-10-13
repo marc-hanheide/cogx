@@ -8,7 +8,11 @@
 #ifndef ABST_MLN_EVD_FILTER_H
 #define ABST_MLN_EVD_FILTER_H
 
+#define DEFAULT_EVD_LOW_THRESHOLD 0.15
+#define DEFAULT_EVD_HIGH_THRESHOLD 0.85
+
 #include <AbsMLNClient.h>
+#include <math.h>
 
 namespace cast
 {
@@ -17,7 +21,6 @@ using namespace org::cognitivesystems::binder::mln;
 using namespace eu::cogx::mln::slice;
 using namespace std;
 
-const string EPI_STATUS_ALL = "all";
 const string DEFAULT_INSTANCE_KEY = "belief";
 class AbsMLNEvdFilter :  public AbsMLNClient
 {
@@ -32,6 +35,8 @@ class AbsMLNEvdFilter :  public AbsMLNClient
   set<string> m_epiStatuses;
   set<string> m_relevantKeys;
   set<string> m_instKeys;
+  
+  double m_0_thr, m_1_thr;
   
   /**
    * callback function called whenever there is a change in fact collection
@@ -103,6 +108,18 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	      m_epiStatuses.insert(token);
 	  }
 	}
+	
+	if ((it = _config.find("--thr0")) != _config.end()) {
+	  m_0_thr = atof(it->second.c_str());
+	} else {
+	 m_0_thr = DEFAULT_EVD_LOW_THRESHOLD;
+	}
+	
+	if ((it = _config.find("--thr1")) != _config.end()) {
+	   m_1_thr = atof(it->second.c_str());
+	} else {
+	 m_1_thr = DEFAULT_EVD_HIGH_THRESHOLD;
+	}
   }
   /**
    * called by the framework after configuration, before run loop
@@ -163,7 +180,7 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	{
 	  if(facts.find(it->first) == facts.end()) {
 		evdChanged = true;
-		if(it->second.prob == 1 || it->second.prob == 0) {
+		if(it->second.prob >= m_1_thr || it->second.prob <= m_0_thr) {
 		  if(m_instKeys.count(it->second.key)) {
 			Instance inst;
 			inst.name=it->second.id;
@@ -190,7 +207,7 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 	  
 	  if(old == oldFacts.end()) {
 		evdChanged = true;
-		if(prob >= 1)
+		if(prob >= m_1_thr)
 		  if(m_instKeys.count(it->second.key)) {
 			Instance inst;
 			inst.name=it->second.id;
@@ -198,37 +215,41 @@ class AbsMLNEvdFilter :  public AbsMLNClient
 			evd->newInstances.push_back(inst);
 		  } else
 			evd->trueEvidence.push_back(atom);
-		else if (it->second.prob <= 0)
+		else if (it->second.prob <= m_0_thr)
 		  evd->falseEvidence.push_back(atom);
 		else {
 		  evd->extPriors.push_back(atom);
-		  evd->priorWts.push_back(prob);
+		  evd->priorWts.push_back(logit(prob));
 		}
 	  }
 	  else
 	  ///  Modify existing evidence
 	  {
-	    if(prob >= 1 && oldProb < 1) {
+	    if(prob >= m_1_thr && oldProb < m_1_thr) {
 		  evdChanged = true;
 		  evd->trueEvidence.push_back(atom);
-		  if(oldProb > 0)
+		  if(oldProb > m_0_thr)
 			evd->resetPriors.push_back(atom);
 			
-		} else if(prob <= 0 && oldProb > 0) {
+		} else if(prob <= m_0_thr && oldProb > m_0_thr) {
 		  evdChanged = true;
 		  evd->falseEvidence.push_back(atom);	  
-		  if(oldProb < 1)
+		  if(oldProb < m_1_thr)
 			evd->resetPriors.push_back(atom);
 			
-		} else if(prob > 0 && prob < 1 && (oldProb == 0 || oldProb >= 1) ) {
+		} else if(prob > m_0_thr && prob < m_1_thr && (oldProb == m_0_thr || oldProb >= m_1_thr) ) {
 		  evdChanged = true;
 		  evd->extPriors.push_back(atom);
-		  evd->priorWts.push_back(prob);
+		  evd->priorWts.push_back(logit(prob));
 		  evd->noEvidence.push_back(atom);
 		}
 	  }	
 	}
 	return evdChanged;
+  }
+  
+  double logit(double p) {
+	return ::log(p/(1-p));
   }
   
   string adaptAtom(string atom, string grd)

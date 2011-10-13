@@ -174,7 +174,7 @@ class AbsMLNClient :  public ManagedComponent
 	}
 	catch (DoesNotExistOnWMException e) {
 	  log("WARNING: the entry InferredResult ID %s not in WM.", m_infResultAddr.id.c_str());
-	  exit;
+	  exit(-1);
 	}
 	m_infResultReady = false;
 	return inf;

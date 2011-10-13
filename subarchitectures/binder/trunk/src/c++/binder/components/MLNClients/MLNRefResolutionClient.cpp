@@ -51,7 +51,7 @@ void MLNRefResolutionClient::newConstraints(const cdl::WorkingMemoryChange & _wm
 	
 	evd->trueEvidence = m_currentConstraints;
 	m_constraintAddr = _wmc.address;
-	distributeEvd(evd, m_constraintAddr.id);
+	distributeEvd(evd, m_constraintAddr.id,1000,200);
 }
 
 void MLNRefResolutionClient::removeConstraints(const cdl::WorkingMemoryChange & _wmc)
@@ -63,7 +63,7 @@ void MLNRefResolutionClient::removeConstraints(const cdl::WorkingMemoryChange & 
 		evd->noEvidence = m_currentConstraints;
 		m_currentConstraints.clear();
 		
-		distributeEvd(evd, "", m_constraintAddr.id);
+		distributeEvd(evd, "", m_constraintAddr.id,1000,200);
 	}
 }
 
