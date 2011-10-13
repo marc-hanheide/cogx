@@ -149,6 +149,17 @@ public class PossibleInterpretationsMotiveGenerator
 		String predicate = CASTUtils.concatenate("polar-", _feature,
 				"-question-answered");
 
+		excludeFeatureFromReference(_feature);
+
+		return "(exists (?v - VisualObject) (and (= (" + predicate + " ?v) "
+				+ _hypothesis + ")))";
+
+	}
+
+	/**
+	 * @param _feature
+	 */
+	private void excludeFeatureFromReference(String _feature) {
 		try {
 			if (_feature.equals("color")) {
 				updateFeatureExclusion(true, false);
@@ -158,26 +169,26 @@ public class PossibleInterpretationsMotiveGenerator
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
 		}
-
-		return "(exists (?v - VisualObject) (and (= (" + predicate + " ?v) "
-				+ _hypothesis + ")))";
-
 	}
 
 	@Override
 	protected String getOpenQuestionGoalString(String _feature,
 			WorkingMemoryAddress _groundedBeliefAddr) {
+		excludeFeatureFromReference(_feature);
+
 		String predicate = CASTUtils.concatenate("global-", _feature,
 				"-question-answered");
 		return "(exists (?v - VisualObject) (and (" + predicate + " ?v)))";
 	}
 
 	@Override
-	protected String getAscriptionGoalString(String feature, boolean learn,
-			String groundedBeliefID) {
+	protected String getAscriptionGoalString(String _feature, boolean _learn,
+			String _groundedBeliefID) {
+
+		excludeFeatureFromReference(_feature);
 
 		return "(exists (?v - VisualObject) (and ("
-				+ getAscriptionPredicate(feature, learn) + " ?v)))";
+				+ getAscriptionPredicate(_feature, _learn) + " ?v)))";
 	}
 
 	@Override
