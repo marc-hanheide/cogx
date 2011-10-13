@@ -41,7 +41,7 @@ extends AbstractDialogueComponent {
 			}
 		}
 
-		threshold = 1.1f;
+//		threshold = 1.1f;
 		getLogger().debug("using " + threshold + " for the ASR confidence threshold");
 	}
 
