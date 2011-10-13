@@ -66,7 +66,7 @@ public class ProofSet {
 		prune();
 	}
 
-	public <T> ExpansionStepResult<T> expansionStep(ProofInterpretationContext<T> ctx) {
+	public <T, U> ExpansionStepResult<T> expansionStep(ProofInterpretationContext<T, U> ctx) {
 		logger.trace("BEGIN-expansion");
 		Proof p = getMostLikely();
 		if (p == null) {

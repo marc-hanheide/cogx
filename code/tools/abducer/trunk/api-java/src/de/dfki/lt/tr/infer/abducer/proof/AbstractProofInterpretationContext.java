@@ -2,8 +2,8 @@ package de.dfki.lt.tr.infer.abducer.proof;
 
 import java.util.List;
 
-public abstract class AbstractProofInterpretationContext<T>
-implements ProofInterpretationContext<T> {
+public abstract class AbstractProofInterpretationContext<T, U>
+implements ProofInterpretationContext<T, U> {
 
 	private final ProofPruner pruner;
 	private final ProofExpander expander;
@@ -38,7 +38,7 @@ implements ProofInterpretationContext<T> {
 	}
 
 	@Override
-	public abstract void onSuccessfulInterpretation(List<T> interpretation, double asrConfidence);
+	public abstract void onSuccessfulInterpretation(List<T> interpretation, double asrConfidence, U arg);
 
 	@Override
 	public abstract void onNoInterpretation();

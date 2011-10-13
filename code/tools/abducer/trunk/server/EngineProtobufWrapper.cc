@@ -343,7 +343,7 @@ EngineProtobufWrapper::startProvingWithMethod(const vector<proof::MarkedQueryPtr
 void
 EngineProtobufWrapper::startProving(const vector<proof::MarkedQueryPtr> & qs, const Ice::Current& c)
 {
-	LOG4CXX_WARN(logger, "using the deprecated startProving() interface");
+	LOG4CXX_DEBUG(logger, "using the deprecated startProving() interface");
 	engine::DFSPtr method = new engine::DFS();
 	startProvingWithMethod(qs, method, c);
 }
