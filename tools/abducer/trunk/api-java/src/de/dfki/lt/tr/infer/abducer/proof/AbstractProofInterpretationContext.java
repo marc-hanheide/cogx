@@ -38,7 +38,7 @@ implements ProofInterpretationContext<T> {
 	}
 
 	@Override
-	public abstract void onSuccessfulInterpretation(List<T> interpretation);
+	public abstract void onSuccessfulInterpretation(List<T> interpretation, double asrConfidence);
 
 	@Override
 	public abstract void onNoInterpretation();

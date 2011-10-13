@@ -12,7 +12,7 @@ public interface ProofInterpretationContext<T> {
 
 	public ProofInterpreter<T> getInterpreter();
 
-	public void onSuccessfulInterpretation(List<T> interpretation);
+	public void onSuccessfulInterpretation(List<T> interpretation, double priorConfidence);
 
 	public void onNoInterpretation();
 
