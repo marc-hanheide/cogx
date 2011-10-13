@@ -7,8 +7,9 @@
 #include "MLNEngine.h"
 
 #define DEFAULT_INSTANCE_TYPE "belief"
-#define DEFAULT_INFERENCE_STEPS 0
-#define DEFAULT_INFERENCE_PAUSE 100
+#define DEFAULT_INFERENCE_STEPS 50
+#define DEFAULT_INFERENCE_PAUSE 200
+#define DEFAULT_MAX_SAMPLES 4000
 /**
  * The function called to create a new instance of our component.
  */
@@ -255,7 +256,7 @@ void MLNEngine::runComponent()
   //  result->engId = m_id;
 	
   //  m_oe->setMaxInferenceSteps(5000);
-	if(m_infSteps > 0)
+	if(m_infSteps > 0 && m_overallSamples < DEFAULT_MAX_SAMPLES)
 	{
 	  if(!first) m_oe->restoreCnts();
 	  m_oe->setMaxInferenceSteps(m_infSteps);
