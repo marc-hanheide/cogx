@@ -13,37 +13,32 @@ namespace P
 
 unsigned PKeypoint::nbcnt = 0;
 unsigned PKeypoint::nb2cnt = 0;
-double PKeypoint::badPoint = std::numeric_limits<double>::quiet_NaN ();
 
 
 /************************************************************************************
  * Constructor/Destructor
  */
 PKeypoint::PKeypoint()
- : id(UINT_MAX), nb(0),nb2(0), pt(0.,0.), size(1), angle(0), response(0), desc(0), sizeDesc(0), fw(0), bw(0)
+ : id(UINT_MAX), nb(0),nb2(0), pt(0.,0.), size(1), angle(0), response(0), fw(0), bw(0)
 {
-  pos.x = badPoint;
 }
 
 PKeypoint::PKeypoint(const cv::KeyPoint &k)
- : id(k.class_id), nb(0),nb2(0), pt(k.pt.x,k.pt.y), size(k.size), angle(k.angle), response(k.response), desc(0), sizeDesc(0), fw(0), bw(0)
+ : id(k.class_id), nb(0),nb2(0), pt(k.pt.x,k.pt.y), size(k.size), angle(k.angle), response(k.response), fw(0), bw(0)
 {
-  pos.x = badPoint;
 }
 
 /**
  * copy constructor
  */
 PKeypoint::PKeypoint(const PKeypoint &k)
- : id(k.id), nb(k.nb), nb2(k.nb2), pt(k.pt), size(k.size), angle(k.angle), response(k.response), desc(0), sizeDesc(0), pos(k.pos), fw(0), bw(0)
+ : id(k.id), nb(k.nb), nb2(k.nb2), pt(k.pt), size(k.size), angle(k.angle), response(k.response), pos(k.pos), fw(0), bw(0)
 {
-  //view = k.view;
 }
 
 PKeypoint::PKeypoint(cv::Point2d _pt, double _size, double _angle, double _response, unsigned _id)
- : id(_id), nb(0), nb2(0), pt(_pt), size(_size), angle(_angle), response(_response), desc(0), sizeDesc(0), fw(0), bw(0)
+ : id(_id), nb(0), nb2(0), pt(_pt), size(_size), angle(_angle), response(_response), fw(0), bw(0)
 {
-  pos.x = badPoint;
 }
 
 PKeypoint::~PKeypoint()
@@ -85,13 +80,13 @@ void PKeypoint::Draw(cv::Mat &img, const PKeypoint &key, const cv::Scalar& col)
 
   float srcAngleRad = key.angle*(float)CV_PI/180.f;
   cv::Point orient(cvRound(cos(srcAngleRad)*radius), cvRound(sin(srcAngleRad)*radius));
-  cv::line( img, center, center+orient, col, 1, CV_AA,0 );
+  cv::line( img, center, center+orient, col, 1);
 }
 
 /**
  * Convert PKeypoints to opencv KeyPoints
  */
-void PKeypoint::ConvertToCv(const vector<cv::Ptr<PKeypoint> > &keys, vector<cv::KeyPoint> &cvKeys)
+void PKeypoint::ConvertToCv(const std::vector<cv::Ptr<PKeypoint> > &keys, std::vector<cv::KeyPoint> &cvKeys)
 {
   cvKeys.resize(keys.size());
 
@@ -105,7 +100,7 @@ void PKeypoint::ConvertToCv(const vector<cv::Ptr<PKeypoint> > &keys, vector<cv::
 /**
  * Convert opencv KeyPoints to PKeypoints
  */
-void PKeypoint::ConvertFromCv(const vector<cv::KeyPoint> &cvKeys, vector<cv::Ptr<PKeypoint> > &keys)
+void PKeypoint::ConvertFromCv(const std::vector<cv::KeyPoint> &cvKeys, std::vector<cv::Ptr<PKeypoint> > &keys)
 {
   keys.resize(cvKeys.size());
 
@@ -117,9 +112,9 @@ void PKeypoint::ConvertFromCv(const vector<cv::KeyPoint> &cvKeys, vector<cv::Ptr
 }
 
 /**
- * copy a vector of keypoints
+ * copy a std::vector of keypoints
  */
-void PKeypoint::Copy(const vector<cv::Ptr<PKeypoint> > &src, vector<cv::Ptr<PKeypoint> > &dst)
+void PKeypoint::Copy(const std::vector<cv::Ptr<PKeypoint> > &src, std::vector<cv::Ptr<PKeypoint> > &dst)
 {
   dst.resize(src.size());
 
@@ -134,20 +129,17 @@ void PKeypoint::Copy(const vector<cv::Ptr<PKeypoint> > &src, vector<cv::Ptr<PKey
 /**
  * Print
  */
-ostream& operator<<(ostream &os, const PKeypoint &k)
+std::ostream& operator<<(std::ostream &os, const PKeypoint &k)
 {
-  os << '['<<k.id << ' ' << k.pt.x << ' ' << k.pt.y << ' ' << k.size << ' ' << k.angle << ' ' << k.response << ' ';
+  os << '['<<k.id << ' ' << k.pt.x << ' ' << k.pt.y << ' ' << k.size << ' ' << k.angle << ' ' << k.response << ']';
 
-  if (k.Have3D()) os<<'1'<<' '<<k.pos.x << ' '<< k.pos.y << ' ' << k.pos.z<<']';
-  else os<<'0'<<']';
-  
   return os;
 }
 
 /**
  * Read
  */
-istream& operator>>(istream &is, PKeypoint &k)
+std::istream& operator>>(std::istream &is, PKeypoint &k)
 {
   char c;
   unsigned tmp;
@@ -158,17 +150,13 @@ istream& operator>>(istream &is, PKeypoint &k)
   {
     is >> k.id >> k.pt.x >> k.pt.y >> k.size >> k.angle >> k.response;
 
-    is >> tmp;
-    if (tmp==0) k.Release3D();
-    else is >> k.pos.x >> k.pos.y >> k.pos.z;
-
     is>>c;
     if(c != ']')
-      throw runtime_error ("PKeypoint::operator>>: Error reading Pose: ']' expected"); 
+      throw std::runtime_error ("PKeypoint::operator>>: Error reading PKeypoint: ']' expected"); 
   }
   else
   {
-    throw runtime_error ("PKeypoint::operator>>: Error reading Pose: '[' expected");
+    throw std::runtime_error ("PKeypoint::operator>>: Error reading PKeypoint: '[' expected");
   }
 
   return is;

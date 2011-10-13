@@ -21,6 +21,9 @@
 #include OCV_CV_H
 #include OCV_CXCORE_H
 #include OCV_HIGHGUI_H
+#ifndef WIN32 && WIN64
+#include OCV_IMGPROC_H
+#endif
 
 
 NAMESPACE_CLASS_BEGIN( RTE )

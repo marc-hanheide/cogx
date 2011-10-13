@@ -12,6 +12,7 @@
 #include <opencv2/core/core.hpp>
 #include "PKeypoint.hh"
 #include "View.hh"
+#include "CModel.hh"
 
 
 
@@ -19,7 +20,7 @@
 namespace P
 {
 
-class OVMatches;
+class ObjectMatches;
 
 /**
  * Codebook
@@ -34,8 +35,8 @@ public:
 
   virtual void clear() {}
   virtual void Optimize() {}
-  virtual void InsertView(unsigned oidx, unsigned vidx, cv::Ptr<View> &view) = 0;
-  virtual void QueryObjects(cv::Mat_<float> &queryDescriptors, vector<cv::Ptr<OVMatches> > &matches) = 0;
+  virtual void InsertView(unsigned idxObject,unsigned idxView,std::vector<cv::Ptr<CModel> > &objs) = 0;
+  virtual void QueryObjects(cv::Mat_<float> &queryDescriptors, map<unsigned, vector<cv::DMatch> > &matches) = 0;
 
   virtual void Load(const string &filename) {};
   virtual void Save(const string &filename) {};
@@ -43,17 +44,17 @@ public:
 
 
 /**
- * matches with object view
+ * matches with object
  */
-class OVMatches
+class ObjectMatches
 {     
 public: 
-  unsigned oid;
-  unsigned vid;
+  unsigned idxObject;
   double conf;
+
   vector<cv::DMatch> matches;    
   
-  OVMatches(unsigned &_oid, unsigned &_vid, double c) : oid(_oid), vid(_vid), conf(c) {}
+  ObjectMatches(unsigned &oidx, double c) : idxObject(oidx), conf(c) {}
 };    
 
 

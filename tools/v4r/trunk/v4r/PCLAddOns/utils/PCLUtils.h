@@ -1,5 +1,5 @@
 /**
- * @file PCLUtils.hh
+ * @file PCLUtils.h
  * @author Richtsfeld
  * @date June 2011
  * @version 0.1
@@ -38,7 +38,7 @@ typedef union
  * @param pcl_cloud PCL style point cloud
  */
 void ConvertCvVec2PCLCloud(const std::vector<cv::Vec4f> &cv_cloud,
-                           pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud);
+                           pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud);
                  
 /**
  * @brief Convert openCV matrix points to pcl point cloud.
@@ -46,16 +46,31 @@ void ConvertCvVec2PCLCloud(const std::vector<cv::Vec4f> &cv_cloud,
  * @param pcl_cloud PCL style point cloud
  */
 void ConvertCvMat2PCLCloud(const cv::Mat_<cv::Vec4f> &cv_cloud,
-                           pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud);
-                 
+                           pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud);                 
 
+/**
+ * @brief Convert openCV matrix normals to pcl point cloud normals.
+ * @param cv_normals Point cloud of normals in openCV matrix format
+ * @param normals PCL style point cloud normals
+ */
+void ConvertCvMat2PCLNormals(const cv::Mat_<cv::Vec4f> &cv_normals,
+                             pcl::PointCloud<pcl::Normal>::Ptr &normals);                 
+
+/**
+ * @brief Convert a point cloud from pcl-format to opencv vector format.
+ * @param cloud Point cloud in pcl-format.
+ * @param cvCloud Point cloud as openCV vector.
+ */
+void ConvertPCLCloud2CvVec(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud, 
+                           std::vector<cv::Vec3f> &cvCloud);
+                      
 /**
  * @brief Convert a point cloud from pcl-format to opencv vector format.
  * @param cloud Point cloud in pcl-format.
  * @param cvCloud Point cloud as openCV vector.
  * @param random_color Convert cloud with random color.
  */
-void ConvertPCLCloud2CvVec(const pcl::PointCloud<pcl::PointXYZRGB> &pcl_cloud, 
+void ConvertPCLCloud2CvVec(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud, 
                            std::vector<cv::Vec4f> &cvCloud,
                            bool random_colors = false);
                       
@@ -71,14 +86,17 @@ void ConvertPCLClouds2CvVecs(const std::vector< pcl::PointCloud<pcl::PointXYZRGB
                       
 /**
  * @brief Convert a point cloud from pcl-format to opencv matrix format.
- * @param cloud Points cloud in pcl-format.
+ * Second function uses a additional z-filter with min and max values.
+ * @param pcl_cloud Points cloud in pcl-format.
  * @param cvCloud Point cloud in openCV format.
  * @param random_color Convert cloud with random color.
+ * @param z_min Minium z-value
+ * @param z_max Maximum z-value
  */
-void ConvertPCLCloud2CvMat(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, 
+void ConvertPCLCloud2CvMat(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud, 
                            cv::Mat_<cv::Vec4f> &cvCloud,
                            bool random_colors = false);
-void ConvertPCLCloud2CvMat(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,
+void ConvertPCLCloud2CvMat(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud,
                            cv::Mat_<cv::Vec4f> &cvCloud,
                            float z_min, float z_max);
 
@@ -98,32 +116,91 @@ void ConvertPCLClouds2CvMats(const std::vector< pcl::PointCloud<pcl::PointXYZRGB
  * @param cloud Point cloud to be transformed.
  * @param image Image as openCV matrix with 3b-vectors
  */
-void ConvertPCLCloud2Image(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,
+void ConvertPCLCloud2Image(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud,
                            cv::Mat_<cv::Vec3b> &image);
+void ConvertPCLCloud2Image(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud,
+                           cv::Mat_<cv::Vec3b> &image);
+
+/**
+ * @brief Convert a cv::Mat (float, uchar) image to a grey-level rgb-image.
+ * @param mat_image Float-image
+ * @param image Image as openCV matrix with 3b-vectors
+ * @param invert_y_coordinate Invert the y-coordinate (OpenGL-style)
+ */
+void ConvertCvMat2Image(const cv::Mat_<float> &mat_image, 
+                        cv::Mat_<cv::Vec3b> &image,
+                        bool invert_y_coordinate);
+
+void ConvertCvMat2Image(const cv::Mat_<uchar> &mat_image, 
+                        cv::Mat_<cv::Vec3b> &image,
+                        bool invert_y_coordinate);
+
+void ConvertCvMat2Image(const cv::Mat_<cv::Vec3f> &mat_image, 
+                        cv::Mat_<cv::Vec3b> &image,
+                        bool invert_y_coordinate);
+
+                        
+/**
+ * @brief Convert a index vector to a mask image.
+ * @param indexes Vector with indexes
+ * @param mask Mask image
+ * @param width Patch mask width (if not initialized)
+ * @param height Patch mask height (if not initialized)
+ */            
+void ConvertIndexes2Mask(std::vector<int> &indexes,
+                         cv::Mat_<cv::Vec3b> &mask,
+                         int width = 640, int height = 480);
+
+/**
+ * @brief Extract from a binary mask the edges.
+ * @param mask Mask image
+ * @param edge Edge image
+ */ 
+void ConvertMask2Edges(const cv::Mat_<cv::Vec3b> &mask,
+                       cv::Mat_<cv::Vec3b> &edge);
+/**
+ * @brief Convert edge image to index vector
+ * @param edge Edge image
+ * @param indexes Index vector
+ */ 
+void ConvertEdges2Indexes(const cv::Mat_<cv::Vec3b> &edge,
+                          std::vector<int> &indexes);
+
+/**
+ * @brief Convert a cv::Mat (float, uchar) image to a grey-level rgb-image.
+ * @param normals Normals
+ */
+void ShowNormalImage(const pcl::PointCloud<pcl::Normal>::Ptr &normals);
+
 
 /**
  * @brief Creates mask from point cloud.
  * @param cloud Point cloud to get mask from.
  * @param mask Image indicating whether a point in the cloud is available (255) or not (0)
+ * @param treat_zeros_as_nan Remove zero-values
+ * @param treat_floatmax_as_nan Remove FLT_MAX values
+ * @param use_z_filter Remove points out of z-value range
+ * @param zMin Minimum z-value
+ * @param zMax Maximum z-value
  */
-void ConvertPCLCloud2Mask(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,
-                           cv::Mat_<uchar> &mask);
+void ConvertPCLCloud2Mask(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud,
+                          cv::Mat_<uchar> &mask, 
+                          bool treat_zeros_as_nan=true, 
+                          bool treat_floatmax_as_nan=true,
+                          bool use_z_filter = false,
+                          double zMin = 0.0,
+                          double zMax = 10.0);
 
 /**
- * @brief Convert point cloud to normal map. Only for dense point clouds with correct header.
- * @param cloud Point cloud to be transformed.
- * @param normals Normal map as openCV matrix with 4f-vectors (4th element is curvature)
- */
-void ConvertPCLCloud2Normals(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
-                           cv::Mat_<cv::Vec4f> &normals, float radius_search);
-                             
-/**
- * @brief Copy one point cloud to another without loosing the array structure.
+ * @brief Copy one point cloud to another WITHOUT loosing the array structure.
  * @param src Source point cloud to copy.
  * @param dst Destination point cloud.
  */             
 void CopyPointCloud(const pcl::PointCloud<pcl::PointXYZRGB> &src,
                     pcl::PointCloud<pcl::PointXYZRGB> &dst);
+           
+void CopyPointCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &src,
+                    pcl::PointCloud<pcl::PointXYZRGB>::Ptr &dst);
            
 
 /** TODO Experimental => Without loosing the array structure => setting other points to NAN
@@ -142,31 +219,28 @@ void CopyPointCloud(const pcl::PointCloud<pcl::PointXYZRGB> &src,
  * @brief Print the points of the cloud to the console.
  * @param cloud Point cloud
  */
-void PrintPCLCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud);
+void PrintPCLCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
 
 
 /**
- * @brief Remove points with z=0 from the pcl point cloud.
+ * @brief Remove points with z=0 and all nan's from the pcl point cloud.
+ * SAC and VoxelGrid is not able to handle these points.
  * @param cloud PCL point cloud
  */
-void RemoveZeros(pcl::PointCloud<pcl::PointXYZRGB> &cloud);
-void RemoveNormalZeros(pcl::PointCloud<pcl::Normal> &cloud);
+void RemoveZeros(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud);
+void RemoveZerosIndexed(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud,
+                        std::vector<int> &indexes);
+void RemoveNormalZeros(pcl::PointCloud<pcl::Normal>::Ptr &cloud);
 
 
 /**
- * @brief Get the outlier cloud of a point cloud after segmentation.
- * @param cloud Full PCL point cloud
- * @param inliers Inlier indices
- * @param outlierCloud Resulting outlier cloud
+ * @brief Filter point cloud by z-value (distance)
+ * @param pcl_cloud Full PCL point cloud
+ * @param minZ Minimum z-value
+ * @param maxZ Maximum z-value
  */
-void GetOutlierCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, 
-                     pcl::PointIndices inliers);
-void GetOutlierCloud(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, 
-                     pcl::PointIndices inliers, 
-                     pcl::PointCloud<pcl::PointXYZ> &outlierCloud);
-void GetOutlierNormalCloud(const pcl::PointCloud<pcl::Normal> &cloud, 
-                           pcl::PointIndices inliers, 
-                           pcl::PointCloud<pcl::Normal> &outlierCloud);
+void FilterZ(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud,
+             double minZ, double maxZ);
 
 
 /**
@@ -177,7 +251,7 @@ void GetOutlierNormalCloud(const pcl::PointCloud<pcl::Normal> &cloud,
  * @param weight_factor A higher weight factor bred to consider the distance
  * to the point cloud more and more.
  */
-void CalculateOptimalSACDistanceKinect(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, 
+void CalculateOptimalSACDistanceKinect(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud, 
                                        double &sac_distance, 
                                        double weight_factor = 1.5);
 
@@ -189,12 +263,28 @@ void CalculateOptimalSACDistanceKinect(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pc
  * @param distance Average distance to point cloud
  * @param nrOfPoints Used number of points to calculate the mean distance.
  */
-void GetMeanPointCloudDistance(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud, 
+void GetMeanPointCloudDistance(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud, 
                                double &distance, 
                                int nrOfPoints = 5);
-                               
+
+/**
+ * @brief Rearange the point cloud: Remove FLT_MAX values and insert instead again nan's
+ * @param pcl_cloud Point cloud to rearange
+ */
+void SubstituteNanValues(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud);
 
 
+/**
+ * @brief Dilation 
+ * @param pcl_cloud_src Source point cloud (ordered)
+ * @param pcl_cloud_dst Destination point cloud.
+ * @param fx-fy-cx-cy Camera parameters (standard-values for Kinect with 640x480)
+ * @param valid_nghbr Number of required valid neighbors (of 4)
+ */
+void Dilation(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &src,
+              pcl::PointCloud<pcl::PointXYZRGB>::Ptr &dst, 
+              double fx = 525., double fy = 525., double cx = 320., double cy = 240., 
+              int valid_nghbr = 2);
 
 }
 

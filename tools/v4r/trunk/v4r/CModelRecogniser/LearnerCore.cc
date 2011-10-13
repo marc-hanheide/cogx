@@ -1,10 +1,5 @@
 /**
  * $Id$
- * TODO
- * - add prob function (ConfValues)
- * ------
- * - voc tree 2                         // Mi.
- * - optionally bundle (mot, struct)
  */
 
 
@@ -21,27 +16,27 @@ namespace P
 {
 
 
-
 /********************** LearnerCore ************************
  * Constructor/Destructor
  */
 LearnerCore::LearnerCore(cv::Ptr<KeypointDetector> &keyDetector,
                                cv::Ptr<cv::DescriptorExtractor> &descExtractor,
                                cv::Ptr<cv::DescriptorMatcher> &descMatcher,
-                               Parameter _param)
- : scaleWidth(1.), scaleHeight(1.), param(_param)
+                               Parameter p)
+ : param(p)
 {
   detector = keyDetector;
   extractor = descExtractor;
   matcher = descMatcher;
 
-  estimator = new RobustEstimators(RobustEstimators::Parameter(_param.maxRandTrials, 
-      _param.numLoTrials, _param.etaRansac, _param.inlDistRansac));
+  //estimator = new RobustEstimators(RobustEstimators::Parameter(p.maxRandTrials, 
+  //                  p.numLoTrials, p.etaRansac, p.inlDistRansac));
 
-  SetCameraParameter(_param.intrinsic,_param.distortion);
+  SetCameraParameter(p.intrinsic, p.distCoeffs);
   model = new CModel(VIEW_HIST_SUB_DIV);
 
-  codebook = new MSCodebook(matcher, MSCodebook::Parameter(_param.thrDesc));
+  codebook = new MeanShiftCodebook(matcher, MeanShiftCodebook::Parameter(p.thrDesc,p.sigmaDesc));
+  //codebook = new MeanCodebook(matcher, MeanCodebook::Parameter(p.thrDesc,p.sigmaDesc));
 }
 
 LearnerCore::~LearnerCore()
@@ -55,7 +50,7 @@ LearnerCore::~LearnerCore()
 /**
  * Setup
  */
-void LearnerCore::Setup(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, cv::Mat &R, cv::Mat &T, const string &oid)
+int LearnerCore::Setup(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, cv::Mat &R, cv::Mat &T, const string &oid)
 {
   // set images
   if (param.intrinsic.empty())
@@ -66,9 +61,6 @@ void LearnerCore::Setup(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, 
     throw runtime_error("LearnerCore::Setup : No point cloud available!");
   if (!model->id.empty() && model->id.compare(oid)!=0)
     throw runtime_error("LearnerCore::Setup : Invalide object id!");
-
-  imgGray = image;
-  if( image.type() != CV_8U ) cv::cvtColor( image, imgGray, CV_BGR2GRAY );
 
 
   // set the object pose
@@ -82,191 +74,281 @@ void LearnerCore::Setup(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, 
     if ( refObject.empty() ) refObject = pose;
     MulPose(invRefGlobal, refObject, view->pose);
     MulPose(pose, view->pose, view->pose);
+
+    model->pose = view->pose;
+
+    // check pose
+    for (unsigned i=0; i<model->views.size(); i++)
+    {
+      double angle = AngleBetween(view->pose,model->views[i]->pose);
+      #ifdef DEBUG
+      cout<<"Angle between views: "<<angle*180/M_PI<<endl;
+      #endif
+      if (angle < param.minAngleBetweenViews*M_PI/180.)
+        return 0;
+    }
+
+    imgGray = image;
+    if( image.type() != CV_8U ) cv::cvtColor( image, imgGray, CV_BGR2GRAY );
+
+    // set object name
+    if (model->id.empty()) model->id = oid;
+
+    return 1;
   }
 
-  // scaling point cloud / image
-  scaleWidth = (double)cloud.cols / (double)image.cols;
-  scaleHeight = (double)cloud.rows / (double)image.rows;
-
-  // set object name
-  if (model->id.empty()) model->id = oid;
+  return 0;
 }
 
 
 /**
  * Set 3d location of interest points
  */
-void LearnerCore::AlignKeypoints3D(const cv::Mat_<cv::Vec4f> &cloud, vector< cv::Ptr<PKeypoint> > &keys, Pose &pose)
+void LearnerCore::AlignKeypoints3D(const cv::Mat_<cv::Vec4f> &cloud, const cv::Mat &mask, Pose &pose, const vector< cv::Ptr<PKeypoint> > &keys, std::vector<cv::Point3f> &pts)
 {
+  pts.clear();
   if (pose.empty())
     return;
 
-  double pos[3];
+  cv::Point3f pos;
+  cv::Point2f pt;
   Pose invPose;
   InvPose(pose,invPose);
 
-  for (unsigned i=0; i<keys.size(); i++)
+  // transform to current view
+  cloud3f.clear();
+  projCloud2f.clear();
+  for (int v=0; v<cloud.rows; v++)
   {
-    const cv::Vec4f &pt3f = cloud(toCloudY(keys[i]->pt.y), toCloudX(keys[i]->pt.x));
-    if (pt3f[0]==pt3f[0] && pt3f[1]==pt3f[1] && pt3f[2]==pt3f[2])
+    for (int u=0; u<cloud.cols; u++)
     {
-      PMat::MulAdd3( invPose.R.ptr<double>(), &pt3f[0], invPose.t.ptr<double>(), pos);
-      keys[i]->Set3D( &pos[0] );
+      const cv::Vec4f &pt3f = cloud(v,u);
+      if (pt3f[0]==pt3f[0] && pt3f[1]==pt3f[1] && pt3f[2]==pt3f[2]) 
+      {
+        if (param.distCoeffs.empty())
+          ProjectPoint2Image(&pt3f[0], param.intrinsic.ptr<double>(), &pt.x);
+        else
+          ProjectPoint2Image(&pt3f[0], param.intrinsic.ptr<double>(), param.distCoeffs.ptr<double>(), &pt.x);
+
+        if (mask.empty() || mask.at<uchar>((int)(pt.y+.5),(int)(pt.x+.5))>0)
+        {
+          projCloud2f.push_back(pt);
+          cloud3f.push_back(cv::Point3f(pt3f[0],pt3f[1],pt3f[2]));
+        }
+      }
     }
   }
-}
-
-/**
- * LinkViews
- * Note: 
- * Actually, becaus of 3d data from point cloud 
- * there is no reason to forward 3d keypoint locations except if we want to do sfm
- */
-void LearnerCore::LinkViews(vector<cv::Ptr<PKeypoint> > &queryKeys, vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches)
-{
-  for (unsigned i=0; i<matches.size(); i++)
+  
+  if (cloud3f.size()<5)
   {
-    queryKeys[matches[i].queryIdx]->InsertLink(*trainKeys[matches[i].trainIdx]);
-    if (!queryKeys[matches[i].queryIdx]->Have3D()) 
-      queryKeys[matches[i].queryIdx]->pos = trainKeys[matches[i].trainIdx]->pos;
+    pts.clear();
+    return;
   }
-}
 
-/**
- * Recognise
- */
-void LearnerCore::Recognise(cv::Mat_<float> &queryDescs, vector<cv::Ptr<PKeypoint> > &queryKeys, 
-       vector<Pose> &poses, vector<double> &probs, vector<unsigned> &idxViews, 
-       vector<vector<cv::DMatch> > &matches)
-{
-  double conf, sig;
-  vector<vector<cv::DMatch> > tmpMatches;
-  vector<cv::Ptr<OVMatches> > queryMatches;
-  MatchFilter filter;
-  ConfValues getConf(param.intrinsic, param.distortion, param.inlDistRansac);
+  // find corresponding 3d points for keypoints
+  vector<cv::Point2f> keys2f(keys.size());
+  for (unsigned i=0; i<keys.size(); i++)
+    keys2f[i] = keys[i]->pt;
 
-  probs.clear();
-  idxViews.clear(); 
-  poses.clear();
-  matches.clear();
+  cv::Mat matPts2f(projCloud2f.size(),2,CV_32F,&projCloud2f[0]);
+  cv::Mat matKeys2f(keys2f.size(),2,CV_32F, &keys2f[0]);
+  cv::Mat indices(keys.size(), 1, CV_32S);
+  cv::Mat dists(keys.size(), 1, CV_32F);
 
-  // query view
-  codebook->QueryObjects(queryDescs, queryMatches);
-
-  // test views
-  poses.reserve(param.maxLinkViews);
-  matches.reserve(param.maxLinkViews);
-
-  for (unsigned i=0; i<queryMatches.size() && i<param.maxLinkViews; i++)
+  cv::flann::Index flann_index(matPts2f, cv::flann::KDTreeIndexParams(4));
+  flann_index.knnSearch(matKeys2f, indices, dists, 1, cv::flann::SearchParams(32) );
+  
+  // return results
+  float sqrDist = PMath::Sqr(param.alignDist);
+  pts.resize(keys.size());
+  float noPoint = std::numeric_limits<float>::quiet_NaN ();
+  for (unsigned i=0; i<pts.size(); i++)
   {
-    poses.push_back(Pose());
-    View &mview = *model->views[queryMatches[i]->vid];
-
-    filter.Voting(queryKeys, mview.keys, queryMatches[i]->matches, mview.center, tmpMatches);
-   
-    if (tmpMatches.size()>0)
+    if (dists.at<float>(i,0) < sqrDist)
     {
-
-      sig = estimator->LoRansacPose(queryKeys, mview.keys, tmpMatches[0], poses.back());
-      //probs.push_back(sig/(double)mview.keys.size());
-      conf = getConf.SupportingPointsPerView(queryKeys, mview.keys, poses.back());
-      probs.push_back( getConf.ConfToProb(conf) );
-
-      idxViews.push_back(queryMatches[i]->vid);
-      matches.push_back(tmpMatches[0]);
+      PMat::MulAdd3( invPose.R.ptr<double>(), &cloud3f[indices.at<int>(i,0)].x, invPose.t.ptr<double>(), &pts[i].x);
     }
     else
     {
-      poses.pop_back();
+      pts[i] = cv::Point3f(noPoint,noPoint,noPoint);
     }
   }
 
 }
 
 /**
- * ComparePose
- * up to now just compare the view points
+ * AngleBetween viewpoints
  */
-bool LearnerCore::ComparePose(Pose &pose1, Pose &pose2)
+double LearnerCore::AngleBetween(Pose &pose1, Pose &pose2)
 {
   if (pose1.empty() || pose2.empty())  // there is nothing to test, so just ignore...
-    return true;
+    return 100;
 
-  cv::Point3d vr(0.,0.,1.), pos1, pos2;
-  
-  PMat::Mul3( pose1.R.ptr<double>(), &vr.x, &pos1.x);
-  PMat::Mul3( pose2.R.ptr<double>(), &vr.x, &pos2.x);
 
-  if (PVec::AngleBetween3(&pos1.x,&pos2.x) < param.cmpViewAngle*M_PI/180.)
-    return true;
-  return false;
+  cv::Point3d pos1, pos2;
+
+  ComputeViewRay(pose1, model->center, pos1);
+  ComputeViewRay(pose2, model->center, pos2);
+
+  return PVec::AngleBetween3(&pos1.x,&pos2.x);
 }
 
-
 /**
- * Recognise objects and link keypoints
+ * AddViewToModel and link the points
  */
-int LearnerCore::RecogniseAndLink(double &maxConf)
+int LearnerCore::AddViewToModel(std::vector<cv::Point3f> &keys3f)
 {
-  maxConf=0.;
-  unsigned idxBestPose=UINT_MAX;
-  int status=0;
-  vector<cv::DMatch> inlMatches;
-  vector<Pose> poses;
-  vector<double> probs;
-  vector<unsigned> idxViews;
-  vector<vector<cv::DMatch> > matches;
+  if (keys3f.size() != view->keys.size())
+    return 0;
 
-  //recognise
-  Recognise(view->descriptors, view->keys, poses, probs, idxViews, matches);
+  int status=0, cnt=0;
+  cv::Point2f pt;
+  cv::Point3f pos;
+  map<unsigned, vector<cv::DMatch> > matches;
+  map<unsigned, vector<cv::DMatch> >::iterator it;
+  double sqrInlDist = PMath::Sqr(param.inlDistRansac);
+  double sqrDistPoint3d = PMath::Sqr(param.maxDistPoint3d);
+  vector<bool> okLink;
+  vector<int> cntLinksPerView;
 
-  //check status
-  for (unsigned i=0; i<probs.size(); i++)
+  // query matches
+  codebook->QueryObjects(view->descriptors, matches);
+
+  // link 3d points
+  view->id = model->views.size();
+
+  if (matches.size()==1)
   {
-    if (probs[i] > maxConf)                      // test higher learning threshold
+    it = matches.begin();
+    okLink.resize(it->second.size(),false);
+    cntLinksPerView.resize(model->views.size(),0);
+
+    //cout<<"matches.size()="<<it->second.size()<<endl;
+    for (unsigned i=0; i<it->second.size(); i++)
     {
-      maxConf = probs[i];
-      idxBestPose = i;
-      if (maxConf > param.maxProbLearn)
+      cv::DMatch &ma = it->second[i];
+      PKeypoint &key = *model->views[ma.imgIdx]->keys[ma.trainIdx];
+      cv::Point3f &pt3f = keys3f[ma.queryIdx];
+      //cv::line(dbg, key.pt, view->keys[ma.queryIdx]->pt, CV_RGB(255,0,0),1);
+      if (pt3f.x==pt3f.x && !key.pos.empty())
       {
-        if (view->pose.empty())
-          model->pose = poses[i];
-        else
-          model->pose = view->pose;
-        return 1;
+        PMat::MulAdd3( view->pose.R.ptr<double>(), &key.pos->pt.x, view->pose.t.ptr<double>(), &pos.x);
+        ProjectPoint(pos, param.intrinsic, param.distCoeffs, pt);
+        if (PVec::DistanceSqr2(&pt.x, &view->keys[ma.queryIdx]->pt.x) < sqrInlDist)
+        {
+          if (PVec::DistanceSqr3(&key.pos->pt.x, &pt3f.x) < sqrDistPoint3d)
+          {
+            if (key.pos->TestInsert(view->id, ma.queryIdx))
+            {
+              cnt++;
+              okLink[i] = true;
+              cntLinksPerView[ma.imgIdx]++;
+            }
+          }
+        }
       }
     }
   }
 
-  // link keypoints of views
-  MatchFilter filter;
-  for (unsigned i=0; i<poses.size(); i++)
-  {                                             // test lower learning threshold compare poses
-    if (probs[i] >= param.minProbLearn && ComparePose(poses[i], view->pose))
-    {
-      filter.ThrProjDist(view->keys, model->views[idxViews[i]]->keys, matches[i], poses[i], 
-                         param.intrinsic, inlMatches, param.inlDistRansac);
-      LinkViews(view->keys, model->views[idxViews[i]]->keys, inlMatches);
-      status = 2;
-    }
-  }
+  int idx = GetIndexMax(cntLinksPerView);
+  double conf = (cnt>3 ? ((double)cnt)/(double)model->views[idx]->keys.size() : DBL_MAX);
 
-  // set best pose if we did not get a pose
-  if (idxBestPose!=UINT_MAX)
+  // add new 3d points and add view
+  if (conf<param.maxConfToLearn || param.forceLearning || model->views.size()==0)
   {
-    if (view->pose.empty() || param.useRecognisedPose)
+    if (matches.size()==1)
     {
-      view->pose = poses[idxBestPose];
-      model->pose = poses[idxBestPose];
+      for (unsigned i=0; i<okLink.size(); i++)
+      {
+        if (okLink[i])
+        {
+          cv::DMatch &ma = it->second[i];
+          PKeypoint &key = *model->views[ma.imgIdx]->keys[ma.trainIdx];
+          view->keys[ma.queryIdx]->pos = key.pos;
+          key.pos->Insert(view->id, ma.queryIdx, keys3f[ma.queryIdx]);
+        }
+      }
     }
+
+    status = (cnt==0?1:2);
+    model->views.push_back(view);
+
+    for (int i=0; i<keys3f.size(); i++)
+    {
+      cv::Point3f &pt3f = keys3f[i];
+      if (pt3f.x==pt3f.x && view->keys[i]->pos.empty())
+      {
+        model->points.push_back(new Point3dProjs(model->points.size(), pt3f));
+        model->points.back()->projs.push_back(std::pair<unsigned,unsigned>(view->id, i));
+        view->keys[i]->pos = model->points.back();
+      }
+    }
+
+    // insert to codebook
+    std::vector<cv::Ptr<CModel> > models(1,model);
+    codebook->InsertView(0,view->id, models);
+
+    // compute object center
+    if (model->views.size()==1 && param.computeObjectCenter)
+      SetObjectCenter();
+
+    // add to view indexing sphere
+    AddViewToViewSphere();
   }
 
-  if (view->pose.empty()) InitializePose(view->pose);
-
-  if (model->views.size()==0)
-    status = 2;
+  #ifdef DEBUG
+  cout<<"Test conf for learning: conf="<<conf<<endl;
+  cout<<"Number of linked points: "<<cnt<<" -> "<<(status==2?"learned view!":"no view learned")<<endl;
+  #endif
 
   return status;
+}
+
+/**
+ * SetObjectCenter
+ */
+void LearnerCore::SetObjectCenter()
+{
+  // shift 3d points and set origin of the object
+  cv::Point3d center = GetMean3D(model->views);
+  Translate3D(model->views, -center);
+  model->center = cv::Point3d(0.,0.,0.);
+
+  // renew pose
+  cv::Mat_<double> pt;
+  model->views.back()->pose.t.copyTo(pt);
+  double *t = model->views.back()->pose.t.ptr<double>(0);
+  double *R = model->views.back()->pose.R.ptr<double>(0);
+  PMat::MulAdd3(R,&center.x,&pt(0,0), t);
+  refObject.t.copyTo(pt);
+  PMat::MulAdd3(refObject.R.ptr<double>(0),&center.x, &pt(0,0), refObject.t.ptr<double>(0));
+}
+
+
+/**
+ * AddViewToViewSphere
+ */
+void LearnerCore::AddViewToViewSphere()
+{
+  //set view center in px
+  double pos[3];
+  View &view = *model->views.back();
+  PMat::MulAdd3( view.pose.R.ptr<double>(), &model->center.x, view.pose.t.ptr<double>(), pos);
+  if (param.distCoeffs.empty())
+    ProjectPoint2Image(pos, param.intrinsic.ptr<double>(), &view.center.x);
+  else
+    ProjectPoint2Image(pos, param.intrinsic.ptr<double>(), param.distCoeffs.ptr<double>(), &view.center.x);
+
+  // add to completeness representation (viewpoint historgram)
+  if (!model->viewHist.empty())
+  {
+    cv::Point3d vr;
+    ProbModel predProb;
+    
+    // compute view ray..
+    ComputeViewRay(view.pose, model->center, vr);
+    model->viewHist->InsertMax(model->views.size()-1,vr, predProb);
+  }
 }
 
 /**
@@ -284,7 +366,7 @@ cv::Point3d LearnerCore::GetMean3D(vector<cv::Ptr<View> > &views)
     for (unsigned j=0; j<keys.size(); j++)
       if (keys[j]->Have3D())
       {
-        mean += keys[j]->pos;
+        mean += keys[j]->pos->pt;
         cnt++;
       }
   }
@@ -297,31 +379,9 @@ cv::Point3d LearnerCore::GetMean3D(vector<cv::Ptr<View> > &views)
 }
 
 /**
- * Get mean of 3d points
- */
-cv::Point3d LearnerCore::GetMean3D(View& view)
-{
-  unsigned cnt=0;
-  cv::Point3d mean(0.,0.,0.);
-
-  for (unsigned j=0; j<view.keys.size(); j++)
-    if (view.keys[j]->Have3D())
-    {
-      mean += view.keys[j]->pos;
-      cnt++;
-    }
-  
-  mean.x /= (double)cnt;
-  mean.y /= (double)cnt;
-  mean.z /= (double)cnt;
-
-  return mean;
-}
-
-/**
  * Translate3D 3d location of keypoints
  */
-bool LearnerCore::Translate3D(vector<cv::Ptr<View> > &views, cv::Point3d T )
+void LearnerCore::Translate3D(vector<cv::Ptr<View> > &views, cv::Point3d T )
 {
   for (unsigned i=0; i<views.size(); i++)
   {
@@ -329,7 +389,7 @@ bool LearnerCore::Translate3D(vector<cv::Ptr<View> > &views, cv::Point3d T )
 
     for (unsigned j=0; j<keys.size(); j++)
       if (keys[j]->Have3D())
-        keys[j]->pos += T;
+        keys[j]->pos->pt += T;
   }
 }
 
@@ -347,62 +407,6 @@ void LearnerCore::ComputeViewRay(Pose &pose, cv::Point3d &objCenter, cv::Point3d
   vr -= objCenter;
   if (!PMath::IsZero(vr.x) && !PMath::IsZero(vr.y) && !PMath::IsZero(vr.z))
     PVec::Normalise3(&vr.x,&vr.x);
-}
-
-
-/**
- * AddViewToModel
- */
-int LearnerCore::AddViewToModel()
-{
-  if (view->pose.empty())
-    return 0;
-
-  view->id = model->views.size();
-  model->views.push_back(view);
-  codebook->InsertView(0,model->views.size()-1,model->views.back());
-
-  if (model->views.size()==1 && param.computeObjectCenter)
-  {
-    // shift 3d points and set origin of the object
-    cv::Point3d center = GetMean3D(model->views);
-    if (param.computeObjectCenter)
-    {
-      Translate3D(model->views, -center);
-      model->center = cv::Point3d(0.,0.,0.);
-    }
-    else model->center=center;
-
-    // renew pose
-    cv::Mat_<double> pt;
-    model->views.back()->pose.t.copyTo(pt);
-    double *t = model->views.back()->pose.t.ptr<double>(0);
-    double *R = model->views.back()->pose.R.ptr<double>(0);
-    PMat::MulAdd3(R,&center.x,&pt(0,0), t);
-    refObject.t.copyTo(pt);
-    PMat::MulAdd3(refObject.R.ptr<double>(0),&center.x, &pt(0,0), refObject.t.ptr<double>(0));
-  }
-
-  //set view center in px
-  double pos[3];
-  View &view = *model->views.back();
-  PMat::MulAdd3( view.pose.R.ptr<double>(), &model->center.x, view.pose.t.ptr<double>(), pos);
-  ProjectPoint2Image(pos, param.intrinsic.ptr<double>(), &view.center.x);
-
-  // add to completeness representation (viewpoint historgram)
-  if (!model->viewHist.empty())
-  {
-    cv::Point3d vr;
-    ConfValues predProb(param.intrinsic, param.distortion);
-    
-    // compute view ray..
-    //cv::Point3d objCenter = GetMean3D(view);
-    ComputeViewRay(view.pose, model->center, vr);
-
-    model->viewHist->InsertMax(model->views.size()-1,vr, predProb);
-  }
-
-  return 2;
 }
 
 /**
@@ -446,7 +450,7 @@ void LearnerCore::SetPointCloud(const cv::Mat_<cv::Vec4f> &cloud, const cv::Mat_
  * @param cloud  grid of 3d points aligned with image (up to a scale factor) in camara coordinates
  * @param R T global coordinates of the camera assuming the object is static
  * @param mask mask to learn only a part of the image (optional)
- * @return status of learning (0..not_recognised, 1..recognised_not_learned, 2..learned)
+ * @return status of learning (0..not_learned, 1..learned, 2..learned_and_linked)
  */
 int LearnerCore::Learn(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, cv::Mat R, cv::Mat T, const string &oid, cv::Mat mask)
 {
@@ -457,36 +461,23 @@ int LearnerCore::Learn(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, c
   #endif
 
   // init ...
-  int status;
   double maxConf=0;
-  Setup(image, cloud, R, T, oid);
+  vector<cv::Point3f> keys3f;
 
-  // detect keypoints and descriptors of current frame
-  detector->Detect(imgGray, view->keys, mask);
-  PKeypoint::ConvertToCv(view->keys,cvKeys);
-  extractor->compute(imgGray, cvKeys, view->descriptors);
+  int status = Setup(image, cloud, R, T, oid);
 
-  //try to recognise the object and link keypoints
-  status = RecogniseAndLink(maxConf);
-
-  // set 3d coordinates
-  if (status == 2 || param.forceLearning)
+  if (status >= 1)
   {
-    if (refObject.empty())
-    {
-      if (!R.empty() && !T.empty())
-      {
-        Pose pose(R,T);
-        InvPose(pose, invRefGlobal);
-      }
-      refObject = view->pose;
-    }
+    // detect keypoints and descriptors of current frame
+    detector->Detect(imgGray, view->keys, mask);
+    PKeypoint::ConvertToCv(view->keys,cvKeys);
+    extractor->compute(imgGray, cvKeys, view->descriptors);
 
-    // align keypoints with 3d model using the point cloud
-    AlignKeypoints3D(cloud, view->keys, view->pose);
+   // align keypoints
+    AlignKeypoints3D(cloud, mask, view->pose, view->keys, keys3f);
 
-    // add view
-    status = AddViewToModel();
+    //add view to model 
+    status = AddViewToModel(keys3f);
 
     #ifdef LOG_POINT_CLOUD
     if (status==2)
@@ -502,93 +493,17 @@ int LearnerCore::Learn(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, c
       #endif
     }
     #endif
-  }
 
-  #ifdef DEBUG
-  cout<<"model id="<<oid<<", conf="<<maxConf<<": views.size()="<<model->views.size()<<endl;
-  #endif
+    #ifdef DEBUG
+    cout<<"model id="<<oid<<": views.size()="<<model->views.size()<<endl;
+    #endif
+  }
+  cout<<"model id="<<oid<<": views.size()="<<model->views.size()<<endl;
+
 
   return status;
 }
 
-/**
- * Detect keypoints in image
- * (backward compatibility to BLORT)
- */
-void LearnerCore::DetectKeypoints(const cv::Mat &image, vector<cv::Ptr<PKeypoint> > &keys, cv::Mat mask)
-{
-  // init ...
-  if (image.cols != param.width || image.rows != param.height)
-    throw runtime_error("LearnerCore::DetectKeypoints : Wrong image size!");
-
-  imgGray = image;
-  if( image.type() != CV_8U ) cv::cvtColor( image, imgGray, CV_BGR2GRAY );
-
-  // detect keypoints
-  detector->Detect(imgGray, keys, mask);
-}
-
-/**
- * Add keypoints to object model
- * Attention: DetectKeypoint has to be called before (to store the image)!
- * (backward compatibility to BLORT)
- */ 
-int LearnerCore::InsertToModel(const vector<cv::Ptr<PKeypoint> > &keys,cv::Mat R, cv::Mat T, const string &oid)
-{
-  // init ...
-  if (param.intrinsic.empty())
-    throw runtime_error("LearnerCore::DetectKeypoints : Camera parameter are not set!");
-  if (!model->id.empty() && model->id.compare(oid)!=0)
-    throw runtime_error("LearnerCore::DetectKeypoints : Invalide object id!");
-
-  // set the object pose
-  Pose pose(R,T);
-  view = new View();
-
-  if ( !pose.empty() )
-  {
-    if ( invRefGlobal.empty() ) InvPose(pose,invRefGlobal);
-    if ( refObject.empty() ) refObject = pose;
-    MulPose(invRefGlobal, refObject, view->pose);
-    MulPose(pose, view->pose, view->pose);
-  }
-
-  if (model->id.empty()) model->id = oid;
-
-  for (unsigned i=0; i<keys.size(); i++)
-    if (keys[i]->Have3D())
-      view->keys.push_back(keys[i]);
-
-  PKeypoint::ConvertToCv(view->keys,cvKeys);
-  extractor->compute(imgGray, cvKeys, view->descriptors);
-
-  //try to recognise the object and link keypoints
-  int status;
-  double maxConf=0;
-  status = RecogniseAndLink(maxConf);
-
-  // add view
-  if (status == 2 || param.forceLearning)
-  {
-    if (refObject.empty())
-    {
-      if (!R.empty() && !T.empty())
-      {
-        Pose pose(R,T);
-        InvPose(pose, invRefGlobal);
-      }
-      refObject = view->pose;
-    }
-
-    status = AddViewToModel();
-  }
-
-  #ifdef DEBUG
-  cout<<"model id="<<oid<<", conf="<<maxConf<<": views.size()="<<model->views.size()<<endl;
-  #endif
-
-  return status;
-}
 
 /**
  * Clear the model for learnModeling,
@@ -610,9 +525,10 @@ void LearnerCore::SetModel(cv::Ptr<CModel> &_model)
   Clear();
 
   model = _model;
+  std::vector<cv::Ptr<CModel> > models(1,model);
 
   for (unsigned i=0; i<model->views.size(); i++)
-    codebook->InsertView(0,i,model->views[i]);
+    codebook->InsertView(0,i, models);
 }
 
 /**
@@ -624,29 +540,43 @@ cv::Ptr<CModel> &LearnerCore::GetModel()
 }
 
 /**
+ * Set the reference object pose from recognition to continue learning
+ */
+void LearnerCore::SetReferenceObjectPose(const Pose &pose)
+{
+  refObject = pose;
+}
+
+/**
  * GetViewRays
  */
 void LearnerCore::GetViewRays(vector<cv::Point3d> &vr)
 {
-  if (!model->viewHist.empty())
-    model->viewHist->GetViewRays(vr, param.minProbLearn, param.maxProbLearn);
+  cout<<"TODO: LearnerCore::GetViewRays!"<<endl;
+//  if (!model->viewHist.empty())
+//    model->viewHist->GetViewRays(vr, param.minProbLearn, param.maxProbLearn);
 }
 
 /**
  * set camera parameter 
  */
-void LearnerCore::SetCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_distortion)
+void LearnerCore::SetCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_distCoeffs)
 {
   param.intrinsic = _intrinsic;
-  param.distortion = _distortion;
+  param.distCoeffs = cv::Mat();
 
   if (_intrinsic.type() != CV_64F)
     _intrinsic.convertTo(param.intrinsic, CV_64F);
 
-  if (_distortion.type() != CV_64F)
-    _distortion.convertTo(param.distortion, CV_64F);
 
-  estimator->SetCameraParameter(param.intrinsic, param.distortion);
+  if (!param.distCoeffs.empty())
+  {
+    param.distCoeffs = cv::Mat::zeros(1,8,CV_64F);
+    for (int i=0; i<_distCoeffs.cols; i++)
+      param.distCoeffs.at<double>(1,i) = _distCoeffs.at<double>(1,i);
+  }
+
+  //estimator->SetCameraParameter(param.intrinsic, param.distCoeffs);
 }
 
 

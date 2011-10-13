@@ -16,6 +16,7 @@
 namespace pclA
 {
 
+using namespace std;
   
 /**************************************  SOI **********************************************/
 PlanePopout::SOI::SOI(unsigned l, 
@@ -61,16 +62,17 @@ PlanePopout::PlanePopout(Parameter _param)
   n3d.setKSearch (param.nbNeighbours);
   n3d.setSearchMethod (normalsTree);
 
+printf("SAC threshold: %4.3f\n", param.thrSacDistance);
   seg.setDistanceThreshold (param.thrSacDistance);
   seg.setMaxIterations (2000);
 
-  seg.setNormalDistanceWeight (param.normalDistanceWeight);
-  seg.setOptimizeCoefficients (true);
-  seg.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+//  seg.setNormalDistanceWeight (param.normalDistanceWeight);
+//  seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_PLANE);  // pcl::SACMODEL_NORMAL_PLANE
   seg.setMethodType (pcl::SAC_RANSAC);
-  seg.setProbability (0.95);
+//  seg.setProbability (0.95);
 
-  proj.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+  proj.setModelType (pcl::SACMODEL_PLANE);	//pcl::SACMODEL_NORMAL_PLANE
 
   prism.setHeightLimits (param.minObjectHeight, param.maxObjectHeight);
 
@@ -102,21 +104,23 @@ PlanePopout::~PlanePopout()
  * - Build from the convex hull (perpendicular) a soi prism with bottom/top points of 
  *   the convex hull.
  */
-bool PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
+void PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
 {
   sois.clear();
   pclA::CopyPointCloud(*cloud, *input_cloud);
   
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudFiltered (new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr popoutCloud (new pcl::PointCloud<pcl::PointXYZRGB>);
 
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > clusters;
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > clusters_projected;
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > cluster_hulls;
 
   FilterZ(cloud, *cloudFiltered);                                           // Filter the PointCloud in z-coordinate
-  if (DetectPopout(cloudFiltered, popouts) == false)	return false;
-  
-  pclA::EuclideanClustering(*cloudFiltered, popouts, clusters);             // Do euclidean clustering with all points of the popout-cloud
+  DetectPopout(cloudFiltered, popouts);
+  pcl::copyPointCloud(*cloudFiltered, popouts, *popoutCloud);
+
+  pclA::EuclideanClustering(popoutCloud, clusters);             // Do euclidean clustering of the popout-cloud
   for(unsigned i=0; i<clusters.size(); i++)
   {
     if(clusters[i]->points.size() > param.minClusterSize)
@@ -137,8 +141,8 @@ bool PlanePopout::CalculateSOIs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud)
   }
   
   valid_computation = true;
-  return true;
 }
+
 
 /**
  * Calculate the ROI mask with labels, starting with 1. 0 means no ROI.
@@ -190,10 +194,14 @@ ushort PlanePopout::IsInROI(int x, int y)
   return roi_label_mask(y, x);
 }
 
-void PlanePopout::GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois)
+void PlanePopout::GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &_sois,
+                          std::vector<unsigned> &labels)
 {
   for(unsigned i=0; i<sois.size(); i++)
+  {
     _sois.push_back(sois[i].GetSoi());
+    labels.push_back(sois[i].GetLabel());
+  }
 }
 
 /**
@@ -202,17 +210,16 @@ void PlanePopout::GetSOIs(std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > 
  */ 
 unsigned PlanePopout::IsInSOI(float x, float y, float z)
 {
-  /*pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_projected (new pcl::PointCloud<pcl::PointXYZRGB>);*/
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_projected (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  pcl::PointXYZRGB p;
+  pcl::PointXYZRGB p, pn, pp;
   p.x = x;
   p.y = y;
   p.z = z;
-  /*pcl::PointXYZRGB pn, pp;
   pcl_cloud->push_back(p);
   pclA::GetProjectedPoints(pcl_cloud, tableCoefficients, pcl_cloud_projected);
-  pn = pcl_cloud_projected->points[0];*/
+  pn = pcl_cloud_projected->points[0];
   
   unsigned label = 0;
   for(unsigned i=0; i<sois.size(); i++)
@@ -220,7 +227,7 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
     unsigned newLabel = sois[i].IsInSOI(p);
     if(newLabel > 0) 
     {
-      /*// check, if point is "under" table (depends on view!!!)
+      // check, if point is "under" table (depends on view!!!)
       pp.x = pn.x - p.x;
       pp.y = pn.y - p.y;
       pp.z = pn.z - p.z;
@@ -229,46 +236,24 @@ unsigned PlanePopout::IsInSOI(float x, float y, float z)
       double dot_p_pp = p.x*pp.x + p.y*pp.y + p.z*pp.z;
       double angle = acos(dot_p_pp/(norm_p*norm_pp));
       if(angle < 1.57)  // Pi/2
-        label = newLabel;*/
-      label = newLabel;
+        label = newLabel;
     }
   }
   return label;
 }
 
-/**
- * Detect table plane and objects which pop out
- */
-bool PlanePopout::CollectTableInliers(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, pcl::ModelCoefficients::Ptr dpc)
-{
-//     if (dpc->values[0]!=0 && dpc->values[1]!=0 && dpc->values[2]!=0 && dpc->values[3]!=0)
-//     {
-// cout<<"PlanePopout::DetectPopout: dpc= (" << dpc->values[0] << ", "<<dpc->values[1]<<", "<<","<<dpc->values[2]<<","<<dpc->values[3]<<")"<<endl;
-	tableInliers.reset (new pcl::PointIndices());
-	for (unsigned i=0; i<cloud->points.size(); i++)
-	{
-	  float dist=abs(dpc->values[0]*cloud->points[i].x
-			+dpc->values[1]*cloud->points[i].y
-			+dpc->values[2]*cloud->points[i].z
-			+dpc->values[3])
-	  /sqrt(dpc->values[0]*dpc->values[0]
-	       +dpc->values[1]*dpc->values[1]
-	       +dpc->values[2]*dpc->values[2]);
-	  if (dist < param.thr)	(*tableInliers).indices.push_back(i);
-	}
-// cout<<"Done the collection of inliers"<<endl;
-//     }
-}
 
 /**
  * Detect table plane and objects which pop out
  */
-bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
+void PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud, 
                                pcl::PointIndices &popout)
 {
   if ((int)cloud->points.size () < param.nbNeighbours)
-    return false;
-  //	else cout<<"PlanePopout::DetectPopout: Only " << (int)cloud->points.size () << " are available!"<<endl;
+  {
+    cout<<"PlanePopout::DetectPopout: Only " << (int)cloud->points.size () << " are available!"<<endl;
+    return;
+  }
 
   if (tableCoefficients.get()==0)
     tableCoefficients.reset(new pcl::ModelCoefficients());
@@ -280,20 +265,14 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
   n3d.compute (*cloudNormals);
 
   seg.setInputCloud (cloudDownsampled);
-  seg.setInputNormals (cloudNormals);
+//  seg.setInputNormals (cloudNormals);
   seg.segment (*tableInliers, *tableCoefficients);
 
   if (tableInliers->indices.size () == 0)
   {
-//     cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
-    return false;
+    cout<<"PlanePopout::DetectPopout: No Plane Inliers points!"<<endl;
+    return;
   }
-//   else
-//   {
-//       for (int i=0; i<tableInliers->indices.size(); i++)
-// 	cout<<"PlanePopout::DetectPopout: there is a point at ( "<<cloud->points.at(tableInliers->indices.at(i)).x <<" ,"<<cloud->points.at(tableInliers->indices.at(i)).y<<" ,"<<cloud->points.at(tableInliers->indices.at(i)).z<<" )"<<endl;
-//   }
-  //else	cout<<"PlanePopout::DetectPopout: There are "<< tableInliers->indices.size()<<"Plane Inliers points!"<<endl;
 
   proj.setInputCloud (cloudDownsampled);
   proj.setIndices (tableInliers);
@@ -305,15 +284,7 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 
   prism.setInputCloud (cloud);
   prism.setInputPlanarHull (tableHull);
-  prism.segment (popout);
-
-  if (popout.indices.size () == 0)
-  {
-//     cout<<"PlanePopout::DetectPopout: No popout points!"<<endl;
-    return false;
-  }
-  
-  return true;
+  prism.segment (popout); 
 }
 
 /**
@@ -323,8 +294,8 @@ bool PlanePopout::DetectPopout(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 void PlanePopout::FilterZ(const cv::Mat_<cv::Vec4f> &cloud, 
                           pcl::PointCloud<pcl::PointXYZRGB> &filtered)
 {
-  if (pclCloud.get()==0) pclCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
-  pclA::ConvertCvMat2PCLCloud(cloud, *pclCloud);
+//   if (pclCloud.get()==0) pclCloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
+  pclA::ConvertCvMat2PCLCloud(cloud, pclCloud);
 
   zFilter.setInputCloud (pclCloud);
   zFilter.filter(filtered);

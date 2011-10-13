@@ -11,9 +11,9 @@ class MatchPairs
 {
 public:
   unsigned idxObject;
-  vector<unsigned> idxViews;
-  vector<vector<PKeypoint*> > ptsModel;   // model points sorted by views
-  vector<vector<PKeypoint*> > ptsImage;   // according image points
+  std::vector<unsigned> idxViews;
+  std::vector<std::vector<PKeypoint*> > ptsModel;   // model points sorted by views
+  std::vector<std::vector<PKeypoint*> > ptsImage;   // according image points
   MatchPairs() {};
   MatchPairs(unsigned oidx) : idxObject(oidx) {};
 };

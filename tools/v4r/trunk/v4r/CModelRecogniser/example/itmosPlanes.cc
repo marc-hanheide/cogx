@@ -17,6 +17,7 @@
 #include "v4r/CModelRecogniser/Plane.hh"
 #include "v4r/CModelRecogniser/PSiftGPU.hh"
 #include "v4r/CModelRecogniser/MergePlanesHF.hh"
+#include "v4r/CModelRecogniser/IsPlaneGraph.hh"
 
 #include "external/SiftGPU/src/SiftGPU/SiftGPU.h"
 
@@ -44,7 +45,12 @@
 #define FILENAME "/home/hannes/images/GRASPBox05/GRASPBox05-000000%04d.png"
 #define START 50
 #define END 3000
-#define STEP 1 
+#define STEP 1
+
+/*#define FILENAME "/home/hannes/images/Box06/Box06Left_%04d.jpg"
+#define START 80
+#define END 1586
+#define STEP 2 */
 
 
 using namespace std;
@@ -52,23 +58,29 @@ using namespace std;
 
 
 void Draw(cv::Mat &img, vector<cv::Ptr<P::Plane> > planes);
+void onMouse( int event, int x, int y, int flags, void* );
 
+cv::Mat imDraw, imTmp;
+vector<cv::Ptr<P::Plane> > planes;
+cv::Point ptMouse;
+P::IsPlaneGraph *pPlaneGraph=0;
 
 
 int main(int argc, char *argv[] )
 {
   int key;
   char filename[PATH_MAX];
-  cv::Mat imLoad, imCol, imGray, imDraw;
+  cv::Mat imLoad, imCol, imGray, imDrawLast;
   cv::Mat intrinsic, distCoeffs, map1, map2;
 
   vector< cv::Ptr<P::PKeypoint> > keys;
   cv::Mat_<float> descriptors;
   vector<cv::KeyPoint> cvKeys;
-  vector<cv::Ptr<P::Plane> > planes;
   struct timespec start1, end1;
 
   cv::namedWindow("Image", 1);
+  cv::namedWindow("Last Image", 1);
+  cv::setMouseCallback( "Image", onMouse, 0 );
 
   cv::Ptr<P::KeypointDetector> detector = new P::KeypointDetectorSURF();
   //cv::Ptr<P::KeypointDetector> detector = new P::KeypointDetectorFAST();
@@ -82,6 +94,8 @@ int main(int argc, char *argv[] )
 
   P::ItMoSPlanes splane(matcher, P::ItMoSPlanes::Parameter(640, 480));
   P::MergePlanesHF mergeF;
+  P::IsPlaneGraph planeGraph(matcher, P::IsPlaneGraph::Parameter(640, 480));
+  pPlaneGraph = &planeGraph;
 
   #ifdef UNDISTORT
   cv::FileStorage fs(INTRINSIC, cv::FileStorage::READ);
@@ -124,14 +138,22 @@ int main(int argc, char *argv[] )
 
     splane.dbg = imDraw;
     bool selected = splane.Operate(keys,descriptors, planes);
-    splane.Draw(imDraw,planes);
+    //splane.Draw(imDraw,planes,2);
 
     if (selected)
     {
-      Draw(imDraw,planes);     // debug drawing
+      planeGraph.dbg = imDraw;
+      planeGraph.Create(planes, cnt);
+      planeGraph.Draw(imDraw, 1);
 
-      mergeF.dbg = imDraw;
-      mergeF.Operate(planes);
+      //------------------------ save gt -----------------
+      /*if (!imDrawLast.empty()) cv::imshow("Last Image", imDrawLast);
+      for (unsigned i=0; i<planes.size(); i++)
+      {
+        imDraw.copyTo(imTmp);
+        pPlaneGraph->GTSaveTracks(imTmp, i);
+      }*/
+      //----------------------------------------------------
     }
 
 
@@ -139,10 +161,14 @@ int main(int argc, char *argv[] )
     cout<<"Time for plane detection (inkl. matching) [s]: "<<PMath::timespec_diff(&end1,&start1)<<endl;
     /**************************************************/
 
-    cv::imshow("Image",imDraw);
-    key = cv::waitKey(0);
 
-    if ( ((int)key) == 27 ) 
+    cv::imshow("Image",imDraw);
+    if (!imDrawLast.empty()) cv::imshow("Last Image", imDrawLast);
+    key = cv::waitKey(0);
+    
+    if (selected) imDraw.copyTo(imDrawLast);
+
+    if ( ((char)key) == 27 ) 
       break;
   }
 
@@ -171,17 +197,46 @@ void Draw(cv::Mat &img, vector<cv::Ptr<P::Plane> > planes)
 
   for (unsigned i=0; i<planes.size(); i++)
   {
-    MeanKeys(planes[i]->keys, pt1);
-    P::PHom::MapPoint(&pt1.x, &planes[i]->H(0,0), &pt2.x);
-    cv::line(img, pt1,pt2, CV_RGB(255,255,0));
-    cv::circle(img, pt1, 2, CV_RGB(255,255,255), 2);
-if (PVec::Distance2(&pt1.x, &pt2.x)>2)
-  planes[i]->haveMotion=true;
-else planes[i]->haveMotion=false;
+    P::PHom::MapPoint(&planes[i]->center.x, &planes[i]->H(0,0), &pt2.x);
+    cv::line(img, planes[i]->center, pt2, CV_RGB(255,255,0));
+    cv::circle(img, planes[i]->center, 2, CV_RGB(255,255,255), 2);
+
+    if (PVec::Distance2(&planes[i]->center.x, &pt2.x)>2)
+      planes[i]->haveMotion=true;
+    else planes[i]->haveMotion=false;
   }
 
 }
 
+void onMouse( int event, int x, int y, int flags, void* )
+{
+    if( x < 0 || x >= imDraw.cols || y < 0 || y >= imDraw.rows )
+        return;
+
+    if( event == CV_EVENT_LBUTTONDOWN && pPlaneGraph!=0)
+    {
+      double dist, min=DBL_MAX;
+      unsigned idx=UINT_MAX;
+      ptMouse = cv::Point(x,y);
+      imDraw.copyTo(imTmp);
+
+      for (unsigned i=0; i<planes.size(); i++)
+      {
+        dist = PVec::DistanceSqr2(&planes[i]->center.x, &ptMouse.x);
+        if (dist<min)
+        {
+          min = dist;
+          idx = i;
+        }
+      }
+      
+      if (idx!=UINT_MAX)
+      {
+        pPlaneGraph->DrawText(imTmp,idx);
+        imshow("Image", imTmp);
+      }
+    }
+}
 
 
 

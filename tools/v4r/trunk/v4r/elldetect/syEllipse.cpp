@@ -116,20 +116,25 @@ unsigned CzEllipse::EllipseSupport(CzArray<CzEdgel> &points, double inlDist, CzA
 bool CzEllipse::FitEllipse(CzArray<CzEdgel> &ps, double &x, double &y, double &a, double &b, double &phi)
 {
    unsigned i;
-   CvPoint2D32f *points = 0;
-   CvBox2D params;
+   //CvPoint2D32f *points = 0;
+   vector<cv::Point2f> points(ps.Size());
+   cv::RotatedRect params;
+   //CvBox2D params;
 
-   points = new CvPoint2D32f[ps.Size()];
-   if (points == 0)
-      throw CzExcept(__HERE__, "Could not create class CvPoint2D32f! Out of memory?");
-   assert(points != 0);
+   //points = new CvPoint2D32f[ps.Size()];
+   //if (points == 0)
+   //   throw CzExcept(__HERE__, "Could not create class CvPoint2D32f! Out of memory?");
+   //assert(points != 0);
    for(i = 0; i <ps.Size(); i++)
    {
       points[i].x = (float) ps[i].p.x;
       points[i].y = (float) ps[i].p.y;
    }
 
-   cvFitEllipse(points, ps.Size(), &params);
+   //CvMat matPoints = cvMat(ps.Size(),2, CV_32F, &points[0].x);
+
+   //cvFitEllipse2(points, ps.Size(), &params);
+   params = cv::fitEllipse(points);
    x = params.center.x;
    y = params.center.y;
    // box size is double the axis lengths
@@ -143,7 +148,7 @@ bool CzEllipse::FitEllipse(CzArray<CzEdgel> &ps, double &x, double &y, double &a
       swap(a, b);
       phi = ScaleAngle_0_2pi(phi + M_PI_2);
    }
-   delete[] points;
+   //delete[] points;
    return true;
 }
 

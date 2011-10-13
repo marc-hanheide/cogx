@@ -33,8 +33,8 @@ ConfValues::~ConfValues()
  * SupportingPointsPerView
  * = num_supporting_points / num_points_of_recognised_view  (no matches used)
  */
-double ConfValues::SupportingPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
+double ConfValues::SupportingPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -74,8 +74,8 @@ double ConfValues::SupportingPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKey
  * = num_supporting_points / num_points_of_recognised_view (no matches used)
  *   each supporting point is weighted with the inlier distance
  */
-double ConfValues::WeightedSupportingPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
+double ConfValues::WeightedSupportingPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -115,8 +115,8 @@ double ConfValues::WeightedSupportingPointsPerView(vector<cv::Ptr<PKeypoint> > &
  * MatchedPointsPerView
  * = num_inl_matched_points / num_points_of_recognised_view
  */
-double ConfValues::MatchedPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose)
+double ConfValues::MatchedPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -152,8 +152,8 @@ double ConfValues::MatchedPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys,
  * = num_inl_matched_points / num_points_of_recognised_view
  *   each supporting point is weighted with the inlier distance
  */
-double ConfValues::WeightedMatchedPointsPerView(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose)
+double ConfValues::WeightedMatchedPointsPerView(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -226,8 +226,8 @@ double ConfValues::WeightedMatchedPointsPerView(MatchPairs &mp, unsigned sizeVie
 /**
  * SupportingPointsPerXX
  */
-double ConfValues::SupportingPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
+double ConfValues::SupportingPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -263,8 +263,8 @@ double ConfValues::SupportingPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys,
 /**
  * WeightedSupportingPointsPerXX
  */
-double ConfValues::WeightedSupportingPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
+double ConfValues::WeightedSupportingPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -300,8 +300,8 @@ double ConfValues::WeightedSupportingPointsPerXX(vector<cv::Ptr<PKeypoint> > &qu
 /**
  * MatchedPointsPerXX
  */
-double ConfValues::MatchedPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose)
+double ConfValues::MatchedPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose)
 {
   if (pose.empty())
     return 0.;
@@ -332,8 +332,8 @@ double ConfValues::MatchedPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys,
 /**
  * WeightedMatchedPointsPerXX
  */
-double ConfValues::WeightedMatchedPointsPerXX(vector<cv::Ptr<PKeypoint> > &queryKeys, 
-                    vector<cv::Ptr<PKeypoint> > &trainKeys, vector<cv::DMatch> &matches, Pose &pose)
+double ConfValues::WeightedMatchedPointsPerXX(std::vector<cv::Ptr<PKeypoint> > &queryKeys, 
+                    std::vector<cv::Ptr<PKeypoint> > &trainKeys, std::vector<cv::DMatch> &matches, Pose &pose)
 {
   if (pose.empty())
     return 0.;

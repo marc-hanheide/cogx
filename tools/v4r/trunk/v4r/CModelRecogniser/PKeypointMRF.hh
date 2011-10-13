@@ -20,17 +20,17 @@ namespace P
 class PKeypointMRF : public PKeypoint
 {
 public:
-  set<unsigned> links;
-  vector<float> cost;                         // cost of assigning labels (data cost)
-  vector<float> tmpCost;
+  std::set<unsigned> links;
+  std::vector<float> cost;                         // cost of assigning labels (data cost)
+  std::vector<float> tmpCost;
 
   PKeypointMRF();
   PKeypointMRF(const PKeypoint &k);
   PKeypointMRF(const cv::KeyPoint &k);
   ~PKeypointMRF();
 
-  inline void InsertLink(vector<PKeypointMRF> &keys, unsigned lid);
-  inline void ReleaseLinks(vector<PKeypointMRF> &keys);
+  inline void InsertLink(std::vector<PKeypointMRF> &keys, unsigned lid);
+  inline void ReleaseLinks(std::vector<PKeypointMRF> &keys);
 };
 
 
@@ -38,15 +38,15 @@ public:
 
 
 /*************************** INLINE METHODES **************************/
-inline void PKeypointMRF::InsertLink(vector<PKeypointMRF> &keys, unsigned lid)
+inline void PKeypointMRF::InsertLink(std::vector<PKeypointMRF> &keys, unsigned lid)
 {
   links.insert(lid);
   keys[lid].links.insert(id);
 }
 
-inline void PKeypointMRF::ReleaseLinks(vector<PKeypointMRF> &keys)
+inline void PKeypointMRF::ReleaseLinks(std::vector<PKeypointMRF> &keys)
 {
-  set<unsigned>::iterator it;
+  std::set<unsigned>::iterator it;
 
   for (it = links.begin(); it!=links.end(); it++)
     keys[(*it)].links.erase(id);

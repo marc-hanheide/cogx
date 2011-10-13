@@ -18,6 +18,7 @@ namespace P
  */
 
 CModel::CModel(int subdivHist)
+ : center(cv::Point3d(0.,0.,0.))
 {
   if (subdivHist>0)
     viewHist = new SphereHistogram(subdivHist);
@@ -71,32 +72,21 @@ void CModel::save(ofstream &os)
   os<<id<<'\n';
   os<<center.x<<' '<<center.y<<' '<<center.z<<'\n';
   os<<views.size()<<'\n';
+
   for (unsigned i=0; i<views.size(); i++)
   {
     views[i]->id = i;
     views[i]->save(os);
   }
 
-    
-  //save links
-  for (unsigned j=0; j<views.size(); j++)
+  os<<points.size()<<'\n';
+  for (unsigned i=0; i<points.size(); i++)
   {
-    View &view = *views[j];
-    set<PKeypoint*>::iterator it;
-    for (unsigned i=0; i<view.keys.size(); i++)
-    {
-      os<<view.keys[i]->links.size()<<' ';
-      for (it=view.keys[i]->links.begin(); it!=view.keys[i]->links.end(); it++)
-      {
-        if ((*it)->HaveView())
-          os<<(*it)->view->id<<' '<<(*it)->id<<' ';
-        else
-          os<<UINT_MAX<<' ';
-      }
-      os<<'\n';
-    }
+    os<<points[i]->idx<<' '<<points[i]->pt.x<<' '<<points[i]->pt.y<<' '<<points[i]->pt.z<<' '<<points[i]->projs.size()<<'\n';
+    for (unsigned j=0; j<points[i]->projs.size(); j++)
+      os<<points[i]->projs[j].first<<' '<<points[i]->projs[j].second<<' ';
+    os<<'\n';
   }
-  
 }
 
 /**
@@ -104,38 +94,35 @@ void CModel::save(ofstream &os)
  */
 void CModel::load(ifstream &is)
 {
-  unsigned vid, kid, tmp;
+  unsigned tmp, tmp2;
   
   is>>id;
   is>>center.x>>center.y>>center.z;
   is>>tmp;
   views.resize(tmp);
+
   for (unsigned i=0; i<views.size(); i++)
   {
     views[i] = new View();
     views[i]->load(is);
   }
 
-  //load links
-  for (unsigned j=0; j<views.size(); j++)
+  is>>tmp;
+  points.resize(tmp);
+  for (unsigned i=0; i<points.size(); i++)
   {
-    View &view=*views[j];
-    for (unsigned i=0; i<view.keys.size(); i++)
+    points[i] = new Point3dProjs();
+    is>>points[i]->idx>>points[i]->pt.x>>points[i]->pt.y>>points[i]->pt.z;
+    is>>tmp2;
+    points[i]->projs.resize(tmp2);
+    for (unsigned j=0; j<tmp2; j++)
     {
-      view.keys[i]->view = views[j];
-      is>>tmp;
-
-      for (unsigned k=0; k<tmp; k++)
-      {
-        is>>vid;
-        if (vid!=UINT_MAX)
-        {
-          is>>kid;
-          view.keys[i]->InsertLink(*views[vid]->keys[kid]);
-        }
-      }
+      is>>points[i]->projs[j].first>>points[i]->projs[j].second;
+      //link 3d point to keypoints
+      views[ points[i]->projs[j].first ]->keys[ points[i]->projs[j].second ]->pos = points[i];
     }
   }
+
 }
 
 

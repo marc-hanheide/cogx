@@ -402,7 +402,7 @@ SFace* SphereHistogram::GetFace(cv::Point3d n)
 /**
  * insert weighted depending on weightfunc
  */
-void SphereHistogram::InsertMax(unsigned idx, cv::Point3d vr, ConfValues &pred)
+void SphereHistogram::InsertMax(unsigned idx, cv::Point3d vr, ProbModel &pred)
 {
   if (startFaces.size()==0)
     throw runtime_error("SphereHistogram::Insert Please init indexing sphere!");

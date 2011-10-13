@@ -10,7 +10,8 @@
 #ifndef POLYGONTEST_CV_H
 #define POLYGONTEST_CV_H
 
-#include <opencv/cv.h>
+#include <opencv2/core/core.hpp>
+
 namespace cv
 {
 

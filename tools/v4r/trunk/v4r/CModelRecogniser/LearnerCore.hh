@@ -10,15 +10,16 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include "KeypointDetector.hh"
-#include "RobustEstimators.hh"
+//#include "RobustEstimators.hh"
 #include "CModel.hh"
 #include "polygontest_cv.h"
 #include "ObjectLocation.hh"
 #include "v4r/PGeometry/Pose.hh"
 #include "Codebook.hh"
-#include "MSCodebook.hh"
-#include "MatchFilter.hh"
-#include "ConfValues.hh"
+#include "MeanShiftCodebook.hh"
+#include "MeanCodebook.hh"
+//#include "MatchFilter.hh"
+#include "ProbModel.hh"
 
 
 namespace P
@@ -33,41 +34,42 @@ public:
   public:
     int width, height;                  //willow 1280 1024
     cv::Mat intrinsic;
-    cv::Mat distortion;
-    double minProbLearn;                // min conf to insert frame
-    double maxProbLearn;                // max conf to insert a frame
-    unsigned maxRandTrials;             // max. number of trials for pose ransac (recognition)
-    unsigned numLoTrials;               // number of local ransac trials
-    double etaRansac;                   // eta for pose ransac
-    double inlDistRansac;               // inlier dist pose ransac
-    bool forceLearning;
-    unsigned maxLinkViews;
-    bool useRecognisedPose;
-    double cmpViewAngle;                // test recognised poses [°]
-    bool computeObjectCenter;
-    double thrDesc;
+    cv::Mat distCoeffs;
+    unsigned maxRandTrials;             // max. number of trials for pose ransac (recognition) (1000)
+    unsigned numLoTrials;               // number of local ransac trials (50)
+    double etaRansac;                   // eta for pose ransac (0.01)
+    double inlDistRansac;               // inlier dist pose ransac (2)
+    bool forceLearning;                 // force learning of views without links to other views 
+    double minAngleBetweenViews;        // test angle between viewpoints [°] (20)
+    bool computeObjectCenter;           //
+    double thrDesc;                     // (0.4)
+    double sigmaDesc;                   // (0.2)
+    double alignDist;                   // distance to align projetions of 3d and 2d points
+    double maxDistPoint3d;              // max dist point3d [m]
+    double maxConfToLearn;
 
-    Parameter(int w=640, int h=480, double _minProbLearn=.25, double _maxProbLearn=.4, 
-              unsigned trials=1000, unsigned loTrials=50, double eta=0.01, double inlDist=2, 
-              bool force=false, unsigned maxLink=3, bool useRecPose=false, 
-              double dAlpha=20., bool center=false, double _thrDesc=0.3) 
-      : width(w), height(h), minProbLearn(_minProbLearn), maxProbLearn(_maxProbLearn), 
-        maxRandTrials(trials), numLoTrials(loTrials), etaRansac(eta), inlDistRansac(inlDist), 
-        forceLearning(force),  maxLinkViews(maxLink), useRecognisedPose(useRecPose), 
-        cmpViewAngle(dAlpha), computeObjectCenter(center), thrDesc(_thrDesc) {}
+    Parameter(int w=640, int h=480, unsigned trials=1000, unsigned loTrials=50, double eta=0.01, 
+              double inlDist=2, double minAngle=20., double _thrDesc=0.4, double _sigmaDesc=.2, 
+              double _alignDist=2., bool force=true, bool computeCenter=false, double dist3d=.01,
+              double _maxConfToLearn=0.5) 
+      : width(w), height(h), maxRandTrials(trials), numLoTrials(loTrials), etaRansac(eta), 
+        inlDistRansac(inlDist), minAngleBetweenViews(minAngle), 
+        thrDesc(_thrDesc), sigmaDesc(_sigmaDesc), alignDist(_alignDist), 
+        forceLearning(force), computeObjectCenter(computeCenter),maxDistPoint3d(dist3d),
+        maxConfToLearn(_maxConfToLearn) {}
   };
 
 private:
-  double scaleWidth, scaleHeight;        // xyImage * scale = xyCloud
-
   cv::Ptr<KeypointDetector> detector;
   cv::Ptr<cv::DescriptorExtractor> extractor;
   cv::Ptr<cv::DescriptorMatcher> matcher;
 
-  cv::Ptr<RobustEstimators> estimator;
+  //cv::Ptr<RobustEstimators> estimator;
 
   cv::Mat imgGray;             // gray scale image
   vector<cv::KeyPoint> cvKeys;   // just a opencv keypoint container
+  vector<cv::Point3f> cloud3f;
+  vector<cv::Point2f> projCloud2f;
 
   cv::Ptr<View> view;                   // current view
   cv::Ptr<CModel> model;                // object model container for learning
@@ -76,28 +78,22 @@ private:
 
   cv::Ptr<Codebook> codebook;           // codebook to recognise views
 
-  void Setup(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, 
+  int Setup(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, 
          cv::Mat &R, cv::Mat &T, const string &oid);
-  void AlignKeypoints3D(const cv::Mat_<cv::Vec4f> &cloud, vector< cv::Ptr<PKeypoint> > &keys, Pose &pose);
-  void Recognise(cv::Mat_<float> &queryDescs, vector<cv::Ptr<PKeypoint> > &queryKeys, 
-         vector<Pose> &poses, vector<double> &probs, vector<unsigned> &idxViews, 
-         vector<vector<cv::DMatch> > &matches);
-  void LinkViews(vector<cv::Ptr<PKeypoint> > &queryKeys, vector<cv::Ptr<PKeypoint> > &trainKeys, 
-         vector<cv::DMatch> &matches);
-  int RecogniseAndLink(double &maxConf);
+  double AngleBetween(Pose &pose1, Pose &pose2);
+  void AlignKeypoints3D(const cv::Mat_<cv::Vec4f> &cloud, const cv::Mat &mask, Pose &pose, 
+        const vector< cv::Ptr<PKeypoint> > &keys, std::vector<cv::Point3f> &pts);
+  int AddViewToModel(std::vector<cv::Point3f> &keys3f);
   cv::Point3d GetMean3D(vector<cv::Ptr<View> > &views);
-  bool Translate3D(vector<cv::Ptr<View> > &views, cv::Point3d T );
-  int AddViewToModel();
-  bool ComparePose(Pose &pose1, Pose &pose2);
+  void Translate3D(vector<cv::Ptr<View> > &views, cv::Point3d T );
   void ComputeViewRay(Pose &pose, cv::Point3d &objCenter, cv::Point3d &vr);
-  cv::Point3d GetMean3D(View& view);
+  void SetObjectCenter();
+  void AddViewToViewSphere();
   void SetPointCloud(const cv::Mat_<cv::Vec4f> &cloud, const cv::Mat_<uchar> &mask, 
          Pose &pose, vector<cv::Vec4f> &vecCloud);
 
-
-  inline int toCloudX(double x);
-  inline int toCloudY(double y);
-
+  inline void ProjectPoint(cv::Point3f &pt3, cv::Mat &intrinsic, cv::Mat &distCoeffs, cv::Point2f &pt);
+  inline int GetIndexMax(const vector<int> &tab);
 
 
 public:
@@ -107,7 +103,7 @@ public:
   LearnerCore(cv::Ptr<KeypointDetector> &keyDetector,
                  cv::Ptr<cv::DescriptorExtractor> &descExtractor,
                  cv::Ptr<cv::DescriptorMatcher> &descMatcher,
-                 Parameter _param=Parameter());
+                 Parameter p=Parameter());
   ~LearnerCore();
 
 
@@ -115,26 +111,41 @@ public:
   void SetModel(cv::Ptr<CModel> &_model);
   cv::Ptr<CModel>& GetModel();
   int Learn(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, cv::Mat R, cv::Mat T, const string &oid, cv::Mat mask=cv::Mat());
+  void SetReferenceObjectPose(const Pose &pose);
   void GetViewRays(vector<cv::Point3d> &vr);
 
-  void DetectKeypoints(const cv::Mat &image, vector<cv::Ptr<PKeypoint> > &keys, cv::Mat mask=cv::Mat());
-  int InsertToModel(const vector<cv::Ptr<PKeypoint> > &keys,cv::Mat R,cv::Mat T, const string &oid);
-
-  void SetCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_distortion);
+  void SetCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_distCoeffs);
 };
 
 
 
 
 /*********************** INLINE METHODES **************************/
-inline int LearnerCore::toCloudX(double x)
+
+inline void LearnerCore::ProjectPoint(cv::Point3f &pt3, cv::Mat &intrinsic, cv::Mat &distCoeffs, cv::Point2f &pt)
 {
-  return (int)(x*scaleWidth+.5);
+  if (distCoeffs.empty())
+  {
+    ProjectPoint2Image(&pt3.x, intrinsic.ptr<double>(), &pt.x);
+  }
+  else
+  {
+    ProjectPoint2Image(&pt3.x, intrinsic.ptr<double>(), distCoeffs.ptr<double>(), &pt.x);
+  }
 }
 
-inline int LearnerCore::toCloudY(double y)
+inline int LearnerCore::GetIndexMax(const vector<int> &tab)
 {
-  return (int)(y*scaleHeight+.5);
+  int max=INT_MIN, idx=INT_MIN;
+
+  for (int i=0; i<tab.size(); i++)
+    if (tab[i]>max)
+    {
+      max=tab[i];
+      idx = i;
+    }
+
+  return idx;
 }
 
 

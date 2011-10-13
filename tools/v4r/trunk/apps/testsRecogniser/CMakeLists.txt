@@ -17,10 +17,10 @@ IF(APPS_TESTS4RECOGNISER)
 
 	add_executable(learnRecognise ${SOURCE_H} ${SOURCE_CPP} main.cpp)
 	target_link_libraries(learnRecognise v4rtomgine v4rglwindow v4rtracker)
-	target_link_libraries(learnRecognise CModelRecogniser PCLUtils PCLFunctions PlanePopout EllCalib ${PCL_LIBRARIES})
+	target_link_libraries(learnRecognise CModelRecogniser v4rpclutils v4rpclfunctions v4rplanepopout EllCalib ${PCL_LIBRARIES})
 
 	add_executable(evalRecognise ${SOURCE_H} ${SOURCE_CPP} eval.cpp)
 	target_link_libraries(evalRecognise v4rtomgine v4rglwindow v4rtracker)
-	target_link_libraries(evalRecognise CModelRecogniser PCLUtils PCLFunctions PlanePopout EllCalib ${PCL_LIBRARIES})
+	target_link_libraries(evalRecognise CModelRecogniser v4rpclutils v4rpclfunctions v4rplanepopout EllCalib ${PCL_LIBRARIES})
 
 ENDIF(APPS_TESTS4RECOGNISER)

@@ -12,14 +12,12 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include "PKeypoint.hh"
-#include <v4r/PMath/PMatrix.hh>
-#include <v4r/PGeometry/Pose.hh>
+#include "v4r/PMath/PMatrix.hh"
+#include "v4r/PGeometry/Pose.hh"
 
 
 namespace P
 {
-
-using namespace std;
 
 class PKeypoint;
 
@@ -34,17 +32,17 @@ public:
   cv::Point3d vr;           // view ray
   cv::Point2d center;       // object center in that image
 
-  vector< cv::Ptr<PKeypoint> > keys;
+  std::vector< cv::Ptr<PKeypoint> > keys;
   cv::Mat_<float> descriptors;
 
-  vector< cv::Vec4f > pointcloud;  // dense segmented kinect point cloud (object coordinates)
+  std::vector< cv::Vec4f > pointcloud;  // dense segmented kinect point cloud (object coordinates)
 
   View();
   ~View();
   
   void copyTo(cv::Ptr<View> &view);
-  void save(ofstream &os);
-  void load(ifstream &is);
+  void save(std::ofstream &os);
+  void load(std::ifstream &is);
 };
 
 

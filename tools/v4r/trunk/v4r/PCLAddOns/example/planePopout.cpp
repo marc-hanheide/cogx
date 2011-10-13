@@ -57,9 +57,9 @@ public:
       planePopout.LabelClusters(matCloud, labels, sizeClusters);
       planePopout.CreateMaskLargest(labels, sizeClusters, mask);
       //planePopout.CreateMaskAll(labels, sizeClusters, mask);
-
       //planePopout.ConvertPointCloud2Mat(*cloud, matCloud);
-      pclA::ConvertPCLCloud2Image(*cloud, image);
+
+      pclA::ConvertPCLCloud2Image(cloud, image);
 
       cv::imshow("Image",image);
       cv::imshow("Mask",mask);

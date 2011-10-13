@@ -1,4 +1,4 @@
 
-add_executable(planepopout planePopout.cpp)
-target_link_libraries(planepopout ${OPENCV_LIBRARIES} PlanePopout)
+add_executable(plane_popout planePopout.cpp)
+target_link_libraries(plane_popout ${OPENCV_LIBRARIES} v4rplanepopout)
 

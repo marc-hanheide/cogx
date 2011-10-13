@@ -18,7 +18,7 @@ unsigned Plane::idcnt=0;
  */
 
 Plane::Plane(unsigned _id)
- : id(_id)
+ : id(_id), col(cv::Scalar(0))
 { 
 }
 
@@ -53,6 +53,9 @@ void Plane::copyTo(cv::Ptr<Plane> &dst)
   }
 
   descriptors.copyTo(dst->descriptors);
+
+  dst->center = center;
+  dst->haveMotion = haveMotion;
 }
 
 

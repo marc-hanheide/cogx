@@ -44,8 +44,8 @@ private:
     SET_MODEL_LEARN,
     GET_MODEL_LEARN,
     GET_VIEW_RAYS_LEARN,
-    DETECT_KEYPOINTS,
-    INSERT_TO_MODEL,
+    SET_DEBUG_IMAGE,
+    SET_REF_POSE,
     RECOGNISE,               // recognise
     CLEAR_RECOGNISER,
     ADD_MODEL_RECOGNISER,
@@ -66,12 +66,13 @@ private:
   // temp data...
   cv::Ptr<CModel> tmodel;
   int tstatus;
-  cv::Mat timage, tcloud, tR, tT, tmask;
+  cv::Mat timage, tcloud, tR, tT, tmask, imDebug;
   string toid;
   vector<cv::Point3d> tvr;
   vector<cv::Ptr<PKeypoint> > tkeys;
   cv::Mat tcam, tdistCoeffs;
   vector<ObjectLocation> tobjects;
+  P::Pose tPose;
 
   friend void* ThreadRecognise(void* c);
 
@@ -92,12 +93,11 @@ public:
   void GetModelLearn(cv::Ptr<CModel> &_model);
   int Learn(const cv::Mat &image, const cv::Mat_<cv::Vec4f> &cloud, 
         cv::Mat R, cv::Mat T, const string &oid, cv::Mat mask=cv::Mat());
+  void SetReferenceObjectPose(const Pose &pose);
   void GetViewRays(vector<cv::Point3d> &vr);
-  void DetectKeypoints(const cv::Mat &image,vector<cv::Ptr<PKeypoint> > &keys, cv::Mat mask=cv::Mat());
-  int InsertToModel(const vector<cv::Ptr<PKeypoint> > &keys,cv::Mat R,cv::Mat T, const string &oid);
+  void SetDebugImage(cv::Mat &img);
 
   // recogniser commands
-  void LoadVocabularyTree(const string &filename);
   void ClearRecogniser();
   unsigned AddModelRecogniser(cv::Ptr<CModel> &model);
   void Recognise(const cv::Mat &image, vector<ObjectLocation> &objects, cv::Mat mask=cv::Mat());

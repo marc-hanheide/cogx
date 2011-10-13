@@ -18,9 +18,9 @@ KeypointDetectorFAST::KeypointDetectorFAST(Parameter _param)
 
   /*cv::GoodFeaturesToTrackDetector::Params params;
   params.useHarrisDetector = false;
-  params.maxCorners = param.maxCount;         //500
-  params.qualityLevel = param.qualityLevel;   //0.1
-  params.minDistance = param.minDistance;     //3
+  params.maxCorners = 500;
+  params.qualityLevel = 0.1;
+  params.minDistance = 3;
 
   detector = new cv::GoodFeaturesToTrackDetector();*/
 }

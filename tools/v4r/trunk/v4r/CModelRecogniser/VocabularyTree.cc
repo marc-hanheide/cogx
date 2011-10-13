@@ -56,7 +56,7 @@ void VocabularyTree::CreateNodes(VTNode &node, vector<float*> &ptDescs, unsigned
     cout<<".";
     cv::kmeans(descs, param.k, labels,
           cvTermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 100, 0.001 ),
-          param.numRandCenters, param.flags, &node.descriptors);
+          param.numRandCenters, param.flags, node.descriptors);
 
     vector< vector<float*> > ptDescsBranches(param.k);
     for (unsigned i=0; i<labels.rows; i++)
