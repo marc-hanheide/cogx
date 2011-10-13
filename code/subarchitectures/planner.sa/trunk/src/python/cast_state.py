@@ -233,14 +233,16 @@ class CASTState(object):
                 return True, None
             
             for mapping in rule.smart_instantiate(inst_func, rule.args, [problem.get_all_objects(a.type) for a in rule.args], problem):
-                # print map(str,mapping.values())
-                # print rule.precondition.pddl_str()
+                # if "person" in rule.name:
+                #     print map(str,mapping.values())
+                #     print rule.precondition.pddl_str()
                 if rule.precondition is None or cstate.is_satisfied(rule.precondition):
                     for e in rule.get_effects():
                         # print e.pddl_str()
                           #apply effects seperately in order to allow later effects affecting previously set values
                         facts = cstate.get_effect_facts(e)
-                        # print ["%s=%s" % (str(k), str(v)) for k,v in facts.iteritems()]
+                        # if "person" in rule.name:
+                        #     print "   ",["%s=%s" % (str(k), str(v)) for k,v in facts.iteritems()]
                         cstate.update(facts)
                         generated_facts.update(facts)
 
@@ -492,9 +494,11 @@ class CASTState(object):
                 continue
             
             facts = []
+            # print "---"
             for f in oldstate.state.iterfacts():
                 if any(a == gen for a in chain(f.svar.args, f.svar.modal_args)):
                     facts.append(f)
+                    # print f
                 
             for obj in new_objects:
                 if obj in matches or obj.type != gen.type:
@@ -510,6 +514,7 @@ class CASTState(object):
                         log.debug("Mismatch: %s = %s != %s = %s", str(svar), val.name, str(newvar), self.state[newvar].name)
                         match = False
                         break
+                    # print "match:", svar, val
                 if match:
                     matches[obj] = gen
                     break
@@ -644,6 +649,8 @@ class CASTState(object):
             if svar.modality == pddl.mapl.attributed:
                 value = svar.modal_args[1]
                 svar = svar.nonmodal()
+            elif svar.modality == pddl.mapl.neg_attributed:
+                continue
             assert svar.modality is None
             n_args = [replace_object(a) for a in svar.args]
             
