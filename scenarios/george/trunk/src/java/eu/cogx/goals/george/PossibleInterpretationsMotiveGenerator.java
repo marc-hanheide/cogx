@@ -112,8 +112,8 @@ public class PossibleInterpretationsMotiveGenerator
 
 			for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 				InterpretedIntention iint = _pii.intentions.get(addr);
-				addStringFeature(iint.addressContent.get("about"),
-						tilm.resultPredicate, tilm.resultValue);
+				addAttribution(iint.addressContent.get("about"),
+						tilm.assertedFeature, tilm.assertedValue, tilm.assertedLearn);
 			}
 		}
 
