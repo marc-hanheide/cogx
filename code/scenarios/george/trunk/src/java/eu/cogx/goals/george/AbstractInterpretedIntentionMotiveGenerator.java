@@ -53,17 +53,17 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// }
 		// });
 
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-				TutorInitiativeMotive.class, WorkingMemoryOperation.DELETE),
-				new WorkingMemoryChangeReceiver() {
-
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-							throws CASTException {
-						println("SOMEONE DELETED MY INTENTION");
-						println(CASTUtils.toString(_wmc));
-					}
-				});
+//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+//				TutorInitiativeMotive.class, WorkingMemoryOperation.DELETE),
+//				new WorkingMemoryChangeReceiver() {
+//
+//					@Override
+//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+//							throws CASTException {
+//						println("SOMEONE DELETED MY INTENTION");
+//						println(CASTUtils.toString(_wmc));
+//					}
+//				});
 	}
 
 	private WorkingMemoryAddress m_robotBeliefAddr;
