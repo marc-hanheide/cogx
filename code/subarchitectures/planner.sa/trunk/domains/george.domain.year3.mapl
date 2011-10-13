@@ -50,8 +50,6 @@
     (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
     (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
 
-    (curiosity-satisfied ?r - Robot)
-
     (looked-at ?vc - ViewCone)
 
     (is-object-in-question ?v - VisualObject)
@@ -66,6 +64,9 @@
     (object-refering-color-question-answered ?v - VisualObject ?c - ColorName)
     (object-refering-shape-question-answered ?v - VisualObject ?s - ShapeName)
     (object-refering-type-question-answered ?v - VisualObject ?t - TypeName)
+
+    (exclude-color-description ?r - Robot)
+    (exclude-shape-description ?r - Robot)
   )
 
   (:functions
@@ -124,13 +125,13 @@
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-color-threshold ?r) 1.4)
+    :effect (assign (polar-question-color-threshold ?r) 0.4)
   )
 
   (:init-rule set-learn-autonomous-color-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-color-threshold ?r) 1.98)
+    :effect (assign (learn-autonomous-color-threshold ?r) 0.98)
   )
 
   (:init-rule set-convinced-of-color-threshold
@@ -148,13 +149,13 @@
   (:init-rule set-polar-question-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (polar-question-shape-threshold ?r) UNKNOWN)
-    :effect (assign (polar-question-shape-threshold ?r) 1.4)
+    :effect (assign (polar-question-shape-threshold ?r) 0.4)
   )
 
   (:init-rule set-learn-autonomous-shape-threshold
     :parameters (?r - Robot)
     :precondition (= (learn-autonomous-shape-threshold ?r) UNKNOWN)
-    :effect (assign (learn-autonomous-shape-threshold ?r) 1.98)
+    :effect (assign (learn-autonomous-shape-threshold ?r) 0.98)
   )
 
   (:init-rule set-convinced-of-shape-threshold
@@ -220,26 +221,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; to satisfy the curiosity is the "standard" goal, i.e. whenever George wants to learn stuff about objects
-
-  (:derived (curiosity-satisfied ?r - Robot)
-    (and
-      (forall 
-        (?p - ProtoObject) 
-        (exists 
-          (?v - VisualObject) 
-          (and 
-            (= (po-is-associated-with ?p) ?v) 
-            (color-learned ?v)
-            (shape-learned ?v)
-            ;;(type-learned ?v)
-          )
-        )
-      )
-      (arm-in-resting-position ?r)
-    )
-  )
 
 ;; A polar question is allowed for the color/shape with the max gain only,
 ;; and only if this gain is higher than some threshold
@@ -327,7 +308,6 @@
       (and
         (= (current-viewcone ?r) ?vc)
         (= (target-object ?vc) ?p)
-        ;; (not (exists (?vo - visualobject) (= (po-is-associated-with ?p) ?vo)))
       )
     :effect
       (and
@@ -481,7 +461,8 @@
         (and
           (allow-autonomous-color-learning ?v ?c ?r)
           (not (color-learned ?v))
-          (exists (?p - ProtoObject) 
+          (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))            
+          (exists (?p - ProtoObject)
             (and 
               (= (po-is-associated-with ?p) ?v)
               (= (target-object (current-viewcone ?r)) ?p)
@@ -494,7 +475,7 @@
 	(color-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-	(increase (total-cost) 1)
+	(increase (total-cost) 5)
       )
   )
 
@@ -518,6 +499,7 @@
         (and
           (allow-autonomous-shape-learning ?v ?s ?r)
           (not (shape-learned ?v))
+          (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))  
           (exists (?p - ProtoObject) 
             (and 
               (= (po-is-associated-with ?p) ?v)
@@ -531,7 +513,7 @@
 	(shape-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-	(increase (total-cost) 1)
+	(increase (total-cost) 5)
       )
   )
 
@@ -568,7 +550,7 @@
         (type-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-        (increase (total-cost) 1)
+        (increase (total-cost) 5)
       )
   )
 
@@ -589,7 +571,7 @@
         (update (currently-points-at ?r) ?v)
         (not (arm-in-resting-position ?r))
         (update (arm-in-resting-position ?r) false)
-        (increase (total-cost) 1)
+        (increase (total-cost) 2)
       )
   )
 
@@ -603,87 +585,63 @@
     :effect 
       (and
         (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action verify-reference-by-describing-its-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (and
+              (>= (color-prob ?v1) (believe-in-color-threshold ?r))
+              (exists (?c1 - ColorName) (and (= (color ?v) ?c1) (not (= ?c ?c1))))
+            )
+          )
+        )
+        (not (exclude-color-description ?r))
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
         (increase (total-cost) 1)
       )
   )
 
-  ;; (:action verify-reference-by-describing-its-color
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?c - ColorName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (color-excluded-for-reference-resolution ?r))
-  ;;       (is-potential-object-in-question ?v)
-  ;;       (>= (color-prob ?v) (believe-in-color-threshold ?r))
-  ;;       (= (color ?v) ?c)
-  ;;       (forall 
-  ;;         (?v1 - VisualObject) 
-  ;;         (or 
-  ;;           (= ?v ?v1)
-  ;;           (not (is-potential-object-in-question ?v1))
-  ;;           (>= (color-prob ?v1) (believe-in-color-threshold ?r))
-  ;;           (exists (?c1 - ColorName) (and (= (color ?v) ?c1) (not (= ?c ?c1))))
-  ;;         )
-  ;;       )            
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (not (is-potential-object-in-question ?v))
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
-
-  ;; (:action verify-reference-by-describing-its-shape
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?s - ShapeName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (shape-excluded-for-reference-resolution ?r))
-  ;;       (is-potential-object-in-question ?v)
-  ;;       (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
-  ;;       (= (shape ?v) ?s)
-  ;;       (forall 
-  ;;         (?v1 - VisualObject) 
-  ;;         (or 
-  ;;           (= ?v ?v1)
-  ;;           (not (is-potential-object-in-question ?v1))
-  ;;           (>= (shape-prob ?v1) (believe-in-shape-threshold ?r))
-  ;;           (exists (?s1 - ShapeName) (and (= (shape ?v) ?s1) (not (= ?s ?s1))))
-  ;;         )
-  ;;       )            
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (not (is-potential-object-in-question ?v))
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
-
-  ;; (:action verify-reference-by-describing-its-type
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?t - TypeName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (type-excluded-for-reference-resolution ?r))
-  ;;       (is-potential-object-in-question ?v)
-  ;;       (>= (type-prob ?v) (believe-in-type-threshold ?r))
-  ;;       (= (type ?v) ?t)
-  ;;       (forall 
-  ;;         (?v1 - VisualObject) 
-  ;;         (or 
-  ;;           (= ?v ?v1)
-  ;;           (not (is-potential-object-in-question ?v1))
-  ;;           (>= (type-prob ?v1) (believe-in-type-threshold ?r))
-  ;;           (exists (?t1 - TypeName) (and (= (type ?v) ?t1) (not (= ?t ?t1))))
-  ;;         )
-  ;;       )            
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (not (is-potential-object-in-question ?v))
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action verify-reference-by-describing-its-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (and
+              (>= (shape-prob ?v1) (believe-in-shape-threshold ?r))
+              (exists (?s1 - ShapeName) (and (= (shape ?v) ?s1) (not (= ?s ?s1))))
+            )
+          )
+        )
+        (not (exclude-shape-description ?r))
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
 
   (:action retract-arm
     :agent (?r - Robot)
@@ -697,7 +655,7 @@
         (update (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
         (arm-in-resting-position ?r)
         (update (arm-in-resting-position ?r) true)
-        (increase (total-cost) 1)
+        (increase (total-cost) 2)
       )
   )
 
@@ -723,6 +681,7 @@
     :effect
       (and
         (global-color-question-answered ?v)
+        (update (exclude-shape-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -740,6 +699,7 @@
     :effect
       (and
         (global-color-question-answered ?v)
+        (update (exclude-shape-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -756,6 +716,7 @@
     :effect
       (and
         (global-color-question-answered ?v)
+        (update (exclude-shape-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -772,6 +733,7 @@
     :effect
       (and
         (global-shape-question-answered ?v)
+        (update (exclude-color-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -789,6 +751,7 @@
     :effect
       (and
         (global-shape-question-answered ?v)
+        (update (exclude-color-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -805,6 +768,7 @@
     :effect
       (and
         (global-shape-question-answered ?v)
+        (update (exclude-color-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -876,6 +840,7 @@
     :effect
       (and
         (assign (polar-color-question-answered ?v) ?c)
+        (update (exclude-shape-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -893,6 +858,7 @@
     :effect
       (and
         (assign (polar-color-question-answered ?v) ?c)
+        (update (exclude-shape-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -915,6 +881,7 @@
     :effect
       (and
         (assign (polar-color-question-answered ?v) ?c)
+        (update (exclude-shape-description ?r) false)
         (increase (total-cost) 2)
       )
   )
@@ -931,6 +898,7 @@
     :effect
       (and
         (assign (polar-shape-question-answered ?v) ?s)
+        (update (exclude-color-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -948,6 +916,7 @@
     :effect
       (and
         (assign (polar-shape-question-answered ?v) ?s)
+        (update (exclude-color-description ?r) false)
         (increase (total-cost) 1)
       )
   )
@@ -970,64 +939,65 @@
     :effect
       (and
         (assign (polar-shape-question-answered ?v) ?s)
+        (update (exclude-color-description ?r) false)
         (increase (total-cost) 2)
       )
   )
 
-  (:action answer-polar-type-question-positively
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition
-      (and
-        (is-object-in-question ?v)
-        (>= (type-prob ?v) (convinced-of-type-threshold ?r))
-        (= (type ?v) ?t)
-      )
-    :effect
-      (and
-        (assign (polar-type-question-answered ?v) ?t)
-        (increase (total-cost) 1)
-      )
-  )
+  ;; (:action answer-polar-type-question-positively
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (>= (type-prob ?v) (convinced-of-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (assign (polar-type-question-answered ?v) ?t)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
 
-  (:action answer-polar-type-question-believing
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition
-      (and
-        (is-object-in-question ?v)
-        (< (type-prob ?v) (convinced-of-type-threshold ?r))
-        (>= (type-prob ?v) (believe-in-type-threshold ?r))
-        (= (type ?v) ?t)
-      )
-    :effect
-      (and
-        (assign (polar-type-question-answered ?v) ?t)
-        (increase (total-cost) 1)
-      )
-  )
+  ;; (:action answer-polar-type-question-believing
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (< (type-prob ?v) (convinced-of-type-threshold ?r))
+  ;;       (>= (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (assign (polar-type-question-answered ?v) ?t)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
 
-  (:action answer-polar-type-question-negatively
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition
-      (or
-        (and
-          (is-object-in-question ?v)
-          (< (type-prob ?v) (believe-in-type-threshold ?r))
-          (= (type ?v) ?t)
-        )
-        (and
-          (is-object-in-question ?v)
-          (not (= (type ?v) ?t))
-        )
-      )
-    :effect
-      (and
-        (assign (polar-type-question-answered ?v) ?t)
-        (increase (total-cost) 2)
-      )
-  )
+  ;; (:action answer-polar-type-question-negatively
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (or
+  ;;       (and
+  ;;         (is-object-in-question ?v)
+  ;;         (< (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;         (= (type ?v) ?t)
+  ;;       )
+  ;;       (and
+  ;;         (is-object-in-question ?v)
+  ;;         (not (= (type ?v) ?t))
+  ;;       )
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (assign (polar-type-question-answered ?v) ?t)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;     OBJECT QUESTIONS     ;;;;;;;;;;;;;;;;;;
