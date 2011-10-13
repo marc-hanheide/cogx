@@ -21,6 +21,7 @@
 #include "v4r/CModelRecogniser/KeypointDetector.hh"
 #include "v4r/CModelRecogniser/ObjectLocation.hh"
 #include "v4r/CModelRecogniser/RecogniserCore.hh"
+#include <v4r/CModelRecogniser/RecogniserThread.hh>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <VisionData.hpp>
@@ -42,9 +43,10 @@ private:
   int camId;
   string videoServerName;
   Video::VideoInterfacePrx videoServer;
-  cv::Ptr<P::RecogniserCore> recogniser;
 	map<string, string> modelFiles;
   map<string, string> objectWMIds;
+
+  cv::Ptr<P::RecogniserThread> recogniser;
 
 #ifdef FEAT_VISUALIZATION
   class CDisplayClient: public cogx::display::CDisplayClient
@@ -58,7 +60,7 @@ private:
 	CDisplayClient m_display;
 #endif
 
-  void initRecognizer();
+//   void initRecognizer();
   void recognize(vector<string> &labels, cv::Mat &colImg,
     Video::CameraParameters &camPars, cv::Mat mask,
     vector<P::ObjectLocation> &objects);
