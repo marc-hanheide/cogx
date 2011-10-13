@@ -1,7 +1,6 @@
 package eu.cogx.goals.george;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -49,23 +48,24 @@ public class LookAroundMotiveGenerator extends
 
 				if (System.currentTimeMillis() - m_lastSystemActivity < BOREDOM_THRESHOLD) {
 					println("not bored yet");
-					return;
-				}
+				} else {
+					try {
 
-				try {
+						println("ok, bored now, asking for some cones to look at");
 
-					println("ok, bored now, asking for some cones to look at");
+						LookAroundCommand cmd = new LookAroundCommand(null,
+								VisionCommandStatus.VCREQUESTED);
 
-					LookAroundCommand cmd = new LookAroundCommand(null,
-							VisionCommandStatus.VCREQUESTED);
-
-					WorkingMemoryAddress cmdAddr = new WorkingMemoryAddress(
-							newDataID(), VISION_SA);
-					addChangeFilter(ChangeFilterFactory.createAddressFilter(
-							cmdAddr, WorkingMemoryOperation.OVERWRITE), this);
-					addToWorkingMemory(cmdAddr, cmd);
-				} catch (CASTException e) {
-					logException(e);
+						WorkingMemoryAddress cmdAddr = new WorkingMemoryAddress(
+								newDataID(), VISION_SA);
+						addChangeFilter(
+								ChangeFilterFactory.createAddressFilter(
+										cmdAddr,
+										WorkingMemoryOperation.OVERWRITE), this);
+						addToWorkingMemory(cmdAddr, cmd);
+					} catch (CASTException e) {
+						logException(e);
+					}
 				}
 			}
 
@@ -77,7 +77,7 @@ public class LookAroundMotiveGenerator extends
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
 			log("got some cones back");
-			
+
 			// Don't clean up, because it ruins the "current_viewcone" belief of
 			// the robot and thus makes it impossible to find further plans.
 			//
