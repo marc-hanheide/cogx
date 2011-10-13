@@ -69,14 +69,14 @@ aboutness(Int, Addr) <-
 % ASSERTION EFFECT
 %-------------------------------------------------------------------------
 
-beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief) <-
-
-	? understand : new_belief(Int, AssertedBelief, attrib(Hearer, Speaker)),
-	int : address_content(Int, asserted, AssertedBelief) / p(1.0),
-
-	% retrieve the referent
-	mark(referent, ReferentAddr) / p(1.0),
-	int : belief_content(AssertedBelief, about, ReferentAddr) / p(1.0).
+%beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief) <-
+%
+%%	? understand : new_belief(Int, AssertedBelief, attrib(Hearer, Speaker)),
+%%	int : address_content(Int, asserted, AssertedBelief) / p(1.0),
+%
+%	% retrieve the referent
+%	mark(referent, _ReferentAddr) / p(1.0).
+%%	int : belief_content(AssertedBelief, about, ReferentAddr) / p(1.0).
 
 %-------------------------------------------------------------------------
 
@@ -85,11 +85,11 @@ string_content_for_assertion(Int, Feature, Value, Polarity) <-
 	int : string_content(Int, 'asserted-value', Value) / p(1.0),
 	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
 
-intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity) <-
-	polarprop(Value, Polarity, PolarPropFormula),
-	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
-	string_content_for_assertion(Int, Feature, Value, Polarity),
-	int : belief_content(AssertedBelief, Feature, PolarPropFormula) / p(1.0).
+intention_effect(_Speaker, _Hearer, Int, Feature, Value, Polarity) <-
+	polarprop(Value, Polarity, _PolarPropFormula),
+%	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	string_content_for_assertion(Int, Feature, Value, Polarity).
+%	int : belief_content(AssertedBelief, Feature, PolarPropFormula) / p(1.0).
 
 %-------------------------------------------------------------------------
 
