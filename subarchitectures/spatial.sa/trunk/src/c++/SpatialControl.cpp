@@ -27,6 +27,7 @@
 #include <Utils/CureDebug.hh>
 #include "PTZ.hpp"
 #include <Rendezvous.h>
+#include "CameraParameters.h"
 
 #include <utility>
 #include <queue>
@@ -35,6 +36,8 @@ using namespace cast;
 using namespace std;
 using namespace boost;
 using namespace spatial;
+
+#define CAM_ID_DEFAULT 0
 
 //NOTE: This file "adapted" (nicked) from nav.sa version with NavCommand structs.
 //SpatialData doesn't have everything that NavData does; the extraneous
@@ -176,13 +179,22 @@ void SpatialControl::configure(const map<string,string>& _config)
     }
 
   }
+
+  camId = CAM_ID_DEFAULT;
+  map<string,string>::const_iterator it = _config.find("--camid");
+  if(it != _config.end())
+  {
+    istringstream str(it->second);
+    str >> camId;
+  }
+
   m_sendPTZCommands = false;
   if (_config.find("--ctrl-ptu") != _config.end()) {
     m_sendPTZCommands = true;
     log("will use ptu");
   }
 
-  map<string,string>::const_iterator it = _config.find("-c");
+  it = _config.find("-c");
   if (it== _config.end()) {
     println("configure(...) Need config file (use -c option)\n");
     std::abort();
@@ -325,7 +337,6 @@ void SpatialControl::configure(const map<string,string>& _config)
 
 void SpatialControl::start() 
 {
-
   if (m_UsePointCloud) {
     startPCCServerCommunication(*this);
   }
@@ -537,6 +548,16 @@ class ComparePoints {
       return lhs.p.z < rhs.p.z;
     }
 };
+
+bool SpatialControl::isPointVisible(const cogx::Math::Vector3 &pos)
+{
+  Video::CameraParameters params;
+  if (!getCameraParameters(camId, params))
+    return false;
+
+  return Video::isPointVisible(params, pos);
+}
+
 void SpatialControl::updateGridMaps()
 {
   double maxCatHeight = 0.3;
@@ -655,8 +676,10 @@ void SpatialControl::updateGridMaps()
     std::sort(points.begin(), points.end(), ComparePoints());
     for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
       /* Ignore points not in the current view cone */
-      if (!isPointInViewCone(it->p))
-        continue;
+      if (!isPointVisible(it->p))
+	continue;
+//      if (!isPointInViewCone(it->p))
+//        continue;
       /* Transform point in cloud with regards to the robot pose */
       Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
       Cure::Vector3D to;
