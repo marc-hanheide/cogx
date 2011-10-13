@@ -95,7 +95,10 @@ module motivation {
     	};
 
     	class TutorInitiativeLearningMotive extends TutorInitiativeMotive {
+			string resultPredicate;
+			string resultValue;			
     	};
+
     	class TutorInitiativeQuestionMotive extends TutorInitiativeMotive {
     	};
 
