@@ -159,6 +159,8 @@ public class VisualObjectTransferFunction extends
 		FormulaDistribution fd = FormulaDistribution.create();
 		double maxGain = -1;
 		String gainStr = "";
+		double maxLabelProb = Double.MIN_VALUE;
+		
 		for (int i = 0; i < labels.length; i++) {
 			fd.add(labels[i], distrib[i]);
 			if (gains != null && i < gains.length) {
@@ -167,7 +169,22 @@ public class VisualObjectTransferFunction extends
 					gainStr = labels[i];
 				}
 			}
+			
+			//HACK for planner cleanliness
+			if(distrib[i] > maxLabelProb) {
+				maxLabelProb = distrib[i];
+			}		
+			//HACK - END
 		}
+
+		//HACK for planner cleanliness
+		FormulaDistribution maxLabelPD = FormulaDistribution.create();
+		maxLabelPD.add((float)maxLabelProb, 1.0);
+		distr.put(concept + "-prob",maxLabelPD);
+		
+		
+		//HACK - END
+		
 		if (maxGain > 0) {
 			FormulaDistribution gainFD = FormulaDistribution.create();
 			gainFD.add(gainStr, 1.0);
