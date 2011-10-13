@@ -440,11 +440,11 @@ class Inference
       numSamples_++;
     }
 
-//    /* DEBUG
+    /* DEBUG
     cout << "marker1: " << (*allClauseTrueCnts_)[0][0] << endl;
     cout << "marker2: " << (*clauseTrueCnts_)[0] << endl;
     cout << "numSamples_ = " << numSamples_ << endl;
-//    */
+   */
   }
 
 
