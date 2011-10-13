@@ -7,6 +7,6 @@ SET(SOURCE_H
   PCLUtils.h
 )
 
-add_library(v4rpclutils SHARED ${SOURCE_CPP})
-target_link_libraries(v4rpclutils ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
+add_library(PCLUtils SHARED ${SOURCE_CPP})
+target_link_libraries(PCLUtils ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
 

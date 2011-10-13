@@ -7,10 +7,9 @@
 #ifndef PCLA_CC_LABELING_HH
 #define PCLA_CC_LABELING_HH 
 
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include "opencv/cxcore.h"
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
 #include <stdexcept>
 #include <float.h>
 #include <iostream>
@@ -21,7 +20,7 @@
 namespace pclA
 {
 
-// using namespace std; // TODO hat hier nix verloren
+using namespace std;
 
 class Label
 {
@@ -60,10 +59,10 @@ public:
   CCLabeling(Parameter _param=Parameter());
   ~CCLabeling();
 
-  void Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, std::vector<unsigned> &cluster_size);
-  void FilterClusterSize(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, std::vector<unsigned> &cluster_size);
-  void FilterLargestCluster(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, std::vector<unsigned> &cluster_size);
-  void CreateMask(const cv::Mat_<ushort> &labels, const std::vector<unsigned> &cluster_size, cv::Mat_<uchar> &mask);
+  void Operate(const cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, vector<unsigned> &cluster_size);
+  void FilterClusterSize(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, vector<unsigned> &cluster_size);
+  void FilterLargestCluster(cv::Mat_<cv::Vec4f> &cloud, cv::Mat_<ushort> &labels, vector<unsigned> &cluster_size);
+  void CreateMask(const cv::Mat_<ushort> &labels, const vector<unsigned> &cluster_size, cv::Mat_<uchar> &mask);
 
 };
 
