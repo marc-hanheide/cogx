@@ -633,6 +633,7 @@ class CASTTask(object):
             
     def handle_task_failure(self):
         self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
+        time.sleep(5)
         merged_plan, init_state, final_state = self.merge_plans(self.plan_history)
         # last_plan = self.plan_history[-1].topological_sort()
         # last_plan = merged_plan.topological_sort()
