@@ -104,19 +104,20 @@ public class VisualObjectTransferFunction extends
 			fd = FormulaDistribution.create();
 			for (int i = 0; i < from.colorLabels.length; i++) {
 				fd.add(from.colorLabels[i], from.colorDistrib[i]);
-				FormulaDistribution gainFD = FormulaDistribution.create();
-				gainFD.add((float) from.colorGains[i], 1.0);
-				distr.put("gain-color-" + from.colorLabels[i], gainFD);
+//				FormulaDistribution gainFD = FormulaDistribution.create();
+//				gainFD.add((float) from.colorGains[i], 1.0);
+//				distr.put("gain-color-" + from.colorLabels[i], gainFD);
 			}
 			distr.put("color", fd);
 
-			fd = FormulaDistribution.create();
-			fd.add((float) from.colorGain, 1.0);
-			distr.put("colorGain", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.colorAmbiguity, 1.0);
-			distr.put("colorAmbiguity", fd);
+			// outdated?
+//			fd = FormulaDistribution.create();
+//			fd.add((float) from.colorGain, 1.0);
+//			distr.put("colorGain", fd);
+//
+//			fd = FormulaDistribution.create();
+//			fd.add((float) from.colorAmbiguity, 1.0);
+//			distr.put("colorAmbiguity", fd);
 
 		}
 		
@@ -127,13 +128,14 @@ public class VisualObjectTransferFunction extends
 			}
 			distr.put("shape", fd);
 
-			fd = FormulaDistribution.create();
-			fd.add((float) from.shapeGain, 1.0);
-			distr.put("shapeGain", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.shapeAmbiguity, 1.0);
-			distr.put("shapeAmbiguity", fd);
+			// outdated?
+//			fd = FormulaDistribution.create();
+//			fd.add((float) from.shapeGain, 1.0);
+//			distr.put("shapeGain", fd);
+//
+//			fd = FormulaDistribution.create();
+//			fd.add((float) from.shapeAmbiguity, 1.0);
+//			distr.put("shapeAmbiguity", fd);
 		}
 		
 		{ // ident
@@ -143,13 +145,14 @@ public class VisualObjectTransferFunction extends
 			}
 			distr.put("ident", fd);
 
-			fd = FormulaDistribution.create();
-			fd.add((float) from.identGain, 1.0);
-			distr.put("identGain", fd);
-
-			fd = FormulaDistribution.create();
-			fd.add((float) from.identAmbiguity, 1.0);
-			distr.put("identAmbiguity", fd);
+			// outdated?
+//			fd = FormulaDistribution.create();
+//			fd.add((float) from.identGain, 1.0);
+//			distr.put("identGain", fd);
+//
+//			fd = FormulaDistribution.create();
+//			fd.add((float) from.identAmbiguity, 1.0);
+//			distr.put("identAmbiguity", fd);
 		}
 	}
 
@@ -157,18 +160,18 @@ public class VisualObjectTransferFunction extends
 			IndependentFormulaDistributions distr, String[] labels,
 			double[] distrib, double[] gains, double gain, double ambiguity) {
 		FormulaDistribution fd = FormulaDistribution.create();
-		double maxGain = -1;
-		String gainStr = "";
+//		double maxGain = -1;
+//		String gainStr = "";
 		double maxLabelProb = Double.MIN_VALUE;
 		
 		for (int i = 0; i < labels.length; i++) {
 			fd.add(labels[i], distrib[i]);
-			if (gains != null && i < gains.length) {
-				if (maxGain < gains[i]) {
-					maxGain = gains[i];
-					gainStr = labels[i];
-				}
-			}
+//			if (gains != null && i < gains.length) {
+//				if (maxGain < gains[i]) {
+//					maxGain = gains[i];
+//					gainStr = labels[i];
+//				}
+//			}
 			
 			//HACK for planner cleanliness
 			if(distrib[i] > maxLabelProb) {
@@ -185,23 +188,23 @@ public class VisualObjectTransferFunction extends
 		
 		//HACK - END
 		
-		if (maxGain > 0) {
-			FormulaDistribution gainFD = FormulaDistribution.create();
-			gainFD.add(gainStr, 1.0);
-			distr.put("max-gain-label-" + concept, gainFD);
-			gainFD = FormulaDistribution.create();
-			gainFD.add((float) maxGain, 1.0);
-			distr.put("max-gain-value-" + concept, gainFD);
-		}
-		distr.put(concept, fd);
-
-		fd = FormulaDistribution.create();
-		fd.add((float) gain, 1.0);
-		distr.put("gain-" + concept, fd);
-
-		fd = FormulaDistribution.create();
-		fd.add((float) ambiguity, 1.0);
-		distr.put("ambiguity-" + concept, fd);
+//		if (maxGain > 0) {
+//			FormulaDistribution gainFD = FormulaDistribution.create();
+//			gainFD.add(gainStr, 1.0);
+//			distr.put("max-gain-label-" + concept, gainFD);
+//			gainFD = FormulaDistribution.create();
+//			gainFD.add((float) maxGain, 1.0);
+//			distr.put("max-gain-value-" + concept, gainFD);
+//		}
+//		distr.put(concept, fd);
+//
+//		fd = FormulaDistribution.create();
+//		fd.add((float) gain, 1.0);
+//		distr.put("gain-" + concept, fd);
+//
+//		fd = FormulaDistribution.create();
+//		fd.add((float) ambiguity, 1.0);
+//		distr.put("ambiguity-" + concept, fd);
 
 	}
 }
