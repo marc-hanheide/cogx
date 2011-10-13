@@ -336,8 +336,9 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 						groundedBeliefID(_intention)) });
 
 		// HACK used later for adding attribution to all possible referentss
-		motive.resultPredicate = getAscriptionPredicate(feature, learn);
-		motive.resultValue = value;
+		motive.assertedFeature = feature;
+		motive.assertedValue = value;
+		motive.assertedLearn = learn;
 		// HACK END
 
 		motive.goal = new Goal(100f, goalString, false);
