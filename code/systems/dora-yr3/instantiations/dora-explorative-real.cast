@@ -52,6 +52,7 @@ SETVAR or3d_sift_files=<multiline>
    %(siftroot_)/kelloggs.sift
    %(siftroot_)/AI.sift
    %(siftroot_)/XXX
+   %(siftroot_)/XXX
 </multiline>
 
 ### ply files
@@ -64,10 +65,11 @@ SETVAR or3d_ply_files=<multiline>
    %(plyroot_)/kelloggs.ply
    %(plyroot_)/AI.ply
    %(plyroot_)/table.ply
+   %(plyroot_)/table.ply
 </multiline>
 
 ### object labels
-SETVAR or3d_labels=joystick pizza juice coffee tea cerealbox book table
+SETVAR or3d_labels=joystick pizza juice coffee tea cerealbox book table milk
 
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
