@@ -28,6 +28,7 @@
 #include "Patch3D.h"
 #include "Closure3D.h"
 #include "Rectangle3D.h"
+#include <../../home/ari/v4r/trunk/v4r/PCLAddOns/functions/PCLFunctions.h>
 
 using namespace std;
 using namespace VisionData;
@@ -59,21 +60,18 @@ void SegTester::configure(const map<string,string> & _config)
   configureServerCommunication(_config);
 
   // for one vision core: only lines
-  runtime = 600;                                    // processing time for image => we need no incremental processing (only line calculation)
+  runtime = 10;                                     // processing time for image => we need no incremental processing (only line calculation)
   cannyAlpha = 0.75;                                // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
   cannyOmega = 0.001;
   
   vcore = new Z::VisionCore();                      // New vision core
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_SEGMENTS);
   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_LINES);
-  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_JUNCTIONS);
-  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CORNERS);
-  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CLOSURES);
-  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_RECTANGLES);
+//   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_JUNCTIONS);
+//   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CORNERS);
+//   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CLOSURES);
+//   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_RECTANGLES);
 
-  kcore = new Z::KinectCore();                      // New kinect core
-  // TODO Enable/Disable KinectPrinciples?
-  
 //  learner = new Z::Learner();                       // Learner for features
 //  svmFileCreator = new Z::SVMFileCreator();         // Creator training files for SVM
 
@@ -81,7 +79,6 @@ void SegTester::configure(const map<string,string> & _config)
   single = false;
 
   map<string,string>::const_iterator it;
-
   if((it = _config.find("--camids")) != _config.end())
   {
     istringstream str(it->second);
@@ -98,15 +95,8 @@ void SegTester::configure(const map<string,string> & _config)
     while(str >> file)
     {
       Video::CameraParameters pars;
-      // calibration files can be either monocular calibration files (e.g.
-      // "flea0.cal", "flea1.cal") or SVS stereo calib files (e.g.
-      // "stereo.ini:L", "stereo.ini:R"). Note that in the latter case the
-      // actual file name is extended with a ":" (to indicate we have a stereo
-      // case) and a L or R indicating we refer to the LEFT or RIGHT camera of
-      // the stereo rig.
       if(file.find(":") == string::npos)
       {
-        // monocular files can be either .cal (INI style) or .xml (from OpenCV file storage)
         if(file.find(".xml") == string::npos)
           loadCameraParameters(pars, file);
         else
@@ -160,12 +150,6 @@ void SegTester::configure(const map<string,string> & _config)
     single = true;
   }
 
-  if((it = _config.find("--stereoconfig")) != _config.end())
-  {
-    log("Warning: Antiquated: Use stereoconfig_xml with openCV stereo calibration");
-    stereoconfig = it->second;
-  }
-
   if((it = _config.find("--stereoconfig_xml")) != _config.end())
   {
     istringstream str(it->second);
@@ -184,7 +168,7 @@ void SegTester::configure(const map<string,string> & _config)
   {
     log("Warning: Antiquated: Use stereoconfig_xml with openCV stereo calibration");
   }
-  
+
   if(showImages)
   {
     // initialize tgRenderer
@@ -192,7 +176,7 @@ void SegTester::configure(const map<string,string> & _config)
     cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
     cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
     cv::Vec3d rotCenter(0,0,0.4);
-    
+
     // Initialize 3D render engine 
     tgRenderer = new TomGine::tgTomGineThread(1280, 1024);
     tgRenderer->SetCamera(intrinsic);
@@ -202,12 +186,22 @@ void SegTester::configure(const map<string,string> & _config)
   }
   else 
     cvShowImage("Control window", iplImage_k);
-  
+
+
+  kcore = new Z::KinectCore(vcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
+  // TODO Enable/Disable KinectPrinciples?
+
   planePopout = new pclA::PlanePopout();
   relations = new Z::CalculateRelations();
   relations->Initialize(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
   svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
   graphCutter = new Z::GraphCut(kcore, relations);
+
+  if(showImages) 
+  {
+    cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
+    cvMoveWindow("Kinect image",  10, 500);
+  }
 }
 
 
@@ -218,12 +212,6 @@ void SegTester::start()
 {
   // start point cloud communication
   startPCCServerCommunication(*this);
-
-  if(showImages) 
-  {
-    cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
-    cvMoveWindow("Kinect image",  10, 500);
-  }
 }
 
 /**
@@ -241,14 +229,30 @@ void SegTester::runComponent()
 
   if(showImages)
   {
-    cvReleaseImage(&iplImage_l);
-    cvReleaseImage(&iplImage_r);
+//     cvReleaseImage(&iplImage_l);
+//     cvReleaseImage(&iplImage_r);
     cvReleaseImage(&iplImage_k);
 
     log("destroy openCV windows.");
     cvDestroyWindow("Kinect image");
   }
   log("windows destroyed");
+  
+// printf("Delete objects: 0\n");
+//   delete &vcore;
+// printf("Delete objects: 1\n");
+//   delete &score;
+// printf("Delete objects: 2\n");
+//   delete &kcore;
+// // printf("Delete objects: 3\n");
+//   delete &planePopout;
+// printf("Delete objects: 4\n");
+//   delete &relations;
+// printf("Delete objects: 5\n");
+//   delete &svmPredictor;
+// printf("Delete objects: 6\n");
+//   delete &graphCutter;
+// printf("Delete objects: 7\n");
 }
 
   
@@ -260,23 +264,25 @@ void SegTester::GetImageData()
 {
   pointCloudWidth = 320;
   pointCloudHeight = pointCloudWidth *3/4;
-  kinectImageWidth = 640;
-  kinectImageHeight = kinectImageWidth *3/4;
- 
+  rgbWidth = 640;
+  rgbHeight = rgbWidth *3/4;
+  double rgb2depthScale = rgbWidth/pointCloudWidth;
+  
   points.resize(0);
-  getCompletePoints(false, pointCloudWidth, points);      // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+  getCompletePoints(false, pointCloudWidth, points);      // Get the image grid point cloud with zeros, when no values are available!
 //   getPoints(false, pointCloudWidth, points);           /// TODO für KinectStereoSeqServer => einbauen von getCompletePoints!!!!
   
-  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth);
-  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, *pcl_cloud);
+  printf("SegTester: points.size: %u\n", points.size());
+  
+  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth, pointCloudHeight, true); // replace 0-points by NAN's
+  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
 
   // get rectified images from point cloud server
-  getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
-  getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
-  getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
-  iplImage_l = convertImageToIpl(image_l);
-  iplImage_r = convertImageToIpl(image_r);
+//   getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
+//   getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
+  getRectImage(2, rgbWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+//   iplImage_l = convertImageToIpl(image_l);
+//  iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
 
   if(showImages)
@@ -284,9 +290,9 @@ void SegTester::GetImageData()
     cvShowImage("Kinect image", iplImage_k);
 
     // convert point cloud to iplImage
-    cv::Mat_<cv::Vec3b> kinect_pc_image;
-    pclA::ConvertPCLCloud2Image(*pcl_cloud, kinect_pc_image);     // TODO Funktioniert nicht!!!
-    cv::imshow("Kinect Image from point cloud", kinect_pc_image);
+//     cv::Mat_<cv::Vec3b> kinect_pc_image;
+//     pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_pc_image);
+//     cv::imshow("Kinect Image from point cloud", kinect_pc_image);
   }
 }
 
@@ -297,7 +303,7 @@ void SegTester::GetImageData()
  */
 void SegTester::processImage()
 {  
-printf("\nSegTester::processImage: start\n");
+printf("SegTester::processImage: start\n");
 
   log("Process new images with runtime: %ums", runtime);
   kcore->ClearResults();
@@ -318,7 +324,9 @@ last = current;
 
   /// Run vision core
   vcore->NewImage(iplImage_k);
+printf("Process VisionCore: start\n");
   vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+printf("Process VisionCore: end\n");
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester::VisionCore: %4.3f\n", timespec_diff(&current, &last));
@@ -329,9 +337,7 @@ last = current;
 //   score->ProcessStereoImage(runtime, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
 
   /// Run kinect core
-printf("Run Kinect Core: start\n");
-  kcore->Process(vcore, iplImage_k, kinect_point_cloud);
-printf("Run Kinect Core: end\n");
+  kcore->Process(iplImage_k, kinect_point_cloud, pcl_cloud);
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester::KinectCore processing: %4.3f\n", timespec_diff(&current, &last));
@@ -340,11 +346,14 @@ last = current;
   /// Run plane popout
 printf("Run plane-popout: start\n");
   planePopout->CalculateSOIs(pcl_cloud);
-  planePopout->GetSOIs(sois);
+  planePopout->GetSOIs(sois, soi_labels);
   if(!planePopout->CalculateROIMask()) 
     printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
 printf("Run plane-popout: end\n");
+
+printf("SetObjectLabels: start\n");
   kcore->SetObjectLabels(planePopout);    // Set object labels for kinect-Gestalts
+printf("SetObjectLabels: end\n");
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester::PlanePopout: %4.3f\n", timespec_diff(&current, &last));
@@ -360,7 +369,6 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: CalculateRelations: %4.3f\n", timespec_diff(&current, &last));
 last = current;
 
-
   /// SVM-Prediction
 printf("SegTester: Prediction start: relation_vector.size: %u\n", relation_vector.size());
   for(unsigned i=0; i<relation_vector.size(); i++)
@@ -371,15 +379,19 @@ printf("SegTester: Prediction start: relation_vector.size: %u\n", relation_vecto
     relations->AddProbability(i, relation_vector[i].rel_probability);
   }
 printf("SegTester: Prediction end!\n");
-  
+
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: Prediction: %4.3f\n", timespec_diff(&current, &last));
 last = current;
 
-  relations->PrintResults();
+//   relations->PrintResults();
   relations->ConstrainRelations();
-  relations->PrintRelations();
+//   relations->PrintRelations();
   
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Constrain results: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
   /// Graph cutter
 printf("    graphCutter: start\n");
   graphCutter->Initialize();
@@ -475,25 +487,26 @@ void SegTester::SingleShotMode()
 
   if (key == 65472 || key == 1114048) // F3
   {
-//     if(showSingleGestalt && showID != -1 && (mouseSide == 0 || mouseSide == 1)) 
-//     {
-//       const char* text = (score->GetMonoCore(mouseSide))->GetInfo(showType, showID);
-//       log("Gestalt infos:\n%s\n", text);
-//     }
     const char* text = vcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
 
   if (key == 65473 || key == 1114049) // F4
   {
-//     score->PrintVCoreStatistics();
     kcore->PrintVCoreStatistics();
   }
+
+  if (key == 65474 || key == 1114050) // F5
+  {
+    relations->PrintResults();
+    relations->PrintRelations();
+  }
+
 
   if (key == 65478 || key == 1114054) // F9
   {
 //     log("process images in single shot mode.");
-    printf("\nLearnPrincipleDistributions::Process: Learn from next image!\n");
+    printf("\nSegTester::SingleShotMode: Process next image!\n");
     lockComponent();
     processImage();
     unlockComponent();
@@ -518,7 +531,7 @@ void SegTester::SingleShotMode()
       for(unsigned i=0; i< sois.size(); i++)
       {
         std::vector<cv::Vec4f> soi_hull;
-        pclA::ConvertPCLCloud2CvVec(*sois[i], soi_hull);  // convert pcl cloud to cvVec cloud
+        pclA::ConvertPCLCloud2CvVec(sois[i], soi_hull);  // convert pcl cloud to cvVec cloud
         if(showImages)
         {
           int top = soi_hull.size();
@@ -529,7 +542,7 @@ void SegTester::SingleShotMode()
             if(i >= bottom) i=0;
             cv::Vec4f s = soi_hull[j];
             cv::Vec4f e = soi_hull[i];
-            tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 5);
+            tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
           for(unsigned j=bottom; j < top; j++)
           {
@@ -537,15 +550,23 @@ void SegTester::SingleShotMode()
             if(i >= top) i=bottom;
             cv::Vec4f s = soi_hull[j];
             cv::Vec4f e = soi_hull[i];
-        //     color.float_value = s[3];
-            tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 5);
+            tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
           for(unsigned j=0; j < bottom; j++)
           {
             int i = j + bottom; 
             cv::Vec4f s = soi_hull[j];
             cv::Vec4f e = soi_hull[i];
-            tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 5);
+            tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
+          }
+          if(true)  // draw id of soi
+          {
+            char label[5];
+            snprintf(label, 5, "%u", soi_labels[i]);
+            tgRenderer->AddLabel3D(label, 24, 
+                                   (soi_hull[0][0] + soi_hull[int(soi_hull.size()/4)][0])/2,
+                                   (soi_hull[0][1] + soi_hull[int(soi_hull.size()/4)][1])/2, 
+                                   (soi_hull[0][2] + soi_hull[int(soi_hull.size()/4)][2])/2);
           }
           tgRenderer->Update(); 
         }
@@ -568,6 +589,28 @@ void SegTester::SingleShotMode()
       tgRenderer->Update();
       break;
       
+//     case '5':
+//       log("Show POINT CLOUD dilatation");
+//       if (showImages)
+//       {
+//         tgRenderer->Clear();
+//         tgRenderer->Update();
+//         tgRenderer->AddPointCloud(kinect_point_cloud_dil);
+//         tgRenderer->Update();
+//       }
+//       break;
+
+    case '6':
+      log("Show POINT CLOUD dilatation");
+      if (showImages)
+      {
+        tgRenderer->Clear();
+        tgRenderer->Update();
+//         tgRenderer->AddPointCloud(kinect_point_cloud_dil);
+//         tgRenderer->Update();
+      }
+      break;
+
     case 'q':
       log("Show PATCHES");
       for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::PATCH); i++)
@@ -582,18 +625,30 @@ void SegTester::SingleShotMode()
       {
         tgRenderer->Clear();
         tgRenderer->Update();
-        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH);
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, false);
         tgRenderer->Update();
       }
       break;    
     case 'w':
       log("Show SEGMENTS");
+      for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::SEGMENT); i++)
+      {
+        cv::Mat_<cv::Vec3b> kinect_image;
+        ConvertImage(*iplImage_k, kinect_image);                                              /// TODO Convert image after drawing into it!
+        kcore->DrawGestalts3DToImage(kinect_image, Z::Gestalt3D::SEGMENT, camPars[2]);
+        cv::imshow("3D-Gestalts", kinect_image);
+      }
+      {
+        Z::SetActiveDrawArea(iplImage_k);
+        vcore->DrawGestalts(Z::Gestalt::SEGMENT, 1);
+        cvShowImage("Kinect", iplImage_k);
+      }
       if(showImages)
       {
         tgRenderer->Clear();
         tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
-        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT);
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT, false);
         tgRenderer->Update();
       }
       break;
@@ -606,13 +661,13 @@ void SegTester::SingleShotMode()
         line_image = kinect_image;
         kcore->DrawGestalts3DToImage(line_image, Z::Gestalt3D::LINE, camPars[2]);
         cv::imshow("3D-Gestalt", line_image);
-      }      
+      }
       if(showImages)
       {
         tgRenderer->Clear();
         tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
-        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE);
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE, false);
         tgRenderer->Update();
       }
       break;
@@ -621,7 +676,7 @@ void SegTester::SingleShotMode()
       tgRenderer->Clear();
       tgRenderer->Update();
       tgRenderer->AddPointCloud(kinect_point_cloud);
-      kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::COLLINEARITY);
+      kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::COLLINEARITY, false);
       tgRenderer->Update();
       break;
 //     case 't':
@@ -631,7 +686,7 @@ void SegTester::SingleShotMode()
       tgRenderer->Clear();
       tgRenderer->Update();
       tgRenderer->AddPointCloud(kinect_point_cloud);
-      kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::CLOSURE);
+      kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::CLOSURE, false);
       tgRenderer->Update();
       break;
     case 'u':
@@ -639,13 +694,66 @@ void SegTester::SingleShotMode()
       tgRenderer->Clear();
       tgRenderer->Update();
       tgRenderer->AddPointCloud(kinect_point_cloud);
-      kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::RECTANGLE);
+      kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::RECTANGLE, false);
       tgRenderer->Update();
       break;
       
-    case 'x':
+      
+      
+    case 'a':
+      log("Show PCL_PATCHES");
+      if(showImages)
+      {
+        tgRenderer->Clear();
+        tgRenderer->Update();
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, true);
+        tgRenderer->Update();
+      }
+      break;     
+    case 's':
+      log("Show PCL_SPHERES");
+      if(showImages)
+      {
+        tgRenderer->Clear();
+        tgRenderer->Update();
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_SPHERE, true);
+        tgRenderer->Update();
+      }
+      break;    
+    case 'd':
+      log("Show PCL_CYLINDERS");
+      if(showImages)
+      {
+        tgRenderer->Clear();
+        tgRenderer->Update();
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_CYLINDER, true);
+        tgRenderer->Update();
+      }
+      break;    
+      
+      case 'y':
+      log("Show PCL_GESTALTS");
+      if(showImages)
+      {
+        tgRenderer->Clear();
+        tgRenderer->Update();
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, false, true, GetRandomColor());
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_SPHERE, false, true, GetRandomColor());
+        kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_CYLINDER, false, true, GetRandomColor());
+        tgRenderer->Update();
+      }
+      break;    
+      
+    case 'x':                               /// TODO Take F10 or F12???
       log("End Single-Shot mode!");
       single = false;
+      break;
+      
+    case '^':
+      log("Add labels!");
+      static bool drawNodeID = false;
+      drawNodeID = !drawNodeID;
+      kcore->DrawNodeID(drawNodeID);
       break;
   }
 }

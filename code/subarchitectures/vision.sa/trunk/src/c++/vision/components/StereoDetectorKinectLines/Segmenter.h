@@ -1,14 +1,14 @@
 /**
- * @file SegLearner.h
+ * @file Segmenter.h
  * @author Andreas Richtsfeld
  * @date 2011
  * @version 0.1
- * @brief Get properties to learn how to segment.
+ * @brief Segment a RGB-D image from the kinect.
  */
 
 
-#ifndef SEG_LEARNER_H
-#define SEG_LEARNER_H
+#ifndef SEGMENTER_H
+#define SEGMENTER_H
 
 #include <vector>
 #include <stdexcept>
@@ -20,10 +20,11 @@
 #include <VideoUtils.h>
 #include <../../VisionUtils.h>
 
-#include "KinectCore.h"
 #include "StereoCore.h"
-#include "Learner.h"              /// TODO Braucht man hier?
-#include "SVMFileCreator.h"
+#include "KinectCore.h"
+#include "CalculateRelations.h"
+#include "GraphCut.h"
+#include "SVMPredictor.h"
 
 #include "Pose3.h"
 #include "StereoBase.h"
@@ -43,9 +44,9 @@ namespace cast
 {
 
 /**
- * @class SegLearner
+ * @class Segmenter
  */
-class SegLearner : public ManagedComponent,
+class Segmenter : public ManagedComponent,
                    public PointCloudClient
 {
 private:
@@ -56,11 +57,12 @@ private:
   Z::VisionCore *vcore;                                     ///< VisionCore
   Z::StereoCore *score;                                     ///< Stereo core
   Z::KinectCore *kcore;                                     ///< Kinect core
-//  Z::Learner *learner;                                      ///< Learner
-  Z::SVMFileCreator *svmFileCreator;                        ///< SVM training file creator
-//  Z::GraphCut *graphCutter;                                 ///< Graph cutter
   pclA::PlanePopout *planePopout;                           ///< PlanePopout for SOI calculation (ground truth data)
-  
+//  Z::SVMFileCreator *svmFileCreator;                        ///< SVM training file creator
+  Z::CalculateRelations *relations;                         ///< Calculate relations between features.
+  Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
+  Z::GraphCut *graphCutter;                                 ///< Graph cutter
+
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
   std::string stereoconfig;                                 ///< Config name of stereo camera config file
@@ -69,15 +71,13 @@ private:
 
   int kinectImageWidth, kinectImageHeight;                  ///< width and height of the kinect color image
   int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
-  Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
-  IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
-//  IplImage *iplImage_depthMap;                              ///< iplImage with depth map of kinect
+  Video::Image image_k;                                     ///< Kinect image
+  IplImage *iplImage_k;                                     ///< Converted kinect images
   
   cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud
   
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois; ///< Estimated sois from the PlanePopout
-  std::vector<unsigned> soi_labels;                           ///< Labels of the estimated sois
 
   cv::Mat_<cv::Vec3b> patch_image;                          ///< 3D patches on 2D image
   cv::Mat_<cv::Vec3b> line_image;                           ///< 3D lines on 2D image
@@ -100,8 +100,8 @@ protected:
   virtual void runComponent();
 
 public:
-  SegLearner() {}
-  virtual ~SegLearner() {delete vcore;}
+  Segmenter() {}
+  virtual ~Segmenter() {delete vcore;}
   
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int imgWidth);
 

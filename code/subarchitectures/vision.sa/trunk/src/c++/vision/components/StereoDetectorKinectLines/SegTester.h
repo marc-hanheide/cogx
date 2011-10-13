@@ -51,7 +51,6 @@ class SegTester : public ManagedComponent,
 {
 private:
   TomGine::tgTomGineThread *tgRenderer;                      ///< 3D render engine
-  std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect view
   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
  
   Z::VisionCore *vcore;                                     ///< VisionCore
@@ -69,16 +68,18 @@ private:
   std::vector<int> camIds;                                  ///< Which cameras to get images from
   std::vector<Video::CameraParameters> camPars;             ///< Camera parameters for each camera (left/right/kinect)
 
-  int kinectImageWidth, kinectImageHeight;                  ///< width and height of the kinect color image
+  int rgbWidth, rgbHeight;                                  ///< width and height of the kinect color image
   int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
-  Video::Image image_l, image_r, image_k;                   ///< Left and right stereo image and kinect image
-  IplImage *iplImage_l, *iplImage_r, *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
+  Video::Image /*image_l, image_r,*/ image_k;                   ///< Left and right stereo image and kinect image
+  IplImage /**iplImage_l, *iplImage_r,*/ *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
 //  IplImage *iplImage_depthMap;                              ///< iplImage with depth map of kinect
   
+  std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect sensor
   cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud (dilation)
   
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois; ///< Estimated sois from the PlanePopout
+  std::vector<unsigned> soi_labels;                           ///< Labels of the estimated sois
 
   cv::Mat_<cv::Vec3b> patch_image;                          ///< 3D patches on 2D image
   cv::Mat_<cv::Vec3b> line_image;                           ///< 3D lines on 2D image
