@@ -47,6 +47,7 @@ import execution.slice.actions.BeliefPlusFeatureValueAction;
 import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.SingleBeliefAction;
 import execution.slice.actions.VerifyReference;
+import execution.slice.actions.VerifyReferenceByFeatureValue;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
@@ -472,11 +473,12 @@ public abstract class AbstractDialogueActionInterface extends
 		}
 	}
 
-	public static class VerifyReferenceExecutor extends
-			BeliefIntentionDialogueAction<VerifyReference> {
+	public abstract static class AbstractVerifyReferenceExecutor<V extends SingleBeliefAction>
+			extends BeliefIntentionDialogueAction<V> {
 
-		public VerifyReferenceExecutor(ManagedComponent _component) {
-			super(_component, VerifyReference.class);
+		public AbstractVerifyReferenceExecutor(ManagedComponent _component,
+				Class<V> _verificationClass) {
+			super(_component, _verificationClass);
 		}
 
 		@Override
@@ -643,6 +645,30 @@ public abstract class AbstractDialogueActionInterface extends
 		}
 	}
 
+	public abstract static class VerifyReferenceExecutor extends
+			AbstractVerifyReferenceExecutor<VerifyReference> {
+
+		public VerifyReferenceExecutor(ManagedComponent _component) {
+			super(_component, VerifyReference.class);
+		}
+
+	}
+
+	public static class VerifyByFeatureValueReferenceExecutor extends
+			AbstractVerifyReferenceExecutor<VerifyReferenceByFeatureValue> {
+
+		public VerifyByFeatureValueReferenceExecutor(ManagedComponent _component) {
+			super(_component, VerifyReferenceByFeatureValue.class);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			super.addStringContent(_stringContent);
+			_stringContent.put("description",getAction().value);
+		}
+
+	}
+
 	public static class AnswerOpenQuestionExecutor extends
 			FeatureValueQuestionAnswer<AnswerOpenQuestion> {
 
@@ -700,7 +726,7 @@ public abstract class AbstractDialogueActionInterface extends
 				_stringContent.put("polarity", "pos");
 			} else if (confidence == ConfidenceLevel.UNSURE) {
 				_stringContent.put("certainty", "low");
-				_stringContent.put("polarity", "pos");				
+				_stringContent.put("polarity", "pos");
 			} else {
 				// high confidence in a negative answer
 				_stringContent.put("certainty", "high");
@@ -1124,6 +1150,13 @@ public abstract class AbstractDialogueActionInterface extends
 							VerifyReference.class,
 							new ComponentActionFactory<VerifyReference, VerifyReferenceExecutor>(
 									this, VerifyReferenceExecutor.class));
+
+			m_actionStateManager
+					.registerActionType(
+							VerifyReferenceByFeatureValue.class,
+							new ComponentActionFactory<VerifyReferenceByFeatureValue, VerifyByFeatureValueReferenceExecutor>(
+									this,
+									VerifyByFeatureValueReferenceExecutor.class));
 
 			// m_actionStateManager
 			// .registerActionType(
