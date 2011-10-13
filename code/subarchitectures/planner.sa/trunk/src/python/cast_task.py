@@ -617,6 +617,8 @@ class CASTTask(object):
                 return {'color' : 'red'}
             
         G = plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
+        G.write("plan.dot")
+        G = plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
         G.layout(prog='dot')
         G.draw("plan.pdf")
 
@@ -630,6 +632,7 @@ class CASTTask(object):
         return plan, merged_init_state, merged_final_state
             
     def handle_task_failure(self):
+        self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
         merged_plan, init_state, final_state = self.merge_plans(self.plan_history)
         # last_plan = self.plan_history[-1].topological_sort()
         # last_plan = merged_plan.topological_sort()
@@ -639,7 +642,7 @@ class CASTTask(object):
         #         for f in a.effects:
         #             endstate.set(f)
         if self.expl_rules_fn:
-            explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task)
+            explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
 
 
     def process_cp_plan(self):

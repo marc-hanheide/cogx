@@ -291,7 +291,7 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
     return p
     
 
-def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn, cp_task):
+def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn, cp_task, component):
     global w
     w = pddl.mapl.MAPLWriter()
 
@@ -317,7 +317,9 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
 
     if plan is not None:
         postprocess_explanations(plan, last_plan)
+        component.verbalise("I have now found a possible explanation for the failure.")
     else:
+        component.verbalise("I'm sorry. I can't explain what went wrong.")
         print "No explanations found"
 
     print "done"
@@ -473,6 +475,8 @@ def postprocess_explanations(expl_plan, exec_plan):
         if data['type'] == 'repaired':
             return {'color' : 'green'}
         
+    G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
+    G.write("plan-explained.dot")
     G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
     G.layout(prog='dot')
     G.draw("plan-explained.pdf")
