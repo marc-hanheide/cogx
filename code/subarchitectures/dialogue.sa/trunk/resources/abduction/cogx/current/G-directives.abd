@@ -51,3 +51,16 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
 
 	event : produce_text([did, you, mean, this, object]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'verification'),
+	i : int : string_content(IntAddr, description, Description),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
+
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+
+	event : produce_text([did, you, mean, the, Description, object]) / -4.0.
