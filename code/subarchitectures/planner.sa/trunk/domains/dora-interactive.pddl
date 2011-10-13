@@ -676,16 +676,16 @@
              )
 
 
-   (:observe engagement
-             :agent (?a - robot)
-             :parameters (?h - person ?p - place)
-             :execution (engage ?a ?h ?p)
-             :precondition (and)
+   ;; (:observe engagement
+   ;;           :agent (?a - robot)
+   ;;           :parameters (?h - person ?p - place)
+   ;;           :execution (engage ?a ?h ?p)
+   ;;           :precondition (and)
                                 
-             :effect (and (when (or (not (= (is-in ?h) ?p))
-                                    (= (unresponsive ?h) true))
-                            (observed (unresponsive ?h) true)))
-             )
+   ;;           :effect (and (when (or (not (= (is-in ?h) ?p))
+   ;;                                  (= (unresponsive ?h) true))
+   ;;                          (observed (unresponsive ?h) true)))
+   ;;           )
 
    (:action look-for-people
             :agent (?a - robot)
