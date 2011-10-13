@@ -194,7 +194,7 @@ public:
       }
       if (toSleep < minSleep)
          toSleep = minSleep;
-      if (toSleep > 0)
+      if (toSleep > 0 && toSleep <= intervalDurationMs)
          doSleep(toSleep);
    }
    double getTotalRate()
