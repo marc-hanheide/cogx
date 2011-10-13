@@ -66,9 +66,10 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 //				});
 	}
 
+	// TODO HACK sanitise between Dora and George	
 	private WorkingMemoryAddress m_robotBeliefAddr;
 
-	// TODO sanitise between Dora and George
+	// TODO HACK sanitise between Dora and George
 	@Override
 	protected WorkingMemoryAddress getRobotBeliefAddr() {
 		if (m_robotBeliefAddr == null) {

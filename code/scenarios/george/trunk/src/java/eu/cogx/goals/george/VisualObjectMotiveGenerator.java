@@ -1,5 +1,6 @@
 package eu.cogx.goals.george;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import motivation.components.generators.AbstractBeliefMotiveGenerator;
@@ -9,11 +10,16 @@ import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import VisionData.VisualObject;
 import autogen.Planner.Goal;
+import cast.DoesNotExistOnWMException;
+import cast.SubarchitectureComponentException;
+import cast.UnknownSubarchitectureException;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -43,11 +49,29 @@ public class VisualObjectMotiveGenerator extends
 
 	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
-	private boolean m_shapeEnabled = false;
+	private boolean m_shapeEnabled = true;
 	private boolean m_identityEnabled = false;
 
 	public VisualObjectMotiveGenerator() {
 		super(VO_TYPE, LearnObjectFeatureMotive.class, GroundedBelief.class);
+		monitorMotivesForDeletion(true);
+	}
+
+	@Override
+	protected void motiveWasDeleted(LearnObjectFeatureMotive _motive)
+			throws SubarchitectureComponentException {
+
+		// if dialogue was involved, then the belief may have been marked as a
+		// referent. this needs cleaning up...
+
+		GroundedBelief belief = getMemoryEntry(_motive.referenceEntry,
+				GroundedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class, belief);
+		gb.getContent()
+				.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
+		overwriteWorkingMemory(_motive.referenceEntry, gb.get());
+
 	}
 
 	private boolean motiveFeatureLearnt(String _featureKey,
@@ -118,47 +142,99 @@ public class VisualObjectMotiveGenerator extends
 
 		// only generate things if the VO is actually visible
 
-		if (visualObjectIsVisible(belief)) {
+		try {
+			if (visualObjectIsVisible(belief)) {
 
-			if (m_colourEnabled) {
-				LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
-						COLOUR_KEY, COLOUR_LEARNT_KEY, addr, belief);
-				if (motive != null) {
-					newAdditions.add(motive);
+				if (m_colourEnabled) {
+					LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+							COLOUR_KEY, COLOUR_LEARNT_KEY, addr, belief);
+					if (motive != null) {
+						newAdditions.add(motive);
+					}
+				}
+
+				if (m_shapeEnabled) {
+					LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+							SHAPE_KEY, SHAPE_LEARNT_KEY, addr, belief);
+					if (motive != null) {
+						newAdditions.add(motive);
+					}
+				}
+
+				if (m_identityEnabled) {
+					LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
+							IDENTITY_KEY, IDENTITY_LEARNT_KEY, addr, belief);
+					if (motive != null) {
+						newAdditions.add(motive);
+					}
 				}
 			}
-
-			if (m_shapeEnabled) {
-				LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
-						SHAPE_KEY, SHAPE_LEARNT_KEY, addr, belief);
-				if (motive != null) {
-					newAdditions.add(motive);
-				}
-			}
-
-			if (m_identityEnabled) {
-				LearnObjectFeatureMotive motive = generateLearnFeatureMotive(
-						IDENTITY_KEY, IDENTITY_LEARNT_KEY, addr, belief);
-				if (motive != null) {
-					newAdditions.add(motive);
-				}
-			}
-
+		} catch (SubarchitectureComponentException e) {
+			logException(e);
 		}
+	}
+
+	// TODO HACK sanitise between Dora and George
+	private WorkingMemoryAddress m_robotBeliefAddr;
+
+	// TODO HACK sanitise between Dora and George
+	@Override
+	protected WorkingMemoryAddress getRobotBeliefAddr() {
+		if (m_robotBeliefAddr == null) {
+			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
+			try {
+				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
+						"binder", 0);
+			} catch (UnknownSubarchitectureException e) {
+				logException(e);
+				return null;
+			}
+
+			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
+				if (beliefEntry.getData().type.equals("Robot")) {
+					m_robotBeliefAddr = new WorkingMemoryAddress(
+							beliefEntry.getID(), "binder");
+					break;
+				}
+			}
+			if (m_robotBeliefAddr == null) {
+				getLogger().warn("unable to find belief '" + "Robot" + "'");
+			}
+		}
+		return m_robotBeliefAddr;
+
+	}
+
+	protected String getAdditionalGoals() throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		println("fetching robot belief from " + getRobotBeliefAddr());
+		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(GroundedBelief.class,
+						getMemoryEntry(getRobotBeliefAddr(),
+								GroundedBelief.class));
+
+		return VisualObjectMotiveGenerator.beliefPredicateGoal(
+				"arm-in-resting-position", belief);
+
 	}
 
 	private LearnObjectFeatureMotive generateLearnFeatureMotive(
 			String _featureKey, String _featureLearntPredicate,
 			WorkingMemoryAddress _wma,
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
 		LearnObjectFeatureMotive result = null;
+
+		getRobotBeliefAddr();
 
 		if (!_belief.getContent().containsKey(_featureLearntPredicate)) {
 			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
-			result.goal = new Goal(100f, beliefPredicateGoal(
-					_featureLearntPredicate, _belief), false);
+			result.goal = new Goal(100f, conjoinGoalStrings(new String[] {
+					beliefPredicateGoal(_featureLearntPredicate, _belief),
+					getAdditionalGoals() }), false);
 			result.feature = _featureKey;
 			log("goal is " + result.goal.goalString + " with inf-gain "
 					+ result.informationGain);
@@ -198,7 +274,6 @@ public class VisualObjectMotiveGenerator extends
 		return beliefPredicateGoal(_predicate, _belief.getId());
 	}
 
-	
 	public static String beliefPredicateGoal(String _predicate, String _beliefID) {
 		StringBuilder sb = new StringBuilder("(");
 		sb.append(_predicate);
@@ -208,13 +283,14 @@ public class VisualObjectMotiveGenerator extends
 		return sb.toString();
 	}
 
-        public static String beliefFunctionGoal(String _predicate, String _beliefID, String _value) {
+	public static String beliefFunctionGoal(String _predicate,
+			String _beliefID, String _value) {
 		StringBuilder sb = new StringBuilder("(= (");
 		sb.append(_predicate);
 		sb.append(" '");
 		sb.append(_beliefID);
-                sb.append("') ");
-                sb.append(_value);
+		sb.append("') ");
+		sb.append(_value);
 		sb.append(")");
 		return sb.toString();
 	}
