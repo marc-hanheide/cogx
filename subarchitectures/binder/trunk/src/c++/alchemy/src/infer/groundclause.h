@@ -308,6 +308,33 @@ class GroundClause
                    gc->getGndPredIndexes()->getItems(),
                    (gndPredIndexes_->size())*sizeof(int)) == 0);
   }
+  
+  bool logicSame(const GroundClause* const & gc, int idx)
+  {
+    if (this == gc) return true;
+    if (gndPredIndexes_->size() != gc->getGndPredIndexes()->size() + 1)
+      return false;
+      
+    for(int i=0; i<gndPredIndexes_->size(); i++)
+    	if(gndPredIndexes_->item(i) != idx)
+    		if(!gc->getGndPredIndexes()->contains(gndPredIndexes_->item(i)))
+    			return false;
+    
+    return true;
+  }
+  
+  bool logicSame(const GroundClause* const & gc)
+  {
+    if (this == gc) return true;
+    if (gndPredIndexes_->size() != gc->getGndPredIndexes()->size())
+      return false;
+      
+    for(int i=0; i<gndPredIndexes_->size(); i++)
+    	if(!gc->getGndPredIndexes()->contains(gndPredIndexes_->item(i)))
+    		return false;
+    
+    return true;
+  }
 
   void printWithoutWt(ostream& out) const;
   void print(ostream& out) const;
