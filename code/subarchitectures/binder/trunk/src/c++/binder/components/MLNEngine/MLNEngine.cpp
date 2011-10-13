@@ -8,7 +8,7 @@
 
 #define DEFAULT_INSTANCE_TYPE "belief"
 #define DEFAULT_INFERENCE_STEPS 0
-#define DEFAULT_INFERENCE_PAUSE 250
+#define DEFAULT_INFERENCE_PAUSE 100
 /**
  * The function called to create a new instance of our component.
  */
@@ -305,6 +305,8 @@ void MLNEngine::runComponent()
 	 
 	sleepComponent(DEFAULT_INFERENCE_PAUSE);
   }
+  
+  delete m_oe;
 }
 
 void MLNEngine::newEvidence(const cdl::WorkingMemoryChange & _wmc)

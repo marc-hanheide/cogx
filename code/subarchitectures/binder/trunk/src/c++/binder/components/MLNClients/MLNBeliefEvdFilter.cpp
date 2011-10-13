@@ -79,7 +79,7 @@ void MLNBeliefEvdFilter::runComponent()
   evd->falseEvidence.push_back("belief(Blf4)");
   evd->falseEvidence.push_back("belief(Blf5)");
   evd->falseEvidence.push_back("belief(Blf6)");
-  
+/*  
   evd->falseEvidence.push_back("epstatus(Blf1,Attributed)");
   evd->falseEvidence.push_back("epstatus(Blf2,Attributed)");
   evd->falseEvidence.push_back("epstatus(Blf3,Attributed)");
@@ -93,7 +93,7 @@ void MLNBeliefEvdFilter::runComponent()
   evd->falseEvidence.push_back("epstatus(Blf4,Shared)");
   evd->falseEvidence.push_back("epstatus(Blf5,Shared)");
   evd->falseEvidence.push_back("epstatus(Blf6,Shared)");
-  
+*/  
   evd->initInfSteps = DEFAULT_INFERENCE_STEPS;
   evd->prevInfSteps = 0;
   evd->burnInSteps = DEFAULT_BURNIN_STEPS;
