@@ -10,11 +10,16 @@ import motivation.slice.TutorInitiativeQuestionMotive;
 import vision.execution.george.VisionActionInterface;
 import autogen.Planner.Goal;
 import cast.AlreadyExistsOnWMException;
+import cast.CASTException;
 import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
+import cast.architecture.ChangeFilterFactory;
+import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTData;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -23,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import execution.slice.Robot;
 
 public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.Object>
 		extends AbstractWMEntryMotiveGenerator<TutorInitiativeMotive, T> {
@@ -32,9 +38,28 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		monitorMotivesForDeletion(true);
 	}
 
+	protected WorkingMemoryAddress m_robotEntry;
+
+	public WorkingMemoryAddress getRobotAddress() {
+		assert (m_robotEntry != null);
+		return m_robotEntry;
+	}
+
 	@Override
 	protected void start() {
 		super.start();
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(Robot.class,
+				WorkingMemoryOperation.ADD), new WorkingMemoryChangeReceiver() {
+
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+					throws CASTException {
+				m_robotEntry = _wmc.address;
+				removeChangeFilter(this);
+			}
+		});
+
 		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 		// BaseIntention.class, WorkingMemoryOperation.ADD),
 		// new WorkingMemoryChangeReceiver() {

@@ -13,6 +13,7 @@ import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.cast.dialogue.IntentionUnpacker;
+import execution.slice.Robot;
 
 /**
  * This component does one of two things with a PossibleInterpretedIntentions
@@ -31,6 +32,16 @@ public class PossibleInterpretationsMotiveGenerator
 
 	public PossibleInterpretationsMotiveGenerator() {
 		super(PossibleInterpretedIntentions.class);
+	}
+
+	private void updateFeatureExclusion(boolean _excludeColor,
+			boolean _excludeShape) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException, ConsistencyException,
+			PermissionException {
+		Robot rbt = getMemoryEntry(getRobotAddress(), Robot.class);
+		rbt.excludeColor = _excludeColor;
+		rbt.excludeShape = _excludeShape;
+		overwriteWorkingMemory(getRobotAddress(), rbt);
 	}
 
 	@Override
@@ -137,8 +148,20 @@ public class PossibleInterpretationsMotiveGenerator
 			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddr) {
 		String predicate = CASTUtils.concatenate("polar-", _feature,
 				"-question-answered");
+
+		try {
+			if (_feature.equals("color")) {
+				updateFeatureExclusion(true, false);
+			} else if (_feature.equals("shape")) {
+				updateFeatureExclusion(false, true);
+			}
+		} catch (SubarchitectureComponentException e) {
+			logException(e);
+		}
+
 		return "(exists (?v - VisualObject) (and (= (" + predicate + " ?v) "
 				+ _hypothesis + ")))";
+
 	}
 
 	@Override
@@ -162,7 +185,7 @@ public class PossibleInterpretationsMotiveGenerator
 			throws SubarchitectureComponentException {
 
 		println("cleaning beliefs after disambiguation goal");
-		
+
 		PossibleInterpretedIntentions _pii = getMemoryEntry(
 				_motive.referenceEntry, PossibleInterpretedIntentions.class);
 
@@ -172,6 +195,7 @@ public class PossibleInterpretationsMotiveGenerator
 			cleanBelief(iint.addressContent.get("about"));
 		}
 
+		updateFeatureExclusion(false, false);
 	}
 
 }
