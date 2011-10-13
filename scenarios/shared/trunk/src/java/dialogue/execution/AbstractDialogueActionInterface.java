@@ -195,7 +195,8 @@ public abstract class AbstractDialogueActionInterface extends
 										bestIntention);
 								getComponent().addToWorkingMemory(
 										bestIntentionWMA, bestIntention);
-								VerbalisationUtils.verbaliseString(this.getComponent(), "ok");
+								VerbalisationUtils.verbaliseString(
+										this.getComponent(), "ok");
 								return TriBool.TRITRUE;
 							} else {
 								return TriBool.TRIFALSE;
@@ -349,6 +350,51 @@ public abstract class AbstractDialogueActionInterface extends
 			_stringContent.put("feature", m_feature);
 		}
 
+		@Override
+		protected void addAddressContent(
+				Map<String, WorkingMemoryAddress> _addressContent) {
+			super.addAddressContent(_addressContent);
+
+			// also flag grounded belief with reference potential
+			try {
+				((AbstractDialogueActionInterface) getComponent())
+						.addBooleanFeature(getAction().beliefAddress,
+								IS_POTENTIAL_OBJECT_IN_QUESTION, true);
+			} catch (SubarchitectureComponentException e) {
+				logException(e);
+			}
+		}
+
+		/**
+		 * Input is the matching response
+		 * 
+		 * @throws UnknownSubarchitectureException
+		 * @throws DoesNotExistOnWMException
+		 */
+		@Override
+		protected TriBool checkResponse(InterpretedIntention _ii)
+				throws SubarchitectureComponentException {
+			// Handle matched response looking like this:
+			// [33m[gg.ii: asserted-value -> red][0m
+			// [33m[gg.ii: subtype -> answer][0m
+			// [33m[gg.ii: asserted-polarity -> pos][0m
+			// [33m[gg.ii: asserted-feature -> color][0m
+			// [33m[gg.ii: type -> assertion][0m
+			// [33m[gg.ii: ][0m
+
+			// TODO what if the answer is a negation?
+
+			String feature = _ii.stringContent.get("asserted-feature");
+			String value = _ii.stringContent.get("asserted-value");
+			try {
+				((AbstractDialogueActionInterface) getComponent())
+						.addStringFeature(getAction().beliefAddress,
+								"attributed-" + feature, value);
+			} catch (SubarchitectureComponentException e) {
+				logException(e);
+			}
+			return TriBool.TRITRUE;
+		}
 	}
 
 	public abstract static class PolarFeatureQuestion<T extends BeliefPlusStringAction>
@@ -494,13 +540,12 @@ public abstract class AbstractDialogueActionInterface extends
 
 			String polarity = interpretedIntention.stringContent
 					.get("asserted-polarity");
-			
+
 			println("verification polarity: " + polarity);
 			if (polarity.equals("pos")) {
-			
 
 				println("positive polarity: ");
-				
+
 				// this is the thing we care about
 				// get the list of all potential intentions and thus referents
 
@@ -513,11 +558,10 @@ public abstract class AbstractDialogueActionInterface extends
 				PossibleInterpretedIntentions pii = getComponent()
 						.getMemoryEntry(piiAddr,
 								PossibleInterpretedIntentions.class);
-				
-				println("number of iis in pii found on WM: " + pii.intentions.size());
-				
-				
-				
+
+				println("number of iis in pii found on WM: "
+						+ pii.intentions.size());
+
 				for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
 					InterpretedIntention iint = pii.intentions.get(addr);
 					WorkingMemoryAddress potentialReferentAddr = iint.addressContent
@@ -577,7 +621,7 @@ public abstract class AbstractDialogueActionInterface extends
 			// <confidence>1.0</confidence>
 			// </de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention>
 
-			}
+		}
 
 		private void unmarkReferent(WorkingMemoryAddress _refGroundBelAddr)
 				throws DoesNotExistOnWMException,
@@ -590,11 +634,10 @@ public abstract class AbstractDialogueActionInterface extends
 
 			if (!((AbstractDialogueActionInterface) getComponent())
 					.removeQuestionReference(getAction().beliefAddress, belief)) {
-				getComponent()
-						.getLogger()
-						.warn("Verified belief didn't have field"
+				getComponent().getLogger().warn(
+						"Verified belief didn't have field"
 								+ IS_POTENTIAL_OBJECT_IN_QUESTION,
-								getComponent().getLogAdditions());
+						getComponent().getLogAdditions());
 			}
 
 		}
@@ -669,7 +712,9 @@ public abstract class AbstractDialogueActionInterface extends
 						+ "-question-answered";
 				// record that we have looked at it
 
-				((AbstractActionInterface) getComponent()).addStringFeature(getAction().beliefAddress, answeredPredictate, getAction().value);
+				((AbstractActionInterface) getComponent()).addStringFeature(
+						getAction().beliefAddress, answeredPredictate,
+						getAction().value);
 			} catch (CASTException e) {
 				getComponent().logException(e);
 			}
@@ -914,11 +959,8 @@ public abstract class AbstractDialogueActionInterface extends
 
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, _belief);
-		if (belief
-				.getContent()
-				.containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
-			belief.getContent()
-					.remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
+		if (belief.getContent().containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
+			belief.getContent().remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
 			overwriteWorkingMemory(_beliefAddr, belief.get());
 			return true;
 		} else {
