@@ -7,8 +7,8 @@
 #include "MLNBeliefEvdFilter.h"
 
 #define DEFAULT_SLEEP_PERIOD 100
-#define DEFAULT_INFERENCE_STEPS 500
-#define DEFAULT_BURNIN_STEPS 100
+#define DEFAULT_INFERENCE_STEPS 800
+#define DEFAULT_BURNIN_STEPS 300
 
 /**
  * The function called to create a new instance of our component.
