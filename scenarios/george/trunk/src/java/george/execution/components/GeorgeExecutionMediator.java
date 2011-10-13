@@ -24,6 +24,7 @@ import execution.slice.actions.UnlearnColour;
 import execution.slice.actions.UnlearnIdentity;
 import execution.slice.actions.UnlearnShape;
 import execution.slice.actions.VerifyReference;
+import execution.slice.actions.VerifyReferenceByFeatureValue;
 import execution.slice.actions.george.yr3.AnalyzeProtoObject;
 import execution.slice.actions.george.yr3.MoveToViewCone;
 import execution.util.ActionConverter;
@@ -224,6 +225,20 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 2 : "verify-reference is expected to be of arity 2";
 			return createSingleBeliefAction(VerifyReference.class,
 					_plannedAction.arguments[1]);
+		} else if (_plannedAction.name
+				.equals("verify-reference-by-describing-its-color")) {
+			assert _plannedAction.arguments.length == 3 : "verify-reference-by-describing-its-color is expected to be of arity 3";			
+			return createBeliefFeatureValueAction(VerifyReferenceByFeatureValue.class, _plannedAction.arguments[1], "color", _plannedAction.arguments[2]);			
+		}
+		else if (_plannedAction.name
+				.equals("verify-reference-by-describing-its-shape")) {
+			assert _plannedAction.arguments.length == 3 : "verify-reference-by-describing-its-shape is expected to be of arity 3";			
+			return createBeliefFeatureValueAction(VerifyReferenceByFeatureValue.class, _plannedAction.arguments[1], "shape", _plannedAction.arguments[2]);			
+		}
+		else if (_plannedAction.name
+				.equals("verify-reference-by-describing-its-type")) {
+			assert _plannedAction.arguments.length == 3 : "verify-reference-by-describing-its-type is expected to be of arity 3";			
+			return createBeliefFeatureValueAction(VerifyReferenceByFeatureValue.class, _plannedAction.arguments[1], "type", _plannedAction.arguments[2]);			
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
