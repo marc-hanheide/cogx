@@ -51,7 +51,7 @@ INROOM table corridor 0.0594
 
 INROOM cerealbox kitchen 0.581
 INROOM cerealbox meetingroom 0.06
-INROOM cerealbox office 0.2529
+INROOM cerealbox office 0.02529
 INROOM cerealbox corridor 0.0519
 
 INROOM book kitchen 0.0366
