@@ -114,7 +114,7 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 		@Override
 		protected void actionComplete() {
 			try {
-				((ManipulationActionInterface)getComponent()).updateArmRestingState(!ManipulationActionInterface.ARM_IS_RESTING);
+				((ManipulationActionInterface)getComponent()).updateArmRestingState(ManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
 				logException("Problem updating robot state",e);
 			}
