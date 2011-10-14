@@ -1504,6 +1504,7 @@ AVS_ContinualPlanner::startMovePanTilt(double pan, double tilt, double tolerance
   addToWorkingMemory(cmdId, newPTZPoseCommand);
 
   m_waitingForPTZCommandID = cmdId;
+  log("Sending PTZ to %f, %f (%s)", pan, tilt, cmdId.c_str());
 }
 
 void
@@ -1526,6 +1527,7 @@ AVS_ContinualPlanner::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &
       log ("Error: SetPTZPoseCommand went missing! "); 
     }
 
+    log("PTZ command %s finished", m_waitingForPTZCommandID.c_str());
     m_waitingForPTZCommandID = "";
   }
 }
