@@ -12,11 +12,9 @@ import org.apache.log4j.Logger;
 import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryChange;
-import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
-import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
-import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributions;
+import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
@@ -32,7 +30,7 @@ public class VisualObjectTransferFunction extends
 	public static final String PRESENCE_UNKNOWN = "unknown";
 	public static final String PRESENCE_REMOVED = "removed";
 	public static final String PRESENCE_WAS_VISIBLE = "was-visible";
-	
+
 	public static final String PRESENCE_KEY = "presence";
 
 	static Logger logger = Logger.getLogger(VisualObjectTransferFunction.class);
@@ -50,161 +48,40 @@ public class VisualObjectTransferFunction extends
 		result.put("salience", DoubleFormula.create(from.salience)
 				.getAsFormula());
 
+		// logger.info("added salience");
+
+		fillConcept("color", result, from.colorLabels, from.colorDistrib);
+
+		// logger.info("added color");
+
+		fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
+
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeeu.cogx.perceptmediator.transferfunctions.abstr.
-	 * SimpleDiscreteTransferFunction#fillBelief(de.dfki.lt.tr.beliefs.data.
-	 * CASTIndependentFormulaDistributionsBelief, cast.cdl.WorkingMemoryChange,
-	 * Ice.ObjectImpl)
-	 */
-	@Override
-	protected void fillBelief(
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
-			WorkingMemoryChange wmc, VisualObject from) {
-		super.fillBelief(belief, wmc, from);
-		IndependentFormulaDistributions distr = belief.getContent();
-		FormulaDistribution fd;
+	private void fillConcept(String concept, Map<String, Formula> result,
+			String[] labels, double[] distrib) {
 
-		fd = FormulaDistribution.create();
-		fd.add((float) from.salience, 1.0);
-		distr.put("salience", fd);
+		if (labels.length > 0) {
 
-		// The status of the VO: unknow, visible, was_visible, removed
-		String status;
-		fd = FormulaDistribution.create();
-		switch(from.presence) {
-			case VopVISIBLE:
-			 	status = PRESENCE_VISIBLE;
-			 	break;
-			case VopWasVISIBLE:
-			 	status = PRESENCE_WAS_VISIBLE;
-			 	break;
-			case VopREMOVED:
-			 	status = PRESENCE_REMOVED;
-			 	break;
-			default:
-			 	status = PRESENCE_UNKNOWN;
-			 	break;
-		}
-		fd.add(status, 1.0);
-		distr.put(PRESENCE_KEY, fd);
+			double maxLabelProb = Double.MIN_VALUE;
+			int maxIndex = 0;
 
-		fillConcept("color", distr, from.colorLabels, from.colorDistrib,
-				from.colorGains, from.colorGain, from.colorAmbiguity);
-		fillConcept("shape", distr, from.shapeLabels, from.shapeDistrib,
-				from.shapeGains, from.shapeGain, from.shapeAmbiguity);
-		fillConcept("ident", distr, from.identLabels, from.identDistrib, null,
-				from.identGain, from.identAmbiguity);
+			for (int i = 0; i < labels.length; i++) {
 
-		{ // color
-			fd = FormulaDistribution.create();
-			for (int i = 0; i < from.colorLabels.length; i++) {
-				fd.add(from.colorLabels[i], from.colorDistrib[i]);
-//				FormulaDistribution gainFD = FormulaDistribution.create();
-//				gainFD.add((float) from.colorGains[i], 1.0);
-//				distr.put("gain-color-" + from.colorLabels[i], gainFD);
+				// HACK for planner cleanliness
+				if (distrib[i] > maxLabelProb) {
+					maxLabelProb = distrib[i];
+					maxIndex = i;
+				}
+				// HACK - END
 			}
-			distr.put("color", fd);
 
-			// outdated?
-//			fd = FormulaDistribution.create();
-//			fd.add((float) from.colorGain, 1.0);
-//			distr.put("colorGain", fd);
-//
-//			fd = FormulaDistribution.create();
-//			fd.add((float) from.colorAmbiguity, 1.0);
-//			distr.put("colorAmbiguity", fd);
+			result.put(concept + "-prob", DoubleFormula.create(maxLabelProb)
+					.getAsFormula());
 
+			result.put(concept, PropositionFormula.create(labels[maxIndex])
+					.getAsFormula());
 		}
-		
-		{ // shape
-			fd = FormulaDistribution.create();
-			for (int i = 0; i < from.shapeLabels.length; i++) {
-				fd.add(from.shapeLabels[i], from.shapeDistrib[i]);
-			}
-			distr.put("shape", fd);
-
-			// outdated?
-//			fd = FormulaDistribution.create();
-//			fd.add((float) from.shapeGain, 1.0);
-//			distr.put("shapeGain", fd);
-//
-//			fd = FormulaDistribution.create();
-//			fd.add((float) from.shapeAmbiguity, 1.0);
-//			distr.put("shapeAmbiguity", fd);
-		}
-		
-		{ // ident
-			fd = FormulaDistribution.create();
-			for (int i = 0; i < from.identLabels.length; i++) {
-				fd.add(from.identLabels[i], from.identDistrib[i]);
-			}
-			distr.put("ident", fd);
-
-			// outdated?
-//			fd = FormulaDistribution.create();
-//			fd.add((float) from.identGain, 1.0);
-//			distr.put("identGain", fd);
-//
-//			fd = FormulaDistribution.create();
-//			fd.add((float) from.identAmbiguity, 1.0);
-//			distr.put("identAmbiguity", fd);
-		}
-	}
-
-	private void fillConcept(String concept,
-			IndependentFormulaDistributions distr, String[] labels,
-			double[] distrib, double[] gains, double gain, double ambiguity) {
-		FormulaDistribution fd = FormulaDistribution.create();
-//		double maxGain = -1;
-//		String gainStr = "";
-		double maxLabelProb = Double.MIN_VALUE;
-		
-		for (int i = 0; i < labels.length; i++) {
-			fd.add(labels[i], distrib[i]);
-//			if (gains != null && i < gains.length) {
-//				if (maxGain < gains[i]) {
-//					maxGain = gains[i];
-//					gainStr = labels[i];
-//				}
-//			}
-			
-			//HACK for planner cleanliness
-			if(distrib[i] > maxLabelProb) {
-				maxLabelProb = distrib[i];
-			}		
-			//HACK - END
-		}
-
-		//HACK for planner cleanliness
-		FormulaDistribution maxLabelPD = FormulaDistribution.create();
-		maxLabelPD.add((float)maxLabelProb, 1.0);
-		distr.put(concept + "-prob",maxLabelPD);
-		
-		
-		//HACK - END
-		
-//		if (maxGain > 0) {
-//			FormulaDistribution gainFD = FormulaDistribution.create();
-//			gainFD.add(gainStr, 1.0);
-//			distr.put("max-gain-label-" + concept, gainFD);
-//			gainFD = FormulaDistribution.create();
-//			gainFD.add((float) maxGain, 1.0);
-//			distr.put("max-gain-value-" + concept, gainFD);
-//		}
-//		distr.put(concept, fd);
-//
-//		fd = FormulaDistribution.create();
-//		fd.add((float) gain, 1.0);
-//		distr.put("gain-" + concept, fd);
-//
-//		fd = FormulaDistribution.create();
-//		fd.add((float) ambiguity, 1.0);
-//		distr.put("ambiguity-" + concept, fd);
-
 	}
 }
