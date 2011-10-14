@@ -97,7 +97,7 @@ public class FakeManipulationActionInterface extends AbstractActionInterface {
 		protected void actionComplete() {
 			try {
 				((FakeManipulationActionInterface) getComponent())
-						.updateArmRestingState(!FakeManipulationActionInterface.ARM_IS_RESTING);
+						.updateArmRestingState(FakeManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
 				logException("Problem updating robot state", e);
 			}
