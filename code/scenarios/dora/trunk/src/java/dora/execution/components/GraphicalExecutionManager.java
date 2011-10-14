@@ -5,6 +5,7 @@ package dora.execution.components;
 
 import java.util.Map;
 
+import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.PermissionException;
@@ -19,6 +20,7 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import dora.execution.util.ActionInterfaceFrame;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractExecutionManager;
+import execution.slice.Action;
 import execution.slice.actions.BackgroundModels;
 import execution.slice.actions.BeliefPlusStringAction;
 import execution.slice.actions.CreateConesForModel;
@@ -55,6 +57,10 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 
 	private WorkingMemoryAddress m_currentActionAddress;
 
+	public WorkingMemoryAddress getCurrentActionAddress() {
+		return m_currentActionAddress;
+	}
+
 	/**
 	 * 
 	 */
@@ -89,8 +95,8 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 					public void workingMemoryChanged(WorkingMemoryChange _wmc)
 							throws CASTException {
 						try {
-							addStableBelief(_wmc.address,
-									getMemoryEntry(_wmc.address, dBelief.class));
+							addStableBelief(_wmc.address, getMemoryEntry(
+									_wmc.address, dBelief.class));
 						} catch (CASTException e) {
 							logException("Carry on regardless", e);
 						}
@@ -98,22 +104,22 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 				});
 
 		// use these to harvest beliefs
-//		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-//				GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
-//				new WorkingMemoryChangeReceiver() {
-//					@Override
-//					public void workingMemoryChanged(WorkingMemoryChange _wmc)
-//							throws CASTException {
-//						try {
-//							// FIXME: horribly inefficient I guess
-//							removeStableBelief(_wmc.address);
-//							addStableBelief(_wmc.address,
-//									getMemoryEntry(_wmc.address, dBelief.class));
-//						} catch (CASTException e) {
-//							logException("Carry on regardless", e);
-//						}
-//					}
-//				});
+		// addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+		// GroundedBelief.class, WorkingMemoryOperation.OVERWRITE),
+		// new WorkingMemoryChangeReceiver() {
+		// @Override
+		// public void workingMemoryChanged(WorkingMemoryChange _wmc)
+		// throws CASTException {
+		// try {
+		// // FIXME: horribly inefficient I guess
+		// removeStableBelief(_wmc.address);
+		// addStableBelief(_wmc.address,
+		// getMemoryEntry(_wmc.address, dBelief.class));
+		// } catch (CASTException e) {
+		// logException("Carry on regardless", e);
+		// }
+		// }
+		// });
 
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				GroundedBelief.class, WorkingMemoryOperation.DELETE),
@@ -171,35 +177,45 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
+	@Override
+	public WorkingMemoryAddress triggerExecution(Action action,
+			ActionMonitor monitor) throws AlreadyExistsOnWMException,
+			DoesNotExistOnWMException, UnknownSubarchitectureException {
+
+		WorkingMemoryAddress adr = super.triggerExecution(action, monitor);
+		m_gui.setStatus(action);
+		return adr;
+	}
+
 	public WorkingMemoryAddress triggerConeGeneration(String _model,
 			int _roomId, ActionMonitor _monitor) throws CASTException {
-        CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
+		CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
 		act.model = _model;
-        act.relation = "inroom";
-        act.roomID = _roomId;
+		act.relation = "inroom";
+		act.roomID = _roomId;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
 
-	public WorkingMemoryAddress triggerConeGenerationOnObject(String _model, String _supportModel,
-                                                              WorkingMemoryAddress _supportObject, int _roomId, ActionMonitor _monitor) 
-        throws CASTException {
-        CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
-        act.model = _model;
-        act.supportObjectCategory = _supportModel;
-        act.relation = "on";
-        act.supportObject = _supportObject.id; 
-        act.roomID = _roomId;
+	public WorkingMemoryAddress triggerConeGenerationOnObject(String _model,
+			String _supportModel, WorkingMemoryAddress _supportObject,
+			int _roomId, ActionMonitor _monitor) throws CASTException {
+		CreateRelationalConesForModel act = newActionInstance(CreateRelationalConesForModel.class);
+		act.model = _model;
+		act.supportObjectCategory = _supportModel;
+		act.relation = "on";
+		act.supportObject = _supportObject.id;
+		act.roomID = _roomId;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
 
 	public WorkingMemoryAddress triggerProccesCone(
-        WorkingMemoryAddress _coneAddr, int _coneID, ActionMonitor _monitor)
+			WorkingMemoryAddress _coneAddr, int _coneID, ActionMonitor _monitor)
 			throws CASTException {
 		ProcessConeGroupAction act = newActionInstance(ProcessConeGroupAction.class);
-        act.coneGroupID = _coneID;
-        act.coneGroupBeliefID = _coneAddr;
+		act.coneGroupID = _coneID;
+		act.coneGroupBeliefID = _coneAddr;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
@@ -283,8 +299,8 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 	}
 
 	public WorkingMemoryAddress triggerEngagementAction(
-			WorkingMemoryAddress _beliefAddress, boolean _engage, ActionMonitor _monitor)
-			throws CASTException {
+			WorkingMemoryAddress _beliefAddress, boolean _engage,
+			ActionMonitor _monitor) throws CASTException {
 		EngageWithHuman act = newActionInstance(EngageWithHuman.class);
 		act.beliefAddress = _beliefAddress;
 		act.disengage = !_engage;
@@ -292,17 +308,21 @@ public class GraphicalExecutionManager extends AbstractExecutionManager {
 		return m_currentActionAddress;
 	}
 
-	
-	public WorkingMemoryAddress executeSingleBeliefAction(WorkingMemoryAddress _beliefID,
-			ActionMonitor _monitor, Class<? extends SingleBeliefAction> _actionCls) throws CASTException {
+	public WorkingMemoryAddress executeSingleBeliefAction(
+			WorkingMemoryAddress _beliefID, ActionMonitor _monitor,
+			Class<? extends SingleBeliefAction> _actionCls)
+			throws CASTException {
 		SingleBeliefAction act = newActionInstance(_actionCls);
 		act.beliefAddress = _beliefID;
 		m_currentActionAddress = triggerExecution(act, _monitor);
 		return m_currentActionAddress;
 	}
-	
-	public WorkingMemoryAddress executeSingleBeliefPlusStringAction(WorkingMemoryAddress _beliefID, String _string,
-			ActionMonitor _monitor, Class<? extends BeliefPlusStringAction> _actionCls) throws CASTException {
+
+	public WorkingMemoryAddress executeSingleBeliefPlusStringAction(
+			WorkingMemoryAddress _beliefID, String _string,
+			ActionMonitor _monitor,
+			Class<? extends BeliefPlusStringAction> _actionCls)
+			throws CASTException {
 		BeliefPlusStringAction act = newActionInstance(_actionCls);
 		act.beliefAddress = _beliefID;
 		act.value = _string;
