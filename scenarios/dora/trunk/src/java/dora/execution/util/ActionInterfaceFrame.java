@@ -1,8 +1,8 @@
 package dora.execution.util;
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,18 +17,17 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
-import SpatialData.ViewPoint;
 import VisionData.Person;
 import VisionData.VisualObject;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
-import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 
 import comadata.ComaRoom;
@@ -42,18 +41,29 @@ import dora.execution.components.GraphicalExecutionManager;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import eu.cogx.perceptmediator.dora.PersonTransferFunction;
-import eu.cogx.perceptmediator.dora.ViewPointTransferFunction;
 import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
-import eu.cogx.perceptmediator.transferfunctions.LocalizedAgentTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import execution.slice.Action;
+import execution.slice.TriBool;
 import execution.slice.actions.AskForIdentity;
 import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.TurnToHuman;
 import execution.util.ActionMonitor;
 
+/**
+* This code was edited or generated using CloudGarden's Jigloo
+* SWT/Swing GUI Builder, which is free for non-commercial
+* use. If Jigloo is being used commercially (ie, by a corporation,
+* company or business for any purpose whatever) then you
+* should purchase a license for each developer using Jigloo.
+* Please visit www.cloudgarden.com for details.
+* Use of Jigloo implies acceptance of these licensing terms.
+* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
+* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
+* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+*/
 /**
  * Every time I look at this code I die inside a little.
  * 
@@ -61,6 +71,16 @@ import execution.util.ActionMonitor;
  * 
  */
 public class ActionInterfaceFrame extends JFrame {
+
+	{
+		//Set Look & Feel
+		try {
+			javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 	private static final String PERSONTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(Person.class);
@@ -97,6 +117,12 @@ public class ActionInterfaceFrame extends JFrame {
 	private JRadioButton m_foregroundModelsAction;
 	private JRadioButton m_backgroundModelsAction;
 	private JRadioButton m_recogniseForegroundedModelsAction;
+	
+	private JRadioButton jStatusExecuting;
+	private JRadioButton jStatusFailed;
+	private JRadioButton jStatusSuccess;
+	private JPanel jPanelStatus;
+	private JTextField jStatusText;
 
 	private JRadioButton m_reportPosition;
 
@@ -250,9 +276,11 @@ public class ActionInterfaceFrame extends JFrame {
 	private JPanel getButtonPanel() {
 		if (m_buttonPanel == null) {
 			m_buttonPanel = new JPanel();
-			m_buttonPanel.setLayout(new GridBagLayout());
-			m_buttonPanel.add(getGoButton(), new GridBagConstraints());
-			m_buttonPanel.add(getM_stopButton(), new GridBagConstraints());
+			FlowLayout m_buttonPanelLayout = new FlowLayout();
+			m_buttonPanel.setLayout(m_buttonPanelLayout);
+			m_buttonPanel.add(getJPanelStatus());
+			m_buttonPanel.add(getGoButton());
+			m_buttonPanel.add(getM_stopButton());
 		}
 		return m_buttonPanel;
 	}
@@ -392,9 +420,18 @@ public class ActionInterfaceFrame extends JFrame {
 
 		@Override
 		public void actionComplete(Action _action) {
+			jStatusText.setText("completed action "+_action.getClass().getSimpleName() + " with  " + _action.success.toString());
+			setStatus(_action);
 			m_exeMan.println("Action complete");
 		}
 
+
+	}
+	public  void setStatus(Action _action) {
+		jStatusText.setText("action " + _action.getClass().getSimpleName() + " status=" + _action.status.toString()+ ", success="+_action.success.toString());
+		jStatusSuccess.setSelected(_action.success==TriBool.TRITRUE);
+		jStatusFailed.setSelected(_action.success==TriBool.TRIFALSE);
+		jStatusExecuting.setSelected(_action.success==TriBool.TRIINDETERMINATE);
 	}
 
 	private void go() throws CASTException {
@@ -458,6 +495,8 @@ public class ActionInterfaceFrame extends JFrame {
 			throw new RuntimeException("No tab selected apparently... "
 					+ m_tabbedPane.getSelectedIndex());
 		}
+		
+		
 	}
 
 	// /**
@@ -1005,6 +1044,7 @@ public class ActionInterfaceFrame extends JFrame {
 
 	private boolean removePersonBelief(WorkingMemoryAddress _address) {
 		for (int row = 0; row < m_objectBeliefsTableModel.getRowCount(); row++) {
+			
 			WorkingMemoryAddress objectAddr = addressFromString((String) m_objectBeliefsTableModel
 					.getValueAt(row, OBJ_ADDR_COLUMN));
 			if (objectAddr.equals(_address)) {
@@ -1180,11 +1220,61 @@ public class ActionInterfaceFrame extends JFrame {
 		}
 	}
 
+	
 	private String getFeatureValue(String _beliefID, String _concept, String _op) {
 		String message = "What " + _concept + " should be " + _op
 				+ " for belief " + _beliefID + "?";
 
 		return (String) JOptionPane.showInputDialog(this, message);
+	}
+
+	private JPanel getJPanelStatus() {
+		if(jPanelStatus == null) {
+			jPanelStatus = new JPanel();
+			jPanelStatus.add(getJStatusFailed());
+			jPanelStatus.add(getJRadioButton1());
+			jPanelStatus.add(getJStatusSuccess());
+			jPanelStatus.add(getJStatusText());
+		}
+		return jPanelStatus;
+	}
+	
+	private JRadioButton getJStatusSuccess() {
+		if(jStatusSuccess == null) {
+			jStatusSuccess = new JRadioButton();
+			jStatusSuccess.setForeground(new java.awt.Color(0,255,0));
+			jStatusSuccess.setText("SUCCEEDED");
+		}
+		return jStatusSuccess;
+	}
+	
+	private JRadioButton getJStatusFailed() {
+		if(jStatusFailed == null) {
+			jStatusFailed = new JRadioButton();
+			jStatusFailed.setForeground(new java.awt.Color(255,0,0));
+			jStatusFailed.setText("FAILED");
+		}
+		return jStatusFailed;
+	}
+	
+	private JRadioButton getJRadioButton1() {
+		if(jStatusExecuting == null) {
+			jStatusExecuting = new JRadioButton();
+			jStatusExecuting.setEnabled(true);
+			jStatusExecuting.setForeground(new java.awt.Color(128,128,0));
+			jStatusExecuting.setText("ONGOING");
+		}
+		return jStatusExecuting;
+	}
+	
+	public JTextField getJStatusText() {
+		if(jStatusText == null) {
+			jStatusText = new JTextField();
+			jStatusText.setText("status");
+			jStatusText.setPreferredSize(new java.awt.Dimension(600, 22));
+			jStatusText.setEditable(false);
+		}
+		return jStatusText;
 	}
 
 }
