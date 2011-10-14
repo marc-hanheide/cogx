@@ -155,6 +155,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/dora-interaction.cast
+JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/INCL/dora-live.cast
