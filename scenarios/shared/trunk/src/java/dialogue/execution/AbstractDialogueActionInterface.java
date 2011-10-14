@@ -545,6 +545,7 @@ public abstract class AbstractDialogueActionInterface extends
 					.get("asserted-polarity");
 
 			println("verification polarity: " + polarity);
+
 			if (polarity.equals("pos")) {
 
 				println("positive polarity: ");
@@ -631,13 +632,15 @@ public abstract class AbstractDialogueActionInterface extends
 				throws DoesNotExistOnWMException,
 				UnknownSubarchitectureException, ConsistencyException,
 				PermissionException {
+			
 			println("removing reference marker from belief at "
 					+ CASTUtils.toString(_refGroundBelAddr));
+		
 			GroundedBelief belief = getComponent().getMemoryEntry(
-					getAction().beliefAddress, GroundedBelief.class);
+					_refGroundBelAddr, GroundedBelief.class);
 
 			if (!((AbstractDialogueActionInterface) getComponent())
-					.removeQuestionReference(getAction().beliefAddress, belief)) {
+					.removeQuestionReference(_refGroundBelAddr, belief)) {
 				getComponent().getLogger().warn(
 						"Verified belief didn't have field"
 								+ IS_POTENTIAL_OBJECT_IN_QUESTION,
@@ -1000,6 +1003,7 @@ public abstract class AbstractDialogueActionInterface extends
 		// END HACK
 
 		boolean result = false;
+		
 		if (belief.getContent().containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
 			belief.getContent().remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
 			result = true;
