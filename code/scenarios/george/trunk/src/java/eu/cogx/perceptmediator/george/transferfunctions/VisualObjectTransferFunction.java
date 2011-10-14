@@ -48,6 +48,27 @@ public class VisualObjectTransferFunction extends
 		result.put("salience", DoubleFormula.create(from.salience)
 				.getAsFormula());
 
+		// The status of the VO: unknow, visible, was_visible, removed
+		switch (from.presence) {
+		case VopVISIBLE:
+			result.put(PRESENCE_KEY, PropositionFormula
+					.create(PRESENCE_VISIBLE).getAsFormula());
+			break;
+		case VopWasVISIBLE:
+			result.put(PRESENCE_KEY,
+					PropositionFormula.create(PRESENCE_WAS_VISIBLE)
+							.getAsFormula());
+			break;
+		case VopREMOVED:
+			result.put(PRESENCE_KEY, PropositionFormula
+					.create(PRESENCE_REMOVED).getAsFormula());
+			break;
+		default:
+			result.put(PRESENCE_KEY, PropositionFormula
+					.create(PRESENCE_UNKNOWN).getAsFormula());
+			break;
+		}
+
 		// logger.info("added salience");
 
 		fillConcept("color", result, from.colorLabels, from.colorDistrib);
