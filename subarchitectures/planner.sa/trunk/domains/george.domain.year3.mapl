@@ -477,7 +477,7 @@
 	(color-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-	(increase (total-cost) 5)
+	(increase (total-cost) 10)
       )
   )
 
@@ -515,7 +515,7 @@
 	(shape-learned ?v)
         (not (is-potential-object-in-question ?v))
         (update (is-potential-object-in-question ?v) false)
-	(increase (total-cost) 5)
+	(increase (total-cost) 10)
       )
   )
 
