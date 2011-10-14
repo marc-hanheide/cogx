@@ -20,6 +20,14 @@ import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
 
+
+/**
+ * 
+ * TODO Refactor so that it shares code with real interface.
+ * 
+ * @author nah
+ *
+ */
 public class FakeManipulationActionInterface extends AbstractActionInterface {
 
 	private static final boolean ARM_IS_RESTING = true;

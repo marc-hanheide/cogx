@@ -227,8 +227,6 @@ public class VisualObjectMotiveGenerator extends
 
 		LearnObjectFeatureMotive result = null;
 
-		getRobotBeliefAddr();
-
 		if (!_belief.getContent().containsKey(_featureLearntPredicate)) {
 			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
