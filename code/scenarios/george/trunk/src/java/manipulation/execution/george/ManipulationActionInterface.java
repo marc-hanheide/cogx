@@ -47,9 +47,10 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 		@Override
 		protected void actionComplete() {
 			try {
-				((ManipulationActionInterface)getComponent()).updateArmRestingState(!ManipulationActionInterface.ARM_IS_RESTING);
+				((ManipulationActionInterface) getComponent())
+						.updateArmRestingState(!ManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
-				logException("Problem updating robot state",e);
+				logException("Problem updating robot state", e);
 			}
 		}
 
@@ -110,13 +111,14 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 			cmd.objPointerSeq = new WorkingMemoryPointer[0];
 			addThenCompleteOnOverwrite(cmd);
 		}
-		
+
 		@Override
 		protected void actionComplete() {
 			try {
-				((ManipulationActionInterface)getComponent()).updateArmRestingState(ManipulationActionInterface.ARM_IS_RESTING);
+				((ManipulationActionInterface) getComponent())
+						.updateArmRestingState(ManipulationActionInterface.ARM_IS_RESTING);
 			} catch (SubarchitectureComponentException e) {
-				logException("Problem updating robot state",e);
+				logException("Problem updating robot state", e);
 			}
 		}
 	}
@@ -140,7 +142,9 @@ public class ManipulationActionInterface extends AbstractActionInterface {
 	@Override
 	protected void start() {
 		m_actionStateManager = new LocalActionStateManager(this);
-		m_actionStateManager.registerActionType(PointToObject.class,
+		m_actionStateManager
+				.registerActionType(
+						PointToObject.class,
 						new ComponentActionFactory<PointToObject, PointToObjectExecutor>(
 								this, PointToObjectExecutor.class));
 		m_actionStateManager.registerActionType(ArmToHomePos.class,

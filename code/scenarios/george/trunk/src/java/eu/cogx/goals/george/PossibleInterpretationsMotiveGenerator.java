@@ -9,6 +9,7 @@ import cast.PermissionException;
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
+import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
@@ -38,10 +39,13 @@ public class PossibleInterpretationsMotiveGenerator
 			boolean _excludeShape) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException, ConsistencyException,
 			PermissionException {
+		
+		lockEntry(getRobotAddress(), WorkingMemoryPermissions.LOCKEDODR);
 		Robot rbt = getMemoryEntry(getRobotAddress(), Robot.class);
 		rbt.excludeColor = _excludeColor;
 		rbt.excludeShape = _excludeShape;
 		overwriteWorkingMemory(getRobotAddress(), rbt);
+		unlockEntry(getRobotAddress());
 	}
 
 	@Override
