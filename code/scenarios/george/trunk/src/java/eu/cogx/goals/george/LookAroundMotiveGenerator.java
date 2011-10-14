@@ -34,7 +34,7 @@ public class LookAroundMotiveGenerator extends
 
 	// number of millis to wait with nothing going on before looking around.
 
-	public static final long BOREDOM_THRESHOLD = 20000;
+	public static final long BOREDOM_THRESHOLD = 40000;
 
 	public class GetCones implements Runnable, WorkingMemoryChangeReceiver {
 
