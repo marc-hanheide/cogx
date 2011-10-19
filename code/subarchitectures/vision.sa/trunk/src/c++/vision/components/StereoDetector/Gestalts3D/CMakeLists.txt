@@ -6,6 +6,9 @@ FIND_PACKAGE (OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIR})
 link_directories(${OPENCV_LIBRARY_DIRS})
 
+include_directories(${V4R_DIR})
+
+
 # Set the header and sources.
 SET(HEADERS
   Closure3D.h
@@ -44,6 +47,6 @@ SET(SOURCES
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 #target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} opencv_core opencv_highgui opencv_imgproc opencv_objdetect opencv_features2d opencv_flann)# v4rtomgine)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES})# v4rtomgine)# opencv_core opencv_highgui opencv_imgproc opencv_objdetect opencv_features2d opencv_flann)# v4rtomgine)
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 

@@ -24,8 +24,11 @@
 namespace Z
 {
 
-// THRESHOLD_CONSTANT: 1 - 10? => 2
-#define THRESHOLD_CONSTANT 3.0
+// THRESHOLD_CONSTANT: 1. - 10.? => 2.
+// CAREFULL: Float value!!!
+// - with one line for each patch => 3.0
+// - only patches => 1.0
+#define THRESHOLD_CONSTANT 1.0
 #define MIN_SIZE 1                /// minimum size of element-sets
 
 #define THRESHOLD(size, c) (c/size)

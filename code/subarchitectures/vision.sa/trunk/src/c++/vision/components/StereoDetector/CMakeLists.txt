@@ -53,11 +53,12 @@ SET(SOURCES
 )
 add_cast_component(StereoDetector ${SOURCES} ${HEADERS})
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDLearner SDGraphCut)
-link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)# GLWindow) #TomGine TomGineWraper)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
+link_cast_component(${CAST_COMPONENT_NAME} v4rplanepopout v4rpclfunctions v4rtomgine)
 
-target_link_libraries(${CAST_COMPONENT_NAME} v4rplanepopout v4rpclfunctions v4rtomgine)
+# target_link_libraries(${CAST_COMPONENT_NAME} v4rplanepopout v4rpclfunctions v4rtomgine)
 endif (HAVE_V4R)
 endif (HAVE_PCL_LIBRARY)
 

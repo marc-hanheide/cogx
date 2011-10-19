@@ -74,8 +74,8 @@ printf("KinectCore::SetNodeID: we initialize only patches and lines!\n");
 
  for(unsigned j=0; j<kinectGestalts[Gestalt3D::PATCH].Size(); j++)
    kinectGestalts[Gestalt3D::PATCH][j]->SetNodeID(nodeID++);
- for(unsigned j=0; j<kinectGestalts[Gestalt3D::SEGMENT].Size(); j++)
-   kinectGestalts[Gestalt3D::SEGMENT][j]->SetNodeID(nodeID++);
+//  for(unsigned j=0; j<kinectGestalts[Gestalt3D::SEGMENT].Size(); j++)
+//    kinectGestalts[Gestalt3D::SEGMENT][j]->SetNodeID(nodeID++);
 }
 
 void KinectCore::PrintNodeIDs()                                                       /// TODO TODO TODO Delete later!!!

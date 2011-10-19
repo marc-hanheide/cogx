@@ -18,6 +18,14 @@ CalculateRelations::CalculateRelations()
 {}
 
 /**
+ * @brief Reset the relations
+ */
+void CalculateRelations::Reset()
+{
+  relations.resize(0);
+}
+
+/**
  * @brief Constructor of class CalculateRelations.
  */
 void CalculateRelations::Initialize(KinectCore *k, double fx, double fy, double cx, double cy)
@@ -27,7 +35,6 @@ void CalculateRelations::Initialize(KinectCore *k, double fx, double fy, double 
   cam_fy = fy;
   cam_cx = cx;
   cam_cy = cy;
-  relations.resize(0);
 }
 
 
@@ -42,7 +49,7 @@ void CalculateRelations::CalcSVMRelations(std::vector<Relation> &rel)
 static struct timespec start, last, current;
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
 last = start;
-  relations.resize(0);
+//   relations.resize(0);
   CalcSVMPatchPatchRelations();
 //   CalcSVMPatchLineRelations();
 //   CalcSVMLineLineRelations();
@@ -78,10 +85,11 @@ void CalculateRelations::CalcSVMPatchPatchRelations()
         double colorSimilarity = p0->CompareColor(px);
         double n0n1, ppn0, ppn1;
         p0->CalculateCoplanarity2(px, n0n1, ppn0, ppn1);
-        double dist2plane;
-        CalculateSegmentRelations(p0, px, dist2plane);    /// TODO TODO Calculate relations of segments!
         
-printf(" PP True : %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeID(), px->GetNodeID(), proximity, colorSimilarity, n0n1, ppn0, ppn1);
+        std::vector<double> segRelations;
+        CalculateSegmentRelations(p0, px, segRelations);
+        
+// printf(" PP True : %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeID(), px->GetNodeID(), proximity, colorSimilarity, n0n1, ppn0, ppn1);
         
 // printf("  => true example!\n");
         Relation r;
@@ -90,11 +98,16 @@ printf(" PP True : %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeI
         r.type = 1;
         r.id_0 = p0->GetNodeID();
         r.id_1 = px->GetNodeID();
-        r.rel_value.push_back(proximity);
-        r.rel_value.push_back(colorSimilarity);
-        r.rel_value.push_back(n0n1);
-        r.rel_value.push_back(ppn0);
-        r.rel_value.push_back(ppn1);
+        r.rel_value.push_back(proximity);           // proximity of planes (minimum hull distance)
+        r.rel_value.push_back(colorSimilarity);     // color histogram
+        r.rel_value.push_back(n0n1);                // coplanarity: angle between patch-normals
+        r.rel_value.push_back(ppn0);                // angle between center point line and first patch normal
+        r.rel_value.push_back(ppn1);                // angle between center point line and second patch normal
+        r.rel_value.push_back(segRelations[0]);     // distance to first plane
+        r.rel_value.push_back(segRelations[1]);     // distance to second plane
+        r.rel_value.push_back(segRelations[2]);     // depth value
+        r.rel_value.push_back(segRelations[3]);     // mask value
+        r.rel_value.push_back(segRelations[4]);     // curvature value
         relations.push_back(r);
       }
       else if((p0->GetObjectLabel() != 0 || px->GetObjectLabel() != 0) &&   // => False ground truth
@@ -105,8 +118,11 @@ printf(" PP True : %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeI
         double colorSimilarity = p0->CompareColor(px);
         double n0n1, ppn0, ppn1;
         p0->CalculateCoplanarity2(px, n0n1, ppn0, ppn1);
+        
+        std::vector<double> segRelations;
+        CalculateSegmentRelations(p0, px, segRelations);
 
-printf(" PP False: %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeID(), px->GetNodeID(), proximity, colorSimilarity, n0n1, ppn0, ppn1);
+// printf(" PP False: %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeID(), px->GetNodeID(), proximity, colorSimilarity, n0n1, ppn0, ppn1);
         
 // printf("  => false example!\n");
         Relation r;
@@ -115,11 +131,16 @@ printf(" PP False: %u-%u: %4.3f - %4.3f - %4.3f - %4.3f - %4.3f\n", p0->GetNodeI
         r.type = 1;
         r.id_0 = p0->GetNodeID();
         r.id_1 = px->GetNodeID();
-        r.rel_value.push_back(proximity);
-        r.rel_value.push_back(colorSimilarity);
-        r.rel_value.push_back(n0n1);
-        r.rel_value.push_back(ppn0);
-        r.rel_value.push_back(ppn1);
+        r.rel_value.push_back(proximity);           // proximity of planes (minimum hull distance)
+        r.rel_value.push_back(colorSimilarity);     // color histogram
+        r.rel_value.push_back(n0n1);                // coplanarity: angle between patch-normals
+        r.rel_value.push_back(ppn0);                // angle between center point line and first patch normal
+        r.rel_value.push_back(ppn1);                // angle between center point line and second patch normal
+        r.rel_value.push_back(segRelations[0]);     // distance to first plane
+        r.rel_value.push_back(segRelations[1]);     // distance to second plane
+        r.rel_value.push_back(segRelations[2]);     // depth value
+        r.rel_value.push_back(segRelations[3]);     // mask value
+        r.rel_value.push_back(segRelations[4]);     // curvature value
         relations.push_back(r);
       }
     }
@@ -258,7 +279,6 @@ void CalculateRelations::CalcSVMLineLineRelations()
 void CalculateRelations::CalcTestRelations(std::vector<Relation> &rel)
 {
   firstCall = true;
-  relations.resize(0);
   
 // printf("CalculateRelations::CalcTestRelations: Start\n");
   /// Patch-Patch relations
@@ -272,15 +292,15 @@ void CalculateRelations::CalcTestRelations(std::vector<Relation> &rel)
       
       if(p0->GetNodeID() != -1 && px->GetNodeID() != -1)
       {
-  // printf("  Calculate PP-Relation: %u-%u (%u-%u)\n", p0->GetNodeID(), px->GetNodeID(), p0->GetObjectLabel(), px->GetObjectLabel());
         // calculate relation values
         double proximity = p0->CalculateProximity(px);
         double colorSimilarity = p0->CompareColor(px);
-//         double normal_angle, plane_distance; 
-//         p0->CalculateCoplanarity(px, normal_angle, plane_distance);
         double n0n1, ppn0, ppn1;
         p0->CalculateCoplanarity2(px, n0n1, ppn0, ppn1);        
         
+        std::vector<double> segRelations;
+        CalculateSegmentRelations(p0, px, segRelations);
+
         Relation r;
         if(p0->GetObjectLabel() != 0 && p0->GetObjectLabel() == px->GetObjectLabel())
           r.groundTruth = 1;
@@ -293,11 +313,16 @@ void CalculateRelations::CalcTestRelations(std::vector<Relation> &rel)
         r.type = 1;
         r.id_0 = p0->GetNodeID();
         r.id_1 = px->GetNodeID();
-        r.rel_value.push_back(proximity);
-        r.rel_value.push_back(colorSimilarity);
-        r.rel_value.push_back(n0n1);
-        r.rel_value.push_back(ppn0);
-        r.rel_value.push_back(ppn1);
+        r.rel_value.push_back(proximity);           // proximity of planes (minimum hull distance)
+        r.rel_value.push_back(colorSimilarity);     // color histogram
+        r.rel_value.push_back(n0n1);                // coplanarity: angle between patch-normals
+        r.rel_value.push_back(ppn0);                // angle between center point line and first patch normal
+        r.rel_value.push_back(ppn1);                // angle between center point line and second patch normal
+        r.rel_value.push_back(segRelations[0]);     // distance to first plane
+        r.rel_value.push_back(segRelations[1]);     // distance to second plane
+        r.rel_value.push_back(segRelations[2]);     // depth value
+        r.rel_value.push_back(segRelations[3]);     // mask value
+        r.rel_value.push_back(segRelations[4]);     // curvature value
         r.remove = false;
         relations.push_back(r); 
       }
@@ -465,13 +490,13 @@ void CalculateRelations::PrintResults()
  */
 void CalculateRelations::PrintRelations()
 {
-  printf("Results of relation calculation:\n");
-  printf("  Number of relations: %u\n", relations.size());
-  printf("  Accuracy: %4.3f\n", CheckAccuracy());
-  for(unsigned i=0; i< relations.size(); i++)
+  PrintResults();
+  for(unsigned i=0; i< relations.size(); i++)            /// TODO TODO Überarbeiten!!!
   {
+// printf("Print relations!!!\n");
     if(relations[i].rel_probability.size() >= 1) // check, if we have at least 2 labes (true/false)
     {
+// printf("Print relations 2!!!\n");
       if(relations[i].prediction == relations[i].groundTruth)
         printf("  Rel: %u: %u-%u => gt(%u) - pr(%u) (true) with prob: %4.3f\n", i, relations[i].id_0, relations[i].id_1, 
             relations[i].groundTruth, relations[i].prediction, relations[i].rel_probability[1]);
@@ -660,7 +685,8 @@ if(para != para) printf("CalculateRelations::PLParallelity: Warning: dir: %4.3f-
 }
 
 /**
- * @brief Constrain Relations after prediction
+ * @brief Constrain relations after prediction.
+ * Patch-Line: Only the line with the highest probability is assigned to a patch.
  */
 void CalculateRelations::ConstrainRelations()
 {
@@ -686,13 +712,23 @@ void CalculateRelations::ConstrainRelations()
       relations.erase(it);
 }
 
+/**
+ * @brief Calculates the minimum distance between given image index-points
+ * and given coordinates on the image plane.
+ * @param indexes Vector of image indexes
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @param width image width
+ * @param height image height
+ * @return Returns the minimum distance between the indexes and the given coordinates.
+ */
 double IndexDistance(std::vector<int> indexes,
                      double x, double y,
                      int width, int height)
 {
   double u, v;
   double dx, dy;
-  double distance, min_dist = 640.;
+  double distance, min_dist = 640.;//(double) width;
   for(unsigned i=0; i<indexes.size(); i++)
   {
     u = indexes[i] % width;
@@ -700,64 +736,92 @@ double IndexDistance(std::vector<int> indexes,
     dx = fabs((double) u-x);
     dy = fabs((double) v-y);
     distance = sqrt(dx*dx + dy*dy);
-// printf("   => x,y: %4.1f - %4.1f - u-v: %4.1f - %4.1f - dx,dy: %4.1f - %4.1f - distance: %4.1f\n", x, y, u, v, dx, dy, distance);
     if(distance < min_dist)
       min_dist = distance;
   }
   return min_dist;
 }
 
-void CalculateRelations::CalculateSegmentRelations(Patch3D *p0, Patch3D *p1, double &dist2plane)
+/**
+ * @brief Calculate the relations between patches, caused by segments.
+ * @param p0 First patch
+ * @param p1 Second patch
+ * @param params Parameter vector:
+ *  - distance p0
+ *  - distance p1
+ *  - depth value
+ *  - mask value
+ *  - curvature value
+ * @return Returns true, if there is a relation between these patches.
+ */
+bool CalculateRelations::CalculateSegmentRelations(Patch3D *p0, Patch3D *p1, std::vector<double> &params)
 {
-printf("CalculateRelations::CalculateSegmentRelations: Time to implement!!!\n");
-printf("  patches: %u-%u\n", p0->GetNodeID(), p1->GetNodeID());
+  /** Distance threshold between segments and patches **/
+  static double MIN_DISTANCE_THR = 5.;
+
+  /** Use weighting with edgel distances **/
+  static bool USE_DISTANCE_WEIGHTING = false;
+  
+  /** Use normalisation of results from edgel length and number of edges **/
+  static bool USE_LENGTH_NORMALISATION = true;
+  
   int width = kcore->GetPointCloudWidth();
   int height = kcore->GetPointCloudHeight();
-
+  
+  unsigned nr_edges = 0;
+  unsigned overall_nr_points = 0;
+  double pp_dis_sum_0 = 0;
+  double pp_dis_sum_1 = 0;
+  double pp_depth_sum = 0;
+  double pp_mask_sum = 0;
+  double pp_curv_sum = 0;
+  
+  // First calculate the distances of the patch-hulls to the segment-edgels and store it.
   if(firstCall)
   {
+    min_distances.clear();
     distances.clear();
     unsigned nrPatches = kcore->NumGestalts3D(Gestalt3D::PATCH);
-    for(unsigned i=0; i<nrPatches-1; i++)                                             /// TODO -1 ???
+    for(unsigned i=0; i<nrPatches; i++)
     {
       std::vector<double> min_patch_distances;
       std::vector< std::vector<double> > patch_distances;
       Patch3D *patch = (Patch3D*) kcore->Gestalts3D(Gestalt3D::PATCH, i);
       unsigned nrSegments = kcore->NumGestalts3D(Gestalt3D::SEGMENT);
-      for(unsigned j=0; j<nrSegments-1; j++)
+      for(unsigned j=0; j<nrSegments; j++)
       {
         Segment3D *s = (Segment3D*) kcore->Gestalts3D(Gestalt3D::SEGMENT, j);
 
         std::vector<int> indexes_p, indexes_s;
+        double x, y, dis, min_dist;
+
         patch->GetIndexes(indexes_p);
         s->GetIndexes(indexes_s);
-
-        double x, y, min_dist;
-        x = indexes_s[0] % width;
+        x = indexes_s[0] % width; // get coordinate of segment start point
         y = indexes_s[0] / width;
-        min_dist = IndexDistance(indexes_p, x, y, width, height);
-        double dis = min_dist - indexes_s.size();
-        std::vector<double> dist;
-// printf("min_dist, size, dis: %4.1f - %u - %4.1f\n", min_dist, indexes_s.size(), dis);
-        if(dis < 10.0)
+        min_dist = IndexDistance(indexes_p, x, y, width, height);  // min distance between patch and segment start point
+        dis = min_dist - indexes_s.size();  /// Distance is minimum distance of start_point - length of segment => maybe negative => good idea to constrain calculations?
+        if(dis < MIN_DISTANCE_THR)  // is valid, if startPoint-segmentLength < MIN_DISTANCE_THR
         {        
-          std::vector<double> dist;
+          double abs_min_dist = (double) width;
+          std::vector<double> p_distances;
           for(unsigned k=0; k<indexes_s.size(); k++)
           {
             x = indexes_s[k] % width;
             y = indexes_s[k] / width;
             min_dist = IndexDistance(indexes_p, x, y, width, height);
-            dist.push_back(min_dist);
+            if(min_dist < abs_min_dist)
+              abs_min_dist = min_dist;
+            p_distances.push_back(min_dist);
           }
-// printf(" %u-%u: IndexDistance: %4.3f\n", patch->GetNodeID(), s->GetNodeID(), min_dist);
-          min_patch_distances.push_back(min_dist);
-          patch_distances.push_back(dist);
+          min_patch_distances.push_back(abs_min_dist);
+          patch_distances.push_back(p_distances);
         }
         else
         {
           min_patch_distances.push_back(dis);
-          dist.push_back(dis);
-          patch_distances.push_back(dist);
+          std::vector<double> dist;
+          patch_distances.push_back(dist);      /// Careful: Empty vector!!!
         }
       }
       min_distances.push_back(min_patch_distances);
@@ -765,134 +829,104 @@ printf("  patches: %u-%u\n", p0->GetNodeID(), p1->GetNodeID());
     }
     firstCall = false;
   }
-
-printf("WE are here!\n");
+  
+// printf("middle!\n");
+  
   // find segments next to the two patches
   unsigned nrSegments = kcore->NumGestalts3D(Gestalt3D::SEGMENT);
   for(unsigned i=0; i<nrSegments-1; i++)
   {   
-printf("We are here too!\n");
-    if(min_distances[p0->GetNodeID()][i] < 5.0 && min_distances[p1->GetNodeID()][i] < 5.0)
+    if(min_distances[p0->GetNodeID()][i] < MIN_DISTANCE_THR && min_distances[p1->GetNodeID()][i] < MIN_DISTANCE_THR)
     {
+      nr_edges++;
       Segment3D *s = (Segment3D*) kcore->Gestalts3D(Gestalt3D::SEGMENT, i);
-printf("We have a candidate: patches: %u-%u with %u\n", p0->GetNodeID(), p1->GetNodeID(), s->GetNodeID());
 
-      // now calculate the support for each segment!!!
       int nr_points = 0;
       double dis_sum_0 = 0.;
       double dis_sum_1 = 0.;
       double depth_sum = 0.;
       double mask_sum = 0.;
       double curv_sum = 0.;
+      
       std::vector<int> indexes_s;
       s->GetIndexes(indexes_s);
-printf("Problem???\n");
       for(unsigned j=0; j<indexes_s.size(); j++)
       {
-printf("Problem 2: %u - %u - %u\n", p0->GetNodeID(), i, j);
-        double dis_0 = distances[p0->GetNodeID()][i][j];
-        double dis_1 = distances[p1->GetNodeID()][i][j];
-        if(dis_0 < 5. && dis_1 < 5.)
+        double dis_0 = distances[p0->GetNodeID()][i][j];  // distance of segment edgel to p0
+        double dis_1 = distances[p1->GetNodeID()][i][j];  // distance of segment edgel to p1
+        if(dis_0 < MIN_DISTANCE_THR && dis_1 < MIN_DISTANCE_THR)
         {
-printf("Problem 3???\n");
           nr_points++;
+          overall_nr_points++;
           dis_sum_0 += dis_0;
           dis_sum_1 += dis_1;
-          depth_sum += s->GetEdgeSupportDepth(j);//*dis_0*dis_1;
-          mask_sum += s->GetEdgeSupportMask(j);//*dis_0*dis_1;
-          curv_sum += s->GetEdgeSupportCurvature(j);//*dis_0*dis_1;   
+          if(USE_DISTANCE_WEIGHTING)
+          {
+            dis_0 = (MIN_DISTANCE_THR - dis_0) / MIN_DISTANCE_THR;  // normalization (0-1)
+            dis_1 = (MIN_DISTANCE_THR - dis_1) / MIN_DISTANCE_THR;
+            depth_sum += (s->GetEdgeSupportDepth(j) *dis_0*dis_1);
+            mask_sum += (s->GetEdgeSupportMask(j) *dis_0*dis_1);
+            curv_sum += (s->GetEdgeSupportCurvature(j) *dis_0*dis_1);   
+          }
+          else
+          {
+            depth_sum += s->GetEdgeSupportDepth(j);
+            mask_sum += s->GetEdgeSupportMask(j);
+            curv_sum += s->GetEdgeSupportCurvature(j);   
+          }
         }
       }
-if(nr_points == 0) printf("Warning nr_points == 0!\n");
-      dis_sum_0 /= nr_points;
-      dis_sum_1 /= nr_points;
-      depth_sum /= nr_points;
-      mask_sum /= nr_points;
-      curv_sum /= nr_points;
-      
-printf("  pts: %u => dis_sum_0: %4.3f - dis_sum_0: %4.3f\n", nr_points, dis_sum_0, dis_sum_1);
-printf("  dep: %4.3f - mask: %4.3f - curv: %4.3f\n", depth_sum, mask_sum, curv_sum);
+      if(nr_points != 0)
+      {
+        if(USE_LENGTH_NORMALISATION)
+        {
+          dis_sum_0 /= nr_points;                 /// TODO Sollte man das Normieren????
+          dis_sum_1 /= nr_points;                 /// Wenn ein edgel zwei Flächen gut teilt, dann ist doch egal, wo die anderen edgels sind, oder?
+          depth_sum /= nr_points;                 /// 1. Zum Beispiel eine Linie, die dann in eine Schattenlinie übergeht würde schlechtere Werte liefern als
+          mask_sum /= nr_points;                  ///    eine Linie die nur direkt an der Kante ist, obwohl sie das gleiche aussagen. => Eigentlich werden weit entfernte pixel nicht gezählt (DIST_THR0)
+          curv_sum /= nr_points;                  /// 2. Eine längere Linie zwischen 2 Flächen hat mehr aussagekraft als nur 2 Pixel
+        }
+        
+        pp_dis_sum_0 += dis_sum_0;
+        pp_dis_sum_1 += dis_sum_1;
+        pp_depth_sum += depth_sum;
+        pp_mask_sum += mask_sum;
+        pp_curv_sum += curv_sum;
+      }
     }
   }
-      
-// if(s->GetNodeID() == 94)
-// {
-//   printf("  %u-%u: x,y: %u-%u - u,v: %u-%u  => dist: %4.3f\n", p0->GetNodeID(), s->GetNodeID(), x, y, u, v, min_dist);
-//   cv::Mat_<cv::Vec3b> patch_edges = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
-//   pclA::ConvertIndexes2Mask(indexes_s, patch_edges);
-//   cv::imshow("Relation-Patch", patch_edges);
-// }
+
+// printf("near end!\n");
+
+  if(nr_edges != 0)
+  {  
+    if(USE_LENGTH_NORMALISATION)
+    {
+      pp_dis_sum_0 /= nr_edges;
+      pp_dis_sum_1 /= nr_edges;
+      pp_depth_sum /= nr_edges;
+      pp_mask_sum /= nr_edges;
+      pp_curv_sum /= nr_edges;
+    }
+  printf("Solution: %u-%u (%u pts) (dis: %4.3f/%4.3f) => dep: %4.3f - mask: %4.3f - curv: %4.3f\n", p0->GetNodeID(), p1->GetNodeID(), overall_nr_points, 
+        pp_dis_sum_0, pp_dis_sum_1, pp_depth_sum, pp_mask_sum, pp_curv_sum);
     
-
-
-
-
-
-
-
-//   unsigned nrSegments = kcore->NumGestalts3D(Gestalt3D::SEGMENT);
-//   for(unsigned i=0; i<nrSegments; i++)
-//   {
-//     Segment3D *s = (Segment3D*) kcore->Gestalts3D(Gestalt3D::SEGMENT, i);
-//     
-//     // arbitrary threshold for "near" (10cm)
-//     double DELTA = 0.03;
-//     double PLANE_DIST = 0.005;
-//     
-//     double r0 = p0->GetRadius();
-//     double r1 = p1->GetRadius();
-//     double distance_start_0 = cv::norm(p0->GetCenter3D() - s->GetStartPoint());
-//     double distance_start_1 = cv::norm(p1->GetCenter3D() - s->GetStartPoint());
-//     double distance_end_0 = cv::norm(p0->GetCenter3D() - s->GetEndPoint());
-//     double distance_end_1 = cv::norm(p1->GetCenter3D() - s->GetEndPoint());
-//     
-//     // Calculate distance of start-/end-point to center3D of plane
-//     if((distance_start_0 < r0 + DELTA && distance_start_1 < r1 + DELTA) || 
-//        (distance_end_0 < r0 + DELTA || distance_end_1 < r1 + DELTA))
-//     {
-//       double distance_sum_0 = 0.;
-//       double distance_sum_1 = 0.;
-//       int positive_points = 0.;
-//       double depth_value = 0.;         /// TODO Calculate this values
-//       double mask_value = 0.;
-//       double curvature_value = 0.;
-// 
-//       // Get now each piece of segment and calculate distance to both planes
-//       std::vector<cv::Vec4f> segment_points;
-//       s->GetPoints(segment_points);
-//       for(unsigned i=0; i< segment_points.size(); i++)
-//       {
-//         double dist_0 = p0->CalculatePointDistance(segment_points[i][0], segment_points[i][1], segment_points[i][2]);
-//         double dist_1 = p1->CalculatePointDistance(segment_points[i][0], segment_points[i][1], segment_points[i][2]);
-//         
-//         if(dist_0 < PLANE_DIST || dist_1 < PLANE_DIST)
-//         {
-//           positive_points++;
-//           distance_sum_0 += dist_0;
-//           distance_sum_1 += dist_1;
-//           depth_value += s->GetEdgeSupportDepth(i);
-//           mask_value += s->GetEdgeSupportMask(i);
-//           curvature_value += s->GetEdgeSupportCurvature(i);
-//           
-// //         printf("   dist: %4.3f - %4.3f\n", dist_0, dist_1);
-//         }
-//       }
-//       distance_sum_0 /= positive_points;
-//       distance_sum_1 /= positive_points;
-// 
-//       if(positive_points > 0)
-//       {
-//         printf(" CalculateRelations: patch: %u-%u with segment %u\n", p0->GetNodeID(), p1->GetNodeID(), s->GetNodeID());
-//         printf("  => %u pixels of %u points!\n", positive_points, segment_points.size());
-//         printf("  => distance_sum: %4.3f - %4.3f\n", distance_sum_0, distance_sum_1);
-//         printf("  => %4.3f depth support\n", depth_value);
-//         printf("  => %4.3f mask support\n", mask_value);
-//         printf("  => %4.3f curvature support\n", curvature_value);
-//       }
-//     }
-//   }
-  
-
+    params.push_back(pp_dis_sum_0);
+    params.push_back(pp_dis_sum_1);
+    params.push_back(pp_depth_sum);
+    params.push_back(pp_mask_sum);
+    params.push_back(pp_curv_sum);
+    return true;
+  }
+  else
+  {
+    params.push_back(MIN_DISTANCE_THR);
+    params.push_back(MIN_DISTANCE_THR);
+    params.push_back(0.);
+    params.push_back(0.);
+    params.push_back(0.);
+    return false;
+  }
 }
 
 
