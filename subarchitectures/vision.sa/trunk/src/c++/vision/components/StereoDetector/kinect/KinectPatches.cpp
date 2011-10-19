@@ -42,15 +42,20 @@ void KinectPatches::ClearResults()
  */
 void KinectPatches::Process()
 {
-printf("KinectPatches::Process: Antiquated: Use KinectModels instead.\n");
+printf("KinectPatches::Process: Antiquated: Use KinectPclModels instead.\n");
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;
   pclA::ConvertCvMat2PCLCloud(kcore->GetPointCloud(), pcl_cloud);
 
   // preprocess point cloud
-  bool useVoxelGrid = false;
+  bool useVoxelGrid = false;                // still possible to use it???
   double vg_size = 0.005;                  // 0.005 - 0.01
   std::vector<int> pcl_model_cloud_indexes; // TODO be careful => not initialized!
-  pclA::PreProcessPointCloud(pcl_cloud, pcl_model_cloud_indexes, useVoxelGrid, vg_size);
+  bool useZFilter = false;                // still possible to use it???
+  double minZ = 0.3;
+  double maxZ = 1.3;
+  pclA::PreProcessPointCloud(pcl_cloud, pcl_model_cloud_indexes, 
+                             useVoxelGrid, vg_size,
+                             useZFilter, minZ, maxZ);
 
 //   bool sac_optimal_distance = true;
 //   double sac_optimal_weight_factor = 1.5; // with/out voxelgrid: 1.5 / 3

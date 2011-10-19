@@ -46,14 +46,15 @@ private:
   void CalcSVMPatchLineRelations();       ///< Calculate relations between patches and lines
   void CalcSVMLineLineRelations();        ///< Calculate relations between lines
   bool firstCall;                         ///< True for first call
-  
-  /// Distances of each edgel to the patches (patch/segement/edgel)
+
+  /// Minimum distances for each patch to each segment (patch/segment)
   std::vector< std::vector<double> > min_distances;
+  /// Distances of each edgel to the patches (patch/segement/edgel)
   std::vector< std::vector< std::vector<double> > > distances;
   
-  void CalculateSegmentRelations(Patch3D *p0,             ///< Calculate relations between patches, caused by segments
+  bool CalculateSegmentRelations(Patch3D *p0,             ///< Calculate relations between patches, caused by segments
                                  Patch3D *p1,
-                                 double &dist2plane);
+                                 std::vector<double> &params);
   
   bool PLLineInPlaneROI(Patch3D *p, Line3D *l);
   double PLProximity(Patch3D *p, Line3D *l);
@@ -66,6 +67,7 @@ public:
   CalculateRelations();
   ~CalculateRelations() {}
   
+  void Reset();
   void Initialize(KinectCore *k, double fx, double fy, double cx, double cy);
   
   void CalcSVMRelations(std::vector<Relation> &rel);    ///< Relations for SVM learning

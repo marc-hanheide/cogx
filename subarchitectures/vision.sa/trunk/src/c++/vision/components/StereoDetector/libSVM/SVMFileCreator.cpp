@@ -38,15 +38,18 @@ SVMFileCreator::~SVMFileCreator()
  */
 void SVMFileCreator::Process(KinectCore *kc)
 {
+printf("SVMFileCreator::Process: start!\n");
   kcore = kc;
   kcore->GetCameraParameters(cam_fx, cam_fy, cam_cx, cam_cy);
   
   std::vector<Relation> relation_vector;
-  relations->Initialize(kc, cam_fx, cam_fy, cam_cx, cam_cy);
+  relations->Initialize(kc, cam_fx, cam_fy, cam_cx, cam_cy);                  /// TODO Move to constructor???
   relations->CalcSVMRelations(relation_vector);
+  relations->PrintRelations();
   
   // add relations to file!
   WriteResults2File(relation_vector);
+printf("SVMFileCreator::Process: end!\n");
 }
 
 /** 

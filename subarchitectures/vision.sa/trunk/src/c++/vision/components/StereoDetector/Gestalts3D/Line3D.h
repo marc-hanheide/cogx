@@ -14,6 +14,7 @@
 #include "StereoCore.h"
 
 #include "../../../VisionUtils.h"
+#include "v4r/TomGine/tgTomGineThread.h"
 
 namespace Z
 {

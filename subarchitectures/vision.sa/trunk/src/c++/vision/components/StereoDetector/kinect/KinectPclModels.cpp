@@ -54,7 +54,11 @@ void KinectPclModels::Process()
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
   pclA::CopyPointCloud(kcore->GetPclCloud(), pcl_cloud);
 
-  model_fitter = new pclA::ModelFitter();
+  double minZ = 0.3;
+  double maxZ = 1.5;
+  pclA::ModelFitter::Parameter param(false, 0.005, true, minZ, maxZ);
+                
+  model_fitter = new pclA::ModelFitter(param);
   model_fitter->AddModelType(pcl::SACMODEL_PLANE);
 //   model_fitter->AddModelType(pcl::SACMODEL_CYLINDER);
 //   model_fitter->AddModelType(pcl::SACMODEL_SPHERE);
@@ -62,14 +66,14 @@ void KinectPclModels::Process()
   model_fitter->SetNormals(no);
     
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-// printf("  ### KinectPclModels: Runtime for pre-processing: %4.3f\n", timespec_diff(&current, &last));
+// printf("  KinectPclModels: Runtime for pre-processing: %4.3f\n", timespec_diff(&current, &last));
 // last = current;
 
 //   model_fitter->Process(pcl_cloud);
   model_fitter->ProcessWithoutDP(pcl_cloud);
   
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-// printf("  ### KinectPclModels: Runtime for processing: %4.3f\n", timespec_diff(&current, &last));
+// printf("  KinectPclModels: Runtime for processing: %4.3f\n", timespec_diff(&current, &last));
 // last = current;
 
   std::vector<int> pcl_model_types;
@@ -79,7 +83,7 @@ void KinectPclModels::Process()
   model_fitter->GetResults(pcl_model_types, pcl_model_clouds, pcl_model_cloud_indexes, model_coefficients);
 
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-// printf("  ### KinectPclModels: Runtime for post-processing: %4.3f\n", timespec_diff(&current, &last));
+// printf("  KinectPclModels: Runtime for post-processing: %4.3f\n", timespec_diff(&current, &last));
 // last = current;
 
   /// ++++++++++++++++++++++++++++++++++++++++ postprocessing ++++++++++++++++++++++++++++++++++++++++ ///

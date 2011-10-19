@@ -36,7 +36,7 @@ if(dir.x == 0 && dir.y == 0 && dir.z == 0){
   dir.y = dir.y/norm;
   dir.z = dir.z/norm;
 if(dir.x != dir.x){
-  printf("        norm: %4.3f\n");
+  printf("        norm: %4.3f\n", norm);
   printf("        dir: %4.3f-%4.3f-%4.3f\n", dir.x, dir.y, dir.z);
 }
 

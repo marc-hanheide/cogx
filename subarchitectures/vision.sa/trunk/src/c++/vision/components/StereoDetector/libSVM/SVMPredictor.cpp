@@ -31,7 +31,7 @@ printf("SVMPredictor::SVMPredictor: constructor.\n");
 printf("SVMPredictor::SVMPredictor: constructor 2.\n");
 
   // Load svm models
-  if((pp_model = svm_load_model("./instantiations/11-05-11/PP-Trainingsset.txt.model")) == 0)
+  if((pp_model = svm_load_model("./instantiations/11-05-11/1018/PP-Trainingsset.txt.model")) == 0)
   {
     printf("SVMPredictor::SVMPredictor: Error: Can't open patch-patch model file.\n");
     exit(1);

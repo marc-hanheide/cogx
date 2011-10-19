@@ -41,7 +41,7 @@ GraphCut::~GraphCut()
  */
 bool GraphCut::Initialize()
 {
-  graph = new Graph(relations);                     /// TODO kcore und learner sollten nicht mehr notwendig sein!!!
+  graph = new Graph(relations);
 
   std::vector<E::Edge> e;
   graph->BuildFromSVM(e, num_edges);
@@ -109,9 +109,6 @@ if(debug) printf("THRESHOLD: %4.3f\n", threshold[0]);
 
 // printf("GraphCut::Cut: start 2: num_sets: %u\n", u->num_sets());
 
-/// PRINT all edges:
-
-  
   
   /// for each edge, in non-decreasing weight order...
   for (unsigned i = 0; i < num_edges; i++) 
@@ -122,7 +119,7 @@ u->printAll();
 for (unsigned i = 0; i < num_edges; i++) 
 {
   E::Edge *pedge = &edges[i];
-  printf("all edges: %u: %u-%u with thrd: %4.3f => universe: %u-%u\n", i, pedge->a, pedge->b, threshold[i], u->find(pedge->a), u->find(pedge->b));
+  printf("  all edges: %u: %u-%u with thrd: %4.3f => universe: %u-%u\n", i, pedge->a, pedge->b, threshold[i], u->find(pedge->a), u->find(pedge->b));
 }
 }
     
@@ -142,7 +139,7 @@ if(debug)printf("weight: %4.3f and thds: %4.3f-%4.3f\n", pedge->w, threshold[a],
       {
         u->join(a, b);
         a = u->find(a);
-if(debug)printf("  => join: threshold[%u] = %4.3f => ", a, threshold[a]);
+if(debug)printf("  => join: threshold[%u] = w(%4.3f) + %4.3f => ", a, pedge->w, threshold[a]);
         threshold[a] = pedge->w + THRESHOLD(u->size(a), THRESHOLD_CONSTANT);
 if(debug)printf("%4.3f (size: %u)\n", threshold[a], u->size(a));
       }
