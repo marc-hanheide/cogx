@@ -1,4 +1,4 @@
-package eu.cogx.beliefs.interfaces;
+package eu.cogx.beliefs.experimental.interfaces;
 
 public interface FunctionOutcome<T extends FunctionValue> extends BeliefStructure,
 		Iterable<T> {
