@@ -195,8 +195,6 @@ void ObjectRelationTester::runComponent()
     krispies->pose.pos.z = table1->pose.pos.z + 0.5 + 0.26 + 0.145;
     m_testObjects.push_back(krispies);
     addProxy(krispies, "krispies");
-
-
 //
 //    bp.add(m_relationTester, "krispies", peekabot::REPLACE_ON_CONFLICT);
 //    bp.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z+0.5 + 0.26+0.145);
@@ -214,6 +212,19 @@ void ObjectRelationTester::runComponent()
     joystick->pose.pos.z = table1->pose.pos.z + 0.5 + 0.13;
     m_testObjects.push_back(joystick);
     addProxy(joystick, "joystick");
+
+    spatial::HollowBoxObject *redbox = new spatial::HollowBoxObject;
+    redbox-> type = spatial::OBJECT_HOLLOW_BOX;
+    redbox->radius1 = 0.27;
+    redbox->radius2 = 0.165;
+    redbox->radius3 = 0.135;
+    redbox->thickness = 0.051;
+    redbox->sideOpen = 5;
+    redbox->pose.pos.x = table1->pose.pos.x;
+    redbox->pose.pos.y = table1->pose.pos.y - 0.3;
+    redbox->pose.pos.z = table1->pose.pos.z + 0.5+0.135;
+    m_testObjects.push_back(redbox);
+    addProxy(redbox, "redbox");
 
 //    bp2.add(m_relationTester, "joystick", peekabot::REPLACE_ON_CONFLICT);
 //    bp2.translate(table1.pose.pos.x, table1.pose.pos.y, table1.pose.pos.z+0.5 + 0.13);
@@ -264,6 +275,19 @@ void ObjectRelationTester::runComponent()
       spm2.translate(2.0, 3.0, 1.0);
       spm2.set_opacity(0.3);
     }
+  }
+
+  peekabot::PointCloudProxy pcloud;
+  vector<Vector3> points;
+  int nPoints = 0;
+  int maxPoints = 2500;
+  if (m_bSampleOnness) {
+    pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+    points.reserve(maxPoints);
+  }
+  else if (m_bSampleInness) {
+    pcloud.add(m_relationTester,"inpoints", peekabot::REPLACE_ON_CONFLICT);
+    points.reserve(maxPoints);
   }
 
   while (isRunning()) {
@@ -386,113 +410,29 @@ void ObjectRelationTester::runComponent()
 	}
 
 	if (m_bSampleOnness) {
-	  static bool sampleTable = false;
+	  if (m_testObjects.size() > 2) {
+	    if (nPoints < maxPoints) {
+	      vector<spatial::Object*> testObjects;
+	      vector<Vector3> points;
+	      peekabot::VertexSet vs;
+	      points.reserve(500);
+	      testObjects.push_back(m_testObjects[1]);
 
+	      sampleRecursively(testObjects, 0, 100, 500, points, m_testObjects[0]);
+	      log("Found %i points", points.size());
 
-	  //	      Cure::LocalGridMap<double> pdf(50, 0.05, 0.0, 
-	  //		  Cure::LocalGridMap<double>::MAP1, 0, 0);
-	  vector<spatial::Object *>objects;
-	  vector<string> objectLabels;
-	  vector<spatial::SpatialRelationType> relations;
-
-	  if (sampleTable) {
-	    objects.push_back(m_testObjects[2]);
-	    objectLabels.push_back("box2");
-	    //		objects.push_back(m_testObjects[1]);
-	    //		objectLabels.push_back("box1");
-	    //		relations.push_back(RELATION_ON);
-	    objects.push_back(m_testObjects[0]);
-	    objectLabels.push_back("table1");
-	    relations.push_back(RELATION_ON);
+	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+		  it++) {
+		//  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+		//    if (nPoints > 500) 
+		vs.add(it->x, it->y, it->z);
+		//points.push_back(box1.pose.pos);
+		nPoints++;
+	      }
+	      pcloud.add_vertices(vs);
+	    }
 	  }
-	  else {
-	    objects.push_back(m_testObjects[1]);
-	    objectLabels.push_back("box1");
-	    //		objects.push_back(m_testObjects[2]);
-	    //		objectLabels.push_back("box2");
-	    //		relations.push_back(RELATION_ON);
-	    objects.push_back(m_testObjects[0]);
-	    objectLabels.push_back("table1");
-	    relations.push_back(RELATION_ON);
-	  }
-
-	  //	    objects.push_back(m_testObjects[2]);
-	  //	    objectLabels.push_back("box2");
-	  //	    relations.push_back(RELATION_ON);
-
-	  //	      SampleCloud testCloud;
-	  //	      m_sampler.
-	  //		sampleBinaryRelationSystematically(relations, objects, 
-	  //		    objectLabels, pdfMap.getCellSize(),
-	  //		    testCloud);
-
-	  //  log("Writing into 2D grid");
-	  //	      testCloud.KernelDensityEstimation2D(pdf, 
-	  //		  objects.back()->pose.pos, m_sampler.getKernelWidthFactor(), 
-	  //		  total, 1.0);
-
-	  //	      testCloud.compact();
-	  //	      Vector3 center;
-	  //	      double interval;
-	  //	      int xExt, yExt, zExt;
-	  //	      vector<double> weights;
-	  //	      testCloud.makePointCloud(center, interval, xExt, yExt, zExt, weights);
-	  //
-	  //	      center += objects.back()->pose.pos;
-	  //	      vector<Vector3>centers;
-	  //	      centers.push_back(center);
-	  //
-	  //	      m_sampler.kernelDensityEstimation3D(pdfMap,
-	  //		  centers, interval, xExt, yExt, zExt, weights, 1.0, 1.0);
-	  //
-	  //	      sampleTable = !sampleTable;
-	  //	      
-	  //	      //visualPB.DisplayMap(pdfMap);
-	  //	      visualPB->AddPDF(pdfMap);
-
-	  //	      peekabot::LineCloudProxy linecloudp;
-	  //
-	  //	      linecloudp.add(m_PeekabotClient, "root.distribution",
-	  //		  peekabot::REPLACE_ON_CONFLICT);
-	  //	      linecloudp.clear_vertices();
-	  //	      linecloudp.set_color(0.5, 0, 0.5);
-	  //
-	  //	      double maxPDFValue = 0.0;
-	  //	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-	  //		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-	  //		  if (pdf(x,y) > maxPDFValue) {
-	  //		    maxPDFValue = pdf(x,y);
-	  //		  }
-	  //		}
-	  //	      }
-	  //
-	  //	      for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
-	  //		for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-	  //		  if (pdf(x, y) == 0)
-	  //		    continue;
-	  //		  double xW2, yW2;
-	  //		  double xW3, yW3;
-	  //		  pdf.index2WorldCoords(x, y, xW2, yW2);
-	  //		  pdf.index2WorldCoords(x+1, y, xW3, yW3);
-	  //		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-	  //		      xW3, yW3, pdf(x+1, y)/maxPDFValue);
-	  //		}
-	  //	      }
-	  //	      for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-	  //		for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
-	  //		  if (pdf(x, y) == 0)
-	  //		    continue;
-	  //		  double xW2, yW2;
-	  //		  double xW3, yW3;
-	  //		  pdf.index2WorldCoords(x, y, xW2, yW2);
-	  //		  pdf.index2WorldCoords(x, y+1, xW3, yW3);
-	  //		  linecloudp.add_line(xW2, yW2, pdf(x, y)/maxPDFValue,
-	  //		      xW3, yW3, pdf(x, y+1)/maxPDFValue);
-	  //		}
-	  //	      }
-	  //
 	}
-
       } // if (m_bTestOnness)
 
       if (m_bTestInness) {
@@ -597,31 +537,31 @@ ObjectRelationTester::addProxy(const spatial::Object* obj, const string &label)
     if (hbo->sideOpen != 2) {
       peekabot::CubeProxy cube2;
       cube2.add(group, "Side2", peekabot::REPLACE_ON_CONFLICT);
-      cube2.translate(-hbo->radius1-hbo->thickness/2, 0, 0);
-      cube2.set_scale(hbo->thickness/2, 2*hbo->radius2, 2*hbo->radius3);
+      cube2.translate(-hbo->radius1+hbo->thickness/2, 0, 0);
+      cube2.set_scale(hbo->thickness, 2*hbo->radius2, 2*hbo->radius3);
     }
     if (hbo->sideOpen != 3) {
       peekabot::CubeProxy cube3;
       cube3.add(group, "Side3", peekabot::REPLACE_ON_CONFLICT);
-      cube3.translate(0, hbo->radius1-hbo->thickness/2, 0);
+      cube3.translate(0, hbo->radius2-hbo->thickness/2, 0);
       cube3.set_scale(2*hbo->radius1, hbo->thickness,  2*hbo->radius3);
     }
     if (hbo->sideOpen != 4) {
       peekabot::CubeProxy cube4;
       cube4.add(group, "Side4", peekabot::REPLACE_ON_CONFLICT);
-      cube4.translate(0, -hbo->radius1-hbo->thickness/2, 0);
+      cube4.translate(0, -hbo->radius2+hbo->thickness/2, 0);
       cube4.set_scale(2*hbo->radius1, hbo->thickness,  2*hbo->radius3);
     }
     if (hbo->sideOpen != 5) {
       peekabot::CubeProxy cube5;
       cube5.add(group, "Side5", peekabot::REPLACE_ON_CONFLICT);
-      cube5.translate(0, 0, hbo->radius1-hbo->thickness/2);
+      cube5.translate(0, 0, hbo->radius3-hbo->thickness/2);
       cube5.set_scale(2*hbo->radius1, 2*hbo->radius2, hbo->thickness);
     }
     if (hbo->sideOpen != 6) {
       peekabot::CubeProxy cube6;
       cube6.add(group, "Side6", peekabot::REPLACE_ON_CONFLICT);
-      cube6.translate(0, 0, -hbo->radius1-hbo->thickness/2);
+      cube6.translate(0, 0, -hbo->radius3+hbo->thickness/2);
       cube6.set_scale(2*hbo->radius1, 2*hbo->radius2, hbo->thickness);
     }
   }
@@ -682,4 +622,115 @@ ObjectRelationTester::connectPeekabot()
         e.what());
     return;
   }
+}
+
+void
+ObjectRelationTester::sampleOnnessForObject(const spatial::Object *objectS, 
+    spatial::Object *objectO) 
+{
+//  ASSERT_TYPE(objectS);
+//  ASSERT_TYPE(objectO);
+
+  Pose3 oldPose = objectO->pose;
+  vector<Vector3> points;
+
+  BoxObject *supportBox = (BoxObject *)objectS;
+
+  double frameRadius = supportBox->radius1 > supportBox->radius2 ?
+    supportBox->radius1 : supportBox->radius2;
+  frameRadius = frameRadius > supportBox->radius3 ? 
+    frameRadius : supportBox->radius3;
+  m_evaluator.sampleOnnessDistribution(objectS, objectO, points, 
+      objectS->pose.pos.x - frameRadius, objectS->pose.pos.x + frameRadius,
+      objectS->pose.pos.y - frameRadius, objectS->pose.pos.y + frameRadius,
+      objectS->pose.pos.z - frameRadius, objectS->pose.pos.z + frameRadius*4,
+      0.04, 0.02);
+
+  objectO->pose = oldPose;
+
+  peekabot::PointCloudProxy pcloud;
+  peekabot::VertexSet cloudPoints;
+  pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+
+  for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+      it++) {
+    cloudPoints.add(it->x,it->y,it->z);
+  }
+  pcloud.add_vertices(cloudPoints);
+}
+
+void
+ObjectRelationTester::sampleRecursively(const vector<spatial::Object*> &objects, 
+    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
+    vector<Vector3> &outPoints, spatial::Object *supportObject
+//    , const vector<Vector3> &triangle
+    )
+{
+  if (supportObject->pose.pos.x == -FLT_MAX) {
+    log("Error! Support object pose uninitialized!");
+    return;
+  }
+  spatial::Object *onObject = objects[currentLevel];
+
+  Pose3 oldPose = onObject->pose;
+
+  double frameRadius;
+  if (supportObject->type == spatial::OBJECT_PLANE) {
+    spatial::PlaneObject &table1 = (spatial::PlaneObject &)(*supportObject);
+    if (table1.shape == spatial::PLANE_OBJECT_RECTANGLE) {
+      frameRadius = table1.radius1 > table1.radius2 ?
+	table1.radius1 : table1.radius2;
+    }
+    else {
+      log ("Unsupported object type!");
+      return;
+    }
+  }
+  else if (supportObject->type == spatial::OBJECT_BOX) {
+    spatial::BoxObject &box1 = (spatial::BoxObject &)(*supportObject);
+    frameRadius = box1.radius1 > box1.radius2 ?
+		box1.radius1 : box1.radius2;
+	      frameRadius = frameRadius > box1.radius3 ? 
+		frameRadius : box1.radius3;
+  }
+  else {
+    log("Unsupported object type!");
+  }
+
+  double maxLateral = -frameRadius*1.5;
+  double minVertical = -frameRadius*1.5;
+  double maxVertical = frameRadius*3;
+
+  unsigned int pointsFound = 0;
+  unsigned int iterations = 0;
+  while (pointsFound < nSamplesPerStep && outPoints.size() < nMaxSamples &&
+      iterations < 10000) {
+    iterations++;
+    onObject->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+    onObject->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+
+//    if (triangle.size() > 0 && currentLevel == 0 &&
+//	!isInTriangle(onObject->pose.pos.x, onObject->pose.pos.y, triangle))
+//	continue;
+
+    onObject->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+
+    randomizeOrientation(onObject->pose);
+    if (m_evaluator.evaluateOnness(supportObject, onObject) > 0.5) {
+      pointsFound++;
+      if (currentLevel == 0) {
+	// This is the trajector itself
+	outPoints.push_back(onObject->pose.pos);
+      }
+      else {
+	// Sample and recurse
+	sampleRecursively(objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
+	    outPoints, onObject);
+      }
+    }
+//    if (iterations % 100 == 0) {
+//      log("iterations: %i, points: %i", iterations, pointsFound);
+//    }
+  }
+  onObject->pose = oldPose;
 }
