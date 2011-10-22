@@ -118,11 +118,8 @@ void ObjectRelationTester::start()
       sleep(m_RetryDelay);
     }
 
-    if (m_bTestOnness) {
-      m_relationTester.add(m_PeekabotClient, "on-ness_tester", peekabot::REPLACE_ON_CONFLICT);
-    }
-    else if (m_bTestInness) {
-      m_relationTester.add(m_PeekabotClient, "in-ness_tester", peekabot::REPLACE_ON_CONFLICT);
+    if (m_bTestOnness || m_bTestInness) {
+      m_relationTester.add(m_PeekabotClient, "relation_tester", peekabot::REPLACE_ON_CONFLICT);
     }
 //    else if (m_bTestInference) {
 //      m_relationTester.add(m_PeekabotClient, "inference_tester", peekabot::REPLACE_ON_CONFLICT);
@@ -165,6 +162,7 @@ void ObjectRelationTester::runComponent()
     table1->radius1 = 0.5;
     table1->radius2 = 0.5;
     table1->radius3 = 0.5;
+    setIdentity(table1->pose);
     table1->pose.pos = vector3(0,0,0);
 
     addProxy(table1, "table");
@@ -190,6 +188,7 @@ void ObjectRelationTester::runComponent()
     krispies->radius1 = 0.095;
     krispies->radius2 = 0.045;
     krispies->radius3 = 0.145;
+    setIdentity(krispies->pose);
     krispies->pose.pos.x = table1->pose.pos.x;
     krispies->pose.pos.y = table1->pose.pos.y;
     krispies->pose.pos.z = table1->pose.pos.z + 0.5 + 0.26 + 0.145;
@@ -207,6 +206,7 @@ void ObjectRelationTester::runComponent()
     joystick->radius1 = 0.115;
     joystick->radius2 = 0.105;
     joystick->radius3 = 0.130;
+    setIdentity(joystick->pose);
     joystick->pose.pos.x = table1->pose.pos.x;
     joystick->pose.pos.y = table1->pose.pos.y;
     joystick->pose.pos.z = table1->pose.pos.z + 0.5 + 0.13;
@@ -220,9 +220,11 @@ void ObjectRelationTester::runComponent()
     redbox->radius3 = 0.135;
     redbox->thickness = 0.051;
     redbox->sideOpen = 5;
-    redbox->pose.pos.x = table1->pose.pos.x;
-    redbox->pose.pos.y = table1->pose.pos.y - 0.3;
+    setIdentity(redbox->pose);
+    redbox->pose.pos.x = table1->pose.pos.x + 0.3;
+    redbox->pose.pos.y = table1->pose.pos.y;
     redbox->pose.pos.z = table1->pose.pos.z + 0.5+0.135;
+    fromAngleAxis(redbox->pose.rot, -0.5*M_PI, vector3(0.0, 0.0, 1.0));
     m_testObjects.push_back(redbox);
     addProxy(redbox, "redbox");
 
@@ -417,8 +419,16 @@ void ObjectRelationTester::runComponent()
 	      peekabot::VertexSet vs;
 	      points.reserve(500);
 	      testObjects.push_back(m_testObjects[1]);
+	      vector<spatial::SpatialRelationType> types;
+	      types.push_back(spatial::RELATION_ON);
 
-	      sampleRecursively(testObjects, 0, 100, 500, points, m_testObjects[0]);
+	      sampleRecursively(types, 
+		  testObjects, 
+		  0, 
+		  100, 
+		  500, 
+		  points, 
+		  m_testObjects[0]);
 	      log("Found %i points", points.size());
 
 	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
@@ -440,65 +450,34 @@ void ObjectRelationTester::runComponent()
 	sp2.set_scale(m_evaluator.evaluateInness(m_testObjects[2], m_testObjects[1]));
 
 	if (m_bSampleInness) {
-	  Cure::LocalGridMap<double> pdf(25, 0.05, 0.0, 
-	      Cure::LocalGridMap<double>::MAP1, 0, 0);
-	  vector<spatial::Object *>objects;
-	  vector<string>objectLabels;
-	  objects.push_back(m_testObjects[1]);
-	  objectLabels.push_back("box1");
-	  objects.push_back(m_testObjects[2]);
-	  objectLabels.push_back("box2");
-	  //	    objects.push_back(m_testObjects[2]);
-	  vector<spatial::SpatialRelationType> relations;
-	  relations.push_back(RELATION_IN);
-	  //	    relations.push_back(RELATION_IN);
+	  if (m_testObjects.size() > 3) {
+	    if (nPoints < maxPoints) {
+	      vector<spatial::Object*> testObjects;
+	      vector<Vector3> points;
+	      peekabot::VertexSet vs;
+	      points.reserve(500);
+	      testObjects.push_back(m_testObjects[1]);
+	      vector<spatial::SpatialRelationType> types;
+	      types.push_back(spatial::RELATION_IN);
 
-	  double total;
-	  m_sampler.
-	    sampleBinaryRelationRecursively(relations, objects, objects.size()-2, pdf,
-		total);
-	  peekabot::LineCloudProxy linecloudp;
+	      sampleRecursively(types,
+		  testObjects,
+		  0,
+		  100,
+		  500,
+		  points,
+		  m_testObjects[3]);
+	      log("Found %i points", points.size());
 
-	  linecloudp.add(m_PeekabotClient, "Scene.distribution",
-	      peekabot::REPLACE_ON_CONFLICT);
-	  linecloudp.clear_vertices();
-	  linecloudp.set_color(0.5, 0, 0.5);
-
-	  double maxPDFValue = 0.0;
-	  for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-	    for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-	      if (pdf(x,y) > maxPDFValue) {
-		maxPDFValue = pdf(x,y);
+	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
+		  it++) {
+		//  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+		//    if (nPoints > 500) 
+		vs.add(it->x, it->y, it->z);
+		//points.push_back(box1.pose.pos);
+		nPoints++;
 	      }
-	    }
-	  }
-
-	  for (int x = -pdf.getSize(); x < pdf.getSize(); x++) {
-	    for (int y = -pdf.getSize(); y <= pdf.getSize(); y++) {
-	      if (pdf(x, y) == 0)
-		continue;
-	      double xW2, yW2;
-	      double xW3, yW3;
-	      pdf.index2WorldCoords(x, y, xW2, yW2);
-	      pdf.index2WorldCoords(x+1, y, xW3, yW3);
-	      peekabot::VertexSet pdfs;
-	      pdfs.add(xW2, yW2, pdf(x, y)/maxPDFValue);
-	      pdfs.add(xW3, yW3, pdf(x+1, y)/maxPDFValue);
-	      linecloudp.add_vertices(pdfs);
-	    }
-	  }
-	  for (int x = -pdf.getSize(); x <= pdf.getSize(); x++) {
-	    for (int y = -pdf.getSize(); y < pdf.getSize(); y++) {
-	      if (pdf(x, y) == 0)
-		continue;
-	      double xW2, yW2;
-	      double xW3, yW3;
-	      pdf.index2WorldCoords(x, y, xW2, yW2);
-	      pdf.index2WorldCoords(x, y+1, xW3, yW3);
-	      peekabot::VertexSet pdfs;
-	      pdfs.add(xW2, yW2, pdf(x, y)/maxPDFValue);
-	      pdfs.add(xW3, yW3, pdf(x, y+1)/maxPDFValue);
-	      linecloudp.add_vertices(pdfs);
+	      pcloud.add_vertices(vs);
 	    }
 	  }
 	}
@@ -565,8 +544,13 @@ ObjectRelationTester::addProxy(const spatial::Object* obj, const string &label)
       cube6.set_scale(2*hbo->radius1, 2*hbo->radius2, hbo->thickness);
     }
   }
-  group.set_position(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
-  log("set pos %f %f %f", obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
+  float m[16];
+  getRow44(obj->pose, m);
+  group.set_transformation(m, true);
+
+//  group.set_position(obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
+
+//  log("set pos %f %f %f", obj->pose.pos.x, obj->pose.pos.y, obj->pose.pos.z);
 }
 
 void
@@ -660,7 +644,9 @@ ObjectRelationTester::sampleOnnessForObject(const spatial::Object *objectS,
 }
 
 void
-ObjectRelationTester::sampleRecursively(const vector<spatial::Object*> &objects, 
+ObjectRelationTester::sampleRecursively(
+    const vector<spatial::SpatialRelationType> &relationTypes,
+    const vector<spatial::Object*> &objects, 
     int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
     vector<Vector3> &outPoints, spatial::Object *supportObject
 //    , const vector<Vector3> &triangle
@@ -670,9 +656,9 @@ ObjectRelationTester::sampleRecursively(const vector<spatial::Object*> &objects,
     log("Error! Support object pose uninitialized!");
     return;
   }
-  spatial::Object *onObject = objects[currentLevel];
+  spatial::Object *trajector = objects[currentLevel];
 
-  Pose3 oldPose = onObject->pose;
+  Pose3 oldPose = trajector->pose;
 
   double frameRadius;
   if (supportObject->type == spatial::OBJECT_PLANE) {
@@ -686,7 +672,8 @@ ObjectRelationTester::sampleRecursively(const vector<spatial::Object*> &objects,
       return;
     }
   }
-  else if (supportObject->type == spatial::OBJECT_BOX) {
+  else if (supportObject->type == spatial::OBJECT_BOX ||
+      supportObject->type == spatial::OBJECT_HOLLOW_BOX) {
     spatial::BoxObject &box1 = (spatial::BoxObject &)(*supportObject);
     frameRadius = box1.radius1 > box1.radius2 ?
 		box1.radius1 : box1.radius2;
@@ -706,31 +693,35 @@ ObjectRelationTester::sampleRecursively(const vector<spatial::Object*> &objects,
   while (pointsFound < nSamplesPerStep && outPoints.size() < nMaxSamples &&
       iterations < 10000) {
     iterations++;
-    onObject->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
-    onObject->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
+    trajector->pose.pos.x = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.x;
+    trajector->pose.pos.y = (((double)rand())/RAND_MAX) * (2*maxLateral) - maxLateral + supportObject->pose.pos.y;
 
 //    if (triangle.size() > 0 && currentLevel == 0 &&
-//	!isInTriangle(onObject->pose.pos.x, onObject->pose.pos.y, triangle))
+//	!isInTriangle(trajector->pose.pos.x, trajector->pose.pos.y, triangle))
 //	continue;
 
-    onObject->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
+    trajector->pose.pos.z = (((double)rand())/RAND_MAX) * (maxVertical-minVertical) + minVertical + supportObject->pose.pos.z;
 
-    randomizeOrientation(onObject->pose);
-    if (m_evaluator.evaluateOnness(supportObject, onObject) > 0.5) {
+    randomizeOrientation(trajector->pose);
+    //currentLevel is 0 for the trajector, 1 for whatever it's on/in and so on
+    double value = relationTypes[currentLevel] == RELATION_ON ?
+      m_evaluator.evaluateOnness(supportObject, trajector) 
+      : m_evaluator.evaluateInness(supportObject, trajector);
+    if (value > 0.5) {
       pointsFound++;
       if (currentLevel == 0) {
-	// This is the trajector itself
-	outPoints.push_back(onObject->pose.pos);
+	// This is the top-level trajector itself
+	outPoints.push_back(trajector->pose.pos);
       }
       else {
 	// Sample and recurse
-	sampleRecursively(objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
-	    outPoints, onObject);
+	sampleRecursively(relationTypes, objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
+	    outPoints, trajector);
       }
     }
 //    if (iterations % 100 == 0) {
 //      log("iterations: %i, points: %i", iterations, pointsFound);
 //    }
   }
-  onObject->pose = oldPose;
+  trajector->pose = oldPose;
 }
