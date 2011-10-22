@@ -62,6 +62,13 @@ protected:
   void updatePosesFromPB();
 
   DensitySampler m_sampler;
+
+  void sampleOnnessForObject(const spatial::Object *objectS, spatial::Object *objectO);
+  void sampleRecursively(const vector<spatial::Object*> &objects, 
+    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
+    vector<Vector3> &outPoints, spatial::Object *supportObject
+//    , const vector<Vector3> &triangle
+    );
 }; 
 };
 #endif //ObjectRelationTester_hpp
