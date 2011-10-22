@@ -45,6 +45,9 @@ protected:
   bool m_bNoPTZ;
   bool m_bNoVision;
 
+  vector<spatial::Object *> m_testObjects;
+  vector<peekabot::GroupProxy> m_testObjectProxies;
+
   peekabot::PeekabotClient m_PeekabotClient;  
   peekabot::GroupProxy m_relationTester;
   std::string m_PbHost;
@@ -54,6 +57,9 @@ protected:
   void connectPeekabot();
 
   virtual void configure(const std::map<std::string, std::string>& _config);
+
+  void addProxy(const spatial::Object* obj, const string &label);
+  void updatePosesFromPB();
 
   DensitySampler m_sampler;
 }; 
