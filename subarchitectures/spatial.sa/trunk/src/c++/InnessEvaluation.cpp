@@ -209,7 +209,7 @@ RelationEvaluator::evaluateInness(const Object *objectC, const Object *objectO)
 
     BoxObject side3;
     side3.type = OBJECT_BOX;
-    side3.pose.pos = vector3(0, hb->radius1-hb->thickness/2, 0);
+    side3.pose.pos = vector3(0, hb->radius2-hb->thickness/2, 0);
     side3.radius1 = hb->radius1;
     side3.radius2 = hb->thickness/2;
     side3.radius3 = hb->radius3;
