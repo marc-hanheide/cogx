@@ -34,18 +34,17 @@ extends AbstractDialogueComponent {
 
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ReferenceGenerationRequest.class, WorkingMemoryOperation.ADD), 
 				new WorkingMemoryChangeReceiver() {
-					@Override
-					public void workingMemoryChanged(WorkingMemoryChange _wmc) {
-						//addTask(new ProcessingTaskWithData<WorkingMemoryChange>(_wmc) {
+			@Override
+			public void workingMemoryChanged(WorkingMemoryChange _wmc) {
+				addTask(new ProcessingTaskWithData<WorkingMemoryChange>(_wmc) {
 
-							//@Override
-							//public void execute(WorkingMemoryChange arg) {
-						//processResolutionRequest(arg);
-						processResolutionRequest(_wmc);
-						//	}
-							
-					//	});
-					};
+					@Override
+					public void execute(WorkingMemoryChange arg) {
+						processResolutionRequest(arg);
+					}
+
+				});
+			};
 		});
 	}
 
