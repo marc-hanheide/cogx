@@ -102,14 +102,31 @@ start=current;
   // create Patch3D´s
   for(unsigned i=0; i<cv_vec_planes.size(); i++)
   {
-    std::vector<int> indexes; // TODO TODO TODO We do not have indexes here!!!
+    std::vector<int> mask_hull_idxs;          // TODO TODO TODO We do not have mask_hull_idxs here!!! => see KinectPclModels
+    std::vector<cv::Vec4f> mask_hull_points;  // TODO TODO TODO We do not have mask_hull_points here
+
 //     cv::Mat_<cv::Vec3b> patch_mask = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
 //     cv::Mat_<cv::Vec3b> patch_edges = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
 //     pclA::ConvertIndexes2Mask(pcl_model_cloud_indexes[i], patch_mask);
 //     pclA::ConvertMask2Edges(patch_mask, patch_edges);
 //     pclA::ConvertEdges2Indexes(patch_edges, indexes);
 
-    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], indexes, cv_vec_hulls[i]);
+    cv::Vec3f plane_normal;
+    if(model_coefficients[i]->values[3] < 0.)
+    {
+      printf("KinectPatches::Process: Warning: model_coefficients of plane with negative distance. Inverted.\n");
+      plane_normal[0] = -model_coefficients[i]->values[0];
+      plane_normal[1] = -model_coefficients[i]->values[1];
+      plane_normal[2] = -model_coefficients[i]->values[2];
+    }
+    else
+    {
+      plane_normal[0] = model_coefficients[i]->values[0];
+      plane_normal[1] = model_coefficients[i]->values[1];
+      plane_normal[2] = model_coefficients[i]->values[2];
+    }
+
+    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], cv_vec_hulls[i], mask_hull_points, mask_hull_idxs, plane_normal);
     kcore->NewGestalt3D(p3d);
     numPatches++;
   }

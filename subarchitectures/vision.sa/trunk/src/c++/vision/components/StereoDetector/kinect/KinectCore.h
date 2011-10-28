@@ -41,7 +41,8 @@ private:
 
   IplImage *iplImg;                                                 ///< current ipl-image of kinect camera
   cv::Mat_<cv::Vec4f> points;                                       ///< point cloud of the kinect camera
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;                 ///< point cloud of the kinect as pcl-cloud
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;                 ///< point cloud of the kinect as pcl-cloud               /// TODO remove at one point and use const-version
+  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr const_pcl_cloud;      ///< constant point cloud of the kinect as pcl-cloud
 
   bool valid_normals;                                               ///< Flag for valid point cloud normals
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;                    ///< calculated point cloud normals
@@ -87,6 +88,7 @@ public:
   
   const char* GetKinectTypeName(KinectBase::Type type);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr GetPclCloud() {return pcl_cloud;}
+  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr GetConstPclCloud() {return const_pcl_cloud;}
   cv::Mat_<cv::Vec4f> GetPointCloud() {return points;}
   unsigned GetImageWidth() {return iplImg->width;}
   unsigned GetPointCloudWidth() {return points.cols;}

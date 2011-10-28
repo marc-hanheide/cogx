@@ -148,13 +148,13 @@ void KinectCore::InitKinectPrinciplesForSegmenter()
   // set principles enabled or disabled
 //   kinectPrinciples[KinectBase::KINECT_PATCHES]->EnablePrinciple(true);
 //   kinectPrinciples[KinectBase::KINECT_SEGMENTS]->EnablePrinciple(true);
-  kinectPrinciples[KinectBase::KINECT_LINES]->EnablePrinciple(true);
+  kinectPrinciples[KinectBase::KINECT_LINES]->EnablePrinciple(true);                    /// TODO was tu ich mit den lines??? => Für segments?
 //   kinectPrinciples[KinectBase::KINECT_COLLINEARITIES]->EnablePrinciple(true);
 //   kinectPrinciples[KinectBase::KINECT_CLOSURES]->EnablePrinciple(true);
 //   kinectPrinciples[KinectBase::KINECT_RECTANGLES]->EnablePrinciple(true);
   kinectPrinciples[KinectBase::KINECT_PCL_MODELS]->EnablePrinciple(true);
 //   kinectPrinciples[KinectBase::KINECT_PCL_EDGELS]->EnablePrinciple(true);
-  kinectPrinciples[KinectBase::KINECT_PCL_SEGMENTS]->EnablePrinciple(true);
+  kinectPrinciples[KinectBase::KINECT_PCL_SEGMENTS]->EnablePrinciple(true);             /// TODO das hier ist nicht notwendig, oder???
 //   kinectPrinciples[KinectBase::KINECT_PCL_LINES]->EnablePrinciple(true);
 
   initialized = true;
@@ -333,6 +333,8 @@ void KinectCore::Process(IplImage *_iplImg, cv::Mat_<cv::Vec4f> &_points,
   iplImg = _iplImg;
   points = _points;
   pcl_cloud = _pcl_cloud;
+  const_pcl_cloud = _pcl_cloud;     // TODO reicht das? => Testen.
+//   pcl::copyPointCloud(_pcl_cloud, const_pcl_cloud);
   
   if(!initialized) InitKinectPrinciples();
   

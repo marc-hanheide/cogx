@@ -55,13 +55,24 @@ private:
   bool CalculateSegmentRelations(Patch3D *p0,             ///< Calculate relations between patches, caused by segments
                                  Patch3D *p1,
                                  std::vector<double> &params);
-  
+
+  bool CalculatePPColorRelation(Patch3D *p0,             ///< Calculate color relation between patches
+                                Patch3D *p1,
+                                std::vector<double> &params);
+
+  bool CalculatePPRelation(Patch3D *p0, 
+                           Patch3D *p1, 
+                           std::vector<double> &params);
+
   bool PLLineInPlaneROI(Patch3D *p, Line3D *l);
   double PLProximity(Patch3D *p, Line3D *l);
   double PLParallelity(Patch3D *p, Line3D *l);
   
   double cam_fx, cam_fy, cam_cx, cam_cy;  ///< Internal camera parameters
 
+  // TODO for debugging
+  std::vector<cv::Vec4f> pxlsToDraw;
+  
 public:
   
   CalculateRelations();
@@ -83,6 +94,9 @@ public:
   void PrintResults();
   void PrintRelations();
   double CheckAccuracy();
+  
+  // TODO This is for debugging
+  void GetPixelsToDraw(std::vector<cv::Vec4f> &pts);
 };
 
 }

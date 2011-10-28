@@ -42,7 +42,7 @@ private:
   
   
 public:
-  SVMPredictor(int max_svm, const char* filename = "svm.model");
+  SVMPredictor(int max_svm, std::vector<const char*> filenames);// const char* filename = "svm.model");
   ~SVMPredictor();
   
   bool GetResult(int type, const std::vector<double> &val, std::vector<double> &prob);

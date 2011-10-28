@@ -20,12 +20,15 @@ namespace Z
  * @param _h_p Convex hull points of the patch
  */
 Patch3D::Patch3D(std::vector<cv::Vec4f> _points, 
-                 std::vector<int> _indexes, 
-                 std::vector<cv::Vec4f> _hull_points) : Gestalt3D(Gestalt3D::PATCH)
+                 std::vector<cv::Vec4f> _hull_points, 
+                 std::vector<cv::Vec4f> _mask_hull_points, 
+                 std::vector<int> _mask_hull_idxs,
+                 cv::Vec3f _normal) : Gestalt3D(Gestalt3D::PATCH)
 {
   radius = 0.;
   points = _points;
-  indexes = _indexes;
+  mask_hull_points = _mask_hull_points;
+  mask_hull_idxs = _mask_hull_idxs;
   hull_points = _hull_points;
   
   int num_hull_points = hull_points.size();
@@ -40,7 +43,8 @@ Patch3D::Patch3D(std::vector<cv::Vec4f> _points,
   center3D[1] = center3D[1] / num_hull_points;
   center3D[2] = center3D[2] / num_hull_points;
 
-  CalculatePlaneNormal();
+//   CalculatePlaneNormal();                    /// TODO Normale wir mit übergeben
+  normal = _normal;
   
   cv::Vec3f p;
   for(unsigned i=0; i<hull_points.size(); i++)
@@ -63,25 +67,25 @@ Patch3D::Patch3D(std::vector<cv::Vec4f> _points,
 void Patch3D::CalculatePlaneNormal()
 {
   // take 3 points of the convex hull and build two vectors => then cross product, then normalisation
-  cv::Vec3f p0, p1, cross;
-  p0[0] = hull_points[0][0] - hull_points[1][0];
-  p0[1] = hull_points[0][1] - hull_points[1][1];
-  p0[2] = hull_points[0][2] - hull_points[1][2];
-  p1[0] = hull_points[1][0] - hull_points[2][0];
-  p1[1] = hull_points[1][1] - hull_points[2][1];
-  p1[2] = hull_points[1][2] - hull_points[2][2];
-  cross = p0.cross(p1);
-  double norm = cv::norm(cross);
-  normal.x = cross[0]/norm;
-  normal.y = cross[1]/norm;
-  normal.z = cross[2]/norm;
-  
-  // Check if normal goes into direction of camera (opening angle < PI/2
-  double norm_center = cv::norm(center3D); //sqrt(center3D.x*center3D.x + center3D.y*center3D.y + center3D.z*center3D.z);
-  double dot_p_center = normal.x*center3D[0] + normal.y*center3D[1] + normal.z*center3D[2];
-  double angle = acos(dot_p_center/(norm_center));
-  if(angle < 1.57)
-    normal = -normal;
+//   cv::Vec3f p0, p1, cross;
+//   p0[0] = hull_points[0][0] - hull_points[1][0];
+//   p0[1] = hull_points[0][1] - hull_points[1][1];
+//   p0[2] = hull_points[0][2] - hull_points[1][2];
+//   p1[0] = hull_points[1][0] - hull_points[2][0];
+//   p1[1] = hull_points[1][1] - hull_points[2][1];
+//   p1[2] = hull_points[1][2] - hull_points[2][2];
+//   cross = p0.cross(p1);
+//   double norm = cv::norm(cross);
+//   normal.x = cross[0]/norm;
+//   normal.y = cross[1]/norm;
+//   normal.z = cross[2]/norm;
+//   
+//   // Check if normal goes into direction of camera (opening angle < PI/2
+//   double norm_center = cv::norm(center3D); //sqrt(center3D.x*center3D.x + center3D.y*center3D.y + center3D.z*center3D.z);
+//   double dot_p_center = normal.x*center3D[0] + normal.y*center3D[1] + normal.z*center3D[2];
+//   double angle = acos(dot_p_center/(norm_center));
+//   if(angle < 1.57)
+//     normal = -normal;
 }
 
 /**
@@ -145,8 +149,8 @@ double Patch3D::DistancePoint2Plane(double a, double b, double c, double d, doub
  */
 double Patch3D::CalculatePointDistance(double x, double y, double z)
 {
-  double np = normal.x*center3D[0] + normal.y*center3D[1] + normal.z*center3D[2];
-  return DistancePoint2Plane(normal.x, normal.y, normal.z, np, x, y, z);
+  double np = normal[0]*center3D[0] + normal[1]*center3D[1] + normal[2]*center3D[2];
+  return DistancePoint2Plane(normal[0], normal[1], normal[2], np, x, y, z);
 }
 
 /**
@@ -154,8 +158,8 @@ double Patch3D::CalculatePointDistance(double x, double y, double z)
  * the distance of the planes 
  * @param p Patch to compare with
  * @param n0n1 Angle between the two plane normals
- * @param ppn0 Angle between center point line and first patch
- * @param ppn1 Angle between center point line and second patch
+ * @param ppn0 Angle between center point line and first patch normal
+ * @param ppn1 Angle between center point line and second patch normal
  */
 void Patch3D::CalculateCoplanarity2(Patch3D *p, double &n0n1, double &ppn0, double &ppn1)
 {
@@ -167,10 +171,12 @@ void Patch3D::CalculateCoplanarity2(Patch3D *p, double &n0n1, double &ppn0, doub
   pp_dir.y = pp.y/norm_pp;
   pp_dir.z = pp.z/norm_pp;  
   
-  n0n1 = acos(normal.x*p->normal.x + normal.y*p->normal.y + normal.z*p->normal.z);
-  ppn0 = acos(pp_dir.x*normal.x + pp_dir.y*normal.y + pp_dir.z*normal.z);
-  ppn1 = acos(pp_dir.x*p->normal.x + pp_dir.y*p->normal.y + pp_dir.z*p->normal.z);
+  n0n1 = acos(normal[0]*p->normal[0] + normal[1]*p->normal[1] + normal[2]*p->normal[2]);
+  ppn0 = acos(pp_dir.x*normal[0] + pp_dir.y*normal[1] + pp_dir.z*normal[2]);
+  ppn1 = acos(pp_dir.x*p->normal[0] + pp_dir.y*p->normal[1] + pp_dir.z*p->normal[2]);
 
+  if(n0n1 != n0n1 || ppn0 != ppn0 || ppn1 != ppn1)
+    printf("Patch3D::CalculateCoplanarity2: Warning: NANs found!\n");
 }
   
   
@@ -184,52 +190,52 @@ void Patch3D::CalculateCoplanarity2(Patch3D *p, double &n0n1, double &ppn0, doub
 void Patch3D::CalculateCoplanarity(Patch3D *p, double &normal_angle, double &plane_distance)
 {
 printf("Patch3D::CalculateCoplanarity: Warning: antiquated!\n");
-  // direction from patch center to patch center
-  cv::Point3f pp = center3D - p->center3D;
-  double norm_pp = cv::norm(pp);
-  cv::Point3f pp_dir;
-  pp_dir.x = pp.x/norm_pp;
-  pp_dir.y = pp.y/norm_pp;
-  pp_dir.z = pp.z/norm_pp;
-  
-//   double pp_dir = norm(pp);
-  
-  // angel between normal and pp_dir
-  double ang0 = acos(pp_dir.x*normal.x + pp_dir.y*normal.y + pp_dir.z*normal.z);
-  double ang1 = acos(pp_dir.x*p->normal.x + pp_dir.y*p->normal.y + pp_dir.z*p->normal.z);
-  
-printf("ang0-ang1: %4.3f-%4.3f\n", ang0, ang1);
-//   if(ang0 > M_PI/2.) ang0 = M_PI - ang0;
-//   if(ang1 > M_PI/2.) ang1 = M_PI - ang1;
-// printf("        : %4.3f-%4.3f\n", ang0, ang1);
-  ang0 = fabs(ang0 - M_PI/2.);
-  ang1 = fabs(ang1 - M_PI/2.);
-  
-printf("     ang1: %4.3f-%4.3f\n", ang0, ang1);
-  normal_angle = ang0 + ang1;
-// printf("     norm: %4.3f\n", normal_angle);
-  
-//   double a_normal_pp_dir = p->normal.x*normal.x + p->normal.y*normal.y + p->normal.z*normal.z;
-//   normal_angle = acos(dot_p_pp);
-  
-  // First calculate the deviation of the normals
-//   double dot_p_pp = p->normal.x*normal.x + p->normal.y*normal.y + p->normal.z*normal.z;
-//   normal_angle = acos(dot_p_pp);
-// //   printf("NormalAngle: %4.4f\n", normal_angle);
+//   // direction from patch center to patch center
+//   cv::Point3f pp = center3D - p->center3D;
+//   double norm_pp = cv::norm(pp);
+//   cv::Point3f pp_dir;
+//   pp_dir.x = pp.x/norm_pp;
+//   pp_dir.y = pp.y/norm_pp;
+//   pp_dir.z = pp.z/norm_pp;
 //   
-
-  // calculate plane distance:
-  // calculate mean normal
-  cv::Point3f meanNormal;
-  meanNormal = normal + p->normal;
-
-  double norm = cv::norm(meanNormal);
-  meanNormal.x = meanNormal.x/norm;
-  meanNormal.y = meanNormal.y/norm;
-  meanNormal.z = meanNormal.z/norm;
-  
-  double np = meanNormal.x*center3D[0] + meanNormal.y*center3D[1] + meanNormal.z*center3D[2];
-  plane_distance = DistancePoint2Plane(meanNormal.x, meanNormal.y, meanNormal.z, np, p->center3D[0], p->center3D[1], p->center3D[2]);
+// //   double pp_dir = norm(pp);
+//   
+//   // angel between normal and pp_dir
+//   double ang0 = acos(pp_dir.x*normal.x + pp_dir.y*normal.y + pp_dir.z*normal.z);
+//   double ang1 = acos(pp_dir.x*p->normal.x + pp_dir.y*p->normal.y + pp_dir.z*p->normal.z);
+//   
+// printf("ang0-ang1: %4.3f-%4.3f\n", ang0, ang1);
+// //   if(ang0 > M_PI/2.) ang0 = M_PI - ang0;
+// //   if(ang1 > M_PI/2.) ang1 = M_PI - ang1;
+// // printf("        : %4.3f-%4.3f\n", ang0, ang1);
+//   ang0 = fabs(ang0 - M_PI/2.);
+//   ang1 = fabs(ang1 - M_PI/2.);
+//   
+// printf("     ang1: %4.3f-%4.3f\n", ang0, ang1);
+//   normal_angle = ang0 + ang1;
+// // printf("     norm: %4.3f\n", normal_angle);
+//   
+// //   double a_normal_pp_dir = p->normal.x*normal.x + p->normal.y*normal.y + p->normal.z*normal.z;
+// //   normal_angle = acos(dot_p_pp);
+//   
+//   // First calculate the deviation of the normals
+// //   double dot_p_pp = p->normal.x*normal.x + p->normal.y*normal.y + p->normal.z*normal.z;
+// //   normal_angle = acos(dot_p_pp);
+// // //   printf("NormalAngle: %4.4f\n", normal_angle);
+// //   
+// 
+//   // calculate plane distance:
+//   // calculate mean normal
+//   cv::Point3f meanNormal;
+//   meanNormal = normal + p->normal;
+// 
+//   double norm = cv::norm(meanNormal);
+//   meanNormal.x = meanNormal.x/norm;
+//   meanNormal.y = meanNormal.y/norm;
+//   meanNormal.z = meanNormal.z/norm;
+//   
+//   double np = meanNormal.x*center3D[0] + meanNormal.y*center3D[1] + meanNormal.z*center3D[2];
+//   plane_distance = DistancePoint2Plane(meanNormal.x, meanNormal.y, meanNormal.z, np, p->center3D[0], p->center3D[1], p->center3D[2]);
 }
 
 /**
@@ -240,7 +246,7 @@ printf("     ang1: %4.3f-%4.3f\n", ang0, ang1);
 double Patch3D::CalculateParallelity(cv::Point3f &dir)
 {
   // calculate opening angle!!!
-  double dot = normal.x * dir.x + normal.y * dir.y + normal.z * dir.z;
+  double dot = normal[0] * dir.x + normal[1] * dir.y + normal[2] * dir.z;
   return (acos(dot) - (M_PI/2.));
 }
 
@@ -289,18 +295,30 @@ void Patch3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer,
   }
   tgRenderer->AddPointCloud(col_points);
     
-  // add convex hull of patch
-  for(unsigned j=0; j < hull_points.size(); j++)
-  {
-    int k = j+1;
-    if(k == hull_points.size()) k=0;
-    cv::Vec4f s = hull_points[j];
-    cv::Vec4f e = hull_points[k];
-    if(!use_color && !randomColor) col.float_value = hull_points[j][3];
-    tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
-                          col.r, col.g, col.b, 2);
-  }  
+//   // add convex hull of patch
+//   for(unsigned j=0; j < hull_points.size(); j++)
+//   {
+//     int k = j+1;
+//     if(k == hull_points.size()) k=0;
+//     cv::Vec4f s = hull_points[j];
+//     cv::Vec4f e = hull_points[k];
+//     if(!use_color && !randomColor) col.float_value = hull_points[j][3];
+//     tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
+//                           col.r, col.g, col.b, 2);
+//   }  
   
+//   // draw patch hull (TODO points are not ordered!)
+//   for(int i=0; i<mask_hull_points.size(); i++)
+//   {
+//     int k = i+1;
+//     if(k == mask_hull_points.size()) k=0;
+//     cv::Vec4f s = mask_hull_points[i];
+//     cv::Vec4f e = mask_hull_points[k];
+//     if(!use_color && !randomColor) col.float_value = s[3];
+//     tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
+//                           col.r, col.g, col.b, 2);
+//   }
+
   if(drawNodeID)
   {
     char label[5];
@@ -374,6 +392,39 @@ void Patch3D::DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraPar
   char labl[5];
   snprintf(labl, 5, "%u", GetNodeID());
   cv::putText(image, string(labl), cv::Point(c_x, c_y), cv::FONT_HERSHEY_SIMPLEX, 0.5, CV_RGB(0,0,0), 2);
+}
+
+
+/**
+ * @brief Get color value of a point for known index.
+ * @param idx Index of the point in 2D image space
+ * @return Returns the rgb-color value as float
+ */
+bool Patch3D::GetColorValue(int idx, float &color)
+{
+  for(unsigned i=0; i< mask_hull_idxs.size(); i++) {
+    if(mask_hull_idxs[i] == idx) {
+      color = mask_hull_points[i][3];
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * @brief Get depth value of a point for known index.
+ * @param idx Index of the point in 2D image space
+ * @return Returns the z-value as double
+ */
+bool Patch3D::GetDepthValue(int idx, double &z_value)
+{
+  for(unsigned i=0; i< mask_hull_idxs.size(); i++) {
+    if(mask_hull_idxs[i] == idx) {
+      z_value = mask_hull_points[i][2];
+      return true;
+    }
+  }
+  return false;
 }
 
 /**

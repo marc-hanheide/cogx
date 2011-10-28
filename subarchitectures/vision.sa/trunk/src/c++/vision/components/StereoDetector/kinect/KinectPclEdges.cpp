@@ -43,8 +43,6 @@ void KinectPclEdges::ClearResults()
  */
 void KinectPclEdges::Process()
 {
-printf("KinectPclEdges::Process: time to implement\n");
-
   double fx, fy, cx, cy;
   kcore->GetScaledCameraParameters(fx, fy, cx, cy);
   cv::Mat_<cv::Vec4f> normals = kcore->GetCvNormals();
@@ -93,9 +91,6 @@ printf("KinectPclEdges::Process: time to implement\n");
   cv::Mat_<float> depth = cv::Mat_<float>(rows, cols);
   cv::Mat_<float> curvature = cv::Mat_<float>(rows, cols);
   rgbdSegment->DetectEdges(kcore->GetPointCloud(), normals, image, mask, depth, curvature, color_edges, depth_edges, curvature_edges, mask_edges, edges);
-
-  
-  
   
   /// basic images (mask, depth, curvature)
   cv::Mat_<cv::Vec3b> color_edge_image_2 = cv::Mat_<cv::Vec3b>(rows, cols);
