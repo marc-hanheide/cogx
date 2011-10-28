@@ -2692,13 +2692,17 @@ static char* readline(FILE *input)
 
 svm_model *svm_load_model(const char *model_file_name)
 {
-printf("svm: svm_load_model: 1\n");
+// printf("svm: svm_load_model: 1\n");
 	FILE *fp = fopen(model_file_name,"rb");
-	if(fp==NULL) return NULL;
-printf("svm: svm_load_model: 2\n");
+	if(fp==NULL)
+  {
+    printf("SVM.CPP: svm_load_model failed: wrong filename (%s)?\n", model_file_name);
+    return NULL;
+  }
+// printf("svm: svm_load_model: 2\n");
 	
 	// read parameters
-printf("svm: svm_load_model: 3\n");
+// printf("svm: svm_load_model: 3\n");
 	svm_model *model = Malloc(svm_model,1);
 	svm_parameter& param = model->param;
 	model->rho = NULL;
@@ -2707,19 +2711,19 @@ printf("svm: svm_load_model: 3\n");
 	model->label = NULL;
 	model->nSV = NULL;
 
-printf("svm: svm_load_model: 4\n");
+// printf("svm: svm_load_model: 4\n");
 	char cmd[81];
 	while(1)
 	{
 		fscanf(fp,"%80s",cmd);
-printf("svm: svm_load_model: 4.0.1\n");
+// printf("svm: svm_load_model: 4.0.1\n");
 		if(strcmp(cmd,"svm_type")==0)
 		{
 			fscanf(fp,"%80s",cmd);
 			int i;
 			for(i=0;svm_type_table[i];i++)
 			{
-printf("svm: svm_load_model: 4.0.2\n");
+// printf("svm: svm_load_model: 4.0.2\n");
 				if(strcmp(svm_type_table[i],cmd)==0)
 				{
 					param.svm_type=i;
@@ -2728,7 +2732,7 @@ printf("svm: svm_load_model: 4.0.2\n");
 			}
 			if(svm_type_table[i] == NULL)
 			{
-printf("svm: svm_load_model: 4.0.3\n");
+// printf("svm: svm_load_model: 4.0.3\n");
 				fprintf(stderr,"unknown svm type.\n");
 				free(model->rho);
 				free(model->label);
@@ -2739,7 +2743,7 @@ printf("svm: svm_load_model: 4.0.3\n");
 		}
 		else if(strcmp(cmd,"kernel_type")==0)
 		{		
-printf("svm: svm_load_model: 4.0.4\n");
+// printf("svm: svm_load_model: 4.0.4\n");
 			fscanf(fp,"%80s",cmd);
 			int i;
 			for(i=0;kernel_type_table[i];i++)
@@ -2772,7 +2776,7 @@ printf("svm: svm_load_model: 4.0.4\n");
 			fscanf(fp,"%d",&model->l);
 		else if(strcmp(cmd,"rho")==0)
 		{
-printf("svm: svm_load_model: 4.0.5\n");
+// printf("svm: svm_load_model: 4.0.5\n");
 			int n = model->nr_class * (model->nr_class-1)/2;
 			model->rho = Malloc(double,n);
 			for(int i=0;i<n;i++)
@@ -2780,7 +2784,7 @@ printf("svm: svm_load_model: 4.0.5\n");
 		}
 		else if(strcmp(cmd,"label")==0)
 		{
-printf("svm: svm_load_model: 4.0.6\n");
+// printf("svm: svm_load_model: 4.0.6\n");
 			int n = model->nr_class;
 			model->label = Malloc(int,n);
 			for(int i=0;i<n;i++)
@@ -2788,7 +2792,7 @@ printf("svm: svm_load_model: 4.0.6\n");
 		}
 		else if(strcmp(cmd,"probA")==0)
 		{
-printf("svm: svm_load_model: 4.0.7\n");
+// printf("svm: svm_load_model: 4.0.7\n");
 			int n = model->nr_class * (model->nr_class-1)/2;
 			model->probA = Malloc(double,n);
 			for(int i=0;i<n;i++)
@@ -2796,7 +2800,7 @@ printf("svm: svm_load_model: 4.0.7\n");
 		}
 		else if(strcmp(cmd,"probB")==0)
 		{
-printf("svm: svm_load_model: 4.0.8\n");
+// printf("svm: svm_load_model: 4.0.8\n");
 			int n = model->nr_class * (model->nr_class-1)/2;
 			model->probB = Malloc(double,n);
 			for(int i=0;i<n;i++)
@@ -2804,7 +2808,7 @@ printf("svm: svm_load_model: 4.0.8\n");
 		}
 		else if(strcmp(cmd,"nr_sv")==0)
 		{
-printf("svm: svm_load_model: 4.0.9\n");
+// printf("svm: svm_load_model: 4.0.9\n");
 			int n = model->nr_class;
 			model->nSV = Malloc(int,n);
 			for(int i=0;i<n;i++)
@@ -2812,7 +2816,7 @@ printf("svm: svm_load_model: 4.0.9\n");
 		}
 		else if(strcmp(cmd,"SV")==0)
 		{
-printf("svm: svm_load_model: 4.0.10\n");      
+// printf("svm: svm_load_model: 4.0.10\n");      
 			while(1)
 			{
 				int c = getc(fp);
@@ -2822,7 +2826,7 @@ printf("svm: svm_load_model: 4.0.10\n");
 		}
 		else
 		{
-printf("svm: svm_load_model: 4.0.11\n");
+// printf("svm: svm_load_model: 4.0.11\n");
 			fprintf(stderr,"unknown text in model file: [%s]\n",cmd);
 			free(model->rho);
 			free(model->label);
@@ -2832,7 +2836,7 @@ printf("svm: svm_load_model: 4.0.11\n");
 		}
 	}
 
-printf("svm: svm_load_model: 4.1\n");
+// printf("svm: svm_load_model: 4.1\n");
 
 	// read sv_coef and SV
 
@@ -2859,7 +2863,7 @@ printf("svm: svm_load_model: 4.1\n");
 		}
 	}
 	elements += model->l;
-printf("svm: svm_load_model: 4.2\n");
+// printf("svm: svm_load_model: 4.2\n");
 
 	fseek(fp,pos,SEEK_SET);
 
@@ -2873,7 +2877,7 @@ printf("svm: svm_load_model: 4.2\n");
 	svm_node *x_space = NULL;
 	if(l>0) x_space = Malloc(svm_node,elements);
   
-printf("svm: svm_load_model: 4.3\n");
+// printf("svm: svm_load_model: 4.3\n");
 
 	int j=0;
 	for(i=0;i<l;i++)
@@ -2907,17 +2911,17 @@ printf("svm: svm_load_model: 4.3\n");
 // printf("svm: svm_load_model: 4.3.4\n");
 		x_space[j++].index = -1;
 	}
-printf("svm: svm_load_model: 5\n");
+// printf("svm: svm_load_model: 5\n");
 	free(line);
 
-printf("svm: svm_load_model: 6\n");
+// printf("svm: svm_load_model: 6\n");
 
 	if (ferror(fp) != 0 || fclose(fp) != 0)
 		return NULL;
 
-printf("svm: svm_load_model: 7\n");
+// printf("svm: svm_load_model: 7\n");
 	model->free_sv = 1;	// XXX
-printf("svm: svm_load_model: 8\n");
+// printf("svm: svm_load_model: 8\n");
 	return model;
 }
 

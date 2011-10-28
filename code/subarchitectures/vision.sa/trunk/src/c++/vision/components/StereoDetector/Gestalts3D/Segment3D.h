@@ -25,7 +25,7 @@ class Segment3D : public Gestalt3D
 {
 private:
   std::vector<cv::Vec4f> points;              ///< Points of the edge in 3D (with color).
-  std::vector<int> indexes;                   ///< Indexes of the point cloud refering to the image space.
+  std::vector<int> indexes;                   ///< Indexes of the points, refering to the image space.
   std::vector<cv::Vec4f> edge_support;        ///< Support of color-, depth-, mask-, curvature-edges
   cv::Vec3f point[2];                         ///< Start/End point of the segment in 3D
   cv::Vec3f center3D;                         ///< 3D center point

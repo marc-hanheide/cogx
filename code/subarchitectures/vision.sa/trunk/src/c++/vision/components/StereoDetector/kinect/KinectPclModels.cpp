@@ -47,6 +47,7 @@ void KinectPclModels::ClearResults()
  */
 void KinectPclModels::Process()
 {
+printf("KinectPclModels::Process: start!\n");
 // static struct timespec start, last, current;
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 // last = current;
@@ -57,20 +58,22 @@ void KinectPclModels::Process()
   double minZ = 0.3;
   double maxZ = 1.5;
   pclA::ModelFitter::Parameter param(false, 0.005, true, minZ, maxZ);
-                
   model_fitter = new pclA::ModelFitter(param);
-  model_fitter->AddModelType(pcl::SACMODEL_PLANE);
-//   model_fitter->AddModelType(pcl::SACMODEL_CYLINDER);
-//   model_fitter->AddModelType(pcl::SACMODEL_SPHERE);
+//   model_fitter->addModelType(pcl::SACMODEL_PLANE);
+  model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);      // TODO implement!
+//   model_fitter->addModelType(pcl::SACMODEL_CYLINDER);
+//   model_fitter->addModelType(pcl::SACMODEL_SPHERE);
   pcl::PointCloud<pcl::Normal>::Ptr no = kcore->GetPclNormals();
-  model_fitter->SetNormals(no);
+  model_fitter->setNormals(no);
     
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 // printf("  KinectPclModels: Runtime for pre-processing: %4.3f\n", timespec_diff(&current, &last));
 // last = current;
 
 //   model_fitter->Process(pcl_cloud);
-  model_fitter->ProcessWithoutDP(pcl_cloud);
+  model_fitter->useDominantPlane(true);
+  model_fitter->setInputCloud(pcl_cloud);
+  model_fitter->compute();
   
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 // printf("  KinectPclModels: Runtime for processing: %4.3f\n", timespec_diff(&current, &last));
@@ -81,6 +84,12 @@ void KinectPclModels::Process()
   std::vector< std::vector<int> > pcl_model_cloud_indexes;
   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
   model_fitter->GetResults(pcl_model_types, pcl_model_clouds, pcl_model_cloud_indexes, model_coefficients);
+
+  std::vector< std::vector<double> > distances;
+  std::vector<double> square_errors;
+  model_fitter->getError(distances, square_errors);
+
+  printf("KinectPclModels::Process: ModelFitter: done => %u %u %u %u models\n", pcl_model_types.size(), pcl_model_clouds.size(), pcl_model_cloud_indexes.size(), model_coefficients.size());
 
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 // printf("  KinectPclModels: Runtime for post-processing: %4.3f\n", timespec_diff(&current, &last));
@@ -95,16 +104,30 @@ void KinectPclModels::Process()
   pclA::ConvertPCLClouds2CvVecs(pcl_model_clouds, cv_vec_models);
   for(unsigned i=0; i<cv_vec_models.size(); i++)
   {
-    /// convert 
-    std::vector<int> indexes;
+printf("KinectPclModels::Process: Size of pcl_model_cloud: %u\n", pcl_model_clouds[i]->points.size());
+    
+    /// get 2d mask hull indexes and 3d mask hull points 
+    std::vector<int> mask_hull_idxs;
+    std::vector<cv::Vec4f> mask_hull_points;
     cv::Mat_<cv::Vec3b> patch_mask = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
     cv::Mat_<cv::Vec3b> patch_edges = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
     pclA::ConvertIndexes2Mask(pcl_model_cloud_indexes[i], patch_mask);
     pclA::ConvertMask2Edges(patch_mask, patch_edges);
-    pclA::ConvertEdges2Indexes(patch_edges, indexes);
+    pclA::ConvertEdges2Indexes(patch_edges, mask_hull_idxs);
+    for(unsigned j=0; j<mask_hull_idxs.size(); j++)
+    {
+      pcl::PointXYZRGB pt = kcore->GetPclCloud()->points[mask_hull_idxs[j]];
+      cv::Vec4f p;
+      p[0] = pt.x;
+      p[1] = pt.y;
+      p[2] = pt.z;
+      p[3] = pt.rgb;
+      mask_hull_points.push_back(p);
+    }
+    
 //     cv::imshow("Patch-Mask", patch_edges);
     
-    if(pcl_model_types[i] == pcl::SACMODEL_PLANE)
+    if(pcl_model_types[i] == pcl::SACMODEL_PLANE || pcl_model_types[i] == pcl::SACMODEL_NORMAL_PLANE)
     {
       pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_hull;
       pclA::GetConvexHull(pcl_model_clouds[i], model_coefficients[i], pcl_hull);
@@ -114,20 +137,34 @@ void KinectPclModels::Process()
       pclA::ConvertPCLCloud2CvVec(pcl_hull, cv_vec_hull, true);
       
       /// TODO TODO TODO Convex hull area!!!
-      std::vector<cv::Vec3f> pcl_convex_hull;
-      pclA::ConvertPCLCloud2CvVec(pcl_hull, pcl_convex_hull);
-      double area = pclA::GetConvexHullArea(pcl_convex_hull);
+//       std::vector<cv::Vec3f> pcl_convex_hull;
+//       pclA::ConvertPCLCloud2CvVec(pcl_hull, pcl_convex_hull);
+//       double area = pclA::GetConvexHullArea(pcl_convex_hull);
       
       /// TODO Calculate square error !!!
-      double square_error = 0.;
-      pclA::CalcSquareErrorToPlane(pcl_model_clouds[i], model_coefficients[i], square_error);
+//       double square_error = 0.;
+//       pclA::CalcSquareErrorToPlane(pcl_model_clouds[i], model_coefficients[i], square_error);
 
 // printf("PclModels %u: pts: %u - Area: %4.3f => %4.3f && square_error: %4.3f\n", pl, cv_vec_models[i].size(), area*1000, cv_vec_models[i].size()/(area*1000), square_error);
 // if(cv_vec_models[i].size()/(area*1000) < 20 && cv_vec_models[i].size() < 200)
 // printf("                    => Maybe wrong?\n");
 
+      cv::Vec3f plane_normal;
+      if(model_coefficients[i]->values[3] < 0.)
+      {
+        printf("KinectPclModels::Process: Warning: model_coefficients of plane with negative distance. Inverted.\n");
+        plane_normal[0] = -model_coefficients[i]->values[0];
+        plane_normal[1] = -model_coefficients[i]->values[1];
+        plane_normal[2] = -model_coefficients[i]->values[2];
+      }
+      else
+      {
+        plane_normal[0] = model_coefficients[i]->values[0];
+        plane_normal[1] = model_coefficients[i]->values[1];
+        plane_normal[2] = model_coefficients[i]->values[2];
+      }
       
-      Z::Patch3D *p3d = new Z::Patch3D(cv_vec_models[i], indexes, cv_vec_hull);
+      Z::Patch3D *p3d = new Z::Patch3D(cv_vec_models[i], cv_vec_hull, mask_hull_points, mask_hull_idxs, plane_normal);
       kcore->NewGestalt3D(p3d);
       numPatches++;
       numModels++;
@@ -135,14 +172,14 @@ void KinectPclModels::Process()
     }
     else if(pcl_model_types[i] == pcl::SACMODEL_SPHERE)
     {
-      Z::PclSphere3D *pl3d = new Z::PclSphere3D(cv_vec_models[i], indexes);
+      Z::PclSphere3D *pl3d = new Z::PclSphere3D(cv_vec_models[i], mask_hull_idxs);
       kcore->NewGestalt3D(pl3d);
       numSpheres++;
       numModels++;
     }
     else if(pcl_model_types[i] == pcl::SACMODEL_CYLINDER)
     {
-      Z::PclCylinder3D *pl3d = new Z::PclCylinder3D(cv_vec_models[i], indexes);
+      Z::PclCylinder3D *pl3d = new Z::PclCylinder3D(cv_vec_models[i], mask_hull_idxs);
       kcore->NewGestalt3D(pl3d);
       numCylinders++;
       numModels++;
@@ -152,6 +189,7 @@ void KinectPclModels::Process()
 // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 // printf("  Runtime for KinectPclModels: %4.3f\n", timespec_diff(&current, &last));
 // last = current;
+printf("KinectPclModels::Process: end!\n");
 
 }
 

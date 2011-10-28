@@ -28,7 +28,7 @@ namespace Z
 // CAREFULL: Float value!!!
 // - with one line for each patch => 3.0
 // - only patches => 1.0
-#define THRESHOLD_CONSTANT 1.0
+#define THRESHOLD_CONSTANT 0.5
 #define MIN_SIZE 1                /// minimum size of element-sets
 
 #define THRESHOLD(size, c) (c/size)

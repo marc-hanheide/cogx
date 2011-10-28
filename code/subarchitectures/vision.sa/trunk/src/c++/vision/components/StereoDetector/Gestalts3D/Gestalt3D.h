@@ -9,12 +9,13 @@
 #ifndef Z_GESTALT3D_HH
 #define Z_GESTALT3D_HH
 
-#include "v4r/TomGine/tgTomGineThread.h"
-
 #include "StereoTypes.h"
 #include "GraphLink.h"
 
+#include <vector>
 #include <VisionData.hpp>
+
+#include "v4r/TomGine/tgTomGineThread.h"
 
 namespace Z
 {
@@ -97,11 +98,11 @@ public:
   virtual void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, 
                              bool randomColor, 
                              bool use_color = false, 
-                             float color = 0.0) {}   // 
+                             float color = 0.0) {}
   virtual void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, 
                                      Video::CameraParameters &camPars) {}              // TODO pure virtual ???
 
-  virtual void PrintGestalt3D() {}                                                                                // TODO pure virtual
+  virtual void PrintGestalt3D() {}                                                     // TODO pure virtual
 };
 
 }

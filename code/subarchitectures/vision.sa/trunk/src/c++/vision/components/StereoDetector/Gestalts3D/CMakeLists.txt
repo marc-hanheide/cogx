@@ -8,6 +8,8 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 
 include_directories(${V4R_DIR})
 
+find_package(PCL 1.1 REQUIRED COMPONENTS)
+include_directories(${PCL_INCLUDE_DIRS})
 
 # Set the header and sources.
 SET(HEADERS

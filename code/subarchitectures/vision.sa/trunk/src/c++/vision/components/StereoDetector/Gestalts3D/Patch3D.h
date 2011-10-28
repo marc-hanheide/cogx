@@ -18,6 +18,8 @@
 
 #include "highgui.h"
 
+#include "v4r/PCLAddOns/utils/PCLCommonHeaders.h"
+
 namespace Z
 {
 
@@ -28,9 +30,10 @@ class Patch3D : public Gestalt3D
 {
 private:
   std::vector<cv::Vec4f> points;            ///< All (projected) points of the plane patch
-  std::vector<int> indexes;                 ///< 2D indexes of the points (in image space)
-  std::vector<cv::Vec4f> hull_points;       ///< Hull points of the plane
-  cv::Point3f normal;                       ///< Normal of the plane                                /// TODO Ändern auf Vec3f ???
+  std::vector<cv::Vec4f> hull_points;       ///< 3D convex hull points of the plane
+  std::vector<cv::Vec4f> mask_hull_points;  ///< 3D points of the mask hull (non-convex!)
+  std::vector<int> mask_hull_idxs;          ///< 2D point indexes of the mask hull (mask edges) (refer to pcl_cloud)
+  cv::Vec3f normal;                       ///< Normal of the plane                                /// TODO Ändern auf Vec3f
   cv::Vec3f center3D;                       ///< Center point of the 3D patch
   double radius;                            ///< Maximum distance from center3D to hull_point       // TODO Wieder weg???
   
@@ -39,19 +42,23 @@ private:
                              double x, double y, double z);
 
 public:
- ColorHistogram *hist;                    ///< ColorHistogram of patch
+ ColorHistogram *hist;                      ///< ColorHistogram of patch
 
 public:
-  Patch3D(std::vector<cv::Vec4f> _points, std::vector<int> _indexes, std::vector<cv::Vec4f> _hull_points);
+  Patch3D(std::vector<cv::Vec4f> _points, 
+          std::vector<cv::Vec4f> _hull_points, 
+          std::vector<cv::Vec4f> _mask_hull_points, 
+          std::vector<int> _mask_hull_idxs,
+          cv::Vec3f _normal);
 
   void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
   bool GetLinks(vector<GraphLink> &links);
   cv::Vec3f GetCenter3D() {return center3D;}
-  cv::Point3f GetPlaneNormal() {return normal;}
+  cv::Vec3f GetPlaneNormal() {return normal;}
   void GetCenter3D(cv::Vec3f &c) {c = center3D;}
   std::vector<cv::Vec4f> GetHullPoints() {return hull_points;}
   double GetRadius() {return radius;}
-  void GetIndexes(std::vector<int> &_indexes) {_indexes = indexes;}
+  void GetIndexes(std::vector<int> &_indexes) {_indexes = mask_hull_idxs;}
 
   // Learning functions
   double CalculateProximity(Patch3D *p);
@@ -60,11 +67,13 @@ public:
   void CalculateCoplanarity(Patch3D *p, double &normal_angle, double &plane_distance);
   double CalculatePointDistance(double x, double y, double z);
   double CalculateParallelity(cv::Point3f &dir);
+  bool GetColorValue(int idx, float &color);
+  bool GetDepthValue(int idx, double &z_value);
   
   // Drawing functions
   void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, bool randomColor, bool use_color = false, float color = 0.0);
   void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars);
-  
+
   void PrintGestalt3D();
 };
 
