@@ -47,7 +47,7 @@ namespace cast
  * @class SegTester
  */
 class SegTester : public ManagedComponent,
-                   public PointCloudClient
+                  public PointCloudClient
 {
 private:
   TomGine::tgTomGineThread *tgRenderer;                      ///< 3D render engine
@@ -57,7 +57,6 @@ private:
   Z::StereoCore *score;                                     ///< Stereo core
   Z::KinectCore *kcore;                                     ///< Kinect core
   pclA::PlanePopout *planePopout;                           ///< PlanePopout for SOI calculation (ground truth data)
-//  Z::SVMFileCreator *svmFileCreator;                        ///< SVM training file creator
   Z::CalculateRelations *relations;                         ///< Calculate relations between features.
   Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
   Z::GraphCut *graphCutter;                                 ///< Graph cutter
@@ -71,7 +70,7 @@ private:
   int rgbWidth, rgbHeight;                                  ///< width and height of the kinect color image
   int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
   Video::Image /*image_l, image_r,*/ image_k;                   ///< Left and right stereo image and kinect image
-  IplImage /**iplImage_l, *iplImage_r,*/ *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
+  IplImage /*iplImage_l, *iplImage_r,*/ *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
 //  IplImage *iplImage_depthMap;                              ///< iplImage with depth map of kinect
   
   std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect sensor

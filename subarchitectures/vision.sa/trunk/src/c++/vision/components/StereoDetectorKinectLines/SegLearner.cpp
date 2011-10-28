@@ -42,19 +42,19 @@ extern "C" {
   }
 }
 
-/// maximum allowed depth jump from one pixel to the next (0.05m == 5cm)
-// static double MAXIMUM_DIST = 0.05;
-
 namespace cast
 {
+
+/** Debug flag **/
+static bool deb = true;
   
-  
-  /**
+/**
  * @brief Called by the framework to configure the component.
  * @param _config Configuration
  */
 void SegLearner::configure(const map<string,string> & _config)
 {
+printf("SegLearner::configure: start!\n");
   // first let the base classes configure themselves (for point clouds)
   configureServerCommunication(_config);
 
@@ -203,9 +203,23 @@ void SegLearner::configure(const map<string,string> & _config)
   
   //   learner = new Z::Learner();                       // Learner for features
   svmFileCreator = new Z::SVMFileCreator();         // Creator training files for SVM
-  planePopout = new pclA::PlanePopout();
 
+  double _minZ = 0.0;
+  double _maxZ = 2.0;
+  double dwLeaf = 0.02;
+  double dwLeafObj = 0.01;
+  int nb = 10;
+  double thrSac = 0.01;
+  double normalDistWeight = 0.1;
+  double minObjH = thrSac; // 0.005,           /// HACK Disabled: Set to thrSac
+  double maxObjH = 1.0;
+  float eucThr = 0.02;
+  unsigned minClSize = 100;
+  pclA::PlanePopout::Parameter param(_minZ, _maxZ, dwLeaf, dwLeafObj, nb, thrSac, 
+                                     normalDistWeight, minObjH, maxObjH, eucThr, minClSize);
+  planePopout = new pclA::PlanePopout(param);
 
+printf("SegLearner::configure: end!\n");
 }
 
 
@@ -325,25 +339,28 @@ void SegLearner::processImage()
 //   score->ProcessStereoImage(runtime, cannyAlpha, cannyOmega, iplImage_l, iplImage_r);
 
   /// Run kinect core
-printf("Run Kinect Core: start\n");
+  if(deb) printf("Run Kinect Core: start\n");
   kcore->Process(iplImage_k, kinect_point_cloud, pcl_cloud);
-printf("Run Kinect Core: end\n");
+  if(deb) printf("Run Kinect Core: end\n");
   
   /// Run plane popout TODO Move planePopout completely to learner => is not neccessary to have it here!
-printf("Run plane-popout: start\n");
+  if(deb) printf("Run plane-popout: start\n");
   planePopout->CalculateSOIs(pcl_cloud);
+  if(deb) printf("Run plane-popout: start 1\n");
   planePopout->GetSOIs(sois, soi_labels);
-  if(!planePopout->CalculateROIMask()) 
+  if(deb) printf("Run plane-popout: start 2\n");
+  if(!planePopout->CalculateROIMask())    // TODO we need the ROI mask? only for displaying the results, right?
     printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
+  if(deb) printf("Run plane-popout: start 3\n");
   kcore->SetObjectLabels(planePopout);    // Set object labels for kinect-Gestalts
-printf("Run plane-popout: end\n");
+  if(deb) printf("Run plane-popout: end\n");
 
-  
-  /// Set object labels for kinect-Gestalts
-  kcore->SetObjectLabels(planePopout);
-  
+  /// Calculate relations between features and write it to file for SVM learning!
+  svmFileCreator->Process(kcore);
+
+  /// Draw results on render engine
   tgRenderer->Clear();
-  tgRenderer->Update();
+//   tgRenderer->Update();
   kcore->DrawObjects3D(tgRenderer);
   tgRenderer->Update();
 
@@ -379,12 +396,9 @@ printf("Run plane-popout: end\n");
 //   learner->WriteResults2File();
   
   
-  /// Calculate relations between features and write it to file for SVM learning!
-  svmFileCreator->Process(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
-  
   /// Draw VisionCore image
-  if(showImages)
-  {
+//   if(showImages)
+//   {
 //     Z::SetActiveDrawArea(iplImage_k);
 //     vcore->DrawGestalts(Z::Gestalt::LINE, 1);
 //     cvShowImage("Kinect", iplImage_k);
@@ -393,7 +407,7 @@ printf("Run plane-popout: end\n");
 //   tgRenderer->Update();
 //     tgRenderer->AddPointCloud(kinect_point_cloud);
 //   tgRenderer->Update();
-  }
+//   }
 }
 
 /**
@@ -494,7 +508,7 @@ void SegLearner::SingleShotMode()
       for(unsigned i=0; i< sois.size(); i++)
       {
         std::vector<cv::Vec4f> soi_hull;
-        pclA::ConvertPCLCloud2CvVec(sois[i], soi_hull);  // convert pcl cloud to cvVec cloud
+        pclA::ConvertPCLCloud2CvVec(sois[i], soi_hull);  // convert pcl clouds to cvVec clouds
         if(showImages)
         {
           int top = soi_hull.size();
@@ -522,7 +536,16 @@ void SegLearner::SingleShotMode()
             cv::Vec4f e = soi_hull[i];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
-          tgRenderer->Update();
+          if(true)  // draw id of soi
+          {
+            char label[5];
+            snprintf(label, 5, "%u", soi_labels[i]);
+            tgRenderer->AddLabel3D(label, 24, 
+                                   (soi_hull[0][0] + soi_hull[int(soi_hull.size()/4)][0])/2,
+                                   (soi_hull[0][1] + soi_hull[int(soi_hull.size()/4)][1])/2, 
+                                   (soi_hull[0][2] + soi_hull[int(soi_hull.size()/4)][2])/2);
+          }
+          tgRenderer->Update(); 
         }
       }
       break;
@@ -535,6 +558,56 @@ void SegLearner::SingleShotMode()
       tgRenderer->Update();
       break;
       
+    case  '7':
+    {
+      log("Show PlanePopout");
+//       tgRenderer->Clear();
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr pp_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+      planePopout->GetPopoutsCloud(pp_cloud);
+      cv::Mat_<cv::Vec4f> cv_pp_cloud;
+      pclA::ConvertPCLCloud2CvMat(pp_cloud, cv_pp_cloud, true);
+      tgRenderer->AddPointCloud(cv_pp_cloud);
+      tgRenderer->Update();
+      break;
+    }
+          
+    case  '8':
+    {
+      log("Show PlanePopout");
+      tgRenderer->Clear();
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr pp_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+      planePopout->GetCloudDownsampled(pp_cloud);
+      cv::Mat_<cv::Vec4f> cv_pp_cloud;
+      pclA::ConvertPCLCloud2CvMat(pp_cloud, cv_pp_cloud, true);
+      tgRenderer->AddPointCloud(cv_pp_cloud);
+      tgRenderer->Update();
+      break;
+    }
+      
+    case '9':
+    {
+      log("Show PlanePopout");
+      tgRenderer->Clear();
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr table (new pcl::PointCloud<pcl::PointXYZRGB>);
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr table_hull (new pcl::PointCloud<pcl::PointXYZRGB>);
+      planePopout->GetTableProjected(table);
+      planePopout->GetTableHull(table_hull);
+      cv::Mat_<cv::Vec4f> cv_table;
+      pclA::ConvertPCLCloud2CvMat(table, cv_table, false);
+      tgRenderer->AddPointCloud(cv_table);
+      int hull_size = table_hull->points.size();
+      for(unsigned i=0; i<hull_size-1; i++)
+      {
+        tgRenderer->AddLine3D(table_hull->points[i].x, table_hull->points[i].y, table_hull->points[i].z, 
+                               table_hull->points[i+1].x, table_hull->points[i+1].y, table_hull->points[i+1].z, 
+                               0, 255, 0, 3);
+      }
+      tgRenderer->AddLine3D(table_hull->points[0].x, table_hull->points[0].y, table_hull->points[0].z, 
+                             table_hull->points[hull_size-1].x, table_hull->points[hull_size-1].y, 
+                             table_hull->points[hull_size-1].z, 0, 255, 0, 3);
+      tgRenderer->Update();
+      break;
+    }
 
     case 'q':
       log("Show PATCHES");
@@ -564,7 +637,7 @@ void SegLearner::SingleShotMode()
         cv::imshow("3D-Gestalts", kinect_image);
       }
       {
-        Z::SetActiveDrawArea(iplImage_k);
+        Z::SetActiveDrawArea(iplImage_k);                                                     /// TODO Show vs3 segments
         vcore->DrawGestalts(Z::Gestalt::SEGMENT, 1);
         cvShowImage("Kinect", iplImage_k);
       }
@@ -583,10 +656,14 @@ void SegLearner::SingleShotMode()
       {
         cv::Mat_<cv::Vec3b> kinect_image;
         ConvertImage(*iplImage_k, kinect_image);                                              /// TODO Convert image after drawing into it!
-        line_image = kinect_image;
-        kcore->DrawGestalts3DToImage(line_image, Z::Gestalt3D::LINE, camPars[2]);
-        cv::imshow("3D-Gestalt", line_image);
-      }      
+        kcore->DrawGestalts3DToImage(kinect_image, Z::Gestalt3D::LINE, camPars[2]);
+        cv::imshow("3D-Gestalt", kinect_image);
+      }  
+      {
+        Z::SetActiveDrawArea(iplImage_k);                                                     /// TODO Show vs3 lines
+        vcore->DrawGestalts(Z::Gestalt::LINE, 1);
+        cvShowImage("Kinect", iplImage_k);
+      }
       if(showImages)
       {
         tgRenderer->Clear();

@@ -50,7 +50,7 @@ namespace cast
 {
   
   
-  /**
+/**
  * @brief Called by the framework to configure the component.
  * @param _config Configuration
  */
@@ -73,7 +73,6 @@ void SegTester::configure(const map<string,string> & _config)
 //   vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_RECTANGLES);
 
 //  learner = new Z::Learner();                       // Learner for features
-//  svmFileCreator = new Z::SVMFileCreator();         // Creator training files for SVM
 
   showImages = false;
   single = false;
@@ -194,7 +193,17 @@ void SegTester::configure(const map<string,string> & _config)
   planePopout = new pclA::PlanePopout();
   relations = new Z::CalculateRelations();
   relations->Initialize(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
-  svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
+  
+  std::vector<const char*> filenames;
+  const char* filename = "./instantiations/11-05-11/1026/PP-Trainingsset.txt.model";
+  filenames.push_back(filename);
+  filename = "./instantiations/11-05-11/PL-Trainingsset.txt.model";
+  filenames.push_back(filename);
+  filename = "./instantiations/11-05-11/LL-Trainingsset.txt.model";
+  filenames.push_back(filename);
+printf(" HEY: Filenames.size(): %u\n", filenames.size());
+  svmPredictor = new Z::SVMPredictor(2, filenames);      // 2 ... Number of SVM's
+
   graphCutter = new Z::GraphCut(kcore, relations);
 
   if(showImages) 
@@ -294,6 +303,16 @@ void SegTester::GetImageData()
 //     pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_pc_image);
 //     cv::imshow("Kinect Image from point cloud", kinect_pc_image);
   }
+  
+  /// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK 
+  /// Check if there are same 3D points in the point clouds
+  for(unsigned l=0; l<pointCloudWidth*pointCloudHeight-1; l++)
+  {
+    double dist = ((pcl_cloud->points[l].x-pcl_cloud->points[l+1].x) + 
+                   (pcl_cloud->points[l].y-pcl_cloud->points[l+1].y) + 
+                   (pcl_cloud->points[l].z-pcl_cloud->points[l+1].z));
+    if(dist == 0.) printf("SegTester: Warning: Same 3D points!!!\n");
+  }
 }
 
 
@@ -362,6 +381,7 @@ last = current;
   /// CalculateRelations
 printf("SegTester: CalculateRelations start!\n");
   std::vector<Z::Relation> relation_vector;
+  relations->Reset();
   relations->CalcTestRelations(relation_vector);   // with ground-truth relations
 printf("SegTester: CalculateRelations end!\n");
 
@@ -385,8 +405,8 @@ printf("Runtime for SegTester: Prediction: %4.3f\n", timespec_diff(&current, &la
 last = current;
 
 //   relations->PrintResults();
-  relations->ConstrainRelations();
-//   relations->PrintRelations();
+//   relations->ConstrainRelations();
+  relations->PrintRelations();
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: Constrain results: %4.3f\n", timespec_diff(&current, &last));
@@ -395,7 +415,9 @@ last = current;
   /// Graph cutter
 printf("    graphCutter: start\n");
   graphCutter->Initialize();
+printf("    graphCutter: initialized\n");
   graphCutter->Cut();
+printf("    graphCutter: cutted\n");
   graphCutter->CopyGroupIDToFeatures();
 printf("    graphCutter: end.\n");
 
@@ -414,11 +436,14 @@ last = current;
   /// Draw VisionCore image
   if(showImages)
   {
+//     tgRenderer->Clear();
+//     kcore->DrawObjects3D(tgRenderer);
+//     tgRenderer->Update();
+
     tgRenderer->Clear();
+    kcore->DrawGraphCut3D(tgRenderer);
     tgRenderer->Update();
-    kcore->DrawObjects3D(tgRenderer);
-    tgRenderer->Update();
-    
+
 //     Z::SetActiveDrawArea(iplImage_k);
 //     vcore->DrawGestalts(Z::Gestalt::LINE, 1);
 //     cvShowImage("Kinect", iplImage_k);
@@ -520,7 +545,6 @@ void SegTester::SingleShotMode()
       if (showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
         tgRenderer->Update();
       }
@@ -576,7 +600,6 @@ void SegTester::SingleShotMode()
     case '3':
       log("Show Objects");
       tgRenderer->Clear();
-      tgRenderer->Update();
       kcore->DrawObjects3D(tgRenderer);
       tgRenderer->Update();
       break;
@@ -584,7 +607,6 @@ void SegTester::SingleShotMode()
     case '4':
       log("Show GRAPH-CUT");
       tgRenderer->Clear();
-      tgRenderer->Update();
       kcore->DrawGraphCut3D(tgRenderer);
       tgRenderer->Update();
       break;
@@ -611,6 +633,21 @@ void SegTester::SingleShotMode()
       }
       break;
 
+    case '9':
+      log("Show Relation debug pixels");
+      if (showImages)
+      {
+        std::vector<cv::Vec4f> pts;
+        relations->GetPixelsToDraw(pts);
+for(unsigned i=0; i<pts.size(); i++)
+  printf("Number of pixels to draw: %u: %4.3f-%4.3f-%4.3f-%4.3f\n", pts.size(), pts[i][0], pts[i][1], pts[i][2], pts[i][3]);
+        tgRenderer->Clear();
+//         tgRenderer->AddPointCloud(kinect_point_cloud);
+        tgRenderer->AddPointCloud(pts);
+        tgRenderer->Update();
+      }
+      break;
+
     case 'q':
       log("Show PATCHES");
       for(unsigned i=0; i<kcore->NumGestalts3D(Z::Gestalt3D::PATCH); i++)
@@ -624,7 +661,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, false);
         tgRenderer->Update();
       }
@@ -646,7 +682,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::SEGMENT, false);
         tgRenderer->Update();
@@ -665,7 +700,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         tgRenderer->AddPointCloud(kinect_point_cloud);
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::LINE, false);
         tgRenderer->Update();
@@ -684,7 +718,6 @@ void SegTester::SingleShotMode()
     case 'z':
       log("Show CLOSURES");
       tgRenderer->Clear();
-      tgRenderer->Update();
       tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::CLOSURE, false);
       tgRenderer->Update();
@@ -692,7 +725,6 @@ void SegTester::SingleShotMode()
     case 'u':
       log("Show RECTANGLES");
       tgRenderer->Clear();
-      tgRenderer->Update();
       tgRenderer->AddPointCloud(kinect_point_cloud);
       kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::RECTANGLE, false);
       tgRenderer->Update();
@@ -705,7 +737,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, true);
         tgRenderer->Update();
       }
@@ -715,7 +746,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_SPHERE, true);
         tgRenderer->Update();
       }
@@ -725,7 +755,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_CYLINDER, true);
         tgRenderer->Update();
       }
@@ -736,7 +765,6 @@ void SegTester::SingleShotMode()
       if(showImages)
       {
         tgRenderer->Clear();
-        tgRenderer->Update();
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PATCH, false, true, GetRandomColor());
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_SPHERE, false, true, GetRandomColor());
         kcore->DrawGestalts3D(tgRenderer, Z::Gestalt3D::PCL_CYLINDER, false, true, GetRandomColor());

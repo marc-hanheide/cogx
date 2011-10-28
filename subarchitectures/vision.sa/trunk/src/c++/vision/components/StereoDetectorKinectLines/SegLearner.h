@@ -74,7 +74,7 @@ private:
 //  IplImage *iplImage_depthMap;                              ///< iplImage with depth map of kinect
   
   cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud ;        ///< PCL point cloud
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud
   
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois; ///< Estimated sois from the PlanePopout
   std::vector<unsigned> soi_labels;                           ///< Labels of the estimated sois
@@ -101,7 +101,7 @@ protected:
 
 public:
   SegLearner() {}
-  virtual ~SegLearner() {delete vcore;}
+  virtual ~SegLearner() {/*delete vcore;*/printf("TODO: SegLearner.h: Delete all the stuff!!!\n");}
   
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int imgWidth);
 
