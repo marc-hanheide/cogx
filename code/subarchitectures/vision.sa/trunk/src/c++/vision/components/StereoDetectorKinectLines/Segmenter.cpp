@@ -207,7 +207,16 @@ void Segmenter::configure(const map<string,string> & _config)
 //   planePopout = new pclA::PlanePopout();
   relations = new Z::CalculateRelations();
   relations->Initialize(kcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
-  svmPredictor = new Z::SVMPredictor(2);      // 2 ... Number of SVM's
+
+  std::vector<const char*> filenames;
+  const char* filename = "./instantiations/11-05-11/1021/PP-Trainingsset2.txt.model";
+  filenames.push_back(filename);
+  filename = "./instantiations/11-05-11/PL-Trainingsset.txt.model";
+  filenames.push_back(filename);
+  filename = "./instantiations/11-05-11/LL-Trainingsset.txt.model";
+  filenames.push_back(filename);
+  svmPredictor = new Z::SVMPredictor(2, filenames);      // 2 ... Number of SVM's
+
   graphCutter = new Z::GraphCut(kcore, relations);
 }
 
