@@ -516,6 +516,9 @@ void SOIFilter::onAdd_LookAroundCommand(const cdl::WorkingMemoryChange & _wmc)
 void SOIFilter::saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy)
 {
   soiCopy->boundingSphere = soiOrig->boundingSphere;
+  // review 2011: since we don't call getstablesois, we have to remember the points for segmentation
+  soiCopy->points = soiOrig->points;
+  soiCopy->BGpoints = soiOrig->BGpoints;
 }
 
 // Save a part of a ProtoObject to the internal database
