@@ -256,6 +256,82 @@ void WmTaskExecutor_Soi::handle_add_soi(WmEvent* pEvent)
   }
 }
 
+// When the object should be (re-)analyzed we set the desired view cone to move to
+// and analyze. 
+# if 0
+// copied from ... _add_ ...
+int WmTaskExecutor_Soi::CreateDesiredViewCone(SOIPtr psoi, CameraParameters camPars, ViewConePtr &result)
+{
+      ROIPtr roiPtr = projectSOI(camPars, *psoi);
+
+      // Center of the projected SOI ... Math::Rect2.pos IS the center
+      double rcx = roiPtr->rect.pos.x;
+      double rcy = roiPtr->rect.pos.y;
+
+      if (isnan(rcx) || isnan(rcy) || fabs(rcx) > 2*camPars.width || fabs(rcy) > 2*camPars.height) {
+        ostringstream ss;
+        Math::Vector3 pos = psoi->boundingSphere.pos;
+        ss << "SOI: (" << pos.x << ", " << pos.y << ", " << pos.z << ")";
+        ss << "  CAMERA: " << camPars;
+        ss << "  roiCx: (" << rcx << ", " << rcy << ")";
+        log(ss.str());
+
+        //if (pSoiFilter->retryEvent(pEvent, retryMs, 10))
+        //  log("Projected SOI out of bouds. WILL RETRY LATER.");
+        //else
+        //  error("Projected SOI out of bouds. NO MORE RETRIES. ABORTING.");
+
+        result = NULL;
+        return SoiOutOfBounds;
+      }
+
+      // how far from the center of the LEFT image is the SOI
+      double dirDelta  = -atan2( (rcx - camPars.cx), camPars.fx); // negative pan is to the right
+      double tiltDelta = -atan2( (rcy - camPars.cy), camPars.fy); // y is inverted between image and tilt
+      log("Angle to SOI: pan %g, tilt %g", dirDelta, tiltDelta);
+
+
+#if 0 && defined(FEAT_VISUALIZATION) && defined(HAS_LIBPLOT)
+      // draw the thing
+      std::ostringstream ssvg;
+      cogx::display::CSvgStringPlotter p(ssvg);
+      p.openpl();
+      p.flinewidth (2.0);        // line thickness in user coordinates
+      p.pencolorname ("red");    // path will be drawn in red
+
+      p.line(camPars.cx, YY(camPars.cy), rcx, YY(rcy));
+      p.line(camPars.cx, YY(camPars.cy), camPars.cx - dirDelta * 180 / 3.14, YY(camPars.cy));
+      p.line(camPars.cx, YY(camPars.cy), camPars.cx, YY(camPars.cy - tiltDelta * 180 / 3.14));
+
+      p.closepl();
+
+      string s = p.getScreenSvg();
+
+      pSoiFilter->m_display.setObject(OBJ_VISUAL_OBJECTS, "soif-last-move", s);
+      //pSoiFilter->m_display.setHtml("KrNeki", "soif-last-move-text", s);
+#endif
+    }
+
+    // New view cone for turning the head
+    ViewConePtr pBetterVc = createViewCone();
+    pBetterVc->anchor = pCurVc->anchor;
+    pBetterVc->x = pCurVc->x;
+    pBetterVc->y = pCurVc->y;
+    pBetterVc->viewDirection = pCurVc->viewDirection + dirDelta;
+    pBetterVc->tilt = pCurVc->tilt + tiltDelta;
+    pBetterVc->target = createWmPointer<ProtoObject>(cast::makeWorkingMemoryAddress(objId,
+          pSoiFilter->getSubarchitectureID()));
+
+    result = pBetterVc;
+    return OK;
+    //// Address at which new view cone will be stored
+    //cdl::WorkingMemoryAddress vcAddr = cast::makeWorkingMemoryAddress(pSoiFilter->newDataID(),
+    //    pSoiFilter->getSubarchitectureID());
+    //// Write viewcone to memory
+    //pSoiFilter->addToWorkingMemory(vcAddr, pBetterVc);
+}
+#endif
+
 //void WmTaskExecutor_Soi::handle_update_soi(WmEvent* pEvent)
 //{
 //  // TODO: update SOI position

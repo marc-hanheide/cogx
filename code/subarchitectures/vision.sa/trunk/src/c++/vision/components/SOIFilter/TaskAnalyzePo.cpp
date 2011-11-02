@@ -77,6 +77,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
    * DELETE it. It will be moved to a deletion queue by the framework and
    * deleted later. */
   debug("analyze_task: calling GetStableSoisCommand");
+#if 0
   GetSoisCommandRcv* pGetSois;
   vector<SOIPtr> sois;
   pGetSois = new GetSoisCommandRcv(pSoiFilter, pSoiFilter->m_fineSource);
@@ -85,6 +86,17 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   if (bCompleted)
     pGetSois->getSois(sois);
   pSoiFilter->removeChangeFilter(pGetSois, cdl::DELETERECEIVER);
+#else
+  // review 2011
+  // because of problems with PPO/SOIFilter interaction we don't call GetStableSoisCommand but
+  // use the sois we already have (assumpiton: 1 PC server is running)
+  bool bCompleted = true;
+  vector<SOIPtr> sois;
+  typeof(pSoiFilter->m_sois.begin()) it;
+  for (it = pSoiFilter->m_sois.begin(); it != pSoiFilter->m_sois.end(); it++) {
+    sois.push_back(it->second->psoi);
+  }
+#endif
 
   if (! bCompleted || sois.size() < 1)
   {
