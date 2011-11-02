@@ -109,10 +109,15 @@ class Agent(BaseAgent):
         if task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
             return
 
+        def is_pure_sensor(pnode):
+            if isinstance(pnode.action, pddl.mapl.MAPLAction):
+                return pnode.action.is_pure_sensor()
+            return False
+
         def action_cmp(pnode1, pnode2):
-            if pnode1.action.is_pure_sensor() and not pnode2.action.is_pure_sensor():
+            if is_pure_sensor(pnode1) and not is_pure_sensor(pnode2):
                 return -1
-            elif not pnode1.action.is_pure_sensor() and pnode2.action.is_pure_sensor():
+            elif not is_pure_sensor(pnode1) and is_pure_sensor(pnode2):
                 return 1
 
             for s1, s2 in [(pnode1.action.name, pnode2.action.name)] + zip(map(str, pnode1.args), map(str, pnode2.args)):
