@@ -20,7 +20,18 @@ class MapsimScenario(object):
         it = iter(root)
         it.get("define")
         j = iter(it.get(list, "(problem 'scenario identifier')"))
-        j.get("scenario")
+        filetype = j.get("terminal")
+        if filetype.token.string == "problem":
+            world  = Problem.parse(root, domain)
+            scname = world.name
+            world.name = "%s-world" % scname
+            agent_prob = Problem(scname+"-agent", world.objects, world.init, world.goal, domain)
+            agents = {"default-agent" : agent_prob}
+            return MapsimScenario(scname, world, agents, domain)
+            
+        elif filetype.token.string != "scenario":
+            raise UnexpectedTokenError(filetype.token, "'scenario'")
+            
         scname = j.get(None, "scenario identifier").token.string
         
         j = iter(it.get(list, "domain identifier"))

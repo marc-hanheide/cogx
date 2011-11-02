@@ -106,7 +106,13 @@ class Simulation(object):
         """
         Translate (kval ?a ?svar) facts in the world state to actual knowledge in the agents state.
         """
-        a = self.problem[agent.name]
+        try:
+            a = self.problem[agent.name]
+        except KeyError, e:
+            if agent.name == "default-agent":
+                return
+            raise e
+        
         for svar, val in self.state.iteritems():
             if val == pddl.FALSE:
                 continue
@@ -179,10 +185,14 @@ class Simulation(object):
         action = self.domain.get_action(action)
         action.instantiate(args, self.problem)
 
-        if agent != self.agents[action.agents[0].get_instance().name]:
-            other = action.agents[0].get_instance()
-            print "%d: %s tried to execute action for %s (%s %s)" % (self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
-            log.debug("%d: %s tried to execute action for %s (%s %s)", self.time, agent.name, other.name, action.name, " ".join(a.name for a in args))
+        if isinstance(action, mapl.MAPLAction):
+            agent_name = action.agents[0].get_instance().name
+        else:
+            agent_name = "default-agent"
+
+        if agent != self.agents[agent_name]:
+            print "%d: %s tried to execute action for %s (%s %s)" % (self.time, agent.name, agent_name, action.name, " ".join(a.name for a in args))
+            log.debug("%d: %s tried to execute action for %s (%s %s)", self.time, agent.name, agent_name, action.name, " ".join(a.name for a in args))
             agent.statistics.increase_stat("failed_execution_attempts")
             agent.statistics.increase_stat("reward", 0.95**self.time * -global_vars.mapsim_config.reward)
             action.uninstantiate()
@@ -201,7 +211,7 @@ class Simulation(object):
             if action.effect:
                 perceived_facts = self.execute_physical_action(action, agent)
                 agent.statistics.increase_stat("physical_actions_executed")
-            if action.sensors:
+            if isinstance(action, mapl.MAPLAction) and action.sensors:
                 perceived_facts += self.execute_sensor_action(action, agent)
                 agent.statistics.increase_stat("sensor_actions_executed")
             if self.observe_dict[action.name]:
