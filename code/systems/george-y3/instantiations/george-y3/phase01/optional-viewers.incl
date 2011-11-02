@@ -1,0 +1,5 @@
+# CAST file
+
+#SETVAR displaysrv_param_redirect=--redirect-to-host %(host:SecondDisplayHost)
+#CPP MG display.srv.2 DisplayServer %(displaysrv_param_redirect)
+#CPP MG grabber VideoGrabber --videoname VideoServer --camids "0 1 2" --displayserver "display.srv.2"
