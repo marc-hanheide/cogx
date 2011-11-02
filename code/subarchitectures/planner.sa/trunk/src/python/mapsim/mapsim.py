@@ -55,7 +55,8 @@ def parse_command_line():
 if __name__ == '__main__':
     global_vars.mapsim_config = global_vars.load_config_file(CONFIG_FN, cfg_path=mapsim_path, **global_vars.config_autogen.__dict__)
     global_vars.logging_config = global_vars.load_config_file(LOG_CONFIG_FN, cfg_path=mapsim_path, **global_vars.config_autogen.__dict__)
-    
+    global_vars.update_config(CONFIG_FN, cfg_path=mapsim_path)
+
     config.logging_settings_from_dict(global_vars.logging_config.__dict__)
 
     #set default verbosity and loglevel from logging.conf
