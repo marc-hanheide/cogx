@@ -412,7 +412,7 @@ bool StereoServer::isPointVisible(const cogx::Math::Vector3& point)
       //log("Point is NOT visible in camera %d", camPars.id);
       return false;
   }
-  log("Point is visible in camera %d", camPars.id);
+  //log("Point is visible in camera %d", camPars.id);
 
   if (!getCameraParameters(RIGHT, camPars) || ! Video::isPointVisible(camPars, point)) {
       //log("Point is NOT visible in camera %d", camPars.id);
