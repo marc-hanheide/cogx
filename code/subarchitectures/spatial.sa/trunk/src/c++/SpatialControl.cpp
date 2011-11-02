@@ -404,8 +404,11 @@ void SpatialControl::start()
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
  */
 
-  m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
-  ptz::PTZReading reading = m_ptzInterface->getPose();
+	
+  if(m_sendPTZCommands) {	
+  	m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
+  	ptz::PTZReading reading = m_ptzInterface->getPose();
+  
 
   if(reading.pose.tilt < -M_PI/4 + 0.05 && reading.pose.tilt > -M_PI/4 -0.05)
     m_ptzInNavigationPose = true;
@@ -415,6 +418,8 @@ void SpatialControl::start()
   log("PTZ in navigation pose: %d", m_ptzInNavigationPose);
 
   m_lastPtzNavPoseCompletion = getCASTTime();
+}
+
 
   log("SpatialControl started");
   
