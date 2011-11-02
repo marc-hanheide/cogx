@@ -85,7 +85,8 @@ public class CogXRunner extends ManagedComponent implements Runner {
 			}
 
 			configuration = new Configuration(config.get("--configPath"),
-					armName, config.containsKey("--testGUI"));
+					armName, config.containsKey("--testGUI"),
+          config.containsKey("--enableTableObstacleHack"));
 		} else {
 			logger.error("Cannot read arguments - exit");
 			System.exit(-1);

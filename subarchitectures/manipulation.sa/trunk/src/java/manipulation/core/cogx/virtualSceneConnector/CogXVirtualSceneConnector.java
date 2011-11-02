@@ -313,15 +313,18 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 	 */
 	public RigidBodyPrx updateRobot(BasePositionData position) throws ExTiny {
 		RigidBodyDesc robot = new RigidBodyDescI();
-		robot.shapes = new ShapeDesc[2];
+    // if the table obstacle hack is enabled, we add an extra part to the
+    // robot shape
+    if(manipulator.getConfiguration().isEnabledTableObstacleHack())
+      robot.shapes = new ShapeDesc[3];
+    else
+      robot.shapes = new ShapeDesc[2];
 
 		BoxShapeDesc base = new BoxShapeDescI();
 		base.dimensions.v1 = baseLength / 2;
 		base.dimensions.v2 = baseWidth / 2;
 		base.dimensions.v3 = baseHeight / 2;
-
 		base.localPose.p = new Vec3(-baseLength / 4, 0, 0);
-
 		robot.shapes[0] = base;
 
 		BoxShapeDesc stick = new BoxShapeDescI();
@@ -331,6 +334,16 @@ public class CogXVirtualSceneConnector implements VirtualSceneConnector {
 		stick.localPose.p = new Vec3(-baseLength / 3, 0, baseHeight / 2
 				+ stichHeight / 2);
 		robot.shapes[1] = stick;
+
+    if(manipulator.getConfiguration().isEnabledTableObstacleHack()) {
+      // safety obstacle for tables
+      BoxShapeDesc safety = new BoxShapeDescI();
+      safety.dimensions.v1 = 1;
+      safety.dimensions.v2 = 1;
+      safety.dimensions.v3 = 0.25;
+      safety.localPose.p = new Vec3(1.3, 0, -baseHeight/2 + 0.25);
+      robot.shapes[2] = safety;
+    }
 
 		robot.globalPose.p.v1 = position.getPoint().getX();
 		robot.globalPose.p.v2 = position.getPoint().getY();
