@@ -12,12 +12,14 @@ public class Configuration {
 	String configPath;
 	ArmConnector.ArmName armName;
 	boolean gui;
+  boolean enabledTableObstacleHack;
 
 	public Configuration(String configPath, ArmConnector.ArmName armName,
-			boolean gui) {
+			boolean gui, boolean enabledTableObstacleHack) {
 		this.configPath = configPath;
 		this.armName = armName;
 		this.gui = gui;
+    this.enabledTableObstacleHack = enabledTableObstacleHack;
 	}
 
 	/**
@@ -69,4 +71,17 @@ public class Configuration {
 		this.gui = gui;
 	}
 
+	/**
+	 * @return enabledTableObstacleHack
+	 */
+	public boolean isEnabledTableObstacleHack() {
+		return enabledTableObstacleHack;
+	}
+
+	/**
+	 * @param enabledTableObstacleHack
+	 */
+	public void setTableObstacleHack(boolean set) {
+		this.enabledTableObstacleHack = set;
+	}
 }
