@@ -14,9 +14,9 @@ SETVAR CoarsePlanePopOut_Params=<multiline>
    #--minObjHeight 0.015
    #--totalPoints 8000
    #--LeastPointsInOneObj 40
-   #--agonalTime 10
-   #--stableTime 2 
-   #--display
+   --agonalTime 4
+   --stableTime 4 
+   --display
    #--log
 </multiline>
 CPP MG vis.ppo.coarse PlanePopOutPc %(CoarsePlanePopOut_Params)

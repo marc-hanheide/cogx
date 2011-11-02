@@ -6,6 +6,7 @@
 INCLUDE  ppo-stereo-1.incl
 #INCLUDE  ppo-stereo-2.incl
 #INCLUDE  ppo-kinect-stereo.incl
+#INCLUDE  ppo-kinect-1.incl
 
 
 SETVAR wmBlocking=--blocking false
@@ -22,6 +23,7 @@ SETVAR SOIFilter_Params=<multiline>
    --bght 24
    --bgdt 9999
    --fixc 24
+   --max-soi-dist 1.5
    # Left camera from the fine point cloud server; used by the internal grabber for debugging
    --camid 0
    --videoname videoserver
@@ -37,13 +39,13 @@ CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
 
 
 INCLUDE  includes/vision.sa/vision-visual-learner.cast
+# INCLUDE  object-recognizer.incl
+
 
 # ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
 # Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
 # the ProtoObject.
 #CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoWidth 640 --histogramSize 24 --use3DPoints --planeDistThr 0.005 --planeMinPoints 100 --findConnectedRegions --displayserver "display.srv" --logImages # --log --debug
-
-INCLUDE  object-recognizer.incl
 
 CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid 0 --displayserver "display.srv" --image-send-ms "300"
 #CPP MG video.viewer.1 VideoViewer --videoname videoserver --camid 1 --displayserver "display.srv" --image-send-ms "300"

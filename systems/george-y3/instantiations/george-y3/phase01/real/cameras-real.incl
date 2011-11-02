@@ -72,7 +72,7 @@ SETVAR KinectPCServer_Params=<multiline>
    #--imgsize "320 240" --maxdisp "96"
    #--logimages
    #--display
-   --create-viewcone
+   #--create-viewcone
    # --save-to-file --save-directory "/tmp"
    --displayserver "display.srv"
 </multiline>
@@ -81,4 +81,4 @@ CPP MG kinect.server KinectPCServer %(KinectPCServer_Params)
 # to move the PTU to a given position
 #CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
 
-JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer # --pan "0.0" --tilt "-0.8" # --testGUI
+JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-1.0" # --testGUI
