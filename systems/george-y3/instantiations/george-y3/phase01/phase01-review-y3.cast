@@ -6,13 +6,14 @@
 # in a .hconf file will be used instead of host addresses defined here.
 # HOSTNAME  localhost      192.168.33.101
 # HOSTNAME  Main           192.168.56.1
-#HOSTNAME  Main           localhost
-## HOSTNAME  PlayerHost     192.168.56.3
-#HOSTNAME  PlayerHost     [Main]
-#HOSTNAME  PeekabotHost   [Main]
-#HOSTNAME  DisplayHost    [Main]
-##HOSTNAME  AbducerHost    192.168.56.3
-#HOSTNAME  AbducerHost    [Main]
+# HOSTNAME  PlayerHost     192.168.56.3
+
+HOSTNAME  Main           localhost
+
+HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Main]
+HOSTNAME  DisplayHost    [Main]
+HOSTNAME  AbducerHost    [Main]
 
 HOST     [Main]
 
@@ -25,8 +26,8 @@ INCLUDE  includes/spatial.sa/spatial-base.cast
 INCLUDE  includes/vision.sa/vision-base.cast
 
 # Configure the cameras (internal, external parameters; stereo config; position)
-# INCLUDE  sim/cameras-sim.incl
-INCLUDE  real/cameras-real.incl
+INCLUDE  sim/cameras-sim.incl
+#INCLUDE  real/cameras-real.incl
 
 # Include other vision components
 INCLUDE  georgeY3-vision.incl
@@ -34,7 +35,7 @@ INCLUDE  georgeY3-vision.incl
 # belief mediators, execution
 INCLUDE includes/vision.sa/vision-execution.cast
 INCLUDE includes/vision.sa/vision-mediators.cast
-#INCLUDE juggler.incl
+INCLUDE juggler.incl
 
 CPP MG vc-costs ViewConeMoveCostGenerator
 
@@ -65,20 +66,10 @@ INCLUDE includes/motivation.sa/motivation-goals-george.cast
 SUBARCHITECTURE manipulation.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# the PlayerArmBridge is only required for Gazebo, hence in simulation settings
-#CPP MG manipulation.playerArmBridge PlayerArmBridge --log
-#--------------------------------------------------------------------------------------------------------------------------------------------------
-# this is the component that receives ManipulationExternalCommand
-# as discussed in the tutorial and controls the arm.
-# Here you have to give the correct clibration file
-# with "--testGUI" you can try out the different commands
-SETVAR armName=katana300
-#SETVAR armName=simulation
-JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/george-y3/calibration/example-arm-pose.xml" --armName "%(armName)" #--testGUI
-CPP MG armManager ArmManager
-# This compenent creates commands for the ArmManager from the planner
-JAVA MG exe.manipulation manipulation.execution.george.ManipulationActionInterface --log
+
+# Include the appropriate Katana config
+INCLUDE  sim/katana300-sim.incl
+INCLUDE  real/katana300-real.incl
 
 
 # visualization ##########################################################
