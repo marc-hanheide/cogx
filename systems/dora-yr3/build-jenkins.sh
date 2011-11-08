@@ -6,6 +6,8 @@ else
 	workdir=`pwd`
 fi
 
+
+rm -rf "$workdir/BUILD" "$workdir/output"
 mkdir -pv "$workdir/BUILD"
 cd "$workdir/BUILD" \
 	&& cmake -C ../cmake-caches/dora-yr3.txt .. \
