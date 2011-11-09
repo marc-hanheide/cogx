@@ -44,6 +44,7 @@ protected:
   bool m_bDemoSampling;
   bool m_bNoPTZ;
   bool m_bNoVision;
+  bool m_bShowPoses;
 
   vector<spatial::Object *> m_testObjects;
   vector<peekabot::GroupProxy> m_testObjectProxies;
@@ -66,8 +67,9 @@ protected:
   void sampleOnnessForObject(const spatial::Object *objectS, spatial::Object *objectO);
   void sampleRecursively(const vector<spatial::SpatialRelationType> &types,
       const vector<spatial::Object*> &objects, 
-    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
-    vector<Vector3> &outPoints, spatial::Object *supportObject
+      unsigned int nSamplesPerStep, unsigned int nMaxSamples,
+      vector<vector<Pose3> > &outPoints, spatial::Object *supportObject,
+      unsigned int currentLevel = UINT_MAX
 //    , const vector<Vector3> &triangle
     );
 }; 

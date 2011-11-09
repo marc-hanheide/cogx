@@ -78,6 +78,12 @@ void ObjectRelationTester::configure(const map<string,string>& _config)
     m_bDemoSampling = true;
   }
 
+  m_bDemoSampling = false;
+  it = _config.find("--show-poses");
+  if (it != _config.end()) {
+    m_bShowPoses = true;
+  }
+
 //  m_bTestInference = false;
 //  it = _config.find("--test-inference");
 //  if (it != _config.end()) {
@@ -279,17 +285,29 @@ void ObjectRelationTester::runComponent()
     }
   }
 
-  peekabot::PointCloudProxy pcloud;
   vector<Vector3> points;
   int nPoints = 0;
   int maxPoints = 2500;
-  if (m_bSampleOnness) {
-    pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
-    points.reserve(maxPoints);
+
+  peekabot::PointCloudProxy pcloud;
+  peekabot::GroupProxy poses;
+  if (!m_bShowPoses) {
+    if (m_bSampleOnness) {
+      pcloud.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+      points.reserve(maxPoints);
+    }
+    else if (m_bSampleInness) {
+      pcloud.add(m_relationTester,"inpoints", peekabot::REPLACE_ON_CONFLICT);
+      points.reserve(maxPoints);
+    }
   }
-  else if (m_bSampleInness) {
-    pcloud.add(m_relationTester,"inpoints", peekabot::REPLACE_ON_CONFLICT);
-    points.reserve(maxPoints);
+  else {
+    if (m_bSampleOnness) {
+      poses.add(m_relationTester,"onpoints", peekabot::REPLACE_ON_CONFLICT);
+    }
+    else if (m_bSampleInness) {
+      poses.add(m_relationTester,"inpoints", peekabot::REPLACE_ON_CONFLICT);
+    }
   }
 
   while (isRunning()) {
@@ -415,31 +433,77 @@ void ObjectRelationTester::runComponent()
 	  if (m_testObjects.size() > 2) {
 	    if (nPoints < maxPoints) {
 	      vector<spatial::Object*> testObjects;
-	      vector<Vector3> points;
-	      peekabot::VertexSet vs;
-	      points.reserve(500);
-	      testObjects.push_back(m_testObjects[1]);
 	      vector<spatial::SpatialRelationType> types;
+
+	      // HERE: Select trajector and any intermediates
+
+	      //Trajector
+	      testObjects.push_back(m_testObjects[1]);
 	      types.push_back(spatial::RELATION_ON);
+
+	      //Intermediate
+	      testObjects.push_back(m_testObjects[2]);
+	      types.push_back(spatial::RELATION_ON);
+
+	      vector<vector<Pose3> > points;
+	      points.reserve(500);
 
 	      sampleRecursively(types, 
 		  testObjects, 
-		  0, 
 		  100, 
 		  500, 
 		  points, 
+
+		  // HERE: Select base object
+
+		  // A on Table
 		  m_testObjects[0]);
+//		  // A on B
+//		  m_testObjects[2]);
+
 	      log("Found %i points", points.size());
 
-	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
-		  it++) {
-		//  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
-		//    if (nPoints > 500) 
-		vs.add(it->x, it->y, it->z);
-		//points.push_back(box1.pose.pos);
-		nPoints++;
+
+	      if (m_bShowPoses) {
+		for (vector<vector<Pose3> >::iterator it = points.begin(); it != points.end();
+		    it++) {
+
+		  for (unsigned int level = 0; level < it->size(); level++) {
+
+		    BoxObject *boxobject;
+		    if (m_testObjects[level]->type == OBJECT_BOX ||
+			m_testObjects[level]->type == OBJECT_HOLLOW_BOX) {
+		      boxobject = static_cast<BoxObject*>(testObjects[level]);
+		    }
+
+		    peekabot::CubeProxy dummy;
+		    dummy.add(poses, "pt", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+		    float m[16];
+		    getRow44((*it)[level], m);
+		    dummy.set_transformation(m, true);
+		    dummy.set_scale(boxobject->radius1*2,
+			boxobject->radius2*2,
+			boxobject->radius3*2);
+		    dummy.set_visibility(false);
+		    //points.push_back(box1.pose.pos);
+		  }
+		  nPoints++;
+		}
 	      }
-	      pcloud.add_vertices(vs);
+	      else {
+		peekabot::VertexSet vs;
+		for (vector<vector<Pose3> >::iterator it = points.begin();
+		    it != points.end();
+		    it++) {
+		  //  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+		  //    if (nPoints > 500) 
+		  const Pose3 &pose = (*it)[0];
+		  vs.add(pose.pos.x, pose.pos.y, pose.pos.z);
+		  //points.push_back(box1.pose.pos);
+		  nPoints++;
+		}
+		pcloud.add_vertices(vs);
+	      }
 	    }
 	  }
 	}
@@ -447,14 +511,13 @@ void ObjectRelationTester::runComponent()
 
       if (m_bTestInness) {
 	sp.set_scale(m_evaluator.evaluateInness(m_testObjects[0], m_testObjects[1]));
-	sp2.set_scale(m_evaluator.evaluateInness(m_testObjects[2], m_testObjects[1]));
+	sp2.set_scale(m_evaluator.evaluateInness(m_testObjects[3], m_testObjects[1]));
 
 	if (m_bSampleInness) {
 	  if (m_testObjects.size() > 3) {
 	    if (nPoints < maxPoints) {
 	      vector<spatial::Object*> testObjects;
-	      vector<Vector3> points;
-	      peekabot::VertexSet vs;
+	      vector<vector<Pose3> > points;
 	      points.reserve(500);
 	      testObjects.push_back(m_testObjects[1]);
 	      vector<spatial::SpatialRelationType> types;
@@ -462,22 +525,51 @@ void ObjectRelationTester::runComponent()
 
 	      sampleRecursively(types,
 		  testObjects,
-		  0,
 		  100,
 		  500,
 		  points,
 		  m_testObjects[3]);
 	      log("Found %i points", points.size());
 
-	      for (vector<Vector3>::iterator it = points.begin(); it != points.end();
-		  it++) {
-		//  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
-		//    if (nPoints > 500) 
-		vs.add(it->x, it->y, it->z);
-		//points.push_back(box1.pose.pos);
+
+	      if (m_bShowPoses) {
+		for (vector<vector<Pose3> >::iterator it = points.begin();
+		    it != points.end(); it++) {
+		  for (unsigned int level = 0; level < it->size(); level++) {
+
+		    BoxObject *boxobject;
+		    if (m_testObjects[level]->type == OBJECT_BOX ||
+			m_testObjects[level]->type == OBJECT_HOLLOW_BOX) {
+		      boxobject = static_cast<BoxObject*>(testObjects[level]);
+		    }
+
+		    peekabot::CubeProxy dummy;
+		    dummy.add(poses, "pt", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+		    float m[16];
+		    getRow44((*it)[level], m);
+		    dummy.set_transformation(m, true);
+		    dummy.set_scale(boxobject->radius1*2,
+			boxobject->radius2*2,
+			boxobject->radius3*2);
+		    dummy.set_visibility(false);
+		    //points.push_back(box1.pose.pos);
+		  }
+		}
 		nPoints++;
 	      }
-	      pcloud.add_vertices(vs);
+	      else {
+		peekabot::VertexSet vs;
+		for (vector<vector<Pose3> >::iterator it = points.begin(); it != points.end();
+		    it++) {
+		  //  if (evaluateOnness(&box2, &box1) > ((double)rand())/RAND_MAX) 
+		  //    if (nPoints > 500) 
+		  const Pose3 &pose = (*it)[0];
+		  vs.add(pose.pos.x, pose.pos.y, pose.pos.z);
+		  //points.push_back(box1.pose.pos);
+		  nPoints++;
+		}
+		pcloud.add_vertices(vs);
+	      }
 	    }
 	  }
 	}
@@ -647,11 +739,16 @@ void
 ObjectRelationTester::sampleRecursively(
     const vector<spatial::SpatialRelationType> &relationTypes,
     const vector<spatial::Object*> &objects, 
-    int currentLevel, unsigned int nSamplesPerStep, unsigned int nMaxSamples,
-    vector<Vector3> &outPoints, spatial::Object *supportObject
+    unsigned int nSamplesPerStep, 
+    unsigned int nMaxSamples,
+    vector<vector<Pose3> > &outPoints, spatial::Object *supportObject,
+    unsigned int currentLevel
 //    , const vector<Vector3> &triangle
     )
 {
+  if (currentLevel == UINT_MAX)
+    currentLevel = objects.size()-1;
+
   if (supportObject->pose.pos.x == -FLT_MAX) {
     log("Error! Support object pose uninitialized!");
     return;
@@ -684,9 +781,17 @@ ObjectRelationTester::sampleRecursively(
     log("Unsupported object type!");
   }
 
-  double maxLateral = -frameRadius*1.5;
-  double minVertical = -frameRadius*1.5;
-  double maxVertical = frameRadius*3;
+  double maxLateral, minVertical, maxVertical;
+  if (relationTypes[currentLevel] == RELATION_ON) {
+    maxLateral = -frameRadius*1.5;
+    minVertical = -frameRadius*1.5;
+    maxVertical = frameRadius*3;
+  }
+  else {
+    maxLateral = -frameRadius;
+    minVertical = -frameRadius;
+    maxVertical = frameRadius;
+  }
 
   unsigned int pointsFound = 0;
   unsigned int iterations = 0;
@@ -709,14 +814,21 @@ ObjectRelationTester::sampleRecursively(
       : m_evaluator.evaluateInness(supportObject, trajector);
     if (value > 0.5) {
       pointsFound++;
+
+      if (currentLevel == objects.size()-1) {
+	// This is the first level
+	outPoints.push_back(vector<Pose3>(objects.size()));
+      }
+
       if (currentLevel == 0) {
 	// This is the top-level trajector itself
-	outPoints.push_back(trajector->pose.pos);
+	outPoints.back()[currentLevel] = trajector->pose;
       }
       else {
 	// Sample and recurse
-	sampleRecursively(relationTypes, objects, currentLevel-1, nSamplesPerStep, nMaxSamples,
-	    outPoints, trajector);
+	outPoints.back()[currentLevel] = trajector->pose;
+	sampleRecursively(relationTypes, objects,  nSamplesPerStep, nMaxSamples,
+	    outPoints, trajector, currentLevel-1);
       }
     }
 //    if (iterations % 100 == 0) {
