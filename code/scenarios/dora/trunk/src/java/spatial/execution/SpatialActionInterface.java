@@ -64,7 +64,7 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  */
 public class SpatialActionInterface extends ManagedComponent {
 
-	private class AlwaysSucceedsExecutor extends
+	public class AlwaysSucceedsExecutor extends
 			BlockingActionExecutor<ExplorePlace> {
 
 		public AlwaysSucceedsExecutor(ManagedComponent _component) {
@@ -78,7 +78,7 @@ public class SpatialActionInterface extends ManagedComponent {
 
 	}
 
-	private class AlwaysSucceedsExecutorFactory extends
+	public class AlwaysSucceedsExecutorFactory extends
 			ComponentActionFactory<ExplorePlace, AlwaysSucceedsExecutor> {
 
 		public AlwaysSucceedsExecutorFactory(ManagedComponent _component) {
