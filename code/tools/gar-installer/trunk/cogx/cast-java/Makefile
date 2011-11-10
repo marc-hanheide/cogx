@@ -12,13 +12,13 @@ MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/nah/cast/tags/cast-2.1.16b/
 #MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tags/cast-2.1.0rc3/
 
 
-LIBDEPS = cogx/cast-c++
+LIBDEPS = cogx-u11.10/cast-c++
 
 DEB_PACKAGES=\
 	liblog4j1.2-java@ubuntu \
 	default-jdk@ubuntu \
         ant@ubuntu \
-        zeroc-ice33@ubuntu
+        zeroc-ice34@ubuntu
 	
 MFLAGS=$(MFLAGS_NUMCPU)
 
