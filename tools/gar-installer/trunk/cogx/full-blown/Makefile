@@ -7,7 +7,7 @@ MAINTAINER = mhanheid
 DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libqt4-webkit@ubuntu \
 		python-qt4@ubuntu \
-		libboost-python1.40-dev@ubuntu \
+		libboost-all-dev@ubuntu \
 		libqt4-dev@ubuntu \
 		libgl1-mesa-dev@ubuntu \
 		libglu1-mesa-dev@ubuntu \
@@ -22,7 +22,10 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		python-pygraphviz@ubuntu \
 		libglew1.5-dev@ubuntu \
 		libdevil-dev@ubuntu \
-		nvidia-cg-toolkit@ubuntu\
+		nvidia-cg-toolkit@ubuntu \
+		cmake-curses-gui@ubuntu \
+		libdc1394-22-dev@ubuntu \
+		libsdl1.2-dev@ubuntu \
 		libsuitesparse-dev@ubuntu\
 		libeigen2-dev@ubuntu 
 

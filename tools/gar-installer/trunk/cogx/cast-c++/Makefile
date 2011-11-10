@@ -18,7 +18,8 @@ LIBDEPS =
 
 DEB_PACKAGES=\
 	liblog4cxx10-dev@ubuntu \
-        zeroc-ice33@ubuntu
+        zeroc-ice34@ubuntu \
+	libgoogle-perftools-dev@ubuntu
 
 MFLAGS=$(MFLAGS_NUMCPU)
 

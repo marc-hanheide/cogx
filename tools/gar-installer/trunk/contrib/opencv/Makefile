@@ -1,10 +1,10 @@
 GARNAME = OpenCV
-GARVERSION = 2.2.0
+GARVERSION = 2.3.1a
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 MAINTAINER = ttoenige
 
-MASTER_SITES =  http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.2/
+MASTER_SITES =  http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.3.1/
 #svnhttps://opencvlibrary.svn.sourceforge.net/svnroot/opencvlibrary/trunk/opencv/
 
 
