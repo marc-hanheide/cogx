@@ -1,0 +1,6 @@
+ATTRS{product}=="Xbox NUI Camera", SYMLINK+="kinect"
+ATTRS{manufacturer}=="Hokuyo Data Flex for USB", ATTRS{product}=="URG-Series USB Driver", SYMLINK+="laser"
+ATTRS{port_number}=="1", SYMLINK+="pantilt"
+ATTRS{port_number}=="0", SYMLINK+="robotbase"
+ATTRS{product}=="Logitech Cordless RumblePad 2", SYMLINK+="joystick", OPTIONS+="last_rule"
+
