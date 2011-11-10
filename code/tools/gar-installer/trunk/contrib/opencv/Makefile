@@ -1,7 +1,7 @@
 GARNAME = OpenCV
-GARVERSION = 2.3.1a
+GARVERSION = 2.3.1
 CATEGORIES = bootstrap
-DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
+DISTFILES = $(GARNAME)-$(GARVERSION)a.tar.bz2
 MAINTAINER = ttoenige
 
 MASTER_SITES =  http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.3.1/
@@ -27,6 +27,8 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 include ../../gar.extend.mk
 #-D OPENCV_CONFIG_FILE_INCLUDE_DIR:PATH=$(prefix)/include/opencv
 CONFIGURE_ARGS =  -D CMAKE_INSTALL_PREFIX:PATH=$(prefix)
+
+
 
 #checksum-$(DISTFILES):  
 #	true
