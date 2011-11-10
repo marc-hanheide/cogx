@@ -24,7 +24,7 @@ CONFIGURE_SCRIPTS = cmake
 BUILD_SCRIPTS = $(WORKSRC)/Makefile
 INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
-CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix)
+CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix) -D CMAKE_CXX_FLAGS="-Wl,--no-as-needed"
 
 include ../../gar.extend.mk
 
