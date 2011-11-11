@@ -1,0 +1,23 @@
+<org.cognitivesystems.binder.mln.Evidence>
+  <engId>mlnEngine1</engId>
+  <setToken></setToken>
+  <resetToken></resetToken>
+  <newInstances/>
+  <removeInstances/>
+  <trueEvidence/>
+  <falseEvidence>
+    <string>belief(Blf1)</string>
+    <string>belief(Blf2)</string>
+    <string>belief(Blf3)</string>
+    <string>belief(Blf4)</string>
+    <string>belief(Blf5)</string>
+    <string>belief(Blf6)</string>
+  </falseEvidence>
+  <noEvidence/>
+  <extPriors/>
+  <priorWts/>
+  <resetPriors/>
+  <burnInSteps>300</burnInSteps>
+  <initInfSteps>800</initInfSteps>
+  <prevInfSteps>0</prevInfSteps>
+</org.cognitivesystems.binder.mln.Evidence>
