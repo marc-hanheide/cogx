@@ -19,7 +19,7 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-CONFIGURE_ARGS = 
+CONFIGURE_ARGS = "LDFLAGS=-Wl,--no-as-needed"
 
 checksum-$(DISTFILES):  
 	true
