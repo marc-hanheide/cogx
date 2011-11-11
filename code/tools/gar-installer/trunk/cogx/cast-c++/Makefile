@@ -19,7 +19,8 @@ LIBDEPS =
 DEB_PACKAGES=\
 	liblog4cxx10-dev@ubuntu \
         zeroc-ice34@ubuntu \
-	libgoogle-perftools-dev@ubuntu
+	libgoogle-perftools-dev@ubuntu \
+	cmake@ubuntu
 
 MFLAGS=$(MFLAGS_NUMCPU)
 
