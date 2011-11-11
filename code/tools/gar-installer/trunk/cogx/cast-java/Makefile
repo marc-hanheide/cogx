@@ -12,7 +12,7 @@ MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/nah/cast/tags/cast-2.1.16b/
 #MASTER_SITES =  svnhttps://codex.cs.bham.ac.uk/svn/nah/cosy/development/cast/tags/cast-2.1.0rc3/
 
 
-LIBDEPS = cogx-u11.10/cast-c++
+LIBDEPS = cogx/cast-c++
 
 DEB_PACKAGES=\
 	liblog4j1.2-java@ubuntu \
