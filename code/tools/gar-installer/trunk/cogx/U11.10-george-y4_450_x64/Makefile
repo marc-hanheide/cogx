@@ -2,7 +2,7 @@ GARNAME = cogx-distro
 GARVERSION =
 CATEGORIES = distributions
 DISTFILES =
-MAINTAINER = ttoenige
+MAINTAINER = ari
 
 DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libqt4-webkit@ubuntu \
@@ -29,15 +29,16 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 
 
 
-LIBDEPS = 	contrib-u11.10/peekabot \
-		cogx-u11.10/cast-c++ \
-		cogx-u11.10/cast-java \
-		contrib-u11.10/opencv \
+LIBDEPS = 	contrib/peekabot \
+		cogx/cast-c++ \
+		cogx/cast-java \
+		contrib/opencv \
+		cogx/cosycure \
 		contrib/player-3.0.2 \
 		contrib/physx_x64 \
-		contrib-u11.10/gazebo \
 		contrib/openNI \
 		contrib/avin2-SensorKinect \
+		contrib/gazebo \
 		cogx/golem_katana450_x64
 
 DESCRIPTION = agai-distro
