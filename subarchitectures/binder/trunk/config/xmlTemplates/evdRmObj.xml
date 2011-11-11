@@ -1,0 +1,29 @@
+<org.cognitivesystems.binder.mln.Evidence>
+  <engId>mlnEngine1</engId>
+  <setToken></setToken>
+  <resetToken></resetToken>
+  <newInstances/>
+  <removeInstances>
+    <org.cognitivesystems.binder.mln.Instance>
+      <name>Obj1</name>
+      <type>belief</type>
+    </org.cognitivesystems.binder.mln.Instance>
+  </removeInstances>
+  <trueEvidence/>
+  <falseEvidence/>
+  <noEvidence>
+    <string>color(Obj1, P_red)</string>
+    <string>shape(Obj1, P_compact)</string>
+    <string>color(Obj1, P_blue)</string>
+    <string>color(Obj1, P_green)</string>
+    <string>color(Obj1, P_yellow)</string>
+    <string>color(Obj1, P_orange)</string>
+    <string>shape(Obj1, P_elongated)</string>
+  </noEvidence>
+  <extPriors/>
+  <priorWts/>
+  <resetPriors/>
+  <burnInSteps>300</burnInSteps>
+  <initInfSteps>800</initInfSteps>
+  <prevInfSteps>0</prevInfSteps>
+</org.cognitivesystems.binder.mln.Evidence>
