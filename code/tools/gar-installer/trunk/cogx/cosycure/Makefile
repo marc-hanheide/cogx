@@ -28,6 +28,11 @@ checksum-$(PATCHFILES):
 	
 pre-configure: autoreconf
 
+pre-build: 
+	(cd $(WORKSRC); make clean)
+	@$(MAKECOOKIE)
+	
+
 autoreconf:
 	(cd $(WORKSRC); autoreconf --install)
 	@$(MAKECOOKIE)
