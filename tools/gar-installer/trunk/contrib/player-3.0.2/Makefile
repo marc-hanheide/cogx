@@ -186,6 +186,9 @@ CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix) \
 
 include ../../gar.extend.mk
 
+pre-install:
+	if [ ! -e /usr/local/lib64 ]; then ln -s /usr/local/lib /usr/local/lib64; fi
+
 #pre-configure:
 #	cd $(WORKSRC) && autoreconf -i
 #	@$(MAKECOOKIE)
