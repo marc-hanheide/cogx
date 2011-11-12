@@ -37,7 +37,7 @@ CXX_SOURCES+=protocol.pb-$(PROTOBUF_VERSION).cc
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 # ICE
 
-CXXFLAGS+=-Wall
+CXXFLAGS+=-Wall 
 CXXFLAGS+=-I. -I$(ICE_HOME)/include
 CXXFLAGS+=-g
 
@@ -154,7 +154,7 @@ abducer.h abducer.cc: $(SLICE_PATH)/abducer.ice
 OBJS=$(addsuffix .o, $(basename $(CXX_SOURCES)))
 
 $(BIN): $(CXX_HEADERS) $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) -o $@
+	$(CXX) -Wl,--no-as-needed $(LDFLAGS) $(OBJS) -o $@
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
