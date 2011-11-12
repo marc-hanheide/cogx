@@ -14,6 +14,9 @@
 
 #ifndef LocalMapManager_hpp
 #define LocalMapManager_hpp
+
+#include "GridObjectFinder.hpp"
+
 #include <peekabot.hh>
 
 #include <cast/architecture/ManagedComponent.hpp>
@@ -33,7 +36,7 @@
 #include <Transformation/Transformation3D.hh>
 #include <PTZ.hpp>
 #include <VisionData.hpp>
-#include "GridObjectFinder.hpp"
+
 #include <cast/core/CASTTimer.hpp>
 #include "scanmap/HSS/HSSScan2D.hh"
 #include "scanmap/HSS/HSSDoorExtractor.hh"
