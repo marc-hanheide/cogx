@@ -262,7 +262,7 @@ protected:
 
   bool m_firstScanAdded;
 
-  string m_waitingForPTZCommandID;
+  std::string m_waitingForPTZCommandID;
 
   bool m_UsePointCloud;
   double m_obstacleMinHeight;
