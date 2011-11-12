@@ -28,8 +28,9 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libsdl1.2-dev@ubuntu \
 		libsuitesparse-dev@ubuntu\
 		libeigen2-dev@ubuntu \
-		python-numpy@ubuntu
-
+		python-numpy@ubuntu \
+		flex@ubuntu \
+		bison@ubuntu
 
 LIBDEPS = 			contrib/peekabot \
 		cogx/cast-c++ \
