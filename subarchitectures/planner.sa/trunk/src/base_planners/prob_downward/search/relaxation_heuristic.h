@@ -43,7 +43,7 @@ struct Proposition {
 };
 
 struct hash_operator_ptr {
-    size_t operator()(const Operator *key) const {
+  std::size_t operator()(const Operator *key) const {
     return reinterpret_cast<unsigned long>(key);
     }
 };
