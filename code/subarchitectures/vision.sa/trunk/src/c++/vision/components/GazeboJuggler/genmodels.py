@@ -1,7 +1,41 @@
 #!/usr/bin/python
 # vim: set fileencoding=utf-8 sw=4 sts=4 ts=8 et :vim
 
-from PIL import Image, ImageDraw, ImageColor as ico, ImageFont
+import sys
+#from PIL import Image, ImageDraw, ImageColor as ico, ImageFont
+#import cv
+from PyQt4 import QtGui, QtCore
+
+print dir()
+
+def rectPoly(x0, y0, w, h):
+    return (( (x0, y0), (x0+w, y0), (x0+w, y0+h), (x0, y0+h), (x0, y0) ), )
+
+Fonts = {
+    "arial": "/usr/share/fonts/truetype/msttcorefonts/arial.ttf"
+}
+#def makeMaterials_cv(self):
+#    img = cv.CreateImage((800,600), cv.IPL_DEPTH_8U, 3)
+#    print dir(img)
+#    cv.FillPoly(img, rectPoly(0, 0, img.width, img.height), cv.CV_RGB(0x20, 0x40, 0xe0))
+#    font = cv.InitFont(cv.CV_FONT_HERSHEY_SIMPLEX, 1, 1, 0, 2)
+#    cv.PutText(img, "This is the '%s'" % self.name, (10, 30), font, cv.CV_RGB(0xe0, 0x40, 0x20))
+#    cv.SaveImage("xdata/x-%s.png" % self.name, img)
+#def makeMaterials_pil(self):
+#    ppm = 800
+#    (w, h) = self.getUnfoldSize(ppm)
+#    faces = self.getUnfoldFaces(ppm)
+#    img = Image.new("RGB", (w, h), "#2040e0")
+#    font = ImageFont.truetype(Fonts["arial"], 32)
+#    draw = ImageDraw.Draw(img)
+#    draw.text((faces[1][2]/2, faces[1][1]),
+#            "This is the '%s'" % self.name, fill=ico.getrgb("#e04020"), font=font)
+#    for i in xrange(6):
+#        fp = faces[i][:4]
+#        fl = faces[i][4]
+#        print fp, fl
+#        fim = img.copy().crop(fp)
+#        fim.save("xdata/x-%s-%s.png" % (self.name, fl[6]))
 
 tmpl_material = """
 material %(material_name)
@@ -135,15 +169,75 @@ class OgreBox:
         return model
 
 
+    # Unfold Box Layout:
+    #       T
+    #    L  F  R  BK
+    #       B
+    # @param ppm = pixels per meter; self.size is in meters
+    def getUnfoldSize(self, ppm = 800):
+        face_locations = tmpl_box["face-locations"]
+        lr_size = [int(ppm * self.size[i] * face_locations[0][i+3]) for i in xrange(3) ]
+        fb_size = [int(ppm * self.size[i] * face_locations[2][i+3]) for i in xrange(3) ]
+        tb_size = [int(ppm * self.size[i] * face_locations[4][i+3]) for i in xrange(3) ]
+        w = fb_size[0] * 2 + lr_size[1] * 2
+        h = fb_size[2]     + tb_size[1] * 2
+        return (w, h)
+
+    def getUnfoldFaces(self, ppm = 800):
+        face_locations = tmpl_box["face-locations"]
+        lr_size = [int(ppm * self.size[i] * face_locations[0][i+3]) for i in xrange(3) ]
+        fb_size = [int(ppm * self.size[i] * face_locations[2][i+3]) for i in xrange(3) ]
+        tb_size = [int(ppm * self.size[i] * face_locations[4][i+3]) for i in xrange(3) ]
+
+        w = fb_size[0] * 2 + lr_size[1] * 2
+        h = fb_size[2]     + tb_size[1] * 2
+        x1 = lr_size[1]
+        x2 = x1 + fb_size[0]
+        x3 = x2 + lr_size[1]
+        x4 = w + 1
+        y1 = tb_size[1]
+        y2 = y1 + fb_size[2]
+        y3 = h + 1
+        faces = [ # same order as in face_locations
+            (x1, 0,  x2, y1, face_locations[4]), #T
+            (0,  y1, x1, y2, face_locations[0]), #L
+            (x1, y1, x2, y2, face_locations[2]), #F 
+            (x2, y1, x3, y2, face_locations[1]), #R
+            (x3, y1, x4, y2, face_locations[3]), #BK
+            (x1, y2, x2, y3, face_locations[5])  #B
+            ]
+        return faces
+
+
     def makeMaterials(self):
-        img = Image.new("RGB", (800, 600), "#2040e0")
-        font = ImageFont.truetype("/usr/share/fonts/truetype/msttcorefonts/arial.ttf", 32)
-        draw = ImageDraw.Draw(img)
-        draw.text((10, 10), "This is the '%s'" % self.name, fill=ico.getrgb("#e04020"), font=font)
-        img.save("xdata/x-%s.png" % self.name)
+        ppm = 800
+        cobg = QtGui.QColor(0x20, 0x40, 0xe0)
+        (w, h) = self.getUnfoldSize(ppm)
+        faces = self.getUnfoldFaces(ppm)
+        img = QtGui.QImage(QtCore.QSize(w, h), QtGui.QImage.Format_RGB32)
+        img.fill(cobg.rgb())
+
+        draw = QtGui.QPainter(img)
+        draw.setPen(cobg.lighter(120))
+        draw.drawLine(0, 0, w, h)
+        font = QtGui.QFont("arial", 24)
+        finf = QtGui.QFontInfo(font)
+        draw.setFont(font)
+        draw.drawText(faces[1][2]/2, faces[1][1] + finf.pixelSize(), "This is the '%s'" % self.name)
+
+        draw.end()
+        for i in xrange(6):
+            fp = faces[i][:4] # face points
+            fl = faces[i][4]  # face_location
+            print fp, fl
+            fim = img.copy(QtCore.QRect(fp[0], fp[1], fp[2] - fp[0], fp[3] - fp[1]))
+            fim.save("xdata/x-%s-%s.png" % (self.name, fl[6]))
 
 
-print OgreBox("example").makeModel()
-OgreBox("example").makeMaterials()
+
+a = QtGui.QApplication(sys.argv)
+b = OgreBox("example", size = (0.5, 0.3, 0.6))
+print b.makeModel()
+b.makeMaterials()
 
 
