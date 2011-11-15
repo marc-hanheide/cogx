@@ -16,9 +16,9 @@ add_subdirectory(src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen/)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components/)
 
-find_package(Eigen REQUIRED)
+find_package(Eigen2 REQUIRED)
 include_directories(/usr/include/eigen2)
-include_directories(${EIGEN_INCLUDE_DIRS})
+#include_directories(${EIGEN_INCLUDE_DIRS})
 
 add_subdirectory(src/c++/components)
 
