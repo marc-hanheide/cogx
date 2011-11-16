@@ -38,7 +38,7 @@ Fonts = {
 #        fim.save("xdata/x-%s-%s.png" % (self.name, fl[6]))
 
 tmpl_material = """
-material %(material_name)
+material %(material_name)s
 {
   technique
   {
@@ -46,7 +46,7 @@ material %(material_name)
     {
       texture_unit
       {
-        texture %(image_filename)
+        texture %(image_filename)s
       }
     }
   }
@@ -209,35 +209,127 @@ class OgreBox:
         return faces
 
 
+    def getTextureString(self, color, niter=200):
+        co = [
+            "0x%06x" % color.rgb(),
+            "0x%06x" % color.lighter(120).rgb(),
+            "0x%06x" % color.darker(120).rgb() ]
+
+        text = ""
+        s = 0
+        for i in xrange(niter):
+            count = s % 7 + 3
+            sx = ""
+            for j in xrange(count):
+                s = s + (ord(self.name[(i + j) % len(self.name)]))
+                sx += "%c" % (s % 64 + 64)
+
+            text += "%s-%s " % (co[i % 3], sx)
+        return text
+
+    # weight: 0-99 or -1; 25 light, 50 normal, 75 bold
+    def getBestFont(self, imgDevice, fontname, weight, text, minwidth, maxwidth, maxheight):
+        pointsize = 128
+        minheight = maxheight / 4
+        font = QtGui.QFont(fontname, pointsize, weight)
+        fmet = QtGui.QFontMetrics(font, imgDevice)
+        tw = fmet.width(text)
+        if tw > maxwidth:
+            pointsize *= (1.0 * maxwidth / tw)
+            font = QtGui.QFont(fontname, pointsize, weight)
+            fmet = QtGui.QFontMetrics(font, imgDevice)
+        elif tw < minwidth:
+            pointsize *= (1.0 * minwidth / tw)
+            font = QtGui.QFont(fontname, pointsize, weight)
+            fmet = QtGui.QFontMetrics(font, imgDevice)
+
+        if fmet.height() < minheight:
+            pointsize *= (1.0 * minheight / fmet.height())
+            font = QtGui.QFont(fontname, pointsize, weight)
+            fmet = QtGui.QFontMetrics(font, imgDevice)
+        elif fmet.height() > maxheight:
+            pointsize *= (1.0 * maxheight / fmet.height())
+            font = QtGui.QFont(fontname, pointsize, weight)
+            fmet = QtGui.QFontMetrics(font, imgDevice)
+
+        print fontname, pointsize, "fw", fmet.width(text), "fh", fmet.height(), "minw", minwidth, "maxh", maxheight
+        return font
+
     def makeMaterials(self):
         ppm = 800
-        cobg = QtGui.QColor(0x20, 0x40, 0xe0)
+        cobg = QtGui.QColor(self.color[0], self.color[1], self.color[2])
         (w, h) = self.getUnfoldSize(ppm)
         faces = self.getUnfoldFaces(ppm)
         img = QtGui.QImage(QtCore.QSize(w, h), QtGui.QImage.Format_RGB32)
         img.fill(cobg.rgb())
-
         draw = QtGui.QPainter(img)
-        draw.setPen(cobg.lighter(120))
-        draw.drawLine(0, 0, w, h)
-        font = QtGui.QFont("arial", 24)
-        finf = QtGui.QFontInfo(font)
+
+        font = QtGui.QFont("courier", 32)
+        topt = QtGui.QTextOption()
+        draw.setPen(cobg.lighter(115))
+        topt.setWrapMode(QtGui.QTextOption.WrapAnywhere)
+        stxt = self.getTextureString(cobg)
         draw.setFont(font)
-        draw.drawText(faces[1][2]/2, faces[1][1] + finf.pixelSize(), "This is the '%s'" % self.name)
+        draw.drawText(QtCore.QRectF(0, 0, w, h), stxt, topt)
+
+        fleft = faces[1]
+        szleft = (fleft[2] - fleft[0], fleft[3] - fleft[1])
+        ffront = faces[2]
+        szfront = (ffront[2] - ffront[0], ffront[3] - ffront[1])
+        ftop = faces[0]
+        sztop = (ftop[2] - ftop[0], ftop[3] - ftop[1])
+
+        draw.setPen(cobg.darker(120))
+        font = self.getBestFont(img, "arial", 75, self.name, szleft[0] * 1.5 + szfront[0], w, szleft[1] * 0.6)
+        fmet = QtGui.QFontMetrics(font, img)
+        draw.setFont(font)
+        draw.drawText(0, fleft[1] + fmet.ascent(), "%s" % self.name)
+
+        draw.setPen(cobg.darker(140))
+        font = self.getBestFont(img, "times", 75, self.name, szleft[0] + szfront[0] * 1.5, w, szleft[1] * 0.6)
+        fmet = QtGui.QFontMetrics(font, img)
+        draw.setFont(font)
+        draw.drawText(w - fmet.width(self.name), fleft[3] - fmet.descent(), "%s" % self.name)
+
+        draw.setPen(cobg.darker(130))
+        font = self.getBestFont(img, "courier", 75, self.name, sztop[0] * 0.8, sztop[0] * 1.5, sztop[1])
+        fmet = QtGui.QFontMetrics(font, img)
+        draw.setFont(font)
+        draw.drawText(QtCore.QRectF(ftop[0], ftop[1], sztop[0], sztop[1]),
+                "%s" % self.name, topt)
 
         draw.end()
+
+        materials = []
         for i in xrange(6):
             fp = faces[i][:4] # face points
             fl = faces[i][4]  # face_location
             print fp, fl
             fim = img.copy(QtCore.QRect(fp[0], fp[1], fp[2] - fp[0], fp[3] - fp[1]))
-            fim.save("xdata/x-%s-%s.png" % (self.name, fl[6]))
+            fname = "x-%s-%s.png" % (self.name.lower(), fl[6])
+            fname = fname.replace(" ", "-")
+            matname = "%s-%s" % (self.name, fl[6]) 
+            fim.save("xdata/%s"  % fname)
+            materials.append(tmpl_material % {
+                    "material_name": matname,
+                    "image_filename": fname })
+
+        return "\n".join(materials)
 
 
+labels = ["SanDisk Flash", "Nokia Phone", "Staedtler Textsurfer", "Jaffa Cakes"]
+# x:-, y:/, z:|
+sizes  = [(0.5, 0.3, 0.6), (0.4, 0.2, 0.6), (0.5, 0.3, 0.2)]
+# rgb
+colors = [(0x20, 0x40, 0xe0, "b"), (0xe0, 0x30, 0x10, "r"), (0x10, 0xd0, 0x30, "g")]
 
 a = QtGui.QApplication(sys.argv)
-b = OgreBox("example", size = (0.5, 0.3, 0.6))
-print b.makeModel()
-b.makeMaterials()
+for l in labels:
+    for si,s in enumerate(sizes):
+        for ci,c in enumerate(colors):
+            name = "%s-%s-%d" % (c[3], l, si)
+            b = OgreBox(name, size = s, color = c[:3])
+            print b.makeModel()
+            print b.makeMaterials()
 
 
