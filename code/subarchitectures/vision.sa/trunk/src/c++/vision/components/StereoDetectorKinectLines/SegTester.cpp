@@ -28,7 +28,6 @@
 #include "Patch3D.h"
 #include "Closure3D.h"
 #include "Rectangle3D.h"
-#include <../../home/ari/v4r/trunk/v4r/PCLAddOns/functions/PCLFunctions.h>
 
 using namespace std;
 using namespace VisionData;
