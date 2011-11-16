@@ -44,11 +44,15 @@ private:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;                 ///< point cloud of the kinect as pcl-cloud               /// TODO remove at one point and use const-version
   pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr const_pcl_cloud;      ///< constant point cloud of the kinect as pcl-cloud
 
+  double fx,fy,cx,cy;                                               ///< Camera parameters for kinect (NOT scaled!!!)
   bool valid_normals;                                               ///< Flag for valid point cloud normals
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;                    ///< calculated point cloud normals
   cv::Mat_<cv::Vec4f> cv_normals;                                   ///< calculated point cloud normals
   
-  double fx,fy,cx,cy;                                               ///< Camera parameters for kinect (NOT scaled!!!)
+  int nr_processed_images;                                          ///< Number of processed images
+  std::vector<double> sum_res_multi;                                ///< results of the object check (anno to real)
+  std::vector<double> sum_res_single;                               ///< results of the single object check (anno to real)
+  std::vector<double> sum_res_backcheck;                            ///< backcheck (real to anno)
 
   std::set<unsigned> graphCutGroups;                                ///< group numbers of graph-cut result.
 
@@ -112,6 +116,10 @@ public:
   void SetObjectLabels(pclA::PlanePopout *pp);
   void SetGraphCutGroups(std::set<unsigned> &gcg) {graphCutGroups = gcg;}
 
+  double CheckAnnotation(std::vector<int> &anno);
+  void GetAnnotationResults(double &m, double &s, double &b);       
+  void SetAnnotation(std::vector<int> &anno);
+  
   void PrintNodeIDs();                                                ///< TODO Remove
 
 };

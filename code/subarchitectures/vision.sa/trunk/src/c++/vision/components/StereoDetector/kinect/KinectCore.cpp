@@ -45,6 +45,7 @@ KinectCore::KinectCore(Z::VisionCore *vc, double _fx, double _fy, double _cx, do
   cy = _cy;
   drawNodeID = false;
   valid_normals = false;
+  nr_processed_images = 0;
 }
 
 
@@ -76,14 +77,6 @@ printf("KinectCore::SetNodeID: we initialize only patches and lines!\n");
    kinectGestalts[Gestalt3D::PATCH][j]->SetNodeID(nodeID++);
 //  for(unsigned j=0; j<kinectGestalts[Gestalt3D::SEGMENT].Size(); j++)
 //    kinectGestalts[Gestalt3D::SEGMENT][j]->SetNodeID(nodeID++);
-}
-
-void KinectCore::PrintNodeIDs()                                                       /// TODO TODO TODO Delete later!!!
-{
-  unsigned nodeID = 0;
-  for(unsigned i=0; i<KinectBase::MAX_TYPE; i++)
-    for(unsigned j=0; j<kinectGestalts[i].Size(); j++)
-      printf(" nodeID: %u\n", kinectGestalts[i][j]->GetNodeID());
 }
 
 /**
@@ -467,25 +460,11 @@ void KinectCore::PrintVCoreStatistics()
 
 /**
  * @brief Set object labels for kinect-Gestalts, according to the
- * plane-popout results. Currently for patches and lines!
+ * plane-popout results.
  * @param pp Plane-Popout
  */
 void KinectCore::SetObjectLabels(pclA::PlanePopout *pp)
 {
-  // set object labels, according to planePopout-SOIs
-//   unsigned nrPatches = NumGestalts3D(Gestalt3D::PATCH);
-//   for(unsigned i=0; i<nrPatches; i++)
-//   {
-//     Patch3D *p = (Patch3D*) Gestalts3D(Gestalt3D::PATCH, i);
-//     p->SetObjectLabel(pp->IsInSOI(p->GetCenter3D()));
-//   }
-//   unsigned nrLines = NumGestalts3D(Gestalt3D::LINE);
-//   for(unsigned i=0; i<nrLines; i++)
-//   {
-//     Line3D *l = (Line3D*) Gestalts3D(Gestalt3D::LINE, i);
-//     l->SetObjectLabel(pp->IsInSOI(l->GetCenter3D()));
-//   }
-  
   for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
   {
     Gestalt3D::Type t = (Gestalt3D::Type) type;
@@ -494,5 +473,160 @@ void KinectCore::SetObjectLabels(pclA::PlanePopout *pp)
   }
 }
 
+void KinectCore::PrintNodeIDs()                                                       /// TODO TODO TODO Delete later!!!
+{
+  unsigned nodeID = 0;
+  for(unsigned i=0; i<KinectBase::MAX_TYPE; i++)
+    for(unsigned j=0; j<kinectGestalts[i].Size(); j++)
+      printf(" nodeID: %u\n", kinectGestalts[i][j]->GetNodeID());
+}
 
+/**
+ * @brief Check hand-made annotation with graph-cutted results.
+ * @param anno Annotation (-1 = unknown / object label = 1,2,3, ...)
+ * @return Returns the percentage of correct labeled results.
+ */
+double KinectCore::CheckAnnotation(std::vector<int> &anno)
+{
+  int annoMaxLabel = 0;
+  for(unsigned i=0; i<anno.size(); i++)
+    if(anno[i] != -1)
+      if(anno[i] > annoMaxLabel)
+        annoMaxLabel = anno[i];
+        
+  std::vector<double> res_multi;              // results of the object check (anno to real)
+  std::vector<double> res_single;             // results of the single object check (anno to real)
+  std::vector<double> res_backcheck;          // backcheck (real to anno)
+  
+  std::vector<int> objects;     // graph cut label (real data) on image plane
+  objects.resize(anno.size());
+  for(unsigned i=0; i<objects.size(); i++)
+    objects[i] = -1;
+
+  int maxGraphCutLabel = 0;
+  for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
+  {
+    Gestalt3D::Type t = (Gestalt3D::Type) type;
+    for(unsigned i=0; i < NumGestalts3D(t); i++)
+    {
+      int label = Gestalts3D(t, i)->GetGraphCutLabel();
+      if(label > 0)
+      {
+        if(label > maxGraphCutLabel)
+          maxGraphCutLabel = label;
+        
+        std::vector<int> indices;
+        Gestalts3D(t, i)->GetIndices(indices);
+        for(unsigned idx=0; idx<indices.size(); idx++)
+          objects[(indices[idx])] = label;
+      }
+    }
+  }
+
+// printf(" Anno max label = max gc-label: %u - %u\n", annoMaxLabel, maxGraphCutLabel);
+
+  std::vector< std::pair<int, int> > anno_real_pairs;
+//   std::pair<int, int> anno_real_pair;
+  for(unsigned lab=1; lab<=annoMaxLabel; lab++)
+  {
+    int cnt = 0, cnt_sum = 0;
+    int labelCnt[maxGraphCutLabel];
+    for(unsigned i=0; i<maxGraphCutLabel; i++)
+      labelCnt[i]=0;
+    
+    for(unsigned i=0; i<anno.size(); i++)
+    {
+      if(anno[i] == lab)
+      { 
+        cnt_sum++;
+        if(objects[i] != -1)
+        {
+// printf("we have for lab: %u => objects[i]: %u\n", lab, objects[i]);
+          cnt++;
+// printf("add to labelCnt[%u]++\n", lab);
+          labelCnt[objects[i]]++;
+        }
+      }
+    }
+// printf("  multi object %u: %u of %u:  %4.4f%\n", lab, cnt, cnt_sum, cnt*100./cnt_sum);
+    res_multi.push_back((double) cnt/(double) cnt_sum);
+
+    int maxLabelCnt = 0;
+    int maxLabelObject = 0;
+    for(unsigned i=0; i<maxGraphCutLabel; i++)
+    {
+// printf("partial objectness (%u) for object %u: %u of %u (%4.4f%)\n", i, lab, labelCnt[i], cnt_sum, labelCnt[i]*100./cnt_sum);
+      if(labelCnt[i] > maxLabelCnt)
+      {
+        maxLabelCnt = labelCnt[i];
+        maxLabelObject = i;
+      }
+    }
+    anno_real_pairs.push_back(std::make_pair(lab, maxLabelObject));
+    res_single.push_back((double) maxLabelCnt/(double) cnt_sum);
+// printf("=> maximum for (anno=%u) object %u: %u of %u (%4.4f%)\n", lab, maxLabelObject, maxLabelCnt, cnt_sum, (double) maxLabelCnt*100./(double)cnt_sum);
+  }
+  
+  // calculate backcheck
+  for(int i=0; i<anno_real_pairs.size(); i++)
+  {
+    int anno_id = anno_real_pairs[i].first;
+    int obj_id = anno_real_pairs[i].second;
+    int sum = 0, cnt = 0;
+    for(unsigned idx=0; idx<objects.size(); idx++) {
+      if(objects[idx] == obj_id) {
+        sum++;
+        if(anno[idx] == anno_id)
+          cnt++;
+      }
+    }
+//     printf("Check #3: anno %u - object %u => %u of %u (%4.4f%)\n", anno_id, obj_id, cnt, sum, (double) cnt*100./sum);
+    res_backcheck.push_back((double) cnt/ (double) sum);
+  }
+  
+  double sum_single = 0;
+  double sum_multi = 0;
+  double sum_backcheck = 0;
+  for(unsigned i=0; i< res_single.size(); i++) {
+    sum_single += res_single[i];
+    sum_multi += res_multi[i];
+    sum_backcheck += res_backcheck[i];
+  }
+  sum_res_multi.push_back(sum_multi/res_multi.size());
+  sum_res_single.push_back(sum_single/res_single.size());
+  sum_res_backcheck.push_back(sum_backcheck/res_backcheck.size());
+  
+  if(res_single.size() != res_multi.size() || res_single.size() != res_backcheck.size())
+    printf("KinectCore::CheckAnnotation: Warning: result-arrays with different sizes found!\n");
+  
+  nr_processed_images++;
+  return 0.0;
+}
+
+void KinectCore::GetAnnotationResults(double &m, double &s, double &b)
+{
+  m = 0; s = 0; b = 0;
+  for(unsigned i=0; i<nr_processed_images; i++) {
+    m += sum_res_multi[i];
+    s += sum_res_single[i];
+    b += sum_res_backcheck[i];
+  }
+  m /= nr_processed_images;
+  s /= nr_processed_images;
+  b /= nr_processed_images;
 } 
+
+
+void KinectCore::SetAnnotation(std::vector<int> &anno)
+{
+  for(int type=0; type < Gestalt3D::MAX_TYPE; type++)
+  {
+    Gestalt3D::Type t = (Gestalt3D::Type) type;
+    for(unsigned i=0; i < NumGestalts3D(t); i++)
+      Gestalts3D(t, i)->SetAnnotation(anno);
+//       Gestalts3D(t, i)->SetObjectLabel(pp->IsInSOI(Gestalts3D(t, i)->GetCenter3D()));
+  }
+}
+
+
+}

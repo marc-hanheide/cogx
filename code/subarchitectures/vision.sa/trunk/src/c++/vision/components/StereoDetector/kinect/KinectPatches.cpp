@@ -104,6 +104,7 @@ start=current;
   {
     std::vector<int> mask_hull_idxs;          // TODO TODO TODO We do not have mask_hull_idxs here!!! => see KinectPclModels
     std::vector<cv::Vec4f> mask_hull_points;  // TODO TODO TODO We do not have mask_hull_points here
+    std::vector<int> indices;                 // TODO TODO TODO We do not have point-indices => see KinectPclModels
 
 //     cv::Mat_<cv::Vec3b> patch_mask = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
 //     cv::Mat_<cv::Vec3b> patch_edges = cv::Mat_<cv::Vec3b>::zeros(kcore->GetPointCloudHeight(), kcore->GetPointCloudWidth());
@@ -126,7 +127,7 @@ start=current;
       plane_normal[2] = model_coefficients[i]->values[2];
     }
 
-    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], cv_vec_hulls[i], mask_hull_points, mask_hull_idxs, plane_normal);
+    Z::Patch3D *p3d = new Z::Patch3D(cv_vec_planes[i], indices, cv_vec_hulls[i], mask_hull_points, mask_hull_idxs, plane_normal);
     kcore->NewGestalt3D(p3d);
     numPatches++;
   }
