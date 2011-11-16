@@ -48,9 +48,9 @@ private:
   bool firstCall;                         ///< True for first call
 
   /// Minimum distances for each patch to each segment (patch/segment)
-  std::vector< std::vector<double> > min_distances;
+  std::vector< std::vector<double> > min_distances;                     /// TODO antiquated?
   /// Distances of each edgel to the patches (patch/segement/edgel)
-  std::vector< std::vector< std::vector<double> > > distances;
+  std::vector< std::vector< std::vector<double> > > distances;          /// TODO antiquated?
   
   bool CalculateSegmentRelations(Patch3D *p0,             ///< Calculate relations between patches, caused by segments
                                  Patch3D *p1,
