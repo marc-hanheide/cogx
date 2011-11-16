@@ -37,6 +37,8 @@
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/utils/PCLUtils.h"
 #include "v4r/PCLAddOns/functions/PCLFunctions.h"
+#include "v4r/PCLAddOns/Annotation.h"
+#include "v4r/PCLAddOns/ModelFitter.h"
 #include "v4r/TomGine/tgTomGineThread.h"
 
 
@@ -52,6 +54,11 @@ class SegTester : public ManagedComponent,
 private:
   TomGine::tgTomGineThread *tgRenderer;                      ///< 3D render engine
   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
+
+  /// TODO new ones
+  pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
+  Z::GraphCut *graphCutter;                                 ///< Graph cutter
+
  
   Z::VisionCore *vcore;                                     ///< VisionCore
   Z::StereoCore *score;                                     ///< Stereo core
@@ -59,7 +66,7 @@ private:
   pclA::PlanePopout *planePopout;                           ///< PlanePopout for SOI calculation (ground truth data)
   Z::CalculateRelations *relations;                         ///< Calculate relations between features.
   Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
-  Z::GraphCut *graphCutter;                                 ///< Graph cutter
+  pa::Annotation *annotation;                               ///< Annotation from file
 
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
@@ -92,7 +99,8 @@ private:
 //   void Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap);
   void GetImageData();
   
-  void processImage();
+  void processImageNew();
+  void processImage();        /// TODO Remove later
   void SingleShotMode();
 
 protected:

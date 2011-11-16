@@ -36,6 +36,7 @@
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/utils/PCLUtils.h"
 #include "v4r/PCLAddOns/functions/PCLFunctions.h"
+#include "v4r/PCLAddOns/Annotation.h"
 #include "v4r/TomGine/tgTomGineThread.h"
 
 
@@ -60,7 +61,8 @@ private:
   Z::SVMFileCreator *svmFileCreator;                        ///< SVM training file creator
 //  Z::GraphCut *graphCutter;                                 ///< Graph cutter
   pclA::PlanePopout *planePopout;                           ///< PlanePopout for SOI calculation (ground truth data)
-  
+  pa::Annotation *annotation;                               ///< Annotation from file
+
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
   std::string stereoconfig;                                 ///< Config name of stereo camera config file

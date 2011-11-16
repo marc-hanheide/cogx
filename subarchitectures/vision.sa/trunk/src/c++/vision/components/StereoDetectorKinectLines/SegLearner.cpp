@@ -54,7 +54,6 @@ static bool deb = true;
  */
 void SegLearner::configure(const map<string,string> & _config)
 {
-printf("SegLearner::configure: start!\n");
   // first let the base classes configure themselves (for point clouds)
   configureServerCommunication(_config);
 
@@ -197,7 +196,6 @@ printf("SegLearner::configure: start!\n");
   else 
     cvShowImage("Control window", iplImage_k);
 
-
   kcore = new Z::KinectCore(vcore, camPars[2].fx, camPars[2].fy, camPars[2].cx, camPars[2].cy);
   // TODO Enable/Disable KinectPrinciples?
   
@@ -219,7 +217,8 @@ printf("SegLearner::configure: start!\n");
                                      normalDistWeight, minObjH, maxObjH, eucThr, minClSize);
   planePopout = new pclA::PlanePopout(param);
 
-printf("SegLearner::configure: end!\n");
+  annotation = new pa::Annotation();
+  annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 16);
 }
 
 
@@ -344,17 +343,23 @@ void SegLearner::processImage()
   if(deb) printf("Run Kinect Core: end\n");
   
   /// Run plane popout TODO Move planePopout completely to learner => is not neccessary to have it here!
-  if(deb) printf("Run plane-popout: start\n");
-  planePopout->CalculateSOIs(pcl_cloud);
-  if(deb) printf("Run plane-popout: start 1\n");
-  planePopout->GetSOIs(sois, soi_labels);
-  if(deb) printf("Run plane-popout: start 2\n");
-  if(!planePopout->CalculateROIMask())    // TODO we need the ROI mask? only for displaying the results, right?
-    printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
-  if(deb) printf("Run plane-popout: start 3\n");
-  kcore->SetObjectLabels(planePopout);    // Set object labels for kinect-Gestalts
-  if(deb) printf("Run plane-popout: end\n");
+//   if(deb) printf("Run plane-popout: start\n");
+//   planePopout->CalculateSOIs(pcl_cloud);
+//   if(deb) printf("Run plane-popout: start 1\n");
+//   planePopout->GetSOIs(sois, soi_labels);
+//   if(deb) printf("Run plane-popout: start 2\n");
+//   if(!planePopout->CalculateROIMask())    // TODO we need the ROI mask? only for displaying the results, right?
+//     printf("StereoDetectorKinectLines: Error while processing ROI mask in PlanePopout!\n");
+//   if(deb) printf("Run plane-popout: start 3\n");
+//   kcore->SetObjectLabels(planePopout);    // Set object labels for kinect-Gestalts
+//   if(deb) printf("Run plane-popout: end\n");
 
+  /// use annotation instead of plane-popout.
+  std::vector<int> anno;
+  annotation->load(pointCloudWidth, anno);
+  kcore->SetAnnotation(anno);
+
+  
   /// Calculate relations between features and write it to file for SVM learning!
   svmFileCreator->Process(kcore);
 
@@ -457,19 +462,12 @@ void SegLearner::SingleShotMode()
   
   if (key == 65471 || key == 1114047) // F2
   {
-//     const char* text = score->GetGestaltListInfo();
-//     printf("\n%s\n", text);
     const char* text = kcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
 
   if (key == 65472 || key == 1114048) // F3
   {
-//     if(showSingleGestalt && showID != -1 && (mouseSide == 0 || mouseSide == 1)) 
-//     {
-//       const char* text = (score->GetMonoCore(mouseSide))->GetInfo(showType, showID);
-//       log("Gestalt infos:\n%s\n", text);
-//     }
     const char* text = vcore->GetGestaltListInfo();
     printf("\n%s\n", text);
   }
