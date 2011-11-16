@@ -13,6 +13,7 @@
 #include "VisionCore.hh"
 
 #include "v4r/PCLAddOns/ModelFitter.h"
+#include "v4r/PCLAddOns/Planes.h"
 
 
 namespace Z
@@ -30,6 +31,7 @@ private:
   int numCylinders;             ///< Number of extracted 3D cylinders
   
   pclA::ModelFitter *model_fitter;
+  pclA::Planes *planes;
 
 public:
   KinectPclModels(KinectCore *kc, VisionCore *vc);

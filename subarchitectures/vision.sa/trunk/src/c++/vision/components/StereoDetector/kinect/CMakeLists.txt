@@ -39,7 +39,7 @@ SET(SOURCES
 )
 
 add_cast_component(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} v4rtomgine v4rrgbdsegment v4rmodelfitter)
+link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} v4rtomgine v4rrgbdsegment v4rpcladdons)
 
 #ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 #INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
