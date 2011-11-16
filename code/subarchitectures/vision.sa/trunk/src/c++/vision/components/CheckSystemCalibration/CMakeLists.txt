@@ -14,6 +14,6 @@ add_cast_component(CheckSystemCalibration ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    VisionData Video VideoUtils PTZ
    ${VISUALIZATION_LIBRARIES}
-   ${OPENCV_LDFLAGS}
+   ${OPENCV_LIBRARIES}
    )
 
