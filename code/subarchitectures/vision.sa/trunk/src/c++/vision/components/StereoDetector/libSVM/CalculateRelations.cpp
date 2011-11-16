@@ -90,7 +90,7 @@ printf("CalculateRelations::CalcSVMPatchPatchRelations: start!\n");
         double n0n1, ppn0, ppn1;
         p0->CalculateCoplanarity2(px, n0n1, ppn0, ppn1);
         
-        std::vector<double> segRelations;
+        std::vector<double> segRelations;                       /// TODO Nur mehr für mask
         if(!CalculateSegmentRelations(p0, px, segRelations))
           valid_relation = false;
 //         std::vector<double> colRelations;
@@ -136,7 +136,7 @@ printf("CalculateRelations::CalcSVMPatchPatchRelations: start!\n");
         double n0n1, ppn0, ppn1;
         p0->CalculateCoplanarity2(px, n0n1, ppn0, ppn1);
         
-        std::vector<double> segRelations;
+        std::vector<double> segRelations;                       /// TODO Nur mehr für mask
         if(!CalculateSegmentRelations(p0, px, segRelations))
           valid_relation = false;
 //         std::vector<double> colRelations;
@@ -333,7 +333,7 @@ void CalculateRelations::CalcTestRelations(std::vector<Relation> &rel)
         double n0n1, ppn0, ppn1;
         p0->CalculateCoplanarity2(px, n0n1, ppn0, ppn1);        
         
-        std::vector<double> segRelations;
+        std::vector<double> segRelations;                       /// TODO Nur mehr für mask
         if(!CalculateSegmentRelations(p0, px, segRelations))
           valid_relation = false;
 //         std::vector<double> colRelations;
@@ -1001,6 +1001,8 @@ bool CalculateRelations::CalculateSegmentRelations(Patch3D *p0, Patch3D *p1, std
  */
 bool CalculateRelations::CalculatePPColorRelation(Patch3D *p0, Patch3D *p1, std::vector<double> &params)
 {
+printf("CalculateRelations::CalculatePPColorRelation: Warning: Antiquated!\n");
+  
   /** Distance threshold between segments and patches **/
   static double MIN_DISTANCE_THR_PP_COLOR = 3.;
   static double MIN_DISTANCE_THR_PP_DEPTH = 1.5;
@@ -1182,9 +1184,6 @@ bool CalculateRelations::CalculatePPRelation(Patch3D *p0, Patch3D *p1, std::vect
   double mask_sum = 0.0;
   double curvature_sum = 0.0;
 
-//  double curvature_sum_0 = 0.0; /// TODO remove later
-//  double curvature_sum_1 = 0.0; /// TODO remove later
-
   /// find for every plane-mask-edge-point the nearest neighbor to the other plane
   for(unsigned i=0; i<indexes_p0.size(); i++)
   {
@@ -1236,16 +1235,14 @@ bool CalculateRelations::CalculatePPRelation(Patch3D *p0, Patch3D *p1, std::vect
       double p1_z = kcore->GetPclCloud()->points[p1_idx].z;
       double depth = fabs(p0_z - p1_z);
       depth_sum += depth;
-if(depth > 4.0) printf("  CalculateRelations: Warning: depth too large => d0-d1: %4.3f / %4.3f\n", p0_z, p1_z);
+      if(depth > 4.0) printf("CalculateRelations::CalculatePPRelation: Warning: depth too large => d0-d1: %4.3f / %4.3f\n", p0_z, p1_z);
     }
   
-  
-  
     /// calculate mask (TODO How???)
-    if(min_dist < MIN_DISTANCE_THR_PP_MASK)
-    {    
-//       nr_valid_points_mask++;
-    }  
+//     if(min_dist < MIN_DISTANCE_THR_PP_MASK)
+//     {    
+// //       nr_valid_points_mask++;
+//     }  
   
     /// calculate curvature
     if(min_dist < MIN_DISTANCE_THR_PP_CURVATURE)
@@ -1262,10 +1259,7 @@ if(depth > 4.0) printf("  CalculateRelations: Warning: depth too large => d0-d1:
       
       cv::Vec3f p0_normal = p0->GetPlaneNormal();
       cv::Vec3f p1_normal = p1->GetPlaneNormal();
-      
       cv::Vec3f pp = pt1 - pt0;
-      
-// printf("idx: %u-%u => pp: %4.3f-%4.3f-%4.3f\n", p0_idx, p1_idx, pp[0], pp[1], pp[2]);
 
       double norm_pp = cv::norm(pp);
       cv::Vec3f pp_dir;
@@ -1277,22 +1271,12 @@ if(depth > 4.0) printf("  CalculateRelations: Warning: depth too large => d0-d1:
 //       double dot0 = p0_normal.ddot(pp_dir);
       double a_p0_pp = acos(p0_normal.ddot(pp_dir));
       pp_dir = -pp_dir; // invert direction between points
-//       double dot1 = p1_normal.ddot(pp_dir);
       double a_p1_pp = acos(p1_normal.ddot(pp_dir));
-//       printf(" dots: %4.3f and %4.3f\n", dot0, dot1);
-//       printf("  pts: %4.3f-%4.3f-%4.3f and %4.3f-%4.3f-%4.3f -- angles: %4.3f-%4.3f => %4.3f (%4.3f)\n", 
-//              p0_normal[0], p0_normal[1], p0_normal[2], p1_normal[0], p1_normal[1], p1_normal[2],
-//              a_p0_pp, a_p1_pp, a_p0_pp+a_p1_pp, a_p0_pp+a_p1_pp - M_PI);
       
-//       curvature_sum_0 += a_p0_pp - M_PI/2.;
-//       curvature_sum_1 += a_p1_pp - M_PI/2.;
       curvature_sum += a_p0_pp+a_p1_pp - M_PI;
     }
   }
   
-//   if(nr_valid_points_curvature > 0)
-//     printf("curvature-sums: %4.3f-%4.3f => %4.3f\n", curvature_sum_0/nr_valid_points_curvature, curvature_sum_1/nr_valid_points_curvature, curvature_sum/nr_valid_points_curvature);      
-      
   /// normalize values!
   if(nr_valid_points_color == 0. && nr_valid_points_depth == 0. &&
      nr_valid_points_mask == 0. && nr_valid_points_curvature == 0.)
@@ -1307,8 +1291,8 @@ if(depth > 4.0) printf("  CalculateRelations: Warning: depth too large => d0-d1:
   if(nr_valid_points_curvature != 0. && USE_CURVATURE_NORMALISATION)
     curvature_sum /= nr_valid_points_curvature;
     
-printf("CalculatePPRelation: %u-%u: %4.3f - %4.3f - %4.3f - %4.3f\n", 
-       p0->GetNodeID(), p1->GetNodeID(), color_sum, depth_sum, mask_sum, curvature_sum);
+// printf("CalculatePPRelation: %u-%u: %4.3f - %4.3f - %4.3f - %4.3f\n", 
+//        p0->GetNodeID(), p1->GetNodeID(), color_sum, depth_sum, mask_sum, curvature_sum);
 
   params.push_back(color_sum);
   params.push_back(depth_sum);
