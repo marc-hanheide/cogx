@@ -44,17 +44,13 @@ void Graph::BuildFromSVM(std::vector<E::Edge> &e, unsigned &num_edges)
   
   for(unsigned i=0; i< rel.size(); i++)
   {
-//     if(rel[i].rel_probability[1] > 0.0001)
-//     {
-      E::Edge e;
-      e.a = rel[i].id_0;
-      e.b = rel[i].id_1;
-      e.type = 1;
-      e.w = 1- rel[i].rel_probability[1];           // it's the weight for joining elements!!! (1-p(x))
+    E::Edge e;
+    e.a = rel[i].id_0;
+    e.b = rel[i].id_1;
+    e.type = 1;
+    e.w = 1- rel[i].rel_probability[1];           // it's the weight for joining elements!!! (1-p(x))
 // printf("  Graph::BuildFromSVM: New edge (type: %u): %u-%u: %8.8f\n", rel[i].type, e.a, e.b, e.w);
-      edges.push_back(e);
-//     }
-//     else printf("Graph::BuildFromSVM: Skipped one relation: %u-%u: %8.8f\n", rel[i].id_0, rel[i].id_1, 1- rel[i].rel_probability[1]);
+    edges.push_back(e);
   }
   
   // TODO Check connectivity of graph
