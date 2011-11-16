@@ -18,10 +18,12 @@ namespace Z
  * @param _indexes Indexes of the point cloud refering to the 2D image
  */
 PclSphere3D::PclSphere3D(std::vector<cv::Vec4f> _points,
-                         std::vector<int> _indexes) : Gestalt3D(Gestalt3D::PCL_SPHERE)
+                         std::vector<int> _indices,
+                         std::vector<int> _mask_hull_indices) : Gestalt3D(Gestalt3D::PCL_SPHERE)
 {
   points = _points;
-  indexes = _indexes;
+  indices = _indices;
+  mask_hull_indices = _mask_hull_indices;
   
   // Take center of first and last point !!! quick HACK => Get later model parameter from pcl
   center3D[0] = (points[0][0] + points[points.size()-1][0])/2.;

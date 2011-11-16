@@ -30,13 +30,15 @@ class Patch3D : public Gestalt3D
 {
 private:
   std::vector<cv::Vec4f> points;            ///< All (projected) points of the plane patch
+  std::vector<int> indices;                 ///< Indices of the points refering to 2D image plane
   std::vector<cv::Vec4f> hull_points;       ///< 3D convex hull points of the plane
   std::vector<cv::Vec4f> mask_hull_points;  ///< 3D points of the mask hull (non-convex!)
   std::vector<int> mask_hull_idxs;          ///< 2D point indexes of the mask hull (mask edges) (refer to pcl_cloud)
-  cv::Vec3f normal;                       ///< Normal of the plane                                /// TODO Ändern auf Vec3f
-  cv::Vec3f center3D;                       ///< Center point of the 3D patch
+  cv::Vec3f normal;                         ///< Normal of the plane
+  cv::Vec3f center3D;                       ///< Center point of the 3D patch                       // TODO Bad center!
   double radius;                            ///< Maximum distance from center3D to hull_point       // TODO Wieder weg???
   
+  void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
   void CalculatePlaneNormal();
   double DistancePoint2Plane(double a, double b, double c, double d, 
                              double x, double y, double z);
@@ -46,12 +48,15 @@ public:
 
 public:
   Patch3D(std::vector<cv::Vec4f> _points, 
+          std::vector<int> _indices,
           std::vector<cv::Vec4f> _hull_points, 
           std::vector<cv::Vec4f> _mask_hull_points, 
           std::vector<int> _mask_hull_idxs,
           cv::Vec3f _normal);
 
-  void CalculateSignificance(double angle2Dleft, double angle2Dright, double angle3Dz);
+  void GetPoints(std::vector<cv::Vec4f> &p) {p = points;}
+  void GetIndices(std::vector<int> &i) {i = indices;}
+          
   bool GetLinks(vector<GraphLink> &links);
   cv::Vec3f GetCenter3D() {return center3D;}
   cv::Vec3f GetPlaneNormal() {return normal;}
@@ -75,6 +80,8 @@ public:
   void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, Video::CameraParameters camPars);
 
   void PrintGestalt3D();
+  
+  void SetAnnotation(std::vector<int> &anno);
 };
 
 
