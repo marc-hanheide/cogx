@@ -23,7 +23,8 @@ class PclCylinder3D : public Gestalt3D
 {
 public:
   std::vector<cv::Vec4f> points;        ///< points of the rectangle on the fitted plane
-  std::vector<int> indexes;             ///< 2D indexes of the points (in image space)
+  std::vector<int> indices;             ///< Indices of the points refering to 2D image plane
+  std::vector<int> mask_hull_indices;             ///< 2D indexes of the points (in image space)
   bool calcCenter3D;                    ///< True, if center3D is already calculated
   cv::Vec3f center3D;                   ///< 3D center point
 
@@ -31,7 +32,12 @@ public:
 
 public:
   PclCylinder3D();
-  PclCylinder3D(std::vector<cv::Vec4f> _points, std::vector<int> _indexes);
+  PclCylinder3D(std::vector<cv::Vec4f> _points, 
+                std::vector<int> _indices,
+                std::vector<int> _mask_hull_indices);
+
+  void GetPoints(std::vector<cv::Vec4f> &p) {p = points;}
+  void GetIndices(std::vector<int> &i) {i = indices;}
 
   void CalculateSignificance(double sigLeft, double sigRight);
   void GetCenter3D(cv::Vec3f &c) {CalcCenter3D(); c = center3D;}

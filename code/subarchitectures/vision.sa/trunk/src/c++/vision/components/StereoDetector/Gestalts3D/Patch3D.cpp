@@ -20,6 +20,7 @@ namespace Z
  * @param _h_p Convex hull points of the patch
  */
 Patch3D::Patch3D(std::vector<cv::Vec4f> _points, 
+                 std::vector<int> _indices,
                  std::vector<cv::Vec4f> _hull_points, 
                  std::vector<cv::Vec4f> _mask_hull_points, 
                  std::vector<int> _mask_hull_idxs,
@@ -27,6 +28,7 @@ Patch3D::Patch3D(std::vector<cv::Vec4f> _points,
 {
   radius = 0.;
   points = _points;
+  indices = _indices;
   mask_hull_points = _mask_hull_points;
   mask_hull_idxs = _mask_hull_idxs;
   hull_points = _hull_points;
@@ -295,17 +297,17 @@ void Patch3D::DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer,
   }
   tgRenderer->AddPointCloud(col_points);
     
-//   // add convex hull of patch
-//   for(unsigned j=0; j < hull_points.size(); j++)
-//   {
-//     int k = j+1;
-//     if(k == hull_points.size()) k=0;
-//     cv::Vec4f s = hull_points[j];
-//     cv::Vec4f e = hull_points[k];
-//     if(!use_color && !randomColor) col.float_value = hull_points[j][3];
-//     tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
-//                           col.r, col.g, col.b, 2);
-//   }  
+  // add convex hull of patch
+  for(unsigned j=0; j < hull_points.size(); j++)
+  {
+    int k = j+1;
+    if(k == hull_points.size()) k=0;
+    cv::Vec4f s = hull_points[j];
+    cv::Vec4f e = hull_points[k];
+    if(!use_color && !randomColor) col.float_value = hull_points[j][3];
+    tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 
+                          col.r, col.g, col.b, 3);
+  }  
   
 //   // draw patch hull (TODO points are not ordered!)
 //   for(int i=0; i<mask_hull_points.size(); i++)
@@ -414,7 +416,8 @@ bool Patch3D::GetColorValue(int idx, float &color)
 /**
  * @brief Get depth value of a point for known index.
  * @param idx Index of the point in 2D image space
- * @return Returns the z-value as double
+ * @param z_value z_value as return value
+ * @return Returns true for success.
  */
 bool Patch3D::GetDepthValue(int idx, double &z_value)
 {
@@ -437,6 +440,42 @@ void Patch3D::PrintGestalt3D()
   
   for(unsigned idx=0; idx<points.size(); idx++)
     printf(" point: %4.3f / %4.3f / %4.3f\n", points[idx][0], points[idx][1], points[idx][2]);
+}
+
+
+/**
+ * @brief Use annotation to set the object label for the patch.
+ * @param anno Annotation of the point cloud (255=unknown, 1..n objects)
+ */
+void Patch3D::SetAnnotation(std::vector<int> &anno)
+{
+  int annoMaxLabel = 0;
+  for(unsigned i=0; i<anno.size(); i++)
+    if(anno[i] != -1)
+      if(anno[i] > annoMaxLabel)
+        annoMaxLabel = anno[i];
+    
+  int nr_points[annoMaxLabel+1];
+  for(unsigned i=0; i<=annoMaxLabel; i++)
+    nr_points[i] = 0;
+  for(unsigned i=0; i<indices.size(); i++)
+  {
+    if(anno[indices[i]] != -1)
+      nr_points[anno[indices[i]]]++;
+    else nr_points[0]++;
+  }
+  
+  int max_nr_points = 0;
+  int max_object = 0;
+  for(unsigned i=0; i<=annoMaxLabel; i++)
+  {
+    if(nr_points[i] > max_nr_points)
+    {
+      max_nr_points = nr_points[i];
+      max_object = i;
+    }
+  }
+  SetObjectLabel(max_object);
 }
 
 

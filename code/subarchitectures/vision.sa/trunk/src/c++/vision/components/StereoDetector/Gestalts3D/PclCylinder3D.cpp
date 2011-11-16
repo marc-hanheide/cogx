@@ -27,10 +27,12 @@ PclCylinder3D::PclCylinder3D() : Gestalt3D(Gestalt3D::PCL_CYLINDER)
  * @param _indexes Indexes of the points refering to the 2D image
  */
 PclCylinder3D::PclCylinder3D(std::vector<cv::Vec4f> _points, 
-                             std::vector<int> _indexes)  : Gestalt3D(Gestalt3D::PCL_CYLINDER)
+                             std::vector<int> _indices,
+                             std::vector<int> _mask_hull_indices)  : Gestalt3D(Gestalt3D::PCL_CYLINDER)
 {
   points = _points;
-  indexes = _indexes;
+  indices = _indices;
+  mask_hull_indices = _mask_hull_indices;
   calcCenter3D = false;
 }
 

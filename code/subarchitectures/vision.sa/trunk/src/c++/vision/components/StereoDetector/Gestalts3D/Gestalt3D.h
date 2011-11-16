@@ -58,7 +58,7 @@ protected:
   unsigned rank;	          // Rank of the the stereo Gestalt
 
   unsigned nodeID;          // Unique ID of the Gestalt (used for graph building/SVM/Learning)
-  unsigned objectLabel;     // Object label from Plane-Popout (ground truth data)
+  unsigned objectLabel;     // Object label from Plane-Popout (ground truth data from plane-popout)
   unsigned graphCutLabel;   // Labels from the graph cut
   
   bool drawNodeID;          // true, to draw the nodeID on the render-engine
@@ -91,18 +91,20 @@ public:
 
   void DrawNodeID(bool draw) {drawNodeID = draw;}
 
-  virtual cv::Vec3f GetCenter3D() {return cv::Vec3f(0.,0.,0.);}                                     /// TODO later pure virtual!
+  virtual cv::Vec3f GetCenter3D() {return cv::Vec3f(0.,0.,0.);}                                    /// TODO later all functions pure virtual!
+  virtual void GetPoints(std::vector<cv::Vec4f> &p) {}
+  virtual void GetIndices(std::vector<int> &i) {}
+  virtual void SetAnnotation(std::vector<int> &anno) {}
+  virtual bool GetLinks(std::vector<GraphLink> &links) {return false;}                                  /// TODO ARI: noch notwendig?
 
-  virtual bool GetLinks(vector<GraphLink> &links) {return false;}                                                 /// TODO ARI: noch notwendig?
-//  virtual void DrawGestalt3D(TGThread::TomGineThread *tgRenderer, bool randomColor) {}                            // TODO pure virtual
   virtual void DrawGestalt3D(TomGine::tgTomGineThread *tgRenderer, 
                              bool randomColor, 
                              bool use_color = false, 
                              float color = 0.0) {}
   virtual void DrawGestalts3DToImage(cv::Mat_<cv::Vec3b> &image, 
-                                     Video::CameraParameters &camPars) {}              // TODO pure virtual ???
+                                     Video::CameraParameters &camPars) {} 
 
-  virtual void PrintGestalt3D() {}                                                     // TODO pure virtual
+  virtual void PrintGestalt3D() {}
 };
 
 }

@@ -22,12 +22,18 @@ namespace Z
 class PclSphere3D : public Gestalt3D
 {
 public:
-  std::vector<cv::Vec4f> points;        /// points of the sphere hull
-  std::vector<int> indexes;             ///< 2D indexes of the points (in image space)
-  cv::Vec3f center3D;                   ///< 3D center point of the sphere // TODO TODO not done!!!
+  std::vector<cv::Vec4f> points;            /// points of the sphere hull
+  std::vector<int> indices;                 ///< Indices of the points refering to 2D image plane
+  std::vector<int> mask_hull_indices;       ///< 2D indexes of the points (in image space)
+  cv::Vec3f center3D;                       ///< 3D center point of the sphere // TODO TODO not done!!!
 
 public:
-  PclSphere3D(std::vector<cv::Vec4f> _points, std::vector<int> _indexes);
+  PclSphere3D(std::vector<cv::Vec4f> _points, 
+              std::vector<int> _indices,
+              std::vector<int> _mask_hull_indices);
+
+  void GetPoints(std::vector<cv::Vec4f> &p) {p = points;}
+  void GetIndices(std::vector<int> &i) {i = indices;}
 
   cv::Vec3f GetCenter3D() {return center3D;}
   void GetCenter3D(cv::Vec3f &c) {c = center3D;}
