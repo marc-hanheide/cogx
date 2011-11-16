@@ -205,7 +205,15 @@ printf(" HEY: Filenames.size(): %u\n", filenames.size());
   svmPredictor = new Z::SVMPredictor(2, filenames);      // 2 ... Number of SVM's
 
   graphCutter = new Z::GraphCut(kcore, relations);
-
+  annotation = new pa::Annotation();
+  annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 5, 16);
+  
+  /// init model fitter
+  double minZ = 0.3;
+  double maxZ = 1.5;
+  pclA::ModelFitter::Parameter param(false, 0.005, true, minZ, maxZ);
+  model_fitter = new pclA::ModelFitter(param);
+  
   if(showImages) 
   {
     cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
@@ -289,7 +297,7 @@ void SegTester::GetImageData()
   // get rectified images from point cloud server
 //   getRectImage(0, kinectImageWidth, image_l);            // 0 = left image / we take it with kinect image width
 //   getRectImage(1, kinectImageWidth, image_r);            // 1 = right image / we take it with kinect image width
-  getRectImage(2, rgbWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+  getRectImage(2, rgbWidth, image_k);                       // 2 = kinect image / we take it with kinect image width
 //   iplImage_l = convertImageToIpl(image_l);
 //  iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
@@ -306,16 +314,77 @@ void SegTester::GetImageData()
   
   /// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK 
   /// Check if there are same 3D points in the point clouds
-  for(unsigned l=0; l<pointCloudWidth*pointCloudHeight-1; l++)
+  for(unsigned l=1; l<pointCloudWidth*pointCloudHeight-1; l++)
   {
     double dist = ((pcl_cloud->points[l].x-pcl_cloud->points[l+1].x) + 
                    (pcl_cloud->points[l].y-pcl_cloud->points[l+1].y) + 
                    (pcl_cloud->points[l].z-pcl_cloud->points[l+1].z));
-    if(dist == 0.) printf("SegTester: Warning: Same 3D points!!!\n");
+    if(dist == 0.) printf("SegTester: Warning: Same 3D point: idx: %u-%u!!!\n", l, l+1);
   }
 }
 
 
+/**
+ *  @brief Process data from stereo or Kinect.
+ */
+void SegTester::processImageNew()
+{
+  printf("SegTester::processImageNew: start\n");
+  
+static struct timespec start, last, current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+last = start;
+
+  /// Get kinect data
+  GetImageData();
+
+  /// TODO ModelFitter
+  std::vector<int> pcl_model_types;
+  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_model_clouds;
+  std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;
+  std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
+  std::vector< std::vector<double> > distances;
+  std::vector<double> square_errors;
+  
+  model_fitter->addModelType(pcl::SACMODEL_PLANE);
+//   model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);
+//  model_fitter->addModelType(pcl::SACMODEL_CYLINDER);
+//  model_fitter->addModelType(pcl::SACMODEL_SPHERE);
+  pcl::PointCloud<pcl::Normal>::Ptr no = kcore->GetPclNormals();  /// TODO process normals in getImage
+  model_fitter->setNormals(no);
+  model_fitter->useDominantPlane(true);
+  model_fitter->setInputCloud(pcl_cloud);
+  model_fitter->compute();
+  model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
+  model_fitter->getError(distances, square_errors);
+
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Model fitting: %4.3f\n", timespec_diff(&current, &last));
+last = current;  
+
+  /// TODO Calculate relations
+    
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Calculate relations: %4.3f\n", timespec_diff(&current, &last));
+last = current;  
+  
+  /// TODO Graph cutter
+// printf("    graphCutter: start\n");
+//   graphCutter->Initialize();
+// printf("    graphCutter: initialized\n");
+//   graphCutter->Cut();
+// printf("    graphCutter: cutted\n");
+//   graphCutter->CopyGroupIDToFeatures();
+// printf("    graphCutter: end.\n");
+
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
+}
 
 /**
  *  @brief Process data from stereo or Kinect.
@@ -425,6 +494,14 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
 last = current;
 
+// printf("    annotation: start\n");
+//   std::vector<int> anno;
+//   annotation->load(pointCloudWidth, anno);
+//   kcore->CheckAnnotation(anno);
+//   double m, s, b;
+//   kcore->GetAnnotationResults(m, s, b);
+//   printf("SegTester: overall annotation results: %4.3f - %4.3f - %4.3f\n", m*100, s*100, b*100);
+// printf("    annotation: end\n");
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
@@ -478,6 +555,27 @@ void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
 }
 
 
+void DrawNormals(Z::KinectCore *kc, TomGine::tgTomGineThread *tgR)
+{
+  pcl::PointCloud<pcl::Normal>::Ptr normals;// (new pcl::PointCloud<pcl::Normal>);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;// (new pcl::PointCloud<pcl::Normal>);
+  normals = kc->GetPclNormals();
+  pcl_cloud = kc->GetPclCloud();
+  
+  for(unsigned i=0; i<normals->points.size(); i++)
+  {
+    cv::Vec3f s, e;
+    s[0] = pcl_cloud->points[i].x;
+    s[1] = pcl_cloud->points[i].y;
+    s[2] = pcl_cloud->points[i].z;
+    e[0] = pcl_cloud->points[i].x + normals->points[i].normal_x/500.;
+    e[1] = pcl_cloud->points[i].y + normals->points[i].normal_y/500.;
+    e[2] = pcl_cloud->points[i].z + normals->points[i].normal_z/500.;
+    
+    tgR->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 1);
+  }
+}
+
 /**
  * @brief Single shot mode of the stereo detector for debugging.\n
  * Catch keyboard events and change displayed results:\n
@@ -530,7 +628,15 @@ void SegTester::SingleShotMode()
 
   if (key == 65478 || key == 1114054) // F9
   {
-//     log("process images in single shot mode.");
+    log("process images in single shot mode.");
+    printf("\nSegTester::SingleShotMode: Process next image!\n");
+    lockComponent();
+    processImageNew();
+    unlockComponent();
+  }
+  if (key == 65479 || key == 1114055) // F10
+  {
+    log("process images in single shot mode.");
     printf("\nSegTester::SingleShotMode: Process next image!\n");
     lockComponent();
     processImage();
@@ -611,16 +717,15 @@ void SegTester::SingleShotMode()
       tgRenderer->Update();
       break;
       
-//     case '5':
-//       log("Show POINT CLOUD dilatation");
-//       if (showImages)
-//       {
+    case '5':
+      log("Show Normals");
+      if (showImages)
+      {
 //         tgRenderer->Clear();
-//         tgRenderer->Update();
-//         tgRenderer->AddPointCloud(kinect_point_cloud_dil);
-//         tgRenderer->Update();
-//       }
-//       break;
+        DrawNormals(kcore, tgRenderer);
+        tgRenderer->Update();
+      }
+      break;
 
     case '6':
       log("Show POINT CLOUD dilatation");
