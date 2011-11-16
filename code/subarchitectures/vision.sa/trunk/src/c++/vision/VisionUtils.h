@@ -188,7 +188,8 @@ inline float GetRandomColor()
  * @param cloud Point cloud
  * @param colCloud Color values for the point cloud
  */
-inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> &points, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
+inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> &points, 
+                         cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud)
 {
   printf("VisionUtils::Points2Cloud: Antiquated function: Use the cv::Vec4f matrix!\n");
   
@@ -210,66 +211,48 @@ inline void Points2Cloud(const std::vector<PointCloud::SurfacePoint> &points, cv
   }
 }
 
-/**
- * @brief Convert points from point cloud server to opencv matrix.
- * @param points Points from the point cloud as vector
- * @param cloud Point cloud
- */
-// inline void ConvertPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> &points, cv::Mat_<cv::Vec4f> &cloud)
-// {
-//   unsigned pcWidth = sqrt(points.size()*4/3);
-//   unsigned pcHeight = pcWidth *3/4;
-//   unsigned position = 0;
-//   
-//   cloud = cv::Mat_<cv::Vec4f>(pcHeight, pcWidth);    // rows = height / cols = width
-//   RGBValue color;
-//   color.a = 0;
-//   
-//   for(unsigned row = 0; row < pcHeight; row++)
-//   {
-//     for(unsigned col = 0; col < pcWidth; col++)
-//     {
-//       cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
-//       position = row*pcWidth + col;
-//       p[0] = (float) points[position].p.x;
-//       p[1] = (float) points[position].p.y;
-//       p[2] = (float) points[position].p.z;
-//       color.r = points[position].c.r;
-//       color.g = points[position].c.g;
-//       color.b = points[position].c.b;
-//       p[3] = color.float_value;
-//     }
-//   }
-// }
 
 /**
- * @brief Convert ONLY kinect points from point cloud server to opencv matrix.
- * Expects, that the kinect data points come first in the points field.
+ * @brief Converts a point cloud from cogx-points to cv::Mat.
+ * If substituteNAN flag is true, replace the zero values by NAN-values.
  * @param points Points from the point cloud as vector
- * @param cloud Point cloud
+ * @param cv_cloud Point cloud
  * @param width Width of the cloud
+ * @param height Height of the cloud
+ * @param substituteNAN Substitute FLT_MAX values by NAN values
  */
 inline void ConvertKinectPoints2MatCloud(const std::vector<PointCloud::SurfacePoint> &points, 
-                                         cv::Mat_<cv::Vec4f> &cloud,
-                                         int width)
+                                         cv::Mat_<cv::Vec4f> &cv_cloud,
+                                         unsigned width, unsigned height, bool substituteNAN)
 {
-printf("VisionUtils::ConvertKinectPoints2MatCloud: Warning: Experimental function.!\n");
-  unsigned height = width *3/4;
   unsigned position = 0;
-  
-  cloud = cv::Mat_<cv::Vec4f>(height, width);    // rows = height / cols = width
+  cv_cloud = cv::Mat_<cv::Vec4f>(height, width);    // rows = height / cols = width
   RGBValue color;
   color.a = 0;
   
   for(unsigned row = 0; row < height; row++)
   {
-    for(unsigned col = 0; col < (unsigned)width; col++)
+    for(unsigned col = 0; col < width; col++)
     {
-      cv::Vec4f &p = cloud.at<cv::Vec4f>(row, col);
+      cv::Vec4f &p = cv_cloud.at<cv::Vec4f>(row, col);
       position = row*width + col;
-      p[0] = (float) points[position].p.x;
-      p[1] = (float) points[position].p.y;
-      p[2] = (float) points[position].p.z;
+
+      if(substituteNAN)
+      {
+        if(points[position].p.x == 0. && points[position].p.y == 0. && points[position].p.z == 0.)
+        {
+          p[0] = NAN;
+          p[1] = NAN;
+          p[2] = NAN;
+        }
+        else
+        {
+          p[0] = (float) points[position].p.x;
+          p[1] = (float) points[position].p.y;
+          p[2] = (float) points[position].p.z;
+        }
+      }
+      
       color.r = points[position].c.b;
       color.g = points[position].c.g;
       color.b = points[position].c.r;
