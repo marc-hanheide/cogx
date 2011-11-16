@@ -1,9 +1,9 @@
 /**
- * @file Mouse.cpp
+ * @file Configuration.cpp
  * @author Andreas Richtsfeld
  * @date 2010
  * @version 0.1
- * @brief Functions for mouse handling.
+ * @brief Configuration.
  */
 
 #include "StereoDetector.h"

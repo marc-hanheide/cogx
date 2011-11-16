@@ -56,7 +56,7 @@ link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentat
 link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
-link_cast_component(${CAST_COMPONENT_NAME} v4rplanepopout v4rpclfunctions v4rtomgine)
+link_cast_component(${CAST_COMPONENT_NAME} v4rpcladdons v4rtomgine)
 
 # target_link_libraries(${CAST_COMPONENT_NAME} v4rplanepopout v4rpclfunctions v4rtomgine)
 endif (HAVE_V4R)
