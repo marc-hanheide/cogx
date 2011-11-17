@@ -1,11 +1,12 @@
 //predicate declarations
-default(t_dummy)
-
 color(t_belief, t_color)
 shape(t_belief, t_shape)
 salience(t_belief)
 type(t_belief, t_attr_type)
 room-type(t_belief, t_attr_type)
+ambiguity
+unknown
+exist_constraint
 
 //attributed_color(t_belief, t_attr_color)
 //attributed_shape(t_belief, t_attr_shape)
@@ -20,7 +21,7 @@ type_constraint(t_attr_type)
 
 resolution(t_belief)
 
-
+-2 exist_constraint
 
 // temporary solution for the 'openworldness' of number of private beliefs
 // the predicate prv_belief makes sure that only the (non-unit) rules of perceived

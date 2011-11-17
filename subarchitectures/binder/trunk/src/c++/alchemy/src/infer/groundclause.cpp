@@ -188,6 +188,12 @@ void GroundClause::setWtToSumOfParentWts(const MLN* const & mln)
     int clauseno = itr->first;
     int frequency = itr->second.first;
     bool invertWt = itr->second.second;
+		// One hard clause as parent is enough        
+    if(frequency > 0 && mln->getClause(clauseno)->isHardClause()) {
+    	if (invertWt) wt_ = -HARD_GROUNDCLAUSE_WT;
+    	else wt_= HARD_GROUNDCLAUSE_WT;
+    	return;
+    }
     double parentWeight = mln->getClause(clauseno)->getWt();
     if(!xwtset_ || mln->getClause(clauseno)->getNumPredicates() != 1)
     	if (invertWt) wt_ -= parentWeight*frequency;

@@ -2855,10 +2855,10 @@ class VariableState
       // or a unit clause
       GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i]-deleted];
 			if (!trueEvidence || gc->getNumGroundPredicates() == 1) {          
-        if (vsdebug) {
+//        if (vsdebug) {
           cout << "Deleting ground clause " << gndClauseIndexes[i] << " ";
           cout << endl;
-        }
+//        }
         // Real index is old index adjusted one lower for every element
         // deleted up until now
 //        GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i] - deleted];
@@ -2867,10 +2867,10 @@ class VariableState
         delete gc;
         deleted++;
 			} else {
-        if (vsdebug) {
+//        if (vsdebug) {
           cout << "Removing gnd pred " << -(atomIdx + 1)
                << " from ground clause " << gndClauseIndexes[i] << endl;
-      	}
+//      	}
         
 //        GroundClause* gc = (*gndClauses_)[gndClauseIndexes[i]-deleted];
         //remove the old grounded clause
@@ -2882,10 +2882,13 @@ class VariableState
         
         int pos = -1;
         for(int i=0; i<gndClauses_->size(); i++)
-    				if(gc->logicSame((*gndClauses_)[i]))
-    					pos=i;
+        	if(gc->logicSame((*gndClauses_)[i])) {
+//        			&& (*gndClauses_)[pos]->isHardClause() == gc->isHardClause()) {
+    				pos=i;
+    				continue;
+    			}
         // if equivalent caluse exists merge the new clause with it
-        if(pos >=0 && !(*gndClauses_)[pos]->isHardClause()) {
+        if(pos >=0) {
   				IntBoolPairItr itr;
   				IntBoolPair *flist = gc->getClauseFrequencies();
   		
@@ -2938,8 +2941,11 @@ class VariableState
           
         int pos = -1;
         for(int i=0; i<gndClauses_->size(); i++)
-    				if(gc->logicSame((*gndClauses_)[i]))
-    					pos=i;
+    			if(gc->logicSame((*gndClauses_)[i])) {
+//        			&& (*gndClauses_)[pos]->isHardClause() == gc->isHardClause()) {
+    				pos=i;
+    				continue;
+    			}
     					
         if(pos >=0)	{
     			IntBoolPairItr itr;
@@ -2947,7 +2953,7 @@ class VariableState
     			
     			for(itr=flist->begin(); itr != flist->end(); itr++) {
     				int freq=itr->second.first;
-    				if(freq > 0 && !(*gndClauses_)[pos]->isHardClause())	
+    				if(freq > 0)// && !(*gndClauses_)[pos]->isHardClause())	
     					(*gndClauses_)[pos]
     						->incrementClauseFrequency(itr->first,freq,itr->second.second);
     			}    				
