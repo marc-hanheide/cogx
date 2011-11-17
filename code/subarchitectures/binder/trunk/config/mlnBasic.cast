@@ -8,7 +8,7 @@ SETVAR mlnEngine1_params=<multiline>
 		--sa binder
 		--queries resolution
 		--instance-type t_belief
-		--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln,subarchitectures/binder.sa/src/mln/refresol/rrDomain.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow color,shape,color_constraint,shape_constraint,belief"
+		--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrDomain.mln,subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow color,shape,color_constraint,shape_constraint,belief"
 		--standalone-display-host localhost
 	</multiline>
 CPP MG mlnEngine1 MLNEngine %(mlnEngine1_params)
