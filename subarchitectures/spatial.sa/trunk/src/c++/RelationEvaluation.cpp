@@ -19,18 +19,19 @@ struct ActiveFace {
 
 RelationEvaluator::RelationEvaluator()
 {
-  patchThreshold = 0.030;
+  patchThreshold = 0.020;
 
   // Separation/interpenetration at which onness drops by half
-  distanceFalloffOutside			= 0.15; 
-  distanceFalloffInside			= 0.10; 
+  // IROS 2010 sim values: 0.007, 0.004
+  distanceFalloffOutside			= 0.007; 
+  distanceFalloffInside			= 0.004; 
 
   // Abruptness of transition as the COM moves out from
   // inside the (horizontal projection of) the contact patch
   supportCOMContainmentSteepness		= 1;
   // Offset for point of greatest slope. Positive means
   // slope is greatest somewhere outside the patch boundary
-  supportCOMContainmentOffset		= 0.5;
+  supportCOMContainmentOffset		= -0.5;
 
 
   planeThickness = 0.05;

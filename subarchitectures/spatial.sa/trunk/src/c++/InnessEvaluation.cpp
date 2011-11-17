@@ -172,7 +172,13 @@ RelationEvaluator::evaluateInness(const Object *objectC, const Object *objectO)
     clipPolyhedronToPlane(polyO, vector3(0, 0, -box->radius3), vector3(0,0,1));
 
     mergeAnyOverlappingVertices(polyO, 1e-6);
+  try {
     containedVolume = computePolyhedronVolume(polyO);
+  }
+  catch(exception e) {
+    cerr << ("Oh noes");
+    containedVolume = 0;
+  }
   }
   else {
     cerr << "Object type not supported yet!\n";

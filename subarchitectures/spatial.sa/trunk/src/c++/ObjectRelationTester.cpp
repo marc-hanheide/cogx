@@ -441,9 +441,9 @@ void ObjectRelationTester::runComponent()
 	      testObjects.push_back(m_testObjects[1]);
 	      types.push_back(spatial::RELATION_ON);
 
-	      //Intermediate
-	      testObjects.push_back(m_testObjects[2]);
-	      types.push_back(spatial::RELATION_ON);
+//	      //Intermediate
+//	      testObjects.push_back(m_testObjects[2]);//
+//	      types.push_back(spatial::RELATION_ON);
 
 	      vector<vector<Pose3> > points;
 	      points.reserve(500);
