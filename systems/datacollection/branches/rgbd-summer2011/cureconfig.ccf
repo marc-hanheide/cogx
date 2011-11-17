@@ -1,3 +1,5 @@
 JOYSTICK_DEVICE
 #/dev/joystick
+#the /dev/input one works
+#/dev/input/js0
 /dev/js0
