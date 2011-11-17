@@ -44,6 +44,7 @@ include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/tools/rocs/src/concept/cpp/)
 include_directories(${COGX_ROOT}/tools/rocs/src/ml/cpp/)
 include_directories(${COGX_ROOT}/tools/rocs/src/core/cpp/)
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
 include_directories(scanmap/HSS)
 
@@ -233,13 +234,17 @@ if(BUILD_SA_SPATIAL_RELATIONMANAGER)
   link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBRARIES})
   link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters)
 
-  add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp InferRelations.cpp) 
+endif(BUILD_SA_SPATIAL_RELATIONMANAGER)
+
+option(BUILD_SA_SPATIAL_RELATIONTESTER "Build spatial.SA ObjectRelationTester component" NO)
+
+if(BUILD_SA_SPATIAL_RELATIONTESTER)
+  add_cast_component(ObjectRelationTester ObjectRelationTester.cpp DensitySampling.cpp RelationEvaluation.cpp OnnessEvaluation.cpp InnessEvaluation.cpp) 
   set_target_properties(${CAST_COMPONENT_NAME} PROPERTIES INSTALL_RPATH ${ROCS_DIR}/lib)
   link_cast_component(${CAST_COMPONENT_NAME} peekabot)
-  link_cast_component(${CAST_COMPONENT_NAME} dai rocs_core rocs_ml rocs_concept)
   link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureAddressBank CureTransformation CureMath CureSensorData)
   link_cast_component(${CAST_COMPONENT_NAME} Math)
-endif(BUILD_SA_SPATIAL_RELATIONMANAGER)
+endif(BUILD_SA_SPATIAL_RELATIONTESTER)
 
 OPTION(BUILD_AVS_PLANNER NO)
 if(BUILD_AVS_PLANNER)
