@@ -1,4 +1,4 @@
-from standalone import pddl
+from standalone import pddl, plans
 from standalone import statistics
 
 from standalone.task import PlanningStatusEnum, Task
@@ -43,6 +43,7 @@ class BaseAgent(object):
 
     def run(self):
         self.running = True
+        self.failure_count = 0
         
     def execute(self, action, args):
         self.simulator.schedule(action, args, self)
@@ -154,10 +155,17 @@ class Agent(BaseAgent):
 
         if plan is not None and action_status:
             self.last_action.status = action_status
+
+        if action_status == plans.ActionStatusEnum.FAILED:
+            if self.failure_count >= global_vars.mapsim_config.max_failures:
+                return
+            self.failure_count += 1
+        else:
+            self.failure_count = 0
             
         for f in new_facts:
             self.task.get_state().set(f)
-            
+
         self.task.mark_changed()
         self.task.replan()
         self.execute_plan(self.task)
