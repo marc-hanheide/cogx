@@ -106,8 +106,8 @@ endif(BUILD_SA_SPATIAL_PEEKABOT)
 # link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 
 add_cast_component(SlamProcess SlamProcess.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapBase CureMapWall CureMapPoint CureMapHLine CureMapRangedPoint CureRelativePointFeature CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Scan2dReceiver Robotbase OdometryReceiver CureHWUtils)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 # -------------- /NAV.SA ----------------
