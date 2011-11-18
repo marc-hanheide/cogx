@@ -408,6 +408,19 @@ class Fact(tuple):
         return "%s = %s" % (str(self.svar), str(self.value))
 
     @staticmethod
+    def from_dict(d):
+        for tup in d.iteritems():
+            yield Fact(*tup)
+
+    @staticmethod
+    def to_dict(factlist, d=None):
+        if d is None:
+            d = {}
+        for svar, val in factlist:
+            d[svar] = val
+        return d
+            
+    @staticmethod
     def from_literal(literal, state=None):
         """Create a new Fact from a Literal. If the Literal
         contains nested functions, a state must be applied to look
@@ -479,7 +492,8 @@ class Fact(tuple):
     def from_tuple(tup):
         """Create a Fact object from a tuple containing a
         StateVariable and a TypedObject."""
-        return Fact(tup[0], tup[1])
+        assert False
+        return Fact(*tup)
 
 class NegatedFact(Fact):
     def negated(self):
@@ -532,7 +546,7 @@ class State(dict):
     def iterfacts(self):
         """Returns an iterator of all Facts contained in this
         State."""
-        return (Fact.from_tuple(tup) for tup in self.iteritems())
+        return Fact.from_dict(self)
 
     def set(self, fact):
         """Sets a StateVariable to a value as specified in the
@@ -1052,6 +1066,13 @@ class State(dict):
         """
         t0 = time.time()
 
+        stratification = self.problem.domain.stratification
+        if not stratification:
+            #we don't have axioms
+            if getReasons:
+                return self, {}, {}
+            return self
+        
         if not getReasons and svars is not None and self.extstate is not None:
             svars = set(svars)
             if svars < self.derived:
@@ -1078,14 +1099,7 @@ class State(dict):
                                 open.add(dep)
                         ax.uninstantiate()
             return closed
-        
-        stratification = self.problem.domain.stratification
-        if not stratification:
-            #we don't have axioms
-            if getReasons:
-                return self, {}, {}
-            return self
-            
+                    
         relevant = set()
         if svars is not None:
             for s in svars:
@@ -1094,10 +1108,11 @@ class State(dict):
                     relevant.add(s) #shortcut for nonrecursive, level 1 axioms
                 elif pred in derived:
                     relevant |= getDependencies(s, derived)
-                    
             if not relevant:
                 if getReasons:
                     return self, {}, {}
+                if self.extstate is not None:
+                    return self.extstate
                 return self
 
         if getReasons:
