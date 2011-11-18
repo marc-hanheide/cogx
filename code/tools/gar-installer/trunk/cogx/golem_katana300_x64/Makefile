@@ -22,7 +22,18 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
+SYSBITS=$(shell getconf LONG_BIT)
+OPT_BUILD_32=ERROR/SYSBITS
+ifeq ($(SYSBITS),64)
+    OPT_BUILD_32=OFF
+endif
+ifeq ($(SYSBITS),32)
+    OPT_BUILD_32=ON
+endif
 CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix) \
 			-D BUILD_DEVICE_KATANA450=OFF \
 			-D BUILD_AXNI=OFF \
-			-D BUILD_32_BIT=OFF
+			-D BUILD_32_BIT=$(OPT_BUILD_32)
+
+mydebugprint:
+	@echo $(CONFIGURE_ARGS)
