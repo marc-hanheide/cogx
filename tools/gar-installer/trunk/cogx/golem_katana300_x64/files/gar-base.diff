@@ -1,0 +1,11 @@
+diff -ru orig-golem-trunk/include/Golem/Math/Collection.h golem-trunk/include/Golem/Math/Collection.h
+--- orig-golem-trunk/include/Golem/Math/Collection.h	2010-11-22 02:24:58.000000000 +0100
++++ golem-trunk/include/Golem/Math/Collection.h	2011-11-18 14:45:19.271689446 +0100
+@@ -15,6 +15,7 @@
+ #include <vector>
+ #include <list>
+ #include <map>
++#include <cstdlib>
+ 
+ //------------------------------------------------------------------------------
+ 
