@@ -7,6 +7,9 @@ WORKSRC = $(WORKDIR)/$(DISTNAME)/compiler/cmake/default/
 
 MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/msk/development/Golem/trunk/
 
+PATCHDIR=$(WORKDIR)/$(DISTNAME)
+PATCHFILES = gar-base.diff
+
 #LIBDEPS = contrib/peak-linux
 
 MAINTAINER = ttoenige
