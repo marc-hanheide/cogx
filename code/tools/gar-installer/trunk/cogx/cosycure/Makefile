@@ -4,6 +4,9 @@ CATEGORIES = bootstrap
 DISTFILES = $(GARNAME).tgz
 MAINTAINER = mhanheid
 
+
+SYSTEM_UNAME=$(shell uname -s)
+
 MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/nah/cosycure/trunk/
 
 #LIBDEPS = contrib/peekabot
@@ -19,14 +22,22 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-CONFIGURE_ARGS = "LDFLAGS=-Wl,--no-as-needed"
+ifeq ($(SYSTEM_UNAME),Darwin)
+	CONFIGURE_ARGS = $(DIRPATHS)
+else
+	CONFIGURE_ARGS = $(DIRPATHS) "LDFLAGS=-Wl,--no-as-needed"
+endif
+
+
 
 checksum-$(DISTFILES):  
-	true
-checksum-$(PATCHFILES): 
-	true
+	@true
 	
-pre-configure: autoreconf
+pre-configure: autoreconf showconfig
+
+showconfig:
+	@echo "configure for $(SYSTEM_UNAME): $(CONFIGURE_ARGS)"
+	$(MAKECOOKIE)
 
 pre-build: 
 	(cd $(WORKSRC); make clean)
