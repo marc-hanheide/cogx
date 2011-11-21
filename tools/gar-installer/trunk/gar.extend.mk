@@ -1,5 +1,7 @@
 include ../../gar.mk
 
+LSB_RELEASE_BIN:=/usr/bin/lsb_release
+
 ifdef SVNUSER
 SVNUSERARG=--username $(SVNUSER)
 else
@@ -15,13 +17,24 @@ print-debs:
 	@echo -n "$(DEB_PACKAGES) "
 
 %@ubuntu:
-	@(if [ `lsb_release -i -s` = "Ubuntu" ]; then if dpkg-query -s $* | grep "Status:.*install[^e]" >/dev/null 2>&1; then \
+	@(if [ -x $(LSB_RELEASE_BIN) ]; then if [ `$(LSB_RELEASE_BIN) -i -s`x = "Ubuntu"x ]; then if dpkg-query -s $* | grep "Status:.*install[^e]" >/dev/null 2>&1; then \
 		echo "	[ubuntu-check] $* is already installed.";\
 		exit 0;\
 	else \
 		echo "	[ubuntu-check] need to install $*. will now call sudo apt-get install $*.";\
 		sudo apt-get --allow-unauthenticated --assume-yes install $* || (echo "$* failed. press [return] to continue anyway or CTRL-C to interrupt."; read dummy);\
+	fi;fi;fi) && $(MAKECOOKIE)
+
+
+%@macports:
+	@(if [ `uname  -s`x = "Darwin"x ]; then if port info $* >/dev/null 2>&1; then \
+		echo "	[macports-check] $* is already installed.";\
+		exit 0;\
+	else \
+		echo "	[macports-check] need to install $*. will now call sudo port install $*.";\
+		sudo port install install $* || (echo "$* failed. press [return] to continue anyway or CTRL-C to interrupt."; read dummy);\
 	fi;fi) && $(MAKECOOKIE)
+
 
 configure-cmake:
 	@echo " ==> Running cmake in $(WORKSRC)"
