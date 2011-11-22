@@ -25,7 +25,7 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		nvidia-cg-toolkit@ubuntu \
 		cmake-curses-gui@ubuntu \
 		libdc1394-22-dev@ubuntu \
-		libsdl-dev@ubuntu
+		libsdl-dev@ubuntu 
 
 
 
@@ -38,6 +38,7 @@ LIBDEPS = 	contrib/peekabot \
 		contrib/physx_x64 \
 		contrib/openNI \
 		contrib/avin2-SensorKinect \
+		cogx/v4r \
 		contrib/gazebo \
 		cogx/golem_katana450_x64
 
