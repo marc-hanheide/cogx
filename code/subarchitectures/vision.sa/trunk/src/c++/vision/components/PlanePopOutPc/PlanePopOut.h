@@ -15,8 +15,8 @@
 #include <opencv/highgui.h>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <v4r/PCLAddOns/PlanePopout.hh>
-#include <v4r/PCLAddOns/utils/PCLUtils.h>
-#include <v4r/PCLAddOns/functions/PCLFunctions.h>
+#include <v4r/PCLAddOns/PCLUtils.h>
+#include <v4r/PCLAddOns/PCLFunctions.h>
 #include <PointCloudClient.h>
 #include <VisionData.hpp>
 #include "TomGineWraper/TomGineThread.hh"

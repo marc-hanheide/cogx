@@ -15,6 +15,9 @@ FIND_PACKAGE( PCL REQUIRED )
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 
+FIND_PACKAGE( V4R REQUIRED )
+include_directories(${V4R_INCLUDE_DIRS})
+link_directories(${V4R_LIBRARY_DIRS})
 
 include_directories(.)
 include_directories(${COGX_ROOT}/subarchitectures/nav.sa/src/c++/autogen)
@@ -53,6 +56,6 @@ link_cast_component(${CAST_COMPONENT_NAME} GLU glut)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
     ${GLUT_LDFLAGS} ${VISUALIZATION_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} PCLUtils PCLFunctions PlanePopout)
+link_cast_component(${CAST_COMPONENT_NAME} v4rpcladdons)
 link_cast_component(${CAST_COMPONENT_NAME} pcl_segmentation)
 

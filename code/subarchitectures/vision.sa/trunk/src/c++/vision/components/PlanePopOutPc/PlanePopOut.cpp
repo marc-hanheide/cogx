@@ -1044,14 +1044,15 @@ void PlanePopOut::GetPlaneAndSOIs()
 #endif
 
 	//log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
-	if (!m_planePopout->CalculateSOIs(pcl_cloud))
-	    return;
 
-	m_planePopout->GetSOIs(pcl_sois);
+	/// TODO
+	std::vector<unsigned> labels;   /// TODO unused?
+	m_planePopout->CalculateSOIs(pcl_cloud);
+	m_planePopout->GetSOIs(pcl_sois, labels);
 	m_planePopout->GetDominantPlaneCoefficients(pcl_domplane);
-	m_planePopout->GetTableHulls(tablehull);
-	m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
-	m_planePopout->GetPlanePoints(planepoints); 
+	m_planePopout->GetTableHull(tablehull);
+//	m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);	/// TODO Reimplement
+//	m_planePopout->GetPlanePoints(planepoints); 			/// TODO Reimplement
     }
 
 #ifdef FEAT_VISUALIZATION
