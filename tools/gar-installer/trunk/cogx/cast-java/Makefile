@@ -18,9 +18,14 @@ DEB_PACKAGES=\
 	liblog4j1.2-java@ubuntu \
 	default-jdk@ubuntu \
         ant@ubuntu \
-        zeroc-ice34@ubuntu
+        zeroc-ice34@ubuntu \
+    \
+	jakarta-log4j@macports \
+	apache-ant@macports \
+	ice-java@macports
+
 	
-MFLAGS=$(MFLAGS_NUMCPU)
+#MFLAGS=$(MFLAGS_NUMCPU)
 
 
 CONFIGURE_SCRIPTS = 

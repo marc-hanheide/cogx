@@ -20,9 +20,16 @@ DEB_PACKAGES=\
 	liblog4cxx10-dev@ubuntu \
         zeroc-ice34@ubuntu \
 	libgoogle-perftools-dev@ubuntu \
-	cmake@ubuntu
+	cmake@ubuntu \
+	\
+	log4cxx@macports \
+	google-perftools@macports \
+	ice-cpp@macports \
+	ice-python@macports \
+	cmake@macports 
+		
 
-MFLAGS=$(MFLAGS_NUMCPU)
+#MFLAGS=$(MFLAGS_NUMCPU)
 
 
 CONFIGURE_SCRIPTS = cmake
