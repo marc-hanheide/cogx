@@ -48,20 +48,20 @@ autoreconf:
 	(cd $(WORKSRC); autoreconf --install)
 	@$(MAKECOOKIE)
 
-post-install: install-includes install-libs install-bins
-	@$(MAKECOOKIE)
+#post-install: install-includes install-libs install-bins
+#	@$(MAKECOOKIE)
 	
-install-includes:
-	(cp -Rf $(WORKSRC)/include/cure $(includedir))
-	@$(MAKECOOKIE)
+#install-includes:
+#	(cp -Rf $(WORKSRC)/include/cure $(includedir))
+#	@$(MAKECOOKIE)
 	
-install-libs:
-	(cp -Rf $(WORKSRC)/lib/cure $(libdir))
-	@$(MAKECOOKIE)
+#install-libs:
+#	(cp -Rf $(WORKSRC)/lib/cure $(libdir))
+#	@$(MAKECOOKIE)
 	
-install-bins:
-	(cp -f $(WORKSRC)/bin/* $(bindir))
-	@$(MAKECOOKIE)
+#install-bins:
+#	(cp -f $(WORKSRC)/bin/* $(bindir))
+#	@$(MAKECOOKIE)
 
 
 
