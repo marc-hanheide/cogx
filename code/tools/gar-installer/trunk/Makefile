@@ -1,4 +1,4 @@
-.DEFAULT:	full-blown
+.DEFAULT:	dora george
 
 dora:
 	sudo $(MAKE) -C cogx/dora-y4 install
