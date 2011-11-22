@@ -7,7 +7,7 @@ MAINTAINER = ttoenige
 MASTER_SITES =  http://downloads.sourceforge.net/project/opencvlibrary/opencv-unix/2.3.1/
 #svnhttps://opencvlibrary.svn.sourceforge.net/svnroot/opencvlibrary/trunk/opencv/
 
-
+PATCHFILES=pixeltype-bug.diff
 
 LIBDEPS = 
 
