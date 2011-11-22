@@ -18,7 +18,7 @@ LIBDEPS =
 #        libgtk2.0-dev@ubuntu
 # libv4l-dev
 
-MFLAGS=$(MFLAGS_NUMCPU)
+#MFLAGS=$(MFLAGS_NUMCPU)
 
 CONFIGURE_SCRIPTS = cmake
 BUILD_SCRIPTS = $(WORKSRC)/Makefile
