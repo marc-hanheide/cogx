@@ -30,7 +30,30 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libeigen2-dev@ubuntu \
 		python-numpy@ubuntu \
 		flex@ubuntu \
-		bison@ubuntu
+		bison@ubuntu \
+		\
+		qt4-mac-devel@macports \
+		py-pyqt4@macports \
+		boost@macports \
+		mesa@macports \
+		glut@macports \
+		ftgl@macports \
+		lua@macports \
+		protobuf-cpp@macports \
+		protobuf-java@macports \
+		protobuf-c@macports \
+		protobuf-python@macports \
+		py26-pygraphviz@macports \
+		glew@macports \
+		libdevil@macports \
+		libdc1394@macports \
+		libsdl-devel@macports \
+		SuiteSparse@macports\
+		eigen@macports \
+		eigen3@macports \
+		py-numpy@macports \
+		flex@macports \
+		bison@macports 
 
 LIBDEPS = 			contrib/peekabot \
 		cogx/cast-c++ \
