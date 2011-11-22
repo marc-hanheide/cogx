@@ -1,0 +1,9 @@
+vision.sa:
+
+- ARTagRecognizer has a preKnownObjects and ARConfig file under vision/config
+	Works like this: The objects in both files should follow the same order. in preKnownObjects, what's important is the object category label
+	and that's the name that gets into WM. Whereas in ARConfig, each pattern is associated with a unique id (given while loading the patterns in the component) and a name. 
+
+spatial.sa:
+	- As it is now created 2D maps are pretty bad as a result of incorporating maxrange beams from Hokuyo
+	- explore-range of SpatialControl should be smaller then max-frontier-dist of PlaceManager 

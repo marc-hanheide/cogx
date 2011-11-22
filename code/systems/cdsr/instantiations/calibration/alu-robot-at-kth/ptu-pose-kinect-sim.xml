@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<tvec type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    0.00 0.02 0.06</data></tvec>
+<rmat type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>3</cols>
+  <dt>d</dt>
+  <data>
+   0.00000  -0.08716   0.99619
+  -1.00000   0.00000   0.00000
+   0.00000  -0.99619  -0.08716
+    </data></rmat>
+</opencv_storage>
+<!--
+  0 0 1
+  -1 0 0
+  0 -1 0
+-->

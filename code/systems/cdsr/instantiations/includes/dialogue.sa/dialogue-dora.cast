@@ -1,0 +1,24 @@
+
+VARDEFAULT parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
+VARDEFAULT irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
+VARDEFAULT dm_policy=subarchitectures/dialogue.sa/config/policies/yr2/fullpolicy_george.xml
+VARDEFAULT irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+VARDEFAULT cplan_rules=subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf
+VARDEFAULT realize_grammar=%(parsing_grammar)
+VARDEFAULT realize_ngrams=subarchitectures/dialogue.sa/grammars/openccg/moloko.v6/ngram-corpus.txt
+
+INCLUDE  ../../modules/main.incl
+
+INCLUDE  ../../modules/context.incl
+
+INCLUDE  ../../modules/asr-loquendo.incl
+INCLUDE  ../../modules/nlu-all.incl
+INCLUDE  ../../modules/manage-none.incl
+INCLUDE  ../../modules/nlg-all.incl
+INCLUDE  ../../modules/tts-mary.incl
+INCLUDE  ../../modules/gui-local.incl
+INCLUDE  dialogue-exe.cast
+
+#INCLUDE dialogue-dora-exe-fake.cast
+
+JAVA MG shared-tracker eu.cogx.sharedtracker.dora.SharedBeliefTracker --write-to-sa binder
