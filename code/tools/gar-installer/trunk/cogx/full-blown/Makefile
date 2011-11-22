@@ -39,7 +39,8 @@ LIBDEPS = 			contrib/peekabot \
 		contrib/opencv \
 		contrib/player-3.0.2 \
 		contrib/stage \
-		contrib/avin2-SensorKinect
+		contrib/avin2-SensorKinect \
+		contrib/mercury
 
 DESCRIPTION = cogx-distro
 
