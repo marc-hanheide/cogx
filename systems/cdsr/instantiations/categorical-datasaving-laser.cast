@@ -1,0 +1,51 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+#INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+#disabled door detection
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --min-door-width 1.0 --max-door-width 0.9 #--no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --explore-range 2.0 
+CPP MG spatial.translation SpatialTranslation 
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.6 --min-node-separation 1 --hyp-path-length 2.0 --no-placeholders 
+CPP GD path.query PathQueryProcessor #--no-indirect-paths 
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors 
+JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
+
+
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+CPP GD self.representer SelfRepresenter 
+# coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+INCLUDE includes/coma.sa/coma-mediators.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main.cast
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-saving.cast
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main.cast
+
+# Fake Vision ###############################################################
+INCLUDE includes/vision.sa/vision-base.cast
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 200 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0
+
+# exection ####################################################################
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --labels table,cerealbox
+JAVA MG executor dora.execution.components.DoraExecutionMediator
+
+
+JAVA MG tourguide castutils.experimentation.TourGiver --places "1 3 6 22 19 0" --delay-ms 10000 
+

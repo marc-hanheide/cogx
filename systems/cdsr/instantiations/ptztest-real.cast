@@ -1,0 +1,13 @@
+HOST localhost
+
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# use the PTZ GUI to move the pan tilt e.g. to a fixed position from which to calibrate camera poses
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI  --pan "0.4" --tilt "-0.2"
+
+JAVA MG ptz castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "ptz.SetPTZPoseCommand" --generic-col
+

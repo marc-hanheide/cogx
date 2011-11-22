@@ -1,0 +1,16 @@
+VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
+VARDEFAULT planning_domain=dora-interactive.pddl
+VARDEFAULT planning_goal="(exists (?p - person) (kval (is-in ?p)))"
+VARDEFAULT expl_rules=explanations-dora.pddl
+VARDEFAULT planning_config="config.dora.ini"
+
+
+COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules)
+COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+INCLUDE planner-base.cast
+INCLUDE viz-plan.cast
+JAVA MG manual.planning motivation.components.generators.SimulatedPersonGoalGenerator --goals %(planning_goal)
+# exection ####################################################################
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
+JAVA MG executor dora.execution.components.DoraExecutionMediator
+

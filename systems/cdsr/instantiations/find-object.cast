@@ -1,0 +1,40 @@
+# test a new object, in real.
+
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT objname_=re_book
+
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/%(objname_).sift
+</multiline>
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/%(objname_).ply
+</multiline>
+VARDEFAULT or3d_labels=%(objname_)
+
+HOST localhost
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv"
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files) --display $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv"
+
+CPP MG Recognizer3DDriver DummyDriver --labels "%(or3d_labels)"
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
+
