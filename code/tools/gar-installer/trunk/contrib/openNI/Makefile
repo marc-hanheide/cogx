@@ -18,7 +18,13 @@ DEB_PACKAGES=\
 
 include ../../gar.extend.mk
 
-
+SYSTEM_UNAME:=$(shell uname -s)
+ifeq ($(SYSTEM_UNAME),Darwin)
+post-build:
+	@echo "*** build not supported on $(SYSTEM_UNAME) ***" >&2
+post-install:
+	@echo "*** install not supported on $(SYSTEM_UNAME) ***" >&2	
+else
 post-build:
 	(cd $(WORKSRC)/Platform/Linux-x86/CreateRedist/; ./RedistMaker;)
 	@$(MAKECOOKIE)
@@ -27,4 +33,5 @@ post-build:
 post-install:
 	(cd $(WORKSRC)/Platform/Linux-x86/Redist/; sudo ./install.sh -i;)
 	@$(MAKECOOKIE)
+endif
 
