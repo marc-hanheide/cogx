@@ -383,7 +383,10 @@ class TemporalTranslator(pddl.translators.Translator):
                 return pddl.durative.TimedEffect(eff.predicate, eff.args[:], "end", negated=eff.negated)
             if isinstance(eff, pddl.ConditionalEffect):
                 eff2 = pddl.ConditionalEffect(None, results[0])
-                eff2.condition = eff.condition.visit(condition_visitor)
+                cond, is_timed = eff.condition.visit(condition_visitor)
+                if not is_timed:
+                    cond = pddl.durative.TimedCondition("start", cond, a2)
+                eff2.condition = cond
                 return eff2
 
         a2.precondition, is_timed = pddl.visitors.visit(action.precondition, condition_visitor, default=(None, True))

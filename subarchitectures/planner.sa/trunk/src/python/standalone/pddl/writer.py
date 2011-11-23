@@ -90,7 +90,7 @@ class Writer(object):
             per_type[o.type].add(o)
 
         for t, olist in per_type.iteritems():
-            ostr = " ".join(o.name for o in olist)
+            ostr = " ".join(sorted(o.name for o in olist))
             strings.append("%s - %s" % (ostr, self.write_type(t)))
             
         return self.section(":%s" % name, strings)
