@@ -153,8 +153,14 @@ abducer.h abducer.cc: $(SLICE_PATH)/abducer.ice
 
 OBJS=$(addsuffix .o, $(basename $(CXX_SOURCES)))
 
+ifeq ($(shell uname -s),Darwin)
+	LDFLAGS+=
+else
+	LDFLAGS+=-Wl,--no-as-needed
+endif
+
 $(BIN): $(CXX_HEADERS) $(OBJS)
-	$(CXX) -Wl,--no-as-needed $(LDFLAGS) $(OBJS) -o $@
+	$(CXX)  $(LDFLAGS) $(OBJS) -o $@
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
