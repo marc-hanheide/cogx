@@ -1195,8 +1195,6 @@ class DTPDDLCompiler(translators.Translator):
         a2 = action.copy(newdomain=domain)
         a2.set_total_cost(None)
 
-        if self.orig_domain is None:
-            self.orig_domain = self.get_original(domain)
         orig_action = self.orig_domain.get_action(action.name)
         fct = predicates.Term(mapl.failure_cost,[])
         fail_cost_term = orig_action.get_effects(fct)
@@ -1247,6 +1245,7 @@ class DTPDDLCompiler(translators.Translator):
 
     def translate_domain(self, _domain):
         dom = _domain.copy_skeleton()
+        self.orig_domain = self.get_original(_domain)
         # dom.types[t_integer.name] = t_integer
         # dom.types[t_double.name] = t_double
 
