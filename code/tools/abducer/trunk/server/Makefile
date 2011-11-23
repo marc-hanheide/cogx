@@ -160,7 +160,7 @@ else
 endif
 
 $(BIN): $(CXX_HEADERS) $(OBJS)
-	$(CXX) $(PRFX_LDFLAGS) $(LDFLAGS) $(OBJS) -o $@
+	$(CXX) $(LDFLAGS_PRFX) $(LDFLAGS) $(OBJS) -o $@
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
