@@ -724,8 +724,12 @@ class State(dict):
                 
             if trace_vars:
                 self.read_svars.add(svar)
-#            print svar, self[svar], (self[svar] == TRUE) ^ literal.negated
-            return (self[svar] == TRUE) ^ literal.negated
+            if self.problem and svar.function in self.problem.domain.get_derived():
+                st = self.get_extended_state([svar])
+            else:
+                st = self
+            # print svar, st[svar], (st[svar] == TRUE) ^ literal.negated
+            return (st[svar] == TRUE) ^ literal.negated
 
 
     def get_literal_effect(self, literal, trace_vars=False):
