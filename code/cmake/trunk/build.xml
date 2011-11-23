@@ -8,7 +8,8 @@
 	<!-- =================================================================== -->
 	<target name="init" description="compiles the source code">
 	  <tstamp/>
-	<mkdir dir="${basedir}/lib/jar"/>
+	  <mkdir dir="${basedir}/output"/>
+	  <mkdir dir="${basedir}/output/jar"/>
 	</target>
 
 	<!-- =================================================================== -->
