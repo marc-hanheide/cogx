@@ -525,6 +525,7 @@ class State(dict):
         self.written_svars = set()
         self.extstate = None
         self.derived = set()
+        self.auto_axiom_evaluation = True
         
         self.random = random.Random()
 
@@ -559,6 +560,7 @@ class State(dict):
         
     def __getitem__(self, key):
         try:
+            # print key,"--",dict.__getitem__(self, key)
             return dict.__getitem__(self, key)
         except:
             if isinstance(key.function, Predicate) or isinstance(key.modality, Predicate):
@@ -724,7 +726,7 @@ class State(dict):
                 
             if trace_vars:
                 self.read_svars.add(svar)
-            if self.problem and svar.function in self.problem.domain.get_derived():
+            if self.auto_axiom_evaluation and self.problem and svar.function in self.problem.domain.get_derived():
                 st = self.get_extended_state([svar])
             else:
                 st = self
@@ -1127,9 +1129,12 @@ class State(dict):
 
         if self.extstate is None:
             self.extstate = self.copy()
+            self.extstate.extstate = self.extstate
+            self.extstate.derived = self.derived
 
         import logging
-        
+        self.extstate.auto_axiom_evaluation = False
+
         t0 = time.time()
         for level, preds in sorted(stratification.iteritems()):
             logging.getLogger().debug("level: %d, %s", level, map(str, preds))
@@ -1192,7 +1197,7 @@ class State(dict):
                                 universal = None
                                 
                             if self.extstate.is_satisfied(ax.condition, vars, universal):
-                                #logging.getLogger().debug("set to true: %s", svar)
+                                # logging.getLogger().debug("set to true: %s", svar)
 
                                 true_atoms.add(svar)
                                 self.extstate[svar] = TRUE
@@ -1212,6 +1217,7 @@ class State(dict):
             #print "layer:", time.time()-t1
         
         #print "total:", time.time()-t0
+        self.extstate.auto_axiom_evaluation = True
         if getReasons:
             return self.extstate, reasons, universalReasons
         
