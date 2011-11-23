@@ -66,7 +66,7 @@ CScene2D::CScene2D()
 void CScene2D::configure(const std::map<std::string,std::string> & _config)
 {
    m_display.configureDisplayClient(_config);
-   map<string,string>::const_iterator it;
+   std::map<std::string,std::string>::const_iterator it;
 
    m_objectList = "video.viewer";
    if ((it = _config.find("--v11n-objects")) != _config.end()) {
@@ -100,8 +100,8 @@ void CScene2D::start()
    m_display.installEventReceiver();
 
    std::vector<std::string> objects;
-   istringstream iss(m_objectList);
-   string idobj;
+   std::istringstream iss(m_objectList);
+   std::string idobj;
 
    while (iss.good() && !iss.eof()) {
       iss >> idobj;
