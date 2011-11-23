@@ -11,7 +11,7 @@ MASTER_SITES = http://downloads.sourceforge.net/project/peekabot/peekabot/0.8.x/
 
 LIBDEPS = 
 
-PATCHFILES= gar-base.diff
+#PATCHFILES= gar-base.diff
 
 #MFLAGS=$(MFLAGS_NUMCPU)
 
