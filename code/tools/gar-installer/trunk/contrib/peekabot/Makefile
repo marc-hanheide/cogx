@@ -11,7 +11,7 @@ MASTER_SITES = http://downloads.sourceforge.net/project/peekabot/peekabot/0.8.x/
 
 LIBDEPS = 
 
-#PATCHFILES= gar-base.diff
+PATCHFILES= gar-base.diff
 
 #MFLAGS=$(MFLAGS_NUMCPU)
 
@@ -26,11 +26,11 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-ifeq ($(SYSTEM_UNAME),Darwin)
-	CONFIGURE_ARGS = $(DIRPATHS) --disable-server
-else
-	CONFIGURE_ARGS = $(DIRPATHS) 
-endif
+#ifeq ($(SYSTEM_UNAME),Darwin)
+#	CONFIGURE_ARGS = $(DIRPATHS) --disable-server
+#else
+#	CONFIGURE_ARGS = $(DIRPATHS) 
+#endif
 
 
 pre-configure: reconf showconfig
