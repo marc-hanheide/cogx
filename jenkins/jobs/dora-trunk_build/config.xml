@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.trac.TracProjectProperty>
+      <tracWebsite>https://codex.cs.bham.ac.uk/trac/cogx/</tracWebsite>
+    </hudson.plugins.trac.TracProjectProperty>
+  </properties>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://codex.cs.bham.ac.uk/svn/nah/cogx/code/systems/dora-yr3</remote>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <browser class="hudson.plugins.trac.TracRepositoryBrowser"/>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateWithCleanUpdater"/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector">
+    <hudson.triggers.TimerTrigger>
+      <spec># start nightly build at 1:00 am
+0 1 * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.cmake.CmakeBuilder>
+      <sourceDir>./dora-yr3/.</sourceDir>
+      <buildDir>./dora-yr3/BUILD</buildDir>
+      <installDir>./dora-yr3/output</installDir>
+      <buildType>Debug</buildType>
+      <otherBuildType></otherBuildType>
+      <generator>Unix Makefiles</generator>
+      <makeCommand>make</makeCommand>
+      <installCommand>make install</installCommand>
+      <preloadScript>$WORKSPACE/dora-yr3/cmake-caches/dora-yr3.txt</preloadScript>
+      <cmakeArgs></cmakeArgs>
+      <projectCmakePath></projectCmakePath>
+      <cleanBuild>true</cleanBuild>
+      <cleanInstallDir>true</cleanInstallDir>
+      <builderImpl/>
+    </hudson.plugins.cmake.CmakeBuilder>
+  </builders>
+  <publishers>
+    <hudson.tasks.Mailer>
+      <recipients>cogx@cs.bham.ac.uk</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+    <jenkins.plugins.tracpublisher.TracPublisher>
+      <buildServerAddress>https://codex.cs.bham.ac.uk/jenkins-cogx</buildServerAddress>
+      <rpcAddress>https://codex.cs.bham.ac.uk/trac/cogx</rpcAddress>
+      <username>cogx</username>
+      <password>cogxxgoc</password>
+      <issuePattern>
+        <pattern>[#](\d+)</pattern>
+        <flags>0</flags>
+      </issuePattern>
+    </jenkins.plugins.tracpublisher.TracPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

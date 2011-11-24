@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.scm.SubversionSCM_-DescriptorImpl>
+  <generation>24</generation>
+  <credentials class="hashtable">
+    <entry>
+      <string>&lt;https://codex.cs.bham.ac.uk:443&gt; Subversion Projects Repository</string>
+      <hudson.scm.SubversionSCM_-DescriptorImpl_-PasswordCredential>
+        <userName>cogx</userName>
+        <password>Y29neHhnb2M=</password>
+      </hudson.scm.SubversionSCM_-DescriptorImpl_-PasswordCredential>
+    </entry>
+  </credentials>
+  <workspaceFormat>8</workspaceFormat>
+  <validateRemoteUpToVar>false</validateRemoteUpToVar>
+  <storeAuthToDisk>true</storeAuthToDisk>
+</hudson.scm.SubversionSCM_-DescriptorImpl>
