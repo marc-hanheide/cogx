@@ -1,0 +1,19 @@
+<package>
+  <description brief="cogx_stuff">
+
+     cogx_stuff
+
+  </description>
+  <author>Marko Mahnic</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/cogx_stuff</url>
+
+ <depend package="gazebo"/>
+ <export>
+    <gazebo gazebo_media_path="${prefix}/../../instantiations/george-y3/sim/gazebo" />
+ </export>
+
+</package>
+
+

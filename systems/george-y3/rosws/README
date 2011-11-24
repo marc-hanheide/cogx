@@ -1,0 +1,6 @@
+Run Gazebo with George World
+
+cd rosws
+. setup.sh
+rosmake cogx_stuff
+roslaunch cogx_stuff george_world.launch
