@@ -1,8 +1,8 @@
 GARNAME = OpenNI-OpenNI
-GARVERSION = d50d0e3
+GARVERSION = 	d07a88a
 CATEGORIES = bootstrap
 DISTNAME = $(GARNAME)-$(GARVERSION)
-DISTFILES = $(DISTNAME).tar.gz
+DISTFILES = $(DISTNAME).zip
 
 MAINTAINER = ttoenige
 
@@ -14,7 +14,7 @@ DEB_PACKAGES=\
 	libusb-1.0-0-dev@ubuntu \
 	libmono-winforms2.0-cil@ubuntu
 
-
+PATCHFILES=memcpy-bugfix.diff
 
 include ../../gar.extend.mk
 
@@ -26,12 +26,12 @@ post-install:
 	@echo "*** install not supported on $(SYSTEM_UNAME) ***" >&2	
 else
 post-build:
-	(cd $(WORKSRC)/Platform/Linux-x86/CreateRedist/; ./RedistMaker;)
+	(cd $(WORKSRC)/Platform/Linux-x86/CreateRedist/; bash ./RedistMaker;)
 	@$(MAKECOOKIE)
 
 
 post-install:
-	(cd $(WORKSRC)/Platform/Linux-x86/Redist/; sudo ./install.sh -i;)
+	(cd $(WORKSRC)/Platform/Linux-x86/Redist/; sudo bash ./install.sh -i;)
 	@$(MAKECOOKIE)
 endif
 
