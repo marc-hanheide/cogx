@@ -42,3 +42,5 @@ include ../../gar.extend.mk
 #	cd $(WORKSRC) && autoreconf -i
 #	@$(MAKECOOKIE)
 
+pre-install:
+        if [ ! -e /usr/local/lib64 ]; then ln -s /usr/local/lib /usr/local/lib64; fi
