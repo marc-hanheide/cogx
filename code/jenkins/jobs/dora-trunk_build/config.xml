@@ -5,7 +5,7 @@
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.trac.TracProjectProperty>
-      <tracWebsite>https://codex.cs.bham.ac.uk/trac/cogx/</tracWebsite>
+      <tracWebsite>https://codex.cs.bham.ac.uk/trac/cogx/wiki/scenarios#Dora/</tracWebsite>
     </hudson.plugins.trac.TracProjectProperty>
   </properties>
   <scm class="hudson.scm.SubversionSCM">
