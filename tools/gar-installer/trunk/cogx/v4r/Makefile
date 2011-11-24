@@ -7,6 +7,9 @@ MAINTAINER = ari
 
 #PATCHFILES= gar-base.diff
 
+DEB_PACKAGES=	libglew1.5-dev@ubuntu \
+		libdevil-dev@ubuntu
+
 #MASTER_SITES = svnhttps://codex.cs.bham.ac.uk/svn/nah/cast/tags/cast-2.1.16b/
 MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
 
