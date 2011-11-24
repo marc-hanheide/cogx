@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <logRotator>
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>3</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.SubversionSCM">
+    <locations>
+      <hudson.scm.SubversionSCM_-ModuleLocation>
+        <remote>https://codex.cs.bham.ac.uk/svn/nah/cogx/code/tools/gar-installer/trunk</remote>
+        <local>gar-installer</local>
+      </hudson.scm.SubversionSCM_-ModuleLocation>
+    </locations>
+    <browser class="hudson.plugins.trac.TracRepositoryBrowser"/>
+    <excludedRegions></excludedRegions>
+    <includedRegions></includedRegions>
+    <excludedUsers></excludedUsers>
+    <excludedRevprop></excludedRevprop>
+    <excludedCommitMessages></excludedCommitMessages>
+    <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>sudo /bin/bash $WORKSPACE/gar-installer/build-jenkins.bash
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>dora-trunk_build</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
+    <hudson.tasks.Mailer>
+      <recipients>cogx@cs.bham.ac.uk</recipients>
+      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
+      <sendToIndividuals>false</sendToIndividuals>
+    </hudson.tasks.Mailer>
+    <jenkins.plugins.tracpublisher.TracPublisher>
+      <buildServerAddress>https://codex.cs.bham.ac.uk/jenkins-cogx</buildServerAddress>
+      <rpcAddress>https://codex.cs.bham.ac.uk/trac/cogx</rpcAddress>
+      <username>cogx</username>
+      <password>cogxxgoc</password>
+      <issuePattern>
+        <pattern>[#](\d+)</pattern>
+        <flags>0</flags>
+      </issuePattern>
+    </jenkins.plugins.tracpublisher.TracPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>

@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <version>1.409.1</version>
+  <numExecutors>2</numExecutors>
+  <mode>NORMAL</mode>
+  <useSecurity>true</useSecurity>
+  <authorizationStrategy class="hudson.security.GlobalMatrixAuthorizationStrategy">
+    <permission>hudson.model.Computer.Configure:gsh148</permission>
+    <permission>hudson.model.Computer.Configure:hanheidm</permission>
+    <permission>hudson.model.Computer.Delete:gsh148</permission>
+    <permission>hudson.model.Computer.Delete:hanheidm</permission>
+    <permission>hudson.model.Hudson.Administer:gsh148</permission>
+    <permission>hudson.model.Hudson.Administer:hanheidm</permission>
+    <permission>hudson.model.Hudson.Read:anonymous</permission>
+    <permission>hudson.model.Hudson.Read:gsh148</permission>
+    <permission>hudson.model.Hudson.Read:hanheidm</permission>
+    <permission>hudson.model.Item.Build:anonymous</permission>
+    <permission>hudson.model.Item.Build:gsh148</permission>
+    <permission>hudson.model.Item.Build:hanheidm</permission>
+    <permission>hudson.model.Item.Configure:gsh148</permission>
+    <permission>hudson.model.Item.Configure:hanheidm</permission>
+    <permission>hudson.model.Item.Create:gsh148</permission>
+    <permission>hudson.model.Item.Create:hanheidm</permission>
+    <permission>hudson.model.Item.Delete:gsh148</permission>
+    <permission>hudson.model.Item.Delete:hanheidm</permission>
+    <permission>hudson.model.Item.Read:anonymous</permission>
+    <permission>hudson.model.Item.Read:gsh148</permission>
+    <permission>hudson.model.Item.Read:hanheidm</permission>
+    <permission>hudson.model.Item.Workspace:anonymous</permission>
+    <permission>hudson.model.Item.Workspace:gsh148</permission>
+    <permission>hudson.model.Item.Workspace:hanheidm</permission>
+    <permission>hudson.model.Run.Delete:gsh148</permission>
+    <permission>hudson.model.Run.Delete:hanheidm</permission>
+    <permission>hudson.model.Run.Update:gsh148</permission>
+    <permission>hudson.model.Run.Update:hanheidm</permission>
+    <permission>hudson.model.View.Configure:gsh148</permission>
+    <permission>hudson.model.View.Configure:hanheidm</permission>
+    <permission>hudson.model.View.Create:gsh148</permission>
+    <permission>hudson.model.View.Create:hanheidm</permission>
+    <permission>hudson.model.View.Delete:gsh148</permission>
+    <permission>hudson.model.View.Delete:hanheidm</permission>
+    <permission>hudson.scm.SCM.Tag:gsh148</permission>
+    <permission>hudson.scm.SCM.Tag:hanheidm</permission>
+  </authorizationStrategy>
+  <securityRealm class="org.jenkinsci.plugins.reverse_proxy_auth.ReverseProxySecurityRealm">
+    <header>X-Forwarded-User</header>
+  </securityRealm>
+  <systemMessage>CogX&apos;s continuous integration server... get Dora and George running continuously.</systemMessage>
+  <markupFormatter class="hudson.markup.RawHtmlMarkupFormatter"/>
+  <jdks/>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds/>
+  <slaves/>
+  <quietPeriod>5</quietPeriod>
+  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+  <views>
+    <hudson.model.AllView>
+      <owner class="hudson" reference="../../.."/>
+      <name>All</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+    </hudson.model.AllView>
+  </views>
+  <primaryView>All</primaryView>
+  <slaveAgentPort>-1</slaveAgentPort>
+  <label></label>
+  <nodeProperties/>
+  <globalNodeProperties/>
+  <disabledAdministrativeMonitors/>
+  <noUsageStatistics>true</noUsageStatistics>
+</hudson>
