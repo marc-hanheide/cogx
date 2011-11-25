@@ -82,6 +82,8 @@ sleep 5
 xterm -title "CAST cient: $configFile" -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
+vncsnapshot :10 1st-shot.jpg
+
 sleep 20
 
 #BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 5.8 0 5.8 4
