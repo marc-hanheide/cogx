@@ -82,7 +82,7 @@ sleep 5
 xterm -title "CAST cient: $configFile" -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
-vncsnapshot :10 1st-shot.jpg
+vncsnapshot -passwd /var/lib/jenkins/.vnc/passwd $DISPLAY 1st-shot.jpg 
 
 sleep 20
 
