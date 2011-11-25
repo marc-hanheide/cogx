@@ -29,7 +29,8 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
   add_cast_component(${PROJECT_NAME} ${SOURCES})
   link_cast_component(${CAST_COMPONENT_NAME} OpenNI)
 
-  include_directories(/usr/include/ni)
+  #this is necessary because those openni guys are incompetent ;-) They should fix the way they include their own includes...
+  include_directories(/usr/include/openni)
 
   add_cast_component(KinectVideoServer KinectVideoServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils Kinect)
