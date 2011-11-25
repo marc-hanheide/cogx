@@ -28,7 +28,6 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libsdl-dev@ubuntu 
 
 
-
 LIBDEPS = 	contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
@@ -36,11 +35,11 @@ LIBDEPS = 	contrib/peekabot \
 		cogx/cosycure \
 		contrib/player-3.0.2 \
 		contrib/physx_x64 \
-		contrib/openNI \
 		contrib/avin2-SensorKinect \
 		cogx/v4r \
-		contrib/gazebo \
-		cogx/golem_katana450_x64
+		cogx/golem_katana300_x64
+#		contrib/gazebo \
+#		contrib/openNI \
 
 DESCRIPTION = agai-distro
 
