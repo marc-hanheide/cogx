@@ -7,7 +7,7 @@
 /**
  * Defines data structures pertaining to Places, for system-wide interfacing.
  *
- * @author Kristoffer Sjöö
+ * @author Kristoffer Sjoo
  * @see
  */
 
@@ -35,7 +35,7 @@ module SpatialData {
   /**
    * Defines the possible states of the definition of a Place
    * 
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   enum PlaceStatus { TRUEPLACE,
@@ -43,7 +43,7 @@ module SpatialData {
   /**
    * Represents a single Place as created by the Place layer.
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class Place {
@@ -58,7 +58,7 @@ module SpatialData {
    * Message struct indicating the merging of two extant Places
    * into a single Place.
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class PlaceMergeNotification {
@@ -75,7 +75,7 @@ module SpatialData {
    * Message struct indicating the splitting of an extant Place
    * into two Places.
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class PlaceSplitNotification {
@@ -91,7 +91,7 @@ module SpatialData {
   /**
    * Possible states of a value request from Spatial.sa
    * 
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   enum PlaceQueryStatus {PENDING,	
@@ -106,7 +106,7 @@ module SpatialData {
    * Command struct for querying the likelihood of
    * being in a given Place
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class PlaceLikelihoodRequest {
@@ -130,7 +130,7 @@ module SpatialData {
    * Command struct for querying the posterior probability of
    * being in a given Place
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class PlacePosteriorRequest {
@@ -147,7 +147,7 @@ module SpatialData {
   /**
    * Possible states of a path value request from Spatial.sa
    * 
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   enum PathQueryStatus {QUERYPENDING,	
@@ -164,7 +164,7 @@ module SpatialData {
    * Command struct for querying the transition probabilities
    * involved in traversing a path
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class PathTransitionProbRequest {
@@ -192,7 +192,7 @@ module SpatialData {
    * Command struct for querying the modelled transition costs
    * of traversing a path
    *
-   * @author Kristoffer Sjöö
+   * @author Kristoffer Sjoo
    * @see
    */
   class PathTransitionCostRequest {
@@ -211,7 +211,7 @@ module SpatialData {
  /**
   * This enum defines the different commands that one can issue to the nav.sa
   *
-  * @author Dorian Galves Lopez, Patric Jensfelt, Kristoffer Sjöö
+  * @author Dorian Galves Lopez, Patric Jensfelt, Kristoffer Sjoo
   * @see
   */
   enum CommandType {GOTOPLACE,                
@@ -282,7 +282,7 @@ module SpatialData {
    * Command for moving the robot from the current Place
    * to a goal Place
    * 
-   * @author Kristoffer Sjöö (cut 'n paste from Patric Jensfelt)
+   * @author Kristoffer Sjoo (cut 'n paste from Patric Jensfelt)
    * @see
    */
   class NavCommand {
