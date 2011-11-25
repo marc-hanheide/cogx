@@ -29,12 +29,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.xerces.internal.parsers.DOMParser;
+//import com.sun.org.apache.xerces.internal.parsers.DOMParser;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.UnderspecifiedFormula;
@@ -98,7 +99,7 @@ public class TNOPolicyReader {
 			Document fullDoc = parser.getDocument();
 			fullDoc.getDocumentElement().normalize();
 
-
+ 
 			if (fullDoc.getFirstChild().getNodeName().equals("dialog")) {
 				for (int i = 0 ; i < fullDoc.getFirstChild().getChildNodes().getLength(); i++) {
 					Node curNode = fullDoc.getFirstChild().getChildNodes().item(i);

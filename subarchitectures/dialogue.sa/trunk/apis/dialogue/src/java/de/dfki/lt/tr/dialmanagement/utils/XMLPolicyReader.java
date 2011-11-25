@@ -29,7 +29,6 @@ import java.util.List;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.xerces.internal.parsers.DOMParser;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ModalFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
@@ -53,6 +52,7 @@ import de.dfki.lt.tr.dialmanagement.data.conditions.PhonstringCondition;
 import de.dfki.lt.tr.dialmanagement.data.conditions.TimeoutCondition;
 import de.dfki.lt.tr.dialmanagement.data.conditions.EmptyCondition;
 import org.apache.log4j.Logger;
+import org.apache.xerces.parsers.DOMParser;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
