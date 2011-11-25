@@ -26,11 +26,7 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 include ../../gar.extend.mk
 
-#ifeq ($(SYSTEM_UNAME),Darwin)
-#	CONFIGURE_ARGS = $(DIRPATHS) --disable-server
-#else
-#	CONFIGURE_ARGS = $(DIRPATHS) 
-#endif
+CONFIGURE_ARGS = $(DIRPATHS) 
 
 
 pre-configure: reconf showconfig
