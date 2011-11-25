@@ -31,6 +31,7 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		python-numpy@ubuntu \
 		flex@ubuntu \
 		bison@ubuntu \
+		libpcl-all@ubuntu \
 		\
 		qt4-mac-devel@macports \
 		py-pyqt4@macports \
@@ -62,7 +63,6 @@ LIBDEPS = 			contrib/peekabot \
 		contrib/opencv \
 		contrib/player-3.0.2 \
 		contrib/stage \
-		contrib/avin2-SensorKinect \
 		contrib/mercury
 
 DESCRIPTION = cogx-distro
@@ -72,6 +72,15 @@ BUILD_SCRIPTS =
 INSTALL_SCRIPTS = 
 
 CONFIGURE_ARGS = 
+
+
+libpcl-all@ubuntu:	add-pcl-ppa
+
+add-pcl-ppa:
+	add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/pcl
+	apt-get update
+	$(MAKECOOKIE)
+
 
 include ../../gar.extend.mk
 
