@@ -12,7 +12,7 @@ SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-dire
 SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-review-nocat.xml"
 
 ### the Haar-like face detector file to use
-SETVAR face_detector=/usr/local/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml
+SETVAR face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
 
 ### run coma mediators in a discretising way?
 SETVAR discrete_room_cats=
@@ -84,11 +84,14 @@ SETVAR ptz_server=ptz.server
 SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 
 SETVAR vision_pcserver_host=pcserver
+# use these to have kinect
 SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
-# disable use of Kinect data for navigation:
 SETVAR spatial_pcserver=--pcserver %(vision_pcserver_host)
 
-SETVAR no_placeholders=--no-placeholders
+#SETVAR vision_pcserver=
+#SETVAR spatial_pcserver=
+
+SETVAR no_placeholders=#--no-placeholders
 
 
 include dora-real-science-museum.cast
