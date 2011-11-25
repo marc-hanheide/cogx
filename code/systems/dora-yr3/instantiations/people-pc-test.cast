@@ -21,7 +21,7 @@ CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/Kin
 
 JAVA MG person.runner vision.components.PersonDetectorRunner  --gui 
 
-CPP MG people-detector PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --pcserver pcserver --faceCascade "/usr/local/share/opencv/haarcascades/haarcascade_frontalface_alt2.xml" --numattempts 4 
+CPP MG people-detector PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --pcserver pcserver --faceCascade "instantiations/data/haarcascade_frontalface_alt2.xml" --numattempts 4 
 
 JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact 
 
