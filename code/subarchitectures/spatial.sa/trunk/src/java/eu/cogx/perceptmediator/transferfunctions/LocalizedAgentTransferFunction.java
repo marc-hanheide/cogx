@@ -30,6 +30,7 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 public class LocalizedAgentTransferFunction<To extends dBelief> extends
 		DependentDiscreteTransferFunction<PlaceContainmentAgentProperty, To> {
 
+	public static final String ROBOT = "Robot";
 	public static final String AGENT_ID = "AgentId";
 	public static final String IS_IN = "is-in";
 
@@ -53,7 +54,7 @@ public class LocalizedAgentTransferFunction<To extends dBelief> extends
 			PlaceContainmentAgentProperty from) {
 		// TODO Auto-generated method stub
 		To pb = super.create(idToCreate, wmc, from);
-		pb.type = "Robot";
+		pb.type = ROBOT;
 		return pb;
 	}
 
