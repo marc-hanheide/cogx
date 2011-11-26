@@ -10,6 +10,7 @@ module motivation {
       interface RemoteFilterServer {
     	void setPriority(string motiveType, string priority);    	
       };
+      
     
 
     	class TestSource {
@@ -27,6 +28,10 @@ module motivation {
     		COMPLETED,
     		WILDCARD
     	};
+
+      interface ExternalGoalServer {
+      	MotiveStatus submitGoal(string goalString, float importance);
+      };
     	
     	enum MotivePriority {
     		UNSURFACE,
