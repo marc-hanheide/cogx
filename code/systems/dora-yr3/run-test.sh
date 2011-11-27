@@ -10,10 +10,11 @@ cd "$DIR"
 
 JARS=`find "$DIR/output/jar" -name "*.jar" | tr "\n" ":"`
 
-export CLASSPATH=$CLASSPATH:/usr/local/share/java/cast.jar:/usr/share/java/Ice.jar:/usr/share/java/log4j-1.2.jar:$JARS
+export CLASSPATH=$CLASSPATH:/usr/local/share/java/cast.jar:/usr/share/java/Ice.jar:/usr/share/java/log4j-1.2.jar:/opt/local/share/java/cast.jar:/opt/local/share/java/Ice.jar:$JARS
 echo $CLASSPATH
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$DIR/output/lib:/usr/local/lib/cast"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/output/lib:/usr/local/lib/cast:/opt/local/lib/cast"
+export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
 PIDS=""
 
