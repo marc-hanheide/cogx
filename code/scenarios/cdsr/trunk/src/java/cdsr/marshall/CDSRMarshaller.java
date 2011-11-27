@@ -1,8 +1,10 @@
 package cdsr.marshall;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
@@ -22,14 +24,14 @@ public abstract class CDSRMarshaller {
 	/**
 	 * Convenience function to marshall problem set from just a room and objects
 	 * 
-	 * @param filename
+	 * @param _filename
 	 * @param _room
 	 * @param _objects
 	 * @throws IOException
 	 */
-	public static void saveProblemSet(String filename, Room _room,
+	public static void saveProblemSet(String _filename, Room _room,
 			ArrayList<SensedObject> _objects) throws IOException {
-		saveProblemSet(filename, new ProblemSet(_room,
+		saveProblemSet(_filename, new ProblemSet(_room,
 				new ArrayList<SensedObject>(0),
 				new ArrayList<ObjectRelation>(0)));
 	}
@@ -37,14 +39,14 @@ public abstract class CDSRMarshaller {
 	/**
 	 * Convenience function to marshall problem set from just a room
 	 * 
-	 * @param filename
+	 * @param _filename
 	 * @param _room
 	 * @param _objects
 	 * @throws IOException
 	 */
-	public static void saveProblemSet(String filename, Room _room)
+	public static void saveProblemSet(String _filename, Room _room)
 			throws IOException {
-		saveProblemSet(filename, new ProblemSet(_room,
+		saveProblemSet(_filename, new ProblemSet(_room,
 				new ArrayList<SensedObject>(0),
 				new ArrayList<ObjectRelation>(0)));
 	}
@@ -73,7 +75,15 @@ public abstract class CDSRMarshaller {
 		ObjectOutputStream out = new ObjectOutputStream(fos);
 		out.writeObject(_problem);
 		out.close();
+	}
 
+	public static ProblemSet loadProblemSet(String _filename)
+			throws IOException, ClassNotFoundException {
+		FileInputStream fis = new FileInputStream(_filename);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		ProblemSet ps = (ProblemSet) ois.readObject();
+		ois.close();
+		return ps;
 	}
 
 }

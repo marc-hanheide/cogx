@@ -12,7 +12,6 @@ import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 
 import cast.core.logging.ComponentLogger;
-import cdsr.data.SavedObjectLists;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
 
@@ -29,8 +28,8 @@ public class LineMapPanel extends JPanel {
 
 	private final static int DEFAULT_PIXELS_PER_METRE = 20;
 
-	private final Logger m_logger = ComponentLogger
-			.getLogger(LineMapPanel.class);
+	// private final Logger m_logger = ComponentLogger
+	// .getLogger(LineMapPanel.class);
 
 	private final int m_pixelsPerMetre;
 
@@ -40,11 +39,15 @@ public class LineMapPanel extends JPanel {
 
 	public LineMapPanel(int _pixelsPerMetre) {
 		m_pixelsPerMetre = _pixelsPerMetre;
-		m_objects = SavedObjectLists.getClassroom2Objects();
 	}
 
 	public void updateRoom(Room _room) {
 		m_room = _room;
+		repaint();
+	}
+
+	public void updateObjects(ArrayList<SensedObject> _objects) {
+		m_objects = _objects;
 		repaint();
 	}
 
