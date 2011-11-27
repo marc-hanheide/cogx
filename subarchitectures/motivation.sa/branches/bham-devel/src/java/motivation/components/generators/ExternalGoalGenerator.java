@@ -156,11 +156,12 @@ public class ExternalGoalGenerator extends ManagedComponent implements
 			while (op != WorkingMemoryOperation.DELETE) {
 				try {
 					WorkingMemoryChange event = queue.take();
+					op = event.operation;
 					if (op != WorkingMemoryOperation.DELETE) {
 						ggm = getMemoryEntry(event.address,
 								GeneralGoalMotive.class);
 						println("current status of motive "
-								+ ggm.goal.goalString + "after op " + op
+								+ ggm.goal.goalString + " after op " + op
 								+ " is " + ggm.status);
 					}
 				} catch (CASTException e) {
