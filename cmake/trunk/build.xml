@@ -239,5 +239,30 @@
 			<param name="target" value="compile" />
 		</antcall>
 	</target>
+	
+	
+	<!-- =================================================================== -->
+	<!-- run a junit test with the goal generator                            -->
+	<!-- =================================================================== -->
+	
+
+	<target name="goaltest">
+		<junit fork="no">
+			<sysproperty key="goal" value="${test.goal}"/>
+		  	<classpath>
+				<fileset dir="${jar.dir}">
+  					<include name="*.jar"/>
+				</fileset>
+    			<pathelement location="${output.dir}"/>
+    			<pathelement location="${cast.jar}"/>
+    			<pathelement location="${ice.jar}"/>
+  			</classpath>
+
+    		<formatter type="xml"/> 
+  			
+			<test name="motivation.components.generators.ExternalGoalGeneratorClient" haltonfailure="yes" outfile="result" />
+		</junit>
+	</target>
+
 
 </project>
