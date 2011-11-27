@@ -1,0 +1,145 @@
+include "../../common/map.inc"
+include "../../common/p3dx_with_urg.inc"
+include "../../common/box.inc"
+
+window
+(
+	#This is the size the simulation window will be in pixels
+	size [800 600]
+	#This is how many metres of the simulated environment each pixel shows
+	scale 40
+)
+
+floorplan
+(
+	bitmap "classroom-1.png"
+	#size of map in metre
+	size [10 8 1.5]
+)
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+	pose [3 -0.25 0 180]
+	color "red"
+)
+
+
+box2d60cm
+(
+name "whiteboard1"
+color "blue"
+pose [4.5 -0.25 0.000 0]
+)
+
+
+box2d60cm
+(
+name "desk1"
+color "red"
+pose [-3.5 -2.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk2"
+color "red"
+pose [-3.5 -1 0.000 0]
+)
+
+box2d60cm
+(
+name "desk3"
+color "red"
+pose [-3.5 0.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk4"
+color "red"
+pose [-3.5 2 0.000 0]
+)
+
+box2d60cm
+(
+name "desk5"
+color "red"
+pose [-2 -2.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk6"
+color "red"
+pose [-2 -1 0.000 0]
+)
+
+box2d60cm
+(
+name "desk7"
+color "red"
+pose [-2 0.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk8"
+color "red"
+pose [-2 2 0.000 0]
+)
+
+box2d60cm
+(
+name "desk9"
+color "red"
+pose [-0.5 -2.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk10"
+color "red"
+pose [-0.5 -1 0.000 0]
+)
+
+box2d60cm
+(
+name "desk11"
+color "red"
+pose [-0.5 0.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk12"
+color "red"
+pose [-0.5 2 0.000 0]
+)
+
+box2d60cm
+(
+name "desk13"
+color "red"
+pose [1 -2.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk14"
+color "red"
+pose [1 -1 0.000 0]
+)
+
+box2d60cm
+(
+name "desk15"
+color "red"
+pose [1 0.5 0.000 0]
+)
+
+box2d60cm
+(
+name "desk16"
+color "red"
+pose [1 2 0.000 0]
+)
