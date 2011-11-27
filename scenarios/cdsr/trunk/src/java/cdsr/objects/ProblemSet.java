@@ -39,5 +39,13 @@ public class ProblemSet implements Serializable {
 		m_objects = _objects;
 		m_relations = _relations;
 	}
+	
+	public void addObject(SensedObject _object) {
+		m_objects.add(_object);
+	}
+
+	public void addObjects(ArrayList<SensedObject> _objects) {
+		m_objects.addAll(_objects);
+	}
 
 }

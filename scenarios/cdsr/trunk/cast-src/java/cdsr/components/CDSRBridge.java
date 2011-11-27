@@ -4,6 +4,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Double;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.swing.JFrame;
 
@@ -25,6 +26,8 @@ public class CDSRBridge extends ManagedComponent {
 
 	private Room m_cdsrRoom;
 
+	private String m_outputFile;
+
 	public CDSRBridge() {
 		m_panel = new LineMapPanel();
 	}
@@ -44,6 +47,11 @@ public class CDSRBridge extends ManagedComponent {
 					}
 				});
 
+	}
+
+	@Override
+	public void configure(Map<String, String> _config) {
+		m_outputFile = _config.get("--output");
 	}
 
 	private void lineMapUpdated(String _id, LineMap _lineMap) {
@@ -73,16 +81,18 @@ public class CDSRBridge extends ManagedComponent {
 
 	@Override
 	protected void stop() {
-		try {
-			CDSRMarshaller.saveProblemSet("test.cdsr", m_cdsrRoom);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (m_outputFile != null) {
+			try {
+				CDSRMarshaller.saveProblemSet(m_outputFile, m_cdsrRoom);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
 	@Override
 	protected void runComponent() {
-		JFrame f = new JFrame("A JFrame");
+		JFrame f = new JFrame("CDSR map");
 		f.getContentPane().add(m_panel);
 		f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		f.setSize(400, 400);
