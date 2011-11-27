@@ -9,9 +9,6 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import org.apache.log4j.Logger;
-
-import cast.core.logging.ComponentLogger;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
 
