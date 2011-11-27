@@ -16,6 +16,32 @@ import cast.cdl.ComponentLanguage;
 import cast.core.CASTUtils;
 
 /**
+ * implements a JUnit4 test where it calls the ExternalGoalGenerator component
+ * with a predefined goal string that will then cause a GeneralGoalMotive to be
+ * created and monitored in the working memory.
+ * 
+ * Here is an example how this can be invoked in an ANT file:
+ * 
+ * <pre>
+ * 	<target name="goaltest">
+		<junit fork="no">
+			<sysproperty key="goal" value="${test.goal}"/>
+		  	<classpath>
+				<fileset dir="${jar.dir}">
+  					<include name="*.jar"/>
+				</fileset>
+    			<pathelement location="${output.dir}"/>
+    			<pathelement location="${cast.jar}"/>
+    			<pathelement location="${ice.jar}"/>
+  			</classpath>
+
+    		<formatter type="xml"/> 
+  			
+			<test name="motivation.components.generators.ExternalGoalGeneratorClient" haltonfailure="yes" outfile="result" />
+		</junit>
+	</target>
+
+ * </pre>
  * @author marc
  * 
  */
@@ -77,7 +103,7 @@ public class ExternalGoalGeneratorClient {
 		String goal = getGoal();
 		float importance = getImportance();
 		logger.info("got goal " + goal + ", got importance " + importance);
-		assertTrue(call(goal, importance));
+		assertTrue("the goal " + goal + " has not been achieved, but has now been removed.", call(goal, importance));
 	}
 
 	public ExternalGoalGeneratorClient() {
