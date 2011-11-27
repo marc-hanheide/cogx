@@ -83,9 +83,15 @@ sleep 5
 xterm -title "CAST cient: $configFile" -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
-vncsnapshot -passwd /var/lib/jenkins/.vnc/passwd $DISPLAY 1st-shot.jpg 
 
-sleep 20
+sleep 60
+
+vncsnapshot -passwd /var/lib/jenkins/.vnc/passwd $DISPLAY logs/1st-shot.jpg 
+
+
+# check if the C++ server is still running after this time!
+if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=0; else RES=1; fi
+
 
 #BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 5.8 0 5.8 4
 #BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 6.3 0
@@ -102,6 +108,7 @@ sleep 20
 kill $PIDS >/dev/null 2>&1
 sleep 2; 
 kill -9 $PIDS  >/dev/null 2>&1
-exit 0
+
+exit $RES
 
 
