@@ -1,12 +1,39 @@
 #!/bin/bash
 
+plannerDebugDir="subarchitectures/planner.sa/src/python/standalone/tmp/static_dir_for_debugging"
+
+function storePlannerLogs {
+	if [ -r "$plannerDebugDir" ]; then
+		zip -j logs/planner-debug.zip "$plannerDebugDir"/*
+	else
+		touch logs/no-planner-logs-available
+	fi
+}
+
+
+function waitForTrigger {
+	while [ ! -e $STOPTRIGGERFILE ]; do
+		sleep 1
+	done
+}
+
+
+if [ "$1" ]; then
+    configFile="$1"
+else
+    configFile="instantiations/dora-test-search-base.cast"
+fi
+
+if [ "$2" ]; then
+    STOPTRIGGERFILE="$2"
+else
+    STOPTRIGGERFILE="logs/result.xml"
+fi
 
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$DIR"
-
-
 
 JARS=`find "$DIR/output/jar" -name "*.jar" | tr "\n" ":"`
 
@@ -16,18 +43,13 @@ echo $CLASSPATH
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/output/lib:/usr/local/lib/cast:/opt/local/lib/cast"
 export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
-PIDS=""
-
 trap 'kill $PIDS; sleep 2; kill -9 $PIDS; exit 1' INT TERM PIPE QUIT ABRT HUP 
 
-if [ "$1" ]; then
-    configFile="$1"
-else
-    configFile="instantiations/dora-test-search-base.cast"
-fi
+PIDS=""
 
 mkdir -p logs
-rm -f logs/log4j.properties
+# clear old logs
+rm -rf logs/*
 cat > logs/log4j.properties <<EOF
 log4j.rootLogger=DEBUG,srvXmlFile,srvConsole
 log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
@@ -52,6 +74,15 @@ log4j.loggerFactory=cast.core.logging.ComponentLoggerFactory
 log4j.appender.cliSocketApp=cast.core.logging.IceAppender
 log4j.appender.cliSocketApp.Host=localhost
 EOF
+
+
+if which vncsnapshot; then
+	xterm -title "make snapshots" -e bash -c "vncsnapshot -fps 2 -count 10000 -passwd $HOME/.vnc/passwd $DISPLAY logs/snapshot.jpg" &
+	PIDS="$PIDS $!"
+else
+	echo "snapshot is not possible, install vncsnapshot to make it work" >& 2
+fi
+
 
 xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
 PIDS="$PIDS $!"
@@ -78,36 +109,27 @@ xterm -title "Abducer" -e bash -c "tools/abducer/bin/abducer-server -n AbducerSe
 ABDUCERPID="$!"
 PIDS="$PIDS $ABDUCERPID"
 
-sleep 5
+sleep 10
 
-xterm -title "CAST cient: $configFile" -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
+xterm -title "CAST client: $configFile" -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
 
-sleep 60
+waitForTrigger
 
-vncsnapshot -passwd /var/lib/jenkins/.vnc/passwd $DISPLAY logs/1st-shot.jpg 
-
+storePlannerLogs
 
 # check if the C++ server is still running after this time!
 if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=0; else RES=1; fi
 
 
-#BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 5.8 0 5.8 4
-#BUILD/tools/hardware/robotbase/src/c++/components/TourGuide 0 0  1 0 6.3 0
-
-#if [ "$1" ]; then
-#    output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority GeneralGoalMotive NORMAL
-#else
-#    output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority ExploreMotive NORMAL
-#    output/bin/universalIceClient MotiveFilterManager localhost motivation.slice.RemoteFilterServer setPriority CategorizeRoomMotive NORMAL
-#fi
-#BUILD/tools/hardware/robotbase/src/c++/components/TourGuide | tee "$LOGNAME".dist.log
-
-#wait $SERVERPID
 kill $PIDS >/dev/null 2>&1
 sleep 2; 
 kill -9 $PIDS  >/dev/null 2>&1
+
+if [ -e logs/snapshot00000.jpg ]; then
+	ffmpeg -i "logs/snap%05d.jpg" "logs/screencast.mpg" && rm logs/snapshot*.jpg
+fi
 
 exit $RES
 
