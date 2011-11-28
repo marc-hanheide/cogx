@@ -43,7 +43,7 @@ echo $CLASSPATH
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/output/lib:/usr/local/lib/cast:/opt/local/lib/cast"
 export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
-trap 'kill $PIDS; sleep 2; kill -9 $PIDS; exit 1' INT TERM PIPE QUIT ABRT HUP 
+trap 'kill -2 $PIDS; sleep 5; kill -9 $PIDS; exit 1' INT TERM PIPE QUIT ABRT HUP 
 
 PIDS=""
 
@@ -76,12 +76,17 @@ log4j.appender.cliSocketApp.Host=localhost
 EOF
 
 
-if which vncsnapshot; then
-	xterm -title "make snapshots" -e bash -c "vncsnapshot -fps 2 -count 10000 -passwd $HOME/.vnc/passwd $DISPLAY logs/snapshot.jpg" &
-	PIDS="$PIDS $!"
-else
-	echo "snapshot is not possible, install vncsnapshot to make it work" >& 2
-fi
+#if which vncsnapshot; then
+#	xterm -title "make snapshots" -e bash -c "vncsnapshot -fps 2 -count 10000 -passwd $HOME/.vnc/passwd $DISPLAY logs/snapshot.jpg" &
+#	PIDS="$PIDS $!"
+#else
+#	echo "snapshot is not possible, install vncsnapshot to make it work" >& 2
+#fi
+
+DIM=`xdpyinfo | grep dimension | cut -f7 -d" "`
+ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
+PIDS="$PIDS $!"
+
 
 
 xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
@@ -123,13 +128,9 @@ storePlannerLogs
 if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=0; else RES=1; fi
 
 
-kill $PIDS >/dev/null 2>&1
-sleep 2; 
+kill -2 $PIDS >/dev/null 2>&1
+sleep 5; 
 kill -9 $PIDS  >/dev/null 2>&1
-
-if [ -e logs/snapshot00000.jpg ]; then
-	ffmpeg -i "logs/snap%05d.jpg" "logs/screencast.mpg" && rm logs/snapshot*.jpg
-fi
 
 exit $RES
 
