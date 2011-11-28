@@ -120,7 +120,9 @@ xterm -title "CAST client: $configFile" -e bash -c "output/bin/cast-client-start
 PIDS="$PIDS $!"
 
 
-waitForTrigger
+# in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
+#waitForTrigger
+sleep 60
 
 storePlannerLogs
 
