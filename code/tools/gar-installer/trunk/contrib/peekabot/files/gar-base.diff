@@ -1,0 +1,12 @@
+diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/m4/boost.m4 peekabot-0.8.6/m4/boost.m4
+--- peekabot-0.8.6.orig/m4/boost.m4	2011-05-29 18:59:31.000000000 +0100
++++ peekabot-0.8.6/m4/boost.m4	2011-11-21 10:54:31.000000000 +0000
+@@ -403,7 +403,7 @@
+       LDFLAGS=$boost_save_LDFLAGS
+       LIBS=$boost_save_LIBS
+       if test x"$Boost_lib" = xyes; then
+-        Boost_lib_LDFLAGS="-L$boost_ldpath -Wl,-R$boost_ldpath"
++        Boost_lib_LDFLAGS="-L$boost_ldpath"
+         Boost_lib_LDPATH="$boost_ldpath"
+         break 6
+       else
