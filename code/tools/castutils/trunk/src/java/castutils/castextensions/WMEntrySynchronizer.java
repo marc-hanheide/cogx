@@ -349,10 +349,10 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 					}
 				} catch (CASTException e) {
 					getLogger().error("in run: ", e);
+				} catch (InterruptedException e) {
+					getLogger().warn("interrupted in run: ", e);
 				}
 			}
-		} catch (InterruptedException e) {
-			getLogger().warn("interrupted in run: ", e);
 		} finally {
 			try {
 				component.removeChangeFilter(entryQueue);
