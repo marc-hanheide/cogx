@@ -15,7 +15,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
-#include "v4r/PMath/PMath.hh"
+#include "v4r/PCore/PMath.hh"
 #include "v4r/CModelRecogniser/CModelHandler.hh"
 #include "v4r/CModelRecogniser/KeypointDetectorSURF.hh"
 #include "v4r/CModelRecogniser/KeypointDetector.hh"

@@ -21,5 +21,5 @@ SET(SOURCES
 )
 
 add_cast_component(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} SDGestalts3D)
 
