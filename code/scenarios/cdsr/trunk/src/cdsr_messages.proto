@@ -1,0 +1,61 @@
+option java_package = "cdsr.rsb";
+
+message Room
+{
+  required string id = 1;
+  repeated Line wall = 2;
+}
+
+message SpatialRelation
+{
+  required string id = 1;
+  required string type = 2;
+  required string start_id = 3;
+  required string end_id = 4;
+  required double strength = 5;
+}
+
+message SensedObject 
+{
+  required string id = 1;
+  required string type = 2;
+  optional double orientation = 3;
+  repeated Line side = 4;
+}
+
+message Point
+{
+  required double x = 1;
+  required double y = 2;
+}
+
+message Line
+{
+  required Point start = 1;
+  required Point end = 2;
+}
+
+message SendSensedObjects
+{
+  repeated SensedObject object = 1;
+}
+
+message SendSpatialRelations
+{
+  repeated SpatialRelation relation = 1;
+}
+
+message ReceivedSensedObjects
+{
+  optional int32 number = 1;
+}
+
+message ReceivedRoom
+{
+  optional string id = 1;
+}
+
+message ReceivedSpatialRelations
+{
+  optional int32 number = 1;
+}
