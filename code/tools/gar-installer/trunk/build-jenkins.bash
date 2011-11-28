@@ -8,4 +8,5 @@ export https_proxy
 export SVNUSER=cogx
 env
 
+/usr/bin/make -C $dname clean
 /usr/bin/make -C $dname dora SVNUSER=cogx
