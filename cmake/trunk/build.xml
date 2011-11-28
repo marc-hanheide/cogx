@@ -259,8 +259,7 @@
   			</classpath>
 
     		<formatter type="xml"/> 
-  			
-			<test name="motivation.components.generators.ExternalGoalGeneratorClient" haltonfailure="yes" outfile="result" />
+			<test name="motivation.components.generators.ExternalGoalGeneratorClient" haltonfailure="yes" outfile="logs/result" />
 		</junit>
 	</target>
 
