@@ -3,7 +3,7 @@
  */
 package cdsr.objects;
 
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
 /**
@@ -25,7 +25,7 @@ public class SensedObject extends AbstractPhysicalObject {
 	 * @param _id
 	 * @param _walls
 	 */
-	public SensedObject(String _id, ArrayList<Double> _walls, String _type) {
+	public SensedObject(String _id, ArrayList<Line2D.Double> _walls, String _type) {
 		super(_id, _walls);
 		m_type = _type;
 	}

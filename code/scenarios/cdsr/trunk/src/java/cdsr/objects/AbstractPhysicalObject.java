@@ -1,7 +1,6 @@
 package cdsr.objects;
 
 import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Double;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -32,14 +31,14 @@ public abstract class AbstractPhysicalObject implements Serializable, Iterable<L
 
 	
 	/**
-	 * Construct an object from an ID and a list of walls.
+	 * Construct an object from an ID and a list of lines.
 	 * 
 	 * @param _id
-	 * @param _walls
+	 * @param _lines
 	 */
-	public AbstractPhysicalObject(String _id, ArrayList<Line2D.Double> _walls) {
+	public AbstractPhysicalObject(String _id, ArrayList<Line2D.Double> _lines) {
 		m_id = _id;
-		m_lines = _walls;
+		m_lines = _lines;
 	}
 
 	/**
@@ -56,10 +55,10 @@ public abstract class AbstractPhysicalObject implements Serializable, Iterable<L
 	}
 
 	/**
-	 * Iterator over walls in the room.
+	 * Iterator over the lines in the object.
 	 */
 	@Override
-	public Iterator<Double> iterator() {
+	public Iterator<Line2D.Double> iterator() {
 		return m_lines.iterator();
 	}
 
