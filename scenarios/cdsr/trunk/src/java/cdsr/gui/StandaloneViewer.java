@@ -1,11 +1,14 @@
 package cdsr.gui;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
 import cdsr.marshall.CDSRMarshaller;
 import cdsr.objects.ProblemSet;
+import cdsr.objects.Room;
+import cdsr.objects.SensedObject;
 
 public class StandaloneViewer extends JFrame {
 
@@ -25,10 +28,18 @@ public class StandaloneViewer extends JFrame {
 	}
 
 	private void addProblemSet(ProblemSet _ps) {
-		m_mapPanel.updateRoom(_ps.getRoom());
-		m_mapPanel.updateObjects(_ps.getObjects());
+		updateRoom(_ps.getRoom());
+		updateObjects(_ps.getObjects());
 	}
 
+	public void updateRoom(Room _room) {
+	  m_mapPanel.updateRoom(_room);
+	}
+	
+	public void updateObjects(ArrayList<SensedObject> _objects) {
+	  m_mapPanel.updateObjects(_objects);
+	}
+	
 	/**
 	 * @param args
 	 * @throws ClassNotFoundException
