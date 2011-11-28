@@ -18,7 +18,7 @@
 
 #include "highgui.h"
 
-#include "v4r/PCLAddOns/utils/PCLCommonHeaders.h"
+#include "v4r/PCLAddOns/PCLCommonHeaders.h"
 
 namespace Z
 {

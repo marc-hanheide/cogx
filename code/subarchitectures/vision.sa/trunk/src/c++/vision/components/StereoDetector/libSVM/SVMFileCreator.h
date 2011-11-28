@@ -13,8 +13,8 @@
 #include "CalculateRelations.h"
 
 #include "v4r/PCLAddOns/PlanePopout.hh"
-#include "v4r/PCLAddOns/utils/PCLUtils.h"
-#include "v4r/PCLAddOns/functions/PCLFunctions.h"
+#include "v4r/PCLAddOns/PCLUtils.h"
+#include "v4r/PCLAddOns/PCLFunctions.h"
 
 
 namespace Z

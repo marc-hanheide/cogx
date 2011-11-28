@@ -56,10 +56,8 @@ include_directories(.)
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES})
 
-#target_link_libraries(${PROJECT_NAME} SDL SDLmain)
 target_link_libraries(${PROJECT_NAME} rt)
-#target_link_libraries(${PROJECT_NAME} ${OPENCV_LDFLAGS})
-target_link_libraries(${PROJECT_NAME} SDUtils)
+target_link_libraries(${PROJECT_NAME} SDUtils SDMatas)
 
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
