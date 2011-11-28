@@ -56,10 +56,13 @@ public class ConnectivityTransferFunction extends
 		assert (from != null);
 		Map<String, Formula> result = new HashMap<String, Formula>();
 
+		log("looking up belief for place " + from.place1Id);
 		WorkingMemoryAddress wmaPlace1 = getReferredBelief(new PlaceMatchingFunction(
 				from.place1Id));
+		log("looking up belief for place " + from.place2Id);
 		WorkingMemoryAddress wmaPlace2 = getReferredBelief(new PlaceMatchingFunction(
 				from.place2Id));
+		log("got all required beliefs");
 		result.put("val0", WMPointer.create(wmaPlace1, CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		result.put("val1", WMPointer.create(wmaPlace2, CASTUtils.typeName(this.beliefClass)).getAsFormula());
 		result.put("connected", BoolFormula.create(true).getAsFormula());

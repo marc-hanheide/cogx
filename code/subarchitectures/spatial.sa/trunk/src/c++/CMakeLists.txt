@@ -17,6 +17,10 @@ find_package(Eigen2 REQUIRED)
 include_directories(${EIGEN2_INCLUDE_DIRS})
 
 
+if (NOT APPLE)
+	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-as-needed")
+endif (NOT APPLE)
+
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 #MESSAGE(${OPENCV_INCLUDE_DIRS})
