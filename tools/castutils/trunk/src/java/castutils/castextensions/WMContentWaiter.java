@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -27,7 +28,7 @@ import castutils.castextensions.WMView.ChangeHandler;
 public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 		ChangeHandler<T> {
 
-    static final int BELIEF_TIMEOUT = 10000;
+    static final int BELIEF_TIMEOUT = 2000;
 
 	/**
 	 * an interface realizing a matching function used for the
@@ -93,8 +94,9 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 			// if we come here, we haven't found the data in the current view so
 			// we have to be until it appears
 			while (System.currentTimeMillis() - startTime < BELIEF_TIMEOUT) {
-				Entry<WorkingMemoryAddress, T> entry = eventQueue.take();
-
+				Entry<WorkingMemoryAddress, T> entry = eventQueue.poll(1, TimeUnit.SECONDS);
+				if (entry==null)
+					continue;
 				if (cmf.matches(entry.getValue())) {
 					logger
 							.trace("found a matching entry being added/overwritten in the view");
@@ -103,7 +105,7 @@ public class WMContentWaiter<T extends Ice.ObjectImpl> implements
 
 			}
 
-            return null;
+            throw new InterruptedException("could not find a corresponding belief in time");
 
 		} finally {
 			view.unregisterHandler(this);
