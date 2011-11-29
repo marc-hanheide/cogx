@@ -3,20 +3,21 @@ cmake_minimum_required(VERSION 2.4)
 set(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem system signals)
 FIND_PACKAGE (OpenCV REQUIRED)
+INCLUDE_DIRECTORIES (${OPENCV_INCLUDE_DIRS})
 
 add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 
 option(BUILD_CALIB_CAM "Build single monocular camera calibration" YES)
 if(BUILD_CALIB_CAM)
   add_executable(camcalib camcalib.cpp)
-  target_link_libraries(camcalib ${OPENCV_LDFLAGS} ${Boost_LIBRARIES} )
+  target_link_libraries(camcalib ${OpenCV_LIBS} ${Boost_LIBRARIES} )
   INSTALL(TARGETS camcalib RUNTIME DESTINATION bin)
 endif(BUILD_CALIB_CAM)
 
 option(BUILD_CALIB_PTU "Build PTU calibration" YES)
 if(BUILD_CALIB_PTU)
   add_executable(ptucalib_simple ptucalib_simple.cpp)
-  target_link_libraries(ptucalib_simple ${OPENCV_LDFLAGS} )
+  target_link_libraries(ptucalib_simple ${OpenCV_LIBS})
   INSTALL(TARGETS ptucalib_simple RUNTIME DESTINATION bin)
 endif(BUILD_CALIB_PTU)
 
