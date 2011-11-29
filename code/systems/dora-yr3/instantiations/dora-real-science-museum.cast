@@ -180,7 +180,7 @@ JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALON
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/INCL/dora-live.cast
 INCLUDE includes/dialogue.sa/dialogue-exe.cast
-JAVA MG verbalisation verbalisation.DoraVerbalisation
+JAVA MG verbalisation verbalisation.RobotvilleDoraVerbalisation
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
