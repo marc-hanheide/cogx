@@ -1,9 +1,12 @@
-find_package(OpenCV REQUIRED)
-
 include_directories(.)
+include_directories(${COGX_ROOT}/tools/castutils/src/c++)
+
+find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 include_directories(${OPENCV_CFLAGS})
-include_directories(${COGX_ROOT}/tools/castutils/src/c++)
+
+find_package(OpenNI REQUIRED)
+include_directories(${OPENNI_INCLUDE_DIRS})
 
 option(BUILD_KINECT_USER_DETECTOR "Build the Kinect User Generator in KinectPCServer." NO)
 if (BUILD_KINECT_USER_DETECTOR)
@@ -30,7 +33,7 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
   link_cast_component(${CAST_COMPONENT_NAME} OpenNI)
 
   #this is necessary because those openni guys are incompetent ;-) They should fix the way they include their own includes...
-  include_directories(/usr/include/openni)
+  #include_directories(/usr/include/openni)
 
   add_cast_component(KinectVideoServer KinectVideoServer.cpp)
   link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils Kinect)
