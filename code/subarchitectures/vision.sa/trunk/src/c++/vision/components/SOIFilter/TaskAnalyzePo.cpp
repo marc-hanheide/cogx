@@ -92,8 +92,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   // use the sois we already have (assumpiton: 1 PC server is running)
   bool bCompleted = true;
   vector<SOIPtr> sois;
-  typeof(pSoiFilter->m_sois.begin()) it;
-  for (it = pSoiFilter->m_sois.begin(); it != pSoiFilter->m_sois.end(); it++) {
+  for (auto it = pSoiFilter->m_sois.begin(); it != pSoiFilter->m_sois.end(); it++) {
     sois.push_back(it->second->psoi);
   }
 #endif

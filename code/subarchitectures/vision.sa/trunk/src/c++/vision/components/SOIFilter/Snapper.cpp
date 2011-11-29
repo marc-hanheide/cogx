@@ -125,8 +125,7 @@ void Snapper::saveSnapshot()
       fpoints.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
       fpoints.open(string(path + "p.txt").c_str(), ofstream::out);
       fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
-      typeof(pobj->points.begin()) it;
-      for (it = pobj->points.begin(); it != pobj->points.end(); it++) {
+      for (auto it = pobj->points.begin(); it != pobj->points.end(); it++) {
         fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g
           << "\t" << (unsigned int)it->c.b << "\t";
         fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
@@ -152,8 +151,7 @@ void Snapper::saveSnapshot()
         filename << "patch" << cnt << ".txt";
         fpoints.open(string(path + filename.str()).c_str(), ofstream::out);
         fpoints << ";;r\tg\tb\tx\ty\tz" << endl;
-        typeof(it1->points.begin()) it;
-        for (it = it1->points.begin(); it != it1->points.end(); it++) {
+        for (auto it = it1->points.begin(); it != it1->points.end(); it++) {
           fpoints << (unsigned int)it->c.r << "\t" << (unsigned int)it->c.g
             << "\t" << (unsigned int)it->c.b << "\t";
           fpoints << it->p.x << "\t" << it->p.y << "\t" << it->p.z << endl;
@@ -172,8 +170,7 @@ void Snapper::saveSnapshot()
     ofstream fhist;
     fhist.exceptions ( ofstream::eofbit | ofstream::failbit | ofstream::badbit );
     fhist.open(string(path + "h.txt").c_str(), ofstream::out);
-    typeof(pobj->rasShapeDesc.angleHistogram.begin()) it;
-    for (it = pobj->rasShapeDesc.angleHistogram.begin(); it != pobj->rasShapeDesc.angleHistogram.end(); it++) {
+    for (auto it = pobj->rasShapeDesc.angleHistogram.begin(); it != pobj->rasShapeDesc.angleHistogram.end(); it++) {
       fhist << (double)it[1] << " ";
     }
     fhist.close();
