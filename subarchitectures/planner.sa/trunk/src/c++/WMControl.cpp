@@ -100,9 +100,10 @@ void WMControl::runComponent() {
         m_queue_mutex.lock();
         bool waiting = !m_waiting_tasks.empty();
         if (!m_runqueue.empty() || !m_waiting_tasks.empty()) {
-            log("planning is scheduled");
+            // log("planning is scheduled");
             timeval tval;
             gettimeofday(&tval, NULL);
+            log("planning is scheduled. Time: %ld / %ld", tval.tv_sec, tval.tv_usec);
 
             if (later_than(tval, m_belief_activity_timeout)) {
                 for(std::map<int, timeval>::iterator it=m_runqueue.begin(); it != m_runqueue.end(); ++it) {
@@ -248,6 +249,7 @@ void WMControl::taskRemoved(const cast::cdl::WorkingMemoryChange& wmc) {
     }*/
 
 void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
+    debug("Action changed.");
     ActionPtr action = getMemoryEntry<Action>(wmc.address);
 
     if (action->status == PENDING) { // We just added this action ourselves
@@ -336,6 +338,7 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     tval.tv_sec += BELIEF_TIMEOUT / 1000;
     tval.tv_usec += 1000 * (BELIEF_TIMEOUT % 1000);
     m_belief_activity_timeout = tval;
+    log("belief timeout tval: %ld / %ld", tval.tv_sec, tval.tv_usec);
 
     // log("Recevied state change...");
 
