@@ -276,7 +276,7 @@ public class WMEntrySynchronizer<From extends Ice.ObjectImpl, To extends Ice.Obj
 								} else {
 									isNew = false;
 									component.lockEntry(toWMA,
-											WorkingMemoryPermissions.LOCKEDODR);
+											WorkingMemoryPermissions.LOCKEDOD);
 									to = component
 											.getMemoryEntry(toWMA, toType);
 								}
