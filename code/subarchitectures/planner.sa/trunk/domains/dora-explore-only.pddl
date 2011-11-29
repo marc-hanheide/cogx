@@ -41,6 +41,19 @@
    (is-in ?o - robot) - place
    (is-in ?o - person) - place
 
+
+   ;; expected cost of searching for an object. Used by CP planner
+   (dora__cost_inroom ?l - label) - number
+   (dora__cost_inobject ?l1 ?l2 - label) - number
+   (dora__cost_on ?l1 ?l2 - label) - number
+   (search_cost ?l - label ?rel - spatial_relation ?where - (either visualobject room)) - number
+   ;; default probabilities. These come from Coma.
+   (dora__inroom ?l - label ?c - category) - number
+   (dora__inobject ?l1 ?l2 - label ?c - category) - number
+   (dora__on ?l1 ?l2 - label ?c - category) - number
+
+   (dora__not_inroom ?l - label ?c - category) - number
+
    ;; === room properties ===
    (category ?r - room) - category
    (identity ?r - room) - category
