@@ -108,6 +108,29 @@
    dummy-room - room
    )
 
+  ;; create dummy persons
+  (:init-rule persons
+              :parameters(?r - room)
+              :precondition (and (not (is-virtual ?r))
+                                 (not (exists (?p - person ?pl - place)
+                                              (or (and (= (in-room ?pl) ?r)
+                                                       (in-domain (is-in ?p) ?pl))
+                                                  (and (is-virtual ?p)
+                                                       (= (associated-with ?p) ?r))))))
+              :effect (create (?p - person) (and
+                                             (is-virtual ?p)
+                                             (assign (associated-with ?p) ?r))
+                              )
+              )
+
+  ;; p(?label IN ?room | category(?room) = ?cat)
+  (:dtrule person_in_room
+           :parameters (?p - person ?pl - place ?r - room)
+           :precondition (and (= (contains-a-person-prior ?r) true)
+                              (= (in-room ?pl) ?r)
+                              (= (associated-with ?p) ?r)
+                              (is-virtual ?p))
+           :effect (probabilistic 1.0 (assign (is-in ?p) ?pl))) ;; will automatically be normalised
 
  ;; (:init-rule reset-engaged
  ;;             :effect (not (any-engaged)))
@@ -199,5 +222,26 @@
    ;;                                (change (placestatus ?to) trueplace))
    ;;                   )
 
+   (:action look-for-people
+            :agent (?a - robot)
+            :variables (?p - place)
+            :precondition (and (not (done))
+                            (= (is-in ?a) ?p))
+            :effect (and 
+                     (increase (total-cost) 10))
+            )
+
+   (:observe person
+             :agent (?a - robot)
+             :parameters (?p - person ?pl - place)
+             :execution (look-for-people ?a ?pl)
+             :precondition (and )
+                                
+             :effect (and (when (= (is-in ?p) ?pl)
+                            (probabilistic 0.7 (observed (does-exist ?p) true)))
+                          (when (not (= (is-in ?p) ?pl))
+                            (probabilistic 0.001 (observed (does-exist ?p) true)))
+                          )
+             )
 
 )
