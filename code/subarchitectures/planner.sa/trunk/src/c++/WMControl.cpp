@@ -97,7 +97,9 @@ void WMControl::runComponent() {
     std::vector<int> execute;
     std::vector<int> timed_out;
     while (isRunning()) {
+        log("Running...");
         m_queue_mutex.lock();
+        log("Got lock");
         bool waiting = !m_waiting_tasks.empty();
         if (!m_runqueue.empty() || !m_waiting_tasks.empty()) {
             // log("planning is scheduled");
@@ -108,36 +110,52 @@ void WMControl::runComponent() {
             if (later_than(tval, m_belief_activity_timeout)) {
                 for(std::map<int, timeval>::iterator it=m_runqueue.begin(); it != m_runqueue.end(); ++it) {
                     if (later_than(tval, it->second)) {
+                        log("Scheduling task %d: %ld / %ld", it->first, it->second.tv_sec, it->second.tv_usec);
                         execute.push_back(it->first);
+                    } else {
+                        log("Waiting a bit longer for task %d: %ld / %ld", it->first, it->second.tv_sec, it->second.tv_usec);
                     }
                 }
                 for(std::map<int, timeval>::iterator it=m_waiting_tasks.begin(); it != m_waiting_tasks.end(); ++it) {
                     if (later_than(tval, it->second)) {
+                        log("Scheduling waiting task %d: %ld / %ld", it->first, it->second.tv_sec, it->second.tv_usec);
                         timed_out.push_back(it->first);
+                    } else {
+                        log("Waiting a bit longer for waiting task %d: %ld / %ld", it->first, it->second.tv_sec, it->second.tv_usec);
                     }
                 }
                 for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
+                    log("Removing task %d", *it);
                     m_runqueue.erase(*it);
                 }
                 for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
+                    log("Removing waiting task %d", *it);
                     m_waiting_tasks.erase(*it);
                 }
+            } else {
+                log("Waiting for belief state to settle down. Timeout: %ld / %ld", tval.tv_sec, tval.tv_usec);
             }
         }
         m_queue_mutex.unlock();
+        log("Released lock");
 
         if (!execute.empty() || !timed_out.empty() || (waiting && m_new_updates)) {
+            log("Something to do.");
             lockComponent();
+            log("Component locked to get beliefs");
             m_new_updates = false;
             vector<BeliefEntry> state;
             for (BeliefMap::const_iterator i=m_currentState.begin(); i != m_currentState.end(); ++i) {
                 state.push_back(i->second);
             }
             unlockComponent();
+            log("Component unlocked");
+            log("Sending state update");
             pyServer->updateState(state, m_percepts);
             m_percepts.clear();
 
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
+                log("Sending task update for task %d", *it);
                 lockComponent();
                 PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
                 unlockComponent();
@@ -145,10 +163,11 @@ void WMControl::runComponent() {
                 pyServer->updateTask(task);
             }
             for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
+                log("Sending task timeout for task %d", *it);
                 lockComponent();
                 PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
-                log("task timeout reached.");
                 unlockComponent();
+                log("task timeout reached.");
                 pyServer->taskTimedOut(task);
             }
             execute.clear();
@@ -249,7 +268,7 @@ void WMControl::taskRemoved(const cast::cdl::WorkingMemoryChange& wmc) {
     }*/
 
 void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
-    debug("Action changed.");
+    log("Action changed.");
     ActionPtr action = getMemoryEntry<Action>(wmc.address);
 
     if (action->status == PENDING) { // We just added this action ourselves
