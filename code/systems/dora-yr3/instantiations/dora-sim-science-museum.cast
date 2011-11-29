@@ -2,8 +2,12 @@
 ### the default goal
 SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace))"
 
-### the plannig domain to use
-SETVAR planning_domain=dora-interactive.pddl
+### the planning domain to use
+SETVAR planning_domain=dora-explore-only.pddl
+#dora-interactive.pddl
+
+## for dora-explore-only.pddl domain, need to turn off conceptual query
+SETVAR planning_config=config.dora-nonconceptual.ini
 
 ### the default probabilities
 SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-direct.txt"
