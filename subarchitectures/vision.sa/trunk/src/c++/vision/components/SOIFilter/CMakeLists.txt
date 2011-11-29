@@ -1,3 +1,5 @@
+project(Vision.SOIFilter)
+
 include_directories(.)
 
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
@@ -15,6 +17,7 @@ if(1)
 endif()
 
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++0x)
 
 find_package(LibPlot) # for visualization
 set(HAS_LIBPLOT ${LIBPLOT_FOUND})

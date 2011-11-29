@@ -355,8 +355,7 @@ void SOIFilter::sendSyncAllProtoObjects()
 {
   IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
 
-  typeof(m_protoObjects.begin()) it = m_protoObjects.begin();
-  for (; it != m_protoObjects.end(); ++it) {
+  for (auto it = m_protoObjects.begin(); it != m_protoObjects.end(); ++it) {
     ProtoObjectRecordPtr& pporec = it->second;
 
     if (!pporec->pobj.get() || !m_bShowProtoObjects)
@@ -395,8 +394,7 @@ void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const Vis
   ss << "showLabel(0, 0, 0.06, 'PO:" << addr.id << "', 12);\n";
 
   ss << "glColor(0.8, 0.9, 0.1)\n";
-  typeof(m_sois.begin()) it;
-  for (it = m_sois.begin(); it != m_sois.end(); ++it) {
+  for (auto it = m_sois.begin(); it != m_sois.end(); ++it) {
     if (it->second->protoObjectAddr == addr) {
       Vector3& pos = it->second->psoi->boundingSphere.pos;
       ss << "glBegin(GL_LINES)\n"
@@ -743,8 +741,7 @@ void SOIFilter::checkInvisibleObjects()
   // unlocked to avoid waiting for unlock in onDelete_ProtoObject.
   {
     IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
-    typeof(m_protoObjects.begin()) itpo;
-    for(itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
+    for(auto itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
       ProtoObjectRecordPtr& pporec = itpo->second;
       //ProtoObjectPtr& pobj = pporec->pobj;
 
@@ -752,8 +749,7 @@ void SOIFilter::checkInvisibleObjects()
         continue;
 
       bool bVisible = false;
-      typeof(m_sois.begin()) it;
-      for (it = m_sois.begin(); it != m_sois.end(); ++it) {
+      for (auto it = m_sois.begin(); it != m_sois.end(); ++it) {
         if (it->second->protoObjectAddr == pporec->addr) {
           bVisible = true;
           break;
@@ -765,8 +761,7 @@ void SOIFilter::checkInvisibleObjects()
     }
   }
 
-  typeof(toDelete.begin()) itpo;
-  for(itpo = toDelete.begin(); itpo != toDelete.end(); ++itpo) {
+  for(auto itpo = toDelete.begin(); itpo != toDelete.end(); ++itpo) {
     ProtoObjectRecordPtr& pporec = *itpo;
 #if 0
     Vector3& pos = pporec->pobj->position;
@@ -1007,8 +1002,7 @@ void SOIFilter::runComponent()
 
       // count (important) events in queue
       addSoiCount = 0;
-      typeof(m_EventQueue.begin()) it;
-      for(it = m_EventQueue.begin(); it != m_EventQueue.end(); it++) {
+      for(auto it = m_EventQueue.begin(); it != m_EventQueue.end(); it++) {
         WmEvent* pevent = *it;
         switch (pevent->objectType)
         {
@@ -1099,8 +1093,7 @@ ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
   log("Find PO near (%.4g, %.4g, %.4g)", p0.x, p0.y, p0.z);
 
   IceUtil::RWRecMutex::RLock lock(m_protoObjectMapMutex);
-  typeof(m_protoObjects.begin()) itpo = m_protoObjects.begin();
-  for(; itpo != m_protoObjects.end(); ++itpo) {
+  for(auto itpo = m_protoObjects.begin(); itpo != m_protoObjects.end(); ++itpo) {
     ProtoObjectRecordPtr& pporec = itpo->second;
     ProtoObjectPtr& pobj = pporec->pobj;
     if (!pobj.get()) {
@@ -1139,8 +1132,7 @@ VisualObjectRecordPtr SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAdd
   if (protoAddr.id == "") 
     return NULL;
 
-  typeof(m_visualObjects.begin()) itvo = m_visualObjects.begin();
-  for(; itvo != m_visualObjects.end(); ++itvo) {
+  for(auto itvo = m_visualObjects.begin(); itvo != m_visualObjects.end(); ++itvo) {
     VisualObjectRecordPtr& pvorec = itvo->second;
     VisualObjectPtr& pobj = pvorec->pobj;
     if (!pobj.get())
@@ -1160,8 +1152,7 @@ VisualObjectRecordPtr SOIFilter::findHiddenVisualObjectFor(const cdl::WorkingMem
     return NULL;
 
   // The check the hidden objects
-  typeof(m_visualObjects.begin()) itvo = m_visualObjects.begin();
-  for(; itvo != m_visualObjects.end(); ++itvo) {
+  for(auto itvo = m_visualObjects.begin(); itvo != m_visualObjects.end(); ++itvo) {
     VisualObjectRecordPtr& pvorec = itvo->second;
     VisualObjectPtr& pobj = pvorec->pobj;
     if (!pobj.get())

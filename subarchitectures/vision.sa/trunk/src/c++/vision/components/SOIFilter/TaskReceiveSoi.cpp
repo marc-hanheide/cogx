@@ -369,8 +369,7 @@ void WmTaskExecutor_Soi::handle_delete_soi(WmEvent* pEvent)
 
       // check if other SOIs are associated with this PO
       bool hasMoreSois = false;
-      typeof(pSoiFilter->m_sois.begin()) it;
-      for (it = pSoiFilter->m_sois.begin(); it != pSoiFilter->m_sois.end(); ++it) {
+      for (auto it = pSoiFilter->m_sois.begin(); it != pSoiFilter->m_sois.end(); ++it) {
         if (it->second->protoObjectAddr == psoirec->protoObjectAddr) {
           hasMoreSois = true;
           break;
