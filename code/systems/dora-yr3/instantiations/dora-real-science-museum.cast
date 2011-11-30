@@ -4,6 +4,8 @@ SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) 
 
 ### the plannig domain to use
 SETVAR planning_domain=dora-interactive.pddl
+#dora-explore-only.pddl
+#dora-interactive.pddl
 
 ### the default probabilities
 SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-direct.txt"
@@ -73,8 +75,9 @@ SETVAR or3d_labels=joystick pizza juice coffee tea cerealbox book table milk
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 
 ### SPATIAL.SA DOOR DETECTION SETTINGS DISABLED
-SETVAR spatial_min_door_width=1000.0
-SETVAR spatial_max_door_width=0.0
+SETVAR spatial_min_door_width=0.70
+#1000.0
+SETVAR spatial_max_door_width=0.85
 
 SETVAR playerhost= %(host:localhost)
 SETVAR ptz_server=ptz.server
@@ -102,7 +105,7 @@ INCLUDE includes/visualization.sa/v11n-base-p.cast
 COMPONENT CPP ptz.server PlayerPTZServer --player-host %(playerhost) --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
-INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-robotville.cast
 INCLUDE includes/spatial.sa/spatial-mediator.cast
 JAVA MG SpatialPropertyRemover spatial.SpatialPropertyRemover 
 
