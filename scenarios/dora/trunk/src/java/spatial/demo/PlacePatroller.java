@@ -7,6 +7,7 @@ import SpatialData.CommandType;
 import SpatialData.Completion;
 import SpatialData.NavCommand;
 import SpatialData.Place;
+import SpatialData.PlaceStatus;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -37,7 +38,8 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 	}
 
 	public void addPlace(Place _p) {
-		m_schedule.addPlace(_p);
+		if (_p.status == PlaceStatus.TRUEPLACE)
+			m_schedule.addPlace(_p);
 	}
 
 	private void goToPlace(Place _p) throws AlreadyExistsOnWMException,
