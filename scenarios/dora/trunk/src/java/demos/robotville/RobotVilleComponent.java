@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import spatial.demo.PlacePatroller;
+import spatial.demo.ShakeHeadBehaviour;
 
 import motivation.slice.PlanProxy;
 import SpatialData.CommandType;
@@ -43,7 +44,11 @@ public class RobotVilleComponent extends ManagedComponent {
 
 	final PlacePatroller m_patroller = new PlacePatroller(this);
 	final Thread m_patrollerThread = new Thread(m_patroller);
+	final ShakeHeadBehaviour m_shaker = new ShakeHeadBehaviour(this);
+	final Thread m_shakerThread = new Thread(m_shaker);
+	
 	boolean isPatrolling = false;
+	boolean isShaking = false;
 
 	public void stopRunningTasks() {
 		try {
@@ -51,6 +56,11 @@ public class RobotVilleComponent extends ManagedComponent {
 				m_patroller.stopPatrolling();
 				isPatrolling = false;
 			}
+			if (isShaking) {
+				m_shaker.stopShaking();
+				isShaking = false;
+			}
+
 			if (wmaPlanningTask != null) {
 				deleteFromWorkingMemory(wmaPlanningTask);
 				wmaPlanningTask = null;
@@ -68,6 +78,7 @@ public class RobotVilleComponent extends ManagedComponent {
 	protected void start() {
 		planner = new PlannerFacade(this);
 		m_patrollerThread.start();
+		m_shakerThread.start();
 		frame.setVisible(true);
 		WorkingMemoryChangeReceiver wmcr = new WorkingMemoryChangeReceiver() {
 			@Override
@@ -170,7 +181,8 @@ public class RobotVilleComponent extends ManagedComponent {
 	}
 
 	public void startIdleBehaviour() {
-
+		m_shaker.startShaking();
+		isShaking = true;
 	}
 
 	public void startPatrolBehaviour() {
