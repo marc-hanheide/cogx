@@ -1,11 +1,10 @@
 package spatial.demo;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import SpatialData.Place;
 
@@ -22,8 +21,7 @@ public class AdditionOrderPatrolSchedule implements PatrolSchedule {
 	private List<Place> m_toVisit;
 
 	public AdditionOrderPatrolSchedule() {
-		m_allPlaces = new TreeSet<Place>();
-
+		m_allPlaces = new LinkedHashSet<Place>();
 	}
 
 	public void addPlace(Place _p) {
