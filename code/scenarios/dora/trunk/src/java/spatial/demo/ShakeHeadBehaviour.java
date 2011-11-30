@@ -25,7 +25,7 @@ public class ShakeHeadBehaviour extends CASTHelper implements Runnable {
 		log("starting patrol");
 	}
 
-	public void stopPatrolling() {
+	public void stopShaking() {
 		m_shaking = false;
 	}
 

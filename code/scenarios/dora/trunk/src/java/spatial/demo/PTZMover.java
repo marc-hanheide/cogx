@@ -43,6 +43,7 @@ public class PTZMover {
 			WMEventQueue queue = new WMEventQueue();
 			component.addChangeFilter(
 					ChangeFilterFactory.createAddressFilter(wma), queue);
+			component.addToWorkingMemory(wma, cmd);	
 			while (cmd.comp == PTZCompletion.COMPINIT) {
 				WorkingMemoryChange wmc = queue.take();
 				cmd = component.getMemoryEntry(wmc.address,

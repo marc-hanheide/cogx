@@ -79,7 +79,7 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 	}
 
 	public void stopPatrolling() {
-		m_patrol = false;
+		m_patrol = false;	
 	}
 
 	public void kill() {
@@ -87,7 +87,6 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 		synchronized (m_patrolSignal) {
 			m_patrolSignal.notify();
 		}
-		
 	}
 
 	private boolean isExecutingCommand() {
