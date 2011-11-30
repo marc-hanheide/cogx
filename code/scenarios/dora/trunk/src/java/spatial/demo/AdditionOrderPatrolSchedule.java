@@ -1,8 +1,11 @@
 package spatial.demo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import SpatialData.Place;
 
@@ -15,11 +18,11 @@ import SpatialData.Place;
  */
 public class AdditionOrderPatrolSchedule implements PatrolSchedule {
 
-	private final List<Place> m_allPlaces;
+	private final Set<Place> m_allPlaces;
 	private List<Place> m_toVisit;
 
 	public AdditionOrderPatrolSchedule() {
-		m_allPlaces = new ArrayList<Place>();
+		m_allPlaces = new TreeSet<Place>();
 
 	}
 

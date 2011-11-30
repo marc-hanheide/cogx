@@ -1,4 +1,4 @@
-package dora.demo;
+package demos.robotville;
 
 import SpatialData.Place;
 import spatial.demo.PlacePatroller;
