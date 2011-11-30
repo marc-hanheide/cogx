@@ -97,9 +97,9 @@ void WMControl::runComponent() {
     std::vector<int> execute;
     std::vector<int> timed_out;
     while (isRunning()) {
-        log("Running...");
+        // log("Running...");
         m_queue_mutex.lock();
-        log("Got lock");
+        // log("Got lock");
         bool waiting = !m_waiting_tasks.empty();
         if (!m_runqueue.empty() || !m_waiting_tasks.empty()) {
             // log("planning is scheduled");
@@ -133,11 +133,11 @@ void WMControl::runComponent() {
                     m_waiting_tasks.erase(*it);
                 }
             } else {
-                log("Waiting for belief state to settle down. Timeout: %ld / %ld", tval.tv_sec, tval.tv_usec);
+                log("Waiting for belief state to settle down. Timeout: %ld / %ld", m_belief_activity_timeout.tv_sec, m_belief_activity_timeout.tv_usec);
             }
         }
         m_queue_mutex.unlock();
-        log("Released lock");
+        // log("Released lock");
 
         if (!execute.empty() || !timed_out.empty() || (waiting && m_new_updates)) {
             log("Something to do.");
