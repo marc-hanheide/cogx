@@ -51,10 +51,6 @@ public class RobotVilleComponent extends ManagedComponent {
 				m_patroller.stopPatrolling();
 				isPatrolling = false;
 			}
-			if (isPatrolling) {
-				m_patroller.stopPatrolling();
-				isPatrolling = false;
-			}
 			if (wmaPlanningTask != null) {
 				deleteFromWorkingMemory(wmaPlanningTask);
 				wmaPlanningTask = null;
@@ -71,6 +67,7 @@ public class RobotVilleComponent extends ManagedComponent {
 	@Override
 	protected void start() {
 		planner = new PlannerFacade(this);
+		m_patrollerThread.start();
 		frame.setVisible(true);
 		WorkingMemoryChangeReceiver wmcr = new WorkingMemoryChangeReceiver() {
 			@Override
@@ -173,13 +170,12 @@ public class RobotVilleComponent extends ManagedComponent {
 	}
 
 	public void startIdleBehaviour() {
-		// TODO Auto-generated method stub
 
 	}
 
 	public void startPatrolBehaviour() {
-		// TODO Auto-generated method stub
-
+		m_patroller.startPatrolling();
+		isPatrolling = true;
 	}
 
 }
