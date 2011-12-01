@@ -1,7 +1,5 @@
 package spatial.demo;
 
-import org.apache.log4j.pattern.LogEvent;
-
 import ptz.PTZCompletion;
 import ptz.PTZPose;
 import ptz.SetPTZPoseCommand;
