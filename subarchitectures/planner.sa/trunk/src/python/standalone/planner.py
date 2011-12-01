@@ -160,7 +160,7 @@ class Planner(object):
                 try:
                     pnode.action = mapltask.domain.get_action(pnode.action.name)
                 except:
-                    log.warning("problem getting action description for %s", str(pnode))
+                    log.info("problem getting action description for %s", str(pnode))
                     return False
         return True
 
@@ -237,7 +237,7 @@ class Planner(object):
         self.statistics.increase_stat("monitoring_calls")
 
         if not self.update_plan(task.get_plan(), task._mapltask):
-            log.warning("Error updating plan, replanning.");
+            log.info("Error updating plan, replanning.");
             return True
                 
         t0 = time.time()
@@ -682,13 +682,108 @@ class TFD(BasePlanner):
         - knowledge preconditions: make them explicit?
         - negotiation actions --> requests: when and how?
         """
-        plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
+        # plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
         times_actions = [(a[0], a[1]) for a in action_list]
         times_actions = sorted(times_actions, key=lambda x:x[0])
         plan = plan_postprocess.make_po_plan(times_actions, task)
             
         return plan
-    
+
+class SAPA(BasePlanner):
+    """
+    """
+    PLAN_REXP = re.compile("([0-9\.]*): \((.*)\) \[([0-9\.]*)\]")
+    def __init__(self, main_planner):
+        self.main_planner = main_planner
+        self.config = global_vars.config.base_planner.__dict__[self.__class__.__name__]
+        self.executable = self.config.executable
+        # if not os.path.exists(self.executable):
+        #     print "Executable %s does not exist!" % self.executable
+        #     print "Please make sure it has been built and paths are set properly in config.ini."
+        #     sys.exit(1)
+
+    def _prepare_input(self, _task):
+        planning_tmp_dir =  global_vars.config.tmp_dir
+        tmp_dir = get_planner_tempdir(planning_tmp_dir)
+
+        paths = [os.path.join(tmp_dir, name) for name in ("domain.pddl", "problem.pddl", "stdout.out")]
+        
+        w = task.ADLOutput()
+        w.write(_task.mapltask, domain_fn=paths[0], problem_fn=paths[1])
+        
+        # pddl_strs = _task.domain_str(task.PDDLWriter), _task.problem_str(task.PDDLWriter)
+        # for path, content in zip(paths, pddl_strs):
+        #     f = open(path, "w")
+        #     f.write(content)
+        #     f.close()
+        return paths
+
+    def _run(self, input_data, task):
+        import subprocess
+        domain_path, problem_path, stdout_path = input_data
+        java_class = self.executable
+        classpath = os.path.join(global_vars.src_path, self.config.sapa_dir)
+        cmd = "java -cp %(classpath)s %(java_class)s %(domain_path)s %(problem_path)s" % locals()
+        output = open(stdout_path, "w")
+        
+        proc, planner_out,_ = utils.run_process(cmd, output=subprocess.PIPE, error=subprocess.PIPE)
+
+        output.write(planner_out)
+                
+        if proc.returncode != 0:
+            utils.print_errors(proc, cmd, open(planner_out).read(), log, "SAPA")
+            return None
+        
+        pddl_plan = self.parse_sapa_output(planner_out)
+        return pddl_plan
+
+    def parse_sapa_output(self, pddl_output):
+        lines = [line.strip() for line in pddl_output.splitlines() if line]
+
+        def lines_from(lines, start, end):
+            start_found = False if start is not None else True
+            for l in lines:
+                if end is not None and l == end:
+                    return
+                if start_found:
+                    yield l
+                elif l == start:
+                    start_found = True
+
+        actions = []
+        for line in lines_from(lines, ";;-----------Original plan returned by Sapa-------------",
+                               ";;-----------End original plan--------------------------"):
+            result = self.PLAN_REXP.search(line)
+            start = float(result.group(1))
+            action =  result.group(2).lower()
+            duration = float(result.group(3))
+            #if start == 0:
+            #    #start of a new (usually better plan)
+            #    actions = []
+            actions.append((start, action, duration))
+            
+        return actions
+
+    def _post_process(self, action_list, task):
+        """
+        Receives a PDDL action list and produces a MAPL plan
+        Steps:
+        - create an empty MAPL plan P
+        - add dummy action for the current state of the task to P
+        - create goal action
+        - map PDDL actions to properly instantiated MAPL actions
+        - determine causal and threat-prevention links between actions
+        - add actions and links to P
+        - add goal action to P
+        TODO:
+        - derived predicates: where are they used in preconds and where have they been triggered
+        - knowledge preconditions: make them explicit?
+        - negotiation actions --> requests: when and how?
+        """
+        times_actions = [(start, a) for start, a, dur in action_list]
+        times_actions = sorted(times_actions, key=lambda x:x[0])
+        plan = plan_postprocess.make_po_plan(times_actions, task)
+
             
 if __name__ == '__main__':    
     assert len(sys.argv) == 3, """Call 'planner.py domain.mapl task.mapl' for a single planner call"""
