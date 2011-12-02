@@ -14,6 +14,6 @@ add_cast_component(VideoGrabber ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    Video VideoUtils
    ${VISUALIZATION_LIBRARIES}
-   ${OPENCV_LDFLAGS}
+   ${OPENCV_LIBRARIES}
    )
 
