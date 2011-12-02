@@ -200,18 +200,38 @@ void SegTester::configure(const map<string,string> & _config)
   filenames.push_back(filename);
   filename = "./instantiations/11-05-11/LL-Trainingsset.txt.model";
   filenames.push_back(filename);
-printf(" HEY: Filenames.size(): %u\n", filenames.size());
   svmPredictor = new Z::SVMPredictor(2, filenames);      // 2 ... Number of SVM's
 
   graphCutter = new Z::GraphCut(kcore, relations);
-  annotation = new pa::Annotation();
-  annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 5, 16);
+
+  /// ################### The new classes for calculation ################### ///
   
   /// init model fitter
   double minZ = 0.3;
   double maxZ = 1.5;
   pclA::ModelFitter::Parameter param(false, 0.005, true, minZ, maxZ);
   model_fitter = new pclA::ModelFitter(param);
+
+  /// init annotation
+  annotation = new pa::Annotation();
+  annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 16);
+
+  /// init patch class
+  patches = new pclA::Patches();
+  patches->setZLimit(0.01);
+  
+  /// init svm-predictor
+//   std::vector<const char*> filenames;
+//   const char* filename = "./instantiations/11-05-11/1026/PP-Trainingsset.txt.model";
+//   filenames.push_back(filename);
+//   filename = "./instantiations/11-05-11/PL-Trainingsset.txt.model";
+//   filenames.push_back(filename);
+//   filename = "./instantiations/11-05-11/LL-Trainingsset.txt.model";
+//   filenames.push_back(filename);
+  svm = new svm::SVMPredictor(3, filenames);
+  
+  /// init graph cutter
+  graphCut = new gc::GraphCut();
   
   if(showImages) 
   {
@@ -253,22 +273,6 @@ void SegTester::runComponent()
     cvDestroyWindow("Kinect image");
   }
   log("windows destroyed");
-  
-// printf("Delete objects: 0\n");
-//   delete &vcore;
-// printf("Delete objects: 1\n");
-//   delete &score;
-// printf("Delete objects: 2\n");
-//   delete &kcore;
-// // printf("Delete objects: 3\n");
-//   delete &planePopout;
-// printf("Delete objects: 4\n");
-//   delete &relations;
-// printf("Delete objects: 5\n");
-//   delete &svmPredictor;
-// printf("Delete objects: 6\n");
-//   delete &graphCutter;
-// printf("Delete objects: 7\n");
 }
 
   
@@ -288,8 +292,6 @@ void SegTester::GetImageData()
   getCompletePoints(false, pointCloudWidth, points);      // Get the image grid point cloud with zeros, when no values are available!
 //   getPoints(false, pointCloudWidth, points);           /// TODO für KinectStereoSeqServer => einbauen von getCompletePoints!!!!
   
-  printf("SegTester: points.size: %u\n", points.size());
-  
   ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth, pointCloudHeight, true); // replace 0-points by NAN's
   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
 
@@ -301,10 +303,12 @@ void SegTester::GetImageData()
 //  iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
 
+  /// calculate normals
+  pclA::NormalsFromSortedPCLCloud(pcl_cloud, pcl_normals, 0.02, 5.0);
+
   if(showImages)
   {
     cvShowImage("Kinect image", iplImage_k);
-
     // convert point cloud to iplImage
 //     cv::Mat_<cv::Vec3b> kinect_pc_image;
 //     pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_pc_image);
@@ -313,13 +317,13 @@ void SegTester::GetImageData()
   
   /// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK 
   /// Check if there are same 3D points in the point clouds
-  for(unsigned l=1; l<pointCloudWidth*pointCloudHeight-1; l++)
-  {
-    double dist = ((pcl_cloud->points[l].x-pcl_cloud->points[l+1].x) + 
-                   (pcl_cloud->points[l].y-pcl_cloud->points[l+1].y) + 
-                   (pcl_cloud->points[l].z-pcl_cloud->points[l+1].z));
-    if(dist == 0.) printf("SegTester: Warning: Same 3D point: idx: %u-%u!!!\n", l, l+1);
-  }
+//   for(unsigned l=1; l<pointCloudWidth*pointCloudHeight-1; l++)
+//   {
+//     double dist = ((pcl_cloud->points[l].x-pcl_cloud->points[l+1].x) + 
+//                    (pcl_cloud->points[l].y-pcl_cloud->points[l+1].y) + 
+//                    (pcl_cloud->points[l].z-pcl_cloud->points[l+1].z));
+//     if(dist == 0.) printf("SegTester: Warning: Same 3D point: idx: %u-%u!!!\n", l, l+1);
+//   }
 }
 
 
@@ -328,7 +332,8 @@ void SegTester::GetImageData()
  */
 void SegTester::processImageNew()
 {
-  printf("SegTester::processImageNew: start\n");
+  bool debug = true;
+  if(debug) printf("SegTester::processImageNew: start\n");
   
 static struct timespec start, last, current;
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
@@ -336,54 +341,115 @@ last = start;
 
   /// Get kinect data
   GetImageData();
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Getting images: %4.3f\n", timespec_diff(&current, &last));
+last = current;  
 
-  /// TODO ModelFitter
+  if(debug) printf("############################### end => This takes longer!\n");
+
+  /// ModelFitter
+  int nr_models = 0;
   std::vector<int> pcl_model_types;
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_model_clouds;
-  std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;
+//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_model_clouds;
   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
   std::vector< std::vector<double> > distances;
   std::vector<double> square_errors;
-  
   model_fitter->addModelType(pcl::SACMODEL_PLANE);
-//   model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);
+//  model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);
 //  model_fitter->addModelType(pcl::SACMODEL_CYLINDER);
 //  model_fitter->addModelType(pcl::SACMODEL_SPHERE);
-  pcl::PointCloud<pcl::Normal>::Ptr no = kcore->GetPclNormals();  /// TODO process normals in getImage
-  model_fitter->setNormals(no);
+  model_fitter->setNormals(pcl_normals);
   model_fitter->useDominantPlane(true);
   model_fitter->setInputCloud(pcl_cloud);
   model_fitter->compute();
   model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
   model_fitter->getError(distances, square_errors);
-
+  nr_models = model_coefficients.size();
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: Model fitting: %4.3f\n", timespec_diff(&current, &last));
-last = current;  
+last = current; 
 
-  /// TODO Calculate relations
-    
+  if(debug)  printf("    Annotation: start\n");
+  std::vector<int> anno;
+  std::vector< std::vector<int> > anno_pairs;
+  annotation->load(pointCloudWidth, anno);            /// TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation->setIndices(pcl_model_cloud_indices);
+  annotation->calculate();
+  annotation->getResults(anno_pairs);
+  if(debug) printf("    Annotation: end\n");
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-printf("Runtime for SegTester: Calculate relations: %4.3f\n", timespec_diff(&current, &last));
+printf("Runtime for SegTester: Annotation calculation: %4.3f\n", timespec_diff(&current, &last));
+last = current; 
+
+  /// Calculate patch relations
+  if(debug) printf("SegTester: Calculate patches start!\n");
+//   std::vector< std::vector<unsigned> > neighbors;
+  std::vector<Relation> relation_vector;
+  patches->setInputCloud(pcl_cloud, pcl_normals);
+//   patches->setNeighbors(neighbors);
+  patches->setPatches(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
+  patches->computeNeighbors();
+  patches->computeTestRelations();
+//   patches->getNeighbors(neighbors);
+  patches->getRelations(relation_vector);
+  if(debug) printf("SegTester: Calculate patches end!\n");
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Calculate patch relations: %4.3f\n", timespec_diff(&current, &last));
 last = current;  
-  
+
+
+  /// SVM-Prediction
+  if(debug) printf("SegTester: Prediction start: relation_vector.size: %u\n", relation_vector.size());
+  for(unsigned i=0; i<relation_vector.size(); i++)
+  {
+    relation_vector[i].prediction = svm->getResult(relation_vector[i].type, relation_vector[i].rel_value, relation_vector[i].rel_probability);
+    if(debug) 
+    {
+      if(relation_vector[i].groundTruth == 0)
+        printf("relation [%u][%u]: gt: false => %4.3f\n", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
+      if(relation_vector[i].groundTruth == 1)
+        printf("relation [%u][%u]: gt: true => %4.3f\n", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
+    }
+  }
+  if(debug) printf("SegTester: Prediction end!\n");
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Prediction: %4.3f\n", timespec_diff(&current, &last));
+last = current;
+
   /// TODO Graph cutter
-// printf("    graphCutter: start\n");
-//   graphCutter->Initialize();
-// printf("    graphCutter: initialized\n");
-//   graphCutter->Cut();
-// printf("    graphCutter: cutted\n");
-//   graphCutter->CopyGroupIDToFeatures();
-// printf("    graphCutter: end.\n");
+  if(debug) printf("    graphCutter: start\n");
+  graphCut->init(relation_vector);
+  if(debug) printf("    graphCutter: initialized\n");
+  graphCut->process();
+  if(debug) printf("    graphCutter: processed\n");
+  std::vector< std::vector<unsigned> > clusters;
+  graphCut->getResults(nr_models, clusters);
+
+  if(debug) 
+  {
+    for(unsigned i=0; i<clusters.size(); i++) { 
+      printf("%u: ", i);
+      for(unsigned j=0; j<clusters[i].size(); j++)
+        printf("%u ", clusters[i][j]);
+      printf("\n");
+    }
+  }
+  if(debug) printf("    graphCutter: end: clusters.size(): %u\n", clusters.size());
 
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
 last = current;
 
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
 }
+
 
 /**
  *  @brief Process data from stereo or Kinect.
@@ -597,7 +663,7 @@ void SegTester::SingleShotMode()
 {
 //   sleepComponent(10);
   int key = 0;
-  key = cvWaitKey(100);
+  key = cvWaitKey(10);
   
   if (key == 65471 || key == 1114047) // F2
   {
@@ -665,7 +731,7 @@ void SegTester::SingleShotMode()
         {
           int top = soi_hull.size();
           int bottom = top/2; 
-          for(unsigned j=0; j < bottom; j++)
+          for(int j=0; j < bottom; j++)
           {
             int i = j+1; 
             if(i >= bottom) i=0;
@@ -673,7 +739,7 @@ void SegTester::SingleShotMode()
             cv::Vec4f e = soi_hull[i];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
-          for(unsigned j=bottom; j < top; j++)
+          for(int j=bottom; j < top; j++)
           {
             int i = j+1; 
             if(i >= top) i=bottom;
@@ -681,7 +747,7 @@ void SegTester::SingleShotMode()
             cv::Vec4f e = soi_hull[i];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
-          for(unsigned j=0; j < bottom; j++)
+          for(int j=0; j < bottom; j++)
           {
             int i = j + bottom; 
             cv::Vec4f s = soi_hull[j];
@@ -887,6 +953,46 @@ for(unsigned i=0; i<pts.size(); i++)
       drawNodeID = !drawNodeID;
       kcore->DrawNodeID(drawNodeID);
       break;
+
+      
+    /// *** For new processing!!! *** ///
+    case '+':
+      log("Show PATCHES");
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        cv::Vec4f center3D[pcl_model_cloud_indices.size()];
+        RGBValue col[pcl_model_cloud_indices.size()];
+        for(unsigned i=0; i<pcl_model_cloud_indices.size(); i++) {
+          col[i].float_value = GetRandomColor();
+          for(unsigned j=0; j<pcl_model_cloud_indices[i]->indices.size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[pcl_model_cloud_indices[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[pcl_model_cloud_indices[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[pcl_model_cloud_indices[i]->indices[j]].z;
+            pt[3] = col[i].float_value;
+            center3D[i][0] = center3D[i][0] + pt[0];
+            center3D[i][1] = center3D[i][1] + pt[1];
+            center3D[i][2] = center3D[i][2] + pt[2];
+            col_points.push_back(pt);
+          }
+        }
+    
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+
+        for(int i=0; i<pcl_model_cloud_indices.size(); i++) {
+          char label[5];
+          snprintf(label, 5, "%u", i);
+          tgRenderer->AddLabel3D(label, 14, 
+                                 center3D[i][0]/pcl_model_cloud_indices[i]->indices.size(), 
+                                 center3D[i][1]/pcl_model_cloud_indices[i]->indices.size(), 
+                                 center3D[i][2]/pcl_model_cloud_indices[i]->indices.size());
+        }
+        tgRenderer->Update();
+      }
+      break;    
+
   }
 }
 

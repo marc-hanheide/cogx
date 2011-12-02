@@ -58,7 +58,7 @@ void SegLearner::configure(const map<string,string> & _config)
   configureServerCommunication(_config);
 
   // for one vision core: only lines
-  runtime = 600;                                    // processing time for image => we need no incremental processing (only line calculation)
+  runtime = 10;                                    // processing time for image => we need no incremental processing (only line calculation)
   cannyAlpha = 0.75;                                // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
   cannyOmega = 0.001;
   
@@ -217,8 +217,26 @@ void SegLearner::configure(const map<string,string> & _config)
                                      normalDistWeight, minObjH, maxObjH, eucThr, minClSize);
   planePopout = new pclA::PlanePopout(param);
 
+
+  /// ################### The new classes for calculation ################### ///
+  
+  /// init model fitter
+  double minZ = 0.3;
+  double maxZ = 1.5;
+  pclA::ModelFitter::Parameter mf_param(false, 0.005, true, minZ, maxZ);
+  model_fitter = new pclA::ModelFitter(mf_param);
+
+  /// init annotation
   annotation = new pa::Annotation();
   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 16);
+
+  /// init patch class
+  patches = new pclA::Patches();
+  patches->setZLimit(0.01);
+  
+  /// init svm-file-creator
+  svm = new svm::SVMFileCreator();
+  
 }
 
 
@@ -300,6 +318,89 @@ void SegLearner::GetImageData()
 }
 
 
+
+/**
+ *  @brief Process data from stereo or Kinect.
+ */
+void SegLearner::processImageNew()
+{
+  bool debug = true;
+  if(debug) printf("SegLearner::processImageNew: start\n");
+  
+static struct timespec start, last, current;
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+last = start;
+
+  /// Get kinect data
+  GetImageData();
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: Getting images: %4.3f\n", timespec_diff(&current, &last));
+last = current;  
+
+  if(debug) printf("############################### end => This takes longer!\n");
+
+  /// ModelFitter
+  int nr_models = 0;
+  std::vector<int> pcl_model_types;
+//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_model_clouds;
+  std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
+  std::vector< std::vector<double> > distances;
+  std::vector<double> square_errors;
+  model_fitter->addModelType(pcl::SACMODEL_PLANE);
+//  model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);
+//  model_fitter->addModelType(pcl::SACMODEL_CYLINDER);
+//  model_fitter->addModelType(pcl::SACMODEL_SPHERE);
+  model_fitter->setNormals(pcl_normals);
+  model_fitter->useDominantPlane(true);
+  model_fitter->setInputCloud(pcl_cloud);
+  model_fitter->compute();
+  model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
+  model_fitter->getError(distances, square_errors);
+  nr_models = model_coefficients.size();
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: Model fitting: %4.3f\n", timespec_diff(&current, &last));
+last = current; 
+
+  if(debug)  printf("    Annotation: start\n");
+  std::vector<int> anno;
+  std::vector< std::vector<int> > anno_pairs;
+  annotation->load(pointCloudWidth, anno);            /// TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation->setIndices(pcl_model_cloud_indices);
+  annotation->calculate();
+  annotation->getResults(anno_pairs);
+  if(debug) printf("    Annotation: end\n");
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: Annotation calculation: %4.3f\n", timespec_diff(&current, &last));
+last = current; 
+
+  /// Calculate patch relations
+  if(debug) printf("SegLearner: Calculate patches start!\n");
+//   std::vector< std::vector<unsigned> > neighbors;
+  std::vector<Relation> relation_vector;
+  patches->setInputCloud(pcl_cloud, pcl_normals);
+//   patches->setNeighbors(neighbors);
+  patches->setPatches(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
+  patches->computeNeighbors();
+  patches->computeTestRelations();
+//   patches->getNeighbors(neighbors);
+  patches->getRelations(relation_vector);
+  if(debug) printf("SegLearner: Calculate patches end!\n");
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: Calculate patch relations: %4.3f\n", timespec_diff(&current, &last));
+last = current;  
+
+
+  /// write svm-relations to file!
+  svm->init(relation_vector);
+  svm->process();
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
+}
 
 /**
  *  @brief Process data from stereo or Kinect.
@@ -481,7 +582,16 @@ void SegLearner::SingleShotMode()
   if (key == 65478 || key == 1114054) // F9
   {
 //     log("process images in single shot mode.");
-    printf("\nLearnPrincipleDistributions::Process: Learn from next image!\n");
+    printf("\nSegLearner::ProcessNew: Learn from next image!\n");
+    lockComponent();
+    processImageNew();
+    unlockComponent();
+  }
+
+  if (key == 65479 || key == 1114055) // F10
+  {
+//     log("process images in single shot mode.");
+    printf("\nSegLearner::ProcessNew: Learn from next image!\n");
     lockComponent();
     processImage();
     unlockComponent();
@@ -511,7 +621,7 @@ void SegLearner::SingleShotMode()
         {
           int top = soi_hull.size();
           int bottom = top/2; 
-          for(unsigned j=0; j < bottom; j++)
+          for(int j=0; j < bottom; j++)
           {
             int i = j+1; 
             if(i >= bottom) i=0;
@@ -519,7 +629,7 @@ void SegLearner::SingleShotMode()
             cv::Vec4f e = soi_hull[i];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
-          for(unsigned j=bottom; j < top; j++)
+          for(int j=bottom; j < top; j++)
           {
             int i = j+1; 
             if(i >= top) i=bottom;
@@ -527,7 +637,7 @@ void SegLearner::SingleShotMode()
             cv::Vec4f e = soi_hull[i];
             tgRenderer->AddLine3D(s[0], s[1], s[2], e[0], e[1], e[2], 255, 255, 255, 3);
           }
-          for(unsigned j=0; j < bottom; j++)
+          for(int j=0; j < bottom; j++)
           {
             int i = j + bottom; 
             cv::Vec4f s = soi_hull[j];
@@ -707,6 +817,47 @@ void SegLearner::SingleShotMode()
       drawNodeID = !drawNodeID;
       kcore->DrawNodeID(drawNodeID);
       break;
+      
+      
+    /// *** For new processing!!! *** ///
+    case '+':
+      log("Show PATCHES");
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        cv::Vec4f center3D[pcl_model_cloud_indices.size()];
+        RGBValue col[pcl_model_cloud_indices.size()];
+        for(unsigned i=0; i<pcl_model_cloud_indices.size(); i++) {
+          col[i].float_value = GetRandomColor();
+          for(unsigned j=0; j<pcl_model_cloud_indices[i]->indices.size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[pcl_model_cloud_indices[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[pcl_model_cloud_indices[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[pcl_model_cloud_indices[i]->indices[j]].z;
+            pt[3] = col[i].float_value;
+            center3D[i][0] = center3D[i][0] + pt[0];
+            center3D[i][1] = center3D[i][1] + pt[1];
+            center3D[i][2] = center3D[i][2] + pt[2];
+            col_points.push_back(pt);
+          }
+        }
+    
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+
+        for(int i=0; i<pcl_model_cloud_indices.size(); i++) {
+          char label[5];
+          snprintf(label, 5, "%u", i);
+          tgRenderer->AddLabel3D(label, 14, 
+                                 center3D[i][0]/pcl_model_cloud_indices[i]->indices.size(), 
+                                 center3D[i][1]/pcl_model_cloud_indices[i]->indices.size(), 
+                                 center3D[i][2]/pcl_model_cloud_indices[i]->indices.size());
+        }
+        tgRenderer->Update();
+      }
+      break;    
+
+      
   }
 }
 
