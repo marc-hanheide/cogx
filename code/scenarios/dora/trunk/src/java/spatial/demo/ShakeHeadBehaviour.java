@@ -51,7 +51,7 @@ public class ShakeHeadBehaviour extends CASTHelper implements Runnable {
 
 				ptzMover.moveToRandomPose();
 				try {
-					Thread.sleep((long) (3000+Math.random()*10000));
+					Thread.sleep((long) (3000+Math.random()*5000));
 				} catch (InterruptedException e) {
 					component.logException(e);
 				}
