@@ -226,6 +226,23 @@ void SegLearner::configure(const map<string,string> & _config)
   pclA::ModelFitter::Parameter mf_param(false, 0.005, true, minZ, maxZ);
   model_fitter = new pclA::ModelFitter(mf_param);
 
+  /// init nurbsfitting & model-selection
+  nurbsfitting::SequentialFitter::Parameter nurbsParams;
+  nurbsParams.order = 3;
+  nurbsParams.refinement = 1;
+  nurbsParams.iterationsQuad = 0;
+  nurbsParams.iterationsBoundary = 0;
+  nurbsParams.iterationsAdjust = 0;
+  nurbsParams.iterationsInterior = 1;
+  nurbsParams.forceBoundary = 100.0;
+  nurbsParams.forceBoundaryInside = 300.0;
+  nurbsParams.forceInterior = 1.0;
+  nurbsParams.stiffnessBoundary = 0.1;
+  nurbsParams.stiffnessInterior = 0.1;
+  nurbsParams.resolution = 16; 
+                                              //nurbsParams, sigmaError, kappa1, kappa2
+  modeling = new SurfaceModeling( SurfaceModeling::Parameter(nurbsParams, 0.003, 0.003, 0.9));
+  
   /// init annotation
   annotation = new pa::Annotation();
   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 16);
@@ -361,6 +378,33 @@ last = current;
   
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: Model fitting: %4.3f\n", timespec_diff(&current, &last));
+last = current; 
+  
+  /// NURBS-Fitting and model selection
+  std::vector<int> modelTypes;
+  std::vector<pcl::ModelCoefficients::Ptr> coeffs;
+  std::vector<pcl::PointIndices::Ptr> indices;
+  std::vector< std::vector<double> > error;
+//   std::vector<double> square_error;
+  std::vector<cv::Ptr<SurfaceModel> > surfaces;
+//  modeling.dbg = imgDraw;
+//  modeling.SetDebugWin(win);
+  modeling.setInputCloud(pcl_cloud);
+  modeling.setInputPlanes(modelTypes, coeffs, indices, error);
+  modeling.compute();
+  modeling.getSurfaceModels(surfaces);
+  
+  std::vector<ON_NurbsSurface> nurbs;
+  void getPlanes(modelTypes, coeffs, indices, error);
+  void getNurbs(modelTypes, nurbs, indices, error);
+
+  
+  
+  
+  
+  
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f\n", timespec_diff(&current, &last));
 last = current; 
 
   if(debug)  printf("    Annotation: start\n");
@@ -591,7 +635,7 @@ void SegLearner::SingleShotMode()
   if (key == 65479 || key == 1114055) // F10
   {
 //     log("process images in single shot mode.");
-    printf("\nSegLearner::ProcessNew: Learn from next image!\n");
+    printf("\nSegLearner::Process: Learn from next image!\n");
     lockComponent();
     processImage();
     unlockComponent();

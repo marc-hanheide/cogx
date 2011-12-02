@@ -44,6 +44,7 @@
 #include "v4r/TomGine/tgTomGineThread.h"
 #include "v4r/svm/SVMFileCreator.h"
 #include "v4r/GraphCut/GraphCut.h"
+#include "v4r/SurfaceModeling/SurfaceModeling.hh"
 
 
 namespace cast
@@ -62,6 +63,7 @@ private:
  
    /// TODO new ones
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
+  surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
   pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
   svm::SVMFileCreator *svm;                                 ///< SVM-predictor
   
