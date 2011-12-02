@@ -39,7 +39,12 @@
 #include "v4r/PCLAddOns/PCLFunctions.h"
 #include "v4r/PCLAddOns/Annotation.h"
 #include "v4r/PCLAddOns/ModelFitter.h"
+#include "v4r/PCLAddOns/Planes.h"
+#include "v4r/PCLAddOns/Patches.h"
+#include "v4r/PCLAddOns/Relation.h"
 #include "v4r/TomGine/tgTomGineThread.h"
+#include "v4r/svm/SVMPredictor.h"
+#include "v4r/GraphCut/GraphCut.h"
 
 
 namespace cast
@@ -57,8 +62,13 @@ private:
 
   /// TODO new ones
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
-  Z::GraphCut *graphCutter;                                 ///< Graph cutter
-
+  pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
+  svm::SVMPredictor *svm;                                   ///< SVM-predictor
+  gc::GraphCut *graphCut;                                   ///< Graph cut
+  
+  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
+  std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
+  /// TODO end new ones
  
   Z::VisionCore *vcore;                                     ///< VisionCore
   Z::StereoCore *score;                                     ///< Stereo core
@@ -67,6 +77,7 @@ private:
   Z::CalculateRelations *relations;                         ///< Calculate relations between features.
   Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
   pa::Annotation *annotation;                               ///< Annotation from file
+  Z::GraphCut *graphCutter;                                 ///< Graph cutter
 
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?

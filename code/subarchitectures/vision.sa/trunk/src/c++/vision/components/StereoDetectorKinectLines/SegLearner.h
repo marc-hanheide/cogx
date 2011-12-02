@@ -37,7 +37,13 @@
 #include "v4r/PCLAddOns/PCLUtils.h"
 #include "v4r/PCLAddOns/PCLFunctions.h"
 #include "v4r/PCLAddOns/Annotation.h"
+#include "v4r/PCLAddOns/ModelFitter.h"
+#include "v4r/PCLAddOns/Planes.h"
+#include "v4r/PCLAddOns/Patches.h"
+#include "v4r/PCLAddOns/Relation.h"
 #include "v4r/TomGine/tgTomGineThread.h"
+#include "v4r/svm/SVMFileCreator.h"
+#include "v4r/GraphCut/GraphCut.h"
 
 
 namespace cast
@@ -50,9 +56,19 @@ class SegLearner : public ManagedComponent,
                    public PointCloudClient
 {
 private:
-  TomGine::tgTomGineThread *tgRenderer;                      ///< 3D render engine
+  TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
   std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect view
   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
+ 
+   /// TODO new ones
+  pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
+  pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
+  svm::SVMFileCreator *svm;                                 ///< SVM-predictor
+  
+  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
+  std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
+  /// TODO end new ones
+
  
   Z::VisionCore *vcore;                                     ///< VisionCore
   Z::StereoCore *score;                                     ///< Stereo core
@@ -84,16 +100,14 @@ private:
   cv::Mat_<cv::Vec3b> patch_image;                          ///< 3D patches on 2D image
   cv::Mat_<cv::Vec3b> line_image;                           ///< 3D lines on 2D image
 
-//  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points                                  /// TODO delete later => change to cv::Vec4f
-//  cv::Mat_<cv::Point3f> kinect_color_point_cloud;           ///< point cloud with kinect color information
-  
   bool single;                                              ///< Single shot mode for the stereo detector learner
   bool showImages;                                          ///< Show images in openCV windows
 
-//   void Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap);
   void GetImageData();
   
   void processImage();
+  void processImageNew();
+
   void SingleShotMode();
 
 protected:
