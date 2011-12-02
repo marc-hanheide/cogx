@@ -31,7 +31,7 @@ private:
   int numCylinders;             ///< Number of extracted 3D cylinders
   
   pclA::ModelFitter *model_fitter;
-  pclA::Planes *planes;
+//   pclA::Planes *planes;
 
 public:
   KinectPclModels(KinectCore *kc, VisionCore *vc);

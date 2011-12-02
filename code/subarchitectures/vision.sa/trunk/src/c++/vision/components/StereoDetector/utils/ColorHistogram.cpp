@@ -7,7 +7,6 @@
  */
 
 #include <string.h>
-#include "Math.hh"
 #include "ColorHistogram.h"
 
 namespace Z
@@ -73,11 +72,6 @@ ColorHistogram::ColorHistogram(int _nr_bins, std::vector<cv::Vec4f> _p)
     uHist[i] /= nr_points;
     vHist[i] /= nr_points;
   }
-  
-  
-// printf("\nColorHistogram with Vec:\n");
-// printf("vec: v_points: %u\n", v_points.size());
-//PrintHistogram();  /// TODO Print histogram
 }
 
 

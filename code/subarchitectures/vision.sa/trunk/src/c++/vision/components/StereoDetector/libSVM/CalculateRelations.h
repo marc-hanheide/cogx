@@ -87,7 +87,7 @@ public:
   
   void AddPrediction(unsigned id, double prediction) {relations[id].prediction = prediction;}
   void AddProbability(unsigned id, std::vector<double> probability) {relations[id].rel_probability = probability;}
-  void GetRelations(std::vector<Relation> &rel) {rel = relations;}
+  void getRelations(std::vector<Relation> &rel) {rel = relations;}
 
   void ConstrainRelations();
 
