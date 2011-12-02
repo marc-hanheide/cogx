@@ -11,11 +11,11 @@
 #include <vector>
 #include <fstream>
 #include <boost/interprocess/sync/scoped_lock.hpp>
-#ifdef __APPLE__
-#include <GL/glut.h> //nah: glut is installed via MacPorts and thus preferred
-#else
-#include <GL/freeglut.h>
-#endif
+// #ifdef __APPLE__
+// #include <GL/glut.h> //nah: glut is installed via MacPorts and thus preferred
+// #else
+// //#include <GL/freeglut.h>
+// #endif
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cogxmath.h>
 #include <VideoUtils.h>
@@ -1051,8 +1051,8 @@ void PlanePopOut::GetPlaneAndSOIs()
 	m_planePopout->GetSOIs(pcl_sois, labels);
 	m_planePopout->GetDominantPlaneCoefficients(pcl_domplane);
 	m_planePopout->GetTableHull(tablehull);
-//	m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);	/// TODO Reimplement
-//	m_planePopout->GetPlanePoints(planepoints); 			/// TODO Reimplement
+	m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
+	m_planePopout->GetPlanePoints(planepoints);
     }
 
 #ifdef FEAT_VISUALIZATION
