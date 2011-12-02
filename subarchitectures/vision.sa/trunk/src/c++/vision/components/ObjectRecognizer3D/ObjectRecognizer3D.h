@@ -24,6 +24,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
+#include <PointCloudClient.h>
 #include <VisionData.hpp>
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -36,7 +37,7 @@
 namespace cast
 {
 
-class ObjectRecognizer3D : public VideoClient, public ManagedComponent
+class ObjectRecognizer3D : public VideoClient, public PointCloudClient, public ManagedComponent
 {
 private:
 	VisionData::Recognizer3DCommandType m_task;
@@ -59,6 +60,7 @@ private:
   int m_height;
   int camId;
   std::string videoServerName;
+  std::string pcServerName;
   Video::VideoInterfacePrx videoServer;
   /**
    * initial pose for tracking when learning a new object
@@ -99,7 +101,7 @@ private:
 	};
 	CDisplayClient m_display;
 #endif
-
+  void getImage();
   void loadVisualModelToWM(RecEntry &rec_entry, cogx::Math::Pose3 &pose,
     std::string &label, bool forceNewObject = false);
   std::string loadEmptyVisualModelToWM(std::string &label);

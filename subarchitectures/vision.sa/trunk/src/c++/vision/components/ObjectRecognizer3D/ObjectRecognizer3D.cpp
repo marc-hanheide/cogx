@@ -50,13 +50,17 @@ ObjectRecognizer3D::~ObjectRecognizer3D(){
 void ObjectRecognizer3D::configure(const map<string,string> & _config){
   map<string,string>::const_iterator it;
   log("Configure:");
-
   istringstream plyiss;
   istringstream siftiss;
   istringstream labeliss;
 
   if((it = _config.find("--videoname")) != _config.end()){
     videoServerName = it->second;
+  }
+
+  if((it = _config.find("--pcserver")) != _config.end()){
+    pcServerName = it->second;
+    PointCloudClient::configureServerCommunication(_config);
   }
 
   if((it = _config.find("--simulation-only")) != _config.end()){
@@ -118,8 +122,11 @@ void ObjectRecognizer3D::start(){
   
   if (!m_simulationOnly) {
     // get connection to the video server
-    videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+	if (videoServerName.length() >0 )
+		videoServer = getIceServer<Video::VideoInterface>(videoServerName);
 
+	if (pcServerName.length() > 0)
+		PointCloudClient::startPCCServerCommunication(*this);
     // register our client interface to allow the video server pushing images
     Video::VideoClientInterfacePtr servant = new VideoClientI(this);
     registerIceServer<Video::VideoClientInterface, Video::VideoClientInterface>(servant);
@@ -585,7 +592,7 @@ void ObjectRecognizer3D::initInRun(){
 
   m_detect = new(P::ODetect3D);
 
-  videoServer->getImage(camId, m_image);
+  getImage();
   m_iplImage = convertImageToIpl(m_image);
   m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
   cvConvertImage( m_iplImage, m_iplGray );
@@ -641,7 +648,7 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
     addTrackerCommand(VisionData::LOCK, m_rec_cmd->visualObjectID);
 
     // 	Grab image from VideoServer
-    videoServer->getImage(camId, m_image);
+    getImage();
     m_iplImage = convertImageToIpl(m_image);
     m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
     cvConvertImage( m_iplImage, m_iplGray );
@@ -700,6 +707,16 @@ void ObjectRecognizer3D::learnSiftModel(P::DetectGPUSIFT &sift){
   }
 }
 
+void ObjectRecognizer3D::getImage()
+{
+	if (pcServerName.length()>0) {
+		getRectImage(camId, 640, m_image);
+		log("got image from Kinect: " + m_image.height);
+	}
+	else
+		videoServer->getImage(camId, m_image);
+}
+
 void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
 
   // if we don't know that label we want to produce a non-detected
@@ -723,16 +740,14 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     // 	addTrackerCommand(VisionData::LOCK, m_recEntries[m_label].visualObjectID);
 
     // Grab image from VideoServer
-    videoServer->getImage(camId, m_image);
-    m_iplImage = convertImageToIpl(m_image);
-    m_iplGray = cvCreateImage ( cvGetSize ( m_iplImage ), 8, 1 );
-    cvConvertImage( m_iplImage, m_iplGray );
-
-    // Calculate SIFTs from image
-    sift.Operate(m_iplGray,m_image_keys);
-
-    m_detect->SetDebugImage(m_iplImage);
-    if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
+      getImage();
+      m_iplImage = convertImageToIpl(m_image);
+      m_iplGray = cvCreateImage(cvGetSize(m_iplImage), 8, 1);
+      cvConvertImage(m_iplImage, m_iplGray);
+      // Calculate SIFTs from image
+      sift.Operate(m_iplGray, m_image_keys);
+      m_detect->SetDebugImage(m_iplImage);
+      if(!m_detect->Detect(m_image_keys, (*m_recEntries[m_label].object)))
     {
       log("Failed to find object %s", m_label.c_str());
       Math::Pose3 nonPose;
@@ -772,10 +787,6 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       m_rec_cmd->confidence = m_recEntries[m_label].object->conf;
       m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
     }
-
-#ifdef FEAT_VISUALIZATION
-    m_display.setImage(getComponentID(), m_iplImage);
-#endif
 
     if(m_showCV){
       cvShowImage(getComponentID().c_str(), m_iplImage);
