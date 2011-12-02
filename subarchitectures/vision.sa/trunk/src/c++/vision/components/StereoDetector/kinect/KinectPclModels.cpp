@@ -99,13 +99,13 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 // printf("  KinectPclModels: Runtime for processing: %4.3f\n", timespec_diff(&current, &last));
 last = current;  
   
-  std::vector< std::vector<unsigned> > neighbors;
-  planes = new pclA::Planes();
-  planes->setZLimit(0.005);
-  planes->setInputCloud(pcl_cloud);
-  planes->setPlanes(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
-  planes->computeNeighbors();
-  planes->getNeighbors(neighbors);
+//   std::vector< std::vector<unsigned> > neighbors;
+//   planes = new pclA::Planes();
+//   planes->setZLimit(0.005);
+//   planes->setInputCloud(pcl_cloud);
+//   planes->setPlanes(pcl_model_types, model_coefficients, pcl_model_cloud_indices);
+//   planes->computeNeighbors();
+//   planes->getNeighbors(neighbors);
  
 //   printf("Results of neighbors: \n");
 //   for(unsigned i=0; i<neighbors.size(); i++)
@@ -118,8 +118,6 @@ last = current;
 
   /// ++++++++++++++++++++++++++++++++++++++++ postprocessing ++++++++++++++++++++++++++++++++++++++++ ///
 
-  int pl = 0;  // remove later
-  
   // Create now the different models
   std::vector< std::vector<cv::Vec4f> > cv_vec_models;
   pclA::ConvertPCLClouds2CvVecs(pcl_model_clouds, cv_vec_models);
@@ -144,7 +142,7 @@ last = current;
       p[3] = pt.rgb;
       mask_hull_points.push_back(p);
     }
-cv::imshow("Patch-Mask", patch_mask);
+// cv::imshow("Patch-Mask", patch_mask);
     
     if(pcl_model_types[i] == pcl::SACMODEL_PLANE || pcl_model_types[i] == pcl::SACMODEL_NORMAL_PLANE)
     {
@@ -184,7 +182,6 @@ cv::imshow("Patch-Mask", patch_mask);
       kcore->NewGestalt3D(p3d);
       numPatches++;
       numModels++;
-      pl++;
     }
     else if(pcl_model_types[i] == pcl::SACMODEL_SPHERE)
     {

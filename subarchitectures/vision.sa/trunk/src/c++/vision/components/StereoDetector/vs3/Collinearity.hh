@@ -27,6 +27,7 @@ private:
   void CalculateSignificance();
 
 public:
+	
   Line* line[2];					///< Line 0 is the longer, line 1 the shorter one
   int near_point[2];			///< The line end, which is nearer to the collinearity
   double gap;      				///< TODO: Distance between endpoints?? or sum of distances between end points and intersection?

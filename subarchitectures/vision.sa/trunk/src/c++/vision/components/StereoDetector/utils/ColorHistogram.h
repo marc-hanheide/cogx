@@ -25,7 +25,6 @@ class ColorHistogram
 private:
   int nr_points;
   int nr_bins;
-//   cv::Mat_<cv::Vec4f> points;                               // TODO Change to vector<cv::Vec4f>
   std::vector<cv::Vec4f> points;
   
   double *redHist, *greenHist, *blueHist;   /// r,g,b histogram

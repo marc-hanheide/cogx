@@ -40,7 +40,7 @@ Graph::~Graph()
 void Graph::BuildFromSVM(std::vector<E::Edge> &e, unsigned &num_edges)
 {
   std::vector<Relation> rel;
-  relations->GetRelations(rel);
+  relations->getRelations(rel);
   
   for(unsigned i=0; i< rel.size(); i++)
   {

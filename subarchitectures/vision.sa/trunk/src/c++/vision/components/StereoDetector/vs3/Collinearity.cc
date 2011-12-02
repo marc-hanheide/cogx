@@ -26,6 +26,7 @@ namespace Z
 Collinearity::Collinearity(VisionCore *vc, Line *line_i, Line *line_j, int end_i, int end_j)
   : Gestalt(vc, COLLINEARITY)
 {
+	
   // line 0 is to be the longer, line 1 the shorter line
   if(line_i->Length() >= line_j->Length())
   {
