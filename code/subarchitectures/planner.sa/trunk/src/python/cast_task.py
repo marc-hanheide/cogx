@@ -502,6 +502,7 @@ class CASTTask(object):
                         type = "unexpected"
                         # plan.add_edge(real_p, new_n, svar=svar, val=val, type = "unexpected")
                 if not has_link(plan, new_p, new_n, svar, val, type):
+                    # print "new link:", new_p, new_n
                     plan.add_edge(new_p, new_n, svar=svar, val=val, type=type)
 
         used_objects = set()
@@ -541,9 +542,11 @@ class CASTTask(object):
                         assert eff.value != expected_val
                         if not real_p.action.name.startswith("new_facts"):
                             plan.add_edge(real_p, new_n, svar=eff.svar, val=eff.value, type="unexpected")
+                            # print "unexpected link:", real_p, new_n
                             new_n.preconds.add(eff)
                             conflicting_svars[(real_p, eff.svar)].add(eff.svar)
                 plan.add_edge(prev_init_node, new_n, type="order")
+                # print "init link:", prev_init_node, new_n
                 current_state = new_st
                 prev_was_init = True
                 prev_init_node = new_n
@@ -572,7 +575,21 @@ class CASTTask(object):
             n.time = i
             i += 1
             new_n = get_node(mapped_node(n))
-            if new_n not in plan:
+            if new_n in plan:
+                # print "trying to reuse node:", new_n
+                # avoid cycles caused by duplicate actions
+                successors = plan.succ_closure(new_n)
+                # print "successors:", map(str, successors)
+                for p, _, _, _ in get_incoming_links(n):
+                    new_p = get_node(mapped_node(p))
+                    # print "checking predecessor:", new_p
+                    if new_p in successors:
+                        # print "cycle!"
+                        new_n = mapped_node(n)
+                        #reusing node would cause cycle, add new node
+                        plan.add_node(new_n)
+                        break
+            else:
                 plan.add_node(new_n)
 
             add_links(n, new_n)
