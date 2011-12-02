@@ -27,17 +27,17 @@ include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/compo
 # remove_definitions(-DFEAT_VISUALIZATION)
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
-link_directories(${OPENGL_LIBRARY_DIRS})
+#find_package(OpenGL REQUIRED)
+#include_directories(${OPENGL_INCLUDE_DIR})
+#link_directories(${OPENGL_LIBRARY_DIRS})
 
-find_package(GLU REQUIRED)
-include_directories(${GLU_INCLUDE_DIR})
-link_directories(${GLU_LIBRARY_DIRS})
+#find_package(GLU REQUIRED)
+#include_directories(${GLU_INCLUDE_DIR})
+#link_directories(${GLU_LIBRARY_DIRS})
 
-find_package(GLUT REQUIRED)
-include_directories(${GLUT_INCLUDE_DIR})
-link_directories(${GLUT_LIBRARY_DIRS})
+#find_package(GLUT REQUIRED)
+#include_directories(${GLUT_INCLUDE_DIR})
+#link_directories(${GLUT_LIBRARY_DIRS})
 
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
@@ -50,9 +50,9 @@ SET(SOURCES
 )
 
 add_cast_component(PlanePopOutPc ${SOURCES})
-link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl GLWindow TomGine TomGineWraper)
+link_cast_component(${CAST_COMPONENT_NAME} GLWindow TomGine TomGineWraper) #freetype ftgl
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
-link_cast_component(${CAST_COMPONENT_NAME} GLU glut)
+#link_cast_component(${CAST_COMPONENT_NAME} GLU glut)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
     ${GLUT_LDFLAGS} ${VISUALIZATION_LIBRARIES})
