@@ -37,7 +37,7 @@ public class PTZMover {
 			SetPTZPoseCommand cmd = new SetPTZPoseCommand(new PTZPose(pan,
 					tilt, 1), PTZCompletion.COMPINIT);
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(
-					component.newDataID(), component.getSubarchitectureID());
+					component.newDataID(), "spatial.sa");
 			WMEventQueue queue = new WMEventQueue();
 			component.addChangeFilter(
 					ChangeFilterFactory.createAddressFilter(wma), queue);

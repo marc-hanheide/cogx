@@ -19,6 +19,7 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.CASTHelper;
+import cast.cdl.WorkingMemoryPermissions;
 
 public class PlacePatroller extends CASTHelper implements Runnable,
 		WorkingMemoryChangeReceiver {
@@ -30,11 +31,14 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 	private final PatrolSchedule m_schedule;
 	private Iterator<Place> m_placeInterator;
 
+	final private PTZMover ptzMover;
+
 	public PlacePatroller(ManagedComponent _c) {
 		super(_c);
 		m_schedule = new AdditionOrderPatrolSchedule();
 		m_patrol = false;
 		m_kill = false;
+		ptzMover = new PTZMover(_c);
 	}
 
 	public void addPlace(Place _p) {
@@ -54,7 +58,7 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 		log("going to place: " + _p.id);
 		
 		m_navCmdAddr = new WorkingMemoryAddress(component.newDataID(),
-				component.getSubarchitectureID());
+				"spatial.sa");
 
 		component.addChangeFilter(ChangeFilterFactory.createAddressFilter(
 				m_navCmdAddr, WorkingMemoryOperation.OVERWRITE), this);
@@ -112,6 +116,7 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 						}
 
 						log("going to place");
+						//ptzMover.moveToRandomPose();
 						goToPlace(m_placeInterator.next());
 
 					}
@@ -160,7 +165,14 @@ public class PlacePatroller extends CASTHelper implements Runnable,
 				NavCommand.class);
 		if (commandCompleted(navCommand)) {
 			log("Command completed");
-			component.deleteFromWorkingMemory(m_navCmdAddr);
+			//TODO fix locking behaviour to match spatial sa protocol
+			try {
+				component.lockEntry(m_navCmdAddr, WorkingMemoryPermissions.LOCKEDODR);			
+				component.deleteFromWorkingMemory(m_navCmdAddr);
+			} catch (CASTException e) {
+				component.logException(e);
+				//component.unlockEntry(m_navCmdAddr);			
+			}
 			m_navCmdAddr = null;
 			component.removeChangeFilter(this);
 		}

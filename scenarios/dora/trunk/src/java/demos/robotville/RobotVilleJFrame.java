@@ -85,6 +85,7 @@ public class RobotVilleJFrame extends JFrame {
 		JButton btnPatrol = new JButton("Patrol");
 		btnPatrol.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				component.stopRunningTasks();
 				component.startPatrolBehaviour();
 			}
 		});
@@ -93,6 +94,7 @@ public class RobotVilleJFrame extends JFrame {
 		JButton btnIdle = new JButton("Idle");
 		btnIdle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				component.stopRunningTasks();
 				component.startIdleBehaviour();
 			}
 		});
@@ -101,6 +103,7 @@ public class RobotVilleJFrame extends JFrame {
 		JButton btnGoHome = new JButton("Go Home");
 		btnGoHome.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				component.stopRunningTasks();
 				component.goHome();
 			}
 		});
