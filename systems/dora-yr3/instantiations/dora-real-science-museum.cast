@@ -1,6 +1,6 @@
 
 ### the default goal
-SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace))"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
 
 ### the plannig domain to use
 SETVAR planning_domain=dora-interactive.pddl
@@ -11,7 +11,7 @@ SETVAR planning_domain=dora-interactive.pddl
 SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-direct.txt"
 
 ### the default knowledge to use
-SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-review-nocat.xml"
+SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-robotville.xml"
 
 ### the Haar-like face detector file to use
 SETVAR face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
@@ -44,32 +44,16 @@ SETVAR plyroot_=./instantiations/ply-models
 
 ### siftfiles
 SETVAR or3d_sift_files=<multiline>
-   %(siftroot_)/rumblepad.sift
-   %(siftroot_)/pizza.sift
-   %(siftroot_)/juice.sift
-   %(siftroot_)/coffee.sift
-   %(siftroot_)/lipton.sift
-   %(siftroot_)/kelloggs.sift
-   %(siftroot_)/AI.sift
-   %(siftroot_)/XXX
-   %(siftroot_)/XXX
+   %(siftroot_)/frosties.sift
 </multiline>
 
 ### ply files
 SETVAR or3d_ply_files=<multiline>
-   %(plyroot_)/rumplepad.ply
-   %(plyroot_)/pizza.ply
-   %(plyroot_)/juice.ply
-   %(plyroot_)/coffee.ply
-   %(plyroot_)/lipton.ply
-   %(plyroot_)/kelloggs.ply
-   %(plyroot_)/AI.ply
-   %(plyroot_)/table.ply
-   %(plyroot_)/table.ply
+   %(plyroot_)/frosties.ply
 </multiline>
 
 ### object labels
-SETVAR or3d_labels=joystick pizza juice coffee tea cerealbox book table milk
+SETVAR or3d_labels=cerealbox
 
 ### CURE config file
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
@@ -77,7 +61,7 @@ VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 ### SPATIAL.SA DOOR DETECTION SETTINGS DISABLED
 SETVAR spatial_min_door_width=0.70
 #1000.0
-SETVAR spatial_max_door_width=0.85
+SETVAR spatial_max_door_width=0.92
 
 SETVAR playerhost= %(host:localhost)
 SETVAR ptz_server=ptz.server
@@ -113,7 +97,7 @@ JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3
 JAVA MG spatial-manual spatial.manual.ManualNavControl
 
 CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --display-objects-in-pb --ptzserver %(ptz_server)
-CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 200 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.2 --log --queryhandler conceptual.queryhandler --usepeekabot  --siftobjects "table cerealbox"
+CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.2 --log --queryhandler conceptual.queryhandler --usepeekabot  --siftobjects "cerealbox"
 
 
 # coma ######################################################################
@@ -149,10 +133,10 @@ SUBARCHITECTURE categorical.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 																																														# these flags were on the dora-real.cast file
-CPP GD categorical.dataprovider CategoricalDataProvider --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --laser-robot-servers-hostname  %(host:localhost)  # --correct-scans --convert-scans-to-sick --display-gridmap
-CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg
-CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg --placemanager place.manager
-# CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg --placemanager place.manager
+#CPP GD categorical.dataprovider CategoricalDataProvider --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --laser-robot-servers-hostname  %(host:localhost)  # --correct-scans --convert-scans-to-sick --display-gridmap
+#CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
+#CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --placemanager place.manager
+#CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --placemanager place.manager
 
 
 
@@ -169,7 +153,7 @@ CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(visi
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake --tilt "-0.7854"
 
 
-####CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 CPP MG recognizer.people PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
 
@@ -179,6 +163,8 @@ INCLUDE includes/binder.sa/binder-base.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/dora-interaction.cast
 JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
+JAVA MG RobotVilleComntrol demos.robotville.RobotVilleComponent
+
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/INCL/dora-live.cast
