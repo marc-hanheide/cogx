@@ -177,13 +177,13 @@ void Observer::start()
 // -------------------------------------------------------
 void Observer::runComponent()
 {
-	println("Running!!");
-	while (isRunning())
+  println("Running!!");
+  while (isRunning())
     {
-    	usleep(1000000);
-    	pthread_mutex_lock(&_worldStateMutex);
-    	updateWorldState();
-    	pthread_mutex_unlock(&_worldStateMutex);
+      usleep(30000000);
+      pthread_mutex_lock(&_worldStateMutex);
+      updateWorldState();
+      pthread_mutex_unlock(&_worldStateMutex);
     }
 }
 
