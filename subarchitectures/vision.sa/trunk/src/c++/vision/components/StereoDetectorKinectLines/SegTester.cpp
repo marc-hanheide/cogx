@@ -303,6 +303,18 @@ void SegTester::GetImageData()
 //  iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
 
+    /// bilateral filter
+//   bilateral->setInputCloud(pcl_cloud);
+//   bilateral->compute();
+//   bilateral->getCloud(pcl_cloud);
+  
+  /// subsample point cloud
+//   subsample->setInputCloud(pcl_cloud);
+//   subsample->compute();
+//   subsample->getCloud(pcl_cloud);
+//   pointCloudWidth = pointCloudWidth/2.;
+//   pointCloudHeight = pointCloudWidth *3/4;
+
   /// calculate normals
   pclA::NormalsFromSortedPCLCloud(pcl_cloud, pcl_normals, 0.02, 5.0);
 

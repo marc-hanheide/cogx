@@ -31,10 +31,8 @@ include(${COGX_ROOT}/cmake/FindV4R.cmake)
 include_directories(${V4R_DIR})
 link_directories(${V4R_DIR}/lib)
 
-if (HAVE_PCL_LIBRARY)
-find_package(PCL 1.1 REQUIRED COMPONENTS)
+find_package(PCL REQUIRED COMPONENTS)
 include_directories(${PCL_INCLUDE_DIRS})
-endif(HAVE_PCL_LIBRARY)
 
 # Set the sources.
 SET(HEADERS
@@ -57,7 +55,7 @@ link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} v4rpcladdons v4rsvm v4rgraphcut)
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling)
 
 add_cast_component(SegTester SegTester.cpp SegTester.h)
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
@@ -65,7 +63,7 @@ link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} v4rpcladdons v4rsvm v4rgraphcut)
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling)
 
 add_cast_component(Segmenter Segmenter.cpp Segmenter.h)
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
@@ -73,6 +71,6 @@ link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} v4rpcladdons v4rsvm v4rgraphcut)
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling)
 
 endif (HAVE_V4R)
