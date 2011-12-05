@@ -45,6 +45,8 @@
 #include "v4r/svm/SVMFileCreator.h"
 #include "v4r/GraphCut/GraphCut.h"
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
+#include "v4r/PCLAddOns/BilateralFilter.hh"
+#include "v4r/PCLAddOns/SubsamplePointCloud.hh"
 
 
 namespace cast
@@ -62,13 +64,19 @@ private:
   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
  
    /// TODO new ones
+  pclA::BilateralFilter *bilateral;                         ///< Bilateral filter for point clouds
+  pclA::SubsamplePointCloud *subsample;                     ///< Subsample point cloud
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
   pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
   svm::SVMFileCreator *svm;                                 ///< SVM-predictor
   
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
-  std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;    ///< indices of the surface patches (from fitter for debugging => TODO Remove later)
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
+  
+  std::vector<pcl::PointIndices::Ptr> plane_indices;        ///< Plane indices after model selection  /// TODO REMOVE
+  std::vector<pcl::PointIndices::Ptr> nurbs_indices;        ///< NURBS indices after model selection  /// TODO REMOVE
   /// TODO end new ones
 
  

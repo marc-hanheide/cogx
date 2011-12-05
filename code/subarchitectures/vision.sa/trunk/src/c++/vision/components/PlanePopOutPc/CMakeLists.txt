@@ -56,6 +56,6 @@ link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData VideoUtils Video)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENGL_LDFLAGS} ${GLU_LDFLAGS}
     ${GLUT_LDFLAGS} ${VISUALIZATION_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} v4rpcladdons)
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns)
 link_cast_component(${CAST_COMPONENT_NAME} pcl_segmentation)
 
