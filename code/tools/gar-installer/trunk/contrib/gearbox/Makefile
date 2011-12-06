@@ -44,4 +44,4 @@ include ../../gar.extend.mk
 
 
 pre-install:
-	if [ ! -e /usr/local/lib641 ]; then ln -s /usr/local/lib /usr/local/lib64; fi
+	if [ ! -e /usr/local/lib64 ]; then ln -s /usr/local/lib /usr/local/lib64; fi
