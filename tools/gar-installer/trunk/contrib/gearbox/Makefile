@@ -43,8 +43,5 @@ include ../../gar.extend.mk
 #	@$(MAKECOOKIE)
 
 
-# U11.10: errors in pre-install:
-#    - make error: missing tab
-#    - bash error: missing delimiter (after tab is added)
-##pre-install:
-#        if [ ! -e /usr/local/lib64 ]; then ln -s /usr/local/lib /usr/local/lib64; fi
+pre-install:
+	if [ ! -e /usr/local/lib641 ]; then ln -s /usr/local/lib /usr/local/lib64; fi
