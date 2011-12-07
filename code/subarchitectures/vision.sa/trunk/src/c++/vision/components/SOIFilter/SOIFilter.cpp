@@ -468,47 +468,35 @@ void SOIFilter::CSfDisplayClient::sendPtuStateToDialog()
 
 void SOIFilter::onAdd_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-  m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::ADD, _wmc));
-  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+  m_EventQueue.addItem(new WmEvent(TYPE_SOI, cdl::ADD, _wmc));
 }
 
 void SOIFilter::onDelete_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-  m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::DELETE, _wmc));
-  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+  m_EventQueue.addItem(new WmEvent(TYPE_SOI, cdl::DELETE, _wmc));
 }
 
 void SOIFilter::onUpdate_SOI(const cdl::WorkingMemoryChange & _wmc)
 {
-  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-  m_EventQueue.push_back(new WmEvent(TYPE_SOI, cdl::OVERWRITE, _wmc));
-  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+  m_EventQueue.addItem(new WmEvent(TYPE_SOI, cdl::OVERWRITE, _wmc));
 }
 
 void SOIFilter::onAdd_MoveToVcCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   debug("RECEIVED: MoveToViewConeCommand %s", _wmc.address.id.c_str());
-  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-  m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK, cdl::ADD, _wmc));
-  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+  m_EventQueue.addItem(new WmEvent(TYPE_CMD_LOOK, cdl::ADD, _wmc));
 }
 
 void SOIFilter::onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   debug("RECEIVED: AnalyzeProtoObjectCommand %s", _wmc.address.id.c_str());
-  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-  m_EventQueue.push_back(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
-  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+  m_EventQueue.addItem(new WmEvent(TYPE_CMD_ANALYZE, cdl::ADD, _wmc));
 }
 
 void SOIFilter::onAdd_LookAroundCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   debug("RECEIVED: LookAroundCommand %s", _wmc.address.id.c_str());
-  IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-  m_EventQueue.push_back(new WmEvent(TYPE_CMD_LOOK_AROUND, cdl::ADD, _wmc));
-  m_EventQueueMonitor.notify(); // works only if the monitor is locked here
+  m_EventQueue.addItem(new WmEvent(TYPE_CMD_LOOK_AROUND, cdl::ADD, _wmc));
 }
 
 void SOIFilter::saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy)
@@ -887,7 +875,6 @@ void SOIFilter::checkRetryEvents()
 
   lock.downgrade();
 
-  IceUtil::Monitor<IceUtil::Mutex>::Lock eqlock(m_EventQueueMonitor);
   for (unsigned int i = 0; i < ready.size(); i++) {
     WmEvent* pEvent = ready[i];
     if (pEvent->pRetry->retriesLeft <= 0)
@@ -895,7 +882,7 @@ void SOIFilter::checkRetryEvents()
     else {
       pEvent->pRetry->retriesLeft--;
       pEvent->pRetry->retryCount++;
-      m_EventQueue.push_back(pEvent);
+      m_EventQueue.addItem(pEvent);
     }
   }
 }
@@ -972,8 +959,6 @@ void SOIFilter::runComponent()
   WmTaskExecutor_MoveToViewCone moveProcessor(this);
   WmTaskExecutor_Analyze analysisProcessor(this);
 
-  int addSoiCount;
-
   castutils::CMilliTimer tmCheckVisibility(true);
   tmCheckVisibility.setTimeout(1000);
 
@@ -990,41 +975,9 @@ void SOIFilter::runComponent()
 
     checkRetryEvents();
 
-    {
-      // SYNC: Lock the monitor
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventQueueMonitor);
-
-      // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
-      if (m_EventQueue.size() < 1)
-        m_EventQueueMonitor.timedWait(IceUtil::Time::milliSeconds(getMillisToRetryEvent(600)));
-
-      // SYNC: Continue with a locked monitor
-
-      // count (important) events in queue
-      addSoiCount = 0;
-      for(auto it = m_EventQueue.begin(); it != m_EventQueue.end(); it++) {
-        WmEvent* pevent = *it;
-        switch (pevent->objectType)
-        {
-          case TYPE_SOI:
-            if (pevent->change == cdl::ADD)
-              addSoiCount++;
-            break;
-        }
-      }
-
-#if 0
-      // Process whole queue at once
-      tasks = m_EventQueue;
-      m_EventQueue.clear();
-#else
-      // Process queued items one by one
-      if (m_EventQueue.size() > 0) {
-        tasks.push_back(m_EventQueue.front());
-        m_EventQueue.pop_front();
-      }
-#endif
-      // SYNC: unlock the monitor when going out of scope
+    bool has_events = m_EventQueue.waitForItem(getMillisToRetryEvent(600));
+    if (has_events) {
+      tasks = std::move(m_EventQueue.getItems(1));
     }
 
     // if (tasks.empty()) debug("Timeout");
@@ -1056,8 +1009,15 @@ void SOIFilter::runComponent()
     {
       // We check for invisible objects only when there are no add-soi events in queue.
       // This is to prevent POs being deleted to quickly after a camera move.
-      if (addSoiCount < 1 && isCameraStable(4000))
-        checkInvisibleObjects();
+      if (isCameraStable(4000)) {
+        int addSoiCmdCount = m_EventQueue.countIf(
+            [](WmEvent* const & pev) {
+               return pev->objectType == TYPE_SOI && pev->change == cdl::ADD;
+            }); 
+        if (addSoiCmdCount < 1) {
+          checkInvisibleObjects();
+        }
+      }
       tmCheckVisibility.restart();
     }
 

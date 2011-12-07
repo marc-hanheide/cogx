@@ -54,7 +54,6 @@
 #include <map>
 #include <stdexcept>
 
-
 namespace cast
 {
 
@@ -62,11 +61,11 @@ template<typename TK, typename TV>
 class mmap: public std::map<TK, TV>
 {
 public:
-  bool has_key(const TK& key)
+  bool has_key(const TK& key) const
   {
     return find(key) != this->end();
   }
-  TV& get(const TK& key)
+  TV& get(const TK& key) // not const because of []
   {
     if (this->find(key) == this->end())
       throw std::range_error("Key does not exist in map.");
@@ -106,6 +105,65 @@ class SOIPointCloudClient: public PointCloudClient
   public:
     using PointCloudClient::configureServerCommunication;
     using PointCloudClient::startPCCServerCommunication;
+};
+
+template<typename TItem>
+class CMointoredQueue
+{
+  typedef IceUtil::Monitor<IceUtil::Mutex>::Lock Lock;
+  mutable IceUtil::Monitor<IceUtil::Mutex> monitor;
+  std::deque<TItem> data;
+public:
+  void addItem(TItem pEvent)
+  {
+    Lock my(monitor);
+    data.push_back(pEvent);
+    monitor.notify(); // works only if the monitor is locked here
+  };
+  bool waitForItem(long milliseconds) const
+  {
+    Lock my(monitor);
+    if (data.size() > 0) return true;
+    monitor.timedWait(IceUtil::Time::milliSeconds(milliseconds));
+    return data.size() > 0;
+  }
+  std::deque<TItem> getItems(int maxItems = -1 /*all*/)
+  {
+    Lock my(monitor);
+    std::deque<TItem> evts;
+    if (maxItems < 0 || (unsigned int)maxItems >= data.size()) {
+      //std::move(data.begin(), data.end(), std::back_inserter(evts));
+      evts = std::move(data);
+      data.clear();
+    }
+    else {
+      while (data.size() > 0 && evts.size() < (unsigned int)maxItems) {
+        evts.push_back(std::move(data.front()));
+        data.pop_front();
+      }
+    }
+    return evts;
+  }
+  int countIf(bool (*testFunc)(const TItem&)) const
+  {
+    Lock my(monitor);
+    int count = 0;
+    //for (auto item : data) { g++ 4.5.2 doesn't eat this
+    for (auto it = data.begin(); it != data.end(); it++) {
+      if (testFunc(*it)) count++;
+    }
+    return count;
+  }
+  bool empty() const
+  {
+    Lock my(monitor);
+    return data.empty();
+  }
+  size_t size() const
+  {
+    Lock my(monitor);
+    return data.size();
+  }
 };
 
 class SOIFilter : public ManagedComponent,
@@ -163,8 +221,7 @@ public:
   Snapper m_snapper;
 
 private:
-  std::deque<WmEvent*> m_EventQueue;
-  IceUtil::Monitor<IceUtil::Mutex> m_EventQueueMonitor;
+  CMointoredQueue<WmEvent*> m_EventQueue;
 
 private:
   // time-based queue
