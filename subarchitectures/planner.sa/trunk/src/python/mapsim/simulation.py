@@ -129,14 +129,18 @@ class Simulation(object):
         def remove_visitor(cond, results=[]):
             if cond.__class__ == pddl.LiteralCondition:
                 if cond.predicate in (mapl.knowledge, mapl.update, mapl.update_fail, mapl.indomain):
-                    return None
-            if isinstance(cond, pddl.conditions.JunctionCondition):
-                cond.parts = filter(None, results)
+                    return pddl.conditions.Truth()
+            if isinstance(cond, pddl.conditions.Conjunction):
+                cond.parts = filter(lambda c: not isinstance(c, pddl.conditions.Truth) , results)
                 if not cond.parts:
-                    return None
-            if isinstance(cond, pddl.conditions.QuantifiedCondition):
-                if results[0] is None:
-                    return None
+                    return pddl.conditions.Truth()
+            elif isinstance(cond, pddl.conditions.Disjunction):
+                if any(isinstance(c, pddl.conditions.Truth) for c in results):
+                    return pddl.conditions.Truth()
+                cond.parts = results
+            elif isinstance(cond, pddl.conditions.QuantifiedCondition):
+                if isinstance(results[0], pddl.conditions.Truth):
+                    return pddl.conditions.Truth()
             return cond
 
         dom2 = dom.copy()
@@ -260,7 +264,7 @@ class Simulation(object):
             
             for mapping in o.smart_instantiate(o.get_inst_func(self.state), o.args, [get_objects(a) for a in o.args], self.problem):
                 log.debug("%d: Agent %s executes observation (%s %s)", self.time, agent.name, o.name, " ".join(a.get_instance().name for a in o.args))
-                facts = [state.Fact(svar, val) for svar, val in self.state.get_effect_facts(o.effect).iteritems()]
+                facts = list(state.Fact.from_dict(self.state.get_effect_facts(o.effect)))
                 log.debug("%d: Agent %s receives observations: %s", self.time, agent.name, ", ".join(map(str, facts)))
                 for f in facts:
                     print "%d: %s observes: %s" % (self.time, agent.name, str(f.svar))
