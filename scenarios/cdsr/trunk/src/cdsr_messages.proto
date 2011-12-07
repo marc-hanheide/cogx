@@ -1,9 +1,12 @@
+package cdsr.rsb;
+
 option java_package = "cdsr.rsb";
 
 message Room
 {
   required string id = 1;
   repeated Line wall = 2;
+  required string context = 3;
 }
 
 message SpatialRelation
@@ -35,27 +38,19 @@ message Line
   required Point end = 2;
 }
 
-message SendSensedObjects
+message SensedObjects
 {
   repeated SensedObject object = 1;
 }
 
-message SendSpatialRelations
+message SpatialRelations
 {
   repeated SpatialRelation relation = 1;
 }
 
-message ReceivedSensedObjects
+message ContextDependentSpatialRegion
 {
-  optional int32 number = 1;
-}
-
-message ReceivedRoom
-{
-  optional string id = 1;
-}
-
-message ReceivedSpatialRelations
-{
-  optional int32 number = 1;
+  required string id = 1;
+  required string context = 2;
+  repeated Line side = 3;
 }
