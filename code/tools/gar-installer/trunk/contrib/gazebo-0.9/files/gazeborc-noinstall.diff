@@ -1,0 +1,12 @@
+diff -ru gazebo-0.9.0-orig/CMakeLists.txt gazebo-0.9.0/CMakeLists.txt 
+--- gazebo-0.9.0-orig/CMakeLists.txt    2009-07-08 20:00:41.000000000 +0200
++++ gazebo-0.9.0/CMakeLists.txt 2011-07-14 11:38:57.830226873 +0200
+@@ -75,7 +75,7 @@
+ ########################################
+ # Make the gazebo rc file
+ CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/cmake/gazeborc.cmake ${PROJECT_BINARY_DIR}/.gazeborc @ONLY)
+-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/.gazeborc DESTINATION $ENV{HOME}/)
++#INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/.gazeborc DESTINATION $ENV{HOME}/)
+ 
+ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+ 
