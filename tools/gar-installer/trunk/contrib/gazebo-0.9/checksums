@@ -1,0 +1,5 @@
+dc230c8c2ff11af40062d7c783d4f21d  download/gazebo-0.9.0.tar.bz2
+425b0855368848e83e4cd1f8710cc615  download/gar-base.diff
+41c6a3a7b0c8ead25bb9376b68c0c914  download/gazebo-initialisation.diff
+6d29a9cec219d3ab45bb48729e245893  download/ogre-visual-name.diff
+e017092f6fe4f0cd3472b83f2d0b9f67  download/gazeborc-noinstall.diff
