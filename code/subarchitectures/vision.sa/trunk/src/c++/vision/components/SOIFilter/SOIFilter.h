@@ -148,9 +148,11 @@ public:
   {
     Lock my(monitor);
     int count = 0;
-    //for (auto item : data) { g++ 4.5.2 doesn't eat this
-    for (auto it = data.begin(); it != data.end(); it++) {
-      if (testFunc(*it)) count++;
+    // g++ 4.5.2 doesn't eat range-for;
+    // g++ 4.6.1 thinks item is a (cast::WmEvent) when it is actually a (cast::WmEvent*);
+    //for (auto item : data) {
+    for (auto item = data.begin(); item != data.end(); item++) {
+      if (testFunc(*item)) count++;
     }
     return count;
   }
