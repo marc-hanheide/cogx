@@ -1,7 +1,7 @@
 
 This document describes how to use the Robotics Service Bus to send/receive data between Java, LISP and C++ using the code written at Birmingham
 
-GSH 7 Dec 2011
+GSH 8 Dec 2011
 
 Prepare - read all of this section before doing anything else!
 -------
@@ -12,7 +12,7 @@ Follow the installation instructions on the website - NOTE:
 
 You should be able to install the .deb packages for RSC and RSB which are available via the link lower down on the front page
 
-But building from source is OK.
+But building from source is OK. For Lisp you need the source.
 
 RSB requires
 
@@ -36,15 +36,51 @@ pbuf.protopath = /usr/local/share/rsbprotocol
 pbuf.lib = /usr/share/java/protobuf.jar
 spread.daemon = /usr/local/sbin/spread
 
+The use ant as described.
+
 For LISP 
 
 Tested using Steel Bank Common Lisp
 
-Install quicklisp 
+Download quicklisp.lisp from http://www.quicklisp.org/
+
+Then in sbcl (omit proxy or change, as required) - to install as ~/quicklisp
+
+(load "quicklisp.lisp")
+(quicklisp-quickstart:install) or (quicklisp-quickstart:install :proxy "http://webcache.cs.bham.ac.uk:3128/")
 
 Copy the contents of rsb/cl to quicklisp/local-projects
 
-*** unfinished ***
+Back in sbcl:
+
+(ql:quickload "yacc")
+(ql:quickload :asdf-system-connections)
+
+Now do a bug fix (done by the patch file below, so you don't have to do it by hand)
+
+remove :force t in line 47 of
+$HOME/quicklisp/dists/quicklisp/software/asdf-system-connections-20101006-darcs/dev/asdf-system-connections.lisp
+
+And a hack or 2:
+
+cp $prefix/share/rsbprotocol/rsb/protocol/Notification.proto $HOME/quicklisp/local-projectys/cl-rsb/data/rsb/protocol/
+
+Copy the rsb.conf file from your .config directory (see below for creation of rsb.conf)
+
+In sbcl:
+
+(ql:quickload :cl-rsb)
+(ql:quickload :cl-spread)
+
+Now for some bug fixes:
+
+Assuming the patch files are in  ~/patches and quicklisp is in ~/quicklisp
+
+cd ~/patches
+patch -p0 -b -i iterate.patch
+patch -p0 -b -i asdf-system-connections.patch
+
+Lisp is now good to go!
 
 -------------------------------------------------------------------
 For all languages:
@@ -112,15 +148,22 @@ java -classpath $RSB_CLASSPATH:output/classes cdsr.rsb.CdsrHub classroom data/cl
 
 Lisp:
 
-Quicklisp Bug fix
-
-remove :force t in line 47 of
-$HOME/quicklisp/dists/quicklisp/software/asdf-system-connections-20101006-darcs/dev/asdf-system-connections.lisp
+Replace $USER in the following:
 
 (load "quicklisp.lisp")
-(load "/home/graham/quicklisp/setup.lisp")
+(load "/home/$USER/quicklisp/setup.lisp")
 (ql:quickload :asdf-system-connections)
 (ql:quickload :cl-spread)
 (ql:quickload :cl-rsb)
 
+Then to run example code:
 
+(load "listener.lisp")
+
+or 
+
+(load "informer.lisp")
+
+To exit SBCL:
+
+(quit)
