@@ -1,3 +1,4 @@
+GARDIR ?= ../../..
 GARNAME = gazebo
 GARVERSION = trunk
 CATEGORIES = bootstrap
@@ -29,7 +30,7 @@ INSTALL_SCRIPTS = $(WORKSRC)/Makefile
 
 CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix)
 
-include ../../gar.extend.mk
+include $(GARDIR)/gar.extend.mk
 
 
 makesum-$(DISTFILES):  
