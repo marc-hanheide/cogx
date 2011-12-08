@@ -1,3 +1,16 @@
+Index: CMakeLists.txt
+===================================================================
+--- orig/CMakeLists.txt      (revision 9081)
++++ work/CMakeLists.txt      (working copy)
+@@ -112,7 +112,7 @@
+   ########################################
+   # Make the gazebo rc file
+   configure_file(${CMAKE_SOURCE_DIR}/cmake/gazeborc.cmake ${PROJECT_BINARY_DIR}/.gazeborc @ONLY)
+-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/.gazeborc DESTINATION $ENV{HOME}/)
++  #install(FILES ${CMAKE_CURRENT_BINARY_DIR}/.gazeborc DESTINATION $ENV{HOME}/)
+  
+   include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+   
 Index: cmake/SearchForStuff.cmake
 ===================================================================
 --- orig/cmake/SearchForStuff.cmake	(revision 9081)
