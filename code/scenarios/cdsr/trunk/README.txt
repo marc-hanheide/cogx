@@ -12,21 +12,41 @@ Follow the installation instructions on the website - NOTE:
 
 You should be able to install the .deb packages for RSC and RSB which are available via the link lower down on the front page
 
+But building from source is OK.
+
 RSB requires
 
  * Spread 4.1.0 from the source at http://www.spread.org/
- * protoc 2.4 - to compile protocol buffers
+ * libprotobuf-dev, protobuf-compiler, libprotobuf-java - 2.3 or higher, from Ubuntu packages or source
 
-For the Java version it needs
- * libprotobuf-java (version 2.4 or higher)
+For C++
 
-For the LISP version it needs
+Use $prefix = /usr/local
 
-quicklisp 
+Note for RSB C++ Core, the webpage uses RSC not rsc - it should be in lower case:
+
+cd core/build && cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DRSC_DIR=$prefix/share/rsc && make && make install
+
+For Java 
+
+Create a build.properties file containing:
+
+pbuf.protoc = /usr/bin/protoc
+pbuf.protopath = /usr/local/share/rsbprotocol
+pbuf.lib = /usr/share/java/protobuf.jar
+spread.daemon = /usr/local/sbin/spread
+
+For LISP 
+
+Tested using Steel Bank Common Lisp
+
+Install quicklisp 
+
+Copy the contents of rsb/cl to quicklisp/local-projects
 
 *** unfinished ***
 
-
+-------------------------------------------------------------------
 For all languages:
 
 Create a file called rsb.conf in your .config directory which should contain these lines:
@@ -88,5 +108,14 @@ In a third shell:
 
 cd {workspace}/cdsr
 java -classpath $RSB_CLASSPATH:output/classes cdsr.rsb.CdsrHub classroom data/classroom-1.cdsr
+
+
+Lisp:
+
+(load "quicklisp.lisp")
+(load "/home/graham/quicklisp/setup.lisp")
+(ql:quickload :asdf-system-connections)
+(ql:quickload :cl-spread)
+(ql:quickload :cl-rsb)
 
 
