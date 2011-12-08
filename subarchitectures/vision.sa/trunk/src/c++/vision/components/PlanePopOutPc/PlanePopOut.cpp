@@ -1,7 +1,6 @@
 /**
- * @author Kai ZHOU, Michael ZILLICH
- * @date June 2009, Sept 2011
- * NOP
+ * @author Michael Zillich
+ * @date Sept 2011
  */
 
 #include <math.h>
@@ -124,6 +123,8 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
 	pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull)
 {
+	if(pcl_cloud && planepoints && pcl_domplane && tablehull)
+	{
     valid = true;
     plane = plane3(pcl_domplane->values[0],
 	    pcl_domplane->values[1],
@@ -132,16 +133,21 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
     normalisePlane(plane);        
     for (size_t i = 0; i < planepoints->indices.size(); i++)
     {
-	int index = planepoints->indices[i];
-	SurfacePoint p;
-	p.p = vector3(pcl_cloud->points[index].x, pcl_cloud->points[index].y, pcl_cloud->points[index].z);
-	p.c.r = pcl_cloud->points[index].r;
-	p.c.g = pcl_cloud->points[index].g;
-	p.c.b = pcl_cloud->points[index].b;
-	planePoints.push_back(p);
+      int index = planepoints->indices[i];
+      SurfacePoint p;
+      p.p = vector3(pcl_cloud->points[index].x, pcl_cloud->points[index].y, pcl_cloud->points[index].z);
+      p.c.r = pcl_cloud->points[index].r;
+      p.c.g = pcl_cloud->points[index].g;
+      p.c.b = pcl_cloud->points[index].b;
+      planePoints.push_back(p);
     }
     for (size_t i = 0; i < tablehull->points.size(); i++)
-	hullPoints.push_back(vector3(tablehull->points[i].x, tablehull->points[i].y, tablehull->points[i].z));
+      hullPoints.push_back(vector3(tablehull->points[i].x, tablehull->points[i].y, tablehull->points[i].z));
+	}
+	else
+	{
+	  valid = false;
+	}
 }
 
 void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
@@ -149,11 +155,11 @@ void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
     // bounding sphere
     setZero(boundingSphere.pos);
     for (size_t i = 0; i < points.size(); i++)
-	boundingSphere.pos += points[i].p;
+      boundingSphere.pos += points[i].p;
     boundingSphere.pos /= (double)points.size();
     boundingSphere.rad = 0.;
     for (size_t i = 0; i < points.size(); i++)
-	boundingSphere.rad = max(boundingSphere.rad, dist(boundingSphere.pos, points[i].p));
+      boundingSphere.rad = max(boundingSphere.rad, dist(boundingSphere.pos, points[i].p));
 
     // bounding box
     // TODO: actually we could get a better size estimate for the box
@@ -165,8 +171,8 @@ void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
 
     // background points
     for (size_t i = 0; i < domPlane.planePoints.size(); i++)
-	if(pointInsideSphere(boundingSphere, domPlane.planePoints[i].p))
-	    BGpoints.push_back(domPlane.planePoints[i]);
+      if(pointInsideSphere(boundingSphere, domPlane.planePoints[i].p))
+        BGpoints.push_back(domPlane.planePoints[i]);
 
     calcHistogram();
 
@@ -188,7 +194,7 @@ double PlanePopOut::SOIEntry::compare(const PlanePopOut::SOIEntry &other)
     wP /= s;
     double distHistogram = abs(CompareHistKLD(hist, other.hist));
     double distSize = abs(boundingSphere.rad - other.boundingSphere.rad) /
-	max(boundingSphere.rad, other.boundingSphere.rad);
+        max(boundingSphere.rad, other.boundingSphere.rad);
     double distPos = dist(boundingSphere.pos, other.boundingSphere.pos)/(2.*boundingSphere.rad);
     return wC*distHistogram + wS*distSize + wP*distPos;
 }
@@ -583,7 +589,6 @@ void PlanePopOut::SendImage()
 	m_display.setImage(guiid(ID_OBJECT_IMAGE), iplDispImage);
 
 	long long t2 = tm.elapsed();
-	long long t3 = tm.elapsed();
 
 	if (1) {
 	    ostringstream str;
@@ -1063,51 +1068,54 @@ void PlanePopOut::GetPlaneAndSOIs()
 
     // fill our dominant plane structure
     dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
+    if(dominantPlane.valid)
+    {
+      // fill our SOI structures
+      // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
+      // vertices of the bounding prism. We are however interested in all original
+      // points inside the SOI.
+      /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+        {
+        int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+      // if point is in any SOI
+      if(soi_label != 0) {
+      SurfacePoint p;
+      p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+      p.c.r = pcl_cloud->points[i].r;
+      p.c.g = pcl_cloud->points[i].g;
+      p.c.b = pcl_cloud->points[i].b;
+      currentSOIs[soi_label].points.push_back(p);
+      }
+      }*/
 
-    // fill our SOI structures
-    // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
-    // vertices of the bounding prism. We are however interested in all original
-    // points inside the SOI.
-    /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+      // NOTE: the above does not work for some as yet unknown reason, so we essentially
+      // do the same thing "by hand"
+      for (size_t i = 0; i < pcl_sois.size(); i++)
       {
-      int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-    // if point is in any SOI
-    if(soi_label != 0) {
-    SurfacePoint p;
-    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-    p.c.r = pcl_cloud->points[i].r;
-    p.c.g = pcl_cloud->points[i].g;
-    p.c.b = pcl_cloud->points[i].b;
-    currentSOIs[soi_label].points.push_back(p);
+        // dummy call to create map entry
+        currentSOIs[i].hist = 0;
+        // NOTE: the following isPointIn2DPolygon() function needs the bottom
+        // polygon of SOI prism, i.e. only the first half of the points
+        pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
+      }
+      for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+      {
+        for(size_t j = 0; j < pcl_sois.size(); j++)
+        {
+          if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j]))
+          {
+            SurfacePoint p;
+            p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+            p.c.r = pcl_cloud->points[i].r;
+            p.c.g = pcl_cloud->points[i].g;
+            p.c.b = pcl_cloud->points[i].b;
+            currentSOIs[j].points.push_back(p);
+          }
+        }
+      }
+      for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
+        it->second.init(dominantPlane);
     }
-    }*/
-
-    // NOTE: the above does not work for some as yet unknown reason, so we essentially
-    // do the same thing "by hand"
-    for (size_t i = 0; i < pcl_sois.size(); i++)
-    {
-	// dummy call to create map entry
-	currentSOIs[i].hist = 0;
-	// NOTE: the following isPointIn2DPolygon() function needs the bottom
-	// polygon of SOI prism, i.e. only the first half of the points 
-	pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
-    }
-    for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-    {
-	for(size_t j = 0; j < pcl_sois.size(); j++)
-	{
-	    if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j])) {
-		SurfacePoint p;
-		p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-		p.c.r = pcl_cloud->points[i].r;
-		p.c.g = pcl_cloud->points[i].g;
-		p.c.b = pcl_cloud->points[i].b;
-		currentSOIs[j].points.push_back(p);
-	    }
-	}
-    }
-    for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
-	it->second.init(dominantPlane);
 
 #if 0
     log("have %d current sois", (int)currentSOIs.size());
