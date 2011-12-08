@@ -54,7 +54,6 @@
 ^/code/tools/scripts/trunk                        tools/scripts
 ^/code/tools/syscalb/trunk                        tools/syscalb
 ^/code/tools/testing/trunk                        tools/testing
-^/code/tools/v4r/trunk                            tools/v4r
 
 
 # importing to have access to dora systems for testing purposes
@@ -64,4 +63,5 @@
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 # ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
 # ^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
+#^/code/tools/v4r/trunk                            tools/v4r
 
