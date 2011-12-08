@@ -1,9 +1,8 @@
 /**
- * @author Kai ZHOU
- * @date June 2009
- * NOP
+ * @author Michael Zillich
+ * @date Sept 2011
  *
- * This is a rewrite of the original plane poput, using the V4R library class
+ * This is a rewrite of the original plane popout, using the V4R library class
  * PlanePopout, which is based on PCL.
  */
 
