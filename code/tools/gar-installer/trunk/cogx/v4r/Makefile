@@ -7,7 +7,8 @@ MAINTAINER = ari
 #PATCHFILES= gar-base.diff
 
 DEB_PACKAGES=	libglew1.5-dev@ubuntu \
-		libdevil-dev@ubuntu
+		libdevil-dev@ubuntu \
+		libcminpack-dev@ubuntu
 
 LIBDEPS = 
 
