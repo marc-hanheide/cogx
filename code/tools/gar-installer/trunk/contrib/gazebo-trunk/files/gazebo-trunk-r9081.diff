@@ -1,0 +1,282 @@
+Index: cmake/SearchForStuff.cmake
+===================================================================
+--- orig/cmake/SearchForStuff.cmake	(revision 9081)
++++ work/cmake/SearchForStuff.cmake	(working copy)
+@@ -111,6 +111,10 @@
+ 
+     set (INCLUDE_RTSHADER ON CACHE BOOL "Enable GPU shaders")
+ 
++    set(OGRE_INCLUDE_DIRS ${OGRE-RTShaderSystem_INCLUDE_DIRS})
++    set(OGRE_LIBRARY_DIRS ${OGRE-RTShaderSystem_LIBRARY_DIRS})
++    set(OGRE_LIBRARIES ${OGRE-RTShaderSystem_LIBRARIES})
++
+   else (OGRE-RTShaderSystem_FOUND)
+ 
+     set (INCLUDE_RTSHADER OFF CACHE BOOL "Enable GPU shaders")
+Index: player/SimulationInterface.cc
+===================================================================
+--- orig/player/SimulationInterface.cc	(revision 9081)
++++ work/player/SimulationInterface.cc	(working copy)
+@@ -329,7 +329,7 @@
+     switch (response->type)
+     {
+       case libgazebo::SimulationRequestData::SET_STATE:
+-      case libgazebo::SimulationRequestData::GO:
++      //case libgazebo::SimulationRequestData::GO:
+       case libgazebo::SimulationRequestData::PAUSE:
+       case libgazebo::SimulationRequestData::RESET:
+       case libgazebo::SimulationRequestData::SAVE:
+Index: player/CMakeLists.txt
+===================================================================
+--- orig/player/CMakeLists.txt	(revision 9081)
++++ work/player/CMakeLists.txt	(working copy)
+@@ -15,7 +15,7 @@
+              GripperInterface.cc
+              BumperInterface.cc
+              IRInterface.cc
+-             ImuInterface.cc
++#ImuInterface.cc
+ )
+ 
+ include_directories( 
+Index: player/GazeboDriver.cc
+===================================================================
+--- orig/player/GazeboDriver.cc	(revision 9081)
++++ work/player/GazeboDriver.cc	(working copy)
+@@ -41,7 +41,7 @@
+ #include "BumperInterface.hh"
+ #include "GripperInterface.hh"
+ #include "IRInterface.hh"
+-#include "ImuInterface.hh"
++//#include "ImuInterface.hh"
+ 
+ /*
+ #include "PowerInterface.hh"
+@@ -311,7 +311,7 @@
+         if (!player_quiet_startup) printf(" an ir interface.\n");
+         ifsrc = new IRInterface( playerAddr,  this, cf, section );
+         break;
+-
++#if 0
+       case PLAYER_IMU_CODE:
+         if (!player_quiet_startup) printf(" an imu interface.\n");
+         ifsrc = new ImuInterface( playerAddr,  this, cf, section );
+@@ -332,6 +332,7 @@
+                 ifsrc = new GpsInterface( playerAddr,  this, cf, section );
+                 break;
+         */
++#endif
+       default:
+         printf( "error: Gazebo driver doesn't support interface type %d\n",
+                 playerAddr.interf );
+Index: libgazebo/IfaceFactory.cc
+===================================================================
+--- orig/libgazebo/IfaceFactory.cc	(revision 9081)
++++ work/libgazebo/IfaceFactory.cc	(working copy)
+@@ -33,21 +33,21 @@
+ 
+ using namespace libgazebo;
+ 
+-std::map<std::string, IfaceFactoryFn> IfaceFactory::ifaces;
++// std::map<std::string, IfaceFactoryFn> IfaceFactory::ifaces;
+ 
+ // Register a iface class.  Use by dynamically loaded modules
+ void IfaceFactory::RegisterIface(std::string classname, IfaceFactoryFn factoryfn)
+ {
+-  ifaces[classname] = factoryfn;
++  getIfaces()[classname] = factoryfn;
+ }
+ 
+ // Create a new instance of a iface.  Used by the world when reading
+ // the world file.
+ Iface *IfaceFactory::NewIface(const std::string &classname)
+ {
+-  if (ifaces.find(classname) != ifaces.end())
++  if (getIfaces().find(classname) != getIfaces().end())
+   {
+-    return (ifaces[classname]) ();
++    return (getIfaces()[classname]) ();
+   }
+   else
+   {
+Index: libgazebo/IfaceFactory.hh
+===================================================================
+--- orig/libgazebo/IfaceFactory.hh	(revision 9081)
++++ work/libgazebo/IfaceFactory.hh	(working copy)
+@@ -63,7 +63,8 @@
+     public: static Iface *NewIface(const std::string &classname);
+   
+     // A list of registered iface classes
+-    private: static std::map<std::string, IfaceFactoryFn> ifaces;
++    //private: static std::map<std::string, IfaceFactoryFn> ifaces;
++    private: static std::map<std::string, IfaceFactoryFn> &getIfaces() { static std::map<std::string, IfaceFactoryFn> iface; return iface; };
+   
+   };
+ 
+Index: server/sensors/SensorFactory.cc
+===================================================================
+--- orig/server/sensors/SensorFactory.cc	(revision 9081)
++++ work/server/sensors/SensorFactory.cc	(working copy)
+@@ -32,14 +32,14 @@
+ 
+ using namespace gazebo;
+ 
+-std::map<std::string, SensorFactoryFn> SensorFactory::sensors;
++//std::map<std::string, SensorFactoryFn> SensorFactory::sensors;
+ 
+ 
+ // Register a model class.  Use by dynamically loaded modules
+ void SensorFactory::RegisterSensor(std::string type, std::string classname,
+                                    SensorFactoryFn factoryfn)
+ {
+-  sensors[classname] = factoryfn;
++  getSensors()[classname] = factoryfn;
+ }
+ 
+ 
+@@ -47,9 +47,9 @@
+ // the world file.
+ Sensor *SensorFactory::NewSensor(const std::string &classname, Body *body)
+ {
+-  if (sensors[classname])
++  if (getSensors()[classname])
+   {
+-    Sensor *sensor = (sensors[classname]) (body);
++    Sensor *sensor = (getSensors()[classname]) (body);
+     SensorManager::Instance()->AddSensor(sensor);
+     return sensor;
+   }
+Index: server/sensors/SensorFactory.hh
+===================================================================
+--- orig/server/sensors/SensorFactory.hh	(revision 9081)
++++ work/server/sensors/SensorFactory.hh	(working copy)
+@@ -62,7 +62,8 @@
+   public: static Sensor *NewSensor(const std::string &classname, Body *body);
+ 
+   /// \brief A list of registered sensor classes
+-  private: static std::map<std::string, SensorFactoryFn> sensors;
++  // private: static std::map<std::string, SensorFactoryFn> sensors;
++  private: static std::map<std::string, SensorFactoryFn> &getSensors() { static std::map<std::string, SensorFactoryFn> sensors; return sensors; };
+ };
+ 
+ 
+Index: server/controllers/ControllerFactory.cc
+===================================================================
+--- orig/server/controllers/ControllerFactory.cc	(revision 9081)
++++ work/server/controllers/ControllerFactory.cc	(working copy)
+@@ -46,13 +46,13 @@
+ 
+ using namespace gazebo;
+ 
+-std::map<std::string, ControllerFactoryFn> ControllerFactory::controllers;
++//std::map<std::string, ControllerFactoryFn> ControllerFactory::controllers;
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+ // Register a controller class.  Use by dynamically loaded modules
+ void ControllerFactory::RegisterController(std::string type, std::string classname, ControllerFactoryFn factoryfn)
+ {
+-  controllers[classname] = factoryfn;
++  getControllers()[classname] = factoryfn;
+ }
+ 
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -60,9 +60,9 @@
+ // the world file.
+ Controller *ControllerFactory::NewController(const std::string &classname, Entity *parent)
+ {
+-  if (controllers[classname])
++  if (getControllers()[classname])
+   {
+-    return (controllers[classname]) (parent);
++    return (getControllers()[classname]) (parent);
+   }
+   else
+   {
+Index: server/controllers/ControllerFactory.hh
+===================================================================
+--- orig/server/controllers/ControllerFactory.hh	(revision 9081)
++++ work/server/controllers/ControllerFactory.hh	(working copy)
+@@ -63,7 +63,9 @@
+   public: static void LoadPlugin(const std::string &plugin, const std::string &classname);
+ 
+   // A list of registered controller classes
+-  private: static std::map<std::string, ControllerFactoryFn> controllers;
++  // private: static std::map<std::string, ControllerFactoryFn> controllers;
++  private: static std::map<std::string, ControllerFactoryFn> &getControllers() { static std::map<std::string, ControllerFactoryFn> controllers; return controllers; };
++           
+ 
+ };
+ 
+Index: server/rendering/CMakeLists.txt
+===================================================================
+--- orig/server/rendering/CMakeLists.txt	(revision 9081)
++++ work/server/rendering/CMakeLists.txt	(working copy)
+@@ -66,6 +66,6 @@
+     ${CMAKE_LINK_FLAGS_${CMAKE_BUILD_TYPE}})
+ endif (CMAKE_LINK_FLAGS_${CMAKE_BUILD_TYPE})
+ 
+-target_link_libraries( gazebo_rendering ${OGRE_LIBRARIES} X11 profiler)
++target_link_libraries( gazebo_rendering ${OGRE_LIBRARIES} X11 GL glut profiler)
+ install ( TARGETS gazebo_rendering DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+ APPEND_TO_SERVER_HEADERS(${headers})
+Index: server/CMakeLists.txt
+===================================================================
+--- orig/server/CMakeLists.txt	(revision 9081)
++++ work/server/CMakeLists.txt	(working copy)
+@@ -184,6 +184,8 @@
+                                    assimp
+                                    pthread
+                                    profiler
++                                   xml2
++                                   tbb
+ )
+ 
+ APPEND_TO_CACHED_LIST(gazeboserver_ldflags 
+Index: server/audio_video/AudioDecoder.hh
+===================================================================
+--- orig/server/audio_video/AudioDecoder.hh	(revision 9081)
++++ work/server/audio_video/AudioDecoder.hh	(working copy)
+@@ -33,6 +33,11 @@
+ 
+ extern "C" {
+ 
++#ifndef INT64_C
++#define INT64_C(c) (c ## LL)
++#define UINT64_C(c) (c ## ULL)
++#endif
++
+ #include <avformat.h>
+ #include <avcodec.h>
+ }
+Index: server/audio_video/AudioDecoder.cc
+===================================================================
+--- orig/server/audio_video/AudioDecoder.cc	(revision 9081)
++++ work/server/audio_video/AudioDecoder.cc	(working copy)
+@@ -101,8 +101,13 @@
+       tmpBufsize = sizeof(tmpBuf);
+ 
+       // Decode the frame
++#if 0
+       bytesDecoded = avcodec_decode_audio2( this->codecCtx, (int16_t*)tmpBuf, 
+           &tmpBufsize, packet.data, packet.size );
++#else
++      bytesDecoded = avcodec_decode_audio3( this->codecCtx, (int16_t*)tmpBuf, 
++          &tmpBufsize, &packet );
++#endif
+ 
+       if (bytesDecoded < 0)
+       {
+@@ -168,6 +173,13 @@
+   this->audioStream = -1;
+   for (i=0; i < this->formatCtx->nb_streams; i++)
+   {
++     
++#ifndef CODEC_TYPE_AUDIO
++# if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 64, 0)
++#  define CODEC_TYPE_AUDIO AVMEDIA_TYPE_AUDIO
++# endif
++#endif
++
+     if (this->formatCtx->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO)
+     {
+       this->audioStream = i;
