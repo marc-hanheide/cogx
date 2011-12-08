@@ -112,6 +112,11 @@ java -classpath $RSB_CLASSPATH:output/classes cdsr.rsb.CdsrHub classroom data/cl
 
 Lisp:
 
+Quicklisp Bug fix
+
+remove :force t in line 47 of
+$HOME/quicklisp/dists/quicklisp/software/asdf-system-connections-20101006-darcs/dev/asdf-system-connections.lisp
+
 (load "quicklisp.lisp")
 (load "/home/graham/quicklisp/setup.lisp")
 (ql:quickload :asdf-system-connections)
