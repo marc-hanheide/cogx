@@ -1,4 +1,5 @@
-include ../../gar.mk
+GARDIR ?= ../..
+include $(GARDIR)/gar.mk
 
 LSB_RELEASE_BIN:=/usr/bin/lsb_release
 
