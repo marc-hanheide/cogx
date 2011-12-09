@@ -28,6 +28,11 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		cmake-qt-gui@ubuntu \
 		libdc1394-22-dev@ubuntu \
 		libsdl-dev@ubuntu \
+		libsuitesparse-dev \
+		libcminpack-dev \
+		libplot-dev \
+		libeigen2-dev \
+		libeigen3-dev \
 		flex@ubuntu \
 		bison@ubuntu
 
