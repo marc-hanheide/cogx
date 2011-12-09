@@ -9,6 +9,9 @@ SETVAR planning_domain=dora-explore-only.pddl
 ## for dora-explore-only.pddl domain, need to turn off conceptual query
 SETVAR planning_config=config.dora-nonconceptual.ini
 
+## dont't use explanations 
+SETVAR expl_rules=
+
 ### the default probabilities
 SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-direct.txt"
 
