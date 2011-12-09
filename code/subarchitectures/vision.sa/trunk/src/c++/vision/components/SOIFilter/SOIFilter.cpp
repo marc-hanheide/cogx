@@ -1010,10 +1010,11 @@ void SOIFilter::runComponent()
       // We check for invisible objects only when there are no add-soi events in queue.
       // This is to prevent POs being deleted to quickly after a camera move.
       if (isCameraStable(4000)) {
-        int addSoiCmdCount = m_EventQueue.countIf(
-            [](WmEvent* const & pev) {
-               return pev->objectType == TYPE_SOI && pev->change == cdl::ADD;
-            }); 
+        int addSoiCmdCount = 0;
+        m_EventQueue.for_each([&addSoiCmdCount](WmEvent*& pev) {
+          if (pev->objectType == TYPE_SOI && pev->change == cdl::ADD)
+            addSoiCmdCount++;
+        }); 
         if (addSoiCmdCount < 1) {
           checkInvisibleObjects();
         }
