@@ -1,3 +1,4 @@
+GARDIR ?= ../..
 GARNAME = cogx-distro
 GARVERSION =
 CATEGORIES = distributions
@@ -24,9 +25,14 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libdevil-dev@ubuntu \
 		nvidia-cg-toolkit@ubuntu \
 		cmake-curses-gui@ubuntu \
+		cmake-qt-gui@ubuntu \
 		libdc1394-22-dev@ubuntu \
-		libsdl-dev@ubuntu 
+		libsdl-dev@ubuntu \
+		flex@ubuntu \
+		bison@ubuntu
 
+
+SYSBITS=$(shell getconf LONG_BIT)
 
 LIBDEPS = 	contrib/peekabot \
 		cogx/cast-c++ \
@@ -34,11 +40,12 @@ LIBDEPS = 	contrib/peekabot \
 		contrib/opencv \
 		cogx/cosycure \
 		contrib/player-3.0.2 \
-		contrib/physx_x64 \
 		contrib/avin2-SensorKinect \
 		cogx/v4r \
-		cogx/golem_katana300_x64
-#		contrib/gazebo \
+		contrib/physx_x$(SYSBITS) \
+		cogx/golem_katana300_x$(SYSBITS) \
+		contrib/gazebo \
+		contrib/mercury \
 #		contrib/openNI \
 
 DESCRIPTION = agai-distro
@@ -49,7 +56,7 @@ INSTALL_SCRIPTS =
 
 CONFIGURE_ARGS = 
 
-include ../../gar.extend.mk
+include $(GARDIR)/gar.extend.mk
 
 checksum-$(DISTFILES):	
 	true
