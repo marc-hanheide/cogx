@@ -208,6 +208,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.expl_rules_fn = path.join(standalone.globals.config.domain_dir, config["--expl_rules"])
       if not path.exists(self.expl_rules_fn):
           log.error("Could not find specified explanations rule set %s. Will not be able to determine explanations for failures!", config["--expl_rules"])
+          self.expl_rules_fn = None
 
     if "--problem" in config:
       self.problem_fn = path.join(standalone.globals.config.problem_dir, config["--problem"])
