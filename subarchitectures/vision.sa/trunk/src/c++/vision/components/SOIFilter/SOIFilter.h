@@ -47,6 +47,7 @@
 #include <IceUtil/IceUtil.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <functional>
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -144,8 +145,7 @@ public:
     }
     return evts;
   }
-  template<typename Func>
-  void for_each(Func func)
+  void for_each(std::function<void (const TItem&)> func)
   {
     Lock my(monitor);
     std::for_each(data.begin(), data.end(), func);
