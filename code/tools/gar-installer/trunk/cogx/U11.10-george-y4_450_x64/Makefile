@@ -49,8 +49,8 @@ LIBDEPS = 	contrib/peekabot \
 		cogx/v4r \
 		contrib/physx_x$(SYSBITS) \
 		cogx/golem_katana300_x$(SYSBITS) \
-		contrib/gazebo \
 		contrib/mercury \
+#		contrib/gazebo \
 #		contrib/openNI \
 
 DESCRIPTION = agai-distro
