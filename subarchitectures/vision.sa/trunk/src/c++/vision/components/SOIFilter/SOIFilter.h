@@ -144,14 +144,11 @@ public:
     }
     return evts;
   }
-  int countIf(bool (*testFunc)(const TItem&)) const
+  template<typename Func>
+  void for_each(Func func)
   {
     Lock my(monitor);
-    int count = 0;
-    for (auto& item : data) { // g++ 4.6 required
-      if (testFunc(item)) count++;
-    }
-    return count;
+    std::for_each(data.begin(), data.end(), func);
   }
   bool empty() const
   {
