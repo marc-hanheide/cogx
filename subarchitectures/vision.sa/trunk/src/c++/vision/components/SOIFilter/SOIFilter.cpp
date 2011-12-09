@@ -370,7 +370,7 @@ void SOIFilter::sendProtoObject(const cdl::WorkingMemoryAddress& addr, const Vis
   // PO already references it.
   // (Temporary) fix: send all POs again after every VO change (done in onXXX_VisualObject).
   VisualObjectRecordPtr pvorec = findVisualObjectFor(addr);
-  bool bHasVo = pvorec.get() != NULL;
+  bool bHasVo = pvorec.get() != nullptr;
 
   ostringstream ss;
   ss << "function render()\n";
@@ -1076,13 +1076,13 @@ ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const Vector3 &pos)
   if (dmin < 0.12)
     return pBest;
 
-  return NULL;
+  return nullptr;
 }
 
 ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const SOIPtr &psoi)
 {
   if (!psoi.get()) 
-    return NULL;
+    return nullptr;
 
   return findProtoObjectAt(psoi->boundingSphere.pos);
 }
@@ -1091,7 +1091,7 @@ ProtoObjectRecordPtr SOIFilter::findProtoObjectAt(const SOIPtr &psoi)
 VisualObjectRecordPtr SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
 {
   if (protoAddr.id == "") 
-    return NULL;
+    return nullptr;
 
   for(auto itvo = m_visualObjects.begin(); itvo != m_visualObjects.end(); ++itvo) {
     VisualObjectRecordPtr& pvorec = itvo->second;
@@ -1103,14 +1103,14 @@ VisualObjectRecordPtr SOIFilter::findVisualObjectFor(const cdl::WorkingMemoryAdd
       return itvo->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 // Find the VO that was last linked with the PO
 VisualObjectRecordPtr SOIFilter::findHiddenVisualObjectFor(const cdl::WorkingMemoryAddress& protoAddr)
 {
   if (protoAddr.id == "") 
-    return NULL;
+    return nullptr;
 
   // The check the hidden objects
   for(auto itvo = m_visualObjects.begin(); itvo != m_visualObjects.end(); ++itvo) {
@@ -1123,7 +1123,7 @@ VisualObjectRecordPtr SOIFilter::findHiddenVisualObjectFor(const cdl::WorkingMem
       return itvo->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 } // namespace
