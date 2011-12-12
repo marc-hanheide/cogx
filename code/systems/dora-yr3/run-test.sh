@@ -10,6 +10,13 @@ function storePlannerLogs {
 	fi
 }
 
+function storeCoreDump {
+	if [ -e "core" ]; then
+		zip logs/core.zip core
+	else
+		touch logs/no-core-dump
+	fi
+}
 
 function waitForTrigger {
 	while [ ! -e $STOPTRIGGERFILE ]; do
@@ -97,26 +104,27 @@ xterm -e player instantiations/stage/alu/alu.cfg &
 PIDS="$PIDS $!"
 
 rm -f  robotpose.ccf tmpmap.*
+rm -f core
 
 #xterm -e peekabot &
 #PIDS="$PIDS $!"
 
-xterm -title "CAST server" -e bash -c "output/bin/cast-server-start 2>&1 | tee logs/server.log" &
+xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
 SERVERPID="$!"
 PIDS="$PIDS $SERVERPID"
 
-xterm -title "Display server" -e bash -c "output/bin/display-server 2>&1 | tee logs/display-server.log" &
+xterm -title "Display server" -e bash -c "ulimit -c unlimited; output/bin/display-server 2>&1 | tee logs/display-server.log" &
 DISPLAYSERVERPID="$!"
 PIDS="$PIDS $DISPLAYSERVERPID"
 
 
-xterm -title "Abducer" -e bash -c "tools/abducer/bin/abducer-server -n AbducerServer -e \"default -p 9100\" -l \"$DIR/log4j.properties\" -a \"$DIR/tools/abducer/bin/abducer-engine-pb\" -x --silent 2>&1 | tee logs/abducer.log" &
+xterm -title "Abducer" -e bash -c "ulimit -c unlimited; tools/abducer/bin/abducer-server -n AbducerServer -e \"default -p 9100\" -l \"$DIR/log4j.properties\" -a \"$DIR/tools/abducer/bin/abducer-engine-pb\" -x --silent 2>&1 | tee logs/abducer.log" &
 ABDUCERPID="$!"
 PIDS="$PIDS $ABDUCERPID"
 
 sleep 10
 
-xterm -title "CAST client: $configFile" -e bash -c "output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
+xterm -title "CAST client: $configFile" -e bash -c "ulimit -c unlimited; output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
 
@@ -125,6 +133,7 @@ PIDS="$PIDS $!"
 sleep 60
 
 storePlannerLogs
+storeCoreDump
 
 # check if the C++ server is still running after this time!
 if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=0; else RES=1; fi
