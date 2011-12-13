@@ -1,22 +1,21 @@
 <?xml version="1.0"?>
 
 <!-- CogX Platform: Pioneer 3-DX with superstructure
-		 Michael Zillich
-		 April 2011 -->
+     Tested with gazebo branch wg, which is based on 0.10
+     Michael Zillich
+		 December 2011 -->
 
 <model:physical name="cogx_platform_model"
   xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
   xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
   xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
   xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
-  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
-  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
-  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
   >
 
-  <verbosity>5</verbosity>
-
-  <xyz>0 0 1</xyz>
+  <xyz>0 0 0</xyz>
   <rpy>0.0 0.0 0.0</rpy>
   <static>false</static>
 
@@ -33,13 +32,7 @@
         <mesh>unit_box</mesh>
         <material>Gazebo/Red</material>
       </visual>
-      <!-- fake caster wheel, just for appearance -->
-      <visual>
-        <xyz>-0.170 0 -0.120</xyz>
-        <scale>0.0175 0.0175 0.0175</scale>
-        <mesh>unit_sphere</mesh>
-        <material>Gazebo/Grey</material>
-      </visual>
+
       <!-- arrows indicating axes
       <visual>
         <xyz>1 0 0</xyz>
@@ -131,61 +124,21 @@
     </geom:cylinder>
   </body:cylinder>
 
-  <!--
-     4 invisible caster wheels to prevent tipping over with sudden breaks
-     or outstretched arm.
+  <body:sphere name="caster_body">
+    <xyz>-0.170 0 0.0175</xyz>
+    <rpy>0 0 0</rpy>
+    <geom:sphere name="caster_geom">
+      <size>0.0175</size>
+      <mass>0.5</mass>
+      <mu1>0.2</mu1>
 
-     Note: The normal way of doing this would be to have a single caster
-     wheel with a free running ball joint. But in the current version of
-     ODE (libode.so.1.1) and gazebo (0.9) the wheel keeps spinning as if
-     it had a very high inertia and thus keep pushing the robot although
-     the motors have already stopped, leading to very odd behaviour.
-     So we take 4 (invisible) sliding caster balls, with friction turned
-     off.
-  -->
-  <model:physical name = "caster1_model">	
-    <enableFriction>0</enableFriction>
-    <body:sphere name="caster1_body">
-      <xyz>0.250 0.140 0.0175</xyz>
-      <rpy>0 0 0</rpy>
-      <geom:sphere name="caster1_geom">
-        <size>0.0175</size>
-      </geom:sphere>
-    </body:sphere>
-  </model:physical>
-
-  <model:physical name = "caster2_model">
-    <enableFriction>0</enableFriction>
-    <body:sphere name="caster2_body">
-      <xyz>-0.180 0.140 0.0175</xyz>
-      <rpy>0 0 0</rpy>
-      <geom:sphere name="caster2_geom">
-        <size>0.0175</size>
-      </geom:sphere>
-    </body:sphere>
-  </model:physical>
-
-  <model:physical name = "caster3_model">
-    <enableFriction>0</enableFriction>
-    <body:sphere name="caster3_body">
-      <xyz>-0.180 -0.140 0.0175</xyz>
-      <rpy>0 0 0</rpy>
-      <geom:sphere name="caster3_geom">
-        <size>0.0175</size>
-      </geom:sphere>
-    </body:sphere>
-  </model:physical>
-
-  <model:physical name = "caster4_model">
-    <enableFriction>0</enableFriction>
-    <body:sphere name="caster4_body">
-      <xyz>0.250 -0.140 0.0175</xyz>
-      <rpy>0 0 0</rpy>
-      <geom:sphere name="caster4_geom">
-        <size>0.0175</size>
-      </geom:sphere>
-    </body:sphere>
-  </model:physical>
+      <visual>
+        <scale>0.0175 0.0175 0.0175</scale>
+        <mesh>unit_sphere</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:sphere>
+  </body:sphere>
 
   <joint:hinge name="left_wheel_joint">
     <body1>left_wheel_body</body1>
@@ -201,13 +154,11 @@
     <axis>0 1 0</axis>
   </joint:hinge>
 
-  <!-- don't need caster joints, as caster wheels simply slide frictionless
   <joint:ball name="caster_joint">
     <body1>caster_body</body1>
     <body2>chassis_body</body2>
     <anchor>caster_body</anchor>
   </joint:ball>
-  -->
 
   <controller:differential_position2d name="controller1">
     <leftJoint>left_wheel_joint</leftJoint>
@@ -217,5 +168,181 @@
     <torque>50</torque>
     <interface:position name="position_iface_0"/>
   </controller:differential_position2d>
+
+<!--  <model:physical name="ptu">
+    <xyz>0.10 0 1.28</xyz>
+
+    <attach>
+      <parentBody>chassis_body</parentBody>
+      <myBody>ptu_base_body</myBody>
+    </attach>
+
+    <body:box name="ptu_base_body">
+      <xyz>0.0 0.0 0.0</xyz>
+      <rpy>0.0 0.0 0.0</rpy>
+
+      <geom:box name="ptu_base_geom">
+        <xyz>0.0 0.0 0.025</xyz>
+        <rpy>0 0 0</rpy>
+        <size>0.04 0.07 0.05</size>
+        <mass>0.01</mass>
+
+        <visual>
+          <rpy>0 0 0</rpy>
+          <size>0.04 0.07 0.05</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+      </geom:box>
+    </body:box>
+
+    <body:box name="ptu_pan_body">
+      <xyz>0.0 0.0 0.0</xyz>
+      <rpy>0.0 0.0 0.0</rpy>
+
+      <geom:box name="ptu_pan_geom">
+        <xyz>0.0 0.0 0.08</xyz>
+        <rpy>0 0 0</rpy>
+        <size>0.04 0.04 0.06</size>
+        <mass>0.01</mass>
+        <visual>
+          <size>0.04 0.04 0.06</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+      </geom:box>
+    </body:box>
+
+
+    <body:box name="ptu_tilt_body">
+      <xyz>0.0 0.0 0.09</xyz>
+      <rpy>0.0 0.0 0.0</rpy>
+
+      <geom:box name="ptu_tilt_geom">
+        <xyz>0 0 0.05</xyz>
+        <rpy>0 0 0</rpy>
+        <size>0.03 0.24 0.02</size>
+        <mass>0.01</mass>
+
+        <visual>
+          <size>0.03 0.24 0.02</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+        <visual>
+				  <xyz>0 0.025 -0.04</xyz>
+          <size>0.03 0.01 0.06</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+        <visual>
+				  <xyz>0 -0.025 -0.04</xyz>
+          <size>0.03 0.01 0.06</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+      </geom:box>
+    </body:box>
+
+    <model:physical name="camera0_model">
+      <xyz>0.00 0.06 0.16</xyz>
+      <rpy>0 0 0</rpy>
+
+      <attach>
+        <parentBody>ptu_tilt_body</parentBody>
+        <myBody>camera0_body</myBody>
+      </attach>
+
+      <body:box name="camera0_body">
+        <geom:box name="camera0_geom">
+          <size>0.02 0.02 0.02</size>
+          <mass>0.01</mass>
+
+          <visual>
+            <scale>0.02 0.02 0.02</scale>
+            <mesh>unit_box</mesh>
+            <material>Gazebo/Blue</material>
+          </visual>
+        </geom:box>
+
+        <sensor:camera name="camera0_sensor">
+          <imageSize>640 480</imageSize>
+          <hfov>45</hfov>
+          <nearClip>0.1</nearClip>
+          <farClip>50</farClip>
+          <saveFrames>false</saveFrames>
+          <saveFramePath>frames</saveFramePath>
+
+          <controller:generic_camera name="camera0_controller">
+            <interface:camera name="camera_iface_0"/>
+          </controller:generic_camera>
+        </sensor:camera>
+      </body:box>
+    </model:physical>
+
+    <model:physical name="camera1_model">
+      <xyz>0.00 -0.06 0.16</xyz>
+      <rpy>0 0 0</rpy>
+
+      <attach>
+        <parentBody>ptu_tilt_body</parentBody>
+        <myBody>camera1_body</myBody>
+      </attach>
+
+      <body:box name="camera1_body">
+        <geom:box name="camera1_geom">
+          <size>0.02 0.02 0.02</size>
+          <mass>0.01</mass>
+
+          <visual>
+            <scale>0.02 0.02 0.02</scale>
+            <mesh>unit_box</mesh>
+            <material>Gazebo/Blue</material>
+          </visual>
+        </geom:box>
+
+        <sensor:camera name="camera1_sensor">
+          <imageSize>640 480</imageSize>
+          <hfov>45</hfov>
+          <nearClip>0.1</nearClip>
+          <farClip>50</farClip>
+          <saveFrames>false</saveFrames>
+          <saveFramePath>frames</saveFramePath>
+
+          <controller:generic_camera name="camera1_controller">
+            <interface:camera name="camera_iface_1"/>
+          </controller:generic_camera>
+        </sensor:camera>
+      </body:box>
+    </model:physical>
+
+    <joint:hinge name="pan_joint">
+      <body1>ptu_base_body</body1>
+      <body2>ptu_pan_body</body2>
+      <anchor>ptu_pan_body</anchor>
+      <axis>0 0 -1</axis>
+      <lowStop>-170</lowStop>
+      <highStop>170</highStop>
+    </joint:hinge>
+
+    <joint:hinge name="tilt_joint">
+      <body1>ptu_pan_body</body1>
+      <body2>ptu_tilt_body</body2>
+      <anchor>ptu_tilt_body</anchor>
+      <axis>0 1 0</axis>
+      <lowStop>-90</lowStop>
+      <highStop>90</highStop>
+    </joint:hinge>
+
+    <controller:generic_ptz name="ptu_controller">
+      <panJoint>pan_joint</panJoint>
+      <tiltJoint>tilt_joint</tiltJoint>
+
+      <motionGain>3</motionGain>
+      <force>20</force>
+      <interface:ptz name="ptz_iface_0"/>
+    </controller:generic_ptz>
+  </model:physical>-->
+
 </model:physical>
 

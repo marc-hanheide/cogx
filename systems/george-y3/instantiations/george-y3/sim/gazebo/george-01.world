@@ -28,7 +28,7 @@
   <verbosity>5</verbosity>
 
   <physics:ode>
-    <stepTime>0.003</stepTime>
+    <stepTime>0.0005</stepTime>
     <gravity>0 0 -9.81</gravity>
     <cfm>10e-5</cfm>
     <erp>0.3</erp>
@@ -37,7 +37,7 @@
     <!-- updateRate: <0 == throttle simTime to match realTime.
                       0 == No throttling
                      >0 == Frequency at which to throttle the sim --> 
-    <updateRate>-1</updateRate>
+    <updateRate>100</updateRate>
   </physics:ode>
 
   <rendering:gui>
@@ -72,7 +72,10 @@
   <model:physical name="robot">
     <xyz>0.0 0.0 0.01</xyz>
     <rpy>0.0 0.0 0.0</rpy>
-    <static>true</static>
+   
+    <include embedded="true">
+       <xi:include href="models/cogx-platform.model" />
+    </include>
 
     <model:physical name="laser">
       <xyz>0.14 0.00 0.24</xyz>
@@ -88,20 +91,24 @@
       </include>
     </model:physical>
 
-    <model:physical name="ptu">
-      <xyz>0.10 0 1.28</xyz>
+    <include embedded="true">
+      <xi:include href="models/ptu.model" />
+    </include>
 
-      <attach>
-        <parentBody>chassis_body</parentBody>
-        <myBody>ptu_base_body</myBody>
-      </attach>
+    <!-- This fake joint, which actually cannot move as it has a range of 0
+         degrees, is needed to fix the PTU to the chassis.
+         Using a model around the PTU and using <attach> does not work, PTU's
+         controller then fails to be updated and simply cannot be used (a bug) -->
+    <joint:hinge name="fake_joint">
+      <body1>chassis_body</body1>
+      <body2>ptu_base_body</body2>
+      <anchor>ptu_base_body</anchor>
+      <axis>0 0 1</axis>
+      <lowStop>0</lowStop>
+      <highStop>0</highStop>
+    </joint:hinge>
 
-      <include embedded="true">
-        <xi:include href="models/ptu.model" />
-      </include>
-    </model:physical>
-
-    <model:physical name="arm">
+    <!-- <model:physical name="arm">
       <xyz>0.04 0.00 0.24</xyz>
       <rpy>0.0 0.0 0.0</rpy>
 
@@ -113,11 +120,7 @@
       <include embedded="true">
          <xi:include href="models/katana-6m180.model" />
       </include>
-    </model:physical>
-
-    <include embedded="true">
-       <xi:include href="models/cogx-platform.model" />
-    </include>
+    </model:physical> -->
   </model:physical>
 
   <!-- ground plane -->
@@ -203,14 +206,14 @@
   <model:physical name="table-f2_model">
     <static>true</static>
     <xyz>1 -0.350 0.176</xyz> <!-- PLACE -->
-    <include embedded="false">
+    <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>
   <model:physical name="table-f3_model">
     <static>true</static>
     <xyz>1 0.350 0.176</xyz> <!-- PLACE -->
-    <include embedded="false">
+    <include embedded="true">
       <xi:include href="models/table.model" />
     </include>
   </model:physical>

@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 
 <!-- A simple world file with a box on a table
+     Tested with gazebo branch wg, which is based on 0.10
      Michael Zillich
-		 April 2011 -->
+     December 2011 -->
 
 <gazebo:world 
   xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -18,22 +19,19 @@
   xmlns:ui="http://playerstage.sourceforge.net/gazebo/xmlschema/#ui"
   xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering" 
   xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
-  xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics" 
->
+  xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics" >
 
-  <verbosity>5</verbosity>
+  <verbosity>4</verbosity>
 
   <physics:ode>
-    <stepTime>0.003</stepTime>
-    <gravity>0 0 -9.81</gravity>
+    <stepTime>0.0005</stepTime>
+    <gravity>0 0 -9.8</gravity>
     <cfm>10e-5</cfm>
     <erp>0.3</erp>
-    <!-- cfm 10e-5 works
-         erp 0.5 .. 0.8 works -->
     <!-- updateRate: <0 == throttle simTime to match realTime.
                       0 == No throttling
                      >0 == Frequency at which to throttle the sim --> 
-    <updateRate>-1</updateRate>
+    <updateRate>100</updateRate>
   </physics:ode>
 
   <rendering:gui>
@@ -49,6 +47,11 @@
     <sky>
       <material>Gazebo/Grey</material>
     </sky>
+
+    <grid>false</grid>
+
+    <!--<shadowTechnique>stencilModulative</shadowTechnique>-->
+    <shadowTechnique>none</shadowTechnique>
   </rendering:ogre>
 
   <!-- White Directional light -->
@@ -68,6 +71,10 @@
   <model:physical name="robot">
     <xyz>0.0 0.0 0.01</xyz>
     <rpy>0.0 0.0 0.0</rpy>
+   
+    <include embedded="true">
+       <xi:include href="models/cogx-platform.model" />
+    </include>
 
     <model:physical name="laser">
       <xyz>0.14 0.00 0.24</xyz>
@@ -83,20 +90,24 @@
       </include>
     </model:physical>
 
-    <model:physical name="ptu">
-      <xyz>0.10 0 1.28</xyz>
+    <include embedded="true">
+      <xi:include href="models/ptu.model" />
+    </include>
 
-      <attach>
-        <parentBody>chassis_body</parentBody>
-        <myBody>ptu_base_body</myBody>
-      </attach>
+    <!-- This fake joint, which actually cannot move as it has a range of 0
+         degrees, is needed to fix the PTU to the chassis.
+         Using a model around the PTU and using <attach> does not work, PTU's
+         controller then fails to be updated and simply cannot be used (a bug) -->
+    <joint:hinge name="fake_joint">
+      <body1>chassis_body</body1>
+      <body2>ptu_base_body</body2>
+      <anchor>ptu_base_body</anchor>
+      <axis>0 0 1</axis>
+      <lowStop>0</lowStop>
+      <highStop>0</highStop>
+    </joint:hinge>
 
-      <include embedded="true">
-        <xi:include href="models/ptu.model" />
-      </include>
-    </model:physical>
-
-    <model:physical name="arm">
+    <!-- <model:physical name="arm">
       <xyz>0.04 0.00 0.24</xyz>
       <rpy>0.0 0.0 0.0</rpy>
 
@@ -108,11 +119,7 @@
       <include embedded="true">
          <xi:include href="models/katana-6m180.model" />
       </include>
-    </model:physical>
-
-    <include embedded="true">
-       <xi:include href="models/cogx-platform.model" />
-    </include>
+    </model:physical> -->
   </model:physical>
 
   <!-- ground plane -->
