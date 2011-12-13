@@ -276,6 +276,27 @@ class JunctionCondition(Condition):
     
     def __hash__(self):
         return hash((self.__class__, ) + tuple(self.parts))
+
+    @staticmethod
+    def join(conds, scope=None, clas=None):
+        """Join together a list of copnditions in a Junction
+        condition, whose type is defined by the first not None
+        element. If an element of the list is already a condition of
+        that type, add its elements."""
+        parts = []
+        for c in conds:
+            if not c:
+                continue
+            if clas is None and isinstance(c, JunctionCondition):
+                clas = type(c)
+                parts += c.parts
+            elif isinstance(c, clas):
+                parts += c.parts
+            else:
+                parts.append(c)
+            if scope is None and isinstance(c, clas) and c.get_scope() is not None:
+                scope = c.get_scope()
+        return clas(parts, scope)
     
     
 class Conjunction(JunctionCondition):
@@ -285,6 +306,10 @@ class Conjunction(JunctionCondition):
         neg_parts = [c.negate() for c in self.parts]
         return Disjunction(neg_parts)
 
+    @staticmethod
+    def join(conds, scope=None):
+        return JunctionCondition.join(conds, scope, Conjunction)
+        
     @staticmethod
     def new(cond):
         """If cond is not a conjunction, return a new one with cond as an element.
@@ -297,6 +322,10 @@ class Conjunction(JunctionCondition):
         
 class Disjunction(JunctionCondition):
     """This class represents a disjunction of zero or more Conditions."""
+
+    @staticmethod
+    def join(conds, scope=None):
+        return JunctionCondition.join(conds, scope, Disjunction)
     
     def negate(self):
         neg_parts = [c.negate() for c in self.parts]

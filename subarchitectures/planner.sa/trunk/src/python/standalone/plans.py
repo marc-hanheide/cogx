@@ -53,7 +53,9 @@ class PlanNode(object):
         self.effects = set()
         self.preconds_universal = set()
         self.replan_universal = set()
-        
+
+        self.ceffs = []
+
         self.original_preconds = set()
         self.original_replan = set()
         self.explanations = {}
@@ -143,12 +145,12 @@ class MAPLPlan(networkx.MultiDiGraph):
     def get_remaining_costs(self):
         return sum(n.cost for n in self.nodes_iter() if n.status == ActionStatusEnum.EXECUTABLE)
 
-    def add_link(self, n1, n2, svar, val, conflict=False):
+    def add_link(self, n1, n2, svar, val, conflict=False, **add_args ):
         if conflict:
             type = "prevent_threat"
         else:
             type = "depends"
-        self.add_edge(n1, n2,  svar=svar, val=val, type=type)
+        self.add_edge(n1, n2,  svar=svar, val=val, type=type, **add_args)
     
     def topological_sort(self):
         return networkx.topological_sort(self)
