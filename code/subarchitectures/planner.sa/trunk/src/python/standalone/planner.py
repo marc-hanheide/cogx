@@ -105,17 +105,20 @@ class Planner(object):
                 
 
     def check_node(self, pnode, state, replan=False):
+        conds = []
         if replan:
             read = pnode.replanconds
             universal = pnode.replan_universal
-            cond = pnode.action.replan
+            conds.append(pnode.action.replan)
         else:
             read = pnode.preconds|pnode.replanconds
             universal = pnode.preconds_universal|pnode.replan_universal
-            if pnode.action.replan:
-                cond = pddl.Conjunction([pnode.action.precondition, pnode.action.replan])
-            else:
-                cond = pnode.action.precondition
+            conds.append(pnode.action.precondition)
+        for _, cconds, _, pddl_ccond, c_universal in pnode.ceffs:
+            # print "cconds:", map(str, cconds)
+            read |= cconds
+            universal |= c_universal
+            conds.append(pddl_ccond)
 
         negated_axioms = any(val == pddl.FALSE for svar, val in read if svar.function in state.problem.domain.derived or svar.modality in state.problem.domain.derived)
         # print map(str, state.problem.domain.derived)
@@ -131,12 +134,13 @@ class Planner(object):
                 return True
             return any(results)
         
-        if isinstance(pnode.action, plans.GoalAction) and cond and cond.visit(has_preferences):
+        if isinstance(pnode.action, plans.GoalAction) and conds and any(cond.visit(has_preferences) for cond in conds):
             if pnode.satisfied_softgoals:
-                cond = pddl.Conjunction([cond] + list(pnode.satisfied_softgoals))
+                conds += list(pnode.satisfied_softgoals)
 
         action = pnode.action
-        if cond:
+        if conds:
+            cond = pddl.Conjunction.join(conds)
             try:
                 action.instantiate(pnode.full_args, state.problem)
                 state.clear_axiom_cache()

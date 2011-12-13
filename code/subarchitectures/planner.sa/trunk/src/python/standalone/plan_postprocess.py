@@ -59,6 +59,27 @@ def getGoalDescription(goal, gnode, _state):
         
     return gnode
 
+def get_conditional_effects(effects):
+    def ceff_visitor(eff, results):
+        results = sum(results, [])
+        assert(not isinstance(eff, pddl.effects.UniversalEffect))
+        if isinstance(eff, pddl.effects.SimpleEffect):
+            return [(None, eff)]
+        if isinstance(eff, pddl.effects.ConditionalEffect):
+            new_res = []
+            for cond, effs in results:
+                new_res.append((pddl.Conjunction.join([cond, eff.condition]), effs))
+            return new_res
+        elif isinstance(eff, pddl.effects.ConjunctiveEffect):
+            return results
+        else:
+            assert False, eff
+
+    for eff in effects:
+        for cond, ceffs in pddl.visitors.visit(eff, ceff_visitor, []):
+            if cond is not None:
+                yield cond, ceffs
+
 def getRWDescription(action, args, _state, time):
     cond_keffs = pddl.translators.Translator.get_annotations(_state.problem.domain).get('has_commit_actions', False)
     pnode = plans.PlanNode(action, args, time, plans.ActionStatusEnum.EXECUTABLE)
@@ -134,6 +155,25 @@ def getRWDescription(action, args, _state, time):
         pnode.preconds |= eff_conds
         pnode.original_preconds |= original_eff_conds
         pnode.preconds_universal |= universal_eff_conds
+
+    pnode.ceffs = []
+
+    for cond, ceff in get_conditional_effects(effects):
+        read_vars = []
+        universal_args = []
+        rel = _state.get_relevant_vars(cond)
+        _state.clear_axiom_cache()
+        extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
+        negcond = cond.negate()
+        sat = extstate.is_satisfied(negcond, read_vars, universal_args)
+        if sat:
+            preconds, original_preconds, preconds_universal = process_conditions(extstate, read_vars, universal_args, reasons, universalReasons)
+            preconds = set(state.Fact(var, _state[var]) for var in preconds)
+            # for eff in ceffs:
+            svar = state.StateVariable.from_literal(ceff)
+            cfact = state.Fact(svar, _state[svar])
+            pnode.ceffs.append((cfact, preconds, original_preconds, negcond, preconds_universal))
+            
         
     #print "write:", time.time()-t0
 
@@ -179,7 +219,6 @@ def make_po_plan(actions, task):
     t0 = time.time()
     plan = plans.MAPLPlan(init_state=task.get_state(), goal_condition=task.get_goal())
 
-    relevant_init_vars = set()
     frontier = defaultdict(lambda: plan.init_node)
     
     readers = defaultdict(set)
@@ -210,13 +249,17 @@ def make_po_plan(actions, task):
             log.trace("%s depends artificially on init", pnode)
                          
         for svar, val in itertools.chain(pnode.replanconds, pnode.preconds):
-            if svar not in frontier:
-                relevant_init_vars.add(svar)
             readers[svar].add(pnode)
             plan.add_link(frontier[svar], pnode, svar, val)
             log.trace("%s depends on %s", pnode, frontier[svar])
+            
+        for _, preconds, _, _, _ in pnode.ceffs:
+            for svar, val in preconds:
+                readers[svar].add(pnode)
+                plan.add_link(frontier[svar], pnode, svar, val, conflict=False, ceff=True)
+                log.trace("%s conditionally depends on %s", pnode, frontier[svar])
 
-        for svar, val in pnode.effects:
+        for svar, val in itertools.chain(pnode.effects, (eff for eff, _, _, _, _ in pnode.ceffs)) :
             if svar.function in (pddl.builtin.total_cost, pddl.dtpddl.probability):
                 continue
             if state[svar] != val:
@@ -245,8 +288,6 @@ def make_po_plan(actions, task):
     #plan.add_link(previous, plan.goal_node)
 
     for svar, val in gnode.preconds:
-        if svar not in frontier:
-            relevant_init_vars.add(svar)
         plan.add_link(frontier[svar], plan.goal_node, svar, val)
 
 #     for i,pnode in plan.topological_sort():
