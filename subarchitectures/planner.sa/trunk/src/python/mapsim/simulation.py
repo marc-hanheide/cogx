@@ -128,8 +128,10 @@ class Simulation(object):
         
         def remove_visitor(cond, results=[]):
             if cond.__class__ == pddl.LiteralCondition:
-                if cond.predicate in (mapl.knowledge, mapl.update, mapl.update_fail, mapl.indomain):
+                if cond.predicate in (mapl.knowledge, mapl.update, mapl.update_fail):
                     return pddl.conditions.Truth()
+                if cond.predicate == mapl.indomain:
+                    return pddl.conditions.LiteralCondition(pddl.equals, cond.args, cond.get_scope(), cond.negated) 
             if isinstance(cond, pddl.conditions.Conjunction):
                 cond.parts = filter(lambda c: not isinstance(c, pddl.conditions.Truth) , results)
                 if not cond.parts:

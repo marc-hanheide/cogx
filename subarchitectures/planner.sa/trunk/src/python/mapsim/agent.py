@@ -78,6 +78,11 @@ class Agent(BaseAgent):
 
         prob_state = pddl.prob_state.ProbabilisticState.from_problem(self.mapltask)
         state = prob_state.determinized_state(0.1, 0.9)
+        for svar, val in state.iteritems():
+            if svar.modality == pddl.mapl.indomain:
+                ivar = svar.as_modality(pddl.mapl.i_indomain, svar.modal_args)
+                del state[svar]
+                state[ivar] = val
         
         if global_vars.mapsim_config.add_assertions:
             self.task = Task(next_id(), self.mapltask, add_assertions=True)
@@ -165,6 +170,8 @@ class Agent(BaseAgent):
             
         for f in new_facts:
             self.task.get_state().set(f)
+
+        # print self.task.get_state()
 
         self.task.mark_changed()
         self.task.replan()
