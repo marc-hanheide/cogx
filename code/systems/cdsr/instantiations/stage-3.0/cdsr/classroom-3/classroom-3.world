@@ -1,0 +1,68 @@
+include "../../common/map.inc"
+include "../../common/p3dx_with_urg.inc"
+include "../../common/box.inc"
+
+window
+(
+	#This is the size the simulation window will be in pixels
+	size [800 600]
+	#This is how many metres of the simulated environment each pixel shows
+	scale 40
+)
+
+floorplan
+(
+	bitmap "classroom-3.png"
+	#size of map in metre
+	size [7.2 3.6 2.5]
+)
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+	pose [-3 0 0 0]
+	color "red"
+)
+
+define desk position
+(
+  # actual size
+  size [0.6 0.5 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 2
+  ranger_return 1
+)
+
+define whiteboard position
+(
+  # actual size
+  size [2.0 0.02 1.5]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 2
+  ranger_return 1
+)
+
+whiteboard
+(
+name "whiteboard1"
+color "blue"
+pose [-3.55 0 0.9 90]
+)
+
+
+desk
+(
+name "desk1"
+color "red"
+pose [-1.95 -0.5 0.000 90]
+)
+
+desk
+(
+name "desk2"
+color "red"
+pose [-1.95 0.5 0.000 90]
+)
