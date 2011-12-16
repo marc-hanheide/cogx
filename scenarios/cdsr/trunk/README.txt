@@ -36,7 +36,7 @@ pbuf.protopath = /usr/local/share/rsbprotocol
 pbuf.lib = /usr/share/java/protobuf.jar
 spread.daemon = /usr/local/sbin/spread
 
-The use ant as described.
+Then use ant as described.
 
 For LISP 
 
@@ -103,6 +103,7 @@ cd {workspace}/cdsr
 
 Java:
 
+mkdir -p gen-src/java
 protoc --java_out=gen-src/java src/cdsr_messages.proto 
 
 export RSB_CLASSPATH=/usr/share/java/protobuf.jar:/usr/local/share/java/rsb.jar
@@ -113,9 +114,9 @@ C++:
 
 mkdir build
 cd build
-ccmake ..
+ccmake -DCMAKE_INSTALL_PREFIX=../output ..
 
-Change the CMAKE_INSTALL_PREFIX to ../output, then (c)onfigure and (g)enerate
+Press (c)onfigure and (g)enerate
 
 make
 make install

@@ -42,7 +42,7 @@ using namespace cdsr::rsb;
 
 void processRoom(boost::shared_ptr<Room> room) {
 	cout << "received Room " << room->id() << endl;
-	cout << "Context = " << room->context() << endl;
+	cout << "Category = " << room->category() << endl;
 
 	for (int i = 0; i < room->wall_size(); i++) {
 		const Line& next_wall = room->wall(i);

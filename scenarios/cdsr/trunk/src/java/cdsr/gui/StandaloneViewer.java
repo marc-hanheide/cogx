@@ -1,5 +1,6 @@
 package cdsr.gui;
 
+import java.awt.TextField;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -21,6 +22,9 @@ public class StandaloneViewer extends JFrame {
 	public StandaloneViewer() {
 		m_mapPanel = new LineMapPanel();
 		getContentPane().add(m_mapPanel);
+		getContentPane().add(new TextField("hellow world"));
+		getContentPane().add(new TextField("hellow world"));
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(400, 400);
 		setLocation(200, 200);

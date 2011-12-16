@@ -56,14 +56,14 @@ public class CdsrHub {
    */
   public static void main(String[] args) throws InterruptedException,
       ExecutionException, InitializeException {
-    String context = null;
+    String category = null;
     String data_file = null;
 
     if (args.length == 2) {
-      context = args[0];
+      category = args[0];
       data_file = args[1];
     } else {
-      System.out.println("You must specify the context and data file");
+      System.out.println("You must specify the category and data file");
       System.exit(1);
     }
 
@@ -82,10 +82,10 @@ public class CdsrHub {
 
     try {
       // sendSensedObjects(createTestSensedObjects(), sensed_objects_informer);
-      // sendRoom(createTestRoom(), context, room_informer);
+      // sendRoom(createTestRoom(), category, room_informer);
 
       ProblemSet ps = loadProblemSet(data_file);
-      sendRoom(ps.getRoom(), context, room_informer);
+      sendRoom(ps.getRoom(), category, room_informer);
       sendSensedObjects(ps.getObjects(), sensed_objects_informer);
 
     } catch (RSBException e) {
@@ -168,9 +168,9 @@ public class CdsrHub {
     return sensed_objects;
   }
 
-  private static void sendRoom(Room room, String context,
+  private static void sendRoom(Room room, String category,
       Informer<cdsr.rsb.CdsrMessages.Room> informer) throws RSBException {
-    cdsr.rsb.CdsrMessages.Room msg = createMessage(room, context);
+    cdsr.rsb.CdsrMessages.Room msg = createMessage(room, category);
 
     LOG.info("sending room");
 
@@ -192,12 +192,12 @@ public class CdsrHub {
   }
 
   private static cdsr.rsb.CdsrMessages.Room createMessage(Room room,
-      String context) {
+      String category) {
     cdsr.rsb.CdsrMessages.Room.Builder room_builder = cdsr.rsb.CdsrMessages.Room
         .newBuilder();
 
     room_builder.setId(room.getID());
-    room_builder.setContext(context);
+    room_builder.setCategory(category);
 
     for (Iterator<Line2D.Double> iterator = room.iterator(); iterator.hasNext();) {
       Line2D.Double next_wall = (Line2D.Double) iterator.next();

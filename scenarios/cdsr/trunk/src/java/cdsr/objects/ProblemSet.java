@@ -17,7 +17,11 @@ public class ProblemSet implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private final Room m_room;
+	
 	private final ArrayList<SensedObject> m_objects;
+	
+	
+	
 	public Room getRoom() {
 		return m_room;
 	}
