@@ -6,7 +6,7 @@ message Room
 {
   required string id = 1;
   repeated Line wall = 2;
-  required string context = 3;
+  required string category = 3;
 }
 
 message SpatialRelation
