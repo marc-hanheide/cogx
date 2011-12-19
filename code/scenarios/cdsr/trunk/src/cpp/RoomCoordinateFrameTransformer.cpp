@@ -1,9 +1,5 @@
-#include <gmpxx.h>
-#include <mpfr.h>
-
-
 #include <CGAL/Cartesian.h>
-// #include <CGAL/bounding_box.h>
+#include <CGAL/bounding_box.h>
 
 
 #include <iostream>
@@ -27,6 +23,8 @@
 #include <list>
 #include <iostream>
 
+
+//from http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Principal_component_analysis/Chapter_main.html#Subsection_68.2.1
 typedef double              FT;
 typedef CGAL::Cartesian<FT> K;
 typedef K::Point_2          Point_2;
@@ -39,52 +37,54 @@ using namespace boost;
 using namespace rsb;
 using namespace rsb::converter;
 
+using namespace rsb::patterns;
+
 // The generated protocol buffer class is in this namespace.
 using namespace cdsr::rsb;
 
-void processRoom(boost::shared_ptr<Room> room) {
-	cout << "received Room " << room->id() << endl;
-	cout << "Category = " << room->category() << endl;
 
-	for (int i = 0; i < room->wall_size(); i++) {
-		const Line& next_wall = room->wall(i);
-		cout << "[" << next_wall.start().x() << ", " << next_wall.start().y()
-				<< "] to [" << next_wall.end().x() << ", "
-				<< next_wall.end().y() << "]" << endl;
-		cout << "----------------" << endl;
-	}
+class RoomCallback: public rsb::patterns::Server::Callback<Room, Room> {
+public:
+  boost::shared_ptr<Room> call(const string& _methodName, boost::shared_ptr<Room> room) {
+    cout << "received Room " << room->id() << endl;
+    cout << "Category = " << room->category() << endl;
+    
+    
+    std::list<Point_2> points;
+    
+    for (int i = 0; i < room->wall_size(); i++) {
+      const Line& next_wall = room->wall(i);
+      cout << "[" << next_wall.start().x() << ", " << next_wall.start().y()
+      << "] to [" << next_wall.end().x() << ", "
+      << next_wall.end().y() << "]" << endl;
+      cout << "----------------" << endl;
+      
+      points.push_back(Point_2(next_wall.start().x(), next_wall.start().y()));
+      points.push_back(Point_2(next_wall.end().x(), next_wall.end().y()));
+    }
+    
+    // axis-aligned bounding box of 2D points
+    K::Iso_rectangle_2 c2 = CGAL::bounding_box(points.begin(), points.end());
+    std::cout << c2 << std::endl;
 
-}
+    return room;
+  }
+};
 
 
 int main() {
-
-  // axis-aligned bounding box of 2D points
-  std::list<Point_2> points_2;
-  points_2.push_back(Point_2(1.0, 0.0));
-  points_2.push_back(Point_2(2.0, 2.0));
-  points_2.push_back(Point_2(3.0, 5.0));
-
-	// Register specific template instantiations of the
-	// ProtocolBufferConverter for each message sent or received
-	shared_ptr<ProtocolBufferConverter<Room> > room_converter(
-			new ProtocolBufferConverter<Room> ());
+  
+  
+	shared_ptr<ProtocolBufferConverter<Room> > room_converter(new ProtocolBufferConverter<Room> ());
 	stringConverterRepository()->registerConverter(room_converter);
-
-
-	// create the listeners
-
-	ListenerPtr room_listener = Factory::getInstance().createListener(Scope(
-			"/cdsr/room"));
-
-	
-  boost::shared_ptr<rsc::threading::SynchronizedQueue<boost::shared_ptr<Room> > > queue(new rsc::threading::SynchronizedQueue<boost::shared_ptr<Room> >);
-
-  room_listener->addHandler(HandlerPtr(new QueuePushHandler<Room> (queue)));
   
-  boost::shared_ptr<Room> data = queue->pop();
-
-  processRoom(data);  
+  Factory& factory = Factory::getInstance();
+  ServerPtr server = factory.createServer(Scope("/cdsr/rooms"));
   
+  server->registerMethod("standardiseCoordinateFrame",
+                         Server::CallbackPtr(new RoomCallback()));
+
+  boost::this_thread::sleep(boost::posix_time::seconds(1000));
+
 	return EXIT_SUCCESS;
 }
