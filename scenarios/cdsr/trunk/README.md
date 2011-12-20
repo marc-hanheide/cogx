@@ -48,6 +48,7 @@ cd core/build && cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DRSC_DIR=$prefix/share
 
 Create a build.properties file containing:
 
+env.prefix = /usr/local
 pbuf.protoc = /usr/bin/protoc
 pbuf.protopath = /usr/local/share/rsbprotocol
 pbuf.lib = /usr/share/java/protobuf.jar
