@@ -37,7 +37,7 @@ define desk position
 define whiteboard position
 (
   # actual size
-  size [2.0 0.02 1.5]
+  size [2.0 0.1 1.5]
   origin [0 0 0 0]
   blob_return 1
 #  sonar_return 1
