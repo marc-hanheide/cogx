@@ -11,7 +11,7 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
 
 INCLUDE includes/spatial.sa/spatial-base.cast
-# INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 
 
@@ -45,10 +45,10 @@ JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --la
 # visibility minx miny maxx maxy
 
 VARDEFAULT fake_objects=<multiline>
-   --pos-desk1 "1.05, -0.5, 0.36, 90.0" 
+   --pos-desk1 "1.05, -0.5, 1.45, 90.0" 
    --dimensions-desk1 "0.3, 0.25, 0.36" 
    --visibility-area-desk1 "-0.6, -1.8, 2.0, 1.8"
-   --pos-desk2 "1.05, 0.5, 0.36, 90.0"
+   --pos-desk2 "1.05, 0.5, 1.45, 90.0"
    --dimensions-desk2 "0.3, 0.25, 0.36" 
    --visibility-area-desk2 "-0.6, -1.8, 2.0, 1.8" 
    --pos-whiteboard1 "-0.59, 0, 1.45, 90.0" 
@@ -80,4 +80,4 @@ CPP MG recognizer.3D ObjectRecognizer3D --simulation-only --no-learning --videon
 
 
 # viewing and debugging #######################################################
-JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "VisionData.VisualObject"
+#JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "VisionData.VisualObject"
