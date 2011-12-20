@@ -69,6 +69,13 @@ using namespace cogx::Math;
 using namespace VisionData;
 using namespace cdl;
 
+static inline bool PointIsSane(const PointCloud::SurfacePoint &p)
+{
+  return p.p.x > -10000. && p.p.x < 10000. &&
+	 p.p.y > -10000. && p.p.y < 10000. &&
+	 p.p.z > -10000. && p.p.z < 10000.;
+}
+
 /**
  * Convert points from CAST format to PCL format.
  * NOTE: this should go to VisionUtils. But that introduces a PCL dependency in VisionUtils,
@@ -88,13 +95,26 @@ static inline void ConvertSurfacePoints2PCLCloud(const vector<PointCloud::Surfac
     for(size_t i = 0; i < pcl_cloud.points.size(); i++)
     {
 	RGBValue color;
-	pcl_cloud.points[i].x = (float) points[i].p.x;
-	pcl_cloud.points[i].y = (float) points[i].p.y;
-	pcl_cloud.points[i].z = (float) points[i].p.z;
-	color.r = points[i].c.r;
-	color.g = points[i].c.g;
-	color.b = points[i].c.b;
-	pcl_cloud.points[i].rgb = color.float_value;
+	if(PointIsSane(points[i]))
+	{
+	    pcl_cloud.points[i].x = (float) points[i].p.x;
+	    pcl_cloud.points[i].y = (float) points[i].p.y;
+	    pcl_cloud.points[i].z = (float) points[i].p.z;
+	    color.r = points[i].c.r;
+	    color.g = points[i].c.g;
+	    color.b = points[i].c.b;
+	    pcl_cloud.points[i].rgb = color.float_value;
+	}
+	else
+	{
+	    pcl_cloud.points[i].x = 0.;
+	    pcl_cloud.points[i].y = 0.;
+	    pcl_cloud.points[i].z = 0.;
+	    color.r = 0;
+	    color.g = 0;
+	    color.b = 0;
+	    pcl_cloud.points[i].rgb = color.float_value;
+	}
     }
 }
 
