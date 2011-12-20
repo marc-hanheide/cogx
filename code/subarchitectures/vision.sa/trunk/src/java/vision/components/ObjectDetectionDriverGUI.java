@@ -70,12 +70,26 @@ public class ObjectDetectionDriverGUI extends JPanel implements ActionListener{
     gui.setVisible(true);
   }
   
-  public synchronized void showDetections(Map<String, Boolean> detection_results)
+  public synchronized void showDetections(Map<String, Boolean> ever_detected,
+      Map<String, Boolean> currently_detected)
   {
     StringBuilder txt = new StringBuilder();
-    for (Iterator<String> iterator = detection_results.keySet().iterator(); iterator.hasNext();) {
+    for (Iterator<String> iterator = ever_detected.keySet().iterator(); iterator.hasNext();) {
       String label = (String) iterator.next();
-      txt.append(label).append(" - ").append(detection_results.get(label)).append("\n");
+      txt.append(label).append(" - ");
+      if (currently_detected.get(label).booleanValue() == true)
+      {
+        txt.append(" currently detected\n");
+      }
+      else if (ever_detected.get(label).booleanValue() == true)
+      {
+        txt.append(" previously detected\n");
+      }
+      else
+      {
+        txt.append(" not seen\n");
+      }
+      
     }
     detectionResults.setText(txt.toString());
   }

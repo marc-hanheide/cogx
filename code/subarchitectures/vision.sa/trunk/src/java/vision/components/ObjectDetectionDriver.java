@@ -26,7 +26,8 @@ public class ObjectDetectionDriver extends ManagedComponent implements
   
   private String[] labels;
   private boolean useGui = false;
-  private Map<String, Boolean> detectionResults;
+  private Map<String, Boolean> everDetected;
+  private Map<String, Boolean> currentlyDetected;
   private ObjectDetectionDriverGUI gui;
 
   private Logger logger = Logger.getLogger(this.getClass());
@@ -43,19 +44,18 @@ public class ObjectDetectionDriver extends ManagedComponent implements
     if (visual_object.identDistrib[0] >=0.5)
     {
       logger.debug("Detected " + visual_object.identLabels[0]);
-      detectionResults.put(visual_object.identLabels[0], Boolean.TRUE);
+      everDetected.put(visual_object.identLabels[0], Boolean.TRUE);
+      currentlyDetected.put(visual_object.identLabels[0], Boolean.TRUE);
     }
     else
     {
       logger.debug("Did not detect " + visual_object.identLabels[0]);
-      // don't change back to false - we want to keep going until all objects have been detected
-      // at least once
-      //detectionResults.put(visual_object.identLabels[0], Boolean.FALSE);
+      currentlyDetected.put(visual_object.identLabels[0], Boolean.FALSE);
     }
     
    if (useGui)
    {
-     gui.showDetections(detectionResults);
+     gui.showDetections(everDetected, currentlyDetected);
    }
     
   }
@@ -63,7 +63,8 @@ public class ObjectDetectionDriver extends ManagedComponent implements
   @Override
   protected void configure(Map<String, String> _config) {
     
-    detectionResults = new HashMap<String, Boolean>();
+    everDetected = new HashMap<String, Boolean>();
+    currentlyDetected = new HashMap<String, Boolean>();
     
     if (_config.containsKey(LABELS_KEY)) {
       labels = _config.get(LABELS_KEY).split(" ");     
@@ -73,7 +74,8 @@ public class ObjectDetectionDriver extends ManagedComponent implements
     }
     
     for (int i = 0; i < labels.length; i++) {
-      detectionResults.put(labels[i], Boolean.FALSE);
+      everDetected.put(labels[i], Boolean.FALSE);
+      currentlyDetected.put(labels[i], Boolean.FALSE);
     }
     
     if (_config.containsKey(GUI_KEY)) {
