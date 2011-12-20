@@ -60,10 +60,24 @@ public class VisionUtils {
 	 * @return returns true if a 3D point is visible in the frame of the camera
 	 */
 	static public boolean isVisible(CameraParameters cam, Vector3 w) {
-		Vector2 imgCoords = projectPoint(cam, w);
-		Logger.getLogger(VisionUtils.class).debug(
-				"projected coords=[" + imgCoords.x + ", " + imgCoords.y + "]");
-		return (imgCoords.x >= 0 && imgCoords.x < cam.width && imgCoords.y >= 0 && imgCoords.y < cam.height);
+	  boolean result;
+	  // TODO duplication of code from projectPoint needs to be tidied up
+	  Vector3 p = Functions.transformInverse(cam.pose, w);
+    Logger.getLogger(VisionUtils.class).debug(
+        "in cam coords: [" + p.x + ", " + p.y + ", " + p.z + "]");
+	  if (p.z < 0)
+	  {
+	    Logger.getLogger(VisionUtils.class).debug("Behind the camera");
+	    result = false;
+	  }
+	  else
+	  {
+  		Vector2 imgCoords = projectPoint(cam, w);
+  		Logger.getLogger(VisionUtils.class).debug(
+  				"projected coords=[" + imgCoords.x + ", " + imgCoords.y + "]");
+  		result = (imgCoords.x >= 0 && imgCoords.x < cam.width && imgCoords.y >= 0 && imgCoords.y < cam.height);
+	  }
+	  return result;
 	}
 
 	/**
@@ -75,8 +89,8 @@ public class VisionUtils {
 	 */
 	static public Vector2 projectPoint(CameraParameters cam, Vector3 w) {
 		Vector3 p = Functions.transformInverse(cam.pose, w);
-		Logger.getLogger(VisionUtils.class).debug(
-				"in cam coords: [" + p.x + ", " + p.y + ", " + p.z + "]");
+//		Logger.getLogger(VisionUtils.class).debug(
+//				"in cam coords: [" + p.x + ", " + p.y + ", " + p.z + "]");
 		Logger.getLogger(VisionUtils.class).debug(
 				"cam params: [" + cam.fx + ", " + cam.fy + ", " + cam.cx + ", "
 						+ cam.cy + "]");
