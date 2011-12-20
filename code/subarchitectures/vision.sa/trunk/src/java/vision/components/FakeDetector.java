@@ -127,7 +127,7 @@ public class FakeDetector extends ManagedComponent implements
 		double z = Double.parseDouble(labels[2]);
 		double theta = Double.parseDouble(labels[3]) * Math.PI / 180.0;
 		println("predefined position configured: " + label + " " + x + " " + y
-				+ " " + theta);
+				+ " " + z + " " + theta);
 		Pose3 pose = Functions
 				.pose3FromEuler(new Vector3(x, y, z), 0, 0, theta);
 		knowObjects.put(label, pose);
