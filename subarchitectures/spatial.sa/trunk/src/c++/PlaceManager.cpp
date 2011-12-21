@@ -1381,19 +1381,15 @@ SpatialData::PlacePtr PlaceManager::getCurrentPlace() {
 NavData::FNodePtr
 PlaceManager::getCurrentNavNode()
 {
-  log("getCurrentNavNode called");
+  // log("getCurrentNavNode called");
   vector<NavData::FNodePtr> nodes;
-  log("1");
   getMemoryEntries<NavData::FNode>(nodes, 0);
 
   vector<NavData::RobotPose2dPtr> robotPoses;
-  log("2");
   getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
-  log("3");
 
   if (robotPoses.size() == 0) {
-    log("Could not find RobotPose!");
-    log("getCurrentNavNode exited");
+    println("getCurrentNavNode exited - Could not find RobotPose!");
     return 0;
   }
 
@@ -1416,10 +1412,10 @@ PlaceManager::getCurrentNavNode()
       }
     }
     catch (IceUtil::NullHandleException e) {
-      log("Error! FNode suddenly disappeared!");
+      println("Error! FNode suddenly disappeared!");
     }
   }
-  log("getCurrentNavNode exited");
+ // log("getCurrentNavNode exited");
   return ret;
 }
 
