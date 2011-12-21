@@ -129,16 +129,7 @@ INCLUDE includes/conceptual.sa/conceptual-test.cast
 
 # Categorical.SA ############################################################
 
-SUBARCHITECTURE categorical.sa
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
-																																														# these flags were on the dora-real.cast file
-CPP GD categorical.dataprovider CategoricalDataProvider --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --laser-robot-servers-hostname  %(host:localhost)  # --correct-scans --convert-scans-to-sick --display-gridmap
-CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
-CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --placemanager place.manager
-CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --placemanager place.manager
-
-
+INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
 
 # Vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
