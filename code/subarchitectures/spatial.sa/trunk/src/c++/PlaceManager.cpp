@@ -223,7 +223,7 @@ PlaceManager::runComponent()
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(change.address);
 
-  while(true) {
+  while(isRunning()) {
     sleep(5);
     evaluateUnexploredPaths();
   }
