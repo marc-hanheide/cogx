@@ -32,7 +32,7 @@ public abstract class CDSRMarshaller {
 	public static void saveProblemSet(String _filename, Room _room,
 			ArrayList<SensedObject> _objects) throws IOException {
 		saveProblemSet(_filename, new ProblemSet(_room,
-				new ArrayList<SensedObject>(0),
+				_objects,
 				new ArrayList<ObjectRelation>(0)));
 	}
 
