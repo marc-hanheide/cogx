@@ -10,10 +10,6 @@ import java.util.Map;
 import javax.swing.JFrame;
 
 import mathlib.Functions;
-
-import cogx.Math.Pose3;
-import cogx.Math.Vector3;
-
 import NavData.LineMap;
 import NavData.LineMapSegement;
 import VisionData.Vertex;
@@ -28,6 +24,8 @@ import cdsr.gui.LineMapPanel;
 import cdsr.marshall.CDSRMarshaller;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
+import cogx.Math.Pose3;
+import cogx.Math.Vector3;
 
 public class CDSRBridge extends ManagedComponent {
 
@@ -82,10 +80,10 @@ public class CDSRBridge extends ManagedComponent {
 	private void visualObjectUpdated(String _id, VisualObject _visualObject) {
 
 		if (_visualObject.identDistrib[0] >= 0.5) {
-			println("Detected " + _visualObject.identLabels[0] + " at " + _id);
+			log("Detected " + _visualObject.identLabels[0] + " at " + _id);
 			storeObject(_id, _visualObject);
 		} else {
-			println("Did not detect " + _visualObject.identLabels[0] + " at "
+			log("Did not detect " + _visualObject.identLabels[0] + " at "
 					+ _id);
 		}
 
@@ -121,7 +119,7 @@ public class CDSRBridge extends ManagedComponent {
 					_visualObject.pose);
 
 			if (line != null) {
-				println("line: " + line.x1 + "," + line.y1 + "," + line.x2
+				log("line: " + line.x1 + "," + line.y1 + "," + line.x2
 						+ "," + line.y2);
 
 				// doesn't seem to happen yet
