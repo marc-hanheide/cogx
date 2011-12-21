@@ -23,10 +23,10 @@ public class SensedObject extends AbstractPhysicalObject {
 
 	/**
 	 * @param _id
-	 * @param _walls
+	 * @param _edges
 	 */
-	public SensedObject(String _id, ArrayList<Line2D.Double> _walls, String _type) {
-		super(_id, _walls);
+	public SensedObject(String _id, ArrayList<Line2D.Double> _edges, String _type) {
+		super(_id, _edges);
 		m_type = _type;
 	}
 
