@@ -83,8 +83,7 @@ public class CDSRBridge extends ManagedComponent {
 			log("Detected " + _visualObject.identLabels[0] + " at " + _id);
 			storeObject(_id, _visualObject);
 		} else {
-			log("Did not detect " + _visualObject.identLabels[0] + " at "
-					+ _id);
+			log("Did not detect " + _visualObject.identLabels[0] + " at " + _id);
 		}
 
 	}
@@ -119,8 +118,8 @@ public class CDSRBridge extends ManagedComponent {
 					_visualObject.pose);
 
 			if (line != null) {
-				log("line: " + line.x1 + "," + line.y1 + "," + line.x2
-						+ "," + line.y2);
+				log("line: " + line.x1 + "," + line.y1 + "," + line.x2 + ","
+						+ line.y2);
 
 				// doesn't seem to happen yet
 				// if (lines.contains(line)) {
@@ -160,10 +159,10 @@ public class CDSRBridge extends ManagedComponent {
 			m_sensedObjects = new HashMap<String, SensedObject>();
 		}
 
-		SensedObject previous = m_sensedObjects.put(_id,
-				toCDSRObject(_id, _visualObject));
-
-		if (previous == null) {
+		// this assume objects don't get updated on WM in meaningful ways after
+		// they've been successfully detected
+		if (!m_sensedObjects.containsKey(_id)) {
+			m_sensedObjects.put(_id, toCDSRObject(_id, _visualObject));
 			m_panel.updateObjects(new ArrayList<SensedObject>(m_sensedObjects
 					.values()));
 		}
