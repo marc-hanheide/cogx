@@ -13,7 +13,7 @@ COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
 #INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
-JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-3-all.cdsr
+JAVA MG cdsrBridge cdsr.components.CDSRBridge --output classroom-3-all.cdsr
 
 # use this in real:
 #INCLUDE includes/spatial.sa/spatial-ptz.cast
