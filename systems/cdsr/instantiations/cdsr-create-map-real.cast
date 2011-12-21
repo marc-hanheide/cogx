@@ -19,7 +19,7 @@ CPP MG place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 CPP MG path.query PathQueryProcessor #--no-indirect-paths 
 CPP MG map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-planes --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors
 
-#JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-3-walls.cdsr
+JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-3-walls.cdsr
 
 # Vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
@@ -29,7 +29,7 @@ CPP MG cameramount  CameraMount --use_ptz --camids "0" --cam_poses_xml "%(vision
 
 
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
-JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --labels "desk1 desk2 whiteboard1" 
+JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --labels "desk1 desk2 desk3 desk4 desk5 desk6 desk7 desk8 whiteboard1" 
 
 # FakeDetector data, in world coordinates where robot starts at 0, 0, 0, 0
 # pos x y z theta (centre of object)
@@ -37,13 +37,31 @@ JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --la
 # visibility minx miny maxx maxy
 
 VARDEFAULT fake_objects=<multiline>
-   --pos-desk1 "1.05, -0.5, 1.0, 90.0" 
+   --pos-desk1 "1.05, -0.5, 1.45, 90.0" 
    --dimensions-desk1 "0.3, 0.25, 0.36" 
    --visibility-area-desk1 "-0.6, -1.8, 2.0, 1.8"
-   --pos-desk2 "1.05, 0.5, 1.0, 90.0"
+   --pos-desk2 "1.05, 0.5, 1.45, 90.0"
    --dimensions-desk2 "0.3, 0.25, 0.36" 
    --visibility-area-desk2 "-0.6, -1.8, 2.0, 1.8" 
-   --pos-whiteboard1 "-0.59, 0, 1.0, 90.0" 
+   --pos-desk3 "2.25, -0.5, 1.45, 90.0" 
+   --dimensions-desk3 "0.3, 0.25, 0.36" 
+   --visibility-area-desk3 "0.6, -1.8, 3.2, 1.8"
+   --pos-desk4 "2.25, 0.5, 1.45, 90.0"
+   --dimensions-desk4 "0.3, 0.25, 0.36" 
+   --visibility-area-desk4 "0.6, -1.8, 3.2, 1.8"
+   --pos-desk5 "3.45, -0.5, 1.45, 90.0" 
+   --dimensions-desk5 "0.3, 0.25, 0.36" 
+   --visibility-area-desk5 "1.8, -1.8, 4.4, 1.8"
+   --pos-desk6 "3.45, 0.5, 1.45, 90.0"
+   --dimensions-desk6 "0.3, 0.25, 0.36" 
+   --visibility-area-desk6 "1.8, -1.8, 4.4, 1.8"
+   --pos-desk7 "4.65, -0.5, 1.45, 90.0" 
+   --dimensions-desk7 "0.3, 0.25, 0.36" 
+   --visibility-area-desk7 "3.0, -1.8, 5.6, 1.8"
+   --pos-desk8 "4.65, 0.5, 1.45, 90.0"
+   --dimensions-desk8 "0.3, 0.25, 0.36" 
+   --visibility-area-desk8 "3.0, -1.8, 5.6, 1.8"
+   --pos-whiteboard1 "-0.59, 0, 1.45, 90.0" 
    --dimensions-whiteboard1 "1.0, 0.01, 0.75" 
    --visibility-area-whiteboard1 "-0.6, -1.8, 6.6, 1.8"  
 </multiline>
@@ -56,18 +74,28 @@ VARDEFAULT plyroot_=./instantiations/ply-models
 VARDEFAULT or3d_sift_files=<multiline>
    %(siftroot_)/xxx.sift
    %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift   
+   %(siftroot_)/xxx.sift
    %(siftroot_)/xxx.sift   
 </multiline>
 
 VARDEFAULT or3d_ply_files=<multiline>
    %(plyroot_)/desk.ply
+   %(plyroot_)/desk.ply 
+   %(plyroot_)/desk.ply
+   %(plyroot_)/desk.ply 
+   %(plyroot_)/desk.ply
    %(plyroot_)/desk.ply   
+   %(plyroot_)/desk.ply
+   %(plyroot_)/desk.ply 
    %(plyroot_)/whiteboard.ply
 </multiline>
 
-#desk3 desk4 desk5 desk6 desk7 desk8 desk9 desk10 desk11 desk12 desk13 desk14 desk15 desk16
-
-VARDEFAULT or3d_labels=desk1 desk2 whiteboard1
+VARDEFAULT or3d_labels=desk1 desk2 desk3 desk4 desk5 desk6 desk7 desk8 whiteboard1
 CPP MG recognizer.3D ObjectRecognizer3D --simulation-only --no-learning --videoname VideoServer --camid "0" --display --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 
