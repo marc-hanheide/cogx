@@ -66,3 +66,45 @@ name "desk2"
 color "red"
 pose [-1.95 0.5 0.000 90]
 )
+
+desk
+(
+name "desk3"
+color "red"
+pose [-0.75 -0.5 0.000 90]
+)
+
+desk
+(
+name "desk4"
+color "red"
+pose [-0.75 0.5 0.000 90]
+)
+
+desk
+(
+name "desk5"
+color "red"
+pose [0.45 -0.5 0.000 90]
+)
+
+desk
+(
+name "desk6"
+color "red"
+pose [0.45 0.5 0.000 90]
+)
+
+desk
+(
+name "desk7"
+color "red"
+pose [1.65 -0.5 0.000 90]
+)
+
+desk
+(
+name "desk8"
+color "red"
+pose [1.65 0.5 0.000 90]
+)
