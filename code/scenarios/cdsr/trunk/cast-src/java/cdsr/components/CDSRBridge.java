@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import mathlib.Functions;
 import NavData.LineMap;
 import NavData.LineMapSegement;
+import NavData.RobotPose2d;
 import VisionData.Vertex;
 import VisionData.VisualObject;
 import cast.CASTException;
@@ -40,6 +41,8 @@ public class CDSRBridge extends ManagedComponent {
 	public CDSRBridge() {
 		m_panel = new LineMapPanel();
 	}
+
+	private RobotPose2d m_currentRobotPose;
 
 	@Override
 	protected void start() {
@@ -74,6 +77,18 @@ public class CDSRBridge extends ManagedComponent {
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
 				VisualObject.class, WorkingMemoryOperation.OVERWRITE),
 				voReceiver);
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				RobotPose2d.class, WorkingMemoryOperation.OVERWRITE),
+				new WorkingMemoryChangeReceiver() {
+
+					@Override
+					public void workingMemoryChanged(WorkingMemoryChange _wmc)
+							throws CASTException {
+						m_currentRobotPose = getMemoryEntry(_wmc.address,
+								RobotPose2d.class);
+					}
+				});
 
 	}
 
@@ -140,16 +155,31 @@ public class CDSRBridge extends ManagedComponent {
 	}
 
 	private Line2D.Double toCDSRLine(Vertex _vertex1, Vertex _vertex2,
-			Pose3 _pose) {
+			Pose3 _objectPoseRobotCoords) {
 
-		Point2D.Double pt1 = toWorldPoint(_vertex1, _pose);
-		Point2D.Double pt2 = toWorldPoint(_vertex2, _pose);
 		Line2D.Double line = null;
-		// A line in 3D may become a point in 2D
-		if (!pt1.equals(pt2)) {
-			line = new Line2D.Double(pt1, pt2);
+
+		if (m_currentRobotPose != null) {
+
+			Pose3 robotPose3D = Functions.pose3FromEuler(new Vector3(
+					m_currentRobotPose.x, m_currentRobotPose.y, 0.0), 0.0, 0.0,
+					m_currentRobotPose.theta);
+
+			Pose3 objectPoseWorldCoords = Functions.transform(robotPose3D,
+					_objectPoseRobotCoords);
+
+			Point2D.Double pt1 = toWorldPoint(_vertex1, objectPoseWorldCoords);
+			Point2D.Double pt2 = toWorldPoint(_vertex2, objectPoseWorldCoords);
+			// A line in 3D may become a point in 2D
+			if (!pt1.equals(pt2)) {
+				line = new Line2D.Double(pt1, pt2);
+			} else {
+				// println("no line, returning null");
+			}
 		} else {
-			// println("no line, returning null");
+			getLogger().error(
+					"current robot pose is null, not generating line",
+					getLogAdditions());
 		}
 		return line;
 	}
@@ -158,6 +188,9 @@ public class CDSRBridge extends ManagedComponent {
 		if (m_sensedObjects == null) {
 			m_sensedObjects = new HashMap<String, SensedObject>();
 		}
+
+		// println("object pose: " +
+		// Functions.toString(_visualObject.pose.pos));
 
 		// this assume objects don't get updated on WM in meaningful ways after
 		// they've been successfully detected
