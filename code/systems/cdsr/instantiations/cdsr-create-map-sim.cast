@@ -11,9 +11,9 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
 
 INCLUDE includes/spatial.sa/spatial-base.cast
-INCLUDE includes/spatial.sa/spatial-peekabot.cast
+#INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
-
+JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-3-all.cdsr
 
 # use this in real:
 #INCLUDE includes/spatial.sa/spatial-ptz.cast
@@ -26,7 +26,7 @@ CPP MG place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.
 CPP MG path.query PathQueryProcessor #--no-indirect-paths 
 CPP MG map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-planes --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors
 
-#JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-3-walls.cdsr
+
 
 # Vision ######################################################################
 INCLUDE includes/vision.sa/vision-base.cast
