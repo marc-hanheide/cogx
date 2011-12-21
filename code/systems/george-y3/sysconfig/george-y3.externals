@@ -63,5 +63,5 @@
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
 # ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
 # ^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
-#^/code/tools/v4r/trunk                            tools/v4r
+# ^/code/tools/v4r/trunk                            tools/v4r
 
