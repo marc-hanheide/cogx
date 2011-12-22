@@ -4,7 +4,9 @@ CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 MAINTAINER = ari
 
-#PATCHFILES= gar-base.diff
+
+MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
+
 
 DEB_PACKAGES=	libglew1.5-dev@ubuntu \
 		libdevil-dev@ubuntu \
@@ -12,7 +14,7 @@ DEB_PACKAGES=	libglew1.5-dev@ubuntu \
 
 LIBDEPS = 
 
-MFLAGS=$(MFLAGS_NUMCPU)
+#MFLAGS=$(MFLAGS_NUMCPU)
 
 CONFIGURE_SCRIPTS = cmake
 BUILD_SCRIPTS = $(WORKSRC)/Makefile
