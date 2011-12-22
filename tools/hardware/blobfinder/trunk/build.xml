@@ -61,7 +61,8 @@
         <!-- Cleanup                                                             -->
         <!-- =================================================================== -->
         <target name="clean">
-                <delete dir="${src.dir}/**"/>
+		<delete file="${src.dir}/.depend" />
+		<delete dir="${src.dir}/blobfinder" />
         </target>
 
 </project>
