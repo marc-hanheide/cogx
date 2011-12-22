@@ -39,6 +39,7 @@
 #include "v4r/PCLAddOns/PCLFunctions.h"
 #include "v4r/TomGine/tgTomGineThread.h"
 
+#include "SegUtilsFunctions.h"
 
 namespace cast
 {
