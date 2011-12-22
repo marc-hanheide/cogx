@@ -67,7 +67,10 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-
+		<delete file="${src.dir}/.depend" />
+		<delete> 
+			<fileset dir="${src.dir}/ptz" includes="*.java" />
+		</delete> 
 	</target>
 
 
