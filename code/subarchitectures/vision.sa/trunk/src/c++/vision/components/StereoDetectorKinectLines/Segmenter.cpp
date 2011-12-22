@@ -388,9 +388,6 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for Segmenter: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
 last = current;
 
-  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-  
-  
   /// Draw VisionCore image
   if(showImages)
   {
@@ -415,22 +412,22 @@ last = current;
  * @param iplImage IplImage source
  * @param matImage cv::Mat image destination
  */
-void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
-{
-  image = cv::Mat_<cv::Vec3b>(iplImage.height, iplImage.width); 
-  
-  for (int v = 0; v < iplImage.height; ++v)
-  {
-    uchar *d = (uchar*) iplImage.imageData + v*iplImage.widthStep;
-    for (int u = 0; u < iplImage.width; ++u, d+=3)
-    {
-      cv::Vec3b &ptCol = image(v,u);
-      ptCol[0] = d[0];
-      ptCol[1] = d[1];
-      ptCol[2] = d[2];
-    }
-  }
-}
+// void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
+// {
+//   image = cv::Mat_<cv::Vec3b>(iplImage.height, iplImage.width); 
+//   
+//   for (int v = 0; v < iplImage.height; ++v)
+//   {
+//     uchar *d = (uchar*) iplImage.imageData + v*iplImage.widthStep;
+//     for (int u = 0; u < iplImage.width; ++u, d+=3)
+//     {
+//       cv::Vec3b &ptCol = image(v,u);
+//       ptCol[0] = d[0];
+//       ptCol[1] = d[1];
+//       ptCol[2] = d[2];
+//     }
+//   }
+// }
 
 
 /**

@@ -45,7 +45,12 @@
 #include "v4r/TomGine/tgTomGineThread.h"
 #include "v4r/svm/SVMPredictor.h"
 #include "v4r/GraphCut/GraphCut.h"
+#include "v4r/SurfaceModeling/SurfaceModeling.hh"
+#include "v4r/PCLAddOns/BilateralFilter.hh"
+#include "v4r/PCLAddOns/SubsamplePointCloud.hh"
+#include "v4r/PCLAddOns/NormalsEstimationNR.hh"
 
+#include "SegUtilsFunctions.h"
 
 namespace cast
 {
@@ -62,12 +67,27 @@ private:
 
   /// TODO new ones
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
+  surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
+  pa::Annotation *annotation;                               ///< Annotation from file
   pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
   svm::SVMPredictor *svm;                                   ///< SVM-predictor
   gc::GraphCut *graphCut;                                   ///< Graph cut
-  
+
+  int nr_anno;                                              ///< Number of annotated objects
+  std::vector<int> anno;                                    ///< Annotation of all pcl_model_indices
+  std::vector<bool> texture;                                ///< Texture on 2D image space
+
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud (dilation)
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
-  std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
+//  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_vis;     ///< PCL point cloud (dilation)
+//  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_vis;        ///< Normals of the point cloud
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;///< indices of the surface patches (from fitter for debugging => TODO Remove later)
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
+  
+  std::vector<cv::Ptr<surface::SurfaceModel> > surfaces;    ///< Surfaces container (for Planes, NURBS)
+  std::vector< std::vector<unsigned> > graphCutGroups;      ///< Graph cut groups of surface patch models
+
+//   std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
   /// TODO end new ones
  
   Z::VisionCore *vcore;                                     ///< VisionCore
@@ -76,7 +96,6 @@ private:
   pclA::PlanePopout *planePopout;                           ///< PlanePopout for SOI calculation (ground truth data)
   Z::CalculateRelations *relations;                         ///< Calculate relations between features.
   Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
-  pa::Annotation *annotation;                               ///< Annotation from file
   Z::GraphCut *graphCutter;                                 ///< Graph cutter
 
   int runtime;                                              ///< Overall processing runtime for one image (pair)
@@ -93,7 +112,7 @@ private:
   
   std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect sensor
   cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud (dilation)
+  cv::Mat_<cv::Vec3b> kinect_point_cloud_image;             ///< Image of the kinect point cloud
   
   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois; ///< Estimated sois from the PlanePopout
   std::vector<unsigned> soi_labels;                           ///< Labels of the estimated sois

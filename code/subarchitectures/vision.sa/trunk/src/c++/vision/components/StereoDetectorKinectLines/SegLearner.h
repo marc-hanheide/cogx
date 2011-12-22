@@ -47,7 +47,9 @@
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 #include "v4r/PCLAddOns/BilateralFilter.hh"
 #include "v4r/PCLAddOns/SubsamplePointCloud.hh"
+#include "v4r/PCLAddOns/NormalsEstimationNR.hh"
 
+#include "SegUtilsFunctions.h"
 
 namespace cast
 {
@@ -68,15 +70,23 @@ private:
   pclA::SubsamplePointCloud *subsample;                     ///< Subsample point cloud
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
+  pa::Annotation *annotation;                               ///< Annotation from file
   pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
   svm::SVMFileCreator *svm;                                 ///< SVM-predictor
-  
+
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
+  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_new;            ///< Normals of the point cloud
+  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_repro;      ///< Reprocessed normals after fitting => TODO Remove later
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;    ///< indices of the surface patches (from fitter for debugging => TODO Remove later)
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
-  
+
+  int nr_anno;                                              ///< Number of annotated objects
+  std::vector<int> anno;                                    ///< Annotation of all pcl_model_indices
+  std::vector<bool> texture;                                ///< Texture on 2D image space
+
   std::vector<pcl::PointIndices::Ptr> plane_indices;        ///< Plane indices after model selection  /// TODO REMOVE
   std::vector<pcl::PointIndices::Ptr> nurbs_indices;        ///< NURBS indices after model selection  /// TODO REMOVE
+  std::vector<cv::Ptr<surface::SurfaceModel> > surfaces;    ///< Surfaces container (for Planes, NURBS)
   /// TODO end new ones
 
  
@@ -87,7 +97,6 @@ private:
   Z::SVMFileCreator *svmFileCreator;                        ///< SVM training file creator
 //  Z::GraphCut *graphCutter;                                 ///< Graph cutter
   pclA::PlanePopout *planePopout;                           ///< PlanePopout for SOI calculation (ground truth data)
-  pa::Annotation *annotation;                               ///< Annotation from file
 
   int runtime;                                              ///< Overall processing runtime for one image (pair)
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
