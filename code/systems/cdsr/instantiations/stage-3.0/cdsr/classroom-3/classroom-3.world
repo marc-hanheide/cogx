@@ -30,8 +30,8 @@ define desk position
   origin [0 0 0 0]
   blob_return 1
 #  sonar_return 1
-  laser_return 2
-  ranger_return 1
+  laser_return 0
+  ranger_return 0
 )
 
 define whiteboard position
@@ -41,8 +41,8 @@ define whiteboard position
   origin [0 0 0 0]
   blob_return 1
 #  sonar_return 1
-  laser_return 2
-  ranger_return 1
+  laser_return 0
+  ranger_return 0
 )
 
 whiteboard
