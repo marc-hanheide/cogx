@@ -69,9 +69,10 @@
 	<!-- Cleanup                                                             -->
 	<!-- =================================================================== -->
 	<target name="clean">
-		<delete dir="${src.dir}/VisionData/**" />
-		<delete dir="${src.dir}/ObjectRecognizerSrv/**" />
-		<delete dir="${src.dir}/.depend" />
+		<delete file="${src.dir}/.depend" />
+		<delete dir="${src.dir}/VisionData" />
+		<delete dir="${src.dir}/ObjectRecognizerSrv" />
+		<delete dir="${src.dir}/ObjectRecognizerIce" />
 	</target>
 
 
