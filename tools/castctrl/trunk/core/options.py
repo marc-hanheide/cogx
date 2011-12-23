@@ -150,6 +150,11 @@ class CCastOptions(object):
             self._environmentDefault = self._mergeEnvironment(startup_environ, self.environmentScriptDefault)
         return self._environmentDefault
 
+    @property
+    def envVarsFromScript(self):
+        evars = self._mergeEnvironment({}, self.environscript)
+        return evars.keys()
+
     def xe(self, shexpr, environ=None):
         if not environ:
             environ = self.environ

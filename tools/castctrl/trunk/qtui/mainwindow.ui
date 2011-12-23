@@ -1663,7 +1663,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>780</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCast">
@@ -1671,9 +1671,11 @@ p, li { white-space: pre-wrap; }
      <string>&amp;Cast</string>
     </property>
     <addaction name="actShowEnv"/>
+    <addaction name="actCreateEnvScript"/>
+    <addaction name="separator"/>
+    <addaction name="actStartTerminal"/>
     <addaction name="separator"/>
     <addaction name="actQuit"/>
-    <addaction name="actStartTerminal"/>
    </widget>
    <widget class="QMenu" name="menu_Process">
     <property name="title">
@@ -1844,7 +1846,10 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actShowEnv">
    <property name="text">
-    <string>Show ENV</string>
+    <string>Show environment in log</string>
+   </property>
+   <property name="toolTip">
+    <string>Write the environment to the log window</string>
    </property>
   </action>
   <action name="actCtxShowBuildError">
@@ -2049,6 +2054,14 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Cancel Build</string>
+   </property>
+  </action>
+  <action name="actCreateEnvScript">
+   <property name="text">
+    <string>Create env script BUILD/castenv.sh</string>
+   </property>
+   <property name="toolTip">
+    <string>Create an environment script in Build directory</string>
    </property>
   </action>
  </widget>
