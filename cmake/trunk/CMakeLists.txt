@@ -22,6 +22,8 @@ endif(USE_CCACHE)
 
 project (CogX)
 
+add_custom_target (clean-all)
+
 #message(${CMAKE_CXX_COMPILER})
 get_filename_component(COGX_ROOT . ABSOLUTE)
 
@@ -268,8 +270,6 @@ endif(SLICE_IDENTITY)
 #message(" ice slice: " ${ICE_SLICE_DIR})
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
-
-add_custom_target (clean-all)
 
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
