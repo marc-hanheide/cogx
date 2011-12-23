@@ -15,3 +15,4 @@ add_custom_target (clean-Abducer
    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
    COMMAND make clean
    )
+add_dependencies(clean-all DEPENDS clean-Abducer)
