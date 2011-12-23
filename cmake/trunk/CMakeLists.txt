@@ -280,16 +280,24 @@ if(DO_ANT)
 	 -Dice.jar=${ICE_HOME}/share/java/Ice.jar
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
+   
+   # (2011-12-23,mmarko):
+   #   This target (clean-*) will be discovered and executed by CAST Control
+   add_custom_target (clean-ant_build
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      COMMAND ant clean
+      )
 endif(DO_ANT)
 
 option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
 if(DO_V4R_MAKE)
-   add_custom_target( v4r_build ALL )
-   add_custom_command(
-      TARGET  v4r_build
-      COMMAND bash cmake/makev4r.sh
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      )
+   #add_custom_target( v4r_build ALL )
+   #add_custom_command(
+   #   TARGET  v4r_build
+   #   COMMAND bash cmake/makev4r.sh
+   #   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+   #   )
+   MESSAGE(STATUS "V4R is no longer part of CogX build. Use GAR installer.")
 endif()
 
 MESSAGE(STATUS " * Build type: " ${CMAKE_BUILD_TYPE})
