@@ -555,6 +555,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         # Event connections
         self.connect(self.ui.actQuit, QtCore.SIGNAL("triggered()"), self.close)
         self.connect(self.ui.actShowEnv, QtCore.SIGNAL("triggered()"), self.onShowEnvironment)
+        self.connect(self.ui.actCreateEnvScript, QtCore.SIGNAL("triggered()"), self.onWriteEnvironment)
 
         # Config actions
         self.connect(self.ui.actOpenClientConfig, QtCore.SIGNAL("triggered()"), self.onBrowseClientConfig)
@@ -1159,12 +1160,25 @@ class CCastControlWnd(QtGui.QMainWindow):
         for h in self._remoteHosts:
             h.agentProxy.startBuild(target)
 
+    def _writeEnvironScript(self, fname):
+        f = open(fname, "w")
+        f.write("#!/bin/bash")
+        for k in self._options.envVarsFromScript:
+            f.write("export %s='%s'\n" % (k, self._options.environ[k]))
+        f.close()
+
+    def onWriteEnvironment(self):
+        bdir=self._options.xe("${COGX_BUILD_DIR}")
+        if not os.path.exists(bdir): os.makedirs(bdir)
+        self._writeEnvironScript(os.path.join(bdir, "castenv.sh"))
+
     def _runLocalBuild(self, target):
         if not self._localBuildEnabled or not self._checkBuidDir():
             return
 
         p = self._manager.getProcess("BUILD")
         if p != None:
+            self._writeEnvironScript(os.path.join(p.workdir, "castenv.sh"))
             self.ui.tabWidget.setCurrentWidget(self.ui.tabBuildLog)
             self.buildLog.clearOutput()
             if not self.buildLog.log.hasSource(p): self.buildLog.log.addSource(p)
@@ -1365,7 +1379,7 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def onShowEnvironment(self):
-        cmd = "bash -c env"
+        cmd = 'bash -c "env | sort"'
         # procman.runCommand(cmd, name="ENV")
         procman.xrun_wait(cmd)
 
