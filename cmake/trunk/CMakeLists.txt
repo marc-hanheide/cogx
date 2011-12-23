@@ -269,6 +269,8 @@ endif(SLICE_IDENTITY)
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}/build.properties)
 
+add_custom_target (clean-all)
+
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
    ADD_CUSTOM_TARGET( ant_build ALL )
@@ -283,10 +285,11 @@ if(DO_ANT)
    
    # (2011-12-23,mmarko):
    #   This target (clean-*) will be discovered and executed by CAST Control
-   add_custom_target (clean-ant_build
+   add_custom_target (clean-AntBuild
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMAND ant clean
       )
+   add_dependencies(clean-all DEPENDS clean-AntBuild)
 endif(DO_ANT)
 
 option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
