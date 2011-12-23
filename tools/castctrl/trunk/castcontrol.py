@@ -7,6 +7,7 @@ import os, sys, time, signal
 import re
 import tempfile
 import copy
+import subprocess
 import threading
 import ConfigParser
 from PyQt4 import QtCore, QtGui
@@ -1194,8 +1195,29 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._runLocalBuild(target)
         self._runRemoteBuild(target)
 
+    def _getMakeCleanTargets(self):
+        bashCompletion = "/etc/bash_completion" # TODO: system dependent
+        bdir=self._options.xe("${COGX_BUILD_DIR}")
+        if not os.path.exists(bdir):
+            return ""
+        script = """
+        COMP_LINE="make clean-"
+        COMP_POINT=99
+        COMP_WORDS=( make clean- )
+        COMP_CWORD=1
+        _make
+        echo "${COMPREPLY[@]}" 
+        """.split("\n")
+        script = [
+                'source %s' % bashCompletion,
+                'cd "%s"' % bdir
+               ] + script
+        script = ";".join([l.strip() for l in script if len(l.strip())])
+        rv = subprocess.check_output(["bash", "-c", script])
+        return rv.split("\n")[0]
+
     def onRunMakeClean(self):
-        target = "clean"
+        target = "clean " + self._getMakeCleanTargets()
         self._runLocalBuild(target)
         self._runRemoteBuild(target)
 
