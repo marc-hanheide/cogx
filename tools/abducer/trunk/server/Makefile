@@ -176,7 +176,7 @@ $(MBIN): $(M_SOURCES) $(LIBABDUCER)
 .PHONY: clean
 clean:
 	rm -rf $(OBJS) abducer.cc abducer.h \
-		protocol.pb-*.cc protocol.pb-*.h protocol.pb.h \
+		protocol.pb-*.o protocol.pb-*.cc protocol.pb-*.h protocol.pb.h \
 		Mercury \
 		$(addsuffix .err, $(basename $(M_SOURCES))) \
 		$(addsuffix .mh, $(basename $(M_SOURCES))) \
