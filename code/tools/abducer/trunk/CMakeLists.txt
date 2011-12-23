@@ -9,3 +9,9 @@ add_custom_command (
 	COMMAND make ICE_HOME=${ICE_HOME}
 )
 
+# (2011-12-23,mmarko):
+#   This target (clean-*) will be discovered and executed by CAST Control
+add_custom_target (clean-Abducer
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+   COMMAND make clean
+   )
