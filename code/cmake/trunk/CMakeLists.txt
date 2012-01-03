@@ -22,6 +22,30 @@ endif(USE_CCACHE)
 
 project (CogX)
 
+# (mmarko, 2012-01-03)
+# The clean-all target is used for cleaning stuff in components that are built
+# by custom build scripts (eg. a Makefile or ant).
+#
+# Example with a Makefile that creates binaries in the source directory:
+#    add_custom_target (MyMakeProject ALL
+#       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+#       COMMAND make
+#       )
+#    add_custom_target (clean-MyMakeProject
+#       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+#       COMMAND make clean
+#       )
+#    if(TARGET clean-all)
+#       add_dependencies(clean-all DEPENDS clean-MyMakeProject)
+#    endif()
+#
+# After cmake, the following can be done:
+#   make clean-all  -  make all targets that clean-all depends on
+#   make clean-MyMakeProject  -  clean only this target
+#
+# See also clean-AntBuild near the end of this file. 
+#
+# NOTE: CAST Control will pick up all clean-* targets when executing Make Clean from the menu.
 add_custom_target (clean-all)
 
 #message(${CMAKE_CXX_COMPILER})
@@ -289,7 +313,9 @@ if(DO_ANT)
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMAND ant clean
       )
-   add_dependencies(clean-all DEPENDS clean-AntBuild)
+   if(TARGET clean-all)
+      add_dependencies(clean-all DEPENDS clean-AntBuild)
+   endif()
 endif(DO_ANT)
 
 option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
