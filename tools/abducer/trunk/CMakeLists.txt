@@ -15,6 +15,9 @@ add_custom_target (clean-Abducer
    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
    COMMAND make clean
    )
+
 #   This target will also be executed as a part of the clean-all target defined
 #   in the top-level CMakeLists.txt
-add_dependencies(clean-all DEPENDS clean-Abducer)
+if(TARGET clean-all)
+   add_dependencies(clean-all DEPENDS clean-Abducer)
+endif()
