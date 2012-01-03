@@ -1,4 +1,4 @@
-option(BUILD_SA_CONCEPTUAL_PLACEHOLDER_PROPERTY_UPDATER "Build Conceptual.SA PlaceholderPropertyUpdater component" YES)
+option(BUILD_SA_CONCEPTUAL_PLACEHOLDER_PROPERTY_UPDATER "Build Conceptual.SA PlaceholderPropertyUpdater component" NO)
 if(BUILD_SA_CONCEPTUAL_PLACEHOLDER_PROPERTY_UPDATER)
 
     add_cast_component(ConceptualPlaceholderPropertyUpdater PlaceholderPropertyUpdater.cc)
