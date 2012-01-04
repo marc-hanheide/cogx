@@ -2,6 +2,13 @@ package cdsr.rsb;
 
 option java_package = "cdsr.rsb";
 
+message RoomWithObjects
+{
+  required Room room = 1;
+  repeated SensedObject object = 2;
+  repeated SpatialRelation relation = 3;
+}
+
 message Room
 {
   required string id = 1;

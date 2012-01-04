@@ -10,10 +10,15 @@ import rsb.patterns.RemoteServer;
 import cdsr.gui.StandaloneViewer;
 import cdsr.marshall.CDSRMarshaller;
 import cdsr.objects.ProblemSet;
-import cdsr.rsb.CdsrMessages.Room;
+import cdsr.rsb.CdsrMessages.RoomWithObjects;
 
 public class DataViewer extends StandaloneViewer {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private static final Logger LOG = Logger.getLogger(DataViewer.class
 			.getName());
 
@@ -32,16 +37,16 @@ public class DataViewer extends StandaloneViewer {
 			return;
 		}
 
-		ProblemSet ps = CDSRMarshaller.loadProblemSet(args[0]);
+		ProblemSet originalPS = CDSRMarshaller.loadProblemSet(args[0]);
 
 		DataViewer viewer = new DataViewer();
-		viewer.addProblemSet(ps);
+//		viewer.addProblemSet(originalPS);
 
 		try {
 
-			CDSRRSBUtils.registerRoomConverter();
+			CDSRRSBUtils.registerRoomWithObjectsConverter();
 			
-			Room room = CDSRRSBUtils.createRoomMessage(ps.getRoom(),
+			RoomWithObjects room = CDSRRSBUtils.createRoomWithObjectsMessage(originalPS,
 					"Classroom");
 
 			RemoteServer server = Factory.getInstance().createRemoteServer(
@@ -49,7 +54,9 @@ public class DataViewer extends StandaloneViewer {
 			server.activate();
 
 			LOG.info("making call");
-			server.call("standardiseCoordinateFrame", room);
+			RoomWithObjects transformedPS = server.call("standardiseCoordinateFrame", room);
+			viewer.addProblemSet(CDSRRSBUtils.toProblemSet(transformedPS));
+			
 			LOG.info("done");
 			
 			server.deactivate();
