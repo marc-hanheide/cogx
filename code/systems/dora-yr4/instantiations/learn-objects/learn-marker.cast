@@ -1,0 +1,18 @@
+HOST localhost
+
+# reading stored images
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer PointGreyServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/kthimcal.ini:L subarchitectures/vision.sa/config/kthimcal.ini:R" --log
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
+
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --learnmode --plyfile "subarchitectures/vision.sa/config/test-recognizer3D/krispies.ply" --siftfile "subarchitectures/vision.sa/config/test-recognizer3D/krispies.sift" --log
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/marker.ply" --siftfiles "instantiations/ply-models/marker.sift" --labels "marker" --learnmode --log
+#CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --learnmode --plyfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.ply" --siftfiles "subarchitectures/vision.sa/config/test-recognizer3D/jasmin.sift" --labels "jasmin" --log
+
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --plyfile --labels "marker" --log

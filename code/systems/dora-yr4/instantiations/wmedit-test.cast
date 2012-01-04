@@ -1,0 +1,13 @@
+HOST localhost
+
+SUBARCHITECTURE test.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+JAVA MG wmeditor.xml castutils.castextensions.wmeditor.YAMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
+JAVA MG wmeditor.yaml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief"
+
+SUBARCHITECTURE test2.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+

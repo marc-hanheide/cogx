@@ -1,0 +1,38 @@
+HOST localhost
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT objname_=re_book
+
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/%(objname_).sift
+</multiline>
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/%(objname_).ply
+</multiline>
+VARDEFAULT or3d_labels=%(objname_)
+
+
+COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.050 -0.060 0.000][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0" --tilt "0.0"
+
+CPP MG recognizer.3D ObjectRecognizer3D --no-learning --videoname VideoServer --camid "0" --display --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+
+JAVA MG estimator castutils.experimentation.ManualObservationModelEstimatorComponent --label "%(or3d_labels)"
+
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+

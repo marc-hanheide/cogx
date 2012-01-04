@@ -1,0 +1,33 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-base-dataprovider.cast
+INCLUDE includes/spatial.sa/spatial-semmap.cast
+INCLUDE includes/spatial.sa/spatial-peekabot-semmap.cast
+#CPP GD self.representer SelfRepresenter 
+
+# Coma ######################################################################
+INCLUDE includes/coma.sa/coma-base.cast
+INCLUDE includes/coma.sa/coma-crowl.cast
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+INCLUDE includes/default.sa/default-main-semmap.cast
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+INCLUDE includes/conceptual.sa/conceptual-main-semmap.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-cvap-semmap-size-shape-appearance-data.cast
+
+# Viewing and debugging #######################################################
+JAVA MG pathpropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PathProperty" --generic-col
+JAVA MG placepropertydisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "SpatialProperties.PlaceProperty" --generic-col
+JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
+JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col
