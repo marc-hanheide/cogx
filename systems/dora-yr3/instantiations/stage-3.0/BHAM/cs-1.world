@@ -1,5 +1,5 @@
 include "../common/map.inc"
-include "../common/p3dx.inc"
+include "../common/p3dx_with_urg.inc"
 
 window
 (
