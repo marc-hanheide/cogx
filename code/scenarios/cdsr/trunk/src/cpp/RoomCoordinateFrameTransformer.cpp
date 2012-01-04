@@ -43,17 +43,18 @@ using namespace rsb::patterns;
 using namespace cdsr::rsb;
 
 
-class RoomCallback: public rsb::patterns::Server::Callback<Room, Room> {
+class RoomCallback: public rsb::patterns::Server::Callback<RoomWithObjects, RoomWithObjects> {
 public:
-  boost::shared_ptr<Room> call(const string& _methodName, boost::shared_ptr<Room> room) {
-    cout << "received Room " << room->id() << endl;
-    cout << "Category = " << room->category() << endl;
+  boost::shared_ptr<RoomWithObjects> call(const string& _methodName, 
+										  boost::shared_ptr<RoomWithObjects> room) {
+    cout << "received Room " << room->room().id() << endl;
+    cout << "Category = " << room->room().category() << endl;
     
     
     std::list<Point_2> points;
     
-    for (int i = 0; i < room->wall_size(); i++) {
-      const Line& next_wall = room->wall(i);
+    for (int i = 0; i < room->room().wall_size(); i++) {
+      const Line& next_wall = room->room().wall(i);
       cout << "[" << next_wall.start().x() << ", " << next_wall.start().y()
       << "] to [" << next_wall.end().x() << ", "
       << next_wall.end().y() << "]" << endl;
@@ -75,7 +76,7 @@ public:
 int main() {
   
   
-	shared_ptr<ProtocolBufferConverter<Room> > room_converter(new ProtocolBufferConverter<Room> ());
+	shared_ptr<ProtocolBufferConverter<RoomWithObjects> > room_converter(new ProtocolBufferConverter<RoomWithObjects> ());
 	stringConverterRepository()->registerConverter(room_converter);
   
   Factory& factory = Factory::getInstance();
