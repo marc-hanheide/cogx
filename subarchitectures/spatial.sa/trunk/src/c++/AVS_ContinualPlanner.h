@@ -109,14 +109,17 @@ public:
 	 void newSpatialObject(const cast::cdl::WorkingMemoryChange &objID);
 	 void displayPDF(BloxelMap map);
 	 void owtARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
-	 void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
-	 void setConeDepth(const string &label);
+   void owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID);
+   void setConeDepth(const string &label);
+   ViewPointGenerator::SensingAction getRandomViewCone(ViewPointGenerator::SensingAction s);
+
 
 public:
 	 bool m_usePeekabot;
 	 VisualPB_Bloxel* pbVis;
 
 private:
+   std::set<int> m_processedViewConeIDs;
 
 	 class AVSServer: public SpatialData::AVSInterface {
 	 public:
@@ -129,7 +132,6 @@ private:
 	    };
 
 		NavData::RobotPose2dPtr lastRobotPose;
-
 
 	std::map<std::string, BloxelMap* > m_objectBloxelMaps; // this holds bloxel maps for each location i.e. <object,rel,(object2),room>
 	std::map<int, BloxelMap* > m_templateRoomBloxelMaps; // template room bloxel maps to instantiate objectBloxelMaps from
@@ -192,7 +194,6 @@ private:
 	 ConeGroup* m_currentConeGroup;
 	 std::pair<int,ViewPointGenerator::SensingAction> m_currentViewCone; // Id of this SensingAction's ConeGroup and the SensingAction itself
 	 int m_coneGroupId; // Unique Id for each cone group
-
 	MainDialog *_mainDialog;
 
      class NavCommandReceiver: public cast::WorkingMemoryChangeReceiver {

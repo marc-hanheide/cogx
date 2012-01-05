@@ -994,15 +994,73 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
 	if(skipNav){
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 	}else{
-		Cure::Pose3D pos;
-			pos.setX(m_currentViewCone.second.pos[0]);
-			pos.setY(m_currentViewCone.second.pos[1]);
+	
+    // TODO: If we've already processed this viewcone, serve another one
+    // slightly at a different place but looking at the same region
+    // Otherwise just process the viewcone and add it to m_processedViewConeIDs
+    // list
+
+
+    // RSS update
+    if(m_processedViewConeIDs.count(m_currentViewCone.first) > 0){
+      // This view cone was processed before so now we need to serve a
+      // different one
+      log("We've processed this viewcone before, so serve a random one observing the same space");
+      ViewPointGenerator::SensingAction s = getRandomViewCone(m_currentViewCone.second);
+
+      Cure::Pose3D pos;
+      pos.setX(s.pos[0]);
+      pos.setY(s.pos[1]);
+      pos.setTheta(s.pan);
+      PostNavCommand(pos, SpatialData::GOTOPOSITION);
+      log("Posting a nav command with a random view cone");
+    }
+    else {
+      m_processedViewConeIDs.insert(m_currentViewCone.first); 
+      Cure::Pose3D pos;
+      pos.setX(m_currentViewCone.second.pos[0]);
+      pos.setY(m_currentViewCone.second.pos[1]);
 			pos.setTheta(m_currentViewCone.second.pan);
 			PostNavCommand(pos, SpatialData::GOTOPOSITION);
 			log("Posting a nav command");
-	}
+    }
+    }
 }
 
+ViewPointGenerator::SensingAction AVS_ContinualPlanner::getRandomViewCone(ViewPointGenerator::SensingAction s){
+
+  double panRad = s.pan * M_PI/180;
+  double tiltRad = s.tilt * M_PI/180;
+
+  double centerx = cos(panRad)*s.conedepth+ s.pos[0];
+  double centery = sin(panRad)*s.conedepth+ s.pos[1];
+  
+    
+  int low = -10;
+  int high = 10; 
+
+  srand(time(0));
+  int n = 0;
+  while(n == 0)
+    n = rand() % (low - high) + low;
+
+  double theta = panRad + n*M_PI/180;
+
+  double rimx = cos( theta - M_PI ) * s.conedepth + centerx;
+  double rimy = sin( theta- M_PI  ) * s.conedepth + centery;
+  ViewPointGenerator::SensingAction ret;
+
+  ret.pos.push_back(rimx);
+  ret.pos.push_back(rimy);
+  ret.pos.push_back(s.pos[2]);
+  ret.pan = theta;
+  ret.tilt = s.tilt;
+  ret.conedepth= s.conedepth;
+  ret.horizangle = s.horizangle;
+  ret.vertangle = s.vertangle;
+  ret.minDistance = s.minDistance;
+  return ret;
+}
 
 void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::SensingAction> viewcone, BloxelMap* map){
 
@@ -1504,7 +1562,6 @@ AVS_ContinualPlanner::startMovePanTilt(double pan, double tilt, double tolerance
   addToWorkingMemory(cmdId, newPTZPoseCommand);
 
   m_waitingForPTZCommandID = cmdId;
-  log("Sending PTZ to %f, %f (%s)", pan, tilt, cmdId.c_str());
 }
 
 void
@@ -1527,7 +1584,6 @@ AVS_ContinualPlanner::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &
       log ("Error: SetPTZPoseCommand went missing! "); 
     }
 
-    log("PTZ command %s finished", m_waitingForPTZCommandID.c_str());
     m_waitingForPTZCommandID = "";
   }
 }
