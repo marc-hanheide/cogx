@@ -51,7 +51,7 @@ public class StandaloneViewer extends JFrame {
 		
 		if (args.length != 1) {
 			System.out
-					.println("Only one arguement allowed/required, path to .cdsr save file.");
+					.println("Only one argument allowed/required, path to .cdsr save file.");
 			return;
 		}
 
