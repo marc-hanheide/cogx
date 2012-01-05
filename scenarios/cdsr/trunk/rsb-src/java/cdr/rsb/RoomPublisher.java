@@ -1,4 +1,4 @@
-package cdsr.rsb;
+package cdr.rsb;
 
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
@@ -8,6 +8,8 @@ import rsb.Informer;
 import rsb.InitializeException;
 import rsb.RSBException;
 import cdsr.objects.ProblemSet;
+import cdsr.rsb.CdsrMessages;
+import cdsr.rsb.CdsrMessages.Room;
 
 public class RoomPublisher {
 	private static final Logger LOG = Logger.getLogger(RoomPublisher.class
