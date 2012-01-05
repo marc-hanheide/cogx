@@ -33,6 +33,22 @@ p3dx_with_urg_and_blobfinder (
  pose [21.835 10.145 0 0]
  )
 
+# extra barriers to block the corridor next to the meeting room (245)
+
+ barrier
+ (
+ name "extrabarrier1"
+ color "black"
+ pose [18.600 1.225 0 0]
+ )
+
+ barrier
+ (
+ name "extrabarrier2"
+ color "black"
+ pose [19.060 1.225 0 0]
+ )
+
 # barriers to close office doors:
 
  barrier
