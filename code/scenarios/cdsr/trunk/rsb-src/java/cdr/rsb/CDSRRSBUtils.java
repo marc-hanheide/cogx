@@ -1,4 +1,4 @@
-package cdsr.rsb;
+package cdr.rsb;
 
 import java.awt.geom.Line2D;
 import java.io.IOException;
@@ -16,7 +16,9 @@ import cdsr.objects.ObjectRelation;
 import cdsr.objects.ProblemSet;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
+import cdsr.rsb.CdsrMessages;
 import cdsr.rsb.CdsrMessages.Line;
+import cdsr.rsb.CdsrMessages.Point;
 import cdsr.rsb.CdsrMessages.RoomWithObjects;
 import cdsr.rsb.CdsrMessages.SensedObject.Builder;
 import cdsr.rsb.CdsrMessages.SpatialRelation;

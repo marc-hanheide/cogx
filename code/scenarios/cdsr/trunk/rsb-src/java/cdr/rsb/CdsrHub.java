@@ -1,4 +1,4 @@
-package cdsr.rsb;
+package cdr.rsb;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -21,9 +21,13 @@ import cdsr.marshall.CDSRMarshaller;
 import cdsr.objects.ProblemSet;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
+import cdsr.rsb.CdsrMessages;
+import cdsr.rsb.CdsrMessages.Line;
+import cdsr.rsb.CdsrMessages.Point;
 import cdsr.rsb.CdsrMessages.SensedObjects;
 import cdsr.rsb.CdsrMessages.SpatialRelation;
 import cdsr.rsb.CdsrMessages.SpatialRelations;
+import cdsr.rsb.CdsrMessages.Point.Builder;
 
 public class CdsrHub {
   private static final Logger LOG = Logger.getLogger(CdsrHub.class.getName());
