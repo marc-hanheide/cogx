@@ -146,7 +146,8 @@ private:
 	std::string m_waitingForPTZCommandID;
 	enum {NO_WAITING, WAITING_TO_RECOGNIZE, WAITING_TO_RETURN} m_ptzWaitingStatus;
 
-	bool m_usePTZ;
+	bool m_randomViewCones;
+  bool m_usePTZ;
 	bool m_ignoreTilt;
 	bool m_runInSimulation;
 	VariableNameGenerator m_namegenerator;
