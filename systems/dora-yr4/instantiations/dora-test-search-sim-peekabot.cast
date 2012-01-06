@@ -95,7 +95,7 @@ JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3
 ####JAVA MG spatial-manual spatial.manual.ManualNavControl
 
 CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --ptzserver %(ptz_server) --display-objects-in-pb 
-CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --usepeekabot ######--ctrl-ptz 
+CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --random-vc --usepeekabot ######--ctrl-ptz 
 
 
 # coma ######################################################################
