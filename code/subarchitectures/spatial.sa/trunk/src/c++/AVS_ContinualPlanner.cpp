@@ -1014,7 +1014,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       pos.setTheta(s.pan);
       PostNavCommand(pos, SpatialData::GOTOPOSITION);
       log("Posting a nav command with a random view cone");
-      log("With parameters: x: %4.2f, y:%4.2f, z:%4.2f, pan: %4.2f, tilt: %4.2f", s.pos[0], s.pos[1], s.pos[2], s.pan, s.tilt);
+      log("With parameters: x: %4.2f, y:%4.2f, z:%4.2f, pan: %4.2f, tilt: %4.2f, radius: %4.2f, horizontal fov: %4.2f, vertical fov: %4.2f", s.pos[0], s.pos[1], s.pos[2], s.pan, s.tilt, s.conedepth, s.horizangle, s.vertangle);
     }
     else {
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
