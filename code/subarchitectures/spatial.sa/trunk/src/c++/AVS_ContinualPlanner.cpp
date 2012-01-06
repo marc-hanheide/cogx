@@ -1002,7 +1002,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
 
 
     // RSS update
-    if(m_processedViewConeIDs.count(m_currentViewCone.first) > 0){
+    if(m_processedViewConeIDs.count(m_currentViewCone.first) > 0 && m_randomViewCones){
       // This view cone was processed before so now we need to serve a
       // different one
       log("We've processed this viewcone before, so serve a random one observing the same space");
@@ -1014,6 +1014,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       pos.setTheta(s.pan);
       PostNavCommand(pos, SpatialData::GOTOPOSITION);
       log("Posting a nav command with a random view cone");
+      log("With parameters: x: %4.2f, y:%4.2f, z:%4.2f, pan: %4.2f, tilt: %4.2f", s.pos[0], s.pos[1], s.pos[2], s.pan, s.tilt);
     }
     else {
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
@@ -1362,6 +1363,11 @@ void AVS_ContinualPlanner::configure(
 		log("will use ptu");
 	}
 
+	m_randomViewCones = false;
+	if (_config.find("--random-vc") != _config.end()) {
+		m_randomViewCones = true;
+		log("Will generate random view cones.");
+	}
 	m_runInSimulation = false;
 	if (_config.find("--simulation") != _config.end()) {
 			m_runInSimulation = true;
