@@ -9,6 +9,10 @@ from PyQt4.QtCore import Qt
 from editors import ICustomEditorBase, CTextEditor, CFilenameEditor, CStringItemEditor
 from propeditor import *
 
+#class CustomTreeView(QTreeView):
+#    def commitAndCloseEditor(self):
+#        self.closeEditor(which) # ?????????
+
 class CConfigWidget(QtGui.QWidget):
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
@@ -24,7 +28,7 @@ class CConfigWidget(QtGui.QWidget):
                 QtCore.SIGNAL("closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)"),
                 self.onEditorClosed);
         self.connect(self.itemDelegate,
-                QtCore.SIGNAL("editorCreated()"),
+                QtCore.SIGNAL("editorCreated(QWidget*)"),
                 self.onEditorCreated);
         self.wItems.setItemDelegate(self.itemDelegate)
         qet = QtGui.QAbstractItemView
@@ -77,16 +81,34 @@ class CConfigWidget(QtGui.QWidget):
     def setEditBuddy(self, buddy):
         self.editBuddy = buddy
         if buddy != None:
+            self.connect(self.editBuddy, QtCore.SIGNAL("clicked(bool)"), self.onEditBuddyClicked)
             buddy.setEnabled(False)
-            buddy.setVisible(False) # TODO: it doesn't work, yet, so hide it
+            #buddy.setVisible(False) # TODO: it doesn't work, yet, so hide it
 
     # (HACK)
-    def onEditorCreated(self):
+    # This will be called for complex custom editors
+    def onEditBuddyClicked(self, clicked):
+        #print "Buddy clicked"
+        i = self.wItems.currentIndex()
+        if self.activeEditor != None:
+            self.wItems.commitData(self.activeEditor)
+            self.wItems.closeEditor(self.activeEditor, 0)
+            self.activeEditor = None
+            self.editBuddy.setEnabled(False)
+        #self.wItems.closePersistentEditor(i) # only hides, doesn't commit
+        #self.wItems.setCurrentIndex(i.parent()) # XXX This doesn't apply the changes ... argh!
+
+    # (HACK)
+    def onEditorCreated(self, wEditor):
+        #print "Editor Created"
+        self.activeEditor = wEditor
         if self.editBuddy != None:
             self.editBuddy.setEnabled(True)
 
     # (HACK)
+    # This will be called for simple editors
     def onEditorClosed(self, wEditor, endEditHint):
+        #print "Editor Closed"
         if self.editBuddy != None:
             self.editBuddy.setEnabled(False)
 

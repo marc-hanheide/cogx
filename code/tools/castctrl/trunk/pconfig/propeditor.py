@@ -25,7 +25,7 @@ class EditorFactory(QtGui.QItemEditorFactory):
         self.registerEditor(QtCore.QVariant.String, lec)
 
 class CItemDelegate(QtGui.QStyledItemDelegate):
-    editorCreated = QtCore.pyqtSignal()
+    editorCreated = QtCore.pyqtSignal(QtGui.QWidget)
 
     def __init__(self, parent=None):
         QtGui.QStyledItemDelegate.__init__(self, parent)
@@ -61,7 +61,7 @@ class CItemDelegate(QtGui.QStyledItemDelegate):
         else: rv = super(CItemDelegate, self).createEditor(parent, styleOption, modelIndex)
 
         if rv != None:
-            self.editorCreated.emit()
+            self.editorCreated.emit(rv)
 
         return rv
 
