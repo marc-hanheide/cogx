@@ -92,6 +92,7 @@
     <copy todir="${jar.dir}" file="./lib/jsapi.jar"/>
     <copy todir="${jar.dir}" file="./lib/tags.jar"/>
     <copy todir="${jar.dir}" file="./lib/sphinx4.jar"/>
+    <copy todir="${jar.dir}" file="./lib/xercesImpl.jar"/>
   </target>
 
   <!-- =================================================================== -->
