@@ -42,6 +42,7 @@ project (CogX)
 # After cmake, the following can be done:
 #   make clean-all  -  make all targets that clean-all depends on
 #   make clean-MyMakeProject  -  clean only this target
+#   make clean clean-all - clean everything
 #
 # See also clean-AntBuild near the end of this file. 
 #
