@@ -1051,7 +1051,7 @@ p, li { white-space: pre-wrap; }
           <attribute name="title">
            <string>Servers</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_21">
+          <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
             <widget class="QWidget" name="processGroupPanel" native="true">
              <property name="sizePolicy">
@@ -1167,6 +1167,46 @@ p, li { white-space: pre-wrap; }
               </sizepolicy>
              </property>
             </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <spacer name="horizontalSpacer_11">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btApplyServerProp">
+               <property name="text">
+                <string>Apply</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_12">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>

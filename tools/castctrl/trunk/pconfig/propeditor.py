@@ -25,6 +25,8 @@ class EditorFactory(QtGui.QItemEditorFactory):
         self.registerEditor(QtCore.QVariant.String, lec)
 
 class CItemDelegate(QtGui.QStyledItemDelegate):
+    editorCreated = QtCore.pyqtSignal()
+
     def __init__(self, parent=None):
         QtGui.QStyledItemDelegate.__init__(self, parent)
 
@@ -52,11 +54,16 @@ class CItemDelegate(QtGui.QStyledItemDelegate):
 
         data = modelIndex.data(role=Qt.EditRole)
         wtype = self.getType(data)
-        if wtype == "text": return CTextEditor(parent)
-        elif wtype == "filename": return CFilenameEditor(parent)
-        elif wtype == "stringitem": return CStringItemEditor(parent)
+        rv = None
+        if wtype == "text": rv = CTextEditor(parent)
+        elif wtype == "filename": rv = CFilenameEditor(parent)
+        elif wtype == "stringitem": rv = CStringItemEditor(parent)
+        else: rv = super(CItemDelegate, self).createEditor(parent, styleOption, modelIndex)
 
-        return super(CItemDelegate, self).createEditor(parent, styleOption, modelIndex)
+        if rv != None:
+            self.editorCreated.emit()
+
+        return rv
 
     def setEditorData(self, editWidget, modelIndex):
         if not modelIndex.isValid(): return

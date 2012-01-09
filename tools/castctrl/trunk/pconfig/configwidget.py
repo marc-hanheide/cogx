@@ -14,11 +14,18 @@ class CConfigWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
         self.createUi()
         self.installEditors()
+        self.editBuddy = None # (HACK) eg. Apply button that is enabled when an editor is active
 
     def installEditors(self):
         self.itemDelegate = CItemDelegate(self)
         self.editFactory = EditorFactory()
         self.itemDelegate.setItemEditorFactory(self.editFactory)
+        self.connect(self.itemDelegate,
+                QtCore.SIGNAL("closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)"),
+                self.onEditorClosed);
+        self.connect(self.itemDelegate,
+                QtCore.SIGNAL("editorCreated()"),
+                self.onEditorCreated);
         self.wItems.setItemDelegate(self.itemDelegate)
         qet = QtGui.QAbstractItemView
         # XXX: Activation variant could be user configurable
@@ -66,6 +73,21 @@ class CConfigWidget(QtGui.QWidget):
         self.mProperties.addServers(servers)
         self.mProperties.prepareServerRows(self.wItems)
 
+    # (HACK)
+    def setEditBuddy(self, buddy):
+        self.editBuddy = buddy
+        if buddy != None:
+            buddy.setEnabled(False)
+
+    # (HACK)
+    def onEditorCreated(self):
+        if self.editBuddy != None:
+            self.editBuddy.setEnabled(True)
+
+    # (HACK)
+    def onEditorClosed(self, wEditor, endEditHint):
+        if self.editBuddy != None:
+            self.editBuddy.setEnabled(False)
 
     #def loadServers(self, fname):
     #    import manager
