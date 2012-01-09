@@ -543,9 +543,11 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.ui.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(":icons/res/cogx_icon.png"))
         self.wAppConfig = CConfigWidget(self.ui.applicationTreeView)
+        self.wAppConfig.setEditBuddy(self.ui.btApplyServerProp)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.wAppConfig.setSizePolicy(sizePolicy)
         layout = QtGui.QVBoxLayout(self.ui.applicationTreeView)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.wAppConfig)
 
         # XXX keep the old interface, just in case, but hide it
