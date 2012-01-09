@@ -78,6 +78,7 @@ class CConfigWidget(QtGui.QWidget):
         self.editBuddy = buddy
         if buddy != None:
             buddy.setEnabled(False)
+            buddy.setVisible(False) # TODO: it doesn't work, yet, so hide it
 
     # (HACK)
     def onEditorCreated(self):
