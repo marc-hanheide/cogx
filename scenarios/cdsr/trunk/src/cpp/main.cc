@@ -46,19 +46,13 @@ using namespace rsb::converter;
 using namespace cdsr::rsb;
 
 static boost::shared_ptr<SensedObjects> sobjects;
+static boost::shared_ptr<Room> sroom;
+
 
 void processRoom(boost::shared_ptr<Room> room) {
+    sroom = room;
 	cout << "received Room " << room->id() << endl;
 	cout << "Category = " << room->category() << endl;
-
-	for (int i = 0; i < room->wall_size(); i++) {
-		const Line& next_wall = room->wall(i);
-		cout << "[" << next_wall.start().x() << ", " << next_wall.start().y()
-				<< "] to [" << next_wall.end().x() << ", "
-				<< next_wall.end().y() << "]" << endl;
-		cout << "----------------" << endl;
-	}
-
 }
 
 void processSensedObjects(boost::shared_ptr<SensedObjects> sensed_objects) {
@@ -80,6 +74,13 @@ void processSensedObjects(boost::shared_ptr<SensedObjects> sensed_objects) {
 		cout << "----------------" << endl;
 	}*/
 }
+
+double distanceBetween2Points(double p1x, double p1y, double p2x, double p2y) {
+	double xd = p1x - p2x;
+	double yd = p1y - p2y;
+	return sqrt((xd*xd) + (yd*yd));	
+}
+
 
 double dotProduct(double v1_x, double v1_y, double v2_x, double v2_y) {
 	return ((v1_x*v2_x)+(v1_y*v2_y));
@@ -138,15 +139,105 @@ double angleBetween(double v1_x, double v1_y, double v2_x, double v2_y) {
 	return degrees;
 }
 
-
-double projSpatRel(const SensedObject& landmark, const SensedObject& target, double vDir_x, double vDir_y) {
-    
-    //compute the centroid of the landmark and target    
+/*
+ * compute the maximum distance between the landmark and any of the vertices of the room
+ */
+double computeMaxDistance(double l_cent_x, double l_cent_y) {
+    //get the extent of the room
     double max_x = 0; 
     double min_x = DBL_MAX;
     double max_y = 0; 
     double min_y = DBL_MAX;
     
+    double room_min_x = DBL_MAX;
+    double room_max_x = 0.0;
+    double room_min_y = DBL_MAX;
+    double room_max_y = 0;
+    
+    for (int i = 0; i < sroom->wall_size(); i++) {
+		const Line& next_wall = sroom->wall(i);
+        if(next_wall.start().x() > max_x) {
+            max_x = next_wall.start().x();
+        } else if(next_wall.start().x() < min_x) {
+            min_x = next_wall.start().x();
+        }
+        
+        if(next_wall.end().x() > max_x) {
+            max_x = next_wall.end().x();
+        } else if(next_wall.end().x() < min_x) {
+            min_x = next_wall.end().x();
+        }
+        
+        if(next_wall.start().y() > max_y) {
+            max_y = next_wall.start().y();
+        } else if(next_wall.start().y() < min_y) {
+            min_y = next_wall.start().y();
+        }
+        
+        if(next_wall.end().y() > max_y) {
+            max_y = next_wall.end().y();
+        } else if(next_wall.end().y() < min_y) {
+            min_y = next_wall.end().y();
+        }
+	}
+    
+    room_min_x = min_x;
+    room_max_x = max_x;
+    room_min_y = min_y;
+    room_max_y = max_y;
+
+    //compute the maximum distance between the landmark and any of the vertices of the room
+    
+    double max_distance = 0;
+    
+    double dist1 = distanceBetween2Points(l_cent_x, l_cent_y, room_max_x, room_max_y);
+    double dist2 = distanceBetween2Points(l_cent_x, l_cent_y, room_max_x, room_min_y);
+    double dist3 = distanceBetween2Points(l_cent_x, l_cent_y, room_min_x, room_max_y);
+    double dist4 = distanceBetween2Points(l_cent_x, l_cent_y, room_min_x, room_min_y);
+    
+    if(dist1 > dist2) {
+        if(dist1 > dist3) {
+            if(dist1 > dist4) {
+                max_distance = dist1;
+            } else {
+                max_distance = dist4;
+            }
+        } else {
+            if(dist3 > dist4) {
+                max_distance = dist3;
+            } else {
+                max_distance = dist4;
+            }
+        }
+    } else {
+        if(dist2 > dist3) {
+            if(dist2 > dist4) {
+                max_distance = dist2;
+            } else {
+                max_distance = dist4;
+            }
+        } else {
+            if(dist3 > dist4) {
+                max_distance = dist3;
+            } else {
+                max_distance = dist4;
+            }
+        }
+    }
+
+    return max_distance;
+    
+}
+
+
+double projSpatRel(const SensedObject& landmark, const SensedObject& target, double vDir_x, double vDir_y) {
+    
+    //compute the centroid of the landmark  
+    double max_x = 0; 
+    double min_x = DBL_MAX;
+    double max_y = 0; 
+    double min_y = DBL_MAX;
+  
     for(int l_side = 0; l_side < landmark.side_size(); l_side++) {
         
         if(landmark.side(l_side).start().x() > max_x) {
@@ -178,8 +269,9 @@ double projSpatRel(const SensedObject& landmark, const SensedObject& target, dou
     double l_cent_x = min_x + ((max_x - min_x)/2);
     double l_cent_y = min_y + ((max_y - min_y)/2);
     
-    cout << "landmark position: " << l_cent_x << " ," << l_cent_y << endl;
+    cout << "landmark position: " << l_cent_x << " ," << l_cent_y << endl;    
     
+    //compute the centroid of the target
     max_x = 0; 
     min_x = DBL_MAX;
     max_y = 0; 
@@ -216,6 +308,8 @@ double projSpatRel(const SensedObject& landmark, const SensedObject& target, dou
 
     cout << "target position: " << t_cent_x << " ," << t_cent_y << endl; 
     
+    
+    //compute the angular deviation model
     //subtract the landmarks position from the trajector
     //equivalent to moving the landmark and the trajector towards the origin
     
@@ -224,15 +318,18 @@ double projSpatRel(const SensedObject& landmark, const SensedObject& target, dou
 
     //get the angle between the trajector and the direction vector
     //i.e. compute the dot product 
-    
     double angle = angleBetween(t_cent_x, t_cent_y, vDir_x, vDir_y);
-    
-    //cout << " angle: " << angle << endl;
-    
+
+    //compute a normalised distance between the landmark and the trajector
+    //we normalise the distance by the extent of the room
+    double max_distance =  computeMaxDistance(l_cent_x, l_cent_y);
+    double distbetween = distanceBetween2Points(l_cent_x, l_cent_y, t_cent_x, t_cent_y);
+    double distfactor = 1 - (distbetween/max_distance); 
+
     if(angle > 90) {
         return 0;
     } else {
-        return (1-(angle/90.0));
+        return (1-(angle/90.0)) * distfactor;
     }    
 }
 
@@ -299,36 +396,36 @@ int main() {
               relation3->set_strength(projSpatRel(landmark, target, 0.0, 1.0));
 
               SpatialRelation* relation4 = data->add_relation();
-              relation4->set_id(landmark.id() + ":" + target.id() + ":xMinOneYOne");
-              relation4->set_type("xMinOneYOne");
+              relation4->set_id(landmark.id() + ":" + target.id() + ":xNegOneYOne");
+              relation4->set_type("xNegOneYOne");
               relation4->set_start_id(landmark.id());
               relation4->set_end_id(target.id());
               relation4->set_strength(projSpatRel(landmark, target, -1.0, 1.0));
 
               SpatialRelation* relation5 = data->add_relation();
-              relation5->set_id(landmark.id() + ":" + target.id() + ":xMinOneYZero");
-              relation5->set_type("xMinOneYZero");
+              relation5->set_id(landmark.id() + ":" + target.id() + ":xNegOneYZero");
+              relation5->set_type("xNegOneYZero");
               relation5->set_start_id(landmark.id());
               relation5->set_end_id(target.id());
               relation5->set_strength(projSpatRel(landmark, target, -1.0, 0.0));
 
               SpatialRelation* relation6 = data->add_relation();
-              relation6->set_id(landmark.id() + ":" + target.id() + ":xMinOneYMinOne");
-              relation6->set_type("xMinOneYMinOne");
+              relation6->set_id(landmark.id() + ":" + target.id() + ":xNegOneYNegOne");
+              relation6->set_type("xNegOneYNegOne");
               relation6->set_start_id(landmark.id());
               relation6->set_end_id(target.id());
               relation6->set_strength(projSpatRel(landmark, target, -1.0, -1.0));
 
               SpatialRelation* relation7 = data->add_relation();
-              relation7->set_id(landmark.id() + ":" + target.id() + ":xZeroYMinOne");
-              relation7->set_type("xZeroYMinOne");
+              relation7->set_id(landmark.id() + ":" + target.id() + ":xZeroYNegOne");
+              relation7->set_type("xZeroYNegOne");
               relation7->set_start_id(landmark.id());
               relation7->set_end_id(target.id());
               relation7->set_strength(projSpatRel(landmark, target, 0.0, -1.0));
 
               SpatialRelation* relation8 = data->add_relation();
-              relation8->set_id(landmark.id() + ":" + target.id() + ":xOneYMinOne");
-              relation8->set_type("xOneYMinOne");
+              relation8->set_id(landmark.id() + ":" + target.id() + ":xOneYNegOne");
+              relation8->set_type("xOneYNegOne");
               relation8->set_start_id(landmark.id());
               relation8->set_end_id(target.id());
               relation8->set_strength(projSpatRel(landmark, target, 1.0, -1.0));
@@ -366,11 +463,11 @@ int main() {
 
 /*  cout << "landmark: " << landmark.id() << " target: " << target.id() << " xOneYOne: " << projSpatRel(landmark, target, 1.0, 1.0) << endl;              
  cout << "landmark: " << landmark.id() << " target: " << target.id() << " xZeroYOne: " << projSpatRel(landmark, target, 0.0, 1.0) << endl;              
- cout << "landmark: " << landmark.id() << " target: " << target.id() << " xMinOneYOne: " << projSpatRel(landmark, target, -1.0, 1.0) << endl;              
- cout << "landmark: " << landmark.id() << " target: " << target.id() << " xMinOneYZero: " << projSpatRel(landmark, target, -1.0, 0.0) << endl;              
- cout << "landmark: " << landmark.id() << " target: " << target.id() << " xMinOneYMinOne: " << projSpatRel(landmark, target, -1.0, -1.0) << endl;              
- cout << "landmark: " << landmark.id() << " target: " << target.id() << " xZeroYMinOne: " << projSpatRel(landmark, target, 0.0, -1.0) << endl;              
- cout << "landmark: " << landmark.id() << " target: " << target.id() << " xOneYMinOne: " << projSpatRel(landmark, target, 1.0, -1.0) << endl;              */
+ cout << "landmark: " << landmark.id() << " target: " << target.id() << " xNegOneYOne: " << projSpatRel(landmark, target, -1.0, 1.0) << endl;              
+ cout << "landmark: " << landmark.id() << " target: " << target.id() << " xNegOneYZero: " << projSpatRel(landmark, target, -1.0, 0.0) << endl;              
+ cout << "landmark: " << landmark.id() << " target: " << target.id() << " xNegOneYNegOne: " << projSpatRel(landmark, target, -1.0, -1.0) << endl;              
+ cout << "landmark: " << landmark.id() << " target: " << target.id() << " xZeroYNegOne: " << projSpatRel(landmark, target, 0.0, -1.0) << endl;              
+ cout << "landmark: " << landmark.id() << " target: " << target.id() << " xOneYNegOne: " << projSpatRel(landmark, target, 1.0, -1.0) << endl;              */
 
 //    const SensedObject& target = sobjects->object(15);
 //    float xZeroYPlus =  projSpatRel(landmark, target, 0.0, 1.0);
