@@ -27,6 +27,7 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		cmake-curses-gui@ubuntu \
 		cmake-qt-gui@ubuntu \
 		libdc1394-22-dev@ubuntu \
+		libdc1394-utils@ubuntu \
 		libsdl-dev@ubuntu \
 		libsuitesparse-dev \
 		libcminpack-dev \
