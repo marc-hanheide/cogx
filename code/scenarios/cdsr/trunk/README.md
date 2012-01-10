@@ -1,7 +1,7 @@
 
 This document describes how to use the Robotics Service Bus to send/receive data between Java, LISP and C++ using the code written at Birmingham
 
-GSH 8 Dec 2011
+GSH 8 Dec 2011; updated 10 Jan 2012
 
 # Prepare - read all of this section before doing anything else!
 -------
@@ -182,7 +182,9 @@ protoc --java_out=gen-src/java src/cdsr_messages.proto
 
 export RSB_CLASSPATH=/usr/share/java/protobuf.jar:/usr/local/share/java/rsb.jar
 mkdir -p output/classes
-javac -classpath $RSB_CLASSPATH -d output/classes/ src/java/cdsr/*/* gen-src/java/cdsr/rsb/*
+javac -classpath $RSB_CLASSPATH -d output/classes/ src/java/cdsr/*/* gen-src/java/cdsr/rsb/* rsb-src/java/cdsr/rsb/*
+
+
 
 ## C++:
 -------
@@ -228,8 +230,11 @@ LD_LIBRARY_PATH=output/lib ./output/bin/cdsr_test
 In a third shell:
 
 cd {workspace}/cdsr
-java -classpath $RSB_CLASSPATH:output/classes cdsr.rsb.CdsrHub classroom data/classroom-1.cdsr
+java -classpath $RSB_CLASSPATH:output/classes cdsr.rsb.CdsrHub classroom data/classroom-1.cdsr data/classroom-1-out.cdsr
 
+Afterwards, to convert to text files for LISP:
+
+java -classpath output/classes cdsr.marshall.ProblemSetConverter data/classroom-1-out.cdsr classroom
 
 ## Lisp
 

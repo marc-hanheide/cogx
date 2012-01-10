@@ -1,4 +1,4 @@
-package cdr.rsb;
+package cdsr.rsb;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -18,22 +18,31 @@ import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import cdsr.marshall.CDSRMarshaller;
+import cdsr.objects.ObjectRelation;
 import cdsr.objects.ProblemSet;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
-import cdsr.rsb.CdsrMessages;
-import cdsr.rsb.CdsrMessages.Line;
-import cdsr.rsb.CdsrMessages.Point;
 import cdsr.rsb.CdsrMessages.SensedObjects;
 import cdsr.rsb.CdsrMessages.SpatialRelation;
 import cdsr.rsb.CdsrMessages.SpatialRelations;
-import cdsr.rsb.CdsrMessages.Point.Builder;
 
 public class CdsrHub {
   private static final Logger LOG = Logger.getLogger(CdsrHub.class.getName());
+  
+  private static Object lock = new Object();
 
   public static class SpatialRelationsHandler extends
       AbstractDataHandler<SpatialRelations> {
+	  
+	private ProblemSet problemSet;  
+	private String outputFilename;
+	  
+	public SpatialRelationsHandler(ProblemSet problem_set, String output_filename)
+	{
+		problemSet = problem_set;
+		outputFilename = output_filename;
+	}
+	  
     @Override
     public void handleEvent(SpatialRelations e) {
       try {
@@ -41,9 +50,24 @@ public class CdsrHub {
         System.out.println("SpatialRelations Data received: "
             + spatial_relations_list);
 
-        // TODO write to file / send to Lisp
-        // if all 3 components were running then Lisp could listen to the message from C++
+        // convert to ObjectRelation list
+        ArrayList<ObjectRelation> object_relations = new ArrayList<ObjectRelation>();
+        for (Iterator iterator = spatial_relations_list.iterator(); iterator
+				.hasNext();) {
+			SpatialRelation spatial_relation = (SpatialRelation) iterator.next();
+			object_relations.add(new ObjectRelation(spatial_relation.getId(), spatial_relation.getType(),
+					spatial_relation.getStartId(), spatial_relation.getEndId(), spatial_relation.getStrength()));	
+		}
+        
+        // save the ProblemSet
+        ProblemSet revised_problem_set = new ProblemSet(problemSet.getRoom(), problemSet.getObjects(), object_relations);
+        CDSRMarshaller.saveProblemSet(outputFilename, revised_problem_set);
 
+        synchronized(lock)
+        {
+        	lock.notifyAll();
+        }
+        
       } catch (Exception ex) {
         ex.printStackTrace();
       }
@@ -62,12 +86,14 @@ public class CdsrHub {
       ExecutionException, InitializeException {
     String category = null;
     String data_file = null;
+    String output_data_file = null;
 
-    if (args.length == 2) {
+    if (args.length == 3) {
       category = args[0];
       data_file = args[1];
+      output_data_file = args[2];
     } else {
-      System.out.println("You must specify the category and data file");
+      System.out.println("You must specify the category, input data file and output data file");
       System.exit(1);
     }
 
@@ -91,23 +117,29 @@ public class CdsrHub {
       ProblemSet ps = loadProblemSet(data_file);
       sendRoom(ps.getRoom(), category, room_informer);
       sendSensedObjects(ps.getObjects(), sensed_objects_informer);
+      
+      // wait for the spatial regions message
 
+      Listener spatial_relations_listener = Factory.getInstance().createListener(
+          "/cdsr/spatialrelations");
+      spatial_relations_listener.activate();
+      spatial_relations_listener.addHandler(new SpatialRelationsHandler(ps, output_data_file), true);
+      
+      LOG.info("Listener object activated");
+      synchronized (lock)
+      {
+    	  lock.wait();
+      }
+      LOG.info("Spatial relations received");
+      
     } catch (RSBException e) {
       e.printStackTrace();
     }
 
-    // wait for the spatial regions message
-
-    Listener spatial_relations_listener = Factory.getInstance().createListener(
-        "/cdsr/spatialrelations");
-    spatial_relations_listener.activate();
-    spatial_relations_listener.addHandler(new SpatialRelationsHandler(), true);
     
-    LOG.info("Listener object activated");
-    
-    Thread.sleep(10000);
 
     room_informer.deactivate();
+    System.exit(0);
   }
 
   private static void registerConverters() {
