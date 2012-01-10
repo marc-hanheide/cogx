@@ -25,6 +25,7 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		nvidia-cg-toolkit@ubuntu \
 		cmake-curses-gui@ubuntu \
 		libdc1394-22-dev@ubuntu \
+		libdc1394-utils@ubuntu \
 		libsdl1.2-dev@ubuntu \
 		libsuitesparse-dev@ubuntu\
 		libeigen2-dev@ubuntu \
