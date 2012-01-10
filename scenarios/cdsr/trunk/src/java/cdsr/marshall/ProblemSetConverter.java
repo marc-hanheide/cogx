@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import cdsr.objects.ObjectRelation;
 import cdsr.objects.ProblemSet;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
@@ -43,6 +44,7 @@ public class ProblemSetConverter {
 
 			saveSensedObjects(args[0] + "_obj", problem_set.getObjects());
 			saveRoom(args[0] + "_room", problem_set.getRoom(), args[1]);
+			saveRelations(args[0] + "_rlns", problem_set.getRelations());
 		} else {
 			System.out
 					.println("Expect a 2 arguments: the filename of the problem set and the room category");
@@ -50,6 +52,34 @@ public class ProblemSetConverter {
 
 	}
 
+	public static void saveRelations(String _filename, ArrayList<ObjectRelation> object_relations) throws IOException
+	{
+		File file = new File(_filename);
+
+		if (file.exists()) {
+			boolean deleted = file.delete();
+			if (!deleted) {
+				throw new RuntimeException(
+						"Could not delete file before writing: " + _filename);
+			}
+		}
+
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		bw.write(object_relations.size() + "");
+		bw.newLine();
+
+		for (ObjectRelation object_relation : object_relations) {
+			
+			bw.write(object_relation.getID() + " " + object_relation.getType());
+			bw.write(" " + object_relation.getStart() + " " + object_relation.getEnd() + " " +
+					object_relation.getStrength()); 
+			bw.newLine();
+		}
+
+		bw.flush();
+		bw.close();
+	}
+	
 	public static void saveRoom(String _filename, Room _room,
 			String room_category) throws IOException {
 		File file = new File(_filename);

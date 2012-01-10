@@ -1,4 +1,4 @@
-package cdr.rsb;
+package cdsr.rsb;
 
 import java.awt.geom.Line2D;
 import java.io.IOException;
