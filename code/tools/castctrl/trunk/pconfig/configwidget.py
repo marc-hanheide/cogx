@@ -83,7 +83,6 @@ class CConfigWidget(QtGui.QWidget):
         if buddy != None:
             self.connect(self.editBuddy, QtCore.SIGNAL("clicked(bool)"), self.onEditBuddyClicked)
             buddy.setEnabled(False)
-            #buddy.setVisible(False) # TODO: it doesn't work, yet, so hide it
 
     # (HACK)
     # This will be called for complex custom editors
@@ -95,8 +94,6 @@ class CConfigWidget(QtGui.QWidget):
             self.wItems.closeEditor(self.activeEditor, 0)
             self.activeEditor = None
             self.editBuddy.setEnabled(False)
-        #self.wItems.closePersistentEditor(i) # only hides, doesn't commit
-        #self.wItems.setCurrentIndex(i.parent()) # XXX This doesn't apply the changes ... argh!
 
     # (HACK)
     def onEditorCreated(self, wEditor):
