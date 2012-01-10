@@ -29,11 +29,11 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 		libdc1394-22-dev@ubuntu \
 		libdc1394-utils@ubuntu \
 		libsdl-dev@ubuntu \
-		libsuitesparse-dev \
-		libcminpack-dev \
-		libplot-dev \
-		libeigen2-dev \
-		libeigen3-dev \
+		libsuitesparse-dev@ubuntu \
+		libcminpack-dev@ubuntu \
+		libplot-dev@ubuntu \
+		libeigen2-dev@ubuntu \
+		libeigen3-dev@ubuntu \
 		flex@ubuntu \
 		bison@ubuntu
 
@@ -43,14 +43,14 @@ SYSBITS=$(shell getconf LONG_BIT)
 LIBDEPS = 	contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
-		contrib/opencv \
 		cogx/cosycure \
+		contrib/opencv \
 		contrib/player-3.0.2 \
-		contrib/avin2-SensorKinect \
 		cogx/v4r \
 		contrib/physx_x$(SYSBITS) \
 		cogx/golem_katana300_x$(SYSBITS) \
-		contrib/mercury \
+		contrib/mercury 
+#		contrib/avin2-SensorKinect \
 #		contrib/gazebo \
 #		contrib/openNI \
 
