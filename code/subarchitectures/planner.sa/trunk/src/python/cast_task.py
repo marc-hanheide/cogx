@@ -246,7 +246,7 @@ class CASTTask(object):
             os.system("%s %s" % (show_dot_script, dot_fn))
 
     def write_history(self):
-        history_fn = abspath(join(self.component.get_path(), "history%d-%d.pddl" % (self.id, len(self.plan_state_history)+1)))
+        history_fn = abspath(join(self.component.get_path(), "history-%d.pddl" % self.id))
         f = open(history_fn, "w")
         log.debug("writing history to %s", history_fn)
         
