@@ -14,8 +14,8 @@
 #include <cstdio>
 #include <iostream>
 
-#include <opencv/cxcore.h>
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <IceUtil/IceUtil.h>
 
