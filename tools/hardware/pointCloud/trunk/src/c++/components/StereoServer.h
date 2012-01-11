@@ -14,7 +14,8 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <VideoClient.h>
 #include "StereoCamera.h"
 #include "Math.hpp"

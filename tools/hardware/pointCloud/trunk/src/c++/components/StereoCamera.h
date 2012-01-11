@@ -8,8 +8,8 @@
 #define STEREO_CAMERA_H
 
 #include <string>
-#include <opencv/cv.h>
-#include <opencv/cv.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <cogxmath.h>
 
 namespace cast

@@ -4,8 +4,8 @@
 #define USE_OPENCV 1
 
 #ifdef USE_OPENCV
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #endif
 
 
