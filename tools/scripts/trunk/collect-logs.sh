@@ -8,5 +8,5 @@ svn info . > logs/svn-info.txt
 svn st -q . >> logs/svn-info.txt
 
 
-zip -j "$zipname" logs/log.xml logs/svn-info.txt subarchitectures/planner.sa/src/python/standalone/tmp/static_dir_for_debugging/* tmpmap.* conceptual.fg conceptual.info
+zip -j "$zipname" logs/log.xml logs/svn-info.txt subarchitectures/planner.sa/src/python/standalone/tmp/static_dir_for_debugging/* subarchitectures/planner.sa/src/python/history-*.pddl tmpmap.* conceptual.fg conceptual.info
 
