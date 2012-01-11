@@ -9,7 +9,9 @@
 #ifndef Z_HISTOGRAM_HH
 #define Z_HISTOGRAM_HH
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <vector>
 #include "Color.hh"
 

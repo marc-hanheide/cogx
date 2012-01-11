@@ -9,8 +9,9 @@
 #ifndef Z_KINECT_CORE_H
 #define Z_KINECT_CORE_H
 
-#include <opencv/cxcore.h>
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <stdexcept>
 #include <set>
 

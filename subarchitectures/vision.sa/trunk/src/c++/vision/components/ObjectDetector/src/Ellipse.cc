@@ -6,8 +6,9 @@
 #include <assert.h>
 #include <algorithm>
 #ifdef USE_OPENCV_ELLFIT
-#include <opencv/cv.h>
-#include <opencv/cvtypes.h>
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
 #else
 extern "C"
 {

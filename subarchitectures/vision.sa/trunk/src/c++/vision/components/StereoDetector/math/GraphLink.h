@@ -9,8 +9,9 @@
 #ifndef Z_GRAPH_LINK_H
 #define Z_GRAPH_LINK_H
 
-#include <opencv/cv.h>
-#include <opencv/cv.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 
 namespace Z
 {

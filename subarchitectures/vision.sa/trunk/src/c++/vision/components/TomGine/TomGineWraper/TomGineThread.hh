@@ -9,7 +9,9 @@
 #ifndef TGTHREAD_TOMGINE_THREAD_HH
 #define TGTHREAD_TOMGINE_THREAD_HH
 
-#include <opencv/cxcore.h>
+
+#include <opencv2/core/core.hpp>
+
 #include <vector>
 #include "Pose.hh"
 #include "tgEngine.h"

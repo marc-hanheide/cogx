@@ -5,7 +5,9 @@
 #ifndef P_CEDGE_HH
 #define P_CEDGE_HH
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <iostream>
 #include <stdexcept>
 

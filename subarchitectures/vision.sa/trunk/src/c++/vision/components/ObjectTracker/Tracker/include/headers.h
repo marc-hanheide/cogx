@@ -36,7 +36,8 @@
 #ifdef WIN32
 #include <highgui.h>
 #else
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
 #endif
 
 #include <stdio.h>

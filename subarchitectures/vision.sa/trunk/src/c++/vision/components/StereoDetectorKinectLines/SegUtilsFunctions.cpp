@@ -12,11 +12,6 @@
 namespace cast
 {
 
-/**
- * @brief Convert a IplImage to a cvMat<Vec3b> image.
- * @param iplImage IplImage source
- * @param matImage cv::Mat image destination
- */
 void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image)
 {
   image = cv::Mat_<cv::Vec3b>(iplImage.height, iplImage.width); 
@@ -94,6 +89,7 @@ unsigned WhichGraphCutGroup(unsigned modelID, std::vector< std::vector<unsigned>
 }
 
 /**
+ * TODO We should move that to Annotation
  * @brief Check annotation for evaluation (over-/under-segmentation)
  * @param surfaces Surface patches
  * @param anno Annotation of all pcl_model_indices
@@ -114,7 +110,7 @@ void CheckAnnotation(std::vector<cv::Ptr<surface::SurfaceModel> > &surfaces,
   std::vector<double> res_too_much_pixel;         // nr true positive points (biggest)
                                                   // multi-indices are the same!
   static int overall_res_too_much_pixel = 0;      // number or oversegmentation pixel (more than one image)
-  static int overall_res_backcheck_indices = 0;   // number of correct indices (more than one image)
+//  static int overall_res_backcheck_indices = 0;   // number of correct indices (more than one image)
 
   //  std::vector<double> res_single;             // results of the single object check (anno to real)
 
@@ -131,7 +127,7 @@ void CheckAnnotation(std::vector<cv::Ptr<surface::SurfaceModel> > &surfaces,
   objects.resize(anno.size());
   for(unsigned i=0; i<objects.size(); i++)
     objects[i] = -1;
-  for(int i=0; i < surfaces.size(); i++)
+  for(unsigned i=0; i < surfaces.size(); i++)
     for(unsigned j=0; j< surfaces[i]->indices.size(); j++)
       for(unsigned k=0; k < graphCutGroups.size(); k++) 
         for(unsigned l=0; l < graphCutGroups[k].size(); l++) 
@@ -255,6 +251,23 @@ void CheckAnnotation(std::vector<cv::Ptr<surface::SurfaceModel> > &surfaces,
   printf("Overall sum of backward check: %u/%u = %4.3f\n", overall_res_too_much_pixel, overallsum_res_forward, (double) overall_res_too_much_pixel / (double) overallsum_res_forward);
 }
 
+std::vector<int> UpscaleIndices(std::vector<int> &_indices,
+                    int image_width)
+{
+  std::vector<int> new_indices;
+  for(unsigned i=0; i<_indices.size(); i++)
+  {
+//     int pos_x = _indices[i] % image_width;
+//     int pos_y = _indices[i] / image_width;
+//     pos = pos_y * image_width * 2 + pos_x * 2;
+    
+    new_indices.push_back(_indices[i]*2);
+    new_indices.push_back(_indices[i]*2 + 1);
+    new_indices.push_back(_indices[i]*2 + image_width);
+    new_indices.push_back(_indices[i]*2 + image_width + 1);
+  }
+  return new_indices;
+}
 
 }
 

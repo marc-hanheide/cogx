@@ -7,8 +7,9 @@
 #include "TestCases.h"
 
 #include <string>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+
+#include <opencv2/core/core.hpp>
+#include "opencv2/highgui/highgui.hpp"
 #include <Ice/LocalException.h>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 

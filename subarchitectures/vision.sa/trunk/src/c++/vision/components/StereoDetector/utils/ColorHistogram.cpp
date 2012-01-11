@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <cstdio>
 #include "ColorHistogram.h"
 
 namespace Z
@@ -79,7 +80,7 @@ double ColorHistogram::Compare(ColorHistogram *ch)
 {
   if(nr_bins != ch->nr_bins)
   {
-    printf("ColorHistogram::Compare: Warning: Cannot compare histograms with different bin sizes.\n");
+    std::printf("[ColorHistogram::Compare] Warning: Cannot compare histograms with different bin sizes.\n");
     return 0.;
   }
   

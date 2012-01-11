@@ -1,7 +1,11 @@
 /**
  * $Id: FormLines.cc,v 1.22 2007/02/18 18:02:48 mxz Exp mxz $
  */
-#include <opencv/cv.h>
+
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
 #include "Segment.hh"
 #include "Line.hh"
 #include "FormLines.hh"

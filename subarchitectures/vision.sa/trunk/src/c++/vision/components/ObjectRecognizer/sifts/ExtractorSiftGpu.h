@@ -24,7 +24,8 @@
 #include <exception>
 #include <vector>
 
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 namespace cogx { namespace vision {
 

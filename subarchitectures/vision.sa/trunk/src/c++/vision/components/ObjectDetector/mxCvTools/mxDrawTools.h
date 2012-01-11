@@ -11,7 +11,9 @@
 #ifndef MXDRAW_TOOLS_H_
 #define MXDRAW_TOOLS_H_
 
-#include <opencv/cv.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <vector>
 #include "mxCvTools.h"
 #include "stdint.h"

@@ -5,8 +5,9 @@
 #ifndef Z_IMG_UTILS_HH
 #define Z_IMG_UTILS_HH
 
-#include <cv.h>
-#include <cxcore.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 //#include <stdexcept>
 
 namespace Z

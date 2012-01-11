@@ -10,8 +10,11 @@
 #define PLANE_POPOUT_H
 
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/legacy/compat.hpp>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <v4r/PCLAddOns/PlanePopout.hh>
 #include <v4r/PCLAddOns/PCLUtils.h>

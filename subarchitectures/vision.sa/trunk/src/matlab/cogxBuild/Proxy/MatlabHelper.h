@@ -1,7 +1,8 @@
 #ifndef MATLABHELPER_UT6PZ9BU
 #define MATLABHELPER_UT6PZ9BU
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <MatlabData.hpp>
 
 // If you get linking problems with mclmcrrt, check how the matlab header files are
