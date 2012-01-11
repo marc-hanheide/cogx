@@ -13,7 +13,8 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <cast/core/CASTComponent.hpp>
 #include "Math.hpp"
 #include "PointCloud.hpp"
