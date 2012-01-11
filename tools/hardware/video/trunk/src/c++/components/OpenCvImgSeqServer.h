@@ -10,7 +10,8 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <ImageCache.h>
 #include "VideoServer.h"
 

@@ -11,7 +11,8 @@
 #include <vector>
 #include <stdexcept>
 #include <sys/time.h>
-#include <cv.h> 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <libplayerc++/playerc++.h>
 #if 0
 #include <highgui.h>
