@@ -210,11 +210,11 @@
               :effect (defined ?svar))
 
 
- (:init-rule negated-probs
-             :parameters (?l - label  ?c - category)
-             :precondition (defined (dora__inroom ?l ?c))
-             :effect (assign (dora__not_inroom ?l ?c) (- 1.0 (dora__inroom ?l ?c)))
-             )
+  (:init-rule negated-probs
+              :parameters (?l - label  ?c - category)
+              :precondition (defined (dora__inroom ?l ?c))
+              :effect (assign (dora__not_inroom ?l ?c) (- 1.0 (dora__inroom ?l ?c)))
+              )
 
  ;; (:init-rule reset-engaged
  ;;             :effect (not (any-engaged)))
@@ -226,12 +226,12 @@
 
   (:derived (attached_to_room ?p - place ?r - room)
             (exists (?p2 - place) (and (= (in-room ?p2) ?r)
+                                       (not (= (placestatus ?p) trueplace))
                                        (connected ?p2 ?p))))
 
 
   (:derived (not_fully_explored ?r - room)
-            (exists (?p - place) (and (not (= (placestatus ?p) trueplace))
-                                      (attached_to_room ?p ?r))))
+            (exists (?p - place) (and (attached_to_room ?p ?r))))
               
   (:derived (trans_related ?o - visualobject ?where - (either visualobject room))
             (or (poss (related-to ?o) ?where)
@@ -405,6 +405,7 @@
                          (assign (placestatus ?to) trueplace)
                          (kval ?a (in-room ?to))
                          (increase (total-cost) 2))
+
             )
 
    (:action move_direct
