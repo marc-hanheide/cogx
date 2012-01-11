@@ -106,7 +106,8 @@ void TmpEllipse3D::FitRectifiedEllipse(TmpEllipse &left, unsigned numPoints)
   }
   
   // fit new ellipse to rectified points of ellipse and estimate parameters
-  cvFitEllipse(points, numPoints, &params);
+printf("[StereoEllipses::TmpEllipse3D::FitRectifiedEllipse] ERROR: Antiquated! Update this function to new opencv version!\n");
+//  cvFitEllipse(points, numPoints, &params);
   x_r = params.center.x;
   y_e = params.center.y;
   // box size is double the axis lengths

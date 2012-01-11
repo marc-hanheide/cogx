@@ -10,8 +10,8 @@
 #include <limits.h>
 //#include <GL/glut.h>
 #include <dlfcn.h>
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include "PNamespace.hh"
 #include "Line.hh"
 #include "Array.hh"

@@ -14,8 +14,8 @@
 #include <map>
 #include <algorithm>
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/core/core.hpp>
+#include "opencv2/highgui/highgui.hpp"
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>

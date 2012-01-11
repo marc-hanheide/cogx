@@ -225,6 +225,8 @@ void StereoDetector::receiveProtoObject(const cdl::WorkingMemoryChange & _wmc)
     iplMask->imageData[i] = (char) poPtr->mask.data[i];
   }
 
+printf("[StereoDetector::receiveProtoObject] Error: Rewrite function for new opencv2!\n");
+/* HACK ARI: Rewrite for new opencv-version
   poPatchImage = cvCreateImage(cvSize(poPtr->mask.width*2, poPtr->mask.height*2), IPL_DEPTH_8U, 3);
   cvSetImageROI(poPatchImage, cvRect( 0, 0, poPtr->mask.width, poPtr->mask.height) );
   cvCopyImage(poImg, poPatchImage);
@@ -236,14 +238,13 @@ void StereoDetector::receiveProtoObject(const cdl::WorkingMemoryChange & _wmc)
   cvSetImageROI(poPatchImage, cvRect( poPtr->mask.width, poPtr->mask.height, poPtr->mask.width, poPtr->mask.height) );
   cvCopyImage(poImg, poPatchImage);
   cvResetImageROI(poPatchImage);
+*/
 
 //  cvReleaseImage(&poPatchImage);
 //  cvReleaseImage(&iplMask);
-
 //  cvCvtColor(segPatch, tetraPatch, CV_GRAY2RGB);
 //  cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
 //  cvCvtColor(bgCostPatch, tetraPatch, CV_GRAY2RGB);
-
 //  delete []poMask;
 
   printf("  Proto object received:\n    mask w-h: %u - %u\n", poPtr->mask.width, poPtr->mask.height);

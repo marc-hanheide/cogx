@@ -5,9 +5,9 @@
 #ifndef P_SDRAW_HH
 #define P_SDRAW_HH
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <opencv/cxcore.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "PNamespace.hh"
 #include "Vector2.hh"
 #include "Array.hh"

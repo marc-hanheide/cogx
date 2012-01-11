@@ -22,32 +22,37 @@
 namespace cast
 {
   
-/**
- * @brief Convert a IplImage to a cvMat<Vec3b> image.
- * @param iplImage IplImage source
- * @param matImage cv::Mat image destination
- */
+/** Convert a IplImage to a cvMat image. **/
 void ConvertImage(IplImage &iplImage, cv::Mat_<cv::Vec3b> &image);
 
+/** Draw NORMALS on the TomGine **/
 void DrawNormals(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
                  pcl::PointCloud<pcl::Normal>::Ptr normals,
                  TomGine::tgTomGineThread *tgR,
                  int color);
 
+/** Draw NURBS on the TomGine **/
 void DrawNURBS(TomGine::tgTomGineThread *tgR,
                const ON_NurbsSurface &on_surf,
                int color);
 
+/** Returns the canny edges from the vcore as texture vector with a certain width **/
 void GetSegmentIndexes(Z::VisionCore *vcore, 
                        std::vector<bool> &_texture,
                        int point_cloud_width);
 
+/** Returns the graph cut group for a certain modelID **/
 unsigned WhichGraphCutGroup(unsigned modelID, 
                             std::vector< std::vector<unsigned> > _graphCutGroups);
 
+/** Check over- and undersegmentation of objects **/
 void CheckAnnotation(std::vector<cv::Ptr<surface::SurfaceModel> > &surfaces,
                      std::vector<int> &anno,
                      std::vector< std::vector<unsigned> > &graphCutGroups);
+
+/** Upscale indices by a factor of 2 **/
+std::vector<int> UpscaleIndices(std::vector<int> &_indices,
+                                int image_width);
 
 }
 

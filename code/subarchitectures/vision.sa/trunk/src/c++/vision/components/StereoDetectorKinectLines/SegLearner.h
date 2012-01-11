@@ -10,6 +10,9 @@
 #ifndef SEG_LEARNER_H
 #define SEG_LEARNER_H
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <vector>
 #include <stdexcept>
 

@@ -11,8 +11,11 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <PointCloudClient.h>
 #include <VisionData.hpp>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/legacy/compat.hpp>
+
 #include <castutils/Timers.hpp>
 #include "OpenSURF/surflib.h"
 #include "TomGineWraper/TomGineThread.hh"

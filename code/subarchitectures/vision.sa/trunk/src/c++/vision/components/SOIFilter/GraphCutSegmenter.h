@@ -20,7 +20,9 @@
 #define ID_OBJ_LAST_SEGMENTATION "soif.Last ROI Segmentation"
 #endif
 
-#include <opencv/cv.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/legacy/compat.hpp>
 
 #include <vector>
 #include <string>

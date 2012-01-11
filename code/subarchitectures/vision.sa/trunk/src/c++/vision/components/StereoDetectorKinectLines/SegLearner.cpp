@@ -9,7 +9,6 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#include <opencv/highgui.h>
 #include "SegLearner.h"
 
 #include "Gestalt3D.h"
@@ -31,6 +30,8 @@
 #include "Patch3D.h"
 #include "Closure3D.h"
 #include "Rectangle3D.h"
+
+#include "v4r/Surf/Fourier.h"
 
 using namespace std;
 using namespace VisionData;
@@ -178,17 +179,24 @@ void SegLearner::configure(const map<string,string> & _config)
   if(showImages)
   {
     // initialize tgRenderer
-    cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);  // 0 == LEFT
+//     cv::Mat intrinsic = stereo_cam->GetIntrinsic(0);  // 0 == LEFT
     cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
     cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
     cv::Vec3d rotCenter(0,0,0.4);
+    
+    cv::Mat intrinsic;
+    intrinsic = cv::Mat::zeros(3,3,CV_64F);
+    intrinsic.at<double>(0,0) = intrinsic.at<double>(1,1) = 525;
+    intrinsic.at<double>(0,2) = 320;
+    intrinsic.at<double>(1,2) = 240;
+    intrinsic.at<double>(2,2) = 1.;
     
     // Initialize 3D render engine 
     tgRenderer = new TomGine::tgTomGineThread(640, 480);
     tgRenderer->SetCamera(intrinsic);
     tgRenderer->SetCamera(R, t);
     tgRenderer->SetRotationCenter(rotCenter);
-    tgRenderer->SetClearColor(1., 1., 1.);
+//     tgRenderer->SetClearColor(1., 1., 1.); /// TODO Set color to white
 //     tgRenderer->SetCoordinateFrame();
   }
   else 
@@ -281,7 +289,8 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
-  annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+  annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
   
   
@@ -342,7 +351,7 @@ void SegLearner::runComponent()
  */
 void SegLearner::GetImageData()
 {
-  pointCloudWidth = 320;
+  pointCloudWidth = 640;
   pointCloudHeight = pointCloudWidth *3/4;
   kinectImageWidth = 640;
   kinectImageHeight = kinectImageWidth *3/4;
@@ -361,22 +370,8 @@ void SegLearner::GetImageData()
 //  iplImage_r = convertImageToIpl(image_r);
   iplImage_k = convertImageToIpl(image_k);
 
-  /// bilateral filter
-//   bilateral->setInputCloud(pcl_cloud);
-//   bilateral->compute();
-//   bilateral->getCloud(pcl_cloud);
-  
-  /// subsample point cloud
-//   subsample->setInputCloud(pcl_cloud);
-//   subsample->compute();
-//   subsample->getCloud(pcl_cloud);
-//   pointCloudWidth = pointCloudWidth/2.;
-//   pointCloudHeight = pointCloudWidth *3/4;
-
-  /// calculate normals from point cloud
-//   pclA::NormalsFromSortedPCLCloud(pcl_cloud, pcl_normals, 0.02, 5.0);
-
-static struct timespec start, last, current;
+  /// calculate normals
+  static struct timespec start, last, current;
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
 last = start;
   pclA::NormalsEstimationNR::Parameter param(5, 0.02, 1000, 0.001, 10);
@@ -388,7 +383,19 @@ last = start;
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: Getting images => Calculate normals %4.3f\n", timespec_diff(&current, &last));
   
+
+  /// bilateral filter
+//   bilateral->setInputCloud(pcl_cloud);
+//   bilateral->compute();
+//   bilateral->getCloud(pcl_cloud);
   
+  /// subsample point cloud
+//   subsample->setInputCloud(pcl_cloud);
+//   subsample->compute();
+//   subsample->getCloud(pcl_cloud);
+//   pointCloudWidth = pointCloudWidth/2.;
+//   pointCloudHeight = pointCloudWidth *3/4;
+ 
   if(showImages) {
     cvShowImage("Kinect image", iplImage_k);
     // convert point cloud to iplImage
@@ -420,7 +427,7 @@ last = current;
   /// Run vision core (for canny edges
   vcore->NewImage(iplImage_k);
   vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
-  GetSegmentIndexes(vcore, texture, 320);
+  GetSegmentIndexes(vcore, texture, pointCloudWidth);
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: Vision core: %4.3f\n", timespec_diff(&current, &last));
@@ -441,7 +448,7 @@ last = current;
   model_fitter->setInputCloud(pcl_cloud);
   model_fitter->compute();
   model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices);         /// TODO Eigentlich sollte man hier schon surfaces kriegen?
-  model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_old);
+  model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_old);     /// TODO old nur für die Anzeige später!
   model_fitter->getError(error, square_error);
   log("ModelFitter end!");
   
@@ -473,6 +480,25 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f\n", timespec_diff(&current, &last));
 last = current; 
 
+/// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
+  log("Fourier: start");
+  surf::Fourier fourier;
+  cv::Mat_<cv::Vec3b> kinect_image;
+  ConvertImage(*iplImage_k, kinect_image);
+  fourier.setInputImage(kinect_image);
+  fourier.compute();
+
+clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+printf("Runtime for SegLearner: Fourier: %4.3f\n", timespec_diff(&current, &last));
+last = current; 
+
+//   fourier.check();
+  log("Fourier: end");
+  
+  /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
+
   log("Annotation: start");
   std::vector< std::vector<int> > anno_pairs;
   std::vector<int> anno_background_list;
@@ -496,6 +522,7 @@ last = current;
   /// Calculate patch relations
   log("Calculate patch-relations start!");
   std::vector<Relation> relation_vector;
+  patches->setInputImage(iplImage_k);
   patches->setInputCloud(pcl_cloud, pcl_normals);
   patches->setPatches(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);

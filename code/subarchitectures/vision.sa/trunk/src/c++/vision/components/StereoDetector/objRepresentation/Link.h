@@ -11,8 +11,8 @@
 
 #include <cstdio>
 #include <vector>
-#include <opencv/cv.h>
-#include <opencv/cv.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include "Node.h"
 

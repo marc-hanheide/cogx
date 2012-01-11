@@ -5,8 +5,9 @@
 #ifndef P_IMG_UTILS_HH
 #define P_IMG_UTILS_HH
 
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "PNamespace.hh"
 #include "Except.hh"
 

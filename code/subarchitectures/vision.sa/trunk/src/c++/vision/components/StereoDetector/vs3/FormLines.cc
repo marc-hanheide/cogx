@@ -6,7 +6,9 @@
  * @brief Class file of Gestalt principle FormLines.
  */
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "Segment.hh"
 #include "Line.hh"
 #include "FormLines.hh"

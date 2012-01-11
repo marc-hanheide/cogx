@@ -12,7 +12,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "ipoint.h"
 
 #include <vector>

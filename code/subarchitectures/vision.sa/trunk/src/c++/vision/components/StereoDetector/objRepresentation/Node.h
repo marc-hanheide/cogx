@@ -10,8 +10,8 @@
 #define Z_OBJREP_NODE_H
 
 #include <cstdio>
-#include <opencv/cv.h>
-#include <opencv/cv.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 namespace Z
 {

@@ -9,7 +9,9 @@
 #ifndef Z_CLOSURE3D_HH
 #define Z_CLOSURE3D_HH
 
-#include "cv.h"
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "Gestalt3D.h"
 #include "StereoTypes.h"
 #include "StereoCore.h"

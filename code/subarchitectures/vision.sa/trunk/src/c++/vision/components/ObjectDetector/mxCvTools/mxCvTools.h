@@ -12,7 +12,9 @@
 #define MXCVTOOLS_H
 
 #include <stdio.h>
-#include <opencv/cv.h>
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
 
 inline void cvPrint ( CvMat *pMatix, const char *pInfo = NULL )
 {

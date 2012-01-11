@@ -9,7 +9,9 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "SegTester.h"
 
 #include "Gestalt3D.h"
@@ -275,8 +277,8 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 9);
-  annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
+  annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
 
   /// init patch class
   patches = new pclA::Patches();
@@ -284,9 +286,10 @@ void SegTester::configure(const map<string,string> & _config)
   
   /// init svm-predictor
   std::vector<const char*> files;
-  const char* file = "./instantiations/11-05-11/1215/PP-Trainingsset.txt.model";
+  const char* file = "./instantiations/11-05-11/1215/PP-Trainingsset.txt.scaled.model";
   files.push_back(file);
   svm = new svm::SVMPredictor(files.size(), files);   /// TODO Remove files.size() => sinnlos
+  svm->setScaling(true, "./instantiations/11-05-11/1215/param.txt");
   
   /// init graph cutter
   graphCut = new gc::GraphCut();
@@ -498,6 +501,7 @@ last = current;
   /// Calculate patch relations
   log("Calculate patch-relations start!");
   std::vector<Relation> relation_vector;
+  patches->setInputImage(iplImage_k);
   patches->setInputCloud(pcl_cloud, pcl_normals);
   patches->setPatches(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);       // TODO for evaluation => Necessary?

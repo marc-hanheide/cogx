@@ -13,6 +13,9 @@
 #include <vector>
 #include <stdexcept>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include <VideoClient.h>

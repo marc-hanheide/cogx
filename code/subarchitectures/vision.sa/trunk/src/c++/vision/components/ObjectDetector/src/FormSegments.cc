@@ -6,8 +6,9 @@
  * @brief Form edge segments with Matas canny edge detector.
  **/
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
 extern "C" {
 #include "canny.h"
 #include "vector2.h"

@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <cstdio>
 #ifdef USE_OPENCV_ELLFIT
-#include <cv.h>
-#include <cvtypes.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #else
 // extern "C" for FitEllipse_b2ac
 // {
@@ -85,7 +85,9 @@ static bool FitEllipse_opencv(Array<Arc*> &arcs, unsigned l, unsigned u,
       points[n].y = arcs[i]->seg->edgels[j].p.y;
       n++;
     }
-  cvFitEllipse(points, n, &params);
+
+printf("[Ellips::FitEllipse_opencv] ERROR: Antiquated! Update this function to new opencv version!\n");
+//  cvFitEllipse(points, n, &params);
   x = params.center.x;
   y = params.center.y;
   // box size is double the axis lengths

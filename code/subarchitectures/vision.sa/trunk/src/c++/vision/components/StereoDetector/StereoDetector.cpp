@@ -11,7 +11,9 @@
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
-#include <opencv/highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include "StereoDetector.h"
 #include "StereoBase.h"
 #include "Draw.hh"
