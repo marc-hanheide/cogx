@@ -10,9 +10,8 @@
 
 #include <stdexcept>
 #include <vector>
-#include <cv.h>
-#include <highgui.h>
-//#include <opencv/cv.h> - this is incorrect according to the pkg-config flags
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include "Video.hpp"
 
 namespace Video

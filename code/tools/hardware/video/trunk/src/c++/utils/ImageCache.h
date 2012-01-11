@@ -7,7 +7,9 @@
 #ifndef VIDEO_IMAGECACHE_H
 #define VIDEO_IMAGECACHE_H
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <map>
 #include <string>
 
