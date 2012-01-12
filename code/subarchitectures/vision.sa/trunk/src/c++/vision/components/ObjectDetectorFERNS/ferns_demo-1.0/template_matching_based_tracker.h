@@ -23,7 +23,7 @@
 #ifndef template_matching_based_tracker_h
 #define template_matching_based_tracker_h
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 #include "homography06.h"
 #include "homography_estimator.h"
 

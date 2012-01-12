@@ -1,4 +1,4 @@
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 #include <MatlabData.hpp>
 
 // If you get linking problems with mclmcrrt, check how the matlab header files are

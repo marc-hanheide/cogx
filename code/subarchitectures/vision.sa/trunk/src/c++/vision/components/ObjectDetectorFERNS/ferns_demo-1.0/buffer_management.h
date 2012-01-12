@@ -30,7 +30,7 @@
 #include <fstream>
 using namespace std;
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 #define MANAGED_MEMORY_DEBUGGING 0
 
