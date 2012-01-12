@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 
 #include "VisionCore.hh"
 #include "Image.hh"
