@@ -258,10 +258,11 @@ class CASTTask(object):
                 f.write(l)
                 f.write("\n")
             f.write("END_PROBLEM\n")
-            for pnode in plan.topological_sort():
-                s = "(%s %s), %s" % (pnode.action.name, " ".join(a.name for a in pnode.full_args), pnode.status)
-                f.write(s)
-                f.write("\n")
+            if plan is not None:
+                for pnode in plan.topological_sort():
+                    s = "(%s %s), %s" % (pnode.action.name, " ".join(a.name for a in pnode.full_args), pnode.status)
+                    f.write(s)
+                    f.write("\n")
             f.write("END_PLAN\n")
         f.close()
             
@@ -273,6 +274,12 @@ class CASTTask(object):
         self.plan_state = self.state
         self.cp_task.replan()
         log.debug("Planning done: %.2f sec", global_vars.get_time())
+
+        if self.cp_task.get_plan() is None:
+            self.plan_history.append(None)
+            self.plan_state_history.append((None, self.plan_state))
+            self.write_history()
+        
         self.process_cp_plan()
         log.debug("Plan processing done: %.2f sec", global_vars.get_time())
 
@@ -307,10 +314,9 @@ class CASTTask(object):
         if self.cp_task.get_plan() != plan:
             problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
             self.write_cp_problem(problem_fn)
-            if plan is not None:
-                self.plan_history.append(plan)
-                self.plan_state_history.append((plan, self.plan_state))
-                self.write_history()
+            self.plan_history.append(plan)
+            self.plan_state_history.append((plan, self.plan_state))
+            self.write_history()
             self.plan_state = self.state
         
         self.process_cp_plan()
@@ -613,7 +619,7 @@ class CASTTask(object):
         for n in redundant:
             plan.remove_node(n)
 
-        final_plan_actions = set(get_node(n) for n in last_plan.nodes_iter())
+        final_plan_actions = set(get_node(n) for n in last_plan.nodes_iter()) if last_plan else set()
 
         def node_decorator(node):
             if node.action.name.startswith("new_facts"):
@@ -649,6 +655,11 @@ class CASTTask(object):
         return plan, merged_init_state, merged_final_state
             
     def handle_task_failure(self):
+        plan = self.cp_task.get_plan()
+        self.plan_history.append(plan)
+        self.plan_state_history.append((plan, self.plan_state))
+        self.write_history()
+        
         self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
         time.sleep(5)
         merged_plan, init_state, final_state = self.merge_plans(self.plan_history)
@@ -659,7 +670,7 @@ class CASTTask(object):
         #     if a.status == plans.ActionStatusEnum.EXECUTED and not a.is_virtual():
         #         for f in a.effects:
         #             endstate.set(f)
-        if self.expl_rules_fn:
+        if self.expl_rules_fn and len(merged_plan) > 2:
             explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
 
 
