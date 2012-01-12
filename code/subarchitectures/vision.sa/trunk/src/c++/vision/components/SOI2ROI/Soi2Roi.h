@@ -13,7 +13,7 @@
 
 #include <VideoClient.h>
 #include <StereoClient.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <../../VisionUtils.h>
 
 
