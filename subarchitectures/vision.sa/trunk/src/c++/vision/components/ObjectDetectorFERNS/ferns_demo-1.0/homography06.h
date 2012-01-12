@@ -26,7 +26,7 @@
 #include <iostream>
 using namespace std;
 
-#include <opencv2/opencv.h>
+#include <opencv2/opencv.hpp>
 
 class homography06 : public CvMat
 {
