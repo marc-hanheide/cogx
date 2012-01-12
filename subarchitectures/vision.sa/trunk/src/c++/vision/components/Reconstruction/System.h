@@ -12,7 +12,7 @@
 #define __SYSTEM_H
 
 #include "GLWindow2.h"
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <cvd/image.h>
 #include <cvd/rgb.h>
 #include <cvd/byte.h>

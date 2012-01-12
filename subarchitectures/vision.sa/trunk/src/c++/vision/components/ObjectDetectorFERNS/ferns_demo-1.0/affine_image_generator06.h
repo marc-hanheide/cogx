@@ -23,7 +23,7 @@
 #ifndef affine_image_generator06_h
 #define affine_image_generator06_h
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 #include <fstream>
 using namespace std;

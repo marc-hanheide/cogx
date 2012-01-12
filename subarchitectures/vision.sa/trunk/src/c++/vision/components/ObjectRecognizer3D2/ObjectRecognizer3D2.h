@@ -11,9 +11,9 @@
 
 #include <vector>
 #include <string>
-#include <cv.h>
-#include <highgui.h>
-#include <cxcore.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+//#include <cxcore.h>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <StereoClient.h>

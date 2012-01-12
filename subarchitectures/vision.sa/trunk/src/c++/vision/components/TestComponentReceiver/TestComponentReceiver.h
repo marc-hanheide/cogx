@@ -19,7 +19,7 @@
 // #include <VisionData.hpp>
 #include <StereoClient.h>
 // #include <../../VisionUtils.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 
 namespace cast
 {

@@ -23,7 +23,7 @@
 #ifndef KEYPOINT_H
 #define KEYPOINT_H
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 /*!
   \brief A 2D feature point as detected by a point detector
