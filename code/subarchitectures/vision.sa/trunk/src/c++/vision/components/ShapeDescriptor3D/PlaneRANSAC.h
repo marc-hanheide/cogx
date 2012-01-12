@@ -7,7 +7,7 @@
 #define PLANE_RANSAC_H
 
 #include <vector>
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 #include <VisionData.hpp>
 #include "PlanarPatch.h"
 
