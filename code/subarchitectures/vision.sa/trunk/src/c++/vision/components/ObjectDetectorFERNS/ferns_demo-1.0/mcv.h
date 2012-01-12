@@ -23,7 +23,7 @@
 #ifndef MCV_H
 #define MCV_H
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 /*! \file */
 
