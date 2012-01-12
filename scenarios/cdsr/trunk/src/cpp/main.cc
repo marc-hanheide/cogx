@@ -373,58 +373,59 @@ int main() {
       for (j = 0; j < sobjects->object_size(); j++) {
           if(j != i) {
               const SensedObject& target = sobjects->object(j);
-              
+              const string separator = "_";
+
               SpatialRelation* relation1 = data->add_relation();
-              relation1->set_id(landmark.id() + ":" + target.id() + ":xOneYZero");
+              relation1->set_id(landmark.id() + separator + target.id() + separator + "xOneYZero");
               relation1->set_type("xOneYZero");
               relation1->set_start_id(landmark.id());
               relation1->set_end_id(target.id());
               relation1->set_strength(projSpatRel(landmark, target, 1.0, 0.0));
 
               SpatialRelation* relation2 = data->add_relation();
-              relation2->set_id(landmark.id() + ":" + target.id() + ":xOneYOne");
+              relation2->set_id(landmark.id() + separator + target.id() + separator + "xOneYOne");
               relation2->set_type("xOneYOne");
               relation2->set_start_id(landmark.id());
               relation2->set_end_id(target.id());
               relation2->set_strength(projSpatRel(landmark, target, 1.0, 1.0));
 
               SpatialRelation* relation3 = data->add_relation();
-              relation3->set_id(landmark.id() + ":" + target.id() + ":xZeroYOne");
+              relation3->set_id(landmark.id() + separator + target.id() + separator + "xZeroYOne");
               relation3->set_type("xZeroYOne");
               relation3->set_start_id(landmark.id());
               relation3->set_end_id(target.id());
               relation3->set_strength(projSpatRel(landmark, target, 0.0, 1.0));
 
               SpatialRelation* relation4 = data->add_relation();
-              relation4->set_id(landmark.id() + ":" + target.id() + ":xNegOneYOne");
+              relation4->set_id(landmark.id() + separator + target.id() + separator + "xNegOneYOne");
               relation4->set_type("xNegOneYOne");
               relation4->set_start_id(landmark.id());
               relation4->set_end_id(target.id());
               relation4->set_strength(projSpatRel(landmark, target, -1.0, 1.0));
 
               SpatialRelation* relation5 = data->add_relation();
-              relation5->set_id(landmark.id() + ":" + target.id() + ":xNegOneYZero");
+              relation5->set_id(landmark.id() + separator + target.id() + separator + "xNegOneYZero");
               relation5->set_type("xNegOneYZero");
               relation5->set_start_id(landmark.id());
               relation5->set_end_id(target.id());
               relation5->set_strength(projSpatRel(landmark, target, -1.0, 0.0));
 
               SpatialRelation* relation6 = data->add_relation();
-              relation6->set_id(landmark.id() + ":" + target.id() + ":xNegOneYNegOne");
+              relation6->set_id(landmark.id() + separator + target.id() + separator + "xNegOneYNegOne");
               relation6->set_type("xNegOneYNegOne");
               relation6->set_start_id(landmark.id());
               relation6->set_end_id(target.id());
               relation6->set_strength(projSpatRel(landmark, target, -1.0, -1.0));
 
               SpatialRelation* relation7 = data->add_relation();
-              relation7->set_id(landmark.id() + ":" + target.id() + ":xZeroYNegOne");
+              relation7->set_id(landmark.id() + separator + target.id() + separator + "xZeroYNegOne");
               relation7->set_type("xZeroYNegOne");
               relation7->set_start_id(landmark.id());
               relation7->set_end_id(target.id());
               relation7->set_strength(projSpatRel(landmark, target, 0.0, -1.0));
 
               SpatialRelation* relation8 = data->add_relation();
-              relation8->set_id(landmark.id() + ":" + target.id() + ":xOneYNegOne");
+              relation8->set_id(landmark.id() + separator + target.id() + separator + "xOneYNegOne");
               relation8->set_type("xOneYNegOne");
               relation8->set_start_id(landmark.id());
               relation8->set_end_id(target.id());
