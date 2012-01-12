@@ -16,7 +16,8 @@
 
 #include <cassert>
 #include <iostream>
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <cogxmath_base.h>
 #include <Vector3.h>
 #include <Matrix33.h>
