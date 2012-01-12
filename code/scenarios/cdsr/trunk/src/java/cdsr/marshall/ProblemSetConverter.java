@@ -70,8 +70,9 @@ public class ProblemSetConverter {
 
 		for (ObjectRelation object_relation : object_relations) {
 			
-			bw.write(object_relation.getID() + " " + object_relation.getType());
-			bw.write(" " + object_relation.getStart() + " " + object_relation.getEnd() + " " +
+			bw.write(formatID(object_relation.getID()) + " " + object_relation.getType());
+			bw.write(" " + formatID(object_relation.getStart()) +
+				" " + formatID(object_relation.getEnd()) + " " +
 					object_relation.getStrength()); 
 			bw.newLine();
 		}
@@ -80,6 +81,12 @@ public class ProblemSetConverter {
 		bw.close();
 	}
 	
+
+	public static String formatID(String input_id)
+	{
+		return input_id.replace(':', '-');
+	}
+
 	public static void saveRoom(String _filename, Room _room,
 			String room_category) throws IOException {
 		File file = new File(_filename);
@@ -93,7 +100,7 @@ public class ProblemSetConverter {
 		}
 
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-		bw.write(_room.getID() + " " + room_category);
+		bw.write(formatID(_room.getID()) + " " + room_category);
 		bw.newLine();
 		bw.write(_room.getLines().size() + "");
 		bw.newLine();
@@ -129,7 +136,11 @@ public class ProblemSetConverter {
 		bw.newLine();
 
 		for (SensedObject sensed_object : sensed_objects) {
-			bw.write(sensed_object.getID() + " " + sensed_object.getType());
+			// re-format ID - replace colon with hyphen
+			bw.write(formatID(sensed_object.getID()));
+			bw.write(" ");
+			// reformat type - remove trailing digits
+			bw.write(formatObjectType(sensed_object.getType()));
 			Iterator<Line2D.Double> line_itr = sensed_object.iterator();
 			while (line_itr.hasNext()) {
 				Line2D.Double next_line = line_itr.next();
@@ -145,4 +156,15 @@ public class ProblemSetConverter {
 		bw.close();
 	}
 
+	public static String formatObjectType(String input_type)
+	{
+		StringBuilder builder = new StringBuilder();
+    		for (int i = 0; i < input_type.length(); i++) {
+        		char c = input_type.charAt(i);
+        		if (!Character.isDigit(c)) {
+            			builder.append(c);
+        		}
+    		}
+    		return builder.toString();
+	}
 }
