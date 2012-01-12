@@ -23,7 +23,7 @@
 #ifndef fine_gaussian_pyramid_h
 #define fine_gaussian_pyramid_h
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 /*
   Handling borders:
