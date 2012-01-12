@@ -29,12 +29,12 @@ print-debs:
 
 
 %@macports:
-	@(if [ `uname  -s`x = "Darwin"x ]; then if port info $* >/dev/null 2>&1; then \
+	@(if [ `uname  -s`x = "Darwin"x ] && which port; then if port installed $* | grep -v -q "None of"  >/dev/null 2>&1; then \
 		echo "	[macports-check] $* is already installed.";\
 		exit 0;\
 	else \
 		echo "	[macports-check] need to install $*. will now call sudo port install $*.";\
-		sudo port install install $* || (echo "$* failed. press [return] to continue anyway or CTRL-C to interrupt."; read dummy);\
+		sudo port install $* configure.compiler=gcc || (echo "$* failed. press [return] to continue anyway or CTRL-C to interrupt."; read dummy);\
 	fi;fi) && $(MAKECOOKIE)
 
 
