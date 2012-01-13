@@ -1,21 +1,33 @@
 GARDIR ?= ../../..
 GARNAME = gazebo
-GARVERSION = trunk
+GARVERSION = trunk-r9081-patched
 CATEGORIES = bootstrap
 MAINTAINER = mmarko
 DISTNAME = $(GARNAME)-$(GARVERSION)
-DISTFILES = $(DISTNAME).tar.gz
+DISTFILES = $(DISTNAME).tar.bz2
 #DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
 
-#MASTER_SITES = svnhttps://playerstage.svn.sourceforge.net/svnroot/playerstage/code/gazebo/branches/wg
-#MASTER_SITES = http://downloads.sourceforge.net/project/playerstage/Gazebo/$(GARVERSION)/
-MASTER_SITES = svnhttps://playerstage.svn.sourceforge.net/svnroot/playerstage/code/gazebo/trunk/
-SVN_REVISION=-r 9081
+#The old gazebo repository that was removed
+#MASTER_SITES = svnhttps://playerstage.svn.sourceforge.net/svnroot/playerstage/code/gazebo/trunk/
+#SVN_REVISION=-r 9081
+#PATCHFILES= gazebo-trunk-r9081.diff
 
-PATCHFILES= gazebo-trunk-r9081.diff
+MASTER_SITES = http://vicos.fri.uni-lj.si/data/cogx/gazebo/
+
+include $(GARDIR)/gar.detect.mk
 
 DEB_PACKAGES=\
-	libode1sp@ubuntu libode-sp-dev@ubuntu libogre-dev@ubuntu ogre-tools@ubuntu libxml2-dev@ubuntu
+	libode1sp@ubuntu \
+	libode-sp-dev@ubuntu \
+	libogre-dev@ubuntu \
+	ogre-tools@ubuntu \
+	libyaml-dev@ubuntu \
+	libxml2-dev@ubuntu
+
+ifeq ("$(SYSTEM_RELEASE)","Ubuntu-11.10")
+   DEB_PACKAGES+= \
+	libwxgtk2.8-dev@ubuntu
+endif
 
 LIBDEPS = contrib/player-3.0.2
 
@@ -33,10 +45,10 @@ CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX=$(prefix)
 include $(GARDIR)/gar.extend.mk
 
 
-makesum-$(DISTFILES):  
-	true
-checksum-$(DISTFILES):  
-	true
+#makesum-$(DISTFILES):  
+#        true
+#checksum-$(DISTFILES):  
+#        true
 #checksum-$(PATCHFILES): 
 #	true
 
