@@ -1,4 +1,5 @@
 # This file was auto generated
+include ../../gar.detect.mk
 RELEASE = $(SYSTEM_RELEASE)
 default: build
 
