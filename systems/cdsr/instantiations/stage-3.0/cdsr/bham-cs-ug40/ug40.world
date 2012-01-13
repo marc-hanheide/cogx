@@ -19,7 +19,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [-5.29 -2.72 0 0]
+	pose [-4.09 -0.52 0 0]
 	color "red"
 )
 
@@ -41,6 +41,12 @@ define twodesks onedesk
   size [0.5 2.40 0.72]
 )
 
+define threedesks onedesk 
+(
+  # actual size
+  size [0.5 3.60 0.72]
+)
+
 
 define whiteboard position
 (
@@ -53,13 +59,31 @@ define whiteboard position
   ranger_return 0
 )
 
+define lectern position 
+(
+  # actual size
+  size [0.6 1.20 1.0]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+)
+
 whiteboard
 (
 name "whiteboard1"
 color "blue"
-pose [-5.245 1.415 0.9 0]
+pose [-5.15 1.415 0.9 0]
 )
 
+
+lectern 
+(
+name "lectern1"
+color "green"
+pose [-3.99 -1.9 0 0]
+)
 
 onedesk
 (
@@ -71,5 +95,35 @@ twodesks
 (
 name "desk21"
 pose [-3.17 -0.35 0.000 3]
+)
+
+threedesks
+(
+name "desk31"
+pose [-2.01 -0.25 0.000 2]
+)
+
+threedesks
+(
+name "desk32"
+pose [-0.79 -0.36 0.000 1]
+)
+
+threedesks
+(
+name "desk33"
+pose [0.71 -0.11 0.000 0]
+)
+
+threedesks
+(
+name "desk34"
+pose [1.99 -0.31 0.000 0]
+)
+
+threedesks
+(
+name "desk35"
+pose [3.33 -0.37 0.000 3]
 )
 
