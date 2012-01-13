@@ -6,38 +6,46 @@ window
 (
 	#This is the size the simulation window will be in pixels
 	size [800 600]
-	#This is how many metres of the simulated environment each pixel shows
+	#This is (should be) how many metres (centimetres?) of the simulated environment each pixel shows
 	scale 40
 )
 
 floorplan
 (
-	bitmap "classroom-3.png"
+	bitmap "ug40.png"
 	#size of map in metre
-	size [7.2 3.6 2.5]
+	size [10.58 5.43 2.5]
 )
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [-3 0 0 0]
+	pose [-5.29 -2.72 0 0]
 	color "red"
 )
 
-define desk position
+define onedesk position
 (
   # actual size
-  size [0.6 0.5 0.72]
+  size [0.5 1.20 0.72]
   origin [0 0 0 0]
   blob_return 1
 #  sonar_return 1
   laser_return 0
   ranger_return 0
+  color "red"
 )
+
+define twodesks onedesk 
+(
+  # actual size
+  size [0.5 2.40 0.72]
+)
+
 
 define whiteboard position
 (
   # actual size
-  size [2.0 0.1 1.5]
+  size [0.09 2.4 1.5]
   origin [0 0 0 0]
   blob_return 1
 #  sonar_return 1
@@ -49,62 +57,19 @@ whiteboard
 (
 name "whiteboard1"
 color "blue"
-pose [-3.55 0 0.9 90]
+pose [-5.245 1.415 0.9 0]
 )
 
 
-desk
+onedesk
 (
-name "desk1"
-color "red"
-pose [-1.95 -0.5 0.000 90]
+name "desk11"
+pose [5.04 -0.08 0.000 0]
 )
 
-desk
+twodesks
 (
-name "desk2"
-color "red"
-pose [-1.95 0.5 0.000 90]
+name "desk21"
+pose [-3.17 -0.35 0.000 3]
 )
 
-desk
-(
-name "desk3"
-color "red"
-pose [-0.75 -0.5 0.000 90]
-)
-
-desk
-(
-name "desk4"
-color "red"
-pose [-0.75 0.5 0.000 90]
-)
-
-desk
-(
-name "desk5"
-color "red"
-pose [0.45 -0.5 0.000 90]
-)
-
-desk
-(
-name "desk6"
-color "red"
-pose [0.45 0.5 0.000 90]
-)
-
-desk
-(
-name "desk7"
-color "red"
-pose [1.65 -0.5 0.000 90]
-)
-
-desk
-(
-name "desk8"
-color "red"
-pose [1.65 0.5 0.000 90]
-)
