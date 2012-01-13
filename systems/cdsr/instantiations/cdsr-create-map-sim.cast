@@ -7,16 +7,11 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 # INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-# use this in sim:
 COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
-
 INCLUDE includes/spatial.sa/spatial-base.cast
 #INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 JAVA MG cdsrBridge cdsr.components.CDSRBridge --output classroom-3-all.cdsr
-
-# use this in real:
-#INCLUDE includes/spatial.sa/spatial-ptz.cast
 
 CPP MG slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric
 CPP MG navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph
@@ -27,6 +22,7 @@ CPP MG path.query PathQueryProcessor #--no-indirect-paths
 CPP MG map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-planes --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors
 
 # Vision ######################################################################
+
 INCLUDE includes/vision.sa/vision-base.cast
 INCLUDE includes/vision.sa/vision-execution.cast
 
