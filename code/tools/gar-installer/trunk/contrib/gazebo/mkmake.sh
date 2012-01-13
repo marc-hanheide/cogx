@@ -2,6 +2,7 @@
 mkf="Makefile"
 echo '# This file was auto generated' > $mkf
 #echo 'RELEASE = $(SYSTEM_NAME)-$(SYSTEM_VERSION)' >> $mkf # provided by gar.extend.mk
+echo 'include ../../gar.detect.mk' >> $mkf
 echo 'RELEASE = $(SYSTEM_RELEASE)' >> $mkf
 echo 'default: build' >> $mkf
 echo >> $mkf

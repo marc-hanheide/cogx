@@ -1,11 +1,10 @@
 GARDIR ?= ../../..
 GARNAME = gazebo
-GARVERSION = trunk-r9081-patched
+GARVERSION = trunk
 CATEGORIES = bootstrap
 MAINTAINER = mmarko
 DISTNAME = $(GARNAME)-$(GARVERSION)
-DISTFILES = $(DISTNAME).tar.bz2
-#DISTFILES = $(GARNAME)-$(GARVERSION).tar.bz2
+DISTFILES = $(DISTNAME)-r9081-patched.tar.bz2
 
 #The old gazebo repository that was removed
 #MASTER_SITES = svnhttps://playerstage.svn.sourceforge.net/svnroot/playerstage/code/gazebo/trunk/
