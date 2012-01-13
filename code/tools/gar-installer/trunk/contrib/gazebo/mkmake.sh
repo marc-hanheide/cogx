@@ -1,12 +1,13 @@
 #!/bin/bash
 mkf="Makefile"
 echo '# This file was auto generated' > $mkf
-echo 'RELEASE = $(shell lsb_release -si)-$(shell lsb_release -sr)' >> $mkf
+#echo 'RELEASE = $(SYSTEM_NAME)-$(SYSTEM_VERSION)' >> $mkf # provided by gar.extend.mk
+echo 'RELEASE = $(SYSTEM_RELEASE)' >> $mkf
 echo 'default: build' >> $mkf
 echo >> $mkf
 
-TARGETS='clean fetch checksum extract patch configure build install'
-VERSIONS='Ubuntu-11.04 Ubuntu-11.10 ' # info returned by lsb_release
+TARGETS='clean fetch checksum extract patch configure build install' # Defined by GAR
+VERSIONS='Ubuntu-11.04 Ubuntu-11.10 Darwin-x' # stored in RELEASE
 
 for target in $TARGETS ; do
    echo "$target: $target-\$(RELEASE)" >> $mkf
@@ -17,6 +18,8 @@ for version in $VERSIONS; do
    if [ "$version" == "Ubuntu-11.04" ]; then
       wrkdir='gazebo-0.9'
    elif [ "$version" == "Ubuntu-11.10" ]; then
+      wrkdir='gazebo-trunk'
+   elif [ "$version" == "Darwin-x" ]; then
       wrkdir='gazebo-trunk'
    else
       echo "Invalid system version: '$version'"

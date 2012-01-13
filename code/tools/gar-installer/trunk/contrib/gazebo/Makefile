@@ -1,5 +1,5 @@
 # This file was auto generated
-RELEASE = $(shell lsb_release -si)-$(shell lsb_release -sr)
+RELEASE = $(SYSTEM_RELEASE)
 default: build
 
 clean: clean-$(RELEASE)
@@ -64,5 +64,29 @@ build-Ubuntu-11.10:
 	cd gazebo-trunk && make build
 
 install-Ubuntu-11.10:
+	cd gazebo-trunk && make install
+
+clean-Darwin-x:
+	cd gazebo-trunk && make clean
+
+fetch-Darwin-x:
+	cd gazebo-trunk && make fetch
+
+checksum-Darwin-x:
+	cd gazebo-trunk && make checksum
+
+extract-Darwin-x:
+	cd gazebo-trunk && make extract
+
+patch-Darwin-x:
+	cd gazebo-trunk && make patch
+
+configure-Darwin-x:
+	cd gazebo-trunk && make configure
+
+build-Darwin-x:
+	cd gazebo-trunk && make build
+
+install-Darwin-x:
 	cd gazebo-trunk && make install
 
