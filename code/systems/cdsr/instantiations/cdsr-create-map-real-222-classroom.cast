@@ -29,7 +29,7 @@ CPP MG cameramount  CameraMount --use_ptz --camids "0" --cam_poses_xml "%(vision
 
 
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
-JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --labels "whiteboard desk bookcase" 
+JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --labels "two_desk1 two_desk2 whiteboard bookcase" 
 
 # FakeDetector data, in world coordinates where robot starts at 0, 0, 0, 0
 # pos x y z theta (centre of object)
@@ -43,9 +43,12 @@ VARDEFAULT fake_objects=<multiline>
    --pos-bookcase "4.34, -0.71, 1.45, 0" 
    --dimensions-bookcase "0.16, 0.4, 0.75" 
    --visibility-area-bookcase "-1.1, -1.8, 4.5, 2.2"  
-   --pos-desk "1.85, 0.1, 1.45, -1.46" 
-   --dimensions-desk "1.2, 0.8, 0.36" 
-   --visibility-area-desk "-1.1, -1.8, 4.5, 2.2" 
+   --pos-two_desk1 "1.38, 0.07, 1.45, -0.72" 
+   --dimensions-two_desk1 "0.4, 1.2, 0.36" 
+   --visibility-area-two_desk1 "-1.1, -1.8, 4.5, 2.2" 
+   --pos-two_desk1 "3.09, -0.01, 1.45, -0.72" 
+   --dimensions-two_desk1 "0.4, 1.2, 0.36" 
+   --visibility-area-two_desk1 "-1.1, -1.8, 4.5, 2.2" 
 </multiline>
 
 
@@ -57,15 +60,17 @@ VARDEFAULT or3d_sift_files=<multiline>
    %(siftroot_)/xxx.sift
    %(siftroot_)/xxx.sift
    %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
 </multiline>
 
 VARDEFAULT or3d_ply_files=<multiline>
-   %(plyroot_)/222-large-desk.ply
+   %(plyroot_)/222-2desks-row.ply
+   %(plyroot_)/222-2desks-row.ply
    %(plyroot_)/222-whiteboard.ply
    %(plyroot_)/222-bookcase.ply
 </multiline>
 
-VARDEFAULT or3d_labels=desk whiteboard bookcase
+VARDEFAULT or3d_labels=two_desk1 two_desk2 whiteboard bookcase
 CPP MG recognizer.3D ObjectRecognizer3D --simulation-only --no-learning --videoname VideoServer --camid "0" --display --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 
