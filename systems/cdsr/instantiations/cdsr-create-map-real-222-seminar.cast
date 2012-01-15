@@ -57,29 +57,15 @@ VARDEFAULT or3d_sift_files=<multiline>
    %(siftroot_)/xxx.sift
    %(siftroot_)/xxx.sift
    %(siftroot_)/xxx.sift
-   %(siftroot_)/xxx.sift
-   %(siftroot_)/xxx.sift
-   %(siftroot_)/xxx.sift
-   %(siftroot_)/xxx.sift   
-   %(siftroot_)/xxx.sift
-   %(siftroot_)/xxx.sift
-   %(siftroot_)/xxx.sift   
 </multiline>
 
 VARDEFAULT or3d_ply_files=<multiline>
-   %(plyroot_)/UG40-2desks-row.ply
-   %(plyroot_)/UG40-3desks-row.ply 
-   %(plyroot_)/UG40-3desks-row.ply 
-   %(plyroot_)/UG40-3desks-row.ply 
-   %(plyroot_)/UG40-3desks-row.ply 
-   %(plyroot_)/UG40-3desks-row.ply       
-   %(plyroot_)/UG40-desk.ply
-   %(plyroot_)/UG40-whiteboard.ply
-   %(plyroot_)/UG40-lecturn.ply
-   %(plyroot_)/UG40-bin.ply
+   %(plyroot_)/222-large-desk.ply
+   %(plyroot_)/222-whiteboard.ply
+   %(plyroot_)/222-bookcase.ply
 </multiline>
 
-VARDEFAULT or3d_labels=two_desk three_desk1 three_desk2 three_desk3 three_desk4 three_desk5 desk whiteboard lecturn bin
+VARDEFAULT or3d_labels=desk whiteboard bookcase
 CPP MG recognizer.3D ObjectRecognizer3D --simulation-only --no-learning --videoname VideoServer --camid "0" --display --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 
