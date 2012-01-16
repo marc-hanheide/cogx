@@ -223,6 +223,7 @@ LD_LIBRARY_PATH=output/lib ./output/bin/cdsr_test
 In a third shell:
 
 cd {workspace}/cdsr
+export RSB_CLASSPATH=/usr/share/java/protobuf.jar:/usr/local/share/java/rsb.jar
 java -classpath $RSB_CLASSPATH:output/classes cdsr.rsb.CdsrHub classroom data/classroom-1.cdsr data/classroom-1-out.cdsr
 
 Afterwards, to convert to text files for LISP:
