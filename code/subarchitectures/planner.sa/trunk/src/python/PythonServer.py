@@ -371,6 +371,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       
       standalone.globals.set_time()
       task = self.tasks[task_desc.id]
+      if task.internal_state != TaskStateEnum.FAILED:
+          task.update_status(TaskStateEnum.FAILED)
       task.handle_task_failure()
           
   @pdbdebug
