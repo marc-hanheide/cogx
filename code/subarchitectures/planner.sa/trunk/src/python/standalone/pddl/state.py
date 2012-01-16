@@ -526,6 +526,7 @@ class State(dict):
         self.extstate = None
         self.derived = set()
         self.auto_axiom_evaluation = True
+        self.handler_func = None
         
         self.random = random.Random()
 
@@ -559,6 +560,10 @@ class State(dict):
             self[fact.svar] = fact.value
         
     def __getitem__(self, key):
+        if self.handler_func is not None:
+            val = self.handler_func(self, key)
+            if val is not None:
+                return val
         try:
             # print key,"--",dict.__getitem__(self, key)
             return dict.__getitem__(self, key)
@@ -730,7 +735,7 @@ class State(dict):
                 st = self.get_extended_state([svar])
             else:
                 st = self
-            # print svar, st[svar], (st[svar] == TRUE) ^ literal.negated
+            # print svar, st[svar]
             return (st[svar] == TRUE) ^ literal.negated
 
 
@@ -809,7 +814,7 @@ class State(dict):
         extstate = self.get_extended_state(self.get_relevant_vars(action.precondition))
         return extstate.is_satisfied(action.precondition)
             
-    def is_satisfied(self, cond, relevantVars=None, universal=None):
+    def is_satisfied(self, cond, relevantVars=None, universal=None, filter_fn=lambda x:True):
         """Returns True if the supplied Condition is satisfied in this
         state. All Parameters to the condition must be instantiated,
         otherwise an Exception is raised.
@@ -847,6 +852,8 @@ class State(dict):
             return False, [], []
             
         def checkConditionVisitor(cond):
+            if not filter_fn(cond):
+                return True, [], []
             if isinstance(cond, conditions.PreferenceCondition):
                 result, svars, univ = checkConditionVisitor(cond.cond)
                 if not result:
@@ -950,7 +957,7 @@ class State(dict):
         self.read_svars = read_vars
         return set(relevant_vars)
 
-    def get_effect_facts(self, effect, trace_vars=False):
+    def get_effect_facts(self, effect, trace_vars=False, filter_fn=lambda x: True):
         """Return list of Facts that describe the effect of applying
         an Effect to this state. Supported are adding/deleting atoms,
         fluent assignments and numeric operations. All Parameters to
@@ -967,6 +974,10 @@ class State(dict):
         import dynamic_objects
         
         facts = {}
+
+        if not filter_fn(effect):
+            return facts
+        
         if isinstance(effect, effects.UniversalEffect):
             combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), effect.args))
             for params in combinations:
@@ -1222,7 +1233,7 @@ class State(dict):
             return self.extstate, reasons, universalReasons
         
         return self.extstate
-
+    
     def apply_init_rules(self, domain=None, rules=None):
         if not domain:
             domain = self.problem.domain

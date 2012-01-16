@@ -150,6 +150,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.tasks = {}
     self.dt_tasks = {}
     self.expl_rules_fn = None
+    self.consistency_fn = None
 
     self.beliefs = None
     self.address_dict = {}
@@ -210,6 +211,12 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           log.error("Could not find specified explanations rule set %s. Will not be able to determine explanations for failures!", config["--expl_rules"])
           self.expl_rules_fn = None
 
+    if "--consistency_rules" in config:
+      self.consistency_fn = path.join(standalone.globals.config.domain_dir, config["--consistency_rules"])
+      if not path.exists(self.consistency_fn):
+          log.error("Could not find specified consistency rules %s. Disabling consistency checks .", config["--consistency_rules"])
+          self.consistency_fn = None
+          
     if "--problem" in config:
       self.problem_fn = path.join(standalone.globals.config.problem_dir, config["--problem"])
       if not path.exists(self.problem_fn):

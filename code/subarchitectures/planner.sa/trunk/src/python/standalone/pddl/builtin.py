@@ -1,5 +1,5 @@
 from mapltypes import Parameter, TypedObject, Type, FunctionType, ProxyType
-from mapltypes import t_object, t_boolean, t_number
+from mapltypes import t_object, t_boolean, t_number, t_any
 from mapltypes import TRUE, FALSE, UNKNOWN, UNDEFINED
 
 from predicates import Predicate, Function

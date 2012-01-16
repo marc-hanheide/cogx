@@ -7,7 +7,7 @@ from scope import Scope, SCOPE_CONDITION
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, Parameter
 from predicates import Predicate
-from builtin import t_object
+from builtin import t_object, t_any
 
 pddl_module = True
 
@@ -45,6 +45,8 @@ update = Predicate("update", [p, Parameter("?v", types.ProxyType(p)), ], builtin
 p = Parameter("?f", types.FunctionType(t_object))
 update_fail = Predicate("update-failed", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 
+defined = Predicate("defined", [Parameter("?f", types.FunctionType(t_any))], builtin=True)
+
 failure_cost = predicates.Function("failure-cost", [], builtin.t_number, builtin=True)
 
 # shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
@@ -52,7 +54,7 @@ failure_cost = predicates.Function("failure-cost", [], builtin.t_number, builtin
 modal_predicates = [knowledge, indomain,\
                     direct_knowledge, i_indomain, \
                     commit, committed, attributed, neg_attributed, \
-                    update, update_fail]
+                    update, update_fail, defined]
 # shared_knowledge, , ,\
 
 is_planning_agent = Predicate("is_planning_agent", [Parameter("?a", t_agent)], builtin=True)

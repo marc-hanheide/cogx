@@ -144,18 +144,18 @@ class ProbFact(Fact):
 
         
 class ProbabilisticState(State):
-    def __init__(self, facts=[], prob=None):
-        assert prob is None or isinstance(prob, problem.Problem)
-        self.problem = prob
-        for f in facts:
-            self.set(f)
+    # def __init__(self, facts=[], prob=None):
+    #     assert prob is None or isinstance(prob, problem.Problem)
+    #     self.problem = prob
+    #     for f in facts:
+    #         self.set(f)
 
-        self.read_svars = set()
-        self.written_svars = set()
-        self.extstate = None
-        self.derived = set()
+    #     self.read_svars = set()
+    #     self.written_svars = set()
+    #     self.extstate = None
+    #     self.derived = set()
         
-        self.random = random.Random()
+    #     self.random = random.Random()
 
     def copy(self):
         s = ProbabilisticState([], self.problem)
@@ -229,7 +229,7 @@ class ProbabilisticState(State):
         
     def __getitem__(self, key):
         try:
-            dist = dict.__getitem__(self, key)
+            dist = State.__getitem__(self, key)
             dval = dist.value
             if dval is not None:
                 return dval
@@ -424,6 +424,9 @@ class ProbabilisticState(State):
             dist.normalize()
             highest = max(dist.itervalues())
             lower_bound = highest * rejection_ratio
+            if dist.value != UNKNOWN and svar.modality is None and not isinstance(svar.function, Predicate):
+                dvar = svar.as_modality(mapl.defined)
+                s[dvar] = TRUE
             for v,p in sorted(dist.items(), key=lambda (v,p): -p):
                 # print svar, v, p
                 if total_p >= upper_threshold or p < lower_bound:

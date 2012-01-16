@@ -1,7 +1,7 @@
 from itertools import chain
 from collections import defaultdict
 from os.path import abspath, join
-import re
+import re, time
 
 from standalone import pddl, pstatenode, config
 from standalone.pddl import state, prob_state
@@ -23,9 +23,11 @@ QDL_VALUE = re.compile("<dora:(.*)>")
 #QDL_VALUE = re.compile("<http://dora.cogx.eu#(.*)>")
 
 class CASTState(object):
-    def __init__(self, beliefs, domain, oldstate=None, component=None):
+    def __init__(self, beliefs, domain, oldstate=None, component=None, consistency_cond=None):
+        t0 = time.time()
         self.config = global_vars.config
         self.domain = domain
+        self.consistency_cond = consistency_cond
         self.beliefs = []
         #print beliefs
         for b in beliefs:
@@ -55,6 +57,7 @@ class CASTState(object):
         tp.belief_dict = self.beliefdict
 
         obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
+        log.debug("time to belief conversion: %.2f", time.time() - t0)
   
         #keep names for previously matched objects
         renamings = {}
@@ -66,6 +69,7 @@ class CASTState(object):
                     #print "previous match:", belname, gen.name
 
         objects = tp.infer_types(obj_descriptions)
+        log.debug("time to type inferrence: %.2f", time.time() - t0)
 
         self.castname_to_obj, self.obj_to_castname = tp.rename_objects(objects, self.coma_objects|domain.constants, add_renamings=renamings )
         self.objects = set(list(objects)) # force rehashing
@@ -78,6 +82,7 @@ class CASTState(object):
 
         problem = pddl.Problem("cogxtask", self.objects, [], None, domain)
         self.prob_state = prob_state.ProbabilisticState(self.facts, problem)
+        log.debug("time to state generation: %.2f", time.time() - t0)
         
         if component and global_vars.config.enable_conceptual_query:
            if self.facts:
@@ -93,14 +98,20 @@ class CASTState(object):
         self.raw_objects = set(self.objects)
 
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, oldstate)
+        log.debug("time to init fact generation: %.2f", time.time() - t0)
         self.facts += self.generated_facts
         for f in self.generated_facts:
             self.prob_state.set(f)
         self.objects |= self.generated_objects
         
         self.state = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
-                    
+        log.debug("time to state determinisation: %.2f", time.time() - t0)
+
+        self.consistent = self.check_consistency(self.state)
+        log.debug("time to consistency check: %.2f", time.time() - t0)
+        
         self.generate_belief_state(self.prob_state, self.state)
+        log.debug("time to belief state generation: %.2f", time.time() - t0)
 
         if oldstate:
             self.match_generated_objects(oldstate)
@@ -153,9 +164,58 @@ class CASTState(object):
             cp_domain.add_action(a)
         
         return cp_domain
+
+    def check_consistency(self, detstate):
+        if self.consistency_cond is None:
+            return True
         
-            
+        t0 = time.time()
+        type_to_rule = defaultdict(list)
+        for elem in self.consistency_cond.parts:
+            assert isinstance(elem, pddl.UniversalCondition)
+            type_to_rule[elem.args[0].type].append(elem)
+
+        # alltrue = pddl.prob_state.ValueDistribution(pddl.TRUE)
+        # allfalse = pddl.prob_state.ValueDistribution(pddl.FALSE)
+        # def handle_defined(stat, svar):
+        #     if svar.modality != pddl.mapl.defined:
+        #         return None
+        #     svar = svar.nonmodal()
+        #     if svar not in stat:
+        #         # print svar, False
+        #         return allfalse
+        #     val = stat[svar]
+        #     if val.value == pddl.UNKNOWN:
+        #         # print svar, False
+        #         return allfalse
+        #     # print svar, True
+        #     return alltrue
+
+        # probstate.handler_func = handle_defined
+        # probstate.auto_axiom_evaluation = False
+        for o in detstate.problem.objects:
+            rules = type_to_rule[o.type]
+            # ok = True
+            for r in rules:
+                r.instantiate({r.args[0] : o}, parent=detstate.problem)
+                # print r.args[0], r.args[0].get_instance()
+                rel = []
+                if not detstate.is_satisfied(r.condition, relevantVars=rel):
+                    log.warning("Object %s fails test: %s", str(o), r.pddl_str())
+                    # ok = False
+                    r.uninstantiate()
+                    # print "consistency check took %.2f sec" % (time.time() - t0)
+                    return False
+                # for svar in rel:
+                #     print "   ",svar, probstate[svar]
+                r.uninstantiate()
+        # probstate.handler_func = None
+        # probstate.auto_axiom_evaluation = True
+        # print "consistency check took %.2f sec" % (time.time() - t0)
+        return True
+    
     def generate_belief_state(self, probstate, detstate):
+        log.debug("Generating probabilistic state representations")
         pnodes = pstatenode.PNode.from_state(probstate, detstate)
         pnodes, det_lits = pstatenode.PNode.simplify_all(pnodes)
         assert not det_lits, map(str, det_lits)
@@ -196,6 +256,7 @@ class CASTState(object):
         return results
             
     def generate_init_facts(self, problem, oldstate=None):
+        log.debug("Generating initial facts")
         cstate = self.prob_state.determinized_state(0.05, self.config.uncertainty_threshold)
 
         generated_facts = {}
@@ -222,6 +283,7 @@ class CASTState(object):
         # import debug
         # debug.set_trace()
         for rule in self.domain.init_rules:
+            t0 = time.time()
             # print "rule: ", rule.name
             def inst_func(mapping, args):
                 if len(args) != len(rule.args):
@@ -231,11 +293,11 @@ class CASTState(object):
                 #elif rule.precondition and any(a in new_objects for a in mapping.itervalues()):
                 #    return True, None
                 return True, None
-            
+            # inst_func = rule.get_inst_func(cstate)
             for mapping in rule.smart_instantiate(inst_func, rule.args, [problem.get_all_objects(a.type) for a in rule.args], problem):
                 # if "person" in rule.name:
-                #     print map(str,mapping.values())
-                #     print rule.precondition.pddl_str()
+                # print map(str,mapping.values())
+                # print rule.precondition.pddl_str()
                 if rule.precondition is None or cstate.is_satisfied(rule.precondition):
                     for e in rule.get_effects():
                         # print e.pddl_str()
@@ -245,6 +307,7 @@ class CASTState(object):
                         #     print "   ",["%s=%s" % (str(k), str(v)) for k,v in facts.iteritems()]
                         cstate.update(facts)
                         generated_facts.update(facts)
+            # print "rule: ", rule.name, "took %.2f sec" % (time.time() - t0)
 
         generated_objects |= (problem.objects - self.objects)
                       

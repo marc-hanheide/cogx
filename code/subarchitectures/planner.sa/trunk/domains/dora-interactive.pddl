@@ -33,7 +33,7 @@
    (cones_created  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
 
    ;;used to early prevent instantiation of operators with undefined probability/costs
-   (defined ?svar - (function number))
+   ;; (defined ?svar - (function number))
 
    (started)
    (done)
@@ -199,15 +199,15 @@
               :effect (assign (search_cost ?l on ?o) (dora__cost_on ?l (label ?o)))
               )
 
-  (:init-rule reset_defined_numbers
-              :parameters (?svar - (function number))
-              :precondition (defined ?svar)
-              :effect (not (defined ?svar)))
+  ;; (:init-rule reset_defined_numbers
+  ;;             :parameters (?svar - (function number))
+  ;;             :precondition (defined ?svar)
+  ;;             :effect (not (defined ?svar)))
 
-  (:init-rule defined_numbers
-              :parameters (?svar - (function number))
-              :precondition (> ?svar 0.0001)
-              :effect (defined ?svar))
+  ;; (:init-rule defined_numbers
+  ;;             :parameters (?svar - (function number))
+  ;;             :precondition (> ?svar 0.0001)
+  ;;             :effect (defined ?svar))
 
 
   (:init-rule negated-probs

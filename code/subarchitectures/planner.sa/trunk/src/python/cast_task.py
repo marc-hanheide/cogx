@@ -37,6 +37,10 @@ PLANNER_CP = 0
 PLANNER_DT = 1
 
 WAIT_FOR_ACTION_TIMEOUT = 2000
+WAIT_FOR_CONSISTENCY_TIMEOUT = 10000
+
+TO_OK = -2
+TO_WAIT = -3
 
 FAKE_ACTION_FAILURE = None#"search_for_object_in_room"
 
@@ -59,36 +63,71 @@ def fval_to_str(fval):
         return "UNKNOWN"
     assert False
 
-class CASTTask(object):
-    def __init__(self, planning_task, beliefs, domain_fn, component, problem_fn=None, expl_rules_fn=None):
-        self.component = component
+class TimedOut(Exception):
+    pass
 
+def timeout(to):
+    yield to
+    while True:
+        yield TO_WAIT
+
+def coroutine(fn):
+    def decorated_method(self, *args, **kwargs):
+        cofn = fn(self, *args, **kwargs)
+        try:
+            while True:
+                res = cofn.next()
+                if res >= 0:
+                    self.wait_co(cofn, res)
+                    break
+                elif res != TO_OK:
+                    cofn.throw(AssertionError("Cofunction needs to yield a positive number (timeout) or TO_OK"))
+                    
+        except StopIteration:
+            pass
+        
+    decorated_method.__name__ = fn.__name__
+    decorated_method.__dict__ = fn.__dict__
+    decorated_method.__doc__ = fn.__doc__
+    return decorated_method
+
+    
+class CASTTask(object):
+    def __init__(self, planning_task, beliefs, domain_fn, component, **args):
+        self.component = component
         self.init_state = None
         self.id = planning_task.id
         self.dt_id = None
         self.slice_goals = planning_task.goals
         self.dt_task = None
+        self.waiting_cofn = None
         self.step = 0
         self.plan_history = []
         self.plan_state_history = []
         self.fail_count = defaultdict(lambda: 0)
         self.failure_simulated = False
-        self.expl_rules_fn = expl_rules_fn
+        self.expl_rules_fn = args.get('expl_rules_fn', None)
 
         self.load_domain(domain_fn)
+
+        if component.consistency_fn:
+            self.consistency_cond = pddl.parser.Parser.parse_as(open(component.consistency_fn), pddl.Conjunction, self.domain)
+        else:
+            self.consistency_cond = None
+            
         if component.history_fn:
             self.load_history(component.history_fn, component)
             self.failure_simulated = True
-        elif problem_fn:
+        elif args.get('problem_fn', None):
             import fake_cast_state
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
-            self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component)
+            self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component, consistency_cond=self.consistency_cond)
             self.init_state = self.state
             goal_from_pddl = Planner.Goal(importance=-1.0, goalString=add_problem.goal.pddl_str(), isInPlan=False)
             self.slice_goals = [goal_from_pddl]
         else:
-            self.state = cast_state.CASTState(beliefs, self.domain, component=component)
+            self.state = cast_state.CASTState(beliefs, self.domain, component=component, consistency_cond=self.consistency_cond)
             self.init_state = self.state
             
         self.percepts = []
@@ -197,7 +236,46 @@ class CASTTask(object):
                 n.status = actions_status[key.strip()]
             self.plan_history.append(plan)
             self.plan_state_history.append((plan, self.state))
+
+    def wait_co(self, cofn, timeout):
+        self.waiting_cofn = cofn
+        log.debug("%s is waiting for updates. Timeout is %d ms", cofn.gi_code.co_name, timeout)
+        self.component.getClient().waitForChanges(self.id, timeout)
+
+    def wait_co_update(self):
+        cofn = self.waiting_cofn
+        log.debug("continuing %s after belief update.", cofn.gi_code.co_name)
+        try:
+            while True:
+                res = cofn.next()
+                if res == TO_WAIT:
+                    log.debug("update was not handeled by %s, waiting some more", cofn.gi_code.co_name)
+                    return
+                elif res == TO_OK:
+                    self.waiting_cofn = None
+                    log.debug("update was handeled by %s", cofn.gi_code.co_name)
+                else:
+                    self.wait_co(cofn, res)
+                    break
+            
+        except StopIteration:
+            self.waiting_cofn = None
         
+    def wait_co_timeout(self):
+        cofn = self.waiting_cofn
+        self.waiting_cofn = None
+        log.debug("%s has timed out", cofn.gi_code.co_name)
+        try:
+            cofn.throw(TimedOut())
+            while True:
+                res = cofn.next()
+                if res >= 0:
+                    self.wait_co(cofn, res)
+                    break
+                elif res != TO_OK:
+                    cofn.throw(AssertionError("Cofunction needs to yield a positive number (timeout) or TO_OK"))
+        except StopIteration:
+            pass
 
     def wait(self, timeout, update_callback, timeout_callback):
         self.wait_update_callback = update_callback
@@ -205,6 +283,8 @@ class CASTTask(object):
         self.component.getClient().waitForChanges(self.id, timeout)
 
     def wait_update(self):
+        if self.waiting_cofn is not None:
+            return self.wait_co_update()
         assert self.wait_update_callback is not None
         # store the old handlers and restore if the update wasn't handled
         # we do it this way because the update handler (if successful) may
@@ -220,6 +300,8 @@ class CASTTask(object):
             log.debug("update was handled")
 
     def wait_timeout(self):
+        if self.waiting_cofn is not None:
+            return self.wait_co_timeout()
         if self.wait_timeout_callback is None:
             log.debug("no timeout handler installed")
             return
@@ -265,11 +347,26 @@ class CASTTask(object):
                     f.write("\n")
             f.write("END_PLAN\n")
         f.close()
-            
+
+    @coroutine
     def run(self):
         if self.failure_simulated:
             self.handle_task_failure()
             return
+
+        self.plan_state = None
+        
+        try:
+            to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
+            while not self.state.consistent:
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                yield to.next()
+            yield TO_OK
+        except TimedOut:
+            log.warning("Wait for consistent state timed out. Plan failed.")
+            self.update_status(TaskStateEnum.FAILED)
+            return
+        
         self.update_status(TaskStateEnum.PROCESSING)
         self.plan_state = self.state
         self.cp_task.replan()
@@ -283,6 +380,7 @@ class CASTTask(object):
         self.process_cp_plan()
         log.debug("Plan processing done: %.2f sec", global_vars.get_time())
 
+    @coroutine
     def retry(self):
         # self.state = cast_state.CASTState(beliefs, self.domain, component=self.component)
         # self.percepts = []
@@ -300,6 +398,17 @@ class CASTTask(object):
         # domain_out_fn = abspath(join(self.component.get_path(), "domain%d.mapl" % self.id))
         # w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
         # w.write(self.cp_task.mapltask, domain_fn=domain_out_fn)
+        try:
+            to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
+            while not self.state.consistent:
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                yield to.next()
+            yield TO_OK
+        except TimedOut:
+            log.warning("Wait for consistent state timed out. Plan failed.")
+            self.update_status(TaskStateEnum.FAILED)
+            return
+
         plan = self.cp_task.get_plan()
 
         self.cp_task.mark_changed()
@@ -314,9 +423,11 @@ class CASTTask(object):
         if self.cp_task.get_plan() != plan:
             problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
             self.write_cp_problem(problem_fn)
-            self.plan_history.append(plan)
-            self.plan_state_history.append((plan, self.plan_state))
-            self.write_history()
+            #way may reach this point without ever having planned before. Check that case
+            if self.plan_state is not None:
+                self.plan_history.append(plan)
+                self.plan_state_history.append((plan, self.plan_state))
+                self.write_history()
             self.plan_state = self.state
         
         self.process_cp_plan()
@@ -828,6 +939,7 @@ class CASTTask(object):
             
         self.monitor_cp()
 
+    @coroutine
     def monitor_dt(self):
         assert self.internal_state in (TaskStateEnum.WAITING_FOR_ACTION)
         
@@ -869,35 +981,30 @@ class CASTTask(object):
                 log.info("%d: delivered observation (%s %s)", self.id, obs.predicate, " ".join(a for a in obs.arguments))
             return result
 
-        def wait_for_observation():
-            observations = get_observations()
-            if not observations:
-                log.info("Still waiting for observations from %s...", str(self.dt_task.dt_plan[-1]))
-                return False
-            self.update_status(TaskStateEnum.WAITING_FOR_DT)
-            self.component.getDT().deliverObservation(self.dt_id, observations)
-            return True
-
-        def wait_timeout():
-            log.info("Got no observations from %s", str(self.dt_task.dt_plan[-1]))
-            observations = [Planner.Observation("null", [])]
-            self.update_status(TaskStateEnum.WAITING_FOR_DT)
-            self.component.getDT().deliverObservation(self.dt_id, observations)
-            
-        observations = get_observations()
         if not self.dt_task.observation_expected(dt_pnode.action):
-            log.info("No observations expected from %s", str(self.dt_task.dt_plan[-1]))
-            observations.append(Planner.Observation("null", []))
-        elif not observations:
-            log.info("Waiting for observations from %s", str(self.dt_task.dt_plan[-1]))
-            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
-            self.wait(WAIT_FOR_ACTION_TIMEOUT/2, wait_for_observation, wait_timeout)
-            return
-
+            log.debug("No observations expected from %s", str(self.dt_task.dt_plan[-1]))
+            observations = [Planner.Observation("null", [])]
+        else:
+            try:
+                to = timeout(WAIT_FOR_ACTION_TIMEOUT/2)
+                while True:
+                    observations = get_observations()
+                    if not observations:
+                        log.info("Waiting for observations from %s", str(self.dt_task.dt_plan[-1]))
+                        self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                        yield to.next()
+                    else:
+                        yield TO_OK
+                        break
+            except TimedOut:
+                log.info("Got no observations from %s", str(self.dt_task.dt_plan[-1]))
+                observations = [Planner.Observation("null", [])]
+                        
         log.debug("delivered observations")
         self.update_status(TaskStateEnum.WAITING_FOR_DT)
         self.component.getDT().deliverObservation(self.dt_id, observations)
-  
+
+    @coroutine
     def monitor_cp(self):
         assert self.internal_state in (TaskStateEnum.PROCESSING, TaskStateEnum.WAITING_FOR_ACTION)
         
@@ -909,49 +1016,55 @@ class CASTTask(object):
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.pddl" % (self.id)))
         self.write_cp_problem(problem_fn)
+
+        
+        try:
+            to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
+            while not self.state.consistent:
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                yield to.next()
+            yield TO_OK
+        except TimedOut:
+            log.warning("Wait for consistent state timed out. Plan failed.")
+            self.update_status(TaskStateEnum.FAILED)
+            return
+
         plan = self.cp_task.get_plan()
+        
+        self.step += 1
 
-        def wait_for_effect():
-            self.cp_task.replan()
-            log.debug("Continual planning done: %.2f sec", global_vars.get_time())
-            if self.cp_task.get_plan() != plan:
-                self.plan_history.append(plan)
-                self.plan_state_history.append((plan, self.plan_state))
-                self.write_history()
-                self.plan_state = self.state
-            if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
-                log.info("Still waiting for effects of %s to appear", str(self.cp_task.pending_action))
-                return False
-            self.process_cp_plan()
-            return True
-
-        def wait_timeout():
+        try:
+            to = timeout(WAIT_FOR_ACTION_TIMEOUT)
+            while True:
+                self.cp_task.replan()
+                log.debug("Continual planning step done: %.2f sec", global_vars.get_time())
+                
+                if self.cp_task.get_plan() != plan:
+                    problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
+                    self.write_cp_problem(problem_fn)
+                    self.plan_history.append(plan)
+                    self.plan_state_history.append((plan, self.plan_state))
+                    self.write_history()
+                    self.plan_state = self.state
+                    
+                if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
+                    log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
+                    self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                    yield to.next()
+                else:
+                    yield TO_OK
+                    break
+                
+        except TimedOut:
             log.info("Wait for %s timed out. Plan failed.", str(self.cp_task.pending_action))
             # self.plan_history.append(plan)
             # self.cp_task.set_plan(None, update_status=True)
             self.update_status(TaskStateEnum.FAILED)
             return
         
-        self.step += 1
-        self.cp_task.replan()
-        log.debug("Continual planning step done: %.2f sec", global_vars.get_time())
-        
-        if self.cp_task.get_plan() != plan:
-            problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
-            self.write_cp_problem(problem_fn)
-            self.plan_history.append(plan)
-            self.plan_state_history.append((plan, self.plan_state))
-            self.write_history()
-            self.plan_state = self.state
-            
-        if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
-            log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
-            self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
-            self.wait(WAIT_FOR_ACTION_TIMEOUT, wait_for_effect, wait_timeout)
-            return
-        
         self.process_cp_plan()
 
+    @coroutine
     def dt_done(self):
         last_dt_action = -1
         dt_action_found = False
@@ -976,13 +1089,18 @@ class CASTTask(object):
 
         # use the timeout mechanism to escape the DT thread
         log.debug("returning to main loop...")
-        def callback():
-            self.component.cancel_dt_session(self)
-            log.debug("Continuing sequential session")
-            self.monitor_cp()
-        self.wait(0, callback, callback)
+        try:
+            yield 0
+            yield TO_OK
+        except TimedOut:
+            pass
+
+        self.component.cancel_dt_session(self)
+        log.debug("Continuing sequential session")
+        self.monitor_cp()
         
 
+    @coroutine
     def action_delivered(self, action):
         assert self.internal_state == TaskStateEnum.WAITING_FOR_DT
         
@@ -997,22 +1115,22 @@ class CASTTask(object):
             log.info("Goal action recieved. DT task completed")
             self.dt_done()
             return
-        
 
-        def wait_for_effect():
-            #TODO: using the last CP state might be problematic
-            state = self.cp_task.get_state().copy()
-            try:
-                pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
-            except:
-                log.info("Still waiting for effects from previous action...")
-                return False
-            self.percepts = []
-            self.dt_task.dt_plan.append(pnode)
-            self.dispatch_actions([pnode])
-            return True
+        pnode = None
+        try:
+            to = timeout(WAIT_FOR_ACTION_TIMEOUT)
+            while True:
+                #TODO: using the last CP state might be problematic
+                state = self.cp_task.get_state().copy()
+                try:
+                    pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
+                    yield TO_OK
+                    break
+                except:
+                    log.info("Action (%s %s) not executable. Waiting for action effects from previous action...", pddl_action.name, " ".join(action.arguments))
+                    yield to.next()
 
-        def wait_timeout():
+        except TimedOut:
             for pnode in self.dt_task.subplan_actions:
                 pnode.status = plans.ActionStatusEnum.FAILED
             self.plan_history.append(self.dt_task)
@@ -1021,19 +1139,9 @@ class CASTTask(object):
             self.update_status(TaskStateEnum.FAILED)
             return
         
-        #TODO: using the last CP state might be problematic
-        state = self.cp_task.get_state().copy()
-        try:
-            pnode = plan_postprocess.getRWDescription(pddl_action, args, state, 1)
-        except:
-            log.info("Action (%s %s) not executable. Waiting for action effects from previous action...", pddl_action.name, " ".join(action.arguments))
-            self.wait(WAIT_FOR_ACTION_TIMEOUT, wait_for_effect, wait_timeout)
-            return
-            
         self.percepts = []
         self.dt_task.dt_plan.append(pnode)
         self.dispatch_actions([pnode])
-        
 
     def dispatch_actions(self, nodes):
         outplan = []
@@ -1094,7 +1202,7 @@ class CASTTask(object):
             return True
 
         oldstate = self.state
-        self.state = cast_state.CASTState(beliefs, self.domain, oldstate, component=self.component)
+        self.state = cast_state.CASTState(beliefs, self.domain, oldstate, component=self.component, consistency_cond=self.consistency_cond)
         new_cp_problem, new_cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
 
         self.state.print_state_difference(oldstate)

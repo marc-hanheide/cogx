@@ -1,3 +1,4 @@
+import time
 from itertools import chain
 from standalone import config
 from standalone.pddl import prob_state
@@ -11,11 +12,13 @@ log = config.logger("PythonServer")
 BINDER_SA = "binder"
 
 class FakeCASTState(cast_state.CASTState):
-    def __init__(self, problem, domain, component=None):
+    def __init__(self, problem, domain, component=None, consistency_cond=None):
+        t0 = time.time()
         self.config = global_vars.config
         self.domain = domain
         self.problem = problem
-        #self.beliefs = beliefs
+        self.consistency_cond = consistency_cond
+      #self.beliefs = beliefs
         #self.beliefdict = dict((b.id, b) for b in beliefs)
         #TODO: make this less ugly
         #tp.current_domain = self.domain
@@ -28,9 +31,11 @@ class FakeCASTState(cast_state.CASTState):
         self.obj_to_castname = {}
 
         self.prob_state = prob_state.ProbabilisticState.from_problem(problem)
+        log.debug("time to state generation: %.2f", time.time() - t0)
         
         self.raw_state = prob_state.ProbabilisticState.from_problem(problem)
         self.raw_objects = set(problem.objects)
+        log.debug("time to 2nd state generation: %.2f", time.time() - t0)
 
         if component:
             coma_facts, coma_objects = self.get_coma_data(component)
@@ -47,6 +52,7 @@ class FakeCASTState(cast_state.CASTState):
         # import debug
         # debug.set_trace()
         self.generated_facts, self.generated_objects = self.generate_init_facts(problem, None)
+        log.debug("time to init fact generation: %.2f", time.time() - t0)
         for o in self.generated_objects:
             if o not in self.objects:
                 self.objects.add(o)
@@ -54,12 +60,17 @@ class FakeCASTState(cast_state.CASTState):
             self.prob_state.set(f)
             problem.init.append(f.as_literal(useEqual=True))
 
-        print map(str, self.objects)
+        # print map(str, self.objects)
             
         # print "objects:",  map(str,self.objects)
         self.state = self.prob_state.determinized_state(0.05, 0.95)
+        log.debug("time to state determinisation: %.2f", time.time() - t0)
 
+        self.check_consistency(self.state)
+        log.debug("time to consistency check: %.2f", time.time() - t0)
+        
         self.generate_belief_state(self.prob_state, self.state)
+        log.debug("time to belief state generation: %.2f", time.time() - t0)
         
         commit_facts = self.generate_committed_facts(self.state)
         for f in commit_facts:

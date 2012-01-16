@@ -483,14 +483,15 @@ class Parameter(TypedObject):
 t_object = Type("object", [])
 t_number = Type("number", [])
 t_boolean = Type("boolean", [t_object])
+t_any = AnyType()
 
 #predefined constants
 
 TRUE = TypedObject("true", t_boolean)
 FALSE = TypedObject("false", t_boolean)
 
-UNKNOWN = TypedObject("unknown", AnyType())
-UNDEFINED = TypedObject("undefined", AnyType())
+UNKNOWN = TypedObject("unknown", t_any)
+UNDEFINED = TypedObject("undefined", t_any)
 
    
 def parse_typelist(it):
