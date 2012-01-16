@@ -8,9 +8,10 @@ include "long-desk.inc"
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [1215.000 940.000]
+	size [315.000 400.000]
 	#This is how many metres of the simulated environment each pixel shows
-	scale 18.181
+	scale 22
+	center [17.800 6.200]
 )
 
 floorplan
