@@ -292,16 +292,16 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
             log("Action %s failed, retries exhausted.", action->name.c_str());
             task->executionStatus = FAILED;
             pyServer->notifyFailure(task);
+            overwriteWorkingMemory(activeTasks[task->id], task);
         }
         else {
-        log("Action %s failed, replanning.", action->name.c_str());
-             task->executionStatus = PENDING;
-             //generateState(task);
-             task->executionRetries++;
+            log("Action %s failed, replanning.", action->name.c_str());
+            task->executionStatus = PENDING;
+            //generateState(task);
+            task->executionRetries++;
+            overwriteWorkingMemory(activeTasks[task->id], task);
+            dispatchPlanning(task, PLANNER_UPDATE_DELAY);
         }
-        overwriteWorkingMemory(activeTasks[task->id], task);
-        //pyServer->updateTask(task);
-        dispatchPlanning(task, PLANNER_UPDATE_DELAY);
     }
     else if (action->status == SUCCEEDED) {
         /*task->plan.erase(task->plan.begin());
@@ -561,7 +561,7 @@ void WMControl::updateStatus(int id, Completion status) {
             task->planningRetries = 0;
     }
     else if (status == FAILED) {
-        if (task->planningRetries >= MAX_PLANNING_RETRIES) {
+        if (task->planningRetries >= MAX_PLANNING_RETRIES && task->executionStatus != FAILED) {
             log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);
             task->executionStatus = FAILED;
             pyServer->notifyFailure(task);
