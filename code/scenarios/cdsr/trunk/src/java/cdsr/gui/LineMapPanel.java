@@ -2,10 +2,12 @@ package cdsr.gui;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
+import cdsr.objects.CDSR;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
 
@@ -34,12 +36,21 @@ public class LineMapPanel extends JPanel {
 		m_painter.updateObjects(_objects);
 		repaint();
 	}
+	
 
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		m_painter.setWidth(getWidth());
 		m_painter.setHeight(getHeight());
 		m_painter.paintLineMap((Graphics2D)g);
+	}
+
+	public void addCDSR(CDSR _region) {
+		m_painter.addCDSR(_region);
+	}
+
+	public void addPoint(Double _worldPoint) {
+		m_painter.addPoint(_worldPoint);
 	}
 
 }

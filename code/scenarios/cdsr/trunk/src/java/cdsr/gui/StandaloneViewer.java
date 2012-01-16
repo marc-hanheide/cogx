@@ -1,11 +1,15 @@
 package cdsr.gui;
 
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D.Double;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 
 import cdsr.marshall.CDSRMarshaller;
+import cdsr.objects.CDSR;
 import cdsr.objects.ProblemSet;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
@@ -41,6 +45,10 @@ public class StandaloneViewer extends JFrame {
 	  m_mapPanel.updateObjects(_objects);
 	}
 	
+	public void addCDSR(CDSR _region) {
+		m_mapPanel.addCDSR(_region);
+	}
+	
 	/**
 	 * @param args
 	 * @throws ClassNotFoundException
@@ -59,6 +67,10 @@ public class StandaloneViewer extends JFrame {
 		
 		StandaloneViewer viewer = new StandaloneViewer();
 		viewer.addProblemSet(ps);
+	}
+
+	public void addPoint(Double _worldPoint) {
+		m_mapPanel.addPoint(_worldPoint);
 	}
 
 }
