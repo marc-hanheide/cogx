@@ -40,7 +40,7 @@ public class LineMapImageGenerator {
 		
 		
 		System.out.println(_pixelsPerMetre + " pixels/m");
-		System.out.println("origin at pixel " + m_xOffset + ", " + (m_height - m_yOffset) + " measured from top right");
+		System.out.println("origin at pixel " + m_xOffset + ", " + (m_height - m_yOffset) + " measured from top left");
 	}
 
 	private void calculateImageDimensions(Room _room, int _pixelsPerMetre,

@@ -1,11 +1,17 @@
 package cdsr.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
+import java.util.List;
 
+import cdsr.objects.CDSR;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
 
@@ -15,7 +21,7 @@ public class LineMapPainter {
 
 	private ArrayList<SensedObject> m_objects;
 
-	private final static int DEFAULT_PIXELS_PER_METRE = 20;
+	private final static int DEFAULT_PIXELS_PER_METRE = 80;
 
 	private int m_width;
 	private int m_height;
@@ -28,6 +34,12 @@ public class LineMapPainter {
 	// .getLogger(LineMapPanel.class);
 
 	private final int m_pixelsPerMetre;
+
+	private boolean m_drawOrigin = false;
+
+	private List<CDSR> m_cdsrs;
+
+	private ArrayList<Point2D.Double> m_points;
 
 	public LineMapPainter() {
 		this(DEFAULT_PIXELS_PER_METRE);
@@ -98,7 +110,7 @@ public class LineMapPainter {
 	}
 
 	private final int toPixelsY(double _worldPoint) {
-		return invertY((int) (_worldPoint * m_pixelsPerMetre) +  m_yOffset);
+		return invertY((int) (_worldPoint * m_pixelsPerMetre) + m_yOffset);
 	}
 
 	private void drawOrigin(Graphics2D g2) {
@@ -125,6 +137,7 @@ public class LineMapPainter {
 		}
 
 		if (m_objects != null) {
+			g2.setStroke(new BasicStroke(3f));
 			g2.setPaint(Color.blue);
 			for (SensedObject object : m_objects) {
 				for (Line2D.Double segment : object) {
@@ -133,8 +146,44 @@ public class LineMapPainter {
 			}
 		}
 
-		drawOrigin(g2);
+		if (m_cdsrs != null) {
+			g2.setStroke(new BasicStroke(2f));
+			g2.setPaint(Color.green);
 
+			for (CDSR cdsr : m_cdsrs) {
+				for (Line2D.Double segment : cdsr) {
+					g2.draw(toPixels(segment));
+				}
+			}
+		}
+
+		if (m_points != null) {
+
+//			g2.setPaint(Color.orange);
+			for (Point2D.Double pt : m_points) {
+				g2.draw(new Ellipse2D.Double(toPixelsX(pt.x) - 4, toPixelsY(pt.y) - 4, 8, 8));
+			}
+
+		}
+
+		if (m_drawOrigin) {
+			drawOrigin(g2);
+		}
+
+	}
+
+	public void addCDSR(CDSR _region) {
+		if (m_cdsrs == null) {
+			m_cdsrs = new ArrayList<CDSR>();
+		}
+		m_cdsrs.add(_region);
+	}
+
+	public void addPoint(Double _worldPoint) {
+		if (m_points == null) {
+			m_points = new ArrayList<Point2D.Double>();
+		}
+		m_points.add(_worldPoint);
 	}
 
 }
