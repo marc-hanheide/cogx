@@ -6,7 +6,7 @@ from predicates import Predicate, Function
 from scope import SCOPE_CONDITION, SCOPE_EFFECT, SCOPE_ALL, SCOPE_INIT
 
 #predefined types
-default_types = [t_object, t_boolean]
+default_types = [t_object, t_boolean, t_any]
 
 #basic predicates
 equals = Predicate("=", [Parameter("?o1", t_object), Parameter("?o2", t_object)], builtin=True, function_scope=SCOPE_CONDITION)

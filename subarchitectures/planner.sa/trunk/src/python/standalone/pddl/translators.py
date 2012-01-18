@@ -47,7 +47,7 @@ class Translator(object):
         
     def translate(self, entity, **kwargs):
         t0 = time.time()
-        #print "preorder:", type(self), type(entity)
+        # print "preorder:", type(self), type(entity)
         for translator in self.depends:
             #entity._original = Translator.get_original(entity)
             #original = entity
@@ -270,25 +270,29 @@ class PreferenceCompiler(Translator):
         self.counter = 0
         self.costIncrease = 0
         self.prefCondScope = None
-        self.prefFound = False
 
     def translate_action(self, action, domain):
-        self.prefFound = False
-        action1 = action.copy(domain)
+        @visitors.collect
+        def collect_prefs_visitor(cond, parts):
+            if isinstance(cond, conditions.PreferenceCondition):
+                return cond
 
+        prefs = visitors.visit(action.precondition, collect_prefs_visitor, [])
+        assert len(prefs) <= 1, "only one preference per action precondition supported"
+
+        if not prefs:
+            return Translator.translate_action(self, action, domain) 
+        
+        
         @visitors.copy
         def visitor1(cond, parts):
             if isinstance(cond, conditions.PreferenceCondition):
-                assert not self.prefFound, "only one preference per action precondition supported"
-                self.prefFound = True
                 self.costIncrease = cond.penalty
                 self.prefCondScope = cond.scope
                 return conditions.Conjunction([])
 
-        action1.precondition = visitors.visit(action1.precondition, visitor1)
-
-        if not self.prefFound:
-            return action1
+        action1 = action.copy(domain)
+        action1.precondition = visitors.visit(action.precondition, visitor1)
 
         action1.name = "ignore-preferences-" + action1.name
         old_total_cost = action1.get_total_cost()
@@ -300,7 +304,7 @@ class PreferenceCompiler(Translator):
             new_cost_term = predicates.Term(self.costIncrease + old_total_cost.object.value)
 
         action1.set_total_cost(new_cost_term)
-        action2 = action.copy(domain)
+        action2 = Translator.translate_action(self, action, domain)
 
         @visitors.copy
         def visitor2(cond, parts):
@@ -896,6 +900,7 @@ class ModalPredicateCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
         self.depends = [MAPLCompiler(**kwargs)]
         self.set_copy(copy)
+        self.used_functions = defaultdict(set)
         
     def compile_modal_args(self, args, functions):
         func_arg = None
@@ -937,9 +942,9 @@ class ModalPredicateCompiler(Translator):
 
     def translate_literal(self, literal, scope):
         import durative
-        
+
         if literal.predicate in durative.default_predicates + numeric_ops + assignment_ops:
-            return literal.copy_instance()
+            return literal
         
         args = []
         name_elems = [literal.predicate.name]
@@ -949,24 +954,27 @@ class ModalPredicateCompiler(Translator):
                 name_elems.append(arg.function.name)
                 args += arg.args
                 has_functionals = True
+                self.used_functions[literal.predicate].add(arg.function)
             else:
                 args.append(arg)
         if not has_functionals:
             return literal
 
         pred = scope.predicates.get("-".join(name_elems), args)
+        if not pred:
+            return None
         result = literal.new_literal(predicate=pred, args=args)
-        return result.copy_instance()
+        return result#.copy_instance()#FIXME: is this copy required?
                 
     def translate_action(self, action, domain=None, new_args=None):
         assert domain is not None
 
-        @visitors.copy
+        @visitors.replace
         def cond_visitor(cond, results):
             if isinstance(cond, conditions.LiteralCondition):
                 return self.translate_literal(cond, domain)
 
-        @visitors.copy
+        @visitors.replace
         def eff_visitor(eff, results):
             if isinstance(eff, effects.SimpleEffect):
                 return self.translate_literal(eff, domain)
@@ -976,20 +984,27 @@ class ModalPredicateCompiler(Translator):
             
         if new_args:
             args = new_args
+            copy = True
         else:
             args = [types.Parameter(p.name, p.type) for p in action.args]
+            copy = self.copy
 
-        a2 = action.copy_skeleton(domain) # TODO: new_args is being ignored, which is a bug
-        
-        if action.precondition:
-            a2.precondition = action.precondition.copy(copy_instance=True).visit(cond_visitor)
-            a2.precondition.set_scope(a2)
-        if action.replan:
-            a2.replan = action.replan.copy(copy_instance=True).visit(cond_visitor)
-            a2.replan.set_scope(a2)
-        a2.effect = visitors.visit(action.effect, eff_visitor)
-        
-        return a2
+        if copy:
+            a2 = action.copy_skeleton(domain) # TODO: new_args is being ignored, which is a bug
+            if action.precondition:
+                a2.precondition = action.precondition.copy(copy_instance=True).visit(cond_visitor)
+                a2.precondition.set_scope(a2)
+            if action.replan:
+                a2.replan = action.replan.copy(copy_instance=True).visit(cond_visitor)
+                a2.replan.set_scope(a2)
+            a2.effect = visitors.visit(action.effect, eff_visitor)
+            return a2
+        else:
+            action.precondition = visitors.visit(action.precondition, cond_visitor)
+            action.replan = visitors.visit(action.replan, cond_visitor)
+            action.effect = visitors.visit(action.effect, eff_visitor)
+            return action
+            
             
     def translate_axiom(self, axiom, domain=None, new_args=None, new_pred=None):
         assert domain is not None
@@ -1001,19 +1016,25 @@ class ModalPredicateCompiler(Translator):
         
         if new_args is not None:
             args = new_args
+            copy = True
         else:
             args = [types.Parameter(p.name, p.type) for p in axiom.args]
+            copy = self.copy
 
         if new_pred is not None:
             pred = new_pred
         else:
             pred = domain.predicates.get(axiom.predicate.name, args)
 
-        a2 = axioms.Axiom(pred, args, None, domain)
-        a2.condition = axiom.condition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
-        a2.condition.set_scope(a2)
+        if copy :
+            a2 = axioms.Axiom(pred, args, None, domain)
+            a2.condition = axiom.condition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
+            a2.condition.set_scope(a2)
+            return a2
+        else:
+            axiom.condition = visitors.visit(axiom.condition, cond_visitor)
+            return axiom
 
-        return a2
         
     @requires('modal-predicates')
     def translate_domain(self, _domain):
@@ -1031,11 +1052,14 @@ class ModalPredicateCompiler(Translator):
 
         funcs = [f for f in _domain.functions if not f.builtin]
 
+        new_pred_dict = {}
         new_preds = []
         for pred in modal:
             func_arg, compiled = self.compile_modal_args(pred.args, funcs)
             for f, args in compiled:
-                new_preds.append(Predicate("%s-%s" % (pred.name, f.name), args))
+                new_p = Predicate("%s-%s" % (pred.name, f.name), args)
+                new_pred_dict[(pred, f)] = new_p
+                new_preds.append(new_p)
 
         nonmodal += new_preds
 
@@ -1054,19 +1078,41 @@ class ModalPredicateCompiler(Translator):
                     ac.uninstantiate()
                     a2.name = "%s-%s" % (a2.name, f.name)
                     dom.add_action(a2)
-                    
+
+        #Nonmodal axioms
         for ax in _domain.axioms:
-            func_arg, compiled = self.compile_modal_args(ax.args, funcs)
+            func_arg, compiled = self.compile_modal_args(ax.args, [])
             if not func_arg:
                 dom.axioms.append(self.translate_axiom(ax, dom))
-            else:
+
+        prev_used = defaultdict(set)
+        while True:
+            added = False
+            for ax in _domain.axioms:
+                used_functions = self.used_functions[ax.predicate] - prev_used[ax.predicate]
+                func_arg, compiled = self.compile_modal_args(ax.args, used_functions)
+                # print ax.predicate, map(str,used_functions)
+                if not func_arg:
+                    continue
                 for f, args in compiled:
+                    added = True
                     ax.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
                     new_pred = dom.predicates.get("%s-%s" % (ax.predicate.name, f.name), args)
                     a2 = self.translate_axiom(ax, dom, args, new_pred)
                     a2.copy()
                     ax.uninstantiate()
                     dom.axioms.append(a2)
+            for k,v in self.used_functions.iteritems():
+                prev_used[k] |= v
+            self.used_functions.clear()
+            
+            if not added:
+                break
+            
+        for (p, f), compiled in new_pred_dict.iteritems():
+            if f not in prev_used[p]:
+                dom.predicates.remove(compiled)
+            
         dom.stratify_axioms()
         dom.name2action = None
 
@@ -1080,13 +1126,18 @@ class ModalPredicateCompiler(Translator):
         @visitors.copy
         def lit_visitor(cond, results):
             if isinstance(cond, predicates.Literal):
-                return self.translate_literal(cond, p2)
+                res = self.translate_literal(cond, p2)
+                if not res:
+                    return False
+                return res
 
         if _problem.goal:
             p2.goal = _problem.goal.visit(lit_visitor)
 
         for i in _problem.init:
-            p2.init.append(i.visit(lit_visitor))
+            res = i.visit(lit_visitor)
+            if res:
+                p2.init.append(res)
         
         return p2             
 

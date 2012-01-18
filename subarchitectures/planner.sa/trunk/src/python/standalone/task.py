@@ -314,7 +314,7 @@ class FDOutput(PDDLOutput):
                 for v in prob.get_all_objects(function.type):
                     #print pddl.Literal(pred, c+[v]).pddl_str()
                     group.append(pddl.Literal(pred, itertools.chain(c, [v])))
-                    if build_modal_groups:
+                    if build_modal_groups and commit_pred:
                         commit_group.append(pddl.Literal(commit_pred, itertools.chain(c, [v])))
                     
                 groups.append(group)
