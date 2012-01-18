@@ -1,0 +1,83 @@
+HOST localhost
+
+SETVAR ptz_server=ptz.server
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+# Visualization.SA ##########################################################
+# INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+
+JAVA MG cdsrBridge cdsr.components.CDSRBridge --output studio-mistry-sim.cdsr
+
+CPP MG slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric
+CPP MG navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph
+CPP MG spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf --explore-range 2.0 
+CPP MG spatial.translation SpatialTranslation 
+CPP MG place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 0.6 --min-node-separation 1 --hyp-path-length 2.0 --no-placeholders 
+CPP MG path.query PathQueryProcessor #--no-indirect-paths 
+CPP MG map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-planes --no-local-map-window --no-tentative-window --laser-range 2.0 --planemap-size 100 --planemap-cellsize 0.05 --detect-doors
+
+# Vision ######################################################################
+
+INCLUDE includes/vision.sa/vision-base.cast
+INCLUDE includes/vision.sa/vision-execution.cast
+
+CPP MG cameramount  CameraMount --use_ptz --camids "0" --cam_poses_xml "%(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+
+JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --labels "desk dresser bed cooker couch" 
+
+# FakeDetector data, in world coordinates where robot starts at 0, 0, 0, 0
+# pos x y z theta (centre of object)
+# dimensions dx dy dz (from centre)
+# visibility minx miny maxx maxy
+
+VARDEFAULT fake_objects=<multiline>
+   --pos-desk "0.3, 1.24, 1.45, 0" 
+   --dimesions-desk "1, 0.3, 0.75" 
+   --visibility-area-desk "-0.7, -1.93, 5.77, 1.54"    
+   --pos-dresser "1.70, 1.24, 1.45, 0" 
+   --dimensions-dresser "0.395, 0.3, 0.75" 
+   --visibility-area-dresser "-0.7, -1.93, 5.77, 1.54"
+   --pos-bed "1.68, -0.97, 1.45, 0" 
+   --dimensions-bed "0.64, 0.965, 0.75" 
+   --visibility-area-bed "-0.7, -1.93, 5.77, 1.54"
+   --pos-cooker "3.83, -1.17, 1.45, 0" 
+   --dimensions-cooker "0.295, 0.76, 0.36" 
+   --visibility-area-cooker "-0.7, -1.93, 5.77, 1.54"
+   --pos-couch "0.17, -1.40, 1.45, 0" 
+   --dimensions-couch "0.735, 0.4, 0.36" 
+   --visibility-area-couch "-0.7, -1.93, 5.77, 1.54"
+</multiline>
+
+JAVA MG FakeDetector vision.components.FakeDetector %(fake_objects)
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+   %(siftroot_)/xxx.sift
+</multiline>
+
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/Mistry-desk.ply       
+   %(plyroot_)/Mistry-dresser.ply
+   %(plyroot_)/Mistry-bed.ply
+   %(plyroot_)/Mistry-cooker.ply
+   %(plyroot_)/Mistry-couch.ply
+</multiline>
+
+VARDEFAULT or3d_labels=desk dresser bed cooker couch
+CPP MG recognizer.3D ObjectRecognizer3D --simulation-only --no-learning --videoname VideoServer --camid "0" --display --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+
+
+# viewing and debugging #######################################################
+#JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "VisionData.VisualObject"
