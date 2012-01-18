@@ -1,14 +1,5 @@
 #!/bin/bash
 
-plannerDebugDir="subarchitectures/planner.sa/src/python/standalone/tmp/static_dir_for_debugging"
-
-function storePlannerLogs {
-	if [ -r "$plannerDebugDir" ]; then
-		zip -j logs/planner-debug.zip "$plannerDebugDir"/*
-	else
-		touch logs/no-planner-logs-available
-	fi
-}
 
 function storeCoreDump {
 	if [ -e "core" ]; then
@@ -16,12 +7,6 @@ function storeCoreDump {
 	else
 		touch logs/no-core-dump
 	fi
-}
-
-function waitForTrigger {
-	while [ ! -e $STOPTRIGGERFILE ]; do
-		sleep 1
-	done
 }
 
 
@@ -32,11 +17,11 @@ else
 fi
 
 if [ "$2" ]; then
-    STOPTRIGGERFILE="$2"
+    GOAL="$2"
 else
-    STOPTRIGGERFILE="logs/result.xml"
+    GOAL=""
+    #(forall (?p - place) (= (placestatus ?p) trueplace))"
 fi
-
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -132,8 +117,12 @@ PIDS="$PIDS $!"
 #waitForTrigger
 sleep 60
 
-storePlannerLogs
+if [ "$GOAL"]; then
+	ant -Dtest.goal="$GOAL" goaltest
+fi
+
 storeCoreDump
+tools/scripts/collect-logs.sh
 
 # check if the C++ server is still running after this time!
 if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=0; else RES=1; fi
