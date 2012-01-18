@@ -11,7 +11,7 @@ INCLUDE includes/spatial.sa/spatial-ptz.cast
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
-JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-222-real.cdsr
+JAVA MG cdsr.bridge cdsr.components.CDSRBridge --output classroom-222-classroom-format-real.cdsr
 
 CPP MG slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric
 CPP MG navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph
@@ -46,9 +46,9 @@ VARDEFAULT fake_objects=<multiline>
    --pos-two_desk1 "1.38, 0.07, 1.45, -0.72" 
    --dimensions-two_desk1 "0.4, 1.2, 0.36" 
    --visibility-area-two_desk1 "-1.1, -1.8, 4.5, 2.2" 
-   --pos-two_desk1 "3.09, -0.01, 1.45, -0.72" 
-   --dimensions-two_desk1 "0.4, 1.2, 0.36" 
-   --visibility-area-two_desk1 "-1.1, -1.8, 4.5, 2.2" 
+   --pos-two_desk2 "3.09, -0.01, 1.45, -0.72" 
+   --dimensions-two_desk2 "0.4, 1.2, 0.36" 
+   --visibility-area-two_desk2 "-1.1, -1.8, 4.5, 2.2" 
 </multiline>
 
 
