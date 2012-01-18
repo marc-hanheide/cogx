@@ -9,7 +9,7 @@ SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
 # Spatial.SA ################################################################
 COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
-#INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
 
 JAVA MG cdsrBridge cdsr.components.CDSRBridge --output classroom-3-all.cdsr
 
