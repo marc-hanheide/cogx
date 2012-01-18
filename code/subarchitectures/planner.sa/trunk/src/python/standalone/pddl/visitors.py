@@ -36,6 +36,8 @@ def replace(f):
             elem.effect = results[0]
         elif isinstance(elem, (conditions.PreferenceCondition, conditions.IntermediateCondition)):
             elem.cond = results[0]
+        elif isinstance(elem, effects.ProbabilisticEffect):
+            elem.effects = filter(lambda (p,e): bool(e), results)
         return elem
     return replace_visitor
 
