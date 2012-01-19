@@ -88,7 +88,7 @@ CMD_PYTHON_SERVER=python -m ComponentServer
 CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
 CMD_JAVA_SERVER_DEBUG=ddd -jdb -launch cast.server.ComponentServer
 
-CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG]
+CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG] [OPTIONS]
 
 CMD_PLAYER=player [PLAYER_CONFIG]
 

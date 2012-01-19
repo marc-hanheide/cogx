@@ -620,6 +620,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         def ckint(field, default=0):
             try: return int(self._options.getOption(field)) % 3
             except: return default
+        self.ui.ckClientDebugOutput.setCheckState(ckint("ckClientDebugOutput", 2))
         self.ui.ckShowFlushMsgs.setCheckState(ckint("ckShowFlushMsgs", 2))
         self.ui.ckShowInternalMsgs.setCheckState(ckint("ckShowInternalMsgs", 2))
         self.ui.ckAutoClearLog.setCheckState(ckint("ckAutoClearLog", 2))
@@ -843,6 +844,7 @@ class CCastControlWnd(QtGui.QMainWindow):
         try:
             self._options.mruCfgCast = getitems(self.ui.clientConfigCmbx)
             self._options.mruCfgHosts = getitems(self.ui.hostConfigCmbx, hasNullFile=True)
+            self._options.setOption("ckClientDebugOutput", self.ui.ckClientDebugOutput.checkState())
             self._options.setOption("ckShowFlushMsgs", self.ui.ckShowFlushMsgs.checkState())
             self._options.setOption("ckShowInternalMsgs", self.ui.ckShowInternalMsgs.checkState())
             self._options.setOption("ckAutoClearLog", self.ui.ckAutoClearLog.checkState())
@@ -1088,7 +1090,10 @@ class CCastControlWnd(QtGui.QMainWindow):
                 try:
                     confname = self.buildConfigFile()
                     if confname != None and confname != "":
-                        p.start( params = { "CAST_CONFIG": confname } )
+                        options = ""
+                        if self.ui.ckClientDebugOutput.isChecked():
+                            options = "--debug-parser"
+                        p.start( params = { "CAST_CONFIG": confname, "OPTIONS": options } )
                 except Exception as e:
                     LOGGER.error("%s" % e)
             # if p != None: p.start( params = { "CAST_CONFIG": self._options.mruCfgCast[0] } )
