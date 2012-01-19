@@ -215,8 +215,10 @@ void SOIFilter::connectPtz() {
 
 void SOIFilter::start()
 {
-  videoServer = getIceServer<Video::VideoInterface>(videoServerName);
-  m_snapper.videoServer = videoServer;
+  if (videoServerName != "") {
+    videoServer = getIceServer<Video::VideoInterface>(videoServerName);
+    m_snapper.videoServer = videoServer;
+  }
 
   m_coarsePointCloud.startPCCServerCommunication(*this);
   m_finePointCloud.startPCCServerCommunication(*this);
