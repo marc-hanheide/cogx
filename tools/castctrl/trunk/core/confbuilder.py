@@ -178,6 +178,8 @@ class CCastConfig:
         if line.find("'") > 0 or line.find('"') > 0:
             # TODO: Handle strings while removing comments!
             pass
+        if line.strip().startswith("#EXPAND"):
+            return line
         return line.split("#")[0]
 
     def _cwdRelativeDir(self, fdir):
