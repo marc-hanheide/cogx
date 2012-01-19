@@ -105,7 +105,7 @@ VARDEFAULT or3d_ply_files=<multiline>
    %(plyroot_)/Klenk-fridge.ply
 </multiline>
 
-VARDEFAULT or3d_labels= "desk files tv bookcase1 bikes armchair sofa bookcase2 table cooker fridge" 
+VARDEFAULT or3d_labels=desk files tv bookcase1 bikes armchair sofa bookcase2 table cooker fridge
 CPP MG recognizer.3D ObjectRecognizer3D --simulation-only --no-learning --videoname VideoServer --camid "0" --display --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
 
