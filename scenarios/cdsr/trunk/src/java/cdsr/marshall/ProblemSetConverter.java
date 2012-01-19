@@ -167,4 +167,29 @@ public class ProblemSetConverter {
     		}
     		return builder.toString();
 	}
+	
+	/**
+	 * Strips digits and anything before the final underscore.
+	 * 
+	 * @param input_type
+	 * @return
+	 */
+	public static String formatObjectTypeForDisplay(String input_type)
+	{
+		StringBuilder builder = new StringBuilder();
+    		for (int i = 0; i < input_type.length(); i++) {
+        		char c = input_type.charAt(i);
+        		if (!Character.isDigit(c)) {
+        			if(c == '_') {
+        				//lazy way of resetting
+        				builder = new StringBuilder();
+        			}
+        			else {
+            			builder.append(c);
+        			}
+        		}
+        		
+    		}
+    		return builder.toString();
+	}
 }

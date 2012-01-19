@@ -41,6 +41,7 @@ public class LineMapImageGenerator {
 		
 		System.out.println(_pixelsPerMetre + " pixels/m");
 		System.out.println("origin at pixel " + m_xOffset + ", " + (m_height - m_yOffset) + " measured from top left");
+		System.out.println("image height: " + m_height);
 	}
 
 	private void calculateImageDimensions(Room _room, int _pixelsPerMetre,
@@ -126,7 +127,7 @@ public class LineMapImageGenerator {
 		}
 
 		ProblemSet ps = CDSRMarshaller.loadProblemSet(args[0]);
-		LineMapImageGenerator generator = new LineMapImageGenerator(ps, 80, 10);
+		LineMapImageGenerator generator = new LineMapImageGenerator(ps, 80, 20);
 
 		if (!generator.generateImage(args[1])) {
 			System.err.println("image generation failed");
