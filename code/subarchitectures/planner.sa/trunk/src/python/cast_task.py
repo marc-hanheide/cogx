@@ -277,39 +277,39 @@ class CASTTask(object):
         except StopIteration:
             pass
 
-    def wait(self, timeout, update_callback, timeout_callback):
-        self.wait_update_callback = update_callback
-        self.wait_timeout_callback = timeout_callback
-        self.component.getClient().waitForChanges(self.id, timeout)
+    # def wait(self, timeout, update_callback, timeout_callback):
+    #     self.wait_update_callback = update_callback
+    #     self.wait_timeout_callback = timeout_callback
+    #     self.component.getClient().waitForChanges(self.id, timeout)
 
     def wait_update(self):
         if self.waiting_cofn is not None:
             return self.wait_co_update()
-        assert self.wait_update_callback is not None
-        # store the old handlers and restore if the update wasn't handled
-        # we do it this way because the update handler (if successful) may
-        # install its own update handlers
-        old_update_callback = self.wait_update_callback
-        old_timeout_callback = self.wait_timeout_callback
-        self.wait_update_callback = None
-        self.wait_timeout_callback = None
-        if not old_update_callback():
-            self.wait_update_callback = old_update_callback
-            self.wait_timeout_callback = old_timeout_callback
-        else:
-            log.debug("update was handled")
+        # assert self.wait_update_callback is not None
+        # # store the old handlers and restore if the update wasn't handled
+        # # we do it this way because the update handler (if successful) may
+        # # install its own update handlers
+        # old_update_callback = self.wait_update_callback
+        # old_timeout_callback = self.wait_timeout_callback
+        # self.wait_update_callback = None
+        # self.wait_timeout_callback = None
+        # if not old_update_callback():
+        #     self.wait_update_callback = old_update_callback
+        #     self.wait_timeout_callback = old_timeout_callback
+        # else:
+        #     log.debug("update was handled")
 
     def wait_timeout(self):
         if self.waiting_cofn is not None:
             return self.wait_co_timeout()
-        if self.wait_timeout_callback is None:
-            log.debug("no timeout handler installed")
-            return
-        log.debug("calling timeout handler")
-        callback = self.wait_timeout_callback
-        self.wait_timeout_callback = None
-        self.wait_update_callback = None
-        callback()
+        # if self.wait_timeout_callback is None:
+        #     log.debug("no timeout handler installed")
+        #     return
+        # log.debug("calling timeout handler")
+        # callback = self.wait_timeout_callback
+        # self.wait_timeout_callback = None
+        # self.wait_update_callback = None
+        # callback()
 
     def write_cp_problem(self, problem_fn):
         init_prob, _, _ = self.state.to_problem(self.slice_goals, deterministic=False, raw_problem=True)
