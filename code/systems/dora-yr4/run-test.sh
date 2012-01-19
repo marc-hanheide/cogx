@@ -117,20 +117,24 @@ PIDS="$PIDS $!"
 #waitForTrigger
 sleep 60
 
-if [ "$GOAL"]; then
-	ant -Dtest.goal="$GOAL" goaltest
+TESTREST=0
+if [ "$GOAL" ]; then
+        echo "running test for goal $GOAL" 
+	if ant -Dtest.goal="$GOAL" goaltest; then TESTREST=0 else TESTREST=1
+        echo "test returned"
 fi
 
 storeCoreDump
-tools/scripts/collect-logs.sh
 
 # check if the C++ server is still running after this time!
-if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=0; else RES=1; fi
+if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=$TESTREST; else RES=1; fi
 
 
 kill -2 $PIDS >/dev/null 2>&1
 sleep 5; 
 kill -9 $PIDS  >/dev/null 2>&1
+
+tools/scripts/collect-logs.sh
 
 exit $RES
 
