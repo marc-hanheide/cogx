@@ -3,6 +3,7 @@ package cdsr.gui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -11,6 +12,7 @@ import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.List;
 
+import cdsr.marshall.ProblemSetConverter;
 import cdsr.objects.CDSR;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
@@ -35,8 +37,10 @@ public class LineMapPainter {
 
 	private final int m_pixelsPerMetre;
 
+	//TODO make configurable
 	private boolean m_drawOrigin = false;
-
+	private boolean m_cleanObjectType = true;
+	
 	private List<CDSR> m_cdsrs;
 
 	private ArrayList<Point2D.Double> m_points;
@@ -139,10 +143,30 @@ public class LineMapPainter {
 		if (m_objects != null) {
 			g2.setStroke(new BasicStroke(3f));
 			g2.setPaint(Color.blue);
+			
+			
 			for (SensedObject object : m_objects) {
+			
+				int objectMaxX = Integer.MAX_VALUE;
+				int objectMaxY = Integer.MAX_VALUE;
+				
 				for (Line2D.Double segment : object) {
-					g2.draw(toPixels(segment));
+					Line2D.Double segmentInPixels = toPixels(segment);
+					g2.draw(segmentInPixels);
+					
+					Rectangle bounds = segmentInPixels.getBounds();
+					if(bounds.getMinX() < objectMaxX) {
+						objectMaxX = bounds.x;
+					}
+					if(bounds.getMinY() < objectMaxY) {
+						objectMaxY = bounds.y;
+					}	
 				}
+				String type = object.getType();
+				if(m_cleanObjectType) {
+					type = ProblemSetConverter.formatObjectTypeForDisplay(type);
+				}
+				g2.drawString(type, objectMaxX - 5 , objectMaxY - 5);
 			}
 		}
 
