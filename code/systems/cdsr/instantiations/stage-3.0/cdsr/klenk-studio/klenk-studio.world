@@ -1,0 +1,119 @@
+include "../../common/map.inc"
+include "../../common/p3dx_with_urg.inc"
+include "../../common/box.inc"
+
+window
+(
+	#This is the size the simulation window will be in pixels
+	size [700 400]
+	#This is (should be) how many metres (centimetres?) of the simulated environment each pixel shows
+	scale 40
+)
+
+floorplan
+(
+	bitmap "mistry-studio.png"
+	#size of map in metre
+	size [6.47 3.47 2.5]
+)
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+	pose [-2.54 0.2 0 0]
+	color "red"
+)
+
+define desk position
+(
+  # actual size
+  size [2 0.6 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
+)
+
+define dresser position
+(
+  # actual size
+  size [0.79 0.6 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
+)
+
+define bed position
+(
+  # actual size
+  size [1.28 1.93 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
+)
+
+define cooker position
+(
+  # actual size
+  size [0.59 1.52 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
+)
+
+define couch position
+(
+  # actual size
+  size [1.47 0.8 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
+)
+
+
+
+
+
+desk
+(
+name "desk1"
+pose [-2.24 1.44 0 0]
+)
+
+dresser
+(
+name "dresser1"
+pose [-0.84 1.44 0 0]
+)
+
+bed
+(
+name "bed1"
+pose [-0.86 -0.77 0 0]
+)
+
+cooker
+(
+name "cooker1"
+pose [1.29 -0.98 0 0]
+)
+
+couch
+(
+name "couch1"
+pose [-2.37 -1.20 0 0]
+)
+
