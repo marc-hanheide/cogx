@@ -7,6 +7,8 @@ SETVAR camera_config_dir=%(CURRENT_DIR)/calibration
 SETVAR kinect_config_file=%(camera_config_dir)/camcalib-kinect.xml
 SETVAR kinect_internal_file=%(camera_config_dir)/KinectConfig.xml
 
+VARDEFAULT main_camera_id=0
+
 SETVAR real_camera_ids=
 SETVAR real_camera_poses=
 SETVAR real_camera_refid=
@@ -114,3 +116,9 @@ IFOPTALL(%(hardware_options), ptz )
     JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-1.0" # --testGUI
 ENDIF
 
+IFOPTANY(%(real_camera_ids), %(main_camera_id))
+    # The main camera id is set correctly
+ELSE
+    # set to the reference_cam_id that was set here (may be empty)
+    SETVAR main_camera_id=%(reference_cam_id)
+ENDIF
