@@ -20,7 +20,7 @@ static void sig_alrm(int signo)
 
 
 // Camera unique ids
-#define PROSILICA_LEFT_CAM_ID 37107
+#define PROSILICA_LEFT_CAM_ID 37107 
 #define PROSILICA_RIGHT_CAM_ID 37105
 
 /*
@@ -230,7 +230,12 @@ void ProsilicaServer::init()
     {
       throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot open the left camera."));
     }
-    // Adjust packet size
+    // Adjust packet size - it is vital that this is not larger than the size set on the ethernet card
+    if (PvCaptureAdjustPacketSize(_leftCamHandle, 7000))
+    {
+        throw cast::CASTException("Cannot adjust the packet size for the left camera.");
+    }
+
 //    if (mtuAuto)
 //    {
 //      if (PvCaptureAdjustPacketSize(_leftCamHandle, 10000))
@@ -439,7 +444,9 @@ void ProsilicaServer::grabFrames()
 			debug("frame saved\n");
 		}
 		else
-			error("the frame failed to be captured ...");
+		{
+			error("the frame failed to be captured - error code %d", _frame.Status);
+		}
 	}
 	else
 	error("failed to enqueue the frame");
