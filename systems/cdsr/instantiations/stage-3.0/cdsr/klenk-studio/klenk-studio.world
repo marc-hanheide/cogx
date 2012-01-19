@@ -12,9 +12,9 @@ window
 
 floorplan
 (
-	bitmap "mistry-studio.png"
+	bitmap "klenk-studio.png"
 	#size of map in metre
-	size [6.47 3.47 2.5]
+	size [8.43 4.33 2.5]
 )
 
 p3dx_with_urg_and_blobfinder (
@@ -26,7 +26,7 @@ p3dx_with_urg_and_blobfinder (
 define desk position
 (
   # actual size
-  size [2 0.6 0.72]
+  size [0.6 1.2 0.72]
   origin [0 0 0 0]
   blob_return 1
 #  sonar_return 1
@@ -34,86 +34,69 @@ define desk position
   ranger_return 0
   color "red"
 )
-
-define dresser position
-(
-  # actual size
-  size [0.79 0.6 0.72]
-  origin [0 0 0 0]
-  blob_return 1
-#  sonar_return 1
-  laser_return 0
-  ranger_return 0
-  color "red"
-)
-
-define bed position
-(
-  # actual size
-  size [1.28 1.93 0.72]
-  origin [0 0 0 0]
-  blob_return 1
-#  sonar_return 1
-  laser_return 0
-  ranger_return 0
-  color "red"
-)
-
-define cooker position
-(
-  # actual size
-  size [0.59 1.52 0.72]
-  origin [0 0 0 0]
-  blob_return 1
-#  sonar_return 1
-  laser_return 0
-  ranger_return 0
-  color "red"
-)
-
-define couch position
-(
-  # actual size
-  size [1.47 0.8 0.72]
-  origin [0 0 0 0]
-  blob_return 1
-#  sonar_return 1
-  laser_return 0
-  ranger_return 0
-  color "red"
-)
-
-
-
-
 
 desk
 (
 name "desk1"
-pose [-2.24 1.44 0 0]
+pose [-3.9 -0.9 0 0]
 )
 
-dresser
+define bikes position
 (
-name "dresser1"
-pose [-0.84 1.44 0 0]
+  # actual size
+  size [0.6 1.2 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
 )
 
-bed
+bikes
 (
-name "bed1"
-pose [-0.86 -0.77 0 0]
+name "bikes1"
+pose [-3.9 1.4 0 0]
 )
 
-cooker
+
+define files position
 (
-name "cooker1"
-pose [1.29 -0.98 0 0]
+  # actual size
+  size [1.2 0.6 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
 )
 
-couch
+files
 (
-name "couch1"
-pose [-2.37 -1.20 0 0]
+name "files1"
+pose [-2.8 -1.8 0 0]
 )
+
+define tv position
+(
+  # actual size
+  size [1.6 0.4 0.72]
+  origin [0 0 0 0]
+  blob_return 1
+#  sonar_return 1
+  laser_return 0
+  ranger_return 0
+  color "red"
+)
+
+tv
+(
+name "tv1"
+pose [-1.3 -1.9 0 0]
+)
+
+
+
+
 
