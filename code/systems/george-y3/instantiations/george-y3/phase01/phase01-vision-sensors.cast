@@ -1,4 +1,5 @@
 # CAST config file
+# vim: set sw=4 ts=8 et sts=4 ai :vim
 
 # Host names can be used instead of raw IPs to distribute components eg. [Main].
 # Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
@@ -20,11 +21,12 @@ HOSTNAME  AbducerHost    [Main]
 ###########################################################################
 VARDEFAULT hardware=real
 VARDEFAULT hardware_options=<multiline>
-      kinect  kinect-video
+      kinect  !kinect-video
       !video 
       !stereo
       ptz  cameramount
 </multiline>
+VARDEFAULT main_camera_id=0
 
 #SETVAR     hardware=simulation
 ###########################################################################
@@ -48,7 +50,7 @@ ELSE
 ENDIF
 
 # Include other vision components
-INCLUDE  georgeY3-vision.incl
+INCLUDE  george-y4-vision.incl
 
 # manipulation #####################################################################
 #SUBARCHITECTURE manipulation.sa
