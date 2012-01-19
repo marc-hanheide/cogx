@@ -120,7 +120,7 @@
 			<key>Points</key>
 			<array>
 				<string>{670, 310}</string>
-				<string>{530, 310}</string>
+				<string>{580, 310}</string>
 			</array>
 			<key>Rotation</key>
 			<real>90</real>
@@ -174,8 +174,8 @@
 			<integer>24</integer>
 			<key>Points</key>
 			<array>
-				<string>{530, 310}</string>
-				<string>{531, 0}</string>
+				<string>{580, 310}</string>
+				<string>{581, 0}</string>
 			</array>
 			<key>Rotation</key>
 			<real>90</real>
@@ -265,7 +265,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2012-01-19 14:28:02 +0000</string>
+	<string>2012-01-19 19:31:12 +0000</string>
 	<key>Modifier</key>
 	<string>Nick Hawes</string>
 	<key>NotesVisible</key>
@@ -346,7 +346,7 @@
 			</dict>
 		</array>
 		<key>Frame</key>
-		<string>{{141, 237}, {1147, 768}}</string>
+		<string>{{53, 90}, {1147, 768}}</string>
 		<key>ListView</key>
 		<true/>
 		<key>OutlineWidth</key>
