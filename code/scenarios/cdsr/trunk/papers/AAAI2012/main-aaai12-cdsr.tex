@@ -57,28 +57,24 @@
 % \title{Context-Dependent Spatial Regions}
 % \title{Qualitative and Analogical Cognition for Spatial Regions Defined by Context}
 
-\author{Matthew Klenk \\ Palo Alto Research Center \\  Palo Alto, CA \\ matthew.klenk@parc.com \And Nick Hawes \\ Intelligent Robotics Lab \\ University of Birmingham, UK \\ n.a.hawes@cs.bham.ac.uk \And Kate Lockwood \\ ITCD Department \\ California State University - Monterey Bay \\ klockwood@csumb.edu  }
+\author{}
 
 
- \maketitle
- \begin{abstract}
-In order to collaborate with people in the real world, cognitive systems must be able to represent and reason about spatial regions in human environments. Consider the command \emph{``go to the front of the classroom''}. The spatial region mentioned (the front of the classroom) is not perceivable using geometry alone. Instead it is defined by its functional use, implied by nearby objects and their configuration. In this paper, we define such areas as \textit{context-dependent spatial regions} and propose a method for a cognitive system to learn them incrementally by combining qualitative spatial representations, semantic labels, and analogy. Using data from a mobile robot, we generate a relational representation of semantically labeled objects and their configuration. Next, we show how the boundary of a context-dependent spatial region can be defined using \textit{anchor points}. Finally, we demonstrate how an existing computational model of analogy can be used to transfer this region to a new situation. 
- \end{abstract}
+\maketitle
+\begin{abstract}
+In order to collaborate with people in the real world, cognitive systems must be able to represent and reason about spatial regions in human environments. Consider the command \emph{``go to the front of the classroom''}. The spatial region mentioned (the front of the classroom) is not perceivable using geometry alone. Instead it is defined by its functional use, implied by nearby objects and their configuration. In this paper, we define such areas as \textit{context-dependent spatial regions} and propose a method for a cognitive system to learn them incrementally by combining qualitative spatial representations, semantic labels, and analogy. Using data from a mobile robot, we generate a relational representation of semantically labeled objects and their configuration. Next, we show how the boundary of a context-dependent spatial region can be defined using \textit{anchor points}. We then demonstrate how an existing computational model of analogy can be used to transfer this region to a new situation. To evaluate this process we compare transferred regions to annotations made on maps of real rooms by human volunteers.
+\end{abstract}
 
  \section{Introduction}
 
 Consider a janitorial robot cleaning a classroom. While performing this task, it encounters a teacher working with a student. The teacher tells the robot to ``start at the front of the classroom'', expecting it to go to the front of the classroom and begin cleaning that area. This response requires that the robot is able to \emph{determine the spatial region in the environment that satisfies this concept}.
 
-The ability to understand and reason about \textit{spatial regions} is essential for cognitive systems performing tasks for humans in everyday environments. Some regions, such as whole rooms and corridors, are defined by clearly perceivable boundaries (e.g. walls and doors). However, many regions to which humans routinely refer are not so easily defined. Consider, for example, the aforementioned region \textit{the front of the classroom}. This region is not easily perceivable using just the geometry of the environment. Instead, it is defined by the objects present in the room (chairs, a desk, a chalkboard), their role in this context (seats for students to watch a teacher who writes on the chalkboard) and their configuration in space (the seats point toward the chalkboard). In this paper, we will refer to such regions as \textit{context-dependent spatial regions}. 
+The ability to understand and reason about \textit{spatial regions} is essential for cognitive systems performing tasks for humans in everyday environments. Some regions, such as whole rooms and corridors, are defined by clearly perceivable boundaries (e.g. walls and doors). However, many regions to which humans routinely refer are not so easily defined. Consider, for example, the aforementioned region \textit{the front of the classroom}. This region is not easily perceivable using just the geometry of the environment. Instead, it is defined by the objects present in the room (chairs, a desk, a chalkboard), their role in this context (seats for students to watch a teacher who writes on the chalkboard) and their configuration in space (the seats point toward the chalkboard). In this paper, we will refer to such regions as \textit{context-dependent spatial regions} (CDSRs). 
 
-% Pat:
-% Finally, let me urge you to include specific claims in your paper and
-% to provide evidence that supports them. Such evidence can take many
-% forms, from experimental studies to proofs to compelling arguments,
-% but making this explicit will improve your chances.
-
+% nah: These are the main claims from the ACS paper, but they can be reduced/dropped for aaai
 
 Representing and reasoning about context-dependent spatial regions is beyond the capabilities of current cognitive systems, yet it is an important ability for three reasons:
+
 \begin{itemize}
 
 \item{If cognitive systems are to collaborate with humans in everyday environments, then they must be able to represent and reason about the spatial regions humans refer to. Many regions are best defined in a context-dependent manner, for example, a kitchen in a studio apartment, an aisle in a church or store, behind enemy lines in a military engagement, etc.}
@@ -89,29 +85,18 @@ Representing and reasoning about context-dependent spatial regions is beyond the
 \item{Cognitive systems must adapt their knowledge and experience to new situations. While humans do not demonstrate mastery after seeing a single example of a new concept, they are able to begin using it immediately, whilst incrementally refining it over time (cf. one-shot learning~\cite{Fei-Fei/etal:2006}). This has important implications with respect to the amount of knowledge engineering and training time required to create a cognitive system. For example, having trained a mobile robot to understand the front of one classroom, it is desirable for it to be able to identify the front of other classrooms and similar areas (e.g. theaters) without additional tutoring.}
 \end{itemize}
 
-\begin{figure*}[t!]
-  \includegraphics[width=\textwidth]{example1.jpg}
-  \caption{
-This image demonstrates the behavior we desire of our cognitive system. The robot is able to identify the front of the classroom by analogy to a previously labelled example. To do this it must identify the correspondences between the example and its current environment (the desks in the front row and chalkboards) and then transfer the spatial region (the front of the room is between these entities).}
-  \label{fig:example}
-\end{figure*}
+% nah: removed large motivating picture, hoping we can make do with just our result pictures, or replace it with images used for ground truth
 
-Figure \ref{fig:example} illustrates our approach for understanding context-dependent spatial regions via analogy. Our first assumption is that these regions can be defined using qualitative spatial representations~\cite{Cohn:2001}. Our second assumption is that geometrically and semantically similar areas will feature similar context-dependent spatial regions, and that these can be transferred through analogy. 
+This paper presents a novel integration of technologies which allows an artificial cognitive system (specifically a mobile robot) to represent and reason about CDSRs. Our approach is founded on two assumptions. The first assumption is that CDSRs can be defined using qualitative spatial representations (QSRs) extracted from the sensor data of the system~\cite{Cohn:2001}. 
 
-In the context of the symposium on ``Advances in Cognitive Systems'' we are making two specific claims:
+The second assumption is that semantically similar areas (e.g. two different classrooms) will feature similar CDSRs, and that these similarities can be recognised through analogy. 
 
-\begin{enumerate}
-\item Understanding context-dependent spatial regions is an essential ability for a cognitive system that must interact with humans.
-\item This ability can be realized in an artificial cognitive system through the combination of a sensor-based spatial model, qualitative spatial representations, and analogy.  
-\end{enumerate}
+The rest of the paper is structured following these assumptions. Section~\ref{sec:qsr-gen} describes how we generate QSRs from the spatial model of an existing, state-of-the-art, cognitive system and use these to define CDSRs. Section~\ref{sec:analogy} then describes how use the structure-mapping model of analogy \cite{Gentner1983a} to transfer a CDSR from a labelled example to a new situation. Section~\ref{sec:example} presents a worked example of the entire process, and Section~\ref{sec:evaluation} evaluates our system in comparison to data from human subjects performing the same task.
 
-\noindent We appeal to the reader's experience and intuition to evidence the first claim. To support this, we have already provided a number of examples of situations in which humans rely on context-dependent spatial regions, but we have not done any systematic collection or analysis of real-world situations in which they occur. To evidence the second claim, we present the results of developing an extension to an existing cognitive system that enables it to learn context-dependent spatial regions by example. 
 
-The rest of the paper is structured as follows. First, we describe how we generate qualitative spatial representations from the spatial model of an existing system. Second, we describe how we define context-dependent spatial regions using \textit{anchor points} \cite{Klenk/etal2005}, i.e., symbolic descriptions that tie conceptual entities to geometric points. Next, we use the structure-mapping model of analogy \cite{Gentner1983a} to transfer knowledge from an existing context-dependent spatial region to a new situation. Finally, we discuss some limitations of our current implementation, and position it with respect to previous work and cognitive systems in general.
+\section{From Sensors to Semantics}\label{sec:qsr-gen}
 
-\section{From Sensors to Semantics}
-
-Our approach to representing and reasoning about context-dependent spatial regions requires the existence of qualitative spatial representations~\cite{Cohn:2001} describing the relationships between the entities a cognitive system perceives (including objects, groups, and regions). By adding semantic labels, or types, to each entity, we are able to reason about the geometric \emph{and} conceptual characteristics of the system's environment. The following sections describe how we generate appropriate qualitative spatial representations using the spatial model of an existing, state-of-the-art, cognitive system.
+% Our approach to representing and reasoning about context-dependent spatial regions requires the existence of qualitative spatial representations~\cite{Cohn:2001} describing the relationships between the entities a cognitive system perceives (including objects, groups, and regions). By adding semantic labels, or types, to each entity, we are able to reason about the geometric \emph{and} conceptual characteristics of the system's environment. The following sections describe how we generate appropriate qualitative spatial representations using the spatial model of an existing, state-of-the-art, cognitive system.
 
 \subsection{The Dora System}
 
@@ -121,28 +106,20 @@ Our approach to representing and reasoning about context-dependent spatial regio
   \label{fig:dora-spatial}
 \end{figure}
 
-We base our work on Dora, a mobile cognitive robot with a pre-existing multi-layered spatial representation~\cite{Hawes/etal:2011}. In this paper, we focus on the basic elements of this spatial model. For more information on Dora's other competences, see recent papers, e.g.~\cite{Hawes/etal:2011,Hanheide/etal:2011}.
+We base our work on Dora, a mobile cognitive robot with a pre-existing multi-layered spatial model~\cite{Hawes/etal:2011}. In this paper, we draw on the metric layer of this model. For more information on Dora's other competences, see recent papers, e.g.~\cite{Hawes/etal:2011,Hanheide/etal:2011}.
 
-In the simplest terms, Dora's spatial model can be treated as two layers: a \emph{metric layer} and a \emph{place layer}. A visualization of these from the running system is shown in Figure~\ref{fig:dora-spatial}.
-% Metric layer
-The metric layer is a collection of lines in a 2D global coordinate frame. These lines are generated by a  process which uses input from the robot's odometry and laser scanner to perform simultaneous localization and mapping (SLAM). Lines in this SLAM map represent features extracted from laser scans wherever a straight line is present for long enough to be considered permanent. In practice, lines are generated at the positions of walls and any other objects that are flat at the height of the laser (e.g. foot stools, bins, closed doors etc.). The robot's location in the metric layer is represented as a 2D position plus an orientation.
-% Place layer
-As the robot moves around in the world, the free space it passes through is discretized into a graph of connected nodes $1m$ apart. We refer to these nodes as \emph{places} and the graph of connected places forms the spatial model's place layer. The robot's location in the place layer is represented by a pointer to a place. Places allow Dora to reason about space in basic qualitative ways, e.g. by clustering places into rooms based on the presence of doorways, and provide a representation of space capable of facilitating behavior planning.
+Dora's metric layer is a collection of lines in a 2D global coordinate frame. These lines are generated by a process which uses input from the robot's odometry and laser scanner to perform simultaneous localization and mapping (SLAM). Lines in this SLAM map represent features extracted from laser scans wherever a straight line is present for long enough to be considered permanent. In practice, lines are generated at the positions of walls and any other objects that are flat at the height of the laser (e.g. bins, closed doors etc.). The robot's location in the metric layer is represented as a 2D position plus an orientation. 
+
 % Objects
 Dora is capable of using vision to recognize predefined objects. Recognition can either be triggered through autonomous visual search or a a user's command. When an object is detected it is represented in the place layer relative to Dora's current position. The recognizer associates each object with a label that was provided during a training phase. In our current work, these labels are used directly in analogical processing. We use a convex hull around the places in a room to represent its area, and the 2D locations of perceived objects to create the qualitative spatial representations in the next section.
+
+lines = walls
 
 % simulation
 As the purpose of this paper is to explore the possibility of using qualitative spatial reasoning and analogy on top of Dora's spatial model, we decided to perform our research using the Player/Stage hardware abstraction layer and simulation tools~\cite{GerkeyVaughanHoward03} rather than on a real robot. This allows us to run the Dora system \emph{mostly unchanged} in a controlled simulation environment, rather than deal with some of the unrelated challenges of running the robot in the real world. The key difference is that the sensor readings are free of noise in the simulated world. This is particularly significant where vision is concerned, as Dora's object recognizer is replaced entirely by a simulated blob detector which is always correct. Beyond this, the functionality of the system remains unchanged, and, crucially, the representations our work builds on will be the same when the system is run in the real world.  
 
 \input{qsr-extraction}
-%\subsection{Qualitative Spatial Representation Extraction}
 
-%Given data from Dora's spatial model, we compute the following qualitative spatial representations. First, we extract the object and room entities from the sensor data. Next, we determine the qualitative spatial relationships between these entities. For the room, we compute its region as a convex hull around the set of points. For the objects, we consider only their centroids. For each pair of adjacent objects, we compute topological and positional relationships. Adjacency is determined by creating a voronoi diagram as is standard geometric reasoning \cite{Forbus/etal2003}. For the topological relationships, we use the region connection calculus, RCC8, \cite{Cohn:2001}. For positional relations, we use two predicates \fw{leftOf} and \fw{below}. An entity is \fw{leftOf} another if the x coordinate of its centroid is less than that of the other entity's. An entity is \fw{below} another if the y coordinate of its centroid is less than that of the other entity's. Objects whose x or y coordinates are within a threshold of one another will not be related by \fw{leftOf} or \fw{below} positional relations.
-
-%%\from{Nick}{I have changed the below paragraph to match the actual numbers and images. I've marked what I changed}
-%%Desk 1 and Desk 2 are not labeled in the Figure.
-
-%Consider the situation in Figure~\ref{fig:dora-spatial} where the robot is facing two desks in a row\footnote{Please note that although the desks in front of the robot in Figure~\ref{fig:dora-spatial} appear distributed left to right from the robot's current position, they are actually distributed bottom to top, according to our definitions, in the global coordinate frame.}. Because we represent the desks as distinct points, \fw{(rcc8-DC Desk1 Desk2)} states that they are disjoint. To account for their relative positions, neither \fw{(leftOf Desk1 Desk2)} nor \fw{(leftOf Desk2 Desk1)} are true because the x coordinate of \fw{Desk1} is within a threshold of the x coordinate of \fw{Desk2}. The statement \fw{(below Desk1 Desk2)} is true because \fw{Desk1} has a lower y coordinate. Each desk is also related to the room by the non-tangential proper part relation, \fw{rcc8-NTPP}. These qualitative spatial relationships provide the structure necessary for analogical processing.
 
 \subsection{Representing Context-Dependent Spatial Regions}
 
@@ -172,7 +149,7 @@ Figure \ref{fig:cdsr-reps} contains the symbolic description for the front of cl
 
 % In the next section, we describe how to transfer these environment-specific representations to new situations via analogy.
 
-\section{Analogical Transfer of Spatial Regions}
+\section{Analogical Transfer of Spatial Regions}\label{sec:analogy}
 
 % While this work focuses on how analogy enables inferences from specific examples to new situations, but its role in the larger cognitive system this work envisions cannot be ignored. 
 
@@ -244,9 +221,12 @@ To support the definition of new spatial regions which the robot should be aware
 
 For mobile robots, spatial understanding is required to enable the pursuit of spatially-defined goals (e.g the goal that the front of the classroom is clean). Consequently, spatial understanding should be evaluated with respect to a cognitive system's actions in its environment. The minimal performance for spatial understanding is that the cognitive system is able to navigate to context-dependent spatial regions. A longer term research project involves reasoning about potentially conflicting goals with overlapping spatial extents. A cognitive system should be able to combine them to generate new goals to pursue. The scenario in Figure \ref{fig:example} exemplifies this process of combining goals through spatial extent, when the robot generates the goal of cleaning the front of the classroom. With the proliferation of mobile robots, sensors and computation, new ideas, such as, context-dependent spatial regions, have the potential to reshape how users interact with cognitive systems.
 
-\section{Acknowledgments}
+% \section{Acknowledgments}
+% 
+% The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams. The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
 
-The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams. The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
+% 7th page may only contain references
+\newpage
 
 \bibliography{aaai12-cdsr}
 \bibliographystyle{aaai}
