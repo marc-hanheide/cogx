@@ -93,10 +93,11 @@ public class GroundTruthScaler {
 				Integer.parseInt(split[lastSuccess + 2]));
 
 		StringBuilder type = new StringBuilder();
-		for (int i = lastSuccess + 3; i < split.length; i++) {
+		for (int i = lastSuccess + 3; i < split.length - 1; i++) {
 			type.append(split[i]);
-			type.append(' ');
+			type.append('_');
 		}
+		type.append(split[split.length - 1]);
 		scaler.setType(type.toString());
 		return scaler;
 	}
