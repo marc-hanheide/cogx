@@ -88,12 +88,19 @@ void CategoricalDataProvider::configure(const std::map<std::string,std::string> 
   if (it!=config.end())
     dataFile = it->second;
 
-  // --laser-robot-servers-hostname
-  it = config.find("--laser-robot-servers-hostname");
+  // --laser-server
+  it = config.find("--laser-server");
   if (it!=config.end())
-	  _laserRobotServersHostname = it->second;
-  if (_laserRobotServersHostname.empty())
-      throw(CASTException(exceptionMessage(__HERE__, "Please provide --laser-robot-servers-hostname")));
+	  _laserServerName = it->second;
+  if (_laserServerName.empty())
+      throw(CASTException(exceptionMessage(__HERE__, "Please provide --laser-server")));
+
+  // --robot-server
+  it = config.find("--robot-server");
+  if (it!=config.end())
+	  _robotServerName = it->second;
+  if (_robotServerName.empty())
+      throw(CASTException(exceptionMessage(__HERE__, "Please provide --robot-server")));
 
   // --startservers
   it = config.find("--start-servers");
@@ -387,8 +394,8 @@ void CategoricalDataProvider::runComponent()
   _lastGrabTimestamp.us=0;
 
   // Setup push
-  setupPushScan2d(*this, -1, _laserRobotServersHostname);
-  setupPushOdometry(*this, -1, _laserRobotServersHostname);
+  setupPushScan2d(*this, -1, _laserServerName);
+  setupPushOdometry(*this, -1, _robotServerName);
 
   // Run component
   while(isRunning())

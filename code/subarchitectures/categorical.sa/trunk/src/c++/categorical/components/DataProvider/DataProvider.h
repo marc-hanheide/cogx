@@ -220,7 +220,8 @@ private: // Data sources
   /** ICE proxy to the video server. */
   Video::VideoInterfacePrx _videoServer;
 
-  std::string _laserRobotServersHostname;
+  std::string _laserServerName;
+  std::string _robotServerName;
 
 
 private: // WM object IDs
