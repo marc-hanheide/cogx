@@ -138,7 +138,7 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     }
   }
 
-  m_RetryDelay = 10;
+  m_RetryDelay = 500;
 
   Cure::ConfigFileReader *cfg = 0;
   it = _config.find("-c");
@@ -245,7 +245,7 @@ void ObjectRelationManager::start()
   if (m_bDisplayPlaneObjectsInPB || m_bDisplayVisualObjectsInPB) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       connectPeekabot();
-      sleep(m_RetryDelay);
+      sleepComponent(m_RetryDelay);
     }
 
     if (m_bDisplayPlaneObjectsInPB) {
