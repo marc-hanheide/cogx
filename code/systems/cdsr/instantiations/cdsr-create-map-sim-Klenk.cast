@@ -39,7 +39,7 @@ JAVA MG objectDetectionDriver vision.components.ObjectDetectionDriver --gui --la
 
 VARDEFAULT fake_objects=<multiline>
    --pos-desk "-3.9, -0.9, 1.45, 0" 
-   --dimesions-desk "0.3, 0.6, 0.36" 
+   --dimensions-desk "0.3, 0.6, 0.36" 
    --visibility-area-desk "-4.2, -2.1, 4.2, 2.1"    
    --pos-files "-2.8, -1.8, 1.45, 0" 
    --dimensions-files "0.6, 0.3, 0.36" 
