@@ -98,6 +98,8 @@ The rest of the paper is structured following these assumptions. Section~\ref{se
 
 % Our approach to representing and reasoning about context-dependent spatial regions requires the existence of qualitative spatial representations~\cite{Cohn:2001} describing the relationships between the entities a cognitive system perceives (including objects, groups, and regions). By adding semantic labels, or types, to each entity, we are able to reason about the geometric \emph{and} conceptual characteristics of the system's environment. The following sections describe how we generate appropriate qualitative spatial representations using the spatial model of an existing, state-of-the-art, cognitive system.
 
+The context which defines a CDSR is a combination of the functional and geometric properties of a room, i.e. what can be done there and where. In this work we determine this using the type of objects present in a room and their location, both relative to each other and relative to the room itself. The following sections describe how we construct these ingredients of context from the starting point of a robot that can sense its environment. 
+
 \subsection{The Dora System}
 
 \begin{figure}[t!]
@@ -117,13 +119,12 @@ To enable us to generate a range of different evaluation situations in a reasona
 
 \input{qsr-extraction}
 
-
 \subsection{Representing Context-Dependent Spatial Regions}
 
-To enable analogical transfer, it is necessary to represent context-dependent spatial regions symbolically. We do this using \textit{anchor points} \cite{Klenk/etal2005} which are symbolic descriptions linking a conceptual entity to a particular point on a perceived entity.  A context-dependent spatial region is a conceptual entity, and the objects in the room and the room itself are perceived entities. As stated previously, the room is represented by a set of points. Anchor points are created using unary functions over a percieved entity. For example, \fw{(CentroidFn Area1)} represents the centroid of geometric extent of \fw{Area1}. We use anchor points to specify the boundary of the context-dependent spatial region using the \fw{regionBoundary} relation. For a particular classroom, we are able to define the front of the room as the region bounded by the leftmost top point of the room, the whiteboard, the leftmost bottom point of the room, and each of the desks in the front row. After we have defined the boundary of the region, we assign it a semantic label using the \fw{regionType} relation. Therefore, each context-dependent spatial region has one type and a variable number of boundary points.
-%\from{Nick}{This is crying out for a diagram, perhaps on the stage map of classroom 1.}
-%\from{Nick}{You mention chalkboard above, but it is not anywhere else in the below example.}
-%\from{Klenk}{We will do for Figure 5.}
+We use \textit{anchor points}~\cite{Klenk/etal2005} to define the boundaries of CDSRs. Anchor points are symbolic descriptions which link a conceptual entity (i.e. something that can be reasoned about but not directly perceived, such as a CDSR) to a particular point on a perceived entity. The perceived entities we use are the objects recognised by Dora, and the room itself. The room representation is created by putting a convex hull around the lines in Dora's SLAM map. Anchor points are created from perceived entities using unary functions, e.g. \fw{(CentroidFn Desk1)} represents the centroid of the geometric extent of \fw{Desk1}, and are linked to a particular CDSR using a \fw{regionBoundary} relation. After we have defined the boundary of the region, we assign it a semantic label using the \fw{regionType} relation. Therefore, each CDSR has one type and a variable number of boundary points.
+
+
+\textbf{TODO: Need to update example, including new fns, when we have updated pictures in.}
 
 \begin{figure}[h]
 	{\fontsize{8}{8} %%Because aaai.sty overrides usual font size commands
