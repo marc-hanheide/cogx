@@ -30,8 +30,6 @@ RobotbaseServerCure::RobotbaseServerCure()
 {
   m_MinPushInterval = -1;
 
-  m_IceServerName = "RobotbaseServer";
-
   m_MotionCmdGiven = false;
   m_MotionCmd.speed = 0;
   m_MotionCmd.rotspeed = 0;
@@ -47,12 +45,6 @@ RobotbaseServerCure::configure(const std::map<std::string,std::string> & config)
 
   std::map<std::string,std::string>::const_iterator it;
 
-  if ((it = config.find("--server-name")) != config.end()) {
-    std::istringstream str(it->second);
-    str >> m_IceServerName;
-  }
-  log("Using m_IceServerName=%s", m_IceServerName.c_str());
-
   if ((it = config.find("--min-push-interval")) != config.end()) {
     std::istringstream str(it->second);
     str >> m_MinPushInterval;
@@ -67,24 +59,7 @@ RobotbaseServerCure::configure(const std::map<std::string,std::string> & config)
 
   JoystickDrivable::configure(config);
 
-  // Start the interface that allows clients to connect to this server
-  // the Ice way
-  try {
-
-    Ice::Identity id;
-    id.name = m_IceServerName;
-    id.category = "RobotbaseServer";
-    
-    //add as a separate object
-    getObjectAdapter()->add(this, id);
-
-    println("server registered");
-    
-  } catch (const Ice::Exception& e) {
-    std::cerr << e << std::endl;
-  } catch (const char* msg) {
-    std::cerr << msg << std::endl;
-  }
+  registerIceServer<cast::CASTComponent, RobotbaseServer>(getComponentPointer());
 }
 
 void 

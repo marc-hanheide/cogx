@@ -46,8 +46,6 @@ RobotbaseServerPlayer::RobotbaseServerPlayer()
 
   m_MinPushInterval = -1;
 
-  m_IceServerName = "RobotbaseServer";
-
   m_RandData = false;
 
   // Initialize with no limts really
@@ -64,12 +62,6 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
   log("configure");
 
   std::map<std::string,std::string>::const_iterator it;
-
-  if ((it = config.find("--server-name")) != config.end()) {
-    std::istringstream str(it->second);
-    str >> m_IceServerName;
-  }
-  log("Using m_IceServerName=%s", m_IceServerName.c_str());
 
   if ((it = config.find("--min-push-interval")) != config.end()) {
     std::istringstream str(it->second);
@@ -153,26 +145,10 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
   }
   log("Using m_RandData=%d", (int)m_RandData);
 
+  Robotbase::RobotbaseServerPtr servant = new RobotbaseServerI(this);
+//  registerIceServer<cast::CASTComponent, RobotbaseServer>(getComponentPointer());
+  registerIceServer<RobotbaseServer, RobotbaseServer>(servant);
   JoystickDrivable::configure(config);
-
-  // Start the interface that allows clients to connect to this server
-  // the Ice way
-  try {
-
-    Ice::Identity id;
-    id.name = m_IceServerName;
-    id.category = "RobotbaseServer";
-    
-    //add as a separate object
-    getObjectAdapter()->add(this, id);
-
-    log("server registered");
-    
-  } catch (const Ice::Exception& e) {
-    std::cerr << e << std::endl;
-  } catch (const char* msg) {
-    std::cerr << msg << std::endl;
-  }
 }
 
 void 
@@ -240,13 +216,14 @@ RobotbaseServerPlayer::runComponent()
       p.y = m_Position->GetYPos();
       p.theta = m_Position->GetYaw();
       
+      lockComponent();
       m_Odom.odompose.resize(1);
       m_Odom.odompose[0] = p;
       
       //if we're guessing that the player timestamp is based on gettimeofday
       if(useWallclockTimestamps) {
 	//create a CAST time from the double value      
-	m_Odom.time = timeServer->fromTimeOfDayDouble(m_Position->GetDataTime());	
+        m_Odom.time = timeServer->fromTimeOfDayDouble(m_Position->GetDataTime());	
 // 	ostringstream outStream;
 // 	outStream<<"player cast time: "<<m_Odom.time<<endl;
 // 	outStream<<"current cast time: "<<getCASTTime();
@@ -280,14 +257,18 @@ RobotbaseServerPlayer::runComponent()
         m_Position->SetSpeed(0,0);
       }
       joyDriveState = m_Joydrive;
+      unlockComponent();
     } else {
+      lockComponent();
       m_Odom.odompose.resize(1);
       m_Odom.odompose[0].x += 0.01;
+      unlockComponent();
       //nah: removed this... why the extra assignment without offset?
       //      m_Odom.time = getCASTTime();
       sleepComponent(100);
     }
     saveOdomToFile(m_Odom);
+    lockComponent();
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       //nah: added isRunning check to prevent hang on CAST stop()
@@ -299,6 +280,7 @@ RobotbaseServerPlayer::runComponent()
       }
 
     }
+    unlockComponent();
 
   }
 
@@ -323,15 +305,21 @@ void RobotbaseServerPlayer::saveOdomToFile(Robotbase::Odometry odom){
 }
 
 Robotbase::Odometry
-RobotbaseServerPlayer::pullOdometry(const Ice::Current&)
+RobotbaseServerPlayer::RobotbaseServerI::pullOdometry(const Ice::Current&)
 {
   log("pullOdometry");
-  return m_Odom;
+  return svr->m_Odom;
 }
 
 void 
-RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd,
-                                         const Ice::Current&)
+RobotbaseServerPlayer::RobotbaseServerI::execMotionCommand
+  (const ::Robotbase::MotionCommand& cmd, const Ice::Current&)
+{
+  svr->execMotionCommand(cmd);
+}
+
+void
+RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd)
 {
   if (m_Position && !m_RandData) {
     if (m_EnableMotors) {
@@ -358,15 +346,20 @@ RobotbaseServerPlayer::execMotionCommand(const ::Robotbase::MotionCommand& cmd,
   
 
 void
-RobotbaseServerPlayer::registerOdometryPushClient(const Robotbase::OdometryPushClientPrx& c, 
-                                                Ice::Double desiredInterval, 
-                                                const Ice::Current&)
+RobotbaseServerPlayer::RobotbaseServerI::registerOdometryPushClient
+(const Robotbase::OdometryPushClientPrx& c, 
+ Ice::Double desiredInterval, 
+ const Ice::Current&)
 {
   println("registerScan2dPushClient");
 
   OdometryClient client;
   client.prx = c;
   client.interval = desiredInterval;
-  m_PushClients.push_back(client);
+
+  svr->lockComponent();
+  svr->m_PushClients.push_back(client);
+  svr->log("Added push client %i", svr->m_PushClients.size()-1);
+  svr->unlockComponent();
 }
 

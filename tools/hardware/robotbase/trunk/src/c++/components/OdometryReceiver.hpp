@@ -51,9 +51,7 @@ public:
    */
   virtual bool setupPushOdometry(cast::CASTComponent &owner,
                                  double interval = -1,
-                                 const std::string &iceServerHost = "localhost",
-                                 int iceServerPort = cast::cdl::CPPSERVERPORT,
-                                 const std::string &iceServerName = "RobotbaseServer");
+                                 const std::string &serverName = "robot.server");
 
 protected:
 
