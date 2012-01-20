@@ -16,19 +16,78 @@
 To evaluate our progress toward building a cognitive system capabile of reasoning about these regions, we conducted the an experiment focusing on the following questions:
 \begin{itemize}
 \item{How well do anchor points capture context-dependent spatial regions?}
-\item{When provided with an example definition of a CDSR, how well does our appraoch identify the CDSR in the new situation?}
+\item{When provided with an example definition of a CDSR, how well does our approach identify the CDSR in the new situation?}
+\item{Is the integration of geometric and semantic knowledge necessary?}
+\item{Does similarity correlate with performance?}
 \end{itemize}
- Our materials are six classrooms (two simulated and four real) and two simulated studio apartments. To determine how people consider CDRSs, we asked \textbf{SOMENUMBER} of users to draw polygons representing a list of region types for seach room, users were also shown a polygon drawn by another and asked to determine if it was an acceptable depiction of the region. All users provided acceptable regions, and therefore, we define the \textit{target region} as the union of the user-defined polygons.
+
+I'm not sure how many of the above questions we want to talk about. The last one is fairly easy and won't take up much space in the paper. The integration of knowledge question is could take some more work as the grouping is determined by semantic type, so in testing just positional knowledge,  I would have to create an alternate set of anchor points.
+
+\subsection{Materials}
+We evaluated our approach on six classrooms (two simulated and four real) and two simulated studio apartments. To determine how people consider CDRSs, we asked \textbf{SOMENUMBER} of users to draw polygons representing a list of region types for seach room, users were also shown a polygon drawn by another and asked to determine if it was an acceptable depiction of the region. All users provided acceptable regions, and therefore, we define the \textit{target region} as the union of the user-defined polygons.
 
 We consider a \textit{problem instance} to be a room and a sought CDSR type (e.g., "front"). For each room containing a CDSR of the sought type, we generate an \textit{inferred region} our analogical approach. To assess the quality of the transfer, we use the following measures:
 
 \begin{equation}
-	precision=\frac{area(infered region \cap target region)}{area(infered region)}
+	p=\frac{area(inferred region \cap target region)}{area(inferred region)}
 \end{equation}
 \begin{equation}
-	recall=\frac{area(infered region \cap target region)}{area(target region)}
+	r=\frac{area(inferred region \cap target region)}{area(target region)}
 \end{equation}
 
-As a baseline, we will compare our results against (1) the manually encoded anchors for the problem instance and (2) the entire room.
+As a baseline, we will compare our results against the manually encoded CDSRS for the problem instance and the entire room. The precision and recall for considering the entire room provides a baseline from which to assess each of the questions. The performance of the manually encoded CDSRs evaluates how well the anchor points capture the user defined regions and a ceiling for the inferred region performance.
+
+\subsection{Results}
+\begin{table}
+\caption{Performance by Room}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Room & Transfer & Manually Encoded & Entire Room \\
+\hline
+Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Studio-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+\hline
+\end{tabular}
+\end{table}
+
+If we are just going to report means, we should standard deviations as well.
+
+\begin{table}
+\caption{Performance by Region Type}
+\begin{tabular}{|c|c|c|c|}
+\hline
+Region & Transfer & Manually Encoded & Entire Room \\
+\hline
+Front & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Back & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Front Rows & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Back Rows & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Kitchen & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Office & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+\hline
+\end{tabular}
+\end{table}
+
+Or we could report all of the results in a single entry.
+
+\begin{table}
+\caption{Performance against Target Region}
+\begin{tabular}{|c|c|c|}
+\hline
+Transfer & Manually Encoded & Entire Room \\
+\hline
+p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+\hline
+\end{tabular}
+\end{table}
+
+Overall the transferred region was significantly better than the entire room (p<Blah), and not statistically different than the manually encoded region (p=Blah). There was a positive correlation (r=Blah) between the structural evaluation score of the analogy and f-measure of the inference.
+
+\subsection{Discussion}
+Our results
 
 \end{document}
