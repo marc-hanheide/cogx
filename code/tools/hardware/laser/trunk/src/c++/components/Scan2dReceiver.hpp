@@ -53,9 +53,7 @@ public:
    */
   virtual bool setupPushScan2d(cast::CASTComponent &owner, 
                                double interval = -1,
-                               const std::string &iceServerHost = "localhost",
-                               int iceServerPort = cast::cdl::CPPSERVERPORT,
-                               const std::string &iceServerName = "LaserServer");
+                               const std::string &serverName="laser.server");
 
 protected:
 

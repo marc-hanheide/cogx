@@ -29,30 +29,31 @@ Scan2dReceiver::~Scan2dReceiver()
 bool
 Scan2dReceiver::setupPushScan2d(cast::CASTComponent &owner,
                                 double interval,
-                                const std::string &iceServerHost,
-                                int iceServerPort,
-                                const std::string &iceServerName)
+                                const std::string &serverName)
 {
   if (!owner.isRunning()) {
     owner.println("You must not call Scan2dReceiver::setupPush before the component is running");
     return false;
   }
 
-  Ice::Identity id;
-  id.name = iceServerName;
-  id.category = "LaserServer";
-
-  std::ostringstream str;
-  str << owner.getCommunicator()->identityToString(id) 
-      << ":default"
-      << " -h " << iceServerHost
-      << " -p " << iceServerPort; 
+  LaserServerPrx server(owner.getIceServer<LaserServer>(serverName));
   
-  owner.println(str.str());
 
-  Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(str.str());    
-  Laser::LaserServerPrx server = Laser::LaserServerPrx::uncheckedCast(base);
-  if (!server) throw "Invalid proxy";
+//  Ice::Identity id;
+//  id.name = iceServerName;
+//  id.category = "LaserServer";
+//
+//  std::ostringstream str;
+//  str << owner.getCommunicator()->identityToString(id) 
+//      << ":default"
+//      << " -h " << iceServerHost
+//      << " -p " << iceServerPort; 
+//  
+//  owner.println(str.str());
+//
+//  Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(str.str());    
+//  Laser::LaserServerPrx server = Laser::LaserServerPrx::uncheckedCast(base);
+//  if (!server) throw "Invalid proxy";
 
   //add new facet for this object... client is this, ice id is the
   //unique id of the object in the ice runtime, and Scan2dReceiver is
@@ -76,6 +77,7 @@ Scan2dReceiver::setupPushScan2d(cast::CASTComponent &owner,
     owner.println("couldn't cast back down to LaserPushClientPrx");
     return false;
   } else {
+    owner.log("Registering scan push client");
     server->registerScan2dPushClient(clientPrx, interval);    
   } 
 
