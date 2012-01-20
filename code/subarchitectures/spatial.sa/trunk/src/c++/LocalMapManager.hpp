@@ -219,7 +219,7 @@ protected:
   //Interfaces
   ptz::PTZInterfacePrx m_ptzInterface;
 
-  std::string m_RobotServerHost;
+  std::string m_RobotServerName;
   Robotbase::RobotbaseServerPrx m_RobotServer;
   FrontierInterface::PlaceInterfacePrx m_placeInterface;
 

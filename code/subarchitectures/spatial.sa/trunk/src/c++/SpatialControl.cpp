@@ -75,7 +75,7 @@ SpatialControl::SpatialControl()
   
   cure_debug_level = 10;
 
-  m_RobotServerHost = "localhost";
+  m_RobotServerName = "robot.server";
 
   m_waitingForPTZCommandID = "";
 
@@ -236,10 +236,10 @@ void SpatialControl::configure(const map<string,string>& _config)
     m_MaxCatExplorationRange = (atof(it->second.c_str()));
   }
 
-  it = _config.find("--robot-server-host");
+  it = _config.find("--robot-server");
   if (it != _config.end()) {
     std::istringstream str(it->second);
-    str >> m_RobotServerHost;
+    str >> m_RobotServerName;
   }
 
   m_lgm = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
@@ -326,8 +326,8 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_DefTolPos = 0.25;
   m_DefTolRot = Cure::HelpFunctions::deg2rad(5);
 
-  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
-                                                     m_RobotServerHost);
+//  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
+//                                                     m_RobotServerHost);
 
   FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
   registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
@@ -404,6 +404,7 @@ void SpatialControl::start()
     m_ptzInterface = ptz::PTZInterfacePrx::uncheckedCast(base);
  */
 
+m_RobotServer = getIceServer<Robotbase::RobotbaseServer>(m_RobotServerName);
 	
   if(m_sendPTZCommands) {	
   	m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
@@ -808,6 +809,13 @@ void SpatialControl::runComponent()
   setupPushOdometry(*this);
 
   while(isRunning()){
+    lockComponent();
+    if (m_odometryQueue.size() > 0) 
+    {
+      processOdometry();
+    }
+    unlockComponent();
+
     if (m_UsePointCloud) {
       updateGridMaps();
     }	
@@ -994,6 +1002,7 @@ void SpatialControl::deleteInhibitor(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+  debug("SpatialControl::newRobotPose");
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
 
@@ -1007,6 +1016,7 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
   
   Cure::Pose3D cp = m_SlamRobotPose;
   m_TOPP.defineTransform(cp);
+  debug("defined: %i", m_TOPP.isTransformDefined());
 }
 
 
@@ -1127,14 +1137,24 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
-  debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
-        cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
-        cureOdom.getTime().getDouble());
-  
-  m_TOPP.addOdometry(cureOdom);
+  //Can't defer this; odometry must be in the TOPP before
+  //the new RobotPose arrives
+  m_TOPP.addOdometry(cureOdom); 
   
   m_CurrPose = m_TOPP.getPose();
 	
+  m_odometryQueue.push_back(cureOdom);
+  unlockComponent();
+  debug("unlock receiveOdometry");
+}
+
+void SpatialControl::processOdometry()
+{
+  const Cure::Pose3D &cureOdom = m_odometryQueue.front();
+  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+        cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
+        cureOdom.getTime().getDouble());
+  
   if (m_ready || m_bNoNavGraph) { // have to get a first nav graph 
                  // to be ready
     
@@ -1347,8 +1367,7 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
     m_Mutex.unlock();
     
   } // if (m_ready)    
-  unlockComponent();
-  debug("unlock receiveOdometry");
+  m_odometryQueue.pop_front();
 }
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
@@ -1480,8 +1499,10 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
    also set as obstacles */
 void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex = true) const {
   
-  if(lockMapsMutex)
+  if(lockMapsMutex) {
+
     m_MapsMutex.lock();
+    }
 
   int gridmapSize = gridmap->getSize();
 
@@ -1517,8 +1538,9 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
     }
   }
 
-  if(lockMapsMutex)
+  if(lockMapsMutex) {
     m_MapsMutex.unlock();
+  }
 }
 
 void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &frontiers) {
@@ -1766,6 +1788,7 @@ SpatialControl::getFrontiers()
   }
 
   m_Frontiers.clear();
+  debug("calling findFrontiers");
   m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
   setFrontierReachability(m_Frontiers);
 

@@ -148,6 +148,7 @@ private:
   void saveGraphToFile(const std::string &filename);
 
   IceUtil::Mutex m_Mutex;
+  IceUtil::Mutex m_TOPPMutex;
 
   Cure::NavGraph m_cureNavGraph;
   std::string m_cureNavGraphFile;

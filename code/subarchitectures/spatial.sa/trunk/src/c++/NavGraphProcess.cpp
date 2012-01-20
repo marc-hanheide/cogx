@@ -1158,12 +1158,14 @@ void NavGraphProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
     return;
   }
 
-  debug("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
 
+  m_TOPPMutex.lock();
   m_LastOdom = cureOdom;
   m_TOPP.addOdometry(cureOdom);
+  m_TOPPMutex.unlock();
 }
 
 void NavGraphProcess::newRobotPose(const cdl::WorkingMemoryChange &objID) 
@@ -1187,7 +1189,9 @@ void NavGraphProcess::newRobotPose(const cdl::WorkingMemoryChange &objID)
         cp.getX(), cp.getY(), cp.getTheta(), cp.getTime().getDouble());
 
   m_LastRobotPose = cp;  
+  m_TOPPMutex.lock();
   m_TOPP.defineTransform(cp);
+  m_TOPPMutex.unlock();
 }
 
 
@@ -1207,6 +1211,7 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
     // pose when the object was observed
     Cure::Pose3D rp = m_LastRobotPose;
 
+    m_TOPPMutex.lock();
     if (!m_TOPP.isTransformDefined())
     {
     	log("TOPP transformation not defined yet -> GUESSING pose more or less");
@@ -1214,6 +1219,7 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
     {
     	m_TOPP.getPoseAtTime(t, rp);
     }
+    m_TOPPMutex.unlock();
     rp.setTime(t);
 
     // Pose of the camera in world frame at the time of the observation
@@ -1271,11 +1277,13 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
   // pose when the object was observed
   Cure::Pose3D rp = m_LastRobotPose;
 
+  m_TOPPMutex.lock();
   if (!m_TOPP.isTransformDefined()) {
     log("TOPP transformation not defined yet -> GUESSING pose more or less");
   } else {
     m_TOPP.getPoseAtTime(t, rp);
   }
+  m_TOPPMutex.unlock();
   rp.setTime(t);
   
   // Pose of the camera in world frame at the time of the observation
@@ -1365,7 +1373,11 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 
   // Get the current robot position
   Cure::Pose3D cp;
-  if (m_TOPP.getPoseAtTime(cureScan.getTime(), cp) != 0) {
+  m_TOPPMutex.lock();
+  bool status = m_TOPP.getPoseAtTime(cureScan.getTime(), cp) != 0;
+  m_TOPPMutex.unlock();
+
+  if (status) {
     debug("Failed to get robot pose at the time of the scan, cannot add nodes");
     debug("Wanted robot pose at t=%.6f (last odometry t=%.6f, robot pose t=%.6f)",
         cureScan.getDoubleTime(), m_LastOdom.getDoubleTime(),
@@ -1403,7 +1415,10 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 
   if (m_MotionDetector) {
     Cure::Pose3D scanOdomPose;
-    if (m_TOPP.getOdomAtTime(cureScan.getTime(), scanOdomPose) != 0) {
+    m_TOPPMutex.lock();
+    bool status = m_TOPP.getOdomAtTime(cureScan.getTime(), scanOdomPose) != 0;
+    m_TOPPMutex.unlock();
+    if (status) {
       debug("Failed to get odom pose at time of scan");
       m_MotionDetector->m_Movements.clear();
     } else {

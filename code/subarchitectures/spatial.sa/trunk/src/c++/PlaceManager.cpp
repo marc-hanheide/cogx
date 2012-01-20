@@ -747,7 +747,7 @@ std::vector<pair <double,double> >
 PlaceManager::getPlaceholderPositionsFromFrontiers(
     FrontierInterface::FrontierPtSeq frontiers,
     int placeId) {
-  log("Entered getplaceholderpositionsfromfrontiers\n");
+  debug("Entered getplaceholderpositionsfromfrontiers\n");
 
   std::vector<pair <double,double> > ret;
 
@@ -1475,15 +1475,15 @@ PlaceManager::getHypFromPlaceID(int placeID)
 NavData::FNodePtr
 PlaceManager::getNodeFromPlaceID(int placeID)
 {
-  log("getNodeFromPlaceID called");
+  debug("getNodeFromPlaceID called");
   map<int, NavData::FNodePtr>::iterator it =
     m_PlaceIDToNodeMap.find(placeID);
   if (it == m_PlaceIDToNodeMap.end()) {
-    log("getNodeFromPlaceID exited");
+    debug("getNodeFromPlaceID exited");
     return 0;
   }
   else {
-    log("getNodeFromPlaceID exited");
+    debug("getNodeFromPlaceID exited");
     return it->second;
   }
 }

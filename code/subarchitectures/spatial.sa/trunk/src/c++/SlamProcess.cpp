@@ -207,12 +207,14 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
     return;
   }
 
+  lockComponent();
+
   const Robotbase::Pose2d &p = castOdom.odompose[0];
 
   char buf[256];
   sprintf(buf, "Got odometry x=%.3f, y=%.3f, theta=%.3f t=%ld.%06ld",
           p.x, p.y, p.theta, (long)castOdom.time.s, (long)castOdom.time.us);
-  debug(buf);
+  log(buf);
 
    Cure::Pose3D odom;  
    CureHWUtils::convOdomToCure(castOdom, odom);
@@ -244,7 +246,10 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
      m_RobotIsMoving = false;
    }
    
-   if (m_NotRunningYet) return;
+   if (m_NotRunningYet) {
+     unlockComponent();
+     return;
+   }
 
    
    m_Mutex.lock();
@@ -253,6 +258,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
          odom.getTime().Seconds, odom.getTime().Microsec);
    m_PP->addOdometry(odom);
    m_Mutex.unlock();
+   unlockComponent();
 }
 
 void SlamProcess::processScan2d(const Laser::Scan2d &castScan)

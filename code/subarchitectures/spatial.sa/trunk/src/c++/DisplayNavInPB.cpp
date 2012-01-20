@@ -60,7 +60,7 @@ DisplayNavInPB::DisplayNavInPB()
 {
   m_LaserConnected = false;
   m_NoPeopleModel = false;
-  m_LaserServerHost = "localhost";
+  m_LaserServerName = "laser.server";
   m_RobotPose = 0;
   m_LineMap = 0;
   m_FovH = 45.0;
@@ -111,9 +111,9 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowPath = (_config.find("--log-path") != _config.end());
   m_ShowCommands = (_config.find("--log-commands") != _config.end());
 
-  if (_config.find("--laser-server-host") != _config.end()) {
-    std::istringstream str(_config.find("--laser-server-host")->second);
-    str >> m_LaserServerHost;
+  if (_config.find("--laser-server") != _config.end()) {
+    std::istringstream str(_config.find("--laser-server")->second);
+    str >> m_LaserServerName;
   }
 
   if (_config.find("--object-models") != _config.end()) {
@@ -464,13 +464,13 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
 
+	// Get node it for the place ID
+    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
     m_Mutex.lock();
     m_PeekabotClient.begin_bundle();
 
 	_shapeProps[property->placeId] = property;
 
-	// Get node it for the place ID
-    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
     // search m_Nodes for place and change its room id
     std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
 
@@ -525,14 +525,14 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 
 	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
+	// Get node it for the place ID
+    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
 
     m_Mutex.lock();
     m_PeekabotClient.begin_bundle();
 
 	_sizeProps[property->placeId] = property;
 
-	// Get node it for the place ID
-    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
     // search m_Nodes for place and change its room id
     std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
 
@@ -587,13 +587,14 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 
 	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
+	// Get node it for the place ID
+	::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
+
     m_Mutex.lock();
     m_PeekabotClient.begin_bundle();
 
 	_appearanceProps[property->placeId] = property;
 
-	// Get node it for the place ID
-    ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
     // search m_Nodes for place and change its room id
     std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
 
@@ -649,6 +650,18 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 	debug("New Coma Room recieved: id=%d",roomId);
 
+
+	map<long,long> nodeIDs;
+	// For each place in the room
+	for (::std::vector< ::Ice::Long>::iterator iter = croom->containedPlaceIds.begin();
+			iter != croom->containedPlaceIds.end();
+			iter++ )
+	{
+		// Get node id from place id
+		::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) *iter); // why is iter a long?
+		nodeIDs[*iter] = fnodePtr->nodeId;
+	}
+
 	// Update DisplayNavInPB
 	m_Mutex.lock();
 	m_PeekabotClient.begin_bundle();
@@ -658,11 +671,9 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 			iter != croom->containedPlaceIds.end();
 			iter++ )
 	{
-		// Get node id from place id
-		::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) *iter); // why is iter a long?
 
 		// Search m_Nodes for place and change its room id
-		std::map<long,Node>::iterator nodeIter = m_Nodes.find(fnodePtr->nodeId);
+		std::map<long,Node>::iterator nodeIter = m_Nodes.find(nodeIDs[*iter]);
 
 		if (nodeIter == m_Nodes.end())
 		{
@@ -795,6 +806,9 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 	}
 
 	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+	// Get node hyp for the placeholder ID
+    FrontierInterface::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
+
     m_Mutex.lock();
     m_PeekabotClient.begin_bundle();
 
@@ -803,9 +817,6 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
     ss << property->placeId << "_";
     ss << property->category;
     _roomCatPlaceholderProps[ss.str()] = property;
-
-	// Get node hyp for the placeholder ID
-    FrontierInterface::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
 
     if (nodeHypPtr)
     {
@@ -1138,7 +1149,7 @@ void DisplayNavInPB::runComponent() {
 
   log("runComponent");
 
-  setupPushScan2d(*this, 0.2, m_LaserServerHost);
+  setupPushScan2d(*this, 0.2, m_LaserServerName);
 
   log("Connected to the laser");
 
@@ -1162,11 +1173,11 @@ void DisplayNavInPB::runComponent() {
 	ptuPose.pose.tilt = -0.75;
       }
 
-      m_Mutex.lock();
 
       m_PeekabotClient.begin_bundle();
 
 
+      m_scanMutex.lock();
       // Display the last laser scan
       if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {
 
@@ -1183,6 +1194,9 @@ void DisplayNavInPB::runComponent() {
 
 
       }
+      m_scanMutex.unlock();
+
+      m_Mutex.lock();
 
       if (m_RobotPose && m_ShowPointCloud) {
         PointCloud::SurfacePointSeq points;
@@ -1353,9 +1367,9 @@ void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
         (long)scan.time.s, (long)scan.time.us,
         (long)ct.s, (long)ct.us);
 
-  m_Mutex.lock();
+  m_scanMutex.lock();
   m_Scan = scan;
-  m_Mutex.unlock();
+  m_scanMutex.unlock();
 }
 
 
