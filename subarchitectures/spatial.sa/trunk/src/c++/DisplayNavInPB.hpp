@@ -199,11 +199,12 @@ private:
 	double m_FovH; // horisontal fov in degs
 	double m_FovV; // vertical fov in degs
 	std::vector<double> previouscenter;
-	std::string m_LaserServerHost;
+	std::string m_LaserServerName;
 	IceUtil::Mutex m_Mutex;
 	NavData::RobotPose2dPtr m_RobotPose;
 	NavData::LineMapPtr m_LineMap;
 	Laser::Scan2d m_Scan;
+	IceUtil::Mutex m_scanMutex;
 	std::string m_PbHost;
 	int m_PbPort;
 	std::string m_PbRobotFile;

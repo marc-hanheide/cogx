@@ -152,6 +152,8 @@ protected:
   void getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy);
   std::vector<double> getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount);
 
+  void processOdometry();
+
   //REMOVEME
   void SaveGridMap();
 
@@ -174,6 +176,7 @@ protected:
 
   Cure::FrontierFinder<unsigned char>* m_FrontierFinder;
   std::list<Cure::FrontierPt> m_Frontiers;
+  std::deque<Cure::Pose3D> m_odometryQueue;
 
   IceUtil::Mutex m_Mutex;
   IceUtil::Mutex m_MapsMutex;
@@ -247,7 +250,7 @@ protected:
   NavData::Completion m_CurrentCmdFinalCompletion;
   NavData::StatusError m_CurrentCmdFinalStatus;
 
-  std::string m_RobotServerHost;
+  std::string m_RobotServerName;
   Robotbase::RobotbaseServerPrx m_RobotServer;
 
   int m_NumInhibitors;

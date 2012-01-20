@@ -52,7 +52,7 @@ LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
   m_currentNumberOfClusters = 0;
   m_standingStillThreshold = 0.2;
   m_maxClusterDeviation = 0.1;
-  m_RobotServerHost = "localhost";
+  m_RobotServerName = "robot.server";
   m_maxNumberOfClusters = 3;
   m_doorwayWidth = 4.0;
 }
@@ -183,10 +183,10 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_isUsingSeparateGridMaps = 
     m_MaxLaserRangeForPlaceholders != m_MaxLaserRangeForCombinedMaps;
 
-  it = _config.find("--robot-server-host");
+  it = _config.find("--robot-server");
   if (it != _config.end()) {
     std::istringstream str(it->second);
-    str >> m_RobotServerHost;
+    str >> m_RobotServerName;
   }
 
   it = _config.find("--max-clusters");
@@ -288,8 +288,9 @@ void LocalMapManager::configure(const map<string,string>& _config)
     LoadNodeGridMaps("NodeGridMaps.txt");
   }
 
-  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
-      m_RobotServerHost);
+//  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
+//      m_RobotServerHost);
+
   FrontierInterface::HypothesisEvaluatorPtr servant = new EvaluationServer(this);
   registerIceServer<FrontierInterface::HypothesisEvaluator, FrontierInterface::HypothesisEvaluator>(servant);
 
@@ -317,6 +318,8 @@ void LocalMapManager::start()
     m_placeInterface = getIceServer<FrontierInterface::PlaceInterface>("place.manager");
     log("LocalMapManager started");
   }
+
+m_RobotServer = getIceServer<Robotbase::RobotbaseServer>(m_RobotServerName);
 
   if (!m_bNoPTZ) {
     log("connecting to PTU");
