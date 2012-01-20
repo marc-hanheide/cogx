@@ -5,7 +5,7 @@ MAINTAINER = fsiepman
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MASTER_SITES = http://www.mercury.csse.unimelb.edu.au/download/files/
-#PATCHFILES= gar-base.diff
+PATCHFILES= gar-base.diff
 
 # no parallel build due to problems of player make scheme
 #MFLAGS=$(MFLAGS_NUMCPU)
