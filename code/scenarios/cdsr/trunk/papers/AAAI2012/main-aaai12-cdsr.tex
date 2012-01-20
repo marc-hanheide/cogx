@@ -189,6 +189,7 @@ SME generates an analogy between the base and target cases enabling the transfer
   \label{fig:success}
 \end{figure}
 
+\input{evaluation}
 
 % We can put back in if desired
 %
@@ -206,27 +207,17 @@ Typical approaches to spatial representation for mobile robots tend to focus on 
 There is mounting evidence that analogy, operating over structured qualitative representations can be used to simulate a number of spatial reasoning tasks. Forbus \textit{et al.} showed that analogy between course of action diagrams could be used to identify potential ambush locations in new situations by focusing on only the relevant aspects of sketched battle plans \cite{Forbus/etal2003}. A core contribution of their work was the definition of a \textit{shared similarity constraint} between a spatial reasoning system and its user; where users and spatial reasoning systems agree on the similarities between situations. This has close parallels to what we are trying to accomplish, where a cognitive system is able to reason about context-dependent spatial regions by identifying the same salient features as its human user. The anchor points in our work were originally used in teaching a system how to solve problems from the Bennett Mechanical Comprehension Test that require spatial and conceptual reasoning. For example, identifying which wheelbarrow will be more difficult to lift based on the relative locations of its loads as depicted in a sketch \cite{Klenk/etal2005}. In that work, the anchor points defined the endpoints of lines. We go beyond that result to use anchor points to specify 2D regions.  The combination of analogy and qualitative representation has been shown to be flexible enough to model problems at different levels of refinement (e.g. edges, shapes, groups) \cite{Lovett&Forbus2011} and to combine semantic as well as geometric information in spatial reasoning tasks (e.g. \cite{Lockwood/etal2008}). Our work demonstrates that the combination of analogy and qualitative spatial representations is useful for problems in cognitive mobile robotics. 
 % Therefore, we hope and expect to see more research combining these three fields.
 
-\section{Discussion}
+\section{Conclusion}
 
-% Nick: All this reptetition and probably unnecessary
-% Klenk: I like the repetition. I think it is really important to drive home the cognitive systems story here.
+\from{Nick}{TODO!}
 
-Our first claim for this work is that in order for artificial cognitive systems to collaborate with human users, they must be able to understand and reason about the types of spatial regions that humans use. In particular we have identified context-dependent spatial regions, i.e., regions defined by their geometric, functional, and semantic relations to surrounding entities, as an important type of region that cannot be represented by current systems. Addressing this problem is important as such regions are ubiquitous in human environments and communication, ranging from regions in everyday experience (e.g. aisles, marketplaces) to domain-specific regions (e.g. the ``pocket'' in American Football). 
-
-In addition to addressing a specific need in human-robot interaction, developing a cognitive system able to represent and reason about context-dependent spatial regions is important for two further reasons. First, as these regions are not defined solely by their geometry, we must investigate approaches that integrate different types of knowledge. This is a key problem in cognitive systems work in general. Second, in order to reduce the burden on developers and users, a cognitive system that understands one type of context-dependent spatial region should be able to use this understanding to recognize similar regions in other areas. Developing such a generalization ability (particularly one that can work incrementally from a small number of examples) is another general challenge for the cognitive systems community.
-
-Our second claim in this work is that the combination of a sensor-based spatial model, qualitative spatial representations, and analogy provides a potential solution to the aforementioned problems. We presented results from an initial proof-of-concept implementation that supports this claim. This system is able to transfer, via analogy, context-dependent spatial regions defined using anchor points over logical representations consisting of  object types and qualitative spatial relationships inferred from sensor data. Whilst the system has a number of limitations, and the transferred context-dependent spatial region presented does not perfectly match human expectations, it validates further development of our approach. 
-
-To support the definition of new spatial regions which the robot should be aware of, it is desirable to integrate a sketching interface on top of a visualization of the spatial knowledge the robot already has. Sketching \cite{Forbus/etal:2009a} is often used by humans to convey new ideas and concepts, making this a natural interface for human-robot interaction. When faced with an unknown context-dependent spatial region, the mobile robot could then ask a human to define the region using \textit{sketch annotations} over its representation \cite{Klenk/etal2005}. 
-
-For mobile robots, spatial understanding is required to enable the pursuit of spatially-defined goals (e.g the goal that the front of the classroom is clean). Consequently, spatial understanding should be evaluated with respect to a cognitive system's actions in its environment. The minimal performance for spatial understanding is that the cognitive system is able to navigate to context-dependent spatial regions. A longer term research project involves reasoning about potentially conflicting goals with overlapping spatial extents. A cognitive system should be able to combine them to generate new goals to pursue. The scenario in Figure \ref{fig:example} exemplifies this process of combining goals through spatial extent, when the robot generates the goal of cleaning the front of the classroom. With the proliferation of mobile robots, sensors and computation, new ideas, such as, context-dependent spatial regions, have the potential to reshape how users interact with cognitive systems.
 
 % \section{Acknowledgments}
 % 
 % The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams. The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
 
 % 7th page may only contain references
-\newpage
+\clearpage
 
 \bibliography{aaai12-cdsr}
 \bibliographystyle{aaai}
