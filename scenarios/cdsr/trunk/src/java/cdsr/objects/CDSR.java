@@ -15,6 +15,9 @@ public class CDSR implements Iterable<Line2D.Double> {
 		m_type = _type;
 	}
 
+//	public CDSR() {
+//		this(new ArrayList<Line2D.Double>());
+//	}
 
 	@Override
 	public Iterator<Line2D.Double> iterator() {
