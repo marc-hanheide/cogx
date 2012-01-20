@@ -53,8 +53,23 @@ namespace Laser {
  * @author Patric Jensfelt
  * @see
  */
-class LaserServerPlayer : public Laser::LaserServer,
-                          public cast::CASTComponent {
+class LaserServerPlayer : public cast::CASTComponent {
+protected:
+
+	class LaserServerI : public Laser::LaserServer,
+				public cast::CASTComponent {
+		private:
+			LaserServerPlayer *svr;
+
+		public:
+		LaserServerI(LaserServerPlayer *_svr) : svr(_svr) {}
+
+		Laser::Scan2d pullScan2d(const Ice::Current&);
+		void registerScan2dPushClient(const Laser::Scan2dPushClientPrx&, 
+                                Ice::Double interval,  
+                                const Ice::Current&);
+	};
+  
 public:
   /**
    * Constructor
@@ -66,11 +81,6 @@ public:
    */
   ~LaserServerPlayer();
 
-  Laser::Scan2d pullScan2d(const Ice::Current&);
-  
-  void registerScan2dPushClient(const Laser::Scan2dPushClientPrx&, 
-                                Ice::Double interval,  
-                                const Ice::Current&);
 protected:
   virtual void configure(const std::map<std::string,std::string> & config);
 

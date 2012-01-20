@@ -45,8 +45,6 @@ LaserServerPlayer::LaserServerPlayer()
 
   m_MinPushInterval = -1;
 
-  m_IceServerName = "LaserServer";
-
   m_RandData = false;
 
   m_ProbFakeMinOutlier = -1;
@@ -62,12 +60,6 @@ LaserServerPlayer::configure(const std::map<std::string,std::string> & config)
   println("configure");
 
   std::map<std::string,std::string>::const_iterator it;
-
-  if ((it = config.find("--server-name")) != config.end()) {
-    std::istringstream str(it->second);
-    str >> m_IceServerName;
-  }
-  log("Using m_IceServerName=%s", m_IceServerName.c_str());
 
   if ((it = config.find("--min-push-interval")) != config.end()) {
     std::istringstream str(it->second);
@@ -143,27 +135,9 @@ LaserServerPlayer::configure(const std::map<std::string,std::string> & config)
     log("No additional artificial discretization on range data");
   }
 
-  // Start the interface that allows clients to connect to this server
-  // the Ice way
-  try {
-
-    Ice::Identity id;
-    id.name = m_IceServerName;
-    id.category = "LaserServer";
-    
-    println("name: " + id.name);
-    println("category: " + id.category);
-
-    //add as a separate object
-    getObjectAdapter()->add(this, id);
-
-    println("server registered");
-    
-  } catch (const Ice::Exception& e) {
-    std::cerr << e << std::endl;
-  } catch (const char* msg) {
-    std::cerr << msg << std::endl;
-  }
+  Laser::LaserServerPtr servant = new LaserServerI(this);
+//  registerIceServer<cast::CASTComponent, LaserServer>(getComponentPointer());
+  registerIceServer<LaserServer, LaserServer>(servant);
 }
 
 void LaserServerPlayer::saveScanToFile(Laser::Scan2d scan){
@@ -328,29 +302,31 @@ LaserServerPlayer::runComponent()
     if(m_saveToFile){
       saveScanToFile(m_Scan);
     }
+    lockComponent();
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
       if ( isRunning() && 
            (!m_PushClients[i].timer.isRunning() ||
             (m_PushClients[i].timer.split() >= m_PushClients[i].interval) ) ) {
-        debug("pushed scan to client %d", i);    
+        log("pushed scan to client %d", i);    
         m_PushClients[i].timer.restart();
         m_PushClients[i].prx->receiveScan2d(m_Scan);
       }
     }
+    unlockComponent();
 
   }
 }
 
 Laser::Scan2d 
-LaserServerPlayer::pullScan2d(const Ice::Current&)
+LaserServerPlayer::LaserServerI::pullScan2d(const Ice::Current&)
 {
   debug("pullScan2d");
-  return m_Scan;
+  return svr->m_Scan;
 }
 
 void
-LaserServerPlayer::registerScan2dPushClient(const Laser::Scan2dPushClientPrx& c, 
+LaserServerPlayer::LaserServerI::registerScan2dPushClient(const Laser::Scan2dPushClientPrx& c, 
                                             Ice::Double desiredInterval, 
                                             const Ice::Current&)
 {
@@ -359,6 +335,9 @@ LaserServerPlayer::registerScan2dPushClient(const Laser::Scan2dPushClientPrx& c,
   Scan2dClient client;
   client.prx = c;
   client.interval = desiredInterval;
-  m_PushClients.push_back(client);
+  svr->lockComponent();
+  svr->m_PushClients.push_back(client);
+  svr->log("Added push client %i", svr->m_PushClients.size()-1);
+  svr->unlockComponent();
 }
 
