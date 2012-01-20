@@ -1,5 +1,7 @@
 \subsection{Qualitative Spatial Representation Extraction}
 
+\from{Nick}{Do these 8 relations have names? We need them here so we can refer to the predicates later.}
+
 For each object that Dora detects we compute 8 spatial relations between that object and each of the objects adjacent to it; adjacency is determined using a voronoi diagram, as is standard in geometric reasoning \cite{Forbus/etal2003}. The relations we compute between each given \emph{landmark} object and its adjacent neighbour are analogous to the cardinal and intermediate points on the compass when the compass is centered on the object. The canonical directions of these relations are defined using the following vectors: $<0,1>$, $<1,1>$, $<1,0>$, $<1,-1>$, $<0,-1>$, $<-1,-1>$, $<-1,0>$, $<-1,1>$.
 
 We generate these relations as follows. Taking each object in the room in turn to be the current landmark, we translate the origin of the room to the landmark's centroid. This results in the coordinates of the all the other objects in the room being translated into a frame of reference whose origin is the centroid of the landmark.  For each neighbour object adjacent to the landmark we compute the 8 relations by calculating the inner angle between the vector from the origin (the landmark's centroid) and the neighbour's location and the direction vector of the relation, as defined above. This angle is computed by taking the dot product of these two vectors. $\dots$
