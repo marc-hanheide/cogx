@@ -1,0 +1,34 @@
+\documentclass[letterpaper]{article}
+
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{graphicx}
+\usepackage{stfloats}
+\usepackage{color}
+
+
+\begin{document}
+
+ \section{Evaluation}
+
+To evaluate our progress toward building a cognitive system capabile of reasoning about these regions, we conducted the an experiment focusing on the following questions:
+\begin{itemize}
+\item{How well do anchor points capture context-dependent spatial regions?}
+\item{When provided with an example definition of a CDSR, how well does our appraoch identify the CDSR in the new situation?}
+\end{itemize}
+ Our materials are six classrooms (two simulated and four real) and two simulated studio apartments. To determine how people consider CDRSs, we asked \textbf{SOMENUMBER} of users to draw polygons representing a list of region types for seach room, users were also shown a polygon drawn by another and asked to determine if it was an acceptable depiction of the region. All users provided acceptable regions, and therefore, we define the \textit{target region} as the union of the user-defined polygons.
+
+We consider a \textit{problem instance} to be a room and a sought CDSR type (e.g., "front"). For each room containing a CDSR of the sought type, we generate an \textit{inferred region} our analogical approach. To assess the quality of the transfer, we use the following measures:
+
+\begin{equation}
+	precision=\frac{area(infered region \cap target region)}{area(infered region)}
+\end{equation}
+\begin{equation}
+	recall=\frac{area(infered region \cap target region)}{area(target region)}
+\end{equation}
+
+As a baseline, we will compare our results against (1) the manually encoded anchors for the problem instance and (2) the entire room.
+
+\end{document}
