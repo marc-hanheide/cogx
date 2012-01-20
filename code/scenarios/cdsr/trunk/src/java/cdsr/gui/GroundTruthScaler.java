@@ -2,6 +2,12 @@ package cdsr.gui;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -16,6 +22,8 @@ public class GroundTruthScaler {
 	private final double m_xOriginPixels;
 	private final double m_yOriginPixels;
 	private final ArrayList<Line2D.Double> m_lines = new ArrayList<Line2D.Double>();
+	private Double m_position;
+	private String m_type;
 
 	/**
 	 * 
@@ -59,73 +67,167 @@ public class GroundTruthScaler {
 	public static GroundTruthScaler createFromData(int _pixelsPerMetre,
 			int _imageHeight, int _xOrigin, int _yOrigin, String _data) {
 
-		String[] split = _data.split("[ ()]+");
+		// WARNING this will fail to process negative numbers sensibly
+		String[] split = _data.split("[ ()-]+");
 
-		assert (split.length % 4 == 2);
+		// can't assume anythign really given Kate's format
+		// assert (split.length % 2 == 1);
 
 		GroundTruthScaler scaler = new GroundTruthScaler(_pixelsPerMetre,
 				_imageHeight, _xOrigin, _yOrigin);
 
-		for (int i = 0; i < split.length - 2; i += 4) {
-			scaler.addLine(Integer.parseInt(split[i]),
-					Integer.parseInt(split[i + 1]),
-					Integer.parseInt(split[i + 2]),
-					Integer.parseInt(split[i + 3]));
+		int lastSuccess = 0;
+		for (int i = 0; i < split.length - 3; i += 4) {
+			try {
+				scaler.addLine(Integer.parseInt(split[i]),
+						Integer.parseInt(split[i + 1]),
+						Integer.parseInt(split[i + 2]),
+						Integer.parseInt(split[i + 3]));
+				lastSuccess = (i + 3);
+			} catch (NumberFormatException e) {
+				// HACK this not really a good way of solving this problem
+			}
 		}
 
+		scaler.setPosition(Integer.parseInt(split[lastSuccess + 1]),
+				Integer.parseInt(split[lastSuccess + 2]));
+
+		StringBuilder type = new StringBuilder();
+		for (int i = lastSuccess + 3; i < split.length; i++) {
+			type.append(split[i]);
+			type.append(' ');
+		}
+		scaler.setType(type.toString());
 		return scaler;
+	}
+
+	private void setType(String _type) {
+		m_type = _type;
+	}
+
+	public void setPosition(int _x, int _y) {
+		m_position = toWorldPoint(_x, _y);
 	}
 
 	private void addLine(int _xStart, int _yStart, int _xEnd, int _yEnd) {
 		m_lines.add(toWorldLine(_xStart, _yStart, _xEnd, _yEnd));
 	}
 
+	public String getType() {
+		return m_type;
+	}
+
 	public CDSR getCDSR() {
-		return new CDSR(m_lines);
+		return new CDSR(m_lines, getType());
+	}
+
+	public Point2D.Double getPosition() {
+		return m_position;
 	}
 
 	public ArrayList<Line2D.Double> getLines() {
 		return m_lines;
 	}
 
-	/**
-	 * @param args
-	 * @throws ClassNotFoundException
-	 * @throws IOException
-	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (Line2D.Double line : m_lines) {
+			sb.append(line.x1);
+			sb.append(' ');
+			sb.append(line.y1);
+			sb.append(' ');
+			sb.append(line.x2);
+			sb.append(' ');
+			sb.append(line.y2);
+			sb.append(' ');
+		}
+		sb.append('(');
+		sb.append(m_position.x);
+		sb.append(' ');
+		sb.append(m_position.y);
+		sb.append(')');
+		sb.append(' ');
+		sb.append(m_type);
+		return sb.toString();
+	}
+
 	public static void main(String[] args) throws IOException,
 			ClassNotFoundException {
 
-		String data = "110 72 112 274 112 274 29 275 29 275 34 76 34 76 112 73 (45 192)";
-		GroundTruthScaler scaler = GroundTruthScaler.createFromData(80, 401,
-				58, 188, data);
-
 		if (args.length != 1) {
 			System.out
-					.println("Only one argument allowed/required, path to .cdsr save file.");
+					.println("Only one argument allowed/required, path to ground truth file.");
 			return;
 		}
 
-		ProblemSet ps = CDSRMarshaller.loadProblemSet(args[0]);
+		File truthFile = new File(args[0]);
+		File outFile = new File("translated-" + args[0]);
+		BufferedReader reader = new BufferedReader(new FileReader(truthFile));
+		BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
 
-		StandaloneViewer viewer = new StandaloneViewer();
-		viewer.addProblemSet(ps);
+		while (reader.ready()) {
+			String line = reader.readLine();
+			int firstSpace = line.indexOf(' ');
+			String imageFilename = line.substring(0, firstSpace);
+			String dataFilename = dataFileForImage(imageFilename);
+			String groundTruthData = line.substring(firstSpace + 1);
 
-		CDSR cdsr = scaler.getCDSR();
-		viewer.addCDSR(cdsr);
+			System.out.println(imageFilename);
+			System.out.println(groundTruthData);
 
-		// add point at origin
-		// System.out.println("origin");
-		// viewer.addPoint(scaler.toWorldPoint(58, 188));
-		Point2D.Double point = scaler.toWorldPoint(45, 192);
-		viewer.addPoint(point);
+			ProblemSet ps = CDSRMarshaller.loadProblemSet(dataFilename);
 
-		System.out.println("CDSR");
-		System.out.println(cdsr);
+			int pixelsPerMetre = LineMapImageGenerator.DEFAULT_PIXELS_PER_METRE;
+			int imageMargin = LineMapImageGenerator.DEFAULT_IMAGE_MARGIN;
 
-		System.out.println("Point");
-		System.out.println(point.x + "," + point.y);
-		
+			LineMapImageGenerator imageGen = new LineMapImageGenerator(ps,
+					pixelsPerMetre, imageMargin);
+
+			GroundTruthScaler scaler = GroundTruthScaler.createFromData(
+					pixelsPerMetre, imageGen.getImageHeight(),
+					imageGen.getXOriginOffset(), imageGen.getYOriginOffset(),
+					groundTruthData);
+
+			writer.write(dataFilename);
+			writer.write(" ");
+			writer.write(scaler.toString());
+			writer.write("\n");
+
+			// for visualisation
+			// StandaloneViewer viewer = new StandaloneViewer();
+			// viewer.addProblemSet(ps);
+			//
+			// CDSR cdsr = scaler.getCDSR();
+			// viewer.addCDSR(cdsr);
+			//
+			// // add point at origin
+			// // System.out.println("origin");
+			// // viewer.addPoint(scaler.toWorldPoint(58, 188));
+			// Point2D.Double point = scaler.getPosition();
+			// viewer.addPoint(point);
+			//
+			// System.out.println("CDSR");
+			// System.out.println(cdsr);
+			//
+			// System.out.println("Point");
+			// System.out.println(point.x + "," + point.y);
+		}
+
+		writer.close();
+		reader.close();
+
 	}
 
+	/**
+	 * Assumes x/y.png matches data/y.cdsr
+	 * 
+	 * @param _filename
+	 * @return
+	 */
+	private static String dataFileForImage(String _filename) {
+		String[] split = _filename.split("[/.]+");
+		assert (split.length == 3);
+		return "data/" + split[1] + ".cdsr";
+	}
 }

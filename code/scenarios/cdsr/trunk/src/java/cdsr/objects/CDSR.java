@@ -8,14 +8,13 @@ import java.util.List;
 public class CDSR implements Iterable<Line2D.Double> {
 
 	private final List<Line2D.Double> m_lines;
-
-	public CDSR(List<Line2D.Double> _lines) {
+	private final String m_type;
+	
+	public CDSR(List<Line2D.Double> _lines, String _type) {
 		m_lines = _lines;
+		m_type = _type;
 	}
 
-	public CDSR() {
-		this(new ArrayList<Line2D.Double>());
-	}
 
 	@Override
 	public Iterator<Line2D.Double> iterator() {
