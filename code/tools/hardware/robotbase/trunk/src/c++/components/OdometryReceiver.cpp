@@ -29,30 +29,30 @@ OdometryReceiver::~OdometryReceiver()
 bool
 OdometryReceiver::setupPushOdometry(cast::CASTComponent &owner, 
                                     double interval,
-                                    const std::string &iceServerHost,
-                                    int iceServerPort,
-                                    const std::string &iceServerName)
+                                    const std::string &serverName)
 {
   if (!owner.isRunning()) {
     owner.println("You must not call OdometryReceiver::setupPush before the component is running");
     return false;
   }
 
-  Ice::Identity id;
-  id.name = iceServerName;
-  id.category = "RobotbaseServer";
+  RobotbaseServerPrx server(owner.getIceServer<RobotbaseServer>(serverName));
 
-  std::ostringstream str;
-  str << owner.getCommunicator()->identityToString(id) 
-      << ":default"
-      << " -h " << iceServerHost
-      << " -p " << iceServerPort; 
-
-  owner.println(str.str());
-
-  Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(str.str());    
-  Robotbase::RobotbaseServerPrx server = Robotbase::RobotbaseServerPrx::uncheckedCast(base);
-  if (!server) throw "Invalid proxy";
+//  Ice::Identity id;
+//  id.name = iceServerName;
+//  id.category = "RobotbaseServer";
+//
+//  std::ostringstream str;
+//  str << owner.getCommunicator()->identityToString(id) 
+//      << ":default"
+//      << " -h " << iceServerHost
+//      << " -p " << iceServerPort; 
+//
+//  owner.println(str.str());
+//
+//  Ice::ObjectPrx base = owner.getCommunicator()->stringToProxy(str.str());    
+//  Robotbase::RobotbaseServerPrx server = Robotbase::RobotbaseServerPrx::uncheckedCast(base);
+//  if (!server) throw "Invalid proxy";
 
   //add new facet for this object... client is this, ice id is the
   //unique id of the object in the ice runtime, and OdometryReceiver is
@@ -76,6 +76,7 @@ OdometryReceiver::setupPushOdometry(cast::CASTComponent &owner,
     owner.println("couldn't cast back down to OdometryPushClientPrx");
     return false;
   } else {
+    owner.log("Registering odometry push client");
     server->registerOdometryPushClient(clientPrx, interval);    
   } 
 

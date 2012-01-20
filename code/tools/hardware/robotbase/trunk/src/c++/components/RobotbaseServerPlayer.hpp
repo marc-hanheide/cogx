@@ -55,9 +55,25 @@ namespace Robotbase {
  * @author Patric Jensfelt
  * @see
  */
-class RobotbaseServerPlayer : public Robotbase::RobotbaseServer,
-                              public JoystickDrivable,
+class RobotbaseServerPlayer : public JoystickDrivable,
                               public cast::CASTComponent {
+protected:
+  class RobotbaseServerI : public Robotbase::RobotbaseServer,
+  public cast::CASTComponent {
+    private:
+      RobotbaseServerPlayer *svr;
+    public:
+      RobotbaseServerI(RobotbaseServerPlayer *_svr) : svr(_svr) {}
+      Robotbase::Odometry pullOdometry(const Ice::Current&);
+
+      void execMotionCommand(const ::Robotbase::MotionCommand& cmd,
+          const Ice::Current&);
+
+      void registerOdometryPushClient(const Robotbase::OdometryPushClientPrx&, 
+          Ice::Double interval,  
+          const Ice::Current&);
+  };
+
 public:
   /**
    * Constructor
@@ -69,14 +85,6 @@ public:
    */
   ~RobotbaseServerPlayer();
 
-  Robotbase::Odometry pullOdometry(const Ice::Current&);
-
-  void execMotionCommand(const ::Robotbase::MotionCommand& cmd,
-                         const Ice::Current&);
-  
-  void registerOdometryPushClient(const Robotbase::OdometryPushClientPrx&, 
-                                  Ice::Double interval,  
-                                  const Ice::Current&);
 protected:
   virtual void configure(const std::map<std::string,std::string> & config);
 
@@ -88,6 +96,8 @@ protected:
 
   void saveOdomToFile(Robotbase::Odometry odom);
 protected:
+
+  void execMotionCommand(const ::Robotbase::MotionCommand& cmd);
 
   class OdometryClient {
   public:
