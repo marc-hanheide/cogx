@@ -11,11 +11,14 @@ To evaluate our progress toward building a cognitive system capable of reasoning
 I'm not sure how many of the above questions we want to talk about. The last one is fairly easy and won't take up much space in the paper. The integration of knowledge question is could take some more work as the grouping is determined by semantic type, so in testing just positional knowledge,  I would have to create an alternate set of anchor points.
 
 \subsection{Materials}
-We evaluated our approach on six classrooms (two simulated and four real) and two simulated studio apartments. To determine how people define CDRSs, we asked \textbf{SOMENUMBER} of users to draw polygons for particular region types for each room. Users were also shown a polygon drawn by another user and asked to determine if it was an acceptable depiction of the region. All users provided acceptable regions, and therefore, we define the \textit{target region} as the union of the user-defined polygons.
 
-\from{Nick}{What is the base CDSR in a problem instance?}
+\from{Nick}{TODO: Perhaps list manually encoded CDSRs}
 
-We consider a \textit{problem instance} to be a room and a sought CDSR type (e.g., ``front''). For each room for which we have a human-labelled target CDSR of the sought type, we generate an \textit{inferred region} using our analogical approach. To assess the quality of the transfer, we use the following measures:
+We evaluated our approach on six classrooms (two simulated and four real) and two simulated studio apartments. The simulated rooms were based on real-life counterparts. For each room we manually encoded the appropriate CDSRs that could be represented by our approach. These were used as the base CDSRs for analogical transfers, and can be considered the training data for our evaluation. 
+
+To determine how non-experts define CDRSs, we asked \textbf{SOMENUMBER} of users to draw polygons for particular region types for each room. Users were also shown a polygon drawn by another user and asked to determine if it was an acceptable depiction of the region. All users provided acceptable regions, and therefore, we define the \textit{target region} as the union of the user-defined polygons. The user-provided data provides the ground truth against which we evaluate our transfers.
+
+We consider a \textit{problem instance} to be a room and a sought CDSR type. For each room for which we have a human-labelled target region of the sought type, we generate an \textit{inferred region} using analogical transfer. To assess the quality of the transfer, we calculate precision ($p$) and recall ($r$) as follows:
 
 \begin{equation}
 	p=\frac{area(inferred region \cap target region)}{area(inferred region)}
@@ -25,16 +28,21 @@ We consider a \textit{problem instance} to be a room and a sought CDSR type (e.g
 \end{equation}
 
 
-As a baseline, we will compare our results against the manually encoded CDSRs for the problem instance and the entire room. The precision and recall for considering the entire room provides a baseline from which to assess each of the questions. The performance of the manually encoded CDSRs evaluates how well the anchor points capture the user defined regions and a ceiling for the inferred region performance.
+As a baseline, we compare the transfer results against our manually encoded CDSRs for the target and a region that represents the entire room. Results on the entire room provide a baseline performance measure. The performance of the manually encoded CDSRs evaluates how well the anchor points capture the user defined regions and a ceiling for the inferred region performance.
+
+\from{Nick}{I'm confused here. Are we comparing the inferred region against our manual region for the target room, or are we comparing our manual region for the target room against the user-provided region for the target room?}
+
+
+
 \from{Klenk}{I think that I can do away with all of the stuff about the union from each of the subjects. Especially since we are averaging them all together anyways. We can have a variation in which we control for everything else and vary the user. Perhaps even another table...}
 
-\from{Nick}{What are manually encoded CDSRs? Are these the ones you do and use for the base case?}
-\from{Klenk}{Yes.}
+\from{Nick}{Which approach makes the explanation easier, union or averaging? The union makes our target the broadest acceptable region (not the average region though). Averaging shows how well we match an individual's conception of the region on average. Is one of these more relevant to our story than the other?}
 
 
 
 \subsection{Results}
 \begin{table}
+\small
 \caption{Performance by Room}
 \begin{tabular}{|c|c|c|c|}
 \hline
@@ -56,6 +64,7 @@ Classroom-6 & p=nil,r=nil & p=.76,r=.66 & p=.20,r=.99 \\ % This is UG40
 If we are just going to report means, we should standard deviations as well. %yup! 
 
 \begin{table}
+\small
 \caption{Performance by Region Type}
 \begin{tabular}{|c|c|c|c|}
 \hline
@@ -74,6 +83,7 @@ Office & p=nil,r=nil & p=nil,r=nil & p=nil,r=nil \\
 Or we could report all of the results in a single entry.
 
 \begin{table}
+\small
 \caption{Performance against Target Region}
 \begin{tabular}{|c|c|c|}
 \hline
