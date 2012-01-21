@@ -26,8 +26,11 @@ We consider a \textit{problem instance} to be a room and a sought CDSR type (e.g
 
 
 As a baseline, we will compare our results against the manually encoded CDSRs for the problem instance and the entire room. The precision and recall for considering the entire room provides a baseline from which to assess each of the questions. The performance of the manually encoded CDSRs evaluates how well the anchor points capture the user defined regions and a ceiling for the inferred region performance.
+\from{Klenk}{I think that I can do away with all of the stuff about the union from each of the subjects. Especially since we are averaging them all together anyways. We can have a variation in which we control for everything else and vary the user. Perhaps even another table...}
 
 \from{Nick}{What are manually encoded CDSRs? Are these the ones you do and use for the base case?}
+\from{Klenk}{Yes.}
+
 
 
 \subsection{Results}
@@ -37,20 +40,20 @@ As a baseline, we will compare our results against the manually encoded CDSRs fo
 \hline
 Room & Transfer & Manually Encoded & Entire Room \\
 \hline
-Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Classroom-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Studio-1 & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Classroom-1 & p=nil,r=nil & p=.93,r=.60 & p=.23,r=1 \\
+Classroom-2 & p=nil,r=nil & p=.90, r=.69 & p=.19,r=1 \\
+Classroom-3 & p=nil,r=nil & p=.94,r=.64 & p=.17,r=1 \\
+Classroom-4 & p=nil,r=nil & p=85,r=.89 & p=.19,r=1 \\  %This is 222-Classroom
+Classroom-5 & p=nil,r=nil & p=.87,r=.71 & p=.24,r=1 \\ % This is 222-Seminar
+Classroom-6 & p=nil,r=nil & p=.76,r=.66 & p=.20,r=.99 \\ % This is UG40
 \hline
 \end{tabular}
 \end{table}
 
 \from{Nick}{Would this be just a single region type or averaging across all applicable ones?}
+\from{Klenk}{This is averaging across all applicable ones.}
 
-
-If we are just going to report means, we should standard deviations as well. %yup!
+If we are just going to report means, we should standard deviations as well. %yup! 
 
 \begin{table}
 \caption{Performance by Region Type}
@@ -58,12 +61,12 @@ If we are just going to report means, we should standard deviations as well. %yu
 \hline
 Region & Transfer & Manually Encoded & Entire Room \\
 \hline
-Front & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Back & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Front Rows & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Back Rows & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Kitchen & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
-Office & p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+Front & p=nil,r=nil & p=.89,r=.79 & p=.23,r=1 \\
+Back & p=nil,r=nil & p=.85,r=.82 & p=.13,r=1 \\
+Front Rows & p=nil,r=nil & p=.85,r=.48 & p=.22,r=1 \\
+Back Rows & p=nil,r=nil & p=.94,r=.40 & p=.7,r=.9 \\
+Kitchen & p=nil,r=nil & p=nil,r=nil & p=nil,r=nil \\
+Office & p=nil,r=nil & p=nil,r=nil & p=nil,r=nil \\
 \hline
 \end{tabular}
 \end{table}
@@ -76,7 +79,7 @@ Or we could report all of the results in a single entry.
 \hline
 Transfer & Manually Encoded & Entire Room \\
 \hline
-p=.6,r=1 & p=.7,r=.9 & p=.7,r=.9 \\
+p=nil,r=nil & p=.88,r=.66 & p=.20,r=.99 \\
 \hline
 \end{tabular}
 \end{table}
