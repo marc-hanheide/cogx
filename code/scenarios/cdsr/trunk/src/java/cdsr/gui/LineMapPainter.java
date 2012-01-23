@@ -16,6 +16,7 @@ import cdsr.marshall.ProblemSetConverter;
 import cdsr.objects.CDSR;
 import cdsr.objects.Room;
 import cdsr.objects.SensedObject;
+import cdsr.util.Pair;
 
 public class LineMapPainter {
 
@@ -24,6 +25,7 @@ public class LineMapPainter {
 	private ArrayList<SensedObject> m_objects;
 
 	private final static int DEFAULT_PIXELS_PER_METRE = 80;
+	private final static Color DEFAULT_CDSR_COLOUR = Color.green;
 
 	private int m_width;
 	private int m_height;
@@ -37,11 +39,11 @@ public class LineMapPainter {
 
 	private final int m_pixelsPerMetre;
 
-	//TODO make configurable
+	// TODO make configurable
 	private boolean m_drawOrigin = false;
 	private boolean m_cleanObjectType = true;
-	
-	private List<CDSR> m_cdsrs;
+
+	private List<Pair<CDSR, Color>> m_cdsrs;
 
 	private ArrayList<Point2D.Double> m_points;
 
@@ -143,30 +145,29 @@ public class LineMapPainter {
 		if (m_objects != null) {
 			g2.setStroke(new BasicStroke(3f));
 			g2.setPaint(Color.blue);
-			
-			
+
 			for (SensedObject object : m_objects) {
-			
+
 				int objectMaxX = Integer.MAX_VALUE;
 				int objectMaxY = Integer.MAX_VALUE;
-				
+
 				for (Line2D.Double segment : object) {
 					Line2D.Double segmentInPixels = toPixels(segment);
 					g2.draw(segmentInPixels);
-					
+
 					Rectangle bounds = segmentInPixels.getBounds();
-					if(bounds.getMinX() < objectMaxX) {
+					if (bounds.getMinX() < objectMaxX) {
 						objectMaxX = bounds.x;
 					}
-					if(bounds.getMinY() < objectMaxY) {
+					if (bounds.getMinY() < objectMaxY) {
 						objectMaxY = bounds.y;
-					}	
+					}
 				}
 				String type = object.getType();
-				if(m_cleanObjectType) {
+				if (m_cleanObjectType) {
 					type = ProblemSetConverter.formatObjectTypeForDisplay(type);
 				}
-				g2.drawString(type, objectMaxX - 5 , objectMaxY - 5);
+				g2.drawString(type, objectMaxX - 5, objectMaxY - 5);
 			}
 		}
 
@@ -174,8 +175,9 @@ public class LineMapPainter {
 			g2.setStroke(new BasicStroke(2f));
 			g2.setPaint(Color.green);
 
-			for (CDSR cdsr : m_cdsrs) {
-				for (Line2D.Double segment : cdsr) {
+			for (Pair<CDSR, Color> cdsr : m_cdsrs) {
+				for (Line2D.Double segment : cdsr.m_first) {
+					g2.setPaint(cdsr.m_second);
 					g2.draw(toPixels(segment));
 				}
 			}
@@ -183,9 +185,10 @@ public class LineMapPainter {
 
 		if (m_points != null) {
 
-//			g2.setPaint(Color.orange);
+			// g2.setPaint(Color.orange);
 			for (Point2D.Double pt : m_points) {
-				g2.draw(new Ellipse2D.Double(toPixelsX(pt.x) - 4, toPixelsY(pt.y) - 4, 8, 8));
+				g2.draw(new Ellipse2D.Double(toPixelsX(pt.x) - 4,
+						toPixelsY(pt.y) - 4, 8, 8));
 			}
 
 		}
@@ -196,11 +199,15 @@ public class LineMapPainter {
 
 	}
 
-	public void addCDSR(CDSR _region) {
+	public void addCDSR(CDSR _region, Color _color) {
 		if (m_cdsrs == null) {
-			m_cdsrs = new ArrayList<CDSR>();
+			m_cdsrs = new ArrayList<Pair<CDSR, Color>>();
 		}
-		m_cdsrs.add(_region);
+		m_cdsrs.add(new Pair<CDSR, Color>(_region, _color));
+	}
+
+	public void addCDSR(CDSR _region) {
+		addCDSR(_region, DEFAULT_CDSR_COLOUR);
 	}
 
 	public void addPoint(Double _worldPoint) {
