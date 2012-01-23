@@ -1,5 +1,6 @@
 package cdsr.gui;
 
+import java.awt.Color;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import cdsr.marshall.CDSRMarshaller;
+import cdsr.objects.CDSR;
 import cdsr.objects.ProblemSet;
 import cdsr.objects.Room;
 
@@ -71,6 +73,10 @@ public class LineMapImageGenerator {
 	public int getYOriginOffset() {
 		return (m_height - m_yOffset);
 	}
+	
+	public void addCDSR(CDSR _cdsr, Color _color) {
+		m_painter.addCDSR(_cdsr,_color);
+	}
 
 	private void calculateImageDimensions(Room _room, int _pixelsPerMetre,
 			int _imageMarginPixel) {
@@ -128,7 +134,7 @@ public class LineMapImageGenerator {
 
 	}
 
-	private boolean generateImage(String _filename) throws IOException {
+	public boolean generateImage(String _filename) throws IOException {
 		BufferedImage img = new BufferedImage(m_width, m_height,
 				BufferedImage.TYPE_INT_RGB);
 		m_painter.paintLineMap(img.createGraphics());

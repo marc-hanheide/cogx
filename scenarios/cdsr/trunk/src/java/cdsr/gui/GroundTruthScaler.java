@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import cdsr.marshall.CDSRMarshaller;
 import cdsr.objects.CDSR;
@@ -24,7 +25,21 @@ public class GroundTruthScaler {
 	private final ArrayList<Line2D.Double> m_lines = new ArrayList<Line2D.Double>();
 	private Double m_position;
 	private String m_type;
-
+	private static HashMap<String, String> m_typeTranslation;
+	
+	static {
+		m_typeTranslation = new HashMap<String, String>();
+		m_typeTranslation.put("the_front_of_the_room", "front");
+		m_typeTranslation.put("the_back_of_the_room", "back");
+		m_typeTranslation.put("the_front_rows", "front_rows");
+		m_typeTranslation.put("the_back_rows", "back_rows");
+		m_typeTranslation.put("the_kitchen", "kitchen");
+		m_typeTranslation.put("the_office", "office");
+		m_typeTranslation.put("the_living_room", "living_room");
+	}
+	
+	
+	
 	/**
 	 * 
 	 * @param _pixelsPerMetre
@@ -92,14 +107,34 @@ public class GroundTruthScaler {
 		scaler.setPosition(Integer.parseInt(split[lastSuccess + 1]),
 				Integer.parseInt(split[lastSuccess + 2]));
 
-		StringBuilder type = new StringBuilder();
-		for (int i = lastSuccess + 3; i < split.length - 1; i++) {
-			type.append(split[i]);
-			type.append('_');
+		
+		//Check whether there is a type on the end
+		if (_data.contains("-")) {
+			StringBuilder type = new StringBuilder();
+			for (int i = lastSuccess + 3; i < split.length - 1; i++) {
+				type.append(split[i]);
+				type.append('_');
+			}
+			type.append(split[split.length - 1]);
+			
+			
+			
+			scaler.setType(translateToStandard(type.toString()));
 		}
-		type.append(split[split.length - 1]);
-		scaler.setType(type.toString());
+		else {
+			scaler.setType("unknown");
+		}
 		return scaler;
+	}
+
+	static String translateToStandard(String _type) {
+		String trans = m_typeTranslation.get(_type);
+		if(trans != null) {
+			return trans;
+		}
+		else {
+			return _type;
+		}
 	}
 
 	private void setType(String _type) {
@@ -226,7 +261,7 @@ public class GroundTruthScaler {
 	 * @param _filename
 	 * @return
 	 */
-	private static String dataFileForImage(String _filename) {
+	static String dataFileForImage(String _filename) {
 		String[] split = _filename.split("[/.]+");
 		assert (split.length == 3);
 		return "data/" + split[1] + ".cdsr";
