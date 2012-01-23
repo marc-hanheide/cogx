@@ -70,28 +70,17 @@ Consider a janitorial robot cleaning a classroom. While performing this task, it
 
 The ability to understand and reason about \textit{spatial regions} is essential for cognitive systems performing tasks for humans in everyday environments. Some regions, such as whole rooms and corridors, are defined by clearly perceivable boundaries (e.g. walls and doors). However, many regions to which humans routinely refer are not so easily defined. Consider, for example, the aforementioned region \textit{the front of the classroom}. This region is not easily perceivable using just the geometry of the environment. Instead, it is defined by the objects present in the room (chairs, a desk, a chalkboard), their role in this context (seats for students to watch a teacher who writes on the chalkboard) and their configuration in space (the seats point toward the chalkboard). In this paper, we will refer to such regions as \textit{context-dependent spatial regions} (CDSRs). 
 
-% nah: These are the main claims from the ACS paper, but they can be reduced/dropped for aaai
 
-Representing and reasoning about context-dependent spatial regions is beyond the capabilities of current cognitive systems, yet it is an important ability for three reasons:
+Representing and reasoning about CDSRs is beyond the capabilities of current cognitive systems, yet it is an important ability. If cognitive systems are to collaborate with humans in everyday environments then they must be able to represent and reason about the spatial regions humans refer to. Many regions are best defined in a context-dependent manner, for example, a kitchen in a studio apartment, an aisle in a church or store, behind enemy lines in a military engagement, etc. In order to represent and reason about such regions, cognitive systems must integrate different types of information, including geometric, semantic, and functional knowledge. Thus, context-dependent spatial regions provide a suitable context for studying this integration. 
 
-\begin{itemize}
-
-\item{If cognitive systems are to collaborate with humans in everyday environments, then they must be able to represent and reason about the spatial regions humans refer to. Many regions are best defined in a context-dependent manner, for example, a kitchen in a studio apartment, an aisle in a church or store, behind enemy lines in a military engagement, etc.}
-
-
-\item{Cognitive systems must integrate different types of information, including geometric, semantic, and functional knowledge. The identification of context-dependent spatial regions provides a suitable task for studying this integration. 
-% Only through such integration could a system determine, for example, whether a banquet hall has a dancefloor depending on the arrangement of the room.
-}
-
-\item{Cognitive systems must adapt their knowledge and experience to new situations. While humans do not demonstrate mastery after seeing a single example of a new concept, they are able to begin using it immediately, whilst incrementally refining it over time (cf. one-shot learning~\cite{Fei-Fei/etal:2006}). This has important implications with respect to the amount of knowledge engineering and training time required to create a cognitive system. For example, having trained a mobile robot to understand the front of one classroom, it is desirable for it to be able to identify the front of other classrooms and similar areas (e.g. theaters) without additional tutoring.}
-\end{itemize}
+% Cognitive systems must adapt their knowledge and experience to new situations. While humans do not demonstrate mastery after seeing a single example of a new concept, they are able to begin using it immediately, whilst incrementally refining it over time (cf. one-shot learning~\cite{Fei-Fei/etal:2006}). This has important implications with respect to the amount of knowledge engineering and training time required to create a cognitive system. For example, having trained a mobile robot to understand the front of one classroom, it is desirable for it to be able to identify the front of other classrooms and similar areas (e.g. theaters) without additional tutoring.
 
 % nah: removed large motivating picture, hoping we can make do with just our result pictures, or replace it with images used for ground truth
 
 This paper presents a novel integration of technologies which allows an artificial cognitive system (specifically a mobile robot) to represent and reason about CDSRs. Our approach is founded on two assumptions. The first assumption is that CDSRs can be defined using qualitative spatial representations (QSRs) extracted from the sensor data of the system~\cite{Cohn:2001}. The second assumption is that semantically similar areas (e.g. two different classrooms) will feature similar CDSRs, and that these similarities can be recognised through analogy. The rest of the paper is structured following these assumptions. Section~\ref{sec:qsr-gen} describes how we generate QSRs from sensor data taken from an existing, state-of-the-art, cognitive system and use these to define CDSRs. Section~\ref{sec:analogy} then describes how use the structure-mapping model of analogy \cite{Gentner1983a} to transfer a CDSR from a labelled example to a new situation. Section~\ref{sec:example} presents a worked example of the entire process, and Section~\ref{sec:evaluation} evaluates our system in comparison to data from human subjects performing the same task.
 
 
-\section{From Sensors to Qualitative Representations}\label{sec:qsr-gen}
+\section{Metric to Qualitative Representations}\label{sec:qsr-gen}
 
 % Our approach to representing and reasoning about context-dependent spatial regions requires the existence of qualitative spatial representations~\cite{Cohn:2001} describing the relationships between the entities a cognitive system perceives (including objects, groups, and regions). By adding semantic labels, or types, to each entity, we are able to reason about the geometric \emph{and} conceptual characteristics of the system's environment. The following sections describe how we generate appropriate qualitative spatial representations using the spatial model of an existing, state-of-the-art, cognitive system.
 
@@ -110,7 +99,7 @@ To enable us to generate a range of different evaluation situations in a reasona
 
 \input{qsr-extraction}
 
-\subsection{Representing Context-Dependent Spatial Regions}
+\subsection{Representing CDSRs}
 
 We use \textit{anchor points}~\cite{Klenk/etal2005} to define the boundaries of CDSRs. Anchor points are symbolic descriptions which link a conceptual entity (i.e. something that can be reasoned about but not directly perceived, such as a CDSR) to a particular point on a perceived entity. The perceived entities we use are the objects recognised by Dora, and the room itself. The room representation is created by putting a convex hull around the lines in Dora's SLAM map. Anchor points are created from perceived entities using unary functions, e.g. \fw{(CentroidFn Desk1)} represents the centroid of the geometric extent of \fw{Desk1}, and are linked to a particular CDSR using a \fw{regionBoundary} relation. After we have defined the boundary of the region, we assign it a semantic label using the \fw{regionType} relation. Therefore, each CDSR has one type and a variable number of boundary points.
 
