@@ -1,0 +1,48 @@
+HOST localhost
+
+# spatial #####################################################################
+#COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
+
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+
+SUBARCHITECTURE spatial.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #-m tmpmap.metric #--no-file-output
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf #-m tmpmap.graph #--no-file-output
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf
+CPP MG spatial.translation SpatialTranslation 
+CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 1.0 --min-node-separation 2.5 --hyp-path-length 2.0  #--no-placeholders --log
+CPP GD path.query PathQueryProcessor #--no-indirect-paths 
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --laser-range 2 --planemap-size 100 --planemap-cellsize 0.05 #--load-nodemap --log
+
+#INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD display.process DisplayNavInPB --no-objects --retry-interval 10 --room-categories corridor,kitchen,office -c instantiations/cureconfig/cogxp3.ccf
+
+
+
+# vision ######################################################################
+CPP MG cameramount CameraMount --fixed --camids 0 --cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml"
+
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "/home/ttoenige/Video1/frosties_small-0000000%d.ppm" --start "100" --end 620 --framerate_ms 300 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/css2011/object-models/example-cereals-weetabix.ply instantiations/css2011/object-models/example-cereals-schokomusli.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-weetabix.sift instantiations/css2011/object-models/example-cereals-schokomusli.sift" --labels "example-cereals-weetabix example-cereals-schokomusli" --displayserver "display.srv" --log
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --displayserver "display.srv" --log
+
+#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 #--log 
+
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 --displayserver "display.srv"
+
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner --configPath "instantiations/css2011/calibration/example-arm-pose.xml" --armName "katana450"
+
+JAVA MG objectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
