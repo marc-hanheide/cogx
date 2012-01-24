@@ -100,7 +100,7 @@ public class MotiveFilterManager extends ManagedComponent {
 		// avoid self calls
 		if (_wmc.src.equals(getComponentID()))
 			return;
-		log("src of motive change: " + _wmc.src);
+		debug("src of motive change: " + _wmc.src);
 		try {
 			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDO);
 			Motive motive = getMemoryEntry(_wmc.address, Motive.class);
@@ -110,7 +110,8 @@ public class MotiveFilterManager extends ManagedComponent {
 				switch (priority) {
 				case UNSURFACE: // if the priority is UNSURFACE then
 					// change status
-					motive.status = MotiveStatus.UNSURFACED;
+					if (motive.status!=MotiveStatus.COMPLETED)
+						motive.status = MotiveStatus.UNSURFACED;
 					break;
 				default:
 					// only if the previous status was UNSURFACED we

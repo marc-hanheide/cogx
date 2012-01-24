@@ -41,7 +41,7 @@ public class ExternalGoalGenerator extends ManagedComponent implements
 	private static final float DEFAULT_CONSTANT_COSTS = (float) 1.0;
 
 	// give planning at maximum 60 seconds
-	private static final int DEFAULT_MAX_PLANNING_TIME = 60;
+	private static final int DEFAULT_MAX_PLANNING_TIME = 120;
 	// give the max at max 60 minutes to reach goal
 	private static final int DEFAULT_MAX_EXECUTION_TIME = 60 * 60;
 
@@ -152,17 +152,19 @@ public class ExternalGoalGenerator extends ManagedComponent implements
 					+ CASTUtils.toString(wma));
 
 			WorkingMemoryOperation op = WorkingMemoryOperation.WILDCARD;
-			// wait until that motive has been removed and update in other cases
-			while (op != WorkingMemoryOperation.DELETE) {
+			MotiveStatus status = MotiveStatus.WILDCARD;
+			// wait until that motive has been removed or flagged completed and update in other cases
+			while (op != WorkingMemoryOperation.DELETE && status != MotiveStatus.COMPLETED) {
 				try {
 					WorkingMemoryChange event = queue.take();
 					op = event.operation;
 					if (op != WorkingMemoryOperation.DELETE) {
 						ggm = getMemoryEntry(event.address,
 								GeneralGoalMotive.class);
+						status = ggm.status;
 						println("current status of motive "
 								+ ggm.goal.goalString + " after op " + op
-								+ " is " + ggm.status);
+								+ " is " + status);
 					}
 				} catch (CASTException e) {
 					getLogger().warn(e);

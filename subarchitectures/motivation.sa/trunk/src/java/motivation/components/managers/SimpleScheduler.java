@@ -4,10 +4,7 @@
 package motivation.components.managers;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import motivation.slice.Motive;
 import motivation.slice.MotiveStatus;
@@ -15,7 +12,6 @@ import autogen.Planner.PlanningTask;
 import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
-import eu.cogx.planner.facade.PlannerFacade;
 
 /**
  * @author Marc Hanheide (marc@hanheide.de)
@@ -52,19 +48,8 @@ public class SimpleScheduler extends AbstractScheduler {
 					sleepComponent(1000);
 					// check if there are any goals that need to be deleted
 					// if goal is achieved already we should remove it!
-					{
-						Set<Entry<WorkingMemoryAddress, Motive>> copySet = new HashSet<Entry<WorkingMemoryAddress, Motive>>(
-								motives.entrySet());
-
-						for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
-							if (PlannerFacade.get(this).isGoalAchieved(
-									m.getValue().goal.goalString)) {
-								log("remove achieved goal "
-										+ m.getValue().goal.goalString);
-								motives.remove(m.getKey());
-							}
-						}
-					}
+					log("flag achieved goals");
+					flagAchievedGoals();
 
 					executionFuture = null;
 					continue;
@@ -115,7 +100,7 @@ public class SimpleScheduler extends AbstractScheduler {
 					}
 
 				} else {
-					log("check if there are opportunities... NOT IMPLEMENTED YET, so we continue execution");
+					debug("check if there are opportunities... NOT IMPLEMENTED YET, so we continue execution");
 
 				}
 			}
@@ -129,6 +114,5 @@ public class SimpleScheduler extends AbstractScheduler {
 		}
 
 	}
-
 
 }
