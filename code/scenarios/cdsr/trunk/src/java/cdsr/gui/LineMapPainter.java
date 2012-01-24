@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
@@ -42,6 +43,8 @@ public class LineMapPainter {
 	// TODO make configurable
 	private boolean m_drawOrigin = false;
 	private boolean m_cleanObjectType = true;
+	private boolean m_drawTypes = false;
+	public static boolean FILL_CDSRS = true;
 
 	private List<Pair<CDSR, Color>> m_cdsrs;
 
@@ -143,8 +146,8 @@ public class LineMapPainter {
 		}
 
 		if (m_objects != null) {
-			g2.setStroke(new BasicStroke(3f));
-			g2.setPaint(Color.blue);
+//			g2.setStroke(new BasicStroke(3f));
+			g2.setPaint(Color.black);
 
 			for (SensedObject object : m_objects) {
 
@@ -163,29 +166,55 @@ public class LineMapPainter {
 						objectMaxY = bounds.y;
 					}
 				}
-				String type = object.getType();
-				if (m_cleanObjectType) {
-					type = ProblemSetConverter.formatObjectTypeForDisplay(type);
+				if (m_drawTypes) {
+					String type = object.getType();
+					if (m_cleanObjectType) {
+						type = ProblemSetConverter
+								.formatObjectTypeForDisplay(type);
+					}
+					g2.drawString(type, objectMaxX - 5, objectMaxY - 5);
 				}
-				g2.drawString(type, objectMaxX - 5, objectMaxY - 5);
 			}
 		}
 
 		if (m_cdsrs != null) {
-			g2.setStroke(new BasicStroke(2f));
-			g2.setPaint(Color.green);
+			g2.setStroke(new BasicStroke(4f));
 
 			for (Pair<CDSR, Color> cdsr : m_cdsrs) {
-				for (Line2D.Double segment : cdsr.m_first) {
-					g2.setPaint(cdsr.m_second);
-					g2.draw(toPixels(segment));
+
+				List<java.awt.geom.Line2D.Double> lines = cdsr.m_first
+						.getLines();
+				GeneralPath polygon = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
+				java.awt.geom.Line2D.Double firstLine = lines.get(0);
+				polygon.moveTo(toPixelsX(firstLine.x1), toPixelsY(firstLine.y1));
+				for (int i = 0; i < lines.size(); i++) {
+					polygon.lineTo(toPixelsX(lines.get(i).x2),
+							toPixelsY(lines.get(i).y2));
 				}
+				polygon.closePath();
+
+				// match colour, but add alpha
+				Color originalColour = cdsr.m_second;
+				g2.setPaint(originalColour);
+
+				if (FILL_CDSRS) {
+					Color transparentColour = new Color(
+							originalColour.getRed() / 255f,
+							originalColour.getGreen() / 255f,
+							originalColour.getBlue() / 255f, 0.1f);
+					g2.setPaint(transparentColour);
+					g2.fill(polygon);
+					g2.setPaint(originalColour.darker().darker().darker());
+				}
+
+				g2.draw(polygon);
+
 			}
 		}
 
 		if (m_points != null) {
 
-			// g2.setPaint(Color.orange);
+			g2.setPaint(Color.orange);
 			for (Point2D.Double pt : m_points) {
 				g2.draw(new Ellipse2D.Double(toPixelsX(pt.x) - 4,
 						toPixelsY(pt.y) - 4, 8, 8));

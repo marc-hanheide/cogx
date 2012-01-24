@@ -29,6 +29,8 @@ public abstract class ImageGeneratorForPaper {
 			return;
 		}
 
+		LineMapPainter.FILL_CDSRS = true;
+		
 		File specFile = new File(args[0]);
 		BufferedReader reader = new BufferedReader(new FileReader(specFile));
 
@@ -46,20 +48,20 @@ public abstract class ImageGeneratorForPaper {
 		ArrayList<Pair<String, Color>> baseData = new ArrayList<Pair<String, Color>>(
 				1);
 		// base 
-		baseData.add(new Pair<String, Color>(lines[0], Color.ORANGE));
+		baseData.add(new Pair<String, Color>(lines[0], Color.RED));
 		imageWithCDSRs(baseData, "base-image.png");
 
 		ArrayList<Pair<String, Color>> targetData = new ArrayList<Pair<String, Color>>(
 				2);
 		// target
-		targetData.add(new Pair<String, Color>(lines[1], Color.RED));
+		targetData.add(new Pair<String, Color>(lines[1], Color.BLUE));
 		// inferred
 		targetData.add(new Pair<String, Color>(lines[2], Color.GREEN));
 		imageWithCDSRs(targetData, "target-image.png");
 	}
 
 	// generate base image with annotated CDSR
-	private static void imageWithCDSRs(List<Pair<String, Color>> _data,
+	static void imageWithCDSRs(List<Pair<String, Color>> _data,
 			String _outFile) throws IOException, ClassNotFoundException {
 
 		String firstData = _data.get(0).m_first;

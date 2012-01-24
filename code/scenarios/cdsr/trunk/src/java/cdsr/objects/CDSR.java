@@ -1,7 +1,6 @@
 package cdsr.objects;
 
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,6 +14,14 @@ public class CDSR implements Iterable<Line2D.Double> {
 		m_type = _type;
 	}
 
+	public String getType() {
+		return m_type;
+	}
+	
+	public List<Line2D.Double> getLines() {
+		return m_lines;
+	}
+	
 //	public CDSR() {
 //		this(new ArrayList<Line2D.Double>());
 //	}
@@ -42,5 +49,11 @@ public class CDSR implements Iterable<Line2D.Double> {
 			sb.append("\n");
 		}
 		return sb.toString();
+	}
+	
+	
+	
+	public int getNumberOfLines() {
+		return m_lines.size();
 	}
 }
