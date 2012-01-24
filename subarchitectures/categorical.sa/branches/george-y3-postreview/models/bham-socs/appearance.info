@@ -1,0 +1,9 @@
+Training sets:
+ - ../../../bham-app-train.data
+ - ../../../bham-app-test.data
+Parameter selection: Reduced gamma cross-validation
+Features: CRFH Lxx(4,28)+Lxy(4,28)+Lyy(4,28)+Lxx(64,28)+Lxy(64,28)+Lyy(64,28)
+SVM Kernel: Chi2
+SVM Multi-class: One-against-all
+SVM C: 100
+SVM Kernel Gamma: 5.62341
