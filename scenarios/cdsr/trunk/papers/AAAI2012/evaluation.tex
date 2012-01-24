@@ -15,10 +15,10 @@ To determine how people define CDRSs, we asked three na\"ive users to draw polyg
 We consider a \textit{problem instance} to be a room and a sought CDSR type. For each room for which we have a human-labelled target region of the sought type, we generate an \textit{inferred region} using analogical transfer. To assess the quality of the transfer, we calculate precision ($p$, the proportion of the inferred region that overlaps with the target region) and recall ($r$, the proportion of the target region that overlaps with the inferred region) as follows:
 
 \begin{equation}
-	p=\frac{area(inferred region \cap target region)}{area(inferred region)}
+	p=\frac{area(inferred\ region \cap target\ region)}{area(inferred\ region)}
 \end{equation}
 \begin{equation}
-	r=\frac{area(inferred region \cap target region)}{area(target region)}
+	r=\frac{area(inferred\ region \cap target\ region)}{area(target\ region)}
 \end{equation}
 
 Using this approach we generate results showing the matches between each of the following pairs of regions: the transferred region and the appropriate target region; the manually annotated CDSR in the target and appropriate target region; and the region for the whole room and the target region. 
@@ -26,7 +26,7 @@ Using this approach we generate results showing the matches between each of the 
 
 
 \subsection{Results}
-\begin{table}
+\begin{table*}
 \small
 \begin{tabular}{|c|c|c|}
 \hline
@@ -38,14 +38,15 @@ $\bar{p}$=.45 $\sigma$=.37, $\bar{r}$=.45 $\sigma$=.38 & $\bar{p}$=.71 $\sigma$=
 \caption{Overall Performance}
   \label{tab:overall}	
 
-\end{table}
+\end{table*}
 
 \from{klenk}{I guess we should rotate the above table. And it has been awhile since I wrote academic, so feel free to cut the boring text below}
 
-Table~\ref{tab:overall} summarizes the results by combining each problem instance and user-defined target region. The mean precision and recall for the inferred regions is .45 with a standard deviation of .37 and .38 respectively. When comparing the manually encoded regions against each target instance, we calculate a mean precision of .71 ($\sigma$=.29) and recall of .66 ($\sigma$=.24). The region defined by the room results in a precision of .17 ($\sigma$=.11) and recall of .98 ($\sigma$=.05).
+Table~\ref{tab:overall} summarizes the results by combining each problem instance and user-defined target region. Both precision and recall for the inferred regions is .45 with a standard deviation of .37 and .38 respectively. When comparing the manually encoded regions against each target instance, we calculate a mean precision of .71 ($\sigma$=.29) and recall of .66 ($\sigma$=.24). The region defined by the room results in a precision of .17 ($\sigma$=.11) and recall of .98 ($\sigma$=.05).
 
-\begin{table}
-\small
+% these are sensible results, nice
+
+\begin{table*}
 \begin{tabular}{|c|c|c|c|}
 \hline
 Region & Inferred & Manually Encoded & Entire Room \\
@@ -67,9 +68,9 @@ Living Room & $\bar{p}$=0 $\sigma$=0, $\bar{r}$=0 $\sigma$=0 & $\bar{p}$=.63 $\s
 \end{tabular}
 \caption{Performance by Region Type}
   \label{tab:region}	
-\end{table}
+\end{table*}
 
-Table~\ref{tab:region} separates the results by the region type of the context-dependent spatial region. The mean precision for the transferred regions ranged from .74 for the back rows to 0 for the living room of the studio apartment. Comparing the manually encoded against the target regions resulted in a minimum mean precision of .60, which occurred for the front of the classroom. The room precision, which is directly proportionally to the size of the target region, varied from .08 for the office to .35 for the living area. 
+Table~\ref{tab:region} separates the results by CDSR type. The mean precision for the transferred regions ranged from .74 for the back rows to 0 for the living room of the studio apartment. Comparing manually encoded against  target regions resulted in a minimum mean precision of .60. This  occurred for the front of the classroom. The whole room precision, which is directly proportionally to the size of the target region, varied from .08 for the office to .35 for the living area. 
 
 
 %(3 :transfer-p (0.5649091160864536d0 . 0.3824746399624735d0)  :transfer-r (0.4264200799557943d0 . 0.34846457388485863d0) :self-p   (0.8290901572528112d0 . 0.19630847005535487d0) :self-r
@@ -91,5 +92,5 @@ Table~\ref{tab:region} separates the results by the region type of the context-d
 
 \subsection{Discussion}
 
-These results support the hypothesis that anchor points can provide a symbolic representation on top of sensor data for context-dependent spatial regions, and, when combined with qualitative spatial relations, they facilitated learning from a single example through analogical transfer. The relatively high manually encoded precisions and recalls indicate that the defined anchor points are a reasonable starting place for a symbolic representation. The lower scores typically resulted from target regions which were farther away from objects. While the inferred regions did not score as well as the manually encoded regions, they were considerably more precise than the room regions. The only case were transfer was not possible was between the two studio's living room cases. The objects which define the living area in one studio (sofa, TV, and bookshelves) are significantly different than the objects in the other (desk, bed, and sofa), as are the studios in general.
+These results support the hypothesis that anchor points can provide a symbolic representation on top of sensor data for context-dependent spatial regions, and, when combined with qualitative spatial relations, they facilitate learning from a single example through analogical transfer. The relatively high manually encoded precisions and recalls indicate that the defined anchor points are a reasonable starting place for a symbolic representation. The lower scores typically resulted from target regions which were farther away from objects. While the inferred regions did not score as well as the manually encoded regions, they were considerably more precise than the room regions. The only case were transfer was not possible was between the two studio's living room cases. The objects which define the living area in one studio (sofa, TV, and bookshelves) are significantly different than the objects in the other (desk, bed, and sofa), as are the studios in general.
 
