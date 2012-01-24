@@ -53,12 +53,12 @@ namespace cast
 {
   
 /** Debug flag **/
-static bool deb;
-#ifdef DEBUG
-  #define deb = true;
-#elseif
-  #define deb = false;
-#endif
+// static bool deb;
+// #ifdef DEBUG
+//   #define deb = true;
+// #elseif
+//   #define deb = false;
+// #endif
 
 
 // **************************** SegTester **************************** //
@@ -273,7 +273,7 @@ void SegTester::configure(const map<string,string> & _config)
   modeling->setExtrinsic(pose);
 
   /// init annotation
-  annotation = new pa::Annotation();
+  annotation = new anno::Annotation();
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 9);
@@ -281,7 +281,7 @@ void SegTester::configure(const map<string,string> & _config)
   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
 
   /// init patch class
-  patches = new pclA::Patches();
+  patches = new surface::Patches();
   patches->setZLimit(0.01);
   
   /// init svm-predictor
@@ -489,7 +489,7 @@ last = current;
   std::vector<int> anno_background_list;
   annotation->load(pointCloudWidth, anno, true);            /// TODO Das ist überflüssig - Könnte intern aufgerufen werden
   //annotation->setIndices(pcl_model_indices);                /// TODO Sollte die indices nicht von surfaces kommen => da sind Nurbs auch dabei!
-  annotation->setSurfaces(surfaces);
+  annotation->setSurfaceModels(surfaces);
   annotation->calculate();
   annotation->getResults(nr_anno, anno_pairs, anno_background_list);
   log("Annotation: end");
@@ -502,16 +502,18 @@ last = current;
   log("Calculate patch-relations start!");
   std::vector<Relation> relation_vector;
   patches->setInputImage(iplImage_k);
-  patches->setInputCloud(pcl_cloud, pcl_normals);
-  patches->setPatches(surfaces);
+  patches->setInputCloud(pcl_cloud);
+  patches->setNormals(pcl_normals);
+  patches->setSurfaceModels(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);       // TODO for evaluation => Necessary?
   patches->setTexture(texture); 
-  patches->computePatchModels(true);            /// TODO TODO TODO TODO TODO TODO Sollte nicht compute, sonder set heißen, da ja nichts berechnet wird!
+  patches->computeOptimalPatchModels(true);            /// TODO TODO TODO TODO TODO TODO Sollte nicht compute, sonder set heißen, da ja nichts berechnet wird!
 //  patches->computeNeighbors();                  /// TODO TODO Müssen neighbors wirklich vorher berechnet werden? Nicht automatisch?
   patches->computeTestRelations();
 //   patches->getNeighbors(neighbors);
   patches->getRelations(relation_vector);
   patches->getOutputCloud(pcl_cloud, pcl_normals);    // pcl_cloud_vis, pcl_normals_vis
+  patches->getSurfaceModels(surfaces);
   log("Calculate patch-relations ended!");
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -1032,21 +1034,33 @@ void SegTester::SingleShotMode()
       
     case  '0':
     {
-      log("Show mesh of surfaces");
+//       log("Show mesh of surfaces");
+//       tgRenderer->ClearModels();
+//       tgRenderer->Clear();
+//       tgRenderer->SetImage(kinect_point_cloud_image);
+//       for(unsigned gcg=0; gcg < graphCutGroups.size(); gcg++)
+//       {
+//         TomGine::tgMaterial mat;
+//         mat.Random();
+//         for(unsigned i=0; i<graphCutGroups[gcg].size(); i++)
+//         {
+//           TomGine::tgRenderModel model = surfaces[graphCutGroups[gcg][i]]->mesh;
+//           model.m_material = mat;
+//           tgRenderer->AddModel(model);
+//         }
+//       }
+      
+      log("Show mesh of surfaces. wait ...");
+      surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
+      createMesh.setInputCloud(pcl_cloud);
+      createMesh.compute(surfaces);
+
       tgRenderer->ClearModels();
-      tgRenderer->Clear();
-      tgRenderer->SetImage(kinect_point_cloud_image);
-      for(unsigned gcg=0; gcg < graphCutGroups.size(); gcg++)
-      {
-        TomGine::tgMaterial mat;
-        mat.Random();
-        for(unsigned i=0; i<graphCutGroups[gcg].size(); i++)
-        {
-          TomGine::tgRenderModel model = surfaces[graphCutGroups[gcg][i]]->mesh;
-          model.m_material = mat;
-          tgRenderer->AddModel(model);
-        }
-      }
+      for (unsigned i=0; i<surfaces.size(); i++)
+        tgRenderer->AddModel(&surfaces[i]->mesh);
+      tgRenderer->Update();
+      log("Show mesh of surfaces. done.");
+      
       tgRenderer->Update();
       break;
     }

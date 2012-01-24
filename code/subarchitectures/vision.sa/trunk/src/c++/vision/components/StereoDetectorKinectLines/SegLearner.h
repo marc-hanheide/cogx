@@ -25,7 +25,7 @@
 
 #include "KinectCore.h"
 #include "StereoCore.h"
-#include "Learner.h"              /// TODO Braucht man hier?
+// #include "Learner.h"              /// TODO Braucht man hier?
 #include "SVMFileCreator.h"
 
 #include "Pose3.h"
@@ -36,23 +36,26 @@
 
 #include "ObjRep.h"
 
+#include "v4r/Annotation/Annotation.h"
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/PCLUtils.h"
 #include "v4r/PCLAddOns/PCLFunctions.h"
-#include "v4r/PCLAddOns/Annotation.h"
 #include "v4r/PCLAddOns/ModelFitter.h"
-#include "v4r/PCLAddOns/Planes.h"
-#include "v4r/PCLAddOns/Patches.h"
-#include "v4r/PCLAddOns/Relation.h"
-#include "v4r/TomGine/tgTomGineThread.h"
-#include "v4r/svm/SVMFileCreator.h"
-#include "v4r/GraphCut/GraphCut.h"
-#include "v4r/SurfaceModeling/SurfaceModeling.hh"
 #include "v4r/PCLAddOns/BilateralFilter.hh"
 #include "v4r/PCLAddOns/SubsamplePointCloud.hh"
 #include "v4r/PCLAddOns/NormalsEstimationNR.hh"
+#include "v4r/PCLAddOns/Relation.h"
+//#include "v4r/PCLAddOns/Planes.h"
+#include "v4r/TomGine/tgTomGineThread.h"
+#include "v4r/GraphCut/GraphCut.h"
+#include "v4r/SurfaceModeling/CreateMeshModel.hh"
+#include "v4r/SurfaceModeling/SurfaceModeling.hh"
+#include "v4r/SurfaceModeling/Patches.h"
+#include "v4r/svm/SVMFileCreator.h"
+#include "v4r/svm/Statistics.h"
 
 #include "SegUtilsFunctions.h"
+
 
 namespace cast
 {
@@ -73,14 +76,13 @@ private:
   pclA::SubsamplePointCloud *subsample;                     ///< Subsample point cloud
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
-  pa::Annotation *annotation;                               ///< Annotation from file
-  pclA::Patches *patches;                                   ///< Patch tool for calculation of relations between surface patches
+  anno::Annotation *annotation;                             ///< Annotation from file
+  surface::Patches *patches;                                ///< Patch tool for calculation of relations between surface patches
   svm::SVMFileCreator *svm;                                 ///< SVM-predictor
 
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
-  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_new;            ///< Normals of the point cloud
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_repro;      ///< Reprocessed normals after fitting => TODO Remove later
-  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;    ///< indices of the surface patches (from fitter for debugging => TODO Remove later)
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;///< indices of the surface patches (from fitter for debugging => TODO Remove later)
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
 
   int nr_anno;                                              ///< Number of annotated objects
@@ -89,7 +91,7 @@ private:
 
   std::vector<pcl::PointIndices::Ptr> plane_indices;        ///< Plane indices after model selection  /// TODO REMOVE
   std::vector<pcl::PointIndices::Ptr> nurbs_indices;        ///< NURBS indices after model selection  /// TODO REMOVE
-  std::vector<cv::Ptr<surface::SurfaceModel> > surfaces;    ///< Surfaces container (for Planes, NURBS)
+  std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
   /// TODO end new ones
 
  

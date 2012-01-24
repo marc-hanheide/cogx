@@ -31,7 +31,7 @@
 #include "Closure3D.h"
 #include "Rectangle3D.h"
 
-#include "v4r/Surf/Fourier.h"
+//#include "v4r/SurfaceModeling/Fourier.h"
 
 using namespace std;
 using namespace VisionData;
@@ -282,7 +282,7 @@ void SegLearner::configure(const map<string,string> & _config)
   modeling->setExtrinsic(pose);
   
   /// init annotation for first-level svm learning
-  annotation = new pa::Annotation();
+  annotation = new anno::Annotation();
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 0, 16);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 9);
   /// eval svm
@@ -291,11 +291,9 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
-
-  
   
   /// init patch class
-  patches = new pclA::Patches();
+  patches = new surface::Patches();
   patches->setZLimit(0.01);
   
   /// init svm-file-creator
@@ -433,6 +431,7 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: Vision core: %4.3f\n", timespec_diff(&current, &last));
 last = current;  
   
+
   /// ModelFitter
   log("ModelFitter start!");
   std::vector<int> pcl_model_types;
@@ -456,25 +455,22 @@ clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: Model fitting: %4.3f\n", timespec_diff(&current, &last));
 last = current; 
   
+
   /// NURBS-Fitting and model selection
   log("NURBS-Fitting start!");
   modeling->setInputCloud(pcl_cloud);
   modeling->setInputPlanes(pcl_model_types, model_coefficients, pcl_model_indices, error);
   modeling->compute();
   modeling->getSurfaceModels(surfaces);
-//   modeling->getPlanes(modelTypes, coeffs, plane_indices, error);
-//   modeling->getNurbs(modelTypes, nurbs, nurbs_indices, error);
   modeling->getResults(pcl_model_types, pcl_model_indices, error);      // TODO Nur für Anzeige notwendig!
-  log("NURBS-Fitting end!");
+  log("NURBS-Fitting end: size of surfaces: %u", surfaces.size());
 
-// printf("surfaces.size(): %u\n", surfaces.size());
-// for(unsigned i=0; i< pcl_model_types.size(); i++) 
-// {
-//   if(pcl_model_types[i] = pcl::SACMODEL_PLANE)
-//     printf("plane\n");
-//   else 
-//     printf("no plane!\n");
-// }
+for(unsigned i=0; i< pcl_model_types.size(); i++) {
+  if(pcl_model_types[i] = pcl::SACMODEL_PLANE)
+    printf(" %u is plane\n", i);
+  else 
+    printf(" %u is no plane!\n", i);
+}
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f\n", timespec_diff(&current, &last));
@@ -482,19 +478,19 @@ last = current;
 
 /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 
-  log("Fourier: start");
-  surf::Fourier fourier;
-  cv::Mat_<cv::Vec3b> kinect_image;
-  ConvertImage(*iplImage_k, kinect_image);
-  fourier.setInputImage(kinect_image);
-  fourier.compute();
-
-clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-printf("Runtime for SegLearner: Fourier: %4.3f\n", timespec_diff(&current, &last));
-last = current; 
-
-//   fourier.check();
-  log("Fourier: end");
+//   log("Fourier: start");
+//   surface::Fourier fourier;
+//   cv::Mat_<cv::Vec3b> kinect_image;
+//   ConvertImage(*iplImage_k, kinect_image);
+//   fourier.setInputImage(kinect_image);
+//   fourier.compute();
+// 
+// clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+// printf("Runtime for SegLearner: Fourier: %4.3f\n", timespec_diff(&current, &last));
+// last = current; 
+// 
+// //   fourier.check();
+//   log("Fourier: end");
   
   /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 
@@ -504,7 +500,7 @@ last = current;
   std::vector<int> anno_background_list;
   annotation->load(pointCloudWidth, anno, true);            /// TODO TODO TODO TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
 //   annotation->setIndices(pcl_model_indices);
-  annotation->setSurfaces(surfaces);
+  annotation->setSurfaceModels(surfaces);
   annotation->calculate();
   annotation->getResults(nr_anno, anno_pairs, anno_background_list);
 //   for(unsigned i=0; i<anno_pairs.size(); i++) {
@@ -523,11 +519,12 @@ last = current;
   log("Calculate patch-relations start!");
   std::vector<Relation> relation_vector;
   patches->setInputImage(iplImage_k);
-  patches->setInputCloud(pcl_cloud, pcl_normals);
-  patches->setPatches(surfaces);
+  patches->setInputCloud(pcl_cloud);
+  patches->setNormals(pcl_normals);
+  patches->setSurfaceModels(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);
   patches->setTexture(texture);
-  patches->computePatchModels(true);
+  patches->computeOptimalPatchModels(true);
 //  patches->computeNeighbors();
   patches->computeLearnRelations();
 //   patches->getNeighbors(neighbors);
@@ -544,10 +541,16 @@ last = current;
 
   /// write svm-relations to file!
   log("process svm");
-  svm->init(relation_vector);
+  svm->setRelations(relation_vector);
   svm->setAnalyzeOutput(true);
   svm->process();
   log("process svm ended");
+  
+  svm::Statistics *stat = new svm::Statistics();
+  stat->readSamplesFromFile("PP-Trainingsset.txt");
+  stat->compute();
+  stat->printCovarianceMatrix();
+  stat->printCorrelationMatrix();
 
 clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 printf("Runtime for SegLearner: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
@@ -934,16 +937,16 @@ void SegLearner::SingleShotMode()
       
     case  '0':
     {
-      log("Show mesh of surfaces");
-      tgRenderer->ClearModels();
-      tgRenderer->Clear();
-      for(unsigned i=0; i<surfaces.size(); i++)
-      {
-        tgRenderer->AddModel(surfaces[i]->mesh);
-//         if(surfaces[i]->type == MODEL_NURBS)
-//           DrawNURBS(tgRenderer, surfaces[i]->nurbs, 1);
-      }
-      tgRenderer->Update();
+      log("Show mesh of surfaces. wait ...");
+        surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
+        createMesh.setInputCloud(pcl_cloud);
+        createMesh.compute(surfaces);
+
+        tgRenderer->ClearModels();
+        for (unsigned i=0; i<surfaces.size(); i++)
+          tgRenderer->AddModel(&surfaces[i]->mesh);
+        tgRenderer->Update();
+      log("Show mesh of surfaces. done.");
       break;
     }
 //           
@@ -1074,6 +1077,19 @@ void SegLearner::SingleShotMode()
       tgRenderer->Update();
       break;
       
+    case 's':
+    {
+      log("Calculate statistics: covariance matrix");
+//       svm::Statistics stat;
+//       stat.readSamplesFromFile("PP-Trainingsset.txt");
+//       stat.compute();
+//       cv::Mat covariance;
+//       stat.getCovarianceMatrix(covariance);    
+        // print covariance matrix
+//         printf("
+    }   
+      break;
+      
     case 'x':
       log("End Single-Shot mode!");
       single = false;
@@ -1084,8 +1100,7 @@ void SegLearner::SingleShotMode()
       static bool drawNodeID = false;
       drawNodeID = !drawNodeID;
       kcore->DrawNodeID(drawNodeID);
-      break;   
-      
+      break;     
   }
 }
 
