@@ -1,0 +1,8 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+#HOST 192.168.218.14
+#HOST 130.237.218.219
+HOST localhost
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host 192.168.218.4 #--debug
+COMPONENT CPP odom.client PushClientOdometry --log  #--debug
+
