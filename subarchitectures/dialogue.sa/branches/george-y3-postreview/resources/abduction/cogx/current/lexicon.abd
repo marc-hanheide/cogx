@@ -1,0 +1,12 @@
+%-------------------------------------------------------------------------
+% LEXICON
+%-------------------------------------------------------------------------
+
+valid_objecttype(thing, box, box).
+valid_objecttype(thing, ball, ball).
+valid_objecttype(thing, mug, mug).
+
+valid_material(_, cornflakes, cornflakes).
+valid_material(_, cookies, cookies).
+
+%-------------------------------------------------------------------------

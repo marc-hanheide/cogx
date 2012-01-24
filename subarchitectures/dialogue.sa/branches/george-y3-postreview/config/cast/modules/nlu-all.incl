@@ -1,0 +1,13 @@
+VARDEFAULT parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
+VARDEFAULT irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
+
+JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.StandbyModeManager --unlock-phrase "continue" --unlock-threshold 0.65
+
+# phonological string -> linguistic meaning
+JAVA MG	parser	             de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar %(parsing_grammar) --log true
+JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.SimpleParseSelection
+JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.FakeReferenceResolution
+
+# intention recognition
+#JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost)  --dumpfile %(dump_file)
+JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost)

@@ -1,0 +1,14 @@
+// Content Goal Plan level 
+
+// CONTENT: Add a content structure under a DVP if not given
+
+:dvp ^ ! <Content>
+-> 
+# ^ <Content> ( #v:top ),
+##noInitialContent = true.
+
+// SPEECHACT: Set the global variable for recording the speech act
+
+:dvp ^ <SpeechAct>#v
+->
+##speechact = #v.

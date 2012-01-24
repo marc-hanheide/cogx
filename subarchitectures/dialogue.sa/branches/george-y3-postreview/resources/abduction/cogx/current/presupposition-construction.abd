@@ -1,0 +1,113 @@
+% Extracts the features of presupposed beliefs. These are marked as
+%
+%   bel : fv(RootNom, FeatName, FeatValue)
+%
+% where RootNom is the root nominal of the sub-tree, FeatName is the
+% name of the feature, and FeatValue is the value of the feature.
+%
+% So e.g.
+%   bel : fv(box_1, 'Color', red)
+%
+% means that the tree rooted at the nominal box_1 specifies that
+% the referred belief has a feature 'Color' which has the value 'red'.
+
+%-------------------------------------------------------------------------
+% ROOT
+%-------------------------------------------------------------------------
+
+% ascriptions
+presuppositions_in(Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	find_ref_features(RestrNom, RestrNom).
+
+presuppositions_in(Nom) <-
+	i : rel_Patient(Nom, PatNom),
+	find_ref_features(PatNom, PatNom).
+
+presuppositions_in(Nom) <-
+	i : feat_Mood(Nom, int),
+	i : rel_Subject(Nom, SubjNom),
+	find_ref_features(SubjNom, SubjNom).
+
+presuppositions_in(Nom) <-
+	i : rel_Recipient(Nom, RecpNom),
+	find_ref_features(RecpNom, RecpNom).
+
+presuppositions_in(Nom) <-
+	i : rel_Patient(Nom, PatNom),
+		i : 'rel_Scope-in'(PatNom, ScopeNom),
+			i : rel_Subject(ScopeNom, SubjNom),
+			find_ref_features(SubjNom, SubjNom).
+
+%-------------------------------------------------------------------------
+%-------------------------------------------------------------------------
+
+%ref_restr(BId, Nom) <-
+%	assume_has_no_properties(Nom) / p(0.5).
+
+find_ref_features(BId, Nom) <-
+	i : feat_Delimitation(Nom, unique),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific),
+	bel : fv(BId, exists, yes) / 0.0,
+	try_objecttype(BId, Nom),
+	try_proximity(BId, Nom),
+	try_modifier(BId, Nom).
+
+% "it"
+find_ref_features(BId, Nom) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, it),
+	i : feat_Num(Nom, sg),
+	bel : fv(BId, 'linguisticSalience', high) / 0.0.
+
+find_ref_features(BId, Nom) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, Prop),
+	bel : fv(BId, 'color', Prop) / 0.0.
+
+find_ref_features(BId, Nom) <-
+	i : sort(Nom, 'q-size'),
+	i : prop(Nom, Prop),
+	bel : fv(BId, 'size', Prop) / 0.0.
+
+find_ref_features(BId, Nom) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, Prop),
+	bel : fv(BId, 'shape', Prop) / 0.0.
+
+%-------------------------------------------------------------------------
+
+try_objecttype(BId, Nom) <-
+	has_no_objecttype(Nom) / 1.0.
+
+try_objecttype(BId, Nom) <-
+	i : sort(Nom, Sort),
+	i : prop(Nom, Prop),
+	valid_objecttype(Sort, Prop, Type),
+	bel : fv(BId, 'objecttype', Type) / 0.0.
+
+%-------------------------------------------------------------------------
+
+try_modifier(BId, Nom) <-
+	has_no_modifier(Nom) / 1.0.
+
+try_modifier(BId, Nom) <-
+	i : rel_Modifier(Nom, ModNom),
+	find_ref_features(BId, ModNom).
+
+%-------------------------------------------------------------------------
+
+try_proximity(BId, Nom) <-
+	has_no_proximity(Nom) / 1.0.
+
+try_proximity(BId, Nom) <-
+	i : feat_Proximity(Nom, Proximity),
+	proximity_to_salience(Proximity, Salience),
+	bel : fv(BId, 'visualSalience', Salience) / 0.0.
+%	bel : fv(BId, 'proximity', Proximity) / 0.0.
+
+proximity_to_salience(proximal, high).
+prozimity_to_salience(distal, low).

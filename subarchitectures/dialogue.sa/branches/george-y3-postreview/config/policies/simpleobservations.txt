@@ -1,0 +1,6 @@
+obs1 = "one"
+obs2 = "two"
+obs3 = "three"
+obs4 = "four"
+obs5 = "five"
+obs6 = "six"

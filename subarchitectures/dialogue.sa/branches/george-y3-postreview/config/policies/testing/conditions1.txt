@@ -1,0 +1,6 @@
+obs1 = CI["one"]
+obs2 = CI["two"]
+obs3 = CI["three"]
+obs4 = CI["four"]
+obs5 = CI["five"]
+obs6 = CI["six"]

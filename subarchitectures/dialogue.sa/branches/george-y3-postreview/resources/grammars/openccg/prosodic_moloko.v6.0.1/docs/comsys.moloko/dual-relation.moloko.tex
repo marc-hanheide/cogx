@@ -1,0 +1,96 @@
+\section{Dual-Relation Words} \label{sec-Dual-Relation-Words}
+ 
+In section \ref{sec-Semantic-Relations}, we saw that some word classes need to be able to play the role of both modifiers and dependents. We will first consider how this is handled in 'traditional' \textsc{CCG} and outline its limitations.  We will then describe how these were overcome in Moloko.
+ 
+ \subsection{Dual-Relation words in standard \textsc{CCG} }
+
+In standard \textsc{CCG}, the dual functionality of such words is handled by assigning them two entirely separate lexical families. So, for example, the adjective \emph{bigger} would receive:
+
+\begin{enumerate}
+\item \catg{adj\id{M}}    :    \atsign{b1}{size}( \wand\  \prop{big} \wand\ \diam{Degree}(comparative) )
+\item \catg{n\id{T} \fwdsl{} n\id{T} }  : \\ \atsign{t1}{entity}(  \diam{Modifier}(b1:size \wand\  \prop{big} \wand\ \diam{Degree}(comparative) ) )
+\end{enumerate}
+In the first case, \emph{bigger} is given an atomic category \catg{adj} and thus provides it with its own semantic head M. This variable can then be 'selected for', and then used to fill a dependency role, allowing \emph{bigger} to act as a dependent. Consider again the sentence \emph{I made it bigger} from above. At the point in the incremental parsing of this sentence, just before the word \emph{bigger} is reached, we have this partial parse \\
+
+parse: \catg{s \fwdsl{} adj } 
+\vspace{-1.5em} %% some negative vertical spacing
+
+\begin{align*}
+\atsign{m1}{action-non-motion}(& \prop{make}  \\ 
+      & \wand\ \diam{Mood}(ind) \\
+      & \wand\ \diam{Actor}(i1:person \wand\ \prop{I} \wand\ \diam{Num}(sg))  \\ 
+      & \wand\ \diam{Patient}(b1:thing \wand\ \prop{it} \wand\ \diam{Num}(sg))  \\
+      & \wand\ \diam{Result}x1:quality )
+\end{align*}
+In order for this sentence to recieve a complete parse, syntactically it 'needs' an adjective (atomic cat \catg{adj} ) to its left, an adjective whose nominal variable would semantically fill its currently empty  \diam{Result} role. When the word \emph{bigger} is encountered next, lexical reading 1) above is employed, and the variable M fills this missing role.
+
+As for the second reading above, \emph{bigger} simply adds its semantic content to the modifee (in this case T, the entity designated by the noun). This is much clearer if we consider how \textsc{CCG}, being a dependency grammar, treats modifiers. Syntactically, modifiers are treated  as identity functions: they take an argument of category X and return the same category X. This is done by giving modifiers a complex category, one which specifies both the modifee's syntactic category and its combinatorial possible locations (via its slash direction and mode). The intuition here, is that despite their semantic differences, syntactically \emph{dog} behaves identically to \emph{big dog},  or \emph{big scary dog} or even \emph{big scary dog running right towards you}.  It is instead on the semantic side that modifiers do their work: they take the nominal variable associated with their modifee and attach some 'new' semantic content to it, that is they modify it. 
+
+Unfortunately, by creating two separate readings--one for each relation--we are forced into a few unexpected limitations. First, consider the following two sentences, where the examples from section \ref{sec-Semantic-Relations} have been slightly altered by the addition of the word \emph{much}
+\begin{itemize}
+\item	 I made it much bigger
+\item	 I wanted the much bigger picture
+\end{itemize}
+Cases like these can be handled quite simply by treating the word \emph{much} as an adjective pre-modifier (Note: of type 'degree')\\
+
+\catg{adj\id{M} \fwdsl{} adj\id{M} }  : \atsign{m1}{modifier}(  \diam{Modifier}(m2:degree \wand\  \prop{much}  ) ) \\\\
+This then combines with \emph{bigger} creating \emph{much bigger}, a 'new' adjective whose nominal variable M is given the semantic content of \emph{much}:
+
+\vspace{-1.5em} %% some negative vertical spacing
+\begin{align*}
+\atsign{b1}{size}(& \prop{big}  \\ 
+      & \wand\ \diam{Degree}(comparative) \\
+      & \wand\ \diam{Modifier}(m2:degree \wand\  \prop{much} )) 
+\end{align*} 
+This can then act as a dependent, e.g. filling the \diam{Resultant} role in \emph{made}, in exactly the same way as a simple, unmodified adjective.
+
+It is in the second sentence that we enounter a problem. As we saw above, modifiers require a nominal variable to attach their 'modifying' semantic content to. This is true of any linguistic unit acting as modifier, whether it is a single word like \emph{big} or \emph{quickly}, or a larger constituent like \emph{on the table} , \emph{that I told you about} or \emph{when you come back}. It is also true regardless of the type of the modifee. This was the case in section \ref{sec-Semantic-Relations}, and also with \emph{much} directly above: because the atomic category version of adjectives already has a nominal variable (to be selected for as a dependent), it can easily be modified. However, this is not the case for the 'modifier' reading of adjectives, prepositions and adverbs: currently, complex categories do not receive their own nominal variables in \textsc{OpenCCG}. So in the case of \emph{bigger} above, the nominal variable T can be used to 'refer' to the modified entity, but unlike the dependent-version in 1), there is no separate nominal variable refers to the adjective as a whole. Consequently, there is no way to modify an adjective operating in this way; or more generally, it is impossible to modify a modifier.
+
+This is a signicant problem. It rules out the possibility of parsing, or generating sentences like these:
+\begin{itemize}
+\item	Adverb Modifiers: go to the kitchen \underline{very slowly}, please don't do it \underline{so quickly}
+\item	Adjective Modifiers:	I want the \underline{really big} one
+\item Preposition (pp) Modifiers: walk \underline{over to GJ}, walk \underline{up to the table} 
+\end{itemize}									 
+A second highly similar problem is that without semantic heads, modifiers performing the modifying role cannot be conjoined, i.e. sentences like \emph{the \underline{green and yellow} ones  }, \emph{put it on the table \underline{quickly but carefully}  } and \emph{I walked \underline{in the room and around the desk}} cannot be handled. 
+	
+\subsection{Dual-Relation Words in Moloko} \label{sec-Dual-Relation-in-Moloko}
+
+These limitations were addressed in the Moloko grammar through the use a single reading for dual-relation words in combination with type-changing rules. Adjectives, prepositions and adverbs are given only an atomic category reading, and consequently always have a nominal variable, allowing them to serve as dependents (including being modified). To perform their modifying function, these basic categories can be 'transformed' or 'exploded' into their complex combinatorial form. For example, Moloko contains this type-changing rule for adjectives: \\
+
+\catg{adj\id{M}}   \arrow \catg{n\id{T}\fwdsl{} n\id{T} }  : \atsign{t1}{entity}(  \diam{Modifier}(m1) ) ) \\ \\
+The result is the familiar pre-nominal adjective reading, but instead of the  \diam{Modifier} relation receiving its contents off-line (directly from the lexicon), this rule dynamically copies the contents of the atomic version's nominal variable (M) into the 'open' dependency relation: in some sense it turns modification into some form of bizarre dependency. What is crucial here is that this rule acts on any linguistic constituent with category adj encountered during parsing, including already modified adjs.
+Thus, while parsing \emph{I want the really big one}, the rule can operate either on {big} or on {really big}\footnote{ in actuality, it operates on \emph{really} alone. See the second example in the section on Incrementalilty ( \ref{sec-Incrementality} ).}
+
+By continually using adjectives as an example, we have masked a very important fact: most modifiers have a variety of combinatorial possibilities. Consider the adverb \emph{normally}. It can placed in a variety of locations within the clause:
+\begin{itemize}
+\item	\emph{normally} you can get it from GJ
+\item	you \emph{normally} can get it from GJ
+\item	you can \emph{normally} get it from GJ
+\item	you can get it from GJ \emph{normally}
+\end{itemize}
+These different syntactic permutations are handled by giving \emph{normally} multiple readings, each with a different syntactic form. In the standard \textsc{CCG} approach, this is done by giving these words multiple lexical entries. Of course this leads to the same problems mentioned above. In the Moloko grammar, we handle this variability by creating a type-changing rule for each syntactic possibility. So for example, here are two adverb type-changing rules: 
+
+\begin{itemize}
+\item \catg{adv\id{M}}   \arrow \catg{s\id{E} \fwdsl{} s\id{E} }  : \atsign{e1}{event}(  \diam{Modifier}(m1) ) ) 
+\item \catg{adv\id{M}}   \arrow \catg{s\id{E} \backsl{} s\id{E} }  : \atsign{e1}{event}(  \diam{Modifier}(m1) ) )
+\end{itemize}
+
+However, this still leaves one major issue unresolved: different words within the same
+syntactic class can behave differently. Compare the adverb \emph{normally} to the adverb \emph{too}
+(with the meaning of  \emph{also}):
+\begin{itemize}
+\item	* too you can get it from GJ
+\item	you too can get it from GJ
+\item	? you can too get it from GJ
+\item	you can get it from GJ too
+\end{itemize}
+To account for these 'idiosyncracies', each word must somehow specify its behaviour. Again, in standard \textsc{CCG} this can be done easily by assigning a word to only its appropriate families. In Moloko, this is done instead by 'naming' each type-changing rule and for each word, specifying lexically which rules can apply to it. We could have created a binary syntactic feature for each rule, and thus basically would specify + values for each feature, and too would specify - for the rules it wishes to block. However, to
+avoid this explosion of features, all of this information is instead contained in a single syntactic feature called cc-type (complex-category type). Here is a more detailed look at some of the rules used for adverbs:
+\begin{itemize}
+\item \catg{adv\fb{\fid{M}, cc-type=pre-s} }    \arrow  \\\catg{s\id{E} \fwdsl{} s\id{E}}  : \atsign{e1}{event}(  \diam{Modifier}(m1) ) ) 
+\item \catg{adv\fb{\fid{M}, cc-type=pre-s}}   \arrow \\\catg{s\id{E} \backsl{} s\id{E}}  : \atsign{e1}{event}(  \diam{Modifier}(m1) ) )
+\end{itemize}
+These individual, rule-specific feature values are then grouped (via multiple inheritance) in the syntactic feature heirarchy. This creates a set of 'syntactic classes', each  specifying exactly which rules can apply (and can't apply) to words belonging to this class, and hence enforces the appropriate combinatorially behaviours. 
+
+Each of the Dual-Relation parts of speech (\catg{adj}, \catg{adv} and \catg{prep}) has its own set of syntactic classes (e.g. adv1, adv2, adv3, etc), and each word from these POS belongs to one of these classes. This is specified lexically via macro. 

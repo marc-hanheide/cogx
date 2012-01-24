@@ -1,0 +1,24 @@
+# domain definition for George
+
+color:
+	red
+	blue
+	green
+	orange
+	black
+	white
+
+shape:
+	compact
+	elongated
+	flat
+#	spherical
+#	cylindrical
+	conical
+	cuboid
+
+ident:
+	box
+	ball
+#	mug
+#	colacan

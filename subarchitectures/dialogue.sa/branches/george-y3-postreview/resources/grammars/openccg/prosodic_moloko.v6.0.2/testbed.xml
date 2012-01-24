@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<regression name="moloko.ccg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testbed.xsd">
+  <item string="this is a red box" numOfParses="1"/>
+  <item string="this is a red box LL%" numOfParses="0"/>
+  <item string="this is a red@H* box@H* LL%" numOfParses="1"/>
+  <item string="this is a red@H* box LL%" numOfParses="1"/>
+  <item string="this is a red box@H* LL%" numOfParses="1"/>
+  <item string="this is@L+H* LH% a red@H* box@H* LL%" numOfParses="1"/>
+  <item string="this is@L+H* LH% a red@H* box LL%" numOfParses="1"/>
+  <item string="this is@L+H* LH% a red box@H* LL%" numOfParses="1"/>
+  <item string="the box is red" numOfParses="1"/>
+  <item string="the box is red LL%" numOfParses="0"/>
+  <item string="the box is red@H* LL%" numOfParses="1"/>
+  <item string="the box@H* is red LL%" numOfParses="1"/>
+  <item string="the box@H* is red@H* LL%" numOfParses="1"/>
+  <item string="the box@H* LL% is red" numOfParses="1"/>
+  <item string="the box@L+H* is LH% red@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* LH% is red@H* LL%" numOfParses="1"/>
+  <item string="the box@L+H* LH% is@H* LL% red@L+H* LL%" numOfParses="1"/>
+</regression>

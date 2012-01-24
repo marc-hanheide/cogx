@@ -1,0 +1,7 @@
+SETVAR mary_voice=dfki-prudence-hsmm
+SETVAR max_readings=1
+
+INCLUDE default+gui.cast
+
+INCLUDE modules/refres-fake.incl
+#INCLUDE modules/refgen-fake.incl

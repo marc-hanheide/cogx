@@ -1,0 +1,314 @@
+% @d1:dvp(c-goal  ^ /SpeechAct\assertion  ^ /Relation\accept ^ /AcknoModality\vision)
+% what do i have here
+%generate : intention : new_object_visible(Entity) <-
+%	dummy_nom1(Nom),
+%	i : sort(Nom, dvp) / 1.0,
+%	i : prop(Nom, 'c-goal') / 1.0,
+%	i : feat_SpeechAct(Nom, assertion) / 1.0,
+%	i : feat_Relation(Nom, accept) / 1.0,
+%	i : feat_AcknoModality(Nom, vision) / 1.0,
+%	event : produce(r, Nom) / 1.0.
+
+generate : intention : value_verification_request(h, Object, Prop, PropValue) <-
+	check_property_value(Object, Prop, known(PropValue)),
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : feat_AnswerType(Nom, positive) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : value_verification_request(h, Object, Prop, PropValue) <-
+	check_property_value(Object, Prop, known(DifferentValue)),
+	PropValue \= DifferentValue,
+	dummy_againnom(AgNom),
+	i : sort(AgNom, dvp) / 1.0,
+	i : prop(AgNom, 'c-goal') / 1.0,
+	i : feat_CannedText(AgNom, 'No') / 1.0,
+	event : produce(r, AgNom) / 1.0,
+	reply_to_result(Nom, Object, Prop, known(DifferentValue)),
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : value_verification_request(h, Object, Prop, PropValue) <-
+	check_property_value(Object, Prop, unknown),
+	generate : i_dont_know(Nom, Prop),
+	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+%generate: i_dont_know(Nom) <-
+%	i : feat_CannedText(Nom, 'I_do_not_know') / 1.0.
+
+%@d1:dvp(c-goal  ^ <SpeechAct>assertion  ^ <Relation>answer ^ <Content>(e1:cognition ^ know ^ <Polarity>neg ^ <Actor>(i:person ^ I ))
+generate : i_dont_know(Nom, Prop) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
+	dummy_nom4(PatNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, cognition) / 1.0,
+		i : prop(ContentNom, know) / 1.0,
+		i : feat_Polarity(ContentNom, neg) / 1.0,
+		i : rel_Actor(ContentNom, ActorNom) / 1.0,
+			i : sort(ActorNom, person) / 1.0,
+			i : prop(ActorNom, 'I') / 1.0,
+			i : feat_ProofStatus(ActorNom, assumed) / 1.0,
+		add_patient(ContentNom, PatNom, Prop).
+
+%----------------------------------------------------------------------
+
+generate : intention : ask_known(h, Object, objecttype) <-
+	check_property_value(Object, objecttype, Result),
+	describe(Nom, Object, Result),
+	event : produce(r, Nom) / 1.0.
+
+% what Prop is the Object
+generate : intention : ask_property(h, Object, Prop) <-
+	check_property_value(Object, Prop, Result),
+	reply_to_result(Nom, Object, Prop, Result),
+	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+describe(Nom, Object, unknown) <-
+	generate : i_dont_know(Nom, objecttype).
+%	describe(Nom, Object, known(object)).
+
+	% value known
+describe(Nom, Object, known(Type)) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	propname_to_questiontype(objecttype, QuestionType),
+	i : feat_QuestionType(Nom, QuestionType) / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : prop(ContentNom, be) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			generate : it(TargetNom),
+		add_prop_value_to_protolf(ContentNom, PropNom, objecttype, Type),
+		add_colour_if_known(PropNom, Object).
+%		i : feat_ProofStatus(PropNom, asserted) / 1.0.
+
+add_colour_if_known(Nom, Object) <-
+	check_property_value(Object, color, unknown) / 10.0.
+
+add_colour_if_known(Nom, Object) <-
+	check_property_value(Object, color, known(ColorValue)),
+	i : feat_Color(Nom, ColorValue) / 1.0.
+%	dummy_nom5(ColorNom),
+%	add_prop_value_to_protolf(Nom, ColorNom, color, ColorValue).
+
+%----------------------------------------------------------------------
+
+generate : intention : find_object(h, Prop, PropValue) <-
+	check_property_value(Union, Prop, known(PropValue)),
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : prop(ContentNom, be) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			i : feat_ProofStatus(TargetNom, asserted) / 1.0,
+			referring_expression(TargetNom, Union),
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, PropValue),
+			i : feat_ProofStatus(PropNom, assumed) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : find_object(h, Prop, PropValue) <-
+	no_such_object(Prop, PropValue) / 15.0,
+	utt_head(Nom),
+	generate : i_dont_know(Nom, objecttype),  % XXX hackish
+	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+	% value unknown
+reply_to_result(Nom, Object, Prop, unknown) <-
+	generate : i_dont_know(Nom, Prop).
+
+	% value known
+reply_to_result(Nom, Object, Prop, known(Value)) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(PropNom),
+	propname_to_questiontype(Prop, QuestionType),
+	i : feat_QuestionType(Nom, QuestionType) / 1.0,
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : prop(ContentNom, be) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			generate : it(TargetNom),
+		i : feat_ProofStatus(TargetNom, assumed) / 1.0,
+		add_prop_value_to_protolf(ContentNom, PropNom, Prop, Value).
+%		i : feat_ProofStatus(PropNom, asserted) / 1.0.
+
+%----------------------------------------------------------------------
+
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\accept)
+generate : intention : grounding(Ag, Modality, assertionVerified) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, accept) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(h, discourse, assertionVerified) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, thanking) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(h, discourse, assertionFalsified) <-
+	utt_head(Nom),
+	i : feat_Relation(Nom, filler) / 1.0,
+%	i : feat_CannedText(Nom, 'Too_bad') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : grounding(r, vision, assertionFalsified) <-
+	utt_head(Nom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, reject) / 1.0,
+	i : feat_AcknoModality(Nom, vision) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+generate : intention : value_assertion(h, Object, Property) <-
+	utt_head(Nom),
+	i : feat_Relation(Nom, hold) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+generate : intention : need_get_value(Modality, Entity, Prop, repeated) <-
+	dummy_againnom(AgNom),
+	i : sort(AgNom, dvp) / 1.0,
+	i : prop(AgNom, 'c-goal') / 1.0,
+	i : feat_CannedText(AgNom, 'That_is_not_what_I_meant') / 1.0,
+	event : produce(r, AgNom) / 1.0,
+	generate : intention : need_get_value0(Modality, Entity, Prop).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : intention : need_get_value(Modality, Entity, Prop, not_repeated) <-
+	generate : intention : need_get_value0(Modality, Entity, Prop).
+
+%what color does the box have
+generate : intention : need_get_value0(Modality, Entity, Prop) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(QualityNom),
+	%k(now, private(r)) : objecttype(Object, box),
+	%k(now, private(r)) : color(Object, unknownColor),
+%	k(now, attrib(r, h)) : objecttype(Entity, Type) / 1.0,
+	%k(now, attrib(r, h)) : objecttype(Entity, Type),
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			referring_expression(TargetNom, Entity),
+		add_prop_value_to_protolf(ContentNom, QualityNom, Prop, Prop),
+%		i : rel_Color(ContentNom, QualityNom) / 1.0,
+%			i : sort(QualityNom, quality) / 1.0,
+%			i : prop(QualityNom, color) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0,
+			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+referring_expression(Nom, Union) <-
+	check_property_value(Union, objecttype, known(Type)),
+	i : sort(Nom, entity) / 1.0,
+	i : prop(Nom, Type) / 1.0,
+	i : feat_InfoStatus(Nom, familiar) / 1.0.
+	
+referring_expression(Nom, Union) <-
+	check_property_value(Union, objecttype, unknown),
+	generate : this(Nom).
+
+%----------------------------------------------------------------------
+
+% is the object blue
+%d1:dvp(c-goal  ^ <SpeechAct>question  ^  <Content>(e1:ascription ^ <Target>(b2:entity ^ <InfoStatus>familiar ^ object)  ^ <Color>(b3:quality ^ blue)))
+generate : intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) <-
+	Prop \= objecttype,
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(QualityNom),
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			referring_expression(TargetNom, Entity),
+		add_prop_value_to_protolf(ContentNom, QualityNom, Prop, Hypothesis),
+		i : rel_Color(ContentNom, QualityNom) / 1.0,
+			i : feat_Questioned(QualityNom, true) / 1.0,
+			i : feat_ProofStatus(QualityNom, asserted) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+generate : intention : need_verify_hypothesis(Modality, Entity, objecttype, Hypothesis) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(TargetNom),
+	dummy_nom4(TypeNom),
+	i : feat_SpeechAct(Nom, question) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, ascription) / 1.0,
+		i : rel_Target(ContentNom, TargetNom) / 1.0,
+			generate : it(TargetNom),
+		i : rel_Type(ContentNom, TypeNom) / 1.0,
+			i : sort(TypeNom, 'entity') / 1.0,
+			i : prop(TypeNom, Hypothesis) / 1.0,
+			i : feat_Questioned(TypeNom, true) / 1.0,
+			i : feat_ProofStatus(TypeNom, asserted) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%----------------------------------------------------------------------
+
+generate : intention : not_understood(Ag) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'Sorry_I_did_not_understand') / 1.0,
+	%i : feat_SpeechAct(Nom, assertion) / 1.0,
+	%i : feat_Relation(Nom, reject) / 1.0,
+	%i : feat_AcknoModality(Nom, action) / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%-------------------------------------------------------------------------
+
+generate : intention : reuse_last_intention(h, Id) <-
+	utt_head(Nom),
+	i : feat_CannedText(Nom, 'I_do_not_know_what_you_mean') / 1.0,
+	event : produce(r, Nom) / 1.0.
+
+%-------------------------------------------------------------------------
+
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\alreadyTrue) 
+
+% @d1:dvp(c-goal ^ /SpeechAct\assertion ^ /Relation\answer ^ /Content\(e1:cognition ^ know ^ /Actor\(i:person ^ I) ^ /Patient\(b:entity ^ object ^ /Salient\true))  )
+generate : intention : already_grounded(r, Union, Prop) <-
+	utt_head(Nom),
+	dummy_nom2(ContentNom),
+	dummy_nom3(ActorNom),
+	dummy_nom4(PatientNom),
+	i : feat_SpeechAct(Nom, assertion) / 1.0,
+	i : feat_Relation(Nom, answer) / 1.0,
+	i : rel_Content(Nom, ContentNom) / 1.0,
+		i : sort(ContentNom, cognition) / 1.0,
+		i : prop(ContentNom, know) / 1.0,
+		i : rel_Actor(ContentNom, ActorNom) / 1.0,
+			i : sort(ActorNom, person) / 1.0,
+			i : prop(ActorNom, 'I') / 1.0,
+		i : rel_Patient(ContentNom, PatientNom) / 1.0,
+			generate : this(PatientNom),
+	event : produce(r, Nom) / 1.0.

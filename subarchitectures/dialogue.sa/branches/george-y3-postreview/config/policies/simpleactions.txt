@@ -1,0 +1,6 @@
+start = ""
+action1 = "act 1"
+action2 = "act 2"
+action3 = "act 3"
+end1 = ""
+end2 = ""

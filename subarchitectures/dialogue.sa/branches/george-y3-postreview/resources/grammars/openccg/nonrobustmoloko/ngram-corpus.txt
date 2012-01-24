@@ -1,0 +1,71 @@
+a ball
+color game
+Borland book
+what colour is a ball
+which colour is a ball
+what colour is a box
+which colour is a box
+what colour is a triangle
+which colour is a triangle
+what size is a ball
+which size is a ball
+what size is a box
+which size is a box
+what size is a triangle
+which size is a triangle
+what shape is a ball
+which shape is a ball
+what shape is a box
+which shape is a box
+what shape is a triangle
+which shape is a triangle
+is the thing elongated
+is the thing compact
+is this elongated
+is this compact
+is it elongated
+is it compact
+is the thing green
+is the thing blue
+is the thing red
+is the thing black
+is the thing orange
+is it green
+is it red
+is it blue
+is it black
+is it orange
+is this green
+is this red
+is this blue
+is this black
+is this orange
+is the colour of the box red
+is the colour of the thing red
+is the colour of the thing blue
+is the colour of the thing green
+is the colour of the thing orange
+is the box red
+is the colour of this green
+is the box red
+is the ball red
+is a box red
+is a ball red
+this is a ball
+this is a box
+this is a car
+this is a cow
+this is a triangle
+this is a star
+the room is a kitchen
+the room is the kitchen
+I see a ball
+I see the ball
+I see a box
+I see the box
+I see a triangle
+I see the car
+the color game
+the shape game
+I am playing the color game
+I am playing the shape game

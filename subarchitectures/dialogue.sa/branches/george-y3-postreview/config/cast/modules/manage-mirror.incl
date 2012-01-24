@@ -1,0 +1,6 @@
+#JAVA MG int-to-cint          de.dfki.lt.tr.cast.dialogue.IntentionToCommunicativeIntentionForwarder --log true
+#JAVA MG cint-to-int          de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionToIntentionForwarder --log true
+
+#JAVA MG cint-mirror          de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionMirror --log true
+
+JAVA MG new-int-mirror  de.dfki.lt.tr.cast.dialogue.NewIntentionMirror

@@ -1,0 +1,7 @@
+SETVAR mary_voice=dfki-obadiah-hsmm
+SETVAR max_readings=2
+
+INCLUDE default+gui.cast
+
+#INCLUDE modules/refres-fake.incl
+INCLUDE modules/refgen-belprop.incl

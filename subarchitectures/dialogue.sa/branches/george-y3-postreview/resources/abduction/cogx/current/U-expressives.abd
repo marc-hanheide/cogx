@@ -1,0 +1,73 @@
+%-------------------------------------------------------------------------
+% ENGAGEMENT
+%-------------------------------------------------------------------------
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, greeting),
+	? understand : i : intention(Nom, Int),
+	human_initiative(Nom) / p(0.2),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'engagement-opening') / p(1.0).
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, greeting),
+	? type_of_question_under_discussion(_QUDAddr, Int, 'engagement-opening'),
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'engagement-opening') / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, closing),
+	? understand : i : intention(Nom, Int),
+	human_initiative(Nom) / p(0.2),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'engagement-closing') / p(1.0).
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, greeting),
+	? understand : i : intention(Nom, Int),
+	? type_of_question_under_discussion(_QUDAddr, Int, 'engagement-closing'),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'engagement-closing') / p(1.0).
+
+%-------------------------------------------------------------------------
+
+%understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+%	i : sort(Nom, communication),
+%	i : prop(Nom, thank),
+%	? understand : i : intention(Nom, Int),
+%	human_initiative(Nom) / p(0.8),
+%	int : agent(Int, Speaker) / p(1.0),
+%	int : string_content(Int, type, 'thanking') / p(1.0).
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, communication),
+	i : prop(Nom, thank),
+	? understand : i : intention(Nom, Int),
+	? type_of_question_under_discussion(_QUDAddr, Int, 'assertion'),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'thanking') / p(1.0).
+
+%-------------------------------------------------------------------------
+
+appreciation_marker(fine).
+appreciation_marker(right).
+appreciation_marker(cool).
+appreciation_marker(ok).
+
+appreciation_sort(marker).
+appreciation_sort('q-attitude').
+
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, Sort),
+	i : prop(Nom, Prop),
+	appreciation_sort(Sort),
+	appreciation_marker(Prop),
+	? understand : i : intention(Nom, Int),
+	? type_of_question_under_discussion(_QUDAddr, Int, 'assertion'),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'acknowledgment') / p(1.0).
+
+%-------------------------------------------------------------------------

@@ -1,0 +1,11 @@
+correlation = [
+	(ling_to_observed(exists(yes), exists(yes))) = p(1.0),
+
+	(ling_to_observed(linguisticsalience(high), linguisticsalience(high))) = p(0.8),
+	(ling_to_observed(linguisticsalience(high), linguisticsalience(low))) = p(0.2),
+
+	(ling_to_observed(linguisticsalience(high), salience(nonzero))) = p(0.4),
+	(ling_to_observed(linguisticsalience(high), salience(zero))) = p(0.2),
+	(ling_to_observed(linguisticsalience(low), salience(nonzero))) = p(0.3),
+	(ling_to_observed(linguisticsalience(low), salience(zero))) = p(0.1),
+

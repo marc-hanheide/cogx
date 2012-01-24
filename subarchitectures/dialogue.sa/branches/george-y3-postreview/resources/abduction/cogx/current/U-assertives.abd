@@ -1,0 +1,181 @@
+%-------------------------------------------------------------------------
+% ASSERTION
+%-------------------------------------------------------------------------
+
+% X is Y
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, ind),
+	i : 'feat_Tense'(Nom, pres),
+	polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+
+	? understand : i : intention(Nom, Int),
+
+	not_anaphoric(Nom) / p(0.2),
+
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'ascription') / p(1.0),
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, RestrNom),
+	understand : assertion_effect(Speaker, Hearer, Int, SubjNom, Polarity, ScopeNom).
+
+%-------------------------------------------------------------------------
+
+% there is X
+understand : event : from_logical_form(S, H, Nom) <-
+	i : sort(Nom, presentational),
+	i : feat_Mood(Nom, ind),
+	i : feat_Tense(Nom, pres),
+	i : rel_Presented(Nom, PresNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	understand : assertion_effect(S, H, Int, PresNom, pos, PresNom),
+	understand : topic_switch_mark(PresNom, 'pointer-to'(assertion)) / p(1.0),
+	int : post(Int, state([presented, agent(S), patient('pointer-to'(assertion))])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% I see X
+understand : event : from_logical_form(S, H, Nom) <-
+	i : sort(Nom, perception),
+	i : prop(Nom, see),
+	i : feat_Mood(Nom, ind),
+	i : rel_Patient(Nom, PatNom),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+%	int : pre(Int, state([see, agent(S), patient(PatNom)])) / p(1.0),
+	understand : assertion_effect(S, H, Int, PatNom, pos, PatNom).
+
+%-------------------------------------------------------------------------
+
+% (I) don't know
+%understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+%	i : sort(Nom, cognition),
+%	i : prop(Nom, know),
+%	i : feat_Polarity(Nom, neg),
+%
+%	? understand : i : intention(Nom, Int),
+%
+%	int : agent(Int, Speaker) / p(1.0),
+%	int : string_content(Int, type, 'assertion') / p(1.0),
+%	int : string_content(Int, subtype, 'answer-unknown') / p(1.0),
+%
+%	doesnt_matter_under_discussion(_QUDAddr, Nom, Int, _Feature).
+
+%-------------------------------------------------------------------------
+% YES/NO CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+%doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
+%	? polar_question_under_discussion(_Speaker, _Hearer, QUDAddr, Nom, Int, Feature, unknown, _Polarity).
+%
+%doesnt_matter_under_discussion(QUDAddr, Nom, Int, Feature) <-
+%	? wh_question_under_discussion(QUDAddr, Nom, Int, Feature).
+
+%-------------------------------------------------------------------------
+
+type_of_question_under_discussion(QUDAddr, Int, Type) <-
+	i : type_of_question_under_discussion(QUDAddr, Int, Type),
+	i : int : string_content(QUDAddr, type, Type),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity) <-
+	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'polar'),
+	i : int : string_content(QUDAddr, feature, Feature),
+	i : int : string_content(QUDAddr, hypothesis, Value),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	aboutness(Int, BeliefAddr),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+	int : string_content(Int, subtype, 'answer') / p(1.0),
+
+	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
+
+% verification polar question
+polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity) <-
+	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'verification'),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	i : int : address_content(QUDAddr, 'verification-of', _IntSetAddr),
+	aboutness(Int, BeliefAddr),
+	int : string_content(Int, subtype, 'verification-answer') / p(1.0),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
+
+%polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, unknown, Polarity) <-
+%	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
+%	i : int : string_content(QUDAddr, type, 'question'),
+%	i : int : string_content(QUDAddr, subtype, 'polar'),
+%	i : int : string_content(QUDAddr, feature, Feature),
+%	i : int : string_content(QUDAddr, hypothesis, Value),
+%	i : int : address_content(QUDAddr, about, BeliefAddr),
+%	aboutness(Int, BeliefAddr),
+%	int : address_content(Int, 'answer-to', QUDAddr) / p(0.5).
+
+%-------------------------------------------------------------------------
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, Marker),
+	marker_to_polarity(Marker, Polarity),
+
+	? understand : i : intention(Nom, Int),
+
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+
+	? polar_question_under_discussion(Speaker, Hearer, _QUDAddr, Nom, Int, _Feature, _Value, Polarity).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+marker_to_polarity(yes, pos).
+marker_to_polarity('No', neg).
+
+%-------------------------------------------------------------------------
+% SHORT ANSWERS TO WH- QUESTIONS
+%-------------------------------------------------------------------------
+
+wh_question_under_discussion(QUDAddr, Nom, Int, Feature) <-
+	i : wh_question_under_discussion(QUDAddr, Nom, Int, Feature),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'open'),
+	i : int : string_content(QUDAddr, feature, Feature),
+	i : int : address_content(QUDAddr, about, BeliefAddr),
+	aboutness(Int, BeliefAddr).
+
+%-------------------------------------------------------------------------
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	polar_query_prop(Nom, Feature, Value),
+
+	? understand : i : intention(Nom, Int),
+
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'answer') / p(1.0),
+
+	? wh_question_under_discussion(QUDAddr, Nom, Int, Feature),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+
+	intention_effect(Speaker, Hearer, Int, Feature, Value, pos).
+
+%-------------------------------------------------------------------------
+% Anaphoric reference.
+
+%@{be1_2:ascription}(be ^ <Mood>ind ^ <Tense>pres ^ <Cop-Scope>(red1_2:q-color ^ red) ^ <Cop-Restr>(it1_2:thing ^ it ^ <Num>sg) ^ <Subject>(it1_2:thing))
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : rel_Subject(Nom, SubjNom),
+		i : prop(SubjNom, it),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+
+	understand : event : from_logical_form(Speaker, Hearer, ScopeNom).

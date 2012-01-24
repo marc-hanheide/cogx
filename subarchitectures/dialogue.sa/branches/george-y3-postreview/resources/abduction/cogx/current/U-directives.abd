@@ -1,0 +1,334 @@
+%-------------------------------------------------------------------------
+% QUESTION
+%-------------------------------------------------------------------------
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% POLAR QUESTIONS
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% is X Y
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'polar') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, RestrNom),
+	understand : polar_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : polar_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
+	polar_query_prop(Nom, Prop, Value),
+	int : string_content(Int, feature, Prop) / p(1.0),
+	int : string_content(Int, hypothesis, Value) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% WH- QUESTIONS
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Asking to describe an object.
+
+% @{be1_1:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Restr>(context1_1:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(what1_1:entity ^ what) ^ <Subject>(context1_1:entity) ^ <Wh-Restr>(what1_1:entity))
+
+% what is X
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, _RestrNom),  % XXX garbage
+	i : 'rel_Cop-Scope'(Nom, WhNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, what),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'description-request') / p(1.0),
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
+
+% do you know what X is
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : rel_Patient(Nom, PatNom),
+		i : 'rel_Scope-in'(PatNom, ScopeNom),
+			i : rel_Subject(ScopeNom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+%	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+%	i : 'rel_Wh-Restr'(Nom, SubjNom),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'description-request') / p(1.0),
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+% Asking about feature values.
+
+% @{be1_7:ascription}(be ^ <Mood>int ^ <Tense>pres ^ <Wh-Restr>(what1_7:specifier ^ what ^ <Scope>(color1_7:quality ^ color)) ^ <Cop-Restr>(context1_7:entity ^ context ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific) ^ <Cop-Scope>(color1_7:quality) ^ <Subject>(context1_7:entity))
+
+% what X is Y
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+%	i : sort(Nom, ascription),  % XXX garbage
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),  % XXX garbage
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : rel_Scope(WhNom, ScopeNom),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'open') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom),
+	understand : wh_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom).
+
+% what is the X of Y
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : rel_Subject(Nom, SubjNom),
+		i : rel_Owner(SubjNom, ScopeNom),
+	i : 'rel_Wh-Restr'(Nom, _WhNom),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'open') / p(1.0),
+	understand : topic(Speaker, Hearer, EpSt, Int, SubjNom, ScopeNom),
+	understand : wh_query_scope(Speaker, Hearer, EpSt, Int, SubjNom, SubjNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% HACKING:
+% where is X (testing for Dora)
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, _RestrNom),  % XXX garbage
+		i : 'rel_Cop-Scope'(Nom, WhNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, where),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+%	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'assertion') / p(1.0),
+	int : string_content(Int, subtype, 'location-report') / p(1.0),
+	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : wh_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
+	wh_query_prop(Nom, Prop),
+	int : string_content(Int, feature, Prop) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% which object is blue
+%@{be1_2:ascription}(be ^ <Mood>int ^ <Tense>pres ^ <Cop-Scope>(blue1_2:q-color ^ blue) ^ <Cop-Restr>(object1_2:thing ^ object ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific) ^ <Subject>(object1_2:thing) ^ <Wh-Restr>(which1_2:specifier ^ which ^ <Scope>(object1_2:thing)))
+
+% what is blue
+% @{be1_3:ascription}(be ^ <Tense>pres ^ <Mood>int ^ <Cop-Scope>(blue1_3:q-color ^ blue) ^ <Cop-Restr>(what1_3:entity ^ what) ^ <Subject>(what1_3:entity) ^ <Wh-Restr>(what1_3:entity))
+
+% what object is Feat
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	i : 'rel_Cop-Scope'(Nom, FeatNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : rel_Scope(WhNom, SubjNom),
+
+	polar_query_prop(FeatNom, Feature, Value),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'determination') / p(1.0),
+	int : string_content(Int, feature, Feature) / p(1.0),
+	int : string_content(Int, value, Value) / p(1.0).
+
+% @{be1_1:ascription}(be ^ <Mood>int ^ <Tense>pres ^ <Cop-Restr>(object1_1:thing ^ object ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(blue1_1:q-color ^ blue)) ^ <Cop-Scope>(context1_1:entity ^ context ^ <Delimitation>unique) ^ <Subject>(object1_1:thing) ^ <Wh-Restr>(which1_1:specifier ^ which ^ <Scope>(context1_1:entity))
+
+% which is the Feat object
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : sort(Nom, ascription),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, pres),
+	i : 'rel_Cop-Restr'(Nom, SubjNom),
+		i : rel_Modifier(SubjNom, FeatNom),
+	i : 'rel_Cop-Scope'(Nom, CtxNom),
+	i : rel_Subject(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		i : prop(WhNom, which),
+		i : rel_Scope(WhNom, CtxNom),
+
+	polar_query_prop(FeatNom, Feature, Value),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'communication') / p(1.0),
+	int : string_content(Int, subclass, 'info-request') / p(1.0),
+	int : string_content(Int, type, 'determination') / p(1.0),
+	int : string_content(Int, feature, Feature) / p(1.0),
+	int : string_content(Int, value, Value) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : non_referring_object(Nom) <-
+	i : prop(Nom, object).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : wh_query_scope(_Speaker, _Hearer, _EpSt, Int, _Ref, Nom) <-
+	wh_query_prop(Nom, Prop),
+	int : string_content(Int, feature, Prop) / p(1.0).
+
+%-------------------------------------------------------------------------
+% COMMAND: ACTION-MOTION
+%-------------------------------------------------------------------------
+
+%% go to X
+%understand : event : from_logical_form(S, H, Nom) <-
+%	i : sort(Nom, 'action-motion'),
+%%	i : feat_Mood(Nom, imp),
+%	i : rel_Actor(Nom, ActorNom),
+%%		i : prop(ActorNom, addressee),
+%	int_id(Int),
+%	int : agent(Int, S) / p(1.0),
+%	i : rel_Modifier(Nom, ModifNom),
+%		i : rel_Anchor(ModifNom, AnchorNom),
+%		understand : topic(S, H, EpSt, Int, AnchorNom, AnchorNom),
+%	i : prop(Nom, ActionProp),
+%	m_action_effects(S, H, EpSt, Int, AnchorNom, ActionProp).
+%
+%%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+%
+%m_action_effects(S, H, EpSt, Int, Ref, go) <-
+%	get_topic_referent(S, H, shared(S, H), Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+%	int : post(Int, state([position, agent(H), 'location-of'(BId)])) / p(1.0).
+%
+%m_action_effects(S, H, EpSt, Int, Ref, move) <-
+%	m_action_effect(S, H, Int, Ref, go).
+%
+%m_action_effects(S, H, EpSt, Int, Ref, turn) <-
+%	get_topic_referent(S, H, EpSt, Int, Ref, Ref, BId),  % XXX the presupposed belief not constructed
+%	int : post(Int, state(['orientation-towards', agent(H), 'location-of'(BId)])) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% search around
+% @{search1_1:action-non-motion}(search ^ <Mood>imp ^ <Actor>(addressee1_1:entity ^ addressee) ^ <Modifier>(around1_1:m-direction ^ around) ^ <Subject>(addressee1_1:entity))
+
+% look around
+% @{look1_1:perception}(look ^ <Mood>imp ^ <Actor>(addressee1_1:entity ^ addressee) ^ <Modifier>(around1_1:m-direction ^ around) ^ <Subject>(addressee1_1:entity))
+
+look_around_verb(look).
+look_around_verb(search).
+
+% look DIRECTION
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : prop(Nom, Verb),
+	look_around_verb(Verb),
+	i : rel_Modifier(Nom, ModNom),
+		i : prop(ModNom, around),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'complex-action') / p(1.0),
+	int : string_content(Int, type, 'look-around') / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : direction(Nom, Dir) <-
+%	i : sort(Nom, 'm-direction'),  % m-whereto
+	i : prop(Nom, Prop),
+	valid_direction(Prop, Dir).
+
+valid_direction(forward, forward).
+valid_direction(back, back).
+valid_direction(around, back).
+valid_direction(left, left).
+valid_direction(right, right).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+m_action_effects_direction(Int, Dir, go) <-
+	int : string_content(Int, type, 'move-direction') / p(1.0),
+	int : string_content(Int, direction, Dir) / p(1.0).
+
+m_action_effects_direction(Int, Dir, move) <-
+	m_action_effects_direction(Int, Dir, go).
+
+m_action_effects_direction(Int, Dir, turn) <-
+	int : string_content(Int, type, 'turn-direction') / p(1.0),
+	int : string_content(Int, direction, Dir) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% stop
+understand : event : from_logical_form(Speaker, _Hearer, Nom) <-
+	i : feat_Mood(Nom, imp),
+	i : prop(Nom, stop),
+
+	? understand : i : intention(Nom, Int),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, class, 'motion') / p(1.0),
+	int : string_content(Int, type, 'stop') / p(1.0).
+
+%-------------------------------------------------------------------------
+% HACKS
+%-------------------------------------------------------------------------
+
+% did you mean X
+%@{mean1_1:cognition}(mean ^ <Mood>int ^ <Tense>past ^ <Actor>(you1_1:person ^ you ^ <Num>sg) ^ <Event>(context1_1:event ^ context ^ <Delimitation>unique ^ <Proximity>proximal ^ <Quantification>specific) ^ <Subject>(you1_1:person))
+
+understand : event : from_logical_form(Speaker, Hearer, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, mean),
+	i : feat_Mood(Nom, int),
+	i : feat_Tense(Nom, past),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),  % XXX garbage
+	get_obj_nom(Nom, ObjNom),
+
+	? understand : i : intention(Nom, Int),
+	understand : topic(Speaker, Hearer, _EpSt, Int, ObjNom, ObjNom),
+	int : agent(Int, Speaker) / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'verification') / p(1.0),
+	int : address_content(Int, 'verification-of', Int) / p(1.0).
+
+get_obj_nom(Nom, ObjNom) <-
+	i : rel_Event(Nom, ObjNom).
+
+get_obj_nom(Nom, ObjNom) <-
+	i : rel_Patient(Nom, ObjNom).

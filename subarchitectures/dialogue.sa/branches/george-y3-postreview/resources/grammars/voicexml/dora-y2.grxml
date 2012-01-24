@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<grammar root="root" version="1.0" xml:lang="en-us" xmlns="http://www.w3.org/2001/06/grammar" tag-format="semantics/1.0">
+
+	<rule id="root">
+		<one-of>
+			<item><ruleref uri="#greeting" /></item>
+			<item><ruleref uri="#goodbye" /></item>
+			<item><ruleref uri="#command" /></item>
+			<item><ruleref uri="#ack" /></item>
+			<item><ruleref uri="#assertion" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="greeting">
+		<one-of>
+			<item>hi</item>
+			<item>hello</item>
+		</one-of>
+		<ruleref uri="#name" />
+	</rule>
+
+	<rule id="goodbye">
+		<one-of>
+			<item>bye</item>
+			<item>goodbye</item>
+		</one-of>
+		<ruleref uri="#name" />
+	</rule>
+
+	<rule id="ack">
+		<one-of>
+			<item>ok</item>
+			<item>yes</item>
+			<item>No</item>
+			<item>correct</item>
+			<item>right</item>
+			<item>great</item>
+			<item>good</item>
+			<item>thanks</item>
+		</one-of>
+	</rule>
+
+
+	<rule id="name">
+		<item repeat="0-1">
+			<one-of>
+				<item>robot</item>
+				<item>Dora</item>
+			</one-of>
+		</item>
+	</rule>
+
+	<rule id="command">
+		<item repeat="0-1">
+			<one-of>
+				<item>please</item>
+			</one-of>
+		</item>
+		<one-of>
+			<item>find the cornflakes box</item>
+			<item>find the box</item>
+			<item>find some cookies</item>
+		</one-of>
+	</rule>
+
+
+	<rule id="assertion">
+		<one-of>
+			<item>this</item>
+			<item>that</item>
+		</one-of>
+		<item>is the</item>
+		<one-of>
+			<item>kitchen</item>
+			<item>hallway</item>
+			<item>lab</item>
+			<item>office</item>
+		</one-of>
+	</rule>
+
+</grammar>

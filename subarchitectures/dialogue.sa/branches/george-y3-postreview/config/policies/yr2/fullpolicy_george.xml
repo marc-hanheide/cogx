@@ -1,0 +1,100 @@
+<policy>
+	<nodes>
+		<node id="startNode" isInitial="true" isFinal="false"/>
+		<node id="rootNode" isInitial="false" isFinal="true" action="forwardAction"/>
+		<node id="greetingNode" isFinal="true" isInitial="false" action="greetingAction"/>
+		<node id="thankingNode" action="thankAction" isFinal="true" isInitial="false"/>
+		<node id="closingNode" action="closingAction" isInitial="false" isFinal="true"/>
+		<node id="whColorAnswerNode" action="whColorAnswerAction" isInitial="false" isFinal="true"/>
+	    <node id="whShapeAnswerNode" action="whShapeAnswerAction" isInitial="false" isFinal="true"/>
+		<node id="notKnowAnswerNode" action="notKnowAnswerAction" isInitial="false" isFinal="true"/>
+		<node id="notSureAnswerNode" action="notSureAnswerAction" isInitial="false" isFinal="true"/>
+		<node id="posAnswerNodeCertain" action="posAnswerActionCertain" isInitial="false" isFinal="true"/> 
+		<node id="posAnswerNodeUncertain" action="posAnswerActionUncertain" isInitial="false" isFinal="true"/> 
+		<node id="negAnswerNodeCertain" action="negAnswerActionCertain" isInitial="false" isFinal="true"/> 
+		<node id="negAnswerNodeUncertain" action="negAnswerActionUncertain" isInitial="false" isFinal="true"/> 
+		<node id="notUnderstoodNode" action="notUnderstoodAction" isInitial="false" isFinal="true"/>
+		<node id="describeObjectNode1" action="describeObjectAction1" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode2" action="describeObjectAction2" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode3" action="describeObjectAction3" isInitial="false" isFinal="true"/>		
+		<node id="describeObjectNode4" action="describeObjectAction4" isInitial="false" isFinal="true"/>		
+	</nodes>
+	
+	<edges>
+		<edge id="greetingEdge" source="*" target="greetingNode" condition="greetingCond"/>
+		<edge id="evalEdge" source="*" target="thankingNode" condition="evalCond"/>
+		<edge id="notUnderstoodEdge" source="*" target="notUnderstoodNode" condition="anyCond"/>	
+		<edge id="forwardEdge" source="*" target="rootNode" condition="beliefCond"/>	
+		<edge id="closingEdge" source="*" target="closingNode" condition="closingCond"/>
+		<edge id="whColorQuestionEdge" source="*" target="whColorAnswerNode" condition="whColorQuestionCond"/>
+		<edge id="notKnowQuestionEdge" source="*" target="notKnowAnswerNode" condition="notKnowQuestionEdge"/>
+	     <edge id="notSureQuestionEdge" source="*" target="notSureAnswerNode" condition="notSureQuestionEdge"/>
+		<edge id="whShapeQuestionEdge" source="*" target="whShapeAnswerNode" condition="whShapeQuestionCond"/>
+		<edge id="polarPosEdgeCertain" source="*" target="posAnswerNodeCertain" condition="polarPosCondCertain"/> 
+		<edge id="polarPosEdgeUncertain" source="*" target="posAnswerNodeUncertain" condition="polarPosCondUncertain"/> 
+		<edge id="polarNegEdgeCertain" source="*" target="negAnswerNodeCertain" condition="polarNegCondCertain"/> 
+		<edge id="polarNegEdgeUncertain" source="*" target="negAnswerNodeUncertain" condition="polarNegCondUncertain"/> 
+		<edge id="polarNoclueEdge" source="*" target="notKnowAnswerNode" condition="polarNoclueCond"/> 
+		<edge id="yesEdge" source="*" target="thankingNode" condition="yesCond"/> 
+		<edge id="noEdge" source="*" target="thankingNode" condition="noCond"/> 
+		<edge id="openQuestionEdge1" source="*" target="describeObjectNode1" condition="openQuestionCond1"/>
+		<edge id="openQuestionEdge2" source="*" target="describeObjectNode2" condition="openQuestionCond2"/>
+		<edge id="openQuestionEdge3" source="*" target="describeObjectNode3" condition="openQuestionCond3"/>
+		<edge id="openQuestionEdge4" source="*" target="describeObjectNode4" condition="openQuestionCond4"/>
+	</edges>
+	
+	<conditions>
+		<condition id="beliefCond" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" lowerProb="0.0" higherProb="1.0" type="communicativeintention"></condition>
+		<condition id="anyCond" content="*" lowerProb="0.6" higherProb="1.0" type="communicativeintention"></condition>
+		<condition content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" id="greetingCond" lowerProb="0.0" higherProb="1.0" type="communicativeintention"/>
+		<condition id="evalCond" content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" type="communicativeintention" lowerProb="0.0" higherProb="1.0"></condition>
+		<condition id="closingCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"></condition>
+		<condition id="whColorQuestionCond" type="communicativeintention"
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" ></condition>
+		<condition id="notKnowQuestionEdge" type="communicativeintention"
+			lowerProb="0.0" higherProb="0.3" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2))))" ></condition>
+		<condition id="notSureQuestionEdge" type="communicativeintention"
+			lowerProb="0.3" higherProb="0.6" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2))))" ></condition>
+	    <condition id="whShapeQuestionCond" type="communicativeintention"
+			lowerProb="0.6" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;shape&gt;(%3)) ^ &lt;feature&gt;(shape)))" ></condition>
+
+		<condition id="polarPosCondCertain" type="communicativeintention"
+			lowerProb="0.8" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
+	    <condition id="polarPosCondUncertain" type="communicativeintention"
+			lowerProb="0.4" higherProb="0.8" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(valid)))" /> 
+		<condition id="polarNegCondCertain" type="communicativeintention"
+			lowerProb="0.8" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition>
+		<condition id="polarNegCondUncertain" type="communicativeintention"
+			lowerProb="0.4" higherProb="0.8" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(invalid)))" ></condition> 
+	    <condition id="polarNoclueCond" type="communicativeintention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(*) ^ &lt;post&gt;(&lt;state&gt;(question-answered  ^ &lt;hypo&gt;(noclue)))" ></condition>
+		
+		<condition id="yesCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(verified)" ></condition>
+		<condition id="noCond" type="communicativeintention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(falsified)" ></condition>	 
+		<condition id="openQuestionCond1" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2) ^ &lt;color&gt;(%3) ^ &lt;shape&gt;(%4))))" />
+	     <condition id="openQuestionCond2" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2) ^ &lt;shape&gt;(%4))))" />
+	<condition id="openQuestionCond3" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2) ^ &lt;color&gt;(%3))))" />
+	<condition id="openQuestionCond4" type="communicativeintention" lowerProb="0.4" higherProb="1.0" content= "&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(object-described ^ &lt;about&gt;(&lt;ref&gt;(%2))))" />
+	
+	</conditions>
+	
+	<actions>
+		<action id="forwardAction" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" type="attributedintention"></action>
+		<action id="greetingAction" type="communicativeintention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="thankAction" type="communicativeintention" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
+		<action id="closingAction" type="communicativeintention" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="whColorAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+		<action id="whShapeAnswerAction" type="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;shape&gt;(%3))))" />
+	    <action id="notKnowAnswerAction" type="communicativeintention" content="&lt;state&gt;(knowing-disconfirmed)" />
+	    <action id="notSureAnswerAction" type="communicativeintention" content="&lt;state&gt;(uncertainty-expressed)" />
+	    <action id="posAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(verified)" ></action> 
+	    <action id="posAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(verified ^ &lt;certainty&gt;uncertain)" ></action> 
+	    <action id="negAnswerActionCertain" type="communicativeintention" content="&lt;state&gt;(falsified)" ></action> 
+	    <action id="negAnswerActionUncertain" type="communicativeintention" content="&lt;state&gt;(falsified ^ &lt;certainty&gt;uncertain)" ></action>
+	    <action id="notUnderstoodAction" action="communicativeintention" content="&lt;state&gt;(error-reported)" />
+	    <action id="describeObjectAction1" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object) ^ &lt;color&gt;(%3) ^ &lt;shape&gt;(%4))))"></action>
+	<action id="describeObjectAction2" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object) ^ &lt;shape&gt;(%3))))"></action>
+	<action id="describeObjectAction3" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object) ^ &lt;color&gt;(%3))))"></action>
+		<action id="describeObjectAction4" action="communicativeintention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;type&gt;(object))))"></action>
+	</actions>
+</policy>

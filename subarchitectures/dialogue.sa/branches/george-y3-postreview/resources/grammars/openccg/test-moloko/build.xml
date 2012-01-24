@@ -1,0 +1,110 @@
+<!-- Copyright (C) 2005   DFKI (Geert-Jan M. Kruijff)             -->
+<!-- based on similar files by Michael White                      -->
+
+<project default="grammar" basedir=".">
+
+  <!-- =================================================================== -->
+  <!-- Initialization target                                               -->
+  <!-- =================================================================== -->
+  <target name="init">
+    <tstamp/>
+    <property name="Name" value="OpenCCG"/>
+    <property name="name" value="openccg"/>
+
+    <echo message="----------- ${Name} ------------"/>
+
+    <property name="openccg.home" value="${env.OPENCCG_HOME}"/>
+
+    <property name="lib.dir" value="${openccg.home}/lib"/>
+    <property name="build.dir" value="${openccg.home}/output"/>
+    <property name="grammars.dir" value="${env.OPENCCG_HOME}/grammars"/>
+
+    <property name="basedir" value="./test-moloko"/>
+
+    <path id="validate.classpath">
+      <pathelement location="${lib.dir}/xercesImpl.jar"/>
+      <pathelement location="${build.dir}/${name}.jar"/>
+    </path>
+  </target>
+  
+
+  <!-- =================================================================== -->
+  <!-- Help on usage                                                       -->
+  <!-- =================================================================== -->
+  <target name="usage">
+    <echo message=""/>
+    <echo message=""/>
+    <echo message="MOLOKO mk2 grammar build file"/>
+    <echo message="-------------------------------------------------------------"/>
+    <echo message=""/>
+    <echo message=" Available targets are:"/>
+    <echo message=""/>
+    <echo message="   grammar  --> builds the grammar (default)"/>
+    <echo message=""/>
+    <echo message=" See the comments inside the build.xml file for more details."/>
+    <echo message="-------------------------------------------------------------"/>
+    <echo message=""/>
+    <echo message=""/>
+  </target>
+  
+  <!-- =================================================================== -->
+  <!-- Builds grammar                                                     -->
+  <!-- =================================================================== -->
+
+  <target name="grammar" depends="init" description="builds grammar">
+    <echo message="Transforming dict.xsl to dict.xml"/>
+    <java classname="org.apache.xalan.xslt.Process"> 
+      <arg value="-XSL"/> <arg value="dict.xsl"/>
+      <arg value="-OUT"/> <arg value="dict.xml"/>
+    </java>
+    <echo message="Transforming lexicon-base.xsl to lexicon-base.xml and unary-rules.xml"/>
+    <java classname="org.apache.xalan.xslt.Process"> 
+      <arg value="-XSL"/> <arg value="lexicon-base.xsl"/>
+      <arg value="-OUT"/> <arg value="lexicon-base.xml"/>
+    </java>
+    <echo message="Adding family members from dict.xml to lexicon-base.xml, yielding lexicon.xml"/>
+    <java classname="org.apache.xalan.xslt.Process"> 
+      <arg value="-IN"/> <arg value="lexicon-base.xml"/>
+      <arg value="-XSL"/> <arg value="../add-family-members.xsl"/>
+      <arg value="-PARAM"/> <arg value="dict-file"/> <arg value="${basedir}/dict.xml"/>
+      <arg value="-OUT"/> <arg value="lexicon.xml"/>
+    </java>
+
+<!-- TREVOR ADDED MAY 27, 200 7 -->
+  <echo message="Adding type changing rules from unary-rules.xml to rules-base.xml, yielding rules.xml"/>
+    <java classname="org.apache.xalan.xslt.Process"> 
+      <arg value="-XSL"/> <arg value="rules-base.xsl"/>
+      <arg value="-OUT"/> <arg value="rules.xml"/>
+    </java>
+
+
+    <echo message="Extracting morph items from dict.xml to morph.xml"/>
+    <java classname="org.apache.xalan.xslt.Process">
+      <arg value="-IN"/> <arg value="dict.xml"/>
+      <arg value="-XSL"/> <arg value="../extract-morph.xsl"/>
+      <arg value="-OUT"/> <arg value="morph.xml"/>
+    </java>
+
+<!-- 
+    <echo message="Adding type changing rules from unary-rules.xml to rules-base.xml, yielding rules.xml"/>
+    <java classname="org.apache.xalan.xslt.Process"> 
+      <arg value="-IN"/> <arg value="rules-base.xml"/>
+      <arg value="-XSL"/> <arg value="../append.xsl"/>
+      <arg value="-PARAM"/> <arg value="file-to-append"/> <arg value="${basedir}/unary-rules.xml"/>
+      <arg value="-OUT"/> <arg value="rules.xml"/>
+    </java>
+-->
+    <echo message="Validating grammar.xml, lexicon.xml, morph.xml, rules.xml and types.xml"/>
+    <java classname="opennlp.ccg.test.Validator" classpathref="validate.classpath" fork="true"> 
+      <arg value="grammar.xml"/>
+      <arg value="lexicon.xml"/>
+      <arg value="morph.xml"/>
+      <arg value="rules.xml"/>
+      <arg value="types.xml"/>
+    </java>
+
+  </target>
+
+</project>
+
+<!-- End of file -->

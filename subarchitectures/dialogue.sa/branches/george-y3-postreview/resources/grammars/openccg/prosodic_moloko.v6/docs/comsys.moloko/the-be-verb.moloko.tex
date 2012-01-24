@@ -1,0 +1,287 @@
+\section{The \emph{be} Verb} \label{sec-The-Be-Verb} 
+
+This section discusses Moloko's treatment of the \emph{be} verb. To begin, here are a few examples which can be used to isolate its broad functions:
+\begin{enumerate}
+\item  \emph{the cat \ul{was} sitting on the table} 
+\item \emph{the cat \ul{was} picked up} 
+\item \emph{the cat \ul{was} willing to sit next to me} 
+\item \emph{the cat \ul{was} on the table} 
+\item \emph{the cat \ul{was} happy}
+\item \emph{this \ul{is} a cat}
+\item \emph{a cat \ul{is} a kind of animal}
+\item \emph{there \ul{was} a cat}
+\item \emph{on the table \ul{was} a cat} 
+\end{enumerate}
+
+1 and 2 are clear cases of auxilliary verbs, the \emph{ing} \textbf{continuous/progressive} and \textbf{passive} respectively. We have treated the usage in 3, with what are sometimes call predicatival or adjectival verbs, as a auxiliary as well, i.e. we treat \emph{willing} as the main verb/event:\footnote{in this and all the other examples in this section, I have removed all semantic features (\diam{Num}, \diam{Degree}, etc.)}
+\begin{verbatim}
+  @w1:modal(willing ^ 
+            <Mood>ind ^ 
+            <Tense>past ^ 
+            <Actor>(c1:animate ^ cat )^ 
+            <Event>(s1:action-non-motion ^ sit ^ 
+                    <Actor>c1:animate ^ 
+                    <Modifier>(n1:m-location ^ next ^ 
+                               <Anchor>(i1:person ^ I ) ^ 
+            <Subject>m1:person)
+\end{verbatim}
+Thus, for uses 1-3, see section \ref{sec-TAM} for semantics and \ref{sec-Auxiliary-and-Modal-Verbs} for families. 
+ 
+4-7 are various instances of  the \textbf{copular/ascriptive} usage of the verb. The last two are \textbf{presentational/existential}. We will discuss the semantics of each of these in turn. For their families, see \ref{sec-Verbs}
+
+\subsection{Ascription}
+
+The ascriptive use of \emph{be} has this basic semantic structure:
+\vspace{-1.5em} 
+
+\begin{align*}
+\atsign{b1}{ascription}(& \prop{be}  \\ 
+      & \wand\ \diam{Cop-Restr}(X)  \\ 
+      & \wand\ \diam{Cop-Scope}(Y) \ )
+\end{align*}
+The \diam{Cop-Restr} is the entity which is being ascribed, and the \diam{Cop-Scope} is what is being ascribed of it. Here are the three main classes of \diam{Cop-Scope}:
+\begin{enumerate}
+\item \textsc{Nominal}:  \emph{it is \ul{a ball} / \ul{GJ} / \ul{me} / \ul{a kind of coffee} / \ul{the color of the mug}}
+\item \textsc{Adjectival}: \emph{it is \ul{blue} / \ul{bigger than the mug} / \ul{happy} /  \ul{off} / \ul{correct} / \ul{ok}} 
+\item \textsc{Prepositional}: \emph{it is \ul{on the table} / \ul{here} / \ul{with me} / \ul{for me}}
+\end{enumerate}
+Class 1 includes but does not distinguish between \textbf{category description}\footnote{Note that we currently do not have a proper treatment  of generic entities. However, it can be 'hacked' as in sentence 5 above.} and \textbf{identificational} uses. Class 2 allows the ascription of any \textbf{quality}, physical, attitudinal or other. Class 3 currently handles \textbf{static location, accompaniment} and \textbf{benefactor}.
+
+In addition to the Indicative uses illustrated above, it can also be used for Imperatives, both both positive ( \emph{be happy}) and negative (\emph{don't be so sad}).
+\begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>imp ^ 
+                 <Cop-Restr>(a1:entity ^ addressee) ^ 
+                 <Cop-Scope>(h1:q-attitude ^ happy) ^ 
+                 <Subject>a1:entity)
+
+  @b1:ascription(be ^ 
+                 <Mood>imp ^ 
+                 <Polarity>neg ^ 
+                 <Cop-Restr>(a1:entity ^ addressee) ^ 
+                 <Cop-Scope>(s1:q-attitude ^ sad) ^ 
+                 <Subject>a1:entity)
+\end{verbatim}
+
+It can also be used for Closed (Y/N) Interrogatives, again positive ( \emph{is it a ball}) and negative (\emph{wasn't it here earlier}).
+\begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(i1:thing ^ it ) ^ 
+                 <Cop-Scope>(b2:thing ^ ball ) 
+                 <Subject>i1:thing)
+ 
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Polarity>neg ^ 
+                 <Tense>past ^ 
+                 <Cop-Restr>(i1:thing ^ it ) ^ 
+                 <Cop-Scope>(c1:m-location ^ context ) ^ 
+                 <Modifier>(e1:m-time ^ early ) ^ 
+                 <Subject>i1:thing)
+\end{verbatim}
+
+Finally, it can be used in Open (Wh) Interrogatives to question both the \diam{Cop-Scope} role and the \diam{Cop-Restr}. Like all events, it can also be questioned for modifiers. These will be handled in turn. \\ \\
+\textbf{ \ul{Questioning the \diam{Cop-Restr} }} \\ \\
+An entity can be given with a prompt for 'filling in' some 'property' specified by the Wh-Word. Here are some examples sorted by the classes specified above:
+
+\begin{tabbing}
+\textsc{1. Nominal} \\ \\
+\emph{\ul{what} is this thing on the table} \=  it is \ul{a ball} \\
+\emph{\ul{who} is it} \> it is \ul{me} (see below)\\
+\emph{\ul{who} is that guy} \> it is \ul{my dad} \\
+\emph{\ul{what} is a cat}  \> a cat is \ul{a kind of animal} \\
+\emph{\ul{which ball} is mine}  \> yours is \ul{the one over there} \\
+\end{tabbing}
+\begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(i1:entity ^ it)
+                 <Cop-Scope>(w1:entity ^ what) ^ 
+                 <Subject>c1:entity ^ 
+                 <Wh-Restr>w1:entity)
+\end{verbatim}
+
+\begin{tabbing}
+\textsc{2. Adjectival} \\ \\
+\emph{\ul{what shape} is it}  \= it is \ul{round} \\
+\emph{\ul{what color} is it} \> it is \ul{red} (see below) \\
+\emph{\ul{what size} is it}  \> it is \ul{small} \\
+\emph{\ul{how} are you} \>  I am \ul{good}\footnote{\emph{how} does not restrict the kind quality given} (see below) \\
+\emph{\ul{how big} is it} \> it is \ul{really big}\footnote{this is ambiguous between the 'degree' reading and the standard 'scale' reading (c.f. \emph{what size}). We have not distinguished between these two readings.} \\
+\emph{\ul{how cold} is it} \> it is \ul{ok}
+\end{tabbing}
+\begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(y1:person ^ you)
+                 <Cop-Scope>(h1:quality ^ how) ^ 
+                 <Subject>y1:person ^ 
+                 <Wh-Restr>h1:quality)
+
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(i1:thing ^ it ) ^ 
+                 <Cop-Scope>(c1:quality ^ color) ^ 
+                 <Subject>i1:thing ^ 
+                 <Wh-Restr>(w1:specifier ^ what ^ 
+                            <Scope>c1:quality))
+                 
+\end{verbatim}
+
+\begin{tabbing}
+\textsc{1. Prepositional} \\ \\
+\emph{\ul{where} is the big green mug} \=  it is \ul{on your table} (see below) \\
+\emph{\ul{what} is it under} \>  it is under \ul{the table} (see below) \\
+\emph{\ul{which room} is it in} \>  it is in \ul{GJ's office}  \\
+\emph{\ul{who} is it for} \> it is for \ul{me} \\
+\emph{\ul{which cat} is this milk for} \> it is for \ul{mine} (see below)  \\
+\emph{\ul{who} is he with} \> he is with \ul{GJ} \\
+\end{tabbing}
+\begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(m1:thing ^ mug ^ 
+                             <Modifier>(b2:q-size ^ big) ^ 
+                             <Modifier>(g1:q-color ^ green)) ^ 
+                 <Cop-Scope>(w1:m-location ^ where) ^ 
+                 <Subject>m1:thing ^ 
+                 <Wh-Restr>w1:m-location)
+
+   @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(i1:thing ^ it ) 
+                 <Cop-Scope>(u1:m-location ^ under ^ 
+                             <Anchor>w1:physical) ^ 
+                 <Subject>i1:thing ^ 
+                 <Wh-Restr>(w1:physical ^ what))
+ 
+   @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(m1:thing ^ milk ) 
+                 <Cop-Scope>(f1:m-benefactor ^ for ^ 
+                             <Anchor>(c2:animate ^ cat ^ )
+                 <Subject>c1:thing ^ 
+                 <Wh-Restr>(w1:specifier ^ which ^ 
+                            <Scope>c2:animate))
+ 
+ \end{verbatim}
+A note on questioning \textbf{physical properties} (color, size, shape, etc.) In addition \emph{what \ul {color/size/shape} is the mug}, there is the option of \emph{what is the \ul{color/size/shape} of the mug}. The former is treated as an 'adjectival' questioning, scoping over \diam{Cop-Scope}\emph{(q:quality)} (see above). The latter is treated very naively,  scoping over the whole \diam{Cop-Scope} AND as some sort of entity. We hope unify these two readings sometime soon.
+ \begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>pres ^ 
+                 <Cop-Restr>(c1:xxxx ^ color ^ 
+                             <Delimitation>unique ^ 
+                             <Num>sg ^ 
+                             <Quantification>specific ^ 
+                             <Owner>(b2:thing ^ ball ^ 
+                                     <Delimitation>unique ^ 
+                                     <Num>sg ^ 
+                                     <Quantification>specific)) ^ 
+                 <Cop-Scope>(w1:xxxx ^ what) ^ 
+                 <Subject>c1:entity ^ 
+                 <Wh-Restr>w1:xxxx)
+ \end{verbatim} \\ 
+\textbf{ \ul{Questioning the \diam{Cop-Restr} }} \\ \\
+In addition,  a 'property' can be given with a prompt for 'filling in' what entity(s) this applies to. So, for example, \emph{what is big} or \emph{what is on the table}. Of course all of the other Wh-words are available:  \emph{who is nicer},\footnote{we have not yet handled \textbf{constrained option} questions, like \emph{who is nicer, me or him}} \emph{which coffee is black}, \emph{how\_many balls are in here}, etc. So, for example, here is \emph{who was in there}: 
+\begin{verbatim}
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>past ^ 
+                 <Cop-Restr>(w1:animate ^ who) ^ 
+                 <Cop-Scope>(i1:m-location ^ in ^ 
+                             <Anchor>(c1:e-location ^ context ) 
+                 <Subject>w1:animate ^ 
+                 <Wh-Restr>w1:animate)
+\end{verbatim}
+The \diam{Cop-Restr} for class 1 (nominals) is 'shut off' from questioning, i.e. \emph{what is this} does not expect an answer like \emph{a ball is this}. There maybe a sub-class of cases where such questioning would make sense, but this is for future work.
+\\Ê\\ \textbf{ \ul{Questioning the Ascription Itself }} \\ \\
+Currently, the time and place of the ascription can be questioned. For example, \emph{where was he happy} and \emph{when was he here}:
+\begin{verbatim}
+@b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>past ^ 
+                 <Cop-Restr>(h1:person ^ he ^) ^ 
+                 <Cop-Scope>(h2:q-attitude ^ happy) ^ 
+                 <Subject>h1:person ^ 
+                 <Wh-Restr>(w1:m-location ^ where ^ 
+                            <Scope>b1:ascription))
+
+  @b1:ascription(be ^ 
+                 <Mood>int ^ 
+                 <Tense>past ^ 
+                 <Cop-Restr>(h1:person ^ he) ^ 
+                 <Cop-Scope>(c1:m-location ^ context ^ 
+                             <Proximity>m-proximal) ^ 
+                 <Subject>h1:person ^ 
+                 <Wh-Restr>(w1:m-time-point ^ when ^ 
+                            <Scope>b1:ascription))
+\end{verbatim}
+
+\subsection{Presentation}
+
+The \emph{be} verb can also be used to present entities 'on the scene' and/or to assert/deny their existence. Here are some indicative examples: \\
+
+      \emph{there is \ul{a mug} on the table} 
+
+     \emph{there are \ul{two mugs and a book}} 
+
+      \emph{there were \ul{some good books} yesterday} 
+
+      \emph{there has never been \ul{a table} there} \\ \\
+Here, for example, is the first:
+\begin{verbatim}
+  @b1:presentational(be ^ 
+                     <Mood>ind ^ 
+                     <Tense>pres ^ 
+                     <Presented>(m1:thing ^ mug) 
+                     <Modifier>(o1:m-location ^ on ^ 
+                              <Anchor>(t1:thing ^ table ^)) 
+                     <Subject>(t2:dummy ^ there) )
+\end{verbatim}
+The entity is placed in the \diam{Presented} role, and additional modifiers (location, time, etc) modify the event itself.\footnote{in fact, this example is treated as ambiguous. It also has a reading where the mug is modified. If there is any difference in meaning, we certainly can't figure it out. Note that the possibility of other modifiers (time, etc) and the possibility of questions like \emph{where were there balls } suggests that this location should be able to modify the event.} The \diam{Subject} is filled by the 'dummy' word \emph{there}. This does not contribute to the semantics, but is required for proper generation and for handling the syntax of questions. 
+
+In addition, there is a special indicative construction exemplified by \emph{in the room were some cats and a dog}:
+\begin{verbatim}
+  @b1:presentational(be ^ 
+                     <Mood>ind ^ 
+                     <Tense>past ^ 
+                     <Modifier>(i1:m-location ^ in ^ 
+                                <Anchor>(r1:e-place ^ room) ^
+                     <Presented>(a1:entity ^ and ^ 
+                                <First>(c1:animate ^ cat) 
+                                 <Next>(d1:animate ^ dog ))
+\end{verbatim}
+Note that this leads to two readings for \emph{there is my ball}, with with a 'real' locational \emph{there} and one with a dummy.
+
+There is no imperative form for the presentational, but it can be used for both Open and Closed Interrogatives. For example, \emph{were there any dogs there} and \emph{what was there yesterday}\footnote{this is also ambiguous between \emph{there} as dummy subject or as the \diam{Cop-Scope} of ascription.}:
+\begin{verbatim}
+  @b1:presentational(be ^ 
+                     <Mood>int ^ 
+                     <Tense>past ^ 
+                     <Modifier>(c1:m-location ^ context ^ 
+                                <Proximity>m-distal) ^ 
+                     <Presented>(d1:animate ^ dog) ^ 
+                     <Subject>(t1:dummy ^ there))
+
+  @b1:presentational(be ^ 
+                     <Mood>int ^ 
+                     <Tense>past ^ 
+                     <Modifier>(y1:m-time-point ^ yesterday) ^ 
+                     <Presented>(w1:entity ^ what) ^ 
+                     <Subject>(t1:dummy ^ there) ^ 
+                     <Wh-Restr>w1:entity)
+\end{verbatim}
+
+
+
+
+

@@ -1,0 +1,152 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+ 
+# This file contains the stuff for: 
+#    1) auxillaries : do, have, be (as progr, passive and predictival verb)
+#    2) modals      : can, should, will, etc.
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def aux(args)           { aux<11>[E NUM:NUM PERS:PERS VFORM:VFORM FIN:FIN POL:POL args] }
+
+##############
+## FAMILIES ##
+##############
+
+  #  NOTE: currently, contextualized predicates (e.g. I am, I can, can you, etc)
+  #        are restricted to m-class-4. 
+  #        This SHOULD be taken out (c.f. A: are you running? B: yeah 'I am, on the table'
+  #        but now done to block getting such readings (instead of just copular reading)
+  #
+
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+
+  # With semantics, i.e. <Modifier> (see modal family below)
+  #
+  def fin-entry+sem(arg, sem){
+      
+      entry:  ( s(fin-full MCLASS:MCLASS POL:POL) +subj() ) 
+	   /^ ( s<14>[E MCLASS:MCLASS POL:POL VFORM=arg] +subj() )  : EVENT(sem);  
+      entry:  s(fin-ctxt m-class-4 POL:POL) +subj()                 : EVENT(context sem) ;	  
+	 
+      entry: aux( VFORM=arg)                                        : EVENT(sem) ;
+      
+      entry: from-s( s-int fin-full) / ( s(arg) +subj() ) /^ subj() : EVENT(INT() SUBJECT() sem) ;              
+      entry: s( s-int m-class-4 fin-ctxt) /^ subj()                 : EVENT(INT() SUBJECT() context sem) ;              
+  }
+
+  ## With no semantics, must separate Y/N indicatives from others because 
+  #  only finite forms of auxs receive this i.e. I have BEEN sleeping but not BEEN I sleeping
+  #
+  def fin-entry-no-int(arg){
+  
+      # indicative, with vp and context    
+      #  
+      entry:    ( s(fin-full MCLASS:MCLASS POL:POL) +subj() ) 
+	     /^ ( s<14>[E MCLASS:MCLASS POL:POL VFORM=arg] +subj() )       ; 
+      entry:  s(fin-ctxt m-class-4 POL:POL) +subj()	  : EVENT(context) ;
+      
+      # aux cat used (selected) by, e.g. wh-questions
+      #   
+      entry: aux( VFORM=arg)      ; 
+		  
+  }
+
+  def fin-entry(arg){
+  
+      fin-entry-no-int(arg)
+  
+      # the Y-N question versions: with vp and context ##
+      #
+      entry: from-s( s-int fin-full ) / ( s(arg) +subj() ) /^ subj()  : EVENT(INT() SUBJECT() ) ;              
+      entry: s( s-int m-class-4 fin-ctxt) /^ subj()		      : EVENT(INT() SUBJECT() context) ;              
+  }
+
+  # For Passives
+  #
+  # In theory could create rule which changes passive vp's into vp / by-subj
+  # this would require a syntactic voice feature 
+  # This may be attractive cuz right now we're gonna need to duplicate this in Wh-forms anyway.. sigh.
+  
+  def pass-ind()       { ( s(fin-full MCLASS:MCLASS POL:POL) \! np[X] ) /^ ( s<14>[E MCLASS:MCLASS POL:POL VFORM=pp] +subj() / np[X] )  }
+  def pass-yn()        { s(fin-full s-int) / ( s<14>[E VFORM=pp] \! np[S] / np[X] ) /^ np<9>[X NUM:NUM PERS:PERS nom]  }  	   
+ 
+  def pass-ind-by()    { ( s(fin-full MCLASS:MCLASS) \! np[X] ) /^ obl[S MARK=by] /^ ( s<14>[E MCLASS:MCLASS VFORM=pp] +subj() / np[X] )    }
+  def pass-yn-by()     { s( s-int fin-full) /^ obl[S MARK=by] / ( s<14>[E VFORM=pp] \! np[S] / np[X] ) /^ np<9>[X NUM:NUM PERS:PERS nom]  }  	   
+ 
+     
+  #-----------------------
+  #---  The Families  ----
+  #-----------------------
+
+  family Modal-vf-base                       { fin-entry+sem(vf-base, MODIFIER(*) ) }
+  
+  family Aux-vf-base (indexRel=Tense)        { fin-entry(vf-base ) }
+  family Aux-no-int-vf-base (indexRel=Tense) { fin-entry-no-int(vf-base ) }
+  
+  family Aux-pp (indexRel=Aspect)            { fin-entry(pp) }
+  family Aux-no-int-pp (indexRel=Aspect)     { fin-entry-no-int(pp) }
+  
+  family Aux-ing (indexRel=Aspect)           { fin-entry(ing) }
+  family Aux-no-int-ing (indexRel=Aspect)    { fin-entry-no-int(ing) }
+  
+  family Aux-vf-be (indexRel=Tense)          { fin-entry(vf-be) }
+  family Aux-no-int-vf-be (indexRel=Tense)   { fin-entry-no-int(vf-be) }
+
+  # Should add 'context' readings here.
+  family Aux-no-int-passive(indexRel=Voice){
+           entry: pass-ind()      : S(context);        # the actor is markerked as 'unexpressed'
+       	   entry: pass-ind-by()   ; 
+           entry: aux( VFORM=pp)  ; 
+   }
+
+  family Aux-passive (indexRel=Voice){						  
+           entry: pass-ind()      : S(context);        # the actor is markerked as 'unexpressed'
+       	   entry: pass-ind-by()   ; 
+           entry: aux( VFORM=pp)  ; 
+           entry: pass-yn()     : EVENT( INT() <Subject>(X))  S(context) ;
+           entry: pass-yn-by()  : EVENT( INT() <Subject>(X) ) ;
+  }
+
+ # Could be cleaned up by making defs for these categories (since repetition of above)
+ #
+ family Aux-negation (indexRel=Polarity) {
+    
+    # Standard, indicative and Y-N Int
+    #
+    entry:     ( (from-s(s-neg) +subj() ) / (s<14> +subj() ) )
+             \ ( s(s-prov-pos) +subj()    / (s<14> +subj() ) ) ;  
+    entry:     ( from-s(s-neg) / ( s<14> +subj() ) )
+             \ ( s( s-int s-prov-pos) / ( s<14> +subj() ) ) ;     
+	   
+    # Passive, indicative and Y-N with and without 'by actor'
+    # 
+    entry:     ( (from-s(s-neg) \! np[X] ) / (s<14> +subj() / np[X] ) ) 
+             \ ( (s(s-prov-pos) \! np[X] ) / (s<14> +subj() / np[X] ) ) ;  # Pass Ind
+    entry:     ( (from-s(s-neg) \! np[X] )  /^ obl[S MARK=by] / (s<14> +subj() / np[X] ) )
+             \ ( (s(s-prov-pos) \! np[X] ) /^ obl[S MARK=by] / (s<14> +subj() / np[X] ) ) ;  # Pass Ind-by
+    entry:     ( from-s(s-neg) / ( s<13> \! np[S] / np[X] ) )
+             \ ( s( s-int s-prov-pos)  / ( s<13> \! np[S] / np[X] ) ) ;     
+    entry:     ( from-s(s-neg)  /^ obl[S MARK=by] / ( s<13> \! np[S] / np[X] ) )
+            \ ( s( s-int s-prov-pos) /^ obl[S MARK=by] / ( s<13> \! np[S] / np[X] ) ) ;     
+ }
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  # The auxillary verbs be, have, do are done 'by-hand' in dictionary-closed.ccg
+
+  def modal(form, class, args)  { modal-irr(form, form."n't", class, args) }
+
+  def modal-irr(pos-form, neg-form, class, args) {
+      word pos-form.-auxev : Modal-vf-base(class, pred=pos-form){
+	     pos-form : pos-form s-prov-pos args; 
+	     neg-form : pos-form s-neg neg args;
+	  }
+  }
+

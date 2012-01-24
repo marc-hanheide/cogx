@@ -1,0 +1,603 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# The vast majory of dictionary entries are in dictionary-open.ccg. 
+# Also, see this file for general info on adding dictionary items.
+
+# This file contains the 'core vocabulary' or 'closed class' words:
+#    Pro-forms  (pronouns, pro-verb 'do', pro-sentences (I said it), pro-locations (here, there) )
+#    Adjective related function words (more, most, bigger THAN) 
+#    Markers (obliques, infinitival to, subordinate-sentential clause markers, etc)
+#    Determiners, Possessive 's, Deictics, 'Group'-words, Numbers (ordinal & cardinal)
+#    Wh-words
+#    Auxillary & Modal Verbs
+
+# NOTE: MUST CLEAN UP WH and EXTR SECTION
+
+##############
+## PROFORMS ##
+##############
+
+  
+  #-- Nominals --#    
+ 
+  # pronoun(pers, sg-nom, sg-acc, pl-nom, pl-acc, posessed, class,)
+  #
+  pronoun(I,    1st, sg, I    , me   , my   , mine   , person,)
+  pronoun(I,    1st, pl, we   , us   , our  , ours   , person,)
+  pronoun(you,  2nd, sg, you  , you  , your , yours  , person,)
+#  pronoun(you,  2nd, pl, you  , you  , your , yours  , person,) 
+  pronoun(he,   3rd, sg, he   , him  , his  , his    , person,)
+  pronoun(she,  3rd, sg, she  , her  , her  , hers   , person,)
+  pronoun(it,   3rd, sg, it   , it   , its  , its    , thing,)
+  pronoun(they, 3rd, pl, they , them , their, theirs , entity,)
+
+  word it-pro-3rd-sg:Bare-np(thing, pred=it) { that :  3rd s-sg acc pro sg asr-correction; }
+ 
+
+  context-np(someone,  person, s-sg sg existential specific full)   _context-np(someone, somebody, person, s-sg sg existential specific full)
+  context-np(anyone,   person, s-sg sg variable    specific  full)   _context-np(anyone, anybody, person, s-sg sg  variable    specific full) 
+
+  context-np(something,  thing, s-sg sg existential  specific  full)   
+  context-np(anything,   thing, s-sg sg variable     specific  full)  
+
+  # deictics 'this' and 'that' defined with determiners below  
+
+
+  #-- Events --# 
+  
+  context-s(this, proximal specific unique)
+  context-s(that, distal   specific unique)
+  context-s(it, )
+  context-s(something, existential  specific )   
+  context-s(anything,  variable     specific )  
+
+  verb(do, doing, did, done, m-class-all, event,                v+deictic-event )
+
+
+  #-- Locations --#
+ 
+  _prp+(no-arg, context, there, location, prep-1 m-distal)
+  _prp+(no-arg, context, there, whereto,  prep-2 m-distal)
+  _prp+(no-arg, context, here,  location, prep-1 m-proximal)
+  _prp+(no-arg, context, here,  whereto,  prep-2 m-proximal)
+
+  # these are used as contexualized anchors for prepositions: 'I went in there', 'walk over to here'
+  # these use case loc-acc that only prepositions can accept
+
+  context-np(here, e-location, sg s-sg acc-loc proximal specific unique full) 
+  context-np(there, e-location, sg s-sg acc-loc distal specific  unique full)  
+    
+  prp+(no-arg, somewhere, location, prep-1 )  _prp+(no-arg, somewhere, anywhere, location, prep-1 )
+  prp+(no-arg, somewhere, whereto, prep-2 )  _prp+(no-arg, somewhere, anywhere, whereto, prep-2 )
+
+  #-- Temporal --#
+  
+  context-np(then, e-time, sg s-sg acc-loc specific unique full)  
+     
+
+#######################
+## ADJECTIVE RELATED ##
+#######################
+
+  word more : More-adj: comparative;
+  word most : Most-adj: superlative;
+  word than : Adj-er-than(m-comparison);
+
+################################################
+## MARKER (including dep and relative clauses ##
+################################################
+
+  word of  : NP-marker;
+  word by  : NP-marker;
+  word at  : NP-marker;
+  word to  : NP-marker;
+  word for : NP-marker;
+  word from : NP-marker;
+  word out_of : NP-marker;
+
+
+  word infinitive-to: Infinitive-to {to;}
+  word for-verb-ing: For-verb-ing {for;}
+  word that: Dep-clause-marker-no-sem;
+  word if: Dep-clause-marker;
+  word whether: Dep-clause-marker;
+
+  word that-RCn : Rel-Clause-np- {that ;}
+  word who-RCn  : Rel-Clause-np- {who ;}
+
+####################
+## DET and GROUPS ##
+####################
+  
+  word possessive-s: Det-poss-s { 
+		"'s": unique specific sg s-sg; 
+		"'s": unique specific pl s-pl; 
+  }	
+  
+  # These are higher order dictionary-entry macros
+  # which collect other dict-macros together to reduce redundancy in the grammar
+  #  
+  def det+context-np (form, args)  {
+      det(form, args) 
+      context-np(form,"entity",  args) 
+  }
+
+  def det+context-np+group-np  (form, args) {
+      det+context-np(form, args) 
+      group-np(form, args)
+  }
+
+  def sdet+context-np  (form, class, args) {
+      sdet(form, class, args)
+      context-np+modifier(form, class, args) 
+  }
+
+  def sdet+context-np+group-np (form, class, args) {
+        sdet+context-np(form, class,args) 
+	sgroup-np(form, class,args)
+  }
+
+  det                      (the,   s-sg      sg  unique      specific   )
+  det                      (the,   s-pl-sp   pl  unique      specific   ) 
+  det                      (the,   s-pl-unsp pl  unique      unspecific ) 
+  
+  det                      (a,     s-sg      sg  existential specific   )   
+  det                      (some,  s-sg      sg  existential specific   ) 
+  det+context-np+group-np  (some,  s-pl-unsp pl  existential unspecific )
+  det+context-np           (any,   s-sg      sg  variable    specific   )
+  det+context-np+group-np  (any,   s-pl-unsp pl  variable    unspecific )
+    
+  det+context-np           (this,  s-sg      sg  unique      specific   proximal)
+  det+context-np           (these, s-pl-unsp pl  unique      unspecific proximal)
+  det                      (these, s-pl-sp   pl  unique      specific   proximal)
+  det+context-np           (that,  s-sg      sg  unique      specific   distal  )
+  det+context-np           (those, s-pl-unsp pl  unique      unspecific distal  )
+  det                      (those, s-pl-sp   pl  unique      specific   distal  )
+
+  sdet+context-np+group-np (more, comparative, s-pl-unsp pl variable unspecific)
+  sdet+context-np+group-np (less, comparative, s-pl-unsp pl variable unspecific)
+  sdet+context-np+group-np (all,  quantity,    s-pl-sp      unique   unspecific)
+      sgroup-np-no-of      (all,  quantity,    s-pl-sp      unique   unspecific)
+   
+  sdet+context-np+group-np (both,     quantity, s-pl-sp    pl unique      specific)
+  sdet+context-np+group-np (another,  quantity, s-sg       sg existential specific)
+  sdet+context-np+group-np (the_rest, quantity, s-pl-unsp  pl unique      unspecific)
+  sdet+context-np+group-np (enough,   quantity, s-pl-unsp  pl variable    unspecific)
+  sdet+context-np+group-np (none,     quantity, s-pl-sp       variable    unspecific)
+  sdet+context-np+group-np (a_few,    quantity, s-pl-unsp  pl existential unspecific)  # FIX
+  sdet+context-np+group-np (several,  quantity, s-pl-unsp  pl existential unspecific)
+ 
+  sdet(No, quantity, s-sg    sg  variable specific   )
+  sdet(No, quantity, s-pl-sp pl  variable unspecific )
+  
+  sdet(every, quantity, s-sg     variable specific)
+
+#############
+## NUMBERS ##
+#############
+
+
+  # These dictionary entry macros handle the various uses of numbers
+  # Note that both numeric and "written out" versions are created 
+  # for both cardinal (1, 2, 3 ...) and ordinal numbers (1st, 2nd, 3rd ...)
+  #
+  def number(card, r-card) {number-irr (card, card."th", r-card, r-card."th") }
+  def number-irr(card, ord, r-card, r-ord) { number-basic (card, ord, r-card, r-ord, pl, s-pl-sp) }  
+  def number-basic (card, ord, r-card, r-ord, num, s-num) {
+		
+      	# CARDINAL		
+      	un-to-spec-det      (card,         "number-cardinal" ) # num s-num feat just repeated to fill slot
+      	un-to-spec-det      (r-card,       "number-cardinal" )
+      	_un-to-spec-det     (card, r-card, "number-cardinal" )
+  	_un-to-spec-det     (r-card, card, "number-cardinal" )
+      	
+      	sdet                (card,         "number-cardinal"  , num s-num existential specific)
+      	sdet                (r-card,       "number-cardinal"  , num s-num existential specific)
+      	_sdet               (card, r-card, "number-cardinal"  , num s-num existential specific)
+      	_sdet               (r-card, card, "number-cardinal"  , num s-num existential specific) 
+      	
+      	sgroup-np           (card,         "number-cardinal"  , num s-num existential specific)
+        sgroup-np           (r-card,       "number-cardinal"  , num s-num existential specific)
+        _sgroup-np          (card, r-card, "number-cardinal"  , num s-num existential specific)
+        _sgroup-np          (r-card, card, "number-cardinal"  , num s-num existential specific)
+
+      	context-n+modifier  (card,         "number-cardinal"  , s-num )
+      	context-n+modifier  (r-card,       "number-cardinal"  , s-num )
+      	_context-n+modifier (card, r-card, "number-cardinal"  , s-num )
+      	_context-n+modifier (r-card, card, "number-cardinal"  , s-num )
+      	
+      	context-np+modifier  (card,         "number-cardinal"  , num s-num  existential specific)
+      	context-np+modifier  (r-card,       "number-cardinal"  , num s-num existential specific)
+      	_context-np+modifier (card, r-card, "number-cardinal"  , num s-num existential specific)
+      	_context-np+modifier (r-card, card, "number-cardinal"  , num s-num existential specific)
+      	
+        number-id  (card )
+      	number-id  (r-card)
+      	_number-id (card, r-card)
+      	_number-id (r-card, card)
+
+	# ORDINAL (The predicate for ordinals is always the corresponding cardinal)
+      	
+        _adj-none           (card, ord,     "number-ordinal"   ,  ) 
+      	_adj-none           (r-card, r-ord, "number-ordinal"   ,  ) 
+      	_adj-none           (card, r-ord,   "number-ordinal"   ,  ) 
+      	_adj-none           (r-card, ord,   "number-ordinal"   ,  ) 
+      	
+      	_context-n+modifier (card, ord,     "number-ordinal"   , s-sg  )  
+      	_context-n+modifier (r-card, r-ord, "number-ordinal"   , s-sg  )  
+      	_context-n+modifier (card, r-ord,   "number-ordinal"   , s-sg  )  
+      	_context-n+modifier (r-card, ord,   "number-ordinal"   , s-sg  )  
+      	
+      	_sgroup-n            (card, ord,      "number-ordinal"   , s-sg  ) 
+        _sgroup-n            (r-card, r-ord,  "number-ordinal"   , s-sg  ) 
+  	_sgroup-n            (card, r-ord,    "number-ordinal"   , s-sg  ) 
+      	_sgroup-n            (r-card, ord,    "number-ordinal"   , s-sg  ) 
+  
+      	
+   
+ }
+  
+  number-basic(one, first, "1", "1st", s-sg, sg)
+     # This gives a reading equivalent to 'a ball'
+     det+context-np+group-np  (one,   s-sg sg  existential specific)        
+     # This is for handling the dummy noun for the contextual 'the ones on the table'
+	 context-n(ones, entity, s-pl full)  
+	 context-n(one, entity, s-sg full)
+	   
+  number-irr(two, second, "2", "2nd")
+  number-irr(three, third, "3", "3rd")
+  number(four, "4")
+  number-irr(five, fifth, "5", "5th")
+  number(six, "6")
+  number(seven, "7")
+  number-irr(eight, eighth, "8", "8th")
+  number(nine, "9")
+  number(ten, "10")
+  number(eleven, "11")
+  number(twelve, "12")
+  number(thirteen, "13")
+  number(fourteen, "14")
+  number(fifteen, "15")
+ 
+###############
+## ADVERBS   ##
+###############
+
+  # Purpose ascribing to, i.e. I went in to see him, I picked it up to play with it.
+
+  word to-purpose: Adv+verb-base- (m-purpose, pred=to)    {to: s-purpose ;}
+
+
+###############
+## PARTICLES ##
+###############
+
+  word up : Particle;
+
+  word cup: Particle (pred=up) {
+    cup: asr-correction ;
+  }
+
+###########
+## COORD ##
+###########
+
+  coord+(and, np,   entity, s-pl pl)
+  #coord+(and, n,    entity, s-pl pl)
+  coord+(then, np,   entity, s-pl pl) 
+#_coord+(then, and_then, np,   entity, s-pl pl)
+  #coord+(then, n,    entity, s-pl pl) 
+#_coord+(then, and_then,  n,   entity, s-pl pl)
+  
+  coord+(before, np,   entity, s-pl pl) 
+  #coord+(before, n,    entity, s-pl pl)
+  
+  coord+(after, np,   entity, s-pl pl) 
+  #coord+(after, n,    entity, s-pl pl)
+
+
+  coord+(or, np,   entity, s-sg)
+  #coord+(or, n,    entity, s-sg)
+
+  coord(and, s, event)
+  coord(but, s, event)
+  coord(then, s, event)   _coord(then, and_then, s, event)    
+  coord(or, s, event) 
+
+#  coord(and, prep, modifier)
+#  coord(but, prep, modifier)
+#  coord(then, prep, modifier) 
+# _coord(and, and_then, prep, modifier)
+#  coord(or, prep, modifier)
+
+  coord(and, adv, modifier)
+#  coord(but, adv, modifier)
+#  coord(then, adv, modifier)  
+#_coord(and, and_then, adv, modifier)
+  coord(or, adv, modifier)
+
+  coord(and, adj, quality)
+#  coord(but, adj, quality)
+#  coord(then, adj, quality) 
+# _coord(and, and_then, adj, quality)
+  coord(or, adj, quality)
+
+
+############
+# WH-WORDS #
+############
+
+  # This only handles a single family, not a list like 
+  # the underlying classes. This is due to string formation
+  #
+  def wh+extr(form, class, item, args) {
+    wh-word(form, class, "Wh-".item."-")
+  #  extr(form, class, "Extr-".item."-", args)
+  #  _extr(form, form."ever", class, "Extr-".item."-", args)  # must add features!
+  }
+  
+  def wh+extrrr(form, class, item, args) {
+    wh-word(form, class, "Wh-".item."-")
+    extr(form, class, "Extr-".item."-", args)
+    _extr(form, form."ever", class, "Extr-".item."-", args)  # must add features!
+  }
+  
+  
+  wh+extrrr(who, animate, np , s-sg nf-real)
+  
+  wh+extrrr(what, entity, np , s-sg nf-real)
+  wh+extrrr(what, event, sent, fin)
+  
+  wh+extrrr(which, specifier, np-spec, nf-real)
+  wh+extrrr(which, specifier, np-spec-ctxt, nf-real)
+  
+  wh-word(which, specifier , Wh-np-spec-ctxt- Wh-np-qclass- Wh-adj-qclass-  )
+  #wh-word(which, specifier , Wh-np-spec- Wh-np-spec-ctxt- Wh-np-qclass- Wh-adj-qclass-  )
+  wh-word(what , specifier , Wh-np-spec- Wh-np-qclass- Wh-adj-qclass-  )
+  
+  wh-word(whose, owner , Wh-np-spec- Wh-np-spec-ctxt-)
+  
+  wh+extrrr(how_much, quantity, np-quant-mass  , s-sg nf-real)
+  wh+extrrr(how_many, quantity, np-quant-count , s-sg nf-real)
+  
+  # Adding degree-base here wasn't really 'intended'. It was to avoid having an
+  # empty arg slot in the wh+extr def
+  
+  wh+extr(how, quality, adj , s-degree-base cc-none)
+  wh+extr(how, quality, adj-degree , s-degree-base cc-none)
+  wh-word+feat(how, m-manner, Wh-sent-modifier-, s-manner)
+  extr(how, m-manner, Extr-adv-sent-modifier-, adv-2 s-manner x-manner)
+  
+  wh+extrrr(where, m-location, pp , prep-1 x-location )
+  wh-word+feat(where, m-location, Wh-sent-modifier-, s-location)
+  extr(where, m-location, Extr-pp-sent-modifier-,  prep-1 s-location x-location)
+  
+  wh+extrrr(where, m-dynamic, pp , x-dynamic prep-2 )
+  wh-word+feat(where, m-dynamic, Wh-sent-modifier-, s-dynamic)
+  extr(where, m-dynamic, Extr-pp-sent-modifier-,  prep-1 s-dynamic x-dynamic)
+  
+  # Time Questions
+  
+  wh-word+feat(when, m-time-point, Wh-sent-modifier-, s-time)
+  wh-word+feat(how_long, m-time-interval, Wh-sent-modifier-, s-time)
+  
+  
+  #wh-word(how, degree , Wh-adj-degree Extr-adj-degree )
+  #wh-word(how, quality, Wh-adj Extr-adj)
+  #wh-word+(how, m-manner, Wh-sent-modifier, s-manner)
+  #wh-word+(how, m-manner, Extr-adv-sent-modifier, adv-2 s-manner x-manner)
+  
+  # Prep-1 allows post-s, post-vp 
+  #        and post-n, i.e. it can handle 'the place where I put it', 'the room where I stayed' etc.
+   
+  #wh-word(where,  m-location, Wh-pp) 
+  #wh-word+(where, m-location, Wh-sent-modifier,        s-location)
+  #wh-word+(where, m-location, Extr-pp,                  prep-1 x-location)
+  #wh-word+(where, m-location, Extr-pp-sent-modifier,    prep-1 s-location x-location)
+  
+  #wh-word(where,  m-dynamic, Wh-pp)  
+  #wh-word+(where, m-dynamic, Wh-sent-modifier,     s-dynamic)
+  #wh-word+(where, m-dynamic, Extr-pp,               prep-1 x-dynamic)
+  #wh-word+(where, m-dynamic, Extr-pp-sent-modifier, prep-1 s-dynamic x-dynamic)
+  
+  quality-class(size)
+  quality-class(shape)
+  quality-class(color) _quality-class(color, colour)
+  quality-class(age)
+  quality-class(material)
+  quality-class(substance)
+  quality-class(temperature)
+  quality-class(orientation)
+  
+  
+  #wh-s-mod(where, m-location, s-location)
+  #wh-s-mod(blah, m-dynamic, s-dynamic)
+  #wh-s-mod(how, m-manner, s-manner)
+  
+
+
+############
+# BE-FORMS #
+############
+
+# These forms of the be verb are used by be as copular & as its various aux forms 
+# ( be + v+ing, be + passive )
+
+def be-forms (args) {
+    am:        be  pres  1st     s-sg s-prov-pos      args;
+	are:       be  pres          s-pl s-prov-pos      args;
+        far:	   be  pres          s-pl s-prov-pos  asr-correction;
+	are:       be  pres  2nd     s-sg s-prov-pos      args;
+	"aren't":  be  pres          s-pl s-neg      neg  args;
+	"aren't":  be  pres  2nd     s-sg s-neg      neg  args;
+        is:        be  pres  3rd     s-sg s-prov-pos      args;
+        "isn't":   be  pres  3rd     s-sg s-neg      neg  args;
+	"ain't":   be  pres               s-neg      neg  args;
+	was:       be  past  1st     s-sg s-prov-pos      args;
+	was:       be  past  3rd     s-sg s-prov-pos      args;
+	"wasn't":  be  past  1st     s-sg s-neg      neg  args;
+	"wasn't":  be  past  3rd     s-sg s-neg      neg  args;
+	were:      be  past  2nd     s-sg s-prov-pos      args;
+	were:      be  past          s-pl s-prov-pos      args;
+	"weren't": be  past  2nd     s-sg s-neg      neg  args; 
+	"weren't": be  past          s-pl s-neg      neg  args; 
+}
+
+
+###########
+# COPULAR #
+###########
+
+  # The copular and its negation
+  # There are two versions of this because the normal locational (I am here)
+  # is blocked from allowing additional post-modified locations
+  #
+  word be-copular: Copular(ascription, pred=be){
+  
+      be-forms(fin-full m-class-2x)
+  
+   	been:    pp        m-class-3; 
+        being:   ing       m-class-3;
+   	be:      vf-base   m-class-3; 
+  	be:      vf-to-imp m-class-3; 
+  
+  }
+  
+  word be-copular-loc: Copular-location(ascription, pred=be){
+  
+      be-forms(fin-full m-class-3)
+  
+      been:    pp        m-class-3; 
+      being:   ing       m-class-3;
+      be:      vf-base   m-class-3; 
+      be:      vf-to-imp m-class-3; 
+  
+  }
+  
+  
+  word not-cop-neg :Cop-negation{not: neg;}
+
+  word no-cop-neg :Cop-negation{No: neg asr-correction;}
+  
+  # The presentational there+be
+  # There are two versions of this because the inverted version
+  # is blocked from allowing additional post-modified locations
+  #
+  word be-presentational: Presentational(presentational, pred=be){
+  
+      be-forms(fin-full m-class-2)
+  
+      been:    pp      m-class-2; 
+      being:   ing     m-class-2;
+      be:      vf-base m-class-2; 
+  
+  }
+  
+  word be-presentational-inverted: Presentational-inverted(presentational, pred=be){
+  
+      be-forms(fin-full m-class-3)
+  
+      been:    pp      m-class-3; 
+      being:   ing     m-class-3;
+      be:      vf-base m-class-3; 
+  
+  }
+  
+   word dummy-there : Bare-np(dummy, pred=there){ there: nom dummy-there;}
+
+#####################
+## MODAL/AUX VERB ##
+#####################
+
+  # Modal Verbs #
+
+  modal(should, modal, pres)
+  modal(must,   modal, pres)
+  modal(would, modal, )
+  modal(could, modal, )
+  modal-irr(can,  "can't", modal, pres)
+  modal-irr(can,  "cannot", modal, pres)
+  modal-irr(will, "won't", modal, fut)
+   
+
+  # Auxilliary Verbs #
+
+  word not-aux-neg: Aux-negation {not: neg;}  # syntactic change from s-prov-pos to s-neg in family
+
+  # Note: currently  'I did go' is treated identically to 'I went'
+  #       and hence collapse. If we want emphatic do, it'll have to be
+  #       treated as a modal, and hence be given its own <Modal> dep reln.
+
+  word do-aux: Aux-vf-base(aux){
+    do:        do pres non-3rd s-sg  s-prov-pos     ;
+    "don't":   do pres non-3rd s-sg  s-neg      neg ;
+    do:        do pres         s-pl  s-prov-pos     ;
+    "don't":   do pres         s-pl  s-neg      neg ;
+    does:      do pres 3rd     s-sg  s-prov-pos     ;
+    "doesn't": do pres 3rd     s-sg  s-neg      neg ;
+    did:       do past               s-prov-pos	    ;
+    "didn't":  do past               s-neg      neg ;
+  }
+  
+  word do-imp: imp-do {
+	do:        do   s-prov-pos     ;
+        "don't":   do   s-neg      neg ;
+  }
+
+  word lets-imp: imp-lets {
+      "let's":   do   s-pos      ;
+  }
+
+  word have-aux: Aux-pp(aux){   
+	have:      have pres perfect non-3rd s-sg  s-prov-pos      ;
+        "haven't": have pres perfect non-3rd s-sg  s-neg       neg ;
+	have:      have pres perfect         s-pl  s-prov-pos      ;
+        "haven't": have pres perfect         s-pl  s-neg       neg ;
+	has:       have pres perfect 3rd     s-sg  s-prov-pos      ;
+	"hasn't":  have pres perfect 3rd     s-sg  s-neg       neg ;
+	had:       have past perfect               s-prov-pos      ;
+	"hadn't":  have past perfect               s-neg       neg ;
+  }
+  word have-aux-no-int: Aux-no-int-pp(aux){  
+     have:   vf-base perfect;   # will have
+  }
+
+
+  word be-aux-vf-be: Aux-vf-be (aux) {
+    be-forms()
+  }
+  word be-aux-vf-be-no-int: Aux-no-int-vf-be (aux) {
+    be:       vf-base  ;      # will be going, can be going, etc.
+    been:     pp       ;      # have been going
+  }
+
+  word be-aux-ing: Aux-ing (aux) {
+    be-forms(continuous)
+  }
+  word be-aux-ing-no-int: Aux-no-int-ing (aux) {
+    be:       vf-base  continuous;      # will be going, can be going, etc.
+    been:     pp       continuous;      # have been going
+  }
+
+
+  # Currently, no wh-questions can be handled in passsives, as this'll require
+  # adding a new 'passive' for for each...
+
+  word be-passive-aux: Aux-passive (aux) {
+     be-forms(passive)
+  } 
+  word be-passive-aux-no-int: Aux-no-int-passive (aux) {
+   be:      vf-base passive;       
+   being:   ing     passive;       
+   been:    pp      passive;            
+  } 
+
+ word get-passive-aux: Aux-no-int-passive (aux) {
+     get:      fin-full passive pres s-pos do non-3rd s-sg  ;  	
+     gets:     fin-full passive pres s-pos do 3rd     s-sg  ;
+     get:      fin-full passive pres s-pos do         s-pl  ;
+     got:      fin-full passive past s-pos do               ;
+     get:      vf-base  passive;       
+     getting:  ing      passive;       
+     got:      pp       passive;            
+  } 
