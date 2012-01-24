@@ -4,10 +4,12 @@
 package motivation.components.managers;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -117,8 +119,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 				if (lastChange == null) {
 					this.wait(TIME_TO_WAIT_FOR_CHANGE);
 					if (lastChange == null) {
-						getLogger().debug(
-								"no relevant event, so we continue waiting");
+						debug("no relevant event, so we continue waiting");
 						return true;
 					}
 				}
@@ -127,8 +128,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			Thread.sleep(TIME_TO_WAIT_TO_SETTLE);
 			synchronized (this) {
 				if (lastChange != null) {
-					getLogger()
-							.debug("there is another change pending, let's collect them all before actally start planning");
+					debug("there is another change pending, let's collect them all before actally start planning");
 					return false;
 				}
 			}
@@ -234,7 +234,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 	public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
 			WorkingMemoryChange wmc, Motive newEntry, Motive oldEntry)
 			throws CASTException {
-		log("received change event: " + CASTUtils.toString(wmc));
+		debug("received change event: " + CASTUtils.toString(wmc));
 		synchronized (this) {
 			lastChange = wmc;
 			this.notifyAll();
@@ -260,12 +260,12 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 
 	private void lockSet(Map<WorkingMemoryAddress, Motive> set)
 			throws UnknownSubarchitectureException {
-		log("lockSet(): locking component");
+		debug("lockSet(): locking component");
 		try {
 			lockComponent();
 			getLogger().debug("lockSet(): component locked");
 			for (WorkingMemoryAddress wma : set.keySet()) {
-				log("lockSet(): locking entry " + wma.id);
+				debug("lockSet(): locking entry " + wma.id);
 				try {
 					lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
 				} catch (DoesNotExistOnWMException e) {
@@ -274,11 +274,11 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 									e);
 					set.remove(wma);
 				}
-				log("lockSet(): entry " + wma.id + " is locked");
+				debug("lockSet(): entry " + wma.id + " is locked");
 			}
 		} finally {
 			unlockComponent();
-			log("lockSet(): component unlocked");
+			debug("lockSet(): component unlocked");
 		}
 	}
 
@@ -345,6 +345,28 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			}
 		} finally {
 			unlockComponent();
+		}
+	}
+
+	protected void flagAchievedGoals() throws CASTException {
+		Set<Entry<WorkingMemoryAddress, Motive>> copySet = new HashSet<Entry<WorkingMemoryAddress, Motive>>(
+				motives.entrySet());
+
+		for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
+			Motive motive = m.getValue();
+			if (PlannerFacade.get(this).isGoalAchieved(motive.goal.goalString)) {
+				WorkingMemoryAddress wma = m.getKey();
+
+				log("flag achieved goal " + motive.goal.goalString);
+				motive.status = MotiveStatus.COMPLETED;
+				try {
+					lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
+					overwriteWorkingMemory(m.getKey(), motive);
+					// motives.remove(m.getKey());
+				} finally {
+					unlockEntry(wma);
+				}
+			}
 		}
 	}
 
