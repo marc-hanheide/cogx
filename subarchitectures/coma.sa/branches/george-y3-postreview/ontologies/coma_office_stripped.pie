@@ -1,0 +1,58 @@
+/*
+* OWL reasoning for ABox individuals
+* includes use of sameAs and differentFrom, universal instantiation for
+* individuals & triples, and property charecteristics (transitive, symmetric,
+* functional)
+*
+* the minimal rule set consisting of the two axioms below and the fake rule
+* was provided by Damyan Ognyanoff from Ontotext -- THANKS !!
+* based on a rule set written by Hans-Ulrich Krieger (DFKI) -- Thanks!
+*
+* file name: coma_office_stripped.pie
+* author: Hendrik Zender, zender@dfki.de
+* date: 2008-04-17
+*/
+
+Prefices
+{
+     rdf      :  http://www.w3.org/1999/02/22-rdf-syntax-ns#
+     rdfs     :  http://www.w3.org/2000/01/rdf-schema#
+     owl      :  http://www.w3.org/2002/07/owl#
+     xsd      :  http://www.w3.org/2001/XMLSchema#
+     oe       :	 http://www.dfki.de/cosy/officeenv.owl#
+}
+
+Axioms
+{
+    <rdf:type> <rdfs:range> <rdfs:Class>
+    <rdfs:range> <rdfs:domain> <rdf:Property>
+}
+
+Rules
+{
+
+// need that fake rule according to Damyan Ognyanoff
+
+Id: fake_rule
+   "fake"  <rdf:type>  b
+   "fake"  <rdf:type>  b
+   --------------------------------
+   b  <rdfs:subClassOf>  b
+   b  <rdfs:subPropertyOf>  b
+   b  <rdf:type>  b
+
+
+//************************************************************************
+//***************** the REAL rules are starting here *********************
+//************************************************************************
+
+// if something is near something else, then the two are part of the
+// same super-structure
+Id: topoNeighborhood
+    x <oe:near> y    [Constraint x != y]
+    y <oe:in> z      [Constraint y != z]
+    ----------------------
+    x <oe:in> z
+
+
+}

@@ -1,0 +1,7 @@
+HOST localhost
+
+SUBARCHITECTURE coma
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA MG testreasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/test-ontology.cfg --log true
+JAVA MG testwriter coma.components.TestWriter --reasoner-name testreasoner --log true

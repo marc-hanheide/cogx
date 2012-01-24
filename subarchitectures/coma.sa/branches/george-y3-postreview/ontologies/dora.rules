@@ -1,0 +1,136 @@
+#------------------------------------------------------------------
+# OWL ABox reasoning
+# 
+# OWL reasoning for ABox individuals for Dora
+#
+# author: Hendrik Zender, zender@dfki.de
+# date: 2009-09-25, started: 2008-04-17
+#------------------------------------------------------------------
+
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix dora: <http://dora.cogx.eu#>.
+
+
+
+#------------------------------------------------------------------
+# Tabling directives
+#------------------------------------------------------------------
+
+#-> tableAll().
+
+#-> table(rdf:type).
+#-> table(owl:sameAs).
+#-> table(owl:differentFrom).
+
+#------------------------------------------------------------------
+# OWL rules
+#------------------------------------------------------------------
+
+[omicsClassesRule:
+  (?thing dora:typicalObjectInRoom ?loc)
+  ->
+  (?thing rdfs:subClassOf dora:Object),
+  (?loc rdfs:subClassOf dora:PhysicalRoom)]
+  
+
+# uncomment one of the following 2 rules according to your needs
+[omicsCrispInferenceRuleWith2Objects:
+  (?objClass1 dora:typicalObjectInRoom ?areaClass),
+  (?objClass2 dora:typicalObjectInRoom ?areaClass),
+  (?objIns1 rdf:type ?objClass1),
+  (?objIns2 rdf:type ?objClass2),
+  (?areaIns dora:contains ?objIns1)
+  (?areaIns dora:contains ?objIns2)
+  notEqual(?objIns1,?objIns2)
+  ->
+  (?areaIns rdf:type ?areaClass)]  
+
+#[omicsCrispInferenceRuleWith1Object:
+#  (?objClass dora:typicalObjectInRoom ?areaClass),
+#  (?objIns rdf:type ?objClass),
+#  (?areaIns dora:contains ?objIns)
+#  ->
+#  (?areaIns rdf:type ?areaClass)]  
+
+
+[sameRoomRuleDirect:
+  (?a dora:adjacent ?b),
+  noValue(?a rdf:type dora:Doorway),
+  noValue(?b rdf:type dora:Doorway)
+  ->
+  (?a dora:sameRoomAs ?b)]
+  
+[sameRoomRuleTransitive:
+  (?a dora:adjacent ?c),
+  (?b dora:sameRoomAs ?c),
+  noValue(?a rdf:type dora:Doorway),
+  noValue(?b rdf:type dora:Doorway),
+  noValue(?c rdf:type dora:Doorway)
+  ->
+  (?a dora:sameRoomAs ?b)]
+  
+# reflexiveness is already stated in the owl definition
+#[sameRoomReflexive:
+#  (?a rdf:type dora:Place),
+#  noValue(?a rdf:type dora:Doorway)
+#  ->
+#  (?a dora:adjacent ?a)]
+
+[removeDoorwaySameRoomAs:
+  (?x dora:sameRoomAs ?y),
+  (?x rdf:type dora:Doorway),
+  noValue(dora:tweety dora:isa dora:Bird)
+  ->
+  (dora:tweety dora:isa dora:Bird),
+  print(removeDoorwaySameRoomAs called),
+  doorcleaner(?x)]
+  
+[possiblySameRoomRuleBaseCase:
+  (?a dora:sameRoomAs ?b),
+  ->
+  (?a dora:possiblySameRoomAs ?b)]
+
+[possiblySameRoomRule:
+  (?a dora:possiblySameRoomAs ?c),
+  (?b dora:possiblySameRoomAs ?c),
+  ->
+  (?a dora:possiblySameRoomAs ?b)]
+ 
+# I don't understand this rule, hz, 2009-09-25
+[possiblySameRoomRuleTransitive:
+  (?a rdf:type dora:Unknown),
+  (?b rdf:type dora:Unknown),
+  (?a dora:possiblySameRoomAs ?c),
+  ->
+  (?b dora:possiblySameRoomAs ?c)]
+  
+# not necessary because objects aren't related via places
+#[objectContainmentRule:
+#  (?a rdf:type dora:Object),
+#  (?b rdf:type dora:Place),
+#  (?a dora:observableFromPlace ?b),
+#  (?b dora:constituentOfRoom ?c)
+#  ->
+#  (?a dora:in ?c)]
+  
+#[bottomUpRoomFormation:
+#  (?x rdf:type dora:Place),
+#  (?y rdf:type dora:Place),
+#  (?x dora:sameRoomAs ?y),
+#  (?r rdf:type dora:PhysicalRoom),
+#  (?x dora:constituentOf ?r)
+#  ->
+#  (?y dora:constituentOf ?r),
+##  roomcleaner(?x)
+#]
+  
+#[doorwaysBelongToAllRooms:
+#  (?x rdf:type dora:Doorway),
+#  (?x dora:adjacent ?y),
+#  (?y dora:constituentOf ?r),
+#  (?r rdf:type dora:PhysicalRoom)
+#  ->
+#  (?x dora:constituentOf ?r)]
