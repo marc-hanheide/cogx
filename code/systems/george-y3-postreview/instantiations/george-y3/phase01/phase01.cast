@@ -1,0 +1,43 @@
+# CAST config file
+
+# Host names can be used instead of raw IPs to distribute components eg. [Main].
+# Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
+# If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
+# in a .hconf file will be used instead of host addresses defined here.
+# HOSTNAME  localhost      192.168.33.101
+HOSTNAME  Main           localhost
+# HOSTNAME  PlayerHost     cca-0838
+HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Main]
+HOSTNAME  DisplayHost    [Main]
+
+HOST     [Main]
+
+SETVAR ptzServerComponent=ptz.server
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host %(host:PlayerHost)
+
+####################################################################################################################
+INCLUDE  includes/spatial.sa/spatial-base.cast
+
+####################################################################################################################
+INCLUDE  includes/vision.sa/vision-base.cast
+
+# Configure the cameras (internal, external parameters; stereo config; position)
+INCLUDE  sim/cameras-sim.incl
+
+# Include othere vision components
+INCLUDE  georgeY3-vision.incl
+
+INCLUDE  juggler.incl
+
+# mediators, execution
+JAVA MG vision.mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent #--debug
+
+####################################################################################################################
+# INCLUDE  includes/binder.sa/spatial-base.cast
+
+####################################################################################################################
+SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+INCLUDE  includes/visualization.sa/v11n-base-p.cast
+
+

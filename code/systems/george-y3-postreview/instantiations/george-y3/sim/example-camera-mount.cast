@@ -1,0 +1,28 @@
+# shows different examples to use the camera mount component
+
+HOST localhost
+
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# This is how you should use CameraMount in your simulated robot system. 
+# Use PTZ with kinematic parameters the same as in gazebo model. Camera poses will be calculated
+# based on the kinematic chain base - pan joint - tilt joint - cam offset
+#CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml # --log --debug
+
+# This is how you can use CameraMount on your real robot system, in case the PTZ is broken (as is the case for the TUW robot)
+# Don't use PTZ at all, and just provide fixed camera poses.
+#CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml" # --debug --log
+
+# This is how you should use CameraMount in your real robot system. 
+# Use PTZ with kinematic parameters the same as in gazebo model, but also provide fixed poses.
+# If the PTZ is at the fixed pan/tilt position, camera mount will output the fixed camera poses
+# Otherwise camera poses will be calculated based on the kinematic chain
+# base - pan joint - tilt joint - cam offset.
+CPP MG CameraMount CameraMount --camids "0" --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -0.785398175" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml # --log --debug
+
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+

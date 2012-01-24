@@ -1,0 +1,172 @@
+
+Building the system
+===================
+
+If the file BUILD/CMakeCache.txt doesn't exist, you can create one with:
+
+   bash sysconfig/prepare_build.sh
+
+This will create the BUILD directory and run cmake with the initial cache file
+sysconfig/cmakecache/george-y3.txt.
+
+Change into BUILD and run make or start the build from CAST Control. If you
+encounter problems with the libraries levmar or homest, you may have to change
+F2C_LIB from 'f2c' to 'f2c.a' in ccmake.
+
+If you want to restore the set of components that are built in the George
+system, use the following command:
+
+   tools/scripts/cmake-apply BUILD sysconfig/cmakecache/george-y3.txt
+
+To save the current set of components:
+
+   tools/scripts/cmake-freeze > my-components.txt
+
+
+Mac users
+---------
+
+The command 'readlink -f' doesn't work on Mac and there are some problems
+between sed and the shell. Do the following:
+
+  mkdir BUILD
+  cd BUILD
+  ccmake -C ../sysconfig/cmakecache/george-y3.txt  ..
+
+
+V4R library
+-----------
+
+The V4R library is built separately. By default it should be checked out into
+tools/v4r. To build it do:
+  
+   cd tools/v4r
+   mkdir BUILD
+   cd BUILD
+   cmake ..
+   make
+
+It may have to be configured manually to enable certain parts of the library.
+In this case use cmake-gui or ccmake.
+
+The library shouldn't be installed on the system. Instead the path to the
+include and lib files has to be set. This can be done in castcontrol.conf:
+
+   V4R_DIR=${COGX_ROOT}/tools/v4r
+
+   PATH=<pathlist>
+      # ...
+      ${PATH}
+      ${V4R_DIR}/bin
+   </pathlist>
+
+   LD_LIBRARY_PATH=<pathlist>
+      ${LD_LIBRARY_PATH}
+      ${V4R_DIR}/lib
+      # ...
+   </pathlist>
+
+Similar statements can be added to .profile, instead.
+
+It is also possible to build the library as a part of the main build using an
+external make process. This can be enabled with the option
+
+   DO_V4R_MAKE=ON
+
+in the CogX build configuration.
+
+
+Changing externals
+==================
+
+The externals can be changed with the script applyexternals.sh in sysconfig:
+
+   cd sysconfig
+   bash  applyexternals.sh  george-y3-trunk.externals
+   svn up ..
+
+if the .externals file is not provided, the default file george-y3.externals
+will be used.
+
+
+The VisualLearner component
+===========================
+
+If you don't have the Matlab Compiler you have to download the prebuilt
+component from  http://cogx.eu/data/cogx/prebuilt/ and install the files into
+
+ subarchitectures/vision.sa/prebuilt/VisualLearner/glnx86
+
+You can also use the George Year 2 DVD ISO to run the VisualLearner component
+inside the virtual machine. See
+
+ https://codex.cs.bham.ac.uk/trac/cogx/wiki/documents/scenarios/george2/review
+
+
+Fake VisualLearner component
+----------------------------
+
+You can also build a fake VisualLearner that doesn't use Matlab, but doesn't do
+anything useful, either. It just adds some constant values to the appropriate
+WM entries. The fake component is built instead of the real one if the option
+BUILD_SA_VISION_VISLEARNER_FAKE is enabled in cmake.
+
+
+Phase 01
+========
+
+Goal: Run the 4 types of learning using 2 layered vision and (if possible) use
+the Katana arm as an aid for reference resolution.
+
+
+In simulation with Gazebo and Player
+------------------------------------
+
+* Server configuration:
+   - instantiations/george-y3/sim/gazebo/george-01.world
+   - instantiations/george-y3/sim/player/cogx-platform-sim.cfg
+
+* Use one of the phase01-*.cast files, eg.: 
+   - instantiations/george-y3/phase01/phase01-motivation.cast
+
+* Select the PPO configuration in georgey3-vision.incl, include one of the ppo-* files:
+   - ppo-stereo-1.incl
+   - ppo-stereo-2.incl
+
+* Check that the Gazebo Juggler is enabled (juggler.incl included)
+
+
+Managing objects in the scene
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check that the juggler.incl is included in the top cast file. This will include
+the GazeboJuggler component which will remove all the objects from the scene at
+startup. Then you can place individual objects back on the scene in the
+GazeboJuggler dialog. Press the yellow icon in the "CAST Viewer" window to
+show/hide the dialog window.
+
+
+On the real robot
+-----------------
+
+* Server configuration:
+   - instantiations/george-y3/real/player/cogx-platform.cfg
+
+* Use one of the phase01-*.cast files, eg.: 
+   - instantiations/george-y3/phase01/phase01-motivation.cast
+
+* Check that the Gazebo Juggler is disabled (juggler.incl NOT included)
+
+* Select the PPO configuration in georgey3-vision.incl, include one of the ppo-* files:
+   - ppo-stereo-1.incl
+   - ppo-stereo-2.incl
+   - ppo-kinect-stereo.incl
+
+
+Analyze Proto Objects
+---------------------
+
+The system will analyze proto objects when the "Anal. PO" goal is enabled in
+"Motivation::ManualSelectFilter" window.
+
+

@@ -1,0 +1,67 @@
+# CAST config file
+
+# Host names can be used instead of raw IPs to distribute components eg. [Main].
+# Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
+# If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
+# in a .hconf file will be used instead of host addresses defined here.
+# HOSTNAME  localhost      192.168.33.101
+HOSTNAME  Main           192.168.56.1
+# HOSTNAME  Main           localhost
+HOSTNAME  PlayerHost     192.168.56.3
+# HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Main]
+HOSTNAME  DisplayHost    [Main]
+HOSTNAME  AbducerHost    192.168.56.3
+# HOSTNAME  AbducerHost    [Main]
+
+HOST     [Main]
+
+COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0 --log --debug
+
+# spatial ################################################################
+INCLUDE  includes/spatial.sa/spatial-base.cast
+
+# vision #################################################################
+INCLUDE  includes/vision.sa/vision-base.cast
+
+# Configure the cameras (internal, external parameters; stereo config; position)
+INCLUDE  sim/cameras-sim.incl
+#INCLUDE  real/cameras-real.incl
+
+# Include other vision components
+INCLUDE  georgeY3-vision.incl
+
+# belief mediators, execution
+INCLUDE includes/vision.sa/vision-execution.cast
+INCLUDE includes/vision.sa/vision-mediators.cast
+INCLUDE juggler.incl
+CPP MG vc-costs ViewConeMoveCostGenerator
+
+
+# binder #################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/planner-george.cast
+INCLUDE includes/planner.sa/planner-base.cast
+INCLUDE includes/planner.sa/viz-plan.cast
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+# JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
+JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
+JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
+JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
+
+INCLUDE includes/motivation.sa/motivation.cast
+INCLUDE includes/motivation.sa/motivation-goals-george.cast
+
+
+# visualization ##########################################################
+SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+INCLUDE  includes/visualization.sa/v11n-base-p.cast
+
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
+JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --mode SVG
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+
