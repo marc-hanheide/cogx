@@ -120,7 +120,7 @@ sleep 60
 TESTREST=0
 if [ "$GOAL" ]; then
         echo "running test for goal $GOAL" 
-	if ant -Dtest.goal="$GOAL" goaltest; then TESTREST=0 else TESTREST=1; fi
+	if ant -Dtest.goal="$GOAL" goaltest; then TESTREST=0; else TESTREST=1; fi
         echo "test returned"
 fi
 
