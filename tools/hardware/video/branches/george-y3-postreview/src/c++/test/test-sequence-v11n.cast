@@ -1,0 +1,22 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST localhost
+
+SUBARCHITECTURE visusalization.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer 
+
+CPP MG monitor FileMonitorDC --displayserver "display.srv" --monitor "ImageA=image:./testvideoclient-0.ppm  ImageB=image:./testvideoclient-1.ppm"
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# reading stored images
+CPP MG videoserver OpenCvImgSeqServer --framerate_ms 250 --camids "0 1" --sequences "%(CONFIG_DIR)/test-sequence.vseq" --show_sequence "TeaAll" --displayserver "display.srv" --log
+
+# live images
+#CPP MG VideoServer OpenCvLiveServer --camids 0 --devnums 0 --log
+
+COMPONENT CPP videoclient TestVideoClient --videoname videoserver --camids "0 1" --log
+

@@ -1,0 +1,256 @@
+<?xml version="1.0"?>
+
+<!--
+model of "oberhaus" office room, 7 by 3 m
+-->
+
+<gazebo:world 
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz" 
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:window="http://playerstage.sourceforge.net/gazebo/xmlschema/#window" 
+  xmlns:param="http://playerstage.sourceforge.net/gazebo/xmlschema/#param" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:ui="http://playerstage.sourceforge.net/gazebo/xmlschema/#ui"
+  xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+  xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics" 
+>
+
+  <verbosity>5</verbosity>
+
+  <physics:ode>
+    <stepTime>0.003</stepTime>
+    <gravity>0 0 -9.81</gravity>
+    <cfm>0.00001</cfm> <!-- 10e-5 works -->
+    <erp>0.8</erp> <!-- 0.8 works -->
+  </physics:ode>
+
+  <rendering:gui>
+    <type>fltk</type>
+    <size>800 600</size>
+    <pos>0 0</pos>
+    <xyz>0 0 0</xyz>
+    <rpy>0 0 0</rpy>
+  </rendering:gui>
+
+  <rendering:ogre>
+    <ambient>0.8 0.8 0.8 1.0</ambient>
+  </rendering:ogre>
+  
+
+  <!-- robot model -->
+  <model:physical name="robot">
+    <xyz>0.0 0.0 0.01</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+<!--
+    <model:physical name="laser">
+      <xyz>0.15 0 0.18</xyz>
+
+      <attach>
+        <parentBody>chassis_body</parentBody>
+        <myBody>laser_body</myBody>
+      </attach>
+
+      <include embedded="true">
+        <xi:include href="sicklms200.model" />
+      </include>
+    </model:physical>
+-->
+    <model:physical name="ptz">
+      <xyz>-0.15 0 0.30</xyz>
+
+      <attach>
+        <parentBody>chassis_body</parentBody>
+        <myBody>sonyvid30_body</myBody>
+      </attach>
+
+      <include embedded="true">
+        <xi:include href="directed-perception.model" />
+      </include>
+    </model:physical>
+
+    <include embedded="true">
+       <xi:include href="cogx-platform-simulated.model" />
+    </include>
+  </model:physical>
+
+  <!-- Ground Plane -->
+  <model:physical name="plane1_model">
+    <static>true</static>
+    <body:plane name="plane1_body">
+      <geom:plane name="plane1_geom">
+        <normal>0 0 1</normal>
+        <size>30 30</size>
+        <segments>10 10</segments>
+        <uvTile>15 15</uvTile>
+        <material>Gazebo/GrayGrid</material>
+      </geom:plane>
+    </body:plane>
+  </model:physical>
+
+
+
+  <model:physical name="walls_model">
+    <static>true</static>
+    <body:box name="walls_body">
+      <geom:box name="wall_front_geom">
+        <xyz>5 0 0.1</xyz>
+        <size>0.1 10 1</size>
+        <visual>
+          <size>0.1 10 1</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/White</material>
+        </visual>
+      </geom:box>
+      <geom:box name="wall_left_geom">
+        <xyz>0 5 0.1</xyz>
+        <size>10 0.1 1</size>
+        <visual>
+          <size>10 0.1 1</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/White</material>
+        </visual>
+      </geom:box>
+      <geom:box name="wall_back_geom">
+        <xyz>-5 0 0.1</xyz>
+        <size>0.1 10 1</size>
+        <visual>
+          <size>0.1 10 1</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/White</material>
+        </visual>
+      </geom:box>
+      <geom:box name="wall_right_geom">
+        <xyz>0 -5 0.1</xyz>
+        <size>10 0.1 1</size>
+        <visual>
+          <size>10 0.1 1</size>
+          <mesh>unit_box</mesh>
+          <material>Gazebo/White</material>
+        </visual>
+      </geom:box>
+    </body:box>
+ </model:physical>
+
+<!--
+  <model:physical name="scenery1_model">
+    <static>true</static>
+    <xyz>5 2 0.5</xyz>
+    <body:box name="scenery1_body">
+      <geom:box name="scenery1_geom">
+        <size>0.5 0.5 1</size>
+        <visual>
+	  <size>0.5 0.5 1</size>
+          <mesh>unit_cylinder</mesh>
+          <material>Gazebo/RustyBarrel</material>
+        </visual>
+      </geom:box>
+    </body:box>
+  </model:physical>
+
+  <model:physical name="scenery2_model">
+    <static>true</static>
+    <xyz>-5 -2 0.5</xyz>
+    <body:box name="scenery2_body">
+      <geom:box name="scenery2_geom">
+        <size>1 1 1</size>
+        <visual>
+	  <size>1 1 1</size>
+          <mesh>unit_box</mesh>
+	  <uvTile>2 2</uvTile>
+          <material>Gazebo/BumpyMetal</material>
+        </visual>
+      </geom:box>
+    </body:box>
+  </model:physical>
+
+  <model:physical name="scenery3_model">
+    <static>true</static>
+    <xyz>0 -5 0</xyz>
+    <body:box name="scenery3_body">
+      <geom:box name="scenery3_geom">
+	<rpy>0 0 90</rpy>
+        <size>2 2 2</size>
+        <visual>
+	  <size>2 2 2</size>
+          <mesh>unit_sphere</mesh>
+	  <uvTile>1 1</uvTile>
+          <material>Gazebo/GrassFloor</material>
+        </visual>
+      </geom:box>
+    </body:box>
+  </model:physical>
+
+  <model:physical name="scenery4_model">
+    <static>true</static>
+    <xyz>0 5 0.4</xyz>
+    <body:box name="scenery4_body">
+      <geom:box name="scenery4_geom">
+        <size>2 1 0.8</size>
+        <visual>
+	  <size>2 1 0.8</size>
+          <mesh>unit_box</mesh>
+	  <uvTile>4 2</uvTile>
+          <material>Gazebo/Chrome</material>
+        </visual>
+      </geom:box>
+    </body:box>
+ </model:physical>
+-->
+
+  <model:physical name="goal_model">
+    <static>false</static>
+    <xyz>3 0 0.5</xyz>
+    <body:box name="goal_body">
+      <geom:box name="goal_geom">
+        <size>1 1 1</size>
+        <mass>1</mass>
+        <visual>
+          <scale>1 1 1</scale>
+          <mesh>unit_box</mesh>
+          <uvTile>1 1</uvTile>
+          <material>Gazebo/Green</material>
+        </visual>
+      </geom:box>
+    </body:box>
+ </model:physical>
+
+<!--
+  <model:physical name="home_model">
+    <static>false</static>
+    <xyz>0 -1.5 0.5</xyz>
+    <body:box name="home_body">
+      <geom:box name="home_geom">
+        <size>0.10 0.10 0.10</size>
+        <mass>1</mass>
+        <visual>
+          <scale>0.10 0.10 0.10</scale>
+          <mesh>unit_box</mesh>
+          <uvTile>1 1</uvTile>
+          <material>Gazebo/RedEmissive</material>
+        </visual>
+      </geom:box>
+    </body:box>
+ </model:physical>
+-->
+
+  <!-- White Directional light -->
+  <model:renderable name="directional_white">
+    <light>
+      <type>directional</type>
+      <direction>0.1 -0.6 -0.4</direction>
+      <diffuseColor>0.9 0.9 0.9</diffuseColor>
+      <specularColor>0.2 0.2 0.2</specularColor>
+      <attenuation>1000 1.0 0.0 0</attenuation>
+      <range>.8</range>
+   </light>
+  </model:renderable>
+
+</gazebo:world>
+
