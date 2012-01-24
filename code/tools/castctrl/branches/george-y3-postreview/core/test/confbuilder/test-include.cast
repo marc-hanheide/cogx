@@ -1,0 +1,3 @@
+HOST localhost
+INCLUDE inc-spatial.cast
+INCLUDE inc-vision.cast

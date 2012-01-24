@@ -1,0 +1,19 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Comment[en_US]=
+Comment=
+Exec=~/bin/castcontrol
+GenericName[en_US]=Control Application for CogX CAST
+GenericName=Control Application for CogX CAST
+MimeType=
+Name[en_US]=CAST Control
+Name=CAST Control
+Path=/mnt/tcluvss/Devel/CogX/code/systems/ul
+StartupNotify=false
+Terminal=false
+TerminalOptions=
+Type=Application
+X-DBUS-ServiceName=
+X-DBUS-StartupType=none
+X-KDE-SubstituteUID=false
+X-KDE-Username=

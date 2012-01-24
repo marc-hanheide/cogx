@@ -1,0 +1,22 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>res/iconBuildStop.png</file>
+    <file>res/iconBuildInstall.png</file>
+    <file>res/iconBuild.png</file>
+    <file>res/castStop.png</file>
+    <file>res/castStart.png</file>
+    <file>res/serverStart.png</file>
+    <file>res/serverStop.png</file>
+    <file>res/terminal.png</file>
+    <file>res/runMakeClean.png</file>
+    <file>res/CMakeSetup128.png</file>
+    <file>res/svn-commit.png</file>
+    <file>res/svn-update.png</file>
+    <file>res/shellscriptOff.png</file>
+    <file>res/shellscriptOn.png</file>
+    <file>res/shellscript.png</file>
+    <file>res/cogx_icon.png</file>
+    <file>res/cogxStart.png</file>
+    <file>res/cogxStop.png</file>
+  </qresource>
+</RCC>
