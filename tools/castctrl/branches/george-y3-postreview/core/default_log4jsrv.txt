@@ -1,0 +1,57 @@
+
+# Startup configuration for the following servers:
+#   - org.apache.log4j.net.SimpleSocketServer
+#   - cast.core.logging.IceAppender
+# rootLogger entries are the following: level, consoleAppender-id, xmlFileAppender-id
+[LOG4J.SimpleSocketServer.conf]
+log4j.rootLogger=TRACE, srvConsole, srvXmlFile
+
+
+[LOG4J.SimpleSocketServer.console]
+#+ The server is configured to log to the console
+log4j.appender.srvConsole=org.apache.log4j.ConsoleAppender
+log4j.appender.srvConsole.Threshold=${LEVEL}
+log4j.appender.srvConsole.layout=org.apache.log4j.PatternLayout
+log4j.appender.srvConsole.layout.ConversionPattern=[%p %c: %m]%n
+# log4j.appender.srvConsole.layout.ConversionPattern=%30c [ %05p ] - %m %n
+
+
+[LOG4J.SimpleSocketServer.xmlfile]
+#+ The server is configured to log to an XML file
+log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
+log4j.appender.srvXmlFile.Threshold=${LEVEL}
+log4j.appender.srvXmlFile.File=${LOGFILE}
+log4j.appender.srvXmlFile.Append=true
+log4j.appender.srvXmlFile.layout=org.apache.log4j.xml.XMLLayout
+
+
+[LOG4J.SimpleSocketServer.XMLLayout.head]
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j:logsequence xmlns:log4j="http://jakarta.apache.org/log4j/" user="${USER}" time="${NOW}">
+
+
+[LOG4J.client.conf]
+log4j.rootLogger=TRACE, cliConsole, cliSocketApp
+
+
+[LOG4J.client.console]
+#+ The clients are configured to log to the console
+log4j.appender.cliConsole=org.apache.log4j.ConsoleAppender
+log4j.appender.cliConsole.Threshold=${LEVEL}
+log4j.appender.cliConsole.layout=cast.core.logging.ComponentLayout
+log4j.appender.cliConsole.layout.ConversionPattern=%S[%P %i: %m]%n%E
+#log4j.appender.cliConsole.layout.ConversionPattern=%S %30c [ %05p ] - %m %n%E
+
+
+[LOG4J.client.socket]
+#+ The clients are configured to send messages to a SocketAppender
+log4j.appender.cliSocketApp=org.apache.log4j.net.SocketAppender
+log4j.appender.cliSocketApp.Port=${PORT}
+log4j.appender.cliSocketApp.RemoteHost=${HOST}
+
+[LOG4J.client.IceAppender]
+#+ The clients are configured to send messages to an IceAppender (CAST logger)
+log4j.loggerFactory=cast.core.logging.ComponentLoggerFactory
+log4j.appender.cliSocketApp=cast.core.logging.IceAppender
+log4j.appender.cliSocketApp.Host=${HOST}
+

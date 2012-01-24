@@ -1,0 +1,83 @@
+# vim: set ft=python ts=8 sw=4 et :vim #
+
+# Fields will be stored in history file. Some fields may have mru histories.
+# eg. BUILD#BUILDDIR=${COGX_ROOT}/BUILD
+# eg. [PLAYER#CONFIG-MRU]
+#     ${COGX_ROOT}/player/robot.cfg
+#     ${COGX_ROOT}/player/fakerobot.cfg
+#
+# setVar():
+# The variable is only set if it is not defined in castcontrol.conf.
+# This way a user doesn't need to change the code, but only the configuration file.
+# Vars are not stored in history.
+
+#from extserver import Server
+
+def selectDebugCommand(basename, serverInfo):
+    debug = serverInfo.getProperty("DEBUGGER")
+    debug = debug != None and debug.value == "Yes"
+    if debug: return "${%s_DEBUG}" % basename
+    else: return "${%s}" % basename
+
+#####################################################
+# C++ Server
+#####################################################
+cast_cpp = Server("cast-cpp", server=True, label="CAST C++ Server", group='B')
+cast_cpp.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"], default="No" )
+cast_cpp.setCommand("[COMMAND]")
+cast_cpp.setVar("CMD_CPP_SERVER_DEBUG", "${CMD_CPP_SERVER}")
+cast_cpp.enabled = True
+
+def cppParamProcessor(name, value, serverInfo):
+    if name == "COMMAND":
+        return selectDebugCommand("CMD_CPP_SERVER", serverInfo)
+    return value
+
+cast_cpp.setParamProcessor(cppParamProcessor)
+
+#####################################################
+# Java Server
+#####################################################
+cast_java = Server("cast-java", server=True, label="CAST Java Server", group='B')
+cast_java.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"], default="No" )
+cast_java.setCommand("[COMMAND]")
+cast_java.setVar("CMD_JAVA_SERVER_DEBUG", "${CMD_JAVA_SERVER}")
+cast_java.enabled = True
+
+def javaParamProcessor(name, value, serverInfo):
+    if name == "COMMAND":
+        return selectDebugCommand("CMD_JAVA_SERVER", serverInfo)
+    return value
+cast_java.setParamProcessor(javaParamProcessor)
+
+#####################################################
+# Python Server
+#####################################################
+cast_python = Server("cast-python", server=True, label="CAST Python Server", group='B')
+cast_python.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"], default="No" )
+cast_python.setCommand("[COMMAND]")
+cast_python.setVar("CMD_PYTHON_SERVER_DEBUG", "${CMD_PYTHON_SERVER}")
+cast_python.enabled = True
+
+def pythonParamProcessor(name, value, serverInfo):
+    if name == "COMMAND":
+        return selectDebugCommand("CMD_PYTHON_SERVER", serverInfo)
+    return value
+cast_python.setParamProcessor(pythonParamProcessor)
+
+#####################################################
+# Java Client
+# * not included; custom interface is still needed *
+#####################################################
+#cast_client = Server("cast-client", server=True, label="CAST Client", group='C')
+#cast_client.filenameField("CAST_CONFIG", label="Configuration", filter="CAST Configuration (*.cast);;All files (*)")
+#cast_client.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"], default="No" )
+#cast_client.setCommand("[COMMAND]")
+#cast_client.setVar("CMD_CAST_CLIENT_DEBUG", "${CMD_CAST_CLIENT}")
+
+#def clientParamProcessor(name, value, serverInfo):
+#    if name == "COMMAND":
+#        return selectDebugCommand("CMD_CAST_CLIENT", serverInfo)
+#    return value
+#cast_client.setParamProcessor(clientParamProcessor)
+

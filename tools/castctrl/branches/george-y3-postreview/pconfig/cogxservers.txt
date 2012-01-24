@@ -1,0 +1,133 @@
+# vim: set ft=python ts=8 sw=4 et :vim #
+
+# Fields will be stored in history file. Some fields may have mru histories.
+# eg. BUILD#BUILDDIR=${COGX_ROOT}/BUILD
+# eg. [PLAYER#CONFIG-MRU]
+#     ${COGX_ROOT}/player/robot.cfg
+#     ${COGX_ROOT}/player/fakerobot.cfg
+#
+# setVar():
+# The variable is only set if it is not defined in castcontrol.conf.
+# This way a user doesn't need to change the code, but only the configuration file.
+# Vars are not stored in history.
+
+#from extserver import Server
+
+def selectDebugCommand(basename, serverInfo):
+    debug = serverInfo.getProperty("DEBUGGER")
+    debug = debug != None and debug.value == "Yes"
+    if debug: return "${%s_DEBUG}" % basename
+    else: return "${%s}" % basename
+
+# TODO: Fix castcontrol to properly run the processes. Only group='A' works as it should.
+cleanup = Server("Cleanup", server=False, label="Cleanup shell script (bash)") #, group='B')
+cleanup.filenameField("SCRIPT", label="Script", filter="SH Files (*.sh);;All files (*)", allowEmpty=True)
+cleanup.setCommand("bash [SCRIPT]")
+
+
+disp=Server("Display", label="Standalone Display Server")
+disp.stringItemField("DEBUGGER", label="Run in debugger", items=["Yes", "No"], default="No" )
+disp.setVar("CMD_DISPLAY_SERVER", "output/bin/display-server")
+disp.setVar("CMD_DISPLAY_SERVER_DEBUG", "${CMD_DISPLAY_SERVER}")
+disp.setCommand("[COMMAND]")
+#disp.setCommand("${COGX_ROOT}/output/bin/display-server")
+
+def displayParamProcessor(name, value, serverInfo):
+    if name == "COMMAND":
+        return selectDebugCommand("CMD_DISPLAY_SERVER", serverInfo)
+    return value
+
+disp.setParamProcessor(displayParamProcessor)
+
+
+gazebo = Server("Gazebo", label="Gazebo")
+gazebo.filenameField("WORLD", label="World", filter="Gazebo Worlds (*.world);;All files (*)")
+gazebo.stringItemField("GUI", label="Show GUI", items=["Yes", "No"] )
+gazebo.stringItemField("PHYSICS", label="Enable Physics", items=["Yes", "No"] )
+levels = ["Off", "Critical (default)", "Medium", "All"]
+gazebo.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1])
+gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
+
+def gazeboParamProcessor(name, value, serverInfo):
+    if name == "GUI":
+        if value == "No": return "-g"
+        return ""
+    if name == "PHYSICS":
+        if value == "No": return "-p"
+        return ""
+    if name == "DEBUG":
+        if value.startswith("Off"): return "-d -1"
+        elif value.startswith("Critical"): return "-d 0"
+        elif value.startswith("Medium"): return "-d 5"
+        elif value.startswith("All"): return "-d 9"
+        return ""
+
+    return value
+
+gazebo.setParamProcessor(gazeboParamProcessor)
+
+
+player = Server("Player", label="Player")
+player.filenameField("CONFIG", label="Configuration", filter="Player Config (*.cfg);;All files (*)")
+levels = ["Off", "Default", "Medium", "All"]
+player.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1] )
+player.setCommand("player  [DEBUG]  [CONFIG]")
+
+def playerParamProcessor(name, value, serverInfo):
+    if name == "DEBUG":
+        if value.startswith("Off"): return "-d 0"
+        elif value.startswith("Default"): return "-d 1"
+        elif value.startswith("Medium"): return "-d 5"
+        elif value.startswith("All"): return "-d 9"
+        return ""
+
+    return value
+
+player.setParamProcessor(playerParamProcessor)
+
+
+pbot = Server("Peekabot", label="Peekabot")
+pbot.setCommand("peekabot")
+
+
+abducer = Server("Abducer", label="Abducer Server")
+abducer.integerField("PORT",
+        label="Port", range=(2000,50000), default=9100)
+#TODO: maybe server and engine should also be configurable
+abducer.setVar("ABDUCER_ROOT", "${COGX_ROOT}/tools/abducer")
+abducer.setCommand("""
+      ${ABDUCER_ROOT}/bin/abducer-server
+      -n "AbducerServer"
+      -e "default -p [PORT]"
+      -l ${COGX_ROOT}/log4j.properties
+      -a ${ABDUCER_ROOT}/bin/abducer-engine-pb
+      -x --silent
+      """)
+
+
+mary = Server("Mary.tts", label="Mary TTS Server")
+mary.setVar("MARY_ROOT", "${COGX_ROOT}/tools/mary")
+mary.setPathList("MARY_CLASSPATH", """
+      ${MARY_ROOT}/java/mary-common.jar
+      ${MARY_ROOT}/java/log4j-1.2.15.jar
+      """)
+mary.setCommand("""
+      java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
+      -Dmary.base=${MARY_ROOT} 
+      marytts.server.Mary
+      """)
+
+
+golem = Server("Golem", label="Golem")
+#golem.filenameField("CONFIG", label="Configuration", filter="Golem Config (*.cfg);;All files (*)")
+golem.setVar("CMD_GOLEM_WORKDIR", "/usr/local/bin/Golem")
+golem.setVar("CMD_GOLEM", "${CMD_GOLEM_WORKDIR}/TinyIce")
+golem.setCommand("${CMD_GOLEM}", workdir="${CMD_GOLEM_WORKDIR}")
+
+
+# * An external sever must be configured to run on an agent
+#    - confiugration in xml or ini; like setLog4jProperties (eg. rename to setServerProperties)
+#    - select the agent(s) on which to run
+#    - retrieve effective settings from an agent; agents may have local settings
+#      in their castcontrol.conf; read-only
+

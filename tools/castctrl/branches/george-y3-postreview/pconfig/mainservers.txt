@@ -1,0 +1,50 @@
+# vim: set ft=python ts=8 sw=4 et :vim #
+
+# These are the Well-Known-Servers
+
+# This server is always present and can't be changed
+# TARGET is provided by the build system ('', install, clean); tied to buttons
+build = Server("MAKE", label="Make", group="Build")
+build.stringField("BUILDDIR", label="Build directory", default="${COGX_ROOT}/BUILD")
+build.setCommand("make [TARGET]", workdir="[BUILDDIR]")
+
+# Editor is a user setting! Currently it's in user.conf. Should be written there after edit.
+edit = Server("EDIT", label="Edit", group="Edit")
+edit.stringItemField("COMMAND", label="Command", items = [
+        "*internal*",
+        "gvim --servername GVIM --remote-silent %l[+:] %s",
+        "xemacs %l[+] %s",
+        "kate %l[-l ] %s",
+        "gedit %l[+] %s",
+        "xjed %s %l[-g ]",
+        "edit %l[+] %s",
+        "open -a textwrangler %s",
+       ])
+edit.setCommand("[COMMAND]")
+
+class Log4jServer(Server):
+    def __init__(self, name, **kwargs):
+        Server.__init__(self, name, **kwargs)
+        self.setCommand("${CMD_JAVA} org.apache.log4j.net.SimpleSocketServer [PORT] [SERVER_CONFIG]")
+
+        self.integerField("PORT",
+                label="Port", range=(10000,50000), default=10000)
+
+        self.filenameField("LOGFILE",
+                label="Output", default="logs/log.xml", filter="XML File (*.xml)")
+
+        levels = "ALL,TRACE,DEBUG,INFO,WARN,ERROR,OFF".split(",")
+        group = "Logging level"
+
+        self.stringItemField("CONSOLE_LEVEL", label="Console", group=group, items=levels, default="DEBUG")
+        self.stringItemField("XML_LEVEL", label="XML File", group=group, items=levels, default="OFF")
+
+        # TODO: Per-CAST-component logging levels
+
+    def preExec(self):
+        self.constField("SERVER_CONFIG", "${COGX_ROOT}/logs/auto_log4j.properties")
+        # TODO: generate config file; code is in log4util
+
+log4j = Log4jServer("LOG4J", label="Log4j Server")
+
+

@@ -1,0 +1,20 @@
+
+# Configure an external editor. If the external editor doesn't work
+# the program will use the internal editor
+EDITOR=internal
+#EDITOR=gvim --servername GVIM --remote-silent %l[+:] %s
+#EDITOR=xemacs %l[+] %s
+#EDITOR=kate %l[-l ] %s
+#EDITOR=gedit %l[+] %s
+#EDITOR=xjed %s %l[-g ]
+#EDITOR=edit %l[+] %s
+#EDITOR=open -a textwrangler %s
+
+# Configure the terminal to be used with the "Start Terminal" command.
+#TERMINAL=konsole --workdir '%s'
+#TERMINAL=konsole --new-tab --workdir '%s'
+#TERMINAL=gnome-terminal --working-directory='%s'
+
+# Set the limits for the number of log messages displayed (100-10000)
+#MAINLOGLINES=500
+#BUILDLOGLINES=500
