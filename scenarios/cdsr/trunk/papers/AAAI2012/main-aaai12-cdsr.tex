@@ -61,10 +61,10 @@
 
 \maketitle
 \begin{abstract}
-In order to collaborate with people in the real world, cognitive systems must be able to represent and reason about spatial regions in human environments. Consider the command \emph{``go to the front of the classroom''}. The spatial region mentioned (the front of the classroom) is not perceivable using geometry alone. Instead it is defined by its functional use, implied by nearby objects and their configuration. In this paper, we define such areas as \textit{context-dependent spatial regions} and propose a method for a cognitive system to learn them incrementally by combining qualitative spatial representations, semantic labels, and analogy. Using data from a mobile robot, we generate a relational representation of semantically labeled objects and their configuration. Next, we show how the boundary of a context-dependent spatial region can be defined using \textit{anchor points}. We then demonstrate how an existing computational model of analogy can be used to transfer this region to a new situation. To evaluate this process we compare transferred regions to annotations made on maps of real rooms by human volunteers.
+In order to collaborate with people in the real world, cognitive systems must be able to represent and reason about spatial regions in human environments. Consider the command \emph{``go to the front of the classroom''}. The spatial region mentioned (the front of the classroom) is not perceivable using geometry alone. Instead it is defined by its functional use, implied by nearby objects and their configuration. In this paper, we define such areas as \textit{context-dependent spatial regions} and present a cognitive system able to learn them by combining qualitative spatial representations, semantic labels, and analogy. The system is capable of generating a collection of qualitative spatial representations describing the configuration of the entities it perceives in the world. It can then be taught context-dependent spatial regions using \textit{anchor points} defined on these representations.  We then demonstrate how an existing computational model of analogy can be used to detect context-dependent spatial regions in previously unseen rooms. To evaluate this process we compare detected regions to annotations made on maps of real rooms by human volunteers.
 \end{abstract}
 
- \section{Introduction}
+\section{Introduction}
 
 Consider a janitorial robot cleaning a classroom. While performing this task, it encounters a teacher working with a student. The teacher tells the robot to ``start at the front of the classroom'', expecting it to go to the front of the classroom and begin cleaning that area. This response requires that the robot is able to \emph{determine the spatial region in the environment that satisfies this concept}.
 
@@ -167,7 +167,7 @@ In our system, the base and target representations consist of the entities Dora 
 
 \begin{figure}
   \includegraphics[width=\columnwidth]{images/ug40.png}
-  \caption{One of the classrooms used in our evaluation. This image was presented to subjects who were  asked to annotate a copy of the image in the bottom half of Figure~\ref{fig:rooms}.}
+  \caption{One of the classrooms used in our evaluation. This image was presented to subjects who were asked to annotate a copy of the image in the bottom half of Figure~\ref{fig:rooms}. The inset shows a screenshot from the data collection webpage.}
   \label{fig:ug40}
 \end{figure}
 
