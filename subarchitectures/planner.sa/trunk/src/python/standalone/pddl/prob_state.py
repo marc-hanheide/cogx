@@ -424,7 +424,7 @@ class ProbabilisticState(State):
             dist.normalize()
             highest = max(dist.itervalues())
             lower_bound = highest * rejection_ratio
-            if dist.value != UNKNOWN and svar.modality is None and not isinstance(svar.function, Predicate):
+            if "mapl" in self.problem.requirements and dist.value != UNKNOWN and svar.modality is None and not isinstance(svar.function, Predicate):
                 dvar = svar.as_modality(mapl.defined)
                 s[dvar] = TRUE
             for v,p in sorted(dist.items(), key=lambda (v,p): -p):
