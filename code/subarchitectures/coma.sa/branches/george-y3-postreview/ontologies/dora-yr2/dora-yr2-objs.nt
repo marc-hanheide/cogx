@@ -1,0 +1,5 @@
+<dora:corridor> <owl:equivalentClass> <dora:hallway>
+<http://dora.cogx.eu#cornflakes> <rdfs:subClassOf> <http://dora.cogx.eu#cereal_box>
+<http://dora.cogx.eu#chocolate_chips> <rdfs:subClassOf> <http://dora.cogx.eu#cookies>
+<http://dora.cogx.eu#grape_juice> <rdfs:subClassOf> <http://dora.cogx.eu#juice>
+<http://dora.cogx.eu#orange_juice> <rdfs:subClassOf> <http://dora.cogx.eu#juice>

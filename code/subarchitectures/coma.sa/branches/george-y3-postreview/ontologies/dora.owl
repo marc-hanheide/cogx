@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+    xmlns="http://dora.cogx.eu#"
+    xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+    xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xml:base="http://dora.cogx.eu">
+  <owl:Ontology rdf:about=""/>
+  <owl:Class rdf:ID="Scene">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Portion_of_space"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="KitchenTable">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="KitchenObject"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="FunctionalRegion">
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
+  </owl:Class>
+  <owl:Class rdf:about="#KitchenObject">
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Object"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="OfficeObject">
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:ID="DummyObject">
+    <rdfs:subClassOf rdf:resource="#Object"/>
+  </owl:Class>
+  <owl:Class rdf:ID="PhysicalRoom">
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
+  </owl:Class>
+  <owl:Class rdf:ID="DummyRoom">
+    <owl:equivalentClass>
+      <owl:Class>
+        <owl:intersectionOf rdf:parseType="Collection">
+          <owl:Restriction>
+            <owl:onProperty>
+              <owl:ObjectProperty rdf:ID="contains"/>
+            </owl:onProperty>
+            <owl:someValuesFrom rdf:resource="#DummyObject"/>
+          </owl:Restriction>
+          <owl:Class rdf:about="#PhysicalRoom"/>
+        </owl:intersectionOf>
+      </owl:Class>
+    </owl:equivalentClass>
+  </owl:Class>
+  <owl:Class rdf:ID="Doorway">
+    <rdfs:subClassOf rdf:resource="#Portion_of_space"/>
+  </owl:Class>
+  <owl:Class rdf:ID="OfficeDesk">
+    <rdfs:subClassOf rdf:resource="#OfficeObject"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Place"/>
+  <owl:Class rdf:ID="Office">
+    <rdfs:subClassOf rdf:resource="#PhysicalRoom"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Kitchen">
+    <rdfs:subClassOf rdf:resource="#PhysicalRoom"/>
+  </owl:Class>
+  <owl:Class rdf:ID="FunctionEvidence"/>
+  <owl:ObjectProperty rdf:ID="constituentOf">
+    <rdfs:domain rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="on">
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="topoIncluded"/>
+    </rdfs:subPropertyOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="observableFromPlace">
+    <rdfs:range rdf:resource="#Place"/>
+    <rdfs:domain rdf:resource="#Object"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="sameRoomAs">
+    <rdfs:range rdf:resource="#Place"/>
+    <rdfs:domain rdf:resource="#Place"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="possiblySameRoomAs">
+    <owl:inverseOf rdf:resource="#possiblySameRoomAs"/>
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdfs:range rdf:resource="#Place"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="topoIncludes">
+    <rdfs:subPropertyOf>
+      <owl:TransitiveProperty rdf:ID="topoIncludesTrans"/>
+    </rdfs:subPropertyOf>
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="#topoIncluded"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="adjacent">
+    <rdfs:range rdf:resource="#Place"/>
+    <rdfs:domain rdf:resource="#Place"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+    <owl:inverseOf rdf:resource="#adjacent"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="constituentOfRegion">
+    <rdfs:range rdf:resource="#FunctionalRegion"/>
+    <rdfs:subPropertyOf rdf:resource="#constituentOf"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#topoIncluded">
+    <owl:inverseOf rdf:resource="#topoIncludes"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="in">
+    <rdfs:subPropertyOf rdf:resource="#topoIncluded"/>
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="#contains"/>
+    </owl:inverseOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#contains">
+    <rdfs:range rdf:resource="#Object"/>
+    <owl:inverseOf rdf:resource="#in"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="constituentOfRoom">
+    <rdfs:subPropertyOf rdf:resource="#constituentOf"/>
+    <rdfs:range rdf:resource="#PhysicalRoom"/>
+  </owl:ObjectProperty>
+  <owl:TransitiveProperty rdf:about="#topoIncludesTrans">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+  </owl:TransitiveProperty>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 3.4.7, Build 620)  http://protege.stanford.edu -->
