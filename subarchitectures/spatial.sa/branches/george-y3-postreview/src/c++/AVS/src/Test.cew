@@ -1,0 +1,148 @@
+#include "AVSPolicyManager.hh"
+#include "Utils/CureDebug.hh"
+
+//g++ -L /home/cure/lib/cure/ -L ./ -lcuretoolbox -lpthread -lAVSPolicyManager Test.cc  -I /home/cure/toolbox/src/ 
+
+int main(int argc, char * argv[])
+{
+  cure_debug_level = 90;
+
+  const char *optstring = "hc:";
+  std::string args = "[-h help] [-c config.cfg] ";
+  std::string configfile = "-";
+  char o = getopt(argc, argv, optstring);
+  while (o != -1) {
+    switch (o) {
+      
+      break;
+    case 'c':
+      configfile = optarg;
+      break;
+    case 'h':
+    case '?':
+      std::cerr << "Usage: " << argv[0] << " " << args << std::endl;
+    std::cerr << "Example " << argv[0] << " "
+	      <<"-c config.cfg"<<std::endl;
+    return -1;
+    }
+    o = getopt(argc, argv, optstring);
+  }
+  AVSPolicyManager pm;
+  std::cerr<<"Call preCompute/n";
+  pm.preCompute("Needle",.05);
+  std::list<std::string> policy; 
+  std::string currentCfg="Unknown";
+  std::cerr<<"\nTry nextGreedyRatioPolicy:\n";
+  while( pm.nextGreedyRatioPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+  getchar();
+  pm.resetToPrior();
+  pm.m_ExpectedCost=10;
+  currentCfg="Unknown";
+  std::cerr<<"\nTry nextGreedyCostPolicy:\n";
+  while( pm.nextGreedyCostPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+  getchar();
+  short type=1;
+  pm.m_Type=type;
+  pm.m_ExpectedCost=10;
+  pm.resetToPrior();
+  currentCfg="Unknown";
+
+  std::cerr<<"\nTry NextNearlyBestPolicy Type "<<type<<":\n";
+  while( pm.nextNearlyBestPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+  getchar();
+  type=2;
+  pm.m_Type=type;
+  pm.resetToPrior();
+   currentCfg="Unknown";
+
+  std::cerr<<"\nTry NextNearlyBestPolicy Type "<<type<<":\n";
+  while( pm.nextNearlyBestPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+
+
+  getchar();
+  type=4;
+  pm.m_Type=type;
+  pm.resetToPrior();
+  currentCfg="Unknown";
+  std::cerr<<"\nTry NextNearlyBestPolicy Type "<<type<<":\n";
+  while( pm.nextNearlyBestPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+  getchar();
+  type=8;
+  pm.m_Type=type;
+  pm.resetToPrior();
+  currentCfg="Unknown";
+  std::cerr<<"\nTry NextNearlyBestPolicy Type "<<type<<":\n";
+  while( pm.nextNearlyBestPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+  getchar();
+  type=16;
+  pm.m_Type=type;
+  pm.resetToPrior();
+  currentCfg="Unknown";
+  std::cerr<<"\nTry NextNearlyBestPolicy Type "<<type<<":\n";
+  while( pm.nextNearlyBestPolicy(policy,
+				  currentCfg,
+				  0.01,0.9)){
+    std::cerr<<"\ngot ";
+    for (std::list<std::string>::iterator pi = policy.begin();
+	 pi != policy.end(); pi++) {
+      std::cerr<<(*pi)<<"->";
+      currentCfg=(*pi);
+    }
+  }
+  std::cerr<<"\nThank you \n";
+  return 0;
+}

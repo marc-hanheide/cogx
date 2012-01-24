@@ -1,0 +1,12 @@
+book
+.6 book IN room1
+.05 book ON table1 IN room1
+.15 book ON bookcase_sm IN room1
+.1 book IN bookcase_sm IN room1
+.2 book IN bookcase_lg IN room1
+.05 book IN dell ON table1 IN room1
+.15 book IN dell IN room1
+.4 book IN room2
+.05 book ON table2 IN room2
+.3 book IN metalbox IN room2
+.05 book IN shelves IN room2

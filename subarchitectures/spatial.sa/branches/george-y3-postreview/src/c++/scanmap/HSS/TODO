@@ -1,0 +1,1 @@
+Save odometry value when adding a reference node so that it can be used as an edge in the graph

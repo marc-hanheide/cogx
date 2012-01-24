@@ -1,0 +1,54 @@
+We must limit the scope of the current experiments to finish on time for ICRA.
+
+After ICRA (or sooner) the following improvements can be implemented:
+
+Costs should be more precisely computed.  
+
+1. We need costs to include motion of the robot between view cones
+(approximately but not too randomly).
+
+2. We need costs broken down by policy step. (ie what is the cost of
+finding tableA in room2.)
+
+3. We need costs updated as knowledge is acquired including 'accidental'
+gains like finding a table when looking for a box and so on.  This can
+be updated by sending the configuration of the found object (ie tableA
+in room2) to the AVSPolicyManager who can then reduce the costs of all
+policies that need to find that table by the cost of finding the
+table.
+
+4. We need the costs to be computed with the probilities of sucess and
+failure of each step.  So if we grab an image we can compute the
+probabity mass 'p' that the cone cuts.  This is the probability of sucess
+for that cone.  If it succeeds we are done with that step so this
+contributes p*cost for that cone. Then we add (1-p) times the cost of
+this and the following cones also computed as expectations.  There is
+a chance we are looking for an object that is not there so we must be
+sure that is reflected in our probabilies.  A early failure means the
+cost is much lower.  So looking for the box and not finding it is a
+low cost way to eliminate that chunk of probabiity mass.  If this is
+likely to happen we want to count that correctly.
+
+5. We need to compute the policies less greedy.  If there is a great
+policy in some far remote room with nothing else to look for when that
+policy fails then it might not be a good policy.  Looking only one
+step ahead is the problem.  We can look further (POMDP, Markov
+Decision Process).
+
+6. We need to do a smarter object search in the rooms.  So we should not
+just drop view cones and take the best then repeat.  We need to
+opitimize the entire search not just one cone.  So looking in a room
+for big things: if the center is clear go there and simplly rotate in
+place taking images.  This is better than going to two corners even if
+the corner views cover more of the room.  Rotation without translation
+is much cheaper.  So we should at least consider multiple orientations
+at each xy pose and always try to pick such view sequences. 
+
+7. We need to think about how we can expand our approach to include
+knowlegde gain at higher levels of abstraction.  So discoving that
+room 1 is a kitchen for instance.  This can change our policy but we
+don't want to just start all over.  This is very interesting and so I
+have now real good suggestion for it now.
+
+
+
