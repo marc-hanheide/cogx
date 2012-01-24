@@ -1,0 +1,22 @@
+HOST localhost
+SUBARCHITECTURE binder
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+
+SETVAR mlnEngine1_params=<multiline>
+		--sa binder
+		--queries resolution
+		--instance-type t_belief
+		--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrDomain.mln,subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow color,shape,color_constraint,shape_constraint,belief"
+		--standalone-display-host localhost
+	</multiline>
+CPP MG mlnEngine1 MLNEngine %(mlnEngine1_params)
+
+### Moitors & WM Editors
+
+JAVA MG evdEditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "org.cognitivesystems.binder.mln.Evidence"
+JAVA MG infEditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "org.cognitivesystems.binder.mln.InferredResult"
+JAVA MG queEditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "org.cognitivesystems.binder.mln.Query"
+
+
