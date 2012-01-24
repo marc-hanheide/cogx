@@ -1,0 +1,6 @@
+<org.cognitivesystems.binder.mln.Query>
+  <engId>mlnEngine1</engId>
+  <atoms>
+    <string>color_constraint</string>
+  </atoms>
+</org.cognitivesystems.binder.mln.Query>

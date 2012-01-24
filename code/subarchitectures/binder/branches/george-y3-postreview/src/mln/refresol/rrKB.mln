@@ -1,0 +1,119 @@
+//predicate declarations
+color(t_belief, t_color)
+shape(t_belief, t_shape)
+salience(t_belief)
+type(t_belief, t_attr_type)
+room-type(t_belief, t_attr_type)
+ambiguity
+unknown
+exist_constraint
+
+//attributed_color(t_belief, t_attr_color)
+//attributed_shape(t_belief, t_attr_shape)
+
+belief(t_belief)
+//epstatus(t_belief, t_status)
+
+color_constraint(t_attr_color)
+shape_constraint(t_attr_shape)
+salience_constraint(t_attr_salience)
+type_constraint(t_attr_type)
+
+resolution(t_belief)
+
+-2 exist_constraint
+
+// temporary solution for the 'openworldness' of number of private beliefs
+// the predicate prv_belief makes sure that only the (non-unit) rules of perceived
+// objects are grounded
+// this keeps the size of the network managable even if the number of possible
+// private beliefs (|bel|) is significantly larger than 	
+
+// -5.61346  color(a1,a2)
+//-1.4 color(a1,a2) v !belief(a1)
+//-0.5  shape(a1,a2) v !belief(a1)
+-5 color(a1,a2) v !belief(a1)
+-5  shape(a1,a2) v !belief(a1)
+
+//-5.61346  color_constraint(a1)
+//-1.4  color_constraint(a1)
+//-0.5 shape_constraint(a1)
+-5  color_constraint(a1)
+-5 shape_constraint(a1)
+
+// 0       prv_belief(p) ^ color(p,P_red) ^ color_constraint(A_red) => resolution(p)
+// RGB Colors
+2.1      !color(a1,P_red) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+-2.2       !color(a1,P_blue) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+-2.1       !color(a1,P_green) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+-2       !color(a1,P_red) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+2.1       !color(a1,P_blue) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+-1.9       !color(a1,P_green) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+-2       !color(a1,P_red) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+-2.05       !color(a1,P_blue) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+2.2       !color(a1,P_green) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+-2.1       !color(a1,P_red) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+2.2       !color(a1,P_blue) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+2.15       !color(a1,P_green) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+2.2       !color(a1,P_red) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+-2.1       !color(a1,P_blue) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_green) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+1.9       !color(a1,P_red) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+2.3       !color(a1,P_blue) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+-2.2       !color(a1,P_green) v !color_constraint(A_green) v !resolution(a1) v !belief(a1) 
+
+// Yellow, Orange (assuming RBG)
+2.2				!color(a1,P_yellow) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_orange) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+-1.9			!color(a1,P_yellow) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+2.2       !color(a1,P_orange) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2.15			!color(a1,P_yellow) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_orange) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_yellow) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_orange) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+
+-2.1			!color(a1,P_green) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_green) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+1.8       !color(a1,P_green) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_green) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+2.1       !color(a1,P_yellow) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_orange) v !color_constraint(A_green) v !resolution(a1) v !belief(a1)
+-2			!color(a1,P_yellow) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_orange) v !color_constraint(A_green) v resolution(a1) v !belief(a1)
+
+-2.1			!color(a1,P_blue) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2.2			!color(a1,P_blue) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+2.3       !color(a1,P_blue) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_blue) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_yellow) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+1.9       !color(a1,P_orange) v !color_constraint(A_blue) v !resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_yellow) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+-2			!color(a1,P_orange) v !color_constraint(A_blue) v resolution(a1) v !belief(a1)
+
+-2.1			!color(a1,P_red) v !color_constraint(A_orange) v resolution(a1) v !belief(a1)
+-2.05			!color(a1,P_red) v !color_constraint(A_yellow) v resolution(a1) v !belief(a1)
+2       !color(a1,P_red) v !color_constraint(A_yellow) v !resolution(a1) v !belief(a1)
+2.2       !color(a1,P_red) v !color_constraint(A_orange) v !resolution(a1) v !belief(a1)
+2       !color(a1,P_yellow) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+2.05       !color(a1,P_orange) v !color_constraint(A_red) v !resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_yellow) v !color_constraint(A_red) v resolution(a1) v !belief(a1)
+-2.1			!color(a1,P_orange) v !color_constraint(A_red) v resolution(a1) v !belief(a1) 
+
+
+//Shape
+1.5       !shape(a1,P_compact) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1)
+-1.4       !shape(a1,P_compact) v !shape_constraint(A_elongated) v resolution(a1) v !belief(a1)
+1.4       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v resolution(a1) v !belief(a1)
+-1.6       !shape(a1,P_elongated) v !shape_constraint(A_compact) v resolution(a1) v !belief(a1)
+-1.5       !shape(a1,P_compact) v !shape_constraint(A_compact) v !resolution(a1) v !belief(a1)
+1.6       !shape(a1,P_compact) v !shape_constraint(A_elongated) v !resolution(a1) v !belief(a1)
+-1.4       !shape(a1,P_elongated) v !shape_constraint(A_elongated) v !resolution(a1) v !belief(a1)
+1.6       !shape(a1,P_elongated) v !shape_constraint(A_compact) v !resolution(a1) v !belief(a1)
+
+
+// -7.23121  resolution(a1)
+//-7.23121  resolution(a1)
+
+// -7.23121  prv_belief(a1)
+//-7.23121  belief(a1)
+
