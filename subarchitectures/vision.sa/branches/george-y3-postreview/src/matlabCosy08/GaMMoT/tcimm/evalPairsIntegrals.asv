@@ -1,0 +1,75 @@
+function dE = evalPairsIntegrals( w, mu, C, mu0, C0, N ) 
+
+tol = 1e-5* 1/length(w) ;
+
+if ( sum(w < tol) > 1 )
+    dE = 10 ; return ;
+end
+
+D = rows(mu) ;
+Nn = w*N ;
+ 
+
+w12 = sum(w) ;
+P = zeros(1,4) ;
+
+mu1 = mu(:,1) ; mu2 = mu(:,2) ;
+w1 = w(1) ; w2 = w(2) ;
+C1 = C(:,:,1) ; C2 = C(:,:,2) ;
+
+p11 = bhatta( mu1, C1, mu1, C1 ) ;
+p12 = bhatta( mu1, C1, mu2, C2 ) ;
+p22 = bhatta( mu2, C2, mu2, C2 ) ;
+p01 = bhatta( mu0, C0, mu1, C1 ) ;
+p02 = bhatta( mu0, C0, mu2, C2 ) ;
+ 
+
+w0 = w1 + w2 ;
+f0.mu = mu0 ; f0.weights = w0 ; f0.covariances = C0(1) ;
+f12.mu = mu ; f12.weights = w ; f12.covariances = [C(1);C(2) ];
+
+% H = uHellingerJointSupport(  f12, f0 ) ; dE = (H < 0.01) - 0.5 ;
+H2 = hellinger2Norm( w1, mu1, C1, w2, mu2, C2 ) ; dE = %(H2 < 0.05) - 0.5 ;
+
+% disp(sprintf('Hellinger distance: %1.3g, DistanceBetweenComps: %1.3g', H, H2 ));
+
+
+% Es = (w(1)*p11 + w(2)*p12)^Nn(1) * (w(1)*p12 + w(2)*p22)^Nn(2) ;
+% Em = (w12*p01)^Nn(1) * (w12*p02)^Nn(2) ;
+
+% ttol = 0 ;
+% if ( Es <= ttol )
+%     dE = 10 ; return ;
+% end
+% 
+% if ( Em <= ttol )
+%     dE = -10 ; return ;
+% end
+
+
+% dE = mdlCriterion ( Es, Em, Nn ) ;  
+
+% 
+
+function dE = bicCriterion ( Es, Em, Nn )
+
+dE = -2*log2(Es) + 5*log2(sum(Nn)) - ( -2*log2(Em) + 2 ) ;
+
+function dE = mdlCriterion ( Es, Em, Nn )
+
+% mdl criterion
+Ns = 2 - 1 +2*1 + 2*2/2 ; Nm = 1 - 1 + 1 + 1*2/2 ;
+mdl_f = (1/2)*Ns*log2(sum(Nn)) - log2(Es) ;
+mdl_c = (1/2)*Nm*log2(sum(Nn)) - log2(Em) ;
+% [ mdl_c, mdl_f ]
+D = 1 ;
+
+% disp(sprintf('Num comps %d: mdl=%1.3g; Num comps %d: mdl=%1.3g; Ratio:
+% %1.3g',length(pdf_reduced.weights),mdl_f,length(pdf_reduced.weights)-1,mdl_c,abs(mdl_f - mdl_c)/abs(mdl_f) )) ,
+% dE = (1/4)*D*(D+1)*log2(sum(Nn)) - log2(Es) + log2(Em) ;
+% dE = (1/2)*log2(sum(Nn))*(Ns - Nm) +  log2(Em) - 0.7*log2(Es) ;
+dE = (1/2)*log2(sum(Nn))*(Ns - Nm) + log2(Em) - log2(Es) ;
+
+function P = bhatta( mu1, C1, mu2, C2 )
+
+P =  normpdf(mu1, mu2, [], C1 + C2 ) ;

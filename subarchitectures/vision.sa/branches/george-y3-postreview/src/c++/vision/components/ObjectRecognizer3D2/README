@@ -1,0 +1,21 @@
+
+
+Install NVIDIA CG
+ubuntu package
+  nvidia-cg-toolkit
+or
+  http://developer.nvidia.com/object/cg_download.html
+
+Dependencies:
+-------------
+
+ObjectTracker
+
+
+Keyboard settings:
+------------------
+
+space bar:	Learn next view
+s:					Save sift model to file and stop learning
+q:					Stop learning without saving the sift file
+

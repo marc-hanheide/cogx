@@ -1,0 +1,26 @@
+# Test the recognizer with a learned object, in real.
+
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -60"
+
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass USB --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
+CPP MG VideoServer OpenCvImgSeqServer --camids "0" --camconfigs "instantiations/calibration/kinect-magic-cal.xml" --files "subarchitectures/vision.sa/src/c++/vision/components/ObjectRecognizer3D3/config/darjeeling.jpg" --start 0 --end 0 --framerate_ms 500
+
+CPP MG Recognizer3D ObjectRecognizer3D3  --displayserver "display.srv" --videoname VideoServer --camid "0" --models "instantiations/recognizer-models/darjeeling.cm" --labels "darjeeling" --log
+
+# viewing and debugging
+
+CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0 --displayserver "display.srv"
+
+JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
+

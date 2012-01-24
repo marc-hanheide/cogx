@@ -1,0 +1,34 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname VideoServer --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini #--display
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.000 0.060 0.150][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.080 0.000 1.300][0 0 0]"
+CPP MG cameramounttest CameraMountTest --pan "0.0" --tilt "-0.75"
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# live images
+CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/tuw_stereo.ini:L  subarchitectures/vision.sa/config/tuw_stereo.ini:R"
+
+CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --globalPoints true --log true #--display
+CPP MG DisplayConvexHullPB DisplayConvexHullPB -c subarchitectures/nav.sa/config/cogxp3.ccf --log --read-ptu
+
+
+
+
+#CPP MG Filter SOIFilter --log true --videoname VideoServer --camid 0 --display --stereoname stereo
+#robot base
+COMPONENT CPP robot.server RobotbaseServerPlayer --log #--player-host localhost #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --log #--player-host localhost #--rand-data
+
+
+SUBARCHITECTURE nav.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP GD slam.process SlamProcess -c subarchitectures/nav.sa/config/cogxp3.ccf --max-scan-rate 5 --no-file-output #--log #-m tmpmap.metric #--debug
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c subarchitectures/nav.sa/config/cogxp3.ccf --log #--read-ptu --log #--debug 
+#CPP GD odom.process OdomLocalizer

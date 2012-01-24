@@ -1,0 +1,18 @@
+# CAST config file
+HOST localhost
+
+INCLUDE visualization.incl
+
+#CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "SiftInput=image:%(dir)/{sift_inputimage.jpg}  Model.Best=image:%(dir)/{sift_bestmodel01.png} Model.Distribution=html:%(dir)/{or_model_distrib.html}" --debug true
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG video.server OpenCvLiveServer --imgsize "640 480" --camids 0 --devnums 0
+
+# CPP MG vis.recognizer.srv ObjectRecognizerSrv --matcher-cuda --models "MDarjeeling SwGreenTea2 ShelcoreCube2 TwLemonTea2" --modeldir "subarchitectures/vision.sa/config/test-objrecognizer/model" --log true
+
+CPP MG vis.recognizer.srv ObjectRecognizerSrv --matcher-cuda --models "*" --modeldir "%(CONFIG_DIR)/models_c.db" --log
+
+CPP MG vis.recognizer.test TestObjectRecognizer --testmode server-camera --videoname video.server --camid "0" --recognizerhost localhost --recognizerid vis.recognizer.srv --debug false

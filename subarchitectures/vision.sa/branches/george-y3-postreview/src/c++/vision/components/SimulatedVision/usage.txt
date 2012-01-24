@@ -1,0 +1,69 @@
+
+Add SimulatedVision component to cast file:
+
+   SUBARCHITECTURE visualization.sa 
+   CPP WM SubarchitectureWorkingMemory
+   CPP TM AlwaysPositiveTaskManager
+
+   CPP MG display.srv DisplayServer --log true --debug true
+
+   SUBARCHITECTURE vision.sa
+   CPP WM SubarchitectureWorkingMemory
+   CPP TM AlwaysPositiveTaskManager
+
+   CPP MG sim.vision SimulatedVision --displayserver "display.srv" --datadir "/path/to/dir"
+      # --log true --debug true
+
+Create (empty) files for the objects and scenes that you will be using.
+Object files have an extension '.tobj'. Scene files have an extension '.tscn'. 
+The files are formatted as INI files.
+
+Start a CAST system. The component will read the list of objects and scenes
+from the data directory. Currently the files are read only at startup.
+
+You should see a view named "Vision.Simulator" in the Display Server.  In the 
+top form you can edit the attributes of an object.  The first drop-list selects 
+the object to be edited. The others are used to set its attributes.
+
+Select a value of the property from the drop-down list and set its probability 
+in the edit box (0.0 - 1.0; data validation is missing, so be careful).
+
+When ready, press "Apply" to save the attributes to the component's
+internal memory or "Apply&Save" to also save the data to the disk.
+
+
+Set the content of the scene in the bottom form.
+
+When ready, press "Create Scene" to save scene to the component's internal 
+memory or "Create&Save Scene" to also save the data to the disk. Both buttons 
+will also write into the working memory. Currently, the old contents of WM is 
+deleted and new objects are created; overwriteWorkingMemory is not used.
+
+The data is written to the VisualObject:
+   colors: colorLabels, colorDistrib, colorGain, colorAmbiguity
+   shapes: shapeLabels, shapeDistrib, shapeGain, shapeAmbiguity
+   labels: identLabels, identDistrib, identGain, identAmbiguity
+
+The button "Erase Scene" removes the objects from WM.
+
+
+Below the second form the current contents of WM is displayed after a "Create 
+Scene" operation.
+
+
+WORKAROUND: Currently it is not possible to add new attribute values to the 
+objects. To add more attributes, create a new object (eg 'xdummy.tobj') and set 
+missing attribute values:
+
+   [color]
+   @near_green=0.21
+   @near_red=0.31
+
+   [shape]
+   @sharp=0.22
+
+   [label]
+   @tv_box=0.63
+
+The '@' from at the beginning is required and will be removed. The values will 
+be converted to lower case.

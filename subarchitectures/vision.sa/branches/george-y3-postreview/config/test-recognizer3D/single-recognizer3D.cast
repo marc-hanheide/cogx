@@ -1,0 +1,24 @@
+HOST localhost
+
+# reading stored images
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "1" --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+
+CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --imgsize "640 480" --camconfigs "instantiations/review2011/camcalib-left.xml instantiations/review2011/camcalib-right.xml" #--framerate_fps 30
+
+#CPP MG VideoServer OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-tracker2/img/0000%04d.jpg" --start 1 --end 130 --framerate_ms 1 --camconfigs "subarchitectures/vision.sa/config/test-recognizer3D/tm.calb"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --coordinateframe --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/nativa.ply" --siftfiles "instantiations/sift-models/nativa.sift" --labels "nativa" --log
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "nativa" --mode RECOGNIZE --log
+
+#CPP MG VirtualScene VirtualScene --videoname VideoServer --camid 0 --log  #--debug 
+
+
