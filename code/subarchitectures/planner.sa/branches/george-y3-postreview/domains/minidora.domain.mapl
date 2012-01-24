@@ -1,0 +1,101 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :object-fluents)
+	
+	(:types 
+		place - object
+		room - object
+		robot - agent
+		place_type - object
+		place_id - object  ;; make this a number at some point 
+		room_id - object  ;; make this a number at some point 
+		place_category - object
+        place_status - object
+	)
+	
+	(:constants
+        placeholder trueplace - place_status
+        dora - robot
+	)
+
+    (:predicates
+		(connected ?n1 - place ?n2 - place)
+        (located ?r -  agent ?n - place)
+		(contains ?r - room ?n - place)
+		;; special
+		(has-goal ?a - agent)
+		(commited ?a - agent)
+        ;;(connects ?p1 - place_id ?p2 - place_id)
+    )	
+
+	(:functions
+		(place_type ?n - place) - place_type
+		(place_id ?n - place) - place_id
+		(placestatus ?n - place) - place_status
+		(place_category ?n - place) - place_category
+		(areaclass ?r - room) - place_category
+ 	)
+	
+
+;;; actions ;;;
+
+	(:action explore_place
+	 :agent (?a - agent)
+	 :parameters (?loc - place)
+	 :precondition (and
+	 	(located ?a ?loc)
+		)
+     :effect (assign (placestatus ?loc) trueplace)
+    )
+
+	(:action categorize_place
+	 :agent (?a - agent)
+	 :parameters (?loc - place)
+	 :precondition (and
+	 	(located ?a ?loc))
+     :sense (place_category ?loc)
+    )
+
+
+	(:action categorize_room
+	 :agent (?a - agent)
+	 :parameters (?r - room)
+	 :variables (?loc - place)
+	 :precondition (and
+	 	(located ?a ?loc)
+		(contains ?r ?loc)
+		)
+     :sense (areaclass ?r)
+    )
+
+
+	(:action move
+	 :agent (?a - agent)
+	 :parameters (?to - place)
+	 :variables (?from - place)
+	 :precondition (and
+		;;(located ?a ?from)
+        (or (= (placestatus ?to) trueplace)
+            (connected ?from ?to)) 
+		)
+	 :effect (and
+		(not (located ?a ?from))
+		(located ?a ?to)
+	))
+
+;;; 	(:action move
+;;; 	 :agent (?a - agent)
+;;; 	 :parameters (?to - place)
+;;; 	 :variables (?from - place)
+;;; 	 :precondition (and
+;;; 		(located ?a ?from) 
+;;; 		(connected ?from ?to)
+;;; 		)
+;;; 	 :effect (and
+;;; 		(not (located ?a ?from))
+;;; 		(located ?a ?to)
+;;; 		(connected ?to ?from)   ;; now we assume we can also move back
+;;; 	))
+	
+
+)

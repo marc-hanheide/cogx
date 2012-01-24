@@ -1,0 +1,266 @@
+(define (domain dt-pomdprover)
+
+(:requirements :quantified-preconditions :numeric-fluents :equality :typing :negative-preconditions :conditional-effects :action-costs :adl :disjunctive-preconditions :partial-observability)
+
+(:types  node - object
+         lander - object
+         geology - object
+         agent - object
+         subgoal - object
+         planning_agent - agent
+         rover - agent
+         node_choice - object
+         feature - object
+         camera - object
+         place - object
+         waypoint - place
+         rock - object
+         objective - object
+         store - object
+         mode - object
+         
+)
+
+(:predicates  (have_rock_analysis ?x - rover ?r - rock)
+              (visible_from ?o - objective ?w - waypoint)
+              (selected ?n - node ?value - node_choice)
+              (i_in-domain-selected ?n - node ?v - node_choice)
+              (kval-rock_type ?a - agent ?r - rock)
+              (visible ?w - waypoint ?p - waypoint)
+              (attributed-selected ?a - agent ?n - node ?v - node_choice)
+              (attributed-rock_type ?a - agent ?r - rock ?v - geology)
+              (kval-selected ?a - agent ?n - node)
+              (has_rat ?r - rover)
+              (kd-rock_type ?a - agent ?r - rock)
+              (communicated_rock_data ?g - geology)
+              (hyp-selected ?n - node ?v - node_choice)
+              (committed-selected ?n - node)
+              (hyp-rock_type ?r - rock ?v - geology)
+              (in-domain-rock_type ?r - rock ?v - geology)
+              (i_in-domain-rock_type ?r - rock ?v - geology)
+              (has_microscope ?r - rover)
+              (rat_applied ?r - rock)
+              (at_rock ?r - rock ?w - waypoint)
+              (rock_type ?r - rock ?value - geology)
+              (empty ?s - store)
+              (available ?r - rover)
+              (full ?s - store)
+              (update-failed-rock_type ?r - rock ?v - geology)
+              (can_traverse ?r - rover ?x - waypoint ?y - waypoint)
+              (update-rock_type ?r - rock ?v - geology)
+              (channel_free ?l - lander)
+              (update-selected ?n - node ?v - node_choice)
+              (neg-attributed-rock_type ?a - agent ?r - rock ?v - geology)
+              (neg-attributed-selected ?a - agent ?n - node ?v - node_choice)
+              (in-domain-selected ?n - node ?v - node_choice)
+              (committed-rock_type ?r - rock)
+              (has_spectrometer ?r - rover)
+              (store_of ?s - store ?r - rover)
+              (at_lander ?x - lander ?y - waypoint)
+              (commit-rock_type ?r - rock ?v - geology)
+              (update-failed-selected ?n - node ?v - node_choice)
+              (done )
+              (commit-selected ?n - node ?v - node_choice)
+              (kd-selected ?a - agent ?n - node)
+              (at ?x - rover ?y - waypoint)
+)
+
+(:percepts  (observed-selected ?n - node ?v - node_choice)
+            (observed-rock_type ?r - rock ?v - geology)
+)
+
+(:functions  (reward ) - number)
+
+(:constants  carbonate basalt - geology
+             r2 - rock
+)
+
+(:action  spin :precondition (done) :effect (assign (reward ) 0))
+
+(:action  navigate
+          :parameters  (?x - rover ?y - waypoint ?z - waypoint)
+          :precondition  (and  (can_traverse ?x ?y ?z)
+                               (available ?x)
+                               (at ?x ?y)
+                               (visible ?y ?z)
+                               (not (done ))
+                         )
+          :effect  (and  (not (at ?x ?y))
+                         (at ?x ?z)
+                         (assign (reward ) -5.0000)
+                   )
+)
+
+(:action  sample_rock_spectrometer
+          :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
+          :precondition  (and  (at ?x ?p)
+                               (at_rock ?r ?p)
+                               (has_spectrometer ?x)
+                               (store_of ?s ?x)
+                               (empty ?s)
+                               (not (done ))
+                         )
+          :effect  (and  (not (empty ?s))
+                         (full ?s)
+                         (assign (reward ) -25)
+                   )
+)
+
+(:action  sample_rock_microscope
+          :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
+          :precondition  (and  (at ?x ?p)
+                               (at_rock ?r ?p)
+                               (has_microscope ?x)
+                               (not (done ))
+                         )
+          :effect  (and  (assign (reward ) -12))
+)
+
+(:action  apply_rat
+          :parameters  (?x - rover ?r - rock ?p - waypoint)
+          :precondition  (and  (at ?x ?p)
+                               (at_rock ?r ?p)
+                               (has_rat ?x)
+                               (not (done ))
+                         )
+          :effect  (and  (rat_applied ?r)
+                         (assign (reward ) -65)
+                   )
+)
+
+(:action  drop
+          :parameters  (?x - rover ?y - store)
+          :precondition  (and  (store_of ?y ?x)
+                               (full ?y)
+                               (not (done ))
+                         )
+          :effect  (and  (not (full ?y))
+                         (empty ?y)
+                         (assign (reward ) -1)
+                   )
+)
+
+;; (:action  communicate_rock_data
+;;           :parameters  (?x - rover ?l - lander ?r - rock ?g - geology ?f - waypoint ?t - waypoint)
+;;           :precondition  (and  (at ?x ?f)
+;;                                (at_lander ?l ?t)
+;;                                (have_rock_analysis ?x ?r)
+;;                                (visible ?f ?t)
+;;                                (available ?x)
+;;                                (channel_free ?l)
+;;                                (hyp-rock_type ?r ?g)
+;;                                (kval-rock_type ?x ?r)
+;;                                (not (done ))
+;;                          )
+;;           :effect  (and  (not (available ?x))
+;;                          (not (channel_free ?l))
+;;                          (channel_free ?l)
+;;                          (communicated_rock_data ?g)
+;;                          (available ?x)
+;;                          (assign (reward ) -10.0000)
+;;                    )
+;; )
+
+(:action  cancel
+          :precondition  (not (done ))
+          :effect  (and  (done )
+                         (assign (reward ) 0)
+                   )
+)
+
+(:action  commit-rock_type-r2
+          :parameters  (?val - geology)
+          :precondition  (not (done ))
+          :effect  (and  (when  (rock_type r2 ?val)
+                                (assign (reward ) 300)
+                         )
+                         (when  (not (rock_type r2 ?val))
+                                (assign (reward ) -300)
+                         )
+                         (committed-rock_type r2)
+                         (done )
+                   )
+)
+
+;; (:action  disconfirm-rock_type-r2
+;;           :precondition  (not (done ))
+;;           :effect  (and  (when  (not (rock_type r2 carbonate))
+;;                                 (assign (reward ) 300.0000)
+;;                          )
+;;                          (when  (rock_type r2 carbonate)
+;;                                 (assign (reward ) -300.0000)
+;;                          )
+;;                          (done )
+;;                    )
+;; )
+
+
+(:observe  rock_type_spectrometer
+           :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
+           :execution  (sample_rock_spectrometer ?x ?r ?s ?p)
+           :precondition  (not (rat_applied ?r))
+           :effect  (and  (when  (rock_type ?r carbonate)
+                                 (probabilistic  0.8000  (observed-rock_type ?r carbonate)
+                                                 0.2000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                          (when  (rock_type ?r basalt)
+                                 (probabilistic  0.2000  (observed-rock_type ?r carbonate)
+                                                 0.8000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                    )
+)
+
+(:observe  rock_type_spectrometer_rat
+           :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
+           :execution  (sample_rock_spectrometer ?x ?r ?s ?p)
+           :precondition  (rat_applied ?r)
+           :effect  (and  (when  (rock_type ?r carbonate)
+                                 (probabilistic  0.9000  (observed-rock_type ?r carbonate)
+                                                 0.1000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                          (when  (rock_type ?r basalt)
+                                 (probabilistic  0.1000  (observed-rock_type ?r carbonate)
+                                                 0.9000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                    )
+)
+
+(:observe  rock_type_microscope
+           :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
+           :execution  (sample_rock_microscope ?x ?r ?s ?p)
+           :precondition  (not (rat_applied ?r))
+           :effect  (and  (when  (rock_type ?r carbonate)
+                                 (probabilistic  0.6000  (observed-rock_type ?r carbonate)
+                                                 0.4000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                          (when  (rock_type ?r basalt)
+                                 (probabilistic  0.4000  (observed-rock_type ?r carbonate)
+                                                 0.6000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                    )
+)
+
+(:observe  rock_type_microscope_rat
+           :parameters  (?x - rover ?r - rock ?s - store ?p - waypoint)
+           :execution  (sample_rock_microscope ?x ?r ?s ?p)
+           :precondition  (rat_applied ?r)
+           :effect  (and  (when  (rock_type ?r carbonate)
+                                 (probabilistic  0.7000  (observed-rock_type ?r carbonate)
+                                                 0.3000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                          (when  (rock_type ?r basalt)
+                                 (probabilistic  0.3000  (observed-rock_type ?r carbonate)
+                                                 0.7000  (observed-rock_type ?r basalt)
+                                 )
+                          )
+                    )
+)
+
+)

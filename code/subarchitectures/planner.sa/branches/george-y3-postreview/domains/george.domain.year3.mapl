@@ -1,0 +1,1129 @@
+(define (domain george-yr3)
+
+  (:requirements :mapl :adl :fluents :action-costs :equality)
+
+  (:types
+    Robot - agent
+    VisualObject ProtoObject ViewCone ConceptName - object
+    ColorName ShapeName TypeName Visibility - ConceptName
+  )
+
+  (:constants
+    VISUAL_OBJECT_DUMMY - VisualObject
+
+    UNKNOWN_COLOR - ColorName
+    RED - ColorName
+    GREEN - ColorName
+    BLUE - ColorName
+    YELLOW - ColorName
+    ORANGE - ColorName
+    WHITE - ColorName
+    BLACK - ColorName
+    PINK - ColorName
+
+    UNKNOWN_SHAPE - ShapeName
+    COMPACT - ShapeName
+    ELONGATED - ShapeName
+
+    UNKNOWN_TYPE - TypeName
+
+    VISIBLE - Visibility
+    REMOVED - Visibility
+
+    TUTOR - agent
+  )
+
+  (:predicates
+    (color-learned ?v - VisualObject)
+    (shape-learned ?v - VisualObject)
+    (type-learned ?v - VisualObject)
+
+    (color-unlearned ?v - VisualObject)
+    (shape-unlearned ?v - VisualObject)
+    (type-unlearned ?v - VisualObject)
+
+    (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
+    (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
+    (allow-polar-type-question ?v - VisualObject ?t - TypeName ?r - Robot)
+
+    (allow-autonomous-color-learning ?v - VisualObject ?c - ColorName ?r - Robot)
+    (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
+    (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
+
+    (looked-at ?vc - ViewCone)
+
+    (is-object-in-question ?v - VisualObject)
+    (is-potential-object-in-question ?v - VisualObject)
+
+    (arm-in-resting-position ?r - Robot)
+
+    (global-color-question-answered ?v - VisualObject)
+    (global-shape-question-answered ?v - VisualObject)
+    (global-type-question-answered ?v - VisualObject)
+
+    (object-refering-color-question-answered ?v - VisualObject ?c - ColorName)
+    (object-refering-shape-question-answered ?v - VisualObject ?s - ShapeName)
+    (object-refering-type-question-answered ?v - VisualObject ?t - TypeName)
+
+    (exclude-color-description ?r - Robot)
+    (exclude-shape-description ?r - Robot)
+  )
+
+  (:functions
+    (color ?v - VisualObject) - ColorName                    ;; We believe the object is of this color...
+    (color-prob ?v - VisualObject) - number                  ;; ...with this probability
+    (attributed-color ?v - VisualObject) - ColorName         ;; This was attributed to the object by the tutor
+    (polar-question-color-threshold ?r - Robot) - number     ;; If color-prob is higher than this we allow a polar question
+    (learn-autonomous-color-threshold ?r - Robot) - number   ;; If color-prob is higher than this we learn autonomously
+    (convinced-of-color-threshold ?r - Robot) - number       ;; If color-prob is higher than this we answer convinced
+    (believe-in-color-threshold ?r - Robot) - number         ;; If color-prob is lower than this we answer we dont know
+
+    (shape ?v - VisualObject) - ShapeName
+    (shape-prob ?v - VisualObject) - number
+    (attributed-shape ?v - VisualObject) - ShapeName
+    (polar-question-shape-threshold ?r - Robot) - number
+    (learn-autonomous-shape-threshold ?r - Robot) - number
+    (convinced-of-shape-threshold ?r - Robot) - number
+    (believe-in-shape-threshold ?r - Robot) - number
+
+    (type ?v - VisualObject) - TypeName
+    (type-prob ?v - VisualObject) - number
+    (attributed-type ?v - VisualObject) - TypeName
+    (polar-question-type-threshold ?r - Robot) - number
+    (learn-autonomous-type-threshold ?r - Robot) - number
+    (convinced-of-type-threshold ?r - Robot) - number
+    (believe-in-type-threshold ?r - Robot) - number
+
+    (target-object ?vc - ViewCone) - ProtoObject
+    (po-is-associated-with ?p - ProtoObject) - VisualObject
+
+    (current-viewcone ?r - Robot) - ViewCone
+    (currently-points-at ?r - Robot) - VisualObject
+    (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
+
+    (presence ?v - VisualObject) - Visibility
+
+    (polar-color-question-answered ?v - VisualObject) - ColorName
+    (polar-shape-question-answered ?v - VisualObject) - ShapeName
+    (polar-type-question-answered ?v - VisualObject) - TypeName
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;                   INIT RULES                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:init-rule set-move-to-viewcone-cost
+    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
+    :precondition 
+      (and 
+        (= (move-to-viewcone-cost ?vc1 ?vc2) UNKNOWN)
+        (not (= (move-to-viewcone-cost ?vc2 ?vc1) UNKNOWN))
+      )
+    :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
+  )
+
+  (:init-rule set-polar-question-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (polar-question-color-threshold ?r) UNKNOWN)
+    :effect (assign (polar-question-color-threshold ?r) 0.5)
+  )
+
+  (:init-rule set-learn-autonomous-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (learn-autonomous-color-threshold ?r) UNKNOWN)
+    :effect (assign (learn-autonomous-color-threshold ?r) 0.95)
+  )
+
+  (:init-rule set-convinced-of-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (convinced-of-color-threshold ?r) UNKNOWN)
+    :effect (assign (convinced-of-color-threshold ?r) 0.75)
+  )
+
+  (:init-rule set-believe-in-color-threshold
+    :parameters (?r - Robot)
+    :precondition (= (believe-in-color-threshold ?r) UNKNOWN)
+    :effect (assign (believe-in-color-threshold ?r) 0.4)
+  )
+
+  (:init-rule set-polar-question-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (polar-question-shape-threshold ?r) UNKNOWN)
+    :effect (assign (polar-question-shape-threshold ?r) 0.5)
+  )
+
+  (:init-rule set-learn-autonomous-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (learn-autonomous-shape-threshold ?r) UNKNOWN)
+    :effect (assign (learn-autonomous-shape-threshold ?r) 0.95)
+  )
+
+  (:init-rule set-convinced-of-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (convinced-of-shape-threshold ?r) UNKNOWN)
+    :effect (assign (convinced-of-shape-threshold ?r) 0.75)
+  )
+
+  (:init-rule set-believe-in-shape-threshold
+    :parameters (?r - Robot)
+    :precondition (= (believe-in-shape-threshold ?r) UNKNOWN)
+    :effect (assign (believe-in-shape-threshold ?r) 0.4)
+  )
+
+  (:init-rule set-polar-question-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (polar-question-type-threshold ?r) UNKNOWN)
+    :effect (assign (polar-question-type-threshold ?r) 0.4)
+  )
+
+  (:init-rule set-learn-autonomous-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (learn-autonomous-type-threshold ?r) UNKNOWN)
+    :effect (assign (learn-autonomous-type-threshold ?r) 0.98)
+  )
+
+  (:init-rule set-convinced-of-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (convinced-of-type-threshold ?r) UNKNOWN)
+    :effect (assign (convinced-of-type-threshold ?r) 0.66)
+  )
+
+  (:init-rule set-believe-in-type-threshold
+    :parameters (?r - Robot)
+    :precondition (= (believe-in-type-threshold ?r) UNKNOWN)
+    :effect (assign (believe-in-type-threshold ?r) 0.33)
+  )
+
+  (:init-rule set-looked-at-of-initial-viewcone
+    :parameters (?r - Robot ?vc - ViewCone)
+    :precondition (= (current-viewcone ?r) ?vc)
+    :effect (looked-at ?vc)
+  )
+
+  (:init-rule set-color-prob
+    :parameters (?v - VisualObject)
+    :precondition (= (color-prob ?v) UNKNOWN)
+    :effect (assign (color-prob ?v) 0)
+  )
+
+  (:init-rule set-shape-prob
+    :parameters (?v - VisualObject)
+    :precondition (= (shape-prob ?v) UNKNOWN)
+    :effect (assign (shape-prob ?v) 0)
+  )
+
+  (:init-rule set-type-prob
+    :parameters (?v - VisualObject)
+    :precondition (= (type-prob ?v) UNKNOWN)
+    :effect (assign (type-prob ?v) 0)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;                     AXIOMS                    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; A polar question is allowed for the color/shape with the max gain only,
+;; and only if this gain is higher than some threshold
+
+  (:derived (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
+    (and
+      (= (color ?v) ?c)
+      (>= (color-prob ?v) (polar-question-color-threshold ?r))
+    )
+  )
+
+  (:derived (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
+    (and
+      (= (shape ?v) ?s)
+      (>= (shape-prob ?v) (polar-question-shape-threshold ?r))
+    )
+  )
+
+  (:derived (allow-polar-type-question ?v - VisualObject ?t - TypeName ?r - Robot)
+    (and
+      (= (type ?v) ?t)
+      (>= (type-prob ?v) (polar-question-type-threshold ?r))
+    )
+  )
+
+  (:derived (allow-autonomous-color-learning ?v - VisualObject ?c - ColorName ?r - Robot)
+    (and
+      (>= (color-prob ?v) (learn-autonomous-color-threshold ?r))
+      (= (color ?v) ?c)
+    )
+  )
+
+  (:derived (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
+    (and
+      (>= (shape-prob ?v) (learn-autonomous-shape-threshold ?r))
+      (= (shape ?v) ?s)
+    )
+  )
+
+  (:derived (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
+    (and
+      (>= (type-prob ?v) (learn-autonomous-shape-threshold ?r))
+      (= (type ?v) ?t)
+    )
+  )
+
+  (:derived (is-object-in-question ?v - VisualObject)
+    (and
+      (is-potential-object-in-question ?v)
+      (not (exists (?v1 - VisualObject) (and (not (= ?v ?v1)) (is-potential-object-in-question ?v1))))
+    )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;                     ACTIONS                   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                MOVE HEAD                ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action move-to-viewcone
+    :agent (?r - Robot)
+    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
+    :precondition
+      (and
+        (= (current-viewcone ?r) ?vc1)
+      )
+    :effect
+      (and
+        (assign (current-viewcone ?r) ?vc2)
+        (looked-at ?vc2)
+        (increase (total-cost) (move-to-viewcone-cost ?vc1 ?vc2))
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;        ANALYZE PROTO OBJECT             ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action analyze-proto-object
+    :agent (?r - Robot)
+    :parameters (?vc - ViewCone ?p - ProtoObject)
+    :precondition
+      (and
+        (= (current-viewcone ?r) ?vc)
+        (= (target-object ?vc) ?p)
+      )
+    :effect
+      (and
+        (assign (po-is-associated-with ?p) VISUAL_OBJECT_DUMMY)
+        (increase (total-cost) 1)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;       ASK FOR OBJECT PROPERTIES         ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action ask-for-an-objects-color-general
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (or
+          (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        )
+      )
+    :effect 
+      (and
+        (assign (attributed-color ?v) (color ?v))
+        ;; (assign (attributed-color ?v) UNKNOWN_COLOR)
+        (is-potential-object-in-question ?v)
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action ask-for-an-objects-color-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (allow-polar-color-question ?v ?c ?r)
+        (or
+          (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        )
+      )
+    :effect 
+      (and
+        (assign (attributed-color ?v) ?c)        
+        (is-potential-object-in-question ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action ask-for-an-objects-shape-general
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (or
+          (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        )
+      )
+    :effect 
+      (and 
+        (assign (attributed-shape ?v) (shape ?v))
+        ;; (assign (attributed-shape ?v) UNKNOWN_SHAPE)
+        (is-potential-object-in-question ?v)
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action ask-for-an-objects-shape-polar
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        (allow-polar-shape-question ?v ?s ?r)
+        (or
+          (= (currently-points-at ?r) ?v)
+          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+        )
+      )
+    :effect 
+      (and 
+        (assign (attributed-shape ?v) ?s)
+        (is-potential-object-in-question ?v)
+        (increase (total-cost) 1)
+      )
+  )
+
+  ;; (:action ask-for-an-objects-type-general
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject)
+  ;;   :precondition
+  ;;     (and
+  ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       (or
+  ;;         (= (currently-points-at ?r) ?v)
+  ;;         (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and 
+  ;;       (assign (attributed-type ?v) (type ?v))
+  ;;       (is-potential-object-in-question ?v)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
+
+  ;; (:action ask-for-an-objects-type-polar
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       (allow-polar-type-question ?v ?t ?r)
+  ;;       (or
+  ;;         (= (currently-points-at ?r) ?v)
+  ;;         (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+  ;;       )
+  ;;     )
+  ;;   :effect 
+  ;;     (and 
+  ;;       (assign (attributed-type ?v) ?t)
+  ;;       (is-potential-object-in-question ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                   LEARNING              ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action learn-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (or
+        (and
+	  (not (color-learned ?v))
+          (= (attributed-color ?v) ?c)
+          (not (= ?c UNKNOWN_COLOR))
+          (exists (?p - ProtoObject) 
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
+          (is-object-in-question ?v)
+        )
+        (and
+          (allow-autonomous-color-learning ?v ?c ?r)
+          (not (color-learned ?v))
+          (not (exists (?c1 - ColorName) (= (attributed-color ?v) ?c1)))            
+          (exists (?p - ProtoObject)
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
+        )
+      )
+    :effect 
+      (and
+	(color-learned ?v)
+        (not (is-potential-object-in-question ?v))
+        (update (is-potential-object-in-question ?v) false)
+	(increase (total-cost) 10)
+      )
+  )
+
+  (:action learn-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (or
+        (and
+	  (not (shape-learned ?v))
+          (= (attributed-shape ?v) ?s)
+          (not (= ?s UNKNOWN_SHAPE))
+          (exists (?p - ProtoObject) 
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
+          (is-object-in-question ?v)
+        )
+        (and
+          (allow-autonomous-shape-learning ?v ?s ?r)
+          (not (shape-learned ?v))
+          (not (exists (?s1 - ShapeName) (= (attributed-shape ?v) ?s1)))  
+          (exists (?p - ProtoObject) 
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
+        )
+      )
+    :effect 
+      (and
+	(shape-learned ?v)
+        (not (is-potential-object-in-question ?v))
+        (update (is-potential-object-in-question ?v) false)
+	(increase (total-cost) 10)
+      )
+  )
+
+  (:action learn-type
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition 
+      (or
+        (and
+          (not (type-learned ?v))
+          (= (attributed-type ?v) ?t)
+          (not (= ?t UNKNOWN_TYPE))
+          (exists (?p - ProtoObject) 
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
+          (is-object-in-question ?v)
+        )
+        (and
+          (allow-autonomous-type-learning ?v ?t ?r)
+          (not (type-learned ?v))
+          (exists (?p - ProtoObject) 
+            (and 
+              (= (po-is-associated-with ?p) ?v)
+              (= (target-object (current-viewcone ?r)) ?p)
+            )
+          )
+        )
+      )
+    :effect 
+      (and
+        (type-learned ?v)
+        (not (is-potential-object-in-question ?v))
+        (update (is-potential-object-in-question ?v) false)
+        (increase (total-cost) 5)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;          REFERENCE RESOLUTION           ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action point-to-object
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition
+      (and
+        (not (= ?v VISUAL_OBJECT_DUMMY))
+      )
+    :effect
+      (and
+        (assign (currently-points-at ?r) ?v)
+        (update (currently-points-at ?r) ?v)
+        (not (arm-in-resting-position ?r))
+        (update (arm-in-resting-position ?r) false)
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action verify-reference
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject)
+    :precondition 
+      (and
+        (= (currently-points-at ?r) ?v)
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action verify-reference-by-describing-its-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition 
+      (and
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (and
+              (>= (color-prob ?v1) (believe-in-color-threshold ?r))
+              (not (= ?c (color ?v1)))
+            )
+          )
+        )
+        (not (exclude-color-description ?r))
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action verify-reference-by-describing-its-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
+        (forall 
+          (?v1 - VisualObject) 
+          (or 
+            (= ?v ?v1)
+            (not (is-potential-object-in-question ?v1))
+            (and
+              (>= (shape-prob ?v1) (believe-in-shape-threshold ?r))
+              (not (= ?s (shape ?v1)))
+            )
+          )
+        )
+        (not (exclude-shape-description ?r))
+      )
+    :effect 
+      (and
+        (not (is-potential-object-in-question ?v))
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action retract-arm
+    :agent (?r - Robot)
+    :precondition
+      (and
+        (forall (?p - ProtoObject) (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v)))
+      )
+    :effect
+      (and
+        (assign (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
+        (update (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
+        (arm-in-resting-position ?r)
+        (update (arm-in-resting-position ?r) true)
+        (increase (total-cost) 2)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;           QUESTION ANSWERING            ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;    GLOBAL QUESTIONS      ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; These are answers to questions of the form "What color is object v?"
+
+  (:action answer-global-color-question-convinced
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (>= (color-prob ?v) (convinced-of-color-threshold ?r))
+        (= (color ?v) ?c)
+      )
+    :effect
+      (and
+        (global-color-question-answered ?v)
+        (update (exclude-shape-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-color-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (< (color-prob ?v) (convinced-of-color-threshold ?r))
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
+      )
+    :effect
+      (and
+        (global-color-question-answered ?v)
+        (update (exclude-shape-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-color-question-unknown
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (< (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
+      )
+    :effect
+      (and
+        (global-color-question-answered ?v)
+        (update (exclude-shape-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-shape-question-convinced
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (>= (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (= (shape ?v) ?s)
+      )
+    :effect
+      (and
+        (global-shape-question-answered ?v)
+        (update (exclude-color-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+    (:action answer-global-shape-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (< (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
+      )
+    :effect
+      (and
+        (global-shape-question-answered ?v)
+        (update (exclude-color-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-global-shape-question-unknown
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (< (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
+      )
+    :effect
+      (and
+        (global-shape-question-answered ?v)
+        (update (exclude-color-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  ;; (:action answer-global-type-question-convinced
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (>= (type-prob ?v) (convinced-of-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (global-type-question-answered ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+  ;;   (:action answer-global-type-question-believing
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (< (type-prob ?v) (convinced-of-type-threshold ?r))
+  ;;       (>= (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (global-type-question-answered ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+  ;; (:action answer-global-type-question-unknown
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (< (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (global-type-question-answered ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;     POLAR QUESTIONS      ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; These are answers to questions of the form "Is object v of color c?"
+
+  (:action answer-polar-color-question-positively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (>= (color-prob ?v) (convinced-of-color-threshold ?r))
+        (= (color ?v) ?c)
+      )
+    :effect
+      (and
+        (assign (polar-color-question-answered ?v) ?c)
+        (update (exclude-shape-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-color-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (< (color-prob ?v) (convinced-of-color-threshold ?r))
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
+      )
+    :effect
+      (and
+        (assign (polar-color-question-answered ?v) ?c)
+        (update (exclude-shape-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-color-question-negatively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (or
+        (and
+          (is-object-in-question ?v)
+          (< (color-prob ?v) (believe-in-color-threshold ?r))
+          (= (color ?v) ?c)
+        )
+        (and
+          (is-object-in-question ?v)
+          (not (= (color ?v) ?c))
+        )
+      )
+    :effect
+      (and
+        (assign (polar-color-question-answered ?v) ?c)
+        (update (exclude-shape-description ?r) false)
+        (increase (total-cost) 2)
+      )
+  )
+
+  (:action answer-polar-shape-question-positively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (>= (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (= (shape ?v) ?s)
+      )
+    :effect
+      (and
+        (assign (polar-shape-question-answered ?v) ?s)
+        (update (exclude-color-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-shape-question-believing
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (is-object-in-question ?v)
+        (< (shape-prob ?v) (convinced-of-shape-threshold ?r))
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
+      )
+    :effect
+      (and
+        (assign (polar-shape-question-answered ?v) ?s)
+        (update (exclude-color-description ?r) false)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-polar-shape-question-negatively
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (or
+        (and
+          (is-object-in-question ?v)
+          (< (shape-prob ?v) (believe-in-shape-threshold ?r))
+          (= (shape ?v) ?s)
+        )
+        (and
+          (is-object-in-question ?v)
+          (not (= (shape ?v) ?s))
+        )
+      )
+    :effect
+      (and
+        (assign (polar-shape-question-answered ?v) ?s)
+        (update (exclude-color-description ?r) false)
+        (increase (total-cost) 2)
+      )
+  )
+
+  ;; (:action answer-polar-type-question-positively
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (>= (type-prob ?v) (convinced-of-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (assign (polar-type-question-answered ?v) ?t)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+  ;; (:action answer-polar-type-question-believing
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (is-object-in-question ?v)
+  ;;       (< (type-prob ?v) (convinced-of-type-threshold ?r))
+  ;;       (>= (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;       (= (type ?v) ?t)
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (assign (polar-type-question-answered ?v) ?t)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+  ;; (:action answer-polar-type-question-negatively
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition
+  ;;     (or
+  ;;       (and
+  ;;         (is-object-in-question ?v)
+  ;;         (< (type-prob ?v) (believe-in-type-threshold ?r))
+  ;;         (= (type ?v) ?t)
+  ;;       )
+  ;;       (and
+  ;;         (is-object-in-question ?v)
+  ;;         (not (= (type ?v) ?t))
+  ;;       )
+  ;;     )
+  ;;   :effect
+  ;;     (and
+  ;;       (assign (polar-type-question-answered ?v) ?t)
+  ;;       (increase (total-cost) 2)
+  ;;     )
+  ;; )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;     OBJECT QUESTIONS     ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action answer-object-refering-color-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (= (currently-points-at ?r) ?v)
+        (>= (color-prob ?v) (believe-in-color-threshold ?r))
+        (= (color ?v) ?c)
+      )
+    :effect
+      (and
+        (object-refering-color-question-answered ?v ?c)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-object-refering-shape-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition
+      (and
+        (= (currently-points-at ?r) ?v)
+        (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
+        (= (shape ?v) ?s)
+      )
+    :effect
+      (and
+        (object-refering-shape-question-answered ?v ?s)
+        (increase (total-cost) 1)
+      )
+  )
+
+  (:action answer-object-refering-type-question
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?t - TypeName)
+    :precondition
+      (and
+        (= (currently-points-at ?r) ?v)
+        (>= (type-prob ?v) (believe-in-type-threshold ?r))
+        (= (type ?v) ?t)
+      )
+    :effect
+      (and
+        (object-refering-type-question-answered ?v ?t)
+        (increase (total-cost) 1)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;                  UNLEARNING             ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  ;; (:action unlearn-color
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?c - ColorName)
+  ;;   :precondition
+  ;;     (and
+  ;;       (not (color-unlearned ?v))
+  ;;       (not (= (attributed-color ?v) (color ?v)))
+  ;;       (not (= ?c UNKNOWN_COLOR))
+  ;;       (exists (?p - ProtoObject)
+  ;;         (and 
+  ;;           (= (po-is-associated-with ?p) ?v)
+  ;;           (= (target-object (current-viewcone ?r)) ?p)
+  ;;         )
+  ;;       )
+  ;;       (is-object-in-question ?v)
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (color-unlearned ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+  ;; (:action unlearn-shape
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?s - ShapeName)
+  ;;   :precondition 
+  ;;     (and
+  ;;       (not (shape-unlearned ?v))
+  ;;       (not (= (attributed-shape ?v) (shape ?v)))
+  ;;       (not (= ?s UNKNOWN_SHAPE))
+  ;;       (exists (?p - ProtoObject) 
+  ;;         (and 
+  ;;           (= (po-is-associated-with ?p) ?v)
+  ;;           (= (target-object (current-viewcone ?r)) ?p)
+  ;;         )
+  ;;       )
+  ;;       (is-object-in-question ?v)
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (shape-unlearned ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+  ;; (:action unlearn-type
+  ;;   :agent (?r - Robot)
+  ;;   :parameters (?v - VisualObject ?t - TypeName)
+  ;;   :precondition 
+  ;;     (and
+  ;;       (not (type-unlearned ?v))
+  ;;       (not (= (attributed-type ?v) (type ?v)))
+  ;;       (not (= ?t UNKNOWN_TYPE))
+  ;;       (exists (?p - ProtoObject) 
+  ;;         (and 
+  ;;           (= (po-is-associated-with ?p) ?v)
+  ;;           (= (target-object (current-viewcone ?r)) ?p)
+  ;;         )
+  ;;       )
+  ;;       (is-object-in-question ?v)
+  ;;     )
+  ;;   :effect 
+  ;;     (and
+  ;;       (type-unlearned ?v)
+  ;;       (increase (total-cost) 1)
+  ;;     )
+  ;; )
+
+)

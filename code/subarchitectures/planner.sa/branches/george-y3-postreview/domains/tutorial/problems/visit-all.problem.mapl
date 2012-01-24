@@ -1,0 +1,23 @@
+(define (problem cogxtask)
+
+(:domain cogx)
+
+(:objects  robot_6__q - robot
+           place_2__q place_1__q place_0__q - place
+           place_id_0 place_id_2 place_id_1 - place_id
+)
+
+(:init  (connected place_1__q place_2__q)
+        (connected place_1__q place_0__q)
+        (= (placeid place_0__q) place_id_0)
+        (= (is-in robot_6__q) place_1__q)
+        (= (placeid place_2__q) place_id_2)
+        (visited place_1__q)
+        (connected place_2__q place_1__q)
+        (connected place_0__q place_1__q)
+        (= (placeid place_1__q) place_id_1)
+)
+
+(:goal  (and  (forall (?p - place)  (visited ?p))))
+
+)

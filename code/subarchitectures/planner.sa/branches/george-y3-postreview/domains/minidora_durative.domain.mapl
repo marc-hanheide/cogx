@@ -1,0 +1,52 @@
+(define (domain cogx)
+
+	(:requirements :mapl :adl :durative-actions :object-fluents :numeric-fluents)
+	
+	(:types 
+		place - object
+		robot - agent
+		place_type - object
+		place_id - object  ;; make this a number at some point 
+		place_category - object
+	)
+	
+	(:constants
+		place placeholder - place_type
+        R2D2 - robot
+	)
+
+    (:predicates
+		(place_connectivity ?n1 - place ?id2 - place_id)
+		;; special
+		(has-goal ?a - agent)
+		(commited ?a - agent)
+    )
+
+	(:functions
+		(place_id ?n - place) - place_id
+		(position ?r -  agent) - place_id
+		(explored ?n - place) - boolean
+ 	)
+	
+
+;;; actions ;;;
+
+	(:durative-action move
+	 :agent (?a - agent)
+	 :parameters (?to_id - place_id)
+	 :variables (?to - place ?from_id - place_id ?from - place)
+     :duration (at start (= ?duration 1.0))
+	 :condition (and
+	    (over all (= (place_id ?from) ?from_id))
+	    (over all (= (place_id ?to) ?to_id))
+		(at start (= (position ?a) ?from_id))
+		(over all (place_connectivity ?from ?to_id))
+		)
+	 :effect (and
+		(change (position ?a) ?to_id)
+		(change (explored ?to) true)
+		(at end (place_connectivity ?to ?from_id))   ;; now we assume we can also move back
+	))
+
+
+)
