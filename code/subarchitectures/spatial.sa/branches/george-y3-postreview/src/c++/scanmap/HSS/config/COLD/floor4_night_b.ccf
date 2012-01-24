@@ -1,0 +1,11 @@
+INCLUDEPATH
+./
+
+FILEPATH
+/usr/local/pkg/DataSets/COLD/cold-stockholm/floor4_night_b
+
+ROBOTPOSE
+0 0 0 0 0 0
+
+INCLUDE
+dumbo-base.ccf
