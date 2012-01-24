@@ -1,0 +1,30 @@
+# Learn a new object, in simulation.
+
+HOST localhost
+
+COMPONENT CPP ptz.server PlayerPTZServer
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG CameraMount CameraMount --camids "0" --cam_poses_xml instantiations/css2011/calibration/ptu-pose-cam-left-sim.xml --pt_base_xml instantiations/css2011/calibration/ptu-pose-base-sim.xml --pt_pan_xml instantiations/css2011/calibration/ptu-pose-pan-sim.xml --pt_tilt_xml instantiations/css2011/calibration/ptu-pose-tilt-sim.xml
+
+CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "instantiations/css2011/calibration/cam-left-cal-sim.xml"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/css2011/object-models/example-cereals-schokomusli-sim.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-schokomusli-sim.sift" --labels "example-cereals-schokomusli-sim" --initpose "[1.000000 0.000000 1.400000][0 0 1.57]" --displayserver "display.srv" --log
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "example-cereals-schokomusli-sim" --mode LEARN
+
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+
+CPP MG turntable GazeboTurntable --label "cereals1_model" --displayserver "display.srv"
+

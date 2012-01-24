@@ -1,0 +1,67 @@
+# file: george-y3.externals
+
+^/code/cmake/trunk                        cmake
+
+# Scenarios
+^/code/scenarios/george/trunk             scenarios/george
+^/code/scenarios/dora/trunk               scenarios/dora
+^/code/scenarios/shared/trunk             scenarios/shared
+
+^/code/subarchitectures/binder/trunk                    subarchitectures/binder.sa
+^/code/subarchitectures/coma.sa/trunk                   subarchitectures/coma.sa
+^/code/subarchitectures/conceptual.sa/trunk             subarchitectures/conceptual.sa
+^/code/subarchitectures/categorical.sa/trunk            subarchitectures/categorical.sa
+^/code/subarchitectures/default.sa/trunk                subarchitectures/default.sa
+^/code/subarchitectures/dialogue.sa/trunk               subarchitectures/dialogue.sa
+^/code/subarchitectures/execution.sa/trunk              subarchitectures/execution.sa
+^/code/subarchitectures/fakemotivation.sa/trunk         subarchitectures/fakemotivation.sa
+^/code/subarchitectures/manipulation.sa/trunk           subarchitectures/manipulation.sa
+^/code/subarchitectures/motivation.sa/trunk             subarchitectures/motivation.sa
+^/code/subarchitectures/planner.sa/trunk                subarchitectures/planner.sa
+^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
+^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
+^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
+
+
+^/code/tools/abducer/trunk                        tools/abducer
+^/code/tools/alchemy                              tools/alchemy
+^/code/tools/beliefs/trunk                        tools/beliefs
+^/code/tools/camcalb2/trunk                       tools/camcalb2
+^/code/tools/castctrl/trunk                       tools/castctrl
+^/code/tools/castutils/trunk                      tools/castutils
+^/code/tools/cogxutils/trunk                      tools/cogxutils
+^/code/tools/d-lib/trunk                          tools/d-lib
+^/code/tools/genroi/trunk                         tools/genroi
+^/code/tools/grabimg/trunk                        tools/grabimg
+^/code/tools/hardware/blobfinder/trunk            tools/hardware/blobfinder
+^/code/tools/hardware/config/trunk                tools/hardware/config
+^/code/tools/hardware/kinect/trunk                tools/hardware/kinect
+^/code/tools/hardware/laser/trunk                 tools/hardware/laser
+^/code/tools/hardware/pointCloud/trunk            tools/hardware/pointCloud
+^/code/tools/hardware/ptz/trunk                   tools/hardware/ptz
+^/code/tools/hardware/robotbase/trunk             tools/hardware/robotbase
+^/code/tools/hardware/sonar/trunk                 tools/hardware/sonar
+^/code/tools/hardware/tests/trunk                 tools/hardware/tests
+^/code/tools/hardware/tts/trunk                   tools/hardware/tts
+^/code/tools/hardware/utils/trunk                 tools/hardware/utils
+^/code/tools/hardware/video/trunk                 tools/hardware/video
+^/code/tools/interconnectivity                    tools/interconnectivity
+^/code/tools/logtools/trunk                       tools/logtools
+^/code/tools/marytts/trunk                        tools/mary
+^/code/tools/math/trunk                           tools/math
+^/code/tools/python/trunk                         tools/python
+^/code/tools/rocs/trunk                           tools/rocs
+^/code/tools/scripts/trunk                        tools/scripts
+^/code/tools/syscalb/trunk                        tools/syscalb
+^/code/tools/testing/trunk                        tools/testing
+
+
+# importing to have access to dora systems for testing purposes
+^/code/systems/dora-yr3/instantiations            instantiations/dora-yr3
+
+# Obsolete
+# ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys
+# ^/code/subarchitectures/nav.sa/trunk                    subarchitectures/nav.sa
+# ^/code/tools/hardware/stereo/trunk                tools/hardware/stereo
+# ^/code/tools/v4r/trunk                            tools/v4r
+

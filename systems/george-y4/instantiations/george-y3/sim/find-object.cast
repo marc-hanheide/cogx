@@ -1,0 +1,27 @@
+# Test the recognizer with a learned object, in real.
+
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG CameraMount CameraMount --camids 0 --fixed_cam_poses_xml "instantiations/css2011/calibration/example-cam-left-pose.xml" --fixed_pan_tilt "0 -60"
+
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/css2011/calibration/example-cam-left-cal.xml"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --plyfiles "instantiations/css2011/object-models/example-cereals-weetabix.ply" --siftfiles "instantiations/css2011/object-models/example-cereals-weetabix.sift" --labels "example-cereals-weetabix" --initpose "[0.47 0.00 0.96][0.00 0.00 1.57]" --displayserver "display.srv" --log
+
+# viewing and debugging
+
+CPP MG VideoViewer VideoViewer --videoname VideoServer --camid 0 --displayserver "boo.view" $V11N_STANDALONE $V11N_STANDALONE_HOST 
+
+JAVA MG VisualObjects castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject"  --generic-col
+

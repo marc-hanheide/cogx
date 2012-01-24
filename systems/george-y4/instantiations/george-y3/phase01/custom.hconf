@@ -1,0 +1,20 @@
+HOST  Remote      192.168.33.127
+
+HOST  Main        localhost
+HOST  PlayerHost  localhost
+HOST  Debug       localhost
+HOST  DisplayHost localhost
+
+ID stereoserver           [Main] 1
+ID vis.planepopout.fine   [Main] 0
+ID vis.planepopout.coarse [Main] 1
+ID vis.SOI.filter         [Main] 1
+
+ID videoserver            [PlayerHost] 1
+ID video.viewer.0         [Main] 1
+ID video.viewer.1         [Main] 0
+ID laser.server           [PlayerHost]
+ID ptz.server             [PlayerHost]
+ID display.srv            [DisplayHost]
+
+ID PlanePopOut            [Main] 1

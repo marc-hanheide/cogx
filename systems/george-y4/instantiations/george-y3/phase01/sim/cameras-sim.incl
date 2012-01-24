@@ -1,0 +1,54 @@
+# CAST config file
+
+SETVAR camera_config_dir=%(CURRENT_DIR)/calibration
+#SETVAR camera_config_file=%(camera_config_dir)/ul_stereo_20101005.ini
+SETVAR stereo_config_file="%(camera_config_dir)/cam-left-cal-sim.xml %(camera_config_dir)/cam-right-cal-sim.xml"
+
+VARDEFAULT PlayerCameraConfigs_01=<multiline>
+   %(camera_config_dir)/cam-left-cal-sim.xml
+   %(camera_config_dir)/cam-right-cal-sim.xml
+</multiline>
+SETVAR PlayerVideoServer_Params=<multiline>
+   --player-host %(host:PlayerHost)
+   --player-port 6665
+   # --camids  "0 1" --devnums "0 1" --camconfigs "%(camera_config_file):L %(camera_config_file):R"
+   #--camids  "0" --devnums "0"--camconfigs "%(camera_config_file)"
+   --camids  "0 1" --devnums "0 1" --camconfigs "%(PlayerCameraConfigs_01)"
+   --imgsize "640 480"
+   --framerate_fps 3
+</multiline>
+CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)
+
+SETVAR StereoServer_Params=<multiline>
+   --videoname videoserver
+   --camids "0 1"
+   --stereoconfig_xml "%(PlayerCameraConfigs_01)"
+   --camconfigs "%(PlayerCameraConfigs_01)"
+   #--imgsize "640 480 320 240" --maxdisp "192 96"
+   --imgsize "320 240" --maxdisp "96"
+   --displayserver "display.srv"
+   #--logimages
+   #--display
+</multiline>
+CPP MG stereoserver StereoServer %(StereoServer_Params)
+
+# This is how you should use CameraMount in your simulated robot system.  Use
+# PTZ with kinematic parameters the same as in gazebo model. Camera poses will
+# be calculated based on the kinematic chain base - pan joint - tilt joint -
+# cam offset
+VARDEFAULT ptzServerComponent=ptz.server
+SETVAR camera_mount_params=<multiline>
+   --camids "0"
+   --cam_poses_xml "%(camera_config_dir)/ptu-pose-cam-left-sim.xml"
+   --pt_base_xml   %(camera_config_dir)/ptu-pose-base-sim.xml
+   --pt_pan_xml    %(camera_config_dir)/ptu-pose-pan-sim.xml
+   --pt_tilt_xml   %(camera_config_dir)/ptu-pose-tilt-sim.xml
+   --ptzserver "%(ptzServerComponent)"
+   # --log --debug
+</multiline>
+CPP MG CameraMount CameraMount %(camera_mount_params)
+
+# to move the PTU to a given position
+# CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-0.8" --ptzserver "%(ptzServerComponent)"
+
+JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8" # --testGUI
