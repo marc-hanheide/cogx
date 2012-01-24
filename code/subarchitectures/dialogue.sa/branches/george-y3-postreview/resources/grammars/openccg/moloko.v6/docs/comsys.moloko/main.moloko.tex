@@ -1,0 +1,137 @@
+%% =================================================================
+%% DOCUMENT CLASS
+%% =================================================================
+
+\documentclass[a4paper,11pt]{techdoc}
+
+%% =================================================================
+%% DOCUMENT INFO
+%% =================================================================
+
+\title{MOLOKO: A CCG grammar for processing situated dialogue for HRI}
+\author{Trevor Benjamin \& Geert-Jan M. Kruijff}
+\address{DFKI GmbH, Saarbr\"ucken Germany}
+\project{Talking Robots Group}
+\email{gj@dfki.de}
+\doctype{Software documentation}
+
+\headertitle{MOLOK: A CCG grammar for HRI}
+\headerauthor{G.J.M. Kruijff}
+
+%% =================================================================
+%% PACKAGES
+%% =================================================================
+
+\usepackage{amsmath}
+
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[latin1]{inputenc}
+% Add PDF summary doc Info
+\hypersetup{pdfauthor={Trevor Benjamin, Geert-Jan Kruijff}}
+\hypersetup{pdftitle={MOLOKO software documentation}}
+\hypersetup{pdfsubject={Grammar documentation}}
+
+%% =================================================================
+%% NEW COMMANDS1
+%% =================================================================
+
+
+\newcommand{\backsl}[1]{\ensuremath{\setminus_{#1}}}
+\newcommand{\fwdsl}[1]{\ensuremath{/_{#1}}}
+\newcommand{\catg}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\arrow}{\ensuremath{\Longrightarrow \ }}
+
+
+\newcommand{\atsign}[2]{\ensuremath{@_{#1:#2}}}
+\newcommand{\diam}[1]{\ensuremath{\langle#1\rangle}}
+\newcommand{\prop}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\wand}{\ensuremath{\wedge}}
+
+\newcommand{\ul}[1] {\underline{#1}}
+
+%Features
+\newcommand{\fb}[1]{\ensuremath{_{\mathit{#1}}}}                    % features, subscripted
+\newcommand{\fsb}[2]{\ensuremath{_{\langle#1\rangle\mathit{#2}}}}   % fs index and features, 
+
+%Indexes, inside Features (fid) and alone (id)
+\newcommand{\fid}[1]{\ensuremath{_{\mathbf{#1}}}} 
+\newcommand{\id}[1]{\ensuremath{_{_{\mathit{\mathbf{#1}}}}}} 
+
+%Whole category, cat + id  or cat + id + feats
+\newcommand{\cx}[2]{ #1 \id{#2}}
+\newcommand{\cxx}[3]{ #1 \fb{ \fid{#2}  #3 } }
+
+
+%section + labels
+% only usable if the name is a SINGLE WORD
+
+\newcommand{\sect}[1]{\section{#1} \label{sec-#1} } 
+\newcommand{\subsect}[1]{\subsection{#1} \label{sec-#1} } 
+\newcommand{\subsubsect}[1]{\subsubsection{#1} \label{sec-#1} } 
+
+%%%%%%%%%%%%
+%% Stuff used in Family Definitions
+%%%%%%%%%%%%
+
+\newcommand{\lab}[1] {\underline{#1}:}   % heading for subsections
+
+% Feature classes and values
+\newcommand{\fv}[1]{ \emph{#1}} 
+\newcommand{\feat}[2]{ \textsc{#1}: \fv{#2} } 
+
+% Family Name (single line, and double (l) )
+
+\newcommand{\family}[2] {\ensuremath{\mathbf{#1}} \ \ \ \ \emph{#2} \vspace{0.5em} }
+
+\newcommand{\entry}[2]{  \\  \ensuremath{\vdash} \ \ \catg{#1} \ \ : \ \  #2}  
+\newcommand{\entryl}[2]{  \\  \ensuremath{\vdash} \ \ \catg{#1} \ \ : \\ \ \  #2}  
+
+% type-change rule
+\newcommand{\tc}[3]  {  \catg{#1} \ \arrow \  \catg{#2} \ \ : \ \  #3}  
+\newcommand{\tcl}[3] {  \catg{#1} \ \arrow \\  \catg{#2} \ \ : \ \  #3}  
+\newcommand{\tcll}[3] {  \catg{#1} \ \arrow \\  \catg{#2} \ \ : \\  #3}  
+
+%used in 'HELP FILE' section
+\newcommand{\filename}[1]{ \texttt{#1}}  %for file and folder names 
+\newcommand{\ingram}[1]   { \textsf{#1}}  %for 'in grammar file' items
+
+%dictionary entries
+\newcommand{\dict}[3]{ \textsc{#1} ( #2 ) \\  \ingram{#1 (#3)} \vspace{0.5em} \\} 
+
+%% =================================================================
+%% DOCUMENT BODY
+%% =================================================================
+
+\begin{document}
+
+\maketitle
+
+\hrule
+
+\vspace{5mm}
+
+\input{abstract.moloko}
+
+\vspace{5mm}
+
+\hrule
+
+\vspace{5mm}
+
+\tableofcontents
+
+\newpage
+
+\input{intro.moloko}
+
+\input{semantics.moloko}
+\input{dual-relation.moloko}
+\input{event-modifier-restriction.moloko}
+\input{mood.moloko}
+\input{the-be-verb.moloko}
+\input{incrementality.moloko}
+
+\input{families.moloko}
+\input{using-moloko.moloko}
+
+\end{document}

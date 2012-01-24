@@ -1,0 +1,876 @@
+This will someday be a sexy .tex file. Until then...
+
+2 paragraph 
+
+type hierarchy phil (uses, syntactic vs semantic, )
+
+inferencing outside (entities for binding, event nucleus for planning ...)
+
+Semantic sorts used    1) grammar internally for some restriction, 
+	but primarily  2) grammar externally for (see below) first stab at inferencing, planning, etc.
+
+what do we care about, what not. (promiscuous, but some sem/syn restrictions)
+	- it is not 'grammar's' job to block the mug ate the ball
+	  
+	  We do not want to a priori block 'non-sensical' readings too much,
+	  (language is a tool used for construal)
+	  but we do want to use some semantic sort information to rule out
+              some of the most 'unlikely' readings and to include necessary readings 
+
+	  but it is, to tell us that as a modifier 'in my office'
+		has 1 readings in  'I sat in my office' has 1 reading (locative)
+		    2 readings in  'I walked in my room' has 2 
+	  	    0 readings in  'I wanted the ball in my room' (here it is a goal-ish argument)
+	  and that 
+
+
+	 NOT so simple  (look into the room, walk into the room, hence modifier categories)
+
+How organize in terms of lexical families (combinatorial possibilities + semantic relationships of parts, how it modifies), 
+inheritance, what does it reflect.
+
+
+Start with 3 broad categories & propositional acts. These can all stand in certain roles to one another 
+(thematic, quite broad cuz understanding what the actor of putting means is language external)
+ 
+Then finer levels of granualarity. What is in the grammar and what isn't (role of this generative grammar within project)
+	again 2 uses (internal and external) both still quite broad (e.x. grammar says ball an inanimate thing, but not it is round, etc)
+
+
+
+
+Introduction
+
+The Moloko grammar was designed as part of a much larger project aimed at modelling the incremental processing of situated dialogue. 
+From this perspective comes two important ideas which have shaped the development on the grammar. First, the understanding that 
+language plays only a part in this process (albeit an important one!), and utterance
+level language processing (compared with 'higher levels' of discourse processing), an even more greatly restricted role: 
+there are many other sources of information required in the process of understanding dialogue. Second, parsing is an incremental process--it must be, because at
+each 'step' the linguistic information provided by the grammar must be integrated into the broader context of incremental understanding,
+and should be available as a resource for guiding other incremental processes.
+
+In the description of the Moloko grammar that follows, these two ideas, the role of grammar and the importance of incrementality,
+will be taken up in turn.
+
+The Role of Syntax and Linguistic Semantics
+
+CCG views syntax as a process, as a means to end (Steedman). Unlike classical PS based formalisms, it is not concerned with building 
+elaborate heirarchical 'syntactic' structure, but instead uses syntax to create semantic structure directly. However, 
+as the Moloko grammar was designed for use with embodied cognitive agents in situated contexts, even this semantic structure is not an end 
+in any important sense. The meaning construction, grounding and understanding process extends well beyond the semantic struture outputted by the grammar.
+It serves simply as a formally rigourous and hence machine-readable first step at 'getting at' the meaning expressed in an utterance.
+This view of what linguistic semantics is (or should be) has greatly guided the development of this grammar. 
+
+In any case, as semantic structure is being viewed as the goal of grammar proper, it is a good place to begin in describing what Moloko
+is and can do.
+
+Moloko's Semantics
+
+Moloko's semantics can divided into three broad categories: entities, events and modifiers. These 
+correspond to the three propositional acts of reference, predication and modification (Croft). Of course, these categories must be
+treated in the broadest, most general of terms. Entities (T) correspond to not only to concrete objects, but any facet of experience which can be construed, or reified
+as a thing (Talmy, Langacker). Events (E) cover all types of dynamic processes, as well as ascriptions and states which endure over time.
+Finally, modifiers can be applied to any of the three basic categories (T, E, M) and they need not be inherit properties like size and color
+for T, or location, time and polarity for E--they also include evaluations, judgements and many other types of textual and interpersonal 
+relationships. 
+
+From this point of view, then, the role of the Moloko grammar is:
+
+    1) to turn 'natural language utterances' into semantic representations consisting of entities, events, modifiers and their relationships (parsing).
+    2) to transform semantic representations into the appropriate 'natural language utterances' (generation). 
+
+Of course in order for either of these tasks to be used effectively, the three broad semantic categories, T, E and M, require much finer levels of granularity.
+The Moloko grammar includes a richly sorted ontological type heirarchy for each. Consider the following semantic representation for
+the utterance 'I quickly kicked the red ball to the dog' 
+
+    @k1:action-motion(kick ^ 
+                    <Mood>ind ^ 
+                    <Tense>past ^ 
+                    <Actor>(i1:person ^ I ^ 
+                            <Number>sg) ^ 
+                    <Modifier>(q1:m-manner ^ quickly) ^ 
+                    <Patient>(b1:thing ^ ball ^ 
+                              <Delimitation>unique ^ 
+                              <num>sg ^ 
+                              <Quantification>specific_singular ^ 
+                              <Property>(r1:q-color ^ red)) ^ 
+                    <Recipient>(d1:animate ^ dog ^
+                                <Delimitation>unique ^
+                                <num>sg ^
+                                <Quantification>specific_singular))
+
+At the top level, we see that the event 'kick' (k1) is a type of 'action-motion'. At the 'next level', the three entities, 
+i.e. the event participants (see below), 'I', 'the ball', 'the dog' are of type 'person', 'thing' and 'animate' respectively. 
+Finally, the event modifier 'quickly' is of type 'manner' and the entity modifier 'red' is of type 'color'. 
+
+An important note concerning this semantic type heirarchy is that, for the most part, 
+it is 'external' to the grammar itself. What that means is the semantic sort given to a word does not 
+dictate its treatment within the grammar proper. For example, the fact that kick is specified to represent an 
+'action-motion' event does not dictate its combinatorial possibilities. This is done, instead, by specifiying
+the appropriate lexical family (here a 'dative' ditranstive), and by specifying its modifier group to allow
+for the appropriate modifications (manner, place, time, etc) and block others (e.g. negation) (see... below). 
+
+This is done primarily to allow easy, modular extension to the semantic heirarchy. So for example,
+if finer grain distinctions are needed amongst verb sorts, the grammar need not be internally modified.
+There are, however, some exceptions to this principle, and will be covered in ()
+
+Event Semantics
+
+In addition to their ontological sort, the semantic structure of events consist of their participant roles 
+(argument structure), their tense/aspect/polarity and to a vary limited degree voice. (Mood handled created separately below).
+
+Participant Roles
+
+Events specify only the number and (top-level) semantic type (E, T or M) of their compliments. Only in a few cases
+do they subcategorize based on finer grained semantic levels. For example, ditranstive recipients
+are not constrained to animate referents. Thus, the grammar is quite 'promiscous' in this regard. 
+Instead, these types of 'appropriateness' restrictions are assumed to be handled outside 
+the grammar. The main, and notable, exception to this design principle is the grammar 
+internal restriction of event modifiers (see...)
+
+Also, the number of event roles used within the grammar are quite small (Actor, Patient, 
+Recipient, Goal, Ecomp). Again, the idea is that the specifics of participant role interpretation, i.e.
+what it 'means' to be kicked, or to run, or to be 'put on the table', are handled
+outside the grammar. As the grammar was designed for use in embodied agents, this
+is of course intentional, and fully necessary anyway. Note, however, that because of 
+this decision, we do not get any meaningful level of 'semantics' internal inferencing, 
+like one does within a richer 'frame semantics' style role structure. In our case, these 
+types of inferences must be handled outside the grammar.
+
+families
+
+Tense/Aspect/Polarity
+
+Events are currently categorized along the traditional lines of tense (past, present, future), grammatical (vs. lexical)
+aspect (the continuous and perfect dimensions), polarity (positive, negative) and voice (active, passive) using semantic features.
+Tense is always marked, whereas aspect, polarity and voice rely on the idea of unspecified defaults: only the 'marked' forms
+are marked. Taking polarity, if no negative particle/auxillary occurs the event is 'implicitly' postive but does not receive a feature
+marking this. The same is true for voice - if a passive construction is not used, the event is 'implicitly' active- and for aspect-if the 
+event is not marked for progressive or for perfective, it simply receives no aspectual feature, instead receiving the default
+(imperfective, non-progressive) interpretation.    
+
+These features are incorporated into the semantic representation when either the main verb, or a tense/aspect marked
+auxillary is reached. Thus, 
+
+I went
+I didn't
+
+Mood
+
+Mood, the classification of utterances into imperatives, interrogatives and indicatives, has been
+given a quite detailed and slightly unorthodox treatment in the Moloko grammar. 
+
+In the Moloko grammar, mood is not uniformally specified by the first/main verb. Instead, it has
+been built into the grammar in a number of ways based on the various mood values(imp, ind, int). 
+Before detailing where and how, I will briefly describe the motivation behind this choice.
+
+At least in English, mood is best thought of as clausal feature: it is specified by the combination
+of various syntatic features including, besides verb-form, the presence and location (i.e. order) of other 
+key grammatical elements (subject, auxillaries, wh-words). Consider the 4 main mood subdivisions:
+
+Indicative: I picked up the ball.
+Imperative: pick up the ball.
+Y-N-Interogative: did you pick up the ball  
+Wh-Interogative: what did you pick up OR who picked up the ball
+
+
+Semantic Relations: Modifiers vs Dependents
+
+Given the quite broad definition of modifiers above, one could view nearly any relationship
+as a modification. For example, a determiner like 'the' modifies the entity of its head noun
+by delimiting and quantifying it. Likewise, a negation marker, as in 'I did not put it there',
+can be seen as an event modifier (negative propositional semantics) and a 'intention' 
+modifier (specifying that Speaker claims they DIDN'T do it). NOTE: Currently, these two levels of
+semantics (ideational and interpersonal) are not separated within the semantic representation.
+Furthermore, neither negation scope nor quantifier scope are being treated in any sophisticated
+manner within Moloko.  
+Essentially then, whenever a word or construction 'adds' some sort of 'extra' semantic dependency
+relation or feature to another 'independent' semantic 'head', it can be viewed as a modifier. 
+This stands in contrast to head-dependent relations, where a word 'fills in' a 'missing'  role 
+within the semantic head. This is the case, for example, with verbs and their complements, 
+prepositions and their 'anchors', etc. 
+
+Dual-Relation Words
+
+Although not much rides on this distinction between 'modifier' and 'dependent', 
+there is one case where this has greatly impacted the structure of the moloko grammar--this is in the cases of the major 
+'open class' modifiers: adjectives,  prepositions, and to a lesser degree adverbs. 
+Words of these type need to be able to play either role . Consider the 
+following sentence pairs:
+
+	I wrote the letter on the table
+	I wanted the bigger picture
+	
+	I made it bigger             (Resultant Verb)
+    I put it on the table        (Caused Motion)
+
+In the first sentence of each pair, the underlined word is acting as a modifier. The sentences
+would be semantically and syntactically 'complete' (though most likely not pragmatically or
+intentionally) without them:
+
+	I wrote the letter
+	I wanted the picture
+
+Compare this second set of sentences. Here, the same words are somehow 'essential' to 
+the sentences. Removing them leads to syntactic (and semantic) incompleteness.
+
+    I made it ____
+	I put it ____
+
+To handle the dual functionality of such words they must be able to behave in two
+grammatically distinct ways. NOTE: This is in contrast to nouns, for example, which never
+directly play a modifying role. In the next section, we will consider how
+this is done in 'traditional' CCG, and then in (), outline how Moloko handles this 
+in a manner which overcomes the limitations of such an approach.
+
+Dual-Relation words in Traditional CCG
+
+In 'traditional' CCG, the dual functionality of such words is handled by assigning them
+two entirely separate lexical families. So, for example, the adjective 'bigger' would
+receive:
+
+	1) bigger   :     adj[M]				  @b1:size(big ^ 
+													  <Degree>comparative)
+
+	2) bigger   :     n[T] / n[T]			  @x1:entity(
+											       		<Property>(b1:q-size ^ big ^ 
+													          	   <Degree>comparative))
+
+In the first case, 'bigger' is given an atomic category (adj) and thus provides it with its 
+own semantic head (or nominal variable as it is called in HLDS) M. This variable can then 
+be 'selected for', and then used to 'fill' a 'wanting' dependency role, allowing
+'bigger' to act as a dependent. Consider again the sentence 'I made it bigger' from above. 
+At the point in the incremental parsing of this sentence, just before the word bigger is
+reached, we have this partial parse NOTE: removed syntactic features
+
+s<349>{index=E_5:action-non-motion }/adj<15>{index=X3_5:quality}
+
+  @m1:action-non-motion(make ^ 
+                        <Mood>ind ^ 
+                        <Tense>past ^ 
+                        <Actor>(i1:person ^ I ^ 
+                                <Number>sg) ^ 
+                        <Patient>(i2:thing ^ it ^ 
+                                  <Number>sg) ^ 
+                        <Resultant>x1:quality)
+
+In order for this sentence to recieve a complete parse, syntactically it 'needs' an adjective (atomic cat adj),
+to its left, an adjective whose nominal variable would semantically fill its currently empty <Resultant> Role.
+When the word 'bigger' is encountered next, lexical reading 1) above is employed, and the variable M fills this missing role.
+
+As for the second reading above, bigger simply adds its semantic content to the modifee
+(in this case T, the entity designated by the noun). This is much clearer if we consider
+how CCG, being a dependency grammar, treats modifiers. Syntactically, modifiers are treated 
+as identity functions: they take an argument of category X and return the same category X. 
+This is done by giving modifiers a complex category, one which specifies both the modifee's syntactic category 
+and its combinatorial possible locations (via its slash direction and mode (refer) )
+The intuition here, is that despite their semantic differences, syntactically 'dog' behaves identically to 
+'big dog', or 'big scary dog' or even 'big scary dog running towards you'. It is instead on 
+the semantic side that modifiers do their work: they take the nominal variable associated with their modifee and attach
+some 'new' semantic content to it, thus modifying it. 
+
+The Limitiations of this Approach
+
+Unfortunately, by creating two separate readings--one for each relation--we are forced
+into a few unexpected limitations.
+
+Higher Order Modifiers
+
+Consider the following two sentences, where ( ) and ( ) are slightly altered by the addition of the word much
+
+	I made it much bigger
+	I wanted the much bigger picture
+
+() case can be handled quite simply by treating the word 'much' as an adjective
+modifier (Note: of type 'degree')
+
+			much  :		adj[M] / adj[M]			@x1(
+													<Modifier>(r1:degree ^ much))
+
+This then combines with 'bigger' creating 'much bigger', another adjective whose
+nominal variable M is given much's content:
+
+			much bigger    :	adj[M]			@b1:size(big ^ 
+														<Degree>comparative ^ 
+														<Modifier>(m1:degree ^ much))
+
+This can then act as a dependent, e.g. filling the <Resultant> role in made, in exactly the same
+way as a simple, unmodified adjective.
+
+It is in the second sentence, that we enounter a problem. As we saw in () above,
+modifiers require a nominal variable to attach their 'modifying' semantic content to.
+This is true of any linguistic unit acting as modifier, whether it is a single word 
+like 'big' or 'quickly', or a larger constituent like 'on the table', 'that I told you about'
+or 'when I was boy'. It is also true, regardless of the type of the modifee. This 
+was the case in () and () above, and also with much directly above: because the atomic
+category version of adjectives already has a nominal variable (to be selected for as a dependent),
+it can easily be modified. However, this is not the case for the 'modifier' reading of
+adjectives, prepositions and adverbs: currently, complex categories do not receive their own 
+nominal variables in OpenCCG. So in the case of 'bigger' above, the nominal variable T can be used to 'refer' 
+to the modified entity, but unlike the dependent-version in 1), there is no separate nominal variable
+which refers to the adjective as a whole. Consequently, there is no way to modify an adjective operating 
+in this way; or more generally, it is impossible to modify a modifier.
+
+This is a signicant problem. It rules out the possibility of parsing, or generating sentences like these:
+
+	Adverb Modifiers:				go to the kitchen very slowly, 	please, don't do it so quickly
+	Adjective Modifiers:			I want the really big one
+	Preposition (pp) Modifiers:		walk over to GJ	(over is a 'distal' marker), walk up to the table (up signifies 'proximity')
+									it's right under there
+
+	
+Dual-Relation Words in Moloko
+
+Illustration
+
+These limitations were addressed in the Moloko grammar through the use a single
+reading for dual-relation words in combination with type-changing rules.
+Adjectives, prepositions and adverbs are given only an atomic category reading,
+and consequently always have a nominal variable, allowing modification and coordination
+To perform their modifying function, these basic categories can be 'transformed'
+or 'exploded' into their complex combinatorial form. 
+
+For example, Moloko contains this type-changing rule rule adjectives:
+
+		adj[M]     ===>		n[T]   /   n[T]     @T(
+													<Property>(@M) )
+
+It creates the familiar n[T] / n[T]   @T( ... <Property>(...)) adjective reading
+but instead of the <Property> relation receiving its contents off-line (directly from the lexicon),
+this rule dynamically copies the contents of the atomic version's nominal variable (M) into 
+the 'open' dependency relation: in some sense it turns modification into some form of bizarre
+dependency. What is crucial here is that this rule acts on any linguistic constituent with category adj encountered
+during parsing, including already modified adjs.
+Thus, while parsing 'I want the really big one', the rule can operate either on 'big' or on 'really big' 
+(NOTE: in actuality, it operates on really alone. See () on incremental parsing)
+
+Complex-cat type
+
+By continually using adjectives as an example, we have masked a very important fact: most
+modifiers have a variety of combinatorial possibilities. Consider the adverb 'basically'. It can
+placed in a vareity of locations within a clause:
+
+	Basically, you can get it from GJ
+	You basically can get it from GJ
+	You can basically get it from GJ
+	You can get it from GJ basically
+
+These different syntactic permutations are handled by giving 'basically' multiple
+readings, each with a different syntactic form. (NOTE: Moloko currently ignores
+any IS diffrences between these readings, giving them the same semantic representations)
+In the standard CCG approach, this is done by giving these words multiple lexical families
+(or a single family with multiple entries). Of course this leads to the same problems
+mentioned above. In the Moloko grammar, we handle this variability by
+creating a type-changing rule for each syntactic possibility. So for example, here
+are two adverb type-changing rules:
+
+	adv[M]     ===>		s[E]   /   s[E]     @E(
+											   <Modifier>(@M) )
+
+	adv[M]     ===>		s[E]   \   s[E]     @E(
+											   <Modifier>(@M) )
+
+
+However, this still leaves on major issue unresolved: different words within the same
+syntactic class can behave differently. Compare the adverb 'basically' to the adverb 'too'
+(as in also):
+
+	* Too you can get it from GJ
+	You too can get it from GJ
+	? You can too get it from GJ
+	You can get it from GJ too
+
+To acccount for these 'idiosyncracies', each word must somehow specify its behaviour.
+Again, in standard CCG this can be done easily by assigning a word to only its appropriate
+families. In Moloko, this is done instead by 'naming' each type-changing rule and
+for each word, specifying lexically which rules can apply to it. We could have created a binary 
+syntactic feature for each rule, and thus basically would specify + values for each
+feature, and too would specify - for the rules it wishes to block. However, to
+avoid this explosion of features, all of this information is instead
+contained in a single syntactic feature called 'complexcat-type'. Here is a 
+more detailed look at some of the rules used for adverbs:
+
+    adv[M complexcat-type=s-right]     ===>		s[E]   /   s[E]     @E(
+																		<Modifier>(@M) )
+  
+	adv[M complexcat-type=s-left]     ===>		s[E]   \   s[E]     @E(
+																		<Modifier>(@M) )
+
+
+These individual, rule-specific feature values are then grouped (via multiple inheritance)
+in the syntactic feature heirarchy. This creates a set of 'syntactic classes', each 
+specifying exactly which rules can apply (and can't apply) to words belonging to this class,
+and hence enforces the appropriate combinatorially behaviours. 
+
+Each of the Dual-Relation parts of speech (adj, adv and prep) has its own set of
+syntactic classes (e.g. adv1, adv2, adv3, etc), and each word from these POS belongs
+to one of these classes. This is specified lexically via macro. 
+
+
+Event Modifier Restriction
+
+As discussed in () above, the Moloko is quite promiscous when it comes to 
+semantic or pragmatic 'un-acceptability', notions which must be handled
+grammar externally. There is, however, one major exception to this design 
+principle: verbs are able to lexically specify what kinds of event modifiers 
+they can recieve. In this section, first, we will give some examples 
+illustrating the utility of this design feature, and then go into detail
+on how this was implemented.
+
+Motivation
+
+Consider first this pair of sentences:
+
+	I played in the room
+	I walked in the room
+	
+Despite their similarity, these two sentences differ in
+that the second allows a reading which the first does not. 
+In both cases, 'in the room' can be a static locational modifier, 
+specifying the place where the event occured. (NOTE: for the second,
+imagine a person 'pacing'). However, only in the second can
+'in the room' specify the dynamic 'goal' of the event, i.e., 
+walking 'into' the room. There is a case for arguing that this 
+difference in motificational behaviour is inherit in the verb 
+and should thus be lexically specified (c.f. Goldberg). 	
+	
+As another example, consider
+
+	* I am a ball to the door
+
+The unacceptability of this sentence can be accomodated by lexically specifying
+that the copular verb (be) blocks the class of 'dynamic modifiers'.
+
+Similarly, in the sentence
+
+	I want you to play in the room.
+
+we can easily block the reading where 'in the room' modifies 'want', i.e.,
+the reading where it was the 'wanting' that occured within the room, instead of the 
+true reading where it is the playing in the room that is wanted.
+
+Of course, we can not and should not attempt to grammatically specify
+every allowable type of event modification. For one, the type of information that
+underlies these differences certainly falls under the realm of
+world knowledge. More importantly, for nearly any restriction
+we could specify, we could most likely find a set of contexts where these
+restrictions would no longer apply--language is after all, a tool used by
+humans who have a remarkable gift for construing situations in novel and
+unexpected ways. However, pragmatically, the ability to grammar-internally 
+'rule out' some bizarre or highly unlikely readings is a powerful one.
+It can eliviate a great deal of burden on parse pruning by limiting what
+readings we are willing to even consider within the context the task for
+which the grammar is being employed.
+
+Implementation	
+
+In fact, the restriction of event modifiers is handled almost identically
+to the way the combinatorial behaviour of modifiers was handled (see .. above).
+It is done through the use of 
+
+	1) a pair syntatic features which are attached lexically to modifiers and verbs
+	2) the inclusion of these features within the syntactic category responsible for 'attaching' the
+	   modifier to its modifee. This includes the type-changing rules used to handle
+	   the modifier function of adverbs and prepositions (), and also subordinate
+	   clause modifiers. 
+
+(NOTE: although 
+event modifier restriction is surely a matter of semantics and not syntax,
+there are two reasons why it is better handled via feature. First, OpenCCG
+is much better at 'accessing' syntactic features than semantic ones. In fact,
+once semantic content has been added the semantic representation of a parse,
+it is no longer 'visible' to the parsing at all. Second, as discussed above
+(), one of the design features for Moloko was to keep the semantic sorts
+as grammar external as possible. Using the event-type to control modification
+would violate this.)
+	
+The Syntactic Features	
+
+The first syntactic feature, mod-type, is attached to the event modifier
+and essentially parrots the semantic sort given to the modifier. For example,
+the preposition 'into', of semantic type 'm-whereto' is assigned a mod-type 
+value of m-whereto, i.e.
+
+	   <fs id="25" attr="mod-type" val="m-whereto"/>
+
+The second feature, mod-class, is attached to the verb, and specifies exactly
+which 'types' of modifiers can attach to it. Just like complexcat-class, this
+is done in the syntactic type heirarchy by grouping the mod-type values 
+(via multiple inheritance). For example, consider this type definition 
+
+		<type name="mod-class.4"		parents="s-frequency s-probability s-comment s-time "/>
+
+Mod-class.4 is very restrictive, allowing only frequency (always), probability (certainly),
+time (on Monday) and comment (please) modifiers, blocking all others 
+(location, dynamic, negation, etc.) (NOTE: m- vs s-)
+
+Both of these features are specified lexically via macro. For a full list of the 
+current mod-types and mod-classes see types-feature.ccg
+
+Syntatic Category Modification
+
+In the case of prepositions and adverbs (i.e. the dual-relation words able to serve
+as event modifiers), we simply expanded the type-changing rules to enforce these restrictions. 
+For each of the n different syntactic variants, we added a rule for each of the m different 
+modifer-types. Thus, instead of their being only n rules, there are now n x m rules,
+each specifying a particular syntactic variant and a specific modifer type.
+Here is an example for event modifying prepositions
+
+
+    prep[M complexcat-type = s-right   
+		   mod-type = m-whereto]       ===>		s[E]   /   s[E mod-class =  s-whereto]        @E(
+																		                         <Dynamic>(@M) )
+
+
+This rule handles dynamic 'whereto' prepositions that modify a sentence on its right, e.g., 
+the preposition 'into' in the sentence 'I went into the room'. Note as well, that the modified sentence
+is marked with the feature mod-class = s-whereto. This insures that only those verbs which belong to a mod-class
+which allow whereto modifers can actually be modified by this.
+
+For other event modifier categories, such as subordinate clause markers (when, while, etc), 
+again, the appropriate modifier type was assigned to the modifee's mod-class value. 
+
+It is important to remember, that because the semantic classes used for modifiers have actually
+been built into the grammar signature (by creating features and rules), any further modification
+to this portion of the semantic type heirarchy would lead to potential inconsistencies within the grammar.
+Thus, any such changes would need to be reflected within the grammar itself as well. See types-feature.ccg
+for details.
+
+Incrementality
+
+Another driving factor motivating the development of Moloko was the need for incrementality in utterance
+parsing. This is essential for its use as a component in the broader context of incremental situated
+dialgue processing. At each 'step' in the flow of interaction, we want to be able to get as much
+meaning out of our linguistic representation as possible. In our context, these 'steps' boil down to
+words and thus what we want are word-by-word linguistic representations which are both integrated with what
+came before, and projective (or predicative) of what could come next. (NOTE: as the moloko grammar is a
+'pure' generative grammar, it cannot make any predictions beyond what could possibly come. To get at
+what is more (or most) likely to come, the possible readings outputted by Moloko must be augmented with
+other sources of knowledge (statistical expectations, predictions/preferences based on some element of physical or 
+discourse/interactional context  etc) )
+
+These two dimensions of incrementality, 'back-integration' and 'forward-projection' , will be discussed 
+in turn. Then, a number of parses will be illustrated, discussing step-by-step how incrementality is
+acheived. This will hopefully give a taste of how these principles have impacted the design of the grammar.
+
+
+Back-Integration
+
+The integration of the 'now' with the 'before' can be separated into issues of syntactic integration and
+issues of semantic integration. The first are concerned with parsability--we never want the parser to complain
+because it 'doesn't know yet' if a particular reading could happen. Instead, the grammar should be 
+designed so that at each point, all the possible readings can parse. The second is concerned with the 
+structure of the current semantic representation. We do not want multiple semantic chunks which must 'wait'
+to be combined. Instead, whenever possible, we want semantic readings which consist of only a single 
+semantic structure, with each sub-structure connected in a way licensed (provisionally) by the grammar.
+
+Forward-Projection
+
+Moloko was designed to optimize the following maxim: 'words should tell you what they expect as soon as they can'; 
+in other words 'project early'. Thus, whenever possible, the first word in a construction should project its dependencies. 
+This provides the maximal amount of information in terms of what could come next both syntactically 
+(in terms of 'rightward' constituents) and semantically (in terms of 'unfilled roles').
+
+
+Some Illustrations
+
+Consider the incremental parsing of the following straight forward example:
+
+	The man put a ball onto the table.
+	
+	
+Step 1:  the
+
+np/^n[num=sg]	  ==>		@x1:entity(
+									<Delimitation>unique ^ 
+									<Quantification>specific_singular)
+
+np/^n[num=pl]	  ==>		@x1:entity(
+									<Delimitation>unique ^ 
+									<Quantification>specific_non_singular)
+
+
+	
+Clearly, as this is the first word in the utterance there is nothing to back-integrate into (NOTE: this of course says nothing
+about incremental discourse parsing, which is handled in a separate module outside of Moloko)
+However, as 'the' is a 'syntactic head' it 'syntactially' projects a noun to come (and tells us what we will 'have' (an np) when we get this noun)
+and semantically projects an entity (the 'semantic head' of this modification relation) which we know is unique and 
+either specific singular (if syntactically singular) or specific non singular (if syntactically plural). Of course these
+two readings represent the 'ambiguity' of the definite determiner (NOTE: impossible to 'underspecify' semantic features in OpenCCG)
+
+
+Step 2: the man
+
+
+np			==>				@m1:person(man ^ 
+										<Delimitation>unique ^ 
+										<num>sg ^ 
+										<Quantification>specific_singular)
+
+s/(s\np)	==>				@m1:person(man ^ 
+										  <Delimitation>unique ^ 
+										  <num>sg ^ 
+										  <Quantification>specific_singular)
+
+
+Considering first the np reading, we see that 'man' fills the forward-projected singular noun of the first
+reading it step 1, and also contains the expected head entity, thus back-integrating perfectly both syntactically and semantically. 
+We now have a complete np and its corresponding
+entity. The fact that nps have no dependents means that their are no projections at this point.
+This, of course, does not prohibit further rightward modification (the man on the table, the man that I told you about, etc)
+but as this is optional, it does not figure into the parse of the utterance. (NOTE: in this way,
+CCG is quite different from PS based formalisms, where we would in fact get a number of 'np-bar' readings at this point, projecting 
+these possible modifications. If we want somehow to model this 'linguistic knowledge' about the possibility
+of the  rightward modification of nps, it would have to be handled somehow)
+
+The second reading is the 'type-raised' version of the np. It is used to syntactically project its (possible) role as the 'subject' of 
+a sentence to come. This is of course an importanct and necessary feature of CCG, and as we will
+discuss below, the lack of a semantic counterpart to this type-raise rule is actually one of the
+stumbling blocks on the way to 'complete' incremental semantic-integration.
+
+Step 3: the man put 
+
+s/pp/np    ==>  @p1:action-motion(put ^ 
+									<Mood>ind ^ 
+									<Tense>past ^ 
+									<Actor>(m1:person ^ man ^ 
+												<Delimitation>unique ^ 
+												<num>sg ^ 
+												<Quantification>specific_singular) ^ 
+									<Dynamic>x1:m-whereto ^ 
+									<Patient>x2:entity   )
+
+ 
+ Having encountered the verb, i.e. the syntactic and semantic head of the sentence, we see 
+ that both syntactially and semantically our linguistic reading explodes in complexity.
+ First, in terms of back-integration, we see that our entire reading up to this point,
+ is 'absorbed' by put: syntactically the np 'fills' the leftward np of put (it's category
+ is in fact s/pp/np\np) and semantically T fills the associated role of Actor. As we now
+ still have only a single semantic 'chunk', we have a fully semantically-integrated reading.
+ 
+ In terms of projection, we see that 'put' has two dependencies: a rightward np whose entity
+ serves the role of Patient, followed by a prepositional-phrase whose referent will fill
+ the role of Dynamic. Note further, that this referent is semantically constrained (or
+ subcategorized) to be of type 'whereto'. At this point, then, we have some very
+ useful information about what we expect to come in the remainder of the utterance.
+ This is, of course, still provisional. We may end up receiving less information (a fragment)
+ or more likely, more information (addional modifications 'the man put it on the table yesterday afternoon when you weren't in, etc)
+ 
+ 
+Step 4: the man put a
+
+s/pp/^n		==>		@p1:action-motion(put ^ 
+										<Mood>ind ^ 
+										<Tense>past ^ 
+										<Actor>(m1:person ^ man ^ 
+													<Delimitation>unique ^ 
+													<num>sg ^ 
+													<Quantification>specific_singular) ^ 
+										<Dynamic>x1:m-whereto ^ 
+										<Patient>(x2:entity ^ 
+													<Delimitation>existential ^ 
+													<Quantification>specific_singular))
+
+
+As the structure of step 3 projected an np, the determiner 'a' is assumed to be the beginning of that
+np. Consequently, it is integrated syntactically ( /np is 'replaced' with  /^n) and semantically
+(the Patient entity is now marked to be existential and specific_singular). The only change
+in projection is that we are no longer looking for a full np, but only a noun.
+
+
+Step 5: the man put a ball 
+
+s/pp	.....
+
+Nothing much interesting happens here. The Patient is filled in, and again the amount
+of projected material decreases.
+
+Step 6: the man put a ball onto
+
+ s/np		==>		@p1:action-motion(put ^ 
+										<Mood>imp ^ 
+										<Tense>pres ^ 
+                    					<Actor>(m1:person ^ man ^ 
+                    					        <Delimitation>unique ^ 
+					                            <num>sg ^ 
+                    					        <Quantification>specific_singular) ^ 
+					                    <Dynamic>(o1:m-whereto ^ onto ^ 
+                   					                 <Arg>x1:entity) ^ 
+   					                    <Patient>(b1:thing ^ ball ^ 
+                              					 <Delimitation>existential ^ 
+                              					 <num>sg ^ 
+                              					 <Quantification>specific_singular))
+
+
+The preposition 'onto' has the syntactic category pp/np. (NOTE: this is the 'dependent'
+category, the modifier category is created via type-changing rule (see above)). It thus
+projects its own np dependent whose entity will fill its Arg role. This information 
+gets integrated into the into the parse in Step 6. Syntactically, the pp projection
+is satisfied, but a new rightward np gets added. Semantically, the Dynamic role
+is now filled (with 'onto') but with an open Arg dependency in the appropriate place.
+
+Step 7 and 8 are trivial
+
+
+
+Consider a second example, involving the leftward and rightward modification of a noun
+
+	the big ball on the table
+	
+step 1: the        (ignoring the second, plural reading of the)
+
+
+np/^n		==>			@x1:entity(
+									<Delimitation>unique ^ 
+									<Quantification>specific_singular)
+
+This is identical to step 1 above
+
+
+
+step 2: the big   
+
+np/^n		==>			@x1:entity(
+									<Delimitation>unique ^ 
+									<Quantification>specific_singular
+									<Property>(b1:q-size ^ big) )
+	
+We can see that both in terms of back-integration and forward-projection
+this reading is behaving as we want it. The projected entity is further
+specified (modified) and we 'still' project a noun along with its
+associated nominal variable T and proposition.
+
+In order to understand exactly how this reading is built, we must look
+a big more carefully at how adjectives like 'big' work. As discussed in ()
+all adjectives begin as atomic categories. So, we have:
+
+		adj[M]		==>		  @b1:size(big) 
+		
+This is then 'transformed' into a complex category, capable of modification, 
+via the following type-changing rule:
+
+		adj[M]     ===>		n[T]   /   n[T]     @T(
+													<Property>(@M) )
+
+This yeilds the 'modificational' adjective
+
+		n[T]  /  n[T]	   ===>		@T(
+									   <Property>(b1:q-size ^ big) )
+
+which is then, via simple forward composition,  combined with step 1's
+np/^n resulting in the step 2 above.
+
+
+Step 3: the big ball
+
+np			==>				@m1:person(ball ^ 
+										<Delimitation>unique ^ 
+										<num>sg ^ 
+										<Quantification>specific_singular)
+
+s/(s\np)	==>				@m1:person(ball ^ 
+										  <Delimitation>unique ^ 
+										  <num>sg ^ 
+										  <Quantification>specific_singular)
+
+
+The readings here are parallel to those in step 2 of example 1. Again, the
+important thing is that we have a (provisionally) complete np and entity.
+
+Step 4: the big ball on 
+
+np/np		==>				@b1:thing(ball ^ 
+										<Delimitation>unique ^ 
+										<num>sg ^ 
+										<Quantification>specific_singular ^ 
+										<Property>(b2:q-size ^ big)   ^
+										<Location>(o1:m-location ^ on ^ 
+												<Arg>x1:entity)             )
+
+Before investigating exactly how the complete reading from 3 was 'opened' up
+to allow further modification, we should notice that this reading is perfectly
+incremental. The preposition 'on' has attached itself to the entity as a
+locational modifier, and has appended its own syntactic projection creating the
+complex cat np/np. We have thus gone from a 'complete' reading back to an 
+syntactically and semantically 'unfinished' reading.
+
+To explain what has happened here, it is best to look at the derivational
+history leading to this reading. The word in parantheses specify where the
+derivational step comes from. This can be a lexical entry (lex), a type
+changing grammatical rule (gram) or a composition rule, e.g. (>) or (>B).
+
+
+   (lex)             the :- np/^n
+   (lex)             big :- adj
+   (gram)            adj: adj$1 => n/^n$1
+
+The $1 here represents any potential dependencies that the adj may bring along with it.
+We will see this in action a few steps down with 'on'
+
+   (adj)             big :- n/^n
+   (lex)             ball :- n
+   (>)               big ball :- n
+
+Note that at this point, we have not actually integrated 'the' into the derivation yet.
+This does not violate incrementality, however, because we are actually 'in the middle' of
+a parse step. Incrementality is imposed on the output of a parse, not on the process itself
+
+   (lex)             on :- pp/np
+   (gram)            prep-n-location: pp$1 => n$1\*n
+   (prep-n-location) on :- n/np\*n
+
+First, we have the lexical entry for on, which as discussed above () is the 
+atomic category pp plus its np dependency. Then, the rule named prep-n-location
+comes into play, transforming the basic category into the complex category
+n/np\*n. The $1 works here to take all of pp's syntactic dependencies and
+place them in the correct location in the new complex category. In this case,
+as this is a rightward modifier, this is directly after the modifee (hence 
+the ordering /np\*n) (NOTE: remember do to the currying of CCG categories,
+the order in syntactic categories is the reverse of their linear realization)
+This category, n/np\*n should understood as: 'I want a noun directly (*) to my 
+left (this is the modifee), followed by a np ( 'on's dependency), and then 
+I'll give you back a noun (the result)
+
+   (<)               big ball on :- n/np
+
+This first \*n requirement is met by 'big', leaving the np.
+
+   (>B)              the big ball on :- np/np
+
+Finally, 'the' comes back into play:  np/^n  +  n/np = np / np  via >B
+
+Step 5 and 6  (type-raised reading not given to save space)
+
+np			==>				@m1:person(ball ^ 
+										<Delimitation>unique ^ 
+										<num>sg ^ 
+										<Quantification>specific_singular
+										<Location>(o1:m-location ^ on ^ 
+													<Arg>(t1:thing ^ table ^ 
+															 <Delimitation>unique ^ 
+															 <num>sg ^ 
+															 <Quantification>specific_singular)) ^ 
+							    		<Property>(b2:q-size ^ big))
+
+Again, we have another (provisionally) complete reading.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

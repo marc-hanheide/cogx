@@ -1,0 +1,26 @@
+
+rule { typechange: np[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: n[D x2du]  =>  du[D] :  ; } 
+
+rule { typechange: adj[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: adv[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: s[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: pp[D x2du]  =>  du[D]  :  ; } 
+
+
+rule { typechange: du[A disclevelcomp] => du[B]/^du[C] : B:d-units (list <First>(A) ^ <Next>(C) ) ; }
+
+
+rule { typechange: np[B correction] => np[A]/^np[A]: A ( <Deleted>(B) ) ; }
+
+#rule { typechange: adj[B correction] => adj<99>[A]/^adj<99>[A]: A ( <Deleted>(B) ) ; }
+
+rule { typechange: n[B correction] => n<99>[A]/^n<99>[A]: A ( <Deleted>(B) ) ; }
+
+#rule { typechange: np[B correction]/^n => np<100>/^n<100>[A] /^ (np<100>/^n<100>[A]) : A ( <Deleted>(B) ) ; }
+
+#rule { typechange: pp[B correction]/^np => pp<100>/^np[A] /^ (pp<100>/^np[A]) : A ( <Deleted>(B) ) ; }

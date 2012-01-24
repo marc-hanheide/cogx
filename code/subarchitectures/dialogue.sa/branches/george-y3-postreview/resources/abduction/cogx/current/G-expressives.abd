@@ -1,0 +1,24 @@
+%-------------------------------------------------------------------------
+% ENGAGEMENT
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'engagement-opening'),
+
+	event : produce_text([hello, Hearer]) / -1.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'engagement-closing'),
+
+	event : produce_text([goodbye, Hearer]) / -1.0.
+
+%-------------------------------------------------------------------------
+% THANKING
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'thanking'),
+	event : produce_text([thank, you, Hearer]) / -1.0.
+

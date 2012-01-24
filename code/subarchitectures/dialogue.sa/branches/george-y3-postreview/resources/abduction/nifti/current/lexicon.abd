@@ -1,0 +1,80 @@
+%-------------------------------------------------------------------------
+% LEXICON
+%-------------------------------------------------------------------------
+
+valid_argument(forward,   'direction-spatial'(forward)).
+valid_argument(straight,  'direction-spatial'(forward)).
+valid_argument(back,      'direction-spatial'(back)).
+valid_argument(backward,  'direction-spatial'(back)).
+valid_argument(around,    'direction-spatial'(back)).
+valid_argument(left,      'direction-spatial'(left)).
+valid_argument(right,     'direction-spatial'(right)).
+
+valid_argument(up,    'direction-visual'(up)).
+valid_argument(down,  'direction-visual'(down)).
+valid_argument(left,  'direction-visual'(left)).
+valid_argument(right, 'direction-visual'(right)).
+
+valid_argument_nom(Nom, Arg) <-
+	i : prop(Nom, Prop),
+	valid_argument(Prop, Arg).
+
+valid_argument_nom(Nom, location(V)) <-
+	is_referring_expression(Nom, V) / p(0.9),
+	? understand : is_reference(Nom, V).
+
+understand : is_reference(Nom, Ref) <-
+	understand : resolves_to_epobject(Nom, Ref, _EpSt) / reference_resolution.
+
+understand : is_reference(Nom, Ref) <-
+	understand : unknown_reference(Nom, Ref) / p(0.55),
+	? understand : ungroundable(Nom, Ref).
+
+valid_action_prop(drive,  'in-motion').
+valid_action_prop(drive,  'in-location').
+%valid_action_prop(drive,  'returned-to-base').
+valid_action_prop(go,     'in-motion').
+valid_action_prop(go,     'in-location').
+%valid_action_prop(go,     'returned-to-base').
+valid_action_prop(move,   'in-motion').
+valid_action_prop(move,   'in-location').
+%valid_action_prop(move,   'returned-to-base').
+valid_action_prop(turn,   'in-orientation').
+valid_action_prop(look,   'looking').
+valid_action_prop(search, 'looking').
+valid_action_prop(zoom,   'zoomed').
+
+valid_action_prop(stop,     'execution-stopped').
+valid_action_prop(wait,     'execution-on-hold').
+valid_action_prop(hold,     'execution-on-hold').
+valid_action_prop(pause,    'execution-on-hold').
+valid_action_prop(continue, 'execution-resumed').
+valid_action_prop(resume,   'execution-resumed').
+valid_action_prop(unpause,  'execution-resumed').
+valid_action_prop(return,   'returned-to-base').
+
+valid_yn(affirmative, 'confirmed').
+valid_yn(negative,    'disconfirmed').
+
+%-------------------------------------------------------------------------
+
+valid_state(state(['in-motion', agent(_Ag), 'direction-spatial'(_Dir)])).
+valid_state(state(['in-orientation', agent(_Ag), 'direction-spatial'(_Dir)])).
+valid_state(state([looking, agent(_Ag), 'direction-visual'(_Dir)])).
+valid_state(state(['execution-stopped', agent(_Ag)])).
+valid_state(state(['execution-on-hold', agent(_Ag)])).
+valid_state(state(['execution-resumed', agent(_Ag)])).
+valid_state(state(['in-location', agent(_Ag), location(_Loc)])).
+%valid_state(state(['in-location', agent(_Ag), location(coordinates(_Coords))])).
+%valid_state(state(['in-location', agent(_Ag), location(landmark(_LM))])).
+valid_state(state(['dialogue-on-hold', agent(_Ag)])).
+valid_state(state(['returned-to-base', agent(_Ag)])).
+
+agent_of(state([_, agent(Ag)|_]), Ag).
+action_of(state([Action|_]), Action).
+argument_of(state([_, _, Arg|_]), Arg).
+has_no_arguments(state([_, agent(Ag)])).
+
+%-------------------------------------------------------------------------
+
+valid_object(car, car).

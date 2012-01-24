@@ -1,0 +1,63 @@
+// ASCRIPTION 
+// Content planning rules for ascription constructions, typically involving "be"
+// modules: 
+// - target descriptions: salient targets turn into deictics, familiar targets into object descriptions 
+
+:ascription 
+-> 
+##ascription = true, 
+# ^ be.
+
+// TARGET DESCRIPTION: 
+// Transforms a target entity into the copula restrictor, deleting the original target spec
+
+// Familiar target turns into an object description 
+:ascription ^ <Target> #t:(entity | thing) 
+-> 
+# ^ <Cop-Restr>(#t:), 
+# ^ <Subject>(#t:),
+# ! <Target>.
+
+// TENSE
+// Without an explicit tense, set tense to present
+
+:ascription ^ !<Tense> 
+-> 
+# ^ <Tense>pres.
+
+// MOOD
+// Check for speech act: if answer, do indicative; if question, interrogative 
+
+:ascription ^ <Tense>,
+##speechact ^ assertion
+-> 
+# ^ <Mood>ind.
+
+:ascription ^ <Tense>,
+##speechact ^ question
+-> 
+# ^ <Mood>int.
+
+
+// QUALITY PROPERTIES
+// Transforms a quality property into a copula scope. 
+
+:ascription ^ <Color>(:quality ^ #p) 
+->
+# ^ <Cop-Scope>(:q-color ^ #p),
+# ! <Color>.
+
+:ascription ^ <Size>(:quality ^ #p) 
+->
+# ^ <Cop-Scope>(:q-size ^ #p),
+# ! <Size>.
+
+:ascription ^ <Shape>(:quality ^ #p) 
+->
+# ^ <Cop-Scope>(:q-shape ^ #p),
+# ! <Shape>.
+
+:ascription ^ <Type>(#t:)
+-> 
+# ^ <Cop-Scope>(#t:),
+# ! <Type>.

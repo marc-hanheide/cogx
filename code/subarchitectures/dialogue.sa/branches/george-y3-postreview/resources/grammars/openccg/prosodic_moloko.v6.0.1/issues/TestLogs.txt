@@ -1,0 +1,185 @@
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <SpeechAct>greeting))]
+[LOG speech.synth: Trying to say the following: [hello that one]]
+======================================================================================================
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ color ^ <Questioned>true ^ <ProofStatus>asserted))))]
+[LOG cca: current belief model has been updated!]
+[LOG speech.synth: Trying to say the following: [what color@H* is the box]]
+
+L* for question 
+======================================================================================================
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <QuestionType>type ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:ascription ^ be ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar) ^  <Type>(dummy1_4:entity ^ box ^ <Color>red))))]
+[LOG speech.synth: Trying to say the following: [it is HH% one red@H* box@H* LL%]]
+
+======================================================================================================
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:ascription ^ be ^  <Target>(dummy1_3:entity ^ box ^ <ProofStatus>asserted ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ red ^ <ProofStatus>assumed))))]
+[LOG speech.synth: Trying to say the following: [the box@H* LL% is red HH%]]
+======================================================================================================
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <QuestionType>color ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:ascription ^ be ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Color>(dummy1_4:quality ^ red))))]
+[LOG speech.synth: Trying to say the following: [it is HH% red@H* LL%]]
+======================================================================================================
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true) ^  <Shape>(dummy1_4:quality ^ shape ^ <Questioned>true ^ <ProofStatus>asserted))))]
+[LOG cca: current belief model has been updated!]
+[LOG speech.synth: Trying to say the following: [which shape is this]]
+
+======================================================================================================
+
+======================================================================================================
+
+======================================================================================================
+
+(@dummy1_1:dvp(c-goal ^ <Relation>hold))
+[] [0.025] let me HL% see@H* LL% 
+ "let me see" takes time because "modals" like "let" 
+1. have no prosodic semantic features in grammar.( Done)
+2. has been assigned t-rheme-true/t-focus-false ( modals are of nominal type e ).
+@content:modal(let ^ <Rheme>t-rheme-true ^ <Mood>imp ^ <Commitment>t-uncontentious ^ <Focus>t-focus-false ^ <Tense>pres ^ <Owner>t-speaker
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept))
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^  <Content>(content:marker ^ yes ^ <Mood>ind ^ <Tense>pres)))
+
+@content:marker(yes ^ <Mood>ind ^ <Tense>pres)
+results in "am"...closest to marker...why? sem feature Tense gives more score...
+am :- aux<443>{FIN=be, INTOPH=nulltn, NUM=s-sg, PERS=1st, POL=s-prov-pos, VFORM=vf-be, index=content:marker} : @content:marker(<Tense>pres)
+
+entry for "yes": @yes1_0:marker(yes)
+i.e. additional semantic parameters...
+
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>accept ^  <Content>(content:perception ^ see ^ <Mood>ind ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Tense>pres ^  <Actor>(i1:person ^ I ^ <Rheme>t-rheme-false ^ <Owner>t-hearer ^ <Num>sg ^ <Focus>t-focus-true ^ <Commitment>t-uncontentious) ^  <Subject>(i1:person ^ I ^ <Rheme>t-rheme-false ^ <Owner>t-hearer ^ <Num>sg ^ <Focus>t-focus-true ^ <Commitment>t-uncontentious))))
+
+I@L+H* see
+boundary ??
+======================================================================================================
+(@d1:dvp(cg ^ <FeedBackSource>parser ^ <Polarity>negative ^  <Content>(f1:feedback ^ ))
+
+@content:cognition(mean ^ <Mood>int ^ <Tense>past ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious ^ <Actor>(y1:person ^ you ^ <Num>sg ^ <Rheme>t-rheme-true ^ <Commitment>t-uncontentious ^ <Focus>t-focus-true ^ <Owner>t-speaker) ^ <Event>(w1:event ^ what ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious) ^ <Modifier>(j1:m-time ^ just) ^ <Wh-Restr>(w1:event ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious) ^ <Subject>y1:person)
+
+LF intends: what did LH% you@H* LL% just mean LH%
+result: what did you@H* LL% just LH% mean LH%
+
+did is a aux here
+
+investigate: intended LF could not be parsed. PARSE FAIL (FIXED)
+just: the LF need prosodic attributes. also none in grammar? (DONE)
+what: event has no prosodic features in grammar. (DONE)
+what:event:  s/(s$1/^(s\!np))/(s\!np/(s$1))/^np/aux
+new what:event:  s/(s$1/^(s\!np))/(s\!np/(s$1))/^(s/!np)/aux
+
+relization with boundary tones is still not prefect
+"what" and "did" doesn't show semantic features in the parsed LF. Issue of semantic feature handling in grammar. NOMINALS of type E and Z ECOMP
+Adding semantic features to what and did causes something like "did you just mean that to.." i.e. lexical selection is hanpered...
+-----------------
+
+@content:event(but ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious ^ <First>(b2:ascription ^ be ^ <Mood>ind ^ <Rheme>e-rheme-false ^ <Tense>pres ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious ^ <Cop-Restr>(i1:person ^ I ^ <Rheme>t-rheme-false ^ <Num>sg ^ <Owner>t-hearer ^ <Focus>t-focus-false ^ <Commitment>t-uncontentious) ^ <Cop-Scope>(s1:q-attitude ^ sorry) ^ <Subject>i1:person) ^ <Next>(u1:cognition ^ understand ^ <Mood>ind ^ <Polarity>neg ^ <Rheme>e-rheme-false ^ <Tense>pres ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious ^ <Actor>(i2:person ^ I ^ <Rheme>t-rheme-true ^ <Num>sg ^ <Commitment>t-uncontentious ^ <Focus>t-focus-false ^ <Owner>t-speaker) ^ <Modifier>(c1:modal ^ could ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Commitment>e-uncontentious) ^ <Patient>(c2:entity ^ context ^ <Delimitation>unique ^ <Proximity>distal ^ <Quantification>specific ^ <Num>sg ^ <Rheme>t-rheme-true ^ <Num>sg ^ <Quantification>specific ^ <Commitment>t-uncontentious ^ <Focus>t-focus-true ^ <Owner>t-speaker) ^ <Subject>i2:person))
+
+LF intends:  I am sorry but LH% I LL% could not understand LH% that@H* LL%
+result: I LL% couldn't HH% understand HH% that.
+
+investigate:
+lexicon
+but : LF has prosodic features but lexicon has none. Did but unconnected graphs. Same issue of NOMINALs. F and N for COORD semantics
+sorry: LF has prosodic features but lexicon has none
+could: LF has semantic features. Could is a "modal" . Need entry in lexicon for prosodic. Again the issues of NOMINALs.
+that@H* is not there in the lexicon. (DONE)
+
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:cognition ^ know ^ <Polarity>neg ^  <Actor>(dummy1_3:person ^ I) ^  <Patient>(dummy1_4:entity ^ color ^ <InfoStatus>familiar))))
+
+expected: I LL% don't know LH% the color@H* LL%
+results. I HL% don't LH% know the LH%
+after changes: I LL% don't know LH% the color@H* HL%
+
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:cognition ^ know ^ <Polarity>neg ^  <Actor>(dummy1_3:person ^ I ^ <ProofStatus>assumed) ^  <Patient>(dummy1_4:entity ^ color ^ <InfoStatus>familiar ^ <ProofStatus>asserted))))
+
+expected: I don't know LH% the color@H* LL%
+result:I HH% don't HL% know the HH%
+after changes: I don't know HH% the color@H* LL%
+
+investigation:
+--------------
+also see why don't get attached to HL% ?? oh it is a verb! rules permit this! need to use ngram
+
+don't: s\!np/^(s\!np)
+know: s\!np/np :type change to s\!np/(s/!np) I HH% don't know HH% the color@H* LL%
+
+=====================================
+what color@H* is HH% the box@L+H* LH%
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Color>(dummy1_4:quality ^ color ^ <Questioned>true ^ <ProofStatus>asserted))))
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ color ^ <Questioned>true ^ <ProofStatus>asserted))))
+
+@dummy1_2:ascription(be ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Mood>int ^ <Commitment>e-uncontentious ^ <Tense>pres ^ <Cop-Restr>(dummy1_3:entity ^ box ^ <Rheme>t-rheme-false ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>unique ^ <Owner>t-hearer ^ <Focus>t-focus-false ^ <Commitment>t-uncontentious) ^ <Cop-Scope>(dummy1_4:quality ^ color ^ <Rheme>m-rheme-true ^ <Commitment>m-uncontentious ^ <Focus>m-focus-true ^ <Owner>m-hearer) ^ <Subject>dummy1_3:entity ^ <Wh-Restr>(w1:specifier ^ which ^ <Scope>dummy1_4:quality))
+
+LF expected: what color@H* HH% is the box LH% 
+Grammar result: what color is the box HH%
+	        which color is the boy LH%
+Robot Meant: what color@H* HH% is the box LH% (IQ)
+
+investigations: 
+tccg> what color@H* is HH% the box LH%     
+Unable to parse
+tccg> what@H* color is the mug HH%
+parses, however here color is qclassi, what we have in the LF is quality. Doesn't get the semantic feature.
+
+We changed q-class nominal from type C to M.: but this lead to issues
+a) the structure has nominals that are not part of discourse
+	<Cop-Scope>x1_0:quality ^ 
+	where as in moloko.v6 it is
+	<Cop-Scope>(color1_0:quality ^ color) ^
+======================================================================================================
+
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:cognition ^ know ^ <Polarity>neg ^  <Actor>(dummy1_3:person ^ I))) ^ @dummy1_4:(<ProofStatus>assumed))
+I HL% don't know HH%
+what shall be the intonation of negations...
+
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Color>(dummy1_4:quality ^ red ^ <ProofStatus>assumed))))
+it is red
+
+Theme only, and unmarked! See how boundary could be placed. Strange!we have...places where we need boundary for a non accent IP...and at places we don't
+======================================================================================================
+
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar) ^  <Type>(dummy1_4:entity ^ box))))
+it is HH% a box@H* HL%
+HH% is theme is not required...
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Type>(dummy1_4:entity ^ box ^ <ProofStatus>assumed))))
+
+it is a box HH%
+See how LH% or LL% boundary could be placed. Strange! we have...places where we need boundary for a non accent IP...and at places we don't
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ blue ^ <Questioned>true ^ <ProofStatus>asserted))))
+is the box blue@H* LH%
+
+Boundary tone LH% vs HH%
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar ^ <ProofStatus>assumed) ^  <Type>(dummy1_4:entity ^ box ^ <ProofStatus>asserted))))
+
+it is HH% a box@H* HL%
+HH% in the unmarked theme
+
+======================================================================================================
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ box ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ blue ^ <Questioned>true ^ <ProofStatus>asserted))))
+is the box blue@H* LH%
+======================================================================================================
+
+@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ red))))
+[0.102] it is LH% red@H* LL% 
+
+======================================================================================================
+
+(@dummy1_1:dvp(c-goal ^ <SpeechAct>question ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true) ^  <Type>(dummy1_4:entity ^ objecttype ^ <Questioned>true ^ <ProofStatus>asserted))))
+
+@dummy1_2:ascription(be ^ <Rheme>e-rheme-false ^ <Owner>e-hearer ^ <Focus>e-focus-false ^ <Mood>int ^ <Commitment>e-uncontentious ^ <Tense>pres ^ <Cop-Restr>(dummy1_3:entity ^ context ^ <Proximity>distal ^ <Delimitation>unique ^ <Rheme>t-rheme-false ^ <Quantification>specific ^ <Num>sg ^ <Owner>t-hearer ^ <Focus>t-focus-false ^ <Commitment>t-uncontentious) ^ <Cop-Scope>(dummy1_4:entity ^ what ^ <Rheme>t-rheme-true ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>unique ^ <Commitment>t-uncontentious ^ <Focus>t-focus-true ^ <Owner>t-hearer) ^ <Subject>dummy1_3:entity ^ <Wh-Restr>(dummy1_4:entity ^ <Rheme>t-rheme-true ^ <Num>sg ^ <Quantification>specific ^ <Delimitation>unique ^ <Commitment>t-uncontentious ^ <Focus>t-focus-true ^ <Owner>t-hearer))
+what is that? 
+but we get
+is LH% that the
+
+======================================================================================================
+
+@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^  <Content>(dummy1_2:ascription ^  ^  <Target>(dummy1_3:entity ^ object ^ <Salient>true ^ <InfoStatus>familiar) ^  <Color>(dummy1_4:quality ^ red))))
+it is HH% red@H* HL%
+
+avoid HH% in the beginning...
+======================================================================================================
+[LOG cca: will realise this proto-LF: (@dummy1_1:dvp(c-goal ^ <SpeechAct>assertion ^ <Relation>answer ^  <Content>(dummy1_2:cognition ^ know ^ <Polarity>neg ^  <Actor>(dummy1_3:person ^ I ^ <ProofStatus>assumed))))]
+[LOG speech.synth: Trying to say the following: [I don't know]]

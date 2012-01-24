@@ -1,0 +1,58 @@
+
+<policy>
+
+	<nodes>
+		<node id="R_Introduction"  isInitial="true" isFinal="false" action="R_IntroductionA"/>
+		<node id="Q_Name" isInitial="false" isFinal="false" action="Q_NameA" />
+		<node id="R_Name" isInitial="false" isFinal="false" action="R_NameA" />
+		<node id="R_noName" isInitial="false" isFinal="false" action="R_noNameA" />
+		<node id="Q_Mood" isInitial="false" isFinal="false" action="Q_MoodA" />
+		<node id="R_MoodPositive" isInitial="false" isFinal="true" action="R_MoodPositiveA" />
+		<node id="R_MoodNegative" isInitial="false" isFinal="true" action="R_MoodNegativeA" />
+		<node id="R_MoodUndefined" isInitial="false" isFinal="false" action="R_MoodUndefinedA" />
+	</nodes>
+
+	<edges>
+		<edge id="break1" source="R_Introduction" target="Q_Name" condition="1500ms"/>
+		<edge id="A_Name1" source="Q_Name" target="R_Name" condition="A_NameC1"/>
+		<edge id="A_Name2" source="Q_Name" target="R_Name" condition="A_NameC2"/>
+		<edge id="A_noName" source="Q_Name" target="R_noName" condition="A_noNameC"/>
+		<edge id="A_noName2" source="Q_Name" target="R_noName" condition="10000ms"/>
+		<edge id="break2" source="R_noName" target="Q_Name" condition="1500ms"/>	
+		<edge id="break3" source="R_Name" target="Q_Mood" condition="1500ms"/>	
+		<edge id="A_MoodPositive" source="Q_Mood" target="R_MoodPositive" condition="A_MoodPositiveC"/>
+		<edge id="A_MoodNegative" source="Q_Mood" target="R_MoodNegative" condition="A_MoodNegativeC"/>
+		<edge id="A_MoodUndefined" source="Q_Mood" target="R_MoodUndefined" condition="A_MoodUndefinedC"/>
+		<edge id="A_MoodUndefined2" source="Q_Mood" target="R_MoodUndefined" condition="10000ms"/>
+		<edge id="break4" source="R_MoodUndefined" target="Q_Mood" condition="1500ms"/>
+		<edge id="A_MoodRepeatRequest" source="Q_Mood" target="Q_Mood" condition="A_MoodRepeatRequestC"/>
+	</edges>
+    
+	<conditions>
+        <condition id="A_NameC1" type="phonstring" content="Merlijn" lowerProb="0.0" higherProb="1.0" />
+        <condition id="A_NameC2" type="phonstring" content="Diane" lowerProb="0.0" higherProb="1.0" />
+        
+        <condition id="A_noNameC" type="phonstring" content="*" lowerProb="0.0" higherProb="1.0" />
+        <condition id="A_MoodPositiveC" type="phonstring" content="fijn" lowerProb="0.0" higherProb="1.0" />
+        <condition id="A_MoodNegativeC" type="phonstring" content="slecht" lowerProb="0.0" higherProb="1.0" />
+        <condition id="A_MoodUndefinedC" type="phonstring" content="*" lowerProb="0.0" higherProb="1.0" />
+        <condition id="A_MoodRepeatRequestC" type="phonstring" content="wat zei je" lowerProb="0.0" higherProb="1.0" />
+        <condition id="800ms" type="timeout" content="800"/>
+        <condition id="700ms" type="timeout" content="700"/>
+        <condition id="500ms" type="timeout" content="500"/>
+        <condition id="1500ms" type="timeout" content="1500"/>
+          <condition id="10000ms" type="timeout" content="10000"/>
+    </conditions>
+    
+	<actions>
+		<action id="R_IntroductionA" type="phonstring" content="Hoi ik ben Roos en ik ben een aiCat. Ik kan met je praten, we kunnen spelletjes spelen en we kunnen ook een quiz doen"/>
+        <action id="Q_NameA" type="phonstring" content="Maar hoe heet je eigenlijk?"/>
+        <action id="R_NameA" type="phonstring" content="Wat een mooie naam"/>
+        <action id="R_noNameA" type="phonstring" content="Sorry, ik heb je niet goed verstaan"/>
+        <action id="Q_MoodA" type="alternativeaction" content="[Hoe voel je je vandaag?],[Hoe gaat het?]"/>
+        <action id="R_MoodPositiveA" type="phonstring" content="Dat is mooi"/>
+        <action id="R_MoodNegativeA" type="phonstring" content="Dat is vervelend"/>
+        <action id="R_MoodUndefinedA" type="phonstring" content="Sorry ik heb je niet begrepen"/>
+	</actions>
+
+</policy>

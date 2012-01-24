@@ -1,0 +1,1 @@
+JAVA MG	asr-sphinx    de.dfki.lt.tr.cast.dialogue.SphinxASR --listenOnInit --outputType phonString --configFile ./config/asr/george.sphinx-config.xml

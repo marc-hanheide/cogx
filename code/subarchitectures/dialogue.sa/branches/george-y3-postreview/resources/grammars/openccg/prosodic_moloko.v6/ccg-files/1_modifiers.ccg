@@ -1,0 +1,166 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+# This file contains some important categories used by modifiers like
+# adjectives, adverbs and prepositions 
+#
+#    1) the complex-syntactic categories used in their type-changing rules
+#    2) the semantic dependency relations used for modifiers
+#    3) syn & sem categories for modifier arguments (like the np arg of prepositions)
+#    4) a generic dictionary-entry macro for modifier-modifiers.
+
+# Due to DotCCG ordering issues, this file also contains copula argument definitions
+
+####################################
+# SYNTACTIC COMPLEX-CAT CATEGORIES #
+####################################
+
+  # These correspond to the various CC-CAT values given to modifiers
+  # such as prepositions, adverbs, adjectives etc. (see types-word-classes.ccg)
+  #
+  # The 'mod' argument is the modifier-class corrisponding to the modifier-type of the
+  # modifier. This is restricts the type of sentences which can be modified.
+  # I have used MCLASS:mod vs. MCLASS=mod b/c we only want the sentence(verb) to 
+  # have a class which unifies with the modifier. We don't want to change its value. 
+  #
+  # The syn argument here corresponds to any arguments that the modifier 
+  # may have 'following it', e.g. the np arg of a preposition.
+  # The ordering here is crucial for incremental parsing:
+  #	For pre-modifiers, the modifier args will come first then the modifee
+  #     For post-modifiers, the modifee comes and then then the mod args
+
+
+  def post-s(mod, syn)          {  from-s() syn \* s(MCLASS:mod )  }
+  def post-s-loose(mod, syn)    {  from-s() syn \< s(MCLASS:mod )  }
+  def post-vp(mod, syn)         {  from-s() +from-subj()  syn \* ( s(MCLASS:mod) +subj() )  }
+    
+  def pre-s(mod, syn)           {  from-s() /^ s(MCLASS:mod )  syn   }
+  def pre-vp(mod, syn)          {  from-s() +from-subj() /^ ( s(MCLASS:mod) +subj() )  syn }  
+
+
+  # Added by plison
+  def post-s2(syn)          {  from-s() syn \* s()  }
+  def post-s-loose2(syn)    {  from-s() syn \< s()  }
+  def post-vp2(syn)         {  from-s() +from-subj()  syn \* ( s() +subj() )  }
+    
+  def pre-s2(syn)           {  from-s() /^ s()  syn   }
+  def pre-vp2(syn)          {  from-s() +from-subj() /^ ( s() +subj() )  syn }  
+  
+
+
+  # Added  Aug 19:
+  #   this is a hack to incrementally parse 'the ball that I just picked up'
+  #   Need to sort out incremental handling of this later!
+  
+  def pre-vp-in-rel-clause(mod, syn) {       n() / ( from-s() +from-subj() / np<56>[X] ) 
+                                        \^ ( n() / ( s(MCLASS:mod) +subj() / np<56>[X] ) ) 
+                                           syn
+                                     }
+ 
+  def post-n(args, syn)         {  from-n(args) syn \* n()  }
+ def post-n2(syn)         {  from-n() syn \* n()  }
+ def pre-n(args, syn)          {  from-n(args) / n() syn  }		
+
+########################################
+# SPECIAL MODIFIER 'SLOTS' FOR COPULA. #
+########################################
+
+  # These must be defined here because of DotCCG ORDERING ISSUES
+  #
+  # This handles I am ALSO big, it is DEFINITELY not a ball, etc.
+  # i.e. they occur before the compliment  of the copular
+  # NOTE: To avoid OVER-GENERATION (e.g. I gave him DEFINITELY the ball),
+  #        the allow compliment possiblities must be specifically defined
+  
+  # The three possible compliments
+
+  def +cop-np(args)  { /^ np<42>[X NUM:NUM ACCENT acc args] }    # the restr & Scope must share number (*these are a ball) 
+  def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
+  def +cop-adj(args) { / adj<2>[X args] }
+  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+  def +cop-adj-ip(args) { /! adj<2>[X args] }
+
+  # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
+  def pre-cop-comp (moder, modee, arg)      { from-s(moder) arg \^ ( s(modee be) arg ) } 
+
+  # These are defined independently because copular negation uses these directly
+  #
+  def pre-cop-pp(moder, modee, arg)  { pre-cop-comp(moder, modee, +cop-pp() arg   ) }
+  def pre-cop-np(moder, modee, arg)  { pre-cop-comp(moder, modee, +cop-np() arg   ) }
+  def pre-cop-adj(moder, modee, arg) { pre-cop-comp(moder, modee, +cop-adj() arg  ) }
+
+  # This is invoked by the specific modifier type (e.g. adv) 
+  #
+  def mod-rule-pre-cop(atomicmod, arg, modee, sem){
+	# rule{ typechange: atomicmod arg => pre-cop-pp (, modee, arg) : sem ;}
+	 rule{ typechange: atomicmod arg => pre-cop-np (, modee, arg) : sem ;}
+         rule{ typechange: atomicmod arg => pre-cop-adj(, modee, arg) : sem ;}
+  }
+
+
+  def mod-rule-pre-cop2(atomicmod, arg, sem){
+	# rule{ typechange: atomicmod arg => pre-cop-pp (, , arg) : sem ;}
+	 rule{ typechange: atomicmod arg => pre-cop-np (, , arg) : sem ;}
+         rule{ typechange: atomicmod arg => pre-cop-adj(, , arg) : sem ;}
+  }
+
+
+#######################################
+# MODIFIER DEPENDENCY RELN SEMANTICS  #
+#######################################
+
+  # This is the generic dependency relation used by ALL MODIFIERS (all adj, pp, adv, etc) 
+  # when they are used as modifiers, i.e., this is added to the the semantics of the 
+  # modifee within all of the various complex category type changing rules used to 
+  # turn atomic modifiers into complex modifiers. 
+  #
+  # Note: further specification of the nature of relation (i.e location, frequency, etc.)
+  #       is handled using the semantic sort hierarchy (see types-ontology.ccg)
+
+  def MODIFIER(args) {<Modifier>(M  args) }
+  def RHMODIFIER(args) {<Modifier>(M args ^ <RhFocus>Hs) }
+
+  # This is the semantic dependency relation used by modifier modifiers,
+  #     e.g.  'really' big , 'over' on the table, etc. 
+  # The syntactic categories are defined locally in the appropriate
+  # modifier .ccg file 
+  
+  def M-MOD(args)        { <Modifier>(MM args) }
+
+
+#####################################
+# MODIFIER ARGUMENTS: SLOTS & ROLES # 
+#####################################
+
+  # These are the syntactic slots and corresponding semantic roles
+  # used for modifiers with arguments (ma = Modifier Argument)
+
+  # NP/OBL SLOT #
+  
+  def np_ma(args)            { np<30>[A args] }
+  def n_ma(args)             { n<30>[A args] }
+  def obl_ma(mrk, args)      { obl<30>[A MARK=mrk args] }
+  def obln_ma(mrk, args)     { obln<30>[A MARK=mrk args] }
+  
+  def ARG(args)              { <Anchor>(A args) }
+
+  # S SLOT #
+
+  def s_ma(args)             { s<31>[G args] }
+  def E-ARG(args)            { <Event>(G args) }
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  # modify a given pos (adj, adv, prep, etc) in the given position (pre, post) 
+
+  def modifier(form, pos, side, class) {  _modifier(form, form, pos, side, class)  }
+  def _modifier(prd, form, pos, side, class) {
+    word form.-mod-.side."-".pos."-".class : "Mod-" . side . "-" . pos ."-" ("m-".class, pred=prd)
+	{form;}
+  } 
+

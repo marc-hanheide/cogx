@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+Copyright (C) 2003-4 University of Edinburgh (Michael White) 
+$Revision: 1.1 $, $Date: 2005/06/06 16:08:37 $ 
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:annotation>
+  <xsd:documentation>
+    Schema for grammar file.
+    
+    A grammar file lists the lexicon, morphology and rules files, 
+    and optionally lists the types file and sequences of 
+    XSLT transformations to use in loading/saving LFs from/to XML.
+    It may also specify a custom tokenizer and/or semantic classes to 
+    replace words with for language models.
+  </xsd:documentation>
+  </xsd:annotation>
+
+  <xsd:element name="grammar">
+    <xsd:annotation>
+    <xsd:documentation>
+      The root element.
+    </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="lexicon" type="fileType"/>
+        <xsd:element name="morphology" type="fileType"/>
+        <xsd:element name="rules" type="fileType"/>
+        <xsd:element name="types" type="fileType" minOccurs="0"/>
+        <xsd:element name="tokenizer" type="tokenizerType" minOccurs="0"/>
+        <xsd:element name="LF-from-XML" type="transformList" minOccurs="0" maxOccurs="1"/>
+        <xsd:element name="LF-to-XML" type="transformList" minOccurs="0" maxOccurs="1"/>
+      </xsd:sequence>
+      <xsd:attribute name="name" type="xsd:string"/>
+    </xsd:complexType>
+  </xsd:element>
+  
+  <xsd:complexType name="fileType">
+    <xsd:annotation>
+    <xsd:documentation>
+      An element with a file attribute specifying a filename.
+    </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="file" type="xsd:string" use="required"/>
+  </xsd:complexType>
+  
+  <xsd:complexType name="tokenizerType">
+    <xsd:annotation>
+    <xsd:documentation>
+      An element which gives the fully qualified class name for 
+      a custom tokenizer, and/or lists semantic classes to replace words 
+      with for language models.
+    </xsd:documentation>
+    </xsd:annotation>
+    <xsd:attribute name="classname" type="xsd:string"/>
+    <xsd:attribute name="replacement-sem-classes" type="xsd:string"/>
+  </xsd:complexType>
+  
+  <xsd:complexType name="transformList">
+    <xsd:annotation>
+    <xsd:documentation>
+      Specifies a sequence of XSLT transformations.
+    </xsd:documentation>
+    </xsd:annotation>
+      <xsd:sequence>
+        <xsd:element name="transform" type="fileType" maxOccurs="unbounded"/>
+      </xsd:sequence>
+  </xsd:complexType>
+  
+</xsd:schema>

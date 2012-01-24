@@ -1,0 +1,7 @@
+start = wait
+acknowledge1 = CI["okay, searching for the cornflakes box!"]
+acknowledge2 = CI["okay, searching for the mug!"]
+confirm1 = CI["sorry, should I search for the cornflaxes box?"]
+confirm2 = CI["sorry, should I search for the mug?"]
+repeat = CI["sorry, could you repeat please?"]
+failure = CI["sorry I couldn't understand you"]

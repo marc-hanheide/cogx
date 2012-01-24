@@ -1,0 +1,281 @@
+
+
+PARSER_BEGIN(FormulaParser)
+
+package de.dfki.lt.tr.dialmanagement.utils.formulaParser;
+
+import java.util.List ;
+import java.util.LinkedList ;
+import java.util.Enumeration ;
+import java.io.* ;
+import java.util.Hashtable;
+// import cast.cdl.WorkingMemoryAddress;
+
+
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.*;
+import de.dfki.lt.tr.dialmanagement.arch.DialogueException;
+
+public class FormulaParser {
+    
+}
+
+PARSER_END(FormulaParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+
+TOKEN :
+{
+<LANGLE: "<">
+|<RANGLE: ">">
+| <LBRACKET: "(">
+| <RBRACKET: ")">
+| <NEG: "!">
+| <INTEGER: ( ["0"-"9"] )+>
+| <FLOAT: ( ["0"-"9"] )+ "." (["0"-"9"] )+ "f">
+| <BOOLEAN: "true"|"false">
+| <KLEENE_STAR: "*">
+| <ARGUMENT: "%" ( [".", "A"-"Z", "a"-"z", "0"-"9","-" ,"_", "?", ",", "!", "'", "*"] )+ >
+| <INTERROGATION_MARK: "?">
+| <SLBRACKET: "[">
+| <SRBRACKET: "]">
+| <COLON: ":">
+| <LAND: "^">
+| <LOR: "v">
+| <QUOTE: "\"">
+| <WORD: ( [".", "A"-"Z", "a"-"z", "0"-"9","-" ,"_", "?", ",", "!", "'", "*"] )+  >
+}
+
+
+ElementaryFormula ElemFormulaExtended():
+{
+String curString = "";
+Token tok;
+}
+{
+ <QUOTE> (tok=<WORD>
+  {curString += tok.toString() +" " ; }
+	)+ <QUOTE> 
+	{return new ElementaryFormula(0, curString.substring(0, curString.length()-1) ); }
+}	
+
+
+/**
+PointerFormula PointerFormula():
+{
+Token tok1;
+Token tok2;
+Token tok3;
+}
+{ <SLBRACKET> tok1=<WORD> <COLON> tok2=<INTEGER> <COLON> tok3=<INTEGER> <SRBRACKET> 
+ { return new PointerFormula(0, new WorkingMemoryAddress(tok2.toString()+":"+tok3.toString(), tok1.toString()), "") ; }
+}*/
+
+ElementaryFormula ElemFormula():
+{
+Token tok;
+}
+{
+( tok=<WORD>
+  {return new ElementaryFormula(0, tok.toString()); }
+  )
+}
+
+IntegerFormula IntegerFormula():
+{
+Token tok;
+}
+{
+( tok=<INTEGER>
+  {return new IntegerFormula(0, Integer.parseInt(tok.toString())); }
+  )
+}
+
+
+
+BooleanFormula BooleanFormula():
+{
+Token tok;
+}
+{
+( tok=<BOOLEAN>
+  {return new BooleanFormula(0, Boolean.valueOf(tok.toString())); }
+  )
+}
+
+
+FloatFormula FloatFormula():
+{
+Token tok;
+}
+{
+( tok=<FLOAT>
+  {return new FloatFormula(0, Float.parseFloat(tok.toString())); }
+  )
+}
+
+
+
+UnknownFormula UnknownFormula():
+{
+Token tok;
+}
+{
+( tok=<INTERROGATION_MARK>
+  {return new UnknownFormula(0); }
+  )
+}
+
+
+UnderspecifiedFormula UnderspecifiedFormula():
+{
+Token tok;
+}
+{
+( tok=<KLEENE_STAR>
+  {return new UnderspecifiedFormula(0,"*");}
+  | tok=<ARGUMENT>
+  {return new UnderspecifiedFormula(0,tok.toString().replace("%","")); }
+  )
+}
+
+
+ComplexFormula CFormulaConj():
+{
+List<dFormula> subFormulae = new LinkedList<dFormula>();
+dFormula formula;
+}
+{ 
+   formula=SubFormula() 
+ 		  {subFormulae.add(formula); }
+   ( <LAND> formula=SubFormula() 
+ 		  {subFormulae.add(formula); }
+   )+
+    {    return new ComplexFormula(0, subFormulae, BinaryOp.conj);  }
+}
+
+
+
+
+ComplexFormula CFormulaDisj():
+{
+List<dFormula> subFormulae = new LinkedList<dFormula>();
+dFormula formula;
+}
+{ 
+    formula=SubFormula() 
+   {subFormulae.add(formula); }
+   ( <LOR> formula=SubFormula() 
+ 		  {subFormulae.add(formula); }
+   )+
+    {    return new ComplexFormula(0, subFormulae, BinaryOp.disj);  }
+}   
+   
+   
+   
+dFormula SubFormula():
+{
+dFormula formula;
+dFormula formulaIn;
+}
+{
+   (<LBRACKET> formula=GeneralFormula() <RBRACKET>
+	|
+	<NEG> <LBRACKET> formulaIn=GeneralFormula() <RBRACKET>
+	{ formula = new NegatedFormula(0,formulaIn); }
+	|
+	formula = ModalFormula()
+   	|
+	formula = BooleanFormula()	
+	|
+	formula = FloatFormula()	
+	|
+	formula = UnknownFormula()	
+	|
+	formula = UnderspecifiedFormula()
+	|
+	/** formula = PointerFormula()
+	| */
+	formula = IntegerFormula()	
+	|
+   formula = ElemFormula()	
+		|
+	formula = ElemFormulaExtended()	
+	)
+	{return formula; }
+}
+
+
+dFormula ModalFormula():
+{
+Token tok;
+dFormula underFormula;
+}
+{
+   <LANGLE> tok=<WORD> <RANGLE> (
+   LOOKAHEAD(60) <LBRACKET> underFormula=CFormulaConj() <RBRACKET>
+   |
+   LOOKAHEAD(60) <LBRACKET> underFormula=CFormulaDisj() <RBRACKET>
+   |
+   LOOKAHEAD(60) <LBRACKET> underFormula=ModalFormula() <RBRACKET>
+   |
+   underFormula=SubFormula())
+   {return new ModalFormula(0,tok.toString(), underFormula);}
+}
+
+
+
+dFormula GeneralFormula():
+{
+dFormula formula;
+dFormula formulaIn;
+}
+{
+	(LOOKAHEAD(3) <LBRACKET> formula=GeneralFormula() <RBRACKET>
+	|
+	LOOKAHEAD(3) <NEG> <LBRACKET> formulaIn=GeneralFormula() <RBRACKET>
+	{ formula = new NegatedFormula(0,formulaIn); }
+	|
+	LOOKAHEAD(60) formula = CFormulaConj()
+	|
+	LOOKAHEAD(60) formula = CFormulaDisj()
+	|	
+	formula = ModalFormula()
+	|
+	formula = BooleanFormula()	
+	|
+	formula = FloatFormula()
+	|
+	formula = UnderspecifiedFormula()	
+	|
+	/** formula = PointerFormula() 
+	| */
+	formula = UnknownFormula()	
+	|
+	formula = IntegerFormula()	
+	|
+	formula = ElemFormula()	
+	|
+	formula = ElemFormulaExtended()	
+	
+	)  
+	{ return formula; }
+}
+	
+
+  
+dFormula Input():
+{
+dFormula formula;
+}
+{
+	formula=GeneralFormula()
+	 <EOF> 
+	{ return formula; }
+}

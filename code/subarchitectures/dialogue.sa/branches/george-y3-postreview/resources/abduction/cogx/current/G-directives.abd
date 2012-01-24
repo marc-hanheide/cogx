@@ -1,0 +1,66 @@
+%-------------------------------------------------------------------------
+% POLAR QUESTIONS
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, feature, Feature),
+	i : int : string_content(IntAddr, hypothesis, Hypo),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+%	? generate : reference_generation(BeliefAddr, Category, Relation, Location),
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, [Feature]),
+	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
+
+	event : produce_text([is, ObjectRE, VerbalisedHypo]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+verbalised_feature(color, color).
+verbalised_feature(shape, shape).
+verbalised_feature(objecttype, [kind, of, object]).
+verbalised_feature(identity, [kind, of, room]).
+
+%-------------------------------------------------------------------------
+% WH- QUESTIONS
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'open'),
+	i : int : string_content(IntAddr, feature, Feature),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, [Feature]),
+
+	verbalised_feature(Feature, VerbalisedFeature),
+
+	event : produce_text([what, VerbalisedFeature, is, ObjectRE]) / -1.0.
+
+%-------------------------------------------------------------------------
+% VERIFICATION
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'verification'),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
+
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+
+	event : produce_text([did, you, mean, this, object]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'verification'),
+	i : int : string_content(IntAddr, description, Description),
+	i : int : address_content(IntAddr, about, BeliefAddr),
+	i : int : address_content(IntAddr, 'verification-of', _IntSetAddr),
+
+	? generate : reference_generation(BeliefAddr, yes, no, ObjectRE, []),
+
+	event : produce_text([did, you, mean, the, Description, object]) / -4.0.

@@ -1,0 +1,60 @@
+// asking for confirmation / repetition of information
+
+
+// generic "yes"
+:dvp ^<SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>positive ^ <Content> ( #c1:top )
+->
+#c1 = :marker ^ yes.
+
+// generic "no"
+:dvp ^<SpeechAct>assertion ^ <Relation>answer ^ <AnswerType>negative ^ <Content> ( #c1:top )
+->
+#c1 = :marker ^ no.
+
+// Generic confirmation 
+// Goal: @d1:dvp(c-goal ^ <SpeechAct>confirmation)
+// Variants: "thank you" (1), "okay" (2), 
+// Trigger: <SpeechAct>confirmation
+
+
+// Variant: "thank you"
+/*
+:dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top),
+random(1,2,3) ^ 1
+-> 
+#c1 =:communication ^ thank ^ 
+        <Mood>ind ^ 
+        <Tense>pres ^ 
+        <Actor>(#s1:entity ^ speaker ^ 
+                <Num>sg) ^ 
+        <Recipient>(#a1:entity ^ addressee).
+*/
+        
+// Variant: "okay"        
+        
+:dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top)
+->         
+#c1 = :q-attitude ^ ok.    
+        
+ // Variant: "thank you for telling me that" (3)
+/*
+:dvp ^ <SpeechAct>confirmation ^ <Content>(#c1:top),
+random(1,2,3) ^ 3
+->         
+#c1 = :communication ^ thank ^ 
+            <Mood>ind ^ 
+            <Tense>pres ^ 
+            <Actor>(#i1:person ^ I ^ 
+                    <Num>sg) ^ 
+            <Event>(#t2:communication ^ tell ^ 
+                    <Actor>(#y1:person ^ you ^ 
+                            <Num>sg) ^ 
+                    <Patient>(#i2:thing ^ it ^ 
+                              <Num>sg ^ 
+                              <Deleted>(#i3:person ^ I ^ 
+                                        <Num>sg))) ^ 
+            <Recipient>#x1:entity ^ 
+            <Subject>#i1:person.
+*/
+
+

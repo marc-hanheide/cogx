@@ -1,0 +1,29 @@
+%-------------------------------------------------------------------------
+% FIXME: this will eventually have to be use probabilities exclusively.
+% For now, let's just use negative weights where we care about having
+% the given query/nominal in the resulting proof.
+%-------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------
+% GENERAL INTERPRETATION
+%-------------------------------------------------------------------------
+
+generate : event : utter(Speaker, Hearer, IntAddr) <-
+	? generate : event : from_intention(Speaker, Hearer, IntAddr).
+
+%-------------------------------------------------------------------------
+
+% The following dummy facts are bound to nominals in the rules for generation.
+dummy_nom1(dn1_1).
+dummy_nom2(dn1_2).
+dummy_nom3(dn1_3).
+dummy_nom4(dn1_4).
+dummy_nom5(dn1_5).
+dummy_nom6(dn1_6).
+
+%-------------------------------------------------------------------------
+
+utt_head(Nom) <-
+	dummy_nom1(Nom),
+	i : sort(Nom, dvp) / p(1.0),
+	i : prop(Nom, 'c-goal') / p(1.0).

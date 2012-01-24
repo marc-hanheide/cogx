@@ -1,0 +1,4 @@
+VARDEFAULT irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
+VARDEFAULT max_readings=1
+
+JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost) --max-readings %(max_readings)

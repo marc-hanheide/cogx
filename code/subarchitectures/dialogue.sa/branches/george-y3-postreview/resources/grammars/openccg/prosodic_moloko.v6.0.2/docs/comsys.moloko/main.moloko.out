@@ -1,0 +1,79 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Semantics}{}
+\BOOKMARK [2][-]{subsection.2.1}{The Semantic/Ontological Hierarchy}{section.2}
+\BOOKMARK [2][-]{subsection.2.2}{Semantic Relations: Modifiers vs Dependents }{section.2}
+\BOOKMARK [2][-]{subsection.2.3}{Entity Semantics}{section.2}
+\BOOKMARK [3][-]{subsubsection.2.3.1}{Number/Specification and Delimination}{subsection.2.3}
+\BOOKMARK [3][-]{subsubsection.2.3.2}{Ownership and Compounding}{subsection.2.3}
+\BOOKMARK [3][-]{subsubsection.2.3.3}{Groups}{subsection.2.3}
+\BOOKMARK [3][-]{subsubsection.2.3.4}{Pronouns}{subsection.2.3}
+\BOOKMARK [2][-]{subsection.2.4}{Event Semantics}{section.2}
+\BOOKMARK [3][-]{subsubsection.2.4.1}{Participant Roles}{subsection.2.4}
+\BOOKMARK [3][-]{subsubsection.2.4.2}{Tense/Aspect/Polarity}{subsection.2.4}
+\BOOKMARK [3][-]{subsubsection.2.4.3}{Mood}{subsection.2.4}
+\BOOKMARK [3][-]{subsubsection.2.4.4}{Modality}{subsection.2.4}
+\BOOKMARK [2][-]{subsection.2.5}{Modifier Semantics}{section.2}
+\BOOKMARK [2][-]{subsection.2.6}{Miscellaneous Semantic Issues}{section.2}
+\BOOKMARK [3][-]{subsubsection.2.6.1}{Quantifier and Modifier Scope}{subsection.2.6}
+\BOOKMARK [3][-]{subsubsection.2.6.2}{Proximity}{subsection.2.6}
+\BOOKMARK [3][-]{subsubsection.2.6.3}{Contextualized Semantic Objects}{subsection.2.6}
+\BOOKMARK [3][-]{subsubsection.2.6.4}{Role Defined entities and modifiers}{subsection.2.6}
+\BOOKMARK [2][-]{subsection.2.7}{Location}{section.2}
+\BOOKMARK [2][-]{subsection.2.8}{Time}{section.2}
+\BOOKMARK [1][-]{section.3}{Dual-Relation Words}{}
+\BOOKMARK [2][-]{subsection.3.1}{Dual-Relation words in standard CCG }{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{Dual-Relation Words in Moloko}{section.3}
+\BOOKMARK [1][-]{section.4}{Event Modifier Restriction}{}
+\BOOKMARK [2][-]{subsection.4.1}{Motivation}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Implementation}{section.4}
+\BOOKMARK [3][-]{subsubsection.4.2.1}{Syntactic Features}{subsection.4.2}
+\BOOKMARK [3][-]{subsubsection.4.2.2}{Syntatic Category Modification}{subsection.4.2}
+\BOOKMARK [1][-]{section.5}{Mood}{}
+\BOOKMARK [2][-]{subsection.5.1}{Motivation: Mood in English}{section.5}
+\BOOKMARK [2][-]{subsection.5.2}{Implementing Mood}{section.5}
+\BOOKMARK [3][-]{subsubsection.5.2.1}{Indicatives}{subsection.5.2}
+\BOOKMARK [3][-]{subsubsection.5.2.2}{Imperatives}{subsection.5.2}
+\BOOKMARK [3][-]{subsubsection.5.2.3}{Closed Interrogatives}{subsection.5.2}
+\BOOKMARK [3][-]{subsubsection.5.2.4}{Open Interrogatives}{subsection.5.2}
+\BOOKMARK [1][-]{section.6}{The be Verb}{}
+\BOOKMARK [2][-]{subsection.6.1}{Ascription}{section.6}
+\BOOKMARK [2][-]{subsection.6.2}{Presentation}{section.6}
+\BOOKMARK [1][-]{section.7}{Incrementality}{}
+\BOOKMARK [2][-]{subsection.7.1}{Back-Integration}{section.7}
+\BOOKMARK [2][-]{subsection.7.2}{Forward-Projection}{section.7}
+\BOOKMARK [2][-]{subsection.7.3}{Some Illustrations}{section.7}
+\BOOKMARK [3][-]{subsubsection.7.3.1}{Example 1: the man put a ball on the table}{subsection.7.3}
+\BOOKMARK [3][-]{subsubsection.7.3.2}{Example 2: \040this big ball on the table}{subsection.7.3}
+\BOOKMARK [1][-]{section.8}{Families}{}
+\BOOKMARK [2][-]{subsection.8.1}{Coordination}{section.8}
+\BOOKMARK [2][-]{subsection.8.2}{Nouns}{section.8}
+\BOOKMARK [2][-]{subsection.8.3}{Determiners}{section.8}
+\BOOKMARK [2][-]{subsection.8.4}{Verbs}{section.8}
+\BOOKMARK [3][-]{subsubsection.8.4.1}{Basic Verbs}{subsection.8.4}
+\BOOKMARK [3][-]{subsubsection.8.4.2}{Copular be }{subsection.8.4}
+\BOOKMARK [3][-]{subsubsection.8.4.3}{Presentational be }{subsection.8.4}
+\BOOKMARK [3][-]{subsubsection.8.4.4}{Auxiliary and Modal Verbs}{subsection.8.4}
+\BOOKMARK [2][-]{subsection.8.5}{Mood Rules}{section.8}
+\BOOKMARK [2][-]{subsection.8.6}{Open-Class Modifiers}{section.8}
+\BOOKMARK [2][-]{subsection.8.7}{Adjectives}{section.8}
+\BOOKMARK [2][-]{subsection.8.8}{Adverbs}{section.8}
+\BOOKMARK [2][-]{subsection.8.9}{Prepositions}{section.8}
+\BOOKMARK [2][-]{subsection.8.10}{Wh-Words}{section.8}
+\BOOKMARK [3][-]{subsubsection.8.10.1}{Questioning a Role}{subsection.8.10}
+\BOOKMARK [3][-]{subsubsection.8.10.2}{Questioning an Event Modifier}{subsection.8.10}
+\BOOKMARK [2][-]{subsection.8.11}{Discourse Markers}{section.8}
+\BOOKMARK [2][-]{subsection.8.12}{Other Minor Families}{section.8}
+\BOOKMARK [2][-]{subsection.8.13}{Higher Order Dictionary Forms}{section.8}
+\BOOKMARK [1][-]{section.9}{Using Moloko}{}
+\BOOKMARK [2][-]{subsection.9.1}{Getting Started}{section.9}
+\BOOKMARK [2][-]{subsection.9.2}{Folder Contents}{section.9}
+\BOOKMARK [2][-]{subsection.9.3}{Grammar Layout}{section.9}
+\BOOKMARK [3][-]{subsubsection.9.3.1}{The Grammar Signature}{subsection.9.3}
+\BOOKMARK [3][-]{subsubsection.9.3.2}{The Dictionary}{subsection.9.3}
+\BOOKMARK [3][-]{subsubsection.9.3.3}{The Testbed}{subsection.9.3}
+\BOOKMARK [2][-]{subsection.9.4}{Modifying the Grammar}{section.9}
+\BOOKMARK [3][-]{subsubsection.9.4.1}{Adding New Words \(i.e. dictionary entries\) to the grammar}{subsection.9.4}
+\BOOKMARK [3][-]{subsubsection.9.4.2}{Changing the Ontological Hierarchy}{subsection.9.4}
+\BOOKMARK [3][-]{subsubsection.9.4.3}{Classes}{subsection.9.4}
+\BOOKMARK [3][-]{subsubsection.9.4.4}{Other changes \(features, new lexical families, rules, etc\)}{subsection.9.4}
+\BOOKMARK [2][-]{subsection.9.5}{Compiling and Testing the Grammar}{section.9}

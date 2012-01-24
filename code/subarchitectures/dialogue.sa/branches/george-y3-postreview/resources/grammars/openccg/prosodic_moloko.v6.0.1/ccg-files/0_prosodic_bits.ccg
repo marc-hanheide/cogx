@@ -1,0 +1,44 @@
+# Authors: Raveesh Meena (rame01@dfki.de), 2009
+# This file contains definition of Macros that are needed for prosodic grammar.
+
+## Definition of a no-sort 's' category 
+##  This is same as 's' of sort 'E' but for syntactic phrases like np, adjuncts to become intonation phrases they need to unify with boundaries of type s$\s$ 
+##  However this definiton of boundary is of type no-sort. i.e. bpundaries can combine with anything: phrase, adjunct phrases, events
+
+def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+def from-ips(args)    { s<~10>[args] }
+
+## Definition of a no-sort 's' category 
+## a simpler definition to typechanging np or adjuncts.
+
+def trs()         { s<10> [ACCENT OWNER]}
+def from-trs()    { s<~10>[args] }
+
+
+
+########################################################
+# Inflection Rules to mark words with prosodic details #
+########################################################
+
+# We do not want to enumerate all possible prosodic markers for words in the dictionary.
+# Using the following macro a input word could be marked with the pitch accents we are handeling in our grammar.
+# see also prosodicHandles(word) 
+
+def accentMark(word) { markWordHs(word),markWordLs(word),markWordLpHs(word)}
+
+# input is 'word', output is 'word@H*'
+def markWordHs(word) {
+    ifmatch(word, word, word .'@H*', word)
+  }
+
+# input is 'word', output is 'word@L*'
+def markWordLs(word) {
+    ifmatch(word, word, word .'@L*', word)
+  }
+
+# input is 'word', output is 'word@L+H*'
+def markWordLpHs(word) {
+    ifmatch(word, word, word .'@L+H*', word)
+  }
+
+# We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.

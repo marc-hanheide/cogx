@@ -1,0 +1,358 @@
+
+<dialog>
+  <subdialogs>
+    <subdialog id="introduction">
+      <remark id="R_Introduction" text="Hoi ik ben Roos en ik ben een aiCat. *Happy* Ik kan met je praten, we kunnen spelletjes spelen en we kunnen ook een quiz doen." loopsuccessor="">
+      </remark>
+
+      <question id="Q_Name" text="Maar hoe heet je eigenlijk?#Wat was je naam?">
+        <answers>
+          <answer id="A_Name" text="Mark#Matej#Diane#Vincent#Tom#Caro#Rosemarijn#Jan#Fleur#Lauran#Merlijn#Dorien#Dorine#Sanne#Caspar#Bas#Iris#Tjaard#Annika#Tim#Jeffrey#Lara#Thomas#Lisanne#Chris#Lars#Mitchell#Andy#Puck#Pauley#Tara#Karin#Thomas#Jonne#Floori-Anne#Anne#Floor#Florianne#Timo#Luuk">
+	                <remark id="R_Name" text="Wat een mooie naam*Happy*"></remark>
+          </answer>
+          <answer id="A_NameUndefined" text="">
+            <remark id="R_noName" text="*NotUnderstood* Sorry, ik heb je niet goed verstaan." loopsuccessor="Q_Name" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+      <question id="Q_Mood" text="Hoe voel je je vandaag?#Hoe gaat het?">
+        <answers>
+          <answer id="A_MoodPositive" text="normaal#fijn#blij#tevreden#vrolijk#uitstekend#ok#okee#Oke#lekker#goed#super#fantastisch#prima#niet onaardig#fris">
+            <remark id="R_MoodPositive" text="*Happy* Dat is mooi"></remark>
+          </answer>
+          <answer id="A_MoodNegative" text="boos#slecht#niet zo goed#wat minder#beroerd#klote#moe#een beetje ziek">
+            <remark id="R_MoodNegative" text="*Sad* Dat is vervelend"></remark>
+          </answer>
+          <answer id="A_MoodUndefined" text="">
+            <remark id="R_MoodUndefined" text="*NotUnderstood* Sorry ik heb je niet begrepen.# *NotUnderstood* Sorry, ik heb je niet goed verstaan." loopsuccessor="Q_Mood" maxloop="2"></remark>
+          </answer>
+          <answer id="A_MoodRepeatRequest" text="herhalen#nog een keer#wat zei je#sorry#wat zeg je">
+            <remark id="R_MoodRepeatRequest" text="" loopsuccessor="Q_Mood" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+    </subdialog>
+     
+    <subdialog id="quiz">
+      <question id="Q_Quiz" text="Zullen we een quiz spelen?# Heb je zin in een video quiz?">
+        <answers>
+          <answer id="A_QuizPositive" text="leuk#ok#oke#okee#ik heb wel zin#ik heb zin#lijkt me leuk#ja#ok#goed#natuurlijk#waarom niet#daar heb ik zin in#tuurlijk#jazeker">
+            <remark id="R_QuizPositive" text="*Happy* Leuk"></remark>
+          </answer>
+          <answer id="A_QuizNegative" text="nee#ik hou niet#echt niet#geen zin#liever niet">
+            <remark id="R_QuizNegative" text="Ik weet zeker dat je het leuk zal vinden"></remark>
+          </answer>
+          <answer id="A_QuizUndecided" text="hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+            <remark id="R_QuizUndecided" text="Ik weet zeker dat je het leuk zal vinden"></remark>
+          </answer>
+          <answer id="A_QuizUndefined" text="">
+            <remark id="R_QuizUndefined" text="*NotUnderstood* Sorry, ik heb je niet begrepen.#*NotUnderstood* Sorry, ik heb je niet goed verstaan.# *NotUnderstood* Sorry, ik heb je niet helemaal begrepen" loopsuccessor="Q_Quiz" maxloop="2"></remark>
+          </answer>
+          <answer id="A_QuizSkip" text="12345">
+            <remark id="R_QuizSkip" text="Ok we gaan skippen." loopsuccessor="Q_Game" maxloop="2"></remark>
+          </answer>
+          <answer id="A_QuizRepeatRequest" text="herhalen#nog een keer#wat zei je#sorry#wat zeg je">
+            <remark id="R_QuizRepeatRequest" text="" loopsuccessor="Q_Quiz" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+
+
+      <remark id="R_Movie" text="Deze quiz is een speciale quiz. Het is een quiz met filmpjes. Ik laat een filmpje zien en over het filmpje stel ik dan een vraag. Kijk maar naar het speciale aanraakscherm voor je."></remark>
+<environmental_action id="EA_Movie1" action="initiateMovie" link="\\movies\\ontbijten1.avi">
+  <situations>
+ 	<situation name="busy" text="*LookMovie*"></situation>
+  </situations>
+</environmental_action>
+        
+      <question id="Q_Movie" text="*Neutral*Wat vond je van het filmpje?">
+        <answers>
+          <answer id="A_Movie_Positive" text="super#leuk#echt wel#ja#ok#goed#waarom niet#tuurlijk#jazeker">
+            <remark id="R_Movie_Positive" text="*Happy* Ik ook"></remark>
+          </answer>
+          <answer id="A_MovieNegative" text="flut#niks#nee#ik hou niet#echt niet#saai#vervelend">
+            <remark id="R_MovieNegative" text="*Sad* Jammer"></remark>
+          </answer>
+          <answer id="A_MovieUndecided" text="beetje#hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+            <remark id="R_MovieUndecided" text="Jammer"></remark>
+          </answer>
+          <answer id="A_MovieUndefined" text="">
+            <remark id="R_MovieUndefined" text="Okee."></remark>
+          </answer>
+          <answer id="A_MovieRepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_MovieRepeatRequest" text="" loopsuccessor="Q_Movie" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+
+
+      <remark id="R_Quiz2" text="*Neutral*Dan gaan we nu met de quiz beginnen. Ik stel zometeen een vraag en dan mag jij een antwoord geven."></remark>
+      <question id="Q_Question1" text="Is ontbijten belangrijk? A: Ja, je krijgt er energie van en je kunt je daarna goed concentreren, bijvoorbeeld op school. B: nee, niet zo, je kunt later ook een tussendoortje nemen">
+        <answers>
+          <answer id="A_Question1True" text="A#ja#concentreren#school">
+            <remark id="R_Question1True" text="*Nod* Hartstikke goed. Goed ontbijten is heel belangrijk. je krijgt er energie van en je kunt je daarna goed concentreren, bijvoorbeeld op school. *Happy*"></remark>
+          </answer>
+          <answer id="A_Question1False" text="B#nee#later#tussendoortje">
+            <remark id="R_Question1False" text="Bijna goed. Goed ontbijten is heel belangrijk. je krijgt er energie van en je kunt je daarna goed concentreren, bijvoorbeeld op school"></remark>
+          </answer>
+          <answer id="A_Question1Undefined" text="">
+            <remark id="R_Question1Undefined" text=" *NotUnderstood* Sorry ik begreep je niet helemaal. Ik stel de vraag nog een keer. Kun je dan met A of B antwoorden?" loopsuccessor="Q_Question1" maxloop="2"></remark>
+          </answer>
+          <answer id="A_Question1RepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_Question1RepeatRequest" text="" loopsuccessor="Q_Question1" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+
+
+      <question id="Q_Question2" text="Hoeveel bewegen is denk je nodig per dag? Met bewegen bedoel ik niet alleen sporten, maar ook bijvoorbeeld lopen, buiten spelen en fietsen. Is dat denk je A: minder dan een uur. B: een uur of langer?">
+        <answers>
+          <answer id="A_Question2Bad" text="a#minder#uur">
+            <remark id="R_Question2Random" text="Kijk maar naar het volgende filmpje"></remark>
+          </answer>
+          <answer id="A_Question2Good" text="b#meer">
+            <remark id="R_Question2Random" text="*Happy* Goed zo. Kijk maar naar het volgende filmpje"></remark>
+          </answer>
+	         <answer id="A_Question2Undefined" text="">
+            <remark id="R_Question2Undefined" text="*NotUnderstood* Sorry ik begreep je niet helemaal. Ik stel de vraag nog een keer. Kun je dan met A of B antwoorden?" loopsuccessor="Q_Question2" maxloop="2"></remark>
+          </answer>
+          <answer id="A_Question2RepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_Question2RepeatRequest" text="" loopsuccessor="Q_Question2" maxloop="2"></remark>
+          </answer>
+          </answers>
+        </question>
+      <environmental_action id="EA_Movie2" action="initiateMovie" link="\\movies\\minUurBewegen1.avi">
+        <situations>
+          <situation name="busy" text="*LookMovie*"></situation>
+        </situations>
+      </environmental_action>
+
+      <remark id="R_Quiz3" text="*Neutral*Dit wordt alweer het laatste filmpje. Hij gaat over eten en bewegen. Veel plezier *Happy*"></remark>
+      <environmental_action id="EA_Movie3" action="initiateMovie" link="\\movies\\balansSeq.avi">
+        <situations>
+          <situation name="busy" text="*LookMovie*"></situation>
+        </situations>
+      </environmental_action>
+      <question id="Q_Question3" text="*Neutral* Wat gebeurt er als je veel eet en weinig beweegt? A: je wordt langzaamaan dik. B: eten en bewegen zijn dan in balans. ">
+        <answers>
+          <answer id="A_Question3True" text="A#dik">
+            <remark id="R_Question3True" text="*Nod* Goed zo. Als je veel eet en weinig beweegt, is er geen balans meer tussen eten en bewegen. Dit is ongezond en je wordt hier dik van.   *Happy*"></remark>
+          </answer>
+          <answer id="A_Question3False" text="B#zelfde">
+            <remark id="R_Question3False" text="Als je veel eet en weinig beweegt, is er juist geen balans meer tussen eten en bewegen. Dit is ongezond en je wordt hier dik van. "></remark>
+          </answer>
+          <answer id="A_Question3Undefined" text="">
+            <remark id="R_Question3Undefined" text="*NotUnderstood* Sorry ik begreep je niet helemaal. Ik stel de vraag nog een keer. Kun je dan met A of B antwoorden?" loopsuccessor="Q_Question3" maxloop="2"></remark>
+          </answer>
+          <answer id="A_Question3RepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_Question3RepeatRequest" text="" loopsuccessor="Q_Question3" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+      <remark id="R_Quiz4" text="Ik hoop dat je het een leuke quiz vond *Happy*"></remark>
+
+    </subdialog>
+    
+    <subdialog id="game">
+      <question id="Q_Game" text="Heb je zin in een spelletje?#Zullen we een spelletje spelen?">
+        <answers>
+          <answer id="A_GamePositive" text="vooruit#ok#oke#okee#ik heb wel zin#ik heb zin#ja#ok#goed#natuurlijk#waarom niet#daar heb ik zin in#tuurlijk#jazeker">
+            <remark id="R_GamePositive" text="Leuk! *Happy* "></remark>
+          </answer>
+          <answer id="A_GameNegative" text="nee#ik hou niet#echt niet#Ik heb geen zin">
+            <remark id="R_GameNegative" text="Het is heel leuk. Zullen we toch maar beginnen? *Happy* "></remark>
+          </answer>
+          <answer id="A_GameUndecided" text="hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+            <remark id="R_GameUndecided" text="Het is heel leuk. Zullen we toch maar beginnen? *Happy*"></remark>
+          </answer>
+          <answer id="A_GameUndefined" text="">
+            <remark id="R_GameUndefined" text="*NotUnderstood* Sorry ik begreep je niet helemaal." loopsuccessor="Q_Game" maxloop="2"></remark>
+          </answer>
+          <answer id="A_GameRepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_GameRepeatRequest" text="" loopsuccessor="Q_Game" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+      <question id="Q_TicTacToe" text="Ik kan boter kaas en eieren spelen, ken je die?#Ken je boter kaas en eieren?">
+        <answers>
+          <answer id="A_TicTacToePositive" text="die ken ik#ja#heel goed#natuurlijk#waarom niet#tuurlijk#jazeker">
+            <remark id="R_TicTacToePositive" text="Leuk!"></remark>
+          </answer>
+          <answer id="A_TicTacToeNegative" text="nee#niet dat ik weet#echt niet#Ik heb geen zin#ken ik niet">
+            <remark id="R_TicTacToeNegative" text="Boter kaas en eieren is een spelletje voor spelers. De ene heeft de kruisjes en de andere de rondjes. Het is de bedoeling dat je 3 kruisjes of rondjes op een rij krijgt en ervoor zorgt dat je tegenstander er geen drie op een rij krijgt."></remark>
+          </answer>
+          <answer id="A_TicTacToeUndecided" text="een beetje#hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+            <remark id="R_TicTacToeUndecided" text="Boter kaas en eieren is een spelletje voor spelers. De ene heeft de kruisjes en de andere de rondjes. Het is de bedoeling dat je 3 kruisjes of rondjes op een rij krijgt en ervoor zorgt dat je tegenstander er geen drie op een rij krijgt."></remark>
+          </answer>
+          <answer id="A_TicTacToeUndefined" text="">
+            <remark id="R_TicTacToeUndefined" text="*NotUnderstood* Sorry ik begreep je niet helemaal." loopsuccessor="Q_TicTacToe" maxloop="2"></remark>
+          </answer>
+          <answer id="A_TicTacToeRepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_TicTacToeRepeatRequest" text="" loopsuccessor="Q_TicTacToe" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+      <question id="Q_TicTacToe2" text="Zullen we een potje spelen?">
+        <answers>
+          <answer id="A_TicTacToe2Positive" text="ok#okee#oke#ja#goed#natuurlijk#waarom niet#tuurlijk#jazeker">
+            <remark id="R_TicTacToe2Positive" text="*Happy* Top"></remark>
+          </answer>
+          <answer id="A_TicTacToe2Negative" text="geen tijd#geen zin#nee#niet dat ik weet#echt niet#Ik heb geen zin">
+            <remark id="R_TicTacToe2Negative" text="Ik weet zeker dat je het leuk vindt."></remark>
+          </answer>
+          <answer id="A_TicTacToe2Undecided" text="een beetje#hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+            <remark id="R_TicTacToe2Undecided" text="Ik weet zeker dat je het leuk vindt."></remark>
+          </answer>
+          <answer id="A_TicTacToe2Undefined" text="">
+            <remark id="R_TicTacToe2Undefined" text="*NotUnderstood* Sorry ik begrijp je niet helemaal." loopsuccessor="Q_TicTacToe2" maxloop="2"></remark>
+          </answer>
+          <answer id="A_TicTacToe2RepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_TicTacToe2RepeatRequest" text="" loopsuccessor="Q_TicTacToe2" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+        <question id="Q_TicTacToeuserBegin" text="Wil jij beginnen? *Happy*#Wil jij beginnen met het spelletje?*Happy*" maxloop="20">
+        <answers>
+          <answer id="A_TicTacToeuserBeginPositive" text="ok#oke#okee#ja#ok#goed#natuurlijk#waarom niet#daar heb ik zin in#tuurlijk#jazeker">
+            <remark id="R_TicTacToeuserBeginPositive" text="okee" loopsuccessor="Q_TicTacToeuserSymbol"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserBeginNegative" text="nee#liever niet#ik hou niet#echt niet#Ik heb geen zin">
+            <remark id="R_TicTacToeuserBeginNegative" text="okee" loopsuccessor="Q_TicTacToesystemSymbol"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserBeginUndecided" text="hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+            <remark id="A_TicTacToeuserBeginUndecided" text="Weet je wat, dan begin ik wel." loopsuccessor="Q_TicTacToesystemSymbol"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserBeginUndefined" text="">
+            <remark id="R_TicTacToeuserBeginUndefined" text="*NotUnderstood* Sorry wat zei je?" loopsuccessor="Q_TicTacToeuserBegin" maxloop="6"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserBeginRepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_TicTacToeuserBeginRepeatRequest" text="" loopsuccessor="Q_TicTacToeuserBegin" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+
+      <question id="Q_TicTacToeuserSymbol" text="Wil je kruisjes of rondjes?" maxloop="20">
+        <answers>
+          <answer id="A_TicTacToeuserKruisjes" text="kruis#kruisjes#x">
+            <remark id="R_TicTacToeuserKruisjes" text="Okee. Jij mag beginnen met kruisjes. Succes *Happy*" loopsuccessor="TicTacToe1_user_X"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserRondjes" text="rondjes#cirkeltjes#rond#ok#okee#ok#o">
+            <remark id="R_TicTacToeuserRondjes" text="Okee. Jij mag beginnen met rondjes. Succes *Happy*" loopsuccessor="TicTacToe1_user_O"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserSymbolUndefined" text="">
+            <remark id="R_TicTacToeuserSymbolUndefined" text="*NotUnderstood* Sorry, ik heb je niet begrepen, kun je rondjes of kruisjes kiezen?" loopsuccessor="Q_TicTacToeuserSymbol" maxloop="6"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserSymbolRepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_TicTacToeuserSymbolRepeatRequest" text="" loopsuccessor="Q_TicTacToeuserSymbol" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+
+      <question id="Q_TicTacToesystemSymbol" text="Wil je kruisjes of rondjes?" maxloop="20">
+        <answers>
+          <answer id="A_TicTacToeuserBeginKruisjes" text="kruis#kruisjes#x">
+            <remark id="R_TicTacToeuserBeginKruisjes" text="okee. Ik begin met rondjes. succes *Happy*" loopsuccessor="TicTacToe1_system_X"></remark>
+          </answer>
+          <answer id="A_TicTacToeuserBeginRondjes" text="rondjes#cirkeltjes#rond#ok#okee#ok#o">
+            <remark id="R_TicTacToeuserBeginRondjes" text="okee. Ik begin met kruisjes. succes *Happy*" loopsuccessor="TicTacToe1_system_O"></remark>
+          </answer>
+          <answer id="A_TicTacToesystemSymbolUndefined" text="">
+            <remark id="R_TicTacToesystemSymbolUndefined" text="*NotUnderstood* Sorry, ik heb je niet begrepen, kun je rondjes of kruisjes kiezen?" loopsuccessor="Q_TicTacToeuserSymbol" maxloop="6"></remark>
+          </answer>
+          <answer id="A_TicTacToesystemSymbolRepeatRequest" text="herhalen#nog een keer#wat zei je#wat zeg je#sorry">
+            <remark id="R_TicTacToesystemSymbolRepeatRequest" text="" loopsuccessor="Q_TicTacToesystemSymbol" maxloop="2"></remark>
+          </answer>
+        </answers>
+      </question>
+
+
+
+      <environmental_action id="TicTacToe1_user_X" action="initiateTicTacToe" successor="emptyloop">
+        <situations>
+          <situation name="userOnTurn" text="Jij bent. *LookMovie**Happy*"></situation>
+          <situation name="systemOnTurn" text="*Think*"></situation>
+          <situation name="endUserWin" text="*Happy* Je hebt gewonnen. Gefeliciteerd"></situation>
+          <situation name="endUserLoose" text="*Happy* Ik heb gewonnen"></situation>
+          <situation name="endUserDraw" text="*Happy* We zijn allebei even goed."></situation>
+          <situation name="onUserTurnUserAdvantage" text="Goede zet*Sad*"></situation>
+          <situation name="onSystemTurnUserAdvantage" text="*Sad*"></situation>
+          <situation name="onUserTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="onSystemTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="userDraw" text=""></situation>
+        </situations>
+      </environmental_action>
+
+      <environmental_action id="TicTacToe1_user_O" action="initiateTicTacToe" successor="emptyloop">
+        <situations>
+          <situation name="userOnTurn" text="Jij bent. *LookMovie**Happy*"></situation>
+          <situation name="systemOnTurn" text="*Think*"></situation>
+          <situation name="endUserWin" text="*Happy* Je hebt gewonnen. Gefeliciteerd"></situation>
+          <situation name="endUserLoose" text="*Happy* Ik heb gewonnen"></situation>
+          <situation name="endUserDraw" text="*Happy* We zijn allebei even goed."></situation>
+          <situation name="onUserTurnUserAdvantage" text="Goede zet*Sad*"></situation>
+          <situation name="onSystemTurnUserAdvantage" text="*Sad*"></situation>
+          <situation name="onUserTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="onSystemTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="userDraw" text=""></situation>
+        </situations>
+      </environmental_action>
+
+      <environmental_action id="TicTacToe1_system_X" action="initiateTicTacToe" successor="emptyloop">
+        <situations>
+          <situation name="userOnTurn" text="Jij bent. *LookMovie**Happy*"></situation>
+          <situation name="systemOnTurn" text="*Think*"></situation>
+          <situation name="endUserWin" text="*Happy* Je hebt gewonnen. Gefeliciteerd"></situation>
+          <situation name="endUserLoose" text="*Happy* Ik heb gewonnen"></situation>
+          <situation name="endUserDraw" text="*Happy* We zijn allebei even goed."></situation>
+          <situation name="onUserTurnUserAdvantage" text="Goede zet*Sad*"></situation>
+          <situation name="onSystemTurnUserAdvantage" text="*Sad*"></situation>
+          <situation name="onUserTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="onSystemTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="userDraw" text=""></situation>
+        </situations>
+      </environmental_action>
+
+
+      <environmental_action id="TicTacToe1_system_O" action="initiateTicTacToe" successor="emptyloop">
+        <situations>
+          <situation name="userOnTurn" text="Jij bent. *LookMovie**Happy*"></situation>
+          <situation name="systemOnTurn" text="*Think*"></situation>
+          <situation name="endUserWin" text="*Happy* Je hebt gewonnen. Gefeliciteerd"></situation>
+          <situation name="endUserLoose" text="*Happy* Ik heb gewonnen"></situation>
+          <situation name="endUserDraw" text="*Happy* We zijn allebei even goed."></situation>
+          <situation name="onUserTurnUserAdvantage" text="Goede zet*Sad*"></situation>
+          <situation name="onSystemTurnUserAdvantage" text="*Sad*"></situation>
+          <situation name="onUserTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="onSystemTurnUserDisadvantage" text="*Happy*"></situation>
+          <situation name="userDraw" text=""></situation>
+        </situations>
+      </environmental_action>
+
+
+      <question id="Q_TicTacToe2End" text="Zullen we nog een potje spelen?">
+      <answers>
+        <answer id="A_TicTacToe2EndPositive" text="leuk#ok#okee#oke#ja#goed#natuurlijk#waarom niet#tuurlijk#jazeker">
+          <remark id="A_TicTacToe2EndPositive" text="*Happy* Top" loopsuccessor="Q_TicTacToeuserBegin" ></remark>
+        </answer>
+        <answer id="A_TicTacToe2EndNegative" text="geen tijd#geen zin#nee#niet dat ik weet#echt niet#Ik heb geen zin">
+          <remark id="R_TicTacToe2EndNegative" text="Okee, jammer." loopsuccessor="R_End1" ></remark>
+        </answer>
+        <answer id="A_TicTacToe2EndUndecided" text="een beetje#hangt er vanaf#misschien#zou kunnen#niet echt#ik denk het niet#weet ik niet">
+          <remark id="R_TicTacToe2EndUndecided" text="Ik weet zeker dat je het leuk vindt." loopsuccessor="Q_TicTacToeuserBegin"></remark>
+        </answer>
+        <answer id="A_TicTacToe2EndUndefined" text="">
+          <remark id="R_TicTacToe2EndUndefined" text="*NotUnderstood* Sorry ik begrijp je niet helemaal." loopsuccessor="Q_TicTacToe2nd" maxloop="3"></remark>
+        </answer>
+      </answers>
+    </question>
+      <external_loop id="emptyloop" loopsuccessor="Q_TicTacToe2nd" maxloop="1"></external_loop>
+    </subdialog>
+
+<subdialog id="end">
+      <remark id="R_End1" text="*Happy* Ik vond het leuk met je gespeeld te hebben Veel plezier nog. Doei *Happy*"></remark>
+      <remark id="R_End2" text="*Sleep*"></remark>
+    </subdialog>
+
+    </subdialogs>
+</dialog>
+

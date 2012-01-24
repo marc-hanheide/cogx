@@ -1,0 +1,187 @@
+%-------------------------------------------------------------------------
+% GENERAL INTERPRETATION
+%-------------------------------------------------------------------------
+
+understand : event : utter(S, H, Nom) <-
+	? understand : event : from_logical_form(S, H, Nom).
+
+%-------------------------------------------------------------------------
+
+understand : i : intention(Int, Nom) <-
+	understand : i : intention(Int, Nom) / intention_creation.
+
+understand : new_belief(_Int, BelAddr, EpSt) <-
+	understand : new_belief_id(BelAddr, EpSt) / belief_creation.
+
+%-------------------------------------------------------------------------
+% PERSONS
+%-------------------------------------------------------------------------
+
+	% the speaker
+person(Speaker, _Hearer, Nom, Speaker) <-
+	i : sort(Nom, person),
+	i : prop(Nom, 'I'),
+	i : feat_Num(Nom, sg).
+
+	% the hearer
+person(_Speaker, Hearer, Nom, Hearer) <-
+	i : sort(Nom, person),
+	i : prop(Nom, you).
+
+%-------------------------------------------------------------------------
+% REFERRING
+%-------------------------------------------------------------------------
+
+understand : is_reference(RefNom, ReferentAddr, EpSt) <-
+	epst_variant(EpSt, RefEpSt),
+	understand : referent_of(RefNom, ReferentAddr, RefEpSt) / reference_resolution.
+
+%understand : is_reference(Nom, Referent, _EpSt) <-
+%	understand : unknown_reference(Nom, Referent) / p(0.55),
+%	? understand : ungroundable(Nom, Referent).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+%understand : about(RefNom, BeliefId, EpSt) <-
+%	is_epst_variant(EpSt, RefEpSt),
+%	understand : referent_of(RefNom, BeliefId, RefEpSt) / reference_resolution.
+
+epst_variant(private(A), private(A)).
+epst_variant(attrib(A, B), attrib(A, B)).
+epst_variant(shared(A, B), shared(A, B)).
+epst_variant(shared(A, B), shared(B, A)).
+
+%-------------------------------------------------------------------------
+% TOPIC
+%-------------------------------------------------------------------------
+
+understand : topic(_S, _H, EpSt, Int, RefNom, _Nom) <-
+	? understand : is_reference(RefNom, ReferentAddr, EpSt),
+	aboutness(Int, ReferentAddr).
+
+%-------------------------------------------------------------------------
+
+aboutness(Int, Addr) <-
+	mark(referent, Addr) / p(1.0),
+	int : address_content(Int, about, Addr) / p(1.0).
+
+%-------------------------------------------------------------------------
+% ASSERTION EFFECT
+%-------------------------------------------------------------------------
+
+beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief) <-
+
+	? understand : new_belief(Int, AssertedBelief, attrib(Hearer, Speaker)),
+	int : address_content(Int, asserted, AssertedBelief) / p(1.0),
+
+	% retrieve the referent
+	mark(referent, ReferentAddr) / p(1.0),
+	int : belief_content(AssertedBelief, about, ReferentAddr) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+string_content_for_assertion(Int, Feature, Value, Polarity) <-
+	int : string_content(Int, 'asserted-feature', Feature) / p(1.0),
+	int : string_content(Int, 'asserted-value', Value) / p(1.0),
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
+
+intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity) <-
+	polarprop(Value, Polarity, PolarPropFormula),
+%	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	string_content_for_assertion(Int, Feature, Value, Polarity),
+	add_belief_content(Speaker, Hearer, Int, Feature, PolarPropFormula).
+%	int : belief_content(AssertedBelief, Feature, PolarPropFormula) / p(1.0).
+
+add_belief_content(_Speaker, _Hearer, _Int, Feature, _PolarPropFormula) <-
+	feature_has_beliefs(Feature, no).
+
+add_belief_content(Speaker, Hearer, Int, Feature, PolarPropFormula) <-
+	feature_has_beliefs(Feature, yes),
+	beliefs_for_assertion(Speaker, Hearer, Int, AssertedBelief),
+	int : belief_content(AssertedBelief, Feature, PolarPropFormula) / p(1.0).
+
+feature_has_beliefs(color, no).
+feature_has_beliefs(shape, no).
+feature_has_beliefs(objecttype, no).
+feature_has_beliefs(identity, yes).
+
+%-------------------------------------------------------------------------
+
+understand : assertion_effect(Speaker, Hearer, Int, _Ref, Polarity, Nom) <-
+	polar_query_prop(Nom, Feature, Value),
+	intention_effect(Speaker, Hearer, Int, Feature, Value, Polarity).
+
+%-------------------------------------------------------------------------
+% QUESTIONS
+%-------------------------------------------------------------------------
+
+polar_query_prop(Nom, color, PropValue) <-
+	i : sort(Nom, 'q-color'),
+	i : prop(Nom, PropValue).
+
+polar_query_prop(Nom, shape, PropValue) <-
+	i : sort(Nom, 'q-shape'),
+	i : prop(Nom, PropValue).
+
+polar_query_prop(Nom, size, PropValue) <-
+	i : sort(Nom, 'q-size'),
+	i : prop(Nom, PropValue).
+
+polar_query_prop(Nom, objecttype, PropValue) <-
+	i : sort(Nom, thing),
+	i : prop(Nom, PropValue),
+	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+polar_query_prop(Nom, identity, PropValue) <-
+	i : sort(Nom, 'e-place'),
+	i : prop(Nom, PropValue).
+
+%-------------------------------------------------------------------------
+
+wh_query_prop(Nom, color) <-
+	i : sort(Nom, 'q-color').
+
+wh_query_prop(Nom, color) <-
+%	i : sort(Nom, quality),
+	i : prop(Nom, color).
+
+wh_query_prop(Nom, shape) <-
+	i : sort(Nom, 'q-shape').
+
+wh_query_prop(Nom, shape) <-
+%	i : sort(Nom, quality),
+	i : prop(Nom, shape).
+
+wh_query_prop(Nom, size) <-
+	i : sort(Nom, 'q-size').
+
+wh_query_prop(Nom, size) <-
+%	i : sort(Nom, quality),
+	i : prop(Nom, size).
+
+wh_query_prop(Nom, objecttype) <-
+	i : sort(Nom, thing),
+%	i : prop(Nom, PropValue),
+%	i : feat_Delimitation(Nom, existential),
+	i : feat_Num(Nom, sg),
+	i : feat_Quantification(Nom, specific).
+
+wh_query_prop(Nom, identity) <-
+	i : sort(Nom, 'e-place').
+
+%-------------------------------------------------------------------------
+
+polarity(Nom, Polarity) <-
+	i : feat_Polarity(Nom, Polarity).
+
+polarity(Nom, pos) <-
+	polarity_positive(Nom) / p(0.9).
+
+%-------------------------------------------------------------------------
+
+polarprop(Prop, pos, Prop).
+polarprop(Prop, neg, not(Prop)).
+
+%-------------------------------------------------------------------------
