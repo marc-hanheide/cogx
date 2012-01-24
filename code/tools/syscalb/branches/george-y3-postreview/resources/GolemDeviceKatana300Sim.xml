@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<golem>
+  <arm name="Katana 300 (6M180) simulator" custom_kinematics="0">
+    <global_pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></global_pose>
+    <!-- L3 = 0.1916 -->
+    <reference_pose v1="0.0" v2="0.1916" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></reference_pose>
+    <rest_config c1="0.0" c2="0.0" c3="0.0" c4="0.0" c5="0.0" c6="0.0" c7="0.0"></rest_config>
+
+    <calibration cycle_num="20" cycle_dur="0.3" time_quant="0.01" delta_offs="0.02" skew_offs="0.01" delta_sync="0.005" delta_recv="0.0" delta_send="0.075"></calibration>
+    <links L0="0.2035" L1="0.1902" L2="0.1391" L3="0.1916"></links>
+
+    <joint name="Axis #1" collision="0" collision_offs="7">
+      <min pos="-3.025528" vel="-0.7853981634" acc="-2.3561944902"></min>
+      <max pos="+3.025474" vel="+0.7853981634" acc="+2.3561944902"></max>
+      <trn v1="0.0" v2="0.0" v3="0.0" w1="0.0" w2="0.0" w3="1.0" th="-2.902810"></trn>
+      <trn_init v1="0.0" v2="0.0" v3="0.0" w1="0.0" w2="0.0" w3="0.0" th="0.0"></trn_init>
+
+      <KNI angleOffset="6.65" angleRange="346.7" encoderOffset="31000" encodersPerCycle="51200" rotationDirection="+1" encoderPositionAfter="30000" offset="-3.14159265359" gain="1.0"></KNI>
+
+      <bounds type="box" group="1">
+        <!-- L0/2 = 0.10175 -->
+        <dimensions v1="0.04" v2="0.04" v3="0.10175"/>
+        <!-- L0/2 = 0.10175 -->
+        <pose v1="0.0" v2="0.0" v3="0.10176" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+    <joint name="Axis #2" collision="1" collision_offs="7">
+      <min pos="-2.168572" vel="-0.7853981634" acc="-2.3561944902"></min>
+      <max pos="+0.327277" vel="+0.7853981634" acc="+2.3561944902"></max>
+      <!-- L0 = 0.2035 -->
+      <trn v1="0.0" v2="-0.2035" v3="0.0" w1="-1.0" w2="0.0" w3="0.0" th="-2.102416"></trn>
+      <!-- L0 = 0.2035 -->
+      <trn_init v1="0.0" v2="0.0" v3="0.2035" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <KNI angleOffset="124.25" angleRange="-143.0" encoderOffset="-31000" encodersPerCycle="94976" rotationDirection="+1" encoderPositionAfter="-30000" offset="0.0" gain="-1.0"></KNI>
+
+      <bounds type="box" group="1">
+        <!-- L1/2 = 0.0951 -->
+        <dimensions v1="0.02" v2="0.0951" v3="0.02"/>
+        <!-- L1/2 = 0.0951 -->
+        <pose v1="0.0" v2="0.0951" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+      <bounds type="sphere" group="1" radius="0.05">
+        <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+    <joint name="Axis #3" collision="1" collision_offs="7">
+      <min pos="0.0" vel="-0.7853981634" acc="-2.3561944902"></min>
+      <max pos="+2.221804" vel="+0.7853981634" acc="+2.3561944902"></max>
+      <!-- L0 = 0.2035, L1 = 0.1902 -->
+      <trn v1="0.0" v2="-0.2035" v3="0.1902" w1="-1.0" w2="0.0" w3="0.0" th="2.144623"></trn>
+      <!-- L0 = 0.2035, L1 = 0.1902 -->
+      <trn_init v1="0.0" v2="0.1902" v3="0.2035" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <KNI angleOffset="52.7" angleRange="127.3" encoderOffset="-31000" encodersPerCycle="81408" rotationDirection="-1" encoderPositionAfter="-30000" offset="3.14159265359" gain="-1.0"></KNI>
+
+      <bounds type="box" group="1">
+        <!-- L2/2 = 0.06955 -->
+        <dimensions v1="0.02" v2="0.06955" v3="0.02"/>
+        <!-- L2/2 = 0.06955 -->
+        <pose v1="0.0" v2="0.06955" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+      <bounds type="sphere" group="1" radius="0.05">
+        <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+      <bounds type="sphere" group="1" radius="0.05">
+        <!-- L2 = 0.1391 -->
+        <pose v1="0.0" v2="0.1391" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+    <joint name="Axis #4" collision="1" collision_offs="7">
+      <min pos="-2.033309" vel="-0.7853981634" acc="-2.3561944902"></min>
+      <max pos="+2.028059" vel="+0.7853981634" acc="+2.3561944902"></max>
+      <!-- L0 = 0.2035, L1 + L2 = 0.3293 -->
+      <trn v1="0.0" v2="-0.2035" v3="0.3293" w1="-1.0" w2="0.0" w3="0.0" th="-1.910590"></trn>
+      <!-- L0 = 0.2035, L1 + L2 = 0.3293 -->
+      <trn_init v1="0.0" v2="0.3293" v3="0.2035" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <KNI angleOffset="63.5" angleRange="232.7" encoderOffset="31000" encodersPerCycle="51200" rotationDirection="+1" encoderPositionAfter="30000" offset="-3.14159265359" gain="1.0"></KNI>
+    </joint>
+    <joint name="Axis #5" collision="1" collision_offs="3">
+      <min pos="-2.989776" vel="-0.7853981634" acc="-2.3561944902"></min>
+      <max pos="+2.993240" vel="+0.7853981634" acc="+2.3561944902"></max>
+      <!-- L0 = 0.2035 -->
+      <trn v1="-0.2035" v2="0.0" v3="0.0" w1="0.0" w2="1.0" w3="0.0" th="2.870521"></trn>
+      <!-- L0 = 0.2035, L1 + L2 = 0.3293 -->
+      <trn_init v1="0.0" v2="0.3293" v3="0.2035" w1="0.0" w2="0.0" w3="0.0" th="1.0"></trn_init>
+
+      <KNI angleOffset="8.5" angleRange="342.8" encoderOffset="31000" encodersPerCycle="51200" rotationDirection="+1" encoderPositionAfter="30000" offset="3.14159265359" gain="-1.0"></KNI>
+
+      <bounds type="box" group="1">
+        <!-- L3/2 = 0.0958 -->
+        <dimensions v1="0.02" v2="0.0958" v3="0.02"/>
+        <!-- L3/2 = 0.0958 -->
+        <pose v1="0.0" v2="0.0958" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"/>
+      </bounds>
+    </joint>
+  </arm>
+</golem>
