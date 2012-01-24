@@ -5,7 +5,7 @@ COGX_ROOT=$(readlink -f $SCRIPT_DIR/..)
 echo "COGX_ROOT: $COGX_ROOT"
 echo ""
 
-extfile=george-y3.externals
+extfile=george-y4.externals
 if [ "$1" != "" ]; then
    extfile="$1"
 fi
