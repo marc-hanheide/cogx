@@ -1,0 +1,7 @@
+# HOST <hostname> -- default host to run all the components on, not
+# required if specified elsewhere
+HOST localhost
+COMPONENT CPP laser+robot.server LaserRobotServerDummy --log
+COMPONENT CPP laser.client PullClientLaser --log --move #--debug
+COMPONENT CPP robot.client PullClientOdometry --log --move #--debug
+
