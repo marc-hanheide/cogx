@@ -1,0 +1,4 @@
+#/bin/sh
+export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:@PREFIX@/jar/*:/usr/share/java/log4j-1.2.jar:$CLASSPATH:
+
+java motivation.components.generators.ExternalGoalGeneratorClient "$@"

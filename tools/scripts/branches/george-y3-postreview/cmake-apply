@@ -1,0 +1,122 @@
+#!/bin/bash
+# @author: Marko Mahnič
+# @created: April 2011
+#
+# This script will read an initial cache file for cmake and
+# apply the settings to an existing CMakeCache.txt file.
+# (Only the variables of type BOOL are processed.)
+#
+# Example:
+#    cd BUILD
+#    ../tools/scripts/cmake-apply . <initial_cache.txt>
+
+# Absolute path and directory
+#SCRIPT=$(readlink -f $0)
+#SCRIPTDIR=$(dirname $SCRIPT)
+
+dir="$1"
+
+if [ -f $dir/CMakeCache.txt ]; then
+   fnout=$dir/CMakeCache.txt
+fi
+
+if [ -z $fnout ]; then
+   echo "$dir/CMakeCache.txt not found"
+   exit 1
+fi
+
+init="$2"
+
+if [ ! -f $init ]; then
+   echo "$init not found"
+   exit 1
+fi
+
+# Change the internal field separator to newline so that we will be
+# able to process lines in for loops.
+IFS=$'\n'
+
+# initial cache - regular expressions
+# set(SOMETHING OFF CACHE BOOL "comment")
+rxident='\([a-zA-Z0-9_]\+\)'
+rxboolv='\([A-Z0-1]\+\)'
+rxtype='\([A-Z]\+\)'
+rxcomment='\"\(.*\)\"'
+ws='[[:blank:]]\+'
+ws0='[[:blank:]]*'
+wsrhs='[[:blank:]]\\\+'
+
+
+# Read initial cache
+ic_lines=$(grep -e "^set(" $init)
+
+if [ "" == "$ic_lines" ]; then
+   echo "No cmake set() expressions found"
+   exit
+fi
+
+# From initial cache: create sed expressions from initial cache lines.
+# @param 1: lines from initial cache
+# @param 2: an experssion to be created
+# sed placeholders:
+#    \1 - identifier
+#    \2 - value
+#    \3 - type
+function transformLines()
+{
+   local lines="$1"
+   local newsedex="$2"
+
+   translines=$(
+   for l in $lines; do
+      echo $(echo $l | sed -e "s/^set($rxident${ws}$rxboolv${ws}CACHE${ws}$rxtype${ws}$rxcomment.*/$newsedex/")
+   done
+   )
+}
+
+function replaceCacheValues()
+{
+   # CMakeCache.txt
+   # SOMETHING:BOOL=OFF
+   transformLines  "$ic_lines"  '-e s#^\\(\1:\3\\)=.*\$#\\1=\2#'
+   local sedlines="$translines"
+   # echo sed "$sedlines"
+   local file=$(cat $fnout)
+   echo "$file" | sed $sedlines > $fnout
+}
+
+function addMissingValues()
+{
+   # find values in CMakeCache
+   # create sed expressions to remove values from initial cache
+   local cmc_lines=$(grep -e "^$rxident:$rxtype="  $fnout | \
+      sed -e "s/^$rxident:$rxtype=.*/-e \/^set(\1${wsrhs}\/d/" )
+   #echo "$cmc_lines"
+
+   if [ -n "$cmc_lines" ]; then
+      local leftlines=$(
+      for l in $ic_lines; do
+         echo $(echo $l | sed $cmc_lines)
+      done
+      )
+   else
+      leftlines="$ic_lines"
+   fi
+   leftlines=$(echo "$leftlines" | grep -v "^${ws0}$")
+   
+   echo $fnout
+   echo "" >> $fnout
+   for l in $leftlines; do
+      transformLines "$l"  '\/\/\4'
+      echo "$translines" >> $fnout
+      transformLines "$l"  '\1:\3=\2'
+      echo "$translines" >> $fnout
+      echo "Added: $translines"
+   done
+}
+
+echo "Setting existing options"
+replaceCacheValues
+echo "Adding new options"
+addMissingValues
+

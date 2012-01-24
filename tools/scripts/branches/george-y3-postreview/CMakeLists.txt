@@ -1,0 +1,49 @@
+cmake_minimum_required(VERSION 2.4)
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+MARK_AS_ADVANCED(CMAKE_BACKWARDS_COMPATIBILITY)
+MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
+MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
+#MARK_AS_ADVANCED(CMAKE_BUILD_TYPE)
+
+#INCLUDE(UsePkgConfig)
+
+###
+### Project name, features, and destination
+###
+
+PROJECT(cogx-scripts)
+SET(PROGNAME vdemo)
+SET(PACKET cogx)
+SET(PREFIX ${CMAKE_INSTALL_PREFIX})
+
+SET(BINDIR "${PREFIX}/bin")
+SET(INCLUDEDIR "${PREFIX}/include")
+SET(MANDIR "${PREFIX}/man")
+SET(LIBDIR "${PREFIX}/lib")
+SET(DATADIR "${PREFIX}/share/${PACKET}")
+
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cast-client-start.in ${CMAKE_CURRENT_SOURCE_DIR}/cast-client-start  @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cast-server-start.in ${CMAKE_CURRENT_SOURCE_DIR}/cast-server-start)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cogx-dora-simul.in ${CMAKE_CURRENT_SOURCE_DIR}/cogx-dora-simul)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/log4j-server.in ${CMAKE_CURRENT_SOURCE_DIR}/log4j-server)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/standalone-planner.in ${CMAKE_CURRENT_SOURCE_DIR}/standalone-planner)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/universalIceClient.in ${CMAKE_CURRENT_SOURCE_DIR}/universalIceClient)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/submit-goal.in ${CMAKE_CURRENT_SOURCE_DIR}/submit-goal)
+INSTALL(PROGRAMS 
+	${CMAKE_CURRENT_SOURCE_DIR}/cast-client-start 
+	${CMAKE_CURRENT_SOURCE_DIR}/cast-server-start 
+	${CMAKE_CURRENT_SOURCE_DIR}/cogx-dora-simul
+	${CMAKE_CURRENT_SOURCE_DIR}/dc1394chmod
+	${CMAKE_CURRENT_SOURCE_DIR}/showversions
+	${CMAKE_CURRENT_SOURCE_DIR}/log4j-server
+	${CMAKE_CURRENT_SOURCE_DIR}/standalone-planner
+	${CMAKE_CURRENT_SOURCE_DIR}/universalIceClient
+	${CMAKE_CURRENT_SOURCE_DIR}/submit-goal
+	DESTINATION ${BINDIR})
+
+
+
