@@ -1,0 +1,98 @@
+# CAST config file
+# vim: set sw=4 ts=8 et sts=4 ai :vim
+# Part of the SUBARCHITECTURE "vision.sa"
+
+# The following file provides coarsePointCloud, coarseSoiSource, finePointCloud, fineSoiSource.
+# Choose one:
+#INCLUDE  ppo-stereo-1.incl
+#INCLUDE  ppo-stereo-2.incl
+#INCLUDE  ppo-kinect-stereo.incl
+INCLUDE  ppo-kinect-1.incl
+
+
+SETVAR wmBlocking=--blocking false
+SETVAR SOIFilter_UseVideo=
+IFNEQ(%(main_camera_id),)
+    SETVAR SOIFilter_UseVideoserver=<multiline>
+    --camid "%(main_camera_id)"
+    # TODO: should also have main_video_server
+    --videoname videoserver
+    </multiline>
+ENDIF
+SETVAR SOIFilter_Params=<multiline>
+   # point cloud servers
+   --coarse-pcserver    "%(coarsePointCloud)"
+   --fine-pcserver      "%(finePointCloud)"
+   # SOI sources (plane popout)
+   --coarse-source      "%(coarseSoiSource)"
+   --fine-source        "%(fineSoiSource)"
+   # Parameters for graph-cut
+   --objht 23
+   --objdt 60
+   --bght 24
+   --bgdt 9999
+   --fixc 24
+   --max-soi-dist 1.5
+
+   # Left camera from the fine point cloud server; used by the internal grabber for debugging
+   %(SOIFilter_UseVideoserver)
+
+   # stuff
+   --displayserver "display.srv"
+   --ptzserver "%(ptzServerComponent)"
+   --scene3d "PlanePopout.3D"
+   %(wmBlocking)
+   --display 
+   #--log --debug
+</multiline>
+CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
+
+
+# INCLUDE  includes/vision.sa/vision-visual-learner.cast
+# INCLUDE  object-recognizer.incl
+
+
+# ShapeDescriptor3D is required by the Analyzer/VisualLearner for Affordance Processing.
+# Afoordance Processing should be started by the Analyzer after the ShapeDescriptor3D modifies
+# the ProtoObject.
+#CPP MG ShapeDescriptor3D-2 ShapeDescriptor3D --stereoname stereoserver --stereoWidth 640 --histogramSize 24 --use3DPoints --planeDistThr 0.005 --planeMinPoints 100 --findConnectedRegions --displayserver "display.srv" --logImages # --log --debug
+
+IFNEQ(%(main_camera_id),)
+    CPP MG video.viewer.0 VideoViewer --videoname videoserver --camid "%(main_camera_id)" --displayserver "display.srv" --image-send-ms "300"
+ENDIF
+#CPP MG stereo.viewer StereoViewer --stereoname stereoserver --videoname videoserver --camid 0 --displayserver "display.srv"
+
+CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
+
+
+# not used in Y3 CPP MG vis.analyzer ObjectAnalyzer  %(wmBlocking)  --log --debug
+
+##### Monitors
+
+JAVA MG vis.e.SOI castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
+
+JAVA MG vis.e.proto.object castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact --omit-fields "image mask points"
+
+JAVA MG vis.e.visual.object castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualObject" --displayserver "display.srv" --generic-col --compact --omit-fields "points2d model"
+
+JAVA MG vis.e.view.cone castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ViewCone" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.analyze castutils.viewer.V11WMViewerComponent --subscribe "VisionData.AnalyzeProtoObjectCommand" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.moveToVc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.MoveToViewConeCommand" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.lookAround castutils.viewer.V11WMViewerComponent --subscribe "VisionData.LookAroundCommand" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.learnTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearningTask" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.cmd.learnRecogTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearnerRecognitionTask" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.status castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualConceptModelStatus" --displayserver "display.srv" --generic-col --compact
+
+JAVA MG vis.camparam castutils.viewer.V11WMViewerComponent --subscribe "Video.CameraParametersWrapper" --displayserver "display.srv" --generic-col --compact
+
+
+# JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.WMRemoteProcedureCall" --displayserver "display.srv"
+#JAVA MG percepts castutils.viewer.V11WMViewerComponent --subscribe "eu.cogx.beliefs.slice.PerceptBelief" --displayserver "display.srv"
+#JAVA MG beliefs castutils.viewer.V11WMViewerComponent --subscribe "eu.cogx.beliefs.slice.GroundedBelief" --displayserver "display.srv"
+

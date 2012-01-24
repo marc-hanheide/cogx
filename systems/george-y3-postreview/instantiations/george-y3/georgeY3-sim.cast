@@ -1,0 +1,83 @@
+# CAST config file
+# HOSTNAME  localhost     192.168.33.129
+#HOSTNAME  Main          localhost
+#HOSTNAME  PlayerHost    [Main]
+#HOSTNAME  PeekabotHost  [Main]
+#HOSTNAME  DisplayHost   [Main]
+
+#HOST      [Main]
+HOST localhost
+
+COMPONENT PYTHON  PlannerPythonServer PythonServer --domain george.domain.mapl --log --displayserver "display.srv" --nodot
+
+COMPONENT CPP ptz.server PlayerPTZServer
+
+SETVAR camera_config_dir=instantiations/george-y3/sim/calibration
+SETVAR camera_config_file=%(camera_config_dir)/cam-left-cal-sim.xml
+# INCLUDE georgeY3-vision-srv.incl
+
+####################################################################################################################
+# SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+SETVAR displaysrv_param_redirect=--redirect-to-host localhost
+INCLUDE ../includes/visualization.sa/v11n-base-p.cast
+
+####################################################################################################################
+INCLUDE georgeY3-vision.incl
+
+# Select the video input; change the camera_config_file accordingly
+INCLUDE sim/image-sim.incl
+INCLUDE sim/camera-mount-sim.incl
+
+# mediators, execution
+JAVA MG vision.mediator eu.cogx.perceptmediator.components.VisualObjectMediatorComponent #--debug
+JAVA MG concept.status.mediator eu.cogx.perceptmediator.ModelStatusMediator #--debug
+JAVA MG exe.vision vision.execution.VisionActionInterface
+
+####################################################################################################################
+INCLUDE ../includes/binder.sa/binder-base.cast
+
+####################################################################################################################
+INCLUDE ../includes/planner.sa/planner-base.cast
+
+SETVAR fmdc_plandir=subarchitectures/planner.sa/src/python
+CPP MG filemon.planner FileMonitorDC --displayserver "display.srv" --monitor "CurrentPlan=dot:%(fmdc_plandir)/{plan*.dot}"
+
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter,GainFilter,MinAgeFilter,LimitTriesFilter" --min-gain 0.2 --min-age 5000 --max-tries 1 --log
+
+JAVA MG goal.scheduler motivation.components.managers.Scheduler --debug 
+
+JAVA MG goal.generator.shape eu.cogx.goals.george.LearnShapeGenerator
+JAVA MG goal.generator.color eu.cogx.goals.george.LearnColorGenerator
+JAVA MG goal.generator.intention eu.cogx.goals.george.IntentionGoalGenerator --log --debug
+#JAVA MG goal.generator.non-situated eu.cogx.goals.george.CannedTextGenerator
+JAVA MG goal.generator.non-situated eu.cogx.goals.george.ModelStatusGoalGenerator
+
+
+
+#JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+
+JAVA MG visual.percept.tracker eu.cogx.percepttracker.components.VisualObjectTracker --debug --write-to-sa binder
+JAVA MG shared.tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
+
+#JAVA MG execution.manager george.execution.components.GraphicalExecutionManager
+JAVA MG execution.mediator george.execution.components.GeorgeExecutionMediator #--self-motivate --interrupt
+JAVA MG verbalisation  verbalisation.GeorgeVerbalisation
+
+####################################################################################################################
+INCLUDE ../includes/dialogue.sa/dialogue-base.cast
+INCLUDE ../includes/dialogue.sa/dialogue-george.cast
+
+JAVA MG execution.dialogue dialogue.execution.DialogueActionInterface
+
+####################################################################################################################
+# Monitors
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject" --generic-col
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief" # --generic-col
+JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
+JAVA MG speechdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem" --generic-col
+JAVA MG planningtaskdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+JAVA MG modelstatusdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualConceptModelStatus" --generic-col
+
+

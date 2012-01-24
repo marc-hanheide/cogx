@@ -1,0 +1,5 @@
+# Special components for simulation
+SETVAR worldDir=%(CURRENT_DIR)/../sim/gazebo
+CPP MG gazebo.juggler GazeboJuggler --player-host %(host:PlayerHost) --objects "%(worldDir)/george-01.objects.txt"
+
+
