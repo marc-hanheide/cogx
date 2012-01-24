@@ -1,67 +1,67 @@
 # file: george-y3.externals
 
-^/code/cmake/george-y3-postreview                        cmake
+^/code/cmake/branches/george-y3-postreview                        cmake
 
 # Scenarios
-^/code/scenarios/george/george-y3-postreview             scenarios/george
-^/code/scenarios/dora/george-y3-postreview               scenarios/dora
-^/code/scenarios/shared/george-y3-postreview             scenarios/shared
+^/code/scenarios/george/branches/george-y3-postreview             scenarios/george
+^/code/scenarios/dora/branches/george-y3-postreview               scenarios/dora
+^/code/scenarios/shared/branches/george-y3-postreview             scenarios/shared
 
-^/code/subarchitectures/binder/george-y3-postreview                    subarchitectures/binder.sa
-^/code/subarchitectures/coma.sa/george-y3-postreview                   subarchitectures/coma.sa
-^/code/subarchitectures/conceptual.sa/george-y3-postreview             subarchitectures/conceptual.sa
-^/code/subarchitectures/categorical.sa/george-y3-postreview            subarchitectures/categorical.sa
-^/code/subarchitectures/default.sa/george-y3-postreview                subarchitectures/default.sa
-^/code/subarchitectures/dialogue.sa/george-y3-postreview               subarchitectures/dialogue.sa
-^/code/subarchitectures/execution.sa/george-y3-postreview              subarchitectures/execution.sa
-^/code/subarchitectures/fakemotivation.sa/george-y3-postreview         subarchitectures/fakemotivation.sa
-^/code/subarchitectures/manipulation.sa/george-y3-postreview           subarchitectures/manipulation.sa
-^/code/subarchitectures/motivation.sa/george-y3-postreview             subarchitectures/motivation.sa
-^/code/subarchitectures/planner.sa/george-y3-postreview                subarchitectures/planner.sa
-^/code/subarchitectures/spatial.sa/george-y3-postreview                subarchitectures/spatial.sa
-^/code/subarchitectures/vision.sa/george-y3-postreview                 subarchitectures/vision.sa
-^/code/subarchitectures/visualization.sa/george-y3-postreview          subarchitectures/visualization.sa
+^/code/subarchitectures/binder/branches/george-y3-postreview                    subarchitectures/binder.sa
+^/code/subarchitectures/coma.sa/branches/george-y3-postreview                   subarchitectures/coma.sa
+^/code/subarchitectures/conceptual.sa/branches/george-y3-postreview             subarchitectures/conceptual.sa
+^/code/subarchitectures/categorical.sa/branches/george-y3-postreview            subarchitectures/categorical.sa
+^/code/subarchitectures/default.sa/branches/george-y3-postreview                subarchitectures/default.sa
+^/code/subarchitectures/dialogue.sa/branches/george-y3-postreview               subarchitectures/dialogue.sa
+^/code/subarchitectures/execution.sa/branches/george-y3-postreview              subarchitectures/execution.sa
+^/code/subarchitectures/fakemotivation.sa/branches/george-y3-postreview         subarchitectures/fakemotivation.sa
+^/code/subarchitectures/manipulation.sa/branches/george-y3-postreview           subarchitectures/manipulation.sa
+^/code/subarchitectures/motivation.sa/branches/george-y3-postreview             subarchitectures/motivation.sa
+^/code/subarchitectures/planner.sa/branches/george-y3-postreview                subarchitectures/planner.sa
+^/code/subarchitectures/spatial.sa/branches/george-y3-postreview                subarchitectures/spatial.sa
+^/code/subarchitectures/vision.sa/branches/george-y3-postreview                 subarchitectures/vision.sa
+^/code/subarchitectures/visualization.sa/branches/george-y3-postreview          subarchitectures/visualization.sa
 
 
-^/code/tools/abducer/george-y3-postreview                        tools/abducer
+^/code/tools/abducer/branches/george-y3-postreview                        tools/abducer
 ^/code/tools/alchemy                              tools/alchemy
-^/code/tools/beliefs/george-y3-postreview                        tools/beliefs
-^/code/tools/camcalb2/george-y3-postreview                       tools/camcalb2
-^/code/tools/castctrl/george-y3-postreview                       tools/castctrl
-^/code/tools/castutils/george-y3-postreview                      tools/castutils
-^/code/tools/cogxutils/george-y3-postreview                      tools/cogxutils
-^/code/tools/d-lib/george-y3-postreview                          tools/d-lib
-^/code/tools/genroi/george-y3-postreview                         tools/genroi
-^/code/tools/grabimg/george-y3-postreview                        tools/grabimg
-^/code/tools/hardware/blobfinder/george-y3-postreview            tools/hardware/blobfinder
-^/code/tools/hardware/config/george-y3-postreview                tools/hardware/config
-^/code/tools/hardware/kinect/george-y3-postreview                tools/hardware/kinect
-^/code/tools/hardware/laser/george-y3-postreview                 tools/hardware/laser
-^/code/tools/hardware/pointCloud/george-y3-postreview            tools/hardware/pointCloud
-^/code/tools/hardware/ptz/george-y3-postreview                   tools/hardware/ptz
-^/code/tools/hardware/robotbase/george-y3-postreview             tools/hardware/robotbase
-^/code/tools/hardware/sonar/george-y3-postreview                 tools/hardware/sonar
-^/code/tools/hardware/tests/george-y3-postreview                 tools/hardware/tests
-^/code/tools/hardware/tts/george-y3-postreview                   tools/hardware/tts
-^/code/tools/hardware/utils/george-y3-postreview                 tools/hardware/utils
-^/code/tools/hardware/video/george-y3-postreview                 tools/hardware/video
+^/code/tools/beliefs/branches/george-y3-postreview                        tools/beliefs
+^/code/tools/camcalb2/branches/george-y3-postreview                       tools/camcalb2
+^/code/tools/castctrl/branches/george-y3-postreview                       tools/castctrl
+^/code/tools/castutils/branches/george-y3-postreview                      tools/castutils
+^/code/tools/cogxutils/branches/george-y3-postreview                      tools/cogxutils
+^/code/tools/d-lib/branches/george-y3-postreview                          tools/d-lib
+^/code/tools/genroi/branches/george-y3-postreview                         tools/genroi
+^/code/tools/grabimg/branches/george-y3-postreview                        tools/grabimg
+^/code/tools/hardware/blobfinder/branches/george-y3-postreview            tools/hardware/blobfinder
+^/code/tools/hardware/config/branches/george-y3-postreview                tools/hardware/config
+^/code/tools/hardware/kinect/branches/george-y3-postreview                tools/hardware/kinect
+^/code/tools/hardware/laser/branches/george-y3-postreview                 tools/hardware/laser
+^/code/tools/hardware/pointCloud/branches/george-y3-postreview            tools/hardware/pointCloud
+^/code/tools/hardware/ptz/branches/george-y3-postreview                   tools/hardware/ptz
+^/code/tools/hardware/robotbase/branches/george-y3-postreview             tools/hardware/robotbase
+^/code/tools/hardware/sonar/branches/george-y3-postreview                 tools/hardware/sonar
+^/code/tools/hardware/tests/branches/george-y3-postreview                 tools/hardware/tests
+^/code/tools/hardware/tts/branches/george-y3-postreview                   tools/hardware/tts
+^/code/tools/hardware/utils/branches/george-y3-postreview                 tools/hardware/utils
+^/code/tools/hardware/video/branches/george-y3-postreview                 tools/hardware/video
 ^/code/tools/interconnectivity                    tools/interconnectivity
-^/code/tools/logtools/george-y3-postreview                       tools/logtools
-^/code/tools/marytts/george-y3-postreview                        tools/mary
-^/code/tools/math/george-y3-postreview                           tools/math
-^/code/tools/python/george-y3-postreview                         tools/python
-^/code/tools/rocs/george-y3-postreview                           tools/rocs
-^/code/tools/scripts/george-y3-postreview                        tools/scripts
-^/code/tools/syscalb/george-y3-postreview                        tools/syscalb
-^/code/tools/testing/george-y3-postreview                        tools/testing
+^/code/tools/logtools/branches/george-y3-postreview                       tools/logtools
+^/code/tools/marytts/branches/george-y3-postreview                        tools/mary
+^/code/tools/math/branches/george-y3-postreview                           tools/math
+^/code/tools/python/branches/george-y3-postreview                         tools/python
+^/code/tools/rocs/branches/george-y3-postreview                           tools/rocs
+^/code/tools/scripts/branches/george-y3-postreview                        tools/scripts
+^/code/tools/syscalb/branches/george-y3-postreview                        tools/syscalb
+^/code/tools/testing/branches/george-y3-postreview                        tools/testing
 
 
 # importing to have access to dora systems for testing purposes
 ^/code/systems/dora-yr3/instantiations            instantiations/dora-yr3
 
 # Obsolete
-# ^/code/subarchitectures/comsys/george-y3-postreview                    subarchitectures/comsys
-# ^/code/subarchitectures/nav.sa/george-y3-postreview                    subarchitectures/nav.sa
-# ^/code/tools/hardware/stereo/george-y3-postreview                tools/hardware/stereo
-# ^/code/tools/v4r/george-y3-postreview                            tools/v4r
+# ^/code/subarchitectures/comsys/branches/george-y3-postreview                    subarchitectures/comsys
+# ^/code/subarchitectures/nav.sa/branches/george-y3-postreview                    subarchitectures/nav.sa
+# ^/code/tools/hardware/stereo/branches/george-y3-postreview                tools/hardware/stereo
+# ^/code/tools/v4r/branches/george-y3-postreview                            tools/v4r
 
