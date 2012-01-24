@@ -40,11 +40,8 @@ $\bar{p}$=.45 $\sigma$=.37, $\bar{r}$=.45 $\sigma$=.38 & $\bar{p}$=.71 $\sigma$=
 
 \end{table*}
 
-\from{klenk}{I guess we should rotate the above table. And it has been awhile since I wrote academic, so feel free to cut the boring text below}
+To assess overall performance, Table~\ref{tab:overall} summarizes the results across all problem instances against user-defined target regions from three different users. Both precision and recall for the inferred regions is .45 with a standard deviation of .37 and .38 respectively. When comparing the manually encoded regions against each target instance, we calculate a mean precision of .71 ($\sigma$=.29) and recall of .66 ($\sigma$=.24). The region defined by the room results in a precision of .17 ($\sigma$=.11) and recall of .98 ($\sigma$=.05).
 
-Table~\ref{tab:overall} summarizes the results by combining each problem instance and user-defined target region. Both precision and recall for the inferred regions is .45 with a standard deviation of .37 and .38 respectively. When comparing the manually encoded regions against each target instance, we calculate a mean precision of .71 ($\sigma$=.29) and recall of .66 ($\sigma$=.24). The region defined by the room results in a precision of .17 ($\sigma$=.11) and recall of .98 ($\sigma$=.05).
-
-% these are sensible results, nice
 
 \begin{table*}
 	\center
@@ -71,27 +68,12 @@ Living Room & $\bar{p}$=0 $\sigma$=0, $\bar{r}$=0 $\sigma$=0 & $\bar{p}$=.63 $\s
   \label{tab:region}	
 \end{table*}
 
-Table~\ref{tab:region} separates the results by CDSR type. The mean precision for the transferred regions ranged from .74 for the back rows to 0 for the living room of the studio apartment. Comparing manually encoded against  target regions resulted in a minimum mean precision of .60. This  occurred for the front of the classroom. The whole room precision, which is directly proportionally to the size of the target region, varied from .08 for the office to .35 for the living area. 
+\note{Klenk}{UPDATE TABLE and specific numbers in these sections.}
 
-
-%(3 :transfer-p (0.5649091160864536d0 . 0.3824746399624735d0)  :transfer-r (0.4264200799557943d0 . 0.34846457388485863d0) :self-p   (0.8290901572528112d0 . 0.19630847005535487d0) :self-r
-%  (0.6113880445364026d0 . 0.22432810023132582d0) :room-p
-%  (0.20903207305733315d0 . 0.10291204447091876d0) :room-r
-%  (0.9960679285191474d0 . 0.011022662977174953d0))
-% (2 :transfer-p (0.4496053675639215d0 . 0.36845133415546233d0)
-%  :transfer-r (0.4174204919721308d0 . 0.3697742376406773d0) :self-p
-%  (0.7556540963495391d0 . 0.2672139547143468d0) :self-r
-%  (0.6252647119318083d0 . 0.23778540411202373d0) :room-p
-%  (0.17891943994602752d0 . 0.11273973943366206d0) :room-r
-%  (0.95742701954372d0 . 0.08432884603590181d0))
-% (1 :transfer-p (0.3360804531954755d0 . 0.3364697224078454d0)
-%  :transfer-r (0.5074731366878895d0 . 0.4231938085019586d0) :self-p
-%  (0.5493333659045643d0 . 0.33190756014975015d0) :self-r
-%  (0.7596761147032691d0 . 0.25387231566349d0) :room-p
-%  (0.12277614149421091d0 . 0.10953121808467986d0) :room-r
-%  (0.9946881982552835d0 . 0.011992196508589958d0))
+To identify how our approach fairs under different conditions, Table~\ref{tab:region} separates the results by CDSR type. The mean precision for the transferred regions ranged from .74 for the back rows of classrooms to 0 for the office in studio apartments. Comparing manually encoded against  target regions resulted in a minimum mean precision of .60. This occurred for the front of the classroom. The whole room precision, which is directly proportionally to the size of the target region, varied from .08 for the office to .35 for the living area.
 
 \subsection{Discussion}
 
-These results support the hypothesis that anchor points can provide a symbolic representation on top of sensor data for context-dependent spatial regions, and, when combined with qualitative spatial relations, they facilitate learning from a single example through analogical transfer. The relatively high manually encoded precisions and recalls indicate that the defined anchor points are a reasonable starting place for a symbolic representation. The lower scores typically resulted from target regions which were farther away from objects. While the inferred regions did not score as well as the manually encoded regions, they were considerably more precise than the room regions. The only case were transfer was not possible was between the two studio's living room cases. The objects which define the living area in one studio (sofa, TV, and bookshelves) are significantly different than the objects in the other (desk, bed, and sofa), as are the studios in general.
+These results support the hypothesis that anchor points can provide a symbolic representation on top of sensor data for context-dependent spatial regions, and, when combined with qualitative spatial relations, they facilitate learning from a single example through analogical transfer. Collaboration with human users requires a high precision and recall, because cognitive systems must be able to understand as well as refer to these regions in human environments. Consequently, the high manually encoded precisions and recalls indicate that the defined anchor points are a reasonable starting place for a symbolic representation. Our future work seeks to further evaluate the utility of this representation by embedding the cognitive system within a tasks with human users.
 
+The transferred regions were considerably more precise (.47) when compared to the room as whole (.17), and their recalls (.45) indicate that they captured almost half of the area indicated by the human user. Our approach performed the best when the extent of the context dependent spatial region is closely tied to objects as is the case in the front rows of the classroom with p's of .76 and .82 for the inferred and the manually encoded regions respectively. The system performs worst when the extent of the CDSR is defined as an unbounded area near or around particular objects. The office of a studio apartment is loosely defined as the region around the desk. This motivates one direction of future work to expand the vocabulary of anchor points to better capture these notions of space.
