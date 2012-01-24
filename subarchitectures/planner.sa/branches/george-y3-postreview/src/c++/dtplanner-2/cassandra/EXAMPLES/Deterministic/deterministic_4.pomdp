@@ -1,0 +1,31 @@
+# Simple deterministic problem
+
+discount : 0.95
+
+values : reward 
+
+states : one two three four
+
+actions : move-left move-right
+
+observations : observe-one observe-two observe-three observe-four
+
+start: 1.0 0.0 0.0 0.0
+
+T: move-right : one : two 1.0
+T: move-right : two : three 1.0
+T: move-right : three : four 1.0
+T: move-right : four : four 1.0
+
+T: move-left : four : three 1.0
+T: move-left : three : two 1.0
+T: move-left : two : one 1.0
+T: move-left : one : one 1.0
+
+
+R: * : four : * : * 5000.0
+
+O: * : one : observe-one 1.0
+O: * : two : observe-two 1.0
+O: * : three : observe-three 1.0
+O: * : four : observe-four 1.0

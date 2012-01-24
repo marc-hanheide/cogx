@@ -1,0 +1,1476 @@
+
+
+<<<<<<< .mine
+# CPPFLAGS := -ggdb $(WARNINGS) -pg -fmudflap -fmudflapth -fmudflapir -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+#-fprefetch-loop-arrays -ftracer -ftree-parallelize-loops=4 -fipa-matrix-reorg -fwhole-program -fsee -fsched-spec-load-dangerous -funsafe-loop-optimizations
+CPPFLAGS := $(OPTIMISE)  -fsee -fsched-spec-load-dangerous -funsafe-loop-optimizations -fprefetch-loop-arrays -ftracer -fipa-matrix-reorg -ftree-parallelize-loops=4  -fmodulo-sched -fmodulo-sched-allow-regmoves -fomit-frame-pointer -finline-functions -funroll-all-loops -mpush-args  -maccumulate-outgoing-args -mno-align-stringops  -minline-all-stringops -ffast-math -DNDEBUG -ftemplate-depth-1000 -I/data/private/grettonc/include/ -I./pegtl-0.30/include/ -std=c++0x -pedantic -Wall
+=======
+
+
+
+// int main(int argc, char** argv)
+// {    
+//     /*Some preliminary testing.*/
+//     Turnstyle::test__turnstyle_hh();//turnstyle.hh
+    
+//     assert(command_Line_Arguments.size() == 0);
+//     command_Line_Arguments = Command_Line_Arguments(argc, argv);
+    
+//     int seed = 2010;
+//     srandom(seed);
+//     srand(seed);
+
+//     while(read_in__domain_description()){};
+    
+//     while(read_in__problem_description()){};
+    
+//     assert(Planning::Parsing::domains.size() > 0);
+
+// //     for(auto domain = Planning::Parsing::domains.begin()
+// //             ; domain != Planning::Parsing::domains.end()
+// //             ; domain++){
+// //         std::cout<<*domain->second<<std::endl;
+// //     }
+    
+//     /*Testing exposure Wed Aug 25 15:41:33 BST 2010 ---*/
+    
+//     for(auto problem = Planning::Parsing::problems.begin()
+//             ; problem != Planning::Parsing::problems.end()
+//             ; problem++){
+            
+//         std::cout<<*problem->second->get__domain_Data()<<std::endl;
+//         std::cout<<*problem->second<<std::endl;
+        
+//         for(int i =0 ; i < 100; i++){
+//             std::cout<<problem->second->get__prescribed_action()<<std::endl;
+//         }
+//     }
+    
+//     INTERACTIVE_VERBOSER(true, 12000, "Passed test 1 :: "<<std::endl);
+
+// //     uint count_test2 = 0;
+// //     while(true){
+        
+// //         for(auto problem = Planning::Parsing::problems.begin()
+// //                 ; problem != Planning::Parsing::problems.end()
+// //                 ; problem++){
+// // //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
+// //             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+// //             solver->preprocess();
+
+// //             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
+// // //             solver->expand_belief_state_space();
+// //             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
+            
+// //             INTERACTIVE_VERBOSER(true, 10021, "Current state is :: "
+// //                                  <<*current_state<<std::endl
+// //                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+            
+// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+// //             for(uint i = 0; i < 10; i++){
+// //                 if(!solver->expand_belief_state_space()){
+// //                     break;
+// //                     VERBOSER(10501, "No starting state!"<<std::endl);
+// //                 } else {
+// //                     VERBOSER(10501, "Expanding (so far we have "
+// //                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl);
+                    
+// // //                     policy_Iteration();
+// //                 }
+// //             }
+// //             for(uint i = 0; i < 10; i++){
+// //                 policy_Iteration();
+// //                 VERBOSER(10501, "Expected reward is :: "
+// //                          <<current_state->get__expected_value()<<std::endl);
+// //             }
+            
+
+// // //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+// // //             policy_Iteration();
+            
+// //             for(auto i = 0; i < 10; i++){
+            
+// //                 INTERACTIVE_VERBOSER(true, 10501, "Current state is :: "
+// //                                      <<*current_state<<std::endl
+// //                                      <<"First element is :: "
+// //                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)
+// //                                      <<std::endl);
+                
+// //                 std::pair<Planning::Formula::Action_Proposition, uint> _action
+// //                     = solver->get_prescribed_action(current_state);
+            
+// //                 INTERACTIVE_VERBOSER(true, 10501, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+            
+// //                 auto observations = current_state->get__possible_observations_given_action(_action.second);
+            
+// //                 auto random_index = random() % observations.size();
+// //                 auto observation = observations[random_index];
+            
+// //                 Planning::POMDP_State* successor_state
+// //                     = solver->take_observation(current_state,
+// //                                                observation,
+// //                                                _action.second);
+            
+// //                 current_state = successor_state;
+            
+// //                 INTERACTIVE_VERBOSER(true, 10501, "Current belief state is :: "<<*current_state<<std::endl);
+// //             }
+
+        
+// //             delete solver;
+// //         }
+    
+// //         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
+// //     }
+
+
+
+
+
+
+        
+//     uint count_test2 = 0;
+// //     while(true){
+        
+//         for(auto problem = Planning::Parsing::problems.begin()
+//                 ; problem != Planning::Parsing::problems.end()
+//                 ; problem++){
+//             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
+// //             auto solver = new Planning::Simple_Online_Solver(*problem->second);//Planning::Solver*
+// //             auto solver = new Planning::Solver(*problem->second);//Planning::Solver*
+            
+//             INTERACTIVE_VERBOSER(true, 12000, "Made a solver, starting preprocessing.")
+            
+//             solver->preprocess();
+
+//             INTERACTIVE_VERBOSER(true, 12000, "Done preprocessing, now looking towards state expansion.");
+            
+//             QUERY_UNRECOVERABLE_ERROR(0 == solver->peek__next_belief_state_for_expansion()
+//                                       , "There is no starting belief state.\n"
+//                                       <<"This might be because no rewards are available in the problem.");
+            
+//             assert(0 != solver->peek__next_belief_state_for_expansion());//expansion_queue.size());
+// //             solver->expand_belief_state_space();
+//             auto current_state = solver->peek__next_belief_state_for_expansion();//expansion_queue.front();
+            
+//             INTERACTIVE_VERBOSER(true, 12000, "Current state is :: "
+//                                  <<*current_state<<std::endl
+//                                  <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+
+            
+// //             Planning::Policy_Iteration
+//             Planning::Policy_Iteration__GMRES policy_Iteration(solver->belief_state__space);
+// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+//             for(uint i = 0; i < 100; i++){
+//                 if(!solver->expand_belief_state_space()){
+//                     break;
+//                     VERBOSER(12000, "No starting state!"<<std::endl);
+//                 } else {
+//                     VERBOSER(12000, "Expanding (so far we have "
+//                              <<solver->belief_state__space.size()<<" beliefs)!"<<std::endl
+//                              <<"Expected reward is :: "
+//                              <<current_state->get__expected_value()<<std::endl);
+                
+//                     policy_Iteration();
+//                 }
+//             }
+
+// //             exit(0);
+            
+// //             double old_expected_reward = -1000000.0;
+            
+//             for(uint i = 0; i < 50; i++){
+//                 policy_Iteration();
+// //                 if(old_expected_reward != current_state->get__expected_value()){
+// //                      old_expected_reward = current_state->get__expected_value();
+// //                 } else {
+// //                     break;
+// //                 }
+                
+                
+//                 VERBOSER(12000, "Expected reward is :: "
+//                          <<current_state->get__expected_value()<<std::endl);
+//             }
+            
+
+// //             Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+// //             policy_Iteration();
+            
+//             for(auto i = 0; i < 10; i++){
+            
+//                 INTERACTIVE_VERBOSER(true, 12000, "Current state is :: "
+//                                      <<*current_state<<std::endl
+//                                      <<"First element is :: "
+//                                      <<*dynamic_cast<const Planning::State*>(current_state->get__belief_state().back().first)<<std::endl);
+                
+//                 std::pair<Planning::Formula::Action_Proposition, uint> _action
+//                     = solver->get_prescribed_action(current_state);
+            
+//                 INTERACTIVE_VERBOSER(true, 12000, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+            
+//                 auto observations = current_state->get__possible_observations_given_action(_action.second);
+            
+//                 auto random_index = random() % observations.size();
+//                 auto observation = observations[random_index];
+            
+//                 Planning::POMDP_State* successor_state
+//                     = solver->take_observation(current_state,
+//                                                observation,
+//                                                _action.second);
+            
+//                 current_state = successor_state;
+            
+//                 INTERACTIVE_VERBOSER(true, 12000, "Current belief state is :: "<<*current_state<<std::endl);
+//             }
+
+        
+// //             delete solver;
+//         }
+    
+//         INTERACTIVE_VERBOSER(true, 10004, "Passed test 2 :: "<<++count_test2<<std::endl);
+//   //   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+// //     for(auto problem = Planning::Parsing::problems.begin()
+// //             ; problem != Planning::Parsing::problems.end()
+// //             ; problem++){
+// //         Planning::Solver* solver = new Planning::Solver(*problem->second);
+// //         solver->preprocess();
+// //         solver->expand_belief_state_space();
+// //         auto current_state = solver->expansion_queue.front();
+// //         if(!solver->expand_belief_state_space()){
+// //             UNRECOVERABLE_ERROR("No starting state!"<<std::endl);
+// //         }
+        
+// //         for(auto i = 0; i < 10; i++){
+            
+// //             std::pair<Planning::Formula::Action_Proposition, uint> _action
+// //                 = solver->get_prescribed_action(current_state);
+            
+// //             INTERACTIVE_VERBOSER(true, 10002, "Prescribed action :: "<<_action.first<<" "<<_action.second<<std::endl);
+            
+// //             auto observations = current_state->get__possible_observations_given_action(_action.second);
+            
+// //             auto random_index = random() % observations.size();
+// //             auto observation = observations[random_index];
+            
+// //             Planning::POMDP_State* successor_state
+// //                 = solver->take_observation(current_state,
+// //                                            observation,
+// //                                            _action.second);
+            
+// //             current_state = successor_state;
+            
+// //             INTERACTIVE_VERBOSER(true, 10002, "Current belief state is :: "<<*current_state<<std::endl);
+// //         }
+
+        
+// //         delete solver;
+// //     }
+    
+//     INTERACTIVE_VERBOSER(true, 10004, "Passed test2 :: "<<std::endl);
+    
+// //     for(auto problem = Planning::Parsing::problems.begin()
+// //             ; problem != Planning::Parsing::problems.end()
+// //             ; problem++){
+        
+// //         INTERACTIVE_VERBOSER(true, 10004, "Making new solver :: "<<std::endl);
+// //         Planning::Solver* solver = new Planning::Solver(*problem->second);
+// //         INTERACTIVE_VERBOSER(true, 10004, "Made new solver, now preprocessing :: "<<std::endl);
+        
+// //         solver->preprocess();
+// //         INTERACTIVE_VERBOSER(true, 10004, "Done preprocessing, now expanding belief space :: "<<std::endl);
+// //         solver->expand_belief_state_space();
+// //         INTERACTIVE_VERBOSER(true, 10004, "Done belief expansion, now running PI :: "<<std::endl);
+        
+// //         Planning::Policy_Iteration policy_Iteration(solver->belief_state__space);
+// //         while(solver->expand_belief_state_space()){
+// //             INTERACTIVE_VERBOSER(true, 10004, "Expanded belief for state count :: "
+// //                                  <<solver->belief_state__space.size()<<std::endl);
+// //             policy_Iteration();
+// //         }
+        
+// //         delete solver;
+// //     }
+
+    
+// //     for(auto problem = Planning::Parsing::problems.begin()
+// //             ; problem != Planning::Parsing::problems.end()
+// //             ; problem++){
+        
+// //         std::cout<<*problem->second->get__domain_Data()<<std::endl;
+// //         std::cout<<*problem->second<<std::endl;
+        
+// //         for(int i =0 ; i < 100; i++){
+// //             std::cout<<problem->second->get__prescribed_action()<<std::endl;
+// //         }
+        
+// //         Planning::Solver solver(*problem->second);
+// //         solver.preprocess();
+// //         while(solver.expand_belief_state_space()){
+// //             INTERACTIVE_VERBOSER(true, 9096, "Expanding POMDP state"<<std::endl);
+// //         };
+        
+// //         std::cout<<*problem->second->get__domain_Data()<<std::endl;
+// //         std::cout<<*problem->second<<std::endl;
+// //     }
+
+
+    
+//     return 0;
+// }
+
+
+
+
+
+0.096 :--:> FFFTTTTTTTTTTTTTTFFFTFFFFTT
+0 := 0; 
+
+
+0.0768 :--:> FFTTTTTTTTTTTTTTTFFTFFFFFTT
+0 := 0; 
+
+
+0.2304 :--:> FFTTTTTTTTTTTTTTTFTFFFFFFTT
+0 := 0; 
+
+
+0.0576 :--:> FFTTTTTTTTTTTTTTTTFFFFFFFTT
+0 := 0; 
+
+
+0.0192 :--:> FFTTTTTTTTTTTTTTTFFFFFFFFTT
+0 := 0; 
+
+
+0.0048 :--:> FFFTTTTTTTTTTTTTTFFFTTFFTFT
+0 := 0; 
+
+
+0.00384 :--:> FFTTTTTTTTTTTTTTTFFTFTFFTFT
+0 := 0; 
+
+
+0.01152 :--:> FFTTTTTTTTTTTTTTTFTFFTFFTFT
+0 := 0; 
+
+
+0.00288 :--:> FFTTTTTTTTTTTTTTTTFFFTFFTFT
+0 := 0; 
+
+
+0.00096 :--:> FFTTTTTTTTTTTTTTTFFFFTFFTFT
+0 := 0; 
+
+
+0.0144 :--:> FFFTTTTTTTTTTTTTTFFFTTFTFFT
+0 := 0; 
+
+
+0.01152 :--:> FFTTTTTTTTTTTTTTTFFTFTFTFFT
+0 := 0; 
+
+
+0.03456 :--:> FFTTTTTTTTTTTTTTTFTFFTFTFFT
+0 := 0; 
+
+
+0.00864 :--:> FFTTTTTTTTTTTTTTTTFFFTFTFFT
+0 := 0; 
+
+
+0.00288 :--:> FFTTTTTTTTTTTTTTTFFFFTFTFFT
+0 := 0; 
+
+
+0.0036 :--:> FFFTTTTTTTTTTTTTTFFFTTTFFFT
+0 := 0; 
+
+
+0.00288 :--:> FFTTTTTTTTTTTTTTTFFTFTTFFFT
+0 := 0; 
+
+
+0.00864 :--:> FFTTTTTTTTTTTTTTTFTFFTTFFFT
+0 := 0; 
+
+
+0.00216 :--:> FFTTTTTTTTTTTTTTTTFFFTTFFFT
+0 := 0; 
+
+
+0.00072 :--:> FFTTTTTTTTTTTTTTTFFFFTTFFFT
+0 := 0; 
+
+
+0.0012 :--:> FFFTTTTTTTTTTTTTTFFFTTFFFFT
+0 := 0; 
+
+
+0.00096 :--:> FFTTTTTTTTTTTTTTTFFTFTFFFFT
+0 := 0; 
+
+
+0.00288 :--:> FFTTTTTTTTTTTTTTTFTFFTFFFFT
+0 := 0; 
+
+
+0.00072 :--:> FFTTTTTTTTTTTTTTTTFFFTFFFFT
+0 := 0; 
+
+
+0.00024 :--:> FFTTTTTTTTTTTTTTTFFFFTFFFFT
+0 := 0; 
+
+
+0.162 :--:> FFFTTTTTTTTTTTTTTFFFTFFFFTF
+0 := 0; 
+
+
+0.0036 :--:> FFTTTTTTTTTTTTTTTFFTFFFFFTF
+0 := 0; 
+
+
+0.0108 :--:> FFTTTTTTTTTTTTTTTFTFFFFFFTF
+0 := 0; 
+
+
+0.0027 :--:> FFTTTTTTTTTTTTTTTTFFFFFFFTF
+0 := 0; 
+
+
+0.0009 :--:> FFTTTTTTTTTTTTTTTFFFFFFFFTF
+0 := 0; 
+
+
+0.0396 :--:> FFFTTTTTTTTTTTTTTFFFTTFFTFF
+0 := 0; 
+
+
+0.00088 :--:> FFTTTTTTTTTTTTTTTFFTFTFFTFF
+0 := 0; 
+
+
+0.00264 :--:> FFTTTTTTTTTTTTTTTFTFFTFFTFF
+0 := 0; 
+
+
+0.00066 :--:> FFTTTTTTTTTTTTTTTTFFFTFFTFF
+0 := 0; 
+
+
+0.00022 :--:> FFTTTTTTTTTTTTTTTFFFFTFFTFF
+0 := 0; 
+
+
+0.1188 :--:> FFFTTTTTTTTTTTTTTFFFTTFTFFF
+0 := 0; 
+
+
+0.00264 :--:> FFTTTTTTTTTTTTTTTFFTFTFTFFF
+0 := 0; 
+
+
+0.00792 :--:> FFTTTTTTTTTTTTTTTFTFFTFTFFF
+0 := 0; 
+
+
+0.00198 :--:> FFTTTTTTTTTTTTTTTTFFFTFTFFF
+0 := 0; 
+
+
+0.00066 :--:> FFTTTTTTTTTTTTTTTFFFFTFTFFF
+0 := 0; 
+
+
+0.0297 :--:> FFFTTTTTTTTTTTTTTFFFTTTFFFF
+0 := 0; 
+
+
+0.00066 :--:> FFTTTTTTTTTTTTTTTFFTFTTFFFF
+0 := 0; 
+
+
+0.00198 :--:> FFTTTTTTTTTTTTTTTFTFFTTFFFF
+0 := 0; 
+
+
+0.000495 :--:> FFTTTTTTTTTTTTTTTTFFFTTFFFF
+0 := 0; 
+
+
+0.000165 :--:> FFTTTTTTTTTTTTTTTFFFFTTFFFF
+0 := 0; 
+
+
+0.0099 :--:> FFFTTTTTTTTTTTTTTFFFTTFFFFF
+0 := 0; 
+
+
+0.00022 :--:> FFTTTTTTTTTTTTTTTFFTFTFFFFF
+0 := 0; 
+
+
+0.00066 :--:> FFTTTTTTTTTTTTTTTFTFFTFFFFF
+0 := 0; 
+
+
+0.000165 :--:> FFTTTTTTTTTTTTTTTTFFFTFFFFF
+0 := 0; 
+
+
+5.5e-05 :--:> FFTTTTTTTTTTTTTTTFFFFTFFFFF
+0 := 0; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0.126 :--:> FFFTTTTTTTTTTTTTTFFFTFFFFT
+0 := 0; 
+
+
+0.0028 :--:> FFTTTTTTTTTTTTTTTFFTFFFFFT
+0 := 0; 
+
+
+0.0084 :--:> FFTTTTTTTTTTTTTTTFTFFFFFFT
+0 := 0; 
+
+
+0.0021 :--:> FFTTTTTTTTTTTTTTTTFFFFFFFT
+0 := 0; 
+
+
+0.0007 :--:> FFTTTTTTTTTTTTTTTFFFFFFFFT
+0 := 0; 
+
+
+0.0108 :--:> FFFTTTTTTTTTTTTTTFFFTTFFTF
+0 := 0; 
+
+
+0.00024 :--:> FFTTTTTTTTTTTTTTTFFTFTFFTF
+0 := 0; 
+
+
+0.00072 :--:> FFTTTTTTTTTTTTTTTFTFFTFFTF
+0 := 0; 
+
+
+0.00018 :--:> FFTTTTTTTTTTTTTTTTFFFTFFTF
+0 := 0; 
+
+
+6e-05 :--:> FFTTTTTTTTTTTTTTTFFFFTFFTF
+0 := 0; 
+
+
+0.0324 :--:> FFFTTTTTTTTTTTTTTFFFTTFTFF
+0 := 0; 
+
+
+0.00072 :--:> FFTTTTTTTTTTTTTTTFFTFTFTFF
+0 := 0; 
+
+
+0.00216 :--:> FFTTTTTTTTTTTTTTTFTFFTFTFF
+0 := 0; 
+
+
+0.00054 :--:> FFTTTTTTTTTTTTTTTTFFFTFTFF
+0 := 0; 
+
+
+0.00018 :--:> FFTTTTTTTTTTTTTTTFFFFTFTFF
+0 := 0; 
+
+
+0.0081 :--:> FFFTTTTTTTTTTTTTTFFFTTTFFF
+0 := 0; 
+
+
+0.00018 :--:> FFTTTTTTTTTTTTTTTFFTFTTFFF
+0 := 0; 
+
+
+0.00054 :--:> FFTTTTTTTTTTTTTTTFTFFTTFFF
+0 := 0; 
+
+
+0.000135 :--:> FFTTTTTTTTTTTTTTTTFFFTTFFF
+0 := 0; 
+
+
+4.5e-05 :--:> FFTTTTTTTTTTTTTTTFFFFTTFFF
+0 := 0; 
+
+
+0.0027 :--:> FFFTTTTTTTTTTTTTTFFFTTFFFF
+0 := 0; 
+
+
+6e-05 :--:> FFTTTTTTTTTTTTTTTFFTFTFFFF
+0 := 0; 
+
+
+0.00018 :--:> FFTTTTTTTTTTTTTTTFTFFTFFFF
+0 := 0; 
+
+
+4.5e-05 :--:> FFTTTTTTTTTTTTTTTTFFFTFFFF
+0 := 0; 
+
+
+1.5e-05 :--:> FFTTTTTTTTTTTTTTTFFFFTFFFF
+0 := 0; 
+
+
+0.8 :--:> FFFTTTTTTTTTTTTTTFFFFFFFFF
+0 := 0; 
+
+
+
+
+
+
+
+
+
+
+
+
+// State& report__state(State&){
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+
+//         /* \result is FALSE if the state has already been discovered. */
+//         State& report__state(State&);//{UNRECOVERABLE_ERROR("unimplemented");};
+        
+
+Seems that for the same action and observation, that we are adding the entry twice at a belief.
+
+The observation i nthis case is equal, and yet the pointers are not equajl. So this is a deref issuej. 
+
+
+(label place_0_pt_spatial_data kitchen )
+(label place_0_pt_spatial_data kitchen )
+    
+//     if(is_top_level()){
+
+//         assert(!( (get__precondition()->get__disjunctive_clauses().size() == 0) &&
+//                   (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ));
+        
+//         if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
+//            get__precondition()->is_satisfied(state)){
+            
+//             if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
+//                 get__execution_precondition()->is_satisfied(state)){
+                
+//                 set__satisfied(state);
+//                 state.push__observation
+//                     (this);
+//             }
+//         }
+//     } else {
+//         if( (get__precondition()->get__disjunctive_clauses().size() == 0) &&
+//             (get__execution_precondition()->get__disjunctive_clauses().size() == 0)){
+            
+//             assert(get__level_of_satisfaction(state) == 1);
+//             set__satisfied(state);
+//             state.push__observation
+//                 (this);
+            
+//         } else if ( (get__precondition()->get__disjunctive_clauses().size() == 0) ||
+//                     (get__execution_precondition()->get__disjunctive_clauses().size() == 0) )
+//         {
+//             QUERY_UNRECOVERABLE_ERROR(get__level_of_satisfaction(state) > 2
+//                                       , *this<<std::endl
+//                                       <<" Expecting a level of satisfaction not grater than 2, but got :: "
+//                                       <<get__level_of_satisfaction(state)<<std::endl);
+            
+//             if(get__level_of_satisfaction(state) == 2){
+//                 set__satisfied(state);
+//                 state.push__observation
+//                     (this);
+//             }
+//         } else if (get__level_of_satisfaction(state) == 3) {
+//             set__satisfied(state);
+//             state.push__observation
+//                 (this);
+//         }
+//     }
+    
+    
+    
+//     /*If the action has no precondition.*/
+//     if((get__precondition()->get__disjunctive_clauses().size() == 0) ||
+//        get__precondition()->is_satisfied(state)){
+
+//         if( (get__execution_precondition()->get__disjunctive_clauses().size() == 0) ||
+//             get__execution_precondition()->is_satisfied(state)){
+
+//             state.push__observation
+//                 (this);
+            
+//             auto listeners = get__traversable__listeners();
+//             for(auto listener = listeners.begin()
+//                     ; listener != listeners.end()
+//                     ; listener++){
+//                 (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//             }
+//         }        
+//     } 
+
+
+
+  
+//         if(get__compulsory()){
+            
+//             if(get__lookup_probability()){
+//                 WARNING("Unimplemented support for probability lookup.");
+//             }
+            
+//             double probability = get__probability(state);
+            
+//             if(are_Doubles_Close(probability, 1.0)){
+//                 state.push__compulsory_transformation(this);
+//             } else {
+//                 state.push__compulsory_generative_transformation(this);
+//             }
+            
+//             auto listeners = Satisfaction_Listener::get__traversable__listeners();
+//             for(auto listener = listeners.begin()
+//                     ; listener != listeners.end()
+//                     ; listener++){
+//                 (*listener).cxx_get<Satisfaction_Listener>()
+//                     ->report__newly_satisfied(state);
+//             }
+            
+//             report__newly_unsatisfied(state);
+//         } else {
+//             state.add__optional_transformation(this);
+//         }
+    
+    
+//     uint satisfaction_requirement = 0;
+//     /*If the action has no precondition.*/
+//     if(get__precondition()->get__disjunctive_clauses().size() == 0){
+        
+//         QUERY_UNRECOVERABLE_ERROR(!get__compulsory(),
+//                                   "Was only expecting compulsory (i.e., sub-)actions with"
+//                                   <<" null preconditions, but now we got :: "<<std::endl
+//                                   <<*this<<std::endl);
+        
+//         satisfaction_requirement = 1;
+//     } else
+//     /*If the action has a precondition.*/
+//     {
+//         /* If the action is not compulsary, then only its CNF
+//          * precondition has to be satisfied to make it
+//          * executable. Otherwise (if it is compulsary), the listener
+//          * action must have been executed, and the precondition CNF
+//          * must be satisfied.*/
+//         satisfaction_requirement = (get__compulsory())?2:1;
+//     }
+
+//     assert(get__number_of_satisfied_conditions(state) <= 2);
+    
+//     /*If this transformation is now executable.*/
+//     if(satisfaction_requirement == get__number_of_satisfied_conditions(state)){
+//         set__satisfied(state);
+        
+//         INTERACTIVE_VERBOSER(true, 8060, "Adding action :: "
+//                              <<*this<<std::endl);
+        
+//         if(get__compulsory()){
+            
+//             if(get__lookup_probability()){
+//                 WARNING("Unimplemented support for probability lookup.");
+//             }
+            
+//             double probability = get__probability(state);
+            
+//             if(are_Doubles_Close(probability, 1.0)){
+//                 state.push__compulsory_transformation(this);
+//             } else {
+//                 state.push__compulsory_generative_transformation(this);
+//             }
+            
+//             auto listeners = Satisfaction_Listener::get__traversable__listeners();
+//             for(auto listener = listeners.begin()
+//                     ; listener != listeners.end()
+//                     ; listener++){
+//                 (*listener).cxx_get<Satisfaction_Listener>()
+//                     ->report__newly_satisfied(state);
+//             }
+            
+//             report__newly_unsatisfied(state);
+//         } else {
+//             state.add__optional_transformation(this);
+//         }
+//     }
+
+
+
+
+
+
+//     /*Is a positive symbol.*/
+//     if(!get__sign()){
+//         for(auto negative = negatives->begin()
+//                 ; negative != negatives->end()
+//                 ; negative++){
+//             if(get__action_symbol() != (*negative)->get__action_symbol()){
+                
+//                 (*negative)->report__newly_satisfied(state);
+//             } else {
+//                 // (*negative)->report__newly_unsatisfied(state);
+// //                 negation_of_this = Action_Literal__Pointer(*negative); 
+//             }
+//         }
+//     }
+    
+//     /*Is a positive symbol.*/
+//     if(!get__sign()){
+
+        
+//         auto listeners = get__traversable__listeners();
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
+//                                  <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+//         }
+        
+//         for(auto negative = negatives->begin()
+//                 ; negative != negatives->end()
+//                 ; negative++){
+//             if(get__action_symbol() != (*negative)->get__action_symbol()){
+//                 (*negative)->report__newly_unsatisfied(state);
+//             } // else {
+// //                 (*negative)->report__newly_unsatisfied(state);
+// //                 negation_of_this = Action_Literal__Pointer(*negative); 
+// //             }
+//         }
+//     }
+
+//         std::vector< 
+//             std::vector<
+//                 std::vector<
+//                     double> > >  successor_probability;
+
+//             /* Functionality to change \argument{State} to reflect the
+//              * effects of a call to \member{flip()}. */
+//             void flip_satisfaction(State&) const;
+
+
+
+/* PRIVATE */
+void Literal::flip_satisfaction(State& state) const
+{
+    
+}
+
+//     bool was_satisfied = is_satisfied(state);
+    
+    flip_satisfaction(state);
+    
+//     auto listeners = get__traversable__listeners();
+//     if(was_satisfied){
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 7002, "Just UNSATISFIED literal  :: "<<*this<<std::endl
+//                                  <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_unsatisfied(state);
+//         }
+//     } else {
+//         for(auto listener = listeners.begin()
+//                 ; listener != listeners.end()
+//                 ; listener++){
+//             INTERACTIVE_VERBOSER(true, 7002, "Just SATISFIED literal  :: "<<*this<<std::endl
+//                                  <<"Waking listener :: "<<(*listener).cxx_get<Satisfaction_Listener>()<<std::endl);
+//             (*listener).cxx_get<Satisfaction_Listener>()->report__newly_satisfied(state);
+//         }
+//     }
+
+// void Literal::flip_variable_on(State& state) const
+// {
+//     /*negative*/
+//     if(get__sign()){
+//         if(!is_satisfied(state)){
+//             flip(state);
+//         } 
+//     }
+//     /*positive*/
+//     else {
+//         if(is_satisfied(state)){
+//             flip(state);
+//         }
+//     }
+// }
+
+// void Literal::flip_variable_off(State& state) const
+// {
+//     if(get__sign()){
+//         if(is_satisfied(state)){
+//             flip(state);
+//         } 
+//     } else {
+//         if(!is_satisfied(state)){
+//             flip(state);
+//         }
+//     }
+// }
+
+
+
+//         /* For each \LHS{action}, we have the \RHS{probability} that
+//          * that action leads to a particular successor. */
+//         typedef std::tr1::tuple<uint, double> Successor_Index;
+
+//         /* Description of state transition function from *this
+//          * state. */
+//         typedef std::map<Successor_Index
+//                          , Markov_Decision_Process_State> Successors;
+
+//         /* Probability of getting a particular successor state. */
+//         typedef std::map<Markov_Decision_Process_State
+//                          , Successor_Index> Successor_Probability;
+
+//         /* (see \typedef{Successors}) */
+//         Successors successors;
+
+//         /* (see \typedef{Successor_Probability}) */
+//         Successor_Probability successor_Probability;
+
+
+
+//     std::ostringstream __new_action_name;
+//     Planning::Action_Name old__action_name = action_Proposition.get__name();
+//     Planning::Constant_Arguments arguments = action_Proposition.get__arguments();
+//     __new_action_name<<old__action_name
+//                      <<":numeric:+"
+//                      <<count_of_actions_posted++;
+            
+//     auto _new_action_name = __new_action_name.str();
+//     NEW_referenced_WRAPPED(runtime_Thread
+//                            , Planning::Action_Name
+//                            , new__action_name
+//                            , _new_action_name);
+            
+//     NEW_referenced_WRAPPED(runtime_Thread
+//                            , Formula::Action_Proposition
+//                            , new__action_proposition
+//                            , new__action_name
+//                            , arguments);
+
+
+
+//         if(!processing_negative){
+//             INTERACTIVE_VERBOSER(true, 3101, " -- Needed to be TRUE :: "<<fact);
+
+            
+//             statically_false__starting_always_false(fact);
+//         } else if (processing_negative) {
+//             INTERACTIVE_VERBOSER(true, 3101, " -- Needed to be FALSE :: "<<fact);
+
+            
+            
+            
+//         }
+        
+        
+//         auto predicate_index = fact->get__name().get__id();
+//         auto _arguments = fact->get__arguments();
+
+//         Argument_List arguments(_arguments.size());
+        
+//         for(auto i = 0; i < arguments.size(); i++){
+//             if(_arguments[i].test_cast<Planning::Variable>()){
+//                 arguments[i] = X_constant;
+//             } else {
+//                 arguments[i] = _arguments[i];
+//             }
+//         }
+        
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Ground form of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        
+//         auto cached_Partial_Assignment_Satisfiability = cached_satisfiable.find(predicate_index);
+        
+        
+//     }
+
+//     if(!domain_Data.in_delete_effect(fact->get__name())){
+        
+//     }
+    
+    
+    
+//     if(!processing_negative && ){
+
+//         INTERACTIVE_VERBOSER(true, 3101, "Got static FALSE first-order fact :: "<<fact);
+        
+//         auto predicate_index = fact->get__name().get__id();
+//         auto _arguments = fact->get__arguments();
+
+//         Argument_List arguments(_arguments.size());
+        
+//         for(auto i = 0; i < arguments.size(); i++){
+//             if(_arguments[i].test_cast<Planning::Variable>()){
+//                 arguments[i] = X_constant;
+//             } else {
+//                 arguments[i] = _arguments[i];
+//             }
+//         }
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Ground form of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+        
+        
+//         auto cached_Partial_Assignment_Satisfiability = cached_satisfiable.find(predicate_index);
+        
+//         if(cached_Partial_Assignment_Satisfiability == cached_satisfiable.end()){
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Had not cached ground form of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             cached_satisfiable[predicate_index] = std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+//                 , Cached_Partial_Assignment_Unsatisfiability>();
+//             cached_Partial_Assignment_Satisfiability = cached_satisfiable.find(predicate_index);
+//         }
+        
+//         Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//             std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+//         Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+//             std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+        
+//         if(satisfiable__cached.find(arguments) == satisfiable__cached.end()){
+//             assert(!(unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()));
+            
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+            
+//             return Result(Subformula(fact), true);
+//         } else if (unsatisfiable__cached.find(arguments) == unsatisfiable__cached.end()) {
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cached UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             return Result(formula__false, false);
+//         }
+           
+//         if(problem_Data.statically_satisfiable(*fact)){
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cache-ING POSSIBLY GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+            
+//             satisfiable__cached.insert(arguments);
+//             return Result(Subformula(fact), true);
+//         } else {
+//             INTERACTIVE_VERBOSER(true, 3101, "FALSE CASE :: Cache-ING UN-GROUNDABLE ::  of first-order fact :: "<<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             unsatisfiable__cached.insert(arguments);
+//             return Result(formula__false, false);
+//         }
+//     }
+
+
+//     if(processing_negative && !domain_Data.in_add_effect(fact->get__name())){
+        
+//         INTERACTIVE_VERBOSER(true, 3101, "Got static FALSE first-order fact :: "<<fact);
+        
+        
+//         auto predicate_index = fact->get__name().get__id();
+//         auto _arguments = fact->get__arguments();
+
+//         Argument_List arguments(_arguments.size());
+//         for(auto i = 0; i < arguments.size(); i++){
+//             if(_arguments[i].test_cast<Planning::Variable>()){
+//                 arguments[i] = X_constant;
+//             } else {
+//                 arguments[i] = _arguments[i];
+//             }
+//         }
+           
+//         INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Ground form of first-order fact :: "
+//                              <<fact->get__name()<<" "<<arguments<<std::endl);
+        
+//         auto cached_Partial_Assignment_Satisfiability = cached_unsatisfiable.find(predicate_index);
+
+//         if(cached_Partial_Assignment_Satisfiability == cached_unsatisfiable.end()){
+//             INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Had not cached TRUE first-order fact :: "<<fact);
+            
+//             cached_unsatisfiable[predicate_index] = std::tr1::tuple<Cached_Partial_Assignment_Satisfiability
+//                 , Cached_Partial_Assignment_Unsatisfiability>();
+//             cached_Partial_Assignment_Satisfiability = cached_unsatisfiable.find(predicate_index);
+//         }
+           
+//         Cached_Partial_Assignment_Satisfiability& satisfiable__cached =
+//             std::tr1::get<0>(cached_Partial_Assignment_Satisfiability->second);
+//         Cached_Partial_Assignment_Unsatisfiability& unsatisfiable__cached =
+//             std::tr1::get<1>(cached_Partial_Assignment_Satisfiability->second);
+
+//         if(satisfiable__cached.find(arguments) != satisfiable__cached.end()){
+//             return Result(formula__true, true);
+//         } else if (unsatisfiable__cached.find(arguments) != unsatisfiable__cached.end()) {
+//             return Result(Subformula(fact), true);
+//         }
+           
+//         if(problem_Data.statically_unsatisfiable(*fact)){
+//             satisfiable__cached.insert(arguments);
+//             INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Cache-ING ALWAYS GROUNDABLE ::  of first-order fact :: "
+//                                  <<fact->get__name()<<" "<<arguments<<std::endl);
+            
+//             return Result(formula__true, true);
+//         } else {
+//             INTERACTIVE_VERBOSER(true, 3101, "TRUE CASE :: Cache-ING POSSIBLY GROUNDABLE ::  of first-order fact :: "
+//                                  <<fact->get__name()<<" "<<arguments<<std::endl);
+//             unsatisfiable__cached.insert(arguments);
+//             return Result(Subformula(fact), true);
+//         }
+//     }
+    
+//     INTERACTIVE_VERBOSER(true, 3101, "Got dynamic first-order fact :: "<<fact);
+    
+    
+//     return Result(Subformula(fact), true);
+
+State_Transformation::State_Transformation(bool compulsory)
+    :compulsory(compulsory)
+{
+}
+
+        
+void State_Transformation::report__newly_satisfied(State& state)
+{
+    if(compulsory){
+        state.add__compulsory_transformation(this); 
+    } else {
+        state.add__optional_transformation(this);
+    }
+}
+
+void State_Transformation::report__newly_unsatisfied(State& state)
+{
+    if(compulsory){
+        state.retract__compulsory_transformation(this); 
+    } else {
+        state.retract__optional_transformation(this);
+    }   
+}
+        
+bool State_Transformation::is__compulsory() const
+{
+    return compulsory;
+}
+
+void State_Transformation::set__compulsory(bool in)
+{
+   compulsory = in; 
+}
+
+
+
+// State& STRIPS_Action::operator()(const State&)
+// {
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+// void STRIPS_Action::add__add(uint)
+// {
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+// void STRIPS_Action::add__delete(uint)
+// {
+//     UNRECOVERABLE_ERROR("unimplemented");
+// }
+
+
+
+
+
+
+
+
+// void  Domain_Data::address___derived_Predicates__types_pending()
+// {
+//     if(!derived_Predicates__types_pending.size()) return;
+    
+//     Planning::Formula::Derived_Predicates to_delete;
+//     Planning::Formula::Derived_Predicates to_include;
+
+//     /* Some new variables were just now quantified. */
+//     auto variable_symbols = get__symbols(typed_Arguments);
+//     auto type_symbols = get__types(typed_Arguments);
+        
+//     for(auto dp = derived_Predicates__types_pending.begin()
+//             ; dp != derived_Predicates__types_pending.end()
+//             ; dp++){
+        
+//         Planning::Variables pending_variables = dp->get__pending_arguments();
+//         Planning::Typed_Arguments argument_spec = dp->get__arguments();
+
+//         bool changed = false;
+
+//         /*For newely acquired variable descriptions (from \member{typed_Arguments})*/
+//         for(auto i = 0
+//                 ; i < variable_symbols.size()
+//                 ; i++){
+
+//             assert(variable_symbols[i].test_cast<Variable>());
+            
+//             auto var = variable_symbols[i].do_cast_and_copy<Variable>();
+//             auto types = type_symbols[i];
+            
+//             if(pending_variables.find(var) != pending_variables.end()){
+//                 pending_variables.erase(var);
+//                 get__symbols(argument_spec).push_back(variable_symbols[i]);
+//                 get__types(argument_spec).push_back(types);
+//                 changed = true;
+//             }
+//         }
+
+//         if(changed){
+//             to_delete.insert(*dp);
+            
+//             NEW_object_referenced_WRAPPED(Planning::Formula::Derived_Predicate
+//                                           , tmp
+//                                           , dp->get__name()
+//                                           , argument_spec
+//                                           , pending_variables
+//                                           , dp->get__formula()
+//                                           , dp->get__type()
+//                                           , dp->get__variable()
+//                                           , ((dp->get__genesis() > -1)
+//                                              ?(dp->get__genesis())
+//                                              :(dp->get__id())));
+            
+//             if(!pending_variables.size()){
+//                 derived_Predicates__artificial.insert(tmp);
+//             } else {
+//                 to_include.insert(tmp);
+//             }
+//         }
+//     }
+
+
+//     for(auto p = to_delete.begin()
+//             ; p != to_delete.end()
+//             ; p++){
+//         auto old_size = derived_Predicates__types_pending.size();
+//         derived_Predicates__types_pending.erase(*p);
+//         QUERY_UNRECOVERABLE_ERROR(old_size >= derived_Predicates__types_pending.size(),
+//                                   "Attempt to remove predicate :: "<<*p<<std::endl
+//                                   <<"with out of scope variables :: "<<std::tr1::get<0>(p->contents())<<std::endl
+//                                   <<"has failed.");
+//     }
+    
+//     for(auto p = to_include.begin()
+//             ; p != to_include.end()
+//             ; p++){
+//         derived_Predicates__types_pending.insert(*p);
+//     }
+// }
+
+
+
+// CXX__deref__shared_ptr<basic_type>
+// Domain_Data::complete__forall_formula()
+// {
+//     VERBOSER(31, "Universal quantification.");
+
+//     QUERY_UNRECOVERABLE_ERROR(get__symbols(typed_Arguments).size() != 1,
+//                               "Expecting one quantified variable, but got :: "<<typed_Arguments<<std::endl);
+    
+//     assert(get__symbols(typed_Arguments).size() == 1);
+//     assert(get__symbols(typed_Arguments).back().test_cast<Variable>());
+//     Planning::Variable quantified_variable
+//         = get__symbols(typed_Arguments).back().do_cast_and_copy<Variable>();
+    
+//     QUERY_WARNING(variables.find(quantified_variable) == variables.end()
+//                   , "Pointless quantifier :: (forall (?"<<quantified_variable<<") ("
+//                   <<subformulae[parsing_level + 1].back()<<")"<<std::endl
+//                   <<"Because variable "<<quantified_variable
+//                   <<" does not appear in formula. Recovering by skipping quantifier."<<std::endl);
+    
+//     if(variables.find(quantified_variable) == variables.end()){
+//         variables.erase(quantified_variable);
+//         typed_Arguments = Typed_Arguments();
+//         return subformulae[parsing_level + 1].back();
+//     }
+//     variables.erase(quantified_variable);
+    
+//     assert(subformulae.find(parsing_level + 1) != subformulae.end());
+//     assert(subformulae[parsing_level + 1].size());
+//     std::ostringstream oss;
+//     oss<<subformulae[parsing_level + 1][0];
+
+//     NEW_object_referenced_WRAPPED(Planning::Predicate_Name,
+//                                   name,
+//                                   oss.str());
+
+    
+    
+//     Variables _variables = variables;
+    
+//     auto typed_variables = std::tr1::get<0>(std::tr1::get<1>(action_Header.contents()));
+//     auto variablex_types = std::tr1::get<1>(std::tr1::get<1>(action_Header.contents()));
+    
+//     for(auto variable = variables.begin()
+//             ; variable != variables.end()
+//             ; variable++){
+
+            
+//         for(auto i = 0; i < typed_variables.size(); i++){
+            
+            
+//             assert(typed_variables[i].test_cast<Variable>());
+//             auto actual_variable = typed_variables[i].do_cast<Variable>();
+            
+//             if(*variable == *actual_variable){
+//                 VERBOSER(31, "NOT MISSING "<<*variable<<std::endl);
+//                 std::tr1::get<0>(typed_Arguments).push_back(typed_variables[i]);
+//                 std::tr1::get<1>(typed_Arguments).push_back(variablex_types[i]);
+//                 _variables.erase(*variable);
+//             }
+//         }
+//     }
+    
+
+//     QUERY_UNRECOVERABLE_ERROR(
+//         subformulae[parsing_level + 1].size() != 1,
+//         "Got a quantified variable without a formula.");
+    
+//     NEW_object_referenced_WRAPPED_deref_POINTER
+//         (Planning::Formula::Derived_Predicate
+//          , tmp
+//          , name
+//          , typed_Arguments
+//          , _variables
+//          , subformulae[parsing_level + 1].back()
+//          , Planning::enum_types::forall
+//          , quantified_variable
+//          , -1
+//          );
+    
+//     VERBOSER(26, "GOT :: "<<name<<std::endl<<std::endl
+//              <<typed_Arguments<<std::endl<<std::endl
+//              <<_variables<<std::endl<<std::endl
+//              <<subformulae[parsing_level + 1].back()<<std::endl<<std::endl
+//              <<Planning::enum_types::forall<<std::endl<<std::endl
+//              <<quantified_variable<<std::endl<<std::endl);
+
+    
+//     VERBOSER(31, "GOT :: "<<tmp<<std::endl);
+    
+//     if(!_variables.size()){
+//         VERBOSER(31, "CONFIRMED :: "<<tmp<<std::endl);
+//         derived_Predicates__artificial
+//             .insert(*dynamic_cast<Planning::Formula::Derived_Predicate*>(tmp.get().get()));
+//     } else {
+//         VERBOSER(31, "PENDING :: "<<tmp<<std::endl);
+//         derived_Predicates__types_pending
+//             .insert(*dynamic_cast<Planning::Formula::Derived_Predicate*>(tmp.get().get()));
+//     }
+
+//     address___derived_Predicates__types_pending();
+    
+//     typed_Arguments = Typed_Arguments();
+
+//     return tmp;
+// }
+
+//     using namespace Planning;
+    
+//     Argument_List argument_List;
+//     Argument_Types argument_Types;
+//     Typed_Arguments typed_Arguments;
+//     Predicate predicate;
+//     Predicates predicates;
+//     Types types;
+//     NEW_WRAPPED(Predicate_Name, predicate_Name, "name");
+//     NEW_WRAPPED(Type, t, "S");
+//     types.insert(t);
+//     NEW_WRAPPED_deref_POINTER(Variable, v, "x");
+//     argument_List.push_back(v);
+//     argument_Types.push_back(types);
+//     std::tr1::get<0>(typed_Arguments) = argument_List;
+//     std::tr1::get<1>(typed_Arguments) = argument_Types;
+//     NEW_WRAPPED(Predicate, p, predicate_Name, typed_Arguments);
+//     NEW_WRAPPED(Predicate, pp, predicate_Name, typed_Arguments);
+
+//     predicates.insert(p);
+//     auto size1 = predicates.size();
+//     predicates.insert(pp);
+//     auto size2 = predicates.size();
+
+//     assert(size1 == size2);
+    
+//     NEW_WRAPPED_deref_POINTER(Variable, vv, "x1");
+//     argument_List.push_back(vv);
+    
+//     Argument_Types argument_Types2;
+//     argument_Types2.push_back(types);
+//     argument_Types2.push_back(types);
+//     assert(argument_Types2 != argument_Types);
+//     assert(argument_Types < argument_Types2 || argument_Types2 < argument_Types);
+    
+//     Typed_Arguments typed_Arguments2;
+//     std::tr1::get<0>(typed_Arguments2) = argument_List;
+//     std::tr1::get<1>(typed_Arguments2) = argument_Types2;
+    
+//     NEW_WRAPPED(Predicate, ppp, predicate_Name, typed_Arguments2);
+//     predicates.insert(ppp);
+//     std::cerr<<predicates.size()<<std::endl;
+//     std::cerr<<ppp<<" "<<ppp.hash_value()<<std::endl;
+//     std::cerr<<p<<" "<<p.hash_value()<<std::endl;
+        
+//     exit(0);

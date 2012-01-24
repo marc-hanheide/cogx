@@ -1,0 +1,95 @@
+(define (domain cogx)
+  ;; the planner domain is case insensitive, the beliefs are mixed
+  ;; case, though here we only use lower case...
+  (:requirements :mapl :adl :object-fluents :action-costs)
+  
+  (:types 
+   place place_id - object
+   person person_id person_name  - object
+   visualobject visualobject_id visualobject_label - object
+   robot - agent
+   )
+  
+  (:predicates
+   (connected ?n1 - place ?n2 - place)
+   (visited ?p - place)
+   (explored ?p - place)
+   )	
+
+  (:functions
+   (is-in ?r - robot) - place
+   (is-in ?h - person) - place
+   (is-in ?o - visualobject) - place
+   (label ?o - visualobject) - visualobject_label
+
+   ;; we need to model the place id as well to distinguish places from
+   ;; other objects
+   (placeid ?p - place) - place_id
+
+   ;; a person can a have name feature. StringValues, IntegerValues,
+   ;; and PointerValues in StableBelief are turned into funtions in
+   ;; the planner, BooleanValues are turned into predicates, other
+   ;; value types are not supported
+   (name ?h - person) - person_name
+
+   ;; we also need the id of the persons and objects as unique identifier here
+   (personid ?h - person) - person_id
+   (objectid ?h - visualobject) - visualobject_id
+   )
+  
+;;; actions ;;;
+
+  (:action move
+	   :agent (?a - robot)
+	   :parameters (?to - place)
+	   :variables (?from - place)
+	   :precondition (and
+			  (= (is-in ?a) ?from)
+			  (or (connected ?from ?to)
+			      (connected ?to ?from))
+			  )
+	   :effect (and
+		    (assign (is-in ?a) ?to)
+		    (visited ?to)
+		    (update (visited ?to) true)
+		    ))
+
+
+  (:action look-for-people
+	   :agent (?a - robot)
+	   :variables (?p - place)
+	   :precondition (= (is-in ?a) ?p)
+	   :effect (and
+		    (explored ?p)
+		    (update (explored ?p) true)
+		    )
+	   )
+
+
+  (:action ask-for-your-name
+	   :agent (?a - robot)
+	   :parameters (?p - person)
+	   :variables (?loc - place)
+	   :precondition (and
+			  (= (is-in ?a) ?loc)
+			  (= (is-in ?p) ?loc)
+			  )
+	   :effect
+	   (kval ?a (name ?p))
+	   )
+
+  (:action commit-name
+	   :agent (?a - robot)
+	   :parameters (?p - person ?n - person_name)
+	   :precondition (and
+			  (in-domain (name ?p) ?n)
+			  )
+	   :replan (kval ?a (name ?p))
+	   :effect
+	   (assign (name ?p) ?n)
+	   )
+
+  
+  )
+
+

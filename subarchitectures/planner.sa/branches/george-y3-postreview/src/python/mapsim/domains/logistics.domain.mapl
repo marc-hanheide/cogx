@@ -1,0 +1,123 @@
+(define (domain logistics_conf)
+(:requirements :mapl :adl :object-fluents)
+  (:types
+	AIRPORT	- LOCATION
+	AIRPLANE TRUCK - VEHICLE
+	VEHICLE LOCATION - OBJ_LOCATION
+	VEHICLE OBJ - LOCATABLE
+	OBJ CITY)
+
+  (:functions 	
+      (pos ?obj - LOCATABLE) - OBJ_LOCATION
+      (in_city ?loc - OBJ_LOCATION) - CITY
+)
+
+(:action sense_package_loc
+ :agent (?a - agent)
+ :parameters (?obj - OBJ ?loc - LOCATION ?vehicle - VEHICLE)
+ :precondition (and (= (pos ?vehicle) ?loc)
+ 	       	   (in-domain (pos ?obj) ?loc))
+ :sense (= (pos ?obj) ?loc))
+
+;; (:action a_LOAD_TRUCK_LOC
+;;   :agent (?a - agent)
+;;   :parameters
+;;    (?obj - OBJ
+;;     ?loc - LOCATION
+;;     ?truck - TRUCK)
+;;   :precondition(and (in-domain (pos ?obj) ?loc)
+;;                     (= (pos ?truck) ?loc))
+;;   :replan (kval ?a (pos ?obj))
+;;   :effect
+;;    (and (assign (pos ?obj) ?truck))
+   
+;; )
+
+
+(:action LOAD_TRUCK_LOC
+  :agent (?a - agent)
+  :parameters
+   (?obj - OBJ
+    ?truck - TRUCK
+    ?loc - LOCATION)
+  :precondition
+   (and
+	(= (pos ?truck) ?loc)
+	(in-domain (pos ?obj) ?loc) 
+	(kval ?a (pos ?obj)) 
+   )
+  :effect
+   (and (assign (pos ?obj) ?truck))
+   
+)
+
+
+(:action LOAD_AIRPLANE
+  :agent (?a - agent)
+  :parameters
+   (?obj - OBJ ?airplane - AIRPLANE ?loc - AIRPORT) 
+  :precondition (and
+   (= (pos ?airplane) ?loc)
+   (= (pos ?obj) ?loc)) 
+  :effect
+   (and (assign (pos ?obj) ?airplane)))
+
+(:action UNLOAD_TRUCK_LOC
+  :agent (?a - agent)
+  :parameters
+   (?obj - OBJ
+    ?truck - TRUCK
+    ?loc - LOCATION)
+  :precondition
+   (and 
+	(= (pos ?truck) ?loc) 
+	(= (pos ?obj) ?truck) 
+   )
+  :effect
+   (and (assign (pos ?obj) ?loc)))
+
+
+(:action UNLOAD_AIRPLANE
+  :agent (?a - agent)
+  :parameters
+   (?obj - OBJ
+    ?airplane - AIRPLANE
+    ?loc - AIRPORT)
+  :precondition (and
+   (= (pos ?airplane) ?loc)
+   (= (pos ?obj) ?airplane))
+  :effect
+   (and (assign (pos ?obj) ?loc)))
+
+(:action DRIVE_TRUCK
+  :agent (?a - agent)
+  :parameters
+   (?truck - TRUCK
+    ?loc1 - LOCATION
+    ?loc2 - LOCATION
+    ?city - CITY)
+  :precondition
+   (and (= (pos ?truck) ?loc1)
+        (= (in_city ?loc1) ?city)
+        (= (in_city ?loc2) ?city)
+	;(in_city ?truck : ?city)
+	;(not (at_ta ?truck ?loc2))
+   )
+  :effect
+   (and (assign (pos ?truck) ?loc2)))
+
+(:action FLY_AIRPLANE
+  :agent (?a - agent)
+  :parameters
+   (?airplane - AIRPLANE
+    ?loc1 - AIRPORT
+    ?loc2 - AIRPORT)
+  :precondition
+  (and  
+	(= (pos ?airplane) ?loc1)
+  )
+  :effect
+   (and (assign (pos ?airplane) ?loc2 )))
+
+
+)
