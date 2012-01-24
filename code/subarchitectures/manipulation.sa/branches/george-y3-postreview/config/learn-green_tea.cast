@@ -1,0 +1,17 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+# NOTE: provide your own camera calibration file here
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/calib/cam-left-cal.xml"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/green_tea.ply" --siftfiles "instantiations/sift-models/green_tea.sift" --labels "green_tea" --log
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "green_tea" --mode LEARN --log
+

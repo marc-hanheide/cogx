@@ -1,0 +1,17 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+# NOTE: provide your own camera calibration file here
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "0" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2 --log
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/pringles.ply" --siftfiles "instantiations/sift-models/pringles.sift" --labels "pringles" --log
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "pringles" --mode LEARN --log
+
