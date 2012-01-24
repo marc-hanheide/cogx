@@ -46,7 +46,7 @@ unsigned WhichGraphCutGroup(unsigned modelID,
                             std::vector< std::vector<unsigned> > _graphCutGroups);
 
 /** Check over- and undersegmentation of objects **/
-void CheckAnnotation(std::vector<cv::Ptr<surface::SurfaceModel> > &surfaces,
+void CheckAnnotation(std::vector<surface::SurfaceModel::Ptr> &surfaces,
                      std::vector<int> &anno,
                      std::vector< std::vector<unsigned> > &graphCutGroups);
 

@@ -13,7 +13,7 @@
 #include "VisionCore.hh"
 
 #include "v4r/PCLAddOns/ModelFitter.h"
-#include "v4r/PCLAddOns/Planes.h"
+//#include "v4r/SurfaceModeling/Patches.h"
 
 
 namespace Z
