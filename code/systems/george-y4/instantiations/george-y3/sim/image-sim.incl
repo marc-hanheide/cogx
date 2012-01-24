@@ -1,0 +1,3 @@
+# CAST config file
+
+CPP MG videoserver PlayerVideoServer --camids 0 --devnums 0 --imgsize "640 480" --framerate_fps 3 --camconfigs "%(camera_config_file)"

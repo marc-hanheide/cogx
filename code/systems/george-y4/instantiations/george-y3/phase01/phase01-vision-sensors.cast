@@ -1,0 +1,69 @@
+# CAST config file
+# vim: set sw=4 ts=8 et sts=4 ai :vim
+
+# Host names can be used instead of raw IPs to distribute components eg. [Main].
+# Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
+# If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
+# in a .hconf file will be used instead of host addresses defined here.
+# HOSTNAME  localhost      192.168.33.101
+# HOSTNAME  Main           192.168.56.1
+# HOSTNAME  PlayerHost     192.168.56.3
+
+HOSTNAME  Main           localhost
+
+HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Main]
+HOSTNAME  DisplayHost    [Main]
+HOSTNAME  AbducerHost    [Main]
+
+###########################################################################
+#             CONFIGURATION                                               #
+###########################################################################
+VARDEFAULT hardware=real
+VARDEFAULT hardware_options=<multiline>
+      kinect  !kinect-video
+      !video 
+      !stereo
+      ptz  cameramount
+</multiline>
+VARDEFAULT main_camera_id=0
+
+#SETVAR     hardware=simulation
+###########################################################################
+#EXPAND hardware_options='%(hardware_options)'
+
+HOST     [Main]
+
+IFOPTALL(%(hardware_options), ptz)
+    COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0 --log --debug
+ENDIF
+
+# vision #################################################################
+INCLUDE  includes/vision.sa/vision-base.cast
+
+# Configure the cameras (internal, external parameters; stereo config; position)
+IFEQ(%(hardware), real)
+   INCLUDE  real/cameras-real-y4.incl
+ELSE
+   INCLUDE  sim/cameras-sim.incl
+   INCLUDE juggler.incl
+ENDIF
+
+# Include other vision components
+INCLUDE  george-y4-vision.incl
+
+# manipulation #####################################################################
+#SUBARCHITECTURE manipulation.sa
+#JAVA WM cast.architecture.SubarchitectureWorkingMemory
+#CPP TM AlwaysPositiveTaskManager
+
+# Include the appropriate Katana config
+#INCLUDE  sim/katana300-sim.incl
+#INCLUDE  real/katana300-real.incl
+
+
+# visualization ##########################################################
+SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+INCLUDE  includes/visualization.sa/v11n-base-p.cast
+INCLUDE  optional-viewers.incl
+

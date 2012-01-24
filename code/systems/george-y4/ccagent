@@ -1,0 +1,14 @@
+#!/bin/bash
+# Absolute path and directory
+#SCRIPT=$(readlink -f $0)
+#SCRIPTDIR=$(dirname $SCRIPT)
+
+# Show CAST version 
+# Note: cast client does't recognize --version, but it will print the version anyway
+bash tools/scripts/cast-client-start --version 2> /dev/null | grep "Release:"
+
+# Show the configured IP4 interfaces
+ifconfig | grep "inet \|^[a-z]"
+
+# Start the agent
+python ./tools/castctrl/castagent $*

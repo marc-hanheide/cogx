@@ -1,0 +1,21 @@
+# CAST Config file
+# To be included under SUBARCHITECTURE vision.sa
+
+VARDEFAULT camera_config_dir=instantiations/george-y3/sim/calibration
+
+# This is how you should use CameraMount in your simulated robot system.  Use
+# PTZ with kinematic parameters the same as in gazebo model. Camera poses will
+# be calculated based on the kinematic chain base - pan joint - tilt joint -
+# cam offset
+SETVAR camera_mount_params=<multiline>
+   --camids "0"
+   --cam_poses_xml %(camera_config_dir)/ptu-pose-cam-left-sim.xml
+   --pt_base_xml   %(camera_config_dir)/ptu-pose-base-sim.xml
+   --pt_pan_xml    %(camera_config_dir)/ptu-pose-pan-sim.xml
+   --pt_tilt_xml   %(camera_config_dir)/ptu-pose-tilt-sim.xml
+   # --log --debug
+</multiline>
+CPP MG CameraMount CameraMount %(camera_mount_params)
+
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+
