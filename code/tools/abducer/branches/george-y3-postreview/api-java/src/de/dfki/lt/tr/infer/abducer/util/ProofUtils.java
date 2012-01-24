@@ -1,0 +1,166 @@
+// =================================================================
+// Copyright (C) 2009-2011 DFKI GmbH Talking Robots
+// Miroslav Janicek (miroslav.janicek@dfki.de)
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License
+// as published by the Free Software Foundation; either version 2.1 of
+// the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+// 02111-1307, USA.
+// =================================================================
+
+package de.dfki.lt.tr.infer.abducer.util;
+
+import de.dfki.lt.tr.infer.abducer.lang.Atom;
+import de.dfki.lt.tr.infer.abducer.lang.FunctionTerm;
+import de.dfki.lt.tr.infer.abducer.lang.ModalisedAtom;
+import de.dfki.lt.tr.infer.abducer.lang.Modality;
+import de.dfki.lt.tr.infer.abducer.lang.NullAssumabilityFunction;
+import de.dfki.lt.tr.infer.abducer.lang.Term;
+import de.dfki.lt.tr.infer.abducer.proof.AssertedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.AssumedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.MarkedQuery;
+import de.dfki.lt.tr.infer.abducer.proof.UnsolvedQuery;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Utilities for manipulating proofs.
+ *
+ * @author Miroslav Janicek
+ * @version 2.1.0
+ */
+public abstract class ProofUtils {
+
+	/**
+	 * Given a sequence of queries, return all queries marked as asserted.
+	 * 
+	 * @param qs the sequence of queries (proof)
+	 * @return all elements of qs that are of type AssertedQuery
+	 */
+	public static List<AssertedQuery> filterAsserted(List<MarkedQuery> qs) {
+		ArrayList<AssertedQuery> result = new ArrayList<AssertedQuery>();
+		for (MarkedQuery q : qs) {
+			if (q instanceof AssertedQuery) {
+				result.add((AssertedQuery) q);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Given a sequence of queries, return all queries that are marked as assumed.
+	 * 
+	 * @param qs the sequence of queries (proof)
+	 * @return all elements of qs that are of type AssumedQuery
+	 */
+	public static List<AssumedQuery> filterAssumed(List<MarkedQuery> qs) {
+		ArrayList<AssumedQuery> result = new ArrayList<AssumedQuery>();
+		for (MarkedQuery q : qs) {
+			if (q instanceof AssumedQuery) {
+				result.add((AssumedQuery) q);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * A "forgetful" version of <tt>filterAssumed()</tt>. Returns the sequence
+	 * of queries with their original marking.
+	 *
+	 * @param qs the sequence of queries (proof)
+	 * @return all elements of qs that are of type AssumedQuery, as MarkedQuery
+	 */
+	public static List<MarkedQuery> filterAssumedAndForget(List<MarkedQuery> qs) {
+		ArrayList<MarkedQuery> result = new ArrayList<MarkedQuery>();
+		for (MarkedQuery q : qs) {
+			if (q instanceof AssumedQuery) {
+				result.add(q);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Convert a proof to a sequence of modalised atoms, thereby stripping
+	 * the proof of the markings.
+	 *
+	 * @param qs the sequence of queries (proof)
+	 * @return sequence of the corresponding modalised atoms
+	 */
+	public static List<ModalisedAtom> stripMarking(List<MarkedQuery> qs) {
+		ArrayList<ModalisedAtom> result = new ArrayList<ModalisedAtom>();
+		for (MarkedQuery q : qs) {
+			result.add(q.atom);
+		}
+		return result;
+	}
+
+	/**
+	 * Filter a sequence of modalised formulas by a modality prefix.
+	 * Formulas thus prefixed will be included in the output with the
+	 * prefix removed.
+	 *
+	 * TODO: evaluated on class equality rather than class *content* equality
+	 *
+	 * @param mas sequence of modalised atoms
+	 * @param m modality prefix
+	 * @return sequence of modalised formulas from mas with m removed
+	 */
+	public static List<ModalisedAtom> filterStripByModalityPrefix(List<ModalisedAtom> mas, List<Modality> m) {
+		ArrayList<ModalisedAtom> result = new ArrayList<ModalisedAtom>();
+		for (ModalisedAtom ma : mas) {
+			if (ma.m.size() >= m.size()) {
+				boolean good = true;
+				for (int j = 0; j < m.size(); j++) {
+					good = good && ma.m.get(j) == m.get(j);
+				}
+				if (good) {
+					ArrayList<Modality> ms = new ArrayList<Modality>();
+					for (int k = m.size(); k < ma.m.size(); k++) {
+						ms.add(ma.m.get(k));
+					}
+					result.add(new ModalisedAtom(ms, (Atom) ma.a.clone()));
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Create a new unsolved, non-assumable proof.
+	 *
+	 * @param goal the goal formula
+	 * @return the proof
+	 */
+	public static List<MarkedQuery> newUnsolvedProof(ModalisedAtom goal) {
+		List<MarkedQuery> result = new ArrayList<MarkedQuery>();
+		result.add(new UnsolvedQuery(goal, new NullAssumabilityFunction()));
+		return result;
+	}
+
+	/**
+	 * Return the functor of a term. The term is assumed to be a function
+	 * term. If this isn't true, the method returns {@code null}.
+	 *
+	 * @param t  the term
+	 * @return functor, or {@code null} if {@code t} is not a function term.
+	 */
+	public static String termFunctor(Term t) {
+		if (t instanceof FunctionTerm) {
+			return ((FunctionTerm) t).functor;
+		}
+		else {
+			return null;
+		}
+	}
+}
