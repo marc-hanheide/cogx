@@ -1,0 +1,15 @@
+# Test the PlayerVideoServer component
+# Uses: player, gazebo, VideoViewer, Display Server
+
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+CPP MG VideoServer PlayerVideoServer --camids 0 --devnums 0 --swapredblue --imgsize "320 240" --framerate_fps 15 --log --debug
+
+CPP MG viewer VideoViewer --videoname VideoServer --camid 0
+
+INCLUDE v11n_base.cast.incl

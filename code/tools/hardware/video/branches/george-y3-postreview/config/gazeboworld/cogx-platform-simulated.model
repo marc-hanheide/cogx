@@ -1,0 +1,288 @@
+<?xml version="1.0"?>
+
+<!-- CogX Platform: Pioneer 3-DX with superstructure -->
+<model:physical name="cogx_platform_model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  >
+
+  <verbosity>5</verbosity>
+
+  <xyz>0 0 0</xyz>
+  <rpy>0.0 0.0 0.0</rpy>
+  <static>false</static>
+
+  <canonicalBody>chassis_body</canonicalBody>
+
+  <body:box name="chassis_body">
+    <xyz>-0.045 0.000 0.1375</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <geom:box name="chassis_geom">
+      <size>0.510 0.300 0.205</size>
+      <mass>10</mass>
+
+      <visual>
+        <scale>0.510 0.300 0.205</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Red</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <body:cylinder name="left_wheel_body">
+    <xyz>0.000 0.186 0.095</xyz>
+    <rpy>0 90 90</rpy>
+    <geom:cylinder name="left_wheel_geom">
+      <size>0.095 0.050</size>
+      <mass>0.2</mass>
+
+      <visual>
+        <scale>0.190 0.190 0.050</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="right_wheel_body">
+    <xyz>0.000 -0.186 0.095</xyz>
+    <rpy>0 90 90</rpy>
+    <geom:cylinder name="right_wheel_geom">
+      <size>0.095 0.050</size>
+      <mass>0.2</mass>
+
+      <visual>
+        <scale>0.190 0.190 0.050</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <model:physical name = "caster_model">
+    <enableFriction>0</enableFriction>
+    <body:sphere name="caster_body">
+      <xyz>-0.170 0 0.0175</xyz>
+      <rpy>0 0 0</rpy>
+      <geom:sphere name="caster_geom">
+        <size>0.0175</size>
+        <mass>0.1</mass>
+
+        <visual>
+          <scale>0.0175 0.0175 0.0175</scale>
+          <mesh>unit_sphere</mesh>
+          <material>Gazebo/Grey</material>
+        </visual>
+      </geom:sphere>
+    </body:sphere>
+  </model:physical>
+
+  <body:box name="arm_base_body">
+    <xyz>-0.300 0.000 0.5</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <geom:box name="arm_base_geom">
+      <size>0.2 0.2 0.2</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.2 0.2 0.2</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <body:box name="arm_link1_body">
+    <xyz>-0.300 0.000 0.8</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <geom:box name="arm_link1_geom">
+      <size>0.2 0.2 0.2</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.2 0.2 0.2</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <joint:hinge name="left_wheel_joint">
+    <body1>left_wheel_body</body1>
+    <body2>chassis_body</body2>
+    <anchor>left_wheel_body</anchor>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="right_wheel_joint">
+    <body1>right_wheel_body</body1>
+    <body2>chassis_body</body2>
+    <anchor>right_wheel_body</anchor>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:ball name="caster_joint">
+    <body1>caster_body</body1>
+    <body2>chassis_body</body2>
+    <anchor>caster_body</anchor>
+  </joint:ball>
+
+  <joint:hinge name="chassis_to_arm_base_joint">
+    <body1>arm_base_body</body1>
+    <body2>chassis_body</body2>
+    <anchor>arm_base_body</anchor>
+    <axis>0 0 1</axis>
+  </joint:hinge>
+
+  <joint:hinge name="arm_base_to_link1_joint">
+    <body1>arm_link1_body</body1>
+    <body2>arm_base_body</body2>
+    <anchor>arm_link1_body</anchor>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <model:physical name="laser0">
+      <xyz>0.300 0.000 0.300</xyz>
+      <rpy>0 0 0</rpy>
+      
+      <attach>
+        <parentBody>chassis_body</parentBody>
+        <myBody>laser0_body</myBody>
+      </attach>
+
+      <model:physical name="laser0_model">
+        <xyz>0 0 0</xyz>
+        <rpy>0 0 0</rpy>
+        <canonicalBody>laser0_body</canonicalBody>
+        <body:box name="laser0_body">
+          <xyz>0.000 0.000 0.000</xyz>
+          <rpy>0.0 0.0 0.0</rpy>
+
+          <geom:box name="laser0_geom">
+            <xyz>0.0 0.0 0.0</xyz>
+            <rpy>0 0 0</rpy>
+            <size>0.01 0.01 0.01</size>
+            <mass>0.1</mass>
+
+            <visual>
+              <scale>0.01 0.01 0.01</scale>
+              <mesh>unit_box</mesh>
+              <material>Gazebo/Blue</material>
+            </visual>
+          </geom:box>
+
+          <sensor:ray name="ray0">
+            <rayCount>270</rayCount>
+            <rangeCount>271</rangeCount>
+            <origin>0.0 0.0 0.0</origin>
+
+            <displayRays>fan</displayRays>
+
+            <minAngle>-135</minAngle>
+            <maxAngle>135</maxAngle>
+
+            <!-- actual sonars: 0.150 -->
+            <minRange>0.01</minRange>
+            <maxRange>6.000</maxRange>
+            <resRange>.1</resRange>
+            <controller:sicklms200_laser name="laser_controller_0">
+              <interface:laser name="laser_iface_0"/>
+            </controller:sicklms200_laser>
+          </sensor:ray>
+        </body:box>
+      </model:physical>
+    </model:physical>
+
+<!--
+    <model:physical name="camera">
+      <xyz>0.11 0 0.10</xyz>
+      <attach>
+        <parentBody>chassis_body</parentBody>
+        <myBody>camera_body</myBody>
+      </attach>
+      <include embedded="true">
+        <xi:include href="camera.model" />
+      </include>
+    </model:physical>
+-->
+<!--
+  <model:physical name="laser0">
+    <xyz>0.500 0.000 0.100</xyz>
+    <rpy>0 0 0</rpy>
+    
+    <attach>
+      <parentBody>chassis_body</parentBody>
+      <myBody>laser0_body</myBody>
+    </attach>
+
+    <model:physical name="laser0_model">
+      <xyz>0.105 0.040 0.051</xyz>
+      <rpy>0 0 10</rpy>
+      <canonicalBody>laser0_body</canonicalBody>
+      <body:cyliner name="laser0_body">
+        <xyz>0.000 0.000 0.000</xyz>
+        <rpy>0.0 0.0 0.0</rpy>
+
+        <geom:cylinder name="laser0_geom">
+          <xyz>0.0 0.0 0.0</xyz>
+          <rpy>0 0 0</rpy>
+          <size>0.05 0.10</size>
+          <mass>0.1</mass>
+
+          <visual>
+            <scale>0.01 0.01 0.01</scale>
+            <mesh>unit_box</mesh>
+            <material>Gazebo/Blue</material>
+          </visual>
+        </geom:cylinder>
+
+        <sensor:ray name="ray0">
+          <rayCount>270</rayCount>
+          <rangeCount>271</rangeCount>
+          <origin>0.0 0.0 0.0</origin>
+
+          <minAngle>-135</minAngle>
+          <maxAngle>135</maxAngle>
+
+          <minRange>0.01</minRange>
+          <maxRange>6.000</maxRange>
+          <resRange>.1</resRange>
+          <controller:sicklms200_laser name="laser_controller_0">
+            <interface:laser name="laser_iface_0"/>
+          </controller:sicklms200_laser>
+        </sensor:ray>
+      </body:cylinder>
+    </model:physical>
+  </model:physical>
+-->
+  <controller:differential_position2d name="controller1">
+    <leftJoint>left_wheel_joint</leftJoint>
+    <rightJoint>right_wheel_joint</rightJoint>
+    <wheelSeparation>0.370</wheelSeparation>
+    <wheelDiameter>0.190</wheelDiameter>
+    <torque>2</torque>
+    <interface:position name="position_iface_0"/>
+  </controller:differential_position2d>
+
+  <controller:generic_actarray name="arm_controller">
+    <joint name="chassis_to_arm_base_joint">
+      <force>1</force>
+      <gain>1</gain>
+    </joint>
+    <joint name="arm_base_to_link1_joint">
+      <force>1</force>
+      <gain>1</gain>
+    </joint>
+    <interface:actarray name="generic_actarray_iface_0"/>
+  </controller:generic_actarray>
+
+</model:physical>
+
