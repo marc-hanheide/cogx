@@ -1,0 +1,32 @@
+/* LogMX Javadoc style sheet */
+
+/* Define colors, fonts and other style attributes here to override the defaults */
+
+/* Page background color */
+body, table { font-family: Verdana, Helvetica, Arial, san-serif }
+body { background-color: #FFFFFF; font-size: 12px; font-family: Verdana, Helvetica, Arial, san-serif }
+
+/* Links */
+a:link, a:visited, a:active { text-decoration: none; color: #349EF9; }
+a:hover { color: #91CFFF; }
+
+/* Table colors */
+.TableHeadingColor     { font-size: 10px; background: #FED29A; color: #D4872C; } 
+.TableSubHeadingColor  { font-size: 10px; background: #FFE3C1; color: #D4872C; } 
+.TableRowColor         { font-size: 12px; background: #FFFFFF } 
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont, .FrameHeadingFont, .FrameItemFont  { font-size: 12px; }
+
+/* Navigation bar fonts and colors */
+.NavBarCell1    { font-size: 11px; background-color:#E7F3FE;}
+#.NavBarCell1    { font-size: 11px; background-color:#FFE3C1;}
+.NavBarCell1Rev { font-size: 11px; background-color:#349EF9;}
+.NavBarCell2    { font-size: 11px; background-color:#FFFFFF;}
+.NavBarCell3    { font-size: 11px; background-color:#FFFFFF;}
+.NavBarFont1    { font-size: 11px; color:#000000;}
+.NavBarFont1Rev { font-size: 11px; color:#FFFFFF;}
+
+/* Specific colors */
+.ToDev  { color: #900000; }
+.ToCall { color: #009000; }
