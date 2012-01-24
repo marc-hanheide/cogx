@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="/toolButton">
+    <file>tbNewWindow.png</file>
+    <file>tbViews.png</file>
+    <file>tbToolbars.png</file>
+    <file>tbDialogs.png</file>
+    <file>camera-photo.png</file>
+  </qresource>
+  <qresource prefix="/appIcon">
+    <file>cogxDialog_icon.png</file>
+    <file>cogxViewer_icon.png</file>
+  </qresource>
+</RCC>

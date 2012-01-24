@@ -1,0 +1,14 @@
+
+HOST localhost
+
+INCLUDE v11n_base.cast.inc
+
+CPP MG visualization.test VisualizationTest --videoname videoserver --displayserver "display.srv" --camid 0 --debug true
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 100 --debug true
+
+CPP MG video.viewer VideoViewer --videoname videoserver --displayserver "display.srv" --camid 0 --debug true

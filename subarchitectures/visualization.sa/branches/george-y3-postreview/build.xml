@@ -1,0 +1,85 @@
+<!-- Inner build file for a module in the CogX system -->
+<project name="visualization" default="compile" basedir=".">
+
+	<property name="projectroot.dir" value="${basedir}/../.." />
+	<property file="${projectroot.dir}/build.properties" />
+	<property name="output.dir" value="${projectroot.dir}/output/classes" />
+
+   <!-- =================================================================== -->
+   <!-- Add JAR files to classpath                                          -->
+   <!-- =================================================================== -->
+   <path id="build.classpath">
+      <pathelement path="${ice.jar}"/>
+      <pathelement path="${cast.jar}"/>
+      <!--<fileset dir="lib">-->
+         <!--  <include name="**/*.jar"/>-->
+         <!--</fileset>-->
+   </path>
+
+   <!-- Controls what is compiled -->
+   <property name="src.dir" value="./src/java" />
+   <property name="slice.dir" value="./src/slice" />
+
+   <property name="generated.v11n.dir" value="${src.dir}/Visualization"/>
+
+   <!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+   <taskdef name="slice2java" classname="Slice2JavaTask">
+   </taskdef>
+
+   <!-- =================================================================== -->
+   <!-- Cleanup                                                              -->
+   <!-- =================================================================== -->
+
+   <target name="clean">
+      <echo message="cleaning comsys mess..."/>
+      <delete file="${src.dir}/.depend"/>
+      <delete dir="${generated.v11n.dir}"/>
+   </target>
+
+
+   <!-- =================================================================== -->
+   <!-- Preparation                                                         -->
+   <!-- =================================================================== -->
+   <target name="prepare"  description="any project-specific init">
+      <mkdir dir="${output.dir}"/>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Source generation                                                   -->
+   <!-- =================================================================== -->
+   <target name="slice-v11n" depends="prepare" description="generates source from slice">
+      <slice2java tie="true" outputdir="${src.dir}">
+         <fileset dir="${slice.dir}" includes="DisplayServer.ice"/>
+         <includepath>
+            <pathelement path="${ice.slice.dir}"/> 
+            <pathelement path="${slice.dir}"/>
+            <pathelement path="${castslice.dir}"/>
+            <pathelement path="${castslice.dir}/cast/slice/"/>
+            <pathelement path="/usr/share/Ice/slice"/>
+            <pathelement path="/usr/share/slice"/>
+            <pathelement path="../../tools/math/src/slice"/>
+            <pathelement path="../../tools/hardware/video/src/slice"/>
+         </includepath>
+      </slice2java>
+   </target>
+
+   <target name="slice" depends="slice-v11n" description="generates source from slice">
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Basic compilation                                                   -->
+   <!-- =================================================================== -->
+   <target name="compile" depends="compile-slice" description="compiles the source code">
+      <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+         <classpath refid="build.classpath"/> </javac>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- slice compilation                                                   -->
+   <!-- =================================================================== -->
+   <target name="compile-slice" depends="slice" description="compiles the source code">
+      <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" includes="autogen/**">
+         <classpath refid="build.classpath"/> </javac>
+   </target>
+
+</project>
