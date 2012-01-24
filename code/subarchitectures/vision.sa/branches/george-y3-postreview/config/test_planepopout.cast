@@ -1,0 +1,28 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+#################### reading stored img
+#################### first image with one obj on the plane. second img with 2 objs, third img without any obj########################
+
+COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 0 --end 0 --framerate_ms 30
+
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 1 --end 1--framerate_ms 30
+
+#COMPONENT CPP VideoServer OpenCvImgSeqServer --videoname video --camids "0 1" --files "subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-L.jpg subarchitectures/vision.sa/config/Planepopout_test_img/img%03d-R.jpg" --start 2 --end 2--framerate_ms 30
+
+########################### live images####################################
+########################### commend all in "reading stored img" and uncommend this if you want to use stereo cameras to test
+
+#COMPONENT CPP VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/tuw_stereo.ini:L subarchitectures/vision.sa/config/tuw_stereo.ini:R"
+
+####################################### change to your own calibration file########################################
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname video --camids "1 0" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini --display
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo
+

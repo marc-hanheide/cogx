@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+import os, sys
+here = os.path.abspath(os.path.dirname(__file__))
+cogx_root = os.path.abspath(here + ("/.." * 7))
+output = cogx_root + "/output"
+
+def pathadd(var, path, delim = ":"):
+   try: np = os.environ[var] + delim + path
+   except: np = path
+   os.environ[var] = np
+   # print var, os.environ[var]
+
+pathadd("LD_LIBRARY_PATH", output + "/lib")
+pathadd("PYTHONPATH", output + "/python/dist-packages")
+
+#try: ldl = os.environ["LD_LIBRARY_PATH"] + ":%s"
+#except: ldl = "%s"
+#os.environ["LD_LIBRARY_PATH"] = ldl % (output + "/lib")
+os.execlp("python", "python", "mbuilder.py")

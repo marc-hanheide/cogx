@@ -1,0 +1,21 @@
+/* Test for the object tracker component
+*
+*  @author: Thomas Mörwald, April 2009
+*
+*  This component is an example on how to control the
+*  object tracker by loading a model from ply-file
+*  to the working memory and calling several tracking commands.
+*
+*/
+
+
+Testing the tracker
+-------------------
+
+The tracker can be tasted by using the "subarchitectures/vision.sa/config/test-tracker/test-tracker.cast".
+Do not press any button while the test is running.
+Wait until the message [LOG "TrackerDriver": Tracking test successfull] appears.
+If tracking fails please contact me: moerwald@acin.tuwien.ac.at
+
+
+

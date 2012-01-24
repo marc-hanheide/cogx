@@ -1,0 +1,27 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --log
+
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "1 0" --devclass FIREWIRE --camconfigs "instantiations/dfki-sep-09/stereo.ini:L instantiations/dfki-sep-09/stereo.ini:R"
+#CPP MG videoserver OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "instantiations/dfki-sep-09/stereo.ini:L"
+
+CPP MG videoviewer VideoViewer --videoname videoserver --camid 0
+
+# offset values are for cogx robot platform (stereo cameras on pan/tilt head)
+# robot ego pose is: x points forward, y points to left wheel, z points up
+# pan/tilt pose is parallel to that and moved up and slightly forward
+# (lef) camera pose is offset a bit and as usual x points right (in -y), y
+# points down (in -z) and z points forward (in +x)
+CPP MG cameramount CameraMount --cam_ids 0 --cam_poses "[0.000 0.060 0.150][-1.2092 1.2092 -1.2092]" --pt_zero_pose "[0.080 0.000 1.300][0 0 0]"
+
+# moves the pan/tilt head to given angles
+CPP MG cameramounttest CameraMountTest --pan "-0.5" --tilt "0.5"
+

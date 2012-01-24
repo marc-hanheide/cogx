@@ -1,0 +1,27 @@
+# Test
+HOST localhost
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer # --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# reading stored images
+VARDEFAULT video_camconfigFile = %(CONFIG_DIR)/640/camera.ini
+VARDEFAULT video_staticImgDir = %(CONFIG_DIR)/640
+VARDEFAULT video_staticImgFile = %(video_staticImgDir)/img-%03d
+VARDEFAULT params_VideoServer = <multiline>
+  --camids "0 1"
+  --files "%(video_staticImgFile)-L.jpg  %(video_staticImgFile)-R.jpg"
+  --start 0 --end 4 --repeatframe 10 --framerate_ms 100 
+  --camconfigs "%(video_camconfigFile):L  %(video_camconfigFile):R"
+</multiline>
+CPP MG VideoServer OpenCvImgSeqServer %(params_VideoServer)
+
+# Grabber GUI
+CPP MG grabber VideoGrabber --videoname VideoServer --camids "0 1" --displayserver "display.srv"
+

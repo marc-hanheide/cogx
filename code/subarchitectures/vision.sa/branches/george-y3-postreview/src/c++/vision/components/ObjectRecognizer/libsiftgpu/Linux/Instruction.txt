@@ -1,0 +1,19 @@
+
+The list of required libraries is 
+
+libCg.so	libCgGL.so	libGLEW.a	libglut.so
+libIL.so -> libIL.so.1 		libIL.so.1	libCudart.so
+
+Those libraris may also be dependent on other libraries, and you may need to download them yourself. You also need to handle the compatibility of those libraies yourself. 
+
+Get those libraries either in the system default path or ./bin here before compiling. 
+
+The output binaries are 
+./bin/libsiftgpu.a	./bin/TestWinGlut	./bin/SimpleSIFT 	./bin/speed
+
+
+If you want to run the stuff with any .so files in ./bin, don't forget to add . to LD_LIBRARY_PATH by calling:
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
+
+
+If some of your header files (e.g. GL/gl.h )are not in the default path (e.g. /usr/include ), you'll need to add extra flags to CFLAGS in the makefile. Say, your opengl header are in /myheaders/GL. You'll need to add -isystem/myheader to CFLAGS.  

@@ -1,0 +1,49 @@
+
+zur significance:
+=================
+wie gross soll l bei lines, arcs, ellipses sein?
+ganze laenge von line im bild? oder nur bis zur naechsten edge?
+gleiches fuer arc: ganzer kreis oder nur bis zur naechsten edge?
+analog ellipse.
+
+und bei edge (ohne modell)? tangenten bis zur naecshten edge?
+
+problem: riesen sprung in der significance je nachdem ob eine line (tangente
+etc.) zufaellig die naechste edge trifft oder gerade verfehlt.
+
+-> besser wirklich das ganze modell (line im bild, ganze ellipse) nehmen.
+
+was wenn ich explizit eine verdeckung entdecke? also wenn z.b. eine ellipse
+halb verdeckt ist? dann sehe ich doch die halbe ellipse vollstaendig. und
+das ist eine bessere erklaerung als eine volle ellipse nur halb zu sehen.
+ja, aber das involviert higher level knowledge und die existenz eines
+verdeckenden objektes.
+eine halbe ellipse als vollstaendig und ein verdeckendes objekt als existent
+zu erklaeren sollte eine hoehere signifikanz haben, als auf der halb
+gefuellten vollen ellipse zu bestehen.
+
+
+wenn ich connected edgels annehme, habe ich nicht mehr l ueber k
+moegliche anordnungen sondern nur mehr l - k.
+
+schauen was passiert wenn ich eine lange edge zerstueckle in
+a) einfach kleinere edges
+b) kleinere edges MIT modell
+die summe der einzelnen significances sollte bei (a) kleiner bei (b) groesser
+sein als die significance der ursprunglichen edge.
+dann habe ich ein gutes signifikanz mass.
+UND wenn ich dann ein noch hoeheres modell fitte (z.b. eine ellipse
+uber alldie kleinen arcs) dann sollte das eine noch hoehere signifikanz
+haben.
+
+gestalt selection, preference
+=============================
+gestalt can be picked by
+- occlusion
+- depth from range camera, disparity, focus
+- any field of interest
+
+learning
+========
+can i use adaboost to learn objects from gestalts?
+

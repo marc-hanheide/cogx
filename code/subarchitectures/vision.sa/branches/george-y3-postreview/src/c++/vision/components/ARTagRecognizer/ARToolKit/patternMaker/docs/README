@@ -1,0 +1,139 @@
+ABOUT
+_________________________________
+
+Please see copyright at the bottom of this document.
+
+The patternMaker program automatically creates large numbers of target 
+patterns for the ARToolkit.
+
+The ARToolkit normally requires custom drawn target patterns that are hand 
+trained using the toolkit and a camera. We want the capability of 
+generating large numbers of target patterns and training them 
+automatically. Furthermore, we want the patterns to be as clear as possible 
+to provide the highest performance recognition in the toolkit.
+
+We have created the patternMaker program, which generates grids of black 
+and white squares. The restriction is that the grids cannot be rotationally 
+symmetric with itself or other grids in the group, else the ARToolkit won't 
+be able to extract orientation from the target pattern. The training files 
+are automatically generated from the patterns.
+
+This project is supported by the NSF STC for Computer Graphics and 
+Visualization and collaborative NSF/NIH projects with the Scripps Research 
+Institute and the University of Washington. The ARToolkit is publicly 
+available from the University of Washington 
+(http://www.hitl.washington.edu/research/shared_space/download/).
+
+The following people are responsible for patternMaker:
+
+  * David Johnson (http://www.cs.utah.edu/~dejohnso/)
+  * Christopher Berthiaume (http://www.cs.utah.edu/~chrisb/)
+  * Bryan Witkowski (http://www.cs.utah.edu/~bthomas/)
+
+More information can be found at 
+http://www.cs.utah.edu/gdc/projects/augmentedreality/.
+
+Questions and comments should be directed to David Johnson at 
+dejohnso@cs.utah.edu.
+
+INSTRUCTIONS
+_________________________________
+
+Ouput files have been included with this package so you may not have to 
+actually run the program.
+
+To run the program do the following (on Unix-like machines):
+
+A) To produce the unique patterns:
+
+  1) Open "pattern.c" and edit the three constants at the top of the 
+     file (SIZE -- the size of a side of the square to be produced 
+     , OUTPUT -- the name of the output file, DELIM -- the character 
+     that will separate elements in the output file)
+
+  2) Type "make" in the directory where you unpacked the source.
+
+  3) Run the "pattern" executable.
+
+B) To produce the pattern files for ARToolKit:
+
+  1) Run "javac pattmk.java" to compile the java scripts if 
+     "pattmk.class" is not present.
+
+  2) Name the output file from the above step to "nxn" where n is 
+     the size of one side of the pattern.
+  3) Run "java pattmk <#to create> <dimension size> <ppm image 1|0>"
+     with the following arguments
+
+     #to create: a number of pattern files to be produced counting 
+	from top of pattern file.
+
+     dim size: the number of squares across/down in pattern. 
+	typically 3 or 4, depending on if you are using a 3x3 or a 
+	4x4 pattern file.
+
+     ppm image 1|0: this flag allows the user to create the pattern 
+	file as a ppm image (for debug purposes) rather than a trained 
+	pattern file.  This is set to 0 for normal use.
+
+C) To produce grayscale ppm pattern files that can be printed:
+
+  1) Run "javac imagemk.java" to compile the java scripts if 
+     "imagemk.class" is not present.
+
+  2) Name the output file from the above step to "nxn" where n is 
+     the size of one side of the pattern.
+
+  3) Run "java imagemk <#to create> <dim size> <img size 1:16>"
+     with the following arguments
+
+     #to create: a number of images to be produced counting from top 
+	of pattern file.
+
+     dim size: the number of squares across/down in pattern. 
+	typically 3 or 4, depending on if you are using a 3x3 or a 
+	4x4 pattern file.
+
+     image size 1:16:  this allows the user to pick the size of the 
+	resulting images 1 being the smallest at 24 pixels by 24 pixels.  
+	choosing 16 would yield an image 384x384 (16*24 = 384)
+
+
+------------------
+
+Copyright (c) 2002 The University of Utah
+All Rights Reserved. 
+
+This is an experimental, research release of a component of the
+Alpha_1 Geometric Modelling System, and as such is subject to a
+license agreement with Engineering Geometry Systems, Inc. and may only
+be used under the terms of that agreement.  Any other use is
+prohibited.
+
+Having received prior authorization from EGS, the University of Utah grants
+permission to use, copy, or modify this software and its
+documentation for educational, research and non-profit purposes,
+without fee, and without a written agreement.  It is explicitly prohibited to
+redistribute this software or any derivative. 
+
+      IN NO EVENT SHALL THE UNIVERSITY OF UTAH OR ENGINEERING GEOMETRY
+      SYSTEMS, INC.  BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,
+      SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+      PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS
+      DOCUMENTATION, EVEN IF THE UNIVERSITY OF UTAH HAVE BEEN ADVISED
+      OF THE POSSIBILITY OF SUCH DAMAGES.
+
+      THE UNIVERSITY OF UTAH AND ENGINEERING GEOMETRY SYSTEMS, INC.
+      SPECIFICALLY DISCLAIM ANY WARRANTIES, INCLUDING, BUT NOT LIMITED
+      TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+      PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS ON AN
+      "AS IS" BASIS, AND THE UNIVERSITY OF UTAH AND ENGINEERING
+      GEOMETRY SYSTEMS, INC. HAVE NO OBLIGATIONS TO PROVIDE
+      MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+The above permission is granted provided that this whole notice
+appears in all copies.
+
+Contacts are: 
+
+      EMail:  {dejohnso, cohen} @ cs.utah.edu 

@@ -1,0 +1,15 @@
+
+INTRINSIC1 cfg/Cam1-int.xml
+INTRINSIC2 cfg/Cam2-int.xml
+DISTORTION1 cfg/Cam1-dist.xml
+DISTORTION2 cfg/Cam2-dist.xml
+CAM12_ROT cfg/Cam12-R.xml
+CAM12_TRANS cfg/Cam12-T.xml
+
+#IMAGE1 /home/hannes/temp/img/BoxesStereo/img001-L.bmp
+#IMAGE2 /home/hannes/temp/img/BoxesStereo/img001-R.bmp
+#MASK1 /home/hannes/temp/img/BoxesStereo/img001-L-mask.bmp
+
+IMAGE1 img/img004-L.jpg
+IMAGE2 img/img004-R.jpg
+MASK1 img/img004-L-mask.jpg

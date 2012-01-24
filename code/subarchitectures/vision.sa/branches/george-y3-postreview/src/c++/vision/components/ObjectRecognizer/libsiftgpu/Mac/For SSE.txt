@@ -1,0 +1,6 @@
+Please add the following compiler options according to your CPU to enable SSE.
+
+-march=(cpu_type) -mfpmath=sse
+
+SSE is only used in OpenGL-based imiplementations to speed up the descriptor normalization,
+you can delete them from CFLAGS if you are using only CUDA.

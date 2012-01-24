@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <!--%(prjname)s.prj-->
+  <MCCProperties>
+    <wrapper>
+      <type>cpplib</type>
+      <component_name>%(prjname)s</component_name>
+      <default_class>Exported functions</default_class>
+    </wrapper>
+    <intermediate_dir>%(builddir)s</intermediate_dir>
+    <output_dir>%(distribdir)s</output_dir>
+    <link>lib</link>
+    <MCR_runtime_options/>
+    <generate_code_only>false</generate_code_only>
+    <verbose>true</verbose>
+    <create_CTF>%(separatectf)s</create_CTF>
+    <options_file/>
+    <debug>false</debug>
+    <toolboxes_on_path shortcut="all"/>
+    <warning shortcut="default">
+      <warn name="specified_file_mismatch">enable</warn>
+      <warn name="repeated_file">enable</warn>
+      <warn name="switch_ignored">enable</warn>
+      <warn name="missing_lib_sentinel">enable</warn>
+      <warn name="demo_license">enable</warn>
+    </warning>
+  </MCCProperties>
+  <file_info>
+    <category name="Exported functions">
+      <!--Do not modify the value of the name attribute, unless it is a class name.-->
+%(mfiles)s
+    </category>
+    <category name="Other files">
+      <!--Do not modify the value of the name attribute, unless it is a class name.-->
+%(otherfiles)s
+    </category>
+    <category name="C/C++ files">
+      <!--Do not modify the value of the name attribute, unless it is a class name.-->
+%(cppfiles)s
+    </category>
+  </file_info>
+  <packaging>
+    <name>%(prjname)s_pkg</name>
+    <mcr include="false"/>
+    <additional_files/>
+  </packaging>
+  <MATLABPath>
+%(directories)s
+  </MATLABPath>
+</project>
