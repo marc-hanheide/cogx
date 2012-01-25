@@ -32,7 +32,7 @@ Using this approach we generate results showing the matches between each of the 
 \hline
 Inferred & Manually Encoded & Entire Room \\
 \hline
-$\bar{p}$=.45 $\sigma$=.37, $\bar{r}$=.45 $\sigma$=.38 & $\bar{p}$=.71 $\sigma$=.29, $\bar{r}$=.66 $\sigma$=.24  & $\bar{p}$=.17 $\sigma$=.11, $\bar{r}$=.98 $\sigma$=.05  \\
+$\bar{p}$=.47 $\sigma$=.37, $\bar{r}$=.46 $\sigma$=.38 & $\bar{p}$=.71 $\sigma$=.30, $\bar{r}$=.67 $\sigma$=.25 & $\bar{p}$=.17 $\sigma$=.11, $\bar{r}$=.98 $\sigma$=.05  \\
 \hline
 \end{tabular}
 \caption{Overall Performance}
@@ -40,8 +40,7 @@ $\bar{p}$=.45 $\sigma$=.37, $\bar{r}$=.45 $\sigma$=.38 & $\bar{p}$=.71 $\sigma$=
 
 \end{table*}
 
-To assess overall performance, Table~\ref{tab:overall} summarizes the results across all problem instances against user-defined target regions from three different users. Both precision and recall for the inferred regions is .45 with a standard deviation of .37 and .38 respectively. When comparing the manually encoded regions against each target instance, we calculate a mean precision of .71 ($\sigma$=.29) and recall of .66 ($\sigma$=.24). The region defined by the room results in a precision of .17 ($\sigma$=.11) and recall of .98 ($\sigma$=.05).
-
+To assess overall performance, Table~\ref{tab:overall} summarizes the results across all problem instances against user-defined target regions from three different users. Both precision and recall for the inferred regions is .47 and .37 with a standard deviation of .37 and .38 respectively. When comparing the manually encoded regions against each target instance, we calculate a mean precision of .71 ($\sigma$=.30) and recall of .67 ($\sigma$=.25). The region defined by the room results in a precision of .17 ($\sigma$=.11) and recall of .98 ($\sigma$=.05).
 
 \begin{table*}
 	\center
@@ -49,19 +48,19 @@ To assess overall performance, Table~\ref{tab:overall} summarizes the results ac
 \hline
 Region & Inferred & Manually Encoded & Entire Room \\
 \hline
-Front & $\bar{p}$=.33 $\sigma$=.34, $\bar{r}$=.52 $\sigma$=.40 & $\bar{p}$=.60 $\sigma$=.29, $\bar{r}$=.82 $\sigma$=.19  & $\bar{p}$=.15 $\sigma$=.09, $\bar{r}$=1 $\sigma$=0  \\
+Front & $\bar{p}$=.32 $\sigma$=.33, $\bar{r}$=.49 $\sigma$=.41 & $\bar{p}$=.60 $\sigma$=.29, $\bar{r}$=.83 $\sigma$=.19  & $\bar{p}$=.16 $\sigma$=.10, $\bar{r}$=1 $\sigma$=0  \\
 \hline
-Back & $\bar{p}$=.45 $\sigma$=.35, $\bar{r}$=.56 $\sigma$=.40 & $\bar{p}$=.66 $\sigma$=.25, $\bar{r}$=.84 $\sigma$=.17  & $\bar{p}$=.11 $\sigma$=.06, $\bar{r}$=.99 $\sigma$=.03  \\
+Back & $\bar{p}$=.44 $\sigma$=.37, $\bar{r}$=.56 $\sigma$=.41 & $\bar{p}$=.66 $\sigma$=.25, $\bar{r}$=.84 $\sigma$=.17  & $\bar{p}$=.11 $\sigma$=.06, $\bar{r}$=.99 $\sigma$=.03  \\
 \hline
-Front Rows & $\bar{p}$=.62 $\sigma$=.36, $\bar{r}$=.22 $\sigma$=.21 & $\bar{p}$=.82 $\sigma$=.30, $\bar{r}$=.50 $\sigma$=.11  & $\bar{p}$=.22 $\sigma$=.08, $\bar{r}$=1 $\sigma$=0  \\
+Front Rows & $\bar{p}$=.76 $\sigma$=.27, $\bar{r}$=.28 $\sigma$=.21 & $\bar{p}$=.83 $\sigma$=.31, $\bar{r}$=.50 $\sigma$=.11  & $\bar{p}$=.22 $\sigma$=.08, $\bar{r}$=1 $\sigma$=0  \\
 \hline
-Back Rows & $\bar{p}$=.74 $\sigma$=.28, $\bar{r}$=.43 $\sigma$=.23 & $\bar{p}$=.80 $\sigma$=.29, $\bar{r}$=.43 $\sigma$=.26  & $\bar{p}$=.19 $\sigma$=.06, $\bar{r}$=1 $\sigma$=0  \\
+Back Rows & $\bar{p}$=.72 $\sigma$=.30, $\bar{r}$=.42 $\sigma$=.26 & $\bar{p}$=.80 $\sigma$=.29, $\bar{r}$=.43 $\sigma$=.26  & $\bar{p}$=.19 $\sigma$=.06, $\bar{r}$=1 $\sigma$=0  \\
 \hline
-Kitchen & $\bar{p}$=.23 $\sigma$=.03, $\bar{r}$=.09 $\sigma$=.02 & $\bar{p}$=.78 $\sigma$=.20, $\bar{r}$=.71 $\sigma$=.13  & $\bar{p}$=.16 $\sigma$=.02, $\bar{r}$=.92 $\sigma$=.13  \\
+Kitchen & $\bar{p}$=.60 $\sigma$=.05, $\bar{r}$=.59 $\sigma$=.34 & $\bar{p}$=.78 $\sigma$=.20, $\bar{r}$=.71 $\sigma$=.13  & $\bar{p}$=.16 $\sigma$=.02, $\bar{r}$=.92 $\sigma$=.13  \\
 \hline
-Office & $\bar{p}$=.05 $\sigma$=.01, $\bar{r}$=.06 $\sigma$=.06 & $\bar{p}$=.78 $\sigma$=.29, $\bar{r}$=.55 $\sigma$=.20  & $\bar{p}$=.08 $\sigma$=.03, $\bar{r}$=.93 $\sigma$=.06  \\
+Office & $\bar{p}$=.00 $\sigma$=.00, $\bar{r}$=.00 $\sigma$=.00 & $\bar{p}$=.78 $\sigma$=.29, $\bar{r}$=.55 $\sigma$=.20  & $\bar{p}$=.08 $\sigma$=.03, $\bar{r}$=.94 $\sigma$=.06  \\
 \hline
-Living Room & $\bar{p}$=0 $\sigma$=0, $\bar{r}$=0 $\sigma$=0 & $\bar{p}$=.63 $\sigma$=.34, $\bar{r}$=.54 $\sigma$=.13  & $\bar{p}$=.35 $\sigma$=.22, $\bar{r}$=.96 $\sigma$=.06  \\
+Living Room & $\bar{p}$=.40 $\sigma$=.39, $\bar{r}$=.01 $\sigma$=.01 & $\bar{p}$=.63 $\sigma$=.34, $\bar{r}$=.54 $\sigma$=.13  & $\bar{p}$=.35 $\sigma$=.22, $\bar{r}$=.96 $\sigma$=.06  \\
 \hline
 \end{tabular}
 \caption{Performance by Region Type}
