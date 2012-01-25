@@ -68,18 +68,20 @@ In order to collaborate with people in the real world, cognitive systems must be
 
 Consider a janitorial robot cleaning a classroom. While performing this task, it encounters a teacher working with a student. The teacher tells the robot to ``start at the front of the classroom'', expecting it to go to the front of the classroom and begin cleaning that area. This response requires that the robot is able to \emph{determine the spatial region in the environment that satisfies this concept}.
 
-The ability to understand and reason about \textit{spatial regions} is essential for cognitive systems performing tasks for humans in everyday environments. Some regions, such as whole rooms and corridors, are defined by clearly perceivable boundaries (e.g. walls and doors). However, many regions to which humans routinely refer are not so easily defined. Consider, for example, the aforementioned region \textit{the front of the classroom}. This region is not easily perceivable using just the geometry of the environment. Instead, it is defined by the objects present in the room (chairs, a desk, a whiteboard), their role in this context (seats for students to watch a teacher who writes on the whiteboard) and their configuration in space (the seats point toward the whiteboard). We refer to such regions as \textit{context-dependent spatial regions} (CDSRs). 
+The ability to understand and reason about \textit{spatial regions} is essential for cognitive systems performing tasks for humans in everyday environments. Some regions, such as whole rooms and corridors, are defined by clearly perceivable boundaries (e.g. walls and doors). However, many regions to which humans routinely refer are not so easily defined. Consider, for example, the aforementioned region \textit{the front of the classroom}. This region is not perceivable using just the geometry of the environment. Instead, it is defined by the objects present in the room (chairs, a desk, a whiteboard), their role in this context (seats for students to watch a teacher who writes on the whiteboard) and their configuration in space (the seats point toward the whiteboard). We refer to such regions as \textit{context-dependent spatial regions} (CDSRs). 
 
-Current cognitive systems are not capable of representing and reasoning about CDSRs, yet it is an important ability. If cognitive systems are to collaborate with humans in everyday environments then they must be able to understand the spatial regions humans refer to. Many regions are best defined in a context-dependent manner, for example, a kitchen in a studio apartment, an aisle in a church or store, behind enemy lines in a military engagement, etc. In order to represent and reason about such regions, cognitive systems must integrate different types of information, including geometric, semantic, and functional knowledge. Creating systems able to integrate such a range of information is a key challenge in the cognitive systems paradigm.
+Current cognitive systems are not capable of representing and reasoning about CDSRs, yet it is an important ability. If cognitive systems are to collaborate with humans in everyday environments then they must be able to understand and refer to the same spatial regions humans do. Many regions are best defined in a context-dependent manner, for example, a kitchen in a studio apartment, an aisle in a church or store, behind enemy lines in a military engagement, etc. In order to represent and reason about such regions, cognitive systems must integrate different types of information, including geometric, semantic, and functional knowledge. Creating systems able to integrate such a range of information is a key challenge in the cognitive systems paradigm.
 
-This paper presents an artificial cognitive system (specifically a mobile robot) able to represent and reason about CDSRs. Our approach is founded on two assumptions. The first assumption is that CDSRs can be defined using \emph{qualitative spatial representations} (QSRs) extracted from the sensor data of the system~\cite{Cohn:2001}. The second assumption is that semantically similar areas (e.g. two different classrooms) will feature similar CDSRs, and that these similarities can be recognised through \emph{analogy}. The rest of the paper is structured following these assumptions. Section~\ref{sec:qsr-gen} describes how we generate QSRs from sensor data taken from an existing, state-of-the-art, cognitive system and use these to define CDSRs. Section~\ref{sec:analogy} then describes how we use the structure-mapping model of analogy \cite{Gentner1983a} to transfer a CDSR from a labelled example to a new situation. Section~\ref{sec:example} presents a worked example of the entire process, and Section~\ref{sec:evaluation} evaluates our system in comparison to data from human subjects performing the same task.
+\from{klenk}{Cite recent Langley work}
+
+This paper presents an artificial cognitive system (specifically a mobile robot) able to represent and reason about CDSRs. Our approach is founded on two assumptions. The first assumption is that CDSRs can be defined using \emph{qualitative spatial representations} (QSRs) corresponding to sensor data of the system~\cite{Cohn:2001}. The second assumption is that semantically and geometrically similar areas (e.g. two different classrooms) will feature similar CDSRs, and that these similarities can be recognised through \emph{analogy}. The rest of the paper is structured following these assumptions. Section~\ref{sec:qsr-gen} describes how we generate QSRs from sensor data taken from an existing, state-of-the-art, cognitive system and use these to define CDSRs. Section~\ref{sec:analogy} then describes how we use the structure-mapping model of analogy \cite{Gentner1983a} to transfer a CDSR from a labelled example to a new situation. Section~\ref{sec:example} presents a worked example of the entire process, and Section~\ref{sec:evaluation} evaluates our system in comparison to data from human subjects performing the same task.
 
 
 \section{Metric to Qualitative Representations}\label{sec:qsr-gen}
 
 % Our approach to representing and reasoning about context-dependent spatial regions requires the existence of qualitative spatial representations~\cite{Cohn:2001} describing the relationships between the entities a cognitive system perceives (including objects, groups, and regions). By adding semantic labels, or types, to each entity, we are able to reason about the geometric \emph{and} conceptual characteristics of the system's environment. The following sections describe how we generate appropriate qualitative spatial representations using the spatial model of an existing, state-of-the-art, cognitive system.
 
-The context which defines a CDSR is a combination of the functional and geometric properties of a room, i.e. what can be done there and where. In this work we implicitly represent context using the types of objects present in a room and their location, both relative to each other and relative to the room itself. The following sections describe how we construct these ingredients of context from the starting point of a robot that can sense its environment. 
+The context which defines a CDSR is a combination of the functional and geometric properties of a room, i.e. what can be done there and where. In this work we implicitly represent context using the types of objects present in a room and their location relative to each other. The following sections describe how we construct these ingredients of context from the starting point of a robot that can sense its environment. 
 
 \subsection{The Dora System}
 
@@ -88,32 +90,31 @@ We base our work on Dora, a mobile cognitive robot with a pre-existing multi-lay
 Dora's metric map is a collection of lines in a 2D global coordinate frame. These lines are generated by a process which uses input from the robot's odometry and laser scanner to perform simultaneous localization and mapping (SLAM). Lines in this SLAM map represent features extracted from laser scans wherever a straight line is present for long enough to be considered permanent. In practice, lines are generated at the positions of walls and any other objects that are flat at the height of the laser (e.g. bins, closed doors etc.). The robot's location in the metric layer is represented as a 2D position plus an orientation. 
 
 Dora is capable of using vision to recognize pre-trained 3D object models. Recognition can either be triggered through autonomous visual search or at a user's command. When an object is detected it is represented in the metric map 
-by placing a copy of the model at the detected pose. The recognizer associates each object with a type label that was provided during a training phase.  
+by placing a copy of the model at the detected pose. The recognizer associates each object with a semantic type that was provided during a training phase.
 
-To enable us to generate a range of different evaluation situations in a reasonable length of time, we have generated data from Dora in both real rooms and in simulation. Simulation is performed using the Player/Stage hardware abstraction layer~\cite{GerkeyVaughanHoward03} allowing us to run the system \emph{mostly unchanged} in a pre-defined environment. Also, to enable us to detect a wider range of objects than is usually possible (from armchairs to whiteboards), we used a simulated object recogniser in all runs. The recogniser was configured with types and positions of objects in the environment and was guaranteed to detected them when the robot was orientated towards them. This eliminated any errors from the recognition process, but was still influenced by errors in robot localisation. 
+To enable us to generate a range of different evaluation situations in a reasonable length of time, we have generated data from Dora in both real rooms and in simulation. Simulation is performed using the Player/Stage hardware abstraction layer~\cite{GerkeyVaughanHoward03} allowing us to run the system \emph{mostly unchanged} in a pre-defined environment. Also, to enable us to detect a wider range of objects than is usually possible (from armchairs to whiteboards), we used a simulated object recogniser in all runs. The recogniser was configured with types and positions of objects in the environment and was guaranteed to detected them when the robot was orientated towards them. This eliminated any errors from the recognition process, but was still influenced by errors in robot localisation.
 
 \input{qsr-extraction}
 
 \subsection{Representing CDSRs}
 
-We use \textit{anchor points}~\cite{Klenk/etal2005} to define the boundaries of CDSRs. Anchor points are symbolic descriptions which link a conceptual entity (i.e. something that can be reasoned about but not directly perceived, such as a CDSR) to a particular point on a perceived entity. The perceived entities we use are the objects recognised by Dora, and the room itself. The room representation is created by putting a convex hull around the lines in Dora's SLAM map. Anchor points are created from perceived entities using unary functions, e.g. \fw{(CentroidFn Desk1)} represents the centroid of the geometric extent of \fw{Desk1}, and are linked to a particular CDSR using a \fw{regionBoundary} relation. After we have defined the boundary of the region, we assign it a semantic label using the \fw{regionType} relation. Therefore, each CDSR has one type and a variable number of boundary points.
-
-
-\from{Nick}{TODO: Need to update example, including new fns, when we have updated pictures in.}
+We use \textit{anchor points}~\cite{Klenk/etal2005} to define the boundaries of CDSRs. Anchor points are symbolic descriptions which link a conceptual entity to a perceived entity. The perceived entities we use are the objects recognised by Dora, and the room itself. The room representation is created by putting a convex hull around the lines in Dora's SLAM map. Anchor points are created from perceived entities using unary functions, e.g. \fw{(XMaxYMostFn Desk1)} represents the point on the \fw{Desk1} with the largest x coordinate taken from the set of points with a y coordinate within 5\% of the maximum y coordinate. Anchor points are linked to particular CDSRs using a \fw{regionBoundary} relation. After we have defined the boundary of the region, we assign it a semantic label using the \fw{regionType} relation. Therefore, each CDSR has one type and a variable number of boundary segments.
 
 \begin{figure}[h]
 	{\fontsize{8}{8} %%Because aaai.sty overrides usual font size commands
-  
-\fw{(regionType CDSR1 FrontRegion)\\
-(regionBoundary CDSR1 (LeftmostTopFn Room1))\\
-(regionBoundary CDSR1 (LeftmostBottomFn Room1))\\
-(regionBoundary CDSR1 Desk1)\\
-(regionBoundary CDSR1 Desk2)\\
-(regionBoundary CDSR1 Desk3)\\
-(regionBoundary CDSR1 Desk4)\\
-(regionBoundary CDSR1 Whiteboard0)
-}}
-  \caption{Representing the front of the classroom context-dependent region \fw{CDSR1}}
+
+\fw{
+(regionType CDSR9 FrontRegion) \\
+(regionBoundarySegment CDSR9 \\
+\hspace*{2em}(YMaxXFewestFn Room-Base) \\
+\hspace*{2em}(YMinXFewestFn Room-Base)) \\
+(regionBoundarySegment CDSR9 \\
+\hspace*{2em}(YMinXFewestFn Room-Base) \\
+\hspace*{2em}(YMinXFewestFn Group1))\\
+...
+}
+}
+  \caption{Representing the front of the classroom context-dependent region \fw{CDSR9}}
   \label{fig:cdsr-reps}
 \end{figure}
 
@@ -203,7 +204,7 @@ In this paper we presented an integrated cognitive system capable of representin
 
 % \section{Acknowledgments}
 % 
-% The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams. The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
+% The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams, Scott Friedman for assistance on probablistic SME, and Danny Bobrow comments on an earlier draft of this paper. The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
 
 % 7th page may only contain references
 \clearpage
