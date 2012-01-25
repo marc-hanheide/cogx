@@ -1,6 +1,6 @@
 \subsection{Qualitative Spatial Representation Extraction}
 
-For each object that Dora detects we compute the strengths of 8 spatial relations between that object and each of the objects adjacent to it; adjacency is determined using a voronoi diagram, as is standard in geometric reasoning \cite{Forbus/etal2003}. The relation's strength for a given pair of objects represents the applicability of the relation to the pair of objects ranging from 0 to 1 with 0 being unsuitable. The model used to compute these relations was inspired by the literature on modeling the semantics of spatial terms \cite{kelleher/costello:09,kelleher/vanGenabith:2006,regier/carlson:2001,gapp:1994}. The model accommodates both direction and distance as factors in the relative position of objects.
+For each object that Dora detects we compute the strengths of 8 spatial relations between that object and each of the objects adjacent to it; adjacency is determined using a voronoi diagram, as is standard in geometric reasoning \cite{Forbus/etal2003}. The strength of a computed relation for a given pair of objects represents the applicability of that relation to the pair.  Strength ranges from 0 to 1, with 0 being unsuitable. The model used to compute these relations was inspired by the literature on modeling the semantics of spatial terms \cite{kelleher/costello:09,kelleher/vanGenabith:2006,regier/carlson:2001,gapp:1994}. The model accommodates both direction and distance as factors in the relative position of objects.
 
 The relations we compute between each given \emph{landmark} object and its adjacent neighbours are analogous to the cardinal and intermediate points on the compass when the compass is centered on the object. The canonical directions of these relations are defined using the following vectors: $\langle0,1\rangle$, $\langle1,1\rangle$, $\langle1,0\rangle$, $\langle1,-1\rangle$, $\langle0,-1\rangle$, $\langle-1,-1\rangle$, $\langle-1,0\rangle$, $\langle-1,1\rangle$. The predicates used to denote these relations are named accordingly, e.g. \textit{xZeroYPlus}, \textit{xPlusYPlus}, \textit{xPlusYZero}, \textit{xPlusYMinus}, etc.
 
@@ -17,9 +17,10 @@ s = \left\{
 \end{equation}
 
 
-These spatial relationships between adjacent objects provide the structure necessary for analogical processing. Generating the relationships in this way (as opposed to, for example, simple coordinate-based thresholding) has the advantage that the presence and absence of relationships is represented on a continuous scale. This provides our representations with the flexibility necessary to manage the variation in perceptual information (i.e. the position of walls and objects) inevitable in human environments.
+These spatial relationships between adjacent objects provide the structure necessary for analogical processing. Generating the relationships in this way (as opposed to, for example, simple coordinate-based thresholding) has the advantage that the presence and absence of relationships is represented on a continuous scale. This provides our representations with the flexibility necessary to manage the variation in perceptual information (i.e. the position of walls and objects) inevitable in human environments and robot perception.
 
-The last piece of symbolic representation extracted from the sensor data is grouping entities. We create a group entity anytime there is a set of adjacent objects of the same type. For example, a classroom would likely have a group entity created in which all of the students' desks were members.
+In addition to spatial relations, we also create \emph{grouping entities}
+from the robot sensor data. Grouping entities collect together sets of adjacent objects of the same type. For example, a classroom would likely have a group entity created in which all of the students' desks were members.
 
 \begin{figure}
 \centerline{
