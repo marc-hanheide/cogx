@@ -34,6 +34,8 @@
 #include "ObjectTrackerUtils.hpp"
 #include "Tracker.h"
 
+#include <boost/filesystem.hpp>
+
 namespace cast
 {
 
@@ -89,6 +91,9 @@ private:
   bool m_delete_command_from_wm;
   bool m_showCV;
   bool m_noLearning;
+  bool m_saveImages;
+  std::string m_imagesDirectory;
+  int m_imageCount;
 
 #ifdef FEAT_VISUALIZATION
   class CDisplayClient: public cogx::display::CDisplayClient

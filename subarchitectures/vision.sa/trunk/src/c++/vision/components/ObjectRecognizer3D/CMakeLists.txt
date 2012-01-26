@@ -23,7 +23,8 @@ add_subdirectory(matrix)
 find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 
-
+include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIRS})
 
 # Set the sources.
 SET(SOURCES 
@@ -53,4 +54,5 @@ link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} Tracker matrix siftgpu)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} GLEW glut IL)
 link_cast_component(${CAST_COMPONENT_NAME} ${CG_LIBRARY} ${CG_GL_LIBRARY})
+link_cast_component(${CAST_COMPONENT_NAME} boost_filesystem-mt)
 
