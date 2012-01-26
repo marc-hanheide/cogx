@@ -28,6 +28,9 @@ ObjectRecognizer3D::ObjectRecognizer3D(){
 	m_showCV = true;
 	m_confidence = 0.08;
 	m_simulationOnly=false;
+	m_saveImages = false;
+	m_imagesDirectory = "images"; 
+	m_imageCount = 0;
 
 	// initial pose for tracking when learning a new object:
   // useful values for a user presenting an object to the system:
@@ -80,6 +83,34 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
     m_showCV = true;
   }else{
   	m_showCV = false;
+  }
+
+  if((it = _config.find("--save-images")) != _config.end()){
+    m_saveImages = true;
+    log("Saving images");
+  
+    if(boost::filesystem::exists(m_imagesDirectory))
+    {
+      // directory exists
+      boost::filesystem::remove_all(m_imagesDirectory);
+    }
+    else
+    {
+      // no directory
+    }
+    if (boost::filesystem::create_directory(m_imagesDirectory))
+    {
+      log("saving images in: %s", m_imagesDirectory.c_str());
+    }
+    else
+    {
+      log("unable to create images directory - not saving images");
+      m_saveImages = false;
+    }
+  } 
+  else{
+    m_saveImages = false;
+    log("not saving images");
   }
 
   if((it = _config.find("--labels")) != _config.end()){
@@ -791,6 +822,20 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
     if(m_showCV){
       cvShowImage(getComponentID().c_str(), m_iplImage);
       cvWaitKey(50);
+    }
+
+    if (m_saveImages)
+    {
+      log("saving image as image_%05d.png", m_imageCount);
+      char output_filename[30];
+      // Assumes the images directory exists and can be written to
+      sprintf(output_filename, "%s/image_%05d.png", m_imagesDirectory.c_str(), m_imageCount);
+      cvSaveImage(output_filename, m_iplImage);
+      m_imageCount++;
+    }
+    else
+    {
+      log("not saving image");
     }
 
     cvReleaseImage(&m_iplImage);
