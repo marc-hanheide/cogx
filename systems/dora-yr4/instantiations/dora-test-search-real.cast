@@ -97,7 +97,8 @@ JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3
 JAVA MG spatial-manual spatial.manual.ManualNavControl
 
 CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --display-objects-in-pb --ptzserver %(ptz_server)
-CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.2 --log --queryhandler conceptual.queryhandler --random-vc --usepeekabot  --siftobjects "cerealbox"
+# GSH changed sampleawayfromobs from 0.2 to 0.5
+CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 100 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.5 --log --queryhandler conceptual.queryhandler --random-vc --usepeekabot  --siftobjects "cerealbox"
 
 
 # coma ######################################################################
@@ -144,7 +145,7 @@ CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(visi
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake --tilt "-0.7854"
 
 
-CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --display --save-images
 
 CPP MG recognizer.people PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
 
@@ -157,8 +158,9 @@ JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALON
 
 
 # dialogue ####################################################################
-#INCLUDE includes/dialogue.sa/INCL/dora-live.cast
-#INCLUDE includes/dialogue.sa/dialogue-exe.cast
+INCLUDE includes/dialogue.sa/INCL/dora-live.cast
+INCLUDE includes/dialogue.sa/dialogue-exe.cast
+JAVA MG verbalisation verbalisation.DoraVerbalisation
 
 # stuff for experiments #######################################################
 #JAVA MG tourguide castutils.experimentation.TourGiver --places %(tour_places) --delay-ms 30000 --goal %(goal)
