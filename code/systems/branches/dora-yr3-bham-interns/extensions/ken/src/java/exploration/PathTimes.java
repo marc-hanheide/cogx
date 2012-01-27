@@ -1,10 +1,14 @@
 package exploration;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Vector;
 
@@ -37,7 +41,8 @@ public class PathTimes implements Serializable {
 			e.printStackTrace();
 
 		}
-System.out.println(pathTimes);
+		System.out.println(pathTimes);
+
 	}
 
 	/**
@@ -76,10 +81,13 @@ System.out.println(pathTimes);
 
 	@Override
 	public String toString() {
+		int count = 0;
 		String returnV = " \n Path between " + a + " & " + b;
 		for (PathRun run : runs) {
 			returnV += "\n" + run.toString();
+			count++;
 		}
+		returnV += "\nthere are " + count + " runs ";
 		return returnV;
 	}
 

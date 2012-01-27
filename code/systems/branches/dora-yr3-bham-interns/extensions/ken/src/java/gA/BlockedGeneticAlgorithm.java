@@ -11,7 +11,7 @@ import exploration.PathTimes;
 import exploration.PathTimesWrapper;
 import exploration.TourFinder;
 
-public class GeneticAlgorithm {
+public class BlockedGeneticAlgorithm {
 
 	private Vector<Vector<PathTimes>> paths;
 	private Vector<PathTimes> pT;
@@ -24,7 +24,7 @@ public class GeneticAlgorithm {
 		Vector<PathTimes> pathTimes = new Vector<PathTimes>();
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings.txt")));
+					new BufferedInputStream(new FileInputStream("timings2.txt")));
 
 			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
 
@@ -42,22 +42,48 @@ public class GeneticAlgorithm {
 		}
 		System.out.println("begining value "
 				+ TourFinder.evaluatePath(pathTimes, 0));
-		
-		Vector<PathTimes> visited = new Vector<PathTimes>();
-		BlockedGeneticAlgorithm gA = new BlockedGeneticAlgorithm(pathTimes,visited, 200, 60, 0);
-		//GeneticAlgorithm gA = new GeneticAlgorithm(pathTimes,200,60,0);
+		//TourFinder tF = new TourFinder(pathTimes, 0);
+	//	Vector<PathTimes> pT = tF.generateSimplePath(pathTimes, 0);
+//		Vector<PathTimes> blocked =new Vector<PathTimes>();
+//		blocked.add(pT.get(4));
+		System.out.println(pathTimes.remove(4));
+		Vector<PathTimes> travelled = new Vector<PathTimes>();
+		travelled.add(pathTimes.get(0));
+		travelled.add(pathTimes.get(1));
+		travelled.add(pathTimes.get(2));
+		travelled.add(pathTimes.get(3));
+		travelled.add(pathTimes.get(4));
+		BlockedGeneticAlgorithm gA = new BlockedGeneticAlgorithm(pathTimes,travelled, 200, 60, 4);
 		Vector<PathTimes> path = gA.getBest();
-		System.out.println("cost is " + TourFinder.evaluatePath(path, 0));
+		System.out.println("cost is " + TourFinder.evaluatePath(path, 4));
 		for (PathTimes route : path) {
 			System.out.println("A " + route.getA());
 			System.out.println("B " + route.getB());
 		}
 	}
 
-	public GeneticAlgorithm(Vector<PathTimes> pathTimes, int popSize,
-			int noOfGenerations, int startPos) {
+	/**
+	 * assumes all the blocks have been removed and that this is a completly
+	 * connected graph
+	 * 
+	 * @param pathTimes
+	 * @param travelled
+	 * @param popSize
+	 * @param noOfGenerations
+	 * @param startPos
+	 */
+	public BlockedGeneticAlgorithm(Vector<PathTimes> pathTimes,
+			Vector<PathTimes> travelled, int popSize, int noOfGenerations,
+			int startPos) {
+
 		this.startPos = startPos;
-		pT = pathTimes;
+
+		Vector<PathTimes> complete = TourFinder.copy(pathTimes);
+
+		for (PathTimes path : travelled) {
+			pathTimes.remove(path);
+		}
+		pT = complete;
 		paths = new Vector<Vector<PathTimes>>();
 		paths.add(pT);
 
@@ -67,8 +93,11 @@ public class GeneticAlgorithm {
 		System.out.println("created");
 		while (gen < noOfGenerations) {
 			System.out.println("gen is " + gen);
+			
 			System.out.println("best is "
-					+ TourFinder.evaluatePath(getBest(), startPos));
+					+ TourFinder.evaluateIncompletePath(getBest(), complete,
+							startPos));
+			
 			selection();
 			// System.out.println("selection done");
 			reproduction();
@@ -99,7 +128,14 @@ public class GeneticAlgorithm {
 
 	}
 
-	
+	public Vector<Vector<PathTimes>> crossOver(Vector<PathTimes> mama,
+			Vector<PathTimes> papa) {
+
+		Vector<Vector<PathTimes>> returnV = new Vector<Vector<PathTimes>>();
+		returnV.add(papa);
+		returnV.add(mama);
+		return returnV;
+	}
 
 	private void selection() {
 		System.out.println("path size " + paths.size());
@@ -108,7 +144,7 @@ public class GeneticAlgorithm {
 		int total = 0;
 
 		for (Vector<PathTimes> path : paths) {
-			int val = TourFinder.evaluatePath(path, startPos);
+			int val = TourFinder.evaluateIncompletePath(path, pT, startPos);
 			total += val;
 			double value = 1 / (double) val;
 			values.add(value);
@@ -135,12 +171,13 @@ public class GeneticAlgorithm {
 	private void reproduction() {
 		paths.clear();
 		while (!temp.isEmpty()) {
-			Vector<PathTimes> child1 = temp.remove(getRandomPos(temp.size()));
-			Vector<PathTimes> child2 = temp.remove(getRandomPos(temp.size()));
-						paths.add(child1);
-			paths.add(mutate(child1));
-			paths.add(child2);
-			paths.add(mutate(child2));
+			Vector<Vector<PathTimes>> child = crossOver(temp
+					.remove(getRandomPos(temp.size())), temp
+					.remove(getRandomPos(temp.size())));
+			paths.add(child.get(0));
+			paths.add(mutate(child.get(0)));
+			paths.add(child.get(1));
+			paths.add(mutate(child.get(1)));
 		}
 		// System.out.println("path length " + paths.size());
 	}
@@ -163,6 +200,9 @@ public class GeneticAlgorithm {
 		return best;
 	}
 
+	
+	
+	
 	public void findBest() {
 
 		int bestV = Integer.MAX_VALUE;
@@ -177,5 +217,7 @@ public class GeneticAlgorithm {
 		}
 		System.out.println("best from GA is " + bestV);
 	}
+	
+
 
 }

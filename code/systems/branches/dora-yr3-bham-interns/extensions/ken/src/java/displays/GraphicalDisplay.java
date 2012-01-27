@@ -82,14 +82,14 @@ public class GraphicalDisplay extends JPanel {
 		pathTimes = new Vector<PathTimes>();
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings.txt")));
+					new BufferedInputStream(new FileInputStream("timings2.txt")));
 
 			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
 
 			in.close();
 
 			BufferedReader f = new BufferedReader(
-					new FileReader("tmpmap.graph"));
+					new FileReader("tmpmap2.graph"));
 			String first = f.readLine();
 			int length = Integer.valueOf(String.valueOf(first.toCharArray(), 6,
 					first.length() - 6));
@@ -129,9 +129,11 @@ public class GraphicalDisplay extends JPanel {
 		}
 
 		for (PathTimes pT : pathTimes) {
+			
 			g.setColor(Color.black);
 			double x1 = nodes.get(pT.getA()).x;
 			double y1 = nodes.get(pT.getA()).y;
+			System.out.println(pT.getB());
 			double x2 = nodes.get(pT.getB()).x;
 			double y2 = nodes.get(pT.getB()).y;
 			int drawX1 = (int) (((x1 - minX) / sizeX) * width);
