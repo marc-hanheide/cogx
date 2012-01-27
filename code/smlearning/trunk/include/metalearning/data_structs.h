@@ -108,32 +108,8 @@ enum feature_selection {
 struct LearningData {
 	
 	
-	
 	/** Data chunk */
 	struct Chunk {
-		// struct Object
-		// {
-		// 	/** Object orientation in Euler coordinates */
-		// 	golem::Real obRoll, obPitch, obYaw;
-		// 	/** Object GLOBAL pose */
-		// 	golem::Mat34 objectPose;
-		// 	/** feature vector (here any vectorial representation is possible) */
-		// 	FeatureVector featureVector;
-		// };
-		// struct Action
-		// {
-		// 	golem::GenConfigspaceState armState;
-		// 	golem::Real efRoll, efPitch, efYaw;
-		// 	golem::Real horizontalAngle;
-		// 	/** speed ( 3 (fast), 4 (middle), 5 (low) */
-		// 	golem::Real pushDuration;
-		// 	/** direction vector (target pose) */
-		// 	golem::Mat34 endEffectorPose;
-		// 	golem::Mat34 effectorPose;
-		// 	/** target effector orientation in Euler coordinates */
-		// 	golem::Real endEfRoll, endEfPitch, endEfYaw;
-		// 	FeatureVector featureVector;
-		// };
 		typedef std::vector<Chunk> Seq;
 		
 		
@@ -154,13 +130,6 @@ struct LearningData {
 
 	typedef std::vector<Chunk::Seq> DataSet;
 
-	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::Action::effectorPose */
-	// golem::Bounds::Seq effector;
-	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::Object::objectPose */
-	// golem::Bounds::Seq object;
-	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
-	// golem::Bounds::Seq obstacles;
-	
 	/** Time-dependent data */
 	Chunk::Seq currentChunkSeq;
 	//DataSet data;
