@@ -3,6 +3,15 @@ if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
+# TrackerTest exec ---------------------------
+#PROJECT(TrackerTest)
+#SET(SOURCES /home/cogx/svn.cogx/code/smlearning/trunk/src/Scenario/TrackerThread.cpp)
+#LINK_LIBRARIES(cv highgui GL GLU GLEW ftgl)
+#LINK_LIBRARIES(GLWindow Tracker TomGine ThreadObject)
+#ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCES})
+#INSTALL(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+
 
 # SMLearning
 PROJECT(SMLearning)
@@ -43,6 +52,9 @@ SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 SET(RNNLIB_INCLUDE /usr/local/include/rnnlib CACHE PATH "Path prefix for RNNLIB include")
 SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 
+SET(BLORT_INCLUDE /usr/local/include/Blort CACHE PATH "Path prefix for BLORT include files")
+SET(BLORT_LIBRARY /usr/local/lib CACHE PATH "Path prefix for BLORT libraries")
+
 SET(Boost_MAJOR_VERSION 1)
 SET(Boost_MINOR_VERSION 36)
 # SET(Boost_SUBMINOR_VERSION 0)
@@ -75,11 +87,12 @@ SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SM
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader #KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools #GolemTinyIce !!not created anymore
-		##### NEW ##### ##### NEW ##### ##### NEW #####
-		GolemDemoCommon #newly added
-	       pthread rt GL glut GLU expat SMLearning netcdf
- 	       rnnlib ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
+	       GolemDemoCommon
+	       pthread rt GL glut GLU expat SMLearning netcdf rnnlib
+ 	       ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	       ${QT_LIBRARIES} qwt-qt4
+	       cv highgui GLEW ftgl
+	       TomGine Tracker GLWindow ThreadObject
 	       Ice IceUtil)
 
 INCLUDE_DIRECTORIES(
@@ -96,6 +109,7 @@ INCLUDE_DIRECTORIES(
 	${RNNLIB_INCLUDE}
 	${QT_INCLUDE_DIR}
 	${QWT_INCLUDE}
+	${BLORT_INCLUDE}
 	${ICE_INCLUDE}
 )
 
@@ -107,22 +121,23 @@ LINK_DIRECTORIES(
 	${RNNLIB_LIBRARY}
 	${QWT_LIBRARY}
 	${ICE_LIBRARY}
+	${BLORT_LIBRARY}
 )
 
 SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/SMRegion.cpp
-	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
-	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
 	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
 )
 
-SET(OFFLINE_EXPERIMENT_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/offline_experiment.cpp
-)
+# SET(OFFLINE_EXPERIMENT_SOURCE
+# 	${SMLEARNING_ROOT}/src/metalearning/offline_experiment.cpp
+# )
 
 #SET(OFFLINE_EXPERIMENT_ICE_SOURCE
 #	${SMLEARNING_ROOT}/src/metalearning/offline_experiment_ice.cpp
@@ -132,22 +147,53 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 #	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment_ice.cpp
 #)
 
-SET(ACTIVELEARN_EXPERIMENT_SOURCE
-	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment.cpp
-)
+# SET(ACTIVELEARN_EXPERIMENT_SOURCE
+# 	${SMLEARNING_ROOT}/src/metalearning/activelearn_experiment.cpp
+# )
 
 
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/SMRegion.h
-	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
+#	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
 #	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
 #	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
-	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
+#	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/metalearning/data_structs.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
+
+SET(SCENARIO_SOURCES
+	${SMLEARNING_ROOT}/src/scenario/ActorObject.cpp
+	${SMLEARNING_ROOT}/src/scenario/ArmActor.cpp
+	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
+	${SMLEARNING_ROOT}/src/scenario/Scenario.cpp	
+	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
+	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
+)
+
+
+SET(SCENARIO_HEADERS
+	${SMLEARNING_ROOT}/include/scenario/ActorObject.h
+	${SMLEARNING_ROOT}/include/scenario/ArmActor.h
+	${SMLEARNING_ROOT}/include/scenario/ConcreteActor.h
+	${SMLEARNING_ROOT}/include/metalearning/data_structs.h
+	${SMLEARNING_ROOT}/include/scenario/Polyflap.h
+	${SMLEARNING_ROOT}/include/scenario/PushingApplication.h
+	${SMLEARNING_ROOT}/include/scenario/Scenario.h
+	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
+)
+
+INSTALL(FILES ${SCENARIO_HEADERS} DESTINATION include/SMLearning/scenario/)
+
+SET(EXPERIMENTS_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/Experiments.cpp
+)
+
+SET(TRACKER_TEST_SOURCE
+ 	${SMLEARNING_ROOT}/src/scenario/TrackerTest.cpp
+)
 
 SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/tools/helpers.cpp
@@ -203,6 +249,7 @@ SET(WRITE_DATA_CRYSSMEX_FMT_SOURCE
 SET(TOOLS_HEADERS
 	${SMLEARNING_ROOT}/include/tools/helpers.h
 	${SMLEARNING_ROOT}/include/tools/math_helpers.h
+	${SMLEARNING_ROOT}/include/tools/tracker_tools.h
 )
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
@@ -218,8 +265,9 @@ QT4_WRAP_CPP( DATA_PLOT_TEST_GEN_MOC ${DATA_PLOT_TEST_MOC_HEADERS} )
 
 SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/defaultnet.config
-	${SMLEARNING_ROOT}/config/offline_experiment.xml
-	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
+#	${SMLEARNING_ROOT}/config/offline_experiment.xml
+	${SMLEARNING_ROOT}/config/pushing_appl.xml
+#	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
@@ -273,14 +321,14 @@ SET(DATA_PLOT_SERVER_SOURCE
 
 
 # SMLearning library
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${PLOT_SOURCES})
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${PLOT_SOURCES} ${SCENARIO_SOURCES} ${TRACKER_SOURCES})
 # ADD_LIBRARY(${PROJECT_NAME} SHARED ${TOOLS_SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
-ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
+#ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 #ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 #ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
-ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
+#ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
@@ -295,13 +343,17 @@ ADD_EXECUTABLE(write_data_cryssmex_fmt ${WRITE_DATA_CRYSSMEX_FMT_SOURCE})
 ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
+ADD_EXECUTABLE(tracker_test ${TRACKER_TEST_SOURCE})
+ADD_EXECUTABLE(pushing_appl ${EXPERIMENTS_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/training.sh DESTINATION bin/SMLearning)
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/ensemble_experiment.sh DESTINATION bin/SMLearning)
-INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
+#INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
+#INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS pushing_appl RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evaluate_activelearn RUNTIME DESTINATION bin/SMLearning)
@@ -320,4 +372,3 @@ INSTALL(FILES ${GOLEM_KATANA_DRIVERS_FILES} DESTINATION bin/SMLearning)
 #INSTALL(TARGETS tools_test RUNTIME DESTINATION bin/SMLearning)
 #ADD_LIBRARY(${PROJECT_NAME}_tools SHARED ${TOOLS_SOURCES})
 #INSTALL(TARGETS ${PROJECT_NAME}_tools LIBRARY DESTINATION lib)
-
