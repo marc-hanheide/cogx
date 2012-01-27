@@ -192,7 +192,7 @@ SET(EXPERIMENTS_SOURCE
 )
 
 SET(TRACKER_TEST_SOURCE
- 	${SMLEARNING_ROOT}/src/scenario/TrackerTest.cpp
+ 	${SMLEARNING_ROOT}/src/tests/TrackerTest.cpp
 )
 
 SET(TOOLS_SOURCES
