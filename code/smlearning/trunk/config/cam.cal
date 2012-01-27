@@ -1,0 +1,83 @@
+# camera parameter file generated Fri Jan 28 15:45:55 2011
+
+# Intrinsic parameters for pinhole camera model.
+# The pinhole camera model is as follows:
+# m = A*(R*M + t)
+#
+# M .. 3x1 world point [mm]
+# A .. 3x3 camera intrinsic matrix
+#          |f_x  0  c_x|
+#      A = | 0  f_y c_y|
+#          | 0   0   1 |
+#      c_x, c_y .. principal point [pix]
+#      f_x, f_y .. focal length in [pix]
+#                  f_x = f/s_x, f_y = f/s_y
+#                  with f the focal length in [mm] and s_x, s_y the pixel
+#                  sizes in [mm/pix]
+# R,t .. 3x3 rotation matrix and 3x1 translation vector [mm]
+#      pose of camera w.r.t. world (= extrinsic parameters)
+# m .. 3x1 image point in homogenous co-ordinates
+#      image point in cartesian pixel co-ordinates is given as
+#      (x, y) = (m_x/m_z, m_y/m_z)
+# Note that only the ratios focal length to pixel size can be determined.
+# Given a (known) nominal focal length f (e.g. from camera data sheet) we
+# can calculate:
+# s_x = f/f_x .. horizontal pixel size [mm/pix]
+# s_y = f/f_y .. vertical pixel size [mm/pix]
+# r = s_x/s_y .. pixel aspect ratio
+#
+# Distortion is modelled as follows:
+# x_d = x + x*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*x^2)
+# y_d = y + y*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*y^2)
+#
+# where (x, y) are ideal, distortion-free image physical co-ordinates,
+# (x_d, y_d) are distorted image physical co-ordinates and r^2 = x^2 + y^2
+#
+# w, h .. image width and height
+
+# focal lengths in [pix]
+fx = 812.448384
+fy = 813.446329
+# principal point [pix]
+cx = 299.394259
+cy = 248.291265
+
+# (nominal) focal length [mm]
+f  = 6.000000
+# pixel size [mm/pix]
+sx = 0.007385
+sy = 0.007376
+# aspect ratio: pixel size x/y
+r  = 1.001228
+# image width and height
+w =  640
+h =  480
+
+# distortion parameters
+k1 = -0.122772
+k2 = 0.298595
+p1 = -0.004147
+p2 = -0.000691
+
+# mean reprojection error
+err = -nan
+
+# poses of calibration object w.r.t. camera for each image
+# 3x1 translation vector t [m] and 3x1 rotation vector
+nposes = 8
+# img001.jpg
+pose0 = [-60.258 -147.915 611.539]  [1.568 2.369 -0.004]
+# img002.jpg
+pose1 = [-20.346 -138.999 520.837]  [1.681 2.234 -0.823]
+# img003.jpg
+pose2 = [35.747 -122.775 640.168]  [1.695 1.665 0.132]
+# img004.jpg
+pose3 = [-99.465 -116.184 509.222]  [1.796 1.229 0.156]
+# img005.jpg
+pose4 = [-105.688 19.032 498.015]  [2.249 0.558 0.109]
+# img006.jpg
+pose5 = [-95.343 -28.439 501.032]  [2.283 0.641 0.138]
+# img009.jpg
+pose6 = [-128.959 -128.850 581.175]  [2.001 2.072 -0.287]
+# img010.jpg
+pose7 = [-6.236 -137.137 505.463]  [1.447 1.569 0.244]

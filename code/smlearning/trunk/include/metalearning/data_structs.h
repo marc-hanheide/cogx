@@ -32,6 +32,8 @@
 #include <metalearning/RNN.h>
 #include <tools/math_helpers.h>
 #include <tools/helpers.h>
+#include <metalearning/Object.h>
+#include <metalearning/Action.h>
 
 using namespace golem;
 using namespace std;
@@ -105,44 +107,44 @@ enum feature_selection {
 */
 struct LearningData {
 	
+	
+	
 	/** Data chunk */
 	struct Chunk {
+		// struct Object
+		// {
+		// 	/** Object orientation in Euler coordinates */
+		// 	golem::Real obRoll, obPitch, obYaw;
+		// 	/** Object GLOBAL pose */
+		// 	golem::Mat34 objectPose;
+		// 	/** feature vector (here any vectorial representation is possible) */
+		// 	FeatureVector featureVector;
+		// };
+		// struct Action
+		// {
+		// 	golem::GenConfigspaceState armState;
+		// 	golem::Real efRoll, efPitch, efYaw;
+		// 	golem::Real horizontalAngle;
+		// 	/** speed ( 3 (fast), 4 (middle), 5 (low) */
+		// 	golem::Real pushDuration;
+		// 	/** direction vector (target pose) */
+		// 	golem::Mat34 endEffectorPose;
+		// 	golem::Mat34 effectorPose;
+		// 	/** target effector orientation in Euler coordinates */
+		// 	golem::Real endEfRoll, endEfPitch, endEfYaw;
+		// 	FeatureVector featureVector;
+		// };
 		typedef std::vector<Chunk> Seq;
+		
 		
 		/** Data chunk time stamp */
 		golem::SecTmReal timeStamp;
-
-		struct Object {
-			/** Object GLOBAL pose */
-			golem::Mat34 objectPose;
-			/** Object orientation in Euler coordinates */
-			golem::Real obRoll, obPitch, obYaw;
-			/** feature vector (here any vectorial representation is possible) */
-			FeatureVector featureVector;
-		};
-
-		struct Action {
-			/** Arm state - (joint) dynamic configuration */
-			golem::GenConfigspaceState armState;
-			/** End-effector GLOBAL pose */
-			golem::Mat34 effectorPose;
-			/** End-effector orientation in Euler coordinates */
-			golem::Real efRoll, efPitch, efYaw; 
-			/** horizontal angle */
-			golem::Real horizontalAngle;
-			/** speed ( 3 (fast), 4 (middle), 5 (low) */
-			golem::Real pushDuration;
-			/** direction vector (target pose) */
-			golem::Mat34 endEffectorPose;
-			/** target effector orientation in Euler coordinates */
-			golem::Real endEfRoll, endEfPitch, endEfYaw;
-			/** feature vector (here any vectorial representation is possible) */
-			FeatureVector featureVector;
-		};
 		/** object related chunk part */
 		Object object;
+		
 		/** action related chunk part */
 		Action action;
+		
 		/** feature vector corresponding to the whole chunk (any vectorial representation is possible) */
 		FeatureVector featureVector;
 		/** a label for this chunk, as a real nr. */
@@ -153,11 +155,11 @@ struct LearningData {
 	typedef std::vector<Chunk::Seq> DataSet;
 
 	/** (Dynamic) Effector bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::Action::effectorPose */
-	golem::Bounds::Seq effector;
+	// golem::Bounds::Seq effector;
 	/** (Dynamic) Object bounds in LOCAL coordinates; to obtain global pose multiply by Chunk::Object::objectPose */
-	golem::Bounds::Seq object;
+	// golem::Bounds::Seq object;
 	/** (Static) Obstacles bounds in GLOBAL coordinates (usually ground plane) */
-	golem::Bounds::Seq obstacles;
+	// golem::Bounds::Seq obstacles;
 	
 	/** Time-dependent data */
 	Chunk::Seq currentChunkSeq;
@@ -213,9 +215,9 @@ struct LearningData {
 	
 	/** Reset to default */
 	void setToDefault(FeaturesLimits limits) {
-		effector.clear();
-		object.clear();
-		obstacles.clear();
+		// effector.clear();
+		// object.clear();
+		// obstacles.clear();
 		featLimits.minX = limits.minX;
 		featLimits.minY = limits.minY;
 		featLimits.minZ = limits.minZ;

@@ -424,7 +424,7 @@ void  Scenario::calculate_starting_position_coord(){
 
 	//set the variable target so that it obtains the coordinates of the start point
 	//arm target update
-	set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
+	//set_coordinates_into_target(startPosition, positionT, polyflapNormalVec, polyflapOrthogonalVec, desc.dist, desc.side, desc.center, desc.top, desc.over);
 
 	prepare_target();
 
@@ -820,7 +820,9 @@ void Scenario::run(int argc, char* argv[]) {
 
 		//create and setup polyflap object, compute its vectors
 		initialize_polyflap();
-
+cout << Real(polyflapPosition.v1) << " " << Real(polyflapPosition.v2) << " " << Real(polyflapPosition.v3) << endl;
+cout << Real(positionT.v1) << " " << Real(positionT.v2) << " " << Real(positionT.v3) << endl;
+cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
 		//select a random action
 		choose_action ();
 
