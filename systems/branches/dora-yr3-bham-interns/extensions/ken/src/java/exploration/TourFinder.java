@@ -1,13 +1,13 @@
 package exploration;
 
-import gA.GeneticAlgorithm;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Vector;
+
+import gA.BlockedGeneticAlgorithm;
 
 /**
  * class for finding tours of a network
@@ -41,19 +41,39 @@ public class TourFinder {
 			e.printStackTrace();
 
 		}
-		System.out.println("Path times");
-		int index = 0;
-		for (PathTimes pT : pathTimes) {
-			System.out.println("num " + index + " " + pT.getA() + " "
-					+ pT.getB());
-			index++;
-		}
+		// System.out.println("Path times");
+		// int index = 0;
+		// for (PathTimes pT : pathTimes) {
+		// System.out.println("num " + index + " " + pT.getA() + " "
+		// + pT.getB());
+		// index++;
+		// }
 		TourFinder tF = new TourFinder(pathTimes, 0);
-		Vector<PathTimes> pT = tF.getBestPath(0);
-		for (PathTimes path : pT) {
-			System.out.println(path.getA() + " " + path.getB());
+		Vector<PathTimes> pTa = tF.getBestPath(0);
+		Vector<PathTimes> blocked = new Vector<PathTimes>();
+		Vector<PathTimes> visited = new Vector<PathTimes>();
+		visited.add(pathTimes.get(0));
+		visited.add(pathTimes.get(1));
+		visited.add(pathTimes.get(2));
+		visited.add(pathTimes.get(3));
+		visited.add(pathTimes.get(4));
+		pathTimes.remove(4);
+		System.out.println("moo " + blocked);
+		Vector<PathTimes> pT = tF.generatePath(pathTimes, blocked, visited, 0);
+
+		for (int i = 0; i < pT.size(); i++) {
+			System.out.println(pT.get(i).getA() + " " + pT.get(i).getB() + " "
+					+ pTa.get(i).getA() + " " + pTa.get(i).getB() + " ");
+			System.out.println(pT.get(i).getA() == pTa.get(i).getA());
+			System.out.println(pT.get(i).getB() == pTa.get(i).getB());
 		}
-		System.out.println(evaluatePath(pT, 0));
+		System.out.println("old version " + evaluatePath(pTa, 0));
+		System.out
+				.println("old version " + evaluateIncompletePath(pTa, pTa, 0));
+
+		System.out.println("new version " + evaluatePath(pT, 0));
+		System.out.println("new version " + evaluateIncompletePath(pT, pT, 0));
+		System.out.println(pT.size() + " " + pTa.size());
 
 	}
 
@@ -62,7 +82,12 @@ public class TourFinder {
 		standard = copy(pathTimes);
 		others = new Vector<Vector<PathTimes>>();
 		// Vector<PathTimes> temp = copy(pathTimes);
-		GeneticAlgorithm GA = new GeneticAlgorithm(pathTimes, 200, 60, startPos);
+
+		Vector<PathTimes> travelled = new Vector<PathTimes>();
+		Vector<PathTimes> simple = generateSimplePath(pathTimes, startPos);
+		others.add(simple);
+		BlockedGeneticAlgorithm GA = new BlockedGeneticAlgorithm(copy(simple),
+				travelled, 200, 60, startPos);
 		others.add(GA.getBest());
 
 	}
@@ -91,14 +116,17 @@ public class TourFinder {
 
 		Vector<PathTimes> bestPath = standard;
 		int best = evaluatePath(standard, pos);
+		System.out.println("others size is " + others.size());
 		for (Vector<PathTimes> path : others) {
 			int current = evaluatePath(path, pos);
-			System.out.println(current);
+
 			if (current < best) {
 				System.out.println("new best found");
-				System.out.println(best);
+				System.out.println("old best " + best + " & new best is "
+						+ current);
 				best = current;
 				bestPath = path;
+
 			}
 		}
 
@@ -299,6 +327,42 @@ public class TourFinder {
 	}
 
 	/**
+	 * states how many extra paths need to be run to go through the given path
+	 * 
+	 * @return
+	 */
+	public static int evaluateIncompletePath(Vector<PathTimes> paths,
+			Vector<PathTimes> wholeGraph, int startPos) {
+		
+		int cost = 0;
+		for (PathTimes path : paths) {
+
+			if (startPos == path.getA()) {
+				cost += distFromPaths(wholeGraph, startPos, path.getA());
+				startPos = path.getB();
+			} else {
+				if (startPos == path.getB()) {
+					cost += distFromPaths(wholeGraph, startPos, path.getB());
+					startPos = path.getA();
+				} else {
+					int distA = distFromPaths(wholeGraph, startPos, path.getA());
+					int distB = distFromPaths(wholeGraph, startPos, path.getB());
+					if (distA < distB) {
+						cost += distA;
+						startPos = path.getB();
+					} else {
+						cost += distB;
+						startPos = path.getA();
+					}
+				}
+			}
+			
+		}
+	
+		return cost;
+	}
+
+	/**
 	 * returns the number of nodes traversed through the list of path times from
 	 * the start position till the end one
 	 * 
@@ -397,12 +461,16 @@ public class TourFinder {
 
 		Vector<PathTimes> temp = generateSimplePath(pathTimes, blocked,
 				travelled, startPos);
-		Vector<PathTimes> evolved = copy(temp);
-		GeneticAlgorithm gA = new GeneticAlgorithm(evolved, 200, 60, startPos);
-		evolved = gA.getBest();
+
+		BlockedGeneticAlgorithm gA = new BlockedGeneticAlgorithm(copy(temp),
+				travelled, 200, 60, startPos);
+		Vector<PathTimes> evolved = gA.getBest();
 		int gACost = evaluatePath(evolved, startPos);
 		int otherCost = evaluatePath(temp, startPos);
+		System.out.println("GA cost is " + gACost);
+		System.out.println("other cost is " + otherCost);
 		if (otherCost > gACost) {
+			System.out.println("evolved");
 			return evolved;
 		} else {
 			return temp;
