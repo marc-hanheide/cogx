@@ -810,7 +810,7 @@ void SpatialControl::runComponent()
 
   while(isRunning()){
     lockComponent();
-    if (m_odometryQueue.size() > 0) 
+    while (m_odometryQueue.size() > 0) 
     {
       processOdometry();
     }
@@ -851,7 +851,9 @@ void SpatialControl::runComponent()
     }
 		m_MapsMutex.unlock();	
 	  
-    usleep(250000);
+    if (m_odometryQueue.size() == 0) {
+      usleep(250000);
+    }
   }
 } 
 
