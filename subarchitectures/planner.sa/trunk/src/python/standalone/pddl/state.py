@@ -362,7 +362,7 @@ class Fact(tuple):
             modal_args = [a.object for a in modal_args]
             val_arg = val_arg.object
 
-        if function != self.svar.function and modality != self.svar.modality:
+        if function != self.svar.function or modality != self.svar.modality:
             return None
         
         mapping = {}
