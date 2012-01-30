@@ -1,4 +1,13 @@
 # vim: set fileencoding=utf-8 sw=4 sts=4 ts=8 et :vim
+# Author: Marko Mahnič
+# Created: 2012-01-24
+#
+# This file reads a list of external repositories (eg. from 'svn pg get .') and
+# creates branches at a certain revision in all the external repositories that
+# currently point to their trunk.
+#
+# The root SVN directory is read from .svn/entries in the workroot directory.
+#
 import os, sys, re
 import subprocess as subp
 
