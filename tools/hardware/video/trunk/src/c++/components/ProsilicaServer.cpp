@@ -16,48 +16,13 @@ static void sig_alrm(int signo)
 {    /* nothing to do, just return to wake up the pause */}
 
 
-
-
-
 // Camera unique ids
-#define PROSILICA_LEFT_CAM_ID 37107 
-#define PROSILICA_RIGHT_CAM_ID 37105
-
-/*
-Prosilica_PeriodMs 100
-Prosilica_TriggerId 1
-Prosilica_UseLeftCam 1<><------><------># 1 - Yes, 0 - No
-Prosilica_UseRightCam 1><------><------># 1 - Yes, 0 - No
-Prosilica_ExposureModeAuto 1<--><------># 1 - Yes, 0 - No
-Prosilica_ExposureValue 15000
-Prosilica_ExposureAutoAdjustDelay 0
-Prosilica_ExposureAutoAdjustTol 3
-Prosilica_ExposureAutoMax 15000><------># In us. Must be less than periodms*1000
-Prosilica_ExposureAutoMin 6000<><------># Min. 10
-Prosilica_ExposureAutoOutliers 5
-Prosilica_ExposureAutoTarget 35
-Prosilica_GainValue 15
-Prosilica_WhitebalModeAuto 1<--><------># 1 - Yes, 0 - No
-Prosilica_WhitebalValueRed 100
-Prosilica_WhitebalValueBlue 300
-Prosilica_WhitebalAutoAdjustDelay 0
-Prosilica_WhitebalAutoAdjustTol 5
-Prosilica_WhitebalAutoOutliers 5
-Prosilica_MtuAuto 0
-Prosilica_MtuValue 4114
-Prosilica_FrequencyDivider 2<--><------># If >1, every nth image & trigger will be used (trigger Nos will be divided by n)
-Prosilica_BufferSize 20><------><------># No of frames in the buffer.
-Prosilica_FileFormat 0<><------><------># 0 - Half resolution RGB JPEG, 1 - Bayer8 PGM, 2 - Half resolution RGB PPM
-Prosilica_VerticalImageShift -22<------># No of pixels by which the right image will be shifted down (or up if negative)
-*/
+//#define PROSILICA_CAM_ID 37107 
+//#define PROSILICA_CAM_ID 37105
 
 const unsigned int bufferSize = 20;
-const bool mtuAuto = false;
-const int mtu = 4114;
 const int periodMs = 100;
 const int verticalImageShift = -22;
-
-
 
 /**
  * The function called to create a new instance of our component.
@@ -200,41 +165,35 @@ void ProsilicaServer::init()
   // Find cameras
   log("Found %d camera(s)", camNo);
 
-  bool foundLeft=false;
-  bool foundRight=false;
+  bool found=false;
   for (unsigned int i=0; i<camNo; ++i)
   {
-//    log("Found camera of unique ID: %d"+(int)(camList[i].UniqueId));
-    if (camList[i].UniqueId==PROSILICA_LEFT_CAM_ID)
+    //    log("Found camera of unique ID: %d"+(int)(camList[i].UniqueId));
+    if (camList[i].UniqueId==_camId)
     {
-      foundLeft=true;
-      log("Found left camera.");
-    }
-    if (camList[i].UniqueId==PROSILICA_RIGHT_CAM_ID)
-    {
-      foundRight=true;
-      log("Found right camera.");
+      found=true;
+      log("Found camera.");
     }
   }
 
-  if (!foundLeft)
+  if (!found)
   {
       error("Left camera not found.");
 	  throw cast::CASTException(cast::exceptionMessage(__HERE__, "Left camera not found!"));
   }
 
-  // Init left camera
-    // Open camera
-    log("Opening left camera");
-    if (PvCameraOpen(PROSILICA_LEFT_CAM_ID, ePvAccessMaster, &_leftCamHandle))
-    {
-      throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot open the left camera."));
-    }
-    // Adjust packet size - it is vital that this is not larger than the size set on the ethernet card
-    if (PvCaptureAdjustPacketSize(_leftCamHandle, 7000))
-    {
-        throw cast::CASTException("Cannot adjust the packet size for the left camera.");
-    }
+  // Init camera
+  // Open camera
+  log("Opening camera");
+  if (PvCameraOpen(_camId, ePvAccessMaster, &_camHandle))
+  {
+    throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot open the left camera."));
+  }
+  // Adjust packet size - it is vital that this is not larger than the size set on the ethernet card
+  if (PvCaptureAdjustPacketSize(_camHandle, _mtu))
+  {
+    throw cast::CASTException("Cannot adjust the packet size for the camera.");
+  }
 
 //    if (mtuAuto)
 //    {
@@ -250,48 +209,49 @@ void ProsilicaServer::init()
 //    	  throw cast::CASTException("Cannot set the packet size for the left camera.");
 //      }
 //    }
+
     tPvUint32 ps=0;
-    PvAttrUint32Get(_leftCamHandle, "PacketSize", &ps);
-    log("Packet size for the left camera set to %d", ps);
+    PvAttrUint32Get(_camHandle, "PacketSize", &ps);
+    log("Packet size for the camera set to %d", ps);
     // Setting camera parameters
     log("Setting left camera parameters.");
-    if (!setCameraAttributes(_leftCamHandle))
+    if (!setCameraAttributes(_camHandle))
     {
-        error("Cannot set left camera attributes.");
-    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot set left camera attributes."));
+      error("Cannot set camera attributes.");
+      throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot set camera attributes."));
     }
     // Calculating StreamBytesPerSecond
     tPvUint32 tbpf=0;
-    PvAttrUint32Get(_leftCamHandle, "TotalBytesPerFrame", &tbpf);
-//    tPvUint32 sbps=static_cast<tPvUint32>(static_cast<double>(tbpf)*
-//                                          (1000.0/static_cast<double>(periodMs))*
-//                                          3
-//                                          );
+    PvAttrUint32Get(_camHandle, "TotalBytesPerFrame", &tbpf);
+    //    tPvUint32 sbps=static_cast<tPvUint32>(static_cast<double>(tbpf)*
+    //                                          (1000.0/static_cast<double>(periodMs))*
+    //                                          3
+    //                                          );
     int sbps=6493836;
-    if (PvAttrUint32Set(_leftCamHandle, "StreamBytesPerSecond",  sbps))
+    if (PvAttrUint32Set(_camHandle, "StreamBytesPerSecond",  sbps))
     {
-    	throw cast::CASTException("Cannot set StreamBytesPerSecond for the left camera.");
+      throw cast::CASTException("Cannot set StreamBytesPerSecond for the camera.");
     }
-    log("StreamBytesPerSecond of the left camera set to %d ", sbps);
+    log("StreamBytesPerSecond of the camera set to %d ", sbps);
     // Create buffers
-    log("Creating buffer for the left camera.");
+    log("Creating buffer for the camera.");
     _frame.ImageBuffer=new char[tbpf];
     _frame.ImageBufferSize=tbpf;
     _frame.AncillaryBufferSize=0;
 
     // Starting capture
-    log("Starting capture for the left camera.");
-    if (PvCaptureStart(_leftCamHandle))
+    log("Starting capture for the camera.");
+    if (PvCaptureStart(_camHandle))
     {
-    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Error invoking CaptureStart for left camera."));
+    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Error invoking CaptureStart for camera."));
     }
 
     sleepComponent(1000);
     // Start acquisition
-    log("Starting acquisition for the left camera.");
-    if (PvCommandRun(_leftCamHandle, "AcquisitionStart"))
+    log("Starting acquisition for the  camera.");
+    if (PvCommandRun(_camHandle, "AcquisitionStart"))
     {
-    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot start acquisition for the left camera."));
+    	throw cast::CASTException(cast::exceptionMessage(__HERE__, "Cannot start acquisition for the camera."));
     }
     log("Finished initialization.");
 
@@ -321,7 +281,7 @@ bool ProsilicaServer::setCameraAttributes(tPvHandle cam)
   else
   {
     vertShiftAbs=-vertShift;
-    if (cam==_leftCamHandle)
+    if (cam==_camHandle)
      y=vertShiftAbs;
   }
 
@@ -418,6 +378,25 @@ void ProsilicaServer::configure(const map<string,string> & _config)
   // first let the base class configure itself
   VideoServer::configure(_config);
 
+  // Read camId and mtu
+  map<string,string>::const_iterator it;
+  if((it = _config.find("--cam-id")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> _camId;
+  }
+  else
+  {
+    throw CASTException(exceptionMessage(__HERE__, "Please provide the camera id (37105 or 37107)."));
+  }
+  _mtu = 1500;
+  if((it = _config.find("--mtu")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> _mtu;
+  }
+
+
   init();
 }
 
@@ -433,10 +412,10 @@ void ProsilicaServer::grabFrames()
 
 	log("Grabbing frames");
 	pthread_mutex_lock(&_pvMutex);
-	if(!PvCaptureQueueFrame(_leftCamHandle,&(_frame),NULL))
+	if(!PvCaptureQueueFrame(_camHandle,&(_frame),NULL))
 	{
 		debug("waiting for the frame to be done ...");
-		while(PvCaptureWaitForFrameDone(_leftCamHandle,&(_frame),PVINFINITE) == ePvErrTimeout)
+		while(PvCaptureWaitForFrameDone(_camHandle,&(_frame),PVINFINITE) == ePvErrTimeout)
 			debug("still waiting ...");
 		grabTime = getCASTTime();
 		if(_frame.Status == ePvErrSuccess)

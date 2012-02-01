@@ -76,19 +76,25 @@ private:
 
 
 private:
-	  /** Left cam handle. */
-	  tPvHandle _leftCamHandle;
 
-	  /** Frame buffer. */
-	  tPvFrame _frame;
+        /* MTU */
+        unsigned int _mtu;
 
-	  /** Mutex for protecting the Pv API. */
-	  pthread_mutex_t _pvMutex;
+        /** Camera Id */
+        unsigned int _camId;
 
-	  cast::cdl::CASTTime grabTime;
+        /** Cam handle. */
+        tPvHandle _camHandle;
 
-	  bool initDone;
+        /** Frame buffer. */
+        tPvFrame _frame;
 
+        /** Mutex for protecting the Pv API. */
+        pthread_mutex_t _pvMutex;
+
+        cast::cdl::CASTTime grabTime;
+
+        bool initDone;
 };
 
 }
