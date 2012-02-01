@@ -180,7 +180,7 @@ void Observer::runComponent()
   println("Running!!");
   while (isRunning())
     {
-      usleep(30000000);
+      usleep(100000);
       pthread_mutex_lock(&_worldStateMutex);
       updateWorldState();
       pthread_mutex_unlock(&_worldStateMutex);
