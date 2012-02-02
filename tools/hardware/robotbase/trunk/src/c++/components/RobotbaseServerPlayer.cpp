@@ -51,6 +51,8 @@ RobotbaseServerPlayer::RobotbaseServerPlayer()
   // Initialize with no limts really
   m_MaxV = 10;
   m_MaxW = 10;
+  m_MaxJoyV = 10;
+  m_MaxJoyW = 10;
 }
 
 RobotbaseServerPlayer::~RobotbaseServerPlayer()
@@ -102,13 +104,13 @@ RobotbaseServerPlayer::configure(const std::map<std::string,std::string> & confi
     str >> m_MaxJoyV;
   }
 
-  log("Using m_MaxJoyV=%.2fm/s", m_MaxV);
+  log("Using m_MaxJoyV=%.2fm/s", m_MaxJoyV);
 
   if ((it = config.find("--max-joyw")) != config.end()) {
     std::istringstream str(it->second);
     str >> m_MaxJoyW;
   }
-  log("Using m_MaxW=%.2frad/s", m_MaxJoyW);
+  log("Using m_MaxJoyW=%.2frad/s", m_MaxJoyW);
 
 
 
