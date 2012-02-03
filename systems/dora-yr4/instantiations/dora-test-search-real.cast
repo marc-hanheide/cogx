@@ -145,7 +145,7 @@ CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(visi
 JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake --tilt "-0.7854"
 
 
-CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --display --save-images
+CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images #--display 
 
 CPP MG recognizer.people PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
 
