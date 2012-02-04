@@ -117,6 +117,9 @@ public class TourFinder {
 		Vector<PathTimes> bestPath = standard;
 		int best = evaluatePath(standard, pos);
 		System.out.println("others size is " + others.size());
+		if (bestPath.size() < 2) {
+			return bestPath;
+		}
 		for (Vector<PathTimes> path : others) {
 			int current = evaluatePath(path, pos);
 
@@ -161,7 +164,7 @@ public class TourFinder {
 	public static Vector<Vector<PathTimes>> convertToNodes(
 			Vector<PathTimes> paths) {
 		Vector<Vector<PathTimes>> nodes = new Vector<Vector<PathTimes>>();
-		for (int i = 0; i < paths.size(); i++) {
+		for (int i = 0; i <= paths.size(); i++) {
 			nodes.add(getPathsFromNode(paths, i));
 		}
 
@@ -190,7 +193,7 @@ public class TourFinder {
 
 		int count = 0;
 		int foundNum = -1;
-
+		System.out.println("path from nodes " + pathFromNodes);
 		while ((simple.size() < pathTimes.size())) {
 
 			// foundNum=-1;
@@ -298,9 +301,13 @@ public class TourFinder {
 	 * @return
 	 */
 	public static int evaluatePath(Vector<PathTimes> pathTimes, int startPos) {
-
+		// if (pathTimes==null) {
+		// return 0;
+		// }
 		int cost = 0;
 		for (PathTimes path : pathTimes) {
+//			System.out.println(path);
+//			System.out.println(startPos);
 			if (startPos == path.getA()) {
 				cost += distFromPaths(pathTimes, startPos, path.getA());
 				startPos = path.getB();
@@ -333,8 +340,8 @@ public class TourFinder {
 	 */
 	public static int evaluateIncompletePath(Vector<PathTimes> paths,
 			Vector<PathTimes> wholeGraph, int startPos) {
-		
-		int cost = 0;
+
+		int cost = 1;
 		for (PathTimes path : paths) {
 
 			if (startPos == path.getA()) {
@@ -356,9 +363,9 @@ public class TourFinder {
 					}
 				}
 			}
-			
+
 		}
-	
+
 		return cost;
 	}
 
@@ -458,7 +465,7 @@ public class TourFinder {
 
 	public Vector<PathTimes> generatePath(Vector<PathTimes> pathTimes,
 			Vector<PathTimes> blocked, Vector<PathTimes> travelled, int startPos) {
-
+	
 		Vector<PathTimes> temp = generateSimplePath(pathTimes, blocked,
 				travelled, startPos);
 

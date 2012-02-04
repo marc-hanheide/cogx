@@ -44,9 +44,11 @@ public class PathCluster {
 			e.printStackTrace();
 
 		}
-
+System.out.println("path times is "+ pathTimes);
 		PathTimes pT = pathTimes.get(n);
+		if(printy){
 		System.out.println(pT);
+		}
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter("temp.arff"));
 			out.println("% 1. Title: Path Relations");

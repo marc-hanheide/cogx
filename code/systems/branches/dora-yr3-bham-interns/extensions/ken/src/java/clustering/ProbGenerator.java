@@ -15,40 +15,72 @@ public class ProbGenerator {
 	private double[] hypothesis;
 	private double[] timeOfDay;
 
-	private boolean boundsCreated;
-	
+	private int minPath = 1; // the minimum number of paths before we start
+	private double minEntropy = 0.5;
+
+	private boolean messy;
+
+	// deciding a time has had enough data
+	// collection
+
 	public static void main(String[] args) {
+		long time = System.currentTimeMillis();
+		for (int i = 0; i < 1; i++) {
+			ProbGenerator g = new ProbGenerator(i, false, false);
+			// ArrayList<Integer> bounds = g.getBounds(true);
+			// double[] max = g.getEntropies();
+			// ArrayList<Integer> startPositions = new ArrayList<Integer>();
+			// ArrayList<Integer> endPositions = new ArrayList<Integer>();
+			//
+			// for (int i = 0; i < max.length; i++) {
+			// if (max[i] != 1) {
+			// System.out.println(max[i] + " at point " + i);
+			// startPositions.add(bounds.get(i - 1));
+			// endPositions.add(bounds.get(i));
+			// }
+			// }
+			//
+			// System.out.println();
+			// System.out.println(bounds);
+			// for (int i = 0; i < startPositions.size(); i++) {
+			// System.out.println("between " + startPositions.get(i) + " & "
+			// + endPositions.get(i));
+			// }
 
-		ProbGenerator g = new ProbGenerator(49);
-		double[] probs = g.getProbs(58);
-		for (int i = 0; i < probs.length; i++) {
-			System.out.print(probs[i]);
+			System.out.println(g.getTimesToInvestigate());
 		}
-		System.out.println();
-		probs = g.getProbs(62);
-		for (int i = 0; i < probs.length; i++) {
-			System.out.print(probs[i]);
-		}
-		System.out.println();
-		probs = g.getProbs(10);
-		for (int i = 0; i < probs.length; i++) {
-			System.out.print(probs[i]);
-		}
-	double[] max = g.getHighest();
-	for(double d: max){
-		System.out.print( " "+ d);
+		System.out.println(System.currentTimeMillis() - time);
 	}
 
+	public ArrayList<ArrayList<Integer>> getTimesToInvestigate() {
+		double[] max = getEntropies();
+		ArrayList<Integer> startPositions = new ArrayList<Integer>();
+		ArrayList<Integer> endPositions = new ArrayList<Integer>();
+		for (int i = 1; i < max.length; i++) {
+			if (max[i] > minEntropy) {
+				startPositions.add(bounds.get(i - 1));
+				endPositions.add(bounds.get(i));
+			}
+		}
+		ArrayList<ArrayList<Integer>> list = new ArrayList<ArrayList<Integer>>();
+		list.add(startPositions);
+		list.add(endPositions);
+		return list;
+
 	}
 
-	public ProbGenerator(int n) {
-		c = new Cluster(n, false);
-		boundsCreated=false;
+	public ProbGenerator(int n, boolean printGraph, boolean messy) {
+		c = new Cluster(n, false, printGraph, false);
+		this.messy = messy;
 		instances = c.retrieveInstances();
 		complete = unsort(instances);
-		System.out.println(instances);
+		if (messy) {
+			System.out.println(instances);
+		}
 		bounds = getBounds(true);
-		System.out.println(bounds);
+		if (messy) {
+			System.out.println(bounds);
+		}
 		ArrayList<ArrayList<Integer>> bounded = sortIntoBounds(bounds);
 		prob(bounded);
 
@@ -68,13 +100,16 @@ public class ProbGenerator {
 		for (int i = 0; i < bounds.size(); i++) {
 			bounded.add(new ArrayList<Integer>());
 		}
-		System.out.println(bounds);
+		if (messy) {
+			System.out.println(bounds);
+		}
 		for (Instance i : complete) {
 			int val = (int) i.value(0);
 
 			int pos = 0;
 			while (pos < bounded.size()) {
 				if (val < bounds.get(pos)) {
+					// System.out.println(val + " is in bound " + pos);
 					break;
 				}
 				pos++;
@@ -108,8 +143,9 @@ public class ProbGenerator {
 	 * @return
 	 */
 	public void prob(ArrayList<ArrayList<Integer>> bounded) {
-		System.out.println("bounded ");
-		System.out.println(bounded);
+		if (messy) {
+			System.out.println(bounded);
+		}
 		timeOfDay = new double[bounded.size()];
 		int sum = 0;
 		for (int i = 0; i < bounded.size(); i++) {
@@ -121,9 +157,13 @@ public class ProbGenerator {
 		}
 
 		int largest = largestClusterNum(bounded);
-		System.out.println("largest gives " + largest);
+		if (messy) {
+			System.out.println("largest gives " + largest);
+		}
 		hypothesis = new double[largestClusterNum(bounded) + 1];
-		System.out.println("moo" + hypothesis.length);
+		if (messy) {
+			System.out.println("moo" + hypothesis.length);
+		}
 		for (int i = 0; i < bounded.size(); i++) {
 			for (Integer hyp : bounded.get(i)) {
 				hypothesis[hyp]++;
@@ -134,22 +174,26 @@ public class ProbGenerator {
 			sum += hypothesis[i];
 		}
 		for (int i = 0; i < hypothesis.length; i++) {
-			System.out.println("before division size is " + hypothesis[i]);
+			if (messy) {
+				System.out.println("before division size is " + hypothesis[i]);
+			}
 			hypothesis[i] /= sum;
 		}
-		System.out.println("time of day");
-		for (int i = 0; i < timeOfDay.length; i++) {
-			System.out.println(timeOfDay[i]);
-		}
-		System.out.println("hypothesis");
-		System.out.println(hypothesis.length);
-		for (double h : hypothesis) {
-			System.out.println(h);
-		}
+		// System.out.println("time of day");
+		// for (int i = 0; i < timeOfDay.length; i++) {
+		// System.out.println(timeOfDay[i]);
+		// }
+		// System.out.println("hypothesis");
+		// System.out.println(hypothesis.length);
+		// for (double h : hypothesis) {
+		// System.out.println(h);
+		// }
 
 		// now we need to compute the joint probability table
 		ArrayList<ArrayList<Integer>> hyp = sortIntoHyp(bounded);
-		System.out.println(hyp);
+		if (messy) {
+			System.out.println(hyp);
+		}
 		// this bit is where the money is
 		// the first index will indicate the hypothesis we are looking at
 		// while the second is the time of day we are looking at
@@ -160,12 +204,12 @@ public class ProbGenerator {
 			}
 		}
 
-		for (int i = 0; i < joint.length; i++) {
-			for (int j = 0; j < joint[0].length; j++) {
-				System.out.print(joint[i][j] + " ");
-			}
-			System.out.println();
-		}
+		// for (int i = 0; i < joint.length; i++) {
+		// for (int j = 0; j < joint[0].length; j++) {
+		// System.out.print(joint[i][j] + " ");
+		// }
+		// System.out.println();
+		// }
 		// now normalize each
 		for (int i = 0; i < joint.length; i++) {// for each hypothesis
 			int sumed = 0;
@@ -178,12 +222,12 @@ public class ProbGenerator {
 				}
 			}
 		}
-		for (int i = 0; i < joint.length; i++) {
-			for (int j = 0; j < joint[0].length; j++) {
-				System.out.print(joint[i][j] + " ");
-			}
-			System.out.println();
-		}
+		// for (int i = 0; i < joint.length; i++) {
+		// for (int j = 0; j < joint[0].length; j++) {
+		// System.out.print(joint[i][j] + " ");
+		// }
+		// System.out.println();
+		// }
 
 	}
 
@@ -204,8 +248,10 @@ public class ProbGenerator {
 	 * they can be discretized into
 	 */
 	public ArrayList<Integer> getBounds(boolean simple) {
-		if (bounds==null) {
-			System.out.println("creating bounds");
+		if (bounds == null) {
+			if (messy) {
+				System.out.println("creating bounds");
+			}
 			bounds = new ArrayList<Integer>();
 			if (simple) {
 				for (int i = 0; i < 24 * 60; i += 10) {
@@ -241,32 +287,69 @@ public class ProbGenerator {
 	}
 
 	/**
-	 * returns the highest probability for each time (can use getBounds to query where each comes from)
+	 * returns the highest probability for each time (can use getBounds to query
+	 * where each comes from)
 	 * 
 	 * a result of Nan means we need to investigate this time
 	 * 
-	 * a value between 1 and 0 means that one of the hypothesis is likely to be selected for this time
-	 *  
-	 * a value of exactly 1 means we should check out that time incase we only have a few readings for that
+	 * a value between 1 and 0 means that one of the hypothesis is likely to be
+	 * selected for this time
+	 * 
+	 * a value of exactly 1 means we should check out that time incase we only
+	 * have a few readings for that
 	 * 
 	 * 0 is probably an error
 	 * 
 	 * @return
 	 */
-	public double[] getHighest(){
+	public double[] getHighest() {
 		System.out.println();
 		double[] maxProbs = new double[bounds.size()];
-		for(int i=0;i<bounds.size();i++){
+		for (int i = 0; i < bounds.size(); i++) {
 			double[] arr = getProbs(i);
-			double max=arr[0];
-			for(double d: arr){
-				if(d>max){
-					max=d;
+			double max = arr[0];
+			for (double d : arr) {
+				if (d > max) {
+					max = d;
 				}
 			}
-			maxProbs[i]=max;
+			maxProbs[i] = max;
 		}
 		return maxProbs;
 	}
-	
+
+	/**
+	 * return the entropy of each time for this path If the path has no
+	 * crossings, the entropy is interpreted as 1
+	 * 
+	 * @return
+	 */
+	public double[] getEntropies() {
+		System.out.println();
+		double[] entropies = new double[bounds.size()];
+		for (int i = 0; i < bounds.size(); i++) {
+			double sum = 0;
+			double[] arr = getProbs(i);
+
+			for (double d : arr) {
+				if (d > 0) {
+					sum += d * Math.log(d);
+				}
+			}
+			// System.out.println(timeOfDay[i]);
+			if (timeOfDay[i] >= (1.0 / (double) complete.size()) * minPath) {
+				// System.out.println("succeeded " +timeOfDay[i]);
+				// System.out.println((1.0/(double)complete.size())*minPath);
+				entropies[i] = sum;
+			} else {
+				// System.out.println("failed "+timeOfDay[i]);
+				// System.out.println( (1.0/(double)complete.size())*minPath);
+
+				entropies[i] = Double.MAX_VALUE;
+			}
+
+		}
+		return entropies;
+	}
+
 }

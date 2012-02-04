@@ -49,7 +49,7 @@ public class TimingsChart extends JFrame {
 		
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings2.txt")));
+					new BufferedInputStream(new FileInputStream("timings.txt")));
 
 			Vector<PathTimes> pT = ((PathTimesWrapper) (in.readObject()))
 					.getPathTimes();
