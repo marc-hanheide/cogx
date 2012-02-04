@@ -1,12 +1,12 @@
 HOST localhost
 
 # Visualization.SA ##########################################################
-INCLUDE includes/visualization.sa/v11n-base.cast
+#INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
 
 # ken take this out when running
-COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 
+#COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 
 
 
 INCLUDE includes/spatial.sa/spatial-base.cast
@@ -26,11 +26,11 @@ CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-
 
 
 # Conceptual.SA  ############################################################
-INCLUDE includes/conceptual.sa/conceptual-base.cast
-INCLUDE includes/conceptual.sa/conceptual-main.cast
+#INCLUDE includes/conceptual.sa/conceptual-base.cast
+#INCLUDE includes/conceptual.sa/conceptual-main.cast
 
 # Default.SA ################################################################
-INCLUDE includes/default.sa/default-base.cast
-INCLUDE includes/coma.sa/coma-defaultsa.cast
-INCLUDE includes/default.sa/default-main-ICAPS.cast
+#INCLUDE includes/default.sa/default-base.cast
+#INCLUDE includes/coma.sa/coma-defaultsa.cast
+#INCLUDE includes/default.sa/default-main-ICAPS.cast
 

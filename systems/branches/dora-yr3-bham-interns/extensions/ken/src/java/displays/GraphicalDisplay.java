@@ -82,14 +82,14 @@ public class GraphicalDisplay extends JPanel {
 		pathTimes = new Vector<PathTimes>();
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings2.txt")));
+					new BufferedInputStream(new FileInputStream("timings.txt")));
 
 			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
 
 			in.close();
 
 			BufferedReader f = new BufferedReader(
-					new FileReader("tmpmap2.graph"));
+					new FileReader("tmpmap.graph"));
 			String first = f.readLine();
 			int length = Integer.valueOf(String.valueOf(first.toCharArray(), 6,
 					first.length() - 6));

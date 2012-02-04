@@ -14,37 +14,42 @@ public class Cluster {
 	private Instances data;
 	private int maxTime;
 
-	
 	private ArrayList<ArrayList<Instance>> instances;
 	private boolean includeDay;
 	private HierarchicalClusterer h1;
-	
-	public Cluster(int pathArrPos, boolean includeDay) {
+	private boolean messy;
+
+	public Cluster(int pathArrPos, boolean includeDay, boolean printGraph,
+			boolean messy) {
+		
+		this.messy = messy;
 		DataSource source;
 		try {
 			if (pathArrPos == -1) {
 				source = new DataSource("data.arff");
 			} else {
-				PathCluster p = new PathCluster(pathArrPos, false, includeDay);
-				this.includeDay=includeDay;
+				PathCluster p = new PathCluster(pathArrPos, messy, includeDay);
+				this.includeDay = includeDay;
 				source = new DataSource("temp.arff");
 			}
 
 			data = source.getDataSet();
 			maxTime = largest();
-			System.out.println("data is");
-			System.out.println(data);
-			System.out.println();
-			System.out.println("top level 1");
+			if (messy) {
+				System.out.println("data is");
+				System.out.println(data);
+				System.out.println();
+				System.out.println("top level 1");
+			}
 			HierarchicalClusterer h = cluster(1);
 			double startVar = variance(h);
-
-			JFrame frame = new JFrame("entire system");
-			HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
-			frame.add(v);
-			frame.setSize(400, 400);
-			frame.setVisible(true);
-
+			if (printGraph) {
+				JFrame frame = new JFrame("entire system");
+				HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
+				frame.add(v);
+				frame.setSize(400, 400);
+				frame.setVisible(true);
+			}
 			double varStart = startVar;
 			double prevVar = varStart;
 			int n = data.size();
@@ -57,74 +62,98 @@ public class Cluster {
 				n = 5;
 
 			}
-			System.out.println(n);
+			if (messy) {
+				System.out.println(n);
+			}
 			for (int i = 2; i <= n; i++) {
-				System.out.println();
-				System.out.println("cluster number " + i);
-
+				if (messy) {
+					System.out.println();
+					System.out.println("cluster number " + i);
+				}
 				double var = variance(cluster(i));
 
-				System.out.println("variance of this cluster number is " + var);
+				if (messy) {
+					System.out.println("variance of this cluster number is "
+							+ var);
+				}
 				double diff = prevVar - var;
 				prevVar = var;
 				grads.add(new Double(diff));
-				System.out.println("gradient here is " + diff);
+				if (messy) {
+					System.out.println("gradient here is " + diff);
+				}
 			}
-			System.out.println("gradients are " + grads);
+			if (messy) {
+				System.out.println("gradients are " + grads);
+			}
 			double sum = 0;
 			for (Double d : grads) {
 				sum += d;
 			}
 			double av = sum / grads.size();
-			System.out.println("average gradient was " + av);
+			if (messy) {
+				System.out.println("average gradient was " + av);
+			}
 			int clustNum = 1;
 			for (int i = 0; i < grads.size(); i++) {
 				if (grads.get(i) < av) {
 					clustNum = i + 1;
-					System.out.println("number of clusters is " + clustNum);
-					break;
-				}
-			}
-			System.out.println("clust num is " + clustNum);
-		 h1 = cluster(clustNum);
-			System.out.println(h1);
-			String entire = h1.toString();
-			int pos = 7;
-			int prev = 0;
-			String[] clusters = new String[clustNum];
-
-			for (int i = 0; i < clustNum - 1; i++) {
-				pos = entire.indexOf("Cluster", pos + 7);
-				System.out.println("prev is " + prev + " pos is " + pos);
-				if (pos == -1) {
-					if (i == 0) {
-						clusters[0] = entire;
+					if (messy) {
+						System.out.println("number of clusters is " + clustNum);
 					}
 					break;
+				}
+			}
+			if (messy) {
+				System.out.println("clust num is " + clustNum);
+			}
+			h1 = cluster(clustNum);
+			if (messy) {
+				System.out.println(h1);
+			}
+			if (printGraph) {
+				String entire = h1.toString();
+				int pos = 7;
+				int prev = 0;
+				String[] clusters = new String[clustNum];
+
+				for (int i = 0; i < clustNum - 1; i++) {
+					pos = entire.indexOf("Cluster", pos + 7);
+					if (messy) {
+						System.out
+								.println("prev is " + prev + " pos is " + pos);
+					}
+					if (pos == -1) {
+						if (i == 0) {
+							clusters[0] = entire;
+						}
+						break;
+
+					}
+					clusters[i] = entire.substring(prev, pos);
+
+					prev = pos;
 
 				}
-				clusters[i] = entire.substring(prev, pos);
+				if (pos != -1) {
+					clusters[clustNum - 1] = entire.substring(pos, entire
+							.length());
+				} else {
 
-				prev = pos;
-
-			}
-			if (pos != -1) {
-				clusters[clustNum - 1] = entire.substring(pos, entire.length());
-			} else {
-
-			}
-			for (int i = 0; i < clustNum; i++) {
-
-				JFrame frame1 = new JFrame("cluster number " + i);
-				if (clusters[i] == null) {
-					break;
 				}
-				HierarchyVisualizer v1 = new HierarchyVisualizer(clusters[i]);
-				frame1.add(v1);
-				frame1.setSize(400, 400);
-				frame1.setVisible(true);
-			}
+				for (int i = 0; i < clustNum; i++) {
 
+					JFrame frame1 = new JFrame("cluster number " + i);
+					if (clusters[i] == null) {
+						break;
+					}
+					HierarchyVisualizer v1 = new HierarchyVisualizer(
+							clusters[i]);
+					frame1.add(v1);
+					frame1.setSize(400, 400);
+					frame1.setVisible(true);
+				}
+			}
 		} catch (Exception e) {
 			System.out.println(e);
 			e.printStackTrace();
@@ -135,14 +164,15 @@ public class Cluster {
 	public int largest() {
 		int large = 0;
 		for (Instance i : data) {
-			if(includeDay){
-			if (i.value(2) > large) {
-				large = (int) i.value(2);
-			}
-			}else{
+			if (includeDay) {
+				if (i.value(2) > large) {
+					large = (int) i.value(2);
+				}
+			} else {
 				if (i.value(1) > large) {
 					large = (int) i.value(1);
 				}
+
 			}
 		}
 		return large;
@@ -150,7 +180,7 @@ public class Cluster {
 
 	public static void main(String[] args) {
 
-		Cluster c = new Cluster(49, true);
+		Cluster c = new Cluster(0, true, true, false);
 		// 50 actually has somethign happen
 	}
 
@@ -173,9 +203,13 @@ public class Cluster {
 		int n = 0;
 		double var = 0;
 		for (ArrayList<Instance> ins : sorted) {
-			System.out.println(ins);
+			if (messy) {
+				System.out.println(ins);
+			}
 			double curVar = variance(ins);
-			System.out.println("var is " + curVar);
+			if (messy) {
+				System.out.println("var is " + curVar);
+			}
 			var += (curVar * ins.size());
 			n += ins.size();
 		}
@@ -192,28 +226,29 @@ public class Cluster {
 		double day = 0, min = 0, time = 0;// sums for averages
 
 		for (Instance ins : instances) {
-			if(includeDay){
-			day += (ins.value(0) / max0);
-			min += (ins.value(1) / max1);
-			time += (ins.value(2) / max2);
-			}else{
+			if (includeDay) {
+				day += (ins.value(0) / max0);
+				min += (ins.value(1) / max1);
+				time += (ins.value(2) / max2);
+			} else {
 				min += (ins.value(0) / max1);
 				time += (ins.value(1) / max2);
 			}
-			
 
 		}
-		if(includeDay){
-		day /= instances.size();
+		if (includeDay) {
+			day /= instances.size();
 		}
 		min /= instances.size();
 		time /= instances.size();
-		if(includeDay){
-		System.out.println("mean point is " + day * max0 + " , " + min * max1
-				+ " , " + time * max2);
-		}else{
-			System.out.println("mean point is "  + min * max1
-					+ " , " + time * max2);
+		if (includeDay) {
+			System.out.println("mean point is " + day * max0 + " , " + min
+					* max1 + " , " + time * max2);
+		} else {
+			if (messy) {
+				System.out.println("mean point is " + min * max1 + " , " + time
+						* max2);
+			}
 		}
 
 		// the vector we just calculated is our centre point
@@ -222,27 +257,26 @@ public class Cluster {
 		double sum = 0;
 		double sumSqr = 0;
 		for (Instance ins : instances) {
-			double d=0;
-			double m=0;
-			double t =0;
-			if(includeDay){
-			d = ins.value(0) / max0;
-			m = ins.value(1) / max1;
-			t = ins.value(2) / max2;
-			d = d - day;
-			}else{
+			double d = 0;
+			double m = 0;
+			double t = 0;
+			if (includeDay) {
+				d = ins.value(0) / max0;
+				m = ins.value(1) / max1;
+				t = ins.value(2) / max2;
+				d = d - day;
+			} else {
 				m = ins.value(0) / max1;
 				t = ins.value(1) / max2;
 			}
-			
-			
+
 			m = m - min;
 			t = t - time;
 			double dist;
-			if(includeDay){
-			 dist = Math.pow(d * d + m * m + t * t, 0.5);
-			}else{
-				 dist = Math.pow(m * m + t * t, 0.5);
+			if (includeDay) {
+				dist = Math.pow(d * d + m * m + t * t, 0.5);
+			} else {
+				dist = Math.pow(m * m + t * t, 0.5);
 			}
 			sum += dist;
 			sumSqr += dist * dist;
@@ -272,24 +306,24 @@ public class Cluster {
 				e.printStackTrace();
 			}
 		}
-		instances=sorted;
+		instances = sorted;
 		return sorted;
 	}
-	
-	public ArrayList<ArrayList<Instance>> retrieveInstances(){
+
+	public ArrayList<ArrayList<Instance>> retrieveInstances() {
 		return instances;
 	}
 
-	public int getCluster(Instance i){
-	try {
-		return 	h1.clusterInstance(i);
-	} catch (Exception e) {
-		System.out.println("instance "+ i + " could not be clustered");
-		return -1;
-		
+	public int getCluster(Instance i) {
+		try {
+			return h1.clusterInstance(i);
+		} catch (Exception e) {
+			System.out.println("instance " + i + " could not be clustered");
+			return -1;
+
+		}
 	}
-	}
-	
+
 	public double combine(double[] arr) {
 
 		double sum = 1;
@@ -298,5 +332,5 @@ public class Cluster {
 		}
 		return sum;
 	}
-	
+
 }
