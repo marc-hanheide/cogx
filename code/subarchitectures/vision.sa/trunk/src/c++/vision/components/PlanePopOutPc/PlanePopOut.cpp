@@ -143,8 +143,8 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
 	pcl::PointIndices::Ptr planepoints, pcl::ModelCoefficients::Ptr pcl_domplane,
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull)
 {
-	if(pcl_cloud && planepoints && pcl_domplane && tablehull)
-	{
+  if(pcl_cloud && planepoints && tablehull && pcl_domplane && pcl_domplane->values.size() >= 4)
+  {
     valid = true;
     plane = plane3(pcl_domplane->values[0],
 	    pcl_domplane->values[1],
@@ -163,11 +163,11 @@ void PlanePopOut::PlaneEntry::init(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cl
     }
     for (size_t i = 0; i < tablehull->points.size(); i++)
       hullPoints.push_back(vector3(tablehull->points[i].x, tablehull->points[i].y, tablehull->points[i].z));
-	}
-	else
-	{
-	  valid = false;
-	}
+  }
+  else
+  {
+    valid = false;
+  }
 }
 
 void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
@@ -1032,121 +1032,128 @@ void PlanePopOut::GetPlaneAndSOIs()
     dominantPlane.clear();
     currentSOIs.clear();
 
-    if (points.size() < PPO_MIN_POINTCLOUD_SIZE)
-	return;
-
-    // first convert to PCL format, for PCL based plane and SOI detection
-    // TODO get from cast-file!
-    int pointCloudWidth = PPO_POINTCLOUD_WIdTH;
-    int pointCloudHeight = 240;
-    pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-    ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
-
-    // Dominant plane coefficients
-    pcl::ModelCoefficients::Ptr pcl_domplane;
-    // table hull points
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
-    // the indices of points on the dominant plane
-    pcl::PointIndices::Ptr planepoints;
-    // detected SOIs: convex hull prisms, with first half of points the bottom
-    // and second half the top polygon
-    vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
-
+    try
     {
-	// libqhull which is used by PCL is not thread-safe.
-	// When multiple instances of PPO are calling PCL, we lock to avoid crashes.
-	// This will not prevent conflicts with other components using PCL.
-#if LOG_SHOW_PCL_LOCKS
-	auto_ptr<LockerDebug> pcllock;
-	if (m_componentCount > 1) {
-	    pcllock = auto_ptr<LockerDebug>(new LockerDebug(m_planePopoutMutex, this));
+	// remembers whether the actual plane and SOIs computation succeeded
+	bool ppo_ok = false;
+
+	if (points.size() < PPO_MIN_POINTCLOUD_SIZE)
+	    return;
+
+	// first convert to PCL format, for PCL based plane and SOI detection
+	// TODO get from cast-file!
+	int pointCloudWidth = PPO_POINTCLOUD_WIdTH;
+	int pointCloudHeight = 240;
+	pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+	ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
+
+	// Dominant plane coefficients
+	pcl::ModelCoefficients::Ptr pcl_domplane;
+	// table hull points
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr tablehull;
+	// the indices of points on the dominant plane
+	pcl::PointIndices::Ptr planepoints;
+	// detected SOIs: convex hull prisms, with first half of points the bottom
+	// and second half the top polygon
+	vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pcl_sois;
+
+	{
+	    // libqhull which is used by PCL is not thread-safe.
+	    // When multiple instances of PPO are calling PCL, we lock to avoid crashes.
+	    // This will not prevent conflicts with other components using PCL.
+    #if LOG_SHOW_PCL_LOCKS
+	    auto_ptr<LockerDebug> pcllock;
+	    if (m_componentCount > 1) {
+		pcllock = auto_ptr<LockerDebug>(new LockerDebug(m_planePopoutMutex, this));
+	    }
+    #else
+	    auto_ptr<IceUtil::Mutex::Lock> pcllock;
+	    if (m_componentCount > 1) {
+	       pcllock = auto_ptr<IceUtil::Mutex::Lock>(new IceUtil::Mutex::Lock(m_planePopoutMutex));
+	    }
+    #endif
+
+	    //log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
+
+	    /// TODO
+	    std::vector<unsigned> labels;   /// TODO unused?
+	    ppo_ok = m_planePopout->CalculateSOIs(pcl_cloud);
+	    if(ppo_ok)
+	    {
+		m_planePopout->GetSOIs(pcl_sois, labels);
+		m_planePopout->GetDominantPlaneCoefficients(pcl_domplane);
+		m_planePopout->GetTableHull(tablehull);
+		m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
+		m_planePopout->GetPlanePoints(planepoints);
+		log("****** HAPPY HAPPY SOIs");
+	    }
+	    else
+		log("****** failed to calulcate SOIs");
 	}
-#else
-	auto_ptr<IceUtil::Mutex::Lock> pcllock;
-	if (m_componentCount > 1) {
-	   pcllock = auto_ptr<IceUtil::Mutex::Lock>(new IceUtil::Mutex::Lock(m_planePopoutMutex));
+
+	if(ppo_ok)
+	{
+    #ifdef FEAT_VISUALIZATION
+	    // NOTE: not nice having visualisiaton code here, but ok
+	    if (m_bSendSois)
+		SendSOIs(pcl_sois);
+    #endif
+	    // fill our dominant plane structure
+	    dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
+	    if(dominantPlane.valid)
+	    {
+	      // fill our SOI structures
+	      // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
+	      // vertices of the bounding prism. We are however interested in all original
+	      // points inside the SOI.
+	      /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+		{
+		int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+	      // if point is in any SOI
+	      if(soi_label != 0) {
+	      SurfacePoint p;
+	      p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+	      p.c.r = pcl_cloud->points[i].r;
+	      p.c.g = pcl_cloud->points[i].g;
+	      p.c.b = pcl_cloud->points[i].b;
+	      currentSOIs[soi_label].points.push_back(p);
+	      }
+	      }*/
+
+	      // NOTE: the above does not work for some as yet unknown reason, so we essentially
+	      // do the same thing "by hand"
+	      for (size_t i = 0; i < pcl_sois.size(); i++)
+	      {
+		// dummy call to create map entry
+		currentSOIs[i].hist = 0;
+		// NOTE: the following isPointIn2DPolygon() function needs the bottom
+		// polygon of SOI prism, i.e. only the first half of the points
+		pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
+	      }
+	      for (size_t i = 0; i < pcl_cloud->points.size(); i++)
+	      {
+		for(size_t j = 0; j < pcl_sois.size(); j++)
+		{
+		  if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j]))
+		  {
+		    SurfacePoint p;
+		    p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
+		    p.c.r = pcl_cloud->points[i].r;
+		    p.c.g = pcl_cloud->points[i].g;
+		    p.c.b = pcl_cloud->points[i].b;
+		    currentSOIs[j].points.push_back(p);
+		  }
+		}
+	      }
+	      for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
+		it->second.init(dominantPlane);
+	    }
 	}
-#endif
-
-	//log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
-
-	/// TODO
-	std::vector<unsigned> labels;   /// TODO unused?
-	m_planePopout->CalculateSOIs(pcl_cloud);
-	m_planePopout->GetSOIs(pcl_sois, labels);
-	m_planePopout->GetDominantPlaneCoefficients(pcl_domplane);
-	m_planePopout->GetTableHull(tablehull);
-	m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
-	m_planePopout->GetPlanePoints(planepoints);
     }
-
-#ifdef FEAT_VISUALIZATION
-    // NOTE: not nice having visualisiaton code here, but ok
-    if (m_bSendSois)
-	SendSOIs(pcl_sois);
-#endif
-
-    // fill our dominant plane structure
-    dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
-    if(dominantPlane.valid)
+    catch(...)
     {
-      // fill our SOI structures
-      // NOTE: the point clouds returned as SOIs by the PlanePopout class are the
-      // vertices of the bounding prism. We are however interested in all original
-      // points inside the SOI.
-      /*for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-        {
-        int soi_label = planePopout->IsInSOI(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-      // if point is in any SOI
-      if(soi_label != 0) {
-      SurfacePoint p;
-      p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-      p.c.r = pcl_cloud->points[i].r;
-      p.c.g = pcl_cloud->points[i].g;
-      p.c.b = pcl_cloud->points[i].b;
-      currentSOIs[soi_label].points.push_back(p);
-      }
-      }*/
-
-      // NOTE: the above does not work for some as yet unknown reason, so we essentially
-      // do the same thing "by hand"
-      for (size_t i = 0; i < pcl_sois.size(); i++)
-      {
-        // dummy call to create map entry
-        currentSOIs[i].hist = 0;
-        // NOTE: the following isPointIn2DPolygon() function needs the bottom
-        // polygon of SOI prism, i.e. only the first half of the points
-        pcl_sois[i]->points.resize(pcl_sois[i]->points.size()/2);
-      }
-      for (size_t i = 0; i < pcl_cloud->points.size(); i++)
-      {
-        for(size_t j = 0; j < pcl_sois.size(); j++)
-        {
-          if(pcl::isPointIn2DPolygon(pcl_cloud->points[i], *pcl_sois[j]))
-          {
-            SurfacePoint p;
-            p.p = vector3(pcl_cloud->points[i].x, pcl_cloud->points[i].y, pcl_cloud->points[i].z);
-            p.c.r = pcl_cloud->points[i].r;
-            p.c.g = pcl_cloud->points[i].g;
-            p.c.b = pcl_cloud->points[i].b;
-            currentSOIs[j].points.push_back(p);
-          }
-        }
-      }
-      for (map<unsigned, SOIEntry>::iterator it = currentSOIs.begin(); it != currentSOIs.end(); it++)
-        it->second.init(dominantPlane);
+	log("caught unknown exception in %s, no SOIs found", __FUNCTION__);
     }
-
-#if 0
-    log("have %d current sois", (int)currentSOIs.size());
-    for (map<unsigned, SOIEntry>::iterator jt = currentSOIs.begin(); jt != currentSOIs.end(); jt++)
-    {
-       ostringstream str;
-       str << "current SOI " << jt->first << " at: "
-	   << jt->second.boundingSphere.pos << " with " << jt->second.points.size() << " points";
-       log("%s", str.str().c_str());
-    }
-#endif
 }
 
 /**
