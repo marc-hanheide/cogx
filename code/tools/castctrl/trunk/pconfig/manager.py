@@ -4,12 +4,28 @@
 # Created: March 2011
 
 from properties import CPropertySet
+import re
+
+regSimple = re.compile (r"\$([a-z_0-9]+)", re.IGNORECASE)
+regSimpleBrace = re.compile (r"\${([a-z_0-9]+)}", re.IGNORECASE)
+
+def _xe(shexpr, env):
+    for rx in [regSimple, regSimpleBrace]:
+        mos = [mo for mo in rx.finditer(shexpr)]
+        mos.reverse()
+        for m in mos:
+            if env.has_key(m.group(1)): v = env[m.group(1)]
+            else: v = ""
+            shexpr = shexpr.replace(m.group(0), v)
+
+    return shexpr
 
 class CServerInfo(CPropertySet):
     def __init__(self, name, **kwargs):
         super(CServerInfo, self).__init__(name, **kwargs)
         self.enabled = False
         self._command = None
+        self._customCommandVar = None
         self.isServer = True
         self.workdir = None
         self.defaultVars = []
@@ -40,8 +56,16 @@ class CServerInfo(CPropertySet):
         self._command = " ".join(self._valid_lines(cmd))
         self.workdir = workdir
 
-    def getCommand(self):
-        cmd = self._command
+    def setCustomCommandVar(self, varname):
+        self._customCommandVar = varname
+
+    def getCommand(self, environ=None):
+        cmd = ""
+        if environ != None and self._customCommandVar != None and self._customCommandVar in environ:
+            cmd = _xe(environ[self._customCommandVar], environ)
+            cmd = cmd.strip()
+        if cmd == "":
+            cmd = self._command
         if self._paramPreprocess != None:
             cmdname = cmd.split()[0]
             if cmdname.startswith("[") and cmdname.endswith("]"):

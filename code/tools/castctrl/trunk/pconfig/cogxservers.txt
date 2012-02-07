@@ -72,6 +72,7 @@ player.filenameField("CONFIG", label="Configuration", filter="Player Config (*.c
 levels = ["Off", "Default", "Medium", "All"]
 player.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1] )
 player.setCommand("player  [DEBUG]  [CONFIG]")
+player.setCustomCommandVar("CMD_PLAYER")
 
 def playerParamProcessor(name, value, serverInfo):
     if name == "DEBUG":
