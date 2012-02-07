@@ -892,7 +892,7 @@ class CCastControlWnd(QtGui.QMainWindow):
                 continue
 
             extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
-            command = self._options.xe(csi.getCommand(), environ=extenv)
+            command = self._options.xe(csi.getCommand(extenv), environ=extenv)
             workdir = self._options.xe(csi.workdir, environ=extenv) if csi.workdir != None else None
             params = csi.getParameters()
             if params:

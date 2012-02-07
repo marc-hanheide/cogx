@@ -90,13 +90,6 @@ CMD_JAVA_SERVER_DEBUG=ddd -jdb -launch cast.server.ComponentServer
 
 CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG] [OPTIONS]
 
-CMD_PLAYER=player [PLAYER_CONFIG]
-
-CMD_GOLEM_WORKDIR=/usr/local/bin/Golem
-CMD_GOLEM=${CMD_GOLEM_WORKDIR}/TinyIce
-
-CMD_PEEKABOT=peekabot
-
 CMD_LOG4J_CAST_SERVER=<multiline>
    java -ea -classpath ${CLASSPATH} cast.core.logging.LoggingServer
 </multiline>
@@ -107,29 +100,37 @@ CMD_LOG4J_SOCKET_SERVER=<multiline>
 # default for CAST before version 2.1.16
 CMD_LOG4J_SERVER=${CMD_LOG4J_SOCKET_SERVER}
 
-CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
+#CMD_PLAYER=player [DEBUG] [CONFIG]
 
-CMD_GAZEBO=gazebo  [GUI]  [PHYSICS]  [WORLD]
+#CMD_GOLEM_WORKDIR=/usr/local/bin/Golem
+#CMD_GOLEM=${CMD_GOLEM_WORKDIR}/TinyIce
+
+#CMD_PEEKABOT=peekabot
+
+# CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
+
+# CMD_GAZEBO=gazebo  [GUI]  [PHYSICS]  [WORLD]
 
 # Abducer Server
-ABDUCER_ROOT=${COGX_ROOT}/tools/abducer
-CMD_ABDUCER_SERVER=<multiline>
-   ${ABDUCER_ROOT}/bin/abducer-server
-   -n "AbducerServer"
-   -e "default -p 9100"
-   -l ${COGX_ROOT}/log4j.properties
-   -a ${ABDUCER_ROOT}/abducer-engine-pb
-   -x --silent
-</multiline>
+#ABDUCER_ROOT=${COGX_ROOT}/tools/abducer
+#CMD_ABDUCER_SERVER=<multiline>
+#   ${ABDUCER_ROOT}/bin/abducer-server
+#   -n "AbducerServer"
+#   -e "default -p 9100"
+#   -l ${COGX_ROOT}/log4j.properties
+#   -a ${ABDUCER_ROOT}/abducer-engine-pb
+#   -x --silent
+#</multiline>
 
-MARY_ROOT=${COGX_ROOT}/tools/mary
-MARY_CLASSPATH=<pathlist>
-   ${MARY_ROOT}/java/mary-common.jar
-   ${MARY_ROOT}/java/log4j-1.2.15.jar
-</pathlist>
-CMD_SPEECH_SERVER=<multiline>
-   java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
-   -Dmary.base=${MARY_ROOT} 
-   marytts.server.Mary
-</multiline>
+# Mary TTS
+#MARY_ROOT=${COGX_ROOT}/tools/mary
+#MARY_CLASSPATH=<pathlist>
+#   ${MARY_ROOT}/java/mary-common.jar
+#   ${MARY_ROOT}/java/log4j-1.2.15.jar
+#</pathlist>
+#CMD_SPEECH_SERVER=<multiline>
+#   java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
+#   -Dmary.base=${MARY_ROOT} 
+#   marytts.server.Mary
+#</multiline>
 
