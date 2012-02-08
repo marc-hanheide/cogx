@@ -722,7 +722,6 @@ bool SOIFilter::isPointVisible(const cogx::Math::Vector3 &pos)
 // it was removed and delete the ProtoObject.
 void SOIFilter::checkInvisibleObjects()
 {
-  if ( ! isCameraStable(2000)) sleepComponent(50);
   if ( ! isCameraStable(2000)) return;
 
   vector<ProtoObjectRecordPtr> toDelete;
