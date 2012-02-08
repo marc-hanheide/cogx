@@ -46,7 +46,9 @@ gazebo.stringItemField("GUI", label="Show GUI", items=["Yes", "No"] )
 gazebo.stringItemField("PHYSICS", label="Enable Physics", items=["Yes", "No"] )
 levels = ["Off", "Critical (default)", "Medium", "All"]
 gazebo.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1])
-gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
+gazebo.setVar("CMD_GAZEBO", "gazebo  [GUI]  [PHYSICS]  [WORLD]")
+gazebo.setCommand("${CMD_GAZEBO}")
+#gazebo.setCommand("gazebo  [GUI]  [PHYSICS]  [WORLD]")
 
 def gazeboParamProcessor(name, value, serverInfo):
     if name == "GUI":
@@ -71,8 +73,10 @@ player = Server("Player", label="Player")
 player.filenameField("CONFIG", label="Configuration", filter="Player Config (*.cfg);;All files (*)")
 levels = ["Off", "Default", "Medium", "All"]
 player.stringItemField("DEBUG", label="Debug level", items=levels, default=levels[1] )
-player.setCommand("player  [DEBUG]  [CONFIG]")
-player.setCustomCommandVar("CMD_PLAYER")
+player.setVar("CMD_PLAYER", "player  [DEBUG]  [CONFIG]")
+player.setCommand("${CMD_PLAYER}")
+#player.setCommand("player  [DEBUG]  [CONFIG]")
+#player.setCustomCommandVar("CMD_PLAYER")
 
 def playerParamProcessor(name, value, serverInfo):
     if name == "DEBUG":
@@ -88,7 +92,8 @@ player.setParamProcessor(playerParamProcessor)
 
 
 pbot = Server("Peekabot", label="Peekabot")
-pbot.setCommand("peekabot")
+pbot.setVar("CMD_PEEKABOT", "peekabot")
+pbot.setCommand("${CMD_PEEKABOT}")
 
 
 abducer = Server("Abducer", label="Abducer Server")
@@ -96,7 +101,7 @@ abducer.integerField("PORT",
         label="Port", range=(2000,50000), default=9100)
 #TODO: maybe server and engine should also be configurable
 abducer.setVar("ABDUCER_ROOT", "${COGX_ROOT}/tools/abducer")
-abducer.setCommand("""
+abducer.setVar("CMD_ABDUCER", """
       ${ABDUCER_ROOT}/bin/abducer-server
       -n "AbducerServer"
       -e "default -p [PORT]"
@@ -104,6 +109,7 @@ abducer.setCommand("""
       -a ${ABDUCER_ROOT}/bin/abducer-engine-pb
       -x --silent
       """)
+abducer.setCommand("${CMD_ABDUCER}")
 
 
 mary = Server("Mary.tts", label="Mary TTS Server")
@@ -112,11 +118,12 @@ mary.setPathList("MARY_CLASSPATH", """
       ${MARY_ROOT}/java/mary-common.jar
       ${MARY_ROOT}/java/log4j-1.2.15.jar
       """)
-mary.setCommand("""
+mary.setVar("CMD_SPEECH_SERVER", """
       java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
       -Dmary.base=${MARY_ROOT} 
       marytts.server.Mary
       """)
+mary.setCommand("${CMD_SPEECH_SERVER}")
 
 
 golem = Server("Golem", label="Golem")

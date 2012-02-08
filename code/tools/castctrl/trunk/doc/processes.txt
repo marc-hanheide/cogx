@@ -1,0 +1,145 @@
+== External Processes ==
+
+=== Commands ===
+
+The commands of the external processes can be changed in the configuration file 
+castcontrol.conf.  The variables that can be set are listed below with the 
+default values.  If the command has a _DEBUG version, then there is a setting 
+in Cast Control UI that can start the process either standalone or inside a 
+debugger.
+
+The default values are shown below:
+
+* CAST Servers
+
+    CMD_JAVA=java -ea -classpath ${CLASSPATH}
+
+    CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
+    CMD_CPP_SERVER_DEBUG=ddd --eval-command=run ${CAST_BIN_DIR}/cast-server-c++ 
+
+    CMD_PYTHON_SERVER=python -m ComponentServer
+
+    CMD_JAVA_SERVER=${CMD_JAVA} cast.server.ComponentServer
+    CMD_JAVA_SERVER_DEBUG=ddd -jdb -launch cast.server.ComponentServer
+
+    CMD_CAST_CLIENT=${CMD_JAVA} cast.clients.CASTClient -f [CAST_CONFIG] [OPTIONS]
+
+* Display Server
+
+    CMD_DISPLAY_SERVER=output/bin/display-server
+    CMD_DISPLAY_SERVER_DEBUG=${CMD_DISPLAY_SERVER}
+
+* Gazebo
+
+    CMD_GAZEBO=gazebo  [GUI]  [PHYSICS]  [WORLD]
+
+* Player
+
+    CMD_PLAYER=player  [DEBUG]  [CONFIG]
+
+* Peekabot
+
+    CMD_PEEKABOT=peekabot
+
+* Golem
+
+    CMD_GOLEM_WORKDIR=/usr/local/bin/Golem
+    CMD_GOLEM=${CMD_GOLEM_WORKDIR}/TinyIce
+
+* Abducer
+
+    ABDUCER_ROOT=${COGX_ROOT}/tools/abducer
+    CMD_ABDUCER=<multiline>
+      ${ABDUCER_ROOT}/bin/abducer-server
+      -n "AbducerServer"
+      -e "default -p [PORT]"
+      -l ${COGX_ROOT}/log4j.properties
+      -a ${ABDUCER_ROOT}/bin/abducer-engine-pb
+      -x --silent
+    </multiline>
+
+* Mary TTS
+
+    MARY_ROOT=${COGX_ROOT}/tools/mary
+    MARY_CLASSPATH=<pathlist>
+       ${MARY_ROOT}/java/mary-common.jar
+       ${MARY_ROOT}/java/log4j-1.2.15.jar
+    </pathlist>
+    CMD_SPEECH_SERVER=<multiline>
+       java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
+       -Dmary.base=${MARY_ROOT} 
+       marytts.server.Mary
+    </multiline>
+
+=== Debugging ===
+
+* DDD with gdb backend
+
+  Start DDD and, load the cast-server-c++ process and run it:
+
+    CMD_CPP_SERVER_DEBUG=ddd --eval-command=run ${CAST_BIN_DIR}/cast-server-c++ 
+
+  Start DDD and execute the GDB script ${COGX_ROOT}/cast-cpp-init.gdb:
+
+    CMD_CPP_SERVER_DEBUG=ddd ${CAST_BIN_DIR}/cast-server-c++ --command cast-cpp-init.gdb
+
+  Some commands for the GDB script:
+
+    set breakpoint pending on
+    # break in the following function:
+    break cogx::vision::CScene2D::drawVisualObject
+    # break in the following line
+    break /home/user/cast/cast-trunk/src/c++/cast/core/CASTComponent.cpp:299
+    
+    # run the process
+    run
+
+=== Running as SUDO ===
+
+WARNING: the following procedure may break your sudo. If there are errors in a 
+sudo script, sudo will fail to start (tested on Ubuntu 11.10). If this happens, 
+you have to reboot the machine and select the root login at startup to fix the 
+offending script.
+WARNING: this is a security risk.
+
+This procedure will allow the members of cogxusers group to run some commands 
+as sudo without password.
+
+1. create a group named cogxusers
+
+    sudo groupadd cogxusers
+    # grep cogxusers /etc/group
+
+2. add some existing users to the group
+
+    sudo usermod -a -G cogxusers username
+    # id username
+
+3. create the script /etc/sudoers.d/10_cogxusers with the following contents:
+
+    # (included by sudoers)
+    # allow player to run without password
+    %cogxusers ALL =  NOPASSWD:/usr/local/bin/player 
+
+  At this point sudo will start complaining that it can't execute a script, but 
+  it will still work.
+
+4. fix the permissions of the sudo script
+   WARNING: this may break sudo if there are errors in the script
+
+   sudo chmod 0440 /etc/sudoers.d/10_cogxusers
+
+5. reboot and test it:
+   sudo /usr/local/bin/player  some_player_config.cfg
+
+6. modify the commands in castcontrol.conf, eg:
+
+  * sudo player with xterm
+    CMD_PLAYER=xterm -e bash -i -c 'sudo -- player [DEBUG] [CONFIG]'
+
+  * this won't work: the process can't be stopped
+    CMD_PLAYER=sudo -- player [DEBUG] [CONFIG]
+
+    When you try to stop the process, the status of the process will be 
+    'Stopping'. You have to 'sudo kill' it.
+
