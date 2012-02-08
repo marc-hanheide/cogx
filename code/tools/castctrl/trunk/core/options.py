@@ -293,18 +293,27 @@ class CCastOptions(object):
     def saveHistory(self, configParser):
         p = configParser
         hists = self._get_mru_lists()
+        pathprefix = self.codeRootDir + '/'
 
         for mru in hists:
-           section = mru[0]
-           p.remove_section(section)
-           p.add_section(section)
-           for i,h in enumerate(mru[1]):
-              p.set(section, "%03d" % (i+1), "%s" % h)
+            section = mru[0]
+            p.remove_section(section)
+            p.add_section(section)
+            for i,h in enumerate(mru[1]):
+                try:
+                    if len(pathprefix) > 2 and h.startswith(pathprefix):
+                        h = h[len(pathprefix):]
+                except: pass
+                p.set(section, "%03d" % (i+1), "%s" % h)
 
         section = "OPTIONS"
         if not p.has_section(section):
             p.add_section(section)
         for k,v in self.options.iteritems():
+            try:
+                if len(pathprefix) > 2 and v.startswith(pathprefix):
+                    v = v[len(pathprefix):]
+            except: pass
             p.set(section, "%s" % k, "%s" % v)
 
 

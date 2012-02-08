@@ -855,7 +855,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             cfg = ConfigParser.RawConfigParser()
             cfg.read(self.fnhist)
             self._options.saveHistory(cfg)
-            self.serverManager.saveServerConfig(cfg)
+            self.serverManager.saveServerConfig(cfg, self._options.codeRootDir)
             with open(self.fnhist, 'wb') as conffile:
                 cfg.write(conffile)
 
