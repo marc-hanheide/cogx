@@ -126,7 +126,11 @@ class CServerManager:
 
         return srvrs
 
-    def saveServerConfig(self, configParser):
+    def saveServerConfig(self, configParser, rootdir=None):
+        pathprefix = ""
+        if rootdir != None:
+            pathprefix = rootdir + '/'
+
         p = configParser
         for csi in self.servers:
             section = "Server:%s" % (csi.name.upper())
@@ -136,6 +140,10 @@ class CServerManager:
             for prop in csi.properties:
                 v = prop.value
                 if v == None: v = ""
+                try:
+                    if len(pathprefix) > 2 and v.startswith(pathprefix):
+                        v = v[len(pathprefix):]
+                except: pass
                 p.set(section, prop.name, "%s" % v)
 
             for prop in csi.properties:
@@ -149,6 +157,10 @@ class CServerManager:
                 if len(prop.mruHistory) < 1: continue
 
                 for i,h in enumerate(prop.mruHistory):
+                    try:
+                        if len(pathprefix) > 2 and h.startswith(pathprefix):
+                            h = h[len(pathprefix):]
+                    except: pass
                     p.set(section, "%03d" % (i+1), "%s" % h)
 
     def loadServerConfig(self, configParser):
