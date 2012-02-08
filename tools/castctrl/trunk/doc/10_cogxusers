@@ -1,0 +1,5 @@
+# (included by sudoers)
+
+# allow player to run without password
+%cogxusers ALL =  NOPASSWD:/usr/local/bin/player 
+
