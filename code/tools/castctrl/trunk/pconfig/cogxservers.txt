@@ -120,7 +120,7 @@ mary.setPathList("MARY_CLASSPATH", """
       """)
 mary.setVar("CMD_SPEECH_SERVER", """
       java -ea -Xms40m -Xmx1g -classpath ${MARY_CLASSPATH}
-      -Dmary.base=${MARY_ROOT} 
+      -Dmary.base=${MARY_ROOT}
       marytts.server.Mary
       """)
 mary.setCommand("${CMD_SPEECH_SERVER}")
