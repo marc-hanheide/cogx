@@ -48,6 +48,20 @@ class PresupposedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dB
 class AssertedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
 
+// GeorgeY4 belief subclasses
+
+class PrivateBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
+class AssumedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
+class MergedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
+class VerifiedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
 }; 
 // end slice
 }; 
