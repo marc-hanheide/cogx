@@ -42,6 +42,9 @@ class CServerInfo(CPropertySet):
         self._paramPreprocess = processor
 
     def setVar(self, name, value):
+        parts = value.split("\n")
+        parts = [ p.strip() for p in parts if p.strip() != ""]
+        value = " ".join(parts)
         self.defaultVars.append( (name, value) )
 
     def _valid_lines(self, strValue):
