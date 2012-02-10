@@ -25,6 +25,9 @@ find_package(Boost 1.36.0 REQUIRED COMPONENTS serialization iostreams )
 
 
 option(BUILD_SA_V11N_USE_LUAGL "Build with LuaGl script support (requres lua51 and tolua++51)" ON)
+# This block is actually for glLuabindings, copied from doris.sourceforge.net.
+# TODO: It should be replaced by LuaGL, which is also included below;
+# clients will have to be changed (function names: glX -> gl.X)
 if(BUILD_SA_V11N_USE_LUAGL)
    find_package(Lua51)
    find_library(LUA_LIB_TOLUA_51 tolua++5.1)
@@ -54,6 +57,16 @@ if(BUILD_SA_V11N_USE_LUAGL)
    if (NOT LUA_LIB_TOLUA_51)
       message ("libtolua++5.1 not found. Please install libtolua++5.1-dev")
    endif (NOT LUA_LIB_TOLUA_51)
+endif(BUILD_SA_V11N_USE_LUAGL)
+
+# This block is for luagl.sourceforge.net
+if(BUILD_SA_V11N_USE_LUAGL)
+   include_directories(object/luagl ${LUA_INCLUDE_DIR})
+   set(LUAGL_EXPERIMENT_SRC ${LUAGL_EXPERIMENT_SRC}
+      object/luagl/luagl.c
+      object/luagl/luaglu.c
+      object/luagl/luagl_util.c
+      )
 endif(BUILD_SA_V11N_USE_LUAGL)
 
 option(BUILD_SA_V11N_USE_WEBKIT "Build with HTML support (Qt-WebKit)" ON)
