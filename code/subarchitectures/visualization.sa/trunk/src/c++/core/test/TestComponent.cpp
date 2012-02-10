@@ -351,6 +351,7 @@ void VideoViewer::runComponent()
   }
 #endif
 
+  // gllua
   {
     std::stringstream str;
     str << "function initlists()\n";
@@ -390,6 +391,49 @@ void VideoViewer::runComponent()
            "glTranslate(0.5,0.5,0.0)\n"
            "DispList:draw('myobject')\n"
          "glPopMatrix()\n"
+      "end\n";
+    str << "setCamera('glLua.default', 0, 0, 5, 0, 0, -1, 0, 1, 0)\n";
+    m_display.setLuaGlObject("Visualization.sa.glLua", "Points", str.str());
+  }
+  {
+    std::stringstream str;
+    str << "function initlists()\n";
+    str <<   "dirty = DispList:getDirty({'myobject'})\n";
+    str <<   "if not dirty['myobject'] then return end\n";
+    str <<   "DispList:newList('myobject')\n";
+    str <<     "gl.Begin(GL_QUADS)\n";
+    str <<     "gl.Vertex(0.1, 0.1, 0.1)\n";
+    str <<     "gl.Vertex(0.3, 0.1, 0.2)\n";
+    str <<     "gl.Vertex(0.3, 0.4, 0.3)\n";
+    str <<     "gl.Vertex(0.0, 0.5, 0.4)\n";
+    str <<     "gl.End()\n";
+    str <<   "DispList:endList()\n";
+    str << "end\n";
+
+    str << "function render()\n";
+    str << "initlists()\n";
+    str << "N=36\n";
+    str << "tabsin={0";
+    for (int i = 0; i < 36; i++) str << "," << sin(10*i*3.14/180);
+    str << "}\n";
+    str << "tabcos={1.0";
+    for (int i = 0; i < 36; i++) str << "," << cos(10*i*3.14/180);
+    str << "}\n";
+    str <<
+         //"glPointSize(2)\n"
+         "gl.Begin(GL_LINES)\n"
+         "for i=1,10000 do\n"
+            "gl.Color(i%23/23.0,i%17/17.0,i%11/11.0)\n"
+            "gl.Vertex(tabcos[i%N+1], tabsin[i%N+1], -i/100.0)\n"
+         "end\n"
+         "gl.End()\n"
+         "gl.Color(0.5,0.1,0.1)\n"
+         "DispList:draw('myobject')\n"
+         "gl.PushMatrix()\n"
+           "gl.Color(0.1,0.7,0.4)\n"
+           "gl.Translate(0.5,0.5,0.0)\n"
+           "DispList:draw('myobject')\n"
+         "gl.PopMatrix()\n"
       "end\n";
     str << "setCamera('LuaGL.default', 0, 0, 5, 0, 0, -1, 0, 1, 0)\n";
     m_display.setLuaGlObject("Visualization.sa.LuaGL", "Points", str.str());
@@ -560,6 +604,69 @@ void VideoViewer::runComponent()
   println("press <s> to stop/start receving images");
 #endif
 
+  if (1) {
+    std::stringstream str;
+    str << "setCamera('ppo.robot.head', -1.0, 0, 3.0, 1, 0, -1, 0, 0, 1)\n"
+        << "setCamera('ppo.robot.front', 4.0, 0, 4.0, -1, 0, -1, 0, 0, 1)\n"
+        << "setCamera('ppo.points.top', 0, 0, 4.0, 0, 0, -1, -1, 0, 0)\n";
+    str << "function render()\n";
+    //str << "StdModel:zfloor(0)\n";
+    str << "overlays()\n";
+    str << "tableTop()\n";
+    str << "objects()\n";
+    str << "end\n";
+
+    str << "function overlays()\n";
+    str << "v=glVertex\nc=glColor\n";
+    str << "glBegin(GL_LINES)\n";
+    str << "c(1.0,0.0,0.0)\n";
+    str << "v(0., 0., 0.)\n";
+    str << "v(0.1, 0., 0.)\n";
+    str << "c(0.0,1.0,0.0)\n";
+    str << "v(0., 0., 0.)\n";
+    str << "v(0., 0.1, 0.)\n";
+    str << "c(0.0,0.0,1.0)\n";
+    str << "v(0., 0., 0.)\n";
+    str << "v(0., 0., 0.1)\n";
+    str << "glEnd()\n";
+    str << "showLabel(0.1, 0, 0, 'x', 12)\n";
+    str << "showLabel(0, 0.1, 0, 'y', 12)\n";
+    str << "showLabel(0, 0, 0.1, 'z', 12)\n";
+    str << "end\n";
+
+    str << "function tableTop()\n";
+    str << "glPointSize(2.0)\n";
+    str << "glBegin(GL_LINE_LOOP)\n";
+    str << "glColor(1.0,1.0,1.0)\n";
+    str << "v=glVertex\n";
+    str << "v(0.6, -0.7, 0.5)\n";
+    str << "v(0.6,  0.2, 0.4)\n";
+    str << "v(0.6,  0.7, 0.55)\n";
+    str << "v(0.6,  0.8, 1.3)\n";
+    str << "v(0.6,  0.6, 1.6)\n";
+    str << "v(0.6, -0.6, 1.5)\n";
+    str << "glEnd()\n";
+    str << "end\n";
+
+
+    str << "function oneobject(x,y,v)\n";
+    str << "if v then glColor(0.0, 1.0, 0.0) else glColor(0.2, 0.2, 0.2) end\n";
+    str << "if v then s=0.12 else s=0.06 end\n";
+    str << "glPushMatrix()\n";
+    str << "glTranslate(0.8+s,x,y)\n";
+    str << "StdModel:box(s,s,s)\n";
+    str << "glPopMatrix()\n";
+    str << "end\n";
+
+    str << "function objects()\n";
+    str << "oneobject(1.0, 1.0, false)\n";
+    str << "oneobject(0.58, 0.85, true)\n";
+    str << "oneobject(0.17, 0.9, true)\n";
+    str << "oneobject(-0.26, 0.85, true)\n";
+    str << "oneobject(-0.71, 0.9, false)\n";
+    str << "end\n";
+    m_display.setLuaGlObject("Robot.3D.scene", "", str.str());
+  }
   while(isRunning())
   {
     // needed to make the window appear
