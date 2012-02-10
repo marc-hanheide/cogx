@@ -606,11 +606,11 @@ void VideoViewer::runComponent()
 
   if (1) {
     std::stringstream str;
-    str << "setCamera('ppo.robot.head', -1.0, 0, 3.0, 1, 0, -1, 0, 0, 1)\n"
-        << "setCamera('ppo.robot.front', 4.0, 0, 4.0, -1, 0, -1, 0, 0, 1)\n"
-        << "setCamera('ppo.points.top', 0, 0, 4.0, 0, 0, -1, -1, 0, 0)\n";
+    //str << "setCamera('ppo.robot.head', -1.0, 0, 3.0, 1, 0, -1, 0, 0, 1)\n"
+    //    << "setCamera('ppo.robot.front', 4.0, 0, 4.0, -1, 0, -1, 0, 0, 1)\n"
+    //    << "setCamera('ppo.points.top', 0, 0, 4.0, 0, 0, -1, -1, 0, 0)\n";
     str << "function render()\n";
-    //str << "StdModel:zfloor(0)\n";
+    str << "StdModel:xfloor(0)\n";
     str << "overlays()\n";
     str << "tableTop()\n";
     str << "objects()\n";
