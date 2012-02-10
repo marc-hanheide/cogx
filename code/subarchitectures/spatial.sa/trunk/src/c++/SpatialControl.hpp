@@ -36,7 +36,7 @@
 
 #include <SensorData/LaserScan2d.hh>
 #include <Navigation/NavGraph.hh>
-#include <Navigation/NavController.hh>
+#include "NewNavController.hpp"
 #include <Navigation/FrontierExplorer.hh>
 #include "GridLineRayTracerModified.hh"
 #include <NavX/XDisplayLocalGridMap.hh>
@@ -49,7 +49,7 @@
 namespace spatial {
 
 /**
- * This class wraps the class Cure::NavController which contains
+ * This class wraps the class Cure::NewNavController which contains
  * navigation functionality aided by a navigation graph (acquired via
  * Working Memory). The assumes that you provide a configuration file
  * that specifies the geometry of the robot.
@@ -65,8 +65,8 @@ namespace spatial {
 class SpatialControl : public cast::ManagedComponent ,
                    public Scan2dReceiver,
                    public OdometryReceiver,
-                   public Cure::NavController,                  
-                   public Cure::NavControllerEventListener,
+                   public Cure::NewNavController,                  
+                   public Cure::NewNavControllerEventListener,
 		   public Cure::FrontierExplorerEventListener,
 		   public Cure::LocalMap,
 		   public cast::PointCloudClient
@@ -156,6 +156,7 @@ protected:
 
   //REMOVEME
   void SaveGridMap();
+  void LoadGridMap(std::string filename);;
 
   void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight);
   void updateGridMaps();
@@ -181,6 +182,9 @@ protected:
   IceUtil::Mutex m_Mutex;
   IceUtil::Mutex m_MapsMutex;
   IceUtil::Mutex m_ScanQueueMutex;
+
+  bool m_loadLgm,m_saveLgm; 
+
   Cure::LocalGridMap<unsigned char>* m_lgm;
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
