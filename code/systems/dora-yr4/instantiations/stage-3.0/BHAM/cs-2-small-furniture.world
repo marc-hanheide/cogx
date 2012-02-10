@@ -8,10 +8,10 @@ include "long-desk.inc"
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [315.000 400.000]
+	size [1280.000 717.000]
 	#This is how many metres of the simulated environment each pixel shows
-	scale 22
-	center [17.800 6.200]
+	scale 22.000
+	center [18.345 5.518]
 )
 
 floorplan
@@ -98,21 +98,21 @@ p3dx_with_urg_and_blobfinder (
  (
  name "desk8"
  color "black"
- pose [21.110 10.200 0 0]
+ pose [21.928 8.109 0 0]
  )
 
  long-desk
  (
  name "desk10"
  color "black"
- pose [15.275 12.820 0 90.000]
+ pose [15.184 12.729 0 90.000]
  )
 
  long-desk
  (
  name "desk11"
  color "black"
- pose [15.285 10.400 0 90.000]
+ pose [15.194 10.627 0 90.000]
  )
 
  desk
