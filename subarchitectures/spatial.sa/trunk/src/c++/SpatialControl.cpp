@@ -59,8 +59,8 @@ int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Cu
 }
 
 SpatialControl::SpatialControl()
-  :NavController(m_NavGraph, m_LMap),
-   NavControllerEventListener("SpatialControl"),
+  :NewNavController(m_NavGraph, m_LMap, this),
+   NewNavControllerEventListener("SpatialControl"),
    FrontierExplorerEventListener("SpatialControl")
 {
   m_CurrPerson = -1;
@@ -137,10 +137,10 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
 SpatialControl::~SpatialControl() 
 { }
 
-//REMOVEME
+//saves m_lgm
 void SpatialControl::SaveGridMap(){
   log("Saving node gridmaps");
-  ofstream fout("NodeGridMaps.txt");
+  ofstream fout("GridMap.txt");
   //write size
   fout << m_lgm->getSize() << endl;
   // then map center
@@ -160,8 +160,60 @@ void SpatialControl::SaveGridMap(){
   fout.close();
 }
 
+// load from the file
+void SpatialControl::LoadGridMap(std::string filename){
+  ifstream file(filename.c_str());
+  if (!file.good()){
+    log("Could not read grid map file, exiting.");
+    return;
+  }
+  string line,tmp;
+  double cx,cy;
+  int sz;
+    getline(file,line);
+    istringstream istr(line); 
+    istr >> tmp;
+    sz = atoi(tmp.c_str());
+    log("GridMap size: %d",sz);
+    getline(file,line);
+    istringstream istr1(line); 
+    istr1 >> tmp;
+    cx = atof(tmp.c_str());
+    istr1 >> tmp;
+    cy = atof(tmp.c_str());
+    log("GridMap cx, cy: %3.2f, %3.2f",cx,cy);
+    getline(file,line); 
+    getline(file,line);
+    int count = 0;
+    m_MapsMutex.lock();
+    m_lgm = new Cure::LocalGridMap<unsigned char>(sz, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+      for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+        char c = line[count];
+        (*m_lgm)(x,y) = c;
+        count++;
+      }
+    }
+   
+    m_MapsMutex.unlock();
+    log("loaded gridmap");
+}
+
 void SpatialControl::configure(const map<string,string>& _config) 
 {
+
+  if (_config.find("--save-map") != _config.end()) {
+    m_saveLgm = true;
+  }
+
+  if (_config.find("--load-map") != _config.end()) {
+    m_loadLgm = true;
+    m_saveLgm = false;
+  }
+
+
+
   m_UsePointCloud = false;
   if (_config.find("--pcserver") != _config.end()) {
     configureServerCommunication(_config);
@@ -213,7 +265,7 @@ void SpatialControl::configure(const map<string,string>& _config)
     m_bNoNavGraph = true;
   }
 
-  if (Cure::NavController::config(configfile)) {
+  if (Cure::NewNavController::config(configfile)) {
     println("configure(...) Failed to config with \"%s\", use -c option\n",
             configfile.c_str());
     std::abort();
@@ -243,6 +295,12 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_lgm = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+
+  if(m_loadLgm)
+  {
+    LoadGridMap("GridMap.txt");
+  }
+
   m_lgmKH = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
   m_categoricalMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
@@ -292,23 +350,23 @@ void SpatialControl::configure(const map<string,string>& _config)
     str >> maxGotoW;
   }
 
-  Cure::NavController::addEventListener(this);
-  Cure::NavController::setTurnAngleIntoSpeed(true, 0.5);
-  Cure::NavController::setMinNonzeroSpeeds(0.04, 
+  Cure::NewNavController::addEventListener(this);
+  Cure::NewNavController::setTurnAngleIntoSpeed(true, 0.5);
+  Cure::NewNavController::setMinNonzeroSpeeds(0.04, 
                                            Cure::HelpFunctions::deg2rad(10));
-  Cure::NavController::setApproachTolerances(0.5, 
+  Cure::NewNavController::setApproachTolerances(0.5, 
                                              Cure::HelpFunctions::deg2rad(10));
-  Cure::NavController::setUsePathTrimming(false);
-  Cure::NavController::setMaxPathTrimDist(3);
-  Cure::NavController::setProgressTimeout(20);
-  Cure::NavController::setGotoMaxSpeeds(maxGotoV, maxGotoW);
-  Cure::NavController::setGatewayMaxSpeeds(0.3, 0.3);
+  Cure::NewNavController::setUsePathTrimming(false);
+  Cure::NewNavController::setMaxPathTrimDist(3);
+  Cure::NewNavController::setProgressTimeout(20);
+  Cure::NewNavController::setGotoMaxSpeeds(maxGotoV, maxGotoW);
+  Cure::NewNavController::setGatewayMaxSpeeds(0.3, 0.3);
   
-  Cure::NavController::setFollowDistances(0.8, 0.4);
-  Cure::NavController::setFollowTolerances(0.1, 
+  Cure::NewNavController::setFollowDistances(0.8, 0.4);
+  Cure::NewNavController::setFollowTolerances(0.1, 
                                            Cure::HelpFunctions::deg2rad(10));
 
-  Cure::NavController::setPoseProvider(m_TOPP);
+  Cure::NewNavController::setPoseProvider(m_TOPP);
 
   /*
   it = _config.find("--max-target-graph-dist");
@@ -598,11 +656,11 @@ void SpatialControl::updateGridMaps()
       lpW.add(LscanPose, m_LaserPoseR);		
       tmp_glrt.addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
       tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
-          0.55*Cure::NavController::getRobotWidth(), '0');                                  
+          0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
 
       tmp_catglrt.addScan(m_LScanQueue.front(), lpW, m_MaxCatExplorationRange);
       tmp_catlgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
-          0.55*Cure::NavController::getRobotWidth(), '0');                                  
+          0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
 
       m_firstScanAdded = true;
 
@@ -756,11 +814,11 @@ void SpatialControl::updateGridMaps()
     if (pointcloudMinXi != INT_MAX && pointcloudMinYi != INT_MAX && pointcloudMaxXi != INT_MIN && pointcloudMaxYi != INT_MIN) {
       blitHeightMap(tmp_lgm, m_lgmKH, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
       tmp_lgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-          0.55*Cure::NavController::getRobotWidth(), '0'); 
+          0.55*Cure::NewNavController::getRobotWidth(), '0'); 
 
       blitHeightMap(tmp_catlgm, m_categoricalKHMap, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, maxCatHeight);
       tmp_catlgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-          0.55*Cure::NavController::getRobotWidth(), '0'); 
+          0.55*Cure::NewNavController::getRobotWidth(), '0'); 
     }
   }
 
@@ -780,7 +838,7 @@ void SpatialControl::updateGridMaps()
   m_LMap.clearMap();
   Cure::Pose3D currPose = m_TOPP.getPose();		
   tmp_lgm.setValueInsideCircle(currPose.getX(), currPose.getY(),
-      0.55*Cure::NavController::getRobotWidth(), '0');                                  
+      0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
   for (int i = 0; i < m_Npts; i++) {
     theta = m_StartAngle + m_AngleStep * i;
     for (int j = 1; j < deltaN*maxcellstocheck; j++){
@@ -807,8 +865,13 @@ void SpatialControl::runComponent()
 {
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
-
+  int count = 0;
   while(isRunning()){
+	if(m_saveLgm && count  == 12){
+	  SaveGridMap();
+	  count = 0;
+	}
+    count++;
     lockComponent();
     while (m_odometryQueue.size() > 0) 
     {
@@ -1186,9 +1249,9 @@ void SpatialControl::processOdometry()
         
         log("executing command GOTOXYA");  	
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::gotoXYA
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::gotoXYA
           (currentTaskId, m_commandX, m_commandY, m_commandTheta);
       }
       
@@ -1198,9 +1261,9 @@ void SpatialControl::processOdometry()
         
         log("executing command GOTOXYROUGH"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
       }
       
       
@@ -1210,9 +1273,9 @@ void SpatialControl::processOdometry()
         
         log("executing command GOTOXY"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
 				//Clean out path; use only final waypoint
         if(!m_Path.empty()) {
           Cure::NavGraphNode lastNode = m_Path.back();
@@ -1228,9 +1291,9 @@ void SpatialControl::processOdometry()
         
         log("executing command GOTOPOLAR"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::gotoPolar(currentTaskId,m_commandTheta,m_commandR);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::gotoPolar(currentTaskId,m_commandTheta,m_commandR);
       }
       
       // GOTO_AREA
@@ -1239,9 +1302,9 @@ void SpatialControl::processOdometry()
         
         log("executing command GOTOAREA"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::gotoArea(currentTaskId, m_commandAreaId);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::gotoArea(currentTaskId, m_commandAreaId);
       }
       
       
@@ -1251,9 +1314,9 @@ void SpatialControl::processOdometry()
         
         log("executing command GOTONODE"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::gotoNode(currentTaskId, m_commandNodeId);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::gotoNode(currentTaskId, m_commandNodeId);
       }
       
       // ROTATE_REL
@@ -1262,9 +1325,9 @@ void SpatialControl::processOdometry()
         
         log("executing command ROTATEREL"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::rotateRel(currentTaskId, m_commandTheta);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::rotateRel(currentTaskId, m_commandTheta);
         
       }
       
@@ -1275,9 +1338,9 @@ void SpatialControl::processOdometry()
         
         log("executing command ROTATEABS"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::rotateAbs(currentTaskId, m_commandTheta);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::rotateAbs(currentTaskId, m_commandTheta);
         
       }
       
@@ -1287,9 +1350,9 @@ void SpatialControl::processOdometry()
         
         log("executing command BACKOFF"); 
         
-        Cure::NavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NavController::backOff(currentTaskId, m_commandDistance);
+        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+        Cure::NewNavController::setOrientationTolerance(m_TolRot);
+        ret = Cure::NewNavController::backOff(currentTaskId, m_commandDistance);
         
       }
       
@@ -1304,7 +1367,7 @@ void SpatialControl::processOdometry()
         // and does not raise a doneTask calling (but can raise
         // abortTask).
         // 
-        ret = Cure::NavController::stop();
+        ret = Cure::NewNavController::stop();
         
       }
       
@@ -1335,7 +1398,7 @@ void SpatialControl::processOdometry()
 
           } else {
 
-            ret = Cure::NavController::followPerson(currentTaskId,
+            ret = Cure::NewNavController::followPerson(currentTaskId,
                                          m_People[m_CurrPerson].m_data->x,
                                          m_People[m_CurrPerson].m_data->y,
                                          m_People[m_CurrPerson].m_data->direction,
@@ -1365,7 +1428,7 @@ void SpatialControl::processOdometry()
     
     m_Mutex.lock();
     m_LMap.moveRobot(m_CurrPose);
-    Cure::NavController::updateCtrl();
+    Cure::NewNavController::updateCtrl();
     m_Mutex.unlock();
     
   } // if (m_ready)    
@@ -1397,7 +1460,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
         m_MapsMutex.lock();
         Cure::Pose3D lpW;
         m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-            0.5*Cure::NavController::getRobotWidth(), 
+            0.5*Cure::NewNavController::getRobotWidth(), 
             '0');
         lpW.add(scanPose, m_LaserPoseR);
         m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
@@ -1528,7 +1591,7 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
   }
 
   // Grow each occupied cell to account for the size of the robot.
-  ungrown_map.growInto(map, 0.5*Cure::NavController::getRobotWidth() / m_lgm->getCellSize());
+  ungrown_map.growInto(map, 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
 
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
