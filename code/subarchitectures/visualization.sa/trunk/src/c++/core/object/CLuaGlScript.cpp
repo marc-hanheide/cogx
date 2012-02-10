@@ -26,6 +26,8 @@ extern "C" {
 #include "v11nbind.h"
 #include <gl.h>
 
+#include "luagl.h"
+
 #ifdef DEBUG_TRACE
 #undef DEBUG_TRACE
 #endif
@@ -130,6 +132,7 @@ void CLuaGlScript::CScript::initLuaState()
       tolua_gl_open(luaS);
       tolua_glu_open(luaS);
       tolua_v11n_open(luaS);
+      luaopen_luagl(luaS);
 
       lua_register(luaS, "_ALERT", reportError);
       lua_atpanic(luaS, reportError);
