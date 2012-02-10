@@ -101,3 +101,53 @@ function StdModel:cylinder(rx, ry, sz, np)
    end
    glEnd()
 end
+
+-- TODO: (origin, size, normal)
+function StdModel:xfloor(x)
+   size = 5
+   sy = size
+   sz = size
+   glBegin(GL_QUADS)
+   glColor(0.7, 0.7, 0.7)
+   glNormal(1.0, 0.0, 0.0)
+   glVertex(x, -sy,  sz)
+   glVertex(x, -sy, -sz)
+   glVertex(x,  sy, -sz)
+   glVertex(x,  sy,  sz)
+   glEnd()
+   glBegin(GL_LINES)
+   glLineWidth(4.0)
+   glColor(1.0, 1.0, 1.0)
+   for i=-size,size do
+      glVertex(x, i,  size)
+      glVertex(x, i, -size)
+      glVertex(x,  size, i)
+      glVertex(x, -size, i)
+   end
+   glLineWidth(1.0)
+   glEnd()
+end
+function StdModel:zfloor(z)
+   size = 5
+   sx = size
+   sy = size
+   glBegin(GL_QUADS)
+   glColor(0.7, 0.7, 0.7)
+   glNormal(0.0, 0.0, 1.0)
+   glVertex(-sx, sy,  z)
+   glVertex(-sx, -sy, z)
+   glVertex( sx, -sy, z)
+   glVertex( sx, sy,  z)
+   glEnd()
+   glBegin(GL_LINES)
+   glLineWidth(4.0)
+   glColor(1.0, 1.0, 1.0)
+   for i=-size,size do
+      glVertex(i,  size, z)
+      glVertex(i, -size, z)
+      glVertex( size, i, z)
+      glVertex(-size, i, z)
+   end
+   glLineWidth(1.0)
+   glEnd()
+end
