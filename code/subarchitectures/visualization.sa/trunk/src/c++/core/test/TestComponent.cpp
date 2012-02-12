@@ -106,6 +106,7 @@ void VideoViewer::start()
 
   m_display.addDialog("Calculator 1", res_calculator_ui, res_calculator_js, "Calculator");
   m_display.addDialog("Calculator 2", res_calculator_ui, res_calculator_js, "Calculator calc");
+  m_display.addDialog("dialog.interaction", res_chat_ui, "", "");
 #else
   cvNamedWindow(getComponentID().c_str(), 1);
 #endif
