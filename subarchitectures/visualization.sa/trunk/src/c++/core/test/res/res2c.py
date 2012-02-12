@@ -3,7 +3,7 @@
 
 import os, sys
 outfile = "test_calc.inc"
-infiles = ["calculator.ui", "calculator.js"]
+infiles = ["calculator.ui", "calculator.js", "chat.ui"]
 
 f = open(outfile, "w")
 
