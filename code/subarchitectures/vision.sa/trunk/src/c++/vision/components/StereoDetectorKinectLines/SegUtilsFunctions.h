@@ -12,7 +12,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <v4r/PCLAddOns/PCLCommonHeaders.h>
 #include "v4r/TomGine/tgTomGineThread.h"
-#include "v4r/NurbsFitting/NurbsConvertion.h"
+#include "v4r/NurbsConvertion/NurbsConvertion.h"
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 
 #include "VisionCore.hh"
