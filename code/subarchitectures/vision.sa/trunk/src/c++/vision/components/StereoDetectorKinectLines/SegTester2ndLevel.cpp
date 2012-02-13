@@ -1,25 +1,24 @@
 /**
- * @file SegTester.cpp
+ * @file SegTester2ndLevel.cpp
  * @author Andreas Richtsfeld
- * @date 2011
+ * @date February 2012
  * @version 0.1
- * @brief Get properties to learn how to segment.
+ * @brief Segmentation tester for 2-level svm approach.
  */
 
 
 #include <cast/architecture/ChangeFilterFactory.hpp>
-
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "SegTester.h"
+#include "SegTester2ndLevel.h"
 
 #include "Gestalt3D.h"
 #include "StereoBase.h"
 #include "Draw.hh"
 
 #include "StereoCamera.h"
-#include <VisionData.hpp>
+#include "VisionData.hpp"
 
 #include "VisionCore.hh"
 #include "Gestalt.hh"
@@ -42,7 +41,7 @@ using namespace Video;
  */
 extern "C" {
   cast::CASTComponentPtr newComponent() {
-    return new cast::SegTester();
+    return new cast::SegTester2ndLevel();
   }
 }
 
@@ -56,7 +55,7 @@ namespace cast
  * @brief Called by the framework to configure the component.
  * @param _config Configuration
  */
-void SegTester::configure(const map<string,string> & _config)
+void SegTester2ndLevel::configure(const map<string,string> & _config)
 {
   deb = true;   // set debug flag
   
@@ -260,7 +259,7 @@ void SegTester::configure(const map<string,string> & _config)
 /**
  * @brief Called by the framework after configuration, before run loop.
  */
-void SegTester::start()
+void SegTester2ndLevel::start()
 {
   startPCCServerCommunication(*this);  // start point cloud communication
 }
@@ -269,7 +268,7 @@ void SegTester::start()
  * @brief Called by the framework to start component run loop.
  * @TODO LOCKT DEN SPEICHERBEREICH IM WM NICHT, SOLANGE GEARBEITET WIRD
  */
-void SegTester::runComponent()
+void SegTester2ndLevel::runComponent()
 { 
   while(single && isRunning()){
     SingleShotMode();
@@ -289,7 +288,7 @@ void SegTester::runComponent()
 /**
  * @brief Get images with the resolution, defined in the cast file, from video server.
  */
-void SegTester::GetImageData()
+void SegTester2ndLevel::GetImageData()
 {
   log("Get image data started.");
   
@@ -364,7 +363,7 @@ void SegTester::GetImageData()
 /**
  *  @brief Process data from stereo or Kinect.
  */
-void SegTester::processImageNew()
+void SegTester2ndLevel::processImageNew()
 {
   if(deb) printf("SegTester::processImageNew: start\n");
   
@@ -543,7 +542,7 @@ void SegTester::processImageNew()
  *   s ... 
  *   
  */
-void SegTester::SingleShotMode()
+void SegTester2ndLevel::SingleShotMode()
 {
 //   sleepComponent(10);
   int key = 0;

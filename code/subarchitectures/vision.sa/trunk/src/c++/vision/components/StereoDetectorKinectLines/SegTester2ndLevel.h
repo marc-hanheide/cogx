@@ -1,14 +1,14 @@
 /**
- * @file SegTester.h
+ * @file SegTester2ndLevel.h
  * @author Andreas Richtsfeld
- * @date 2011
+ * @date February 2012
  * @version 0.1
- * @brief Get properties to learn how to segment.
+ * @brief Segmentation tester for 2-level svm approach.
  */
 
 
-#ifndef SEG_TESTER_H
-#define SEG_TESTER_H
+#ifndef SEG_TESTER_2ND_LEVEL_H
+#define SEG_TESTER_2ND_LEVEL_H
 
 #include <vector>
 #include <stdexcept>
@@ -53,26 +53,42 @@
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 #include "v4r/SurfaceModeling/Patches.h"
 
-
 #include "SegUtilsFunctions.h"
 
 namespace cast
 {
 
 /**
- * @class SegTester
+ * @class SegTester2ndLevel
  */
-class SegTester : public ManagedComponent,
-                  public PointCloudClient
+class SegTester2ndLevel : public ManagedComponent,
+                          public PointCloudClient
 {
 private:
   
   bool deb;                                                 ///< Debug flag
+  bool single;                                              ///< Single shot mode for the stereo detector learner
+  bool showImages;                                          ///< Show images in openCV windows
   
-  TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
-  cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
+  int runtime;                                              ///< Overall processing runtime for one image (pair)
+  float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector                     /// TODO muss hier nicht sein?
+  std::vector<int> camIds;                                  ///< Which cameras to get images from
+  std::vector<Video::CameraParameters> camPars;             ///< Camera parameters for each camera (left/right/kinect)
 
+  int rgbWidth, rgbHeight;                                  ///< width and height of the kinect color image
+  int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
+  Video::Image image_k;                                     ///< Left and right stereo image and kinect image
+  IplImage *iplImage_k;                                     ///< Converted left and right stereo images (openCV ipl-images)
+
+  std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect sensor
+  cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
+  cv::Mat_<cv::Vec3b> kinect_point_cloud_image;             ///< Image of the kinect point cloud
+  
+  std::vector<surface::SurfaceModel::Ptr> surfaces;         ///< Surfaces container (for Planes, NURBS)
+  std::vector< std::vector<unsigned> > graphCutGroups;      ///< Graph cut groups of surface patch models
+  
   /// TODO new ones
+  TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
   Z::VisionCore *vcore;                                     ///< VisionCore
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
@@ -87,15 +103,8 @@ private:
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud (dilation)
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
-//  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_vis;     ///< PCL point cloud (dilation)
-//  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_vis;        ///< Normals of the point cloud
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;///< indices of the surface patches (from fitter for debugging => TODO Remove later)
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
-  
-  std::vector<surface::SurfaceModel::Ptr> surfaces;         ///< Surfaces container (for Planes, NURBS)
-  std::vector< std::vector<unsigned> > graphCutGroups;      ///< Graph cut groups of surface patch models
-
-//   std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
   /// TODO end new ones
  
 //   Z::StereoCore *score;                                     ///< Stereo core
@@ -105,37 +114,20 @@ private:
 //   Z::SVMPredictor *svmPredictor;                            ///< SVM predictor
 //   Z::GraphCut *graphCutter;                                 ///< Graph cutter
 
-  int runtime;                                              ///< Overall processing runtime for one image (pair)
-  float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector											/// TODO muss hier nicht sein?
-  std::string stereoconfig;                                 ///< Config name of stereo camera config file
-  std::vector<int> camIds;                                  ///< Which cameras to get images from
-  std::vector<Video::CameraParameters> camPars;             ///< Camera parameters for each camera (left/right/kinect)
 
-  int rgbWidth, rgbHeight;                                  ///< width and height of the kinect color image
-  int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
-  Video::Image /*image_l, image_r,*/ image_k;                   ///< Left and right stereo image and kinect image
-  IplImage /*iplImage_l, *iplImage_r,*/ *iplImage_k;           ///< Converted left and right stereo images (openCV ipl-images)
-//  IplImage *iplImage_depthMap;                              ///< iplImage with depth map of kinect
   
-  std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect sensor
-  cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect
-  cv::Mat_<cv::Vec3b> kinect_point_cloud_image;             ///< Image of the kinect point cloud
-  
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois; ///< Estimated sois from the PlanePopout
-  std::vector<unsigned> soi_labels;                           ///< Labels of the estimated sois
+//   std::vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > sois; ///< Estimated sois from the PlanePopout
+//   std::vector<unsigned> soi_labels;                           ///< Labels of the estimated sois
 
-  cv::Mat_<cv::Vec3b> patch_image;                          ///< 3D patches on 2D image
-  cv::Mat_<cv::Vec3b> line_image;                           ///< 3D lines on 2D image
+//   cv::Mat_<cv::Vec3b> patch_image;                          ///< 3D patches on 2D image
+//   cv::Mat_<cv::Vec3b> line_image;                           ///< 3D lines on 2D image
 
 //  cv::Mat_<cv::Point3f> kinect_point_cloud;                 ///< point cloud with kinect 3d points                                  /// TODO delete later => change to cv::Vec4f
 //  cv::Mat_<cv::Point3f> kinect_color_point_cloud;           ///< point cloud with kinect color information
   
-  bool single;                                              ///< Single shot mode for the stereo detector learner
-  bool showImages;                                          ///< Show images in openCV windows
 
 //   void Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap);
   void GetImageData();
-  
   void processImageNew();
   void SingleShotMode();
 
@@ -145,11 +137,10 @@ protected:
   virtual void runComponent();
 
 public:
-  SegTester() {}
-  virtual ~SegTester() {delete vcore;}
+  SegTester2ndLevel() {}
+  virtual ~SegTester2ndLevel() {delete vcore;}
   
   void ProjectPoint(double X, double Y, double Z, double &u, double &v, int imgWidth);
-
 };
 
 }

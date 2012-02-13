@@ -1,6 +1,7 @@
 include_directories(.)
 
 add_definitions(-DHAVE_CAST)
+add_definitions(-DLINUX)
 
 # include openNI headers for kinect sensor
 include_directories(/usr/include/ni)
@@ -59,7 +60,23 @@ link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
 
+add_cast_component(SegLearner2ndLevel SegUtilsFunctions.cpp SegLearner2ndLevel.cpp SegLearner2ndLevel.h)
+link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+
 add_cast_component(SegTester SegUtilsFunctions.cpp SegTester.cpp SegTester.h)
+link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
+link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
+link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+
+add_cast_component(SegTester2ndLevel SegUtilsFunctions.cpp SegTester2ndLevel.cpp SegTester2ndLevel.h)
 link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
 link_cast_component(${CAST_COMPONENT_NAME} freetype ftgl)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
