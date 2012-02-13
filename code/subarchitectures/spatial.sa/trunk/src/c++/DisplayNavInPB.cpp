@@ -975,7 +975,7 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
     color[2] = 0.1;
     for (unsigned int i = 0; i < plan->planlist.size(); i++){
       sprintf(path,"viewpoint_%i",i);
-      createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.5, plan->planlist[i], false);
+      createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.15, plan->planlist[i], false);
     }
   }
   debug("Exited newVPlist"); 
