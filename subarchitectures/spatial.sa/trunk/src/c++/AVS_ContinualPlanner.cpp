@@ -190,7 +190,7 @@ void AVS_ContinualPlanner::connectPeekabot()
     
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
-    if (m_ShowCurrentViewCone){
+    if(m_usePeekabot){
       log("Showing current viewcone in Peekabot");
       m_ProxyCurrentViewPoint.add(m_PeekabotClient, "current_viewpoint",peekabot::REPLACE_ON_CONFLICT);
     }
@@ -213,13 +213,13 @@ void AVS_ContinualPlanner::connectPeekabot()
 
 void AVS_ContinualPlanner::runComponent() {
 	log("I am running");
-
-    while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-        sleep(m_RetryDelay);
-        connectPeekabot();
-    }
-    CreateCurrentViewCone();    
-	
+    if(m_usePeekabot){
+        while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+            sleep(m_RetryDelay);
+            connectPeekabot();
+        }
+        CreateCurrentViewCone();    
+	}
     while(isRunning()){
 
 	  if (m_ptzWaitingStatus != NO_WAITING && m_waitingForPTZCommandID == "") {
@@ -376,8 +376,9 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	    getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
 	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
-
-    m_proxyCone.hide();
+    if(m_usePeekabot){
+        m_proxyCone.hide();
+    }
 	startMovePanTilt(0.0,0.0,0.08);
 	m_ptzWaitingStatus = WAITING_TO_RETURN;
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
@@ -1153,19 +1154,19 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     // slightly at a different place but looking at the same region
     // Otherwise just process the viewcone and add it to m_processedViewConeIDs
     // list
-
-    m_proxyCone.show();
-
+    if(m_usePeekabot){
+        m_proxyCone.show();
+    }
     // RSS update
     if(m_processedViewConeIDs.count(m_currentViewCone.first) > 0 && m_randomViewCones){
       // This view cone was processed before so now we need to serve a
       // different one
       log("We've processed this viewcone before, so serve a random one observing the same space");
       ViewPointGenerator::SensingAction s = getRandomViewCone(m_currentViewCone.second);
-
-      MoveCurrentViewCone(s);
-      ChangeCurrentViewConeColor(0.1,0.1,0.9);
-
+      if(m_usePeekabot){
+          MoveCurrentViewCone(s);
+          ChangeCurrentViewConeColor(0.1,0.1,0.9);
+      }  
 
       Cure::Pose3D pos;
       pos.setX(s.pos[0]);
@@ -1177,10 +1178,10 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     }
     else {
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
-
-      MoveCurrentViewCone(m_currentViewCone.second);
-      ChangeCurrentViewConeColor(0.1,0.1,0.9);
-
+      if(m_usePeekabot){  
+          MoveCurrentViewCone(m_currentViewCone.second);
+          ChangeCurrentViewConeColor(0.1,0.1,0.9);
+      }
       Cure::Pose3D pos;
       pos.setX(m_currentViewCone.second.pos[0]);
       pos.setY(m_currentViewCone.second.pos[1]);
@@ -1351,7 +1352,9 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 void AVS_ContinualPlanner::Recognize() {
 	log("Sending a recognition command");
-    ChangeCurrentViewConeColor(0.1,0.9,0.9);
+    if(m_usePeekabot){
+        ChangeCurrentViewConeColor(0.1,0.9,0.9);
+    }
 	for (unsigned int i = 0; i < m_siftObjects.size(); i++) {
 		//todo: ask for visual object recognition
 		if (m_siftObjects[i] == m_currentConeGroup->searchedObjectCategory) {
@@ -1421,7 +1424,6 @@ void AVS_ContinualPlanner::configure(
 		std::abort();
 	}
 
-    m_ShowCurrentViewCone = true;
     m_PbPort = 5050;
     cfg->getRoboLookHost(m_PbHost);
     std::string usedCfgFile, tmp;
@@ -1667,8 +1669,10 @@ void AVS_ContinualPlanner::owtNavCommand(
 		// it means we've reached viewcone position
 		if(!m_runInSimulation){
 			log("Not running in simulation mode, moving pan tilt");
-            ChangeCurrentViewConeColor(0.1,0.9,0.1);
-			startMovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
+            if(m_usePeekabot){            
+                ChangeCurrentViewConeColor(0.1,0.9,0.1);
+            }			
+            startMovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
 			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
 //			Recognize();
 		}
