@@ -16,7 +16,7 @@ import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.Formula;
 import de.dfki.lt.tr.beliefs.data.formulas.PropositionFormula;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.PrivateBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 /**
@@ -24,7 +24,7 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
  * 
  */
 public class VisualObjectTransferFunction extends
-		SimpleDiscreteTransferFunction<VisualObject, GroundedBelief> {
+		SimpleDiscreteTransferFunction<VisualObject, PrivateBelief> {
 
 	public static final String PRESENCE_VISIBLE = "visible";
 	public static final String PRESENCE_UNKNOWN = "unknown";
@@ -36,7 +36,7 @@ public class VisualObjectTransferFunction extends
 	static Logger logger = Logger.getLogger(VisualObjectTransferFunction.class);
 
 	public VisualObjectTransferFunction(ManagedComponent component) {
-		super(component, logger, GroundedBelief.class);
+		super(component, logger, PrivateBelief.class);
 	}
 
 	@Override
