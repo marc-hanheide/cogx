@@ -2,7 +2,7 @@ PROJECT(SDKinect)
 
 include_directories(.)
 
-find_package(PCL 1.1 REQUIRED COMPONENTS)
+find_package(PCL REQUIRED COMPONENTS)
 include_directories(${PCL_INCLUDE_DIRS})
 
 # Set the sources.
@@ -39,7 +39,7 @@ SET(SOURCES
 )
 
 add_cast_component(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} v4rTomGine v4rRGBDSegment v4rPCLAddOns)
+link_cast_component(${CAST_COMPONENT_NAME} ${PCL_LIBRARIES} v4rTomGine v4rRGBDSegment v4rPCLAddOns SDvs3)
 
 #ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 #INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
