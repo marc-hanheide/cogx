@@ -15,6 +15,10 @@ module castutils {
     	class WMTrackedBeliefMap extends WMMap {};
 
     	class GroundedToSharedBeliefMap extends WMMap {};
+    	
+    	class PrivateToAssumedBeliefMap extends WMMap {};
+    	
+    	class AssumedToMergedBeliefMap extends WMMap {};
 
     
         class WMMutex {
