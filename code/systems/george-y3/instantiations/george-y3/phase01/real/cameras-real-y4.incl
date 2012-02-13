@@ -31,7 +31,7 @@ IFOPTANY(%(hardware_options), video)
     CPP MG videoserver OpenCvLiveServer %(OpenCvLiveServer_Params)
     SETVAR real_camera_ids=%(real_camera_ids) 0 1
     SETVAR real_camera_refid=0
-    SETVAR real_camera_poses=</multiline>
+    SETVAR real_camera_poses=<multiline>
         %(real_camera_poses)
         %(camera_config_dir)/ptu-pose-cam-left-sim.xml
         %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml

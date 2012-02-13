@@ -51,4 +51,4 @@ CPP MG CameraMount CameraMount %(camera_mount_params)
 # to move the PTU to a given position
 # CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-0.8" --ptzserver "%(ptzServerComponent)"
 
-JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8" # --testGUI
+JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8"  # --testGUI

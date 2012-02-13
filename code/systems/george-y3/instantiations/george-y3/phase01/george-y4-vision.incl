@@ -1,13 +1,18 @@
 # CAST config file
-# vim: set sw=4 ts=8 et sts=4 ai :vim
+# vim: set ft=cast sw=4 ts=8 et sts=4 ai :vim
 # Part of the SUBARCHITECTURE "vision.sa"
 
 # The following file provides coarsePointCloud, coarseSoiSource, finePointCloud, fineSoiSource.
 # Choose one:
 #INCLUDE  ppo-stereo-1.incl
 #INCLUDE  ppo-stereo-2.incl
-#INCLUDE  ppo-kinect-stereo.incl
-INCLUDE  ppo-kinect-1.incl
+IFEQ(%(hardware), real)
+   #INCLUDE  ppo-kinect-stereo.incl
+   INCLUDE  ppo-kinect-1.incl
+ENDIF
+IFEQ(%(hardware), simulation)
+    INCLUDE  ppo-stereo-1.incl
+ENDIF
 
 
 SETVAR wmBlocking=--blocking false
@@ -69,6 +74,8 @@ CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 
 ##### Monitors
 
+IFTRUE(0)
+
 JAVA MG vis.e.SOI castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
 
 JAVA MG vis.e.proto.object castutils.viewer.V11WMViewerComponent --subscribe "VisionData.ProtoObject" --displayserver "display.srv" --generic-col --compact --omit-fields "image mask points"
@@ -91,6 +98,7 @@ JAVA MG vis.status castutils.viewer.V11WMViewerComponent --subscribe "VisionData
 
 JAVA MG vis.camparam castutils.viewer.V11WMViewerComponent --subscribe "Video.CameraParametersWrapper" --displayserver "display.srv" --generic-col --compact
 
+ENDIF
 
 # JAVA MG wmrpc castutils.viewer.V11WMViewerComponent --subscribe "VisionData.WMRemoteProcedureCall" --displayserver "display.srv"
 #JAVA MG percepts castutils.viewer.V11WMViewerComponent --subscribe "eu.cogx.beliefs.slice.PerceptBelief" --displayserver "display.srv"
