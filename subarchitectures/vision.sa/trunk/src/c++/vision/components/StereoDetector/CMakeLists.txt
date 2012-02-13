@@ -1,6 +1,7 @@
 include_directories(.)
 
 add_definitions(-DHAVE_CAST)
+add_definitions(-DLINUX)
 
 # include openNI headers for kinect sensor
 include_directories(/usr/include/ni)
