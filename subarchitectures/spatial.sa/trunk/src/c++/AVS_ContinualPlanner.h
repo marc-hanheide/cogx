@@ -8,6 +8,9 @@
 #ifndef AVS_CONTINUALPLANNER_H_
 #define AVS_CONTINUALPLANNER_H_
 
+#include <peekabot.hh>
+#include <peekabot/Types.hh>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <NavData.hpp>
 #include "SpatialGridMap.hh"
@@ -119,6 +122,27 @@ public:
 	 VisualPB_Bloxel* pbVis;
 
 private:
+    int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+    peekabot::PeekabotClient m_PeekabotClient;
+    peekabot::GroupProxy m_proxyCone;
+    peekabot::GroupProxy m_ProxyCurrentViewPoint;
+    peekabot::PolygonProxy m_proxyConeParts[5];
+	double m_FovH; // horisontal fov in degs
+	double m_FovV; // vertical fov in degs
+
+    bool m_ShowCurrentViewCone;
+
+    void connectPeekabot();
+    void createFOV(peekabot::GroupProxy &proxy, const char* path,
+                               double fovHorizAngle, double fovVertiAngle,
+                               double* color, double opacity,
+                               NavData::ViewPoint viewpoint, bool robotfov);
+
+    void CreateCurrentViewCone();
+    void ChangeCurrentViewConeColor(double r,double g,double b);
+    void MoveCurrentViewCone(ViewPointGenerator::SensingAction &nbv);
+
+
    std::set<int> m_processedViewConeIDs;
 
 	 class AVSServer: public SpatialData::AVSInterface {
@@ -172,6 +196,7 @@ private:
 	 bool  m_gotNewGenerateViewCone;
 
 	 std::string m_PbHost;
+     int m_PbPort;
 
 	 // labels of tagged objects
 	 std::vector<std::string> m_siftObjects;

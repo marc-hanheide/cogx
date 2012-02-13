@@ -65,10 +65,162 @@ AVS_ContinualPlanner::~AVS_ContinualPlanner() {
 	// TODO Auto-generated destructor stub
 }
 
+
+void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy, const char* path,
+                               double fovHorizAngle, double fovVertiAngle,
+                               double* color, double opacity,
+                               NavData::ViewPoint viewpoint, bool robotfov){
+
+		
+  m_proxyCone.add(proxy, path, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+  m_proxyCone.hide();
+  const double coneLen = viewpoint.length;
+  // The "half angle" of the field of view
+  const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
+  const double fovVerti = fovVertiAngle*M_PI/180.0/2;
+  
+  m_proxyConeParts[0].add(m_proxyCone, "top");
+  m_proxyConeParts[0].add_vertex(0,0,0);
+  m_proxyConeParts[0].add_vertex(coneLen,
+                               coneLen*tan(fovHoriz),
+                               coneLen*tan(fovVerti));
+  m_proxyConeParts[0].add_vertex(coneLen,
+                               coneLen*tan(-fovHoriz),
+                               coneLen*tan(fovVerti));
+  m_proxyConeParts[1].add(m_proxyCone, "bottom");
+  m_proxyConeParts[1].add_vertex(0,0,0);
+  m_proxyConeParts[1].add_vertex(coneLen,
+                          coneLen*tan(fovHoriz),
+                          coneLen*tan(-fovVerti));
+  m_proxyConeParts[1].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(-fovVerti));
+  m_proxyConeParts[2].add(m_proxyCone, "left");
+  m_proxyConeParts[2].add_vertex(0,0,0);
+  m_proxyConeParts[2].add_vertex(coneLen,
+                               coneLen*tan(fovHoriz),
+                               coneLen*tan(-fovVerti));
+  m_proxyConeParts[2].add_vertex(coneLen,
+                               coneLen*tan(fovHoriz),
+                               coneLen*tan(fovVerti));
+  m_proxyConeParts[3].add(m_proxyCone, "right");
+  m_proxyConeParts[3].add_vertex(0,0,0);
+  m_proxyConeParts[3].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(-fovVerti));
+  m_proxyConeParts[3].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(fovVerti));
+  m_proxyConeParts[4].add(m_proxyCone, "image");
+  m_proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(fovHoriz),
+                          coneLen*tan(fovVerti));
+  m_proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(fovHoriz),
+                          coneLen*tan(-fovVerti));
+  m_proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                          coneLen*tan(-fovVerti));
+  m_proxyConeParts[4].add_vertex(coneLen,
+                          coneLen*tan(-fovHoriz),
+                               coneLen*tan(fovVerti));
+
+  for (int i = 0; i < 5; i++) {
+    m_proxyConeParts[i].set_color(color[0],color[1],color[2]);
+    m_proxyConeParts[i].set_opacity(opacity);
+    m_proxyConeParts[i].set_scale(1);  // This is how I make the cone
+                                     // larger or smaller
+
+  }	if (!robotfov )
+	{
+
+	//m_proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
+	m_proxyCone.rotate(viewpoint.pan,0,0,1);
+	m_proxyCone.rotate(viewpoint.tilt,0,-1,0);
+	m_proxyCone.set_position(viewpoint.pos.x, viewpoint.pos.y, viewpoint.pos.z);
+
+	}
+	else
+	{
+
+	  m_proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
+	  m_proxyCone.set_position(0,0,viewpoint.pos.z);
+	}
+}
+
+void AVS_ContinualPlanner::CreateCurrentViewCone() {
+    m_ProxyCurrentViewPoint.add(m_PeekabotClient, "current_viewpoint",peekabot::REPLACE_ON_CONFLICT);
+    m_FovH = 45.0;
+    m_FovV = 35.0;
+
+    char path[32];    
+    sprintf(path,"current_viewpoint_1");
+    double color[3];
+    color[0] = 0.1;
+    color[1] = 0.9;
+    color[2] = 0.1;
+
+    NavData::ViewPoint viewpoint;
+    viewpoint.pos.x = 0;
+    viewpoint.pos.y = 0;
+    viewpoint.pos.z = 0;
+    viewpoint.length = m_conedepth;
+    viewpoint.pan = 0;
+    viewpoint.tilt = 0;
+
+    createFOV(m_ProxyCurrentViewPoint, path, m_FovH, m_FovV, color, 0.5, viewpoint, false);
+}
+
+void AVS_ContinualPlanner::ChangeCurrentViewConeColor(double r,double g,double b){
+    for (int i = 0; i < 5; i++) {
+        m_proxyConeParts[i].set_color(r,g,b);
+    }
+}
+
+void AVS_ContinualPlanner::MoveCurrentViewCone(ViewPointGenerator::SensingAction &nbv){
+	m_proxyCone.set_rotation(nbv.pan,nbv.tilt,0);
+	m_proxyCone.set_position(nbv.pos[0], nbv.pos[1], nbv.pos[2]);
+}
+
+void AVS_ContinualPlanner::connectPeekabot()
+{
+  try {
+    log("Trying to connect to Peekabot (again?) on host %s and port %d",
+        m_PbHost.c_str(), m_PbPort);
+    
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
+
+    if (m_ShowCurrentViewCone){
+      log("Showing current viewcone in Peekabot");
+      m_ProxyCurrentViewPoint.add(m_PeekabotClient, "current_viewpoint",peekabot::REPLACE_ON_CONFLICT);
+    }
+
+    log("Connection to Peekabot established");
+
+    
+  } catch(std::exception &e) {
+    log("Caught exception when connecting to peekabot (%s)",
+        e.what());
+    return;
+  }
+}
+
+
+
+
+
+
+
 void AVS_ContinualPlanner::runComponent() {
 	log("I am running");
 
-	while(isRunning()){
+    while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+        sleep(m_RetryDelay);
+        connectPeekabot();
+    }
+    CreateCurrentViewCone();    
+	
+    while(isRunning()){
 
 	  if (m_ptzWaitingStatus != NO_WAITING && m_waitingForPTZCommandID == "") {
 
@@ -207,6 +359,7 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	log("Overwritten ARTagCommand: %s", newObj->label.c_str());
 	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 	m_ptzWaitingStatus = WAITING_TO_RETURN;
+    m_proxyCone.hide();
 	startMovePanTilt(0.0,0.0,0.08);
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 //	log("Overwriting command to change status to: SUCCESS");
@@ -224,6 +377,7 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 
+    m_proxyCone.hide();
 	startMovePanTilt(0.0,0.0,0.08);
 	m_ptzWaitingStatus = WAITING_TO_RETURN;
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
@@ -1000,6 +1154,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     // Otherwise just process the viewcone and add it to m_processedViewConeIDs
     // list
 
+    m_proxyCone.show();
 
     // RSS update
     if(m_processedViewConeIDs.count(m_currentViewCone.first) > 0 && m_randomViewCones){
@@ -1007,6 +1162,10 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       // different one
       log("We've processed this viewcone before, so serve a random one observing the same space");
       ViewPointGenerator::SensingAction s = getRandomViewCone(m_currentViewCone.second);
+
+      MoveCurrentViewCone(s);
+      ChangeCurrentViewConeColor(0.1,0.1,0.9);
+
 
       Cure::Pose3D pos;
       pos.setX(s.pos[0]);
@@ -1018,6 +1177,10 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     }
     else {
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
+
+      MoveCurrentViewCone(m_currentViewCone.second);
+      ChangeCurrentViewConeColor(0.1,0.1,0.9);
+
       Cure::Pose3D pos;
       pos.setX(m_currentViewCone.second.pos[0]);
       pos.setY(m_currentViewCone.second.pos[1]);
@@ -1188,6 +1351,7 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 void AVS_ContinualPlanner::Recognize() {
 	log("Sending a recognition command");
+    ChangeCurrentViewConeColor(0.1,0.9,0.9);
 	for (unsigned int i = 0; i < m_siftObjects.size(); i++) {
 		//todo: ask for visual object recognition
 		if (m_siftObjects[i] == m_currentConeGroup->searchedObjectCategory) {
@@ -1257,6 +1421,8 @@ void AVS_ContinualPlanner::configure(
 		std::abort();
 	}
 
+    m_ShowCurrentViewCone = true;
+    m_PbPort = 5050;
     cfg->getRoboLookHost(m_PbHost);
     std::string usedCfgFile, tmp;
     if (cfg && cfg->getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
@@ -1501,6 +1667,7 @@ void AVS_ContinualPlanner::owtNavCommand(
 		// it means we've reached viewcone position
 		if(!m_runInSimulation){
 			log("Not running in simulation mode, moving pan tilt");
+            ChangeCurrentViewConeColor(0.1,0.9,0.1);
 			startMovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
 			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
 //			Recognize();
