@@ -130,7 +130,7 @@ link_cast_component(${CAST_COMPONENT_NAME} DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 
 add_cast_component(SpatialControl SpatialControl.cpp NewNavController.cpp NewTurnMotion.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface DLIB)
+link_cast_component(${CAST_COMPONENT_NAME} peekabot PTZ NavData Robotbase Laser Scan2dReceiver OdometryReceiver CureHWUtils RobotbaseClientUtils FrontierInterface DLIB)
 link_cast_component(${CAST_COMPONENT_NAME} CureTransformation CureAddressBank CureMapApps CureNav CureNavX CureMapX CureMapBase CureMapWall CureMapHLine CureMapRangedPoint CureMapPoint CureRelativePointFeature CureGeometry CureFilters CureSensory CureSensorData CureUtils CureMath CureMSpace)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})

@@ -23,6 +23,9 @@
 #ifndef SpatialControl_hpp
 #define SpatialControl_hpp
 
+#include <peekabot.hh>
+#include <peekabot/Types.hh>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <PointCloudClient.h>
@@ -143,6 +146,18 @@ public:
   const Cure::LocalGridMap<unsigned char>& getLocalGridMap();
 
 protected:
+    int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+    peekabot::PeekabotClient m_PeekabotClient;
+    peekabot::GroupProxy m_ProxyMap;
+    peekabot::OccupancyGrid2DProxy m_ProxyGridMap;
+    bool m_usePeekabot;
+    void connectPeekabot();
+    void CreateGridMap();
+    void UpdateGridMap();
+
+    std::string m_PbHost;
+    int m_PbPort;
+
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};

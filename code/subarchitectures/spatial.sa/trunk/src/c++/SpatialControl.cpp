@@ -83,6 +83,58 @@ SpatialControl::SpatialControl()
   m_SentInhibitStop = false;
 }
 
+void SpatialControl::connectPeekabot()
+{
+  try {
+    log("Trying to connect to Peekabot (again?) on host %s and port %d",
+        m_PbHost.c_str(), m_PbPort);
+    
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
+
+    if (m_usePeekabot){
+      log("Showing grid map in Peekabot");
+      m_ProxyMap.add(m_PeekabotClient, "map",peekabot::REPLACE_ON_CONFLICT);
+    }
+
+    log("Connection to Peekabot established");
+
+    
+  } catch(std::exception &e) {
+    log("Caught exception when connecting to peekabot (%s)",
+        e.what());
+    return;
+  }
+}
+
+void SpatialControl::CreateGridMap() {
+    double cellSize=m_lgm->getCellSize();
+    m_ProxyGridMap.add(m_ProxyMap, "grid_map", cellSize, 
+    1,1,1,
+    0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
+    peekabot::OccupancySet2D cells;
+    m_ProxyGridMap.set_cells(cells);
+    m_ProxyMap.set_position(0,0,-0.01);
+}
+
+void SpatialControl::UpdateGridMap() {
+    peekabot::OccupancySet2D cells;
+    double cellSize=m_lgm->getCellSize();
+    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+            if ((* (m_lgm))(x, y)=='1')
+                cells.add(x*cellSize,y*cellSize,1);
+        }
+    }
+    m_ProxyGridMap.set_cells(cells);
+}
+
+
+
+
+
+
+
+
 void
 SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance) 
 {
@@ -212,6 +264,9 @@ void SpatialControl::configure(const map<string,string>& _config)
     m_saveLgm = false;
   }
 
+  m_usePeekabot = false;
+    if (_config.find("--usepeekabot") != _config.end())
+      m_usePeekabot= true;
 
 
   m_UsePointCloud = false;
@@ -260,6 +315,14 @@ void SpatialControl::configure(const map<string,string>& _config)
     std::abort();
   }  
 
+    m_PbPort = 5050;
+    cfg.getRoboLookHost(m_PbHost);
+    std::string usedCfgFile, tmp;
+    if (cfg.getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
+      m_PbHost = tmp;
+    }
+
+
   m_bNoNavGraph = false;
   if(_config.find("--no-graph") != _config.end()){
     m_bNoNavGraph = true;
@@ -270,6 +333,7 @@ void SpatialControl::configure(const map<string,string>& _config)
             configfile.c_str());
     std::abort();
   } 
+
 
   if (cfg.getSensorPose(1, m_LaserPoseR)) {
     println("configure(...) Failed to get sensor pose");
@@ -865,10 +929,21 @@ void SpatialControl::runComponent()
 {
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
+
+    if(m_usePeekabot){
+        while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+            sleep(m_RetryDelay);
+            connectPeekabot();
+        }
+        CreateGridMap(); 
+    }
   int count = 0;
   while(isRunning()){
-	if(m_saveLgm && count  == 12){
-	  SaveGridMap();
+	if(count  == 12){
+	  if (m_saveLgm) SaveGridMap();
+      if(m_usePeekabot){
+        UpdateGridMap();
+      }
 	  count = 0;
 	}
     count++;

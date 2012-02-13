@@ -130,8 +130,6 @@ private:
 	double m_FovH; // horisontal fov in degs
 	double m_FovV; // vertical fov in degs
 
-    bool m_ShowCurrentViewCone;
-
     void connectPeekabot();
     void createFOV(peekabot::GroupProxy &proxy, const char* path,
                                double fovHorizAngle, double fovVertiAngle,
