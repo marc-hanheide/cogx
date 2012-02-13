@@ -488,7 +488,7 @@ void KinectCore::PrintNodeIDs()                                                 
  */
 double KinectCore::CheckAnnotation(std::vector<int> &anno)
 {
-  int annoMaxLabel = 0;
+  unsigned annoMaxLabel = 0;
   for(unsigned i=0; i<anno.size(); i++)
     if(anno[i] != -1)
       if(anno[i] > annoMaxLabel)
