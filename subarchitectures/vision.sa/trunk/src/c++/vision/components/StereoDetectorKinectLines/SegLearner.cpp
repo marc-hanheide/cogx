@@ -394,9 +394,8 @@ void SegLearner::processImageNew()
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
   planeFitter->getError(error);
   if(deb) log("MoS-Plane fitter end: Found %lu models.", pcl_model_types.size());
-  
-  for(unsigned i=0; i<pcl_model_indices.size(); i++)
-    printf(" model %u: size: %lu\n", i, pcl_model_indices[i]->indices.size());
+//   for(unsigned i=0; i<pcl_model_indices.size(); i++)
+//     printf(" model %u: size: %lu\n", i, pcl_model_indices[i]->indices.size());
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
