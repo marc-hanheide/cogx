@@ -15,82 +15,154 @@ HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
 HOSTNAME  AbducerHost    [Main]
 
-HOST     [Main]
-
 ###########################################################################
 #             CONFIGURATION                                               #
 ###########################################################################
 VARDEFAULT hardware=real
-SETVAR     hardware=simulation
-###########################################################################
+SETVAR hardware=simulation
 
-COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0 --log --debug
+VARDEFAULT hardware_options=<multiline>
+      kinect  !kinect-video
+      !video 
+      !stereo
+      ptz  cameramount
+      robot
+      laser
+      !katana
+</multiline>
+VARDEFAULT main_camera_id=0
 
-# spatial ################################################################
-INCLUDE  includes/spatial.sa/spatial-base.cast
-
-# vision #################################################################
-INCLUDE  includes/vision.sa/vision-base.cast
-
-# Configure the cameras (internal, external parameters; stereo config; position)
-IFEQ(%(hardware), real)
-   INCLUDE  real/cameras-real.incl
-ELSE
-   INCLUDE  sim/cameras-sim.incl
-   INCLUDE juggler.incl
+IFEQ(%(hardware),simulation)
+    SETVAR hardware_options=<multiline>
+          !kinect  !kinect-video
+          video 
+          stereo
+          ptz  cameramount
+          robot
+          laser
+          !katana
+    </multiline>
 ENDIF
 
-# Include other vision components
-INCLUDE  georgeY3-vision.incl
+VARDEFAULT feature_options=<multiline>
+   vision
+   vision-execution
+   vision-mediators
+   spatial
+   binder
+   binder-mln
+   dialogue
+   planning
+   motivation
+   !manipulation
+   visualization
+</multiline>
+###########################################################################
 
-# belief mediators, execution
-INCLUDE includes/vision.sa/vision-execution.cast
-INCLUDE includes/vision.sa/vision-mediators.cast
+HOST     [Main]
 
-CPP MG vc-costs ViewConeMoveCostGenerator
+IFOPTALL(%(hardware_options), ptz)
+    COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0 --log --debug
+ENDIF
+
+# spatial ################################################################
+IFOPTALL(%(feature_options), spatial)
+   INCLUDE  includes/spatial.sa/spatial-base.cast
+ENDIF
+
+# vision #################################################################
+IFOPTALL(%(feature_options), vision)
+   INCLUDE  includes/vision.sa/vision-base.cast
+
+   # Configure the cameras (internal, external parameters; stereo config; position)
+   IFEQ(%(hardware), real)
+      INCLUDE  real/cameras-real-y4.incl
+   ELSE
+      INCLUDE  sim/cameras-sim.incl
+      INCLUDE juggler.incl
+   ENDIF
+
+   # Include other vision components
+   INCLUDE  george-y4-vision.incl
+
+   # belief mediators, execution
+   IFOPTALL(%(feature_options), vision-execution)
+      INCLUDE includes/vision.sa/vision-execution.cast
+   ENDIF
+   IFOPTALL(%(feature_options), vision-mediators)
+      INCLUDE includes/vision.sa/vision-mediators.cast
+   ENDIF
+
+   CPP MG vc-costs ViewConeMoveCostGenerator
+ENDIF
 
 
 # binder #################################################################
-INCLUDE includes/binder.sa/binder-base.cast
-INCLUDE georgeY3-mln.incl
+IFOPTALL(%(feature_options), binder)
+   INCLUDE includes/binder.sa/binder-base.cast
+   IFOPTALL(%(feature_options), binder-mln)
+      INCLUDE georgeY3-mln.incl
+   ENDIF
+ENDIF
 
 
 # dialogue ###################################################################
-INCLUDE includes/dialogue.sa/INCL/george-live.cast
-INCLUDE includes/dialogue.sa/dialogue-exe.cast
+IFOPTALL(%(feature_options), dialogue)
+   INCLUDE includes/dialogue.sa/INCL/george-live.cast
+   INCLUDE includes/dialogue.sa/dialogue-exe.cast
+ENDIF
 
 # planning and motivation #####################################################
-INCLUDE includes/planner.sa/planner-george.cast
-INCLUDE includes/planner.sa/planner-base.cast
-INCLUDE includes/planner.sa/viz-plan.cast
-JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
-JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
-JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
-JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
-JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
+IFOPTALL(%(feature_options), planning)
+   INCLUDE includes/planner.sa/planner-george.cast
+   INCLUDE includes/planner.sa/planner-base.cast
+   INCLUDE includes/planner.sa/viz-plan.cast
+   JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+   JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
+   JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
+   JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
+   JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
+ENDIF
 
-INCLUDE includes/motivation.sa/motivation.cast
-INCLUDE includes/motivation.sa/motivation-goals-george.cast
+IFOPTALL(%(feature_options), motivation)
+   INCLUDE includes/motivation.sa/motivation.cast
+   INCLUDE includes/motivation.sa/motivation-goals-george.cast
+ENDIF
 
 # manipulation #####################################################################
-SUBARCHITECTURE manipulation.sa
-JAVA WM cast.architecture.SubarchitectureWorkingMemory
-CPP TM AlwaysPositiveTaskManager
+IFOPTALL(%(feature_options), manipulation)
+   SUBARCHITECTURE manipulation.sa
+   JAVA WM cast.architecture.SubarchitectureWorkingMemory
+   CPP TM AlwaysPositiveTaskManager
 
-# Include the appropriate Katana config
-INCLUDE  sim/katana300-sim.incl
-#INCLUDE  real/katana300-real.incl
+   # Include the appropriate Katana config
+   # TODO: select katana 300 or 450
+   IFOPTALL(%(hardware_options), katana)
+      IFEQ(%(hardware),simulation)
+         INCLUDE  sim/katana300-sim.incl
+      ENDIF
+      IFEQ(%(hardware),real)
+         INCLUDE  real/katana300-real.incl
+      ENDIF
+   ENDIF
+ENDIF
 
 
 # visualization ##########################################################
-SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
-INCLUDE  includes/visualization.sa/v11n-base-p.cast
-INCLUDE  optional-viewers.incl
+IFOPTALL(%(feature_options), visualization)
+   SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+   INCLUDE  includes/visualization.sa/v11n-base-p.cast
+   INCLUDE  optional-viewers.incl
 
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
-JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+   JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
 
-JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
+   IFOPTALL(%(feature_options), planning)
+      JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+   ENDIF
 
-JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+   IFOPTALL(%(feature_options), motivation)
+      JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
 
+      JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+   ENDIF
+ENDIF
