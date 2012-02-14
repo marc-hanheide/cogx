@@ -26,9 +26,9 @@ INCLUDE  includes/spatial.sa/spatial-base.cast
 INCLUDE  includes/vision.sa/vision-base.cast
 
 # Configure the cameras (internal, external parameters; stereo config; position)
-INCLUDE  sim/cameras-sim.incl
-#INCLUDE  real/cameras-real.incl
-INCLUDE juggler.incl # juggler is used only in simulation
+#INCLUDE  sim/cameras-sim.incl
+#INCLUDE juggler.incl # juggler is used only in simulation
+INCLUDE  real/cameras-real.incl
 
 # Include other vision components
 INCLUDE  georgeY3-vision.incl
@@ -68,7 +68,7 @@ JAVA WM cast.architecture.SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 # Include the appropriate Katana config
-INCLUDE  sim/katana300-sim.incl
+#INCLUDE  sim/katana300-sim.incl
 #INCLUDE  real/katana300-real.incl
 
 

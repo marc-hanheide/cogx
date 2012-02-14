@@ -5,35 +5,49 @@ SETVAR camera_config_dir=%(CURRENT_DIR)/calibration
 #SETVAR camera_config_file=%(camera_config_dir)/ul_stereo_20101005.ini
 SETVAR stereo_config_file="%(camera_config_dir)/cam-left-cal-sim.xml %(camera_config_dir)/cam-right-cal-sim.xml"
 
-VARDEFAULT main_camera_id=0
+VARDEFAULT left_cam_id=0
+VARDEFAULT right_cam_id=1
+VARDEFAULT kinect_cam_id=2
+
+# The main camera to use with video-viewers etc.
+# It is undefined until we know that we have video input
+VARDEFAULT main_camera_id=
+
+# The camera id that is used as the reference for transformations between cameras
+# on the camera mount.
+VARDEFAULT cameramount_ref_cam_id=%(left_cam_id)
 
 SETVAR real_camera_ids=
 SETVAR real_camera_poses=
-SETVAR real_camera_refid=
 
 IFOPTANY(%(hardware_options), video)
+    VARDEFAULT PlayerCameraIds_01=%(left_cam_id) %(right_cam_id)
+    VARDEFAULT PlayerCameraDevs_01=0 1
     VARDEFAULT PlayerCameraConfigs_01=<multiline>
        %(camera_config_dir)/cam-left-cal-sim.xml
        %(camera_config_dir)/cam-right-cal-sim.xml
     </multiline>
-    #-------------------------------------------------------
-    SETVAR PlayerVideoServer_Params=<multiline>
-       --player-host %(host:PlayerHost)
-       --player-port 6665
-       # --camids  "0 1" --devnums "0 1" --camconfigs "%(camera_config_file):L %(camera_config_file):R"
-       #--camids  "0" --devnums "0"--camconfigs "%(camera_config_file)"
-       --camids  "0 1" --devnums "0 1" --camconfigs "%(PlayerCameraConfigs_01)"
-       --imgsize "640 480"
-       --framerate_fps 3
-    </multiline>
-    CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)
-    SETVAR real_camera_ids=%(real_camera_ids) 0 1
-    SETVAR real_camera_refid=0
-    SETVAR real_camera_poses=<multiline>
-        %(real_camera_poses)
+    VARDEFAULT PlayerCameraPoses_01=<multiline>
         %(camera_config_dir)/ptu-pose-cam-left-sim.xml
         %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml
     </multiline>
+    #-------------------------------------------------------
+    SETVAR PlayerVideoServer_Params=<multiline>
+       --camids  "%(PlayerCameraIds_01)"
+       --devnums "%(PlayerCameraDevs_01)"
+       --camconfigs "%(PlayerCameraConfigs_01)"
+       --imgsize "640 480"
+       --framerate_fps 3
+       --player-host %(host:PlayerHost)
+       --player-port 6665
+    </multiline>
+    CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)
+
+    SETVAR real_camera_ids=%(real_camera_ids) %(PlayerCameraIds_01)
+    SETVAR real_camera_poses=%(real_camera_poses) %(PlayerCameraPoses_01)
+    IFEQ(%(main_camera_id),)
+        SETVAR main_camera_id=%(left_cam_id)
+    ENDIF
 ENDIF
 
 #----------------------------------------------------------------------------------------------
@@ -41,7 +55,7 @@ ENDIF
 IFOPTALL(%(hardware_options), video stereo)
     SETVAR StereoServer_Params=<multiline>
        --videoname videoserver
-       --camids "0 1"
+       --camids "%(left_cam_id) %(right_cam_id)"
        --stereoconfig_xml "%(PlayerCameraConfigs_01)"
        --camconfigs "%(PlayerCameraConfigs_01)"
        #--imgsize "640 480 320 240" --maxdisp "192 96"
@@ -60,19 +74,24 @@ ENDIF
 IFOPTALL(%(hardware_options), ptz cameramount )
 VARDEFAULT ptzServerComponent=ptz.server
     SETVAR camera_mount_params=<multiline>
-       --camids "0"
+       --camids "%(real_camera_ids)"
+       --reference_cam_id "%(cameramount_ref_cam_id)"
        --cam_poses_xml "%(camera_config_dir)/ptu-pose-cam-left-sim.xml"
-       --pt_base_xml   %(camera_config_dir)/ptu-pose-base-sim.xml
-       --pt_pan_xml    %(camera_config_dir)/ptu-pose-pan-sim.xml
-       --pt_tilt_xml   %(camera_config_dir)/ptu-pose-tilt-sim.xml
+       # NOT--invert_poses
+       --pt_base_xml   "%(camera_config_dir)/ptu-pose-base-sim.xml"
+       --pt_pan_xml    "%(camera_config_dir)/ptu-pose-pan-sim.xml"
+       --pt_tilt_xml   "%(camera_config_dir)/ptu-pose-tilt-sim.xml"
        --ptzserver "%(ptzServerComponent)"
        # --log --debug
     </multiline>
-    CPP MG CameraMount CameraMount %(camera_mount_params)
+    IFNEQ(%(real_camera_ids),)
+        CPP MG CameraMount CameraMount %(camera_mount_params)
+        # to move the PTU to a given position
+        #CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
+    ENDIF
 ENDIF
 
-# to move the PTU to a given position
-# CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-0.8" --ptzserver "%(ptzServerComponent)"
+#--------------------------------------------------------------------------------------------------
 
 IFOPTALL(%(hardware_options), ptz )
    JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8"  # --testGUI
