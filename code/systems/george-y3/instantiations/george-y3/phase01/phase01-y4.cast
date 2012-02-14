@@ -22,38 +22,40 @@ VARDEFAULT hardware=real
 SETVAR hardware=simulation
 
 VARDEFAULT hardware_options=<multiline>
-      kinect  !kinect-video
-      !video 
-      !stereo
-      ptz  cameramount
-      robot
-      laser
-      !katana
+    kinect
+    !kinect-video
+    !video 
+    !stereo
+    ptz  cameramount
+    robot
+    laser
+    !katana
 </multiline>
 VARDEFAULT main_camera_id=0
 
 IFEQ(%(hardware),simulation)
-    SETVAR hardware_options=<multiline>
-          !kinect  !kinect-video
-          video 
-          stereo
-          ptz  cameramount
-          robot
-          laser
-          !katana
-    </multiline>
+  SETVAR hardware_options=<multiline>
+    !kinect
+    !kinect-video
+    video 
+    stereo
+    ptz  cameramount
+    robot
+    laser
+    !katana
+  </multiline>
 ENDIF
 
 VARDEFAULT feature_options=<multiline>
    vision
-   vision-execution
-   vision-mediators
+   !vision-execution
+   !vision-mediators
    spatial
-   binder
-   binder-mln
-   dialogue
-   planning
-   motivation
+   !binder
+   !binder-mln
+   !dialogue
+   !planning
+   !motivation
    !manipulation
    visualization
 </multiline>

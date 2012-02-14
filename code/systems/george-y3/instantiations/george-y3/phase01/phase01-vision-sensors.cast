@@ -20,6 +20,8 @@ HOSTNAME  AbducerHost    [Main]
 #             CONFIGURATION                                               #
 ###########################################################################
 VARDEFAULT hardware=real
+SETVAR hardware=simulation
+
 VARDEFAULT hardware_options=<multiline>
       kinect  !kinect-video
       !video 
@@ -28,8 +30,16 @@ VARDEFAULT hardware_options=<multiline>
 </multiline>
 VARDEFAULT main_camera_id=0
 
-#SETVAR     hardware=simulation
+IFEQ(%(hardware),simulation)
+    SETVAR hardware_options=<multiline>
+          !kinect  !kinect-video
+          video 
+          stereo
+          ptz  cameramount
+    </multiline>
+ENDIF
 ###########################################################################
+#EXPAND hardware='%(hardware)'
 #EXPAND hardware_options='%(hardware_options)'
 
 HOST     [Main]
@@ -45,7 +55,7 @@ INCLUDE  includes/vision.sa/vision-base.cast
 IFEQ(%(hardware), real)
    INCLUDE  real/cameras-real-y4.incl
 ELSE
-   INCLUDE  sim/cameras-sim.incl
+   INCLUDE  sim/cameras-sim-y4.incl
    INCLUDE juggler.incl
 ENDIF
 
