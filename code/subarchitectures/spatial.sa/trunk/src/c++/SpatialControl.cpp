@@ -108,12 +108,13 @@ void SpatialControl::connectPeekabot()
 
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
-    m_ProxyGridMap.add(m_ProxyMap, "grid_map", cellSize, 
+    m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize, 
     1,1,1,
     0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet2D cells;
     m_ProxyGridMap.set_cells(cells);
-    m_ProxyMap.set_position(0,0,-0.01);
+    m_ProxyMap.set_position(0,0,-0.005);
+    m_ProxyGridMap.set_position(0,0,-0.01);
 }
 
 void SpatialControl::UpdateGridMap() {
@@ -121,11 +122,67 @@ void SpatialControl::UpdateGridMap() {
     double cellSize=m_lgm->getCellSize();
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
         for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((* (m_lgm))(x, y)=='1')
+            if ((* (m_lgm))(x, y)=='0')
+                cells.add(x*cellSize,y*cellSize,0);
+            else if ((* (m_lgm))(x, y)=='1')
                 cells.add(x*cellSize,y*cellSize,1);
         }
     }
     m_ProxyGridMap.set_cells(cells);
+    std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
+    m_ProxyMap.clear();
+    if (fPts) {
+        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
+        for (std::list<Cure::FrontierPt>::const_iterator fi = fPts->begin();
+             fi != fPts->end(); fi++) {
+          int i, j;
+          if (m_lgm->worldCoords2Index(fi->getX(), fi->getY(), i, j) == 0) {        
+            i = i + m_lgm->getSize();
+            j = m_lgm->getSize() - j;
+
+            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
+            double color[3];
+            color[0] = 0.1;
+            color[1] = 0.1;
+            color[2] = 0.9;
+//            GC *gc = &gcBlue;
+            if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
+//              gc = &gcYellow;
+                color[0] = 0.9;
+                color[1] = 0.9;
+                color[2] = 0.1;
+
+            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
+//              gc = &gcRed;
+                color[0] = 0.9;
+                color[1] = 0.1;
+                color[2] = 0.1;
+            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
+//              gc = &gcMagenta;
+                color[0] = 0.9;
+                color[1] = 0.1;
+                color[2] = 0.9;
+            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
+//              gc = &gcGreen;
+                color[0] = 0.1;
+                color[1] = 0.9;
+                color[2] = 0.1;
+            }
+
+            fi->m_Width;
+
+            peekabot::PolygonProxy p;
+            p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+            int num_points = 10;
+            for(int k=0;k<num_points;k++)
+                p.add_vertex(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
+            p.set_color(color[0],color[1],color[2]);
+            p.set_opacity(1);
+            p.set_position(fi->getX(), fi->getY(),0);
+            p.set_rotation(fi->getTheta() - M_PI_2,0,0);
+          }
+        }
+      }
 }
 
 
@@ -382,7 +439,7 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
 
-  if (_config.find("--no-x-window") == _config.end()) {
+  if ((_config.find("--no-x-window") == _config.end()) && (!m_usePeekabot)) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
     println("Will use X window to show the exploration map");
   } else {
