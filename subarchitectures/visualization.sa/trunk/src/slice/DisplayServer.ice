@@ -10,8 +10,14 @@ module Visualization
    const string V11NSTANDALONENAME = "StandaloneDisplayServer";
 
    sequence<byte> ByteSeq;
-   sequence<double> FloatSeq;
+   sequence<double> DoubleSeq;
    sequence<string> StringSeq;
+   sequence<long> LongSeq;
+
+   enum Type {
+      int8, uint8, int16, uint16, int32, uint32, int64, uint64,
+      float32, float64
+   };
 
    struct Quaternion {
       double x;
@@ -51,12 +57,12 @@ module Visualization
       void getStandaloneHost(out string hostname);
 
       // Create views to show objects
-      void createView(string viewId, ViewType type, StringSeq objects);
+      void createView(string viewId, ViewType valueType, StringSeq objects);
       void enableDefaultView(string objectId, bool enable);
 
       // Create objects in the display server
       void setObject(string id, string partId, string svgObject);
-      void setObjectTransform2D(string id, string partId, FloatSeq matrix33);
+      void setObjectTransform2D(string id, string partId, DoubleSeq matrix33);
 
       // 3 channels for RGB, 1 channel for GS
       void setRawImage(string id, int width, int height, int channels, ByteSeq data);
@@ -70,6 +76,10 @@ module Visualization
 
       // Set a LuaGL script
       void setLuaGlObject(string id, string partId, string script);
+
+      //void setBlob(string id, string partId, ByteSeq data);
+      //// type: int8, uint8, int16, ..., float32, float64
+      //void setArray(string id, string partId, ByteSeq data, Type valueType, LongSeq dims);
 
       // Set an HTML chunk
       void setHtml(string id, string partId, string htmlData);

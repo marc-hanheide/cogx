@@ -47,7 +47,8 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
    zRot = 0;
    zoomLevel = 0;
    m_pivot.set(0, 0, 0);
-   coBackground = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0).dark();
+   //coBackground = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0).dark();
+   coBackground = QColor(0xd0, 0xd0, 0xff);
 }
 
 QCastViewGL::~QCastViewGL()
@@ -78,6 +79,9 @@ void QCastViewGL::setView(cogx::display::CDisplayView* pDisplayView)
 
 void QCastViewGL::selectCamera(cogx::display::CDisplayCamera* pCamera)
 {
+   xRot = 0;
+   yRot = 0;
+   zRot = 0;
    if (! pCamera) return;
    m_camera.eye.set(pCamera->xEye, pCamera->yEye, pCamera->zEye);
    m_camera.view.set(pCamera->xView, pCamera->yView, pCamera->zView);
@@ -278,19 +282,48 @@ void QCastViewGL::initializeGL()
    //glEnable(GL_MULTISAMPLE);
    glShadeModel(GL_SMOOTH);
 
+   //Good Settings. (from: http://www.sjbaker.org/steve/omniv/opengl_lighting.html)
+   //
+   //My advice for a starting point is to:
+   //    * Set GL_LIGHT_0's position to something like 45 degrees to the
+   //    'vertical'. Coordinate (1,1,0) should work nicely in most cases.
+   //    * Set GL_LIGHT_0's Ambient color to 0,0,0,1
+   //    * Set GL_LIGHT_0's Diffuse color to 1,1,1,1
+   //    * Set GL_LIGHT_0's Specular color to 1,1,1,1
+   //    * Set the glLightModel's global ambient to 0.2,0.2,0.2,1 (this is the default).
+   //    * Don't set any other glLight or glLightModel options - just let them default.
+   //    * Enable GL_LIGHTING and GL_LIGHT_0.
+   //    * Enable GL_COLOR_MATERIAL and set glColorMaterial to
+   //      GL_AMBIENT_AND_DIFFUSE. This means that glMaterial will control the
+   //      polygon's specular and emission colours and the ambient and diffuse
+   //      will both be set using glColor.
+   //    * Set the glMaterial's Specular colour to 1,1,1,1
+   //    * Set the glMaterial's Emission colour to 0,0,0,1
+   //    * Set the glColor to whatever colour you want each polygon to
+   //      basically appear to be. That sets the Ambient and Diffuse to the same
+   //      value which is what you generally want. 
    glEnable(GL_LIGHTING);
-   //static GLfloat global_ambient[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-   //glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+   static GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+
+   static GLfloat ambientL[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+   static GLfloat diffuseL[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+   static GLfloat specularL[] = {1.0f, 1.0f, 1.0f, 1.0f};
+   //static GLfloat lightPosition0[] = { 2.0, 2.0, 2.0, 1.0 }; // w!=0 ==> positional light
+   static GLfloat lightPosition0[] = { 1.0, 0.0, 1.0, 0.0 }; // w=0 ==> directional light
+   static GLfloat lightPosition1[] = { -1.0, 0.0, 1.0, 0.0 }; // w=0 ==> directional light
 
    glEnable(GL_LIGHT0);
-   static GLfloat specularL[] = {0.5f, 0.5f, 0.5f , 1.0f};
-   static GLfloat ambientL[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-   static GLfloat diffuseL[] = { 0.8f, 0.8f, 0.8, 1.0f };
-   static GLfloat lightPosition[4] = { -3.0, 3.0, 5.0, 1.0 };
    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientL);
    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseL);
    glLightfv(GL_LIGHT0, GL_SPECULAR, specularL);
-   glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+   glLightfv(GL_LIGHT0, GL_POSITION, lightPosition0);
+
+   glEnable(GL_LIGHT1);
+   glLightfv(GL_LIGHT1, GL_AMBIENT, ambientL);
+   glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseL);
+   glLightfv(GL_LIGHT1, GL_SPECULAR, specularL);
+   glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
 
    glEnable(GL_COLOR_MATERIAL);
    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -322,7 +355,7 @@ void QCastViewGL::resizeGL(int width, int height)
 
       if (ang < 5) ang = 5;
       if (ang > 170) ang = 170;
-      gluPerspective(ang, aspect, 0.01, 20.0);
+      gluPerspective(ang, aspect, 0.001, 1000.0);
 
       // glFrustum (-1.0*zoomFactor, 1.0*zoomFactor, -1.0*zoomFactor, 1.0*zoomFactor, 1.5, 20.0);
    }

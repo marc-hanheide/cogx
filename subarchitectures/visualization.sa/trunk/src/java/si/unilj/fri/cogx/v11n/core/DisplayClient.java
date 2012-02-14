@@ -20,6 +20,8 @@ package si.unilj.fri.cogx.v11n.core;
 // CAST IMPORTS
 //-----------------------------------------------------------------
 import java.util.Map;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 import Ice.ObjectPrx;
 import Ice.ConnectionRefusedException;
@@ -256,6 +258,34 @@ public class DisplayClient {
 			return;
 		m_Server.setLuaGlObject(id, partId, script);
 	}
+
+	//public final void setBlob(String id, String partId, byte[] data) {
+	//    if (m_Server == null)
+	//        return;
+	//    m_Server.setBlob(id, partId, data);
+	//}
+
+	//public final void setArray(String id, String partId, byte[] data, Visualization.Type type, long[] dims) {
+	//    if (m_Server == null)
+	//        return;
+	//    m_Server.setArray(id, partId, data, type, dims);
+	//}
+
+	//// TODO: setDoubleArray, setByteArray, setShortArray, setLongArray, ...
+	//// conversion: java.nio.ByteBuffer ?
+	//public final void setFloatArray(String id, String partId, float[] data, long[] dims) {
+	//   if (m_Server == null)
+	//       return;
+	//   // m_Server.setArray(id, partId, data, type, dims);
+	//   FloatBuffer fb = FloatBuffer.wrap(data);
+	//   // There's no asByteArray in FloatBuffer :(
+	//   // XXX: looks like we'll have to copy after all:
+	//   //float[] array = {1, 6, 1, 4, 5, 0, 8, 7, 8, 6, 1,0, 5 ,6, 1,8};
+	//   // ByteBuffer byteBuf = ByteBuffer.allocate(4 * array.length);
+	//   // FloatBuffer floatBuf = byteBuf.asFloatBuffer();
+	//   // floatBuf.put(array);
+	//   // byte [] byte_array = byteBuf.array();
+	//}
 
 	public final void setObjectPose3D(String id, String partId,
 			cogx.Math.Vector3 position, Quaternion rotation) {
