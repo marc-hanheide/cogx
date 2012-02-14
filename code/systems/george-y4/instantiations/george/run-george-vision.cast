@@ -1,10 +1,10 @@
 # vim: set ft=cast sw=4 sts=4 ts=8 et :vim
 
-SETVAR hardware=simulation
-#SETVAR hardware=real
+VARDEFAULT hardware=simulation
+#VARDEFAULT hardware=real
 
 IFEQ(%(hardware),real)
-  SETVAR hardware_options=<multiline>
+  VARDEFAULT hardware_options=<multiline>
     kinect
     !kinect-video
     !video 
@@ -15,7 +15,7 @@ IFEQ(%(hardware),real)
     !katana
   </multiline>
 ELSE # simulation
-  SETVAR hardware_options=<multiline>
+  VARDEFAULT hardware_options=<multiline>
     !kinect
     !kinect-video
     video 
@@ -27,7 +27,7 @@ ELSE # simulation
   </multiline>
 ENDIF
 
-SETVAR feature_options=<multiline>
+VARDEFAULT feature_options=<multiline>
    vision
    !vision-execution
    !vision-mediators
