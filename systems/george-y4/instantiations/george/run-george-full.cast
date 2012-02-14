@@ -12,7 +12,7 @@ IFEQ(%(hardware),real)
     ptz  cameramount
     robot
     !laser
-    !katana
+    katana
   </multiline>
 ELSE # simulation
   SETVAR hardware_options=<multiline>
@@ -23,7 +23,7 @@ ELSE # simulation
     ptz  cameramount
     robot
     !laser
-    !katana
+    katana
   </multiline>
 ENDIF
 
