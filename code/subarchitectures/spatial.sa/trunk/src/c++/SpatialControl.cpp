@@ -439,7 +439,7 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
 
-  if ((_config.find("--no-x-window") == _config.end()) && (!m_usePeekabot)) {
+  if ((_config.find("--no-x-window") == _config.end())) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
     println("Will use X window to show the exploration map");
   } else {
