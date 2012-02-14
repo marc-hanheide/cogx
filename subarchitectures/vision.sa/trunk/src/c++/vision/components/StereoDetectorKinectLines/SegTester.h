@@ -52,7 +52,7 @@
 #include "v4r/SurfaceModeling/CreateMeshModel.hh"
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 #include "v4r/SurfaceModeling/Patches.h"
-
+#include "v4r/SurfaceModeling/FileSystem.hh"
 
 #include "SegUtilsFunctions.h"
 
@@ -68,6 +68,10 @@ class SegTester : public ManagedComponent,
 private:
   
   bool deb;                                                 ///< Debug flag
+  
+  surface::SaveFileSequence save_models;                    ///< Save surface models
+  bool save_results;                                        ///< Save surface models
+  char *save_filename;                                      ///< filename for surface models
   
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
