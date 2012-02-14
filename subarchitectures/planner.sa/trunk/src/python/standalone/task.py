@@ -304,6 +304,9 @@ class FDOutput(PDDLOutput):
 
         for function in oldprob.functions:
             pred = prob.predicates.get(function.name, function.args+[function.type])
+            if not pred:
+                continue
+            # print function.name, pred 
             if build_modal_groups:
                 commit_pred = prob.predicates.get("%s-%s" % (pddl.mapl.commit.name, function.name), function.args+[function.type])
                 

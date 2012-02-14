@@ -56,7 +56,7 @@ class Translator(object):
             #entity._original = original._original
         t1 = time.time()
 
-        #print "postorder:", type(self), type(entity)
+        print "postorder:", type(self), type(entity)
         if isinstance(entity, actions.Action):
             result = self.translate_action(entity, **kwargs)
         elif isinstance(entity, axioms.Axiom):
@@ -897,7 +897,140 @@ class ObjectFluentCompiler(Translator):
                 p2.init.append(lit)
         
         return p2
+
+class NumericConstantCompiler(Translator):
+    def __init__(self, copy=True, **kwargs):
+        self.depends = [MAPLCompiler(**kwargs), ObjectFluentNormalizer(**kwargs)]
+        self.set_copy(copy)
+        self.numericFluentToPredicateDict = dict()
+
+    def translate_problem(self, _problem):
+        from itertools import product
+        import state
         
+        _problem = Translator.translate_problem(self,_problem)
+
+        s = state.State.from_problem(_problem)
+        for k,v in self.numericFluentToPredicateDict.iteritems():
+            args0, args1, pred, cond, literalParams, action = v
+            combinations = product(*map(lambda a: list(_problem.get_all_objects(a.type)), pred.args))
+
+            for c in combinations:
+                action.instantiate(dict(zip(literalParams,c)),parent=_problem)
+                if s.evaluate_literal(cond):
+                    lit = predicates.Literal(pred,c,_problem)
+                    _problem.init.append(lit)
+                    
+                action.uninstantiate()
+
+        return _problem
+    
+    def translate_action(self, action, domain=None, new_args=None):
+        assert domain is not None
+        
+        @visitors.replace
+        def cond_visitor(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                if cond.predicate == gt or cond.predicate == lt or cond.predicate == ge or cond.predicate == le or (cond.predicate ==eq and cond.predicate.args[0].type == t_number):
+                    if cond.predicate == gt:
+                        name = "gt_"
+                    elif cond.predicate == lt:
+                        name = "lt_"
+                    elif cond.predicate == ge:
+                        name = "ge_"
+                    elif cond.predicate == le:
+                        name = "le_"
+                    else:
+                        assert(cond.predicate ==eq)
+                        name = "eq_"
+                    literalParams = []
+                    predParams = []
+                    assert(len(cond.args) == 2)  
+                    if isinstance(cond.args[0],predicates.ConstantTerm):
+                        #print(cond.args[0].object)
+                        name += str(cond.args[0].object.value)
+                    else:
+                       assert isinstance(cond.args[0],predicates.FunctionTerm)
+                       name += cond.args[0].function.name
+                       literalParams.extend(cond.args[0].args)
+                       predParams.extend(cond.args[0].function.args)
+                       
+                    name += "__"
+                    
+                    if isinstance(cond.args[1],predicates.ConstantTerm):
+                        #print(cond.args[1].object)
+                        name += str(cond.args[1].object.value)
+                    else:
+                       assert isinstance(cond.args[1],predicates.FunctionTerm)
+                       name += cond.args[1].function.name
+                       literalParams.extend(cond.args[1].args)
+                       predParams.extend(cond.args[1].function.args)
+
+                    
+                    if name not in self.numericFluentToPredicateDict:
+                        res = Predicate(name,predParams)
+                        domain.predicates.add(res)
+                        self.numericFluentToPredicateDict[name] = [cond.args[0],cond.args[1],res,cond,literalParams,action]
+                    else:
+                        res = domain.predicates.get(name,predParams)
+                    return conditions.LiteralCondition(res,literalParams)
+ 
+        action.precondition = visitors.visit(action.precondition, cond_visitor)
+        return action
+
+    def translate_axiom(self, axiom, domain=None, new_args=None, new_pred=None):
+        assert domain is not None
+        
+        @visitors.replace
+        def cond_visitor(cond, results):
+            if isinstance(cond, conditions.LiteralCondition):
+                if cond.predicate == gt or cond.predicate == lt or cond.predicate == ge or cond.predicate == le or (cond.predicate ==eq and cond.predicate.args[0].type == t_number):
+                    if cond.predicate == gt:
+                        name = "gt_"
+                    elif cond.predicate == lt:
+                        name = "lt_"
+                    elif cond.predicate == ge:
+                        name = "ge_"
+                    elif cond.predicate == le:
+                        name = "le_"
+                    else:
+                        assert(cond.predicate ==eq)
+                        name = "eq_"
+                    literalParams = []
+                    predParams = []
+                    assert(len(cond.args) == 2)  
+                    if isinstance(cond.args[0],predicates.ConstantTerm):
+                        #print(cond.args[0].object)
+                        name += str(cond.args[0].object.value)
+                    else:
+                       assert isinstance(cond.args[0],predicates.FunctionTerm)
+                       name += cond.args[0].function.name
+                       literalParams.extend(cond.args[0].args)
+                       predParams.extend(cond.args[0].function.args)
+                       
+                    name += "__"
+                    
+                    if isinstance(cond.args[1],predicates.ConstantTerm):
+                        #print(cond.args[1].object)
+                        name += str(cond.args[1].object.value)
+                    else:
+                       assert isinstance(cond.args[1],predicates.FunctionTerm)
+                       name += cond.args[1].function.name
+                       literalParams.extend(cond.args[1].args)
+                       predParams.extend(cond.args[1].function.args)
+
+                    
+                    if name not in self.numericFluentToPredicateDict:
+                        res = Predicate(name,predParams)
+                        domain.predicates.add(res)
+                        self.numericFluentToPredicateDict[name] = [cond.args[0],cond.args[1],res,cond,literalParams,axiom]
+                    else:
+                        res = domain.predicates.get(name,predParams)
+                    return conditions.LiteralCondition(res,literalParams)
+ 
+        axiom.condition = visitors.visit(axiom.condition, cond_visitor)
+        return axiom
+      
 class ModalPredicateCompiler(Translator):
     def __init__(self, copy=True, **kwargs):
         self.depends = [MAPLCompiler(**kwargs)]
@@ -1326,3 +1459,4 @@ class MAPLCompiler(Translator):
 domain.ModuleDescription.create_module("object-fluents", default_compiler=ObjectFluentCompiler)
 domain.ModuleDescription.create_module("modal-predicates", default_compiler=ModalPredicateCompiler)
 domain.ModuleDescription.create_module("preferences", default_compiler=PreferenceCompiler)
+domain.ModuleDescription.create_module("numeric-fluents", default_compiler=NumericConstantCompiler)
