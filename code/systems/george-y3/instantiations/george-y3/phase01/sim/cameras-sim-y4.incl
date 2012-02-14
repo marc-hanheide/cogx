@@ -8,17 +8,11 @@ SETVAR stereo_config_file="%(camera_config_dir)/cam-left-cal-sim.xml %(camera_co
 VARDEFAULT left_cam_id=0
 VARDEFAULT right_cam_id=1
 VARDEFAULT kinect_cam_id=2
+SETVAR real_camera_ids=
 
 # The main camera to use with video-viewers etc.
 # It is undefined until we know that we have video input
 VARDEFAULT main_camera_id=
-
-# The camera id that is used as the reference for transformations between cameras
-# on the camera mount.
-VARDEFAULT cameramount_ref_cam_id=%(left_cam_id)
-
-SETVAR real_camera_ids=
-SETVAR real_camera_poses=
 
 IFOPTANY(%(hardware_options), video)
     VARDEFAULT PlayerCameraIds_01=%(left_cam_id) %(right_cam_id)
@@ -26,10 +20,6 @@ IFOPTANY(%(hardware_options), video)
     VARDEFAULT PlayerCameraConfigs_01=<multiline>
        %(camera_config_dir)/cam-left-cal-sim.xml
        %(camera_config_dir)/cam-right-cal-sim.xml
-    </multiline>
-    VARDEFAULT PlayerCameraPoses_01=<multiline>
-        %(camera_config_dir)/ptu-pose-cam-left-sim.xml
-        %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml
     </multiline>
     #-------------------------------------------------------
     SETVAR PlayerVideoServer_Params=<multiline>
@@ -44,7 +34,6 @@ IFOPTANY(%(hardware_options), video)
     CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)
 
     SETVAR real_camera_ids=%(real_camera_ids) %(PlayerCameraIds_01)
-    SETVAR real_camera_poses=%(real_camera_poses) %(PlayerCameraPoses_01)
     IFEQ(%(main_camera_id),)
         SETVAR main_camera_id=%(left_cam_id)
     ENDIF
@@ -72,11 +61,18 @@ ENDIF
 # be calculated based on the kinematic chain base - pan joint - tilt joint -
 # cam offset
 IFOPTALL(%(hardware_options), ptz cameramount )
-VARDEFAULT ptzServerComponent=ptz.server
+    VARDEFAULT cameramount_camera_ids=%(left_cam_id) %(right_cam_id)
+    VARDEFAULT cameramount_camera_poses=<multiline>
+        %(camera_config_dir)/ptu-pose-cam-left-sim.xml
+        %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml
+    </multiline>
+    VARDEFAULT cameramount_ref_cam_id=%(left_cam_id)
+
+    VARDEFAULT ptzServerComponent=ptz.server
     SETVAR camera_mount_params=<multiline>
-       --camids "%(real_camera_ids)"
+       --camids "%(cameramount_camera_ids)"
        --reference_cam_id "%(cameramount_ref_cam_id)"
-       --cam_poses_xml "%(camera_config_dir)/ptu-pose-cam-left-sim.xml"
+       --cam_poses_xml "%(cameramount_camera_poses)"
        # NOT--invert_poses
        --pt_base_xml   "%(camera_config_dir)/ptu-pose-base-sim.xml"
        --pt_pan_xml    "%(camera_config_dir)/ptu-pose-pan-sim.xml"
@@ -84,15 +80,14 @@ VARDEFAULT ptzServerComponent=ptz.server
        --ptzserver "%(ptzServerComponent)"
        # --log --debug
     </multiline>
-    IFNEQ(%(real_camera_ids),)
-        CPP MG CameraMount CameraMount %(camera_mount_params)
-        # to move the PTU to a given position
-        #CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
-    ENDIF
+    CPP MG CameraMount CameraMount %(camera_mount_params)
+    # to move the PTU to a given position
+    #CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
 ENDIF
 
 #--------------------------------------------------------------------------------------------------
 
 IFOPTALL(%(hardware_options), ptz )
-   JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8"  # --testGUI
+    JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8"  # --testGUI
 ENDIF
+

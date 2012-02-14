@@ -19,7 +19,7 @@ HOSTNAME  AbducerHost    [Main]
 #             CONFIGURATION                                               #
 ###########################################################################
 VARDEFAULT hardware=real
-SETVAR hardware=simulation
+#SETVAR hardware=simulation
 
 VARDEFAULT hardware_options=<multiline>
     kinect
@@ -28,10 +28,9 @@ VARDEFAULT hardware_options=<multiline>
     !stereo
     ptz  cameramount
     robot
-    laser
+    !laser
     !katana
 </multiline>
-VARDEFAULT main_camera_id=0
 
 IFEQ(%(hardware),simulation)
   SETVAR hardware_options=<multiline>
