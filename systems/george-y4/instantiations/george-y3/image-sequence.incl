@@ -1,8 +1,0 @@
-# CAST config file
-
-#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "kai-%1d-L.jpg kai-%1d-R.jpg" --start 0 --end 0 --framerate_ms 30 --camconfigs "%(camera_config_file):L  %(camera_config_file):R"
-
-#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "kai-%1d-L.jpg kai-%1d-R.jpg" --start 0 --end 0 --framerate_ms 30 --camconfigs "%(camera_config_file):L  %(camera_config_file):R"
-
-INCLUDE ../../xdata/VideoSequences/test-sequence.incl
-#INCLUDE ../../xdata/grab/TwPureGreen/test-sequence.incl
