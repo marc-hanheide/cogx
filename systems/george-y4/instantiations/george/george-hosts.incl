@@ -1,0 +1,16 @@
+# vim: set ft=cast sw=4 sts=4 ts=8 et :vim
+
+# Host names can be used instead of raw IPs to distribute components eg. [Main].
+# Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
+# If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
+# in a .hconf file will be used instead of host addresses defined here.
+# HOSTNAME  localhost      192.168.33.101
+# HOSTNAME  Main           192.168.56.1
+# HOSTNAME  PlayerHost     192.168.56.3
+
+HOSTNAME  Main           localhost
+
+HOSTNAME  PlayerHost     [Main]
+HOSTNAME  PeekabotHost   [Main]
+HOSTNAME  DisplayHost    [Main]
+HOSTNAME  AbducerHost    [Main]

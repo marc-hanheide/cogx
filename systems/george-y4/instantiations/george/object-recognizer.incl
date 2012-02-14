@@ -1,3 +1,4 @@
+# vim: set ft=cast sw=4 ts=8 et sts=4 ai :vim
 # CAST include file
 
 VARDEFAULT recognizer_model_dir=instantiations/recognizer-models

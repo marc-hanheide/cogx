@@ -1,0 +1,20 @@
+
+# this is the component that receives ManipulationExternalCommand
+# as discussed in the tutorial and controls the arm.
+# Here you have to give the correct clibration file
+# with "--testGUI" you can try out the different commands
+SETVAR manipServer_config=<multiline>
+   --configPath "instantiations/george-y3/calibration/example-arm-pose.xml"
+   --armName "simulation"
+   --enableTableObstacleHack true
+   #--testGUI
+</multiline>
+JAVA MG manipulationServer manipulation.runner.cogx.CogXRunner %(manipServer_config)
+CPP MG armManager ArmManager
+
+# This compenent creates commands for the ArmManager from the planner
+JAVA MG exe.manipulation manipulation.execution.george.ManipulationActionInterface --log
+
+# the PlayerArmBridge is only required for Gazebo, hence in simulation settings
+CPP MG manipulation.playerArmBridge PlayerArmBridge # --log
+

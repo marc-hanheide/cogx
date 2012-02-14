@@ -1,0 +1,44 @@
+# vim: set ft=cast sw=4 sts=4 ts=8 et :vim
+
+SETVAR hardware=simulation
+#SETVAR hardware=real
+
+IFEQ(%(hardware),real)
+  SETVAR hardware_options=<multiline>
+    kinect
+    !kinect-video
+    !video 
+    !stereo
+    ptz  cameramount
+    robot
+    !laser
+    !katana
+  </multiline>
+ELSE # simulation
+  SETVAR hardware_options=<multiline>
+    !kinect
+    !kinect-video
+    video 
+    stereo
+    ptz  cameramount
+    robot
+    !laser
+    !katana
+  </multiline>
+ENDIF
+
+SETVAR feature_options=<multiline>
+   vision
+   !vision-execution
+   !vision-mediators
+   spatial
+   !binder
+   !binder-mln
+   !dialogue
+   !planning
+   !motivation
+   !manipulation
+   visualization
+</multiline>
+
+INCLUDE george.cast
