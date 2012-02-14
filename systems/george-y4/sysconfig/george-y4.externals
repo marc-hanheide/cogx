@@ -57,7 +57,7 @@
 
 
 # importing to have access to dora systems for testing purposes
-^/code/systems/dora-yr3/instantiations            instantiations/dora-yr3
+# ^/code/systems/dora-yr4/instantiations            instantiations/x-dora-yr4
 
 # Obsolete
 # ^/code/subarchitectures/comsys/trunk                    subarchitectures/comsys

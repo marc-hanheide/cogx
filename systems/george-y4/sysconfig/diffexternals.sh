@@ -7,7 +7,7 @@ echo ""
 
 tmpfile=$(tempfile)
 
-extfile=george-y3.externals
+extfile=george-y4.externals
 if [ "$1" != "" ]; then
    extfile="$1"
 fi
