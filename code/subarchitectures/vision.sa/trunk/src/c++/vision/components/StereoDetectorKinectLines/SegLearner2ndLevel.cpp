@@ -478,7 +478,7 @@ for(unsigned i=0; i<graphCutGroups.size(); i++) {
   
   
   /// TODO TODO TODO And now the second label TODO TODO TODO 
-  printf(" ######################### 2nd level learning starts here #########################\n");
+  printf(" ######################### 2nd level learning #########################\n");
   
   /// And now do the 2nd-level svm training
   relation_vector.clear();

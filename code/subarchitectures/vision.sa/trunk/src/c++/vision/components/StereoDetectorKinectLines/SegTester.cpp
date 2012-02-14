@@ -235,6 +235,10 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
 
+  /// save results to file
+  save_results = true;
+  save_models.InitFileSequence("/media/Daten/Object-Database/results/cvww_mixed_fi%1d.sfm", 0, 8);
+  
   /// init patch class
   patches = new surface::Patches();
   patches->setZLimit(0.01);
@@ -338,15 +342,8 @@ void SegTester::GetImageData()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegLearner: Getting images => Calculate normals %4.3f\n", timespec_diff(&current, &last));
   
-
   if(showImages)
-  {
     cvShowImage("Kinect image", iplImage_k);
-    // convert point cloud to iplImage
-//     cv::Mat_<cv::Vec3b> kinect_pc_image;
-//     pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_pc_image);
-//     cv::imshow("Kinect Image from point cloud", kinect_pc_image);
-  }
   
   /// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK 
   /// Check if there are same 3D points in the point clouds
@@ -495,6 +492,9 @@ void SegTester::processImageNew()
   graphCut->init(relation_vector);
   graphCut->process();
   graphCut->getResults(nr_models, graphCutGroups);
+  for(unsigned i=0; i<graphCutGroups.size(); i++)
+    for(unsigned j=0; j<graphCutGroups[i].size(); j++)
+      surfaces[graphCutGroups[i][j]]->label = i;
   if(deb) log("graph-cutter: end");
   
 // printf("GraphCut groups:\n");
@@ -509,6 +509,16 @@ void SegTester::processImageNew()
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;
 
+  if(deb) log("save surface models: start");
+  if(save_results)
+    save_models.SaveNext(surfaces);
+//     surface::FileSystem::Save(surfaces, save_filename);
+  if(deb) log("save surface models: end");
+  
+//   std::vector<SurfaceModel::Ptr> surfaces2;
+//   FileSystem::Load(surfaces2, "/home/tm/svn-repositories/v4r/trunk/resources/cvww_cyl2.sfm");
+
+ 
   /// Check annotation for evaluation
   CheckAnnotation(surfaces, anno, graphCutGroups);    /// TODO move this function to annotation class
 

@@ -476,7 +476,7 @@ void SegLearner::processImageNew()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
   
-  cv::waitKey(500);   // wait for images on opencv windows
+  cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
 

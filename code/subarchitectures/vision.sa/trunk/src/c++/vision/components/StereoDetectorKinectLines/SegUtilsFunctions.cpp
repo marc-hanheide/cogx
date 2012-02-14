@@ -236,9 +236,11 @@ void CheckAnnotation(std::vector<surface::SurfaceModel::Ptr> &surfaces,
   printf("Overall sum of backward check: %u/%u = %4.3f\n", overall_res_too_much_pixel, overallsum_res_forward, (double) overall_res_too_much_pixel / (double) overallsum_res_forward);
 }
 
+
 std::vector<int> UpscaleIndices(std::vector<int> &_indices,
                     int image_width)
 {
+printf("SegUtilsFunctions: UpscaleIndices: Check this function!\n");
   std::vector<int> new_indices;
   for(unsigned i=0; i<_indices.size(); i++)
   {
