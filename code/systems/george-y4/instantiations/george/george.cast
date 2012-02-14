@@ -1,27 +1,19 @@
+# vim: set ft=cast sw=4 sts=4 ts=8 et :vim
 # CAST config file
 
-# Host names can be used instead of raw IPs to distribute components eg. [Main].
-# Host names can be used as variables in parameters, eg. --player-host %(host:PlayerHost)
-# If CAST Control is used, the hosts can be changed in a .hconf file. Host addresses defined
-# in a .hconf file will be used instead of host addresses defined here.
-# HOSTNAME  localhost      192.168.33.101
-# HOSTNAME  Main           192.168.56.1
-# HOSTNAME  PlayerHost     192.168.56.3
-
-HOSTNAME  Main           localhost
-
-HOSTNAME  PlayerHost     [Main]
-HOSTNAME  PeekabotHost   [Main]
-HOSTNAME  DisplayHost    [Main]
-HOSTNAME  AbducerHost    [Main]
+# The default HOSTNAMEs are defined in george-hosts.incl and are all set to localhost.
+# Use george-hosts-<username>.incl for your personal settings.
+INCLUDE george-hosts.incl
 
 ###########################################################################
-#             CONFIGURATION                                               #
+#             DEFAULT CONFIGURATION                                       #
 ###########################################################################
-VARDEFAULT hardware=real
-#SETVAR hardware=simulation
+# real or simulation
+VARDEFAULT hardware=simulation
+#SETVAR hardware=real
 
-VARDEFAULT hardware_options=<multiline>
+IFEQ(%(hardware),real)
+  VARDEFAULT hardware_options=<multiline>
     kinect
     !kinect-video
     !video 
@@ -30,17 +22,16 @@ VARDEFAULT hardware_options=<multiline>
     robot
     !laser
     !katana
-</multiline>
-
-IFEQ(%(hardware),simulation)
-  SETVAR hardware_options=<multiline>
+  </multiline>
+ELSE # simulation
+  VARDEFAULT hardware_options=<multiline>
     !kinect
     !kinect-video
     video 
     stereo
     ptz  cameramount
     robot
-    laser
+    !laser
     !katana
   </multiline>
 ENDIF
@@ -102,7 +93,7 @@ ENDIF
 IFOPTALL(%(feature_options), binder)
    INCLUDE includes/binder.sa/binder-base.cast
    IFOPTALL(%(feature_options), binder-mln)
-      INCLUDE georgeY3-mln.incl
+      INCLUDE george-mln.incl
    ENDIF
 ENDIF
 
@@ -153,7 +144,6 @@ ENDIF
 IFOPTALL(%(feature_options), visualization)
    SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
    INCLUDE  includes/visualization.sa/v11n-base-p.cast
-   INCLUDE  optional-viewers.incl
 
    JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
 

@@ -1,5 +1,5 @@
-# CAST config file
 # vim: set ft=cast sw=4 ts=8 et sts=4 ai :vim
+# CAST config file
 # Part of the SUBARCHITECTURE "vision.sa"
 
 # The following file provides coarsePointCloud, coarseSoiSource, finePointCloud, fineSoiSource.

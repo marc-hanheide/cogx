@@ -1,0 +1,22 @@
+
+The files in this directory define the George Y4 system.
+
+The main file george.cast and its includes define all the components that can
+be used in the system. Individual parts of the system can be turned on and off
+with settings in the variables 'hardware', 'hardware_options' and
+'feature_options' with the defaults on top of george.cast. The main file should
+be modified only if additional components or component parameters are added.
+
+To run the system, select one of the run-george-*.cast files. These files
+change only the variables used for the configuration of the system and add no
+components. Create more such files if necessary.
+
+The files are prepared for running in simulation. To run on the real robot,
+change the value of the variable 'hardware'.
+
+For distributed execution a .hconf file has to be used in Cast Control or the
+cast file has to be modified.  The hosts are now defined in george-hosts.incl.
+To create your own distributed system, copy the file to
+george-hosts-<username>.incl and modify the HOSTNAME addresses, then include
+the file in george.cast.
+

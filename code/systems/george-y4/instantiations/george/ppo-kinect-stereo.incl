@@ -1,3 +1,4 @@
+# vim: set ft=cast sw=4 sts=4 ts=8 et :vim
 # CAST include file
 
 # Plane Pop Out: two PPO instances with Point Clouds from Kinect (coarse) and Stereo Server (fine)
