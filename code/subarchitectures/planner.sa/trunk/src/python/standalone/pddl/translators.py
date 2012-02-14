@@ -664,10 +664,12 @@ class ObjectFluentNormalizer(Translator):
         if domain is None:
             domain = action.parent
 
+        action.set_lazy_mode(params=scope.UNKNOWN_OBJECT_IGNORE)
         termdict = {}
         pre = self.translate_condition(action.precondition, termdict, domain)
         replan = self.translate_condition(action.replan, termdict, domain)
         effect = self.translate_effect(action.effect, termdict, domain)
+        action.set_lazy_mode(params=scope.UNKNOWN_OBJECT_ERROR)
 
         add_args = []
         if termdict:
@@ -1026,7 +1028,7 @@ class ModalPredicateCompiler(Translator):
         else:
             pred = domain.predicates.get(axiom.predicate.name, args)
 
-        if copy :
+        if copy:
             a2 = axioms.Axiom(pred, args, None, domain)
             a2.condition = axiom.condition.copy(copy_instance=True, new_scope=a2).visit(cond_visitor)
             a2.condition.set_scope(a2)
@@ -1139,7 +1141,7 @@ class ModalPredicateCompiler(Translator):
             if res:
                 p2.init.append(res)
         
-        return p2             
+        return p2
 
 class RemoveTimeCompiler(Translator):
     def translate_action(self, action, domain=None):

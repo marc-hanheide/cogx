@@ -157,6 +157,11 @@ class FunctionTable(dict):
         
     def __setitem__(self, key, value):
         raise NotImplementedError
+
+
+UNKNOWN_OBJECT_ERROR = 0
+UNKNOWN_OBJECT_IGNORE = 1
+UNKNOWN_OBJECT_ADD = 2
     
 class Scope(dict):
     """This class represents any PDDL object that can define variables
@@ -187,6 +192,8 @@ class Scope(dict):
 
         self.tags = {}
         self.inherited_tags = set()
+        self.lazy_param = UNKNOWN_OBJECT_ERROR
+        self.lazy_constant = UNKNOWN_OBJECT_ERROR
         
         for obj in objects:
             dict.__setitem__(self, obj.name, obj)
@@ -212,6 +219,14 @@ class Scope(dict):
             self.requirements = set()
             self.parse_handlers = []
 
+    def set_lazy_mode(self, constants=None, params=None, all=None):
+        if all is not None:
+            self.lazy_param = all
+            self.lazy_constant = all
+        if constants is not None:
+            self.lazy_constant = constants
+        if params is not None:
+            self.lazy_param = params
             
     def lookup(self, args):
         """Lookup a list of symbols in this Scope. Returns a list of
@@ -487,17 +502,21 @@ class Scope(dict):
         
     def __getitem__(self, key):
         #print type(key)
+        obj = None
         if isinstance(key, predicates.VariableTerm):
+            obj = key.object
             key = key.object.name
         elif isinstance(key, str):
             pass
         elif isinstance(key, predicates.ConstantTerm):
             if key.object.type == types.t_number:
                 return key.object
+            obj = key.object
             key = key.object.name
         elif isinstance(key, types.TypedObject):
             if key.type == types.t_number:
                 return key
+            obj = key
             key = key.name
         elif isinstance(key, (float, int)):
             return types.TypedNumber(key)
@@ -511,7 +530,24 @@ class Scope(dict):
         if dict.__contains__(self, key):
             return dict.__getitem__(self, key)
         if self.parent:
-            return self.parent[key]
+            try:
+                return self.parent[key]
+            except KeyError:
+                pass
+            
+        if obj is not None:
+            if isinstance(obj, types.Parameter):
+                if self.lazy_param == UNKNOWN_OBJECT_IGNORE:
+                    return obj
+                elif self.lazy_param == UNKNOWN_OBJECT_ADD:
+                    self.add(obj)
+                    return obj
+            elif isinstance(obj, types.TypedObject):
+                if self.lazy_constant == UNKNOWN_OBJECT_IGNORE:
+                    return obj
+                elif self.lazy_constant == UNKNOWN_OBJECT_ADD:
+                    self.add(obj)
+                    return obj
 
         raise KeyError, "Symbol %s not found." % key
         
