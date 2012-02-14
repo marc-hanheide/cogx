@@ -294,6 +294,7 @@ public:
    }
 };
 
+// TODO rename to sth. like CGlContextProxy
 class CGlTextWriter
 {
 public:

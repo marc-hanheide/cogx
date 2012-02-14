@@ -224,6 +224,20 @@ public:
       m_pDisplayServer->setLuaGlObject(id, partId, script);
    }
 
+   virtual void setBlob(const std::string& id, const std::string& partId,
+         const std::vector<unsigned char>& data, const Ice::Current&)
+   {
+      // TODO m_pDisplayServer->setLuaGlObject(id, partId, script);
+   }
+
+   virtual void setArray(const std::string& id, const std::string& partId,
+         const std::vector<unsigned char>& data, Visualization::Type type, std::vector<long>& dims,
+         const Ice::Current&)
+   {
+      // TODO m_pDisplayServer->setLuaGlObject(id, partId, script);
+   }
+
+
    virtual void setHtml(const std::string& id, const std::string& partId,
          const std::string& htmlData, const Ice::Current&)
    {

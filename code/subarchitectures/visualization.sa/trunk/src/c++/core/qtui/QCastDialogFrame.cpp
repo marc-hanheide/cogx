@@ -43,6 +43,11 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
    QString sName;
    if (lsConstruct.size() > 1)
       sName = lsConstruct[1].trimmed();
+   if (lsConstruct.size() < 1) {
+      sName = "_fake_object_";
+      engine.evaluate("function _Fake_Object_Type_(ui) { this.ui = ui }");
+      lsConstruct << "_Fake_Object_Type_";
+   }
    if (sName.length() < 1)
       sName = "_" + lsConstruct[0].trimmed() + "_";
 
