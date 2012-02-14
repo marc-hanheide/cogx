@@ -723,10 +723,11 @@ void PlanePopOut::SendPlaneGrid()
     if (dominantPlane.valid) {
 	str << "glBegin(GL_LINE_LOOP)\n";
 	str << "glPointSize(2.0)\n";
-	str << "glColor("
-	    << FCHN(dominantPlane.dispColor.r) << ","
-	    << FCHN(dominantPlane.dispColor.g) << ","
-	    << FCHN(dominantPlane.dispColor.b) << ")\n";
+	//str << "glColor("
+	//    << FCHN(dominantPlane.dispColor.r) << ","
+	//    << FCHN(dominantPlane.dispColor.g) << ","
+	//    << FCHN(dominantPlane.dispColor.b) << ")\n";
+	str << "glColor(1,0,0)\n";
 	str << "v=glVertex\n";
 	for(size_t i = 0; i < dominantPlane.hullPoints.size(); i++)
 	    str << "v(" << dominantPlane.hullPoints[i].x << ","
@@ -757,6 +758,7 @@ void PlanePopOut::SendOverlays()
 {
     ostringstream str;
     str << "function render()\n";
+    str << "StdModel:zfloor(0.0)\n";
     str << "v=glVertex\nc=glColor\n";
     str << "glBegin(GL_LINES)\n";
     str << "c(1.0,0.0,0.0)\n";
