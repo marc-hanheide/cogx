@@ -1,0 +1,93 @@
+# CAST config file
+# vim: set sw=4 ts=8 et sts=4 ai :vim
+
+SETVAR camera_config_dir=%(CURRENT_DIR)/calibration
+#SETVAR camera_config_file=%(camera_config_dir)/ul_stereo_20101005.ini
+SETVAR stereo_config_file="%(camera_config_dir)/cam-left-cal-sim.xml %(camera_config_dir)/cam-right-cal-sim.xml"
+
+VARDEFAULT left_cam_id=0
+VARDEFAULT right_cam_id=1
+VARDEFAULT kinect_cam_id=2
+SETVAR real_camera_ids=
+
+# The main camera to use with video-viewers etc.
+# It is undefined until we know that we have video input
+VARDEFAULT main_camera_id=
+
+IFOPTANY(%(hardware_options), video)
+    VARDEFAULT PlayerCameraIds_01=%(left_cam_id) %(right_cam_id)
+    VARDEFAULT PlayerCameraDevs_01=0 1
+    VARDEFAULT PlayerCameraConfigs_01=<multiline>
+       %(camera_config_dir)/cam-left-cal-sim.xml
+       %(camera_config_dir)/cam-right-cal-sim.xml
+    </multiline>
+    #-------------------------------------------------------
+    SETVAR PlayerVideoServer_Params=<multiline>
+       --camids  "%(PlayerCameraIds_01)"
+       --devnums "%(PlayerCameraDevs_01)"
+       --camconfigs "%(PlayerCameraConfigs_01)"
+       --imgsize "640 480"
+       --framerate_fps 3
+       --player-host %(host:PlayerHost)
+       --player-port 6665
+    </multiline>
+    CPP MG videoserver PlayerVideoServer %(PlayerVideoServer_Params)
+
+    SETVAR real_camera_ids=%(real_camera_ids) %(PlayerCameraIds_01)
+    IFEQ(%(main_camera_id),)
+        SETVAR main_camera_id=%(left_cam_id)
+    ENDIF
+ENDIF
+
+#----------------------------------------------------------------------------------------------
+
+IFOPTALL(%(hardware_options), video stereo)
+    SETVAR StereoServer_Params=<multiline>
+       --videoname videoserver
+       --camids "%(left_cam_id) %(right_cam_id)"
+       --stereoconfig_xml "%(PlayerCameraConfigs_01)"
+       --camconfigs "%(PlayerCameraConfigs_01)"
+       #--imgsize "640 480 320 240" --maxdisp "192 96"
+       --imgsize "320 240" --maxdisp "96"
+       --displayserver "display.srv"
+       #--logimages
+       #--display
+    </multiline>
+    CPP MG stereoserver StereoServer %(StereoServer_Params)
+ENDIF
+
+# This is how you should use CameraMount in your simulated robot system.  Use
+# PTZ with kinematic parameters the same as in gazebo model. Camera poses will
+# be calculated based on the kinematic chain base - pan joint - tilt joint -
+# cam offset
+IFOPTALL(%(hardware_options), ptz cameramount )
+    VARDEFAULT cameramount_camera_ids=%(left_cam_id) %(right_cam_id)
+    VARDEFAULT cameramount_camera_poses=<multiline>
+        %(camera_config_dir)/ptu-pose-cam-left-sim.xml
+        %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml
+    </multiline>
+    VARDEFAULT cameramount_ref_cam_id=%(left_cam_id)
+
+    VARDEFAULT ptzServerComponent=ptz.server
+    SETVAR camera_mount_params=<multiline>
+       --camids "%(cameramount_camera_ids)"
+       --reference_cam_id "%(cameramount_ref_cam_id)"
+       --cam_poses_xml "%(cameramount_camera_poses)"
+       # NOT--invert_poses
+       --pt_base_xml   "%(camera_config_dir)/ptu-pose-base-sim.xml"
+       --pt_pan_xml    "%(camera_config_dir)/ptu-pose-pan-sim.xml"
+       --pt_tilt_xml   "%(camera_config_dir)/ptu-pose-tilt-sim.xml"
+       --ptzserver "%(ptzServerComponent)"
+       # --log --debug
+    </multiline>
+    CPP MG CameraMount CameraMount %(camera_mount_params)
+    # to move the PTU to a given position
+    #CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
+ENDIF
+
+#--------------------------------------------------------------------------------------------------
+
+IFOPTALL(%(hardware_options), ptz )
+    JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8"  # --testGUI
+ENDIF
+

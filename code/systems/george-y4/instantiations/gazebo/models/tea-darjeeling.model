@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+
+<!-- Manner wafers 
+     actual size: 0,098 x 0,016 x 0,085
+     size is doubled to easy manipulation: 0,196  0,032  0,170
+
+     Meßmer Darjeeling Tea
+     top: 0,158 0,065
+     right: 0,065 0,072
+     0,196 -> 0,158 ; 0,098 -> 0,079
+     0,032 -> 0,065 ; 0,016 -> 0,033
+     0,170 -> 0,072 ; 0,085 -> 0,036
+     -->
+<model:physical name="tea-darjeeling_model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>tea-darjeeling_body</canonicalBody>
+
+  <body:box name="tea-darjeeling_body">
+    <xyz>0 0 0</xyz>
+    <rpy>0 0 0</rpy>
+
+    <mass>0.05</mass>
+    <massMatrix>true</massMatrix>
+    <ixx>0.001</ixx>
+    <ixy>0.0</ixy>
+    <ixz>0.0</ixz>
+    <iyy>0.0005</iyy>
+    <iyz>0.0</iyz>
+    <izz>0.001</izz>
+    <cx>0.0</cx>
+    <cy>0.0</cy>
+    <cz>0.0</cz>
+
+
+    <geom:box name="tea-darjeeling_geom">
+      <xyz>0 0 0</xyz>
+      <rpy>0 0 0</rpy>
+      <size>0.158 0.065 0.072</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <xyz>0 0.033 0</xyz>
+        <scale>0.158 0.001 0.072</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/tea-darjeeling-front</material>
+      </visual>
+
+      <visual>
+        <xyz>0 -0.033 0</xyz>
+        <scale>0.158 0.001 0.072</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/tea-darjeeling-back</material>
+      </visual>
+
+      <visual>
+        <xyz>0.079 0 0</xyz>
+        <scale>0.001 0.065 0.072</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/tea-darjeeling-left</material>
+      </visual>
+
+      <visual>
+        <xyz>-0.079 0 0</xyz>
+        <scale>0.001 0.065 0.072</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/tea-darjeeling-right</material>
+      </visual>
+
+      <visual>
+        <xyz>0 0 0.036</xyz>
+        <scale>0.158 0.065 0.001</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/tea-darjeeling-top</material>
+      </visual>
+
+      <visual>
+        <xyz>0 0 -0.036</xyz>
+        <scale>0.158 0.065 0.001</scale>
+        <mesh>unit_box</mesh>
+        <material>cogx/tea-darjeeling-bottom</material>
+      </visual>
+    </geom:box>
+  </body:box>
+</model:physical>
+
