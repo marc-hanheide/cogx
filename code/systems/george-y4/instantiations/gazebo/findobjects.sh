@@ -11,6 +11,8 @@ fi
 out="${1%.world}.objects.txt"
 
 echo "[objects]" > $out
+# In Gazebo 0.9 the objects are known as "<name>".
+# In Gazebo 0.10 the objects are known as "noname::<name>".
 grep -e "<model:.*<\!-- OBJECT" $1 | sed -e "s/.*name=[\"']\([-a-zA-Z_0-9]*\)[\"']>.*$/\1/" >> $out
 
 echo "[places]" >> $out
