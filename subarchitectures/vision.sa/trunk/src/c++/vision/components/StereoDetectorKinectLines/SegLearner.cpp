@@ -185,7 +185,7 @@ void SegLearner::configure(const map<string,string> & _config)
   int pyrLevels = 3;                        // Number of pyramid levels
   float nbDist = 0.02;                      // max. neighor distance for subsampling
   float thrAngleNormalClustering = 0.5;     // maximum angle for clustering (0.5 = 28° (+5,7))
-  float inlDist = 0.012;                     // Inlier distance for planes
+  float inlDist = 0.012;                    // Inlier distance for planes
   float sigma = 0.008;                      // TODO What sigma???
   int minPoints = 16;                       // Minimum points for a plane (16)
   planeFitter = new surface::MoSPlanes3D(
@@ -222,12 +222,16 @@ void SegLearner::configure(const map<string,string> & _config)
   /// init annotation for first-level svm learning
   annotation = new anno::Annotation();
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 0, 16);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 8);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 9);
-  /// eval svm
-//   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 15);
-//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+  /// eval svm
+//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 9, 15);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+  
+  
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
   /// init patch class
@@ -281,7 +285,7 @@ void SegLearner::runComponent()
  */
 void SegLearner::GetImageData()
 {
-  pointCloudWidth = 320;
+  pointCloudWidth = 640;
   pointCloudHeight = pointCloudWidth *3/4;
   kinectImageWidth = 640;
   kinectImageHeight = kinectImageWidth *3/4;
@@ -379,8 +383,6 @@ void SegLearner::processImageNew()
   /// MOS-Plane fitting
   if(deb) log("MoS-Plane fitter start!");
   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
-//   zFilter.setInputCloud (pcl_cloud_filtered);
-//   zFilter.filter(*pcl_cloud_filtered);
   pclA::FilterZ(pcl_cloud_filtered, 0.3, 1.5);      // z filtering for 1.5 meters
   planeFitter->setInputCloud(pcl_cloud_filtered);
   planeFitter->compute();
@@ -392,11 +394,15 @@ void SegLearner::processImageNew()
 // printf("Surfaces:\n");
 // for(unsigned i=0; i<surfaces.size(); i++)
 //   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
+
+  printf("planeFitter->postprocess: start\n");
   planeFitter->postprocessResults(postProcessIndices);
-  if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
+  printf("planeFitter->postprocess: end\n");
+
 // printf("Post-surfaces:\n");
 // for(unsigned i=0; i<surfaces.size(); i++)
 //   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
+  if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
 
 
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -450,12 +456,12 @@ void SegLearner::processImageNew()
   if(deb) log("Calculate patch-relations start!");
   std::vector<Relation> relation_vector;
   patches->setInputImage(iplImage_k);
-  patches->setInputCloud(pcl_cloud_copy);     /// TODO We use a copy to avoid changes!!!
+  patches->setInputCloud(pcl_cloud_copy);                   /// TODO We use a copy to avoid changes!!!
   patches->setNormals(pcl_normals);
   patches->setSurfaceModels(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);
   patches->setTexture(texture);
-  patches->setOptimalPatchModels(true);
+  patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
   patches->computeLearnRelations();
   patches->getRelations(relation_vector);
 
