@@ -27,11 +27,13 @@ class GObject
 {
 public:
   std::string label;
+  std::string gazeboName;
   cogx::Math::Vector3 loc;
   cogx::Math::Vector3 pose; // x=roll, y=pitch, z=yaw
-  GObject(const std::string& label)
+  GObject(const std::string& label, const std::string& gazeboname)
   {
     this->label = label;
+    this->gazeboName = gazeboname;
   }
 };
 
