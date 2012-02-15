@@ -86,7 +86,7 @@ public class ManualGoalComponent extends ManagedComponent implements
 						return "";
 					}
 				}
-				Goal g = new Goal(importance, (String) goalObj, false);
+				Goal g = new Goal(importance, -1, (String) goalObj, false);
 				TutorInitiativeMotive motive = new TutorInitiativeMotive();
 				AbstractEpistemicObjectMotiveGenerator.fillDefault(motive);
 				motive.thisEntry = new WorkingMemoryAddress(newDataID(),

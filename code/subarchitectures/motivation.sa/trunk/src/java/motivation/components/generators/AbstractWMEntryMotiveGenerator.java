@@ -325,7 +325,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	public float askPlannerForCosts(Motive motive) {
 		PlannerFacade pf = PlannerFacade.get(this);
 		List<Goal> goals = new ArrayList<Goal>(1);
-		Goal hardGoal = new Goal(-1, motive.goal.goalString, false);
+		Goal hardGoal = new Goal(-1, -1, motive.goal.goalString, false);
 		goals.add(hardGoal);
 		Future<WMEntryQueueElement<PlanningTask>> planningTask = pf.plan(goals,
 				false);

@@ -85,7 +85,7 @@ public class GeneralGoalGenerator extends AbstractMotiveGenerator {
 						if (!initialized) { // if home base is not set yet
 							GeneralGoalMotive newMotive = MotiveFactory
 									.createGeneralGoalMotive(_wmc.address);
-							newMotive.goal = new Goal(-1, goalString, false);
+							newMotive.goal = new Goal(-1, -1, goalString, false);
 							newMotive.informationGain = constantGain;
 							newMotive.costs = (float) constantCosts;
 
