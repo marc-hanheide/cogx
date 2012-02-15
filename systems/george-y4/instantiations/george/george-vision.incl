@@ -74,7 +74,9 @@ CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
 
 ##### Monitors
 
-IFTRUE(0)
+IFOPTALL(%(feature_options), vision-monitors)
+
+# TODO: show only if certain features are used
 
 JAVA MG vis.e.SOI castutils.viewer.V11WMViewerComponent --subscribe "VisionData.SOI" --displayserver "display.srv" --generic-col --compact --omit-fields "points BGpoints EQpoints"
 
