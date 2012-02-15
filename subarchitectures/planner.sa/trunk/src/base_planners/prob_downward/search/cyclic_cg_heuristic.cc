@@ -36,12 +36,13 @@ inline void CyclicCGHeuristic::add_to_heap(LocalProblemNode *node) {
 
 LocalTransition::LocalTransition(
     LocalProblemNode *source_, LocalProblemNode *target_,
-    const ValueTransitionLabel *label_, int action_cost_, double action_prob_) {
+    const ValueTransitionLabel *label_, int action_cost_, int duration_, double action_prob_) {
     source = source_;
     target = target_;
     label = label_;
     action_cost = action_cost_;
     action_prob = action_prob_;
+    action_duration = duration_;
 
     // if (label->op)
     //     std::cout << "local transition: "<< label->op->get_name() << " " << action_cost << std::endl;
@@ -81,8 +82,14 @@ void LocalTransition::on_source_expanded(const State &state) {
     assert(source->cost >= 0);
     assert(source->cost < LocalProblem::QUITE_A_LOT);
 
-    target_action_costs = source->action_cost + action_cost;
-    target_prob = source->prob * action_prob;
+    if (g_HACK->mode == HEURISTIC_MODE_COST) {
+        target_action_costs = source->action_cost + action_cost;
+        target_prob = source->prob * action_prob;
+    } else {
+        target_action_costs = source->action_cost + action_duration;
+        target_prob = source->prob * 1;
+    }
+
     target_cost = target_action_costs + (1-target_prob) * g_reward + 0.5;
     min_prob = 1.0;
     max_cost = 0;
@@ -205,8 +212,8 @@ void LocalTransition::on_condition_reached(int cost, double prob) {
     // target_cost = target_cost + target_prob * (cost + (1-prob) * g_multiplier * g_reward);
     if (g_debug && label->op) {
         double new_min_prob = min(min_prob, prob);
-        // double new_max_cost = max(max_cost, cost);
-        double new_max_cost = max_cost + cost;
+        double new_max_cost = max(max_cost, cost);
+        // double new_max_cost = max_cost + cost;
         int new_target_cost = target_action_costs + new_max_cost + (1-target_prob*new_min_prob) * g_reward + 0.5;
         std::cout << "    condition reached: " << label->op->get_name() << " - " << cost << " / " << prob << "  remaining: " << unreached_conditions << std::endl;
         //std::cout << "    " << target_action_costs << " - " << new_target_prob << std::endl;
@@ -363,9 +370,10 @@ void LocalProblem::build_nodes_for_variable(int var_no) {
 #endif
                 // int action_cost = dtg->is_axiom ? 0 : label.op->get_cost() + (g_reward * 0.5 * label.op->get_p_cost()) / g_multiplier;
                 int action_cost = dtg->is_axiom ? 0 : label.op->get_cost();
+                int action_time = dtg->is_axiom ? 0 : label.op->get_duration();
                 // std::cout << "build node: " << label.op->get_name() << " cost: " << label.op->get_cost() << " + " <<  g_reward << " * 0.5 * " << label.op->get_p_cost() << " = " << action_cost << std::endl;
                 double action_prob = dtg->is_axiom ? 1.0 : label.op->get_prob();
-                LocalTransition trans(&node, &target, &label, action_cost, action_prob);
+                LocalTransition trans(&node, &target, &label, action_cost, action_time, action_prob);
                 node.outgoing_transitions.push_back(trans);
             }
         }
@@ -389,7 +397,7 @@ void LocalProblem::build_nodes_for_goal() {
     }
     vector<LocalAssignment> no_effects;
     ValueTransitionLabel *label = new ValueTransitionLabel(0, goals, no_effects);
-    LocalTransition trans(&nodes[0], &nodes[1], label, 0, 1.0);
+    LocalTransition trans(&nodes[0], &nodes[1], label, 0, 0, 1.0);
     nodes[0].outgoing_transitions.push_back(trans);
 }
 
@@ -533,6 +541,7 @@ CyclicCGHeuristic::CyclicCGHeuristic() {
     goal_problem = 0;
     goal_node = 0;
     heap_size = -1;
+    mode = HEURISTIC_MODE_COST;
 }
 
 CyclicCGHeuristic::~CyclicCGHeuristic() {
@@ -558,14 +567,41 @@ void CyclicCGHeuristic::initialize() {
 }
 
 int CyclicCGHeuristic::compute_heuristic(const State &state) {
+    if (g_use_deadline) {
+        int current_time = 0;
+        if (einfo != NULL) {
+            current_time = einfo->get_t();
+            // if (einfo->op != 0) {
+            //     cout << "created by: " << einfo->op->get_name() << endl; 
+            // }
+        }
+
+        // int heuristic;
+        mode = HEURISTIC_MODE_TIME;
+        initialize_heap();
+        goal_problem->base_priority = -1;
+        for(int i = 0; i < local_problems.size(); i++)
+            local_problems[i]->base_priority = -1;
+        goal_problem->initialize(0, 0, state);
+
+        int time_h = compute_costs(state);
+        if (time_h == DEAD_END || time_h + current_time > g_deadline) {
+            // cout << "deadline pruned: " << time_h << " + " << current_time  << endl;
+            return DEAD_END;
+        }
+    }
+    // cout << "not pruned: " << heuristic << " + " << current_time << endl;
+    
+
+    mode = HEURISTIC_MODE_COST;
     initialize_heap();
     goal_problem->base_priority = -1;
     for(int i = 0; i < local_problems.size(); i++)
         local_problems[i]->base_priority = -1;
-
     goal_problem->initialize(0, 0, state);
-
     int heuristic = compute_costs(state);
+    // cout << "h: " << heuristic << endl;
+    // cout << heuristic << endl;
 
     // if(heuristic != DEAD_END && heuristic != 0) {
     //     double p_init = 1.0;

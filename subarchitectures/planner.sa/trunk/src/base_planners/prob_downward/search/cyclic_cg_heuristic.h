@@ -19,6 +19,11 @@ class CyclicCGHeuristic;
 
 // TODO: Fix friend statements and access qualifiers.
 
+enum {
+    HEURISTIC_MODE_COST,
+    HEURISTIC_MODE_TIME
+};
+
 class LocalTransition {
     friend class CyclicCGHeuristic;
     friend class LocalProblem;
@@ -27,6 +32,7 @@ class LocalTransition {
     LocalProblemNode *source;
     LocalProblemNode *target;
     const ValueTransitionLabel *label;
+    int action_duration;
     int action_cost;
     double action_prob;
 
@@ -39,7 +45,7 @@ class LocalTransition {
 
     LocalTransition(LocalProblemNode *source_, LocalProblemNode *target_,
                     const ValueTransitionLabel *label_, int action_cost_,
-                    double action_prob_);
+                    int duration_, double action_prob_);
 
     #ifdef USE_CONTEXT
     inline void get_context(std::vector<std::pair<int, int> >& result) const;
@@ -161,6 +167,7 @@ class CyclicCGHeuristic : public Heuristic {
 
     std::vector<std::vector<LocalProblemNode *> > buckets;
     int heap_size;
+    int mode;
 
     int compute_costs(const State &state);
     void initialize_heap();

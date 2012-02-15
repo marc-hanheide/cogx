@@ -80,7 +80,7 @@ class Requirements(object):
         ":strips", ":adl", ":typing", ":negation", ":equality",
         ":negative-preconditions", ":disjunctive-preconditions",
         ":quantified-preconditions", ":conditional-effects",
-        ":derived-predicates", ":action-costs"), req
+        ":derived-predicates", ":action-costs", ":deadlines"), req
   def __str__(self):
     return ", ".join(self.requirements)
 

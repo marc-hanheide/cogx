@@ -128,6 +128,11 @@ int GeneralEagerBestFirstSearch::step() {
             if (succ_info.get_p() < g_min_p) {
                 continue;
             }
+            if (g_use_deadline && succ_info.get_t() > g_deadline) {
+                // cout << "hit deadline:" << succ_info.get_t() << endl;
+                continue;
+            }
+
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
                 // heuristics[i]->evaluate(node.get_info(), succ_state);

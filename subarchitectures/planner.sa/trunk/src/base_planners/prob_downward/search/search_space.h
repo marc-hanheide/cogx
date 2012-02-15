@@ -19,11 +19,13 @@ class EvalInfo {
 public:
     int g;
     int c;
+    int t;
     double p;
     const Operator* op;
     EvalInfo succ(const Operator *op) const;
 
     int get_g() const { return g; } ;
+    int get_t() const { return t; } ;
     double get_p() const { return p; } ;
 };
 

@@ -180,9 +180,12 @@ bool g_merge_and_shrink_bound_is_for_product = true;
 
 bool g_debug = false;
 
-double g_min_p = 0.001;
+double g_min_p = 0.01;
 int g_reward = 1000;
 int g_multiplier = 100;
+
+bool g_use_deadline = false;
+int g_deadline = -1;
 
 // TODO: The following three should be command-line options.
 bool g_merge_and_shrink_simplify_labels = true;

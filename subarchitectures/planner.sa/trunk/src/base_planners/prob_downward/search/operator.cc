@@ -40,11 +40,17 @@ Operator::Operator(istream &in, bool axiom) {
       cost = 1;
     } else {
       int op_cost;
+      int op_time;
       in >> op_cost;
       cost = g_use_metric ? op_cost +1 : 1;
+      in >> op_time;
       in >> probability;
       log_p = (int) (g_multiplier * -log(probability));
-      // cout << probability << " = " << -log(probability) << endl;
+      duration = op_time;
+      
+      // cost += log_p + 1;
+      // cout << probability << " = " << log_p << endl;
+      // probability = 1.0;
     }
     g_min_action_cost = min(g_min_action_cost, cost);
 

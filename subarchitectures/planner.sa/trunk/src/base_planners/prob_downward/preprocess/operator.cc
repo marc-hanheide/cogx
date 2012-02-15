@@ -42,6 +42,7 @@ Operator::Operator(istream &in, const vector<Variable *> &variables) {
       pre_post.push_back(PrePost(variables[varNo], val, newVal));
   }
   in >> cost;
+  in >> time;
   in >> probability;
   check_magic(in, "end_operator");
   // TODO: Evtl. effektiver: conditions schon sortiert einlesen?
@@ -131,6 +132,7 @@ void Operator::generate_cpp_input(ofstream &outfile) const {
 	    << pre_post[i].post << endl;
   }
   outfile << cost << endl;
+  outfile << time << endl;
   outfile << probability << endl;
   outfile << "end_operator" << endl;
 }

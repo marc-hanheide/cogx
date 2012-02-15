@@ -7,13 +7,14 @@ import effects
 import pddl_types
 
 class Action(object):
-    def __init__(self, name, parameters, precondition, replan, effects, cost, probability):
+    def __init__(self, name, parameters, precondition, replan, effects, cost, time, probability):
         self.name = name
         self.parameters = parameters
         self.precondition = precondition
         self.replan = replan
         self.effects = effects
         self.cost = cost
+        self.time = time
         self.probability = probability
         self.uniquify_variables() # TODO: uniquify variables in cost?
     def __repr__(self):
@@ -46,10 +47,16 @@ class Action(object):
         assert effect_tag == ":effect"
         effect_list = iterator.next()
         eff = []
-        cost, prob = effects.parse_effects(effect_list, eff)
+        num_eff = effects.parse_effects(effect_list, eff)
+        cost = None
+        virtual_cost = num_eff.get('virtual-cost', None)
+        time = num_eff.get('total-cost', None)
+        prob = num_eff.get('probability', None)
+        cost = virtual_cost if virtual_cost else time
+            
         for rest in iterator:
             assert False, rest
-        return Action(name, parameters, precondition, replan, eff, cost, prob)
+        return Action(name, parameters, precondition, replan, eff, cost, time, prob)
     parse = staticmethod(parse)
     def dump(self):
         print "%s(%s)" % (self.name, ", ".join(map(str, self.parameters)))
@@ -146,30 +153,27 @@ class Action(object):
             eff.instantiate(var_mapping, init_facts, fluent_facts,
                             objects_by_type, effects)
         if effects:
-            if self.cost is None:
-                cost = 0
-            else:
-                c_expr = self.cost.instantiate(var_mapping, init_facts)
-                if not c_expr:
-                    return None
-                cost = int(c_expr.expression.value)
-            if self.probability is None:
-                probability = 1
-            else:
-                p_expr = self.probability.instantiate(var_mapping, init_facts)
-                if not p_expr:
-                    return None
-                try:
-                    probability = float(p_expr.expression.value)
-                except:
-                    return None
+            def get_value(expr, default=0, typ=int):
+                if expr is None:
+                    return default
+                ground_expr = expr.instantiate(var_mapping, init_facts)
+                if not ground_expr:
+                    raise StopIteration
+                return typ(ground_expr.expression.value)
+            
+            try:
+                cost = get_value(self.cost)
+                time = get_value(self.time)
+                probability = get_value(self.probability, default=1, typ=float)
+            except:
+                return None
                 
-            return PropositionalAction(name, precondition, replan, effects, cost, probability)
+            return PropositionalAction(name, precondition, replan, effects, cost, time, probability)
         else:
             return None
 
 class PropositionalAction:
-    def __init__(self, name, precondition, replan, effects, cost, probability):
+    def __init__(self, name, precondition, replan, effects, cost, time, probability):
         self.name = name
         self.precondition = precondition
         self.replan = replan
@@ -186,6 +190,7 @@ class PropositionalAction:
             if effect.negated and (condition, effect.negate()) not in self.add_effects:
                 self.del_effects.append((condition, effect.negate()))
         self.cost = cost
+        self.time = time
         self.probability = probability
     def dump(self):
         print self.name

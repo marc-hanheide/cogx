@@ -70,12 +70,13 @@ class SASGoal:
     print >> stream, "end_goal"
 
 class SASOperator:
-  def __init__(self, name, prevail, replan, pre_post, cost, probability):
+  def __init__(self, name, prevail, replan, pre_post, cost, time, probability):
     self.name = name
     self.replan = sorted(replan)
     self.prevail = sorted(prevail)
     self.pre_post = sorted(pre_post)
     self.cost = cost
+    self.time = time
     self.probability = probability
   def dump(self):
     print self.name
@@ -108,6 +109,7 @@ class SASOperator:
         print >> stream, cvar, cval,
       print >> stream, var, pre, post
     print >> stream, self.cost
+    print >> stream, self.time
     print >> stream, self.probability
     print >> stream, "end_operator"
 

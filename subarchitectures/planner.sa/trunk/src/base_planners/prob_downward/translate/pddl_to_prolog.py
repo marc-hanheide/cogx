@@ -123,7 +123,9 @@ class Rule:
       if var_name[0] == "?":
         if var_name in used_variables:
           new_var_name = "%s@%d" % (var_name, len(new_conditions))
-          atom.args[i] = new_var_name
+          arglist = list(atom.args)
+          arglist[i] = new_var_name
+          atom.args = tuple(arglist)
           new_conditions.append(pddl.Atom("=", [var_name, new_var_name]))
         else:
           used_variables.add(var_name)

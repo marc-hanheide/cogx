@@ -112,7 +112,7 @@ class FunctionAssignment(object):
         # We know that this assignment is a cost effect of an action (for initial state
         # assignments, "instantiate" is not called). Hence, we know that the fluent is
         # the 0-ary "total-cost" which does not need to be instantiated
-        assert self.fluent.symbol in ("total-cost", "probability")
+        assert self.fluent.symbol in ("total-cost", "virtual-cost", "probability")
         fluent = self.fluent
         expression = self.expression.instantiate(var_mapping, init_facts)
         if expression:

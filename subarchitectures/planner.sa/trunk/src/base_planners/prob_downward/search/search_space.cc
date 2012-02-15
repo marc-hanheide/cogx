@@ -17,6 +17,7 @@ EvalInfo EvalInfo::succ(const Operator *op) const {
     EvalInfo info;
     info.op = op;
     info.c = c + op->get_cost();
+    info.t = t + op->get_duration();
     info.p = p * op->get_prob();
     info.g = g_multiplier * info.c + g_multiplier * (1-info.p) * g_reward;
     return info;
@@ -27,6 +28,7 @@ SearchNode::SearchNode(state_var_t *state_buffer_, SearchNodeInfo &info_)
     einfo.op = info.creating_operator;
     einfo.c = info.c;
     einfo.p = info.p;
+    einfo.t = info.t;
     einfo.g = g_multiplier * einfo.c + g_multiplier * (1-einfo.p) * g_reward;
 }
 
@@ -85,6 +87,7 @@ void SearchNode::open(int h, const SearchNode &parent_node,
     einfo = parent_node.succ_info(parent_op);
     info.c = einfo.c;
     info.p = einfo.p;
+    info.t = einfo.t;
     // cout << "g: "<< parent_node.get_info()->g << "->" << info.g << "  p: " << parent_node.get_info()->p << "->" << einfo.p << endl;
     info.h = h;
     info.parent_state = parent_node.state_buffer;
@@ -103,6 +106,7 @@ void SearchNode::reopen(const SearchNode &parent_node,
     einfo = parent_node.succ_info(parent_op);
     info.c = einfo.c;
     info.p = einfo.p;
+    info.t = einfo.t;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
@@ -117,6 +121,7 @@ void SearchNode::update_parent(const SearchNode &parent_node,
     einfo = parent_node.succ_info(parent_op);
     info.c = einfo.c;
     info.p = einfo.p;
+    info.t = einfo.t;
     info.parent_state = parent_node.state_buffer;
     info.creating_operator = parent_op;
 }
