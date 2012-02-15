@@ -37,7 +37,7 @@ import eu.cogx.beliefs.slice.PerceptBelief;
  * In order to do this job it requires a {@link MatcherFunction}.
  * 
  * @author marc
- * 
+ * agnostic 
  * @param <From>
  *            the generic type to listen for and generate from
  * @param <To>
@@ -63,7 +63,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	 * @param <To2>
 	 *            the generic type of the sink of the transfer
 	 */
-	public interface MatcherFunction<From2 extends Ice.ObjectImpl, To2 extends Ice.ObjectImpl> {
+	public interface MatcherFunction<From2 extends Ice.ObjectImpl, Via extends Ice.ObjectImpl, To2 extends Ice.ObjectImpl> {
 		/**
 		 * @param from
 		 * @return true if this matching function can actually handle this type
@@ -113,8 +113,25 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 		 *            the belief to be updated
 		 * @throws IncompatibleAssignmentException
 		 */
+		public void update(WorkingMemoryChange wmc, From2 from, Via via, To2 to)
+				throws IncompatibleAssignmentException;
+				
+				/**
+		 * update an existing belief with a new observation
+		 * 
+		 * @param wmc
+		 *            the {@link WorkingMemoryChange} that caused the update
+		 * @param from
+		 *            the belief that is used to update the existing one
+		 * @param to
+		 *            the belief to be updated
+		 * @throws IncompatibleAssignmentException
+		 */
 		public void update(WorkingMemoryChange wmc, From2 from, To2 to)
 				throws IncompatibleAssignmentException;
+				
+		public WorkingMemoryAddress bestMatch(WorkingMemoryChange wmc, From2 from,
+				WMView beliefView);
 
 	}
 
@@ -137,11 +154,11 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	 */
 	public static <SrcS1 extends dBelief, SrcS2 extends dBelief, DestS extends dBelief> WMMerger<SrcS1, SrcS2, DestS> create(
 			ManagedComponent component, Class<SrcS1> srcType1, Class<SrcS2> srcType2,
-			Class<DestS> destType, MatcherFunction<SrcS1, DestS> transferFunction1, MatcherFunction<SrcS2, DestS> transferFunction2,
-			PointerMap<?> src1d, PointerMap<?> dests2, PointerMap<?> src2s1) {
+			Class<DestS> destType, MatcherFunction<SrcS1, SrcS2, DestS> transferFunction1, MatcherFunction<SrcS2, SrcS1, DestS> transferFunction2,
+			PointerMap<?> srcDest, PointerMap<?> srcSrc) {
 
 		return new WMMerger<SrcS1, SrcS2, DestS>(component, srcType1, srcType2, destType,
-				transferFunction1, transferFunction2, src1d, dests2, src2s1, null);
+				transferFunction1, transferFunction2, srcDest, srcSrc, null);
 	}
 
 	/**
@@ -175,19 +192,18 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	 */
 	public static  <SrcS1 extends dBelief, SrcS2 extends dBelief, DestS extends dBelief> WMMerger<SrcS1, SrcS2, DestS> create(
 			ManagedComponent component, Class<SrcS1> srcType1, Class<SrcS2> srcType2,
-			Class<DestS> destType, MatcherFunction<SrcS1, DestS> transferFunction1,  MatcherFunction<SrcS2, DestS> transferFunction2,
-			PointerMap<?> src1d, PointerMap<?> dests2, PointerMap<?> src2s1, String inSA) {
+			Class<DestS> destType, MatcherFunction<SrcS1, SrcS2, DestS> transferFunction1,  MatcherFunction<SrcS2, SrcS1, DestS> transferFunction2,
+			PointerMap<?> srcDest, PointerMap<?> srcSrc, String inSA) {
 
 		return new WMMerger<SrcS1, SrcS2, DestS>(component, srcType1, srcType2, destType,
-				transferFunction1, transferFunction2, src1d, dests2, src2s1, inSA);
+				transferFunction1, transferFunction2, srcDest, srcSrc, inSA);
 	}
 
 	final Set<WorkingMemoryAddress> lockedAddresses = Collections
 			.synchronizedSet(new HashSet<WorkingMemoryAddress>());
 
-	private PointerMap<?> src1dMap;
-	private PointerMap<?> dests2Map;
-	private PointerMap<?> src2s1Map;
+	private PointerMap<?> srcDestMap;
+	private PointerMap<?> srcSrcMap;
 
 	/**
 	 * a synchronized event queue that ensure that any new insert notification
@@ -208,8 +224,8 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	protected final Class<Dest> destType;
 
 	/** the registered TransferFunction for PerceptMonitor */
-	protected MatcherFunction<Src1, Dest> matcherFunction1;
-	protected MatcherFunction<Src2, Dest> matcherFunction2;
+	protected MatcherFunction<Src1, Src2, Dest> matcherFunction1;
+	protected MatcherFunction<Src2, Src1, Dest> matcherFunction2;
 
 	// private ExecutorService executor;
 
@@ -236,8 +252,9 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	 *            the SA this should be created in.
 	 */
 	protected WMMerger(ManagedComponent component, Class<Src1> srcType1, Class<Src2> srcType2,
-			Class<Dest> destType, MatcherFunction<Src1, Dest> transferFunction1, MatcherFunction<Src2, Dest> transferFunction2,
-			PointerMap<?> src1dMap, PointerMap<?> dests2Map, PointerMap<?> src2s1Map, String inSA) {
+			Class<Dest> destType, MatcherFunction<Src1, Src2, Dest> transferFunction1,
+			MatcherFunction<Src2, Src1, Dest> transferFunction2, PointerMap<?> srcDestMap,
+			PointerMap<?> srcSrcMap, String inSA) {
 		super(component);
 		this.srcType1 = srcType1;
 		this.srcType2 = srcType2;
@@ -245,14 +262,13 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 		this.matcherFunction1 = transferFunction1;
 		this.matcherFunction2 = transferFunction2;
 		entryQueue = new WMEventQueue();
-		this.src1dMap = src1dMap;
-		this.dests2Map = dests2Map;
-		this.src2s1Map = src2s1Map;
+		this.srcDestMap = srcDestMap;
+		this.srcSrcMap = srcSrcMap;
 		this.allTrackedBeliefs = WMView.create(this.component, destType);
 		this.createInSA = inSA;
 		// this.executor = Executors.newCachedThreadPool();
 	}
-
+/*
 	protected WorkingMemoryAddress bestMatch1(WorkingMemoryChange wmc, Src1 from) {
 		double bestProb = 0.0;
 		WorkingMemoryAddress result = null;
@@ -282,15 +298,15 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 		}
 		return result;
 	}
-
+*/
 	private void handleNewObservation1(final WorkingMemoryChange ev)
 			throws CASTException, IncompatibleAssignmentException {
 		log("Got a new observation of type " + ev.type);
 		final WorkingMemoryAddress matchingWMA;
 		
-		final Src1 from1 = component.getMemoryEntry(ev.address, srcType1);
-		matchingWMA = bestMatch1(ev, from1);
-		if (!matcherFunction1.canHandle(from1))
+		final Src1 from = component.getMemoryEntry(ev.address, srcType1);
+		matchingWMA = matcherFunction1.bestMatch(ev, from, allTrackedBeliefs);
+		if (!matcherFunction1.canHandle(from))
 			return;
 			
 		executor.submit(new Runnable() {
@@ -308,22 +324,26 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 						log("creating new tracked belief with "
 								+ CASTUtils.toString(toWMA));
 
-						Dest to = matcherFunction1.create(toWMA, ev, from1);
+						Dest to = matcherFunction1.create(toWMA, ev, from);
 						if (to != null) {
 							log("have created new belief with type=" + to.type
 									+ " (" + toWMA.id + ")");
-							matcherFunction1.update(ev, from1, to);
-							manageHistory(ev, from1, to);
+							matcherFunction1.update(ev, from, to);
+							manageHistory(ev, from, to);
 							log("have filled with values:" + to.type + " ("
 									+ toWMA.id + "), ready to write to WM now.");
 							component.addToWorkingMemory(toWMA, to);
 							log("written to WM, insert into map now:" + to.type
 									+ " (" + toWMA.id + ")");
-							src1dMap.put(ev.address, toWMA);
+							
+							srcDestMap.put(ev.address, toWMA);
+							// temporarily put the destination as the key
+							srcSrcMap.put(toWMA, ev.address);
+							
 						} else {
 							getLogger().warn(
 									"failed to create a corresponding belief for "
-											+ from1.type);
+											+ from.type);
 						}
 					} else {
 						try {
@@ -342,11 +362,13 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 										destType);
 								log("updating belief "
 										+ CASTUtils.toString(matchingWMA));
-								matcherFunction1.update(ev, from1, to);
-								manageHistory(ev, from1, to);
+								matcherFunction1.update(ev, from, to);
+								manageHistory(ev, from, to);
 								component.overwriteWorkingMemory(matchingWMA,
 										to);
-								src1dMap.put(ev.address, matchingWMA);
+								srcDestMap.put(ev.address, matchingWMA);
+								// temporarily put the destination as the key
+								srcSrcMap.put(matchingWMA, ev.address);
 							} finally {
 								unlock(matchingWMA);
 								//
@@ -371,7 +393,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 		final WorkingMemoryAddress matchingWMA;
 		
 		final Src2 from = component.getMemoryEntry(ev.address, srcType2);
-		matchingWMA = bestMatch2(ev, from);
+		matchingWMA = matcherFunction2.bestMatch(ev, from, allTrackedBeliefs);
 		if (!matcherFunction2.canHandle(from))
 			return;
 			
@@ -401,7 +423,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 							component.addToWorkingMemory(toWMA, to);
 							log("written to WM, insert into map now:" + to.type
 									+ " (" + toWMA.id + ")");
-							dests2Map.put(ev.address, toWMA);
+							srcDestMap.put(ev.address, toWMA);
 						} else {
 							getLogger().warn(
 									"failed to create a corresponding belief for "
@@ -422,13 +444,18 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 								// WorkingMemoryPermissions.LOCKEDODR);
 								Dest to = component.getMemoryEntry(matchingWMA,
 										destType);
+								Src1 via = component.getMemoryEntry(srcSrcMap.get(matchingWMA),
+										srcType1);
 								log("updating belief "
 										+ CASTUtils.toString(matchingWMA));
-								matcherFunction2.update(ev, from, to);
+								matcherFunction2.update(ev, from, via, to);
 								manageHistory(ev, from, to);
 								component.overwriteWorkingMemory(matchingWMA,
 										to);
-								dests2Map.put(ev.address, matchingWMA);
+								srcDestMap.put(ev.address, matchingWMA);
+								srcSrcMap.put(ev.address, srcSrcMap.get(matchingWMA));
+								srcSrcMap.put(srcSrcMap.get(matchingWMA), ev.address);
+								srcSrcMap.remove(matchingWMA);
 							} finally {
 								unlock(matchingWMA);
 								//
@@ -448,8 +475,14 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	}
 
 	private void handleOverwriteObservation1(final WorkingMemoryChange ev,
-			final WorkingMemoryAddress matchingWMA) throws CASTException,
+			final WorkingMemoryAddress otherWMA, final WorkingMemoryAddress matchingWMA) throws CASTException,
 			IncompatibleAssignmentException {
+			
+		if(otherWMA != null) {
+			handleOverwriteObservation2(ev, otherWMA, ev.address, matchingWMA);
+			return;
+		}
+			
 		final Src1 from = component.getMemoryEntry(ev.address, srcType1);
 		if (!matcherFunction1.canHandle(from))
 			return;
@@ -500,11 +533,12 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 		});
 	}
 	
-	private void handleOverwriteObservation2(final WorkingMemoryChange ev,
-			final WorkingMemoryAddress matchingWMA) throws CASTException,
+	private void handleOverwriteObservation2(final WorkingMemoryChange ev, final WorkingMemoryAddress fromWMA,
+			final WorkingMemoryAddress otherWMA, final WorkingMemoryAddress matchingWMA) throws CASTException,
 			IncompatibleAssignmentException {
-		final Src2 from = component.getMemoryEntry(ev.address, srcType2);
-		if (!matcherFunction2.canHandle(from))
+		final Src2 from = component.getMemoryEntry(fromWMA, srcType2);
+		final Src1 via = component.getMemoryEntry(otherWMA, srcType1);
+		if (!matcherFunction2.canHandle(from) || !matcherFunction1.canHandle(via))
 			return;
 
 		executor.submit(new Runnable() {
@@ -522,7 +556,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 					// }
 					lock(matchingWMA);
 					Dest to = component.getMemoryEntry(matchingWMA, destType);
-					matcherFunction2.update(ev, from, to);
+					matcherFunction2.update(ev, from, via, to);
 					manageHistory(ev, from, to);
 					try {
 						// component.lockComponent();
@@ -631,7 +665,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 					}
 					case OVERWRITE: {
 						if(ev.type == srcType1.getSimpleName()) {
-							WorkingMemoryAddress toWMA = src1dMap.get(ev.address);
+							WorkingMemoryAddress toWMA = srcDestMap.get(ev.address);
 							if (toWMA == null)
 								handleNewObservation1(ev);
 							else {
@@ -639,11 +673,12 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 								// observation has once been linked to a tracked
 								// belief, overwrite will only be propagated to
 								// this one!
-								handleOverwriteObservation1(ev, toWMA);
+								WorkingMemoryAddress otherWMA = srcSrcMap.get(ev.address);
+								handleOverwriteObservation1(ev, otherWMA, toWMA);
 							}
 						}
 						else if(ev.type == srcType2.getSimpleName()) {
-							WorkingMemoryAddress toWMA = dests2Map.get(ev.address);
+							WorkingMemoryAddress toWMA = srcDestMap.get(ev.address);
 							if (toWMA == null)
 								handleNewObservation2(ev);
 							else {
@@ -651,7 +686,9 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 								// observation has once been linked to a tracked
 								// belief, overwrite will only be propagated to
 								// this one!
-								handleOverwriteObservation2(ev, toWMA);
+									
+								WorkingMemoryAddress otherWMA = srcSrcMap.get(ev.address);
+								handleOverwriteObservation2(ev, ev.address, otherWMA, toWMA);
 							}
 						}
 						break;
@@ -659,7 +696,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 					case DELETE: {
 
 						if (shouldPropagateDeletion) {
-							WorkingMemoryAddress adr = src1dMap.get(ev.address);
+							WorkingMemoryAddress adr = srcDestMap.get(ev.address);
 							
 							//nah: this could be null if we don't track this entry
 							if (adr != null) {
@@ -675,7 +712,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 							}
 
 						}
-						src1dMap.remove(ev.address);
+						srcDestMap.remove(ev.address);
 						break;
 					}
 					}
