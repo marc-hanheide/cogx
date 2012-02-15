@@ -119,7 +119,7 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 	private String submitOneGoal(TableModel goalsTable,
 			boolean shouldExecutePlan) {
 		LinkedList<Goal> goals = new LinkedList<Goal>();
-		Goal g = new Goal(-1, this.frame.getjGoalTextEditField().getText(),
+		Goal g = new Goal(-1, -1, this.frame.getjGoalTextEditField().getText(),
 				false);
 		goals.add(g);
 
@@ -167,7 +167,7 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 						importance = -1;
 					}
 				}
-				Goal g = new Goal(importance, (String) goalObj, false);
+				Goal g = new Goal(importance, -1, (String) goalObj, false);
 				goals.add(g);
 			}
 		}

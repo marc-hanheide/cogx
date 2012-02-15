@@ -108,7 +108,7 @@ class Writer(object):
                 strings.append(self.write_predicate(pred))
         if not strings:
             return []
-        return self.section(":predicates", strings)
+        return self.section(":predicates", sorted(strings))
 
     def write_functions(self, funcs):
         strings = []
@@ -117,7 +117,7 @@ class Writer(object):
                 strings.append(self.write_function(func))
         if not strings:
             return []
-        return self.section(":functions", strings)
+        return self.section(":functions", sorted(strings))
     
     def write_action(self, action, head=":action"):
         strings = [action.name]

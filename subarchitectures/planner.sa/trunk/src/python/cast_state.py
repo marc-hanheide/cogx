@@ -747,10 +747,9 @@ class CASTState(object):
             wma = self.address_dict[name] if self.address_dict else cast.cdl.WorkingMemoryAddress(name, BINDER_SA)
             value = logicalcontent.PointerFormula(0, wma)
         elif arg.is_instance_of(pddl.t_boolean):
-            value = False
-            if arg == pddl.TRUE:
-                value = True
-            value = logicalcontent.BooleanFormula(0, value)
+            value = logicalcontent.BooleanFormula(0, True if arg == pddl.TRUE else False)
+        elif arg.is_instance_of(pddl.t_number):
+            value = logicalcontent.FloatFormula(0, float(name))
         elif arg == pddl.UNKNOWN:
             value = logicalcontent.UnknownFormula(0)
         else:

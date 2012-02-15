@@ -214,7 +214,7 @@ class Action(Scope):
 
         self.effect = self.effect.visit(visitor)
 
-        if not self.totalCostFound:
+        if not self.totalCostFound and new_total_cost is not None:
             new_cost_eff = effects.SimpleEffect(builtin.increase,[tct,new_total_cost], self.effect.scope)
             if isinstance(self.effect, effects.ConjunctiveEffect):
                 self.effect.parts.append(new_cost_eff)
@@ -309,3 +309,4 @@ class Action(Scope):
             pass
             
         return action
+

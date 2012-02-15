@@ -164,6 +164,7 @@ def replan(cast_state):
     print "problem creation took: %.2f sec" % (time.time() - t0)
 
     task = standalone.task.Task(0, cp_problem)
+    task.deadline = 211
     task.set_state(state.state)
     planner.register_task(task)
     task.replan()
