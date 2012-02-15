@@ -180,7 +180,7 @@ public class ExplorePlaceGenerator extends
 			log("  gain=" + motive.informationGain);
 		}
 
-		motive.goal = new Goal(computeImportance(motive), "(= (placestatus '"
+		motive.goal = new Goal(computeImportance(motive), -1, "(= (placestatus '"
 				+ belief.getId() + "') trueplace)", false);
 		log("goal is " + motive.goal.goalString);
 		// assignCosts(motive);

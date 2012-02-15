@@ -131,7 +131,7 @@ public class TourGiver extends ManagedComponent {
 
 	public void submitPlan(String goalStr) {
 		LinkedList<Goal> goals = new LinkedList<Goal>();
-		Goal goal = new Goal(-1, (String) goalStr, false);
+		Goal goal = new Goal(-1, -1, (String) goalStr, false);
 		goals.add(goal);
 		try {
 			WMEntryQueueElement<PlanningTask> res = planner.plan(goals, true)

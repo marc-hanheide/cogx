@@ -100,7 +100,7 @@ public class CategorizeRoomGoalGenerator extends
 		motive.costs = -1;
 		motive.informationGain = 1.0;
 		assert (getRobotBeliefAddr() != null);
-		motive.goal = new Goal(computeImportance(motive), "(kval '"
+		motive.goal = new Goal(computeImportance(motive), -1, "(kval '"
 				+ getRobotBeliefAddr() + "' (areaclass '" + belief.getId()
 				+ "'))", false);
 		log("updated goal to " + motive.goal.goalString);

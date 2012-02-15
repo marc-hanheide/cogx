@@ -47,7 +47,7 @@ public class FindObjectFromIntentionGenerator extends AbstractIntentionMotiveGen
 			// TODO: fill these values:
 			String objLabel=objLabelNode.getValue();
 			String robotBeliefId="";
-			motive.goal= new Goal(-1, "exists (?o - visualobject) (and (= (label ?o) "+objLabel+") (kval '"+robotBeliefId+"' (is-in ?o))))", false);
+			motive.goal= new Goal(-1, -1, "exists (?o - visualobject) (and (= (label ?o) "+objLabel+") (kval '"+robotBeliefId+"' (is-in ?o))))", false);
 			return motive;
 		} else {
 			return null;

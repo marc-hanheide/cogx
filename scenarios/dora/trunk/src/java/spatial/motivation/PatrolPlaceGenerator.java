@@ -155,7 +155,7 @@ public class PatrolPlaceGenerator extends
 
 			}
 
-			motive.goal = new Goal(computeImportance(motive), "(= (is-in "
+			motive.goal = new Goal(computeImportance(motive), -1, "(= (is-in "
 					+ this.getRobotBeliefAddr().id + ") " + belief.getId()
 					+ ")", false);
 			log("goal is " + motive.goal.goalString + " with inf-gain "

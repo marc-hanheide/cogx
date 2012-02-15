@@ -98,7 +98,7 @@ public class RobotVilleComponent extends ManagedComponent {
 	public void startPlannedAction(String string) {
 		LinkedList<Goal> goals = new LinkedList<Goal>();
 		try {
-			Goal g = new Goal(-1, substituteRobotBelief(string), false);
+			Goal g = new Goal(-1, -1, substituteRobotBelief(string), false);
 			goals.add(g);
 
 			WMEntryQueueElement<PlanningTask> res = planner.plan(goals, true)
