@@ -387,6 +387,7 @@ void ProsilicaServer::configure(const map<string,string> & _config)
   }
   else
   {
+    error("Please provide the camera id (37105 or 37107).");
     throw CASTException(exceptionMessage(__HERE__, "Please provide the camera id (37105 or 37107)."));
   }
   _mtu = 1500;
