@@ -34,48 +34,6 @@ between sed and the shell. Do the following:
   ccmake -C ../sysconfig/cmakecache/george-y3.txt  ..
 
 
-V4R library
------------
-
-The V4R library is built separately. By default it should be checked out into
-tools/v4r. To build it do:
-  
-   cd tools/v4r
-   mkdir BUILD
-   cd BUILD
-   cmake ..
-   make
-
-It may have to be configured manually to enable certain parts of the library.
-In this case use cmake-gui or ccmake.
-
-The library shouldn't be installed on the system. Instead the path to the
-include and lib files has to be set. This can be done in castcontrol.conf:
-
-   V4R_DIR=${COGX_ROOT}/tools/v4r
-
-   PATH=<pathlist>
-      # ...
-      ${PATH}
-      ${V4R_DIR}/bin
-   </pathlist>
-
-   LD_LIBRARY_PATH=<pathlist>
-      ${LD_LIBRARY_PATH}
-      ${V4R_DIR}/lib
-      # ...
-   </pathlist>
-
-Similar statements can be added to .profile, instead.
-
-It is also possible to build the library as a part of the main build using an
-external make process. This can be enabled with the option
-
-   DO_V4R_MAKE=ON
-
-in the CogX build configuration.
-
-
 Changing externals
 ==================
 
@@ -112,34 +70,27 @@ WM entries. The fake component is built instead of the real one if the option
 BUILD_SA_VISION_VISLEARNER_FAKE is enabled in cmake.
 
 
-Phase 01
-========
+George
+======
 
-Goal: Run the 4 types of learning using 2 layered vision and (if possible) use
-the Katana arm as an aid for reference resolution.
-
+(See also the file instantiations/george/README)
 
 In simulation with Gazebo and Player
 ------------------------------------
 
 * Server configuration:
-   - instantiations/george-y3/sim/gazebo/george-01.world
-   - instantiations/george-y3/sim/player/cogx-platform-sim.cfg
+   - instantiations/gazebo/george-01.world
+   - instantiations/player/cogx-platform-sim.cfg
 
-* Use one of the phase01-*.cast files, eg.: 
-   - instantiations/george-y3/phase01/phase01-motivation.cast
-
-* Select the PPO configuration in georgey3-vision.incl, include one of the ppo-* files:
-   - ppo-stereo-1.incl
-   - ppo-stereo-2.incl
-
-* Check that the Gazebo Juggler is enabled (juggler.incl included)
+* Use one of the run-george-*.cast files, eg.: 
+   - instantiations/george/run-george-all.cast
+   - verify that the variable 'hardware' is set to 'simulation'
 
 
 Managing objects in the scene
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Check that the juggler.incl is included in the top cast file. This will include
+(Check that the juggler.incl is included in the top cast file.) This will include
 the GazeboJuggler component which will remove all the objects from the scene at
 startup. Then you can place individual objects back on the scene in the
 GazeboJuggler dialog. Press the yellow icon in the "CAST Viewer" window to
@@ -150,18 +101,11 @@ On the real robot
 -----------------
 
 * Server configuration:
-   - instantiations/george-y3/real/player/cogx-platform.cfg
+   - instantiations/player/cogx-platform.cfg
 
-* Use one of the phase01-*.cast files, eg.: 
-   - instantiations/george-y3/phase01/phase01-motivation.cast
-
-* Check that the Gazebo Juggler is disabled (juggler.incl NOT included)
-
-* Select the PPO configuration in georgey3-vision.incl, include one of the ppo-* files:
-   - ppo-stereo-1.incl
-   - ppo-stereo-2.incl
-   - ppo-kinect-stereo.incl
-
+* Use one of the run-george-*.cast files, eg.: 
+   - instantiations/george/run-george-all.cast
+   - verify that the variable 'hardware' is set to 'real'
 
 Analyze Proto Objects
 ---------------------
