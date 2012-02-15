@@ -66,38 +66,45 @@ void GazeboJuggler::configure(const map<string,string> & _config)
     //println(" GJ **** " + fname);
     ifstream f;
     f.open(fname.c_str());
-    int mode = 0; // 1 - objects, 2 - places
-    while (f.good() && !f.eof()) {
-      string line, tok;
-      getline(f, line);
-      //println(" GJ **** " + line);
-      istringstream itok(line);
+    if (f.fail()) {
+      error("File not found: '" + fname + "'");
+    }
+    else {
+      int mode = 0; // 1 - objects, 2 - places
+      while (f.good() && !f.eof()) {
+        string line, tok;
+        getline(f, line);
+        //println(" GJ **** " + line);
+        istringstream itok(line);
 
-      int newmode = mode;
-      itok >> tok;
-      if (tok == "[objects]") newmode = 1;
-      else if (tok == "[places]") newmode = 2;
-      if (mode != newmode) {
-        mode = newmode;
-        continue;
-      }
+        int newmode = mode;
+        itok >> tok;
+        if (tok == "[objects]") newmode = 1;
+        else if (tok == "[places]") newmode = 2;
+        if (mode != newmode) {
+          mode = newmode;
+          continue;
+        }
 
-      if (mode == 1) {
-        if (tok != "")
-          m_objects.push_back(GObject(tok));
-      }
-      else if (mode == 2) {
-        Vector3 v;
-        int n;
-        n = sscanf(line.c_str(), "%lf %lf %lf", &v.x, &v.y, &v.z);
-        if (n > 1) {
-          if (n != 3) v.z = 1.0;
-          else v.z += 0.5;
-          m_locations.push_back(v);
+        if (mode == 1) {
+          if (tok != "")
+            // In Gazebo 0.9 top objects didn't have a prefix.
+            // In Gazebo 0.10 the prefix is "noname::"
+            m_objects.push_back(GObject(tok, "noname::" + tok));
+        }
+        else if (mode == 2) {
+          Vector3 v;
+          int n;
+          n = sscanf(line.c_str(), "%lf %lf %lf", &v.x, &v.y, &v.z);
+          if (n > 1) {
+            if (n != 3) v.z = 1.0;
+            else v.z += 0.5;
+            m_locations.push_back(v);
+          }
         }
       }
+      f.close();
     }
-    f.close();
   }
 
 #if 0
@@ -165,7 +172,7 @@ void GazeboJuggler::prepareObjects()
   for(int i = 0; i < objs.size(); i++) {
     GObject& o = objs[i];
     o.loc.x = OFF;
-    pSim->GetPose3d((char*)o.label.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z, time);
+    pSim->GetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z, time);
     if (o.loc.x == OFF) {
       println(" *** Object '%s' is not in the scene.", o.label.c_str());
       notthere.push_back(o);
@@ -173,7 +180,7 @@ void GazeboJuggler::prepareObjects()
     }
     o.loc.x = 100 + i * 10;
     o.loc.y = 100 + i * 10;
-    pSim->SetPose3d((char*)o.label.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
+    pSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
     m_objects.push_back(o);
   }
   println("%ld objects managed in the scene.", m_objects.size());
@@ -224,7 +231,7 @@ void GazeboJuggler::moveObject(const std::string& label, int placeIndex)
     }
     else
       o.loc = m_locations[placeIndex];
-    pSim->SetPose3d((char*)o.label.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
+    pSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
     break;
   }
 }
