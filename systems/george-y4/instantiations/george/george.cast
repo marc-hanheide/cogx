@@ -40,6 +40,8 @@ VARDEFAULT feature_options=<multiline>
    vision
    !vision-execution
    !vision-mediators
+   # TODO !visual-learner
+   # TODO !object-recognizer
    spatial
    !binder
    !binder-mln
