@@ -240,6 +240,7 @@ class CCastConfig:
                 removelines.append(i)
                 ordHosts.append(mo.group(1))
 
+        lastremoved = removelines[-1] - len(removelines) + 1 if len(removelines) else 0
         for i in reversed(removelines):
             lines.pop(i)
 
@@ -289,8 +290,8 @@ class CCastConfig:
             logger.get().warn("HOSTNAME-s COULD NOT BE SORTED.")
 
         for h in reversed(ordHosts):
-            lines.insert(0, "HOSTNAME %s %s" % (h, self._cast_hostnames[h]))
-        last = len(ordHosts)
+            lines.insert(lastremoved, "HOSTNAME %s %s" % (h, self._cast_hostnames[h]))
+        last = len(ordHosts) + lastremoved
 
         # remove invalid HOST declarations
         defaultHostFound = False
