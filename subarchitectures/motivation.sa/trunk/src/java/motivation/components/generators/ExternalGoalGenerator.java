@@ -141,7 +141,7 @@ public class ExternalGoalGenerator extends ManagedComponent implements
 			ggm.thisEntry=wma;
 			goalAddresses.put(goalString, wma);
 
-			ggm.goal = new Goal(importance, substituteRobotBelief(goalString),
+			ggm.goal = new Goal(importance, -1, substituteRobotBelief(goalString),
 					false);
 			ggm.informationGain = constantGain;
 			ggm.costs = constantCosts;
