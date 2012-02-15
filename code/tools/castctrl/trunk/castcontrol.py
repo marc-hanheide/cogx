@@ -968,6 +968,11 @@ class CCastControlWnd(QtGui.QMainWindow):
     def onStartCastServers(self):
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            if self.log4j.startedOnHost == None and self.log4j.mustStartServer:
+                self.startLog4jServer()
+                log4 = self.log4j.getConfig(self.configuredHosts)
+                log4.prepareClientConfig()
+
             self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
             self.startServers()
             self.ui.processTree.expandAll()
