@@ -93,7 +93,8 @@ private:
   std::vector<bool> texture;                                ///< Texture on 2D image space
 
   std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
-
+  std::vector<int> postProcessIndices;                      ///< TODO Indices of points eliminated by postProcessing
+  
   /// TODO new ones
   Z::VisionCore *vcore;                                     ///< VisionCore
   pclA::BilateralFilter *bilateral;                         ///< Bilateral filter for point clouds

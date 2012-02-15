@@ -378,25 +378,27 @@ void SegLearner::processImageNew()
   
   /// MOS-Plane fitting
   if(deb) log("MoS-Plane fitter start!");
-  // z-filtering!
-  pcl::PassThrough<pcl::PointXYZRGB> zFilter;
-  zFilter.setFilterFieldName ("z"); 
-  zFilter.setFilterLimits (0.3, 1.5);
-  zFilter.setKeepOrganized(true);
   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
-  zFilter.setInputCloud (pcl_cloud_filtered);
-  zFilter.filter(*pcl_cloud_filtered);
-  
+//   zFilter.setInputCloud (pcl_cloud_filtered);
+//   zFilter.filter(*pcl_cloud_filtered);
+  pclA::FilterZ(pcl_cloud_filtered, 0.3, 1.5);      // z filtering for 1.5 meters
   planeFitter->setInputCloud(pcl_cloud_filtered);
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
   planeFitter->getError(error);
-  if(deb) log("MoS-Plane fitter end: Found %lu models.", pcl_model_types.size());
-//   for(unsigned i=0; i<pcl_model_indices.size(); i++)
-//     printf(" model %u: size: %lu\n", i, pcl_model_indices[i]->indices.size());
-  
+
+// printf("Surfaces:\n");
+// for(unsigned i=0; i<surfaces.size(); i++)
+//   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
+  planeFitter->postprocessResults(postProcessIndices);
+  if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
+// printf("Post-surfaces:\n");
+// for(unsigned i=0; i<surfaces.size(); i++)
+//   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
+
+
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
   if(deb) last = current; 
@@ -585,7 +587,29 @@ void SegLearner::SingleShotMode()
         tgRenderer->Update();
       }
       break; 
-      
+
+    case '4':
+      log("Show postprocess points (of MoSPlanes3D).");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        RGBValue col;
+        col.float_value = GetRandomColor();
+        for(unsigned i=0; i<postProcessIndices.size(); i++) {
+          cv::Vec4f pt;
+          pt[0] = pcl_cloud->points[postProcessIndices[i]].x;
+          pt[1] = pcl_cloud->points[postProcessIndices[i]].y;
+          pt[2] = pcl_cloud->points[postProcessIndices[i]].z;
+          pt[3] = col.float_value;
+          col_points.push_back(pt);
+        }
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+        tgRenderer->Update();
+      }
+      break; 
+
     case '5':
       log("Show PATCHES");
       tgRenderer->ClearModels();
