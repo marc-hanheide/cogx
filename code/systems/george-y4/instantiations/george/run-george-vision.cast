@@ -31,6 +31,7 @@ VARDEFAULT feature_options=<multiline>
    vision
    !vision-execution
    !vision-mediators
+   vision-monitors
    spatial
    !binder
    !binder-mln
