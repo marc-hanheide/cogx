@@ -92,9 +92,15 @@ JAVA MG vis.cmd.moveToVc castutils.viewer.V11WMViewerComponent --subscribe "Visi
 
 JAVA MG vis.cmd.lookAround castutils.viewer.V11WMViewerComponent --subscribe "VisionData.LookAroundCommand" --displayserver "display.srv" --generic-col --compact
 
+# TODO IFOPTALL(%(feature_options),visual-learner)
 JAVA MG vis.cmd.learnTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearningTask" --displayserver "display.srv" --generic-col --compact
 
 JAVA MG vis.cmd.learnRecogTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualLearnerRecognitionTask" --displayserver "display.srv" --generic-col --compact
+# TODO ENDIF
+
+# TODO IFOPTALL(%(feature_options),object-recognizer)
+JAVA MG vis.cmd.objectRecogTask castutils.viewer.V11WMViewerComponent --subscribe "VisionData.RecognitionCommand" --displayserver "display.srv" --generic-col --compact
+# TODO ENDIF
 
 JAVA MG vis.status castutils.viewer.V11WMViewerComponent --subscribe "VisionData.VisualConceptModelStatus" --displayserver "display.srv" --generic-col --compact
 
