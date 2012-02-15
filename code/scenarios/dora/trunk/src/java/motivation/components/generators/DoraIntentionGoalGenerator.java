@@ -136,7 +136,7 @@ public class DoraIntentionGoalGenerator extends
 //							"(exists (?o - visualobject) (and (= (label ?o) "
 //									+ objectType + ") (kval '" + robotBel
 //									+ "' (is-in ?o))))", false);
-					goal.goal = new Goal(-1,
+					goal.goal = new Goal(-1, -1,
 					"(exists (?o - visualobject) (and (= (label ?o) "
 							+ objectType + ") (position-reported ?o)))", false);
 					log("goal generated: " + goal.goal.goalString);
