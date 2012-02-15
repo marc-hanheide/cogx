@@ -38,6 +38,7 @@ private:
   vector<Prevail> replan;      // var, val
   vector<PrePost> pre_post; // var, old-val, new-val
   int cost;
+  int time;
   double probability;
 public:
   Operator(istream &in, const vector<Variable *> &variables);

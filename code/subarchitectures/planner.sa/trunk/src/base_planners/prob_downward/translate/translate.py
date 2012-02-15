@@ -229,7 +229,7 @@ def translate_strips_operator(operator, dictionary, ranges, mutex_dict, mutex_ra
     prevail = condition.items()
     replan = replancond.items()
 
-    return sas_tasks.SASOperator(operator.name, prevail, replan, pre_post, operator.cost, operator.probability)
+    return sas_tasks.SASOperator(operator.name, prevail, replan, pre_post, operator.cost, operator.time, operator.probability)
 
 def prune_stupid_effect_conditions(var, val, conditions):
     ## (IF <conditions> THEN <var> := <val>) is a conditional effect.
@@ -576,8 +576,8 @@ if __name__ == "__main__":
         task, mutex_file = pddl.open()
 
     # EXPERIMENTAL!
-    #import psyco
-    #psyco.full()
+    # import psyco
+    # psyco.full()
 
     sas_task = pddl_to_sas(task, mutex_file)
     

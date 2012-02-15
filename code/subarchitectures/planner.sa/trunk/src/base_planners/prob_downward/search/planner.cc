@@ -63,15 +63,13 @@ int main(int argc, const char **argv) {
     bool use_selective_max = false;
     bool use_ehc_search = false;
     bool ehc_rank_by_preferred = false;
-
+    
     for (int i = 1; i < argc; i++) {
         for (const char *c = argv[i]; *c != 0; c++) {
             if (*c == 'o') {
                 a_star_search = true; // "o"ptimal
             } else if (*c == 'e') {
                 use_ehc_search = true; // "e"enforced hill climbing
-            } else if (*c == 'r') {
-                ehc_rank_by_preferred = true;
             } else if (*c == 'c') {
                 cg_heuristic = true;
             } else if (*c == 'C') {
@@ -109,7 +107,20 @@ int main(int argc, const char **argv) {
                     c++;
                 c--;
             } else if (*c == 'd') {
-                additive_heuristic = true;
+                g_use_deadline = true;
+                c++;
+                g_deadline = ::atoi(c);
+                while (*c >= '0' && *c <= '9')
+                    c++;
+                cout << "Deadline: " << g_deadline << endl;
+                c--;
+            } else if (*c == 'r') {
+                c++;
+                g_reward = ::atoi(c);
+                while (*c >= '0' && *c <= '9')
+                    c++;
+                cout << "Reward: " << g_reward << endl;
+                c--;
             } else if (*c == 'l') {
                 lm_heuristic = true;
                 c++;

@@ -16,11 +16,16 @@ def parse_effects(alist, result):
   """Parse a PDDL effect (any combination of simple, conjunctive, conditional, and universal)."""
   tmp_effect = parse_effect(alist)
   normalized = tmp_effect.normalize()
-  cost_eff, prob_eff, rest_effect = normalized.extract_cost_prob()
+  num_eff, rest_effect = normalized.extract_cost_prob()
+  d = {}
+  if num_eff:
+    for eff in num_eff:
+      d[eff.symbol] = eff.effect
   add_effect(rest_effect, result)
-  c_eff = cost_eff.effect if cost_eff else None
-  p_eff = prob_eff.effect if prob_eff else None
-  return c_eff, p_eff
+  # c_eff = cost_eff.effect if cost_eff else None
+  # p_eff = prob_eff.effect if prob_eff else None
+  # return c_eff, p_eff
+  return d
 
 def add_effect(tmp_effect, result):
   """tmp_effect has the following structure:
@@ -77,14 +82,14 @@ def parse_effect(alist):
       return ConditionalEffect(condition, effect)
     elif tag == "increase":
       assert len(alist) == 3
-      assert alist[1] == ['total-cost']
+      assert alist[1][0] in ('total-cost', 'virtual-cost')
       assignment = f_expression.parse_assignment(alist)
-      return CostEffect(assignment)
+      return NumericEffect(assignment, alist[1][0])
     elif tag == "assign":
       assert len(alist) == 3
-      assert alist[1] == ['probability']
+      assert alist[1][0] == 'probability'
       assignment = f_expression.parse_assignment(alist)
-      return ProbabilityEffect(assignment)
+      return NumericEffect(assignment, alist[1][0])
     else:
         return SimpleEffect(conditions.parse_literal(alist))
       
@@ -176,7 +181,7 @@ class ConditionalEffect(object):
     else:
       return ConditionalEffect(self.condition, norm_effect)
   def extract_cost_prob(self):
-    return None, None, self
+    return None, self
 
 class UniversalEffect(object):
   def __init__(self, parameters, effect):
@@ -201,7 +206,7 @@ class UniversalEffect(object):
     else:
       return UniversalEffect(self.parameters, norm_effect) 
   def extract_cost_prob(self):
-    return None, None, self
+    return None, self
     
 class ConjunctiveEffect(object):
   def __init__(self, effects):
@@ -223,16 +228,13 @@ class ConjunctiveEffect(object):
     return ConjunctiveEffect(new_effects)
   def extract_cost_prob(self):
     new_effects = []
-    cost_effect = None
-    prob_effect = None
+    special_effects = []
     for effect in self.effects:
-      if isinstance(effect, CostEffect):
-        cost_effect = effect
-      elif isinstance(effect, ProbabilityEffect):
-        prob_effect = effect
+      if isinstance(effect, NumericEffect):
+        special_effects.append(effect)
       else:
         new_effects.append(effect)
-    return cost_effect, prob_effect, ConjunctiveEffect(new_effects)
+    return special_effects, ConjunctiveEffect(new_effects)
                          
 class SimpleEffect(object):
   def __init__(self, effect):
@@ -242,26 +244,16 @@ class SimpleEffect(object):
   def normalize(self):
     return self
   def extract_cost_prob(self):
-    return None, None, self
+    return None, self
   
-class CostEffect(object):
-  def __init__(self, effect):
+class NumericEffect(object):
+  def __init__(self, effect, symbol):
     self.effect = effect
+    self.symbol = symbol
   def dump(self, indent="  "):
     print "%s%s" % (indent, self.effect)
   def normalize(self):
     return self
   def extract_cost_prob(self):
-    return self, None, None # this would only happen if
+    return [self], None # this would only happen if
   #an action has no effect apart from the cost effect
-
-class ProbabilityEffect(object):
-  def __init__(self, effect):
-    self.effect = effect
-  def dump(self, indent="  "):
-    print "%s%s" % (indent, self.effect)
-  def normalize(self):
-    return self
-  def extract_cost_prob(self):
-    return None, self, None # this would only happen if
-  #an action has no effect apart from the probability effect

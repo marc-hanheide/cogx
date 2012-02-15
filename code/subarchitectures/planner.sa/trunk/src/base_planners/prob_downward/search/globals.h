@@ -55,6 +55,9 @@ extern double g_min_p;
 extern int g_reward;
 extern int g_multiplier;
 
+extern bool g_use_deadline;
+extern int g_deadline;
+
 extern bool g_debug;
 
 extern Timer g_timer;
