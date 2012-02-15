@@ -178,10 +178,30 @@ class DTProblem(object):
                     if oarg in o_a_mapping:
                         a_mapping[o_a_mapping[oarg]] = val
                 yield action, a_mapping
+        # for a in self.domain.actions:
+        #     #try mapl-sensors
+        #     sensors = None
+        #     try:
+        #         sensors = a.sensors
+        #     except:
+        #         pass
+        #     for s in sensors:
+        #         term = s.get_term()
+        #         mapping =  dict(zip(term.args, fact.svar.args))
+        #         yield action, mapping
 
     def has_observations(self, fact):
         for _ in self.get_observations(fact):
             return True
+        # for a in self.domain.actions:
+        #     sensors = None
+        #     try:
+        #         sensors = a.sensors
+        #     except:
+        #         pass
+        #     for s in sensors:
+        #         if s.get_term().function == fact.svar.function:
+        #             return True
         return False
 
     def get_observations(self, fact):
@@ -475,6 +495,7 @@ class DTProblem(object):
             relaxed_exploration.cache.set_fact(cfact)
             for agent_obj in self.state.problem.get_all_objects(mapl.t_planning_agent):
                 goal_facts.append(state.Fact(fact.svar.as_modality(mapl.direct_knowledge, [agent_obj]), pddl.TRUE))
+            # print map(str, goal_facts)
             actions, explored_facts = relaxed_exploration.explore(self.domain.actions, set(goal_facts), self.detstate, self.domain, prob_functions = self.prob_functions, check_fn=make_check_fn(fact))
             relaxed_exploration.cache.unset_fact(fact)
             relaxed_exploration.cache.unset_fact(cfact)

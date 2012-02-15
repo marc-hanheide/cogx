@@ -38,6 +38,7 @@ class Task(object):
         self.dt_calls = 0
         self.dt_actions = 0
         self.dt_orig_id = 0
+        self.deadline = -1
         # private
         self._state = None
         

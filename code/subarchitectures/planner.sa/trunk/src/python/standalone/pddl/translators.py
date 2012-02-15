@@ -56,7 +56,7 @@ class Translator(object):
             #entity._original = original._original
         t1 = time.time()
 
-        print "postorder:", type(self), type(entity)
+        # print "postorder:", type(self), type(entity)
         if isinstance(entity, actions.Action):
             result = self.translate_action(entity, **kwargs)
         elif isinstance(entity, axioms.Axiom):
@@ -317,6 +317,7 @@ class PreferenceCompiler(Translator):
         return action1
 
     def translate_problem(self, _problem):
+        import builder
         p2 = Translator.translate_problem(self, _problem)
 
         if 'soft_goals' not in Translator.get_annotations(_problem):
@@ -336,14 +337,13 @@ class PreferenceCompiler(Translator):
                 help_lit = conditions.LiteralCondition(pred,[], cond.scope)
                 parts = [cond.cond, help_lit]
                 goal_dis = conditions.Disjunction(parts, cond.scope)
-
-                help_eff = effects.SimpleEffect(pred,[], cond.scope)
-
+                
                 precond = help_lit.negate()
-
-                help_act = actions.Action(action_name,[],precond,help_eff,p2.domain)
-                cost_increase = predicates.Term(cond.penalty)
-                help_act.set_total_cost(cost_increase)
+                help_act = actions.Action(action_name, [], precond, None, p2.domain)
+                b = builder.Builder(help_act)
+                help_act.effect = b.effect("and", (pred,),
+                                           ("increase", ("virtual-cost",), cond.penalty),
+                                           ("increase", ("total-cost",), 0))
 
                 p2.domain.actions.append(help_act)
 

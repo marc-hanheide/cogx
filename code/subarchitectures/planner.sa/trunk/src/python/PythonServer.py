@@ -77,7 +77,7 @@ class CASTLoggerProxy(object):
         if args:
             msg = msg % args
             
-        #self.log.error(msg)
+        self.log.error(msg)
 
     def critical(self, msg, *args, **kwargs):
         self.connect()
@@ -124,6 +124,7 @@ def pdbdebug(fn):
             return fn(self, *args, **kwargs)
         except Exception, e:
             log.error("Python exception: %s", str(e))
+            log.error(traceback.format_exc())
             traceback.print_exception(*sys.exc_info())
             if self.start_pdb:
                 import debug
@@ -172,6 +173,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
     if "--config" in config:
         standalone.globals.update_config(config.get("--config"))
+    self.config = config
 
     self.planner = StandalonePlanner()
     self.m_display.configureDisplayClient(config)
@@ -184,55 +186,72 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.start_pdb = "--pdb" in config
     self.min_p = float(config.get("--low-p-threshold", 0.01))
 
-    if "--dtdomain" in config:
-        self.dtdomain_fn = path.join(standalone.globals.config.domain_dir, config["--dtdomain"])
-    else:
-        self.dtdomain_fn = None
+    domain_dir = standalone.globals.config.domain_dir
+    problem_dir = standalone.globals.config.problem_dir
+    planner_dir = path.dirname(__file__)
+    cogx_dir = standalone.globals.config.cogx_dir
+
+
+    self.set_filename(domain_dir, dtdomain_fn="--dtdomain")
+    self.set_filename(problem_dir, dtproblem_fn="--dtproblem")
+
+    self.set_filename(cogx_dir, default_fn="--default", default="instantiations/defaultprobs/defaultprobs.txt")
+
+    self.set_filename(domain_dir, domain_fn="--domain", default=TEST_DOMAIN_FN)
+    if not self.set_filename(domain_dir, expl_rules_fn="--expl_rules"):
+        log.error("Could not find specified explanations rule set. Will not be able to determine explanations for failures!")
+
+    if not self.set_filename(domain_dir, consistency_fn="--consistency_rules"):
+        log.error("Could not find specified consistency rules. Disabling consistency checks.")
         
-    if "--dtproblem" in config:
-        self.dtproblem_fn = path.join(standalone.globals.config.problem_dir, config["--dtproblem"])
-    else:
-        self.dtproblem_fn = None
+    if not self.set_filename(problem_dir, domain_dir, planner_dir, problem_fn="--problem"):
+        log.error("Could not find specified problem. Using planning state from CAST.")
+    if not self.set_filename(problem_dir, domain_dir, planner_dir, history_fn="--history"):
+        log.error("Could not find specified problem. Using planning state from CAST.")
 
-    if "--default" in config:
-        self.default_fn = path.join(standalone.globals.config.cogx_dir, config["--default"])
-    else:
-        self.default_fn = path.join(standalone.globals.config.cogx_dir, "instantiations/defaultprobs/defaultprobs.txt")
-        
-    if "--domain" in config:
-      self.domain_fn = path.join(standalone.globals.config.domain_dir, config["--domain"])
-      if not path.exists(self.domain_fn):
-          log.error("Could not find specified domain %s. Using default domain %s", config["--domain"], TEST_DOMAIN_FN)
-          self.domain_fn = TEST_DOMAIN_FN
+  def set_filename(self, *paths, **kwargs):
+      search_paths = paths[:]
+      attr_name = None
+      default_fname = None
+      
+      for k,v in kwargs.iteritems():
+          if k == 'path':
+              if isinstance(v, str):
+                  search_paths.append(v)
+              else:
+                  search_paths += v
+          elif k == 'default':
+              default_fname = v
+          else:
+              attr_name = k
+              filename = v
 
-    if "--expl_rules" in config:
-      self.expl_rules_fn = path.join(standalone.globals.config.domain_dir, config["--expl_rules"])
-      if not path.exists(self.expl_rules_fn):
-          log.error("Could not find specified explanations rule set %s. Will not be able to determine explanations for failures!", config["--expl_rules"])
-          self.expl_rules_fn = None
-
-    if "--consistency_rules" in config:
-      self.consistency_fn = path.join(standalone.globals.config.domain_dir, config["--consistency_rules"])
-      if not path.exists(self.consistency_fn):
-          log.error("Could not find specified consistency rules %s. Disabling consistency checks .", config["--consistency_rules"])
-          self.consistency_fn = None
+      assert attr_name
+      setattr(self, attr_name, None)
+              
+      if filename.startswith("--"):
+          filename = self.config.get(filename, None)
           
-    if "--problem" in config:
-      self.problem_fn = path.join(standalone.globals.config.problem_dir, config["--problem"])
-      if not path.exists(self.problem_fn):
-          self.problem_fn = path.join(standalone.globals.config.domain_dir, config["--problem"])
-      if not path.exists(self.problem_fn):
-          log.error("Could not find specified problem %s. Using planning state from CAST.", config["--problem"])
-          self.problem_fn = None
+      if filename is None:
+          if default_fname:
+              return self.set_filename(*paths, attr_name=default_fname)
+          return True # No given value: success
+      
+      if search_paths is None:
+          search_paths = [path.dirname(__file__)]
+      for path in search_paths:
+          full_name = os.path.join(path, filename)
+          if os.path.exists(full_name):
+              setattr(self, attr_name, full_name)
+              return True
 
-    if "--history" in config:
-      self.history_fn = path.join(standalone.globals.config.problem_dir, config["--history"])
-      if not path.exists(self.history_fn):
-          self.history_fn = path.join(standalone.globals.config.domain_dir, config["--history"])
-      if not path.exists(self.history_fn):
-          log.error("Could not find specified history %s. Using planning state from CAST.", config["--history"])
-          self.history_fn = None
-          
+      if default_fname:
+          log.error("File not found: %s. Trying fallback: %s", filename, default_fname)
+          return self.set_filename(*paths, attr_name=default_fname)
+
+      log.error("File not found: %s", filename)
+      return False
+            
   def getClient(self):
     if not self.client:
       self.client = self.getIceServer(self.client_name, Planner.CppServer, Planner.CppServerPrx)

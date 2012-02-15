@@ -1,5 +1,5 @@
 (define (domain dora-avs-iros11)
-  (:requirements :mapl :adl :fluents :partial-observability :dynamic-objects :action-costs)
+  (:requirements :mapl :adl :fluents :partial-observability :dynamic-objects :action-costs :deadlines)
 
   (:types
    conegroup - object

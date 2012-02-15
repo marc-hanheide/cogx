@@ -3,12 +3,26 @@ import time, itertools
 import config
 
 import pddl
-import pddl.dtpddl
-from pddl import state
+from pddl import dtpddl, state
 import plans
 
 log = config.logger("planner")
 
+class ConditionalNode(plans.PlanNode):
+    def __init__(self, parent, condition, effect ):
+        plans.PlanNode.__init__(self, parent.action, parent.args, parent.time, parent.status)
+        self.parent = parent
+        self.pddl_condition = condition
+        self.pddl_effect = effect
+
+    def __str__(self):
+        #return "%s(%s)" % (self.action, self.time)
+        # def tostr(arg):
+        #     return a.name if hasattr(a,"name") else str(a)
+        # args = [tostr(a) for a in self.args]
+        efact = iter(self.effects).next()
+        return "%d: %s " % (self.time, str(efact))
+        
 def MAPLAction(action, task):
     elmts = action.split()
     action, args = elmts[0], elmts[1:]
@@ -145,11 +159,14 @@ def getRWDescription(action, args, _state, time):
             # print action.conditional_knowledge_effect().pddl_str()
             
     if effects:
-        rel = reduce(lambda x,y: x | y, (_state.get_relevant_vars(eff) for eff in effects), set())
+        def ceff_filter(eff):
+            return not isinstance(eff, pddl.ConditionalEffect)
+        
+        rel = reduce(lambda x,y: x | y, (_state.get_relevant_vars(eff) for eff in effects if ceff_filter(eff)), set())
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
         pnode.effects = set()
         for eff in effects:
-            pnode.effects |= set(state.Fact(k,v) for k,v in extstate.get_effect_facts(eff, trace_vars=True).iteritems())
+            pnode.effects |= set(state.Fact.from_dict(extstate.get_effect_facts(eff, trace_vars=True, filter_fn=ceff_filter)))
 
         eff_conds, original_eff_conds, universal_eff_conds = process_conditions(extstate, extstate.read_svars, [], reasons, universalReasons)
         pnode.preconds |= eff_conds
@@ -164,20 +181,32 @@ def getRWDescription(action, args, _state, time):
         rel = _state.get_relevant_vars(cond)
         _state.clear_axiom_cache()
         extstate, reasons, universalReasons = _state.get_extended_state(rel, getReasons=True)
-        negcond = cond.negate()
-        sat = extstate.is_satisfied(negcond, read_vars, universal_args)
+        sat = extstate.is_satisfied(cond, read_vars, universal_args)
         if sat:
             preconds, original_preconds, preconds_universal = process_conditions(extstate, read_vars, universal_args, reasons, universalReasons)
             preconds = set(state.Fact(var, _state[var]) for var in preconds)
-            # for eff in ceffs:
+            cfact = state.Fact.from_literal(ceff)
+        else:
+            cond = cond.negate()
+            sat = extstate.is_satisfied(cond, read_vars, universal_args)
+            preconds, original_preconds, preconds_universal = process_conditions(extstate, read_vars, universal_args, reasons, universalReasons)
+            preconds = set(state.Fact(var, _state[var]) for var in preconds)
+
             svar = state.StateVariable.from_literal(ceff)
             cfact = state.Fact(svar, _state[svar])
-            pnode.ceffs.append((cfact, preconds, original_preconds, negcond, preconds_universal))
+            preconds.add(cfact)
             
+        cnode = ConditionalNode(pnode, cond, ceff)
+        cnode.effects = set([cfact])
+        cnode.preconds = preconds
+        cnode.preconds_universal = preconds_universal
+        cnode.original_preconds = original_preconds
+
+        pnode.ceffs.append(cnode)
         
     #print "write:", time.time()-t0
 
-    pterm = pddl.Term(pddl.dtpddl.probability, [])
+    pterm = pddl.Term(dtpddl.probability, [])
     prob_terms = action.get_effects(pterm)
     if prob_terms:
         pnode.prob = _state.evaluate_term(prob_terms[0]).value
@@ -206,6 +235,12 @@ def getRWDescription(action, args, _state, time):
     log.trace("replan: %s", " ".join(map(str, pnode.replanconds)))
     log.trace("original replan: %s", " ".join(map(str, pnode.original_replan)))
     log.trace("write: %s", " ".join(map(str, pnode.effects)))
+
+    for cnode in pnode.ceffs:
+        log.trace("conditional effect %s", cnode)
+        log.trace("    read: %s", " ".join(map(str, cnode.preconds)))
+        log.trace("    write: %s", " ".join(map(str, cnode.effects)))
+        
     
     action.uninstantiate()
     return pnode
@@ -225,6 +260,7 @@ def make_po_plan(actions, task):
     writers = defaultdict(set)
 
     ignored_soft_goals = set()
+    ceffs = []
     
     state = task.get_state().copy()
     plan.init_node.effects = set(state.iterfacts())
@@ -252,34 +288,46 @@ def make_po_plan(actions, task):
             readers[svar].add(pnode)
             plan.add_link(frontier[svar], pnode, svar, val)
             log.trace("%s depends on %s", pnode, frontier[svar])
-            
-        for _, preconds, _, _, _ in pnode.ceffs:
-            for svar, val in preconds:
-                readers[svar].add(pnode)
-                plan.add_link(frontier[svar], pnode, svar, val, conflict=False, ceff=True)
-                log.trace("%s conditionally depends on %s", pnode, frontier[svar])
 
-        for svar, val in itertools.chain(pnode.effects, (eff for eff, _, _, _, _ in pnode.ceffs)) :
-            if svar.function in (pddl.builtin.total_cost, pddl.dtpddl.probability):
-                continue
-            if state[svar] != val:
-                if svar in readers:
-                    for node in readers[svar]:
-                        if node != pnode and not node in plan.predecessors(pnode):
-                            plan.add_link(node, pnode, svar, val, conflict=True)
-                            log.trace("%s must preceed %s (read conflict)", node, pnode)
-                    del readers[svar]
+        for cnode in pnode.ceffs:
+            plan.add_link(pnode, cnode, None, None, conflict=False, ceff_parent=True)
+            ceffs.append(cnode)
+            for svar, val in cnode.preconds:
+                if pnode in readers[svar]:
+                    #no duplicate links
+                    continue
+                readers[svar].add(cnode)
+                plan.add_link(frontier[svar], cnode, svar, val, conflict=False, ceff=True)
+                log.trace("%s effect %s depends on %s", pnode, cnode, frontier[svar])
 
-                if svar in writers:
-                    for node in writers[svar]:
-                        if node != pnode and not node in plan.predecessors(pnode):
-                            plan.add_link(node, pnode, svar, val, conflict=True)
-                            log.trace("%s must preceed %s (write conflict)", node, pnode)
-                    del writers[svar]
-                    
-                state[svar] = val
-            frontier[svar] = pnode
-            writers[svar].add(pnode)
+
+        def add_effect(node):
+            for svar, val in node.effects:
+                if svar.function in (pddl.builtin.total_cost, dtpddl.probability):
+                    continue
+                if state[svar] != val:
+                    #TODO: add threat links to parents
+                    if svar in readers:
+                        for rnode in readers[svar]:
+                            if rnode != node and not rnode in plan.predecessors(node):
+                                plan.add_link(rnode, node, svar, val, conflict=True)
+                                log.trace("%s must preceed %s (read conflict)", rnode, node)
+                        del readers[svar]
+
+                    if svar in writers:
+                        for wnode in writers[svar]:
+                            if wnode != node and not wnode in plan.predecessors(node):
+                                plan.add_link(wnode, node, svar, val, conflict=True)
+                                log.trace("%s must preceed %s (write conflict)", wnode, node)
+                        del writers[svar]
+
+                    state[svar] = val
+                frontier[svar] = node
+                writers[svar].add(node)
+                
+        add_effect(pnode)
+        for cnode in pnode.ceffs:
+            add_effect(cnode)
 
         log.trace("total time for action: %f", time.time()-t1)
 
@@ -289,6 +337,27 @@ def make_po_plan(actions, task):
 
     for svar, val in gnode.preconds:
         plan.add_link(frontier[svar], plan.goal_node, svar, val)
+
+    # remove irrelevant conditional effects
+    causally_relevant_nodes = plan.pred_closure(gnode, link_type='depends')
+    for cnode in ceffs[::-1]:
+        if cnode not in causally_relevant_nodes:
+            plan.remove_node(cnode)
+
+    #merge conditional effect back into actions
+    for cnode in ceffs:
+        if cnode in plan:
+            for pred in plan.predecessors_iter(cnode):
+                if pred == cnode.parent:
+                    continue
+                for e in plan[pred][cnode].itervalues():
+                    plan.add_edge(pred, cnode.parent, **e)
+            for succ in plan.successors_iter(cnode):
+                for e in plan[cnode][succ].itervalues():
+                    plan.add_edge(cnode.parent, succ, **e)
+            plan.remove_node(cnode)
+            cnode.parent.enabled_ceffs.append(cnode)
+        
 
 #     for i,pnode in plan.topological_sort():
 #         print i, str(pnode)

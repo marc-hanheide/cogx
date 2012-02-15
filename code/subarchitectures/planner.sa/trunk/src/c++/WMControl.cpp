@@ -125,11 +125,11 @@ void WMControl::runComponent() {
                     }
                 }
                 for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
-                    log("Removing task %d", *it);
+                    log("Removing task %d from runqueue", *it);
                     m_runqueue.erase(*it);
                 }
                 for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
-                    log("Removing waiting task %d", *it);
+                    log("Removing waiting task %d from runqueue", *it);
                     m_waiting_tasks.erase(*it);
                 }
             } else {
@@ -161,6 +161,7 @@ void WMControl::runComponent() {
                 unlockComponent();
                 log("sending task update...");
                 pyServer->updateTask(task);
+                log("task returned");
             }
             for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
                 log("Sending task timeout for task %d", *it);
@@ -169,6 +170,7 @@ void WMControl::runComponent() {
                 unlockComponent();
                 log("task timeout reached.");
                 pyServer->taskTimedOut(task);
+                log("task returned");
             }
             execute.clear();
             timed_out.clear();
@@ -359,63 +361,9 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     m_belief_activity_timeout = tval;
     log("belief timeout tval: %ld / %ld", tval.tv_sec, tval.tv_usec);
 
-    // log("Recevied state change...");
-
-    // CASTTime timestamp;
-    // bool first = true;
-    // m_currentState.clear();
-    // vector<Belief> changed;
-    // for (UnionSequence::iterator i = config->includedUnions.begin(); 
-    //      i < config->includedUnions.end() ; ++i) {
-    //     m_currentState.push_back(*i);
-    //     if ((*i)->timeStamp > m_lastUpdate) {
-    //         changed.push_back(*i);
-    //     }
-    //     if(first) {
-    //         timestamp =  (*i)->timeStamp;
-    //         first = false;
-    //     }
-    //     else if ((*i)->timeStamp > timestamp) {
-    //         timestamp = (*i)->timeStamp;
-    //     }
-    // }
-
-    // if (m_continual_state_updates) {
-    //     for (std::map<int,cast::cdl::WorkingMemoryChange>::iterator it=activeTasks.begin(); it != activeTasks.end(); ++it) {
-    //         int id = it->first;
-    //         StateChangeFilterPtr* filter = 0;
-    //         std::map<int, StateChangeFilterPtr>::iterator f_iter = m_stateFilters.find(id);
-    //         if (f_iter != m_stateFilters.end()) {
-    //             filter = &(f_iter->second);
-    //         }
-    //         sendStateChange(id, changed, timestamp, filter);
-    //     }
-    // }
-
     m_lastUpdate = wmc.timestamp;
-
 }
 
-
-void WMControl::sendStateChange(int id, std::vector<dBeliefPtr>& changedUnions, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter) {
-    assert(activeTasks.find(id) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
-    /*if (task->planningStatus == INPROGRESS) {
-        println("Task %d is still planning. Don't send updates.", id);
-        return;
-    }*/
-
-    if (filter) {
-
-    }
-
-    log("Sending state update for task %d", id);
-    //generateState(task);
-    
-    overwriteWorkingMemory(activeTasks[id], task);
-    //pyServer->updateTask(task);
-    dispatchPlanning(task, 0);
-}
 
 void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
     if (task->id != m_active_task_id) {
@@ -445,7 +393,7 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
 
 
 
-void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals) {
+void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& po_plan) {
     log("Plan delivered");
     if (activeTasks.find(id) == activeTasks.end()) {
         log("Task %d not found.", id);
@@ -471,6 +419,9 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
         log("Execution flag is not set.");
         overwriteWorkingMemory(activeTasks[id], task);
         return;
+    }
+    if (po_plan) {
+        log("We have a partially ordered plan!");
     }
 
     //remove task from pending queues
@@ -583,10 +534,6 @@ void WMControl::updateStatus(int id, Completion status) {
 }
 
 
-void WMControl::setChangeFilter(int id, const StateChangeFilterPtr& filter) {
-    m_stateFilters[id] = filter;
-}
-
 void WMControl::waitForChanges(int id, int timeout) {
     assert(activeTasks.find(id) != activeTasks.end());
     timeval tval;
@@ -638,6 +585,10 @@ void WMControl::InternalCppServer::deliverPlan(int id, const ActionSeq& plan, co
     parent->deliverPlan(id, plan, goals);
 }
 
+void WMControl::InternalCppServer::deliverPlanPO(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& orderedPlan, const Ice::Current&) {
+    parent->deliverPlan(id, plan, goals, orderedPlan);
+}
+
 void WMControl::InternalCppServer::updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&) {
     parent->updateBeliefState(beliefs);
 }
@@ -647,7 +598,7 @@ void WMControl::InternalCppServer::updateStatus(int id, Completion status, const
 }
 
 void WMControl::InternalCppServer::setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&) {
-    parent->setChangeFilter(id, filter);
+
 }
 
 void WMControl::InternalCppServer::waitForChanges(int id, int timeout, const Ice::Current&) {

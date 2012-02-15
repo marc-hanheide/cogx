@@ -3,25 +3,56 @@ import fake_cast_state
 from standalone import task, pddl, plans, plan_postprocess
 from autogen import Planner
 
-def load_history(history_fn, domain):
+def slice_goals_from_problem(problem):
+    softgoals = []
+
+    @pddl.visitors.copy
+    def goal_visitor(elem, results):
+        if isinstance(elem, pddl.conditions.PreferenceCondition):
+            softgoals.append((elem.penalty, elem.cond))
+            return False
+
+    hard_goal = problem.goal.visit(goal_visitor)
+    slice_goals = [Planner.Goal(importance=-1.0, deadline=-1, goalString=hard_goal.pddl_str(), isInPlan=False)]
+    for pri, goal in softgoals:
+        slice_goals.append(Planner.Goal(importance=pri, deadline=-1, goalString=goal.pddl_str(), isInPlan=False))
+
+    return slice_goals
+    
+
+def load_history(history_fn, domain, component=None):
 
     def read_file(fn):
         read_problem=True
         problem=[]
         plan=[]
-        for l in open(fn):
-            l = l.strip()
-            if l == "END_PROBLEM":
-                read_problem = False
-            elif l == "END_PLAN":
-                yield problem, plan
-                problem = []
-                plan = []
-                read_problem = True
-            elif read_problem:
-                problem.append(l)
-            else:
-                plan.append(l)
+        def get_section(lines, endstr):
+            for l in lines:
+                if l == endstr:
+                    return
+                yield l
+                
+        lines = (l.strip() for l in open(fn))
+        while True:
+            problem = list(get_section(lines, "END_PROBLEM"))
+            if not problem:
+                return
+            plan = list(get_section(lines, "END_PLAN"))
+            poplan = list(get_section(lines, "END_POPLAN"))
+            yield problem, plan
+        
+        # for l in lines:
+        #     if l == 
+        #         read_problem = False
+        #     elif l == "END_PLAN":
+        #         yield problem, plan
+        #         problem = []
+        #         plan = []
+        #         read_problem = True
+        #     elif read_problem:
+        #         problem.append(l)
+        #     else:
+        #         plan.append(l)
 
     PDDL_REXP = re.compile("\((.*)\)")
     def extract_action(line):
@@ -37,12 +68,12 @@ def load_history(history_fn, domain):
         t0 = time.time()
         problem = pddl.parser.Parser.parse_as(prob_str, pddl.Problem, domain)
         print "parsing problem: %.2f" % (time.time() - t0)
-        state = fake_cast_state.FakeCASTState(problem, domain, component=None)
+        state = fake_cast_state.FakeCASTState(problem, domain, component=component)
         print "state generation: %.2f" % (time.time() - t0)
         if init_state is None:
             init_state = state
-        goal_from_pddl = Planner.Goal(importance=-1.0, goalString=problem.goal.pddl_str(), isInPlan=False)
-        slice_goals = [goal_from_pddl]
+
+        slice_goals = slice_goals_from_problem(problem)
         cp_problem, cp_domain, goaldict = state.to_problem(slice_goals, deterministic=True)
         print "problem re-generation: %.2f" % (time.time() - t0)
         state.goals = slice_goals

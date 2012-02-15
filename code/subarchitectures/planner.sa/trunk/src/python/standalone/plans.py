@@ -9,7 +9,7 @@ Main class for storing MAPL plans. Such plans
 
 from string import Template
 from collections import defaultdict
-import copy
+import copy, itertools
 
 import networkx
 import constants
@@ -55,6 +55,7 @@ class PlanNode(object):
         self.replan_universal = set()
 
         self.ceffs = []
+        self.enabled_ceffs = []
 
         self.original_preconds = set()
         self.original_replan = set()
@@ -164,6 +165,24 @@ class MAPLPlan(networkx.MultiDiGraph):
                 result.add(n)
                 
         return result
+
+    def find_loop(self):
+        stack = []
+        def dfs(node):
+            if node in stack:
+                print "Found loop:"
+                for n in itertools.dropwhile(lambda x: x != node, stack):
+                    print "  ", n
+                print "  ", node
+                return True
+            stack.append(node)
+            for succ in self.successors_iter(node):
+                if dfs(succ):
+                    return True
+            stack.pop(-1)
+            return False
+        return dfs(self.init_node)
+                
                 
     def compute_depths(self):
         visited = set()
@@ -253,13 +272,16 @@ class MAPLPlan(networkx.MultiDiGraph):
             same_rank_list = ['"%s"' % r for r in same_rank_list]
             return '{rank=same; %s}' % " ".join(same_rank_list)
 
-        self.compute_depths()
+        cyclic = self.find_loop()
+        if not cyclic:
+            self.compute_depths()
         ranks = defaultdict(list)
         G = AGraph(directed=True, strict=False)
         for n, data in self.nodes_iter(data=True):
-            if n == self.init_node:
-                continue
-            ranks[data['depth']].append(n)
+            # if n == self.init_node:
+            #     continue
+            if not cyclic:
+                ranks[data['depth']].append(n)
             attrs = {}
             attrs["style"] = "filled"
             if n.status == ActionStatusEnum.EXECUTED:
@@ -286,8 +308,8 @@ class MAPLPlan(networkx.MultiDiGraph):
 
 
         for n1,n2, data in self.edges_iter(data=True):
-            if n1 == self.init_node:
-                continue
+            # if n1 == self.init_node:
+            #     continue
             if n1 not in G or n2 not in G:
                 continue
             attrs = {}
@@ -299,7 +321,7 @@ class MAPLPlan(networkx.MultiDiGraph):
             elif data['type'] == 'unexpected':
                 attrs["color"] = "red"
                 attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
-            elif 'svar' in data and 'val' in data:
+            elif data.get('svar', None) is not None and data.get('val', None) is not None:
                 attrs["label"] = "%s = %s" % (str(data['svar']), data['val'].name)
             
             if edge_deco:

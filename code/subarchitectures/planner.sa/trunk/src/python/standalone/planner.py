@@ -114,11 +114,11 @@ class Planner(object):
             read = pnode.preconds|pnode.replanconds
             universal = pnode.preconds_universal|pnode.replan_universal
             conds.append(pnode.action.precondition)
-        for _, cconds, _, pddl_ccond, c_universal in pnode.ceffs:
+        for cnode in pnode.enabled_ceffs:
             # print "cconds:", map(str, cconds)
-            read |= cconds
-            universal |= c_universal
-            conds.append(pddl_ccond)
+            read |= cnode.preconds
+            universal |= cnode.preconds_universal
+            conds.append(cnode.pddl_condition) #FIXME: proabably not correct yet
 
         negated_axioms = any(val == pddl.FALSE for svar, val in read if svar.function in state.problem.domain.derived or svar.modality in state.problem.domain.derived)
         # print map(str, state.problem.domain.derived)
@@ -196,6 +196,9 @@ class Planner(object):
                 log.debug("    ok.")
                 for f in pnode.effects:
                     state.set(f)
+                for cnode in pnode.enabled_ceffs:
+                    for f in cnode.effects:
+                        state.set(f)
             log.trace("time for checking action (%s %s): %f", action.name, " ".join(a.name for a in pnode.full_args), time.time()-t1)
 
         t2 = time.time()
@@ -291,6 +294,9 @@ class Planner(object):
             remaining_plan = plan[last_executed_index+1:]
             for f in pnode.effects:
                 state.set(f)
+            for cnode in pnode.enabled_ceffs:
+                for f in cnode.effects:
+                    state.set(f)
             if self.is_plan_valid(remaining_plan, task.get_plan().goal_node, state):
                 task.pending_action = pnode
                 log.debug("total time for validation: %f", time.time()-t0)
@@ -579,7 +585,15 @@ class Downward(BasePlanner):
         return plan
         
 class ProbDownward(Downward):
-    pass
+    def _run(self, input_data, task):
+        if task.deadline > -1:
+            oldargs = self.config.search_args
+            self.config.search_args += "d%d" % task.deadline
+            res = Downward._run(self, input_data, task)
+            self.config.search_args = oldargs
+            return res
+        else:
+            return Downward._run(self, input_data, task)
     
 class TFD(BasePlanner):
     """

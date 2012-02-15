@@ -26,10 +26,9 @@ protected:
     void connectToPythonServer();
     //vector<beliefmodels::autogen::beliefs::BeliefPtr>* generateState();
     //void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
-    void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals);
+    void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& po_plan=0);
     void updateBeliefState(const BeliefSeq& beliefs);
     void updateStatus(int id, Completion status);
-    void setChangeFilter(int id, const StateChangeFilterPtr& filter);
     void waitForChanges(int id, int timeout);
     bool queryGoal(const std::string& goal);
 
@@ -46,6 +45,7 @@ protected:
         InternalCppServer(WMControl* Parent);
         //virtual void deliverPlan(const PlanningTaskPtr& task, const Ice::Current&);
         virtual void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const Ice::Current&);
+        virtual void deliverPlanPO(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& orderedPlan, const Ice::Current&);
         virtual void updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&);
         virtual void updateStatus(int id, Completion status, const Ice::Current&);
         virtual void setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&);
@@ -58,7 +58,6 @@ protected:
     };
 
 private:
-    void sendStateChange(int id, std::vector< ::de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBeliefPtr >& changedBeliefs, const cast::cdl::CASTTime & newTimeStamp, StateChangeFilterPtr* filter);
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
@@ -71,7 +70,6 @@ private:
     typedef std::vector< BeliefEntry > PerceptList;
     BeliefMap m_currentState;
     PerceptList m_percepts;
-    std::map<int, StateChangeFilterPtr> m_stateFilters;
     cast::cdl::CASTTime m_lastUpdate;
     bool m_new_updates;
     timeval m_belief_activity_timeout;

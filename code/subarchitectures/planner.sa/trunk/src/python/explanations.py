@@ -161,6 +161,7 @@ def build_operator_for_new_facts(i, node):
         for op in chain([new_op], add_ops):
             op.extend_precondition(cond)
     enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
+
     return [new_op], add_ops, enabled_eff
     
 
@@ -211,7 +212,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     last_actions = []
     i = 0
     for n in last_plan.topological_sort():
-        print "***",n
+        print "***",n, n.status
         # iterate through plan, create action constants to enfore simulated re-execution during monitoring
         a = n.action
         if isinstance(a, plans.DummyAction) and not a.name.startswith("new_facts"):
@@ -234,8 +235,10 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
             pass
         if a.name.startswith("new_facts"):
             a2, add_ops, enabled_last = build_operator_for_new_facts(i, n)
+            print "   ",  [a.name for a in a2]
         else:
             a2, enabled_last = build_operator_for_ground_action(i, a, n.full_args)
+            print "   ",  [a.name for a in a2]
             add_ops = []
         for op in chain(a2, add_ops):
             expl_domain.add_action(op)
@@ -316,13 +319,15 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
     print plan
 
     if plan is not None:
-        postprocess_explanations(plan, last_plan)
+        result = postprocess_explanations(plan, last_plan)
         component.verbalise("I have now found a possible explanation for the failure.")
     else:
         component.verbalise("I'm sorry. I can't explain what went wrong.")
+        result = []
         print "No explanations found"
 
     print "done"
+    return result
 
 
 def get_causal_relations(node):
@@ -446,6 +451,28 @@ def postprocess_explanations(expl_plan, exec_plan):
             if eff.svar.modality == pddl.mapl.commit:
                 commitments[eff.svar.nonmodal()] = (eff.svar.modal_args[0], n)
                 print "commitment:", eff
+
+    old_assumptions = set()
+    for n in exec_plan.nodes_iter():
+        if n != exec_plan.init_node and n.is_virtual():
+            old_assumptions |= n.effects
+
+    relevant_expl = set(explanations)
+    open_expl = set(explanations)
+    while open_expl:
+        n = open_expl.pop()
+        for pred in expl_plan.predecessors_iter(n):
+            if pred != expl_plan.init_node and pred.effects - old_assumptions:
+                relevant_expl.add(pred)
+                open_expl.add(pred)
+
+    for n in relevant_expl:
+        print "relevant:", n
+
+    # requiring_expl = set([exec_plan.goal_node])
+    # while requiring_expl:
+    #     n = requiring_expl.pop()
+    #     for pred in exec_plan.predecessors_iter(link_type='unexpected'):
             
 
     def node_decorator(node):
@@ -480,3 +507,4 @@ def postprocess_explanations(expl_plan, exec_plan):
     G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
     G.layout(prog='dot')
     G.draw("plan-explained.pdf")
+    return relevant_expl

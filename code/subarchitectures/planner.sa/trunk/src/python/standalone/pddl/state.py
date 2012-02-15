@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 
 import time, random
-from itertools import imap, chain
+from itertools import imap, chain, product
 from collections import defaultdict
 
 import mapltypes as types
@@ -11,24 +11,6 @@ from builtin import *
 from durative import change, num_change
 from predicates import *
 from mapltypes import TypedNumber
-
-def product(*iterables):
-    """Returns an iterator with the cartesian product of the lists
-    provided as argument.
-
-    Arguments:
-    *iterables -- list of lists
-    """
-    if not iterables:
-        yield tuple()
-        return
-    for el in iterables[0]:
-        if len(iterables) > 1:
-            for prod in product(*iterables[1:]):
-                yield (el,)+prod
-        else:
-            yield (el,)
-                       
 
 def instantiate_args(args, state=None):
     """Given a list of Terms and a state, try to instantiate these

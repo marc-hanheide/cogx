@@ -39,14 +39,43 @@ module autogen {
       int taskID;
       string name;
       ArgumentSeq arguments;
+      ArgumentSeq allArguments;
       string fullName;
       float cost;
       Completion status;
     };
     sequence<Action> ActionSeq;
 
+    struct Fact {
+        string name;
+        ArgumentSeq arguments;
+        string modality;
+        ArgumentSeq modalArguments;
+        de::dfki::lt::tr::beliefs::slice::logicalcontent::dFormula value;
+    };
+
+    enum LinkType {
+        DEPENDS,
+        THREATENS
+    };
+
+    struct Link {
+        LinkType type;
+        int src;
+        int dest;
+        Fact reason;
+    };
+    sequence<Link> LinkSeq;
+
+    class POPlan {
+        int taskID;
+        ActionSeq actions;
+        LinkSeq links;
+    };
+
     class Goal {
       float importance;
+      int deadline;
       string goalString;
       bool isInPlan;
     };
@@ -150,6 +179,7 @@ module autogen {
     interface CppServer
     {
       void deliverPlan(int id, ActionSeq plan, GoalSeq goals);
+      void deliverPlanPO(int id, ActionSeq plan, GoalSeq goals, POPlan orderedPlan);
       void updateBeliefState(BeliefSeq beliefs);
       //void deliverPlan(PlanningTask task);
       void updateStatus(int id, Completion status);

@@ -119,13 +119,13 @@ class CASTTask(object):
             self.load_history(component.history_fn, component)
             self.failure_simulated = True
         elif args.get('problem_fn', None):
-            import fake_cast_state
+            import fake_cast_state, history
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
             self.state = fake_cast_state.FakeCASTState(add_problem, self.domain, component=component, consistency_cond=self.consistency_cond)
             self.init_state = self.state
-            goal_from_pddl = Planner.Goal(importance=-1.0, goalString=add_problem.goal.pddl_str(), isInPlan=False)
-            self.slice_goals = [goal_from_pddl]
+
+            self.slice_goals = history.slice_goals_from_problem(add_problem)
         else:
             self.state = cast_state.CASTState(beliefs, self.domain, component=component, consistency_cond=self.consistency_cond)
             self.init_state = self.state
@@ -134,12 +134,22 @@ class CASTTask(object):
 
         cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
         self.cp_task = task.Task(self.id, cp_problem)
+
+        deadline = -1
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
                 self.update_status(TaskStateEnum.FAILED)
                 return
-        
+            if g.deadline != -1:
+                if g.importance != -1:
+                    log.error("Deadline for softgoal %s not supported. Will be ignored" % g.goalString)
+                elif deadline == -1 :
+                    deadline = g.deadline
+                else:
+                    deadline = min(deadline, g.deadline)
+
+        self.cp_task.deadline = deadline
         component.planner.register_task(self.cp_task)
 
         self.unary_ops = None
@@ -180,62 +190,16 @@ class CASTTask(object):
             log.debug("total time for constructing query graph: %f", time.time()-t0)
 
     def load_history(self, history_fn, component):
-        import re
-        import fake_cast_state
-        from standalone import plan_postprocess
-        
-        def read_file(fn):
-            read_problem=True
-            problem=[]
-            plan=[]
-            for l in open(fn):
-                l = l.strip()
-                if l == "END_PROBLEM":
-                    read_problem = False
-                elif l == "END_PLAN":
-                    yield problem, plan
-                    problem = []
-                    plan = []
-                    read_problem = True
-                elif read_problem:
-                    problem.append(l)
-                else:
-                    plan.append(l)
-
-        PDDL_REXP = re.compile("\((.*)\)")
-        def extract_action(line):
-            action, status = line.split(",")
-            status = plans.ActionStatusEnum.__dict__[status.strip()]
-            return PDDL_REXP.search(action).group(1).lower().strip(), status
-
+        import history
         log.info("Loading history: %s.", history_fn)
-        _task = None
-        for prob_str, plan_str in read_file(history_fn):
-            problem = pddl.parser.Parser.parse_as(prob_str, pddl.Problem, self.domain)
-            self.state = fake_cast_state.FakeCASTState(problem, self.domain, component=component)
+        for plan, state in history.load_history(history_fn, self.domain, component):
             if self.init_state is None:
-                self.init_state = self.state
-            goal_from_pddl = Planner.Goal(importance=-1.0, goalString=problem.goal.pddl_str(), isInPlan=False)
-            self.slice_goals = [goal_from_pddl]
-            cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
-            
-            _task = task.Task(0, cp_problem)
-            _task.set_state(self.state.state)
-            actions = []
-            actions_status = {}
-            for l in plan_str:
-                action, status = extract_action(l)
-                actions_status[action] = status
-                if action == "init" or action == "goal":
-                    continue
-                actions.append(action)
-                
-            plan = plan_postprocess.make_po_plan(list(enumerate(actions)), _task)
-            for n in plan.nodes_iter():
-                key = "%s %s" % (n.action.name, " ".join(a.name for a in n.full_args))
-                n.status = actions_status[key.strip()]
+                self.init_state = state
+            self.state = state
+            self.slice_goals = state.goals
+                                                
             self.plan_history.append(plan)
-            self.plan_state_history.append((plan, self.state))
+            self.plan_state_history.append((plan, state))
 
     def wait_co(self, cofn, timeout):
         self.waiting_cofn = cofn
@@ -285,6 +249,7 @@ class CASTTask(object):
     def wait_update(self):
         if self.waiting_cofn is not None:
             return self.wait_co_update()
+        log.debug("Task %d is listening for updates but no handler registered. Returning.", self.id)
         # assert self.wait_update_callback is not None
         # # store the old handlers and restore if the update wasn't handled
         # # we do it this way because the update handler (if successful) may
@@ -302,6 +267,7 @@ class CASTTask(object):
     def wait_timeout(self):
         if self.waiting_cofn is not None:
             return self.wait_co_timeout()
+        log.debug("Task %d timed out but no handler registered. Returning.", self.id)
         # if self.wait_timeout_callback is None:
         #     log.debug("no timeout handler installed")
         #     return
@@ -346,6 +312,11 @@ class CASTTask(object):
                     f.write(s)
                     f.write("\n")
             f.write("END_PLAN\n")
+            for s in self.output_poplan(plan):
+                f.write(s)
+                f.write("\n")
+            f.write("END_POPLAN\n")
+                
         f.close()
 
     @coroutine
@@ -563,7 +534,7 @@ class CASTTask(object):
         for i, p in enumerate(_plans):
             if not isinstance(p, plans.MAPLPlan):
                 continue
-            G = p.to_dot() 
+            G = p.to_dot()
             G.layout(prog='dot')
             G.draw("plan%d.pdf" % i)
             
@@ -606,7 +577,12 @@ class CASTTask(object):
             for pred, svar, val, type in get_incoming_links(n):
                 svar = mapped_svar(svar)
                 val = virtual_mappings.get(val, val)
-                new_p = get_node(pred)
+                # if p.action.name == "init":
+                #     print p, p in init_dict, id(p)
+                if False:#pred in init_dict:
+                    new_p = init_dict[pred] #What about mapping???
+                else:
+                    new_p = get_node(pred)
                 # print "    ", pred, svar, val, type
                 if new_p == plan.init_node and svar in written and not n.is_virtual():
                     real_p, expected_val = written[svar]
@@ -619,9 +595,10 @@ class CASTTask(object):
                         type = "unexpected"
                         # plan.add_edge(real_p, new_n, svar=svar, val=val, type = "unexpected")
                 if not has_link(plan, new_p, new_n, svar, val, type):
-                    # print "new link:", new_p, new_n
+                    print "   new link:", new_p, new_n, " (%s = %s)" % (svar, val)
                     plan.add_edge(new_p, new_n, svar=svar, val=val, type=type)
 
+        init_dict = {}
         used_objects = set()
         prev_init_node = None
         conflicting_svars = defaultdict(set)
@@ -631,13 +608,15 @@ class CASTTask(object):
             n.time = i
             i += 1
             mapped_n = mapped_node(n)
-            # print "===", n
+            print "===", n
             if n.is_virtual() or n.action.name == "goal":
                 new_n =  get_node(mapped_n)
                 prev_was_init = False
             elif n.action.name == "init" and prev_init_node is None:
                 new_n =  get_node(mapped_n)
                 prev_init_node = new_n
+                init_dict[n] = new_n
+                print "insert init", id(n)
                 prev_was_init = True
             elif n.action.name == "init":
                 if prev_was_init:
@@ -659,11 +638,13 @@ class CASTTask(object):
                         assert eff.value != expected_val
                         if not real_p.action.name.startswith("new_facts"):
                             plan.add_edge(real_p, new_n, svar=eff.svar, val=eff.value, type="unexpected")
-                            # print "unexpected link:", real_p, new_n
+                            print "unexpected link:", real_p, new_n
                             new_n.preconds.add(eff)
                             conflicting_svars[(real_p, eff.svar)].add(eff.svar)
                 plan.add_edge(prev_init_node, new_n, type="order")
-                # print "init link:", prev_init_node, new_n
+                print "init link:", prev_init_node, new_n
+                init_dict[n] = new_n
+                print "insert init", id(n)
                 current_state = new_st
                 prev_was_init = True
                 prev_init_node = new_n
@@ -675,7 +656,7 @@ class CASTTask(object):
                 prev_was_init = False
                 
             if new_n not in plan:
-                # print "add:", new_n
+                print "add:", new_n
                 plan.add_node(new_n)
 
             add_links(n, new_n)
@@ -693,7 +674,7 @@ class CASTTask(object):
             i += 1
             new_n = get_node(mapped_node(n))
             if new_n in plan:
-                # print "trying to reuse node:", new_n
+                print "trying to reuse node:", new_n
                 # avoid cycles caused by duplicate actions
                 successors = plan.succ_closure(new_n)
                 # print "successors:", map(str, successors)
@@ -704,16 +685,18 @@ class CASTTask(object):
                         # print "cycle!"
                         new_n = mapped_node(n)
                         #reusing node would cause cycle, add new node
+                        print "cycle, add unexec:", new_n
                         plan.add_node(new_n)
                         break
             else:
+                print "add unexec:", new_n
                 plan.add_node(new_n)
 
             add_links(n, new_n)
 
-        # G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
-        # G.layout(prog='dot')
-        # G.draw("plan.pdf")
+        G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
+        G.layout(prog='dot')
+        G.draw("plan.pdf")
 
         redundant = set()
         r_plan = plan.topological_sort()
@@ -734,17 +717,17 @@ class CASTTask(object):
 
         def node_decorator(node):
             if node.action.name.startswith("new_facts"):
-                return {"label" : "Observations",
+                return {#"label" : "Observations",
                         "fillcolor" : "grey80"}
-            if node.status == plans.ActionStatusEnum.EXECUTABLE and node.action.name != 'goal' and node not in final_plan_actions:
-                return {"ignore" : True}
+            # if node.status == plans.ActionStatusEnum.EXECUTABLE and node.action.name != 'goal' and node not in final_plan_actions:
+            #     return {"ignore" : True}
             if node.is_virtual():
                 return {"fillcolor" : "darkslategray2"}
 
         def edge_decorator(n1,n2, data):
             if data['type'] == 'order':
                 return {'style' : 'invis', 'label' : ''}
-            if data['svar'].function.name in ('started',):
+            if data['svar'].function.name in ('started', 'done'):
                 return {'style' : 'invis', 'label' : ''}
             cval = conflicting_svars.get((n1, data['svar']), None)
             if cval is not None and cval != data['val'] :
@@ -767,12 +750,14 @@ class CASTTask(object):
             
     def handle_task_failure(self):
         plan = self.cp_task.get_plan()
-        self.plan_history.append(plan)
-        self.plan_state_history.append((plan, self.plan_state))
-        self.write_history()
+        if not self.failure_simulated:
+            self.plan_history.append(plan)
+            self.plan_state_history.append((plan, self.plan_state))
+            self.write_history()
         
-        self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
-        time.sleep(5)
+            self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
+            time.sleep(5)
+            
         merged_plan, init_state, final_state = self.merge_plans(self.plan_history)
         # last_plan = self.plan_history[-1].topological_sort()
         # last_plan = merged_plan.topological_sort()
@@ -782,8 +767,14 @@ class CASTTask(object):
         #         for f in a.effects:
         #             endstate.set(f)
         if self.expl_rules_fn and len(merged_plan) > 2:
-            explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
+            result = explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
+            facts = reduce(lambda x,y:x|y.effects, result, set())
+            self.facts_to_belief(facts)
 
+    def facts_to_belief(self, facts):
+        print "\nexplanations:"
+        for f in facts:
+            print f
 
     def process_cp_plan(self):
         plan = self.get_plan()
@@ -858,7 +849,7 @@ class CASTTask(object):
             exec_plan.append(pnode)
             
         plan.execution_position = first_action
-        self.dispatch_actions(exec_plan)
+        self.dispatch_actions(exec_plan, plan)
 
     def action_executed_dt(self, slice_plan):
         assert self.internal_state == TaskStateEnum.WAITING_FOR_ACTION
@@ -1107,7 +1098,6 @@ class CASTTask(object):
         log.debug("raw action: (%s %s)", action.name, " ".join(action.arguments))
         args = [self.cp_task.mapltask[a] for a in action.arguments]
         pddl_action = self.dt_task.dtdomain.get_action(action.name)
-
         log.debug("got action from DT: (%s %s)", action.name, " ".join(action.arguments))
         #log.debug("state is: %s", self.cp_task.get_state())
 
@@ -1143,12 +1133,16 @@ class CASTTask(object):
         self.dt_task.dt_plan.append(pnode)
         self.dispatch_actions([pnode])
 
-    def dispatch_actions(self, nodes):
-        outplan = []
-        for pnode in nodes:
+    def dispatch_actions(self, nodes, plan=None):
+        actions = {}
+        # create CAST actions for each plan node
+        all_nodes = plan.nodes_iter() if plan else nodes
+        for pnode in all_nodes:
             uargs = [self.state.featvalue_from_object(a) for a in pnode.args]
+            full_uargs = [self.state.featvalue_from_object(a) for a in pnode.full_args]
             fullname = "%s %s" % (pnode.action.name, " ".join(fval_to_str(a) for a in uargs))
-            outplan.append(Planner.Action(self.id, pnode.action.name, uargs, fullname, float(pnode.cost), Planner.Completion.PENDING))
+            actions[pnode] = Planner.Action(self.id, pnode.action.name, uargs, full_uargs, fullname, float(pnode.cost), Planner.Completion.PENDING)
+        outplan = [actions[n] for n in nodes]
 
         if outplan:
             log.info("First action: %s == %s", str(nodes[0]), outplan[0].fullName)
@@ -1157,9 +1151,63 @@ class CASTTask(object):
         else:
             log.info("Plan is empty")
             self.update_status(TaskStateEnum.COMPLETED)
-        
+
         self.component.deliver_plan(self, outplan)
-        
+
+    def output_poplan(self, plan, cast_actions=None):
+        if not plan:
+            yield "actions:"
+            return
+
+        ordered_nodes = list(plan.topological_sort())
+        indexes = dict((n,i) for i,n in enumerate(ordered_nodes))
+        po_actions = []
+        for pnode in ordered_nodes:
+            uargs = [self.state.featvalue_from_object(a) for a in pnode.args]
+            full_uargs = [self.state.featvalue_from_object(a) for a in pnode.full_args]
+            fullname = "%s %s" % (pnode.action.name, " ".join(fval_to_str(a) for a in uargs))
+            po_actions.append(Planner.Action(self.id, pnode.action.name, uargs, full_uargs, fullname, float(pnode.cost), Planner.Completion.PENDING))
+
+        #Build partially ordered plan in CAST representation
+        po_links = []
+        for n1,n2, data in plan.edges_iter(data=True):
+            if data['type'] == 'depends':
+                typ = Planner.LinkType.DEPENDS
+            elif data['type'] == 'prevent_threat':
+                typ = Planner.LinkType.THREATENS
+            else:
+                continue
+
+            svar = data['svar']
+            svar_args = [self.state.featvalue_from_object(a) for a in svar.args]
+            svar_modal_args = [self.state.featvalue_from_object(a) for a in svar.modal_args]
+            value = self.state.featvalue_from_object(data['val'])
+            fact = Planner.Fact(svar.function.name, svar_args, svar.modality.name if svar.modality else "", svar_modal_args, value)
+            link = Planner.Link(typ, indexes[n1], indexes[n2], fact)
+            po_links.append(link)
+
+        po_plan = Planner.POPlan(self.id, po_actions, po_links)
+            
+        def print_featvalue(fv):
+            if isinstance(fv, logicalcontent.BooleanFormula):
+                return "true"
+            elif isinstance(fv, logicalcontent.FloatFormula):
+                return str(fv.val)
+            elif isinstance(fv, logicalcontent.PointerFormula):
+                return "%s@%s" % (fv.pointer.id, fv.pointer.subarchitecture)
+            else:
+                return str(fv.prop)
+            
+        yield "actions:"
+        for i, a in enumerate(po_plan.actions):
+            yield "%d: %s %s %s" % (i, a.status, a.name, " ".join(print_featvalue(arg) for arg in a.allArguments))
+        yield "links:"
+        for link in po_plan.links:
+            fact = "%s %s" % (link.reason.name, " ".join(map(print_featvalue, link.reason.arguments)))
+            if link.reason.modality:
+                fact = "%s MODALITY: %s %s" % (fact, link.reason.modality, " ".join(map(print_featvalue, link.reason.modalArguments)))
+            fact = "%s VALUE: %s" % (fact, print_featvalue(link.reason.value))
+            yield "%d %d %s %s" % (link.src, link.dest, link.type, fact)
         
     def action_feedback(self, finished_actions, failed_actions):
         diffstate = compute_state_updates(self.cp_task.get_state(), finished_actions, failed_actions)
