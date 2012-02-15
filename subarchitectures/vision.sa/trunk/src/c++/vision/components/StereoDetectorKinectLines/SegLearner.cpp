@@ -395,7 +395,7 @@ void SegLearner::processImageNew()
 // for(unsigned i=0; i<surfaces.size(); i++)
 //   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
 
-  printf("planeFitter->postprocess: start\n");
+  printf("planeFitter->postprocess: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
   planeFitter->postprocessResults(postProcessIndices);
   printf("planeFitter->postprocess: end\n");
 
@@ -417,6 +417,9 @@ void SegLearner::processImageNew()
   modeling->getSurfaceModels(surfaces);
   modeling->getResults(pcl_model_types, pcl_model_indices, error);      // TODO Nur für Anzeige notwendig!
   if(deb) log("NURBS-Fitting end: size of surfaces: %u", surfaces.size());
+
+  /// Check if we have line-models in the point cloud
+  planeFitter->checkPCLines(surfaces, postProcessIndices);
 
 // for(unsigned i=0; i< pcl_model_types.size(); i++) {
 //   if(pcl_model_types[i] == pcl::SACMODEL_PLANE)
