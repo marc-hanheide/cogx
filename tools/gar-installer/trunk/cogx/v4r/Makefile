@@ -4,6 +4,7 @@ CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 MAINTAINER = ari
 
+# To be used with Jenkins
 ifneq ($(CASTV4RPASS),)
 SVNUSER=cogx --password $(CASTV4RPASS)
 endif
