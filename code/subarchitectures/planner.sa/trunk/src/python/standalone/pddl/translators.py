@@ -341,9 +341,14 @@ class PreferenceCompiler(Translator):
                 precond = help_lit.negate()
                 help_act = actions.Action(action_name, [], precond, None, p2.domain)
                 b = builder.Builder(help_act)
-                help_act.effect = b.effect("and", (pred,),
-                                           ("increase", ("virtual-cost",), cond.penalty),
-                                           ("increase", ("total-cost",), 0))
+                if 'deadlines' not in _problem.domain.requirements:
+                    help_act.effect = b.effect("and", (pred,),
+                                               ("increase", ("total-cost",), cond.penalty))
+
+                else:
+                    help_act.effect = b.effect("and", (pred,),
+                                               ("increase", ("virtual-cost",), cond.penalty),
+                                               ("increase", ("total-cost",), 0))
 
                 p2.domain.actions.append(help_act)
 
