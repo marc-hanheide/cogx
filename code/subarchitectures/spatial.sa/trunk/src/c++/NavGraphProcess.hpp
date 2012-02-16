@@ -16,6 +16,7 @@
 #define NavGraphProcess_hpp
 
 #include <string>
+#include <deque>
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
@@ -29,6 +30,7 @@
 #include <Navigation/InDoorOpeningDetector.hh>
 #include <Navigation/ScanMotionDetector.hh>
 #include <Transformation/Pose3D.hh>
+#include <SensorData/LaserScan2d.hh>
 
 // Foward declarations
 namespace Cure {
@@ -126,11 +128,18 @@ private:
   void writeGraphToWorkingMemory(bool forceWrite = false);
 
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+
   void newObjObs(const cast::cdl::WorkingMemoryChange &objID);
   void newVisualObject(const cast::cdl::WorkingMemoryChange & wmChange);
+  void newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
+  
+  // The above merely queue events; the methods below do the work
+  void processNewObjObs(const cast::cdl::WorkingMemoryChange &objID);
+  void processNewVisualObject(const cast::cdl::WorkingMemoryChange & wmChange);
+  void processNewDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
+  void processScan(Cure::LaserScan2d &cureScan);
 
   // Callback function for new door hypothesis
-  void newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
 
   void receiveOdometry(const Robotbase::Odometry &castOdom);
   void receiveScan2d(const Laser::Scan2d &castScan);
@@ -147,8 +156,16 @@ private:
   void loadGraphFromFile(const std::string &filename);
   void saveGraphToFile(const std::string &filename);
 
-  IceUtil::Mutex m_Mutex;
+  IceUtil::Mutex m_GraphMutex; //Protects m_Areas, m_cureNavGraph
   IceUtil::Mutex m_TOPPMutex;
+  IceUtil::Mutex m_eventQueueMutex;
+  IceUtil::Mutex m_scanQueueMutex;
+
+  enum GraphEventType {NEW_OBJ_OBS, NEW_VISUAL_OBJECT, NEW_DOOR_HYPTOHESIS};
+  std::deque<std::pair<GraphEventType, const cast::cdl::WorkingMemoryChange &> >
+    m_graphEventQueue;
+
+  std::deque<Cure::LaserScan2d> m_scanQueue;
 
   Cure::NavGraph m_cureNavGraph;
   std::string m_cureNavGraphFile;

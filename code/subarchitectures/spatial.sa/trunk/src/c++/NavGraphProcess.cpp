@@ -273,18 +273,21 @@ void NavGraphProcess::configure(const map<string,string>& _config)
 double  NavGraphProcess::NavGraphServer::getPathLength(double xS, double yS, double aS, double xG, double yG, double aG, const Ice::Current &_context){
   std::list<Cure::NavGraphNode> path;
   double d;
-  m_pOwner->lockComponent();
+
+  IceUtil::Mutex::Lock lock(m_pOwner->m_GraphMutex);
+
   m_pOwner->m_cureNavGraph.findPath(xS,yS,aS,xG,yG,aG, path, &d);
-  m_pOwner->unlockComponent();
   return d;
 }
 
 int NavGraphProcess::NavGraphServer::getAreaId(double x, double y, double a, double maxDist, const Ice::Current &_context){
   int id;
-  m_pOwner->lockComponent();
- Cure::NavGraphNode* node;
+
+  IceUtil::Mutex::Lock lock(m_pOwner->m_GraphMutex);
+
+  Cure::NavGraphNode* node;
   node = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist); 
-  m_pOwner->unlockComponent();
+
   if (node != NULL)
     id = node->getAreaId();
   else
@@ -295,10 +298,12 @@ int NavGraphProcess::NavGraphServer::getAreaId(double x, double y, double a, dou
 
 int NavGraphProcess::NavGraphServer::getClosestNodeId(double x, double y, double a, double maxDist, const Ice::Current &_context){
   int id;
-  m_pOwner->lockComponent();
+
+  IceUtil::Mutex::Lock lock(m_pOwner->m_GraphMutex);
+
   Cure::NavGraphNode* node;
   node = m_pOwner->m_cureNavGraph.getClosestNode(x,y,a,maxDist); 
-  m_pOwner->unlockComponent();
+
   if (node != NULL)
     id = node->getId();
   else
@@ -308,6 +313,8 @@ int NavGraphProcess::NavGraphServer::getClosestNodeId(double x, double y, double
 }
 void NavGraphProcess::loadGraphFromFile(const std::string &filename)
 {
+  IceUtil::Mutex::Lock lock(m_GraphMutex);
+
   // Load the cure part of the file
   log("Loading file %s", filename.c_str());
   //m_cureNavGraph.loadGraph(filename);
@@ -1146,6 +1153,50 @@ void NavGraphProcess::runComponent()
 {
   setupPushScan2d(*this);
   setupPushOdometry(*this);
+
+  while (isRunning()) {
+
+    m_eventQueueMutex.lock();
+
+    while(!m_graphEventQueue.empty()) {
+      GraphEventType type = m_graphEventQueue.front().first;
+      const cdl::WorkingMemoryChange &wmc = m_graphEventQueue.front().second;
+      m_graphEventQueue.pop_front();
+      
+      m_eventQueueMutex.unlock();
+
+      switch(type) {
+	case NEW_OBJ_OBS:
+	  processNewObjObs(wmc);
+	  break;
+	case NEW_VISUAL_OBJECT:
+	  processNewVisualObject(wmc);
+	  break;
+	case NEW_DOOR_HYPTOHESIS:
+	  processNewDoorHypothesis(wmc);
+	  break;
+      }
+
+      m_eventQueueMutex.lock();
+    }
+    m_eventQueueMutex.unlock();
+
+    m_scanQueueMutex.lock();
+
+    while(!m_scanQueue.empty()) {
+      Cure::LaserScan2d scan = m_scanQueue.front();
+      m_scanQueue.pop_front();
+
+      m_scanQueueMutex.unlock();
+
+      processScan(scan);
+
+      m_scanQueueMutex.lock();
+    }
+    m_scanQueueMutex.unlock();
+
+    sleepComponent(50); //Wait a bit for more events
+  }
 }
 
 void NavGraphProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
@@ -1162,10 +1213,9 @@ void NavGraphProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
 
-  m_TOPPMutex.lock();
+  IceUtil::Mutex::Lock lock(m_TOPPMutex);
   m_LastOdom = cureOdom;
   m_TOPP.addOdometry(cureOdom);
-  m_TOPPMutex.unlock();
 }
 
 void NavGraphProcess::newRobotPose(const cdl::WorkingMemoryChange &objID) 
@@ -1189,13 +1239,22 @@ void NavGraphProcess::newRobotPose(const cdl::WorkingMemoryChange &objID)
         cp.getX(), cp.getY(), cp.getTheta(), cp.getTime().getDouble());
 
   m_LastRobotPose = cp;  
-  m_TOPPMutex.lock();
+
+  IceUtil::Mutex::Lock lock(m_TOPPMutex);
+  
   m_TOPP.defineTransform(cp);
-  m_TOPPMutex.unlock();
 }
 
 
 void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmChange)
+{
+  IceUtil::Mutex::Lock lock(m_GraphMutex);
+
+  m_graphEventQueue.push_back(pair<GraphEventType, const cast::cdl::WorkingMemoryChange &>
+      (NEW_VISUAL_OBJECT, wmChange));
+}
+
+void NavGraphProcess::processNewVisualObject(const cast::cdl::WorkingMemoryChange & wmChange)
 {
 	VisionData::VisualObjectPtr visualObjectPtr = getMemoryEntry<VisionData::VisualObject>(wmChange.address);
 
@@ -1211,7 +1270,8 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
     // pose when the object was observed
     Cure::Pose3D rp = m_LastRobotPose;
 
-    m_TOPPMutex.lock();
+    {
+    IceUtil::Mutex::Lock lock(m_TOPPMutex);
     if (!m_TOPP.isTransformDefined())
     {
     	log("TOPP transformation not defined yet -> GUESSING pose more or less");
@@ -1219,7 +1279,7 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
     {
     	m_TOPP.getPoseAtTime(t, rp);
     }
-    m_TOPPMutex.unlock();
+    }
     rp.setTime(t);
 
     // Pose of the camera in world frame at the time of the observation
@@ -1255,16 +1315,27 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
     long areaId = 0;
     if (m_TopRobPos) areaId = m_TopRobPos->areaId;
 
-    addObject(objPw.getX(), objPw.getY(), objPw.getZ(),
-    		rp.getX(), rp.getY(),
-    		areaId,
-    		category, objId, probability);
+    {
+      IceUtil::Mutex::Lock lock(m_GraphMutex);
 
-    writeGraphToWorkingMemory();
+      addObject(objPw.getX(), objPw.getY(), objPw.getZ(),
+	  rp.getX(), rp.getY(),
+	  areaId,
+	  category, objId, probability);
+
+      writeGraphToWorkingMemory();
+    }
 }
 
-
 void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID) 
+{
+  IceUtil::Mutex::Lock lock(m_GraphMutex);
+
+  m_graphEventQueue.push_back(pair<GraphEventType, const cast::cdl::WorkingMemoryChange &> 
+      (NEW_OBJ_OBS, objID));
+}
+
+void NavGraphProcess::processNewObjObs(const cdl::WorkingMemoryChange &objID) 
 {
   shared_ptr<CASTData<NavData::ObjObs> > oobj =
     getWorkingMemoryEntry<NavData::ObjObs>(objID.address);
@@ -1277,13 +1348,17 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
   // pose when the object was observed
   Cure::Pose3D rp = m_LastRobotPose;
 
-  m_TOPPMutex.lock();
+  {
+  IceUtil::Mutex::Lock lock(m_TOPPMutex);
+
   if (!m_TOPP.isTransformDefined()) {
     log("TOPP transformation not defined yet -> GUESSING pose more or less");
   } else {
     m_TOPP.getPoseAtTime(t, rp);
   }
-  m_TOPPMutex.unlock();
+
+  }
+
   rp.setTime(t);
   
   // Pose of the camera in world frame at the time of the observation
@@ -1318,12 +1393,15 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
   long areaId = 0;
   if (m_TopRobPos) areaId = m_TopRobPos->areaId;
   
-  addObject(objPw.getX(), objPw.getY(), objPw.getZ(), 
-            rp.getX(), rp.getY(),
-            areaId,
-            oobj->getData()->category, objId, 1.0);
+  {
+    IceUtil::Mutex::Lock lock(m_GraphMutex);
+    addObject(objPw.getX(), objPw.getY(), objPw.getZ(), 
+	rp.getX(), rp.getY(),
+	areaId,
+	oobj->getData()->category, objId, 1.0);
 
-  writeGraphToWorkingMemory();
+    writeGraphToWorkingMemory();
+  }
 }
 
 void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
@@ -1336,9 +1414,15 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
     log("Scan not ready yet, time still 0");
     return;
   }
-
   debug("Got scan with t=%.6f", cureScan.getTime().getDouble());
 
+  IceUtil::Mutex::Lock lock(m_scanQueueMutex);
+
+  m_scanQueue.push_back(cureScan);
+}
+
+void NavGraphProcess::processScan(Cure::LaserScan2d &cureScan)
+{
   if (m_RemoveMotionBeams) {
 
     if (m_MotionDetector == 0) {
@@ -1373,9 +1457,11 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 
   // Get the current robot position
   Cure::Pose3D cp;
-  m_TOPPMutex.lock();
-  bool status = m_TOPP.getPoseAtTime(cureScan.getTime(), cp) != 0;
-  m_TOPPMutex.unlock();
+  bool status; 
+  {
+    IceUtil::Mutex::Lock lock(m_TOPPMutex);
+    status = m_TOPP.getPoseAtTime(cureScan.getTime(), cp) != 0;
+  }
 
   if (status) {
     debug("Failed to get robot pose at the time of the scan, cannot add nodes");
@@ -1389,7 +1475,9 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
   debug("Check if node should be placed at x=%.3f y=%.3f theta=%.3f (t=%.6f)",
         cp.getX(), cp.getY(), cp.getTheta(), cp.getTime().getDouble());
   
-  m_Mutex.lock();
+  {
+  IceUtil::Mutex::Lock lock(m_GraphMutex);
+
   int ret=m_cureNavGraph.maybeAddNewNodeAt(cp.getX(),cp.getY(),cp.getTheta());
 
   debug("maybeAddNewNodeAt returned %d", ret);
@@ -1411,13 +1499,16 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
     checkForNodeChanges();    
 
   }
-  m_Mutex.unlock();
+  }
 
   if (m_MotionDetector) {
     Cure::Pose3D scanOdomPose;
-    m_TOPPMutex.lock();
-    bool status = m_TOPP.getOdomAtTime(cureScan.getTime(), scanOdomPose) != 0;
-    m_TOPPMutex.unlock();
+    bool status;
+    {
+      IceUtil::Mutex::Lock lock(m_TOPPMutex);
+      status = m_TOPP.getOdomAtTime(cureScan.getTime(), scanOdomPose) != 0;
+    }
+
     if (status) {
       debug("Failed to get odom pose at time of scan");
       m_MotionDetector->m_Movements.clear();
@@ -1509,7 +1600,8 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 	      x,y,dir*180/M_PI,lpW.getX(),lpW.getY(),lpW.getTheta()*180.0/M_PI,m_DoorDetector.m_RangeR,m_DoorDetector.m_RangeL);
 
 
-	  m_Mutex.lock();
+	  {
+	  IceUtil::Mutex::Lock lock(m_GraphMutex);
 	  //long lastid = m_cureNavGraph.m_Nodes.back()->getId();
 	  unsigned long lastsize = m_cureNavGraph.m_Nodes.size();
 	  m_cureNavGraph.addGatewayNode(x,y,dir,
@@ -1529,7 +1621,7 @@ void NavGraphProcess::receiveScan2d(const Laser::Scan2d &castScan)
 		true); // ask for the area class!!
 	    writeGraphToWorkingMemory();
 	  } 
-	  m_Mutex.unlock();
+	  }
 
 	  //if (processNewCureNavGraphNode(true)) checkForNodeChanges();     
 
@@ -1647,6 +1739,15 @@ void NavGraphProcess::checkForNodeChanges()
 void 
 NavGraphProcess::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 {
+  IceUtil::Mutex::Lock lock(m_GraphMutex);
+
+  m_graphEventQueue.push_back(pair<GraphEventType, const cdl::WorkingMemoryChange &> 
+      (NEW_DOOR_HYPTOHESIS, objID));
+}
+
+void 
+NavGraphProcess::processNewDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
+{
   try {
     FrontierInterface::DoorHypothesisPtr doorHyp =
       getMemoryEntry<FrontierInterface::DoorHypothesis>(objID.address);
@@ -1655,6 +1756,8 @@ NavGraphProcess::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
       double doorX = doorHyp->x;
       double doorY = doorHyp->y;
       log("Adding door hypothesis at (%f, %f)", doorX, doorY);
+
+      IceUtil::Mutex::Lock lock(m_GraphMutex);
 
       m_doorHypPositions.push_back(pair<double, double>(doorX, doorY));
     }
