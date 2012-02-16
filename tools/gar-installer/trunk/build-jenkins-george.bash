@@ -7,6 +7,7 @@ export http_proxy
 export https_proxy
 export SVNUSER=cogx
 env
+export CASTV4RPASS=cogxxgoc
 
 /usr/bin/make -C $dname clean
 /usr/bin/make -C $dname george SVNUSER=cogx
