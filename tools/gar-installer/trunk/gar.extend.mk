@@ -80,7 +80,7 @@ svnhttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	@#env
 	(cd $< && \
 	 rm -rf * && \
-	 echo "exporting from SVN: svn export $(SVNUSERARG) $(SVN_REVISION) https://$(*D)" && \
+	 echo "exporting from SVN: svn export $(SVN_REVISION) https://$(*D)" && \
 	 svn export $(SVNUSERARG) $(SVN_REVISION) https://$(*D) && \
 	 mv * $(GARNAME)-$(GARVERSION)\
 	)
@@ -89,7 +89,7 @@ svnhttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 svnhttp//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	@#env
 	(cd $< && \
-	 echo "exporting from SVN: svn export $(SVNUSERARG) $(SVN_REVISION) http://$(*D)" && \
+	 echo "exporting from SVN: svn export $(SVN_REVISION) http://$(*D)" && \
 	 svn export  $(SVNUSERARG) $(SVN_REVISION) http://$(*D) && \
 	 mv * $(GARNAME)-$(GARVERSION)\
 	)
