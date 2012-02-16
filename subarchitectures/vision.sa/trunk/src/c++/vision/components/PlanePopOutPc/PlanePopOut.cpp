@@ -44,7 +44,7 @@ extern "C"
 
 // image size (i.e. width) of the point cloud and colour image to obtain from the
 // poin cloud server
-#define PPO_POINTCLOUD_WIdTH 320
+#define PPO_POINTCLOUD_WIDTH 320
 #define PPO_IMAGE_WIDTH      640
 
 // minimum number of points in a point cloud to do any processing
@@ -988,14 +988,14 @@ void PlanePopOut::DisplayInTG()
 void PlanePopOut::GetImageData()
 {
     // TODO get from cast-file!
-    int pointCloudWidth = PPO_POINTCLOUD_WIdTH;
-    int imageWidth = PPO_IMAGE_WIDTH;
+    int pointCloudWidth = PPO_POINTCLOUD_WIDTH;
 
     points.clear();
     getCompletePoints(true, pointCloudWidth, points);
 
 #ifdef FEAT_VISUALIZATION
     if (m_bSendImage) {
+        int imageWidth = PPO_IMAGE_WIDTH;
 	Video::Image image;
 	// get rectified image from point cloud server
 	getRectImage(camId, imageWidth, image);
@@ -1044,7 +1044,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 
 	// first convert to PCL format, for PCL based plane and SOI detection
 	// TODO get from cast-file!
-	int pointCloudWidth = PPO_POINTCLOUD_WIdTH;
+	int pointCloudWidth = PPO_POINTCLOUD_WIDTH;
 	int pointCloudHeight = 240;
 	pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 	ConvertSurfacePoints2PCLCloud(points, *pcl_cloud, pointCloudWidth, pointCloudHeight);
