@@ -103,10 +103,7 @@ private final Class<Via> m_viaCls;
 	@Override
 	public To create(WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
 			From from) throws IncompatibleAssignmentException {
-		logger.debug("Error! A new belif cannot be created out of verified belief");
-		throw (new IncompatibleAssignmentException("cannot create new "
-					+ m_toCls ));
-/*					
+				
 		if (beliefTypes != null)
 			if (!beliefTypes.contains(from.type)) {
 				return null;
@@ -124,7 +121,7 @@ private final Class<Via> m_viaCls;
 			throw (new IncompatibleAssignmentException("cannot create new "
 					+ m_toCls + " due to incompatible data types"));
 		}
-*/
+
 	}
 
 	/*
@@ -327,7 +324,6 @@ private final Class<Via> m_viaCls;
 		CASTIndependentFormulaDistributionsBelief<Via> viaBelief = createViaBeliefProxy(via);
 		CASTIndependentFormulaDistributionsBelief<From> fromBelief = createFromBeliefProxy(from);
 
-//		fillBeliefs(wmc, fromBelief, toBelief);
 		mergeBeliefs(wmc, fromBelief, viaBelief, toBelief);
 	}
 	
