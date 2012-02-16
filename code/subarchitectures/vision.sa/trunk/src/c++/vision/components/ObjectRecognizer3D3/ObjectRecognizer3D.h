@@ -24,6 +24,7 @@
 #include <v4r/CModelRecogniser/RecogniserThread.hh>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
+#include <PointCloudClient.h>
 #include <VisionData.hpp>
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -43,27 +44,25 @@ private:
   int camId;
   string videoServerName;
   Video::VideoInterfacePrx videoServer;
-	map<string, string> modelFiles;
+  map<string, string> modelFiles;
   map<string, string> objectWMIds;
-
   vector<cv::Ptr<P::CModel> > models;
   cv::Ptr<P::RecogniserThread> recogniser;
 
 #ifdef FEAT_VISUALIZATION
   class CDisplayClient: public cogx::display::CDisplayClient
-	{
-		ObjectRecognizer3D* pRec;
-	public:
-		CDisplayClient() { pRec = NULL; }
-		void setClientData(ObjectRecognizer3D* _pRec) { pRec = _pRec; }
+  {
+    ObjectRecognizer3D* pRec;
+  public:
+    CDisplayClient() { pRec = NULL; }
+    void setClientData(ObjectRecognizer3D* _pRec) { pRec = _pRec; }
     void handleEvent(const Visualization::TEvent &event);
-	};
-	CDisplayClient m_display;
+  };
+CDisplayClient m_display;
 #endif
 
-//   void initRecognizer();
   void recognize(vector<string> &labels, cv::Mat &colImg,
-    Video::CameraParameters &camPars, cv::Mat mask,
+    Video::CameraParameters &camPars, cv::Mat &mask,
     vector<P::ObjectLocation> &objects);
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveRecognitionCommand(const cdl::WorkingMemoryChange & _wmc);
@@ -79,10 +78,10 @@ protected:
   virtual void start();
 
 public:
-	ObjectRecognizer3D();
+  ObjectRecognizer3D();
   virtual ~ObjectRecognizer3D();
 
-  virtual void receiveImages(const vector<Video::Image>& images);
+  virtual void receiveImages(const vector<Video::Image>& images) {}
 };
 
 }
