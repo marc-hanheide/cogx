@@ -5,7 +5,7 @@ dname=`dirname $0`
 
 export http_proxy
 export https_proxy
-export SVNUSER=cogx
+#export SVNUSER=cogx
 export CASTV4RPASS=cogxxgoc
 env
 
