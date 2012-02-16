@@ -230,7 +230,7 @@ public class VisualObjectMotiveGenerator extends
 		if (!_belief.getContent().containsKey(_featureLearntPredicate)) {
 			log("ProtoObject belief is not linked to VisualObject, so generating motive.");
 			result = newLearnObjectFeatureMotive(_wma);
-			result.goal = new Goal(100f, conjoinGoalStrings(new String[] {
+			result.goal = new Goal(100f, -1, conjoinGoalStrings(new String[] {
 					beliefPredicateGoal(_featureLearntPredicate, _belief),
 					getAdditionalGoals() }), false);
 			result.feature = _featureKey;

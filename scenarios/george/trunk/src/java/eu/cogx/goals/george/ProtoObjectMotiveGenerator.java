@@ -59,7 +59,7 @@ public class ProtoObjectMotiveGenerator extends
 
 			// (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v))
 
-			result.goal = new Goal(100f,
+			result.goal = new Goal(100f, -1,
 					"(exists (?v - VisualObject) (= (po-is-associated-with '"
 							+ belief.getId() + "') ?v))", false);
 
