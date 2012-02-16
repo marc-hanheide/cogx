@@ -4,6 +4,10 @@ CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 MAINTAINER = ari
 
+ifneq($(CASTV4RPASS),)
+SVNUSER=cogx --password $(CASTV4RPASS)
+endif
+
 
 MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
 
