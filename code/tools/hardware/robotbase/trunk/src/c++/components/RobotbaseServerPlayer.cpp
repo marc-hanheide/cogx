@@ -356,7 +356,8 @@ RobotbaseServerPlayer::RobotbaseServerI::registerOdometryPushClient
   println("registerScan2dPushClient");
 
   OdometryClient client;
-  client.prx = c;
+  // created this proxy as oneway allowing async data dispatch
+  client.prx = c->ice_collocationOptimized(false)->ice_oneway();
   client.interval = desiredInterval;
 
   svr->lockComponent();
