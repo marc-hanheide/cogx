@@ -301,7 +301,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 */
 	private void handleNewObservation1(final WorkingMemoryChange ev)
 			throws CASTException, IncompatibleAssignmentException {
-		log("Got a new observation of type " + ev.type);
+		component.log("Got a new observation of type " + ev.type);
 		final WorkingMemoryAddress matchingWMA;
 		
 		final Src1 from = component.getMemoryEntry(ev.address, srcType1);
@@ -315,25 +315,25 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 			public void run() {
 				try {
 					if (matchingWMA == null) {
-						log("found no match for observation "
+						component.log("found no match for observation "
 								+ CASTUtils.toString(ev.address));
 						String id = component.newDataID();
 
 						WorkingMemoryAddress toWMA = new WorkingMemoryAddress(
 								id, createInSA);
-						log("creating new tracked belief with "
+						component.log("creating new tracked belief with "
 								+ CASTUtils.toString(toWMA));
 
 						Dest to = matcherFunction1.create(toWMA, ev, from);
 						if (to != null) {
-							log("have created new belief with type=" + to.type
+							component.log("have created new belief with type=" + to.type
 									+ " (" + toWMA.id + ")");
 							matcherFunction1.update(ev, from, to);
 							manageHistory(ev, from, to);
-							log("have filled with values:" + to.type + " ("
+							component.log("have filled with values:" + to.type + " ("
 									+ toWMA.id + "), ready to write to WM now.");
 							component.addToWorkingMemory(toWMA, to);
-							log("written to WM, insert into map now:" + to.type
+							component.log("written to WM, insert into map now:" + to.type
 									+ " (" + toWMA.id + ")");
 							
 							srcDestMap.put(ev.address, toWMA);
@@ -349,7 +349,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 						try {
 
 							try {
-								log("found match "
+								component.log("found match "
 										+ CASTUtils.toString(matchingWMA)
 										+ " for observation "
 										+ CASTUtils.toString(ev.address));
@@ -360,7 +360,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 								// WorkingMemoryPermissions.LOCKEDODR);
 								Dest to = component.getMemoryEntry(matchingWMA,
 										destType);
-								log("updating belief "
+								component.log("updating belief "
 										+ CASTUtils.toString(matchingWMA));
 								matcherFunction1.update(ev, from, to);
 								manageHistory(ev, from, to);
@@ -623,7 +623,8 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 	 */
 	@Override
 	public void run() {
-		log("register listeners for type " + srcType1.getSimpleName());
+		component.log("WMMerger running2 ");
+		component.log("register listeners for type " + srcType1.getSimpleName());
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				srcType1, WorkingMemoryOperation.ADD), entryQueue);
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
@@ -631,7 +632,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				srcType1, WorkingMemoryOperation.DELETE), entryQueue);
 		
-		log("register listeners for type " + srcType2.getSimpleName());			
+		component.log("register listeners for type " + srcType2.getSimpleName());			
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				srcType2, WorkingMemoryOperation.ADD), entryQueue);
 		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(
@@ -656,15 +657,19 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 					final WorkingMemoryChange ev = entryQueue.take();
 					switch (ev.operation) {
 					case ADD: {
-						if(ev.type == srcType1.getSimpleName())
+						component.log("new WM entry of type " + srcType1.getSimpleName());	
+						String t=srcType1.getSimpleName();
+						if(t.equals(ev.type.substring(ev.type.length()-t.length()))) {
 							handleNewObservation1(ev);
-						else if(ev.type == srcType2.getSimpleName())
+						else
 							handleNewObservation2(ev);
 							
 						break;
 					}
-					case OVERWRITE: {
-						if(ev.type == srcType1.getSimpleName()) {
+					case OVERWRITE: {				
+						component.log("overwritten WM entry of type " + t);
+						String t=srcType1.getSimpleName();
+						if(t.equals(ev.type.substring(ev.type.length()-t.length()))) {
 							WorkingMemoryAddress toWMA = srcDestMap.get(ev.address);
 							if (toWMA == null)
 								handleNewObservation1(ev);
@@ -677,7 +682,7 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 								handleOverwriteObservation1(ev, otherWMA, toWMA);
 							}
 						}
-						else if(ev.type == srcType2.getSimpleName()) {
+						else {
 							WorkingMemoryAddress toWMA = srcDestMap.get(ev.address);
 							if (toWMA == null)
 								handleNewObservation2(ev);
