@@ -10,4 +10,4 @@ export CASTV4RPASS=cogxxgoc
 env
 
 /usr/bin/make -C $dname clean
-/usr/bin/make -C $dname george SVNUSER=cogx
+/usr/bin/make -C $dname george SVNUSER=cogx CASTV4RPASS=cogxxgoc
