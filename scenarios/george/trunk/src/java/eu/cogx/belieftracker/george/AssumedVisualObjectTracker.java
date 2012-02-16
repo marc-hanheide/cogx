@@ -35,6 +35,7 @@ public class AssumedVisualObjectTracker extends ManagedComponent {
 	 */
 	@Override
 	protected void configure(Map<String, String> config) {
+
 		PointerMap<AssumedToMergedBeliefMap> wm2wmMap;
 		try {
 			wm2wmMap = new PointerMap<AssumedToMergedBeliefMap>(this,
