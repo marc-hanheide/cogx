@@ -5,9 +5,9 @@ dname=`dirname $0`
 
 export http_proxy
 export https_proxy
-#export SVNUSER=cogx
+export SVNUSER=cogx
 export CASTV4RPASS=cogxxgoc
 env
 
 /usr/bin/make -C $dname clean
-/usr/bin/make -C $dname george SVNUSER=cogx CASTV4RPASS=cogxxgoc
+/usr/bin/make -C $dname george SVNUSER=cogx
