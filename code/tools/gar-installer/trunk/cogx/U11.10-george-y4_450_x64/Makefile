@@ -40,13 +40,14 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 
 SYSBITS=$(shell getconf LONG_BIT)
 
-LIBDEPS = 	contrib/peekabot \
+LIBDEPS = \
+		cogx/v4r \
+		contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
 		cogx/cosycure \
 		contrib/opencv \
 		contrib/player-3.0.2 \
-		cogx/v4r \
 		contrib/physx_x$(SYSBITS) \
 		cogx/golem_katana300_x$(SYSBITS) \
 		contrib/mercury 
