@@ -167,7 +167,7 @@ protected:
   void getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy);
   std::vector<double> getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount);
 
-  void processOdometry();
+  void processOdometry(Cure::Pose3D);
 
   //REMOVEME
   void SaveGridMap();
@@ -179,7 +179,9 @@ protected:
   double m_MaxExplorationRange; 
   double m_MaxCatExplorationRange; 
 
-  Cure::LocalMap m_LMap;
+  Cure::LocalMap m_LMap; 
+  // Used by NavController; Needs no lock protecting it, as only the main thread
+  // modifies and reads it
   Cure::NavGraph m_NavGraph;
   bool m_bNoNavGraph;
 
@@ -194,9 +196,11 @@ protected:
   std::list<Cure::FrontierPt> m_Frontiers;
   std::deque<Cure::Pose3D> m_odometryQueue;
 
-  IceUtil::Mutex m_Mutex;
-  IceUtil::Mutex m_MapsMutex;
-  IceUtil::Mutex m_ScanQueueMutex;
+  IceUtil::Mutex m_PPMutex;		// Protects m_TOPP
+  IceUtil::Mutex m_MapsMutex;        	// Protects m_lgm
+  IceUtil::Mutex m_ScanQueueMutex; 	// Protects m_LScanQueue
+  IceUtil::Mutex m_OdomQueueMutex;	// Protects m_odometryQueue
+  IceUtil::Mutex m_PeopleMutex;		// Protects m_People
 
   bool m_loadLgm,m_saveLgm; 
 

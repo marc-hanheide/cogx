@@ -294,7 +294,9 @@ void SpatialControl::LoadGridMap(std::string filename){
     getline(file,line); 
     getline(file,line);
     int count = 0;
-    m_MapsMutex.lock();
+
+    IceUtil::Mutex::Lock lock(m_MapsMutex);
+
     m_lgm = new Cure::LocalGridMap<unsigned char>(sz, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
 
     for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
@@ -305,7 +307,6 @@ void SpatialControl::LoadGridMap(std::string filename){
       }
     }
    
-    m_MapsMutex.unlock();
     log("loaded gridmap");
 }
 
@@ -637,7 +638,9 @@ void SpatialControl::abortTask(int taskId) {
 
 void SpatialControl::doneTask(int taskId) {
   log("doneTask");
-  m_taskStatusMutex.lock();
+
+  IceUtil::Mutex::Lock lock(m_taskStatusMutex);
+
   m_TolRot = Cure::HelpFunctions::deg2rad(5);
   if(taskId == m_taskId - 1){ // else, it is an old command
   log("this is an old command...");
@@ -647,20 +650,20 @@ void SpatialControl::doneTask(int taskId) {
       m_taskStatus = TaskFinished;
     }
   }
-  m_taskStatusMutex.unlock();
 }
 
 
 void SpatialControl::failTask(int taskId, int error) {
   log("failTask");
   m_TolRot = Cure::HelpFunctions::deg2rad(5);
-  m_taskStatusMutex.lock();
+
+  IceUtil::Mutex::Lock lock(m_taskStatusMutex);
+
   if(taskId == m_taskId - 1){ // else, it is an old command
     m_CurrentCmdFinalCompletion = NavData::FAILED;
     m_CurrentCmdFinalStatus = NavData::UNKNOWN;
     m_taskStatus = TaskFinished;
   }
-  m_taskStatusMutex.unlock();
 }
 
 // FrontierExplorer exploration done overload function
@@ -668,14 +671,15 @@ void SpatialControl::explorationDone(int taskId, int status)
 {
 
   log("explorationDone");
-  m_taskStatusMutex.lock();
+
+  IceUtil::Mutex::Lock lock(m_taskStatusMutex);
+
   m_TolRot = Cure::HelpFunctions::deg2rad(5);
   if(taskId == m_taskId - 1){ // else, it is an old command
     m_CurrentCmdFinalCompletion = NavData::SUCCEEDED;
     m_CurrentCmdFinalStatus = NavData::NONE;
     m_taskStatus = TaskFinished;
   }
-  m_taskStatusMutex.unlock();
 }
 
 const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
@@ -773,13 +777,25 @@ void SpatialControl::updateGridMaps()
   /* Add all queued laser scans */
   m_ScanQueueMutex.lock();
   while (!m_LScanQueue.empty()){
-    if (m_TOPP.isTransformDefined() && m_TOPP.getPoseAtTime(m_LScanQueue.front().getTime(), LscanPose) == 0) {
+    Cure::LaserScan2d scan = m_LScanQueue.front();
+    m_LScanQueue.pop();
+    m_ScanQueueMutex.unlock();
+
+    int status = 1;
+    {
+      IceUtil::Mutex::Lock lock(m_PPMutex);
+      if (m_TOPP.isTransformDefined()) {
+	status = m_TOPP.getPoseAtTime(scan.getTime(), LscanPose);
+      }
+    }
+    
+    if (status == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
-      tmp_glrt.addScan(m_LScanQueue.front(), lpW, m_MaxExplorationRange);
+      tmp_glrt.addScan(scan, lpW, m_MaxExplorationRange);
       tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
 
-      tmp_catglrt.addScan(m_LScanQueue.front(), lpW, m_MaxCatExplorationRange);
+      tmp_catglrt.addScan(scan, lpW, m_MaxCatExplorationRange);
       tmp_catlgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
 
@@ -804,7 +820,7 @@ void SpatialControl::updateGridMaps()
       if (LscanPose.getY() > laserCatMaxY)
         laserCatMaxY = LscanPose.getY();
     }
-    m_LScanQueue.pop();
+    m_ScanQueueMutex.lock();
   }
   m_ScanQueueMutex.unlock();
   /* Only proceed if we got any new scans */
@@ -841,6 +857,7 @@ void SpatialControl::updateGridMaps()
     laserCatMaxYi = -tmp_catlgm.getSize() - 1;
   }
 
+  if (m_UsePointCloud) {
   /* Bounding box for new point cloud data */
   int pointcloudMinXi = INT_MAX, pointcloudMaxXi = INT_MIN;
   int pointcloudMinYi = INT_MAX, pointcloudMaxYi = INT_MIN;
@@ -849,7 +866,13 @@ void SpatialControl::updateGridMaps()
   cdl::CASTTime frameTime = getCASTTime();
   double time = frameTime.s+frameTime.us/1000000.0;
   double lastptztime = m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us/1000000.0;
-  bool hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
+  bool hasScanPose;
+  {
+    IceUtil::Mutex::Lock lock(m_PPMutex);
+    
+    hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
+  }
+
   /* WARNING (FIXME):
    * For some reason we seem to get old kinect data when we have _just_ moved
    * the pantilt to -45 degrees some times, causing garbage to appear on the
@@ -947,6 +970,7 @@ void SpatialControl::updateGridMaps()
   blitHeightMap(tmp_lgm, m_lgmKH, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
 
   blitHeightMap(tmp_catlgm, m_categoricalKHMap, laserCatMinXi, laserCatMaxXi, laserCatMinYi, laserCatMaxYi, m_obstacleMinHeight, maxCatHeight);
+  }
 
   const int deltaN = 3;
   double d = tmp_lgm.getCellSize()/deltaN;
@@ -954,10 +978,17 @@ void SpatialControl::updateGridMaps()
   double xWT,yWT;
   double theta;
 
+
+  Cure::Pose3D currPose;
+  {
+    IceUtil::Mutex::Lock lock(m_PPMutex);
+
+    currPose = m_TOPP.getPose();		
+  }
+
+
   /* Update the nav map */
-  m_Mutex.lock();
   m_LMap.clearMap();
-  Cure::Pose3D currPose = m_TOPP.getPose();		
   tmp_lgm.setValueInsideCircle(currPose.getX(), currPose.getY(),
       0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
   for (int i = 0; i < m_Npts; i++) {
@@ -966,20 +997,20 @@ void SpatialControl::updateGridMaps()
       xWT = currPose.getX()+j*d*cos(theta);
       yWT = currPose.getY()+j*d*sin(theta);
       if(tmp_lgm.worldCoords2Index(xWT,yWT,xi,yi)==0){
-        if(tmp_lgm(xi,yi) == '1'){
-          m_LMap.addObstacle(xWT, yWT, 1);
-          break;    
-        }
+	if(tmp_lgm(xi,yi) == '1'){
+	  m_LMap.addObstacle(xWT, yWT, 1);
+	  break;    
+	}
       }
     }
   }
-  m_Mutex.unlock();
 
   /* Copy the temporary map */
-  m_MapsMutex.lock();
-  *m_lgm = tmp_lgm;
-  *m_categoricalMap = tmp_catlgm;
-  m_MapsMutex.unlock();
+  {
+    IceUtil::Mutex::Lock lock(m_MapsMutex);
+    *m_lgm = tmp_lgm;
+    *m_categoricalMap = tmp_catlgm;
+  }
 }
 
 void SpatialControl::runComponent() 
@@ -1004,47 +1035,52 @@ void SpatialControl::runComponent()
 	  count = 0;
 	}
     count++;
-    lockComponent();
+    m_OdomQueueMutex.lock();
     while (m_odometryQueue.size() > 0) 
     {
-      processOdometry();
-    }
-    unlockComponent();
+      Cure::Pose3D cureOdom = m_odometryQueue.front();
+      m_odometryQueue.pop_front();
+      m_OdomQueueMutex.unlock();
 
-    if (m_UsePointCloud) {
+      processOdometry(cureOdom);
+      m_OdomQueueMutex.lock();
+    }
+    m_OdomQueueMutex.unlock();
+
+//    if (m_UsePointCloud) {
       updateGridMaps();
-    }	
+//    }	
 
-		m_MapsMutex.lock();
-    Cure::Pose3D currentPose = m_TOPP.getPose();
-		if (m_Displaylgm) {
-			m_Displaylgm->updateDisplay(&currentPose,
-						                      &m_NavGraph, 
-						                      &m_Frontiers);
-		}
-
-    if(m_displayBinaryMap)
-      m_displayBinaryMap->updateDisplay(&currentPose);
-
-    if(m_displayCategoricalMap)
-      m_displayCategoricalMap->updateDisplay(&currentPose);
-
-    if(m_DisplayCureObstacleMap) {
-      // Clear out obstacle map (that's used for visualization only)
-      int radius = m_obstacleMap->getSize();
-      for(int i = -radius; i < radius; ++i) {
-        for(int j = -radius; j < radius; ++j) {
-          (*m_obstacleMap)(i,j) = '0';
-        }
-      }
-      for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
-        ObstPt obspt = m_LMap.obstRef(i);
-        (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+    {
+      Cure::Pose3D currentPose = m_TOPP.getPose();
+      if (m_Displaylgm) {
+	m_Displaylgm->updateDisplay(&currentPose,
+	    &m_NavGraph, 
+	    &m_Frontiers);
       }
 
-      m_displayObstacleMap->updateDisplay(&currentPose);
+      if(m_displayBinaryMap)
+	m_displayBinaryMap->updateDisplay(&currentPose);
+
+      if(m_displayCategoricalMap)
+	m_displayCategoricalMap->updateDisplay(&currentPose);
+
+      if(m_DisplayCureObstacleMap) {
+	// Clear out obstacle map (that's used for visualization only)
+	int radius = m_obstacleMap->getSize();
+	for(int i = -radius; i < radius; ++i) {
+	  for(int j = -radius; j < radius; ++j) {
+	    (*m_obstacleMap)(i,j) = '0';
+	  }
+	}
+	for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
+	  ObstPt obspt = m_LMap.obstRef(i);
+	  (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+	}
+
+	m_displayObstacleMap->updateDisplay(&currentPose);
+      }
     }
-		m_MapsMutex.unlock();	
 	  
     if (m_odometryQueue.size() == 0) {
       usleep(250000);
@@ -1054,7 +1090,7 @@ void SpatialControl::runComponent()
 
 
 void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
-  m_Mutex.lock();
+//  m_Mutex.lock();
 	
   m_NavGraph.clear();
   bool gateway = false;
@@ -1119,7 +1155,7 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
     
   }
 
-  m_Mutex.unlock();
+//  m_Mutex.unlock();
 }
 
 void SpatialControl::newPersonData(const cdl::WorkingMemoryChange &objID)
@@ -1129,29 +1165,31 @@ void SpatialControl::newPersonData(const cdl::WorkingMemoryChange &objID)
   // Person entries can be removed at any time
 
   try {
-	  shared_ptr<CASTData<NavData::Person> > oobj =
-	  getWorkingMemoryEntry<NavData::Person>(objID.address);
-	  
-	  const NavData::PersonPtr p = oobj->getData();
-	  
-	  bool addNewPerson = true;
-	  
-	  // Check if the person already exists, otherwise add it
-	  for (unsigned int i = 0; i < m_People.size(); i++) {
-	    if (m_People[i].m_data->id == p->id) {
-	      // Update it
-	      m_People[i].m_data = p;
-	      addNewPerson = false;
-	      break;
-	    }
-	  }
-	  
-	  if (addNewPerson) {
-	    SpatialControl::PersonData pd;
-	    pd.m_WMid = objID.address.id;
-	    pd.m_data = p;
-	    m_People.push_back(pd);
-	  }
+    shared_ptr<CASTData<NavData::Person> > oobj =
+      getWorkingMemoryEntry<NavData::Person>(objID.address);
+
+    const NavData::PersonPtr p = oobj->getData();
+
+    bool addNewPerson = true;
+
+    IceUtil::Mutex::Lock lock(m_PeopleMutex);
+
+    // Check if the person already exists, otherwise add it
+    for (unsigned int i = 0; i < m_People.size(); i++) {
+      if (m_People[i].m_data->id == p->id) {
+	// Update it
+	m_People[i].m_data = p;
+	addNewPerson = false;
+	break;
+      }
+    }
+
+    if (addNewPerson) {
+      SpatialControl::PersonData pd;
+      pd.m_WMid = objID.address.id;
+      pd.m_data = p;
+      m_People.push_back(pd);
+    }
 
   }catch(DoesNotExistOnWMException){}
 }
@@ -1161,6 +1199,9 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
   log("deletePersonData called");
 
   int i = 0;
+
+  IceUtil::Mutex::Lock lock(m_PeopleMutex);
+
   for (std::vector<SpatialControl::PersonData>::iterator pi = m_People.begin();
        pi != m_People.end(); pi++, i++) {
 
@@ -1212,6 +1253,9 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
 		//log("time of newRobtoPose() = %d.%ld s",(long int)oobj->getData()->time.s, (long int)oobj->getData()->time.us);
   
   Cure::Pose3D cp = m_SlamRobotPose;
+
+  IceUtil::Mutex::Lock lock(m_PPMutex);
+
   m_TOPP.defineTransform(cp);
   debug("defined: %i", m_TOPP.isTransformDefined());
 }
@@ -1230,7 +1274,8 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
   
   
   if (oobj != 0){
-    m_Mutex.lock();
+
+    IceUtil::Mutex::Lock lock(m_taskStatusMutex);
 
     log("read new ctrlCommand");
 
@@ -1291,6 +1336,9 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
     if (m_commandType == NavData::lFOLLOWPERSON) {
       double minD = 1e10;
       m_CurrPerson = -1;
+
+      IceUtil::Mutex::Lock lock2(m_PeopleMutex);
+
       for (unsigned int i = 0; i < m_People.size(); i++) {
         double d = hypot(m_CurrPose.getY() - m_People[i].m_data->y,
                          m_CurrPose.getX() - m_People[i].m_data->x);
@@ -1313,12 +1361,9 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
         m_taskStatus = NothingToDo;
         changeCurrentCommandCompletion(NavData::ABORTED,
                                        NavData::PERSONNOTFOUND);
-        m_Mutex.unlock();
         return;
       }
-
     }
-    m_Mutex.unlock();
     
     log("read new ctrlCommand");
     m_taskStatus = NewTask;
@@ -1328,26 +1373,29 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
-  debug("lock receiveOdometry");
-  lockComponent(); //Don't allow any interface calls while processing a callback
-  debug("lock acquired");
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
   //Can't defer this; odometry must be in the TOPP before
   //the new RobotPose arrives
-  m_TOPP.addOdometry(cureOdom); 
-  
-  m_CurrPose = m_TOPP.getPose();
+  {
+    debug("lock receiveOdometry");
+    IceUtil::Mutex::Lock lock(m_PPMutex); //Don't allow any interface calls while processing a callback
+    debug("lock acquired");
+    m_TOPP.addOdometry(cureOdom); 
+
+    m_CurrPose = m_TOPP.getPose();
+    debug("unlock receiveOdometry");
+  }
 	
-  m_odometryQueue.push_back(cureOdom);
-  unlockComponent();
-  debug("unlock receiveOdometry");
+  {
+    IceUtil::Mutex::Lock lock(m_OdomQueueMutex);
+    m_odometryQueue.push_back(cureOdom);
+  }
 }
 
-void SpatialControl::processOdometry()
+void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 {
-  const Cure::Pose3D &cureOdom = m_odometryQueue.front();
   log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
@@ -1355,224 +1403,226 @@ void SpatialControl::processOdometry()
   if (m_ready || m_bNoNavGraph) { // have to get a first nav graph 
                  // to be ready
     
-    m_taskStatusMutex.lock(); // acquire mutex!
-    
-    if(m_taskStatus == TaskFinished){
-      // report final status
-      changeCurrentCommandCompletion(m_CurrentCmdFinalCompletion,
-                                     m_CurrentCmdFinalStatus);
-      m_taskStatus = NothingToDo;
-      
-    }else if(m_taskStatus == NewTask 
-	&& (m_commandType == NavData::lSTOPROBOT || m_waitingForPTZCommandID == ""))
     {
+      IceUtil::Mutex::Lock lock(m_taskStatusMutex); // acquire mutex!
 
-      m_Mutex.lock();
-      
-      // Result of m_NavCtrl.operationX
-      int ret = -1; // -1:operation not done, 0:ok, >0:error
-      m_currentTaskIsExploration = false; // set later
-      
-      // Task id
-      int currentTaskId = m_taskId++;
-      
-      // GOTO_XYA        
-      if ((m_commandType == NavData::lGOTOXYA)) {
-        
-        log("executing command GOTOXYA");  	
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::gotoXYA
-          (currentTaskId, m_commandX, m_commandY, m_commandTheta);
-      }
-      
-      // GOTO_XY_ROUGH
-      
-      else if ((m_commandType == NavData::lGOTOXYROUGH)){ 
-        
-        log("executing command GOTOXYROUGH"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
-      }
-      
-      
-      // GOTO_XY
-      
-      else if ((m_commandType == NavData::lGOTOXY)){ 
-        
-        log("executing command GOTOXY"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
-				//Clean out path; use only final waypoint
-        if(!m_Path.empty()) {
-          Cure::NavGraphNode lastNode = m_Path.back();
-          m_Path.clear();
-          m_Path.push_back(lastNode);
-        }
-        log("sent command.");
-      }
-      
-      // GOTO_POLAR
-      
-      else if ((m_commandType == NavData::lGOTOPOLAR)) {
-        
-        log("executing command GOTOPOLAR"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::gotoPolar(currentTaskId,m_commandTheta,m_commandR);
-      }
-      
-      // GOTO_AREA
-      
-      else if ((m_commandType == NavData::lGOTOAREA)) {
-        
-        log("executing command GOTOAREA"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::gotoArea(currentTaskId, m_commandAreaId);
-      }
-      
-      
-      // GOTO_NODE
-      
-      else if ((m_commandType == NavData::lGOTONODE)) {
-        
-        log("executing command GOTONODE"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::gotoNode(currentTaskId, m_commandNodeId);
-      }
-      
-      // ROTATE_REL
-      
-      else if ((m_commandType == NavData::lROTATEREL)) {  
-        
-        log("executing command ROTATEREL"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::rotateRel(currentTaskId, m_commandTheta);
-        
-      }
-      
-      
-      // ROTATE_ABS
-      
-      else if ((m_commandType == NavData::lROTATEABS)) {
-        
-        log("executing command ROTATEABS"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::rotateAbs(currentTaskId, m_commandTheta);
-        
-      }
-      
-      // BACK_OFF
-      
-      else if ((m_commandType == NavData::lBACKOFF)) {
-        
-        log("executing command BACKOFF"); 
-        
-        Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-        Cure::NewNavController::setOrientationTolerance(m_TolRot);
-        ret = Cure::NewNavController::backOff(currentTaskId, m_commandDistance);
-        
-      }
-      
-      // STOP
-      
-      else if ((m_commandType == NavData::lSTOPROBOT)) {
-        
-        log("executing command STOPROBOT"); 
-        
-        // This command is special:
-        // It is always accomplished at the moment, by this thread,
-        // and does not raise a doneTask calling (but can raise
-        // abortTask).
-        // 
-        ret = Cure::NewNavController::stop();
-        
-      }
-      
-      // EXPLORE
+      if(m_taskStatus == TaskFinished){
+	// report final status
+	changeCurrentCommandCompletion(m_CurrentCmdFinalCompletion,
+	    m_CurrentCmdFinalStatus);
+	m_taskStatus = NothingToDo;
 
-      
-      // Change completion now
-      
-      // First treat stop case
-      if(m_commandType == NavData::lSTOPROBOT){
-        changeCurrentCommandCompletion(NavData::SUCCEEDED,
-                                       NavData::UNKNOWN);
-        m_taskStatus = NothingToDo;
-        
-      } else if(m_taskStatus != TaskFinished){
+      }else if(m_taskStatus == NewTask 
+	  && (m_commandType == NavData::lSTOPROBOT || m_waitingForPTZCommandID == ""))
+      {
 
-        if ((m_commandType == NavData::lFOLLOWPERSON)) {
-          if (m_CurrPerson < 0 || m_CurrPerson > (int)m_People.size()-1) {
-            
-            m_CurrPerson = -1;
-            m_taskStatus = NothingToDo;
-            changeCurrentCommandCompletion(NavData::ABORTED,
-                                           NavData::PERSONNOTFOUND);
+	//      m_Mutex.lock();
 
-            log("Lost the person we were tracking");
-            
+	// Result of m_NavCtrl.operationX
+	int ret = -1; // -1:operation not done, 0:ok, >0:error
+	m_currentTaskIsExploration = false; // set later
+
+	// Task id
+	int currentTaskId = m_taskId++;
+
+	// GOTO_XYA        
+	if ((m_commandType == NavData::lGOTOXYA)) {
+
+	  log("executing command GOTOXYA");  	
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::gotoXYA
+	    (currentTaskId, m_commandX, m_commandY, m_commandTheta);
+	}
+
+	// GOTO_XY_ROUGH
+
+	else if ((m_commandType == NavData::lGOTOXYROUGH)){ 
+
+	  log("executing command GOTOXYROUGH"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+	}
 
 
-          } else {
+	// GOTO_XY
 
-            ret = Cure::NewNavController::followPerson(currentTaskId,
-                                         m_People[m_CurrPerson].m_data->x,
-                                         m_People[m_CurrPerson].m_data->y,
-                                         m_People[m_CurrPerson].m_data->direction,
-                                         m_People[m_CurrPerson].m_data->speed,
-                                         0);
+	else if ((m_commandType == NavData::lGOTOXY)){ 
 
-          }
+	  log("executing command GOTOXY"); 
 
-        } else {
-          // this means that the m_navCtrl events were not triggered off,
-          // so we have to send a completion now
-          if(ret == 0){
-            m_taskStatus = ExecutingTask;
-            changeCurrentCommandCompletion(NavData::INPROGRESS,
-                                           NavData::UNKNOWN);
-          }else if(ret > 0){
-            m_taskStatus = NothingToDo;
-            changeCurrentCommandCompletion(NavData::FAILED,
-                                           NavData::UNKNOWN);
-          }
-        }
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+	  //Clean out path; use only final waypoint
+	  if(!m_Path.empty()) {
+	    Cure::NavGraphNode lastNode = m_Path.back();
+	    m_Path.clear();
+	    m_Path.push_back(lastNode);
+	  }
+	  log("sent command.");
+	}
+
+	// GOTO_POLAR
+
+	else if ((m_commandType == NavData::lGOTOPOLAR)) {
+
+	  log("executing command GOTOPOLAR"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::gotoPolar(currentTaskId,m_commandTheta,m_commandR);
+	}
+
+	// GOTO_AREA
+
+	else if ((m_commandType == NavData::lGOTOAREA)) {
+
+	  log("executing command GOTOAREA"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::gotoArea(currentTaskId, m_commandAreaId);
+	}
+
+
+	// GOTO_NODE
+
+	else if ((m_commandType == NavData::lGOTONODE)) {
+
+	  log("executing command GOTONODE"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::gotoNode(currentTaskId, m_commandNodeId);
+	}
+
+	// ROTATE_REL
+
+	else if ((m_commandType == NavData::lROTATEREL)) {  
+
+	  log("executing command ROTATEREL"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::rotateRel(currentTaskId, m_commandTheta);
+
+	}
+
+
+	// ROTATE_ABS
+
+	else if ((m_commandType == NavData::lROTATEABS)) {
+
+	  log("executing command ROTATEABS"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::rotateAbs(currentTaskId, m_commandTheta);
+
+	}
+
+	// BACK_OFF
+
+	else if ((m_commandType == NavData::lBACKOFF)) {
+
+	  log("executing command BACKOFF"); 
+
+	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	  ret = Cure::NewNavController::backOff(currentTaskId, m_commandDistance);
+
+	}
+
+	// STOP
+
+	else if ((m_commandType == NavData::lSTOPROBOT)) {
+
+	  log("executing command STOPROBOT"); 
+
+	  // This command is special:
+	  // It is always accomplished at the moment, by this thread,
+	  // and does not raise a doneTask calling (but can raise
+	  // abortTask).
+	  // 
+	  ret = Cure::NewNavController::stop();
+
+	}
+
+	// EXPLORE
+
+
+	// Change completion now
+
+	// First treat stop case
+	if(m_commandType == NavData::lSTOPROBOT){
+	  changeCurrentCommandCompletion(NavData::SUCCEEDED,
+	      NavData::UNKNOWN);
+	  m_taskStatus = NothingToDo;
+
+	} else if(m_taskStatus != TaskFinished){
+
+	  if ((m_commandType == NavData::lFOLLOWPERSON)) {
+
+	    IceUtil::Mutex::Lock lock2(m_PeopleMutex);
+
+	    if (m_CurrPerson < 0 || m_CurrPerson > (int)m_People.size()-1) {
+
+	      m_CurrPerson = -1;
+	      m_taskStatus = NothingToDo;
+	      changeCurrentCommandCompletion(NavData::ABORTED,
+		  NavData::PERSONNOTFOUND);
+
+	      log("Lost the person we were tracking");
+
+
+
+	    } else {
+
+	      ret = Cure::NewNavController::followPerson(currentTaskId,
+		  m_People[m_CurrPerson].m_data->x,
+		  m_People[m_CurrPerson].m_data->y,
+		  m_People[m_CurrPerson].m_data->direction,
+		  m_People[m_CurrPerson].m_data->speed,
+		  0);
+
+	    }
+
+	  } else {
+	    // this means that the m_navCtrl events were not triggered off,
+	    // so we have to send a completion now
+	    if(ret == 0){
+	      m_taskStatus = ExecutingTask;
+	      changeCurrentCommandCompletion(NavData::INPROGRESS,
+		  NavData::UNKNOWN);
+	    }else if(ret > 0){
+	      m_taskStatus = NothingToDo;
+	      changeCurrentCommandCompletion(NavData::FAILED,
+		  NavData::UNKNOWN);
+	    }
+	  }
+	}
+	//      m_Mutex.unlock();
       }
-      m_Mutex.unlock();
+
     }
-    
-    m_taskStatusMutex.unlock(); // release mutex!
-    
-    m_Mutex.lock();
+
     m_LMap.moveRobot(m_CurrPose);
+
     Cure::NewNavController::updateCtrl();
-    m_Mutex.unlock();
-    
+
   } // if (m_ready)    
-  m_odometryQueue.pop_front();
 }
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 {
 	
   debug("lock receiveScan2d");
-  lockComponent(); //Don't allow any interface calls while processing a callback
-  debug("lock acquired");
+//  lockComponent(); //Don't allow any interface calls while processing a callback
+//  debug("lock acquired");
   debug("Got scan with n=%d and t=%ld.%06ld",
         castScan.ranges.size(), 
         (long)castScan.time.s, (long)castScan.time.us);
@@ -1580,57 +1630,68 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);
 
-  if (!m_UsePointCloud) {
-    if (m_TOPP.isTransformDefined()) {
+//  if (!m_UsePointCloud) {
+//
+//    Cure::Pose3D scanPose;
+//    int status = 1;
+//    {
+//      IceUtil::Mutex::Lock lock(m_PPMutex);
+//
+//
+//      if (m_TOPP.isTransformDefined()) {
+//	status = m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose);
+//      }
+//    }
+//
+//    if (status == 0) {
+//      IceUtil::Mutex::Lock lock(m_MapsMutex);
+//
+//      m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
+//
+//      Cure::Pose3D lpW;
+//      m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+//	  0.5*Cure::NewNavController::getRobotWidth(), 
+//	  '0');
+//      lpW.add(scanPose, m_LaserPoseR);
+//      m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
+//      m_firstScanAdded = true;
+//    }
+//  }
+//  else 
+  {
+    IceUtil::Mutex::Lock lock(m_ScanQueueMutex);
 
-      Cure::Pose3D scanPose;
-      if (m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose) == 0) {
-        m_Mutex.lock();
-        m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-        m_Mutex.unlock();
-
-        m_MapsMutex.lock();
-        Cure::Pose3D lpW;
-        m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-            0.5*Cure::NewNavController::getRobotWidth(), 
-            '0');
-        lpW.add(scanPose, m_LaserPoseR);
-        m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
-        m_firstScanAdded = true;
-        m_MapsMutex.unlock();
-      }
-    }
-  }
-  else {
-    m_ScanQueueMutex.lock();
     m_LScanQueue.push(cureScan);
-    m_ScanQueueMutex.unlock();
   }
 
   /* Person following stuff */    
   NavData::PersonFollowedPtr p = new NavData::PersonFollowed;
   static long last_id_sent = -1;
-  if (m_CurrPerson >= 0 && m_CurrPerson < (int)m_People.size()) {
-    p->id = m_People[m_CurrPerson].m_data->id;
-  } else {
-    p->id = -1;
-  }
-  if(last_id_sent != p->id) {
-    last_id_sent = p->id;
-    p->time = castScan.time;
-    if (m_CurrPersonWMid == "") {
-      // Create the entry in the working memory for the 
-      m_CurrPersonWMid = newDataID();
-      addToWorkingMemory<NavData::PersonFollowed>(m_CurrPersonWMid, p);
-      log("added id of person to follow");
-    }else{
-      debug("Updating id of person to follow");
-      overwriteWorkingMemory<NavData::PersonFollowed>(m_CurrPersonWMid, p);
-      debug("updated id of person to follow");
+  {
+    IceUtil::Mutex::Lock lock(m_PeopleMutex);
+
+    if (m_CurrPerson >= 0 && m_CurrPerson < (int)m_People.size()) {
+      p->id = m_People[m_CurrPerson].m_data->id;
+    } else {
+      p->id = -1;
+    }
+    if(last_id_sent != p->id) {
+      last_id_sent = p->id;
+      p->time = castScan.time;
+      if (m_CurrPersonWMid == "") {
+	// Create the entry in the working memory for the 
+	m_CurrPersonWMid = newDataID();
+	addToWorkingMemory<NavData::PersonFollowed>(m_CurrPersonWMid, p);
+	log("added id of person to follow");
+      }else{
+	debug("Updating id of person to follow");
+	overwriteWorkingMemory<NavData::PersonFollowed>(m_CurrPersonWMid, p);
+	debug("updated id of person to follow");
+      }
     }
   }
-  unlockComponent();
-  debug("unlock receiveScan2d");
+//  unlockComponent();
+//  debug("unlock receiveScan2d");
 }
 
 void 
@@ -1696,10 +1757,10 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
    also set as obstacles */
 void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex = true) const {
   
-  if(lockMapsMutex) {
-
-    m_MapsMutex.lock();
-    }
+//  if(lockMapsMutex) {
+//
+//    m_MapsMutex.lock();
+//    }
 
   int gridmapSize = gridmap->getSize();
 
@@ -1735,13 +1796,17 @@ void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gri
     }
   }
 
-  if(lockMapsMutex) {
-    m_MapsMutex.unlock();
-  }
+//  if(lockMapsMutex) {
+//    m_MapsMutex.unlock();
+//  }
 }
 
 void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &frontiers) {
   Cure::BinaryMatrix map;
+
+//  //Mutual exclusion vs. changes to m_lgm in updateGridMaps
+//  IceUtil::Mutex::Lock lock(m_MapsMutex); 
+
   getExpandedBinaryMap(m_lgm, map, false);
 
   for(std::list<Cure::FrontierPt>::iterator it = frontiers.begin();
@@ -1831,6 +1896,9 @@ void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &fronti
 int SpatialControl::findClosestNode(double x, double y) {
   double maxDist = 20; // The first maximum distance to try
   Cure::BinaryMatrix map;
+
+  // Mutual exclusion vs. changes to m_lgm in the main loop (updateGridMaps)
+  IceUtil::Mutex::Lock lock(m_MapsMutex);
 
   // Get the expanded binary map used to search 
   getExpandedBinaryMap(m_lgm, map);
@@ -1975,6 +2043,7 @@ SpatialControl::getFrontiers()
 {
   log("SpatialControl::getFrontiers() called");
 
+  // Mutual exclusion vs. changes to m_lgm in main thread
   m_MapsMutex.lock();
 
   while (!m_firstScanAdded) {
