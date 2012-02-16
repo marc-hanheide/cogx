@@ -219,6 +219,10 @@ enum VisionCommandStatus {
   /**
    * Ask the 3D object recognizer to detect any of the objects given in the
    * label list in the whole image.
+   *
+   * If the list of labels is empty, it will check all the labels known to the
+   * recognizer.
+   *
    * @author Michael Zillich
    */
   class DetectionCommand {
