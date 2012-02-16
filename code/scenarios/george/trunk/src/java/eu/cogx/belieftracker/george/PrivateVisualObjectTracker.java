@@ -34,7 +34,7 @@ public class PrivateVisualObjectTracker extends ManagedComponent {
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
 	@Override
-	protected void configure(Map<String, String> config) {
+	protected void configure(Map<String, String> config) {log("Private tracker running");
 		PointerMap<PrivateToAssumedBeliefMap> wm2wmMap;
 		try {
 			wm2wmMap = new PointerMap<PrivateToAssumedBeliefMap>(this,
@@ -62,7 +62,7 @@ public class PrivateVisualObjectTracker extends ManagedComponent {
 	 * @see cast.core.CASTComponent#runComponent()
 	 */
 	@Override
-	protected void runComponent() {
+	protected void runComponent() {log("Private tracker running2");
 		tracker.run();
 	}
 
