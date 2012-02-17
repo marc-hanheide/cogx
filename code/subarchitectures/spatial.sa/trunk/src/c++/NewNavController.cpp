@@ -1410,87 +1410,87 @@ NewNavController::findPath(double x, double y, double a,
   return findPath(g, path);
 }
 
-void
-NewNavController::displayRL(RoboLookProxy *rlp, bool clearEllipseTarget,
-                         bool displayLocalMap, bool displayGraph)
-{
-  if (rlp == 0) return;
-
-
-  if (displayGraph) m_Graph.displayRL(rlp, true, true);
-  if (displayLocalMap) m_LMap.displayRL(*rlp, true);
-      
-  if (!m_Path.empty()) {
-
-    RL_LineItem edges[m_Path.size()+1];
-    int ei = 0;
-    edges[ei].xS = getPose().getX();
-    edges[ei].yS = getPose().getY();
-    edges[ei].zS = 0.01;
-    for (std::list<NavGraphNode>::iterator ni = m_Path.begin();
-         ni != m_Path.end(); ni++) {
-      if (ei > 0) {
-        edges[ei].xS = edges[ei-1].xE;
-        edges[ei].yS = edges[ei-1].yE;
-        edges[ei].zS = edges[ei-1].zE;
-      }
-      edges[ei].xE = ni->getX();
-      edges[ei].yE = ni->getY();
-      edges[ei].zE = 0.01;
-      edges[ei].color = 12;
-      edges[ei].width = 1;
-      m_sc->log("edge[%d]: xS=%f yS=%f xE=%f yE=%f\n",ei,edges[ei].xS,edges[ei].yS,edges[ei].xE,edges[ei].yE);
-
-      ei++;
-    }
-    rlp->addLines(RL_ENV_EST, edges, ei);
-
-    RL_EllipseItem ell[2];
-    ell[0].xC = m_Path.front().getX();
-    ell[0].yC = m_Path.front().getY();
-    ell[0].z = 0;
-    ell[0].majorAngle = 0;
-    ell[0].style = 0;
-    if (m_Path.size() == 1) {
-      ell[0].color = 2;
-      ell[0].major = m_FinalGoalTol;
-      ell[0].minor = m_FinalGoalTol;
-    } else {
-      // Check we are heading for a node before a gateway, in it
-      // or just after it in which case we should use gateway
-      // tolerance instead of the normal intermediate node
-      // tolerance.
-      std::list<NavGraphNode>::iterator next;
-      next = m_Path.begin(); next++;
-      if (next->getType() == NavGraphNode::NODETYPE_GATEWAY ||
-          m_Path.front().getType() == NavGraphNode::NODETYPE_GATEWAY ||
-          m_PrevWasGateway) {               
-        ell[0].color = 6;      
-        ell[0].major = m_GatewayGoalTol;
-        ell[0].minor = m_GatewayGoalTol;
-      } else {
-        ell[0].color = 7;      
-        ell[0].major = m_InterGoalTol;
-        ell[0].minor = m_InterGoalTol;
-      }
-    }
-    
-    int ne = 1;
-    if (m_TaskType == TASKTYPE_FOLLOWPERSON) {
-      memcpy(ell + 1, ell + 0, sizeof(RL_EllipseItem));
-      
-      // The position we aim to move to which is not the thing we are
-      // following but something slightly ahead of it
-      ell[0].xC = m_FollowX;
-      ell[0].yC = m_FollowY;
-      ell[0].color = 1;
-      ne++;
-    }
-
-    rlp->addEllipses(RL_ENV_EST, ell, ne, clearEllipseTarget);
-  } else {
-    if (clearEllipseTarget) {
-      rlp->clearEllipses(RL_ENV_EST);
-    }
-  }
-}
+//void
+//NewNavController::displayRL(RoboLookProxy *rlp, bool clearEllipseTarget,
+//                         bool displayLocalMap, bool displayGraph)
+//{
+//  if (rlp == 0) return;
+//
+//
+//  if (displayGraph) m_Graph.displayRL(rlp, true, true);
+//  if (displayLocalMap) m_LMap.displayRL(*rlp, true);
+//      
+//  if (!m_Path.empty()) {
+//
+//    RL_LineItem edges[m_Path.size()+1];
+//    int ei = 0;
+//    edges[ei].xS = getPose().getX();
+//    edges[ei].yS = getPose().getY();
+//    edges[ei].zS = 0.01;
+//    for (std::list<NavGraphNode>::iterator ni = m_Path.begin();
+//         ni != m_Path.end(); ni++) {
+//      if (ei > 0) {
+//        edges[ei].xS = edges[ei-1].xE;
+//        edges[ei].yS = edges[ei-1].yE;
+//        edges[ei].zS = edges[ei-1].zE;
+//      }
+//      edges[ei].xE = ni->getX();
+//      edges[ei].yE = ni->getY();
+//      edges[ei].zE = 0.01;
+//      edges[ei].color = 12;
+//      edges[ei].width = 1;
+//      m_sc->log("edge[%d]: xS=%f yS=%f xE=%f yE=%f\n",ei,edges[ei].xS,edges[ei].yS,edges[ei].xE,edges[ei].yE);
+//
+//      ei++;
+//    }
+//    rlp->addLines(RL_ENV_EST, edges, ei);
+//
+//    RL_EllipseItem ell[2];
+//    ell[0].xC = m_Path.front().getX();
+//    ell[0].yC = m_Path.front().getY();
+//    ell[0].z = 0;
+//    ell[0].majorAngle = 0;
+//    ell[0].style = 0;
+//    if (m_Path.size() == 1) {
+//      ell[0].color = 2;
+//      ell[0].major = m_FinalGoalTol;
+//      ell[0].minor = m_FinalGoalTol;
+//    } else {
+//      // Check we are heading for a node before a gateway, in it
+//      // or just after it in which case we should use gateway
+//      // tolerance instead of the normal intermediate node
+//      // tolerance.
+//      std::list<NavGraphNode>::iterator next;
+//      next = m_Path.begin(); next++;
+//      if (next->getType() == NavGraphNode::NODETYPE_GATEWAY ||
+//          m_Path.front().getType() == NavGraphNode::NODETYPE_GATEWAY ||
+//          m_PrevWasGateway) {               
+//        ell[0].color = 6;      
+//        ell[0].major = m_GatewayGoalTol;
+//        ell[0].minor = m_GatewayGoalTol;
+//      } else {
+//        ell[0].color = 7;      
+//        ell[0].major = m_InterGoalTol;
+//        ell[0].minor = m_InterGoalTol;
+//      }
+//    }
+//    
+//    int ne = 1;
+//    if (m_TaskType == TASKTYPE_FOLLOWPERSON) {
+//      memcpy(ell + 1, ell + 0, sizeof(RL_EllipseItem));
+//      
+//      // The position we aim to move to which is not the thing we are
+//      // following but something slightly ahead of it
+//      ell[0].xC = m_FollowX;
+//      ell[0].yC = m_FollowY;
+//      ell[0].color = 1;
+//      ne++;
+//    }
+//
+//    rlp->addEllipses(RL_ENV_EST, ell, ne, clearEllipseTarget);
+//  } else {
+//    if (clearEllipseTarget) {
+//      rlp->clearEllipses(RL_ENV_EST);
+//    }
+//  }
+//}

@@ -891,7 +891,7 @@ bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)
   return true;
 }
 void PlaceManager::updatePlaceholders() {
-    std::vector<long> nodeids;
+  SpatialData::NodeIDSeq nodeids;
     std::vector<long> placeholderids;
 
     for (map<int, PlaceHolder>::iterator it =
@@ -906,14 +906,14 @@ void PlaceManager::updatePlaceholders() {
         }
     }
     error("alex DEBUG1 CHECK PLACEHOLDERS %d PLACES %d\n",placeholderids.size(),placeholderids.size());
-    for (int g = 0; (g < placeholderids.size()); g++)
+    for (size_t g = 0; (g < placeholderids.size()); g++)
         updatePlaceholder(placeholderids[g],nodeids);
 
 }
 /* Updates the edge of the placeholder so that it is linked to the node to
    which it has the shortest path.
    Returns the place id the placeholder is linked to or -1 on error*/
-int PlaceManager::updatePlaceholder(int placeholderId,std::vector<long> nodeids) {
+int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDSeq &nodeids) {
 //  error("alex DEBUG2 PLACEHOLDER %d\n",placeholderId);
   FrontierInterface::NodeHypothesisPtr hyp = getHypFromPlaceID(placeholderId);
   if(!hyp) {
@@ -1319,7 +1319,7 @@ void PlaceManager::evaluateUnexploredPaths()
 
         //Connect placeholder with the closest place
 
-        std::vector<long> nodeids;
+	SpatialData::NodeIDSeq nodeids;
         for (map<int, PlaceHolder>::iterator it =
 	        m_Places.begin();
 	        it != m_Places.end(); it++){
