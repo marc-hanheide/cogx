@@ -104,6 +104,8 @@ class SpatialControl : public cast::ManagedComponent ,
         }
 
         virtual int findClosestNode(double x, double y, const Ice::Current &_context);
+        virtual int findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context);
+
         virtual SpatialData::LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy, const Ice::Current &_context) {
           SpatialData::LocalGridMap ret;
           m_pOwner->lockComponent();
@@ -164,6 +166,7 @@ protected:
   void getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex) const;
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   virtual int findClosestNode(double x, double y);
+  virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
   void getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy);
   std::vector<double> getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount);
 

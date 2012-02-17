@@ -58,6 +58,10 @@ int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Cu
   return m_pOwner->findClosestNode(x,y);
 }
 
+int SpatialControl::MapServer::findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context) {
+  return m_pOwner->findClosestPlace(x,y, nodeids);
+}
+
 SpatialControl::SpatialControl()
   :NewNavController(m_NavGraph, m_LMap, this),
    NewNavControllerEventListener("SpatialControl"),
@@ -1954,6 +1958,75 @@ int SpatialControl::findClosestNode(double x, double y) {
 
   return closestNodeId;
 }
+
+/* Finds the node with the shortest path from (x,y) in an expanded binarymap
+   Returns -1 on error of if there are no nodes to search or if no node
+   was found */
+int SpatialControl::findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids) {
+  double maxDist = 20; // The first maximum distance to try
+  Cure::BinaryMatrix map;
+
+  // Get the expanded binary map used to search 
+  getExpandedBinaryMap(m_lgm, map);
+
+  // Get all the navigation nodes
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+  if(nodes.size() == 0)
+    return -1;
+
+  int xi, yi;
+  if(m_lgm->worldCoords2Index(x, y, xi, yi) != 0) {
+    return -1;
+  }
+  
+  // Offset the indices so that top left is (0,0).
+  xi += m_lgm->getSize();
+  yi += m_lgm->getSize();
+
+  int closestNodeId = -1;
+  double minDistance = FLT_MAX;
+  Cure::ShortMatrix path;
+
+  while(closestNodeId == -1) {
+    for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
+      try {
+          bool b=true;
+          for (int g = 0; (g < nodeids.size()) && b; g++)
+              if (nodeids[g]==((*nodeIt)->nodeId)) b=false;
+
+          if (!b) {
+            int nodexi, nodeyi;
+            if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
+              continue;
+
+            // Offset the indices so that top left is (0,0).
+            nodexi += m_lgm->getSize();
+            nodeyi += m_lgm->getSize();
+
+            double dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
+            if(dist >= 0) { // If a path was found.. 
+              if(dist < minDistance) {
+                closestNodeId = (*nodeIt)->nodeId;
+                minDistance = dist;
+              }
+          }
+        } 
+      } catch(IceUtil::NullHandleException e) {
+        log("Node suddenly disappeared..");
+      }
+    }
+
+    if(maxDist > map.Columns*map.Rows)
+      return -1;
+
+    maxDist *= 2; // Double the maximum distance to search for the next loop
+  }
+
+  return closestNodeId;
+}
+
 
 vector<double> SpatialControl::getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount) {
   vector<double> raytrace;
