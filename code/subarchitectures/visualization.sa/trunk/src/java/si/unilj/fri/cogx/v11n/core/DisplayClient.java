@@ -41,8 +41,8 @@ import cast.core.CASTUtils;
 public class DisplayClient {
 	private class EventReceiverImpl extends Visualization._EventReceiverDisp {
 		/**
-	 * 
-	 */
+		 * 
+		 */
 		private static final long serialVersionUID = -8403217494649616812L;
 		private DisplayClient m_Client;
 
