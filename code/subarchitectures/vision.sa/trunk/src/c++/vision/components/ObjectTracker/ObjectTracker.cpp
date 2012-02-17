@@ -78,6 +78,11 @@ void ObjectTracker::configure(const map<string,string> & _config){
     m_videoServerName = it->second;
   }
 
+  if((it = _config.find("--pcserver")) != _config.end()){
+    m_pcServerName = it->second;
+    PointCloudClient::configureServerCommunication(_config);
+  }
+
   if((it = _config.find("--camid")) != _config.end())
   {
     int camId;
@@ -142,7 +147,13 @@ void ObjectTracker::configure(const map<string,string> & _config){
 
 void ObjectTracker::start(){
   // get connection to the video server
-  m_videoServer = getIceServer<Video::VideoInterface>(m_videoServerName);
+  if (m_videoServerName.length() > 0) {
+    m_videoServer = getIceServer<Video::VideoInterface>(m_videoServerName);
+  }
+
+  if (m_pcServerName.length() > 0) {
+	  PointCloudClient::startPCCServerCommunication(*this);
+  }
 
   // register our client interface to allow the video server pushing images
   Video::VideoClientInterfacePtr servant = new VideoClientI(this);
@@ -176,7 +187,12 @@ void ObjectTracker::runComponent(){
   // Initialize Tracker
   // Grab one image from VideoServer for initialisation
   initTracker();
-  m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
+
+  // if this cannot be done then we only get the first image & so need to pull images in runTracker()
+  if (m_videoServerName.length() > 0) {
+    m_videoServer->startReceiveImages(getComponentID().c_str(), m_camIds, 0, 0);
+    // images will be received via the callback method receiveImages()
+  }
 
   while(isRunning() && m_running)
   {
@@ -206,7 +222,7 @@ void ObjectTracker::initTracker(){
 
   log("Initialising Tracker");
 
-	m_videoServer->getImage(m_camIds[0], m_image);
+	getImage();
 	m_ImageWidth = m_image.width;
 	m_ImageHeight = m_image.height;
 	last_image_time = m_image.time;
@@ -250,7 +266,7 @@ void ObjectTracker::applyTrackingCommand(){
 	if(track_cmd->cmd == VisionData::START){
 		log("  VisionData::START");
 		if(m_track){
-			log("  VisionData::START: I'm allready tracking");
+			log("  VisionData::START: I'm already tracking");
 		}else{
 			log("  VisionData::START: ok");
 			m_track = true;
@@ -398,7 +414,17 @@ void ObjectTracker::runTracker(){
 
 
 	lockComponent();
-		// 		m_videoServer->getImage(m_camIds[0], m_image);
+
+	if (m_pcServerName.length()>0) {
+		getRectImage(m_camIds[0], 640, m_image);
+		//log("got image from Kinect: " + m_image.height);
+		convertCameraParameter(m_image.camPars, m_trackCamPars);
+	}
+  else {
+// this line was commented out before the pcServer functionality was added
+//		m_videoServer->getImage(m_camIds[0], m_image);    
+  }
+
 		dTime = getFrameTime(last_image_time, m_image.time);
 
 // 		if(dTime==0.0){
@@ -453,5 +479,14 @@ void ObjectTracker::runTracker(){
 	fTimeTotal += fTimeTracker;
 }
 
-
+void ObjectTracker::getImage()
+{
+	if (m_pcServerName.length()>0) {
+		getRectImage(m_camIds[0], 640, m_image);
+		log("got image from Kinect: " + m_image.height);
+	}
+	else {
+		m_videoServer->getImage(m_camIds[0], m_image);
+	}
+}
 

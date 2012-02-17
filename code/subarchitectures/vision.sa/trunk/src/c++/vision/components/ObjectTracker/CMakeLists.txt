@@ -17,5 +17,5 @@ SET(SOURCES ObjectTracker.cpp)
 
 add_cast_component(ObjectTracker ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} Tracker)
-link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
+link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OPENCV_LDFLAGS} SDL GLU glut)

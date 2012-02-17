@@ -10,6 +10,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
+#include <PointCloudClient.h>
 #include <VisionData.hpp>
 #include <vector>
 #include <string>
@@ -26,7 +27,7 @@ namespace cast
 
 
 
-class ObjectTracker : public VideoClient, public ManagedComponent
+class ObjectTracker : public VideoClient, public PointCloudClient, public ManagedComponent
 {
 private:
 	Tracking::Tracker* m_tracker;
@@ -56,6 +57,10 @@ private:
   std::string m_videoServerName;
   /** our ICE proxy to the video server */
   Video::VideoInterfacePrx m_videoServer;
+
+  /** component ID of the point cloud server (if not using video server)*/
+  std::string m_pcServerName;
+
 	int m_maxModels;
   bool m_track;
   bool m_running;
@@ -72,6 +77,8 @@ private:
   std::vector<VisionData::TrackingCommandPtr> m_trackingCommandList;
   std::vector<std::string> m_trackingCommandWMID;
   
+  void getImage();
+
   // Functions with GL commands allowed
   void initTracker();
   void runTracker();
