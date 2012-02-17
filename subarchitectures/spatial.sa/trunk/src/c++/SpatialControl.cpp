@@ -1403,6 +1403,7 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
   log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
+  log("CASTTime: %f",getCASTTime().s+1e-6*getCASTTime().us);
   
   if (m_ready || m_bNoNavGraph) { // have to get a first nav graph 
                  // to be ready

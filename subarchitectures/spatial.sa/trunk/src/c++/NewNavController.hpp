@@ -683,17 +683,17 @@ public:
    */
   double getRobotWidth() const { return m_ND.getRobotWidth(); }
 
-  /**
-   * Function to display in RoboLook
-   *
-   * @param pointert to proxy to RoboLook server
-   * @param clearEllipseTarget true if you want to clear ellipses
-   *        before you draw the new to mark the target location
-   * @param displayLocalMap true if you want to display the local map
-   * @param true if you want to display the graph
-   */
-  void displayRL(RoboLookProxy *rlp, bool clearEllipseTarget, 
-                 bool displayLocalMap = false, bool displayGraph = false);
+//  /**
+//   * Function to display in RoboLook
+//   *
+//   * @param pointert to proxy to RoboLook server
+//   * @param clearEllipseTarget true if you want to clear ellipses
+//   *        before you draw the new to mark the target location
+//   * @param displayLocalMap true if you want to display the local map
+//   * @param true if you want to display the graph
+//   */
+//  void displayRL(RoboLookProxy *rlp, bool clearEllipseTarget, 
+//                 bool displayLocalMap = false, bool displayGraph = false);
 
 protected:
 

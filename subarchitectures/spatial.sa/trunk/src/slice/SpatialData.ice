@@ -17,7 +17,7 @@ module SpatialData {
   sequence<bool> BoolSeq;
   sequence<DoubleOpt> CoordinateSeq;
   sequence<long> PlaceIDSeq;
-  sequence<long> NodeIDSeq;  
+  sequence<int> NodeIDSeq;  
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
 
