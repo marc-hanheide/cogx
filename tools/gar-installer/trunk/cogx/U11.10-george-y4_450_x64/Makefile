@@ -41,18 +41,18 @@ DEB_PACKAGES=	libqt4-opengl-dev@ubuntu \
 SYSBITS=$(shell getconf LONG_BIT)
 
 LIBDEPS = \
+		contrib/opencv \
 		cogx/v4r \
+		contrib/player-3.0.2 \
+		contrib/gazebo \
+		cogx/cosycure \
 		contrib/peekabot \
 		cogx/cast-c++ \
 		cogx/cast-java \
-		cogx/cosycure \
-		contrib/opencv \
-		contrib/player-3.0.2 \
 		contrib/physx_x$(SYSBITS) \
 		cogx/golem_katana300_x$(SYSBITS) \
 		contrib/mercury 
 #		contrib/avin2-SensorKinect \
-#		contrib/gazebo \
 #		contrib/openNI \
 
 DESCRIPTION = agai-distro
