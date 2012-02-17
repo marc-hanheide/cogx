@@ -13,8 +13,8 @@ import eu.cogx.beliefs.slice.AssumedBelief;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import eu.cogx.percepttracker.RRMergerMatcher;
-import eu.cogx.percepttracker.WMMerger;
+import eu.cogx.percepttracker.RRSimpleMergeFunction;
+import eu.cogx.percepttracker.WMSimpleMerger;
 /**
  * @author Nick Hawes, but copied from Marc Hanheide (marc@hanheide.de)
  * 
@@ -26,7 +26,7 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 
 	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
 
-	WMMerger<AssumedBelief, VerifiedBelief, MergedBelief> merger = null;
+	WMSimpleMerger<AssumedBelief, VerifiedBelief, MergedBelief> merger = null;
 
 	/**
 	 * configure the component --write-to-sa <subarchitectureID> the SA to write
@@ -42,12 +42,12 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 		try {
 			srcDestMap = new PointerMap<WMMap>(this, WMMap.class);
 			srcSrcMap = new PointerMap<WMMap>(this, WMMap.class);
-			merger = WMMerger.create(this, AssumedBelief.class, VerifiedBelief.class,
+			merger = WMSimpleMerger.create(this, AssumedBelief.class, VerifiedBelief.class,
 					MergedBelief.class,
-					new RRMergerMatcher<AssumedBelief, VerifiedBelief, MergedBelief>(
+					new RRSimpleMergeFunction<AssumedBelief, VerifiedBelief, MergedBelief>(
 							types, srcDestMap, AssumedBelief.class, VerifiedBelief.class,
 							MergedBelief.class),
-					new RRMergerMatcher<VerifiedBelief, AssumedBelief, MergedBelief>(
+					new RRSimpleMergeFunction<VerifiedBelief, AssumedBelief, MergedBelief>(
 							types, srcDestMap, VerifiedBelief.class, AssumedBelief.class,
 							MergedBelief.class), 		
 							 srcDestMap, srcSrcMap, config
