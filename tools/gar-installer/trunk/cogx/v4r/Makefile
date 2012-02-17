@@ -6,7 +6,7 @@ MAINTAINER = ari
 
 # To be used with Jenkins
 ifneq ($(CASTV4RPASS),)
-  override SVNUSER=cogx --password $(CASTV4RPASS)
+  override SVNUSER=cogx --password $(CASTV4RPASS) --non-interactive --no-auth-cache
 endif
 
 
