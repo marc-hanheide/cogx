@@ -77,7 +77,7 @@ install-%/ant:
 	mkdir -p $@
 
 svnhttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
-	@#env
+	@env
 	(cd $< && \
 	 rm -rf * && \
 	 echo "exporting from SVN: svn export $(SVN_REVISION) https://$(*D)" && \
@@ -87,7 +87,7 @@ svnhttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	tar czv -C $< -f $(PARTIALDIR)/$(DISTFILES) .
 
 svnhttp//%:	/tmp/gartmp-$(USER)-$(GARNAME)
-	@#env
+	@env
 	(cd $< && \
 	 echo "exporting from SVN: svn export $(SVN_REVISION) http://$(*D)" && \
 	 svn export  $(SVNUSERARG) $(SVN_REVISION) http://$(*D) && \
