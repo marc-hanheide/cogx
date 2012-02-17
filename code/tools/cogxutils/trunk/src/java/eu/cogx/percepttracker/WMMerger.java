@@ -661,14 +661,17 @@ public class WMMerger<Src1 extends dBelief, Src2 extends dBelief, Dest extends d
 						String t=srcType1.getSimpleName();
 						if(t.equals(ev.type.substring(ev.type.length()-t.length()))) {
 							handleNewObservation1(ev);
+						}
 						else
+						{
 							handleNewObservation2(ev);
+						}
 							
 						break;
 					}
 					case OVERWRITE: {				
-						component.log("overwritten WM entry of type " + t);
 						String t=srcType1.getSimpleName();
+						component.log("overwritten WM entry of type " + t);
 						if(t.equals(ev.type.substring(ev.type.length()-t.length()))) {
 							WorkingMemoryAddress toWMA = srcDestMap.get(ev.address);
 							if (toWMA == null)
