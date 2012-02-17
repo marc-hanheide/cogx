@@ -819,6 +819,10 @@ void ObjectRecognizer3D::recognizeSiftModel(P::DetectGPUSIFT &sift){
       m_rec_cmd->visualObjectID = m_recEntries[m_label].visualObjectID;
     }
 
+#ifdef FEAT_VISUALIZATION
+  m_display.setImage(getComponentID(), m_iplImage);
+#endif
+
     if(m_showCV){
       cvShowImage(getComponentID().c_str(), m_iplImage);
       cvWaitKey(50);
