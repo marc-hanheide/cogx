@@ -94,6 +94,7 @@ private:
 
   std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
   std::vector<int> postProcessIndices;                      ///< TODO Indices of points eliminated by postProcessing
+  std::vector<int> checkPCLines;                            ///< TODO Indices of points found by checkPCLines
   
   /// TODO new ones
   Z::VisionCore *vcore;                                     ///< VisionCore

@@ -185,9 +185,9 @@ void SegLearner::configure(const map<string,string> & _config)
   int pyrLevels = 3;                        // Number of pyramid levels
   float nbDist = 0.02;                      // max. neighor distance for subsampling
   float thrAngleNormalClustering = 0.5;     // maximum angle for clustering (0.5 = 28° (+5,7))
-  float inlDist = 0.012;                    // Inlier distance for planes
+  float inlDist = 0.008;                    // Inlier distance for planes
   float sigma = 0.008;                      // TODO What sigma???
-  int minPoints = 16;                       // Minimum points for a plane (16)
+  int minPoints = 9;                        // Minimum points for a plane (16)
   planeFitter = new surface::MoSPlanes3D(
       surface::MoSPlanes3D::Parameter(pyrLevels, nbDist, thrAngleNormalClustering, inlDist, sigma, minPoints,
       pclA::NormalsEstimationNR::Parameter(5, nbDist, 1000, 0.001, 5, 0.001),
@@ -223,8 +223,8 @@ void SegLearner::configure(const map<string,string> & _config)
   annotation = new anno::Annotation();
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 0, 16);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 8);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 9);
-  annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+  annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
   /// eval svm
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 9, 15);
@@ -382,9 +382,9 @@ void SegLearner::processImageNew()
   
   /// MOS-Plane fitting
   if(deb) log("MoS-Plane fitter start!");
-  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
-  pclA::FilterZ(pcl_cloud_filtered, 0.3, 1.5);      // z filtering for 1.5 meters
-  planeFitter->setInputCloud(pcl_cloud_filtered);
+//   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
+  pclA::FilterZ(pcl_cloud, 0.3, 1.5);      // z filtering for 1.5 meters
+  planeFitter->setInputCloud(pcl_cloud);
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices);
@@ -396,8 +396,9 @@ void SegLearner::processImageNew()
 //   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
 
   printf("planeFitter->postprocess: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
+  postProcessIndices.clear();
   planeFitter->postprocessResults(postProcessIndices);
-  printf("planeFitter->postprocess: end\n");
+  printf("planeFitter->postprocess: end: found indices: %u\n", postProcessIndices.size());
 
 // printf("Post-surfaces:\n");
 // for(unsigned i=0; i<surfaces.size(); i++)
@@ -419,14 +420,10 @@ void SegLearner::processImageNew()
   if(deb) log("NURBS-Fitting end: size of surfaces: %u", surfaces.size());
 
   /// Check if we have line-models in the point cloud
-  planeFitter->checkPCLines(surfaces, postProcessIndices);
+  printf("planeFitter->checkPCLines: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
+  planeFitter->checkPCLines(surfaces, checkPCLines);
+  printf("planeFitter->checkPCLines: end\n");
 
-// for(unsigned i=0; i< pcl_model_types.size(); i++) {
-//   if(pcl_model_types[i] == pcl::SACMODEL_PLANE)
-//     printf(" %u is plane\n", i);
-//   else 
-//     printf(" %u is no plane!\n", i);
-// }
 
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f", timespec_diff(&current, &last));
@@ -466,6 +463,11 @@ void SegLearner::processImageNew()
   patches->setTexture(texture);
   patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
   patches->computeLearnRelations();
+
+  if(deb) log("Calculate patch-relations for 2nd SVM: start!");
+  patches->computeLearnRelations2();
+  if(deb) log("Calculate patch-relations for 2nd SVM: end!");
+
   patches->getRelations(relation_vector);
 
   pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
@@ -611,6 +613,30 @@ void SegLearner::SingleShotMode()
           pt[1] = pcl_cloud->points[postProcessIndices[i]].y;
           pt[2] = pcl_cloud->points[postProcessIndices[i]].z;
           pt[3] = col.float_value;
+          printf("Draw a postProcessIndices point [u]: %3.2f-%3.2f-%3.2f\n", postProcessIndices[i], pt[0], pt[1], pt[2]);
+          col_points.push_back(pt);
+        }
+        printf("col_points.size: %lu\n", col_points.size());
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+        tgRenderer->Update();
+      }
+      break; 
+      
+    case '5':
+      log("Show checkPCLines points (of MoSPlanes3D).");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        RGBValue col;
+        col.float_value = GetRandomColor();
+        for(unsigned i=0; i<checkPCLines.size(); i++) {
+          cv::Vec4f pt;
+          pt[0] = pcl_cloud->points[checkPCLines[i]].x;
+          pt[1] = pcl_cloud->points[checkPCLines[i]].y;
+          pt[2] = pcl_cloud->points[checkPCLines[i]].z;
+          pt[3] = col.float_value;
           col_points.push_back(pt);
         }
         tgRenderer->Clear();
@@ -619,7 +645,7 @@ void SegLearner::SingleShotMode()
       }
       break; 
 
-    case '5':
+    case '6':
       log("Show PATCHES");
       tgRenderer->ClearModels();
       if(showImages)
@@ -659,7 +685,7 @@ void SegLearner::SingleShotMode()
       }
       break;
       
-    case '6':
+    case '7':
       log("Draw normals");
       if(repro) {
         log("Draw original normals");
@@ -720,9 +746,13 @@ void SegLearner::SingleShotMode()
     case  '0':
     {
       log("Show mesh of surfaces. wait ...");
-        surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
-        createMesh.setInputCloud(pcl_cloud);
-        createMesh.compute(surfaces);
+        if(surfaces.size() != 0)
+          if(surfaces[0]->mesh.m_vertices.empty())
+          {
+            surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
+            createMesh.setInputCloud(pcl_cloud);
+            createMesh.compute(surfaces);
+          }
         tgRenderer->Clear();
         tgRenderer->ClearModels();
         for (unsigned i=0; i<surfaces.size(); i++)
