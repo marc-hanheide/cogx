@@ -159,8 +159,11 @@ vector<SurfacePoint>  GraphCutSegmenter::filter3DPoints(const vector<SurfacePoin
   {
     int x=projPoints[i].x;
     int y=projPoints[i].y;
-    if (segMask.data[y*segMask.width + x] == 1)
-      filtSurfPoints.push_back(surfPoints[i]);
+    if (x >= 0 && y >= 0 && x < segMask.width && y < segMask.height
+        && segMask.data[y*segMask.width + x] == 1)
+    {
+        filtSurfPoints.push_back(surfPoints[i]);
+    }
     else
       errProjPoints.push_back(projPoints[i]);
 
