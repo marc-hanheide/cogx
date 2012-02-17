@@ -1160,26 +1160,27 @@ void NavGraphProcess::runComponent()
 
     while(!m_graphEventQueue.empty()) {
       GraphEventType type = m_graphEventQueue.front().first;
-      const cdl::WorkingMemoryChange &wmc = m_graphEventQueue.front().second;
+      cdl::WorkingMemoryAddress addr = m_graphEventQueue.front().second;
       m_graphEventQueue.pop_front();
       
       m_eventQueueMutex.unlock();
 
       switch(type) {
 	case NEW_OBJ_OBS:
-	  processNewObjObs(wmc);
+	  processNewObjObs(addr);
 	  break;
 	case NEW_VISUAL_OBJECT:
-	  processNewVisualObject(wmc);
+	  processNewVisualObject(addr);
 	  break;
 	case NEW_DOOR_HYPTOHESIS:
-	  processNewDoorHypothesis(wmc);
+	  processNewDoorHypothesis(addr);
 	  break;
       }
 
       m_eventQueueMutex.lock();
     }
     m_eventQueueMutex.unlock();
+
 
     m_scanQueueMutex.lock();
 
@@ -1250,13 +1251,13 @@ void NavGraphProcess::newVisualObject(const cast::cdl::WorkingMemoryChange & wmC
 {
   IceUtil::Mutex::Lock lock(m_GraphMutex);
 
-  m_graphEventQueue.push_back(pair<GraphEventType, const cast::cdl::WorkingMemoryChange &>
-      (NEW_VISUAL_OBJECT, wmChange));
+  m_graphEventQueue.push_back(pair<GraphEventType, cast::cdl::WorkingMemoryAddress>
+      (NEW_VISUAL_OBJECT, wmChange.address));
 }
 
-void NavGraphProcess::processNewVisualObject(const cast::cdl::WorkingMemoryChange & wmChange)
+void NavGraphProcess::processNewVisualObject(const cast::cdl::WorkingMemoryAddress & addr)
 {
-	VisionData::VisualObjectPtr visualObjectPtr = getMemoryEntry<VisionData::VisualObject>(wmChange.address);
+	VisionData::VisualObjectPtr visualObjectPtr = getMemoryEntry<VisionData::VisualObject>(addr);
 
 	string category = visualObjectPtr->identLabels[0];
 	double probability = visualObjectPtr->identDistrib[0];
@@ -1331,14 +1332,14 @@ void NavGraphProcess::newObjObs(const cdl::WorkingMemoryChange &objID)
 {
   IceUtil::Mutex::Lock lock(m_GraphMutex);
 
-  m_graphEventQueue.push_back(pair<GraphEventType, const cast::cdl::WorkingMemoryChange &> 
-      (NEW_OBJ_OBS, objID));
+  m_graphEventQueue.push_back(pair<GraphEventType, const cast::cdl::WorkingMemoryAddress> 
+      (NEW_OBJ_OBS, objID.address));
 }
 
-void NavGraphProcess::processNewObjObs(const cdl::WorkingMemoryChange &objID) 
+void NavGraphProcess::processNewObjObs(const cdl::WorkingMemoryAddress &addr) 
 {
   shared_ptr<CASTData<NavData::ObjObs> > oobj =
-    getWorkingMemoryEntry<NavData::ObjObs>(objID.address);
+    getWorkingMemoryEntry<NavData::ObjObs>(addr);
 
   log("Observed object of category \"%s\"", oobj->getData()->category.c_str());
 
@@ -1739,18 +1740,18 @@ void NavGraphProcess::checkForNodeChanges()
 void 
 NavGraphProcess::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 {
-  IceUtil::Mutex::Lock lock(m_GraphMutex);
+  IceUtil::Mutex::Lock lock(m_eventQueueMutex);
 
-  m_graphEventQueue.push_back(pair<GraphEventType, const cdl::WorkingMemoryChange &> 
-      (NEW_DOOR_HYPTOHESIS, objID));
+  m_graphEventQueue.push_back(pair<GraphEventType, const cdl::WorkingMemoryAddress> 
+      (NEW_DOOR_HYPTOHESIS, objID.address));
 }
 
 void 
-NavGraphProcess::processNewDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
+NavGraphProcess::processNewDoorHypothesis(const cast::cdl::WorkingMemoryAddress &addr)
 {
   try {
     FrontierInterface::DoorHypothesisPtr doorHyp =
-      getMemoryEntry<FrontierInterface::DoorHypothesis>(objID.address);
+      getMemoryEntry<FrontierInterface::DoorHypothesis>(addr);
 
     if (doorHyp != 0) {
       double doorX = doorHyp->x;

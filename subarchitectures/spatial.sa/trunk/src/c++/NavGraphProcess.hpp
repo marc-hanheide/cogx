@@ -134,9 +134,9 @@ private:
   void newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
   
   // The above merely queue events; the methods below do the work
-  void processNewObjObs(const cast::cdl::WorkingMemoryChange &objID);
-  void processNewVisualObject(const cast::cdl::WorkingMemoryChange & wmChange);
-  void processNewDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID);
+  void processNewObjObs(const cast::cdl::WorkingMemoryAddress &objID);
+  void processNewVisualObject(const cast::cdl::WorkingMemoryAddress & wmChange);
+  void processNewDoorHypothesis(const cast::cdl::WorkingMemoryAddress &objID);
   void processScan(Cure::LaserScan2d &cureScan);
 
   // Callback function for new door hypothesis
@@ -162,7 +162,7 @@ private:
   IceUtil::Mutex m_scanQueueMutex;
 
   enum GraphEventType {NEW_OBJ_OBS, NEW_VISUAL_OBJECT, NEW_DOOR_HYPTOHESIS};
-  std::deque<std::pair<GraphEventType, const cast::cdl::WorkingMemoryChange &> >
+  std::deque<std::pair<GraphEventType, cast::cdl::WorkingMemoryAddress> >
     m_graphEventQueue;
 
   std::deque<Cure::LaserScan2d> m_scanQueue;
