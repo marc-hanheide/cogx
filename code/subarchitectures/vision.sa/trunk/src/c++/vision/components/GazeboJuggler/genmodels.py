@@ -37,6 +37,32 @@ Fonts = {
 #        fim = img.copy().crop(fp)
 #        fim.save("xdata/x-%s-%s.png" % (self.name, fl[6]))
 
+def readConfig(fname):
+    res = {}
+    section = None
+    content = []
+    def addSection(section, content):
+        content = "".join(content)
+        if section.startswith("python:"):
+            content = eval(content)
+            section = section[7:]
+        res[section] = content
+
+    for line in open(fname).readlines():
+        sline = line.strip()
+        if sline.startswith("[") and sline.endswith("]"):
+            if section != None:
+                addSection(section, content)
+                content = []
+            section = sline.strip(" \t[]")
+            continue
+        content.append(line)
+
+    if section != None:
+        addSection(section, content)
+
+    return res
+
 tmpl_material = """
 material %(material_name)s
 {
@@ -53,80 +79,7 @@ material %(material_name)s
 }
 """
 
-tmpl_box = {
-        "face": """
-<visual>
-  <xyz>%(px)g %(py)g %(pz)g</xyz>
-  <scale>%(sx)g %(sy)g %(sz)g</scale>
-  <mesh>unit_box</mesh>
-  <material>%(material_name)s</material>
-</visual>
-""",
-
-        "geometry": """
-<geom:box name="%(model_name)s_geom">
-  <xyz>0 0 0</xyz>
-  <rpy>0 0 0</rpy>
-  <size>%(sx)g %(sy)g %(sz)g</size>
-  <mass>0.1</mass>
-
-  %(faces)s
-
-</geom:box>
-""",
-
-        "body": """
-<body:box name="%(model_name)s_body">
-  <xyz>0 0 0</xyz>
-  <rpy>0 0 0</rpy>
-
-  <mass>0.05</mass>
-  <massMatrix>true</massMatrix>
-  <ixx>0.001</ixx>
-  <ixy>0.0</ixy>
-  <ixz>0.0</ixz>
-  <iyy>0.0005</iyy>
-  <iyz>0.0</iyz>
-  <izz>0.001</izz>
-  <cx>0.0</cx>
-  <cy>0.0</cy>
-  <cz>0.0</cz>
-
-  %(geometry)s
-
-</body:box>
-""",
-
-        "model": """
-<model:physical name="%(model_name)s_model"
-  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
-  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
-  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
-  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
-  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
-  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
-  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
-  >
-
-  <xyz>0 0 0</xyz>
-  <rpy>0 0 0</rpy>
-  <static>false</static>
-  <canonicalBody>%(model_name)s_body</canonicalBody>
-
-  %(body)s
-
-</model:physical>
-""",
-
-        "face-locations": [ # position, scale, name
-                ( 0.5, 0, 0, 0, 1, 1, "left"),
-                (-0.5, 0, 0, 0, 1, 1, "right"),
-                (0,  0.5, 0, 1, 0, 1, "front"),
-                (0, -0.5, 0, 1, 0, 1, "back"),
-                (0, 0,  0.5, 1, 1, 0, "top"),
-                (0, 0, -0.5, 1, 1, 0, "bottom"),
-               ]
-}
+tmpl_box = readConfig("res/box.tmpl")
 
 class OgreBox:
     def __init__(self, name, prefix="cogxGeneratedModel", size = (1.0, 1.0, 1.0), color = (0.2, 0.4, 1.0)):
