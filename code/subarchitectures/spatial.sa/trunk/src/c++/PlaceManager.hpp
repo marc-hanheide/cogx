@@ -137,6 +137,9 @@ class PlaceManager : public cast::ManagedComponent
     void deletePlaceholderProperties(int placeID);
     void deletePlaceholder(int placeId);
     bool createPlaceholder(int curPlaceId, double x, double y);
+    void updatePlaceholders();
+    int updatePlaceholder(int placeholderId,std::vector<long> nodeids);
+
     int updatePlaceholderEdge(int placeholderId);
     bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
 
