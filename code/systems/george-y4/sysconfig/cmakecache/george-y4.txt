@@ -76,7 +76,7 @@ set(BUILD_SA_PLANNER_DOWNWARD ON CACHE BOOL "Build fast downward planner in plan
 set(BUILD_SA_PLANNER_DT OFF CACHE BOOL "Build DT planner in planner.sa")
 set(BUILD_SA_PLANNER_FF OFF CACHE BOOL "Build FF planner in planner.sa")
 set(BUILD_SA_PLANNER_PROB_DOWNWARD OFF CACHE BOOL "Build probabillistic fast downward planner in planner.sa")
-set(BUILD_SA_PLANNER_TFD ON CACHE BOOL "Build TFD planner in planner.sa")
+set(BUILD_SA_PLANNER_TFD OFF CACHE BOOL "Build TFD planner in planner.sa")
 set(BUILD_SA_SPATIAL ON CACHE BOOL "Build spatial subarchitecure")
 set(BUILD_SA_SPATIAL_PEEKABOT OFF CACHE BOOL "Build spatial.sa PeekaBot components")
 set(BUILD_SA_SPATIAL_RELATIONMANAGER OFF CACHE BOOL "Build spatial.SA ObjectRelationManager component")
