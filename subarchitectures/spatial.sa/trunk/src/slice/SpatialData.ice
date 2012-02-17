@@ -17,6 +17,7 @@ module SpatialData {
   sequence<bool> BoolSeq;
   sequence<DoubleOpt> CoordinateSeq;
   sequence<long> PlaceIDSeq;
+  sequence<long> NodeIDSeq;  
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
 
@@ -432,6 +433,7 @@ class ProcessViewPointCommand {
   interface MapInterface {
     bool isCircleObstacleFree(double x, double y, double radius);
     int findClosestNode(double x, double y);
+    int findClosestPlace(double x, double y, NodeIDSeq nodeids);
     LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
     DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount);
   };
