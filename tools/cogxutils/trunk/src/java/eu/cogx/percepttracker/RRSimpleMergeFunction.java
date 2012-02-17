@@ -46,8 +46,8 @@ import eu.cogx.beliefs.slice.VerifiedBelief;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class RRMergerMatcher<From extends dBelief, Via extends dBelief, To extends dBelief>
-		implements WMMerger.MatcherFunction<From, Via, To> {
+public class RRSimpleMergeFunction<From extends dBelief, Via extends dBelief, To extends dBelief>
+		implements WMSimpleMerger.MergeFunction<From, Via, To> {
 
 	/** the very small epsilon to test doubles for equality */
 	private static final double EPSILON_EQUALITY = 1e-10;
@@ -69,7 +69,7 @@ private final Class<Via> m_viaCls;
 	 *            they will never match and an update will cause an
 	 *            {@link IncompatibleAssignmentException}
 	 */
-	public RRMergerMatcher(List<String> types, PointerMap<?> map,
+	public RRSimpleMergeFunction(List<String> types, PointerMap<?> map,
 			Class<From> _fromCls, Class<Via> _viaCls, Class<To> _toCls) {
 		super();
 		this.beliefTypes = types;
@@ -81,7 +81,7 @@ private final Class<Via> m_viaCls;
 
 	}
 
-	public RRMergerMatcher(List<String> types, PointerMap<?> map,
+	public RRSimpleMergeFunction(List<String> types, PointerMap<?> map,
 			Collection<String> ignoreKeys, Class<From> _fromCls, Class<Via> _viaCls,
 			Class<To> _toCls) {
 		this(types, map, _fromCls, _viaCls, _toCls);
@@ -101,7 +101,7 @@ private final Class<Via> m_viaCls;
 	 * WorkingMemoryAddress, cast.cdl.WorkingMemoryChange, Ice.ObjectImpl)
 	 */
 	@Override
-	public To create(WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
+	public To createDest(WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
 			From from) throws IncompatibleAssignmentException {
 				
 		if (beliefTypes != null)
@@ -122,7 +122,30 @@ private final Class<Via> m_viaCls;
 					+ m_toCls + " due to incompatible data types"));
 		}
 	}
+		
+		@Override
+		public Via createVia(WorkingMemoryAddress idToCreate, WorkingMemoryChange wmc,
+			From from) throws IncompatibleAssignmentException {
+				
+		if (beliefTypes != null)
+			if (!beliefTypes.contains(from.type)) {
+				return null;
+			}
+		try {
+			CASTIndependentFormulaDistributionsBelief<Via> gb = CASTIndependentFormulaDistributionsBelief
+					.create(m_viaCls);
+			CASTIndependentFormulaDistributionsBelief<From> pb = createFromBeliefProxy(from);
 
+			gb.setType(pb.getType());
+			gb.setTime(pb.getStartTime(), pb.getEndTime());
+			gb.setId(idToCreate.id);
+			return gb.get();
+		} catch (ClassCastException e) {
+			throw (new IncompatibleAssignmentException("cannot create new "
+					+ m_viaCls + " due to incompatible data types"));
+		}
+
+	}
 
 	/*
 	 * (non-Javadoc)
