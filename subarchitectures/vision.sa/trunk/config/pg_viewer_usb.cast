@@ -1,0 +1,17 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+
+# live images from stereo rig with PointGreyUSB
+###############################################
+#CPP MG VideoServer PointGreyServerUSB --imgsize "640 480" --framerate_fps "7" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue # --setAutPropAdj "1 1 1 1 1 0"  --format7 "640 480 0 0 1 1600" 
+CPP MG VideoServer PointGreyServerUSB --imgsize "1280 960" --framerate_fps "3" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue # --setAutPropAdj "1 1 1 1 1 0"  --format7 "640 480 0 0 1 1600" 
+
+
+# start cast-components
+#######################
+#CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0" --log
+CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0 1" --log
