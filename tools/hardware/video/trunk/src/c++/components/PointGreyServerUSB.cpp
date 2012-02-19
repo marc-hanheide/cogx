@@ -124,7 +124,7 @@ FlyCapture2::VideoMode PointGreyServerUSB::selectVideoMode(int &_width, int &_he
   {
     _height = 480;
     if(fps > 15) log("Maybe too high framerate requested: <= 15fps recommended.");
-    return FlyCapture2::VIDEOMODE_640x480Y16; //VIDEOMODE_640x480RGB;                                                                 /// TODO TODO TODO 
+    return FlyCapture2::VIDEOMODE_640x480Y8; //VIDEOMODE_640x480RGB;                                                                 /// TODO TODO TODO 
   }
   if(_width == 1280)
   {
@@ -330,37 +330,10 @@ void PointGreyServerUSB::retrieveFrameInternal(int camIdx, int width, int height
 printf("retirieveFrameInternal: %u\n", camIdx);
   // we convert the image to RGB8, if format is different
   FlyCapture2::Image image;
-  if(retrievedImages[camIdx].GetPixelFormat() == FlyCapture2::PIXEL_FORMAT_MONO8)
-    printf(" => is pixel format mono8! \n");
   if(retrievedImages[camIdx].GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8) 
-  {
     retrievedImages[camIdx].Convert(FlyCapture2::PIXEL_FORMAT_RGB8, &image);
-//     if(image.GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8) {                                                     /// TODO Was machen wir hier? Umwandeln in RGB format, oder wie?
-//       printf(" => is not pixel format mono16! \n"); 
-//     }
-  }
   else
     image = retrievedImages[camIdx];
-
-  
-  // show image
-// printf("retirieveFrameInternal: show image\n");
-//   static bool first = true;
-//   if (first){
-//     printf("retirieveFrameInternal: create window\n");
-//     cvNamedWindow("retrieved", CV_WINDOW_AUTOSIZE);
-//   }
-//   first = false;
-// printf("retirieveFrameInternal: show image 1\n");
-//   Video::Image s_img;
-//   IplImage *ipl_img = 0;
-//   copyImage(image, s_img);
-// printf("retirieveFrameInternal: show image 2\n");
-//   convertImageToIpl(s_img, &ipl_img);
-// printf("retirieveFrameInternal: show image 3\n");
-//   cvShowImage("retrieved", ipl_img);
-// printf("retirieveFrameInternal: show image done\n");
- 
   
   // if image size is greater than actual image size, change camera capturing mode to higher resolution.
   if (width > this->width)
