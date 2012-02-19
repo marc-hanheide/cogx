@@ -15,12 +15,15 @@ CPP TM AlwaysPositiveTaskManager
 #CPP MG VideoServer OpenCvLiveServer --videoname video --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml" --debug --log
 
 
-# live images from stereo rig with PointGray
+# live images from stereo rig with PointGrey
 ############################################
-CPP MG VideoServer PointGreyServer --setAutPropAdj "1 1 1 1 1 0" --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue #--format7 "640 480 0 0 1 1600" 
+#CPP MG VideoServer PointGreyServer --imgsize "640 480" --framerate_fps "15" --camids "0" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml"  --log --debug --swapredblue #--setAutPropAdj "1 1 1 1 1 0" --format7 "640 480 0 0 1 1600" 
+#CPP MG VideoServer PointGreyServer --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue # --setAutPropAdj "1 1 1 1 1 0"  --format7 "640 480 0 0 1 1600" 
+CPP MG VideoServer PointGreyServer --imgsize "1280 960" --framerate_fps "3" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue # --setAutPropAdj "1 1 1 1 1 0"  --format7 "640 480 0 0 1 1600" 
 
 
 # start cast-components
 #######################
 #CPP MG VideoViewer VideoViewer --videoname VideoServer --camids "0 1"
-#CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0 1" --log
+CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0 1" --log
+#CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0" --log
