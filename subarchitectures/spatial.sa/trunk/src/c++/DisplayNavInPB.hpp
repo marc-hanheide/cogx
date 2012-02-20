@@ -58,6 +58,8 @@ namespace spatial
  *
  * @author Patric Jensfelt
  */
+
+
 class DisplayNavInPB : public cast::ManagedComponent, public Scan2dReceiver, public cast::PointCloudClient
 {
 
@@ -67,6 +69,7 @@ public:
 	virtual void runComponent();
 	virtual void start();
 
+ 
 protected:
 	virtual void configure(const std::map<std::string, std::string>& _config);
 	void debugScanPush(const char* msg) {} //debug(msg); }
@@ -97,6 +100,7 @@ private:
 		SpatialData::PlaceStatus placeStatus;
 		int nodeId;
 	};
+
 
 	void receiveScan2d(const Laser::Scan2d &scan);
 	void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);

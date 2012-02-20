@@ -97,7 +97,7 @@ void SpatialControl::connectPeekabot()
 
     if (m_usePeekabot){
       log("Showing grid map in Peekabot");
-      m_ProxyMap.add(m_PeekabotClient, "map",peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyMap.add(m_PeekabotClient, "frontiers",peekabot::REPLACE_ON_CONFLICT);
     }
 
     log("Connection to Peekabot established");
@@ -113,7 +113,7 @@ void SpatialControl::connectPeekabot()
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
     m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize, 
-    1,1,1,
+    0.8,0.9,1,
     0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet2D cells;
     m_ProxyGridMap.set_cells(cells);
@@ -885,6 +885,8 @@ void SpatialControl::updateGridMaps()
   if (hasScanPose && m_ptzInNavigationPose && time-lastptztime > 1) {
     PointCloud::SurfacePointSeq points;
     getPoints(true, 640/4, points);
+    
+    
     std::sort(points.begin(), points.end(), ComparePoints());
     for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
       /* Ignore points not in the current view cone */
@@ -1033,9 +1035,6 @@ void SpatialControl::runComponent()
   while(isRunning()){
 	if(count  == 12){
 	  if (m_saveLgm) SaveGridMap();
-      if(m_usePeekabot){
-        UpdateGridMap();
-      }
 	  count = 0;
 	}
     count++;
@@ -1054,6 +1053,10 @@ void SpatialControl::runComponent()
 //    if (m_UsePointCloud) {
       updateGridMaps();
 //    }	
+
+      if(m_usePeekabot){
+        UpdateGridMap();
+      }
 
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
@@ -1380,6 +1383,10 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
+  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+        cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
+        cureOdom.getTime().getDouble());
+
   //Can't defer this; odometry must be in the TOPP before
   //the new RobotPose arrives
   {
@@ -1400,7 +1407,7 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 
 void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 {
-  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+  log("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f",
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
   log("CASTTime: %f",getCASTTime().s+1e-6*getCASTTime().us);
