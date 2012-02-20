@@ -98,13 +98,25 @@ void PointGreyViewer::receiveImages(const std::vector<Video::Image>& images)
 	if(images.size() == 2)
 	{
 		IplImage *iplImage0 = convertImageToIpl(images[0]);
-		cvShowImage("PointGreyViewer: LEFT", iplImage0);
+    IplImage *iplImage0_new = convertImageToIpl(images[0]);
+    cvConvertImage(iplImage0, iplImage0_new, CV_BayerGB2BGR);//COLOR_BayerBG2RGB
+		cvShowImage("PointGreyViewer: LEFT", iplImage0_new);
 		cvReleaseImage(&iplImage0);
 
 		IplImage *iplImage1 = convertImageToIpl(images[1]);
 		cvShowImage("PointGreyViewer: RIGHT", iplImage1);
 		cvReleaseImage(&iplImage1);
+    
+    cv::waitKey(100);
 	}
+	else  if(images.size() == 1)
+  {
+    IplImage *iplImage0 = convertImageToIpl(images[0]);
+    cvShowImage("PointGreyViewer: LEFT", iplImage0);
+    cvReleaseImage(&iplImage0);
+
+    cv::waitKey(100);
+  }
 	else 
 		println("wrong size of image array.");
 }
@@ -265,6 +277,8 @@ void PointGreyViewer::runComponent()
 			IplImage *iplImage1 = convertImageToIpl(image_r);
 			cvShowImage("PointGreyViewer: RIGHT", iplImage1);
 			cvReleaseImage(&iplImage0);
+      
+      cv::waitKey(100);
 		}
   }
 }
