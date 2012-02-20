@@ -3,7 +3,7 @@
 <pbport>5050</pbport>
 <views>
     <view>
-        <name>Top view</name>
+        <name>Top down</name>
         <camera>
             <orthographic>true</glob>
             <glob>true</glob>
@@ -22,10 +22,11 @@
             <object>grid_map</object>
             <object hidden="true">walls</object>
             <object hidden="true">pdf1</object>
+            <object hidden="true">planned_viewpoints</object>
         </objects>
     </view>
     <view>
-        <name>Scene view</name>
+        <name>Scene</name>
         <camera>
             <glob>true</glob>
             <x>1</x>        
@@ -43,6 +44,29 @@
             <object>grid_map</object>
             <object>walls</object>
             <object hidden="true">pdf1</object>
+            <object hidden="true">planned_viewpoints</object>
+        </objects>
+    </view>
+    <view>
+        <name>Search</name>
+        <camera>
+            <glob>true</glob>
+            <x>0</x>        
+            <y>0</y>        
+            <z>0</z>        
+            <yaw>0</yaw>        
+            <pitch>0.5</pitch>        
+            <roll>0.01</roll>        
+        </camera>
+        <objects>
+            <object>robot</object>
+            <object>labels</object>
+            <object>graph</object>
+            <object>frontiers</object>
+            <object>grid_map</object>
+            <object>walls</object>
+            <object>pdf1</object>
+            <object>planned_viewpoints</object>
         </objects>
     </view>
 </views>
