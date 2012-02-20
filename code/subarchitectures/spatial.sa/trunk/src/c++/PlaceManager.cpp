@@ -812,6 +812,7 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
     
     double minDistanceSq = FLT_MAX;
 
+/*
     if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
       for (vector<FrontierInterface::NodeHypothesisPtr>::iterator rejectedHypIt =
           m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
@@ -822,7 +823,7 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
         }
       }
     }
-
+*/
     if (minDistanceSq < m_minNodeSeparation * m_minNodeSeparation) {
       continue;
     }
@@ -2483,9 +2484,13 @@ bool PlaceManager::deleteConnectivityProperty(int place1ID, int place2ID) {
     string placeIDstr = concatenatePlaceIDs(place1ID,place2ID);
     map<string,string>::iterator it = m_placeIDsToConnectivityWMID.find(placeIDstr);
     if(it != m_placeIDsToConnectivityWMID.end()) {
-      deleteFromWorkingMemory(it->second);
-      place1Connectivities.erase(place2ID);
-      m_placeIDsToConnectivityWMID.erase(placeIDstr);
+      try {  
+          deleteFromWorkingMemory(it->second);
+          place1Connectivities.erase(place2ID);
+          m_placeIDsToConnectivityWMID.erase(placeIDstr);
+      } catch (...) {
+        error("Error! Can't delete from working memory!");
+      }
       return true;
     }
   }

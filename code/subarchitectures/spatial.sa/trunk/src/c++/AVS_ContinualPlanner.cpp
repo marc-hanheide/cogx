@@ -213,13 +213,8 @@ void AVS_ContinualPlanner::connectPeekabot()
 
 void AVS_ContinualPlanner::runComponent() {
 	log("I am running");
-    if(m_usePeekabot){
-        while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-            sleep(m_RetryDelay);
-            connectPeekabot();
-        }
-        CreateCurrentViewCone();    
-	}
+
+
     while(isRunning()){
 
 	  if (m_ptzWaitingStatus != NO_WAITING && m_waitingForPTZCommandID == "") {
@@ -298,7 +293,31 @@ AVS_ContinualPlanner::receivePointCloud(FrontierInterface::WeightedPointCloudPtr
 
 void AVS_ContinualPlanner::start() {
 	//Todo subscribe to View Cone Generation
+    if(m_usePeekabot){
+        while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+            sleep(m_RetryDelay);
+            connectPeekabot();
+        }
+        peekabot::ObjectProxy m_grid_map;
+        peekabot::ObjectProxy m_frontiers;
+        peekabot::ObjectProxy m_pdf;
+        peekabot::ObjectProxy m_2DOccGridProxy;
+//        peekabot::ObjectProxy planned_viewpoints;
+        peekabot::Status s;
+        s = m_grid_map.assign(m_PeekabotClient,"grid_map").status();
+        if( s.succeeded() ) m_grid_map.remove();
+        s = m_frontiers.assign(m_PeekabotClient,"frontiers").status();
+        if( s.succeeded() ) m_frontiers.remove();
+        s = m_pdf.assign(m_PeekabotClient, "pdf").status();
+        if( s.succeeded() ) m_pdf.remove();
+        s = m_2DOccGridProxy.assign(m_PeekabotClient, "combined_placemap2D").status();
+        if( s.succeeded() ) m_2DOccGridProxy.remove();
+//        s = planned_viewpoints.assign(m_PeekabotClient, "planned_viewpoints").status();
+//        if( s.succeeded() ) planned_viewpoints.remove();
+        
 
+        CreateCurrentViewCone();    
+	}
 	addChangeFilter(createGlobalTypeFilter<
 			SpatialData::RelationalViewPointGenerationCommand> (cdl::ADD),
 			new MemberFunctionChangeReceiver<AVS_ContinualPlanner> (this,

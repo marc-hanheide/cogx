@@ -16,6 +16,7 @@ include(${QT_USE_FILE})
 find_package(Eigen2 REQUIRED)
 include_directories(${EIGEN2_INCLUDE_DIRS})
 
+find_package(PkgConfig)
 
 if (NOT APPLE)
 	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-as-needed")
@@ -90,7 +91,7 @@ include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 
 add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} PTZ NavData VisionData SpatialData Laser Scan2dReceiver ComaData ConceptualData SpatialProbabilities SpatialProperties)
+link_cast_component(${CAST_COMPONENT_NAME} ${GTKMM_LIBRARIES} PTZ NavData VisionData SpatialData Laser Scan2dReceiver ComaData ConceptualData SpatialProbabilities SpatialProperties)
 #link_cast_component(${CAST_COMPONENT_NAME} PointCloud)
 link_cast_component(${CAST_COMPONENT_NAME} CureTransformation CureSensory CureAddressBank CureFilters CureNav CureMapApps CureMSpace CureNavX CureMapX CureMapBase CureMapWall CureMapPoint CureMapHLine CureMapRangedPoint CureRelativePointFeature CureSensorData CureGeometry CureMath CureUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
