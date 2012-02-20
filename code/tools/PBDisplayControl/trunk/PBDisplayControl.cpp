@@ -168,7 +168,9 @@ void ControlWindow::on_selection_changed(){
         peekabot::Status s;
         s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
         if( s.succeeded() ) {
-            pb_camera.set_position(ps.views[vid].camera.x,ps.views[vid].camera.y,ps.views[vid].camera.z);
+            if (!follow_robot.get_active()){            
+                pb_camera.set_position(ps.views[vid].camera.x,ps.views[vid].camera.y,ps.views[vid].camera.z);
+            }
             pb_camera.set_rotation(ps.views[vid].camera.yaw,ps.views[vid].camera.pitch,ps.views[vid].camera.roll);
             pb_camera.set_orthographic(ps.views[vid].camera.orthographic);
         }
