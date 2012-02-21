@@ -255,10 +255,10 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
 
   if (_config.find("--no-local-map-window") == _config.end()) {
-    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+//    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
     println("Will use X window to show the current local map");
   } else {
-    m_Displaylgm1 = 0;
+//    m_Displaylgm1 = 0;
     println("Will NOT use X window to show the current local map");
   }
 
