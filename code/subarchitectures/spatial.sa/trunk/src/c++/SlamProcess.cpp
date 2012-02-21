@@ -110,6 +110,7 @@ void SlamProcess::configure(const map<string,string>& _config)
     log("Using sigmaR=%fm", sigmaR);
   }
 
+
   m_MapFilename = "";
   it = _config.find("-m");
   if(it != _config.end()) {
@@ -123,20 +124,27 @@ void SlamProcess::configure(const map<string,string>& _config)
     loc->dontDisplay();
     m_RunningSLAM = false;
     m_PP = loc;
-    
+
     if (loc->config(configfile)) {
       printf("SlamThread::configure Failed to config localization with \"%s\"\n",
-             configfile.c_str());
+	  configfile.c_str());
       m_PP = 0;
     } else if ( loc->loadMap(m_MapFilename) != 0) {
       printf("SlamThread::configure Failed to load map \"%s\"\n",
-             configfile.c_str());
+	  configfile.c_str());
       m_PP = 0;
     }
 
     if (m_PP == 0) {
       delete loc;
     }
+  }
+
+  m_PbPort = 5050;
+  cfg.getRoboLookHost(m_PbHost);
+  std::string tmpStr;
+  if (cfg.getString("PEEKABOT_HOST", true, tmpStr, usedCfgFile) == 0) {
+    m_PbHost = tmpStr;
   }
 
   if (m_PP == 0) {
@@ -147,7 +155,7 @@ void SlamProcess::configure(const map<string,string>& _config)
     slam->getPose();
     if ( slam->config(configfile) ) {
       log(string("SlamThread::configure Failed to config slam with \"")
-      	+ configfile + string("\"\nExiting"));
+	  + configfile + string("\"\nExiting"));
       exit(0);
     }
   }
@@ -162,7 +170,7 @@ void SlamProcess::configure(const map<string,string>& _config)
     str >> m_ScansToIgnoreBeforeStart;
   }
   printf("Will ignore first %d scans to make sure simulation is started",
-         m_ScansToIgnoreBeforeStart);
+      m_ScansToIgnoreBeforeStart);
 
   it = _config.find("--max-scan-rate");
   if (it != _config.end()) {
@@ -191,6 +199,13 @@ void SlamProcess::configure(const map<string,string>& _config)
 
 void SlamProcess::runComponent() 
 {  
+//    if(m_usePeekabot){
+        while(!m_PeekabotClient.is_connected()){
+            sleepComponent(1000);
+            connectPeekabot();
+        }
+//    }
+
   setupPushOdometry(*this, -1);
   if (m_MaxScanRate < 0) {
     setupPushScan2d(*this, -1);
@@ -257,6 +272,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
          odom.getX(), odom.getY(), odom.getTheta(), 
          odom.getTime().Seconds, odom.getTime().Microsec);
    m_PP->addOdometry(odom);
+   m_SLAMPoseProxy.set_pose(odom.getX(), odom.getY(), 2, odom.getTheta(), 0, 0);
    m_Mutex.unlock();
    unlockComponent();
 }
@@ -557,4 +573,27 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
   m_WriteMapToWorkingMemory = false;
 
   return 0;
+}
+
+void SlamProcess::connectPeekabot()
+{
+  try {
+    log("Trying to connect to Peekabot (again?) on host %s and port %d",
+        m_PbHost.c_str(), m_PbPort);
+    
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
+
+//    if (m_usePeekabot){
+      m_SLAMPoseProxy.add(m_PeekabotClient, "SLAM_Pose",peekabot::REPLACE_ON_CONFLICT);
+      m_SLAMPoseProxy.set_scale(0.1,0.04,0.04);
+//    }
+
+    log("Connection to Peekabot established");
+
+    
+  } catch(std::exception &e) {
+    log("Caught exception when connecting to peekabot (%s)",
+        e.what());
+    return;
+  }
 }

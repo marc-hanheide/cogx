@@ -16,6 +16,9 @@
 #ifndef SlamProcess_hpp
 #define SlamProcess_hpp
 
+#include <peekabot.hh>
+#include <peekabot/Types.hh>
+
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Scan2dReceiver.hpp>
 #include <OdometryReceiver.hpp>
@@ -88,6 +91,7 @@ public:
   int writeLineMapToWorkingMemory(bool overwrite);
   int extractMeasSet(Cure::LaserScan2d &cureScan, Cure::MeasurementSet &mSet);
 
+  void connectPeekabot();
  private:
 
   void storeDataToFile();
@@ -147,6 +151,11 @@ public:
   bool m_DontWriteFiles;
 
   bool m_UpdateWithoutMotion;
+
+  peekabot::PeekabotClient m_PeekabotClient;
+  std::string m_PbHost;
+  int m_PbPort;
+  peekabot::CubeProxy m_SLAMPoseProxy;
 };
 
 }; // namespace navsa
