@@ -221,9 +221,9 @@ void SegLearner::configure(const map<string,string> & _config)
   
   /// init annotation for first-level svm learning
   annotation = new anno::Annotation();
-//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 0, 16);
+  annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 0, 16);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 8);
-  annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
   /// eval svm
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
@@ -397,10 +397,10 @@ void SegLearner::processImageNew()
 // for(unsigned i=0; i<surfaces.size(); i++)
 //   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
 
-  printf("planeFitter->postprocess: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
-  postProcessIndices.clear();
-  planeFitter->postprocessResults(postProcessIndices);
-  printf("planeFitter->postprocess: end: found indices: %u\n", postProcessIndices.size());
+//   printf("planeFitter->postprocess: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
+//   postProcessIndices.clear();
+//   planeFitter->postprocessResults(postProcessIndices);
+//   printf("planeFitter->postprocess: end: found indices: %u\n", postProcessIndices.size());
 
 // printf("Post-surfaces:\n");
 // for(unsigned i=0; i<surfaces.size(); i++)
@@ -422,9 +422,9 @@ void SegLearner::processImageNew()
   if(deb) log("NURBS-Fitting end: size of surfaces: %u", surfaces.size());
 
   /// Check if we have line-models in the point cloud
-  printf("planeFitter->checkPCLines: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
-  planeFitter->checkPCLines(surfaces, checkPCLines);
-  printf("planeFitter->checkPCLines: end\n");
+//   printf("planeFitter->checkPCLines: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
+//   planeFitter->checkPCLines(surfaces, checkPCLines);
+//   printf("planeFitter->checkPCLines: end\n");
 
 
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -615,7 +615,7 @@ void SegLearner::SingleShotMode()
           pt[1] = pcl_cloud->points[postProcessIndices[i]].y;
           pt[2] = pcl_cloud->points[postProcessIndices[i]].z;
           pt[3] = col.float_value;
-// printf("Draw a postProcessIndices point [u]: %3.2f-%3.2f-%3.2f\n", postProcessIndices[i], pt[0], pt[1], pt[2]);
+          printf("Draw a postProcessIndices point [%u]: %3.2f-%3.2f-%3.2f\n", postProcessIndices[i], pt[0], pt[1], pt[2]);
           col_points.push_back(pt);
         }
         printf("col_points.size: %lu\n", col_points.size());
