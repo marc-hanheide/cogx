@@ -246,19 +246,19 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_lgm2 = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
   m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
-  if (_config.find("--no-tentative-window") == _config.end()) {
-//    m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
+  if (_config.find("--tentative-window") != _config.end()) {
+    m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
     println("Will use X window to show the tentative local map");
   } else {
-//    m_Displaylgm2 = 0;
+    m_Displaylgm2 = 0;
     println("Will NOT use X window to show the tentative local map");
   }
 
-  if (_config.find("--no-local-map-window") == _config.end()) {
-//    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+  if (_config.find("--local-map-window") != _config.end()) {
+    m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
     println("Will use X window to show the current local map");
   } else {
-//    m_Displaylgm1 = 0;
+    m_Displaylgm1 = 0;
     println("Will NOT use X window to show the current local map");
   }
 
@@ -408,7 +408,7 @@ void LocalMapManager::runComponent()
 				}
 
 				if (m_Displaylgm1) {
-					//m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
+					m_Displaylgm1 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm1);
 					m_Displaylgm1->setMap(m_lgm1);
 				}
 				
@@ -424,12 +424,12 @@ void LocalMapManager::runComponent()
 		  //log("Updatin'");
 		  if (m_Displaylgm1) {
 				Cure::Pose3D currentPose = m_TOPP.getPose();
-//				m_Displaylgm1->updateDisplay(&currentPose);
+				m_Displaylgm1->updateDisplay(&currentPose);
 			}
 			
 		  if (m_Displaylgm2) {
 				Cure::Pose3D currentPose = m_TOPP.getPose();
-//				m_Displaylgm2->updateDisplay(&currentPose);
+				m_Displaylgm2->updateDisplay(&currentPose);
 		  }
 		  
 	    //log("Updated");

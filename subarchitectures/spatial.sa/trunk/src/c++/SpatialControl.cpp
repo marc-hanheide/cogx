@@ -454,14 +454,14 @@ void SpatialControl::configure(const map<string,string>& _config)
   if (_config.find("--display-cure-obstacle-map") != _config.end()) {
     m_DisplayCureObstacleMap = true;
     m_obstacleMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, 1, Cure::LocalGridMap<unsigned char>::MAP1);
-//    m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
+    m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
   }
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
   m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
 
-  if ((_config.find("--no-x-window") == _config.end())) {
+  if ((_config.find("--x-window") != _config.end())) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
     println("Will use X window to show the exploration map");
   } else {
@@ -470,13 +470,13 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   if(_config.find("--show-binary-map") != _config.end()) {
-//    m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+     m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
   } else {
     m_displayBinaryMap = 0;
   }
 
   if(_config.find("--show-categorical-map") != _config.end()) {
-//    m_displayCategoricalMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_categoricalMap);
+    m_displayCategoricalMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_categoricalMap);
   } else {
     m_displayCategoricalMap = 0;
   }
@@ -1079,7 +1079,7 @@ void SpatialControl::runComponent()
 //    }	
     }
 //FIXME Too slow!
-/*
+
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
       if (m_Displaylgm) {
@@ -1110,7 +1110,7 @@ void SpatialControl::runComponent()
 	m_displayObstacleMap->updateDisplay(&currentPose);
       }
     }
-*/	  
+	  
     if (m_odometryQueue.size() == 0) {
       usleep(250000);
     }
