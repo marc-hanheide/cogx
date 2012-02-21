@@ -1149,10 +1149,6 @@ void DisplayNavInPB::runComponent() {
 
   log("runComponent");
 
-  setupPushScan2d(*this, 0.2, m_LaserServerName);
-
-  log("Connected to the laser");
-
   while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
     sleep(m_RetryDelay);
     connectPeekabot();
@@ -1175,26 +1171,6 @@ void DisplayNavInPB::runComponent() {
 
 
       m_PeekabotClient.begin_bundle();
-
-
-      m_scanMutex.lock();
-      // Display the last laser scan
-      if(m_ShowScans && m_LaserConnected && !m_Scan.ranges.empty()) {
-
-
-        m_ProxyScan.clear_vertices();
-        double angStep = m_ScanAngFOV / (m_Scan.ranges.size() - 1);
-        double startAng = -m_ScanAngFOV / 2;
-        for (unsigned int i = 0; i < m_Scan.ranges.size(); i++) {
-          float x,y;
-          x = cos(startAng + i * angStep) * m_Scan.ranges[i];
-          y = sin(startAng + i * angStep) * m_Scan.ranges[i];
-          m_ProxyScan.add_vertex(x,y,0);
-        }
-
-
-      }
-      m_scanMutex.unlock();
 
       m_Mutex.lock();
 
@@ -1356,22 +1332,6 @@ void DisplayNavInPB::displayPeople()
   }
 
 }
-
-void DisplayNavInPB::receiveScan2d(const Laser::Scan2d &scan)
-{
-  cast::cdl::CASTTime ct;
-  ct = getCASTTime();
-  debug("Got scan n=%d, r[0]=%.3f a[0]=%.4f r[n-1]=%.3f da=%.4f t=%ld.%06ld @ t=%ld.%06ld",
-        scan.ranges.size(), scan.ranges[0], scan.startAngle,
-        scan.ranges[scan.ranges.size()-1], scan.angleStep,
-        (long)scan.time.s, (long)scan.time.us,
-        (long)ct.s, (long)ct.us);
-
-  m_scanMutex.lock();
-  m_Scan = scan;
-  m_scanMutex.unlock();
-}
-
 
 void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 {
@@ -2538,9 +2498,6 @@ void DisplayNavInPB::connectPeekabot()
       if (m_PbRobotFile == "CogXp3.xml" ||
 	  m_PbRobotFile == "CogX_base_arm.xml" ||
 	  m_PbRobotFile == "CogX_base.xml") {
-        s2 = m_ProxyLaser.assign(m_ProxyRobot, "chassis/rangefinder").status();
-        m_ScanAngFOV = M_PI/180.0*240;
-        m_ScanMaxRange = 5.6;
 
 		std::string path = "robot/chassis/superstructure/ptu/pan/tilt/baseline/cam_left";
 		s4 = m_ProxyCam.assign(m_PeekabotClient, path).status();
@@ -2559,24 +2516,6 @@ void DisplayNavInPB::connectPeekabot()
 		m_ProxyPan.set_dof(0);
 		m_ProxyTilt.set_dof(30*M_PI/180.0);
 
-
-      } else if (m_PbRobotFile == "B21.xml") {
-        s2 = m_ProxyLaser.assign(m_ProxyRobot, "model/rangefinder").status();
-        m_ScanAngFOV = M_PI/180.0*180;
-        m_ScanMaxRange = 8.0;
-      } else {
-        s2 = m_ProxyLaser.assign(m_ProxyRobot, "peoplebot_base/rangefinder").status();
-        m_ScanAngFOV = M_PI/180.0*180;
-        m_ScanMaxRange = 8.0;
-      }
-      if( s2.failed() ) {
-        log("Could not hook up to laser scanner, not using laser");
-        m_LaserConnected = false;
-      } else {
-
-        m_ProxyScan.add(m_ProxyLaser, "scan", peekabot::REPLACE_ON_CONFLICT);
-        m_ProxyScan.set_color(0,0,1);
-        m_LaserConnected = true;
 
       }
     }

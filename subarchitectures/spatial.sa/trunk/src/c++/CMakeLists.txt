@@ -91,7 +91,7 @@ include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 
 
 add_cast_component(DisplayNavInPB DisplayNavInPB.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} ${GTKMM_LIBRARIES} PTZ NavData VisionData SpatialData Laser Scan2dReceiver ComaData ConceptualData SpatialProbabilities SpatialProperties)
+link_cast_component(${CAST_COMPONENT_NAME} ${GTKMM_LIBRARIES} PTZ NavData VisionData SpatialData ComaData ConceptualData SpatialProbabilities SpatialProperties)
 #link_cast_component(${CAST_COMPONENT_NAME} PointCloud)
 link_cast_component(${CAST_COMPONENT_NAME} CureTransformation CureSensory CureAddressBank CureFilters CureNav CureMapApps CureMSpace CureNavX CureMapX CureMapBase CureMapWall CureMapPoint CureMapHLine CureMapRangedPoint CureRelativePointFeature CureSensorData CureGeometry CureMath CureUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
@@ -111,7 +111,7 @@ endif(BUILD_SA_SPATIAL_PEEKABOT)
 # link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 
 add_cast_component(SlamProcess SlamProcess.cpp)
-link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapBase CureMapWall CureMapPoint CureMapHLine CureMapRangedPoint CureRelativePointFeature CureMapApps CureNavX CureMapX)
+link_cast_component(${CAST_COMPONENT_NAME} peekabot CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapBase CureMapWall CureMapPoint CureMapHLine CureMapRangedPoint CureRelativePointFeature CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Scan2dReceiver Robotbase OdometryReceiver CureHWUtils)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
 

@@ -85,6 +85,10 @@ void SlamProcess::configure(const map<string,string>& _config)
   if (m_DontWriteFiles) log("Will NOT output files");
   else log("Will output files with robotpose and map"); 
 
+  m_usePeekabot = false;
+    if (_config.find("--usepeekabot") != _config.end())
+      m_usePeekabot= true;
+
   map<string,string>::const_iterator it;
 
   std::string configfile = "";
@@ -199,12 +203,12 @@ void SlamProcess::configure(const map<string,string>& _config)
 
 void SlamProcess::runComponent() 
 {  
-//    if(m_usePeekabot){
+    if(m_usePeekabot){
         while(!m_PeekabotClient.is_connected()){
             sleepComponent(1000);
             connectPeekabot();
         }
-//    }
+    }
 
   setupPushOdometry(*this, -1);
   if (m_MaxScanRate < 0) {
@@ -272,7 +276,11 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
          odom.getX(), odom.getY(), odom.getTheta(), 
          odom.getTime().Seconds, odom.getTime().Microsec);
    m_PP->addOdometry(odom);
-   m_SLAMPoseProxy.set_pose(odom.getX(), odom.getY(), 2, odom.getTheta(), 0, 0);
+
+    if (m_usePeekabot){
+        m_SLAMPoseProxy.set_pose(odom.getX(), odom.getY(), 2, odom.getTheta(), 0, 0);
+    }
+
    m_Mutex.unlock();
    unlockComponent();
 }
@@ -289,6 +297,17 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
     return;
   }
 
+    if (m_usePeekabot){
+        m_ProxyScan.clear_vertices();
+        double angStep = m_ScanAngFOV / (castScan.ranges.size() - 1);
+        double startAng = -m_ScanAngFOV / 2;
+        for (unsigned int i = 0; i < castScan.ranges.size(); i++) {
+          float x,y;
+          x = cos(startAng + i * angStep) * castScan.ranges[i];
+          y = sin(startAng + i * angStep) * castScan.ranges[i];
+          m_ProxyScan.add_vertex(x,y,0);
+        }
+    }
   debug("Got scan n=%d, r[0]=%.3f, r[n-1]=%.3f t=%ld.%06ld",
         castScan.ranges.size(), castScan.ranges[0], 
         castScan.ranges[castScan.ranges.size()-1],
@@ -584,8 +603,15 @@ void SlamProcess::connectPeekabot()
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
 //    if (m_usePeekabot){
+
+        m_ScanAngFOV = M_PI/180.0*240;
+        m_ScanMaxRange = 5.6;
+
       m_SLAMPoseProxy.add(m_PeekabotClient, "SLAM_Pose",peekabot::REPLACE_ON_CONFLICT);
       m_SLAMPoseProxy.set_scale(0.1,0.04,0.04);
+
+        m_ProxyScan.add(m_SLAMPoseProxy, "scan", peekabot::REPLACE_ON_CONFLICT);
+        m_ProxyScan.set_color(0,0,1);
 //    }
 
     log("Connection to Peekabot established");
