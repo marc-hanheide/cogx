@@ -190,7 +190,7 @@ void SegLearner::configure(const map<string,string> & _config)
   int minPoints = 9;                        // Minimum points for a plane (16)
   planeFitter = new surface::MoSPlanes3D(
       surface::MoSPlanes3D::Parameter(pyrLevels, nbDist, thrAngleNormalClustering, inlDist, sigma, minPoints,
-      pclA::NormalsEstimationNR::Parameter(5, 0.05, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false),
+      pclA::NormalsEstimationNR::Parameter(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false),
       surface::GreedySelection::Parameter(100.,1.,0.005) ) //10 .5 
   );
   
@@ -306,7 +306,7 @@ void SegLearner::GetImageData()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
   if(deb) last = start;
 //   pclA::NormalsEstimationNR::Parameter param(5, 0.02, 1000, 0.001, 5, 0.001, 0.01, false, false);
-  pclA::NormalsEstimationNR::Parameter param(5, 0.05, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
+  pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
 
   pclA::NormalsEstimationNR n;
   n.setParameter(param);
@@ -615,7 +615,7 @@ void SegLearner::SingleShotMode()
           pt[1] = pcl_cloud->points[postProcessIndices[i]].y;
           pt[2] = pcl_cloud->points[postProcessIndices[i]].z;
           pt[3] = col.float_value;
-          printf("Draw a postProcessIndices point [u]: %3.2f-%3.2f-%3.2f\n", postProcessIndices[i], pt[0], pt[1], pt[2]);
+// printf("Draw a postProcessIndices point [u]: %3.2f-%3.2f-%3.2f\n", postProcessIndices[i], pt[0], pt[1], pt[2]);
           col_points.push_back(pt);
         }
         printf("col_points.size: %lu\n", col_points.size());
