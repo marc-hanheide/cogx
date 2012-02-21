@@ -1,6 +1,6 @@
 NAME=PBDisplayControl
 CFLAGS=-g -Wall -o $(NAME) -lboost_program_options
-GTKFLAGS=`pkg-config --cflags --libs gtkmm-2.4 peekabot`
+GTKFLAGS=`pkg-config --cflags --libs gtkmm-2.4 peekabot gthread-2.0`
 SRCS=PBDisplayControl.cpp
 CC=g++
  

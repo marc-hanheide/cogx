@@ -66,11 +66,12 @@ protected:
     Gtk::TreeView m_TreeView;
 private:
     Gtk::CheckButton follow_robot;
+    Glib::Thread * thread;
 
     std::map<std::string,Gtk::CheckButton* > toggles;
     virtual void on_selection_changed();
     void on_button_clicked();
-    bool on_timer();
+    void run();
     pb_settings ps;
     peekabot::PeekabotClient m_PeekabotClient;
     void connectPeekabot();
