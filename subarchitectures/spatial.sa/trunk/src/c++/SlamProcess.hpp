@@ -155,7 +155,7 @@ public:
 
   double m_ScanAngFOV;
   double m_ScanMaxRange;
-
+  Cure::SensorPose m_LaserPoseR;
   peekabot::PeekabotClient m_PeekabotClient;
   std::string m_PbHost;
   int m_PbPort;
