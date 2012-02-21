@@ -60,7 +60,7 @@ namespace spatial
  */
 
 
-class DisplayNavInPB : public cast::ManagedComponent, public Scan2dReceiver, public cast::PointCloudClient
+class DisplayNavInPB : public cast::ManagedComponent, public cast::PointCloudClient
 {
 
 public:
@@ -154,9 +154,8 @@ private:
 	peekabot::PeekabotClient m_PeekabotClient;
 	peekabot::GroupProxy m_ProxyLabels;
 	peekabot::GroupProxy m_ProxyRobot;
-	peekabot::GroupProxy m_ProxyLaser;
 	peekabot::GroupProxy m_ProxyTrajectory;
-	peekabot::PointCloudProxy m_ProxyScan;
+
 	peekabot::PointCloudProxy m_ProxyKinect;
 	peekabot::GroupProxy m_ProxyGraph;
 	peekabot::GroupProxy m_ProxyNodes;
@@ -215,8 +214,6 @@ private:
 	std::string m_PbRobotName;
 	std::string m_PbPersonFile;
 	bool m_NoPeopleModel;
-	double m_ScanAngFOV;
-	double m_ScanMaxRange;
 	int m_CurrPersonId;
 	double m_lastLoggedX;
 	double m_lastLoggedY;

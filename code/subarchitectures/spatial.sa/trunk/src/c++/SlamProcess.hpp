@@ -93,6 +93,7 @@ public:
 
   void connectPeekabot();
  private:
+    bool m_usePeekabot;
 
   void storeDataToFile();
 
@@ -152,10 +153,14 @@ public:
 
   bool m_UpdateWithoutMotion;
 
+  double m_ScanAngFOV;
+  double m_ScanMaxRange;
+
   peekabot::PeekabotClient m_PeekabotClient;
   std::string m_PbHost;
   int m_PbPort;
   peekabot::CubeProxy m_SLAMPoseProxy;
+  peekabot::PointCloudProxy m_ProxyScan;
 };
 
 }; // namespace navsa

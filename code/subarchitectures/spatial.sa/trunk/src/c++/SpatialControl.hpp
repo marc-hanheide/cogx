@@ -157,6 +157,8 @@ protected:
     void CreateGridMap();
     void UpdateGridMap();
 
+    peekabot::CubeProxy m_OdomPoseProxy;
+
     std::string m_PbHost;
     int m_PbPort;
 
@@ -298,6 +300,7 @@ protected:
   double m_obstacleMaxHeight;
   bool m_DisplayCureObstacleMap;
 
+  cast::cdl::CASTTime m_lastSLAMPoseTime;
 
 protected:
   /* 

@@ -906,7 +906,7 @@ void PlaceManager::updatePlaceholders() {
             placeholderids.push_back(it->second.m_data->id);
         }
     }
-    error("alex DEBUG1 CHECK PLACEHOLDERS %d PLACES %d\n",placeholderids.size(),placeholderids.size());
+//    error("alex DEBUG1 CHECK PLACEHOLDERS %d PLACES %d\n",placeholderids.size(),placeholderids.size());
     for (size_t g = 0; (g < placeholderids.size()); g++)
         updatePlaceholder(placeholderids[g],nodeids);
 
@@ -935,7 +935,7 @@ int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDS
     error("Error in finding closest node. Returning.");
     return -1;
   }
-  error("alex DEBUG2 CLOSEST NODE %d\n",closestNodeId);
+//  error("alex DEBUG2 CLOSEST NODE %d\n",closestNodeId);
 
   SpatialData::PlacePtr closestPlace = getPlaceFromNodeID(closestNodeId);
   if(!closestPlace) {
@@ -943,7 +943,7 @@ int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDS
     return -1;
   }
 
-  error("alex DEBUG2 PREV CLOSEST NODE %d\n",closestNodeId);
+//  error("alex DEBUG2 PREV CLOSEST NODE %d\n",closestNodeId);
 
   if(closestPlace->id == hyp->originPlaceID) {
     log("Closest place was the same as before. Returning.");

@@ -37,6 +37,19 @@ using namespace std;
 using namespace boost;
 using namespace spatial;
 
+class TimeLogger {
+  public:
+  TimeLogger(CASTComponent* _owner, const char *_str) :owner(_owner), str(_str) 
+  { startTime = owner->getCASTTime(); }
+  ~TimeLogger() { owner->log("Time @%s:%f", str, 
+      (double)(owner->getCASTTime().s-startTime.s) + 1e-6*(owner->getCASTTime().us-startTime.us)); }
+  CASTComponent* owner;
+  cdl::CASTTime startTime;
+  const char *str;
+};
+
+#define SCOPED_TIME_LOG TimeLogger logger(this, __FILE__);
+
 #define CAM_ID_DEFAULT 0
 
 //NOTE: This file "adapted" (nicked) from nav.sa version with NavCommand structs.
@@ -98,6 +111,10 @@ void SpatialControl::connectPeekabot()
     if (m_usePeekabot){
       log("Showing grid map in Peekabot");
       m_ProxyMap.add(m_PeekabotClient, "frontiers",peekabot::REPLACE_ON_CONFLICT);
+
+      m_OdomPoseProxy.add(m_PeekabotClient, "Odom_pose_SC",peekabot::REPLACE_ON_CONFLICT);
+      m_OdomPoseProxy.set_scale(0.1,0.04,0.04);
+      m_OdomPoseProxy.set_color(1,0,0);
     }
 
     log("Connection to Peekabot established");
@@ -113,7 +130,7 @@ void SpatialControl::connectPeekabot()
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
     m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize, 
-    0.8,0.9,1,
+    1,1,1,
     0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet2D cells;
     m_ProxyGridMap.set_cells(cells);
@@ -780,7 +797,8 @@ void SpatialControl::updateGridMaps()
 
   /* Add all queued laser scans */
   m_ScanQueueMutex.lock();
-  while (!m_LScanQueue.empty()){
+//  while (!m_LScanQueue.empty()){
+  if (!m_LScanQueue.empty()){
     Cure::LaserScan2d scan = m_LScanQueue.front();
     m_LScanQueue.pop();
     m_ScanQueueMutex.unlock();
@@ -885,8 +903,6 @@ void SpatialControl::updateGridMaps()
   if (hasScanPose && m_ptzInNavigationPose && time-lastptztime > 1) {
     PointCloud::SurfacePointSeq points;
     getPoints(true, 640/4, points);
-    
-    
     std::sort(points.begin(), points.end(), ComparePoints());
     for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
       /* Ignore points not in the current view cone */
@@ -1035,11 +1051,15 @@ void SpatialControl::runComponent()
   while(isRunning()){
 	if(count  == 12){
 	  if (m_saveLgm) SaveGridMap();
+      if(m_usePeekabot){
+        UpdateGridMap();
+      }
 	  count = 0;
 	}
     count++;
     m_OdomQueueMutex.lock();
-    while (m_odometryQueue.size() > 0) 
+    if (m_odometryQueue.size() > 0) 
+//    while (m_odometryQueue.size() > 0) 
     {
       Cure::Pose3D cureOdom = m_odometryQueue.front();
       m_odometryQueue.pop_front();
@@ -1050,13 +1070,12 @@ void SpatialControl::runComponent()
     }
     m_OdomQueueMutex.unlock();
 
+    {
+      SCOPED_TIME_LOG;
 //    if (m_UsePointCloud) {
       updateGridMaps();
 //    }	
-
-      if(m_usePeekabot){
-        UpdateGridMap();
-      }
+    }
 
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
@@ -1247,18 +1266,34 @@ void SpatialControl::deleteInhibitor(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
+//  static cast::cdl::CASTTime oldTime = getCASTTime();
+//  cast::cdl::CASTTime newTime = getCASTTime();
+//  long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
+//  oldTime = newTime;
+//  if (diff > 500000) {
+//    error("SpatialControl::newRobotPose - interval: %f s", ((double)diff)*1e-6);
+//  }
+//  else if (diff > 100000) {
+//    log("SpatialControl::newRobotPose - interval: %f s", ((double)diff)*1e-6);
+//  }
+//  else {
+//    log("SpatialControl::newRobotPose - interval: %f s", ((double)diff)*1e-6);
+//  }
+
   debug("SpatialControl::newRobotPose");
-  shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
-    getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
+  NavData::RobotPose2dPtr oobj =
+    getMemoryEntry<NavData::RobotPose2d>(objID.address);
 
   //FIXME
-  m_SlamRobotPose.setTime(Cure::Timestamp(oobj->getData()->time.s,
-                                          oobj->getData()->time.us));
-  m_SlamRobotPose.setX(oobj->getData()->x);
-  m_SlamRobotPose.setY(oobj->getData()->y);
-  m_SlamRobotPose.setTheta(oobj->getData()->theta);
+  m_SlamRobotPose.setTime(Cure::Timestamp(oobj->time.s,
+                                          oobj->time.us));
+  m_SlamRobotPose.setX(oobj->x);
+  m_SlamRobotPose.setY(oobj->y);
+  m_SlamRobotPose.setTheta(oobj->theta);
 		//log("time of newRobtoPose() = %d.%ld s",(long int)oobj->getData()->time.s, (long int)oobj->getData()->time.us);
   
+  m_lastSLAMPoseTime = oobj->time;
+
   Cure::Pose3D cp = m_SlamRobotPose;
 
   IceUtil::Mutex::Lock lock(m_PPMutex);
@@ -1383,10 +1418,6 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
 
-  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
-        cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
-        cureOdom.getTime().getDouble());
-
   //Can't defer this; odometry must be in the TOPP before
   //the new RobotPose arrives
   {
@@ -1396,6 +1427,7 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
     m_TOPP.addOdometry(cureOdom); 
 
     m_CurrPose = m_TOPP.getPose();
+    m_OdomPoseProxy.set_pose(m_CurrPose.getX(), m_CurrPose.getY(), 2.3, m_CurrPose.getTheta(), 0, 0);
     debug("unlock receiveOdometry");
   }
 	
@@ -1407,7 +1439,7 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 
 void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 {
-  log("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
   log("CASTTime: %f",getCASTTime().s+1e-6*getCASTTime().us);
@@ -1623,6 +1655,31 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
     }
 
     m_LMap.moveRobot(m_CurrPose);
+
+  static cast::cdl::CASTTime oldTime = getCASTTime();
+  cast::cdl::CASTTime newTime = getCASTTime();
+  long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
+  oldTime = newTime;
+  if (diff > 500000) {
+    error("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+  }
+  else if (diff > 100000) {
+    log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+  }
+  else {
+    debug("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+  }
+
+  diff = (newTime.s-m_lastSLAMPoseTime.s)*1000000l+(newTime.us-m_lastSLAMPoseTime.us);
+  if (diff > 2000000) {
+    error("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+  }
+  else if (diff > 1000000) {
+    log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+  }
+  else {
+    debug("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+  }
 
     Cure::NewNavController::updateCtrl();
 
