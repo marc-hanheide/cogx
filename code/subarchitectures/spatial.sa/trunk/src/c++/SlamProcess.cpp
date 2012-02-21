@@ -106,6 +106,11 @@ void SlamProcess::configure(const map<string,string>& _config)
     exit(0);
   }  
 
+  if (cfg.getSensorPose(1, m_LaserPoseR)) {
+    println("configure(...) Failed to get sensor pose");
+    std::abort();
+  } 
+
   std::string usedCfgFile;
   double sigmaR;
   if (cfg.getDouble("SIGMA_R", true, sigmaR, usedCfgFile) == 0) {
@@ -279,6 +284,8 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
 
     if (m_usePeekabot){
         m_SLAMPoseProxy.set_pose(odom.getX(), odom.getY(), 2, odom.getTheta(), 0, 0);
+        Cure::Pose3D lpW;
+        m_ProxyScan.set_pose(odom.getX() + m_LaserPoseR.getX(), odom.getY() + m_LaserPoseR.getY(), m_LaserPoseR.getZ(), odom.getTheta(), 0, 0);
     }
 
    m_Mutex.unlock();
@@ -308,6 +315,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
           m_ProxyScan.add_vertex(x,y,0);
         }
     }
+
   debug("Got scan n=%d, r[0]=%.3f, r[n-1]=%.3f t=%ld.%06ld",
         castScan.ranges.size(), castScan.ranges[0], 
         castScan.ranges[castScan.ranges.size()-1],
@@ -610,7 +618,7 @@ void SlamProcess::connectPeekabot()
       m_SLAMPoseProxy.add(m_PeekabotClient, "SLAM_Pose",peekabot::REPLACE_ON_CONFLICT);
       m_SLAMPoseProxy.set_scale(0.1,0.04,0.04);
 
-        m_ProxyScan.add(m_SLAMPoseProxy, "scan", peekabot::REPLACE_ON_CONFLICT);
+        m_ProxyScan.add(m_PeekabotClient, "scan", peekabot::REPLACE_ON_CONFLICT);
         m_ProxyScan.set_color(0,0,1);
 //    }
 

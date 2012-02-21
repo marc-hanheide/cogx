@@ -130,7 +130,7 @@ void SpatialControl::connectPeekabot()
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
     m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize, 
-    1,1,1,
+    0.8,0.9,1,
     0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
     peekabot::OccupancySet2D cells;
     m_ProxyGridMap.set_cells(cells);
@@ -454,7 +454,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   if (_config.find("--display-cure-obstacle-map") != _config.end()) {
     m_DisplayCureObstacleMap = true;
     m_obstacleMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, 1, Cure::LocalGridMap<unsigned char>::MAP1);
-    m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
+//    m_displayObstacleMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_obstacleMap);
   }
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
@@ -470,13 +470,13 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   if(_config.find("--show-binary-map") != _config.end()) {
-    m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+//    m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
   } else {
     m_displayBinaryMap = 0;
   }
 
   if(_config.find("--show-categorical-map") != _config.end()) {
-    m_displayCategoricalMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_categoricalMap);
+//    m_displayCategoricalMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_categoricalMap);
   } else {
     m_displayCategoricalMap = 0;
   }
@@ -797,8 +797,9 @@ void SpatialControl::updateGridMaps()
 
   /* Add all queued laser scans */
   m_ScanQueueMutex.lock();
-//  while (!m_LScanQueue.empty()){
-  if (!m_LScanQueue.empty()){
+  while (!m_LScanQueue.empty()){
+//  if (!m_LScanQueue.empty()){
+
     Cure::LaserScan2d scan = m_LScanQueue.front();
     m_LScanQueue.pop();
     m_ScanQueueMutex.unlock();
@@ -1008,7 +1009,6 @@ void SpatialControl::updateGridMaps()
     currPose = m_TOPP.getPose();		
   }
 
-
   /* Update the nav map */
   m_LMap.clearMap();
   tmp_lgm.setValueInsideCircle(currPose.getX(), currPose.getY(),
@@ -1051,9 +1051,6 @@ void SpatialControl::runComponent()
   while(isRunning()){
 	if(count  == 12){
 	  if (m_saveLgm) SaveGridMap();
-      if(m_usePeekabot){
-        UpdateGridMap();
-      }
 	  count = 0;
 	}
     count++;
@@ -1074,9 +1071,15 @@ void SpatialControl::runComponent()
       SCOPED_TIME_LOG;
 //    if (m_UsePointCloud) {
       updateGridMaps();
+
+      if(m_usePeekabot){
+        UpdateGridMap();
+      }
+
 //    }	
     }
-
+//FIXME Too slow!
+/*
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
       if (m_Displaylgm) {
@@ -1107,7 +1110,7 @@ void SpatialControl::runComponent()
 	m_displayObstacleMap->updateDisplay(&currentPose);
       }
     }
-	  
+*/	  
     if (m_odometryQueue.size() == 0) {
       usleep(250000);
     }
@@ -1433,7 +1436,8 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 	
   {
     IceUtil::Mutex::Lock lock(m_OdomQueueMutex);
-    m_odometryQueue.push_back(cureOdom);
+    if (m_odometryQueue.size() == 0)
+        m_odometryQueue.push_back(cureOdom);
   }
 }
 

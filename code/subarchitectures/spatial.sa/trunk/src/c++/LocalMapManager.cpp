@@ -59,8 +59,8 @@ LocalMapManager::LocalMapManager():m_planeProcessingCooldown(true)
 
 LocalMapManager::~LocalMapManager() 
 {
-  delete m_Displaylgm1;
-  delete m_Displaylgm2;
+//  delete m_Displaylgm1;
+//  delete m_Displaylgm2;
 //  delete m_DisplayPlaneMap;
   delete m_Glrt1;
   delete m_Glrt2;
@@ -247,10 +247,10 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_Glrt2  = new CharGridLineRayTracer(*m_lgm2);
 
   if (_config.find("--no-tentative-window") == _config.end()) {
-    m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
+//    m_Displaylgm2 = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm2);
     println("Will use X window to show the tentative local map");
   } else {
-    m_Displaylgm2 = 0;
+//    m_Displaylgm2 = 0;
     println("Will NOT use X window to show the tentative local map");
   }
 
@@ -424,12 +424,12 @@ void LocalMapManager::runComponent()
 		  //log("Updatin'");
 		  if (m_Displaylgm1) {
 				Cure::Pose3D currentPose = m_TOPP.getPose();
-				m_Displaylgm1->updateDisplay(&currentPose);
+//				m_Displaylgm1->updateDisplay(&currentPose);
 			}
 			
 		  if (m_Displaylgm2) {
 				Cure::Pose3D currentPose = m_TOPP.getPose();
-				m_Displaylgm2->updateDisplay(&currentPose);
+//				m_Displaylgm2->updateDisplay(&currentPose);
 		  }
 		  
 	    //log("Updated");
