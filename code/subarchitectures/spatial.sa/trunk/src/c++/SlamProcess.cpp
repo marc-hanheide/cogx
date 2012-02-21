@@ -426,7 +426,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
       debug("Took %.3fs to extract %d lines, %.3fs to update (tot %.3fs)",
             dt, n, timer.stop()-dt, timer.stop());
 
-      debug("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",
+      log("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",
           m_PP->getPose().getX(), 
           m_PP->getPose().getY(), 
           m_PP->getPose().getTheta(),
