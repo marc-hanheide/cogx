@@ -30,7 +30,7 @@
 QCustomToolBar::QCustomToolBar(QWidget* parent)
    :QToolBar(parent)
 {
-   m_pView = NULL;
+   m_pView = nullptr;
    // see: <url:QCastMainFrame.cpp#tn=QCastMainFrame::onViewAdded>
    connect(this, 
       SIGNAL(signalUiDataChanged(cogx::display::CDisplayModel*, cogx::display::CDisplayView*,
@@ -52,7 +52,7 @@ void QCustomToolBar::onModel_UiDataChanged(cogx::display::CDisplayModel *pModel,
       cogx::display::CGuiElement *pElement, const std::string& newValue)
 {
    if (pSourceView == m_pView) return;
-   if (pElement == NULL) return;
+   if (pElement == nullptr) return;
    DTRACE("QCustomToolBar::onModel_UiDataChanged " << newValue);
 
    // If in the same thread, we can set the value for the control here

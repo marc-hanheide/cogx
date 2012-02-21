@@ -22,7 +22,7 @@
 QCastView::QCastView( QWidget* parent, Qt::WindowFlags flags )
    : QWidget(parent, flags)
 {
-   pView = NULL;
+   pView = nullptr;
    m_scale = 1.0;
    m_offset = QPointF(0, 0);
 }
@@ -30,19 +30,19 @@ QCastView::QCastView( QWidget* parent, Qt::WindowFlags flags )
 QCastView::~QCastView()
 {
    DTRACE("QCastView::~QCastView");
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
-   pView = NULL;
+   pView = nullptr;
 }
 
 void QCastView::setView(cogx::display::CDisplayView* pDisplayView)
 {
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.addObserver(this);
    }
    update();

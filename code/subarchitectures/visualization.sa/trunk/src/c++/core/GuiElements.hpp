@@ -125,7 +125,7 @@ public:
 
    CGuiDialog()
    {
-      m_pDialogView = 0;
+      m_pDialogView = nullptr;
    }
 
    bool isSameDialog(CGuiDialog *pGuiDialog)

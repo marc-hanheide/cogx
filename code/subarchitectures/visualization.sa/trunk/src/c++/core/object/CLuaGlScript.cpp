@@ -42,14 +42,14 @@ std::auto_ptr<CRenderer> CLuaGlScript::renderGL(new CLuaGlScript_RenderGL());
 
 CLuaGlScript::CScript::CScript(CLuaGlScript* pOwner_)
 {
-   luaS = NULL;
+   luaS = nullptr;
    pOwner = pOwner_;
 }
 
 CLuaGlScript::CScript::~CScript()
 {
    if (luaS) lua_close(luaS);
-   luaS = NULL;
+   luaS = nullptr;
 }
 
 #if 0
@@ -220,17 +220,17 @@ CLuaGlScript::~CLuaGlScript()
 
 void CLuaGlScript::loadScript(const std::string& partId, const std::string& script)
 {
-   CScript* pModel = NULL;
+   CScript* pModel = nullptr;
    // IceUtil::RWRecMutex::WLock lock(_objectMutex);
    CDisplayObject::WriteLock lock(*this);
    // if (m_Scripts.find(partId)->second != NULL) {
-   typeof(m_Scripts.begin()) itExtng = m_Scripts.find(partId);
+   auto itExtng = m_Scripts.find(partId);
    if (itExtng != m_Scripts.end()) {
       pModel = m_Scripts[partId];
       //printf("Replacing existing script\n");
    }
 
-   if (pModel == NULL) {
+   if (pModel == nullptr) {
       pModel = new CScript(this);
       pModel->m_id = partId;
       m_Scripts[partId] = pModel;
@@ -248,7 +248,7 @@ void CLuaGlScript::loadScript(const std::string& partId, const std::string& scri
 
 bool CLuaGlScript::removePart(const std::string& partId)
 {
-   typeof(m_Scripts.begin()) it = m_Scripts.find(partId);
+   auto it = m_Scripts.find(partId);
    bool removed = false;
    //if (it->second != NULL) {
    if (it != m_Scripts.end()) {
@@ -285,7 +285,7 @@ CRenderer* CLuaGlScript::getRenderer(ERenderContext context)
       case ContextGL: return renderGL.get();
       default: break;
    }
-   return NULL;
+   return nullptr;
 }
 
 void CLuaGlScript::setPose3D(const std::string& partId, const std::vector<double>& position,
@@ -315,7 +315,7 @@ void CLuaGlScript::setCamera(char* name,
       double xView, double yView, double zView,
       double xUp, double yUp, double zUp)
 {
-   CDisplayCamera* pCamera = 0;
+   CDisplayCamera* pCamera = nullptr;
    FOR_EACH(pCamera, m_Cameras) {
       if (pCamera->name == name) break;
    }

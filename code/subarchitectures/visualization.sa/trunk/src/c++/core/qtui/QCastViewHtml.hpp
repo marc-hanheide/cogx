@@ -37,7 +37,7 @@ private:
    QString m_TextToFind;
 
 public:
-   QCastViewHtml( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
+   QCastViewHtml( QWidget* parent = nullptr, Qt::WindowFlags flags = 0 );
    ~QCastViewHtml();
 
 public:

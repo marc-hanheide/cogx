@@ -37,8 +37,8 @@ typedef struct Tesselator
 } Tesselator;
 
 
-static Tesselator* head = NULL;
-static Tesselator* curr = NULL;
+static Tesselator* head = nullptr;
+static Tesselator* curr = nullptr;
 
 static void create (GLUtriangulatorObj* tessobj)
 {
@@ -55,7 +55,7 @@ static void create (GLUtriangulatorObj* tessobj)
 
 static void release (GLUtriangulatorObj* tessobj)
 {
- Tesselator* prev = NULL;
+ Tesselator* prev = nullptr;
  Tesselator* tess = head;
  while (tess->obj != tessobj)
  {

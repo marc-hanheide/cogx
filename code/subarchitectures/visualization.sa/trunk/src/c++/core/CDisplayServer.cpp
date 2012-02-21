@@ -164,7 +164,7 @@ void CDisplayServer::run()
       debug("EventServer started");
 
       int argc=0;
-      char **argv = NULL;
+      char **argv = nullptr;
       QCastApplication app(argc, argv, this);
       QCastMainFrame* pMainFrame = new QCastMainFrame();
 
@@ -173,7 +173,7 @@ void CDisplayServer::run()
       pMainFrame->setControlDataProxy(this);
       pMainFrame->show();
       pMainFrame->loadStartupLayout();
-      pMainFrame = NULL; // Owned by QApplication
+      pMainFrame = nullptr; // Owned by QApplication
       app.exec();
 
       debug("CDisplayServer Server: GUI closed.");
@@ -234,7 +234,7 @@ void CDisplayServer::setRawImage(const std::string& id, int width, int height,
       int channels, const std::vector<unsigned char>& data)
 {
    // DTRACE("CDisplayServer::setRawImage");
-   CRasterImage *pImage = NULL;
+   CRasterImage *pImage = nullptr;
    CRasterImage *pExisting = m_Model.getImage(id);
 
    bool sameformat = pExisting && pExisting->m_pImage;
@@ -305,7 +305,7 @@ void CDisplayServer::setCompressedImage(const std::string& id, const std::vector
 {
    // DTRACE("CDisplayServer::setCompressedImage");
    CRasterImage *pExisting = m_Model.getImage(id);
-   CRasterImage *pImage = NULL;
+   CRasterImage *pImage = nullptr;
 
    pImage = new CRasterImage();
    pImage->m_id = id;
@@ -329,7 +329,7 @@ void CDisplayServer::setObject(const std::string& id, const std::string& partId,
    // done = true;
    //}
 
-   CSvgImage *pImage = NULL;
+   CSvgImage *pImage = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pImage = dynamic_cast<CSvgImage*>(pExisting);
@@ -368,7 +368,7 @@ void CDisplayServer::setTomGineObject(const std::string& id, const std::string& 
 #ifdef V11N_OBJECT_TOMGINE_MODEL
    DTRACE("CDisplayServer::setTomGineObject");
 
-   CTomGineModel *pModel = NULL;
+   CTomGineModel *pModel = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pModel = dynamic_cast<CTomGineModel*>(pExisting);
@@ -398,7 +398,7 @@ void CDisplayServer::setLuaGlObject(const std::string& id, const std::string& pa
 #ifdef V11N_OBJECT_LUA_GL
    //DTRACE("CDisplayServer::setLuaGlObject");
 
-   CLuaGlScript *pModel = NULL;
+   CLuaGlScript *pModel = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pModel = dynamic_cast<CLuaGlScript*>(pExisting);
@@ -428,7 +428,7 @@ void CDisplayServer::setHtml(const std::string& id, const std::string& partId, c
 #ifdef V11N_OBJECT_HTML
    // DTRACE("CDisplayServer::setHtml");
 
-   CHtmlObject *pObject = NULL;
+   CHtmlObject *pObject = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pObject = dynamic_cast<CHtmlObject*>(pExisting);
@@ -457,7 +457,7 @@ void CDisplayServer::setHtmlHead(const std::string& id, const std::string& partI
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlHead");
 
-   CHtmlObject *pObject = NULL;
+   CHtmlObject *pObject = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pObject = dynamic_cast<CHtmlObject*>(pExisting);
@@ -487,7 +487,7 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setHtmlForm");
    
-   CHtmlObject *pObject = NULL;
+   CHtmlObject *pObject = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pObject = dynamic_cast<CHtmlObject*>(pExisting);
@@ -499,7 +499,7 @@ void CDisplayServer::setHtmlForm(const Ice::Identity& ident, const std::string& 
    }
 
    if (pObject) {
-      CHtmlChunk* pForm = NULL;
+      CHtmlChunk* pForm = nullptr;
       pForm = pObject->setForm(ident, partId, htmlData);
       if (pForm) pForm->Observers.addObserver(this);
       m_Model.refreshObject(id);
@@ -520,7 +520,7 @@ void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string
 #ifdef V11N_OBJECT_HTML
    DTRACE("CDisplayServer::setActiveHtml");
 
-   CHtmlObject *pObject = NULL;
+   CHtmlObject *pObject = nullptr;
    CDisplayObject *pExisting = m_Model.getObject(id);
    if (pExisting) {
       pObject = dynamic_cast<CHtmlObject*>(pExisting);
@@ -652,7 +652,7 @@ void CDisplayServer::addDialog(const Ice::Identity& ident, const std::string& di
 
    if (!m_Model.addGuiDialog(pDialog)) {
       delete pDialog;
-      pDialog = 0;
+      pDialog = nullptr;
    }
 
    if (pDialog) {
@@ -709,7 +709,7 @@ public:
    CUiDataChangeOperation(const Ice::Identity& clientId)
       : CDisplayServerI::CQueuedOperation(clientId)
    {
-      pElement = NULL;
+      pElement = nullptr;
    }
 
    void execute(Visualization::EventReceiverPrx& pClient)
@@ -768,7 +768,7 @@ public:
    CDialogValueChangeOperation(const Ice::Identity& clientId)
       : CDisplayServerI::CQueuedOperation(clientId)
    {
-      pDialog = 0;
+      pDialog = nullptr;
    }
 
    void execute(Visualization::EventReceiverPrx& pClient)
@@ -784,7 +784,7 @@ void CDisplayServer::onGuiDialog_setValue(CGuiDialog *pDialog, const std::string
    if (! pDialog)
       return;
 
-   typeof(pDialog->m_dataOwners.begin()) it = pDialog->m_dataOwners.begin();
+   auto it = pDialog->m_dataOwners.begin();
    for (; it != pDialog->m_dataOwners.end(); ++it) {
       CDialogValueChangeOperation* pOp = new CDialogValueChangeOperation(*it);
       pOp->pDialog = pDialog;
@@ -804,7 +804,7 @@ public:
    CDialogCallOperation(const Ice::Identity& clientId)
       : CDisplayServerI::CQueuedOperation(clientId)
    {
-      pDialog = 0;
+      pDialog = nullptr;
    }
 
    void execute(Visualization::EventReceiverPrx& pClient)
@@ -820,7 +820,7 @@ void CDisplayServer::onGuiDialog_call(CGuiDialog *pDialog, const std::string& na
    if (! pDialog)
       return;
 
-   typeof(pDialog->m_dataOwners.begin()) it = pDialog->m_dataOwners.begin();
+   auto it = pDialog->m_dataOwners.begin();
    if (it != pDialog->m_dataOwners.end()) {
       CDialogCallOperation* pOp = new CDialogCallOperation(*it);
       pOp->pDialog = pDialog;
@@ -838,7 +838,7 @@ public:
    CUiGetControlStateOperation(const Ice::Identity& clientId)
       : CDisplayServerI::CQueuedOperation(clientId)
    {
-      pElement = NULL;
+      pElement = nullptr;
    }
 
    void execute(Visualization::EventReceiverPrx& pClient)
@@ -993,14 +993,14 @@ CDisplayServerI::CDisplayServerI(CDisplayServer *pDisplayServer)
 {
    m_pDisplayServer = pDisplayServer;
    m_stopEventServer = false;
-   m_pEventSenderThread = NULL;
+   m_pEventSenderThread = nullptr;
 }
 
 void CDisplayServerI::startEventServer()
 {
    m_pDisplayServer->debug("CDisplayServerI->startEventServer()");
    try {
-      if (m_pEventSenderThread.get() != NULL) {
+      if (m_pEventSenderThread.get() != nullptr) {
         m_pDisplayServer->log("WARING m_pEventSenderThread ALREADY RUNNING");
         return;
       }
@@ -1102,10 +1102,10 @@ void CDisplayServerI::destroyEventServer()
       m_EventMonitor.notify();
 
       eventSenderThread = m_pEventSenderThread;
-      m_pEventSenderThread = NULL; // Resolve cyclic dependency.
+      m_pEventSenderThread = nullptr; // Resolve cyclic dependency.
    }
 
-   if (eventSenderThread.get() != NULL) {
+   if (eventSenderThread.get() != nullptr) {
       m_pDisplayServer->debug("Waiting for m_pEventSenderThread to finish.");
       eventSenderThread->getThreadControl().join();
       m_pDisplayServer->debug("m_pEventSenderThread joined (finished).");

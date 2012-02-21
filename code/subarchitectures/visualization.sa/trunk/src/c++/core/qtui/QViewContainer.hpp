@@ -33,7 +33,7 @@ private:
    QHash<QString, std::vector<double> > m_viewPosMap;
 
 public:
-   QViewContainer( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
+   QViewContainer( QWidget* parent = nullptr, Qt::WindowFlags flags = 0 );
    ~QViewContainer ();
 
    // copy information from pContainer (eg. last view positions)

@@ -19,6 +19,7 @@
 #include "QCastViewScene.hpp"
 #ifdef V11N_VIEW_GL
 #include "QCastViewGL.hpp"
+//#include "QCastViewOgre.hpp"
 #endif
 #ifdef V11N_OBJECT_HTML
 #include "QCastViewHtml.hpp"
@@ -35,14 +36,14 @@
 QViewContainer::QViewContainer( QWidget* parent, Qt::WindowFlags flags)
    : QWidget(parent, flags)
 {
-   m_pDisplay = NULL;
+   m_pDisplay = nullptr;
 }
 
 QViewContainer::~QViewContainer ()
 {
    // The container is the owner of the display. It will be deleted 
    // with the Qt mechanisms.
-   m_pDisplay = NULL;
+   m_pDisplay = nullptr;
 }
 
 void QViewContainer::initFrom(QViewContainer* pContainer)
@@ -82,7 +83,7 @@ void QViewContainer::removeUi()
    FOR_EACH(pobj, wdgts) {
      if (!pobj) continue;
      QCastViewBase* pViewWin = dynamic_cast<QCastViewBase*>(pobj);
-     if (pViewWin != NULL) {
+     if (pViewWin != nullptr) {
         cogx::display::CDisplayView* pView = pViewWin->getView();
         if (pView) {
            pView->viewObservers.removeObserver(pViewWin);
@@ -95,7 +96,7 @@ void QViewContainer::removeUi()
      pobj->deleteLater();
    }
 
-   m_pDisplay = NULL;
+   m_pDisplay = nullptr;
 }
 
 void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display::CDisplayView* pView)
@@ -123,6 +124,7 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
       }
 #ifdef V11N_VIEW_GL
       else if (pView->m_preferredContext == cogx::display::ContextGL) {
+         //m_pDisplay = new QCastViewOgre(this);
          m_pDisplay = new QCastViewGL(this);
       }
 #endif
@@ -161,7 +163,7 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
 
 cogx::display::CDisplayView* QViewContainer::getActiveView()
 {
-   if (! m_pDisplay) return NULL;
+   if (! m_pDisplay) return nullptr;
    return m_pDisplay->getView();
 }
 

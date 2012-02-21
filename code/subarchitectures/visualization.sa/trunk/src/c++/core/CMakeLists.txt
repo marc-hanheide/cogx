@@ -2,8 +2,7 @@
 project(VisualizationCore)
 
 #set(VERBOSE 1)
-
-
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++0x)
 
 option(BUILD_SA_V11N_SERVER "Build the visualisation display server" YES)
 if(BUILD_SA_V11N_SERVER)
@@ -68,6 +67,29 @@ if(BUILD_SA_V11N_USE_LUAGL)
       object/luagl/luagl_util.c
       )
 endif(BUILD_SA_V11N_USE_LUAGL)
+
+option(BUILD_SA_V11N_USE_OGRE3D "Build with OGRE 3D support (requires OGRE 1.7.3)" OFF)
+if(BUILD_SA_V11N_USE_OGRE3D)
+   set(QT_USE_OPENGL 1)
+   message("CMAKE_MODULE_PATH:" ${CMAKE_MODULE_PATH})
+   # CMake didn't find /usr/share/OGRE/cmake/modules for 1.7.3 ... '/modules' is redundant!
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+      /usr/share/OGRE/cmake/modules
+      /usr/local/share/OGRE/cmake/modules
+      # XXX THIS IS A HACK! The path is system-dependent.
+      )
+   find_package(OGRE)
+   include_directories(${OGRE_INCLUDE_DIRS})
+   set(OGRE3D_SRC
+      qtui/QCastViewOgre.cpp
+      )
+   set(OGRE3D_MOC
+      qtui/QCastViewOgre.hpp
+      )
+   set(OGRE3D_LIB
+      ${OGRE_LIBRARIES}
+      )
+endif(BUILD_SA_V11N_USE_OGRE3D)
 
 option(BUILD_SA_V11N_USE_WEBKIT "Build with HTML support (Qt-WebKit)" ON)
 option(BUILD_SA_V11N_USE_WEBKIT_PLUGINS "Enable plugins in HTML pages (Qt-WebKit)" ON)
@@ -139,6 +161,7 @@ set(SERVER_CPP
    ${LUAGL_EXPERIMENT_SRC}
    ${WEBKIT_EXPERIMENT_SRC}
    ${TOMGINE_SRC}
+   ${OGRE3D_SRC}
    )
 set(GUI_CPP
    qtui/QCastApplication.cpp
@@ -162,6 +185,7 @@ set(SERVER_MOC_HEADERS
    qtui/QCustomToolBar.hpp
    qtui/QViewContainer.hpp
    ${WEBKIT_EXPERIMENT_MOC}
+   ${OGRE3D_MOC}
    )
 set(SERVER_UI_FILES
    qtui/design/castor.ui
@@ -214,6 +238,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${TOMGINE_LIBS}
    ${LUAGL_EXPERIMENT_LIB} 
    ${WEBKIT_EXPERIMENT_LIB} 
+   ${OGRE3D_LIB}
    )
 
 endif(BUILD_SA_V11N_SERVER)

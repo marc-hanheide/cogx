@@ -31,7 +31,7 @@ private:
    void removeUi();
 
 public:
-   QCustomGuiPanel( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
+   QCustomGuiPanel( QWidget* parent = nullptr, Qt::WindowFlags flags = 0 );
    ~QCustomGuiPanel();
 
    // @returns the nubmer of created custom UI elements.

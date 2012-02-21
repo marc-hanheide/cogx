@@ -1,7 +1,7 @@
 
-
-
 project(FileMonitorDisplayClient)
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++0x)
 
 option(BUILD_SA_V11N_CLIENT_FILE_MONITOR "Build file monitor visualisation client" ON)
 

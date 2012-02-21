@@ -27,13 +27,13 @@ std::auto_ptr<CRenderer> CRasterImage::renderScene(new CRasterImage_RenderScene(
 
 CRasterImage::CRasterImage()
 {
-   m_pImage = NULL;
+   m_pImage = nullptr;
 }
 
 CRasterImage::~CRasterImage()
 {
-   if (m_pImage != NULL) delete m_pImage;
-   m_pImage = NULL;
+   if (m_pImage != nullptr) delete m_pImage;
+   m_pImage = nullptr;
 }
 
 bool CRasterImage::isBitmap()
@@ -48,14 +48,14 @@ CRenderer* CRasterImage::getRenderer(ERenderContext context)
       case ContextGraphics: return renderScene.get();
       default: break;
    }
-   return NULL;
+   return nullptr;
 }
 
 void CRasterImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
-   if (pObject == NULL || pContext == NULL) return;
+   if (pObject == nullptr || pContext == nullptr) return;
    CRasterImage *pImage = dynamic_cast<CRasterImage*>(pObject);
-   if (pImage == NULL) return;
+   if (pImage == nullptr) return;
    QPainter *pPainter = (QPainter*) pContext;
    if (pImage->m_pImage) {
       pPainter->drawImage(0, 0, *(pImage->m_pImage));
@@ -64,9 +64,9 @@ void CRasterImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, v
 
 void CRasterImage_RenderScene::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
-   if (pObject == NULL || pContext == NULL) return;
+   if (pObject == nullptr || pContext == nullptr) return;
    CRasterImage *pImage = dynamic_cast<CRasterImage*>(pObject);
-   if (pImage == NULL) return;
+   if (pImage == nullptr) return;
 
    QGraphicsItemGroup *pGroup = (QGraphicsItemGroup*) pContext;
    QGraphicsScene *pScene = pGroup->scene();

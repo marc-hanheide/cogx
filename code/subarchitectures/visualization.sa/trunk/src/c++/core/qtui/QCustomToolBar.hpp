@@ -31,7 +31,7 @@ private:
    void removeUi();
 
 public:
-   QCustomToolBar( QWidget* parent = 0 );
+   QCustomToolBar( QWidget* parent = nullptr );
    ~QCustomToolBar();
 
    // @returns the nubmer of created custom UI elements.

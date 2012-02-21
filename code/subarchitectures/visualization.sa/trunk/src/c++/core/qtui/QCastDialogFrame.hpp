@@ -73,7 +73,7 @@ private:
    QCastDialogProxy* findDialog(cogx::display::CGuiDialog *pDialog);
 
 public:
-   QCastDialogFrame( QWidget * parent = 0, Qt::WindowFlags flags = 0 /* unused */ );
+   QCastDialogFrame( QWidget * parent = nullptr, Qt::WindowFlags flags = 0 /* unused */ );
    ~QCastDialogFrame();
    void addDialog(cogx::display::CGuiDialog *pDialog);
    void closeEvent(QCloseEvent *event);

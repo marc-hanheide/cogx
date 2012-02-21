@@ -5,7 +5,7 @@ namespace cogx { namespace display {
 
 CMilliTimer::CMilliTimer(bool bStart)
 {
-   pStartTime = 0;
+   pStartTime = nullptr;
    if (bStart)
       restart();
 }
