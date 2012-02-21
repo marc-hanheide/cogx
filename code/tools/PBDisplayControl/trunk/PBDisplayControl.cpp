@@ -101,9 +101,10 @@ follow_robot.show();
    m_refTreeSelection = m_TreeView.get_selection();
    m_refTreeSelection->signal_changed().connect( sigc::mem_fun(*this, &ControlWindow::on_selection_changed) );
   // The final step is to display this newly created widget...
-
-  Glib::signal_timeout().connect( sigc::mem_fun(*this, &ControlWindow::on_timer),
-          500 );
+  thread = Glib::Thread::create(sigc::mem_fun(*this, &ControlWindow::run), true);
+  
+  //Glib::signal_timeout().connect( sigc::mem_fun(*this, &ControlWindow::on_timer),
+  //        500 );
 
   set_keep_above();
   show();
@@ -112,31 +113,32 @@ follow_robot.show();
 }
 ControlWindow::~ControlWindow(){}
 
-bool ControlWindow::on_timer()
+void ControlWindow::run()
 {
-    double x=0;
-    double y=0;
-    double z=0;
-    if (follow_robot.get_active()){
-        peekabot::CameraProxy pb_camera;
-        peekabot::Status s;
-        peekabot::ObjectProxy pb_object;
-        s = pb_object.assign(m_PeekabotClient,"robot").status();
-        if( s.succeeded() ) {
-            peekabot::Result<peekabot::Vector3> r = pb_object.get_position();
-            if( r.succeeded() ){
-              peekabot::Vector3 v3 = r.get_result();
-              x = v3(0);
-              y = v3(1);
-              z = v3(2);
+    while(true){
+        double x=0;
+        double y=0;
+        double z=0;
+        if (follow_robot.get_active()){
+            peekabot::CameraProxy pb_camera;
+            peekabot::Status s;
+            peekabot::ObjectProxy pb_object;
+            s = pb_object.assign(m_PeekabotClient,"SLAM_Pose").status();
+            if( s.succeeded() ) {
+                peekabot::Result<peekabot::Vector3> r = pb_object.get_position();
+                if( r.succeeded() ){
+                  peekabot::Vector3 v3 = r.get_result();
+                  x = v3(0);
+                  y = v3(1);
+                  z = v3(2);
+                }
+            }
+            s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
+            if( s.succeeded() ) {
+                pb_camera.set_position(x,y,z);
             }
         }
-        s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
-        if( s.succeeded() ) {
-            pb_camera.set_position(x,y,z);
-        }
     }
-  return true;  // return false when done
 }
 
 void ControlWindow::connectPeekabot()
