@@ -64,7 +64,7 @@ private:
    linalgebra::Vector3 m_pivot;
 
 public:
-   QCastViewGL( QWidget* parent = 0, Qt::WindowFlags flags = 0 );
+   QCastViewGL( QWidget* parent = nullptr, Qt::WindowFlags flags = 0 );
    ~QCastViewGL();
 
 public:

@@ -179,8 +179,7 @@ void VideoViewer::CVvDisplayClient::handleForm(const std::string& id, const std:
   pViewer->m_HtmlForm.apply(fields);
   std::vector<std::string> dump;
   pViewer->m_HtmlForm.dump(dump);
-  typeof(dump.begin()) it;
-  for(it = dump.begin(); it != dump.end(); it++) {
+  for(auto it = dump.begin(); it != dump.end(); it++) {
     pViewer->println("%s", it->c_str());
   }
 }

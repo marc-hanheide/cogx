@@ -73,7 +73,7 @@ QCastFrameManager FrameManager;
 
 QCastFrameManager::QCastFrameManager()
 {
-   m_pDialogFrame = NULL;
+   m_pDialogFrame = nullptr;
 }
 
 QCastFrameManager::~QCastFrameManager()
@@ -227,8 +227,8 @@ QCastMainFrame* QCastFrameManager::checkMainWindow(QCastMainFrame* pSkip)
    DTRACE("QCastMainFrame::checkMainWindow");
 
    QList<QCastMainFrame*> frames = getCastFrames();
-   if (frames.size() == 0) return NULL;
-   QCastMainFrame* pMain = NULL;
+   if (frames.size() == 0) return nullptr;
+   QCastMainFrame* pMain = nullptr;
    foreach(QCastMainFrame* pFrame, frames) {
       if (pFrame == pSkip) continue;
       if (pFrame->m_isMainWindow) {
@@ -236,7 +236,7 @@ QCastMainFrame* QCastFrameManager::checkMainWindow(QCastMainFrame* pSkip)
          break;
       }
    }
-   if (pMain == NULL) {
+   if (pMain == nullptr) {
       // try to find a window with a visible view list
       foreach(QCastMainFrame* pFrame, frames) {
          if (pFrame == pSkip) continue;
@@ -247,13 +247,13 @@ QCastMainFrame* QCastFrameManager::checkMainWindow(QCastMainFrame* pSkip)
       }
    }
 
-   if (pMain == NULL) {
-      typeof(frames.begin()) it = frames.begin();
+   if (pMain == nullptr) {
+      auto it = frames.begin();
       if (it != frames.end()) {
          pMain = *it;
          if (pMain == pSkip) {
             it++;
-            if (it == frames.end()) pMain = NULL;
+            if (it == frames.end()) pMain = nullptr;
             else pMain = *it;
          }
       }
@@ -304,12 +304,12 @@ void QCastFrameManager::createMissingWindows(QCastMainFrame* pFrame, cogx::displ
    // QList<QCastMainFrame*> frames = getCastFrames();
    for (int i = 0; i < newFrames.size(); ++i) {
       FrameInfo* pinfo = (FrameInfo*) &newFrames.at(i);
-      if (pinfo->pFrame != NULL) continue;
-      typeof(pModel->m_Views.begin()) it = pModel->m_Views.find(pinfo->viewid.toStdString());
+      if (pinfo->pFrame != nullptr) continue;
+      auto it = pModel->m_Views.find(pinfo->viewid.toStdString());
       if (it == pModel->m_Views.end()) continue;
 
       cogx::display::CDisplayView *pView = it->second;
-      QCastMainFrame* pchild = NULL;
+      QCastMainFrame* pchild = nullptr;
       if (pinfo->main && pFrame->m_isMainWindow) {
          pchild = pFrame;
       }
@@ -330,7 +330,7 @@ void QCastFrameManager::createMissingWindows(QCastMainFrame* pFrame, cogx::displ
    }
 
    foreach(FrameInfo info, newFrames) {
-      if (info.pFrame == NULL)
+      if (info.pFrame == nullptr)
          m_frameList << info;
    }
 }
@@ -339,7 +339,7 @@ void QCastFrameManager::closeChildWindows()
 {
    QMutexLocker lock(&m_closerMutex);
    DTRACE("QCastMainFrame::closeChildWindows");
-   QCastMainFrame* pMain = checkMainWindow(NULL);
+   QCastMainFrame* pMain = checkMainWindow(nullptr);
    if (! pMain) return;
 
    QList<QCastMainFrame*> frames = getCastFrames();
@@ -352,8 +352,8 @@ void QCastFrameManager::closeChildWindows()
 QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
    : QMainWindow(parent, flags)
 {
-   m_pModel = NULL;
-   m_pControlDataProxy = NULL;
+   m_pModel = nullptr;
+   m_pControlDataProxy = nullptr;
    m_isMainWindow = true;
 
    ui.setupUi(this);
@@ -456,7 +456,7 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 QCastMainFrame::~QCastMainFrame()
 {
    if (m_pModel) m_pModel->modelObservers -= this;
-   m_pModel = NULL; // don't delete
+   m_pModel = nullptr; // don't delete
 }
 
 void QCastMainFrame::setModel(cogx::display::CDisplayModel* pDisplayModel)
@@ -493,13 +493,13 @@ QSettings* QCastMainFrame::getPersistentStorage()
    if (m_pControlDataProxy) {
       name = m_pControlDataProxy->getPersistentStorageName();
    }
-   if (name.size() < 1) return NULL;
+   if (name.size() < 1) return nullptr;
    return new QSettings(name.c_str(), QSettings::IniFormat);
 }
 
 void QCastMainFrame::notifyObjectAdded(cogx::display::CDisplayObject *pObject)
 {
-   if (pObject != NULL) {
+   if (pObject != nullptr) {
       DMESSAGE("TODO: check if view for " << pObject->m_id << " exists, diplay in view-list");
    }
    // TODO: if (m_pCurrentView->hasObject(pObject)) m_pCurrentView->update();
@@ -529,19 +529,19 @@ void QCastMainFrame::syncViewListItem()
 {
    //if (! ui.listWidget->isVisible()) return;
    cogx::display::CDisplayView *pView = ui.drawingArea->getActiveView();
-   if (pView == NULL) {
-      ui.listWidget->setCurrentItem(NULL);
+   if (pView == nullptr) {
+      ui.listWidget->setCurrentItem(nullptr);
       return;
    }
 
    QListWidgetItem* pCurrent = ui.listWidget->currentItem();
-   if (pCurrent != NULL && pCurrent->text().toStdString() == pView->m_id) {
+   if (pCurrent != nullptr && pCurrent->text().toStdString() == pView->m_id) {
       return;
    }
 
    for (int i = 0; i < ui.listWidget->count(); i++) {
       pCurrent = ui.listWidget->item(i);
-      if (pCurrent != NULL && pCurrent->text().toStdString() == pView->m_id) {
+      if (pCurrent != nullptr && pCurrent->text().toStdString() == pView->m_id) {
          ui.listWidget->setCurrentItem(pCurrent);
          break;
       }
@@ -851,14 +851,14 @@ void QCastMainFrame::setView(cogx::display::CDisplayView *pView)
    if (! m_pModel) return;
    if (pView && ! m_pModel->isValidView(pView)) {
       DMESSAGE("Invalid view, set to NULL");
-      pView = NULL;
+      pView = nullptr;
    }
 
    if (! pView) {
       setWindowTitle(m_winText);
-      updateCustomUi(NULL);
-      updateObjectList(NULL);
-      ui.drawingArea->setView(NULL, NULL);
+      updateCustomUi(nullptr);
+      updateObjectList(nullptr);
+      ui.drawingArea->setView(nullptr, nullptr);
    }
    else {
       if (ui.drawingArea->getActiveView() != pView) {
@@ -901,12 +901,12 @@ cogx::display::CDisplayView* QCastMainFrame::getView()
 {
    if (ui.drawingArea)
       return ui.drawingArea->getActiveView();
-   return 0;
+   return nullptr;
 }
 
 void QCastMainFrame::closeEvent(QCloseEvent *event)
 {
-   setView(NULL);
+   setView(nullptr);
    FrameManager.frameDestroyed(this);
    event->accept();
 }

@@ -40,11 +40,11 @@ private:
       std::vector<double> trmatrix;
       SPart(const std::string& partId) {
          m_id = partId;
-         _psvgdoc = NULL;
+         _psvgdoc = nullptr;
       }
       ~SPart() {
          if (_psvgdoc) _psvgdoc->deleteLater();
-         _psvgdoc = NULL;
+         _psvgdoc = nullptr;
       }
       void setIdentity() {
          trmatrix.resize(0);
@@ -58,7 +58,7 @@ private:
       }
       void setData(const std::string& xmlData) {
          if (_psvgdoc) _psvgdoc->deleteLater();
-         _psvgdoc = NULL;
+         _psvgdoc = nullptr;
          data = xmlData;
       }
    };

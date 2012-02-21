@@ -55,7 +55,7 @@ private:
   {
     VideoViewer* pViewer;
   public:
-    CVvDisplayClient() { pViewer = NULL; }
+    CVvDisplayClient() { pViewer = nullptr; }
     void setClientData(VideoViewer* pVideoViewer) { pViewer = pVideoViewer; }
     void handleEvent(const Visualization::TEvent &event); /*override*/
     std::string getControlState(const std::string& ctrlId); /*override*/

@@ -70,12 +70,12 @@ void convertValues(const QMap<QString,QVariant>& object, cxd::TFormValues& vals)
 void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVariant>& object)
 {
    DTRACE("QCastFormProxy::sendValues");
-   cxd::CHtmlChunk* pForm = NULL;
+   cxd::CHtmlChunk* pForm = nullptr;
    
    // std::string id = formid.mid(1).toStdString(); // remove leading '#' from id
    TFormMapIterator it = m_Forms.find(formid.mid(1));
    // DMESSAGE("Looking for " << id << " among " << m_Forms.size() << " forms");
-   if (it == m_Forms.end()) pForm = NULL;
+   if (it == m_Forms.end()) pForm = nullptr;
    else pForm = it->second;
 
    if (pForm) {
@@ -94,17 +94,16 @@ void QCastFormProxy::sendValues(const QString& formid, const QMap<QString,QVaria
 QMap<QString, QVariant> QCastFormProxy::getValues(const QString& formid)
 {
    DTRACE("QCastFormProxy::getValues " << formid.toStdString());
-   cxd::CHtmlChunk* pForm = NULL;
+   cxd::CHtmlChunk* pForm = nullptr;
    
    TFormMapIterator it = m_Forms.find(formid.mid(1));
-   if (it == m_Forms.end()) pForm = NULL;
+   if (it == m_Forms.end()) pForm = nullptr;
    else pForm = it->second;
 
    if (pForm && pForm->type() == cxd::CHtmlChunk::form) {
       DMESSAGE("Fields: " << pForm->m_formData.size());
       QMap<QString, QVariant> data;
-      typeof(pForm->m_formData.begin()) it;
-      for(it = pForm->m_formData.begin(); it != pForm->m_formData.end(); it++) {
+      for(auto it = pForm->m_formData.begin(); it != pForm->m_formData.end(); it++) {
          size_t pos = it->second.find("\n");
          if (pos == std::string::npos) {
             data[QString::fromStdString(it->first)] = QVariant(QString::fromStdString(it->second));
@@ -161,9 +160,9 @@ void QCastFormProxy::onClick(const QString& htmlId, const QString& ctrlId)
 {
    DTRACE("QCastFormProxy::onClick " << ctrlId.toStdString());
 
-   cxd::CHtmlChunk* pChunk = NULL;
+   cxd::CHtmlChunk* pChunk = nullptr;
    TFormMapIterator it = m_Forms.find(htmlId.mid(1));
-   if (it == m_Forms.end()) pChunk = NULL;
+   if (it == m_Forms.end()) pChunk = nullptr;
    else pChunk = it->second;
 
    if (pChunk) {
@@ -179,17 +178,17 @@ void QCastFormProxy::onSendValue(const QString& formid, const QString& ctrlId, c
 {
    DTRACE("QCastFormProxy::onSendValue " << ctrlId.toStdString());
 
-   cxd::CHtmlChunk* pChunk = NULL;
+   cxd::CHtmlChunk* pChunk = nullptr;
    TFormMapIterator it = m_Forms.find(formid.mid(1));
-   if (it == m_Forms.end()) pChunk = NULL;
+   if (it == m_Forms.end()) pChunk = nullptr;
    else pChunk = it->second;
 
    if (pChunk) {
       cxd::TFormValues vals;
       convertValues(object, vals);
       std::string value;
-      typeof(vals.begin()) it = vals.find(valueId.toStdString());
-      if (it != vals.end()) value = it->second;
+      auto itv = vals.find(valueId.toStdString());
+      if (itv != vals.end()) value = itv->second;
       pChunk->notifyChunkEvent(cxd::CHtmlChunk::onSendValue, ctrlId.toStdString(), value, this);
    }
    else {

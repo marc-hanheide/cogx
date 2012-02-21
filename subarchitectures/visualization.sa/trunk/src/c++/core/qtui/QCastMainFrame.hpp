@@ -40,7 +40,7 @@ private:
       bool main;
       FrameInfo()
       {
-         pFrame = NULL;
+         pFrame = nullptr;
          main = false;
       }
    };
@@ -66,7 +66,7 @@ public:
    QCastDialogFrame* getDialogManager();
    bool hasDialogs()
    {
-      return m_pDialogFrame != NULL;
+      return m_pDialogFrame != nullptr;
    }
 
 public slots:
@@ -93,7 +93,7 @@ private:
    cogx::display::COwnerDataProxy* m_pControlDataProxy;
 
 public:
-   QCastMainFrame( QWidget * parent = 0, Qt::WindowFlags flags = 0 );
+   QCastMainFrame( QWidget * parent = nullptr, Qt::WindowFlags flags = 0 );
    ~QCastMainFrame();
    void setModel(cogx::display::CDisplayModel* pDisplayModel);
    void setControlDataProxy(cogx::display::COwnerDataProxy *pProxy);
@@ -137,7 +137,7 @@ private:
    void onViewChanged(cogx::display::CDisplayModel *pModel, cogx::display::CDisplayView *pView);
    void onDialogAdded(cogx::display::CDisplayModel *pModel, cogx::display::CGuiDialog *pDialog);
    void setView(cogx::display::CDisplayView *pView);
-   void setChildMode(QCastMainFrame* pCreator = NULL);
+   void setChildMode(QCastMainFrame* pCreator = nullptr);
    void closeEvent(QCloseEvent *event);
    QCastMainFrame* createChildWindow();
 

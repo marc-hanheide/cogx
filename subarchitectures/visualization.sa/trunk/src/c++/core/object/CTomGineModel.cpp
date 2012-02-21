@@ -46,14 +46,14 @@ void CTomGineModel::deserialize(const std::string& partId, const std::vector<uns
    namespace bio = boost::iostreams;
    namespace barch = boost::archive;
 
-   TomGine::tgRenderModel* pModel = NULL;
+   TomGine::tgRenderModel* pModel = nullptr;
    //if (m_Models.find(partId)->second != NULL) {
-   typeof(m_Models.begin()) itExtng = m_Models.find(partId);
+   auto itExtng = m_Models.find(partId);
    if (itExtng != m_Models.end()) {
       pModel = m_Models[partId];
    }
 
-   if (pModel == NULL) {
+   if (pModel == nullptr) {
       pModel = new TomGine::tgRenderModel();
       m_Models[partId] = pModel;
    }
@@ -78,7 +78,7 @@ ERenderContext CTomGineModel::getPreferredContext()
 
 void CTomGineModel::removePart(const std::string&partId)
 {
-   typeof(m_Models.begin()) it = m_Models.find(partId);
+   auto it = m_Models.find(partId);
    //if (it->second != NULL) {
    if (it != m_Models.end()) {
       TomGine::tgRenderModel* pModel = m_Models[partId];
@@ -92,16 +92,16 @@ CRenderer* CTomGineModel::getRenderer(ERenderContext context)
    switch(context) {
       case ContextGL: return renderGL.get();
    }
-   return NULL;
+   return nullptr;
 }
 
 // OpenGL context is selected by Qt, so pContext is NULL.
 void CTomGineModel_RenderGL::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
    DTRACE("CTomGineModel_RenderGL::draw");
-   if (pObject == NULL) return;
+   if (pObject == nullptr) return;
    CTomGineModel *pModel = dynamic_cast<CTomGineModel*>(pObject);
-   if (pModel == NULL) return;
+   if (pModel == nullptr) return;
    if (pModel->m_Models.size() < 1) return;
    DMESSAGE("Models present.");
 
@@ -124,9 +124,9 @@ void CTomGineModel::setPose3D(const std::string& partId, const std::vector<doubl
    assert(position.size() == 3);
    assert(rotation.size() == 4);
 
-   TomGine::tgRenderModel* pModel = NULL;
+   TomGine::tgRenderModel* pModel = nullptr;
    //if (m_Models.find(partId)->second != NULL) {
-   typeof(m_Models.begin()) itExtng = m_Models.find(partId);
+   auto itExtng = m_Models.find(partId);
    if (itExtng != m_Models.end()) {
       pModel = m_Models[partId];
    }

@@ -41,7 +41,7 @@ void QCastViewGL::Camera::normalize()
 QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 {
    DTRACE("QCastViewGL::QCastViewGL");
-   pView = 0;
+   pView = nullptr;
    xRot = 0;
    yRot = 0;
    zRot = 0;
@@ -54,19 +54,19 @@ QCastViewGL::QCastViewGL( QWidget* parent, Qt::WindowFlags flags )
 QCastViewGL::~QCastViewGL()
 {
    DTRACE("QCastViewGL::~QCastViewGL");
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
-   pView = NULL;
+   pView = nullptr;
 }
 
 void QCastViewGL::setView(cogx::display::CDisplayView* pDisplayView)
 {
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.addObserver(this);
    }
 

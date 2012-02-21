@@ -32,8 +32,8 @@ CDisplayClient::CDisplayClient()
 {
    m_standaloneHost = "";
    m_serverName = "display.srv";
-   m_pServer = NULL;
-   m_pOwner = NULL;
+   m_pServer = nullptr;
+   m_pOwner = nullptr;
    m_imageSendLocalMs = 0;
    m_imageSendRemoteMs = 0;
    m_imageSendMs = 0;
@@ -118,17 +118,17 @@ void CDisplayClient::connectIceClient(CASTComponent& owner)
       }
       catch (...) {
          owner.println(" *** CDisplayClient could not connect to '%s'.", m_serverName.c_str());
-         m_pServer = NULL;
+         m_pServer = nullptr;
       }
 
-      if (m_pServer.get() != NULL) {
+      if (m_pServer.get() != nullptr) {
          try {
             m_pServer = owner.getIceServer<Visualization::DisplayInterface>(m_serverName);
             m_pServer->getStandaloneHost(m_standaloneHost);
             if(m_standaloneHost.empty())
                owner.debug("CDisplayClient Connected.");
             else {
-               m_pServer = NULL;
+               m_pServer = nullptr;
                owner.debug("CDisplayClient Redirecting connection to standalone display server.");
                connectToStandaloneHost(owner);
             }
@@ -232,7 +232,7 @@ void CDisplayClient::setRawImageInternal(const std::string& id, int width, int h
    if (! m_pServer) return;
    long long nexttm = 0;
    if (m_imageSendMs > 0) {
-      typeof(m_nextSendTime.begin()) it = m_nextSendTime.find(id);
+      auto it = m_nextSendTime.find(id);
       if (it != m_nextSendTime.end()) nexttm = it->second;
       long long now = m_timer.elapsed();
       if (now < nexttm) return; // XXX: should cache the image and send it at nexttm; it's too much work for now.
@@ -249,7 +249,7 @@ void CDisplayClient::setCompressedImageInternal(const std::string& id,
    if (! m_pServer) return;
    long long nexttm = 0;
    if (m_imageSendMs > 0) {
-      typeof(m_nextSendTime.begin()) it = m_nextSendTime.find(id);
+      auto it = m_nextSendTime.find(id);
       if (it != m_nextSendTime.end()) nexttm = it->second;
       long long now = m_timer.elapsed();
       if (now < nexttm) return; // XXX: should cache the image and send it at nexttm; it's too much work for now.
@@ -534,7 +534,7 @@ void CActiveDisplayClient::setEventCallback(cast::CASTComponent* pReceiver, TEve
 void CActiveDisplayClient::handleEvent(const Visualization::TEvent& event)
 {
    m_pOwner->debug(event.data + " (received)");
-   if (m_pOwner != NULL && m_pEventCallback != NULL) {
+   if (m_pOwner != NULL && m_pEventCallback != nullptr) {
       m_pOwner->debug("Receiver: Passing event to owner");
       ((m_pOwner)->*(m_pEventCallback))(event);
    }

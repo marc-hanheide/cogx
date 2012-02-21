@@ -89,16 +89,14 @@ bool CFormValues::field::getState(const std::string& option)
 CFormValues::set::set(const std::string& name, const valuelist& setitems)
    : field(name)
 {
-   typeof(setitems.items.begin()) it;
-   for(it = setitems.items.begin(); it != setitems.items.end(); it++) {
+   for(auto it = setitems.items.begin(); it != setitems.items.end(); it++) {
       items[*it] = false;
    }
 }
 
 void CFormValues::set::clear()
 {
-   typeof(items.begin()) it;
-   for(it = items.begin(); it != items.end(); it++) {
+   for(auto it = items.begin(); it != items.end(); it++) {
       it->second = false;
    }
 }
@@ -106,8 +104,7 @@ void CFormValues::set::clear()
 void CFormValues::set::dump(std::vector<std::string>& dump)
 {
    dump.push_back(name + "=[" + get("") + "]");
-   typeof(items.begin()) it;
-   for(it = items.begin(); it != items.end(); it++) {
+   for(auto it = items.begin(); it != items.end(); it++) {
       dump.push_back(it->first + "=" + (it->second ? "true" : "false"));
    }
 }
@@ -116,13 +113,12 @@ std::string CFormValues::set::get(const std::string& xpath)
 {
    if (xpath.size() == 0) {
       std::ostringstream ss;
-      typeof(items.begin()) it;
-      for (it = items.begin(); it != items.end(); it++) {
+      for (auto it = items.begin(); it != items.end(); it++) {
          if (it->second) ss << '\n' << it->first;
       }
       return ss.str();
    }
-   typeof(items.begin()) it = items.find(xpath);
+   auto it = items.find(xpath);
    if (it == items.end()) return ""; // throw... wrong xpath
    else return it->second ? "1" : "0";
 }
@@ -131,8 +127,7 @@ void CFormValues::set::get(std::map<std::string, std::string>& fieldmap)
 {
    std::ostringstream ss;
    bool first = true;
-   typeof(items.begin()) it;
-   for(it = items.begin(); it != items.end(); it++) {
+   for(auto it = items.begin(); it != items.end(); it++) {
       if (it->second) {
          //if (first) ss << it->first;
          //else {
@@ -151,7 +146,7 @@ void CFormValues::set::setValue(const std::string& _value)
    std::string item;
    while(std::getline(ss, item, '\n')) {
       if (item == "") continue;
-      typeof(items.begin()) it = items.find(item);
+      auto it = items.find(item);
       if (it != items.end()) it->second = true;
       //std::cout << name << "." << it->first << "=" << it->second << std::endl;
    }
@@ -160,7 +155,7 @@ void CFormValues::set::setValue(const std::string& _value)
 void CFormValues::set::setValue(const std::string& xpath, const std::string& _value)
 {
    //std::cout << "set::setValue " << xpath << std::endl;
-   typeof(items.begin()) it = items.find(xpath);
+   auto it = items.find(xpath);
    if (it == items.end()) return; // throw... wrong xpath
    else {
       std::string tmp;
@@ -196,8 +191,7 @@ std::string CFormValues::choice::get(const std::string& xpath)
 {
    if (xpath.size() == 0) {
       std::ostringstream ss;
-      typeof(items.begin()) it;
-      for (it = items.begin(); it != items.end(); it++) {
+      for (auto it = items.begin(); it != items.end(); it++) {
          if (it->second) return it->first;
       }
       return "";
@@ -223,8 +217,7 @@ bool CFormValues::choice::getState(const std::string& option)
 
 void CFormValues::clear()
 {
-   typeof(fields.begin()) it;
-   for(it = fields.begin(); it != fields.end(); it++) {
+   for(auto it = fields.begin(); it != fields.end(); it++) {
       it->second->clear();
    }
 }
@@ -232,10 +225,9 @@ void CFormValues::clear()
 void CFormValues::apply(const std::map<std::string, std::string>& newfields)
 {
    clear();
-   typeof(newfields.begin()) itnew;
-   for(itnew = newfields.begin(); itnew != newfields.end(); itnew++) {
+   for(auto itnew = newfields.begin(); itnew != newfields.end(); itnew++) {
       //std::cout << " apply " << itnew->first;
-      typeof(fields.begin()) it = fields.find(itnew->first);
+      auto it = fields.find(itnew->first);
       if (it != fields.end()) {
          //std::cout << " ok ";
          it->second->setValue(itnew->second);
@@ -254,7 +246,7 @@ void CFormValues::setValue(const std::string& xpath, const std::string& value)
       sub = xpath.substr(pos+1);
       //std::cout << "xpath: " << xpath << " ... " << main << " & " << sub << std::endl;
    }
-   typeof(fields.begin()) it = fields.find(main);
+   auto it = fields.find(main);
    if (it != fields.end()) {
       if (sub.size() == 0) it->second->setValue(value);
       else it->second->setValue(sub, value);
@@ -263,7 +255,7 @@ void CFormValues::setValue(const std::string& xpath, const std::string& value)
 
 void CFormValues::clearValue(const std::string& name)
 {
-   typeof(fields.begin()) it = fields.find(name);
+   auto it = fields.find(name);
    if (it != fields.end()) {
       it->second->clear();
    } // else throw ...
@@ -278,7 +270,7 @@ std::string CFormValues::get(const std::string& xpath)
       main = xpath.substr(0, pos);
       sub = xpath.substr(pos+1);
    }
-   typeof(fields.begin()) it = fields.find(main);
+   auto it = fields.find(main);
    if (it != fields.end()) {
       return it->second->get(sub);
    }
@@ -294,7 +286,7 @@ double CFormValues::getFloat(const std::string& xpath)
       main = xpath.substr(0, pos);
       sub = xpath.substr(pos+1);
    }
-   typeof(fields.begin()) it = fields.find(main);
+   auto it = fields.find(main);
    if (it != fields.end()) {
       return it->second->getFloat(sub);
    }
@@ -310,7 +302,7 @@ long CFormValues::getInt(const std::string& xpath)
       main = xpath.substr(0, pos);
       sub = xpath.substr(pos+1);
    }
-   typeof(fields.begin()) it = fields.find(main);
+   auto it = fields.find(main);
    if (it != fields.end()) {
       return it->second->getInt(sub);
    }
@@ -320,8 +312,7 @@ long CFormValues::getInt(const std::string& xpath)
 void CFormValues::get(std::map<std::string, std::string>& fieldmap)
 {
    fieldmap.clear();
-   typeof(fields.begin()) it;
-   for(it = fields.begin(); it != fields.end(); it++) {
+   for(auto it = fields.begin(); it != fields.end(); it++) {
       it->second->get(fieldmap);
    }
 }
@@ -333,8 +324,7 @@ void CFormValues::add(field* pfield)
 
 void CFormValues::dump(std::vector<std::string>& dump)
 {
-   typeof(fields.begin()) it;
-   for(it = fields.begin(); it != fields.end(); it++) {
+   for(auto it = fields.begin(); it != fields.end(); it++) {
       it->second->dump(dump);
    }
 }

@@ -26,7 +26,7 @@
 QCastViewScene::QCastViewScene( QWidget* parent, Qt::WindowFlags flags )
    : QGraphicsView(parent)
 {
-   pView = NULL;
+   pView = nullptr;
    m_bNeedsRebuild = true;
    m_scale = 1.0;
    m_pScene = new QGraphicsScene(this);
@@ -43,21 +43,21 @@ QCastViewScene::QCastViewScene( QWidget* parent, Qt::WindowFlags flags )
 QCastViewScene::~QCastViewScene()
 {
    DTRACE("QCastViewScene::~QCastViewScene");
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
-   pView = NULL;
+   pView = nullptr;
 }
 
 void QCastViewScene::setView(cogx::display::CDisplayView* pDisplayView)
 {
    if (pView == pDisplayView) return;
 
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.addObserver(this);
    }
    emit signalViewChanged();

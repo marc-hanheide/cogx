@@ -44,26 +44,26 @@ void SConverter::add(const std::string &id, const std::string &command,
 
 SConverter* SConverter::find(const std::string &id)
 {
-   typeof(converters.begin()) it = converters.find(id);
-   if (it == converters.end()) return NULL;
+   auto it = converters.find(id);
+   if (it == converters.end()) return nullptr;
    return &it->second;
 }
 
 SConverter* SConverter::findByExt(const std::string &ext)
 {
-   if (ext == "") return NULL;
+   if (ext == "") return nullptr;
    std::string fx = std::string(",") + ext + ",";
-   for (typeof(converters.begin()) it = converters.begin(); it != converters.end(); it++) {
+   for (auto it = converters.begin(); it != converters.end(); it++) {
       int pd = it->second.extensions.find(fx);
       if (pd >= 0) return &it->second;
    }
-   return NULL;
+   return nullptr;
 }
 
 std::string SConverter::names()
 {
    std::ostringstream names;
-   for (typeof(converters.begin()) it = converters.begin(); it != converters.end(); it++) {
+   for (auto it = converters.begin(); it != converters.end(); it++) {
       if (it != converters.begin()) names << ",";
       names << it->first;
    }
@@ -92,7 +92,7 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
    this->watchDef = watchDef;
    watchId = -1;
    changeCount = 0;
-   pConverter = NULL;
+   pConverter = nullptr;
 
    // title#section=converter:path{masks}
    // title --> object on server
@@ -120,7 +120,7 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
 
    if (converter != "") {
       pConverter = SConverter::find(converter);
-      if (pConverter == NULL) {
+      if (pConverter == nullptr) {
          printf("**Unknown converter %s\n", converter.c_str());
          printf("**  Known converters: %s.\n", SConverter::names().c_str());
       }
@@ -161,7 +161,7 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
       strcpy (cstr, masks.c_str());
 
       p = strtok (cstr, delim);
-      while (p != NULL) {
+      while (p != nullptr) {
          if (strlen(p) > 0) {
             std::ostringstream msk;
             while(*p != '\0') {
@@ -176,7 +176,7 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
             msk << "$";
             filemasks.push_back(msk.str());
          }
-         p = strtok(NULL, delim);
+         p = strtok(nullptr, delim);
       }
 
       if (cstr) delete[] cstr;
@@ -185,7 +185,7 @@ SWatchInfo::SWatchInfo(const std::string &watchDef)
 
 bool SWatchInfo::matches(const std::string &fname)
 {
-   for (typeof(filemasks.begin()) it = filemasks.begin(); it != filemasks.end(); it++) {
+   for (auto it = filemasks.begin(); it != filemasks.end(); it++) {
       boost::regex rx (*it);
       boost::smatch res;
       boost::match_flag_type flags = boost::match_default;
@@ -200,7 +200,7 @@ bool SWatchInfo::matches(const std::string &fname)
 void SWatchInfo::dump(std::ostream &stream)
 {
    stream << "Watch " << watchId << ": " << directory << "/{";
-   for (typeof(filemasks.begin()) it = filemasks.begin(); it != filemasks.end(); it++) {
+   for (auto it = filemasks.begin(); it != filemasks.end(); it++) {
       if (it != filemasks.begin()) stream << ", ";
       stream << (*it);
    }
@@ -213,7 +213,7 @@ CFileMonitor::CFileMonitor()
 
 CFileMonitor::~CFileMonitor()
 {
-   for (typeof(m_watches.begin()) it = m_watches.begin(); it != m_watches.end(); it++) {
+   for (auto it = m_watches.begin(); it != m_watches.end(); it++) {
       SWatchInfo* pinfo = *it;
       delete pinfo;
    }
@@ -313,20 +313,20 @@ void describeEvent(inotify_event *event)
 void CFileMonitor::processFileChange(int watchId, const std::string &fname)
 {
    debug("FILE CHANGED: %s", fname.c_str());
-   for (typeof(m_watches.begin()) it = m_watches.begin(); it != m_watches.end(); it++) {
+   for (auto it = m_watches.begin(); it != m_watches.end(); it++) {
       SWatchInfo* pinfo = *it;
       if (pinfo->watchId != watchId) continue;
       if (! pinfo->matches(fname)) continue;
 
       SConverter *pConv = pinfo->pConverter;
-      if (pConv == NULL) {
+      if (pConv == nullptr) {
          int fd = fname.find_last_of(".");
          if (fd >= 0) {
             std::string ext = fname.substr(fd+1);
             pConv = SConverter::findByExt(ext);
          }
       }
-      if (pConv == NULL) {
+      if (pConv == nullptr) {
          log("Error: Could not find a suitable converter for %s", fname.c_str());
          continue;
       }
@@ -355,7 +355,7 @@ void CFileMonitor::processFileChange(int watchId, const std::string &fname)
          cmd << pConv->command << " ";
          cmd << pinfo->directory << "/" << fname;
          FILE *fp = popen(cmd.str().c_str(), "r");
-         if (fp == NULL) {
+         if (fp == nullptr) {
             log("Popen failed: %s", cmd.str().c_str());
             continue;
          }
@@ -449,7 +449,7 @@ public:
    CINotifyMonitor(CFileMonitor& Monitor) {
       m_pMonitor = &Monitor;
       m_fd = -1;
-      m_buffer = NULL;
+      m_buffer = nullptr;
       m_bufLen = 0;
    }
 
@@ -461,7 +461,7 @@ public:
       if (m_fd >= 0) close(m_fd);
       m_fd = -1;
       if (m_buffer) delete m_buffer;
-      m_buffer = NULL;
+      m_buffer = nullptr;
       m_bufLen = 0;
    }
 
@@ -475,7 +475,7 @@ public:
       m_fd = inotify_init();
 
       // Add watches for all configured files/directories
-      for (typeof(m_pMonitor->m_watches.begin()) it = m_pMonitor->m_watches.begin();
+      for (auto it = m_pMonitor->m_watches.begin();
             it != m_pMonitor->m_watches.end(); it++)
       {
          SWatchInfo* pinfo = *it;
@@ -485,7 +485,7 @@ public:
          }
          else {
             bool found = false;
-            for (typeof(m_pMonitor->m_watches.begin()) it2 = m_pMonitor->m_watches.begin();
+            for (auto it2 = m_pMonitor->m_watches.begin();
                   it2 != it; it2++)
             {
                SWatchInfo* pinfo2 = *it2;
@@ -580,7 +580,7 @@ void CFileMonitor::runComponent()
    monitor.installWatches();
 
    debug("Registered watches (-1 = failed to initilaize)");
-   for (typeof(m_watches.begin()) it = m_watches.begin(); it != m_watches.end(); it++) {
+   for (auto it = m_watches.begin(); it != m_watches.end(); it++) {
       SWatchInfo* pinfo = *it;
       std::ostringstream wtch;
       pinfo->dump(wtch);

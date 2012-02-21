@@ -42,7 +42,7 @@ QObject* QCastPluginFactory::create (const QString &mimeType, const QUrl& url,
             QString viewName = url.path().mid(1); // "cogxdisp://view/<path>"
             DMESSAGE("View to show " << viewName.toStdString());
 
-            typeof(m_pModel->m_Views.begin()) it = m_pModel->m_Views.find(viewName.toStdString());
+            auto it = m_pModel->m_Views.find(viewName.toStdString());
             if (! (it == m_pModel->m_Views.end())) {
                pPlug->setView(m_pModel, it->second);
                DMESSAGE("setView applied: " << it->second->m_id);

@@ -51,13 +51,13 @@ CSvgImage::SPart* CSvgImage::findPart(const std::string& partId)
    FOR_EACH(pPart, m_Parts) {
       if (pPart && pPart->m_id == partId) return pPart;
    }
-   return NULL;
+   return nullptr;
 }
 
 bool CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
 {
    SPart* pPart = findPart(partId);
-   bool exists = pPart != 0;
+   bool exists = pPart != nullptr;
    CDisplayObject::WriteLock lock(*this);
    if (! exists) {
       pPart = new SPart(partId);
@@ -71,9 +71,8 @@ bool CSvgImage::setPart(const std::string& partId, const std::string& xmlData)
 
 bool CSvgImage::removePart(const std::string& partId, CPtrVector<CDisplayObjectPart>& parts)
 {
-   typeof(m_Parts.begin()) itpart;
    bool removed = false;
-   for (itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
+   for (auto itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
       SPart* pPart = *itpart;
       if (! pPart) continue;
       if (pPart->m_id == partId) {
@@ -90,8 +89,7 @@ bool CSvgImage::removePart(const std::string& partId, CPtrVector<CDisplayObjectP
 void CSvgImage::getParts(CPtrVector<CDisplayObjectPart>& objects, bool bOrdered)
 {
    // TODO: bOrdered
-   typeof(m_Parts.begin()) itpart;
-   for (itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
+   for (auto itpart = m_Parts.begin(); itpart != m_Parts.end(); itpart++) {
       SPart* pPart = *itpart;
       if (pPart) objects.push_back(pPart);
    }
@@ -121,12 +119,12 @@ CRenderer* CSvgImage::getRenderer(ERenderContext context)
       case ContextGraphics: return renderScene.get();
       case ContextHtml: return renderHtml.get();
    }
-   return NULL;
+   return nullptr;
 }
 
 void CSvgImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
-   if (pObject == NULL || pContext == NULL) return;
+   if (pObject == nullptr || pContext == nullptr) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
    QPainter *pPainter = (QPainter*) pContext;
    CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
@@ -164,7 +162,7 @@ void CSvgImage_Render2D::draw(CDisplayView *pView, CDisplayObject *pObject, void
 
 void CSvgImage_RenderScene::draw(CDisplayView *pView, CDisplayObject *pObject, void *pContext)
 {
-   if (pObject == NULL || pContext == NULL) return;
+   if (pObject == nullptr || pContext == nullptr) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
    QGraphicsItemGroup *pGroup = (QGraphicsItemGroup*) pContext;
    QGraphicsScene *pScene = pGroup->scene();
@@ -216,7 +214,7 @@ void CSvgImage_RenderHtml::draw(CDisplayView *pView, CDisplayObject *pObject, vo
 void CSvgImage_RenderHtml::draw(CDisplayView *pView, const std::string& info,
       CDisplayObject *pObject, void *pContext)
 {
-   if (pObject == NULL || pContext == NULL) return;
+   if (pObject == nullptr || pContext == nullptr) return;
    CSvgImage *pImage = (CSvgImage*) pObject;
    CViewedObjectState *pState = pView->getObjectState(pImage->m_id);
 

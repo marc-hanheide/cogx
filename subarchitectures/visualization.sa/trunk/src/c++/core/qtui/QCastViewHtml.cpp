@@ -38,7 +38,7 @@ QString QCastViewHtml::m_jQuery;
 
 QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
 {
-   pView = NULL;
+   pView = nullptr;
    m_bModified = false;
    m_bHasForms = false;
    m_bBlockUpdates = false;
@@ -63,7 +63,7 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
    // Capture GET and POST events from forms that support it
    m_jsFormCap = QCastFormProxy::getJavaScript(jsObjectName, true);
    QWebPage* pPage = page();
-   QWebFrame* pFrame = NULL;
+   QWebFrame* pFrame = nullptr;
    if (pPage) pFrame = pPage->currentFrame();
    if (pFrame) {
       connect(pFrame, SIGNAL(javaScriptWindowObjectCleared()),
@@ -88,10 +88,10 @@ QCastViewHtml::QCastViewHtml(QWidget* parent, Qt::WindowFlags flags)
 QCastViewHtml::~QCastViewHtml()
 {
    DTRACE("QCastViewHtml::~QCastViewHtml");
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
-   pView = NULL;
+   pView = nullptr;
 
    m_Chunks.clear(); // don't delete, just clear;
 }
@@ -127,7 +127,7 @@ void QCastViewHtml::finishLoading(bool)
    if (m_bHasForms) {
       if (! pView) return;
       QWebPage* pPage = page();
-      QWebFrame* pFrame = NULL;
+      QWebFrame* pFrame = nullptr;
       if (pPage) pFrame = pPage->currentFrame();
       if (!pFrame) return;
 
@@ -175,7 +175,7 @@ void QCastViewHtml::doFillHtmlFrom(const QString& formid)
 {
    DTRACE("QCastViewHtml::doFillHtmlFrom");
    QWebPage* pPage = page();
-   QWebFrame* pFrame = NULL;
+   QWebFrame* pFrame = nullptr;
    if (pPage) pFrame = pPage->currentFrame();
    if (pFrame) {
       QString js = QString("CogxJsFillForm('#%1');").arg(formid);
@@ -190,11 +190,11 @@ void QCastViewHtml::setModel(cogx::display::CDisplayModel* pDisplayModel)
 
 void QCastViewHtml::setView(cogx::display::CDisplayView* pDisplayView)
 {
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.removeObserver(this);
    }
    pView = pDisplayView;
-   if (pView != NULL) {
+   if (pView != nullptr) {
       pView->viewObservers.addObserver(this);
    }
    m_bModified = true;
@@ -241,7 +241,7 @@ void QCastViewHtml::doUpdateContent()
    if (pView) {
       QStringList list, head, body;
       QWebPage* pPage = page();
-      QWebFrame* pFrame = NULL;
+      QWebFrame* pFrame = nullptr;
       if (pPage) pFrame = pPage->currentFrame();
       int sbv = 0;
       if (pFrame) sbv = pFrame->scrollBarValue(Qt::Vertical);

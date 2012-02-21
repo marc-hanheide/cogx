@@ -65,8 +65,8 @@ void CDisplayView::addObject(CDisplayObject *pObject)
    m_Objects[pObject->m_id] = pObject;
 
    // Add object id to object-order, if necessary
-   typeof(m_ObjectOrder.begin()) itorder;
-   for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+   auto itorder = m_ObjectOrder.begin();
+   for (; itorder != m_ObjectOrder.end(); itorder++) {
       if (*itorder == pObject->m_id) break;
    }
    if (itorder == m_ObjectOrder.end())
@@ -75,7 +75,7 @@ void CDisplayView::addObject(CDisplayObject *pObject)
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onViewChanged(NULL, this);
+      pobsrvr->onViewChanged(nullptr, this);
    }
 
 }
@@ -84,8 +84,8 @@ void CDisplayView::setSubscription(const std::string& id, bool active)
 {
    if (active) {
       m_SubscribedObjects[id] = true;
-      typeof(m_ObjectOrder.begin()) itorder;
-      for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+      auto itorder = m_ObjectOrder.begin();
+      for (; itorder != m_ObjectOrder.end(); itorder++) {
          if (*itorder == id) break;
       }
       if (itorder == m_ObjectOrder.end())
@@ -108,7 +108,7 @@ void CDisplayView::removeObject(const std::string& id)
       CDisplayModelObserver *pobsrvr;
       CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
       FOR_EACH(pobsrvr, viewObservers) {
-         pobsrvr->onViewChanged(NULL, this);
+         pobsrvr->onViewChanged(nullptr, this);
       }
    }
 
@@ -128,7 +128,7 @@ void CDisplayView::removeAllObjects()
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onViewChanged(NULL, this);
+      pobsrvr->onViewChanged(nullptr, this);
    }
 }
 
@@ -175,7 +175,7 @@ void CDisplayView::refreshObject(const std::string& id)
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onViewChanged(NULL, this);
+      pobsrvr->onViewChanged(nullptr, this);
    }
 }
 
@@ -185,7 +185,7 @@ void CDisplayView::onGuiElement_CtrlDataChanged(CGuiElement *pElement, const std
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onModel_UiDataChanged(NULL, this, pElement, newValue);
+      pobsrvr->onModel_UiDataChanged(nullptr, this, pElement, newValue);
    }
 }
 
@@ -195,7 +195,7 @@ void CDisplayView::onGuiElement_OwnerDataChanged(CGuiElement *pElement, const st
    CDisplayModelObserver *pobsrvr;
    CObserverList<CDisplayModelObserver>::ReadLock lock(viewObservers);
    FOR_EACH(pobsrvr, viewObservers) {
-      pobsrvr->onModel_UiDataChanged(NULL, NULL, pElement, newValue);
+      pobsrvr->onModel_UiDataChanged(nullptr, nullptr, pElement, newValue);
    }
 }
 
@@ -203,10 +203,8 @@ void CDisplayView::getObjects(CPtrVector<CDisplayObject>& objects, bool bOrdered
 {
    CDisplayObject *pObject;
    if (bOrdered) {
-      typeof(m_ObjectOrder.begin()) itorder;
-      typeof(m_Objects.begin()) itobj;
-      for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-         itobj = m_Objects.find(*itorder);
+      for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+         auto itobj = m_Objects.find(*itorder);
          if (itobj == m_Objects.end()) continue;
          pObject = itobj->second;
          if (!pObject) continue;
@@ -249,10 +247,8 @@ void CDisplayView::draw2D(QPainter &painter)
    CDisplayObject *pObject;
    CRenderer *pRender;
    //FOR_EACH_V(pObject, m_Objects) {
-   typeof(m_ObjectOrder.begin()) itorder;
-   typeof(m_Objects.begin()) itobj;
-   for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      itobj = m_Objects.find(*itorder);
+   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+      auto itobj = m_Objects.find(*itorder);
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
@@ -282,11 +278,9 @@ void CDisplayView::drawScene(QGraphicsScene &scene)
    CDisplayObject *pObject;
    CRenderer *pRender;
    //FOR_EACH_V(pObject, m_Objects) {
-   typeof(m_ObjectOrder.begin()) itorder;
-   typeof(m_Objects.begin()) itobj;
-   for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
       DMESSAGE(*itorder);
-      itobj = m_Objects.find(*itorder);
+      auto itobj = m_Objects.find(*itorder);
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
@@ -316,10 +310,8 @@ void CDisplayView::drawGL(CGlTextWriter* pTextWriter)
    CDisplayObject *pObject;
    CRenderer *pRender;
    //FOR_EACH_V(pObject, m_Objects) {
-   typeof(m_ObjectOrder.begin()) itorder;
-   typeof(m_Objects.begin()) itobj;
-   for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      itobj = m_Objects.find(*itorder);
+   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+      auto itobj = m_Objects.find(*itorder);
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
@@ -336,10 +328,8 @@ void CDisplayView::drawHtml(QStringList &head, QStringList &body)
    CDisplayObject *pObject;
    CRenderer *pRender;
    //FOR_EACH_V(pObject, m_Objects) {
-   typeof(m_ObjectOrder.begin()) itorder;
-   typeof(m_Objects.begin()) itobj;
-   for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      itobj = m_Objects.find(*itorder);
+   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+      auto itobj = m_Objects.find(*itorder);
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;
@@ -357,10 +347,8 @@ int CDisplayView::getHtmlChunks(CPtrVector<CHtmlChunk>& forms, int typeMask)
    int count = 0;
    CDisplayObject *pObject;
    // FOR_EACH_V(pObject, objects) {
-   typeof(m_ObjectOrder.begin()) itorder;
-   typeof(m_Objects.begin()) itobj;
-   for (itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
-      itobj = m_Objects.find(*itorder);
+   for (auto itorder = m_ObjectOrder.begin(); itorder != m_ObjectOrder.end(); itorder++) {
+      auto itobj = m_Objects.find(*itorder);
       if (itobj == m_Objects.end()) continue;
       pObject = itobj->second;
       if (!pObject) continue;

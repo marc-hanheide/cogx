@@ -26,7 +26,7 @@
 
 // typeof works only in gcc; typeof(x) will become auto in c++0x
 #define FOR_EACH(varpointer, avector) \
-   for(typeof(avector.begin()) __it##varpointer=avector.begin();\
+   for(auto __it##varpointer=avector.begin();\
          varpointer=ITERATOR_PTR(avector, __it##varpointer), __it##varpointer!=avector.end(); \
          __it##varpointer++)
 
@@ -34,8 +34,8 @@
 // iterate over maps of pointers
 // XXX FOR_EACH_V(prbl: can't break out of the outer loop; to break use __it##varpointer=amap.end())
 #define FOR_EACH_V(varpointer, amap) \
-   for(typeof(amap.begin()) __it##varpointer=amap.begin(); __it##varpointer != amap.end(); ) \
-      for(typeof(__it##varpointer->second) varpointer = __it##varpointer->second; \
+   for(auto __it##varpointer=amap.begin(); __it##varpointer != amap.end(); ) \
+      for(auto varpointer = __it##varpointer->second; \
           __it##varpointer != amap.end(); \
          (++__it##varpointer != amap.end()) ? varpointer=__it##varpointer->second : varpointer=NULL \
          )
@@ -44,8 +44,8 @@
 // iterate over keys of maps (yields pointers to keys)
 // XXX FOR_EACH_K(prbl: can't break out of the outer loop; to break use __it##varpointer=amap.end())
 #define FOR_EACH_K(varpointer, amap) \
-   for(typeof(amap.begin()) __it##varpointer=amap.begin(); __it##varpointer != amap.end(); ) \
-      for(const typeof(__it##varpointer->first)* varpointer = &__it##varpointer->first; \
+   for(auto __it##varpointer=amap.begin(); __it##varpointer != amap.end(); ) \
+      for(const auto varpointer = &__it##varpointer->first; \
           __it##varpointer != amap.end(); \
          (++__it##varpointer != amap.end()) ? varpointer=&__it##varpointer->first : varpointer=NULL \
          )
