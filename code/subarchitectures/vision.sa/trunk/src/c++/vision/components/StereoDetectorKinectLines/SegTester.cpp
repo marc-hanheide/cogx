@@ -232,12 +232,12 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 9);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
-  annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+  annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
 
   /// save results to file
   save_results = true;
-  save_models.InitFileSequence("/media/Daten/Object-Database/results/cvww_mixed_fi%1d.sfm", 0, 8);
+  save_models.InitFileSequence("/media/Daten/Object-Database/results/cvww_cyl%1d.sfm", 0, 55);
   
   /// init patch class
   patches = new surface::Patches();
