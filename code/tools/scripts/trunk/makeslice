@@ -1,0 +1,76 @@
+#!/bin/bash
+# @author: Marko Mahnič
+# @created: February 2012
+#
+# This script will modify the CogX CMakeCache.txt so that only the
+# slice libraries will be built. Then it will build the libraries.
+# The CMakeCache.txt is restored after the build.
+#
+# If new directories with slice files are added to the project,
+# modify the set() list below.
+
+if [ -f CMakeCache.txt ]; then
+   fnlists=CMakeCache.txt
+   fdir="."
+else 
+   for bdir in BUILD Build build ; do
+      if [ -f $bdir/CMakeCache.txt ]; then
+         fnlists=$bdir/CMakeCache.txt
+         fdir=$bdir
+         break
+      fi
+   done
+fi
+
+if [ -z $fnlists ]; then
+   echo CMakeCache.txt not found
+   exit 1
+fi
+
+fnopts=$(tempfile)
+
+cat > $fnopts << EOF
+set(DO_SLICE_ONLY ON CACHE BOOL "")
+set(BUILD_ABDUCER ON CACHE BOOL "")
+set(BUILD_BELIEFS ON CACHE BOOL "")
+set(BUILD_CALIB ON CACHE BOOL "")
+set(BUILD_CALIB ON CACHE BOOL "")
+set(BUILD_DORA ON CACHE BOOL "")
+set(BUILD_GEORGE ON CACHE BOOL "")
+set(BUILD_GRIPPER ON CACHE BOOL "")
+set(BUILD_HAL_BLOBFINDER ON CACHE BOOL "")
+set(BUILD_HAL_KINECT ON CACHE BOOL "")
+set(BUILD_HAL_LASER ON CACHE BOOL "")
+set(BUILD_HAL_POINT_CLOUD ON CACHE BOOL "")
+set(BUILD_HAL_PTZ ON CACHE BOOL "")
+set(BUILD_HAL_ROBOT ON CACHE BOOL "")
+set(BUILD_HAL_TESTS ON CACHE BOOL "")
+set(BUILD_HAL_TTS ON CACHE BOOL "")
+set(BUILD_HAL_UTILS ON CACHE BOOL "")
+set(BUILD_HAL_VIDEO ON CACHE BOOL "")
+set(BUILD_MULTI_TESTER ON CACHE BOOL "")
+set(BUILD_ROCS ON CACHE BOOL "")
+set(BUILD_SA_BINDING ON CACHE BOOL "")
+set(BUILD_SA_CATEGORICAL ON CACHE BOOL "")
+set(BUILD_SA_COMA ON CACHE BOOL "")
+set(BUILD_SA_CONCEPTUAL ON CACHE BOOL "")
+set(BUILD_SA_DEFAULT ON CACHE BOOL "")
+set(BUILD_SA_DIALOGUE ON CACHE BOOL "")
+set(BUILD_SA_EXECUTION ON CACHE BOOL "")
+set(BUILD_SA_FAKE_MOTIVATION ON CACHE BOOL "")
+set(BUILD_SA_MANIPULATION ON CACHE BOOL "")
+set(BUILD_SA_MOTIVATION ON CACHE BOOL "")
+set(BUILD_SA_PLANNER ON CACHE BOOL "")
+set(BUILD_SA_SPATIAL ON CACHE BOOL "")
+set(BUILD_SA_V11N ON CACHE BOOL "")
+set(BUILD_SA_VISION ON CACHE BOOL "")
+set(BUILD_SCENARIO_SHARED ON CACHE BOOL "")
+EOF
+
+fnbkp=$(tempfile -d $fdir)
+cp $fnlists $fnbkp
+bash tools/scripts/cmake-apply $fdir $fnopts
+make -C $fdir
+cp $fnbkp $fnlists
+rm $fnbkp
+
