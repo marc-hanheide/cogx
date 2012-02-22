@@ -7,7 +7,12 @@ If the file BUILD/CMakeCache.txt doesn't exist, you can create one with:
    bash sysconfig/prepare_build.sh
 
 This will create the BUILD directory and run cmake with the initial cache file
-sysconfig/cmakecache/george-y3.txt.
+sysconfig/cmakecache/george-y4.txt.
+
+It is a good idea to build all the slice libraries in advance. The following
+command will build the slice files for ALL the subarchitectures and tools:
+
+   tools/scripts/makeslice
 
 Change into BUILD and run make or start the build from CAST Control. If you
 encounter problems with the libraries levmar or homest, you may have to change
