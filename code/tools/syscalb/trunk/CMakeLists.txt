@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.4)
 
+# add_subdirectory (src/c++/categorical/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
 set(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem system signals)
 FIND_PACKAGE (OpenCV REQUIRED)
