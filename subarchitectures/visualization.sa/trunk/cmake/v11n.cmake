@@ -10,7 +10,8 @@ if(BUILD_SA_V11N)
    set(VISUALIZATION_LIBRARIES
       DisplayClient VisualizationData
       )
-   add_subdirectory(subarchitectures/visualization.sa)
    add_definitions(-DFEAT_VISUALIZATION)
 endif(BUILD_SA_V11N)
+
+cogx_add_subdir(BUILD_SA_V11N subarchitectures/visualization.sa)
 
