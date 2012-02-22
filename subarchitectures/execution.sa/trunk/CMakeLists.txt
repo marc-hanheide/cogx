@@ -24,5 +24,8 @@ include_directories(${PLANNER_INCLUDE})
 # add a subdirectory containing another CMakeLists.txt file
 # add_subdirectory(src/c++)
 add_subdirectory(src/c++/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
 
 
