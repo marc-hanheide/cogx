@@ -9,10 +9,6 @@ set(CMAKE_VERBOSE_MAKEFILE true)
 # Remove warnings about deprecated libs.
 add_definitions(-Wno-deprecated)
 
-# Find QT4 
-find_package( Qt4 REQUIRED )
-include(${QT_USE_FILE})
-
 # -----------------------------------------------------------
 # Subdirs
 # -----------------------------------------------------------
@@ -30,7 +26,16 @@ include_directories(${COGX_ROOT}/subarchitectures/default.sa/src/c++/def/autogen
 include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
 include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/autogen)
 include_directories(${ROCS_SRC_INCLUDES})
+
 add_subdirectory (src/c++/conceptual/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
+# Find QT4 
+find_package( Qt4 REQUIRED )
+include(${QT_USE_FILE})
+
 include_directories(src/c++/conceptual/autogen)
 include_directories(src/c++/conceptual/shared)
 
