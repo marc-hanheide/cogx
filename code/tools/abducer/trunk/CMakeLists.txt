@@ -2,6 +2,11 @@ cmake_minimum_required (VERSION 2.6)
 
 project (Abducer)
 
+# add_subdirectory (src/c++/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
 add_custom_target (Abducer ALL)
 add_custom_command (
 	TARGET  Abducer
