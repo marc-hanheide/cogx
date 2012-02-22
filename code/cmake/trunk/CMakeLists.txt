@@ -22,6 +22,9 @@ endif(USE_CCACHE)
 
 project (CogX)
 
+# (mmarko, 2012-02-22)
+option(DO_SLICE_ONLY "Generate and compile slice libs, but nothing else." NO)
+
 # (mmarko, 2012-01-03)
 # The clean-all target is used for cleaning stuff in components that are built
 # by custom build scripts (eg. a Makefile or ant).
@@ -83,7 +86,7 @@ add_subdirectory (tools/d-lib)
 
 # ------------ <ROCS> ------------
 option(BUILD_ROCS "Build the internal version of the ROCS library." YES)
-if(BUILD_ROCS)
+if(BUILD_ROCS AND NOT DO_SLICE_ONLY)
 	# We don't want the ROCS build system to define its own build options. We will set them as variables.
 	# mmarko: This will also prevent ROCS from setting various CMAKE_ variables
 	set(ROCS_DONT_DEFINE_OPTIONS yes)
@@ -298,10 +301,14 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/build.properties.in ${CMAKE_SOURCE_DIR}
 
 option(DO_ANT "automatically compile the ant stuff" YES)
 if(DO_ANT)
+   set(ANT_TARGET all)
+   if(DO_SLICE_ONLY)
+      set(ANT_TARGET compile-slice)
+   endif()
    ADD_CUSTOM_TARGET( ant_build ALL )
    ADD_CUSTOM_COMMAND(
       TARGET  ant_build
-      COMMAND ant
+      COMMAND ant ${ANT_TARGET}
 	 -Dcastslice.dir=${CAST_SLICE_DIR}
 	 -Dcast.jar=${CAST_INSTALL_ROOT}/share/java/cast.jar
 	 -Dice.jar=${ICE_HOME}/share/java/Ice.jar
@@ -319,18 +326,19 @@ if(DO_ANT)
    endif()
 endif(DO_ANT)
 
-option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
-if(DO_V4R_MAKE)
-   #add_custom_target( v4r_build ALL )
-   #add_custom_command(
-   #   TARGET  v4r_build
-   #   COMMAND bash cmake/makev4r.sh
-   #   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-   #   )
-   MESSAGE(STATUS "V4R is no longer part of CogX build. Use GAR installer.")
-endif()
+#option(DO_V4R_MAKE "automatically compile the v4r library (external make)" NO)
+#if(DO_V4R_MAKE)
+#   #add_custom_target( v4r_build ALL )
+#   #add_custom_command(
+#   #   TARGET  v4r_build
+#   #   COMMAND bash cmake/makev4r.sh
+#   #   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+#   #   )
+#   MESSAGE(STATUS "V4R is no longer part of CogX build. Use GAR installer.")
+#endif()
 
 MESSAGE(STATUS " * Build type: " ${CMAKE_BUILD_TYPE})
 MESSAGE(STATUS " * Do Ant: " ${DO_ANT})
-MESSAGE(STATUS " * Do make V4R: " ${DO_V4R_MAKE})
+MESSAGE(STATUS " * Do slice only: " ${DO_SLICE_ONLY})
+#MESSAGE(STATUS " * Do make V4R: " ${DO_V4R_MAKE})
 MESSAGE(STATUS " * Use ccache: " ${USE_CCACHE})
