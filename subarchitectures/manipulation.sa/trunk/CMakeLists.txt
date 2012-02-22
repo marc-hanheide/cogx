@@ -11,6 +11,9 @@ include_directories(src/c++/autogen)
 
 # add a subdirectory containing another CMakeLists.txt file
 add_subdirectory(src/c++/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
 
 option(BUILD_SA_MANIPULATION_PLAYERARMBRIDGE "build bridge component between Golem and player" NO)
 if(BUILD_SA_MANIPULATION_PLAYERARMBRIDGE)
