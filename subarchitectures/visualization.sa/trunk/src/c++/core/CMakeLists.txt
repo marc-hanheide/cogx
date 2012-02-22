@@ -2,7 +2,7 @@
 project(VisualizationCore)
 
 #set(VERBOSE 1)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++0x)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 option(BUILD_SA_V11N_SERVER "Build the visualisation display server" YES)
 if(BUILD_SA_V11N_SERVER)
