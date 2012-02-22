@@ -16,7 +16,12 @@ include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 include_directories(${COGX_ROOT}/subarchitectures/coma.sa/src/c++)
 include_directories(${COGX_ROOT}/subarchitectures/conceptual.sa/src/c++/conceptual/shared)
 include_directories(${ROCS_SRC_INCLUDES})
+
 add_subdirectory (src/c++/def/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
 include_directories(src/c++/def/autogen)
 
 # Default.SA C++ Components
