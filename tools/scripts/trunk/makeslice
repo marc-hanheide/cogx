@@ -31,6 +31,7 @@ fnopts=$(tempfile)
 
 cat > $fnopts << EOF
 set(DO_SLICE_ONLY ON CACHE BOOL "")
+set(DO_SLICE_DISABLED OFF CACHE BOOL "")
 set(BUILD_ABDUCER ON CACHE BOOL "")
 set(BUILD_BELIEFS ON CACHE BOOL "")
 set(BUILD_CALIB ON CACHE BOOL "")
@@ -70,7 +71,7 @@ EOF
 fnbkp=$(tempfile -d $fdir)
 cp $fnlists $fnbkp
 bash tools/scripts/cmake-apply $fdir $fnopts
-make -C $fdir
+make -C $fdir install
 cp $fnbkp $fnlists
 rm $fnbkp
 
