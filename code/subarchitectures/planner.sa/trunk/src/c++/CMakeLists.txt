@@ -15,6 +15,10 @@ target_link_libraries(Planner Beliefs BeliefsCAST)
 target_link_libraries(Planner CDL)
 install(TARGETS Planner LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
 find_package(Boost 1.35.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
