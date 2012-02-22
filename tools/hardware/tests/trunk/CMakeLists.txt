@@ -13,5 +13,10 @@ include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen/)
 # make a "use" cmake include too
 include_directories(${CURE_INSTALLROOT}/include/cure)
 
+# add_subdirectory (src/c++/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
 add_subdirectory (src/c++/components)
 
