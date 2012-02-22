@@ -112,7 +112,7 @@ if (EXISTS ${COGX_ROOT}/tools/rocs)
       add_subdirectory(tools/rocs)
       get_directory_property(ROCS_SRC_INCLUDES DIRECTORY tools/rocs INCLUDE_DIRECTORIES)
       message(STATUS ${ROCS_SRC_INCLUDES})
-   endif(BUILD_ROCS)
+   endif()
 endif()
 # ------------ </ROCS> ------------
 
