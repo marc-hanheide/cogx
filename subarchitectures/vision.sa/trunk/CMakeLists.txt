@@ -3,10 +3,6 @@ project (VISIONSA)
 # use cmake files packaged with CAST
 include(UseCAST)
 
-find_package(OpenCV REQUIRED)
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_directories(${OPENCV_LIBRARY_DIRS})
-
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/utils)
@@ -20,6 +16,13 @@ include_directories(${COGX_ROOT}/tools/castutils/src/c++)
 
 # auto generated code
 include_directories(src/c++/vision/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
+find_package(OpenCV REQUIRED)
+include_directories(${OPENCV_INCLUDE_DIRS})
+link_directories(${OPENCV_LIBRARY_DIRS})
 
 add_subdirectory(src/c++/vision/autogen)
 add_subdirectory(src/c++/vision/libs)
