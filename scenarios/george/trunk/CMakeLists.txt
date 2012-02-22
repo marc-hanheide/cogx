@@ -31,5 +31,8 @@ include_directories(${EXECUTION_INCLUDE})
 include_directories(${MOTIVATION_INCLUDE})
 
 add_subdirectory(src/c++/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
 
 
