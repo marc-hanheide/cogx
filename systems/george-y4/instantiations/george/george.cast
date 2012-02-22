@@ -81,10 +81,16 @@ IFOPTALL(%(feature_options), vision)
 
    # belief mediators, execution
    IFOPTALL(%(feature_options), vision-execution)
-      INCLUDE includes/vision.sa/vision-execution.cast
+      JAVA MG exe.vision vision.execution.george.VisionActionInterface --fake-pose --log 
+      # INCLUDE includes/vision.sa/vision-execution.cast
    ENDIF
-   IFOPTALL(%(feature_options), vision-mediators)
-      INCLUDE includes/vision.sa/vision-mediators.cast
+
+   IFOPTALL(%(feature_options), vision-mediators  binder)
+      JAVA MG po-mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorComponent --write-to-sa binder
+      JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent --write-to-sa binder
+      JAVA MG vcmc-mediator eu.cogx.perceptmediator.components.ViewConeMoveCostsMediatorComponent --write-to-sa binder
+      JAVA MG vo-mediator eu.cogx.perceptmediator.george.components.VisualObjectMediatorComponent  --write-to-sa binder
+      #INCLUDE includes/vision.sa/vision-mediators.cast
    ENDIF
 
    CPP MG vc-costs ViewConeMoveCostGenerator
@@ -114,8 +120,14 @@ IFOPTALL(%(feature_options), planning)
    JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
    JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
    JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
-   JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
-   JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
+
+   IFOPTALL(%(feature_options), binder)
+      JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
+
+      # Y3: JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
+      JAVA MG private-tracker eu.cogx.belieftracker.george.PrivateVisualObjectTracker --write-to-sa binder --log true
+      JAVA MG assumed-verified-merger eu.cogx.belieftracker.george.AssumedVerifiedVisualObjectMerger --write-to-sa binder  --log true
+   ENDIF
 ENDIF
 
 IFOPTALL(%(feature_options), motivation)
