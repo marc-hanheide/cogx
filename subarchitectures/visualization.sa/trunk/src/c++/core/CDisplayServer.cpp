@@ -533,7 +533,8 @@ void CDisplayServer::setActiveHtml(const Ice::Identity& ident, const std::string
 
    if (pObject) {
       //if (htmlData.size() < 1) pObject->removePart(partId); --> use RemovePart for this
-      pObject->setActiveHtml(ident, partId, htmlData);
+      CHtmlChunk* pChunk = pObject->setActiveHtml(ident, partId, htmlData);
+      if (pChunk) pChunk->Observers.addObserver(this);
       m_Model.refreshObject(id);
    }
    else {
