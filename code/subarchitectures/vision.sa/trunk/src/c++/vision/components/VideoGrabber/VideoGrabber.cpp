@@ -170,6 +170,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    //setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, head);
    std::ostringstream ss;
    string help1, help2;
+
    ss <<
       "<table>"
       "<tr><td>Model: </td><td>"
@@ -250,6 +251,16 @@ void CVideoGrabber::CVvDisplayClient::createForms()
       "More help is available in the tooltips."
       "</div>";
 
+#if 0 // this makes DisplayServer crash because of mozilla plugins
+   ss << R"(
+      </td><td>
+      <object type='application/cast-displayview' data='cogxdisp://view/Video.Grabber'
+      width='200' height='400'>
+      </object>
+      </td></tr>
+      )";
+#endif
+
    // Set form defaults
    setDirectory("xdata/grab/%m");
    setImageFilenamePatt("image%c-%d.png");
@@ -265,8 +276,22 @@ void CVideoGrabber::CVvDisplayClient::createForms()
 void CVideoGrabber::CVvDisplayClient::showCurrentSettings()
 {
    std::ostringstream ss;
+   ss << "<hr>"
+      << "<table><tr><td>";
+
+   ss << "<table>"
+      << "<tr><td>"
+      << "<input type='button' value='Grab' @@ONCLICK@@('" << IDCMD_GRAB << "') />\n"
+      << "</td></tr><tr><td>"
+      << "<input type='button' value='Record' @@ONCLICK@@('" << IDCMD_RECORD << "') />\n"
+      << "</td></tr><tr><td>"
+      << "<input type='button' value='Stop Recording' @@ONCLICK@@('" << IDCMD_STOP << "') />\n"
+      << "</td></tr>"
+      << "</table>";
+
+   ss << "</td><td>";
+
    ss <<
-      "<hr>"
       "Current settings:"
       "<div>"
       "Saving to: " << getDirectory() << "/" << getImageFilenamePatt() << "<br>"
@@ -275,7 +300,10 @@ void CVideoGrabber::CVvDisplayClient::showCurrentSettings()
       "Grabbing speed: " << pViewer->m_frameGrabMs << "ms, "
       << _str_(1000.0/pViewer->m_frameGrabMs, 0, 3, ' ') << "fps<br>"
       "</div>";
-   setHtml(IDOBJ_SETTINGS, IDPART_SETTINGS_VALUES, ss.str());
+
+   ss << "</td></tr></table>";
+
+   setActiveHtml(IDOBJ_SETTINGS, IDPART_SETTINGS_VALUES, ss.str());
 }
 
 std::string CVideoGrabber::CVvDisplayClient::getDirectory()
@@ -374,6 +402,17 @@ void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &e
       }
    }
    else if (event.type == Visualization::evButtonClick) {
+      if (event.sourceId == IDCMD_GRAB) {
+         pViewer->startGrabbing(IDCMD_GRAB);
+      }
+      else if (event.sourceId == IDCMD_RECORD) {
+         pViewer->startGrabbing(IDCMD_RECORD);
+      }
+      else if (event.sourceId == IDCMD_STOP) {
+         pViewer->stopGrabbing();
+      }
+   }
+   else if (event.type == Visualization::evHtmlOnClick) {
       if (event.sourceId == IDCMD_GRAB) {
          pViewer->startGrabbing(IDCMD_GRAB);
       }
