@@ -23,6 +23,7 @@
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
 ^/code/subarchitectures/vision.sa/trunk/src/c++/vision/components/VideoGrabber   components/VideoGrabber
 ^/code/subarchitectures/vision.sa/trunk/src/c++/vision/components/VideoViewer    components/VideoViewer
+^/code/subarchitectures/vision.sa/trunk/src/c++/vision/components/CameraMount    components/CameraMount
 
 
 #^/code/tools/abducer/trunk                        tools/abducer
