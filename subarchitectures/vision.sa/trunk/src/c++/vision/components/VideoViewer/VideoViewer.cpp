@@ -43,7 +43,7 @@ namespace cast
 {
 
 using namespace std;
-using namespace VisionData;
+//using namespace VisionData;
 
 void VideoViewer::configure(const map<string,string> & _config)
 {
