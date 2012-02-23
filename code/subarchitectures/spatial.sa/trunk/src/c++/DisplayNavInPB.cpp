@@ -275,6 +275,11 @@ void DisplayNavInPB::start() {
 		  	  	  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::deletePlace));
 
+  // NodeHyhothesis
+  addChangeFilter(createLocalTypeFilter<FrontierInterface::NodeHypothesis>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::movePlace));
+
   // People
   addChangeFilter(createLocalTypeFilter<NavData::Person>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -400,7 +405,7 @@ void DisplayNavInPB::start() {
 
 
 void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID) {
-  debug("Entered newPlacePointCloud");
+  log("Entered newPlacePointCloud");
   log("new PlanePointCloud received.");
 
   try {
@@ -445,7 +450,7 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
 
 void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newShapeProperty");
+  log("Entered newShapeProperty");
 
     // Get the property
 	SpatialProperties::RoomShapePlacePropertyPtr property;
@@ -507,7 +512,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
   
-  debug("Entered newSizeProperty");
+  log("Entered newSizeProperty");
 
     // Get the property
 	SpatialProperties::RoomSizePlacePropertyPtr property;
@@ -571,7 +576,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 
 void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newAppearanceProperty");
+  log("Entered newAppearanceProperty");
 	// Get the property
 	SpatialProperties::RoomAppearancePlacePropertyPtr property;
     try
@@ -626,7 +631,7 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 
 void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newComaRoom");
+  log("Entered newComaRoom");
 	if (!m_PeekabotClient.is_connected()) {
     debug("Exited newComaRoom");
 		return;
@@ -790,7 +795,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newRoomCategoryPlaceholderProperty");
+  log("Entered newRoomCategoryPlaceholderProperty");
 
     // Get the property
 	SpatialProperties::RoomCategoryPlaceholderPropertyPtr property;
@@ -953,7 +958,7 @@ double DisplayNavInPB::getProbabilityValue(const SpatialProperties::ProbabilityD
 
 
 void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
-  debug("Entered newVPlist"); 
+  log("Entered newVPlist"); 
 
   if (!m_PeekabotClient.is_connected()) return;
 
@@ -1157,6 +1162,7 @@ void DisplayNavInPB::runComponent() {
   log("Connected to peekabot, ready to go");
   if (m_PeekabotClient.is_connected()) {
     while (isRunning()) {
+  log("while loop");
 
       ptz::PTZReading ptuPose;
       if (m_ReadPTU) {
@@ -1201,7 +1207,7 @@ void DisplayNavInPB::runComponent() {
         m_ProxyKinect.set_vertices(kinectVerts);
       }
 
-
+      log("Display robot pose");
       // Display robot pose
       if(m_ShowRobot && m_RobotPose) {
         m_ProxyRobot.set_pose(m_RobotPose->x,
@@ -1247,7 +1253,7 @@ void DisplayNavInPB::runComponent() {
         }
 
       }
-
+      log("Display the people");  
       // Display the people being tracked
       if(m_ShowPeople) displayPeople();
 
@@ -1335,14 +1341,14 @@ void DisplayNavInPB::displayPeople()
 
 void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newRobotPose");
+  log("Entered newRobotPose");
   shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
     getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
 
   m_Mutex.lock();
   m_RobotPose = oobj->getData();
   m_Mutex.unlock();
-  debug("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
+  log("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us);
   if (m_ShowPath) {
@@ -1448,7 +1454,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 {
   if (!m_ShowObjects) return;
 
-  debug("Entered newNavGraphObject");
+  log("Entered newNavGraphObject");
   
   shared_ptr<CASTData<NavData::ObjData> > oobj =
     getWorkingMemoryEntry<NavData::ObjData>(objID.address);
@@ -1552,7 +1558,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID)
 {
-  debug("newLineMap called");
+  log("newLineMap called");
 
   shared_ptr<CASTData<NavData::LineMap> > oobj =
     getWorkingMemoryEntry<NavData::LineMap>(objID.address);
@@ -1723,7 +1729,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
 
 void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 {
-	debug("Entered newNavGraphNode");
+	log("Entered newNavGraphNode");
 
 	try
 	{
@@ -1890,10 +1896,94 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 	m_Mutex.unlock();
 }
 
+void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
+  log("Entered movePlace");
+	FrontierInterface::NodeHypothesisPtr nodePtr;
+	try
+	{
+		nodePtr =
+				getMemoryEntry<FrontierInterface::NodeHypothesis>(wmChange.address);
+	}
+	catch(CASTException &e)
+	{
+		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+    debug("Exited movePlace");
+		return;
+	}
+
+		if (m_ShowPlaceholders)
+		{
+            	        
+            peekabot::CubeProxy sp;
+	        char name[32];
+	        sprintf(name, "node_hyp%ld", (long)nodePtr->hypID);
+	        peekabot::Status s = sp.assign(m_ProxyNodes, name).status();
+
+            if( s.succeeded() ){
+
+		        sp.set_position(nodePtr->x,nodePtr->y,0);
+                FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+
+			    if (m_ShowLabels)
+			    {
+                    int pid = piPrx->getPlaceFromHypID(nodePtr->hypID)->id;
+				    // Delete ID text
+				    peekabot::LabelProxy text;
+				    char buf[32];
+				    sprintf(buf, "%d", pid);
+				    text.assign(m_ProxyLabels, buf);
+				    text.set_position(nodePtr->x,nodePtr->y,0);
+
+			    }
+
+
+                  int nodeId;
+                  int originPlaceID;
+                  double hypX, hypY;
+                  try {
+                    nodeId = nodePtr->hypID;
+                    originPlaceID = nodePtr->originPlaceID;
+                    hypX = nodePtr->x;
+                    hypY = nodePtr->y;
+                  } catch(IceUtil::NullHandleException &e) {
+                    log("nodeHypPtr is no longer valid.\n");
+                    return;
+                  }
+
+                  double originX=0;
+                  double originY=0;
+                  NavData::FNodePtr fnodePtr;
+                  fnodePtr = piPrx->getNodeFromPlaceID(originPlaceID);
+                  try {
+                    originX = fnodePtr->x;
+                    originY = fnodePtr->y;
+                  } catch(IceUtil::NullHandleException &e) {
+                    log("Could not get origin node.\n");
+                  }
+
+			  if (fnodePtr) {
+//			    int parentNodeID= fnodePtr->nodeId;
+			    peekabot::PolylineProxy lcp;
+			    peekabot::VertexSet points;
+			    points.add(0, 0, 0);
+			    points.add(originX-hypX, 
+				originY-hypY, 0);
+			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
+			    lcp.set_line_style("dotted",0.5);
+			    lcp.add_vertices(points);
+
+			  }
+
+            }
+		}
+    
+
+}
+
 
 void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 {
-  debug("Entered newPlace");
+  log("Entered newPlace");
 	SpatialData::PlacePtr placePtr;
 	try
 	{
@@ -2066,7 +2156,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 
 void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange)
 {
-  debug("Entered deletePlace");
+  log("Entered deletePlace");
 	// Find and remove the place data
 	string wmId = wmChange.address.id;
 	map<string, PlaceData>::iterator it = _places.find(wmChange.address.id);
@@ -2223,7 +2313,7 @@ void DisplayNavInPB::addDoorpost(double x, double y, double theta,
 
 void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newNavGraphEdge");
+  log("Entered newNavGraphEdge");
 
   if (!m_PeekabotClient.is_connected()) {
     debug("Exited newNavGraphEdge");
@@ -2620,7 +2710,7 @@ Cure::Transformation3D DisplayNavInPB::getCameraToWorldTransform()
 void
 DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newViewpointGenCommand");
+  log("Entered newViewpointGenCommand");
   if (!m_PeekabotClient.is_connected() ||
       !m_ShowCommands ||
       !m_RobotPose) {
@@ -2670,7 +2760,7 @@ DisplayNavInPB::newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &obj
 void
 DisplayNavInPB::newARTagCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
-  debug("Entered newARTagCommand");
+  log("Entered newARTagCommand");
   if (!m_PeekabotClient.is_connected() ||
       !m_RobotPose ||
       !m_ShowCommands) {

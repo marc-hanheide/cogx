@@ -120,7 +120,10 @@ private:
 	void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
 	void newNavCommand(const cast::cdl::WorkingMemoryChange & objID);
 	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
+
+	void movePlace(const cast::cdl::WorkingMemoryChange &objID);
 	void newPlace(const cast::cdl::WorkingMemoryChange &objID);
+
 	void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
 	void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);

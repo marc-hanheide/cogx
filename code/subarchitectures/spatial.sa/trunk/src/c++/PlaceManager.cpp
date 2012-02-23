@@ -91,6 +91,11 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_bNoPlaceholders = true;
   }
 
+  m_updatePlaceholderPositions = true;
+  if(_config.find("--no-update-placeholders") != _config.end()) {
+    m_updatePlaceholderPositions = false;
+  }
+
   if(_config.find("--exclude-from-exploration") != _config.end()) {
     std::istringstream str(_config.find("--exclude-from-exploration")->second);
 
@@ -658,6 +663,7 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 
 /* Optionally only check for placholders origining from currentPlaceId. */
 bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId=-1) {
+  error("isPointCloseToExistingPlaceholderd");
   double minDistanceSq = FLT_MAX;
   int minDistID = -1;
 
@@ -668,9 +674,12 @@ bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int cur
       hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
     FrontierInterface::NodeHypothesisPtr extantHyp = *extantHypIt;
     try {
+        SpatialData::PlacePtr placeholder = getPlaceFromHypID(extantHyp->hypID);
+        int pid = placeholder->id;
+      log("Checking against placeholder = %d", pid);
       if (curPlaceId < 0 || extantHyp->originPlaceID == curPlaceId) {
         double distanceSq = (extantHyp->x - x)*(extantHyp->x - x) + (extantHyp->y - y)*(extantHyp->y - y);
-        log("2distanceSq = %f", distanceSq);
+        log("2distanceSq = %f x = %f y= %f x1 = %f y1 = %f place = %d", distanceSq,x,y,extantHyp->x,extantHyp->y,extantHyp->originPlaceID);
         if (distanceSq < minDistanceSq) {
           minDistanceSq = distanceSq;
           minDistID = extantHyp->hypID;
@@ -1284,14 +1293,13 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
 void PlaceManager::evaluateUnexploredPaths()
 {
   log("Entering evaluateUnexplorePaths");
-  m_PlaceholderMutex.lock();
+  IceUtil::Mutex::Lock locks(m_PlaceholderMutex);
   if(!m_bNoPlaceholders) {
     NavData::FNodePtr curNode = getCurrentNavNode();
     SpatialData::PlacePtr curPlace = getPlaceFromNodeID(curNode->nodeId);
     
     if(!curPlace) {
       log("Could not find current place.");
-      m_PlaceholderMutex.unlock();
       return;
     }
 
@@ -1303,7 +1311,6 @@ void PlaceManager::evaluateUnexploredPaths()
     }
     catch (const std::exception& e) {
       log("Error! getFrontiers failed! Message: %s", e.what());
-      m_PlaceholderMutex.unlock();
       return;
     }
 
@@ -1360,14 +1367,14 @@ void PlaceManager::evaluateUnexploredPaths()
     }
 
     // Update positions of old placeholders if frontiers have moved slightly 
-    updatePlaceholderPositions(frontiers);    
+    if (m_updatePlaceholderPositions)
+        updatePlaceholderPositions(frontiers);    
 
     // Update properties for the placeholders reachable from the current place
     log("Updating reachable placeholder properties.");
     updateReachablePlaceholderProperties(curPlace->id);
   }
 
-  m_PlaceholderMutex.unlock();
   log("Exiting evaluateUnexplorePaths");
 }
 

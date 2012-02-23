@@ -37,10 +37,10 @@ NewTurnMotion::NewTurnMotion(cast::ManagedComponent* sc,double securityDistance)
 {
   m_sc->debug("NewTurnMotion started"); 
   nClosePts_ = 0;
-  closePts_ = new CloseObstPt[1000];
+  closePts_ = new CloseObstPt[2000];
 
   nViolationPts_ = 0;
-  violationPts_ = new CloseObstPt[1000];
+  violationPts_ = new CloseObstPt[2000];
 
   nHalf_ = n_ / 2;
   sectPerRad_ = 1.0 / (2.0 * M_PI / n_);

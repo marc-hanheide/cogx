@@ -115,6 +115,9 @@ void SpatialControl::connectPeekabot()
       m_OdomPoseProxy.add(m_PeekabotClient, "Odom_pose_SC",peekabot::REPLACE_ON_CONFLICT);
       m_OdomPoseProxy.set_scale(0.1,0.04,0.04);
       m_OdomPoseProxy.set_color(1,0,0);
+
+      m_ProxyScan.add(m_PeekabotClient, "scan", peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyScan.set_color(0,0,1);
     }
 
     log("Connection to Peekabot established");
@@ -150,9 +153,10 @@ void SpatialControl::UpdateGridMap() {
         }
     }
     m_ProxyGridMap.set_cells(cells);
-    std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
-    m_ProxyMap.clear();
-    if (fPts) {
+    if (m_MapsMutex.tryLock()){
+      std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
+      m_ProxyMap.clear();
+      if (fPts) {
         int r = int(0.8 / m_lgm->getCellSize() + 0.5);
         for (std::list<Cure::FrontierPt>::const_iterator fi = fPts->begin();
              fi != fPts->end(); fi++) {
@@ -204,6 +208,8 @@ void SpatialControl::UpdateGridMap() {
           }
         }
       }
+    m_MapsMutex.unlock();
+  }
 }
 
 
@@ -814,6 +820,23 @@ void SpatialControl::updateGridMaps()
     
     if (status == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
+
+        if (m_usePeekabot){
+            m_ProxyScan.clear_vertices();
+            double angStep = scan.getAngleStep();
+            double startAng = scan.getStartAngle();
+            for (unsigned int i = 0; i < scan.getNPts(); i++) {
+              float x,y;
+              x = cos(startAng + i * angStep) * scan.getRange(i);
+              y = sin(startAng + i * angStep) * scan.getRange(i);
+              m_ProxyScan.add_vertex(x,y,0);
+            }
+       }
+
+      if (m_usePeekabot){
+        m_ProxyScan.set_pose(lpW.getX(), lpW.getY(), lpW.getZ(), lpW.getTheta(), 0, 0);
+      }
+
       tmp_glrt.addScan(scan, lpW, m_MaxExplorationRange);
       tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NewNavController::getRobotWidth(), '0');                                  

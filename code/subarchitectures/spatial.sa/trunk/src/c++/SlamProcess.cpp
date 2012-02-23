@@ -283,9 +283,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
    m_PP->addOdometry(odom);
 
     if (m_usePeekabot){
-        m_SLAMPoseProxy.set_pose(odom.getX(), odom.getY(), 2, odom.getTheta(), 0, 0);
-        Cure::Pose3D lpW;
-        m_ProxyScan.set_pose(odom.getX() + m_LaserPoseR.getX(), odom.getY() + m_LaserPoseR.getY(), m_LaserPoseR.getZ(), odom.getTheta(), 0, 0);
+        m_SLAMPoseProxy.set_pose(m_PP->getPose().getX(), m_PP->getPose().getY(), 2, m_PP->getPose().getTheta(), 0, 0);
     }
 
    m_Mutex.unlock();
@@ -303,18 +301,6 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
     println("Empty scan, ignoring it");
     return;
   }
-
-    if (m_usePeekabot){
-        m_ProxyScan.clear_vertices();
-        double angStep = m_ScanAngFOV / (castScan.ranges.size() - 1);
-        double startAng = -m_ScanAngFOV / 2;
-        for (unsigned int i = 0; i < castScan.ranges.size(); i++) {
-          float x,y;
-          x = cos(startAng + i * angStep) * castScan.ranges[i];
-          y = sin(startAng + i * angStep) * castScan.ranges[i];
-          m_ProxyScan.add_vertex(x,y,0);
-        }
-    }
 
   debug("Got scan n=%d, r[0]=%.3f, r[n-1]=%.3f t=%ld.%06ld",
         castScan.ranges.size(), castScan.ranges[0], 
@@ -432,7 +418,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
           m_PP->getPose().getTheta(),
           m_PP->getPose().getTime().getDouble());
       m_Mutex.unlock();
-        
+
       updateRobotPoseInWM();
       
       storeDataToFile();
@@ -610,17 +596,11 @@ void SlamProcess::connectPeekabot()
     
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
-//    if (m_usePeekabot){
-
         m_ScanAngFOV = M_PI/180.0*240;
         m_ScanMaxRange = 5.6;
 
       m_SLAMPoseProxy.add(m_PeekabotClient, "SLAM_Pose",peekabot::REPLACE_ON_CONFLICT);
       m_SLAMPoseProxy.set_scale(0.1,0.04,0.04);
-
-        m_ProxyScan.add(m_PeekabotClient, "scan", peekabot::REPLACE_ON_CONFLICT);
-        m_ProxyScan.set_color(0,0,1);
-//    }
 
     log("Connection to Peekabot established");
 

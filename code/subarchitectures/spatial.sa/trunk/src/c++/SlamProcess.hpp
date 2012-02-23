@@ -160,7 +160,7 @@ public:
   std::string m_PbHost;
   int m_PbPort;
   peekabot::CubeProxy m_SLAMPoseProxy;
-  peekabot::PointCloudProxy m_ProxyScan;
+
 };
 
 }; // namespace navsa
