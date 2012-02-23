@@ -21,6 +21,8 @@
 #^/code/subarchitectures/spatial.sa/trunk                subarchitectures/spatial.sa
 #^/code/subarchitectures/vision.sa/trunk                 subarchitectures/vision.sa
 ^/code/subarchitectures/visualization.sa/trunk          subarchitectures/visualization.sa
+^/code/subarchitectures/vision.sa/trunk/src/c++/vision/components/VideoGrabber   components/VideoGrabber
+^/code/subarchitectures/vision.sa/trunk/src/c++/vision/components/VideoViewer    components/VideoViewer
 
 
 #^/code/tools/abducer/trunk                        tools/abducer
