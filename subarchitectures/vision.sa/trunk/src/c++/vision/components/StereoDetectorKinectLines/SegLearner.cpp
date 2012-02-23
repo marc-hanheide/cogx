@@ -222,13 +222,13 @@ void SegLearner::configure(const map<string,string> & _config)
   /// init annotation for learning
   annotation = new anno::Annotation();
 
-//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
+  annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 11);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 8);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
   /// eval svm
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 32);
-  annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 9, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
   
