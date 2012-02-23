@@ -603,6 +603,21 @@ void AVS_ContinualPlanner::generateViewCones(
 		      lgm->index2WorldCoords(x,y,xW,yW);
 		      double minDistance = FLT_MAX;
 		      unsigned int closestNodeIndex = 0;
+              bool excluded = false;
+                for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+                    fbIt != m_forbiddenZones.end(); fbIt++) {
+                  //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+                  //    	  log("checking against: %.02g, %.02g", newX, newY);
+                  if (!(x*m_cellsize <= fbIt->maxX && x*m_cellsize >= fbIt->minX &&
+                        y*m_cellsize <= fbIt->maxY && x*m_cellsize >= fbIt->minY)) {
+                    log("point in forbidden zone excluded");
+                    (*lgm)(x,y) = '2';
+                    excluded= true;
+                    break;
+                  }
+                }
+                if (excluded) continue;
+
 
 		      for (unsigned int i = 0; i < nodesForPlaces.size(); i++) {
 			try {
@@ -1543,6 +1558,72 @@ void AVS_ContinualPlanner::configure(
 	      pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time
 	      pbVis->connectPeekabot();
 	    }
+
+
+  if(_config.find("--exclude-from-exploration") != _config.end()) {
+    std::istringstream str(_config.find("--exclude-from-exploration")->second);
+
+    ForbiddenZone newZone;
+    newZone.minX = -DBL_MAX;
+    newZone.maxX = DBL_MAX;
+    newZone.minY = -DBL_MAX;
+    newZone.maxY = DBL_MAX;
+    while (!str.eof()) {
+      string buf;
+      str >> buf;
+
+      if (buf == "or") {
+    	    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX, newZone.minY, newZone.maxX, newZone.maxY);
+
+	m_forbiddenZones.push_back(newZone);
+	newZone.minX = -DBL_MAX;
+	newZone.maxX = DBL_MAX;
+	newZone.minY = -DBL_MAX;
+	newZone.maxY = DBL_MAX;
+      }
+      else if (buf == "x") {
+	str >> buf;
+	if (buf == ">") {
+	  str >> newZone.maxX;
+	}
+	else if (buf == "<") {
+	  str >> newZone.minX;
+	}
+	else {
+	  log("Warning: Malformed --exclude-from-exploration string");
+	  break;
+	}
+      }
+      else if (buf == "y") {
+	str >> buf;
+	if (buf == ">") {
+	  str >> newZone.maxY;
+	}
+	else if (buf == "<") {
+	  str >> newZone.minY;
+	}
+	else {
+	  log("Warning: Malformed --exclude-from-exploration string");
+	  break;
+	}
+      }
+      else {
+	log("Warning: Malformed --exclude-from-exploration string");
+	break;
+      }
+    }
+    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX, newZone.minY, newZone.maxX, newZone.maxY);
+
+    m_forbiddenZones.push_back(newZone);
+  }
+
+
+
+
+
+
+
+
 
 	m_usePTZ = false;
 	if (_config.find("--ctrl-ptu") != _config.end()) {

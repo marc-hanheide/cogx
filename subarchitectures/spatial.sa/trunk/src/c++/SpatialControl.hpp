@@ -158,6 +158,7 @@ protected:
     void UpdateGridMap();
 
     peekabot::CubeProxy m_OdomPoseProxy;
+    peekabot::PointCloudProxy m_ProxyScan;
 
     std::string m_PbHost;
     int m_PbPort;

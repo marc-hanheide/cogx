@@ -122,6 +122,15 @@ public:
 	 VisualPB_Bloxel* pbVis;
 
 private:
+
+    struct ForbiddenZone {
+      double minX;
+      double maxX;
+      double minY;
+      double maxY;
+    };
+    std::vector<ForbiddenZone> m_forbiddenZones;
+
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
     peekabot::PeekabotClient m_PeekabotClient;
     peekabot::GroupProxy m_proxyCone;
