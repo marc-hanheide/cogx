@@ -74,4 +74,4 @@ bash tools/scripts/cmake-apply $fdir $fnopts
 make -C $fdir install
 cp $fnbkp $fnlists
 rm $fnbkp
-
+cmake $fdir
