@@ -93,6 +93,7 @@ private:
   std::vector<bool> texture;                                ///< Texture on 2D image space
 
   std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
+  std::vector< std::vector<int> > preProcessIndices;                      ///< TODO Indices of points eliminated by postProcessing
   std::vector<int> postProcessIndices;                      ///< TODO Indices of points eliminated by postProcessing
   std::vector<int> checkPCLines;                            ///< TODO Indices of points found by checkPCLines
   

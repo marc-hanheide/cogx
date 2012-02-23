@@ -221,15 +221,16 @@ void SegLearner::configure(const map<string,string> & _config)
   
   /// init annotation for first-level svm learning
   annotation = new anno::Annotation();
-  annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 0, 16);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 0, 23);
-//   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 0, 8);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+
+  annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 8);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
   /// eval svm
-//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d_fi.png", 17, 30);
-//   annotation->init("/media/Daten/Object-Database/annotation/box_world_fi%1d.png", 9, 15);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl_fi%1d.png", 10, 23);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 30);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 9, 15);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 10, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
   
   
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
@@ -363,7 +364,7 @@ void SegLearner::processImageNew()
 //   if(deb) log("ModelFitter start!");
   std::vector<int> pcl_model_types;
   std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
-  std::vector< std::vector<double> > error;
+//   std::vector< std::vector<double> > error;
 //   std::vector<double> square_error;
 //   model_fitter->addModelType(pcl::SACMODEL_PLANE);
 // //  model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);
@@ -389,25 +390,20 @@ void SegLearner::processImageNew()
   planeFitter->setInputCloud(pcl_cloud);
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
-  planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
-  planeFitter->getError(error);
 
 // printf("Surfaces:\n");
 // for(unsigned i=0; i<surfaces.size(); i++)
 //   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
-
-//   printf("planeFitter->postprocess: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
-//   postProcessIndices.clear();
-//   planeFitter->postprocessResults(postProcessIndices);
-//   printf("planeFitter->postprocess: end: found indices: %u\n", postProcessIndices.size());
-
-// printf("Post-surfaces:\n");
-// for(unsigned i=0; i<surfaces.size(); i++)
-//   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
   if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
 
-
+  /// TODO copy model indices before check!!! => For displaying
+  for(unsigned i=0; i<surfaces.size(); i++)
+    preProcessIndices.push_back(surfaces[i]->indices);
+    
+  std::vector<int> checkPCLines;
+  planeFitter->checkPCLines(surfaces, checkPCLines);  // TODO Should we check that here or after the modeling
+  
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
   if(deb) last = current; 
@@ -415,81 +411,78 @@ void SegLearner::processImageNew()
   /// NURBS-Fitting and model selection
   if(deb) log("NURBS-Fitting start!");
   modeling->setInputCloud(pcl_cloud);
-  modeling->setInputPlanes(pcl_model_types, model_coefficients, pcl_model_indices, error);
+  modeling->setInputPlanes(surfaces);
   modeling->compute();
   modeling->getSurfaceModels(surfaces);
-  modeling->getResults(pcl_model_types, pcl_model_indices, error);      // TODO Nur für Anzeige notwendig!
   if(deb) log("NURBS-Fitting end: size of surfaces: %u", surfaces.size());
-
-  /// Check if we have line-models in the point cloud
-//   printf("planeFitter->checkPCLines: start with %lu (%lu) models\n", surfaces.size(), pcl_model_types.size());
-//   planeFitter->checkPCLines(surfaces, checkPCLines);
-//   printf("planeFitter->checkPCLines: end\n");
-
 
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f", timespec_diff(&current, &last));
   if(deb) last = current; 
 
-  /// Load annotation from file
-  if(deb) log("Annotation for 1st level: start");
-  std::vector< std::vector<int> > anno_pairs;
-  std::vector<int> anno_background_list;
-  annotation->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
-  annotation->setSurfaceModels(surfaces);
-  annotation->calculate();
-  annotation->getResults(nr_anno, anno_pairs, anno_background_list);
-  for(unsigned i=0; i<anno_pairs.size(); i++) {
-    printf("Annotation pairs for %u: ", i);
-    for(unsigned j=0; j<anno_pairs[i].size(); j++)
-      printf(" %u", anno_pairs[i][j]);
-    printf("\n");
+  
+  if(true) /// TODO TODO TODO DEBUG
+  {
+    /// Load annotation from file
+    if(deb) log("Annotation for 1st level: start");
+    std::vector< std::vector<int> > anno_pairs;
+    std::vector<int> anno_background_list;
+    annotation->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+    annotation->setSurfaceModels(surfaces);
+    annotation->calculate();
+    annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+    for(unsigned i=0; i<anno_pairs.size(); i++) {
+      printf("Annotation pairs for %u: ", i);
+      for(unsigned j=0; j<anno_pairs[i].size(); j++)
+        printf(" %u", anno_pairs[i][j]);
+      printf("\n");
+    }
+    if(deb) log("Annotation for 1st level: end");
+    
+    if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+    if(deb) log("Runtime for SegLearner: Annotation calculation: %4.3f", timespec_diff(&current, &last));
+    if(deb) last = current; 
+
+    /// Calculate patch relations
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_copy (new pcl::PointCloud<pcl::PointXYZRGB>);         ///< PCL point cloud
+    pcl::copyPointCloud(*pcl_cloud, *pcl_cloud_copy);
+    
+    if(deb) log("Calculate patch-relations start!");
+    std::vector<Relation> relation_vector;
+    patches->setInputImage(iplImage_k);
+    patches->setInputCloud(pcl_cloud_copy);                   /// TODO We use a copy to avoid changes!!!
+    patches->setNormals(pcl_normals);
+    patches->setSurfaceModels(surfaces);
+    patches->setAnnotion(anno_pairs, anno_background_list);
+    patches->setTexture(texture);
+    patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
+    patches->computeLearnRelations();
+
+    if(deb) log("Calculate patch-relations for 2nd SVM: start!");
+    patches->computeLearnRelations2();
+    if(deb) log("Calculate patch-relations for 2nd SVM: end!");
+
+    patches->getRelations(relation_vector);
+
+    pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
+    pcl_normals_repro->points.resize(pcl_normals->points.size());
+    patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);
+    if(deb) log("Calculate patch-relations ended!");
+
+    if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+    if(deb) log("Runtime for SegLearner: Calculate patch relations: %4.3f", timespec_diff(&current, &last));
+    if(deb) last = current;  
+
+    /// write svm-relations for first level svm to file!
+    if(deb) log("write svm learn file: start.");
+    svm->setRelations(relation_vector);
+    svm->setAnalyzeOutput(false);
+    svm->process();
+    if(deb) log("write svm learn file: end.");
+
+    if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+    if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
   }
-  if(deb) log("Annotation for 1st level: end");
-  
-  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-  if(deb) log("Runtime for SegLearner: Annotation calculation: %4.3f", timespec_diff(&current, &last));
-  if(deb) last = current; 
-
-  /// Calculate patch relations
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_copy (new pcl::PointCloud<pcl::PointXYZRGB>);         ///< PCL point cloud
-  pcl::copyPointCloud(*pcl_cloud, *pcl_cloud_copy);
-  
-  if(deb) log("Calculate patch-relations start!");
-  std::vector<Relation> relation_vector;
-  patches->setInputImage(iplImage_k);
-  patches->setInputCloud(pcl_cloud_copy);                   /// TODO We use a copy to avoid changes!!!
-  patches->setNormals(pcl_normals);
-  patches->setSurfaceModels(surfaces);
-  patches->setAnnotion(anno_pairs, anno_background_list);
-  patches->setTexture(texture);
-  patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
-  patches->computeLearnRelations();
-
-  if(deb) log("Calculate patch-relations for 2nd SVM: start!");
-  patches->computeLearnRelations2();
-  if(deb) log("Calculate patch-relations for 2nd SVM: end!");
-
-  patches->getRelations(relation_vector);
-
-  pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
-  pcl_normals_repro->points.resize(pcl_normals->points.size());
-  patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);
-  if(deb) log("Calculate patch-relations ended!");
-
-  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-  if(deb) log("Runtime for SegLearner: Calculate patch relations: %4.3f", timespec_diff(&current, &last));
-  if(deb) last = current;  
-
-  /// write svm-relations for first level svm to file!
-  if(deb) log("write svm learn file: start.");
-  svm->setRelations(relation_vector);
-  svm->setAnalyzeOutput(false);
-  svm->process();
-  if(deb) log("write svm learn file: end.");
-
-  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-  if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
   
   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
@@ -608,15 +601,17 @@ void SegLearner::SingleShotMode()
       {
         std::vector<cv::Vec4f> col_points;
         RGBValue col;
-        col.float_value = GetRandomColor();
-        for(unsigned i=0; i<postProcessIndices.size(); i++) {
-          cv::Vec4f pt;
-          pt[0] = pcl_cloud->points[postProcessIndices[i]].x;
-          pt[1] = pcl_cloud->points[postProcessIndices[i]].y;
-          pt[2] = pcl_cloud->points[postProcessIndices[i]].z;
-          pt[3] = col.float_value;
-          printf("Draw a postProcessIndices point [%u]: %3.2f-%3.2f-%3.2f\n", postProcessIndices[i], pt[0], pt[1], pt[2]);
-          col_points.push_back(pt);
+        for(unsigned i=0; i<preProcessIndices.size(); i++) {
+          col.float_value = GetRandomColor();
+          for(unsigned j=0; j<preProcessIndices[i].size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[preProcessIndices[i][j]].x;
+            pt[1] = pcl_cloud->points[preProcessIndices[i][j]].y;
+            pt[2] = pcl_cloud->points[preProcessIndices[i][j]].z;
+            pt[3] = col.float_value;
+  // printf("Draw a preProcessIndices point [u]: %3.2f-%3.2f-%3.2f\n", preProcessIndices[i], pt[0], pt[1], pt[2]);
+            col_points.push_back(pt);
+          }
         }
         printf("col_points.size: %lu\n", col_points.size());
         tgRenderer->Clear();
@@ -653,15 +648,15 @@ void SegLearner::SingleShotMode()
       if(showImages)
       {
         std::vector<cv::Vec4f> col_points;
-        cv::Vec4f center3D[pcl_model_indices.size()];
-        RGBValue col[pcl_model_indices.size()];
-        for(unsigned i=0; i<pcl_model_indices.size(); i++) {
+        cv::Vec4f center3D[surfaces.size()];
+        RGBValue col[surfaces.size()];
+        for(unsigned i=0; i<surfaces.size(); i++) {
           col[i].float_value = GetRandomColor();
-          for(unsigned j=0; j<pcl_model_indices[i]->indices.size(); j++) {
+          for(unsigned j=0; j<surfaces[i]->indices.size(); j++) {
             cv::Vec4f pt;
-            pt[0] = pcl_cloud->points[pcl_model_indices[i]->indices[j]].x;
-            pt[1] = pcl_cloud->points[pcl_model_indices[i]->indices[j]].y;
-            pt[2] = pcl_cloud->points[pcl_model_indices[i]->indices[j]].z;
+            pt[0] = pcl_cloud->points[surfaces[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[surfaces[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[surfaces[i]->indices[j]].z;
             pt[3] = col[i].float_value;
             center3D[i][0] = center3D[i][0] + pt[0];
             center3D[i][1] = center3D[i][1] + pt[1];
@@ -674,13 +669,13 @@ void SegLearner::SingleShotMode()
 
         // Add labels
         if(labels) {
-          for(size_t i=0; i<pcl_model_indices.size(); i++) {
+          for(size_t i=0; i<surfaces.size(); i++) {
             char label[5];
             snprintf(label, 5, "%lu", i);
             tgRenderer->AddLabel3D(label, 14, 
-                                  center3D[i][0]/pcl_model_indices[i]->indices.size(), 
-                                  center3D[i][1]/pcl_model_indices[i]->indices.size(), 
-                                  center3D[i][2]/pcl_model_indices[i]->indices.size());
+                                  center3D[i][0]/surfaces[i]->indices.size(), 
+                                  center3D[i][1]/surfaces[i]->indices.size(), 
+                                  center3D[i][2]/surfaces[i]->indices.size());
           }
         }
         tgRenderer->Update();
