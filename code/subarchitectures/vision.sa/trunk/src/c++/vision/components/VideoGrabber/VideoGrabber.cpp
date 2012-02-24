@@ -848,6 +848,14 @@ void CVideoGrabber::CSaveQueThread::grab()
    if (! m_pGrabber) return;
    //IceUtil::Time tm = IceUtil::Time::now();
 
+   // TODO: To also grab point-clouds (and other types of data), getClients has to be changed!
+   // Refactoring:
+   //   - clients is a vector<GrabberClient>
+   //   - PcClient is a GrabberClient and a PointCloudClient
+   //   - VideoClient is a GrabberClient and a CVideoClient2
+   //   - a GrabberClient grabs in grab()
+   //   - a GrabberClient adds SaveItem(Ptr)s to the queue
+   //   - saveQueuedImages works with SaveItem(Ptr)s instead of CCachedImagePtr-s
    CItem pack;
    std::vector<Video::CCachedImagePtr> queue;
    std::vector<Video::CVideoClient2*> clients;
