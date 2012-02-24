@@ -296,7 +296,7 @@ public class SerialPlanExecutor extends Thread {
 				
 			}
 		} catch (CASTException e) {
-			m_component.logException(e);
+			m_component.logException(e);	
 			try {
 				planComplete(ExecutionState.COMPLETED);
 			} catch (SubarchitectureComponentException e2) {
@@ -307,8 +307,10 @@ public class SerialPlanExecutor extends Thread {
 				m_component.getLogger().warn("stopping action in progress");
 				try {
 					m_component.stopExecution(actionWrapper.getActionAddress());
+				} catch (DoesNotExistOnWMException e1) {
+					m_component.logException("I just tried to halt an action that was already complete. Not to worry.", e1);
 				} catch (CASTException e1) {
-					m_component.logException(e1);
+					m_component.logException("Exception while trying to halt action execution on failure", e1);
 				}
 			}
 			
