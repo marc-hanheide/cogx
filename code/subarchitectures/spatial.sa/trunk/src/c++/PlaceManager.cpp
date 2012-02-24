@@ -63,6 +63,10 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 {
   log("Configure entered");
 
+  m_usePeekabot = false;
+    if (_config.find("--usepeekabot") != _config.end())
+      m_usePeekabot= true;
+
   if(_config.find("--no-local-maps") != _config.end()) {
     m_useLocalMaps = false;
   }
@@ -99,6 +103,11 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   if(_config.find("--exclude-from-exploration") != _config.end()) {
     std::istringstream str(_config.find("--exclude-from-exploration")->second);
 
+
+
+    m_PbPort = 5050;
+    m_PbHost = "localhost";
+
     ForbiddenZone newZone;
     newZone.minX = -DBL_MAX;
     newZone.maxX = DBL_MAX;
@@ -120,10 +129,10 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
       else if (buf == "x") {
 	str >> buf;
 	if (buf == ">") {
-	  str >> newZone.maxX;
+	  str >> newZone.minX;
 	}
 	else if (buf == "<") {
-	  str >> newZone.minX;
+	  str >> newZone.maxX;
 	}
 	else {
 	  log("Warning: Malformed --exclude-from-exploration string");
@@ -133,10 +142,10 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
       else if (buf == "y") {
 	str >> buf;
 	if (buf == ">") {
-	  str >> newZone.maxY;
+	  str >> newZone.minY;
 	}
 	else if (buf == "<") {
-	  str >> newZone.minY;
+	  str >> newZone.maxY;
 	}
 	else {
 	  log("Warning: Malformed --exclude-from-exploration string");
@@ -171,6 +180,28 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 void 
 PlaceManager::start()
 {
+    if(m_usePeekabot){
+        while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+            sleep(m_RetryDelay);
+            connectPeekabot();
+        }
+        m_ProxyForbiddenMap.add(m_PeekabotClient, "pm_forbidden",peekabot::REPLACE_ON_CONFLICT);
+        m_ProxyForbiddenMap.set_position(0,0,-0.004);
+
+        for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+            fbIt != m_forbiddenZones.end(); fbIt++) {
+            peekabot::PolygonProxy* p = new peekabot::PolygonProxy();
+            
+            p->add(m_ProxyForbiddenMap, "zone");
+            p->set_color(1,0.1,0.1);
+            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+        }
+	}
+
+
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::newNavNode));
@@ -801,10 +832,10 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
     bool excluded = false;
     for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
         fbIt != m_forbiddenZones.end(); fbIt++) {
-      //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
-      //    	  log("checking against: %.02g, %.02g", newX, newY);
-      if (!(newX <= fbIt->maxX && newX >= fbIt->minX &&
-            newY <= fbIt->maxY && newY >= fbIt->minY)) {
+          	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+          	  log("checking against: %.02g, %.02g", newX, newY);
+      if (newX <= fbIt->maxX && newX >= fbIt->minX &&
+            newY <= fbIt->maxY && newY >= fbIt->minY) {
         log("Placeholder in forbidden zone excluded");
         excluded = true;
         break;
@@ -842,6 +873,26 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
   }
   return ret;
 }
+
+void PlaceManager::connectPeekabot()
+{
+  try {
+    log("Trying to connect to Peekabot (again?) on host %s and port %d",
+        m_PbHost.c_str(), m_PbPort);
+    
+    m_PeekabotClient.connect(m_PbHost, m_PbPort);
+
+    log("Connection to Peekabot established");
+
+    
+  } catch(std::exception &e) {
+    log("Caught exception when connecting to peekabot (%s)",
+        e.what());
+    return;
+  }
+}
+
+
 
 /* Creates a nodehypothesis with a placeholder at (x,y) connected to placeId */
 bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)

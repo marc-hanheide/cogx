@@ -26,6 +26,8 @@
 
 #include "PBVisualization.hh"
 
+#include <algorithm>
+
 using namespace cast;
 using namespace std;
 using namespace boost;
@@ -314,8 +316,21 @@ void AVS_ContinualPlanner::start() {
         if( s.succeeded() ) m_2DOccGridProxy.remove();
 //        s = planned_viewpoints.assign(m_PeekabotClient, "planned_viewpoints").status();
 //        if( s.succeeded() ) planned_viewpoints.remove();
-        
 
+        m_ProxyForbiddenMap.add(m_PeekabotClient, "avs_forbidden",peekabot::REPLACE_ON_CONFLICT);
+        m_ProxyForbiddenMap.set_position(0,0,-0.005);
+
+        for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+            fbIt != m_forbiddenZones.end(); fbIt++) {
+            peekabot::PolygonProxy* p = new peekabot::PolygonProxy();
+            
+            p->add(m_ProxyForbiddenMap, "zone");
+            p->set_color(1,0.1,0.1);
+            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+        }
         CreateCurrentViewCone();    
 	}
 	addChangeFilter(createGlobalTypeFilter<
@@ -608,7 +623,7 @@ void AVS_ContinualPlanner::generateViewCones(
                     fbIt != m_forbiddenZones.end(); fbIt++) {
                   //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
                   //    	  log("checking against: %.02g, %.02g", newX, newY);
-                  if (!(x*m_cellsize <= fbIt->maxX && x*m_cellsize >= fbIt->minX &&
+                  if ((x*m_cellsize <= fbIt->maxX && x*m_cellsize >= fbIt->minX &&
                         y*m_cellsize <= fbIt->maxY && x*m_cellsize >= fbIt->minY)) {
                     log("point in forbidden zone excluded");
                     (*lgm)(x,y) = '2';
@@ -1584,10 +1599,10 @@ void AVS_ContinualPlanner::configure(
       else if (buf == "x") {
 	str >> buf;
 	if (buf == ">") {
-	  str >> newZone.maxX;
+	  str >> newZone.minX;
 	}
 	else if (buf == "<") {
-	  str >> newZone.minX;
+	  str >> newZone.maxX;
 	}
 	else {
 	  log("Warning: Malformed --exclude-from-exploration string");
@@ -1597,10 +1612,10 @@ void AVS_ContinualPlanner::configure(
       else if (buf == "y") {
 	str >> buf;
 	if (buf == ">") {
-	  str >> newZone.maxY;
+	  str >> newZone.minY;
 	}
 	else if (buf == "<") {
-	  str >> newZone.minY;
+	  str >> newZone.maxY;
 	}
 	else {
 	  log("Warning: Malformed --exclude-from-exploration string");
