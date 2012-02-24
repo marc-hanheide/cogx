@@ -81,6 +81,7 @@ ControlWindow::ControlWindow() : follow_robot("follow the robot") {
     m_box1.pack_start(follow_robot);
 
 follow_robot.show();
+follow_robot.set_active(true);
 
     for (int i=0; i<ps.toggles.size(); i++) {
         Gtk::CheckButton* toggle = new Gtk::CheckButton(ps.toggles[i]);
@@ -109,7 +110,7 @@ follow_robot.show();
   set_keep_above();
   show();
   show_all_children();  
-    
+  ApplyView(0);    
 }
 ControlWindow::~ControlWindow(){}
 
@@ -166,6 +167,11 @@ void ControlWindow::on_selection_changed(){
         TreeModel::Row row = *iter;
 
         int vid =row[m_Columns.m_col_id];
+        ApplyView(vid);
+    }
+}
+
+void ControlWindow::ApplyView(int vid){
         peekabot::CameraProxy pb_camera;
         peekabot::Status s;
         s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
@@ -194,7 +200,6 @@ void ControlWindow::on_selection_changed(){
                 }
             }
         }
-    }
 }
 
 void ControlWindow::on_button_clicked(){
