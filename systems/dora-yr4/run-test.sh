@@ -11,13 +11,15 @@ function storeCoreDump {
 
 
 if [ "$1" ]; then
-    configFile="$1"
+    configFile="instantiations/dora-test-search-sim-peekabot.cast"
+#    configFile="$1"
 else
     configFile="instantiations/dora-test-search-sim-peekabot.cast"
 fi
 
 if [ "$2" ]; then
-    GOAL="$2"
+#    GOAL="$2"
+    GOAL="(forall (?p - place) (= (placestatus ?p) trueplace))"
 else
     GOAL="(forall (?p - place) (= (placestatus ?p) trueplace))"
 fi
