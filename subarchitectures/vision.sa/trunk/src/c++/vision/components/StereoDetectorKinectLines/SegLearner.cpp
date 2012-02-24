@@ -390,6 +390,7 @@ void SegLearner::processImageNew()
 //   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
   pclA::FilterZ(pcl_cloud, 0.3, 1.5);      // z filtering for 1.5 meters
   planeFitter->setInputCloud(pcl_cloud);
+  planeFitter->setLineCheck(true, 8);
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
@@ -397,10 +398,10 @@ void SegLearner::processImageNew()
   for(unsigned i=0; i<surfaces.size(); i++)
     preProcessIndices.push_back(surfaces[i]->indices);
     
-  std::vector<int> checkPCLines;
-  planeFitter->checkPCLines(surfaces, checkPCLines);
-  if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
-  
+  // TODO Experimental function => use setLineCheck-options
+//   std::vector<int> checkPCLines;
+//   planeFitter->checkPCLines(surfaces, checkPCLines);  // TODO Should we check that here or after the modeling
+
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
   if(deb) last = current; 
