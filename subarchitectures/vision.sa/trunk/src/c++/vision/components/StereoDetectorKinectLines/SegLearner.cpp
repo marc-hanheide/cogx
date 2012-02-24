@@ -222,18 +222,21 @@ void SegLearner::configure(const map<string,string> & _config)
   /// init annotation for learning
   annotation = new anno::Annotation();
 
-  annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
+//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 11);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 8);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
-  /// eval svm
+  // eval svm
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 32);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 9, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
-  
-  
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
+
+  /// IROS annotation
+    annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+  
 
   /// init patch class
   patches = new surface::Patches();
@@ -308,7 +311,6 @@ void SegLearner::GetImageData()
   if(deb) last = start;
 //   pclA::NormalsEstimationNR::Parameter param(5, 0.02, 1000, 0.001, 5, 0.001, 0.01, false, false);
   pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
-
   pclA::NormalsEstimationNR n;
   n.setParameter(param);
   n.setInputCloud(pcl_cloud);
@@ -391,18 +393,13 @@ void SegLearner::processImageNew()
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
-
-// printf("Surfaces:\n");
-// for(unsigned i=0; i<surfaces.size(); i++)
-//   printf(" model %u: size: %lu\n", i, surfaces[i]->indices.size());
-  if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
-
   /// TODO copy model indices before check!!! => For displaying
   for(unsigned i=0; i<surfaces.size(); i++)
     preProcessIndices.push_back(surfaces[i]->indices);
     
   std::vector<int> checkPCLines;
-  planeFitter->checkPCLines(surfaces, checkPCLines);  // TODO Should we check that here or after the modeling
+  planeFitter->checkPCLines(surfaces, checkPCLines);
+  if(deb) log("MoS-Plane fitter end: Found %lu models.", surfaces.size());
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
@@ -444,29 +441,27 @@ void SegLearner::processImageNew()
     if(deb) last = current; 
 
     /// Calculate patch relations
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_copy (new pcl::PointCloud<pcl::PointXYZRGB>);         ///< PCL point cloud
-    pcl::copyPointCloud(*pcl_cloud, *pcl_cloud_copy);
+//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_copy (new pcl::PointCloud<pcl::PointXYZRGB>);         ///< PCL point cloud
+//     pcl::copyPointCloud(*pcl_cloud, *pcl_cloud_copy);
     
     if(deb) log("Calculate patch-relations start!");
     std::vector<Relation> relation_vector;
     patches->setInputImage(iplImage_k);
-    patches->setInputCloud(pcl_cloud_copy);                   /// TODO We use a copy to avoid changes!!!
+    patches->setInputCloud(pcl_cloud);                        /// TODO projects points to planes / changes normals, if setOptimalPatchModels is true
     patches->setNormals(pcl_normals);
     patches->setSurfaceModels(surfaces);
     patches->setAnnotion(anno_pairs, anno_background_list);
     patches->setTexture(texture);
     patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
     patches->computeLearnRelations();
-
     if(deb) log("Calculate patch-relations for 2nd SVM: start!");
     patches->computeLearnRelations2();
     if(deb) log("Calculate patch-relations for 2nd SVM: end!");
-
     patches->getRelations(relation_vector);
 
     pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
     pcl_normals_repro->points.resize(pcl_normals->points.size());
-    patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);
+    patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);      // TODO Wieso braucht man hier noch die output-cloud?
     if(deb) log("Calculate patch-relations ended!");
 
     if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
