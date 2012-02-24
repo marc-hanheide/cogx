@@ -1,10 +1,19 @@
-CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 -m tmpmap.metric --no-file-output
-CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph --no-file-output
-CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf 
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+VARDEFAULT spatial_min_door_width=0.8
+VARDEFAULT spatial_max_door_width=1.0
+VARDEFAULT no_placeholders=
+VARDEFAULT display_doors=
 
-CPP MG spatial.translation SpatialTranslation 
-CPP GD place.manager PlaceManager --max-frontier-dist 2.5 --min-frontier-dist 0.5 --min-frontier-length 1.0 --min-node-separation 2.5 --hyp-path-length 2.0 #--no-placeholders #--log
-CPP GD path.query PathQueryProcessor #--no-indirect-paths 
-CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf --no-local-map-window --no-tentative-window --laser-range 1.0 --planemap-size 100 --planemap-cellsize 0.05 --load-nodemap #--log
+###--display-doors
 
-JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
+# set this to "--pcserver pcserver" to use kinect data
+VARDEFAULT spatial_pcserver="--pcserver pcserver"
+
+CPP GD self.representer 	SelfRepresenter 
+CPP MG spatial.translation 	SpatialTranslation 
+CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) --cat-explore-range 5.6 --usepeekabot --load-map
+CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric --usepeekabot #--no-file-output
+CPP GD navgraph.process 	NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width)
+CPP GD place.manager 		PlaceManager --no-update-placeholders --exclude-from-exploration "y < -3.2" --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
+CPP GD map.manager 		LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)  --load-nodemap
+CPP GD path.query 		PathQueryProcessor 

@@ -11,11 +11,11 @@ VARDEFAULT spatial_pcserver="--pcserver pcserver"
 
 CPP GD self.representer 	SelfRepresenter 
 CPP MG spatial.translation 	SpatialTranslation 
-CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) --cat-explore-range 5.6 --show-categorical-map
-CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric #--no-file-output
+CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) --cat-explore-range 5.6 --usepeekabot
+CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric --usepeekabot #--no-file-output
 CPP GD navgraph.process 	NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width)
-CPP GD place.manager 		PlaceManager --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
-CPP GD map.manager 		LocalMapManager -c %(spatial_cureconfig) --no-tentative-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)
+CPP GD place.manager 		PlaceManager --no-update-placeholders --exclude-from-exploration "y < -3.2" --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
+CPP GD map.manager 		LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)
 CPP GD path.query 		PathQueryProcessor 
 
 
