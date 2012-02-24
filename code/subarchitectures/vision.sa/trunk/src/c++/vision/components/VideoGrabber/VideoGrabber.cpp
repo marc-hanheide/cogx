@@ -87,9 +87,21 @@ CVideoGrabber::~CVideoGrabber()
 #endif
 }
 
+bool parseBool(const std::string& value, bool valEmpty=false, bool valInvalid=false)
+{
+   string s = _s_::lower(_s_::strip(value));
+   if (s == "")
+      return valEmpty;
+   if (s == "1" || s == "yes" || s == "true" || s == "on")
+      return true;
+   if (s == "0" || s == "no" || s == "false" || s == "off")
+      return false;
+   return valInvalid;
+}
+
 void CVideoGrabber::configure(const map<string,string> & _config)
 {
-   map<string,string>::const_iterator it, iCam;
+   map<string,string>::const_iterator it, iCam, iopt;
 
    string serverName;
    vector<int> camids;
@@ -132,8 +144,6 @@ void CVideoGrabber::configure(const map<string,string> & _config)
    PcClient *pPc;
    // Pointcloud servers
    for (it = _config.begin(); it != _config.end(); it++) {
-      string sffx = "";
-
       if (it->first != "--pcserver" && !_s_::startswith(it->first, "--pcserver."))
          continue;
 
@@ -141,18 +151,35 @@ void CVideoGrabber::configure(const map<string,string> & _config)
 
       if (serverName == "") continue;
 
+      string sffx = "";
+      if (_s_::startswith(it->first, "--pcserver.")){
+         sffx = it->first.substr(10);
+      }
+
       map<string,string> conf;
       conf["--pcserver"] = serverName;
       pPc = new PcClient();
+
+      iopt = _config.find("--pcgrabpoints" + sffx);
+      if (iopt != _config.end()) {
+         pPc->mbGrabPoints = parseBool(iopt->second, /*empty=*/ true);
+      }
+      iopt = _config.find("--pcgrabdepth" + sffx);
+      if (iopt != _config.end()) {
+         pPc->mbGrabDepth = parseBool(iopt->second, /*empty=*/ true);
+      }
+      iopt = _config.find("--pcgrabrect" + sffx);
+      if (iopt != _config.end()) {
+         pPc->mbGrabRectImage = parseBool(iopt->second, /*empty=*/ true);
+      }
+
       pPc->configurePcComm(conf);
       m_pointcloud.push_back(pPc);
    }
 #endif
 
    if((it = _config.find("--fakegrabbing")) != _config.end()) {
-      string s = _s_::lower(it->second);
-      if (s == "1" || s == "yes" || s == "true" || s == "on")
-         m_fakeRecording = true;
+      m_fakeRecording = parseBool(it->second, /*empty=*/ true);
    }
 
    if((it = _config.find("--grab_ms")) != _config.end()) {

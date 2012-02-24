@@ -57,6 +57,15 @@ struct CRecordingInfo
 class PcClient: public cast::PointCloudClient
 {
 public:
+   bool mbGrabPoints;
+   bool mbGrabDepth;
+   bool mbGrabRectImage;
+   PcClient(): cast::PointCloudClient()
+   {
+      mbGrabPoints = true;
+      mbGrabDepth = false;
+      mbGrabRectImage = false;
+   }
    void configurePcComm(const std::map<std::string,std::string> & _config)
    {
       configureServerCommunication(_config);
