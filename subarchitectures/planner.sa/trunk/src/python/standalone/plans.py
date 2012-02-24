@@ -168,6 +168,7 @@ class MAPLPlan(networkx.MultiDiGraph):
 
     def find_loop(self):
         stack = []
+        closed = set()
         def dfs(node):
             if node in stack:
                 print "Found loop:"
@@ -177,8 +178,10 @@ class MAPLPlan(networkx.MultiDiGraph):
                 return True
             stack.append(node)
             for succ in self.successors_iter(node):
-                if dfs(succ):
-                    return True
+                if succ not in closed:
+                    if dfs(succ):
+                        return True
+                    closed.add(succ)
             stack.pop(-1)
             return False
         return dfs(self.init_node)

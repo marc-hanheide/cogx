@@ -1,4 +1,6 @@
+import re
 import time
+
 from itertools import chain
 from standalone import config
 from standalone.pddl import prob_state
@@ -7,9 +9,11 @@ import standalone.globals as global_vars
 import cast_state
 
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
+import cast.cdl
 
 log = config.logger("PythonServer")
 BINDER_SA = "binder"
+CAST_OBJ_RE = re.compile("[a-z]+_(_?[0-9a-z])_(_?[0-9a-z])")
 
 class FakeCASTState(cast_state.CASTState):
     def __init__(self, problem, domain, component=None, consistency_cond=None):
@@ -19,12 +23,8 @@ class FakeCASTState(cast_state.CASTState):
         self.problem = problem
         self.consistency_cond = consistency_cond
       #self.beliefs = beliefs
-        #self.beliefdict = dict((b.id, b) for b in beliefs)
-        #TODO: make this less ugly
-        #tp.current_domain = self.domain
-        #tp.belief_dict = self.beliefdict
-  
-        #obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(beliefs))))
+        self.beliefdict = {}
+        self.address_dict = {}
   
         self.objects = set(problem.objects)
         self.castname_to_obj = {}
@@ -80,11 +80,23 @@ class FakeCASTState(cast_state.CASTState):
         return []
 
     def featvalue_from_object(self, arg):
-        #arg is a domain constant
-        name = arg.name
-        value = logicalcontent.ElementaryFormula(0, name)
+        if arg not in self.obj_to_castname:
+            obj_match = CAST_OBJ_RE.search(arg.name)
+            if obj_match:
+                i1 = obj_match.group(1)
+                i2 = obj_match.group(2)
+                if len(i1) == 2:
+                    i1 = i1[1].upper()
+                if len(i2) == 2:
+                    i2 = i2[1].upper()
+                name = "%s:%s" % (i1, i2)
+                self.obj_to_castname[arg] = name
+                self.address_dict[name] = cast.cdl.WorkingMemoryAddress(name, "fake.sa")
+            # else:
+            #     vo_match = VIRTUAL_OBJ_RE.search(arg.name)
+            #     if vo_match and vo_match.group(1) in self.domain.types:
 
-        return value
+        return cast_state.CASTState.featvalue_from_object(self, arg)
     
     def update_beliefs(self, diffstate):
         return []

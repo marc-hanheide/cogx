@@ -27,7 +27,8 @@ protected:
     //vector<beliefmodels::autogen::beliefs::BeliefPtr>* generateState();
     //void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
     void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& po_plan=0);
-    void updateBeliefState(const BeliefSeq& beliefs);
+    void deliverHypotheses(int id, const BeliefSeq& hypotheses);
+    void updateBeliefState(const BeliefEntrySeq& beliefs);
     void updateStatus(int id, Completion status);
     void waitForChanges(int id, int timeout);
     bool queryGoal(const std::string& goal);
@@ -46,7 +47,8 @@ protected:
         //virtual void deliverPlan(const PlanningTaskPtr& task, const Ice::Current&);
         virtual void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const Ice::Current&);
         virtual void deliverPlanPO(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& orderedPlan, const Ice::Current&);
-        virtual void updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&);
+        virtual void deliverHypotheses(int id, const BeliefSeq& hypotheses, const Ice::Current&);
+        virtual void updateBeliefState(const BeliefEntrySeq& beliefs, const Ice::Current&);
         virtual void updateStatus(int id, Completion status, const Ice::Current&);
         virtual void setChangeFilter(int id, const StateChangeFilterPtr& filter, const Ice::Current&);
         virtual void waitForChanges(int id, int timeout, const Ice::Current&);

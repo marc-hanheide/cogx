@@ -102,7 +102,7 @@ from standalone import pddl
 
 from standalone.planner import Planner as StandalonePlanner
 
-from cast_task import CASTTask, TaskStateEnum
+from cast_task import CASTTask, TaskStateEnum, TaskStateInfoEnum
 from display_client import PlannerDisplayClient
 
 this_path = path.abspath(path.dirname(__file__))
@@ -152,6 +152,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.dt_tasks = {}
     self.expl_rules_fn = None
     self.consistency_fn = None
+    self.autorun = False
 
     self.beliefs = None
     self.address_dict = {}
@@ -184,6 +185,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.conceptual_name = config.get("--conceptual", "conceptual.queryhandler")
     self.show_dot = "--nodot" not in config
     self.start_pdb = "--pdb" in config
+    self.autorun = "--run-now" in config
     self.min_p = float(config.get("--low-p-threshold", 0.01))
 
     domain_dir = standalone.globals.config.domain_dir
@@ -292,6 +294,11 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       self.m_display.connectIceClient(self)
       self.m_display.installEventReceiver()
       self.m_display.init_html()
+      
+      if self.autorun and (self.problem_fn or self.history_fn):
+          dummy_goals = [Planner.Goal(-1, -1, "(and )", False)]
+          task_desc = Planner.PlanningTask(-1, dummy_goals, False, [], 0, "", Planner.Completion.PENDING, 0, Planner.Completion.PENDING, 0)
+          self.registerTask(task_desc)
 
   @pdbdebug
   def registerTask(self, task_desc, current=None):
@@ -308,8 +315,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
   @pdbdebug
   def deliver_plan(self, task, slice_plan):
       task.status = Planner.Completion.SUCCEEDED
-      self.m_display.update_task(task)
-      self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
+      self.m_display.update_task(task, TaskStateInfoEnum.WAITING_FOR_ACTION)
+      if task.id != -1:
+          self.getClient().deliverPlan(task.id, slice_plan, task.slice_goals);
 
   def get_new_attributed_beliefs(self, beliefs):
       import de.dfki.lt.tr.beliefs.slice as bm
@@ -376,7 +384,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
       if not task.update_state(self.beliefs):
           log.warning("Failed to update planning task. Setting status to FAILED.")
-          task.update_status(TaskStateEnum.FAILED)
+          task.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.INVALID_GOAL)
           self.deliver_plan(task, [])
           return
 
@@ -390,15 +398,26 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
 
   @pdbdebug
-  def notifyFailure(self, task_desc, current=None):
+  def notifyFailure(self, task_desc, cause, current=None):
       if task_desc.id not in self.tasks:
           log.warning("Warning: received update for task %d, but no such task found.", task_desc.id)
           return
       
       standalone.globals.set_time()
       task = self.tasks[task_desc.id]
+      
+      if cause == Planner.FailureCause.EXECUTION:
+          info_state = TaskStateInfoEnum.EXECUTION_FAILURE
+      elif cause == Planner.FailureCause.PLANNING:
+          info_state = TaskStateInfoEnum.PLANNING_FAILURE
+      else:
+          assert False
+          
       if task.internal_state != TaskStateEnum.FAILED:
-          task.update_status(TaskStateEnum.FAILED)
+          task.update_status(TaskStateEnum.FAILED, info_state)
+      else:
+          task.update_info_status(info_state)
+          
       task.handle_task_failure()
           
   @pdbdebug
@@ -482,8 +501,17 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           return
       
       #just forward the status for now
-      self.getClient().updateStatus(task.id, status)
+      self.updateTaskStatus(task)
 
+  def updateTaskStatus(self, task):
+      if task.id != -1:
+          self.getClient().updateStatus(task.id, task.status)
+
+
+  def deliver_hypotheses(self, task, hypotheses):
+      if task.id != -1:
+          self.getClient().deliverHypotheses(task.id, hypotheses)
+          
   
   def update_cast_beliefs(self, beliefs):
       temp_address = cast.cdl.WorkingMemoryAddress("temporary", "temporary")

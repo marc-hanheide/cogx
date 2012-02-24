@@ -293,8 +293,8 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         if (task->executionRetries >= MAX_EXEC_RETRIES) {
             log("Action %s failed, retries exhausted.", action->name.c_str());
             task->executionStatus = FAILED;
-            pyServer->notifyFailure(task);
             overwriteWorkingMemory(activeTasks[task->id], task);
+            pyServer->notifyFailure(task, EXECUTION);
         }
         else {
             log("Action %s failed, replanning.", action->name.c_str());
@@ -448,7 +448,22 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals,
 
 }
 
-void WMControl::updateBeliefState(const BeliefSeq& beliefs) {
+
+void WMControl::deliverHypotheses(int id, const BeliefSeq& hypotheses) {
+    log("Hypotheses delivered");
+    if (activeTasks.find(id) == activeTasks.end()) {
+        log("Task %d not found.", id);
+        return;
+    }
+
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
+    task->executionStatus = FAILED;
+    task->hypotheses = hypotheses;
+
+    overwriteWorkingMemory(activeTasks[id], task);
+}
+
+void WMControl::updateBeliefState(const BeliefEntrySeq& beliefs) {
     BOOST_FOREACH(BeliefEntry entry, beliefs) {
         dBeliefPtr bel = entry.belief;
         try {
@@ -515,7 +530,9 @@ void WMControl::updateStatus(int id, Completion status) {
         if (task->planningRetries >= MAX_PLANNING_RETRIES && task->executionStatus != FAILED) {
             log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);
             task->executionStatus = FAILED;
-            pyServer->notifyFailure(task);
+            overwriteWorkingMemory(activeTasks[id], task);
+            pyServer->notifyFailure(task, PLANNING);
+            return;
         }
         else if (task->id != m_active_task_id) {
             log("Planning failed for non-active task.");
@@ -589,7 +606,11 @@ void WMControl::InternalCppServer::deliverPlanPO(int id, const ActionSeq& plan, 
     parent->deliverPlan(id, plan, goals, orderedPlan);
 }
 
-void WMControl::InternalCppServer::updateBeliefState(const BeliefSeq& beliefs, const Ice::Current&) {
+void WMControl::InternalCppServer::deliverHypotheses(int id, const BeliefSeq& hypotheses, const Ice::Current&) {
+    parent->deliverHypotheses(id, hypotheses);
+}
+
+void WMControl::InternalCppServer::updateBeliefState(const BeliefEntrySeq& beliefs, const Ice::Current&) {
     parent->updateBeliefState(beliefs);
 }
 

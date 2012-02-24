@@ -331,7 +331,7 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
 
 
 def get_causal_relations(node):
-    node.action.instantiate(node.full_args)
+    node.action.instantiate(node.full_args) #FIXME: crashes here sometimes
     @pddl.visitors.collect
     def get_ceffs(elem, results):
         if isinstance(elem, pddl.effects.ConditionalEffect):
@@ -467,6 +467,11 @@ def postprocess_explanations(expl_plan, exec_plan):
                 open_expl.add(pred)
 
     for n in relevant_expl:
+        def fact_transform(f):
+            if f.value.is_instance_of(pddl.t_object) and f.value.name.startswith("unknown-"):
+                return pddl.state.Fact(f.svar, pddl.UNKNOWN)
+            return f
+        n.effects = set(fact_transform(f) for f in n.effects)
         print "relevant:", n
 
     # requiring_expl = set([exec_plan.goal_node])
@@ -493,7 +498,11 @@ def postprocess_explanations(expl_plan, exec_plan):
     def edge_decorator(n1, n2, data):
         if "new_facts" in n1.action.name and n2 == expl_plan.goal_node:
             return {'style' : 'invis', 'label' : ''}
+        if "new_facts" in n2.action.name and n1 == expl_plan.init_node:
+            return {'style' : 'invis', 'label' : ''}
         if data['svar'].modality == pddl.mapl.commit and n2 == expl_plan.goal_node:
+            return {'style' : 'invis', 'label' : ''}
+        if data['svar'].modality == pddl.mapl.committed and data['val'] == pddl.FALSE:
             return {'style' : 'invis', 'label' : ''}
         if data['svar'].function.name in ("phase", "enabled", "started"):
             return {'style' : 'invis', 'label' : ''}
