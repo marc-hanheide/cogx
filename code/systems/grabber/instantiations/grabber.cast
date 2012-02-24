@@ -1,0 +1,114 @@
+
+HOSTNAME  Main  localhost
+
+# lists of device ids
+VARDEFAULT firewire_cameras=
+VARDEFAULT firewire_config=--devclass FIREWIRE
+
+# lists of device ids
+VARDEFAULT v4l_cameras=
+VARDEFAULT v4l_config=
+
+# lists of device ids
+VARDEFAULT pointgrey_cameras=
+SETVAR cfgdir=%(CURRENT_DIR)/config/2011-11-16
+VARDEFAULT pointgrey_config=<multiline>
+   --imgsize "1280 960"
+   --framerate_fps "3"
+   --camconfigs "%(cfgdir)/camcalib-left.xml %(cfgdir)/camcalib-right.xml"
+   --swapredblue
+   # --setAutPropAdj "1 1 1 1 1 0"
+   # --format7 "640 480 0 0 1 1600" 
+   # --log --debug
+</multiline>
+
+VARDEFAULT kinect_internal_file=%(cfgdir)/KinectConfig.xml
+VARDEFAULT kinect_config_file=%(cfgdir)/camcalib-kinect.xml
+VARDEFAULT kinect_pc_camera=
+VARDEFAULT kinect_pc_config=<multiline>
+   --kconfig    "%(kinect_internal_file)"
+   --camconfigs "%(kinect_config_file)"
+   --displayserver "display.srv"
+</multiline>
+
+VARDEFAULT kinect_video_camera=
+VARDEFAULT kinect_video_config=<multiline>
+   --kconfig    "%(kinect_internal_file)"
+   --camconfigs "%(kinect_config_file)"
+   --displayserver "display.srv"
+</multiline>
+
+HOST [Main]
+
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+IFNEQ(%(firewire_cameras),)
+   SETVAR vsparams=<multiline>
+      %(firewire_config)
+      --camids "%(firewire_cameras)"
+   </multiline>
+   CPP MG VideoServer.fw OpenCvLiveServer %(vsparams)
+ENDIF
+
+IFNEQ(%(v4l_cameras),)
+   SETVAR vsparams=<multiline>
+      %(v4l_config)
+      --camids "%(v4l_cameras)"
+   </multiline>
+   CPP MG VideoServer.v4l OpenCvLiveServer %(vsparams)
+ENDIF
+
+IFNEQ(%(pointgrey_cameras),)
+   SETVAR vsparams=<multiline>
+      %(pointgrey_config)
+      --camids "%(pointgrey_cameras)"
+   </multiline>
+   CPP MG VideoServer.pg PointGreyServer %(vsparams)
+ENDIF
+
+IFNEQ(%(kinect_video_camera),)
+   SETVAR kvparams=<multiline>
+      %(kinect_video_config)
+      --camids "%(kinect_video_camera)"
+   </multiline>
+    CPP MG VideoServer.k KinectVideoServer %(kvparams)
+ENDIF
+
+IFNEQ(%(kinect_pc_camera),)
+   SETVAR kpcparams=<multiline>
+      %(kinect_pc_config)
+      --camids "%(kinect_pc_camera)"
+   </multiline>
+   CPP MG PcServer.k KinectPCServer %(kpcparams)
+ENDIF
+
+# Grabber GUI
+SETVAR vgparams=<multiline>
+   --displayserver "display.srv"
+</multiline>
+IFNEQ(%(firewire_cameras),)
+   SETVAR vgparams=%(vgparams) --camids.fw "%(firewire_cameras)" --videoname.fw "VideoServer.fw"
+ENDIF
+IFNEQ(%(v4l_cameras),)
+   SETVAR vgparams=%(vgparams) --camids.v4l "%(v4l_cameras)" --videoname.v4l "VideoServer.v4l"
+ENDIF
+IFNEQ(%(pointgrey_cameras),)
+   SETVAR vgparams=%(vgparams) --camids.pg "%(pointgrey_cameras)" --videoname.pg "VideoServer.pg"
+ENDIF
+IFNEQ(%(kinect_video_camera),)
+   SETVAR vgparams=%(vgparams) --camids.k "%(pointgrey_cameras)" --videoname.k "VideoServer.k"
+ENDIF
+IFNEQ(%(kinect_pc_camera),)
+   SETVAR vgparams=%(vgparams) --pcserver.k "PcServer.k"
+ENDIF
+
+CPP MG grabber VideoGrabber %(vgparams)
+
+
