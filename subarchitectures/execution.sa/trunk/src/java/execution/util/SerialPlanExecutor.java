@@ -86,7 +86,7 @@ public class SerialPlanExecutor extends Thread {
 
 		m_exeState = ExecutionState.PENDING;
 
-		stopWatch = new StopWatch("SerialPlanExecuter");
+		stopWatch = new StopWatch("SerialPlanstExecuter");
 
 		m_component = _component;
 		m_converter = _converter;
@@ -276,12 +276,14 @@ public class SerialPlanExecutor extends Thread {
 						if (!actionWrapper.isInProgress()) {
 							// and we haven't told the planner its complete
 							if (!actionWrapper.haveSentCompletionSignal()) {
+								
 								// update state on completion as appropriate,
 								// return
 								// says whether result of last execution allows
 								// execution to continue
 								signalActionComplete(actionWrapper);
 							} else {
+								
 								// try to trigger the next action. if nothing is
 								// triggered then actionWrapper doesn't change.
 								actionWrapper = triggerNextAction(actionWrapper);
@@ -309,6 +311,8 @@ public class SerialPlanExecutor extends Thread {
 					m_component.logException(e1);
 				}
 			}
+			
+			m_component.unlockComponent();
 
 		}
 		stopWatch.toc("execution complete: " + CASTUtils.toString(m_planningTaskAddress));
