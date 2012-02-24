@@ -13,14 +13,13 @@ function storeCoreDump {
 if [ "$1" ]; then
     configFile="$1"
 else
-    configFile="instantiations/dora-test-search-base.cast"
+    configFile="instantiations/dora-test-search-sim-peekabot.cast"
 fi
 
 if [ "$2" ]; then
     GOAL="$2"
 else
-    GOAL=""
-    #(forall (?p - place) (= (placestatus ?p) trueplace))"
+    GOAL="(forall (?p - place) (= (placestatus ?p) trueplace))"
 fi
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -85,13 +84,16 @@ xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
 PIDS="$PIDS $!"
 sleep 2
 
-xterm -e player instantiations/stage/alu/alu.cfg &
+xterm -e player instantiations/stage/BHAM/cs-2-small.cfg &
 PIDS="$PIDS $!"
 
 rm -f  robotpose.ccf tmpmap.*
 rm -f core
 
 xterm -e peekabot &
+PIDS="$PIDS $!"
+
+xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd tools/PBDisplayControl; ./PBDisplayControl" &
 PIDS="$PIDS $!"
 
 xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
