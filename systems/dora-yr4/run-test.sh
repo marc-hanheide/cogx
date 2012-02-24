@@ -91,8 +91,8 @@ PIDS="$PIDS $!"
 rm -f  robotpose.ccf tmpmap.*
 rm -f core
 
-#xterm -e peekabot &
-#PIDS="$PIDS $!"
+xterm -e peekabot &
+PIDS="$PIDS $!"
 
 xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
 SERVERPID="$!"
