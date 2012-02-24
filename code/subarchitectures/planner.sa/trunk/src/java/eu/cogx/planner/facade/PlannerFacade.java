@@ -24,6 +24,7 @@ import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEntryQueue;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
 import castutils.experimentation.StopWatch;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 
 /**
  * @author marc
@@ -159,7 +160,7 @@ public class PlannerFacade {
 	 */
 	public static PlanningTask newPlanningTask() {
 		return new PlanningTask(0, null, false, new Action[0], 0, "",
-				Completion.PENDING, 0, Completion.PENDING, 0);
+                                Completion.PENDING, 0, Completion.PENDING, 0, new dBelief[0]);
 	}
 
 	public static PlanningTask newPlanningTask(List<Goal> goals) {

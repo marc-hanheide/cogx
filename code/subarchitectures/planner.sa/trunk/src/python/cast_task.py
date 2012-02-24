@@ -1,9 +1,10 @@
-import os, time, itertools
+import os, re, time, itertools
 from os.path import abspath, join
 from collections import defaultdict
 
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
 from autogen import Planner
+import cast.cdl
 
 from standalone import task, dt_problem, plans, plan_postprocess, pddl, config, domain_query_graph
 import standalone.globals as global_vars
@@ -21,6 +22,22 @@ TaskStateEnum = Enum("INITIALISED",
                      "WAITING_FOR_DT",
                      "FAILED",
                      "COMPLETED")
+
+TaskStateInfoEnum = Enum("INITIALISED",
+                         "PLANNING_CP",
+                         "PLANNING_DT",
+                         "WAITING_FOR_ACTION",
+                         "WAITING_FOR_CONSISTENT_STATE",
+                         "WAITING_FOR_EFFECT",
+                         "WAITING_FOR_OBSERVATION",
+                         "EXECUTION_FAILURE",
+                         "PLANNING_FAILURE",
+                         "NO_CONSISTENT_STATE",
+                         "INVALID_GOAL",
+                         "EXPLANATIONS_PENDING",
+                         "EXPLANATIONS_FOUND",
+                         "EXPLANATIONS_NOT_FOUND",
+                         "COMPLETED")
 
 status_dict = {TaskStateEnum.INITIALISED : Planner.Completion.PENDING, \
                    TaskStateEnum.PROCESSING : Planner.Completion.INPROGRESS, \
@@ -43,6 +60,8 @@ TO_OK = -2
 TO_WAIT = -3
 
 FAKE_ACTION_FAILURE = None#"search_for_object_in_room"
+
+NEW_IDS = '0123456789abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWYXZ'
 
 # status_dict = {PlanningStatusEnum.TASK_CHANGED : Planner.Completion.PENDING, \
 #                    PlanningStatusEnum.RUNNING : Planner.Completion.INPROGRESS, \
@@ -107,6 +126,7 @@ class CASTTask(object):
         self.fail_count = defaultdict(lambda: 0)
         self.failure_simulated = False
         self.expl_rules_fn = args.get('expl_rules_fn', None)
+        self.temp_addr_index = 0
 
         self.load_domain(domain_fn)
 
@@ -139,7 +159,7 @@ class CASTTask(object):
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
-                self.update_status(TaskStateEnum.FAILED)
+                self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.INVALID_GOAL )
                 return
             if g.deadline != -1:
                 if g.importance != -1:
@@ -155,7 +175,7 @@ class CASTTask(object):
         self.unary_ops = None
         self.compute_solution_likelihood()
         
-        self.update_status(TaskStateEnum.INITIALISED)
+        self.update_status(TaskStateEnum.INITIALISED, TaskStateInfoEnum.INITIALISED)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d-init.pddl" % self.id))
         self.write_cp_problem(problem_fn)
@@ -167,13 +187,16 @@ class CASTTask(object):
         log.debug("Planning task created: %.2f sec", global_vars.get_time())
         
         
-    def update_status(self, status):
+    def update_status(self, status, info_status):
         self.internal_state = status
         self.status = status_dict[status]
-        self.component.getClient().updateStatus(self.id, self.status)
-        self.component.m_display.update_task(self)
+        self.component.updateTaskStatus(self)
+        self.component.m_display.update_task(self, info_status=info_status)
         self.component.m_display.update_state(self)
 
+    def update_info_status(self, info_status):
+        self.component.m_display.update_task(self, info_status=info_status)
+        
     def load_domain(self, domain_fn):
         log.info("Loading domain %s.", domain_fn)
         domain = pddl.load_domain(domain_fn)
@@ -330,15 +353,15 @@ class CASTTask(object):
         try:
             to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
             while not self.state.consistent:
-                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_BELIEF)
                 yield to.next()
             yield TO_OK
         except TimedOut:
             log.warning("Wait for consistent state timed out. Plan failed.")
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.NO_CONSISTENT_STATE)
             return
         
-        self.update_status(TaskStateEnum.PROCESSING)
+        self.update_status(TaskStateEnum.PROCESSING, TaskStateInfoEnum.PLANNING_CP)
         self.plan_state = self.state
         self.cp_task.replan()
         log.debug("Planning done: %.2f sec", global_vars.get_time())
@@ -372,18 +395,18 @@ class CASTTask(object):
         try:
             to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
             while not self.state.consistent:
-                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_CONSISTENT_STATE)
                 yield to.next()
             yield TO_OK
         except TimedOut:
             log.warning("Wait for consistent state timed out. Plan failed.")
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.NO_CONSISTENT_STATE)
             return
 
         plan = self.cp_task.get_plan()
 
         self.cp_task.mark_changed()
-        self.update_status(TaskStateEnum.PROCESSING)
+        self.update_status(TaskStateEnum.PROCESSING, TaskStateInfoEnum.PLANNING_CP)
         self.cp_task.replan()
         if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
             self.cp_task.set_plan(None)
@@ -668,31 +691,31 @@ class CASTTask(object):
                 written[svar] = (new_n, val)
             
 
-        written.clear()
-        for n in unexecuted:
-            n.time = i
-            i += 1
-            new_n = get_node(mapped_node(n))
-            if new_n in plan:
-                print "trying to reuse node:", new_n
-                # avoid cycles caused by duplicate actions
-                successors = plan.succ_closure(new_n)
-                # print "successors:", map(str, successors)
-                for p, _, _, _ in get_incoming_links(n):
-                    new_p = get_node(mapped_node(p))
-                    # print "checking predecessor:", new_p
-                    if new_p in successors:
-                        # print "cycle!"
-                        new_n = mapped_node(n)
-                        #reusing node would cause cycle, add new node
-                        print "cycle, add unexec:", new_n
-                        plan.add_node(new_n)
-                        break
-            else:
-                print "add unexec:", new_n
-                plan.add_node(new_n)
+        # written.clear()
+        # for n in unexecuted:
+        #     n.time = i
+        #     i += 1
+        #     new_n = get_node(mapped_node(n))
+        #     if new_n in plan:
+        #         print "trying to reuse node:", new_n
+        #         # avoid cycles caused by duplicate actions
+        #         successors = plan.succ_closure(new_n)
+        #         # print "successors:", map(str, successors)
+        #         for p, _, _, _ in get_incoming_links(n):
+        #             new_p = get_node(mapped_node(p))
+        #             # print "checking predecessor:", new_p
+        #             if new_p in successors:
+        #                 # print "cycle!"
+        #                 new_n = mapped_node(n)
+        #                 #reusing node would cause cycle, add new node
+        #                 print "cycle, add unexec:", new_n
+        #                 plan.add_node(new_n)
+        #                 break
+        #     else:
+        #         print "add unexec:", new_n
+        #         plan.add_node(new_n)
 
-            add_links(n, new_n)
+        #     add_links(n, new_n)
 
         G = plan.to_dot() # a bug in pygraphviz causes write() to delete all node attributes when using subgraphs. So create a new graph.
         G.layout(prog='dot')
@@ -700,7 +723,7 @@ class CASTTask(object):
 
         redundant = set()
         r_plan = plan.topological_sort()
-        r_plan.reverse()
+        r_plan.reverse() 
         for n in r_plan:
             if n.status == plans.ActionStatusEnum.EXECUTABLE and n != plan.goal_node:
                 # print n
@@ -749,10 +772,13 @@ class CASTTask(object):
         return plan, merged_init_state, merged_final_state
             
     def handle_task_failure(self):
+        log.info("Trying to find explanations for failure of task %d", self.id)
+        
         plan = self.cp_task.get_plan()
         if not self.failure_simulated:
             self.plan_history.append(plan)
             self.plan_state_history.append((plan, self.plan_state))
+            self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_PENDING) 
             self.write_history()
         
             self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
@@ -768,19 +794,85 @@ class CASTTask(object):
         #             endstate.set(f)
         if self.expl_rules_fn and len(merged_plan) > 2:
             result = explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
-            facts = reduce(lambda x,y:x|y.effects, result, set())
-            self.facts_to_belief(facts)
+            if result:
+                self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_FOUND) 
+                facts = reduce(lambda x,y:x|y.effects, result, set())
+                log.info("Found explanations: %s", ", ".join(str(f) for f in facts))
+                beliefs = list(self.facts_to_belief(facts))
+                for b in beliefs:
+                    print b
+                    
+                self.component.deliver_hypotheses(self, beliefs)
+            else:
+                log.info("Found no explanations.")
+                self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_NOT_FOUND) 
+                
 
     def facts_to_belief(self, facts):
-        print "\nexplanations:"
+        VIRTUAL_OBJ_RE = re.compile("([a-z]+)([0-9]+)")
+        cast_obj_re = re.compile("[a-z]+__?[0-9a-z]__?[0-9a-z]")
+        obj_to_feature = defaultdict(set)
+        obj_to_relation = defaultdict(set)
         for f in facts:
-            print f
+            if f.svar.modality == pddl.mapl.commit:
+                assert f.value == pddl.TRUE
+                f = pddl.state.Fact(f.svar.nonmodal(), f.svar.modal_args[0])
+            if len(f.svar.args) == 1:
+                obj_to_feature[f.svar.args[0]].add(f)
+            elif len(f.svar.args) > 1:
+                for a in f.svar.args:
+                    obj_to_relation[a].add(f)
+
+        def is_virtual_object(obj):
+            match = VIRTUAL_OBJ_RE.search(obj.name)
+            return (match and match.group(1) in self.domain.types)
+
+
+        about_func = pddl.Function("about", [pddl.Parameter("?o", pddl.t_object)], pddl.t_object)
+        
+        for o in obj_to_feature.keys():
+            if is_virtual_object(o):
+                for f in self.state.state.iterfacts():
+                    if f.svar.modality is not None or f.svar.function.name == "is-virtual":
+                        continue
+                    if o in f.svar.args:
+                        if len(f.svar.args) == 1:
+                            obj_to_feature[o].add(f)
+                        else:
+                            obj_to_relation[o].add(f)
+
+                new_id = "0:%s" % NEW_IDS[self.temp_addr_index]
+                self.temp_addr_index += 1
+                self.state.obj_to_castname[o] = new_id
+                self.state.address_dict[new_id] = cast.cdl.WorkingMemoryAddress(new_id, "temporary")
+            else:
+                about_fact =  pddl.state.Fact(pddl.state.StateVariable(about_func, [o]), o)
+                obj_to_feature[o].add(about_fact)
+                
+
+        beliefs = []
+        print "\nexplanations:"
+        for o, vals in obj_to_feature.iteritems():
+            obj_facts = itertools.chain(vals, obj_to_relation.get(o, []))
+            print "  %s: %s" % (str(o), ", ".join(str(f) for f in obj_facts))
+            features = sum((self.state.make_features(f) for f in vals), [])
+            bel = self.state.make_belief(features)
+            bel.id = self.state.obj_to_castname[o]
+            yield bel
+            
+        for o, vals in obj_to_relation.iteritems():
+            if o not in obj_to_feature:
+                print "  %s: %s" % (str(o), ", ".join(str(f) for f in vals))
+
+            for f in vals:
+                yield self.state.make_belief(self.state.make_features(f))
+
 
     def process_cp_plan(self):
         plan = self.get_plan()
         
         if plan is None:
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.PLANNING_FAILURE)
             return
 
         if FAKE_ACTION_FAILURE is not None:
@@ -801,7 +893,7 @@ class CASTTask(object):
             log.warning("total probability %.4f below threshold %.4f. Task failed", total_prob, self.component.min_p)
             # self.plan_history.append(plan)
             self.cp_task.set_plan(None)
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.PLANNING_FAILURE)
             return
         
         for sg in plan.goal_node.satisfied_softgoals:
@@ -827,7 +919,7 @@ class CASTTask(object):
             if self.dt_planning_active():
                 log.info("starting dt task")
                 self.dt_task.initialize(self.state.prob_state)
-                self.update_status(TaskStateEnum.WAITING_FOR_DT)
+                self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
                 for pnode in self.dt_task.subplan_actions:
                     pnode.status = plans.ActionStatusEnum.IN_PROGRESS
                 self.component.start_dt_planning(self)
@@ -955,7 +1047,7 @@ class CASTTask(object):
             #send empty observations to terminate previous task
             self.component.cancel_dt_session(self)
             self.dt_task.recompute_problem(self.state.prob_state)
-            self.update_status(TaskStateEnum.WAITING_FOR_DT)
+            self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
             self.component.start_dt_planning(self)
 
         def get_observations():
@@ -982,7 +1074,7 @@ class CASTTask(object):
                     observations = get_observations()
                     if not observations:
                         log.info("Waiting for observations from %s", str(self.dt_task.dt_plan[-1]))
-                        self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                        self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_OBSERVATION)
                         yield to.next()
                     else:
                         yield TO_OK
@@ -992,7 +1084,7 @@ class CASTTask(object):
                 observations = [Planner.Observation("null", [])]
                         
         log.debug("delivered observations")
-        self.update_status(TaskStateEnum.WAITING_FOR_DT)
+        self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
         self.component.getDT().deliverObservation(self.dt_id, observations)
 
     @coroutine
@@ -1003,7 +1095,7 @@ class CASTTask(object):
         #     self.process_cp_plan()
         #     return
 
-        self.update_status(TaskStateEnum.PROCESSING)
+        self.update_status(TaskStateEnum.PROCESSING, TaskStateInfoEnum.PLANNING_CP)
 
         problem_fn = abspath(join(self.component.get_path(), "problem%d.pddl" % (self.id)))
         self.write_cp_problem(problem_fn)
@@ -1012,12 +1104,12 @@ class CASTTask(object):
         try:
             to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
             while not self.state.consistent:
-                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_CONSISTENT_STATE)
                 yield to.next()
             yield TO_OK
         except TimedOut:
             log.warning("Wait for consistent state timed out. Plan failed.")
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.NO_CONSISTENT_STATE)
             return
 
         plan = self.cp_task.get_plan()
@@ -1040,7 +1132,7 @@ class CASTTask(object):
                     
                 if self.cp_task.planning_status == PlanningStatusEnum.WAITING:
                     log.info("Waiting for effects of %s to appear", str(self.cp_task.pending_action))
-                    self.update_status(TaskStateEnum.WAITING_FOR_BELIEF)
+                    self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_EFFECT)
                     yield to.next()
                 else:
                     yield TO_OK
@@ -1050,7 +1142,7 @@ class CASTTask(object):
             log.info("Wait for %s timed out. Plan failed.", str(self.cp_task.pending_action))
             # self.plan_history.append(plan)
             # self.cp_task.set_plan(None, update_status=True)
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.EXECUTION_FAILURE)
             return
         
         self.process_cp_plan()
@@ -1070,7 +1162,7 @@ class CASTTask(object):
         log.info("dt planning cancelled.")
             
         self.get_plan().execution_position = last_dt_action
-        self.update_status(TaskStateEnum.PROCESSING)
+        self.update_status(TaskStateEnum.PROCESSING, TaskStateInfoEnum.PLANNING_CP)
         self.plan_history.append(self.dt_task)
 
         # import debug
@@ -1126,7 +1218,7 @@ class CASTTask(object):
             self.plan_history.append(self.dt_task)
             # self.cp_task.set_plan(None, update_status=True)
             self.component.cancel_dt_session(self)
-            self.update_status(TaskStateEnum.FAILED)
+            self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.EXECUTION_FAILURE)
             return
         
         self.percepts = []
@@ -1147,10 +1239,10 @@ class CASTTask(object):
         if outplan:
             log.info("First action: %s == %s", str(nodes[0]), outplan[0].fullName)
             nodes[0].status = plans.ActionStatusEnum.IN_PROGRESS
-            self.update_status(TaskStateEnum.WAITING_FOR_ACTION)
+            self.update_status(TaskStateEnum.WAITING_FOR_ACTION, TaskStateInfoEnum.WAITING_FOR_ACTION)
         else:
             log.info("Plan is empty")
-            self.update_status(TaskStateEnum.COMPLETED)
+            self.update_status(TaskStateEnum.COMPLETED, TaskStateInfoEnum.COMPLETED)
 
         self.component.deliver_plan(self, outplan)
 

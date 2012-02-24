@@ -20,6 +20,11 @@ module autogen {
       // plan found
     };
 
+    enum FailureCause {
+        EXECUTION,
+        PLANNING
+    };
+
     struct BeliefEntry {
           cast::cdl::WorkingMemoryAddress address;
           de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief belief;
@@ -28,10 +33,11 @@ module autogen {
     sequence<string> stringSeq;
     sequence<de::dfki::lt::tr::beliefs::slice::logicalcontent::dFormula> ArgumentSeq;
 
-    sequence<BeliefEntry> BeliefSeq;
+    sequence<BeliefEntry> BeliefEntrySeq;
+    sequence<de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief> BeliefSeq;
 
     class StateChangeFilter {
-      BeliefSeq removeFilter;
+      BeliefEntrySeq removeFilter;
       stringSeq featureFilter;
     };
 
@@ -94,6 +100,7 @@ module autogen {
       int executionRetries;
       Completion planningStatus;
       int planningRetries;
+      BeliefSeq hypotheses;
     };
     
     class Observation{
@@ -180,7 +187,8 @@ module autogen {
     {
       void deliverPlan(int id, ActionSeq plan, GoalSeq goals);
       void deliverPlanPO(int id, ActionSeq plan, GoalSeq goals, POPlan orderedPlan);
-      void updateBeliefState(BeliefSeq beliefs);
+      void deliverHypotheses(int id, BeliefSeq hypotheses);
+      void updateBeliefState(BeliefEntrySeq beliefs);
       //void deliverPlan(PlanningTask task);
       void updateStatus(int id, Completion status);
       void setChangeFilter(int id, StateChangeFilter filter);
@@ -194,10 +202,10 @@ module autogen {
       void registerTask(PlanningTask task);
       void executeTask(PlanningTask task);
       void updateTask(PlanningTask task);
-      void notifyFailure(PlanningTask task);
+      void notifyFailure(PlanningTask task, FailureCause cause);
       void taskTimedOut(PlanningTask task);
-      void updateState(BeliefSeq state, BeliefSeq percepts);
-      bool queryGoal(BeliefSeq state, string goal);
+      void updateState(BeliefEntrySeq state, BeliefEntrySeq percepts);
+      bool queryGoal(BeliefEntrySeq state, string goal);
 
 //       /*DTP process with ID \argument{id} calls this method when: (1)
 // 	A useful plan has been found, and execution of that plan

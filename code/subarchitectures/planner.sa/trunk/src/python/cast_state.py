@@ -763,6 +763,40 @@ class CASTState(object):
             #value = featurecontent.StringValue(name)
 
         return value
+
+
+    def make_belief(self, features):
+        frame = bm.framing.SpatioTemporalFrame()
+        eps = bm.epstatus.PrivateEpistemicStatus("robot")
+        hist = bm.history.CASTBeliefHistory([], [])
+
+        dist_dict = {}
+        for dist in features:
+            dist_dict[dist.key] = dist
+            
+        dist = distribs.CondIndependentDistribs(dist_dict)
+        result = bm.sitbeliefs.dBelief(frame, eps, "temporary", "relation", dist, hist)
+        return result
+
+    def make_features(self, fact):
+        features = []
+        if len(fact.svar.args) == 1:
+            val = self.featvalue_from_object(fact.value)
+            feat = fact.svar.function.name
+            pair = distribs.FormulaProbPair(val, 1.0)
+            features.append(distribs.BasicProbDistribution(feat, distribs.FormulaValues([pair])))
+            
+        elif len(fact.svar.args) > 1:
+            for i, arg in enumerate(self.featvalue_from_object(a) for a in fact.svar.args):
+                feat = "element%d" % i
+                pair = distribs.FormulaProbPair(arg, 1.0)
+                features.append(distribs.BasicProbDistribution(feat, distribs.FormulaValues([pair])))
+            fval = self.featvalue_from_object(fact.value)
+            feat = fact.svar.function.name
+            pair = distribs.FormulaProbPair(fval, 1.0)
+            features.append(distribs.BasicProbDistribution(feat, distribs.FormulaValues([pair])))
+
+        return features
     
     def update_beliefs(self, diffstate):
         changed_ids = set()

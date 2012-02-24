@@ -7,7 +7,7 @@ import standalone
 from standalone import pddl
 from standalone.task import PlanningStatusEnum
 from autogen import Planner
-
+from cast_task import TaskStateInfoEnum, TaskStateEnum
 
 TASKS_ID = "planner.tasks"
 STATE_ID = "planner.state"
@@ -115,11 +115,45 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         html += make_html_table(["Variable", "Value", "p"], rows, ["class", "%s", "%s", "%.3f"])
 
         self.setHtml(STATE_ID, "state", html);
+
+
+    def get_task_state_desc(self, state_info):
+        if state_info == TaskStateInfoEnum.PLANNING_CP:
+            return "Continual planner is working"
+        if state_info == TaskStateInfoEnum.PLANNING_DT:
+            return "Decision theoretic planner is working"
+        if state_info == TaskStateInfoEnum.WAITING_FOR_ACTION:
+            return "Waiting for action executon to finish"
+        if state_info == TaskStateInfoEnum.WAITING_FOR_CONSISTENT_STATE:
+            return "Waiting for world state to become consistent"
+        if state_info == TaskStateInfoEnum.WAITING_FOR_EFFECT:
+            return "Waiting for expected action effects to appear"
+        if state_info == TaskStateInfoEnum.WAITING_FOR_OBSERVATION:
+            return "Waiting for expected observations to arrive"
+        if state_info == TaskStateInfoEnum.EXECUTION_FAILURE:
+            return "Action execution failed"
+        if state_info == TaskStateInfoEnum.PLANNING_FAILURE:
+            return "Planning failed"
+        if state_info == TaskStateInfoEnum.NO_CONSISTENT_STATE:
+            return "World state is inconsistent."
+        if state_info == TaskStateInfoEnum.INVALID_GOAL:
+            return "Cannot parse goal"
+        if state_info == TaskStateInfoEnum.EXPLANATIONS_PENDING:
+            return "Searching for explanations of failure"
+        if state_info == TaskStateInfoEnum.EXPLANATIONS_FOUND:
+            return "Found possible explanations for failure"
+        if state_info == TaskStateInfoEnum.EXPLANATIONS_FOUND:
+            return "Found no explanations for failure"
+        return ""
         
-    def update_task(self, task, append=False):
+        
+    def update_task(self, task, info_status=None, append=False):
         id = "%04d" % task.id
         
         html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.internal_state)
+        desc = self.get_task_state_desc(info_status)
+        if desc:
+            html += "<h3>%s</h3>" % desc
 
         def goal_row(g):
             if g.isInPlan:
@@ -131,10 +165,11 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             return (_class, g.goalString, g.importance, g.isInPlan)
         
         html += make_html_table(["Goal", "Importance", "satisfied"], (goal_row(g) for g in task.slice_goals), ["class", "%s", "%d", "%s"])
-        if task.dt_planning_active():
-            html += "<p>Decision theoretic planner is active</p>"
-        else:
-            html += "<p>Continual planner is active:</p>"
+        if task.internal_state not in (TaskStateEnum.INITIALISED, TaskStateEnum.FAILED, TaskStateEnum.COMPLETED):
+            if task.dt_planning_active():
+                html += "<p>Decision theoretic planner is active</p>"
+            else:
+                html += "<p>Continual planner is active:</p>"
 
         def action_row(pnode):
             args = [a.name for a in pnode.args]
