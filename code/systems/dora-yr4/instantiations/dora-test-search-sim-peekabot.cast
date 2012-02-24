@@ -156,6 +156,9 @@ INCLUDE includes/binder.sa/binder-base.cast
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/dora-interaction.cast
 JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
+JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" #--min-gain 0.05
+JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
 
 # dialogue ####################################################################
 INCLUDE includes/dialogue.sa/INCL/dora-live.cast
