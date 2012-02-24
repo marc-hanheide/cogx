@@ -1,15 +1,12 @@
 package exploration;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -42,6 +39,8 @@ public class PathTimes implements Serializable {
 
 		}
 		System.out.println(pathTimes);
+		PathTimes.printList(pathTimes);
+
 
 	}
 
@@ -89,6 +88,13 @@ public class PathTimes implements Serializable {
 		}
 		returnV += "\nthere are " + count + " runs ";
 		return returnV;
+	}
+	
+	public static void printList(Vector<PathTimes> pT){
+		System.out.println("path list size of " +pT.size() );
+		for(PathTimes p:pT){
+			System.out.println(p.getA() +" "+p.getB());
+		}
 	}
 
 }

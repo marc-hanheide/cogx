@@ -18,10 +18,11 @@ public class Cluster {
 	private boolean includeDay;
 	private HierarchicalClusterer h1;
 	private boolean messy;
+	private ArrayList<Integer> means;
 
 	public Cluster(int pathArrPos, boolean includeDay, boolean printGraph,
 			boolean messy) {
-		
+
 		this.messy = messy;
 		DataSource source;
 		try {
@@ -41,7 +42,17 @@ public class Cluster {
 				System.out.println();
 				System.out.println("top level 1");
 			}
-			HierarchicalClusterer h = cluster(1);
+			if (data.size() == 0) {
+				System.out.println("data is empty");
+				return;
+			}
+			HierarchicalClusterer h;
+			try {
+				h = cluster(1);
+			} catch (IllegalArgumentException e) {
+				System.out.println("can't perform clustering on this dataset");
+				return;
+			}
 			double startVar = variance(h);
 			if (printGraph) {
 				JFrame frame = new JFrame("entire system");
@@ -71,7 +82,7 @@ public class Cluster {
 					System.out.println("cluster number " + i);
 				}
 				double var = variance(cluster(i));
-
+				System.out.println("var at " + i + " is " + var);
 				if (messy) {
 					System.out.println("variance of this cluster number is "
 							+ var);
@@ -104,15 +115,49 @@ public class Cluster {
 					break;
 				}
 			}
-			if (messy) {
-				System.out.println("clust num is " + clustNum);
-			}
+			
+				
+			
 			h1 = cluster(clustNum);
-			if (messy) {
+			//if (messy) {
+			System.out.println("clust num is " + clustNum);
 				System.out.println(h1);
+			//}
+
+			// at this point we need to store the average time for each of the
+			// clusters
+
+			ArrayList<ArrayList<Instance>> wholeSet = getClusters(h1);
+			means = new ArrayList<Integer>();
+
+			for (ArrayList<Instance> list : wholeSet) {
+				int sumIns = 0;
+				int zeroCount = 0;
+				for (Instance instance : list) {
+					if (instance.value(1) == 0) {
+						zeroCount++;
+					} else {
+						sumIns += instance.value(1);
+					}
+
+				}
+
+				if (list.size() != 0) {
+					if (zeroCount > (list.size() / 2)) {// if more than half our
+						// values are 0
+						means.add(0);
+					} else {// if they are not, we want to ignore any that were
+						means.add(sumIns / (list.size() - zeroCount));
+					}
+				} else {// can't find any info, so just use a large value
+					means.add(10 ^ 10);
+				}
+
 			}
+
 			if (printGraph) {
 				String entire = h1.toString();
+				System.out.println("whole thing "+entire);
 				int pos = 7;
 				int prev = 0;
 				String[] clusters = new String[clustNum];
@@ -141,10 +186,12 @@ public class Cluster {
 				} else {
 
 				}
+				System.out.println("there are "+clustNum + " clusters ");
 				for (int i = 0; i < clustNum; i++) {
-
-					JFrame frame1 = new JFrame("cluster number " + i);
+					System.out.println("current cluster is "+i);
+										JFrame frame1 = new JFrame("cluster number " + i);
 					if (clusters[i] == null) {
+						System.out.println("null cluster");
 						break;
 					}
 					HierarchyVisualizer v1 = new HierarchyVisualizer(
@@ -180,11 +227,12 @@ public class Cluster {
 
 	public static void main(String[] args) {
 
-		Cluster c = new Cluster(0, true, true, false);
+		Cluster c = new Cluster(16, false, true, false);
 		// 50 actually has somethign happen
 	}
 
-	public HierarchicalClusterer cluster(int cluster) {
+	public HierarchicalClusterer cluster(int cluster)
+			throws IllegalArgumentException {
 		HierarchicalClusterer h = new HierarchicalClusterer();
 
 		h.setNumClusters(cluster);
@@ -192,8 +240,12 @@ public class Cluster {
 			h.buildClusterer(data);
 		} catch (Exception e) {
 			System.out.println("problem building clusterer from data");
-			System.out.println(h);
-			e.printStackTrace();
+			if (e.getClass() == IllegalArgumentException.class) {
+				throw (IllegalArgumentException) e;
+			}
+
+			// System.out.println(h);
+			// e.printStackTrace();
 		}
 		return h;
 	}
@@ -302,8 +354,8 @@ public class Cluster {
 			} catch (Exception e) {
 				System.out.println("error in clustering a particular instance");
 				System.out.println("Instance " + d);
-				System.out.println("cluster " + cluster);
-				e.printStackTrace();
+				// System.out.println("cluster " + cluster);
+				// e.printStackTrace();
 			}
 		}
 		instances = sorted;
@@ -331,6 +383,10 @@ public class Cluster {
 			sum *= d;
 		}
 		return sum;
+	}
+
+	public ArrayList<Integer> getMeans() {
+		return means;
 	}
 
 }
