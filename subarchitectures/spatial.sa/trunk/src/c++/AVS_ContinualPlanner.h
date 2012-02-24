@@ -138,6 +138,7 @@ private:
     peekabot::PolygonProxy m_proxyConeParts[5];
 	double m_FovH; // horisontal fov in degs
 	double m_FovV; // vertical fov in degs
+    peekabot::GroupProxy m_ProxyForbiddenMap;
 
     void connectPeekabot();
     void createFOV(peekabot::GroupProxy &proxy, const char* path,
