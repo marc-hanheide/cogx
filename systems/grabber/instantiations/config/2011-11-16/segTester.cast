@@ -1,0 +1,63 @@
+HOST localhost
+
+#COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0
+#COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
+
+############ SUB ARCH THGS ##############
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+#### when PlanePopOut is running:
+#CPP MG display.srv DisplayServer
+#CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "%(dir)/{popout.show.points}" --log true
+
+############ Camera Mount ##############
+#CPP MG cameramount CameraMount --camids "0 1 2" --cam_poses_xml "subarchitectures/vision.sa/config/camPose110420/campose-left.xml subarchitectures/vision.sa/config/camPose110420/campose-right.xml subarchitectures/vision.sa/config/camPose110420/campose-kinect.xml" #--pt_zero_pose "[0.110 0.000 1.370][0 0 0]"
+#CPP MG CameraMount CameraMount --camids "0 1 2" --fixed_cam_poses_xml "instantiations/11-05-11/campose-left.xml instantiations/11-05-11/camcalib-right.xml instantiations/11-05-11/campose-kinect.xml" --fixed_pan_tilt "0 0"
+
+############ POINT CLOUD SERVER ##############
+#CPP MG pcserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110420.ini --imgsize "320 240" --maxdisp 96 #--display --logimages --log 
+
+###CPP MG pcserver KinectPCServer --camids "2" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --log #--create-viewcone
+
+#CPP MG pcserver KinectStereoServer --videoname videoserver --camids "0 1 2" --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110420.ini:L subarchitectures/vision.sa/config/tuw_stereo_110420.ini:R subarchitectures/vision.sa/config/camPose110420/camcalib-kinect.xml" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110420.ini --imgsize "640 480 320 240" --maxdisp "64 96" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" --log --display #--logimages
+
+#CPP MG pcserver KinectStereoSeqServer --camids "0 1 2" --camconfigs "subarchitectures/vision.sa/config/camPose110420/camcalib-left.xml subarchitectures/vision.sa/config/camPose110420/camcalib-right.xml subarchitectures/vision.sa/config/camPose110420/camcalib-kinect.xml" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --imgsize "640 480 320 240" --maxdisp "64 128" --framerate_ms 10000 --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-K.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-C.pts" --start 0 --end 7 --noCont --log #--display 
+#CPP MG pcserver KinectStereoSeqServer --camids "0 1 2" --camconfigs "instantiations/11-05-11/camcalib-left.xml instantiations/11-05-11/camcalib-right.xml instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480 320 240" --maxdisp "64 128" --framerate_ms 10000 --files "instantiations/11-05-11/data/img%03d-L.jpg instantiations/11-05-11/data/img%03d-R.jpg instantiations/11-05-11/data/img%03d-K.jpg instantiations/11-05-11/data/img%03d-C.pts" --start 15 --end 27 --log --stereoconfig_xml "instantiations/11-05-11/camcalib-left.xml instantiations/11-05-11/camcalib-right.xml" --noCont 
+
+#CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/box%1d.png /media/Daten/Object-Database/points2/box%1d.pcd" --start 0 --end 32 --log --noCont #--display
+#CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/box%1d.png /media/Daten/Object-Database/points2/box%1d.pcd" --start 33 --end 64 --log --noCont #--display
+#CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/boxes%1d.png /media/Daten/Object-Database/points2/boxes%1d.pcd" --start 0 --end 14 --log --noCont #--display
+####CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/ocl_boxes%1d.png /media/Daten/Object-Database/points2/ocl_boxes%1d.pcd" --start 17 --end 32 --log --noCont #--display
+#CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/box_world%1d.png /media/Daten/Object-Database/points2/box_world%1d.pcd" --start 0 --end 16 --log --noCont #--display
+#CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/st_books%1d.png /media/Daten/Object-Database/points2/st_books%1d.pcd" --start 0 --end 11 --log --noCont #--display
+CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10 --files "/media/Daten/Object-Database/image_color/complex%1d.png /media/Daten/Object-Database/points2/complex%1d.pcd" --start 0 --end 11 --log --noCont #--display
+
+### Kate ###
+#CPP MG pcserver KinectSeqServer --camids "0" --camconfigs "instantiations/11-05-11/camcalib-kinect.xml" --imgsize "640 480" --framerate_ms 10000 --files "/media/Daten/Object-Database/image_color/box_objects_%1d.png /media/Daten/Object-Database/points2/box_objects_%1d.pcd" --start 0 --end 2 --log --noCont #--display
+
+
+############ VIDEO SERVER ##############
+############ OPENCV IMG SEQ SERVER ##############
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw-okt-09/img%03d-L.bmp instantiations/tuw-okt-09/img%03d-R.bmp" --start 0 --end 8 --framerate_ms 2000 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/StereoCube/img%03d-L.jpg instantiations/tuw/StereoCube/img%03d-R.jpg" --start 0 --end 3 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/mug/out%03d-L.png instantiations/tuw/mug/out%03d-R.png" --start 0 --end 3 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/mug/img%03d-L.bmp instantiations/tuw/mug/img%03d-R.bmp" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene/img%03d-L.jpg instantiations/tuw/TableScene/img%03d-R.jpg" --start 5 --end 5 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene100929/img%03d-L.jpg instantiations/tuw/TableScene100929/img%03d-R.jpg" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929.ini:L subarchitectures/vision.sa/config/tuw_stereo_100929.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene100929-2/img%03d-L.jpg instantiations/tuw/TableScene100929-2/img%03d-R.jpg" --start 5 --end 5 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929-2.ini:L subarchitectures/vision.sa/config/tuw_stereo_100929-2.ini:R"
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg" --start 0 --end 7 --framerate_ms 1000 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110404.ini:L subarchitectures/vision.sa/config/tuw_stereo_110404.ini:R"
+
+############ OPENCV LIVE SERVER ##############
+#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --imgsize "640 480" #--camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110421.ini:L subarchitectures/vision.sa/config/tuw_stereo_110421.ini:R"
+
+############ POINT GREY SERVER ############
+#CPP MG videoserver PointGreyServer --setAutPropAdj "0 0 0 0 0 0" --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R" --log #--swapredblue --format7 "640 480 0 0 1 1600" #--debug 
+
+############ START CAST COMPONENTS ############
+#CPP MG PlanePopOut PlanePopOut --camid "0 1" --pcserver pcserver --videoname videoserver --log true --display --stereoconfig instantiations/11-05-11/tuw_stereo_110511.ini 
+
+CPP MG SegTester SegTester --pcserver pcserver --singleShot --camids "0 1 2" --camconfigs "instantiations/11-05-11/camcalib-left.xml instantiations/11-05-11/camcalib-right.xml instantiations/11-05-11/camcalib-kinect.xml" --log --stereoconfig_xml "instantiations/11-05-11/camcalib-left.xml instantiations/11-05-11/camcalib-right.xml" --showImages
+
+
