@@ -41,6 +41,10 @@ protected:
 
 public:
   PointCloudClient();
+  const std::string& getPcServerName()
+  {
+     return pointCloudServerName;
+  }
 
   /**
    * Get data from the point cloud client
