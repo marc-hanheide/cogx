@@ -12,6 +12,8 @@ import java.util.Vector;
 
 import javax.swing.JFrame;
 
+import displays.PathVisualization;
+
 import weka.clusterers.HierarchicalClusterer;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -28,7 +30,7 @@ public class PathCluster {
 		Vector<PathTimes> pathTimes = new Vector<PathTimes>();
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings.txt")));
+					new BufferedInputStream(new FileInputStream(PathVisualization.getVal())));
 
 			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
 
@@ -44,10 +46,11 @@ public class PathCluster {
 			e.printStackTrace();
 
 		}
-System.out.println("path times is "+ pathTimes);
+		//System.out.println("path times is " + pathTimes);
 		PathTimes pT = pathTimes.get(n);
-		if(printy){
-		System.out.println(pT);
+		if (printy) {
+			System.out.println(pT);
+			
 		}
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter("temp.arff"));
@@ -66,11 +69,11 @@ System.out.println("path times is "+ pathTimes);
 			for (PathRun r : pT.getRuns()) {
 				Date time = r.timeStarted();
 				int mins = time.getHours() * 60 + time.getMinutes();
-				if(includeDay){
-				out.println(time.getDay() + " , " + mins + " , "
-						+ r.timeTaken());
-				}else{
-					out.println(mins + " , "+ r.timeTaken());
+				if (includeDay) {
+					out.println(time.getDay() + " , " + mins + " , "
+							+ r.timeTaken());
+				} else {
+					out.println(mins + " , " + r.timeTaken());
 				}
 
 			}
@@ -92,6 +95,7 @@ System.out.println("path times is "+ pathTimes);
 				HierarchicalClusterer h = new HierarchicalClusterer();
 				h.buildClusterer(data);
 				JFrame frame = new JFrame();
+				
 				HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
 				frame.add(v);
 				frame.setSize(400, 400);
@@ -105,7 +109,7 @@ System.out.println("path times is "+ pathTimes);
 
 	public static void main(String[] args) {
 
-		PathCluster p = new PathCluster(4, false,false);
+		PathCluster p = new PathCluster(4, false, false);
 
 	}
 

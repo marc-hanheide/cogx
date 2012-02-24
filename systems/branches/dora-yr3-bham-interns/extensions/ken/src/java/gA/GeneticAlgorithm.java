@@ -44,7 +44,7 @@ public class GeneticAlgorithm {
 				+ TourFinder.evaluatePath(pathTimes, 0));
 		
 		Vector<PathTimes> visited = new Vector<PathTimes>();
-		BlockedGeneticAlgorithm gA = new BlockedGeneticAlgorithm(pathTimes,visited, 200, 60, 0);
+		//BlockedGeneticAlgorithm gA = new BlockedGeneticAlgorithm(pathTimes,visited, 200, 60, 0);
 		//GeneticAlgorithm gA = new GeneticAlgorithm(pathTimes,200,60,0);
 		Vector<PathTimes> path = gA.getBest();
 		System.out.println("cost is " + TourFinder.evaluatePath(path, 0));

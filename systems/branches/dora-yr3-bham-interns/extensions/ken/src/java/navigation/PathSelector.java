@@ -1,5 +1,7 @@
 package navigation;
 
+import java.util.Vector;
+
 import exploration.PathTimes;
 
 /**
@@ -13,9 +15,12 @@ public abstract class PathSelector {
 	/**
 	 * given a pathTime, return the time this class believes should be computed
 	 * for the current time
-	 * @param pathTime
 	 * @return
 	 */
-	public abstract long computeTime(PathTimes pathTime);
+	public abstract Vector<Path> generateGraph(int time);
+	
+	
+	
+	
 	
 }

@@ -15,7 +15,7 @@ public class ProbGenerator {
 	private double[] hypothesis;
 	private double[] timeOfDay;
 
-	private int minPath = 1; // the minimum number of paths before we start
+	private int minPath = 2; // the minimum number of paths before we start
 	private double minEntropy = 0.5;
 
 	private boolean messy;
@@ -25,7 +25,8 @@ public class ProbGenerator {
 
 	public static void main(String[] args) {
 		long time = System.currentTimeMillis();
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 83; i++) {
+
 			ProbGenerator g = new ProbGenerator(i, false, false);
 			// ArrayList<Integer> bounds = g.getBounds(true);
 			// double[] max = g.getEntropies();
@@ -47,7 +48,10 @@ public class ProbGenerator {
 			// + endPositions.get(i));
 			// }
 
-			System.out.println(g.getTimesToInvestigate());
+//			System.out.println("At point " + i + " need to look at "
+//					+ g.getTimesToInvestigate().get(0).size() + " times ");
+			System.out.println("At path "+i+" to investigate is "+g.getTimesToInvestigate().get(0));
+			//g.getEntropies();
 		}
 		System.out.println(System.currentTimeMillis() - time);
 	}
@@ -70,7 +74,7 @@ public class ProbGenerator {
 	}
 
 	public ProbGenerator(int n, boolean printGraph, boolean messy) {
-		c = new Cluster(n, false, printGraph, false);
+		c = new Cluster(n, false, printGraph, messy);
 		this.messy = messy;
 		instances = c.retrieveInstances();
 		complete = unsort(instances);
@@ -79,7 +83,7 @@ public class ProbGenerator {
 		}
 		bounds = getBounds(true);
 		if (messy) {
-			System.out.println(bounds);
+			System.out.println("bounds positions "+bounds);
 		}
 		ArrayList<ArrayList<Integer>> bounded = sortIntoBounds(bounds);
 		prob(bounded);
@@ -93,15 +97,12 @@ public class ProbGenerator {
 	 * @param bounds
 	 * @return
 	 */
-	public ArrayList<ArrayList<Integer>> sortIntoBounds(
+	private ArrayList<ArrayList<Integer>> sortIntoBounds(
 			ArrayList<Integer> bounds) {
 		ArrayList<ArrayList<Integer>> bounded = new ArrayList<ArrayList<Integer>>();
 
 		for (int i = 0; i < bounds.size(); i++) {
 			bounded.add(new ArrayList<Integer>());
-		}
-		if (messy) {
-			System.out.println(bounds);
 		}
 		for (Instance i : complete) {
 			int val = (int) i.value(0);
@@ -124,14 +125,17 @@ public class ProbGenerator {
 		return bounded;
 	}
 
-	public ArrayList<Instance> unsort(ArrayList<ArrayList<Instance>> sorted) {
+	private ArrayList<Instance> unsort(ArrayList<ArrayList<Instance>> sorted) {
 
 		ArrayList<Instance> unsorted = new ArrayList<Instance>();
-		for (ArrayList<Instance> list : sorted) {
-			for (Instance i : list) {
-				unsorted.add(i);
+		if (sorted != null) {
+			for (ArrayList<Instance> list : sorted) {
+				for (Instance i : list) {
+					unsorted.add(i);
+				}
 			}
 		}
+
 		return unsorted;
 	}
 
@@ -144,7 +148,7 @@ public class ProbGenerator {
 	 */
 	public void prob(ArrayList<ArrayList<Integer>> bounded) {
 		if (messy) {
-			System.out.println(bounded);
+			System.out.println("bounded "+bounded);
 		}
 		timeOfDay = new double[bounded.size()];
 		int sum = 0;
@@ -231,7 +235,7 @@ public class ProbGenerator {
 
 	}
 
-	public int largestClusterNum(ArrayList<ArrayList<Integer>> bounded) {
+	private int largestClusterNum(ArrayList<ArrayList<Integer>> bounded) {
 		int max = 0;
 		for (ArrayList<Integer> arr : bounded) {
 			for (Integer i : arr) {
@@ -263,7 +267,7 @@ public class ProbGenerator {
 		return bounds;
 	}
 
-	public ArrayList<ArrayList<Integer>> sortIntoHyp(
+	private ArrayList<ArrayList<Integer>> sortIntoHyp(
 			ArrayList<ArrayList<Integer>> list) {
 		ArrayList<ArrayList<Integer>> hyp = new ArrayList<ArrayList<Integer>>();
 		int n = largestClusterNum(list);
@@ -280,9 +284,16 @@ public class ProbGenerator {
 
 	public double[] getProbs(int time) {
 		double[] probs = new double[joint.length];
+		time/=getBounds(true).get(1);
+		time+=1;
+//				System.out.println(joint);
+//		/System.out.println(hypothesis);
+		//System.out.println("time of day "+timeOfDay[67]);
 		for (int i = 0; i < probs.length; i++) {
 			probs[i] = joint[i][time] * hypothesis[i] / timeOfDay[time];
-		}
+		
+		}	
+		
 		return probs;
 	}
 
@@ -333,7 +344,8 @@ public class ProbGenerator {
 
 			for (double d : arr) {
 				if (d > 0) {
-					sum += d * Math.log(d);
+					System.out.println(d);
+					sum -= d * Math.log(d);
 				}
 			}
 			// System.out.println(timeOfDay[i]);
@@ -350,6 +362,40 @@ public class ProbGenerator {
 
 		}
 		return entropies;
+	}
+
+	public ArrayList<Integer> getMeans() {
+		return c.getMeans();
+	}
+	
+	public int getEstimate(int time){
+		double[] probs =getProbs(time);
+		if(Double.isNaN(probs[0])){
+			double av=0;
+			for(int i=0;i<hypothesis.length;i++){
+				av+=hypothesis[i]*getMeans().get(i);
+			}
+			
+			return (int)av;
+		}
+//		for(int i=0;i<probs.length;i++){
+//			if(probs[i]>highest){
+//				highest = probs[i];
+//				highestPos=i;
+//			}
+//		}
+//		if(probs.length==2){
+//			if(probs[0]==probs[1]){
+//				return (getMeans().get(0)+getMeans().get(1))/2;
+//			}
+//		}
+//		
+//		return getMeans().get(highestPos);
+		int sum =0;
+		for(int i=0;i<probs.length;i++){
+			sum+= probs[i]*getMeans().get(i);
+		}
+		return sum;
 	}
 
 }

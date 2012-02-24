@@ -51,9 +51,15 @@ public class AStarSearch {
 			}
 
 			AStarNode.setRadTurn(5000);
-			Vector<Integer> path = AStarSearch.search(nodes, util.misc
-					.convertToSingleTime(pathTimes, new NaivePathSelector()),
-					13, 0);
+			Vector<Path> p = util.misc
+					.convertToSingleTime(pathTimes, new IntelligentPathSelector(), 710);
+			//710 and any other time, 5-->10
+			for(Path pa:p){
+				System.out.println(pa.getA() + " to "+pa.getB() + " costs "+ pa.getCost());
+			}
+			System.out.println("graph is "+ p);
+			Vector<Integer> path = AStarSearch.search(nodes,p ,
+					5,10);
 			System.out.println(path);
 
 		} catch (FileNotFoundException e) {
@@ -90,25 +96,30 @@ public class AStarSearch {
 		Vector<AStarNode> toVisit = new Vector<AStarNode>();
 		Vector<AStarNode> pathsVisited = new Vector<AStarNode>();
 
-		nodesVisited.add(new Integer(startPoint));
+		//System.out.println("net work is "+ paths);
+		
+		//nodesVisited.add(new Integer(startPoint));
 
-		for (Path path : PFN.get(startPoint).getPaths()) {
-			if(path.getA()==startPoint){
-			toVisit.add(new AStarNode(0, path, nodes.get(path.getA()), nodes
-					.get(path.getB()), nodes.get(endPoint)));
-			}else{
-				toVisit.add(new AStarNode(0, path, nodes.get(path.getB()), nodes
-						.get(path.getA()), nodes.get(endPoint)));
-			}
-		}
+		
+		toVisit.add(new AStarNode(0,new Path(startPoint, startPoint, 0),nodes.get(startPoint),nodes.get(startPoint),nodes.get(startPoint)));
+		
+//		for (Path path : PFN.get(startPoint).getPaths()) {
+//			if(path.getA()==startPoint){
+//			toVisit.add(new AStarNode(0, path, nodes.get(path.getA()), nodes
+//					.get(path.getB()), nodes.get(endPoint)));
+//			}else{
+//				toVisit.add(new AStarNode(0, path, nodes.get(path.getB()), nodes
+//						.get(path.getA()), nodes.get(endPoint)));
+//			}
+//		}
 
 		boolean found = false;
 		while (!found) {
 			System.out.println();
-			System.out.println("tovisit is currently");
-			for(AStarNode node:toVisit){
-				System.out.println(node.getPrevNode()+" "+node.getNode());
-			}
+//			System.out.println("tovisit is currently "+toVisit.size());
+//			for(AStarNode node:toVisit){
+//				System.out.println(node.getPrevNode()+" "+node.getNode());
+//			}
 			// find next best pos
 			double best = Double.MAX_VALUE;
 			int bestPos = 0;
@@ -146,6 +157,7 @@ public class AStarSearch {
 							found = true;
 							pathsVisited
 									.add(toVisit.remove(toVisit.size() - 1));
+							
 						}
 					}
 				} else {
@@ -165,6 +177,7 @@ public class AStarSearch {
 								found = true;
 								pathsVisited.add(toVisit
 										.remove(toVisit.size() - 1));
+								
 							}
 						}
 					}
