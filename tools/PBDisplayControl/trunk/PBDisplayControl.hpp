@@ -75,6 +75,7 @@ private:
     pb_settings ps;
     peekabot::PeekabotClient m_PeekabotClient;
     void connectPeekabot();
+    void ApplyView(int vid);
 };
 
 #endif // PBDisplayControl_hpp
