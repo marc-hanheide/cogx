@@ -16,6 +16,9 @@
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
 #endif
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+#include <PointCloudClient.h>
+#endif
 
 namespace cogx
 {
@@ -50,6 +53,21 @@ struct CRecordingInfo
    }
 };
 
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+class PcClient: public cast::PointCloudClient
+{
+public:
+   void configurePcComm(const std::map<std::string,std::string> & _config)
+   {
+      configureServerCommunication(_config);
+   }
+   void startPcComm(cast::CASTComponent &owner)
+   {
+      startPCCServerCommunication(owner);
+   };
+};
+#endif
+
 class CVideoGrabber: public cast::ManagedComponent
 {
 private:
@@ -59,6 +77,9 @@ private:
    bool m_bReceiving;
 
    std::vector<Video::CVideoClient2*> m_video;
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+   std::vector<PcClient*> m_pointcloud;
+#endif
    CRecordingInfo m_RecordingInfo;
    bool m_fakeRecording;
    long m_frameGrabMs;
@@ -160,21 +181,9 @@ protected:
    virtual void runComponent();
 
 public:
-   CVideoGrabber()
-   {
-      m_frameGrabMs = 200;
-#ifdef FEAT_VISUALIZATION
-      m_pDisplayCanvas = NULL;
-      m_display.setClientData(this);
-#endif
-   }
-   virtual ~CVideoGrabber()
-   {
-      m_fakeRecording = false;
-#ifdef FEAT_VISUALIZATION
-      releaseCanvas();
-#endif
-   }
+   CVideoGrabber();
+   virtual ~CVideoGrabber();
+
    /**
     * The callback function for images pushed by the image server.
     * To be overwritten by derived classes.

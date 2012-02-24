@@ -56,6 +56,37 @@ using namespace std;
 using namespace cast;
 namespace cxd = cogx::display;
 
+CVideoGrabber::CVideoGrabber()
+{
+   m_frameGrabMs = 200;
+#ifdef FEAT_VISUALIZATION
+   m_pDisplayCanvas = NULL;
+   m_display.setClientData(this);
+#endif
+}
+
+CVideoGrabber::~CVideoGrabber()
+{
+   m_fakeRecording = false;
+#ifdef FEAT_VISUALIZATION
+   releaseCanvas();
+#endif
+   for(unsigned int i = 0; i < m_video.size(); i++) {
+      Video::CVideoClient2* pVideo = m_video[i];
+      pVideo->setReceiving(false);
+      pVideo->disconnect();
+      delete pVideo;
+   }
+
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+   PcClient *pPc;
+   for(unsigned int i = 0; i < m_pointcloud.size(); i++) {
+      pPc = m_pointcloud[i];
+      delete pPc;
+   }
+#endif
+}
+
 void CVideoGrabber::configure(const map<string,string> & _config)
 {
    map<string,string>::const_iterator it, iCam;
@@ -65,6 +96,7 @@ void CVideoGrabber::configure(const map<string,string> & _config)
    int id;
    Video::CVideoClient2* pVideo;
 
+   // Video servers
    for (it = _config.begin(); it != _config.end(); it++) {
       string sffx = "";
 
@@ -95,6 +127,27 @@ void CVideoGrabber::configure(const map<string,string> & _config)
       pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
       m_video.push_back(pVideo);
    }
+
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+   PcClient *pPc;
+   // Pointcloud servers
+   for (it = _config.begin(); it != _config.end(); it++) {
+      string sffx = "";
+
+      if (it->first != "--pcserver" && !_s_::startswith(it->first, "--pcserver."))
+         continue;
+
+      serverName = _s_::strip(it->second);
+
+      if (serverName == "") continue;
+
+      map<string,string> conf;
+      conf["--pcserver"] = serverName;
+      pPc = new PcClient();
+      pPc->configurePcComm(conf);
+      m_pointcloud.push_back(pPc);
+   }
+#endif
 
    if((it = _config.find("--fakegrabbing")) != _config.end()) {
       string s = _s_::lower(it->second);
@@ -157,6 +210,14 @@ void CVideoGrabber::start()
       pVideo->connect();
       pVideo->setReceiving(true);
    }
+
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+   PcClient *pPc;
+   for(unsigned int i = 0; i < m_pointcloud.size(); i++) {
+      pPc = m_pointcloud[i];
+      pPc->startPcComm(*this);
+   }
+#endif
 }
 
 #ifdef FEAT_VISUALIZATION

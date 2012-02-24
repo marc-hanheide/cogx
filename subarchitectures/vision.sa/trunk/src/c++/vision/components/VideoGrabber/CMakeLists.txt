@@ -16,10 +16,21 @@ include_directories(
    )
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
+option(OPT_VIDEOGRABBER_POINTCLOUD "Video Grabber supports 3D point-cloud grabbing." ON)
+if(OPT_VIDEOGRABBER_POINTCLOUD)
+   include_directories(
+      ${COGX_ROOT}/tools/hardware/src/cpp/autogen
+      ${COGX_ROOT}/tools/hardware/src/cpp/components
+      )
+   add_definitions(-DFEAT_VIDEOGRABBER_POINTCLOUD)
+   set(EXTRALIBS PointCloud PointCloudClient)
+endif()
+
 add_cast_component(VideoGrabber ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 
    Video VideoUtils
    ${VISUALIZATION_LIBRARIES}
    ${OPENCV_LIBRARIES}
+   ${EXTRALIBS}
    )
 
