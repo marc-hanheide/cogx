@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <ostream>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -53,6 +54,8 @@
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 #include "v4r/SurfaceModeling/Patches.h"
 #include "v4r/SurfaceModeling/FileSystem.hh"
+#include "v4r/SurfaceModeling/MoSPlanes3D.hh"
+
 
 #include "SegUtilsFunctions.h"
 
@@ -79,6 +82,7 @@ private:
   /// TODO new ones
   Z::VisionCore *vcore;                                     ///< VisionCore
   pclA::ModelFitter *model_fitter;                          ///< Fit multiple models to point cloud
+  surface::MoSPlanes3D *planeFitter;                        ///< mosPlane fitter
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
   anno::Annotation *annotation;                             ///< Annotation from file
   surface::Patches *patches;                                ///< Patch tool for calculation of relations between surface patches
@@ -95,9 +99,14 @@ private:
 //  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_vis;        ///< Normals of the point cloud
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;///< indices of the surface patches (from fitter for debugging => TODO Remove later)
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
-  
+  std::vector< std::vector<int> > preProcessIndices;        ///< TODO Indices of points eliminated by postProcessing
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_planes; ///< TODO indices of the plane patches (For debugging)
+
   std::vector<surface::SurfaceModel::Ptr> surfaces;         ///< Surfaces container (for Planes, NURBS)
   std::vector< std::vector<unsigned> > graphCutGroups;      ///< Graph cut groups of surface patch models
+
+  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_repro;      ///< Reprocessed normals after fitting => TODO Remove later
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_model_cloud;   ///< TODO PCL point cloud with points projected to model
 
 //   std::vector<pcl::PointIndices::Ptr> pcl_model_cloud_indices;  ///< indices of the plane patches
   /// TODO end new ones

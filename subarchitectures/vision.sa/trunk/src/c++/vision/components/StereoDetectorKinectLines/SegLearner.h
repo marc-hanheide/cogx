@@ -93,7 +93,7 @@ private:
   std::vector<bool> texture;                                ///< Texture on 2D image space
 
   std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
-  std::vector< std::vector<int> > preProcessIndices;                      ///< TODO Indices of points eliminated by postProcessing
+  std::vector< std::vector<int> > preProcessIndices;        ///< TODO Indices of points eliminated by postProcessing
   std::vector<int> postProcessIndices;                      ///< TODO Indices of points eliminated by postProcessing
   std::vector<int> checkPCLines;                            ///< TODO Indices of points found by checkPCLines
   
@@ -110,7 +110,7 @@ private:
 
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_repro;      ///< Reprocessed normals after fitting => TODO Remove later
-  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_planes; ///< indices of the plane patches (For debugging)
+  std::vector<pcl::PointIndices::Ptr> pcl_model_indices_planes; ///< TODO indices of the plane patches (For debugging)
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
   /// TODO end new ones
 

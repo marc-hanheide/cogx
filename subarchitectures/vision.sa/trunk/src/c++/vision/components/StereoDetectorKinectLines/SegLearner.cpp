@@ -234,8 +234,8 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
   /// IROS annotation
-    annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
-//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
+  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
   
 
   /// init patch class
@@ -379,8 +379,7 @@ void SegLearner::processImageNew()
 //   model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices);         /// TODO Eigentlich sollte man hier nur mehr surfaces kriegen? => Anzeige ändern, dann löschen
 //   model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_old);     /// TODO old nur für die Anzeige später!
 //   model_fitter->getError(error, square_error);
-//   if(deb) log("ModelFitter end!");
-  
+//   if(deb) log("ModelFitter end!"); 
 //   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
 //   if(deb) printf("Runtime for SegLearner: Model fitting: %4.3f\n", timespec_diff(&current, &last));
 //   if(deb) last = current; 
@@ -422,20 +421,21 @@ void SegLearner::processImageNew()
   if(true) /// TODO TODO TODO DEBUG
   {
     /// Load annotation from file
-    if(deb) log("Annotation for 1st level: start");
+    if(deb) log("Load annotation: start");
     std::vector< std::vector<int> > anno_pairs;
     std::vector<int> anno_background_list;
     annotation->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
     annotation->setSurfaceModels(surfaces);
     annotation->calculate();
     annotation->getResults(nr_anno, anno_pairs, anno_background_list);
-    for(unsigned i=0; i<anno_pairs.size(); i++) {
-      printf("Annotation pairs for %u: ", i);
-      for(unsigned j=0; j<anno_pairs[i].size(); j++)
-        printf(" %u", anno_pairs[i][j]);
-      printf("\n");
-    }
-    if(deb) log("Annotation for 1st level: end");
+    if(deb)
+      for(unsigned i=0; i<anno_pairs.size(); i++) {
+        printf("Annotation pairs for %u: ", i);
+        for(unsigned j=0; j<anno_pairs[i].size(); j++)
+          printf(" %u", anno_pairs[i][j]);
+        printf("\n");
+      }
+    if(deb) log("Load annotation: end");
     
     if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
     if(deb) log("Runtime for SegLearner: Annotation calculation: %4.3f", timespec_diff(&current, &last));
@@ -444,17 +444,16 @@ void SegLearner::processImageNew()
     /// Calculate patch relations
 //     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_copy (new pcl::PointCloud<pcl::PointXYZRGB>);         ///< PCL point cloud
 //     pcl::copyPointCloud(*pcl_cloud, *pcl_cloud_copy);
-    
     if(deb) log("Calculate patch-relations start!");
     std::vector<Relation> relation_vector;
     patches->setInputImage(iplImage_k);
     patches->setInputCloud(pcl_cloud);                        /// TODO projects points to planes / changes normals, if setOptimalPatchModels is true
-    patches->setNormals(pcl_normals);
+    patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
     patches->setSurfaceModels(surfaces);
     patches->setAnnotion(anno_pairs, anno_background_list);
     patches->setTexture(texture);
     patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
-    patches->computeLearnRelations();
+//     patches->computeLearnRelations();
     if(deb) log("Calculate patch-relations for 2nd SVM: start!");
     patches->computeLearnRelations2();
     if(deb) log("Calculate patch-relations for 2nd SVM: end!");
