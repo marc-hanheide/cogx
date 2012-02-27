@@ -248,11 +248,16 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
 
-  // IROS
+  /// IROS testset
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
-  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+  // IROS learn parts
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 16);           // ocl_boxes 0-16
+  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 17, 28);          // cvww_cyl  0-11
+  // IROS eval parts
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 15);      // ocl_boxes 17-32
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 16, 27);     // cvww_cyl 12-23
 
-  
   /// save results to file
   save_results = false;
   save_models.InitFileSequence("/media/Daten/Object-Database/results/cvww_cyl%1d.sfm", 0, 55);
@@ -273,15 +278,15 @@ cout << flush;
   svm = new svm::SVMPredictor(files);
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 cout << flush;
-  files.clear();
-  const char* pfile = "./instantiations/11-05-11/12-02-25/param_1.txt";
-  files.push_back(pfile);
-  const char* pfile2 = "./instantiations/11-05-11/12-02-25/param_2.txt";
-  files.push_back(pfile2);
-cout << "DEBUG: Init svm-predictor: set scaling" << endl;
+  std::vector<char*> param_files;
+  char* pfile = "./instantiations/11-05-11/12-02-25/param_1.txt";
+  param_files.push_back(pfile);
+  char* pfile2 = "./instantiations/11-05-11/12-02-25/param_2.txt";
+  param_files.push_back(pfile2);
+cout << "DEBUG: Init svm-predictor: set N scaling" << endl;
 cout << flush;
-  svm->setNScaling(true, files);
-cout << "DEBUG: Init svm-predictor: set scaling done" << endl;
+  svm->setNScaling(true, param_files);
+cout << "DEBUG: Init svm-predictor: set N scaling done" << endl;
 cout << flush;
   
   /// init graph cutter
