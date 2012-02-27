@@ -56,6 +56,88 @@ using namespace std;
 using namespace cast;
 namespace cxd = cogx::display;
 
+Video::CIplImageCache CPreview::gCache;
+int CVideoGrabClient::count;
+
+IplImage* cloneVideoImage(const Video::Image &img)
+{
+   // HACK: Share data between IplImage and vector
+   IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 3);
+   pImg->imageData = (char*) &(img.data[0]);
+   pImg->imageDataOrigin = pImg->imageData;
+   pImg->widthStep = img.width * 3;
+   pImg->imageSize = pImg->widthStep * img.height;
+   return pImg;
+}
+
+void releaseClonedImage(IplImage** pImagePtr)
+{
+   if (!pImagePtr) return;
+   if (*pImagePtr) {
+      // HACK: Share data between IplImage and vector
+      (*pImagePtr)->imageData = NULL;
+      (*pImagePtr)->imageDataOrigin = NULL;
+      cvReleaseImage(pImagePtr);
+   }
+}
+
+void CVideoGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
+{
+   std::vector<Video::CCachedImagePtr> timgs;
+   getCachedImages(timgs);
+   for(auto itt = timgs.begin(); itt != timgs.end(); itt++) {
+      items.push_back(CGrabbedItemPtr(new CGrabbedImage(*itt)));
+      //pack.images.push_back(*itt);
+   }
+}
+
+void CVideoGrabClient::getPreviews(std::vector<CPreview>& previews,
+      int width, int height, bool isGrabbing)
+{
+   std::vector<Video::CCachedImagePtr> timgs;
+   getCachedImages(timgs);
+
+   int i = 0;
+   for (auto pCachedImg : timgs) {
+      std::string cid = "pv-video-" + _str_(i, 2, '0');
+      previews.push_back(CPreview(cid, width, height));
+      CPreview& pv = previews.back();
+
+      pv.deviceName = "video." + _str_(mId) + "." + _str_(i);
+      pv.deviceInfo = _str_(pCachedImg->width, "d") + "x" + _str_(pCachedImg->height, "d");
+
+      IplImage *pPreview = pv.getImage();
+      IplImage *pOrig = cloneVideoImage(*pCachedImg);
+      cvResize(pOrig, pPreview);
+      releaseClonedImage(&pOrig);
+      i++;
+   }
+}
+
+void CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId)
+{
+   std::string fname = frameInfo.filenamePatt;
+   std::string sval = _str_(frameInfo.counter, frameInfo.counterDigits, '0');
+   _s_::replace(fname, "%c", sval);
+
+   // TODO: conversion to GS when saving;
+   // TODO: compression parameters for jpeg and png
+   std::string fullname = fname;
+   std::string devname;
+   if (deviceId < frameInfo.deviceNames.size())
+      devname = frameInfo.deviceNames[deviceId];
+   else devname = "d" + _str_(deviceId, 2, '0');
+   _s_::replace(fullname, "%d", devname);
+
+   fullname = frameInfo.directory + "/" + fullname;
+   // TODO: println("Saving image: %s", fullname.c_str());
+   // TODO: if (!m_fakeRecording) {
+      IplImage *iplImage = cloneVideoImage(*mpImage);
+      cvSaveImage(fullname.c_str(), iplImage);
+      releaseClonedImage(&iplImage);
+   //}
+}
+
 CVideoGrabber::CVideoGrabber()
 {
    m_frameGrabMs = 200;
@@ -106,7 +188,6 @@ void CVideoGrabber::configure(const map<string,string> & _config)
    string serverName;
    vector<int> camids;
    int id;
-   Video::CVideoClient2* pVideo;
 
    // Video servers
    for (it = _config.begin(); it != _config.end(); it++) {
@@ -134,7 +215,7 @@ void CVideoGrabber::configure(const map<string,string> & _config)
                   getComponentID().c_str(), sffx.c_str(), serverName.c_str()));
       }
 
-      pVideo = new Video::CVideoClient2();
+      CVideoGrabClient* pVideo = new CVideoGrabClient();
       pVideo->setServer(this, serverName, camids);
       pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
       m_video.push_back(pVideo);
@@ -575,28 +656,6 @@ void CVideoGrabber::prepareCanvas(int width, int height)
    }
 }
 
-IplImage* cloneVideoImage(const Video::Image &img)
-{
-   // HACK: Share data between IplImage and vector
-   IplImage* pImg = cvCreateImageHeader(cvSize(img.width, img.height), IPL_DEPTH_8U, 3);
-   pImg->imageData = (char*) &(img.data[0]);
-   pImg->imageDataOrigin = pImg->imageData;
-   pImg->widthStep = img.width * 3;
-   pImg->imageSize = pImg->widthStep * img.height;
-   return pImg;
-}
-
-void releaseClonedImage(IplImage** pImagePtr)
-{
-   if (!pImagePtr) return;
-   if (*pImagePtr) {
-      // HACK: Share data between IplImage and vector
-      (*pImagePtr)->imageData = NULL;
-      (*pImagePtr)->imageDataOrigin = NULL;
-      cvReleaseImage(pImagePtr);
-   }
-}
-
 #endif
 
 void CVideoGrabber::destroy()
@@ -605,6 +664,53 @@ void CVideoGrabber::destroy()
 
 void CVideoGrabber::sendCachedImages()
 {
+#ifdef FEAT_VISUALIZATION
+   std::vector<CPreview> previews;
+   std::vector<CDataSource*> clients;
+   getClients(clients);
+   for (auto pClient : clients){
+      pClient->getPreviews(previews, 320, 240, isGrabbing());
+   }
+   int w = 0, h = 0;
+   for (auto prv : previews) {
+      IplImage* pImg = prv.getImage();
+      if (w < pImg->width) {
+         w = pImg->width;
+      }
+      h += pImg->height;
+   }
+
+   prepareCanvas(w, h);
+   IplImage *pDisp = m_pDisplayCanvas;
+   CvFont fntSimplex, fntPlain;
+   cvInitFont(&fntSimplex, CV_FONT_HERSHEY_SIMPLEX, 0.7, 0.8, 0, 1.6);
+   cvInitFont(&fntPlain, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0, 1.5);
+   std::vector<std::string> devnames = getDeviceNames();
+
+   int vp = 0;
+   int i = 0;
+   for (auto prv : previews) {
+      int factor = 1;
+      int wi = (int) (prv.getImage()->width * factor);
+      int hi = (int) (prv.getImage()->height * factor);
+      cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
+      cvResize(prv.getImage(), pDisp);
+
+      std::string sMsg = _str_(i) + " " + prv.deviceName;
+      if (i < devnames.size()) sMsg += ": " + devnames[i];
+      cvPutText (pDisp, sMsg.c_str(), cvPoint(10, 25), &fntSimplex, cvScalar(255,255,0));
+      
+      sMsg = prv.deviceInfo;
+      cvPutText (pDisp, sMsg.c_str(), cvPoint(10, hi-2), &fntPlain, cvScalar(255,255,0));
+
+      cvResetImageROI(pDisp);
+      vp += hi;
+      ++i;
+   }
+   m_display.setImage(IDOBJ_GRABBER, w, h, 3, m_DisplayBuffer);
+#endif
+
+#if 0
 #ifdef FEAT_VISUALIZATION
    std::vector<Video::CCachedImagePtr> images;
    for (unsigned int i = 0; i < m_video.size(); i++) {
@@ -656,6 +762,7 @@ void CVideoGrabber::sendCachedImages()
       vp += hi;
    }
    m_display.setImage(IDOBJ_GRABBER, w, h, 3, m_DisplayBuffer);
+#endif
 #endif
 }
 
@@ -742,6 +849,7 @@ void CVideoGrabber::checkStopGrabbing()
    else if (ri.tmEnd > ri.tmStart && IceUtil::Time::now() >= ri.tmEnd) stopGrabbing();
 }
 
+#if 0
 // TODO: frameInfo should be const
 void CVideoGrabber::saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images,
       CRecordingInfo& frameInfo)
@@ -785,6 +893,33 @@ void CVideoGrabber::saveQueuedImages(const std::vector<Video::CCachedImagePtr>& 
       }
    }
 }
+#else
+void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
+      CRecordingInfo& frameInfo)
+{
+   if (frameInfo.directoryStatus == 0 || frameInfo.directoryStatus == 1) {
+      struct stat finfo;
+      string& dir = frameInfo.directory;
+      bool exists = (0 == stat(dir.c_str(), &finfo));
+      if (exists) frameInfo.directoryStatus = 2;
+      else {
+         if (frameInfo.directoryStatus == 0) 
+            frameInfo.directoryStatus = -1;
+         else {
+            mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+            exists = (0 == stat(dir.c_str(), &finfo));
+            frameInfo.directoryStatus = exists ? 2 : -1;
+         }
+      }
+   }
+
+   int devid = 0;
+   for (auto pitem : images) {
+      pitem->save(frameInfo, devid);
+      devid += pitem->numDevices();
+   }
+}
+#endif
 
 void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
 {
@@ -829,7 +964,7 @@ CVideoGrabber::CSaveQueThread::CSaveQueThread(CVideoGrabber *pGrabber)
 }
 
 void CVideoGrabber::CSaveQueThread::getItems(
-      std::vector<CVideoGrabber::CSaveQueThread::CItem>& items,
+      std::vector<CVideoGrabber::CSaveQueThread::CFramePack>& items,
       unsigned int maxItems)
 {
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
@@ -856,26 +991,25 @@ void CVideoGrabber::CSaveQueThread::grab()
    //   - a GrabberClient grabs in grab()
    //   - a GrabberClient adds SaveItem(Ptr)s to the queue
    //   - saveQueuedImages works with SaveItem(Ptr)s instead of CCachedImagePtr-s
-   CItem pack;
-   std::vector<Video::CCachedImagePtr> queue;
-   std::vector<Video::CVideoClient2*> clients;
+   CFramePack pack;
+   std::vector<CGrabbedItemPtr> data;
+   std::vector<CDataSource*> clients;
    m_pGrabber->getClients(clients);
    for (unsigned int i = 0; i < clients.size(); i++) {
-      std::vector<Video::CCachedImagePtr> timgs;
-      Video::CVideoClient2& v = *clients[i];
-      v.getCachedImages(timgs);
-      std::vector<Video::CCachedImagePtr>::iterator itt;
-      for(itt = timgs.begin(); itt != timgs.end(); itt++) {
+      std::vector<CGrabbedItemPtr> timgs;
+      clients[i]->grab(timgs);
+      for(auto itt = timgs.begin(); itt != timgs.end(); itt++) {
          pack.images.push_back(*itt);
       }
    }
    pack.frameInfo = m_pGrabber->m_RecordingInfo;
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
+      m_items.push_back(pack);
+   }
 
    m_pGrabber->m_RecordingInfo.counter++;
    m_pGrabber->m_display.setCounterValue(m_pGrabber->m_RecordingInfo.counter);
-
-   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
-   m_items.push_back(pack);
 
    //IceUtil::Time tm2 = IceUtil::Time::now() - tm;
    //m_pGrabber->debug("images copied in %lld micros", tm2.toMicroSeconds());
@@ -934,14 +1068,14 @@ void CVideoGrabber::runComponent()
    m_pTimer->scheduleRepeated(m_pDrawTick.get(), IceUtil::Time::milliSeconds(200));
 
    while(isRunning()) {
-      vector<CSaveQueThread::CItem> toSave;
+      vector<CSaveQueThread::CFramePack> toSave;
       dynamic_cast<CSaveQueThread*>(m_pQueue.get())->getItems(toSave, 4);
       if (toSave.size() < 1) {
          sleepComponent(200);
          continue;
       }
       debug("Will save %d frames", toSave.size());
-      vector<CSaveQueThread::CItem>::iterator it;
+      vector<CSaveQueThread::CFramePack>::iterator it;
       for (it = toSave.begin(); it != toSave.end(); it++) {
          IceUtil::Time tm = IceUtil::Time::now();
          saveQueuedImages(it->images, it->frameInfo);
