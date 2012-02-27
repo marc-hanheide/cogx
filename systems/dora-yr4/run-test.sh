@@ -95,7 +95,7 @@ rm -f core
 xterm -e peekabot &
 PIDS="$PIDS $!"
 
-xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd tools/PBDisplayControl; ./PBDisplayControl" &
+xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl" &
 PIDS="$PIDS $!"
 
 xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
