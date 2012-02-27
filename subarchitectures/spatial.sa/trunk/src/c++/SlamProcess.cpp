@@ -231,7 +231,6 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
     return;
   }
 
-  lockComponent();
 
   const Robotbase::Pose2d &p = castOdom.odompose[0];
 
@@ -258,36 +257,37 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
    m_OdomTimer.restart();
 
    m_LastOdom = odom;
-   
+
    if (m_LastUsedOdom.getTime() == Cure::Timestamp(0) ||
        hypot(m_LastUsedOdom.getX() - odom.getX(), 
              m_LastUsedOdom.getY() - odom.getY()) > 1e-3 ||
        fabs(Cure::HelpFunctions::angleDiffRad(m_LastUsedOdom.getTheta(), 
                                               odom.getTheta())) > 1e-2) {
      m_RobotIsMoving = true;
+
+     IceUtil::Mutex::Lock lock(m_Mutex);
+
      m_LastUsedOdom = odom;
    } else {
      m_RobotIsMoving = false;
    }
    
    if (m_NotRunningYet) {
-     unlockComponent();
      return;
    }
 
    
-   m_Mutex.lock();
    debug("addOdom(x=%.2f y=%.2f a=%.2f t=%ld.%06ld)",
          odom.getX(), odom.getY(), odom.getTheta(), 
          odom.getTime().Seconds, odom.getTime().Microsec);
-   m_PP->addOdometry(odom);
+   {
+     IceUtil::Mutex::Lock lock(m_Mutex);
+     m_PP->addOdometry(odom);
+   }
 
     if (m_usePeekabot){
         m_SLAMPoseProxy.set_pose(m_PP->getPose().getX(), m_PP->getPose().getY(), 2, m_PP->getPose().getTheta(), 0, 0);
     }
-
-   m_Mutex.unlock();
-   unlockComponent();
 }
 
 void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
@@ -340,45 +340,50 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 
         println("Performing fake measurement update to kick start");
 
-        debug("pose est before fake x=%.2f y=%.2f a=%.4f t=%.6f",
-              m_PP->getPose().getX(), 
-              m_PP->getPose().getY(), 
-              m_PP->getPose().getTheta(),
-              m_PP->getPose().getTime().getDouble());
+	{
+	  IceUtil::Mutex::Lock lock(m_Mutex);
 
-        if (!m_InitedFakeRoutine) {
-          m_LastTimestampWhileNotRunningYet = m_PP->getPose().getTime();
-          m_InitedFakeRoutine = true;
-        }
+	  debug("pose est before fake x=%.2f y=%.2f a=%.4f t=%.6f",
+	      m_PP->getPose().getX(), 
+	      m_PP->getPose().getY(), 
+	      m_PP->getPose().getTheta(),
+	      m_PP->getPose().getTime().getDouble());
 
-        Cure::Pose3D fakeOdom(m_LastUsedOdom);
-        fakeOdom.setTime(cureScan.getTime());
-        m_PP->addOdometry(fakeOdom);
+	  if (!m_InitedFakeRoutine) {
+	    m_LastTimestampWhileNotRunningYet = m_PP->getPose().getTime();
+	    m_InitedFakeRoutine = true;
+	  }
 
-        Cure::MeasurementSet ms;
-        ms.setNumberOfElements(1);
-        ms.Measurements[0].MeasurementType = 0;
-        ms.Measurements[0].SensorType = Cure::SensorData::SENSORTYPE_SICK;
-        ms.Measurements[0].SensorID=0;
-        ms.Measurements[0].Key=0;
-        ms.Measurements[0].Z.reallocate(2,0);
-        ms.Measurements[0].BoundingBox.reallocate(0);
-        ms.Measurements[0].V.reallocate(4,0);
-        ms.Measurements[0].W.reallocate(0,2);
-        ms.Measurements[0].CovV.reallocate(0);
-        ms.setTime(cureScan.getTime());
-        
-        m_PP->addMeasurementSet(ms);
+	  Cure::Pose3D fakeOdom(m_LastUsedOdom);
 
-        debug("pose est after fake x=%.2f y=%.2f a=%.4f t=%.6f",
-              m_PP->getPose().getX(), 
-              m_PP->getPose().getY(), 
-              m_PP->getPose().getTheta(),
-              m_PP->getPose().getTime().getDouble());
+	  fakeOdom.setTime(cureScan.getTime());
+	  m_PP->addOdometry(fakeOdom);
 
-        m_NotRunningYet = (m_PP->getPose().getTime() ==
-                           m_LastTimestampWhileNotRunningYet);      
-        m_LastTimestampWhileNotRunningYet = m_PP->getPose().getTime();
+	  Cure::MeasurementSet ms;
+	  ms.setNumberOfElements(1);
+	  ms.Measurements[0].MeasurementType = 0;
+	  ms.Measurements[0].SensorType = Cure::SensorData::SENSORTYPE_SICK;
+	  ms.Measurements[0].SensorID=0;
+	  ms.Measurements[0].Key=0;
+	  ms.Measurements[0].Z.reallocate(2,0);
+	  ms.Measurements[0].BoundingBox.reallocate(0);
+	  ms.Measurements[0].V.reallocate(4,0);
+	  ms.Measurements[0].W.reallocate(0,2);
+	  ms.Measurements[0].CovV.reallocate(0);
+	  ms.setTime(cureScan.getTime());
+
+	  m_PP->addMeasurementSet(ms);
+
+	  debug("pose est after fake x=%.2f y=%.2f a=%.4f t=%.6f",
+	      m_PP->getPose().getX(), 
+	      m_PP->getPose().getY(), 
+	      m_PP->getPose().getTheta(),
+	      m_PP->getPose().getTime().getDouble());
+
+	  m_NotRunningYet = (m_PP->getPose().getTime() ==
+	      m_LastTimestampWhileNotRunningYet);      
+	  m_LastTimestampWhileNotRunningYet = m_PP->getPose().getTime();
+	}
       }
 
       if (m_NotRunningYet) {
@@ -400,24 +405,26 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
             cureScan.getAngleStep(), cureScan.getRange(0),
             cureScan.getRange(cureScan.getNPts()-1),
             cureScan.getTime().Seconds, cureScan.getTime().Microsec);
-      m_Mutex.lock();
 
       CASTTimer timer(true);
       Cure::MeasurementSet measSet;
       int n = extractMeasSet(cureScan, measSet);
       double dt = timer.split();
-      m_PP->addMeasurementSet(measSet);
       timer.stop();
       
       debug("Took %.3fs to extract %d lines, %.3fs to update (tot %.3fs)",
             dt, n, timer.stop()-dt, timer.stop());
+      {
+	IceUtil::Mutex::Lock lock(m_Mutex);
+	m_PP->addMeasurementSet(measSet);
+      }
+
 
       log("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",
           m_PP->getPose().getX(), 
           m_PP->getPose().getY(), 
           m_PP->getPose().getTheta(),
           m_PP->getPose().getTime().getDouble());
-      m_Mutex.unlock();
 
       updateRobotPoseInWM();
       
@@ -490,11 +497,9 @@ void SlamProcess::storeDataToFile()
   if ((currTime - m_TimeMapLastSaved).getDouble() > m_SaveMapInterval) {
     if (m_RunningSLAM) {
       if (!m_DontWriteFiles) {
-        
-        m_Mutex.lock();
-        ((Cure::WrappedSLAM*)m_PP)->saveMap(m_MapFilename);
-        m_Mutex.unlock();
+	IceUtil::Mutex::Lock lock(m_Mutex);
 
+        ((Cure::WrappedSLAM*)m_PP)->saveMap(m_MapFilename);
       }
       
       m_WriteMapToWorkingMemory = true;
@@ -531,13 +536,9 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
 
   Cure::FeatureMap *fm = 0;
   if (m_RunningSLAM) {
-    m_Mutex.lock();
     fm = &(((Cure::WrappedSLAM*)m_PP)->m_Map);
-    m_Mutex.unlock();
   } else {
-    m_Mutex.lock();
     fm = &(((Cure::WrappedLocalization*)m_PP)->m_Map);
-    m_Mutex.unlock();
   }
   
   std::list<Cure::Line2D> walls;
@@ -551,6 +552,7 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
   m_Mutex.lock();
   Cure::Pose3D cp = m_PP->getPose();
   m_Mutex.unlock();
+
   NavData::LineMap *lineMap = new NavData::LineMap();
   lineMap->time.s = cp.getTime().Seconds;
   lineMap->time.us = cp.getTime().Microsec;

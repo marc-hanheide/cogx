@@ -21,12 +21,15 @@
 #include <Utils/HelpFunctions.hh>
 #include <AddressBank/ConfigFileReader.hh>
 #include <Transformation/Pose3D.hh>
+#include "TimeLogger.hpp"
 
 #ifndef DEPEND
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 #endif
+
+#define SCOPED_TIME_LOG TimeLogger logger(m_sc, __FILE__, __LINE__);
 
 using namespace Cure;
 
@@ -44,16 +47,17 @@ NewNavControllerEventListener::~NewNavControllerEventListener()
 
 
 NewNavController::NewNavController(NavGraph &graph, LocalMap &lmap, cast::ManagedComponent* sc) 
-  :m_PP(0),
-   m_Graph(graph),
-   m_LMap(lmap),
-   m_ND(8),
-   m_TaskType(TASKTYPE_STOP),
-   m_TaskID(-1),
-   m_LastProgressTime(-1),
-   m_ProgressTimeout(-1),
-   m_sc(sc),
-   m_Turn(sc,0.05)
+  :
+    m_PP(0),
+    m_Graph(graph),
+    m_LMap(lmap),
+    m_Turn(sc,0.05),
+    m_ND(8),
+    m_TaskType(TASKTYPE_STOP),
+    m_TaskID(-1),
+    m_sc(sc),
+    m_LastProgressTime(-1),
+    m_ProgressTimeout(-1)
 {
   m_sc->debug("NewNavController started");  
 
@@ -864,6 +868,7 @@ NewNavController::trimPath(const Cure::Pose3D &cp,
 int
 NewNavController::updateCtrl()
 {
+  SCOPED_TIME_LOG;
   if (m_PP == 0) {
      m_sc->error("Must call setPoseProvider first\n");
     return RETVAL_ERROR;
@@ -1287,7 +1292,9 @@ NewNavController::updateCtrl()
     m_sc->log("Speed command now type=%d v=%f w=%f dir=%f\n",cmd.type,cmd.v,cmd.w,Cure::HelpFunctions::rad2deg(cmd.dir));
   }
 
+  {
   execCtrl(cmd);
+  }
   return RETVAL_OK;
 }
 
