@@ -1,0 +1,5 @@
+^/code/tools/gar-installer/trunk/contrip/libpcl   contrib/libpcl
+^/code/tools/gar-installer/trunk/contrib/opencv   contrib/opencv
+^/code/tools/gar-installer/trunk/cogx/v4r         cogx/v4r
+^/code/tools/gar-installer/trunk/cogx/cast-c++    cogx/cast-c++
+^/code/tools/gar-installer/trunk/cogx/cast-java   cogx/cast-java
