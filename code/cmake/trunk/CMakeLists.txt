@@ -263,6 +263,11 @@ if (EXISTS ${COGX_ROOT}/tools/hardware/video)
    cogx_add_subdir(BUILD_HAL_VIDEO tools/hardware/video)
 endif()
 
+option(BUILD_PB_DISPLAY "Build PBDisplayControl" YES)
+if(BUILD_PB_DISPLAY)
+add_subdirectory (tools/PBDisplayControl)
+endif(BUILD_PB_DISPLAY)
+
 #option(BUILD_HAL_STEREO "Build hardware stereo" NO)
 #if(BUILD_HAL_STEREO)
 #add_subdirectory (tools/hardware/stereo)
