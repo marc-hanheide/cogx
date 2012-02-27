@@ -245,7 +245,7 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 9);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
 
   /// IROS testset
@@ -594,7 +594,7 @@ for(unsigned i=0; i<graphCutGroups.size(); i++) {
   }
   
   /// Check annotation for evaluation
-  CheckAnnotation(surfaces, anno, graphCutGroups);    /// TODO move this function to annotation class
+//   CheckAnnotation(surfaces, anno, graphCutGroups);    /// TODO move this function to annotation class
 
 // printf("    annotation: start\n");
 //   std::vector<int> anno;
