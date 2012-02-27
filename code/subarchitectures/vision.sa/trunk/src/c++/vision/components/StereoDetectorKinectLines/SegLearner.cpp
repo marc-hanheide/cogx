@@ -230,12 +230,12 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 32);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 9, 15);
-//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
+  annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
   /// IROS annotation
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
-  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
   
 
   /// init patch class
