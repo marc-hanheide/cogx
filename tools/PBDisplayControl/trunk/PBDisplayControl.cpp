@@ -66,11 +66,11 @@ ControlWindow::ControlWindow() : follow_robot("follow the robot") {
   set_default_size(200, 200);
   // Sets the border width of the window.
   set_border_width(10); 
- add(m_box1);
+  add(m_box1);
   m_refTreeModel = Gtk::ListStore::create(m_Columns);
   m_TreeView.set_model(m_refTreeModel);
 
-    ps.load("pb_settings.xml");
+    ps.load("../../instantiations/PBDisplayControl/pb_settings.xml");
     connectPeekabot();
     for (int i=0; i<ps.views.size(); i++) {
       Gtk::TreeModel::Row row = *(m_refTreeModel->append());
