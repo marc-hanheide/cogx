@@ -12,6 +12,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <Video.hpp>
 #include <VideoClient2.h>
+#include <ImageCache.h>
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
@@ -53,8 +54,83 @@ struct CRecordingInfo
    }
 };
 
+class CGrabbedItem
+{
+public:
+   // # of devices from which the contents was grabbed; usually 1
+   virtual int numDevices()
+   {
+      return 1;
+   }
+   virtual void save(const CRecordingInfo& recinfo, int deviceId) = 0;
+};
+
+class CPreview
+{
+   static Video::CIplImageCache gCache;
+   int mWidth;
+   int mHeight;
+   std::string mName;
+public:
+   std::string deviceName;
+   std::string deviceInfo;
+
+public:
+   CPreview(const std::string& name, int width, int height)
+   {
+      mName = name;
+      mWidth = width;
+      mHeight = height;
+   }
+   IplImage* getImage()
+   {
+      return gCache.getImage(mName, mWidth, mHeight, 8, 3);
+   }
+};
+
+typedef std::shared_ptr<CGrabbedItem> CGrabbedItemPtr;
+
+class CDataSource
+{
+public:
+   virtual void grab(std::vector<CGrabbedItemPtr>& items) = 0;
+   virtual void getPreviews(std::vector<CPreview>& items, int width, int height, bool isGrabbing) = 0;
+};
+
+class CVideoGrabClient: public Video::CVideoClient2, public CDataSource
+{
+   static int count;
+   int mId;
+public:
+   CVideoGrabClient()
+   {
+      mId = count;
+      ++count;
+   }
+   ~CVideoGrabClient()
+   {
+      --count;
+   }
+   virtual void grab(std::vector<CGrabbedItemPtr>& items) /*override*/;
+   virtual void getPreviews(std::vector<CPreview>& previews,
+         int width, int height, bool isGrabbing) /*override*/;
+};
+
+class CGrabbedImage: public CGrabbedItem
+{
+private:
+   friend class CVideoGrabClient;
+   Video::CCachedImagePtr mpImage;
+public:
+   CGrabbedImage(Video::CCachedImagePtr& pimage)
+   {
+      mpImage = pimage;
+   }
+   virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
+};
+
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
-class PcClient: public cast::PointCloudClient
+class PcClient: public cast::PointCloudClient, public CDataSource
 {
 public:
    bool mbGrabPoints;
@@ -74,6 +150,13 @@ public:
    {
       startPCCServerCommunication(owner);
    };
+   virtual void grab(std::vector<CGrabbedItemPtr>& items) /*override*/
+   {
+   }
+   virtual void getPreviews(std::vector<CPreview>& previews,
+         int width, int height, bool isGrabbing) /*override*/
+   {
+   }
 };
 #endif
 
@@ -85,7 +168,7 @@ private:
     */
    bool m_bReceiving;
 
-   std::vector<Video::CVideoClient2*> m_video;
+   std::vector<CVideoGrabClient*> m_video;
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
    std::vector<PcClient*> m_pointcloud;
 #endif
@@ -152,20 +235,20 @@ private:
       CVideoGrabber *m_pGrabber;
 
    public:
-      struct CItem 
+      struct CFramePack 
       {
          CRecordingInfo frameInfo;
-         std::vector<Video::CCachedImagePtr> images;
+         std::vector<CGrabbedItemPtr> images;
       };
 
    private:
-      std::vector<CItem> m_items;
+      std::vector<CFramePack> m_items;
       IceUtil::Monitor<IceUtil::Mutex> m_itemsLock;
 
    public:
       CSaveQueThread(CVideoGrabber *pGrabber);
 
-      void getItems(std::vector<CItem>& items, unsigned int maxItems = 0);
+      void getItems(std::vector<CFramePack>& items, unsigned int maxItems = 0);
       virtual void grab();
       virtual void run();
    };
@@ -201,10 +284,15 @@ public:
 
    std::vector<std::string> getDeviceNames();
    void saveImages(const std::vector<Video::Image>& images);
-   void saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images, CRecordingInfo& frameInfo);
-   void getClients(std::vector<Video::CVideoClient2*>& clients)
+   //void saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images, CRecordingInfo& frameInfo);
+   void saveQueuedImages(const std::vector<CGrabbedItemPtr>& images, CRecordingInfo& frameInfo);
+   void getClients(std::vector<CDataSource*>& clients)
    {
-      clients = m_video;
+      clients.clear();
+      for(auto video : m_video) clients.push_back(video);
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+      for(auto pc : m_pointcloud) clients.push_back(pc);
+#endif
    }
    void fillRecordingInfo(CRecordingInfo &info);
    void startGrabbing(const std::string& command);
