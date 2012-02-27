@@ -78,9 +78,7 @@ public:
   void processScan2d(const Laser::Scan2d &scan);
   inline void receiveScan2d(const Laser::Scan2d &castScan)
   {
-    lockComponent();
     processScan2d(castScan);
-    unlockComponent();
   }
   void receiveOdometry(const Robotbase::Odometry &odom);
 

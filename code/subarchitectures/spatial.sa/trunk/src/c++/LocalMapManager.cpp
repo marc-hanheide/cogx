@@ -516,7 +516,7 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   double oldX = 0.0;
   double oldY = 0.0;
   double oldTheta = 0.0;
-  cast::cdl::CASTTime oldTime;
+  cast::cdl::CASTTime oldTime=getCASTTime();
   if (lastRobotPose) {
     oldX = lastRobotPose->x;
     oldY = lastRobotPose->y;

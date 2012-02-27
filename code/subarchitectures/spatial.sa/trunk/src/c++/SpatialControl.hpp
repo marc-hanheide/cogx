@@ -97,9 +97,10 @@ class SpatialControl : public cast::ManagedComponent ,
           if (radius < 0)
             radius = 0.5 * m_pOwner->getRobotWidth();
 
-          m_pOwner->m_MapsMutex.lock();
+//	    Not thread safe, but can't really lead to errors or inconsistency
+//          m_pOwner->m_MapsMutex.lock();
           bool ret = m_pOwner->m_lgm->isCircleObstacleFree(x,y,radius);
-          m_pOwner->m_MapsMutex.unlock();
+//          m_pOwner->m_MapsMutex.unlock();
           return ret;
         }
 
@@ -108,9 +109,9 @@ class SpatialControl : public cast::ManagedComponent ,
 
         virtual SpatialData::LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy, const Ice::Current &_context) {
           SpatialData::LocalGridMap ret;
-          m_pOwner->lockComponent();
+//          m_pOwner->lockComponent();
           m_pOwner->getBoundedMap(ret, m_pOwner->m_lgm, minx, maxx, miny, maxy);
-          m_pOwner->unlockComponent();
+//          m_pOwner->unlockComponent();
           return ret;
         }
 
@@ -145,7 +146,6 @@ public:
   void doneTask(int taskID);
   void failTask(int taskID, int error);
   void explorationDone(int taskID, int status);
-  const Cure::LocalGridMap<unsigned char>& getLocalGridMap();
 
 protected:
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
@@ -166,11 +166,11 @@ protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
-  void getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex) const;
+  void getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const;
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   virtual int findClosestNode(double x, double y);
   virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
-  void getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy);
+  void getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy) const;
   std::vector<double> getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount);
 
   void processOdometry(Cure::Pose3D);
@@ -192,6 +192,7 @@ protected:
   bool m_bNoNavGraph;
 
   Cure::GridLineRayTracer<unsigned char>* m_Glrt; // This is from our customized cure raytracer. GridLineRayTracerModified.hh in spatial.sa
+  Cure::GridLineRayTracer<unsigned char>* m_catGlrt; // This is from our customized cure raytracer. GridLineRayTracerModified.hh in spatial.sa
 
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
@@ -203,7 +204,6 @@ protected:
   std::deque<Cure::Pose3D> m_odometryQueue;
 
   IceUtil::Mutex m_PPMutex;		// Protects m_TOPP
-  IceUtil::Mutex m_MapsMutex;        	// Protects m_lgm
   IceUtil::Mutex m_ScanQueueMutex; 	// Protects m_LScanQueue
   IceUtil::Mutex m_OdomQueueMutex;	// Protects m_odometryQueue
   IceUtil::Mutex m_PeopleMutex;		// Protects m_People

@@ -28,6 +28,7 @@
 #include "PTZ.hpp"
 #include <Rendezvous.h>
 #include "CameraParameters.h"
+#include "TimeLogger.hpp"
 
 #include <utility>
 #include <queue>
@@ -37,18 +38,8 @@ using namespace std;
 using namespace boost;
 using namespace spatial;
 
-class TimeLogger {
-  public:
-  TimeLogger(CASTComponent* _owner, const char *_str) :owner(_owner), str(_str) 
-  { startTime = owner->getCASTTime(); }
-  ~TimeLogger() { owner->log("Time @%s:%f", str, 
-      (double)(owner->getCASTTime().s-startTime.s) + 1e-6*(owner->getCASTTime().us-startTime.us)); }
-  CASTComponent* owner;
-  cdl::CASTTime startTime;
-  const char *str;
-};
 
-#define SCOPED_TIME_LOG TimeLogger logger(this, __FILE__);
+#define SCOPED_TIME_LOG TimeLogger logger(this, __FILE__, __LINE__);
 
 #define CAM_ID_DEFAULT 0
 
@@ -98,6 +89,21 @@ SpatialControl::SpatialControl()
 
   m_NumInhibitors = 0;
   m_SentInhibitStop = false;
+
+  m_Glrt = NULL;
+  m_catGlrt = NULL;
+  m_Displaylgm = NULL;
+  m_displayBinaryMap = NULL;
+  m_displayObstacleMap = NULL;
+  m_displayCategoricalMap = NULL;
+  m_FrontierFinder = NULL;
+  m_lgm = NULL;
+  m_lgmLM = NULL;
+  m_lgmKH = NULL;
+  m_categoricalMap = NULL;
+  m_categoricalKHMap = NULL;
+  m_binaryMap = NULL;
+  m_obstacleMap = NULL;
 }
 
 void SpatialControl::connectPeekabot()
@@ -132,9 +138,10 @@ void SpatialControl::connectPeekabot()
 
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
-    m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize, 
-    0.8,0.9,1,
-    0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize,
+	peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyGridMap.set_occupied_color(0.1,0.1,0.1);
+    m_ProxyGridMap.set_unoccupied_color(0.8,0.9,1);
     peekabot::OccupancySet2D cells;
     m_ProxyGridMap.set_cells(cells);
     m_ProxyMap.set_position(0,0,-0.005);
@@ -153,11 +160,11 @@ void SpatialControl::UpdateGridMap() {
         }
     }
     m_ProxyGridMap.set_cells(cells);
-    if (m_MapsMutex.tryLock()){
+//    if (m_MapsMutex.tryLock()){
       std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
       m_ProxyMap.clear();
       if (fPts) {
-        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
+//        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
         for (std::list<Cure::FrontierPt>::const_iterator fi = fPts->begin();
              fi != fPts->end(); fi++) {
           int i, j;
@@ -165,7 +172,7 @@ void SpatialControl::UpdateGridMap() {
             i = i + m_lgm->getSize();
             j = m_lgm->getSize() - j;
 
-            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
+//            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
             double color[3];
             color[0] = 0.1;
             color[1] = 0.1;
@@ -199,16 +206,18 @@ void SpatialControl::UpdateGridMap() {
             peekabot::PolygonProxy p;
             p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
             int num_points = 10;
+	    peekabot::VertexSet vSet;
             for(int k=0;k<num_points;k++)
-                p.add_vertex(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
+                vSet.add(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
+	    p.add_vertices(vSet);
             p.set_color(color[0],color[1],color[2]);
             p.set_opacity(1);
             p.set_position(fi->getX(), fi->getY(),0);
             p.set_rotation(fi->getTheta() - M_PI_2,0,0);
           }
         }
-      }
-    m_MapsMutex.unlock();
+//      }
+//    m_MapsMutex.unlock();
   }
 }
 
@@ -271,7 +280,22 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
 }
 
 SpatialControl::~SpatialControl() 
-{ }
+{ 
+  delete m_Glrt;
+  delete m_catGlrt;
+  delete m_Displaylgm;
+  delete m_displayBinaryMap;
+  delete m_displayObstacleMap;
+  delete m_displayCategoricalMap;
+  delete m_FrontierFinder;
+  delete m_lgm;
+  delete m_lgmLM;
+  delete m_lgmKH;
+  delete m_categoricalMap;
+  delete m_categoricalKHMap;
+  delete m_binaryMap;
+  delete m_obstacleMap;
+}
 
 //saves m_lgm
 void SpatialControl::SaveGridMap(){
@@ -321,8 +345,6 @@ void SpatialControl::LoadGridMap(std::string filename){
     getline(file,line); 
     getline(file,line);
     int count = 0;
-
-    IceUtil::Mutex::Lock lock(m_MapsMutex);
 
     m_lgm = new Cure::LocalGridMap<unsigned char>(sz, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
 
@@ -464,6 +486,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
+  m_catGlrt  = new Cure::GridLineRayTracer<unsigned char>(*m_categoricalMap);
 
   m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
 
@@ -709,11 +732,6 @@ void SpatialControl::explorationDone(int taskId, int status)
   }
 }
 
-const Cure::LocalGridMap<unsigned char>& SpatialControl::getLocalGridMap()
-{
-  return *m_lgm;
-}
-
 void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight)
 {
   int xi, yi;
@@ -782,12 +800,18 @@ void SpatialControl::updateGridMaps()
   Cure::Pose3D lpW;
  	int xi,yi;
 
-  /* Update a temporary local map so we don't hog the lock */
-  Cure::LocalGridMap<unsigned char> tmp_lgm(*m_lgm);
-  Cure::GridLineRayTracer<unsigned char> tmp_glrt(tmp_lgm);
-
-  Cure::LocalGridMap<unsigned char> tmp_catlgm(*m_categoricalMap);
-  Cure::GridLineRayTracer<unsigned char> tmp_catglrt(tmp_catlgm);
+  Cure::LocalGridMap<unsigned char> *tmp_lgm;
+  Cure::GridLineRayTracer<unsigned char> *tmp_glrt;
+  Cure::LocalGridMap<unsigned char> *tmp_catlgm;
+  Cure::GridLineRayTracer<unsigned char> *tmp_catglrt;
+  {
+    SCOPED_TIME_LOG;
+    //  /* Update a temporary local map so we don't hog the lock */
+    tmp_lgm = new Cure::LocalGridMap<unsigned char>(*m_lgm);
+    tmp_glrt = new Cure::GridLineRayTracer<unsigned char>(*tmp_lgm);
+    tmp_catlgm = new Cure::LocalGridMap<unsigned char>(*m_categoricalMap);
+    tmp_catglrt = new Cure::GridLineRayTracer<unsigned char>(*tmp_catlgm);
+  }
   
 
   /* Local reference so we don't have to dereference the pointer all the time */
@@ -802,17 +826,17 @@ void SpatialControl::updateGridMaps()
   double laserCatMinY = INT_MAX, laserCatMaxY = INT_MIN;
 
   /* Add all queued laser scans */
-  m_ScanQueueMutex.lock();
+  {
+    SCOPED_TIME_LOG;
+    m_ScanQueueMutex.lock();
+  }
   while (!m_LScanQueue.empty()){
-//  if (!m_LScanQueue.empty()){
-
     Cure::LaserScan2d scan = m_LScanQueue.front();
     m_LScanQueue.pop();
     m_ScanQueueMutex.unlock();
 
     int status = 1;
     {
-      IceUtil::Mutex::Lock lock(m_PPMutex);
       if (m_TOPP.isTransformDefined()) {
 	status = m_TOPP.getPoseAtTime(scan.getTime(), LscanPose);
       }
@@ -825,24 +849,26 @@ void SpatialControl::updateGridMaps()
             m_ProxyScan.clear_vertices();
             double angStep = scan.getAngleStep();
             double startAng = scan.getStartAngle();
-            for (unsigned int i = 0; i < scan.getNPts(); i++) {
+	    peekabot::VertexSet vs;
+            for (int i = 0; i < scan.getNPts(); i++) {
               float x,y;
               x = cos(startAng + i * angStep) * scan.getRange(i);
               y = sin(startAng + i * angStep) * scan.getRange(i);
-              m_ProxyScan.add_vertex(x,y,0);
+              vs.add(x,y,0);
             }
+	    m_ProxyScan.add_vertices(vs);
        }
 
       if (m_usePeekabot){
         m_ProxyScan.set_pose(lpW.getX(), lpW.getY(), lpW.getZ(), lpW.getTheta(), 0, 0);
       }
 
-      tmp_glrt.addScan(scan, lpW, m_MaxExplorationRange);
-      tmp_lgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
-          0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
+      tmp_glrt->addScan(scan, lpW, m_MaxExplorationRange);
+      tmp_lgm->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+          0.55*Cure::NewNavController::getRobotWidth(), '0');
 
-      tmp_catglrt.addScan(scan, lpW, m_MaxCatExplorationRange);
-      tmp_catlgm.setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+      m_catGlrt->addScan(scan, lpW, m_MaxCatExplorationRange);
+      m_categoricalMap->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
           0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
 
       m_firstScanAdded = true;
@@ -866,7 +892,10 @@ void SpatialControl::updateGridMaps()
       if (LscanPose.getY() > laserCatMaxY)
         laserCatMaxY = LscanPose.getY();
     }
-    m_ScanQueueMutex.lock();
+    {
+      SCOPED_TIME_LOG;
+      m_ScanQueueMutex.lock();
+    }
   }
   m_ScanQueueMutex.unlock();
   /* Only proceed if we got any new scans */
@@ -884,23 +913,23 @@ void SpatialControl::updateGridMaps()
   laserCatMaxY += m_MaxCatExplorationRange;
 
   int laserMinXi, laserMinYi, laserMaxXi, laserMaxYi;
-  if (tmp_lgm.worldCoords2Index(laserMinX, laserMinY, laserMinXi, laserMinYi) != 0) {
-    laserMinXi = -tmp_lgm.getSize() + 1;
-    laserMinYi = -tmp_lgm.getSize() + 1;
+  if (m_lgm->worldCoords2Index(laserMinX, laserMinY, laserMinXi, laserMinYi) != 0) {
+    laserMinXi = -m_lgm->getSize() + 1;
+    laserMinYi = -m_lgm->getSize() + 1;
   }
-  if (tmp_lgm.worldCoords2Index(laserMaxX, laserMaxY, laserMaxXi, laserMaxYi) != 0) {
-    laserMaxXi = tmp_lgm.getSize() - 1;
-    laserMaxYi = tmp_lgm.getSize() - 1;
+  if (m_lgm->worldCoords2Index(laserMaxX, laserMaxY, laserMaxXi, laserMaxYi) != 0) {
+    laserMaxXi = m_lgm->getSize() - 1;
+    laserMaxYi = m_lgm->getSize() - 1;
   }
 
   int laserCatMinXi, laserCatMinYi, laserCatMaxXi, laserCatMaxYi;
-  if(tmp_catlgm.worldCoords2Index(laserCatMinX, laserCatMinY, laserCatMinXi, laserCatMinYi) != 0) {
-    laserCatMinXi = -tmp_catlgm.getSize() + 1;
-    laserCatMinYi = -tmp_catlgm.getSize() + 1;
+  if(m_categoricalMap->worldCoords2Index(laserCatMinX, laserCatMinY, laserCatMinXi, laserCatMinYi) != 0) {
+    laserCatMinXi = -m_categoricalMap->getSize() + 1;
+    laserCatMinYi = -m_categoricalMap->getSize() + 1;
   }
-  if(tmp_catlgm.worldCoords2Index(laserCatMaxX, laserCatMaxY, laserCatMaxXi, laserCatMaxYi) != 0) {
-    laserCatMaxXi = -tmp_catlgm.getSize() - 1;
-    laserCatMaxYi = -tmp_catlgm.getSize() - 1;
+  if(m_categoricalMap->worldCoords2Index(laserCatMaxX, laserCatMaxY, laserCatMaxXi, laserCatMaxYi) != 0) {
+    laserCatMaxXi = -m_categoricalMap->getSize() - 1;
+    laserCatMaxYi = -m_categoricalMap->getSize() - 1;
   }
 
   if (m_UsePointCloud) {
@@ -1002,24 +1031,24 @@ void SpatialControl::updateGridMaps()
 
     /* Project the height map onto the 2D obstacle map */ 
     if (pointcloudMinXi != INT_MAX && pointcloudMinYi != INT_MAX && pointcloudMaxXi != INT_MIN && pointcloudMaxYi != INT_MIN) {
-      blitHeightMap(tmp_lgm, m_lgmKH, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
-      tmp_lgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+      blitHeightMap(*tmp_lgm, m_lgmKH, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
+      tmp_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
           0.55*Cure::NewNavController::getRobotWidth(), '0'); 
 
-      blitHeightMap(tmp_catlgm, m_categoricalKHMap, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, maxCatHeight);
-      tmp_catlgm.setValueInsideCircle(scanPose.getX(), scanPose.getY(),
+      blitHeightMap(*m_categoricalMap, m_categoricalKHMap, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, maxCatHeight);
+      m_categoricalMap->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
           0.55*Cure::NewNavController::getRobotWidth(), '0'); 
     }
   }
 
   /* Project the height map onto the 2D obstacle map */ 
-  blitHeightMap(tmp_lgm, m_lgmKH, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
+  blitHeightMap(*tmp_lgm, m_lgmKH, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
 
-  blitHeightMap(tmp_catlgm, m_categoricalKHMap, laserCatMinXi, laserCatMaxXi, laserCatMinYi, laserCatMaxYi, m_obstacleMinHeight, maxCatHeight);
+  blitHeightMap(*m_categoricalMap, m_categoricalKHMap, laserCatMinXi, laserCatMaxXi, laserCatMinYi, laserCatMaxYi, m_obstacleMinHeight, maxCatHeight);
   }
 
   const int deltaN = 3;
-  double d = tmp_lgm.getCellSize()/deltaN;
+  double d = m_lgm->getCellSize()/deltaN;
   int maxcellstocheck = int (5.0/d);
   double xWT,yWT;
   double theta;
@@ -1034,15 +1063,15 @@ void SpatialControl::updateGridMaps()
 
   /* Update the nav map */
   m_LMap.clearMap();
-  tmp_lgm.setValueInsideCircle(currPose.getX(), currPose.getY(),
+  tmp_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
       0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
   for (int i = 0; i < m_Npts; i++) {
     theta = m_StartAngle + m_AngleStep * i;
     for (int j = 1; j < deltaN*maxcellstocheck; j++){
       xWT = currPose.getX()+j*d*cos(theta);
       yWT = currPose.getY()+j*d*sin(theta);
-      if(tmp_lgm.worldCoords2Index(xWT,yWT,xi,yi)==0){
-	if(tmp_lgm(xi,yi) == '1'){
+      if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
+	if((*tmp_lgm)(xi,yi) == '1'){
 	  m_LMap.addObstacle(xWT, yWT, 1);
 	  break;    
 	}
@@ -1052,9 +1081,13 @@ void SpatialControl::updateGridMaps()
 
   /* Copy the temporary map */
   {
-    IceUtil::Mutex::Lock lock(m_MapsMutex);
-    *m_lgm = tmp_lgm;
-    *m_categoricalMap = tmp_catlgm;
+//    IceUtil::Mutex::Lock lock(m_MapsMutex);
+    *m_lgm = *tmp_lgm;
+    *m_categoricalMap = *tmp_catlgm;
+    delete tmp_lgm;
+    delete tmp_glrt;
+    delete tmp_catlgm;
+    delete tmp_catglrt;
   }
 }
 
@@ -1077,7 +1110,9 @@ void SpatialControl::runComponent()
 	  count = 0;
 	}
     count++;
+    {
     m_OdomQueueMutex.lock();
+    }
     if (m_odometryQueue.size() > 0) 
 //    while (m_odometryQueue.size() > 0) 
     {
@@ -1085,15 +1120,20 @@ void SpatialControl::runComponent()
       m_odometryQueue.pop_front();
       m_OdomQueueMutex.unlock();
 
+      {
+      SCOPED_TIME_LOG;
       processOdometry(cureOdom);
+      }
       m_OdomQueueMutex.lock();
     }
     m_OdomQueueMutex.unlock();
 
     {
-      SCOPED_TIME_LOG;
 //    if (m_UsePointCloud) {
-      updateGridMaps();
+      {
+	SCOPED_TIME_LOG;
+	updateGridMaps();
+      }
 
       if(m_usePeekabot){
         UpdateGridMap();
@@ -1102,20 +1142,24 @@ void SpatialControl::runComponent()
 //    }	
     }
 //FIXME Too slow!
-
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
-      if (m_Displaylgm) {
-	m_Displaylgm->updateDisplay(&currentPose,
-	    &m_NavGraph, 
-	    &m_Frontiers);
+      {
+	if (m_Displaylgm) {
+	  m_Displaylgm->updateDisplay(&currentPose,
+	      &m_NavGraph, 
+	      &m_Frontiers);
+	}
       }
 
-      if(m_displayBinaryMap)
-	m_displayBinaryMap->updateDisplay(&currentPose);
+      {
+	if(m_displayBinaryMap)
+	  m_displayBinaryMap->updateDisplay(&currentPose);
 
-      if(m_displayCategoricalMap)
-	m_displayCategoricalMap->updateDisplay(&currentPose);
+	if(m_displayCategoricalMap)
+	  m_displayCategoricalMap->updateDisplay(&currentPose);
+      }
+
 
       if(m_DisplayCureObstacleMap) {
 	// Clear out obstacle map (that's used for visualization only)
@@ -1133,10 +1177,9 @@ void SpatialControl::runComponent()
 	m_displayObstacleMap->updateDisplay(&currentPose);
       }
     }
-	  
-    if (m_odometryQueue.size() == 0) {
-      usleep(250000);
-    }
+//    if (m_odometryQueue.size() == 0) {
+//      usleep(250000);
+//    }
   }
 } 
 
@@ -1453,14 +1496,20 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
     m_TOPP.addOdometry(cureOdom); 
 
     m_CurrPose = m_TOPP.getPose();
-    m_OdomPoseProxy.set_pose(m_CurrPose.getX(), m_CurrPose.getY(), 2.3, m_CurrPose.getTheta(), 0, 0);
+    if (m_usePeekabot) {
+      m_OdomPoseProxy.set_pose(m_CurrPose.getX(), m_CurrPose.getY(), 2.3, m_CurrPose.getTheta(), 0, 0);
+    }
     debug("unlock receiveOdometry");
   }
 	
   {
     IceUtil::Mutex::Lock lock(m_OdomQueueMutex);
-    if (m_odometryQueue.size() == 0)
+    if (m_odometryQueue.size() == 0) {
         m_odometryQueue.push_back(cureOdom);
+    }
+    else {
+      m_odometryQueue.front() = cureOdom;
+    }
   }
 }
 
@@ -1475,7 +1524,9 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
                  // to be ready
     
     {
-      IceUtil::Mutex::Lock lock(m_taskStatusMutex); // acquire mutex!
+      {
+	IceUtil::Mutex::Lock lock(m_taskStatusMutex); // acquire mutex!
+      }
 
       if(m_taskStatus == TaskFinished){
 	// report final status
@@ -1681,7 +1732,9 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 
     }
 
-    m_LMap.moveRobot(m_CurrPose);
+    {
+      m_LMap.moveRobot(m_CurrPose);
+    }
 
   static cast::cdl::CASTTime oldTime = getCASTTime();
   cast::cdl::CASTTime newTime = getCASTTime();
@@ -1708,7 +1761,10 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
     debug("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
   }
 
+    {
+      SCOPED_TIME_LOG;
     Cure::NewNavController::updateCtrl();
+    }
 
   } // if (m_ready)    
 }
@@ -1846,17 +1902,20 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
   debug("execCtrl sending (v=%fm/s,w=%frad/s) to RobotServer", cmd.speed, cmd.rotspeed);
   
+  SCOPED_TIME_LOG;
   m_RobotServer->execMotionCommand(cmd);
 }
 
 /* Fills map with an expanded version of gridmap, where unknown space is
    also set as obstacles */
-void SpatialControl::getExpandedBinaryMap(Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, bool lockMapsMutex = true) const {
+void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const {
   
 //  if(lockMapsMutex) {
 //
 //    m_MapsMutex.lock();
 //    }
+
+  //FIXME: Don't reallocate every time!
 
   int gridmapSize = gridmap->getSize();
 
@@ -1903,7 +1962,7 @@ void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &fronti
 //  //Mutual exclusion vs. changes to m_lgm in updateGridMaps
 //  IceUtil::Mutex::Lock lock(m_MapsMutex); 
 
-  getExpandedBinaryMap(m_lgm, map, false);
+  getExpandedBinaryMap(m_lgm, map);
 
   for(std::list<Cure::FrontierPt>::iterator it = frontiers.begin();
       it != frontiers.end(); ++it) {
@@ -1994,7 +2053,7 @@ int SpatialControl::findClosestNode(double x, double y) {
   Cure::BinaryMatrix map;
 
   // Mutual exclusion vs. changes to m_lgm in the main loop (updateGridMaps)
-  IceUtil::Mutex::Lock lock(m_MapsMutex);
+//  IceUtil::Mutex::Lock lock(m_MapsMutex);
 
   // Get the expanded binary map used to search 
   getExpandedBinaryMap(m_lgm, map);
@@ -2085,7 +2144,7 @@ int SpatialControl::findClosestPlace(double x, double y, const SpatialData::Node
     for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
       try {
           bool b=true;
-          for (int g = 0; (g < nodeids.size()) && b; g++)
+          for (size_t g = 0; (g < nodeids.size()) && b; g++)
               if (nodeids[g]==((*nodeIt)->nodeId)) b=false;
 
           if (!b) {
@@ -2158,7 +2217,7 @@ vector<double> SpatialControl::getGridMapRaytrace(double startAngle, double angl
   return raytrace;
 }
 
-void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, Cure::LocalGridMap<unsigned char>* gridmap, double minx, double maxx, double miny, double maxy) {
+void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char>* gridmap, double minx, double maxx, double miny, double maxy) const {
   int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
   int lgmsize = gridmap->getSize(); // Size of real gridmap
 
@@ -2209,13 +2268,13 @@ SpatialControl::getFrontiers()
   log("SpatialControl::getFrontiers() called");
 
   // Mutual exclusion vs. changes to m_lgm in main thread
-  m_MapsMutex.lock();
+//  m_MapsMutex.lock();
 
   while (!m_firstScanAdded) {
     log("  Waiting for first scan to be added...");
-    m_MapsMutex.unlock();
+//    m_MapsMutex.unlock();
     usleep(1000000);
-    m_MapsMutex.lock();
+//    m_MapsMutex.lock();
   }
 
   m_Frontiers.clear();
@@ -2253,7 +2312,7 @@ SpatialControl::getFrontiers()
     newPt->y = it->getY();
     outArray.push_back(newPt);
   }
-  m_MapsMutex.unlock();
+//  m_MapsMutex.unlock();
   log("exit getFrontiers");
   return outArray;
 }
