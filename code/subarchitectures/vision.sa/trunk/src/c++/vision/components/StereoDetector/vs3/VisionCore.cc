@@ -249,7 +249,9 @@ void VisionCore::ProcessImage(int runtime_ms, float ca, float co) //throw Except
   }
   catch (exception &e)
   {
-    printf("VisionCore::ProcessImage: unknown exception during processing of images.\n");
+    printf("********************************************************************************\n");
+    printf("[VisionCore::ProcessImage] Error: Unknown exception during processing of images.\n");
+    printf("********************************************************************************\n");
     cout << e.what() << endl;
   }
   realRuntime = timespec_diff(&cur, &start);
