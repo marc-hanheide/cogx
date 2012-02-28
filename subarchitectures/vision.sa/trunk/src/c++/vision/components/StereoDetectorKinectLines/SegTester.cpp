@@ -890,11 +890,7 @@ void SegTester::SingleShotMode()
         cv::Vec4f planeCenter3D[surfaces.size()];
         
         for(unsigned i=0; i<surfaces.size(); i++) {
-//           col[i].float_value = GetRandomColor();
           for(unsigned j=0; j<surfaces[i]->indices.size(); j++) {
-        
-//         for(size_t i=0; i<pcl_model_indices.size(); i++) {
-//           for(size_t j=0; j<pcl_model_indices[i]->indices.size(); j++) {
             cv::Vec4f pt;
             pt[0] = pcl_cloud->points[surfaces[i]->indices[j]].x;
             pt[1] = pcl_cloud->points[surfaces[i]->indices[j]].y;

@@ -229,7 +229,7 @@ void SegLearner::configure(const map<string,string> & _config)
   // eval svm
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 32);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
-//   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 9, 15);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
@@ -389,7 +389,7 @@ void SegLearner::processImageNew()
 //   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
   pclA::FilterZ(pcl_cloud, 0.3, 1.5);      // z filtering for 1.5 meters
   planeFitter->setInputCloud(pcl_cloud);
-  planeFitter->setLineCheck(true, 8);
+  planeFitter->setLineCheck(false, 8);
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
@@ -397,7 +397,7 @@ void SegLearner::processImageNew()
   for(unsigned i=0; i<surfaces.size(); i++)
     preProcessIndices.push_back(surfaces[i]->indices);
     
-  // TODO Experimental function => use setLineCheck-options
+  // TODO Experimental function => use setLineCheck-options (button 5)
 //   std::vector<int> checkPCLines;
 //   planeFitter->checkPCLines(surfaces, checkPCLines);  // TODO Should we check that here or after the modeling
 
@@ -702,14 +702,14 @@ void SegLearner::SingleShotMode()
           col[i].float_value = GetRandomColor();
         
         std::vector<cv::Vec4f> col_points;
-        cv::Vec4f planeCenter3D[pcl_model_indices.size()];
-        for(unsigned i=0; i<pcl_model_indices.size(); i++) {
-          for(unsigned j=0; j<pcl_model_indices[i]->indices.size(); j++) {
+        cv::Vec4f planeCenter3D[surfaces.size()];
+        for(unsigned i=0; i<surfaces.size(); i++) {
+          for(unsigned j=0; j<surfaces[i]->indices.size(); j++) {
             cv::Vec4f pt;
-            pt[0] = pcl_cloud->points[pcl_model_indices[i]->indices[j]].x;
-            pt[1] = pcl_cloud->points[pcl_model_indices[i]->indices[j]].y;
-            pt[2] = pcl_cloud->points[pcl_model_indices[i]->indices[j]].z;
-            int number = anno[pcl_model_indices[i]->indices[j]]-1;
+            pt[0] = pcl_cloud->points[surfaces[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[surfaces[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[surfaces[i]->indices[j]].z;
+            int number = anno[surfaces[i]->indices[j]]-1;
             pt[3] = col[number].float_value;
             planeCenter3D[i][0] = planeCenter3D[i][0] + pt[0];
             planeCenter3D[i][1] = planeCenter3D[i][1] + pt[1];
@@ -722,13 +722,13 @@ void SegLearner::SingleShotMode()
 
         // Add labels
         if(labels) {
-          for(size_t i=0; i<pcl_model_indices.size(); i++) {
+          for(size_t i=0; i<surfaces.size(); i++) {
             char label[5];
             snprintf(label, 5, "%lu", i);
             tgRenderer->AddLabel3D(label, 14, 
-                                    planeCenter3D[i][0]/pcl_model_indices[i]->indices.size(), 
-                                    planeCenter3D[i][1]/pcl_model_indices[i]->indices.size(), 
-                                    planeCenter3D[i][2]/pcl_model_indices[i]->indices.size());
+                                    planeCenter3D[i][0]/surfaces[i]->indices.size(), 
+                                    planeCenter3D[i][1]/surfaces[i]->indices.size(), 
+                                    planeCenter3D[i][2]/surfaces[i]->indices.size());
           }
         }
         tgRenderer->Update();

@@ -89,7 +89,7 @@ private:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_model_cloud;   ///< PCL point cloud with points projected to model
   
   int nr_anno;                                              ///< Number of annotated objects
-  std::vector<int> anno;                                    ///< Annotation of all pcl_model_indices
+  std::vector<int> anno;                                    ///< Annotation of all pcl_model_indices (starting with 1?)
   std::vector<bool> texture;                                ///< Texture on 2D image space
 
   std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
