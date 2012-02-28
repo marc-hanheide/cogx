@@ -48,6 +48,11 @@ class PresupposedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dB
 class AssertedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
 };
 
+// Dora subclasses
+
+class HypotheticalBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
+};
+
 // GeorgeY4 belief subclasses
 
 class PrivateBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
