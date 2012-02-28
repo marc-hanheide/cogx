@@ -165,7 +165,7 @@ void CPcGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
 {
    if (mbGrabPoints) {
       CGrabbedPcPoints *pPoints = new CGrabbedPcPoints();
-      getPoints(true, 640, pPoints->mPoints);
+      getPoints(true, 320, pPoints->mPoints);
       printf(" ***** getPoints: %ld\n", pPoints->mPoints.size());
       mLastPoints = CGrabbedItemPtr(pPoints);
       items.push_back(mLastPoints);
@@ -223,6 +223,17 @@ void CPcGrabClient::getPreviews(std::vector<CPreview>& previews,
 }
 
 #ifdef FEAT_VISUALIZATION
+void CPcGrabClient::configExtraV11n(cogx::display::CDisplayClient& display)
+{
+   std::string devid = "pc." + _str_(mId) + ".2";
+   std::ostringstream ss;
+   ss <<  "function render()\nend\n"
+      << "setCamera('ppo.robot.head', -1.0, 0, 3.0, 1, 0, -1, 0, 0, 1)\n"
+      << "setCamera('ppo.robot.front', 4.0, 0, 4.0, -1, 0, -1, 0, 0, 1)\n"
+      << "setCamera('ppo.points.top', 0, 0, 4.0, 0, 0, -1, -1, 0, 0)\n";
+   display.setLuaGlObject("grab." + devid, "cameras", ss.str());
+}
+
 void CPcGrabClient::displayExtra(cogx::display::CDisplayClient& display)
 {
     castutils::CMilliTimer tm(true);
@@ -480,6 +491,9 @@ void CVideoGrabber::start()
    for(unsigned int i = 0; i < m_pointcloud.size(); i++) {
       pPc = m_pointcloud[i];
       pPc->startPcComm(*this);
+#ifdef FEAT_VISUALIZATION
+      pPc->configExtraV11n(m_display);
+#endif
    }
 #endif
 }

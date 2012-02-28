@@ -109,6 +109,9 @@ public:
    virtual void grab(std::vector<CGrabbedItemPtr>& items) = 0;
    virtual void getPreviews(std::vector<CPreview>& items, int width, int height, bool isGrabbing) = 0;
 #ifdef FEAT_VISUALIZATION
+   virtual void configExtraV11n(cogx::display::CDisplayClient& display)
+   {
+   }
    virtual void displayExtra(cogx::display::CDisplayClient& display)
    {
    }
@@ -171,6 +174,7 @@ public:
    virtual void getPreviews(std::vector<CPreview>& previews,
          int width, int height, bool isGrabbing) /*override*/;
 #ifdef FEAT_VISUALIZATION
+   virtual void configExtraV11n(cogx::display::CDisplayClient& display) /*override*/;
    virtual void displayExtra(cogx::display::CDisplayClient& display) /*override*/;
 #endif
 };
