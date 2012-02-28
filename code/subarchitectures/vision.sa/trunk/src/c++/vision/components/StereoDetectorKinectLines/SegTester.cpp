@@ -269,9 +269,9 @@ void SegTester::configure(const map<string,string> & _config)
 printf("DEBUG: Init svm-predictor\n");
   /// init svm-predictor
   std::vector<const char*> files;
-  const char* file = "./instantiations/11-05-11/12-02-25/PP-Trainingsset.txt.scaled.model";
+  const char* file = "./instantiations/11-05-11/12-02-28-2/PP-Trainingsset.txt.scaled.model";
   files.push_back(file);
-  const char *file2 = "./instantiations/11-05-11/12-02-25/PP2-Trainingsset.txt.scaled.model";
+  const char *file2 = "./instantiations/11-05-11/12-02-28-2/PP2-Trainingsset.txt.scaled.model";
   files.push_back(file2);
 cout << "DEBUG: Init svm-predictor: set predictor" << endl;
 cout << flush;
@@ -279,9 +279,9 @@ cout << flush;
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 cout << flush;
   std::vector<const char*> param_files;
-  const char* pfile = "./instantiations/11-05-11/12-02-25/param_1.txt";
+  const char* pfile = "./instantiations/11-05-11/12-02-28-2/param.txt";
   param_files.push_back(pfile);
-  const char* pfile2 = "./instantiations/11-05-11/12-02-25/param_2.txt";
+  const char* pfile2 = "./instantiations/11-05-11/12-02-28-2/param.txt";
   param_files.push_back(pfile2);
 cout << "DEBUG: Init svm-predictor: set N scaling" << endl;
 cout << flush;
