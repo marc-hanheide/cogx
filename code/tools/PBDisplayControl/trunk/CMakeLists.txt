@@ -1,4 +1,12 @@
+cmake_minimum_required (VERSION 2.6)
+
 PROJECT(PBDisplayControl)
+
+# add_subdirectory (src/c++/autogen)
+if (DO_SLICE_ONLY)
+   return()
+endif()
+
 find_package(PkgConfig)
 
 pkg_check_modules(GTKMM gtkmm-2.4)
