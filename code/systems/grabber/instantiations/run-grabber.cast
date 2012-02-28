@@ -1,19 +1,32 @@
+OPTDEFAULT hardware=<multiline>
+   video0
+   !video1
+   kinect
+</multiline>
 
-SETVAR v4l_cameras=0 1
-VARDEFAULT v4l_config=<multiline>
+IFOPTANY(%(hardware),video0)
+   SETVAR v4l_cameras=0 1
+   VARDEFAULT v4l_config=<multiline>
    --devnums "0 1"
    --imgsize "640 480"
    #--imgsize "800 600"
    #--imgsize "1280 960"
-</multiline>
+   </multiline>
+ENDIF
 
-# SETVAR firewire_cameras=1
-# VARDEFAULT firewire_config=<multiline>
-#    --devnums "1"
-#    #--imgsize "640 480"
-#    #--imgsize "800 600"
-#    --imgsize "1280 960"
-# </multiline>
+IFOPTANY(%(hardware),video1)
+   # SETVAR firewire_cameras=1
+   # VARDEFAULT firewire_config=<multiline>
+   #    --devnums "1"
+   #    #--imgsize "640 480"
+   #    #--imgsize "800 600"
+   #    --imgsize "1280 960"
+   # </multiline>
+ENDIF
 
+IFOPTANY(%(hardware),kinect)
+   SETVAR kinect_pc_camera=3
+   SETOPT kinect_pc_grab=points !depth rectimg
+ENDIF
 
 INCLUDE grabber.cast
