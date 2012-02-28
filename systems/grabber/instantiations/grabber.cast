@@ -30,6 +30,7 @@ VARDEFAULT kinect_pc_config=<multiline>
    --camconfigs "%(kinect_config_file)"
    --displayserver "display.srv"
 </multiline>
+OPTDEFAULT kinect_pc_grab=points !depth !rectimg
 
 VARDEFAULT kinect_video_camera=
 VARDEFAULT kinect_video_config=<multiline>
@@ -86,6 +87,7 @@ IFNEQ(%(kinect_pc_camera),)
       %(kinect_pc_config)
       --camids "%(kinect_pc_camera)"
    </multiline>
+   #EXPAND kpcparams=%(kpcparams)
    CPP MG PcServer.k KinectPCServer %(kpcparams)
 ENDIF
 
@@ -112,6 +114,21 @@ IFNEQ(%(kinect_pc_camera),)
    #   --pcgrabdepth.k  "false"
    #   --pcgrabrect.k   "false"
    SETVAR vgparams=%(vgparams) --pcserver.k "PcServer.k"
+   IFOPTANY (%(kinect_pc_grab),points)
+      SETVAR vgparams=%(vgparams) --pcgrabpoints.k "true"
+   ELSE
+      SETVAR vgparams=%(vgparams) --pcgrabpoints.k "false"
+   ENDIF
+   IFOPTANY (%(kinect_pc_grab),depth)
+      SETVAR vgparams=%(vgparams) --pcgrabdepth.k "true"
+   ELSE
+      SETVAR vgparams=%(vgparams) --pcgrabdepth.k "false"
+   ENDIF
+   IFOPTANY (%(kinect_pc_grab),rectimg)
+      SETVAR vgparams=%(vgparams) --pcgrabrect.k "true"
+   ELSE
+      SETVAR vgparams=%(vgparams) --pcgrabrect.k "false"
+   ENDIF
 ENDIF
 
 CPP MG grabber VideoGrabber %(vgparams)
