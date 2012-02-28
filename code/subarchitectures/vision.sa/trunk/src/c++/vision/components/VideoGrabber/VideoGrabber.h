@@ -92,51 +92,68 @@ typedef std::shared_ptr<CGrabbedItem> CGrabbedItemPtr;
 
 class CDataSource
 {
-public:
-   virtual void grab(std::vector<CGrabbedItemPtr>& items) = 0;
-   virtual void getPreviews(std::vector<CPreview>& items, int width, int height, bool isGrabbing) = 0;
-};
-
-class CVideoGrabClient: public Video::CVideoClient2, public CDataSource
-{
    static int count;
+protected:
    int mId;
+
 public:
-   CVideoGrabClient()
+   CDataSource()
    {
       mId = count;
       ++count;
    }
-   ~CVideoGrabClient()
+   virtual ~CDataSource()
    {
       --count;
    }
+   virtual void grab(std::vector<CGrabbedItemPtr>& items) = 0;
+   virtual void getPreviews(std::vector<CPreview>& items, int width, int height, bool isGrabbing) = 0;
+#ifdef FEAT_VISUALIZATION
+   virtual void displayExtra(cogx::display::CDisplayClient& display)
+   {
+   }
+#endif
+};
+
+class CVideoGrabClient: public Video::CVideoClient2, public CDataSource
+{
+public:
    virtual void grab(std::vector<CGrabbedItemPtr>& items) /*override*/;
    virtual void getPreviews(std::vector<CPreview>& previews,
          int width, int height, bool isGrabbing) /*override*/;
 };
 
-class CGrabbedImage: public CGrabbedItem
+class CGrabbedCachedImage: public CGrabbedItem
 {
 private:
    friend class CVideoGrabClient;
    Video::CCachedImagePtr mpImage;
 public:
-   CGrabbedImage(Video::CCachedImagePtr& pimage)
+   CGrabbedCachedImage(Video::CCachedImagePtr& pimage)
    {
       mpImage = pimage;
    }
    virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 
-#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
-class PcClient: public cast::PointCloudClient, public CDataSource
+class CGrabbedImage: public CGrabbedItem
 {
+public:
+   Video::Image mImage;
+   virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
+};
+
+#ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+class CPcGrabClient: public cast::PointCloudClient, public CDataSource
+{
+   CGrabbedItemPtr mLastPoints;
+   CGrabbedItemPtr mLastDepth;
+   CGrabbedItemPtr mLastRectImage;
 public:
    bool mbGrabPoints;
    bool mbGrabDepth;
    bool mbGrabRectImage;
-   PcClient(): cast::PointCloudClient()
+   CPcGrabClient(): cast::PointCloudClient()
    {
       mbGrabPoints = true;
       mbGrabDepth = false;
@@ -150,13 +167,22 @@ public:
    {
       startPCCServerCommunication(owner);
    };
-   virtual void grab(std::vector<CGrabbedItemPtr>& items) /*override*/
-   {
-   }
+   virtual void grab(std::vector<CGrabbedItemPtr>& items) /*override*/;
    virtual void getPreviews(std::vector<CPreview>& previews,
-         int width, int height, bool isGrabbing) /*override*/
-   {
-   }
+         int width, int height, bool isGrabbing) /*override*/;
+#ifdef FEAT_VISUALIZATION
+   virtual void displayExtra(cogx::display::CDisplayClient& display) /*override*/;
+#endif
+};
+
+class CGrabbedPcPoints: public CGrabbedItem
+{
+private:
+   friend class CPcGrabClient;
+   std::vector<PointCloud::SurfacePoint> mPoints;
+public:
+   CGrabbedPcPoints();
+   virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 #endif
 
@@ -170,7 +196,7 @@ private:
 
    std::vector<CVideoGrabClient*> m_video;
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
-   std::vector<PcClient*> m_pointcloud;
+   std::vector<CPcGrabClient*> m_pointcloud;
 #endif
    CRecordingInfo m_RecordingInfo;
    bool m_fakeRecording;
