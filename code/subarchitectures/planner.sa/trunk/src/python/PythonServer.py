@@ -518,6 +518,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       entries = [Planner.BeliefEntry(self.address_dict.get(b.id, temp_address), b) for b in beliefs]
       self.getClient().updateBeliefState(entries)
 
+  def newAddress(self):
+      return self.getClient().newAddress()
+
   def verbalise(self, phrase):
       self.getClient().verbalise(phrase)
       

@@ -54,6 +54,7 @@ protected:
         virtual void waitForChanges(int id, int timeout, const Ice::Current&);
         virtual bool queryGoal(const std::string& goal, const Ice::Current&);
         virtual void verbalise(const std::string& phrase, const Ice::Current&);
+        virtual cast::cdl::WorkingMemoryAddress newAddress(const Ice::Current&);
 
     protected:
         WMControl* parent;

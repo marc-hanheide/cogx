@@ -11,7 +11,7 @@ cast_slice2cpp(GEN_CPP GEN_HPP Planner.ice ${CAST_SLICE_DIR}
   ${COGX_ROOT}/tools/beliefs/apis/beliefs+cast/src/slice)
 
 add_library(Planner SHARED ${GEN_CPP})
-target_link_libraries(Planner Beliefs BeliefsCAST)
+target_link_libraries(Planner Beliefs BeliefsCAST BeliefsCogX)
 target_link_libraries(Planner CDL)
 install(TARGETS Planner LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 

@@ -3,6 +3,7 @@ from os.path import abspath, join
 from collections import defaultdict
 
 from de.dfki.lt.tr.beliefs.slice import logicalcontent
+from eu.cogx.beliefs.slice import HypotheticalBelief
 from autogen import Planner
 import cast.cdl
 
@@ -126,7 +127,6 @@ class CASTTask(object):
         self.fail_count = defaultdict(lambda: 0)
         self.failure_simulated = False
         self.expl_rules_fn = args.get('expl_rules_fn', None)
-        self.temp_addr_index = 0
 
         self.load_domain(domain_fn)
 
@@ -654,8 +654,10 @@ class CASTTask(object):
                 new_n.preconds = set()
                 add_node(new_n)
                 for eff in new_n.effects:
+                    print "effect:", eff
                     if eff.svar in written:
                         real_p, expected_val = written[eff.svar]
+                        print eff.svar,":", real_p, expected_val
                         if new_st.get_extended_state([eff.svar])[eff.svar] == expected_val: #handle axioms
                             continue
                         assert eff.value != expected_val
@@ -829,7 +831,9 @@ class CASTTask(object):
 
 
         about_func = pddl.Function("about", [pddl.Parameter("?o", pddl.t_object)], pddl.t_object)
-        
+
+        new_objects = set()
+
         for o in obj_to_feature.keys():
             if is_virtual_object(o):
                 for f in self.state.state.iterfacts():
@@ -841,10 +845,10 @@ class CASTTask(object):
                         else:
                             obj_to_relation[o].add(f)
 
-                new_id = "0:%s" % NEW_IDS[self.temp_addr_index]
-                self.temp_addr_index += 1
-                self.state.obj_to_castname[o] = new_id
-                self.state.address_dict[new_id] = cast.cdl.WorkingMemoryAddress(new_id, "temporary")
+                new_objects.add(o)
+                wma = self.component.newAddress()
+                self.state.obj_to_castname[o] = wma.id
+                self.state.address_dict[wma.id] = wma
             else:
                 about_fact =  pddl.state.Fact(pddl.state.StateVariable(about_func, [o]), o)
                 obj_to_feature[o].add(about_fact)
@@ -856,8 +860,13 @@ class CASTTask(object):
             obj_facts = itertools.chain(vals, obj_to_relation.get(o, []))
             print "  %s: %s" % (str(o), ", ".join(str(f) for f in obj_facts))
             features = sum((self.state.make_features(f) for f in vals), [])
-            bel = self.state.make_belief(features)
-            bel.id = self.state.obj_to_castname[o]
+            bel = self.state.make_belief(features, HypotheticalBelief)
+            bel.type = o.type.name
+            if o in new_objects:
+                # use the previously generated id for new objects
+                bel.id = self.state.obj_to_castname[o]
+            else:
+                bel.id = self.component.newAddress().id
             yield bel
             
         for o, vals in obj_to_relation.iteritems():
@@ -865,7 +874,9 @@ class CASTTask(object):
                 print "  %s: %s" % (str(o), ", ".join(str(f) for f in vals))
 
             for f in vals:
-                yield self.state.make_belief(self.state.make_features(f))
+                bel = self.state.make_belief(self.state.make_features(f), HypotheticalBelief)
+                bel.id = self.component.newAddress().id
+                yield bel
 
 
     def process_cp_plan(self):
