@@ -23,27 +23,42 @@ endif(USE_CCACHE)
 project (CogX)
 
 # (mmarko, 2012-02-22)
+# cogx_add_subdir(optname subdir [has_slice])
+#   Add the subdirectory 'subdir' to the project if the value of the option
+#   'optname' is true. The optional parameter 'has_slice' (default=TRUE) prevents
+#   the addition of the subdirectory when only slice files are built (DO_SLICE_ONLY=TRUE).
 option(DO_SLICE_ONLY "Generate and compile slice libs, but nothing else." NO)
 option(DO_SLICE_DISABLED "Generate and compile slice libs for disabled directories" YES)
 macro(cogx_add_subdir optname dir)
+   if (${ARGC} GREATER 2)
+      set(subdir_HAS_SLICE ${ARGV2})
+   else()
+      set(subdir_HAS_SLICE TRUE)
+   endif()
+
    set(JAVA_${optname} ${${optname}})
    if (${optname})
-      # message(" ++++ ${optname} ${${optname}} " ${dir})
-      add_subdirectory (${dir})
-   elseif(DO_SLICE_DISABLED)
-      # message(" +--- ${optname} ${${optname}} " ${dir})
+      if (NOT DO_SLICE_ONLY OR subdir_HAS_SLICE)
+         message(STATUS " ++++ ${optname}=${${optname}}, BUILD ${dir}")
+         add_subdirectory (${dir})
+      endif()
+   elseif(DO_SLICE_DISABLED AND subdir_HAS_SLICE)
+      message(STATUS " +--- ${optname}=${${optname}}, SLICE-CPP ${dir}")
       set(save_DO_SLICE_ONLY ${DO_SLICE_ONLY})
       set(DO_SLICE_ONLY YES)
       add_subdirectory (${dir})
       set(DO_SLICE_ONLY ${save_DO_SLICE_ONLY})
 
       if(DO_SLICE_ONLY)
-         # set to ON only if the ant target compile-slice will be called
+         # set to ON only if the 'compile-slice' ant target will be called (when DO_SLICE_ONLY=TRUE)
+         message(STATUS " +--- ${optname}=${${optname}}, SLICE-JAVA ${dir}")
          set(JAVA_${optname} ON)
       endif()
    endif()
 endmacro()
-set(ALWAYS YES)
+set(ALWAYS ON)
+set(HAS_SLICE TRUE)
+set(NO_SLICE FALSE)
 
 
 # (mmarko, 2012-01-03)
@@ -107,7 +122,7 @@ if(EXISTS ${COGX_ROOT}/tools/castutils)
 endif()
 
 if(EXISTS ${COGX_ROOT}/tools/d-lib)
-   cogx_add_subdir(ALWAYS tools/d-lib)
+   cogx_add_subdir(ALWAYS tools/d-lib ${NO_SLICE})
 endif()
 
 
@@ -130,7 +145,7 @@ if (EXISTS ${COGX_ROOT}/tools/rocs)
       # Set the directory where ROCS should be installed
       set(ROCS_DIR ${OUTPUT}/rocs)
       # Finally, add ROCS
-      cogx_add_subdir(BUILD_ROCS tools/rocs)
+      cogx_add_subdir(BUILD_ROCS tools/rocs ${NO_SLICE})
       get_directory_property(ROCS_SRC_INCLUDES DIRECTORY tools/rocs INCLUDE_DIRECTORIES)
       message(STATUS ${ROCS_SRC_INCLUDES})
    endif()
@@ -245,12 +260,12 @@ endif()
 
 if (EXISTS ${COGX_ROOT}/tools/hardware/utils)
    option(BUILD_HAL_UTILS "Build hardware utils" YES)
-   cogx_add_subdir(BUILD_HAL_UTILS tools/hardware/utils)
+   cogx_add_subdir(BUILD_HAL_UTILS tools/hardware/utils ${NO_SLICE})
 endif()
 
 if (EXISTS ${COGX_ROOT}/tools/hardware/tests)
    option(BUILD_HAL_TESTS "Build hardware tests" NO)
-   cogx_add_subdir(BUILD_HAL_TESTS tools/hardware/tests)
+   cogx_add_subdir(BUILD_HAL_TESTS tools/hardware/tests ${NO_SLICE})
 endif()
 
 if (EXISTS ${COGX_ROOT}/tools/math)
@@ -265,7 +280,7 @@ endif()
 
 if (EXISTS ${COGX_ROOT}/tools/PBDisplayControl)
    option(BUILD_PB_DISPLAY "Build PBDisplayControl" YES)
-   cogx_add_subdir (BUILD_PB_DISPLAY tools/PBDisplayControl)
+   cogx_add_subdir (BUILD_PB_DISPLAY tools/PBDisplayControl ${NO_SLICE})
 endif()
 
 #option(BUILD_HAL_STEREO "Build hardware stereo" NO)
@@ -314,7 +329,7 @@ endif()
 
 if (EXISTS ${COGX_ROOT}/tools/syscalb)
    option(BUILD_CALIB "Build system calibration tools" YES)
-   cogx_add_subdir(BUILD_CALIB tools/syscalb)
+   cogx_add_subdir(BUILD_CALIB tools/syscalb ${NO_SLICE})
 endif()
 
 if (EXISTS ${COGX_ROOT}/tools/gripper)
