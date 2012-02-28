@@ -236,9 +236,12 @@ void SegLearner::configure(const map<string,string> & _config)
   /// IROS annotation
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
-  annotation->init("/media/Daten/OD-IROS/annotation/occlusions%1d.png", 0, 14);
+//   annotation->init("/media/Daten/OD-IROS/annotation/occlusions%1d.png", 0, 14);
 //   annotation->init("/media/Daten/OD-IROS/annotation/box_world%1d.png", 0, 15);
 
+  /// IROS komplett
+  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
 
   /// init patch class
   patches = new surface::Patches();
@@ -341,7 +344,13 @@ void SegLearner::GetImageData()
  *  @brief Process data from stereo or Kinect.
  */
 void SegLearner::processImageNew()
-{
+{ 
+  static struct timespec overallStart, overallEnd;
+  static bool first = true;
+  if(first)
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallStart);
+  first = false;
+  
   surfaces.clear();
   
   static struct timespec start, last, current;
@@ -480,8 +489,11 @@ void SegLearner::processImageNew()
     if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
     if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
   }
-  
-  cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
+  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallStart, &overallEnd), (double)timespec_diff(&overallStart, &overallEnd)/60.);
+  printf("\n");
+//   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
 
