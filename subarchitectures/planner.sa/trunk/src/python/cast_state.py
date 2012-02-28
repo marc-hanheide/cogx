@@ -765,7 +765,7 @@ class CASTState(object):
         return value
 
 
-    def make_belief(self, features):
+    def make_belief(self, features, _class = bm.sitbeliefs.dBelief):
         frame = bm.framing.SpatioTemporalFrame()
         eps = bm.epstatus.PrivateEpistemicStatus("robot")
         hist = bm.history.CASTBeliefHistory([], [])
@@ -775,7 +775,7 @@ class CASTState(object):
             dist_dict[dist.key] = dist
             
         dist = distribs.CondIndependentDistribs(dist_dict)
-        result = bm.sitbeliefs.dBelief(frame, eps, "temporary", "relation", dist, hist)
+        result = _class(frame, eps, "temporary", "relation", dist, hist)
         return result
 
     def make_features(self, fact):

@@ -35,6 +35,7 @@ module autogen {
 
     sequence<BeliefEntry> BeliefEntrySeq;
     sequence<de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief> BeliefSeq;
+    sequence<cast::cdl::WorkingMemoryAddress> AddressSeq;
 
     class StateChangeFilter {
       BeliefEntrySeq removeFilter;
@@ -100,7 +101,7 @@ module autogen {
       int executionRetries;
       Completion planningStatus;
       int planningRetries;
-      BeliefSeq hypotheses;
+      AddressSeq hypotheses;
     };
     
     class Observation{
@@ -195,6 +196,7 @@ module autogen {
       void waitForChanges(int id, int timeout);
       bool queryGoal(string goal);
       void verbalise(string phrase);
+      cast::cdl::WorkingMemoryAddress newAddress();
     };
 
     interface PythonServer extends cast::interfaces::CASTComponent

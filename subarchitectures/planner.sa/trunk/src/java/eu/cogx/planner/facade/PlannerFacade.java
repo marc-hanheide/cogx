@@ -21,6 +21,7 @@ import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryOperation;
+import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMEntryQueue;
 import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
 import castutils.experimentation.StopWatch;
@@ -160,7 +161,7 @@ public class PlannerFacade {
 	 */
 	public static PlanningTask newPlanningTask() {
 		return new PlanningTask(0, null, false, new Action[0], 0, "",
-                                Completion.PENDING, 0, Completion.PENDING, 0, new dBelief[0]);
+                                Completion.PENDING, 0, Completion.PENDING, 0, new WorkingMemoryAddress[0]);
 	}
 
 	public static PlanningTask newPlanningTask(List<Goal> goals) {

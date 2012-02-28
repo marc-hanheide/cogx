@@ -340,8 +340,10 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
             BeliefEntry entry;
             entry.address = wmc.address;
             entry.belief = getMemoryEntry<dBelief>(wmc.address);
-            m_currentState[wmc.address.id] = entry;
-            log("%s->id = %s", wmc.address.id.c_str(), entry.belief->id.c_str());
+            if (!dynamic_cast<HypotheticalBelief*>(entry.belief.get())) {
+                m_currentState[wmc.address.id] = entry;
+                log("%s->id = %s", wmc.address.id.c_str(), entry.belief->id.c_str());
+            }
         }
         catch(cast::DoesNotExistOnWMException) {
             log("%s vanished.", wmc.address.id.c_str());
@@ -458,7 +460,14 @@ void WMControl::deliverHypotheses(int id, const BeliefSeq& hypotheses) {
 
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
     task->executionStatus = FAILED;
-    task->hypotheses = hypotheses;
+    task->hypotheses = vector<WorkingMemoryAddress>();
+    BOOST_FOREACH(dBeliefPtr belief, hypotheses) {
+        WorkingMemoryAddress wma;
+        wma.id = belief->id;
+        wma.subarchitecture = subarchitectureID();
+        addToWorkingMemory(wma, belief);
+        task->hypotheses.push_back(wma);
+    }
 
     overwriteWorkingMemory(activeTasks[id], task);
 }
@@ -632,4 +641,11 @@ bool WMControl::InternalCppServer::queryGoal(const string& goal, const Ice::Curr
 
 void WMControl::InternalCppServer::verbalise(const string& phrase, const Ice::Current&) {
     return parent->verbalise(phrase);
+}
+
+WorkingMemoryAddress WMControl::InternalCppServer::newAddress(const Ice::Current&) {
+    WorkingMemoryAddress wma;
+    wma.id = parent->newDataID();
+    wma.subarchitecture = parent->subarchitectureID();
+    return wma;
 }
