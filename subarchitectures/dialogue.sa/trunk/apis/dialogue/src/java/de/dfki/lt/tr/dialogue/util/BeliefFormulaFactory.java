@@ -90,4 +90,14 @@ public abstract class BeliefFormulaFactory {
 		return pF;
 	}
 
+	public static dFormula maybeNegatedElementaryFormula(String proposition, boolean isNegated) {
+		ElementaryFormula elem = new ElementaryFormula(0, proposition);
+		if (isNegated) {
+			return new NegatedFormula(0, elem);
+		}
+		else {
+			return elem;
+		}
+	}
+
 }
