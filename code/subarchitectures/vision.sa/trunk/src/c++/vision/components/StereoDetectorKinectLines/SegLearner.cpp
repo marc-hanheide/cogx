@@ -234,8 +234,10 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
   /// IROS annotation
-  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+  annotation->init("/media/Daten/OD-IROS/annotation/occlusions%1d.png", 0, 14);
+//   annotation->init("/media/Daten/OD-IROS/annotation/box_world%1d.png", 0, 15);
 
 
   /// init patch class
@@ -389,7 +391,7 @@ void SegLearner::processImageNew()
 //   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
   pclA::FilterZ(pcl_cloud, 0.3, 1.5);      // z filtering for 1.5 meters
   planeFitter->setInputCloud(pcl_cloud);
-  planeFitter->setLineCheck(false, 8);
+  planeFitter->setLineCheck(true, 8);                                                                                          /// TODO Line-Checker wieder einschalten
   planeFitter->compute();
   planeFitter->getSurfaceModels(surfaces);
   planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
