@@ -242,6 +242,8 @@ void CPcGrabClient::displayExtra(cogx::display::CDisplayClient& display)
     CGrabbedPcPoints* pPoints = dynamic_cast<CGrabbedPcPoints*>(points.get());
     if (!pPoints)
        return;
+    if (!pPoints->mPoints.size())
+       return;
 
     int pointCnt = 0;
     std::ostringstream str;
