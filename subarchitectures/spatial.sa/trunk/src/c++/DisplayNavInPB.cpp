@@ -1897,7 +1897,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 }
 
 void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
-  log("Entered movePlace");
+    log("Entered movePlace");
 	FrontierInterface::NodeHypothesisPtr nodePtr;
 	try
 	{
@@ -1907,36 +1907,46 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 	catch(CASTException &e)
 	{
 		log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
-    debug("Exited movePlace");
+        debug("Exited movePlace");
 		return;
 	}
 
 		if (m_ShowPlaceholders)
 		{
+    log("1");
             	        
             peekabot::CubeProxy sp;
 	        char name[32];
 	        sprintf(name, "node_hyp%ld", (long)nodePtr->hypID);
 	        peekabot::Status s = sp.assign(m_ProxyNodes, name).status();
+    log("2");
 
             if( s.succeeded() ){
 
 		        sp.set_position(nodePtr->x,nodePtr->y,0);
                 FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+    log("3");
 
 			    if (m_ShowLabels)
 			    {
-                    int pid = piPrx->getPlaceFromHypID(nodePtr->hypID)->id;
-				    // Delete ID text
-				    peekabot::LabelProxy text;
-				    char buf[32];
-				    sprintf(buf, "%d", pid);
-				    text.assign(m_ProxyLabels, buf);
-				    text.set_position(nodePtr->x,nodePtr->y,0);
+                    SpatialData::PlacePtr placePtr = piPrx->getPlaceFromHypID(nodePtr->hypID);
+    log("4");
+
+                    if (placePtr){
+                        int pid = placePtr->id;
+				        // Delete ID text
+    log("5");
+			
+            	        peekabot::LabelProxy text;
+				        char buf[32];
+				        sprintf(buf, "%d", pid);
+				        text.assign(m_ProxyLabels, buf);
+				        text.set_position(nodePtr->x,nodePtr->y,0);
+                    }
 
 			    }
 
-
+    log("6");
                   int nodeId;
                   int originPlaceID;
                   double hypX, hypY;
@@ -1949,7 +1959,7 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
                     log("nodeHypPtr is no longer valid.\n");
                     return;
                   }
-
+    log("7");
                   double originX=0;
                   double originY=0;
                   NavData::FNodePtr fnodePtr;
@@ -1960,7 +1970,7 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
                   } catch(IceUtil::NullHandleException &e) {
                     log("Could not get origin node.\n");
                   }
-
+    log("8");
 			  if (fnodePtr) {
 //			    int parentNodeID= fnodePtr->nodeId;
 			    peekabot::PolylineProxy lcp;
@@ -1971,13 +1981,13 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
 			    lcp.set_line_style("dotted",0.5);
 			    lcp.add_vertices(points);
-
+    log("9");
 			  }
 
             }
 		}
     
-
+  log("Exited movePlace");
 }
 
 
