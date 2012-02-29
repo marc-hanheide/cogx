@@ -99,6 +99,11 @@ std::string CGrabbedItem::makeFilename(const CRecordingInfo& frameInfo, int devi
    return fullname;
 }
 
+CVideoGrabClient::CVideoGrabClient(cast::CASTComponent* pComponent)
+   : CCastLoggerMixin(pComponent)
+{
+}
+
 void CVideoGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
 {
    std::vector<Video::CCachedImagePtr> timgs;
@@ -106,6 +111,9 @@ void CVideoGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
    for(auto itt = timgs.begin(); itt != timgs.end(); itt++) {
       items.push_back(CGrabbedItemPtr(new CGrabbedCachedImage(*itt)));
       //pack.images.push_back(*itt);
+   }
+   if (getLockedCount() > 100) {
+      println(" **** Client %ld - Locked images: %ld", mId, getLockedCount());
    }
 }
 
@@ -404,7 +412,7 @@ void CVideoGrabber::configure(const map<string,string> & _config)
                   getComponentID().c_str(), sffx.c_str(), serverName.c_str()));
       }
 
-      CVideoGrabClient* pVideo = new CVideoGrabClient();
+      CVideoGrabClient* pVideo = new CVideoGrabClient(this);
       pVideo->setServer(this, serverName, camids);
       pVideo->setReceiver(new Video::CReceiverMethod<CVideoGrabber>(this, &CVideoGrabber::receiveImages));
       m_video.push_back(pVideo);
@@ -1120,8 +1128,10 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
    for (auto pitem : images) {
       pitem->save(frameInfo, devid);
       devid += pitem->numDevices();
+      log("saved");
       if (isGrabbing()) {
-         sleepComponent(20);
+         log("sleep - grabbing");
+         sleepComponent(5);
       }
    }
 }

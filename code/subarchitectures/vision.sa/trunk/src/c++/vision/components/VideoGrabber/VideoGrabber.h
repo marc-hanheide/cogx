@@ -21,6 +21,7 @@
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
 #include <PointCloudClient.h>
 #endif
+#include <castutils/CastLoggerMixin.hpp>
 
 namespace cogx
 {
@@ -63,6 +64,9 @@ public:
    virtual int numDevices()
    {
       return 1;
+   }
+   virtual ~CGrabbedItem()
+   {
    }
    virtual void save(const CRecordingInfo& recinfo, int deviceId) = 0;
 };
@@ -120,9 +124,11 @@ public:
 #endif
 };
 
-class CVideoGrabClient: public Video::CVideoClient2, public CDataSource
+class CVideoGrabClient: public Video::CVideoClient2, public CDataSource,
+   public castutils::CCastLoggerMixin
 {
 public:
+   CVideoGrabClient(cast::CASTComponent* pComponent);
    virtual void grab(std::vector<CGrabbedItemPtr>& items) /*override*/;
    virtual void getPreviews(std::vector<CPreview>& previews,
          int width, int height, bool isGrabbing) /*override*/;
