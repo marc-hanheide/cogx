@@ -2,6 +2,7 @@ OPTDEFAULT hardware=<multiline>
    video0
    !video1
    !kinect
+   !pointgrey
 </multiline>
 
 IFOPTANY(%(hardware),video0)
@@ -15,7 +16,7 @@ IFOPTANY(%(hardware),video0)
 ENDIF
 
 IFOPTANY(%(hardware),video1)
-   # SETVAR firewire_cameras=1
+   # SETVAR firewire_cameras=2
    # VARDEFAULT firewire_config=<multiline>
    #    --devclass FIREWIRE
    #    --devnums "0"
@@ -25,8 +26,22 @@ IFOPTANY(%(hardware),video1)
    # </multiline>
 ENDIF
 
+IFOPTANY(%(hardware),pointgrey)
+   SETVAR pointgrey_cameras=3 4
+   SETVAR pointgrey_config=<multiline>
+      --imgsize "640 480"
+      #--imgsize "1280 960"
+      --framerate_fps "3"
+      --camconfigs "%(cfgdir)/camcalib-left.xml %(cfgdir)/camcalib-right.xml"
+      --swapredblue
+      # --setAutPropAdj "1 1 1 1 1 0"
+      # --format7 "640 480 0 0 1 1600" 
+      # --log --debug
+   </multiline>
+ENDIF
+
 IFOPTANY(%(hardware),kinect)
-   SETVAR kinect_pc_camera=3
+   SETVAR kinect_pc_camera=5
    SETOPT kinect_pc_grab=points !depth rectimg
 ENDIF
 
