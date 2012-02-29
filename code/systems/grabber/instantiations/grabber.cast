@@ -1,4 +1,6 @@
 
+VARDEFAULT cfgdir=%(CURRENT_DIR)/config/2011-11-16
+
 HOSTNAME  Main  localhost
 
 # lists of device ids
@@ -11,7 +13,6 @@ VARDEFAULT v4l_config=
 
 # lists of device ids
 VARDEFAULT pointgrey_cameras=
-SETVAR cfgdir=%(CURRENT_DIR)/config/2011-11-16
 VARDEFAULT pointgrey_config=<multiline>
    --imgsize "1280 960"
    --framerate_fps "3"
