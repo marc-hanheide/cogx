@@ -9,7 +9,6 @@
 #include <highgui.h>
 #include <VideoUtils.h>
 #include <IceUtil/Timer.h>
-#include <castutils/Timers.hpp>
 
 #define IDOBJ_GRABBER "Video.Grabber"
 #define IDOBJ_SETTINGS "Video.Grabber.Settings"
@@ -470,6 +469,7 @@ void CVideoGrabber::configure(const map<string,string> & _config)
 void CVideoGrabber::start()
 {
 #ifdef FEAT_VISUALIZATION
+   m_displayTimer.restart();
    m_display.connectIceClient(*this);
    m_display.installEventReceiver();
    m_display.createForms();
@@ -858,6 +858,12 @@ void CVideoGrabber::destroy()
 void CVideoGrabber::sendCachedImages()
 {
 #ifdef FEAT_VISUALIZATION
+   long frameMillis = isGrabbing() ? 1200 : 300;
+   if (m_displayTimer.elapsed() < frameMillis) {
+      return;
+   }
+   m_displayTimer.restart();
+
    std::vector<CPreview> previews;
    std::vector<CDataSource*> clients;
    getClients(clients);
@@ -1114,6 +1120,9 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
    for (auto pitem : images) {
       pitem->save(frameInfo, devid);
       devid += pitem->numDevices();
+      if (isGrabbing()) {
+         sleepComponent(20);
+      }
    }
 }
 #endif

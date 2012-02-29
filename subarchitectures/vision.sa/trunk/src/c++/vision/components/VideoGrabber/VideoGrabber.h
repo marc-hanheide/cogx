@@ -16,6 +16,7 @@
 
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
+#include <castutils/Timers.hpp>
 #endif
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
 #include <PointCloudClient.h>
@@ -212,6 +213,7 @@ private:
    // copying the data to a temporary vector or Video::Image.
    IplImage* m_pDisplayCanvas; // Image for the DisplayServer
    std::vector<unsigned char> m_DisplayBuffer; // For transfering data to the server;
+   castutils::CMilliTimer m_displayTimer;
    void prepareCanvas(int width, int height);
    void releaseCanvas();
    void sendCachedImages();
