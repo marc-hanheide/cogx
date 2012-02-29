@@ -5,29 +5,34 @@ OPTDEFAULT hardware=<multiline>
    !pointgrey
 </multiline>
 
+VARDEFAULT cfgdir=%(CURRENT_DIR)/config/2011-11-16
+VARDEFAULT grab_ms=200
+
 IFOPTANY(%(hardware),video0)
    SETVAR v4l_cameras=0 1
    VARDEFAULT v4l_config=<multiline>
-   --devnums "0 1"
-   --imgsize "640 480"
-   #--imgsize "800 600"
-   #--imgsize "1280 960"
+      --devnums "0 1"
+      --imgsize "640 480"
+      #--imgsize "800 600"
+      #--imgsize "1280 960"
+      #--camconfigs "%(cfgdir)/camcalib-left.xml %(cfgdir)/camcalib-right.xml"
    </multiline>
 ENDIF
 
 IFOPTANY(%(hardware),video1)
-   # SETVAR firewire_cameras=2
+   # SETVAR firewire_cameras=2 3
    # VARDEFAULT firewire_config=<multiline>
    #    --devclass FIREWIRE
    #    --devnums "0"
    #    #--imgsize "640 480"
    #    #--imgsize "800 600"
    #    --imgsize "1280 960"
+   #    #--camconfigs "%(cfgdir)/camcalib-left.xml %(cfgdir)/camcalib-right.xml"
    # </multiline>
 ENDIF
 
 IFOPTANY(%(hardware),pointgrey)
-   SETVAR pointgrey_cameras=3 4
+   SETVAR pointgrey_cameras=4 5
    SETVAR pointgrey_config=<multiline>
       --imgsize "640 480"
       #--imgsize "1280 960"
@@ -41,7 +46,7 @@ IFOPTANY(%(hardware),pointgrey)
 ENDIF
 
 IFOPTANY(%(hardware),kinect)
-   SETVAR kinect_pc_camera=5
+   SETVAR kinect_pc_camera=6
    SETOPT kinect_pc_grab=points !depth rectimg
 ENDIF
 
