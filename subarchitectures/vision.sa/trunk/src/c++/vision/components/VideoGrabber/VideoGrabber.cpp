@@ -608,8 +608,8 @@ void CVideoGrabber::CVvDisplayClient::createForms()
 
    // Set form defaults
    setDirectory("xdata/grab/%m");
-   setImageFilenamePatt("image%c-%d.png");
-   setDeviceNames("L R");
+   setImageFilenamePatt("frame-%c-%d");
+   setDeviceNames("L R P D");
    setCounterDigits(3);
    setCounterValue(0);
    setRecordTimeLimit(5000);
