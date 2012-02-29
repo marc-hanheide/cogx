@@ -49,6 +49,7 @@
 #include "v4r/PCLAddOns/Relation.h"
 #include "v4r/TomGine/tgTomGineThread.h"
 #include "v4r/svm/SVMPredictor.h"
+#include "v4r/svm/SVMFileCreator.h"
 #include "v4r/GraphCut/GraphCut.h"
 #include "v4r/SurfaceModeling/CreateMeshModel.hh"
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
@@ -87,6 +88,7 @@ private:
   anno::Annotation *annotation;                             ///< Annotation from file
   surface::Patches *patches;                                ///< Patch tool for calculation of relations between surface patches
   svm::SVMPredictor *svm;                                   ///< SVM-predictor
+  svm::SVMFileCreator *svmFile;                             ///< SVM-file creator
   gc::GraphCut *graphCut;                                   ///< Graph cut
 
   int nr_anno;                                              ///< Number of annotated objects
