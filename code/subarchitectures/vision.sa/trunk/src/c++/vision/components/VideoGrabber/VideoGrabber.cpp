@@ -82,6 +82,24 @@ void releaseClonedImage(IplImage** pImagePtr)
    }
 }
 
+std::string CGrabbedItem::makeFilename(const CRecordingInfo& frameInfo, int deviceId, const std::string& ext)
+{
+   std::string fname = frameInfo.filenamePatt;
+   std::string sval = _str_(frameInfo.counter, frameInfo.counterDigits, '0');
+   _s_::replace(fname, "%c", sval);
+
+   std::string fullname = fname;
+   std::string devname;
+   if (deviceId < frameInfo.deviceNames.size())
+      devname = frameInfo.deviceNames[deviceId];
+   else devname = "d" + _str_(deviceId, 2, '0');
+   _s_::replace(fullname, "%d", devname);
+
+   fullname = frameInfo.directory + "/" + fullname + ext;
+
+   return fullname;
+}
+
 void CVideoGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
 {
    std::vector<Video::CCachedImagePtr> timgs;
@@ -117,20 +135,9 @@ void CVideoGrabClient::getPreviews(std::vector<CPreview>& previews,
 
 void CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 {
-   std::string fname = frameInfo.filenamePatt;
-   std::string sval = _str_(frameInfo.counter, frameInfo.counterDigits, '0');
-   _s_::replace(fname, "%c", sval);
-
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
-   std::string fullname = fname;
-   std::string devname;
-   if (deviceId < frameInfo.deviceNames.size())
-      devname = frameInfo.deviceNames[deviceId];
-   else devname = "d" + _str_(deviceId, 2, '0');
-   _s_::replace(fullname, "%d", devname);
-
-   fullname = frameInfo.directory + "/" + fullname;
+   std::string fullname = makeFilename(frameInfo, deviceId, ".png");
    // TODO: println("Saving image: %s", fullname.c_str());
    // TODO: if (!m_fakeRecording) {
       IplImage *iplImage = cloneVideoImage(*mpImage);
@@ -141,20 +148,9 @@ void CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 
 void CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 {
-   std::string fname = frameInfo.filenamePatt;
-   std::string sval = _str_(frameInfo.counter, frameInfo.counterDigits, '0');
-   _s_::replace(fname, "%c", sval);
-
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
-   std::string fullname = fname;
-   std::string devname;
-   if (deviceId < frameInfo.deviceNames.size())
-      devname = frameInfo.deviceNames[deviceId];
-   else devname = "d" + _str_(deviceId, 2, '0');
-   _s_::replace(fullname, "%d", devname);
-
-   fullname = frameInfo.directory + "/" + fullname;
+   std::string fullname = makeFilename(frameInfo, deviceId, ".png");
    IplImage *iplImage = cloneVideoImage(mImage);
    cvSaveImage(fullname.c_str(), iplImage);
    releaseClonedImage(&iplImage);
@@ -165,8 +161,8 @@ void CPcGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
 {
    if (mbGrabPoints) {
       CGrabbedPcPoints *pPoints = new CGrabbedPcPoints();
-      getPoints(true, 320, pPoints->mPoints);
-      printf(" ***** getPoints: %ld\n", pPoints->mPoints.size());
+      getPoints(false, 320, pPoints->mPoints);
+      //printf(" ***** getPoints: %ld\n", pPoints->mPoints.size());
       mLastPoints = CGrabbedItemPtr(pPoints);
       items.push_back(mLastPoints);
    }
@@ -298,12 +294,20 @@ void CPcGrabClient::displayExtra(cogx::display::CDisplayClient& display)
 }
 #endif
 
-CGrabbedPcPoints::CGrabbedPcPoints()
+// Save surface points as R G B X Y Z, tab-separated
+void CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
 {
-}
-
-void CGrabbedPcPoints::save(const CRecordingInfo& recinfo, int deviceId)
-{
+   std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
+   std::ofstream fo(fullname);
+   fo << ";;R\tG\tB\tx\ty\tz" << std::endl;
+   for (auto sfp : mPoints) {
+      fo.precision(3);
+      fo << sfp.c.r << "\t" << sfp.c.g << "\t" << sfp.c.b << "\t";
+      fo.precision(6);
+      fo << sfp.p.x << "\t" << sfp.p.y << "\t" << sfp.p.z
+         << std::endl;
+   }
+   fo.close();
 }
 #endif
 
