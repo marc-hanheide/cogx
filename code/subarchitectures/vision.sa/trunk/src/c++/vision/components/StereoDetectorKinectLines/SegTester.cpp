@@ -293,6 +293,9 @@ cout << flush;
   /// init graph cutter
   graphCut = new gc::GraphCut();
   
+  /// init svm-file-creator (save training set for svm evaluation)
+  svmFile = new svm::SVMFileCreator();
+  
   /// open cv window
   if(showImages) 
   {
@@ -609,7 +612,15 @@ for(unsigned i=0; i<graphCutGroups.size(); i++) {
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
   
-  cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
+  /// write svm-relations for first level svm to file!
+  if(deb) log("write svm testset file: start.");
+  svmFile->setRelations(relation_vector);
+  svmFile->setAnalyzeOutput(false);
+  svmFile->setTestSet(true);
+  svmFile->process();
+  if(deb) log("write svm testset file: end.");
+  
+//   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
 
