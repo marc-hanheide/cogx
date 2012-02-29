@@ -184,16 +184,34 @@ void CPcGrabClient::getPreviews(std::vector<CPreview>& previews,
       grab(items); // data will be present also in mLastXXX
    }
 
+   CGrabbedImage depthImg;
+   if (mbGrabPoints || mbGrabDepth) {
+      getRectImage(-1, 320, depthImg.mImage);
+   }
+
    if (mbGrabPoints) {
       std::string cid = "pc-points-" + _str_(mId);
       previews.push_back(CPreview(cid, width, height));
       CPreview& pv = previews.back();
       pv.deviceName = "pc." + _str_(mId) + ".0";
       pv.deviceInfo = "3D points";
+
       IplImage* pPreview = pv.getImage();
-      cvZero(pPreview);
+      IplImage *pOrig = cloneVideoImage(depthImg.mImage);
+      cvResize(pOrig, pPreview);
+      releaseClonedImage(&pOrig);
    }
    if (mbGrabDepth) {
+      std::string cid = "pc-depth-" + _str_(mId);
+      previews.push_back(CPreview(cid, width, height));
+      CPreview& pv = previews.back();
+      pv.deviceName = "pc." + _str_(mId) + ".1";
+      pv.deviceInfo = "Depth";
+
+      IplImage* pPreview = pv.getImage();
+      IplImage *pOrig = cloneVideoImage(depthImg.mImage);
+      cvResize(pOrig, pPreview);
+      releaseClonedImage(&pOrig);
    }
    if (mbGrabRectImage) {
       std::string cid = "pc-rectimg-" + _str_(mId);
