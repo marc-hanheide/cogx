@@ -319,8 +319,7 @@ void CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
    std::ofstream fo(fullname);
    fo << ";;R\tG\tB\tx\ty\tz" << std::endl;
    for (auto sfp : mPoints) {
-      fo.precision(3);
-      fo << sfp.c.r << "\t" << sfp.c.g << "\t" << sfp.c.b << "\t";
+      fo << (unsigned int)sfp.c.r << "\t" << (unsigned int)sfp.c.g << "\t" << (unsigned int)sfp.c.b << "\t";
       fo.precision(6);
       fo << sfp.p.x << "\t" << sfp.p.y << "\t" << sfp.p.z
          << std::endl;
