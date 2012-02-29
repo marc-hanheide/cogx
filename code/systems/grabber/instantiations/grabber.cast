@@ -132,6 +132,8 @@ IFNEQ(%(kinect_pc_camera),)
    ENDIF
 ENDIF
 
+VARDEFAULT grab_ms=200
+SETVAR vgparams=%(vgparams) --grab_ms %(grab_ms)
 CPP MG grabber VideoGrabber %(vgparams)
 
 
