@@ -114,8 +114,8 @@ void Kinect::pullData()
    if (m_grabTimer.elapsed() < m_frameMilliseconds) {
       return;
    }
-   kinect::readFrame();
    m_grabTimer.restart();
+   kinect::readFrame();
 }
 
 }
