@@ -57,6 +57,7 @@ struct CRecordingInfo
 class CGrabbedItem
 {
 public:
+   std::string makeFilename(const CRecordingInfo& recinfo, int deviceId, const std::string& ext=".png");
    // # of devices from which the contents was grabbed; usually 1
    virtual int numDevices()
    {
@@ -185,7 +186,6 @@ private:
    friend class CPcGrabClient;
    std::vector<PointCloud::SurfacePoint> mPoints;
 public:
-   CGrabbedPcPoints();
    virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 #endif
