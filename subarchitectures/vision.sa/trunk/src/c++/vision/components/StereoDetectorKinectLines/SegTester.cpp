@@ -260,8 +260,8 @@ void SegTester::configure(const map<string,string> & _config)
   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 28, 42);
 
   /// save results to file
-  save_results = false;
-  save_models.InitFileSequence("/media/Daten/Object-Database/results/cvww_cyl%1d.sfm", 0, 55);
+  save_results = true;
+  save_models.InitFileSequence("/media/Daten/OD-IROS/results/iros_eval%1d.sfm", 0, 42);
   
   /// init patch class
   patches = new surface::Patches();
@@ -598,17 +598,9 @@ for(unsigned i=0; i<graphCutGroups.size(); i++) {
   }
   
   /// Check annotation for evaluation
-//   CheckAnnotation(surfaces, anno, graphCutGroups);    /// TODO move this function to annotation class
-
-// printf("    annotation: start\n");
-//   std::vector<int> anno;
-//   annotation->load(pointCloudWidth, anno);
-//   kcore->CheckAnnotation(anno);
-//   double m, s, b;
-//   kcore->GetAnnotationResults(m, s, b);
-//   printf("SegTester: overall annotation results: %4.3f - %4.3f - %4.3f\n", m*100, s*100, b*100);
-// printf("    annotation: end\n");
-
+  CheckAnnotation(surfaces, anno, graphCutGroups);    /// TODO move this function to annotation class
+  annotation->CheckAnnotation(surfaces, graphCutGroups);
+  
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
   
