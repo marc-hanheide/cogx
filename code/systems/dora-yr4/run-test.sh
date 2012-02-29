@@ -33,6 +33,10 @@ JARS=`find "$DIR/output/jar" -name "*.jar" | tr "\n" ":"`
 export CLASSPATH=$CLASSPATH:/usr/local/share/java/cast.jar:/usr/share/java/Ice.jar:/usr/share/java/log4j-1.2.jar:/opt/local/share/java/cast.jar:/opt/local/share/java/Ice.jar:$JARS
 echo $CLASSPATH
 
+echo "--------------------------"
+echo $DISPLAY
+echo "--------------------------"
+
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/output/lib:/usr/local/lib/cast:/opt/local/lib/cast"
 export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
@@ -91,17 +95,18 @@ PIDS="$PIDS $!"
 
 rm -f  robotpose.ccf tmpmap.*
 rm -f core
-
+echo "--------------------------"
 echo $DISPLAY
 echo "starting peekabot"
 
-xterm -e /opt/VirtualGL/bin/vglrun peekabot &
+xterm -title "peekabot" -e /opt/VirtualGL/bin/vglrun peekabot &
 PIDS="$PIDS $!"
-
+echo "--------------------------"
 echo "starting PBDisplayControl"
 
 xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl" &
 PIDS="$PIDS $!"
+echo "--------------------------"
 
 xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
 SERVERPID="$!"
