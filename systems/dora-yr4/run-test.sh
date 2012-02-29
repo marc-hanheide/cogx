@@ -92,8 +92,13 @@ PIDS="$PIDS $!"
 rm -f  robotpose.ccf tmpmap.*
 rm -f core
 
+echo $DISPLAY
+echo "starting peekabot"
+
 xterm -e /opt/VirtualGL/bin/vglrun peekabot &
 PIDS="$PIDS $!"
+
+echo "starting PBDisplayControl"
 
 xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl" &
 PIDS="$PIDS $!"
