@@ -156,7 +156,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
 
 #ifdef KINECT_USER_DETECTOR
   registerIceServer<kinect::slice::PersonDetectorInterface, PersonDetectServerI>(personDetectServer);
-  println("PersonDetectServer registered");
+  log("PersonDetectServer registered");
 #endif
 
 #ifdef FEAT_VISUALIZATION
@@ -266,7 +266,7 @@ void KinectPCServer::runComponent()
       }
     }
     double pixelRatio = ((double) pixelCount)/(xRes*yRes);
-    log("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
+    debug("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
     if (pixelRatio > RELATIVE_MINIMUM_PERSON_AREA) {
       kinect::slice::KinectPersonPtr person = new kinect::slice::KinectPerson;
       person->size=pixelCount;
@@ -274,7 +274,7 @@ void KinectPCServer::runComponent()
 
     }
   }
-  log("number of users in image: %d", persons.size());
+  debug("number of users in image: %d", persons.size());
   unlockComponent();
   return persons;
 }
@@ -305,7 +305,7 @@ void KinectPCServer::saveNextFrameToFile()
   kinect->GetDepthImageRgb(&depth_data, /*use-hsv=*/false);
   sprintf(buf,"%s/frame_%04d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
-  log("Saving Kinect frame # %d",kinect->frameNumber);
+  debug("Saving Kinect frame # %d",kinect->frameNumber);
   cvSaveImage(buf, depth_data);
   cvReleaseImage(&depth_data);
 
@@ -325,7 +325,7 @@ void KinectPCServer::deleteViewConePlanes()
 
 bool KinectPCServer::createViewCone()
 {
-  //log("Updating View Cone");
+  //debug("Updating View Cone");
 
   kinect::changeRegistration(0);
   if (!suspendReading) {
@@ -494,16 +494,16 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   IplImage *rgbImage;
   if (side < 0) {
      kinect->GetDepthImageRgb(&rgbImage);
-     log("got depth color image from Kinect");
+     debug("got depth color image from Kinect");
   }
   else {
      kinect->GetColorImage(&rgbImage);
-     log("got color image from Kinect");
+     debug("got color image from Kinect");
   }
 
   if(imgWidth != rgbImage->width)
   {
-    log("needs to be resized");
+    debug("needs to be resized");
     IplImage *resized;
     scaleFactor = (double) rgbImage->width / (double) imgWidth;
     resized = cvCreateImage(cvSize(imgWidth, (int) (rgbImage->height/scaleFactor)), IPL_DEPTH_8U, 3);
@@ -514,7 +514,7 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   }
   else
   {
-    log("no need to be resized");
+    debug("no need to be resized");
     convertImageFromIpl(rgbImage, image);
     cvReleaseImage(&rgbImage);
   }
