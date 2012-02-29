@@ -55,6 +55,8 @@ Kinect::Kinect(cast::CASTComponent* pComponent, const char *kinect_xml_file)
     printf("Kinect: Error: Initialisation not successful! Abort!\n");
     exit(0);
   }
+  m_frameMilliseconds = 50; // limit to 20 fps
+  m_grabTimer.restart();
 }
 #endif
 
@@ -304,7 +306,7 @@ const DepthMetaData* Kinect::getNextDepthMD()
     return 0;
   }
     
-  kinect::readFrame();  // read next frame
+  pullData(); // kinect::readFrame();  // read next frame
   return kinect::getDepthMetaData();
 }
 
@@ -314,7 +316,7 @@ std::pair<const DepthMetaData*, const ImageGenerator*> Kinect::getNextFrame()
   if(!kinect::isCapturing())
     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
     
-  kinect::readFrame();  // read next frame
+  pullData(); // kinect::readFrame();  // read next frame
 
   // get depth image
   return std::make_pair(kinect::getDepthMetaData(), kinect::getImageGenerator());
@@ -332,7 +334,7 @@ bool Kinect::NextFrame()
     return false;
   }
 
-  kinect::readFrame();  // read next frame
+  pullData(); // kinect::readFrame();  // read next frame
 
 #ifdef LOCK_KINECT
   //log("NextFrame Write Lock");

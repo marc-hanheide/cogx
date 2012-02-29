@@ -23,6 +23,7 @@
 #ifdef KINECT_CAST_LOGGING
 #include <castutils/CastLoggerMixin.hpp>
 #endif
+#include <castutils/Timers.hpp>
 
 namespace Kinect
 {
@@ -52,6 +53,8 @@ private:
   XnUInt64 no_sample_value;             ///< Return value for no sample
 
   IceUtil::RWRecMutex m_kinectMutex;
+  castutils::CMilliTimer m_grabTimer;
+  int m_frameMilliseconds;
 
   bool Init(const char *kinect_xml_file);
   void MapMetaData2IplImage(const MapMetaData* pImageMD, IplImage **iplImg);
@@ -78,6 +81,9 @@ public:
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
   int GetRgbImageWidth() {return rgbWidth;}
   int GetDepthImageWidth() {return depWidth;}
+
+private:
+  void pullData();
   
 private:
   cv::Mat grayImage;                    ///< captured gray image (bayer pattered)
@@ -97,6 +103,20 @@ public:
   void GetColorVideoSize(CvSize &size) {size = cvSize(rgbWidth, rgbHeight);}
   void GetDepthVideoSize(CvSize &size) {size = cvSize(depWidth, depHeight);}
 };
+
+inline
+void Kinect::pullData()
+{
+   if (m_frameMilliseconds <= 0) {
+      kinect::readFrame();
+      return;
+   }
+   if (m_grabTimer.elapsed() < m_frameMilliseconds) {
+      return;
+   }
+   kinect::readFrame();
+   m_grabTimer.restart();
+}
 
 }
 
