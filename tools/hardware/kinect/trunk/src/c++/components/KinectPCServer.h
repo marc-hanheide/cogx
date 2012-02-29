@@ -135,6 +135,7 @@ public:
 
   // *********************************** Point Cloud Server *********************************** //
   void getPoints(bool transformToGlobal, int imgWidth, std::vector<PointCloud::SurfacePoint> &points, bool complete);
+  // Kinect hack: side<0 --> return RGB depth image
   void getRectImage(int side, int imgWidth, Video::Image& image);
   void getDisparityImage(int imgWidth, Video::Image& image);
   void getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth);

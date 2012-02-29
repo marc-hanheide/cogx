@@ -440,14 +440,18 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
 
   // copy clouds to points-vector (dense!)
   int scale = imgWidth == 0 ? 1 : cloud.size().width / imgWidth;
+  if (complete) {
+     points.reserve(cloud.size().height * cloud.size().width);  
+  }
   for (int row=0; row < cloud.size().height; row += scale)   /// SLOW conversion
   {
     for (int col=0; col < cloud.size().width; col += scale)
     {
+      const cv::Point3f& cvpt = cloud.at<cv::Point3f>(row, col); 
       PointCloud::SurfacePoint pt;
-      pt.p.x = cloud.at<cv::Point3f>(row, col).x;
-      pt.p.y = cloud.at<cv::Point3f>(row, col).y;
-      pt.p.z = cloud.at<cv::Point3f>(row, col).z;
+      pt.p.x = cvpt.x;
+      pt.p.y = cvpt.y;
+      pt.p.z = cvpt.z;
 
       /* Check point for validity */
       if (pt.p.x == FLT_MAX && pt.p.y == FLT_MAX && pt.p.z == FLT_MAX)
@@ -463,9 +467,9 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
           continue;
       }
 
-      pt.c.r = colCloud.at<cv::Point3f>(row, col).z;
-      pt.c.g = colCloud.at<cv::Point3f>(row, col).y;
-      pt.c.b = colCloud.at<cv::Point3f>(row, col).x;
+      pt.c.r = cvpt.z;
+      pt.c.g = cvpt.y;
+      pt.c.b = cvpt.x;
 
       if(transformToGlobal)
         pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
@@ -488,8 +492,14 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
 
   double scaleFactor = 1.;
   IplImage *rgbImage;
-  kinect->GetColorImage(&rgbImage);
-  log("got color image from Kinect");
+  if (side < 0) {
+     kinect->GetDepthImageRgb(&rgbImage);
+     log("got depth color image from Kinect");
+  }
+  else {
+     kinect->GetColorImage(&rgbImage);
+     log("got color image from Kinect");
+  }
 
   if(imgWidth != rgbImage->width)
   {
@@ -576,6 +586,7 @@ void KinectPCServer::getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth)
   time = getCASTTime();
 
   //for(int row=0;row < DEPTH.rows;row++)
+  depth.reserve(pDepthMD->YRes() * pDepthMD->XRes());
   for(size_t row=0;row < pDepthMD->YRes();row++)
   {
     for(size_t col=0;col < pDepthMD->XRes();col++)
