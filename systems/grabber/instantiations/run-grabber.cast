@@ -1,7 +1,7 @@
 OPTDEFAULT hardware=<multiline>
    video0
    !video1
-   kinect
+   !kinect
 </multiline>
 
 IFOPTANY(%(hardware),video0)
@@ -17,7 +17,8 @@ ENDIF
 IFOPTANY(%(hardware),video1)
    # SETVAR firewire_cameras=1
    # VARDEFAULT firewire_config=<multiline>
-   #    --devnums "1"
+   #    --devclass FIREWIRE
+   #    --devnums "0"
    #    #--imgsize "640 480"
    #    #--imgsize "800 600"
    #    --imgsize "1280 960"
