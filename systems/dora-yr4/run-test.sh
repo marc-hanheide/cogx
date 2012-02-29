@@ -85,7 +85,6 @@ ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
 PIDS="$PIDS $!"
 
 
-
 xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
 PIDS="$PIDS $!"
 sleep 2
@@ -99,7 +98,7 @@ echo "--------------------------"
 echo $DISPLAY
 echo "starting peekabot"
 
-xterm -title "peekabot" -e /opt/VirtualGL/bin/vglrun peekabot &
+xterm -title "peekabot" -e DISPLAY=$DISPLAY_NUMBER /opt/VirtualGL/bin/vglrun /usr/local/bin/peekabot &
 PIDS="$PIDS $!"
 echo "--------------------------"
 echo "starting PBDisplayControl"
