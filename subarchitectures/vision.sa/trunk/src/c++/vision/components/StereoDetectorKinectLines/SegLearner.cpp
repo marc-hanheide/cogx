@@ -491,7 +491,7 @@ void SegLearner::processImageNew()
   }
 
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
-  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallStart, &overallEnd), (double)timespec_diff(&overallStart, &overallEnd)/60.);
+  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
   printf("\n");
 //   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
