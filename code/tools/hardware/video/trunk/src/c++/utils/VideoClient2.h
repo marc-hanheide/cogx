@@ -333,6 +333,12 @@ public:
    void setCaching(bool bCaching = true);
    bool isCaching();
    void getCachedImages(std::vector<CCachedImagePtr>& images);
+
+   // Debugging: # of locked images
+   int getLockedCount()
+   {
+      return m_locked.size();
+   }
 };
 
 } // namespace
