@@ -579,13 +579,15 @@ void SegTester::processImageNew()
       surfaces[graphCutGroups[i][j]]->label = i;
   if(deb) log("graph-cutter: end");
   
-printf("GraphCut groups:\n");
-for(unsigned i=0; i<graphCutGroups.size(); i++) {
-  printf("  %u: ", i);
-  for(unsigned j=0; j<graphCutGroups[i].size(); j++)
-    printf("%u ", graphCutGroups[i][j]);
-  printf("  \n");
-}
+  if(deb) {
+    printf("GraphCut groups:\n");
+    for(unsigned i=0; i<graphCutGroups.size(); i++) {
+      printf("  %u: ", i);
+      for(unsigned j=0; j<graphCutGroups[i].size(); j++)
+        printf("%u ", graphCutGroups[i][j]);
+      printf("  \n");
+    }
+  }
 
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
@@ -598,8 +600,7 @@ for(unsigned i=0; i<graphCutGroups.size(); i++) {
   }
   
   /// Check annotation for evaluation
-  CheckAnnotation(surfaces, anno, graphCutGroups);    /// TODO move this function to annotation class
-  annotation->CheckAnnotation(surfaces, graphCutGroups);
+  if(deb) annotation->CheckAnnotation(surfaces, graphCutGroups);
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
