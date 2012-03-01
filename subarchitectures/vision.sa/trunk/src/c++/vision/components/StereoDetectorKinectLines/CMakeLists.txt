@@ -52,7 +52,7 @@ link_cast_component(${CAST_COMPONENT_NAME} SDUtils SDvs3)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation)
 
 #add_cast_component(SegLearner2ndLevel SegUtilsFunctions.cpp SegLearner2ndLevel.cpp SegLearner2ndLevel.h)
 ##link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
@@ -61,7 +61,7 @@ link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSu
 #link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 #link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 #link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-#link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+#link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation)
 
 add_cast_component(SegTester SegUtilsFunctions.cpp SegTester.cpp SegTester.h)
 #link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
@@ -70,7 +70,7 @@ link_cast_component(${CAST_COMPONENT_NAME} SDUtils SDvs3)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation)
 
 #add_cast_component(SegTester2ndLevel SegUtilsFunctions.cpp SegTester2ndLevel.cpp SegTester2ndLevel.h)
 ##link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
@@ -79,7 +79,7 @@ link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSu
 #link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 #link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 #link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-#link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+#link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation)
 
 #add_cast_component(Segmenter SegUtilsFunctions.cpp Segmenter.cpp Segmenter.h)
 ##link_cast_component(${CAST_COMPONENT_NAME} SDGestalts3D SDUtils SDObjRepresentation SDStereo SDMatas SDvs3 SDCEdge SDKinect SDLearner SDGraphCut SDlibSVM)
@@ -88,6 +88,6 @@ link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSu
 #link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils)
 #link_cast_component(${CAST_COMPONENT_NAME} PointCloud PointCloudClient)
 #link_cast_component(${CAST_COMPONENT_NAME} ${OpenCV_LIBS} ${OPENCV_LIBRARIES} ${PCL_LIBRARIES})
-#link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation v4rNurbsConvertion)
+#link_cast_component(${CAST_COMPONENT_NAME} v4rPCLAddOns v4rsvm v4rGraphCut v4rSurfaceModeling v4rAnnotation)
 
 endif (HAVE_V4R)
