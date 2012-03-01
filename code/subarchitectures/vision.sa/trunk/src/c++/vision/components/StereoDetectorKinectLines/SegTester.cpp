@@ -247,6 +247,7 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 9);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
+  annotation->init("/media/Daten/Object-Database/annotation/complex%1d.png", 0, 11);
 
   /// IROS testset
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
@@ -257,11 +258,11 @@ void SegTester::configure(const map<string,string> & _config)
 
     /// IROS learn and test set full
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
-  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
 
   /// save results to file
   save_results = true;
-  save_models.InitFileSequence("/media/Daten/OD-IROS/results/iros_eval%1d.sfm", 0, 42);
+  save_models.InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval%1d.sfm", 0, 42);
   
   /// init patch class
   patches = new surface::Patches();
@@ -270,9 +271,9 @@ void SegTester::configure(const map<string,string> & _config)
 printf("DEBUG: Init svm-predictor\n");
   /// init svm-predictor
   std::vector<const char*> files;
-  const char* file = "./instantiations/11-05-11/12-02-29/PP-Trainingsset.txt.scaled.model";
+  const char* file = "./instantiations/11-05-11/12-02-29-2/PP-Trainingsset.txt.scaled.model";
   files.push_back(file);
-  const char *file2 = "./instantiations/11-05-11/12-02-29/PP2-Trainingsset.txt.scaled.model";
+  const char *file2 = "./instantiations/11-05-11/12-02-29-2/PP2-Trainingsset.txt.scaled.model";
   files.push_back(file2);
 cout << "DEBUG: Init svm-predictor: set predictor" << endl;
 cout << flush;
@@ -280,9 +281,9 @@ cout << flush;
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 cout << flush;
   std::vector<const char*> param_files;
-  const char* pfile = "./instantiations/11-05-11/12-02-29/param.txt";
+  const char* pfile = "./instantiations/11-05-11/12-02-29-2/param.txt";
   param_files.push_back(pfile);
-  const char* pfile2 = "./instantiations/11-05-11/12-02-29/param2.txt";
+  const char* pfile2 = "./instantiations/11-05-11/12-02-29-2/param2.txt";
   param_files.push_back(pfile2);
 cout << "DEBUG: Init svm-predictor: set N scaling" << endl;
 cout << flush;
@@ -600,7 +601,8 @@ void SegTester::processImageNew()
   }
   
   /// Check annotation for evaluation
-  if(deb) annotation->CheckAnnotation(surfaces, graphCutGroups);
+  annotation->setFileWriting(true, "/media/U-Daten/OD-IROS/results/annoEval.txt");
+  if(deb) annotation->checkAnnotation(surfaces, graphCutGroups);
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));

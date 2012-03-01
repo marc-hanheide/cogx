@@ -240,8 +240,8 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/OD-IROS/annotation/box_world%1d.png", 0, 15);
 
   /// IROS komplett
-  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
-//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+  annotation->init("/media/U-Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
 
   /// init patch class
   patches = new surface::Patches();
