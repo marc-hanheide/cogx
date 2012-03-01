@@ -143,45 +143,73 @@ bool CVideoClient2::isCaching()
 void CVideoClient2::cacheImages(const std::vector<Video::Image>& images)
 {
    struct _local_ {
-      std::vector<CCachedImagePtr::CStorage*>* m_pLocked;
-      CCachedImagePtr::CStorage* getFreeStore()
+      std::vector<CCachedImagePtr::CStoragePtr>* m_pLocked;
+      bool bHasFree;
+      CCachedImagePtr::CStoragePtr getFreeStore()
       {
-         std::vector<CCachedImagePtr::CStorage*>::iterator it;
+         std::vector<CCachedImagePtr::CStoragePtr>::iterator it;
          for(it = m_pLocked->begin(); it != m_pLocked->end(); it++) {
             if (! (*it)->isLocked()) break;
          }
          if (it == m_pLocked->end()) {
-            return new CCachedImagePtr::CStorage();
+            return CCachedImagePtr::CStoragePtr(new CCachedImagePtr::CStorage());
          }
 
-         CCachedImagePtr::CStorage* ps = *it;
+         bHasFree = true;
+         CCachedImagePtr::CStoragePtr ps = *it;
          m_pLocked->erase(it);
          return ps;
       }
-      void addLockedStore(CCachedImagePtr::CStorage* pStore)
+      void addLockedStore(CCachedImagePtr::CStoragePtr pStore)
       {
          m_pLocked->push_back(pStore);
          // std::cout << "Images in locked store: " << m_pLocked->size() << std::endl;
       }
-      _local_(std::vector<CCachedImagePtr::CStorage*>& locked)
+      _local_(std::vector<CCachedImagePtr::CStoragePtr>& locked)
       {
          m_pLocked = &locked;
+         bHasFree = false;
       }
    } local(m_locked);
 
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
 
    if (images.size() > m_cache.size())
-      m_cache.resize(images.size(), 0);
+      m_cache.resize(images.size());
 
    for(unsigned int i = 0; i < images.size(); i++) {
-      if (m_cache[i] != 0 && m_cache[i]->isLocked()) {
+      if (m_cache[i].get() != 0 && m_cache[i]->isLocked()) {
          local.addLockedStore(m_cache[i]);
          m_cache[i] = 0;
       }
-      if (m_cache[i] == 0)
+      if (m_cache[i].get() == 0)
          m_cache[i] = local.getFreeStore();
       m_cache[i]->setImage(images[i]);
+   }
+
+   if (local.bHasFree && m_locked.size() > 16) {
+      // pack the array - move unlocked items to the end of the array
+      std::vector<CCachedImagePtr::CStoragePtr>::iterator it, itn;
+      int keep = 2; // don't remove this number of unlocked items
+      for(it = m_locked.begin(); it != m_locked.end(); it++) {
+         if ((*it)->isLocked()) continue;
+         keep--;
+         if (keep < 1) break;
+      }
+      if (it != m_locked.end()) {
+         for(itn = it + 1; itn != m_locked.end(); itn++) {
+            if (! (*itn)->isLocked()) continue;
+            assert( ! (*it)->isLocked() && (*itn)->isLocked());
+            std::swap(*it, *itn);
+            assert((*it)->isLocked() && ! (*itn)->isLocked());
+            while((*it)->isLocked() && it != itn) {
+               it++;
+            }
+         }
+      }
+      if (it != m_locked.end()) {
+         m_locked.erase(it, m_locked.end());
+      }
    }
 }
 
