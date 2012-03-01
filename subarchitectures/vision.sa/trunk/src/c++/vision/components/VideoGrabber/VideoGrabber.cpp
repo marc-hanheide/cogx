@@ -363,8 +363,32 @@ void CPcGrabClient::displayExtra(cogx::display::CDisplayClient& display)
 class CExtraPcPointSaver: public CExtraSaver
 {
 public:
-   void save() {
-      printf(" **** NOT SAVED \n");
+   void save()
+   {
+      // copy from binary to text representation
+      std::ifstream fi(tmpFilename, std::ios_base::binary | std::ios_base::in);
+      std::ofstream fo(finalFilename);
+      std::vector<char> colors; // Depends on Math::ColorRGB
+      std::vector<double> locs; // Depends on Math::Vector3
+      unsigned long size;
+      fi >> size;
+      colors.resize(size * 3);
+      locs.resize(size * 3);
+      fi.read((char*)&colors[0], sizeof(colors[0]) * colors.size());
+      fi.read((char*)&locs[0], sizeof(locs[0]) * locs.size());
+      fi.close();
+      fo << ";;R\tG\tB\tx\ty\tz" << std::endl;
+      fo.precision(6);
+      for (int i=0; i < size; i++) {
+         int ie = i * 3;
+         fo << (unsigned int)colors[ie] << "\t"
+            << (unsigned int)colors[ie+1] << "\t"
+            << (unsigned int)colors[ie+2] << "\t";
+         fo << locs[ie] << "\t"
+            << locs[ie+1] << "\t"
+            << locs[ie+2] << std::endl;
+      }
+      fo.close();
    }
 };
 
@@ -372,6 +396,7 @@ public:
 CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
 {
 #if 0
+   // Saving text: 600-900ms
    std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname);
    fo << ";;R\tG\tB\tx\ty\tz" << std::endl;
@@ -382,8 +407,10 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
          << std::endl;
    }
    fo.close();
+   return 0;
 #elif 0
-   std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
+   // Saving binary values to stream one by one: 100-200ms
+   std::string fullname = makeTempFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname, std::ios_base::binary | std::ios_base::out);
    unsigned long size = mPoints.size();
    fo << size;
@@ -393,7 +420,8 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
    }
    fo.close();
 #else
-   std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
+   // HACK : Saving binary values as large fields: 10-40ms
+   std::string fullname = makeTempFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname, std::ios_base::binary | std::ios_base::out);
    unsigned long size = mPoints.size();
    std::vector<char> colors; // Depends on Math::ColorRGB
@@ -415,7 +443,7 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
 #endif
 
    CExtraSaverPtr saver = CExtraSaverPtr(new CExtraPcPointSaver());
-   saver->tmpFilename = makeTempFilename(frameInfo, deviceId, ".dat");
+   saver->tmpFilename = fullname;
    saver->finalFilename = makeFilename(frameInfo, deviceId, ".dat");
    return saver;
 }
