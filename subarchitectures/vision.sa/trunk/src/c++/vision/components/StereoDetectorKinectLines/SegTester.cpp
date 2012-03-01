@@ -247,7 +247,7 @@ void SegTester::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 9);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 23);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
-  annotation->init("/media/Daten/Object-Database/annotation/complex%1d.png", 0, 11);
+//   annotation->init("/media/Daten/Object-Database/annotation/complex%1d.png", 0, 11);
 
   /// IROS testset
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
@@ -258,12 +258,8 @@ void SegTester::configure(const map<string,string> & _config)
 
     /// IROS learn and test set full
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
-//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+  annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
 
-  /// save results to file
-  save_results = true;
-  save_models.InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval%1d.sfm", 0, 42);
-  
   /// init patch class
   patches = new surface::Patches();
   patches->setZLimit(0.01);
@@ -296,7 +292,14 @@ cout << flush;
   
   /// init svm-file-creator (save training set for svm evaluation)
   svmFile = new svm::SVMFileCreator();
+
+  /// save results to file
+  save_results = true;
+  surface::SaveFileSequence::Parameter p;
+  save_models = new surface::SaveFileSequence(p);
+  save_models->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval%1d.sfv", 0, 42);
   
+
   /// open cv window
   if(showImages) 
   {
@@ -596,7 +599,7 @@ void SegTester::processImageNew()
 
   if(save_results) {
     if(deb) log("save surface models: start");
-    save_models.SaveNext(surfaces);
+    save_models->SaveNextView(surfaces);
     if(deb) log("save surface models: end");
   }
   

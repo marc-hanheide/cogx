@@ -73,7 +73,7 @@ private:
   
   bool deb;                                                 ///< Debug flag
   
-  surface::SaveFileSequence save_models;                    ///< Save surface models
+  surface::SaveFileSequence *save_models;                   ///< Save surface models
   bool save_results;                                        ///< Save surface models
   char *save_filename;                                      ///< filename for surface models
   
