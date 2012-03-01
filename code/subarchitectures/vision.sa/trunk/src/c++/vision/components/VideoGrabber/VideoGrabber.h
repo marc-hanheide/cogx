@@ -56,10 +56,22 @@ struct CRecordingInfo
    }
 };
 
+// Some data is saved in a temporary file to leave more time and memory for grabbing.
+// The extra saver opens this file and transforms the data to the final form;
+class CExtraSaver
+{
+public:
+   std::string tmpFilename;
+   std::string finalFilename;
+   virtual void save() = 0;
+};
+typedef std::shared_ptr<CExtraSaver> CExtraSaverPtr;
+
 class CGrabbedItem
 {
 public:
    std::string makeFilename(const CRecordingInfo& recinfo, int deviceId, const std::string& ext=".png");
+   std::string makeTempFilename(const CRecordingInfo& recinfo, int deviceId, const std::string& ext=".tmp");
    // # of devices from which the contents was grabbed; usually 1
    virtual int numDevices()
    {
@@ -68,7 +80,7 @@ public:
    virtual ~CGrabbedItem()
    {
    }
-   virtual void save(const CRecordingInfo& recinfo, int deviceId) = 0;
+   virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) = 0;
 };
 
 class CPreview
@@ -144,14 +156,14 @@ public:
    {
       mpImage = pimage;
    }
-   virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
+   virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 
 class CGrabbedImage: public CGrabbedItem
 {
 public:
    Video::Image mImage;
-   virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
+   virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
@@ -193,7 +205,7 @@ private:
    friend class CPcGrabClient;
    std::vector<PointCloud::SurfacePoint> mPoints;
 public:
-   virtual void save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
+   virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 #endif
 
@@ -268,7 +280,7 @@ private:
 #endif
 
    IceUtil::Handle<IceUtil::Timer> m_pTimer;
-   class CSaveQueThread: public IceUtil::Thread, public CTickSyncedTask
+   class CGrabQueThread: public IceUtil::Thread, public CTickSyncedTask
    {
       CVideoGrabber *m_pGrabber;
 
@@ -284,7 +296,7 @@ private:
       IceUtil::Monitor<IceUtil::Mutex> m_itemsLock;
 
    public:
-      CSaveQueThread(CVideoGrabber *pGrabber);
+      CGrabQueThread(CVideoGrabber *pGrabber);
 
       void getItems(std::vector<CFramePack>& items, unsigned int maxItems = 0);
       virtual void grab();
@@ -292,6 +304,22 @@ private:
    };
    IceUtil::ThreadPtr m_pQueue;
    IceUtil::Handle<CTickerTask> m_pQueueTick;
+
+   class CExtraSaveThread: public IceUtil::Thread
+   {
+   private:
+      std::vector<CExtraSaverPtr> m_savers;
+      IceUtil::Monitor<IceUtil::Mutex> m_saversLock;
+   public:
+      void addSaver(CExtraSaverPtr saver)
+      {
+         IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_saversLock);
+         m_savers.push_back(saver);
+      }
+      virtual void run() {
+         // TODO
+      }
+   };
 
    class CDrawingThread: public IceUtil::Thread, public CTickSyncedTask
    {
