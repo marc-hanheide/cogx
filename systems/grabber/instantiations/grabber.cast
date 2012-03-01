@@ -29,7 +29,7 @@ VARDEFAULT kinect_pc_camera=
 VARDEFAULT kinect_pc_config=<multiline>
    --kconfig    "%(kinect_internal_file)"
    --camconfigs "%(kinect_config_file)"
-   --displayserver "display.srv"
+   #--displayserver "display.srv"
 </multiline>
 OPTDEFAULT kinect_pc_grab=points !depth !rectimg
 
@@ -37,7 +37,7 @@ VARDEFAULT kinect_video_camera=
 VARDEFAULT kinect_video_config=<multiline>
    --kconfig    "%(kinect_internal_file)"
    --camconfigs "%(kinect_config_file)"
-   --displayserver "display.srv"
+   #--displayserver "display.srv"
 </multiline>
 
 HOST [Main]
