@@ -1,0 +1,114 @@
+
+### the default goal
+#SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o)))"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+
+### the plannig domain to use
+SETVAR planning_domain=dora-interactive.pddl
+
+### the default probabilities
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-indirect.txt"
+
+### the default knowledge to use
+SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-review.xml"
+
+### the Haar-like face detector file to use
+SETVAR face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
+
+### run coma mediators in a discretising way?
+SETVAR discrete_room_cats=
+#SETVAR discrete_room_cats=--discrete
+
+SETVAR room_has_person=0.2
+
+### places for the initial automatic tour:
+SETVAR tour_places="0 9 4"
+
+### all types to be logged from WMs
+SETVAR logged_types=<multiline>
+  execution.slice.Action, 
+  SpatialData.ObjectSearchResult, 
+  SpatialData.ViewPoint, 
+  SpatialData.ProcessConeGroup, 
+  comadata.ComaRoom,
+  SpatialData.RelationalViewPointGenerationCommand,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask
+  ptz.SetPTZPoseCommand
+</multiline>
+
+### root for the sift-models
+SETVAR siftroot_=./instantiations/sift-models
+
+### root for the ply-models
+SETVAR plyroot_=./instantiations/ply-models
+
+### siftfiles
+SETVAR or3d_sift_files=<multiline>
+   %(siftroot_)/frosties2.sift
+   %(siftroot_)/re_book.sift
+   %(siftroot_)/table.sift
+</multiline>
+
+### ply files
+SETVAR or3d_ply_files=<multiline>
+   %(plyroot_)/frosties2.ply
+   %(plyroot_)/re_book.ply
+   %(plyroot_)/table.ply
+</multiline>
+
+### object labels
+SETVAR or3d_labels=cerealbox book table
+
+
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+INCLUDE includes/spatial.sa/spatial.cast
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+JAVA MG SpatialPropertyRemover spatial.SpatialPropertyRemover 
+
+JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3 
+####JAVA MG spatial-manual spatial.manual.ManualNavControl
+
+# Default.SA ################################################################
+INCLUDE includes/default.sa/default-base.cast
+INCLUDE includes/coma.sa/coma-defaultsa.cast
+
+CPP GD default.queryhandler DefaultQueryHandler
+CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(conceptual_defaults)
+
+# Conceptual.SA  ############################################################
+INCLUDE includes/conceptual.sa/conceptual-base.cast
+CPP GD conceptual.queryhandler ConceptualQueryHandler
+
+CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+
+
+INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
+INCLUDE includes/conceptual.sa/conceptual-test.cast
+
+# Categorical.SA ############################################################
+
+INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
+
+# binder ######################################################################
+INCLUDE includes/binder.sa/binder-base.cast
+
+# planning and motivation #####################################################
+INCLUDE includes/planner.sa/dora-interaction.cast
+JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
+JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" #--min-gain 0.05
+JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
+
+JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent --oversubscription-mode --goals %(goal)
