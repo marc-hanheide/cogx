@@ -353,7 +353,7 @@ class CASTTask(object):
         try:
             to = timeout(WAIT_FOR_CONSISTENCY_TIMEOUT)
             while not self.state.consistent:
-                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_BELIEF)
+                self.update_status(TaskStateEnum.WAITING_FOR_BELIEF, TaskStateInfoEnum.WAITING_FOR_CONSISTENT_STATE)
                 yield to.next()
             yield TO_OK
         except TimedOut:
