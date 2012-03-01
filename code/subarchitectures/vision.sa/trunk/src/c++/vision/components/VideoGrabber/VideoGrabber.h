@@ -328,7 +328,7 @@ private:
       }
       virtual void run();
    };
-   IceUtil::ThreadPtr m_pSaver;
+   IceUtil::ThreadPtr m_pExtraSaver;
 
    class CDrawingThread: public IceUtil::Thread, public CTickSyncedTask
    {
