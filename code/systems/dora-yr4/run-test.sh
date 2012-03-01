@@ -33,10 +33,6 @@ JARS=`find "$DIR/output/jar" -name "*.jar" | tr "\n" ":"`
 export CLASSPATH=$CLASSPATH:/usr/local/share/java/cast.jar:/usr/share/java/Ice.jar:/usr/share/java/log4j-1.2.jar:/opt/local/share/java/cast.jar:/opt/local/share/java/Ice.jar:$JARS
 echo $CLASSPATH
 
-echo "--------------------------"
-echo $DISPLAY
-echo "--------------------------"
-
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/output/lib:/usr/local/lib/cast:/opt/local/lib/cast"
 export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
@@ -80,8 +76,10 @@ EOF
 #	echo "snapshot is not possible, install vncsnapshot to make it work" >& 2
 #fi
 
-DIM=`xdpyinfo | grep dimension | cut -f7 -d" "`
-ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
+#DIM=`xdpyinfo | grep dimension | cut -f7 -d" "`
+#ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
+# Make a flash video
+flvrec.py -o logs/screencast.flv -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
 PIDS="$PIDS $!"
 
 
@@ -95,7 +93,6 @@ PIDS="$PIDS $!"
 rm -f  robotpose.ccf tmpmap.*
 rm -f core
 echo "--------------------------"
-echo $DISPLAY
 echo "starting peekabot"
 
 xterm -title "peekabot" -e DISPLAY=$DISPLAY_NUMBER /opt/VirtualGL/bin/vglrun /usr/local/bin/peekabot &
