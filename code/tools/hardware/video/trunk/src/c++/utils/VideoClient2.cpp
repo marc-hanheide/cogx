@@ -147,6 +147,7 @@ void CVideoClient2::cacheImages(const std::vector<Video::Image>& images)
       bool bHasFree;
       CCachedImagePtr::CStoragePtr getFreeStore()
       {
+         bHasFree = false;
          std::vector<CCachedImagePtr::CStoragePtr>::iterator it;
          for(it = m_pLocked->begin(); it != m_pLocked->end(); it++) {
             if (! (*it)->isLocked()) break;
@@ -172,6 +173,13 @@ void CVideoClient2::cacheImages(const std::vector<Video::Image>& images)
       }
    } local(m_locked);
 
+   static int cleanCount = 0;
+   cleanCount++;
+   if (cleanCount >= 200) {
+      cleanCount = 0;
+      local.bHasFree = true;
+   }
+
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_cacheMonitor);
 
    if (images.size() > m_cache.size())
@@ -180,10 +188,11 @@ void CVideoClient2::cacheImages(const std::vector<Video::Image>& images)
    for(unsigned int i = 0; i < images.size(); i++) {
       if (m_cache[i].get() != 0 && m_cache[i]->isLocked()) {
          local.addLockedStore(m_cache[i]);
-         m_cache[i] = 0;
+         m_cache[i] = CCachedImagePtr::CStoragePtr(0);
       }
-      if (m_cache[i].get() == 0)
+      if (m_cache[i].get() == 0) {
          m_cache[i] = local.getFreeStore();
+      }
       m_cache[i]->setImage(images[i]);
    }
 
