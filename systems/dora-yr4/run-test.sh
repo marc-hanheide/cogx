@@ -95,7 +95,7 @@ rm -f core
 echo "--------------------------"
 echo "starting peekabot"
 
-xterm -title "peekabot" -e "DISPLAY=$DISPLAY_NUMBER /opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot" &
+xterm -title "peekabot" -e "DISPLAY=$DISPLAY_NUMBER /opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
 PIDS="$PIDS $!"
 
 sleep 10
