@@ -10,13 +10,14 @@
 #define SEG_UTILS_FUNCTIONS_H
 
 #include <opencv2/highgui/highgui.hpp>
-#include <v4r/PCLAddOns/PCLCommonHeaders.h>
+#include "v4r/PCLAddOns/PCLCommonHeaders.h"
 #include "v4r/TomGine/tgTomGineThread.h"
-#include "v4r/NurbsConvertion/NurbsConvertion.h"
+//#include "v4r/NurbsConvertion/NurbsConvertion.h"
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 
 #include "VisionCore.hh"
-#include "StereoCore.h"
+#include "Segment.hh"
+//#include "StereoCore.h"
 
 
 namespace cast
@@ -32,9 +33,9 @@ void DrawNormals(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
                  int color);
 
 /** Draw NURBS on the TomGine **/
-void DrawNURBS(TomGine::tgTomGineThread *tgR,
-               const ON_NurbsSurface &on_surf,
-               int color);
+//void DrawNURBS(TomGine::tgTomGineThread *tgR,
+//               const ON_NurbsSurface &on_surf,
+//               int color);
 
 /** Returns the canny edges from the vcore as texture vector with a certain width **/
 void GetSegmentIndexes(Z::VisionCore *vcore, 
