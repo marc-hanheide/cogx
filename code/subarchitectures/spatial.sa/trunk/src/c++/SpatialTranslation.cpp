@@ -65,10 +65,12 @@ SpatialTranslation::~SpatialTranslation() {
 void SpatialTranslation::configure(const map<string,string>& config) 
 {
   println("configure entered");
-
   m_bNoNavGraph = false;
   if(config.find("--no-graph") != config.end()){
     m_bNoNavGraph = true;
+  }
+  if(config.find("--visual-exploration") != config.end()) {
+    m_issueVisualExplorationActions = true;
   }
 }
 
@@ -292,14 +294,33 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	// nav ctrl cmd finished?
 	shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
 	  getWorkingMemoryEntry<NavData::InternalNavCommand>(navCtrlCmdId);
-			
+//  log("alex c1");
+		
 	if(pcmd){
 	  switch(pcmd->getData()->comp){
 	  case NavData::SUCCEEDED:
-	    finished = true;
+//      log("alex c2");
+
+	    if (m_isExplorationAction && m_issueVisualExplorationActions) {
+//        log("alex c3");
+
+        issueVisualExplorationCommand(*rv);
+//        log("alex c4");
+
+	    }
+	    else {
+//        log("alex c5");
+
+	      finished = true;
+	    }
+//        log("alex c6");
+
+	    m_isExplorationAction = false;
 	    break;
 	  case NavData::ABORTED:
 	  case NavData::FAILED:
+//      log("alex c7");
+
 	    some_error = true;
 	    status = SpatialData::TARGETUNREACHABLE;
 	    break;
@@ -318,6 +339,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	  log("The InternalNavCommand suddenly disappeared...");
 	  some_error = true;
 	}
+      }
+      else if (type== typeName<NavData::VisualExplorationCommand>()) {
+	debug("visual exploraiton cmd finished?");
+	finished = true;
       }
     } // while(...)
 		
@@ -359,6 +384,19 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 
   log("Task execution finished");
 	
+}
+
+
+void SpatialTranslation::issueVisualExplorationCommand(Rendezvous &rv)
+{
+  std::string ID = newDataID();
+  NavData::VisualExplorationCommandPtr cmd = new NavData::VisualExplorationCommand;
+  cmd->comp = NavData::PENDING;
+
+  rv.addChangeFilter(
+      createLocalTypeFilter<NavData::VisualExplorationCommand>(cdl::OVERWRITE)); // local
+  error("alex issueVisualExplorationCommand");
+  addToWorkingMemory<NavData::VisualExplorationCommand>(ID, cmd);
 }
 
 // ----------------------------------------------------------------------------
@@ -642,6 +680,8 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
 	    ctrl.x = destHyp->x;
 	    ctrl.y = destHyp->y;
 	    ctrl.tolerance = nav->tolerance;
+//        error("alex m_isExplorationAction = true");
+	    m_isExplorationAction = true;
 	  }
 	  else {//destNode == 0 && destHyp == 0
 	    log("cmd error; could not find destination Place");

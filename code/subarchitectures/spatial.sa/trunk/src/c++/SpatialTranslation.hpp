@@ -30,6 +30,8 @@
 #include <Utils/MutexWrapper.hh>
 #include <FrontierInterface.hpp>
 
+class Rendezvous;
+
 namespace spatial {
 
 /**
@@ -71,6 +73,12 @@ private:
   // This says if have been there changes on the nav graph since then
   bool m_navGraphChanged;
   bool m_bNoNavGraph;
+
+  // Set to true for GOTOPLACE that refer to Placeholders
+  bool m_isExplorationAction;
+  // Set to true in order for SpatialTranslation to send visual exploration
+  // commands when an exploration movment finished
+  bool m_issueVisualExplorationActions;
 
   // NavCommand with its id on WM
   typedef std::pair<std::string, SpatialData::NavCommandPtr> tpNavCommandWithId;
@@ -114,6 +122,12 @@ private:
   void changeNavCmdCompletion(const std::string &id, 
                               const SpatialData::Completion &completion, 
                               const SpatialData::StatusError &status);
+
+  /* Sends a VisualExplorationCommand to SpatialControl
+   * @param rv: Rendezvous object, on which to add a change filter
+   * for VisualExplorationCommand overwrites
+   */
+  void issueVisualExplorationCommand(Rendezvous &rv);
 
   /* Executes the given command, marks its completion and status
    * and returns when it is over.
