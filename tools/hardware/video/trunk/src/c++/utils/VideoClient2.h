@@ -154,11 +154,13 @@ public:
     int m_refCount;
     void addRef()
     {
-       m_refCount++;
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_lockMonitor);
+      m_refCount++;
     }
     void releaseRef()
     {
-       m_refCount--;
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_lockMonitor);
+      m_refCount--;
     }
   public:
     CStorage()
@@ -353,10 +355,8 @@ private:
    /**
     * Replaces m_cache with a set of received images.
     * If an image in m_cache is locked, it is moved to m_locked and an unlocked
-    * one is moved from m_locked to m_cache. If an unlocked imaga doesn't exist
+    * one is moved from m_locked to m_cache. If an unlocked image doesn't exist
     * in m_locked, a new one is created.
-    *
-    * TODO: cleanup m_locked when it grows too big (erase unlocked images)
     */
    void cacheImages(const std::vector<Video::Image>& images);
 
@@ -411,7 +411,7 @@ public:
    void getCachedImages(std::vector<CCachedImagePtr>& images);
 
    // Debugging: # of locked images
-   int getLockedCount()
+   int _getLockedCount()
    {
       return m_locked.size();
    }
