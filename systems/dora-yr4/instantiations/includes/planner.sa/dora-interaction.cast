@@ -10,7 +10,7 @@ COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --
 COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
 INCLUDE planner-base.cast
 INCLUDE viz-plan.cast
-JAVA MG manual.planning motivation.components.generators.SimulatedPersonGoalGenerator --goals %(planning_goal)
+#JAVA MG manual.planning motivation.components.generators.SimulatedPersonGoalGenerator --goals %(planning_goal)
 # exection ####################################################################
 JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
 JAVA MG executor dora.execution.components.DoraExecutionMediator
