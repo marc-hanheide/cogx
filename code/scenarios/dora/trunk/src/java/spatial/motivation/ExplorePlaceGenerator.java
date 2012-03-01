@@ -79,7 +79,6 @@ public class ExplorePlaceGenerator extends
 			log("place is not yet explored, so it is a goal");
 			ExploreMotive result = new ExploreMotive();
 			result.created = getCASTTime();
-			result.correspondingUnion = "";
 			result.maxExecutionTime = MAX_EXECUTION_TIME;
 			result.maxPlanningTime = MAX_PLANNING_TIME;
 			result.priority = MotivePriority.UNSURFACE;

@@ -57,7 +57,6 @@ public class PatrolPlaceGenerator extends
 			log("place is explored, so it is a goal to patrol");
 			PatrolMotive result = new PatrolMotive();
 			result.created = getCASTTime();
-			result.correspondingUnion = "";
 			result.maxExecutionTime = MAX_EXECUTION_TIME;
 			result.maxPlanningTime = MAX_PLANNING_TIME;
 			result.priority = MotivePriority.UNSURFACE;
