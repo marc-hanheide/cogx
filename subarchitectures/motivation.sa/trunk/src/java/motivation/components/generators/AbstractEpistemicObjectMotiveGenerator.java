@@ -46,7 +46,6 @@ public abstract class AbstractEpistemicObjectMotiveGenerator<M extends Motive, T
 
 	public static <T2 extends Motive> T2 fillDefault(T2 result) {
 		result.created = CASTUtils.getTimeServer().getCASTTime();
-		result.correspondingUnion = "";
 		result.maxExecutionTime = DEFAULT_MAX_EXECUTION_TIME;
 		result.maxPlanningTime = DEFAULT_MAX_PLANNING_TIME;
 		result.priority = MotivePriority.UNSURFACE;

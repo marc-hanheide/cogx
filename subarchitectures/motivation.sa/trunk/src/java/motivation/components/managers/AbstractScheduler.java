@@ -47,7 +47,7 @@ import facades.ExecutorFacade;
 public abstract class AbstractScheduler extends ManagedComponent implements
 		ChangeHandler<Motive>, Callable<Object> {
 
-	private static final int MAX_GOALS = 5;
+	public static final int MAX_GOALS = 5;
 
 	private static final int MINIMUM_PLANNER_TIMEOUT = 30;
 
@@ -164,6 +164,7 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		List<Goal> goals = new LinkedList<Goal>();
 		for (Motive m : goalsToPlanFor.values()) {
 			if (!m.goal.goalString.isEmpty())
+				// set all those that are of HIGHEST priority to HARD goals
 				if (m.priority == MotivePriority.HIGH)
 					m.goal.importance = -1;
 			goals.add(m.goal);

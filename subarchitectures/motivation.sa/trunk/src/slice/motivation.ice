@@ -52,23 +52,29 @@ module motivation {
 			cast::cdl::CASTTime created;
 			cast::cdl::CASTTime updated;
 			cast::cdl::WorkingMemoryAddress referenceEntry;
-			string correspondingUnion;
 			cast::cdl::WorkingMemoryAddress thisEntry;
+
     		MotiveStatus status;
+
     		/** a counter for the number of tries this motive has been planned */
     		long tries; 	
+
     		/** [0-1] encoding for a priority */
     		MotivePriority priority;
-    		/** [0-inf] encoding for costs */
-    		float costs;
+
+    		/** [0-inf] encoding for costs, -1 encodes infinity AKA hard goal */
+    		double costs;
+
+
     		/** [0-1] encoding for information gain */
     		double informationGain;
+
     		/** rank of activated motives */
     		int rank;
+
     		/** the derived single goal for the planner */
     		autogen::Planner::Goal goal;
-    		/** planCosts */
-    		double plannedCosts;
+
     		/** maxplanningTime in sec **/
     		int maxPlanningTime;
     		/** max execution time in sec **/
