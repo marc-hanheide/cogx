@@ -38,10 +38,13 @@ using namespace std;
 using namespace boost;
 using namespace spatial;
 
-
 #define SCOPED_TIME_LOG TimeLogger logger(this, __FILE__, __LINE__);
 
 #define CAM_ID_DEFAULT 0
+
+// Amount of time after pan-tilt movement terminates, until point clouds
+// are admitted to the obstacle map (seconds)
+#define KINECT_PANTILT_DELAY 0.3
 
 //NOTE: This file "adapted" (nicked) from nav.sa version with NavCommand structs.
 //SpatialData doesn't have everything that NavData does; the extraneous
@@ -95,13 +98,10 @@ SpatialControl::SpatialControl()
   m_Displaylgm = NULL;
   m_displayBinaryMap = NULL;
   m_displayObstacleMap = NULL;
-  m_displayCategoricalMap = NULL;
   m_FrontierFinder = NULL;
   m_lgm = NULL;
   m_lgmLM = NULL;
   m_lgmKH = NULL;
-  m_categoricalMap = NULL;
-  m_categoricalKHMap = NULL;
   m_binaryMap = NULL;
   m_obstacleMap = NULL;
 }
@@ -146,6 +146,14 @@ void SpatialControl::CreateGridMap() {
     m_ProxyGridMap.set_cells(cells);
     m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
+
+/*    m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize, 
+    1,0.9,0.8,
+    0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
+    peekabot::OccupancySet2D cells1;
+    m_ProxyGridMapKinect.set_cells(cells1);
+    m_ProxyGridMapKinect.set_position(0,0,-0.009);
+*/
 }
 
 void SpatialControl::UpdateGridMap() {
@@ -160,6 +168,18 @@ void SpatialControl::UpdateGridMap() {
         }
     }
     m_ProxyGridMap.set_cells(cells);
+/*
+    peekabot::OccupancySet2D cells1;
+    for (int x = -m_kinlgm->getSize(); x <= m_kinlgm->getSize(); x++) {
+        for (int y = -m_kinlgm->getSize(); y <= m_kinlgm->getSize(); y++) {
+            if ((* (m_kinlgm))(x, y)=='0')
+                cells1.add(x*cellSize,y*cellSize,0);
+            else if ((* (m_kinlgm))(x, y)=='1')
+                cells1.add(x*cellSize,y*cellSize,1);
+        }
+    }
+    m_ProxyGridMapKinect.set_cells(cells1);
+*/
 //    if (m_MapsMutex.tryLock()){
       std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
       m_ProxyMap.clear();
@@ -240,10 +260,12 @@ SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance)
   addToWorkingMemory(cmdId, newPTZPoseCommand);
 
   m_waitingForPTZCommandID = cmdId;
+  error("alex startMovePanTilt %s",m_waitingForPTZCommandID.c_str());
 }
 
 void SpatialControl::newPanTiltCommand(const cdl::WorkingMemoryChange &objID) {
   m_ptzInNavigationPose = false; // Wait until the command is done before checking the pose
+  m_ptzInMappingPose = false; 
 }
 
 void
@@ -260,13 +282,8 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
       deleteFromWorkingMemory(objID.address);
     }
 
-    // Check if the tilt is now in the 'navigation pose' (-45 degrees)
-    if(overwritten->pose.tilt < -M_PI/4 + 0.05 && overwritten->pose.tilt > -M_PI/4 -0.05)
-      m_ptzInNavigationPose = true;
-    else 
-      m_ptzInNavigationPose = false;
+    checkPTZPose(overwritten->pose);
 
-    log("PTZ in navigation pose: %d", m_ptzInNavigationPose);
 
     m_lastPtzNavPoseCompletion = getCASTTime();
   }
@@ -279,6 +296,30 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
       m_waitingForPTZCommandID = "";
 }
 
+void
+SpatialControl::checkPTZPose(const ptz::PTZPose &pose)
+{
+  if(pose.tilt < -M_PI/4 + 0.05 && pose.tilt > -M_PI/4 -0.05) {
+    m_ptzInMappingPose = true;
+  }
+  else {
+    m_ptzInMappingPose = false;
+  } 
+
+  if(pose.tilt < -M_PI/4 + 0.05 && pose.tilt > -M_PI/4 -0.05 &&
+      pose.pan < 0.05 && pose.pan > -0.05)
+  {
+    m_ptzInNavigationPose = true;
+  }
+  else {
+    m_ptzInNavigationPose = false;
+  }
+
+  log("PTZ in navigation pose: %d", m_ptzInNavigationPose);
+  log("PTZ in mapping pose: %d", m_ptzInMappingPose);
+  m_currentPTZPose = pose;
+}
+
 SpatialControl::~SpatialControl() 
 { 
   delete m_Glrt;
@@ -286,13 +327,10 @@ SpatialControl::~SpatialControl()
   delete m_Displaylgm;
   delete m_displayBinaryMap;
   delete m_displayObstacleMap;
-  delete m_displayCategoricalMap;
   delete m_FrontierFinder;
   delete m_lgm;
   delete m_lgmLM;
   delete m_lgmKH;
-  delete m_categoricalMap;
-  delete m_categoricalKHMap;
   delete m_binaryMap;
   delete m_obstacleMap;
 }
@@ -453,12 +491,6 @@ void SpatialControl::configure(const map<string,string>& _config)
     m_MaxExplorationRange = (atof(it->second.c_str()));
   }
 
-  m_MaxCatExplorationRange = 5.6;
-  it = _config.find("--cat-explore-range");
-  if (it != _config.end()) {
-    m_MaxCatExplorationRange = (atof(it->second.c_str()));
-  }
-
   it = _config.find("--robot-server");
   if (it != _config.end()) {
     std::istringstream str(it->second);
@@ -466,16 +498,26 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_lgm = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
+  m_lgmKH = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
   if(m_loadLgm)
   {
     LoadGridMap("GridMap.txt");
+  } else {
+      m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
+      m_lgm->setValueInsideCircle(0.1, 0, 0.5, '0'); 
+      m_lgm->setValueInsideCircle(0.2, 0, 0.5, '0'); 
+      m_lgm->setValueInsideCircle(0.3, 0, 0.5, '0'); 
+
+      m_lgmKH->setValueInsideCircle(0,   0, 0.5, 0.01); 
+      m_lgmKH->setValueInsideCircle(0.1, 0, 0.5, 0.01); 
+      m_lgmKH->setValueInsideCircle(0.2, 0, 0.5, 0.01); 
+      m_lgmKH->setValueInsideCircle(0.3, 0, 0.5, 0.01); 
+
+
   }
 
-  m_lgmKH = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
-  m_categoricalMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
-  m_categoricalKHMap = new Cure::LocalGridMap<double>(300, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
   m_binaryMap = new Cure::LocalGridMap<unsigned char>(300, 0.05, '2', Cure::LocalGridMap<unsigned char>::MAP1);
 
   m_DisplayCureObstacleMap = false;
@@ -486,9 +528,9 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
-  m_catGlrt  = new Cure::GridLineRayTracer<unsigned char>(*m_categoricalMap);
 
   m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
+//  m_FrontierFinderKinect = new Cure::FrontierFinder<unsigned char>(*m_kinlgm);
 
   if ((_config.find("--x-window") != _config.end())) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
@@ -502,12 +544,6 @@ void SpatialControl::configure(const map<string,string>& _config)
      m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
   } else {
     m_displayBinaryMap = 0;
-  }
-
-  if(_config.find("--show-categorical-map") != _config.end()) {
-    m_displayCategoricalMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_categoricalMap);
-  } else {
-    m_displayCategoricalMap = 0;
   }
 
   double maxGotoV = 0.5;
@@ -581,6 +617,10 @@ void SpatialControl::start()
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
 								  &SpatialControl::newInhibitor));
 	        
+  addChangeFilter(createLocalTypeFilter<NavData::VisualExplorationCommand>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<SpatialControl>(this,
+								  &SpatialControl::newVisualExplorationCommand));
+
   addChangeFilter(createLocalTypeFilter<NavData::InhibitNavControl>(cdl::DELETE),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
 								  &SpatialControl::deleteInhibitor));
@@ -641,15 +681,10 @@ m_RobotServer = getIceServer<Robotbase::RobotbaseServer>(m_RobotServerName);
   	ptz::PTZReading reading = m_ptzInterface->getPose();
   
 
-  if(reading.pose.tilt < -M_PI/4 + 0.05 && reading.pose.tilt > -M_PI/4 -0.05)
-    m_ptzInNavigationPose = true;
-  else
-    m_ptzInNavigationPose = false;
+    checkPTZPose(reading.pose);
 
-  log("PTZ in navigation pose: %d", m_ptzInNavigationPose);
-
-  m_lastPtzNavPoseCompletion = getCASTTime();
-}
+    m_lastPtzNavPoseCompletion = getCASTTime();
+  }
 
 
   log("SpatialControl started");
@@ -746,8 +781,8 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure:
     maxY = lgm.getSize() - 1;
 
   /* Project the height map on to the local map */
-  for (xi = minX; xi <= maxX; xi++) {
-    for (yi = minY; yi <= maxY; yi++) {
+  for (yi = minY; yi <= maxY; yi++) {
+    for (xi = minX; xi <= maxX; xi++) {
       if ((*heightMap)(xi, yi) > obstacleMinHeight && (*heightMap)(xi, yi) < obstacleMaxHeight) {
         lgm(xi, yi) = '1';
       }
@@ -756,15 +791,21 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure:
         // free space from the point cloud
         if (lgm(xi, yi) == '1')
           continue;
-
         lgm(xi, yi) = '0';
+      }
+      else if ((m_UsePointCloud) && (lgm(xi, yi) != '1'))
+        lgm(xi, yi) = '2';
+      else if ((!m_UsePointCloud) && (lgm(xi, yi) != '1')){
+        double cellsize = m_lgm->getCellSize();
+        double al = -m_currentPTZPose.pan;
+        double nx = xi*cellsize * cos(al) - yi*cellsize * sin(al);
+        double ny = xi*cellsize * sin(al) + yi*cellsize * cos(al);
+        if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) lgm(xi, yi) = '2';
       }
     }
   }
-
-  /* Filtering */
-  for (xi = minX+1; xi < maxX; xi++) {
-    for (yi = minY+1; yi < maxY; yi++) {
+  for (yi = minY+1; yi < maxY; yi++) {
+    for (xi = minX+1; xi < maxX; xi++) {
       if (lgm(xi,yi) == '1' && 
           lgm(xi-1,yi) != '1' && lgm(xi+1,yi) != '1' &&
           lgm(xi-1,yi-1) != '1' && lgm(xi+1,yi-1) != '1' &&
@@ -792,38 +833,25 @@ bool SpatialControl::isPointVisible(const cogx::Math::Vector3 &pos)
   return Video::isPointVisible(params, pos);
 }
 
-void SpatialControl::updateGridMaps()
-{
-  double maxCatHeight = 0.3;
+void SpatialControl::updateGridMaps(){
   Cure::Pose3D scanPose;
-	Cure::Pose3D LscanPose;
+  Cure::Pose3D LscanPose;
   Cure::Pose3D lpW;
- 	int xi,yi;
+  int xi,yi;
 
+  /* Update a temporary local map so we don't hog the lock */
   Cure::LocalGridMap<unsigned char> *tmp_lgm;
-  Cure::GridLineRayTracer<unsigned char> *tmp_glrt;
-  Cure::LocalGridMap<unsigned char> *tmp_catlgm;
-  Cure::GridLineRayTracer<unsigned char> *tmp_catglrt;
-  {
-    SCOPED_TIME_LOG;
-    //  /* Update a temporary local map so we don't hog the lock */
-    tmp_lgm = new Cure::LocalGridMap<unsigned char>(*m_lgm);
-    tmp_glrt = new Cure::GridLineRayTracer<unsigned char>(*tmp_lgm);
-    tmp_catlgm = new Cure::LocalGridMap<unsigned char>(*m_categoricalMap);
-    tmp_catglrt = new Cure::GridLineRayTracer<unsigned char>(*tmp_catlgm);
-  }
-  
 
+  tmp_lgm = m_lgm; //new Cure::LocalGridMap<unsigned char>(*m_lgm);
+  Cure::GridLineRayTracer<unsigned char> tmp_glrt(*tmp_lgm);
+  
   /* Local reference so we don't have to dereference the pointer all the time */
   Cure::LocalGridMap<double>& lgmKH = *m_lgmKH;
-  Cure::LocalGridMap<double>& lgmcatKH = *m_categoricalKHMap;
 
   /* Bounding box for laser scan */
   double laserMinX = INT_MAX, laserMaxX = INT_MIN;
   double laserMinY = INT_MAX, laserMaxY = INT_MIN;
 
-  double laserCatMinX = INT_MAX, laserCatMaxX = INT_MIN;
-  double laserCatMinY = INT_MAX, laserCatMaxY = INT_MIN;
 
   /* Add all queued laser scans */
   {
@@ -838,59 +866,44 @@ void SpatialControl::updateGridMaps()
     int status = 1;
     {
       if (m_TOPP.isTransformDefined()) {
-	status = m_TOPP.getPoseAtTime(scan.getTime(), LscanPose);
+	      status = m_TOPP.getPoseAtTime(scan.getTime(), LscanPose);
       }
     }
     
     if (status == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
-
-        if (m_usePeekabot){
-            m_ProxyScan.clear_vertices();
-            double angStep = scan.getAngleStep();
-            double startAng = scan.getStartAngle();
-	    peekabot::VertexSet vs;
-            for (int i = 0; i < scan.getNPts(); i++) {
-              float x,y;
-              x = cos(startAng + i * angStep) * scan.getRange(i);
-              y = sin(startAng + i * angStep) * scan.getRange(i);
-              vs.add(x,y,0);
-            }
-	    m_ProxyScan.add_vertices(vs);
-       }
-
       if (m_usePeekabot){
+        SCOPED_TIME_LOG;        
+        m_ProxyScan.clear_vertices();
+        double angStep = scan.getAngleStep();
+        double startAng = scan.getStartAngle();
+				peekabot::VertexSet vs;
+        for (int i = 0; i < scan.getNPts(); i++) {
+          float x,y;
+          x = cos(startAng + i * angStep) * scan.getRange(i);
+          y = sin(startAng + i * angStep) * scan.getRange(i);
+          vs.add(x,y,0);
+        }
+				m_ProxyScan.add_vertices(vs);
         m_ProxyScan.set_pose(lpW.getX(), lpW.getY(), lpW.getZ(), lpW.getTheta(), 0, 0);
       }
-
-      tmp_glrt->addScan(scan, lpW, m_MaxExplorationRange);
-      tmp_lgm->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
-          0.55*Cure::NewNavController::getRobotWidth(), '0');
-
-      m_catGlrt->addScan(scan, lpW, m_MaxCatExplorationRange);
-      m_categoricalMap->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
-          0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
-
+      {
+        SCOPED_TIME_LOG;
+        tmp_glrt.addScan(scan, lpW, m_MaxExplorationRange);
+        tmp_lgm->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
+            0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
+      }
       m_firstScanAdded = true;
 
       /* Update bounding box */
-      if (LscanPose.getX() < laserMinX)
-        laserMinX = LscanPose.getX();
-      if (LscanPose.getX() > laserMaxX)
-        laserMaxX = LscanPose.getX();
-      if (LscanPose.getY() < laserMinY)
-        laserMinY = LscanPose.getY();
-      if (LscanPose.getY() > laserMaxY)
-        laserMaxY = LscanPose.getY();
-
-      if (LscanPose.getX() < laserCatMinX)
-        laserCatMinX = LscanPose.getX();
-      if (LscanPose.getX() > laserCatMaxX)
-        laserCatMaxX = LscanPose.getX();
-      if (LscanPose.getY() < laserCatMinY)
-        laserCatMinY = LscanPose.getY();
-      if (LscanPose.getY() > laserCatMaxY)
-        laserCatMaxY = LscanPose.getY();
+      if (lpW.getX() < laserMinX)
+        laserMinX = lpW.getX();
+      if (lpW.getX() > laserMaxX)
+        laserMaxX = lpW.getX();
+      if (lpW.getY() < laserMinY)
+        laserMinY = lpW.getY();
+      if (lpW.getY() > laserMaxY)
+        laserMaxY = lpW.getY();
     }
     {
       SCOPED_TIME_LOG;
@@ -898,7 +911,7 @@ void SpatialControl::updateGridMaps()
     }
   }
   m_ScanQueueMutex.unlock();
-  /* Only proceed if we got any new scans */
+/* Only proceed if we got any new scans */
   if (laserMinX == INT_MAX || laserMinY == INT_MAX || laserMaxX == INT_MIN || laserMaxY == INT_MIN) {
     return;
   }
@@ -906,11 +919,6 @@ void SpatialControl::updateGridMaps()
   laserMinY -= m_MaxExplorationRange;
   laserMaxX += m_MaxExplorationRange;
   laserMaxY += m_MaxExplorationRange;
-
-  laserCatMinX -= m_MaxCatExplorationRange;
-  laserCatMinY -= m_MaxCatExplorationRange;
-  laserCatMaxX += m_MaxCatExplorationRange;
-  laserCatMaxY += m_MaxCatExplorationRange;
 
   int laserMinXi, laserMinYi, laserMaxXi, laserMaxYi;
   if (m_lgm->worldCoords2Index(laserMinX, laserMinY, laserMinXi, laserMinYi) != 0) {
@@ -922,131 +930,137 @@ void SpatialControl::updateGridMaps()
     laserMaxYi = m_lgm->getSize() - 1;
   }
 
-  int laserCatMinXi, laserCatMinYi, laserCatMaxXi, laserCatMaxYi;
-  if(m_categoricalMap->worldCoords2Index(laserCatMinX, laserCatMinY, laserCatMinXi, laserCatMinYi) != 0) {
-    laserCatMinXi = -m_categoricalMap->getSize() + 1;
-    laserCatMinYi = -m_categoricalMap->getSize() + 1;
-  }
-  if(m_categoricalMap->worldCoords2Index(laserCatMaxX, laserCatMaxY, laserCatMaxXi, laserCatMaxYi) != 0) {
-    laserCatMaxXi = -m_categoricalMap->getSize() - 1;
-    laserCatMaxYi = -m_categoricalMap->getSize() - 1;
-  }
-
   if (m_UsePointCloud) {
-  /* Bounding box for new point cloud data */
-  int pointcloudMinXi = INT_MAX, pointcloudMaxXi = INT_MIN;
-  int pointcloudMinYi = INT_MAX, pointcloudMaxYi = INT_MIN;
+    SCOPED_TIME_LOG;
+    /* Bounding box for new point cloud data */
+    int pointcloudMinXi = INT_MAX, pointcloudMaxXi = INT_MIN;
+    int pointcloudMinYi = INT_MAX, pointcloudMaxYi = INT_MIN;
 
-  /* Update height map */
-  cdl::CASTTime frameTime = getCASTTime();
-  double time = frameTime.s+frameTime.us/1000000.0;
-  double lastptztime = m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us/1000000.0;
-  bool hasScanPose;
-  {
-    IceUtil::Mutex::Lock lock(m_PPMutex);
-    
-    hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
-  }
+    /* Update height map */
+    cdl::CASTTime frameTime = getCASTTime();
+    double time = frameTime.s+frameTime.us/1000000.0;
+    double lastptztime = m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us/1000000.0;
+    bool hasScanPose;
+    {
+      IceUtil::Mutex::Lock lock(m_PPMutex);
 
-  /* WARNING (FIXME):
-   * For some reason we seem to get old kinect data when we have _just_ moved
-   * the pantilt to -45 degrees some times, causing garbage to appear on the
-   * map. For now, we wait for 1 second before doing anything with the kinect
-   * data to make sure we get fresh data. */
-  if (hasScanPose && m_ptzInNavigationPose && time-lastptztime > 1) {
-    PointCloud::SurfacePointSeq points;
-    getPoints(true, 640/4, points);
-    std::sort(points.begin(), points.end(), ComparePoints());
-    for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
-      /* Ignore points not in the current view cone */
-      if (!isPointVisible(it->p))
-	continue;
-//      if (!isPointInViewCone(it->p))
-//        continue;
-      /* Transform point in cloud with regards to the robot pose */
-      Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
-      Cure::Vector3D to;
-      scanPose.invTransform(from, to);
-      double pX = to.X[0];
-      double pY = to.X[1];
-      double pZ = to.X[2];
-      if (m_lgmKH->worldCoords2Index(pX, pY, xi, yi) == 0) {
-        /* Check if we can safely remove an old obstacle */
-        bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
-        bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
+      hasScanPose = m_TOPP.getPoseAtTime(Cure::Timestamp(frameTime.s, frameTime.us), scanPose) == 0;
+    }
 
-        bool oldcatObstacle = (lgmcatKH(xi, yi) > m_obstacleMinHeight  && lgmcatKH(xi,yi) < maxCatHeight);
-        bool newcatObstacle = (pZ > m_obstacleMinHeight && pZ < maxCatHeight);
-
-        bool updateHeightMap = true;
-        if (oldObstacle && !newObstacle) {
-          /* Undo robot pose transform since it is not known by the point cloud */
-          Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
-          scanPose.transform(old, to);
-          cogx::Math::Vector3 oldPoint;
-          oldPoint.x = to.X[0];
-          oldPoint.y = to.X[1];
-          oldPoint.z = to.X[2];
-          /* If the old obstable is not currently in view don't remove it */
-          if (!isPointInViewCone(oldPoint))
-            updateHeightMap = false;
-        }
-        /* If the above tests passed update the height map */ 
-        if(updateHeightMap)
-          lgmKH(xi, yi) = pZ;
-
-        // Again for categorical gridmap
-        updateHeightMap = true;
-        if (oldcatObstacle && !newcatObstacle) {
-          /* Undo robot pose transform since it is not known by the point cloud */
-          Cure::Vector3D old(pX, pY, lgmcatKH(xi, yi));
-          scanPose.transform(old, to);
-          cogx::Math::Vector3 oldPoint;
-          oldPoint.x = to.X[0];
-          oldPoint.y = to.X[1];
-          oldPoint.z = to.X[2];
-          /* If the old obstable is not currently in view don't remove it */
-          if (!isPointInViewCone(oldPoint))
-            updateHeightMap = false;
-        }
-        /* If the point is above the limit we care about, ignore it */
-        if (pZ > maxCatHeight)
-          updateHeightMap = false;
-
-        /* If the above tests passed update the height map */ 
-        if(updateHeightMap)
-          lgmcatKH(xi, yi) = pZ;
-
-        /* Update bounding box */
-        if (xi < pointcloudMinXi)
-          pointcloudMinXi = xi;
-        if (xi > pointcloudMaxXi)
-          pointcloudMaxXi = xi;
-        if (yi < pointcloudMinYi)
-          pointcloudMinYi = yi;
-        if (yi > pointcloudMaxYi)
-          pointcloudMaxYi = yi;
+    /* WARNING (FIXME):
+     * For some reason we seem to get old kinect data when we have _just_ moved
+     * the pantilt to -45 degrees some times, causing garbage to appear on the
+     * map. For now, we wait for 1 second before doing anything with the kinect
+     * data to make sure we get fresh data. */
+    if (hasScanPose && m_ptzInMappingPose && time-lastptztime > KINECT_PANTILT_DELAY) {
+      PointCloud::SurfacePointSeq points;
+      {
+      SCOPED_TIME_LOG;
+      getPoints(true, 640/4, points);
       }
+      {
+      SCOPED_TIME_LOG;
+      std::sort(points.begin(), points.end(), ComparePoints());
+      }
+      {
+      SCOPED_TIME_LOG;
+     
+      for (PointCloud::SurfacePointSeq::iterator it = points.begin(); it != points.end(); ++it) {
+        /* Ignore points not in the current view cone */
+//        if (!isPointVisible(it->p))
+//        	continue;
+//        if (!isPointInViewCone(it->p))
+//          continue;
+        /* Transform point in cloud with regards to the robot pose */
+        Cure::Vector3D from(it->p.x, it->p.y, it->p.z);
+        Cure::Vector3D to;
+        scanPose.invTransform(from, to);
+        double pX = to.X[0];
+        double pY = to.X[1];
+        double pZ = to.X[2];
+        if (m_lgmKH->worldCoords2Index(pX, pY, xi, yi) == 0) {
+          /* Check if we can safely remove an old obstacle */
+          bool oldObstacle = (lgmKH(xi, yi) > m_obstacleMinHeight && lgmKH(xi, yi) < m_obstacleMaxHeight);
+          bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
+          
+          bool updateHeightMap = true;
+          if (oldObstacle && !newObstacle) {
+//          /* Undo robot pose transform since it is not known by the point cloud */
+//            Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
+//            scanPose.transform(old, to);
+//            cogx::Math::Vector3 oldPoint;
+//            oldPoint.x = to.X[0];
+//            oldPoint.y = to.X[1];
+//            oldPoint.z = to.X[2];
+//            /* If the old obstable is not currently in view don't remove it */
+//            double al = -m_currentPTZPose.pan;
+//            double nx = it->p.x * cos(al) - it->p.y * sin(al);
+//            double ny = it->p.x * sin(al) + it->p.y * cos(al);
+//            if ((nx < 1.8) && (0.535 * nx - ny > 0) && (-0.535 * nx - ny < 0)) updateHeightMap = false;
+            updateHeightMap = false;
+          }
+          /* Don't place a free space if it is out of safety range */
+
+          if (pZ <= m_obstacleMinHeight){
+            double al = -m_currentPTZPose.pan;
+            double nx = it->p.x * cos(al) - it->p.y * sin(al);
+            double ny = it->p.x * sin(al) + it->p.y * cos(al);
+            if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) updateHeightMap = false;
+          }
+
+          /* If the above tests passed update the height map */ 
+          if(updateHeightMap)
+            lgmKH(xi, yi) = pZ;
+
+          /* Update bounding box */
+          if (xi < pointcloudMinXi)
+            pointcloudMinXi = xi;
+          if (xi > pointcloudMaxXi)
+            pointcloudMaxXi = xi;
+          if (yi < pointcloudMinYi)
+            pointcloudMinYi = yi;
+          if (yi > pointcloudMaxYi)
+            pointcloudMaxYi = yi;
+        }
+      }
+      }
+      m_lastPointCloudTime = getCASTTime();
     }
-
-    /* Project the height map onto the 2D obstacle map */ 
-    if (pointcloudMinXi != INT_MAX && pointcloudMinYi != INT_MAX && pointcloudMaxXi != INT_MIN && pointcloudMaxYi != INT_MIN) {
-      blitHeightMap(*tmp_lgm, m_lgmKH, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
-      tmp_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-          0.55*Cure::NewNavController::getRobotWidth(), '0'); 
-
-      blitHeightMap(*m_categoricalMap, m_categoricalKHMap, pointcloudMinXi, pointcloudMaxXi, pointcloudMinYi, pointcloudMaxYi, m_obstacleMinHeight, maxCatHeight);
-      m_categoricalMap->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-          0.55*Cure::NewNavController::getRobotWidth(), '0'); 
+    {
+      /* Project the height map onto the 2D obstacle map */ 
+      SCOPED_TIME_LOG;
+      blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight);
     }
   }
+  else {
 
-  /* Project the height map onto the 2D obstacle map */ 
-  blitHeightMap(*tmp_lgm, m_lgmKH, laserMinXi, laserMaxXi, laserMinYi, laserMaxYi, m_obstacleMinHeight, m_obstacleMaxHeight);
+    int minX = laserMinXi;
+    int maxX = laserMaxXi;
+    int minY = laserMinYi;
+    int maxY = laserMaxYi;
 
-  blitHeightMap(*m_categoricalMap, m_categoricalKHMap, laserCatMinXi, laserCatMaxXi, laserCatMinYi, laserCatMaxYi, m_obstacleMinHeight, maxCatHeight);
+    if (minX <= -m_lgm->getSize())
+      minX = -m_lgm->getSize() + 1;
+    if (maxX >= m_lgm->getSize())
+      maxX = m_lgm->getSize() - 1;
+    if (minY <= -m_lgm->getSize())
+      minY = -m_lgm->getSize() + 1;
+    if (maxY >= m_lgm->getSize())
+      maxY = m_lgm->getSize() - 1;
+
+    for (int yi = minY; yi <= maxY; yi++) {
+      for (int xi = minX; xi <= maxX; xi++) {
+        if ((*tmp_lgm)(xi, yi) != '1'){
+          double cellsize = m_lgm->getCellSize();
+          double al = -(lpW.getTheta()+m_currentPTZPose.pan);
+          double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
+          double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
+          if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) (*tmp_lgm)(xi, yi) = '2';
+        }
+      }
+    }  
+  
   }
-
   const int deltaN = 3;
   double d = m_lgm->getCellSize()/deltaN;
   int maxcellstocheck = int (5.0/d);
@@ -1057,38 +1071,29 @@ void SpatialControl::updateGridMaps()
   Cure::Pose3D currPose;
   {
     IceUtil::Mutex::Lock lock(m_PPMutex);
-
     currPose = m_TOPP.getPose();		
   }
-
   /* Update the nav map */
   m_LMap.clearMap();
-  tmp_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(),
-      0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
+  tmp_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(), 0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
   for (int i = 0; i < m_Npts; i++) {
     theta = m_StartAngle + m_AngleStep * i;
     for (int j = 1; j < deltaN*maxcellstocheck; j++){
       xWT = currPose.getX()+j*d*cos(theta);
       yWT = currPose.getY()+j*d*sin(theta);
       if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
-	if((*tmp_lgm)(xi,yi) == '1'){
-	  m_LMap.addObstacle(xWT, yWT, 1);
-	  break;    
-	}
+	      if((*tmp_lgm)(xi,yi) == '1'){
+	        m_LMap.addObstacle(xWT, yWT, 1);
+	        break;    
+	      }
       }
     }
   }
 
   /* Copy the temporary map */
-  {
-//    IceUtil::Mutex::Lock lock(m_MapsMutex);
-    *m_lgm = *tmp_lgm;
-    *m_categoricalMap = *tmp_catlgm;
-    delete tmp_lgm;
-    delete tmp_glrt;
-    delete tmp_catlgm;
-    delete tmp_catglrt;
-  }
+//  IceUtil::Mutex::Lock lock(m_MapsMutex);
+//  *m_lgm = *tmp_lgm;
+//  delete tmp_lgm;
 }
 
 void SpatialControl::runComponent() 
@@ -1102,14 +1107,16 @@ void SpatialControl::runComponent()
             connectPeekabot();
         }
         CreateGridMap(); 
+  
     }
   int count = 0;
   while(isRunning()){
-	if(count  == 12){
-	  if (m_saveLgm) SaveGridMap();
-	  count = 0;
-	}
-    count++;
+		if(count  == 12){
+			if (m_saveLgm) SaveGridMap();
+			count = 0;
+		}
+		count++;
+
     {
     m_OdomQueueMutex.lock();
     }
@@ -1129,57 +1136,93 @@ void SpatialControl::runComponent()
     m_OdomQueueMutex.unlock();
 
     {
-//    if (m_UsePointCloud) {
+
+//FIXME use robot pose
+
+
       {
-	SCOPED_TIME_LOG;
-	updateGridMaps();
+        SCOPED_TIME_LOG;
+        updateGridMaps();
       }
 
       if(m_usePeekabot){
+        SCOPED_TIME_LOG;
         UpdateGridMap();
       }
 
-//    }	
+
     }
 //FIXME Too slow!
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
-      {
-	if (m_Displaylgm) {
-	  m_Displaylgm->updateDisplay(&currentPose,
-	      &m_NavGraph, 
-	      &m_Frontiers);
-	}
-      }
+			{
+				if (m_Displaylgm) {
+					m_Displaylgm->updateDisplay(&currentPose,
+							&m_NavGraph, 
+							&m_Frontiers);
+				}
+			}
 
-      {
-	if(m_displayBinaryMap)
-	  m_displayBinaryMap->updateDisplay(&currentPose);
-
-	if(m_displayCategoricalMap)
-	  m_displayCategoricalMap->updateDisplay(&currentPose);
-      }
+			{
+				if(m_displayBinaryMap)
+					m_displayBinaryMap->updateDisplay(&currentPose);
 
 
-      if(m_DisplayCureObstacleMap) {
-	// Clear out obstacle map (that's used for visualization only)
-	int radius = m_obstacleMap->getSize();
-	for(int i = -radius; i < radius; ++i) {
-	  for(int j = -radius; j < radius; ++j) {
-	    (*m_obstacleMap)(i,j) = '0';
-	  }
-	}
-	for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
-	  ObstPt obspt = m_LMap.obstRef(i);
-	  (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
-	}
+				if(m_DisplayCureObstacleMap) {
+					// Clear out obstacle map (that's used for visualization only)
+					int radius = m_obstacleMap->getSize();
+					for(int i = -radius; i < radius; ++i) {
+						for(int j = -radius; j < radius; ++j) {
+							(*m_obstacleMap)(i,j) = '0';
+						}
+					}
+					for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
+						ObstPt obspt = m_LMap.obstRef(i);
+						(*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+					}
 
-	m_displayObstacleMap->updateDisplay(&currentPose);
-      }
-    }
-//    if (m_odometryQueue.size() == 0) {
-//      usleep(250000);
-//    }
+					m_displayObstacleMap->updateDisplay(&currentPose);
+				}
+			}
+
+			if (m_visualExplorationOngoing && m_waitingForPTZCommandID == "") {
+				// If we've gotten at least one cloud since we finished moving the
+				// PTU, we can move on to the next phase
+				error("last Point cloud time: %f", m_lastPointCloudTime.s+m_lastPointCloudTime.us*1e-6);
+				error("last PTU time: %f", m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us*1e-6);
+				if (m_lastPointCloudTime > m_lastPtzNavPoseCompletion) {
+					//      cdl::CASTTime diff = getCASTTime() - m_lastPtzNavPoseCompletion;
+					////FIXME time is negative !
+					//    error("alex time diff %f",(double)diff.s + (double)diff.us*(1e-6));
+					//    error("alex m_visualExplorationPhase = %d",m_visualExplorationPhase);
+					//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
+					if (m_visualExplorationPhase == 1) {
+						error("alex m_visualExplorationPhase == 1");
+						startMovePanTilt(M_PI/3, -M_PI/4, 0);
+						m_visualExplorationPhase = 2;
+					}
+					else if (m_visualExplorationPhase == 2) {
+						error("alex m_visualExplorationPhase == 2");
+						startMovePanTilt(0, -M_PI/4, 0);
+						m_visualExplorationPhase = 0;
+						m_visualExplorationOngoing = false;
+						try {
+							NavData::VisualExplorationCommandPtr cmd = 
+								getMemoryEntry<NavData::VisualExplorationCommand>(m_visualExplorationCommand);
+							cmd->comp = NavData::SUCCEEDED;
+							overwriteWorkingMemory<NavData::VisualExplorationCommand>(m_visualExplorationCommand, cmd);
+							error("alex cmd->comp = NavData::SUCCEEDED;");
+						}
+						catch (DoesNotExistOnWMException) {
+							error("Could not find visual exploration command for overwriting!");
+						}
+					}
+				}
+			}	  
+			//    if (m_odometryQueue.size() == 0) {
+			//      usleep(250000);
+			//    }
+		}
   }
 } 
 
@@ -1318,6 +1361,33 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
       m_People.erase(pi);
       break;
     }
+  }
+}
+
+void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange &objID) 
+{
+  log("Received new VisualExplorationCommand");
+  try {
+    NavData::VisualExplorationCommandPtr obj =
+      getMemoryEntry<NavData::VisualExplorationCommand>(objID.address);
+
+    IceUtil::Mutex::Lock lock(m_taskStatusMutex);
+
+    if (m_taskStatus == NothingToDo) {
+      m_visualExplorationOngoing = true;
+      m_visualExplorationPhase = 1;
+      error("alex (1) m_visualExplorationPhase = %d", m_visualExplorationPhase);
+      m_visualExplorationCommand = objID.address.id;
+      startMovePanTilt(-M_PI/3, -M_PI/4, 0);
+    }
+    else {
+      log("SpatialControl busy; cannot execute VisualExplorationCommand");
+      obj->comp = NavData::FAILED;
+      overwriteWorkingMemory<NavData::VisualExplorationCommand>(objID.address.id, obj);
+    }
+  }
+  catch (DoesNotExistOnWMException) {
+    log("Could not find VisualExplorationCommand on WM!");
   }
 }
   
@@ -1812,8 +1882,12 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 //  else 
   {
     IceUtil::Mutex::Lock lock(m_ScanQueueMutex);
-
-    m_LScanQueue.push(cureScan);
+    if (m_LScanQueue.size() == 0) {
+      m_LScanQueue.push(cureScan);
+    }
+    else {
+      m_LScanQueue.front() = cureScan;
+    }
   }
 
   /* Person following stuff */    
@@ -2179,44 +2253,6 @@ int SpatialControl::findClosestPlace(double x, double y, const SpatialData::Node
 }
 
 
-vector<double> SpatialControl::getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount) {
-  vector<double> raytrace;
-  raytrace.resize(beamCount);
-
-  // Get current pose
-  double xytheta[3];
-  m_TOPP.getPose().getXYTheta(xytheta);
-  double theta = xytheta[2];
-
-  // Raytrace in the gridmap
-  double cellSize = m_categoricalMap->getCellSize();
-  double angle = startAngle + theta;
-  for(size_t i=0; i<beamCount; ++i)
-  {
-    raytrace[i] = m_MaxCatExplorationRange;
-    for(double r=0; r<=m_MaxCatExplorationRange; r+=(cellSize/2.0))
-    {
-      double x = r * cos(angle) + xytheta[0];
-      double y = r * sin(angle) + xytheta[1];
-
-      int xCell = static_cast<int>(round(x/cellSize));
-      int yCell = static_cast<int>(round(y/cellSize));
-
-      if(xCell < -300 || xCell > 300 || yCell < -300 || yCell > 300)
-        printf("From raytrace. x: %f, y: %f\n", x,y);
-
-      if((*m_categoricalMap)(xCell,yCell) != '0')
-      {
-        raytrace[i] = r;
-        break;
-      }
-    }
-    angle+=angleStep;
-  }
-
-  return raytrace;
-}
-
 void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char>* gridmap, double minx, double maxx, double miny, double maxy) const {
   int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
   int lgmsize = gridmap->getSize(); // Size of real gridmap
@@ -2280,7 +2316,10 @@ SpatialControl::getFrontiers()
   m_Frontiers.clear();
   debug("calling findFrontiers");
   m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
+//  m_FrontierFinderKinect->findFrontiers(0.8,2.0,m_Frontiers);
+
   setFrontierReachability(m_Frontiers);
+
 
   FrontierInterface::FrontierPtSeq outArray;
   log("m_Frontiers contains %i frontiers", m_Frontiers.size());

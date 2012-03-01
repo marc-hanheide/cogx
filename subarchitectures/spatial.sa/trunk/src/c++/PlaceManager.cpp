@@ -694,7 +694,7 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 
 /* Optionally only check for placholders origining from currentPlaceId. */
 bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId=-1) {
-  error("isPointCloseToExistingPlaceholderd");
+  log("entered isPointCloseToExistingPlaceholderd");
   double minDistanceSq = FLT_MAX;
   int minDistID = -1;
 
@@ -1373,7 +1373,8 @@ void PlaceManager::evaluateUnexploredPaths()
     log("Looping over placeholderpositions");
     for(vector<pair <double, double> >::iterator coordIt = coords.begin();
         coordIt != coords.end(); coordIt++) {
-      if(!isPointCloseToExistingPlaceholder(coordIt->first, coordIt->second)) {
+      if(!((isPointCloseToExistingPlaceholder(coordIt->first, coordIt->second)) ||
+        (coordIt->first * coordIt->first + coordIt->second * coordIt->second < 0.5 * 0.5))) {
         log("Creating placeholder");
 
         //Connect placeholder with the closest place

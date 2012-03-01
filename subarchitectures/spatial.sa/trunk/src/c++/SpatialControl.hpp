@@ -119,9 +119,9 @@ class SpatialControl : public cast::ManagedComponent ,
         virtual SpatialData::DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount, const Ice::Current &_context) {
           SpatialData::DoubleOpt ret;
 
-          m_pOwner->lockComponent();
-          ret = m_pOwner->getGridMapRaytrace(startAngle, angleStep, beamCount);
-          m_pOwner->unlockComponent();
+//          m_pOwner->lockComponent();
+//          ret = m_pOwner->getGridMapRaytrace(startAngle, angleStep, beamCount);
+//          m_pOwner->unlockComponent();
 
           return ret;
         }
@@ -152,6 +152,8 @@ protected:
     peekabot::PeekabotClient m_PeekabotClient;
     peekabot::GroupProxy m_ProxyMap;
     peekabot::OccupancyGrid2DProxy m_ProxyGridMap;
+    peekabot::OccupancyGrid2DProxy m_ProxyGridMapKinect;
+
     bool m_usePeekabot;
     void connectPeekabot();
     void CreateGridMap();
@@ -171,7 +173,6 @@ protected:
   virtual int findClosestNode(double x, double y);
   virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
   void getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy) const;
-  std::vector<double> getGridMapRaytrace(double startAngle, double angleStep, unsigned int beamCount);
 
   void processOdometry(Cure::Pose3D);
 
@@ -183,7 +184,6 @@ protected:
   void updateGridMaps();
 
   double m_MaxExplorationRange; 
-  double m_MaxCatExplorationRange; 
 
   Cure::LocalMap m_LMap; 
   // Used by NavController; Needs no lock protecting it, as only the main thread
@@ -197,10 +197,12 @@ protected:
   Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayObstacleMap;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_displayCategoricalMap;
 
   Cure::FrontierFinder<unsigned char>* m_FrontierFinder;
+  Cure::FrontierFinder<unsigned char>* m_FrontierFinderKinect;
+
   std::list<Cure::FrontierPt> m_Frontiers;
+
   std::deque<Cure::Pose3D> m_odometryQueue;
 
   IceUtil::Mutex m_PPMutex;		// Protects m_TOPP
@@ -214,18 +216,15 @@ protected:
   Cure::LocalGridMap<unsigned char>* m_lgmLM; // LGM to display LocalMap (m_LMap)
   Cure::LocalGridMap<double>* m_lgmKH; // Kinect height map
 
-  Cure::LocalGridMap<unsigned char>* m_categoricalMap; // Hack for review 2011
-  Cure::LocalGridMap<double>* m_categoricalKHMap;
-
   Cure::LocalGridMap<unsigned char>* m_binaryMap;
   Cure::LocalGridMap<unsigned char>* m_obstacleMap; 
 
   IceUtil::Monitor<IceUtil::Mutex> m_LScanMonitor;
-	std::queue<Cure::LaserScan2d> m_LScanQueue;	
+  std::queue<Cure::LaserScan2d> m_LScanQueue;	
 
   int m_Npts;
-	double m_StartAngle;
-	double m_AngleStep;
+  double m_StartAngle;
+  double m_AngleStep;
   
 
   Cure::TransformedOdomPoseProvider m_TOPP;
@@ -234,6 +233,10 @@ protected:
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
   
+  bool m_visualExplorationOngoing;
+  int m_visualExplorationPhase;
+  std::string m_visualExplorationCommand;
+
   NavData::InternalCommandType m_commandType;
   double m_commandX;
   double m_commandY;
@@ -288,7 +291,10 @@ protected:
   bool m_sendPTZCommands;
   ptz::PTZInterfacePrx m_ptzInterface;
   bool m_ptzInNavigationPose;
+  bool m_ptzInMappingPose;
   cast::cdl::CASTTime m_lastPtzNavPoseCompletion;
+  ptz::PTZPose m_currentPTZPose;
+  cast::cdl::CASTTime m_lastPointCloudTime;
 
   int camId;
 
@@ -311,9 +317,11 @@ protected:
                                       const NavData::StatusError &status);
 
 private:
+  void checkPTZPose(const ptz::PTZPose &pose);
   void execCtrl(Cure::MotionAlgorithm::MotionCmd&);
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
+  void newVisualExplorationCommand(const cast::cdl::WorkingMemoryChange &objID);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
   void newNavCtrlCommand(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraph(const cast::cdl::WorkingMemoryChange &objID);
