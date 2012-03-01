@@ -93,6 +93,9 @@ PIDS="$PIDS $!"
 rm -f  robotpose.ccf tmpmap.*
 rm -f core
 echo "--------------------------"
+
+ln -fs ~/.peekabot .
+
 echo "starting peekabot"
 
 xterm -title "peekabot" -e "/opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
