@@ -99,6 +99,14 @@ std::string CGrabbedItem::makeFilename(const CRecordingInfo& frameInfo, int devi
    return fullname;
 }
 
+std::string CGrabbedItem::makeTempFilename(const CRecordingInfo& frameInfo, int deviceId, const std::string& ext)
+{
+   std::string fname = "/tmp/grabber-"
+      + _str_(frameInfo.counter, 8, '0') + "-" + _str_(deviceId, 4, '0')
+      + ext;
+   return fname;
+}
+
 CVideoGrabClient::CVideoGrabClient(cast::CASTComponent* pComponent)
    : CCastLoggerMixin(pComponent)
 {
@@ -112,9 +120,9 @@ void CVideoGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
       items.push_back(CGrabbedItemPtr(new CGrabbedCachedImage(*itt)));
       //pack.images.push_back(*itt);
    }
-   if (getLockedCount() > 100) {
-      println(" **** Client %ld - Locked images: %ld", mId, getLockedCount());
-   }
+   //if (_getLockedCount() > 10) {
+   //   println(" **** Client %ld - Locked images: %ld", mId, _getLockedCount());
+   //}
 }
 
 void CVideoGrabClient::getPreviews(std::vector<CPreview>& previews,
@@ -140,7 +148,7 @@ void CVideoGrabClient::getPreviews(std::vector<CPreview>& previews,
    }
 }
 
-void CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int deviceId)
+CExtraSaverPtr CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 {
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
@@ -151,9 +159,10 @@ void CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int deviceId)
       cvSaveImage(fullname.c_str(), iplImage);
       releaseClonedImage(&iplImage);
    //}
+   return 0;
 }
 
-void CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId)
+CExtraSaverPtr CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 {
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
@@ -161,6 +170,7 @@ void CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId)
    IplImage *iplImage = cloneVideoImage(mImage);
    cvSaveImage(fullname.c_str(), iplImage);
    releaseClonedImage(&iplImage);
+   return 0;
 }
 
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
@@ -320,7 +330,7 @@ void CPcGrabClient::displayExtra(cogx::display::CDisplayClient& display)
 #endif
 
 // Save surface points as R G B X Y Z, tab-separated
-void CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
+CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
 {
    std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname);
@@ -332,6 +342,7 @@ void CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
          << std::endl;
    }
    fo.close();
+   return 0; // TODO: save to a temp file and return a CExtraSaver
 }
 #endif
 
@@ -1035,7 +1046,7 @@ void CVideoGrabber::startGrabbing(const std::string& command)
    fillRecordingInfo(m_RecordingInfo);
    if (command == IDCMD_GRAB) {
       // On single-shot grabbing don't install the timer, just grab right now
-      dynamic_cast<CSaveQueThread*>(m_pQueue.get())->grab();
+      dynamic_cast<CGrabQueThread*>(m_pQueue.get())->grab();
       m_display.updateDisplay(); // send counter value
    }
    else if (command == IDCMD_RECORD) {
@@ -1126,12 +1137,16 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
 
    int devid = 0;
    for (auto pitem : images) {
-      pitem->save(frameInfo, devid);
+      CExtraSaverPtr pSaver = pitem->save(frameInfo, devid);
+      if (pSaver.get()) {
+         // TODO: add to save queue
+      }
       devid += pitem->numDevices();
-      log("saved");
+      //log("saved");
       if (isGrabbing()) {
-         log("sleep - grabbing");
-         sleepComponent(5);
+         //log("sleep - grabbing");
+         sleepComponent(1);
+         //sleepComponent(500); // XXX: DEBUGGING, simulating a slow save
       }
    }
 }
@@ -1173,14 +1188,13 @@ void CVideoGrabber::saveImages(const std::vector<Video::Image>& images)
    }
 }
 
-
-CVideoGrabber::CSaveQueThread::CSaveQueThread(CVideoGrabber *pGrabber)
+CVideoGrabber::CGrabQueThread::CGrabQueThread(CVideoGrabber *pGrabber)
 {
    m_pGrabber = pGrabber;
 }
 
-void CVideoGrabber::CSaveQueThread::getItems(
-      std::vector<CVideoGrabber::CSaveQueThread::CFramePack>& items,
+void CVideoGrabber::CGrabQueThread::getItems(
+      std::vector<CVideoGrabber::CGrabQueThread::CFramePack>& items,
       unsigned int maxItems)
 {
    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_itemsLock);
@@ -1194,7 +1208,7 @@ void CVideoGrabber::CSaveQueThread::getItems(
    m_items.erase(m_items.begin(), m_items.begin() + (maxItems-1));
 }
 
-void CVideoGrabber::CSaveQueThread::grab()
+void CVideoGrabber::CGrabQueThread::grab()
 {
    if (! m_pGrabber) return;
    //IceUtil::Time tm = IceUtil::Time::now();
@@ -1232,14 +1246,14 @@ void CVideoGrabber::CSaveQueThread::grab()
    // result: 2+1 images, 40us
 }
 
-void CVideoGrabber::CSaveQueThread::run()
+void CVideoGrabber::CGrabQueThread::run()
 {  
    while (m_pGrabber && m_pGrabber->isRunning()) {
       int ticks = waitForTick(500);
       if (!ticks) continue;
       if (!m_pGrabber->isGrabbing()) continue;
       if (ticks > 1) 
-         m_pGrabber->println(string(" *** CSaveQueThread: missed ticks: ") + _str_(ticks-1));
+         m_pGrabber->println(string(" *** CGrabQueThread: missed ticks: ") + _str_(ticks-1));
 
       grab();
       m_pGrabber->checkStopGrabbing();
@@ -1264,7 +1278,7 @@ void CVideoGrabber::CDrawingThread::run()
 void CVideoGrabber::runComponent()
 {
    sleepComponent(1000);
-   m_pQueue = new CSaveQueThread(this);
+   m_pQueue = new CGrabQueThread(this);
    m_pDrawer = new CDrawingThread(this);
 
    m_pQueueTick = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pQueue.get()));
@@ -1284,19 +1298,19 @@ void CVideoGrabber::runComponent()
    m_pTimer->scheduleRepeated(m_pDrawTick.get(), IceUtil::Time::milliSeconds(200));
 
    while(isRunning()) {
-      vector<CSaveQueThread::CFramePack> toSave;
-      dynamic_cast<CSaveQueThread*>(m_pQueue.get())->getItems(toSave, 4);
+      vector<CGrabQueThread::CFramePack> toSave;
+      dynamic_cast<CGrabQueThread*>(m_pQueue.get())->getItems(toSave, 4);
       if (toSave.size() < 1) {
-         sleepComponent(200);
+         sleepComponent(20);
          continue;
       }
       debug("Will save %d frames", toSave.size());
-      vector<CSaveQueThread::CFramePack>::iterator it;
+      vector<CGrabQueThread::CFramePack>::iterator it;
       for (it = toSave.begin(); it != toSave.end(); it++) {
          IceUtil::Time tm = IceUtil::Time::now();
          saveQueuedImages(it->images, it->frameInfo);
          IceUtil::Time tm2 = IceUtil::Time::now() - tm;
-         debug("%d images saved in %lld ms", it->images.size(), tm2.toMilliSeconds());
+         debug("%d items saved in %lld ms", it->images.size(), tm2.toMilliSeconds());
       }
       toSave.clear();
    }
