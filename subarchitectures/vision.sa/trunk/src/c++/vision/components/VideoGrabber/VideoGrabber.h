@@ -37,6 +37,7 @@ struct CRecordingInfo
    long counterStart;
    long counterEnd;
    long counter;
+   long missedTicks;
    IceUtil::Time tmStart;
    IceUtil::Time tmEnd;
    CRecordingInfo() {
@@ -44,6 +45,7 @@ struct CRecordingInfo
       counterStart = 0;
       counterEnd = 0;
       counter = 0;
+      missedTicks = 0;
 #if 1 // XXX testing
       directory = "/tmp/path/to/Model";
       filenamePatt = "image-%c-%d.png";
@@ -327,6 +329,10 @@ private:
          m_savers.push_back(saver);
       }
       virtual void run();
+      bool isIdle()
+      {
+         return m_savers.size() < 1;
+      }
    };
    IceUtil::ThreadPtr m_pExtraSaver;
 
@@ -376,6 +382,11 @@ public:
    bool isGrabbing()
    {
       return m_RecordingInfo.recording;
+   }
+   bool isSaving()
+   {
+      if (! m_pExtraSaver.get()) return false;
+      return ! dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->isIdle();
    }
 };
 
