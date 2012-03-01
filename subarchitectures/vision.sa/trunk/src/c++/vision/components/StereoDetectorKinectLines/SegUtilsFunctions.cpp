@@ -51,15 +51,15 @@ void DrawNormals(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud,
   }
 }
 
-void DrawNURBS(TomGine::tgTomGineThread *tgR,
-               const ON_NurbsSurface &on_surf,
-               int color)
-{
-  TomGine::tgModel model;
-  unsigned res = 16;
-  NurbsConvertion::Convert(on_surf, model, res);
-  tgR->AddModel(model);
-}
+//void DrawNURBS(TomGine::tgTomGineThread *tgR,
+//               const ON_NurbsSurface &on_surf,
+//               int color)
+//{
+//  TomGine::tgModel model;
+//  unsigned res = 16;
+//  NurbsConvertion::Convert(on_surf, model, res);
+//  tgR->AddModel(model);
+//}
 
 void GetSegmentIndexes(Z::VisionCore *vcore, 
                        std::vector<bool> &_texture,
