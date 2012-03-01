@@ -137,7 +137,6 @@ public class ExternalGoalGenerator extends ManagedComponent implements
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
 			GeneralGoalMotive ggm = MotiveFactory.createGeneralGoalMotive(wma);
-			ggm.correspondingUnion="";
 			ggm.thisEntry=wma;
 			goalAddresses.put(goalString, wma);
 

@@ -20,39 +20,65 @@ import cast.core.CASTUtils;
 
 /**
  * @author marc
- *
+ * 
  */
 public class MotiveFactory {
 	public static Motive createMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new Motive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, new Goal(-1, -1, "", false),0.0,10,60);
+		return new Motive(created, created, src, null, MotiveStatus.UNSURFACED,
+				0, MotivePriority.UNSURFACE, 0.0f, 0.0, 0, new Goal(-1, -1, "",
+						false), 10, 60);
 	}
+
 	public static ExploreMotive createExploreMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new ExploreMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  new Goal(-1, -1, "", false),0.0,5,60,0);
+		return new ExploreMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 5, 60, 0);
 	}
-	public static CategorizePlaceMotive createCategorizePlaceMotive(WorkingMemoryAddress src) {
+
+	public static CategorizePlaceMotive createCategorizePlaceMotive(
+			WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new CategorizePlaceMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, new Goal(-1, -1, "", false),0.0,5,180,0);
+		return new CategorizePlaceMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 5, 180, 0);
 	}
+
 	public static TestMotive createTestMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new TestMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, new Goal(-1, -1, "", false),0.0,10,60,"hurgs");
+		return new TestMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 10, 60, "hurga");
 	}
+
 	public static HomingMotive createHomingMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new HomingMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, new Goal(-1, -1, "", false),0.0,5,180,0);
+		return new HomingMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 5, 180, 0);
 	}
-	public static CategorizeRoomMotive createCategorizeRoomMotive(WorkingMemoryAddress src) {
+
+	public static CategorizeRoomMotive createCategorizeRoomMotive(
+			WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new CategorizeRoomMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0, new Goal(-1, -1, "", false),0.0,5,180,-1);
+		return new CategorizeRoomMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 5, 180, -1);
 	}
+
 	public static PatrolMotive createPatrolMotive(WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new PatrolMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  new Goal(-1, -1, "", false),0.0,10,60,0, created);
+		return new PatrolMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 10, 60, 0, created);
 	}
-	public static GeneralGoalMotive createGeneralGoalMotive(WorkingMemoryAddress src) {
+
+	public static GeneralGoalMotive createGeneralGoalMotive(
+			WorkingMemoryAddress src) {
 		CASTTime created = CASTUtils.getTimeServer().getCASTTime();
-		return new GeneralGoalMotive(created, created, src, null, null, MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0, 0, 0,  new Goal(-1, -1, "", false),0.0,10,Integer.MAX_VALUE);
+		return new GeneralGoalMotive(created, created, src, null,
+				MotiveStatus.UNSURFACED, 0, MotivePriority.UNSURFACE, 0.0f,
+				0.0, 0, new Goal(-1, -1, "", false), 10, Integer.MAX_VALUE);
 	}
 }
