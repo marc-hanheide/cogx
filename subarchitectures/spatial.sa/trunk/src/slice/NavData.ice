@@ -512,6 +512,16 @@ interface NavGraphInterface{
   };
 
   /**
+   * This is a command to cause the Spatial subarchitecture to look around
+   * following an exploration movement
+   * 
+   * @author Kristoffer Sjöö
+   */
+  class VisualExplorationCommand {
+    Completion comp;
+  };
+
+  /**
    * This struct contains information about a person that we are tracking
    *
    * @author Patric Jensfelt
