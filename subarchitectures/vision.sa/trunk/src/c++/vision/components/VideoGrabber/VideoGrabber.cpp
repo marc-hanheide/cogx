@@ -368,7 +368,7 @@ public:
       // copy from binary to text representation
       std::ifstream fi(tmpFilename, std::ios_base::binary | std::ios_base::in);
       std::ofstream fo(finalFilename);
-      std::vector<char> colors; // Depends on Math::ColorRGB
+      std::vector<unsigned char> colors; // Depends on Math::ColorRGB
       std::vector<double> locs; // Depends on Math::Vector3
       unsigned long size;
       fi >> size;
@@ -389,6 +389,8 @@ public:
             << locs[ie+2] << std::endl;
       }
       fo.close();
+
+      remove(tmpFilename.c_str());
    }
 };
 
@@ -424,7 +426,7 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
    std::string fullname = makeTempFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname, std::ios_base::binary | std::ios_base::out);
    unsigned long size = mPoints.size();
-   std::vector<char> colors; // Depends on Math::ColorRGB
+   std::vector<char> colors; // Depends on Math::ColorRGB; save as signed (Ice!), load as unsigned (PointCloud)
    std::vector<double> locs; // Depends on Math::Vector3
    colors.reserve(size * 3);
    locs.reserve(size * 3);
