@@ -97,6 +97,9 @@ echo "starting peekabot"
 
 xterm -title "peekabot" -e "DISPLAY=$DISPLAY_NUMBER /opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot" &
 PIDS="$PIDS $!"
+
+sleep 10
+
 echo "--------------------------"
 echo "starting PBDisplayControl"
 
