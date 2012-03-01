@@ -781,11 +781,25 @@ void CVideoGrabber::CVvDisplayClient::showCurrentSettings()
       "Current settings:"
       "<div>"
       "Saving to: " << getDirectory() << "/" << getImageFilenamePatt() << "<br>"
-      "Next counter value: " << getCounterValue() << "<br>"
+      "Next counter value: "
+      << (pViewer->isGrabbing()
+         ? "<span style='color:red;'>"
+         : "<span>"
+         )
+      << getCounterValue() << "</span>"
+      << ( pViewer->m_RecordingInfo.missedTicks
+            ? " <span style='color:red;'>Skipped: " + _str_(pViewer->m_RecordingInfo.missedTicks) + "</span>"
+            : "")
+      << "<br>"
       "Time limit: " << getRecordTimeLimit() << "ms<br>"
       "Grabbing speed: " << pViewer->m_frameGrabMs << "ms, "
       << _str_(1000.0/pViewer->m_frameGrabMs, 0, 3, ' ') << "fps<br>"
-      "</div>";
+      << "Status: " << (pViewer->isGrabbing()
+         ? "<span style='color:red;'>&nbsp;Recording&nbsp;</span>"
+         : pViewer->isSaving()
+         ? "<span style='color:red;'>&nbsp;Saving&nbsp;</span>"
+         : "Idle")
+      << "</div>";
 
    ss << "</td></tr></table>";
 
@@ -1137,6 +1151,7 @@ void CVideoGrabber::fillRecordingInfo(CRecordingInfo &info)
    info.counterStart = m_display.getCounterValue();
    info.counterEnd = info.counterStart; // TODO: calculate from settings
    info.counter = info.counterStart;
+   info.missedTicks = 0;
 
    long reclimit = m_display.getRecordTimeLimit();
    info.tmStart = IceUtil::Time::now();
@@ -1244,7 +1259,7 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
    for (auto pitem : images) {
       castutils::CMilliTimer tm(true);
       CExtraSaverPtr pSaver = pitem->save(frameInfo, devid);
-      log(" *** %s ::save took %ldms", pitem->mName.c_str(), tm.elapsed());
+      //log(" *** %s ::save took %ldms", pitem->mName.c_str(), tm.elapsed());
 
       if (pSaver.get()) {
          dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->addSaver(pSaver);
@@ -1337,7 +1352,7 @@ void CVideoGrabber::CGrabQueThread::grab()
 
       castutils::CMilliTimer tm(true);
       psource->grab(timgs);
-      m_pGrabber->log(" *** %s ::grab took %ldms", psource->mName.c_str(), tm.elapsed());
+      //m_pGrabber->log(" *** %s ::grab took %ldms", psource->mName.c_str(), tm.elapsed());
 
       for(auto itt = timgs.begin(); itt != timgs.end(); itt++) {
          pack.images.push_back(*itt);
@@ -1363,8 +1378,10 @@ void CVideoGrabber::CGrabQueThread::run()
       int ticks = waitForTick(500);
       if (!ticks) continue;
       if (!m_pGrabber->isGrabbing()) continue;
-      if (ticks > 1) 
+      if (ticks > 1) {
          m_pGrabber->println(string(" *** CGrabQueThread: missed ticks: ") + _str_(ticks-1));
+         m_pGrabber->m_RecordingInfo.missedTicks += (ticks - 1);
+      }
 
       grab();
       m_pGrabber->checkStopGrabbing();
@@ -1393,7 +1410,7 @@ void CVideoGrabber::CExtraSaveThread::run()
          continue;
       }
       saver->save();
-      m_pGrabber->log(" *** Saved extra: %s", saver->finalFilename.c_str());
+      //m_pGrabber->log(" *** Saved extra: %s", saver->finalFilename.c_str());
       if (m_pGrabber->isGrabbing()) {
          getThreadControl().sleep(IceUtil::Time::milliSeconds(10));
       }
@@ -1407,11 +1424,16 @@ CVideoGrabber::CDrawingThread::CDrawingThread(CVideoGrabber *pGrabber)
 
 void CVideoGrabber::CDrawingThread::run()
 {  
+   castutils::CMilliTimer tm(true);
    while (m_pGrabber && m_pGrabber->isRunning()) {
       int ticks = waitForTick(500);
       if (!ticks) continue;
 
       m_pGrabber->sendCachedImages();
+      if (tm.elapsed() > 1230 && (m_pGrabber->isGrabbing() || m_pGrabber->isSaving())) {
+         tm.restart();
+         m_pGrabber->m_display.showCurrentSettings();
+      }
    }
 }
 
