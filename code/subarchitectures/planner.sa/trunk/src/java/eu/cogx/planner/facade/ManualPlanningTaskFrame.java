@@ -287,7 +287,7 @@ public class ManualPlanningTaskFrame extends JFrame {
 		if (jGoalsTable == null) {
 			jGoalsTable = new JTable();
 			jGoalsTable.setModel(new DefaultTableModel(new String[] { "Goal",
-					"importance" }, 10));
+					"importance" , "deadline" }, 10));
 			jGoalsTable.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseClicked(java.awt.event.MouseEvent e) {
 					jGoalTextEditField.setText((String) jGoalsTable.getValueAt(
@@ -299,6 +299,7 @@ public class ManualPlanningTaskFrame extends JFrame {
 			// jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			jGoalsTable.getColumnModel().getColumn(0).setPreferredWidth(900);
 			jGoalsTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+			jGoalsTable.getColumnModel().getColumn(2).setPreferredWidth(100);
 			jGoalsTable.changeSelection(0, 0, true, false);
 		}
 		return jGoalsTable;
