@@ -36,6 +36,7 @@ extern "C"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <cstdio>
 #include <ctime>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -149,11 +150,23 @@ void CVideoGrabClient::getPreviews(std::vector<CPreview>& previews,
    }
 }
 
+class CExtraImageSaver: public CExtraSaver
+{
+public:
+   void save()
+   {
+      IplImage *pImage = cvLoadImage(tmpFilename.c_str());
+      cvSaveImage(finalFilename.c_str(), pImage);
+      cvReleaseImage(&pImage);
+      remove(tmpFilename.c_str());
+   }
+};
+
 CExtraSaverPtr CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 {
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
-   std::string fullname = makeFilename(frameInfo, deviceId, ".png");
+   std::string fullname = makeTempFilename(frameInfo, deviceId, ".bmp");
    // TODO: println("Saving image: %s", fullname.c_str());
    // TODO: if (!m_fakeRecording) {
    IplImage *iplImage = cloneVideoImage(*mpImage);
@@ -161,19 +174,25 @@ CExtraSaverPtr CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int de
    releaseClonedImage(&iplImage);
    //}
 
-   return 0;
+   CExtraSaverPtr saver = CExtraSaverPtr(new CExtraImageSaver());
+   saver->tmpFilename = fullname;
+   saver->finalFilename = makeFilename(frameInfo, deviceId, ".png");
+   return saver;
 }
 
 CExtraSaverPtr CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId)
 {
    // TODO: conversion to GS when saving;
    // TODO: compression parameters for jpeg and png
-   std::string fullname = makeFilename(frameInfo, deviceId, ".png");
+   std::string fullname = makeTempFilename(frameInfo, deviceId, ".bmp");
    IplImage *iplImage = cloneVideoImage(mImage);
    cvSaveImage(fullname.c_str(), iplImage);
    releaseClonedImage(&iplImage);
 
-   return 0;
+   CExtraSaverPtr saver = CExtraSaverPtr(new CExtraImageSaver());
+   saver->tmpFilename = fullname;
+   saver->finalFilename = makeFilename(frameInfo, deviceId, ".png");
+   return saver;
 }
 
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
@@ -352,7 +371,7 @@ public:
 // Save surface points as R G B X Y Z, tab-separated
 CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
 {
-#if 1
+#if 0
    std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname);
    fo << ";;R\tG\tB\tx\ty\tz" << std::endl;
@@ -363,7 +382,7 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
          << std::endl;
    }
    fo.close();
-#else
+#elif 0
    std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname, std::ios_base::binary | std::ios_base::out);
    unsigned long size = mPoints.size();
@@ -372,6 +391,26 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
       fo << sfp.c.r << sfp.c.g << sfp.c.b;
       fo << sfp.p.x << sfp.p.y << sfp.p.z;
    }
+   fo.close();
+#else
+   std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
+   std::ofstream fo(fullname, std::ios_base::binary | std::ios_base::out);
+   unsigned long size = mPoints.size();
+   std::vector<char> colors; // Depends on Math::ColorRGB
+   std::vector<double> locs; // Depends on Math::Vector3
+   colors.reserve(size * 3);
+   locs.reserve(size * 3);
+   for (auto sfp : mPoints) {
+      colors.push_back(sfp.c.r);
+      colors.push_back(sfp.c.g);
+      colors.push_back(sfp.c.b);
+      locs.push_back(sfp.p.x);
+      locs.push_back(sfp.p.y);
+      locs.push_back(sfp.p.z);
+   }
+   fo << size;
+   fo.write((const char*)&colors[0], sizeof(colors[0]) * colors.size());
+   fo.write((const char*)&locs[0], sizeof(locs[0]) * locs.size());
    fo.close();
 #endif
 
@@ -1178,7 +1217,7 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
       log(" *** %s ::save took %ldms", pitem->mName.c_str(), tm.elapsed());
 
       if (pSaver.get()) {
-         // TODO: add to save queue
+         dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->addSaver(pSaver);
       }
       devid += pitem->numDevices();
       //log("saved");
@@ -1311,7 +1350,7 @@ void CVideoGrabber::CExtraSaveThread::run()
 {
    while (m_pGrabber && m_pGrabber->isRunning()) {
       if (m_savers.empty()) {
-         sleep(20);
+         getThreadControl().sleep(IceUtil::Time::milliSeconds(20));
          continue;
       }
       CExtraSaverPtr saver;
@@ -1324,6 +1363,10 @@ void CVideoGrabber::CExtraSaveThread::run()
          continue;
       }
       saver->save();
+      m_pGrabber->log(" *** Saved extra: %s", saver->finalFilename.c_str());
+      if (m_pGrabber->isGrabbing()) {
+         getThreadControl().sleep(IceUtil::Time::milliSeconds(10));
+      }
    }
 }
 
@@ -1347,14 +1390,14 @@ void CVideoGrabber::runComponent()
    sleepComponent(1000);
    m_pQueue = new CGrabQueThread(this);
    m_pDrawer = new CDrawingThread(this);
-   m_pSaver = new CExtraSaveThread(this);
+   m_pExtraSaver = new CExtraSaveThread(this);
 
    m_pQueueTick = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pQueue.get()));
    m_pDrawTick  = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pDrawer.get()));
 
    IceUtil::ThreadControl tcQueue = m_pQueue->start();
    IceUtil::ThreadControl tcDrawer = m_pDrawer->start();
-   IceUtil::ThreadControl tcSaver = m_pSaver->start();
+   IceUtil::ThreadControl tcSaver = m_pExtraSaver->start();
 
    // Unfortunately Timer isn't exact -- (arbitrary) time spent by runTimerTask
    // is added to the time of a period; because of this runTimerTask must be
