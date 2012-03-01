@@ -70,6 +70,9 @@ typedef std::shared_ptr<CExtraSaver> CExtraSaverPtr;
 class CGrabbedItem
 {
 public:
+   std::string mName;
+
+public:
    std::string makeFilename(const CRecordingInfo& recinfo, int deviceId, const std::string& ext=".png");
    std::string makeTempFilename(const CRecordingInfo& recinfo, int deviceId, const std::string& ext=".tmp");
    // # of devices from which the contents was grabbed; usually 1
@@ -115,6 +118,7 @@ protected:
    int mId;
 
 public:
+   std::string mName;
    CDataSource()
    {
       mId = count;
@@ -154,6 +158,7 @@ private:
 public:
    CGrabbedCachedImage(Video::CCachedImagePtr& pimage)
    {
+      mName = "Cached Image";
       mpImage = pimage;
    }
    virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
@@ -163,6 +168,10 @@ class CGrabbedImage: public CGrabbedItem
 {
 public:
    Video::Image mImage;
+   CGrabbedImage()
+   {
+      mName = "Image";
+   }
    virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 
@@ -176,12 +185,7 @@ public:
    bool mbGrabPoints;
    bool mbGrabDepth;
    bool mbGrabRectImage;
-   CPcGrabClient(): cast::PointCloudClient()
-   {
-      mbGrabPoints = true;
-      mbGrabDepth = false;
-      mbGrabRectImage = false;
-   }
+   CPcGrabClient();
    void configurePcComm(const std::map<std::string,std::string> & _config)
    {
       configureServerCommunication(_config);
@@ -205,6 +209,10 @@ private:
    friend class CPcGrabClient;
    std::vector<PointCloud::SurfacePoint> mPoints;
 public:
+   CGrabbedPcPoints()
+   {
+      mName = "Point Cloud Points";
+   }
    virtual CExtraSaverPtr save(const CRecordingInfo& recinfo, int deviceId) /*override*/;
 };
 #endif
@@ -307,19 +315,20 @@ private:
 
    class CExtraSaveThread: public IceUtil::Thread
    {
+      CVideoGrabber *m_pGrabber;
    private:
       std::vector<CExtraSaverPtr> m_savers;
       IceUtil::Monitor<IceUtil::Mutex> m_saversLock;
    public:
+      CExtraSaveThread(CVideoGrabber *pGrabber);
       void addSaver(CExtraSaverPtr saver)
       {
          IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_saversLock);
          m_savers.push_back(saver);
       }
-      virtual void run() {
-         // TODO
-      }
+      virtual void run();
    };
+   IceUtil::ThreadPtr m_pSaver;
 
    class CDrawingThread: public IceUtil::Thread, public CTickSyncedTask
    {
