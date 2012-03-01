@@ -110,6 +110,7 @@ std::string CGrabbedItem::makeTempFilename(const CRecordingInfo& frameInfo, int 
 CVideoGrabClient::CVideoGrabClient(cast::CASTComponent* pComponent)
    : CCastLoggerMixin(pComponent)
 {
+   mName = "Video Grabber " + _str_(mId);
 }
 
 void CVideoGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
@@ -155,10 +156,11 @@ CExtraSaverPtr CGrabbedCachedImage::save(const CRecordingInfo& frameInfo, int de
    std::string fullname = makeFilename(frameInfo, deviceId, ".png");
    // TODO: println("Saving image: %s", fullname.c_str());
    // TODO: if (!m_fakeRecording) {
-      IplImage *iplImage = cloneVideoImage(*mpImage);
-      cvSaveImage(fullname.c_str(), iplImage);
-      releaseClonedImage(&iplImage);
+   IplImage *iplImage = cloneVideoImage(*mpImage);
+   cvSaveImage(fullname.c_str(), iplImage);
+   releaseClonedImage(&iplImage);
    //}
+
    return 0;
 }
 
@@ -170,10 +172,20 @@ CExtraSaverPtr CGrabbedImage::save(const CRecordingInfo& frameInfo, int deviceId
    IplImage *iplImage = cloneVideoImage(mImage);
    cvSaveImage(fullname.c_str(), iplImage);
    releaseClonedImage(&iplImage);
+
    return 0;
 }
 
 #ifdef FEAT_VIDEOGRABBER_POINTCLOUD
+CPcGrabClient::CPcGrabClient():
+   cast::PointCloudClient()
+{
+   mName = "Point Cloud Grabber " + _str_(mId);
+   mbGrabPoints = true;
+   mbGrabDepth = false;
+   mbGrabRectImage = false;
+}
+
 void CPcGrabClient::grab(std::vector<CGrabbedItemPtr>& items)
 {
    if (mbGrabPoints) {
@@ -329,9 +341,18 @@ void CPcGrabClient::displayExtra(cogx::display::CDisplayClient& display)
 }
 #endif
 
+class CExtraPcPointSaver: public CExtraSaver
+{
+public:
+   void save() {
+      printf(" **** NOT SAVED \n");
+   }
+};
+
 // Save surface points as R G B X Y Z, tab-separated
 CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int deviceId)
 {
+#if 1
    std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
    std::ofstream fo(fullname);
    fo << ";;R\tG\tB\tx\ty\tz" << std::endl;
@@ -342,7 +363,22 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
          << std::endl;
    }
    fo.close();
-   return 0; // TODO: save to a temp file and return a CExtraSaver
+#else
+   std::string fullname = makeFilename(frameInfo, deviceId, ".dat");
+   std::ofstream fo(fullname, std::ios_base::binary | std::ios_base::out);
+   unsigned long size = mPoints.size();
+   fo << size;
+   for (auto sfp : mPoints) {
+      fo << sfp.c.r << sfp.c.g << sfp.c.b;
+      fo << sfp.p.x << sfp.p.y << sfp.p.z;
+   }
+   fo.close();
+#endif
+
+   CExtraSaverPtr saver = CExtraSaverPtr(new CExtraPcPointSaver());
+   saver->tmpFilename = makeTempFilename(frameInfo, deviceId, ".dat");
+   saver->finalFilename = makeFilename(frameInfo, deviceId, ".dat");
+   return saver;
 }
 #endif
 
@@ -1137,7 +1173,10 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
 
    int devid = 0;
    for (auto pitem : images) {
+      castutils::CMilliTimer tm(true);
       CExtraSaverPtr pSaver = pitem->save(frameInfo, devid);
+      log(" *** %s ::save took %ldms", pitem->mName.c_str(), tm.elapsed());
+
       if (pSaver.get()) {
          // TODO: add to save queue
       }
@@ -1222,12 +1261,15 @@ void CVideoGrabber::CGrabQueThread::grab()
    //   - a GrabberClient adds SaveItem(Ptr)s to the queue
    //   - saveQueuedImages works with SaveItem(Ptr)s instead of CCachedImagePtr-s
    CFramePack pack;
-   std::vector<CGrabbedItemPtr> data;
    std::vector<CDataSource*> clients;
    m_pGrabber->getClients(clients);
-   for (unsigned int i = 0; i < clients.size(); i++) {
+   for (auto psource : clients) {
       std::vector<CGrabbedItemPtr> timgs;
-      clients[i]->grab(timgs);
+
+      castutils::CMilliTimer tm(true);
+      psource->grab(timgs);
+      m_pGrabber->log(" *** %s ::grab took %ldms", psource->mName.c_str(), tm.elapsed());
+
       for(auto itt = timgs.begin(); itt != timgs.end(); itt++) {
          pack.images.push_back(*itt);
       }
@@ -1260,6 +1302,31 @@ void CVideoGrabber::CGrabQueThread::run()
    }
 }
 
+CVideoGrabber::CExtraSaveThread::CExtraSaveThread(CVideoGrabber *pGrabber)
+{
+   m_pGrabber = pGrabber;
+}
+
+void CVideoGrabber::CExtraSaveThread::run()
+{
+   while (m_pGrabber && m_pGrabber->isRunning()) {
+      if (m_savers.empty()) {
+         sleep(20);
+         continue;
+      }
+      CExtraSaverPtr saver;
+      {
+         IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_saversLock);
+         saver = m_savers.back();
+         m_savers.pop_back();
+      }
+      if (! saver.get()) {
+         continue;
+      }
+      saver->save();
+   }
+}
+
 CVideoGrabber::CDrawingThread::CDrawingThread(CVideoGrabber *pGrabber)
 {
    m_pGrabber = pGrabber;
@@ -1280,12 +1347,14 @@ void CVideoGrabber::runComponent()
    sleepComponent(1000);
    m_pQueue = new CGrabQueThread(this);
    m_pDrawer = new CDrawingThread(this);
+   m_pSaver = new CExtraSaveThread(this);
 
    m_pQueueTick = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pQueue.get()));
    m_pDrawTick  = new CTickerTask(dynamic_cast<CTickSyncedTask*>(m_pDrawer.get()));
 
    IceUtil::ThreadControl tcQueue = m_pQueue->start();
    IceUtil::ThreadControl tcDrawer = m_pDrawer->start();
+   IceUtil::ThreadControl tcSaver = m_pSaver->start();
 
    // Unfortunately Timer isn't exact -- (arbitrary) time spent by runTimerTask
    // is added to the time of a period; because of this runTimerTask must be
@@ -1318,6 +1387,7 @@ void CVideoGrabber::runComponent()
    debug("joining worker threads");
    tcQueue.join();
    tcDrawer.join();
+   tcSaver.join();
 
    m_pTimer->destroy();
 }
