@@ -136,22 +136,35 @@ public:
   private:
     friend class CCachedImagePtr;
     Video::Image* m_pImage;
-    int m_refCount;
-    IceUtil::Monitor<IceUtil::Mutex> m_refMonitor;
-    void addref()
+    int m_lockCount;
+    IceUtil::Monitor<IceUtil::Mutex> m_lockMonitor;
+    void addLock()
     {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_refMonitor);
-      m_refCount++;
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_lockMonitor);
+      m_lockCount++;
+      assert(m_lockCount <= m_refCount);
     }
-    void release()
+    void releaseLock()
     {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_refMonitor);
-      m_refCount--;
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_lockMonitor);
+      m_lockCount--;
+    }
+  private:
+    friend class CStoragePtr;
+    int m_refCount;
+    void addRef()
+    {
+       m_refCount++;
+    }
+    void releaseRef()
+    {
+       m_refCount--;
     }
   public:
     CStorage()
     {
       m_pImage = 0;
+      m_lockCount = 0;
       m_refCount = 0;
     }
     ~CStorage()
@@ -160,7 +173,7 @@ public:
     }
     bool isLocked() const
     {
-      return m_refCount > 0;
+      return m_lockCount > 0;
     }
     void setImage(const Video::Image& image)
     {
@@ -169,8 +182,64 @@ public:
     }
   };
 
+  class CStoragePtr // TODO: c++0x, std::shared_ptr<CStorage>
+  {
+    CStorage* m_pStore;
+  public:
+    CStoragePtr()
+    {
+      m_pStore = 0;
+    }
+    CStoragePtr(CStorage* pStore)
+    {
+      m_pStore = pStore;
+      if (m_pStore) m_pStore->addRef();
+    }
+    CStoragePtr(const CStoragePtr& storePtr)
+    {
+      m_pStore = storePtr.m_pStore;
+      if (m_pStore) m_pStore->addRef();
+    }
+    ~CStoragePtr()
+    {
+      if (m_pStore) {
+        m_pStore->releaseRef();
+        if (m_pStore->m_refCount < 1) {
+          delete m_pStore;
+        }
+      }
+    }
+    CStorage* get() const
+    {
+      return m_pStore;
+    }
+    CStoragePtr& operator=(const CStoragePtr& storePtr)
+    {
+      if (m_pStore) {
+        if (m_pStore == storePtr.m_pStore) {
+          return *this;
+        }
+        m_pStore->releaseRef();
+        if (m_pStore->m_refCount < 1) {
+          delete m_pStore;
+        }
+      }
+      m_pStore = storePtr.m_pStore;
+      if (m_pStore) m_pStore->addRef();
+      return *this;
+    }
+    CStorage* operator->() const
+    {
+      return m_pStore;
+    }
+    CStorage& operator*() const
+    {
+      return *m_pStore;
+    }
+  };
+
 private:
-  CStorage* m_pStore;
+  CStoragePtr m_pStore;
 
 public:
   CCachedImagePtr()
@@ -180,26 +249,33 @@ public:
   CCachedImagePtr(const CCachedImagePtr& aImage)
   {
     m_pStore = aImage.m_pStore;
-    if (m_pStore) m_pStore->addref();
+    if (m_pStore.get()) m_pStore->addLock();
   }
   CCachedImagePtr(CStorage* pStore)
   {
+    m_pStore = CStoragePtr(pStore);
+    if (m_pStore.get()) m_pStore->addLock();
+  }
+  CCachedImagePtr(CStoragePtr pStore)
+  {
     m_pStore = pStore;
-    if (pStore) pStore->addref();
+    if (m_pStore.get()) m_pStore->addLock();
   }
   ~CCachedImagePtr()
   {
-    if (m_pStore) m_pStore->release();
+    if (m_pStore.get()) m_pStore->releaseLock();
   }
   CCachedImagePtr& operator=(const CCachedImagePtr& aImage)
   {
-    if (m_pStore)
+    if (m_pStore.get())
     {
-      if (aImage.m_pStore == m_pStore) return *this;
-      m_pStore->release();
+      if (aImage.m_pStore.get() == m_pStore.get()) {
+        return *this;
+      }
+      m_pStore->releaseLock();
     }
     m_pStore = aImage.m_pStore;
-    if (m_pStore) m_pStore->addref();
+    if (m_pStore.get()) m_pStore->addLock();
     return *this;
   }
 
@@ -270,8 +346,8 @@ private:
     * The size of m_cache should be the same as the size of m_camIds.
     */
    bool m_bCaching;
-   std::vector<CCachedImagePtr::CStorage*> m_cache;
-   std::vector<CCachedImagePtr::CStorage*> m_locked;
+   std::vector<CCachedImagePtr::CStoragePtr> m_cache;
+   std::vector<CCachedImagePtr::CStoragePtr> m_locked;
    IceUtil::Monitor<IceUtil::Mutex> m_cacheMonitor;
 
    /**
