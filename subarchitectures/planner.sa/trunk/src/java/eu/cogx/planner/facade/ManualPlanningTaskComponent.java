@@ -153,6 +153,7 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 		for (int i = 0; i < goalsTable.getRowCount(); i++) {
 			Object goalObj = goalsTable.getValueAt(i, 0);
 			Object impObj = goalsTable.getValueAt(i, 1);
+			Object deadlineObj = goalsTable.getValueAt(i, 2);
 			if (goalObj != null && goalObj instanceof String
 					&& ((String) goalObj).length() > 0) {
 				int importance = -1;
@@ -167,7 +168,19 @@ public class ManualPlanningTaskComponent extends ManagedComponent implements
 						importance = -1;
 					}
 				}
-				Goal g = new Goal(importance, -1, (String) goalObj, false);
+				int deadline = -1;
+				if (impObj != null && impObj instanceof String) {
+					try {
+						deadline = Integer.parseInt((String) deadlineObj);
+					} catch (NumberFormatException e) {
+						getLogger().warn(
+								"could not parse deadline integer from"
+										+ (String) impObj
+										+ ". taken default -1.");
+						deadline = -1;
+					}
+				}
+				Goal g = new Goal(importance, deadline, (String) goalObj, false);
 				goals.add(g);
 			}
 		}
