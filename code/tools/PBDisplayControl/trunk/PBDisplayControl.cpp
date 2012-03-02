@@ -175,11 +175,11 @@ void PeekabotController::show(const std::string &label)
   peekabot::ObjectProxy pb_object;
   peekabot::Status s = pb_object.assign(m_PeekabotClient,label).status();
   if( s.succeeded() ) {
-    cout << "Showing \"" << label << "\"\n";
+//    cout << "Showing \"" << label << "\"\n";
     pb_object.show();
   }
   else {
-    cout << "Not found: \"" << label << "\"\n";
+//    cout << "Not found: \"" << label << "\"\n";
   }
 }
 
@@ -188,11 +188,11 @@ void PeekabotController::hide(const std::string &label)
   peekabot::ObjectProxy pb_object;
   peekabot::Status s = pb_object.assign(m_PeekabotClient,label).status();
   if( s.succeeded() ) {
-    cout << "Hiding \"" << label << "\"\n";
+//    cout << "Hiding \"" << label << "\"\n";
     pb_object.hide();
   }
   else {
-    cout << "Not found: \"" << label << "\"\n";
+//    cout << "Not found: \"" << label << "\"\n";
   }
 }
 
@@ -255,13 +255,19 @@ PeekabotController::PeekabotController()
     connectPeekabot();
 }
 
+void printHelp()
+{
+  cerr << "Usage: PBDisplayControl [--exec {View_name | [+|-]Element_to_display} ...]\n";
+}
+
 int main(int argc, char *argv[]){
   PeekabotController controller;
 
   if (argc > 1) {
     if (strcmp(argv[1], "--exec") == 0) {
-      if (argc < 2) {
+      if (argc < 3) {
 	cerr << "Too few arguments for --exec\n";
+	printHelp();
 	return 1;
       }
       for (int argn = 2; argn < argc; argn++) {
@@ -271,7 +277,7 @@ int main(int argc, char *argv[]){
 	  if (controller.ps.views[i].name == argv[argn]) {
 	    controller.ApplyView(i);
 	    found = true;
-	    cout << "Applying view: " << controller.ps.views[i].name << "\n";
+//	    cout << "Applying view: " << controller.ps.views[i].name << "\n";
 	    break;
 	  }
 	} 
@@ -292,6 +298,7 @@ int main(int argc, char *argv[]){
     }
     else {
       cerr << "Unknown argument \"" << argv[1] << "\"\n";
+      printHelp();
       return 2;
     }
   }
