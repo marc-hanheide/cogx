@@ -101,7 +101,9 @@ echo "starting peekabot"
 xterm -title "peekabot-xterm" -e "/opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
 PIDS="$PIDS $!"
 
-sleep 1
+sleep 4
+wmctrl -l | grep "peekabot$"
+
 window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
 echo "peekabot window id is " $window_id
 xdotool windowactivate $window_id key alt+F5
