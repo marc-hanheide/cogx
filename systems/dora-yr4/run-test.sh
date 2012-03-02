@@ -107,14 +107,14 @@ wmctrl -l | grep "peekabot$"
 window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
 echo "peekabot window id is " $window_id
 xdotool windowactivate $window_id key alt+F5
-xdotool windowsize $window_id 40% 60%
+xdotool windowsize $window_id 40% 40%
 
 sleep 2
 
 echo "--------------------------"
 echo "starting PBDisplayControl"
 
-xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl 2>&1 | tee logs/PBDisplayControl.log" &
+xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl 2>&1 | tee logs/PBDisplayControl.log" &
 PIDS="$PIDS $!"
 echo "--------------------------"
 
@@ -136,10 +136,13 @@ sleep 10
 xterm -title "CAST client: $configFile" -e bash -c "ulimit -c unlimited; output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
-
 # in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
 #waitForTrigger
-sleep 60
+sleep 30
+xdotool windowmove $window_id 0 0
+xdotool windowsize $window_id 50% 50%
+xdotool windowactivate $window_id
+sleep 30
 
 TESTREST=0
 if [ "$GOAL" ]; then
