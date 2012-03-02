@@ -297,7 +297,7 @@ cout << flush;
   save_results = true;
   surface::SaveFileSequence::Parameter p;
   modelSaver = new surface::SaveFileSequence(p);
-  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval-3-1-%1d.sfv", 0, 42);
+  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 42);
   
 
   /// open cv window
@@ -606,6 +606,11 @@ if(false) {
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;
 
+//   if(save_results) {
+//     if(deb) log("save surface models: start");
+//     modelSaver->SaveNextView(surfaces);
+//     if(deb) log("save surface models: end");
+//   }
   
   /// Check annotation for evaluation
   annotation->setFileWriting(true, "/media/U-Daten/OD-IROS/results/annoEval.txt");
