@@ -145,6 +145,8 @@ xdotool windowmove $window_id 0 0
 xdotool windowsize $window_id 50% 50%
 xdotool windowactivate $window_id
 
+sleep 2
+
 TESTREST=0
 if [ "$GOAL" ]; then
         echo "running test for goal $GOAL" 
