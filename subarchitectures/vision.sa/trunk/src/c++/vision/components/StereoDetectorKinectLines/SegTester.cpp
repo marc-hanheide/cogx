@@ -19,7 +19,7 @@
 #include "Draw.hh"
 
 #include "StereoCamera.h"
-#include <VisionData.hpp>
+#include "VisionData.hpp"
 
 #include "VisionCore.hh"
 #include "Gestalt.hh"
@@ -80,6 +80,7 @@ void SegTester::configure(const map<string,string> & _config)
 
   showImages = false;
   single = false;
+  process_loaded_models = false;
 
   map<string,string>::const_iterator it;
   if((it = _config.find("--camids")) != _config.end())
@@ -295,11 +296,21 @@ cout << flush;
 
   /// save results to file
   save_results = true;
-  surface::SaveFileSequence::Parameter p;
-  modelSaver = new surface::SaveFileSequence(p);
-  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 42);
+  surface::SaveFileSequence::Parameter sp;
+  modelSaver = new surface::SaveFileSequence(sp);
+  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_result%1d.sfv", 0, 42);
   
-
+  /// load models from file
+  startID = 0;
+  endID = 42;
+  nextID = startID;
+  off_filename = "/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv";
+  off_pcd_file = "/media/U-Daten/OD-IROS/points2/iros_eval%1d.pcd";
+  off_ipl_file = "/media/U-Daten/OD-IROS/image_color/iros_eval%1d.png";
+  surface::LoadFileSequence::Parameter lp;
+  modelLoader = new surface::LoadFileSequence(lp);
+  modelLoader->InitFileSequence(off_filename, startID, endID);
+  
   /// open cv window
   if(showImages) 
   {
@@ -327,7 +338,10 @@ void SegTester::runComponent()
     SingleShotMode();
   }
   while(isRunning()) {
-    processImageNew();
+    if(process_loaded_models)
+      processLoadedData();
+    else
+      processImageNew();
   }
   if(showImages) {
     cvReleaseImage(&iplImage_k);
@@ -492,8 +506,6 @@ void SegTester::processImageNew()
     if(deb) log("save surface models: end");
   }
   
-/// DEBUG 
-if(false) {
   /// Load annotation
   if(deb) log("Annotation: start");
   std::vector< std::vector<int> > anno_pairs;
@@ -626,7 +638,6 @@ if(false) {
   svmFile->setTestSet(true);
   svmFile->process();
   if(deb) log("write svm testset file: end.");
-}
 //   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
@@ -679,7 +690,21 @@ void SegTester::SingleShotMode()
     unlockComponent();
   }
   if (key == 65479 || key == 1114055)  { // F10
-    log("currently unused.");
+    log("process models from file in single shot mode");
+    single = false;
+  }
+  
+  if (key == 65480 || key == 1114056)  { // F11
+    log("process models: single shot modus ended.");
+    lockComponent();
+    LoadImageData();
+    processLoadedData();
+    unlockComponent();
+  }
+  if (key == 65480 || key == 1114056)  { // F12
+    log("process models: single shot modus ended.");
+    single = false;
+    process_loaded_models = true;
   }
 
   //  if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
@@ -1029,79 +1054,196 @@ void SegTester::SingleShotMode()
       log("Show mesh of surfaces. done.");
       break;
     }  
-      
-    case 'x':                               /// TODO Take F10 or F12???
-      log("End Single-Shot mode!");
-      single = false;
-      break;
   }
 }
 
 void SegTester::LoadImageData()
 {
-//   log("Get image data started.");
-//   
-//   pointCloudWidth = 640;
-//   pointCloudHeight = pointCloudWidth *3/4;
-//   rgbWidth = 640;
-//   rgbHeight = rgbWidth *3/4;
-//   
-//   points.resize(0);
-//   getCompletePoints(false, pointCloudWidth, points);      // Get the image grid point cloud with zeros, when no values are available!
-//   
-//   ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth, pointCloudHeight, true); // replace 0-points by NAN's
-//   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
-//   pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_point_cloud_image);
-// 
-//   tgRenderer->SetImage(kinect_point_cloud_image);
-//   
-//   // get rectified images from point cloud server
-//   getRectImage(2, rgbWidth, image_k);                       // 2 = kinect image / we take it with kinect image width
-//   iplImage_k = convertImageToIpl(image_k);
-// 
-//   /// bilateral filter
-// //   bilateral->setInputCloud(pcl_cloud);
-// //   bilateral->compute();
-// //   bilateral->getCloud(pcl_cloud);
-//   
-//   /// subsample point cloud
-// //   subsample->setInputCloud(pcl_cloud);
-// //   subsample->compute();
-// //   subsample->getCloud(pcl_cloud);
-// //   pointCloudWidth = pointCloudWidth/2.;
-// //   pointCloudHeight = pointCloudWidth *3/4;
-// 
-//   /// calculate normals
-//   static struct timespec start, last, current;
-//   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-//   if(deb) last = start;
-//   pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
-//   pclA::NormalsEstimationNR n;
-//   n.setParameter(param);
-//   n.setInputCloud(pcl_cloud);
-//   n.compute();
-//   n.getNormals(pcl_normals);
-//   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
-//   if(deb) printf("Runtime for SegLearner: Getting images => Calculate normals %4.3f\n", timespec_diff(&current, &last));
-//   
-//   
-//   if(showImages)
-//     cvShowImage("Kinect image", iplImage_k);
-//   
-//   /// Check if there are same 3D points in the point clouds
-// //   for(unsigned l=1; l<pointCloudWidth*pointCloudHeight-1; l++)
-// //   {
-// //     double dist = ((pcl_cloud->points[l].x-pcl_cloud->points[l+1].x) + 
-// //                    (pcl_cloud->points[l].y-pcl_cloud->points[l+1].y) + 
-// //                    (pcl_cloud->points[l].z-pcl_cloud->points[l+1].z));
-// //     if(dist == 0.) printf("SegTester: Warning: Same 3D point: idx: %u-%u!!!\n", l, l+1);
-// //   }
-//   log("Get image data ended.");
+  log("Load image data: started.");
+ 
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  
+  pointCloudWidth = 640;
+  pointCloudHeight = pointCloudWidth *3/4;
+  rgbWidth = 640;
+  rgbHeight = rgbWidth *3/4;
+  
+  char pcd_next[256] = "";
+  std::sprintf(pcd_next, off_pcd_file, nextID);
+  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::io::loadPCDFile(pcd_next, *pcl_cloud);
+  pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_point_cloud_image);
+  
+  char ipl_next[256] = "";
+  std::sprintf(ipl_next, off_ipl_file, nextID);
+  iplImage_k = cvLoadImage(ipl_next);
+
+  surface::View view;
+  modelLoader->LoadNextView(view);
+  surfaces = view.surfaces;
+  
+  tgRenderer->SetImage(kinect_point_cloud_image);
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Getting images: %4.3f\n", timespec_diff(&current, &last));
+  last = current;
+  
+  // calculate normals
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  if(deb) last = start;
+  pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
+  pclA::NormalsEstimationNR n;
+  n.setParameter(param);
+  n.setInputCloud(pcl_cloud);
+  n.compute();
+  n.getNormals(pcl_normals);
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Calculate normals: %4.3f\n", timespec_diff(&current, &last));
+  
+  
+  if(showImages)
+    cvShowImage("Kinect image", iplImage_k);
+  
+  nextID++; 
+  
+  log("Get image data ended.");
 }
+
 
 void SegTester::processLoadedData()
 {
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
 
+  /// Run vision core (for canny edges)
+  vcore->NewImage(iplImage_k);
+  vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+  GetSegmentIndexes(vcore, texture, pointCloudWidth);
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Vision core: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current;  
+
+  
+  /// Load annotation
+  if(deb) log("Annotation loading: start");
+  std::vector< std::vector<int> > anno_pairs;
+  std::vector<int> anno_background_list;
+  annotation->load(pointCloudWidth, anno, true);            /// TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation->setSurfaceModels(surfaces);
+  annotation->calculate();
+  annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+  if(deb) log("Annotation loading: end");
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegTester: Annotation calculation: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current; 
+
+    
+  /// Calculate patch relations
+  if(deb) log("Calculate patch-relations start!");
+  std::vector<Relation> relation_vector;
+  patches->setInputImage(iplImage_k);
+  patches->setInputCloud(pcl_cloud);                        /// TODO projects points to planes / changes normals, if setOptimalPatchModels is true
+  patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
+  patches->setSurfaceModels(surfaces);
+  patches->setAnnotion(anno_pairs, anno_background_list);
+  patches->setTexture(texture);
+  patches->setOptimalPatchModels(true);
+  patches->computeTestRelations();
+  patches->getRelations(relation_vector);
+
+  pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
+  pcl_normals_repro->points.resize(pcl_normals->points.size());
+  patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);      // TODO Wieso braucht man hier noch die output-cloud? Only for displaying
+  if(deb) log("Calculate patch-relations ended!");
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegTester: Calculate patch relations: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current;  
+
+  
+  /// SVM-Prediction
+  if(deb) log("svm-predictor: start");
+  if(deb) printf("SegTester: Prediction start: relation_vector.size: %lu\n", relation_vector.size());
+  for(unsigned i=0; i<relation_vector.size(); i++)
+  {
+    relation_vector[i].prediction = svm->getNResult(relation_vector[i].type, 
+                                                    relation_vector[i].rel_value, 
+                                                    relation_vector[i].rel_probability);
+    if(deb) 
+    {
+      if(relation_vector[i].groundTruth == 0) {
+        printf("relation [%u][%u]: gt: false => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
+        if(relation_vector[i].prediction > 0.5)
+          printf(" => is FALSE\n");
+        else
+          printf(" => is true\n");
+      }
+      if(relation_vector[i].groundTruth == 1) {
+        printf("relation [%u][%u]: gt: true  => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
+        if(relation_vector[i].prediction < 0.5)
+          printf(" => is FALSE\n");
+        else
+          printf(" => is true\n");      
+      }
+    }
+  }
+  if(deb) log("svm-predictor: end");
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegTester: Prediction: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current;
+
+  
+  /// Graph cutter
+  if(deb) log("graph-cutter: start");
+  int nr_models = surfaces.size();
+  graphCut->init(relation_vector);
+  graphCut->process();
+  graphCut->getResults(nr_models, graphCutGroups);
+  for(unsigned i=0; i<graphCutGroups.size(); i++)
+    for(unsigned j=0; j<graphCutGroups[i].size(); j++)
+      surfaces[graphCutGroups[i][j]]->label = i;
+  if(deb) log("graph-cutter: end");
+  
+  if(deb) {
+    printf("GraphCut groups:\n");
+    for(unsigned i=0; i<graphCutGroups.size(); i++) {
+      printf("  %u: ", i);
+      for(unsigned j=0; j<graphCutGroups[i].size(); j++)
+        printf("%u ", graphCutGroups[i][j]);
+      printf("  \n");
+    }
+  }
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current;
+
+//   if(save_results) {
+//     if(deb) log("save surface models: start");
+//     modelSaver->SaveNextView(surfaces);
+//     if(deb) log("save surface models: end");
+//   }
+  
+  /// Check annotation for evaluation
+  annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
+  if(deb) annotation->checkAnnotation(surfaces, graphCutGroups);
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
+  
+  
+  /// write svm-relations for first level svm to file!
+  if(deb) log("write svm testset file: start.");
+  svmFile->setRelations(relation_vector);
+  svmFile->setAnalyzeOutput(false);
+  svmFile->setTestSet(true);
+  svmFile->process();
+  if(deb) log("write svm testset file: end.");
+//   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
 }
