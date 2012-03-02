@@ -140,11 +140,10 @@ PIDS="$PIDS $!"
 
 # in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
 #waitForTrigger
-sleep 30
+sleep 60
 xdotool windowmove $window_id 0 0
 xdotool windowsize $window_id 50% 50%
 xdotool windowactivate $window_id
-sleep 30
 
 TESTREST=0
 if [ "$GOAL" ]; then
