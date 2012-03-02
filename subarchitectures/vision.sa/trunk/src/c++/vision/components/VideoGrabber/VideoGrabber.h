@@ -23,6 +23,8 @@
 #endif
 #include <castutils/CastLoggerMixin.hpp>
 
+#include <queue>
+
 namespace cogx
 {
 
@@ -266,6 +268,8 @@ private:
       void setCounterValue(long nValue);
       long getRecordTimeLimit();
       void setRecordTimeLimit(long nValue);
+      float getGrabbingSpeed();
+      void setGrabbingSpeed(float fValue);
 
    public:
       CVvDisplayClient() { pViewer = NULL; }
@@ -319,19 +323,32 @@ private:
    {
       CVideoGrabber *m_pGrabber;
    private:
-      std::vector<CExtraSaverPtr> m_savers;
+      std::queue<CExtraSaverPtr> m_savers;
       IceUtil::Monitor<IceUtil::Mutex> m_saversLock;
+      CExtraSaverPtr next()
+      {
+         IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_saversLock);
+         //CExtraSaverPtr saver = m_savers.back();
+         //m_savers.pop_back();
+         CExtraSaverPtr saver = m_savers.front();
+         m_savers.pop();
+         return saver;
+      }
    public:
       CExtraSaveThread(CVideoGrabber *pGrabber);
       void addSaver(CExtraSaverPtr saver)
       {
          IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_saversLock);
-         m_savers.push_back(saver);
+         m_savers.push(saver);
       }
       virtual void run();
       bool isIdle()
       {
-         return m_savers.size() < 1;
+         return m_savers.empty();
+      }
+      size_t itemCount()
+      {
+         return m_savers.size();
       }
    };
    IceUtil::ThreadPtr m_pExtraSaver;
@@ -386,7 +403,12 @@ public:
    bool isSaving()
    {
       if (! m_pExtraSaver.get()) return false;
-      return ! dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->isIdle();
+      return dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->itemCount() > 0;
+   }
+   size_t saveQueueSize()
+   {
+      if (! m_pExtraSaver.get()) return 0;
+      return dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->itemCount();
    }
 };
 

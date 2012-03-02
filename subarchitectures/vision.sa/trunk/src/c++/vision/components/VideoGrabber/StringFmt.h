@@ -261,11 +261,12 @@ std::string _str_(T i, const std::string& fmt)
          else if (ch == '+') { ss.setf(std::ios::internal); pos++; }
          size_t end = fmt.find(':', pos);
          if (end == fmt.npos) end = len;
-         int n = 0;
+         int n = -1;
          int wp = 0;
          while (pos < end) {
             ch = fmt[pos];
             if (ch >= '0' && ch <= '9') {
+               if (n < 0) n = 0;
                n = n * 10 + ch - '0';
                pos++;
                continue;
@@ -282,7 +283,7 @@ std::string _str_(T i, const std::string& fmt)
                pos++;
             }
          }
-         if (n > 0) {
+         if (n >= 0) {
             if (wp == 0) width = n;
             else if (wp == 1) precision = n;
          }

@@ -604,6 +604,8 @@ void CVideoGrabber::start()
    m_display.addButton(IDOBJ_GRABBER, IDCMD_RECORD, "&Record");
    m_display.addButton(IDOBJ_GRABBER, IDCMD_STOP, "&Stop Recording");
    m_display.addCheckBox(IDOBJ_SETTINGS, IDCTRL_STREAMING, "Streaming");
+
+   m_display.updateDisplay();
 #endif
 
    Video::CVideoClient2* pVideo;
@@ -648,17 +650,18 @@ void CVideoGrabber::start()
 #ifdef FEAT_VISUALIZATION
 void CVideoGrabber::CVvDisplayClient::createForms()
 {
-   //std::string head =
-   //   "<style>"
-   //   ".info { font-size: 90%; color: #808080; }"
-   //   "</style>"
-   //   ;
-   //setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, head);
+   std::string head =
+     "<style>"
+     "table.formrow { margin-top: 0px; margin-bottom: 0px; }\n"
+     "table.formrow td { padding: 0px;}\n"
+     "</style>"
+     ;
+   setHtmlHead(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, head);
    std::ostringstream ss;
    string help1, help2;
 
    ss <<
-      "<table>"
+      "<table class='formrow'>"
       "<tr><td>Model: </td><td>"
       "<input type='text' name='model' style='width:20em;' />"
       "</td></tr>"
@@ -668,11 +671,11 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    help1 = "Use \"%m\" to place the model name in the Directory.";
    help2 = "\"Create directory\" can only create one (the last) level.";
    ss <<
-      "<table>"
+      "<table class='formrow'>"
       "<tr><td>Directory: </td><td>"
       "<input type='text' name='directory' style='width:20em;' title='" << help1 << "'/>"
       "</td></tr><tr><td>&nbsp;</td><td>"
-      "<input type='checkbox' name='createdir' value='on' title='" << help2 << "'/>Create directory"
+      "<input type='checkbox' name='createdir' value='on' title='" << help2 << "'/> Create directory"
       "</td></tr>"
       "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("directory"));
@@ -684,14 +687,14 @@ void CVideoGrabber::CVvDisplayClient::createForms()
       "Use \"%d\" to place the device name.\n"
       "Use \"%m\" to place the model name.\n";
    ss <<
-      "<table>"
+      "<table class='formrow'>"
       "<tr><td>Filename: </td><td>"
       "<input type='text' name='filename' style='width:20em;' title='" << help1 << "'/>"
       "</td></tr>"
       "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("filename"));
 
-   ss << "<table>";
+   ss << "<table class='formrow'>";
    vector<string> cntValues;
    ss << "<tr><td>Counter digits: </td><td>"
       "<select name='countersize' >";
@@ -711,7 +714,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
 
    help1 = "Space delimited list of device names (for paramerer \"%d\").";
    ss <<
-      "<table>"
+      "<table class='formrow'>"
       "<tr><td>Device names: </td><td>"
       "<input type='text' name='devicenames' style='width:10em;' title='" << help1 << "' />"
       "</td></tr>"
@@ -719,13 +722,17 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    m_frmSettings.add(new cxd::CFormValues::field("devicenames"));
 
    help1 = "Stop recording after limited time. Enter 0 or less for no limit.";
+   help2 = "Grabbing speed in frames per second.";
    ss <<
-      "<table>"
+      "<table class='formrow'>"
       "<tr><td>Recording limit: </td><td>"
-      "<input type='text' name='recordtimelimit' style='width:10em;' title='" << help1 << "' /> milliseconds"
+      "<input type='text' name='recordtimelimit' style='width:5em;' title='" << help1 << "' /> ms"
+      "</td><td>&nbsp;&nbsp;&nbsp; Speed: </td><td>"
+      "<input type='text' name='recordspeed' style='width:5em;' title='" << help2 << "' /> fps"
       "</td></tr>"
       "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("recordtimelimit"));
+   m_frmSettings.add(new cxd::CFormValues::field("recordspeed"));
 
    ss << "<input type='submit' value='Apply' />";
 
@@ -754,6 +761,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    setCounterDigits(3);
    setCounterValue(0);
    setRecordTimeLimit(5000);
+   setGrabbingSpeed(pViewer->m_frameGrabMs > 0 ? 1e+3 / pViewer->m_frameGrabMs : 5);
    
    setHtmlForm(IDOBJ_SETTINGS, IDPART_SETTINGS_FORM, ss.str());
    showCurrentSettings();
@@ -777,6 +785,31 @@ void CVideoGrabber::CVvDisplayClient::showCurrentSettings()
 
    ss << "</td><td>";
 
+   std::string status;
+   if (pViewer->isGrabbing()) {
+      status = "<span style='color:red;'>&nbsp;Recording&nbsp;</span>";
+   }
+   else if (pViewer->isSaving()) {
+      status = "<span style='color:red;'>&nbsp;Saving. "
+         + _str_(pViewer->saveQueueSize())
+         + " items to save</span>";
+   }
+   else {
+      status = "Idle";
+   }
+
+   std::string missed = ( pViewer->m_RecordingInfo.missedTicks
+         ? " <span style='color:red;'>Skipped: " + _str_(pViewer->m_RecordingInfo.missedTicks) + "</span>"
+         : "");
+
+   std::string maxframes;
+   if (getRecordTimeLimit() > 0 && getGrabbingSpeed() > 0) {
+      maxframes = "&nbsp;&nbsp;&nbsp; Approx. " 
+         + _str_((int)(getRecordTimeLimit() * getGrabbingSpeed() / 1e3))
+         + " frames";
+   }
+
+
    ss <<
       "Current settings:"
       "<div>"
@@ -787,18 +820,12 @@ void CVideoGrabber::CVvDisplayClient::showCurrentSettings()
          : "<span>"
          )
       << getCounterValue() << "</span>"
-      << ( pViewer->m_RecordingInfo.missedTicks
-            ? " <span style='color:red;'>Skipped: " + _str_(pViewer->m_RecordingInfo.missedTicks) + "</span>"
-            : "")
+      << missed
       << "<br>"
-      "Time limit: " << getRecordTimeLimit() << "ms<br>"
-      "Grabbing speed: " << pViewer->m_frameGrabMs << "ms, "
-      << _str_(1000.0/pViewer->m_frameGrabMs, 0, 3, ' ') << "fps<br>"
-      << "Status: " << (pViewer->isGrabbing()
-         ? "<span style='color:red;'>&nbsp;Recording&nbsp;</span>"
-         : pViewer->isSaving()
-         ? "<span style='color:red;'>&nbsp;Saving&nbsp;</span>"
-         : "Idle")
+      "Time limit: " << getRecordTimeLimit() << "ms" << maxframes << "<br>"
+      "Grabbing speed: " << (int)(1e3 / getGrabbingSpeed()) << "ms, "
+      << _str_(getGrabbingSpeed(), 0, 3, ' ') << "fps<br>"
+      << "Status: " << status
       << "</div>";
 
    ss << "</td></tr></table>";
@@ -881,6 +908,16 @@ void CVideoGrabber::CVvDisplayClient::setRecordTimeLimit(long nValue)
    m_frmSettings.setValue("recordtimelimit", _str_(nValue));
 }
 
+float CVideoGrabber::CVvDisplayClient::getGrabbingSpeed()
+{
+   return m_frmSettings.getFloat("recordspeed");
+}
+
+void CVideoGrabber::CVvDisplayClient::setGrabbingSpeed(float fValue)
+{
+   m_frmSettings.setValue("recordspeed", _str_(fValue, 2));
+}
+
 void CVideoGrabber::CVvDisplayClient::handleEvent(const Visualization::TEvent &event)
 {
    //debug(event.data + " (received by VideoViewer)");
@@ -947,7 +984,13 @@ void CVideoGrabber::CVvDisplayClient::handleForm(const std::string& id,
    std::cout << " *** handleForm " << partId << std::endl;
    if (partId == IDPART_SETTINGS_FORM) {
       m_frmSettings.apply(fields);
-      showCurrentSettings();
+      double frameGrabMs = 1e3 / getGrabbingSpeed();
+      if (frameGrabMs < 10) {
+         setGrabbingSpeed(1e3 / 10);
+         updateDisplay();
+      }
+      else
+         showCurrentSettings();
    }
 }
 
@@ -1171,7 +1214,8 @@ void CVideoGrabber::startGrabbing(const std::string& command)
    }
    else if (command == IDCMD_RECORD) {
       m_RecordingInfo.recording = true;
-      m_pTimer->scheduleRepeated(m_pQueueTick.get(), IceUtil::Time::milliSeconds(m_frameGrabMs));
+      m_pTimer->scheduleRepeated(m_pQueueTick.get(),
+            IceUtil::Time::milliSeconds(1e3 / m_display.getGrabbingSpeed()));
    }
 }
 
@@ -1265,10 +1309,8 @@ void CVideoGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
          dynamic_cast<CExtraSaveThread*>(m_pExtraSaver.get())->addSaver(pSaver);
       }
       devid += pitem->numDevices();
-      //log("saved");
       if (isGrabbing()) {
-         //log("sleep - grabbing");
-         sleepComponent(1);
+         sleepComponent(5);
          //sleepComponent(500); // XXX: DEBUGGING, simulating a slow save
       }
    }
@@ -1400,12 +1442,7 @@ void CVideoGrabber::CExtraSaveThread::run()
          getThreadControl().sleep(IceUtil::Time::milliSeconds(20));
          continue;
       }
-      CExtraSaverPtr saver;
-      {
-         IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_saversLock);
-         saver = m_savers.back();
-         m_savers.pop_back();
-      }
+      CExtraSaverPtr saver = next();
       if (! saver.get()) {
          continue;
       }
@@ -1425,13 +1462,15 @@ CVideoGrabber::CDrawingThread::CDrawingThread(CVideoGrabber *pGrabber)
 void CVideoGrabber::CDrawingThread::run()
 {  
    castutils::CMilliTimer tm(true);
+   bool wasSaving = false;
    while (m_pGrabber && m_pGrabber->isRunning()) {
       int ticks = waitForTick(500);
       if (!ticks) continue;
 
       m_pGrabber->sendCachedImages();
-      if (tm.elapsed() > 1230 && (m_pGrabber->isGrabbing() || m_pGrabber->isSaving())) {
+      if (tm.elapsed() > 1230 && (m_pGrabber->isGrabbing() || m_pGrabber->isSaving() || wasSaving)) {
          tm.restart();
+         wasSaving = m_pGrabber->isSaving();
          m_pGrabber->m_display.showCurrentSettings();
       }
    }
