@@ -73,7 +73,7 @@ private:
   
   bool deb;                                                 ///< Debug flag
   
-  surface::SaveFileSequence *save_models;                   ///< Save surface models
+  surface::SaveFileSequence *modelSaver;                   ///< Save surface models
   bool save_results;                                        ///< Save surface models
   char *save_filename;                                      ///< filename for surface models
   
@@ -150,9 +150,12 @@ private:
 
 //   void Points2DepthMap(cast::StereoCamera *sc, cv::Mat_<cv::Point3f> c, cv::Mat_<cv::Point3f> cc, cv::Mat_<cv::Point3f> &depthImage, cv::Mat_<cv::Point3f> &depthMap);
   void GetImageData();
-  
   void processImageNew();
   void SingleShotMode();
+  
+  void LoadImageData();
+  void processLoadedData();
+
 
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config);

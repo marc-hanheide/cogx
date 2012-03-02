@@ -267,9 +267,9 @@ void SegTester::configure(const map<string,string> & _config)
 printf("DEBUG: Init svm-predictor\n");
   /// init svm-predictor
   std::vector<const char*> files;
-  const char* file = "./instantiations/11-05-11/12-02-29-2/PP-Trainingsset.txt.scaled.model";
+  const char* file = "./instantiations/11-05-11/12-03-01-2/PP-Trainingsset.txt.scaled.model";
   files.push_back(file);
-  const char *file2 = "./instantiations/11-05-11/12-02-29-2/PP2-Trainingsset.txt.scaled.model";
+  const char *file2 = "./instantiations/11-05-11/12-03-01-2/PP2-Trainingsset.txt.scaled.model";
   files.push_back(file2);
 cout << "DEBUG: Init svm-predictor: set predictor" << endl;
 cout << flush;
@@ -277,9 +277,9 @@ cout << flush;
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 cout << flush;
   std::vector<const char*> param_files;
-  const char* pfile = "./instantiations/11-05-11/12-02-29-2/param.txt";
+  const char* pfile = "./instantiations/11-05-11/12-03-01-2/param.txt";
   param_files.push_back(pfile);
-  const char* pfile2 = "./instantiations/11-05-11/12-02-29-2/param2.txt";
+  const char* pfile2 = "./instantiations/11-05-11/12-03-01-2/param2.txt";
   param_files.push_back(pfile2);
 cout << "DEBUG: Init svm-predictor: set N scaling" << endl;
 cout << flush;
@@ -296,8 +296,8 @@ cout << flush;
   /// save results to file
   save_results = true;
   surface::SaveFileSequence::Parameter p;
-  save_models = new surface::SaveFileSequence(p);
-  save_models->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval%1d.sfv", 0, 42);
+  modelSaver = new surface::SaveFileSequence(p);
+  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval-3-1-%1d.sfv", 0, 42);
   
 
   /// open cv window
@@ -599,7 +599,7 @@ void SegTester::processImageNew()
 
   if(save_results) {
     if(deb) log("save surface models: start");
-    save_models->SaveNextView(surfaces);
+    modelSaver->SaveNextView(surfaces);
     if(deb) log("save surface models: end");
   }
   
@@ -1026,6 +1026,73 @@ void SegTester::SingleShotMode()
       single = false;
       break;
   }
+}
+
+void SegTester::LoadImageData()
+{
+//   log("Get image data started.");
+//   
+//   pointCloudWidth = 640;
+//   pointCloudHeight = pointCloudWidth *3/4;
+//   rgbWidth = 640;
+//   rgbHeight = rgbWidth *3/4;
+//   
+//   points.resize(0);
+//   getCompletePoints(false, pointCloudWidth, points);      // Get the image grid point cloud with zeros, when no values are available!
+//   
+//   ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth, pointCloudHeight, true); // replace 0-points by NAN's
+//   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
+//   pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_point_cloud_image);
+// 
+//   tgRenderer->SetImage(kinect_point_cloud_image);
+//   
+//   // get rectified images from point cloud server
+//   getRectImage(2, rgbWidth, image_k);                       // 2 = kinect image / we take it with kinect image width
+//   iplImage_k = convertImageToIpl(image_k);
+// 
+//   /// bilateral filter
+// //   bilateral->setInputCloud(pcl_cloud);
+// //   bilateral->compute();
+// //   bilateral->getCloud(pcl_cloud);
+//   
+//   /// subsample point cloud
+// //   subsample->setInputCloud(pcl_cloud);
+// //   subsample->compute();
+// //   subsample->getCloud(pcl_cloud);
+// //   pointCloudWidth = pointCloudWidth/2.;
+// //   pointCloudHeight = pointCloudWidth *3/4;
+// 
+//   /// calculate normals
+//   static struct timespec start, last, current;
+//   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+//   if(deb) last = start;
+//   pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
+//   pclA::NormalsEstimationNR n;
+//   n.setParameter(param);
+//   n.setInputCloud(pcl_cloud);
+//   n.compute();
+//   n.getNormals(pcl_normals);
+//   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+//   if(deb) printf("Runtime for SegLearner: Getting images => Calculate normals %4.3f\n", timespec_diff(&current, &last));
+//   
+//   
+//   if(showImages)
+//     cvShowImage("Kinect image", iplImage_k);
+//   
+//   /// Check if there are same 3D points in the point clouds
+// //   for(unsigned l=1; l<pointCloudWidth*pointCloudHeight-1; l++)
+// //   {
+// //     double dist = ((pcl_cloud->points[l].x-pcl_cloud->points[l+1].x) + 
+// //                    (pcl_cloud->points[l].y-pcl_cloud->points[l+1].y) + 
+// //                    (pcl_cloud->points[l].z-pcl_cloud->points[l+1].z));
+// //     if(dist == 0.) printf("SegTester: Warning: Same 3D point: idx: %u-%u!!!\n", l, l+1);
+// //   }
+//   log("Get image data ended.");
+}
+
+void SegTester::processLoadedData()
+{
+
 }
 
 }
