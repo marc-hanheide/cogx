@@ -5,14 +5,17 @@ HOSTNAME  Main  localhost
 
 # lists of device ids
 VARDEFAULT firewire_cameras=
+VARDEFAULT firewire_devices=%(firewire_cameras)
 VARDEFAULT firewire_config=--devclass FIREWIRE
 
 # lists of device ids
 VARDEFAULT v4l_cameras=
+VARDEFAULT v4l_devices=%(v4l_cameras)
 VARDEFAULT v4l_config=
 
 # lists of device ids
 VARDEFAULT pointgrey_cameras=
+VARDEFAULT pointgrey_devices=%(pointgrey_cameras)
 VARDEFAULT pointgrey_config=<multiline>
    --imgsize "1280 960"
    --framerate_fps "3"
@@ -26,6 +29,7 @@ VARDEFAULT pointgrey_config=<multiline>
 VARDEFAULT kinect_internal_file=%(cfgdir)/KinectConfig.xml
 VARDEFAULT kinect_config_file=%(cfgdir)/camcalib-kinect.xml
 VARDEFAULT kinect_pc_camera=
+VARDEFAULT kinect_pc_devices=
 VARDEFAULT kinect_pc_config=<multiline>
    --kconfig    "%(kinect_internal_file)"
    --camconfigs "%(kinect_config_file)"
@@ -34,6 +38,7 @@ VARDEFAULT kinect_pc_config=<multiline>
 OPTDEFAULT kinect_pc_grab=points !depth !rectimg
 
 VARDEFAULT kinect_video_camera=
+VARDEFAULT kinect_video_devices=%(kinect_video_camera)
 VARDEFAULT kinect_video_config=<multiline>
    --kconfig    "%(kinect_internal_file)"
    --camconfigs "%(kinect_config_file)"
@@ -96,17 +101,22 @@ ENDIF
 SETVAR vgparams=<multiline>
    --displayserver "display.srv"
 </multiline>
+SETVAR devicenames=
 IFNEQ(%(firewire_cameras),)
    SETVAR vgparams=%(vgparams) --camids.fw "%(firewire_cameras)" --videoname.fw "VideoServer.fw"
+   SETVAR devicenames=%(devicenames) %(firewire_devices)
 ENDIF
 IFNEQ(%(v4l_cameras),)
    SETVAR vgparams=%(vgparams) --camids.v4l "%(v4l_cameras)" --videoname.v4l "VideoServer.v4l"
+   SETVAR devicenames=%(devicenames) %(v4l_devices)
 ENDIF
 IFNEQ(%(pointgrey_cameras),)
    SETVAR vgparams=%(vgparams) --camids.pg "%(pointgrey_cameras)" --videoname.pg "VideoServer.pg"
+   SETVAR devicenames=%(devicenames) %(pointgrey_devices)
 ENDIF
 IFNEQ(%(kinect_video_camera),)
    SETVAR vgparams=%(vgparams) --camids.k "%(pointgrey_cameras)" --videoname.k "VideoServer.k"
+   SETVAR devicenames=%(devicenames) %(kinect_video_devices)
 ENDIF
 IFNEQ(%(kinect_pc_camera),)
    # Parameters: Grab points, depth, rect image.
@@ -117,23 +127,30 @@ IFNEQ(%(kinect_pc_camera),)
    SETVAR vgparams=%(vgparams) --pcserver.k "PcServer.k"
    IFOPTANY (%(kinect_pc_grab),points)
       SETVAR vgparams=%(vgparams) --pcgrabpoints.k "true"
+      SETVAR devicenames=%(devicenames) k-points
    ELSE
       SETVAR vgparams=%(vgparams) --pcgrabpoints.k "false"
    ENDIF
    IFOPTANY (%(kinect_pc_grab),depth)
       SETVAR vgparams=%(vgparams) --pcgrabdepth.k "true"
+      SETVAR devicenames=%(devicenames) k-depth
    ELSE
       SETVAR vgparams=%(vgparams) --pcgrabdepth.k "false"
    ENDIF
    IFOPTANY (%(kinect_pc_grab),rectimg)
       SETVAR vgparams=%(vgparams) --pcgrabrect.k "true"
+      SETVAR devicenames=%(devicenames) k-rectimg
    ELSE
       SETVAR vgparams=%(vgparams) --pcgrabrect.k "false"
    ENDIF
 ENDIF
 
+IFNEQ(%(devicenames),)
+   SETVAR devicenames=--devicenames "%(devicenames)"
+ENDIF
+
 VARDEFAULT grab_ms=200
-SETVAR vgparams=%(vgparams) --grab_ms %(grab_ms)
+SETVAR vgparams=%(vgparams) --grab_ms %(grab_ms) %(devicenames)
 CPP MG grabber VideoGrabber %(vgparams)
 
 
