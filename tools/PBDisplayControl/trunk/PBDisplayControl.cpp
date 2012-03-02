@@ -294,7 +294,7 @@ int main(int argc, char *argv[]){
 	  }
 	}
       }
-      controller.m_PeekabotClient.flush();
+      controller.m_PeekabotClient.sync();
     }
     else {
       cerr << "Unknown argument \"" << argv[1] << "\"\n";
