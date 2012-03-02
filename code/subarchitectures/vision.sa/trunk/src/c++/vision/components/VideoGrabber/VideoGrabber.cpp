@@ -1071,10 +1071,12 @@ void CVideoGrabber::sendCachedImages()
    int i = 0;
    for (auto prv : previews) {
       int factor = 1;
-      int wi = (int) (prv.getImage()->width * factor);
-      int hi = (int) (prv.getImage()->height * factor);
-      cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
-      cvResize(prv.getImage(), pDisp);
+      IplImage* pImage = prv.getImage();
+      cvResetImageROI(pImage);
+      int wi = (int) (pImage->width * factor);
+      int hi = (int) (pImage->height * factor);
+      cvSetImageROI(pDisp, cvRect(0, vp, wi, hi));
+      cvResize(pImage, pDisp);
 
       std::string sMsg = _str_(i) + " " + prv.deviceName;
       if (i < devnames.size()) sMsg += ": " + devnames[i];
