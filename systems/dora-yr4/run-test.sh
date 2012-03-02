@@ -101,12 +101,18 @@ echo "starting peekabot"
 xterm -title "peekabot" -e "/opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
 PIDS="$PIDS $!"
 
-sleep 10
+sleep 1
+window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+echo "peekabot window id is " $window_id
+xdotool windowactivate $window_id key alt+F5
+xdotool windowsize $window_id 40% 60%
+
+sleep 2
 
 echo "--------------------------"
 echo "starting PBDisplayControl"
 
-xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl" &
+xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl 2>&1 | tee logs/PBDisplayControl.log" &
 PIDS="$PIDS $!"
 echo "--------------------------"
 
