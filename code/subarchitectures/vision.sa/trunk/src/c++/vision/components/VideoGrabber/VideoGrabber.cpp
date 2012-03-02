@@ -454,6 +454,7 @@ CExtraSaverPtr CGrabbedPcPoints::save(const CRecordingInfo& frameInfo, int devic
 CVideoGrabber::CVideoGrabber()
 {
    m_frameGrabMs = 200;
+   m_deviceNames = "L R";
 #ifdef FEAT_VISUALIZATION
    m_pDisplayCanvas = NULL;
    m_display.setClientData(this);
@@ -581,6 +582,9 @@ void CVideoGrabber::configure(const map<string,string> & _config)
       str >> m_frameGrabMs;
    }
    if (m_frameGrabMs < 10) m_frameGrabMs = 10;
+   if((it = _config.find("--devicenames")) != _config.end()) {
+      m_deviceNames = it->second;
+   }
 
 #ifdef FEAT_VISUALIZATION
    m_display.configureDisplayClient(_config);
@@ -757,7 +761,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    // Set form defaults
    setDirectory("xdata/grab/%m");
    setImageFilenamePatt("frame-%c-%d");
-   setDeviceNames("L R P D");
+   setDeviceNames(m_deviceNames);
    setCounterDigits(3);
    setCounterValue(0);
    setRecordTimeLimit(5000);
