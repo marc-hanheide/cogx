@@ -39,6 +39,7 @@
 #include "ObjRep.h"
 
 #include "v4r/Annotation/Annotation.h"
+#include "v4r/PCLAddOns/PCLCommonHeaders.h"
 #include "v4r/PCLAddOns/PlanePopout.hh"
 #include "v4r/PCLAddOns/PCLUtils.h"
 #include "v4r/PCLAddOns/PCLFunctions.h"
@@ -73,7 +74,8 @@ private:
   
   bool deb;                                                 ///< Debug flag
   
-  surface::SaveFileSequence *modelSaver;                   ///< Save surface models
+  surface::SaveFileSequence *modelSaver;                    ///< Save surface models
+  surface::LoadFileSequence *modelLoader;                   ///< Load surface models
   bool save_results;                                        ///< Save surface models
   char *save_filename;                                      ///< filename for surface models
   
@@ -153,6 +155,12 @@ private:
   void processImageNew();
   void SingleShotMode();
   
+  /// Data for offline calculation
+  bool process_loaded_models;
+  unsigned startID;
+  unsigned endID;
+  unsigned nextID;
+  char *off_filename, *off_pcd_file, *off_ipl_file;
   void LoadImageData();
   void processLoadedData();
 
