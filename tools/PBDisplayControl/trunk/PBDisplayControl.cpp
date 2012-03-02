@@ -61,7 +61,7 @@ void pb_settings::load(const std::string &filename)
 }
 
 
-ControlWindow::ControlWindow() : follow_robot("follow the robot") {
+ControlWindow::ControlWindow(PeekabotController &_ctrl) : m_controller(_ctrl), follow_robot_button("follow the robot") {
   set_title("PBDisplayControl");
   set_default_size(200, 200);
   // Sets the border width of the window.
@@ -70,24 +70,22 @@ ControlWindow::ControlWindow() : follow_robot("follow the robot") {
   m_refTreeModel = Gtk::ListStore::create(m_Columns);
   m_TreeView.set_model(m_refTreeModel);
 
-    ps.load("../../instantiations/PBDisplayControl/pb_settings.xml");
-    connectPeekabot();
-    for (int i=0; i<ps.views.size(); i++) {
+    for (size_t i=0; i<m_controller.ps.views.size(); i++) {
       Gtk::TreeModel::Row row = *(m_refTreeModel->append());
       row[m_Columns.m_col_id] = i;
-      row[m_Columns.m_col_name] = ps.views[i].name;
+      row[m_Columns.m_col_name] = m_controller.ps.views[i].name;
     }
 
-    m_box1.pack_start(follow_robot);
+    m_box1.pack_start(follow_robot_button);
 
-follow_robot.show();
-follow_robot.set_active(true);
+follow_robot_button.show();
+follow_robot_button.set_active(true);
 
-    for (int i=0; i<ps.toggles.size(); i++) {
-        Gtk::CheckButton* toggle = new Gtk::CheckButton(ps.toggles[i]);
+    for (size_t i=0; i<m_controller.ps.toggles.size(); i++) {
+        Gtk::CheckButton* toggle = new Gtk::CheckButton(m_controller.ps.toggles[i]);
         toggle->signal_clicked().connect(sigc::mem_fun(*this,
               &ControlWindow::on_button_clicked) );
-        toggles[ps.toggles[i]]=toggle;
+        toggles[m_controller.ps.toggles[i]]=toggle;
         m_box1.pack_start(*toggle);
         toggle->show();
     }
@@ -110,39 +108,26 @@ follow_robot.set_active(true);
   set_keep_above();
   show();
   show_all_children();  
-  ApplyView(0);    
+  m_controller.ApplyView(0);    
+  setActivationFromView(0);
 }
+
 ControlWindow::~ControlWindow(){}
 
 void ControlWindow::run()
 {
     while(true){
-        double x=0;
-        double y=0;
-        double z=0;
-        if (follow_robot.get_active()){
-            peekabot::CameraProxy pb_camera;
-            peekabot::Status s;
-            peekabot::ObjectProxy pb_object;
-            s = pb_object.assign(m_PeekabotClient,"SLAM_Pose").status();
-            if( s.succeeded() ) {
-                peekabot::Result<peekabot::Vector3> r = pb_object.get_position();
-                if( r.succeeded() ){
-                  peekabot::Vector3 v3 = r.get_result();
-                  x = v3(0);
-                  y = v3(1);
-                  z = v3(2);
-                }
-            }
-            s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
-            if( s.succeeded() ) {
-                pb_camera.set_position(x,y,z);
-            }
+        if (follow_robot_button.get_active()){
+	    m_controller.follow();
+	    m_controller.ps.follow_robot = true;
         }
+	else {
+	  m_controller.ps.follow_robot = false;
+	}
     }
 }
 
-void ControlWindow::connectPeekabot()
+void PeekabotController::connectPeekabot()
 {
 
   try {
@@ -160,6 +145,57 @@ void ControlWindow::connectPeekabot()
   }
 }
 
+void PeekabotController::follow()
+{
+  double x=0;
+  double y=0;
+  double z=0;
+  peekabot::CameraProxy pb_camera;
+  peekabot::Status s;
+  peekabot::ObjectProxy pb_object;
+  s = pb_object.assign(m_PeekabotClient,"SLAM_Pose").status();
+  if( s.succeeded() ) {
+    peekabot::Result<peekabot::Vector3> r = pb_object.get_position();
+    if( r.succeeded() ){
+      peekabot::Vector3 v3 = r.get_result();
+      x = v3(0);
+      y = v3(1);
+      z = v3(2);
+    }
+  }
+  s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
+  if( s.succeeded() ) {
+    pb_camera.set_position(x,y,z);
+  }
+}
+
+
+void PeekabotController::show(const std::string &label)
+{
+  peekabot::ObjectProxy pb_object;
+  peekabot::Status s = pb_object.assign(m_PeekabotClient,label).status();
+  if( s.succeeded() ) {
+    cout << "Showing \"" << label << "\"\n";
+    pb_object.show();
+  }
+  else {
+    cout << "Not found: \"" << label << "\"\n";
+  }
+}
+
+void PeekabotController::hide(const std::string &label)
+{
+  peekabot::ObjectProxy pb_object;
+  peekabot::Status s = pb_object.assign(m_PeekabotClient,label).status();
+  if( s.succeeded() ) {
+    cout << "Hiding \"" << label << "\"\n";
+    pb_object.hide();
+  }
+  else {
+    cout << "Not found: \"" << label << "\"\n";
+  }
+}
+
 void ControlWindow::on_selection_changed(){
     TreeModel::iterator iter = m_refTreeSelection->get_selected();
     if(iter) //If anything is selected
@@ -167,16 +203,18 @@ void ControlWindow::on_selection_changed(){
         TreeModel::Row row = *iter;
 
         int vid =row[m_Columns.m_col_id];
-        ApplyView(vid);
+
+        m_controller.ApplyView(vid);
+	setActivationFromView(vid);
     }
 }
 
-void ControlWindow::ApplyView(int vid){
+void PeekabotController::ApplyView(int vid){
         peekabot::CameraProxy pb_camera;
         peekabot::Status s;
         s = pb_camera.assign(m_PeekabotClient,"default_camera").status();
         if( s.succeeded() ) {
-            if (!follow_robot.get_active()){            
+            if (!ps.follow_robot){            
                 pb_camera.set_position(ps.views[vid].camera.x,ps.views[vid].camera.y,ps.views[vid].camera.z);
             }
             pb_camera.set_rotation(ps.views[vid].camera.yaw,ps.views[vid].camera.pitch,ps.views[vid].camera.roll);
@@ -190,13 +228,9 @@ void ControlWindow::ApplyView(int vid){
             if( s.succeeded() ) {
                 if (iter1->second){
                     pb_object.hide();
-                    if (toggles.find(iter1->first) != toggles.end())
-                        toggles[iter1->first]->set_active(false);
                 }
                 else {
                     pb_object.show();
-                    if (toggles.find(iter1->first) != toggles.end())
-                        toggles[iter1->first]->set_active(true);
                 }
             }
         }
@@ -206,17 +240,81 @@ void ControlWindow::on_button_clicked(){
      peekabot::Status s;
     std::map<std::string, Gtk::CheckButton*>::const_iterator iter1;
     for (iter1=toggles.begin(); iter1 !=toggles.end(); ++iter1) {
-        peekabot::ObjectProxy pb_object;
-        s = pb_object.assign(m_PeekabotClient,iter1->first).status();
-        if( s.succeeded() ) {
-            if (iter1->second->get_active())pb_object.show();
-            else pb_object.hide();
-        }
+        if (iter1->second->get_active()) {
+	  m_controller.show(iter1->first);
+	}
+	else {
+	  m_controller.hide(iter1->first);
+	}
     }
 }
 
+PeekabotController::PeekabotController()
+{ 
+    ps.load("instantiations/PBDisplayControl/pb_settings.xml");
+    connectPeekabot();
+}
+
 int main(int argc, char *argv[]){
+  PeekabotController controller;
+
+  if (argc > 1) {
+    if (strcmp(argv[1], "--exec") == 0) {
+      if (argc < 2) {
+	cerr << "Too few arguments for --exec\n";
+	return 1;
+      }
+      for (int argn = 2; argn < argc; argn++) {
+	bool found = false;
+
+	for (size_t i=0; i<controller.ps.views.size(); i++) {
+	  if (controller.ps.views[i].name == argv[argn]) {
+	    controller.ApplyView(i);
+	    found = true;
+	    cout << "Applying view: " << controller.ps.views[i].name << "\n";
+	    break;
+	  }
+	} 
+
+	if (!found) {
+	  if (argv[argn][0] == '-') {
+	    controller.hide(argv[argn]+1);
+	  }
+	  else if (argv[argn][0] == '+') {
+	    controller.show(argv[argn]+1);
+	  }
+	  else {
+	    controller.show(argv[argn]);
+	  }
+	}
+      }
+      controller.m_PeekabotClient.flush();
+    }
+    else {
+      cerr << "Unknown argument \"" << argv[1] << "\"\n";
+      return 2;
+    }
+  }
+
+  else {
     Gtk::Main kit(argc, argv);
-    ControlWindow cw;
+    ControlWindow cw(controller);
     Gtk::Main::run(cw);
+  }
+}
+
+void
+ControlWindow::setActivationFromView(int vid)
+{
+  std::map<std::string, bool>::const_iterator iter1;
+  for (iter1=m_controller.ps.views[vid].objects.begin(); iter1 != m_controller.ps.views[vid].objects.end(); ++iter1) {
+    if (iter1->second){
+      if (toggles.find(iter1->first) != toggles.end())
+	toggles[iter1->first]->set_active(false);
+    }
+    else {
+      if (toggles.find(iter1->first) != toggles.end())
+	toggles[iter1->first]->set_active(true);
+    }
+  }
 }

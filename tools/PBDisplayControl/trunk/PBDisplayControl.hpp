@@ -38,13 +38,28 @@ public:
     int m_PbPort;
     std::vector<view_settings> views;
     std::vector<std::string> toggles;
+    bool follow_robot;
     void load(const std::string &filename);
+};
+
+class PeekabotController
+{
+public:
+    PeekabotController();
+
+    peekabot::PeekabotClient m_PeekabotClient;
+    pb_settings ps;
+    void connectPeekabot();
+    void ApplyView(int vid);
+    void show(const std::string &label);
+    void hide(const std::string &label);
+    void follow();
 };
 
 class ControlWindow : public Gtk::Window
 {
 public:
-    ControlWindow();
+    ControlWindow(PeekabotController &_ctrl);
     virtual ~ControlWindow();
 protected:
     class ModelColumns : public Gtk::TreeModel::ColumnRecord
@@ -56,6 +71,8 @@ protected:
     Gtk::TreeModelColumn<unsigned int> m_col_id;
     Gtk::TreeModelColumn<Glib::ustring> m_col_name;
     };
+
+    void setActivationFromView(int vid);
   
     ModelColumns m_Columns;
     Gtk::VBox m_box1;
@@ -65,17 +82,15 @@ protected:
     //Member widgets:
     Gtk::TreeView m_TreeView;
 private:
-    Gtk::CheckButton follow_robot;
+    PeekabotController &m_controller;
+
+    Gtk::CheckButton follow_robot_button;
     Glib::Thread * thread;
 
     std::map<std::string,Gtk::CheckButton* > toggles;
     virtual void on_selection_changed();
     void on_button_clicked();
     void run();
-    pb_settings ps;
-    peekabot::PeekabotClient m_PeekabotClient;
-    void connectPeekabot();
-    void ApplyView(int vid);
 };
 
 #endif // PBDisplayControl_hpp
