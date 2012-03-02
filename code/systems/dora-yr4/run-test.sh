@@ -18,10 +18,9 @@ else
 fi
 
 if [ "$2" ]; then
-#    GOAL="$2"
-    GOAL="(forall (?p - place) (= (placestatus ?p) trueplace))"
+    GOAL="$2"
 else
-    GOAL="(forall (?p - place) (= (placestatus ?p) trueplace))"
+    GOAL=""
 fi
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
