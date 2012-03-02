@@ -720,7 +720,7 @@ void CVideoGrabber::CVvDisplayClient::createForms()
    ss <<
       "<table class='formrow'>"
       "<tr><td>Device names: </td><td>"
-      "<input type='text' name='devicenames' style='width:10em;' title='" << help1 << "' />"
+      "<input type='text' name='devicenames' style='width:20em;' title='" << help1 << "' />"
       "</td></tr>"
       "</table>";
    m_frmSettings.add(new cxd::CFormValues::field("devicenames"));
