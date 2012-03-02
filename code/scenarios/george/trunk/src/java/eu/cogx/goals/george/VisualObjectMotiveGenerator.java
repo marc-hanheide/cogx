@@ -253,7 +253,6 @@ public class VisualObjectMotiveGenerator extends
 			T result = _cls.newInstance();
 			result.created = _time;
 			result.updated = result.created;
-			result.correspondingUnion = "";
 			result.maxExecutionTime = MAX_EXECUTION_TIME;
 			result.maxPlanningTime = MAX_PLANNING_TIME;
 			result.priority = MotivePriority.UNSURFACE;
