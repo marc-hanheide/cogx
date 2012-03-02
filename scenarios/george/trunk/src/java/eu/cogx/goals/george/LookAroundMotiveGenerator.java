@@ -186,7 +186,6 @@ public class LookAroundMotiveGenerator extends
 
 			result.created = getCASTTime();
 			result.updated = result.created;
-			result.correspondingUnion = "";
 			result.maxExecutionTime = MAX_EXECUTION_TIME;
 			result.maxPlanningTime = MAX_PLANNING_TIME;
 			result.priority = MotivePriority.UNSURFACE;
