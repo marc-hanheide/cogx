@@ -114,7 +114,7 @@ sleep 2
 echo "--------------------------"
 echo "starting PBDisplayControl"
 
-xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl 2>&1 | tee logs/PBDisplayControl.log" &
+xterm -title "PBDisplayControl" -e bash -c "sleep 5; cd output/bin; ./PBDisplayControl 2>&1 | tee ../../logs/PBDisplayControl.log" &
 PIDS="$PIDS $!"
 echo "--------------------------"
 
@@ -135,6 +135,8 @@ sleep 10
 
 xterm -title "CAST client: $configFile" -e bash -c "ulimit -c unlimited; output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
+
+
 
 # in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
 #waitForTrigger
