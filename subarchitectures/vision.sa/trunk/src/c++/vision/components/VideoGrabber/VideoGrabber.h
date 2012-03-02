@@ -236,6 +236,7 @@ private:
    CRecordingInfo m_RecordingInfo;
    bool m_fakeRecording;
    long m_frameGrabMs;
+   std::string m_deviceNames;
 
 #ifdef FEAT_VISUALIZATION
    // HACK: The image data in IplImage will point into char data of m_DisplayBuffer.
