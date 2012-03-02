@@ -431,7 +431,16 @@ void SpatialControl::configure(const map<string,string>& _config)
     }
 
   }
-
+	m_simulateKinect = false;
+  if (_config.find("--simulate-kinect") != _config.end()) {
+		if (m_UsePointCloud) {
+			log("--simulate-kinect ignored: --pcserver provided");
+		}
+		else {
+			m_simulateKinect = true;
+		}
+	}
+    
   camId = CAM_ID_DEFAULT;
   map<string,string>::const_iterator it = _config.find("--camid");
   if(it != _config.end())
@@ -1055,10 +1064,12 @@ void SpatialControl::updateGridMaps(){
           double al = -(lpW.getTheta()+m_currentPTZPose.pan);
           double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
           double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
-          if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) (*tmp_lgm)(xi, yi) = '2';
+					if (!m_simulateKinect ||
+           ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)))
+						(*tmp_lgm)(xi, yi) = '2';
         }
       }
-    }  
+    }
   
   }
   const int deltaN = 3;
