@@ -2029,21 +2029,6 @@ PlaceManager::processPlaceArrival(bool failed)
       log("Calling evaluateUnexploredPaths from processPlaceArrival!");
       evaluateUnexploredPaths();
       log("evaluateUnexploredPaths exited");
-
-      //Once any new Placeholders have been added, it's safe to stop the robot
-      //and signal the client component that we're done moving
-      if (arrivalCase == 1) {
-        // In Case 1, we should stop since we reached/upgraded our goal
-        // In Case 2, we discovered a new node on our way to our goal and
-        // should continue moving towards our goal.
-        // In Case 3, the robot will already have stopped moving
-        // In Case 4, we travelled over a known Place on our way to a goal and
-        // should continue moving towards our goal.
-        // In Case 5, the robot will already have stopped moving
-        // In Case 6, we may be moving for some other reason and shouldn't stop
-        // In Case 7, we don't need to stop
-        cancelMovement();
-      }
     }
   }
   catch(CASTException &e) {

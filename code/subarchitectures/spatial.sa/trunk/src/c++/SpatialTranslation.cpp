@@ -218,6 +218,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 		      createLocalTypeFilter<SpatialData::NavCommand>(cdl::OVERWRITE));
   log("SpatialTranslation: %i", __LINE__);
 	
+  if (m_isExplorationAction) {
+    rv->addChangeFilter(
+	createLocalTypeFilter<NavData::FNode>(cdl::ADD));
+  }
 	
   bool some_error = false;
   bool aborted = false;
@@ -256,9 +260,9 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	debug("abort?");
 	// abort got?
 	try {
-	  log("locking");
+	  debug("locking");
 	  lockEntry(navCmdId, cdl::LOCKEDODR);
-	  log("locked");
+	  debug("locked");
 	  try {
 
 	    shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
@@ -267,7 +271,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       if(pcmd){
         status = pcmd->getData()->status;
         aborted = (status != SpatialData::NONE);
-        debug("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
+        log("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
 	      // I.e. someone outside decided we're done now - the internal cmd needs
 	      // to be cancelled either way.
 	    }else{
@@ -278,7 +282,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	    log("The NavCommand suddenly disappeared...");
 	    some_error = true;
 	  }				
-	  log("unlocking");
+	  debug("unlocking");
 	  unlockEntry(navCmdId);
 	}
 	catch (DoesNotExistOnWMException) {
@@ -290,7 +294,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	debug(aborted? "yes": "no");
 			
       }else if(type == typeName<NavData::InternalNavCommand>()){
-	debug("nav ctrl cmd finished?");
+	log("nav ctrl cmd finished?");
 	// nav ctrl cmd finished?
 	shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
 	  getWorkingMemoryEntry<NavData::InternalNavCommand>(navCtrlCmdId);
@@ -341,8 +345,22 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	}
       }
       else if (type== typeName<NavData::VisualExplorationCommand>()) {
-	debug("visual exploraiton cmd finished?");
+	log("Visual exploration cmd finished");
 	finished = true;
+      }
+      else if (type == typeName<NavData::FNode>()) {
+	log("Halting movement: exploration reached new node");
+
+	navCtrlCmdId = newDataID();
+	NavData::InternalNavCommandPtr stopCommand = 
+	  new NavData::InternalNavCommand;
+
+	stopCommand->cmd = NavData::lSTOPROBOT;	
+	stopCommand->x = 0.0;
+	stopCommand->y = 0.0;
+	stopCommand->theta = 0.0;
+
+	addToWorkingMemory(navCtrlCmdId, stopCommand);
       }
     } // while(...)
 		
@@ -537,6 +555,26 @@ void SpatialTranslation::newNavCommand(const cdl::WorkingMemoryChange & objID){
     addTaskToQueue(navId, oobj->getData());
   }
 }		
+
+//void
+//SpatialTranslation::newNavNode(const WorkingMemoryChange &wmc)
+//{
+//  debug("Received new navNode");
+//  try {
+//    NavData::VisualExplorationCommandPtr obj =
+//      getMemoryEntry<NavData::FNode>(objID.address);
+//
+//    if (m_isExplorationAction) {
+//      // A new node was created while carrying out an explorative movement
+//      // 
+//    }
+//  }
+//  catch (DoesNotExistOnWMException)
+//  {
+//    log("Error: new FNode disappeared from WM!");
+//  }
+//}
+
 
 // ----------------------------------------------------------------------------
 

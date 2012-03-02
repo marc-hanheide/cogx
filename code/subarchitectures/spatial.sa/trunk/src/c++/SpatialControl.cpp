@@ -1385,7 +1385,14 @@ void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange 
 
     IceUtil::Mutex::Lock lock(m_taskStatusMutex);
 
-    if (m_taskStatus == NothingToDo) {
+    if (!m_UsePointCloud && !m_simulateKinect) {
+      obj->comp = NavData::SUCCEEDED;
+      overwriteWorkingMemory<NavData::VisualExplorationCommand>(objID.address, obj);
+    }
+    else if (!m_UsePointCloud && m_simulateKinect) {
+      // TODO: simulated visual exploration action
+    }
+    else  if (m_taskStatus == NothingToDo) {
       m_visualExplorationOngoing = true;
       m_visualExplorationPhase = 1;
       error("alex (1) m_visualExplorationPhase = %d", m_visualExplorationPhase);
