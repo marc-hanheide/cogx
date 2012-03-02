@@ -485,6 +485,15 @@ void SegTester::processImageNew()
   if(deb) printf("Runtime for SegTester: NURBS-fitting & model selection: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current; 
   
+  /// Save results of model fitter to file
+  if(save_results) {
+    if(deb) log("save surface models: start");
+    modelSaver->SaveNextView(surfaces);
+    if(deb) log("save surface models: end");
+  }
+  
+/// DEBUG 
+if(false) {
   /// Load annotation
   if(deb) log("Annotation: start");
   std::vector< std::vector<int> > anno_pairs;
@@ -597,11 +606,6 @@ void SegTester::processImageNew()
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;
 
-  if(save_results) {
-    if(deb) log("save surface models: start");
-    modelSaver->SaveNextView(surfaces);
-    if(deb) log("save surface models: end");
-  }
   
   /// Check annotation for evaluation
   annotation->setFileWriting(true, "/media/U-Daten/OD-IROS/results/annoEval.txt");
@@ -617,7 +621,7 @@ void SegTester::processImageNew()
   svmFile->setTestSet(true);
   svmFile->process();
   if(deb) log("write svm testset file: end.");
-  
+}
 //   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
