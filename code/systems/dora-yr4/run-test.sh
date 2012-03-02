@@ -114,7 +114,7 @@ sleep 2
 echo "--------------------------"
 echo "starting PBDisplayControl"
 
-xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl 2>&1 | tee logs/PBDisplayControl.log" &
+xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl --exec \"Top down\" 2>&1 | tee logs/PBDisplayControl.log" &
 PIDS="$PIDS $!"
 echo "--------------------------"
 
