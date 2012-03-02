@@ -303,7 +303,7 @@ protected:
   std::string m_waitingForPTZCommandID;
 
   bool m_UsePointCloud;
-	bool m_simulateKinect;
+  bool m_simulateKinect;
   double m_obstacleMinHeight;
   double m_obstacleMaxHeight;
   bool m_DisplayCureObstacleMap;
