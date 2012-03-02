@@ -232,11 +232,11 @@ protected:
   Cure::Pose3D m_SlamRobotPose;
   Cure::Pose3D m_CurrPose;
   Cure::SensorPose m_LaserPoseR;
-  
+
   bool m_visualExplorationOngoing;
   int m_visualExplorationPhase;
   std::string m_visualExplorationCommand;
-
+  
   NavData::InternalCommandType m_commandType;
   double m_commandX;
   double m_commandY;
