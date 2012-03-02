@@ -284,7 +284,6 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
 
     checkPTZPose(overwritten->pose);
 
-
     m_lastPtzNavPoseCompletion = getCASTTime();
   }
   catch (DoesNotExistOnWMException e)
@@ -431,16 +430,17 @@ void SpatialControl::configure(const map<string,string>& _config)
     }
 
   }
-	m_simulateKinect = false;
+
+  m_simulateKinect = false;
   if (_config.find("--simulate-kinect") != _config.end()) {
-		if (m_UsePointCloud) {
-			log("--simulate-kinect ignored: --pcserver provided");
-		}
-		else {
-			m_simulateKinect = true;
-		}
-	}
-    
+    if (m_UsePointCloud) {
+      log("--simulate-kinect ignored: --pcserver provided");
+    }
+    else {
+      m_simulateKinect = true;
+    }
+  }
+
   camId = CAM_ID_DEFAULT;
   map<string,string>::const_iterator it = _config.find("--camid");
   if(it != _config.end())
@@ -465,16 +465,16 @@ void SpatialControl::configure(const map<string,string>& _config)
   Cure::ConfigFileReader cfg;
   if (cfg.init(configfile)) {
     println("configure(...) Failed to open with \"%s\"\n",
-            configfile.c_str());
+	configfile.c_str());
     std::abort();
   }  
 
-    m_PbPort = 5050;
-    cfg.getRoboLookHost(m_PbHost);
-    std::string usedCfgFile, tmp;
-    if (cfg.getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
-      m_PbHost = tmp;
-    }
+  m_PbPort = 5050;
+  cfg.getRoboLookHost(m_PbHost);
+  std::string usedCfgFile, tmp;
+  if (cfg.getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
+    m_PbHost = tmp;
+  }
 
 
   m_bNoNavGraph = false;
@@ -484,7 +484,7 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   if (Cure::NewNavController::config(configfile)) {
     println("configure(...) Failed to config with \"%s\", use -c option\n",
-            configfile.c_str());
+	configfile.c_str());
     std::abort();
   } 
 
@@ -513,15 +513,15 @@ void SpatialControl::configure(const map<string,string>& _config)
   {
     LoadGridMap("GridMap.txt");
   } else {
-      m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
-      m_lgm->setValueInsideCircle(0.1, 0, 0.5, '0'); 
-      m_lgm->setValueInsideCircle(0.2, 0, 0.5, '0'); 
-      m_lgm->setValueInsideCircle(0.3, 0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0.1, 0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0.2, 0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0.3, 0, 0.5, '0'); 
 
-      m_lgmKH->setValueInsideCircle(0,   0, 0.5, 0.01); 
-      m_lgmKH->setValueInsideCircle(0.1, 0, 0.5, 0.01); 
-      m_lgmKH->setValueInsideCircle(0.2, 0, 0.5, 0.01); 
-      m_lgmKH->setValueInsideCircle(0.3, 0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0,   0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0.1, 0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0.2, 0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0.3, 0, 0.5, 0.01); 
 
 
   }
@@ -539,7 +539,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
   m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
-//  m_FrontierFinderKinect = new Cure::FrontierFinder<unsigned char>(*m_kinlgm);
+  //  m_FrontierFinderKinect = new Cure::FrontierFinder<unsigned char>(*m_kinlgm);
 
   if ((_config.find("--x-window") != _config.end())) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
@@ -550,7 +550,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   if(_config.find("--show-binary-map") != _config.end()) {
-     m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
+    m_displayBinaryMap = new Cure::XDisplayLocalGridMap<unsigned char>(*m_binaryMap);
   } else {
     m_displayBinaryMap = 0;
   }
@@ -570,30 +570,30 @@ void SpatialControl::configure(const map<string,string>& _config)
   Cure::NewNavController::addEventListener(this);
   Cure::NewNavController::setTurnAngleIntoSpeed(true, 0.5);
   Cure::NewNavController::setMinNonzeroSpeeds(0.04, 
-                                           Cure::HelpFunctions::deg2rad(10));
+      Cure::HelpFunctions::deg2rad(10));
   Cure::NewNavController::setApproachTolerances(0.5, 
-                                             Cure::HelpFunctions::deg2rad(10));
+      Cure::HelpFunctions::deg2rad(10));
   Cure::NewNavController::setUsePathTrimming(false);
   Cure::NewNavController::setMaxPathTrimDist(3);
   Cure::NewNavController::setProgressTimeout(20);
   Cure::NewNavController::setGotoMaxSpeeds(maxGotoV, maxGotoW);
   Cure::NewNavController::setGatewayMaxSpeeds(0.3, 0.3);
-  
+
   Cure::NewNavController::setFollowDistances(0.8, 0.4);
   Cure::NewNavController::setFollowTolerances(0.1, 
-                                           Cure::HelpFunctions::deg2rad(10));
+      Cure::HelpFunctions::deg2rad(10));
 
   Cure::NewNavController::setPoseProvider(m_TOPP);
 
   /*
-  it = _config.find("--max-target-graph-dist");
-  double maxDist = 5;
-  if (it != _config.end()) {
-    std::istringstream str(it->second);
-    str >> maxDist;
-  }  
-  m_NavGraph.setMaxDistTargetFromNode(maxDist);
-  */
+     it = _config.find("--max-target-graph-dist");
+     double maxDist = 5;
+     if (it != _config.end()) {
+     std::istringstream str(it->second);
+     str >> maxDist;
+     }  
+     m_NavGraph.setMaxDistTargetFromNode(maxDist);
+   */
 
   m_taskId = 1;
   m_taskStatus = NothingToDo;
@@ -601,8 +601,8 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_DefTolPos = 0.25;
   m_DefTolRot = Cure::HelpFunctions::deg2rad(5);
 
-//  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
-//                                                     m_RobotServerHost);
+  //  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
+  //                                                     m_RobotServerHost);
 
   FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
   registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
@@ -625,7 +625,7 @@ void SpatialControl::start()
   addChangeFilter(createLocalTypeFilter<NavData::InhibitNavControl>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
 								  &SpatialControl::newInhibitor));
-	        
+
   addChangeFilter(createLocalTypeFilter<NavData::VisualExplorationCommand>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
 								  &SpatialControl::newVisualExplorationCommand));
@@ -1064,7 +1064,7 @@ void SpatialControl::updateGridMaps(){
           double al = -(lpW.getTheta()+m_currentPTZPose.pan);
           double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
           double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
-					if (!m_simulateKinect ||
+					if (m_simulateKinect &&
            ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)))
 						(*tmp_lgm)(xi, yi) = '2';
         }
@@ -1122,25 +1122,25 @@ void SpatialControl::runComponent()
     }
   int count = 0;
   while(isRunning()){
-		if(count  == 12){
-			if (m_saveLgm) SaveGridMap();
-			count = 0;
-		}
-		count++;
+    if(count  == 12){
+      if (m_saveLgm) SaveGridMap();
+      count = 0;
+    }
+    count++;
 
     {
-    m_OdomQueueMutex.lock();
+      m_OdomQueueMutex.lock();
     }
     if (m_odometryQueue.size() > 0) 
-//    while (m_odometryQueue.size() > 0) 
+      //    while (m_odometryQueue.size() > 0) 
     {
       Cure::Pose3D cureOdom = m_odometryQueue.front();
       m_odometryQueue.pop_front();
       m_OdomQueueMutex.unlock();
 
       {
-      SCOPED_TIME_LOG;
-      processOdometry(cureOdom);
+	SCOPED_TIME_LOG;
+	processOdometry(cureOdom);
       }
       m_OdomQueueMutex.lock();
     }
@@ -1148,92 +1148,92 @@ void SpatialControl::runComponent()
 
     {
 
-//FIXME use robot pose
+      //FIXME use robot pose
 
 
       {
-        SCOPED_TIME_LOG;
-        updateGridMaps();
+	SCOPED_TIME_LOG;
+	updateGridMaps();
       }
 
       if(m_usePeekabot){
-        SCOPED_TIME_LOG;
-        UpdateGridMap();
+	SCOPED_TIME_LOG;
+	UpdateGridMap();
       }
 
 
     }
-//FIXME Too slow!
+    //FIXME Too slow!
     {
       Cure::Pose3D currentPose = m_TOPP.getPose();
-			{
-				if (m_Displaylgm) {
-					m_Displaylgm->updateDisplay(&currentPose,
-							&m_NavGraph, 
-							&m_Frontiers);
-				}
-			}
+      {
+	if (m_Displaylgm) {
+	  m_Displaylgm->updateDisplay(&currentPose,
+	      &m_NavGraph, 
+	      &m_Frontiers);
+	}
+      }
 
-			{
-				if(m_displayBinaryMap)
-					m_displayBinaryMap->updateDisplay(&currentPose);
+      {
+	if(m_displayBinaryMap)
+	  m_displayBinaryMap->updateDisplay(&currentPose);
 
 
-				if(m_DisplayCureObstacleMap) {
-					// Clear out obstacle map (that's used for visualization only)
-					int radius = m_obstacleMap->getSize();
-					for(int i = -radius; i < radius; ++i) {
-						for(int j = -radius; j < radius; ++j) {
-							(*m_obstacleMap)(i,j) = '0';
-						}
-					}
-					for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
-						ObstPt obspt = m_LMap.obstRef(i);
-						(*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
-					}
+	if(m_DisplayCureObstacleMap) {
+	  // Clear out obstacle map (that's used for visualization only)
+	  int radius = m_obstacleMap->getSize();
+	  for(int i = -radius; i < radius; ++i) {
+	    for(int j = -radius; j < radius; ++j) {
+	      (*m_obstacleMap)(i,j) = '0';
+	    }
+	  }
+	  for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
+	    ObstPt obspt = m_LMap.obstRef(i);
+	    (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+	  }
 
-					m_displayObstacleMap->updateDisplay(&currentPose);
-				}
-			}
+	  m_displayObstacleMap->updateDisplay(&currentPose);
+	}
+      }
+    }
 
-			if (m_visualExplorationOngoing && m_waitingForPTZCommandID == "") {
-				// If we've gotten at least one cloud since we finished moving the
-				// PTU, we can move on to the next phase
-				error("last Point cloud time: %f", m_lastPointCloudTime.s+m_lastPointCloudTime.us*1e-6);
-				error("last PTU time: %f", m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us*1e-6);
-				if (m_lastPointCloudTime > m_lastPtzNavPoseCompletion) {
-					//      cdl::CASTTime diff = getCASTTime() - m_lastPtzNavPoseCompletion;
-					////FIXME time is negative !
-					//    error("alex time diff %f",(double)diff.s + (double)diff.us*(1e-6));
-					//    error("alex m_visualExplorationPhase = %d",m_visualExplorationPhase);
-					//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
-					if (m_visualExplorationPhase == 1) {
-						error("alex m_visualExplorationPhase == 1");
-						startMovePanTilt(M_PI/3, -M_PI/4, 0);
-						m_visualExplorationPhase = 2;
-					}
-					else if (m_visualExplorationPhase == 2) {
-						error("alex m_visualExplorationPhase == 2");
-						startMovePanTilt(0, -M_PI/4, 0);
-						m_visualExplorationPhase = 0;
-						m_visualExplorationOngoing = false;
-						try {
-							NavData::VisualExplorationCommandPtr cmd = 
-								getMemoryEntry<NavData::VisualExplorationCommand>(m_visualExplorationCommand);
-							cmd->comp = NavData::SUCCEEDED;
-							overwriteWorkingMemory<NavData::VisualExplorationCommand>(m_visualExplorationCommand, cmd);
-							error("alex cmd->comp = NavData::SUCCEEDED;");
-						}
-						catch (DoesNotExistOnWMException) {
-							error("Could not find visual exploration command for overwriting!");
-						}
-					}
-				}
-			}	  
-			//    if (m_odometryQueue.size() == 0) {
-			//      usleep(250000);
-			//    }
-		}
+    if (m_visualExplorationOngoing && m_waitingForPTZCommandID == "") {
+      // If we've gotten at least one cloud since we finished moving the
+      // PTU, we can move on to the next phase
+      error("last Point cloud time: %f", m_lastPointCloudTime.s+m_lastPointCloudTime.us*1e-6);
+      error("last PTU time: %f", m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us*1e-6);
+      if (m_lastPointCloudTime > m_lastPtzNavPoseCompletion) {
+	//      cdl::CASTTime diff = getCASTTime() - m_lastPtzNavPoseCompletion;
+	////FIXME time is negative !
+	//    error("alex time diff %f",(double)diff.s + (double)diff.us*(1e-6));
+	//    error("alex m_visualExplorationPhase = %d",m_visualExplorationPhase);
+	//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
+	if (m_visualExplorationPhase == 1) {
+	  error("alex m_visualExplorationPhase == 1");
+	  startMovePanTilt(M_PI/3, -M_PI/4, 0);
+	  m_visualExplorationPhase = 2;
+	}
+	else if (m_visualExplorationPhase == 2) {
+	  error("alex m_visualExplorationPhase == 2");
+	  startMovePanTilt(0, -M_PI/4, 0);
+	  m_visualExplorationPhase = 0;
+	  m_visualExplorationOngoing = false;
+	  try {
+	    NavData::VisualExplorationCommandPtr cmd = 
+	      getMemoryEntry<NavData::VisualExplorationCommand>(m_visualExplorationCommand);
+	    cmd->comp = NavData::SUCCEEDED;
+	    overwriteWorkingMemory<NavData::VisualExplorationCommand>(m_visualExplorationCommand, cmd);
+	    error("alex cmd->comp = NavData::SUCCEEDED;");
+	  }
+	  catch (DoesNotExistOnWMException) {
+	    error("Could not find visual exploration command for overwriting!");
+	  }
+	}
+      }
+    }	  
+    //    if (m_odometryQueue.size() == 0) {
+    //      usleep(250000);
+    //    }
   }
 } 
 
@@ -1374,6 +1374,7 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
     }
   }
 }
+
 
 void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange &objID) 
 {
