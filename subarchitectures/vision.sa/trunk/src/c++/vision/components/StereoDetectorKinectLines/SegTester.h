@@ -50,6 +50,7 @@
 #include "v4r/PCLAddOns/Relation.h"
 #include "v4r/TomGine/tgTomGineThread.h"
 #include "v4r/svm/SVMPredictor.h"
+#include "v4r/svm/SVMPredictorSingle.h"
 #include "v4r/svm/SVMFileCreator.h"
 #include "v4r/GraphCut/GraphCut.h"
 #include "v4r/SurfaceModeling/CreateMeshModel.hh"
@@ -89,7 +90,8 @@ private:
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
   anno::Annotation *annotation;                             ///< Annotation from file
   surface::Patches *patches;                                ///< Patch tool for calculation of relations between surface patches
-  svm::SVMPredictor *svm;                                   ///< SVM-predictor
+  svm::SVMPredictorSingle *svm1st;                          ///< SVM-predictor for 1st level
+  svm::SVMPredictorSingle *svm2nd;                          ///< SVM-predictor for 2nd level
   svm::SVMFileCreator *svmFile;                             ///< SVM-file creator
   gc::GraphCut *graphCut;                                   ///< Graph cut
 
@@ -155,7 +157,7 @@ private:
   void processImageNew();
   void SingleShotMode();
   
-  /// Data for offline calculation
+  /// Data for offline calculation with loaded surface models
   bool process_loaded_models;
   unsigned startID;
   unsigned endID;

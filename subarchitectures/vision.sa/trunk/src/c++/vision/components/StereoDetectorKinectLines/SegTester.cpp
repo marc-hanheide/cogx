@@ -265,27 +265,19 @@ void SegTester::configure(const map<string,string> & _config)
   patches = new surface::Patches();
   patches->setZLimit(0.01);
 
-printf("DEBUG: Init svm-predictor\n");
   /// init svm-predictor
-  std::vector<const char*> files;
-  const char* file = "./instantiations/11-05-11/12-03-01-2/PP-Trainingsset.txt.scaled.model";
-  files.push_back(file);
-  const char *file2 = "./instantiations/11-05-11/12-03-01-2/PP2-Trainingsset.txt.scaled.model";
-  files.push_back(file2);
-cout << "DEBUG: Init svm-predictor: set predictor" << endl;
-cout << flush;
-  svm = new svm::SVMPredictor(files);
+printf("DEBUG: Init 1st svm-predictor\n");
+  svm1st = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-01-2/PP-Trainingsset.txt.scaled.model");
+printf("DEBUG: Init 2nd svm-predictor\n");
+  svm2nd = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-01-2/PP2-Trainingsset.txt.scaled.model");
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 cout << flush;
-  std::vector<const char*> param_files;
-  const char* pfile = "./instantiations/11-05-11/12-03-01-2/param.txt";
-  param_files.push_back(pfile);
-  const char* pfile2 = "./instantiations/11-05-11/12-03-01-2/param2.txt";
-  param_files.push_back(pfile2);
-cout << "DEBUG: Init svm-predictor: set N scaling" << endl;
-cout << flush;
-  svm->setNScaling(true, param_files);
-cout << "DEBUG: Init svm-predictor: set N scaling done" << endl;
+
+cout << "DEBUG: Init svm-predictor: set scaling done" << endl;
+  svm1st->setScaling(true, "./instantiations/11-05-11/12-03-01-2/param.txt");
+cout << "DEBUG: Init svm-predictor: set scaling 1st done" << endl;
+  svm2nd->setScaling(true, "./instantiations/11-05-11/12-03-01-2/param2.txt");
+cout << "DEBUG: Init svm-predictor: set scaling 2nd done" << endl;
 cout << flush;
   
   /// init graph cutter
@@ -423,6 +415,12 @@ void SegTester::GetImageData()
  */
 void SegTester::processImageNew()
 {
+  static struct timespec overallStart, overallEnd;
+  static bool first = true;
+  if(first)
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallStart);
+  first = false;
+
   if(deb) printf("SegTester::processImageNew: start\n");
   
   static struct timespec start, last, current;
@@ -467,7 +465,7 @@ void SegTester::processImageNew()
 //   if(deb) printf("Runtime for SegLearner: Model fitting: %4.3f\n", timespec_diff(&current, &last));
 //   if(deb) last = current; 
   
-    /// MOS-Plane fitting
+  /// MOS-Plane fitting
   if(deb) log("MoS-Plane fitter start!");
 //   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
   pclA::FilterZ(pcl_cloud, 0.3, 1.5);      // z filtering for 1.5 meters
@@ -566,9 +564,11 @@ void SegTester::processImageNew()
   if(deb) printf("SegTester: Prediction start: relation_vector.size: %lu\n", relation_vector.size());
   for(unsigned i=0; i<relation_vector.size(); i++)
   {
-    relation_vector[i].prediction = svm->getNResult(relation_vector[i].type, 
-                                                    relation_vector[i].rel_value, 
-                                                    relation_vector[i].rel_probability);
+    if(relation_vector[i].type == 1)
+      relation_vector[i].prediction = svm1st->getResult(relation_vector[i].type, 
+                                                     relation_vector[i].rel_value, 
+                                                     relation_vector[i].rel_probability);
+      
     if(deb) 
     {
       if(relation_vector[i].groundTruth == 0) {
@@ -578,12 +578,19 @@ void SegTester::processImageNew()
         else
           printf(" => is true\n");
       }
-      if(relation_vector[i].groundTruth == 1) {
+      else if(relation_vector[i].groundTruth == 1) {
         printf("relation [%u][%u]: gt: true  => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
         if(relation_vector[i].prediction < 0.5)
           printf(" => is false\n");
         else
           printf(" => is true\n");      
+      }
+      else {
+        printf("relation [%u][%u]: gt: unkn.  => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
+        if(relation_vector[i].prediction < 0.5)
+          printf(" => is ???\n");
+        else
+          printf(" => is ???\n");      
       }
     }
   }
@@ -595,10 +602,9 @@ void SegTester::processImageNew()
 
   /// Graph cutter
   if(deb) log("graph-cutter: start");
-  int nr_models = surfaces.size();
-  graphCut->init(relation_vector);
+  graphCut->init(surfaces.size(), relation_vector);
   graphCut->process();
-  graphCut->getResults(nr_models, graphCutGroups);
+  graphCut->getResults(surfaces.size(), graphCutGroups);
   for(unsigned i=0; i<graphCutGroups.size(); i++)
     for(unsigned j=0; j<graphCutGroups[i].size(); j++)
       surfaces[graphCutGroups[i][j]]->label = i;
@@ -638,6 +644,11 @@ void SegTester::processImageNew()
   svmFile->setTestSet(true);
   svmFile->process();
   if(deb) log("write svm testset file: end.");
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
+  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
+  printf("\n");
+
 //   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
 }
 
@@ -695,16 +706,15 @@ void SegTester::SingleShotMode()
   }
   
   if (key == 65480 || key == 1114056)  { // F11
-    log("process models: single shot modus ended.");
+    log("process saved surface models: single shot modus.");
     lockComponent();
-    LoadImageData();
     processLoadedData();
     unlockComponent();
   }
-  if (key == 65480 || key == 1114056)  { // F12
-    log("process models: single shot modus ended.");
-    single = false;
+  if (key == 65481 || key == 1114057)  { // F12
+    log("process saved surface models: single shot modus ended.");
     process_loaded_models = true;
+    single = false;
   }
 
   //  if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
@@ -1074,6 +1084,7 @@ void SegTester::LoadImageData()
   pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::io::loadPCDFile(pcd_next, *pcl_cloud);
   pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_point_cloud_image);
+  pclA::ConvertPCLCloud2CvMat(pcl_cloud, kinect_point_cloud);
   
   char ipl_next[256] = "";
   std::sprintf(ipl_next, off_ipl_file, nextID);
@@ -1105,14 +1116,25 @@ void SegTester::LoadImageData()
   if(showImages)
     cvShowImage("Kinect image", iplImage_k);
   
+  tgRenderer->Clear();
+  tgRenderer->AddPointCloud(kinect_point_cloud);
+  tgRenderer->Update();
+        
   nextID++; 
-  
   log("Get image data ended.");
 }
 
 
 void SegTester::processLoadedData()
 {
+  static struct timespec overallStart, overallEnd;
+  static bool first = true;
+  if(first)
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallStart);
+  first = false;
+
+  LoadImageData();
+  
   static struct timespec start, last, current;
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
 
@@ -1169,22 +1191,35 @@ void SegTester::processLoadedData()
   if(deb) printf("SegTester: Prediction start: relation_vector.size: %lu\n", relation_vector.size());
   for(unsigned i=0; i<relation_vector.size(); i++)
   {
-    relation_vector[i].prediction = svm->getNResult(relation_vector[i].type, 
-                                                    relation_vector[i].rel_value, 
-                                                    relation_vector[i].rel_probability);
+    if(relation_vector[i].type == 1)
+      relation_vector[i].prediction = svm1st->getResult(relation_vector[i].type, 
+                                                        relation_vector[i].rel_value, 
+                                                        relation_vector[i].rel_probability);
+    if(relation_vector[i].type == 2)
+      relation_vector[i].prediction = svm2nd->getResult(relation_vector[i].type, 
+                                                        relation_vector[i].rel_value, 
+                                                        relation_vector[i].rel_probability);
+      
     if(deb) 
     {
       if(relation_vector[i].groundTruth == 0) {
         printf("relation [%u][%u]: gt: false => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
         if(relation_vector[i].prediction > 0.5)
-          printf(" => is FALSE\n");
+          printf(" => is false\n");
         else
           printf(" => is true\n");
       }
-      if(relation_vector[i].groundTruth == 1) {
+      else if(relation_vector[i].groundTruth == 1) {
         printf("relation [%u][%u]: gt: true  => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
         if(relation_vector[i].prediction < 0.5)
-          printf(" => is FALSE\n");
+          printf(" => is false\n");
+        else
+          printf(" => is true\n");      
+      }
+      else {
+        printf("relation [%u][%u]: gt: unkn.  => %4.3f", relation_vector[i].id_0, relation_vector[i].id_1, relation_vector[i].rel_probability[1]);
+        if(relation_vector[i].prediction < 0.5)
+          printf(" => is false\n");
         else
           printf(" => is true\n");      
       }
@@ -1198,11 +1233,10 @@ void SegTester::processLoadedData()
 
   
   /// Graph cutter
-  if(deb) log("graph-cutter: start");
-  int nr_models = surfaces.size();
-  graphCut->init(relation_vector);
+  if(deb) log("graph-cutter: start: models/relations: %lu - %lu", surfaces.size(), relation_vector.size());
+  graphCut->init(surfaces.size(), relation_vector);
   graphCut->process();
-  graphCut->getResults(nr_models, graphCutGroups);
+  graphCut->getResults(surfaces.size(), graphCutGroups);
   for(unsigned i=0; i<graphCutGroups.size(); i++)
     for(unsigned j=0; j<graphCutGroups[i].size(); j++)
       surfaces[graphCutGroups[i][j]]->label = i;
@@ -1236,7 +1270,7 @@ void SegTester::processLoadedData()
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
   
   
-  /// write svm-relations for first level svm to file!
+  /// write svm-relations to file!
   if(deb) log("write svm testset file: start.");
   svmFile->setRelations(relation_vector);
   svmFile->setAnalyzeOutput(false);
@@ -1244,6 +1278,12 @@ void SegTester::processLoadedData()
   svmFile->process();
   if(deb) log("write svm testset file: end.");
 //   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
+  
+    
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
+  if(deb) log("OVERALL RUNTIME for SegTester: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
+  printf("\n");
+
 }
 
 }
