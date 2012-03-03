@@ -482,7 +482,7 @@ void SegLearner::processImageNew()
     /// write svm-relations for first level svm to file!
     if(deb) log("write svm learn file: start.");
     svm->setRelations(relation_vector);
-    svm->setAnalyzeOutput(false);
+    svm->setAnalyzeOutput(true);
     svm->process();
     if(deb) log("write svm learn file: end.");
 
