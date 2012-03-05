@@ -242,8 +242,8 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/U-Daten/OD-IROS/annotation/cvww_mixed%1d.png", 4, 8);
 
   /// IROS komplett
-  annotation->init("/media/U-Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
-//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
 
   /// save results to file
   save_results = false;
