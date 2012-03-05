@@ -439,22 +439,24 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
     global_kinect_pose = lastValidCamPose;
 
   // copy clouds to points-vector (dense!)
+  PointCloud::SurfacePoint pt;
   int scale = imgWidth == 0 ? 1 : cloud.size().width / imgWidth;
-  if (complete) {
-     points.reserve(cloud.size().height * cloud.size().width);  
+  if (scale < 1) {
+     scale = 1;
   }
-  for (int row=0; row < cloud.size().height; row += scale)   /// SLOW conversion
+  int ncol = cloud.size().width;
+  int nrow = cloud.size().height;
+  if (complete) {
+     points.reserve(ncol * nrow);  
+  }
+  for (int row=0; row < nrow; row += scale)   /// SLOW conversion
   {
-    for (int col=0; col < cloud.size().width; col += scale)
+    for (int col=0; col < ncol; col += scale)
     {
       const cv::Point3f& cvpt = cloud.at<cv::Point3f>(row, col); 
-      PointCloud::SurfacePoint pt;
-      pt.p.x = cvpt.x;
-      pt.p.y = cvpt.y;
-      pt.p.z = cvpt.z;
 
       /* Check point for validity */
-      if (pt.p.x == FLT_MAX || pt.p.y == FLT_MAX || pt.p.z == FLT_MAX)
+      if (cvpt.x == FLT_MAX || cvpt.y == FLT_MAX || cvpt.z == FLT_MAX)
       {
         /* If no data is available add (0,0,0) as specified in PointCloudServer */
         if (complete) {
@@ -465,6 +467,11 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
         /* Or if we don't care about missing data ignore the point */
         else
           continue;
+      }
+      else {
+         pt.p.x = cvpt.x;
+         pt.p.y = cvpt.y;
+         pt.p.z = cvpt.z;
       }
 
       const cv::Point3f& cvco = colCloud.at<cv::Point3f>(row, col);
