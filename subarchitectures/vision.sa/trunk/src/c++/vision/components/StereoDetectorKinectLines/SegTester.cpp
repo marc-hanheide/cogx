@@ -259,7 +259,9 @@ void SegTester::configure(const map<string,string> & _config)
 
     /// IROS learn and test set full
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
-  annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+
+  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+  annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
 
   /// init patch class
   patches = new surface::Patches();
@@ -271,14 +273,14 @@ printf("DEBUG: Init 1st svm-predictor\n");
 printf("DEBUG: Init 2nd svm-predictor\n");
   svm2nd = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-04/PP2-Trainingsset.txt.scaled.model");
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
-cout << flush;
+
 
 cout << "DEBUG: Init svm-predictor: set scaling done" << endl;
   svm1st->setScaling(true, "./instantiations/11-05-11/12-03-04/param.txt");
 cout << "DEBUG: Init svm-predictor: set scaling 1st done" << endl;
   svm2nd->setScaling(true, "./instantiations/11-05-11/12-03-04/param2.txt");
 cout << "DEBUG: Init svm-predictor: set scaling 2nd done" << endl;
-cout << flush;
+
   
   /// init graph cutter
   graphCut = new gc::GraphCut();
@@ -637,7 +639,6 @@ void SegTester::processImageNew()
 //   }
   
   /// Check annotation for evaluation
-  annotation->setFileWriting(true, "/media/U-Daten/OD-IROS/results/annoEval.txt");
   if(deb) annotation->checkAnnotation(surfaces, graphCutGroups);
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
