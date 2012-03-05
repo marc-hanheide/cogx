@@ -152,9 +152,12 @@ IFOPTALL(%(feature_options), spatial)
 	VARDEFAULT display_doors=
 
 	IFOPTALL(%(hardware_options), kinect)
-		SETVAR spatial_pcserver="--pcserver pcserver"
+		SETVAR spatial_pcserver=--pcserver pcserver
+		SETVAR simulate_kinect=
 	ELSE
 		SETVAR spatial_pcserver=
+		SETVAR simulate_kinect=
+			###--simulate-kinect
 	ENDIF
 
 	IFOPTALL(%(hardware_options), ptz)
@@ -167,7 +170,7 @@ IFOPTALL(%(feature_options), spatial)
 
 	CPP GD self.representer 	SelfRepresenter 
 	CPP MG spatial.translation 	SpatialTranslation 
-	CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) --cat-explore-range 5.6 %(usePB)
+	CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) --cat-explore-range 5.6 %(usePB) %(simulate_kinect)
 	CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
 	CPP GD navgraph.process 	NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width)
 	CPP GD place.manager 		PlaceManager --no-update-placeholders --exclude-from-exploration "y < -3.2" --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
@@ -330,7 +333,12 @@ ENDIF
 # visualization ##########################################################
 IFOPTALL(%(feature_options), visualization)
     SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
-    INCLUDE  includes/visualization.sa/v11n-base-p.cast
+VARDEFAULT displaysrv_param_redirect=
+
+	SUBARCHITECTURE visualization.sa 
+	JAVA WM cast.architecture.SubarchitectureWorkingMemory
+	CPP TM AlwaysPositiveTaskManager
+	CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
 
 
     IFOPTALL(%(feature_options), planning debug)
