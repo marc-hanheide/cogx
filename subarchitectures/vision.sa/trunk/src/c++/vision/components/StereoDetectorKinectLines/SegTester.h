@@ -76,8 +76,10 @@ private:
   bool deb;                                                 ///< Debug flag
   
   surface::SaveFileSequence *modelSaver;                    ///< Save surface models
+  surface::SaveFileSequence *resultSaver;                   ///< Save results
   surface::LoadFileSequence *modelLoader;                   ///< Load surface models
-  bool save_results;                                        ///< Save surface models
+  bool save_models;                                         ///< Save surface models
+  bool save_results;                                        ///< Save results as surface models
   char *save_filename;                                      ///< filename for surface models
   
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
@@ -101,8 +103,6 @@ private:
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud (dilation)
   pcl::PointCloud<pcl::Normal>::Ptr pcl_normals;            ///< Normals of the point cloud
-//  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_vis;     ///< PCL point cloud (dilation)
-//  pcl::PointCloud<pcl::Normal>::Ptr pcl_normals_vis;        ///< Normals of the point cloud
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices_old;///< indices of the surface patches (from fitter for debugging => TODO Remove later)
   std::vector<pcl::PointIndices::Ptr> pcl_model_indices;    ///< indices of the surface patches
   std::vector< std::vector<int> > preProcessIndices;        ///< TODO Indices of points eliminated by postProcessing

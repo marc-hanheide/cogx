@@ -267,16 +267,16 @@ void SegTester::configure(const map<string,string> & _config)
 
   /// init svm-predictor
 printf("DEBUG: Init 1st svm-predictor\n");
-  svm1st = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-01-2/PP-Trainingsset.txt.scaled.model");
+  svm1st = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-04/PP-Trainingsset.txt.scaled.model");
 printf("DEBUG: Init 2nd svm-predictor\n");
-  svm2nd = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-01-2/PP2-Trainingsset.txt.scaled.model");
+  svm2nd = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-04/PP2-Trainingsset.txt.scaled.model");
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 cout << flush;
 
 cout << "DEBUG: Init svm-predictor: set scaling done" << endl;
-  svm1st->setScaling(true, "./instantiations/11-05-11/12-03-01-2/param.txt");
+  svm1st->setScaling(true, "./instantiations/11-05-11/12-03-04/param.txt");
 cout << "DEBUG: Init svm-predictor: set scaling 1st done" << endl;
-  svm2nd->setScaling(true, "./instantiations/11-05-11/12-03-01-2/param2.txt");
+  svm2nd->setScaling(true, "./instantiations/11-05-11/12-03-04/param2.txt");
 cout << "DEBUG: Init svm-predictor: set scaling 2nd done" << endl;
 cout << flush;
   
@@ -286,11 +286,17 @@ cout << flush;
   /// init svm-file-creator (save training set for svm evaluation)
   svmFile = new svm::SVMFileCreator();
 
+  /// save models to file
+  save_models = false;
+  surface::SaveFileSequence::Parameter smp;
+  modelSaver = new surface::SaveFileSequence(smp);
+  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 42);
+  
   /// save results to file
   save_results = true;
   surface::SaveFileSequence::Parameter sp;
-  modelSaver = new surface::SaveFileSequence(sp);
-  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_result%1d.sfv", 0, 42);
+  resultSaver = new surface::SaveFileSequence(sp);
+  resultSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_result%1d.sfv", 0, 42);
   
   /// load models from file
   startID = 0;
@@ -498,7 +504,7 @@ void SegTester::processImageNew()
   if(deb) last = current; 
   
   /// Save results of model fitter to file
-  if(save_results) {
+  if(save_models) {
     if(deb) log("save surface models: start");
     modelSaver->SaveNextView(surfaces);
     if(deb) log("save surface models: end");
@@ -637,13 +643,20 @@ void SegTester::processImageNew()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
   
-  /// write svm-relations for first level svm to file!
+  /// write svm-relations to file!
   if(deb) log("write svm testset file: start.");
   svmFile->setRelations(relation_vector);
-  svmFile->setAnalyzeOutput(false);
+  svmFile->setAnalyzeOutput(true);
   svmFile->setTestSet(true);
   svmFile->process();
   if(deb) log("write svm testset file: end.");
+  
+  /// Save results of model fitter to file
+  if(save_results) {
+    if(deb) log("save surface models: start");
+    resultSaver->SaveNextView(surfaces);
+    if(deb) log("save surface models: end");
+  }
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
   if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
@@ -1255,12 +1268,6 @@ void SegTester::processLoadedData()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;
-
-//   if(save_results) {
-//     if(deb) log("save surface models: start");
-//     modelSaver->SaveNextView(surfaces);
-//     if(deb) log("save surface models: end");
-//   }
   
   /// Check annotation for evaluation
   annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
@@ -1273,12 +1280,18 @@ void SegTester::processLoadedData()
   /// write svm-relations to file!
   if(deb) log("write svm testset file: start.");
   svmFile->setRelations(relation_vector);
-  svmFile->setAnalyzeOutput(false);
+  svmFile->setAnalyzeOutput(true);
   svmFile->setTestSet(true);
   svmFile->process();
   if(deb) log("write svm testset file: end.");
 //   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
   
+  /// Save results of model fitter to file
+  if(save_results) {
+    if(deb) log("save surface models: start");
+    resultSaver->SaveNextView(surfaces);
+    if(deb) log("save surface models: end");
+  }
     
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
   if(deb) log("OVERALL RUNTIME for SegTester: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);

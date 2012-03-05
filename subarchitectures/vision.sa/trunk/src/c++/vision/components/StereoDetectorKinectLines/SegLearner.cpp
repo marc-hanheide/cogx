@@ -55,6 +55,7 @@ void SegLearner::configure(const map<string,string> & _config)
 
   showImages = false;
   single = false;
+  process_loaded_models = false;
 
   map<string,string>::const_iterator it;
 
@@ -234,15 +235,33 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
 
   /// IROS annotation
-//   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
-//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
-//   annotation->init("/media/Daten/OD-IROS/annotation/occlusions%1d.png", 0, 14);
-//   annotation->init("/media/Daten/OD-IROS/annotation/box_world%1d.png", 0, 15);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/occlusions%1d.png", 0, 14);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/box_world%1d.png", 0, 15);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/cvww_mixed%1d.png", 4, 8);
 
   /// IROS komplett
   annotation->init("/media/U-Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
 //   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
 
+  /// save results to file
+  save_results = false;
+  surface::SaveFileSequence::Parameter sp;
+  modelSaver = new surface::SaveFileSequence(sp);
+  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_result%1d.sfv", 0, 44);
+
+  /// load models from file
+  startID = 0;
+  endID = 42;
+  nextID = startID;
+  off_filename = "/media/U-Daten/OD-IROS/results/iros_result%1d.sfv";
+  off_pcd_file = "/media/U-Daten/OD-IROS/points2/iros%1d.pcd";
+  off_ipl_file = "/media/U-Daten/OD-IROS/image_color/iros%1d.png";
+  surface::LoadFileSequence::Parameter lp;
+  modelLoader = new surface::LoadFileSequence(lp);
+  modelLoader->InitFileSequence(off_filename, startID, endID);
+  
   /// init patch class
   patches = new surface::Patches();
   patches->setZLimit(0.01);
@@ -273,8 +292,11 @@ void SegLearner::runComponent()
   while(single && isRunning() && !stopComponent){
     SingleShotMode();
   }
-  while(isRunning() && !stopComponent) {
-    processImageNew();
+  while(isRunning()) {
+    if(process_loaded_models)
+      processLoadedData();
+    else
+      processImageNew();
   }
 
   if(showImages)
@@ -296,8 +318,8 @@ void SegLearner::GetImageData()
 {
   pointCloudWidth = 640;
   pointCloudHeight = pointCloudWidth *3/4;
-  kinectImageWidth = 640;
-  kinectImageHeight = kinectImageWidth *3/4;
+  rgbWidth = 640;
+  rgbHeight = rgbWidth *3/4;
   if(deb) log("Get image data with size: %u-%u", pointCloudWidth, pointCloudHeight);
   
   points.resize(0);
@@ -307,7 +329,7 @@ void SegLearner::GetImageData()
   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
 
   // get rectified kinect image from point cloud server
-  getRectImage(2, kinectImageWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+  getRectImage(2, rgbWidth, image_k);            // 2 = kinect image / we take it with kinect image width
   iplImage_k = convertImageToIpl(image_k);
 
   /// calculate normals
@@ -428,8 +450,14 @@ void SegLearner::processImageNew()
   if(deb) log("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f", timespec_diff(&current, &last));
   if(deb) last = current; 
 
+  /// Save results of model fitter to sfv-file
+  if(save_results) {
+    if(deb) log("save surface models: start");
+    modelSaver->SaveNextView(surfaces);
+    if(deb) log("save surface models: end");
+  }
   
-  if(true) /// TODO TODO TODO DEBUG
+  if(true) /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO DEBUG
   {
     /// Load annotation from file
     if(deb) log("Load annotation: start");
@@ -479,7 +507,7 @@ void SegLearner::processImageNew()
     if(deb) log("Runtime for SegLearner: Calculate patch relations: %4.3f", timespec_diff(&current, &last));
     if(deb) last = current;  
 
-    /// write svm-relations for first level svm to file!
+    /// write svm-relations for svm to file!
     if(deb) log("write svm learn file: start.");
     svm->setRelations(relation_vector);
     svm->setAnalyzeOutput(true);
@@ -536,17 +564,40 @@ void SegLearner::SingleShotMode()
     log("unused");
   }
 
-  if (key == 65478 || key == 1114054)  { // F9
-    log("process image in single shot mode with new implementations.");
+//   if (key == 65478 || key == 1114054)  { // F9
+//     log("process image in single shot mode with new implementations.");
+//     lockComponent();
+//     processImageNew();
+//     unlockComponent();
+//   }
+// 
+//   if (key == 65479 || key == 1114055)  { // F10
+//     log("unused");
+//   }
+
+    if (key == 65478 || key == 1114054)  { // F9
+    log("process images in single shot mode.");
     lockComponent();
     processImageNew();
     unlockComponent();
   }
-
   if (key == 65479 || key == 1114055)  { // F10
-    log("unused");
+    log("process models from file in single shot mode");
+    single = false;
   }
-
+  
+  if (key == 65480 || key == 1114056)  { // F11
+    log("process saved surface models: single shot modus.");
+    lockComponent();
+    processLoadedData();
+    unlockComponent();
+  }
+  if (key == 65481 || key == 1114057)  { // F12
+    log("process saved surface models: single shot modus ended.");
+    process_loaded_models = true;
+    single = false;
+  }
+  
   // if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
   switch((char) key)
   {
@@ -775,11 +826,6 @@ void SegLearner::SingleShotMode()
     }   
     break;
       
-    case 'x':
-      log("End Single-Shot mode!");
-      single = false;
-      break;
-      
     case '^':
       log("Add labels: antiquated");
       labels = !labels;
@@ -791,6 +837,151 @@ void SegLearner::SingleShotMode()
       break;  
   }
 }
+
+
+void SegLearner::LoadImageData()
+{
+  log("Load image data: started.");
+ 
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  
+  pointCloudWidth = 640;
+  pointCloudHeight = pointCloudWidth *3/4;
+  rgbWidth = 640;
+  rgbHeight = rgbWidth *3/4;
+  
+  char pcd_next[256] = "";
+  std::sprintf(pcd_next, off_pcd_file, nextID);
+  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::io::loadPCDFile(pcd_next, *pcl_cloud);
+  pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_point_cloud_image);
+  pclA::ConvertPCLCloud2CvMat(pcl_cloud, kinect_point_cloud);
+  
+  char ipl_next[256] = "";
+  std::sprintf(ipl_next, off_ipl_file, nextID);
+  iplImage_k = cvLoadImage(ipl_next);
+
+  surface::View view;
+  modelLoader->LoadNextView(view);
+  surfaces = view.surfaces;
+  
+  tgRenderer->SetImage(kinect_point_cloud_image);
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Getting images: %4.3f\n", timespec_diff(&current, &last));
+  last = current;
+  
+  // calculate normals
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  if(deb) last = start;
+  pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
+  pclA::NormalsEstimationNR n;
+  n.setParameter(param);
+  n.setInputCloud(pcl_cloud);
+  n.compute();
+  n.getNormals(pcl_normals);
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Calculate normals: %4.3f\n", timespec_diff(&current, &last));
+  
+  
+  if(showImages)
+    cvShowImage("Kinect image", iplImage_k);
+  
+  tgRenderer->Clear();
+  tgRenderer->AddPointCloud(kinect_point_cloud);
+  tgRenderer->Update();
+        
+  nextID++; 
+  log("Get image data ended.");
+}
+
+
+void SegLearner::processLoadedData()
+{
+  static struct timespec overallStart, overallEnd;
+  static bool first = true;
+  if(first)
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallStart);
+  first = false;
+
+  LoadImageData();
+  
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+
+  /// Run vision core (for canny edges)
+  vcore->NewImage(iplImage_k);
+  vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+  GetSegmentIndexes(vcore, texture, pointCloudWidth);
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Vision core: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current;  
+  
+  /// Load annotation from file
+  if(deb) log("Load annotation: start");
+  std::vector< std::vector<int> > anno_pairs;
+  std::vector<int> anno_background_list;
+  annotation->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation->setSurfaceModels(surfaces);
+  annotation->calculate();
+  annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+  if(deb)
+    for(unsigned i=0; i<anno_pairs.size(); i++) {
+      printf("Annotation pairs for %u: ", i);
+      for(unsigned j=0; j<anno_pairs[i].size(); j++)
+        printf(" %u", anno_pairs[i][j]);
+      printf("\n");
+    }
+  if(deb) log("Load annotation: end");
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Load annotation: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current; 
+
+  /// Calculate patch relations
+  if(deb) log("Calculate patch-relations start!");
+  std::vector<Relation> relation_vector;
+  patches->setInputImage(iplImage_k);
+  patches->setInputCloud(pcl_cloud);
+  patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
+  patches->setSurfaceModels(surfaces);
+  patches->setAnnotion(anno_pairs, anno_background_list);
+  patches->setTexture(texture);
+  patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
+  if(deb) log("Calculate patch-relations for 2nd SVM: start!");
+  patches->computeLearnRelations2();
+  if(deb) log("Calculate patch-relations for 2nd SVM: end!");
+  patches->getRelations(relation_vector);
+  if(deb) log("Calculate patch-relations ended!");
+
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Calculate patch relations: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current;  
+
+  /// copy normals for displaying
+  pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
+  pcl_normals_repro->points.resize(pcl_normals->points.size());
+  patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);      // TODO Wieso braucht man hier noch die output-cloud?
+
+  /// write svm-relations for svm to file!
+  if(deb) log("write svm learn file: start.");
+  svm->setRelations(relation_vector);
+  svm->setAnalyzeOutput(true);
+  svm->process();
+  if(deb) log("write svm learn file: end.");
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
+  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
+  printf("\n");
+
+}
+
 
 }
 
