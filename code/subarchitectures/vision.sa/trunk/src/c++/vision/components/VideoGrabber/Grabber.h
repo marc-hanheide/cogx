@@ -183,8 +183,6 @@ public:
   virtual void receiveImages(const std::string& serverName, const std::vector<Video::Image>& images);
 
   std::vector<std::string> getDeviceNames();
-  //void saveImages(const std::vector<Video::Image>& images);
-  //void saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images, CRecordingInfo& frameInfo);
   void saveQueuedImages(const std::vector<CGrabbedItemPtr>& images, CRecordingInfo& frameInfo);
   void getClients(std::vector<CDataSource*>& clients)
   {
