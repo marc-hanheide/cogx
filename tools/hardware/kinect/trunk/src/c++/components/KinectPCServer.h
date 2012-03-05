@@ -101,10 +101,20 @@ private:
   castutils::CMilliTimer m_tmUpdateViewCone;
 
 private:
-  void getResolution(int camIdx, CvSize &size);
-  bool setResolution(int camIdx, CvSize &size);
+  class KinectLock
+    : private IceUtil::Mutex::Lock
+  {
+  public:
+    KinectLock(KinectPCServer *pServer) : IceUtil::Mutex::Lock(pServer->m_kinectMutex)
+    {
+    }
+  };
   void lockKinect();
   void unlockKinect();
+
+private:
+  void getResolution(int camIdx, CvSize &size);
+  bool setResolution(int camIdx, CvSize &size);
 
   void deleteViewConePlanes();
   bool createViewCone();
