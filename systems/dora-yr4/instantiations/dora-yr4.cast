@@ -1,9 +1,7 @@
 # CAST config file
 
-# The default HOSTNAMEs are defined in george-hosts.incl and are all set to localhost.
+# The default HOSTNAMEs are defined in dora-hosts.incl and are all set to localhost.
 INCLUDE dora-hosts.incl
-
-
 
 ###########################################################################
 #             DEFAULT CONFIGURATION                                       #
@@ -116,11 +114,14 @@ VARDEFAULT fake_tables=<multiline>
 VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 
 ### SPATIAL.SA DOOR DETECTION SETTINGS
-SETVAR spatial_min_door_width=0.8
-SETVAR spatial_max_door_width=1.2
+VARDEFAULT spatial_min_door_width=0.8
+VARDEFAULT spatial_max_door_width=1.2
 
 VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
 
+###########################################################################
+###########################################################################
+###########################################################################
 ###########################################################################
 
 HOST     [Main]
