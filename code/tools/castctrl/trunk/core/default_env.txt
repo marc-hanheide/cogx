@@ -82,6 +82,8 @@ CMD_JAVA=java -ea -classpath ${CLASSPATH}
 
 CMD_CPP_SERVER=${CAST_BIN_DIR}/cast-server-c++
 CMD_CPP_SERVER_DEBUG=ddd --eval-command=run ${CAST_BIN_DIR}/cast-server-c++ 
+# CMD_CPP_SERVER_DEBUG=ddd ${CAST_BIN_DIR}/cast-server-c++ --command cast-cpp-init.gdb
+
 
 CMD_PYTHON_SERVER=python -m ComponentServer
 
