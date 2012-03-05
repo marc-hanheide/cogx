@@ -77,10 +77,10 @@ EOF
 
 #DIM=`xdpyinfo | grep dimension | cut -f7 -d" "`
 #ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
-# Make a flash video
-flvrec.py -o logs/screencast.flv -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
-PIDS="$PIDS $!"
 
+# Make a flash video
+flvrec.py -o logs/screencast.flv -K 1 -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
+PIDS="$PIDS $!"
 
 xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
 PIDS="$PIDS $!"
@@ -138,12 +138,12 @@ PIDS="$PIDS $!"
 # in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
 #waitForTrigger
 echo "--------------------------"
-echo "Sleeping for 60 secs"
+echo "Sleeping for 100 secs"
 
-sleep 60
+sleep 100
 echo "Moving Peekabot"
 xdotool windowmove $window_id 0 0
-xdotool windowsize $window_id 50% 50%
+xdotool windowsize $window_id 70% 70%
 xdotool windowactivate $window_id
 echo "Done moving Peekabot"
 sleep 2
