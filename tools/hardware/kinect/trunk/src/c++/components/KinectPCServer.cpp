@@ -454,7 +454,7 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
       pt.p.z = cvpt.z;
 
       /* Check point for validity */
-      if (pt.p.x == FLT_MAX && pt.p.y == FLT_MAX && pt.p.z == FLT_MAX)
+      if (pt.p.x == FLT_MAX || pt.p.y == FLT_MAX || pt.p.z == FLT_MAX)
       {
         /* If no data is available add (0,0,0) as specified in PointCloudServer */
         if (complete) {
