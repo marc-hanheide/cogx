@@ -8,6 +8,7 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 
 # Set the sources.
 SET(SOURCES
+   CoreStructs.cpp
    Grabber.cpp
    VideoGrabber.cpp
    )

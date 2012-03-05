@@ -683,73 +683,10 @@ void CGrabber::sendCachedImages()
   }
 #endif
 
-#if 0
-#ifdef FEAT_VISUALIZATION
-  std::vector<Video::CCachedImagePtr> images;
-  for (unsigned int i = 0; i < m_video.size(); i++) {
-    Video::CVideoClient2& v = *m_video[i];
-    std::vector<Video::CCachedImagePtr> timgs;
-    v.getCachedImages(timgs);
-    std::vector<Video::CCachedImagePtr>::iterator itt;
-    for(itt = timgs.begin(); itt != timgs.end(); itt++) {
-      images.push_back(*itt);
-    }
-  }
-
-  int w = 0, h = 0;
-  double factor = 1.0;
-  for (unsigned int i = 0; i < images.size(); i++) {
-    if (images[i]->width > w) w = images[i]->width;
-    h += images[i]->height;
-  }
-  if (w > 320) {
-    factor = 320.0 / w;
-    w = (int) (w * factor + 0.5);
-    h = (int) (h * factor + 0.5);
-  }
-  // TODO: every image has its own scale factor
-
-  CvFont fntSimplex, fntPlain;
-  cvInitFont(&fntSimplex, CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0, 0, 2);
-  cvInitFont(&fntPlain, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0, 1.5);
-  std::vector<std::string> devnames = getDeviceNames();
-  int vp = 0;
-  prepareCanvas(w, h);
-  IplImage *pDisp = m_pDisplayCanvas;
-  for (unsigned int i = 0; i < images.size(); i++) {
-    IplImage *iplImage = cloneVideoImage(*images[i]);
-    int wi = (int) (images[i]->width * factor);
-    int hi = (int) (images[i]->height * factor);
-    cvSetImageROI(pDisp, cvRect(0, vp, wi, vp+hi));
-    cvResize(iplImage, pDisp);
-    releaseClonedImage(&iplImage);
-
-    std::string sMsg = _str_(i);
-    if (i < devnames.size()) sMsg += ":" + devnames[i];
-    cvPutText (pDisp, sMsg.c_str(), cvPoint(10, 25), &fntSimplex, cvScalar(255,255,0));
-
-    sMsg = _str_(images[i]->width) + "x" + _str_(images[i]->height);
-    cvPutText (pDisp, sMsg.c_str(), cvPoint(10, hi-2), &fntPlain, cvScalar(255,255,0));
-
-    cvResetImageROI(pDisp);
-    vp += hi;
-  }
-  m_display.setImage(IDOBJ_GRABBER, w, h, 3, m_DisplayBuffer);
-#endif
-#endif
 }
 
 void CGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& _images)
 {
-#if 0
-#ifdef FEAT_VISUALIZATION
-  //sendCachedImages();
-#else
-  IplImage *iplImage = convertImageToIpl(images[0]);
-  cvShowImage(getComponentID().c_str(), iplImage);
-  cvReleaseImage(&iplImage);
-#endif
-#endif
 }
 
 std::vector<std::string> CGrabber::getDeviceNames()
@@ -824,51 +761,6 @@ void CGrabber::checkStopGrabbing()
   else if (ri.tmEnd > ri.tmStart && IceUtil::Time::now() >= ri.tmEnd) stopGrabbing();
 }
 
-#if 0
-// TODO: frameInfo should be const
-void CGrabber::saveQueuedImages(const std::vector<Video::CCachedImagePtr>& images,
-    CRecordingInfo& frameInfo)
-{
-  if (frameInfo.directoryStatus == 0 || frameInfo.directoryStatus == 1) {
-    struct stat finfo;
-    string& dir = frameInfo.directory;
-    bool exists = (0 == stat(dir.c_str(), &finfo));
-    if (exists) frameInfo.directoryStatus = 2;
-    else {
-      if (frameInfo.directoryStatus == 0) 
-        frameInfo.directoryStatus = -1;
-      else {
-        mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-        exists = (0 == stat(dir.c_str(), &finfo));
-        frameInfo.directoryStatus = exists ? 2 : -1;
-      }
-    }
-  }
-  //if (frameInfo.directoryStatus < 0) return;
-
-  std::string fname = frameInfo.filenamePatt;
-  std::string sval = _str_(frameInfo.counter, frameInfo.counterDigits, '0');
-  _s_::replace(fname, "%c", sval);
-
-  // TODO: conversion to GS when saving;
-  // TODO: compression parameters for jpeg and png
-  for (unsigned int i = 0; i < images.size(); i++) {
-    std::string fullname = fname;
-    std::string devname;
-    if (i < frameInfo.deviceNames.size()) devname = frameInfo.deviceNames[i];
-    else devname = "d" + _str_(i, 2, '0');
-    _s_::replace(fullname, "%d", devname);
-
-    fullname = frameInfo.directory + "/" + fullname;
-    println("Saving image: %s", fullname.c_str());
-    if (!m_fakeRecording) {
-      IplImage *iplImage = cloneVideoImage(*images[i]);
-      cvSaveImage(fullname.c_str(), iplImage);
-      releaseClonedImage(&iplImage);
-    }
-  }
-}
-#else
 void CGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
     CRecordingInfo& frameInfo)
 {
@@ -904,45 +796,6 @@ void CGrabber::saveQueuedImages(const std::vector<CGrabbedItemPtr>& images,
     }
   }
 }
-#endif
-
-#if 0
-void CGrabber::saveImages(const std::vector<Video::Image>& images)
-{
-  std::string dir = m_display.getDirectory();
-  if (m_display.getCreateDirectory()) {
-    struct stat finfo;
-    int rv = stat(dir.c_str(), &finfo);
-    bool exists = rv == 0;
-    if (! exists) {
-      mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-    }
-  }
-  std::string fname = m_display.getImageFilenamePatt();
-  std::vector<std::string> devnames = getDeviceNames();
-  long digits = m_display.getCounterDigits();
-  long val = m_display.getCounterValue();
-  if (digits < 1) digits = 1;
-  if (digits > 9) digits = 9;
-  std::string sval = _str_(val, digits, '0');
-  _s_::replace(fname, "%c", sval);
-
-  std::string model = m_display.getModelName();
-  _s_::replace(fname, "%m", model);
-
-  // TODO: conversion to GS when saving;
-  // TODO: compression parameters for jpeg and png
-  for (unsigned int i = 0; i < images.size(); i++) {
-    std::string fullname = fname;
-    _s_::replace(fullname, "%d", devnames[i]);
-    fullname = dir + "/" + fullname;
-    println("Saving image: %s", fullname.c_str());
-    IplImage *iplImage = convertImageToIpl(images[i]);
-    cvSaveImage(fullname.c_str(), iplImage);
-    cvReleaseImage(&iplImage);
-  }
-}
-#endif
 
 CGrabber::CGrabQueThread::CGrabQueThread(CGrabber *pGrabber)
 {
@@ -967,16 +820,7 @@ void CGrabber::CGrabQueThread::getItems(
 void CGrabber::CGrabQueThread::grab()
 {
   if (! m_pGrabber) return;
-  //IceUtil::Time tm = IceUtil::Time::now();
 
-  // TODO: To also grab point-clouds (and other types of data), getClients has to be changed!
-  // Refactoring:
-  //   - clients is a vector<GrabberClient>
-  //   - PcClient is a GrabberClient and a PointCloudClient
-  //   - VideoClient is a GrabberClient and a CVideoClient2
-  //   - a GrabberClient grabs in grab()
-  //   - a GrabberClient adds SaveItem(Ptr)s to the queue
-  //   - saveQueuedImages works with SaveItem(Ptr)s instead of CCachedImagePtr-s
   CFramePack pack;
   std::vector<CDataSource*> clients;
   m_pGrabber->getClients(clients);
@@ -999,10 +843,6 @@ void CGrabber::CGrabQueThread::grab()
 
   m_pGrabber->m_RecordingInfo.counter++;
   m_pGrabber->m_display.setCounterValue(m_pGrabber->m_RecordingInfo.counter);
-
-  //IceUtil::Time tm2 = IceUtil::Time::now() - tm;
-  //m_pGrabber->debug("images copied in %lld micros", tm2.toMicroSeconds());
-  // result: 2+1 images, 40us
 }
 
 void CGrabber::CGrabQueThread::run()

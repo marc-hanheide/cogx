@@ -9,40 +9,10 @@
 #include <castutils/Timers.hpp>
 #include <VideoUtils.h>
 
-#include <highgui.h>
-#include <IceUtil/Timer.h>
-
 #include <string>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <ctime>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <pthread.h> // XXX: Testing code
-#include <unistd.h>
 
 namespace cogxgrabber
 {
-
-#define IDOBJ_GRABBER "Video.Grabber"
-#define IDOBJ_SETTINGS "Video.Grabber.Settings"
-
-#define IDPART_SETTINGS_FORM "001.settings"
-#define IDPART_SETTINGS_VALUES "002.values"
-#define IDCMD_GRAB   "video.grab"
-#define IDCMD_RECORD "video.record"
-#define IDCMD_STOP   "video.stop"
-#define IDCTRL_STREAMING "video.streaming"
-
-using namespace std;
-using namespace cast;
-namespace cxd = cogx::display;
-
-Video::CIplImageCache CPreview::gCache;
-int CDataSource::count = 0;
 
 IplImage* cloneVideoImage(const Video::Image &img)
 {
