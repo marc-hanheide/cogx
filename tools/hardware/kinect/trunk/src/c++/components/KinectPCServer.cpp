@@ -467,9 +467,10 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
           continue;
       }
 
-      pt.c.r = cvpt.z;
-      pt.c.g = cvpt.y;
-      pt.c.b = cvpt.x;
+      const cv::Point3f& cvco = colCloud.at<cv::Point3f>(row, col);
+      pt.c.r = cvco.z;
+      pt.c.g = cvco.y;
+      pt.c.b = cvco.x;
 
       if(transformToGlobal)
         pt.p = transform(global_kinect_pose, pt.p);   // now get from kinect cam coord sys to global coord sys
