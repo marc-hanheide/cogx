@@ -47,6 +47,7 @@
 #include "v4r/SurfaceModeling/SurfaceModeling.hh"
 #include "v4r/SurfaceModeling/Patches.h"
 #include "v4r/SurfaceModeling/MoSPlanes3D.hh"
+#include "v4r/SurfaceModeling/FileSystem.hh"
 #include "v4r/svm/SVMFileCreator.h"
 #include "v4r/svm/Statistics.h"
 
@@ -63,7 +64,6 @@ class SegLearner : public ManagedComponent,
                    public PointCloudClient
 {
 private:
-  
   bool stopComponent;                                       ///< Set true to stop component
   
   bool deb;                                                 ///< debug flag for output
@@ -71,6 +71,11 @@ private:
   bool showImages;                                          ///< Show images in openCV windows
   bool labels;                                              ///< draw labels into TomGine
   
+  surface::SaveFileSequence *modelSaver;                    ///< Save surface models
+  surface::LoadFileSequence *modelLoader;                   ///< Load surface models
+  bool save_results;                                        ///< Save surface models
+  char *save_filename;                                      ///< filename for surface models
+
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
 //   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
   std::vector<int> camIds;                                  ///< Which cameras to get images from
@@ -79,11 +84,13 @@ private:
   float cannyAlpha, cannyOmega;                             ///< Alpha and omega value of the canny edge detector
 
   std::vector<PointCloud::SurfacePoint> points;             ///< 3D points from kinect view
-  int kinectImageWidth, kinectImageHeight;                  ///< width and height of the kinect color image
+  int rgbWidth, rgbHeight;                                  ///< width and height of the kinect color image
   int pointCloudWidth, pointCloudHeight;                    ///< width and height of the kinect point cloud
   Video::Image image_k;                                     ///< Left and right stereo image and kinect image
   IplImage *iplImage_k;                                     ///< Converted left and right stereo images (openCV ipl-images)
   cv::Mat_<cv::Vec4f> kinect_point_cloud;                   ///< Point cloud from the kinect  TODO nur zur Anzeige?
+  cv::Mat_<cv::Vec3b> kinect_point_cloud_image;             ///< Image of the kinect point cloud
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;         ///< PCL point cloud
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_filtered;///< PCL point cloud (z-)filtered
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_model_cloud;   ///< PCL point cloud with points projected to model
@@ -118,6 +125,15 @@ private:
   void processImageNew();
   void SingleShotMode();
 
+  /// Data for offline calculation with loaded surface models
+  bool process_loaded_models;
+  unsigned startID;
+  unsigned endID;
+  unsigned nextID;
+  char *off_filename, *off_pcd_file, *off_ipl_file;
+  void LoadImageData();
+  void processLoadedData();
+  
 protected:
   virtual void configure(const std::map<std::string,std::string> & _config);
   virtual void start();
