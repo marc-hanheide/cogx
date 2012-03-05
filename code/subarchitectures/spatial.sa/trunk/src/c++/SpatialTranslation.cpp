@@ -358,6 +358,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	stopCommand->cmd = NavData::lSTOPROBOT;	
 	stopCommand->x = 0.0;
 	stopCommand->y = 0.0;
+	stopCommand->status = NavData::NONE;
 	stopCommand->theta = 0.0;
 
 	addToWorkingMemory(navCtrlCmdId, stopCommand);
