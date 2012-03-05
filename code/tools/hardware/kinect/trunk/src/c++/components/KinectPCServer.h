@@ -16,6 +16,7 @@
 #include <castutils/Timers.hpp>
 #include <cast/core/CASTTimer.hpp>
 
+#include <IceUtil/IceUtil.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -64,10 +65,8 @@ private:
   std::string kinectConfig;                     ///< Kinect configuration file
   CvSize captureSize;                           ///< Size of captured images from kinect
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
+  IceUtil::Mutex m_kinectMutex;
   cogx::Math::Pose3 lastValidCamPose; 
-
-  void getResolution(int camIdx, CvSize &size);
-  bool setResolution(int camIdx, CvSize &size);
 
   DepthGenerator* depthGenerator;
   ImageGenerator* imageGenerator;
@@ -101,12 +100,19 @@ private:
   int senses[N_PLANES];
   castutils::CMilliTimer m_tmUpdateViewCone;
 
+private:
+  void getResolution(int camIdx, CvSize &size);
+  bool setResolution(int camIdx, CvSize &size);
+  void lockKinect();
+  void unlockKinect();
+
   void deleteViewConePlanes();
   bool createViewCone();
   void checkUpdateViewCone();
   Eigen::Hyperplane<double, 3>* createPlane(std::vector<cv::Point3f>&, cogx::Math::Pose3& pose);
 
 #ifdef FEAT_VISUALIZATION
+private:
   class DisplayClient: public cogx::display::CDisplayClient
   {
     //KinectPCServer* pPcServer;
@@ -152,6 +158,18 @@ public:
   static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
 #endif
 };
+
+inline
+void KinectPCServer::lockKinect()
+{
+  m_kinectMutex.lock();
+}
+
+inline
+void KinectPCServer::unlockKinect()
+{
+  m_kinectMutex.unlock();
+}
 
 
 }

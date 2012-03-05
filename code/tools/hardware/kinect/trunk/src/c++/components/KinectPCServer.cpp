@@ -242,7 +242,7 @@ void KinectPCServer::runComponent()
     println("we don't have a valid userGenerator");
     return persons;
   }
-  lockComponent();
+  lockKinect();
   if (!suspendReading) {
     kinect->NextFrame();
   }
@@ -275,7 +275,7 @@ void KinectPCServer::runComponent()
     }
   }
   debug("number of users in image: %d", persons.size());
-  unlockComponent();
+  unlockKinect();
   return persons;
 }
 
@@ -395,14 +395,14 @@ void KinectPCServer::checkUpdateViewCone()
 
 bool KinectPCServer::isPointInViewCone(const Vector3& point)
 {
-  lockComponent();
+  lockKinect();
 
   checkUpdateViewCone();
 
   /* Make sure we have a complete view cone */
   for (int i = 0; i < N_PLANES; i++) {
     if (fovPlanes[i] == NULL) {
-      unlockComponent();
+      unlockKinect();
       return false;
     }
   }
@@ -414,7 +414,7 @@ bool KinectPCServer::isPointInViewCone(const Vector3& point)
     senses[PLANE_RIGHT] * fovPlanes[PLANE_RIGHT]->signedDistance(p) <= 0 &&
     senses[PLANE_BOTTOM] * fovPlanes[PLANE_BOTTOM]->signedDistance(p) <= 0;
 
-  unlockComponent();
+  unlockKinect();
 
   return inView;
 }
@@ -423,7 +423,7 @@ bool KinectPCServer::isPointInViewCone(const Vector3& point)
 void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
     vector<PointCloud::SurfacePoint> &points, bool complete)
 {
-  lockComponent();
+  lockKinect();
 
   cv::Mat_<cv::Point3f> cloud;
   cv::Mat_<cv::Point3f> colCloud;
@@ -485,13 +485,13 @@ void KinectPCServer::getPoints(bool transformToGlobal, int imgWidth,
       points.push_back(pt);
     }
   }
-  unlockComponent();
+  unlockKinect();
 }
 
 
 void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
 {
-  lockComponent();
+  lockKinect();
 
   if (!suspendReading) {
     kinect->NextFrame();
@@ -531,19 +531,19 @@ void KinectPCServer::getRectImage(int side, int imgWidth, Video::Image& image)
   image.camPars = camPars[0];
   changeImageSize(image.camPars, imgWidth, imgWidth*3/4);
 
-  unlockComponent();
+  unlockKinect();
 }
 
 bool KinectPCServer::getCameraParameters(Ice::Int side, Video::CameraParameters& _camPars)
 {
-  lockComponent(); // TODO: CASTComponent::Lock lock(this);
+  lockKinect(); // TODO: CASTComponent::Lock lock(this);
 
   int imgWidth = kinect->GetRgbImageWidth(); //rgbImage->width;
   initCameraParameters(_camPars);
   _camPars = camPars[0];
   changeImageSize(_camPars, imgWidth, imgWidth*3/4);
 
-  unlockComponent(); // TODO: remove
+  unlockKinect(); // TODO: remove
 
   return true;
 }
@@ -570,9 +570,9 @@ void KinectPCServer::getDisparityImage(int imgWidth, Video::Image& image)
 {
   printf("KinectPCServer::getDisparityImage: Warning: Not yet implemented!\n");
   /*
-     lockComponent();
+     lockKinect();
      convertImageFromIpl(disparityImg, image);
-     unlockComponent();
+     unlockKinect();
    */
 }
 
@@ -583,7 +583,7 @@ void KinectPCServer::getRangePoints(Laser::Scan2d &KRdata)
 
 void KinectPCServer::getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth)
 {
-  lockComponent();
+  lockKinect();
   //kinect->NextFrame();
   //cv::Mat RGB;
   //cv::Mat DEPTH;
@@ -604,15 +604,15 @@ void KinectPCServer::getDepthMap(cast::cdl::CASTTime &time, vector<int>& depth)
       depth.push_back( (*pDepthMD)(col,row) );
     }
   }
-  unlockComponent();
+  unlockKinect();
 }
 
 void KinectPCServer::receiveImages(const vector<Video::Image>& images)
 {
-  //   lockComponent();
+  //   lockKinect();
   printf("KinectPCServer::receiveImages: Warning: Not yet implemented!\n");
   //stereoProcessing();
-  //   unlockComponent();
+  //   unlockKinect();
 }
 
 void KinectPCServer::receiveCameraParameters(const cdl::WorkingMemoryChange & _wmc)
