@@ -8,6 +8,7 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 
 # Set the sources.
 SET(SOURCES
+   Grabber.cpp
    VideoGrabber.cpp
    )
 include_directories(
@@ -21,6 +22,9 @@ if(OPT_VIDEOGRABBER_POINTCLOUD)
    include_directories(
       ${COGX_ROOT}/tools/hardware/src/cpp/autogen
       ${COGX_ROOT}/tools/hardware/src/cpp/components
+      )
+   SET(SOURCES ${SOURCES}
+      PcGrabber.cpp
       )
    add_definitions(-DFEAT_VIDEOGRABBER_POINTCLOUD)
    set(EXTRALIBS PointCloud PointCloudClient)

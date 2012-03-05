@@ -6,7 +6,7 @@
 #include <IceUtil/Mutex.h>
 #include <IceUtil/Monitor.h>
 
-namespace cogx {
+namespace cogxgrabber {
 
 // Usage:
 // class MyTask: public CTickSyncedTask; // if required, make it some kind of a thread
