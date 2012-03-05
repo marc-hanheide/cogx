@@ -259,6 +259,7 @@ void SegTester::configure(const map<string,string> & _config)
 
     /// IROS learn and test set full
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
+  annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
 
   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
   annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
@@ -1271,7 +1272,6 @@ void SegTester::processLoadedData()
   if(deb) last = current;
   
   /// Check annotation for evaluation
-  annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
   if(deb) annotation->checkAnnotation(surfaces, graphCutGroups);
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
