@@ -626,7 +626,8 @@ void CGrabber::destroy()
 void CGrabber::sendCachedImages()
 {
 #ifdef FEAT_VISUALIZATION
-  long frameMillis = isGrabbing() ? 1200 : 300;
+  bool bGrabbing = isGrabbing();
+  long frameMillis = bGrabbing ? 1780 : 312;
   if (m_displayTimer.elapsed() < frameMillis) {
     return;
   }
@@ -636,7 +637,7 @@ void CGrabber::sendCachedImages()
   std::vector<CDataSource*> clients;
   getClients(clients);
   for (auto pClient : clients){
-    pClient->getPreviews(previews, 320, 240, isGrabbing());
+    pClient->getPreviews(previews, 320, 240, bGrabbing);
   }
   int w = 0, h = 0;
   for (auto prv : previews) {
