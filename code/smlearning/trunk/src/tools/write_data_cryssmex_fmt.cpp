@@ -18,7 +18,7 @@ int main (int argc, char* argv[]) {
 		("help,h", "produce help message")
 		("seqfile,s", po::value (&seqFile), "Sequence file (without extension).\n(Required parameter)")
 		("targetdir,t", po::value (&target_dir)->default_value ("./"), "Target directory")
-		("featuresel,f", po::value (&fSMethod)->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label,\nefobpose, efobpose_label)")
+		("featuresel,f", po::value (&fSMethod)->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label,\nobpose_direction, obpose_slide_flip_tilt\nefobpose, efobpose_label,\nefobpose_direction, efobpose_slide_flip_tilt)")
 		("normalize,n", "Normalize data");
 
 	// Declare an options description instance which will include
@@ -44,6 +44,18 @@ int main (int argc, char* argv[]) {
 		featureSelectionMethod = _obpose_label;
 	else if (fSMethod == "efobpose_label")
 		featureSelectionMethod = _efobpose_label;
+	else if (fSMethod == "obpose_direction")
+		featureSelectionMethod = _obpose_direction;
+	else if (fSMethod == "efobpose_direction")
+		featureSelectionMethod = _efobpose_direction;
+	else if (fSMethod == "obpose_rough_direction")
+		featureSelectionMethod = _obpose_rough_direction;
+	else if (fSMethod == "efobpose_rough_direction")
+		featureSelectionMethod = _efobpose_rough_direction;
+	else if (fSMethod == "obpose_slide_flip_tilt")
+		featureSelectionMethod = _obpose_slide_flip_tilt;
+	else if (fSMethod == "efobpose_slide_flip_tilt")
+		featureSelectionMethod = _efobpose_slide_flip_tilt;
 	else {
 		cout << desc << "\n";
 		return 1;
