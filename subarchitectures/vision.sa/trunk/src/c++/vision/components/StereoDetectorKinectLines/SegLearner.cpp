@@ -222,7 +222,7 @@ void SegLearner::configure(const map<string,string> & _config)
   
   /// init annotation for learning
   annotation = new anno::Annotation();
-
+  annotation2 = new anno::Annotation();
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 11);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 8);
@@ -244,7 +244,8 @@ void SegLearner::configure(const map<string,string> & _config)
   /// IROS komplett
   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
-
+  annotation2->init("/media/Daten/OD-IROS/annotation/iros_2nd_%1d.png", 0, 44);
+  
   /// save results to file
   save_results = false;
   surface::SaveFileSequence::Parameter sp;
@@ -474,6 +475,19 @@ void SegLearner::processImageNew()
           printf(" %u", anno_pairs[i][j]);
         printf("\n");
       }
+    std::vector< std::vector<int> > anno_pairs2;
+    std::vector<int> anno_background_list2;
+    annotation2->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+    annotation2->setSurfaceModels(surfaces);
+    annotation2->calculate();
+    annotation2->getResults(nr_anno, anno_pairs2, anno_background_list2);
+    if(deb)
+      for(unsigned i=0; i<anno_pairs2.size(); i++) {
+        printf("Annotation pairs for 2nd level: %u: ", i);
+        for(unsigned j=0; j<anno_pairs2[i].size(); j++)
+          printf(" %u", anno_pairs2[i][j]);
+        printf("\n");
+      }
     if(deb) log("Load annotation: end");
     
     if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -490,11 +504,13 @@ void SegLearner::processImageNew()
     patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
     patches->setSurfaceModels(surfaces);
     patches->setAnnotion(anno_pairs, anno_background_list);
+    patches->setAnnotion2(anno_pairs2, anno_background_list2);
     patches->setTexture(texture);
     patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
 //     patches->computeLearnRelations();
     if(deb) log("Calculate patch-relations for 2nd SVM: start!");
-    patches->computeLearnRelations2();
+//     patches->computeLearnRelations2();
+    patches->computeLearnRelations3();
     if(deb) log("Calculate patch-relations for 2nd SVM: end!");
     patches->getRelations(relation_vector);
 
@@ -934,6 +950,19 @@ void SegLearner::processLoadedData()
         printf(" %u", anno_pairs[i][j]);
       printf("\n");
     }
+  std::vector< std::vector<int> > anno_pairs2;
+  std::vector<int> anno_background_list2;
+  annotation2->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation2->setSurfaceModels(surfaces);
+  annotation2->calculate();
+  annotation2->getResults(nr_anno, anno_pairs2, anno_background_list2);
+  if(deb)
+    for(unsigned i=0; i<anno_pairs2.size(); i++) {
+      printf("Annotation pairs for 2nd level: %u: ", i);
+      for(unsigned j=0; j<anno_pairs2[i].size(); j++)
+        printf(" %u", anno_pairs2[i][j]);
+      printf("\n");
+    }
   if(deb) log("Load annotation: end");
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -948,10 +977,12 @@ void SegLearner::processLoadedData()
   patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
   patches->setSurfaceModels(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);
+  patches->setAnnotion2(anno_pairs2, anno_background_list2);
   patches->setTexture(texture);
   patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
   if(deb) log("Calculate patch-relations for 2nd SVM: start!");
-  patches->computeLearnRelations2();
+//   patches->computeLearnRelations2();
+  patches->computeLearnRelations3();
   if(deb) log("Calculate patch-relations for 2nd SVM: end!");
   patches->getRelations(relation_vector);
   if(deb) log("Calculate patch-relations ended!");

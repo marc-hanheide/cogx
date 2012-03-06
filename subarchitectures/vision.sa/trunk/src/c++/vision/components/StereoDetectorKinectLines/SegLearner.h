@@ -28,9 +28,9 @@
 #include "Segment.hh"
 #include "Edgel.hh"
 
-#include "Pose3.h"
-#include "StereoBase.h"
-#include "StereoCamera.h"
+// #include "Pose3.h"
+// #include "StereoBase.h"
+// #include "StereoCamera.h"
 
 #include "v4r/Annotation/Annotation.h"
 #include "v4r/PCLAddOns/PlanePopout.hh"
@@ -77,7 +77,6 @@ private:
   char *save_filename;                                      ///< filename for surface models
 
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
-//   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
   std::vector<int> camIds;                                  ///< Which cameras to get images from
   std::vector<Video::CameraParameters> camPars;             ///< Camera parameters for each camera (left/right/kinect)
   int runtime;                                              ///< Overall processing runtime for one image (pair)
@@ -95,8 +94,8 @@ private:
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_filtered;///< PCL point cloud (z-)filtered
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_model_cloud;   ///< PCL point cloud with points projected to model
   
-  int nr_anno;                                              ///< Number of annotated objects
-  std::vector<int> anno;                                    ///< Annotation of all pcl_model_indices (starting with 1?)
+  int nr_anno;                                              ///< Number of annotated objects  TODO braucht man nicht mehr => nur mehr zur anzeige???
+  std::vector<int> anno;                                    ///< Annotation of all pcl_model_indices (starting with 1?) => TODO Brauch man auch nicht mehr
   std::vector<bool> texture;                                ///< Texture on 2D image space
 
   std::vector<surface::SurfaceModel::Ptr > surfaces;        ///< Surfaces container (for Planes, NURBS)
@@ -112,6 +111,7 @@ private:
   surface::MoSPlanes3D *planeFitter;                        ///< mosPlane fitter
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
   anno::Annotation *annotation;                             ///< Annotation from file
+  anno::Annotation *annotation2;                            ///< Annotation for 2nd level from file
   surface::Patches *patches;                                ///< Patch tool for calculation of relations between surface patches
   svm::SVMFileCreator *svm;                                 ///< SVM-predictor
 
