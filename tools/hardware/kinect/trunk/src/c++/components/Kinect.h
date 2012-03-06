@@ -76,7 +76,7 @@ public:
   bool GetFrame(IplImage **iplImg, IplImage **iplDepthImg);
   bool NextFrame();  
   bool GetColorImage(IplImage **rgbIplImg);
-  bool GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv=true);
+  bool GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv=false);
   bool GetDepthImageGs(IplImage **gsIplImg);
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
   int GetRgbImageWidth() {return rgbWidth;}
@@ -103,6 +103,41 @@ public:
   void GetColorVideoSize(CvSize &size) {size = cvSize(rgbWidth, rgbHeight);}
   void GetDepthVideoSize(CvSize &size) {size = cvSize(depWidth, depHeight);}
 };
+
+/**
+ * @brief Transform depth point to world coordinates.
+ * @param x x-coordinate
+ * @param y y-coordinate
+ * @param depthValue Raw depth value from the sensor.
+ * @return Returns the 3d point in the world coordinate system.
+ */
+inline cv::Point3f Kinect::DepthToWorld(int x, int y, int depthValue)
+{
+  cv::Point3f result;
+  // NOTE: the depth image was mapped to the color image, so we
+  // have to use the intrinsic parameters of the color camera here.
+  // These are the magic numbers 525, 320, 240
+  result.x = (x - 320) * depthValue * 0.001 / 525;
+  result.y = (y - 240) * depthValue * 0.001 / 525;
+  result.z = depthValue * 0.001;
+  return result;
+}
+
+/**
+ * @brief Get the color for world points.
+ * @param x x-coordinate in depth image
+ * @param y y-coordinate in depth image
+ * @return Returns the color as 3d point.
+ */
+inline cv::Point3f Kinect::WorldToColorInternal(unsigned x, unsigned y)
+{
+  uchar *ptr = rgbImage.data;
+  cv::Point3f col;
+  col.x = ptr[(y*rgbWidth + x)*3];
+  col.y = ptr[(y*rgbWidth + x)*3 +1];
+  col.z = ptr[(y*rgbWidth + x)*3 +2];
+  return col;
+}
 
 }
 

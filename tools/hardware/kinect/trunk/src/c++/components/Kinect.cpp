@@ -436,35 +436,86 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
   if (useHsv) {
     (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
     short* d = depImage.ptr<short>(0);
-    for(int i = 0; i < depImage.rows*depImage.cols; i++)
+    for (int i = 0; i < depImage.rows*depImage.cols; i++)
     {
-      // depth mask = 0x7ff
-      char h = (d[i] >> 3) & 0xff;
-      char v = 0xff - ((d[i] & 0x7ff) >> 4);
-      char s = 0xff - ((d[i] & 0x07f));
-      (*rgbIplImg)->imageData[3*i+0] = (char)h;
-      (*rgbIplImg)->imageData[3*i+1] = (char)s;
-      (*rgbIplImg)->imageData[3*i+2] = (char)v;
+      if (d[i] == shadow_value || d[i] == no_sample_value) {
+        (*rgbIplImg)->imageData[3*i+0] = 0;
+        (*rgbIplImg)->imageData[3*i+1] = 0;
+        (*rgbIplImg)->imageData[3*i+2] = 0;
+      }
+      else {
+        // depth mask = 0x7ff
+        unsigned char h = (d[i] >> 4) & 0xff;
+        unsigned char v = 0xff - ((d[i] & 0x7ff) >> 4);
+        unsigned char s = 0xff - ((d[i] >> 2) & 0x7f);
+        (*rgbIplImg)->imageData[3*i+0] = h;
+        (*rgbIplImg)->imageData[3*i+1] = s;
+        (*rgbIplImg)->imageData[3*i+2] = v;
+      }
     }
     cvCvtColor(*rgbIplImg, *rgbIplImg, CV_HSV2RGB);
   }
   else {
+    static std::vector<unsigned char> rgbScale;
+    if (rgbScale.size() == 0) {
+      const double rgb[] = {
+        0.3, 0.3, 0.3, // dark grey
+        0.5, 0.0, 0.5, // magenta
+        0.0, 0.0, 1.0, // blue
+        0.0, 1.0, 0.0, // green
+        1.0, 1.0, 0.0, // yellow
+        1.0, 0.0, 0.0, // red
+        1.0, 1.0, 1.0  // white
+      };
+      const double limits[] = {
+        0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 1.0
+      };
+      const short nvals = 512;
+      for (int i = 0; i < nvals; i++) {
+        double p = double(i) / nvals;
+        int j = 0;
+        while (limits[j] < p) {
+          j++;
+        }
+        if (j == 0) j = 1;
+        p = (p - limits[j-1]) / (limits[j] - limits[j-1]);
+        for (int k = 2; k >= 0; k--) {
+          double c = (1-p) * rgb[(j-1)*3+k] + p * rgb[j*3+k];
+          rgbScale.push_back((unsigned char) (c * 255));
+        }
+      }
+    }
+
     (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
     short* d = depImage.ptr<short>(0);
-    for(int i = 0; i < depImage.rows*depImage.cols; i++)
+    long nVals = depImage.rows*depImage.cols;
+    for(int i = 0; i < nVals; i++)
     {
+      if (d[i] == shadow_value || d[i] == no_sample_value) {
+        (*rgbIplImg)->imageData[3*i+0] = 0;
+        (*rgbIplImg)->imageData[3*i+1] = 0;
+        (*rgbIplImg)->imageData[3*i+2] = 0;
+      }
+      else {
 #if 0
-      char v1 = ((d[i] >> 8) & 0x0f) << 2;
-      char v2 = d[i] & 0xff;
-      char v3 = (d[i] >> 3) & 0xff;
+        unsigned char v1 = ((d[i] >> 8) & 0x0f) << 2;
+        unsigned char v2 = d[i] & 0xff;
+        unsigned char v3 = (d[i] >> 4) & 0xff;
+#elif 0
+        unsigned char v1 = 0xff-((d[i] >> 3) & 0x7f + 32);
+        unsigned char v2 = 0xff-((d[i] >> 4) & 0xff);
+        unsigned char v3 = 0xff-((d[i] >> 3) & 0x7f + 32);
 #else
-      char v1 = 0xff - ((d[i] >> 1) & 0x7f + 32);
-      char v2 = 0xff - ((d[i] >> 3) & 0xff);
-      char v3 = 0xff - ((d[i] >> 2) & 0x7f + 32);
+        short si = 0x1ff - ((d[i] >> 3) & 0x1ff);
+        //if (i % depImage.cols < 512) si = i % depImage.cols;
+        unsigned char v1 = rgbScale[si*3+0];
+        unsigned char v2 = rgbScale[si*3+1];
+        unsigned char v3 = rgbScale[si*3+2];
 #endif
-      (*rgbIplImg)->imageData[3*i+0] = (char)v1;
-      (*rgbIplImg)->imageData[3*i+1] = (char)v2;
-      (*rgbIplImg)->imageData[3*i+2] = (char)v3;
+        (*rgbIplImg)->imageData[3*i+0] = v1;
+        (*rgbIplImg)->imageData[3*i+1] = v2;
+        (*rgbIplImg)->imageData[3*i+2] = v3;
+      }
     }
   }
   return true;
@@ -485,7 +536,7 @@ bool Kinect::GetDepthImageGs(IplImage **gsIplImg)
   short* d = depImage.ptr<short>(0);
   for(int i = 0; i < depImage.rows*depImage.cols; i++)
   {
-    char value = (d[i] >> 3) & 0xff;
+    unsigned char value = (d[i] >> 3) & 0xff;
     (*gsIplImg)->imageData[i] = value;
   }
   return true;
@@ -506,41 +557,6 @@ bool Kinect::GetImages(cv::Mat &rgbImg, cv::Mat &depImg)
   rgbImg = rgbImage;
   depImg = depImage;
   return true;
-}
-
-/**
- * @brief Transform depth point to world coordinates.
- * @param x x-coordinate
- * @param y y-coordinate
- * @param depthValue Raw depth value from the sensor.
- * @return Returns the 3d point in the world coordinate system.
- */
-cv::Point3f Kinect::DepthToWorld(int x, int y, int depthValue)
-{
-  cv::Point3f result;
-  // NOTE: the depth image was mapped to the color image, so we
-  // have to use the intrinsic parameters of the color camera here.
-  // These are the magic numbers 525, 320, 240
-  result.x = (x - 320) * depthValue * 0.001 / 525;
-  result.y = (y - 240) * depthValue * 0.001 / 525;
-  result.z = depthValue * 0.001;
-  return result;
-}
-
-/**
- * @brief Get the color for world points.
- * @param x x-coordinate in depth image
- * @param y y-coordinate in depth image
- * @return Returns the color as 3d point.
- */
-cv::Point3f Kinect::WorldToColorInternal(unsigned x, unsigned y)
-{
-  uchar *ptr = rgbImage.data;
-  cv::Point3f col;
-  col.x = ptr[(y*rgbWidth + x)*3];
-  col.y = ptr[(y*rgbWidth + x)*3 +1];
-  col.z = ptr[(y*rgbWidth + x)*3 +2];
-  return col;
 }
 
 cv::Point3f Kinect::WorldToColor(unsigned x, unsigned y)
