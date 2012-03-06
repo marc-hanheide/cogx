@@ -24,19 +24,19 @@
 #include <VideoUtils.h>
 #include <../../VisionUtils.h>
 
-#include "StereoCore.h"
-#include "KinectCore.h"
-#include "CalculateRelations.h"
-#include "GraphCut.h"
-#include "SVMPredictor.h"
+// #include "StereoCore.h"
+// #include "KinectCore.h"
+// #include "CalculateRelations.h"
+// #include "GraphCut.h"
+// #include "SVMPredictor.h"
 
-#include "Pose3.h"
-#include "StereoBase.h"
-#include "StereoCamera.h"
-#include "Gestalt.hh"
-#include "Array.hh"
+// #include "Pose3.h"
+// #include "StereoBase.h"
+// #include "StereoCamera.h"
+// #include "Gestalt.hh"
+// #include "Array.hh"
 
-#include "ObjRep.h"
+// #include "ObjRep.h"
 
 #include "v4r/Annotation/Annotation.h"
 #include "v4r/PCLAddOns/PCLCommonHeaders.h"
@@ -83,7 +83,7 @@ private:
   char *save_filename;                                      ///< filename for surface models
   
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
-  cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
+//   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
 
   /// TODO new ones
   Z::VisionCore *vcore;                                     ///< VisionCore
