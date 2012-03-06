@@ -187,6 +187,28 @@ void Kinect::StopCapture()
     kinect::captureStop(0);
 }
 
+void Kinect::pullData()
+{
+  if (m_frameMilliseconds <= 0) {
+#ifdef LOCK_KINECT
+    IceUtil::RWRecMutex::WLock lock(m_kinectMutex);
+#endif
+    kinect::readFrame();
+    return;
+  }
+
+  if (m_grabTimer.elapsed() < m_frameMilliseconds) {
+    return;
+  }
+  m_grabTimer.restart();
+
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::WLock lock(m_kinectMutex);
+#endif
+  kinect::readFrame();
+}
+
+
 /**
  * @brief Convert the meta data map to an openCV ipl-image.
  * @param pImageMD Meta data map
@@ -300,8 +322,7 @@ bool Kinect::GetFrame(IplImage **iplImg, IplImage **iplDepthImg)
 
 const DepthMetaData* Kinect::getNextDepthMD()
 {
-  if(!kinect::isCapturing())
-  {
+  if(!kinect::isCapturing()) {
     printf("Kinect::NextFrame: Warning: Kinect is not capturing data.\n");
     return 0;
   }
@@ -344,7 +365,7 @@ bool Kinect::NextFrame()
 
   // get depth image
   const DepthMetaData* pDepthMD = kinect::getDepthMetaData();
-  frameNumber =pDepthMD->FrameID();
+  frameNumber = pDepthMD->FrameID();
   if (kinect::isDepthOn())
   {
     depImage = cv::Mat(depHeight, depWidth, CV_16S);
@@ -432,12 +453,18 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
     short* d = depImage.ptr<short>(0);
     for(int i = 0; i < depImage.rows*depImage.cols; i++)
     {
-      char value_pt1 = ((d[i] >> 8) & 0x0f) << 2;
-      char value_pt2 = d[i] & 0xff;
-      char value = (d[i] >> 3) & 0xff;
-      (*rgbIplImg)->imageData[3*i+0] = (char)value_pt1;
-      (*rgbIplImg)->imageData[3*i+1] = (char)value_pt2;
-      (*rgbIplImg)->imageData[3*i+2] = (char)value;
+#if 0
+      char v1 = ((d[i] >> 8) & 0x0f) << 2;
+      char v2 = d[i] & 0xff;
+      char v3 = (d[i] >> 3) & 0xff;
+#else
+      char v1 = 0xff - ((d[i] >> 1) & 0x7f + 32);
+      char v2 = 0xff - ((d[i] >> 3) & 0xff);
+      char v3 = 0xff - ((d[i] >> 2) & 0x7f + 32);
+#endif
+      (*rgbIplImg)->imageData[3*i+0] = (char)v1;
+      (*rgbIplImg)->imageData[3*i+1] = (char)v2;
+      (*rgbIplImg)->imageData[3*i+2] = (char)v3;
     }
   }
   return true;

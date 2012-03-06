@@ -104,20 +104,6 @@ public:
   void GetDepthVideoSize(CvSize &size) {size = cvSize(depWidth, depHeight);}
 };
 
-inline
-void Kinect::pullData()
-{
-   if (m_frameMilliseconds <= 0) {
-      kinect::readFrame();
-      return;
-   }
-   if (m_grabTimer.elapsed() < m_frameMilliseconds) {
-      return;
-   }
-   m_grabTimer.restart();
-   kinect::readFrame();
-}
-
 }
 
 #endif
