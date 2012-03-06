@@ -124,6 +124,7 @@ void ControlWindow::run()
 	else {
 	  m_controller.ps.follow_robot = false;
 	}
+        usleep(1000);
     }
 }
 
