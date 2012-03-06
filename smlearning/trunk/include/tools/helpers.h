@@ -78,7 +78,7 @@ void print_featvector (const vector<T>& v) {
 ///write a vector to a file
 ///
 template <typename T>
-void write_vector (ofstream& writeFile, const vector<T>& v, unsigned int write_mode = _binary) {
+void write_vector (ostream& writeFile, const vector<T>& v, unsigned int write_mode = _binary) {
 	if (write_mode == _binary) {
 		long featvectorSize = v.size();
 		writeFile.write ((const char*)&featvectorSize, sizeof (v.size()));

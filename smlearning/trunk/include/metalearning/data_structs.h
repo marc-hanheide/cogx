@@ -56,7 +56,10 @@ enum chunk_flags {
 	_end_effector_pos = 1L << 3, /**< For storing end effector position. */
 	_end_effector_orient = 1L << 4, /**< For storing end effector orientation. */
         _action_params = 1L << 5, /**< For storing other motor action features. */
-	_label = 1L << 6 /**< For storing labels (classifications). */
+	_label = 1L << 6, /**< For storing labels (classifications). */
+	_direction = 1L << 7, /**< For storing a direction vector of the object */
+	_rough_direction = 1L << 8, /**< For storing a direction vector of the object */
+	_slide_flip_tilt = 1L << 9 /**< For classifying the object trajectory as slide/flip/tilt */
 };
 
 inline chunk_flags
@@ -97,7 +100,13 @@ enum feature_selection {
 	_obpose, /**< For automata generation: input are action related features, states are object f., output is object next time f. */
 	_efobpose, /**< For automata generation: input are action related features, states are object and effector f., output is object next time f. */
 	_obpose_label, /**< For automata generation: input are action related features, states are object f., output is label */
-	_efobpose_label /**< For automata generation: input are action related features, states are object and effector f., output is label */
+	_efobpose_label, /**< For automata generation: input are action related features, states are object and effector f., output is label */
+	_obpose_direction, /**< For automata generation: input are action related features, states are object f., output is object direction f. */
+	_efobpose_direction, /**< For automata generation: input are action related features, states are object and effector f., output is object direction f. */
+	_obpose_rough_direction, /**< For automata generation: input are action related features, states are object f., output is object rough direction f. */
+	_efobpose_rough_direction, /**< For automata generation: input are action related features, states are object and effector f., output is object rough direction f. */
+	_obpose_slide_flip_tilt, /**< For automata generation: input are action related features, states are object f., output is trajectory classification f. */
+	_efobpose_slide_flip_tilt /**< For automata generation: input are action related features, states are object and effector f., output is trajectory classification f. */
 };
 
 
@@ -471,8 +480,74 @@ struct LearningData {
 
 	}
 
+	///
+	/// generate a feature vector containing, for now, a direction vector of the object
+	///
+	template<typename T, class Normalization>
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& prev_chunk, Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _direction)
+	{
+		try { 
+			if ( flags & _direction ) {
+				golem::Mat34 direction = prev_chunk.object.objectPose;
+				direction.R.setTransposed();
+				direction.R.multiply (direction.R, chunk.object.objectPose.R);
+				direction.p.subtract (chunk.object.objectPose.p, prev_chunk.object.objectPose.p);
+				Real dRoll, dPitch, dYaw;
+				direction.R.toEuler (dRoll, dPitch, dYaw);
+				// direction.p.normalise ();
+				featVector.push_back (direction.p.v1);
+				featVector.push_back (direction.p.v2);
+				featVector.push_back (direction.p.v3);
+				featVector.push_back (normalize(dRoll, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(dPitch, -REAL_PI, REAL_PI));
+				featVector.push_back (normalize(dYaw, -REAL_PI, REAL_PI));
+			}
+		} catch ( ... ) {
+			cerr << "Error normalizing effector feature vector " << endl;
+		};			
+	}
 
+	static void label_seq (Chunk::Seq* seq, chunk_flags flags)
+	{
+		Chunk::Seq::iterator s_iter;
+		if (flags & _slide_flip_tilt) {
 
+			golem::Real reachedRoll = 0.0;
+
+			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
+				if (s_iter->object.obRoll > reachedRoll)
+					reachedRoll = s_iter->object.obRoll;
+
+			golem::Real polState = -1.0; // sliding object
+			if (reachedRoll > 0.1) // object tilted more than threshold
+				polState = 0.0;
+			if (reachedRoll > 1.5) // object flipped
+				polState = 1.0;
+
+			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
+				s_iter->label = polState;
+		}
+		else if (flags & _rough_direction)
+		{
+			seq->begin()->label = 0;
+			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
+				if (s_iter+1 != seq->end()) {
+					golem::Real polStateOutput = 0;
+					golem::Real epsilonAngle = 0.005;
+					if (s_iter->object.obRoll < ((s_iter+1)->object.obRoll - epsilonAngle))//polyflap Y angle increases
+						polStateOutput = 1;
+					if (s_iter->object.obRoll > ((s_iter+1)->object.obRoll + epsilonAngle))//polyflap Y angle decreases
+						polStateOutput = -1;
+					golem::Real epsilonPfY = 0.000001;
+					if (polStateOutput == 0 && s_iter->object.objectPose.p.v2 < ((s_iter+1)->object.objectPose.p.v2 - epsilonPfY))
+						polStateOutput = 0.5;
+					if (polStateOutput == 0 && s_iter->object.objectPose.p.v2 > ((s_iter+1)->object.objectPose.p.v2 + epsilonPfY))
+						polStateOutput = -0.5;
+					(s_iter+1)->label = polStateOutput;
+				}
+		}
+	}
+	
 	///
 	///almost automatically generated netcdf function to store netcdf data files
 	///
@@ -697,26 +772,20 @@ struct LearningData {
 		assert (data.size() >= 1);
 		int inputVectorSize, stateVectorSize, outputVectorSize;
 
-		if (featureSelectionMethod == _obpose) { //suitable for Mealy machines
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) { //suitable for Mealy machines
 			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
 			stateVectorSize = pfVectorSize;
-			outputVectorSize = pfVectorSize;
 		}
-		else if (featureSelectionMethod == _efobpose) { //suitable for Moore machines
+		else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) { //suitable for Moore machines
 			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
 			stateVectorSize = efVectorSize + pfVectorSize;
+		}
+
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction)
 			outputVectorSize = pfVectorSize;
-		}
-		else if (featureSelectionMethod == _obpose_label) { //suitable for Mealy machines
-			inputVectorSize = motorVectorSizeMarkov + efVectorSize;
-			stateVectorSize = pfVectorSize;
+
+		else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
 			outputVectorSize = 0;
-		}
-		else if (featureSelectionMethod == _efobpose_label) { //suitable for Moore machines
-			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
-			stateVectorSize = efVectorSize + pfVectorSize;
-			outputVectorSize = 0;
-		}
 		ofstream writeFile(writeFileName.c_str(), ios::out);
 
 		writeFile << "# input dim" << endl;
@@ -727,6 +796,57 @@ struct LearningData {
 		writeFile << outputVectorSize << endl;
 		
 		writeFile << "# nr input symbols" << endl << "0.0" << endl;
+
+		stringstream datastr;
+		
+		// writeFile.precision(20);
+
+		DataSet::iterator d_iter;
+		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
+			Chunk::Seq* seq = &(*d_iter);
+
+			Chunk::Seq::iterator s_iter;
+
+			if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+				label_seq (seq, _slide_flip_tilt);
+			else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
+				label_seq (seq, _rough_direction);
+
+			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++) {
+				if (s_iter+1 != seq->end()) {
+
+					FeatureVector inputVector, stateVector, outputVector;
+
+					if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) {
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos | _effector_pos | _effector_orient );
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _object);
+
+					}
+					else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) {
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
+						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
+					}
+
+					if (featureSelectionMethod == _obpose || featureSelectionMethod == _efobpose)
+						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
+					else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+						write_chunk_to_featvector (outputVector, *s_iter, normalize, limits, _label);
+					else if (featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose_direction)
+						write_chunk_to_featvector (outputVector, *s_iter, *(s_iter+1), normalize, limits, _direction);
+					
+					if (s_iter == seq->begin() ) {
+						assert (inputVector.size() == inputVectorSize);
+						assert (stateVector.size() == stateVectorSize);
+						if (outputVectorSize != 0)
+							assert (outputVector.size() == outputVectorSize);
+					}
+					write_vector (datastr, inputVector, _text);
+					write_vector (datastr, stateVector, _text);
+					write_vector (datastr, outputVector, _text);
+					datastr << endl;
+				}
+			}
+		}
 		if (outputVectorSize != 0)
 			writeFile << "# output examples" << endl << "0.0" << endl;
 		else {
@@ -739,54 +859,8 @@ struct LearningData {
 				writeFile << *it << " ";
 			writeFile << endl;
 		}
-		// writeFile.precision(20);
+		writeFile << datastr.str();
 
-		DataSet::const_iterator d_iter;
-		for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
-			Chunk::Seq seq = *d_iter;
-
-			Chunk::Seq::const_iterator s_iter;
-
-			for (s_iter = seq.begin(); s_iter != seq.end(); s_iter++) {
-				if (s_iter+1 != seq.end()) {
-
-					FeatureVector inputVector, stateVector, outputVector;
-
-					if (featureSelectionMethod == _obpose) {
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos | _effector_pos | _effector_orient );
-						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _object);
-						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
-
-					}
-					else if (featureSelectionMethod == _efobpose) {
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
-						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
-						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
-					}
-					else if (featureSelectionMethod == _obpose_label) {
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos | _effector_pos | _effector_orient );
-						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _object);
-						write_chunk_to_featvector (outputVector, *s_iter, normalize, limits, _label);
-					}
-					else if (featureSelectionMethod == _efobpose_label) {
-						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
-						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
-						write_chunk_to_featvector (outputVector, *s_iter, normalize, limits, _label);
-
-					}
-					if (s_iter == seq.begin() ) {
-						assert (inputVector.size() == inputVectorSize);
-						assert (stateVector.size() == stateVectorSize);
-						if (outputVectorSize != 0)
-							assert (outputVector.size() == outputVectorSize);
-					}
-					write_vector (writeFile, inputVector, _text);
-					write_vector (writeFile, stateVector, _text);
-					write_vector (writeFile, outputVector, _text);
-					writeFile << endl;
-				}
-			}
-		}
 		writeFile.close();
 	
 	}
