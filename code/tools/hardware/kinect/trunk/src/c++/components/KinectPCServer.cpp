@@ -303,7 +303,7 @@ void KinectPCServer::saveNextFrameToFile()
   cvReleaseImage(&rgb_data);
 
   IplImage* depth_data = 0;
-  kinect->GetDepthImageRgb(&depth_data, /*use-hsv=*/false);
+  kinect->GetDepthImageRgb(&depth_data);
   sprintf(buf,"%s/frame_%04d_depth_%ld_%ld.bmp", m_saveDirectory.c_str(), kinect->frameNumber,
       (long int)timeNow.s, (long int)timeNow.us);
   debug("Saving Kinect frame # %d",kinect->frameNumber);
