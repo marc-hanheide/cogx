@@ -444,9 +444,9 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
         (*rgbIplImg)->imageData[3*i+2] = 0;
       }
       else {
-        // depth mask = 0x7ff
+        // depth mask = 0xfff
         unsigned char h = (d[i] >> 4) & 0xff;
-        unsigned char v = 0xff - ((d[i] & 0x7ff) >> 4);
+        unsigned char v = 0xff - ((d[i] & 0xfff) >> 4);
         unsigned char s = 0xff - ((d[i] >> 2) & 0x7f);
         (*rgbIplImg)->imageData[3*i+0] = h;
         (*rgbIplImg)->imageData[3*i+1] = s;
@@ -462,13 +462,14 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
         0.3, 0.3, 0.3, // dark grey
         0.5, 0.0, 0.5, // magenta
         0.0, 0.0, 1.0, // blue
+        0.0, 0.8, 0.8, // cyan
         0.0, 1.0, 0.0, // green
         1.0, 1.0, 0.0, // yellow
         1.0, 0.0, 0.0, // red
         1.0, 1.0, 1.0  // white
       };
       const double limits[] = {
-        0.0, 0.3, 0.5, 0.6, 0.7, 0.8, 1.0
+        0.0, 0.3, 0.5, 0.6, 0.68, 0.75, 0.8, 1.0
       };
       const short nvals = 512;
       for (int i = 0; i < nvals; i++) {
@@ -506,7 +507,7 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
         unsigned char v2 = 0xff-((d[i] >> 4) & 0xff);
         unsigned char v3 = 0xff-((d[i] >> 3) & 0x7f + 32);
 #else
-        short si = 0x1ff - ((d[i] >> 3) & 0x1ff);
+        short si = (0xfff - (d[i] & 0xfff)) >> 3;
         //if (i % depImage.cols < 512) si = i % depImage.cols;
         unsigned char v1 = rgbScale[si*3+0];
         unsigned char v2 = rgbScale[si*3+1];
