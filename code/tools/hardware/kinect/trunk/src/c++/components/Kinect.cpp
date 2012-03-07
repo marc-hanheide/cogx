@@ -422,6 +422,63 @@ bool Kinect::GetColorImage(IplImage **rgbIplImg)
   return true;
 }
 
+void Kinect::setDepthColors(const std::vector<long> &rgbColors, const std::vector<double> &positions)
+{
+  assert(rgbColors.size() > 1 && rgbColors.size() == positions.size());
+  m_depthColors = rgbColors;
+  m_depthColorRanges = positions;
+  m_depthPalette.clear();
+  std::sort(m_depthColorRanges.begin(), m_depthColorRanges.end());
+  if (m_depthColorRanges.front() != 0 || m_depthColorRanges.back() != 1) {
+    log("Kinect: Adjusting a bad list of ranges in setDepthColors");
+    // The range has to be adjausted
+    double min = m_depthColorRanges.front();
+    double range = m_depthColorRanges.back() - min;
+    if (range <= 0) {
+      m_depthColorRanges.back() = min + 1;
+      range = 1;
+    }
+    std::vector<double>::iterator it;
+    for (it = m_depthColorRanges.begin(); it != m_depthColorRanges.end(); ++it) {
+      *it = (*it - min) / range;  
+    }
+  }
+}
+
+void Kinect::calculateDepthPalette()
+{
+  if (m_depthColors.size() < 1 || m_depthColorRanges.size() < 1) {
+    const long rgb[] = {
+      0x330033, 0xbb00bb, 0x0033ff, 0x00ee55, 0xeebb00,
+      0xee0055, 0xee22ee, 0xffffff, 0x00bb33, 0x000000
+    };
+    const double limits[] = {
+      0.0, 0.3, 0.5, 0.6, 0.68,
+      0.75, 0.8, 0.85, 0.9, 1.0
+    };
+    const int N = sizeof(rgb) / sizeof(long);
+    setDepthColors(std::vector<long>(rgb, rgb+N), std::vector<double>(limits, limits+N));
+  }
+  std::vector<long> &rgb = m_depthColors;
+  std::vector<double> &limits = m_depthColorRanges;
+  const short nvals = 512;
+  for (int i = 0; i < nvals; i++) {
+    double p = double(i) / nvals;
+    int j = 0;
+    while (limits[j] < p) {
+      j++;
+    }
+    if (j == 0) j = 1;
+    p = (p - limits[j-1]) / (limits[j] - limits[j-1]);
+    double r = (1-p) * ((rgb[j-1] & 0xff0000) >> 16) + p * ((rgb[j] & 0xff0000) >> 16);
+    double g = (1-p) * ((rgb[j-1] & 0xff00) >> 8) + p * ((rgb[j] & 0xff00) >> 8);
+    double b = (1-p) * (rgb[j-1] & 0xff) + p * (rgb[j] & 0xff);
+    m_depthPalette.push_back((unsigned char)b);
+    m_depthPalette.push_back((unsigned char)g);
+    m_depthPalette.push_back((unsigned char)r);
+  }
+}
+
 /**
  * @brief Get depth image as openCV RGB iplImage from the Kinect sensor
  * @param iplImg Depth image as ipl image. A new image will be allocated. 
@@ -456,35 +513,8 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
     cvCvtColor(*rgbIplImg, *rgbIplImg, CV_HSV2RGB);
   }
   else {
-    static std::vector<unsigned char> rgbScale;
-    if (rgbScale.size() == 0) {
-      const double rgb[] = {
-        0.3, 0.3, 0.3, // dark grey
-        0.5, 0.0, 0.5, // magenta
-        0.0, 0.0, 1.0, // blue
-        0.0, 0.8, 0.8, // cyan
-        0.0, 1.0, 0.0, // green
-        1.0, 1.0, 0.0, // yellow
-        1.0, 0.0, 0.0, // red
-        1.0, 1.0, 1.0  // white
-      };
-      const double limits[] = {
-        0.0, 0.3, 0.5, 0.6, 0.68, 0.75, 0.8, 1.0
-      };
-      const short nvals = 512;
-      for (int i = 0; i < nvals; i++) {
-        double p = double(i) / nvals;
-        int j = 0;
-        while (limits[j] < p) {
-          j++;
-        }
-        if (j == 0) j = 1;
-        p = (p - limits[j-1]) / (limits[j] - limits[j-1]);
-        for (int k = 2; k >= 0; k--) {
-          double c = (1-p) * rgb[(j-1)*3+k] + p * rgb[j*3+k];
-          rgbScale.push_back((unsigned char) (c * 255));
-        }
-      }
+    if (m_depthPalette.size() < 3) {
+      calculateDepthPalette();
     }
 
     (*rgbIplImg) = cvCreateImage(cvSize(depWidth, depHeight), IPL_DEPTH_8U, 3);
@@ -498,24 +528,12 @@ bool Kinect::GetDepthImageRgb(IplImage **rgbIplImg, bool useHsv)
         (*rgbIplImg)->imageData[3*i+2] = 0;
       }
       else {
-#if 0
-        unsigned char v1 = ((d[i] >> 8) & 0x0f) << 2;
-        unsigned char v2 = d[i] & 0xff;
-        unsigned char v3 = (d[i] >> 4) & 0xff;
-#elif 0
-        unsigned char v1 = 0xff-((d[i] >> 3) & 0x7f + 32);
-        unsigned char v2 = 0xff-((d[i] >> 4) & 0xff);
-        unsigned char v3 = 0xff-((d[i] >> 3) & 0x7f + 32);
-#else
         short si = (0xfff - (d[i] & 0xfff)) >> 3;
-        //if (i % depImage.cols < 512) si = i % depImage.cols;
-        unsigned char v1 = rgbScale[si*3+0];
-        unsigned char v2 = rgbScale[si*3+1];
-        unsigned char v3 = rgbScale[si*3+2];
-#endif
-        (*rgbIplImg)->imageData[3*i+0] = v1;
-        (*rgbIplImg)->imageData[3*i+1] = v2;
-        (*rgbIplImg)->imageData[3*i+2] = v3;
+        // TODO: if (m_showPalette)
+        //   if (i % depImage.cols < 512 && i / 512 < 128) si = i % depImage.cols;
+        (*rgbIplImg)->imageData[3*i+0] = m_depthPalette[si*3+0];
+        (*rgbIplImg)->imageData[3*i+1] = m_depthPalette[si*3+1];
+        (*rgbIplImg)->imageData[3*i+2] = m_depthPalette[si*3+2];
       }
     }
   }
