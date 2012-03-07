@@ -176,6 +176,8 @@ private:
 	peekabot::HingeProxy m_ProxyPan;
 	peekabot::HingeProxy m_ProxyTilt;
 
+	peekabot::CameraProxy m_DefCam;
+
 	bool m_FollowRobot;
 	bool m_ShowLabels;
 	bool m_ShowWalls;
