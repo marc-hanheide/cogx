@@ -17,6 +17,9 @@ Robone.xml
 PEEKABOT_PERSON_PBMF_FILE
 rolf.pbmf
 
+JOYSTICK_DEVICE
+/dev/joystick
+
 # Press the button with this id on the joystick and you can move the robot
 JOYSTICK_DEADSWITCH_ID
 4
