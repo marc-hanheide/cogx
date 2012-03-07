@@ -1,0 +1,23 @@
+include "../common/map.inc"
+include "../common/p3dx_with_urg.inc"
+
+window
+(
+	#This is the size the simulation window will be in pixels
+	size [1215 1347]
+	#This is how many metres of the simulated environment each pixel shows
+	scale 20
+)
+
+floorplan
+(
+	bitmap "./cs-2.png"
+	#size of map in metre
+	size [50.625 35.29 1.5]
+)
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+	pose [18 8 0 0]
+	color "red"
+)

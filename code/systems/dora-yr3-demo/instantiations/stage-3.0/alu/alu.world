@@ -1,0 +1,120 @@
+include "../common/p3dx_with_urg.inc"
+include "../common/box.inc"
+include "../common/map.inc"
+
+# set the size of a pixel in meters
+#resolution 0.10
+#resolution 0.02
+
+# configure the GUI window
+window
+( 
+  size [ 400.000 400.000 ] 
+  scale 40
+)
+
+
+# load an environment bitmap
+floorplan
+(
+  bitmap "./ALU-map_thickdoors.png"
+  size [8.193 7.32 1.5]
+)
+
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+    pose [-3.0 -2.4 0 0]
+	color "red"
+)
+
+# 
+# 
+# 
+# #create two green boxs
+ box2d
+ (
+ name "redbox1"
+ color "red"
+ pose [0.6 2.0 0.000 0]
+ )
+ 
+# box2d
+# (
+# name "greenbox2"
+# color "green"
+# pose [-0.74 1.4 0.000  0]
+# 
+# )
+# 
+# #create two blue boxs
+# box2d
+# (
+# name "bluebox1"
+# color "blue"
+# pose [-0.1 2.3 0.000 0]
+# 
+# )
+# 
+# box2d
+# (
+# name "bluebox2"
+# color "blue"
+# pose [-0.1  1.4 0.000 0]
+# 
+# )
+# 
+# 
+# #create two red boxs
+# box2d
+# (
+# name "redbox1"
+# color "red"
+# pose [2 2.6 0.000 0]
+# 
+# )
+# 
+# box2d
+# (
+# name "redbox2"
+# color "red"
+# pose [3.5 1.26 0.000 0]
+# 
+# )
+# 
+# 
+#create two yellow boxs
+box2d
+(
+name "yellowbox1"
+color "yellow"
+pose [3.100 -0.0 0.000 30]
+
+)
+ 
+box2d
+(
+name "yellowbox2"
+color "yellow"
+pose [-2.300 1.0 0.000 45]
+
+)
+# 
+# #create two magenta boxs
+# box2d
+# (
+# name "magentabox1"
+# color "magenta"
+# pose [-3.4 -5.6 0.000 0]
+# 
+# )
+# 
+# box2d
+# (
+# name "magentabox2"
+# color "magenta"
+# pose [-0.7 -4.2 0.000 0]
+# 
+# )
+# 
+# 

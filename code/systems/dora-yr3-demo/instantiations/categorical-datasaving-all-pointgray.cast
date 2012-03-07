@@ -1,0 +1,19 @@
+HOST localhost
+
+# Visualization.SA ##########################################################
+INCLUDE includes/visualization.sa/v11n-base.cast
+
+# Spatial.SA ################################################################
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-savelocalmaps.cast
+INCLUDE includes/spatial.sa/spatial-peekabot.cast
+CPP GD self.representer SelfRepresenter 
+
+# Categorical.SA ############################################################
+INCLUDE includes/categorical.sa/categorical-saving.cast
+
+# Vision ######################################################################
+INCLUDE includes/vision.sa/vision-base.cast
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0

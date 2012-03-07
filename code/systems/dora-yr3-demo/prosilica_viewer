@@ -1,0 +1,11 @@
+#!/bin/bash
+
+m=`uname -m`
+
+if [ "$m" == "i686" ]
+then
+    ./tools/hardware/video/src/c++/components/prosilica/bin-pc/x86/SampleViewer
+elif [ "$m" == "x86_64" ]
+then
+    ./tools/hardware/video/src/c++/components/prosilica/bin-pc/x64/SampleViewer
+fi

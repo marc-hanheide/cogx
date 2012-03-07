@@ -1,0 +1,47 @@
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+SETVAR ptz_server=ptz.server
+
+
+HOST localhost
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --max-v 0.2 --max-w 0.4 --max-joyv 10 --max-joyw 10 --cure-config-file  instantiations/cureconfig/cogxp3.ccf #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host localhost #--log
+#COMPONENT CPP ptz.server PlayerActServer --ptz-device 0 --player-host localhost #--log
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# With pan tilt
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI --shake
+
+CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
+
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4 
+
+JAVA MG person.runner vision.components.PersonDetectorRunner  --gui 
+
+CPP MG people-detector PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --pcserver pcserver --faceCascade "instantiations/data/haarcascade_frontalface_alt2.xml" --numattempts 4 
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact 
+
+INCLUDE includes/vision.sa/vision-mediators-dora.cast
+
+
+SUBARCHITECTURE spatial.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+INCLUDE includes/spatial.sa/spatial-mediator.cast
+INCLUDE includes/spatial.sa/spatial.cast
+
+
+JAVA MG manual-execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
+JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 8 
+JAVA MG spatial-manual spatial.manual.ManualNavControl
+
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
+JAVA MG navdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "NavData.NavCommand"  --generic-col --compact
+JAVA MG executor dora.execution.components.DoraExecutionMediator
+INCLUDE includes/vision.sa/vision-execution.cast
+

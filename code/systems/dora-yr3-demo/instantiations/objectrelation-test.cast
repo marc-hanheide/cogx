@@ -1,0 +1,13 @@
+HOST localhost
+
+# spatial #####################################################################
+INCLUDE includes/spatial.sa/spatial-base.cast
+INCLUDE includes/spatial.sa/spatial-relations.cast
+
+CPP GD relation.tester ObjectRelationTester --test-onness --sample-onness
+
+
+#JAVA MG ViewerCastComponent motivation.util.viewer.ViewerCastComponent  --subscribe "SpatialData.Place, motivation.slice.PlanProxy, binder.autogen.core.PerceivedEntity, autogen.Planner.PlanningTask, motivation.slice.Motive, comadata.ComaRoom, binder.autogen.core.UnionConfiguration, execution.slice.Action, SpatialData.NavCommand, SpatialProperties.PlaceProperty"
+
+
+
