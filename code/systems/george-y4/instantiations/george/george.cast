@@ -13,7 +13,7 @@ VARDEFAULT hardware=simulation
 #SETVAR hardware=real
 
 IFEQ(%(hardware),real)
-  VARDEFAULT hardware_options=<multiline>
+  OPTDEFAULT hardware_options=<multiline>
     kinect
     !kinect-video
     !video 
@@ -24,7 +24,7 @@ IFEQ(%(hardware),real)
     !katana
   </multiline>
 ELSE # simulation
-  VARDEFAULT hardware_options=<multiline>
+  OPTDEFAULT hardware_options=<multiline>
     !kinect
     !kinect-video
     video 
@@ -36,7 +36,7 @@ ELSE # simulation
   </multiline>
 ENDIF
 
-VARDEFAULT feature_options=<multiline>
+OPTDEFAULT feature_options=<multiline>
    vision
    !vision-execution
    !vision-mediators
