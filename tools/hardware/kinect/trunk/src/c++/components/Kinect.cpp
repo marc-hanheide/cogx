@@ -16,12 +16,12 @@
 // Callback: New user was detected
 void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
 {
-	printf("New User %d\n", nId);
+  printf("New User %d\n", nId);
 }
 // Callback: An existing user was lost
 void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
 {
-	printf("Lost user %d\n", nId);
+  printf("Lost user %d\n", nId);
 }
 
 #define LOCK_KINECT
@@ -132,10 +132,10 @@ bool Kinect::Init(const char *kinect_xml_file)
   UserGenerator* userGenerator = kinect::getUserGenerator();
 
   if (userGenerator!=NULL) {
-	  XnCallbackHandle hUserCallbacks;
-	  printf("we have a user generator to use\n");
-	  userGenerator->RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
-	 // userGenerator->GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+    XnCallbackHandle hUserCallbacks;
+    printf("we have a user generator to use\n");
+    userGenerator->RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
+    // userGenerator->GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
   }
 
   rgbWidth = 640;	/// TODO Get width and height from file!
@@ -656,9 +656,65 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
   }
 }
 
+bool Kinect::GetDetectPersons(std::vector<KinectPerson>& persons, double minRelativePersonArea)
+{
+  ::xn::UserGenerator* userGenerator = ::kinect::getUserGenerator();
+  persons.clear();
+  if (!userGenerator) {
+    println("Kinect: We don't have a valid userGenerator");
+    return false;
+  }
 
+  if(kinect::isCapturing()) {
+    pullData();
+  }
+
+#ifdef LOCK_KINECT
+  IceUtil::RWRecMutex::RLock lock(m_kinectMutex);
+#endif
+  int count=userGenerator->GetNumberOfUsers();
+  XnUserID aUsers[count];
+  XnUInt16 nUsers=count;
+
+  userGenerator->GetUsers(aUsers, nUsers);
+  for (int i=0; i<count; i++) {
+    double pixelRatio;
+    long pixelCount = 0;
+    if (minRelativePersonArea <= 0) {
+      pixelRatio = 1.0;
+      debug("user %d", aUsers[i]);
+    }
+    else {
+      xn::SceneMetaData smd;
+      userGenerator->GetUserPixels(aUsers[i], smd);
+      // XXX: this is really slow! May lock for too long.
+      // TODO: To speed up, check if GetUserPixels can return pixels for all users. 
+      int xRes=smd.LabelMap().XRes();
+      int yRes=smd.LabelMap().YRes();
+      for (int y=0; y<yRes; y++) {
+        for (int x=0; x<xRes; x++) {
+          int v=smd.LabelMap()(x,y);
+          if (v==aUsers[i])
+            pixelCount++;
+        }
+      }
+      pixelRatio = ((double) pixelCount)/(xRes*yRes);
+      debug("user %d xRes=%d, yRes=%d pixelRatio=%f", aUsers[i], xRes, yRes, pixelRatio);
+    }
+
+    if (pixelRatio > minRelativePersonArea) {
+      XnPoint3D massCnt;
+      if (XN_STATUS_OK != userGenerator->GetCoM(aUsers[i], massCnt)) {
+        massCnt.Z = 0;
+      }
+      persons.push_back(KinectPerson((int)aUsers[i], massCnt.Z, pixelCount));
+    }
+  }
+  debug("Number of users in image: %d", persons.size());
+
+  return true;
 }
 
-
+}
 
 

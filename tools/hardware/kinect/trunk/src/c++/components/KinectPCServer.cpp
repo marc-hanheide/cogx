@@ -123,7 +123,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
   depthGenerator = kinect::getDepthGenerator();
   imageGenerator = kinect::getImageGenerator();
 #ifdef KINECT_USER_DETECTOR
-  userGenerator = kinect::getUserGenerator();
+  //userGenerator = kinect::getUserGenerator();
 #endif
   m_saveToFile = false;
   if ((it = _config.find("--save-to-file")) != _config.end()) {
@@ -172,7 +172,6 @@ void KinectPCServer::configure(const map<string, string> & _config)
 
 kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& cur)
 {
-  kinect::slice::PersonsDict persons;
   return pcSrv->detectPersons();
 }
 
@@ -237,49 +236,20 @@ void KinectPCServer::runComponent()
 #ifdef KINECT_USER_DETECTOR
 ::kinect::slice::PersonsDict KinectPCServer::detectPersons()
 {
-  ::kinect::slice::PersonsDict persons;
-  if (userGenerator==NULL || !userGenerator->IsValid()) {
-    println("we don't have a valid userGenerator");
-    return persons;
-  }
-
-  KinectLock lock(this);
-  if (!suspendReading) {
-    kinect->NextFrame();
-  }
-  int count=userGenerator->GetNumberOfUsers();
-  XnUserID aUsers[count];
-  XnUInt16 nUsers=count;
-
-  userGenerator->GetUsers(aUsers, nUsers);
-  for (int i=0; i<count; i++) {
-    xn::SceneMetaData smd;
-    userGenerator->GetUserPixels(aUsers[i], smd);
-
-    int xRes=smd.LabelMap().XRes();
-    int yRes=smd.LabelMap().YRes();
-    long pixelCount=0;
-    for (int y=0;y<yRes; y++) {
-      for (int x=0;x<xRes; x++) {
-        int v=smd.LabelMap()(x,y);
-        if (v==aUsers[i])
-          pixelCount++;
-      }
-    }
-    double pixelRatio = ((double) pixelCount)/(xRes*yRes);
-    debug("user %d xRes=%d, yRes=%d pixelCount=%f", aUsers[i], xRes, yRes, pixelRatio);
-    if (pixelRatio > RELATIVE_MINIMUM_PERSON_AREA) {
+  ::kinect::slice::PersonsDict ice_persons;
+  std::vector<Kinect::KinectPerson> persons;
+  if (kinect->GetDetectedPersons(persons, RELATIVE_MINIMUM_PERSON_AREA)) {
+    std::vector<Kinect::KinectPerson>::iterator it;
+    for (it = persons.begin(); it != persons.end(); it++) {
       kinect::slice::KinectPersonPtr person = new kinect::slice::KinectPerson;
-      person->size=pixelCount;
-      persons[aUsers[i]] = person;
-
+      person->id = it->id;
+      person->size = it->size;
+      person->distance = it->distance;
     }
   }
-  debug("number of users in image: %d", persons.size());
 
-  return persons;
+  return ice_persons;
 }
-
 #endif
 
 void KinectPCServer::saveNextFrameToFile()

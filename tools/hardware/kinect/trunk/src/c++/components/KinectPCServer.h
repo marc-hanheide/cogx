@@ -71,7 +71,7 @@ private:
   DepthGenerator* depthGenerator;
   ImageGenerator* imageGenerator;
 #ifdef KINECT_USER_DETECTOR
-  UserGenerator* userGenerator;
+  //UserGenerator* userGenerator;
 #endif
   DepthMetaData depthMD;
   ImageMetaData imageMD;
