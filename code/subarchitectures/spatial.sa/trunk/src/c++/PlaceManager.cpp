@@ -49,7 +49,9 @@ PlaceManager::PlaceManager() : m_placeIDCounter(0),
   m_startNodeForCurrentPath(-1),
   m_goalPlaceForCurrentPath(-1),
   m_currentNodeOnPath(-1),
-  m_firstMovementRegistered(false)
+  m_firstMovementRegistered(false),
+  m_robotInitialPoseReceived(false),
+  m_initialMovementThreshold(0.05)
 {
   cout<<"PlaceManager::PlaceManager()"<<endl;
 }
@@ -2223,9 +2225,48 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
       }
     }
   }
+
+  // Before the robot has moved, all nodes added to the WM are places.
+  // Previously m_firstMovementRegistered was set to true on the first receipt of a robot pose
+  // now we check that the robot has actually moved.
   if (!m_firstMovementRegistered){
-	  m_firstMovementRegistered = true;
-	  processPlaceArrival(false);
+    if (!m_robotInitialPoseReceived) {
+      // store initial pose
+      vector<NavData::RobotPose2dPtr> robotPoses;
+      getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+
+      if (robotPoses.size() != 0) {
+        m_robotInitialX = robotPoses[0]->x;
+        m_robotInitialY = robotPoses[0]->y;
+        log("Initial robot position (%f, %f)", m_robotInitialX, m_robotInitialY);
+        m_robotInitialPoseReceived = true;
+      }
+      else {
+        // no pose available!
+      }
+      
+    }
+    else {
+      // check if the robot has moved
+      // get current pose
+      vector<NavData::RobotPose2dPtr> robotPoses;
+      getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+      if (robotPoses.size() != 0) {
+        double robotX = robotPoses[0]->x;
+        double robotY = robotPoses[0]->y;
+        double distance_squared = (m_robotInitialX - robotX)*(m_robotInitialX - robotX) + 
+          (m_robotInitialY - robotY)*(m_robotInitialY - robotY);
+        log("Squared distance from robot's initial position is %f", distance_squared);
+        if (distance_squared > m_initialMovementThreshold) {
+          log("Robot has moved more than the threshold distance");
+	        m_firstMovementRegistered = true;
+	        processPlaceArrival(false);
+        }
+      }
+      else {
+        // no pose available!
+      }
+    }
   }
   //log("robotMoved exited");
 }
