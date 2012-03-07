@@ -1232,6 +1232,9 @@ void DisplayNavInPB::runComponent() {
                               m_RobotPose->y,
                               0,
                               m_RobotPose->theta);
+				if (m_FollowRobot) {
+					m_DefCam.set_position(m_RobotPose->x, m_RobotPose->y, 0);
+				}
 
 	m_ProxyPan.set_dof(ptuPose.pose.pan);
 	m_ProxyTilt.set_dof(-ptuPose.pose.tilt);
@@ -2594,15 +2597,10 @@ void DisplayNavInPB::connectPeekabot()
       log("added robot.");
 
     if (m_FollowRobot) {
-      peekabot::CameraProxy defCam;
       peekabot::Status s =
-				defCam.assign(m_PeekabotClient, "default_camera").status();
-		  if ( s.succeeded() ) {
-				log("Setting default_camera to robot pose");
-				s = defCam.rearrange(m_ProxyRobot, false, peekabot::REPLACE_ON_CONFLICT).status();
-			}
+				m_DefCam.assign(m_PeekabotClient, "default_camera").status();
 			if ( !s.succeeded() ) {
-				error("Error: Could not set default_camera for --follow-robot!");
+				error("Error: Could not find default_camera for --follow-robot!");
 			}
     }
 
