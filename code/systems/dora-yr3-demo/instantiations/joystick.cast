@@ -1,4 +1,6 @@
+VARDEFAULT playerhost=localhost
+
 HOST localhost
 
-COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
-COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host %(playerhost) 
+COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(playerhost)  -c %(spatial_cureconfig) 
