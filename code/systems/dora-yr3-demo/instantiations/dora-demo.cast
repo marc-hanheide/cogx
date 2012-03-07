@@ -10,9 +10,16 @@ VARDEFAULT hardware=simulation
 #SETVAR hardware=real
 
 
+
+
 IFEQ(%(hardware),real)
-  VARDEFAULT hardware_options=<multiline>
-    avs
+
+  SETVAR vision_pcserver_component=pcserver
+  SETVAR vision_pcserver=--pcserver %(vision_pcserver_component)
+  SETVAR spatial_pcserver=--pcserver %(vision_pcserver_component)
+
+  VARDEFAULT feature_options=<multiline>
+    !avs
     dialogue
     debug
     # not tested
@@ -20,10 +27,15 @@ IFEQ(%(hardware),real)
     !people
   </multiline>
 ELSE # simulation
-  VARDEFAULT hardware_options=<multiline>
-    avs
+
+  SETVAR vision_pcserver_component=
+  SETVAR vision_pcserver=
+  SETVAR spatial_pcserver=
+
+  VARDEFAULT feature_options=<multiline>
+    !avs
     dialogue
-    debug
+    !debug
     # not tested
     !categorical
     !people
@@ -99,17 +111,10 @@ SETVAR spatial_min_door_width=0.70
 SETVAR spatial_max_door_width=0.92
 
 SETVAR playerhost= %(host:localhost)
-SETVAR ptz_server=ptz.server
+
+
 
 SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
-
-SETVAR vision_pcserver_host=pcserver
-# use these to have kinect
-SETVAR vision_pcserver=--pcserver %(vision_pcserver_host)
-SETVAR spatial_pcserver=--pcserver %(vision_pcserver_host)
-
-#SETVAR vision_pcserver=
-#SETVAR spatial_pcserver=
 
 SETVAR no_placeholders=#--no-placeholders
 
@@ -137,10 +142,12 @@ ENDIF
 
 
 # Spatial.SA ################################################################
+SETVAR ptz_server=ptz.server
 IFEQ(%(hardware),real)
     COMPONENT CPP %(ptz_server) PlayerPTZServer --player-host %(playerhost) --ptz-device 0
 ELSE # simulation
     COMPONENT CPP %(ptz_server) PlayerActServer --ptz-device 0	
+    INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 ENDIF
 
 INCLUDE includes/spatial.sa/spatial-base.cast
@@ -190,6 +197,7 @@ ENDIF
 IFOPTALL(%(feature_options), categorical)
 
   IFEQ(%(hardware), real)
+
     SUBARCHITECTURE categorical.sa
     JAVA WM cast.architecture.SubarchitectureWorkingMemory
     CPP TM AlwaysPositiveTaskManager
@@ -198,10 +206,14 @@ IFOPTALL(%(feature_options), categorical)
     #CPP GD categorical.laserprocessor CategoricalLaserProcessor --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
     #CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --placemanager place.manager
     #CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg --placemanager place.manager
+
   ELSE #simulation
+
        INCLUDE includes/categorical.sa/categorical-ALU-sim-shape-appearance.cast
+
   ENDIF    
-ENDOF
+
+ENDIF
 
 
 # Vision ######################################################################
@@ -209,11 +221,11 @@ INCLUDE includes/vision.sa/vision-base.cast
 
 IFEQ(%(hardware), real)
 
-  CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
+  CPP MG %(vision_pcserver_component) 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
   
   CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
 
-  CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+  CPP MG recognizer.3D ObjectRecognizer3D %(vision_pcserver) --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
 
   IFOPTALL(%(feature_options), people)
     CPP MG recognizer.people PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
