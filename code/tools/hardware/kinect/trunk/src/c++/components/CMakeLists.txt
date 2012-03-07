@@ -29,7 +29,7 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
      Device.cpp
      Kinect.cpp
   )
-  add_cast_component(${PROJECT_NAME} ${SOURCES})
+  add_cast_component(Kinect ${SOURCES})
   link_cast_component(${CAST_COMPONENT_NAME} OpenNI)
 
   #this is necessary because those openni guys are incompetent ;-) They should fix the way they include their own includes...

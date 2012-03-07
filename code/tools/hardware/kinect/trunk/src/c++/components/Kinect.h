@@ -28,6 +28,18 @@
 namespace Kinect
 {
 
+struct KinectPerson
+{
+  int id;
+  int distance;
+  int size;
+  KinectPerson(int _id, int _distance, int _size) {
+    id = _id;
+    distance = _distance;
+    size = _size;
+  }
+};
+
 class Kinect
 #ifdef KINECT_CAST_LOGGING
   : public castutils::CCastLoggerMixin
@@ -106,6 +118,7 @@ public:
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
   int GetRgbImageWidth() {return rgbWidth;}
   int GetDepthImageWidth() {return depWidth;}
+  bool GetDetectPersons(std::vector<KinectPerson>& persons, double minRelativePersonArea=0);
 
 private:
   void pullData();
