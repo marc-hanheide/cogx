@@ -424,13 +424,31 @@ bool Kinect::GetColorImage(IplImage **rgbIplImg)
 
 void Kinect::setDepthColors(const std::vector<long> &rgbColors, const std::vector<double> &positions)
 {
-  assert(rgbColors.size() > 1 && rgbColors.size() == positions.size());
+  m_depthPalette.clear();
+  if (rgbColors.size() < 2) {
+    m_depthColors.clear();
+    m_depthColorRanges.clear();
+    return;
+  }
   m_depthColors = rgbColors;
   m_depthColorRanges = positions;
-  m_depthPalette.clear();
   std::sort(m_depthColorRanges.begin(), m_depthColorRanges.end());
+
+  while (m_depthColors.size() < m_depthColorRanges.size()) {
+    m_depthColors.push_back(m_depthColors.back());
+  }
+
+  if (m_depthColorRanges.size() < m_depthColors.size()) {
+    if (m_depthColorRanges.size() == 0) {
+      m_depthColorRanges.push_back(1.0);
+    }
+    while (m_depthColorRanges.size() < m_depthColors.size()) {
+      m_depthColorRanges.push_back(m_depthColorRanges.back() + 1.0 / m_depthColors.size());
+    }
+  }
+
   if (m_depthColorRanges.front() != 0 || m_depthColorRanges.back() != 1) {
-    log("Kinect: Adjusting a bad list of ranges in setDepthColors");
+    log("Kinect: Adjusting the list of ranges in setDepthColors");
     // The range has to be adjausted
     double min = m_depthColorRanges.front();
     double range = m_depthColorRanges.back() - min;
@@ -447,7 +465,7 @@ void Kinect::setDepthColors(const std::vector<long> &rgbColors, const std::vecto
 
 void Kinect::calculateDepthPalette()
 {
-  if (m_depthColors.size() < 1 || m_depthColorRanges.size() < 1) {
+  if (m_depthColors.size() < 2 || m_depthColorRanges.size() < 2) {
     const long rgb[] = {
       0x330033, 0xbb00bb, 0x0033ff, 0x00ee55, 0xeebb00,
       0xee0055, 0xee22ee, 0xffffff, 0x00bb33, 0x000000

@@ -83,7 +83,10 @@ public:
   // Set the colors and positions from which the palette will be calculated.
   // Vectors rgbColors and positions have the same number of entries.
   // eg.: (0xff0000, 0x00ff00, 0x0000ff), (0.0, 0.4, 1.0)
-  // At least two colors have to be given.
+  // At least two colors have to be given. If less than two colors are in rgbColors, the default
+  // palette will be used.
+  // The positions will be adjusted to the interval (0.0, 1.0). The sizes of
+  // the vectors rgbColors and positions will be adjusted internally.
   void setDepthColors(const std::vector<long> &rgbColors, const std::vector<double> &positions);
   
 public:
