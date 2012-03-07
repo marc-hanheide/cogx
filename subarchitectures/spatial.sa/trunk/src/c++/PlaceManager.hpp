@@ -129,6 +129,10 @@ class PlaceManager : public cast::ManagedComponent
     peekabot::GroupProxy m_ProxyForbiddenMap;
 	 std::string m_PbHost;
      int m_PbPort;
+  bool m_robotInitialPoseReceived;
+  double m_robotInitialX;
+  double m_robotInitialY;
+  double m_initialMovementThreshold;
 
     void connectPeekabot();
 
