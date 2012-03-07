@@ -1,7 +1,7 @@
 VARDEFAULT playerhost=localhost
 
 COMPONENT CPP laser.server LaserServerPlayer --player-host %(playerhost) 
-COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(playerhost) --ctrl-ptu 
+COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(playerhost)  -c %(spatial_cureconfig) --ctrl-ptu 
 
 SUBARCHITECTURE spatial.sa
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
