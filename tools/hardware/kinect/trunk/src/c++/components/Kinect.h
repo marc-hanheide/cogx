@@ -52,10 +52,22 @@ private:
   XnUInt64 shadow_value;                ///< Return value for shadow point
   XnUInt64 no_sample_value;             ///< Return value for no sample
 
+  // @author: mmarko
+  // Lock before readFrame and global data access
   IceUtil::RWRecMutex m_kinectMutex;
+
+  // @author: mmarko
+  // Limit the number of calls to readFrame
   castutils::CMilliTimer m_grabTimer;
   int m_frameMilliseconds;
 
+  // @author: mmarko
+  // Palette for the RGB depth image
+  std::vector<long> m_depthColors;            ///< Key colors to be used in the palette
+  std::vector<double> m_depthColorRanges;     ///< Positions of key colors in the palette: 0.0 .. 1.0
+  std::vector<unsigned char> m_depthPalette;  ///< Interpolated palette; b-g-r triplets
+
+private:
   bool Init(const char *kinect_xml_file);
   void MapMetaData2IplImage(const MapMetaData* pImageMD, IplImage **iplImg);
   void DepthMetaData2IplImage(const DepthMetaData* pDepthMD, IplImage **iplImg);
@@ -63,6 +75,16 @@ private:
   void depUndistort(cv::Mat src);
   cv::Point3f DepthToWorld(int x, int y, int depthValue);
   cv::Point3f WorldToColorInternal(unsigned x, unsigned y);
+
+  void calculateDepthPalette();
+
+public:
+  // @author: mmarko
+  // Set the colors and positions from which the palette will be calculated.
+  // Vectors rgbColors and positions have the same number of entries.
+  // eg.: (0xff0000, 0x00ff00, 0x0000ff), (0.0, 0.4, 1.0)
+  // At least two colors have to be given.
+  void setDepthColors(const std::vector<long> &rgbColors, const std::vector<double> &positions);
   
 public:
   Kinect(const char *kinect_xml_file);
