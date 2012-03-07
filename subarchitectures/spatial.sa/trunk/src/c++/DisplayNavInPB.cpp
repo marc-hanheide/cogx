@@ -89,7 +89,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     m_ShowPointCloud = false;
   }
 
-  m_FollowRobot = (_config.find("--follow-robot") == _config.end());
+  m_FollowRobot = (_config.find("--follow-robot") != _config.end());
   m_ShowRobot = (_config.find("--no-robot") == _config.end());
   m_ShowWalls = (_config.find("--no-walls") == _config.end());
   m_ShowGraph = (_config.find("--no-graph") == _config.end());
@@ -2595,8 +2595,15 @@ void DisplayNavInPB::connectPeekabot()
 
     if (m_FollowRobot) {
       peekabot::CameraProxy defCam;
-      defCam.assign(m_PeekabotClient, "Scene.default_camera");
-      defCam.rearrange(m_ProxyRobot, false, peekabot::REPLACE_ON_CONFLICT);
+      peekabot::Status s =
+				defCam.assign(m_PeekabotClient, "default_camera").status();
+		  if ( s.succeeded() ) {
+				log("Setting default_camera to robot pose");
+				s = defCam.rearrange(m_ProxyRobot, false, peekabot::REPLACE_ON_CONFLICT).status();
+			}
+			if ( !s.succeeded() ) {
+				error("Error: Could not set default_camera for --follow-robot!");
+			}
     }
 
     log("Loading robot file \"%s\"",
