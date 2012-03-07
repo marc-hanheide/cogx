@@ -89,6 +89,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     m_ShowPointCloud = false;
   }
 
+  m_FollowRobot = (_config.find("--follow-robot") == _config.end());
   m_ShowRobot = (_config.find("--no-robot") == _config.end());
   m_ShowWalls = (_config.find("--no-walls") == _config.end());
   m_ShowGraph = (_config.find("--no-graph") == _config.end());
@@ -430,14 +431,15 @@ void DisplayNavInPB::newPlanePointCloud(const cast::cdl::WorkingMemoryChange &ob
     numeric::ublas::vector<double> t (3);
     //add plane points
     log("points size: %d",objData->points.size());
+    peekabot::VertexSet vs;
     for (unsigned int i =0; i < objData->points.size(); i++){
       v(0) = objData->points.at(i).x;
       v(1) = objData->points.at(i).y;
       v(2) = objData->points.at(i).z;
       //   t = prod(v,m);
-      pcloud.add_vertex(v(0),v(1),v(2));
-
+      vs.add(v(0),v(1),v(2));
     }
+    pcloud.add_vertices(vs);
     pcloud.set_color(color[0],color[1],color[2]);
   }
   catch (DoesNotExistOnWMException) {
@@ -754,11 +756,13 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 					// Add a polygon that corresponds to part of the pie chart
 					// between startAngle and endAngle;
 					peekabot::PolygonProxy acp;
+					peekabot::VertexSet vs;
 					acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
-					acp.add_vertex( 0, 0, 0 );
+					vs.add( 0, 0, 0 );
 					for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
-						acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
-					acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+						vs.add( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+					vs.add( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+					acp.add_vertices(vs);
 					//acp.set_opacity(0.7);
 					acp.set_color(r,g,b);
 					startAngle=endAngle;
@@ -771,11 +775,13 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 					sprintf(name2, "node%ld.area_class%d", node.m_Id, index);
 				double endAngle=(2*3.1415926);
 				peekabot::PolygonProxy acp;
+				peekabot::VertexSet vs;
 				acp.add(sp, name2, peekabot::REPLACE_ON_CONFLICT);
-				acp.add_vertex( 0, 0, 0 );
+				vs.add( 0, 0, 0 );
 				for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
-					acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
-				acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+					vs.add( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+				vs.add( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+				acp.add_vertices(vs);
 				//acp.set_opacity(0.7);
 				acp.set_color(0.7,0.7,0.7);
 				startAngle=endAngle;
@@ -1026,51 +1032,61 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
   const double fovVerti = fovVertiAngle*M_PI/180.0/2;
   peekabot::PolygonProxy proxyConeParts[5];
+  peekabot::VertexSet vs;
   proxyConeParts[0].add(proxyCone, "top");
-  proxyConeParts[0].add_vertex(0,0,0);
-  proxyConeParts[0].add_vertex(coneLen,
+  vs.add(0,0,0);
+  vs.add(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(fovVerti));
-  proxyConeParts[0].add_vertex(coneLen,
+  vs.add(coneLen,
                                coneLen*tan(-fovHoriz),
                                coneLen*tan(fovVerti));
+  proxyConeParts[0].add_vertices(vs);
+  vs.clear();
   proxyConeParts[1].add(proxyCone, "bottom");
-  proxyConeParts[1].add_vertex(0,0,0);
-  proxyConeParts[1].add_vertex(coneLen,
+  vs.add(0,0,0);
+  vs.add(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[1].add_vertex(coneLen,
+  vs.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
+  proxyConeParts[1].add_vertices(vs);
+  vs.clear();
   proxyConeParts[2].add(proxyCone, "left");
-  proxyConeParts[2].add_vertex(0,0,0);
-  proxyConeParts[2].add_vertex(coneLen,
+  vs.add(0,0,0);
+  vs.add(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(-fovVerti));
-  proxyConeParts[2].add_vertex(coneLen,
+  vs.add(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(fovVerti));
+  proxyConeParts[2].add_vertices(vs);
+  vs.clear();
   proxyConeParts[3].add(proxyCone, "right");
-  proxyConeParts[3].add_vertex(0,0,0);
-  proxyConeParts[3].add_vertex(coneLen,
+  vs.add(0,0,0);
+  vs.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[3].add_vertex(coneLen,
+  vs.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(fovVerti));
+  proxyConeParts[3].add_vertices(vs);
+  vs.clear();
   proxyConeParts[4].add(proxyCone, "image");
-  proxyConeParts[4].add_vertex(coneLen,
+  vs.add(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(fovVerti));
-  proxyConeParts[4].add_vertex(coneLen,
+  vs.add(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[4].add_vertex(coneLen,
+  vs.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[4].add_vertex(coneLen,
+  vs.add(coneLen,
                           coneLen*tan(-fovHoriz),
                                coneLen*tan(fovVerti));
+  proxyConeParts[4].add_vertices(vs);
 
   for (int i = 0; i < 5; i++) {
     proxyConeParts[i].set_color(color[0],color[1],color[2]);
@@ -1133,14 +1149,16 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID){
 
     numeric::ublas::vector<double> v (3);
     //add plane points
+    peekabot::VertexSet vs;
     for (unsigned int i =0; i < objData->points.size(); i++){
 
       v(0) = objData->points.at(i).p.x;
       v(1) = objData->points.at(i).p.y;
       v(2) = objData->points.at(i).p.z;
-      pcloud.add_vertex(v(0),v(1),v(2));
+      vs.add(v(0),v(1),v(2));
 
     }
+    pcloud.add_vertices(vs);
     pcloud.set_color(color[0],color[1],color[2]);
   }
   catch (DoesNotExistOnWMException) {
@@ -1207,7 +1225,7 @@ void DisplayNavInPB::runComponent() {
         m_ProxyKinect.set_vertices(kinectVerts);
       }
 
-      log("Display robot pose");
+      debug("Display robot pose");
       // Display robot pose
       if(m_ShowRobot && m_RobotPose) {
         m_ProxyRobot.set_pose(m_RobotPose->x,
@@ -1234,19 +1252,21 @@ void DisplayNavInPB::runComponent() {
           sprintf(buf, "poly%d", i);
           pp.add(walls, buf);
 
-          pp.add_vertex(m_LineMap->lines[i].start.x,
+	  peekabot::VertexSet vs;
+          vs.add(m_LineMap->lines[i].start.x,
                         m_LineMap->lines[i].start.y,
                         0);
-          pp.add_vertex(m_LineMap->lines[i].start.x,
+          vs.add(m_LineMap->lines[i].start.x,
                         m_LineMap->lines[i].start.y,
                         1.0);
-          pp.add_vertex(m_LineMap->lines[i].end.x,
+          vs.add(m_LineMap->lines[i].end.x,
                         m_LineMap->lines[i].end.y,
                         1.0);
-          pp.add_vertex(m_LineMap->lines[i].end.x,
+          vs.add(m_LineMap->lines[i].end.x,
                         m_LineMap->lines[i].end.y,
                         0.0);
 
+	  pp.add_vertices(vs);
           pp.set_color(255./255, 198./255, 0.);
           pp.set_opacity(0.2);
 
@@ -2263,11 +2283,13 @@ void DisplayNavInPB::addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &s
 			// Add a polygon that corresponds to part of the pie chart
 			// between startAngle and endAngle;
 			peekabot::PolygonProxy acp;
+			peekabot::VertexSet vs;
 			acp.add(sp, name, peekabot::REPLACE_ON_CONFLICT);
-			acp.add_vertex( 0, 0, 0 );
+			vs.add( 0, 0, 0 );
 			for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
-			  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
-			acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+			  vs.add( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+			vs.add( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+			acp.add_vertices(vs);
 			acp.set_opacity(0.3);
 			acp.set_color(r,g,b);
 			startAngle=endAngle;
@@ -2277,11 +2299,13 @@ void DisplayNavInPB::addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &s
 	// Add one for the rest
 	double endAngle=(2*3.1415926);
 	peekabot::PolygonProxy acp;
+	peekabot::VertexSet vs;
 	acp.add(sp, "not_exists", peekabot::REPLACE_ON_CONFLICT);
-	acp.add_vertex( 0, 0, 0 );
+	vs.add( 0, 0, 0 );
 	for( double tmp = startAngle; tmp<endAngle; tmp+=(2.0*3.1415926/36) )
-	  acp.add_vertex( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
-	acp.add_vertex( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+	  vs.add( 0.5*cosf(tmp), 0.5*sinf(tmp), 0 );
+	vs.add( 0.5*cosf(endAngle), 0.5*sinf(endAngle), 0 );
+	acp.add_vertices(vs);
 	acp.set_opacity(0.3);
 	acp.set_color(0.7,0.7,0.7);
 	startAngle=endAngle;
@@ -2511,9 +2535,11 @@ void DisplayNavInPB::displayEdge(const DisplayNavInPB::Node &node1,
       node1.m_X, node1.m_Y, node1.m_Id,
       node2.m_X, node2.m_Y, node2.m_Id);
 
+  peekabot::VertexSet vs;
   lp.add(m_ProxyEdges, name, peekabot::REPLACE_ON_CONFLICT);
-  lp.add_line(node1.m_X, node1.m_Y, 0,
-              node2.m_X, node2.m_Y, 0);
+  vs.add(node1.m_X, node1.m_Y, 0);
+  vs.add(node2.m_X, node2.m_Y, 0);
+  lp.add_vertices(vs);
   lp.set_color(0., 0., 0.);
   lp.set_opacity(1);
 }
@@ -2552,11 +2578,11 @@ void DisplayNavInPB::connectPeekabot()
 {
   try {
     log("Trying to connect to Peekabot (again?) on host %s and port %d",
-        m_PbHost.c_str(), m_PbPort);
+	m_PbHost.c_str(), m_PbPort);
 
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
- //   m_PeekabotClient.assign(m_PeekabotClient, "root");
+    //   m_PeekabotClient.assign(m_PeekabotClient, "root");
     peekabot::Status s0,s1, s2, s3,s4;
 
     s0 = m_ProxyRobot.add(m_PeekabotClient,
@@ -2567,19 +2593,25 @@ void DisplayNavInPB::connectPeekabot()
     else
       log("added robot.");
 
-      log("Loading robot file \"%s\"",
-	  m_PbRobotFile.c_str());
-           if (m_ShowCommands) {
-	m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands",
-	    peekabot::REPLACE_ON_CONFLICT);
-	m_ProxyDetectionCommands.add(m_PeekabotClient, "DetectionCommands",
-	    peekabot::REPLACE_ON_CONFLICT);
-      }
+    if (m_FollowRobot) {
+      peekabot::CameraProxy defCam;
+      defCam.assign(m_PeekabotClient, "Scene.default_camera");
+      defCam.rearrange(m_ProxyRobot, false, peekabot::REPLACE_ON_CONFLICT);
+    }
 
-      m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
+    log("Loading robot file \"%s\"",
+	m_PbRobotFile.c_str());
+    if (m_ShowCommands) {
+      m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands",
+	  peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyDetectionCommands.add(m_PeekabotClient, "DetectionCommands",
+	  peekabot::REPLACE_ON_CONFLICT);
+    }
 
-      s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
-      if( s1.failed() ) {
+    m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
+
+    s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
+    if( s1.failed() ) {
       log("Could not load robot file \"%s\"",
               m_PbRobotFile.c_str());
       peekabot::CubeProxy cube;
