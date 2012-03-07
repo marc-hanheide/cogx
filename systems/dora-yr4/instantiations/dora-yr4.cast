@@ -20,12 +20,13 @@ VARDEFAULT feature_options=<multiline>
     vision			# enable the vision core, object recognition (depending on the hardware setting)
     peekabot		# use peekabot
 	man_ctrl		# enable manual GUIs for navigation, PTZ, planning, etc.
-    !avs			# enable AVS view cone planning and relation manager
+    avs			# enable AVS view cone planning and relation manager
     execution		# enable execution framework to let the planner trigger actions
 	conceptual		# enable conceptual framework
+	default			# enable default
 	coma			# enable coma
     !categorisation	# enable place categorisation
-    planning		# enable planning core
+    planning_sa		# enable planning core
     debug			# enable more debug GUIs and WM loggers
     dialogue		# enable dialogue
     !motivation		# enable motivation
@@ -132,15 +133,19 @@ IFOPTALL(%(hardware_options), ptz)
         COMPONENT CPP ptz.server PlayerActServer --player-host %(host:PlayerHost) --ptz-device 0
     ENDIF
 ENDIF
+COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost) 
+COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(host:PlayerHost) --ctrl-ptu 
+IFOPTALL(%(hardware_options), blobfinder)
+	COMPONENT CPP blob.server PlayerBlobFinderServer --player-host %(host:PlayerHost) 
+ENDIF
 
 
 # spatial ################################################################
 IFOPTALL(%(feature_options), spatial)
-    IFOPTALL(%(hardware_options), blobfinder)
-        INCLUDE includes/spatial.sa/spatial-blobfinder.cast
-    ENDIF
+	SUBARCHITECTURE spatial.sa
+	JAVA WM cast.architecture.SubarchitectureWorkingMemory
+	CPP TM AlwaysPositiveTaskManager
 
-    INCLUDE includes/spatial.sa/spatial-base.cast
 
     IFOPTALL(%(feature_options), peekabot)
         INCLUDE includes/spatial.sa/spatial-peekabot.cast
@@ -252,7 +257,7 @@ IFOPTALL(%(feature_options), dialogue)
 ENDIF
 
 # planning and motivation #####################################################
-IFOPTALL(%(feature_options), planning)
+IFOPTALL(%(feature_options), planning_sa)
     VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
     VARDEFAULT planning_domain=dora-interactive.pddl
     VARDEFAULT planning_goal="(exists (?p - person) (kval (is-in ?p)))"
@@ -284,7 +289,7 @@ IFOPTALL(%(feature_options), planning)
 ENDIF
 
 # coma ######################################################################
-IFOPTANY(%(feature_options), coma conceptual avs)
+IFOPTALL(%(feature_options), coma)
     INCLUDE includes/coma.sa/coma-base.cast
     INCLUDE includes/coma.sa/coma-crowl.cast
     IFOPTALL(%(feature_options), binder)
@@ -294,7 +299,7 @@ IFOPTANY(%(feature_options), coma conceptual avs)
 ENDIF
 
 # Default.SA ################################################################
-IFOPTANY(%(feature_options), default conceptual planning avs)
+IFOPTALL(%(feature_options), default)
     INCLUDE includes/default.sa/default-base.cast
     INCLUDE includes/coma.sa/coma-defaultsa.cast
 
@@ -303,7 +308,7 @@ IFOPTANY(%(feature_options), default conceptual planning avs)
 ENDIF
 
 # Conceptual.SA  ############################################################
-IFOPTANY(%(feature_options), conceptual avs)
+IFOPTALL(%(feature_options), conceptual)
     INCLUDE includes/conceptual.sa/conceptual-base.cast
     CPP GD conceptual.queryhandler ConceptualQueryHandler
 
