@@ -209,6 +209,7 @@ protected:
   IceUtil::Mutex m_ScanQueueMutex; 	// Protects m_LScanQueue
   IceUtil::Mutex m_OdomQueueMutex;	// Protects m_odometryQueue
   IceUtil::Mutex m_PeopleMutex;		// Protects m_People
+  IceUtil::Mutex m_FrontierMutex;       // Protects m_Frontiers
 
   bool m_loadLgm,m_saveLgm; 
 
