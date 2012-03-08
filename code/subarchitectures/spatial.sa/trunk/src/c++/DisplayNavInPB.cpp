@@ -968,11 +968,10 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
 
   if (!m_PeekabotClient.is_connected()) return;
 
+  try {
   // Visualize Viewplan boost::shared_ptr<CASTData<NavData::NavCommand> >
-  boost::shared_ptr<CASTData<NavData::ObjectSearchPlan> > oobj =
-    getWorkingMemoryEntry<NavData::ObjectSearchPlan>(objID.address);
-
-  NavData::ObjectSearchPlanPtr plan = oobj->getData();
+  NavData::ObjectSearchPlanPtr plan =
+    getMemoryEntry<NavData::ObjectSearchPlan>(objID.address);
 
   // Get nodeIDs stated in the plan, and search through navGraph to
   // each nodeID and finally put ordered numbers on top of nodes that
@@ -990,6 +989,11 @@ void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
     }
   }
   debug("Exited newVPlist"); 
+  }
+  catch (DoesNotExistOnWMException)
+  {
+    log("VPlist %s disappeared from WM in newVPlist!", objID.address.id.c_str());
+  }
 }
 
 void DisplayNavInPB::createRobotFOV()
@@ -1365,11 +1369,11 @@ void DisplayNavInPB::displayPeople()
 void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 {
   log("Entered newRobotPose");
-  shared_ptr<CASTData<NavData::RobotPose2d> > oobj =
-    getWorkingMemoryEntry<NavData::RobotPose2d>(objID.address);
+
+  NavData::RobotPose2dPtr oobj = getMemoryEntry<NavData::RobotPose2d>(objID.address);
 
   m_Mutex.lock();
-  m_RobotPose = oobj->getData();
+  m_RobotPose = oobj;
   m_Mutex.unlock();
   log("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
@@ -1668,10 +1672,11 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
 void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
 {
   debug("Entered newNavCommand");
-  shared_ptr<CASTData<SpatialData::NavCommand> > oobj =
-    getWorkingMemoryEntry<SpatialData::NavCommand>(objID.address);
+  try {
+    SpatialData::NavCommandPtr oobj =
+      getMemoryEntry<SpatialData::NavCommand>(objID.address);
 
-  if (oobj != 0 && oobj->getData()->cmd == SpatialData::GOTOPLACE)
+  if (oobj != 0 && oobj->cmd == SpatialData::GOTOPLACE)
   {
     FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
     /* Reset the old goal (if any) */
@@ -1703,16 +1708,16 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
       }
     }
 
-    if (oobj->getData()->destId.empty()) {
+    if (oobj->destId.empty()) {
       log("No destID. Returning.");
       debug("Exited newNavCommand");
       return;
     }
     
-    log("Updating goal from %d to %d", m_currGoalPlace, oobj->getData()->destId[0]);
+    log("Updating goal from %d to %d", m_currGoalPlace, oobj->destId[0]);
 
     /* Update new goal */
-    m_currGoalPlace = oobj->getData()->destId[0];
+    m_currGoalPlace = oobj->destId[0];
 
     /* Was the old goal a placeholder? */
     FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
@@ -1746,6 +1751,10 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
       sp.set_color(0, 1, 0);
       sp.set_opacity(0.3);
     }
+  }
+  }
+  catch (DoesNotExistOnWMException) {
+    log("NavCommand %s disppeared from WM in newNavCommand!", objID.address.id.c_str());
   }
   debug("Exited newNavCommand");
 }		
