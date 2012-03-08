@@ -260,7 +260,7 @@ SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance)
   addToWorkingMemory(cmdId, newPTZPoseCommand);
 
   m_waitingForPTZCommandID = cmdId;
-  error("alex startMovePanTilt %s",m_waitingForPTZCommandID.c_str());
+  log("startMovePanTilt %s",m_waitingForPTZCommandID.c_str());
 }
 
 void SpatialControl::newPanTiltCommand(const cdl::WorkingMemoryChange &objID) {
@@ -1168,9 +1168,12 @@ void SpatialControl::runComponent()
       Cure::Pose3D currentPose = m_TOPP.getPose();
       {
 	if (m_Displaylgm) {
-	  m_Displaylgm->updateDisplay(&currentPose,
-	      &m_NavGraph, 
-	      &m_Frontiers);
+	  if (m_FrontierMutex.tryLock()) {
+	    m_Displaylgm->updateDisplay(&currentPose,
+		&m_NavGraph, 
+		&m_Frontiers);
+	    m_FrontierMutex.unlock();
+	  }
 	}
       }
 
@@ -1200,8 +1203,8 @@ void SpatialControl::runComponent()
     if (m_visualExplorationOngoing && m_waitingForPTZCommandID == "") {
       // If we've gotten at least one cloud since we finished moving the
       // PTU, we can move on to the next phase
-      error("last Point cloud time: %f", m_lastPointCloudTime.s+m_lastPointCloudTime.us*1e-6);
-      error("last PTU time: %f", m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us*1e-6);
+      debug("last Point cloud time: %f", m_lastPointCloudTime.s+m_lastPointCloudTime.us*1e-6);
+      debug("last PTU time: %f", m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us*1e-6);
       if (m_lastPointCloudTime > m_lastPtzNavPoseCompletion) {
 	//      cdl::CASTTime diff = getCASTTime() - m_lastPtzNavPoseCompletion;
 	////FIXME time is negative !
@@ -1209,12 +1212,12 @@ void SpatialControl::runComponent()
 	//    error("alex m_visualExplorationPhase = %d",m_visualExplorationPhase);
 	//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
 	if (m_visualExplorationPhase == 1) {
-	  error("alex m_visualExplorationPhase == 1");
+	  debug("m_visualExplorationPhase == 1");
 	  startMovePanTilt(M_PI/3, -M_PI/4, 0);
 	  m_visualExplorationPhase = 2;
 	}
 	else if (m_visualExplorationPhase == 2) {
-	  error("alex m_visualExplorationPhase == 2");
+	  debug("m_visualExplorationPhase == 2");
 	  startMovePanTilt(0, -M_PI/4, 0);
 	  m_visualExplorationPhase = 0;
 	  m_visualExplorationOngoing = false;
@@ -1223,10 +1226,10 @@ void SpatialControl::runComponent()
 	      getMemoryEntry<NavData::VisualExplorationCommand>(m_visualExplorationCommand);
 	    cmd->comp = NavData::SUCCEEDED;
 	    overwriteWorkingMemory<NavData::VisualExplorationCommand>(m_visualExplorationCommand, cmd);
-	    error("alex cmd->comp = NavData::SUCCEEDED;");
+	    debug("cmd->comp = NavData::SUCCEEDED;");
 	  }
 	  catch (DoesNotExistOnWMException) {
-	    error("Could not find visual exploration command for overwriting!");
+	    getLogger()->warn("Could not find visual exploration command for overwriting!");
 	  }
 	}
       }
@@ -1395,7 +1398,7 @@ void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange 
     else  if (m_taskStatus == NothingToDo) {
       m_visualExplorationOngoing = true;
       m_visualExplorationPhase = 1;
-      error("alex (1) m_visualExplorationPhase = %d", m_visualExplorationPhase);
+      debug("m_visualExplorationPhase = %d", m_visualExplorationPhase);
       m_visualExplorationCommand = objID.address.id;
       startMovePanTilt(-M_PI/3, -M_PI/4, 0);
     }
@@ -1829,25 +1832,19 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
   cast::cdl::CASTTime newTime = getCASTTime();
   long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
   oldTime = newTime;
-  if (diff > 500000) {
+  if (diff > 1500000) {
     error("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
   }
-  else if (diff > 100000) {
-    log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
-  }
   else {
-    debug("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+    log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
   }
 
   diff = (newTime.s-m_lastSLAMPoseTime.s)*1000000l+(newTime.us-m_lastSLAMPoseTime.us);
-  if (diff > 2000000) {
+  if (diff > 1500000) {
     error("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
   }
-  else if (diff > 1000000) {
-    log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
-  }
   else {
-    debug("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+    log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
   }
 
     {
@@ -2332,12 +2329,15 @@ SpatialControl::getFrontiers()
 //    m_MapsMutex.lock();
   }
 
-  m_Frontiers.clear();
-  debug("calling findFrontiers");
-  m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
-//  m_FrontierFinderKinect->findFrontiers(0.8,2.0,m_Frontiers);
+  {
+    IceUtil::Mutex::Lock lock(m_FrontierMutex);
+    m_Frontiers.clear();
+    debug("calling findFrontiers");
+    m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
+    //  m_FrontierFinderKinect->findFrontiers(0.8,2.0,m_Frontiers);
 
-  setFrontierReachability(m_Frontiers);
+    setFrontierReachability(m_Frontiers);
+  }
 
 
   FrontierInterface::FrontierPtSeq outArray;
