@@ -37,8 +37,8 @@ VARDEFAULT kinect_pc_config=<multiline>
 </multiline>
 OPTDEFAULT kinect_pc_grab=points !depth !rectimg
 
-VARDEFAULT kinect_video_camera=
-VARDEFAULT kinect_video_devices=%(kinect_video_camera)
+VARDEFAULT kinect_video_cameras=
+VARDEFAULT kinect_video_devices=%(kinect_video_cameras)
 VARDEFAULT kinect_video_config=<multiline>
    --kconfig    "%(kinect_internal_file)"
    --camconfigs "%(kinect_config_file)"
@@ -80,10 +80,10 @@ IFNEQ(%(pointgrey_cameras),)
    CPP MG VideoServer.pg PointGreyServer %(vsparams)
 ENDIF
 
-IFNEQ(%(kinect_video_camera),)
+IFNEQ(%(kinect_video_cameras),)
    SETVAR kvparams=<multiline>
       %(kinect_video_config)
-      --camids "%(kinect_video_camera)"
+      --camids "%(kinect_video_cameras)"
    </multiline>
     CPP MG VideoServer.k KinectVideoServer %(kvparams)
 ENDIF
@@ -114,8 +114,8 @@ IFNEQ(%(pointgrey_cameras),)
    SETVAR vgparams=%(vgparams) --camids.pg "%(pointgrey_cameras)" --videoname.pg "VideoServer.pg"
    SETVAR devicenames=%(devicenames) %(pointgrey_devices)
 ENDIF
-IFNEQ(%(kinect_video_camera),)
-   SETVAR vgparams=%(vgparams) --camids.k "%(pointgrey_cameras)" --videoname.k "VideoServer.k"
+IFNEQ(%(kinect_video_cameras),)
+   SETVAR vgparams=%(vgparams) --camids.k "%(kinect_video_cameras)" --videoname.k "VideoServer.k"
    SETVAR devicenames=%(devicenames) %(kinect_video_devices)
 ENDIF
 IFNEQ(%(kinect_pc_camera),)

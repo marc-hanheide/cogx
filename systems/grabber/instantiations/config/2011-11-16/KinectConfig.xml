@@ -24,6 +24,10 @@
 			<Configuration>
 				<MapOutputMode xRes="640" yRes="480" FPS="30"/>
 				<Mirror on="false"/>
+				<!--<UserPosition index="0">-->
+				<!--   <Min x="128" y="128" z="500" />-->
+				<!--   <Max x="600" y="400" z="2000" />-->
+				<!--</UserPosition>-->
 			</Configuration>
 		</Node>
 		<!--

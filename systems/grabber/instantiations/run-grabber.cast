@@ -1,8 +1,9 @@
 OPTDEFAULT hardware=<multiline>
-   video0
+   !video0
    !video1
-   !kinect
-   !pointgrey
+   pointgrey
+   kinect
+   kinect-video
 </multiline>
 
 VARDEFAULT cfgdir=%(CURRENT_DIR)/config/2011-11-16
@@ -51,6 +52,11 @@ ENDIF
 IFOPTANY(%(hardware),kinect)
    SETVAR kinect_pc_camera=6
    SETOPT kinect_pc_grab=points !depth rectimg
+ENDIF
+
+IFOPTANY(%(hardware),kinect-video)
+   SETVAR kinect_video_cameras=7
+   SETVAR kinect_video_devices=KRGB
 ENDIF
 
 INCLUDE grabber.cast
