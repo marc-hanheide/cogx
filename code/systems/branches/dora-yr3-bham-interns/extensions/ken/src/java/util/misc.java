@@ -44,8 +44,8 @@ public class misc {
 	 * 
 	 * @return
 	 */
-	public static Vector<Path> convertToSingleTime(Vector<PathTimes> pathTimes, PathSelector p, int time) {
-		return p.generateGraph(time);
+	public static Vector<Path> convertToSingleTime(Vector<PathTimes> pathTimes, PathSelector p, int time, boolean includeDay, int day) {
+		return p.generateGraph(time, includeDay, day);
 
 	}
 	

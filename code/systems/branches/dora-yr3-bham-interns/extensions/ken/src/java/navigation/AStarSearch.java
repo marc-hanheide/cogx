@@ -14,9 +14,9 @@ import java.io.ObjectInputStream;
 import java.util.Vector;
 
 import NavData.FNode;
+import displays.GraphicalDisplay;
 import exploration.PathTimes;
 import exploration.PathTimesWrapper;
-import exploration.TourFinder;
 
 /**
  * class for performing A* search on a Vector of Paths
@@ -52,15 +52,16 @@ public class AStarSearch {
 
 			AStarNode.setRadTurn(5000);
 			Vector<Path> p = util.misc
-					.convertToSingleTime(pathTimes, new IntelligentPathSelector(), 710);
+					.convertToSingleTime(pathTimes, new IntelligentPathSelector(), 710, false, 1);
 			//710 and any other time, 5-->10
 			for(Path pa:p){
-				System.out.println(pa.getA() + " to "+pa.getB() + " costs "+ pa.getCost());
+				System.out.println(pa.getA() + " to "+pa.getB() + " costs "+ pa.getCost()); 
 			}
 			System.out.println("graph is "+ p);
 			Vector<Integer> path = AStarSearch.search(nodes,p ,
 					5,10);
-			System.out.println(path);
+			GraphicalDisplay g = new GraphicalDisplay(path, "Quicked path from "+path.get(0)+ " and "+ path.get(path.size()-1));
+			System.out.println("path is "+path);
 
 		} catch (FileNotFoundException e) {
 			System.out.println("unable to find file, load failed");

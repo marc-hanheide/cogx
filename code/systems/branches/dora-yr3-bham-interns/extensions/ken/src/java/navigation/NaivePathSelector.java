@@ -21,7 +21,7 @@ import exploration.PathTimesWrapper;
 public class NaivePathSelector extends PathSelector {
 
 	@Override
-	public Vector<Path> generateGraph(int time) {
+	public Vector<Path> generateGraph(int time, boolean includeDay, int day) {
 		Vector<PathTimes> pathTimes = load();
 		//System.out.println("path times are "+pathTimes);
 		Vector<Path> returnList = new Vector<Path>();

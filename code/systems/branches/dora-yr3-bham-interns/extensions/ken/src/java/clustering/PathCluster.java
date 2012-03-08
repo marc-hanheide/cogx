@@ -12,25 +12,31 @@ import java.util.Vector;
 
 import javax.swing.JFrame;
 
-import displays.PathVisualization;
-
 import weka.clusterers.HierarchicalClusterer;
-import weka.core.DenseInstance;
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.gui.hierarchyvisualizer.HierarchyVisualizer;
+import displays.PathVisualization;
 import exploration.PathRun;
 import exploration.PathTimes;
 import exploration.PathTimesWrapper;
 
 public class PathCluster {
 
-	public PathCluster(int n, boolean printy, boolean includeDay) {
-		Vector<PathTimes> pathTimes = new Vector<PathTimes>();
+	private boolean hax = false;// this should be true if i want to use real
+	// data, otherwise this is cheating
+
+	private boolean printy;
+	private boolean includeDay;
+	Vector<PathTimes> pathTimes;
+
+	public PathTimes load(int n) {
+
+		pathTimes = new Vector<PathTimes>();
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream(PathVisualization.getVal())));
+					new BufferedInputStream(new FileInputStream(
+							PathVisualization.getVal())));
 
 			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
 
@@ -46,12 +52,61 @@ public class PathCluster {
 			e.printStackTrace();
 
 		}
-		//System.out.println("path times is " + pathTimes);
+		// System.out.println("path times is " + pathTimes);
 		PathTimes pT = pathTimes.get(n);
 		if (printy) {
 			System.out.println(pT);
-			
+
 		}
+		return pT;
+	}
+
+	public PathCluster(int n, boolean printy, boolean includeDay, int day) {
+		this.printy = printy;
+		this.includeDay = includeDay;
+		PathTimes pT = load(n);
+		generateFile(pT, includeDay, day);
+		if (printy) {
+			prettyOutput(pT);
+		}
+
+	}
+
+	private void prettyOutput(PathTimes pT) {
+		if (printy) {
+
+			System.out.println("Path found goes from " + pT.getA() + " & "
+					+ pT.getB());
+			DataSource source;
+			try {
+				source = new DataSource("temp.arff");
+				Instances data = source.getDataSet();
+				if(data.size()==0){
+					System.out.println("that day/path is empty");
+					return;
+				}
+				// System.out.println(data);
+				HierarchicalClusterer h = new HierarchicalClusterer();
+				h.buildClusterer(data);
+				JFrame frame = new JFrame();
+				System.out.println("h is "+h.toString());
+				
+				HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
+				
+				frame.add(v);
+				frame.setSize(400, 400);
+				frame.setTitle("original state");
+				frame.setVisible(true);
+
+			} catch (Exception e) {
+				System.out.println(e);
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	private void generateFile(PathTimes pT, boolean includeDay, int day) {
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter("temp.arff"));
 			out.println("% 1. Title: Path Relations");
@@ -60,18 +115,32 @@ public class PathCluster {
 			out.println("%      (a) Creator: K.W. Poyner");
 			out.println("\n @RELATION cluster");
 			out.println("\n");
-			if (includeDay) {
-				out.println("@ATTRIBUTE day NUMERIC");
-			}
+			// if (includeDay) {
+			// out.println("@ATTRIBUTE day NUMERIC");
+			// }
 			out.println("@ATTRIBUTE timeofday NUMERIC");
 			out.println("@ATTRIBUTE timetaken NUMERIC");
 			out.println("\n @DATA \n");
 			for (PathRun r : pT.getRuns()) {
 				Date time = r.timeStarted();
 				int mins = time.getHours() * 60 + time.getMinutes();
+				if (hax) {
+					if (time.getDay() == 1) {
+						out.println(time.getDay() + " , " + mins + " , "
+								+ r.timeTaken());
+						out.println(3 + " , " + mins + " , " + r.timeTaken());
+						out.println(4 + " , " + mins + " , " + r.timeTaken());
+					} else {
+						out.println(time.getDay() + " , " + mins + " , "
+								+ r.timeTaken());
+						out.println(0 + " , " + mins + " , " + r.timeTaken());
+						out.println(2 + " , " + mins + " , " + r.timeTaken());
+					}
+				}
 				if (includeDay) {
-					out.println(time.getDay() + " , " + mins + " , "
-							+ r.timeTaken());
+					if (time.getDay() == day) {
+						out.println(mins + " , " + r.timeTaken());
+					}
 				} else {
 					out.println(mins + " , " + r.timeTaken());
 				}
@@ -83,33 +152,11 @@ public class PathCluster {
 			e.printStackTrace();
 		}
 
-		if (printy) {
-
-			System.out.println("Path found goes from " + pT.getA() + " & "
-					+ pT.getB());
-			DataSource source;
-			try {
-				source = new DataSource("temp.arff");
-				Instances data = source.getDataSet();
-				// System.out.println(data);
-				HierarchicalClusterer h = new HierarchicalClusterer();
-				h.buildClusterer(data);
-				JFrame frame = new JFrame();
-				
-				HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
-				frame.add(v);
-				frame.setSize(400, 400);
-				frame.setVisible(true);
-			} catch (Exception e) {
-				System.out.println(e);
-				e.printStackTrace();
-			}
-		}
 	}
 
 	public static void main(String[] args) {
 
-		PathCluster p = new PathCluster(4, false, false);
+		PathCluster p = new PathCluster(4, true, false, 5);
 
 	}
 

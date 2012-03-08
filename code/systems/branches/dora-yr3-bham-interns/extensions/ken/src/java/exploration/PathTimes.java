@@ -1,10 +1,14 @@
 package exploration;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -40,8 +44,28 @@ public class PathTimes implements Serializable {
 		}
 		System.out.println(pathTimes);
 		PathTimes.printList(pathTimes);
-
-
+//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+//PathTimes.printList(pathTimes);
+//ObjectOutputStream out;
+//try {
+//	File file = new File("timings.txt");
+//	file.delete();
+//	out = new ObjectOutputStream(new BufferedOutputStream(
+//			new FileOutputStream("timings.txt")));
+//	PathTimesWrapper wrap = new PathTimesWrapper(pathTimes);
+//	out.writeObject(wrap);
+//	out.close();
+//	
+//} catch (FileNotFoundException e) {
+//	
+//	e.printStackTrace();
+//} catch (IOException e) {
+//	
+//	e.printStackTrace();
+//}
 	}
 
 	/**
