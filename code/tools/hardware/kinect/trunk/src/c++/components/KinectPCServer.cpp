@@ -42,7 +42,7 @@ KinectPCServer::KinectPCServer()
   }
 
 #ifdef KINECT_USER_DETECTOR
-  personDetectServer=new PersonDetectServerI(this);
+  personDetectServer = 0;
 #endif
 
   m_createViewCone = false;
@@ -112,19 +112,7 @@ void KinectPCServer::configure(const map<string, string> & _config)
   } else{
     throw runtime_error(exceptionMessage(__HERE__, "no kinect config file (kconfig) specified."));
   }
-  // init kinect hardware driver
-  CvSize size;
-  const char* name = kinectConfig.c_str();
-  kinect = new Kinect::Kinect(this, name);
-  kinect->GetColorVideoSize(size);
-  captureSize.width = size.width;
-  captureSize.height = size.height;
-  kinect->StartCapture(0); // start capturing
-  depthGenerator = kinect::getDepthGenerator();
-  imageGenerator = kinect::getImageGenerator();
-#ifdef KINECT_USER_DETECTOR
-  //userGenerator = kinect::getUserGenerator();
-#endif
+
   m_saveToFile = false;
   if ((it = _config.find("--save-to-file")) != _config.end()) {
     m_saveToFile = true;
@@ -153,18 +141,33 @@ void KinectPCServer::configure(const map<string, string> & _config)
   m_lastframe = -1;
   log("Capturing from kinect sensor started.");
 
-
-#ifdef KINECT_USER_DETECTOR
-  registerIceServer<kinect::slice::PersonDetectorInterface, PersonDetectServerI>(personDetectServer);
-  log("PersonDetectServer registered");
-#endif
-
 #ifdef FEAT_VISUALIZATION
   m_bUseV11n = false;
   if ((it = _config.find("--displayserver")) != _config.end()) {
     m_bUseV11n = true;
   }
   m_display.configureDisplayClient(_config);
+#endif
+
+  // --------------------------------
+  // Start the servers
+
+  // init kinect hardware driver
+  kinect = new Kinect::Kinect(this, kinectConfig.c_str());
+  //CvSize size;
+  //kinect->GetColorVideoSize(size);
+  //captureSize.width = size.width;
+  //captureSize.height = size.height;
+  //kinect->StartCapture(0); // start capturing
+  //depthGenerator = kinect::getDepthGenerator();
+  //imageGenerator = kinect::getImageGenerator();
+  if (kinect)
+    kinect->StartCapture(0);
+
+#ifdef KINECT_USER_DETECTOR
+  personDetectServer=new PersonDetectServerI(this);
+  registerIceServer<kinect::slice::PersonDetectorInterface, PersonDetectServerI>(personDetectServer);
+  log("PersonDetectServer registered");
 #endif
 }
 
@@ -178,7 +181,7 @@ kinect::slice::PersonsDict PersonDetectServerI::getPersons(const Ice::Current& c
 #endif
 
 /**
-* @brief Configure the component
+* @brief Start the component
 */
 void KinectPCServer::start()
 {

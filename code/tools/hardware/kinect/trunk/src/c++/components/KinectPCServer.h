@@ -59,27 +59,20 @@ public:
 class KinectPCServer : public PointCloudServer
 {
 private:
-#ifdef KINECT_USER_DETECTOR
-  kinect::slice::PersonDetectorInterfacePtr personDetectServer;
-#endif
   std::string kinectConfig;                     ///< Kinect configuration file
-  CvSize captureSize;                           ///< Size of captured images from kinect
+  //CvSize captureSize;                           ///< Size of captured images from kinect
   Kinect::Kinect *kinect;                       ///< The kinect hardware interface.
   IceUtil::Mutex m_kinectMutex;
   cogx::Math::Pose3 lastValidCamPose; 
 
-  DepthGenerator* depthGenerator;
-  ImageGenerator* imageGenerator;
-#ifdef KINECT_USER_DETECTOR
-  //UserGenerator* userGenerator;
-#endif
   DepthMetaData depthMD;
   ImageMetaData imageMD;
 
-  bool m_saveToFile;
 #ifdef KINECT_USER_DETECTOR
   bool m_detectPersons;
+  kinect::slice::PersonDetectorInterfacePtr personDetectServer;
 #endif
+  bool m_saveToFile;
   bool m_displayImage;
   std::string m_saveDirectory;
   int m_lastframe;
@@ -161,12 +154,10 @@ public:
   bool isPointInViewCone(const cogx::Math::Vector3& point);
   bool isPointVisible(const cogx::Math::Vector3& point);
 #ifdef KINECT_USER_DETECTOR
+  static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
   kinect::slice::PersonsDict detectPersons();
 #endif
   void saveNextFrameToFile();
-#ifdef KINECT_USER_DETECTOR
-  static const float RELATIVE_MINIMUM_PERSON_AREA = 0.10;
-#endif
 };
 
 inline

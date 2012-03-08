@@ -656,7 +656,7 @@ void Kinect::Get3dWorldPointCloud(cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Poi
   }
 }
 
-bool Kinect::GetDetectPersons(std::vector<KinectPerson>& persons, double minRelativePersonArea)
+bool Kinect::GetDetectedPersons(std::vector<KinectPerson>& persons, double minRelativePersonArea)
 {
   ::xn::UserGenerator* userGenerator = ::kinect::getUserGenerator();
   persons.clear();
