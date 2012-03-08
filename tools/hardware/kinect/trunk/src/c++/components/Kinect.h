@@ -118,7 +118,7 @@ public:
   bool GetImages(cv::Mat &rgbImg, cv::Mat &depImg);
   int GetRgbImageWidth() {return rgbWidth;}
   int GetDepthImageWidth() {return depWidth;}
-  bool GetDetectPersons(std::vector<KinectPerson>& persons, double minRelativePersonArea=0);
+  bool GetDetectedPersons(std::vector<KinectPerson>& persons, double minRelativePersonArea=0);
 
 private:
   void pullData();
