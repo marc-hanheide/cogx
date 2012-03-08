@@ -53,8 +53,8 @@ KinectPCServer::KinectPCServer()
 
 KinectPCServer::~KinectPCServer()
 {
-  if (kinect)
-    delete kinect;
+  //if (kinect)
+  //  delete kinect;
 
   /* Delete the view cone planes */
   deleteViewConePlanes();
@@ -153,7 +153,8 @@ void KinectPCServer::configure(const map<string, string> & _config)
   // Start the servers
 
   // init kinect hardware driver
-  kinect = new Kinect::Kinect(this, kinectConfig.c_str());
+  //kinect = new Kinect::Kinect(this, kinectConfig.c_str());
+  kinect = Kinect::KinectFactory::getKinect(this, kinectConfig.c_str());
   //CvSize size;
   //kinect->GetColorVideoSize(size);
   //captureSize.width = size.width;

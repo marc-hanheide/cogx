@@ -105,7 +105,8 @@ KinectVideoServer::~KinectVideoServer()
   printf("KinectVideoServer::~KinectVideoServer.\n");
 //   for(size_t i = 0; i < captures.size(); i++)
 //     cvReleaseCapture(&captures[i]);
-  delete kinect;
+  //if (kinect)
+  //  delete kinect;
 }
 
 /**
@@ -187,8 +188,9 @@ bool KinectVideoServer::setResolution(int camIdx, CvSize &size)
 void KinectVideoServer::init(const vector<int> &dev_nums) throw(runtime_error)
 {
   CvSize size;
-  const char* name = kinectConfig.c_str();
-  kinect = new Kinect::Kinect(name);
+  //const char* name = kinectConfig.c_str();
+  //kinect = new Kinect::Kinect(name);
+  kinect = Kinect::KinectFactory::getKinect(this, kinectConfig.c_str());
   kinect->GetColorVideoSize(size);
   captureSize.width = size.width;
   captureSize.height = size.height;

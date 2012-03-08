@@ -142,6 +142,27 @@ public:
   void GetDepthVideoSize(CvSize &size) {size = cvSize(depWidth, depHeight);}
 };
 
+class KinectFactory
+{
+  static std::map<int,Kinect*> s_kinects;
+  // TODO: map of types (int, std::shared_ptr<Kinect>) would be better!
+  // Instead of this we use KinectFactoryCleanup.
+  friend class KinectFactoryCleanup;
+
+public:
+  // Get a Kinect object to communicate with the kinect device.
+  // ATM the library can only work with one device, but multiple Kinect objects
+  // can be created. This is not desired since the Kinect object implements
+  // locking to serialize access to the device and using multiple objects to
+  // use the same device will return bad data.
+  //
+  // When a new Kinect object is created it will be initialized from kinect_xml_file.
+  static Kinect* getKinect(const char* kinect_xml_file, int deviceId=0);
+#ifdef KINECT_CAST_LOGGING
+  static Kinect* getKinect(cast::CASTComponent* pComponent, const char* kinect_xml_file, int deviceId=0);
+#endif
+};
+
 /**
  * @brief Transform depth point to world coordinates.
  * @param x x-coordinate

@@ -29,6 +29,52 @@ void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator& generator, XnUserID nId, 
 namespace Kinect
 {
 
+std::map<int,Kinect*> KinectFactory::s_kinects;
+class KinectFactoryCleanup
+{
+public:
+  ~KinectFactoryCleanup() {
+    std::map<int,Kinect*>::iterator it;
+    for (it = KinectFactory::s_kinects.begin(); it != KinectFactory::s_kinects.end(); ++it) {
+      if (it->second) {
+        delete it->second;
+        it->second = 0;
+      } 
+    }
+    KinectFactory::s_kinects.clear();
+  }
+};
+static KinectFactoryCleanup s_cleanup;
+
+Kinect* KinectFactory::getKinect(const char* kinect_xml_file, int deviceId)
+{
+  std::map<int,Kinect*>::iterator it;
+  it = s_kinects.find(deviceId);
+  if (it != s_kinects.end()) {
+    return it->second;
+  }
+  s_kinects[deviceId] = new Kinect(kinect_xml_file);
+  return s_kinects[deviceId];
+}
+
+#ifdef KINECT_CAST_LOGGING
+Kinect* KinectFactory::getKinect(cast::CASTComponent* pComponent, const char* kinect_xml_file, int deviceId)
+{
+  std::map<int,Kinect*>::iterator it;
+  it = s_kinects.find(deviceId);
+  if (it != s_kinects.end()) {
+    if (pComponent) {
+      pComponent->log("Using an existing instance of Kinect:%d.", deviceId);
+    }
+    return it->second;
+  }
+  s_kinects[deviceId] = new Kinect(pComponent, kinect_xml_file);
+    if (pComponent) {
+      pComponent->log("A new instance of Kinect:%d was created.", deviceId);
+    }
+  return s_kinects[deviceId];
+}
+#endif
 
 /**
  * @brief Constructor of Class Kinect
