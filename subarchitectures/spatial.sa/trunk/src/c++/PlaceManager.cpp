@@ -194,12 +194,14 @@ PlaceManager::start()
             fbIt != m_forbiddenZones.end(); fbIt++) {
             peekabot::PolygonProxy* p = new peekabot::PolygonProxy();
             
+	    peekabot::VertexSet vs;
             p->add(m_ProxyForbiddenMap, "zone");
             p->set_color(1,0.1,0.1);
-            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
-            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+	    p->add_vertices(vs);
         }
 	}
 
