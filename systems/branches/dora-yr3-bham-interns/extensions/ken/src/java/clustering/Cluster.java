@@ -9,6 +9,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.gui.hierarchyvisualizer.HierarchyVisualizer;
+import displays.ClusterVis;
 
 public class Cluster {
 	private Instances data;
@@ -19,17 +20,26 @@ public class Cluster {
 	private HierarchicalClusterer h1;
 	private boolean messy;
 	private ArrayList<Integer> means;
+	//private int pathArrPos;
 
+	public static void main(String[] args) {
+
+		Cluster c = new Cluster(64, true, true, true,1);
+		// 50 actually has somethign happen
+	}
+	
+	
+	
 	public Cluster(int pathArrPos, boolean includeDay, boolean printGraph,
-			boolean messy) {
-
+			boolean messy, int day) {
+		//this.pathArrPos = pathArrPos;
 		this.messy = messy;
 		DataSource source;
 		try {
 			if (pathArrPos == -1) {
 				source = new DataSource("data.arff");
 			} else {
-				PathCluster p = new PathCluster(pathArrPos, messy, includeDay);
+				PathCluster p = new PathCluster(pathArrPos, messy, includeDay,  day);
 				this.includeDay = includeDay;
 				source = new DataSource("temp.arff");
 			}
@@ -55,7 +65,7 @@ public class Cluster {
 			}
 			double startVar = variance(h);
 			if (printGraph) {
-				JFrame frame = new JFrame("entire system");
+				JFrame frame = new JFrame("Entire System");
 				HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
 				frame.add(v);
 				frame.setSize(400, 400);
@@ -115,14 +125,12 @@ public class Cluster {
 					break;
 				}
 			}
-			
-				
-			
+
 			h1 = cluster(clustNum);
-			//if (messy) {
+			// if (messy) {
 			System.out.println("clust num is " + clustNum);
-				System.out.println(h1);
-			//}
+			System.out.println(h1);
+			// }
 
 			// at this point we need to store the average time for each of the
 			// clusters
@@ -134,11 +142,13 @@ public class Cluster {
 				int sumIns = 0;
 				int zeroCount = 0;
 				for (Instance instance : list) {
-					if (instance.value(1) == 0) {
-						zeroCount++;
-					} else {
-						sumIns += instance.value(1);
-					}
+					
+						if (instance.value(1) == 0) {
+							zeroCount++;
+						} else {
+							sumIns += instance.value(1);
+						}
+					
 
 				}
 
@@ -148,6 +158,7 @@ public class Cluster {
 						means.add(0);
 					} else {// if they are not, we want to ignore any that were
 						means.add(sumIns / (list.size() - zeroCount));
+						// System.out.println("sum is " + sumIns);
 					}
 				} else {// can't find any info, so just use a large value
 					means.add(10 ^ 10);
@@ -156,8 +167,10 @@ public class Cluster {
 			}
 
 			if (printGraph) {
+				ClusterVis clustVis = new ClusterVis(wholeSet,
+						"Clustered Path Traversal Data For Edge "+ pathArrPos + "");
 				String entire = h1.toString();
-				System.out.println("whole thing "+entire);
+				System.out.println("whole thing " + entire);
 				int pos = 7;
 				int prev = 0;
 				String[] clusters = new String[clustNum];
@@ -183,13 +196,11 @@ public class Cluster {
 				if (pos != -1) {
 					clusters[clustNum - 1] = entire.substring(pos, entire
 							.length());
-				} else {
-
-				}
-				System.out.println("there are "+clustNum + " clusters ");
+				} 
+				System.out.println("there are " + clustNum + " clusters ");
 				for (int i = 0; i < clustNum; i++) {
-					System.out.println("current cluster is "+i);
-										JFrame frame1 = new JFrame("cluster number " + i);
+					System.out.println("current cluster is " + i);
+					JFrame frame1 = new JFrame("Cluster Number " + i+ " Of "+ clustNum);
 					if (clusters[i] == null) {
 						System.out.println("null cluster");
 						break;
@@ -200,36 +211,33 @@ public class Cluster {
 					frame1.setSize(400, 400);
 					frame1.setVisible(true);
 				}
+				
+				
 			}
+		
 		} catch (Exception e) {
 			System.out.println(e);
 			e.printStackTrace();
 		}
+	
 
 	}
 
 	public int largest() {
 		int large = 0;
 		for (Instance i : data) {
-			if (includeDay) {
-				if (i.value(2) > large) {
-					large = (int) i.value(2);
-				}
-			} else {
+			
 				if (i.value(1) > large) {
 					large = (int) i.value(1);
 				}
 
-			}
+			
 		}
 		return large;
 	}
 
-	public static void main(String[] args) {
 
-		Cluster c = new Cluster(16, false, true, false);
-		// 50 actually has somethign happen
-	}
+	
 
 	public HierarchicalClusterer cluster(int cluster)
 			throws IllegalArgumentException {
@@ -278,29 +286,20 @@ public class Cluster {
 		double day = 0, min = 0, time = 0;// sums for averages
 
 		for (Instance ins : instances) {
-			if (includeDay) {
-				day += (ins.value(0) / max0);
-				min += (ins.value(1) / max1);
-				time += (ins.value(2) / max2);
-			} else {
+			
 				min += (ins.value(0) / max1);
 				time += (ins.value(1) / max2);
-			}
+			
 
 		}
-		if (includeDay) {
-			day /= instances.size();
-		}
+		
 		min /= instances.size();
 		time /= instances.size();
-		if (includeDay) {
-			System.out.println("mean point is " + day * max0 + " , " + min
-					* max1 + " , " + time * max2);
-		} else {
+		
 			if (messy) {
 				System.out.println("mean point is " + min * max1 + " , " + time
 						* max2);
-			}
+			
 		}
 
 		// the vector we just calculated is our centre point
@@ -309,27 +308,20 @@ public class Cluster {
 		double sum = 0;
 		double sumSqr = 0;
 		for (Instance ins : instances) {
-			double d = 0;
+			
 			double m = 0;
 			double t = 0;
-			if (includeDay) {
-				d = ins.value(0) / max0;
-				m = ins.value(1) / max1;
-				t = ins.value(2) / max2;
-				d = d - day;
-			} else {
+			
 				m = ins.value(0) / max1;
 				t = ins.value(1) / max2;
-			}
+			
 
 			m = m - min;
 			t = t - time;
 			double dist;
-			if (includeDay) {
-				dist = Math.pow(d * d + m * m + t * t, 0.5);
-			} else {
+			
 				dist = Math.pow(m * m + t * t, 0.5);
-			}
+			
 			sum += dist;
 			sumSqr += dist * dist;
 		}

@@ -87,7 +87,7 @@ public class RouteFinder {
 
 	public Vector<Integer> getRoute(int startPoint, int endPoint) {
 		
-		Vector<Path> paths = util.misc.convertToSingleTime(pathTimes, new NaivePathSelector(),0);
+		Vector<Path> paths = util.misc.convertToSingleTime(pathTimes, new NaivePathSelector(),0, false, 10);
 		
 		return AStarSearch.search(nodes, paths, startPoint, endPoint);
 	}

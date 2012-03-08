@@ -17,7 +17,7 @@ public abstract class PathSelector {
 	 * for the current time
 	 * @return
 	 */
-	public abstract Vector<Path> generateGraph(int time);
+	public abstract Vector<Path> generateGraph(int time, boolean includeDay, int day);
 	
 	
 	

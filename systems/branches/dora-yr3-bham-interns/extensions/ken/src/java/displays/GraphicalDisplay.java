@@ -1,7 +1,9 @@
 package displays;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -14,10 +16,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import util.misc;
-
 import NavData.FNode;
-import exploration.PathRun;
 import exploration.PathTimes;
 import exploration.PathTimesWrapper;
 
@@ -28,25 +27,30 @@ public class GraphicalDisplay extends JPanel {
 	private Vector<FNode> nodes;
 	private int maxX, maxY, minX, minY;
 	private int sizeX, sizeY;
+	private Vector<Integer> path;
 
 	public static void main(String[] args) {
 
-		GraphicalDisplay g = new GraphicalDisplay();
+		GraphicalDisplay g = new GraphicalDisplay(new Vector<Integer>(), "map display");
 
 	}
 
-	public GraphicalDisplay() {
-		frame = new JFrame("map display");
+	public GraphicalDisplay(Vector<Integer> path, String title) {
+		frame = new JFrame(title);
+		this.path = path;
 		frame.setSize(800, 600);
 		frame.add(this);
 		load();
 		findXAndY();
-		System.out.println("min x is " + minX + " min y is " + minY);
-		System.out.println("max x is " + maxX + " max y is " + maxY);
-		System.out.println("size x is " + sizeX + " size y is " + sizeY);
+//		System.out.println("min x is " + minX + " min y is " + minY);
+//		System.out.println("max x is " + maxX + " max y is " + maxY);
+//		System.out.println("size x is " + sizeX + " size y is " + sizeY);
 		frame.setVisible(true);
 	}
 
+	
+	
+	
 	public void findXAndY() {
 		double maxX = Double.MIN_VALUE;
 		double maxY = Double.MIN_VALUE;
@@ -116,6 +120,8 @@ public class GraphicalDisplay extends JPanel {
 
 	@Override
 	public void paintComponent(Graphics g) {
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setStroke(new BasicStroke(2));
 		int height = frame.getHeight();
 		int width = frame.getWidth();
 
@@ -128,49 +134,43 @@ public class GraphicalDisplay extends JPanel {
 					(int) ((1 - (node.y - minY) / sizeY) * height));
 		}
 
-		for (PathTimes pT : pathTimes) {
-			
-			g.setColor(Color.black);
+		for (int i = 0; i < pathTimes.size(); i++) {
+			PathTimes pT = pathTimes.get(i);
+
 			double x1 = nodes.get(pT.getA()).x;
 			double y1 = nodes.get(pT.getA()).y;
-			System.out.println(pT.getB());
+			//System.out.println(pT.getB());
 			double x2 = nodes.get(pT.getB()).x;
 			double y2 = nodes.get(pT.getB()).y;
 			int drawX1 = (int) (((x1 - minX) / sizeX) * width);
 			int drawY1 = (int) ((1 - ((y1 - minY) / sizeY)) * height);
 			int drawX2 = (int) (((x2 - minX) / sizeX) * width);
 			int drawY2 = (int) ((1 - ((y2 - minY) / sizeY)) * height);
-
-			int n = pT.getRuns().size();
-
-			if (n > 1) {
-				double sum = 0;
-				double sumSqr = 0;
-				for (PathRun pR : pT.getRuns()) {
-					double val = pR.timeTaken() / 1000;
-					if (val != 0) {
-						sum += val;
-						sumSqr += (val * val);
-					} else {
-						sum--;
-					}
-				}
-				double mean = sum / n;
-
-				double var = (sumSqr - sum * mean) / (n - 1);
-				// assume nothing can go over 4.5 times the var
-				if (var > 4.5) {
-					var = 4.5;
-					System.out.println("tons of variance on this one cap'n");
-				}
-
-				g.setColor(new Color((int) ((255 / 4.5) * var),
-						(int) (255 - ((255 / 4.5)) * var), 0));
+			if (containsPath(pT.getA(),pT.getB())) {
+				g.setColor(Color.green);
+			} else {
+				g.setColor(Color.black);
 			}
-			g.drawLine(drawX1, drawY1, drawX2, drawY2);
 
+			g.drawLine(drawX1, drawY1, drawX2, drawY2);
 		}
 
 	}
-
+	
+	
+	public boolean containsPath(int a, int b){
+		
+		for(int i=1;i<path.size();i++){
+			if(path.get(i)==a && path.get(i-1)==b){
+				return true;
+			}else{
+				
+				if(path.get(i)==b && path.get(i-1)==a){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 }
