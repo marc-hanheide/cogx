@@ -1,0 +1,27 @@
+
+2012-03-08 Marko Mahnič:
+
+  - The Kinect object is now properly locked: a single instance is used by the
+    components KinectPCServer and KinectVideoServer; this fixed the bug which
+    made every other Kinect frame invalid (and caused system crashes on the review).
+
+  - The frequency of calls to readFrame() is limited to 20Hz.
+
+  - A better palette is generated for the RGB depth image; this image can be
+    obtained with PCClient::getRectImage(-1, ...); the camera id (-1) may change in
+    the future.
+
+  - Inlined the functions DepthToWorld and WorldToColorInternal.
+    Grabbing of points is now approx 20% faster.
+
+  - Most of the code for the person detector was moved from KinectPCServer to
+    Kinect; this code has to be tested.
+
+
+2011-10-03 Marko Mahnič:
+
+  - New functions for conversion of depth image to RGB or GS.
+
+  - The RGB depth image can be shown in the display server.
+
+  - Locking of the Kinect object.
