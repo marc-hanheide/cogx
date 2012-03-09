@@ -111,12 +111,6 @@ VARDEFAULT fake_tables=<multiline>
    --pos-table "3.6, 4.4, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "3.6, 2.0, 8.0, 8.0"
 </multiline>
 
-### CURE config file
-VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
-
-### SPATIAL.SA DOOR DETECTION SETTINGS
-VARDEFAULT spatial_min_door_width=0.8
-VARDEFAULT spatial_max_door_width=1.2
 
 VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
 
@@ -141,47 +135,108 @@ ENDIF
 
 
 # spatial ################################################################
+
+### CURE config file
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+
+####
+#### VISUALIZATION OPTIONS
+
+
+### Whether to show remotely detected doors in PB 
+#(different from door nodes)
+    VARDEFAULT display_doors=
+
+VARDEFAULT conceptual_categories=corridor,kitchen,office,meetingroom
+
+####
+#### GUI OPTIONS
+
+### Show PTZ control gui
+VARDEFAULT ptz_test_gui=--testGUI
+
+
+### SPATIAL.SA DOOR DETECTION SETTINGS
+VARDEFAULT spatial_min_door_width=0.8  # Lower boundary on width of doorways
+VARDEFAULT spatial_max_door_width=1.2  # Upper boundary on width of doorways
+
+### Disable placeholder generation (no exploration)
+    VARDEFAULT no_placeholders=
+### Perform visual exploration after exploratory movement (i.e. to placeholders)
+    VARDEFAULT visual_exploration=--visual-exploration
+### Prohibit the creation of placeholders in certain zones
+# template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
+    VARDEFAULT exclude_exploration=
+
+### Kinect options
+    IFOPTALL(%(hardware_options), kinect)
+	    # Connect to and use Kinect point cloud server
+	    SETVAR spatial_pcserver=--pcserver pcserver 
+	    SETVAR simulate_kinect=
+    ELSE
+    	    # Simulate Kinect point cloud for free space clearing
+	    SETVAR spatial_pcserver=
+	    SETVAR simulate_kinect=--simulate-kinect
+    ENDIF
+
+
 IFOPTALL(%(feature_options), spatial)
-	SUBARCHITECTURE spatial.sa
-	JAVA WM cast.architecture.SubarchitectureWorkingMemory
-	CPP TM AlwaysPositiveTaskManager
 
+### Basic components
+    SUBARCHITECTURE spatial.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
 
+### Whether to display spatial information in Peekabot
     IFOPTALL(%(feature_options), peekabot)
-        INCLUDE includes/spatial.sa/spatial-peekabot.cast
+#        INCLUDE includes/spatial.sa/spatial-peekabot.cast
+		CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" --follow-robot
 		SETVAR usePB=--usepeekabot
 	ELSE
 		SETVAR usePB=
     ENDIF
 
-	VARDEFAULT no_placeholders=
-	VARDEFAULT display_doors=
-
-	IFOPTALL(%(hardware_options), kinect)
-		SETVAR spatial_pcserver=--pcserver pcserver
-		SETVAR simulate_kinect=
+### Pan-tilt-zoom server
+    IFOPTALL(%(hardware_options), ptz)
+	IFOPTALL(%(feature_options), man_ctrl)
+	    JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui)
 	ELSE
-		SETVAR spatial_pcserver=
-		SETVAR simulate_kinect=
-			###--simulate-kinect
+	    JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer 
 	ENDIF
+    ENDIF
 
-	IFOPTALL(%(hardware_options), ptz)
-	    IFOPTALL(%(feature_options), man_ctrl)
-	        JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
-	    ELSE
-	        JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer 
-	    ENDIF
-	ENDIF
 
-	CPP GD self.representer 	SelfRepresenter 
-	CPP MG spatial.translation 	SpatialTranslation 
-	CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) --cat-explore-range 5.6 %(usePB) %(simulate_kinect)
-	CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
-	CPP GD navgraph.process 	NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width)
-	CPP GD place.manager 		PlaceManager --no-update-placeholders --exclude-from-exploration "y < -3.2" --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
-	CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)
-	CPP GD path.query 			PathQueryProcessor 
+
+### Puts the robot's own belief on WM, along with it's location
+    CPP GD self.representer 	SelfRepresenter 
+
+### Translates and queues Spatial::NavCommands; 
+# writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
+    CPP MG spatial.translation 	SpatialTranslation %(visual_exploration)
+
+### Reads NavData::InternalNavCmd to control the robot
+# Maintains three-state grid map for exploration and obstacle avoidance
+    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect)
+
+### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
+    CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
+
+### Creates NavData::FNode and AEdge as the robot traverses space
+    CPP GD navgraph.process 	NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width)
+
+### Creates SpatialData::Place from FNode. Creates NodeHypothesis.
+# Maintains connection between Place on the one hand and either a FNode or a
+# NodeHypothesis on the other. Supplies ICE interfaces for translating between the
+# two.
+    CPP GD place.manager 		PlaceManager --no-update-placeholders %(exclude-exploration) --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
+
+### Maintains local obstacle grid maps around individual nodes
+# Provides placeholder properties (length of associated frontier, size of
+# associated free space, nearness to a door hypothesis), exposed through
+# ICE interfaces
+    CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)
+
+###    CPP GD path.query 			PathQueryProcessor 
 
 
     IFOPTALL(%(feature_options), binder)
