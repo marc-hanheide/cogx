@@ -180,65 +180,67 @@ void SpatialControl::UpdateGridMap() {
     }
     m_ProxyGridMapKinect.set_cells(cells1);
 */
-//    if (m_MapsMutex.tryLock()){
-      std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
+
+//    Copy m_Frontiers so lock can be released promptly
+      std::list<Cure::FrontierPt> fPts;
+      {
+	IceUtil::Mutex::Lock lock(m_FrontierMutex);
+	fPts = m_Frontiers;
+      }
+
       m_ProxyMap.clear();
-      if (fPts) {
-//        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
-        for (std::list<Cure::FrontierPt>::const_iterator fi = fPts->begin();
-             fi != fPts->end(); fi++) {
-          int i, j;
-          if (m_lgm->worldCoords2Index(fi->getX(), fi->getY(), i, j) == 0) {        
-            i = i + m_lgm->getSize();
-            j = m_lgm->getSize() - j;
+      //        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
+      for (std::list<Cure::FrontierPt>::const_iterator fi = fPts.begin();
+	  fi != fPts.end(); fi++) {
+	int i, j;
+	if (m_lgm->worldCoords2Index(fi->getX(), fi->getY(), i, j) == 0) {        
+	  i = i + m_lgm->getSize();
+	  j = m_lgm->getSize() - j;
 
-//            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
-            double color[3];
-            color[0] = 0.1;
-            color[1] = 0.1;
-            color[2] = 0.9;
-//            GC *gc = &gcBlue;
-            if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
-//              gc = &gcYellow;
-                color[0] = 0.9;
-                color[1] = 0.9;
-                color[2] = 0.1;
+	  //            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
+	  double color[3];
+	  color[0] = 0.1;
+	  color[1] = 0.1;
+	  color[2] = 0.9;
+	  //            GC *gc = &gcBlue;
+	  if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
+	    //              gc = &gcYellow;
+	    color[0] = 0.9;
+	    color[1] = 0.9;
+	    color[2] = 0.1;
 
-            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
-//              gc = &gcRed;
-                color[0] = 0.9;
-                color[1] = 0.1;
-                color[2] = 0.1;
-            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
-//              gc = &gcMagenta;
-                color[0] = 0.9;
-                color[1] = 0.1;
-                color[2] = 0.9;
-            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
-//              gc = &gcGreen;
-                color[0] = 0.1;
-                color[1] = 0.9;
-                color[2] = 0.1;
-            }
+	  } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
+	    //              gc = &gcRed;
+	    color[0] = 0.9;
+	    color[1] = 0.1;
+	    color[2] = 0.1;
+	  } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
+	    //              gc = &gcMagenta;
+	    color[0] = 0.9;
+	    color[1] = 0.1;
+	    color[2] = 0.9;
+	  } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
+	    //              gc = &gcGreen;
+	    color[0] = 0.1;
+	    color[1] = 0.9;
+	    color[2] = 0.1;
+	  }
 
-            fi->m_Width;
+	  fi->m_Width;
 
-            peekabot::PolygonProxy p;
-            p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-            int num_points = 10;
-	    peekabot::VertexSet vSet;
-            for(int k=0;k<num_points;k++)
-                vSet.add(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
-	    p.add_vertices(vSet);
-            p.set_color(color[0],color[1],color[2]);
-            p.set_opacity(1);
-            p.set_position(fi->getX(), fi->getY(),0);
-            p.set_rotation(fi->getTheta() - M_PI_2,0,0);
-          }
-        }
-//      }
-//    m_MapsMutex.unlock();
-  }
+	  peekabot::PolygonProxy p;
+	  p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+	  int num_points = 10;
+	  peekabot::VertexSet vSet;
+	  for(int k=0;k<num_points;k++)
+	    vSet.add(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
+	  p.add_vertices(vSet);
+	  p.set_color(color[0],color[1],color[2]);
+	  p.set_opacity(1);
+	  p.set_position(fi->getX(), fi->getY(),0);
+	  p.set_rotation(fi->getTheta() - M_PI_2,0,0);
+	}
+      }
 }
 
 
@@ -2330,6 +2332,7 @@ SpatialControl::getFrontiers()
   }
 
   {
+    // Only place m_Frontiers is modified;
     IceUtil::Mutex::Lock lock(m_FrontierMutex);
     m_Frontiers.clear();
     debug("calling findFrontiers");
@@ -2338,7 +2341,7 @@ SpatialControl::getFrontiers()
 
     setFrontierReachability(m_Frontiers);
   }
-
+  // No need to protect the following part
 
   FrontierInterface::FrontierPtSeq outArray;
   log("m_Frontiers contains %i frontiers", m_Frontiers.size());
