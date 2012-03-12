@@ -242,23 +242,23 @@ void SegLearner::configure(const map<string,string> & _config)
 //   annotation->init("/media/U-Daten/OD-IROS/annotation/cvww_mixed%1d.png", 4, 8);
 
   /// IROS komplett
-  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
+  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 16);
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
-  annotation2->init("/media/Daten/OD-IROS/annotation/iros_2nd_%1d.png", 0, 44);
+  annotation2->init("/media/Daten/OD-IROS/annotation/iros_2nd_%1d.png", 0, 16);
   
-  /// save results to file
-  save_results = false;
+  /// save models to file
+  save_models = false;
   surface::SaveFileSequence::Parameter sp;
   modelSaver = new surface::SaveFileSequence(sp);
-  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_result%1d.sfv", 0, 44);
+  modelSaver->InitFileSequence("/media/Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 65);
 
   /// load models from file
   startID = 0;
-  endID = 42;
+  endID = 16;
   nextID = startID;
-  off_filename = "/media/U-Daten/OD-IROS/results/iros_result%1d.sfv";
-  off_pcd_file = "/media/U-Daten/OD-IROS/points2/iros%1d.pcd";
-  off_ipl_file = "/media/U-Daten/OD-IROS/image_color/iros%1d.png";
+  off_filename = "/media/Daten/OD-IROS/results/iros_result%1d.sfv";
+  off_pcd_file = "/media/Daten/OD-IROS/points2/iros%1d.pcd";
+  off_ipl_file = "/media/Daten/OD-IROS/image_color/iros%1d.png";
   surface::LoadFileSequence::Parameter lp;
   modelLoader = new surface::LoadFileSequence(lp);
   modelLoader->InitFileSequence(off_filename, startID, endID);
@@ -438,7 +438,7 @@ void SegLearner::processImageNew()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
   if(deb) last = current; 
-  
+
   /// NURBS-Fitting and model selection
   if(deb) log("NURBS-Fitting start!");
   modeling->setInputCloud(pcl_cloud);
@@ -452,14 +452,15 @@ void SegLearner::processImageNew()
   if(deb) last = current; 
 
   /// Save results of model fitter to sfv-file
-  if(save_results) {
+  if(save_models) {
     if(deb) log("save surface models: start");
     modelSaver->SaveNextView(surfaces);
     if(deb) log("save surface models: end");
   }
   
-  if(true) /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO DEBUG
-  {
+if(false) /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO DEBUG
+{
+
     /// Load annotation from file
     if(deb) log("Load annotation: start");
     std::vector< std::vector<int> > anno_pairs;
@@ -861,6 +862,7 @@ void SegLearner::LoadImageData()
  
   static struct timespec start, last, current;
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  last = start;
   
   pointCloudWidth = 640;
   pointCloudHeight = pointCloudWidth *3/4;
@@ -881,6 +883,7 @@ void SegLearner::LoadImageData()
   surface::View view;
   modelLoader->LoadNextView(view);
   surfaces = view.surfaces;
+  if(deb) log("load next pcd-file: %s", pcd_next);
   
   tgRenderer->SetImage(kinect_point_cloud_image);
 
@@ -889,8 +892,6 @@ void SegLearner::LoadImageData()
   last = current;
   
   // calculate normals
-  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
-  if(deb) last = start;
   pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
   pclA::NormalsEstimationNR n;
   n.setParameter(param);
@@ -909,12 +910,17 @@ void SegLearner::LoadImageData()
   tgRenderer->Update();
         
   nextID++; 
-  log("Get image data ended.");
+  log("Load image data ended.");
 }
 
 
 void SegLearner::processLoadedData()
 {
+  if(nextID > endID) {
+    cvWaitKey(1000);
+    exit(1);
+  }
+  
   static struct timespec overallStart, overallEnd;
   static bool first = true;
   if(first)

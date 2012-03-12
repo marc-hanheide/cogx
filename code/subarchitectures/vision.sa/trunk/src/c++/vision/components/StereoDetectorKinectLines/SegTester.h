@@ -16,27 +16,13 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VisionData.hpp>
 #include <VideoClient.h>
 #include <PointCloudClient.h>
 #include <VideoUtils.h>
 #include <../../VisionUtils.h>
-
-// #include "StereoCore.h"
-// #include "KinectCore.h"
-// #include "CalculateRelations.h"
-// #include "GraphCut.h"
-// #include "SVMPredictor.h"
-
-// #include "Pose3.h"
-// #include "StereoBase.h"
-// #include "StereoCamera.h"
-// #include "Gestalt.hh"
-// #include "Array.hh"
-
-// #include "ObjRep.h"
 
 #include "v4r/Annotation/Annotation.h"
 #include "v4r/PCLAddOns/PCLCommonHeaders.h"
@@ -81,6 +67,11 @@ private:
   bool save_models;                                         ///< Save surface models
   bool save_results;                                        ///< Save results as surface models
   char *save_filename;                                      ///< filename for surface models
+
+  bool take_snapshot;                                       ///< take TomGine snapshot
+  char *snapshot_filename;                                  ///< filename for the snapshot
+  int snapshot_start;                                       ///< start index of snapshot file
+  int snapshot_end;                                         ///< start index of snapshot file
   
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
 //   cast::StereoCamera *stereo_cam;                           ///< stereo camera parameters and functions
@@ -91,6 +82,7 @@ private:
   surface::MoSPlanes3D *planeFitter;                        ///< mosPlane fitter
   surface::SurfaceModeling *modeling;                       ///< Nurbs-fitting and model-selection
   anno::Annotation *annotation;                             ///< Annotation from file
+  anno::Annotation *annotation2;                            ///< Annotation for 2nd level from file
   surface::Patches *patches;                                ///< Patch tool for calculation of relations between surface patches
   svm::SVMPredictorSingle *svm1st;                          ///< SVM-predictor for 1st level
   svm::SVMPredictorSingle *svm2nd;                          ///< SVM-predictor for 2nd level
