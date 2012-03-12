@@ -277,7 +277,7 @@ void DisplayNavInPB::start() {
                                         &DisplayNavInPB::deletePlace));
 
   // NodeHyhothesis
-  addChangeFilter(createLocalTypeFilter<FrontierInterface::NodeHypothesis>(cdl::OVERWRITE),
+  addChangeFilter(createLocalTypeFilter<SpatialData::NodeHypothesis>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::movePlace));
 
@@ -818,7 +818,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 
 	::FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 	// Get node hyp for the placeholder ID
-    FrontierInterface::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
+    SpatialData::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
 
     m_Mutex.lock();
     m_PeekabotClient.begin_bundle();
@@ -1683,7 +1683,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
     if (m_currGoalPlace != -1)
     {
       /* Was the old goal a placeholder? */
-      FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
+      SpatialData::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
       if (nodeHypPtr)
       {
         // Get the node proxy
@@ -1720,7 +1720,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID)
     m_currGoalPlace = oobj->destId[0];
 
     /* Was the old goal a placeholder? */
-    FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
+    SpatialData::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(m_currGoalPlace);
     if (nodeHypPtr)
     {
       // Get the node proxy
@@ -1930,11 +1930,11 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
 void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
     log("Entered movePlace");
-	FrontierInterface::NodeHypothesisPtr nodePtr;
+	SpatialData::NodeHypothesisPtr nodePtr;
 	try
 	{
 		nodePtr =
-				getMemoryEntry<FrontierInterface::NodeHypothesis>(wmChange.address);
+				getMemoryEntry<SpatialData::NodeHypothesis>(wmChange.address);
 	}
 	catch(CASTException &e)
 	{
@@ -2065,7 +2065,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 	{
 		if (m_ShowPlaceholders)
 		{
-			FrontierInterface::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(placeId);
+			SpatialData::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(placeId);
       if(!nodeHypPtr) {
         log("Hyp doesnt exist\nExiting.\n");
         return;

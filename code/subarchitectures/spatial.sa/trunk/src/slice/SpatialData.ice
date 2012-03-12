@@ -13,6 +13,14 @@
 
 module SpatialData {
 
+  class NodeHypothesis {
+    double x;
+    double y;
+
+    int hypID;
+    int originPlaceID;
+  };
+
   sequence<double> DoubleOpt;
   sequence<bool> BoolSeq;
   sequence<DoubleOpt> CoordinateSeq;
@@ -20,6 +28,7 @@ module SpatialData {
   sequence<int> NodeIDSeq;  
   sequence<long> LongOpt;
   sequence<cogx::Math::Vector3> PlanePointSeq;
+  sequence<NodeHypothesis> NodeHypothesisSeq;
 
  /**
    * Struct for passing 3D points belonging to a plane
@@ -431,6 +440,7 @@ class ProcessViewPointCommand {
   };
   
   interface MapInterface {
+    NodeHypothesisSeq refreshNodeHypothesis();
     bool isCircleObstacleFree(double x, double y, double radius);
     int findClosestNode(double x, double y);
     int findClosestPlace(double x, double y, NodeIDSeq nodeids);

@@ -49,7 +49,7 @@ class PlaceManager : public cast::ManagedComponent
 	  const Ice::Current &_context);
       virtual SpatialData::PlacePtr getPlaceFromHypID(int hypID,
 	  const Ice::Current &_context);
-      virtual FrontierInterface::NodeHypothesisPtr getHypFromPlaceID(int placeID,
+      virtual SpatialData::NodeHypothesisPtr getHypFromPlaceID(int placeID,
 	  const Ice::Current &_context);
       virtual NavData::FNodePtr getNodeFromPlaceID(int placeID,
 	  const Ice::Current &_context);
@@ -104,6 +104,7 @@ class PlaceManager : public cast::ManagedComponent
     IceUtil::Mutex m_PlaceholderMutex;
 
     std::vector<std::pair <double,double> > getPlaceholderPositionsFromFrontiers(FrontierInterface::FrontierPtSeq frontiers, int placeId);
+
     void updateReachablePlaceholderProperties(int placeID);
     void updatePlaceholderPositions(FrontierInterface::FrontierPtSeq frontiers);
     SpatialData::PlacePtr getCurrentPlace();
@@ -138,7 +139,7 @@ class PlaceManager : public cast::ManagedComponent
 
     SpatialData::PlacePtr getPlaceFromNodeID(int nodeID);
     SpatialData::PlacePtr getPlaceFromHypID(int hypID);
-    FrontierInterface::NodeHypothesisPtr getHypFromPlaceID(int placeID);
+    SpatialData::NodeHypothesisPtr getHypFromPlaceID(int placeID);
     NavData::FNodePtr getNodeFromPlaceID(int placeID);
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
     void refreshPlaceholders(std::vector<std::pair<double,double> > coords);
@@ -196,10 +197,10 @@ class PlaceManager : public cast::ManagedComponent
 
     long m_hypIDCounter;
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
-    std::map<int, FrontierInterface::NodeHypothesisPtr> m_PlaceIDToHypMap;
+    std::map<int, SpatialData::NodeHypothesisPtr> m_PlaceIDToHypMap;
     std::map<int, std::string> m_HypIDToWMIDMap;
     //List of hypotheses that have already been tried and failed from each Node
-    std::map<int, std::vector<FrontierInterface::NodeHypothesisPtr> > m_rejectedHypotheses; 
+    std::map<int, std::vector<SpatialData::NodeHypothesisPtr> > m_rejectedHypotheses; 
     bool m_isPathFollowing;
   bool m_nickSanity;
     int m_startNodeForCurrentPath; // During transitions, stores where the robot

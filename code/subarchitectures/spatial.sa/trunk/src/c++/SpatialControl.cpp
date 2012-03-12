@@ -42,6 +42,8 @@ using namespace spatial;
 
 #define CAM_ID_DEFAULT 0
 
+#define VISUAL_EXPLORATION_SWIVEL_ANGLE 0.9
+
 // Amount of time after pan-tilt movement terminates, until point clouds
 // are admitted to the obstacle map (seconds)
 #define KINECT_PANTILT_DELAY 0.3
@@ -67,6 +69,10 @@ int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Cu
 
 int SpatialControl::MapServer::findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context) {
   return m_pOwner->findClosestPlace(x,y, nodeids);
+}
+
+SpatialData::NodeHypothesisSeq SpatialControl::MapServer::refreshNodeHypothesis(const Ice::Current &_context){
+  return m_pOwner->refreshNodeHypothesis();
 }
 
 SpatialControl::SpatialControl()
@@ -147,13 +153,14 @@ void SpatialControl::CreateGridMap() {
     m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
 
-/*    m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize, 
-    1,0.9,0.8,
-    0.1,0.1,0.1, peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize, 
+  peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyGridMapKinect.set_occupied_color(0.1,0.1,0.1);
+    m_ProxyGridMapKinect.set_unoccupied_color(0.8,0.9,1);
     peekabot::OccupancySet2D cells1;
     m_ProxyGridMapKinect.set_cells(cells1);
     m_ProxyGridMapKinect.set_position(0,0,-0.009);
-*/
+
 }
 
 void SpatialControl::UpdateGridMap() {
@@ -168,6 +175,7 @@ void SpatialControl::UpdateGridMap() {
         }
     }
     m_ProxyGridMap.set_cells(cells);
+
 /*
     peekabot::OccupancySet2D cells1;
     for (int x = -m_kinlgm->getSize(); x <= m_kinlgm->getSize(); x++) {
@@ -180,67 +188,65 @@ void SpatialControl::UpdateGridMap() {
     }
     m_ProxyGridMapKinect.set_cells(cells1);
 */
-
-//    Copy m_Frontiers so lock can be released promptly
-      std::list<Cure::FrontierPt> fPts;
-      {
-	IceUtil::Mutex::Lock lock(m_FrontierMutex);
-	fPts = m_Frontiers;
-      }
-
+    if (m_FrontierMutex.tryLock()) {
+      std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
       m_ProxyMap.clear();
-      //        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
-      for (std::list<Cure::FrontierPt>::const_iterator fi = fPts.begin();
-	  fi != fPts.end(); fi++) {
-	int i, j;
-	if (m_lgm->worldCoords2Index(fi->getX(), fi->getY(), i, j) == 0) {        
-	  i = i + m_lgm->getSize();
-	  j = m_lgm->getSize() - j;
+      if (fPts) {
+//        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
+        for (std::list<Cure::FrontierPt>::const_iterator fi = fPts->begin();
+             fi != fPts->end(); fi++) {
+          int i, j;
+          if (m_lgm->worldCoords2Index(fi->getX(), fi->getY(), i, j) == 0) {        
+            i = i + m_lgm->getSize();
+            j = m_lgm->getSize() - j;
 
-	  //            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
-	  double color[3];
-	  color[0] = 0.1;
-	  color[1] = 0.1;
-	  color[2] = 0.9;
-	  //            GC *gc = &gcBlue;
-	  if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
-	    //              gc = &gcYellow;
-	    color[0] = 0.9;
-	    color[1] = 0.9;
-	    color[2] = 0.1;
+//            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
+            double color[3];
+            color[0] = 0.1;
+            color[1] = 0.1;
+            color[2] = 0.9;
+//            GC *gc = &gcBlue;
+            if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
+//              gc = &gcYellow;
+                color[0] = 0.9;
+                color[1] = 0.9;
+                color[2] = 0.1;
 
-	  } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
-	    //              gc = &gcRed;
-	    color[0] = 0.9;
-	    color[1] = 0.1;
-	    color[2] = 0.1;
-	  } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
-	    //              gc = &gcMagenta;
-	    color[0] = 0.9;
-	    color[1] = 0.1;
-	    color[2] = 0.9;
-	  } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
-	    //              gc = &gcGreen;
-	    color[0] = 0.1;
-	    color[1] = 0.9;
-	    color[2] = 0.1;
-	  }
+            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
+//              gc = &gcRed;
+                color[0] = 0.9;
+                color[1] = 0.1;
+                color[2] = 0.1;
+            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
+//              gc = &gcMagenta;
+                color[0] = 0.9;
+                color[1] = 0.1;
+                color[2] = 0.9;
+            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
+//              gc = &gcGreen;
+                color[0] = 0.1;
+                color[1] = 0.9;
+                color[2] = 0.1;
+            }
 
-	  fi->m_Width;
+            fi->m_Width;
 
-	  peekabot::PolygonProxy p;
-	  p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-	  int num_points = 10;
-	  peekabot::VertexSet vSet;
-	  for(int k=0;k<num_points;k++)
-	    vSet.add(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
-	  p.add_vertices(vSet);
-	  p.set_color(color[0],color[1],color[2]);
-	  p.set_opacity(1);
-	  p.set_position(fi->getX(), fi->getY(),0);
-	  p.set_rotation(fi->getTheta() - M_PI_2,0,0);
-	}
+            peekabot::PolygonProxy p;
+            p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+            int num_points = 10;
+	    peekabot::VertexSet vSet;
+            for(int k=0;k<num_points;k++)
+                vSet.add(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
+	    p.add_vertices(vSet);
+            p.set_color(color[0],color[1],color[2]);
+            p.set_opacity(1);
+            p.set_position(fi->getX(), fi->getY(),0);
+            p.set_rotation(fi->getTheta() - M_PI_2,0,0);
+          }
+        }
+        m_FrontierMutex.unlock();
       }
+  }
 }
 
 
@@ -249,6 +255,13 @@ void SpatialControl::UpdateGridMap() {
 
 
 
+void 
+SpatialControl::moveSimulatedPTZ(double pan)
+{
+	// Instantly "move PTZ"
+	m_currentPTZPose.pan = pan;
+	m_lastPtzNavPoseCompletion = getCASTTime();
+}
 
 void
 SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance) 
@@ -600,7 +613,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_taskId = 1;
   m_taskStatus = NothingToDo;
   m_ready = false;
-  m_DefTolPos = 0.25;
+  m_DefTolPos = 0.01;
   m_DefTolRot = Cure::HelpFunctions::deg2rad(5);
 
   //  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
@@ -1059,19 +1072,21 @@ void SpatialControl::updateGridMaps(){
     if (maxY >= m_lgm->getSize())
       maxY = m_lgm->getSize() - 1;
 
-    for (int yi = minY; yi <= maxY; yi++) {
-      for (int xi = minX; xi <= maxX; xi++) {
-        if ((*tmp_lgm)(xi, yi) != '1'){
-          double cellsize = m_lgm->getCellSize();
-          double al = -(lpW.getTheta()+m_currentPTZPose.pan);
-          double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
-          double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
-					if (m_simulateKinect &&
-           ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)))
-						(*tmp_lgm)(xi, yi) = '2';
-        }
-      }
-    }
+		if (m_simulateKinect) {
+			for (int yi = minY; yi <= maxY; yi++) {
+				for (int xi = minX; xi <= maxX; xi++) {
+					if ((*tmp_lgm)(xi, yi) != '1'){
+						double cellsize = m_lgm->getCellSize();
+						double al = -(lpW.getTheta()+m_currentPTZPose.pan);
+						double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
+						double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
+						if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0))
+							(*tmp_lgm)(xi, yi) = '2';
+					}
+				}
+			}
+		}
+		m_lastPointCloudTime = getCASTTime();
   
   }
   const int deltaN = 3;
@@ -1215,12 +1230,23 @@ void SpatialControl::runComponent()
 	//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
 	if (m_visualExplorationPhase == 1) {
 	  debug("m_visualExplorationPhase == 1");
-	  startMovePanTilt(M_PI/3, -M_PI/4, 0);
+		if (m_simulateKinect) {
+			moveSimulatedPTZ(VISUAL_EXPLORATION_SWIVEL_ANGLE);
+		}
+		else {
+			startMovePanTilt(VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
+		}
 	  m_visualExplorationPhase = 2;
 	}
 	else if (m_visualExplorationPhase == 2) {
 	  debug("m_visualExplorationPhase == 2");
-	  startMovePanTilt(0, -M_PI/4, 0);
+		if (m_simulateKinect) {
+			moveSimulatedPTZ(0);
+		}
+		else {
+			startMovePanTilt(0, -M_PI/4, 0);
+		}
+
 	  m_visualExplorationPhase = 0;
 	  m_visualExplorationOngoing = false;
 	  try {
@@ -1228,7 +1254,7 @@ void SpatialControl::runComponent()
 	      getMemoryEntry<NavData::VisualExplorationCommand>(m_visualExplorationCommand);
 	    cmd->comp = NavData::SUCCEEDED;
 	    overwriteWorkingMemory<NavData::VisualExplorationCommand>(m_visualExplorationCommand, cmd);
-	    debug("cmd->comp = NavData::SUCCEEDED;");
+	    debug("overwriting VisualExplorationCommand: SUCCEEDED;");
 	  }
 	  catch (DoesNotExistOnWMException) {
 	    getLogger()->warn("Could not find visual exploration command for overwriting!");
@@ -1391,21 +1417,28 @@ void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange 
     IceUtil::Mutex::Lock lock(m_taskStatusMutex);
 
     if (!m_UsePointCloud && !m_simulateKinect) {
+			// Ignore visual exploration commands
       obj->comp = NavData::SUCCEEDED;
       overwriteWorkingMemory<NavData::VisualExplorationCommand>(objID.address, obj);
+			getLogger()->warn("Warning: ignoring VisualExplorationCommand; marking as SUCCEEDED");
     }
     else if (!m_UsePointCloud && m_simulateKinect) {
-      // TODO: simulated visual exploration action
+      // simulated visual exploration action
+			m_visualExplorationOngoing = true;
+			m_visualExplorationPhase = 1;
+      log("(simulated) m_visualExplorationPhase = %d", m_visualExplorationPhase);
+      m_visualExplorationCommand = objID.address.id;
+			moveSimulatedPTZ(-VISUAL_EXPLORATION_SWIVEL_ANGLE);
     }
     else  if (m_taskStatus == NothingToDo) {
       m_visualExplorationOngoing = true;
       m_visualExplorationPhase = 1;
       debug("m_visualExplorationPhase = %d", m_visualExplorationPhase);
       m_visualExplorationCommand = objID.address.id;
-      startMovePanTilt(-M_PI/3, -M_PI/4, 0);
+      startMovePanTilt(-VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
     }
     else {
-      log("SpatialControl busy; cannot execute VisualExplorationCommand");
+      getLogger()->warn("Warning: SpatialControl busy; cannot execute VisualExplorationCommand. Marking as FAILED");
       obj->comp = NavData::FAILED;
       overwriteWorkingMemory<NavData::VisualExplorationCommand>(objID.address.id, obj);
     }
@@ -2202,6 +2235,154 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
+bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map){
+  double min_sep_dist = 1.05;
+  if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
+    double maxDist = 40; // The first maximum distance to try
+    int closestNodeId = -1;
+    double minDistance = FLT_MAX;
+    Cure::ShortMatrix path;
+
+//CHECK AGAINST NODE_HYP
+    for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
+        non_overlapped_hypotheses.begin(); extantHypIt !=  non_overlapped_hypotheses.end(); extantHypIt++) {
+      SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
+
+      double dist2sq = (x*m_lgm->getCellSize() - extantHyp->x) * (x*m_lgm->getCellSize() - extantHyp->x) + (y*m_lgm->getCellSize() - extantHyp->y) * (y*m_lgm->getCellSize() - extantHyp->y);
+      if (dist2sq < min_sep_dist * min_sep_dist){
+        return false;
+      }
+    }
+//CHECK AGAINST NODES
+    while(closestNodeId == -1) {
+      for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
+        try {
+          double dist2sq = (x*m_lgm->getCellSize() - (*nodeIt)->x) * (x*m_lgm->getCellSize() - (*nodeIt)->x) + (y*m_lgm->getCellSize() - (*nodeIt)->y) * (y*m_lgm->getCellSize() - (*nodeIt)->y);
+          if (dist2sq < 1.05* 1.05){
+            return false;
+          }
+          int xi = x + m_lgm->getSize();
+          int yi = y + m_lgm->getSize();
+          int nodexi, nodeyi;
+          if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
+            continue;
+          nodexi = nodexi + m_lgm->getSize();
+          nodeyi = nodeyi + m_lgm->getSize();
+
+          double dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
+          if(dist >= 0) { // If a path was found.. 
+            if(dist < minDistance) {
+              closestNodeId = (*nodeIt)->nodeId;
+              minDistance = dist;
+            }
+          } 
+        } catch(IceUtil::NullHandleException e) {
+          log("Node suddenly disappeared..");
+        }
+      }
+      if(maxDist > 160)//map.Columns*map.Rows)
+        closestNodeId = 0; //return false;
+      maxDist *= 2; // Double the maximum distance to search for the next loop
+    }
+    return true;
+  }
+  return false;
+}
+
+SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
+  SCOPED_TIME_LOG;
+  double min_sep_dist = 1.05;
+  int hyp_move_rangei = 30;
+  int check_rangei=60;
+
+  SpatialData::NodeHypothesisSeq ret;
+
+  Cure::BinaryMatrix map;
+
+  // Get the expanded binary map used to search 
+  getExpandedBinaryMap(m_lgm, map);
+  // Get all the navigation nodes
+  vector<NavData::FNodePtr> nodes;
+  getMemoryEntries<NavData::FNode>(nodes, 0);
+
+//1. LOOP PLACEHOLDERS
+  vector<SpatialData::NodeHypothesisPtr> overlapped_hypotheses;
+  vector<SpatialData::NodeHypothesisPtr> hypotheses;
+  getMemoryEntries<SpatialData::NodeHypothesis>(hypotheses);
+
+  for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
+      hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
+    SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
+    bool overlapped = false;
+//CHECK IF OVERLAPPED
+    for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); (nodeIt != nodes.end()) && !overlapped; ++nodeIt) {
+      try {
+        double dist2sq = (extantHyp->x - (*nodeIt)->x) * (extantHyp->x - (*nodeIt)->x) + (extantHyp->y - (*nodeIt)->y) * (extantHyp->y - (*nodeIt)->y);
+        error("alex dist %f",dist2sq);
+        if (dist2sq < min_sep_dist * min_sep_dist){
+          overlapped=true;
+          error("alex overlapped");
+          overlapped_hypotheses.push_back(extantHyp);
+        }
+      } catch(IceUtil::NullHandleException e) {
+        log("Node suddenly disappeared..");
+      }
+    }
+    if (!overlapped){
+//PLACEHOLDER IS OK, NO NEED TO CHANGE
+      ret.push_back(extantHyp);
+    }
+  }  
+
+//LOOP POINTS AROUND OVERLAPPED PLACEHOLDERS
+  for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
+      overlapped_hypotheses.begin(); extantHypIt != overlapped_hypotheses.end(); extantHypIt++) {
+    SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
+    int hypxi;
+    int hypyi;
+    if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
+      continue;
+
+    for (int x = hypxi-hyp_move_rangei; x <= hypxi+hyp_move_rangei; x++) {
+      for (int y = hypyi-hyp_move_rangei; y <= hypyi+hyp_move_rangei; y++) {
+        if (check_point(x,y,nodes,ret,map)){
+          SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
+          new_nh->x=x*m_lgm->getCellSize();
+          new_nh->y=y*m_lgm->getCellSize();
+          new_nh->hypID=extantHyp->hypID;
+          new_nh->originPlaceID=extantHyp->originPlaceID; //FIXME change to new?
+          ret.push_back(new_nh);
+        }
+//ELSE SKIP, IT WILL BE DELETED
+      }
+    }
+  }
+
+//2. LOOP POINTS AROUND ROBOT
+  Cure::Pose3D currPose;
+  {
+    IceUtil::Mutex::Lock lock(m_PPMutex);
+    currPose = m_TOPP.getPose();		
+  }	
+  int robotxi;
+  int robotyi;  
+  m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
+
+  for (int x = robotxi-check_rangei; x <= robotxi+check_rangei; x++) {
+    for (int y = robotyi-check_rangei; y <= robotyi+check_rangei; y++) {
+      if (check_point(x,y,nodes,ret,map)){
+        SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
+        new_nh->x=x*m_lgm->getCellSize();
+        new_nh->y=y*m_lgm->getCellSize();
+        new_nh->hypID=-1;
+        new_nh->originPlaceID=-1; //FIXME change to new?
+        ret.push_back(new_nh);
+      }
+    }
+  }
+  return ret;
+}
+
 /* Finds the node with the shortest path from (x,y) in an expanded binarymap
    Returns -1 on error of if there are no nodes to search or if no node
    was found */
@@ -2332,7 +2513,6 @@ SpatialControl::getFrontiers()
   }
 
   {
-    // Only place m_Frontiers is modified;
     IceUtil::Mutex::Lock lock(m_FrontierMutex);
     m_Frontiers.clear();
     debug("calling findFrontiers");
@@ -2341,7 +2521,7 @@ SpatialControl::getFrontiers()
 
     setFrontierReachability(m_Frontiers);
   }
-  // No need to protect the following part
+
 
   FrontierInterface::FrontierPtSeq outArray;
   log("m_Frontiers contains %i frontiers", m_Frontiers.size());

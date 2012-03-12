@@ -316,6 +316,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 //        log("alex c5");
 
 	      finished = true;
+//        m_placeInterface->endPlaceTransition(!finished);
 	    }
 //        log("alex c6");
 
@@ -334,7 +335,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	  // For Place transitions, send completion message to
 	  // PlaceManager
 	  if ((finished || some_error)
-	      && cmd.second->cmd == SpatialData::GOTOPLACE) {
+	   /*   && cmd.second->cmd == SpatialData::GOTOPLACE*/) {
 	    m_placeInterface->endPlaceTransition(!finished);
 	  }
 
@@ -713,14 +714,13 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
 	  ctrl.tolerance = nav->tolerance;
 	}
 	else {
-	  FrontierInterface::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);
+	  SpatialData::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);
 	  if (destHyp != 0) {
 
 	    ctrl.cmd = NavData::lGOTOXY;
 	    ctrl.x = destHyp->x;
 	    ctrl.y = destHyp->y;
 	    ctrl.tolerance = nav->tolerance;
-//        error("alex m_isExplorationAction = true");
 	    m_isExplorationAction = true;
 	  }
 	  else {//destNode == 0 && destHyp == 0

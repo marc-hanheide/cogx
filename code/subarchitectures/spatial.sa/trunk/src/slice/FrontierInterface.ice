@@ -12,6 +12,8 @@
  */
 
 module FrontierInterface {
+
+
   sequence<double> DoubleData;
   sequence<string> StringSeq;
   sequence<int> IntSeq;
@@ -20,14 +22,6 @@ module FrontierInterface {
   sequence<cogx::Math::Pose3> PoseSeq;
 
   dictionary<int, IntSeq> AdjacencyLists;
-
-  class NodeHypothesis {
-    double x;
-    double y;
-
-    int hypID;
-    int originPlaceID;
-  };
 
   enum FrontierPtStatus {
     FRONTIERSTATUSUNKNOWN,
@@ -162,7 +156,7 @@ module FrontierInterface {
   };
 
   interface PlaceInterface {
-    NodeHypothesis getHypFromPlaceID(int placeID);
+    SpatialData::NodeHypothesis getHypFromPlaceID(int placeID);
     NavData::FNode getNodeFromPlaceID(int placeID);
     SpatialData::Place getPlaceFromNodeID(int nodeID);
     SpatialData::Place getPlaceFromHypID(int hypID);
@@ -174,7 +168,7 @@ module FrontierInterface {
     AdjacencyLists getAdjacencyLists();
   };
   interface PlaceInterfaceAsComponent extends cast::interfaces::CASTComponent {
-    NodeHypothesis getHypFromPlaceID(int placeID);
+    SpatialData::NodeHypothesis getHypFromPlaceID(int placeID);
     NavData::FNode getNodeFromPlaceID(int placeID);
     SpatialData::Place getPlaceFromNodeID(int nodeID);
     SpatialData::Place getPlaceFromHypID(int hypID);
