@@ -750,7 +750,7 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser
 //      try {
 //	double currentProb = ((DiscreteProbabilityDistributionPtr)gw->distribution)->data[0]->probability;
 //
-//	FrontierInterface::NodeHypothesisPtr hyp =
+//	SpatialData::NodeHypothesisPtr hyp =
 //	  m_placeInterface->getHypFromPlaceID(it->placeID);
 //
 //	bool update = false;
@@ -844,13 +844,13 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
   ret.unexploredBorderValue = 0;
   ret.gatewayValue = 0;
 
-  vector<FrontierInterface::NodeHypothesisPtr> hyps;
-  getMemoryEntries<FrontierInterface::NodeHypothesis>(hyps);
+  vector<SpatialData::NodeHypothesisPtr> hyps;
+  getMemoryEntries<SpatialData::NodeHypothesis>(hyps);
 
   int originPlaceID = -1;
   double relevantX;
   double relevantY;
-  for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it = hyps.begin();
+  for (vector<SpatialData::NodeHypothesisPtr>::iterator it = hyps.begin();
       it != hyps.end(); it++) {
     try {
       if ((*it)->hypID == hypID) {
@@ -865,10 +865,10 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
     }
   }
 
-  vector<FrontierInterface::NodeHypothesisPtr> relevantHypotheses;
+  vector<SpatialData::NodeHypothesisPtr> relevantHypotheses;
 
   if (originPlaceID != -1) {
-    for (vector<FrontierInterface::NodeHypothesisPtr>::iterator it = hyps.begin();
+    for (vector<SpatialData::NodeHypothesisPtr>::iterator it = hyps.begin();
 	it != hyps.end(); it++) {
       try {
 	if ((*it)->originPlaceID == originPlaceID) {
@@ -908,7 +908,7 @@ LocalMapManager::getHypothesisEvaluation(int hypID)
 	  // grid cell
 
 	  bool process = true;
-	  for(vector<FrontierInterface::NodeHypothesisPtr>::iterator it = 
+	  for(vector<SpatialData::NodeHypothesisPtr>::iterator it = 
 	      relevantHypotheses.begin(); process && it != relevantHypotheses.end(); it++) {
 	    if ((*it)->hypID != hypID) {
 	      double distSq = (x - (*it)->x)*(x - (*it)->x) +

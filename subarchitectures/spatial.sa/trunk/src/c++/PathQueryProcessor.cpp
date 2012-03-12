@@ -180,7 +180,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 
   debug("2");
   //Firstly, check if start place is a placeholder
-  FrontierInterface::NodeHypothesisPtr startHyp =
+  SpatialData::NodeHypothesisPtr startHyp =
     m_placeInterface->getHypFromPlaceID(ptr->startPlaceID);
   if (startHyp != 0) {
     debug("Requested path probability from Placeholder with Place ID %i",
@@ -206,9 +206,9 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	}
       }
       // Compute probabilities for all placeholders
-      std::vector<FrontierInterface::NodeHypothesisPtr> hypPts;
-      getMemoryEntries<FrontierInterface::NodeHypothesis>(hypPts,0);
-      for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
+      std::vector<SpatialData::NodeHypothesisPtr> hypPts;
+      getMemoryEntries<SpatialData::NodeHypothesis>(hypPts,0);
+      for (std::vector<SpatialData::NodeHypothesisPtr>::iterator i = 
 	  hypPts.begin(); i != hypPts.end(); i++) {
 	if ((*i)->hypID == startHyp->hypID) {
 	  // Already added
@@ -246,7 +246,7 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
       //Start place is an extant node
       //Secondly, check if goal place is a placeholder
   debug("4");
-      FrontierInterface::NodeHypothesisPtr goalHyp =
+      SpatialData::NodeHypothesisPtr goalHyp =
 	m_placeInterface->getHypFromPlaceID(ptr->goalPlaceID);
       if (goalHyp != 0) {
 	//Goal place is a placeholder
@@ -291,9 +291,9 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 	    }
 	  }
 	  // Compute probabilities for all placeholders
-	  std::vector<FrontierInterface::NodeHypothesisPtr> hypPts;
-	  getMemoryEntries<FrontierInterface::NodeHypothesis>(hypPts,0);
-	  for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
+	  std::vector<SpatialData::NodeHypothesisPtr> hypPts;
+	  getMemoryEntries<SpatialData::NodeHypothesis>(hypPts,0);
+	  for (std::vector<SpatialData::NodeHypothesisPtr>::iterator i = 
 	      hypPts.begin(); i != hypPts.end(); i++) {
 	    if ((*i)->hypID == goalHypID) {
 	      // Already added
@@ -390,9 +390,9 @@ PathQueryProcessor::newPathTransitionProbRequest(const cast::cdl::WorkingMemoryC
 
 	    }
 	    // Compute probabilities for all placeholders
-	    std::vector<FrontierInterface::NodeHypothesisPtr> hypPts;
-	    getMemoryEntries<FrontierInterface::NodeHypothesis>(hypPts,0);
-	    for (std::vector<FrontierInterface::NodeHypothesisPtr>::iterator i = 
+	    std::vector<SpatialData::NodeHypothesisPtr> hypPts;
+	    getMemoryEntries<SpatialData::NodeHypothesis>(hypPts,0);
+	    for (std::vector<SpatialData::NodeHypothesisPtr>::iterator i = 
 		hypPts.begin(); i != hypPts.end(); i++) {
 	      unsigned int hypID = (*i)->hypID;
 	      SpatialData::PlacePtr place = m_placeInterface->getPlaceFromHypID(hypID);
@@ -439,7 +439,7 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
   debug("have lock");
 
   //Firstly, check if start place is a placeholder
-  FrontierInterface::NodeHypothesisPtr startHyp =
+  SpatialData::NodeHypothesisPtr startHyp =
     m_placeInterface->getHypFromPlaceID(ptr->startPlaceID);
   if (startHyp != 0) {
     debug("Requested path cost from Placeholder with Place ID %i",
@@ -458,7 +458,7 @@ PathQueryProcessor::newPathTransitionCostRequest(const cast::cdl::WorkingMemoryC
       //Start place is an extant node
       //Secondly, check if goal place is a placeholder
       NavData::FNodePtr goalNode;
-      FrontierInterface::NodeHypothesisPtr goalHyp =
+      SpatialData::NodeHypothesisPtr goalHyp =
 	m_placeInterface->getHypFromPlaceID(ptr->goalPlaceID);
       if (goalHyp != 0) {
 	//Goal place is a placeholder

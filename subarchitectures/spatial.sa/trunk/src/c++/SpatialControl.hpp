@@ -50,7 +50,7 @@
 #include <FrontierInterface.hpp>
 
 namespace spatial {
-
+  using namespace std;
 /**
  * This class wraps the class Cure::NewNavController which contains
  * navigation functionality aided by a navigation graph (acquired via
@@ -104,6 +104,7 @@ class SpatialControl : public cast::ManagedComponent ,
           return ret;
         }
 
+        virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis(const Ice::Current &_context);
         virtual int findClosestNode(double x, double y, const Ice::Current &_context);
         virtual int findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context);
 
@@ -170,6 +171,8 @@ protected:
   virtual void taskRejected(const std::string &_taskID) {};
   void getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const;
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
+  bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map);
+  virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis();
   virtual int findClosestNode(double x, double y);
   virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
   void getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy) const;
@@ -335,6 +338,7 @@ private:
   void overwrittenPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
 
   void startMovePanTilt(double pan, double tilt, double tolerance);
+	void moveSimulatedPTZ(double pan);
 
   bool isPointVisible(const cogx::Math::Vector3 &pos);
 
