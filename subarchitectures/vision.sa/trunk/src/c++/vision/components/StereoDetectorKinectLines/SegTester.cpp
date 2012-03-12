@@ -7,31 +7,7 @@
  */
 
 
-#include <cast/architecture/ChangeFilterFactory.hpp>
-
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include "SegTester.h"
-
-#include "Gestalt3D.h"
-#include "StereoBase.h"
-#include "Draw.hh"
-
-#include "StereoCamera.h"
-#include "VisionData.hpp"
-
-#include "VisionCore.hh"
-#include "Gestalt.hh"
-#include "Line.hh"
-#include "Vector.hh"
-#include "Draw.cc"
-
-#include "Patch3D.h"
-#include "Closure3D.h"
-#include "Rectangle3D.h"
-
-#include "SegUtilsFunctions.h"
 
 using namespace std;
 using namespace VisionData;
@@ -243,6 +219,7 @@ void SegTester::configure(const map<string,string> & _config)
 
   /// init annotation
   annotation = new anno::Annotation();
+  annotation2 = new anno::Annotation();                                                                                             /// TODO TODO TODO IST ÜBERFLÜSSIG im Tester!!!
 //   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 30);
 //   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 15);
 //   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 9);
@@ -259,10 +236,9 @@ void SegTester::configure(const map<string,string> & _config)
 
     /// IROS learn and test set full
 //   annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 44);
+  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 65);
   annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
-
-  annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
-  annotation->setFileWriting(true, "./seg-learning/annoEval.txt");
+  annotation2->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 65);
 
   /// init patch class
   patches = new surface::Patches();
@@ -270,16 +246,19 @@ void SegTester::configure(const map<string,string> & _config)
 
   /// init svm-predictor
 printf("DEBUG: Init 1st svm-predictor\n");
-  svm1st = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-04/PP-Trainingsset.txt.scaled.model");
-printf("DEBUG: Init 2nd svm-predictor\n");
-  svm2nd = new svm::SVMPredictorSingle("./instantiations/11-05-11/12-03-04/PP2-Trainingsset.txt.scaled.model");
+  cv::waitKey(500);
+  svm1st = new svm::SVMPredictorSingle("./seg-learning/12-03-07-4/PP-Trainingsset.txt.scaled.model");
+  cv::waitKey(500);
+  svm2nd = new svm::SVMPredictorSingle("./seg-learning/12-03-07-4/PP2-Trainingsset.txt.scaled.model");
+  cv::waitKey(250);
 cout << "DEBUG: Init svm-predictor: set predictor done" << endl;
 
 
 cout << "DEBUG: Init svm-predictor: set scaling done" << endl;
-  svm1st->setScaling(true, "./instantiations/11-05-11/12-03-04/param.txt");
-cout << "DEBUG: Init svm-predictor: set scaling 1st done" << endl;
-  svm2nd->setScaling(true, "./instantiations/11-05-11/12-03-04/param2.txt");
+  svm1st->setScaling(true, "./seg-learning/12-03-07-4/param.txt");
+  cv::waitKey(250);
+  svm2nd->setScaling(true, "./seg-learning/12-03-07-4/param2.txt");
+  cv::waitKey(250);
 cout << "DEBUG: Init svm-predictor: set scaling 2nd done" << endl;
 
   
@@ -293,25 +272,31 @@ cout << "DEBUG: Init svm-predictor: set scaling 2nd done" << endl;
   save_models = false;
   surface::SaveFileSequence::Parameter smp;
   modelSaver = new surface::SaveFileSequence(smp);
-  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 42);
+  modelSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 53);
   
   /// save results to file
-  save_results = true;
+  save_results = false;
   surface::SaveFileSequence::Parameter sp;
   resultSaver = new surface::SaveFileSequence(sp);
-  resultSaver->InitFileSequence("/media/U-Daten/OD-IROS/results/iros_eval_result%1d.sfv", 0, 42);
+  resultSaver->InitFileSequence("/media/Daten/OD-IROS/results/iros_eval_result_03-07_4_%1d.sfv", 54, 65);
   
   /// load models from file
-  startID = 0;
-  endID = 42;
+  startID = 43;
+  endID = 43;
   nextID = startID;
-  off_filename = "/media/U-Daten/OD-IROS/results/iros_eval_model%1d.sfv";
-  off_pcd_file = "/media/U-Daten/OD-IROS/points2/iros_eval%1d.pcd";
-  off_ipl_file = "/media/U-Daten/OD-IROS/image_color/iros_eval%1d.png";
+  off_filename = "/media/Daten/OD-IROS/results/iros_eval_model%1d.sfv";
+  off_pcd_file = "/media/Daten/OD-IROS/points2/iros_eval%1d.pcd";
+  off_ipl_file = "/media/Daten/OD-IROS/image_color/iros_eval%1d.png";
   surface::LoadFileSequence::Parameter lp;
   modelLoader = new surface::LoadFileSequence(lp);
   modelLoader->InitFileSequence(off_filename, startID, endID);
   
+  /// Take snapshot in TomGine
+  take_snapshot = true;
+  snapshot_start = startID;
+  snapshot_end = endID;
+  snapshot_filename = "./seg-learning/iros_eval%1d.png";
+
   /// open cv window
   if(showImages) 
   {
@@ -521,6 +506,12 @@ void SegTester::processImageNew()
   annotation->setSurfaceModels(surfaces);
   annotation->calculate();
   annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+  std::vector< std::vector<int> > anno_pairs2;
+  std::vector<int> anno_background_list2;
+  annotation2->load(pointCloudWidth, anno, true);            /// TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation2->setSurfaceModels(surfaces);
+  annotation2->calculate();
+  annotation2->getResults(nr_anno, anno_pairs2, anno_background_list2);
   if(deb) log("Annotation: end");
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -538,6 +529,7 @@ void SegTester::processImageNew()
   patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
   patches->setSurfaceModels(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);
+  patches->setAnnotion2(anno_pairs2, anno_background_list2);
   patches->setTexture(texture);
   patches->setOptimalPatchModels(true);                     /// TODO Do we really have the model normals?
   patches->computeTestRelations();
@@ -568,6 +560,14 @@ void SegTester::processImageNew()
   if(deb) printf("Runtime for SegTester: Calculate patch relations: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;  
 
+  /// write svm-relations to file (before scaling!)
+  if(deb) log("write svm testset file: start.");
+  svmFile->setRelations(relation_vector);
+  svmFile->setAnalyzeOutput(true);
+  svmFile->setTestSet(true);
+  svmFile->process();
+  if(deb) log("write svm testset file: end.");
+  
   /// SVM-Prediction
   if(deb) log("svm-predictor: start");
   if(deb) printf("SegTester: Prediction start: relation_vector.size: %lu\n", relation_vector.size());
@@ -633,11 +633,6 @@ void SegTester::processImageNew()
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;
 
-//   if(save_results) {
-//     if(deb) log("save surface models: start");
-//     modelSaver->SaveNextView(surfaces);
-//     if(deb) log("save surface models: end");
-//   }
   
   /// Check annotation for evaluation
   if(deb) annotation->checkAnnotation(surfaces, graphCutGroups);
@@ -645,19 +640,38 @@ void SegTester::processImageNew()
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
   
-  /// write svm-relations to file!
-  if(deb) log("write svm testset file: start.");
-  svmFile->setRelations(relation_vector);
-  svmFile->setAnalyzeOutput(true);
-  svmFile->setTestSet(true);
-  svmFile->process();
-  if(deb) log("write svm testset file: end.");
-  
-  /// Save results of model fitter to file
+  /// Save results of segTester into file
   if(save_results) {
     if(deb) log("save surface models: start");
     resultSaver->SaveNextView(surfaces);
     if(deb) log("save surface models: end");
+  }
+  
+  /// Take snapshot from TomGine
+  if(take_snapshot) {
+    if(surfaces.size() != 0) {
+        if(surfaces[0]->mesh.m_vertices.empty())
+        {
+          surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
+          createMesh.setInputCloud(pcl_cloud);
+          createMesh.compute(surfaces);
+        }
+      tgRenderer->Clear();
+      tgRenderer->ClearModels();
+        
+      RGBValue color;
+      for(unsigned i=0; i<graphCutGroups.size(); i++) {
+        color.float_value = GetRandomColor();
+        for(unsigned j=0; j<graphCutGroups[i].size(); j++) {    
+          surfaces[graphCutGroups[i][j]]->mesh.m_material.Color(color.r/255., color.g/255., color.b/255.);
+          tgRenderer->AddModel(&surfaces[graphCutGroups[i][j]]->mesh);
+        }
+      }
+    }
+    char file[256] = "";
+    sprintf(file, snapshot_filename, snapshot_start);
+    tgRenderer->Snapshot(file);
+    snapshot_start++;
   }
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
@@ -1142,6 +1156,11 @@ void SegTester::LoadImageData()
 
 void SegTester::processLoadedData()
 {
+  if(snapshot_start > snapshot_end) {
+    cvWaitKey(10000);
+    exit(1);
+  }
+  
   static struct timespec overallStart, overallEnd;
   static bool first = true;
   if(first)
@@ -1171,6 +1190,13 @@ void SegTester::processLoadedData()
   annotation->setSurfaceModels(surfaces);
   annotation->calculate();
   annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+  
+  std::vector< std::vector<int> > anno_pairs2;
+  std::vector<int> anno_background_list2;
+  annotation2->load(pointCloudWidth, anno, true);            /// TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation2->setSurfaceModels(surfaces);
+  annotation2->calculate();
+  annotation2->getResults(nr_anno, anno_pairs2, anno_background_list2);  
   if(deb) log("Annotation loading: end");
   
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
@@ -1186,6 +1212,7 @@ void SegTester::processLoadedData()
   patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
   patches->setSurfaceModels(surfaces);
   patches->setAnnotion(anno_pairs, anno_background_list);
+  patches->setAnnotion2(anno_pairs2, anno_background_list2);
   patches->setTexture(texture);
   patches->setOptimalPatchModels(true);
   patches->computeTestRelations();
@@ -1200,6 +1227,14 @@ void SegTester::processLoadedData()
   if(deb) printf("Runtime for SegTester: Calculate patch relations: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;  
 
+  /// write svm-relations to file!
+  if(deb) log("write svm testset file: start.");
+  svmFile->setRelations(relation_vector);
+  svmFile->setAnalyzeOutput(true);
+  svmFile->setTestSet(true);
+  svmFile->process();
+  if(deb) log("write svm testset file: end.");
+//   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
   
   /// SVM-Prediction
   if(deb) log("svm-predictor: start");
@@ -1266,10 +1301,10 @@ void SegTester::processLoadedData()
       printf("  \n");
     }
   }
-
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
   if(deb) printf("Runtime for SegTester: GraphCutter: %4.3f\n", timespec_diff(&current, &last));
   if(deb) last = current;
+  
   
   /// Check annotation for evaluation
   if(deb) annotation->checkAnnotation(surfaces, graphCutGroups);
@@ -1278,20 +1313,39 @@ void SegTester::processLoadedData()
   if(deb) printf("Runtime for SegTester: Overall processing time: %4.3f\n", timespec_diff(&current, &start));
   
   
-  /// write svm-relations to file!
-  if(deb) log("write svm testset file: start.");
-  svmFile->setRelations(relation_vector);
-  svmFile->setAnalyzeOutput(true);
-  svmFile->setTestSet(true);
-  svmFile->process();
-  if(deb) log("write svm testset file: end.");
-//   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
-  
-  /// Save results of model fitter to file
+  /// Save results of segTester into file
   if(save_results) {
     if(deb) log("save surface models: start");
     resultSaver->SaveNextView(surfaces);
     if(deb) log("save surface models: end");
+  }
+    
+  /// Take snapshot from TomGine
+  srand(time(NULL));
+  if(take_snapshot) {
+    if(surfaces.size() != 0) {
+        if(surfaces[0]->mesh.m_vertices.empty())
+        {
+          surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
+          createMesh.setInputCloud(pcl_cloud);
+          createMesh.compute(surfaces);
+        }
+      tgRenderer->Clear();
+      tgRenderer->ClearModels();
+        
+      RGBValue color;
+      for(unsigned i=0; i<graphCutGroups.size(); i++) {
+        color.float_value = GetRandomColor();
+        for(unsigned j=0; j<graphCutGroups[i].size(); j++) {    
+          surfaces[graphCutGroups[i][j]]->mesh.m_material.Color(color.r/255., color.g/255., color.b/255.);
+          tgRenderer->AddModel(&surfaces[graphCutGroups[i][j]]->mesh);
+        }
+      }
+    }
+    char file[256] = "";
+    sprintf(file, snapshot_filename, snapshot_start);
+    tgRenderer->Snapshot(file);
+    snapshot_start++;
   }
     
   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);

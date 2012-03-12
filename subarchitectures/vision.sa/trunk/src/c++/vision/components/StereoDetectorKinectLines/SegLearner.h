@@ -73,7 +73,7 @@ private:
   
   surface::SaveFileSequence *modelSaver;                    ///< Save surface models
   surface::LoadFileSequence *modelLoader;                   ///< Load surface models
-  bool save_results;                                        ///< Save surface models
+  bool save_models;                                         ///< Save surface models after model selection
   char *save_filename;                                      ///< filename for surface models
 
   TomGine::tgTomGineThread *tgRenderer;                     ///< 3D render engine
