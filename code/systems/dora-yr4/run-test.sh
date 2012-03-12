@@ -100,7 +100,7 @@ echo "starting peekabot"
 xterm -title "peekabot-xterm" -e "/opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
 PIDS="$PIDS $!"
 
-sleep 4
+sleep 10
 wmctrl -l | grep "peekabot$"
 
 window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
