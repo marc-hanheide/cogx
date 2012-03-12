@@ -77,13 +77,17 @@ SETVAR vision_pcserver=
 
 SETVAR no_placeholders=
 
+#If this is set, only the wedge that the kinect can see in the navigation
+#position is treated as free space; if not, the whole laser scan is used
+SETVAR simulate_kinect=--simulate-kinect
+
 HOST localhost
 
 # Visualization.SA ##########################################################
 INCLUDE includes/visualization.sa/v11n-base.cast
 
 # Spatial.SA ################################################################
-INCLUDE includes/spatial.sa/spatial-blobfinder.cast
+#INCLUDE includes/spatial.sa/spatial-blobfinder.cast
 COMPONENT CPP ptz.server PlayerActServer --ptz-device 0
 INCLUDE includes/spatial.sa/spatial-base.cast
 INCLUDE includes/spatial.sa/spatial-peekabot.cast
@@ -155,7 +159,7 @@ INCLUDE includes/binder.sa/binder-base.cast
 
 # planning and motivation #####################################################
 INCLUDE includes/planner.sa/dora-interaction.cast
-JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
+JAVA MG exec-monitor dora.execution.components.ExecutionMonitor --displayserver "display.srv" 
 JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
 JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" #--min-gain 0.05
 JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
@@ -175,10 +179,10 @@ JAVA MG verbalisation verbalisation.DoraVerbalisation
 JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.GroundedBelief, VisionData.VisualObject, VisionData.Person, execution.slice.person.PersonObservation, execution.slice.Action, de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention, de.dfki.lt.tr.dialogue.slice.StandbyMode"
 
 # viewing and debugging #######################################################
-JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact
-JAVA MG actiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "execution.slice.Action" --generic-col
-####JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
-JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
-####JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col --compact
-####JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
-####JAVA MG ptz castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --debug true --subscribe "ptz.SetPTZPoseCommand" --generic-col
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact
+JAVA MG actiondisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "execution.slice.Action" --generic-col
+####JAVA MG worldstatedisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "ConceptualData.WorldState" --generic-col
+JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact
+####JAVA MG roomdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug true --subscribe "comadata.ComaRoom" --generic-col --compact
+####JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug true --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.Intention" --generic-col
+####JAVA MG ptz castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --debug true --subscribe "ptz.SetPTZPoseCommand" --generic-col
