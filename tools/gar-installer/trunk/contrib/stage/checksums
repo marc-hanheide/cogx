@@ -2,3 +2,5 @@ ca93c7c9746354679829092640c49ec6  download/Stage-3.2.2-Source.tar.gz
 6933be4138ee1e91ed9f323f9a2143bf  download/gar-base.diff
 6b3de4dc6e39306be0f7535e5d7ac4c7  download/ros-fltk-patch.diff
 19b02e074398c8b5d8bb9c8e90dfa6c5  download/macosx-fltk-patch.diff
+4f9538adfec53fede8ed4d73a6b16b3d  download/stage-3.2.2-consumequeue-20100615.patch
+ 
