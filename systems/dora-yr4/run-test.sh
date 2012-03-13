@@ -11,8 +11,7 @@ function storeCoreDump {
 
 
 if [ "$1" ]; then
-    configFile="instantiations/dora-test-search-sim-peekabot.cast"
-#    configFile="$1"
+    configFile="$1"
 else
     configFile="instantiations/dora-test-search-sim-peekabot.cast"
 fi
@@ -79,7 +78,7 @@ EOF
 #ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
 
 # Make a flash video
-flvrec.py -o logs/screencast.flv -K 1 -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
+flvrec.py -o logs/screencast.flv -K 15 -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
 PIDS="$PIDS $!"
 
 xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
