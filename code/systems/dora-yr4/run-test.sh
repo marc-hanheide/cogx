@@ -95,6 +95,8 @@ echo "--------------------------"
 ln -fs ~/.peekabot .
 
 echo "starting peekabot"
+export XAUTHORITY=~/.Xauthority
+xauth - v exit
 
 xterm -title "peekabot-xterm" -e "/opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
 PIDS="$PIDS $!"
