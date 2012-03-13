@@ -866,7 +866,7 @@ void SpatialControl::updateGridMaps(){
   /* Update a temporary local map so we don't hog the lock */
   Cure::LocalGridMap<unsigned char> *tmp_lgm;
 
-  tmp_lgm = m_lgm; //new Cure::LocalGridMap<unsigned char>(*m_lgm);
+  tmp_lgm = new Cure::LocalGridMap<unsigned char>(*m_lgm);
   Cure::GridLineRayTracer<unsigned char> tmp_glrt(*tmp_lgm);
   
   /* Local reference so we don't have to dereference the pointer all the time */
@@ -1056,8 +1056,7 @@ void SpatialControl::updateGridMaps(){
       blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight);
     }
   }
-  else {
-
+  else if (m_simulateKinect) {
     int minX = laserMinXi;
     int maxX = laserMaxXi;
     int minY = laserMinYi;
@@ -1072,22 +1071,19 @@ void SpatialControl::updateGridMaps(){
     if (maxY >= m_lgm->getSize())
       maxY = m_lgm->getSize() - 1;
 
-		if (m_simulateKinect) {
-			for (int yi = minY; yi <= maxY; yi++) {
-				for (int xi = minX; xi <= maxX; xi++) {
-					if ((*tmp_lgm)(xi, yi) != '1'){
-						double cellsize = m_lgm->getCellSize();
-						double al = -(lpW.getTheta()+m_currentPTZPose.pan);
-						double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
-						double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
-						if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0))
-							(*tmp_lgm)(xi, yi) = '2';
-					}
+		for (int yi = minY; yi <= maxY; yi++) {
+			for (int xi = minX; xi <= maxX; xi++) {
+				if ((*tmp_lgm)(xi, yi) != '1'){
+					double cellsize = m_lgm->getCellSize();
+					double al = -(lpW.getTheta()+m_currentPTZPose.pan);
+					double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
+					double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
+					if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0))
+						(*tmp_lgm)(xi, yi) = '2';
 				}
 			}
 		}
 		m_lastPointCloudTime = getCASTTime();
-  
   }
   const int deltaN = 3;
   double d = m_lgm->getCellSize()/deltaN;
@@ -1118,10 +1114,30 @@ void SpatialControl::updateGridMaps(){
     }
   }
 
+//MERGE MAPS
+  int minX = laserMinXi;
+  int maxX = laserMaxXi;
+  int minY = laserMinYi;
+  int maxY = laserMaxYi;
+
+  if (minX <= -m_lgm->getSize())
+    minX = -m_lgm->getSize() + 1;
+  if (maxX >= m_lgm->getSize())
+    maxX = m_lgm->getSize() - 1;
+  if (minY <= -m_lgm->getSize())
+    minY = -m_lgm->getSize() + 1;
+  if (maxY >= m_lgm->getSize())
+    maxY = m_lgm->getSize() - 1;
+
+	for (int yi = minY; yi <= maxY; yi++) {
+		for (int xi = minX; xi <= maxX; xi++) {
+			if ((*tmp_lgm)(xi, yi) != '2') (*m_lgm)(xi, yi)=(*tmp_lgm)(xi, yi);
+    }
+  }
+  delete tmp_lgm;
+
   /* Copy the temporary map */
 //  IceUtil::Mutex::Lock lock(m_MapsMutex);
-//  *m_lgm = *tmp_lgm;
-//  delete tmp_lgm;
 }
 
 void SpatialControl::runComponent() 
@@ -2033,7 +2049,7 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
 /* Fills map with an expanded version of gridmap, where unknown space is
    also set as obstacles */
-void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const {
+void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) {
   
 //  if(lockMapsMutex) {
 //
@@ -2060,12 +2076,11 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
       if((*gridmap)(x,y) == '1') {
         ungrown_map.setBit(x + gridmapSize, y + gridmapSize, true);
       }
+      else ungrown_map.setBit(x + gridmapSize, y + gridmapSize, false);
     }
   }
-
   // Grow each occupied cell to account for the size of the robot.
-  ungrown_map.growInto(map, 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
-
+  ungrown_map.growInto(map, 1.5 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
   for(int x = -gridmapSize; x < gridmapSize; ++x) {
@@ -2235,13 +2250,13 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
-bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map){
+bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, int &closestNodeId){
+  closestNodeId = -1;
   double min_sep_dist = 1.05;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
-    double maxDist = 40; // The first maximum distance to try
+    int maxDist = 40; // The first maximum distance to try
     int closestNodeId = -1;
-    double minDistance = FLT_MAX;
-    Cure::ShortMatrix path;
+    int minDistance = 10000;
 
 //CHECK AGAINST NODE_HYP
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
@@ -2269,7 +2284,8 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
           nodexi = nodexi + m_lgm->getSize();
           nodeyi = nodeyi + m_lgm->getSize();
 
-          double dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
+          Cure::ShortMatrix path;
+          int dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
           if(dist >= 0) { // If a path was found.. 
             if(dist < minDistance) {
               closestNodeId = (*nodeIt)->nodeId;
@@ -2280,8 +2296,9 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
           log("Node suddenly disappeared..");
         }
       }
-      if(maxDist > 160)//map.Columns*map.Rows)
-        closestNodeId = 0; //return false;
+      if(maxDist > 320){//map.Columns*map.Rows){
+        break;
+      }
       maxDist *= 2; // Double the maximum distance to search for the next loop
     }
     return true;
@@ -2301,6 +2318,20 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 
   // Get the expanded binary map used to search 
   getExpandedBinaryMap(m_lgm, map);
+/*    peekabot::OccupancySet2D cells;
+    double cellSize=m_lgm->getCellSize();
+    int gridmapSize = m_lgm->getSize();
+    for(int x = -100; x < 100; ++x) {
+      for(int y = -100; y < 100; ++y) {
+            if (map(x + gridmapSize, y + gridmapSize)==false)
+                cells.add(x*cellSize,y*cellSize,0);
+            else
+                cells.add(x*cellSize,y*cellSize,1);
+        }
+    }
+    m_ProxyGridMapKinect.set_cells(cells);
+*/
+
   // Get all the navigation nodes
   vector<NavData::FNodePtr> nodes;
   getMemoryEntries<NavData::FNode>(nodes, 0);
@@ -2309,7 +2340,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   vector<SpatialData::NodeHypothesisPtr> overlapped_hypotheses;
   vector<SpatialData::NodeHypothesisPtr> hypotheses;
   getMemoryEntries<SpatialData::NodeHypothesis>(hypotheses);
-
+{
+  SCOPED_TIME_LOG;
   for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
       hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
     SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
@@ -2318,10 +2350,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); (nodeIt != nodes.end()) && !overlapped; ++nodeIt) {
       try {
         double dist2sq = (extantHyp->x - (*nodeIt)->x) * (extantHyp->x - (*nodeIt)->x) + (extantHyp->y - (*nodeIt)->y) * (extantHyp->y - (*nodeIt)->y);
-        error("alex dist %f",dist2sq);
         if (dist2sq < min_sep_dist * min_sep_dist){
           overlapped=true;
-          error("alex overlapped");
           overlapped_hypotheses.push_back(extantHyp);
         }
       } catch(IceUtil::NullHandleException e) {
@@ -2333,7 +2363,9 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       ret.push_back(extantHyp);
     }
   }  
-
+}
+{
+  SCOPED_TIME_LOG;
 //LOOP POINTS AROUND OVERLAPPED PLACEHOLDERS
   for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
       overlapped_hypotheses.begin(); extantHypIt != overlapped_hypotheses.end(); extantHypIt++) {
@@ -2345,20 +2377,24 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 
     for (int x = hypxi-hyp_move_rangei; x <= hypxi+hyp_move_rangei; x++) {
       for (int y = hypyi-hyp_move_rangei; y <= hypyi+hyp_move_rangei; y++) {
-        if (check_point(x,y,nodes,ret,map)){
+        int originPlaceID;
+        if (check_point(x,y,nodes,ret,map,originPlaceID)){
           SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
           new_nh->x=x*m_lgm->getCellSize();
           new_nh->y=y*m_lgm->getCellSize();
           new_nh->hypID=extantHyp->hypID;
-          new_nh->originPlaceID=extantHyp->originPlaceID; //FIXME change to new?
+          new_nh->originPlaceID=originPlaceID;
           ret.push_back(new_nh);
         }
 //ELSE SKIP, IT WILL BE DELETED
       }
     }
   }
-
+}
 //2. LOOP POINTS AROUND ROBOT
+{
+  SCOPED_TIME_LOG;
+
   Cure::Pose3D currPose;
   {
     IceUtil::Mutex::Lock lock(m_PPMutex);
@@ -2366,23 +2402,27 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   }	
   int robotxi;
   int robotyi;  
+  int originPlaceID;
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
+  for (int i=0;i<100;i++){
+    int x= ( robotxi-check_rangei + (rand() % (check_rangei*2)) ); 
+    int y= ( robotxi-check_rangei + (rand() % (check_rangei*2)) ); 
 
-  for (int x = robotxi-check_rangei; x <= robotxi+check_rangei; x++) {
-    for (int y = robotyi-check_rangei; y <= robotyi+check_rangei; y++) {
-      if (check_point(x,y,nodes,ret,map)){
+//  for (int x = robotxi-check_rangei; x <= robotxi+check_rangei; x++) {
+//    for (int y = robotyi-check_rangei; y <= robotyi+check_rangei; y++) {
+      if (check_point(x,y,nodes,ret,map,originPlaceID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         new_nh->x=x*m_lgm->getCellSize();
         new_nh->y=y*m_lgm->getCellSize();
         new_nh->hypID=-1;
-        new_nh->originPlaceID=-1; //FIXME change to new?
+        new_nh->originPlaceID=originPlaceID;
         ret.push_back(new_nh);
       }
-    }
+//    }
   }
+}
   return ret;
 }
-
 /* Finds the node with the shortest path from (x,y) in an expanded binarymap
    Returns -1 on error of if there are no nodes to search or if no node
    was found */
