@@ -298,33 +298,24 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	// nav ctrl cmd finished?
 	shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
 	  getWorkingMemoryEntry<NavData::InternalNavCommand>(navCtrlCmdId);
-//  log("alex c1");
 		
 	if(pcmd){
 	  switch(pcmd->getData()->comp){
 	  case NavData::SUCCEEDED:
-//      log("alex c2");
 
 	    if (m_isExplorationAction && m_issueVisualExplorationActions) {
-//        log("alex c3");
 
         issueVisualExplorationCommand(*rv);
-//        log("alex c4");
 
 	    }
 	    else {
-//        log("alex c5");
-
 	      finished = true;
 //        m_placeInterface->endPlaceTransition(!finished);
 	    }
-//        log("alex c6");
-
 	    m_isExplorationAction = false;
 	    break;
 	  case NavData::ABORTED:
 	  case NavData::FAILED:
-//      log("alex c7");
 
 	    some_error = true;
 	    status = SpatialData::TARGETUNREACHABLE;

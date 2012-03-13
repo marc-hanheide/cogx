@@ -613,7 +613,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_taskId = 1;
   m_taskStatus = NothingToDo;
   m_ready = false;
-  m_DefTolPos = 0.01;
+  m_DefTolPos = 0.05;
   m_DefTolRot = Cure::HelpFunctions::deg2rad(5);
 
   //  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
@@ -2080,7 +2080,7 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
     }
   }
   // Grow each occupied cell to account for the size of the robot.
-  ungrown_map.growInto(map, 1 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
+  ungrown_map.growInto(map, 1.5 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
   for(int x = -gridmapSize; x < gridmapSize; ++x) {
@@ -2297,7 +2297,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
         }
       }
       if(maxDist > 320){//map.Columns*map.Rows){
-        break;
+        return false;
       }
       maxDist *= 2; // Double the maximum distance to search for the next loop
     }
