@@ -169,9 +169,9 @@ protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
-  void getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) const;
+  void getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map);
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
-  bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map);
+  bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, int &closestNodeId);
   virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis();
   virtual int findClosestNode(double x, double y);
   virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);

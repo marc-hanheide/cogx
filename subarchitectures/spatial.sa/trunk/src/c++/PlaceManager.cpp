@@ -971,7 +971,6 @@ void PlaceManager::updatePlaceholders() {
             placeholderids.push_back(it->second.m_data->id);
         }
     }
-//    error("alex DEBUG1 CHECK PLACEHOLDERS %d PLACES %d\n",placeholderids.size(),placeholderids.size());
     for (size_t g = 0; (g < placeholderids.size()); g++)
         updatePlaceholder(placeholderids[g],nodeids);
 
@@ -980,7 +979,6 @@ void PlaceManager::updatePlaceholders() {
    which it has the shortest path.
    Returns the place id the placeholder is linked to or -1 on error*/
 int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDSeq &nodeids) {
-//  error("alex DEBUG2 PLACEHOLDER %d\n",placeholderId);
   SpatialData::NodeHypothesisPtr hyp = getHypFromPlaceID(placeholderId);
   if(!hyp) {
     return -1;
@@ -1380,10 +1378,16 @@ void PlaceManager::evaluateUnexploredPaths()
             SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
             if (extantHyp->hypID==nodeHyp->hypID){
               if ((*nodeHyp).x!=extantHyp->x || (*nodeHyp).y!=extantHyp->y){
-                error("alex move overlapped placeholder");
+                log("move overlapped placeholder");
                 (*nodeHyp).x=extantHyp->x;
                 (*nodeHyp).y=extantHyp->y;
-//              (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
+                if (extantHyp->originPlaceID != -1 && (*nodeHyp).originPlaceID != extantHyp->originPlaceID){
+                  error("Found closest node. Connecting with the current");
+                  (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
+                  deleteConnectivityProperty(place->id, extantHyp->originPlaceID);
+                  createConnectivityProperty(m_hypPathLength, place->id, extantHyp->originPlaceID);
+                  m_hypotheticalConnectivities.push_back(pair<int, int>(place->id, extantHyp->originPlaceID));
+                }
 //TODO CHANGE origplace and connectivity
                 overwriteWorkingMemory<SpatialData::NodeHypothesis>(m_HypIDToWMIDMap[nodeHyp->hypID], nodeHyp);
               }
@@ -1393,7 +1397,7 @@ void PlaceManager::evaluateUnexploredPaths()
           }
 //2. DELETE NON EXISTING PLACEHOLDERS
           if (!exists){
-            error("alex delete overlapped placeholder");
+            log("delete overlapped placeholder");
             deletePlaceholder(place->id);
           }
         }
@@ -1407,9 +1411,12 @@ void PlaceManager::evaluateUnexploredPaths()
         hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
       SpatialData::NodeHypothesisPtr newHyp = *extantHypIt;
       if (newHyp->hypID==-1){
-        error("alex create new placeholder");
+        log("create new placeholder");
         newHyp->hypID = m_hypIDCounter;
-        newHyp->originPlaceID = curPlace->id;
+        if (newHyp->originPlaceID == -1 ){
+          error("Couldn't find closest node. Connecting with the current");
+          newHyp->originPlaceID = curPlace->id;
+        }
 //TODO assign origplace in spatialcontrol;
 
         log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
