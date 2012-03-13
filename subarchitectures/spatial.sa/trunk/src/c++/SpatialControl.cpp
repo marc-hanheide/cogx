@@ -2080,7 +2080,7 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
     }
   }
   // Grow each occupied cell to account for the size of the robot.
-  ungrown_map.growInto(map, 1.5 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
+  ungrown_map.growInto(map, 1 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
   for(int x = -gridmapSize; x < gridmapSize; ++x) {
@@ -2309,9 +2309,6 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
 SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   SCOPED_TIME_LOG;
   double min_sep_dist = 1.05;
-  int hyp_move_rangei = 30;
-  int check_rangei=60;
-
   SpatialData::NodeHypothesisSeq ret;
 
   Cure::BinaryMatrix map;
@@ -2375,8 +2372,12 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
 
-    for (int x = hypxi-hyp_move_rangei; x <= hypxi+hyp_move_rangei; x++) {
-      for (int y = hypyi-hyp_move_rangei; y <= hypyi+hyp_move_rangei; y++) {
+    for (int i=0;i<10;i++){
+      double theta = (rand() % 360) * 3.14 / 180; 
+      int r = rand() % 20;
+      for (int j=0;j<10;j++){
+        int x= round(hypxi+r*cos(theta+j*2*3.14/10)); 
+        int y= round(hypyi+r*sin(theta+j*2*3.14/10)); 
         int originPlaceID;
         if (check_point(x,y,nodes,ret,map,originPlaceID)){
           SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
@@ -2386,9 +2387,9 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
           new_nh->originPlaceID=originPlaceID;
           ret.push_back(new_nh);
         }
-//ELSE SKIP, IT WILL BE DELETED
       }
     }
+//ELSE SKIP, IT WILL BE DELETED
   }
 }
 //2. LOOP POINTS AROUND ROBOT
@@ -2404,12 +2405,12 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   int robotyi;  
   int originPlaceID;
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
-  for (int i=0;i<100;i++){
-    int x= ( robotxi-check_rangei + (rand() % (check_rangei*2)) ); 
-    int y= ( robotxi-check_rangei + (rand() % (check_rangei*2)) ); 
-
-//  for (int x = robotxi-check_rangei; x <= robotxi+check_rangei; x++) {
-//    for (int y = robotyi-check_rangei; y <= robotyi+check_rangei; y++) {
+  for (int i=0;i<10;i++){
+    double theta = (rand() % 360) * 3.14 / 180; 
+    int r = rand() % 20 + 10;
+    for (int j=0;j<10;j++){
+      int x= round(robotxi+r*cos(theta+j*2*3.14/10)); 
+      int y= round(robotyi+r*sin(theta+j*2*3.14/10)); 
       if (check_point(x,y,nodes,ret,map,originPlaceID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         new_nh->x=x*m_lgm->getCellSize();
@@ -2418,7 +2419,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         new_nh->originPlaceID=originPlaceID;
         ret.push_back(new_nh);
       }
-//    }
+    }
   }
 }
   return ret;
