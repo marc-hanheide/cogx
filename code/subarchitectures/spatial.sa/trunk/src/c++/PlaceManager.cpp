@@ -998,15 +998,12 @@ int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDS
     error("Error in finding closest node. Returning.");
     return -1;
   }
-//  error("alex DEBUG2 CLOSEST NODE %d\n",closestNodeId);
 
   SpatialData::PlacePtr closestPlace = getPlaceFromNodeID(closestNodeId);
   if(!closestPlace) {
     error("No place attached to node. Try again later.");
     return -1;
   }
-
-//  error("alex DEBUG2 PREV CLOSEST NODE %d\n",closestNodeId);
 
   if(closestPlace->id == hyp->originPlaceID) {
     log("Closest place was the same as before. Returning.");
@@ -1382,7 +1379,7 @@ void PlaceManager::evaluateUnexploredPaths()
                 (*nodeHyp).x=extantHyp->x;
                 (*nodeHyp).y=extantHyp->y;
                 if (extantHyp->originPlaceID != -1 && (*nodeHyp).originPlaceID != extantHyp->originPlaceID){
-                  error("Found closest node. Connecting with the current");
+                  log("Found closest node. Connecting with the current");
                   (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
                   deleteConnectivityProperty(place->id, extantHyp->originPlaceID);
                   createConnectivityProperty(m_hypPathLength, place->id, extantHyp->originPlaceID);
@@ -1414,7 +1411,7 @@ void PlaceManager::evaluateUnexploredPaths()
         log("create new placeholder");
         newHyp->hypID = m_hypIDCounter;
         if (newHyp->originPlaceID == -1 ){
-          error("Couldn't find closest node. Connecting with the current");
+          log("Couldn't find closest node. Connecting with the current");
           newHyp->originPlaceID = curPlace->id;
         }
 //TODO assign origplace in spatialcontrol;
