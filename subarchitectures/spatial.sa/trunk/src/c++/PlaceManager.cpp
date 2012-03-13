@@ -1374,21 +1374,34 @@ void PlaceManager::evaluateUnexploredPaths()
               hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
             SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
             if (extantHyp->hypID==nodeHyp->hypID){
-              if ((*nodeHyp).x!=extantHyp->x || (*nodeHyp).y!=extantHyp->y){
-                log("move overlapped placeholder");
-                (*nodeHyp).x=extantHyp->x;
-                (*nodeHyp).y=extantHyp->y;
-                if (extantHyp->originPlaceID != -1 && (*nodeHyp).originPlaceID != extantHyp->originPlaceID){
-                  log("Found closest node. Connecting with the current");
-                  (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
-                  deleteConnectivityProperty(place->id, extantHyp->originPlaceID);
-                  createConnectivityProperty(m_hypPathLength, place->id, extantHyp->originPlaceID);
-                  m_hypotheticalConnectivities.push_back(pair<int, int>(place->id, extantHyp->originPlaceID));
-                }
-//TODO CHANGE origplace and connectivity
-                overwriteWorkingMemory<SpatialData::NodeHypothesis>(m_HypIDToWMIDMap[nodeHyp->hypID], nodeHyp);
-              }
               exists=true;
+              if ((*nodeHyp).x!=extantHyp->x || (*nodeHyp).y!=extantHyp->y){
+                for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+                    fbIt != m_forbiddenZones.end(); fbIt++) {
+                      	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+                      	  log("checking against: %.02g, %.02g", extantHyp->x, extantHyp->y);
+                  if ( extantHyp->x <= fbIt->maxX &&  extantHyp->x >= fbIt->minX &&
+                        extantHyp->y <= fbIt->maxY && extantHyp->y >= fbIt->minY) {
+                    log("Placeholder in forbidden zone excluded");
+                    exists = false;
+                    break;
+                  }
+                }
+                if (exists){
+                  log("move overlapped placeholder");
+                  (*nodeHyp).x=extantHyp->x;
+                  (*nodeHyp).y=extantHyp->y;
+                  if (extantHyp->originPlaceID != -1 && (*nodeHyp).originPlaceID != extantHyp->originPlaceID){
+                    log("Found closest node. Connecting with the current");
+                    (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
+                    deleteConnectivityProperty(place->id, extantHyp->originPlaceID);
+                    createConnectivityProperty(m_hypPathLength, place->id, extantHyp->originPlaceID);
+                    m_hypotheticalConnectivities.push_back(pair<int, int>(place->id, extantHyp->originPlaceID));
+                  }
+  //TODO CHANGE origplace and connectivity
+                  overwriteWorkingMemory<SpatialData::NodeHypothesis>(m_HypIDToWMIDMap[nodeHyp->hypID], nodeHyp);
+                }
+              }
               break;
             }
           }
@@ -1410,40 +1423,54 @@ void PlaceManager::evaluateUnexploredPaths()
       if (newHyp->hypID==-1){
         log("create new placeholder");
         newHyp->hypID = m_hypIDCounter;
-        if (newHyp->originPlaceID == -1 ){
-          log("Couldn't find closest node. Connecting with the current");
-          newHyp->originPlaceID = curPlace->id;
-        }
+//        if (newHyp->originPlaceID == -1 ){
+//          log("Couldn't find closest node. Connecting with the current");
+//          newHyp->originPlaceID = curPlace->id;
+//        }
 //TODO assign origplace in spatialcontrol;
 
-        log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
-            newHyp->y, newHyp->hypID);
+        bool excluded = false;
+        for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+            fbIt != m_forbiddenZones.end(); fbIt++) {
+              	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+              	  log("checking against: %.02g, %.02g", newHyp->x, newHyp->y);
+          if ( newHyp->x <= fbIt->maxX &&  newHyp->x >= fbIt->minX &&
+                newHyp->y <= fbIt->maxY && newHyp->y >= fbIt->minY) {
+            log("Placeholder in forbidden zone excluded");
+            excluded = true;
+            break;
+          }
+        }
+        if (!excluded){
+          log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
+              newHyp->y, newHyp->hypID);
 
-        string newID = newDataID();
-        m_HypIDToWMIDMap[newHyp->hypID]=newID;
+          string newID = newDataID();
+          m_HypIDToWMIDMap[newHyp->hypID]=newID;
 
-        // Create the Place struct corresponding to the hypothesis
-        PlaceHolder p;
-        p.m_data = new SpatialData::Place;   
-        //p.m_data->id = oobj->getData()->nodeId;
+          // Create the Place struct corresponding to the hypothesis
+          PlaceHolder p;
+          p.m_data = new SpatialData::Place;   
+          //p.m_data->id = oobj->getData()->nodeId;
 
-        int newPlaceID = m_placeIDCounter;
-        m_placeIDCounter++;
-        p.m_data->id = newPlaceID;
-        m_PlaceIDToHypMap[newPlaceID] = newHyp;
-        m_hypIDCounter++;
+          int newPlaceID = m_placeIDCounter;
+          m_placeIDCounter++;
+          p.m_data->id = newPlaceID;
+          m_PlaceIDToHypMap[newPlaceID] = newHyp;
+          m_hypIDCounter++;
 
-        // Add connectivity property (one-way)
-        createConnectivityProperty(m_hypPathLength, curPlace->id, newPlaceID);
-        m_hypotheticalConnectivities.push_back(pair<int, int>(curPlace->id, newPlaceID));
+          // Add connectivity property (one-way)
+          createConnectivityProperty(m_hypPathLength, curPlace->id, newPlaceID);
+          m_hypotheticalConnectivities.push_back(pair<int, int>(curPlace->id, newPlaceID));
 
-        p.m_data->status = SpatialData::PLACEHOLDER;
-        p.m_WMid = newDataID();
-        log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
-        addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
-        addToWorkingMemory<SpatialData::NodeHypothesis>(newID, newHyp);
+          p.m_data->status = SpatialData::PLACEHOLDER;
+          p.m_WMid = newDataID();
+          log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
+          addToWorkingMemory<SpatialData::Place>(p.m_WMid, p.m_data);
+          addToWorkingMemory<SpatialData::NodeHypothesis>(newID, newHyp);
 
-        m_Places[newPlaceID]=p;
+          m_Places[newPlaceID]=p;
+        }
       }
     }
 
