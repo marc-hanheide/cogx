@@ -84,7 +84,7 @@ class PlaceManager : public cast::ManagedComponent
     virtual void configure(const std::map<std::string, std::string>& _config);
 
   protected:
-
+    void newPlaceholderEnumeratingCommand(const cast::cdl::WorkingMemoryChange &objID);
     // Call back functions for nodes 
     void newNavNode(const cast::cdl::WorkingMemoryChange &objID);
     void modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID);

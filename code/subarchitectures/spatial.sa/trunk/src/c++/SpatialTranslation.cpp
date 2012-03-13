@@ -108,6 +108,15 @@ void SpatialTranslation::stop(){
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::runComponent() {
+  
+    if (m_issueVisualExplorationActions) {
+      Rendezvous rv(*this);  
+      issueVisualExplorationCommand(rv);
+      rv.wait();
+      issuePlaceholderEnumeratingCommand(rv);
+      rv.wait();
+    }
+
   while(isRunning()){
     log("I am running, but I wait until getting work to do");
 		
@@ -309,7 +318,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 
 	    }
 	    else {
-	      finished = true;
+	      issuePlaceholderEnumeratingCommand(*rv);
 //        m_placeInterface->endPlaceTransition(!finished);
 	    }
 	    m_isExplorationAction = false;
@@ -337,9 +346,14 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	}
       }
       else if (type== typeName<NavData::VisualExplorationCommand>()) {
-	log("Visual exploration cmd finished");
-	finished = true;
+	      log("Visual exploration cmd finished");
+        issuePlaceholderEnumeratingCommand(*rv);
       }
+      else if (type== typeName<NavData::PlaceholderEnumeratingCommand>()) {
+	      log("Placeholder enumerating cmd finished");
+	      finished = true;
+      }
+
       else if (type == typeName<NavData::FNode>()) {
 	log("Halting movement: exploration reached new node");
 
@@ -407,9 +421,20 @@ void SpatialTranslation::issueVisualExplorationCommand(Rendezvous &rv)
 
   rv.addChangeFilter(
       createLocalTypeFilter<NavData::VisualExplorationCommand>(cdl::OVERWRITE)); // local
-  error("alex issueVisualExplorationCommand");
   addToWorkingMemory<NavData::VisualExplorationCommand>(ID, cmd);
 }
+
+void SpatialTranslation::issuePlaceholderEnumeratingCommand(Rendezvous &rv)
+{
+  std::string ID = newDataID();
+  NavData::PlaceholderEnumeratingCommandPtr cmd = new NavData::PlaceholderEnumeratingCommand;
+  cmd->comp = NavData::PENDING;
+
+  rv.addChangeFilter(
+      createLocalTypeFilter<NavData::PlaceholderEnumeratingCommand>(cdl::OVERWRITE)); // local
+  addToWorkingMemory<NavData::PlaceholderEnumeratingCommand>(ID, cmd);
+}
+
 
 // ----------------------------------------------------------------------------
 
