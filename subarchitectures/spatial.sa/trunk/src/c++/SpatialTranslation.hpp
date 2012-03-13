@@ -129,6 +129,8 @@ private:
    */
   void issueVisualExplorationCommand(Rendezvous &rv);
 
+  void issuePlaceholderEnumeratingCommand(Rendezvous &rv);
+
   /* Executes the given command, marks its completion and status
    * and returns when it is over.
    * @param cmd: the NavCommand to execute

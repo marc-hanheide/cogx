@@ -633,10 +633,6 @@ void SpatialControl::start()
   //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
     //(getComponentPointer());
  
-  addChangeFilter(createLocalTypeFilter<NavData::InternalNavCommand>(cdl::ADD), 
-		  new MemberFunctionChangeReceiver<SpatialControl>(this,
-								  &SpatialControl::newNavCtrlCommand));  
-
   addChangeFilter(createLocalTypeFilter<NavData::InhibitNavControl>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
 								  &SpatialControl::newInhibitor));
@@ -710,6 +706,9 @@ m_RobotServer = getIceServer<Robotbase::RobotbaseServer>(m_RobotServerName);
     m_lastPtzNavPoseCompletion = getCASTTime();
   }
 
+  addChangeFilter(createLocalTypeFilter<NavData::InternalNavCommand>(cdl::ADD), 
+		  new MemberFunctionChangeReceiver<SpatialControl>(this,
+								  &SpatialControl::newNavCtrlCommand));  
 
   log("SpatialControl started");
   
@@ -1245,8 +1244,10 @@ void SpatialControl::runComponent()
 	//    error("alex m_visualExplorationPhase = %d",m_visualExplorationPhase);
 	//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
 	if (m_visualExplorationPhase == 1) {
-	  debug("m_visualExplorationPhase == 1");
+	  log("m_visualExplorationPhase == 1");
 		if (m_simulateKinect) {
+      moveSimulatedPTZ(-VISUAL_EXPLORATION_SWIVEL_ANGLE);
+    	updateGridMaps();
 			moveSimulatedPTZ(VISUAL_EXPLORATION_SWIVEL_ANGLE);
 		}
 		else {
@@ -1255,7 +1256,7 @@ void SpatialControl::runComponent()
 	  m_visualExplorationPhase = 2;
 	}
 	else if (m_visualExplorationPhase == 2) {
-	  debug("m_visualExplorationPhase == 2");
+	  log("m_visualExplorationPhase == 2");
 		if (m_simulateKinect) {
 			moveSimulatedPTZ(0);
 		}
@@ -1444,7 +1445,6 @@ void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange 
 			m_visualExplorationPhase = 1;
       log("(simulated) m_visualExplorationPhase = %d", m_visualExplorationPhase);
       m_visualExplorationCommand = objID.address.id;
-			moveSimulatedPTZ(-VISUAL_EXPLORATION_SWIVEL_ANGLE);
     }
     else  if (m_taskStatus == NothingToDo) {
       m_visualExplorationOngoing = true;

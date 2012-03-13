@@ -205,6 +205,9 @@ PlaceManager::start()
         }
 	}
 
+  addChangeFilter(createLocalTypeFilter<NavData::PlaceholderEnumeratingCommand>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<PlaceManager>(this,
+								  &PlaceManager::newPlaceholderEnumeratingCommand));
 
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
@@ -265,7 +268,7 @@ PlaceManager::runComponent()
 
   while(isRunning()) {
     sleepComponent(5000);
-    evaluateUnexploredPaths();
+//    evaluateUnexploredPaths();
   }
 }
 
@@ -356,6 +359,22 @@ PlaceManager::cancelMovement(bool failed = false)
   }
   log("CancelMovement exited");
 }
+
+void PlaceManager::newPlaceholderEnumeratingCommand(const cdl::WorkingMemoryChange &objID) 
+{
+  log("Received new PlaceholderEnumeratingCommand");
+  try {
+    NavData::PlaceholderEnumeratingCommandPtr obj =
+      getMemoryEntry<NavData::PlaceholderEnumeratingCommand>(objID.address);
+    evaluateUnexploredPaths();
+    obj->comp = NavData::SUCCEEDED;
+    overwriteWorkingMemory<NavData::PlaceholderEnumeratingCommand>(objID.address, obj);
+  }
+  catch (DoesNotExistOnWMException) {
+    log("Could not find PlaceholderEnumeratingCommand on WM!");
+  }
+}
+
 
 void 
 PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
@@ -2079,7 +2098,8 @@ PlaceManager::processPlaceArrival(bool failed)
       }
 
       log("Calling evaluateUnexploredPaths from processPlaceArrival!");
-      evaluateUnexploredPaths();
+//NOTE moved to PlaceholderEnumerating command
+//      evaluateUnexploredPaths();
       log("evaluateUnexploredPaths exited");
     }
   }

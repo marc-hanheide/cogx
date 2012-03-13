@@ -520,6 +520,9 @@ interface NavGraphInterface{
   class VisualExplorationCommand {
     Completion comp;
   };
+  class PlaceholderEnumeratingCommand {
+    Completion comp;
+  };
 
   /**
    * This struct contains information about a person that we are tracking
