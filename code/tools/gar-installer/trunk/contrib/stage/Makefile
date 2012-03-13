@@ -7,7 +7,7 @@ DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 
 MAINTAINER = mhanheid
 
-PATCHFILES= gar-base.diff ros-fltk-patch.diff macosx-fltk-patch.diff
+PATCHFILES= gar-base.diff ros-fltk-patch.diff macosx-fltk-patch.diff stage-3.2.2-consumequeue-20100615.patch
 
 MASTER_SITES = http://dfn.dl.sourceforge.net/sourceforge/playerstage/
 
