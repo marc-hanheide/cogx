@@ -1247,16 +1247,24 @@ void SpatialControl::runComponent()
 	  log("m_visualExplorationPhase == 1");
 		if (m_simulateKinect) {
       moveSimulatedPTZ(-VISUAL_EXPLORATION_SWIVEL_ANGLE);
-    	updateGridMaps();
-			moveSimulatedPTZ(VISUAL_EXPLORATION_SWIVEL_ANGLE);
 		}
 		else {
-			startMovePanTilt(VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
+			startMovePanTilt(-VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
 		}
 	  m_visualExplorationPhase = 2;
 	}
 	else if (m_visualExplorationPhase == 2) {
 	  log("m_visualExplorationPhase == 2");
+		if (m_simulateKinect) {
+      moveSimulatedPTZ(VISUAL_EXPLORATION_SWIVEL_ANGLE);
+		}
+		else {
+			startMovePanTilt(VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
+		}
+	  m_visualExplorationPhase = 3;
+  }
+	else if (m_visualExplorationPhase == 3) {
+	  log("m_visualExplorationPhase == 3");
 		if (m_simulateKinect) {
 			moveSimulatedPTZ(0);
 		}
@@ -1279,9 +1287,6 @@ void SpatialControl::runComponent()
 	}
       }
     }	  
-    //    if (m_odometryQueue.size() == 0) {
-    //      usleep(250000);
-    //    }
   }
 } 
 
@@ -1451,7 +1456,6 @@ void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange 
       m_visualExplorationPhase = 1;
       debug("m_visualExplorationPhase = %d", m_visualExplorationPhase);
       m_visualExplorationCommand = objID.address.id;
-      startMovePanTilt(-VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
     }
     else {
       getLogger()->warn("Warning: SpatialControl busy; cannot execute VisualExplorationCommand. Marking as FAILED");
