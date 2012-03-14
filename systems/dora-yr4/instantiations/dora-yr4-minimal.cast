@@ -1,0 +1,31 @@
+SETVAR feature_options=<multiline>
+    spatial			# enable the spatial core
+    !binder			# enable all mediators in the cores enabled and the binding working memory
+    !vision			# enable the vision core, object recognition (depending on the hardware setting)
+    peekabot		# use peekabot
+	man_ctrl		# enable manual GUIs for navigation, PTZ, planning, etc.
+    !avs			# enable AVS view cone planning and relation manager
+    !execution		# enable execution framework to let the planner trigger actions
+	conceptual		# enable conceptual framework
+	default			# enable default
+	!coma			# enable coma
+    !categorisation	# enable place categorisation
+    !planning_sa		# enable planning core
+    !debug			# enable more debug GUIs and WM loggers
+    !dialogue		# enable dialogue
+    !motivation		# enable motivation
+    !visualization	# enable visualisation (see debug)
+</multiline>
+#!binder,
+#!vision,
+#!avs,
+#!execution,
+#!default,
+#!coma,
+#!planning_sa,
+#!debug,
+#!dialogue,
+#!visualization
+#</multiline>
+
+INCLUDE dora-yr4.cast
