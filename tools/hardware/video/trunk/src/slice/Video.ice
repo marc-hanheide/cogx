@@ -113,6 +113,14 @@ module Video {
     CameraParameters cam;
   };
 
+  // Subscribe to CameraMotionState when you need to work with a stable camera.
+  // The motion is detected for selected cameras by CameraMount which monitors
+  // the PTZ server.
+  class CameraMotionState {
+    int id;
+    bool bMoving;
+  };
+
   /**
    * Image class for our system.
    * Image format is RGB24 (we don't want to fiddle around with dozens of
