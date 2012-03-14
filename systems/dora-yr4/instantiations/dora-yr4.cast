@@ -85,8 +85,9 @@ VARDEFAULT logged_types=<multiline>
   comadata.ComaRoom,
   SpatialData.RelationalViewPointGenerationCommand,
   autogen.Planner.Action,
-  autogen.Planner.PlanningTask
-  ptz.SetPTZPoseCommand
+  autogen.Planner.PlanningTask,
+  ptz.SetPTZPoseCommand,
+  eu.cogx.beliefs.slice.HypotheticalBelief
 </multiline>
 
 ### root for the sift-models
@@ -196,7 +197,8 @@ IFOPTALL(%(feature_options), spatial)
 		SETVAR usePB=
     ENDIF
 
-### Pan-tilt-zoom server
+### Pan-tilt-zoom server: This is the CAST Pan-Tilt Server that listens for SetPTZCommand objects being written
+### to WM and then react upon that as described in https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/PanTilt
     IFOPTALL(%(hardware_options), ptz)
 	IFOPTALL(%(feature_options), man_ctrl)
 	    JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui)
@@ -240,22 +242,27 @@ IFOPTALL(%(feature_options), spatial)
 
 
     IFOPTALL(%(feature_options), binder)
+### run the sptial mediators so that the spatial stuff shows up in the binder/planner
 		INCLUDE includes/spatial.sa/spatial-mediator.cast
+### this is a dedicated garbage collection that removes any SpatialProperties for which the referred Place has been removed. It
+### makes sure that there are no orphaned properties on WM left
 		JAVA MG SpatialPropertyRemover spatial.SpatialPropertyRemover 
     ENDIF
 	
 
     IFOPTALL(%(feature_options), execution)
-		JAVA MG exe-spatial spatial.execution.SpatialActionInterface  --detections 3 
+### the interface to translate and monitor execution actions into spatial actions
+		JAVA MG exe-spatial spatial.execution.SpatialActionInterface 
     ENDIF
 	
     IFOPTALL(%(feature_options), man_ctrl)
+### a GUI to allow for manual NavCommands for GOTOXY and GOTO_PLACE
 		JAVA MG spatial-manual spatial.manual.ManualNavControl
     ENDIF
 
     IFOPTALL(%(feature_options), avs)
 		CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --ptzserver ptz.server --display-objects-in-pb 
-		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --random-vc --usepeekabot ######--ctrl-ptz 
+		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 141 --cam-vertangle 131 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --random-vc --usepeekabot ######--ctrl-ptz 
     ENDIF
 ENDIF
 
@@ -264,12 +271,15 @@ ENDIF
 IFOPTALL(%(feature_options), vision)
     INCLUDE includes/vision.sa/vision-base.cast
     IFOPTALL(%(feature_options), execution)
+### the interface to translate and monitor execution actions into vision actions
         INCLUDE includes/vision.sa/vision-execution.cast
     ENDIF
     IFOPTALL(%(feature_options), binder)
+### run the vision mediators so that the vision stuff shows up in the binder/planner
         INCLUDE includes/vision.sa/vision-mediators-dora.cast
     ENDIF
 
+### read https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/CameraMount
     CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver ptz.server
 
     IFOPTALL(%(hardware_options), video)
@@ -337,8 +347,13 @@ IFOPTALL(%(feature_options), planning_sa)
     JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
     
     IFOPTALL(%(feature_options), motivation)
+		### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
         JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
-        JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" #--min-gain 0.05
+		### this instantiates the filter layer of the motivation architecture, here: it's a PassAllFilter, that let's Dora adhere anything
+        JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" 
+		### this instantiates the scheduler (or manager) layer of the motivation architecture
+		### here: it's a simple scheduler which will just plan for all the goals present at once and will NOT look for opportunities, 
+		### but rather execute a plan once it has been found and only after the completion of the plan will look for new goals
         JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
     ENDIF
 ENDIF
@@ -404,19 +419,26 @@ VARDEFAULT displaysrv_param_redirect=
 
     IFOPTALL(%(feature_options), planning debug)
         JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+	### add some time measurements on planning in the logs (useful for debugging and experiments)
 	JAVA MG plannerstopwatch castutils.experimentation.PlannerStopWatch 
     ENDIF
 
     IFOPTALL(%(feature_options), motivation debug)
+		### adds a graphical representation of the motives and their status to the display server (SVG mode)
         JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
         JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
     ENDIF
 
     IFOPTALL(%(feature_options), debug)
+		### starts the WM editor that let's you see and modify WM content in a Java GUI. Set %(logged_types) to select the types
+		### you are interested in
         JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "%(logged_types)"
         JAVA MG workingmemory.display castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe  "%(logged_types)" --generic-col --compact
-	JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
-	JAVA MG distancelogger castutils.experimentation.DistanceMonitor 
+		### starts the WM logger that logs all operation of subscribed types on INFO level in the logs. 
+		### Set %(logged_types) to select the types you are interested in
+		JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
+		### log the distance travelled every 5 seconds
+		JAVA MG distancelogger castutils.experimentation.DistanceMonitor 
     ENDIF
 ENDIF
 
