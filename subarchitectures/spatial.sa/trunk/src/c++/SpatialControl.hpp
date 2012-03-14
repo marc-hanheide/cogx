@@ -153,9 +153,10 @@ protected:
     peekabot::PeekabotClient m_PeekabotClient;
     peekabot::GroupProxy m_ProxyMap;
     peekabot::OccupancyGrid2DProxy m_ProxyGridMap;
-    peekabot::OccupancyGrid2DProxy m_ProxyGridMapKinect;
+    peekabot::OccupancyGrid3DProxy m_ProxyGridMapKinect;
 
     bool m_usePeekabot;
+    bool m_show3Dobstacles; 
     void connectPeekabot();
     void CreateGridMap();
     void UpdateGridMap();
@@ -183,7 +184,7 @@ protected:
   void SaveGridMap();
   void LoadGridMap(std::string filename);;
 
-  void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight);
+  void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight, int kminX, int kmaxX, int kminY, int kmaxY);
   void updateGridMaps();
 
   double m_MaxExplorationRange; 

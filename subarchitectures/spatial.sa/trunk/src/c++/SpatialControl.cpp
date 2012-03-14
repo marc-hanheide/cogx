@@ -153,41 +153,16 @@ void SpatialControl::CreateGridMap() {
     m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
 
-    m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize, 
+    m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize,0.05, 
   peekabot::REPLACE_ON_CONFLICT);
-    m_ProxyGridMapKinect.set_occupied_color(0.1,0.1,0.1);
-    m_ProxyGridMapKinect.set_unoccupied_color(0.8,0.9,1);
-    peekabot::OccupancySet2D cells1;
+
+    peekabot::OccupancySet3D cells1;
     m_ProxyGridMapKinect.set_cells(cells1);
-    m_ProxyGridMapKinect.set_position(0,0,-0.009);
+    m_ProxyGridMapKinect.set_position(0,0,0);
 
 }
 
 void SpatialControl::UpdateGridMap() {
-    peekabot::OccupancySet2D cells;
-    double cellSize=m_lgm->getCellSize();
-    for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
-        for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
-            if ((* (m_lgm))(x, y)=='0')
-                cells.add(x*cellSize,y*cellSize,0);
-            else if ((* (m_lgm))(x, y)=='1')
-                cells.add(x*cellSize,y*cellSize,1);
-        }
-    }
-    m_ProxyGridMap.set_cells(cells);
-
-/*
-    peekabot::OccupancySet2D cells1;
-    for (int x = -m_kinlgm->getSize(); x <= m_kinlgm->getSize(); x++) {
-        for (int y = -m_kinlgm->getSize(); y <= m_kinlgm->getSize(); y++) {
-            if ((* (m_kinlgm))(x, y)=='0')
-                cells1.add(x*cellSize,y*cellSize,0);
-            else if ((* (m_kinlgm))(x, y)=='1')
-                cells1.add(x*cellSize,y*cellSize,1);
-        }
-    }
-    m_ProxyGridMapKinect.set_cells(cells1);
-*/
     if (m_FrontierMutex.tryLock()) {
       std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
       m_ProxyMap.clear();
@@ -205,25 +180,19 @@ void SpatialControl::UpdateGridMap() {
             color[0] = 0.1;
             color[1] = 0.1;
             color[2] = 0.9;
-//            GC *gc = &gcBlue;
             if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
-//              gc = &gcYellow;
                 color[0] = 0.9;
                 color[1] = 0.9;
                 color[2] = 0.1;
-
             } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
-//              gc = &gcRed;
                 color[0] = 0.9;
                 color[1] = 0.1;
                 color[2] = 0.1;
             } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
-//              gc = &gcMagenta;
                 color[0] = 0.9;
                 color[1] = 0.1;
                 color[2] = 0.9;
             } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
-//              gc = &gcGreen;
                 color[0] = 0.1;
                 color[1] = 0.9;
                 color[2] = 0.1;
@@ -248,10 +217,6 @@ void SpatialControl::UpdateGridMap() {
       }
   }
 }
-
-
-
-
 
 
 
@@ -427,6 +392,9 @@ void SpatialControl::configure(const map<string,string>& _config)
     if (_config.find("--usepeekabot") != _config.end())
       m_usePeekabot= true;
 
+  m_show3Dobstacles = false;
+    if (_config.find("--show3Dobstacles") != _config.end())
+      m_show3Dobstacles = true;
 
   m_UsePointCloud = false;
   if (_config.find("--pcserver") != _config.end()) {
@@ -790,7 +758,7 @@ void SpatialControl::explorationDone(int taskId, int status)
   }
 }
 
-void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight)
+void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight, int kminX, int kmaxX, int kminY, int kmaxY)
 {
   int xi, yi;
 
@@ -836,6 +804,43 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure:
           lgm(xi,yi-1) != '1' && lgm(xi,yi+1) != '1') {
         lgm(xi,yi) = '0';
       }
+    }
+  }
+  
+
+  if(m_usePeekabot){
+  	SCOPED_TIME_LOG;
+
+    peekabot::OccupancySet2D cells;
+    double cellSize=m_lgm->getCellSize();
+    for (yi = minY+1; yi < maxY; yi++) {
+      for (xi = minX+1; xi < maxX; xi++) {
+            if (lgm(xi, yi)=='0')
+                cells.add(xi*cellSize,yi*cellSize,0);
+            else if (lgm(xi, yi)=='1')
+                cells.add(xi*cellSize,yi*cellSize,1);
+      }
+    }
+    m_ProxyGridMap.set_cells(cells);
+    if (m_show3Dobstacles){
+      peekabot::OccupancySet3D cells1;
+      for (yi = kminY; yi <= kmaxY; yi++) {
+        for (xi = kminX; xi <= kmaxX; xi++) {
+          if (lgm(xi,yi) == '1'){ 
+            if ((*heightMap)(xi, yi) != FLT_MAX){
+              for (double zi = 0; zi <= (*heightMap)(xi, yi); zi+=0.05) {
+                cells1.set_cell(xi*lgm.getCellSize(),yi*lgm.getCellSize(),zi,1);
+              }
+            }
+          }
+          else if (lgm(xi,yi) == '0'){
+              for (double zi = 0; zi <= 1.45; zi+=0.05) {
+                cells1.set_cell(xi*lgm.getCellSize(),yi*lgm.getCellSize(),zi,0);
+              }
+          } 
+        }
+      }
+      m_ProxyGridMapKinect.set_cells(cells1);
     }
   }
 }
@@ -1007,34 +1012,25 @@ void SpatialControl::updateGridMaps(){
           bool newObstacle = (pZ > m_obstacleMinHeight && pZ < m_obstacleMaxHeight);
           
           bool updateHeightMap = true;
+
+          double vFOV = 43 * M_PI / 180;
+          double kinectZ = 1.45;
+          double alpha = m_currentPTZPose.tilt + vFOV/2;
+          double fovZ = kinectZ + (it->p.x * cos(m_currentPTZPose.pan) + it->p.y * sin(m_currentPTZPose.pan)) * tan(alpha);
+
           if (oldObstacle && !newObstacle) {
-//          /* Undo robot pose transform since it is not known by the point cloud */
-//            Cure::Vector3D old(pX, pY, lgmKH(xi, yi));
-//            scanPose.transform(old, to);
-//            cogx::Math::Vector3 oldPoint;
-//            oldPoint.x = to.X[0];
-//            oldPoint.y = to.X[1];
-//            oldPoint.z = to.X[2];
-//            /* If the old obstable is not currently in view don't remove it */
-//            double al = -m_currentPTZPose.pan;
-//            double nx = it->p.x * cos(al) - it->p.y * sin(al);
-//            double ny = it->p.x * sin(al) + it->p.y * cos(al);
-//            if ((nx < 1.8) && (0.535 * nx - ny > 0) && (-0.535 * nx - ny < 0)) updateHeightMap = false;
-            updateHeightMap = false;
+            if (0.8*lgmKH(xi, yi)>fovZ)
+              updateHeightMap = false;
           }
           /* Don't place a free space if it is out of safety range */
 
-          if (pZ <= m_obstacleMinHeight){
-            double al = -m_currentPTZPose.pan;
-            double nx = it->p.x * cos(al) - it->p.y * sin(al);
-            double ny = it->p.x * sin(al) + it->p.y * cos(al);
-            if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) updateHeightMap = false;
-          }
-
+          double nx = it->p.x * cos(-m_currentPTZPose.pan) - it->p.y * sin(-m_currentPTZPose.pan);
+          double ny = it->p.x * sin(-m_currentPTZPose.pan) + it->p.y * cos(-m_currentPTZPose.pan);
+          if ((nx < 0.5) || (nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) updateHeightMap = false;
           /* If the above tests passed update the height map */ 
-          if(updateHeightMap)
+          if(updateHeightMap){
             lgmKH(xi, yi) = pZ;
-
+          }
           /* Update bounding box */
           if (xi < pointcloudMinXi)
             pointcloudMinXi = xi;
@@ -1052,7 +1048,7 @@ void SpatialControl::updateGridMaps(){
     {
       /* Project the height map onto the 2D obstacle map */ 
       SCOPED_TIME_LOG;
-      blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight);
+      blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight,pointcloudMinXi,pointcloudMaxXi,pointcloudMinYi,pointcloudMaxYi);
     }
   }
   else if (m_simulateKinect) {
@@ -1082,6 +1078,22 @@ void SpatialControl::updateGridMaps(){
 				}
 			}
 		}
+
+    if(m_usePeekabot){
+    	SCOPED_TIME_LOG;
+
+      peekabot::OccupancySet2D cells;
+      double cellSize=m_lgm->getCellSize();
+      for (int yi = minY+1; yi < maxY; yi++) {
+        for (int xi = minX+1; xi < maxX; xi++) {
+              if ((*tmp_lgm)(xi, yi)=='0')
+                  cells.add(xi*cellSize,yi*cellSize,0);
+              else if ((*tmp_lgm)(xi, yi)=='1')
+                  cells.add(xi*cellSize,yi*cellSize,1);
+        }
+      }
+      m_ProxyGridMap.set_cells(cells);
+    }
 		m_lastPointCloudTime = getCASTTime();
   }
   const int deltaN = 3;
@@ -1187,12 +1199,6 @@ void SpatialControl::runComponent()
 	SCOPED_TIME_LOG;
 	updateGridMaps();
       }
-
-      if(m_usePeekabot){
-	SCOPED_TIME_LOG;
-	UpdateGridMap();
-      }
-
 
     }
     //FIXME Too slow!
