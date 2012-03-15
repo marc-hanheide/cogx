@@ -13,8 +13,6 @@
 namespace castutils
 {
 
-using namespace std;
-
 /**
  * Enable a derived class to log through a CAST component.
  *
@@ -42,7 +40,7 @@ public:
     pLogComponentMixin->println("%s", msg);
   }
 
-  void println(const string & _s) const {
+  void println(const std::string & _s) const {
     println("%s", _s.c_str());
   }
 
@@ -57,7 +55,7 @@ public:
     pLogComponentMixin->error("%s", msg);
   }
 
-  void error(const string & _s) const {
+  void error(const std::string & _s) const {
     error("%s", _s.c_str());
   }
 
@@ -73,7 +71,7 @@ public:
     pLogComponentMixin->log("%s", msg);
   }
 
-  void log(const string & _s) const {
+  void log(const std::string & _s) const {
     log("%s", _s.c_str());
   }
 
@@ -88,7 +86,7 @@ public:
     pLogComponentMixin->debug("%s", msg);
   }
 
-  void debug(const string & _s) const {
+  void debug(const std::string & _s) const {
     debug("%s", _s.c_str());
   }
 };
