@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4)
 
-# add_subdirectory (src/c++/categorical/autogen)
+# add_subdirectory (src/c++/autogen)
 if (DO_SLICE_ONLY)
    return()
 endif()
