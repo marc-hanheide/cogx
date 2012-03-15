@@ -4,14 +4,18 @@ include "../common/box.inc"
 include "barrier.inc"
 include "desk.inc"
 include "long-desk.inc"
+include "big-desk.inc"
+include "shelf-unit.inc"
+include "row-of-chairs.inc"
+include "chair.inc"
 
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [1280.000 717.000]
+	size [1278.000 716.000]
 	#This is how many metres of the simulated environment each pixel shows
 	scale 22.000
-	center [18.345 5.518]
+	center [27.254 0.518]
 )
 
 floorplan
@@ -23,7 +27,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [17.800 10.200 0 -90.000]
+	pose [16.845 12.427 0 -90.000]
 	color "red"
 )
 
@@ -36,13 +40,51 @@ p3dx_with_urg_and_blobfinder (
  pose [24.310 9.045 0 0]
  )
 
+# chairs
+
+ chair
+ (
+ name "chair1"
+ color "black"
+ pose [16.955 4.273 0 0]
+ )
+
+
+ row-of-chairs
+ (
+ name "row-of-chairs1"
+ color "black"
+ pose [14.636 1.773 0 0]
+ )
+
+ row-of-chairs
+ (
+ name "row-of-chairs2"
+ color "black"
+ pose [12.727 3.545 0 90.000]
+ )
+
 # desks
+
+ long-desk
+ (
+ name "corridor-table1"
+ color "black"
+ pose [15.841 7.329 0 0]
+ )
+
+ long-desk
+ (
+ name "corridor-table2"
+ color "black"
+ pose [14.023 7.329 0 0]
+ )
 
  desk
  (
  name "desk1"
  color "black"
- pose [22.550 10.200 0 0]
+ pose [22.550 10.245 0 0]
  )
 
  long-desk
@@ -73,25 +115,25 @@ p3dx_with_urg_and_blobfinder (
  pose [23.930 10.220 0 0]
  )
 
- desk
+ shelf-unit
  (
- name "desk6"
+ name "shelf-unit1"
  color "black"
- pose [15.020 4.190 0 30.000]
+ pose [14.747 6.508 0 0]
  )
 
- desk
+ shelf-unit
  (
- name "desk7"
+ name "shelf-unit2"
  color "black"
- pose [14.690 4.805 0 30.000]
+ pose [17.735 3.805 0 90.000]
  )
 
- desk
+ big-desk
  (
- name "desk9"
+ name "big-desk"
  color "black"
- pose [15.415 3.540 0 30.000]
+ pose [15.006 4.313 0 0]
  )
 
  desk
@@ -115,11 +157,11 @@ p3dx_with_urg_and_blobfinder (
  pose [15.194 10.627 0 90.000]
  )
 
- desk
+ long-desk
  (
  name "desk12"
  color "black"
- pose [18.045 11.655 0 90.000]
+ pose [18.090 11.383 0 90.000]
  )
 
 # extra barriers to block the corridor next to the meeting room (245)
