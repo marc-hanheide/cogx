@@ -35,6 +35,7 @@
 #endif
 
 #include <castutils/Timers.hpp>
+//#include <castutils/PersistentWmAccessor.hpp>
 #include <VisionData.hpp>
 #include <NavData.hpp>
 #include <PTZServer.hpp>
@@ -173,7 +174,13 @@ private:
   int camId;
   bool m_bCameraMoving;
   castutils::CMilliTimer m_endMoveTimeout;
-  Video::CameraParameters m_cameraParams;
+
+  // XXX: mCamParamsWma and m_cameraPose are here only for testing. The code
+  // for camera movement detection was moved to CameraMount.
+  //castutils::CPersistentWmAccessor<Video::CameraParametersWrapper, Video::CameraParametersWrapperPtr>
+  //  mCamParamsWma;
+  //cogx::Math::Pose3 m_cameraPose;
+  // --
 
   /**
    * component ID of the video server to connect to
@@ -282,6 +289,7 @@ public:
   void saveSoiData(VisionData::SOIPtr& soiOrig, VisionData::SOIPtr& soiCopy);
   bool isCameraStable(unsigned long milliSeconds = 0);
   bool isPointVisible(const cogx::Math::Vector3 &pos);
+  //const cogx::Math::Pose3& getCameraPose();
 
 public:
   bool retryEvent(WmEvent* pEvent, long milliSeconds, long nRetries=1);
@@ -289,6 +297,7 @@ private:
   void checkRetryEvents();
   long getMillisToRetryEvent(long defaultMs);
   bool isRetryEvent(WmEvent* pEvent);
+  bool doMovePtzCommand(double pan, double tilt, double zoom);
 
 private:
   void onAdd_SOI(const cdl::WorkingMemoryChange & _wmc);
@@ -308,7 +317,9 @@ private:
   void onAdd_AnalyzeProtoObjectCommand(const cdl::WorkingMemoryChange & _wmc);
 
   void onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc);
-  void onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc);
+  void onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc);
+  //void onChange_PtzPoseCommand(const cdl::WorkingMemoryChange & _wmc);
+  //void onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc);
 #ifdef FEAT_TRACK_ARM
   void onChange_ArmPosition(const cdl::WorkingMemoryChange & _wmc);
 #endif

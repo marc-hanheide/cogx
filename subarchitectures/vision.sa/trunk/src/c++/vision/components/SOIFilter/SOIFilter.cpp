@@ -309,12 +309,28 @@ void SOIFilter::start()
       new MemberFunctionChangeReceiver<SOIFilter>(this,
         &SOIFilter::onChange_RobotPose));  
 
-  addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::ADD),
+#if 0
+  //addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::ADD),
+  //    new MemberFunctionChangeReceiver<SOIFilter>(this,
+  //      &SOIFilter::onChange_CameraParameters));  
+  //addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::OVERWRITE),
+  //    new MemberFunctionChangeReceiver<SOIFilter>(this,
+  //      &SOIFilter::onChange_CameraParameters));  
+
+  //addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::ADD),
+  //    new MemberFunctionChangeReceiver<SOIFilter>(this,
+  //      &SOIFilter::onChange_PtzPoseCommand));  
+  //addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
+  //    new MemberFunctionChangeReceiver<SOIFilter>(this,
+  //      &SOIFilter::onChange_PtzPoseCommand));  
+#endif
+
+  addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::ADD),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
-        &SOIFilter::onChange_CameraParameters));  
-  addChangeFilter(createGlobalTypeFilter<Video::CameraParametersWrapper>(cdl::OVERWRITE),
+        &SOIFilter::onChange_CameraMotion));  
+  addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<SOIFilter>(this,
-        &SOIFilter::onChange_CameraParameters));  
+        &SOIFilter::onChange_CameraMotion));  
 
 #ifdef FEAT_TRACK_ARM
   addChangeFilter(createGlobalTypeFilter<ArmIce::ArmStatus>(cdl::ADD),
@@ -432,11 +448,7 @@ void SOIFilter::CSfDisplayClient::onDialogValueChanged(const std::string& dialog
       double pan, tilt, zoom;
       int nf = sscanf(value.c_str(), "%lf, %lf, %lf", &pan, &tilt, &zoom);
       if (nf == 3) {
-        ptz::PTZPose p;
-        p.pan = pan * M_PI / 180;
-        p.tilt = tilt * M_PI / 180;
-        p.zoom = zoom;
-        pFilter->ptzServer->setPose(p);
+        pFilter->doMovePtzCommand(pan * M_PI / 180, tilt * M_PI / 180, zoom);
       }
     }
   }
@@ -641,41 +653,49 @@ void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
   log("Got robot pose");
 }
 
-void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
+void SOIFilter::onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc)
 {
-  Video::CameraParametersWrapperPtr pcampar =
-    getMemoryEntry<Video::CameraParametersWrapper>(_wmc.address);
-  if (pcampar->cam.id != camId)
-    return;
-
-  // XXX: static, not thread safe
-  static castutils::CRunningRate rate;
-  static Vector3 prevrot = vector3(0, 0, 0);
-  rate.tick();
-
-  Vector3 rot;
-  toRotVector(pcampar->cam.pose.rot, rot);
-  Vector3 dr = rot - prevrot;
-  prevrot = rot;
-  double err = fabs(dr.x) + fabs(dr.y) + fabs(dr.z);
-    
-  if (err >= 0.01) {
-    log("Camera is MOVING. Sampling at %.2gHz.", rate.getRate());
-    //log("rot x: %.4g, y: %.4g, z: %.4g", rot.x, rot.y, rot.z);
-    m_bCameraMoving = true;
-    m_endMoveTimeout.restart();
-    m_cameraParams.pose = pcampar->cam.pose; // only pose is valid
-  }
-  else {
-    if (m_bCameraMoving && m_endMoveTimeout.elapsed() > 500) {
-      log("Camera STOPPED.");
+  Video::CameraMotionStatePtr pcms = getMemoryEntry<Video::CameraMotionState>(_wmc.address);
+  if (pcms->camid == camId) {
+    m_bCameraMoving = pcms->bMoving;
+    if (!m_bCameraMoving) {
       m_endMoveTimeout.restart();
-      m_bCameraMoving = false;
-      m_cameraParams.pose = pcampar->cam.pose; // only pose is valid
       m_display.sendPtuStateToDialog();
     }
+    // log("Camera %d moving: %s", int(camId), m_bCameraMoving ? "YES" : "NO");
   }
 }
+
+#if 0
+void SOIFilter::onChange_PtzPoseCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  log("*** %s WM change: operation %d", _wmc.type.c_str(), (int)_wmc.operation);
+  ptz::SetPTZPoseCommandPtr pcmd = getMemoryEntry<ptz::SetPTZPoseCommand>(_wmc.address);
+  log("*** Status: %s", pcmd->comp == ptz::FAILED ? "FAIL" : pcmd->comp == ptz::SUCCEEDED ? "SUCC" : "I");
+}
+
+// TODO: Don't read CameraParameters too often. Move the reading and the checking
+// for camera movement to the main thread.
+void SOIFilter::onChange_CameraParameters(const cdl::WorkingMemoryChange & _wmc)
+{
+  if (! mCamParamsWma.isValid()) {
+    Video::CameraParametersWrapperPtr pcampar =
+      getMemoryEntry<Video::CameraParametersWrapper>(_wmc.address);
+    if (pcampar->cam.id != camId)
+      return;
+  }
+  mCamParamsWma.update(_wmc);
+}
+
+const cogx::Math::Pose3& SOIFilter::getCameraPose()
+{
+  if (mCamParamsWma.isChanged()) {
+    CameraParametersWrapperPtr pcampar = mCamParamsWma.get();
+    m_cameraPose = pcampar->cam.pose; // only pose is valid in CameraParameters from CameraMount
+  }
+  return m_cameraPose;
+}
+#endif
 
 #ifdef FEAT_TRACK_ARM
 void SOIFilter::onChange_ArmPosition(const cdl::WorkingMemoryChange & _wmc)
@@ -930,17 +950,37 @@ void SOIFilter::updateRobotPosePtz()
   }
 }
 
-bool SOIFilter::movePtz(double pan, double tilt, double zoom)
+bool SOIFilter::doMovePtzCommand(double pan, double tilt, double zoom)
 {
+#if 0
   if (!ptzServer.get())
     return false;
-
   ptz::PTZReading ptup;
   ptup.pose.pan = pan;
   ptup.pose.tilt = tilt;
   ptup.pose.zoom = zoom;
   log("PTU Command: pan to %.3f, tilt to %.3f", ptup.pose.pan, ptup.pose.tilt);
   ptzServer->setPose(ptup.pose);
+#else
+  ptz::SetPTZPoseCommandPtr pcmd = new ptz::SetPTZPoseCommand();
+  pcmd->pose.pan = pan;
+  pcmd->pose.tilt = tilt;
+  pcmd->pose.zoom = zoom;
+  pcmd->comp = ptz::COMPINIT;
+  string id = newDataID();
+  addToWorkingMemory(id, pcmd);  
+  log("PTU Command: pan to %.3f, tilt to %.3f", pan, tilt);
+#endif
+  return true;
+}
+
+bool SOIFilter::movePtz(double pan, double tilt, double zoom)
+{
+  doMovePtzCommand(pan, tilt, zoom);
+
+  if (!ptzServer.get())
+    return false;
+
   castutils::CMilliTimer tm(true);
   double eps = 1e-2;
   while (tm.elapsed() < 3000) {
