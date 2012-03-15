@@ -2064,7 +2064,7 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
 /* Fills map with an expanded version of gridmap, where unknown space is
    also set as obstacles */
-void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map) {
+void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, double k) {
   
 //  if(lockMapsMutex) {
 //
@@ -2095,7 +2095,7 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
     }
   }
   // Grow each occupied cell to account for the size of the robot.
-  ungrown_map.growInto(map, 1.5 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
+  ungrown_map.growInto(map, k * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
   /* Set unknown space as obstacles, since we don't want to find paths
   going through space we don't know anything about */
   for(int x = -gridmapSize; x < gridmapSize; ++x) {
@@ -2328,7 +2328,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   Cure::BinaryMatrix map;
 
   // Get the expanded binary map used to search 
-  getExpandedBinaryMap(m_lgm, map);
+  getExpandedBinaryMap(m_lgm, map,1.5);
 /*    peekabot::OccupancySet2D cells;
     double cellSize=m_lgm->getCellSize();
     int gridmapSize = m_lgm->getSize();
