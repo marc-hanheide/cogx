@@ -40,7 +40,7 @@ public abstract class AbstractDiscreteTransferFunction<From extends Ice.ObjectIm
 	}
 
 	public static String getBeliefTypeFromCastType(String casttype) {
-		StringTokenizer st = new StringTokenizer(casttype, ":");
+		StringTokenizer st = new StringTokenizer(casttype.toLowerCase(), ":");
 		String type = casttype.toLowerCase();
 		while (st.hasMoreTokens())
 			type = st.nextToken();
