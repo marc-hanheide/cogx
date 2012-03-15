@@ -29,7 +29,9 @@ VARDEFAULT feature_options=<multiline>
     planning_sa		# enable planning core
     debug			# enable more debug GUIs and WM loggers
     dialogue		# enable dialogue
-    !motivation		# enable motivation
+    motivation		# enable motivation base
+    !motivation_external	# enable motivation via external goal infusion
+    !motivation_explanation	# enable motivation via explanation
     visualization	# enable visualisation (see debug)
 </multiline>
 
@@ -385,8 +387,14 @@ IFOPTALL(%(feature_options), planning_sa)
     JAVA MG exec-monitor dora.execution.components.ExecutionMonitor --displayserver "display.srv" 
     
     IFOPTALL(%(feature_options), motivation)
-		### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
-        JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
+	    IFOPTALL(%(feature_options), motivation_external)
+			### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
+	        JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
+	    ENDIF
+	    IFOPTALL(%(feature_options), motivation_explanation)
+			### creates goals from hypothesis about visualobjects
+	        JAVA MG goal.hyp-generator motivation.components.generators.VisualObjectHypothesisGoalGenerator
+		ENDIF
 		### this instantiates the filter layer of the motivation architecture, here: it's a PassAllFilter, that let's Dora adhere anything
         JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" 
 		### this instantiates the scheduler (or manager) layer of the motivation architecture
