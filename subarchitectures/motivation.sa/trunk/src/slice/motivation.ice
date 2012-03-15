@@ -105,6 +105,10 @@ module motivation {
     	class TutorInitiativeMotive extends Motive {
     	};
 
+    	class HypothesisVerificationMotive extends Motive {
+			
+    	};
+
     	class TutorInitiativeLearningMotive extends TutorInitiativeMotive {
 			string assertedFeature;
 			string assertedValue;	
