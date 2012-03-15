@@ -1,0 +1,28 @@
+
+### the directory containing the calibration files to use
+SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
+
+#### TODO create categorical data for BHAM
+#SETVAR categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
+
+# Turn off unnecessary GUIs
+SETVAR feature_options=<multiline>
+    spatial			# enable the spatial core
+    binder			# enable all mediators in the cores enabled and the binding working memory
+    vision			# enable the vision core, object recognition (depending on the hardware setting)
+    peekabot		# use peekabot
+	man_ctrl		# disable manual GUIs for navigation, PTZ, planning, etc.
+    avs			# enable AVS view cone planning and relation manager
+    execution		# enable execution framework to let the planner trigger actions
+	conceptual		# enable conceptual framework
+	default			# enable default
+	coma			# enable coma
+    categorisation	# enable place categorisation
+    planning_sa		# enable planning core
+    !debug			# disable more debug GUIs and WM loggers
+    dialogue		# enable dialogue
+    motivation		# enable motivation
+    !visualization	# disable visualisation (see debug)
+</multiline>
+
+INCLUDE dora-yr4.cast
