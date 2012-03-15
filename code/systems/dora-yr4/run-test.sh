@@ -22,6 +22,12 @@ else
     GOAL=""
 fi
 
+if [ "$3" ]; then
+    stageFile="$3"
+else
+    stageFile="instantiations/stage/BHAM/cs-2-small-furniture.cfg"
+fi
+
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$DIR"
@@ -85,7 +91,7 @@ xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
 PIDS="$PIDS $!"
 sleep 2
 
-xterm -e player instantiations/stage/BHAM/cs-2-small.cfg &
+xterm -e player $stageFile &
 PIDS="$PIDS $!"
 
 rm -f  robotpose.ccf tmpmap.*
