@@ -117,7 +117,7 @@ module Video {
   // The motion is detected for selected cameras by CameraMount which monitors
   // the PTZ server.
   class CameraMotionState {
-    int id;
+    int camid;
     bool bMoving;
   };
 
