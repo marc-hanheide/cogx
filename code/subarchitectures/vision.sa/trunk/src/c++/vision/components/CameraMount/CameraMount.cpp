@@ -8,8 +8,8 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <castutils/Timers.hpp>
 
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include "cogxmath.h"
 #include "Video.hpp"
 #include "VideoUtils.h"
@@ -159,6 +159,7 @@ void CameraMount::configure(const map<string,string> & _config)
     for(size_t i = 0; i < camFixedPoses.size(); i++)
       inverse(camFixedPoses[i], camFixedPoses[i]);
   }
+
 }
 
 void CameraMount::start()
@@ -167,13 +168,84 @@ void CameraMount::start()
   {
     m_PTUServer = getIceServer<PTZInterface>(ptzServerComponent);
   }
+
+  addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::ADD),
+      new MemberFunctionChangeReceiver<CameraMount>(this,
+        &CameraMount::onAdd_PtzPoseCommand));  
+}
+
+void CameraMount::onAdd_PtzPoseCommand(const cdl::WorkingMemoryChange & _wmc)
+{
+  IceUtil::Mutex::Lock lock(mCamMotionMutex);
+  for(size_t i = 0; i < mCamMotion.size(); i++) {
+    MotionInfo& mi = mCamMotion[i];
+    if (mi.mpState.get() && !mi.isMoving()) {
+      mi.startMoving();
+    }
+  }
+}
+
+bool CameraMount::MotionInfo::detectStatusChange(cogx::Math::Pose3& newPose)
+{
+  double err;
+  Vector3 rot;
+  if (mForcedMoveCount) {
+    err = 1e9;
+  }
+  else {
+    toRotVector(newPose.rot, rot);
+    Vector3 dr = rot - mPrevRot;
+    err = fabs(dr.x) + fabs(dr.y) + fabs(dr.z);
+    //if (mCamId == 0)
+    //  pOwner->log("Camera %d moved for: %.6f", mCamId, err);
+  }
+  bool oldState = mpState->bMoving;
+
+  //if (err >= 0.01) {
+  if (err >= 0.002) {
+    if (!mpState->bMoving)
+       pOwner->log("Camera %d is MOVING.", mCamId);
+    mpState->bMoving = true;
+    if (mForcedMoveCount) {
+      mForcedMoveCount -= 1;
+    }
+    else {
+      mPrevRot = rot;
+    }
+    mEndMoveTimeout.restart();
+  }
+  else {
+    if (mpState->bMoving && mEndMoveTimeout.elapsed() > 500) {
+    //if (mpState->bMoving) {
+      pOwner->log("Camera %d STOPPED.", mCamId);
+      mpState->bMoving = false;
+    }
+  }
+  
+  return !mbSaved || oldState != mpState->bMoving;
+}
+
+void CameraMount::MotionInfo::writeWm()
+{
+  try {
+    //pOwner->println(" *** cam %d WRITE WM %s", mCamId, mWmId.c_str());
+    if (!mbSaved) {
+      pOwner->addToWorkingMemory(mWmId, mpState);
+      mbSaved = true;
+    }
+    else {
+      pOwner->overwriteWorkingMemory(mWmId, mpState);
+    }
+  }
+  catch (runtime_error &e) {
+    pOwner->println("%s", e.what());
+  }
 }
 
 void CameraMount::runComponent()
 {
   size_t size = camIds.size();
   bool camsAddedToWM[size];
-  Pose3 oldPoses[size];
 
   castutils::CCastPaceMaker<CameraMount> paceMaker(*this, 1000/5, 1); // 5Hz
 
@@ -183,9 +255,15 @@ void CameraMount::runComponent()
   for(size_t i = 0; i < camIds.size(); i++)
     camWMIds[i] = newDataID();
 
+  for(size_t i = 0; i < camIds.size(); i++) {
+     mCamMotion.push_back(MotionInfo(this, camIds[i], newDataID()));
+     mCamMotion.back().writeWm();
+  }
+
   while(isRunning())
   {
     paceMaker.sync();
+    //log("CameraMount running at %.3fHz", paceMaker.getTotalRate());
 
     vector<Pose3> camPosesToEgo(camIds.size());
     cdl::CASTTime time;
@@ -203,6 +281,16 @@ void CameraMount::runComponent()
       calculateFixedPoses(camPosesToEgo);
       time = getCASTTime();
     }
+
+    {
+      IceUtil::Mutex::Lock lock(mCamMotionMutex);
+      for(size_t i = 0; i < mCamMotion.size(); i++) {
+        if (mCamMotion[i].detectStatusChange(camPosesToEgo[i])) {
+          mCamMotion[i].writeWm();
+        }
+      }
+    }
+
     for(size_t i = 0; i < camIds.size(); i++)
     {
       CameraParametersWrapperPtr camParms = new CameraParametersWrapper;
@@ -214,18 +302,13 @@ void CameraMount::runComponent()
       camParms->cam.time = time;
       if(camsAddedToWM[i])
       {
-//        if (equals(oldPoses[i], camParms->cam.pose, 1e-4)) {
-//        	log("no update on cam pose as it didn't change significantly");
-//        } else {
-            overwriteWorkingMemory(camWMIds[i], camParms);
-            oldPoses[i]=camParms->cam.pose;
-//        }
+         // MAYBE ovr only when: if (mCamMotion.isMoving() || mCamMotion.statusChanged())
+         overwriteWorkingMemory(camWMIds[i], camParms);
       }
       else
       {
         addToWorkingMemory(camWMIds[i], camParms);
         camsAddedToWM[i] = true;
-    	oldPoses[i]=camParms->cam.pose;
       }
     }
   }
