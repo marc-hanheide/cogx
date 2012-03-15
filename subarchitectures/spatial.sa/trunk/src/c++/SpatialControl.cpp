@@ -414,6 +414,11 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   }
 
+  m_maxNewPlaceholderRadius = 1.5;
+  m_minNewPlaceholderRadius = 1.05;   
+  m_maxMovePlaceholderRadius = 1;
+  m_min_sep_dist = 1.05;
+
   m_simulateKinect = false;
   if (_config.find("--simulate-kinect") != _config.end()) {
     if (m_UsePointCloud) {
@@ -758,7 +763,7 @@ void SpatialControl::explorationDone(int taskId, int status)
   }
 }
 
-void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight, int kminX, int kmaxX, int kminY, int kmaxY)
+void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight)
 {
   int xi, yi;
 
@@ -806,43 +811,6 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure:
       }
     }
   }
-  
-
-  if(m_usePeekabot){
-  	SCOPED_TIME_LOG;
-
-    peekabot::OccupancySet2D cells;
-    double cellSize=m_lgm->getCellSize();
-    for (yi = minY+1; yi < maxY; yi++) {
-      for (xi = minX+1; xi < maxX; xi++) {
-            if (lgm(xi, yi)=='0')
-                cells.add(xi*cellSize,yi*cellSize,0);
-            else if (lgm(xi, yi)=='1')
-                cells.add(xi*cellSize,yi*cellSize,1);
-      }
-    }
-    m_ProxyGridMap.set_cells(cells);
-    if (m_show3Dobstacles){
-      peekabot::OccupancySet3D cells1;
-      for (yi = kminY; yi <= kmaxY; yi++) {
-        for (xi = kminX; xi <= kmaxX; xi++) {
-          if (lgm(xi,yi) == '1'){ 
-            if ((*heightMap)(xi, yi) != FLT_MAX){
-              for (double zi = 0; zi <= (*heightMap)(xi, yi); zi+=0.05) {
-                cells1.set_cell(xi*lgm.getCellSize(),yi*lgm.getCellSize(),zi,1);
-              }
-            }
-          }
-          else if (lgm(xi,yi) == '0'){
-              for (double zi = 0; zi <= 1.45; zi+=0.05) {
-                cells1.set_cell(xi*lgm.getCellSize(),yi*lgm.getCellSize(),zi,0);
-              }
-          } 
-        }
-      }
-      m_ProxyGridMapKinect.set_cells(cells1);
-    }
-  }
 }
 
 class ComparePoints {
@@ -866,6 +834,9 @@ void SpatialControl::updateGridMaps(){
   Cure::Pose3D LscanPose;
   Cure::Pose3D lpW;
   int xi,yi;
+
+  double vFOV = 43 * M_PI / 180;
+  double kinectZ = 1.45;
 
   /* Update a temporary local map so we don't hog the lock */
   Cure::LocalGridMap<unsigned char> *tmp_lgm;
@@ -1013,8 +984,6 @@ void SpatialControl::updateGridMaps(){
           
           bool updateHeightMap = true;
 
-          double vFOV = 43 * M_PI / 180;
-          double kinectZ = 1.45;
           double alpha = m_currentPTZPose.tilt + vFOV/2;
           double fovZ = kinectZ + (it->p.x * cos(m_currentPTZPose.pan) + it->p.y * sin(m_currentPTZPose.pan)) * tan(alpha);
 
@@ -1026,7 +995,7 @@ void SpatialControl::updateGridMaps(){
 
           double nx = it->p.x * cos(-m_currentPTZPose.pan) - it->p.y * sin(-m_currentPTZPose.pan);
           double ny = it->p.x * sin(-m_currentPTZPose.pan) + it->p.y * cos(-m_currentPTZPose.pan);
-          if ((nx < 0.5) || (nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) updateHeightMap = false;
+          if ((nx < 0.55) || (nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) updateHeightMap = false;
           /* If the above tests passed update the height map */ 
           if(updateHeightMap){
             lgmKH(xi, yi) = pZ;
@@ -1048,8 +1017,44 @@ void SpatialControl::updateGridMaps(){
     {
       /* Project the height map onto the 2D obstacle map */ 
       SCOPED_TIME_LOG;
-      blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight,pointcloudMinXi,pointcloudMaxXi,pointcloudMinYi,pointcloudMaxYi);
+      blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight);
     }
+    if(m_usePeekabot){
+    	SCOPED_TIME_LOG;
+
+      peekabot::OccupancySet2D cells;
+      double cellSize=m_lgm->getCellSize();
+      for (int yi = min(pointcloudMinYi,laserMinYi)+1; yi < max(pointcloudMaxYi,laserMaxYi); yi++) {
+        for (int xi =  min(pointcloudMinXi,laserMinXi)+1; xi < max(pointcloudMaxXi,laserMaxXi); xi++) {
+              if ((*tmp_lgm)(xi, yi)=='0')
+                  cells.add(xi*cellSize,yi*cellSize,0);
+              else if ((*tmp_lgm)(xi, yi)=='1')
+                  cells.add(xi*cellSize,yi*cellSize,1);
+        }
+      }
+      m_ProxyGridMap.set_cells(cells);
+      if (m_show3Dobstacles){
+        peekabot::OccupancySet3D cells1;
+        for (int yi = pointcloudMinYi; yi <= pointcloudMaxYi; yi++) {
+          for (int xi = pointcloudMinXi; xi <= pointcloudMaxXi; xi++) {
+            if ((*tmp_lgm)(xi,yi) == '1'){ 
+              if ((*m_lgmKH)(xi, yi) != FLT_MAX){
+                for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
+                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
+                }
+              }
+            }
+            else if ((*tmp_lgm)(xi,yi) == '0'){
+                for (double zi = 0; zi <= kinectZ; zi+=0.05) {
+                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
+                }
+            } 
+          }
+        }
+        m_ProxyGridMapKinect.set_cells(cells1);
+      }
+    }
+
   }
   else if (m_simulateKinect) {
     int minX = laserMinXi;
@@ -2262,7 +2267,6 @@ int SpatialControl::findClosestNode(double x, double y) {
 
 bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, int &closestNodeId){
   closestNodeId = -1;
-  double min_sep_dist = 1.05;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
     int maxDist = 40; // The first maximum distance to try
     int closestNodeId = -1;
@@ -2274,7 +2278,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
       SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
 
       double dist2sq = (x*m_lgm->getCellSize() - extantHyp->x) * (x*m_lgm->getCellSize() - extantHyp->x) + (y*m_lgm->getCellSize() - extantHyp->y) * (y*m_lgm->getCellSize() - extantHyp->y);
-      if (dist2sq < min_sep_dist * min_sep_dist){
+      if (dist2sq < m_min_sep_dist * m_min_sep_dist){
         return false;
       }
     }
@@ -2318,7 +2322,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
 
 SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   SCOPED_TIME_LOG;
-  double min_sep_dist = 1.05;
+
   SpatialData::NodeHypothesisSeq ret;
 
   Cure::BinaryMatrix map;
@@ -2357,7 +2361,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); (nodeIt != nodes.end()) && !overlapped; ++nodeIt) {
       try {
         double dist2sq = (extantHyp->x - (*nodeIt)->x) * (extantHyp->x - (*nodeIt)->x) + (extantHyp->y - (*nodeIt)->y) * (extantHyp->y - (*nodeIt)->y);
-        if (dist2sq < min_sep_dist * min_sep_dist){
+        if (dist2sq < m_min_sep_dist * m_min_sep_dist){
           overlapped=true;
           overlapped_hypotheses.push_back(extantHyp);
         }
@@ -2383,8 +2387,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       continue;
 
     for (int i=0;i<10;i++){
-      double theta = (rand() % 360) * 3.14 / 180; 
-      int r = rand() % 20;
+      double theta = (rand() % 360) * M_PI / 180; 
+      int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
       for (int j=0;j<10;j++){
         int x= round(hypxi+r*cos(theta+j*2*3.14/10)); 
         int y= round(hypyi+r*sin(theta+j*2*3.14/10)); 
@@ -2414,10 +2418,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   int robotxi;
   int robotyi;  
   int originPlaceID;
+
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
   for (int i=0;i<10;i++){
-    double theta = (rand() % 360) * 3.14 / 180; 
-    int r = rand() % 20 + 10;
+    double theta = (rand() % 360) * M_PI / 180; 
+    int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
     for (int j=0;j<10;j++){
       int x= round(robotxi+r*cos(theta+j*2*3.14/10)); 
       int y= round(robotyi+r*sin(theta+j*2*3.14/10)); 
