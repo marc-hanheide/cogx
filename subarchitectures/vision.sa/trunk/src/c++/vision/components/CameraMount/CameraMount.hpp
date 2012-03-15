@@ -10,11 +10,15 @@
 #ifndef CAMERA_MOUNT_HPP
 #define CAMERA_MOUNT_HPP
 
-#include <stdexcept>
-#include <vector>
 #include <cast/architecture/ManagedComponent.hpp>
+#include <castutils/Timers.hpp>
 #include <Math.hpp>
 #include <PTZ.hpp>
+
+#include <IceUtil/IceUtil.h>
+
+#include <stdexcept>
+#include <vector>
 
 class CameraMount : public cast::ManagedComponent
 {
@@ -32,6 +36,45 @@ private:
    * IDs of cameras (0, 1 etc.)
    */
   std::vector<int> camIds;
+
+  // @author: mmarko
+  struct MotionInfo
+  {
+     CameraMount* pOwner;
+     int mCamId;
+     std::string mWmId;
+     Video::CameraMotionStatePtr mpState;
+     bool mbSaved;
+     unsigned int mForcedMoveCount;
+     castutils::CMilliTimer mEndMoveTimeout;
+
+     // Last rotation vector for the detection of camera movements
+     cogx::Math::Vector3 mPrevRot;
+
+     MotionInfo(CameraMount* pComponent, int camid, std::string wmid)
+        : pOwner(pComponent), mCamId(camid), mWmId(wmid), mbSaved(false), mForcedMoveCount(0)
+     {
+        mPrevRot = cogx::Math::vector3(0, 0, 0);
+        mpState = new Video::CameraMotionState();
+        mpState->camid = mCamId;
+        mpState->bMoving = false;
+     }
+
+     bool isMoving()
+     {
+        return mpState.get() && mpState->bMoving;
+     }
+     void startMoving(unsigned int count=2)
+     {
+       mForcedMoveCount = (count > 20) ? 20 : count;
+     } 
+     bool detectStatusChange(cogx::Math::Pose3& newPose);
+     void writeWm();
+  };
+
+  std::vector<CameraMount::MotionInfo> mCamMotion;
+  IceUtil::Mutex mCamMotionMutex;
+
   /**
    * WM IDs of camera poses.
    */
@@ -92,6 +135,9 @@ private:
    */
   void calculateFixedPoses(std::vector<cogx::Math::Pose3> &camPosesToEgo);
 
+  // @author: mmarko
+  // Used in motion state management.
+  void onAdd_PtzPoseCommand(const cast::cdl::WorkingMemoryChange & _wmc);
 protected:
   virtual void configure(const std::map<std::string, std::string>& _config) throw(std::runtime_error);
   virtual void start();
