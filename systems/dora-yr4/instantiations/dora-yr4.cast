@@ -25,7 +25,7 @@ VARDEFAULT feature_options=<multiline>
 	conceptual		# enable conceptual framework
 	default			# enable default
 	coma			# enable coma
-    !categorisation	# enable place categorisation
+    categorisation	# enable place categorisation
     planning_sa		# enable planning core
     debug			# enable more debug GUIs and WM loggers
     dialogue		# enable dialogue
@@ -38,7 +38,8 @@ IFEQ(%(hardware),real)
     kinect			# use the kinect point cloud server for obstacle avoidance and person detection
     kinect-video	# use the kinect as video source for object recognition
     !video 			# use OpenCV cameras as video source for object recognition
-    !blobfinder		# use blobfinder to simulate object and person deteciton
+    !prosilica  # use the Prosilica camera
+    !blobfinder		# use blobfinder to simulate object and person detection
     ptz  			# use ptz (starts different components depending on %(hardware)
   </multiline>
 ELSE # simulation
@@ -46,6 +47,7 @@ ELSE # simulation
     !kinect
     !kinect-video
     !video 
+    !prosilica
     blobfinder    
     ptz  
   </multiline>
@@ -54,7 +56,13 @@ ENDIF
 ### the directory containing the calibration files to use
 VARDEFAULT vision_calib_root=instantiations/calibration/alu-robot-at-kth
 
-### the default goal passed on to the planner GUI
+### the default camera ID
+VARDEFAULT prosilica_id=37105
+
+## default MTU value
+VARDEFAULT prosilica_packet_size=1500
+
+### the default goals passed on to the planner GUI
 VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
 
 ### the plannig domain to use
@@ -115,6 +123,12 @@ VARDEFAULT fake_tables=<multiline>
 
 VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
 
+#################################################
+
+# The following variables are not set
+# vision_pcserver
+
+
 ###########################################################################
 ###########################################################################
 ###########################################################################
@@ -170,6 +184,10 @@ VARDEFAULT spatial_max_door_width=1.2  # Upper boundary on width of doorways
     VARDEFAULT exclude_exploration=
 
 ### Kinect options
+
+# simulate_kinect - If this is set, only the wedge that the kinect can see in the navigation
+#                   position is treated as free space; if not, the whole laser scan is used
+
     IFOPTALL(%(hardware_options), kinect)
 	    # Connect to and use Kinect point cloud server
 	    SETVAR spatial_pcserver=--pcserver pcserver 
@@ -221,6 +239,7 @@ IFOPTALL(%(feature_options), spatial)
     CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect)
 
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
+# If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
     CPP GD slam.process 		SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
@@ -242,7 +261,7 @@ IFOPTALL(%(feature_options), spatial)
 
 
     IFOPTALL(%(feature_options), binder)
-### run the sptial mediators so that the spatial stuff shows up in the binder/planner
+### run the spatial mediators so that the spatial stuff shows up in the binder/planner
 		INCLUDE includes/spatial.sa/spatial-mediator.cast
 ### this is a dedicated garbage collection that removes any SpatialProperties for which the referred Place has been removed. It
 ### makes sure that there are no orphaned properties on WM left
@@ -283,23 +302,42 @@ IFOPTALL(%(feature_options), vision)
     CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver ptz.server
 
     IFOPTALL(%(hardware_options), video)
-        CPP MG VideoServer 	OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "%(vision_calib_root)/dora.right-not-proper.cal"
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
+        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
         CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --camid 0
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
+        CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images
+    ENDIF
+
+    IFOPTALL(%(hardware_options), prosilica)
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
+        CPP MG ProsilicaServer 	ProsilicaServer --camids "3" --cam-id %(prosilica_id) --mtu %(prosilica_packet_size)
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
+        CPP MG viewer.prosilica 		VideoViewer --videohost localhost --videoname ProsilicaServer --camid 3
     ENDIF
 
     IFOPTALL(%(hardware_options), kinect)
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/PointCloudServers
         CPP MG pcserver 	KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
-        CPP MG recognizer.people PCPeopleDetector $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
+
+        CPP MG recognizer.people PCPeopleDetector --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4 
     ENDIF
 
     IFOPTALL(%(hardware_options), blobfinder)
         JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
         CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
         JAVA MG recognizer.people vision.components.BlobbyPeopleDetector --label-person 255,255,0
     ENDIF
 
     IFOPTALL(%(hardware_options), kinect-video)
-        CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images #--display 
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
+        CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images 
     ENDIF
 
     IFOPTALL(%(feature_options), fake-table-detect)
@@ -344,7 +382,7 @@ IFOPTALL(%(feature_options), planning_sa)
     ENDIF
     JAVA MG executor dora.execution.components.DoraExecutionMediator
 
-    JAVA MG exec-monitor dora.execution.components.ExecutionMonitor  $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" 
+    JAVA MG exec-monitor dora.execution.components.ExecutionMonitor --displayserver "display.srv" 
     
     IFOPTALL(%(feature_options), motivation)
 		### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
@@ -433,7 +471,7 @@ VARDEFAULT displaysrv_param_redirect=
 		### starts the WM editor that let's you see and modify WM content in a Java GUI. Set %(logged_types) to select the types
 		### you are interested in
         JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "%(logged_types)"
-        JAVA MG workingmemory.display castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe  "%(logged_types)" --generic-col --compact
+        JAVA MG workingmemory.display castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe  "%(logged_types)" --generic-col --compact
 		### starts the WM logger that logs all operation of subscribed types on INFO level in the logs. 
 		### Set %(logged_types) to select the types you are interested in
 		JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
