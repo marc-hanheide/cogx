@@ -46,13 +46,15 @@ private:
      Video::CameraMotionStatePtr mpState;
      bool mbSaved;
      unsigned int mForcedMoveCount;
+     double mMinDelta;
      castutils::CMilliTimer mEndMoveTimeout;
 
      // Last rotation vector for the detection of camera movements
      cogx::Math::Vector3 mPrevRot;
 
-     MotionInfo(CameraMount* pComponent, int camid, std::string wmid)
-        : pOwner(pComponent), mCamId(camid), mWmId(wmid), mbSaved(false), mForcedMoveCount(0)
+     MotionInfo(CameraMount* pComponent, int camid, std::string wmid, double minDelta)
+        : pOwner(pComponent), mCamId(camid), mWmId(wmid), mMinDelta(minDelta),
+          mbSaved(false), mForcedMoveCount(0)
      {
         mPrevRot = cogx::Math::vector3(0, 0, 0);
         mpState = new Video::CameraMotionState();
@@ -74,6 +76,12 @@ private:
 
   std::vector<CameraMount::MotionInfo> mCamMotion;
   IceUtil::Mutex mCamMotionMutex;
+
+  // For the --motion_tollerance parameter.
+  // The minimum change in the sum of ptz angle deltas that is classified as
+  // movement. The default is 1e-4. For Gazebo set to at least 2e-3.
+  // (the value for Gazebo was tested when CameraMount was running at approx. 2Hz)
+  double mMotionTollerance;
 
   /**
    * WM IDs of camera poses.

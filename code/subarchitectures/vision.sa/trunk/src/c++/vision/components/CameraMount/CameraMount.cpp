@@ -49,6 +49,7 @@ CameraMount::CameraMount()
   setIdentity(ptTiltPose);
   ptzServerComponent = "";
   ref_cam_id = -1;
+  mMotionTollerance = 1e-4;
 }
 
 void CameraMount::configure(const map<string,string> & _config)
@@ -139,6 +140,17 @@ void CameraMount::configure(const map<string,string> & _config)
     ptzServerComponent = it->second;
   }
 
+  // default: 1e-4
+  // for gazebo simulation: set to at least 2e-3
+  if((it = _config.find("--motion_tollerance")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> mMotionTollerance;
+    if (mMotionTollerance < 1e-9) mMotionTollerance = 1e-9;
+    if (mMotionTollerance > 0.1) mMotionTollerance = 0.1;
+  }
+  log("Motion Tollerance: %.9f", mMotionTollerance);
+
   if(camIds.size() == 0)
     throw runtime_error("no cam IDs given, need at least one");
   if(camPoses.size() != 0 && camIds.size() != camPoses.size())
@@ -201,8 +213,7 @@ bool CameraMount::MotionInfo::detectStatusChange(cogx::Math::Pose3& newPose)
   }
   bool oldState = mpState->bMoving;
 
-  //if (err >= 0.01) {
-  if (err >= 0.002) {
+  if (err >= mMinDelta) {
     if (!mpState->bMoving)
        pOwner->log("Camera %d is MOVING.", mCamId);
     mpState->bMoving = true;
@@ -256,7 +267,7 @@ void CameraMount::runComponent()
     camWMIds[i] = newDataID();
 
   for(size_t i = 0; i < camIds.size(); i++) {
-     mCamMotion.push_back(MotionInfo(this, camIds[i], newDataID()));
+     mCamMotion.push_back(MotionInfo(this, camIds[i], newDataID(), mMotionTollerance));
      mCamMotion.back().writeWm();
   }
 
