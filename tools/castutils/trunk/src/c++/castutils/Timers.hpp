@@ -13,19 +13,13 @@ namespace castutils {
  */
 class CMilliTimer
 {
-   void* pStartTime;
+   timeval mStartTime;
    long long timeout;
 public:
-   CMilliTimer(bool bStart=true)
+   CMilliTimer(bool bStart=true /*unused*/)
    {
-      pStartTime = 0;
+      gettimeofday(&mStartTime, 0);
       timeout = 0;
-      if (bStart) restart();
-   }
-
-   ~CMilliTimer()
-   {
-      if (pStartTime) delete (timeval*)pStartTime;
    }
 
    void setTimeout(double milliSeconds)
@@ -35,9 +29,7 @@ public:
 
    void restart()
    {
-      if (pStartTime) delete (timeval*)pStartTime;
-      pStartTime = new timeval;
-      gettimeofday((timeval*)pStartTime, 0);
+      gettimeofday(&mStartTime, 0);
    }
 
    long long elapsed()
@@ -47,16 +39,12 @@ public:
 
    long long elapsed_micros()
    {
-      if (!pStartTime) return 0;
-
-      struct timeval& start = *(timeval*)pStartTime;
+      const struct timeval& start = mStartTime;
       struct timeval now;
-      long long useconds;
 
       gettimeofday(&now, 0);
 
-      useconds  = (now.tv_sec - start.tv_sec) * 1000 * 1000 + (now.tv_usec - start.tv_usec);
-      return useconds;
+      return (now.tv_sec - start.tv_sec) * 1000 * 1000 + (now.tv_usec - start.tv_usec);
    }
 
    bool isTimeoutReached()
