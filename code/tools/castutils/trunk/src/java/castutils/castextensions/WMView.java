@@ -315,11 +315,11 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	private void register() {
 		log("register listeners");
-		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
+		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.ADD), new WMChangeReceiver(type));
-		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
+		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.DELETE), new WMChangeReceiver(type));
-		component.addChangeFilter(ChangeFilterFactory.createTypeFilter(type,
+		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
 				WorkingMemoryOperation.OVERWRITE), new WMChangeReceiver(type));
 
 	}
