@@ -112,9 +112,9 @@ IFOPTALL(%(hardware_options), ptz cameramount )
     #CPP MG CameraMountTest CameraMountTest --pan "0.0" --tilt "-54.00" --ptzserver "%(ptzServerComponent)"
 ENDIF
 
-#--------------------------------------------------------------------------------------------------
-
-IFOPTALL(%(hardware_options), ptz )
-    JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-1.0" # --testGUI
-ENDIF
+## #--------------------------------------------------------------------------------------------------
+## MOVED TO MAIN FILE under spatial.sa
+## IFOPTALL(%(hardware_options), ptz )
+##     JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-1.0" # --testGUI
+## ENDIF
 
