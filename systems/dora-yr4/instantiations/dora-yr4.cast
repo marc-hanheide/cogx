@@ -67,7 +67,7 @@ VARDEFAULT prosilica_packet_size=1500
 ### the default goals passed on to the planner GUI
 VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
 
-### the plannig domain to use
+### the planning domain to use
 VARDEFAULT planning_domain=dora-interactive.pddl
 
 ### the default knowledge to use
@@ -106,30 +106,22 @@ VARDEFAULT siftroot_=./instantiations/sift-models
 VARDEFAULT plyroot_=./instantiations/ply-models
 ### siftfiles
 VARDEFAULT or3d_sift_files=<multiline>
-   %(siftroot_)/frosties2.sift
-   %(siftroot_)/re_book.sift
-   %(siftroot_)/table.sift
+   %(siftroot_)/frosties.sift
+   %(siftroot_)/AImagazineSpring1999.sift
 </multiline>
 ### ply files
 VARDEFAULT or3d_ply_files=<multiline>
-   %(plyroot_)/frosties2.ply
-   %(plyroot_)/re_book.ply
-   %(plyroot_)/table.ply
+   %(plyroot_)/frosties.ply
+   %(plyroot_)/AImagazineSpring1999.ply
 </multiline>
 ### object labels
-VARDEFAULT or3d_labels=cerealbox book table
+VARDEFAULT or3d_labels=cerealbox magazine
 VARDEFAULT fake_tables=<multiline>
    --pos-table "3.6, 4.4, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "3.6, 2.0, 8.0, 8.0"
 </multiline>
 
 
 VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
-
-#################################################
-
-# The following variables are not set
-# vision_pcserver
-
 
 ###########################################################################
 ###########################################################################
@@ -174,8 +166,8 @@ VARDEFAULT ptz_test_gui=--testGUI
 
 
 ### SPATIAL.SA DOOR DETECTION SETTINGS
-VARDEFAULT spatial_min_door_width=0.8  # Lower boundary on width of doorways
-VARDEFAULT spatial_max_door_width=1.2  # Upper boundary on width of doorways
+VARDEFAULT spatial_min_door_width=0.75  # Lower boundary on width of doorways
+VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
 
 ### Disable placeholder generation (no exploration)
     VARDEFAULT no_placeholders=
@@ -185,6 +177,16 @@ VARDEFAULT spatial_max_door_width=1.2  # Upper boundary on width of doorways
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
     VARDEFAULT exclude_exploration=
 
+### AVS options
+VARDEFAULT avs_cone_depth=4			# distance in metres at which the objects should be detectable
+
+# closest distance in metres from an obstacle (putting this comment on the line below caused a problem
+VARDEFAULT avs_sample_from_obs=0.8 
+
+VARDEFAULT avs_sift_objects="table cerealbox"
+VARDEFAULT avs_random_vc=--random-vc    # Do generate random view cones for second and subsequent views
+
+
 ### Kinect options
 
 # simulate_kinect - If this is set, only the wedge that the kinect can see in the navigation
@@ -193,10 +195,12 @@ VARDEFAULT spatial_max_door_width=1.2  # Upper boundary on width of doorways
     IFOPTALL(%(hardware_options), kinect)
 	    # Connect to and use Kinect point cloud server
 	    SETVAR spatial_pcserver=--pcserver pcserver 
+ 	    SETVAR vision_pcserver=--pcserver pcserver 
 	    SETVAR simulate_kinect=
     ELSE
     	    # Simulate Kinect point cloud for free space clearing
 	    SETVAR spatial_pcserver=
+            SETVAR vision_pcserver=
 	    SETVAR simulate_kinect=--simulate-kinect
     ENDIF
 
@@ -251,7 +255,7 @@ IFOPTALL(%(feature_options), spatial)
 # Maintains connection between Place on the one hand and either a FNode or a
 # NodeHypothesis on the other. Supplies ICE interfaces for translating between the
 # two.
-    CPP GD place.manager 		PlaceManager --no-update-placeholders %(exclude-exploration) --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
+    CPP GD place.manager 		PlaceManager --no-update-placeholders %(exclude_exploration) --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
 
 ### Maintains local obstacle grid maps around individual nodes
 # Provides placeholder properties (length of associated frontier, size of
@@ -281,9 +285,11 @@ IFOPTALL(%(feature_options), spatial)
 		JAVA MG spatial-manual spatial.manual.ManualNavControl
     ENDIF
 
+ #EXPAND avs_cone_depth=%(avs_cone_depth)
+ #EXPAND avs_sample_from_obs=%(avs_sample_from_obs)
     IFOPTALL(%(feature_options), avs)
 		CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --ptzserver ptz.server --display-objects-in-pb 
-		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 141 --cam-vertangle 131 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth 4 --kernel-width-factor 0.7 --sampleawayfromobs 0.8 --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --random-vc --usepeekabot ######--ctrl-ptz 
+		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 141 --cam-vertangle 131 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --log --queryhandler conceptual.queryhandler  --siftobjects %(avs_sift_objects) %(avs_random_vc) --usepeekabot ######--ctrl-ptz 
     ENDIF
 ENDIF
 
@@ -302,6 +308,8 @@ IFOPTALL(%(feature_options), vision)
 
 ### read https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/CameraMount
     CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver ptz.server
+
+#EXPAND hardware_options=%(hardware_options)
 
     IFOPTALL(%(hardware_options), video)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
