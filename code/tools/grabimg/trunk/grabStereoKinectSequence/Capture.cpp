@@ -30,8 +30,8 @@
 #include "Device.h"
 // #include "Draw.h"
 
-#include <ni/XnCppWrapper.h>
-#include <ni/XnCodecIDs.h>
+#include <openni/XnCppWrapper.h>
+#include <openni/XnCodecIDs.h>
 
 using namespace xn;
 
