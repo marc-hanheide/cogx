@@ -19,8 +19,25 @@ SETVAR feature_options=<multiline>
     planning_sa		# enable planning core
     debug			# enable more debug GUIs and WM loggers
     dialogue		# enable dialogue
-    motivation		# enable motivation
+    motivation		# enable motivation base
+    !motivation_external	# enable motivation via external goal infusion
+    !motivation_explanation	# enable motivation via explanation
     visualization	# enable visualisation (see debug)
 </multiline>
+
+### the default knowledge to use
+SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-bham-yr4.xml"
+
+### the default probabilities
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
+
+### the default goals passed on to the planner GUI
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+
+SETVAR conceptual_categories=corridor,office,meetingroom
+
+SETVAR avs_cone_depth=2.5
+
+SETVAR exclude_exploration=--exclude-from-exploration "y > 2 or x > 2"
 
 INCLUDE dora-yr4.cast
