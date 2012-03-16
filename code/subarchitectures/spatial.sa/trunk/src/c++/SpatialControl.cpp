@@ -793,15 +793,8 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure:
           continue;
         lgm(xi, yi) = '0';
       }
-      else if ((m_UsePointCloud) && (lgm(xi, yi) != '1'))
+      else if (lgm(xi, yi) != '1')
         lgm(xi, yi) = '2';
-      else if ((!m_UsePointCloud) && (lgm(xi, yi) != '1')){
-        double cellsize = m_lgm->getCellSize();
-        double al = -m_currentPTZPose.pan;
-        double nx = xi*cellsize * cos(al) - yi*cellsize * sin(al);
-        double ny = xi*cellsize * sin(al) + yi*cellsize * cos(al);
-        if ((nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0)) lgm(xi, yi) = '2';
-      }
     }
   }
   for (yi = minY+1; yi < maxY; yi++) {
@@ -1082,7 +1075,7 @@ void SpatialControl::updateGridMaps(){
 					double al = -(lpW.getTheta()+m_currentPTZPose.pan);
 					double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
 					double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
-					if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0))
+          if ((nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0))
 						(*tmp_lgm)(xi, yi) = '2';
 				}
 			}
