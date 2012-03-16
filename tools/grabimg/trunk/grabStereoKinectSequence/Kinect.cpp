@@ -8,7 +8,7 @@
 
 
 #include "Kinect.h"
-#include <ni/XnCodecIDs.h>
+#include <openni/XnCodecIDs.h>
 
 namespace Kinect
 {

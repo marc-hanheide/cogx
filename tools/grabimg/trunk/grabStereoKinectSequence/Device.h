@@ -28,8 +28,8 @@
 // --------------------------------
 // Includes
 // --------------------------------
-#include "ni/XnCppWrapper.h"
-#include "ni/XnTypes.h"
+#include "openni/XnCppWrapper.h"
+#include "openni/XnTypes.h"
 using namespace xn;
 
 namespace kinect

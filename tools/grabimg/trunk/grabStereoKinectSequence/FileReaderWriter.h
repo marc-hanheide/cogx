@@ -5,15 +5,17 @@
  * @brief Read and write point clouds from/to files.
  */
 
-#include "cv.h"
-#include "highgui.h"
-#include "cvaux.h"
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 #include <iostream>
 #include <fstream>
 
 namespace AR
 {
-  
+
+using namespace std;  
+
 int writeToFile(char *filename, cv::Mat_<cv::Point3f> &cloud, cv::Mat_<cv::Point3f> &colCloud) 
 {
   char *row = (char*) &cloud.rows;
