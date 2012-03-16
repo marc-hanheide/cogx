@@ -9,7 +9,8 @@ IFEQ(%(hardware),real)
     !kinect-video
     !video 
     !stereo
-    ptz  cameramount
+    ptz
+    cameramount
     robot
     !laser
     !katana
@@ -20,7 +21,8 @@ ELSE # simulation
     !kinect-video
     video 
     stereo
-    ptz  cameramount
+    ptz
+    cameramount
     robot
     !laser
     !katana

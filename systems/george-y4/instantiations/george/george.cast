@@ -8,7 +8,8 @@ INCLUDE george-hosts.incl
 ###########################################################################
 #             DEFAULT CONFIGURATION                                       #
 ###########################################################################
-# real or simulation
+# real or simulation(gazebo)
+VARDEFAULT simulator=gazebo
 VARDEFAULT hardware=simulation
 #SETVAR hardware=real
 
@@ -18,7 +19,9 @@ IFEQ(%(hardware),real)
     !kinect-video
     !video 
     !stereo
-    ptz  cameramount
+    ptz
+    ptz-wmcall
+    cameramount
     robot
     !laser
     !katana
@@ -29,7 +32,9 @@ ELSE # simulation
     !kinect-video
     video 
     stereo
-    ptz  cameramount
+    ptz
+    ptz-wmcall
+    cameramount
     robot
     !laser
     !katana
@@ -56,12 +61,27 @@ OPTDEFAULT feature_options=<multiline>
 HOST     [Main]
 
 IFOPTALL(%(hardware_options), ptz)
-    COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0 --log --debug
+  SETVAR ptz_server_params=--player-host %(host:PlayerHost) --ptz-device 0
+  IFEQ(%(hardware), real)
+    COMPONENT CPP ptz.server PlayerPTZServer %(ptz_server_params)
+  ELSE
+    IFEQ(%(simulator), stage)
+      COMPONENT CPP ptz.server PlayerActServer %(ptz_server_params)
+    ELSE
+      COMPONENT CPP ptz.server PlayerPTZServer %(ptz_server_params)
+    ENDIF
+  ENDIF
 ENDIF
 
 # spatial ################################################################
-IFOPTALL(%(feature_options), spatial)
+IFOPTANY(%(feature_options) %(hardware_params), spatial ptz-wmcall)
    INCLUDE  includes/spatial.sa/spatial-base.cast
+ENDIF
+
+# --pan "0.0" --tilt "-0.8"  # --testGUI
+VARDEFAULT ptzwmi_params=--pan "0.0" --tilt "-0.8"
+IFOPTALL(%(hardware_options), ptz-wmcall)
+   JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer %(ptzwmi_params)
 ENDIF
 
 # vision #################################################################

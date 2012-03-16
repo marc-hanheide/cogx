@@ -78,6 +78,7 @@ IFOPTALL(%(hardware_options), ptz cameramount )
        --pt_pan_xml    "%(camera_config_dir)/ptu-pose-pan-sim.xml"
        --pt_tilt_xml   "%(camera_config_dir)/ptu-pose-tilt-sim.xml"
        --ptzserver "%(ptzServerComponent)"
+       --motion_tollerance "2e-3"
        # --log --debug
     </multiline>
     CPP MG CameraMount CameraMount %(camera_mount_params)
@@ -87,7 +88,9 @@ ENDIF
 
 #--------------------------------------------------------------------------------------------------
 
-IFOPTALL(%(hardware_options), ptz )
-    JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-0.8"  # --testGUI
-ENDIF
+## #--------------------------------------------------------------------------------------------------
+## MOVED TO MAIN FILE under spatial.sa
+## IFOPTALL(%(hardware_options), ptz )
+##     JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer --pan "0.0" --tilt "-1.0" # --testGUI
+## ENDIF
 
