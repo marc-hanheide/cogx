@@ -419,8 +419,9 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_maxMovePlaceholderRadius = 1;
   m_min_sep_dist = 1.05;
   m_minKinectX = 0.58;
-  m_maxKinectX = 1.8;
+  m_maxKinectX = 1.5;
   m_KinectK = 0.535;
+  m_nodeObstacleK = 1.5;
 
   m_simulateKinect = false;
   if (_config.find("--simulate-kinect") != _config.end()) {
@@ -2331,7 +2332,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   Cure::BinaryMatrix map;
 
   // Get the expanded binary map used to search 
-  getExpandedBinaryMap(m_lgm, map,1.5);
+  getExpandedBinaryMap(m_lgm, map, m_nodeObstacleK);
 /*    peekabot::OccupancySet2D cells;
     double cellSize=m_lgm->getCellSize();
     int gridmapSize = m_lgm->getSize();
@@ -2361,6 +2362,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
     bool overlapped = false;
 //CHECK IF OVERLAPPED
+    int hypxi, hypyi;
+    if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
+      continue;
+    if (map(hypxi+m_lgm->getSize(), hypyi+m_lgm->getSize())==true) overlapped=true;
+
     for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); (nodeIt != nodes.end()) && !overlapped; ++nodeIt) {
       try {
         double dist2sq = (extantHyp->x - (*nodeIt)->x) * (extantHyp->x - (*nodeIt)->x) + (extantHyp->y - (*nodeIt)->y) * (extantHyp->y - (*nodeIt)->y);

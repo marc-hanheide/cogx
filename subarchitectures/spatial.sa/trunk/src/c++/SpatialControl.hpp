@@ -162,6 +162,7 @@ protected:
     double m_minKinectX;
     double m_maxKinectX;
     double m_KinectK;
+    double m_nodeObstacleK;
 
     bool m_usePeekabot;
     bool m_show3Dobstacles; 
