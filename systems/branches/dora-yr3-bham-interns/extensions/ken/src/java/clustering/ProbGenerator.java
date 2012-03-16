@@ -204,6 +204,9 @@ public class ProbGenerator {
 		}
 		for (int i = 0; i < timeOfDay.length; i++) {
 			timeOfDay[i] /= sum;
+			if(timeOfDay[i]!=0){
+				System.out.println(i);
+			}
 		}
 
 	}
@@ -516,8 +519,12 @@ public class ProbGenerator {
 				System.out.println("in prob " + d);
 				System.out.println("in prob sum is " + sum);
 			}
-			if (timeOfDay[i] > 0) {
+			
+			if (timeOfDay[i+1] > 0) {
 				entropies[i] = sum;
+				System.out.println("changing sum");
+				System.out.println("sum is "+sum);
+				System.out.println("i is "+ i);
 			} else {
 				entropies[i] = Double.MAX_VALUE;
 			}

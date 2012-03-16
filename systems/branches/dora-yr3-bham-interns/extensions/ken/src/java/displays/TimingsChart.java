@@ -28,8 +28,13 @@ public class TimingsChart extends JFrame {
 	ChartPanel panel;
 
 	public static void main(String[] args) {
+		PathVisualization.value=PathVisualization.values[1];
 		TimingsChart c = new TimingsChart(true);
-		TimingsChart c2 = new TimingsChart(false);
+		//PathVisualization.value=PathVisualization.values[1];
+		//TimingsChart c1 = new TimingsChart(true);
+		PathVisualization.value=PathVisualization.values[0];
+		TimingsChart c2 = new TimingsChart(true);
+		//TimingsChart c2 = new TimingsChart(false);
 	}
 
 	public TimingsChart(boolean val) {
@@ -46,7 +51,7 @@ public class TimingsChart extends JFrame {
 
 		try {
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings.txt")));
+					new BufferedInputStream(new FileInputStream(PathVisualization.getVal())));
 
 			Vector<PathTimes> pT = ((PathTimesWrapper) (in.readObject()))
 					.getPathTimes();

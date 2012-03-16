@@ -20,6 +20,7 @@ public class Cluster {
 	private HierarchicalClusterer h1;
 	private boolean messy;
 	private ArrayList<Integer> means;
+	private PathCluster p;
 	//private int pathArrPos;
 
 	public static void main(String[] args) {
@@ -39,7 +40,7 @@ public class Cluster {
 			if (pathArrPos == -1) {
 				source = new DataSource("data.arff");
 			} else {
-				PathCluster p = new PathCluster(pathArrPos, messy, includeDay,  day);
+				 p = new PathCluster(pathArrPos, messy, includeDay,  day);
 				this.includeDay = includeDay;
 				source = new DataSource("temp.arff");
 			}
@@ -167,8 +168,10 @@ public class Cluster {
 			}
 
 			if (printGraph) {
+				int start = p.getPath().getA();
+				int end = p.getPath().getB();
 				ClusterVis clustVis = new ClusterVis(wholeSet,
-						"Clustered Path Traversal Data For Edge "+ pathArrPos + "");
+						"Clustered Path Traversal Data Between "+start + " & "+ end+ "("+ pathArrPos + ")");
 				String entire = h1.toString();
 				System.out.println("whole thing " + entire);
 				int pos = 7;
@@ -200,7 +203,7 @@ public class Cluster {
 				System.out.println("there are " + clustNum + " clusters ");
 				for (int i = 0; i < clustNum; i++) {
 					System.out.println("current cluster is " + i);
-					JFrame frame1 = new JFrame("Cluster Number " + i+ " Of "+ clustNum);
+					JFrame frame1 = new JFrame("Cluster Number " + (i+1)+ " Of "+ clustNum);
 					if (clusters[i] == null) {
 						System.out.println("null cluster");
 						break;
