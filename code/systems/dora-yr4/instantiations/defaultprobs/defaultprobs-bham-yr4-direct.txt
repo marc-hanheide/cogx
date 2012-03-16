@@ -1,0 +1,36 @@
+COST INROOM magazine 200
+COST_ON magazine table 30
+
+COST_INROOM cerealbox 200
+COST_ON cerealbox table 30
+
+COST_INROOM book 200
+COST_ON book table 30
+
+INROOM table meetingroom 0.10420009
+INROOM table office 0.51997805
+INROOM table corridor 0.0594
+
+INROOM cerealbox meetingroom 0.06
+INROOM cerealbox office 0.02529
+INROOM cerealbox corridor 0.0519
+
+INROOM book meetingroom 0.0154
+INROOM book office 0.1285
+INROOM book corridor 0.0025
+
+INROOM magazine meetingroom 0.8
+INROOM magazine office 0.18
+INROOM magazine corridor 0.0025
+
+ON cerealbox table meetingroom 0.03
+ON cerealbox table office 0.03
+ON cerealbox table corridor 0.03
+
+ON book table meetingroom 0.3
+ON book table office 0.1
+ON book table corridor 0.03
+
+ON magazine table meetingroom 0.8
+ON magazine table office 0.1
+ON magazine table corridor 0.03
