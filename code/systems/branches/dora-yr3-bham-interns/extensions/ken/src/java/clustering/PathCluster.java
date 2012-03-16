@@ -29,6 +29,7 @@ public class PathCluster {
 	private boolean printy;
 	private boolean includeDay;
 	Vector<PathTimes> pathTimes;
+	PathTimes pT;
 
 	public PathTimes load(int n) {
 
@@ -53,7 +54,7 @@ public class PathCluster {
 
 		}
 		// System.out.println("path times is " + pathTimes);
-		PathTimes pT = pathTimes.get(n);
+		 pT = pathTimes.get(n);
 		if (printy) {
 			System.out.println(pT);
 
@@ -71,6 +72,11 @@ public class PathCluster {
 		}
 
 	}
+	
+	public PathTimes getPath(){
+		return pT;
+		
+	}
 
 	private void prettyOutput(PathTimes pT) {
 		if (printy) {
@@ -81,7 +87,7 @@ public class PathCluster {
 			try {
 				source = new DataSource("temp.arff");
 				Instances data = source.getDataSet();
-				if(data.size()==0){
+				if(data.size()<3){
 					System.out.println("that day/path is empty");
 					return;
 				}
@@ -89,6 +95,7 @@ public class PathCluster {
 				HierarchicalClusterer h = new HierarchicalClusterer();
 				h.buildClusterer(data);
 				JFrame frame = new JFrame();
+				if(h.toString()!=null){
 				System.out.println("h is "+h.toString());
 				
 				HierarchyVisualizer v = new HierarchyVisualizer(h.toString());
@@ -97,8 +104,11 @@ public class PathCluster {
 				frame.setSize(400, 400);
 				frame.setTitle("original state");
 				frame.setVisible(true);
-
-			} catch (Exception e) {
+				}
+			} catch(NullPointerException e){
+				System.out.println("null path");
+				return;
+			}catch (Exception e) {
 				System.out.println(e);
 				e.printStackTrace();
 			}
