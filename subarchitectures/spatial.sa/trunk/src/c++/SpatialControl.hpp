@@ -159,6 +159,9 @@ protected:
     double m_minNewPlaceholderRadius;   
     double m_maxMovePlaceholderRadius;
     double m_min_sep_dist;
+    double m_minKinectX;
+    double m_maxKinectX;
+    double m_KinectK;
 
     bool m_usePeekabot;
     bool m_show3Dobstacles; 

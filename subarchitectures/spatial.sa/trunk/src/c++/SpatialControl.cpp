@@ -418,6 +418,9 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_minNewPlaceholderRadius = 1.05;   
   m_maxMovePlaceholderRadius = 1;
   m_min_sep_dist = 1.05;
+  m_minKinectX = 0.58;
+  m_maxKinectX = 1.8;
+  m_KinectK = 0.535;
 
   m_simulateKinect = false;
   if (_config.find("--simulate-kinect") != _config.end()) {
@@ -796,7 +799,7 @@ void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure:
         double al = -m_currentPTZPose.pan;
         double nx = xi*cellsize * cos(al) - yi*cellsize * sin(al);
         double ny = xi*cellsize * sin(al) + yi*cellsize * cos(al);
-        if ((nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) lgm(xi, yi) = '2';
+        if ((nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0)) lgm(xi, yi) = '2';
       }
     }
   }
@@ -995,7 +998,7 @@ void SpatialControl::updateGridMaps(){
 
           double nx = it->p.x * cos(-m_currentPTZPose.pan) - it->p.y * sin(-m_currentPTZPose.pan);
           double ny = it->p.x * sin(-m_currentPTZPose.pan) + it->p.y * cos(-m_currentPTZPose.pan);
-          if ((nx < 0.55) || (nx > 1.8) || (0.535 * nx - ny < 0) || (-0.535 * nx - ny > 0)) updateHeightMap = false;
+          if ((nx < m_minKinectX) || (nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0)) updateHeightMap = false;
           /* If the above tests passed update the height map */ 
           if(updateHeightMap){
             lgmKH(xi, yi) = pZ;
