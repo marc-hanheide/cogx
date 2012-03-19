@@ -2392,7 +2392,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   Cure::BinaryMatrix map;
 
   // Get the expanded binary map used to search 
-  getExpandedBinaryMap(m_lgm, map, 1.25,0);
+  getExpandedBinaryMap(m_lgm, map, 1,0.25);
 /*    peekabot::OccupancySet2D cells;
     double cellSize=m_lgm->getCellSize();
     int gridmapSize = m_lgm->getSize();
