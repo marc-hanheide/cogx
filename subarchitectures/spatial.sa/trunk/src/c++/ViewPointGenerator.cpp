@@ -307,7 +307,7 @@ double ViewPointGenerator::getPathLength(Cure::Pose3D start,
 
 	// Grow each occupied cell to account for the size of the
 	// robot. We put the result in another binary matrix, m_PathGrid
-	m_NonFreeSpace.growInto(m_PathGrid, 0.3,  true);
+	m_NonFreeSpace.growInto(m_PathGrid, 4,  true);
 	// 0.45 is robot width hard coded here.
 	// We treat all unknown cells as occupied so that the robot only
 	// uses paths that it knowns to be free. Note that we perfom this
@@ -412,13 +412,13 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 			m_component->log("path to here: %3.2f", d);
 			// There is a path to this destination
 			//	    log("there's a path to this destination");
-//			if (d > 0) {
+			if (d > 0) {
 				singlesample.setX(randx);
 				singlesample.setY(randy);
 				singlesample.setTheta(angle);
 				samples.push_back(singlesample);
 				i++;
-//			}
+			}
 //			else {
 			 // cout << "no path to here" << endl;
 //			}
