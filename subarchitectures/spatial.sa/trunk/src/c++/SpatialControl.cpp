@@ -2489,7 +2489,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   int originPlaceID;
 
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
-  for (int i=0;i<10;i++){
+  for (int i=0;i<100;i++){
     double theta = (rand() % 360) * M_PI / 180; 
     int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
     for (int j=0;j<10;j++){
