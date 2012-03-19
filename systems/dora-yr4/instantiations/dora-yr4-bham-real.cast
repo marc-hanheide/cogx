@@ -1,3 +1,4 @@
+
 ### the directory containing the calibration files to use
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 
@@ -7,34 +8,37 @@ SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 SETVAR hardware=real
 
 SETVAR feature_options=<multiline>
-    spatial			# enable the spatial core
-    binder			# enable all mediators in the cores enabled and the binding working memory
-    vision			# enable the vision core, object recognition (depending on the hardware setting)
-    peekabot		# use peekabot
-	man_ctrl		# enable manual GUIs for navigation, PTZ, planning, etc.
-    avs			# enable AVS view cone planning and relation manager
-    execution		# enable execution framework to let the planner trigger actions
-	conceptual		# enable conceptual framework
-	default			# enable default
-	coma			# enable coma
-    categorisation	# enable place categorisation
-    planning_sa		# enable planning core
-    debug			# enable more debug GUIs and WM loggers
-    dialogue		# enable dialogue
-    motivation		# enable motivation
-    visualization	# enable visualisation (see debug)
+    spatial			
+    binder			
+    vision			
+    peekabot		
+	man_ctrl		
+    avs			
+    execution		
+	conceptual		
+	default			
+	coma			
+    categorisation
+    !categorisation-visual
+    planning_sa		
+    debug			
+    dialogue		
+    motivation	
+    !motivation_external
+    !motivation_explanation
+    visualization
 </multiline>
 
 SETVAR prosilica_id=37107
 SETVAR prosilica_packet_size=7000
 
 SETVAR hardware_options=<multiline>
-    kinect			# use the kinect point cloud server for obstacle avoidance and person detection
-    kinect-video	# use the kinect as video source for object recognition
-    !video 			# use OpenCV cameras as video source for object recognition
-    !prosilica  # use the Prosilica camera
-    !blobfinder		# use blobfinder to simulate object and person detection
-    ptz  			# use ptz (starts different components depending on %(hardware)
+   kinect			
+   kinect-video	
+   !video 			
+   !prosilica 
+   !blobfinder	
+   ptz  			
   </multiline>
 
 #####################################################
@@ -44,9 +48,23 @@ SETVAR hardware_options=<multiline>
 SETVAR spatial_min_door_width=0.70
 SETVAR spatial_max_door_width=0.92
 
-SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
 
 ### the prior for a room having a person in it 
 SETVAR room_has_person=0.9
+
+### the default probabilities
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
+
+### the default knowledge to use
+SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-bham-yr4.xml"
+
+SETVAR conceptual_categories=corridor,office,meetingroom
+
+SETVAR avs_cone_depth=2.5
+
+### Prohibit the creation of placeholders in certain zones
+# template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
+SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
 
 INCLUDE dora-yr4.cast
