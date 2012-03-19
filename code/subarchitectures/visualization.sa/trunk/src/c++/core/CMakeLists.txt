@@ -81,6 +81,7 @@ if(BUILD_SA_V11N_USE_OGRE3D)
    find_package(OGRE)
    include_directories(${OGRE_INCLUDE_DIRS})
    set(OGRE3D_SRC
+      qtui/ogre/OgreBase.cpp
       qtui/QCastViewOgre.cpp
       )
    set(OGRE3D_MOC
@@ -259,9 +260,14 @@ if(BUILD_SA_V11N_CLIENT)
       )
    link_cast_component(${CAST_COMPONENT_NAME}
       ${VISUALIZATION_LIBRARIES}
-      Math Video VideoUtils
       ${OPENCV_LDFLAGS}
       )
+   if (HAS_COGX_MATH)
+      link_cast_component(${CAST_COMPONENT_NAME} Math)
+   endif()
+   if (HAS_COGX_VIDEO)
+      link_cast_component(${CAST_COMPONENT_NAME} Video VideoUtils)
+   endif()
 endif(BUILD_SA_V11N_CLIENT)
 
 option(BUILD_SA_V11N_TESTS "Build the test component for V11N (requires the client library)" OFF)

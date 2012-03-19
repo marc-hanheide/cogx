@@ -260,11 +260,13 @@ void CDisplayClient::setCompressedImageInternal(const std::string& id,
    m_pServer->setCompressedImage(id, data, format);
 }
 
+#ifdef HAVE_COGX_VIDEO
 void CDisplayClient::setImage(const std::string& id, const Video::Image& image)
 {
    if (! m_pServer) return;
    setRawImageInternal(id, image.width, image.height, 3, image.data);
 }
+#endif
 
 void CDisplayClient::setImage(const std::string& id, const std::vector<unsigned char>& data,
       const std::string &format)
@@ -372,6 +374,7 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
    m_pServer->setObjectTransform2D(id, partId, transform);
 }
 
+#ifdef HAVE_COGX_MATH
 void CDisplayClient::setObjectTransform2D(const std::string& id, const std::string& partId,
       const cogx::Math::Matrix33& transform)
 {
@@ -388,6 +391,7 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
    tr.push_back(transform.m22);
    m_pServer->setObjectTransform2D(id, partId, tr);
 }
+#endif
 
 #ifndef FEAT_VISUALIZATION_OPENCV
 #error "FEAT_VISUALIZATION_OPENCV must be defined during v11n build."
@@ -447,12 +451,14 @@ void CDisplayClient::setObjectTransform2D(const std::string& id, const std::stri
    m_pServer->setObjectTransform2D(id, partId, tr);
 }
 
+#ifdef HAVE_COGX_MATH
 void CDisplayClient::setObjectPose3D(const std::string& id, const std::string& partId,
       const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation)
 {
    if (! m_pServer) return;
    m_pServer->setObjectPose3D(id, partId, position.x, position.y, position.z, rotation);
 }
+#endif
 
 void CDisplayClient::removeObject(const std::string& id)
 {
