@@ -11,6 +11,7 @@
 #include "SpatialGridMap.hh"
 #include "GridMapData.hh"
 
+#include "NewNavController.hpp"
 #include <Navigation/LocalGridMap.hh>
 #include "XVector3D.h"
 #include "Math/BinaryMatrix.hh"

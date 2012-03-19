@@ -2127,7 +2127,7 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
 /* Fills map with an expanded version of gridmap, where unknown space is
    also set as obstacles */
-void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, double k) {
+void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map, double k, double k2) {
   
 //  if(lockMapsMutex) {
 //
@@ -2168,7 +2168,8 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
       }
     }
   }
-
+  map.growInto(ungrown_map, k2 * 0.5*Cure::NewNavController::getRobotWidth() / m_lgm->getCellSize());
+  map = ungrown_map;
 //  if(lockMapsMutex) {
 //    m_MapsMutex.unlock();
 //  }
@@ -2391,7 +2392,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   Cure::BinaryMatrix map;
 
   // Get the expanded binary map used to search 
-  getExpandedBinaryMap(m_lgm, map, m_nodeObstacleK);
+  getExpandedBinaryMap(m_lgm, map, 1.25,0.5);
 /*    peekabot::OccupancySet2D cells;
     double cellSize=m_lgm->getCellSize();
     int gridmapSize = m_lgm->getSize();
