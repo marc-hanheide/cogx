@@ -12,37 +12,62 @@ VARDEFAULT hardware=simulation
 
 ###########################################################################
 # the following define the features we want to have enabled in the system #
+# (comments in multiline blocks can only be at the start of the line)     #
 ###########################################################################
 
 VARDEFAULT feature_options=<multiline>
-    spatial			# enable the spatial core
-    binder			# enable all mediators in the cores enabled and the binding working memory
-    vision			# enable the vision core, object recognition (depending on the hardware setting)
-    peekabot		# use peekabot
-	man_ctrl		# enable manual GUIs for navigation, PTZ, planning, etc.
-    avs			# enable AVS view cone planning and relation manager
-    execution		# enable execution framework to let the planner trigger actions
-	conceptual		# enable conceptual framework
-	default			# enable default
-	coma			# enable coma
-    categorisation	# enable place categorisation
-    planning_sa		# enable planning core
-    debug			# enable more debug GUIs and WM loggers
-    dialogue		# enable dialogue
-    motivation		# enable motivation base
-    !motivation_external	# enable motivation via external goal infusion
-    !motivation_explanation	# enable motivation via explanation
-    visualization	# enable visualisation (see debug)
+# enable the spatial core
+    spatial			
+# enable all mediators in the cores enabled and the binding working memory
+    binder			
+# enable the vision core, object recognition (depending on the hardware setting)
+    vision			
+# use peekabot
+    peekabot
+# enable manual GUIs for navigation, PTZ, planning, etc.		
+	man_ctrl
+# enable AVS view cone planning and relation manager
+    avs			
+# enable execution framework to let the planner trigger actions
+    execution		
+# enable conceptual framework
+	conceptual
+# enable default		
+	default
+	coma			
+# enable place categorisation
+    categorisation	
+# use visaul categorisation
+    !categorisation-visual 
+# enable planning core
+    planning_sa
+# enable more debug GUIs and WM loggers		
+    debug			
+    dialogue		
+# enable motivation base
+    motivation		
+# enable motivation via external goal infusion
+    !motivation_external	
+# enable motivation via explanation
+    !motivation_explanation	
+# enable visualisation (see debug)
+    visualization	
 </multiline>
 
 IFEQ(%(hardware),real)
   VARDEFAULT hardware_options=<multiline>
-    kinect			# use the kinect point cloud server for obstacle avoidance and person detection
-    kinect-video	# use the kinect as video source for object recognition
-    !video 			# use OpenCV cameras as video source for object recognition
-    !prosilica  # use the Prosilica camera
-    !blobfinder		# use blobfinder to simulate object and person detection
-    ptz  			# use ptz (starts different components depending on %(hardware)
+# use the kinect point cloud server for obstacle avoidance and person detection
+    kinect			
+# use the kinect as video source for object recognition
+    kinect-video	
+# use OpenCV cameras as video source for object recognition
+    !video 	
+# use the Prosilica camera		
+    !prosilica  
+# use blobfinder to simulate object and person detection
+    !blobfinder
+# use ptz (starts different components depending on %(hardware)		
+    ptz  			
   </multiline>
 ELSE # simulation
   VARDEFAULT hardware_options=<multiline>
@@ -164,10 +189,11 @@ VARDEFAULT conceptual_categories=corridor,kitchen,office,meetingroom
 ### Show PTZ control gui
 VARDEFAULT ptz_test_gui=--testGUI
 
-
-### SPATIAL.SA DOOR DETECTION SETTINGS
+### SPATIAL.SA parameters
 VARDEFAULT spatial_min_door_width=0.75  # Lower boundary on width of doorways
 VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
+VARDEFAULT min_obstacle_height=0.25
+VARDEFAULT explore_range=2.0
 
 ### Disable placeholder generation (no exploration)
     VARDEFAULT no_placeholders=
@@ -178,13 +204,16 @@ VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
     VARDEFAULT exclude_exploration=
 
 ### AVS options
-VARDEFAULT avs_cone_depth=4			# distance in metres at which the objects should be detectable
+# distance in metres at which the objects should be detectable
+VARDEFAULT avs_cone_depth=4	
 
 # closest distance in metres from an obstacle (putting this comment on the line below caused a problem
-VARDEFAULT avs_sample_from_obs=0.8 
+VARDEFAULT avs_sample_from_obs=0.8
 
 VARDEFAULT avs_sift_objects="table cerealbox"
-VARDEFAULT avs_random_vc=--random-vc    # Do generate random view cones for second and subsequent views
+
+# Do generate random view cones for second and subsequent views
+VARDEFAULT avs_random_vc=--random-vc    
 
 
 ### Kinect options
@@ -214,7 +243,6 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Whether to display spatial information in Peekabot
     IFOPTALL(%(feature_options), peekabot)
-#        INCLUDE includes/spatial.sa/spatial-peekabot.cast
 		CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" --follow-robot
 		SETVAR usePB=--usepeekabot
 	ELSE
@@ -225,7 +253,8 @@ IFOPTALL(%(feature_options), spatial)
 ### to WM and then react upon that as described in https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/PanTilt
     IFOPTALL(%(hardware_options), ptz)
 	IFOPTALL(%(feature_options), man_ctrl)
-	    JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui)
+## The --shake command is needed to "wake up" the PTU
+	    JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui) --shake --tilt "-0.7854"
 	ELSE
 	    JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer 
 	ENDIF
@@ -238,11 +267,12 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Translates and queues Spatial::NavCommands; 
 # writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
+#EXPAND visual_exploration=%(visual_exploration)
     CPP MG spatial.translation 	SpatialTranslation %(visual_exploration)
 
 ### Reads NavData::InternalNavCmd to control the robot
 # Maintains three-state grid map for exploration and obstacle avoidance
-    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height 0.15 --explore-range 2.0 --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect)
+    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
 
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
@@ -263,7 +293,7 @@ IFOPTALL(%(feature_options), spatial)
 # ICE interfaces
     CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)
 
-###    CPP GD path.query 			PathQueryProcessor 
+##CPP GD path.query 			PathQueryProcessor 
 
 
     IFOPTALL(%(feature_options), binder)
@@ -287,9 +317,11 @@ IFOPTALL(%(feature_options), spatial)
 
  #EXPAND avs_cone_depth=%(avs_cone_depth)
  #EXPAND avs_sample_from_obs=%(avs_sample_from_obs)
+ #EXPAND avs_sift_objects=%(avs_sift_objects)
+ #EXPAND avs_random_vc=%(avs_random_vc)
     IFOPTALL(%(feature_options), avs)
 		CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --ptzserver ptz.server --display-objects-in-pb 
-		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 141 --cam-vertangle 131 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --log --queryhandler conceptual.queryhandler  --siftobjects %(avs_sift_objects) %(avs_random_vc) --usepeekabot ######--ctrl-ptz 
+		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 141 --cam-vertangle 131 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --random-vc --usepeekabot ######--ctrl-ptz 
     ENDIF
 ENDIF
 
