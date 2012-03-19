@@ -19,7 +19,7 @@
 #include "QCastViewScene.hpp"
 #ifdef V11N_VIEW_GL
 #include "QCastViewGL.hpp"
-//#include "QCastViewOgre.hpp"
+// #include "QCastViewOgre.hpp"
 #endif
 #ifdef V11N_OBJECT_HTML
 #include "QCastViewHtml.hpp"
@@ -124,8 +124,8 @@ void QViewContainer::setView(cogx::display::CDisplayModel* pModel, cogx::display
       }
 #ifdef V11N_VIEW_GL
       else if (pView->m_preferredContext == cogx::display::ContextGL) {
-         //m_pDisplay = new QCastViewOgre(this);
          m_pDisplay = new QCastViewGL(this);
+         //m_pDisplay = new QCastViewOgre(this);
       }
 #endif
 #ifdef V11N_OBJECT_HTML

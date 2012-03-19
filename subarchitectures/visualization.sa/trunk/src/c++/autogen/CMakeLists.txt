@@ -13,14 +13,11 @@ cast_slice2cpp(GEN_CPP GEN_HPP DisplayServer.ice ${CAST_SLICE_DIR}
     /opt/local/share/Ice/slice
     /opt/local/share/slice
     /opt/local/share
-    ${COGX_ROOT}/tools/math/src/slice
-    ${COGX_ROOT}/tools/hardware/video/src/slice
     )
 
 
 add_library(VisualizationData SHARED ${GEN_CPP} ${GEN_CPP_ML} ${GEN_CPP_OR})
 target_link_libraries(VisualizationData CDL)
-target_link_libraries(VisualizationData Video Math)
 install(TARGETS VisualizationData LIBRARY DESTINATION lib)
 
 

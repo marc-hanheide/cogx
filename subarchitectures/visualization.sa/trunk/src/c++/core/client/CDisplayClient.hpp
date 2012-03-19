@@ -21,7 +21,9 @@
 #include <stdexcept>
 #include <cast/core/CASTComponent.hpp>
 #include <DisplayServer.hpp> // generated from ice
+#ifdef HAVE_COGX_VIDEO
 #include <Video.hpp> // generated from ice
+#endif
 
 // convenient classes for clients
 #include "CFormValues.hpp"
@@ -106,7 +108,9 @@ public:
    // Set image from raw data.
    void setImage(const std::string& id, int width, int height, int channels,
      const std::vector<unsigned char>& data);
+#ifdef HAVE_COGX_VIDEO
    void setImage(const std::string& id, const Video::Image& image); 
+#endif
 
    // Set image from compressed/formatted data.
    // Formats: (supported by Qt) bmp,gif,jpeg,jpg,png,pbm,pgm,ppm,tiff,xbm,xpm
@@ -122,11 +126,13 @@ public:
    void setHtmlFormData(const std::string& id, const std::string& partId,
          const std::map<std::string, std::string>& fields);
    void setObjectTransform2D(const std::string& id, const std::string& partId,
-         const cogx::Math::Matrix33& transform);
-   void setObjectTransform2D(const std::string& id, const std::string& partId,
          const std::vector<double>& transform);
+#ifdef HAVE_COGX_MATH
+   void setObjectTransform2D(const std::string& id, const std::string& partId,
+         const cogx::Math::Matrix33& transform);
    void setObjectPose3D(const std::string& id, const std::string& partId,
          const cogx::Math::Vector3& position, const Visualization::Quaternion& rotation);
+#endif
 
    void removeObject(const std::string& id);
    void removePart(const std::string& id, const std::string& partId);
