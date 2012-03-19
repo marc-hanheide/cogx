@@ -316,7 +316,7 @@ SpatialControl::~SpatialControl()
 
 //saves m_lgm
 void SpatialControl::SaveGridMap(){
-  log("Saving node gridmaps");
+  log("SaveGridMap");
   ofstream fout("GridMap.txt");
   //write size
   fout << m_lgm->getSize() << endl;
@@ -336,6 +336,29 @@ void SpatialControl::SaveGridMap(){
   fout << endl;
   fout.close();
 }
+
+void SpatialControl::SaveHeightMap(){
+  log("SaveHeightMap");
+  ofstream fout("HeightMap.txt");
+  //write size
+  fout << m_lgmKH->getSize() << endl;
+  // then map center
+  fout << m_lgmKH->getCentXW();
+  fout << " " ;
+  fout << m_lgmKH->getCentYW();
+  fout << endl;
+  fout << endl;
+  //after an empty line go for the map data
+  for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
+    for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
+      fout <<(* (m_lgmKH))(x, y);
+    }
+    //fout << endl;
+  }
+  fout << endl;
+  fout.close();
+}
+
 
 // load from the file
 void SpatialControl::LoadGridMap(std::string filename){
@@ -375,6 +398,45 @@ void SpatialControl::LoadGridMap(std::string filename){
    
     log("loaded gridmap");
 }
+
+void SpatialControl::LoadHeightMap(std::string filename){
+  ifstream file(filename.c_str());
+  if (!file.good()){
+    log("Could not read height map file, exiting.");
+    return;
+  }
+  string line,tmp;
+  double cx,cy;
+  int sz;
+    getline(file,line);
+    istringstream istr(line); 
+    istr >> tmp;
+    sz = atoi(tmp.c_str());
+    log("HeightMap size: %d",sz);
+    getline(file,line);
+    istringstream istr1(line); 
+    istr1 >> tmp;
+    cx = atof(tmp.c_str());
+    istr1 >> tmp;
+    cy = atof(tmp.c_str());
+    log("HeightMap cx, cy: %3.2f, %3.2f",cx,cy);
+    getline(file,line); 
+    getline(file,line);
+    int count = 0;
+
+    m_lgmKH = new Cure::LocalGridMap<double>(sz, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
+
+    for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
+      for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
+        char c = line[count];
+        (*m_lgmKH)(x,y) = c;
+        count++;
+      }
+    }
+   
+    log("loaded heightmap");
+}
+
 
 void SpatialControl::configure(const map<string,string>& _config) 
 {
@@ -504,6 +566,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   if(m_loadLgm)
   {
     LoadGridMap("GridMap.txt");
+    LoadHeightMap("HeightMap.txt");
   } else {
     m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
     m_lgm->setValueInsideCircle(0.1, 0, 0.5, '0'); 
@@ -1169,7 +1232,10 @@ void SpatialControl::runComponent()
   int count = 0;
   while(isRunning()){
     if(count  == 12){
-      if (m_saveLgm) SaveGridMap();
+      if (m_saveLgm){ 
+        SaveGridMap();
+        SaveHeightMap();
+      }
       count = 0;
     }
     count++;
@@ -2388,7 +2454,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
 
-    for (int i=0;i<10;i++){
+    for (int i=0;i<100;i++){
       double theta = (rand() % 360) * M_PI / 180; 
       int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
       for (int j=0;j<10;j++){

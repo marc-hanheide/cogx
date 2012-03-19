@@ -189,9 +189,10 @@ protected:
 
   void processOdometry(Cure::Pose3D);
 
-  //REMOVEME
   void SaveGridMap();
-  void LoadGridMap(std::string filename);;
+  void SaveHeightMap();
+  void LoadGridMap(std::string filename);
+  void LoadHeightMap(std::string filename);
 
   void blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight);
   void updateGridMaps();
