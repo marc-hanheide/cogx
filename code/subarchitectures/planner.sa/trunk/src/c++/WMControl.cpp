@@ -524,6 +524,7 @@ void WMControl::updateBeliefState(const BeliefEntrySeq& beliefs) {
 }
 
 void WMControl::updateStatus(int id, Completion status) {
+    log("entering method updateStatus()");
     assert(activeTasks.find(id) != activeTasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
     task->planningStatus = status;
