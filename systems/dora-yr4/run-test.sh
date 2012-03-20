@@ -49,12 +49,12 @@ mkdir -p logs
 rm -rf logs/*
 cat > logs/log4j.properties <<EOF
 log4j.rootLogger=DEBUG,srvXmlFile,srvConsole
+log4j.properties.coma=TRACE,srvXmlFile
 log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
-log4j.appender.srvXmlFile.Threshold=DEBUG
+#log4j.appender.srvXmlFile.Threshold=DEBUG
 log4j.appender.srvXmlFile.File=log.xml
 log4j.appender.srvXmlFile.Append=true
 log4j.appender.srvXmlFile.layout=org.apache.log4j.xml.XMLLayout
-
 
 log4j.appender.srvConsole=org.apache.log4j.ConsoleAppender
 log4j.appender.srvConsole.Threshold=INFO
