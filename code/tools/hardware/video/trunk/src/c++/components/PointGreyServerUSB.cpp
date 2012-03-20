@@ -327,7 +327,7 @@ void PointGreyServerUSB::grabFrames()
  */
 void PointGreyServerUSB::retrieveFrameInternal(int camIdx, int width, int height, Video::Image &frame)
 {
-printf("retirieveFrameInternal: %u\n", camIdx);
+  debug("retrieveFrameInternal: %u\n", camIdx);
   // we convert the image to RGB8, if format is different
   FlyCapture2::Image image;
   if(retrievedImages[camIdx].GetPixelFormat() != FlyCapture2::PIXEL_FORMAT_RGB8) 
