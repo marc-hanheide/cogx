@@ -5,24 +5,46 @@ SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 #### TODO create categorical data for BHAM
 #SETVAR categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
 
-# Turn off unnecessary GUIs
 SETVAR feature_options=<multiline>
-    spatial			# enable the spatial core
-    binder			# enable all mediators in the cores enabled and the binding working memory
-    vision			# enable the vision core, object recognition (depending on the hardware setting)
-    peekabot		# use peekabot
-	man_ctrl		# disable manual GUIs for navigation, PTZ, planning, etc.
-    avs			# enable AVS view cone planning and relation manager
-    execution		# enable execution framework to let the planner trigger actions
-	conceptual		# enable conceptual framework
-	default			# enable default
-	coma			# enable coma
-    categorisation	# enable place categorisation
-    planning_sa		# enable planning core
-    !debug			# disable more debug GUIs and WM loggers
-    dialogue		# enable dialogue
-    motivation		# enable motivation
-    !visualization	# disable visualisation (see debug)
+# enable the spatial core
+    spatial			
+# enable all mediators in the cores enabled and the binding working memory
+    binder			
+# enable the vision core, object recognition (depending on the hardware setting)
+    vision			
+# use peekabot
+    peekabot
+# disable manual GUIs for navigation, PTZ, planning, etc.		
+	!man_ctrl
+# enable AVS view cone planning and relation manager
+    avs			
+# enable execution framework to let the planner trigger actions
+    execution		
+# enable conceptual framework
+	conceptual
+# enable default		
+	default
+# enable coma
+	coma			
+# enable place categorisation
+    categorisation	
+# use visaul categorisation
+    !categorisation-visual 
+# enable planning core
+    planning_sa
+# disable more debug GUIs and WM loggers		
+    !debug		
+# enable dialogue	
+    dialogue		
+# enable motivation base
+    motivation		
+# enable motivation via external goal infusion
+    motivation_external	
+# enable motivation via explanation
+    motivation_explanation	
+# disable visualisation (see debug)
+    !visualization	
 </multiline>
+
 
 INCLUDE dora-yr4.cast
