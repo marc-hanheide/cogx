@@ -34,8 +34,8 @@ SETVAR prosilica_packet_size=7000
 
 SETVAR hardware_options=<multiline>
    kinect			
-   kinect-video	
-   !video 			
+   !kinect-video	
+   video 			
    !prosilica 
    !blobfinder	
    ptz  			
@@ -48,20 +48,20 @@ SETVAR hardware_options=<multiline>
 SETVAR spatial_min_door_width=0.70
 SETVAR spatial_max_door_width=0.92
 
-SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
+#SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
 
 ### the prior for a room having a person in it 
 SETVAR room_has_person=0.9
 
 ### the default probabilities
-SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
+#SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
 
 ### the default knowledge to use
-SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-bham-yr4.xml"
+#SETVAR default_knowledge="instantiations/defaultprobs/defaultknowledge-bham-yr4.xml"
 
-SETVAR conceptual_categories=corridor,office,meetingroom
+#SETVAR conceptual_categories=corridor,office,meetingroom
 
-SETVAR avs_cone_depth=2.5
+#SETVAR avs_cone_depth=2.5
 
 ### Prohibit the creation of placeholders in certain zones
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
