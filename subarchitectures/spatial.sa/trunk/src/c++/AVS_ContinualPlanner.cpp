@@ -990,8 +990,8 @@ void AVS_ContinualPlanner::generateViewCones(
 			}
 
 			for(unsigned int j =0; j < comaRoomBeliefs.size(); j++){
-				if (comaRoomBeliefs[j]->getData()->type != "ComaRoom"){
-								//	log("Not a place belief, but a %s belief", comaRoomBeliefs[j]->getData()->type.c_str());
+				if ((comaRoomBeliefs[j]->getData()->type != "comaroom") && (comaRoomBeliefs[j]->getData()->type != "ComaRoom")){
+									log("Not a place belief, but a %s belief", comaRoomBeliefs[j]->getData()->type.c_str());
 									continue;
 					}
 			CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(comaRoomBeliefs[j]->getData()->content));
