@@ -194,6 +194,34 @@ class CLog4Config:
             logger.get().error("%s" % e)
 
 
+    # @returns a list of lines to be added to a log4j config file
+    def readCustomLogLevels(self):
+        result = []
+        section = ""
+        reSection = re.compile(r"^\[([-a-zA-Z0-9.]*)\]")
+
+        if not os.path.exists(self.loggerLevelsFilename):
+            if self.loggerLevelsFilename != None and self.loggerLevelsFilename != "":
+                logger.get().error(
+                        "File '%s' not found. Using default logging levels."
+                        % self.loggerLevelsFilename)  
+        else:
+            f = open(self.loggerLevelsFilename)
+            lines = self._removeComments(f.readlines())
+            f.close()
+            for ln in lines:
+                ln = ln.strip()
+                if ln == "": continue
+                if ln.startswith("#"): continue
+                mo = reSection.match(ln)
+                if mo != None:
+                    section = mo.group(1).strip()
+                    if section != "":
+                        section += "."
+                    continue
+                result.append("log4j.logger." + section + ln)
+        return result
+
     def prepareClientConfig(self):
         opts = options.getCastOptions()
         sm = self.servers[self.selectedServer]
@@ -210,20 +238,7 @@ class CLog4Config:
                 ln = ln.replace('${HOST}', self.serverHost)
             result.append(ln)
 
-        if not os.path.exists(self.loggerLevelsFilename):
-            if self.loggerLevelsFilename != None and self.loggerLevelsFilename != "":
-                logger.get().error(
-                        "File '%s' not found. Using default logging levels."
-                        % self.loggerLevelsFilename)  
-        else:
-            f = open(self.loggerLevelsFilename)
-            lines = self._removeComments(f.readlines())
-            f.close()
-            for ln in lines:
-                ln = ln.strip()
-                if ln == "": continue
-                if not ln.startswith("#"):
-                    result.append("log4j.logger." + ln)
+        result += self.readCustomLogLevels()
 
         # cleanup
         result = [ln.strip() for ln in result if not ln.strip().startswith("log4j.rootLogger=")]
