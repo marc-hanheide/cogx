@@ -39,6 +39,12 @@ class CComponent:
         self.status = 0 # included/excluded by filter
         self.enabled = True
 
+    @property
+    def castLoggerName(self):
+        if self.subarch == None or self.subarch == "":
+            return self.cid
+        return "%s.%s" % (self.subarch, self.cid)
+
     def __cmp__(self, cc):
         def sc(a,b):
             if a < b: return -1

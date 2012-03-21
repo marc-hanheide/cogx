@@ -21,6 +21,7 @@ class CLog4Config:
         # log4jproperties is a link that points to a client config file
         self.logPropLink = "log4j.properties"
         self.loggerLevelsFilename = ""
+        self.componentNames = []
 
         serverAppenders = {
             'console': ('LOG4J.SimpleSocketServer.console', ), # params: level
@@ -219,7 +220,17 @@ class CLog4Config:
                     if section != "":
                         section += "."
                     continue
-                result.append("log4j.logger." + section + ln)
+                if ln.find("*") < 0:
+                    result.append("log4j.logger." + section + ln)
+                else:
+                    parts = ln.split("=", 2)
+                    if len(parts) < 2: continue
+                    reName = (section + parts[0]).replace(".", r"\.").replace("*", ".*")
+                    reName = re.compile(reName)
+                    for cname in self.componentNames:
+                        mo = reName.match(cname)
+                        if mo == None: continue
+                        result.append("log4j.logger." + cname + "=" + parts[1])
         return result
 
     def prepareClientConfig(self):
