@@ -9,6 +9,7 @@
 //    Chandana Paul
 //    Dorian Galvez Lopez
 //    Kristoffer Sjöö
+//    Alexey Bezugly
 //
 // = COPYRIGHT
 //                  2007 Dorian Galvez Lopez
@@ -159,6 +160,29 @@ void SpatialControl::CreateGridMap() {
     peekabot::OccupancySet3D cells1;
     m_ProxyGridMapKinect.set_cells(cells1);
     m_ProxyGridMapKinect.set_position(0,0,0);
+
+    	SCOPED_TIME_LOG;
+      double kinectZ = 1.45;
+      if (m_show3Dobstacles){
+        peekabot::OccupancySet3D cells1;
+        for (int yi = -m_lgmKH->getSize(); yi <= m_lgmKH->getSize(); yi++) {
+          for (int xi = -m_lgmKH->getSize(); xi <= m_lgmKH->getSize(); xi++) {
+            if ((*m_lgm)(xi,yi) == '1'){ 
+              if ((*m_lgmKH)(xi, yi) != FLT_MAX){
+                for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
+                  cells1.set_cell(xi*m_lgm->getCellSize(),yi*m_lgm->getCellSize(),zi,1);
+                }
+              }
+            }
+            else if ((*m_lgm)(xi,yi) == '0'){
+                for (double zi = 0; zi <= kinectZ; zi+=0.05) {
+                  cells1.set_cell(xi*m_lgm->getCellSize(),yi*m_lgm->getCellSize(),zi,0);
+                }
+            } 
+          }
+        }
+        m_ProxyGridMapKinect.set_cells(cells1);
+      }
 
 }
 
@@ -351,7 +375,9 @@ void SpatialControl::SaveHeightMap(){
   //after an empty line go for the map data
   for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
     for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
-      fout <<(* (m_lgmKH))(x, y);
+      if ((*m_lgmKH)(x,y) < 9 )
+        fout <<(* (m_lgmKH))(x, y);
+      else fout << 9.;
       fout << " ";
     }
     //fout << endl;
@@ -365,6 +391,11 @@ void SpatialControl::SaveHeightMap(){
 void SpatialControl::LoadGridMap(std::string filename){
   ifstream file(filename.c_str());
   if (!file.good()){
+    m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0.1, 0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0.2, 0, 0.5, '0'); 
+    m_lgm->setValueInsideCircle(0.3, 0, 0.5, '0'); 
+
     log("Could not read grid map file, exiting.");
     return;
   }
@@ -403,6 +434,10 @@ void SpatialControl::LoadGridMap(std::string filename){
 void SpatialControl::LoadHeightMap(std::string filename){
   ifstream file(filename.c_str());
   if (!file.good()){
+    m_lgmKH->setValueInsideCircle(0,   0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0.1, 0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0.2, 0, 0.5, 0.01); 
+    m_lgmKH->setValueInsideCircle(0.3, 0, 0.5, 0.01); 
     log("Could not read height map file, exiting.");
     return;
   }
@@ -422,17 +457,21 @@ void SpatialControl::LoadHeightMap(std::string filename){
     cy = atof(tmp.c_str());
     log("HeightMap cx, cy: %3.2f, %3.2f",cx,cy);
     getline(file,line); 
+    getline(file,line);
+    istringstream istr2(line); 
 
     m_lgmKH = new Cure::LocalGridMap<double>(sz, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
     for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
       for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
-        istr1 >> tmp;
+        istr2 >> tmp;
         (*m_lgmKH)(x,y) = atof(tmp.c_str());
+        if ((*m_lgmKH)(x,y) > 8 ){
+          (*m_lgmKH)(x,y) = FLT_MAX;
+        }
       }
     }
-   
-    log("loaded heightmap");
+  log("loaded heightmap");
 }
 
 list<double> SpatialControl::getVisualExplorationAngles(){
