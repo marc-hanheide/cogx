@@ -114,6 +114,7 @@ class CCastConfig:
     reHostName = re.compile(r"^\s*hostname\s+(\S+)\s+(\S+)", re.IGNORECASE)
     reHost = re.compile(r"^\s*host\s+(\S+)", re.IGNORECASE)
     reSubarch = re.compile(r"^\s*subarchitecture\s+(\S+)", re.IGNORECASE)
+    reSubTmWm = re.compile(r"^\s*(\S+\s+)?(cpp|java|python)\s+(tm|wm)(\s+.*)?", re.IGNORECASE)
     reComponent = re.compile(r"^\s*component\s+(\S+\s+)?(cpp|java|python)\s+(\S+)(\s+.*)?", re.IGNORECASE)
     reSubComponent = re.compile(r"^\s*(\S+\s+)?(cpp|java|python)\s+(\S\S)\s+(\S+)(\s+.*)?", re.IGNORECASE)
     def __init__(self, hostMap):
@@ -400,6 +401,7 @@ class CCastConfig:
 
     def _processComponent(self, line, subarch):
         cpid = None
+        cpautoid = None # for WM and TM
         mo = CCastConfig.reComponent.match(line)
         if mo != None:
             prefix = "COMPONENT"
@@ -418,12 +420,25 @@ class CCastConfig:
             cpid   = mo.group(4)
             rest   = mo.group(5)
 
+        mo = CCastConfig.reSubTmWm.match(line)
+        if mo != None:
+            prefix = ""
+            host   = mo.group(1)
+            lang   = mo.group(2)
+            cptype = mo.group(3)
+            cpid   = ""
+            cpautoid = subarch + "_" + cptype.lower()
+            rest   = mo.group(4)
+
+
         if cpid == None: return (0, line)
         if host == None: host = ""
         if rest == None: rest = ""
         rest = rest.strip()
 
-        comp = CComponent(subarch, cpid, cptype, lang)
+        comp = CComponent(subarch,
+                cpautoid if cpautoid != None else cpid,
+                cptype, lang)
         self.components.append(comp)
 
         # host is currently preserved if defined for component in .cast but not in .hconf
