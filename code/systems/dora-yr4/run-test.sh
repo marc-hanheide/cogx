@@ -49,9 +49,9 @@ mkdir -p logs
 rm -rf logs/*
 cat > logs/log4j.properties <<EOF
 log4j.rootLogger=DEBUG,srvXmlFile,srvConsole
-log4j.properties.coma=TRACE,srvXmlFile
+#log4j.properties.coma=TRACE,srvXmlFile
 log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
-#log4j.appender.srvXmlFile.Threshold=DEBUG
+log4j.appender.srvXmlFile.Threshold=DEBUG
 log4j.appender.srvXmlFile.File=log.xml
 log4j.appender.srvXmlFile.Append=true
 log4j.appender.srvXmlFile.layout=org.apache.log4j.xml.XMLLayout
@@ -149,9 +149,11 @@ echo "Sleeping for 100 secs"
 
 sleep 100
 echo "Moving Peekabot"
+window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+echo "peekabot window id is " $window_id
+xdotool windowactivate $window_id
 xdotool windowmove $window_id 0 0
 xdotool windowsize $window_id 70% 70%
-xdotool windowactivate $window_id
 echo "Done moving Peekabot"
 sleep 2
 
