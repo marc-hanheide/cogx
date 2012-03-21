@@ -344,7 +344,7 @@ void SpatialControl::SaveHeightMap(){
   fout << m_lgmKH->getSize() << endl;
   // then map center
   fout << m_lgmKH->getCentXW();
-  fout << " " ;
+  fout << " ";
   fout << m_lgmKH->getCentYW();
   fout << endl;
   fout << endl;
@@ -352,6 +352,7 @@ void SpatialControl::SaveHeightMap(){
   for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
     for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
       fout <<(* (m_lgmKH))(x, y);
+      fout << " ";
     }
     //fout << endl;
   }
@@ -421,20 +422,27 @@ void SpatialControl::LoadHeightMap(std::string filename){
     cy = atof(tmp.c_str());
     log("HeightMap cx, cy: %3.2f, %3.2f",cx,cy);
     getline(file,line); 
-    getline(file,line);
-    int count = 0;
 
     m_lgmKH = new Cure::LocalGridMap<double>(sz, 0.05, FLT_MAX, Cure::LocalGridMap<double>::MAP1);
 
     for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
       for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
-        char c = line[count];
-        (*m_lgmKH)(x,y) = c;
-        count++;
+        istr1 >> tmp;
+        (*m_lgmKH)(x,y) = atof(tmp.c_str());
       }
     }
    
     log("loaded heightmap");
+}
+
+list<double> SpatialControl::getVisualExplorationAngles(){
+  list<double> ret;
+  double angle;
+  angle = VISUAL_EXPLORATION_SWIVEL_ANGLE;
+  ret.push_back(angle);
+  angle = -VISUAL_EXPLORATION_SWIVEL_ANGLE;
+  ret.push_back(angle);
+  return ret;
 }
 
 
@@ -447,7 +455,6 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   if (_config.find("--load-map") != _config.end()) {
     m_loadLgm = true;
-    m_saveLgm = false;
   }
 
   m_usePeekabot = false;
@@ -1319,25 +1326,26 @@ void SpatialControl::runComponent()
 	//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
 	if (m_visualExplorationPhase == 1) {
 	  log("m_visualExplorationPhase == 1");
-		if (m_simulateKinect) {
-      moveSimulatedPTZ(-VISUAL_EXPLORATION_SWIVEL_ANGLE);
-		}
-		else {
-			startMovePanTilt(-VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
-		}
-	  m_visualExplorationPhase = 2;
-	}
-	else if (m_visualExplorationPhase == 2) {
-	  log("m_visualExplorationPhase == 2");
-		if (m_simulateKinect) {
-      moveSimulatedPTZ(VISUAL_EXPLORATION_SWIVEL_ANGLE);
-		}
-		else {
-			startMovePanTilt(VISUAL_EXPLORATION_SWIVEL_ANGLE, -M_PI/4, 0);
-		}
-	  m_visualExplorationPhase = 3;
+    
+    m_visualExplorationAngles = getVisualExplorationAngles();
+    m_visualExplorationPhase = 2;
   }
-	else if (m_visualExplorationPhase == 3) {
+  if (m_visualExplorationPhase == 2 ){
+    if (!m_visualExplorationAngles.empty()){
+      double angle = m_visualExplorationAngles.front();
+      m_visualExplorationAngles.pop_front();
+		  if (m_simulateKinect) {
+        moveSimulatedPTZ(angle);
+		  }
+		  else {
+			  startMovePanTilt(angle, -M_PI/4, 0);
+		  }
+    }
+    if (m_visualExplorationAngles.empty()){
+  	  m_visualExplorationPhase = 3;
+    }
+	}
+	else if (m_visualExplorationPhase == 3){
 	  log("m_visualExplorationPhase == 3");
 		if (m_simulateKinect) {
 			moveSimulatedPTZ(0);
@@ -1528,7 +1536,7 @@ void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange 
     else  if (m_taskStatus == NothingToDo) {
       m_visualExplorationOngoing = true;
       m_visualExplorationPhase = 1;
-      debug("m_visualExplorationPhase = %d", m_visualExplorationPhase);
+      log("m_visualExplorationPhase = %d", m_visualExplorationPhase);
       m_visualExplorationCommand = objID.address.id;
     }
     else {

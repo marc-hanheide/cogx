@@ -2330,7 +2330,8 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
         if (distance_squared > m_initialMovementThreshold) {
           log("Robot has moved more than the threshold distance");
 	        m_firstMovementRegistered = true;
-	        processPlaceArrival(false);
+//	        processPlaceArrival(false);
+          evaluateUnexploredPaths();
         }
       }
       else {
