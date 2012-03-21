@@ -25,6 +25,16 @@ The empty section is the default section and is used if no other secitons are
 specified. The ini file is read sequentially so multiple sections with the same
 name can be used.
 
+The logging level can be set for multiple components that match a pattern:
+
+   []
+   # The level is set for all components 
+   *=FATAL
+
+   [vision.sa]
+   # The level is set for all components in vision.sa that match the pattern
+   video*=WARN
+
 In Cast Control enter the path to the in file into the 'Levels' field in 
 'Logs'.  The settings will be appended (with a prefix) to the log4j.properties 
 file for clients (logs/cctmp.log4client.conf). the above examples will generate:

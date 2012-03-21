@@ -362,7 +362,7 @@ class CLog4jExecutor:
 
 
 
-    def getConfig(self, configuredHosts):
+    def getConfig(self, configuredHosts, components=None):
         try:
             log4 = log4util.CLog4Config()
             log4.setXmlLogFilename(self.serverOutfile)
@@ -374,6 +374,9 @@ class CLog4jExecutor:
             log4.selectedServer = sm['id']
             log4.startServer = self.ui.ckStartLogServer.isChecked()
             log4.loggerLevelsFilename = "%s" % self.ui.txtFnComponentLevels.text()
+            if components == None: log4.componentNames = []
+            else:
+                log4.componentNames = [ c.castLoggerName for c in components ]
             return log4
         except Exception as e:
             dlg = QtGui.QErrorMessage(self.widget)
@@ -944,7 +947,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def startServers(self):
         self._options.checkConfigFile()
-        log4 = self.log4j.getConfig(self.configuredHosts)
+        self.extractComponentsFromConfig()
+        log4 = self.log4j.getConfig(self.configuredHosts, self.componentFilter)
         log4.prepareClientConfig()
 
         if self.ui.actEnableCleanupScript.isChecked():
@@ -970,7 +974,8 @@ class CCastControlWnd(QtGui.QMainWindow):
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             if self.log4j.startedOnHost == None and self.log4j.mustStartServer:
                 self.startLog4jServer()
-                log4 = self.log4j.getConfig(self.configuredHosts)
+                self.extractComponentsFromConfig()
+                log4 = self.log4j.getConfig(self.configuredHosts, self.componentFilter)
                 log4.prepareClientConfig()
 
             self.ui.tabWidget.setCurrentWidget(self.ui.tabLogs)
@@ -1080,7 +1085,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
 
     def onStartCastClient(self):
-        log4 = self.log4j.getConfig(self.configuredHosts)
+        self.extractComponentsFromConfig()
+        log4 = self.log4j.getConfig(self.configuredHosts, self.componentFilter)
         hasServer = self.log4j.mustUseServer
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
@@ -1126,7 +1132,8 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def onStartExternalServers(self):
         self._options.checkConfigFile()
-        log4 = self.log4j.getConfig(self.configuredHosts)
+        self.extractComponentsFromConfig()
+        log4 = self.log4j.getConfig(self.configuredHosts, self.componentFilter)
 
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
