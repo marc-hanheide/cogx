@@ -25,7 +25,8 @@ The empty section is the default section and is used if no other secitons are
 specified. The ini file is read sequentially so multiple sections with the same
 name can be used.
 
-The logging level can be set for multiple components that match a pattern:
+The logging level can be set for multiple components that match a pattern 
+(lines starting with '#' are comments):
 
    []
    # The level is set for all components 
@@ -43,3 +44,34 @@ file for clients (logs/cctmp.log4client.conf). the above examples will generate:
    log4j.logger.vision.sa.videoviewer=FATAL
    log4j.logger.my.special.logger=DEBUG
    log4j.logger.vision.sa.stereoserver=INFO
+
+Note that the logging messages will be additionally filtered by the appenders. 
+It is therefore necessary to set the 'Console Level' and 'XML File Level' to 
+pass as many messages as possible (usuall ALL, TRACE or DEBUG).
+
+A sensible default is:
+
+   Console Level and XML File Level: TRACE
+   loglevels.ini:
+      []
+      *=WARN
+      *_wm=ERROR
+      *_tm=ERROR
+
+      # increase the level for the components that you need ...
+
+
+
+Bugs
+
+The following loggers can't be configured:
+   * cast.init
+   * cast.server.c++.ComponentServer
+   * cast.server.java.ComponentServer
+   * cast.server.python.ComponentServer
+   * probably also other custom loggers
+
+   This is a bug in CAST implementation. If a logger is created through 
+   log4j.properties it is not of the correct type (the logger of the default 
+   type is created instead of a CAST-specific type).
+

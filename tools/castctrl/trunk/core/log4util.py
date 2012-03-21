@@ -226,7 +226,7 @@ class CLog4Config:
                     parts = ln.split("=", 2)
                     if len(parts) < 2: continue
                     reName = (section + parts[0]).replace(".", r"\.").replace("*", ".*")
-                    reName = re.compile(reName)
+                    reName = re.compile("^" + reName + "$")
                     for cname in self.componentNames:
                         mo = reName.match(cname)
                         if mo == None: continue
