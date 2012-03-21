@@ -164,6 +164,9 @@ protected:
     double m_KinectK;
     double m_nodeObstacleK;
 
+    list<double> m_visualExplorationAngles;
+    list<double> getVisualExplorationAngles();
+
     bool m_usePeekabot;
     bool m_show3Dobstacles; 
     void connectPeekabot();
