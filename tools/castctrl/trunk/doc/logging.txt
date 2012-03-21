@@ -1,0 +1,15 @@
+To configure the logging levels for individual components, create a text file 
+(eg. logs/loggers.ini) with the logging levels of individual components. The 
+file should contain log4j options in the form:
+
+   <subarchitecture-id>.<component-id>=LOGLEVEL
+
+eg.:
+
+   vision.sa.videoserver=ERROR
+
+The valid log levels are: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+
+In Cast Control enter the path to this file into the 'Levels' field in 'Logs'.
+The settings will be appended (with a prefix) to the log4j.properties file for 
+clients (logs/cctmp.log4client.conf).
