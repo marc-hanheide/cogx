@@ -48,10 +48,9 @@ mkdir -p logs
 # clear old logs
 rm -rf logs/*
 cat > logs/log4j.properties <<EOF
-log4j.rootLogger=DEBUG,srvXmlFile,srvConsole
-#log4j.properties.coma=TRACE,srvXmlFile
+log4j.rootLogger=TRACE,srvXmlFile,srvConsole
 log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
-log4j.appender.srvXmlFile.Threshold=DEBUG
+log4j.appender.srvXmlFile.Threshold=TRACE
 log4j.appender.srvXmlFile.File=log.xml
 log4j.appender.srvXmlFile.Append=true
 log4j.appender.srvXmlFile.layout=org.apache.log4j.xml.XMLLayout
@@ -64,12 +63,14 @@ EOF
 
 rm -f log4j.properties
 cat > log4j.properties <<EOF
-log4j.rootLogger=TRACE,cliSocketApp
+log4j.rootLogger=DEBUG,cliSocketApp
 #+ Section: LOG4J.client.IceAppender
 #+ The clients are configured to send messages to an IceAppender (CAST logger)
 log4j.loggerFactory=cast.core.logging.ComponentLoggerFactory
 log4j.appender.cliSocketApp=cast.core.logging.IceAppender
 log4j.appender.cliSocketApp.Host=localhost
+
+log4j.logger.coma=TRACE
 EOF
 
 
