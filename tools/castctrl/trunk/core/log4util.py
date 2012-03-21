@@ -210,7 +210,12 @@ class CLog4Config:
                 ln = ln.replace('${HOST}', self.serverHost)
             result.append(ln)
 
-        if os.path.exists(self.loggerLevelsFilename):
+        if not os.path.exists(self.loggerLevelsFilename):
+            if self.loggerLevelsFilename != None and self.loggerLevelsFilename != "":
+                logger.get().error(
+                        "File '%s' not found. Using default logging levels."
+                        % self.loggerLevelsFilename)  
+        else:
             f = open(self.loggerLevelsFilename)
             lines = self._removeComments(f.readlines())
             f.close()
