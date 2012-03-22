@@ -1451,7 +1451,7 @@ void PlaceManager::evaluateUnexploredPaths()
         newHyp->hypID = m_hypIDCounter;
 //        if (newHyp->originPlaceID == -1 ){
 //          log("Couldn't find closest node. Connecting with the current");
-//          newHyp->originPlaceID = curPlace->id;
+          newHyp->originPlaceID = curPlace->id;
 //        }
 //TODO assign origplace in spatialcontrol;
 
