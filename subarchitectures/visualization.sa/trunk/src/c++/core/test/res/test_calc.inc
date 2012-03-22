@@ -1,810 +1,813 @@
+// C++11 include file
+// --------------------------------------------------
+
 // Generated from calculator.ui
-const char res_calculator_ui[] =
-   "<ui version=\"4.0\" >\n"
-   " <class>Calculator</class>\n"
-   " <widget class=\"QWidget\" name=\"Calculator\" >\n"
-   "  <property name=\"geometry\" >\n"
-   "   <rect>\n"
-   "    <x>0</x>\n"
-   "    <y>0</y>\n"
-   "    <width>314</width>\n"
-   "    <height>301</height>\n"
-   "   </rect>\n"
-   "  </property>\n"
-   "  <property name=\"sizePolicy\" >\n"
-   "   <sizepolicy vsizetype=\"Fixed\" hsizetype=\"Fixed\" >\n"
-   "    <horstretch>0</horstretch>\n"
-   "    <verstretch>0</verstretch>\n"
-   "   </sizepolicy>\n"
-   "  </property>\n"
-   "  <property name=\"minimumSize\" >\n"
-   "   <size>\n"
-   "    <width>314</width>\n"
-   "    <height>301</height>\n"
-   "   </size>\n"
-   "  </property>\n"
-   "  <property name=\"maximumSize\" >\n"
-   "   <size>\n"
-   "    <width>314</width>\n"
-   "    <height>301</height>\n"
-   "   </size>\n"
-   "  </property>\n"
-   "  <property name=\"windowTitle\" >\n"
-   "   <string>Calculator</string>\n"
-   "  </property>\n"
-   "  <widget class=\"QToolButton\" name=\"backspaceButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>10</x>\n"
-   "     <y>50</y>\n"
-   "     <width>91</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>Backspace</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"clearButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>110</x>\n"
-   "     <y>50</y>\n"
-   "     <width>91</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>Clear</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"clearAllButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>210</x>\n"
-   "     <y>50</y>\n"
-   "     <width>91</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>Clear All</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"clearMemoryButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>10</x>\n"
-   "     <y>100</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>MC</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"readMemoryButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>10</x>\n"
-   "     <y>150</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>MR</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"setMemoryButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>10</x>\n"
-   "     <y>200</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>MS</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"addToMemoryButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>10</x>\n"
-   "     <y>250</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>M+</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"sevenButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>60</x>\n"
-   "     <y>100</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>7</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"eightButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>110</x>\n"
-   "     <y>100</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>8</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"nineButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>160</x>\n"
-   "     <y>100</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>9</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"fourButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>60</x>\n"
-   "     <y>150</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>4</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"fiveButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>110</x>\n"
-   "     <y>150</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>5</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"sixButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>160</x>\n"
-   "     <y>150</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>6</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"oneButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>60</x>\n"
-   "     <y>200</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>1</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"twoButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>110</x>\n"
-   "     <y>200</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>2</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"threeButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>160</x>\n"
-   "     <y>200</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>3</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"zeroButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>60</x>\n"
-   "     <y>250</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>0</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"pointButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>110</x>\n"
-   "     <y>250</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>.</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"changeSignButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>160</x>\n"
-   "     <y>250</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>+-</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"plusButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>210</x>\n"
-   "     <y>250</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>+</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"divisionButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>210</x>\n"
-   "     <y>100</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>/</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"timesButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>210</x>\n"
-   "     <y>150</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>*</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"minusButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>210</x>\n"
-   "     <y>200</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>-</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"squareRootButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>260</x>\n"
-   "     <y>100</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>Sqrt</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"powerButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>260</x>\n"
-   "     <y>150</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>x^2</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"reciprocalButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>260</x>\n"
-   "     <y>200</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>1/x</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QToolButton\" name=\"equalButton\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>260</x>\n"
-   "     <y>250</y>\n"
-   "     <width>41</width>\n"
-   "     <height>41</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"text\" >\n"
-   "    <string>=</string>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   "  <widget class=\"QLineEdit\" name=\"display\" >\n"
-   "   <property name=\"geometry\" >\n"
-   "    <rect>\n"
-   "     <x>10</x>\n"
-   "     <y>10</y>\n"
-   "     <width>291</width>\n"
-   "     <height>31</height>\n"
-   "    </rect>\n"
-   "   </property>\n"
-   "   <property name=\"maxLength\" >\n"
-   "    <number>15</number>\n"
-   "   </property>\n"
-   "   <property name=\"alignment\" >\n"
-   "    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>\n"
-   "   </property>\n"
-   "   <property name=\"readOnly\" >\n"
-   "    <bool>true</bool>\n"
-   "   </property>\n"
-   "  </widget>\n"
-   " </widget>\n"
-   " <resources/>\n"
-   " <connections/>\n"
-   "</ui>\n"
-   ; // res_calculator_ui
+const char res_calculator_ui[] = R"((<ui version="4.0" >
+ <class>Calculator</class>
+ <widget class="QWidget" name="Calculator" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>314</width>
+    <height>301</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>314</width>
+    <height>301</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>314</width>
+    <height>301</height>
+   </size>
+  </property>
+  <property name="windowTitle" >
+   <string>Calculator</string>
+  </property>
+  <widget class="QToolButton" name="backspaceButton" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>91</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Backspace</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="clearButton" >
+   <property name="geometry" >
+    <rect>
+     <x>110</x>
+     <y>50</y>
+     <width>91</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Clear</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="clearAllButton" >
+   <property name="geometry" >
+    <rect>
+     <x>210</x>
+     <y>50</y>
+     <width>91</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Clear All</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="clearMemoryButton" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>100</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>MC</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="readMemoryButton" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>150</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>MR</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="setMemoryButton" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>200</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>MS</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="addToMemoryButton" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>250</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>M+</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="sevenButton" >
+   <property name="geometry" >
+    <rect>
+     <x>60</x>
+     <y>100</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>7</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="eightButton" >
+   <property name="geometry" >
+    <rect>
+     <x>110</x>
+     <y>100</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>8</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="nineButton" >
+   <property name="geometry" >
+    <rect>
+     <x>160</x>
+     <y>100</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>9</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="fourButton" >
+   <property name="geometry" >
+    <rect>
+     <x>60</x>
+     <y>150</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>4</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="fiveButton" >
+   <property name="geometry" >
+    <rect>
+     <x>110</x>
+     <y>150</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>5</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="sixButton" >
+   <property name="geometry" >
+    <rect>
+     <x>160</x>
+     <y>150</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>6</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="oneButton" >
+   <property name="geometry" >
+    <rect>
+     <x>60</x>
+     <y>200</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>1</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="twoButton" >
+   <property name="geometry" >
+    <rect>
+     <x>110</x>
+     <y>200</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>2</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="threeButton" >
+   <property name="geometry" >
+    <rect>
+     <x>160</x>
+     <y>200</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>3</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="zeroButton" >
+   <property name="geometry" >
+    <rect>
+     <x>60</x>
+     <y>250</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>0</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="pointButton" >
+   <property name="geometry" >
+    <rect>
+     <x>110</x>
+     <y>250</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>.</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="changeSignButton" >
+   <property name="geometry" >
+    <rect>
+     <x>160</x>
+     <y>250</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>+-</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="plusButton" >
+   <property name="geometry" >
+    <rect>
+     <x>210</x>
+     <y>250</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>+</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="divisionButton" >
+   <property name="geometry" >
+    <rect>
+     <x>210</x>
+     <y>100</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>/</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="timesButton" >
+   <property name="geometry" >
+    <rect>
+     <x>210</x>
+     <y>150</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>*</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="minusButton" >
+   <property name="geometry" >
+    <rect>
+     <x>210</x>
+     <y>200</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>-</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="squareRootButton" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>100</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Sqrt</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="powerButton" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>150</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>x^2</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="reciprocalButton" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>200</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>1/x</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="equalButton" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>250</y>
+     <width>41</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>=</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="display" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>291</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="maxLength" >
+    <number>15</number>
+   </property>
+   <property name="alignment" >
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+   <property name="readOnly" >
+    <bool>true</bool>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+))"; // res_calculator_ui
+// --------------------------------------------------
 
 // Generated from calculator.js
-const char res_calculator_js[] =
-   "\n"
-   "Function.prototype.bind = function() {\n"
-   "   var func = this;\n"
-   "   var thisObject = arguments[0];\n"
-   "   var args = Array.prototype.slice.call(arguments, 1);\n"
-   "   return function() {\n"
-   "      return func.apply(thisObject, args);\n"
-   "   }\n"
-   "}\n"
-   "\n"
-   "function Calculator(ui)\n"
-   "{\n"
-   "   this.ui = ui;\n"
-   "\n"
-   "   this.pendingAdditiveOperator = Calculator.NO_OPERATOR;\n"
-   "   this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;\n"
-   "   this.sumInMemory = 0;\n"
-   "   this.sumSoFar = 0;\n"
-   "   this.factorSoFar = 0;\n"
-   "   this.waitingForOperand = true;\n"
-   "\n"
-   "   with (ui) {\n"
-   "      display.text = \"0\";\n"
-   "\n"
-   "      zeroButton.clicked.connect(this.digitClicked.bind(this, 0));\n"
-   "      oneButton.clicked.connect(this.digitClicked.bind(this, 1));\n"
-   "      twoButton.clicked.connect(this.digitClicked.bind(this, 2));\n"
-   "      threeButton.clicked.connect(this.digitClicked.bind(this, 3));\n"
-   "      fourButton.clicked.connect(this.digitClicked.bind(this, 4));\n"
-   "      fiveButton.clicked.connect(this.digitClicked.bind(this, 5));\n"
-   "      sixButton.clicked.connect(this.digitClicked.bind(this, 6));\n"
-   "      sevenButton.clicked.connect(this.digitClicked.bind(this, 7));\n"
-   "      eightButton.clicked.connect(this.digitClicked.bind(this, 8));\n"
-   "      nineButton.clicked.connect(this.digitClicked.bind(this, 9));\n"
-   "\n"
-   "      pointButton.clicked.connect(this, \"pointClicked\");\n"
-   "      changeSignButton.clicked.connect(this, \"changeSignClicked\");\n"
-   "\n"
-   "      backspaceButton.clicked.connect(this, \"backspaceClicked\");\n"
-   "      clearButton.clicked.connect(this, \"clear\");\n"
-   "      clearAllButton.clicked.connect(this, \"clearAll\");\n"
-   "\n"
-   "      clearMemoryButton.clicked.connect(this, \"clearMemory\");\n"
-   "      readMemoryButton.clicked.connect(this, \"readMemory\");\n"
-   "      setMemoryButton.clicked.connect(this, \"setMemory\");\n"
-   "      addToMemoryButton.clicked.connect(this, \"addToMemory\");\n"
-   "\n"
-   "      divisionButton.clicked.connect(this.multiplicativeOperatorClicked.bind(this, Calculator.DIVISION_OPERATOR));\n"
-   "      timesButton.clicked.connect(this.multiplicativeOperatorClicked.bind(this, Calculator.TIMES_OPERATOR));\n"
-   "      minusButton.clicked.connect(this.additiveOperatorClicked.bind(this, Calculator.MINUS_OPERATOR));\n"
-   "      plusButton.clicked.connect(this.additiveOperatorClicked.bind(this, Calculator.PLUS_OPERATOR));\n"
-   "\n"
-   "      squareRootButton.clicked.connect(this.unaryOperatorClicked.bind(this, Calculator.SQUARE_OPERATOR));\n"
-   "      powerButton.clicked.connect(this.unaryOperatorClicked.bind(this, Calculator.POWER_OPERATOR));\n"
-   "      reciprocalButton.clicked.connect(this.unaryOperatorClicked.bind(this, Calculator.RECIPROCAL_OPERATOR));\n"
-   "      equalButton.clicked.connect(this, \"equalClicked\");\n"
-   "   }\n"
-   "}\n"
-   "\n"
-   "Calculator.NO_OPERATOR = 0;\n"
-   "Calculator.SQUARE_OPERATOR = 1;\n"
-   "Calculator.POWER_OPERATOR = 2;\n"
-   "Calculator.RECIPROCAL_OPERATOR = 3;\n"
-   "Calculator.DIVISION_OPERATOR = 4;\n"
-   "Calculator.TIMES_OPERATOR = 5;\n"
-   "Calculator.MINUS_OPERATOR = 6;\n"
-   "Calculator.PLUS_OPERATOR = 7;\n"
-   "\n"
-   "Calculator.prototype.abortOperation = function()\n"
-   "{\n"
-   "   this.clearAll();\n"
-   "   this.ui.display.text = \"####\";\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.calculate = function(rightOperand, pendingOperator)\n"
-   "{\n"
-   "   if (pendingOperator == Calculator.PLUS_OPERATOR) {\n"
-   "      this.sumSoFar += rightOperand;\n"
-   "   } else if (pendingOperator == Calculator.MINUS_OPERATOR) {\n"
-   "      this.sumSoFar -= rightOperand;\n"
-   "   } else if (pendingOperator == Calculator.TIMES_OPERATOR) {\n"
-   "      this.factorSoFar *= rightOperand;\n"
-   "   } else if (pendingOperator == Calculator.DIVISION_OPERATOR) {\n"
-   "      if (rightOperand == 0)\n"
-   "         return false;\n"
-   "      this.factorSoFar /= rightOperand;\n"
-   "   }\n"
-   "   return true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.digitClicked = function(digitValue)\n"
-   "{\n"
-   "   if ((digitValue == 0) && (this.ui.display.text == \"0\"))\n"
-   "      return;\n"
-   "   if (this.waitingForOperand) {\n"
-   "      this.ui.display.clear();\n"
-   "      this.waitingForOperand = false;\n"
-   "   }\n"
-   "   this.ui.display.text += digitValue;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.unaryOperatorClicked = function(op)\n"
-   "{\n"
-   "   var operand = this.ui.display.text - 0;\n"
-   "   var result = 0;\n"
-   "   if (op == Calculator.SQUARE_OPERATOR) {\n"
-   "      if (operand < 0) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      result = Math.sqrt(operand);\n"
-   "   } else if (op == Calculator.POWER_OPERATOR) {\n"
-   "      result = Math.pow(operand, 2);\n"
-   "   } else if (op == Calculator.RECIPROCAL_OPERATOR) {\n"
-   "      if (operand == 0.0) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      result = 1 / operand;\n"
-   "   }\n"
-   "   this.ui.display.text = result + \"\";\n"
-   "   this.waitingForOperand = true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.additiveOperatorClicked = function(op)\n"
-   "{\n"
-   "   var operand = this.ui.display.text - 0;\n"
-   "\n"
-   "   if (this.pendingMultiplicativeOperator != Calculator.NO_OPERATOR) {\n"
-   "      if (!this.calculate(operand, this.pendingMultiplicativeOperator)) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      this.ui.display.text = this.factorSoFar + \"\";\n"
-   "      operand = this.factorSoFar;\n"
-   "      this.factorSoFar = 0;\n"
-   "      this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;\n"
-   "   }\n"
-   "\n"
-   "   if (this.pendingAdditiveOperator != Calculator.NO_OPERATOR) {\n"
-   "      if (!this.calculate(operand, this.pendingAdditiveOperator)) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      this.ui.display.text = this.sumSoFar + \"\";\n"
-   "   } else {\n"
-   "      this.sumSoFar = operand;\n"
-   "   }\n"
-   "\n"
-   "   this.pendingAdditiveOperator = op;\n"
-   "   this.waitingForOperand = true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.multiplicativeOperatorClicked = function(op)\n"
-   "{\n"
-   "   var operand = this.ui.display.text - 0;\n"
-   "\n"
-   "   if (this.pendingMultiplicativeOperator != Calculator.NO_OPERATOR) {\n"
-   "      if (!this.calculate(operand, this.pendingMultiplicativeOperator)) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      this.ui.display.text = this.factorSoFar + \"\";\n"
-   "   } else {\n"
-   "      this.factorSoFar = operand;\n"
-   "   }\n"
-   "\n"
-   "   this.pendingMultiplicativeOperator = op;\n"
-   "   this.waitingForOperand = true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.equalClicked = function()\n"
-   "{\n"
-   "   var operand = this.ui.display.text - 0;\n"
-   "\n"
-   "   if (this.pendingMultiplicativeOperator != Calculator.NO_OPERATOR) {\n"
-   "      if (!this.calculate(operand, this.pendingMultiplicativeOperator)) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      operand = this.factorSoFar;\n"
-   "      this.factorSoFar = 0.0;\n"
-   "      this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;\n"
-   "   }\n"
-   "   if (this.pendingAdditiveOperator != Calculator.NO_OPERATOR) {\n"
-   "      if (!this.calculate(operand, this.pendingAdditiveOperator)) {\n"
-   "         this.abortOperation();\n"
-   "         return;\n"
-   "      }\n"
-   "      this.pendingAdditiveOperator = Calculator.NO_OPERATOR;\n"
-   "   } else {\n"
-   "      this.sumSoFar = operand;\n"
-   "   }\n"
-   "\n"
-   "   this.ui.display.text = this.sumSoFar + \"\";\n"
-   "   this.sumSoFar = 0.0;\n"
-   "   this.waitingForOperand = true;\n"
-   "\n"
-   "   dialogOwner.setValue(\"display.text\", this.ui.display.text);\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.pointClicked = function()\n"
-   "{\n"
-   "   if (this.waitingForOperand)\n"
-   "      this.ui.display.text = \"0\";\n"
-   "   if (this.ui.display.text.indexOf(\".\") == -1)\n"
-   "      this.ui.display.text += \".\";\n"
-   "   this.waitingForOperand = false;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.changeSignClicked = function()\n"
-   "{\n"
-   "   var text = this.ui.display.text;\n"
-   "   var value = text - 0;\n"
-   "\n"
-   "   if (value > 0) {\n"
-   "      text = \"-\" + text;\n"
-   "   } else if (value < 0) {\n"
-   "      text = text.slice(1);\n"
-   "   }\n"
-   "   this.ui.display.text = text;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.backspaceClicked = function()\n"
-   "{\n"
-   "   if (this.waitingForOperand)\n"
-   "      return;\n"
-   "\n"
-   "   var text = this.ui.display.text;\n"
-   "   text = text.slice(0, -1);\n"
-   "   if (text.length == 0) {\n"
-   "      text = \"0\";\n"
-   "      this.waitingForOperand = true;\n"
-   "   }\n"
-   "   this.ui.display.text = text;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.clear = function()\n"
-   "{\n"
-   "   if (this.waitingForOperand)\n"
-   "      return;\n"
-   "\n"
-   "   this.ui.display.text = \"0\";\n"
-   "   this.waitingForOperand = true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.clearAll = function()\n"
-   "{\n"
-   "   this.sumSoFar = 0.0;\n"
-   "   this.factorSoFar = 0.0;\n"
-   "   this.pendingAdditiveOperator = Calculator.NO_OPERATOR;\n"
-   "   this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;\n"
-   "   this.ui.display.text = \"0\";\n"
-   "   this.waitingForOperand = true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.clearMemory = function()\n"
-   "{\n"
-   "   this.sumInMemory = 0.0;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.readMemory = function()\n"
-   "{\n"
-   "   this.ui.display.text = this.sumInMemory + \"\";\n"
-   "   this.waitingForOperand = true;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.setMemory = function()\n"
-   "{\n"
-   "   this.equalClicked();\n"
-   "   this.sumInMemory = this.ui.display.text - 0;\n"
-   "}\n"
-   "\n"
-   "Calculator.prototype.addToMemory = function()\n"
-   "{\n"
-   "   this.equalClicked();\n"
-   "   this.sumInMemory += this.ui.display.text - 0;\n"
-   "}\n"
-   ; // res_calculator_js
+const char res_calculator_js[] = R"((
+Function.prototype.bind = function() {
+   var func = this;
+   var thisObject = arguments[0];
+   var args = Array.prototype.slice.call(arguments, 1);
+   return function() {
+      return func.apply(thisObject, args);
+   }
+}
+
+function Calculator(ui)
+{
+   this.ui = ui;
+
+   this.pendingAdditiveOperator = Calculator.NO_OPERATOR;
+   this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;
+   this.sumInMemory = 0;
+   this.sumSoFar = 0;
+   this.factorSoFar = 0;
+   this.waitingForOperand = true;
+
+   with (ui) {
+      display.text = "0";
+
+      zeroButton.clicked.connect(this.digitClicked.bind(this, 0));
+      oneButton.clicked.connect(this.digitClicked.bind(this, 1));
+      twoButton.clicked.connect(this.digitClicked.bind(this, 2));
+      threeButton.clicked.connect(this.digitClicked.bind(this, 3));
+      fourButton.clicked.connect(this.digitClicked.bind(this, 4));
+      fiveButton.clicked.connect(this.digitClicked.bind(this, 5));
+      sixButton.clicked.connect(this.digitClicked.bind(this, 6));
+      sevenButton.clicked.connect(this.digitClicked.bind(this, 7));
+      eightButton.clicked.connect(this.digitClicked.bind(this, 8));
+      nineButton.clicked.connect(this.digitClicked.bind(this, 9));
+
+      pointButton.clicked.connect(this, "pointClicked");
+      changeSignButton.clicked.connect(this, "changeSignClicked");
+
+      backspaceButton.clicked.connect(this, "backspaceClicked");
+      clearButton.clicked.connect(this, "clear");
+      clearAllButton.clicked.connect(this, "clearAll");
+
+      clearMemoryButton.clicked.connect(this, "clearMemory");
+      readMemoryButton.clicked.connect(this, "readMemory");
+      setMemoryButton.clicked.connect(this, "setMemory");
+      addToMemoryButton.clicked.connect(this, "addToMemory");
+
+      divisionButton.clicked.connect(this.multiplicativeOperatorClicked.bind(this, Calculator.DIVISION_OPERATOR));
+      timesButton.clicked.connect(this.multiplicativeOperatorClicked.bind(this, Calculator.TIMES_OPERATOR));
+      minusButton.clicked.connect(this.additiveOperatorClicked.bind(this, Calculator.MINUS_OPERATOR));
+      plusButton.clicked.connect(this.additiveOperatorClicked.bind(this, Calculator.PLUS_OPERATOR));
+
+      squareRootButton.clicked.connect(this.unaryOperatorClicked.bind(this, Calculator.SQUARE_OPERATOR));
+      powerButton.clicked.connect(this.unaryOperatorClicked.bind(this, Calculator.POWER_OPERATOR));
+      reciprocalButton.clicked.connect(this.unaryOperatorClicked.bind(this, Calculator.RECIPROCAL_OPERATOR));
+      equalButton.clicked.connect(this, "equalClicked");
+   }
+}
+
+Calculator.NO_OPERATOR = 0;
+Calculator.SQUARE_OPERATOR = 1;
+Calculator.POWER_OPERATOR = 2;
+Calculator.RECIPROCAL_OPERATOR = 3;
+Calculator.DIVISION_OPERATOR = 4;
+Calculator.TIMES_OPERATOR = 5;
+Calculator.MINUS_OPERATOR = 6;
+Calculator.PLUS_OPERATOR = 7;
+
+Calculator.prototype.abortOperation = function()
+{
+   this.clearAll();
+   this.ui.display.text = "####";
+}
+
+Calculator.prototype.calculate = function(rightOperand, pendingOperator)
+{
+   if (pendingOperator == Calculator.PLUS_OPERATOR) {
+      this.sumSoFar += rightOperand;
+   } else if (pendingOperator == Calculator.MINUS_OPERATOR) {
+      this.sumSoFar -= rightOperand;
+   } else if (pendingOperator == Calculator.TIMES_OPERATOR) {
+      this.factorSoFar *= rightOperand;
+   } else if (pendingOperator == Calculator.DIVISION_OPERATOR) {
+      if (rightOperand == 0)
+         return false;
+      this.factorSoFar /= rightOperand;
+   }
+   return true;
+}
+
+Calculator.prototype.digitClicked = function(digitValue)
+{
+   if ((digitValue == 0) && (this.ui.display.text == "0"))
+      return;
+   if (this.waitingForOperand) {
+      this.ui.display.clear();
+      this.waitingForOperand = false;
+   }
+   this.ui.display.text += digitValue;
+}
+
+Calculator.prototype.unaryOperatorClicked = function(op)
+{
+   var operand = this.ui.display.text - 0;
+   var result = 0;
+   if (op == Calculator.SQUARE_OPERATOR) {
+      if (operand < 0) {
+         this.abortOperation();
+         return;
+      }
+      result = Math.sqrt(operand);
+   } else if (op == Calculator.POWER_OPERATOR) {
+      result = Math.pow(operand, 2);
+   } else if (op == Calculator.RECIPROCAL_OPERATOR) {
+      if (operand == 0.0) {
+         this.abortOperation();
+         return;
+      }
+      result = 1 / operand;
+   }
+   this.ui.display.text = result + "";
+   this.waitingForOperand = true;
+}
+
+Calculator.prototype.additiveOperatorClicked = function(op)
+{
+   var operand = this.ui.display.text - 0;
+
+   if (this.pendingMultiplicativeOperator != Calculator.NO_OPERATOR) {
+      if (!this.calculate(operand, this.pendingMultiplicativeOperator)) {
+         this.abortOperation();
+         return;
+      }
+      this.ui.display.text = this.factorSoFar + "";
+      operand = this.factorSoFar;
+      this.factorSoFar = 0;
+      this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;
+   }
+
+   if (this.pendingAdditiveOperator != Calculator.NO_OPERATOR) {
+      if (!this.calculate(operand, this.pendingAdditiveOperator)) {
+         this.abortOperation();
+         return;
+      }
+      this.ui.display.text = this.sumSoFar + "";
+   } else {
+      this.sumSoFar = operand;
+   }
+
+   this.pendingAdditiveOperator = op;
+   this.waitingForOperand = true;
+}
+
+Calculator.prototype.multiplicativeOperatorClicked = function(op)
+{
+   var operand = this.ui.display.text - 0;
+
+   if (this.pendingMultiplicativeOperator != Calculator.NO_OPERATOR) {
+      if (!this.calculate(operand, this.pendingMultiplicativeOperator)) {
+         this.abortOperation();
+         return;
+      }
+      this.ui.display.text = this.factorSoFar + "";
+   } else {
+      this.factorSoFar = operand;
+   }
+
+   this.pendingMultiplicativeOperator = op;
+   this.waitingForOperand = true;
+}
+
+Calculator.prototype.equalClicked = function()
+{
+   var operand = this.ui.display.text - 0;
+
+   if (this.pendingMultiplicativeOperator != Calculator.NO_OPERATOR) {
+      if (!this.calculate(operand, this.pendingMultiplicativeOperator)) {
+         this.abortOperation();
+         return;
+      }
+      operand = this.factorSoFar;
+      this.factorSoFar = 0.0;
+      this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;
+   }
+   if (this.pendingAdditiveOperator != Calculator.NO_OPERATOR) {
+      if (!this.calculate(operand, this.pendingAdditiveOperator)) {
+         this.abortOperation();
+         return;
+      }
+      this.pendingAdditiveOperator = Calculator.NO_OPERATOR;
+   } else {
+      this.sumSoFar = operand;
+   }
+
+   this.ui.display.text = this.sumSoFar + "";
+   this.sumSoFar = 0.0;
+   this.waitingForOperand = true;
+
+   dialogOwner.setValue("display.text", this.ui.display.text);
+}
+
+Calculator.prototype.pointClicked = function()
+{
+   if (this.waitingForOperand)
+      this.ui.display.text = "0";
+   if (this.ui.display.text.indexOf(".") == -1)
+      this.ui.display.text += ".";
+   this.waitingForOperand = false;
+}
+
+Calculator.prototype.changeSignClicked = function()
+{
+   var text = this.ui.display.text;
+   var value = text - 0;
+
+   if (value > 0) {
+      text = "-" + text;
+   } else if (value < 0) {
+      text = text.slice(1);
+   }
+   this.ui.display.text = text;
+}
+
+Calculator.prototype.backspaceClicked = function()
+{
+   if (this.waitingForOperand)
+      return;
+
+   var text = this.ui.display.text;
+   text = text.slice(0, -1);
+   if (text.length == 0) {
+      text = "0";
+      this.waitingForOperand = true;
+   }
+   this.ui.display.text = text;
+}
+
+Calculator.prototype.clear = function()
+{
+   if (this.waitingForOperand)
+      return;
+
+   this.ui.display.text = "0";
+   this.waitingForOperand = true;
+}
+
+Calculator.prototype.clearAll = function()
+{
+   this.sumSoFar = 0.0;
+   this.factorSoFar = 0.0;
+   this.pendingAdditiveOperator = Calculator.NO_OPERATOR;
+   this.pendingMultiplicativeOperator = Calculator.NO_OPERATOR;
+   this.ui.display.text = "0";
+   this.waitingForOperand = true;
+}
+
+Calculator.prototype.clearMemory = function()
+{
+   this.sumInMemory = 0.0;
+}
+
+Calculator.prototype.readMemory = function()
+{
+   this.ui.display.text = this.sumInMemory + "";
+   this.waitingForOperand = true;
+}
+
+Calculator.prototype.setMemory = function()
+{
+   this.equalClicked();
+   this.sumInMemory = this.ui.display.text - 0;
+}
+
+Calculator.prototype.addToMemory = function()
+{
+   this.equalClicked();
+   this.sumInMemory += this.ui.display.text - 0;
+}
+))"; // res_calculator_js
+// --------------------------------------------------
 
 // Generated from chat.ui
-const char res_chat_ui[] =
-   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-   "<ui version=\"4.0\">\n"
-   " <class>Form</class>\n"
-   " <widget class=\"QWidget\" name=\"Form\">\n"
-   "  <property name=\"geometry\">\n"
-   "   <rect>\n"
-   "    <x>0</x>\n"
-   "    <y>0</y>\n"
-   "    <width>400</width>\n"
-   "    <height>300</height>\n"
-   "   </rect>\n"
-   "  </property>\n"
-   "  <property name=\"windowTitle\">\n"
-   "   <string>Form</string>\n"
-   "  </property>\n"
-   "  <layout class=\"QVBoxLayout\" name=\"verticalLayout\">\n"
-   "   <item>\n"
-   "    <layout class=\"QHBoxLayout\" name=\"horizontalLayout\">\n"
-   "     <item>\n"
-   "      <widget class=\"QComboBox\" name=\"comboBox\">\n"
-   "       <property name=\"sizePolicy\">\n"
-   "        <sizepolicy hsizetype=\"Expanding\" vsizetype=\"Fixed\">\n"
-   "         <horstretch>1</horstretch>\n"
-   "         <verstretch>1</verstretch>\n"
-   "        </sizepolicy>\n"
-   "       </property>\n"
-   "       <item>\n"
-   "        <property name=\"text\">\n"
-   "         <string>red</string>\n"
-   "        </property>\n"
-   "       </item>\n"
-   "       <item>\n"
-   "        <property name=\"text\">\n"
-   "         <string>green</string>\n"
-   "        </property>\n"
-   "       </item>\n"
-   "       <item>\n"
-   "        <property name=\"text\">\n"
-   "         <string>blue</string>\n"
-   "        </property>\n"
-   "       </item>\n"
-   "      </widget>\n"
-   "     </item>\n"
-   "     <item>\n"
-   "      <widget class=\"QComboBox\" name=\"comboBox_2\">\n"
-   "       <property name=\"sizePolicy\">\n"
-   "        <sizepolicy hsizetype=\"Expanding\" vsizetype=\"Fixed\">\n"
-   "         <horstretch>1</horstretch>\n"
-   "         <verstretch>1</verstretch>\n"
-   "        </sizepolicy>\n"
-   "       </property>\n"
-   "       <item>\n"
-   "        <property name=\"text\">\n"
-   "         <string>compact</string>\n"
-   "        </property>\n"
-   "       </item>\n"
-   "       <item>\n"
-   "        <property name=\"text\">\n"
-   "         <string>elongated</string>\n"
-   "        </property>\n"
-   "       </item>\n"
-   "      </widget>\n"
-   "     </item>\n"
-   "     <item>\n"
-   "      <widget class=\"QComboBox\" name=\"comboBox_3\">\n"
-   "       <property name=\"sizePolicy\">\n"
-   "        <sizepolicy hsizetype=\"MinimumExpanding\" vsizetype=\"Fixed\">\n"
-   "         <horstretch>1</horstretch>\n"
-   "         <verstretch>0</verstretch>\n"
-   "        </sizepolicy>\n"
-   "       </property>\n"
-   "       <item>\n"
-   "        <property name=\"text\">\n"
-   "         <string>teabox</string>\n"
-   "        </property>\n"
-   "       </item>\n"
-   "      </widget>\n"
-   "     </item>\n"
-   "    </layout>\n"
-   "   </item>\n"
-   "   <item>\n"
-   "    <layout class=\"QHBoxLayout\" name=\"horizontalLayout_2\">\n"
-   "     <item>\n"
-   "      <widget class=\"QLineEdit\" name=\"lineEdit\">\n"
-   "       <property name=\"text\">\n"
-   "        <string>What shape is this</string>\n"
-   "       </property>\n"
-   "      </widget>\n"
-   "     </item>\n"
-   "     <item>\n"
-   "      <widget class=\"QPushButton\" name=\"pushButton\">\n"
-   "       <property name=\"text\">\n"
-   "        <string>Say</string>\n"
-   "       </property>\n"
-   "      </widget>\n"
-   "     </item>\n"
-   "    </layout>\n"
-   "   </item>\n"
-   "   <item>\n"
-   "    <widget class=\"QTextEdit\" name=\"textEdit\">\n"
-   "     <property name=\"html\">\n"
-   "      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;\n"
-   "&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;\n"
-   "p, li { white-space: pre-wrap; }\n"
-   "&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;\n"
-   "&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>\n"
-   "     </property>\n"
-   "    </widget>\n"
-   "   </item>\n"
-   "  </layout>\n"
-   " </widget>\n"
-   " <resources/>\n"
-   " <connections/>\n"
-   "</ui>\n"
-   ; // res_chat_ui
+const char res_chat_ui[] = R"((<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QComboBox" name="comboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>red</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>green</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>blue</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>compact</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>elongated</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>teabox</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="text">
+        <string>What shape is this</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Say</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="textEdit">
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+))"; // res_chat_ui
+// --------------------------------------------------
 

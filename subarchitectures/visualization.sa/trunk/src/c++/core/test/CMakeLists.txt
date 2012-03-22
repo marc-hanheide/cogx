@@ -1,4 +1,6 @@
 
+project (Visualization.Tests)
+
 FIND_LIBRARY(CPPUNIT cppunit)
 FIND_PATH(CPPUNIT_HEADERS cppunit/TestRunner.h)
 IF ( CPPUNIT AND CPPUNIT_HEADERS)
@@ -23,14 +25,14 @@ find_package(OpenCV REQUIRED)
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
 
-set(SOURCES TestComponent.cpp)
-
 find_package(LibPlot)
 set(HAS_LIBPLOT ${LIBPLOT_FOUND})
 if(HAS_LIBPLOT)
    add_definitions(-DHAS_LIBPLOT)
    set(LIBPLOT_LIBS plotter)
 endif(HAS_LIBPLOT)
+
+set(SOURCES TestComponent.cpp)
 
 add_definitions(-DFEAT_VISUALIZATION)
 include_directories( .
@@ -55,3 +57,10 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${LIBPLOT_LIBS}
    )
 
+add_custom_target (${CAST_COMPONENT_NAME}.Resources)
+add_custom_command (
+   TARGET  ${CAST_COMPONENT_NAME}.Resources
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/res
+   COMMAND make
+)
+add_dependencies(${CAST_COMPONENT_NAME} ${CAST_COMPONENT_NAME}.Resources)
