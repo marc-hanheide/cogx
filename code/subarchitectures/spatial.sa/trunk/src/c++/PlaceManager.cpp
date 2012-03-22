@@ -820,7 +820,8 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
     log("Couldnt find node from the placeid specified");
     return ret;
   }
-  int curNodeId = curNode->nodeId;
+  // @demmeln 22.03.2012: curNodeId seems to be unused, so comment out.
+  // int curNodeId = curNode->nodeId 
   double nodeX = curNode->x;
   double nodeY = curNode->y;
 
