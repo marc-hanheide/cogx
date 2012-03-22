@@ -256,6 +256,8 @@ public class DoraVerbalisation extends ManagedComponent implements
 
 	private final HashMap<Long, PlaceStatus> m_placeIDToStatus;
 
+	private String m_greeting;
+
 	public DoraVerbalisation() {
 		m_verbals = new VerbalisationFacade(this);
 		m_placeIDToStatus = new HashMap<Long, PlaceStatus>();
@@ -264,6 +266,12 @@ public class DoraVerbalisation extends ManagedComponent implements
 	@Override
 	public void configure(Map<String, String> _config) {
 		m_verbals.configure(_config);
+
+		if (_config.containsKey("--greeting")) {
+			m_greeting = _config.get("--greeting");
+		} else {
+			m_greeting = "my name is dora.";
+		}
 	}
 
 	public void start() {
@@ -350,7 +358,7 @@ public class DoraVerbalisation extends ManagedComponent implements
 	}
 
 	public void runComponent() {
-		m_verbals.verbaliseCannedText("my name is dora.");
+		m_verbals.verbaliseCannedText(m_greeting);
 	}
 
 	@Override
