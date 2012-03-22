@@ -15,6 +15,7 @@
 #include <Transformation/Pose3D.hh>
 
 class MainDialog;
+class QCoreApplication;
 
 namespace conceptual
 {
@@ -36,7 +37,8 @@ public:
 	_placeManagerAvailable(false),
 	_chainGraphInferencerAvailable(false),
 	_defaultChainGraphInferencerAvailable(false),
-	_mainDialog(0)
+  _mainDialog(0),
+  _app(0)
 	{}
 
 	/** Destructor. */
@@ -131,6 +133,7 @@ private:
 	bool _defaultChainGraphInferencerAvailable;
 
 	MainDialog *_mainDialog;
+  QCoreApplication *_app;
 
 	/** ICE proxy to the QueryHandlerInterface. */
 	ConceptualData::QueryHandlerServerInterfacePrx _queryHandlerServerInterfacePrx;
