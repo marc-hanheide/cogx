@@ -100,7 +100,7 @@ VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealb
 VARDEFAULT planning_domain=dora-interactive.pddl
 
 ### the default knowledge to use
-VARDEFAULT default_knowledge="instantiations/defaultprobs/defaultknowledge-review.xml"
+VARDEFAULT default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-sim.xml"
 
 ### the default probabilities
 VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-indirect.txt"
@@ -150,7 +150,7 @@ VARDEFAULT fake_tables=<multiline>
 </multiline>
 
 
-VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
+VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim-shape.cfg
 
 ###########################################################################
 ###########################################################################
@@ -185,7 +185,7 @@ VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
 #(different from door nodes)
     VARDEFAULT display_doors=
 
-VARDEFAULT conceptual_categories=corridor,kitchen,office,meetingroom
+VARDEFAULT conceptual_categories=corridor,office,meetingroom
 
 ####
 #### GUI OPTIONS
