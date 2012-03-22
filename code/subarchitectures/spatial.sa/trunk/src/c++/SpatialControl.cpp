@@ -2421,7 +2421,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
           log("Node suddenly disappeared..");
         }
       }
-      if(maxDist > 320){//map.Columns*map.Rows){
+      if(maxDist > 80){//map.Columns*map.Rows){
         return false;
       }
       maxDist *= 2; // Double the maximum distance to search for the next loop
