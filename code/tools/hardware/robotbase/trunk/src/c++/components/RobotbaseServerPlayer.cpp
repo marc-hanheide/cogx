@@ -217,7 +217,11 @@ RobotbaseServerPlayer::runComponent()
       p.x = m_Position->GetXPos();
       p.y = m_Position->GetYPos();
       p.theta = m_Position->GetYaw();
-      
+
+      // race condition since Stop lockComponent and then waits for runComponent
+      // to terminate. Should use an extra Mutex instead of the compenent Mutex.
+      if (!isRunning())
+        break;
       lockComponent();
       m_Odom.odompose.resize(1);
       m_Odom.odompose[0] = p;
@@ -261,6 +265,10 @@ RobotbaseServerPlayer::runComponent()
       joyDriveState = m_Joydrive;
       unlockComponent();
     } else {
+      // race condition since Stop lockComponent and then waits for runComponent
+      // to terminate. Should use an extra Mutex instead of the compenent Mutex.
+      if (!isRunning())
+        break;
       lockComponent();
       m_Odom.odompose.resize(1);
       m_Odom.odompose[0].x += 0.01;
@@ -270,6 +278,10 @@ RobotbaseServerPlayer::runComponent()
       sleepComponent(100);
     }
     saveOdomToFile(m_Odom);
+    // race condition since Stop lockComponent and then waits for runComponent
+    // to terminate. Should use an extra Mutex instead of the compenent Mutex.
+    if (!isRunning())
+      break;
     lockComponent();
     for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
 
