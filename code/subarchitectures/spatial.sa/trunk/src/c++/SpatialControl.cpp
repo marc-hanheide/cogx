@@ -2380,7 +2380,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
   closestNodeId = -1;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
     int maxDist = 40; // The first maximum distance to try
-    int closestNodeId = -1;
+    closestNodeId = -1;
     int minDistance = 10000;
 
 //CHECK AGAINST NODE_HYP
