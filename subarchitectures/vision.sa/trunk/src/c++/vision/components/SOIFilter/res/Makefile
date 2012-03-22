@@ -5,5 +5,6 @@ default: generated
 
 generated: ptuctrl.inc
 
-ptuctrl.inc: ptucontroller.ui ptucontroller.js
-	python res2c11.py $@ $^
+resources=ptucontroller.ui ptucontroller.js
+ptuctrl.inc: Makefile $(resources)
+	python res2c11.py $@ $(resources)
