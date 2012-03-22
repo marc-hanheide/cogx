@@ -54,6 +54,9 @@ CategoricalLaserProcessor::CategoricalLaserProcessor(): _cfgGroup("LaserProcesso
 // ------------------------------------------------------
 CategoricalLaserProcessor::~CategoricalLaserProcessor()
 {
+  // Shut down the system
+  finishProcessing();
+
   pthread_cond_destroy(&_dataSignalCond);
   pthread_mutex_destroy(&_dataSignalMutex);
 
@@ -310,9 +313,6 @@ void CategoricalLaserProcessor::start()
 // ------------------------------------------------------
 void CategoricalLaserProcessor::stop()
 {
-  // Shut down the system
-  finishProcessing();
-
   debug("Stop!");
 }
 
@@ -509,11 +509,15 @@ ts.tv_nsec = 0;
 
 void CategoricalLaserProcessor::finishProcessing()
 {
-  if (_svmModel)
+  if (_svmModel) {
     svm_destroy_model(_svmModel);
+    _svmModel = 0;
+  }
 
-  if (_sizeSvmModel)
+  if (_sizeSvmModel) {
     svm_destroy_model(_sizeSvmModel);
+    _sizeSvmModel = 0;
+  }
 }
 
 
