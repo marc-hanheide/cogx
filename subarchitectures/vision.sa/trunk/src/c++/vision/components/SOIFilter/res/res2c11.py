@@ -2,8 +2,14 @@
 # vim:set fileencoding=utf-8 sw=4 ts=8 et:vim
 
 import os, sys
-outfile = "ptuctrl.inc"
-infiles = ["ptucontroller.ui", "ptucontroller.js"]
+if len(sys.argv) < 3:
+    print "res2c11.py output_file  input_file [input_file ...]"
+    sys.exit()
+
+outfile = sys.argv[1]
+infiles = sys.argv[2:]
+#outfile = "ptuctrl.inc"
+#infiles = ["ptucontroller.ui", "ptucontroller.js"]
 
 f = open(outfile, "w")
 
