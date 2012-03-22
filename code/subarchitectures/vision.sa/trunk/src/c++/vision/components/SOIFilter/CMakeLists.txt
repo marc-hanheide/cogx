@@ -26,13 +26,6 @@ if(HAS_LIBPLOT)
    set(LIBPLOT_LIBS plotter)
 endif(HAS_LIBPLOT)
 
-add_custom_target (SOIFilter.Resources)
-add_custom_command (
-   TARGET  SOIFilter.Resources
-   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/res
-   COMMAND make
-)
-
 # Set the sources.
 SET(SOURCES
    SOIFilter.cpp
@@ -52,4 +45,11 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${LIBPLOT_LIBS}
    ${ARM_TRACKING_LIBRARIES}
    )
-add_dependencies(${CAST_COMPONENT_NAME} SOIFilter.Resources)
+
+add_custom_target (${CAST_COMPONENT_NAME}.Resources)
+add_custom_command (
+   TARGET  ${CAST_COMPONENT_NAME}.Resources
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/res
+   COMMAND make
+)
+add_dependencies(${CAST_COMPONENT_NAME} ${CAST_COMPONENT_NAME}.Resources)
