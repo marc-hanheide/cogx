@@ -1,0 +1,59 @@
+--- player-3.0.2.orig/client_libs/libplayerc/client.c	2009-12-16 01:33:35.000000000 +0100
++++ player-3.0.2/client_libs/libplayerc/client.c	2012-03-22 14:59:58.580306446 +0100
+@@ -385,56 +385,10 @@
+   } while (ret == -1 && (errno == EALREADY || errno == EAGAIN || errno == EINPROGRESS));
+   */
+ 
+-  // In Windows, the connect timeout is (apparently) a registry setting.
+-#if !defined (WIN32)
+-  /* Set up a timer to interrupt the connection process */
+-  timer.it_interval.tv_sec = 0;
+-  timer.it_interval.tv_usec = 0;
+-  timer.it_value.tv_sec = (int)floor(client->request_timeout);
+-  timer.it_value.tv_usec =
+-          (int)rint(fmod(client->request_timeout,timer.it_value.tv_sec)*1e6);
+-  if(setitimer(ITIMER_REAL, &timer, NULL) != 0)
+-    PLAYERC_WARN("failed to set up connection timer; "
+-                "indefinite hang may result");
+-
+-  /* Turn off system call restart so that connect() will terminate when the
+-   * alarm goes off */
+-  if(sigaction(SIGALRM, NULL, &sigact) != 0)
+-    PLAYERC_WARN("failed to get SIGALRM action data; "
+-                "unexpected exit may result");
+-  else
+-  {
+-#ifdef SA_RESTART
+-    sigact.sa_handler = dummy;
+-    sigact.sa_flags &= ~SA_RESTART;
+-    if(sigaction(SIGALRM, &sigact, NULL) != 0)
+-#endif
+-      PLAYERC_WARN("failed to set SIGALRM action data; "
+-                  "unexpected exit may result");
+-  }
+-#endif
+ 
+   ret = connect(client->sock, (struct sockaddr*)&client->server,
+                 sizeof(client->server));
+ 
+-#if !defined (WIN32)
+-  /* Turn off timer */
+-  timer.it_value.tv_sec = 0;
+-  timer.it_value.tv_usec = 0;
+-  if(setitimer(ITIMER_REAL, &timer, NULL) != 0)
+-    PLAYERC_WARN("failed to turn off connection timer; "
+-                "unexpected exit may result");
+-
+-  /* Restore normal SIGALRM behavior */
+-#ifdef SA_RESTART
+-  sigact.sa_handler = SIG_DFL;
+-  sigact.sa_flags |= SA_RESTART;
+-  if(sigaction(SIGALRM, &sigact, NULL) != 0)
+-#endif
+-    PLAYERC_WARN("failed to reset SIGALRM action data; "
+-                "unexpected behavior may result");
+-#endif
+-
+   if (ret < 0)
+   {
+     playerc_client_disconnect(client);
