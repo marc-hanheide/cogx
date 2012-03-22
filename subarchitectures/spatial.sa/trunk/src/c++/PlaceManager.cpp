@@ -267,9 +267,16 @@ PlaceManager::runComponent()
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(change.address);
 
+  int count = 0;
   while(isRunning()) {
-    sleepComponent(5000);
-//    evaluateUnexploredPaths();
+    count = (count + 1) % 50;
+    sleepComponent(100);
+    if(count == 0) {
+      // Execute this every 5 seconds.  However we don't want to sleep for so
+      // long to be able to react to the component being stopped, thus we break
+      // it up into sleeps of 100ms.
+//      evaluateUnexploredPaths();
+    }
   }
 }
 
