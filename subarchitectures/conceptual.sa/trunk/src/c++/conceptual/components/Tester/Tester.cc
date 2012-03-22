@@ -177,22 +177,24 @@ void Tester::runComponent()
 	sort (_sizes.begin(), _sizes.end());
 	sort (_appearances.begin(), _appearances.end());
 
-	QCoreApplication *app = QApplication::instance();
-	if (!app) {
+	_app = QApplication::instance();
+	if (!_app) {
 		int argc=0;
-		app = new QApplication(argc,new char*[0]);
+		_app = new QApplication(argc,new char*[0]);
 	}
 	MainDialog *mainDialog = new MainDialog(this);
 	_mainDialog = mainDialog;
 	mainDialog->exec();
 	_mainDialog=0;
 	delete mainDialog;
+
 }
 
 
 // -------------------------------------------------------
 void Tester::stop()
 {
+  _app->quit();
 }
 
 
