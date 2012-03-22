@@ -16,6 +16,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <math.h>
+#include <string>
 
 /** The function called to create a new instance of our component. */
 extern "C"
