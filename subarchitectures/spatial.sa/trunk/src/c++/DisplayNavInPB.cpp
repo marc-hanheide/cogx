@@ -1456,7 +1456,8 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 			      m_ProxyPathLog = ProxyPathLogtemp;
 			}
 			int index = -1;
-				double prob = 0.0;
+      // @demmeln 22.03.2012: prob seems unused. Comment out.
+//				double prob = 0.0;
 				for (unsigned int j = 0; j < _roomCategories.size(); ++j) {
 					if (val->value == _roomCategories[j]) {
 						index = j;
