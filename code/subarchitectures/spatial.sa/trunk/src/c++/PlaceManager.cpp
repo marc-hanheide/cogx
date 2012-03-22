@@ -43,15 +43,16 @@ extern "C" {
   }
 }
 
-PlaceManager::PlaceManager() : m_placeIDCounter(0), 
-  m_hypIDCounter(0), 
-  m_isPathFollowing(false),
-  m_startNodeForCurrentPath(-1),
-  m_goalPlaceForCurrentPath(-1),
-  m_currentNodeOnPath(-1),
-  m_firstMovementRegistered(false),
-  m_robotInitialPoseReceived(false),
-  m_initialMovementThreshold(0.05)
+PlaceManager::PlaceManager() : 
+    m_placeIDCounter(0), 
+    m_robotInitialPoseReceived(false),
+    m_initialMovementThreshold(0.05),
+    m_hypIDCounter(0), 
+    m_isPathFollowing(false),
+    m_startNodeForCurrentPath(-1),
+    m_goalPlaceForCurrentPath(-1),
+    m_currentNodeOnPath(-1),
+    m_firstMovementRegistered(false)
 {
   cout<<"PlaceManager::PlaceManager()"<<endl;
 }
@@ -719,7 +720,6 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId=-1) {
   log("entered isPointCloseToExistingPlaceholderd");
   double minDistanceSq = FLT_MAX;
-  int minDistID = -1;
 
   vector<SpatialData::NodeHypothesisPtr> hypotheses;
   getMemoryEntries<SpatialData::NodeHypothesis>(hypotheses);
@@ -736,7 +736,6 @@ bool PlaceManager::isPointCloseToExistingPlaceholder(double x, double y, int cur
         log("2distanceSq = %f x = %f y= %f x1 = %f y1 = %f place = %d", distanceSq,x,y,extantHyp->x,extantHyp->y,extantHyp->originPlaceID);
         if (distanceSq < minDistanceSq) {
           minDistanceSq = distanceSq;
-          minDistID = extantHyp->hypID;
         }
       } 
     }
