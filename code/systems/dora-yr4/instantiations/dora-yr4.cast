@@ -39,6 +39,10 @@ VARDEFAULT feature_options=<multiline>
     categorisation	
 # use visaul categorisation
     !categorisation-visual 
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
 # enable planning core
     planning_sa
 # enable more debug GUIs and WM loggers		
@@ -477,7 +481,6 @@ IFOPTALL(%(feature_options), conceptual)
 ENDIF
 
 # Categorical.SA ############################################################
-
 IFOPTALL(%(feature_options), categorisation)
 	SUBARCHITECTURE categorical.sa
 	JAVA WM cast.architecture.SubarchitectureWorkingMemory
@@ -491,6 +494,26 @@ IFOPTALL(%(feature_options), categorisation)
 	CPP GD categorical.laserprocessor CategoricalLaserProcessor --config %(categorisation_config)
 	CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config %(categorisation_config) --placemanager place.manager
 ENDIF
+
+
+IFOPTALL(%(feature_options), datasaving)
+        SETVAR categorisation_config = subarchitectures/categorical.sa/config/dora-yr4-saving.cfg
+
+	SUBARCHITECTURE categorical.sa
+	JAVA WM cast.architecture.SubarchitectureWorkingMemory
+	CPP TM AlwaysPositiveTaskManager
+
+        # Add a fake video server if we want to grab only laser data
+        IFOPTALL(%(feature_options), datasaving-visual)
+        ELSE
+           CPP MG ProsilicaServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 200 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+        ENDIF
+
+        CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config)  --laser-server laser.server --robot-server robot.server
+        CPP GD categorical.datasaver CategoricalDataSaver --config %(categorisation_config)
+
+ENDIF
+
 
 # visualization ##########################################################
 IFOPTALL(%(feature_options), visualization)
