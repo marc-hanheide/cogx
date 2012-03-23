@@ -162,7 +162,8 @@ protected:
     double m_minKinectX;
     double m_maxKinectX;
     double m_KinectK;
-    double m_nodeObstacleK;
+    double m_nodeObstacleMargin;
+    double m_nodeUnknownMargin;
 
     list<double> m_visualExplorationAngles;
     list<double> getVisualExplorationAngles();

@@ -529,7 +529,18 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_minKinectX = 0.58;
   m_maxKinectX = 1.5;
   m_KinectK = 0.535;
-  m_nodeObstacleK = 1.5;
+
+  m_nodeObstacleMargin = 1;
+  map<string,string>::const_iterator it = _config.find("--node-obstacle-margin");
+  if (it != _config.end()) {
+    m_nodeObstacleMargin = atof(it->second.c_str());
+  }
+
+  m_nodeUnknownMargin = 1;
+  it = _config.find("--node-unknown-margin");
+  if (it != _config.end()) {
+    m_nodeUnknownMargin = atof(it->second.c_str());
+  }
 
   m_simulateKinect = false;
   if (_config.find("--simulate-kinect") != _config.end()) {
@@ -542,7 +553,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   camId = CAM_ID_DEFAULT;
-  map<string,string>::const_iterator it = _config.find("--camid");
+  it = _config.find("--camid");
   if(it != _config.end())
   {
     istringstream str(it->second);
@@ -2439,7 +2450,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   Cure::BinaryMatrix map;
 
   // Get the expanded binary map used to search 
-  getExpandedBinaryMap(m_lgm, map, 1,0.5);
+  getExpandedBinaryMap(m_lgm, map, m_nodeObstacleMargin,m_nodeUnknownMargin);
 /*    peekabot::OccupancySet2D cells;
     double cellSize=m_lgm->getCellSize();
     int gridmapSize = m_lgm->getSize();
