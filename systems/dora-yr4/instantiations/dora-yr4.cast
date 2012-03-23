@@ -103,7 +103,7 @@ VARDEFAULT planning_domain=dora-interactive.pddl
 VARDEFAULT default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-sim.xml"
 
 ### the default probabilities
-VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-review-indirect.txt"
+VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
 
 ### the Haar-like face detector file to use by the people detector
 VARDEFAULT face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
@@ -125,8 +125,8 @@ VARDEFAULT logged_types=<multiline>
   SpatialData.RelationalViewPointGenerationCommand,
   autogen.Planner.Action,
   autogen.Planner.PlanningTask,
-  ptz.SetPTZPoseCommand,
-  eu.cogx.beliefs.slice.HypotheticalBelief
+  SpatialData.NodeHypothesis,
+  eu.cogx.beliefs.slice.GroundedBelief
 </multiline>
 
 ### root for the sift-models
@@ -162,7 +162,7 @@ IFOPTALL(%(hardware_options), ptz)
     IFEQ(%(hardware),real)
         COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
     ELSE
-        COMPONENT CPP ptz.server PlayerActServer --player-host %(host:PlayerHost) --ptz-device 0
+        COMPONENT CPP ptz.server PlayerActServer --ptz-device 0 #--player-host %(host:PlayerHost)
     ENDIF
 ENDIF
 COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost) 
@@ -198,6 +198,7 @@ VARDEFAULT spatial_min_door_width=0.75  # Lower boundary on width of doorways
 VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
 VARDEFAULT min_obstacle_height=0.25
 VARDEFAULT explore_range=2.0
+VARDEFAULT spatial_load_map=
 
 ### Disable placeholder generation (no exploration)
     VARDEFAULT no_placeholders=
@@ -214,7 +215,7 @@ VARDEFAULT avs_cone_depth=4
 # closest distance in metres from an obstacle (putting this comment on the line below caused a problem
 VARDEFAULT avs_sample_from_obs=0.8
 
-VARDEFAULT avs_sift_objects="table cerealbox"
+VARDEFAULT avs_sift_objects="table cerealbox magazine"
 
 # Do generate random view cones for second and subsequent views
 VARDEFAULT avs_random_vc=--random-vc    
@@ -276,7 +277,7 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Reads NavData::InternalNavCmd to control the robot
 # Maintains three-state grid map for exploration and obstacle avoidance
-    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
+    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin 1 --node-unknown-margin 1 %(spatial_load_map) --show3Dobstacles --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
 
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
@@ -325,7 +326,7 @@ IFOPTALL(%(feature_options), spatial)
  #EXPAND avs_random_vc=%(avs_random_vc)
     IFOPTALL(%(feature_options), avs)
 		CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --ptzserver ptz.server --display-objects-in-pb 
-		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) --cam-horizangle 141 --cam-vertangle 131 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --log --queryhandler conceptual.queryhandler  --siftobjects "table cerealbox" --random-vc --usepeekabot ######--ctrl-ptz 
+		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --log --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz 
     ENDIF
 ENDIF
 
@@ -349,7 +350,7 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(hardware_options), video)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
-        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
+        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-right.xml" --framerate_fps "15" --imgsize "640 480"
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
         CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --camid 0
@@ -473,7 +474,7 @@ IFOPTALL(%(feature_options), conceptual)
     CPP GD conceptual.queryhandler ConceptualQueryHandler
 
     CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
-    CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects book,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+    CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects magazine,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
     CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
 
     INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
