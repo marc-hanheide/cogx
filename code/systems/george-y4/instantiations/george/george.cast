@@ -52,6 +52,8 @@ OPTDEFAULT feature_options=<multiline>
    !binder-mln
    !dialogue
    !planning
+   # Include Manual Planning, only if planning is also enabled
+   manual-planning
    !motivation
    !manipulation
    visualization
@@ -140,6 +142,10 @@ IFOPTALL(%(feature_options), planning)
    JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
    JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
    JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
+
+   IFOPTALL(%(feature_options), manual-planning)
+      JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+   ENDIF
 
    IFOPTALL(%(feature_options), binder)
       JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
