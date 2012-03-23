@@ -20,10 +20,61 @@
             <object>graph</object>
             <object>frontiers</object>
             <object>grid_map</object>
+            <object hidden="true">grid_map_kinect</object>
             <object hidden="true">walls</object>
             <object hidden="true">pdf1</object>
             <object hidden="true">planned_viewpoints</object>
             <object hidden="true">kinect</object>
+        </objects>
+    </view>
+    <view>
+        <name>Right</name>
+        <camera>
+            <orthographic>true</glob>
+            <glob>true</glob>
+            <x>0</x>        
+            <y>0</y>        
+            <z>0</z>        
+            <yaw>1.57</yaw>        
+            <pitch>0</pitch>        
+            <roll>0</roll>        
+        </camera>
+        <objects>
+            <object>robot</object>
+            <object>labels</object>
+            <object>graph</object>
+            <object>frontiers</object>
+            <object>grid_map</object>
+            <object hidden="true">grid_map_kinect</object>
+            <object hidden="true">walls</object>
+            <object hidden="true">pdf1</object>
+            <object hidden="true">planned_viewpoints</object>
+            <object>kinect</object>
+        </objects>
+    </view>
+    <view>
+        <name>Left</name>
+        <camera>
+            <orthographic>true</glob>
+            <glob>true</glob>
+            <x>0</x>        
+            <y>0</y>        
+            <z>0</z>        
+            <yaw>-1.57</yaw>        
+            <pitch>0</pitch>        
+            <roll>0</roll>        
+        </camera>
+        <objects>
+            <object>robot</object>
+            <object>labels</object>
+            <object>graph</object>
+            <object>frontiers</object>
+            <object>grid_map</object>
+            <object hidden="true">grid_map_kinect</object>
+            <object hidden="true">walls</object>
+            <object hidden="true">pdf1</object>
+            <object hidden="true">planned_viewpoints</object>
+            <object>kinect</object>
         </objects>
     </view>
     <view>
@@ -43,6 +94,7 @@
             <object>graph</object>
             <object>frontiers</object>
             <object>grid_map</object>
+            <object>grid_map_kinect</object>
             <object>walls</object>
             <object hidden="true">pdf1</object>
             <object hidden="true">planned_viewpoints</object>
@@ -76,6 +128,7 @@
 <toggles>
     <toggle>kinect</toggle>
     <toggle>grid_map</toggle>
+    <toggle>grid_map_kinect</toggle>
     <toggle>planned_viewpoints</toggle>
 </toggles>
 </pb_settings>
