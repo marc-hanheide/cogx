@@ -95,8 +95,8 @@ sleep 2
 xterm -e player $stageFile &
 PIDS="$PIDS $!"
 
-rm -f  robotpose.ccf tmpmap.*
 rm -f core
+cp 
 echo "--------------------------"
 
 ln -fs ~/.peekabot .
