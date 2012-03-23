@@ -149,17 +149,23 @@ void SpatialControl::CreateGridMap() {
 	peekabot::REPLACE_ON_CONFLICT);
     m_ProxyGridMap.set_occupied_color(0.1,0.1,0.1);
     m_ProxyGridMap.set_unoccupied_color(0.8,0.9,1);
-    peekabot::OccupancySet2D cells;
-    m_ProxyGridMap.set_cells(cells);
     m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
 
     m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize,0.05, 
   peekabot::REPLACE_ON_CONFLICT);
-
-    peekabot::OccupancySet3D cells1;
-    m_ProxyGridMapKinect.set_cells(cells1);
     m_ProxyGridMapKinect.set_position(0,0,0);
+
+      peekabot::OccupancySet2D cells;
+      for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize(); yi++) {
+        for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize(); xi++) {
+              if ((*m_lgm)(xi, yi)=='0')
+                  cells.add(xi*cellSize,yi*cellSize,0);
+              else if ((*m_lgm)(xi, yi)=='1')
+                  cells.add(xi*cellSize,yi*cellSize,1);
+        }
+      }
+      m_ProxyGridMap.set_cells(cells);
 
     	SCOPED_TIME_LOG;
       double kinectZ = 1.45;
