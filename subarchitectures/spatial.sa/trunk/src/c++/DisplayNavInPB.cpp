@@ -666,7 +666,12 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 	{
 		// Get node id from place id
 		::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) *iter); // why is iter a long?
-		nodeIDs[*iter] = fnodePtr->nodeId;
+    if (fnodePtr){
+		  nodeIDs[*iter] = fnodePtr->nodeId;
+    }
+    else {
+      log("comaroom contained unknown node");
+    }
 	}
 
 	// Update DisplayNavInPB
