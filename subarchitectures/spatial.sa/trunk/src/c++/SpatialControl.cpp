@@ -1196,14 +1196,17 @@ void SpatialControl::updateGridMaps(){
 
 		for (int yi = minY; yi <= maxY; yi++) {
 			for (int xi = minX; xi <= maxX; xi++) {
-				if ((*tmp_lgm)(xi, yi) != '1'){
 					double cellsize = m_lgm->getCellSize();
 					double al = -(lpW.getTheta()+m_currentPTZPose.pan);
 					double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
 					double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
-          if ((nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0))
-						(*tmp_lgm)(xi, yi) = '2';
-				}
+  				if ((nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0)) {
+						if ((*tmp_lgm)(xi, yi) != '1') (*tmp_lgm)(xi, yi) = '2';
+          }
+          else {
+            if ((*tmp_lgm)(xi, yi) == '1') lgmKH(xi, yi)=1.;
+            else if ((*tmp_lgm)(xi, yi) == '0') lgmKH(xi, yi)=0.;
+          }
 			}
 		}
 
@@ -1221,6 +1224,26 @@ void SpatialControl::updateGridMaps(){
         }
       }
       m_ProxyGridMap.set_cells(cells);
+      if (m_show3Dobstacles){
+        peekabot::OccupancySet3D cells1;
+        for (int yi = minY+1; yi < maxY; yi++) {
+          for (int xi = minX+1; xi < maxX; xi++) {
+            if ((*tmp_lgm)(xi,yi) == '1'){ 
+              if ((*m_lgmKH)(xi, yi) != FLT_MAX){
+                for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
+                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
+                }
+              }
+            }
+            else if ((*tmp_lgm)(xi,yi) == '0'){
+                for (double zi = 0; zi <= kinectZ; zi+=0.05) {
+                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
+                }
+            } 
+          }
+        }
+        m_ProxyGridMapKinect.set_cells(cells1);
+      }
     }
 		m_lastPointCloudTime = getCASTTime();
   }
