@@ -1,0 +1,581 @@
+x7 place0_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x5 place0_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x6 place0_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x45 place11_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x43 place11_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x44 place11_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x48 place12_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x46 place12_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x47 place12_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x51 place13_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x49 place13_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x50 place13_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x54 place14_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x52 place14_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x53 place14_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x57 place15_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x55 place15_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x56 place15_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x65 place16_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x63 place16_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x64 place16_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x62 place17_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x60 place17_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x61 place17_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x71 place18_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x69 place18_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x70 place18_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x68 place19_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x66 place19_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x67 place19_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x10 place1_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x8 place1_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x9 place1_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x74 place20_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x72 place20_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x73 place20_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x30 place22_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x28 place22_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x29 place22_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x24 place23_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x22 place23_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x23 place23_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x42 place24_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x40 place24_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x41 place24_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x36 place25_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x34 place25_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x35 place25_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x79 place27_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x77 place27_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x78 place27_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x85 place28_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x83 place28_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x84 place28_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x82 place29_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x80 place29_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x81 place29_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x13 place2_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x11 place2_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x12 place2_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x91 place30_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x89 place30_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x90 place30_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x88 place31_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x86 place31_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x87 place31_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x16 place3_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x14 place3_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x15 place3_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x19 place5_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x17 place5_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x18 place5_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x27 place7_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x25 place7_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x26 place7_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x33 place8_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x31 place8_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x32 place8_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x39 place9_appearance_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x37 place9_shape_property
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x38 place9_size_property
+ 0 large
+ 1 medium
+ 2 small
+
+x1 room0_category
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x21 room0_object_cerealbox_unexplored
+ 0 not-exists
+ 1 exists
+
+x20 room0_object_magazine_unexplored
+ 0 not-exists
+ 1 exists
+
+x2 room1_category
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x59 room1_object_cerealbox_unexplored
+ 0 not-exists
+ 1 exists
+
+x58 room1_object_magazine_unexplored
+ 0 not-exists
+ 1 exists
+
+x3 room2_category
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x76 room2_object_cerealbox_unexplored
+ 0 not-exists
+ 1 exists
+
+x75 room2_object_magazine_unexplored
+ 0 not-exists
+ 1 exists
+
+x4 room3_category
+ 0 corridor
+ 1 meetingroom
+ 2 office
+
+x93 room3_object_cerealbox_unexplored
+ 0 not-exists
+ 1 exists
+
+x92 room3_object_magazine_unexplored
+ 0 not-exists
+ 1 exists
+
+f0 f(room_category1,room_category2)
+f1 f(room_category1,room_category2)
+f2 f(room_category1,room_category2)
+f3 SingleRoomFactor
+f4 SingleRoomFactor
+f5 SingleRoomFactor
+f6 SingleRoomFactor
+f7 f(room_category1,shape_property)
+f8 ObservedShapePropertyFactor
+f9 f(room_category1,size_property)
+f10 f(room_category1,appearance_property)
+f11 f(room_category1,shape_property)
+f12 ObservedShapePropertyFactor
+f13 f(room_category1,size_property)
+f14 f(room_category1,appearance_property)
+f15 f(room_category1,shape_property)
+f16 ObservedShapePropertyFactor
+f17 f(room_category1,size_property)
+f18 f(room_category1,appearance_property)
+f19 f(room_category1,shape_property)
+f20 ObservedShapePropertyFactor
+f21 f(room_category1,size_property)
+f22 f(room_category1,appearance_property)
+f23 f(room_category1,shape_property)
+f24 ObservedShapePropertyFactor
+f25 f(room_category1,size_property)
+f26 f(room_category1,appearance_property)
+f27 f(room0_category,room0_object_magazine_unexplored)
+f28 f(room0_category,room0_object_cerealbox_unexplored)
+f29 f(room_category1,shape_property)
+f30 ObservedShapePropertyFactor
+f31 f(room_category1,size_property)
+f32 f(room_category1,appearance_property)
+f33 f(room_category1,shape_property)
+f34 ObservedShapePropertyFactor
+f35 f(room_category1,size_property)
+f36 f(room_category1,appearance_property)
+f37 f(room_category1,shape_property)
+f38 ObservedShapePropertyFactor
+f39 f(room_category1,size_property)
+f40 f(room_category1,appearance_property)
+f41 f(room_category1,shape_property)
+f42 ObservedShapePropertyFactor
+f43 f(room_category1,size_property)
+f44 f(room_category1,appearance_property)
+f45 f(room_category1,shape_property)
+f46 ObservedShapePropertyFactor
+f47 f(room_category1,size_property)
+f48 f(room_category1,appearance_property)
+f49 f(room_category1,shape_property)
+f50 ObservedShapePropertyFactor
+f51 f(room_category1,size_property)
+f52 f(room_category1,appearance_property)
+f53 f(room_category1,shape_property)
+f54 ObservedShapePropertyFactor
+f55 f(room_category1,size_property)
+f56 f(room_category1,appearance_property)
+f57 f(room_category1,shape_property)
+f58 ObservedShapePropertyFactor
+f59 f(room_category1,size_property)
+f60 f(room_category1,appearance_property)
+f61 f(room_category1,shape_property)
+f62 ObservedShapePropertyFactor
+f63 f(room_category1,size_property)
+f64 f(room_category1,appearance_property)
+f65 f(room_category1,shape_property)
+f66 ObservedShapePropertyFactor
+f67 f(room_category1,size_property)
+f68 f(room_category1,appearance_property)
+f69 f(room_category1,shape_property)
+f70 ObservedShapePropertyFactor
+f71 f(room_category1,size_property)
+f72 f(room_category1,appearance_property)
+f73 f(room_category1,shape_property)
+f74 ObservedShapePropertyFactor
+f75 f(room_category1,size_property)
+f76 f(room_category1,appearance_property)
+f77 f(room1_category,room1_object_magazine_unexplored)
+f78 f(room1_category,room1_object_cerealbox_unexplored)
+f79 f(room_category1,shape_property)
+f80 ObservedShapePropertyFactor
+f81 f(room_category1,size_property)
+f82 f(room_category1,appearance_property)
+f83 f(room_category1,shape_property)
+f84 ObservedShapePropertyFactor
+f85 f(room_category1,size_property)
+f86 f(room_category1,appearance_property)
+f87 f(room_category1,shape_property)
+f88 ObservedShapePropertyFactor
+f89 f(room_category1,size_property)
+f90 f(room_category1,appearance_property)
+f91 f(room_category1,shape_property)
+f92 ObservedShapePropertyFactor
+f93 f(room_category1,size_property)
+f94 f(room_category1,appearance_property)
+f95 f(room_category1,shape_property)
+f96 ObservedShapePropertyFactor
+f97 f(room_category1,size_property)
+f98 f(room_category1,appearance_property)
+f99 f(room2_category,room2_object_magazine_unexplored)
+f100 f(room2_category,room2_object_cerealbox_unexplored)
+f101 f(room_category1,shape_property)
+f102 ObservedShapePropertyFactor
+f103 f(room_category1,size_property)
+f104 f(room_category1,appearance_property)
+f105 f(room_category1,shape_property)
+f106 ObservedShapePropertyFactor
+f107 f(room_category1,size_property)
+f108 f(room_category1,appearance_property)
+f109 f(room_category1,shape_property)
+f110 ObservedShapePropertyFactor
+f111 f(room_category1,size_property)
+f112 f(room_category1,appearance_property)
+f113 f(room_category1,shape_property)
+f114 ObservedShapePropertyFactor
+f115 f(room_category1,size_property)
+f116 f(room_category1,appearance_property)
+f117 f(room_category1,shape_property)
+f118 ObservedShapePropertyFactor
+f119 f(room_category1,size_property)
+f120 f(room_category1,appearance_property)
+f121 f(room3_category,room3_object_magazine_unexplored)
+f122 f(room3_category,room3_object_cerealbox_unexplored)
+
