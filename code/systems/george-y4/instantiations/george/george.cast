@@ -139,7 +139,6 @@ IFOPTALL(%(feature_options), planning)
    INCLUDE includes/planner.sa/planner-george.cast
    INCLUDE includes/planner.sa/planner-base.cast
    INCLUDE includes/planner.sa/viz-plan.cast
-   JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
    JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
    JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 
