@@ -79,7 +79,7 @@ ControlWindow::ControlWindow(PeekabotController &_ctrl) : m_controller(_ctrl), f
     m_box1.pack_start(follow_robot_button);
 
 follow_robot_button.show();
-follow_robot_button.set_active(true);
+follow_robot_button.set_active(false);
 
     for (size_t i=0; i<m_controller.ps.toggles.size(); i++) {
         Gtk::CheckButton* toggle = new Gtk::CheckButton(m_controller.ps.toggles[i]);
