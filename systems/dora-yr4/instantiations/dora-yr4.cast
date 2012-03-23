@@ -198,7 +198,7 @@ VARDEFAULT spatial_min_door_width=0.75  # Lower boundary on width of doorways
 VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
 VARDEFAULT min_obstacle_height=0.25
 VARDEFAULT explore_range=2.0
-VARDEFAULT spatial_load_map="--load-map --save-map"
+VARDEFAULT spatial_load_map=--load-map --save-map
 
 ### Disable placeholder generation (no exploration)
     VARDEFAULT no_placeholders=
