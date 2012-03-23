@@ -151,8 +151,8 @@ bool VisualPB_Bloxel::connectPeekabot(){
     // Assign root
     pb_map.add(client,"map",peekabot::REPLACE_ON_CONFLICT);
     
-    pdf.add(client, "pdf", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+    pdf.add(client, "pdf", peekabot::REPLACE_ON_CONFLICT);
+    m_2DOccGridProxy.add(client, "combined_placemap2D", peekabot::REPLACE_ON_CONFLICT);
     
     // Add 15 levels for pdf-visualization
     maxLevels = 15;
