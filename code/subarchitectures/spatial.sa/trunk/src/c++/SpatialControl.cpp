@@ -529,9 +529,9 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_maxNewPlaceholderRadius = 1.5;
-  m_minNewPlaceholderRadius = 1.05;   
+  m_minNewPlaceholderRadius = 1.1;   
   m_maxMovePlaceholderRadius = 1;
-  m_min_sep_dist = 1.05;
+  m_min_sep_dist = 1.1;
   m_minKinectX = 0.58;
   m_maxKinectX = 1.5;
   m_KinectK = 0.535;
@@ -2425,11 +2425,11 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
 
 //CHECK AGAINST NODE_HYP
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
-        non_overlapped_hypotheses.begin(); extantHypIt !=  non_overlapped_hypotheses.end(); extantHypIt++) {
-      SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
+        non_overlapped_hypotheses.end(); extantHypIt !=  non_overlapped_hypotheses.begin(); ) {
+      SpatialData::NodeHypothesisPtr extantHyp = *(--extantHypIt);
 
       double dist2sq = (x*m_lgm->getCellSize() - extantHyp->x) * (x*m_lgm->getCellSize() - extantHyp->x) + (y*m_lgm->getCellSize() - extantHyp->y) * (y*m_lgm->getCellSize() - extantHyp->y);
-      if (dist2sq < m_min_sep_dist * m_min_sep_dist){
+      if (dist2sq < 1 * 1){
         return false;
       }
     }
@@ -2438,7 +2438,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
       for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
         try {
           double dist2sq = (x*m_lgm->getCellSize() - (*nodeIt)->x) * (x*m_lgm->getCellSize() - (*nodeIt)->x) + (y*m_lgm->getCellSize() - (*nodeIt)->y) * (y*m_lgm->getCellSize() - (*nodeIt)->y);
-          if (dist2sq < 1.05* 1.05){
+          if (dist2sq < m_min_sep_dist*m_min_sep_dist){
             return false;
           }
           int xi = x + m_lgm->getSize();

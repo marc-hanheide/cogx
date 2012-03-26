@@ -51,7 +51,7 @@ NewNavController::NewNavController(NavGraph &graph, LocalMap &lmap, cast::Manage
     m_PP(0),
     m_Graph(graph),
     m_LMap(lmap),
-    m_Turn(sc,0.05),
+    m_Turn(sc,0.01),
     m_ND(8),
     m_TaskType(TASKTYPE_STOP),
     m_TaskID(-1),
