@@ -266,84 +266,88 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 			
       string type = change.type;
       if(type == typeName<SpatialData::NavCommand>()){
-	debug("abort?");
-	// abort got?
-	try {
-	  debug("locking");
-	  lockEntry(navCmdId, cdl::LOCKEDODR);
-	  debug("locked");
-	  try {
+	      debug("abort?");
+	      // abort got?
+	      try {
+	        debug("locking");
+	        lockEntry(navCmdId, cdl::LOCKEDODR);
+	        debug("locked");
+	        try {
 
-	    shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
-	      getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
+	          shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
+	            getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
 
-      if(pcmd){
-        status = pcmd->getData()->status;
-        aborted = (status != SpatialData::NONE);
-        log("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
-	      // I.e. someone outside decided we're done now - the internal cmd needs
-	      // to be cancelled either way.
-	    }else{
-	      log("The NavCommand suddenly disappeared...");
-	      some_error = true;
-	    }
-	  } catch (DoesNotExistOnWMException) {
-	    log("The NavCommand suddenly disappeared...");
-	    some_error = true;
-	  }				
-	  debug("unlocking");
-	  unlockEntry(navCmdId);
-	}
-	catch (DoesNotExistOnWMException) {
-	  log("The NavCommand disappeared while waiting to lock.");
-	  some_error = true;
-	}catch (ConsistencyException e) {
-	  log("Error! ConsistencyException in SpatialTranslation::executeCommand!");
-	}
-	debug(aborted? "yes": "no");
-			
-      }else if(type == typeName<NavData::InternalNavCommand>()){
-	log("nav ctrl cmd finished?");
-	// nav ctrl cmd finished?
-	shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
-	  getWorkingMemoryEntry<NavData::InternalNavCommand>(navCtrlCmdId);
+            if(pcmd){
+              status = pcmd->getData()->status;
+              aborted = (status != SpatialData::NONE);
+              log("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
+	            // I.e. someone outside decided we're done now - the internal cmd needs
+	            // to be cancelled either way.
+	          }else{
+	            log("The NavCommand suddenly disappeared...");
+	            some_error = true;
+	          }
+	        } catch (DoesNotExistOnWMException) {
+	          log("The NavCommand suddenly disappeared...");
+	          some_error = true;
+	        }				
+	        debug("unlocking");
+	        unlockEntry(navCmdId);
+	      }
+	      catch (DoesNotExistOnWMException) {
+	        log("The NavCommand disappeared while waiting to lock.");
+	        some_error = true;
+	      }
+        catch (ConsistencyException e) {
+	        log("Error! ConsistencyException in SpatialTranslation::executeCommand!");
+	      }
+	      debug(aborted? "yes": "no");
+      } 
+      else if(type == typeName<NavData::InternalNavCommand>()){
+	      log("nav ctrl cmd finished?");
+	      // nav ctrl cmd finished?
+	      shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
+	        getWorkingMemoryEntry<NavData::InternalNavCommand>(navCtrlCmdId);
 		
-	if(pcmd){
-	  switch(pcmd->getData()->comp){
-	  case NavData::SUCCEEDED:
+	      if(pcmd){
+	        switch(pcmd->getData()->comp){
+	        case NavData::SUCCEEDED:
 
-	    if (m_isExplorationAction && m_issueVisualExplorationActions) {
+	          if (m_isExplorationAction) {
 
-        issueVisualExplorationCommand(*rv);
+              if (m_issueVisualExplorationActions){
+                issueVisualExplorationCommand(*rv);
+              }
+              else {
+	              issuePlaceholderEnumeratingCommand(*rv);
+      //        m_placeInterface->endPlaceTransition(!finished);
+	            }
+	          }
+            else finished = true;
 
-	    }
-	    else {
-	      issuePlaceholderEnumeratingCommand(*rv);
-//        m_placeInterface->endPlaceTransition(!finished);
-	    }
-	    m_isExplorationAction = false;
-	    break;
-	  case NavData::ABORTED:
-	  case NavData::FAILED:
+	          m_isExplorationAction = false;
+	          break;
+	        case NavData::ABORTED:
+	        case NavData::FAILED:
 
-	    some_error = true;
-	    status = SpatialData::TARGETUNREACHABLE;
-	    break;
-	  default: break;
-	  }
+	          some_error = true;
+	          status = SpatialData::TARGETUNREACHABLE;
+	          break;
+	        default: break;
+	        }
 
-	  // For Place transitions, send completion message to
-	  // PlaceManager
-	  if ((finished || some_error)
-	   /*   && cmd.second->cmd == SpatialData::GOTOPLACE*/) {
-	    m_placeInterface->endPlaceTransition(!finished);
-	  }
+	        // For Place transitions, send completion message to
+	        // PlaceManager
+	        if (finished || some_error) {
+	          m_placeInterface->endPlaceTransition(!finished);
+	        }
 
-	  debug(finished? "yes": "no");
-	}else{
-	  log("The InternalNavCommand suddenly disappeared...");
-	  some_error = true;
-	}
+	        log(finished? "yes": "no");
+	      }
+        else{
+	        log("The InternalNavCommand suddenly disappeared...");
+	        some_error = true;
+	      }
       }
       else if (type== typeName<NavData::VisualExplorationCommand>()) {
 	      log("Visual exploration cmd finished");
@@ -352,23 +356,26 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       else if (type== typeName<NavData::PlaceholderEnumeratingCommand>()) {
 	      log("Placeholder enumerating cmd finished");
 	      finished = true;
+        if (finished || some_error) {
+          m_placeInterface->endPlaceTransition(!finished);
+        }
       }
 
       else if (type == typeName<NavData::FNode>()) {
-	log("Halting movement: exploration reached new node");
+	      log("Halting movement: exploration reached new node");
 
-	navCtrlCmdId = newDataID();
-	NavData::InternalNavCommandPtr stopCommand = 
-	  new NavData::InternalNavCommand;
+	      navCtrlCmdId = newDataID();
+	      NavData::InternalNavCommandPtr stopCommand = 
+	        new NavData::InternalNavCommand;
 
-	stopCommand->cmd = NavData::lSTOPROBOT;	
-	stopCommand->x = 0.0;
-	stopCommand->y = 0.0;
-	stopCommand->status = NavData::NONE;
-	stopCommand->comp = NavData::PENDING;
-	stopCommand->theta = 0.0;
+	      stopCommand->cmd = NavData::lSTOPROBOT;	
+	      stopCommand->x = 0.0;
+	      stopCommand->y = 0.0;
+	      stopCommand->status = NavData::NONE;
+	      stopCommand->comp = NavData::PENDING;
+	      stopCommand->theta = 0.0;
 
-	addToWorkingMemory(navCtrlCmdId, stopCommand);
+	      addToWorkingMemory(navCtrlCmdId, stopCommand);
       }
     } // while(...)
 		
@@ -384,7 +391,8 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
     }
     debug("after cancel current task");
 		
-  }else{ // if(!m_Tasks.m_Abort)
+  }
+  else{ // if(!m_Tasks.m_Abort)
     delete rv;
   }
 	
