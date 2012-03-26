@@ -695,7 +695,7 @@ public class PlaceMonitor extends ManagedComponent {
         	log("the ADDED GroundedBelief is about a VisualObject. Going to process it.");
         	
         	// first lock it
-        	lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDODR);
+        	lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDOD);
         	
         	// process further
         	processVisObjGBelief(_belief);
