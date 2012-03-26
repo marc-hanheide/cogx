@@ -80,16 +80,19 @@ namespace ptz {
 #endif
     PTZPose pose = getPose().pose;
     PTZPose oldpose = getPose().pose;
-    int changeWait = 0;
+    int changeWait = waitStartMove;
     mbPoseWasSet = false;
     mbMoving = false;
     while (isRunning()) {
       sleepComponent(intervalMs);
+
       if (mbPoseWasSet) {
         mbPoseWasSet = false;
         mbMoving = true;
         changeWait = waitEndMove;
+        log("Start of move (setPose).");
       }
+
       PTZPose pose = getPose().pose;
       double delta = fabs(pose.pan - oldpose.pan) + fabs(pose.tilt - oldpose.tilt);
       if (mbMoving) {
@@ -102,12 +105,12 @@ namespace ptz {
         else {
           --changeWait;
           if (changeWait <= 0) {
-#ifdef FEAT_VISUALIZATION
-            sendPtuStateToDialog();
-#endif
             mbMoving = false;
             changeWait = waitStartMove;
             log("End of move.");
+#ifdef FEAT_VISUALIZATION
+            sendPtuStateToDialog();
+#endif
           }
         }
       }
@@ -117,14 +120,15 @@ namespace ptz {
           // started moving
           --changeWait;
           if (changeWait <= 0) {
-             oldpose = pose;
-             mbMoving = true;
-             changeWait = waitEndMove;
+            oldpose = pose;
+            mbMoving = true;
+            changeWait = waitEndMove;
+            log("Start of move.");
           }
         }
         else {
-           // still near the same position
-           changeWait = waitStartMove;
+          // still near the same position
+          changeWait = waitStartMove;
         }
       }
     }
@@ -132,14 +136,18 @@ namespace ptz {
 
 #ifdef FEAT_VISUALIZATION
 
-  void PTZServer::sendPtuStateToDialog()
+  void PTZServer::sendPtuStateToDialog(bool bForce)
   {
     //log("PtuCtrl: sendStateToDialog");
     PTZReading ptup = getPose();
     std::ostringstream ss;
-    ss << "ptuctrl.ui.wctrls.spinPan.value=" << ptup.pose.pan * 180 / M_PI << ";";
-    ss << "ptuctrl.ui.wctrls.spinTilt.value=" << ptup.pose.tilt * 180 / M_PI << ";";
-    ss << "ptuctrl.ui.wctrls.spinZoom.value=" << ptup.pose.zoom << ";";
+    ss << "ptuctrl.setPtzPosition(" 
+       << ptup.pose.pan * 180 / M_PI << ", "
+       << ptup.pose.tilt * 180 / M_PI << ", "
+       << ptup.pose.zoom << ", "
+       << (bForce ? "true" : "false")
+       << ")";
+    //log(ss.str());
     display().execInDialog(display().mDialogId, ss.str());
   }
 
@@ -173,7 +181,7 @@ namespace ptz {
     if (dialogId == mDialogId) {
       //println(" *** handleDialogCommand *** " + command);
       if (command == "sendStateToDialog")
-        mpPtzServer->sendPtuStateToDialog();
+        mpPtzServer->sendPtuStateToDialog(/*force=*/ true);
     }
   }
 
