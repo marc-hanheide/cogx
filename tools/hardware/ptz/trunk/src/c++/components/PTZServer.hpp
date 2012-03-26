@@ -75,7 +75,8 @@ namespace ptz {
 
 #ifdef FEAT_VISUALIZATION
   private:
-    void sendPtuStateToDialog();
+    // bForce: set to true when the update was requested by the dialog
+    void sendPtuStateToDialog(bool bForce = false);
 
   friend class CDisplayClient;
   class CDisplayClient: public cogx::display::CDisplayClient

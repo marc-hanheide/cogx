@@ -35,6 +35,7 @@ PtuController.prototype.onSetPosition_clicked = function()
 {
    with (this.ui.wctrls) {
       dialogOwner.setValue("PTZ", [ spinPan.value, spinTilt.value, spinZoom.value ]);
+      //this.ui.ckBlockUpdates.checked = false;
    }
 }
 
@@ -42,5 +43,14 @@ PtuController.prototype.onGetPosition_clicked = function()
 {
    with (this.ui.wctrls) {
       dialogOwner.call("sendStateToDialog", 0);
+   }
+}
+
+PtuController.prototype.setPtzPosition = function(fPan, fTilt, fZoom, bForce)
+{
+   if (bForce || ! this.ui.ckBlockUpdates.checked) {
+      this.ui.wctrls.spinPan.value  = fPan;
+      this.ui.wctrls.spinTilt.value = fTilt;
+      this.ui.wctrls.spinZoom.value = fZoom;
    }
 }
