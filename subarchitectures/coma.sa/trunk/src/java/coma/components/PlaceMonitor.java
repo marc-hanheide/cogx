@@ -1,5 +1,6 @@
 package coma.components;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1111,6 +1112,9 @@ public class PlaceMonitor extends ManagedComponent {
 						_arrayOfPlaceIDsInTheSameRoom[j]=_currPlaceID.longValue();
 						j++;
 					}
+					log("constructed arrayOfPlaceIDsInTheSameRoom with length = " + _arrayOfPlaceIDsInTheSameRoom.length 
+							+": [" + Arrays.toString(_arrayOfPlaceIDsInTheSameRoom) +"]");
+					
 					// now check whether that has changed at all, 
 					// else we don't have to create WM and binder traffic!
 					Set<Long> _oldSetOfContainedPlaces = new HashSet<Long>();
@@ -1120,6 +1124,7 @@ public class PlaceMonitor extends ManagedComponent {
 					if (!(_oldSetOfContainedPlaces.equals(_setOfPlaceIDsInTheSameRoom))) {
 						_hasChanged = true;
 					}
+					log("Room has changed: " + (_hasChanged ? "TRUE" : "FALSE"));
 					
 					// new code: no longer contained places must no longer have 
 					// a constituency relationship with their former rooms
@@ -1133,6 +1138,7 @@ public class PlaceMonitor extends ManagedComponent {
 								+ " dora:constituentOfRoom " 
 								+ "dora:room" + _currentRoomStruct.roomId);
 					}
+					log("after code block that deletes potential no-longer-contained places' constituency assertions.");
 					
 					// removed for Dora yr2 and yr3: room categories inferred by Andrzej
 					/*
@@ -1148,6 +1154,7 @@ public class PlaceMonitor extends ManagedComponent {
 					} */
 					
 					if (_hasChanged) {
+						log("room has changed! going to overwrite WM!");
 						// update the contained places in the room struct
 						_currentRoomStruct.containedPlaceIds=_arrayOfPlaceIDsInTheSameRoom;
 						
