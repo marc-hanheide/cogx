@@ -3,6 +3,8 @@ project(PTZ-Servers)
 include_directories(..)
 include_directories(.)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
+include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 
 # Set the sources.
 set(SOURCES PTZServer.cpp)
