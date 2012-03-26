@@ -476,7 +476,7 @@ void LocalMapManager::LoadNodeGridMaps(std::string filename){
   ifstream file(filename.c_str());
   if (!file.good()){
     log("Could not read node grid map file, exiting.");
-    exit(0);
+    return;
   }
   string line,tmp;
   int nodeid;
