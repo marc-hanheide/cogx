@@ -126,7 +126,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
 
   if (_config.find("--load-nodemap") != _config.end()) {
     m_loadNodeLgms = true;
-    m_saveNodeLgms = false;
   }
 
   m_bNoPlaces = false;
