@@ -696,6 +696,7 @@ public class PlaceMonitor extends ManagedComponent {
         	
         	// first lock it
         	lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDOD);
+        	log("locked " + _wmc.address + " with LOCKEDOD");
         	
         	// process further
         	processVisObjGBelief(_belief);
@@ -724,7 +725,9 @@ public class PlaceMonitor extends ManagedComponent {
         	
         	// finally, unlock the entry
         	try {
-				unlockEntry(_wmc.address);
+        		log("trying to unlock " + _wmc.address);
+        		unlockEntry(_wmc.address);
+				log("unlocked " + _wmc.address);
 			} catch (ConsistencyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1035,6 +1038,7 @@ public class PlaceMonitor extends ManagedComponent {
 			getMemoryEntriesWithData(ComaRoom.class, _knownRoomsOnWM, _count);
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
 				lockEntry(comaRoomWME.getID(), WorkingMemoryPermissions.LOCKEDOD);
+				log("locked comeRoomWME "+ comaRoomWME.getID() + " with comaRoomWME.getID()");
 			}
 			log("loaded and locked all room WMEs. no. of room WMEs: " + _knownRoomsOnWM.size());
 			Collections.sort(_knownRoomsOnWM, new Comparator<CASTData<ComaRoom>>() {
@@ -1246,7 +1250,10 @@ public class PlaceMonitor extends ManagedComponent {
 			log("end for each remaining place loop");
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
 				if (existsOnWorkingMemory(comaRoomWME.getID())) {
-					unlockEntry(comaRoomWME.getID()); 
+					unlockEntry(comaRoomWME.getID());
+					log("unlocked ComaRoomWME " + comaRoomWME.getID());
+				} else {
+					log("ComaRoomWME " + comaRoomWME.getID() + " ceased to exist.");
 				}
 			}
 			log("unlocked all ComaRoom WMEs.");
