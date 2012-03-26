@@ -897,18 +897,25 @@ public class PlaceMonitor extends ManagedComponent {
 				if (_pendingPaths!=null) {
 					debug("process pending paths:");
 					for (WorkingMemoryAddress _workingMemoryAddress : _pendingPaths) {
-						ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
-						log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
-						m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+						try {
+							ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
+							log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
+							m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+						} catch (DoesNotExistOnWMException e) {
+							log("The ConnectivityPathProperty WME at " + _workingMemoryAddress + " ceased to exist. Continuing to cycle through the pending paths.");
+						} catch (UnknownSubarchitectureException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}						
 					}
 					// trigger room creation, splitting, merging, maintenance
 					maintainRooms();
-				}
-				
+				}				
 				_removeFilterAfterwards = true;
 			}
 		} catch (DoesNotExistOnWMException e) {
-			log("The overwritten Place WME at " + _wmc.address + " ceased to exist. Not taking any further steps. Its deletion should be handled by the deletion change filter.");
+			log("The overwritten Place WME at " + _wmc.address + " ceased to exist. Not taking any further steps. " +
+					"Its deletion should be handled by the deletion change filter. Here's the full exception message: " + e.message);
 		} catch (UnknownSubarchitectureException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1026,7 +1033,7 @@ public class PlaceMonitor extends ManagedComponent {
 			int _count=0;
 			getMemoryEntriesWithData(ComaRoom.class, _knownRoomsOnWM, _count);
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
-				lockEntry(comaRoomWME.getID(), WorkingMemoryPermissions.LOCKEDODR);
+				lockEntry(comaRoomWME.getID(), WorkingMemoryPermissions.LOCKEDOD);
 			}
 			log("loaded and locked all room WMEs. no. of room WMEs: " + _knownRoomsOnWM.size());
 			Collections.sort(_knownRoomsOnWM, new Comparator<CASTData<ComaRoom>>() {
@@ -1077,7 +1084,6 @@ public class PlaceMonitor extends ManagedComponent {
 					String[] _placesInTheSameRoom = 
 						m_comareasoner.getRelatedInstancesByRelation(_seedPlaceInstance,"dora:sameRoomAs");
 					Set<Long> _setOfPlaceIDsInTheSameRoom = new HashSet<Long>();
-					int i=0;
 					for (String _placeIns : _placesInTheSameRoom) {
 						Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
 						_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
@@ -1088,12 +1094,12 @@ public class PlaceMonitor extends ManagedComponent {
 								+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
 								+ " dora:constituentOfRoom " 
 								+ "dora:room" + _currentRoomStruct.roomId);
-						i++;
 					}
+
 					// add the seed to the list of contained places to be written to WM!
 					_setOfPlaceIDsInTheSameRoom.add(_seedPlaceId);
 					m_comareasoner.addRelation(_seedPlaceInstance, "dora:constituentOfRoom", "dora:room" + _currentRoomStruct.roomId);
-					log("added relation to the coma reasoner: " + _seedPlaceInstance + " dora:constituentOfRoom " + "dora:room" + _currentRoomStruct.roomId);
+					log("added seed relation to the coma reasoner: " + _seedPlaceInstance + " dora:constituentOfRoom " + "dora:room" + _currentRoomStruct.roomId);
 
 					// discard the found places from the set of remaining places
 					_remainingPlaceIds.removeAll(_setOfPlaceIDsInTheSameRoom);
@@ -1159,6 +1165,7 @@ public class PlaceMonitor extends ManagedComponent {
 				}
 				debug("remaining places: " + _remainingPlaceIds);
 			} // end for each room loop
+			log("end for each room loop - before each remaining place loop");
 			
 			// for each remaining place
 			while (!_remainingPlaceIds.isEmpty()) {
@@ -1229,6 +1236,7 @@ public class PlaceMonitor extends ManagedComponent {
 				} // end else create a new room for non-doorway seeds
 				debug("remaining places: " + _remainingPlaceIds);				
 			} // end for each remaining place loop
+			log("end for each remaining place loop");
 			for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
 				if (existsOnWorkingMemory(comaRoomWME.getID())) {
 					unlockEntry(comaRoomWME.getID()); 
