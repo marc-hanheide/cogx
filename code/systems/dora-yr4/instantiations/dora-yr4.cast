@@ -213,7 +213,7 @@ VARDEFAULT spatial_load_map=--load-map --save-map
 VARDEFAULT avs_cone_depth=4	
 
 # closest distance in metres from an obstacle (putting this comment on the line below caused a problem
-VARDEFAULT avs_sample_from_obs=0.8
+VARDEFAULT avs_sample_from_obs=0.4
 
 VARDEFAULT avs_sift_objects="table cerealbox magazine"
 
