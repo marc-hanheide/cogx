@@ -80,7 +80,7 @@ private:
   // commands when an exploration movment finished
   bool m_issueVisualExplorationActions;
 
-  bool m_generatePlaceholdesOnPlace;
+  bool m_generatePlaceholdersOnPlace;
 
   // NavCommand with its id on WM
   typedef std::pair<std::string, SpatialData::NavCommandPtr> tpNavCommandWithId;
