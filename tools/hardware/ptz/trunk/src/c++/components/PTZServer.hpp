@@ -2,10 +2,15 @@
  * Generic parts of a PTZ server. Copied from Michael Zillich's video
  * server. Currently all control is position-based.
  * 
+ * Display Server integration by Marko Mahnič
  */
 
 #include <cast/core.hpp>
 #include <autogen/PTZ.hpp>
+
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
 
 namespace ptz {
 
@@ -33,7 +38,9 @@ namespace ptz {
   /**
    * Server to provide access to a pan-tilt(-zoom) server.
    */
-  class PTZServer : virtual public cast::CASTComponent {
+  class PTZServer :
+     virtual public cast::CASTComponent
+   {
     
   public:
     PTZServer();
@@ -41,6 +48,8 @@ namespace ptz {
     virtual ~PTZServer() {}
     
     virtual void configure(const std::map<std::string,std::string> & _config);
+    virtual void start();
+    virtual void runComponent();
 
   protected:
 
@@ -58,9 +67,29 @@ namespace ptz {
      */
     virtual void setPose(const PTZPose & _pose) = 0;
 
+#ifdef FEAT_VISUALIZATION
+private:
+  bool mbPoseWasSet;
+  void sendPtuStateToDialog();
+
+  friend class CDisplayClient;
+  class CDisplayClient: public cogx::display::CDisplayClient
+  {
+  public:
+    PTZServer* mpPtzServer;
+    std::string mDialogId;
+    CDisplayClient(PTZServer* pPtzServer);
+    void onDialogValueChanged(const std::string& dialogId,
+        const std::string& name, const std::string& value); /*override*/
+    void handleDialogCommand(const std::string& dialogId,
+        const std::string& command, const std::string& params); /*override*/
   };
-  
-  
-  
+  CDisplayClient mDisplay;
+  CDisplayClient& display()
+  {
+    return mDisplay;
+  }
+#endif
+  };
 
 }
