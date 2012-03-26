@@ -72,6 +72,11 @@ void SpatialTranslation::configure(const map<string,string>& config)
   if(config.find("--visual-exploration") != config.end()) {
     m_issueVisualExplorationActions = true;
   }
+  generatePlaceholdesOnPlace = false;
+  if(config.find("--generate-placeholders-on-place") != config.end()) {
+    m_generatePlaceholdesOnPlace = true;
+  }
+
 }
 
 void SpatialTranslation::start() {
@@ -323,6 +328,9 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       //        m_placeInterface->endPlaceTransition(!finished);
 	            }
 	          }
+            else if (m_generatePlaceholdesOnPlace){
+                issuePlaceholderEnumeratingCommand(*rv);
+            }
             else finished = true;
 
 	          m_isExplorationAction = false;
