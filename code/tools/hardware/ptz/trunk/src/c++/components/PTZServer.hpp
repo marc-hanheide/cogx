@@ -31,6 +31,7 @@ namespace ptz {
     virtual void setPose(const ptz::PTZPose & _pose, 
 			 const Ice::Current & _crt);
 
+    virtual bool isMoving(const Ice::Current & _crt) const;
   };
 
 
@@ -67,10 +68,14 @@ namespace ptz {
      */
     virtual void setPose(const PTZPose & _pose) = 0;
 
+  private:
+    bool mbPoseWasSet;
+    bool mbMoving;
+    double mMotionTollerance;
+
 #ifdef FEAT_VISUALIZATION
-private:
-  bool mbPoseWasSet;
-  void sendPtuStateToDialog();
+  private:
+    void sendPtuStateToDialog();
 
   friend class CDisplayClient;
   class CDisplayClient: public cogx::display::CDisplayClient

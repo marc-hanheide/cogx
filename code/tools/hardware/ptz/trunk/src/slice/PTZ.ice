@@ -53,6 +53,8 @@ module ptz {
      */
     void setPose(PTZPose cmd);
 
+    // Returns true if the PTZ is moving.
+    ["cpp:const"] bool isMoving();
   };
 
   /**
