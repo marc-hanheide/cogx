@@ -172,7 +172,8 @@ void QCastDialogFrame::addDialog(cogx::display::CGuiDialog *pDialog)
 
    QCastDialogProxy* pqpack = new QCastDialogProxy(pDialog, wui);
 
-   int idx = addTab(wui, QString::fromStdString(pDialog->m_id));
+   int idx = addTab(wui, wui->windowTitle());
+   setTabToolTip(idx, wui->toolTip() + "\nform.id:" + QString::fromStdString(pDialog->m_id));
    //pqpack->engine.evaluate("dialogOwner.testMe();");
 
    m_dialogs << pqpack;
