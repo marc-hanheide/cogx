@@ -17,7 +17,7 @@ if(1)
 endif()
 
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++0x)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 find_package(LibPlot) # for visualization
 set(HAS_LIBPLOT ${LIBPLOT_FOUND})
@@ -46,10 +46,12 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${ARM_TRACKING_LIBRARIES}
    )
 
-add_custom_target (${CAST_COMPONENT_NAME}.Resources)
+add_custom_target (${CAST_COMPONENT_NAME}.Resources
+   DEPENDS res/ptuctrl.inc)
 add_custom_command (
-   TARGET  ${CAST_COMPONENT_NAME}.Resources
-   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/res
+   OUTPUT res/ptuctrl.inc
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/res
+   COMMENT "make ${CAST_COMPONENT_NAME}.Resources"
    COMMAND make
 )
 add_dependencies(${CAST_COMPONENT_NAME} ${CAST_COMPONENT_NAME}.Resources)
