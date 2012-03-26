@@ -2,7 +2,7 @@
 // --------------------------------------------------
 
 // Generated from ptucontroller.ui
-const char res_ptucontroller_ui[] = R"((<?xml version="1.0" encoding="UTF-8"?>
+const char res_ptucontroller_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PtuController</class>
  <widget class="QWidget" name="PtuController">
@@ -206,11 +206,11 @@ const char res_ptucontroller_ui[] = R"((<?xml version="1.0" encoding="UTF-8"?>
  <resources/>
  <connections/>
 </ui>
-))"; // res_ptucontroller_ui
+)--"; // res_ptucontroller_ui
 // --------------------------------------------------
 
 // Generated from ptucontroller.js
-const char res_ptucontroller_js[] = R"((
+const char res_ptucontroller_js[] = R"--(
 Function.prototype.bind = function() {
    var func = this;
    var thisObject = arguments[0];
@@ -256,6 +256,6 @@ PtuController.prototype.onGetPosition_clicked = function()
       dialogOwner.call("sendStateToDialog", 0);
    }
 }
-))"; // res_ptucontroller_js
+)--"; // res_ptucontroller_js
 // --------------------------------------------------
 
