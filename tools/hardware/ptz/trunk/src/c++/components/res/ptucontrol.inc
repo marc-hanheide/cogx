@@ -212,10 +212,8 @@ const char res_ptucontroller_ui[] =
 
 // Generated from ptucontroller.js
 const char res_ptucontroller_js[] = 
-   "/*\n"
-   " * @author: Marko Mahnič\n"
-   " * @created: July 2011\n"
-   " */\n"
+   "\n"
+   "\n"
    "Function.prototype.bind = function() {\n"
    "   var func = this;\n"
    "   var thisObject = arguments[0];\n"
@@ -231,7 +229,6 @@ const char res_ptucontroller_js[] =
    "   this.ui = ui;\n"
    "\n"
    "   with (this.ui.wctrls) {\n"
-   "\n"
    "      sliderPan.valueChanged.connect(spinPan, spinPan.setValue);\n"
    "      spinPan['valueChanged(double)'].connect(sliderPan, sliderPan.setValue);\n"
    "\n"

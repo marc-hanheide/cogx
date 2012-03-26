@@ -17,22 +17,41 @@ namespace ptz {
     return m_ptzServer->setPose(_pose);
   }
   
+  bool PTZServerI::isMoving(const Ice::Current & _crt) const {
+    return m_ptzServer->mbMoving;
+  }
 
   PTZServer::PTZServer()
 #ifdef FEAT_VISUALIZATION
     : mDisplay(this)
 #endif
   {
+     mbMoving = false;
+     mbPoseWasSet = false;
+     mMotionTollerance = 1e-4;
   }
 
   void PTZServer::configure(const std::map<std::string,std::string> & _config)  {
-    //setup ice server
-    PTZInterfacePtr servant = new PTZServerI(this);
-    registerIceServer<PTZInterface, PTZInterface>(servant);
+     std::map<std::string,std::string>::const_iterator it;
+
+    // default: 1e-4
+    // for gazebo simulation: set to at least 2e-3
+    if((it = _config.find("--motion_tollerance")) != _config.end())
+    {
+      std::istringstream str(it->second);
+      str >> mMotionTollerance;
+      if (mMotionTollerance < 1e-9) mMotionTollerance = 1e-9;
+      if (mMotionTollerance > 0.1) mMotionTollerance = 0.1;
+    }
+    log("Motion Tollerance: %.9f", mMotionTollerance);
 
 #ifdef FEAT_VISUALIZATION
     display().configureDisplayClient(_config);
 #endif
+
+    //setup ice server
+    PTZInterfacePtr servant = new PTZServerI(this);
+    registerIceServer<PTZInterface, PTZInterface>(servant);
   }
 
 #ifdef FEAT_VISUALIZATION
@@ -51,28 +70,29 @@ namespace ptz {
 
   void PTZServer::runComponent()
   {
-#ifdef FEAT_VISUALIZATION
-    const double epsmove = 1e-3; // [radians] the min angle distance that is treated as a movement
+    const double epsmove = mMotionTollerance;
     const int intervalMs = 100;  // time between checks
     const int waitStartMove = 2; // number of time intervals to wait before start-move is accepted
     const int waitEndMove = 3;   // number of time intervals to wait before end-move is accepted
 
+#ifdef FEAT_VISUALIZATION
     sendPtuStateToDialog();
+#endif
     PTZPose pose = getPose().pose;
     PTZPose oldpose = getPose().pose;
-    bool bMoving = false;
     int changeWait = 0;
     mbPoseWasSet = false;
+    mbMoving = false;
     while (isRunning()) {
       sleepComponent(intervalMs);
       if (mbPoseWasSet) {
         mbPoseWasSet = false;
-        bMoving = true;
+        mbMoving = true;
         changeWait = waitEndMove;
       }
       PTZPose pose = getPose().pose;
       double delta = fabs(pose.pan - oldpose.pan) + fabs(pose.tilt - oldpose.tilt);
-      if (bMoving) {
+      if (mbMoving) {
         // detect end-of-move and update ptu-ctrl
         if (delta >= epsmove) {
           // still moving
@@ -82,11 +102,13 @@ namespace ptz {
         else {
           --changeWait;
           if (changeWait <= 0) {
+#ifdef FEAT_VISUALIZATION
             sendPtuStateToDialog();
-            bMoving = false;
+#endif
+            mbMoving = false;
             changeWait = waitStartMove;
+            log("End of move.");
           }
-          //log("changeWait %d while stopping", changeWait);
         }
       }
       else {
@@ -96,7 +118,7 @@ namespace ptz {
           --changeWait;
           if (changeWait <= 0) {
              oldpose = pose;
-             bMoving = true;
+             mbMoving = true;
              changeWait = waitEndMove;
           }
         }
@@ -106,14 +128,13 @@ namespace ptz {
         }
       }
     }
-#endif
   }
 
 #ifdef FEAT_VISUALIZATION
 
   void PTZServer::sendPtuStateToDialog()
   {
-    log("PtuCtrl: sendStateToDialog");
+    //log("PtuCtrl: sendStateToDialog");
     PTZReading ptup = getPose();
     std::ostringstream ss;
     ss << "ptuctrl.ui.wctrls.spinPan.value=" << ptup.pose.pan * 180 / M_PI << ";";
