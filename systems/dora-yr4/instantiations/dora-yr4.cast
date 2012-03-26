@@ -296,7 +296,7 @@ IFOPTALL(%(feature_options), spatial)
 # Provides placeholder properties (length of associated frontier, size of
 # associated free space, nearness to a door hypothesis), exposed through
 # ICE interfaces
-    CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors)
+    CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
 
 ##CPP GD path.query 			PathQueryProcessor 
 
@@ -350,7 +350,7 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(hardware_options), video)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
-        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
+        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-right.xml" --framerate_fps "15" --imgsize "640 480"
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
         CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --camid 0
