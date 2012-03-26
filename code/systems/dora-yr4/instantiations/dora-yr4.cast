@@ -350,7 +350,7 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(hardware_options), video)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
-        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-right.xml" --framerate_fps "15" --imgsize "640 480"
+        CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
         CPP MG viewer 		VideoViewer --videohost localhost --videoname VideoServer --camid 0
