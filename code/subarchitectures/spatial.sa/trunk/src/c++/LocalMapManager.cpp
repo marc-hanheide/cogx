@@ -283,7 +283,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
 
   if(m_loadNodeLgms)
   {
-    m_nodeGridMaps.clear();
     LoadNodeGridMaps("NodeGridMaps.txt");
   }
 
@@ -478,6 +477,7 @@ void LocalMapManager::LoadNodeGridMaps(std::string filename){
     log("Could not read node grid map file, exiting.");
     return;
   }
+  m_nodeGridMaps.clear();
   string line,tmp;
   int nodeid;
   double cx,cy;
