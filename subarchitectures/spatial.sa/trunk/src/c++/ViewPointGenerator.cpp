@@ -398,10 +398,6 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 		std::pair<int, int> sample;
 		sample.first = randx;
 		sample.second = randy;
-    m_component->log("alex vpg %d",!haspoint);
-    m_component->log("alex vpg %d",(*lgm)(randx, randy) == '0');
-    m_component->log("alex vpg %d",isCircleFree2D(*lgm,
-				xW, yW, m_sampleawayfromobs));
 
 		if (!haspoint && (*lgm)(randx, randy) == '0' && isCircleFree2D(*lgm,
 				xW, yW, m_sampleawayfromobs)) {
