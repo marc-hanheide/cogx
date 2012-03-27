@@ -71,7 +71,12 @@ namespace ptz {
   private:
     bool mbPoseWasSet;
     bool mbMoving;
-    double mMotionTollerance;
+    // The motion tollerance is specified in rad/s to compensate for when the
+    // component is running at a lower rate because of the system overload.
+    double mMotionTollerance; // [rad/s]
+
+  public:
+    using CASTComponent::sleepComponent;
 
 #ifdef FEAT_VISUALIZATION
   private:

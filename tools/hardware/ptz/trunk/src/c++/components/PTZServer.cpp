@@ -1,4 +1,5 @@
 #include "PTZServer.hpp"
+#include "Timers.hpp"
 
 #include <sstream>
 #include <cmath>
@@ -68,13 +69,17 @@ namespace ptz {
 #endif
   }
 
+  // TODO: check the actual frequency of the loop; use rad/sec for motion tollerance (instead of rad)
   void PTZServer::runComponent()
   {
-    const double epsmove = mMotionTollerance;
     const int intervalMs = 100;  // time between checks
     const int waitStartMove = 2; // number of time intervals to wait before start-move is accepted
     const int waitEndMove = 3;   // number of time intervals to wait before end-move is accepted
+    double epsmove = mMotionTollerance * intervalMs / 1000;
+    CCastPaceMaker<PTZServer> pace(*this, intervalMs, 1);
+    CMilliTimer tmInfo;
 
+    log("eps: %.8f", epsmove);
 #ifdef FEAT_VISUALIZATION
     sendPtuStateToDialog();
 #endif
@@ -84,7 +89,8 @@ namespace ptz {
     mbPoseWasSet = false;
     mbMoving = false;
     while (isRunning()) {
-      sleepComponent(intervalMs);
+      pace.sync();
+      epsmove = mMotionTollerance / pace.getTotalRate();
 
       if (mbPoseWasSet) {
         mbPoseWasSet = false;
@@ -95,6 +101,22 @@ namespace ptz {
 
       PTZPose pose = getPose().pose;
       double delta = fabs(pose.pan - oldpose.pan) + fabs(pose.tilt - oldpose.tilt);
+
+      if (tmInfo.elapsed() > 5000) {
+#ifdef FEAT_VISUALIZATION
+        std::ostringstream ss;
+        ss.precision(6);
+        ss << "<h3>PTZ Server</h3>"
+          << "Running rate: " << pace.getTotalRate() << "hz<br>"
+          << "Motion tollerance: " << mMotionTollerance << "rad/s<br>"
+          << "Actual tollerance: " << epsmove << "rad";
+        display().setHtml("INFO", "PTZ.Server" + getComponentID(), ss.str());
+#else
+        log("rate: %.3f, delta: %.8f, eps: %.8f", pace.getTotalRate(), delta, epsmove);
+#endif
+        tmInfo.restart();
+      }
+
       if (mbMoving) {
         // detect end-of-move and update ptu-ctrl
         if (delta >= epsmove) {
