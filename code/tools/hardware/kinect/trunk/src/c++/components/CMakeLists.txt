@@ -17,6 +17,7 @@ include_directories(
    .
    ${VISUALIZATION_INCLUDE_DIRS}
    )
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 
   SET(HEADERS
