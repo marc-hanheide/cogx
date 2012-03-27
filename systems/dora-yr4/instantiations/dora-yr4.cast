@@ -199,6 +199,11 @@ VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
 VARDEFAULT min_obstacle_height=0.25
 VARDEFAULT explore_range=2.0
 VARDEFAULT spatial_load_map=--load-map --save-map
+VARDEFAULT spatial_node_obstacle_margin=1.5
+VARDEFAULT spatial_node_unknown_margin=0.5
+
+# If the flag --show3Dobstacles is present then show the height map in Peekabot (in green)
+VARDEFAULT spatial_show_3d_obstacles=--show3Dobstacles
 
 ### Disable placeholder generation (no exploration)
     VARDEFAULT no_placeholders=
@@ -276,8 +281,9 @@ IFOPTALL(%(feature_options), spatial)
     CPP MG spatial.translation 	SpatialTranslation %(visual_exploration) --generate-placeholders-on-place
 
 ### Reads NavData::InternalNavCmd to control the robot
+#EXPAND spatial_show_3d_obstacles=%(spatial_show_3d_obstacles)
 # Maintains three-state grid map for exploration and obstacle avoidance
-    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin 1.5 --node-unknown-margin 0.5 %(spatial_load_map) --show3Dobstacles --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
+    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
 
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
@@ -297,8 +303,6 @@ IFOPTALL(%(feature_options), spatial)
 # associated free space, nearness to a door hypothesis), exposed through
 # ICE interfaces
     CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
-
-##CPP GD path.query 			PathQueryProcessor 
 
 
     IFOPTALL(%(feature_options), binder)
