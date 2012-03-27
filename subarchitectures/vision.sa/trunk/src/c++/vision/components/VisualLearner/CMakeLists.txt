@@ -5,6 +5,7 @@ include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 project(VisualLearner)
 link_directories(${VISUALLEARNER_LIBRARY_DIRS}) # Set in VisualLearner.cmake (dir for compiled or prebuilt files)
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 if (BUILD_SA_VISION_VISLEARNER_FAKE)
    add_definitions(-DFEAT_FAKE_LEARNER)

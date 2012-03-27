@@ -14,6 +14,7 @@ include_directories(.  sifts
    )
 
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 link_directories(
    ${CUDA_INSTALLROOT}/lib

@@ -5,6 +5,7 @@ include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/components/)
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen/)
 include_directories(.)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 
 add_cast_component(PeopleDetector PeopleDetector.cpp PeopleDetector.hpp)

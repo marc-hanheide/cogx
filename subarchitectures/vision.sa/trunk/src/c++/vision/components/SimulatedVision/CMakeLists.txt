@@ -8,6 +8,7 @@ include_directories(${VISUALIZATION_INCLUDE_DIRS})
 # Set the sources.
 SET(SOURCES SimulatedVision.cpp)
 
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 add_cast_component(SimulatedVision ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME}
    VisionData

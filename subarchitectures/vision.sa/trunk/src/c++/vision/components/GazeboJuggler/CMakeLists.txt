@@ -10,6 +10,7 @@ Find_package(Player)
 # FIND_PACKAGE( OpenCV REQUIRED )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 add_cast_component(GazeboJuggler GazeboJuggler.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}

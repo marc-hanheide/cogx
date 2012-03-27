@@ -208,8 +208,8 @@ bool CameraMount::MotionInfo::detectStatusChange(cogx::Math::Pose3& newPose)
     toRotVector(newPose.rot, rot);
     Vector3 dr = rot - mPrevRot;
     err = fabs(dr.x) + fabs(dr.y) + fabs(dr.z);
-    //if (mCamId == 0)
-    //  pOwner->log("Camera %d moved for: %.6f", mCamId, err);
+    if (mCamId == 0)
+     pOwner->log("Camera %d moved for: %.6f", mCamId, err);
   }
   bool oldState = mpState->bMoving;
 

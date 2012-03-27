@@ -1,6 +1,7 @@
 include_directories(.)
 
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 find_package(LibPlot) # for visualization
 set(HAS_LIBPLOT ${LIBPLOT_FOUND})

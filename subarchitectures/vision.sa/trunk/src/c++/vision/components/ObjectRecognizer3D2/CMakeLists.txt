@@ -8,6 +8,7 @@ include_directories(./ODetect3D)
 include_directories(./matrix)
 include_directories(./SiftGPU/src/SiftGPU)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 link_directories(${CUDA_INSTALLROOT}/lib)
 

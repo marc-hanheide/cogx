@@ -6,6 +6,7 @@ include_directories(
    .
    ${VISUALIZATION_INCLUDE_DIRS}
    )
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
   
 include_directories(ARToolKit/include)
