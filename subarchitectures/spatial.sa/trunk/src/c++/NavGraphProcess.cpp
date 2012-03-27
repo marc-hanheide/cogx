@@ -1154,6 +1154,14 @@ void NavGraphProcess::runComponent()
   setupPushScan2d(*this);
   setupPushOdometry(*this);
 
+  // If we're going to load a map, write a MapLoadStatus struct
+  if (m_WriteFirstGraph) {
+    SpatialData::MapLoadStatusPtr statusStruct 
+      = new SpatialData::MapLoadStatus;
+    m_MapLoadStatusWM = newDataID();
+    addToWorkingMemory<SpatialData::MapLoadStatus>(m_MapLoadStatusWM, statusStruct);
+  }
+
   while (isRunning()) {
 
     m_eventQueueMutex.lock();
@@ -1453,6 +1461,18 @@ void NavGraphProcess::processScan(Cure::LaserScan2d &cureScan)
   // which happens when it is loaded from file
   if (m_WriteFirstGraph) {
     writeGraphToWorkingMemory();
+    try {
+      lockEntry(m_MapLoadStatusWM, cdl::LOCKEDOD);
+      SpatialData::MapLoadStatusPtr loadStatus = 
+	getMemoryEntry<SpatialData::MapLoadStatus>(m_MapLoadStatusWM);
+      loadStatus->nodesWritten = true;
+      overwriteWorkingMemory<SpatialData::MapLoadStatus>(m_MapLoadStatusWM, loadStatus);
+      unlockEntry(m_MapLoadStatusWM);
+    }
+    catch (DoesNotExistOnWMException)
+    {
+      getLogger()->warn("LoadMapStatus struct disappeared from WM!");
+    }
     m_WriteFirstGraph = false;
   }
 

@@ -208,6 +208,8 @@ private:
 
   bool m_WriteFirstGraph;
 
+  std::string m_MapLoadStatusWM;
+
   // This variable is used to tell what ids to assign the object nodes
   // and also used when creating a unique combined id for edges.  For
   // simplicity you should pick a value which 10^N since that allows

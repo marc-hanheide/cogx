@@ -276,6 +276,12 @@ void DisplayNavInPB::start() {
 		  	  	  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::deletePlace));
 
+  // MapLoadStatus
+  addChangeFilter(createLocalTypeFilter<SpatialData::MapLoadStatus>(cdl::WILDCARD),
+		  	  	  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::mapLoadStatusChanged));
+
+
   // NodeHyhothesis
   addChangeFilter(createLocalTypeFilter<SpatialData::NodeHypothesis>(cdl::OVERWRITE),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -473,7 +479,7 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 
 	// Get node it for the place ID
     ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
-    m_Mutex.lock();
+    IceUtil::Mutex::Lock lock(m_Mutex);
     m_PeekabotClient.begin_bundle();
 
 	_shapeProps[property->placeId] = property;
@@ -484,7 +490,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     if (nodeIter == m_Nodes.end()) {
         println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
         m_PeekabotClient.end_bundle();
-        m_Mutex.unlock();
 
         debug("Exited newShapeProperty");
         return;
@@ -503,7 +508,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     addProperties(sp, property->placeId);
 
     m_PeekabotClient.end_bundle();
-    m_Mutex.unlock();
 
     debug("Exited newShapeProperty");
 }
@@ -535,7 +539,7 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 	// Get node it for the place ID
     ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
 
-    m_Mutex.lock();
+    IceUtil::Mutex::Lock lock(m_Mutex);
     m_PeekabotClient.begin_bundle();
 
 	_sizeProps[property->placeId] = property;
@@ -546,7 +550,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
     if (nodeIter == m_Nodes.end()) {
         println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
         m_PeekabotClient.end_bundle();
-        m_Mutex.unlock();
 
         debug("Exited newSizeProperty");
         return;
@@ -565,7 +568,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
     addProperties(sp, property->placeId);
 
     m_PeekabotClient.end_bundle();
-    m_Mutex.unlock();
 
     debug("Exited newSizeProperty");
 }
@@ -597,8 +599,8 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 	// Get node it for the place ID
 	::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
 
-    m_Mutex.lock();
-    m_PeekabotClient.begin_bundle();
+	IceUtil::Mutex::Lock lock(m_Mutex);
+	m_PeekabotClient.begin_bundle();
 
 	_appearanceProps[property->placeId] = property;
 
@@ -608,7 +610,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
     if (nodeIter == m_Nodes.end()) {
         println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
         m_PeekabotClient.end_bundle();
-        m_Mutex.unlock();
 
         debug("Exited newAppearanceProperty");
         return;
@@ -625,7 +626,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
     addProperties(sp,property->placeId);
 
     m_PeekabotClient.end_bundle();
-    m_Mutex.unlock();
 
     debug("Exited newAppearanceProperty");
 }
@@ -633,9 +633,9 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 
 void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 {
-  log("Entered newComaRoom");
+  log("Entered newComaRoom (%s)", objID.address.id.c_str());
 	if (!m_PeekabotClient.is_connected()) {
-    debug("Exited newComaRoom");
+    log("Exited newComaRoom");
 		return;
   }
 
@@ -648,9 +648,11 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 	catch (...)
 	{
 		log("Error! coma room cloud disappeared from WM.");
-    debug("Exited newComaRoom");
+    log("Exited newComaRoom");
 		return;
 	}
+
+
 
 	// Initialization
 	::Ice::Int roomId = croom->roomId;
@@ -675,7 +677,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 	}
 
 	// Update DisplayNavInPB
-	m_Mutex.lock();
+	IceUtil::Mutex::Lock lock(m_Mutex);
 	m_PeekabotClient.begin_bundle();
 
 	// For each place in the room
@@ -798,8 +800,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 		}
 	} // end for
 	m_PeekabotClient.end_bundle();
-	m_Mutex.unlock();
-  debug("Exited newComaRoom");
+  log("Exited newComaRoom");
 }
 
 
@@ -825,7 +826,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 	// Get node hyp for the placeholder ID
     SpatialData::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
 
-    m_Mutex.lock();
+    IceUtil::Mutex::Lock lock(m_Mutex);
     m_PeekabotClient.begin_bundle();
 
     // Remember the property
@@ -846,7 +847,6 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
     }
 
     m_PeekabotClient.end_bundle();
-    m_Mutex.unlock();
     debug("Exited newRoomCategoryPlaceholderProperty");
 }
 
@@ -1205,7 +1205,8 @@ void DisplayNavInPB::runComponent() {
 
       m_PeekabotClient.begin_bundle();
 
-      m_Mutex.lock();
+      {
+      IceUtil::Mutex::Lock lock(m_Mutex);
 
       if (m_RobotPose && m_ShowPointCloud) {
         PointCloud::SurfacePointSeq points;
@@ -1289,10 +1290,10 @@ void DisplayNavInPB::runComponent() {
       // Display the people being tracked
       if(m_ShowPeople) displayPeople();
 
+
+      }
+
       peekabot::Status s = m_PeekabotClient.end_bundle().status();
-
-      m_Mutex.unlock();
-
 
       // Make sure the server processed what we've sent
       m_PeekabotClient.sync();
@@ -1377,9 +1378,10 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID)
 
   NavData::RobotPose2dPtr oobj = getMemoryEntry<NavData::RobotPose2d>(objID.address);
 
-  m_Mutex.lock();
-  m_RobotPose = oobj;
-  m_Mutex.unlock();
+  {
+    IceUtil::Mutex::Lock lock(m_Mutex);
+    m_RobotPose = oobj;
+  }
   log("newRobotPose(x=%.2f y=%.2f a=%.4f t=%ld.%06ld",
         m_RobotPose->x, m_RobotPose->y, m_RobotPose->theta,
         (long)m_RobotPose->time.s, (long)m_RobotPose->time.us);
@@ -1501,7 +1503,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   }
   log("Received an object of category %s", objData->category.c_str());
 
-  m_Mutex.lock();
+  IceUtil::Mutex::Lock lock(m_Mutex);
 
   m_PeekabotClient.begin_bundle();
 
@@ -1585,7 +1587,6 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 
   m_PeekabotClient.end_bundle();
 
-  m_Mutex.unlock();
   debug("Exited newNavGraphObject");
 }
 
@@ -1596,9 +1597,10 @@ void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID)
   shared_ptr<CASTData<NavData::LineMap> > oobj =
     getWorkingMemoryEntry<NavData::LineMap>(objID.address);
 
-  m_Mutex.lock();
+  {
+  IceUtil::Mutex::Lock lock(m_Mutex);
   m_LineMap = oobj->getData();
-  m_Mutex.unlock();
+  }
   debug("Exited newLineMap");
 }
 
@@ -1614,7 +1616,7 @@ void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID)
 
     bool addNewPerson = true;
 
-    m_Mutex.lock();
+    IceUtil::Mutex::Lock lock(m_Mutex);
 
     // Check if the person already exists, otherwise add it
     for (unsigned int i = 0; i < m_People.size(); i++) {
@@ -1641,7 +1643,6 @@ void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID)
 
   } catch(DoesNotExistOnWMException){}
 
-  m_Mutex.unlock();
   debug("Exited newPerson");
 }
 
@@ -1666,12 +1667,11 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID)
   shared_ptr<CASTData<NavData::PersonFollowed> > oobj =
     getWorkingMemoryEntry<NavData::PersonFollowed>(objID.address);
 
-  m_Mutex.lock();
+  IceUtil::Mutex::Lock lock(m_Mutex);
   m_CurrPersonId = oobj->getData()->id;
   char buf[256];
   sprintf(buf, "Got id of person being tracked %d", m_CurrPersonId);
   debug(buf);
-  m_Mutex.unlock();
   debug("Exited newPersonFollowed");
 }
 
@@ -1782,7 +1782,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 		NavData::FNodePtr fnode = oobj->getData();
 
 		// Update DisplayNavInPB
-		m_Mutex.lock();
+		IceUtil::Mutex::Lock lock(m_Mutex);
 		m_PeekabotClient.begin_bundle();
 
 		// Update the node
@@ -1931,7 +1931,6 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 		log("Error! SpatialObject disappeared from WM!");
 	}
 
-	m_Mutex.unlock();
 }
 
 void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
@@ -1951,29 +1950,24 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 
 		if (m_ShowPlaceholders)
 		{
-    log("1");
             	        
             peekabot::CubeProxy sp;
 	        char name[32];
 	        sprintf(name, "node_hyp%ld", (long)nodePtr->hypID);
 	        peekabot::Status s = sp.assign(m_ProxyNodes, name).status();
-    log("2");
 
             if( s.succeeded() ){
 
 		        sp.set_position(nodePtr->x,nodePtr->y,0);
                 FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-    log("3");
 
 			    if (m_ShowLabels)
 			    {
                     SpatialData::PlacePtr placePtr = piPrx->getPlaceFromHypID(nodePtr->hypID);
-    log("4");
 
                     if (placePtr){
                         int pid = placePtr->id;
 				        // Delete ID text
-    log("5");
 			
             	        peekabot::LabelProxy text;
 				        char buf[32];
@@ -1984,7 +1978,6 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 
 			    }
 
-    log("6");
                   int nodeId;
                   int originPlaceID;
                   double hypX, hypY;
@@ -1997,7 +1990,6 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
                     log("nodeHypPtr is no longer valid.\n");
                     return;
                   }
-    log("7");
                   double originX=0;
                   double originY=0;
                   NavData::FNodePtr fnodePtr;
@@ -2008,7 +2000,6 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
                   } catch(IceUtil::NullHandleException &e) {
                     log("Could not get origin node.\n");
                   }
-    log("8");
 			  if (fnodePtr) {
 //			    int parentNodeID= fnodePtr->nodeId;
 			    peekabot::PolylineProxy lcp;
@@ -2019,7 +2010,6 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 			    lcp.add(sp, "parent", peekabot::REPLACE_ON_CONFLICT);
 			    lcp.set_line_style("dotted",0.5);
 			    lcp.add_vertices(points);
-    log("9");
 			  }
 
             }
@@ -2377,7 +2367,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
   NavData::AEdgePtr aedge = oobj->getData();
 
-  m_Mutex.lock();
+  IceUtil::Mutex::Lock lock(m_Mutex);
 
   m_PeekabotClient.begin_bundle();
 
@@ -2401,7 +2391,6 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
   m_PeekabotClient.end_bundle();
 
-  m_Mutex.unlock();
   debug("Exited newNavGraphEdge");
 }
 
@@ -2629,6 +2618,9 @@ void DisplayNavInPB::connectPeekabot()
     }
 
     m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
+    peekabot::LabelProxy mapStatusLabel;
+    mapStatusLabel.add(m_PeekabotClient, "MapStatus", peekabot::REPLACE_ON_CONFLICT);
+    mapStatusLabel.hide();
 
     s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
     if( s1.failed() ) {
@@ -2893,4 +2885,49 @@ DisplayNavInPB::logDetectionCommand(const string &label)
   viewProxy.set_position(m_RobotPose->x, m_RobotPose->y, 0);
   viewProxy.set_rotation(m_RobotPose->theta, 0, 0);
   viewProxy.set_color(1.0, 0, 0);
+}
+
+void
+DisplayNavInPB::mapLoadStatusChanged(const cdl::WorkingMemoryChange &wmc)
+{
+  log("mapLoadStatusChanged");
+  try {
+    if (wmc.operation == cdl::DELETE) {
+      peekabot::LabelProxy mapStatusLabel;
+      mapStatusLabel.assign(m_PeekabotClient, "MapStatus");
+      mapStatusLabel.hide();
+    }
+    else {
+      const SpatialData::MapLoadStatusPtr statusStruct =
+	getMemoryEntry<SpatialData::MapLoadStatus>(wmc.address.id);
+      peekabot::LabelProxy mapStatusLabel;
+      mapStatusLabel.add(m_PeekabotClient, "MapStatus", peekabot::REPLACE_ON_CONFLICT);
+      mapStatusLabel.show();
+      mapStatusLabel.set_scale(10,10,10);
+      mapStatusLabel.set_position(0,0,3);
+      std::string labelString("Loading:");
+      if (statusStruct->nodesWritten) {
+	labelString = labelString + " nodes";
+      }
+      if (statusStruct->placesWritten) {
+	labelString = labelString + " places";
+      }
+      if (statusStruct->roomsWritten) {
+	labelString = labelString + " rooms";
+      }
+      if (statusStruct->categoryDataWritten) {
+	labelString = labelString + " categoryData";
+      }
+      if (statusStruct->obstacleMapsLoaded) {
+	labelString = labelString + " obstacles";
+      }
+      if (statusStruct->categoryDataWritten) {
+	labelString = labelString + " localMaps";
+      }
+      mapStatusLabel.set_text(labelString.c_str());
+    }
+  }
+  catch (DoesNotExistOnWMException) {
+    log("MapLoadStatus struct disappeared from WM!");
+  }
 }

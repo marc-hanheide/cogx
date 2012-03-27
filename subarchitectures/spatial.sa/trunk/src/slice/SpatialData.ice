@@ -433,6 +433,19 @@ class ProcessViewPointCommand {
 	cast::cdl::StringSeq objectModels;
 
   };
+
+  /**
+   * Information struct that lets components know the status of map loading
+   * @author Kristoffer S
+   */
+class MapLoadStatus {
+  bool nodesWritten;		// NavGraphProcess signals all nav nodes (and edges) have been written to WM
+  bool placesWritten;		// PlaceManager signals all Places (including placeholders) have been written to WM
+  bool roomsWritten;		// Coma signals all ComaRooms have been written to WM
+  bool categoryDataWritten;	// Categorical.SA signals all category place/placeholder properties have been written to WM
+  bool obstacleMapsLoaded;	// SpatialControl signals all grid map data has been loaded
+  bool localMapsLoaded;		// LocalMapManager signals all grid map data has been loaded
+};
   
   interface AVSInterface
   {

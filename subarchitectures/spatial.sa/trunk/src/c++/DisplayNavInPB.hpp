@@ -121,6 +121,8 @@ private:
 	void newNavCommand(const cast::cdl::WorkingMemoryChange & objID);
 	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
 
+	void mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &objID);
+
 	void movePlace(const cast::cdl::WorkingMemoryChange &objID);
 	void newPlace(const cast::cdl::WorkingMemoryChange &objID);
 

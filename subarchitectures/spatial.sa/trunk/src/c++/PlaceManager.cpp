@@ -239,6 +239,9 @@ PlaceManager::start()
   addChangeFilter(createLocalTypeFilter<FrontierInterface::DoorHypothesis>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::newDoorHypothesis));
+  addChangeFilter(createLocalTypeFilter<SpatialData::MapLoadStatus>(cdl::OVERWRITE), 
+      new MemberFunctionChangeReceiver<PlaceManager>(this,
+	&PlaceManager::mapLoadStatusOverwritten));
 
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
   if (m_useLocalMaps) {
@@ -2681,4 +2684,25 @@ int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
 	}
     updatePlaceholders();
 	return newPlaceID;
+}
+
+void 
+PlaceManager::mapLoadStatusOverwritten(const cdl::WorkingMemoryChange &wmc)
+{
+  log("mapLoadStatusOverwritten");
+  try {
+    lockEntry(wmc.address, cdl::LOCKEDOD);
+    SpatialData::MapLoadStatusPtr statusStruct = getMemoryEntry<SpatialData::MapLoadStatus>(wmc.address);
+    if (statusStruct->nodesWritten) {
+      // If we receive the signal that all nodes have been written, 
+      // then we will already have received all those nodes
+      // and all the Places corresponding to them will be written too
+      statusStruct->placesWritten = true;
+      overwriteWorkingMemory<SpatialData::MapLoadStatus>(wmc.address.id, statusStruct);
+    }
+    unlockEntry(wmc.address);
+  }
+  catch (DoesNotExistOnWMException) {
+    getLogger()->warn("MapLoadStatus struct disappeared from WM! Map loading procedure may get stuck.");
+  }
 }
