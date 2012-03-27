@@ -263,11 +263,11 @@ NewTurnMotion::canTurnOnTheSpot()
 
   int nSteps = int(da / stepSize + 0.5);
 //FIXME hack
-/*
+
   for (int i = 0; i < nSteps; i++) {
     if (findViolations(robX_, robY_, robA_ + stepSize * i)) return false;
   }
-*/
+
   return true; 
 }
 
