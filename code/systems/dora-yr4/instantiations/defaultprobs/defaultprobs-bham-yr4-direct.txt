@@ -1,4 +1,4 @@
-COST INROOM magazine 200
+COST_INROOM magazine 200
 COST_ON magazine table 30
 
 COST_INROOM cerealbox 200
