@@ -273,11 +273,11 @@ IFOPTALL(%(feature_options), spatial)
 ### Translates and queues Spatial::NavCommands; 
 # writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
 #EXPAND visual_exploration=%(visual_exploration)
-    CPP MG spatial.translation 	SpatialTranslation %(visual_exploration)
+    CPP MG spatial.translation 	SpatialTranslation %(visual_exploration) --generate-placeholders-on-place
 
 ### Reads NavData::InternalNavCmd to control the robot
 # Maintains three-state grid map for exploration and obstacle avoidance
-    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin 1 --node-unknown-margin 1 %(spatial_load_map) --show3Dobstacles --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
+    CPP GD spatial.control 		SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin 1 --node-unknown-margin 0.5 %(spatial_load_map) --show3Dobstacles --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6 
 
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
