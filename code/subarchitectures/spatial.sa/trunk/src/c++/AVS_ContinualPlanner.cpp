@@ -144,8 +144,9 @@ void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy, const char* pa
 	}
 	else
 	{
-
-	  m_proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
+	  m_proxyCone.rotate(viewpoint.pan,0,0,1);
+	  m_proxyCone.rotate(viewpoint.tilt,0,-1,0);
+//	  m_proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
 	  m_proxyCone.set_position(0,0,viewpoint.pos.z);
 	}
 }
