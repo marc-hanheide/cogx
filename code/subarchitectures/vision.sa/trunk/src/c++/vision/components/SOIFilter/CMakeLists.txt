@@ -2,7 +2,6 @@ project(Vision.SOIFilter)
 
 include_directories(.)
 
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/ptz/src/c++/components)
@@ -16,6 +15,8 @@ if(1)
    set(ARM_TRACKING_LIBRARIES ManipulationExeData)
 endif()
 
+include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 

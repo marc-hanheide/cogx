@@ -20,7 +20,7 @@ class C03Writer:
     def writeLine(self, line):
         for c in '\\"':
             line = line.replace(c, '\\' + c)
-        self.f.write('   "%s"\n' % line)
+        self.f.write('   "%s\\n"\n' % line)
 
 class C11Writer:
     def __init__(self, ofile):

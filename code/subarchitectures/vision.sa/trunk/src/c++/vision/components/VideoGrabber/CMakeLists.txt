@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 # Set the sources.
 SET(SOURCES

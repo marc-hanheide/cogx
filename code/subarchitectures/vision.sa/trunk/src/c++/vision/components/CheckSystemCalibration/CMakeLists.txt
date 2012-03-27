@@ -9,6 +9,8 @@ include_directories(
    ${VISUALIZATION_INCLUDE_DIRS}
    )
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
+
 
 add_cast_component(CheckSystemCalibration ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} 

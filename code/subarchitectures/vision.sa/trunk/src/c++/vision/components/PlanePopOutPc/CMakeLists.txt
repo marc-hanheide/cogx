@@ -40,6 +40,7 @@ add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 #link_directories(${GLUT_LIBRARY_DIRS})
 
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 SET(HEADERS
 	PlanePopOut.h

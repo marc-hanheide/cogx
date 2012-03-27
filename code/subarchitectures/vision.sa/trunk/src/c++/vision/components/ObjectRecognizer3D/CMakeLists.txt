@@ -1,5 +1,6 @@
 # needed to allow visualization to use IplImages 
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 FIND_PACKAGE( OpenCV REQUIRED )
 

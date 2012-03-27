@@ -11,6 +11,8 @@ endif(VISION_LIB_DIR)
 include_directories(.)
 include_directories(./DShape3D)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
+
 INCLUDE_DIRECTORIES(${HOMEST_PATH})
 INCLUDE_DIRECTORIES(${LEVMAR_PATH})
 LINK_DIRECTORIES(${HOMEST_PATH})

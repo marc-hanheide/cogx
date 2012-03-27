@@ -5,6 +5,7 @@ include_directories(${COGX_ROOT}/subarchitectures/vision.sa/src/c++/vision/compo
 
 # remove_definitions(-DFEAT_VISUALIZATION)
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIR})
