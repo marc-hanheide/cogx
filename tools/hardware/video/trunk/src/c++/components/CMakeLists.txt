@@ -20,6 +20,7 @@ if(BUILD_HAL_VIDEO_IMG_SEQ)
       # -DFEAT_VISUALIZATION is already defined by v11n.cmake, but we re-define it here
       add_definitions(-DFEAT_VISUALIZATION) # Valid for this directory and below
       include_directories(${VISUALIZATION_INCLUDE_DIRS})
+      link_directories(${VISUALIZATION_LIBRARY_DIRS})
    else(BUILD_HAL_VIDEO_IMG_SEQ_UI)
       remove_definitions(-DFEAT_VISUALIZATION)
    endif(BUILD_HAL_VIDEO_IMG_SEQ_UI)
