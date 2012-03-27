@@ -483,9 +483,13 @@ void SpatialControl::LoadHeightMap(std::string filename){
 list<double> SpatialControl::getVisualExplorationAngles(){
   list<double> ret;
   double angle;
+  angle = 1.5*VISUAL_EXPLORATION_SWIVEL_ANGLE;
+  ret.push_back(angle);
   angle = VISUAL_EXPLORATION_SWIVEL_ANGLE;
   ret.push_back(angle);
   angle = -VISUAL_EXPLORATION_SWIVEL_ANGLE;
+  ret.push_back(angle);
+  angle = -1.5*VISUAL_EXPLORATION_SWIVEL_ANGLE;
   ret.push_back(angle);
   return ret;
 }
