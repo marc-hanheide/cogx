@@ -67,8 +67,11 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   log("Configure entered");
 
   m_usePeekabot = false;
-    if (_config.find("--usepeekabot") != _config.end())
-      m_usePeekabot= true;
+  if (_config.find("--usepeekabot") != _config.end()) {
+    m_usePeekabot= true;
+
+    connectPeekabot();
+  }
 
   if(_config.find("--no-local-maps") != _config.end()) {
     m_useLocalMaps = false;
@@ -96,6 +99,12 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   m_bNoPlaceholders = false;
   if(_config.find("--no-placeholders") != _config.end()) {
     m_bNoPlaceholders = true;
+  }
+
+  m_RetryDelay = 1000;
+  if(_config.find("--retry-interval") != _config.end()){
+    std::istringstream str(_config.find("--retry-interval")->second);
+    str >> m_RetryDelay;
   }
 
   m_updatePlaceholderPositions = true;
@@ -185,7 +194,7 @@ PlaceManager::start()
 {
     if(m_usePeekabot){
         while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-            sleep(m_RetryDelay);
+            sleepComponent(m_RetryDelay);
             connectPeekabot();
         }
         m_ProxyForbiddenMap.add(m_PeekabotClient, "pm_forbidden",peekabot::REPLACE_ON_CONFLICT);

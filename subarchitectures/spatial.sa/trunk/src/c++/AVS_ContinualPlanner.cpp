@@ -298,7 +298,7 @@ void AVS_ContinualPlanner::start() {
 	//Todo subscribe to View Cone Generation
     if(m_usePeekabot){
         while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-            sleep(m_RetryDelay);
+            sleepComponent(m_RetryDelay);
             connectPeekabot();
         }
         peekabot::ObjectProxy m_grid_map;
@@ -1474,12 +1474,18 @@ void AVS_ContinualPlanner::configure(
 		std::abort();
 	}
 
-    m_PbPort = 5050;
-    cfg->getRoboLookHost(m_PbHost);
-    std::string usedCfgFile, tmp;
-    if (cfg && cfg->getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
-      m_PbHost = tmp;
-    }
+	m_PbPort = 5050;
+	cfg->getRoboLookHost(m_PbHost);
+	std::string usedCfgFile, tmp;
+	if (cfg && cfg->getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
+	  m_PbHost = tmp;
+	}
+
+	m_RetryDelay = 1000;
+	if(_config.find("--retry-interval") != _config.end()){
+	  std::istringstream str(_config.find("--retry-interval")->second);
+	  str >> m_RetryDelay;
+	}
 
 	m_gridsize = 200;
 	m_cellsize = 0.05;
@@ -1564,11 +1570,14 @@ void AVS_ContinualPlanner::configure(
 	      log("Distance to nearest obs for samples set to: %f", m_sampleawayfromobs);
 	    }
 
-	m_minDistance = m_conedepth / 4.0;
+	    m_minDistance = m_conedepth / 4.0;
 
-	  m_usePeekabot = false;
-	    if (_config.find("--usepeekabot") != _config.end())
+	    m_usePeekabot = false;
+	    if (_config.find("--usepeekabot") != _config.end()) {
 	      m_usePeekabot= true;
+
+	      connectPeekabot();
+	    }
 
 	    if(m_usePeekabot){
 	      pbVis = new VisualPB_Bloxel(m_PbHost,5050,m_gridsize,m_gridsize,m_cellsize,1,true);//host,port,xsize,ysize,cellsize,scale, redraw whole map every time

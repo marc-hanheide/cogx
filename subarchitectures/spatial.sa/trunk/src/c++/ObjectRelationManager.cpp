@@ -138,7 +138,11 @@ void ObjectRelationManager::configure(const map<string,string>& _config)
     }
   }
 
-  m_RetryDelay = 500;
+  m_RetryDelay = 1000;
+  if(_config.find("--retry-interval") != _config.end()){
+    std::istringstream str(_config.find("--retry-interval")->second);
+    str >> m_RetryDelay;
+  }
 
   Cure::ConfigFileReader *cfg = 0;
   it = _config.find("-c");

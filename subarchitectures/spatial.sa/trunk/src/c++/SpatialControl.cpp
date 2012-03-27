@@ -507,8 +507,11 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
   m_usePeekabot = false;
-    if (_config.find("--usepeekabot") != _config.end())
-      m_usePeekabot= true;
+  if (_config.find("--usepeekabot") != _config.end()) {
+    m_usePeekabot= true;
+
+    connectPeekabot();
+  }
 
   m_show3Dobstacles = false;
     if (_config.find("--show3Dobstacles") != _config.end())
@@ -531,6 +534,13 @@ void SpatialControl::configure(const map<string,string>& _config)
     }
 
   }
+
+  m_RetryDelay = 1000;
+  if(_config.find("--retry-interval") != _config.end()){
+    std::istringstream str(_config.find("--retry-interval")->second);
+    str >> m_RetryDelay;
+  }
+
 
   m_maxNewPlaceholderRadius = 1.5;
   m_minNewPlaceholderRadius = 1.1;   
@@ -1311,14 +1321,14 @@ void SpatialControl::runComponent()
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
 
-    if(m_usePeekabot){
-        while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-            sleep(m_RetryDelay);
-            connectPeekabot();
-        }
-        CreateGridMap(); 
-  
+  if(m_usePeekabot){
+    while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+      sleepComponent(m_RetryDelay);
+      connectPeekabot();
     }
+    CreateGridMap(); 
+
+  }
   int count = 0;
   while(isRunning()){
     if(count  == 12){
