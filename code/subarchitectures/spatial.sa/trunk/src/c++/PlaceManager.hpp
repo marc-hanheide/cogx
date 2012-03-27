@@ -100,6 +100,9 @@ class PlaceManager : public cast::ManagedComponent
     void newEdge(const cast::cdl::WorkingMemoryChange &objID);
     void modifiedEdge(const cast::cdl::WorkingMemoryChange &objID);
 
+    // Call back function for overwrites on MapLoadStructs
+    void mapLoadStatusOverwritten(const cast::cdl::WorkingMemoryChange &wmc);
+
     void evaluateUnexploredPaths();
     IceUtil::Mutex m_PlaceholderMutex;
 
