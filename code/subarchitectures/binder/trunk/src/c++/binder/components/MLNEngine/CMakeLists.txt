@@ -26,6 +26,7 @@ include_directories(${RRF})
 include_directories(${UTIL})
 include_directories(${LEARNWTS})
 
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 add_definitions(-DFEAT_VISUALIZATION_OPENCV)
 #link_directories(${ALCHEMY_ROOT}/bin/obj)
 
