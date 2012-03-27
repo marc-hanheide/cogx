@@ -47,7 +47,7 @@ void SpatialPeekabotControl::configure(const map<string,string>& config)
 {
   println("configure entered");
 
-  m_RetryDelay = 10;
+  m_RetryDelay = 1000;
   if(config.find("--retry-interval") != config.end()){
     std::istringstream str(config.find("--retry-interval")->second);
     str >> m_RetryDelay;
@@ -139,7 +139,7 @@ void SpatialPeekabotControl::runComponent() {
   println("runComponent");
 
   while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-    sleep(m_RetryDelay);
+    sleepComponent(m_RetryDelay);
     connectPeekabot();
   }
 

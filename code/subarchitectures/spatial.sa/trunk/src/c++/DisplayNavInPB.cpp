@@ -146,7 +146,7 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     split( _roomCategories, rcStr, is_any_of(",") );
   }
 
-  m_RetryDelay = 10;
+  m_RetryDelay = 1000;
   if(_config.find("--retry-interval") != _config.end()){
     std::istringstream str(_config.find("--retry-interval")->second);
     str >> m_RetryDelay;
@@ -1182,7 +1182,7 @@ void DisplayNavInPB::runComponent() {
   log("runComponent");
 
   while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
-    sleep(m_RetryDelay);
+    sleepComponent(m_RetryDelay);
     connectPeekabot();
   }
 

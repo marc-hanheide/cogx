@@ -84,6 +84,12 @@ void ObjectRelationTester::configure(const map<string,string>& _config)
     m_bShowPoses = true;
   }
 
+  m_RetryDelay = 1000;
+  if(_config.find("--retry-interval") != _config.end()){
+    std::istringstream str(_config.find("--retry-interval")->second);
+    str >> m_RetryDelay;
+  }
+
 //  m_bTestInference = false;
 //  it = _config.find("--test-inference");
 //  if (it != _config.end()) {
@@ -114,6 +120,8 @@ void ObjectRelationTester::configure(const map<string,string>& _config)
       m_PbHost = tmp;
     }
   }
+
+  connectPeekabot();
 }
 
 void ObjectRelationTester::start() 
@@ -121,7 +129,7 @@ void ObjectRelationTester::start()
   if (m_bTestOnness || m_bTestInness) {// || m_bTestInference) {
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
       connectPeekabot();
-      sleep(m_RetryDelay);
+      sleepComponent(m_RetryDelay);
     }
 
     if (m_bTestOnness || m_bTestInness) {
