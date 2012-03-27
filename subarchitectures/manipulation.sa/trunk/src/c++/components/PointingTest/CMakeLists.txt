@@ -12,5 +12,6 @@ include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
 
 Find_package(Player)
 
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 add_cast_component(PointingTest PointingTest.cpp)
 target_link_libraries(PointingTest ManipulationData ManipulationExeData VisionData ${PLAYER_LDFLAGS} ${VISUALIZATION_LIBRARIES} ${OPENCV_LDFLAGS})

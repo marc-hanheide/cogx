@@ -10,6 +10,7 @@ Find_package(Player)
 FIND_PACKAGE( OpenCV REQUIRED )
 include_directories(${OPENCV_INCLUDE_DIRS})
 link_directories(${OPENCV_LIBRARY_DIRS})
+link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 add_cast_component(GazeboTurntable GazeboTurntable.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} ${VISUALIZATION_LIBRARIES} ${PLAYER_LDFLAGS} ${OPENCV_LDFLAGS}) 
