@@ -29,7 +29,7 @@ namespace ptz {
   {
      mbMoving = false;
      mbPoseWasSet = false;
-     mMotionTolerance = 1e-4;
+     mMotionTolerance = 1e-2;
      mInitialPose.pan = 0;
      mInitialPose.tilt = 0;
      mInitialPose.zoom = 0;
@@ -44,6 +44,7 @@ namespace ptz {
     {
       std::istringstream str(it->second);
       str >> mMotionTolerance;
+      mMotionTolerance *= M_PI / 180;
       if (mMotionTolerance < 1e-9) mMotionTolerance = 1e-9;
       if (mMotionTolerance > 0.1) mMotionTolerance = 0.1;
     }
