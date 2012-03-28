@@ -46,14 +46,14 @@ p3dx_with_urg_and_blobfinder (
  (
  name "chair1"
  color "black"
- pose [16.955 4.273 0 0]
+ pose [15.728 2.500 0 0]
  )
 
  chair
  (
  name "chair2"
  color "black"
- pose [13.319 3.818 0 0]
+ pose [13.955 -1.909 0 0]
  )
 
  row-of-chairs
@@ -139,7 +139,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "big-desk"
  color "black"
- pose [15.006 4.313 0 0]
+ pose [14.642 3.722 0 0]
  )
 
  desk

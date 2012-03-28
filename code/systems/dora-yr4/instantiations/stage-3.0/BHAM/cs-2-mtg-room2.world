@@ -27,7 +27,7 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [16.845 12.427 0 -90.000]
+	pose [17.481 2.154 0 -180.000]
 	color "red"
 )
 
@@ -46,14 +46,14 @@ p3dx_with_urg_and_blobfinder (
  (
  name "chair1"
  color "black"
- pose [16.955 4.273 0 0]
+ pose [15.864 2.455 0 0]
  )
 
  chair
  (
  name "chair2"
  color "black"
- pose [13.319 3.818 0 0]
+ pose [13.955 -1.909 0 0]
  )
 
  row-of-chairs
@@ -139,7 +139,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "big-desk"
  color "black"
- pose [15.006 4.313 0 0]
+ pose [14.642 3.722 0 0]
  )
 
  desk
@@ -220,7 +220,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "barrier5"
  color "black"
- pose [19.800 -4.100 0 90.000]
+ pose [18.164 1.991 0 90.000]
  )
 
  barrier
