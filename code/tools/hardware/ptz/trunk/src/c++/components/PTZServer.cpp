@@ -29,7 +29,7 @@ namespace ptz {
   {
      mbMoving = false;
      mbPoseWasSet = false;
-     mMotionTolerance = 1e-2;
+     mMotionTolerance = 0.01;
      mInitialPose.pan = 0;
      mInitialPose.tilt = 0;
      mInitialPose.zoom = 0;
@@ -38,8 +38,8 @@ namespace ptz {
   void PTZServer::configure(const std::map<std::string,std::string> & _config)  {
      std::map<std::string,std::string>::const_iterator it;
 
-    // default: 1e-4
-    // for gazebo simulation: set to at least 2e-3
+    // default: 0.01
+    // for gazebo simulation: 0.2
     if((it = _config.find("--motion_tolerance")) != _config.end())
     {
       std::istringstream str(it->second);
