@@ -26,6 +26,7 @@ function PtuController(ui)
    //dump("PtuController", this);
    //dump("PtuController.ui", this.ui);
    //dump("PtuController.ui.wbts", this.ui.wbts);
+   //dump("PtuController.ui.wbts.ckBlockUpdates", this.ui.wbts.ckBlockUpdates);
 
    with (this.ui.wctrls) {
       sliderPan.valueChanged.connect(spinPan, spinPan.setValue);
