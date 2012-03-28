@@ -309,6 +309,7 @@ const char res_ptucontroller_js[] =
    "\n"
    "\n"
    "\n"
+   "\n"
    "   with (this.ui.wctrls) {\n"
    "      sliderPan.valueChanged.connect(spinPan, spinPan.setValue);\n"
    "      spinPan['valueChanged(double)'].connect(sliderPan, sliderPan.setValue);\n"
