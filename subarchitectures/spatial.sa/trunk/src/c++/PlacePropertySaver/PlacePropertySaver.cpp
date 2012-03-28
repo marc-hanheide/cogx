@@ -138,6 +138,16 @@ void PlacePropertySaver::start()
 // ------------------------------------------------------
 void PlacePropertySaver::stop()
 {
+  if(_doSave)
+  {
+    // Save once (more) at the end
+    // FIXME: Make sure this is does not interfere with the cast shutdown
+
+    debug("Component stopped running. Save one more time.");
+
+    savePlaceProperties();
+  }
+
   debug("Stopped.");
 }
 
@@ -152,26 +162,33 @@ void PlacePropertySaver::runComponent()
   }
 
   if (_doSave)
-  {
-    while (isRunning())
+  {      
+    if (_saveContinuously) 
     {
-      if (_saveContinuously) 
+      // Sleep at most 100ms at a time to be responsive to "stop" events. We
+      // will round up _saveInterval to 100ms precision.
+      unsigned int sleeptime = 100;
+      unsigned int sleepiterations = _saveInterval / sleeptime;
+      if (sleepiterations % sleeptime != 0) 
+        ++sleepiterations; // make sure we round up
+
+      unsigned int count = 0;
+      while (isRunning())
       {
-        sleepComponent(_saveInterval);
-        savePlaceProperties();
-      } 
-      else 
-      {
-        // just wait until the component is stopped
-        sleepComponent(100);
+        sleepComponent(sleeptime);
+        ++count;
+        if (count >= sleepiterations)
+        {
+          count = 0;
+          if (isRunning())
+            savePlaceProperties();
+        }
       } 
     }
-
-    debug("Component stopped running. Save one more time.");
-
-    // Save once (more) at the end
-    // FIXME: Make sure this is does not interfere with the cast shutdown
-    savePlaceProperties();
+    else
+    {
+      // Do nothing. We save once in the "stop" method.
+    }
   }
 
 }
