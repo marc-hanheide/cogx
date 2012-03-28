@@ -36,7 +36,9 @@ extern "C"
 namespace cast
 {
 
+#ifdef FEAT_PTU_GUI
 #include "res/ptuctrl.inc"
+#endif
 
 using namespace std;
 using namespace cdl;
@@ -241,7 +243,9 @@ void SOIFilter::start()
     m_display.addAction(m_sProtoObjectView, act);
   }
 
+#ifdef FEAT_PTU_GUI
   m_display.addDialog(IDDLG_PTUCTRL, res_ptucontroller_ui, res_ptucontroller_js, "PtuController ptuctrl");
+#endif
 
 #else
   if (doDisplay)
@@ -457,15 +461,18 @@ void SOIFilter::CSfDisplayClient::onDialogValueChanged(const std::string& dialog
 void SOIFilter::CSfDisplayClient::handleDialogCommand(const std::string& dialogId,
     const std::string& command, const std::string& params)
 {
+#ifdef FEAT_PTU_GUI
   if (dialogId == IDDLG_PTUCTRL && pFilter->ptzServer.get()) {
     //pFilter->println(" *** handleDialogCommand *** " + command);
     if (command == "sendStateToDialog")
       sendPtuStateToDialog();
   }
+#endif
 }
 
 void SOIFilter::CSfDisplayClient::sendPtuStateToDialog()
 {
+#ifdef FEAT_PTU_GUI
   pFilter->log("PtuCtrl: sendStateToDialog");
   ptz::PTZReading ptup;
   if (pFilter->ptzServer.get())
@@ -476,6 +483,7 @@ void SOIFilter::CSfDisplayClient::sendPtuStateToDialog()
   ss << "ptuctrl.ui.wctrls.spinZoom.value=" << ptup.pose.zoom << ";";
 
   execInDialog(IDDLG_PTUCTRL, ss.str());
+#endif
 }
 
 #endif
@@ -673,7 +681,9 @@ void SOIFilter::onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc)
     if (!m_bCameraMoving) {
       m_endMoveTimeout.restart();
 #ifdef FEAT_VISUALIZATION
+#ifdef FEAT_PTU_GUI
       m_display.sendPtuStateToDialog();
+#endif
 #endif
     }
     // log("Camera %d moving: %s", int(camId), m_bCameraMoving ? "YES" : "NO");
