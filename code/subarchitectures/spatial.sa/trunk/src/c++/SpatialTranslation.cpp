@@ -235,6 +235,8 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
   if (m_isExplorationAction) {
     rv->addChangeFilter(
 	createLocalTypeFilter<NavData::FNode>(cdl::ADD));
+    rv->addChangeFilter(
+	createLocalTypeFilter<NavData::FNode>(cdl::OVERWRITE));
   }
 	
   bool some_error = false;
@@ -243,7 +245,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
   // This is in case the abort signal arrives before adding the last filter
   log("SpatialTranslation: %i", __LINE__);
   if(!m_Tasks.m_Abort){	
-  log("SpatialTranslation: %i", __LINE__);
+    log("SpatialTranslation: %i", __LINE__);
     // Send command
     addToWorkingMemory<NavData::InternalNavCommand>(navCtrlCmdId, ctrl);
 		
