@@ -67,7 +67,7 @@ AVS_ContinualPlanner::~AVS_ContinualPlanner() {
 	// TODO Auto-generated destructor stub
 }
 
-void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy,
+void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy, peekabot::PolygonProxy* &proxyConeParts,
                                double fovHorizAngle, double fovVertiAngle,
                                double* color, double opacity,
                                NavData::ViewPoint viewpoint){
@@ -76,7 +76,7 @@ void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy,
   // The "half angle" of the field of view
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
   const double fovVerti = fovVertiAngle*M_PI/180.0/2;
-  peekabot::PolygonProxy proxyConeParts[5];
+  
   proxyConeParts[0].add(proxy, "top");
   proxyConeParts[0].add_vertex(0,0,0);
   proxyConeParts[0].add_vertex(coneLen,
@@ -133,41 +133,12 @@ void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy,
   proxy.rotate(viewpoint.pan,0,0,1);
   proxy.rotate(viewpoint.tilt,0,-1,0);
   proxy.set_position(viewpoint.pos.x,viewpoint.pos.y,viewpoint.pos.z);
-}
-
-void AVS_ContinualPlanner::CreateCurrentViewCone() {
-    m_FovH = 45.0;
-    m_FovV = 35.0;
-
-    char path[32];    
-    sprintf(path,"current_viewpoint");
-    double color[3];
-    color[0] = 0.1;
-    color[1] = 0.1;
-    color[2] = 0.9;
-
-    NavData::ViewPoint viewpoint;
-    viewpoint.pos.x = 0;
-    viewpoint.pos.y = 0;
-    viewpoint.pos.z = 0;
-    viewpoint.length = m_conedepth;
-    viewpoint.pan = 0;
-    viewpoint.tilt = 0;
-
-    m_proxyCone.add(m_PeekabotClient, path, peekabot::REPLACE_ON_CONFLICT);
-    createFOV(m_proxyCone, m_FovH, m_FovV, color, 0.2, viewpoint);
-    m_proxyCone.hide();
+  m_PeekabotClient.sync();
 }
 
 void AVS_ContinualPlanner::ChangeCurrentViewConeColor(double r,double g,double b){
-  m_proxyCone.set_color(r,g,b);
-}
-
-void AVS_ContinualPlanner::MoveCurrentViewCone(ViewPointGenerator::SensingAction &nbv){
-	m_proxyCone.set_rotation(0,0,0);
-  m_proxyCone.rotate(nbv.pan,0,0,1);
-	m_proxyCone.rotate(nbv.tilt,0,-1,0);
-	m_proxyCone.set_position(nbv.pos[0], nbv.pos[1], nbv.pos[2]);
+  for(int i=0;i<5;i++)
+    m_proxyConePolygons[i].set_color(r,g,b);
 }
 
 void AVS_ContinualPlanner::connectPeekabot()
@@ -179,6 +150,9 @@ void AVS_ContinualPlanner::connectPeekabot()
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
     if(m_usePeekabot){
+      m_FovH = 45.0;
+      m_FovV = 35.0;
+
       m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
     }
 
@@ -316,7 +290,7 @@ void AVS_ContinualPlanner::start() {
             p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
             p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
         }
-        CreateCurrentViewCone();    
+  
 	}
 	addChangeFilter(createGlobalTypeFilter<
 			SpatialData::RelationalViewPointGenerationCommand> (cdl::ADD),
@@ -378,7 +352,7 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	log("Overwritten ARTagCommand: %s", newObj->label.c_str());
 	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 	m_ptzWaitingStatus = WAITING_TO_RETURN;
-    m_proxyCone.hide();
+
 	startMovePanTilt(0.0,0.0,0.08);
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 //	log("Overwriting command to change status to: SUCCESS");
@@ -395,9 +369,6 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	    getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
 	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
-    if(m_usePeekabot){
-        m_proxyCone.hide();
-    }
 	startMovePanTilt(0.0,0.0,0.08);
 	m_ptzWaitingStatus = WAITING_TO_RETURN;
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
@@ -1193,17 +1164,17 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     // slightly at a different place but looking at the same region
     // Otherwise just process the viewcone and add it to m_processedViewConeIDs
     // list
-    if(m_usePeekabot){
-        m_proxyCone.show();
-    }
     // RSS update
     if(m_processedViewConeIDs.count(m_currentViewCone.first) > 0 && m_randomViewCones){
       // This view cone was processed before so now we need to serve a
       // different one
       log("We've processed this viewcone before, so serve a random one observing the same space");
       ViewPointGenerator::SensingAction s = getRandomViewCone(m_currentViewCone.second);
+      m_coneGroupId++;
       if(m_usePeekabot){
-          MoveCurrentViewCone(s);
+          PostViewCone(s,m_coneGroupId);
+          m_proxyCone=&m_ProxyViewPointsList[m_coneGroupId];
+          m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_coneGroupId];
           ChangeCurrentViewConeColor(0.1,0.1,0.9);
       }  
 
@@ -1218,8 +1189,8 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     else {
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
       if(m_usePeekabot){  
-          m_ProxyViewPointsList[m_currentViewCone.first].hide();
-          MoveCurrentViewCone(m_currentViewCone.second);
+          m_proxyCone=&m_ProxyViewPointsList[m_currentViewCone.first];
+          m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
           ChangeCurrentViewConeColor(0.1,0.1,0.9);
       }
       Cure::Pose3D pos;
@@ -1982,10 +1953,9 @@ void AVS_ContinualPlanner::PostViewCone(const ViewPointGenerator::SensingAction 
   color[2] = 0.1;
   sprintf(path,"viewpoint_%d",id);
 
-  peekabot::GroupProxy proxyCone;
-  proxyCone.add(m_ProxyViewPoints, path, peekabot::REPLACE_ON_CONFLICT);
-  m_ProxyViewPointsList[id] = proxyCone;
-  createFOV(m_ProxyViewPointsList[id], m_FovH, m_FovV, color, 0.15, viewpoint);
+  m_ProxyViewPointsList[id].add(m_ProxyViewPoints, path, peekabot::REPLACE_ON_CONFLICT);
+  m_ProxyViewPointsPolygonsList[id] = new peekabot::PolygonProxy[5];
+  createFOV(m_ProxyViewPointsList[id], m_ProxyViewPointsPolygonsList[id], m_FovH, m_FovV, color, 0.15, viewpoint);
 }
 void
 AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object *object)

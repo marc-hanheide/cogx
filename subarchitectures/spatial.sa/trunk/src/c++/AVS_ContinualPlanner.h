@@ -133,23 +133,22 @@ private:
 
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
     peekabot::PeekabotClient m_PeekabotClient;
-    peekabot::GroupProxy m_proxyCone;
     std::map<int, peekabot::GroupProxy> m_ProxyViewPointsList;
+    std::map<int, peekabot::PolygonProxy*> m_ProxyViewPointsPolygonsList;
+    peekabot::GroupProxy* m_proxyCone;
+    peekabot::PolygonProxy* m_proxyConePolygons;
     peekabot::GroupProxy m_ProxyViewPoints;
 	  double m_FovH; // horisontal fov in degs
 	  double m_FovV; // vertical fov in degs
     peekabot::GroupProxy m_ProxyForbiddenMap;
 
     void connectPeekabot();
-    void createFOV(peekabot::GroupProxy &proxy,
+    void createFOV(peekabot::GroupProxy &proxy, peekabot::PolygonProxy* &proxyConeParts,
                                double fovHorizAngle, double fovVertiAngle,
                                double* color, double opacity,
                                NavData::ViewPoint viewpoint);
 
-    void CreateCurrentViewCone();
     void ChangeCurrentViewConeColor(double r,double g,double b);
-    void MoveCurrentViewCone(ViewPointGenerator::SensingAction &nbv);
-
 
    std::set<int> m_processedViewConeIDs;
 
