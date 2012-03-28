@@ -263,7 +263,6 @@ void AVS_ContinualPlanner::start() {
         peekabot::ObjectProxy m_frontiers;
         peekabot::ObjectProxy m_pdf;
         peekabot::ObjectProxy m_2DOccGridProxy;
-//        peekabot::ObjectProxy planned_viewpoints;
         peekabot::Status s;
         s = m_grid_map.assign(m_PeekabotClient,"grid_map").status();
         if( s.succeeded() ) m_grid_map.remove();
@@ -273,8 +272,18 @@ void AVS_ContinualPlanner::start() {
         if( s.succeeded() ) m_pdf.remove();
         s = m_2DOccGridProxy.assign(m_PeekabotClient, "combined_placemap2D").status();
         if( s.succeeded() ) m_2DOccGridProxy.remove();
-//        s = planned_viewpoints.assign(m_PeekabotClient, "planned_viewpoints").status();
-//        if( s.succeeded() ) planned_viewpoints.remove();
+        s = m_pdf.assign(m_PeekabotClient, "pdf1").status();
+        if( s.succeeded() ) m_pdf.remove();
+        s = m_2DOccGridProxy.assign(m_PeekabotClient, "combined_placemap2D1").status();
+        if( s.succeeded() ) m_2DOccGridProxy.remove();
+        s = m_pdf.assign(m_PeekabotClient, "pdf2").status();
+        if( s.succeeded() ) m_pdf.remove();
+        s = m_2DOccGridProxy.assign(m_PeekabotClient, "combined_placemap2D2").status();
+        if( s.succeeded() ) m_2DOccGridProxy.remove();
+        s = m_pdf.assign(m_PeekabotClient, "pdf3").status();
+        if( s.succeeded() ) m_pdf.remove();
+        s = m_2DOccGridProxy.assign(m_PeekabotClient, "combined_placemap2D3").status();
+        if( s.succeeded() ) m_2DOccGridProxy.remove();
 
         m_ProxyForbiddenMap.add(m_PeekabotClient, "avs_forbidden",peekabot::REPLACE_ON_CONFLICT);
         m_ProxyForbiddenMap.set_position(0,0,-0.005);
