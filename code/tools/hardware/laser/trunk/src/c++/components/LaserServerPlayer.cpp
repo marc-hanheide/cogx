@@ -304,16 +304,17 @@ LaserServerPlayer::runComponent()
     }
 
     if(isRunning()) {
+      // FIXME @demmel 22.03.2012:
       // using lockComponent() is a design flaw since this is held when the
       // component is stopped. Thus even with the isRunning() check there is a
       // race condition when the component is stopped. We should use an extra
       // mutex, not the component mutex.
       lockComponent();
       for (unsigned int i = 0; i < m_PushClients.size(); i++)  {
-        if ( isRunning() && 
+        if ( isRunning() &&
              (!m_PushClients[i].timer.isRunning() ||
               (m_PushClients[i].timer.split() >= m_PushClients[i].interval) ) ) {
-          log("pushed scan to client %d", i);    
+          log("pushed scan to client %d", i);
           m_PushClients[i].timer.restart();
           m_PushClients[i].prx->receiveScan2d(m_Scan);
         }
