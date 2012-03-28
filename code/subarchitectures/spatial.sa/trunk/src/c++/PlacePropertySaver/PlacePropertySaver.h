@@ -8,6 +8,22 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 
+
+// FIXME: add something like this to cast utils instead of having it here
+namespace cast {
+
+/**
+ *   Provide the name of the dynamic type of an object
+ */  
+template <class T>
+const std::string& dynamicTypeName(const IceInternal::Handle<T> object) {
+  return object->ice_id();
+}
+
+}
+
+
+
 /**
  * The PlacePropertySaver component can save observerd place properties to a
  * file either periodically or at the end of execution. It can also load this
@@ -88,6 +104,72 @@ private:
       const std::string name, 
       const std::string defaultValue,
       const std::map<std::string,std::string> &config);
+
+private:
+  // FIXME: this should not be here, but in WorkingMemoryWriterComponent
+
+  /**
+   * Add new data to working memory. The data will be stored with the given
+   * id. Determines the dynamic type of _data instead of using the static
+   * type.
+   * 
+   * @param _id
+   *            The id the data will be stored with.
+   * @param _subarchitectureID
+   *            The subarchitecture to write to.
+   * @param _data
+   *            The data itself. Must be a ref-counted pointer to an instance of an Ice class.
+   * @throws AlreadyExistsOnWMException
+   *             If an entry exists at the given id.
+   */
+  template <class T>
+  void addToWorkingMemoryDynamicType(const std::string &_id, 
+                                     const std::string &_subarch,
+                                     IceInternal::Handle<T>  _data) 
+      throw (cast::AlreadyExistsOnWMException, cast::UnknownSubarchitectureException) { 
+    
+    assert(!_id.empty());//id must not be empty
+    assert(!_subarch.empty());//subarch must not be empty
+    assert(_data);//data must not be null
+    
+    //UPGRADE not sure what to do with this now
+    //checkPrivileges(_subarch);
+    
+    std::string type(dynamicTypeName(_data));
+    
+    //logMemoryAdd(_id, _subarch, type);
+    
+    //#bug 52, testcase 2: If we are already versioning this data
+    //it's ok. This means we had previously written to this address.
+    
+    int versionWhichWillEndUpOnWM = 0;
+    
+    //if not versioned, start doing so
+    if(!isVersioned(_id)) {
+      debug("is not versioned: %s",_id.c_str());
+      startVersioning(_id);
+    }
+    //if it's already versioned, then we need to update our numbers      
+    else {
+      debug("re-adding to working memory with id %s",_id.c_str());	
+      //get the last known version number, which we store + 1
+      versionWhichWillEndUpOnWM = getVersionNumber(_id,_subarch) + 1;
+      storeVersionNumber(_id, versionWhichWillEndUpOnWM);
+    }
+
+    // FIXME: private
+    //    if(m_copyOnWrite) {
+          m_workingMemory->addToWorkingMemory(_id,_subarch,type,getComponentID(),_data->ice_clone()); 
+    //    }
+    //    else {
+    //      m_workingMemory->addToWorkingMemory(_id,_subarch,type,getComponentID(),_data); 
+    //    }
+    
+    // FIXME: private
+    //logAdd(_id, _subarch, type, versionWhichWillEndUpOnWM);
+	  
+    
+  }
 
 private:
 
