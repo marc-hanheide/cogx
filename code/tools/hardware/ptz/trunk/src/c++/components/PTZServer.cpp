@@ -102,7 +102,7 @@ namespace ptz {
     tmChangeWait.setTimeout(waitEndMove, true);
 
     PTZPose pose = getPose().pose;
-    PTZPose oldpose = getPose().pose;
+    PTZPose oldpose = pose;
     mbPoseWasSet = false;
     mbMoving = false;
 #ifdef FEAT_VISUALIZATION
@@ -130,7 +130,7 @@ namespace ptz {
 #endif
       }
 
-      PTZPose pose = getPose().pose;
+      pose = getPose().pose;
       double delta = fabs(pose.pan - oldpose.pan) + fabs(pose.tilt - oldpose.tilt);
 
       if (tmInfo.elapsed() > 5000) {
@@ -194,12 +194,10 @@ namespace ptz {
 
   void PTZServer::sendPtuStateToDialog(bool bMoving)
   {
-    if (bMoving) {
-      display().execInDialog(display().mDialogId, "ptuctrl.setPtzIsMoving(true);");
-    }
-    else {
-      display().execInDialog(display().mDialogId, "ptuctrl.setPtzIsMoving(false);");
-    }
+    display().execInDialog(display().mDialogId,
+        bMoving
+        ? "ptuctrl.setPtzIsMoving(true);"
+        : "ptuctrl.setPtzIsMoving(false);");
   }
 
   void PTZServer::sendPtuPositionToDialog(bool bForce)
