@@ -2702,7 +2702,7 @@ PlaceManager::mapLoadStatusOverwritten(const cdl::WorkingMemoryChange &wmc)
   try {
     lockEntry(wmc.address, cdl::LOCKEDOD);
     SpatialData::MapLoadStatusPtr statusStruct = getMemoryEntry<SpatialData::MapLoadStatus>(wmc.address);
-    if (statusStruct->nodesWritten) {
+    if (statusStruct->nodesWritten && !statusStruct->placesWritten) {
       // If we receive the signal that all nodes have been written, 
       // then we will already have received all those nodes
       // and all the Places corresponding to them will be written too
