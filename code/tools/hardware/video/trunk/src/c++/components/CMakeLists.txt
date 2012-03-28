@@ -1,3 +1,5 @@
+project(hardware.video)
+
 FIND_PACKAGE( OpenCV REQUIRED )
 
 include_directories(.)
@@ -16,14 +18,7 @@ INSTALL(TARGETS VideoServer LIBRARY DESTINATION lib)
 option(BUILD_HAL_VIDEO_IMG_SEQ "Build image sequence video server" YES)
 option(BUILD_HAL_VIDEO_IMG_SEQ_UI "Build UI for image sequence server (requires Visualization SA)" NO)
 if(BUILD_HAL_VIDEO_IMG_SEQ)
-   if(BUILD_HAL_VIDEO_IMG_SEQ_UI)
-      # -DFEAT_VISUALIZATION is already defined by v11n.cmake, but we re-define it here
-      add_definitions(-DFEAT_VISUALIZATION) # Valid for this directory and below
-      include_directories(${VISUALIZATION_INCLUDE_DIRS})
-      link_directories(${VISUALIZATION_LIBRARY_DIRS})
-   else(BUILD_HAL_VIDEO_IMG_SEQ_UI)
-      remove_definitions(-DFEAT_VISUALIZATION)
-   endif(BUILD_HAL_VIDEO_IMG_SEQ_UI)
+   ENABLE_COGX_VISUALIZATION(${BUILD_HAL_VIDEO_IMG_SEQ_UI})
 
    add_cast_component(OpenCvImgSeqServer OpenCvImgSeqServer.cpp)
    link_cast_component(${CAST_COMPONENT_NAME} Video VideoServer VideoUtils)
