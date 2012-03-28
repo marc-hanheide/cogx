@@ -7,6 +7,7 @@
 #include <SpatialProperties.hpp>
 
 #include <Ice/Initialize.h>
+#include <Ice/LocalException.h>
 
 #include <fstream> 
 #include <boost/shared_array.hpp>
@@ -227,6 +228,9 @@ void PlacePropertySaver::stop()
 void PlacePropertySaver::runComponent()
 {
 
+  // If enabled, first load existing place properties from disk, then, if
+  // enabled, start saving properties continuously to disk.
+
   if (_doLoad)
   {
     loadPlaceProperties();
@@ -268,13 +272,11 @@ void PlacePropertySaver::runComponent()
 // ------------------------------------------------------
 void PlacePropertySaver::savePlaceProperties()
 {
-  // TODO: save stuff from categorical and dont forget about search result
-  // TODO: check out workingmemory display for XML backend
 
   ptime start_t(microsec_clock::local_time());
 
-  // Map of subarchitecture name to a vector of outputs of
-  // getWorkingMemoryEntries(...)
+  // Map of subarchitecture name to a vector of place properties (or other
+  // related WM entries like ObjectSearchResult).
   map<string, vector<Ice::ObjectPtr> > output;
   int count = 0;
   
@@ -397,7 +399,8 @@ void PlacePropertySaver::savePlaceProperties()
   
   
   // FIXME @demmeln 22.03.2012: Do we need to filter out inferred place
-  // properties? Apparently it does not hurt just save / load them anyway.
+  // properties? Apparently it does not hurt just save / load them anyway, but
+  // this has the potential to bit us in the future.
 
   
   Ice::OutputStreamPtr os = Ice::createOutputStream(getCommunicator());
@@ -405,12 +408,19 @@ void PlacePropertySaver::savePlaceProperties()
   os->write(output);
 
   vector<Ice::Byte> data;
-  os->writePendingObjects(); // @demmeln 22.03.2012: is this needed?
+  os->writePendingObjects(); // @demmeln 22.03.2012: is this needed? Ice
+                             // Documentation is not shedding light on this.
+                             // @demmeln 24.03.2012: I guess this is necessary
+                             // alter all. It seems this does something like
+                             // save objects that Handles point to. This is
+                             // related to loadPendingObjects().
   os->finished(data);
   
   ofstream fs(_saveFileName.c_str());
-  if(!fs) {
-    error("Could not open file '%d'.", _saveFileName.c_str());
+  if(!fs) 
+  {
+    error("Could not open file '%d' while saving place properties.",
+          _saveFileName.c_str());
     return;
   }
 
@@ -427,3 +437,79 @@ void PlacePropertySaver::savePlaceProperties()
   log("Done saving %d objects. Time taken: %s.", count, duration.c_str());
 
 }
+
+
+// ------------------------------------------------------
+void PlacePropertySaver::loadPlaceProperties()
+{
+  
+  debug("Waiting %dms before loading place properties", _waitBeforeLoading);
+  
+  sleepComponent(_waitBeforeLoading);
+
+  ptime start_t(microsec_clock::local_time());
+
+  debug("Loading place properties from file '%s'.", _loadFileName.c_str());
+
+  ifstream fs(_loadFileName.c_str());
+  if(!fs)
+  {
+    error("Could not open file '%d' while loading place properties.",
+          _loadFileName.c_str());
+    return;
+  }
+
+  vector<Ice::Byte> data((istreambuf_iterator<char>(fs)), 
+                         istreambuf_iterator<char>());
+
+  fs.close();
+
+  Ice::InputStreamPtr is = Ice::createInputStream(getCommunicator(), data);
+  typedef map<string, vector<Ice::ObjectPtr> > input_t;
+  input_t input;
+
+  try
+  {
+    is->read(input);
+    is->readPendingObjects();
+  }
+  catch (Ice::UnmarshalOutOfBoundsException &)
+  {
+    error("Error while parsing file '%s' for loading saved place properties.",
+          _loadFileName.c_str());
+    return;
+  }
+
+  int count = 0;
+  
+  BOOST_FOREACH(input_t::value_type value, input)
+  {
+    const string &subarch = value.first;
+    const vector<Ice::ObjectPtr> &objects = value.second;
+
+    debug("Loading %d objects into wm '%s'.", objects.size(), subarch.c_str());
+
+    count += objects.size();
+
+    BOOST_FOREACH(const Ice::ObjectPtr &o, objects)
+    {
+      if(_waitBetweenLoading > 0)
+        sleepComponent(_waitBetweenLoading);
+
+      debug("Adding loaded property of type '%s' to working memory.",
+            typeid(*o).name());
+      
+      // FIXME: do this with functionality provided by upstream CAST
+      addToWorkingMemoryDynamicType(newDataID(), subarch, o);
+    }
+  }
+
+
+  ptime end_t(microsec_clock::local_time());
+
+  string duration = to_simple_string(end_t - start_t);
+
+  log("Done loading %d objects. Time taken: %s.", count, duration.c_str());
+
+}
+
