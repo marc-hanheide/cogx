@@ -1,7 +1,6 @@
-include_directories(.)
+project(Vision.VirtualScene2D)
 
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
+include_directories(.)
 
 find_package(LibPlot) # for visualization
 set(HAS_LIBPLOT ${LIBPLOT_FOUND})
@@ -11,6 +10,8 @@ if(HAS_LIBPLOT)
 else(HAS_LIBPLOT)
    message("WARNING: libplot-dev not found. You should install it to see SVG graphics in Scene2D.")
 endif(HAS_LIBPLOT)
+
+ENABLE_COGX_VISUALIZATION(TRUE)
 
 # Set the sources.
 SET(SOURCES Scene2D.cpp)

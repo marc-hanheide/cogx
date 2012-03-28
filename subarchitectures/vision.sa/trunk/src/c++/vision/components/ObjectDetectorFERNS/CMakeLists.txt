@@ -1,12 +1,13 @@
+project(vision.ObjectDetectorFerns)
+
 include_directories(.)
 include_directories(ferns_demo-1.0)
 
 include_directories(
    ${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen
-   ${VISUALIZATION_INCLUDE_DIRS}
    )
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
+
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
 
 # Set the sources.
 SET(SOURCES ObjectDetectorFERNS.cpp
@@ -26,7 +27,6 @@ ferns_demo-1.0/planar_pattern_detector_builder.cc
 ferns_demo-1.0/planar_pattern_detector.cc
 ferns_demo-1.0/pyr_yape06.cc
 ferns_demo-1.0/template_matching_based_tracker.cc)
-
 
 add_cast_component(ObjectDetectorFERNS ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils ${VISUALIZATION_LIBRARIES})

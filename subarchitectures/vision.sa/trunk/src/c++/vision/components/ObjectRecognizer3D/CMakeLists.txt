@@ -1,6 +1,4 @@
-# needed to allow visualization to use IplImages 
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
+project(vision.ObjectRecognizer3D)
 
 FIND_PACKAGE( OpenCV REQUIRED )
 
@@ -17,6 +15,8 @@ include_directories(../ObjectTracker/Tracker/include)
 include_directories(${VISUALIZATION_INCLUDE_DIRS})
 include_directories(${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/hardware/laser/src/c++/autogen)
+
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
 
 add_subdirectory(matrix)
 #add_subdirectory(SiftGPU/linux)

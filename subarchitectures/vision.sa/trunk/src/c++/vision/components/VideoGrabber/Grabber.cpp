@@ -23,7 +23,9 @@ extern "C"
 namespace cogxgrabber
 {
 
+#ifdef FEAT_VISUALIZATION
 namespace cxd = cogx::display;
+#endif
 
 #define IDOBJ_GRABBER "Video.Grabber"
 #define IDOBJ_SETTINGS "Video.Grabber.Settings"
@@ -623,9 +625,9 @@ void CGrabber::destroy()
 {
 }
 
+#ifdef FEAT_VISUALIZATION
 void CGrabber::sendCachedImages()
 {
-#ifdef FEAT_VISUALIZATION
   bool bGrabbing = isGrabbing();
   long frameMillis = bGrabbing ? 1780 : 312;
   if (m_displayTimer.elapsed() < frameMillis) {
@@ -682,9 +684,8 @@ void CGrabber::sendCachedImages()
   for (auto pClient : clients){
     pClient->displayExtra(m_display);
   }
-#endif
-
 }
+#endif
 
 void CGrabber::receiveImages(const std::string& serverName, const std::vector<Video::Image>& _images)
 {
@@ -899,11 +900,15 @@ void CGrabber::CDrawingThread::run()
     int ticks = waitForTick(500);
     if (!ticks) continue;
 
+#ifdef FEAT_VISUALIZATION
     m_pGrabber->sendCachedImages();
+#endif
     if (tm.elapsed() > 1230 && (m_pGrabber->isGrabbing() || m_pGrabber->isSaving() || wasSaving)) {
       tm.restart();
       wasSaving = m_pGrabber->isSaving();
+#ifdef FEAT_VISUALIZATION
       m_pGrabber->m_display.showCurrentSettings();
+#endif
     }
   }
 }

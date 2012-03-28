@@ -824,12 +824,10 @@ void PlanePopOut::SendSOIs(vector< pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &soi
 
 void PlanePopOut::runComponent()
 {
-#ifdef FEAT_VISUALIZATION
-    SendOverlays();
-
+    castutils::CCastPaceMaker<PlanePopOut> paceMaker(*this, 1000/5, 1);
     castutils::CRunningRate realRate;
 
-    castutils::CCastPaceMaker<PlanePopOut> paceMaker(*this, 1000/5, 1);
+#ifdef FEAT_VISUALIZATION
 
     castutils::CMilliTimer tmSendPoints(true);
     tmSendPoints.setTimeout(500);
@@ -842,6 +840,8 @@ void PlanePopOut::runComponent()
 
     castutils::CMilliTimer tmSendStatus(true);
     tmSendStatus.setTimeout(3000);
+
+    SendOverlays();
 #endif
 
     try {

@@ -7,16 +7,15 @@ else(VISION_LIB_DIR)
    SET(HOMEST_PATH  "/usr/local/src/homest-1.3") # "path to Lourakis' homest v1.3"
 endif(VISION_LIB_DIR)
 
-
 include_directories(.)
 include_directories(./DShape3D)
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 INCLUDE_DIRECTORIES(${HOMEST_PATH})
 INCLUDE_DIRECTORIES(${LEVMAR_PATH})
 LINK_DIRECTORIES(${HOMEST_PATH})
 LINK_DIRECTORIES(${LEVMAR_PATH})
+
+ENABLE_COGX_VISUALIZATION(TRUE)
 
 add_cast_component(ShapeDescriptor3D ShapeDescriptor3D.cpp PlaneRANSAC.cpp PlanarPatch.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Stereo StereoClient)

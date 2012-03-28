@@ -1,12 +1,11 @@
-# needed to allow visualization to use IplImages 
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+project(vision.ObjectRecognizer3D3)
 
 FIND_PACKAGE( OpenCV REQUIRED )
 
 include_directories(.)
 include_directories(../..)
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
+
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
 
 add_cast_component(ObjectRecognizer3D3 ObjectRecognizer3D.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} VisionData Video VideoUtils ${VISUALIZATION_LIBRARIES})

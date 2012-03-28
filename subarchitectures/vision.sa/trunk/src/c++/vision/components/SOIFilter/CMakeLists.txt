@@ -15,9 +15,8 @@ if(1)
    set(ARM_TRACKING_LIBRARIES ManipulationExeData)
 endif()
 
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 find_package(LibPlot) # for visualization

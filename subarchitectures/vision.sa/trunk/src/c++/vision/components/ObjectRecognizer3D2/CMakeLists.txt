@@ -1,5 +1,4 @@
-# needed to allow visualization to use IplImages 
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+project(vision.ObjectRecognizer3D2)
 
 FIND_PACKAGE( OpenCV REQUIRED )
 
@@ -7,10 +6,10 @@ include_directories(.)
 include_directories(./ODetect3D)
 include_directories(./matrix)
 include_directories(./SiftGPU/src/SiftGPU)
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
 
 link_directories(${CUDA_INSTALLROOT}/lib)
+
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
 
 add_subdirectory(matrix)
 #add_subdirectory(SiftGPU/linux)
