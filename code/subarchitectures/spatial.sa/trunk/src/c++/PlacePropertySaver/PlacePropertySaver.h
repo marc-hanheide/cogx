@@ -1,12 +1,14 @@
 /**
- * Author: Nikolaus Demmel
- * Date:  23.03.2012
+ * Author: Nikolaus Demmel <nikolaus@nikolaus-demmel.de>
+ * Date:   23.03.2012
  **/
 
 #ifndef __SPATIAL_SA_PLACE_PROPERTY_SAVER_H__
 #define __SPATIAL_SA_PLACE_PROPERTY_SAVER_H__
 
 #include <cast/architecture/ManagedComponent.hpp>
+
+#include <castutils/CASTComponentOptionParserMixin.hpp>
 
 
 // FIXME: add something like this to cast utils instead of having it here
@@ -20,7 +22,7 @@ const std::string& dynamicTypeName(const IceInternal::Handle<T> object) {
   return object->ice_id();
 }
 
-}
+} // namespace cast
 
 
 
@@ -42,7 +44,9 @@ const std::string& dynamicTypeName(const IceInternal::Handle<T> object) {
  * result is a non-human-readable byte string. We might want to write a better
  * text based and human-readable output format that would aid debugging.
  */
-class PlacePropertySaver: public cast::ManagedComponent 
+class PlacePropertySaver:
+    public cast::ManagedComponent, 
+    public castutils::CASTComponentOptionParserMixin
 {
 public:
   
@@ -57,53 +61,6 @@ public:
   virtual void start();
 
   virtual void stop();
-
-private:
-  // TODO: These config parse helpers could be added to CASTComponent
-
-  /** Parse a string option.
-   *
-   * The default value is returned if the option was not passed.
-   */
-  std::string parseOption(
-      const std::string name, 
-      const std::string defaultValue,
-      const std::map<std::string,std::string> &config);
-
-  /** Parse a flag (i.e. boolean) option.
-   *
-   * Default value is 'false'. It is returned if the option was not passed. If
-   * the option was passed, but the value passed is maleformed (i.e. not "true"
-   * or "false"), print error and return default value.
-   */
-  bool parseFlagOption(
-      const std::string name, 
-      const std::map<std::string,std::string> &config);
-  
-  /** Parse an option and perform a lexical cast.
-   *
-   * The default value is returned if the option was not passed. If the option
-   * was passed, but the lexical cast throws an exception, print error and
-   * return default value.
-   */
-  template<class T>
-  T parseOptionLexicalCast(
-      const std::string name,
-      const T defaultValue,
-      const std::map<std::string,std::string> &config);
-
-  /** Parse a path option and resolve the path.
-   *
-   * If the option was not passed, the default value is resolved and
-   * returned. If in that case the default value can not be resolved, print an
-   * error and return an empty string. If the option was passed, but the value
-   * could not be resolved as a path, print error and return default value, else
-   * return the resolved path.
-   */ 
-  std::string parsePathOption(
-      const std::string name, 
-      const std::string defaultValue,
-      const std::map<std::string,std::string> &config);
 
 private:
   // FIXME: this should not be here, but in WorkingMemoryWriterComponent

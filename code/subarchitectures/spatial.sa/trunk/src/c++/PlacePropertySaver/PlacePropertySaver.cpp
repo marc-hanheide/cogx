@@ -1,6 +1,6 @@
 /**
- * Author: Nikolaus Demmel
- * Date:  23.03.2012
+ * Author: Nikolaus Demmel <nikolaus@nikolaus-demmel.de>
+ * Date:   23.03.2012
  **/
 
 #include "PlacePropertySaver.h"
@@ -10,8 +10,6 @@
 #include <Ice/LocalException.h>
 
 #include <fstream> 
-#include <boost/shared_array.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -38,7 +36,8 @@ const string PlacePropertySaver::cWorkingMemoryID("spatial.sa");
 
 
 // ------------------------------------------------------
-PlacePropertySaver::PlacePropertySaver()
+PlacePropertySaver::PlacePropertySaver():
+    castutils::CASTComponentOptionParserMixin(this)
 {
   debug("Created.");
 }
@@ -52,137 +51,39 @@ PlacePropertySaver::~PlacePropertySaver()
 
 
 // ------------------------------------------------------
-string PlacePropertySaver::parseOption(
-    const string name, 
-    const string defaultValue,
-    const map<string,string> &config)
-{
-  map<string, string>::const_iterator it = config.find(name);
-
-  if (it != config.end())
-    return it->second;
-
-  return defaultValue; // default if not given
-}
-
-
-// ------------------------------------------------------
-bool PlacePropertySaver::parseFlagOption(
-    const string name, 
-    const map<string,string> &config)
-{
-  map<string, string>::const_iterator it = config.find(name);
-
-  if (it != config.end()) 
-  {
-    if (it->second == "true")
-    {
-      return true;
-    }
-    else if (it->second == "false")
-    {
-      return false;
-    }
-    else
-    {
-      error("Invalid value '%s' for flag option '%s'. "
-            "Should be one of {'true', 'false'}", 
-            it->second.c_str(), name.c_str());
-
-      return false; // default if malformed
-    }
-  }
-
-  return false; // default if not given
-}
-
-
-// ------------------------------------------------------
-template<class T>
-T PlacePropertySaver::parseOptionLexicalCast(
-    const std::string name,
-    const T defaultValue,
-    const std::map<std::string,std::string> &config)
-{
-  map<string, string>::const_iterator it = config.find(name);
-  
-  if (it != config.end())
-  {
-    try
-    {
-      return boost::lexical_cast<T>(it->second);
-    }
-    catch(boost::bad_lexical_cast &)
-    {
-      error("Value '%s' of option '%s' is not of type '%s'", 
-            it->second.c_str(), name.c_str(), typeid(T).name());
-
-      return defaultValue; // default if malformed
-    }
-  }
-
-  return defaultValue; // default if not given
-}
-
-
-// ------------------------------------------------------
-string PlacePropertySaver::parsePathOption(
-    const string name, 
-    const string defaultValue,
-    const map<string,string> &config)
-{
-  string tmp = parseOption("--save-file-name", defaultValue, config);
-  shared_array<char> path(realpath(tmp.c_str(), 0));
-  if (path)
-  {
-    return path.get();
-  }
-  else
-  {
-    error("Value '%s' of option '%s' could not be resolved as a valid path",
-          tmp.c_str(), name.c_str());
-    return "";
-  }
-}
-
-
-// ------------------------------------------------------
 void PlacePropertySaver::configure(const map<string,string> &config)
 {
+  
+  setConfig(config);
 
-  _doSave = parseFlagOption("--save", config);
+  _doSave = parseOptionFlag("--save");
 
   if (_doSave)
   {
     // parse saving related options if we actually want to save
 
-    _saveFileName =
-        parsePathOption("--save-file-name", "place_properties.bin", config);
+    _saveFileName = parseOptionPath("--save-file-name", "place_properties.bin");
 
     _saveInterval = 
-        parseOptionLexicalCast<unsigned int>("--save-interval", 1000, config);
+        parseOptionLexicalCast<unsigned int>("--save-interval", 1000);
 
-    _saveContinuously = 
-        parseFlagOption("--save-continuously", config);
+    _saveContinuously = parseOptionFlag("--save-continuously");
   }
 
 
-  _doLoad = parseFlagOption("--load", config);
+  _doLoad = parseOptionFlag("--load");
 
   if (_doLoad)
   {
     // parse loading related options if we actually want to load
 
-    _loadFileName = 
-        parsePathOption("--load-file-name" , "place_properties.bin", config);
+    _loadFileName = parseOptionPath("--load-file-name", "place_properties.bin");
 
     _waitBeforeLoading =
-        parseOptionLexicalCast<unsigned int>(
-            "--wait-before-loading", 3000, config);
+        parseOptionLexicalCast<unsigned int>("--wait-before-loading", 3000);
     
     _waitBetweenLoading =
-        parseOptionLexicalCast<unsigned int>(
-            "--wait-between-loading", 1, config);
+        parseOptionLexicalCast<unsigned int>("--wait-between-loading", 1);
   }
 
   log("Configuration:");
