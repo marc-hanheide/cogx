@@ -256,7 +256,7 @@ void ObjectRecognizerManager::worldStateChanged(const cast::cdl::WorkingMemoryCh
 					if (place.placeId == curPlaceId)
 					{
 						_curRoomId = room.roomId;
-						break;
+						return;
 					}
 				}
 			} // for
