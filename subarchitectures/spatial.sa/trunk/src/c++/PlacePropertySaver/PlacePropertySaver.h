@@ -177,7 +177,7 @@ private:
   void savePlaceProperties();
 
   /** Read all place properties from disk and put them into working memory. */
-  void loadPlaceProperties() {} ;
+  void loadPlaceProperties();
 
 private:
   
