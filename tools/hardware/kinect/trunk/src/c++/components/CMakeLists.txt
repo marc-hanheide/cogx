@@ -13,12 +13,9 @@ if (BUILD_KINECT_USER_DETECTOR)
    add_definitions(-DKINECT_USER_DETECTOR)
 endif (BUILD_KINECT_USER_DETECTOR)
 
-include_directories(
-   .
-   ${VISUALIZATION_INCLUDE_DIRS}
-   )
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+include_directories(.)
+
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
 
   SET(HEADERS
      Capture.h
