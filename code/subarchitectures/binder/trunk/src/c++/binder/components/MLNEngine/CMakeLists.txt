@@ -5,7 +5,6 @@ include_directories(${COGX_ROOT}/subarchitectures/binder.sa/src/c++/binder/autog
 include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
 include_directories(${COGX_ROOT}/tools/math/src/c++/autogen)
 include_directories(${OPENCV_INCLUDE_DIRS})
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 SET(ALCHEMY_ROOT ${COGX_ROOT}/subarchitectures/binder.sa/src/c++/alchemy)
 SET(ALCHEMY_SRC ${ALCHEMY_ROOT}/src)
@@ -26,8 +25,8 @@ include_directories(${RRF})
 include_directories(${UTIL})
 include_directories(${LEARNWTS})
 
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
-add_definitions(-DFEAT_VISUALIZATION_OPENCV)
+ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
+
 #link_directories(${ALCHEMY_ROOT}/bin/obj)
 
 # Set the sources.
