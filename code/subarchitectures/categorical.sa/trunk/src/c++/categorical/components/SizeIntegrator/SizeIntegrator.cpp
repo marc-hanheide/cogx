@@ -14,6 +14,7 @@
 // Boost
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/thread/pthread/pthread_mutex_scoped_lock.hpp>
 // Std
 #include <exception>
 #include <math.h>
@@ -23,6 +24,8 @@ using namespace cast;
 using namespace categorical;
 using boost::bad_lexical_cast;
 using boost::lexical_cast;
+using boost::pthread::pthread_mutex_scoped_lock;
+typedef pthread_mutex_scoped_lock scoped_lock;
 using namespace boost;
 
 // ------------------------------------------------------
@@ -120,6 +123,11 @@ void CategoricalSizeIntegrator::start()
 			new MemberFunctionChangeReceiver<CategoricalSizeIntegrator>(this,
 					&CategoricalSizeIntegrator::newOdometry));
 
+	addChangeFilter(
+      createLocalTypeFilter<SpatialProperties::RoomSizePlaceProperty>(cdl::ADD),
+      new MemberFunctionChangeReceiver<CategoricalSizeIntegrator>(
+          this, &CategoricalSizeIntegrator::newSizePlaceProperty));
+
 	_nodeCache = new OutputsCache(_posBinSize, _headBinSize);
 
 
@@ -196,6 +204,51 @@ void CategoricalSizeIntegrator::newLaserResults(const cast::cdl::WorkingMemoryCh
 	// Signal
 	pthread_cond_signal(&_dataSignalCond);
 	pthread_mutex_unlock(&_dataSignalMutex);
+}
+
+
+// ------------------------------------------------------
+void CategoricalSizeIntegrator::newSizePlaceProperty(
+    const cast::cdl::WorkingMemoryChange &change)
+{
+  // When a new size property is added, it was either by us, or by the place
+  // property saver that loads saved properties at startup. If we have a
+  // property for the same place id already, ours takes priority, since we have
+  // "more recent" info -> remove the added place property. If we have no
+  // property for that place id, make our internal state aware of it, such that
+  // we overwrite it once we get to the place.
+
+  typedef SpatialProperties::RoomSizePlaceProperty prop_t;
+  typedef SpatialProperties::RoomSizePlacePropertyPtr prop_ptr_t;
+
+	shared_ptr<CASTData<prop_t> > resultsCast = 
+      getWorkingMemoryEntry<prop_t>(change.address);
+	if (!resultsCast)
+	{
+		error("Cannot get place property from WM!");
+		return;
+	}
+  
+	const prop_ptr_t prop = resultsCast->getData();
+
+  {
+    scoped_lock lock(&_intrDataMutex);
+    
+    std::map<int, std::string>::iterator it;
+    it = _placeSizePropertyIds.find(prop->placeId);
+
+    if (it == _placeSizePropertyIds.end())
+    {
+      _placeSizePropertyIds[prop->placeId] = change.address.id;
+    }
+    else
+    {
+      if (change.address.id != it->second)
+      {
+        deleteFromWorkingMemory(change.address);
+      }
+    }
+  }
 }
 
 

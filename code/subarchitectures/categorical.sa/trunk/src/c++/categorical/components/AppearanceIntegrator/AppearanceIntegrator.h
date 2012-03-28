@@ -46,6 +46,7 @@ private:
 
 	void newVisualResults(const cast::cdl::WorkingMemoryChange & change);
 	void newOdometry(const cast::cdl::WorkingMemoryChange & change);
+	void newAppearancePlaceProperty(const cast::cdl::WorkingMemoryChange &change);
 
 	bool readyToAccumulate();
 
