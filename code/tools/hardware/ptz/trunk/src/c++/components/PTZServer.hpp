@@ -74,6 +74,7 @@ namespace ptz {
     // The motion tollerance is specified in rad/s to compensate for when the
     // component is running at a lower rate because of the system overload.
     double mMotionTollerance; // [rad/s]
+    PTZPose mInitialPose;
 
   public:
     using CASTComponent::sleepComponent;
@@ -81,7 +82,8 @@ namespace ptz {
 #ifdef FEAT_VISUALIZATION
   private:
     // bForce: set to true when the update was requested by the dialog
-    void sendPtuStateToDialog(bool bForce = false);
+    void sendPtuPositionToDialog(bool bForce = false);
+    void sendPtuStateToDialog(bool bMoving);
 
   friend class CDisplayClient;
   class CDisplayClient: public cogx::display::CDisplayClient
