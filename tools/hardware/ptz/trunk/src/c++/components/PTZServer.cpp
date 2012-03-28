@@ -30,6 +30,9 @@ namespace ptz {
      mbMoving = false;
      mbPoseWasSet = false;
      mMotionTollerance = 1e-4;
+     mInitialPose.pan = 0;
+     mInitialPose.tilt = 0;
+     mInitialPose.zoom = 0;
   }
 
   void PTZServer::configure(const std::map<std::string,std::string> & _config)  {
@@ -45,6 +48,22 @@ namespace ptz {
       if (mMotionTollerance > 0.1) mMotionTollerance = 0.1;
     }
     log("Motion Tollerance: %.9f", mMotionTollerance);
+
+    if((it = _config.find("--move_ptz_deg")) != _config.end())
+    {
+       std::istringstream ss(it->second);
+       ss.exceptions(std::ios::eofbit | std::ios::failbit);
+       try {
+          ss >> mInitialPose.pan;
+          mInitialPose.pan *= M_PI / 180;
+          ss >> mInitialPose.tilt;
+          mInitialPose.tilt *= M_PI / 180;
+          ss >> mInitialPose.zoom;
+          mInitialPose.zoom *= M_PI / 180;
+       }
+       catch(...) {
+       }
+    }
 
 #ifdef FEAT_VISUALIZATION
     display().configureDisplayClient(_config);
@@ -72,22 +91,29 @@ namespace ptz {
   // TODO: check the actual frequency of the loop; use rad/sec for motion tollerance (instead of rad)
   void PTZServer::runComponent()
   {
-    const int intervalMs = 100;  // time between checks
+    const int intervalMs = 100;  // desired time between checks
     const int waitStartMove = 2; // number of time intervals to wait before start-move is accepted
     const int waitEndMove = 3;   // number of time intervals to wait before end-move is accepted
     double epsmove = mMotionTollerance * intervalMs / 1000;
-    CCastPaceMaker<PTZServer> pace(*this, intervalMs, 1);
+    CCastPaceMaker<PTZServer> pace(*this, intervalMs, 2);
     CMilliTimer tmInfo;
 
-    log("eps: %.8f", epsmove);
-#ifdef FEAT_VISUALIZATION
-    sendPtuStateToDialog();
-#endif
     PTZPose pose = getPose().pose;
     PTZPose oldpose = getPose().pose;
     int changeWait = waitStartMove;
     mbPoseWasSet = false;
     mbMoving = false;
+#ifdef FEAT_VISUALIZATION
+    sendPtuPositionToDialog();
+    sendPtuStateToDialog(mbMoving);
+#endif
+    if (mInitialPose.pan != 0 || mInitialPose.tilt != 0 || mInitialPose.zoom != 0) {
+       log("Initial Move: (%.9f, %9f, %9f)", mInitialPose.pan, mInitialPose.tilt, mInitialPose.zoom);
+       setPose(mInitialPose);
+       mbPoseWasSet = true;
+       mbMoving = true;
+    }
+
     while (isRunning()) {
       pace.sync();
       epsmove = mMotionTollerance / pace.getTotalRate();
@@ -97,6 +123,9 @@ namespace ptz {
         mbMoving = true;
         changeWait = waitEndMove;
         log("Start of move (setPose).");
+#ifdef FEAT_VISUALIZATION
+        sendPtuStateToDialog(mbMoving);
+#endif
       }
 
       PTZPose pose = getPose().pose;
@@ -131,7 +160,8 @@ namespace ptz {
             changeWait = waitStartMove;
             log("End of move.");
 #ifdef FEAT_VISUALIZATION
-            sendPtuStateToDialog();
+            sendPtuPositionToDialog();
+            sendPtuStateToDialog(mbMoving);
 #endif
           }
         }
@@ -146,6 +176,9 @@ namespace ptz {
             mbMoving = true;
             changeWait = waitEndMove;
             log("Start of move.");
+#ifdef FEAT_VISUALIZATION
+            sendPtuStateToDialog(mbMoving);
+#endif
           }
         }
         else {
@@ -158,7 +191,17 @@ namespace ptz {
 
 #ifdef FEAT_VISUALIZATION
 
-  void PTZServer::sendPtuStateToDialog(bool bForce)
+  void PTZServer::sendPtuStateToDialog(bool bMoving)
+  {
+    if (bMoving) {
+      display().execInDialog(display().mDialogId, "ptuctrl.setPtzIsMoving(true);");
+    }
+    else {
+      display().execInDialog(display().mDialogId, "ptuctrl.setPtzIsMoving(false);");
+    }
+  }
+
+  void PTZServer::sendPtuPositionToDialog(bool bForce)
   {
     //log("PtuCtrl: sendStateToDialog");
     PTZReading ptup = getPose();
@@ -203,9 +246,10 @@ namespace ptz {
     if (dialogId == mDialogId) {
       //println(" *** handleDialogCommand *** " + command);
       if (command == "sendStateToDialog")
-        mpPtzServer->sendPtuStateToDialog(/*force=*/ true);
+        mpPtzServer->sendPtuPositionToDialog(/*force=*/ true);
     }
   }
 
 #endif
 }
+// vim: set fileencoding=utf-8 sw=2 sts=4 ts=8 et :vim

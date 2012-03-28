@@ -9,10 +9,23 @@ Function.prototype.bind = function() {
    }
 }
 
+function dump(name, object)
+{
+   var output = '<h3>Dump of ' + name + '</h3>';
+   output += '<ul>'
+   for (property in object) {
+      output += '<li>' + property + ': ' + object[property]+';';
+   }
+   output += '</ul>'
+   dialogOwner.setHtml('@dump', name, output);
+}
 
 function PtuController(ui)
 {
    this.ui = ui;
+   //dump("PtuController", this);
+   //dump("PtuController.ui", this.ui);
+   //dump("PtuController.ui.wbts", this.ui.wbts);
 
    with (this.ui.wctrls) {
       sliderPan.valueChanged.connect(spinPan, spinPan.setValue);
@@ -25,17 +38,18 @@ function PtuController(ui)
       spinZoom['valueChanged(double)'].connect(sliderZoom, sliderZoom.setValue);
    }
 
-   with (this.ui) {
+   with (this.ui.wbts) {
       btSetPosition.clicked.connect(this, this.onSetPosition_clicked);
       btGetPosition.clicked.connect(this, this.onGetPosition_clicked);
    }
+
 }
 
 PtuController.prototype.onSetPosition_clicked = function()
 {
    with (this.ui.wctrls) {
       dialogOwner.setValue("PTZ", [ spinPan.value, spinTilt.value, spinZoom.value ]);
-      //this.ui.ckBlockUpdates.checked = false;
+      //this.ui.wbts.ckBlockUpdates.checked = false;
    }
 }
 
@@ -48,9 +62,20 @@ PtuController.prototype.onGetPosition_clicked = function()
 
 PtuController.prototype.setPtzPosition = function(fPan, fTilt, fZoom, bForce)
 {
-   if (bForce || ! this.ui.ckBlockUpdates.checked) {
+   if (bForce || ! this.ui.wbts.ckBlockUpdates.checked) {
       this.ui.wctrls.spinPan.value  = fPan;
       this.ui.wctrls.spinTilt.value = fTilt;
       this.ui.wctrls.spinZoom.value = fZoom;
    }
 }
+
+PtuController.prototype.setPtzIsMoving = function(bMoving)
+{
+   if (bMoving) {
+      this.ui.wctrls.labStatus.setText("Moving");
+   }
+   else {
+      this.ui.wctrls.labStatus.setText("Still");
+   }
+}
+
