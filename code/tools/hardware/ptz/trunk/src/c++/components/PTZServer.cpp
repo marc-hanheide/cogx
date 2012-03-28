@@ -29,7 +29,7 @@ namespace ptz {
   {
      mbMoving = false;
      mbPoseWasSet = false;
-     mMotionTollerance = 1e-4;
+     mMotionTolerance = 1e-4;
      mInitialPose.pan = 0;
      mInitialPose.tilt = 0;
      mInitialPose.zoom = 0;
@@ -40,14 +40,14 @@ namespace ptz {
 
     // default: 1e-4
     // for gazebo simulation: set to at least 2e-3
-    if((it = _config.find("--motion_tollerance")) != _config.end())
+    if((it = _config.find("--motion_tolerance")) != _config.end())
     {
       std::istringstream str(it->second);
-      str >> mMotionTollerance;
-      if (mMotionTollerance < 1e-9) mMotionTollerance = 1e-9;
-      if (mMotionTollerance > 0.1) mMotionTollerance = 0.1;
+      str >> mMotionTolerance;
+      if (mMotionTolerance < 1e-9) mMotionTolerance = 1e-9;
+      if (mMotionTolerance > 0.1) mMotionTolerance = 0.1;
     }
-    log("Motion Tollerance: %.9f", mMotionTollerance);
+    log("Motion Tolerance: %.9f", mMotionTolerance);
 
     if((it = _config.find("--move_ptz_deg")) != _config.end())
     {
@@ -88,13 +88,13 @@ namespace ptz {
 #endif
   }
 
-  // TODO: check the actual frequency of the loop; use rad/sec for motion tollerance (instead of rad)
+  // TODO: check the actual frequency of the loop; use rad/sec for motion tolerance (instead of rad)
   void PTZServer::runComponent()
   {
     const int intervalMs = 100;  // desired time between checks
     const int waitStartMove = 2; // number of time intervals to wait before start-move is accepted
     const int waitEndMove = 3;   // number of time intervals to wait before end-move is accepted
-    double epsmove = mMotionTollerance * intervalMs / 1000;
+    double epsmove = mMotionTolerance * intervalMs / 1000;
     CCastPaceMaker<PTZServer> pace(*this, intervalMs, 2);
     CMilliTimer tmInfo;
 
@@ -116,7 +116,7 @@ namespace ptz {
 
     while (isRunning()) {
       pace.sync();
-      epsmove = mMotionTollerance / pace.getTotalRate();
+      epsmove = mMotionTolerance / pace.getTotalRate();
 
       if (mbPoseWasSet) {
         mbPoseWasSet = false;
@@ -137,8 +137,8 @@ namespace ptz {
         ss.precision(6);
         ss << "<h3>PTZ Server</h3>"
           << "Running rate: " << pace.getTotalRate() << "hz<br>"
-          << "Motion tollerance: " << mMotionTollerance << "rad/s<br>"
-          << "Actual tollerance: " << epsmove << "rad";
+          << "Motion tolerance: " << mMotionTolerance << "rad/s<br>"
+          << "Actual tolerance: " << epsmove << "rad";
         display().setHtml("INFO", "PTZ.Server" + getComponentID(), ss.str());
 #else
         log("rate: %.3f, delta: %.8f, eps: %.8f", pace.getTotalRate(), delta, epsmove);

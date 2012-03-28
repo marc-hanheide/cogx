@@ -71,9 +71,9 @@ namespace ptz {
   private:
     bool mbPoseWasSet;
     bool mbMoving;
-    // The motion tollerance is specified in rad/s to compensate for when the
+    // The motion tolerance is specified in rad/s to compensate for when the
     // component is running at a lower rate because of the system overload.
-    double mMotionTollerance; // [rad/s]
+    double mMotionTolerance; // [rad/s]
     PTZPose mInitialPose;
 
   public:
