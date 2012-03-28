@@ -215,8 +215,10 @@ while [ $TEST_COMPLETE -eq 0 ] && [ $PEEKABOT_CRASH_COUNT -ge 0 ] && [ $PEEKABOT
 	doTest
 done
 
-# move peekabot crash logs to enable archiving, alternatively add peekabot_crash_logs/* to archive list in jenkins configuration
-mv peekabot_crash_logs/* logs/
+if [ $PEEKABOT_CRASH_COUNT -gt 0 ]; then
+	# move peekabot crash logs to enable archiving, alternatively add peekabot_crash_logs/* to archive list in jenkins configuration
+	mv peekabot_crash_logs/* logs/
+fi
 
 exit $RES
 
