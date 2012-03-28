@@ -43,6 +43,53 @@ public:
   virtual void stop();
 
 private:
+  // TODO: These config parse helpers could be added to CASTComponent
+
+  /** Parse a string option.
+   *
+   * The default value is returned if the option was not passed.
+   */
+  std::string parseOption(
+      const std::string name, 
+      const std::string defaultValue,
+      const std::map<std::string,std::string> &config);
+
+  /** Parse a flag (i.e. boolean) option.
+   *
+   * Default value is 'false'. It is returned if the option was not passed. If
+   * the option was passed, but the value passed is maleformed (i.e. not "true"
+   * or "false"), print error and return default value.
+   */
+  bool parseFlagOption(
+      const std::string name, 
+      const std::map<std::string,std::string> &config);
+  
+  /** Parse an option and perform a lexical cast.
+   *
+   * The default value is returned if the option was not passed. If the option
+   * was passed, but the lexical cast throws an exception, print error and
+   * return default value.
+   */
+  template<class T>
+  T parseOptionLexicalCast(
+      const std::string name,
+      const T defaultValue,
+      const std::map<std::string,std::string> &config);
+
+  /** Parse a path option and resolve the path.
+   *
+   * If the option was not passed, the default value is resolved and
+   * returned. If in that case the default value can not be resolved, print an
+   * error and return an empty string. If the option was passed, but the value
+   * could not be resolved as a path, print error and return default value, else
+   * return the resolved path.
+   */ 
+  std::string parsePathOption(
+      const std::string name, 
+      const std::string defaultValue,
+      const std::map<std::string,std::string> &config);
+
+private:
 
   /** Read all place properties from working memory and save them to disk. */
   void savePlaceProperties();
@@ -60,22 +107,34 @@ private:
   /** Flags saying if we want to save at all. */
   bool _doSave;
 
-  /** Flags saying if we want to load at all. */
-  bool _doLoad;
-
   /** Filename where properties are serialized to. */
   std::string _saveFileName;
 
-  /** Filename where properties are loaded from. Can be the same as savefile. */
-  std::string _loadFileName;
-
   /** Interval between saving all place properties in milliseconds. */
-  unsigned long _saveInterval;
+  unsigned int _saveInterval;
 
   /** If false data is only saved once at the end, else it is also saved all the
    * time. */
   bool _saveContinuously;
-  
+
+  /** Flags saying if we want to load at all. */
+  bool _doLoad;
+
+  /** Filename where properties are loaded from. Can be the same as savefile. */
+  std::string _loadFileName;
+
+  /** Time to wait before starting to load properties. In milliseconds.
+   *
+   * This can be used to make sure starting all components has setteled down.
+   */
+  unsigned int _waitBeforeLoading;
+
+  /** Time to wait adding loaded properties to working memory. In milliseconds.
+   *
+   * This can be used to make sure other components are not overwhelmed by
+   * adding too many properties too fast.
+   */  
+  unsigned int _waitBetweenLoading;
 };
 
 #endif

@@ -9,6 +9,7 @@
 #include <Ice/Initialize.h>
 
 #include <fstream> 
+#include <boost/shared_array.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -50,78 +51,148 @@ PlacePropertySaver::~PlacePropertySaver()
 
 
 // ------------------------------------------------------
-void PlacePropertySaver::configure(const map<string,string> &config)
+string PlacePropertySaver::parseOption(
+    const string name, 
+    const string defaultValue,
+    const map<string,string> &config)
 {
-  map<string, string>::const_iterator it;
+  map<string, string>::const_iterator it = config.find(name);
 
-  _saveFileName = "place_properties.bin";
-  it = config.find("--save-file-name");
   if (it != config.end())
-    _saveFileName = it->second;
+    return it->second;
 
-  _loadFileName = "place_properties.bin";
-  it = config.find("--load-file-name");
-  if (it != config.end())
-    _loadFileName = it->second;
+  return defaultValue; // default if not given
+}
 
-  _saveInterval = 1000;
-  it = config.find("--save-interval");
+
+// ------------------------------------------------------
+bool PlacePropertySaver::parseFlagOption(
+    const string name, 
+    const map<string,string> &config)
+{
+  map<string, string>::const_iterator it = config.find(name);
+
+  if (it != config.end()) 
+  {
+    if (it->second == "true")
+    {
+      return true;
+    }
+    else if (it->second == "false")
+    {
+      return false;
+    }
+    else
+    {
+      error("Invalid value '%s' for flag option '%s'. "
+            "Should be one of {'true', 'false'}", 
+            it->second.c_str(), name.c_str());
+
+      return false; // default if malformed
+    }
+  }
+
+  return false; // default if not given
+}
+
+
+// ------------------------------------------------------
+template<class T>
+T PlacePropertySaver::parseOptionLexicalCast(
+    const std::string name,
+    const T defaultValue,
+    const std::map<std::string,std::string> &config)
+{
+  map<string, string>::const_iterator it = config.find(name);
+  
   if (it != config.end())
   {
     try
     {
-      _saveInterval = boost::lexical_cast<unsigned long>(it->second);
+      return boost::lexical_cast<T>(it->second);
     }
     catch(boost::bad_lexical_cast &)
     {
-      error("Value '%s' of argument '--save-interval' is "
-            "not of type 'unsigned int'", it->second.c_str());
+      error("Value '%s' of option '%s' is not of type '%s'", 
+            it->second.c_str(), name.c_str(), typeid(T).name());
+
+      return defaultValue; // default if malformed
     }
   }
 
-  _saveContinuously = false;
-  it = config.find("--save-continuously");
-  if (it != config.end()) {
-    if (it->second == "true")
-      _saveContinuously = true;
-    else if (it->second == "false")
-      _saveContinuously = false;
-    else
-      error("Invalid value '%s' for argument '--save-coninuously'. "
-            "Should be one of {'true', 'false'}", it->second.c_str());
+  return defaultValue; // default if not given
+}
+
+
+// ------------------------------------------------------
+string PlacePropertySaver::parsePathOption(
+    const string name, 
+    const string defaultValue,
+    const map<string,string> &config)
+{
+  string tmp = parseOption("--save-file-name", defaultValue, config);
+  shared_array<char> path(realpath(tmp.c_str(), 0));
+  if (path)
+  {
+    return path.get();
+  }
+  else
+  {
+    error("Value '%s' of option '%s' could not be resolved as a valid path",
+          tmp.c_str(), name.c_str());
+    return "";
+  }
+}
+
+
+// ------------------------------------------------------
+void PlacePropertySaver::configure(const map<string,string> &config)
+{
+
+  _doSave = parseFlagOption("--save", config);
+
+  if (_doSave)
+  {
+    // parse saving related options if we actually want to save
+
+    _saveFileName =
+        parsePathOption("--save-file-name", "place_properties.bin", config);
+
+    _saveInterval = 
+        parseOptionLexicalCast<unsigned int>("--save-interval", 1000, config);
+
+    _saveContinuously = 
+        parseFlagOption("--save-continuously", config);
   }
 
-  _doSave = false;
-  it = config.find("--save");
-  if (it != config.end()) {
-    if (it->second == "true")
-      _doSave = true;
-    else if (it->second == "false")
-      _doSave = false;
-    else
-      error("Invalid value '%s' for argument '--save'. "
-            "Should be one of {'true', 'false'}", it->second.c_str());
-  }
 
-  _doLoad = false;
-  it = config.find("--load");
-  if (it != config.end()) {
-    if (it->second == "true")
-      _doLoad = true;
-    else if (it->second == "false")
-      _doLoad = false;
-    else
-      error("Invalid value '%s' for argument '--load'. "
-            "Should be one of {'true', 'false'}", it->second.c_str());
+  _doLoad = parseFlagOption("--load", config);
+
+  if (_doLoad)
+  {
+    // parse loading related options if we actually want to load
+
+    _loadFileName = 
+        parsePathOption("--load-file-name" , "place_properties.bin", config);
+
+    _waitBeforeLoading =
+        parseOptionLexicalCast<unsigned int>(
+            "--wait-before-loading", 3000, config);
+    
+    _waitBetweenLoading =
+        parseOptionLexicalCast<unsigned int>(
+            "--wait-between-loading", 1, config);
   }
 
   log("Configuration:");
   log("-> saving: %s", (_doSave ? "true" : "false"));
-  log("-> loading: %s",(_doLoad ? "true" : "false"));
   log("-> save file name: %s", _saveFileName.c_str());
-  log("-> load file name: %s", _loadFileName.c_str());
   log("-> save interval: %dms", _saveInterval);
   log("-> continuous saving: %s", (_saveContinuously ? "true" : "false"));
+  log("-> loading: %s", (_doLoad ? "true" : "false"));
+  log("-> load file name: %s", _loadFileName.c_str());
+  log("-> wait before loading: %dms", _waitBeforeLoading);
+  log("-> wait between loading: %dms", _waitBetweenLoading);
 
   debug("Configured.");
   
