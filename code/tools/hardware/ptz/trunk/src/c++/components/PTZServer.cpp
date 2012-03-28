@@ -93,15 +93,16 @@ namespace ptz {
   void PTZServer::runComponent()
   {
     const int intervalMs = 100;  // desired time between checks
-    const int waitStartMove = 2; // number of time intervals to wait before start-move is accepted
-    const int waitEndMove = 3;   // number of time intervals to wait before end-move is accepted
+    const int waitStartMove = 2 * intervalMs; // number of time intervals to wait before start-move is accepted
+    const int waitEndMove = 4 * intervalMs;   // number of time intervals to wait before end-move is accepted
     double epsmove = mMotionTolerance * intervalMs / 1000;
     CCastPaceMaker<PTZServer> pace(*this, intervalMs, 2);
     CMilliTimer tmInfo;
+    CMilliTimer tmChangeWait;
+    tmChangeWait.setTimeout(waitEndMove, true);
 
     PTZPose pose = getPose().pose;
     PTZPose oldpose = getPose().pose;
-    int changeWait = waitStartMove;
     mbPoseWasSet = false;
     mbMoving = false;
 #ifdef FEAT_VISUALIZATION
@@ -122,7 +123,7 @@ namespace ptz {
       if (mbPoseWasSet) {
         mbPoseWasSet = false;
         mbMoving = true;
-        changeWait = waitEndMove;
+        tmChangeWait.setTimeout(waitEndMove, true);
         log("Start of move (setPose).");
 #ifdef FEAT_VISUALIZATION
         sendPtuStateToDialog(mbMoving);
@@ -152,18 +153,18 @@ namespace ptz {
         if (delta >= epsmove) {
           // still moving
           oldpose = pose;
-          changeWait = waitEndMove;
+          tmChangeWait.setTimeout(waitEndMove, true);
         }
         else {
-          --changeWait;
-          if (changeWait <= 0) {
+          // looks like it stopped.
+          if (tmChangeWait.isTimeoutReached()) {
             mbMoving = false;
-            changeWait = waitStartMove;
-            log("End of move.");
 #ifdef FEAT_VISUALIZATION
             sendPtuPositionToDialog();
             sendPtuStateToDialog(mbMoving);
 #endif
+            tmChangeWait.setTimeout(waitStartMove, true);
+            log("End of move.");
           }
         }
       }
@@ -171,20 +172,19 @@ namespace ptz {
         // detect start-of-move
         if (delta >= epsmove) {
           // started moving
-          --changeWait;
-          if (changeWait <= 0) {
+          if (tmChangeWait.isTimeoutReached()) {
             oldpose = pose;
             mbMoving = true;
-            changeWait = waitEndMove;
-            log("Start of move.");
 #ifdef FEAT_VISUALIZATION
             sendPtuStateToDialog(mbMoving);
 #endif
+            tmChangeWait.setTimeout(waitEndMove, true);
+            log("Start of move.");
           }
         }
         else {
           // still near the same position
-          changeWait = waitStartMove;
+          tmChangeWait.setTimeout(waitStartMove, true);
         }
       }
     }
