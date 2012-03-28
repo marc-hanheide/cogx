@@ -164,7 +164,7 @@ IFOPTALL(%(hardware_options), ptz)
     IFEQ(%(hardware),real)
         COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
     ELSE
-        COMPONENT CPP ptz.server PlayerActServer --ptz-device 0 #--player-host %(host:PlayerHost)
+        COMPONENT CPP ptz.server PlayerActServer --ptz-device 0 --player-host %(host:PlayerHost)
     ENDIF
 ENDIF
 COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost) 
@@ -449,12 +449,20 @@ IFOPTALL(%(feature_options), planning_sa)
 			### creates goals from hypothesis about visualobjects
 	        JAVA MG goal.hyp-generator motivation.components.generators.VisualObjectHypothesisGoalGenerator
 		ENDIF
-		### this instantiates the filter layer of the motivation architecture, here: it's a PassAllFilter, that let's Dora adhere anything
-        JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" 
 		### this instantiates the scheduler (or manager) layer of the motivation architecture
 		### here: it's a simple scheduler which will just plan for all the goals present at once and will NOT look for opportunities, 
 		### but rather execute a plan once it has been found and only after the completion of the plan will look for new goals
-        JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
+	    IFOPTALL(%(feature_options), motivation_deadlines)
+			### creates goals from hypothesis about visualobjects
+	        JAVA MG goal.explore-generator spatial.motivation.ExplorePlaceGenerator
+	        JAVA MG goal.goto-generator spatial.motivation.GotoPlaceGenerator --placeID 1 --deadline 5
+        	JAVA MG goal.scheduler motivation.components.managers.DeadlineScheduler --no-execution
+	        JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter" 
+		ELSE
+			### this instantiates the filter layer of the motivation architecture, here: it's a PassAllFilter, that let's Dora adhere anything
+	        JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter" 
+        	JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
+		ENDIF
     ENDIF
 ENDIF
 
