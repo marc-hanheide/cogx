@@ -1,3 +1,7 @@
+/**
+ * Author: Nikolaus Demmel
+ * Date:  23.03.2012
+ **/
 
 #include "PlacePropertySaver.h"
 #include <SpatialProperties.hpp>
