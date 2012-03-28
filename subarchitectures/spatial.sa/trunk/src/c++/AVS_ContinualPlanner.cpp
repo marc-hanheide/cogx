@@ -181,7 +181,9 @@ void AVS_ContinualPlanner::ChangeCurrentViewConeColor(double r,double g,double b
 }
 
 void AVS_ContinualPlanner::MoveCurrentViewCone(ViewPointGenerator::SensingAction &nbv){
-	m_proxyCone.set_rotation(nbv.pan,nbv.tilt,0);
+	m_proxyCone.set_rotation(0,0,0);
+  m_proxyCone.rotate(nbv.pan,0,0,1);
+	m_proxyCone.rotate(nbv.tilt,0,-1,0);
 	m_proxyCone.set_position(nbv.pos[0], nbv.pos[1], nbv.pos[2]);
 }
 
