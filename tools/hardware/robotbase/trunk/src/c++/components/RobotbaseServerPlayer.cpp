@@ -218,6 +218,7 @@ RobotbaseServerPlayer::runComponent()
       p.y = m_Position->GetYPos();
       p.theta = m_Position->GetYaw();
 
+      // FIXME @demmel 22.03.2012:
       // race condition since Stop lockComponent and then waits for runComponent
       // to terminate. Should use an extra Mutex instead of the compenent Mutex.
       if (!isRunning())
@@ -265,6 +266,7 @@ RobotbaseServerPlayer::runComponent()
       joyDriveState = m_Joydrive;
       unlockComponent();
     } else {
+      // FIXME @demmel 22.03.2012:
       // race condition since Stop lockComponent and then waits for runComponent
       // to terminate. Should use an extra Mutex instead of the compenent Mutex.
       if (!isRunning())
@@ -278,6 +280,7 @@ RobotbaseServerPlayer::runComponent()
       sleepComponent(100);
     }
     saveOdomToFile(m_Odom);
+    // FIXME @demmel 22.03.2012:
     // race condition since Stop lockComponent and then waits for runComponent
     // to terminate. Should use an extra Mutex instead of the compenent Mutex.
     if (!isRunning())
