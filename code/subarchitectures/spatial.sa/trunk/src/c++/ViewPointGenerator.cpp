@@ -142,11 +142,6 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		result3DVCList.push_back(unordered3DVCList[bestindex]);
 
 		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
-
-		if(m_component->m_usePeekabot){
-		m_component->PostViewCone(unordered3DVCList[bestindex]);
-		}
-
 			}
 		m_component->log("Returning %d 3D viewcones \n", result3DVCList.size());
 				for (unsigned int i=0; i < result3DVCList.size(); i++){

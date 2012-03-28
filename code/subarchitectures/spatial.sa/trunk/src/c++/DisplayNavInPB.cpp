@@ -107,7 +107,6 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowPlaceholders = (_config.find("--no-placeholders") == _config.end());
   m_ShowRoomId = (_config.find("--no-roomid") == _config.end());
   m_ShowRoomCategory = (_config.find("--no-areaclass") == _config.end());
-  m_ShowViewCones = (_config.find("--no-viewcones") == _config.end());
 
   m_ShowPath = (_config.find("--log-path") != _config.end());
   m_ShowCommands = (_config.find("--log-commands") != _config.end());
@@ -315,13 +314,6 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newLineMap));
 
-  addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::ADD),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newVPlist));
-  addChangeFilter(createLocalTypeFilter<NavData::ObjectSearchPlan>(cdl::OVERWRITE),
-                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
-                                        &DisplayNavInPB::newVPlist));
-
   // Place & Placeholder Properties
   if (m_ShowProperties)
   {
@@ -397,6 +389,7 @@ void DisplayNavInPB::start() {
 
 
   // Logging events
+
   addChangeFilter(createGlobalTypeFilter<SpatialData::RelationalViewPointGenerationCommand>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newViewpointGenCommand));
@@ -964,41 +957,6 @@ double DisplayNavInPB::getProbabilityValue(const SpatialProperties::ProbabilityD
 	}
 
 	return 0;
-}
-
-
-
-void DisplayNavInPB::newVPlist(const cast::cdl::WorkingMemoryChange &objID) {
-  log("Entered newVPlist"); 
-
-  if (!m_PeekabotClient.is_connected()) return;
-
-  try {
-  // Visualize Viewplan boost::shared_ptr<CASTData<NavData::NavCommand> >
-  NavData::ObjectSearchPlanPtr plan =
-    getMemoryEntry<NavData::ObjectSearchPlan>(objID.address);
-
-  // Get nodeIDs stated in the plan, and search through navGraph to
-  // each nodeID and finally put ordered numbers on top of nodes that
-  // are in the plan.
-  char path[32];
-  if(plan->planlist.size() > 0)
-  {
-    double color[3];
-    color[0] = 0.9;
-    color[1] = 0.1;
-    color[2] = 0.1;
-    for (unsigned int i = 0; i < plan->planlist.size(); i++){
-      sprintf(path,"viewpoint_%i",i);
-      createFOV(m_ProxyViewPoints, path, m_FovH, m_FovV, color, 0.15, plan->planlist[i], false);
-    }
-  }
-  debug("Exited newVPlist"); 
-  }
-  catch (DoesNotExistOnWMException)
-  {
-    log("VPlist %s disappeared from WM in newVPlist!", objID.address.id.c_str());
-  }
 }
 
 void DisplayNavInPB::createRobotFOV()
@@ -2698,11 +2656,6 @@ void DisplayNavInPB::connectPeekabot()
 
       m_ProxyPathLog.add(m_ProxyTrajectory, "path_log", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
       m_ProxyPathLog.set_line_width(5);
-    }
-
-    if (m_ShowViewCones){
-      log("Showing viewcones in Peekabot");
-      m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
     }
 
     createRobotFOV();

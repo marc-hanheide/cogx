@@ -100,7 +100,7 @@ public:
 
 	 void Recognize();
 	 void addARTagCommand();
-	 void PostViewCone(const ViewPointGenerator::SensingAction &nbv);
+	 void PostViewCone(const ViewPointGenerator::SensingAction &nbv,int id);
 	 void ViewConeUpdate( std::pair<int,ViewPointGenerator::SensingAction>  viewcone, BloxelMap* map);
 	 void newGroundedBelief(const cast::cdl::WorkingMemoryChange &objID);
 	 std::string relationToString(SpatialData::SpatialRelation rel);
@@ -134,17 +134,17 @@ private:
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
     peekabot::PeekabotClient m_PeekabotClient;
     peekabot::GroupProxy m_proxyCone;
-    peekabot::GroupProxy m_ProxyCurrentViewPoint;
-    peekabot::PolygonProxy m_proxyConeParts[5];
-	double m_FovH; // horisontal fov in degs
-	double m_FovV; // vertical fov in degs
+    std::map<int, peekabot::GroupProxy> m_ProxyViewPointsList;
+    peekabot::GroupProxy m_ProxyViewPoints;
+	  double m_FovH; // horisontal fov in degs
+	  double m_FovV; // vertical fov in degs
     peekabot::GroupProxy m_ProxyForbiddenMap;
 
     void connectPeekabot();
-    void createFOV(peekabot::GroupProxy &proxy, const char* path,
+    void createFOV(peekabot::GroupProxy &proxy,
                                double fovHorizAngle, double fovVertiAngle,
                                double* color, double opacity,
-                               NavData::ViewPoint viewpoint, bool robotfov);
+                               NavData::ViewPoint viewpoint);
 
     void CreateCurrentViewCone();
     void ChangeCurrentViewConeColor(double r,double g,double b);
