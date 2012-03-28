@@ -49,6 +49,7 @@ public slots:
    void setValue(QString name, QScriptValue value);
    void call(QString name, QScriptValue value);
    void setHtml(QString objectId, QString partId, QScriptValue value);
+   void dumpObject(QString objectId, QScriptValue value);
 
    // These interfaces are missing in JS objects
    void setComboBoxItems(QString cbObjectName, QScriptValue stringItems);
