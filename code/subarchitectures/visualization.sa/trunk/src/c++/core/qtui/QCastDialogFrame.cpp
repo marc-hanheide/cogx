@@ -44,6 +44,7 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
    if (lsConstruct.size() > 1)
       sName = lsConstruct[1].trimmed();
    if (lsConstruct.size() < 1) {
+      // The type was not provided. Invent one.
       sName = "_fake_object_";
       engine.evaluate("function _Fake_Object_Type_(ui) { this.ui = ui }");
       lsConstruct << "_Fake_Object_Type_";
@@ -52,10 +53,22 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
       sName = "_" + lsConstruct[0].trimmed() + "_";
 
    engine.evaluate(QString::fromStdString(pDialog->m_scriptCode));
+   if (engine.hasUncaughtException()) {
+      dumpUncaughtException("Exception while loading script", "loading");
+   }
 
    QScriptValue ctor = engine.evaluate(lsConstruct[0]);
+   if (engine.hasUncaughtException()) {
+      dumpUncaughtException("Exception while creating proxy", "evaltype");
+   }
    QScriptValue scriptUi = engine.newQObject(this->wdialog, QScriptEngine::ScriptOwnership);
+   if (engine.hasUncaughtException()) {
+      dumpUncaughtException("Exception while creating proxy", "newobject");
+   }
    uiobject = ctor.construct(QScriptValueList() << scriptUi);
+   if (engine.hasUncaughtException()) {
+      dumpUncaughtException("Exception while creating proxy", "construct");
+   }
 
    if (sName.length() > 0) {
       glob.setProperty(sName, uiobject);
@@ -65,6 +78,9 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
 
    connect(this, SIGNAL(sigExecute(QString)),
          this, SLOT(doExecute(QString)),
+         Qt::QueuedConnection);
+   connect(&engine, SIGNAL(sigHandlerException()),
+         this, SLOT(handleEngineException(QScriptValue)),
          Qt::QueuedConnection);
 }
 
@@ -90,6 +106,12 @@ void QCastDialogProxy::call(QString name, QScriptValue value)
    DMESSAGE("call: " << name.toStdString() << "(" << value.toString().toStdString() << ")");
    // TODO: convert value to JSON
    pDialog->notify_call(name.toStdString(), value.toString().toStdString());
+}
+
+void QCastDialogProxy::setHtml(QString objectId, QString partId, QScriptValue value)
+{
+   DMESSAGE("setHtml: " << objectId.toStdString() << "." << partId.toString());
+   pDialog->notify_setHtml(objectId.toStdString(), partId.toStdString(), value.toString().toStdString());
 }
 
 void QCastDialogProxy::setComboBoxItems(QString cbObjectName, QScriptValue stringItems)
@@ -121,6 +143,34 @@ void QCastDialogProxy::doExecute(QString script)
 {
    DTRACE("QCastDialogProxy::doExecute");
    engine.evaluate(script);
+   if (engine.hasUncaughtException()) {
+      dumpUncaughtException("Exception in doExecute()", "doExecute", script.toStdString());
+   }
+}
+
+void QCastDialogProxy::handleEngineException(QScriptValue exception)
+{
+   std::string htmlobj = "@scripterror"; 
+   std::string value = "<h3>Exception in dialog: " + pDialog->m_id + "</h3>" + exception.toString().toStdString();
+   pDialog->notify_setHtml(htmlobj, "exception-" + pDialog->m_id, value);
+}
+
+void QCastDialogProxy::dumpUncaughtException(const std::string& title, const std::string& context,
+      const std::string& extra)
+{
+   std::string htmlobj = "@scripterror"; 
+   std::ostringstream ss;
+   ss << "<h3>" << title << "(" << pDialog->m_id << ")</h3>";
+   ss << engine.uncaughtException().toString().toStdString();
+   ss << "<br>---- trace ----</br>";
+   QStringList items = engine.uncaughtExceptionBacktrace();
+   foreach(QString value, items) {
+      ss << value.toStdString() << "<br>";
+   }
+   if (extra != "") {
+      ss << "---- ----<br>" << extra;
+   }
+   pDialog->notify_setHtml(htmlobj, pDialog->m_id + "-" + context, ss.str());
 }
 
 QCastDialogFrame::QCastDialogFrame( QWidget * parent, Qt::WindowFlags flags )

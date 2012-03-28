@@ -48,15 +48,20 @@ public slots:
    void testMe();
    void setValue(QString name, QScriptValue value);
    void call(QString name, QScriptValue value);
+   void setHtml(QString objectId, QString partId, QScriptValue value);
 
    // These interfaces are missing in JS objects
    void setComboBoxItems(QString cbObjectName, QScriptValue stringItems);
 
 private slots:
    void doExecute(QString script);
+   void handleEngineException(QScriptValue exception);
 
 signals:
    void sigExecute(QString script);
+
+private:
+   void dumpUncaughtException(const std::string& title, const std::string& context, const std::string& extra="");
 };
 
 class QCastDialogFrame:

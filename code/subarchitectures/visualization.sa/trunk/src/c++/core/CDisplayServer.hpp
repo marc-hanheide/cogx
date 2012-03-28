@@ -152,6 +152,8 @@ private:
    // CGuiDialogObserver
    void onGuiDialog_setValue(CGuiDialog *pDialog, const std::string& name, const std::string& value);
    void onGuiDialog_call(CGuiDialog *pDialog, const std::string& name, const std::string& value);
+   void onGuiDialog_setHtmlChunk(CGuiDialog* pDialog, const std::string& object,
+         const std::string& part, const std::string& value);
 
    // CHtmlFormObserver
    void onFormSubmitted(CHtmlChunk *pForm, const TFormValues& newValues); /*override*/
