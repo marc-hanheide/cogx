@@ -126,7 +126,9 @@ VARDEFAULT logged_types=<multiline>
   autogen.Planner.Action,
   autogen.Planner.PlanningTask,
   SpatialData.NodeHypothesis,
-  eu.cogx.beliefs.slice.GroundedBelief
+  eu.cogx.beliefs.slice.GroundedBelief,
+  SpatialData.MapLoadStatus,
+  SpatialProperties.PlaceProperty
 </multiline>
 
 ### root for the sift-models
@@ -201,6 +203,7 @@ VARDEFAULT explore_range=2.0
 VARDEFAULT spatial_load_map=--load-map --save-map
 VARDEFAULT spatial_node_obstacle_margin=1.5
 VARDEFAULT spatial_node_unknown_margin=0.5
+VARDEFAULT place_properties_save_file="place_properties.bin"
 
 # If the flag --show3Dobstacles is present then show the height map in Peekabot (in green)
 VARDEFAULT spatial_show_3d_obstacles=--show3Dobstacles
@@ -304,6 +307,8 @@ IFOPTALL(%(feature_options), spatial)
 # ICE interfaces
     CPP GD map.manager 			LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
 
+### Saves and Loads place properties as part of the map (size, shape, appearance, objects)
+    CPP MG place.property.saver PlacePropertySaver --save true --save-file-name %(place_properties_save_file) --save-continuously true --save-interval 10000 --load true --load-file-name %(place_properties_save_file) --wait-before-loading 0 --wait-between-loading 0 --wait-for-map-load-status true
 
     IFOPTALL(%(feature_options), binder)
 ### run the spatial mediators so that the spatial stuff shows up in the binder/planner
