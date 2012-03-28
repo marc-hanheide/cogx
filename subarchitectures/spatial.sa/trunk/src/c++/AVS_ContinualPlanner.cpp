@@ -67,101 +67,84 @@ AVS_ContinualPlanner::~AVS_ContinualPlanner() {
 	// TODO Auto-generated destructor stub
 }
 
-
-void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy, const char* path,
+void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy,
                                double fovHorizAngle, double fovVertiAngle,
                                double* color, double opacity,
-                               NavData::ViewPoint viewpoint, bool robotfov){
+                               NavData::ViewPoint viewpoint){
 
-		
-  m_proxyCone.add(proxy, path, peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-  m_proxyCone.hide();
   const double coneLen = viewpoint.length;
   // The "half angle" of the field of view
   const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
   const double fovVerti = fovVertiAngle*M_PI/180.0/2;
-  
-  m_proxyConeParts[0].add(m_proxyCone, "top");
-  m_proxyConeParts[0].add_vertex(0,0,0);
-  m_proxyConeParts[0].add_vertex(coneLen,
+  peekabot::PolygonProxy proxyConeParts[5];
+  proxyConeParts[0].add(proxy, "top");
+  proxyConeParts[0].add_vertex(0,0,0);
+  proxyConeParts[0].add_vertex(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(fovVerti));
-  m_proxyConeParts[0].add_vertex(coneLen,
+  proxyConeParts[0].add_vertex(coneLen,
                                coneLen*tan(-fovHoriz),
                                coneLen*tan(fovVerti));
-  m_proxyConeParts[1].add(m_proxyCone, "bottom");
-  m_proxyConeParts[1].add_vertex(0,0,0);
-  m_proxyConeParts[1].add_vertex(coneLen,
+  proxyConeParts[1].add(proxy, "bottom");
+  proxyConeParts[1].add_vertex(0,0,0);
+  proxyConeParts[1].add_vertex(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(-fovVerti));
-  m_proxyConeParts[1].add_vertex(coneLen,
+  proxyConeParts[1].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  m_proxyConeParts[2].add(m_proxyCone, "left");
-  m_proxyConeParts[2].add_vertex(0,0,0);
-  m_proxyConeParts[2].add_vertex(coneLen,
+  proxyConeParts[2].add(proxy, "left");
+  proxyConeParts[2].add_vertex(0,0,0);
+  proxyConeParts[2].add_vertex(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(-fovVerti));
-  m_proxyConeParts[2].add_vertex(coneLen,
+  proxyConeParts[2].add_vertex(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(fovVerti));
-  m_proxyConeParts[3].add(m_proxyCone, "right");
-  m_proxyConeParts[3].add_vertex(0,0,0);
-  m_proxyConeParts[3].add_vertex(coneLen,
+  proxyConeParts[3].add(proxy, "right");
+  proxyConeParts[3].add_vertex(0,0,0);
+  proxyConeParts[3].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  m_proxyConeParts[3].add_vertex(coneLen,
+  proxyConeParts[3].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(fovVerti));
-  m_proxyConeParts[4].add(m_proxyCone, "image");
-  m_proxyConeParts[4].add_vertex(coneLen,
+  proxyConeParts[4].add(proxy, "image");
+  proxyConeParts[4].add_vertex(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(fovVerti));
-  m_proxyConeParts[4].add_vertex(coneLen,
+  proxyConeParts[4].add_vertex(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(-fovVerti));
-  m_proxyConeParts[4].add_vertex(coneLen,
+  proxyConeParts[4].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  m_proxyConeParts[4].add_vertex(coneLen,
+  proxyConeParts[4].add_vertex(coneLen,
                           coneLen*tan(-fovHoriz),
                                coneLen*tan(fovVerti));
 
   for (int i = 0; i < 5; i++) {
-    m_proxyConeParts[i].set_color(color[0],color[1],color[2]);
-    m_proxyConeParts[i].set_opacity(opacity);
-    m_proxyConeParts[i].set_scale(1);  // This is how I make the cone
+    proxyConeParts[i].set_color(color[0],color[1],color[2]);
+    proxyConeParts[i].set_opacity(opacity);
+    proxyConeParts[i].set_scale(1);  // This is how I make the cone
                                      // larger or smaller
 
-  }	if (!robotfov )
-	{
-
-	//m_proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
-	m_proxyCone.rotate(viewpoint.pan,0,0,1);
-	m_proxyCone.rotate(viewpoint.tilt,0,-1,0);
-	m_proxyCone.set_position(viewpoint.pos.x, viewpoint.pos.y, viewpoint.pos.z);
-
-	}
-	else
-	{
-	  m_proxyCone.rotate(viewpoint.pan,0,0,1);
-	  m_proxyCone.rotate(viewpoint.tilt,0,-1,0);
-//	  m_proxyCone.set_rotation(viewpoint.pan,viewpoint.tilt,0);
-	  m_proxyCone.set_position(0,0,viewpoint.pos.z);
-	}
+  }
+  proxy.rotate(viewpoint.pan,0,0,1);
+  proxy.rotate(viewpoint.tilt,0,-1,0);
+  proxy.set_position(viewpoint.pos.x,viewpoint.pos.y,viewpoint.pos.z);
 }
 
 void AVS_ContinualPlanner::CreateCurrentViewCone() {
-    m_ProxyCurrentViewPoint.add(m_PeekabotClient, "current_viewpoint",peekabot::REPLACE_ON_CONFLICT);
     m_FovH = 45.0;
     m_FovV = 35.0;
 
     char path[32];    
-    sprintf(path,"current_viewpoint_1");
+    sprintf(path,"current_viewpoint");
     double color[3];
     color[0] = 0.1;
-    color[1] = 0.9;
-    color[2] = 0.1;
+    color[1] = 0.1;
+    color[2] = 0.9;
 
     NavData::ViewPoint viewpoint;
     viewpoint.pos.x = 0;
@@ -171,13 +154,13 @@ void AVS_ContinualPlanner::CreateCurrentViewCone() {
     viewpoint.pan = 0;
     viewpoint.tilt = 0;
 
-    createFOV(m_ProxyCurrentViewPoint, path, m_FovH, m_FovV, color, 0.5, viewpoint, false);
+    m_proxyCone.add(m_PeekabotClient, path, peekabot::REPLACE_ON_CONFLICT);
+    createFOV(m_proxyCone, m_FovH, m_FovV, color, 0.2, viewpoint);
+    m_proxyCone.hide();
 }
 
 void AVS_ContinualPlanner::ChangeCurrentViewConeColor(double r,double g,double b){
-    for (int i = 0; i < 5; i++) {
-        m_proxyConeParts[i].set_color(r,g,b);
-    }
+  m_proxyCone.set_color(r,g,b);
 }
 
 void AVS_ContinualPlanner::MoveCurrentViewCone(ViewPointGenerator::SensingAction &nbv){
@@ -196,8 +179,7 @@ void AVS_ContinualPlanner::connectPeekabot()
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
     if(m_usePeekabot){
-      log("Showing current viewcone in Peekabot");
-      m_ProxyCurrentViewPoint.add(m_PeekabotClient, "current_viewpoint",peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
     }
 
     log("Connection to Peekabot established");
@@ -993,7 +975,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			}
 
 			for(unsigned int j =0; j < comaRoomBeliefs.size(); j++){
-				if ((comaRoomBeliefs[j]->getData()->type != "comaroom") && (comaRoomBeliefs[j]->getData()->type != "ComaRoom")){
+				if ((comaRoomBeliefs[j]->getData()->type != "comaroom")){
 									log("Not a place belief, but a %s belief", comaRoomBeliefs[j]->getData()->type.c_str());
 									continue;
 					}
@@ -1023,6 +1005,11 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		log("Creating ConeGroup belief");
 		m_coneGroupId++;
+
+		if(m_usePeekabot){
+  		PostViewCone(c.viewcones.back(),m_coneGroupId);
+		}
+
 		m_beliefConeGroups[m_coneGroupId] = c;
 		eu::cogx::beliefs::slice::GroundedBeliefPtr b = new eu::cogx::beliefs::slice::GroundedBelief;
 		epstatus::PrivateEpistemicStatusPtr beliefEpStatus= new epstatus::PrivateEpistemicStatus;
@@ -1231,6 +1218,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
     else {
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
       if(m_usePeekabot){  
+          m_ProxyViewPointsList[m_currentViewCone.first].hide();
           MoveCurrentViewCone(m_currentViewCone.second);
           ChangeCurrentViewConeColor(0.1,0.1,0.9);
       }
@@ -1978,22 +1966,26 @@ int AVS_ContinualPlanner::GetClosestNodeId(double x, double y, double a){
   return d;
 }
 
-void AVS_ContinualPlanner::PostViewCone(const ViewPointGenerator::SensingAction &nbv)
-{
-/* Add plan to PB BEGIN */
-NavData::ObjectSearchPlanPtr obs = new NavData::ObjectSearchPlan;
-NavData::ViewPoint viewpoint;
-viewpoint.pos.x = nbv.pos[0];
-viewpoint.pos.y = nbv.pos[1];
-viewpoint.pos.z = nbv.pos[2];
-viewpoint.length = m_conedepth;
-viewpoint.pan = nbv.pan;
-viewpoint.tilt = nbv.tilt;
-obs->planlist.push_back(viewpoint);
-addToWorkingMemory(newDataID(), obs);
-/* Add plan to PB END */
+void AVS_ContinualPlanner::PostViewCone(const ViewPointGenerator::SensingAction &nbv,int id){
+  NavData::ViewPoint viewpoint;
+  viewpoint.pos.x = nbv.pos[0];
+  viewpoint.pos.y = nbv.pos[1];
+  viewpoint.pos.z = nbv.pos[2];
+  viewpoint.length = m_conedepth;
+  viewpoint.pan = nbv.pan;
+  viewpoint.tilt = nbv.tilt;
 
-//cout << "selected cone " << viewpoint.pos.x << " " << viewpoint.pos.y << " " <<viewpoint.pos.z << " " << viewpoint.pan << " " << viewpoint.tilt << endl;
+  char path[32];
+  double color[3];
+  color[0] = 0.9;
+  color[1] = 0.1;
+  color[2] = 0.1;
+  sprintf(path,"viewpoint_%d",id);
+
+  peekabot::GroupProxy proxyCone;
+  proxyCone.add(m_ProxyViewPoints, path, peekabot::REPLACE_ON_CONFLICT);
+  m_ProxyViewPointsList[id] = proxyCone;
+  createFOV(m_ProxyViewPointsList[id], m_FovH, m_FovV, color, 0.15, viewpoint);
 }
 void
 AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object *object)
