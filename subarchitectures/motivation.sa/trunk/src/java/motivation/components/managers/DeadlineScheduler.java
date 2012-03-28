@@ -26,7 +26,17 @@ import castutils.castextensions.WMEntryQueue.WMEntryQueueElement;
  */
 public class DeadlineScheduler extends AbstractScheduler {
 
+	/* (non-Javadoc)
+	 * @see cast.core.CASTComponent#configure(java.util.Map)
+	 */
+	@Override
+	protected void configure(Map<String, String> _config) {
+		if (_config.containsKey("--no-execution"))
+			executionEnabled=false;
+	}
+
 	public static final int MAX_GOALS = 20;
+	private boolean executionEnabled = true;
 
 	/*
 	 * (non-Javadoc)
@@ -98,12 +108,13 @@ public class DeadlineScheduler extends AbstractScheduler {
 							getLogger()
 									.warn("there is a goal impossible which is of higher priority than the possible ones. This should better be treated in the future!");
 						}
-
-						setStatus(possibleGoals, MotiveStatus.ACTIVE);
-						log("start executing for " + possibleGoals.size()
-								+ " possible goals");
-						executionFuture = executor
-								.execute(plan.getEvent().address);
+						if (executionEnabled ) {
+							setStatus(possibleGoals, MotiveStatus.ACTIVE);
+							log("start executing for " + possibleGoals.size()
+									+ " possible goals");
+							executionFuture = executor
+									.execute(plan.getEvent().address);
+						}
 					}
 
 				} else {
@@ -112,22 +123,24 @@ public class DeadlineScheduler extends AbstractScheduler {
 						log("there are no goals surfaced, so we wait until we get something to do");
 						continue;
 					}
-					Map<WorkingMemoryAddress, Motive> goalsToPlanFor = new HashMap<WorkingMemoryAddress, Motive>(surfacedGoals.size()+activeGoals.size()); 
+					Map<WorkingMemoryAddress, Motive> goalsToPlanFor = new HashMap<WorkingMemoryAddress, Motive>(
+							surfacedGoals.size() + activeGoals.size());
 					Map<WorkingMemoryAddress, Motive> possibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
 					Map<WorkingMemoryAddress, Motive> impossibleGoals = new HashMap<WorkingMemoryAddress, Motive>();
 
 					goalsToPlanFor.putAll(surfacedGoals);
 					goalsToPlanFor.putAll(activeGoals);
-					
+
 					WMEntryQueueElement<PlanningTask> plan = doPlanning(
 							goalsToPlanFor, possibleGoals, impossibleGoals);
 					if (plan != null) {
-						if (possibleGoals.keySet().containsAll(activeGoals.keySet())) {
+						if (possibleGoals.keySet().containsAll(
+								activeGoals.keySet())) {
 							println("all active goals are still in the set of possible goals.");
 						}
+
 						// TODO what to do if we have opportunities then???
 					}
-
 
 				}
 			}

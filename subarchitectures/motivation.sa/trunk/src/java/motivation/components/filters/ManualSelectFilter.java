@@ -162,7 +162,7 @@ public class ManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.add(getJSliderCategorize());
 			jMotivesPanel.add(new JLabel("Explore"));
 			jMotivesPanel.add(getJSliderExplore());
-			jMotivesPanel.add(new JLabel("Patrol"));
+			jMotivesPanel.add(new JLabel("Patrol/Goto"));
 			jMotivesPanel.add(getJSliderPatrol());
 			// jMotivesPanel.add(new JLabel("Test"));
 			// jMotivesPanel.add(getJSliderTest());
