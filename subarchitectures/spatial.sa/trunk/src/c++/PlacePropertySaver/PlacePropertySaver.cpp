@@ -21,15 +21,6 @@ using boost::posix_time::microsec_clock;
 using boost::posix_time::to_simple_string;
 
 
-// Some type definitions
-template <typename T>
-struct Data {
-  typedef shared_ptr<CASTData<T> > ptr_t;
-  typedef vector<ptr_t> ptrs_t;
-};
-typedef vector<Ice::ObjectPtr> IceObjectPtrs;
-
-
 // ------------------------------------------------------
 extern "C" 
 {
@@ -196,7 +187,7 @@ void PlacePropertySaver::savePlaceProperties()
 
   // Map of subarchitecture name to a vector of outputs of
   // getWorkingMemoryEntries(...)
-  map<string, IceObjectPtrs> output;
+  map<string, vector<Ice::ObjectPtr> > output;
   int count = 0;
   
   string subarch;
@@ -209,13 +200,15 @@ void PlacePropertySaver::savePlaceProperties()
   // shape
   {
     typedef SpatialProperties::RoomShapePlaceProperty prop_t;
-    Data<prop_t>::ptrs_t result;
+    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+    vector<data_ptr_t> result;
     getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
     debug("Found %d shape place properties.", result.size());
     count += result.size();
 
-    BOOST_FOREACH(const Data<prop_t>::ptr_t &p, result)
+    BOOST_FOREACH(const data_ptr_t &p, result)
     {
       output[subarch].push_back(p->getData());
     }
@@ -224,13 +217,15 @@ void PlacePropertySaver::savePlaceProperties()
   // size
   {
     typedef SpatialProperties::RoomSizePlaceProperty prop_t;
-    Data<prop_t>::ptrs_t result;
+    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+    vector<data_ptr_t> result;
     getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
     debug("Found %d size place properties.", result.size());
     count += result.size();
 
-    BOOST_FOREACH(const Data<prop_t>::ptr_t &p, result)
+    BOOST_FOREACH(const data_ptr_t &p, result)
     {
       output[subarch].push_back(p->getData());
     }
@@ -239,13 +234,15 @@ void PlacePropertySaver::savePlaceProperties()
   // appearance
   {
     typedef SpatialProperties::RoomAppearancePlaceProperty prop_t;
-    Data<prop_t>::ptrs_t result;
+    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+    vector<data_ptr_t> result;
     getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
     debug("Found %d appearance place properties.", result.size());
     count += result.size();
 
-    BOOST_FOREACH(const Data<prop_t>::ptr_t &p, result)
+    BOOST_FOREACH(const data_ptr_t &p, result)
     {
       output[subarch].push_back(p->getData());
     }
@@ -259,13 +256,15 @@ void PlacePropertySaver::savePlaceProperties()
   // human assertions
   {
     typedef SpatialProperties::RoomHumanAssertionPlaceProperty prop_t;
-    Data<prop_t>::ptrs_t result;
+    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+    vector<data_ptr_t> result;
     getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
     debug("Found %d human assertions place properties.", result.size());
     count += result.size();
 
-    BOOST_FOREACH(const Data<prop_t>::ptr_t &p, result)
+    BOOST_FOREACH(const data_ptr_t &p, result)
     {
       output[subarch].push_back(p->getData());
     }
@@ -274,13 +273,15 @@ void PlacePropertySaver::savePlaceProperties()
   // object search result
   {
     typedef SpatialData::ObjectSearchResult prop_t;
-    Data<prop_t>::ptrs_t result;
+    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+    vector<data_ptr_t> result;
     getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
     debug("Found %d object search results.", result.size());
     count += result.size();
 
-    BOOST_FOREACH(const Data<prop_t>::ptr_t &p, result)
+    BOOST_FOREACH(const data_ptr_t &p, result)
     {
       output[subarch].push_back(p->getData());
     }
@@ -289,13 +290,15 @@ void PlacePropertySaver::savePlaceProperties()
   // object place property
   {
     typedef SpatialProperties::ObjectPlaceProperty prop_t;
-    Data<prop_t>::ptrs_t result;
+    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+    vector<data_ptr_t> result;
     getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
     debug("Found %d object place properties.", result.size());
     count += result.size();
 
-    BOOST_FOREACH(const Data<prop_t>::ptr_t &p, result)
+    BOOST_FOREACH(const data_ptr_t &p, result)
     {
       output[subarch].push_back(p->getData());
     }
