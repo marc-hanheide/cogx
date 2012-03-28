@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PEEKABOT_CRASH_COUNT=0
+TEST_COMPLETE=0
 
 function storeCoreDump {
 	if [ -e "core" ]; then
@@ -40,6 +42,13 @@ echo $CLASSPATH
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/output/lib:/usr/local/lib/cast:/opt/local/lib/cast"
 export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
+mkdir -p peekabot_crash_logs
+# clear old peekabot_crash_logs
+rm -rf peekabot_crash_logs/*
+
+# if trying again after a peekabot crash, start here
+function doTest {
+
 trap 'kill -2 $PIDS; sleep 5; kill -9 $PIDS; exit 1' INT TERM PIPE QUIT ABRT HUP 
 
 PIDS=""
@@ -47,6 +56,8 @@ PIDS=""
 mkdir -p logs
 # clear old logs
 rm -rf logs/*
+
+# configure logging
 cat > logs/log4j.properties <<EOF
 log4j.rootLogger=TRACE,srvXmlFile,srvConsole
 log4j.appender.srvXmlFile=org.apache.log4j.FileAppender
@@ -61,6 +72,7 @@ log4j.appender.srvConsole.layout=org.apache.log4j.PatternLayout
 log4j.appender.srvConsole.layout.ConversionPattern=[%p %c: %m]%n
 EOF
 
+# log coma at TRACE, everything else at DEBUG
 rm -f log4j.properties
 cat > log4j.properties <<EOF
 log4j.rootLogger=DEBUG,cliSocketApp
@@ -96,7 +108,7 @@ xterm -e player $stageFile &
 PIDS="$PIDS $!"
 
 rm -f core
-cp 
+
 echo "--------------------------"
 
 ln -fs ~/.peekabot .
@@ -145,27 +157,36 @@ PIDS="$PIDS $!"
 
 # in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
 #waitForTrigger
+# (Wait for 100 seconds to ensure everything has loaded)
 echo "--------------------------"
 echo "Sleeping for 100 secs"
 
 sleep 100
-echo "Moving Peekabot"
+
 window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
-echo "peekabot window id is " $window_id
-xdotool windowactivate $window_id
-xdotool windowmove $window_id 0 0
-xdotool windowsize $window_id 70% 70%
-echo "Done moving Peekabot"
-sleep 2
 
 TESTREST=0
-if [ "$GOAL" ]; then
-        echo "running test for goal $GOAL" 
-	if ant -Dtest.goal="$GOAL" goaltest; then TESTREST=0; else TESTREST=1; fi
-        echo "test returned"
+PEEKABOT_CRASHED=0
+if [ "$window_id" ]; then
+	echo "peekabot window id is " $window_id
+	echo "Moving Peekabot"
+	xdotool windowactivate $window_id
+	xdotool windowmove $window_id 0 0
+	xdotool windowsize $window_id 70% 70%
+	echo "Done moving Peekabot"
+	sleep 2
+	if [ "$GOAL" ]; then
+        	echo "running test for goal $GOAL" 
+		if ant -Dtest.goal="$GOAL" goaltest; then TESTREST=0; else TESTREST=1; fi
+        	echo "test returned"
+	fi
+	TEST_COMPLETE=1
+	storeCoreDump
+else
+	echo "Peekabot has crashed"
+	PEEKABOT_CRASHED=1
+	PEEKABOT_CRASH_COUNT=$(($PEEKABOT_CRASH_COUNT + 1))	
 fi
-
-storeCoreDump
 
 # check if the C++ server is still running after this time!
 if ps ax | grep  cast-server-c++ | grep -qv "grep"; then RES=$TESTREST; else RES=1; fi
@@ -175,7 +196,27 @@ kill -2 $PIDS >/dev/null 2>&1
 sleep 5; 
 kill -9 $PIDS  >/dev/null 2>&1
 
-tools/scripts/collect-logs.sh
+# if peekabot crashed then store some of the files somewhere else before trying again
+# otherwise collect logs as normal
+# in future we might not want to collect all of the peekabot core files
+if [ $PEEKABOT_CRASHED -eq 1 ]
+	if [ -e "core" ]; then
+		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-core.zip core
+	fi
+	mv logs/peekabot.log peekabot_crash_logs/peekabot-crash"$PEEKABOT_CRASH_COUNT".log
+else
+	tools/scripts/collect-logs.sh
+fi
+
+} # end of doTest function
+
+while [ $TEST_COMPLETE -eq 0 ] && [ $PEEKABOT_CRASH_COUNT -ge 0 ] && [ $PEEKABOT_CRASH_COUNT -lt 3 ]; do
+	echo "Running test after $PEEKABOT_CRASH_COUNT peekabot crashes"
+	doTest
+done
+
+# move peekabot crash logs to enable archiving, alternatively add peekabot_crash_logs/* to archive list in jenkins configuration
+mv peekabot_crash_logs/* logs/
 
 exit $RES
 
