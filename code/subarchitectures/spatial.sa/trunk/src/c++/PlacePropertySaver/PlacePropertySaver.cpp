@@ -416,7 +416,7 @@ void PlacePropertySaver::savePlaceProperties()
                              // related to loadPendingObjects().
   os->finished(data);
   
-  ofstream fs(_saveFileName.c_str());
+  ofstream fs(_saveFileName.c_str(), ios::binary | ios::out);
   if(!fs) 
   {
     error("Could not open file '%d' while saving place properties.",
@@ -426,6 +426,36 @@ void PlacePropertySaver::savePlaceProperties()
 
   debug("Writing to file '%s'.", _saveFileName.c_str());
 
+  // NOTE @demmeln 26.03.2012: What I want is simply writing the
+  // vector<Ice::Byte>, which at least on my machine is the same as
+  // vector<unsigned char>, and write it to a file and then later read it back
+  // unchanged. I hope reinterpret cast is ok here. C++ experts are welcome to
+  // confirm and remove this lengthy comment. It says the following at [1]:
+  //
+  // "5. Any pointer to object of type T1 can be converted to pointer to object
+  // of another type T2. If T2's alignment is not stricter than T1's, conversion
+  // of the resulting pointer back to its original type yields the original
+  // value, otherwise the resulting pointer cannot be dereferenced safely,
+  // except where allowed by the type aliasing rules (see below)"
+  //
+  // I would guess that char and unsigned char are guaranteed to have the same
+  // alignment (although I can't find a reference for that right now). In any
+  // case [1] goes on to say:
+  //
+  // "When a pointer or reference to object of type T1 is reintrepret_cast (or
+  // C-style cast) to a pointer or reference to object of a different type T2,
+  // the cast always succeeds, but the resulting pointer or reference may only
+  // be accessed if one of the following is true:
+  //
+  // [...]
+  // 
+  // * T2 is char or unsigned char"
+  //
+  // Judging from that writing and reading a usinged char array to and from an
+  // fstream is always ok. See also the fs.read(...) call in
+  // readPlaceProperties().
+  // 
+  // [1] http://en.cppreference.com/w/cpp/language/reinterpret_cast
   fs.write(reinterpret_cast<char *>(data.data()), data.size()); 
   
   fs.close();
@@ -451,7 +481,7 @@ void PlacePropertySaver::loadPlaceProperties()
 
   debug("Loading place properties from file '%s'.", _loadFileName.c_str());
 
-  ifstream fs(_loadFileName.c_str());
+  ifstream fs(_loadFileName.c_str(), ios::binary | ios::in);
   if(!fs)
   {
     error("Could not open file '%d' while loading place properties.",
@@ -459,10 +489,48 @@ void PlacePropertySaver::loadPlaceProperties()
     return;
   }
 
-  vector<Ice::Byte> data((istreambuf_iterator<char>(fs)), 
-                         istreambuf_iterator<char>());
+
+
+  // Read data from file.
+  //
+  // NOTE @demmeln 26.03.2012: I had a little trouble making sure that the type
+  // conversions writing/reading to from a file are kosher and platform
+  // independet. My initial implementation was the following, which seemed to
+  // work fine and does not require an reinterpret_cast:
+  // 
+  // vector<Ice::Byte> data((istreambuf_iterator<char>(fs)), 
+  //                        istreambuf_iterator<char>());
+  //
+  // Not sure if I would need a "fs >> noskipws" to be sure it will not skrew up
+  // something, which is suggested by this alternative [1]:
+  //
+  // fs >> std::noskipws;
+  // std::copy((istreambuf_iterator<char>(fs)), 
+  //           istreambuf_iterator<char>()
+  //           std::back_inserter(data));
+  //
+  // The above method could be augmented with a call to data.reserve().
+  //
+  // After some investigation I would assume that the following implemention is
+  // potentiall more efficient. Also it mirrows the way I write the file. See
+  // the lengthy comment before fs.write(...) in savePlaceProperties. Comments
+  // by C++ experts to shed some light on the correctness and performance are
+  // very welcome.
+  //
+  // [1] http://stackoverflow.com/a/7690162
+
+  // get length of file:
+  fs.seekg (0, ios::end);
+  int file_length = fs.tellg();
+  fs.seekg (0, ios::beg);
+
+  // read the data
+  vector<Ice::Byte> data(file_length);
+  fs.read(reinterpret_cast<char *>(data.data()), file_length);
 
   fs.close();
+
+
 
   Ice::InputStreamPtr is = Ice::createInputStream(getCommunicator(), data);
   typedef map<string, vector<Ice::ObjectPtr> > input_t;
