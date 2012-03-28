@@ -43,6 +43,41 @@ const std::string& dynamicTypeName(const IceInternal::Handle<T> object) {
  * For serialization the Ice-generated serializers are used. This means the
  * result is a non-human-readable byte string. We might want to write a better
  * text based and human-readable output format that would aid debugging.
+ *
+ * Configuration:
+ *
+ * --save
+ * Boolean to indicate if we want to save at all.
+ *
+ * --save-file-name
+ * File name where the properties are saved to.
+ *
+ * --save-continuously
+ * 
+ * Boolean to indicate if we shoudl, when saving, save all the time. Otherwise
+ * we only when component is stopped.
+ * 
+ * --save-interval
+ * Interval in milliseconds of how long we should wait between saves when saving
+ * continously.
+ *
+ * --load
+ * Booloan to indicate if we want to load at all.
+ *
+ * --load-file-name
+ * File name where the properties are loaded from. If this file is not there,
+ * loading is automatically deactivated, even if "--load true" was supplied
+ *
+ * --wait-before-loading
+ * Time in milliseconds that we should wait additionally before loading anything.
+ *
+ * --wait-between-loading
+ * Time in milliseconds that we should wait between each property being loaded.
+ *
+ * --wait-for-map-load-status
+ * If loading is activated (and the file was found), wait for the map load status
+ * in WM to indicate the places being loaded first and also update this status
+ * once we are finished loading stuff.
  */
 class PlacePropertySaver:
     public cast::ManagedComponent, 
@@ -136,6 +171,30 @@ private:
   /** Read all place properties from disk and put them into working memory. */
   void loadPlaceProperties();
 
+  /** Wait for the map load status to become appropriate. */
+  void waitForMapLoadStatus();
+
+  /** Callbacks */
+  void mapLoadStatusAdded(const cast::cdl::WorkingMemoryChange &wmc);
+  void mapLoadStatusOverwritten(const cast::cdl::WorkingMemoryChange &wmc);
+  void mapLoadStatusDeleted(const cast::cdl::WorkingMemoryChange &wmc);
+
+  /** Returns true if the map load status in working memory is such that we can
+   * start loading. */
+  bool checkWMMapLoadStatus();
+
+  /** Indicates in the working memory that the place properties are loaded */
+  void updateWMMapLoadStatus();
+
+
+  // TODO: Add this somewhere in utilities
+  /** Sleep component but only in small intervals to stay responsive to stop.
+   *
+   * Time is given in milliseconds. Returns false if sleep was abortet due to
+   * the component being shut down, true otherwise.
+   */
+  bool sleepComponentResponsive(unsigned long millis);
+
 private:
   
   /** Working memory id where place properties are found */
@@ -162,9 +221,21 @@ private:
   /** Filename where properties are loaded from. Can be the same as savefile. */
   std::string _loadFileName;
 
+  /** Should we wait for the MapLoadStatus in working memory before loading */
+  bool _waitForMapLoadStatus;
+
+  /** Working memory address of the map load status. */
+  cast::cdl::WorkingMemoryAddress _mapLoadStatusAddress;
+
+  /** Is the map load status such that we can go ahead with loading? */
+  bool _mapLoadStatusOk;
+
   /** Time to wait before starting to load properties. In milliseconds.
    *
-   * This can be used to make sure starting all components has setteled down.
+   * This can be used to make sure starting all components has setteled down. If
+   * _waitForMapLoadStatus is true, the time is wait additionally after the
+   * status becomes such that we could load. Note, however, that if use
+   * _waitForMapLoadStatus, additional waiting time is probably not neccessary.
    */
   unsigned int _waitBeforeLoading;
 
