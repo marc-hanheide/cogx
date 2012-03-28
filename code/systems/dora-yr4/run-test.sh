@@ -199,7 +199,7 @@ kill -9 $PIDS  >/dev/null 2>&1
 # if peekabot crashed then store some of the files somewhere else before trying again
 # otherwise collect logs as normal
 # in future we might not want to collect all of the peekabot core files
-if [ $PEEKABOT_CRASHED -eq 1 ]
+if [ $PEEKABOT_CRASHED -eq 1 ]; then
 	if [ -e "core" ]; then
 		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-core.zip core
 	fi
