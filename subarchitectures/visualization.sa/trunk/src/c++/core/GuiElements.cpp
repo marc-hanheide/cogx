@@ -70,6 +70,16 @@ void CGuiDialog::notify_call(const std::string& name, const std::string& value)
    }
 }
 
+void CGuiDialog::notify_setHtml(const std::string& objectId, const std::string& partId, const std::string& value)
+{
+   DTRACE("CGuiDialog::notify_setHtml");
+   CGuiDialogObserver *pObsrvr;
+   CObserverList<CGuiDialogObserver>::ReadLock lock(Observers); // XXX: the loop could be long for locking
+   FOR_EACH(pObsrvr, Observers) {
+      pObsrvr-> onGuiDialog_setHtmlChunk(this, objectId, partId, value);
+   }
+}
+
 void CGuiDialog::execute(const std::string& script)
 {
    DTRACE("CGuiDialog::execute");

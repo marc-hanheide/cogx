@@ -249,6 +249,7 @@ void QCastViewHtml::doUpdateContent()
       list.append(
             "<html><head>"
             "<style>"
+            " body { font-size: 10pt; }"
             " .v11ninfo { font-size: 90%; color: #808080; }"
             "</style>\n"
             );

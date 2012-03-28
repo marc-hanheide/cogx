@@ -93,11 +93,17 @@ class CGuiDialog;
 class CGuiDialogObserver
 {
 public:
-   // The dialog is sending a piece of data to the owner
+   // The dialog is sending a piece of data to the remote owner
    virtual void onGuiDialog_setValue(CGuiDialog* pDialog, const std::string& name, const std::string& value) = 0;
 
-   // The dialog is calling an owner method
+   // The dialog is calling a remote-owner method
    virtual void onGuiDialog_call(CGuiDialog* pDialog, const std::string& name, const std::string& value) = 0;
+
+   // The dialog is setting an HTML chunk. Only intented for use in the Display Server.
+   virtual void onGuiDialog_setHtmlChunk(CGuiDialog* pDialog, const std::string& object,
+         const std::string& part, const std::string& value)
+   {
+   }
 };
 
 // The Qt infrastructure that manages the display/control of the dialog
@@ -138,6 +144,7 @@ public:
    // Receive changes from m_pDialogView and notify the observers (remote client)
    void notify_setValue(const std::string& name, const std::string& value);
    void notify_call(const std::string& name, const std::string& value);
+   void notify_setHtml(const std::string& objectId, const std::string& partId, const std::string& value);
 
    // Execute some code in m_pDialogView
    void execute(const std::string& script);

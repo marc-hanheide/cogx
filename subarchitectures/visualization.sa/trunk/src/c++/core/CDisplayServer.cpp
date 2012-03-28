@@ -760,6 +760,12 @@ void CDisplayServer::onGuiElement_CtrlDataChanged(CGuiElement *pElement, const s
    hIceDisplayServer->addOperation(pOp);
 }
 
+void CDisplayServer::onGuiDialog_setHtmlChunk(CGuiDialog* pDialog, const std::string& object,
+      const std::string& part, const std::string& value)
+{
+   setHtml(object, part, value);
+}
+
 class CDialogValueChangeOperation: public CDisplayServerI::CQueuedOperation
 {
 public:
