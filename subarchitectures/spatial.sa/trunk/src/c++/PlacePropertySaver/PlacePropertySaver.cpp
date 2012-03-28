@@ -407,13 +407,13 @@ void PlacePropertySaver::savePlaceProperties()
 
   os->write(output);
 
-  vector<Ice::Byte> data;
   os->writePendingObjects(); // @demmeln 22.03.2012: is this needed? Ice
                              // Documentation is not shedding light on this.
                              // @demmeln 24.03.2012: I guess this is necessary
                              // alter all. It seems this does something like
                              // save objects that Handles point to. This is
                              // related to loadPendingObjects().
+  vector<Ice::Byte> data;
   os->finished(data);
   
   ofstream fs(_saveFileName.c_str(), ios::binary | ios::out);
