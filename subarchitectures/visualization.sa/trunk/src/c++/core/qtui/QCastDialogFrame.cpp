@@ -25,6 +25,7 @@
 #include <QBuffer>
 #include <QByteArray>
 #include <QComboBox>
+#include <QScriptValueIterator>
 
 QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget* pDialogWidget_)
 {
@@ -113,6 +114,28 @@ void QCastDialogProxy::setHtml(QString objectId, QString partId, QScriptValue va
 {
    DMESSAGE("setHtml: " << objectId.toStdString() << "." << partId.toString());
    pDialog->notify_setHtml(objectId.toStdString(), partId.toStdString(), value.toString().toStdString());
+}
+
+void QCastDialogProxy::dumpObject(QString objectId, QScriptValue value)
+{
+   std::string sid = pDialog->m_id + "." + objectId.toStdString();
+   std::ostringstream ss;
+   ss << "<h3>Object " << objectId.toStdString() << " (" << pDialog->m_id << ")</h3>";
+   ss << "value: " << value.toString().toStdString() << "<br>";
+   QScriptValueIterator it(value);
+   if (it.hasNext()) {
+      ss << "properties:<br>";
+   }
+   ss << "<ul>";
+   while (it.hasNext()) {
+      it.next();
+      QString sval = it.value().toString();
+      sval.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;");
+      ss << "<li>" << it.name().toStdString() << ": " << sval.toStdString();
+   }
+   ss << "</ul>";
+
+   pDialog->notify_setHtml("@scriptdump", sid, ss.str());
 }
 
 void QCastDialogProxy::setComboBoxItems(QString cbObjectName, QScriptValue stringItems)
