@@ -475,7 +475,8 @@ void PlacePropertySaver::loadPlaceProperties()
   
   debug("Waiting %dms before loading place properties", _waitBeforeLoading);
   
-  sleepComponent(_waitBeforeLoading);
+  if (_waitBeforeLoading > 0)
+    sleepComponent(_waitBeforeLoading);
 
   ptime start_t(microsec_clock::local_time());
 
@@ -565,7 +566,7 @@ void PlacePropertySaver::loadPlaceProperties()
         sleepComponent(_waitBetweenLoading);
 
       debug("Adding loaded property of type '%s' to working memory.",
-            typeid(*o).name());
+            o->ice_id().c_str());
       
       // FIXME: do this with functionality provided by upstream CAST
       addToWorkingMemoryDynamicType(newDataID(), subarch, o);
