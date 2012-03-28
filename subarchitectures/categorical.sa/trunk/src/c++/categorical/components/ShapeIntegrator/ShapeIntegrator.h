@@ -46,6 +46,7 @@ private:
 
 	void newLaserResults(const cast::cdl::WorkingMemoryChange & change);
 	void newOdometry(const cast::cdl::WorkingMemoryChange & change);
+	void newShapePlaceProperty(const cast::cdl::WorkingMemoryChange &change);
 
 	bool readyToAccumulate();
 
