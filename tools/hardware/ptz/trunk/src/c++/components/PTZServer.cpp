@@ -8,6 +8,10 @@ using namespace cast;
 
 namespace ptz {
 
+#ifdef FEAT_VISUALIZATION
+#include "res/ptucontrol.inc"
+#endif
+
   ptz::PTZReading PTZServerI::getPose(const Ice::Current & _crt) const {
     return m_ptzServer->getPose();
   }
@@ -75,10 +79,6 @@ namespace ptz {
     registerIceServer<PTZInterface, PTZInterface>(servant);
   }
 
-#ifdef FEAT_VISUALIZATION
-#include "res/ptucontrol.inc"
-#endif
-
   void PTZServer::start()
   {
 #ifdef FEAT_VISUALIZATION
@@ -138,9 +138,9 @@ namespace ptz {
         std::ostringstream ss;
         ss.precision(6);
         ss << "<h3>PTZ Server</h3>"
-          << "Running rate: " << pace.getTotalRate() << "hz<br>"
-          << "Motion tolerance: " << mMotionTolerance << "rad/s<br>"
-          << "Actual tolerance: " << epsmove << "rad";
+          << "Running rate (r): " << pace.getTotalRate() << "hz<br>"
+          << "Motion tolerance (mt): " << mMotionTolerance << "rad/s<br>"
+          << "Actual tolerance (mt/r): " << epsmove << "rad";
         display().setHtml("INFO", "PTZ.Server" + getComponentID(), ss.str());
 #else
         log("rate: %.3f, delta: %.8f, eps: %.8f", pace.getTotalRate(), delta, epsmove);
