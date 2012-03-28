@@ -6,12 +6,14 @@
 #include "PlacePropertySaver.h"
 #include <SpatialProperties.hpp>
 
+#include <cast/architecture/ChangeFilterFactory.hpp>
 #include <Ice/Initialize.h>
 #include <Ice/LocalException.h>
 
 #include <fstream> 
 #include <boost/foreach.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace boost;
@@ -86,6 +88,8 @@ void PlacePropertySaver::configure(const map<string,string> &config)
         parseOptionLexicalCast<unsigned int>("--wait-between-loading", 1);
   }
 
+  _waitForMapLoadStatus = parseOptionFlag("--wait-for-map-load-status");
+
   log("Configuration:");
   log("-> saving: %s", (_doSave ? "true" : "false"));
   log("-> save file name: %s", _saveFileName.c_str());
@@ -95,6 +99,8 @@ void PlacePropertySaver::configure(const map<string,string> &config)
   log("-> load file name: %s", _loadFileName.c_str());
   log("-> wait before loading: %dms", _waitBeforeLoading);
   log("-> wait between loading: %dms", _waitBetweenLoading);
+  log("-> wait for map load status: %s", 
+      (_waitForMapLoadStatus ? "true" : "false"));
 
   debug("Configured.");
   
@@ -104,6 +110,19 @@ void PlacePropertySaver::configure(const map<string,string> &config)
 // ------------------------------------------------------
 void PlacePropertySaver::start()
 {
+  addChangeFilter(
+      createGlobalTypeFilter<SpatialData::MapLoadStatus>(cdl::ADD),
+      new MemberFunctionChangeReceiver<PlacePropertySaver>(
+          this, &PlacePropertySaver::mapLoadStatusAdded));
+  addChangeFilter(
+      createGlobalTypeFilter<SpatialData::MapLoadStatus>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<PlacePropertySaver>(
+          this, &PlacePropertySaver::mapLoadStatusOverwritten));
+  addChangeFilter(
+      createGlobalTypeFilter<SpatialData::MapLoadStatus>(cdl::DELETE),
+      new MemberFunctionChangeReceiver<PlacePropertySaver>(
+          this, &PlacePropertySaver::mapLoadStatusDeleted));
+
   debug("Started.");
 }
 
@@ -128,38 +147,48 @@ void PlacePropertySaver::stop()
 // ------------------------------------------------------
 void PlacePropertySaver::runComponent()
 {
+  debug("Running.");
 
-  // If enabled, first load existing place properties from disk, then, if
-  // enabled, start saving properties continuously to disk.
+  if (!boost::filesystem::exists(_loadFileName))
+  {
+    log("Did not find file '%s' that was configured to load the place "
+        "properties from. Will neither load nor update map load status.",
+        _loadFileName.c_str());
+    _waitForMapLoadStatus = false;
+    _doLoad = false;
+  }
 
-  if (_doLoad)
+  // 1) If enabled, wait for map status.
+  if (_waitForMapLoadStatus && isRunning())
+  {
+    waitForMapLoadStatus();
+  }
+
+
+  // 2) If enabled, load existing place properties from disk.
+  if (_doLoad && isRunning())
   {
     loadPlaceProperties();
   }
 
-  if (_doSave)
+  if (_waitForMapLoadStatus && isRunning())
+  {
+    // update map load status even if loading is disabled to that map loading
+    // procedure does not get stuck even if we don't load place properties.
+    updateWMMapLoadStatus();
+  }
+
+  // 3) If enabled, start saving properties continuously to disk.
+  if (_doSave && isRunning())
   {      
     if (_saveContinuously) 
     {
-      // Sleep at most 100ms at a time to be responsive to "stop" events. We
-      // will round up _saveInterval to 100ms precision.
-      unsigned int sleeptime = 100;
-      unsigned int sleepiterations = _saveInterval / sleeptime;
-      if (sleepiterations % sleeptime != 0) 
-        ++sleepiterations; // make sure we round up
-
-      unsigned int count = 0;
       while (isRunning())
       {
-        sleepComponent(sleeptime);
-        ++count;
-        if (count >= sleepiterations)
-        {
-          count = 0;
-          if (isRunning())
-            savePlaceProperties();
-        }
-      } 
+        if (!sleepComponentResponsive(_saveInterval))
+          return;
+        savePlaceProperties();
+      }
     }
     else
     {
@@ -184,148 +213,170 @@ void PlacePropertySaver::savePlaceProperties()
   string subarch;
 
 
-  // --- CATEGORICAL ---
-  subarch = "categorical.sa";
-  debug("Looking in %s.", subarch.c_str());
-
-  // shape
+  try
   {
-    typedef SpatialProperties::RoomShapePlaceProperty prop_t;
-    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
 
-    vector<data_ptr_t> result;
-    getWorkingMemoryEntries<prop_t>(subarch, 0, result);
-
-    debug("Found %d shape place properties.", result.size());
-    count += result.size();
-
-    BOOST_FOREACH(const data_ptr_t &p, result)
+    // --- CATEGORICAL ---
+    subarch = "categorical.sa";
+    debug("Looking in %s.", subarch.c_str());
+    
+    // shape
     {
-      output[subarch].push_back(p->getData());
+      typedef SpatialProperties::RoomShapePlaceProperty prop_t;
+      typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+      vector<data_ptr_t> result;
+      // FIXME: exception handling???
+      getWorkingMemoryEntries<prop_t>(subarch, 0, result);
+
+      debug("Found %d shape place properties.", result.size());
+      count += result.size();
+
+      BOOST_FOREACH(const data_ptr_t &p, result)
+      {
+        output[subarch].push_back(p->getData());
+      }
+    }
+
+    // size
+    {
+      typedef SpatialProperties::RoomSizePlaceProperty prop_t;
+      typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+      vector<data_ptr_t> result;
+      getWorkingMemoryEntries<prop_t>(subarch, 0, result);
+
+      debug("Found %d size place properties.", result.size());
+      count += result.size();
+
+      BOOST_FOREACH(const data_ptr_t &p, result)
+      {
+        output[subarch].push_back(p->getData());
+      }
+    }
+
+    // appearance
+    {
+      typedef SpatialProperties::RoomAppearancePlaceProperty prop_t;
+      typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+      vector<data_ptr_t> result;
+      getWorkingMemoryEntries<prop_t>(subarch, 0, result);
+
+      debug("Found %d appearance place properties.", result.size());
+      count += result.size();
+
+      BOOST_FOREACH(const data_ptr_t &p, result)
+      {
+        output[subarch].push_back(p->getData());
+      }
+    }
+
+
+    // --- SPATIAL ---
+    subarch = "spatial.sa";
+    debug("Looking in %s.", subarch.c_str());
+
+    // human assertions
+    {
+      typedef SpatialProperties::RoomHumanAssertionPlaceProperty prop_t;
+      typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+      vector<data_ptr_t> result;
+      getWorkingMemoryEntries<prop_t>(subarch, 0, result);
+
+      debug("Found %d human assertions place properties.", result.size());
+      count += result.size();
+
+      BOOST_FOREACH(const data_ptr_t &p, result)
+      {
+        output[subarch].push_back(p->getData());
+      }
+    }
+
+    // object search result
+    {
+      typedef SpatialData::ObjectSearchResult prop_t;
+      typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+      vector<data_ptr_t> result;
+      getWorkingMemoryEntries<prop_t>(subarch, 0, result);
+
+      debug("Found %d object search results.", result.size());
+      count += result.size();
+
+      BOOST_FOREACH(const data_ptr_t &p, result)
+      {
+        output[subarch].push_back(p->getData());
+      }
+    }
+
+    // object place property
+    {
+      typedef SpatialProperties::ObjectPlaceProperty prop_t;
+      typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
+
+      vector<data_ptr_t> result;
+      getWorkingMemoryEntries<prop_t>(subarch, 0, result);
+
+      debug("Found %d object place properties.", result.size());
+      count += result.size();
+
+      BOOST_FOREACH(const data_ptr_t &p, result)
+      {
+        output[subarch].push_back(p->getData());
+      }
     }
   }
-
-  // size
+  catch(CASTException &e)
   {
-    typedef SpatialProperties::RoomSizePlaceProperty prop_t;
-    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
-
-    vector<data_ptr_t> result;
-    getWorkingMemoryEntries<prop_t>(subarch, 0, result);
-
-    debug("Found %d size place properties.", result.size());
-    count += result.size();
-
-    BOOST_FOREACH(const data_ptr_t &p, result)
-    {
-      output[subarch].push_back(p->getData());
-    }
+    log("Caught exception at %s. Message: %s", __HERE__, e.what());
   }
-
-  // appearance
-  {
-    typedef SpatialProperties::RoomAppearancePlaceProperty prop_t;
-    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
-
-    vector<data_ptr_t> result;
-    getWorkingMemoryEntries<prop_t>(subarch, 0, result);
-
-    debug("Found %d appearance place properties.", result.size());
-    count += result.size();
-
-    BOOST_FOREACH(const data_ptr_t &p, result)
-    {
-      output[subarch].push_back(p->getData());
-    }
-  }
-
-
-  // --- SPATIAL ---
-  subarch = "spatial.sa";
-  debug("Looking in %s.", subarch.c_str());
-
-  // human assertions
-  {
-    typedef SpatialProperties::RoomHumanAssertionPlaceProperty prop_t;
-    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
-
-    vector<data_ptr_t> result;
-    getWorkingMemoryEntries<prop_t>(subarch, 0, result);
-
-    debug("Found %d human assertions place properties.", result.size());
-    count += result.size();
-
-    BOOST_FOREACH(const data_ptr_t &p, result)
-    {
-      output[subarch].push_back(p->getData());
-    }
-  }
-
-  // object search result
-  {
-    typedef SpatialData::ObjectSearchResult prop_t;
-    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
-
-    vector<data_ptr_t> result;
-    getWorkingMemoryEntries<prop_t>(subarch, 0, result);
-
-    debug("Found %d object search results.", result.size());
-    count += result.size();
-
-    BOOST_FOREACH(const data_ptr_t &p, result)
-    {
-      output[subarch].push_back(p->getData());
-    }
-  }
-
-  // object place property
-  {
-    typedef SpatialProperties::ObjectPlaceProperty prop_t;
-    typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
-
-    vector<data_ptr_t> result;
-    getWorkingMemoryEntries<prop_t>(subarch, 0, result);
-
-    debug("Found %d object place properties.", result.size());
-    count += result.size();
-
-    BOOST_FOREACH(const data_ptr_t &p, result)
-    {
-      output[subarch].push_back(p->getData());
-    }
-  }
-
 
   debug("Saving %d WM-entries in total.", count);
   
   
-  // FIXME @demmeln 22.03.2012: Do we need to filter out inferred place
-  // properties? Apparently it does not hurt just save / load them anyway, but
-  // this has the potential to bit us in the future.
 
-  
-  Ice::OutputStreamPtr os = Ice::createOutputStream(getCommunicator());
-
-  os->write(output);
-
-  os->writePendingObjects(); // @demmeln 22.03.2012: is this needed? Ice
-                             // Documentation is not shedding light on this.
-                             // @demmeln 24.03.2012: I guess this is necessary
-                             // alter all. It seems this does something like
-                             // save objects that Handles point to. This is
-                             // related to loadPendingObjects().
+  Ice::OutputStreamPtr os;
   vector<Ice::Byte> data;
-  os->finished(data);
-  
-  ofstream fs(_saveFileName.c_str(), ios::binary | ios::out);
-  if(!fs) 
+
+  try
   {
-    error("Could not open file '%d' while saving place properties.",
-          _saveFileName.c_str());
+    os = Ice::createOutputStream(getCommunicator());
+
+    os->write(output);
+
+    os->writePendingObjects(); /* @demmeln 22.03.2012: is this needed? Ice
+                                * Documentation is not shedding light on this.
+                                * @demmeln 24.03.2012: I guess this is necessary
+                                * alter all. It seems this does something like
+                                * save objects that Handles point to. This is
+                                * related to loadPendingObjects(). */
+    os->finished(data);
+  }
+  catch (Ice::MarshalException &e)
+  {
+    error("Marshal error while saving place properties: %s", e.what());
+    return;
+  }
+  catch (std::exception &e)
+  {
+    error("General error while saving place properties: %s", e.what());
     return;
   }
 
-  debug("Writing to file '%s'.", _saveFileName.c_str());
+
+  try
+  {
+    ofstream fs(_saveFileName.c_str(), ios::binary | ios::out);
+    if(!fs) 
+    {
+      error("Could not open file '%d' while saving place properties.",
+            _saveFileName.c_str());
+      return;
+    }
+
+    debug("Writing to file '%s'.", _saveFileName.c_str());
 
   // NOTE @demmeln 26.03.2012: What I want is simply writing the
   // vector<Ice::Byte>, which at least on my machine is the same as
@@ -357,9 +408,15 @@ void PlacePropertySaver::savePlaceProperties()
   // readPlaceProperties().
   // 
   // [1] http://en.cppreference.com/w/cpp/language/reinterpret_cast
-  fs.write(reinterpret_cast<char *>(data.data()), data.size()); 
+    
+    fs.write(reinterpret_cast<char *>(data.data()), data.size()); 
   
-  fs.close();
+    fs.close();
+  }
+  catch (std::exception &e)
+  {
+    error("Exception while saving data to file: %s", e.what());
+  }
 
   ptime end_t(microsec_clock::local_time());
 
@@ -377,19 +434,25 @@ void PlacePropertySaver::loadPlaceProperties()
   debug("Waiting %dms before loading place properties", _waitBeforeLoading);
   
   if (_waitBeforeLoading > 0)
-    sleepComponent(_waitBeforeLoading);
+    if (!sleepComponentResponsive(_waitBeforeLoading))
+      return;
 
   ptime start_t(microsec_clock::local_time());
 
   debug("Loading place properties from file '%s'.", _loadFileName.c_str());
 
-  ifstream fs(_loadFileName.c_str(), ios::binary | ios::in);
-  if(!fs)
+
+  vector<Ice::Byte> data;
+
+  try
   {
-    error("Could not open file '%d' while loading place properties.",
-          _loadFileName.c_str());
-    return;
-  }
+    ifstream fs(_loadFileName.c_str(), ios::binary | ios::in);
+    if(!fs)
+    {
+      error("Could not open file '%d' while loading place properties.",
+            _loadFileName.c_str());
+      return;
+    }
 
 
 
@@ -421,16 +484,21 @@ void PlacePropertySaver::loadPlaceProperties()
   //
   // [1] http://stackoverflow.com/a/7690162
 
-  // get length of file:
-  fs.seekg (0, ios::end);
-  int file_length = fs.tellg();
-  fs.seekg (0, ios::beg);
+    // get length of file:
+    fs.seekg (0, ios::end);
+    int file_length = fs.tellg();
+    fs.seekg (0, ios::beg);
 
-  // read the data
-  vector<Ice::Byte> data(file_length);
-  fs.read(reinterpret_cast<char *>(data.data()), file_length);
+    // read the data
+    data.resize(file_length);
+    fs.read(reinterpret_cast<char *>(data.data()), file_length);
 
-  fs.close();
+    fs.close();
+  }
+  catch (std::exception &e)
+  {
+    error("Exception while saving data to file: %s", e.what());
+  }
 
 
 
@@ -438,17 +506,25 @@ void PlacePropertySaver::loadPlaceProperties()
   typedef map<string, vector<Ice::ObjectPtr> > input_t;
   input_t input;
 
+
   try
   {
     is->read(input);
     is->readPendingObjects();
   }
-  catch (Ice::UnmarshalOutOfBoundsException &)
+  catch (Ice::MarshalException &e)
   {
-    error("Error while parsing file '%s' for loading saved place properties.",
-          _loadFileName.c_str());
+    error("Marshal error while parsing file '%s' for loading saved place "
+          "properties: %s", _loadFileName.c_str(), e.what());
     return;
   }
+  catch (std::exception &e)
+  {
+    error("General error while parsing file '%s' for loading saved place "
+          "properties: %s", _loadFileName.c_str(), e.what());
+    return;
+  }
+
 
   int count = 0;
   
@@ -464,7 +540,8 @@ void PlacePropertySaver::loadPlaceProperties()
     BOOST_FOREACH(const Ice::ObjectPtr &o, objects)
     {
       if(_waitBetweenLoading > 0)
-        sleepComponent(_waitBetweenLoading);
+        if(!sleepComponentResponsive(_waitBetweenLoading))
+          return;
 
       debug("Adding loaded property of type '%s' to working memory.",
             o->ice_id().c_str());
@@ -483,3 +560,173 @@ void PlacePropertySaver::loadPlaceProperties()
 
 }
 
+
+// ------------------------------------------------------
+void PlacePropertySaver::waitForMapLoadStatus()
+{
+  // TODO: Maybe use mutex / condition signal instead of bool flag / polling
+
+  ptime start_t(microsec_clock::local_time());
+
+  int count = 0;
+
+  while(isRunning() && !_mapLoadStatusOk)
+  {
+    sleepComponent(100);
+    ++count;
+    if (count % 100 == 0)
+    {
+      error("Waited another 10s for map load status.");
+    }
+  }
+
+  ptime end_t(microsec_clock::local_time());
+
+  string duration = to_simple_string(end_t - start_t);
+
+  log("Time waited for MapLoadStatus: %s.", duration.c_str());
+
+}
+
+
+// ------------------------------------------------------
+bool PlacePropertySaver::checkWMMapLoadStatus()
+{
+
+  try {
+    SpatialData::MapLoadStatusPtr statusStruct = 
+        getMemoryEntry<SpatialData::MapLoadStatus>(_mapLoadStatusAddress);
+    return statusStruct->placesWritten;
+  }
+  catch (DoesNotExistOnWMException) {
+    getLogger()->warn("MapLoadStatus struct disappeared from WM! "
+                      "Map loading procedure may get stuck.");
+  }
+  catch(CASTException &e)
+  {
+    log("Caught exception at %s. Message: %s", __HERE__, e.what());
+  }
+
+  return false;
+
+}
+
+
+// ------------------------------------------------------
+void PlacePropertySaver::mapLoadStatusAdded(const cdl::WorkingMemoryChange &wmc)
+{
+  debug("MapLoadStatus added to working memory");
+
+  // Should be added only once. If added again, overwrite, but signal an error.
+
+  // If the map status indicates that places have been loaded, we set
+  // _mapLoadStatusOk to true to indicate to the main thread that it is now ok
+  // to load the place properties
+
+  if (_mapLoadStatusAddress.id != "")
+    error("Map load status was added multiple times to the WM!");
+
+  _mapLoadStatusAddress = wmc.address;
+
+  if (checkWMMapLoadStatus())
+    _mapLoadStatusOk = true;
+
+}
+
+
+// ------------------------------------------------------
+void PlacePropertySaver::mapLoadStatusOverwritten(const cdl::WorkingMemoryChange &wmc)
+{
+  debug("MapLoadStatus overwritten in working memory");
+
+  // If the map status indicates that places have been loaded, we set
+  // _mapLoadStatusOk to true to indicate to the main thread that it is now ok
+  // to load the place properties
+
+  if (_mapLoadStatusAddress != wmc.address)
+  {
+    error("Getting overwrite for different MapLoadStatus. "
+          "There should only be one.");
+    return;
+  }
+
+  if (checkWMMapLoadStatus())
+    _mapLoadStatusOk = true;
+
+}
+
+
+// ------------------------------------------------------
+void PlacePropertySaver::mapLoadStatusDeleted(const cdl::WorkingMemoryChange &wmc)
+{
+  debug("MapLoadStatus deleted from working memory");
+
+  if (wmc.address == _mapLoadStatusAddress)
+    _mapLoadStatusAddress = cast::cdl::WorkingMemoryAddress(); // reset
+
+}
+
+
+// ------------------------------------------------------
+void PlacePropertySaver::updateWMMapLoadStatus()
+{
+
+  if (_mapLoadStatusAddress.id == "")
+  {
+    log("Wanted to update map load status, but it is not in WM.");
+    return;
+  }
+  else
+  {
+    try
+    {
+      lockEntry(_mapLoadStatusAddress, cdl::LOCKEDOD);
+      SpatialData::MapLoadStatusPtr statusStruct = 
+          getMemoryEntry<SpatialData::MapLoadStatus>(_mapLoadStatusAddress);
+      statusStruct->categoryDataWritten = true;
+      overwriteWorkingMemory<SpatialData::MapLoadStatus>
+          (_mapLoadStatusAddress, statusStruct);
+      unlockEntry(_mapLoadStatusAddress);
+    }
+    catch (DoesNotExistOnWMException) 
+    {
+      getLogger()->warn("MapLoadStatus struct disappeared from WM! "
+                        "Map loading procedure may get stuck.");
+    }
+    catch(CASTException &e)
+		{
+			log("Caught exception at %s. Message: %s", __HERE__, e.what());
+		}
+
+  } 
+}
+
+
+// ------------------------------------------------------
+bool PlacePropertySaver::sleepComponentResponsive(unsigned long millis)
+{
+  // how much time do we want to sleep at most between checking for status
+  const unsigned long sleeptime = 100;
+
+  // If we would want to do it properly, we would clock the actual time the
+  // sleeping has been going on, since the intermediate wakeups also take some
+  // time. However we only wake up every 'sleeptime' milliseconds and it is not
+  // vital that the total sleep time is very acurate.
+
+  unsigned int sleepiterations = millis / sleeptime;
+  unsigned int extra = millis % sleeptime;
+
+  unsigned int count = 0;
+  while (isRunning())
+  {
+    if (count == sleepiterations)
+    {
+      sleepComponent(extra);
+      break;
+    }
+    sleepComponent(sleeptime);
+    ++count;
+  } 
+
+  return isRunning();
+}
