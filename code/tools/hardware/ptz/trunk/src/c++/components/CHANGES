@@ -1,0 +1,22 @@
+
+mmarko 2012-03-28:
+
+   - The PTZ server now includes a GUI that is managed by the Display Server.
+     The PTZ GUI was previously managed by the SOI Filter.
+
+   - The PTZ server also monitors the movement of the PTZ and updates the UI
+     every time an end-of-motion is detected. The motion status (Still/Moving)
+     is also displayed in the GUI.
+
+   - The PTZ server accepts 2 parameters:
+
+      --motion_tolerance "1e-2"   // minimum distance that is detected as movement
+      --move_ptz_deg "pan tilt zoom" // move to initial position, in degrees
+
+      The motion tolerance is specified in [deg/s]. This should detect
+      movements of at the same precision independent of the speed at which the
+      server is checking the position. Normally it should be checking at 10Hz,
+      but when the Gazebo simulation is running on the same computer, this
+      drops below 1Hz.
+
+   - The Ice interface was extended with the function isMoving().
