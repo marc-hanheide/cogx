@@ -1162,6 +1162,8 @@ void DisplayNavInPB::runComponent() {
   log("runComponent");
 
   while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
+    if (!isRunning())
+      return;
     sleepComponent(m_RetryDelay);
     connectPeekabot();
   }
