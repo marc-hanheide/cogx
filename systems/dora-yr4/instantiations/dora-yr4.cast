@@ -334,8 +334,8 @@ IFOPTALL(%(feature_options), spatial)
  #EXPAND avs_sift_objects=%(avs_sift_objects)
  #EXPAND avs_random_vc=%(avs_random_vc)
     IFOPTALL(%(feature_options), avs)
-		CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --log --no-vision --ptzserver ptz.server --display-objects-in-pb 
-		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --log --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz 
+		CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --no-vision --ptzserver ptz.server --display-objects-in-pb 
+		CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz 
     ENDIF
 ENDIF
 
@@ -423,8 +423,8 @@ IFOPTALL(%(feature_options), planning_sa)
     VARDEFAULT expl_rules=explanations-dora.pddl
     VARDEFAULT cons_rules=consistency-dora.pddl
     VARDEFAULT planning_config="config.dora.ini"
-    COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --log --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules)
-    COMPONENT CPP PlannerDTServer DTPCONTROL --log --debug
+    COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules)
+    COMPONENT CPP PlannerDTServer DTPCONTROL
 
     INCLUDE includes/planner.sa/planner-base.cast
     INCLUDE includes/planner.sa/viz-plan.cast
@@ -434,7 +434,7 @@ IFOPTALL(%(feature_options), planning_sa)
     
     # exection ####################################################################
     IFOPTALL(%(feature_options), man_ctrl)
-        JAVA MG manual.execution dora.execution.components.GraphicalExecutionManager --log --labels table,cerealbox
+        JAVA MG manual.execution dora.execution.components.GraphicalExecutionManager --labels table,cerealbox
     ENDIF
     JAVA MG executor dora.execution.components.DoraExecutionMediator
 
