@@ -32,6 +32,10 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
    this->wdialog = pDialogWidget_;
    pDialog_->m_pDialogView = this;
 
+   connect(&engine, SIGNAL(signalHandlerException(QScriptValue)),
+         this, SLOT(handleEngineException(QScriptValue)),
+         Qt::QueuedConnection);
+
    QScriptValue glob = engine.globalObject();
    QScriptValue proxy = engine.newQObject(this, QScriptEngine::QtOwnership);
    //           , QScriptEngine::PreferExistingWrapperObject | QScriptEngine::ExcludeSuperClassContents);
@@ -52,7 +56,7 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
    if (sName.length() < 1)
       sName = "_" + lsConstruct[0].trimmed() + "_";
 
-   engine.evaluate(QString::fromStdString(pDialog->m_scriptCode));
+   engine.evaluate(QString::fromStdString(pDialog->m_scriptCode), QString::fromStdString(pDialog->m_id));
    if (engine.hasUncaughtException()) {
       dumpUncaughtException("Exception while loading script", "loading");
    }
@@ -78,9 +82,6 @@ QCastDialogProxy::QCastDialogProxy(cogx::display::CGuiDialog* pDialog_, QWidget*
 
    connect(this, SIGNAL(sigExecute(QString)),
          this, SLOT(doExecute(QString)),
-         Qt::QueuedConnection);
-   connect(&engine, SIGNAL(sigHandlerException()),
-         this, SLOT(handleEngineException(QScriptValue)),
          Qt::QueuedConnection);
 }
 
@@ -142,7 +143,7 @@ void QCastDialogProxy::execute(const std::string& script)
 void QCastDialogProxy::doExecute(QString script)
 {
    DTRACE("QCastDialogProxy::doExecute");
-   engine.evaluate(script);
+   engine.evaluate(script, "execInDialog");
    if (engine.hasUncaughtException()) {
       dumpUncaughtException("Exception in doExecute()", "doExecute", script.toStdString());
    }
@@ -150,9 +151,7 @@ void QCastDialogProxy::doExecute(QString script)
 
 void QCastDialogProxy::handleEngineException(QScriptValue exception)
 {
-   std::string htmlobj = "@scripterror"; 
-   std::string value = "<h3>Exception in dialog: " + pDialog->m_id + "</h3>" + exception.toString().toStdString();
-   pDialog->notify_setHtml(htmlobj, "exception-" + pDialog->m_id, value);
+   dumpUncaughtException("Signal Handler Exception", "sigexception");
 }
 
 void QCastDialogProxy::dumpUncaughtException(const std::string& title, const std::string& context,
@@ -160,7 +159,7 @@ void QCastDialogProxy::dumpUncaughtException(const std::string& title, const std
 {
    std::string htmlobj = "@scripterror"; 
    std::ostringstream ss;
-   ss << "<h3>" << title << "(" << pDialog->m_id << ")</h3>";
+   ss << "<h3>" << title << " (" << pDialog->m_id << ")</h3>";
    ss << engine.uncaughtException().toString().toStdString();
    ss << "<br>---- trace ----</br>";
    QStringList items = engine.uncaughtExceptionBacktrace();
@@ -168,7 +167,7 @@ void QCastDialogProxy::dumpUncaughtException(const std::string& title, const std
       ss << value.toStdString() << "<br>";
    }
    if (extra != "") {
-      ss << "---- ----<br>" << extra;
+      ss << "---- ----<br><pre>" << extra << "</pre>";
    }
    pDialog->notify_setHtml(htmlobj, pDialog->m_id + "-" + context, ss.str());
 }
