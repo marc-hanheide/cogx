@@ -472,6 +472,14 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 
 	// Get node it for the place ID
     ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
+
+    if (!fnodePtr)
+    {
+      error("Place with id %d for added shape property does not exist", 
+            property->placeId);
+      return;
+    }
+
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_PeekabotClient.begin_bundle();
 
@@ -532,6 +540,13 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 	// Get node it for the place ID
     ::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
 
+    if (!fnodePtr)
+    {
+      error("Place with id %d for added size property does not exist", 
+            property->placeId);
+      return;
+    }
+
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_PeekabotClient.begin_bundle();
 
@@ -591,6 +606,13 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 
 	// Get node it for the place ID
 	::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID( (::Ice::Int) (property->placeId)); // why is iter a long?
+
+    if (!fnodePtr)
+    {
+      error("Place with id %d for added appearance property does not exist", 
+            property->placeId);
+      return;
+    }
 
 	IceUtil::Mutex::Lock lock(m_Mutex);
 	m_PeekabotClient.begin_bundle();
