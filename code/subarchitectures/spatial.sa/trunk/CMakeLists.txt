@@ -47,6 +47,7 @@ link_directories(${OPENCV_LIBRARY_DIRS})
 
 # Mendatory components
 add_subdirectory(src/c++/)
+add_subdirectory(src/c++/PlacePropertySaver)
 
 # Options
 #option(BUILD_SA_SPATIAL_XXX "Build Spatial.SA XXX" YES)
@@ -55,6 +56,4 @@ add_subdirectory(src/c++/)
 #if(BUILD_SA_SPATIAL_XXX)
 #    add_subdirectory(src/c++/components/XXX)
 #endif(BUILD_SA_SPATIAL_XXX)
-
-
 
