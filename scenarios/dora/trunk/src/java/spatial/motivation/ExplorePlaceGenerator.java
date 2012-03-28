@@ -120,20 +120,20 @@ public class ExplorePlaceGenerator extends
 	@Override
 	protected void start() {
 		super.start();
-		try {
-			SpatialFacade.get(this).registerPlaceChangedCallback(
-					new SpatialFacade.PlaceChangedHandler() {
-						@Override
-						public synchronized void update(Place p) {
-							log("explicitly scheduling all motives to be checked due to place change. new place is "
-									+ p.id);
-							recheckAllMotives();
-						}
-					});
-		} catch (CASTException e1) {
-			println("exception when registering placeChangedCallbacks");
-			e1.printStackTrace();
-		}
+//		try {
+//			SpatialFacade.get(this).registerPlaceChangedCallback(
+//					new SpatialFacade.PlaceChangedHandler() {
+//						@Override
+//						public synchronized void update(Place p) {
+//							log("explicitly scheduling all motives to be checked due to place change. new place is "
+//									+ p.id);
+//							recheckAllMotives();
+//						}
+//					});
+//		} catch (CASTException e1) {
+//			println("exception when registering placeChangedCallbacks");
+//			e1.printStackTrace();
+//		}
 
 	}
 
@@ -177,6 +177,8 @@ public class ExplorePlaceGenerator extends
 			motive.informationGain = (space * m_spaceMeasureConstant)
 					+ (border * m_borderMeasureConstant) + m_constantGain;
 			log("  gain=" + motive.informationGain);
+		} else {
+			motive.informationGain = 1.0f;
 		}
 
 		motive.goal = new Goal(computeImportance(motive), -1, "(= (placestatus '"
@@ -186,32 +188,32 @@ public class ExplorePlaceGenerator extends
 
 	}
 
-	/**
-	 * assigns costs to the motive
-	 * 
-	 * @param motive
-	 * 
-	 */
-	@Override
-	protected void assignCosts(Motive motive) {
-		try {
-			Place currentPlace;
-			currentPlace = SpatialFacade.get(this).getPlace();
-			log("compute cost from current place " + currentPlace.id
-					+ " to place " + ((ExploreMotive) motive).placeID);
-			if (currentPlace != null) {
-				double costs = SpatialFacade.get(this).queryCosts(
-						currentPlace.id, ((ExploreMotive) motive).placeID);
-				if (costs < Double.MAX_VALUE) {
-					motive.costs = (float) costs;
-				}
-			}
-		} catch (CASTException e) {
-			logException(e);
-		} catch (InterruptedException e) {
-			logException(e);
-		}
-	}
+//	/**
+//	 * assigns costs to the motive
+//	 * 
+//	 * @param motive
+//	 * 
+//	 */
+//	@Override
+//	protected void assignCosts(Motive motive) {
+//		try {
+//			Place currentPlace;
+//			currentPlace = SpatialFacade.get(this).getPlace();
+//			log("compute cost from current place " + currentPlace.id
+//					+ " to place " + ((ExploreMotive) motive).placeID);
+//			if (currentPlace != null) {
+//				double costs = SpatialFacade.get(this).queryCosts(
+//						currentPlace.id, ((ExploreMotive) motive).placeID);
+//				if (costs < Double.MAX_VALUE) {
+//					motive.costs = (float) costs;
+//				}
+//			}
+//		} catch (CASTException e) {
+//			logException(e);
+//		} catch (InterruptedException e) {
+//			logException(e);
+//		}
+//	}
 
 	float computeImportance(ExploreMotive m) {
 		if (m.informationGain < 0)
