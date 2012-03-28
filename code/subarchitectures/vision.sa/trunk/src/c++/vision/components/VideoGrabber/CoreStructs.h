@@ -10,6 +10,7 @@
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
 #endif
+#include <IceUtil/IceUtil.h>
 
 namespace cogxgrabber
 {

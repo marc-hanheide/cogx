@@ -3,7 +3,9 @@
 
 #include <VisionData.hpp>
 #include <MatlabData.hpp>
+#ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
+#endif
 
 #include <cast/architecture/ManagedComponent.hpp>
 

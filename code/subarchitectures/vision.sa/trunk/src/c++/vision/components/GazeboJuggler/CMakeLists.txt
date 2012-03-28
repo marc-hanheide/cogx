@@ -1,7 +1,6 @@
 project (GazeboJuggler)
 
 include_directories(.)
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
 
 include_directories(${COGX_ROOT}/tools/math/src/c++/math)
 #include_directories(${COGX_ROOT}/tools/hardware/video/src/c++/autogen)
@@ -10,7 +9,8 @@ Find_package(Player)
 # FIND_PACKAGE( OpenCV REQUIRED )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
+
+ENABLE_COGX_VISUALIZATION(TRUE)
 
 add_cast_component(GazeboJuggler GazeboJuggler.cpp)
 link_cast_component(${CAST_COMPONENT_NAME}

@@ -13,8 +13,7 @@ include_directories(.  sifts
    ../../libs/SiftGPU/src/SiftGPU
    )
 
-include_directories(${VISUALIZATION_INCLUDE_DIRS})
-link_directories(${VISUALIZATION_LIBRARY_DIRS})
+ENABLE_COGX_VISUALIZATION(TRUE)
 
 link_directories(
    ${CUDA_INSTALLROOT}/lib

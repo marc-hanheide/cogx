@@ -548,9 +548,11 @@ void SOIFilter::onAdd_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
     IceUtil::RWRecMutex::WLock lock(m_protoObjectMapMutex);
     m_protoObjects[pporec->addr] = pporec;
 
+#ifdef FEAT_VISUALIZATION
     if (m_bShowProtoObjects) {
       sendProtoObject(pporec->addr, pobj);
     }
+#endif
   }
 }
 
@@ -566,9 +568,11 @@ void SOIFilter::onUpdate_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
     IceUtil::RWRecMutex::WLock lock(m_protoObjectMapMutex);
     m_protoObjects[pporec->addr] = pporec;
 
+#ifdef FEAT_VISUALIZATION
     if (m_bShowProtoObjects) {
       sendProtoObject(_wmc.address, pobj);
     }
+#endif
   }
 
   if (m_snapper.m_bAutoSnapshot) {
@@ -585,9 +589,11 @@ void SOIFilter::onDelete_ProtoObject(const cdl::WorkingMemoryChange & _wmc)
     IceUtil::RWRecMutex::WLock lock(m_protoObjectMapMutex);
     m_protoObjects.erase(_wmc.address);
   }
+#ifdef FEAT_VISUALIZATION
   if (m_bShowProtoObjects) {
     sendRemoveProtoObject(_wmc.address);
   }
+#endif
 }
 
 void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
@@ -600,7 +606,9 @@ void SOIFilter::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
     saveVisualObjectData(pobj, pvorec->pobj);
     m_visualObjects[pvorec->addr] = pvorec;
 
+#ifdef FEAT_VISUALIZATION
     sendSyncAllProtoObjects();
+#endif
   }
   catch (exception& e) {
     error(" **** onAdd_VisualObject: \n%s\n ****", e.what());
@@ -617,7 +625,9 @@ void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
     saveVisualObjectData(pobj, pvorec->pobj);
     m_visualObjects[pvorec->addr] = pvorec;
 
+#ifdef FEAT_VISUALIZATION
     sendSyncAllProtoObjects();
+#endif
   }
   catch (exception& e) {
     error(" **** onUpdate_VisualObject: \n%s\n ****", e.what());
@@ -627,7 +637,9 @@ void SOIFilter::onUpdate_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 void SOIFilter::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
   m_visualObjects.erase(_wmc.address);
+#ifdef FEAT_VISUALIZATION
   sendSyncAllProtoObjects();
+#endif
 }
 
 void SOIFilter::onChange_RobotPose(const cdl::WorkingMemoryChange & _wmc)
@@ -660,7 +672,9 @@ void SOIFilter::onChange_CameraMotion(const cdl::WorkingMemoryChange & _wmc)
     m_bCameraMoving = pcms->bMoving;
     if (!m_bCameraMoving) {
       m_endMoveTimeout.restart();
+#ifdef FEAT_VISUALIZATION
       m_display.sendPtuStateToDialog();
+#endif
     }
     // log("Camera %d moving: %s", int(camId), m_bCameraMoving ? "YES" : "NO");
   }
@@ -1063,6 +1077,7 @@ void SOIFilter::runComponent()
       tmCheckVisibility.restart();
     }
 
+#ifdef FEAT_VISUALIZATION
     if (tmSendStatus.isTimeoutReached()) {
       ostringstream ss;
       ss.precision(4); // set the _maximum_ precision
@@ -1072,6 +1087,7 @@ void SOIFilter::runComponent()
       m_display.setHtml("INFO", "soif.rate/" + getComponentID(), ss.str());
       tmSendStatus.restart();
     }
+#endif
   }
 
 #ifndef FEAT_VISUALIZATION
