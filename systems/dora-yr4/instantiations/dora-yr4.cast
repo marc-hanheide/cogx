@@ -37,8 +37,10 @@ VARDEFAULT feature_options=<multiline>
 	coma			
 # enable place categorisation
     categorisation	
-# use visaul categorisation
+# use visual categorisation
     !categorisation-visual 
+# use size categorisation
+    !categorisation-size 
 # if enabled, categorical will save a data stream to file
     !datasaving
 # if enabled, images will also be saved
@@ -511,6 +513,10 @@ IFOPTALL(%(feature_options), categorisation)
 	ENDIF
 	CPP GD categorical.laserprocessor CategoricalLaserProcessor --config %(categorisation_config)
 	CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config %(categorisation_config) --placemanager place.manager
+
+        IFOPTALL(%(feature_options), categorisation-size)
+	        CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config %(categorisation_config) --placemanager place.manager
+        ENDIF
 ENDIF
 
 

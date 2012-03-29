@@ -7,6 +7,8 @@ SETVAR feature_options=<multiline>
     default		
     coma		
     categorisation	
+    categorisation-visual
+    categorisation-size
     !binder			
     !vision			
     !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
