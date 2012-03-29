@@ -70,7 +70,7 @@ IFOPTALL(%(hardware_options), ptz)
     IFEQ(%(simulator), stage)
       COMPONENT CPP ptz.server PlayerActServer %(ptz_server_params)
     ELSE
-      COMPONENT CPP ptz.server PlayerPTZServer %(ptz_server_params)
+      COMPONENT CPP ptz.server PlayerPTZServer %(ptz_server_params) --motion_tolerance 0.2
     ENDIF
   ENDIF
 ENDIF
@@ -134,17 +134,38 @@ IFOPTALL(%(feature_options), dialogue)
    INCLUDE includes/dialogue.sa/dialogue-exe.cast
 ENDIF
 
-# planning and motivation #####################################################
+# planning and execution #####################################################
 IFOPTALL(%(feature_options), planning)
-   INCLUDE includes/planner.sa/planner-george.cast
-   INCLUDE includes/planner.sa/planner-base.cast
-   INCLUDE includes/planner.sa/viz-plan.cast
-   JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
-   JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
+   # modifiable options
+   VARDEFAULT planner_show_dot=--nodot
+   VARDEFAULT planner_workdir=subarchitectures/planner.sa/src/python
+   VARDEFAULT planner_domain=george.domain.year3.mapl
+   VARDEFAULT planner_monitor_files=<multiline>
+      CurrentPlan#plan=dot:%(planner_workdir)/{plan*.dot}
+   </multiline>
+
+   SETVAR planner_srv_params=<multiline>
+       --domain %(planner_domain)
+       --displayserver "display.srv"
+        %(planner_show_dot)
+   </multiline>
+   # WARNING: COMPONENT ends a SA and all MG and UM components are skipped until next SA
+   COMPONENT PYTHON PlannerPythonServer PythonServer %(planner_srv_params)
+
+   SUBARCHITECTURE planner.sa
+   JAVA WM cast.architecture.SubarchitectureWorkingMemory
+   CPP TM AlwaysPositiveTaskManager
+
+   CPP MG Planner WMControl --log
+
+   CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --monitor "%(planner_monitor_files)"
 
    IFOPTALL(%(feature_options), manual-planning)
       JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
    ENDIF
+
+   JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
+   JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 
    IFOPTALL(%(feature_options), binder)
       JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder

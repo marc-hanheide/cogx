@@ -12,12 +12,20 @@ SETVAR evdFilter_params=<multiline>
    --epstatus shared,attributed
 </multiline>
 CPP MG evdFilter MLNBeliefEvdFilter %(evdFilter_params)
+
+SETVAR mlnEngine1_inf_str=<multiline>
+   -ms
+   -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln,subarchitectures/binder.sa/src/mln/refresol/rrDomain.mln
+   -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db
+   -q resolution
+   -ow color,shape,color_constraint,shape_constraint,belief
+</multiline>
 	
 SETVAR mlnEngine1_params=<multiline>
 	--sa binder
 	--queries resolution
 	--instance-type t_belief
-	--inf-str "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln,subarchitectures/binder.sa/src/mln/refresol/rrDomain.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow color,shape,color_constraint,shape_constraint,belief"
+        --inf-str "%(mlnEngine1_inf_str)"
 	--standalone-display-host localhost
 </multiline>
 CPP MG mlnEngine1 MLNEngine %(mlnEngine1_params)
@@ -26,8 +34,8 @@ CPP MG rrClient MLNRefResolutionClient --sa binder --inf-id mlnEngine1 --evd-ids
 
 ##### Monitors
 
-JAVA MG MLNFactStatus castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "eu.cogx.mln.slice.MLNState"  --generic-col
-JAVA MG MLNEvidence castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "org.cognitivesystems.binder.mln.Evidence"  --generic-col --compact
+JAVA MG MLNFactStatus castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.mln.slice.MLNState"  --generic-col
+JAVA MG MLNEvidence castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "org.cognitivesystems.binder.mln.Evidence"  --generic-col --compact
 JAVA MG MLNInference castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "org.cognitivesystems.binder.mln.InferredResult" --generic-col
 JAVA MG RefReslResult castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "de.dfki.lt.tr.dialogue.ref.ReferenceResolutionResult" --generic-col --compact
 JAVA MG RefReslRequest castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "de.dfki.lt.tr.dialogue.ref.ReferenceResolutionRequest" --generic-col --compact
