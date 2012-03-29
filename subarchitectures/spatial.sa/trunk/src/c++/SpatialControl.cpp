@@ -2560,9 +2560,9 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
 
-    for (int i=0;i<10;i++){
+    for (int i=0;i<100;i++){
       double theta = (rand() % 360) * M_PI / 180; 
-      int r = round((m_maxMovePlaceholderRadius*(i+1)/10)/m_lgm->getCellSize());
+      int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
       for (int j=0;j<100;j++){
         int x= round(hypxi+r*cos(theta+j*2*3.14/10)); 
         int y= round(hypyi+r*sin(theta+j*2*3.14/10)); 
@@ -2594,9 +2594,9 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   int originPlaceID;
 
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
-  for (int i=0;i<10;i++){
+  for (int i=0;i<100;i++){
     double theta = (rand() % 360) * M_PI / 180; 
-    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)*i/9/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
+    int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
     for (int j=0;j<100;j++){
       int x= round(robotxi+r*cos(theta+j*2*3.14/10)); 
       int y= round(robotyi+r*sin(theta+j*2*3.14/10)); 
