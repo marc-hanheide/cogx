@@ -1967,7 +1967,7 @@ PlaceManager::processPlaceArrival(bool failed)
           log("   CASE 4: travelling over known place %d distant from goal %d, ignoring.", curPlace->id, m_goalPlaceForCurrentPath);
         }
 
-        else {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
+        else if (failed) {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
           arrivalCase = 5;
           //CASE 5: We were exploring but one way or another, we failed or 
           //ended up were we'd started.
@@ -1978,7 +1978,7 @@ PlaceManager::processPlaceArrival(bool failed)
           m_isPathFollowing = false; 
 
           //int currentPlaceID = curPlace->id;
-
+  
           deletePlaceProperties(wasHeadingForPlace);
           m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
           deleteFromWorkingMemory(m_HypIDToWMIDMap[goalHyp->hypID]); //Delete NodeHypothesis
