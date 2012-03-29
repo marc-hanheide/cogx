@@ -542,7 +542,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
 
-  m_maxNewPlaceholderRadius = 1.5;
+  m_maxNewPlaceholderRadius = 1.9;
   m_minNewPlaceholderRadius = 1.1;   
   m_maxMovePlaceholderRadius = 1;
   m_min_sep_dist = 1.1;
