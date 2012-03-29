@@ -253,6 +253,7 @@ PlaceManager::start()
 	&PlaceManager::mapLoadStatusOverwritten));
 
   frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
+  m_mapInterface = SpatialData::MapInterfacePrx(getIceServer<SpatialData::MapInterface>("spatial.control"));
   if (m_useLocalMaps) {
     hypothesisEvaluator = FrontierInterface::HypothesisEvaluatorPrx(getIceServer<FrontierInterface::HypothesisEvaluator>("map.manager"));
   }
@@ -356,9 +357,10 @@ PlaceManager::cancelMovement(bool failed = false)
       commands.begin(); it != commands.end(); it++) {
     try {
       log("locking");
-      lockEntry(it->getID(), cdl::LOCKEDODR);
+      lockEntry(it->getID(), cdl::LOCKEDOD);
       log("locked");
-      SpatialData::NavCommandPtr ptr = it->getData();
+      //Re-read after lock
+      SpatialData::NavCommandPtr ptr = getMemoryEntry<SpatialData::NavCommand>(it->getID());
       if (ptr->cmd == SpatialData::GOTOPLACE &&
           ptr->comp == SpatialData::COMMANDINPROGRESS) {
         ptr->status = failed ? SpatialData::TARGETUNREACHABLE : SpatialData::UNKNOWN;
@@ -401,7 +403,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
   log("modifiedNavNode called");
   try {
-    lockEntry(objID.address.id, cdl::LOCKEDODR);
+    lockEntry(objID.address.id, cdl::LOCKEDOD);
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
     unlockEntry(objID.address.id);
@@ -542,7 +544,7 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
   log("newEdge called");
   try {
-    lockEntry(objID.address.id, cdl::LOCKEDODR);
+    lockEntry(objID.address.id, cdl::LOCKEDOD);
     NavData::AEdgePtr oobj =
       getMemoryEntry<NavData::AEdge>(objID.address);
     unlockEntry(objID.address);
@@ -594,7 +596,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 
 /**  log("newObject called");
   try {
-    lockEntry(objID.address, cdl::LOCKEDODR);
+    lockEntry(objID.address, cdl::LOCKEDOD);
     vector<NavData::FNodePtr> nodes;
     getMemoryEntries<NavData::FNode>(nodes, 0);
 
@@ -845,7 +847,6 @@ PlaceManager::getPlaceholderPositionsFromFrontiers(
 
   // Find out which points are reachable
   log("Find out which points are reachable");
-  SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
   std::vector<std::vector<double> > coords;
   for(FrontierInterface::FrontierPtSeq::iterator frontierIt =
       frontiers.begin(); frontierIt != frontiers.end(); frontierIt++) {
@@ -1029,9 +1030,8 @@ int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDS
 
   int originPlaceId = hyp->originPlaceID;
 
-  SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
   log("Finding closest node.");
-  int closestNodeId = map->findClosestPlace(hyp->x, hyp->y,nodeids);
+  int closestNodeId = m_mapInterface->findClosestPlace(hyp->x, hyp->y,nodeids);
   if(closestNodeId < 0) {
     error("Error in finding closest node. Returning.");
     return -1;
@@ -1090,9 +1090,8 @@ int PlaceManager::updatePlaceholderEdge(int placeholderId) {
 
   int originPlaceId = hyp->originPlaceID;
 
-  SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
   log("Finding closest node.");
-  int closestNodeId = map->findClosestNode(hyp->x, hyp->y);
+  int closestNodeId = m_mapInterface->findClosestNode(hyp->x, hyp->y);
   if(closestNodeId < 0) {
     log("Error in finding closest node. Returning.");
     return -1;
@@ -1178,7 +1177,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
             if (foundFSIt != m_freeSpaceProperties.end()) {
               try {
                 log("lock 6");
-                lockEntry(foundFSIt->second, cdl::LOCKEDODR);
+                lockEntry(foundFSIt->second, cdl::LOCKEDOD);
                 SpatialProperties::AssociatedSpacePlaceholderPropertyPtr
                   freeProp = getMemoryEntry
                   <SpatialProperties::AssociatedSpacePlaceholderProperty>
@@ -1257,7 +1256,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
             if (foundUnexpIt != m_borderProperties.end()) {
               try {
                 log("lock 7");
-                lockEntry(foundUnexpIt->second, cdl::LOCKEDODR);
+                lockEntry(foundUnexpIt->second, cdl::LOCKEDOD);
                 SpatialProperties::AssociatedBorderPlaceholderPropertyPtr
                   borderProp = getMemoryEntry
                   <SpatialProperties::AssociatedBorderPlaceholderProperty>
@@ -1351,7 +1350,7 @@ void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq f
       // Modify the extant hypothesis that best matched the
       // new position indicated by the frontier
       try {
-        lockEntry(m_HypIDToWMIDMap[minDistID], cdl::LOCKEDODR);
+        lockEntry(m_HypIDToWMIDMap[minDistID], cdl::LOCKEDOD);
         SpatialData::NodeHypothesisPtr updatedHyp = 
           getMemoryEntry<SpatialData::NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
 
@@ -1392,8 +1391,7 @@ void PlaceManager::evaluateUnexploredPaths()
       return;
     }
 
-    SpatialData::MapInterfacePrx map(getIceServer<SpatialData::MapInterface>("spatial.control"));
-    SpatialData::NodeHypothesisSeq hypotheses = map->refreshNodeHypothesis();
+    SpatialData::NodeHypothesisSeq hypotheses = m_mapInterface->refreshNodeHypothesis();
 //PROCESS NEW NODE HYP, ADD NEW, DELETE, OVERWRITE     
 //1. LOOP NODE HYPOTHESIS
     vector<SpatialData::PlacePtr> places;
@@ -1556,7 +1554,7 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
     foundFSIt = m_placeholderGatewayProperties.find(placeholderID);
   if (foundFSIt != m_placeholderGatewayProperties.end()) {
     try {
-      lockEntry(foundFSIt->second, cdl::LOCKEDODR);
+      lockEntry(foundFSIt->second, cdl::LOCKEDOD);
       SpatialProperties::GatewayPlaceholderPropertyPtr
 	gwProp = getMemoryEntry
 	<SpatialProperties::GatewayPlaceholderProperty>
@@ -2228,8 +2226,7 @@ PlaceManager::refreshPlaceholders(std::vector<std::pair<double,double> > coords)
              * if it is blocked, if the goal is in free space (ie no frontier
              * there) we should still (try to) go to it */
             SpatialData::NodeHypothesisPtr goalHyp = getHypFromPlaceID(place->id); 
-            SpatialData::MapInterfacePrx map = getIceServer<SpatialData::MapInterface>("spatial.control");
-            if (goalHyp && !map->isCircleObstacleFree(goalHyp->x, goalHyp->y, -1)) {
+            if (goalHyp && !m_mapInterface->isCircleObstacleFree(goalHyp->x, goalHyp->y, -1)) {
               log("deleting goal placeholder %d", place->id);
               deletePlaceholder(place->id);
             }
@@ -2512,8 +2509,10 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
   string goalPlaceWMID = placeholder.m_WMid;
   try {
     log("lock 1");
-    lockEntry(goalPlaceWMID, cdl::LOCKEDODR);
+    lockEntry(goalPlaceWMID, cdl::LOCKEDOD);
     deletePlaceholderProperties(placeID);
+    // Re-read after lock
+    placeholder.m_data = getMemoryEntry<SpatialData::Place>(goalPlaceWMID);
     placeholder.m_data->status = SpatialData::TRUEPLACE;
     log("overwrite 4: %s", goalPlaceWMID.c_str());
     overwriteWorkingMemory(goalPlaceWMID, placeholder.m_data);
