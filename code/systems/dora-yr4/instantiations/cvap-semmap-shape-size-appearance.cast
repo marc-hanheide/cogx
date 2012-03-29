@@ -1,3 +1,5 @@
+SETVAR hardware=real
+
 SETVAR feature_options=<multiline>
     spatial		# enable the spatial core
     peekabot		# use peekabot
