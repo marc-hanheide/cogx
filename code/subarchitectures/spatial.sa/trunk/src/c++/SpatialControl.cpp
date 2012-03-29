@@ -542,7 +542,7 @@ void SpatialControl::configure(const map<string,string>& _config)
   }
 
 
-  m_maxNewPlaceholderRadius = 1.9;
+  m_maxNewPlaceholderRadius = 3;
   m_minNewPlaceholderRadius = 1.1;   
   m_maxMovePlaceholderRadius = 1;
   m_min_sep_dist = 1.1;
@@ -2430,7 +2430,7 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
-bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, int &closestNodeId){
+bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId){
   closestNodeId = -1;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
     int maxDist = 40; // The first maximum distance to try
@@ -2464,7 +2464,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
           nodeyi = nodeyi + m_lgm->getSize();
 
           Cure::ShortMatrix path;
-          int dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
+          int dist = map1.path(xi,yi,nodexi,nodeyi, path, maxDist);
           if(dist >= 0) { // If a path was found.. 
             if(dist < minDistance) {
               closestNodeId = (*nodeIt)->nodeId;
@@ -2494,6 +2494,10 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 
   // Get the expanded binary map used to search 
   getExpandedBinaryMap(m_lgm, map, m_nodeObstacleMargin,m_nodeUnknownMargin);
+  Cure::BinaryMatrix map1;
+
+  // Get the expanded binary map used to search 
+  getExpandedBinaryMap(m_lgm, map1);
 /*    peekabot::OccupancySet2D cells;
     double cellSize=m_lgm->getCellSize();
     int gridmapSize = m_lgm->getSize();
@@ -2563,7 +2567,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         int x= round(hypxi+r*cos(theta+j*2*3.14/10)); 
         int y= round(hypyi+r*sin(theta+j*2*3.14/10)); 
         int originPlaceID;
-        if (check_point(x,y,nodes,ret,map,originPlaceID)){
+        if (check_point(x,y,nodes,ret,map,map1,originPlaceID)){
           SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
           new_nh->x=x*m_lgm->getCellSize();
           new_nh->y=y*m_lgm->getCellSize();
@@ -2596,7 +2600,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     for (int j=0;j<100;j++){
       int x= round(robotxi+r*cos(theta+j*2*3.14/10)); 
       int y= round(robotyi+r*sin(theta+j*2*3.14/10)); 
-      if (check_point(x,y,nodes,ret,map,originPlaceID)){
+      if (check_point(x,y,nodes,ret,map,map1,originPlaceID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         new_nh->x=x*m_lgm->getCellSize();
         new_nh->y=y*m_lgm->getCellSize();
