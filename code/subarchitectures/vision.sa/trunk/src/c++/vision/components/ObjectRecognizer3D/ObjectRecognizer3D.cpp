@@ -147,6 +147,10 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
 #ifdef FEAT_VISUALIZATION	
   m_display.configureDisplayClient(_config);
 #endif
+  if (videoServerName.length() == 0 &&
+      pcServerName.length() == 0) {
+    log("Error! Must provide either --videoname or --pcserver");
+  }
 }
 
 void ObjectRecognizer3D::start(){
