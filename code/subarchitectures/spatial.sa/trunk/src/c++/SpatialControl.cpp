@@ -2563,7 +2563,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     for (int i=0;i<100;i++){
       double theta = (rand() % 360) * M_PI / 180; 
       int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
-      for (int j=0;j<100;j++){
+      for (int j=0;j<10;j++){
         int x= round(hypxi+r*cos(theta+j*2*3.14/10)); 
         int y= round(hypyi+r*sin(theta+j*2*3.14/10)); 
         int originPlaceID;
@@ -2597,7 +2597,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   for (int i=0;i<100;i++){
     double theta = (rand() % 360) * M_PI / 180; 
     int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
-    for (int j=0;j<100;j++){
+    for (int j=0;j<10;j++){
       int x= round(robotxi+r*cos(theta+j*2*3.14/10)); 
       int y= round(robotyi+r*sin(theta+j*2*3.14/10)); 
       if (check_point(x,y,nodes,ret,map,map1,originPlaceID)){
