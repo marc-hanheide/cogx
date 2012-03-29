@@ -2572,11 +2572,10 @@ void DisplayNavInPB::connectPeekabot()
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
     //   m_PeekabotClient.assign(m_PeekabotClient, "root");
-    peekabot::Status s0,s1, s2, s3,s4;
+    peekabot::Status s1, s2, s3, s4, s5;
 
-    s0 = m_ProxyRobot.add(m_PeekabotClient,
-	m_PbRobotName,
-	peekabot::REPLACE_ON_CONFLICT).status();
+    peekabot::Status s0 = m_ProxyRobot.add(m_PeekabotClient, 
+      m_PbRobotName, peekabot::REPLACE_ON_CONFLICT).status();
     if (s0.failed())
       log("failed to add robot");
     else
@@ -2590,16 +2589,21 @@ void DisplayNavInPB::connectPeekabot()
 			}
     }
 
-    log("Loading robot file \"%s\"",
-	m_PbRobotFile.c_str());
+    log("Loading robot file \"%s\"", m_PbRobotFile.c_str());
+
     if (m_ShowCommands) {
-      m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands",
-	  peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands", 
+        peekabot::REPLACE_ON_CONFLICT);
       m_ProxyDetectionCommands.add(m_PeekabotClient, "DetectionCommands",
-	  peekabot::REPLACE_ON_CONFLICT);
+	      peekabot::REPLACE_ON_CONFLICT);
     }
 
-    m_ProxyLabels.add(m_PeekabotClient, "labels",peekabot::REPLACE_ON_CONFLICT);
+    peekabot::Status status_labels = m_ProxyLabels.add(m_PeekabotClient, 
+      "labels", peekabot::REPLACE_ON_CONFLICT).status();
+    if (status_labels.failed()) {
+      log("failed to add labels");
+    }
+
     peekabot::LabelProxy mapStatusLabel;
     mapStatusLabel.add(m_PeekabotClient, "MapStatus", peekabot::REPLACE_ON_CONFLICT);
     mapStatusLabel.hide();
@@ -2621,6 +2625,7 @@ void DisplayNavInPB::connectPeekabot()
       nose.set_color(1,0,0);
 
     } else {
+      log("loaded robot file \"%s\"", m_PbRobotFile.c_str());
       if (m_PbRobotFile == "CogXp3.xml" ||
 	  m_PbRobotFile == "CogX_base_arm.xml" ||
 	  m_PbRobotFile == "CogX_base.xml") {
@@ -2633,11 +2638,11 @@ void DisplayNavInPB::connectPeekabot()
 
 		s4 = m_ProxyPan.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan").status();
 		if(s4.failed()){
-			log("cam proxy failed.");
+			log("pan proxy failed.");
 		}
 		s4 = m_ProxyTilt.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan/tilt").status();
 		if(s4.failed()){
-			log("cam proxy failed.");
+			log("tilt proxy failed.");
 		}
 		m_ProxyPan.set_dof(0);
 		m_ProxyTilt.set_dof(30*M_PI/180.0);
@@ -2648,7 +2653,11 @@ void DisplayNavInPB::connectPeekabot()
 
 
 
-    m_ProxyKinect.add(m_PeekabotClient, "kinect", peekabot::REPLACE_ON_CONFLICT);
+    peekabot::Status status_kinect =
+      m_ProxyKinect.add(m_PeekabotClient, "kinect", peekabot::REPLACE_ON_CONFLICT).status();
+    if (status_kinect.failed()) {
+       log("failed to add kinect");
+    }
     m_ProxyKinect.set_max_vertices(10);
     m_ProxyKinect.set_vertex_overflow_policy(peekabot::VERTEX_OVERFLOW_TRUNCATE_HALF);
 
