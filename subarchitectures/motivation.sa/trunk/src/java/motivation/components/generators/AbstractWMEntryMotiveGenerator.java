@@ -296,15 +296,13 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 		while (isRunning()) {
 			try {
 				WorkingMemoryChange wmc = wmcQueue.take();
-				if (wmc.type.equals(CASTUtils.typeName(epistemicClass))) {
-					lockComponent();
-					getLogger().trace(
-							"new change for "
-									+ AbstractWMEntryMotiveGenerator.class
-											.getSimpleName() + ": "
-									+ CASTUtils.toString(wmc));
-					beliefChanged(wmc);
-				}
+				lockComponent();
+				getLogger().trace(
+						"new change for "
+								+ AbstractWMEntryMotiveGenerator.class
+										.getSimpleName() + ": "
+								+ CASTUtils.toString(wmc));
+				beliefChanged(wmc);
 			} catch (InterruptedException e) {
 				logException(e);
 			} catch (CASTException e) {
