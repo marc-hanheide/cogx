@@ -506,7 +506,12 @@ IFOPTALL(%(feature_options), categorisation)
 	JAVA WM cast.architecture.SubarchitectureWorkingMemory
 	CPP TM AlwaysPositiveTaskManager
 
-	CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config) --laser-server laser.server --robot-server robot.server
+	IFOPTALL(%(feature_options), categorisation-sickscans)
+	    CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config) --laser-server laser.server --robot-server robot.server --correct-scans --convert-scans-to-sick
+        ELSE
+	    CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config) --laser-server laser.server --robot-server robot.server
+        ENDIF
+
 	IFOPTALL(%(feature_options), categorisation-visual)
 		CPP GD categorical.visualprocessor CategoricalVisualProcessor --config %(categorisation_config)
 		CPP GD categorical.appearanceintegrator CategoricalAppearanceIntegrator --config %(categorisation_config) --placemanager place.manager
