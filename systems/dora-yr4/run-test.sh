@@ -204,6 +204,8 @@ if [ $PEEKABOT_CRASHED -eq 1 ]; then
 		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-core.zip core
 	fi
 	mv logs/peekabot.log peekabot_crash_logs/peekabot-crash"$PEEKABOT_CRASH_COUNT".log
+	mv logs/log.xml logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
+	zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.zip logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
 else
 	tools/scripts/collect-logs.sh
 fi
