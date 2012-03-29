@@ -348,7 +348,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 
 	        // For Place transitions, send completion message to
 	        // PlaceManager
-	        if (finished || some_error) {
+          if (some_error){
+            issuePlaceholderEnumeratingCommand(*rv);
+          }
+	        else if (finished) {
 	          m_placeInterface->endPlaceTransition(!finished);
 	        }
 
@@ -366,7 +369,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       else if (type== typeName<NavData::PlaceholderEnumeratingCommand>()) {
 	      log("Placeholder enumerating cmd finished");
 	      finished = true;
-        if (finished || some_error) {
+        if (some_error){
+          m_placeInterface->endPlaceTransition(true);
+        }
+        else if (finished) {
           m_placeInterface->endPlaceTransition(!finished);
         }
       }
