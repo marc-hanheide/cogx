@@ -629,7 +629,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -660,7 +660,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -756,7 +756,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -791,7 +791,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -870,7 +870,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -900,7 +900,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
 		}// Room added
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 
@@ -968,7 +968,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1009,7 +1009,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1099,7 +1099,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1141,7 +1141,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1238,7 +1238,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1276,7 +1276,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1359,7 +1359,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1397,7 +1397,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1479,7 +1479,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1517,7 +1517,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1599,7 +1599,7 @@ void Observer::humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemory
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1638,7 +1638,7 @@ void Observer::humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemory
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1717,7 +1717,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1749,7 +1749,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1825,7 +1825,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1859,7 +1859,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1945,7 +1945,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
@@ -1975,7 +1975,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
 		}
 		catch(CASTException &e)
 		{
-			log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+			log("Caught exception at %s:%s:%i. Message: %s", __HERE__, e.message.c_str());
 			return;
 		}
 		pthread_mutex_lock(&_worldStateMutex);
