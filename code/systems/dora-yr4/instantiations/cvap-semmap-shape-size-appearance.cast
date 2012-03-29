@@ -10,7 +10,7 @@ SETVAR feature_options=<multiline>
     categorisation-visual
     categorisation-size
     !binder			
-    !vision			
+    vision			
     !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
     !avs			
     !execution		
