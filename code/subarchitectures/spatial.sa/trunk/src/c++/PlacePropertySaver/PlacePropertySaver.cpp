@@ -133,7 +133,6 @@ void PlacePropertySaver::stop()
   if(_doSave)
   {
     // Save once (more) at the end
-    // FIXME: Make sure this is does not interfere with the cast shutdown
 
     debug("Component stopped running. Save one more time.");
 
@@ -226,7 +225,6 @@ void PlacePropertySaver::savePlaceProperties()
       typedef shared_ptr<CASTData<prop_t> > data_ptr_t;
 
       vector<data_ptr_t> result;
-      // FIXME: exception handling???
       getWorkingMemoryEntries<prop_t>(subarch, 0, result);
 
       debug("Found %d shape place properties.", result.size());
