@@ -1,3 +1,3 @@
 cvap-avs - Experiments with AVS for IROS'11 at CVAP
-cvap-mapping - Experiments with Semantic Mapping for IROS'11 at CVAP
+cvap-semmapping - Experiments with Semantic Mapping for IROS'11 at CVAP
 BHAM-sim - Fake models for simulation on the BHAM dora yr4 stage world.
