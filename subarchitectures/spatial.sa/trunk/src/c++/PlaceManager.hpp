@@ -200,6 +200,8 @@ class PlaceManager : public cast::ManagedComponent
 
     long m_hypIDCounter;
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
+    IceUtil::Mutex m_MappingsMutex;
+
     std::map<int, SpatialData::NodeHypothesisPtr> m_PlaceIDToHypMap;
     std::map<int, std::string> m_HypIDToWMIDMap;
     //List of hypotheses that have already been tried and failed from each Node
@@ -241,6 +243,7 @@ class PlaceManager : public cast::ManagedComponent
 
     FrontierInterface::FrontierReaderPrx frontierReader;
     FrontierInterface::HypothesisEvaluatorPrx hypothesisEvaluator;
+    SpatialData::MapInterfacePrx m_mapInterface;
 }; // class PlaceManager
 
 }; // namespace spatial
