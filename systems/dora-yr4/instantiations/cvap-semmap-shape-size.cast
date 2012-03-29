@@ -1,0 +1,44 @@
+SETVAR feature_options=<multiline>
+    spatial		# enable the spatial core
+    peekabot		# use peekabot
+    conceptual	
+    default		
+    coma		
+    categorisation	
+    !binder			
+    !vision			
+    !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
+    !avs			
+    !execution		
+    !planning_sa	# enable planning core
+    !debug		# enable more debug GUIs and WM loggers
+    !dialogue		
+    !motivation		
+    !visualization	
+</multiline>
+
+SETVAR hardware_options=<multiline>
+    !kinect
+    !kinect-video
+    !video 
+    !prosilica
+    !blobfinder    
+    ptz  
+</multiline>
+
+SETVAR logged_types=<multiline>
+  SpatialData.ObjectSearchResult, 
+  comadata.ComaRoom,
+  SpatialData.NodeHypothesis,
+  SpatialData.MapLoadStatus,
+  SpatialProperties.PlaceProperty
+</multiline>
+
+SETVAR default_knowledge="instantiations/defaultprobs/cvap-semmap.xml"
+SETVAR conceptual_defaults="instantiations/defaultprobs/cvap-semmap.txt"
+SETVAR categorisation_config=subarchitectures/categorical.sa/config/cvap-semmap-size-shape.cfg
+SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
+
+
+INCLUDE dora-yr4.cast
+
