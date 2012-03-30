@@ -20,6 +20,11 @@ module autogen {
       // plan found
     };
 
+    enum POPlanStatus {
+        RUNNING,
+        FINISHED
+    };
+
     enum FailureCause {
         EXECUTION,
         PLANNING
@@ -63,6 +68,9 @@ module autogen {
 
     enum LinkType {
         DEPENDS,
+        UNEXPECTED,
+        FIXED,
+        EXPLANATION,
         THREATENS
     };
 
@@ -76,6 +84,7 @@ module autogen {
 
     class POPlan {
         int taskID;
+        POPlanStatus status;
         ActionSeq actions;
         LinkSeq links;
     };
@@ -187,7 +196,7 @@ module autogen {
     interface CppServer
     {
       void deliverPlan(int id, ActionSeq plan, GoalSeq goals);
-      void deliverPlanPO(int id, ActionSeq plan, GoalSeq goals, POPlan orderedPlan);
+      void deliverPOPlan(int id, POPlan orderedPlan);
       void deliverHypotheses(int id, BeliefSeq hypotheses);
       void updateBeliefState(BeliefEntrySeq beliefs);
       //void deliverPlan(PlanningTask task);

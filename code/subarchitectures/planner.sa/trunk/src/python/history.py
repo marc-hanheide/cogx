@@ -20,7 +20,7 @@ def slice_goals_from_problem(problem):
     return slice_goals
     
 
-def load_history(history_fn, domain, component=None):
+def load_history(history_fn, domain, component=None, consistency_cond = None):
 
     def read_file(fn):
         read_problem=True
@@ -68,7 +68,7 @@ def load_history(history_fn, domain, component=None):
         t0 = time.time()
         problem = pddl.parser.Parser.parse_as(prob_str, pddl.Problem, domain)
         print "parsing problem: %.2f" % (time.time() - t0)
-        state = fake_cast_state.FakeCASTState(problem, domain, component=component)
+        state = fake_cast_state.FakeCASTState(problem, domain, component=component, consistency_cond=consistency_cond)
         print "state generation: %.2f" % (time.time() - t0)
         if init_state is None:
             init_state = state

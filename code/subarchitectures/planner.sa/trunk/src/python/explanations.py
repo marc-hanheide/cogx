@@ -319,19 +319,17 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
     print plan
 
     if plan is not None:
-        result = postprocess_explanations(plan, last_plan)
+        result, expl_plan  = postprocess_explanations(plan, last_plan)
         component.verbalise("I have now found a possible explanation for the failure.")
+        return result, expl_plan
     else:
         component.verbalise("I'm sorry. I can't explain what went wrong.")
-        result = []
         print "No explanations found"
-
-    print "done"
-    return result
+        return None, None
 
 
 def get_causal_relations(node):
-    node.action.instantiate(node.full_args) #FIXME: crashes here sometimes
+    node.action.instantiate(node.full_args, parent=expl_domain) #FIXME: crashes here sometimes
     @pddl.visitors.collect
     def get_ceffs(elem, results):
         if isinstance(elem, pddl.effects.ConditionalEffect):
@@ -411,13 +409,14 @@ def postprocess_explanations(expl_plan, exec_plan):
                 if eff.svar in written and fact_filter(eff):
                     val, pred = written[eff.svar]
                     if val != eff.value and "new_facts" not in pred.action.name:
-                        expl_plan.add_edge(pred, n, svar=eff.svar, val=val, type="unexpected")
+                        # print "unexpected: %s = %s instead of %s" % (str(eff.svar), str(eff.value), str(val))
+                        expl_plan.replace_link(pred, n, eff.svar, eff.value, "unexpected")
         changed, deleted = changed_effects(n)
         print n, "changed:", map(str, changed), "deleted:", map(str, deleted)
         for f in chain(changed, deleted):
             succ = get_conflict_link_target(n, f)
             if succ:
-                expl_plan.add_edge(n, succ, svar=f.svar, val=f.value, type="repaired")
+                expl_plan.replace_link(n, succ, f.svar, f.value, "repaired")
             for cconds, ceffs in get_causal_relations(n):
                 eff_val = None
                 for eff in ceffs:
@@ -442,7 +441,7 @@ def postprocess_explanations(expl_plan, exec_plan):
                             print "written:", svar, cval, val
                         if val is not None:
                             if (val == cval and not negated) or (val != cval and negated):
-                                expl_plan.add_edge(pred, n, svar=cvar, val=val, type="repaired")
+                                expl_plan.replace_link(pred, n, cvar, val, "explanation")
                                 explanations.add(pred)
 
             
@@ -510,10 +509,12 @@ def postprocess_explanations(expl_plan, exec_plan):
             return {'style' : 'invis', 'label' : ''}
         if data['type'] == 'repaired':
             return {'color' : 'green'}
+        if data['type'] == 'explanation':
+            return {'color' : 'green', 'style' : 'dashed'}
         
     G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
     G.write("plan-explained.dot")
     G = expl_plan.to_dot(node_deco=node_decorator, edge_deco=edge_decorator) 
     G.layout(prog='dot')
     G.draw("plan-explained.pdf")
-    return relevant_expl
+    return relevant_expl, expl_plan
