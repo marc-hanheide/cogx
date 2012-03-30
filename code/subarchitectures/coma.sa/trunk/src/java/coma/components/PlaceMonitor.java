@@ -87,6 +87,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private static final int TIME_TO_WAIT_TO_SETTLE = 1000;
 	private boolean mapLoadMode = false;
 	private boolean mapLoadPlacesWritten = false;
+	private boolean mapLoadRoomsWritten = false;
 	private WorkingMemoryAddress m_mapLoadStatusAddress;
 	
 	private String m_comareasoner_component_name;
@@ -453,6 +454,7 @@ public class PlaceMonitor extends ManagedComponent {
 			this.mapLoadMode = true;
 			this.m_mapLoadStatusAddress = _wmc.address;
 			log("mapLoadMode set to " + Boolean.toString(this.mapLoadMode));
+			this.notifyAll();
 		}
 	}
 	private void processOverwrittenMapLoadStatus(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
@@ -1399,8 +1401,8 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 		log("unlocked all ComaRoom WMEs.");
 		logInstances("owl:Thing");
-
-		if(this.mapLoadMode == true) {
+		
+		if(this.mapLoadMode == true && this.mapLoadRoomsWritten==false) {
 		  	try {
 				// We can mark the Coma rooms as
 			  	// loaded now as well
@@ -1410,6 +1412,7 @@ public class PlaceMonitor extends ManagedComponent {
 				  getMemoryEntry(m_mapLoadStatusAddress, MapLoadStatus.class);
 				_mlstatus.roomsWritten = true;
 				overwriteWorkingMemory(m_mapLoadStatusAddress, _mlstatus);
+				this.mapLoadRoomsWritten=true;
 			}
 			catch (DoesNotExistOnWMException e) {
 				logException(e);
