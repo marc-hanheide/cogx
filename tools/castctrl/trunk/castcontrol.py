@@ -40,6 +40,8 @@ class CLambdaThread(threading.Thread):
 class CLogDisplayer:
     def __init__(self, qtext):
         self.log = messages.CLogMerger()
+        self.logSink = messages.CLogMessageSink()
+        self.log.addSink(self.logSink)
         self.qtext = qtext
         doc = qtext.document()
         doc.setMaximumBlockCount(500)
@@ -67,7 +69,7 @@ class CLogDisplayer:
         mods = False
         tm = time.time()
         self.log.merge()
-        msgs = self.log.getNewMessages(500)
+        msgs = self.logSink.getNewMessages(500)
         #if len(msgs) < 1:
         #    print tm, "Nothing"
         if len(msgs) > 0:

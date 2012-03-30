@@ -49,15 +49,17 @@ class CAgentI(CastAgent.Agent):
             if processName == "LOGGER": p = LOGGER
             else: return []
         if self.logs.has_key(processName):
-            log = self.logs[processName]
+            (log, logSink) = self.logs[processName]
         else:
             log = messages.CLogMerger()
             log.addSource(p)
-            self.logs[processName] = log
+            logSink = messages.CLogMessageSink()
+            log.addSink(logSink)
+            self.logs[processName] = (log, logSink)
         if log == None: return []
         try:
             log.merge()
-            msgs = log.getNewMessages(100)
+            msgs = logSink.getNewMessages(100)
             # Convert messages to transport format (ice) and return them
             res = [
                 CastAgent.CastMessage(time=msg.time, msgtype=msg.msgtype, message=msg.message)

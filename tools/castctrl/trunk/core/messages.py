@@ -187,11 +187,30 @@ class CLogMessageSource(object):
     def setMessageProcessor(self, messageProcessor):
         pass
 
+class CLogMessageSink(object):
+    def __init__(self):
+        self.maxlen = 10000
+        self.messages = []
+        self.fnMatches = None
+
+    def addMessages(self, messages):
+        self.messages += messages
+
+    def getNewMessages(self, maxItems=0):
+        if maxItems <= 0:
+            msgs = self.messages
+            self.messages = []
+        else:
+            msgs = self.messages[:maxItems]
+            self.messages = self.messages[maxItems:]
+        return msgs
+
 class CLogMerger(object):
     def __init__(self):
         self.maxlen = 10000
         self.messages = [] # buffer with sorted messages
         self._sources = []
+        self._sinks = []
         self.fnMatches = None
         self.filtered = self.messages
         self.current = 0
@@ -239,7 +258,7 @@ class CLogMerger(object):
         if lastMessages > 0: self.current = max(0, len(self.filtered) - lastMessages)
         else: self.current = 0
 
-    def getNewMessages(self, maxItems=0):
+    def _pushNewMessages(self, maxItems=0):
         if maxItems < 1:
            msgs = self.filtered[self.current:]
            self.current = len(self.filtered)
@@ -249,7 +268,9 @@ class CLogMerger(object):
            self.current = nc
            if self.current > len(self.filtered):
                self.current = len(self.filtered)
-        return msgs
+
+        for s in self._sinks:
+            s.addMessages(msgs)
 
     def addSource(self, logSource):
         self.removeSource(logSource)
@@ -274,6 +295,9 @@ class CLogMerger(object):
     def removeAllSources(self):
         self._sources = []
 
+    def addSink(self, sink):
+        self._sinks.append(sink)
+
     def merge(self):
         tmst = time.time()
         msgs = []
@@ -295,4 +319,5 @@ class CLogMerger(object):
         self._setMessages(merged)
         self._applyFilter(msgs)
         self._checkLength()
+        self._pushNewMessages()
 
