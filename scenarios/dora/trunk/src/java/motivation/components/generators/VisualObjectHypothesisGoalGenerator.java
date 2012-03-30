@@ -2,15 +2,15 @@ package motivation.components.generators;
 
 import java.util.Map.Entry;
 
-import comadata.ComaRoom;
-
 import motivation.factories.MotiveFactory;
 import motivation.slice.HypothesisVerificationMotive;
 import VisionData.VisualObject;
 import cast.UnknownSubarchitectureException;
 import cast.cdl.WorkingMemoryAddress;
-import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
+
+import comadata.ComaRoom;
+
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
@@ -58,28 +58,49 @@ public class VisualObjectHypothesisGoalGenerator
 				.createHypothesisVerificationMotive(addr);
 		CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> hyp = CASTIndependentFormulaDistributionsBelief
 				.create(HypotheticalBelief.class, newEntry);
-		StringBuilder sb = new StringBuilder();
-		sb.append("(and ");
-		for (Entry<String, FormulaDistribution> entry : hyp.getContent()
-				.entrySet()) {
-			String conj = createConjunct(entry);
-			if (conj == null) {
-				getLogger().warn(
-						"cannot create complete goal for HypotheticalBelief as a referred (for '"
-								+ entry.getKey()
-								+ "') belief could not be resolved");
-				return null;
-			} else {
-				sb.append(conj + " ");
-				log("  added conjunct in hypothesis: " + conj);
-			}
-		}
-		sb.append(")");
+		StringBuilder sb = getGoal(hyp);
+		if (sb==null)
+			return null;
 		hvm.goal.goalString = "(exists (?o - visualobject) " + sb.toString()
 				+ " )";
 		println("the goal string is: " + hvm.goal.goalString);
 		return hvm;
 	}
+
+	private StringBuilder getGoal(
+			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> hyp) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(kval '");
+		sb.append(this.getRobotBeliefAddr().id);
+		sb.append("' (entity-exists '");
+		sb.append(hyp.getId());
+		sb.append("'))");
+		return sb;
+	}
+	
+//	private StringBuilder getGoal(
+//			CASTIndependentFormulaDistributionsBelief<HypotheticalBelief> hyp) {
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("(and ");
+//		for (Entry<String, FormulaDistribution> entry : hyp.getContent()
+//				.entrySet()) {
+//			String conj = createConjunct(entry);
+//			if (conj == null) {
+//				getLogger().warn(
+//						"cannot create complete goal for HypotheticalBelief as a referred (for '"
+//								+ entry.getKey()
+//								+ "') belief could not be resolved");
+//				return null;
+//			} else {
+//				sb.append(conj + " ");
+//				log("  added conjunct in hypothesis: " + conj);
+//			}
+//		}
+//		sb.append(")");
+//		return sb;
+//	}
+
+	
 
 	private String createConjunct(Entry<String, FormulaDistribution> entry) {
 		dFormula df = entry.getValue().getDistribution().getMostLikely().get();
