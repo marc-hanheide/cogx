@@ -497,20 +497,13 @@ list<double> SpatialControl::getVisualExplorationAngles(){
 
 void SpatialControl::configure(const map<string,string>& _config) 
 {
-
+  log("started configure");
   if (_config.find("--save-map") != _config.end()) {
     m_saveLgm = true;
   }
 
   if (_config.find("--load-map") != _config.end()) {
     m_loadLgm = true;
-  }
-
-  m_usePeekabot = false;
-  if (_config.find("--usepeekabot") != _config.end()) {
-    m_usePeekabot= true;
-
-    connectPeekabot();
   }
 
   m_show3Dobstacles = false;
@@ -601,12 +594,19 @@ void SpatialControl::configure(const map<string,string>& _config)
   }  
 
   m_PbPort = 5050;
+  m_PbHost = "localhost";
   cfg.getRoboLookHost(m_PbHost);
   std::string usedCfgFile, tmp;
   if (cfg.getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
     m_PbHost = tmp;
   }
 
+  m_usePeekabot = false;
+  if (_config.find("--usepeekabot") != _config.end()) {
+    m_usePeekabot= true;
+
+    connectPeekabot();
+  }
 
   m_bNoNavGraph = false;
   if(_config.find("--no-graph") != _config.end()){
