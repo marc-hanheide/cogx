@@ -395,7 +395,7 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
 
 
 
-void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& po_plan) {
+void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals) {
     log("Plan delivered");
     if (activeTasks.find(id) == activeTasks.end()) {
         log("Task %d not found.", id);
@@ -421,9 +421,6 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals,
         log("Execution flag is not set.");
         overwriteWorkingMemory(activeTasks[id], task);
         return;
-    }
-    if (po_plan) {
-        log("We have a partially ordered plan!");
     }
 
     //remove task from pending queues
@@ -451,10 +448,42 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals,
 }
 
 
+void WMControl::deliverPOPlan(int task_id, const POPlanPtr& po_plan) {
+    log("delivering PO-plan.");
+
+    POPlanMap* planmap = 0;
+    if (po_plan->status == RUNNING) {
+        planmap = &m_running_poplans;
+        log("Plan is the current plan.");
+    }
+    else {
+        planmap = &m_completed_poplans;
+        log("Plan is the completed plan.");
+    }
+
+    if (planmap->find(task_id) == planmap->end()) {
+        string wm_id = newDataID();
+        addToWorkingMemory(wm_id, po_plan);
+        (*planmap)[task_id] = wm_id;
+    }
+    else {
+        overwriteWorkingMemory((*planmap)[task_id], po_plan);
+    }
+}
+
+
+
 void WMControl::deliverHypotheses(int id, const BeliefSeq& hypotheses) {
     log("Hypotheses delivered");
     if (activeTasks.find(id) == activeTasks.end()) {
         log("Task %d not found.", id);
+        BOOST_FOREACH(dBeliefPtr belief, hypotheses) {
+            WorkingMemoryAddress wma;
+            wma.id = belief->id;
+            wma.subarchitecture = subarchitectureID();
+            log("adding hypothesis %s", wma.id.c_str());
+            addToWorkingMemory(wma, belief);
+        }
         return;
     }
 
@@ -465,6 +494,7 @@ void WMControl::deliverHypotheses(int id, const BeliefSeq& hypotheses) {
         WorkingMemoryAddress wma;
         wma.id = belief->id;
         wma.subarchitecture = subarchitectureID();
+        log("adding hypothesis %s", wma.id.c_str());
         addToWorkingMemory(wma, belief);
         task->hypotheses.push_back(wma);
     }
@@ -612,8 +642,8 @@ void WMControl::InternalCppServer::deliverPlan(int id, const ActionSeq& plan, co
     parent->deliverPlan(id, plan, goals);
 }
 
-void WMControl::InternalCppServer::deliverPlanPO(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& orderedPlan, const Ice::Current&) {
-    parent->deliverPlan(id, plan, goals, orderedPlan);
+void WMControl::InternalCppServer::deliverPOPlan(int id, const POPlanPtr& poplan, const Ice::Current&) {
+    parent->deliverPOPlan(id, poplan);
 }
 
 void WMControl::InternalCppServer::deliverHypotheses(int id, const BeliefSeq& hypotheses, const Ice::Current&) {

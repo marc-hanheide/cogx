@@ -2,7 +2,7 @@ import re
 import time
 
 from itertools import chain
-from standalone import config
+from standalone import config, pddl
 from standalone.pddl import prob_state
 import standalone.globals as global_vars
 
@@ -13,7 +13,7 @@ import cast.cdl
 
 log = config.logger("PythonServer")
 BINDER_SA = "binder"
-CAST_OBJ_RE = re.compile("[a-z]+_(_?[0-9a-z])_(_?[0-9a-z])")
+#CAST_OBJ_RE = re.compile("[a-z]+_(_?[0-9a-z])_(_?[0-9a-z])")
 
 class FakeCASTState(cast_state.CASTState):
     def __init__(self, problem, domain, component=None, consistency_cond=None):
@@ -80,8 +80,8 @@ class FakeCASTState(cast_state.CASTState):
         return []
 
     def featvalue_from_object(self, arg):
-        if arg not in self.obj_to_castname:
-            obj_match = CAST_OBJ_RE.search(arg.name)
+        if arg not in self.obj_to_castname and not arg.is_instance_of(pddl.t_number):
+            obj_match = cast_state.CAST_OBJ_RE.search(arg.name)
             if obj_match:
                 i1 = obj_match.group(1)
                 i2 = obj_match.group(2)

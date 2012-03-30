@@ -20,6 +20,7 @@ TOTAL_P_COSTS = 200
 
 QDL_NUMBER_RE = re.compile("\"([-eE0-9\.]+)\"\^\^<xsd:float>")
 QDL_VALUE = re.compile("<dora:(.*)>")
+CAST_OBJ_RE = re.compile("[a-z]+_(_?[0-9a-z])_(_?[0-9a-z])")
 #QDL_VALUE = re.compile("<http://dora.cogx.eu#(.*)>")
 
 class CASTState(object):
@@ -492,6 +493,7 @@ class CASTState(object):
                 svar = state.StateVariable(exists_func, svar_args + [c_value])
                 fact = state.Fact(svar, pddl.types.TypedNumber(p))
                 facts.append(fact)
+                objects.add(c_value)
                 objects |= set(new_objs)
                 log.debug("conceptual data: %s ", str(fact))
 
@@ -758,6 +760,9 @@ class CASTState(object):
                 wma = self.address_dict[name] if self.address_dict else cast.cdl.WorkingMemoryAddress(name, BINDER_SA)
                 value = logicalcontent.PointerFormula(0, wma)
             else:
+                if CAST_OBJ_RE.search(name):
+                    log.warning("%s seems to be a compiled belief name, but not in name/belief dict!", name)
+
                 value = logicalcontent.ElementaryFormula(0, name)
             #assume a string value
             #value = featurecontent.StringValue(name)

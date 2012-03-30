@@ -16,8 +16,12 @@ room_colors = ["red", "green", "blue", "yellow", "orange", "cyan", "black"]
 assert len(sys.argv) == 3, """Call 'navgraph.py domain.pddl problem.pddl' for a single planner call"""
 domain_fn, problem_fn = sys.argv[1:]
 
+consistency_fn = "../../domains/consistency-dora.pddl"
+
 print "Loading domain..."
 dom = pddl.load_domain(domain_fn)
+
+consistency_cond = pddl.parser.Parser.parse_as(open(consistency_fn), pddl.Conjunction, dom)
 
 t_room = dom.types["room"]
 t_place = dom.types["place"]
@@ -33,7 +37,7 @@ f_pos = dom.functions.get('is-in', [t_robot])
 c_placeholder = dom["placeholder"]
 c_place = dom["trueplace"]
 
-target_category = "kitchen"
+target_category = "meetingroom"
 
 colordict = {}
 planner = None
@@ -164,7 +168,7 @@ def replan(cast_state):
     print "problem creation took: %.2f sec" % (time.time() - t0)
 
     task = standalone.task.Task(0, cp_problem)
-    task.deadline = 211
+    # task.deadline = 220
     task.set_state(state.state)
     planner.register_task(task)
     task.replan()
@@ -194,7 +198,7 @@ try:
     state = pddl.prob_state.ProbabilisticState.from_problem(prob)
     show_step(staet, None)
 except:
-    history_iter = history.load_history(problem_fn, dom)
+    history_iter = history.load_history(problem_fn, dom, consistency_cond=consistency_cond)
     h_list = []
     t = 0
     max_t = None

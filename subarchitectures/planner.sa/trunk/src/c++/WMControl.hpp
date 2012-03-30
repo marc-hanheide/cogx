@@ -26,7 +26,8 @@ protected:
     void connectToPythonServer();
     //vector<beliefmodels::autogen::beliefs::BeliefPtr>* generateState();
     //void deliverPlan(const autogen::Planner::PlanningTaskPtr& task);
-    void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& po_plan=0);
+    void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals);
+    void deliverPOPlan(int id, const POPlanPtr& po_plan=0);
     void deliverHypotheses(int id, const BeliefSeq& hypotheses);
     void updateBeliefState(const BeliefEntrySeq& beliefs);
     void updateStatus(int id, Completion status);
@@ -46,7 +47,7 @@ protected:
         InternalCppServer(WMControl* Parent);
         //virtual void deliverPlan(const PlanningTaskPtr& task, const Ice::Current&);
         virtual void deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals, const Ice::Current&);
-        virtual void deliverPlanPO(int id, const ActionSeq& plan, const GoalSeq& goals, const POPlanPtr& orderedPlan, const Ice::Current&);
+        virtual void deliverPOPlan(int id, const POPlanPtr& orderedPlan, const Ice::Current&);
         virtual void deliverHypotheses(int id, const BeliefSeq& hypotheses, const Ice::Current&);
         virtual void updateBeliefState(const BeliefEntrySeq& beliefs, const Ice::Current&);
         virtual void updateStatus(int id, Completion status, const Ice::Current&);
@@ -68,6 +69,10 @@ private:
 
     typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
     taskMap activeTasks;
+
+    typedef std::tr1::unordered_map<int, std::string> POPlanMap;
+    POPlanMap m_running_poplans;
+    POPlanMap m_completed_poplans;
 
     typedef std::tr1::unordered_map< std::string, BeliefEntry > BeliefMap;
     typedef std::vector< BeliefEntry > PerceptList;

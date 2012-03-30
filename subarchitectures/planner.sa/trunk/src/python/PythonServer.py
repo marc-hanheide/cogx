@@ -505,12 +505,17 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
 
   def updateTaskStatus(self, task):
       if task.id != -1:
+          log.debug("sending status update")
           self.getClient().updateStatus(task.id, task.status)
 
 
   def deliver_hypotheses(self, task, hypotheses):
       if task.id != -1:
           self.getClient().deliverHypotheses(task.id, hypotheses)
+
+  def deliver_po_plan(self, task, po_plan):
+      if task.id != -1:
+          self.getClient().deliverPOPlan(task.id, po_plan)
           
   
   def update_cast_beliefs(self, beliefs):

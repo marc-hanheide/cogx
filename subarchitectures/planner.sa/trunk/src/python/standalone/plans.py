@@ -152,6 +152,13 @@ class MAPLPlan(networkx.MultiDiGraph):
         else:
             type = "depends"
         self.add_edge(n1, n2,  svar=svar, val=val, type=type, **add_args)
+
+    def replace_link(self, n1, n2, svar, val, _type):
+        if n1 in self and n2 in self[n1]:
+            for key, e in self[n1][n2].items():
+                if e['svar'] == svar:
+                    del self[n1][n2][key]
+        self.add_edge(n1, n2, svar=svar, val=val, type=_type)
     
     def topological_sort(self):
         return networkx.topological_sort(self)
