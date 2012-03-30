@@ -135,6 +135,7 @@ echo "starting PBDisplayControl"
 
 xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl --exec \"Top down\" 2>&1 | tee logs/PBDisplayControl.log" &
 PIDS="$PIDS $!"
+sleep 7
 echo "--------------------------"
 
 xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
@@ -198,14 +199,16 @@ kill -9 $PIDS  >/dev/null 2>&1
 
 # if peekabot crashed then store some of the files somewhere else before trying again
 # otherwise collect logs as normal
-# in future we might not want to collect all of the peekabot core files
 if [ $PEEKABOT_CRASHED -eq 1 ]; then
-	if [ -e "core" ]; then
-		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-core.zip core
-	fi
 	mv logs/peekabot.log peekabot_crash_logs/peekabot-crash"$PEEKABOT_CRASH_COUNT".log
-	mv logs/log.xml logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
-	zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.zip logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
+	# only collect the peekabot core and cast log files the first time
+	if [ $PEEKABOT_CRASH_COUNT -eq 1 ]; then
+		if [ -e "core" ]; then
+			zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-core.zip core
+		fi	
+		mv logs/log.xml logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
+		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.zip logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
+	fi
 else
 	tools/scripts/collect-logs.sh
 fi
