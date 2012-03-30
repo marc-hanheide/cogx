@@ -73,9 +73,14 @@ class CLogDisplayer:
             doc = self.qtext.document()
             msgs = self.logSink.getNewMessages()
             #print tm, len(msgs), "Pulled in: ", time.time() - tm
-            if len(msgs) > doc.maximumBlockCount():
-                msgs = msgs[-doc.maximumBlockCount():]
-                print " -->", len(msgs)
+            dropped = 0
+            limit = doc.maximumBlockCount()
+            if len(msgs) > limit:
+                dropped = len(msgs) - limit
+                msgs = msgs[dropped:]
+                s = "(... %d messages were dropped ...)" % dropped
+                LOGGER.error(s)
+                print s
             pntr = messages.CAnsiPainter()
             try:
                 self._qtextLock.acquire(True)
@@ -133,7 +138,9 @@ class CLogDisplayer:
                 self._qtextQueue = self._qtextQueue[limit:]
 
             if dropped:
-                msgs.insert(0, "(... %d messages were dropped ...)" % dropped)
+                s = "(... %d messages were dropped ...)" % dropped
+                msgs.insert(0, s)
+                print s
         finally:
             self._qtextLock.release()
 
@@ -162,7 +169,7 @@ class CLogDisplayer:
             print e
         finally:
             self.qtext.setUpdatesEnabled(True)
-        #print tm, len(msgs), "Rendered in: ", time.time() - tm
+        if len(msgs) > 500: print "%d messages rendered in: %.6f" % (len(msgs), time.time() - tm)
 
         return True
 
