@@ -461,17 +461,17 @@ public class PlaceMonitor extends ManagedComponent {
 		MapLoadStatus _mlstatus = getMemoryEntry(_wmc.address, MapLoadStatus.class);
 		log("received OVERWRITTEN MapLoadStatus");
 		synchronized(this) {
-			log("mapLoadPlacesWritten = " + Boolean.toString(this.mapLoadPlacesWritten));
+			log("mapLoadPlacesWritten is currently set to " + Boolean.toString(this.mapLoadPlacesWritten));
 			if (!this.mapLoadPlacesWritten) {
 				log("MapLoadStatus WME reports placesWritten = " + Boolean.toString(_mlstatus.placesWritten));
 				if (_mlstatus.placesWritten) {
 					this.mapLoadPlacesWritten = true;
 					log("mapLoadPlacesWritten set to " + Boolean.toString(this.mapLoadPlacesWritten));
 				} else {
-					log("not changing mapLoadPlacesWritten (inner block)");
+					log("no  need to change mapLoadPlacesWritten (inner block) -- map loader isn't done writing the places yet!");
 				}
 			} else {
-				log("not changing mapLoadPlacesWritten (outer block)");
+				log("no need to change mapLoadPlacesWritten (outer block) -- already done so before!");
 			}
 			this.notifyAll();
 		}
@@ -1403,6 +1403,7 @@ public class PlaceMonitor extends ManagedComponent {
 		logInstances("owl:Thing");
 		
 		if(this.mapLoadMode == true && this.mapLoadRoomsWritten==false) {
+			log("Done with room maintenance while mapLoadMode == true && mapLoadRoomsWritten == false; going to report MapLoadStatus.roomsWritten=true");
 		  	try {
 				// We can mark the Coma rooms as
 			  	// loaded now as well
@@ -1412,6 +1413,7 @@ public class PlaceMonitor extends ManagedComponent {
 				  getMemoryEntry(m_mapLoadStatusAddress, MapLoadStatus.class);
 				_mlstatus.roomsWritten = true;
 				overwriteWorkingMemory(m_mapLoadStatusAddress, _mlstatus);
+				log("successfully OVERWRITTEN WM with MapLoadStatus.roomsWritten=true");
 				this.mapLoadRoomsWritten=true;
 			}
 			catch (DoesNotExistOnWMException e) {
