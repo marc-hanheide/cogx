@@ -346,7 +346,7 @@ class CLogMerger(object):
                 src.pushLogMessages()
                 msgs.extend(sink.getNewMessages())
             if len(msgs) < 1: return
-            if len(msgs) > 100: print len(msgs), "new messages in %.6f" % (time.time() - tmst)
+            if len(msgs) > 500: print "got %d new messages in %.6f" % (len(msgs), time.time() - tmst)
             msgs.sort()
             if len(self.messages) < 1:
                 self._setMessages(msgs)
