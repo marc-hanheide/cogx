@@ -87,6 +87,7 @@ public class PlaceMonitor extends ManagedComponent {
 	private static final int TIME_TO_WAIT_TO_SETTLE = 1000;
 	private boolean mapLoadMode = false;
 	private boolean mapLoadPlacesWritten = false;
+	private WorkingMemoryAddress m_mapLoadStatusAddress;
 	
 	private String m_comareasoner_component_name;
 	private ComaReasonerInterfacePrx m_comareasoner;
@@ -199,7 +200,7 @@ public class PlaceMonitor extends ManagedComponent {
 				new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc) 
 			throws CASTException {
-				processAddedMapLoadStatus();
+				processAddedMapLoadStatus(_wmc);
 			}
 		});
 		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(MapLoadStatus.class, WorkingMemoryOperation.OVERWRITE), 
@@ -446,10 +447,11 @@ public class PlaceMonitor extends ManagedComponent {
 		});
 	}
 	
-	private void processAddedMapLoadStatus() {
+	private void processAddedMapLoadStatus(WorkingMemoryChange _wmc) {
 		log("received ADDed MapLoadStatus -- setting mapLoadMode to TRUE");
 		synchronized(this) {
 			this.mapLoadMode = true;
+			this.m_mapLoadStatusAddress = _wmc.address;
 			log("mapLoadMode set to " + Boolean.toString(this.mapLoadMode));
 		}
 	}
@@ -469,6 +471,7 @@ public class PlaceMonitor extends ManagedComponent {
 			} else {
 				log("not changing mapLoadPlacesWritten (outer block)");
 			}
+			this.notifyAll();
 		}
 	}
 	
@@ -1304,7 +1307,7 @@ public class PlaceMonitor extends ManagedComponent {
 
 		// for each remaining place
 		while (!_remainingPlaceIds.isEmpty()) {
-			//			for (Long _remainingPlace : _remainingPlaceIds) {
+			//			for (Long _remainingPlace : _remainingPlaceIds
 			Long _remainingPlace = _remainingPlaceIds.poll();
 			// check if current place can be a seed, i.e., it is not a doorway
 			String _currentplaceInstance = "dora:place"+_remainingPlace;
@@ -1396,6 +1399,35 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 		log("unlocked all ComaRoom WMEs.");
 		logInstances("owl:Thing");
+
+		if(this.mapLoadMode == true) {
+		  	try {
+				// We can mark the Coma rooms as
+			  	// loaded now as well
+			  	lockEntry(m_mapLoadStatusAddress,
+				    WorkingMemoryPermissions.LOCKEDODR);
+				MapLoadStatus _mlstatus = 
+				  getMemoryEntry(m_mapLoadStatusAddress, MapLoadStatus.class);
+				_mlstatus.roomsWritten = true;
+				overwriteWorkingMemory(m_mapLoadStatusAddress, _mlstatus);
+			}
+			catch (DoesNotExistOnWMException e) {
+				logException(e);
+				e.printStackTrace();
+			}
+			catch (UnknownSubarchitectureException e) {
+				logException(e);
+				e.printStackTrace();
+			}
+			catch (ConsistencyException e) {
+				logException(e);
+				e.printStackTrace();
+			}
+			catch (PermissionException e) {
+				logException(e);
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	
