@@ -16,22 +16,9 @@ function GazeboJuggler(ui)
    this.emptyObject = "<empty>";
    this.placeContent = {};
 
-   //with (this.ui.wctrls) {
-   //   ////sliderPan.valueChanged.connect(this, this.onSliderPan_valueChanged);
-   //   sliderPan.valueChanged.connect(spinPan, spinPan.setValue);
-   //   spinPan['valueChanged(double)'].connect(sliderPan, sliderPan.setValue);
-
-   //   sliderTilt.valueChanged.connect(spinTilt, spinTilt.setValue);
-   //   spinTilt['valueChanged(double)'].connect(sliderTilt, sliderTilt.setValue);
-
-   //   sliderZoom.valueChanged.connect(spinZoom, spinZoom.setValue);
-   //   spinZoom['valueChanged(double)'].connect(sliderZoom, sliderZoom.setValue);
-   //}
-
-   //with (this.ui) {
-   //   btSetPosition.clicked.connect(this, this.onSetPosition_clicked);
-   //   btGetPosition.clicked.connect(this, this.onGetPosition_clicked);
-   //}
+   //var name = 'cbxPlace01';
+   //var ctrl = this.ui.findChild(name);
+   //dialogOwner.dumpObject(name, ctrl);
 }
 
 GazeboJuggler.prototype.setPlaceCount = function(n)
