@@ -7,7 +7,8 @@
 #
 # The logger has a "message source" intreface that is used by CLogMerger.
 
-from messages import CMessage
+from messages import CMessage, CMessageTextQueue, CLogMessageSource
+import threading
 import legacy
 
 _LOGGER = None
@@ -17,36 +18,62 @@ def get():
     if _LOGGER == None: _LOGGER = CInternalLogger()
     return _LOGGER
 
-class CInternalLogger(object):
+class CInternalLogger(CLogMessageSource):
     def __init__(self):
         # Modelled like CProcess: messages, errors
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
         self.srcid = "castcontrol"
+        self._lock = threading.Lock()
 
-    def getMessages(self, clear=True):
-        msgs = list(self.messages)
-        if clear: self.messages.clear()
-        return msgs
+    def getLogMessages(self): # CLogMessageSource
+        return self.getMessages(True, True)
 
-    def getErrors(self, clear=True):
-        msgs = list(self.errors)
-        if clear: self.errors.clear()
+    def isSameLogMessageSource(self, aObject): #CLogMessageSource
+        return aObject == self
+
+    # This is a CMessageTextQueue compatible method
+    def getMessages(self, stdout=True, stderr=True):
+        msgs = []
+        try:
+            self._lock.acquire(True)
+            if stdout: msgs += self.messages
+            if stderr: msgs += self.errors
+            self.messages = []
+            self.errors = []
+        finally:
+            self._lock.release()
         return msgs
 
     def log(self, msg):
-        self.messages.append(CMessage(self.srcid, msg))
+        try:
+            self._lock.acquire(True)
+            self.messages.append(CMessage(self.srcid, msg))
+        finally:
+            self._lock.release()
 
     def warn(self, msg):
-        self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.WARNING))
+        try:
+            self._lock.acquire(True)
+            self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.WARNING))
+        finally:
+            self._lock.release()
 
     def error(self, msg):
-        self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.ERROR))
+        try:
+            self._lock.acquire(True)
+            self.errors.append(CMessage(self.srcid, msg, msgtype=CMessage.ERROR))
+        finally:
+            self._lock.release()
 
     def addMessage(self, cmsg):
-        if cmsg.msgtype == CMessage.ERROR or cmsg.msgtype == CMessage.WARNING:
-            self.errors.append(cmsg)
-        else: self.messages.append(cmsg)
+        try:
+            self._lock.acquire(True)
+            if cmsg.msgtype == CMessage.ERROR or cmsg.msgtype == CMessage.WARNING:
+                self.errors.append(cmsg)
+            else: self.messages.append(cmsg)
+        finally:
+            self._lock.release()
 
 class CStdoutLogger(CInternalLogger):
     def __init__(self):
