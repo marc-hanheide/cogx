@@ -171,7 +171,7 @@ if [ "$window_id" ]; then
 	sleep 80
 	window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
 else
-	# peekabot has crashed already
+	echo "peekabot has crashed already"
 fi
 
 if [ "$window_id" ]; then
