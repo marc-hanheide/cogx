@@ -116,6 +116,8 @@ class Scenario : public golem::Object
 		void run(int argc, char* argv[]);
 		/** sets the actor to be used */
 		void setActorObject(ConcreteActor*);
+		/** get class name */
+		static string getName () { return "Scenario"; }
 			
 	protected:
 		/** const number of starting positions */
@@ -180,11 +182,12 @@ class Scenario : public golem::Object
 		golem::GenWorkspaceState target;
 		/** vector logging used starting positions throughout the experiment */
 		vector<double> 		usedStartingPositions;
-
-	private:
-		ConcreteActor* _concreteActor;
 		/** initialize the experiment */
 		void _init();
+		/** object (e.g. Polyflap)*/
+		ConcreteActor* _concreteActor;
+
+	private:
 		/** Synchronization objects */
 		golem::CriticalSection cs;
 		volatile bool bStart;

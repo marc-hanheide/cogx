@@ -169,6 +169,7 @@ SET(SCENARIO_SOURCES
 	${SMLEARNING_ROOT}/src/scenario/ArmActor.cpp
 	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
 	${SMLEARNING_ROOT}/src/scenario/Scenario.cpp	
+	${SMLEARNING_ROOT}/src/scenario/PredictingScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
 	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
 )
@@ -182,6 +183,7 @@ SET(SCENARIO_HEADERS
 	${SMLEARNING_ROOT}/include/scenario/Polyflap.h
 	${SMLEARNING_ROOT}/include/scenario/PushingApplication.h
 	${SMLEARNING_ROOT}/include/scenario/Scenario.h
+	${SMLEARNING_ROOT}/include/scenario/PredictingScenario.h
 	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
 )
 

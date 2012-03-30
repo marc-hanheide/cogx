@@ -152,8 +152,7 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 void Scenario::run(int argc, char* argv[]) {
 
 	//set: random seed;init arm; get initial config
-	//DONE
-std::cout <<"_init "<<std::endl;
+	std::cout <<"_init "<<std::endl;
 	_init();
 	std::cout <<"starting loop "<<std::endl;
 	//start of the experiment loop
@@ -165,13 +164,12 @@ std::cout <<"_init "<<std::endl;
 		std::cout <<"creating object "<<std::endl;
 		object = dynamic_cast<ActorObject*>(scene.createObject(desc.descActorObject));
 		object->setShape(scene,_concreteActor);
-		cout << Real(positionTarget.v1) << " " << Real(positionTarget.v2) << " " << Real(positionTarget.v3) << endl;
-		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
 		std::cout <<"choose action "<<std::endl;
 		chooseAction ();						//select a random action		
 		std::cout <<"calculate starting coordinates "<<std::endl;
 		calculateStartCoordinates ();					//compute coordinates of start position
-		std::cout << "sending position"<<std::endl;
+		std::cout << "sending position ";
+		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
 		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);	//move the finger to the beginnnig of experiment trajectory
 		learningData.currentChunkSeq.clear();				//create sequence for this loop run
 		std::cout << "init movement"<<std::endl;

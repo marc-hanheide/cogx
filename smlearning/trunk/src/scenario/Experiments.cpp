@@ -28,7 +28,7 @@ using namespace smlearning;
 
 int main(int argc, char *argv[]) {
 
-	PushingApplication().main(argc, argv);
+	PushingApplication<Scenario, Scenario::Desc>().main(argc, argv);
 
 	return 0;
 }

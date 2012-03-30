@@ -510,24 +510,7 @@ struct LearningData {
 	static void label_seq (Chunk::Seq* seq, chunk_flags flags)
 	{
 		Chunk::Seq::iterator s_iter;
-		if (flags & _slide_flip_tilt) {
-
-			golem::Real reachedRoll = 0.0;
-
-			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
-				if (s_iter->object.obRoll > reachedRoll)
-					reachedRoll = s_iter->object.obRoll;
-
-			golem::Real polState = -1.0; // sliding object
-			if (reachedRoll > 0.1) // object tilted more than threshold
-				polState = 0.0;
-			if (reachedRoll > 1.5) // object flipped
-				polState = 1.0;
-
-			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
-				s_iter->label = polState;
-		}
-		else if (flags & _rough_direction)
+		if (flags & _rough_direction)
 		{
 			seq->begin()->label = 0;
 			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
@@ -545,6 +528,31 @@ struct LearningData {
 						polStateOutput = -0.5;
 					(s_iter+1)->label = polStateOutput;
 				}
+		}
+		if (flags & _slide_flip_tilt) {
+
+			golem::Real reachedRoll = 0.0;
+
+			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
+				if (s_iter->object.obRoll > reachedRoll)
+					reachedRoll = s_iter->object.obRoll;
+
+			int polState = -1; // sliding object
+			if (reachedRoll > 0.1) // object tilted more than threshold
+				polState = 0;
+			if (reachedRoll > 1.5) // object flipped
+				polState = 1;
+
+			for (s_iter = seq->begin(); s_iter != seq->end(); s_iter++)
+			{
+				// relabelling of _rough_direction features
+				if (polState == -1)
+					s_iter->label = denormalize<golem::Real> (s_iter->label, -1.0, -0.34);
+				else if (polState == 0)
+					s_iter->label = denormalize<golem::Real> (s_iter->label, -0.33, 0.33);
+				else if (polState == 1)
+					s_iter->label = denormalize<golem::Real> (s_iter->label, 0.34, 1.0);
+			}
 		}
 	}
 	
@@ -808,7 +816,7 @@ struct LearningData {
 			Chunk::Seq::iterator s_iter;
 
 			if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
-				label_seq (seq, _slide_flip_tilt);
+				label_seq (seq, _rough_direction | _slide_flip_tilt);
 			else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
 				label_seq (seq, _rough_direction);
 
