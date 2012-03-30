@@ -2655,7 +2655,7 @@ void DisplayNavInPB::connectPeekabot()
 
     peekabot::Status status_kinect =
       m_ProxyKinect.add(m_PeekabotClient, "kinect", peekabot::REPLACE_ON_CONFLICT).status();
-    if (status_kinect.failed()) {
+    if (!status_kinect.succeeded()) {
        log("failed to add kinect");
     }
     m_ProxyKinect.set_max_vertices(10);
@@ -2692,9 +2692,22 @@ void DisplayNavInPB::connectPeekabot()
     }
 
     createRobotFOV();
-    log("Connection to Peekabot established");
 
-    
+    peekabot::Status client_status = m_PeekabotClient.noop().status();
+    if (client_status.succeeded()) {
+      log("All well with Peekabot");
+    }
+    else {
+      error("Peekabot may have crashed");
+    }
+
+    if (m_PeekabotClient.is_connected()) {
+      log("Connection to Peekabot established");
+    }
+    else {
+      error("Connection to Peekabot has broken!");
+    }
+
   } catch(std::exception &e) {
     log("Caught exception when connecting to peekabot (%s)",
         e.what());
