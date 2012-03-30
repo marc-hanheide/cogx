@@ -1158,12 +1158,12 @@ void NavGraphProcess::runComponent()
   if (m_WriteFirstGraph) {
     SpatialData::MapLoadStatusPtr statusStruct 
       = new SpatialData::MapLoadStatus;
-    statusStruct.nodesWritten = false;
-    statusStruct.placesWritten = false;
-    statusStruct.roomsWritten = false;
-    statusStruct.categoryDataWritten = false;
-    statusStruct.obstacleMapsLoaded = false;
-    statusStruct.localMapsLoaded = false;
+    statusStruct->nodesWritten = false;
+    statusStruct->placesWritten = false;
+    statusStruct->roomsWritten = false;
+    statusStruct->categoryDataWritten = false;
+    statusStruct->obstacleMapsLoaded = false;
+    statusStruct->localMapsLoaded = false;
 
     m_MapLoadStatusWM = newDataID();
     addToWorkingMemory<SpatialData::MapLoadStatus>(m_MapLoadStatusWM, statusStruct);
