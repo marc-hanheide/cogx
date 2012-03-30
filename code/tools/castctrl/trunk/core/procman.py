@@ -126,6 +126,7 @@ class CProcess(CProcessBase, CLogMessageSource):
     def  __init__(self, name, command, params=None, workdir=None, host=None, allowTerminate=False):
         if host == None: host = CRemoteHostInfo()
         CProcessBase.__init__(self, name, host)
+        CLogMessageSource.__init__(self)
         self.command = command
         self.params = params   # Configurable parameters
         self.workdir = workdir
@@ -143,7 +144,7 @@ class CProcess(CProcessBase, CLogMessageSource):
     def __del__(self):
         self.stop()
 
-    def getLogMessages(self): # CLogMessageSource
+    def _getLogMessages(self): # CLogMessageSource
         return self.messageQueue.getMessages(True, True)
 
     def isSameLogMessageSource(self, aObject): #CLogMessageSource

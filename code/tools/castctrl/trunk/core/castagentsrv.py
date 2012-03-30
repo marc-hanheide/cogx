@@ -59,7 +59,7 @@ class CAgentI(CastAgent.Agent):
         if log == None: return []
         try:
             log.merge()
-            msgs = logSink.getNewMessages(100)
+            msgs = logSink.getNewMessages(200)
             # Convert messages to transport format (ice) and return them
             res = [
                 CastAgent.CastMessage(time=msg.time, msgtype=msg.msgtype, message=msg.message)

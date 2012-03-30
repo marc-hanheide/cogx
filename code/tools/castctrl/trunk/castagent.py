@@ -48,8 +48,7 @@ class CLogDisplayer(threading.Thread):
     def pullLogs(self):
         mods = False
         self.log.merge()
-        if len(self.log.messages) < 1: pass
-        else:
+        if self.logSink.hasMessages():
             msgs = self.logSink.getNewMessages(100)
             for m in msgs:
                 text = m.getText().rstrip()
@@ -78,7 +77,7 @@ class CLogDisplayer(threading.Thread):
         self._isRunning = True
         while self._isRunning:
             self.pullLogs()
-            time.sleep(0.1)
+            time.sleep(0.3)
         self.pullLogs()
 
     def shutdown(self):

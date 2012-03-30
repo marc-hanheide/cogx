@@ -69,11 +69,13 @@ class CLogDisplayer:
         mods = False
         tm = time.time()
         self.log.merge()
-        msgs = self.logSink.getNewMessages(500)
-        #if len(msgs) < 1:
-        #    print tm, "Nothing"
-        if len(msgs) > 0:
+        if self.logSink.hasMessages():
+            doc = self.qtext.document()
+            msgs = self.logSink.getNewMessages()
             #print tm, len(msgs), "Pulled in: ", time.time() - tm
+            if len(msgs) > doc.maximumBlockCount():
+                msgs = msgs[-doc.maximumBlockCount():]
+                print " -->", len(msgs)
             pntr = messages.CAnsiPainter()
             try:
                 self._qtextLock.acquire(True)
@@ -122,7 +124,7 @@ class CLogDisplayer:
                 dropped = len(self._qtextQueue) - limit
                 self._qtextQueue = self._qtextQueue[dropped:]
 
-            limit = 200
+            limit = max(200, doc.maximumBlockCount() / 3)
             if len(self._qtextQueue) < limit:
                 msgs = self._qtextQueue
                 self._qtextQueue = []
@@ -565,6 +567,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         self._remoteMessagePump = CRemoteMessagePump(self)
         self._remoteMessagePump.start()
 
+        self._remoteSyncThread = None
+
         root = self._options.xe("${COGX_ROOT}")
         if len(root) > 64: root = "..." + root[-64:]
         self.setWindowTitle("CAST Control - " + root)
@@ -572,13 +576,11 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.setMaxBlockCount(self._userOptions.maxMainLogLines)
         self.mainLog.log.addSource(LOGGER)
-        #self.mainLog.start()
         self.logPullThread.addLog(self.mainLog, 100)
 
         self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
         self.buildLog.setMaxBlockCount(self._userOptions.maxBuildLogLines)
         self.buildLog.showFlush = True
-        #self.buildLog.start()
         self.logPullThread.addLog(self.buildLog, 100)
 
         self.logPullThread.start()
@@ -1232,15 +1234,20 @@ class CCastControlWnd(QtGui.QMainWindow):
         if not self._remoteBuildEnabled:
             return
 
-        if self.ui.ckAutoSyncCode.isChecked():
-            try:
-                QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-                self.syncRemoteCode()
-            finally:
-                QtGui.QApplication.restoreOverrideCursor()
+        if self._remoteSyncThread != None and self._remoteSyncThread.isAlive():
+            print "Remote sync/build is already running"
+            return
 
-        for h in self._remoteHosts:
-            h.agentProxy.startBuild(target)
+        def _bgRemoteSyncAndBuild(nothing):
+            if self.ui.ckAutoSyncCode.isChecked():
+                self.syncRemoteCode()
+
+            for h in self._remoteHosts:
+                h.agentProxy.startBuild(target)
+
+        self._remoteSyncThread = CLambdaThread(None, _bgRemoteSyncAndBuild)
+        self._remoteSyncThread.start()
+
 
     def _writeEnvironScript(self, fname):
         f = open(fname, "w")
@@ -1368,11 +1375,19 @@ class CCastControlWnd(QtGui.QMainWindow):
         for h in self._remoteHosts:
             sync.rsync(lhost, h)
 
+    def _runBgSyncRemoteCode(self):
+        if self._remoteSyncThread != None and self._remoteSyncThread.isAlive():
+            print "Remote sync/build is already running"
+            return
+        self._remoteSyncThread = CLambdaThread(self, lambda me: me.syncRemoteCode())
+        self._remoteSyncThread.start()
+        pass
 
     def onSynchronizeRemoteCode(self):
         try:
             QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-            self.syncRemoteCode()
+            # self.syncRemoteCode()
+            self._runBgSyncRemoteCode()
         finally:
             QtGui.QApplication.restoreOverrideCursor()
 
