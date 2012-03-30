@@ -10,11 +10,13 @@ import subprocess as subp
 import tempfile
 import select, signal, threading
 import fcntl
-import options, messages, logger
+import options, logger
+from messages import CMessageTextQueue, CLogMessageSource, CMessage
 import itertools
 import legacy
 
 LOG4J_PROCESS = "log4jServer"
+SINGLE_READER = False
 
 LOGGER = logger.get()
 def log(msg):
@@ -120,7 +122,7 @@ class CProcessBase(object):
         for ob in self.observers: # TODO separate thread?
             ob.notifyStatusChange(self, oldStatus, newStatus)
 
-class CProcess(CProcessBase):
+class CProcess(CProcessBase, CLogMessageSource):
     def  __init__(self, name, command, params=None, workdir=None, host=None, allowTerminate=False):
         if host == None: host = CRemoteHostInfo()
         CProcessBase.__init__(self, name, host)
@@ -132,28 +134,23 @@ class CProcess(CProcessBase):
         self.keepalive = False
         self.allowTerminate = allowTerminate # CAST apps should not autoTerm; others may
         self.restarted = 0
-        self.messages = legacy.deque(maxlen=500)
-        self.messageProcessor = None  # Some servers (log4j) could do additional message processing
-        self.errors = legacy.deque(maxlen=200)
-        self.lastLinesEmpty = 0 # suppress consecutive empty lines
-        self.msgOrder = 0
         self.willClearAt = None # Flushing
         self.pipeReader = None
-        self.srcid = "process.%s.%s" % (self.host.host.replace('.', '_'), self.name.replace('.', '_'))
         self.partialLine = {} # one place for every pipe
+        self.srcid = "process.%s.%s" % (self.host.host.replace('.', '_'), self.name.replace('.', '_'))
+        self.messageQueue = CMessageTextQueue(self.srcid)
 
     def __del__(self):
         self.stop()
 
-    def getMessages(self, clear=True):
-        msgs = list(self.messages)
-        if clear: self.messages.clear()
-        return msgs
+    def getLogMessages(self): # CLogMessageSource
+        return self.messageQueue.getMessages(True, True)
 
-    def getErrors(self, clear=True):
-        msgs = list(self.errors)
-        if clear: self.errors.clear()
-        return msgs
+    def isSameLogMessageSource(self, aObject): #CLogMessageSource
+        return aObject == self
+
+    def setMessageProcessor(self, messageProcessor): # CLogMessageSource
+        self.messageQueue.messageProcessor = messageProcessor
 
     def getStatusStr(self):
         st = CProcessBase.getStatusStr(self)
@@ -206,10 +203,7 @@ class CProcess(CProcessBase):
 
         try:
             self._setStatus(CProcessBase.STARTING)
-            if self.pipeReader != None:
-                self._stopReader()
-            self.pipeReader = CPipeReader_1(self)
-            self.pipeReader.start()
+            self._startReader()
             self.process = subp.Popen(
                     command, bufsize=1,
                     stdout=subp.PIPE, stderr=subp.PIPE,
@@ -238,6 +232,13 @@ class CProcess(CProcessBase):
         if not notify: self.status = nextStatus
         else: self._setStatus(nextStatus)
         self._stopReader()
+
+    def _startReader(self):
+        if SINGLE_READER: return
+        if self.pipeReader != None:
+            self._stopReader()
+        self.pipeReader = CPipeReader_1(self)
+        self.pipeReader.start()
 
     def _stopReader(self):
         if self.pipeReader != None:
@@ -282,7 +283,8 @@ class CProcess(CProcessBase):
             if self.process.stderr != None: pipes.append(self.process.stderr)
         return pipes
 
-    def _readPipe(self, pipe, maxcount, targetList, fnType, flushing=False):
+    def _readPipe(self, pipe, maxcount, streamType):
+        flushing = streamType == CMessageTextQueue.FLUSH
         start = time.time(); tmend = start + 0.1
         if not self.partialLine.has_key(pipe): self.partialLine[pipe] = ""
         nl = 0
@@ -301,17 +303,8 @@ class CProcess(CProcessBase):
                 if not lineTerminated:
                     self.partialLine[pipe] += lines[-1]
                     lines = lines[:-1]
-                for msg in lines:
-                    if len(msg) < 1 or msg.isspace(): self.lastLinesEmpty += 1
-                    else: self.lastLinesEmpty = 0
-                    if self.lastLinesEmpty > maxempty: continue
-                    typ = fnType(msg)
-                    if self.messageProcessor:
-                        (msg, typ) = self.messageProcessor.process(msg, typ)
-                    self.msgOrder += 1
-                    msg = msg.decode("utf-8", "replace")
-                    targetList.append(messages.CMessage(self.srcid, msg, typ, self.msgOrder))
-                    nl += 1
+
+                nl = self.messageQueue.addText(streamType, lines)
 
             if nl > maxcount: break
             now = time.time()
@@ -324,10 +317,9 @@ class CProcess(CProcessBase):
         start = time.time(); tmend = start + 0.2
         nl = 0
         selected = select.select(pipes, [], [], 0.0)[0]
-        def flushType(msg): return messages.CMessage.FLUSHMSG
         while len(selected) > 0:
             for pipe in selected:
-                nl += self._readPipe(pipe, 200, self.errors, flushType, flushing=True)
+                nl += self._readPipe(pipe, 200, CMessageTextQueue.FLUSH)
             if nl > maxcount: break
             now = time.time()
             if now < start or now > tmend: break
@@ -339,18 +331,13 @@ class CProcess(CProcessBase):
             self._flushPipes(maxcount)
             return 0
         nl = 0
-        def stderrType(msg): return messages.CMessage.ERROR
-        def stdoutType(msg):
-            mo = messages.reColorEscape.match(msg)
-            if mo != None: return messages.CMessage.CASTLOG
-            else: return messages.CMessage.MESSAGE
         for pipe in pipes:
-            nempty = 0
             if pipe == self.process.stdout:
-                nl += self._readPipe(pipe, maxcount-nl, self.messages, stdoutType)
+                nl += self._readPipe(pipe, maxcount-nl, CMessageTextQueue.STDOUT)
             elif pipe == self.process.stderr:
-                nl +=  self._readPipe(pipe, maxcount-nl, self.errors, stderrType)
-            if not self.isRunning(): break
+                nl +=  self._readPipe(pipe, maxcount-nl, CMessageTextQueue.STDERR)
+            if not self.isRunning():
+                break
         if not self.isRunning():
             nl += self._flushPipes(maxcount)
         return nl
@@ -392,7 +379,8 @@ class CPipeReader_1(threading.Thread):
         while self.isRunning:
             pipes = []
             pipes.extend(self.process.getPipes())
-            if len(pipes) < 1: time.sleep(0.3)
+            if len(pipes) < 1:
+                time.sleep(0.3)
             else:
                 (rlist, wlist, xlist) = select.select(pipes, [], [], 0.3)
                 if len(rlist) > 0:
@@ -414,7 +402,7 @@ class CPipeReader(threading.Thread):
             pipes = []
             for proc in procs: pipes.extend(proc.getPipes())
             if len(pipes) < 1:
-                time.sleep(0.3)
+                time.sleep(0.1)
                 continue
             (rlist, wlist, xlist) = select.select(pipes, [], [], 0.3)
             if len(rlist) > 0:
@@ -532,7 +520,7 @@ class CProcessManager(object):
 #        ready = select.select(pipes, [], [], 0.0)
 #        if len(ready[0]) > 0: p.readPipes(ready[0], 100)
 #        if LOGGER != None:
-#            log = messages.CLogMerger()
+#            log = CLogMerger()
 #            try: # TODO: these messages should be internal!
 #                log.addSource(p)
 #                log.merge()

@@ -6,7 +6,7 @@
 import sys, traceback, Ice
 import threading, time
 from procman import CProcessBase, CRemoteHostInfo
-from messages import CMessageSource, CMessage
+from messages import CLogMessageSource, CMessage
 import itertools
 import legacy
 
@@ -16,24 +16,22 @@ import icemodule.castcontrol.CastAgent as CastAgent
 class CRemoteProcess(CProcessBase):
     """
     A Remote Process accessed through a CASTControl Agent.
-    It implements the same (public) interface as CProcess.
-    It has only one message queue 'messages' so it doesn't work as a CMessageSource;
-    messages are therefore merged in the manager which provides the interface
-    for CLogMerger.
     """
     def __init__(self, manager, name, host):
         CProcessBase.__init__(self, name, host)
         self.manager = manager
         self.messages = legacy.deque(maxlen=500)
         self.srcid = "remote.%s.%s" % (host.host.replace('.', '_'), name.replace('.', '_'))
+        self._lock = threading.Lock()
 
-    def getMessages(self, clear=True):
-        msgs = list(self.messages)
-        if clear: self.messages.clear()
+    def getMessages(self):
+        try:
+            self._lock.acquire(True)
+            msgs = list(self.messages)
+            self.messages.clear()
+        finally:
+            self._lock.release()
         return msgs
-
-    def getErrors(self, clear=True):
-        return []
 
     def getStatusStr(self):
         st = CProcessBase.getStatusStr(self)
@@ -59,8 +57,12 @@ class CRemoteProcess(CProcessBase):
 
     def _readMessages(self):
         msgs = self.manager.agentProxy.readMessages(self.name)
-        for m in msgs:
-            self.messages.append(CMessage(self.srcid, "R:"+m.message, m.msgtype, timestamp=m.time))
+        msgs = [CMessage(self.srcid, "R:"+m.message, m.msgtype, timestamp=m.time) for m in msgs]
+        try:
+            self._lock.acquire(True)
+            for m in msgs: self.messages.append(m)
+        finally:
+            self._lock.release()
 
 
 class CRemoteProcessManager:
@@ -78,11 +80,16 @@ class CRemoteProcessManager:
         self.online = False
         self.observers = [] # proclist change, etc.
         self.remoteInternalMessages = legacy.deque(maxlen=500)
-        self.srcid = "remoteman.%s.%s" % (self.name.replace('.', '_'), self.address.replace('.', '_'))
+        self.srcid = "remote.%s.%s" % (self.name.replace('.', '_'), self.address.replace('.', '_'))
+        self._lock = threading.Lock()
 
-    def getRemoteInternalMessages(self, clear=True):
-        msgs = list(self.remoteInternalMessages)
-        if clear: self.remoteInternalMessages.clear()
+    def getRemoteInternalMessages(self):
+        try:
+            self._lock.acquire(True)
+            msgs = list(self.remoteInternalMessages)
+            self.remoteInternalMessages.clear()
+        finally:
+            self._lock.release()
         return msgs
 
     def getStatusStr(self): # For processtree
@@ -160,9 +167,12 @@ class CRemoteProcessManager:
         try:
             for p in self.proclist: p._readMessages()
             msgs = self.agentProxy.readMessages("LOGGER")
-            for m in msgs:
-                self.remoteInternalMessages.append(
-                    CMessage(self.srcid, "RI:" + m.message, m.msgtype, timestamp=m.time))
+            msgs = [CMessage(self.srcid, "RI:"+m.message, m.msgtype, timestamp=m.time) for m in msgs]
+            try:
+                self._lock.acquire(True)
+                for m in msgs: self.remoteInternalMessages.append(m)
+            finally:
+                self._lock.release()
             self.online = True
         except Ice.ConnectionRefusedException:
             self.online = False
@@ -172,16 +182,31 @@ class CRemoteProcessManager:
         pass
 
 
-class CRemoteMessageSource(CMessageSource):
-    def __init__(self, remoteManager):
-        CMessageSource.__init__(self, remoteManager)
-        self.yieldErrors = False
+#class CRemoteMessageSource(CMessageSource):
+#    def __init__(self, remoteManager):
+#        CMessageSource.__init__(self, remoteManager)
+#        self.yieldErrors = False
 
-    def getMessages(self, clear=True):
+#    def getMessages(self, clear=True):
+#        msgs = []
+#        if self.yieldMessages:
+#            for proc in self.process.proclist:
+#                msgs += proc.getMessages(clear)
+#            msgs += self.process.getRemoteInternalMessages(clear)
+#        return msgs
+
+# CRemoteMessageSource merges messages from a remote host.
+class CRemoteLogMessageSource(CLogMessageSource):
+    def __init__(self, remoteManager):
+        self.remoteManager = remoteManager
+
+    def getLogMessages(self): # CLogMessageSource
         msgs = []
-        if self.yieldMessages:
-            for proc in self.process.proclist:
-                msgs += proc.getMessages(clear)
-            msgs += self.process.getRemoteInternalMessages(clear)
+        for proc in self.remoteManager.proclist:
+            msgs += proc.getMessages()
+        msgs += self.remoteManager.getRemoteInternalMessages()
         return msgs
+
+    def isSameLogMessageSource(self, aObject): #CLogMessageSource
+        return aObject == self
 

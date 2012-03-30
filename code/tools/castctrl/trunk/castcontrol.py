@@ -37,13 +37,13 @@ class CLambdaThread(threading.Thread):
     def run(self):
         self.func(self.data)
 
-class CLogDisplayer(threading.Thread):
+class CLogDisplayer:
     def __init__(self, qtext):
-        threading.Thread.__init__(self, name="CLogDisplayer")
         self.log = messages.CLogMerger()
         self.qtext = qtext
         doc = qtext.document()
         doc.setMaximumBlockCount(500)
+        doc.setUndoRedoEnabled(False)
         self.showFlush = False
         self.showWarning = True
         self.showError = True
@@ -62,11 +62,16 @@ class CLogDisplayer(threading.Thread):
         doc = self.qtext.document()
         doc.setMaximumBlockCount(count)
 
-    def _pullLogsInternal(self):
+    # Merges and caches the logs. Called by CLogPullThread.
+    def pullLogMessages(self):
         mods = False
+        tm = time.time()
         self.log.merge()
-        msgs = self.log.getNewMessages(200)
+        msgs = self.log.getNewMessages(500)
+        #if len(msgs) < 1:
+        #    print tm, "Nothing"
         if len(msgs) > 0:
+            #print tm, len(msgs), "Pulled in: ", time.time() - tm
             pntr = messages.CAnsiPainter()
             try:
                 self._qtextLock.acquire(True)
@@ -93,39 +98,67 @@ class CLogDisplayer(threading.Thread):
                 mods = True
             finally:
                self._qtextLock.release()
+            #print tm, len(msgs), "Transformed in: ", time.time() - tm
 
         return mods
 
-    def run(self):
-        self._isRunning = True
-        while self._isRunning:
-            self._pullLogsInternal()
-            time.sleep(0.5)
-        self._pullLogsInternal()
-
-    def shutdown(self):
-        self._isRunning = False
-
-    def pullLogs(self):
+    # Called by the GUI thread
+    def renderMessages(self):
+        tm = time.time()
         if len(self._qtextQueue) < 1:
-            return False
+            return True
 
         if not self._qtextLock.acquire(False): # nonblocking
             time.sleep(0.05)
             if not self._qtextLock.acquire(False): # nonblocking
                 return False
         try:
-            if len(self._qtextQueue) < 50:
+            doc = self.qtext.document()
+            dropped = 0
+            limit = doc.maximumBlockCount() + 200
+            if len(self._qtextQueue) > limit:
+                dropped = len(self._qtextQueue) - limit
+                self._qtextQueue = self._qtextQueue[dropped:]
+
+            limit = 200
+            if len(self._qtextQueue) < limit:
                 msgs = self._qtextQueue
                 self._qtextQueue = []
             else:
-                msgs = self._qtextQueue[:50]
-                self._qtextQueue = self._qtextQueue[50:]
+                msgs = self._qtextQueue[:limit]
+                self._qtextQueue = self._qtextQueue[limit:]
+
+            if dropped:
+                msgs.insert(0, "(... %d messages were dropped ...)" % dropped)
         finally:
             self._qtextLock.release()
 
-        for m in msgs:
-            self.qtext.append(m)
+        if len(msgs) < 1:
+            return True
+
+        try:
+            self.qtext.setUpdatesEnabled(False)
+            limit = doc.maximumBlockCount()
+            havespace = limit - doc.blockCount()
+            needspace = len(msgs)
+            if needspace > havespace:
+                toremove = needspace - havespace
+                if toremove < limit * 0.1:
+                    toremove = int(limit * 0.1 + 1)
+
+                #print tm, "Blocks: ", doc.blockCount()
+                cur = QtGui.QTextCursor(doc.begin())
+                cur.movePosition(QtGui.QTextCursor.NextBlock, QtGui.QTextCursor.KeepAnchor, toremove)
+                cur.removeSelectedText()
+                #print tm, "Some removed, remaining: ", doc.blockCount()
+
+            for m in msgs:
+                self.qtext.append(m)
+        except Exception as e:
+            print e
+        finally:
+            self.qtext.setUpdatesEnabled(True)
+        #print tm, len(msgs), "Rendered in: ", time.time() - tm
 
         return True
 
@@ -134,11 +167,11 @@ class CLogDisplayer(threading.Thread):
 
     def setFilter(self, fnFilter):
         self.clearOutput()
-        self.log.setFilter(fnFilter, 500) # setMaximumBlockCount
+        self.log.setFilter(fnFilter) # setMaximumBlockCount
 
     def rereadLogs(self):
         self.clearOutput()
-        self.log.restart(500) # setMaximumBlockCount
+        self.log.restart() # setMaximumBlockCount
 
     def saveLogs(self, stream): # TODO: save all available messages from currently registered sourcess
         # maybe: restart, pullRawLogs-->stream, clearOutput, restart
@@ -154,7 +187,7 @@ class CRemoteMessagePump(threading.Thread):
     def run(self):
         self._isRunning = True
         while self._isRunning:
-            time.sleep(0.5)
+            time.sleep(0.3)
             hosts = copy.copy(self.castcontrol._remoteHosts)
             for rpm in hosts:
                 try:
@@ -165,6 +198,25 @@ class CRemoteMessagePump(threading.Thread):
                     pass
 
     def shutdown(self):
+        self._isRunning = False
+
+class CLogPullThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self, name="CLogPullThread")
+        self.logDisplayers = []
+        self._isRunning = False
+
+    def addLog(self, log, intervalMs):
+        self.logDisplayers.append( (log, intervalMs) )
+
+    def run(self): # Thread
+        self._isRunning = True
+        while self._isRunning:
+            for (log, interval) in self.logDisplayers:
+                log.pullLogMessages()
+                time.sleep(0.1)
+
+    def shutdown(self): # Thread
         self._isRunning = False
 
 
@@ -388,7 +440,7 @@ class CLog4jExecutor:
     def createLocalProcess(self):
         log4 = log4util.CLog4Config() # we only need logServerDir, so we don't use getConfig
         p = procman.CProcess(procman.LOG4J_PROCESS, None, workdir=log4.logServerDir)
-        p.messageProcessor = log4util.CLog4MessageProcessor()
+        p.setMessageProcessor(log4util.CLog4MessageProcessor())
         return p
 
 
@@ -500,6 +552,8 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.configuredHosts = confbuilder.CHostMap(localhost=_localhost)
         self.log4j = CLog4jExecutor(self.ui, self._options)
 
+        self.logPullThread = CLogPullThread()
+
         # move option values to UI
         self.ui.txtLocalHost.setText(_localhost)
 
@@ -516,12 +570,16 @@ class CCastControlWnd(QtGui.QMainWindow):
         self.mainLog  = CLogDisplayer(self.ui.mainLogfileTxt)
         self.mainLog.setMaxBlockCount(self._userOptions.maxMainLogLines)
         self.mainLog.log.addSource(LOGGER)
-        self.mainLog.start()
+        #self.mainLog.start()
+        self.logPullThread.addLog(self.mainLog, 100)
 
         self.buildLog  = CLogDisplayer(self.ui.buildLogfileTxt)
         self.buildLog.setMaxBlockCount(self._userOptions.maxBuildLogLines)
         self.buildLog.showFlush = True
-        self.buildLog.start()
+        #self.buildLog.start()
+        self.logPullThread.addLog(self.buildLog, 100)
+
+        self.logPullThread.start()
 
         self._processModel = processtree.CProcessTreeModel()
         self.ui.processTree.setModel(self._processModel)
@@ -812,16 +870,18 @@ class CCastControlWnd(QtGui.QMainWindow):
 
     def statusUpdate(self):
         self.mainLog.showFlush = self.ui.ckShowFlushMsgs.isChecked()
-        self.mainLog.pullLogs()
-        self.buildLog.pullLogs()
+        self.mainLog.renderMessages()
+        self.buildLog.renderMessages()
 
     def closeEvent(self, event):
         self._manager.stopAll()
         self._manager.stopReaderThread()
         time.sleep(0.2)
         self._remoteMessagePump.shutdown()
-        self.mainLog.shutdown()
-        self.buildLog.shutdown()
+        self.logPullThread.shutdown()
+        self.logPullThread.join(0.2)
+        self._remoteMessagePump.join(0.2)
+
         def getitems(cmbx, count=30, hasNullFile=False):
             mx = cmbx.count()
             lst = []
@@ -1412,7 +1472,7 @@ class CCastControlWnd(QtGui.QMainWindow):
             self._remoteHosts.append(rpm)
             self._processModel.rootItem.addHost(rpm)
             if self._pumpRemoteMessages:
-                self.mainLog.log.addSource(remoteproc.CRemoteMessageSource(rpm))
+                self.mainLog.log.addSource(remoteproc.CRemoteLogMessageSource(rpm))
 
         self.ui.processTree.expandAll()
         self._fillMessageFilterCombo()

@@ -6,6 +6,7 @@
 import sys, time, re
 import itertools, heapq
 import legacy
+import threading
 
 reColorEscape = re.compile("\x1b\\[[0-9;]+m")
 reColorEscapeSplit = re.compile("(\x1b\\[[0-9;]+m)")
@@ -40,6 +41,90 @@ class CMessage(object):
             stm = time.strftime("%H:%M:%S", time.localtime(self.time))
             return "%s %s" % (stm, self.message)
         return self.message
+
+
+# 2012-03-29
+# A process writes raw text to a CMessageTextQueue.
+# A message source reads messages from CMessageTextQueue, converted to CMessage
+class CMessageTextQueue(object):
+    STDOUT = 1
+    STDERR = 2
+    FLUSH  = 3 # flushing after the process is dead
+    def __init__(self, sourceId):
+        self.textBlocks = []          # (timestamp, text)
+        self.sourceId = sourceId      # id of the process
+        self.order = 0                # order of the messages for sorting when timestamp is the same
+        self.messageProcessor = None  # Some servers (log4j) could do additional message processing
+        self.lastLineIsBlank = False  # for compression of blank lines
+        self.lineCount = 0
+        self.lineCountLimit = 1000
+        self._lock = threading.Lock()
+
+    # streamType: STDOUT, STDERR, FLUSH
+    def addText(self, streamType, lines):
+        tmst = time.time()
+        text = []
+        for line in lines:
+            blank = len(line) < 1 or line.isspace()
+            if self.lastLineIsBlank and blank: continue
+            self.lastLineIsBlank = blank
+            text.append(line)
+            if len(text) > self.lineCountLimit:
+                print "addText: too many lines added (%d/%d)" % (len(lines), self.lineCountLimit)
+                break
+
+        if len(text) < 1:
+            return 0
+
+        try:
+            self._lock.acquire(True)
+            self.textBlocks.append( (time.time(), text, streamType) )
+            self.lineCount += len(text)
+            dropped = 0
+            while self.lineCount > self.lineCountLimit and len(self.textBlocks) > 1:
+                dropped += len(self.textBlocks[0][1])
+                self.lineCount -= len(self.textBlocks[0][1])
+                self.textBlocks = self.textBlocks[1:]
+            if dropped:
+                print "addText: buffer full. %d lines dropped." % dropped
+        finally:
+            self._lock.release()
+
+        if len(text) > 100: print self.sourceId, len(text), "in", "%.6f" % (time.time() - tmst)
+        return len(text)
+
+    # could this be a generator?
+    def getMessages(self, stdout=True, stderr=True):
+        tmst = time.time()
+        msgs = []
+        try:
+            self._lock.acquire(True)
+            blocks = self.textBlocks
+            self.textBlocks = []
+            self.lineCount = 0
+        finally:
+            self._lock.release()
+
+        for (tm, block, streamType) in blocks:
+            if streamType == CMessageTextQueue.STDOUT:
+                if not stdout: continue
+                mtype = CMessage.MESSAGE
+            else:
+                if not stderr: continue
+                if streamType == CMessageTextQueue.FLUSH:
+                    mtype = CMessage.FLUSHMSG
+                else: mtype = CMessage.ERROR
+
+            for line in block:
+                self.order += 1
+                if self.messageProcessor:
+                    (line, mtype) = self.messageProcessor.process(line, mtype)
+                line = line.decode("utf-8", "replace")
+                msgs.append(CMessage(self.sourceId, line, mtype, self.order, tm))
+
+        if len(msgs) > 100: print self.sourceId, len(msgs), "out", "%.6f" % (time.time() - tmst)
+        return msgs
+
 
 class CAnsiPainter(object):
     colorName = ["black", "darkred", "darkgreen", "orangered",
@@ -90,17 +175,17 @@ class CAnsiPainter(object):
         msg = "".join(parts) + tail
         return msg
 
-class CMessageSource(object):
-    def __init__(self, process):
-        self.process = process
-        self.yieldMessages = True
-        self.yieldErrors = True
+class CLogMessageSource(object):
+    def getLogMessages(self):
+        return []
 
-    def getMessages(self, clear=True):
-        msgs = []
-        if self.yieldMessages: msgs += self.process.getMessages(clear)
-        if self.yieldErrors: msgs += self.process.getErrors(clear)
-        return msgs
+    # Detect if the object is associated with this CLogMessageSource.
+    # Useful when the CLogMessageSource is a wrapper around the message producer.
+    def isSameLogMessageSource(self, aObject):
+        return aObject == self
+
+    def setMessageProcessor(self, messageProcessor):
+        pass
 
 class CLogMerger(object):
     def __init__(self):
@@ -166,37 +251,36 @@ class CLogMerger(object):
                self.current = len(self.filtered)
         return msgs
 
-    def addSource(self, process):
-        # print type(process), type(process).__bases__
-        if type(process) == CMessageSource or CMessageSource in type(process).__bases__:
-            # print "A CMessageSource", type(process)
-            src = process
-            self.removeSource(src.process)
-        else:
-            self.removeSource(process)
-            src = CMessageSource(process)
-        self._sources.append(src)
-        return src
+    def addSource(self, logSource):
+        self.removeSource(logSource)
+        self._sources.append(logSource)
 
-    def removeSource(self, process):
-        if type(process) == CMessageSource or CMessageSource in type(process).__bases__:
-            process = process.process
-        srcs = [s for s in self._sources if s.process == process]
-        for s in srcs: self._sources.remove(s)
-
-    def hasSource(self, process):
+    def removeSource(self, aObject):
+        keep = []
         for s in self._sources:
-            if s.process == process: return True
-        return False
+            if s == aObject or s.isSameLogMessageSource(aObject):
+                continue
+            keep.append(s)
+        self._sources = keep
+
+    def findSource(self, aObject):
+        for s in self._sources:
+            if s == aObject or s.isSameLogMessageSource(aObject): return s
+        return None
+
+    def hasSource(self, aObject):
+        return self.findSource(aObject) != None
 
     def removeAllSources(self):
         self._sources = []
 
     def merge(self):
+        tmst = time.time()
         msgs = []
-        for s in self._sources: msgs.extend(s.getMessages(clear=True))
+        for s in self._sources:
+            msgs.extend(s.getLogMessages())
         if len(msgs) < 1: return
-        # print len(msgs), "new messages"
+        if len(msgs) > 100: print len(msgs), "new messages in %.6f" % (time.time() - tmst)
         msgs.sort()
         if len(self.messages) < 1:
             self._setMessages(msgs)
