@@ -29,6 +29,8 @@ class CLogDisplayer(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self, name="CLogDisplayer")
         self.log = messages.CLogMerger()
+        self.logSink = messages.CLogMessageSink()
+        self.log.addSink(self.logSink)
         self.showFlush = True # option
         self.showWarning = True # option
         self.showError = True # option
@@ -48,7 +50,7 @@ class CLogDisplayer(threading.Thread):
         self.log.merge()
         if len(self.log.messages) < 1: pass
         else:
-            msgs = self.log.getNewMessages(100)
+            msgs = self.logSink.getNewMessages(100)
             for m in msgs:
                 text = m.getText().rstrip()
                 co = None
@@ -76,7 +78,7 @@ class CLogDisplayer(threading.Thread):
         self._isRunning = True
         while self._isRunning:
             self.pullLogs()
-            time.sleep(0.5)
+            time.sleep(0.1)
         self.pullLogs()
 
     def shutdown(self):
