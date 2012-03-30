@@ -160,14 +160,20 @@ PIDS="$PIDS $!"
 #waitForTrigger
 # (Wait for 100 seconds to ensure everything has loaded)
 echo "--------------------------"
-echo "Sleeping for 100 secs"
-
-sleep 100
-
-window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+echo "Sleeping for 20 secs"
+sleep 20
 
 TESTREST=0
 PEEKABOT_CRASHED=0
+window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+if [ "$window_id" ]; then
+	echo "Sleeping for another 80 secs"
+	sleep 80
+	window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+else
+	# peekabot has crashed already
+fi
+
 if [ "$window_id" ]; then
 	echo "peekabot window id is " $window_id
 	echo "Moving Peekabot"
@@ -215,9 +221,10 @@ fi
 
 } # end of doTest function
 
-while [ $TEST_COMPLETE -eq 0 ] && [ $PEEKABOT_CRASH_COUNT -ge 0 ] && [ $PEEKABOT_CRASH_COUNT -lt 3 ]; do
+while [ $TEST_COMPLETE -eq 0 ] && [ $PEEKABOT_CRASH_COUNT -ge 0 ] && [ $PEEKABOT_CRASH_COUNT -lt 5 ]; do
 	echo "Running test after $PEEKABOT_CRASH_COUNT peekabot crashes"
 	doTest
+	sleep 10
 done
 
 if [ $PEEKABOT_CRASH_COUNT -gt 0 ]; then
