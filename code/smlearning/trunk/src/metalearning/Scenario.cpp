@@ -643,9 +643,9 @@ void Scenario::init_writing(){
 ///
 void Scenario::init_data(){
 	// initialize data
-	learningData.effector = effectorBounds;
-	learningData.object = *object->getLocalBoundsSeq();
-	learningData.obstacles = *obstacles->getGlobalBoundsSeq();
+	// learningData.effector = effectorBounds;
+	// learningData.object = *object->getLocalBoundsSeq();
+	// learningData.obstacles = *obstacles->getGlobalBoundsSeq();
 }
 
 
