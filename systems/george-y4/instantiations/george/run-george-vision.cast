@@ -42,6 +42,7 @@ OPTDEFAULT feature_options=<multiline>
    !motivation
    !manipulation
    visualization
+   standalone-display
 </multiline>
 
 INCLUDE george.cast

@@ -57,6 +57,7 @@ OPTDEFAULT feature_options=<multiline>
    !motivation
    !manipulation
    visualization
+   standalone-display
 </multiline>
 ###########################################################################
 
@@ -202,8 +203,16 @@ ENDIF
 
 # visualization ##########################################################
 IFOPTALL(%(feature_options), visualization)
-   SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
-   INCLUDE  includes/visualization.sa/v11n-base-p.cast
+   SUBARCHITECTURE visualization.sa 
+   JAVA WM cast.architecture.SubarchitectureWorkingMemory
+   CPP TM AlwaysPositiveTaskManager
+
+   IFOPTALL(%(feature_options), standalone-display)
+      SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+   ELSE
+      SETVAR displaysrv_param_redirect=
+   ENDIF
+   CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
 
    JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
 
