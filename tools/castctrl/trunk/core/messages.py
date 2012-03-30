@@ -176,8 +176,28 @@ class CAnsiPainter(object):
         return msg
 
 class CLogMessageSource(object):
-    def getLogMessages(self):
+    def __init__(self):
+        self._messageSinks = []
+
+    # To be overriddend by the actual implementation
+    def _getLogMessages(self):
         return []
+
+    def pushLogMessages(self):
+        msgs = self._getLogMessages()
+        if len(msgs):
+            for s in self._messageSinks:
+                s.addMessages(msgs)
+
+    def addSink(self, sink):
+        self._messageSinks.append(sink)
+
+    def removeSink(self, sink):
+        keep = []
+        for s in self._messageSinks:
+            if s == sink: continue
+            keep.append(s)
+        self._messageSinks = keep
 
     # Detect if the object is associated with this CLogMessageSource.
     # Useful when the CLogMessageSource is a wrapper around the message producer.
@@ -193,6 +213,9 @@ class CLogMessageSink(object):
         self.messages = []
         self.fnMatches = None
 
+    def clear(self):
+        self.messages = []
+
     def addMessages(self, messages):
         self.messages += messages
 
@@ -205,6 +228,9 @@ class CLogMessageSink(object):
             self.messages = self.messages[maxItems:]
         return msgs
 
+    def hasMessages(self):
+        return len(self.messages) > 0
+
 class CLogMerger(object):
     def __init__(self):
         self.maxlen = 10000
@@ -214,6 +240,7 @@ class CLogMerger(object):
         self.fnMatches = None
         self.filtered = self.messages
         self.current = 0
+        self._lock = threading.Lock()
 
     def clearBuffer(self):
        self.messages = []
@@ -221,12 +248,19 @@ class CLogMerger(object):
        self.current = 0
 
     def setFilter(self, fnFilter, lastMessages = -1): # fnFilter(message)
-        self.fnMatches = fnFilter
-        if fnFilter == None: self.filtered = self.messages
-        else:
-            self.filtered = []
-            self._applyFilter(self.messages)
-        self.restart(lastMessages)
+        try:
+            self._lock.acquire(True)
+            self.fnMatches = fnFilter
+            if fnFilter == None: self.filtered = self.messages
+            else:
+                self.filtered = []
+                self._applyFilter(self.messages)
+            self.restart(lastMessages)
+
+            for s in self._sinks: s.clear()
+            self._pushNewMessages()
+        finally:
+            self._lock.release()
 
     def _setMessages(self, newList):
         if self.messages == self.filtered: self.filtered = newList
@@ -274,25 +308,30 @@ class CLogMerger(object):
 
     def addSource(self, logSource):
         self.removeSource(logSource)
-        self._sources.append(logSource)
+        sink = CLogMessageSink()
+        logSource.addSink(sink)
+        self._sources.append((logSource, sink))
 
     def removeSource(self, aObject):
         keep = []
         for s in self._sources:
-            if s == aObject or s.isSameLogMessageSource(aObject):
+            if s[0] == aObject or s[0].isSameLogMessageSource(aObject):
+                s[0].removeSink(s[1])
                 continue
             keep.append(s)
         self._sources = keep
 
     def findSource(self, aObject):
-        for s in self._sources:
-            if s == aObject or s.isSameLogMessageSource(aObject): return s
+        for src,sink in self._sources:
+            if src == aObject or src.isSameLogMessageSource(aObject): return src
         return None
 
     def hasSource(self, aObject):
         return self.findSource(aObject) != None
 
     def removeAllSources(self):
+        for s in self._sources:
+            s[0].removeSink(s[1])
         self._sources = []
 
     def addSink(self, sink):
@@ -301,23 +340,29 @@ class CLogMerger(object):
     def merge(self):
         tmst = time.time()
         msgs = []
-        for s in self._sources:
-            msgs.extend(s.getLogMessages())
-        if len(msgs) < 1: return
-        if len(msgs) > 100: print len(msgs), "new messages in %.6f" % (time.time() - tmst)
-        msgs.sort()
-        if len(self.messages) < 1:
-            self._setMessages(msgs)
+        try:
+            self._lock.acquire(True)
+            for src,sink in self._sources:
+                src.pushLogMessages()
+                msgs.extend(sink.getNewMessages())
+            if len(msgs) < 1: return
+            if len(msgs) > 100: print len(msgs), "new messages in %.6f" % (time.time() - tmst)
+            msgs.sort()
+            if len(self.messages) < 1:
+                self._setMessages(msgs)
+                self._applyFilter(msgs)
+                self._pushNewMessages()
+                return
+            first = msgs[0]
+            i = len(self.messages) - 1
+            while i > 0 and first < self.messages[i]: i -= 1
+            resorted = self.messages[i+1:]
+            # if len(resorted) > 0: print len(resorted), "resorted"
+            merged = self.messages[:i+1] + sorted(resorted + msgs)
+            self._setMessages(merged)
             self._applyFilter(msgs)
-            return
-        first = msgs[0]
-        i = len(self.messages) - 1
-        while i > 0 and first < self.messages[i]: i -= 1
-        resorted = self.messages[i+1:]
-        # if len(resorted) > 0: print len(resorted), "resorted"
-        merged = self.messages[:i+1] + sorted(resorted + msgs)
-        self._setMessages(merged)
-        self._applyFilter(msgs)
-        self._checkLength()
-        self._pushNewMessages()
+            self._checkLength()
+            self._pushNewMessages()
+        finally:
+            self._lock.release()
 

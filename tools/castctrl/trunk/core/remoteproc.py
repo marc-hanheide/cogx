@@ -198,9 +198,10 @@ class CRemoteProcessManager:
 # CRemoteMessageSource merges messages from a remote host.
 class CRemoteLogMessageSource(CLogMessageSource):
     def __init__(self, remoteManager):
+        CLogMessageSource.__init__(self)
         self.remoteManager = remoteManager
 
-    def getLogMessages(self): # CLogMessageSource
+    def _getLogMessages(self): # CLogMessageSource
         msgs = []
         for proc in self.remoteManager.proclist:
             msgs += proc.getMessages()

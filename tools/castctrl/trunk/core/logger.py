@@ -20,13 +20,14 @@ def get():
 
 class CInternalLogger(CLogMessageSource):
     def __init__(self):
+        CLogMessageSource.__init__(self)
         # Modelled like CProcess: messages, errors
         self.messages = legacy.deque(maxlen=500)
         self.errors = legacy.deque(maxlen=200)
         self.srcid = "castcontrol"
         self._lock = threading.Lock()
 
-    def getLogMessages(self): # CLogMessageSource
+    def _getLogMessages(self): # CLogMessageSource
         return self.getMessages(True, True)
 
     def isSameLogMessageSource(self, aObject): #CLogMessageSource
