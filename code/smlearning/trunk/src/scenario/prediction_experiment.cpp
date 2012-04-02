@@ -1,4 +1,4 @@
-/** @file Experiments.cpp
+/** @file prediction_experiment.cpp
  *
  *
  * Program which moves the arm along a straight line
@@ -10,7 +10,7 @@
  * - the first uses real Katana arm
  * - the second runs the arm simulators
  *
- * data are stored that can be used for offline training RNNs
+ * a Substochastic Sequential Machine is used for prediction
  *
  * @author	Marek Kopicki (see copyright.txt),
  * 			<A HREF="http://www.cs.bham.ac.uk/~msk">The University Of Birmingham</A>
@@ -28,7 +28,7 @@ using namespace smlearning;
 
 int main(int argc, char *argv[]) {
 
-	PushingApplication<Scenario, Scenario::Desc>().main(argc, argv);
+	PushingApplication<PredictingScenario, PredictingScenario::Desc>().main(argc, argv);
 
 	return 0;
 }
