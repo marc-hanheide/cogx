@@ -2566,13 +2566,14 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       for (int j=0;j<30;j++){
         int x= round(hypxi+r*cos(theta+j*2*3.14/30)); 
         int y= round(hypyi+r*sin(theta+j*2*3.14/30)); 
-        int originPlaceID;
-        if (check_point(x,y,nodes,ret,map,map1,originPlaceID)){
+        int originNodeID;
+        if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
           SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
           new_nh->x=x*m_lgm->getCellSize();
           new_nh->y=y*m_lgm->getCellSize();
           new_nh->hypID=extantHyp->hypID;
-          new_nh->originPlaceID=originPlaceID;
+          new_nh->originPlaceID=-1;
+          new_nh->originNodeID=originNodeID;
           ret.push_back(new_nh);
         }
       }
@@ -2591,7 +2592,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   }	
   int robotxi;
   int robotyi;  
-  int originPlaceID;
+  int originNodeID;
 
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
   for (int i=0;i<100;i++){
@@ -2600,12 +2601,13 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     for (int j=0;j<30;j++){
       int x= round(robotxi+r*cos(theta+j*2*3.14/30)); 
       int y= round(robotyi+r*sin(theta+j*2*3.14/30)); 
-      if (check_point(x,y,nodes,ret,map,map1,originPlaceID)){
+      if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         new_nh->x=x*m_lgm->getCellSize();
         new_nh->y=y*m_lgm->getCellSize();
         new_nh->hypID=-1;
-        new_nh->originPlaceID=originPlaceID;
+        new_nh->originPlaceID=-1;
+        new_nh->originNodeID=originNodeID;
         ret.push_back(new_nh);
       }
     }

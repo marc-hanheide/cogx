@@ -19,6 +19,7 @@ module SpatialData {
 
     int hypID;
     int originPlaceID;
+    int originNodeID;
   };
 
   sequence<double> DoubleOpt;
