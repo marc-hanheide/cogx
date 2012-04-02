@@ -55,10 +55,16 @@ SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 SET(BLORT_INCLUDE /usr/local/include/Blort CACHE PATH "Path prefix for BLORT include files")
 SET(BLORT_LIBRARY /usr/local/lib CACHE PATH "Path prefix for BLORT libraries")
 
+SET(CRYSSMEX_INCLUDE /usr/local/include/cryssmex CACHE PATH "Path prefix for CrySSMEx include")
+SET(CRYSSMEX_LIBRARY /usr/local/lib CACHE PATH "Path prefix for CrySSMEx library")
+
+SET(NEURALGAS_INCLUDE /usr/local/include/NeuralGas CACHE PATH "Path prefix for NEURALGAS include")
+SET(NEURALGAS_LIBRARY /usr/local/lib CACHE PATH "Path prefix for NEURALGAS library")
+
 SET(Boost_MAJOR_VERSION 1)
 SET(Boost_MINOR_VERSION 36)
 # SET(Boost_SUBMINOR_VERSION 0)
-FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex program_options )
+FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex program_options)
 
 # If boost was not found:
 # Use the following values if you use Ubuntu 8.10 and boost 1.39.0
@@ -85,10 +91,11 @@ SET(ICE_BIN /usr/bin CACHE PATH "Path prefix for ZeroC Ice binaries")
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
+# ADD_DEFINITIONS(-DLINUX -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader #KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools #GolemTinyIce !!not created anymore
 	       GolemDemoCommon
-	       pthread rt GL glut GLU expat SMLearning netcdf rnnlib
+	       pthread rt GL glut GLU expat SMLearning netcdf rnnlib cryssmexlib 
  	       ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	       ${QT_LIBRARIES} qwt-qt4
 	       cv highgui GLEW ftgl
@@ -107,6 +114,8 @@ INCLUDE_DIRECTORIES(
 	#${KNI_INCLUDE}
 	${Boost_INCLUDE_DIRS}
 	${RNNLIB_INCLUDE}
+	${NEURALGAS_INCLUDE}
+	${CRYSSMEX_INCLUDE}
 	${QT_INCLUDE_DIR}
 	${QWT_INCLUDE}
 	${BLORT_INCLUDE}
@@ -119,6 +128,8 @@ LINK_DIRECTORIES(
 	${GOLEM_LIBRARY}
 	${Boost_LIBRARY_DIRS}
 	${RNNLIB_LIBRARY}
+	${NEURALGAS_LIBRARY}
+	${CRYSSMEX_LIBRARY}
 	${QWT_LIBRARY}
 	${ICE_LIBRARY}
 	${BLORT_LIBRARY}
@@ -189,8 +200,12 @@ SET(SCENARIO_HEADERS
 
 INSTALL(FILES ${SCENARIO_HEADERS} DESTINATION include/SMLearning/scenario/)
 
-SET(EXPERIMENTS_SOURCE
-	${SMLEARNING_ROOT}/src/scenario/Experiments.cpp
+SET(PREDICTION_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/prediction_experiment.cpp
+)
+
+SET(OFFLINE_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/offline_experiment.cpp
 )
 
 SET(TRACKER_TEST_SOURCE
@@ -198,9 +213,9 @@ SET(TRACKER_TEST_SOURCE
 )
 
 SET(TOOLS_SOURCES
-	${SMLEARNING_ROOT}/src/tools/helpers.cpp
-	${SMLEARNING_ROOT}/src/tools/math_helpers.cpp
-	${SMLEARNING_ROOT}/src/tools/data_plot.cpp
+	${SMLEARNING_ROOT}/src/smltools/helpers.cpp
+	${SMLEARNING_ROOT}/src/smltools/math_helpers.cpp
+	${SMLEARNING_ROOT}/src/smltools/data_plot.cpp
 )
 
 SET(SEQUENCES_TEST_SOURCE
@@ -220,11 +235,11 @@ SET(DATA_PLOT_TEST_SOURCE
 # )
 
 SET(PRINT_DATASET_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/print_dataset.cpp
+        ${SMLEARNING_ROOT}/src/smltools/print_dataset.cpp
 )
 
 SET(EVAL_PLOTTING_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/eval_plotting.cpp
+        ${SMLEARNING_ROOT}/src/smltools/eval_plotting.cpp
 )
 
 SET(EVALUATE_ACTIVELEARN_SOURCE
@@ -237,26 +252,26 @@ SET(EVALUATE_OFFLINELEARN_SOURCE
 
 
 SET(N_FOLD_CVSETS_NETS_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/n_fold_cvsets_nets.cpp
+        ${SMLEARNING_ROOT}/src/smltools/n_fold_cvsets_nets.cpp
 )
 
 SET(CONCATENATE_SEQUENCEDATASETS_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/concatenate_sequencedatasets.cpp
+        ${SMLEARNING_ROOT}/src/smltools/concatenate_sequencedatasets.cpp
 )
 
 SET(WRITE_DATA_CRYSSMEX_FMT_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/write_data_cryssmex_fmt.cpp
+        ${SMLEARNING_ROOT}/src/smltools/write_data_cryssmex_fmt.cpp
 )
 
 SET(TOOLS_HEADERS
-	${SMLEARNING_ROOT}/include/tools/helpers.h
-	${SMLEARNING_ROOT}/include/tools/math_helpers.h
-	${SMLEARNING_ROOT}/include/tools/tracker_tools.h
+	${SMLEARNING_ROOT}/include/smltools/helpers.h
+	${SMLEARNING_ROOT}/include/smltools/math_helpers.h
+	${SMLEARNING_ROOT}/include/smltools/tracker_tools.h
 )
 INSTALL(FILES ${TOOLS_HEADERS} DESTINATION include/SMLearning/tools/)
 
 SET(DATA_PLOT_MOC_HEADERS
-	${SMLEARNING_ROOT}/include/tools/data_plot.h
+	${SMLEARNING_ROOT}/include/smltools/data_plot.h
 )
 QT4_WRAP_CPP( DATA_PLOT_GEN_MOC ${DATA_PLOT_MOC_HEADERS} )
 
@@ -267,8 +282,9 @@ QT4_WRAP_CPP( DATA_PLOT_TEST_GEN_MOC ${DATA_PLOT_TEST_MOC_HEADERS} )
 
 SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/defaultnet.config
-#	${SMLEARNING_ROOT}/config/offline_experiment.xml
-	${SMLEARNING_ROOT}/config/pushing_appl.xml
+	${SMLEARNING_ROOT}/config/offline_experiment.xml
+	${SMLEARNING_ROOT}/config/prediction_experiment.xml
+#	${SMLEARNING_ROOT}/config/pushing_appl.xml
 #	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
@@ -282,7 +298,7 @@ SET(CONFIG_FILES
 ###PlotApp Ice interface
 ###
 SET(PLOTAPP_MOC_HEADERS
-	${SMLEARNING_ROOT}/include/tools/PlotAppI.h
+	${SMLEARNING_ROOT}/include/smltools/PlotAppI.h
 )
 QT4_WRAP_CPP( PLOTAPP_GEN_MOC ${PLOTAPP_MOC_HEADERS} )
 
@@ -317,7 +333,7 @@ SET(PLOT_SOURCES
 )
 
 SET(DATA_PLOT_SERVER_SOURCE
-        ${SMLEARNING_ROOT}/src/tools/data_plot_server.cpp
+        ${SMLEARNING_ROOT}/src/smltools/data_plot_server.cpp
         ${SMLEARNING_ROOT}/slice/PlotApp.cc
 )
 
@@ -327,7 +343,7 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${METALEARNING_SOURCES} ${TOOLS_SOURCES} ${PL
 # ADD_LIBRARY(${PROJECT_NAME} SHARED ${TOOLS_SOURCES})
 INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 
-#ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 #ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 #ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 #ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
@@ -346,15 +362,15 @@ ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT
 ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 ADD_EXECUTABLE(tracker_test ${TRACKER_TEST_SOURCE})
-ADD_EXECUTABLE(pushing_appl ${EXPERIMENTS_SOURCE})
+ADD_EXECUTABLE(prediction_experiment ${PREDICTION_EXPERIMENT_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/training.sh DESTINATION bin/SMLearning)
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/ensemble_experiment.sh DESTINATION bin/SMLearning)
-#INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS pushing_appl RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
