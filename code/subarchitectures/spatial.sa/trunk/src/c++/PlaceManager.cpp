@@ -1411,7 +1411,7 @@ void PlaceManager::evaluateUnexploredPaths()
             SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
             if (extantHyp->hypID==nodeHyp->hypID){
               exists=true;
-              if ((*nodeHyp).x!=extantHyp->x || (*nodeHyp).y!=extantHyp->y){
+//              if ((*nodeHyp).x!=extantHyp->x || (*nodeHyp).y!=extantHyp->y){
                 for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
                     fbIt != m_forbiddenZones.end(); fbIt++) {
                       	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
@@ -1427,7 +1427,7 @@ void PlaceManager::evaluateUnexploredPaths()
                   log("move overlapped placeholder");
                   (*nodeHyp).x=extantHyp->x;
                   (*nodeHyp).y=extantHyp->y;
-                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = getPlaceFromNodeID(extantHyp->originNodeID);
+                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = getPlaceFromNodeID(extantHyp->originNodeID)->id;
                   if ((*nodeHyp).originPlaceID != extantHyp->originPlaceID){
                     log("Found closest node. Connecting with the current");
                     (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
@@ -1438,7 +1438,7 @@ void PlaceManager::evaluateUnexploredPaths()
   //TODO CHANGE origplace and connectivity
                   overwriteWorkingMemory<SpatialData::NodeHypothesis>(m_HypIDToWMIDMap[nodeHyp->hypID], nodeHyp);
                 }
-              }
+              //}
               break;
             }
           }
@@ -1460,7 +1460,7 @@ void PlaceManager::evaluateUnexploredPaths()
       if (newHyp->hypID==-1){
         log("create new placeholder");
         newHyp->hypID = m_hypIDCounter;
-//        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = getPlaceFromNodeID(newHyp->originNodeID);
+//        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = getPlaceFromNodeID(newHyp->originNodeID)->id;
 //          log("Couldn't find closest node. Connecting with the current");
         newHyp->originPlaceID = curPlace->id;
 
