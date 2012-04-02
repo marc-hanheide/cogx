@@ -79,21 +79,27 @@ void PushingApplication<S,D>::define_program_options_desc()
 {
 	try {
 
-	prgOptDesc.add_options()
-		("help,h", "produce help message")
-		("numSequences,S", po::value<string>(), "number of sequences")
-		("startingPosition,P", po::value<string>(), "only starting position to use")
-		("storeLabels,L", "store labels")
-		("configFile,C", po::value<string>(), "name of the xml config file")
-	;
-
-
-
+		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario") {
+			prgOptDesc.add_options()
+				("help,h", "produce help message")
+				("numSequences,S", po::value<string>(), "number of sequences")
+				("startingPosition,P", po::value<string>(), "only starting position to use")
+				// ("storeLabels,L", "store labels")
+				("configFile,C", po::value<string>(), "name of the xml config file");
+		}
+		if (S::getName() == "PredictingScenario" ) {
+			prgOptDesc.add_options ()
+				("ssmFile,s", po::value<string>(), "name of SSM file")
+				("seqFile,D", po::value<string>(), "name of file containing data sequences");
+		}
+		
+		
+		
 	} catch(std::exception& e) {
 		cerr << "error: " << e.what() << "\n";
 	} catch(...) {
 		cerr << "Exception of unknown type!\n";
-
+		
 	}
 	
 }
@@ -113,6 +119,13 @@ int PushingApplication<S,D>::read_program_options(int argc, char *argv[]) {
 			
 			cout << prgOptDesc << endl;
 			return 1;
+		}
+
+		if (S::getName() == "PredictingScenario" ) {
+			if (!vm.count("ssmFile")) {
+				cout << "You should provide a .ssm file name" << endl;
+				return 1;
+			}
 		}
 
 
@@ -195,7 +208,6 @@ std::cout << "step 1"<<std::endl;
 	XMLData(desc, xmlcontext(), context());
 
 	pScenario = dynamic_cast<S*>(scene()->createObject(desc)); // throws
-	// cout << "Scenario type: " << typeid(S).name() << endl;
 	cout << "Scenario type: " << S::getName() << endl;
 	if (pScenario == NULL) {
 		context()->getMessageStream()->write(Message::LEVEL_CRIT, "PushingApplication::run(): unable to cast to Scenario");
