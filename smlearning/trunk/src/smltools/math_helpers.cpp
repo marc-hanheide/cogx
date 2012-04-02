@@ -25,7 +25,7 @@
  
  */
 
-#include <tools/math_helpers.h>
+#include <smltools/math_helpers.h>
 
 namespace smlearning {
 

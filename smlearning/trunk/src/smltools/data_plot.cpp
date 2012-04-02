@@ -23,7 +23,7 @@
  
  */
 
-#include <tools/data_plot.h>
+#include <smltools/data_plot.h>
 
 namespace smlearning {
 

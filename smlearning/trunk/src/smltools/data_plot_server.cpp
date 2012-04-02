@@ -1,5 +1,5 @@
 #include <Ice/Ice.h>
-#include <tools/PlotAppI.h>
+#include <smltools/PlotAppI.h>
 
 using namespace smlearning;
 

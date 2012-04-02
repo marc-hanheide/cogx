@@ -61,7 +61,7 @@ void Scenario::init(boost::program_options::variables_map vm)
 {
 	numSequences = 10000;
 	startingPosition = 0;
-	storeLabels = false;
+	// storeLabels = false;
 	
 	if (vm.count("numSequences")) {
 		numSequences = atoi(vm["numSequences"].as<string>().c_str());
@@ -71,9 +71,9 @@ void Scenario::init(boost::program_options::variables_map vm)
 		startingPosition = atoi(vm["startingPosition"].as<string>().c_str());
 	}
 
-	if (vm.count("storeLabels")) {
-		storeLabels = true;
-	}
+	// if (vm.count("storeLabels")) {
+	// 	storeLabels = true;
+	// }
 
 	dataFileName = get_base_filename_from_time ();
 
