@@ -30,8 +30,8 @@
 #include <netcdf.h>
 #include <boost/filesystem/operations.hpp>
 #include <metalearning/RNN.h>
-#include <tools/math_helpers.h>
-#include <tools/helpers.h>
+#include <smltools/math_helpers.h>
+#include <smltools/helpers.h>
 #include <metalearning/Object.h>
 #include <metalearning/Action.h>
 

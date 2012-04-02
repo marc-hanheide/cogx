@@ -31,7 +31,7 @@
 #include <TomGine/tgFont.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <tools/tracker_tools.h>
+#include <smltools/tracker_tools.h>
 
 using namespace TomGine;
 using namespace blortGLWindow;

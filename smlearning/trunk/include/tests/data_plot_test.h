@@ -14,7 +14,7 @@
 #include <iostream>
 #include <assert.h>
 
-#include <tools/data_plot.h>
+#include <smltools/data_plot.h>
 #include <PlotApp.hh>
 
 using namespace std;

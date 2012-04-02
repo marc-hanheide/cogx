@@ -51,7 +51,7 @@
 #include <Golem/Tools/XMLData.h>
 #include <iostream>
 #include <metalearning/data_structs.h>
-#include <tools/math_helpers.h>
+#include <smltools/math_helpers.h>
 #include <boost/program_options.hpp>
 #include <scenario/ActorObject.h>
 #include <scenario/ArmActor.h>
@@ -176,8 +176,8 @@ class Scenario : public golem::Object
 		int 			startPosition;
 		/** help varibale used to determine the startPosition variable */
 		int 			startingPosition;
-		/** flag to decide storing labels (for pattern recognition) */
-		bool 			storeLabels;
+		// /** flag to decide storing labels (for pattern recognition) */
+		// bool 			storeLabels;
 		/** workspace state used to describe the starting point and also the end point of trajectory */
 		golem::GenWorkspaceState target;
 		/** vector logging used starting positions throughout the experiment */
