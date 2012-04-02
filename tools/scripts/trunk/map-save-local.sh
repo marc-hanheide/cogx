@@ -6,6 +6,7 @@ FILES="robotpose.ccf
        HeightMap.txt
 		   tmpmap.graph
 		   tmpmap.metric
+       Places.txt
        place_properties.bin"
 
 for f in $FILES ; do
