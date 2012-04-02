@@ -333,7 +333,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       if(oobj->gateway == 1) {
 	addNewGatewayProperty(p.m_data->id);			
       }
-//      updatePlaceholders();  
+
     }
   }
   catch (DoesNotExistOnWMException) {
@@ -994,83 +994,6 @@ bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)
   m_Places[newPlaceID]=p;
 
   return true;
-}
-void PlaceManager::updatePlaceholders() {
-  SpatialData::NodeIDSeq nodeids;
-    std::vector<long> placeholderids;
-
-    for (map<int, PlaceHolder>::iterator it =
-        m_Places.begin();
-        it != m_Places.end(); it++){
-
-        if (it->second.m_data->status == SpatialData::TRUEPLACE){
-            NavData::FNodePtr node = getNodeFromPlaceID(it->second.m_data->id);
-            nodeids.push_back(node->nodeId);
-        } else {
-            placeholderids.push_back(it->second.m_data->id);
-        }
-    }
-    for (size_t g = 0; (g < placeholderids.size()); g++)
-        updatePlaceholder(placeholderids[g],nodeids);
-
-}
-/* Updates the edge of the placeholder so that it is linked to the node to
-   which it has the shortest path.
-   Returns the place id the placeholder is linked to or -1 on error*/
-int PlaceManager::updatePlaceholder(int placeholderId,const SpatialData::NodeIDSeq &nodeids) {
-  SpatialData::NodeHypothesisPtr hyp = getHypFromPlaceID(placeholderId);
-  if(!hyp) {
-    return -1;
-  }
-
-  SpatialData::PlacePtr placeholder = getPlaceFromHypID(hyp->hypID);
-  if(!placeholder) {
-    return -1;
-  }
-
-  int originPlaceId = hyp->originPlaceID;
-
-  log("Finding closest node.");
-  int closestNodeId = m_mapInterface->findClosestPlace(hyp->x, hyp->y,nodeids);
-  if(closestNodeId < 0) {
-    error("Error in finding closest node. Returning.");
-    return -1;
-  }
-
-  SpatialData::PlacePtr closestPlace = getPlaceFromNodeID(closestNodeId);
-  if(!closestPlace) {
-    error("No place attached to node. Try again later.");
-    return -1;
-  }
-
-  if(closestPlace->id == hyp->originPlaceID) {
-    log("Closest place was the same as before. Returning.");
-    return closestPlace->id;
-  }
-
-  log("Deleting connectivity property.");
-  deleteConnectivityProperty(originPlaceId, placeholderId);
-
-//FIXME not sure
-  createConnectivityProperty(m_hypPathLength, closestPlace->id, placeholderId);
-//end
-
-  hyp->originPlaceID = closestPlace->id;
-
-  try {
-    std::map<int,std::string>::iterator wmid = m_HypIDToWMIDMap.find(hyp->hypID);
-    if(wmid != m_HypIDToWMIDMap.end())
-      overwriteWorkingMemory<SpatialData::NodeHypothesis>(wmid->second, hyp);
-    else
-      log("Could not find WMID of hyp.");
-
-  } catch (DoesNotExistOnWMException) {
-    log("Error! Could not update hypothesis on WM - entry missing!");
-  }
-
-  log("Found a new connection!");
-
-  return closestPlace->id;
 }
 
 /* Updates the edge of the placeholder so that it is linked to the node to
@@ -2099,7 +2022,6 @@ PlaceManager::processPlaceArrival(bool failed)
               addNewGatewayProperty(newPlaceID);
             }
             
-           // updatePlaceholders();
           }
         }
         else {
@@ -2573,7 +2495,7 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
 
   // Delete placeholder properties for the Place in question
   deletePlaceholderProperties(placeID);
-//  updatePlaceholders();  
+ 
 //  // 1: Free space properties
 //  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
 //    try {
@@ -2689,7 +2611,7 @@ int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
 	if (node->gateway == 1) {
 		addNewGatewayProperty(newPlaceID);
 	}
-//    updatePlaceholders();
+
 	return newPlaceID;
 }
 
