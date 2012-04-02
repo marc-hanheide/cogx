@@ -2170,7 +2170,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			}
 		}
 	}
-  debug("Exited newPlace");
+  log("Exited newPlace");
 }
 
 
