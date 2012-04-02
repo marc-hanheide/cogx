@@ -126,6 +126,7 @@ wmctrl -l | grep "peekabot$"
 window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
 echo "peekabot window id is " $window_id
 xdotool windowactivate $window_id key alt+F5
+xdotool windowactivate $window_id key F9
 xdotool windowsize $window_id 40% 40%
 
 sleep 2
