@@ -1357,6 +1357,7 @@ public class PlaceMonitor extends ManagedComponent {
 								" -- permission exception!", comaRoomWME.getID());
 						logException(e);
 					} finally {
+            // FIXME: The following message is also displayed if the update succeeded, but it says "not updated".
 						logRoom(_currentRoomStruct, "did not update room WME! ", comaRoomWME.getID());
 					}
 					// 2010-09-13-YR2 maintainRoomProxy(_currentRoomStruct, comaRoomWME.getID());
