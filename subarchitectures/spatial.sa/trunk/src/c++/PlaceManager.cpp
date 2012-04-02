@@ -1427,7 +1427,8 @@ void PlaceManager::evaluateUnexploredPaths()
                   log("move overlapped placeholder");
                   (*nodeHyp).x=extantHyp->x;
                   (*nodeHyp).y=extantHyp->y;
-                  if (extantHyp->originPlaceID != -1 && (*nodeHyp).originPlaceID != extantHyp->originPlaceID){
+                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = getPlaceFromNodeID(extantHyp->originNodeID);
+                  if ((*nodeHyp).originPlaceID != extantHyp->originPlaceID){
                     log("Found closest node. Connecting with the current");
                     (*nodeHyp).originPlaceID = extantHyp->originPlaceID;
                     deleteConnectivityProperty(place->id, extantHyp->originPlaceID);
@@ -1459,11 +1460,9 @@ void PlaceManager::evaluateUnexploredPaths()
       if (newHyp->hypID==-1){
         log("create new placeholder");
         newHyp->hypID = m_hypIDCounter;
-//        if (newHyp->originPlaceID == -1 ){
+//        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = getPlaceFromNodeID(newHyp->originNodeID);
 //          log("Couldn't find closest node. Connecting with the current");
-          newHyp->originPlaceID = curPlace->id;
-//        }
-//TODO assign origplace in spatialcontrol;
+        newHyp->originPlaceID = curPlace->id;
 
         bool excluded = false;
         for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
