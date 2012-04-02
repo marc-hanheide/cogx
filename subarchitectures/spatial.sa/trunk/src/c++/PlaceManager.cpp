@@ -333,7 +333,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       if(oobj->gateway == 1) {
 	addNewGatewayProperty(p.m_data->id);			
       }
-      updatePlaceholders();  
+//      updatePlaceholders();  
     }
   }
   catch (DoesNotExistOnWMException) {
@@ -2099,7 +2099,7 @@ PlaceManager::processPlaceArrival(bool failed)
               addNewGatewayProperty(newPlaceID);
             }
             
-            updatePlaceholders();
+           // updatePlaceholders();
           }
         }
         else {
@@ -2573,7 +2573,7 @@ PlaceManager::upgradePlaceholder(int placeID, PlaceHolder &placeholder, NavData:
 
   // Delete placeholder properties for the Place in question
   deletePlaceholderProperties(placeID);
-  updatePlaceholders();  
+//  updatePlaceholders();  
 //  // 1: Free space properties
 //  if (m_freeSpaceProperties.find(placeID) != m_freeSpaceProperties.end()) {
 //    try {
@@ -2689,7 +2689,7 @@ int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
 	if (node->gateway == 1) {
 		addNewGatewayProperty(newPlaceID);
 	}
-    updatePlaceholders();
+//    updatePlaceholders();
 	return newPlaceID;
 }
 
