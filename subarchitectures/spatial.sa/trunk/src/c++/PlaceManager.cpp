@@ -183,7 +183,7 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   }
 
 
-
+  LoadPlaces("Places.txt");
 
   FrontierInterface::PlaceInterfacePtr servant = new PlaceServer(this);
   registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
@@ -268,6 +268,34 @@ PlaceManager::stop()
 {
 }
 
+void PlaceManager::SavePlaces(){
+  ofstream fout("Places.txt");
+  for(map<int, NavData::FNodePtr>::iterator it = m_PlaceIDToNodeMap.begin(); it != m_PlaceIDToNodeMap.end(); it++) {
+    int PlaceID = it->first;
+    int NodeID = it->second->nodeId;
+    fout << PlaceID << " " << NodeID << endl;
+  }
+}
+
+void PlaceManager::LoadPlaces(std::string filename){
+  ifstream file(filename.c_str());
+  if (!file.good()){
+    log("Could not read places file, exiting.");
+    return;
+  }
+  string line,tmp;
+
+  while(!getline(file,line).eof()){
+    istringstream istr(line); 
+    istr >> tmp;
+    int PlaceID = atoi(tmp.c_str());
+    istr >> tmp;
+    int NodeID = atoi(tmp.c_str());
+    m_NodeIDToPlaceIDMap[NodeID]=PlaceID;
+  }
+}
+
+
 void 
 PlaceManager::runComponent()
 {
@@ -282,9 +310,10 @@ PlaceManager::runComponent()
 
   int count = 0;
   while(isRunning()) {
-    count = (count + 1) % 50;
+    count = (count + 1) % 12;
     sleepComponent(100);
     if(count == 0) {
+      SavePlaces();
       // Execute this every 5 seconds.  However we don't want to sleep for so
       // long to be able to react to the component being stopped, thus we break
       // it up into sleeps of 100ms.
@@ -315,9 +344,13 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       PlaceHolder p;
       p.m_data = new SpatialData::Place;   
       //p.m_data->id = oobj->getData()->nodeId;
-      
-      
-      int newPlaceID = m_placeIDCounter;
+      int newPlaceID = m_placeIDCounter;   
+      map<int, int>::iterator it = m_NodeIDToPlaceIDMap.find(oobj->nodeId);
+      if (it != m_NodeIDToPlaceIDMap.end()) {
+        newPlaceID = it->second;
+        if (newPlaceID > m_placeIDCounter) m_placeIDCounter = newPlaceID;
+      }      
+ 
       m_placeIDCounter++;
       p.m_data->id = newPlaceID;
       m_PlaceIDToNodeMap[newPlaceID] = oobj;

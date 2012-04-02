@@ -151,12 +151,14 @@ class PlaceManager : public cast::ManagedComponent
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
     void processPlaceArrival(bool failed); 
 
-    void upgradePlaceholder(int placeID, PlaceHolder &holder, 
-	NavData::FNodePtr newNode, int hypothesisID);
+    void upgradePlaceholder(int placeID, PlaceHolder &holder, NavData::FNodePtr newNode, int hypothesisID);
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
     void deletePlaceholder(int placeId);
     bool createPlaceholder(int curPlaceId, double x, double y);
+
+    void SavePlaces();    
+    void LoadPlaces(std::string filename);
 
     int updatePlaceholderEdge(int placeholderId);
     bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
@@ -198,6 +200,8 @@ class PlaceManager : public cast::ManagedComponent
 
     long m_hypIDCounter;
     std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
+
+    std::map<int, int> m_NodeIDToPlaceIDMap;
     IceUtil::Mutex m_MappingsMutex;
 
     std::map<int, SpatialData::NodeHypothesisPtr> m_PlaceIDToHypMap;
