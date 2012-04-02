@@ -40,6 +40,7 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import cast.cdl.WorkingMemoryEntry;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
@@ -99,7 +100,8 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private HashSet<Long> m_placeholders;
 	private HashSet<Long> m_trueplaces;
-	private HashMap<Long, HashSet<WorkingMemoryAddress>> m_tempAdjacencyStore;
+	private Map<Long, HashSet<WorkingMemoryAddress>> m_tempAdjacencyStore;
+	private Map<WorkingMemoryAddress, ConnectivityPathProperty> m_pathWMAtoPathObject;
 	
 	private int m_roomIndexCounter = 0;
 	private int m_objectIndexCounter = 0;
@@ -130,7 +132,8 @@ public class PlaceMonitor extends ManagedComponent {
 
 		m_placeholders = new HashSet<Long>();
 		m_trueplaces = new HashSet<Long>();
-		m_tempAdjacencyStore = new HashMap<Long, HashSet<WorkingMemoryAddress>>();
+		m_tempAdjacencyStore = Collections.synchronizedMap(new HashMap<Long, HashSet<WorkingMemoryAddress>>());
+		m_pathWMAtoPathObject = Collections.synchronizedMap(new HashMap<WorkingMemoryAddress, ConnectivityPathProperty>());
 		//m_existingRoomProxies = new HashSet<String>();
 		//m_existingRelationProxies = new HashMap<String,HashSet<String>>();
 	}
@@ -157,6 +160,14 @@ public class PlaceMonitor extends ManagedComponent {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 			throws CASTException {
 				processAddedConnectivityPath(_wmc);
+			}
+		});
+		// track connectivity deletion
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(ConnectivityPathProperty.class, WorkingMemoryOperation.DELETE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processDeletedConnectivityPath(_wmc);
 			}
 		});
 
@@ -370,7 +381,9 @@ public class PlaceMonitor extends ManagedComponent {
 		if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) { 
 			// TRUEPLACE block
 			log("create dora:Place instance " + "dora:place"+_newPlaceNode.id);
-			m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
+			synchronized (m_comareasoner) {
+				m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
+			}
 			// keep track of created true place instances
 			m_trueplaces.add(Long.valueOf(_newPlaceNode.id));
 			logInstances("owl:Thing");
@@ -402,7 +415,9 @@ public class PlaceMonitor extends ManagedComponent {
 						_currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
 						log("successfully loaded pending path from WM");
 						log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
-						m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+						synchronized (m_comareasoner) {
+							m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+						}
 					} catch (DoesNotExistOnWMException e) {
 						log("could not load pending path from WM -- ceased to exist. ignoring this path...");
 						logException(e);
@@ -481,6 +496,9 @@ public class PlaceMonitor extends ManagedComponent {
 		// get path from WM
 		ConnectivityPathProperty _path = getMemoryEntry(_wmc.address, ConnectivityPathProperty.class);
 		log("processAddedConnectivityPath() called: got a callback for an ADDED ConnectivityPathProperty between " + _path.place1Id + " and " +_path.place2Id);
+
+		// todo handle lookup for deleted paths WMEs!
+		m_pathWMAtoPathObject.put(_wmc.address, _path);
 		
 		debug("Set of known placeholders: " + m_placeholders);
 		debug("Set of known places: " + m_trueplaces);
@@ -513,8 +531,10 @@ public class PlaceMonitor extends ManagedComponent {
 			// might still be the case that one of them is still unknown, 
 			// in which case adjacency creation is also postponed!
 			if (m_trueplaces.contains(Long.valueOf(_path.place1Id)) && m_trueplaces.contains(Long.valueOf(_path.place2Id))) {
-				m_comareasoner.addRelation("dora:place"+_path.place1Id, "dora:adjacent", "dora:place"+_path.place2Id);
-				debug("added adjacency relation: dora:place"+_path.place1Id + " dora:adjacent " + " dora:place"+_path.place2Id);
+				synchronized (m_comareasoner) {
+					m_comareasoner.addRelation("dora:place"+_path.place1Id, "dora:adjacent", "dora:place"+_path.place2Id);
+				}
+				log("added adjacency relation: dora:place"+_path.place1Id + " dora:adjacent " + " dora:place"+_path.place2Id);
 				logInstances("dora:Place");
 				// trigger room creation, splitting, merging, maintenance
 				maintainRooms();
@@ -547,6 +567,20 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 	}
 	
+	private void processDeletedConnectivityPath(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		// cannot get path from WM
+		// retrieving old copy of the path
+		ConnectivityPathProperty _deletedPath = m_pathWMAtoPathObject.get(_wmc.address);
+		log("processDeletedConnectivityPath() called: got a callback for a DELETed ConnectivityPathProperty between " + _deletedPath.place1Id + " and " +_deletedPath.place2Id);
+
+		synchronized (this.m_comareasoner) {
+			m_comareasoner.deleteRelation("dora:place"+_deletedPath.place1Id, "dora:adjacent", "dora:place"+_deletedPath.place2Id);
+			log("deleted adjacency relation: dora:place"+_deletedPath.place1Id + " dora:adjacent " + " dora:place"+_deletedPath.place2Id);
+		}
+		
+		maintainRooms();
+	}
+	
 	private void processAddedGatewayProperty(WorkingMemoryChange _wmc) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// get path from WM
 		GatewayPlaceProperty _gateProp = getMemoryEntry(_wmc.address, GatewayPlaceProperty.class);
@@ -560,7 +594,10 @@ public class PlaceMonitor extends ManagedComponent {
 		// this should be safe because Doorway Placeholders are seldom and their connectivity
 		// is not stored in the ontology anyway.
 		log("assert dora:Doorway instance dora:place"+ _gateProp.placeId);
-		m_comareasoner.addInstance("dora:place"+_gateProp.placeId, "dora:Doorway");
+
+		synchronized (m_comareasoner) {
+			m_comareasoner.addInstance("dora:place"+_gateProp.placeId, "dora:Doorway");
+		}
 		
 		// trigger room creation, splitting, merging, maintenance
 		maintainRooms();
@@ -804,7 +841,9 @@ public class PlaceMonitor extends ManagedComponent {
     				// if GBelief is deleted, delete the corresponding instance from coma!
     				log("Got a callback for a DELETED VisualObject GroundedBelief. " +
     						"Going to delete the corresponding instance from coma ABox");
-    		        m_comareasoner.deleteInstance(objInsName);
+    		        synchronized (m_comareasoner) {
+    		        	m_comareasoner.deleteInstance(objInsName);
+    		        }
     		        log("deleted instance " + objInsName);}
     		});
         	
@@ -880,7 +919,9 @@ public class PlaceMonitor extends ManagedComponent {
         String objCatName = "dora:" + ComaHelper.firstCap(ComaGBeliefHelper.getGBeliefCategory(gbelief));
         String objInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbelief);
         
-		m_comareasoner.addInstance(objInsName, objCatName);
+		synchronized(m_comareasoner) {
+			m_comareasoner.addInstance(objInsName, objCatName);
+		}
 		log("executed addInstance(" + objInsName + ", " + objCatName +")");
 		
 		// Step 2
@@ -898,7 +939,9 @@ public class PlaceMonitor extends ManagedComponent {
 			try {
 				String relateeInsName = "dora:" + ComaGBeliefHelper.getGBeliefComaIndividualName(gbOfRelatedObjectInWM);
 				String relationName = "dora:" + ComaGBeliefHelper.getGBeliefRelation(gbelief);
-				m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
+				synchronized (m_comareasoner) {
+					m_comareasoner.addRelation(objInsName, relationName, relateeInsName);
+				}
 				log("executed addRelation(" + objInsName + ", " + relationName + ", " + relateeInsName + ")");
 			} catch (de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException e) {
 				logException(e);
@@ -924,7 +967,9 @@ public class PlaceMonitor extends ManagedComponent {
 
         // hmmmmmmm, perhaps simply delete the instance, and re-run the addedVisObj method
         if (!objInsName.equals("dora:")) {
-        	m_comareasoner.deleteInstance(objInsName);
+        	synchronized (m_comareasoner) {
+        		m_comareasoner.deleteInstance(objInsName);
+        	}
         	log("deleted instance " + objInsName);
         }
         processVisObjGBelief(gbelief);        
@@ -984,7 +1029,9 @@ public class PlaceMonitor extends ManagedComponent {
 			// for the moment we are only interested in true places
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) {
 				log("create dora:Place instance " + "dora:place"+_newPlaceNode.id);
-				m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
+				synchronized (m_comareasoner) {
+					m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
+				}
 				logInstances("owl:Thing");
 				logInstances("dora:Place");
 				logInstances("dora:PhysicalRoom");
@@ -998,9 +1045,11 @@ public class PlaceMonitor extends ManagedComponent {
 					debug("process pending paths:");
 					for (WorkingMemoryAddress _workingMemoryAddress : _pendingPaths) {
 						try {
-							ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
-							log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
-							m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+							synchronized (m_comareasoner) {
+								ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
+								log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
+								m_comareasoner.addRelation("dora:place"+_currPendingPath.place1Id, "dora:adjacent", "dora:place"+_currPendingPath.place2Id);
+							}
 						} catch (DoesNotExistOnWMException e) {
 							log("The ConnectivityPathProperty WME at " + _workingMemoryAddress + " ceased to exist. Continuing to cycle through the pending paths.");
 						} catch (UnknownSubarchitectureException e) {
@@ -1016,17 +1065,19 @@ public class PlaceMonitor extends ManagedComponent {
 	}
 	
 	private void processDeletedPlace(long _deletedPlaceID) {
-		log("processDeletedPlace() called: Got a callback for a DELETED Place with ID: " + _deletedPlaceID);
-		boolean _successfullyDeleted = m_comareasoner.deleteInstance("dora:place"+_deletedPlaceID);
-		if (_successfullyDeleted) log("successfully deleted " + "dora:place"+_deletedPlaceID);
-		else log("There was an error deleting " + "dora:place"+_deletedPlaceID);
-		
-		// delete objects associated with that place
-		_successfullyDeleted= m_comareasoner.deleteInstance("dora:object"+_deletedPlaceID);
-		if (_successfullyDeleted) log("successfully deleted " + "dora:object"+_deletedPlaceID);
-		else log("There was an error deleting " + "dora:object"+_deletedPlaceID);
+		synchronized (m_comareasoner) {
+			log("processDeletedPlace() called: Got a callback for a DELETED Place with ID: " + _deletedPlaceID);
+			boolean _successfullyDeleted = m_comareasoner.deleteInstance("dora:place"+_deletedPlaceID);
+			if (_successfullyDeleted) log("successfully deleted " + "dora:place"+_deletedPlaceID);
+			else log("There was an error deleting " + "dora:place"+_deletedPlaceID);
 
-		m_placeholders.remove(_deletedPlaceID);
+			// delete objects associated with that place
+			_successfullyDeleted= m_comareasoner.deleteInstance("dora:object"+_deletedPlaceID);
+			if (_successfullyDeleted) log("successfully deleted " + "dora:object"+_deletedPlaceID);
+			else log("There was an error deleting " + "dora:object"+_deletedPlaceID);
+
+			m_placeholders.remove(_deletedPlaceID);
+		}
 		if (m_trueplaces.remove(_deletedPlaceID)) maintainRooms();
 		logInstances("dora:Place");
 	}
@@ -1110,11 +1161,13 @@ public class PlaceMonitor extends ManagedComponent {
 		// determine all places
 		Queue<Long> _remainingPlaceIds;
 		_remainingPlaceIds = new LinkedList<Long>();
-		String[] _allPlaceIns = m_comareasoner.getAllInstances("dora:Place");
-		for (String _placeIns : _allPlaceIns) {
-			_remainingPlaceIds.add(Long.valueOf(_placeIns.replaceAll("\\D","")));
+		synchronized(m_comareasoner) {
+			String[] _allPlaceIns = m_comareasoner.getAllInstances("dora:Place");
+			for (String _placeIns : _allPlaceIns) {
+				_remainingPlaceIds.add(Long.valueOf(_placeIns.replaceAll("\\D","")));
+			}
+			debug("remaining places: " + _remainingPlaceIds);
 		}
-		debug("remaining places: " + _remainingPlaceIds);
 		Collections.sort((List<Long>)_remainingPlaceIds);
 
 		// get all rooms previously known from WM
@@ -1190,34 +1243,40 @@ public class PlaceMonitor extends ManagedComponent {
 					log("could not delete ComaRoom with room ID " + comaRoomWME.getData().roomId + "from WMA ID " + comaRoomWME.getID() + " -- permission exception!");
 					logException(e);
 				}
-				m_comareasoner.deleteInstance("dora:room" + _currentRoomStruct.roomId);
-				log("deleted instance dora:room" + _currentRoomStruct.roomId + " from the coma reasoner");
+				synchronized (m_comareasoner) {
+					m_comareasoner.deleteInstance("dora:room" + _currentRoomStruct.roomId);
+					log("deleted instance dora:room" + _currentRoomStruct.roomId + " from the coma reasoner");
+				}
 			} else {
 				// otherwise -- i.e., if the current room's seed place is not a Doorway 
 				log("current room's seed is not a doorway. going to maintain.");
 				// check whether that room has changed at all...
 				boolean _hasChanged = false;
 
-				// get places in the same room as the seed
-				String[] _placesInTheSameRoom = 
-						m_comareasoner.getRelatedInstancesByRelation(_seedPlaceInstance,"dora:sameRoomAs");
 				Set<Long> _setOfPlaceIDsInTheSameRoom = new HashSet<Long>();
-				for (String _placeIns : _placesInTheSameRoom) {
-					Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
-					_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
-					m_comareasoner.addRelation((_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns),
-							"dora:constituentOfRoom", 
-							"dora:room" + _currentRoomStruct.roomId);
-					log("added relation to the coma reasoner: " 
-							+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
-							+ " dora:constituentOfRoom " 
-							+ "dora:room" + _currentRoomStruct.roomId);
+				synchronized (m_comareasoner) {
+					// get places in the same room as the seed
+					String[] _placesInTheSameRoom = 
+							m_comareasoner.getRelatedInstancesByRelation(_seedPlaceInstance,"dora:sameRoomAs");
+					for (String _placeIns : _placesInTheSameRoom) {
+						Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
+						_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
+						m_comareasoner.addRelation((_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns),
+								"dora:constituentOfRoom", 
+								"dora:room" + _currentRoomStruct.roomId);
+						log("added relation to the coma reasoner: " 
+								+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
+								+ " dora:constituentOfRoom " 
+								+ "dora:room" + _currentRoomStruct.roomId);
+					}
 				}
 
 				// add the seed to the list of contained places to be written to WM!
 				_setOfPlaceIDsInTheSameRoom.add(_seedPlaceId);
-				m_comareasoner.addRelation(_seedPlaceInstance, "dora:constituentOfRoom", "dora:room" + _currentRoomStruct.roomId);
-				log("added seed relation to the coma reasoner: " + _seedPlaceInstance + " dora:constituentOfRoom " + "dora:room" + _currentRoomStruct.roomId);
+				synchronized (m_comareasoner) {
+					m_comareasoner.addRelation(_seedPlaceInstance, "dora:constituentOfRoom", "dora:room" + _currentRoomStruct.roomId);
+					log("added seed relation to the coma reasoner: " + _seedPlaceInstance + " dora:constituentOfRoom " + "dora:room" + _currentRoomStruct.roomId);
+				}
 
 				// discard the found places from the set of remaining places
 				_remainingPlaceIds.removeAll(_setOfPlaceIDsInTheSameRoom);
@@ -1245,15 +1304,17 @@ public class PlaceMonitor extends ManagedComponent {
 
 				// new code: no longer contained places must no longer have 
 				// a constituency relationship with their former rooms
-				HashSet<Long> noLongerConstituentPlaces = ComaHelper.computeSetDifference(_oldSetOfContainedPlaces, _setOfPlaceIDsInTheSameRoom);
-				for (Long _nlcPlace : noLongerConstituentPlaces) {
-					m_comareasoner.deleteRelation("dora:place" + _nlcPlace,
-							"dora:constituentOfRoom", 
-							"dora:room" + _currentRoomStruct.roomId);
-					log("deleted relation to the coma reasoner: " 
-							+ "dora:place" + _nlcPlace 
-							+ " dora:constituentOfRoom " 
-							+ "dora:room" + _currentRoomStruct.roomId);
+				synchronized (m_comareasoner) {
+					HashSet<Long> noLongerConstituentPlaces = ComaHelper.computeSetDifference(_oldSetOfContainedPlaces, _setOfPlaceIDsInTheSameRoom);
+					for (Long _nlcPlace : noLongerConstituentPlaces) {
+						m_comareasoner.deleteRelation("dora:place" + _nlcPlace,
+								"dora:constituentOfRoom", 
+								"dora:room" + _currentRoomStruct.roomId);
+						log("deleted relation to the coma reasoner: " 
+								+ "dora:place" + _nlcPlace 
+								+ " dora:constituentOfRoom " 
+								+ "dora:room" + _currentRoomStruct.roomId);
+					}
 				}
 				log("after code block that deletes potential no-longer-contained places' constituency assertions.");
 
@@ -1324,37 +1385,43 @@ public class PlaceMonitor extends ManagedComponent {
 				// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
 				ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
 
-				// create new room on the reasoner
-				m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
-				log("created new instance " + "dora:room" + _newRoom.roomId +  " of concept dora:PhysicalRoom");
-				m_comareasoner.addRelation("dora:room" + _newRoom.roomId, "dora:in", "dora:defaultScene");
+				synchronized (m_comareasoner) {
+					// create new room on the reasoner
+					m_comareasoner.addInstance("dora:room" + _newRoom.roomId, "dora:PhysicalRoom");
+					log("created new instance " + "dora:room" + _newRoom.roomId +  " of concept dora:PhysicalRoom");
+					m_comareasoner.addRelation("dora:room" + _newRoom.roomId, "dora:in", "dora:defaultScene");
+				}
 
 				// now initialize the room concepts
 				// changed for Dora yr2!
 				//_newRoom.concepts = m_comareasoner.getAllConcepts("dora:room" + _newRoom.roomId);
 				_newRoom.categories = new ProbabilityDistribution();
 
-				String[] _placesInTheSameRoom = 
-						m_comareasoner.getRelatedInstancesByRelation(_currentplaceInstance,"dora:sameRoomAs");
 				Set<Long> _setOfPlaceIDsInTheSameRoom = new HashSet<Long>();
-				int i=0;
-				for (String _placeIns : _placesInTheSameRoom) {
-					Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
-					m_comareasoner.addRelation(
-							(_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns), 
-							"dora:constituentOfRoom", 
-							"dora:room" + _newRoom.roomId);
-					log("added relation to the coma reasoner: " 
-							+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
-							+ " dora:constituentOfRoom " 
-							+ "dora:room" + _newRoom.roomId);
-					_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
-					i++;
+				synchronized (m_comareasoner) {
+					String[] _placesInTheSameRoom = 
+							m_comareasoner.getRelatedInstancesByRelation(_currentplaceInstance,"dora:sameRoomAs");
+					int i=0;
+					for (String _placeIns : _placesInTheSameRoom) {
+						Long _currPlaceID = Long.valueOf(_placeIns.replaceAll("\\D",""));
+						m_comareasoner.addRelation(
+								(_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns), 
+								"dora:constituentOfRoom", 
+								"dora:room" + _newRoom.roomId);
+						log("added relation to the coma reasoner: " 
+								+ (_placeIns.startsWith(":") ? "dora" + _placeIns : _placeIns) 
+								+ " dora:constituentOfRoom " 
+								+ "dora:room" + _newRoom.roomId);
+						_setOfPlaceIDsInTheSameRoom.add(_currPlaceID);
+						i++;
+					}
 				}
 				// add the seed to the list of contained places to be written to WM!
 				_setOfPlaceIDsInTheSameRoom.add(_remainingPlace);
-				m_comareasoner.addRelation("dora:place" + _remainingPlace, "dora:constituentOfRoom", "dora:room" + _newRoom.roomId);
-				log("added relation to the coma reasoner: dora:place" + _remainingPlace + " dora:constituentOfRoom " + "dora:room" + _newRoom.roomId);
+				synchronized (m_comareasoner) {
+					m_comareasoner.addRelation("dora:place" + _remainingPlace, "dora:constituentOfRoom", "dora:room" + _newRoom.roomId);
+					log("added relation to the coma reasoner: dora:place" + _remainingPlace + " dora:constituentOfRoom " + "dora:room" + _newRoom.roomId);
+				}
 
 				// discard the found places from the set of remaining places
 				_remainingPlaceIds.removeAll(_setOfPlaceIDsInTheSameRoom);
@@ -1517,24 +1584,26 @@ public class PlaceMonitor extends ManagedComponent {
 		
 		String placeInsName = "dora:place" + _objProp.placeId;
 		
-		m_comareasoner.addInstance(objInsName, objCatName);
-		log("executed addInstance( " + objInsName + ", " + objCatName +" )");
-		m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
-		log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
-				
-		// check if the object is immediately in the room or related via a supportObject
-		if ((!_objProp.supportObjectCategory.equals("")) && 
-				(_objProp.relation.equals(SpatialRelation.ON) || _objProp.relation.equals(SpatialRelation.INOBJECT))) {
-			String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
-			String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
-			
-			m_comareasoner.addInstance(suppobjInsName, suppobjCatName);
-			m_comareasoner.addRelation(suppobjInsName, "dora:observableFromPlace", placeInsName);
-			m_comareasoner.addRelation(
-					objInsName, 
-					(_objProp.relation.equals(SpatialRelation.ON) ? "dora:on" : "dora:in"), 
-					suppobjInsName);
-		}	
+		synchronized (m_comareasoner) {
+			m_comareasoner.addInstance(objInsName, objCatName);
+			log("executed addInstance( " + objInsName + ", " + objCatName +" )");
+			m_comareasoner.addRelation(objInsName, "dora:observableFromPlace", placeInsName);
+			log("executed addRelation( " + objInsName + ", dora:observableFromPlace, " + placeInsName +" )");
+
+			// check if the object is immediately in the room or related via a supportObject
+			if ((!_objProp.supportObjectCategory.equals("")) && 
+					(_objProp.relation.equals(SpatialRelation.ON) || _objProp.relation.equals(SpatialRelation.INOBJECT))) {
+				String suppobjInsName = "dora:" + _objProp.supportObjectCategory.toLowerCase() + _objProp.supportObjectId;
+				String suppobjCatName = "dora:" + ComaHelper.firstCap(_objProp.supportObjectCategory);
+
+				m_comareasoner.addInstance(suppobjInsName, suppobjCatName);
+				m_comareasoner.addRelation(suppobjInsName, "dora:observableFromPlace", placeInsName);
+				m_comareasoner.addRelation(
+						objInsName, 
+						(_objProp.relation.equals(SpatialRelation.ON) ? "dora:on" : "dora:in"), 
+						suppobjInsName);
+			}	
+		}
 	}
 
 }
