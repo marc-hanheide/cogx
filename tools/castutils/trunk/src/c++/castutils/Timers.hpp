@@ -22,9 +22,10 @@ public:
       timeout = 0;
    }
 
-   void setTimeout(double milliSeconds)
+   void setTimeout(double milliSeconds, bool bRestart=false)
    {
       timeout = milliSeconds * 1000;
+      if (bRestart) restart();
    }
 
    void restart()
