@@ -1,0 +1,16 @@
+
+CLogMessageSource creates CMessages. A CLogMerger visits every registered 
+CLogMessageSource and calls its pushLogMessages() to push the messages from the 
+source into every CLogSink that is registered with the source. Then the 
+CLogMerger visits all CLogSink-s associated with it and merges the CMessages 
+into a queue ordered by time/order.
+
+The CLogMerger then acts as a CLogMessageSource for various CLogDisplayer-s.
+
+Source ---> Sink ---> LogMerger --> Sink --> LogDisplayer
+                 /
+Source ---> Sink
+
+Source ---> Sink ---> LogMerger --> Sink --> RemoteMessages
+       \
+        '-> Sink ---> LogMerger --> Sink --> Console
