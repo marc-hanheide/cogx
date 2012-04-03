@@ -457,7 +457,6 @@ class MapLoadStatus {
     NodeHypothesisSeq refreshNodeHypothesis();
     bool isCircleObstacleFree(double x, double y, double radius);
     int findClosestNode(double x, double y);
-    int findClosestPlace(double x, double y, NodeIDSeq nodeids);
     LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
     DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount);
   };
