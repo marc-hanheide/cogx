@@ -20,7 +20,7 @@ window
 
 floorplan
 (
-	bitmap "./cs-2.png"
+	bitmap "./cs-2-dist.png"
 	#size of map in metre
 	size [50.625 35.290 1.500]
 )
