@@ -154,7 +154,7 @@ VARDEFAULT fake_tables=<multiline>
 </multiline>
 
 
-VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim-shape.cfg
+VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim2-shape.cfg
 
 ###########################################################################
 ###########################################################################
