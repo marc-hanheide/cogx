@@ -1,6 +1,8 @@
 \documentclass[letterpaper]{article}
-
 \usepackage{aaai}
+
+\setlength\titlebox{2.5in}
+
 \usepackage{times}
 \usepackage{helvet}
 \usepackage{courier}
@@ -42,6 +44,7 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+
 \newcommand{\from}[2]{\textcolor{red}{\noindent\textbf{//}\textbf{Note
       from #1:}\textsc{ #2}\textbf{//}}}
       
@@ -53,10 +56,18 @@
 \begin{document}
 
 \title{Towards a Cognitive System That Can Recognize Spatial Regions Based on Context}
-% \title{Representing and Reasoning About Spatial Regions Defined by Context}
-% \title{Context-Dependent Spatial Regions}
 
-\author{}
+\author{%
+Nick Hawes \\ Intelligent Robotics Lab \\ University of Birmingham, UK \\ n.a.hawes@cs.bham.ac.uk 
+\And % 
+Matthew Klenk \\ Palo Alto Research Center \\  Palo Alto, CA \\ matthew.klenk@parc.com 
+\And % 
+Kate Lockwood \\ ITCD Department \\ California State University - Monterey Bay \\ klockwood@csumb.edu  
+\AND % 
+Graham S. Horn \\ Intelligent Robotics Lab \\ University of Birmingham, UK \\ gsh148@cs.bham.ac.uk 
+\And % 
+John Kelleher \\ Applied Intelligence Research Centre \\ Dublin Institute of Technology \\ john.d.kelleher@dit.ie}
+
 
 
 \maketitle
@@ -195,12 +206,12 @@ There is mounting evidence that analogy, operating over structured qualitative r
 In this paper we presented an integrated cognitive system capable of representing and reasoning about context-dependent spatial regions. The system identifies CDSRs in previously unseen environments through analogy with a single example. This is a difficult cognitive systems task requiring integration of semantic and geometric knowledge to identify regions as small as 8\% of the room. Our system demonstrates a successful integration of a range of technologies including vision, SLAM, qualitative spatial reasoning and analogy to achieve this task. In order to make this rich collection of components work together, our work takes a number of short-cuts that we plan to address with future work. These include a reliance on the initial orientation of a room in a global coordinate frame, the lack of a mechanism to retrieve relevant rooms from memory (e.g. MAC/FAC \cite{forbus/etal1995}), and a lack of transfer post-processing (e.g. comparing the QSRs present in both base and transferred regions) to improve results. In addition, we must complement our system development work with more comprehensive human studies assessing how people define and use these regions as well as how well anchor points capture them. Despite the preliminary nature of this work, our evaluation demonstrates that the system is able to transfer CDSRs that overlap with user-defined regions for 6 out of 7 region types.
 
 
-% \section{Acknowledgments}
-% 
-% The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams, Scott Friedman for assistance on probablistic SME, and Danny Bobrow comments on an earlier draft of this paper. The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
+\section{Acknowledgments}
+ 
+% The authors would like to thank Jeffery Usher for providing the code to compute Voronoi diagrams, Scott Friedman for assistance on probablistic SME, and Danny Bobrow comments on an earlier draft of this paper. 
 
-% 7th page may only contain references
-\clearpage
+The research leading to these results has received funding from the European Community's Seventh Framework Programme [FP7/2007-2013] under grant agreement No. 215181, CogX.
+
 
 \bibliography{aaai12-cdsr}
 \bibliographystyle{aaai}
