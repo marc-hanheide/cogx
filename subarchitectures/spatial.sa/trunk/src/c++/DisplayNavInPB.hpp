@@ -139,6 +139,7 @@ private:
 	void displayEdge(const DisplayNavInPB::Node &node1, const DisplayNavInPB::Node &node2);
 	void redisplayEdgesToNode(const DisplayNavInPB::Node &node);
 	void addDoorpost(double x, double y, double theta, double width, peekabot::SphereProxy &node);
+  void createSimpleRobotModel();
 	void connectPeekabot();
 	void createFOV(peekabot::GroupProxy &proxy,const char* path, double fovHorizAngle,
 			double fovVertiAngle, double* color, double opacity,
@@ -179,6 +180,8 @@ private:
 
 	peekabot::CameraProxy m_DefCam;
 
+  bool m_ShowPanTilt;
+  bool m_LoadRobotFile;
 	bool m_FollowRobot;
 	bool m_ShowLabels;
 	bool m_ShowWalls;
