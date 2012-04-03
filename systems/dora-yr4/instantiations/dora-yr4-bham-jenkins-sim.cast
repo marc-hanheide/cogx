@@ -2,8 +2,8 @@
 ### the directory containing the calibration files to use
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 
-#### TODO create categorical data for BHAM
-#SETVAR categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
+# don't load the robot in peekabot
+SETVAR peekabot_no_load_robot_file=--no-load-robot-file
 
 SETVAR feature_options=<multiline>
 # enable the spatial core

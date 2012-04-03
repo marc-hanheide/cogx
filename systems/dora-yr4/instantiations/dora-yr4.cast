@@ -96,7 +96,7 @@ VARDEFAULT prosilica_id=37105
 VARDEFAULT prosilica_packet_size=1500
 
 ### the default goals passed on to the planner GUI
-VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
 
 ### the planning domain to use
 VARDEFAULT planning_domain=dora-interactive.pddl
@@ -210,6 +210,10 @@ VARDEFAULT place_properties_save_file="place_properties.bin"
 # If the flag --show3Dobstacles is present then show the height map in Peekabot (in green)
 VARDEFAULT spatial_show_3d_obstacles=--show3Dobstacles
 
+# if the flag --no-load-robot-file is present then a simple cube with orientation marker will be drawn in peekabot
+# this was added to try to deal with the peekabot crashes on Jenkins
+VARDEFAULT no_load_robot_file=
+
 ### Disable placeholder generation (no exploration)
     VARDEFAULT no_placeholders=
 ### Perform visual exploration after exploratory movement (i.e. to placeholders)
@@ -258,7 +262,8 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Whether to display spatial information in Peekabot
     IFOPTALL(%(feature_options), peekabot)
-		CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" --follow-robot
+#EXPAND --no_load_robot_file=%(no_load_robot_file)
+		CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" --follow-robot %(no_load_robot_file)
 		SETVAR usePB=--usepeekabot
 	ELSE
 		SETVAR usePB=
