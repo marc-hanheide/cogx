@@ -208,12 +208,14 @@ void SlamProcess::configure(const map<string,string>& _config)
 
 void SlamProcess::runComponent() 
 {  
-    if(m_usePeekabot){
-        while(!m_PeekabotClient.is_connected()){
-            sleepComponent(1000);
-            connectPeekabot();
-        }
+  if(m_usePeekabot){
+    while(!m_PeekabotClient.is_connected()){
+      sleepComponent(1000);
+      connectPeekabot();
+      if (!isRunning())
+        return;
     }
+  }
 
   setupPushOdometry(*this, -1);
   if (m_MaxScanRate < 0) {
