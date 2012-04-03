@@ -2798,6 +2798,7 @@ PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp)
       for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
 	if (it->place->id == placeID) {
 	  hypWMID = it->hypWMID;
+	  it->hyp = new NodeHypothesis(*hyp);
 	  break;
 	}
       }
