@@ -1479,6 +1479,7 @@ public class PlaceMonitor extends ManagedComponent {
 				  getMemoryEntry(m_mapLoadStatusAddress, MapLoadStatus.class);
 				_mlstatus.roomsWritten = true;
 				overwriteWorkingMemory(m_mapLoadStatusAddress, _mlstatus);
+				unlockEntry(m_mapLoadStatusAddress);
 				log("successfully OVERWRITTEN WM with MapLoadStatus.roomsWritten=true");
 				this.mapLoadRoomsWritten=true;
 			}
