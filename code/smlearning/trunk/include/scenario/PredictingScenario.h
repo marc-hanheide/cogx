@@ -12,13 +12,13 @@
 #include "ssm/ssm_file_export.hh"
 #include "ssm/ssm_parser.hh"
 #include "cryssmex/exceptions.hh"
-// #include "quantizing/quantizer_file_export.hh"
+#include "quantizing/quantizer_file_export.hh"
 
 using namespace ssm;
 using namespace cryssmex;
 using namespace basic_stochastics;
 using namespace naming;
-// using namespace quantizing;
+using namespace quantizing;
 
 namespace smlearning {
 
@@ -50,15 +50,25 @@ public:
 	void run(int argc, char* argv[]);
 	/** set experiment default values */
 	virtual void init(boost::program_options::variables_map vm);
+	/** select a random action */
+	virtual void chooseAction ();
+	/** calculate the start coordinates of the arm */
+	virtual void calculateStartCoordinates();
+	/** Describe the experiment trajectory */
+	virtual void initMovement();
 
 
 protected:
-	/** method for feature selection (basis/markov/...?) */
+	/** method for feature selection */
 	unsigned int featureSelectionMethod;
 	/** Substochastic sequential machine used for prediction */
 	SSM* ssm;
 	/** SSM parser used for prediction */
 	SSM_Parser *ssm_parser;
+	/** Input quantizer */
+	Quantizer *input_quantizer;
+	/** Output quantizer */
+	Quantizer *output_quantizer;
 
 };
 

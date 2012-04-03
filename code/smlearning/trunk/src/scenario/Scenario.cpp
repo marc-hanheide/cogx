@@ -205,7 +205,7 @@ void Scenario::setActorObject(ConcreteActor* concreteActor)
 }
 
 ///////// Protected //////////
-/** \brief calculate the start coordinates of the object
+/** \brief calculate the start coordinates of the arm
 */
 void Scenario::calculateStartCoordinates()
 {
@@ -233,7 +233,7 @@ void Scenario::calculateStartCoordinates()
 
 
 ///////// Protected //////////
-/** \brief select an optimal action from a random set of actions
+/** \brief select a random action
 */
 void Scenario::chooseAction () {
 	//choose starting position

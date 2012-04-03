@@ -89,8 +89,11 @@ void PushingApplication<S,D>::define_program_options_desc()
 		}
 		if (S::getName() == "PredictingScenario" ) {
 			prgOptDesc.add_options ()
+				("featuresel,f", po::value<string>()->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label,\nobpose_direction, obpose_slide_flip_tilt\nefobpose, efobpose_label,\nefobpose_direction, efobpose_slide_flip_tilt)")
 				("ssmFile,s", po::value<string>(), "name of SSM file")
-				("seqFile,D", po::value<string>(), "name of file containing data sequences");
+				("seqFile,d", po::value<string>(), "name of file containing data sequences (do not type .seq extension)")
+				("quantizersPath,p", po::value<string>(), "path for looking for quantizer_inputq.qnt and quantizer_outputq.qnt files");
+			
 		}
 		
 		
@@ -123,7 +126,8 @@ int PushingApplication<S,D>::read_program_options(int argc, char *argv[]) {
 
 		if (S::getName() == "PredictingScenario" ) {
 			if (!vm.count("ssmFile")) {
-				cout << "You should provide a .ssm file name" << endl;
+				cerr << "You should provide a .ssm file name" << endl;
+				cout << prgOptDesc << endl;
 				return 1;
 			}
 		}
