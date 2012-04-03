@@ -25,7 +25,7 @@
 #include <Laser.hpp>
 
 // Cure includes
-#include <Navigation/NavGraph.hh>
+#include "NewNavGraph.hpp"
 #include <Map/TransformedOdomPoseProvider.hh>
 #include <Navigation/InDoorOpeningDetector.hh>
 #include <Navigation/ScanMotionDetector.hh>
@@ -167,7 +167,7 @@ private:
 
   std::deque<Cure::LaserScan2d> m_scanQueue;
 
-  Cure::NavGraph m_cureNavGraph;
+  Cure::NewNavGraph m_cureNavGraph;
   std::string m_cureNavGraphFile;
   std::string m_NavGraphWMid;
 
