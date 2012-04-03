@@ -343,7 +343,8 @@ public class PlaceMonitor extends ManagedComponent {
 				// execute the room maintenance algorithm
 				this.lockComponent();
 				executeMaintainRoomsAlgorithm();
-				this.unlockComponent();
+				// handled in finally...
+				// this.unlockComponent();
 			}  catch (InterruptedException e) {
 				logException(e);
 			} finally {
@@ -1356,10 +1357,7 @@ public class PlaceMonitor extends ManagedComponent {
 						logRoom(_currentRoomStruct, "error overwriting comaRoomWME " + comaRoomWME.getID() + 
 								" -- permission exception!", comaRoomWME.getID());
 						logException(e);
-					} finally {
-            // FIXME: The following message is also displayed if the update succeeded, but it says "not updated".
-						logRoom(_currentRoomStruct, "did not update room WME! ", comaRoomWME.getID());
-					}
+					} 
 					// 2010-09-13-YR2 maintainRoomProxy(_currentRoomStruct, comaRoomWME.getID());
 				} else {
 					logRoom(_currentRoomStruct, "did not update room WME or proxy. Room hasn't changed. ", comaRoomWME.getID());
