@@ -345,9 +345,9 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
     log("newNavNode called");
-    log("Nav Node is: %li, (%f,%f:%f), %i on %s", 
-	oobj->nodeId, oobj->x, oobj->y, oobj->theta, oobj->gateway,
-	objID.address.id.c_str());
+//    log("Nav Node is: %li, (%f,%f:%f), %i on %s", 
+//	oobj->nodeId, oobj->x, oobj->y, oobj->theta, oobj->gateway,
+//	objID.address.id.c_str());
 
     if (m_firstMovementRegistered) {
     	log("");
