@@ -89,6 +89,9 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
     m_ShowPointCloud = false;
   }
 
+  m_LoadRobotFile = (_config.find("--no-load-robot-file") == _config.end());
+  m_ShowPanTilt = m_LoadRobotFile; // don't show pan tilt if not loading robot file
+
   m_FollowRobot = (_config.find("--follow-robot") != _config.end());
   m_ShowRobot = (_config.find("--no-robot") == _config.end());
   m_ShowWalls = (_config.find("--no-walls") == _config.end());
@@ -1227,9 +1230,11 @@ void DisplayNavInPB::runComponent() {
 				if (m_FollowRobot) {
 					m_DefCam.set_position(m_RobotPose->x, m_RobotPose->y, 0);
 				}
-
-	m_ProxyPan.set_dof(ptuPose.pose.pan);
-	m_ProxyTilt.set_dof(-ptuPose.pose.tilt);
+  
+        if (m_ShowPanTilt) {
+	        m_ProxyPan.set_dof(ptuPose.pose.pan);
+	        m_ProxyTilt.set_dof(-ptuPose.pose.tilt);
+        }
       }
 
       // Display the line map
@@ -2563,6 +2568,22 @@ void DisplayNavInPB::redisplayEdgesToNode(const DisplayNavInPB::Node &node)
   }
 }
 
+void DisplayNavInPB::createSimpleRobotModel()
+{  
+  m_ProxyRobot.add(m_PeekabotClient, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
+  peekabot::CubeProxy cube;
+  cube.add(m_ProxyRobot, "base", peekabot::REPLACE_ON_CONFLICT);
+  cube.set_scale(0.4, 0.3, 0.2);
+  cube.set_position(0,0,0.1);
+  cube.set_color(0,1,0);
+
+  peekabot::CubeProxy nose;
+  nose.add(cube, "nose", peekabot::REPLACE_ON_CONFLICT);
+  nose.set_scale(0.2, 0.05, 0.05);
+  nose.set_position(0.1, 0, 0.125);
+  nose.set_color(1,0,0);
+}
+
 void DisplayNavInPB::connectPeekabot()
 {
   try {
@@ -2589,7 +2610,9 @@ void DisplayNavInPB::connectPeekabot()
 			}
     }
 
-    log("Loading robot file \"%s\"", m_PbRobotFile.c_str());
+    if (m_LoadRobotFile) {
+      log("Loading robot file \"%s\"", m_PbRobotFile.c_str());
+    }
 
     if (m_ShowCommands) {
       m_ProxyViewpointGenCommands.add(m_PeekabotClient, "ViewpointCommands", 
@@ -2608,50 +2631,45 @@ void DisplayNavInPB::connectPeekabot()
     mapStatusLabel.add(m_PeekabotClient, "MapStatus", peekabot::REPLACE_ON_CONFLICT);
     mapStatusLabel.hide();
 
-    s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
-    if( s1.failed() ) {
-      log("Could not load robot file \"%s\"",
-              m_PbRobotFile.c_str());
-      peekabot::CubeProxy cube;
-      cube.add(m_PeekabotClient, m_PbRobotName, peekabot::REPLACE_ON_CONFLICT);
-      cube.set_scale(0.4, 0.3, 0.2);
-      cube.set_position(0,0,0.1);
-      cube.set_color(0,1,0);
 
-      peekabot::CubeProxy nose;
-      nose.add(cube, "nose", peekabot::REPLACE_ON_CONFLICT);
-      nose.set_scale(0.2, 0.05, 0.05);
-      nose.set_position(0.1, 0, 0.125);
-      nose.set_color(1,0,0);
+    if (m_LoadRobotFile) {
 
-    } else {
-      log("loaded robot file \"%s\"", m_PbRobotFile.c_str());
-      if (m_PbRobotFile == "CogXp3.xml" ||
-	  m_PbRobotFile == "CogX_base_arm.xml" ||
-	  m_PbRobotFile == "CogX_base.xml") {
+      s1 = m_ProxyRobot.load_scene(m_PbRobotFile).status();
+      if( s1.failed() ) {
+        log("Could not load robot file \"%s\"",
+                m_PbRobotFile.c_str());
+        createSimpleRobotModel();
+        m_ShowPanTilt = false;
+      } 
+      else {
+        log("loaded robot file \"%s\"", m_PbRobotFile.c_str());
+        if (m_PbRobotFile == "CogXp3.xml" ||
+	        m_PbRobotFile == "CogX_base_arm.xml" ||
+	        m_PbRobotFile == "CogX_base.xml") {
 
-		std::string path = "robot/chassis/superstructure/ptu/pan/tilt/baseline/cam_left";
-		s4 = m_ProxyCam.assign(m_PeekabotClient, path).status();
-		if(s4.failed()){
-			log("cam proxy failed.");
-		}
+		      std::string path = "robot/chassis/superstructure/ptu/pan/tilt/baseline/cam_left";
+		      s4 = m_ProxyCam.assign(m_PeekabotClient, path).status();
+		      if(s4.failed()){
+			      log("cam proxy failed.");
+		      }
 
-		s4 = m_ProxyPan.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan").status();
-		if(s4.failed()){
-			log("pan proxy failed.");
-		}
-		s4 = m_ProxyTilt.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan/tilt").status();
-		if(s4.failed()){
-			log("tilt proxy failed.");
-		}
-		m_ProxyPan.set_dof(0);
-		m_ProxyTilt.set_dof(30*M_PI/180.0);
-
-
+		      s4 = m_ProxyPan.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan").status();
+		      if(s4.failed()){
+			      log("pan proxy failed.");
+		      }
+		      s4 = m_ProxyTilt.assign(m_PeekabotClient, "robot/chassis/superstructure/ptu/pan/tilt").status();
+		      if(s4.failed()){
+			      log("tilt proxy failed.");
+		      }
+		      m_ProxyPan.set_dof(0);
+		      m_ProxyTilt.set_dof(30*M_PI/180.0);
+        }
       }
     }
-
-
+    else {
+      log("Not loading a robot file - using simple shapes instead");
+      createSimpleRobotModel();
+    }
 
     peekabot::Status status_kinect =
       m_ProxyKinect.add(m_PeekabotClient, "kinect", peekabot::REPLACE_ON_CONFLICT).status();
