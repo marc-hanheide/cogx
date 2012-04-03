@@ -118,7 +118,7 @@ link_cast_component(${CAST_COMPONENT_NAME} peekabot)
 
 # -------------- /NAV.SA ----------------
 
-add_cast_component(NavGraphProcess NavGraphProcess.cpp)
+add_cast_component(NavGraphProcess NavGraphProcess.cpp NewNavGraph.cpp NavGraphGateway.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} NavData Laser Robotbase OdometryReceiver Scan2dReceiver CureHWUtils VisionData FrontierInterface)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX)
 link_cast_component(${CAST_COMPONENT_NAME} ${X11_LIBRARIES})
