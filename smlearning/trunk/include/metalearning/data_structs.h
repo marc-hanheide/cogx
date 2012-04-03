@@ -763,6 +763,27 @@ struct LearningData {
 	
 	}
 
+	template<class Normalization>
+	vector<FeatureVector> load_cryssmexinputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
+
+		Chunk::Seq::const_iterator s_iter;
+		vector<FeatureVector> sequence;
+		if (seq.size() > 2) {
+			for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
+				if (s_iter+1 != seq.end()) {
+					FeatureVector inputVector;
+					if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt)
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos | _effector_pos | _effector_orient );
+					
+					else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt)
+						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
+					sequence.push_back (inputVector);
+				}
+			}
+		}
+		return sequence;
+	}
+		
 
 	///
 	///Writing a dataset in CrySSMEx format.

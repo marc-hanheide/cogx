@@ -122,16 +122,16 @@ class Scenario : public golem::Object
 	protected:
 		/** const number of starting positions */
 		static const int startingPositionsCount = 24;
-		/** calculate the start coordinates of the object */
-		void calculateStartCoordinates();
-		/** select an optimal action from a random set of actions */
-		void chooseAction ();
+		/** calculate the start coordinates of the arm */
+		virtual void calculateStartCoordinates();
+		/** select a random action */
+		virtual void chooseAction ();
 		/** select random angle (discrete or continouos) */
 		Real chooseAngle(const Real&, const Real&, const bool& =true) const;
 		/** Creates Scenario from description. */
 		bool create(const Scenario::Desc& desc);
 		/** Describe the experiment trajectory */
-		void initMovement();
+		virtual void initMovement();
 		/** write data chunk (used in postprocess function) */
 		void writeChunk (LearningData::Chunk& chunk);
 		/** (Post)processing function called AFTER every physics simulation step and before rendering. */
@@ -187,7 +187,6 @@ class Scenario : public golem::Object
 		/** object (e.g. Polyflap)*/
 		ConcreteActor* _concreteActor;
 
-	private:
 		/** Synchronization objects */
 		golem::CriticalSection cs;
 		volatile bool bStart;
