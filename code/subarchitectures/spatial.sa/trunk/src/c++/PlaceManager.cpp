@@ -1861,11 +1861,11 @@ PlaceManager::processPlaceArrival(bool failed)
           log("  CASE 3: Exploration action failed - place already known. Deleting Place %i", wasHeadingForPlace);
 
           m_isPathFollowing = false; 
-
+/*
           deletePlaceProperties(wasHeadingForPlace);
 
           m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
-	  deletePlaceholder(wasHeadingForPlace);
+      	  deletePlaceholder(wasHeadingForPlace);
 
           //Prepare and send merge notification
           PlaceMergeNotificationPtr newNotify = new
@@ -1877,7 +1877,7 @@ PlaceManager::processPlaceArrival(bool failed)
               currentPlaceID, wasHeadingForPlace);
 
           addToWorkingMemory<PlaceMergeNotification>(newDataID(), newNotify);
-          //TODO:delete notifications sometime
+*/          //TODO:delete notifications sometime
         }
         
         else if (!failed && curNodeId != wasComingFromNode && !closeToGoal) {

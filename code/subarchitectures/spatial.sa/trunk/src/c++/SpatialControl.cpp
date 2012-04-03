@@ -2432,6 +2432,7 @@ int SpatialControl::findClosestNode(double x, double y) {
 
 bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId){
   closestNodeId = -1;
+  int counter = 0;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
     int maxDist = 40; // The first maximum distance to try
     closestNodeId = -1;
@@ -2440,6 +2441,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
 //CHECK AGAINST NODE_HYP
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
         non_overlapped_hypotheses.end(); extantHypIt !=  non_overlapped_hypotheses.begin(); ) {
+      counter++;
       SpatialData::NodeHypothesisPtr extantHyp = *(--extantHypIt);
 
       double dist2sq = (x*m_lgm->getCellSize() - extantHyp->x) * (x*m_lgm->getCellSize() - extantHyp->x) + (y*m_lgm->getCellSize() - extantHyp->y) * (y*m_lgm->getCellSize() - extantHyp->y);
@@ -2449,39 +2451,48 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
     }
 //CHECK AGAINST NODES
     while(closestNodeId == -1) {
+      if(maxDist > 40){//map.Columns*map.Rows){
+        log("check_point counter %d",counter);
+        return false;
+      }
       for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
+        counter++;
         try {
           double dist2sq = (x*m_lgm->getCellSize() - (*nodeIt)->x) * (x*m_lgm->getCellSize() - (*nodeIt)->x) + (y*m_lgm->getCellSize() - (*nodeIt)->y) * (y*m_lgm->getCellSize() - (*nodeIt)->y);
           if (dist2sq < m_min_sep_dist*m_min_sep_dist){
+            log("check_point counter %d",counter);
             return false;
           }
-          int xi = x + m_lgm->getSize();
-          int yi = y + m_lgm->getSize();
-          int nodexi, nodeyi;
-          if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
-            continue;
-          nodexi = nodexi + m_lgm->getSize();
-          nodeyi = nodeyi + m_lgm->getSize();
+          else if (dist2sq < 40 * 0.05){
+            int xi = x + m_lgm->getSize();
+            int yi = y + m_lgm->getSize();
+            int nodexi, nodeyi;
+            if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
+              continue;
+            nodexi = nodexi + m_lgm->getSize();
+            nodeyi = nodeyi + m_lgm->getSize();
 
-          Cure::ShortMatrix path;
-          int dist = map1.path(xi,yi,nodexi,nodeyi, path, maxDist);
-          if(dist >= 0) { // If a path was found.. 
-            if(dist < minDistance) {
-              closestNodeId = (*nodeIt)->nodeId;
-              minDistance = dist;
-            }
-          } 
+            Cure::ShortMatrix path;
+            int dist = map1.path(xi,yi,nodexi,nodeyi, path, maxDist);
+            if(dist >= 0) { // If a path was found.. 
+              if(dist < minDistance) {
+                closestNodeId = (*nodeIt)->nodeId;
+                minDistance = dist;
+              }
+            } 
+          }
         } catch(IceUtil::NullHandleException e) {
           log("Node suddenly disappeared..");
         }
       }
-      if(maxDist > 80){//map.Columns*map.Rows){
-        return false;
-      }
       maxDist *= 2; // Double the maximum distance to search for the next loop
     }
+    log("check_point counter %d",counter);
+
     return true;
   }
+  log("check_point counter %d",counter);
+
   return false;
 }
 
@@ -2560,7 +2571,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
 
-    for (int i=0;i<100;i++){
+    for (int i=0;i<30;i++){
       double theta = (rand() % 360) * M_PI / 180; 
       int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
       for (int j=0;j<30;j++){
@@ -2587,6 +2598,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 
   Cure::Pose3D currPose;
   {
+    SCOPED_TIME_LOG;
     IceUtil::Mutex::Lock lock(m_PPMutex);
     currPose = m_TOPP.getPose();		
   }	
@@ -2595,7 +2607,10 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   int originNodeID;
 
   m_lgm->worldCoords2Index(currPose.getX(),currPose.getY(), robotxi, robotyi);
-  for (int i=0;i<100;i++){
+{
+  SCOPED_TIME_LOG;
+
+  for (int i=0;i<30;i++){
     double theta = (rand() % 360) * M_PI / 180; 
     int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
     for (int j=0;j<30;j++){
@@ -2612,6 +2627,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       }
     }
   }
+}
+
 }
   return ret;
 }
