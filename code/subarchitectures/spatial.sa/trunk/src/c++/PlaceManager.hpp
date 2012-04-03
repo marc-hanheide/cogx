@@ -29,6 +29,66 @@
 
 namespace spatial {
 
+  typedef int PlaceID;
+  typedef int NodeID;
+  typedef int HypID;
+
+  class PlaceMapper : public cast::ManagedComponent
+  {
+    struct PlaceMapEntry 
+    {
+      SpatialData::PlacePtr place;
+      NavData::FNodePtr node;
+      SpatialData::NodeHypothesisPtr hyp;
+
+      std::string placeWMID;
+      //	std::string nodeWMID;
+      std::string hypWMID;
+    };
+
+    std::vector<PlaceMapEntry> entries;
+    int m_placeIDCounter;
+    int m_hypIDCounter;
+
+    std::map<int, int> m_NodeIDToPlaceIDMap; // For map loading
+
+    IceUtil::Mutex m_mutex;
+
+    public:
+    SpatialData::PlacePtr _getPlace(PlaceID id);
+
+    PlaceID _getPlaceForNode(NodeID id);
+    NavData::FNodePtr _getNodeForPlace(PlaceID id);
+
+    PlaceID _getPlaceForHyp(HypID id);
+    SpatialData::NodeHypothesisPtr _getHypForPlace(PlaceID id);
+
+    std::string _getPlaceWMIDForPlace(PlaceID id);
+//    std::string _getNodeWMIDForPlace(PlaceID id);
+    std::string _getHypWMIDForPlace(PlaceID id);
+
+    void _getPlaceholders(std::vector<PlaceID> &ret);
+    void _getTruePlaces(std::vector<PlaceID> &ret);
+
+    void _overwriteHypForPlace(PlaceID placeID, SpatialData::NodeHypothesisPtr hyp);
+
+    void _deletePlace(PlaceID id);
+//    void _deleteHypothesis(PlaceID id);
+
+    void _upgradePlaceholderMappings(PlaceID id, SpatialData::PlacePtr place,
+	NavData::FNodePtr node);
+    
+    PlaceID _addPlaceWithNode(SpatialData::PlacePtr _place, NavData::FNodePtr _node);//, string _nodeWMID);
+    PlaceID _addPlaceWithHyp(SpatialData::PlacePtr _place, SpatialData::NodeHypothesisPtr _node);
+
+    void _checkConsistency(int line);
+
+    protected:
+    PlaceMapper();
+    void LoadPlaces(const std::string &filename);
+    void SavePlaces();    
+  };
+
 /**
  * Component that maintains Place structs on WM, and fills them with
  * the necessary information.
@@ -41,9 +101,10 @@ namespace spatial {
  * @author Patric Jensfelt
  * @see
  */
-class PlaceManager : public cast::ManagedComponent
+class PlaceManager : public PlaceMapper
 {
   private:
+
     class PlaceServer: public FrontierInterface::PlaceInterface {
       virtual SpatialData::PlacePtr getPlaceFromNodeID(int nodeID,
 	  const Ice::Current &_context);
@@ -106,25 +167,14 @@ class PlaceManager : public cast::ManagedComponent
     void evaluateUnexploredPaths();
     IceUtil::Mutex m_PlaceholderMutex;
 
-    std::vector<std::pair <double,double> > getPlaceholderPositionsFromFrontiers(FrontierInterface::FrontierPtSeq frontiers, int placeId);
+//    std::vector<std::pair <double,double> > getPlaceholderPositionsFromFrontiers(FrontierInterface::FrontierPtSeq frontiers, int placeId);
 
     void updateReachablePlaceholderProperties(int placeID);
-    void updatePlaceholderPositions(FrontierInterface::FrontierPtSeq frontiers);
+//    void updatePlaceholderPositions(FrontierInterface::FrontierPtSeq frontiers);
     SpatialData::PlacePtr getCurrentPlace();
     NavData::FNodePtr getCurrentNavNode();
     void beginPlaceTransition(int goalPlaceID);
     void endPlaceTransition(int failed);
-
-    class PlaceHolder {
-      public:
-	SpatialData::PlacePtr m_data; 
-	std::string m_WMid;
-    };
-
-    // A map of places and IDs
-    std::map<int, PlaceHolder> m_Places;
-
-    long m_placeIDCounter;
 
   private:
     bool m_usePeekabot;
@@ -140,34 +190,30 @@ class PlaceManager : public cast::ManagedComponent
 
     void connectPeekabot();
 
-    SpatialData::PlacePtr getPlaceFromNodeID(int nodeID);
-    SpatialData::PlacePtr getPlaceFromHypID(int hypID);
-    SpatialData::NodeHypothesisPtr getHypFromPlaceID(int placeID);
-    NavData::FNodePtr getNodeFromPlaceID(int placeID);
+//    SpatialData::PlacePtr getPlaceFromNodeID(int nodeID);
+//    SpatialData::PlacePtr getPlaceFromHypID(int hypID);
+//    SpatialData::NodeHypothesisPtr getHypFromPlaceID(int placeID);
+//    NavData::FNodePtr getNodeFromPlaceID(int placeID);
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
-    void refreshPlaceholders(std::vector<std::pair<double,double> > coords);
+//    void refreshPlaceholders(std::vector<std::pair<double,double> > coords);
 
     // Callback function for metric movement
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
     void processPlaceArrival(bool failed); 
 
-    void upgradePlaceholder(int placeID, PlaceHolder &holder, NavData::FNodePtr newNode, int hypothesisID);
+    void upgradePlaceholder(int placeID, NavData::FNodePtr newNode);
     void deletePlaceProperties(int placeID);
     void deletePlaceholderProperties(int placeID);
     void deletePlaceholder(int placeId);
-    bool createPlaceholder(int curPlaceId, double x, double y);
-
-    void SavePlaces();    
-    void LoadPlaces(std::string filename);
+//    bool createPlaceholder(int curPlaceId, double x, double y);
 
     int updatePlaceholderEdge(int placeholderId);
-    bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
+//    bool isPointCloseToExistingPlaceholder(double x, double y, int curPlaceId);
 
     std::map<int, std::vector<int> > getAdjacencyLists();
 
     double getGatewayness(double x, double y);
-    void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, 
-	int placeholderID, double value);
+    void setOrUpgradePlaceholderGatewayProperty(int hypothesisID, double value);
 
     std::string concatenatePlaceIDs(int place1ID, int place2ID);
     void createConnectivityProperty(double cost, int place1ID, int place2ID);
@@ -196,16 +242,8 @@ class PlaceManager : public cast::ManagedComponent
     				// generate PlaceholderPlaceProperties
     bool m_bNoPlaceholders;
     
-    bool m_updatePlaceholderPositions;
+//    bool m_updatePlaceholderPositions;
 
-    long m_hypIDCounter;
-    std::map<int, NavData::FNodePtr> m_PlaceIDToNodeMap;
-
-    std::map<int, int> m_NodeIDToPlaceIDMap;
-    IceUtil::Mutex m_MappingsMutex;
-
-    std::map<int, SpatialData::NodeHypothesisPtr> m_PlaceIDToHypMap;
-    std::map<int, std::string> m_HypIDToWMIDMap;
     //List of hypotheses that have already been tried and failed from each Node
     std::map<int, std::vector<SpatialData::NodeHypothesisPtr> > m_rejectedHypotheses; 
     bool m_isPathFollowing;
