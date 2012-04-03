@@ -27,7 +27,7 @@ fi
 if [ "$3" ]; then
     stageFile="$3"
 else
-    stageFile="instantiations/stage/BHAM/cs-2-small-furniture.cfg"
+    stageFile="instantiations/stage/BHAM/cs-2-small-furniture2.cfg"
 fi
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
