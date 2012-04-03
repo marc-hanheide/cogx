@@ -72,7 +72,7 @@ log4j.appender.srvConsole.layout=org.apache.log4j.PatternLayout
 log4j.appender.srvConsole.layout.ConversionPattern=[%p %c: %m]%n
 EOF
 
-# log coma at TRACE, everything else at DEBUG
+# log coma, DisplayNavInPB and PlaceManager at TRACE, everything else at DEBUG
 rm -f log4j.properties
 cat > log4j.properties <<EOF
 log4j.rootLogger=DEBUG,cliSocketApp
@@ -83,6 +83,8 @@ log4j.appender.cliSocketApp=cast.core.logging.IceAppender
 log4j.appender.cliSocketApp.Host=localhost
 
 log4j.logger.coma=TRACE
+log4j.logger.spatial.sa.display.process=TRACE
+log4j.logger.spatial.sa.place.manager=TRACE
 EOF
 
 
