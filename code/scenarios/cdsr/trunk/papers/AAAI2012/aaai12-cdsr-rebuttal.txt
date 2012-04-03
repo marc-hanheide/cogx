@@ -1,0 +1,38 @@
+We thank the reviewers for their great feedback. We would like to
+use this space to clarify some aspects of our work. The primary criticism
+from Reviewer 2 seems to be that we are not explicitly representing
+function/orientation information and just using "spatial templates".
+
+First, to explicitly represent function and recognise it from a mobile robot,
+would require a number of advances in computer vision that are outside of our
+expertise. It is easier to include orientation information of recognised
+objects, and we plan to do so in the future. However object orientation, like object category, is just
+a proxy for function (i.e. it represents function implicitly) so it would not
+significantly alter our approach, just add more discriminatory power. Rather
+than use an explicit representation of function, our approach assumes that
+"semantically and geometrically similar areas (e.g. two different classrooms)
+will feature similar CDSRs, and that these similarities can be recognised
+through analogy." Therefore, we avoid explicitly representing function, but
+assume that the functional properties of a region can be extracted through
+analogy to a previously labelled (functional) region. If, at some point,
+function representations become easily obtainable on a robot, we would be
+happy to include them in our system as it should provide a better similarity
+measure and assist with analogical transfer.
+
+Second, our use of spatial templates extends only to determining the weights
+on different positional relationships between two objects. CDSRs are
+represented using anchor points, which are considerably different from
+templates. Because anchor points are symbolic, this enables their analogical
+transfer which is one of the main contributions of this work. This is a
+cognitive systems approach because it allows for new CDSRs to be learned from
+a single example. It is not clear how one could use spatial templates to
+perform the same task, as the variation across rooms and regions would defeat a template matching approach. 
+
+The reviewer raises an important point that there may be gray area in how
+these regions are used by people. The results presented in paper are averaged
+across each subject. The results by subject were rather similar, although the
+regions constructed were a bit different. To address this, we intend to
+perform a thorough human study and also embed our system in a navigation
+communication task. But the work in the paper shows that our approach can
+represent CDSRs and transfer them analogically to semantically and
+geometrically similar situations as determined by sensor data.
