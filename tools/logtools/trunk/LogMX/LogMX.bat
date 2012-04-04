@@ -21,7 +21,7 @@ REM SET CONFIG_FILE_PATH=-Dconfig.file=\\YourRemoteHost\YourPath\logmx.propertie
 REM ** If you don't want to display a splash screen, comment this line:
 SET SPLASH_SCREEN=-splash:pics/splash_screen.png
 
-if not "%1"=="--console" goto GUIMode
+if not "%1"=="--console" if not "%1"=="--help" goto GUIMode
 SET CONSOLE_MODE=on
 SET SPLASH_SCREEN=
 goto Init
@@ -60,10 +60,13 @@ REM Starting LogMX
 REM --------------
 SET LOGMX_LIB_PATH=%LOGMX_HOME%\lib
 SET LOGMX_CLASSPATH=%LOGMX_HOME%\classes;%LOGMX_HOME%\parsers\classes;%LOGMX_HOME%\managers\classes;%LOGMX_HOME%\jar\logmx.jar
-SET LOGMX_CLASSPATH=%LOGMX_CLASSPATH%;%LOGMX_LIB_PATH%\jsch.jar;%LOGMX_LIB_PATH%\activation.jar;%LOGMX_LIB_PATH%\mailapi.jar;%LOGMX_LIB_PATH%\smtp.jar;%LOGMX_LIB_PATH%\jcommon-1.0.14.jar;%LOGMX_LIB_PATH%\jfreechart-1.0.11.jar
+SET LOGMX_CLASSPATH=%LOGMX_CLASSPATH%;%LOGMX_LIB_PATH%\jsch.jar;%LOGMX_LIB_PATH%\activation.jar;%LOGMX_LIB_PATH%\mailapi.jar
+SET LOGMX_CLASSPATH=%LOGMX_CLASSPATH%;%LOGMX_LIB_PATH%\smtp.jar;%LOGMX_LIB_PATH%\jcommon-1.0.14.jar
+SET LOGMX_CLASSPATH=%LOGMX_CLASSPATH%;%LOGMX_LIB_PATH%\player.jar
 SET LOGMX_CLASSPATH=%LOGMX_CLASSPATH%;%LOGMX_ADDITIONAL_CLASSPATH%
+SET LIB_PATH=-Djava.library.path=%LOGMX_HOME%\lib
 SET LOGMX_MAIN=com.lightysoft.logmx.LogMX
-SET JVM_OPTIONS=-Xmx302m %SPLASH_SCREEN% %CONFIG_FILE_PATH%
+SET JVM_OPTIONS=-Xmx400m %LIB_PATH% %SPLASH_SCREEN% %CONFIG_FILE_PATH%
 SET PATH=%SPECIFIC_JRE_PATH%;%PATH%
 
 java %JVM_OPTIONS% -cp %LOGMX_CLASSPATH% %LOGMX_MAIN% %*
