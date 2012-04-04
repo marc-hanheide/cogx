@@ -106,7 +106,7 @@ class SpatialControl : public cast::ManagedComponent ,
 
         virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis(const Ice::Current &_context);
         virtual int findClosestNode(double x, double y, const Ice::Current &_context);
-        virtual int findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context);
+//        virtual int findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context);
 
         virtual SpatialData::LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy, const Ice::Current &_context) {
           SpatialData::LocalGridMap ret;
@@ -188,7 +188,7 @@ protected:
   bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId);
   virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis();
   virtual int findClosestNode(double x, double y);
-  virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
+//  virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
   void getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy) const;
 
   void processOdometry(Cure::Pose3D);
