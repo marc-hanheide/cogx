@@ -356,6 +356,7 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	
 	private void processAddedPlace(WorkingMemoryChange _wmc) {
+    log("Entered processAddedPlace");
 		debug("Got a callback for an ADDed Place WME:");
 		// initialize spatial.sa name!
 		if (m_spatial_sa_name==null) {
@@ -462,6 +463,7 @@ public class PlaceMonitor extends ManagedComponent {
 				processDeletedPlace(_placeID);
 			}
 		});
+    log("Exited processAddedPlace");
 	}
 	
 	private void processAddedMapLoadStatus(WorkingMemoryChange _wmc) {
@@ -1008,6 +1010,7 @@ public class PlaceMonitor extends ManagedComponent {
 //	}
 
 	private boolean processOverwrittenPlace(WorkingMemoryChange _wmc) {
+    log("Entered processOverwrittenPlace");
 		boolean _removeFilterAfterwards = false;
 		debug("Got a callback for an OVERWRITTEN former Placeholder WME!");
 		// try {
@@ -1062,6 +1065,7 @@ public class PlaceMonitor extends ManagedComponent {
 				}				
 				_removeFilterAfterwards = true;
 			}
+    log("Exited processOverwrittenPlace");
 		return _removeFilterAfterwards;
 	}
 	
