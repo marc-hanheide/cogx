@@ -25,8 +25,7 @@ public class SampleParser extends LogFileParser {
     private ParsedEntry entry = null;
 
     /** Entry date format */
-    private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
-        "dd/MM/yyyy, HH:mm:ss");
+    private static SimpleDateFormat dateFormat = null;
 
     /** Pattern for entry begin */
     private final static Pattern ENTRY_BEGIN_PATTERN = Pattern
@@ -112,7 +111,12 @@ public class SampleParser extends LogFileParser {
      * @see com.lightysoft.logmx.mgr.LogFileParser#getAbsoluteEntryDate(com.lightysoft.logmx.business.ParsedEntry)
      */
     public Date getAbsoluteEntryDate(ParsedEntry pEntry) throws Exception {
-        return DATE_FORMAT.parse(pEntry.getDate()); // (the right-part "T0+..." will be ignored by the formatter)
+        if (dateFormat == null) {
+            // Now create the date formatter using the right Locale
+            // (method "getLocale()" can't be called from the constructor) 
+            dateFormat = new SimpleDateFormat("dd/MM/yyyy, HH:mm:ss", getLocale());
+        }
+        return dateFormat.parse(pEntry.getDate()); // (the right-part "T0+..." will be ignored by the formatter)
     }
 
     /**

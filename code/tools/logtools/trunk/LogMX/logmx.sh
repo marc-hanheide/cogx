@@ -39,12 +39,12 @@ LOGMX_ADDITIONAL_CLASSPATH=
 SPLASH_SCREEN=-splash:pics/splash_screen.png
 
 # Disable splash screen for Console Mode
-if [ "x$1" = "x--console" ]; then
-  SPLASH_SCREEN=""
+if [ "$1" == "--console" ]; then
+  SPLASH_SCREEN=
 fi
 
 # Setting default JVM options
-JVM_OPTIONS="-Xmx302m $SPLASH_SCREEN $CONFIG_FILE_PATH"
+JVM_OPTIONS="-Xmx400m $SPLASH_SCREEN $CONFIG_FILE_PATH"
 
 # Check if "--jvmopt" option is used to set JVM options
 HAS_JVM_OPT=`echo "$@" | grep "\-jvmopt="`
@@ -64,7 +64,9 @@ fi
 # Setting Java command line options
 LOGMX_LIB_PATH=$LOGMX_PATH/lib
 LOGMX_CLASSPATH=$LOGMX_PATH/classes:$LOGMX_PATH/parsers/classes:$LOGMX_PATH/managers/classes:$LOGMX_PATH/jar/logmx.jar
-LOGMX_CLASSPATH=$LOGMX_CLASSPATH:$LOGMX_LIB_PATH/jsch.jar:$LOGMX_LIB_PATH/activation.jar:$LOGMX_LIB_PATH/mailapi.jar:$LOGMX_LIB_PATH/smtp.jar:$LOGMX_LIB_PATH/jcommon-1.0.14.jar:$LOGMX_LIB_PATH/jfreechart-1.0.11.jar
+LOGMX_CLASSPATH=$LOGMX_CLASSPATH:$LOGMX_LIB_PATH/jsch.jar:$LOGMX_LIB_PATH/activation.jar:$LOGMX_LIB_PATH/mailapi.jar
+LOGMX_CLASSPATH=$LOGMX_CLASSPATH:$LOGMX_LIB_PATH/smtp.jar:$LOGMX_LIB_PATH/jcommon-1.0.14.jar:$LOGMX_LIB_PATH/jfreechart-1.0.11.jar
+LOGMX_CLASSPATH=$LOGMX_CLASSPATH:$LOGMX_LIB_PATH/player.jar
 LOGMX_CLASSPATH=$LOGMX_CLASSPATH:$LOGMX_ADDITIONAL_CLASSPATH
 LOGMX_MAIN=com.lightysoft.logmx.LogMX
 PATH=$SPECIFIC_JRE_PATH:$PATH
