@@ -2433,7 +2433,6 @@ int SpatialControl::findClosestNode(double x, double y) {
 
 bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId){
   closestNodeId = -1;
-  int counter = 0;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
     int maxDist = 40; // The first maximum distance to try
     closestNodeId = -1;
@@ -2442,29 +2441,28 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
 //CHECK AGAINST NODE_HYP
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
         non_overlapped_hypotheses.end(); extantHypIt !=  non_overlapped_hypotheses.begin(); ) {
-      counter++;
       SpatialData::NodeHypothesisPtr extantHyp = *(--extantHypIt);
 
       double dist2sq = (x*m_lgm->getCellSize() - extantHyp->x) * (x*m_lgm->getCellSize() - extantHyp->x) + (y*m_lgm->getCellSize() - extantHyp->y) * (y*m_lgm->getCellSize() - extantHyp->y);
       if (dist2sq < 1 * 1){
+        counter1++;
         return false;
       }
     }
 //CHECK AGAINST NODES
     while(closestNodeId == -1) {
       if(maxDist > 40){//map.Columns*map.Rows){
-        log("check_point counter %d",counter);
+        counter2++;
         return false;
       }
       for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
-        counter++;
         try {
           double dist2sq = (x*m_lgm->getCellSize() - (*nodeIt)->x) * (x*m_lgm->getCellSize() - (*nodeIt)->x) + (y*m_lgm->getCellSize() - (*nodeIt)->y) * (y*m_lgm->getCellSize() - (*nodeIt)->y);
           if (dist2sq < m_min_sep_dist*m_min_sep_dist){
-            log("check_point counter %d",counter);
+            counter3++;
             return false;
           }
-          else if (dist2sq < m_maxNewPlaceholderRadius * m_maxNewPlaceholderRadius){
+          else if (dist2sq < 2 * 2){
             int xi = x + m_lgm->getSize();
             int yi = y + m_lgm->getSize();
             int nodexi, nodeyi;
@@ -2488,12 +2486,10 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
       }
       maxDist *= 2; // Double the maximum distance to search for the next loop
     }
-    log("check_point counter %d",counter);
-
+    counter4++;
     return true;
   }
-  log("check_point counter %d",counter);
-
+  counter5++;
   return false;
 }
 
@@ -2572,6 +2568,12 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
 
+    counter1 = 0;
+    counter2 = 0;
+    counter3 = 0;
+    counter4 = 0;
+    counter5 = 0;
+
     for (int i=0;i<50;i++){
       double theta = (rand() % 360) * M_PI / 180; 
 //      int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
@@ -2592,6 +2594,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         }
       }
     }
+    log("check_point %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5);
 //ELSE SKIP, IT WILL BE DELETED
   }
 }
@@ -2613,6 +2616,12 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 {
   SCOPED_TIME_LOG;
 
+  counter1 = 0;
+  counter2 = 0;
+  counter3 = 0;
+  counter4 = 0;
+  counter5 = 0;
+
   for (int i=0;i<50;i++){
     double theta = (rand() % 360) * M_PI / 180; 
     int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/50*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
@@ -2633,6 +2642,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       }
     }
   }
+  log("check_point %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5);
 }
 
 }
