@@ -1033,11 +1033,16 @@ public class PlaceMonitor extends ManagedComponent {
 			// for the moment we are only interested in true places
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) {
 				log("create dora:Place instance " + "dora:place"+_newPlaceNode.id);
+        log("processOverwrittenPlace -4");
 				synchronized (m_comareasoner) {
+          log("processOverwrittenPlace -3");
 					m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
+          log("processOverwrittenPlace -2");
 				}
 				logInstances("owl:Thing");
+        log("processOverwrittenPlace -1");
 				logInstances("dora:Place");
+        log("processOverwrittenPlace 0");
 				logInstances("dora:PhysicalRoom");
 
         log("processOverwrittenPlace 1");
