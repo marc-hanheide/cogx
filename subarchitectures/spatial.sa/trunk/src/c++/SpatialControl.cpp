@@ -2462,7 +2462,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
             counter3++;
             return false;
           }
-          else if (dist2sq < 2.3){
+          else if (dist2sq < 3){
             counter6++;
             int xi = x + m_lgm->getSize();
             int yi = y + m_lgm->getSize();
