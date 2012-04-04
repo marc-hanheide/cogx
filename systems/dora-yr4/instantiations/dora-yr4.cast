@@ -288,7 +288,7 @@ IFOPTALL(%(feature_options), spatial)
 ### Translates and queues Spatial::NavCommands; 
 # writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
 #EXPAND visual_exploration=%(visual_exploration)
-    CPP MG spatial.translation 	SpatialTranslation %(visual_exploration) #--generate-placeholders-on-place
+    CPP MG spatial.translation 	SpatialTranslation %(visual_exploration) --generate-placeholders-on-place
 
 ### Reads NavData::InternalNavCmd to control the robot
 #EXPAND spatial_show_3d_obstacles=%(spatial_show_3d_obstacles)
