@@ -180,6 +180,12 @@ protected:
     std::string m_PbHost;
     int m_PbPort;
 
+  int counter1;
+  int counter2;
+  int counter3;
+  int counter4;
+  int counter5;
+
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
