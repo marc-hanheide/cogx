@@ -185,6 +185,7 @@ protected:
   int counter3;
   int counter4;
   int counter5;
+  int counter6;
 
   virtual void configure(const std::map<std::string, std::string>& _config);
   virtual void taskAdopted(const std::string &_taskID) {};
