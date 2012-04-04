@@ -620,6 +620,235 @@ class ShapeTrainer(Trainer):
 
 
 # ========================================
+class SizeTrainer(Trainer):
+    
+    defaultGammas=["0.0001", "0.000133352", "0.000177828", "0.000237137", "0.000316228", "0.000421697", "0.000562341", "0.000749894",
+                   "0.001", "0.00133352", "0.00177828", "0.00237137", "0.00316228", "0.00421697", "0.00562341", "0.00749894",
+                   "0.01", "0.0133352", "0.0177828", "0.0237137", "0.0316228", "0.0421697", "0.0562341", "0.0749894",
+                   "0.1", "0.133352", "0.177828", "0.237137", "0.316228", "0.421697", "0.562341", "0.749894",
+                   "1",   "1.33352",  "1.77828",  "2.37137",  "3.16228",  "4.21697",  "5.62341",  "7.49894",
+                   "10",  "13.3352",  "17.7828",  "23.7137",  "31.6228",  "42.1697",  "56.2341",  "74.9894",
+                   "100" ]
+    
+    defaultBestGamma = "0.07"
+
+
+    # ------------------------------------
+    def __init__(self, gammas):
+        Trainer.__init__(self, gammas)
+
+    # ------------------------------------
+    def _runFullTraining(self):
+        # Calculate step count
+        global stepCount
+        global paths
+        stepCount = 2 + len(self.dataSets)*2 + len(self.gammas)*len(self.dataSets)*3 + 3
+        if not paths.leaveTempFiles:
+            stepCount = stepCount+1
+        # Feature extraction
+        i=1
+        self.featureSets=[]
+        for d in self.dataSets:
+            fSet = paths.getTempFile("dataset%d-size.laser" % i)
+            self.featureSets.append(fSet)
+            gfe = GeometricalFeatureExtractor(d, fSet)
+            gfe.extract()
+            i=i+1
+        # Merging sets for rescaling
+        sm = SetMerger()
+        self.mergedFeatures = paths.getTempFile("merged-size.laser")
+        sm.mergeSets(self.featureSets, self.mergedFeatures)
+        # Rescaling
+        self.rangeFile = paths.getModelFile("size.lscl")
+        fr = FeatureRescaler()
+        fr.learnRanges(self.mergedFeatures, self.rangeFile)
+        i=1
+        self.scaledFeatureSets=[]
+        for f in self.featureSets:
+            sfSet = paths.getTempFile("dataset%d-size.laser_scaled" % i)
+            self.scaledFeatureSets.append(sfSet)
+            fr.rescaleSet(f, sfSet)
+            i=i+1
+        # Parameter selection by cross-validation
+        maxAccuracy = 0.0
+        maxGamma = -1
+        for g in self.gammas:
+            overAllSetsAccuracy = 0.0
+            for i in range(len(self.scaledFeatureSets)):
+                # Create a training set for this partitioning
+                tmp = copy(self.scaledFeatureSets)
+                del tmp[i]
+                sm.mergeSets(tmp, self.mergedFeatures)
+                # Train
+                tmpModelFile = paths.getTempFile("tmp-size.lmdl")
+                svm=SvmModel(tmpModelFile)
+                svm.train(self.mergedFeatures, "2", g)
+                # Test on the test set
+                accuracy=svm.test(self.scaledFeatureSets[i], paths.getTempFile("tmp-size.output"))
+                overAllSetsAccuracy+=accuracy
+            overAllSetsAccuracy/=float(len(self.scaledFeatureSets))
+            if overAllSetsAccuracy > maxAccuracy:
+                maxAccuracy = overAllSetsAccuracy
+                maxGamma = g
+        self.logger.info("-> Best recognition rate (over all sets) is %s for gamma=%s", str(maxAccuracy), maxGamma)
+        # Final training
+        sm.mergeSets(self.scaledFeatureSets, self.mergedFeatures)
+        self.modelFile = paths.getModelFile("size.lmdl")
+        svm = SvmModel(self.modelFile)
+        svm.train(self.mergedFeatures, "2", maxGamma)
+        # Writing info file
+        self.infoFile = paths.getModelFile("size.info")
+        self.logger.info(startStep()+"Writing info file...")
+        try:
+            inf = open(self.infoFile, "w")
+            inf.write("Training sets:\n")
+            for d in self.dataSets:
+                inf.write(" - %s\n" % d)
+            inf.write("Parameter selection: Full gamma cross-validation\n")
+            inf.write("Features: geometrical features\n")
+            inf.write("SVM Kernel: Gaussian\n")
+            inf.write("SVM Multi-class: One-against-all\n")
+            inf.write("SVM C: 100\n")
+            inf.write("SVM Kernel Gamma: %s\n" % maxGamma)
+        except Exception as e:
+            raise Exception("Error while writing the info file %s!\n%s" % (self.infoFile, str(e)))
+        finally:
+            inf.close()
+        self.logger.info(endStep()+"Done!")
+
+
+    # ------------------------------------
+    def _runReducedTraining(self):
+        # Calculate step count
+        global stepCount
+        global paths
+        stepCount = 2 + 2*2 + len(self.gammas)*2 + 3
+        if not paths.leaveTempFiles:
+            stepCount = stepCount+1
+        # Feature extraction
+        i=1
+        self.featureSets=[]
+        for d in self.dataSets[:2]:
+            fSet = paths.getTempFile("dataset%d-size.laser" % i)
+            self.featureSets.append(fSet)
+            gfe = GeometricalFeatureExtractor(d, fSet)
+            gfe.extract()
+            i=i+1
+        # Merging sets for rescaling
+        sm = SetMerger()
+        self.mergedFeatures = paths.getTempFile("merged-size.laser")
+        sm.mergeSets(self.featureSets, self.mergedFeatures)
+        # Rescaling
+        self.rangeFile = paths.getModelFile("size.lscl")
+        fr = FeatureRescaler()
+        fr.learnRanges(self.mergedFeatures, self.rangeFile)
+        i=1
+        self.scaledFeatureSets=[]
+        for f in self.featureSets:
+            sfSet = paths.getTempFile("dataset%d-size.laser_scaled" % i)
+            self.scaledFeatureSets.append(sfSet)
+            fr.rescaleSet(f, sfSet)
+            i=i+1
+        # Parameter selection by cross-validation
+        maxAccuracy = 0.0
+        maxGamma = -1
+        for g in self.gammas:
+            # Train
+            tmpModelFile = paths.getTempFile("tmp-size.lmdl")
+            svm=SvmModel(tmpModelFile)
+            svm.train(self.scaledFeatureSets[0], "2", g)
+            # Test on the test set
+            accuracy=svm.test(self.scaledFeatureSets[1], paths.getTempFile("tmp-size.output"))
+            if accuracy > maxAccuracy:
+                maxAccuracy = accuracy
+                maxGamma = g
+        self.logger.info("-> Best recognition rate is %s for gamma=%s", str(maxAccuracy), maxGamma)
+        # Final training
+        sm.mergeSets(self.scaledFeatureSets, self.mergedFeatures)
+        self.modelFile = paths.getModelFile("size.lmdl")
+        svm = SvmModel(self.modelFile)
+        svm.train(self.mergedFeatures, "2", maxGamma)
+        # Writing info file
+        self.infoFile = paths.getModelFile("size.info")
+        self.logger.info(startStep()+"Writing info file...")
+        try:
+            inf = open(self.infoFile, "w")
+            inf.write("Training sets:\n")
+            for d in self.dataSets:
+                inf.write(" - %s\n" % d)
+            inf.write("Parameter selection: Reduced gamma cross-validation\n")
+            inf.write("Features: geometrical features\n")
+            inf.write("SVM Kernel: Gaussian\n")
+            inf.write("SVM Multi-class: One-against-all\n")
+            inf.write("SVM C: 100\n")
+            inf.write("SVM Kernel Gamma: %s\n" % maxGamma)
+        except Exception as e:
+            raise Exception("Error while writing the info file %s!\n%s" % (self.infoFile, str(e)))
+        finally:
+            inf.close()
+        self.logger.info(endStep()+"Done!")
+
+
+    # ------------------------------------
+    def _runNoParamsTraining(self):
+        # Calculate step count
+        global stepCount
+        global paths
+        stepCount = 2 + 2 + 2
+        if not paths.leaveTempFiles:
+            stepCount = stepCount+1
+        # Feature extraction
+        i=1
+        self.featureSets=[]
+        for d in self.dataSets[:2]:
+            fSet = paths.getTempFile("dataset%d-size.laser" % i)
+            self.featureSets.append(fSet)
+            gfe = GeometricalFeatureExtractor(d, fSet)
+            gfe.extract()
+            i=i+1
+        # Merging sets for rescaling
+        sm = SetMerger()
+        self.mergedFeatures = paths.getTempFile("merged-size.laser")
+        sm.mergeSets(self.featureSets, self.mergedFeatures)
+        # Rescaling
+        self.rangeFile = paths.getModelFile("size.lscl")
+        fr = FeatureRescaler()
+        fr.learnRanges(self.mergedFeatures, self.rangeFile)
+        i=1
+        self.scaledFeatureSets=[]
+        for f in self.featureSets:
+            sfSet = paths.getTempFile("dataset%d-size.laser_scaled" % i)
+            self.scaledFeatureSets.append(sfSet)
+            fr.rescaleSet(f, sfSet)
+            i=i+1
+        # Final training
+        self.modelFile = paths.getModelFile("size.lmdl")
+        svm = SvmModel(self.modelFile)
+        svm.train(self.scaledFeatureSets[0], "2", self.bestGamma)
+        # Writing info file
+        self.infoFile = paths.getModelFile("size.info")
+        self.logger.info(startStep()+"Writing info file...")
+        try:
+            inf = open(self.infoFile, "w")
+            inf.write("Training sets:\n")
+            for d in self.dataSets:
+                inf.write(" - %s\n" % d)
+            inf.write("Parameter selection: No parameter selection (default used)\n")
+            inf.write("Features: geometrical features\n")
+            inf.write("SVM Kernel: Gaussian\n")
+            inf.write("SVM Multi-class: One-against-all\n")
+            inf.write("SVM C: 100\n")
+            inf.write("SVM Kernel Gamma: %s\n" % self.bestGamma)
+        except Exception as e:
+            raise Exception("Error while writing the info file %s!\n%s" % (self.infoFile, str(e)))
+        finally:
+            inf.close()
+        self.logger.info(endStep()+"Done!")
+
+
+
+
+# ========================================
 class AppearanceTrainer(Trainer):
     
     defaultGammas=["0.001", "0.00133352", "0.00177828", "0.00237137", "0.00316228", "0.00421697", "0.00562341", "0.00749894",
