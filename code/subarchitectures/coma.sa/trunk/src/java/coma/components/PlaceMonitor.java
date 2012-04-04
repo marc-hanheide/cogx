@@ -1040,15 +1040,25 @@ public class PlaceMonitor extends ManagedComponent {
 				logInstances("dora:Place");
 				logInstances("dora:PhysicalRoom");
 
+        log("processOverwrittenPlace 1");
+
 				m_placeholders.remove(Long.valueOf(_newPlaceNode.id));
 				m_trueplaces.add(Long.valueOf(_newPlaceNode.id));
+        log("processOverwrittenPlace 2");
 				
 				// process pending paths
 				HashSet<WorkingMemoryAddress> _pendingPaths = m_tempAdjacencyStore.remove(_newPlaceNode.id);
+
+        log("processOverwrittenPlace 3");
+
 				if (_pendingPaths!=null) {
+          log("processOverwrittenPlace 4");
+
 					debug("process pending paths:");
 					for (WorkingMemoryAddress _workingMemoryAddress : _pendingPaths) {
 						try {
+              log("processOverwrittenPlace 5");
+
 							synchronized (m_comareasoner) {
 								ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
 								log("add relation to coma: " + "dora:place"+_currPendingPath.place1Id + " dora:adjacent " + "dora:place"+_currPendingPath.place2Id);
@@ -1061,7 +1071,9 @@ public class PlaceMonitor extends ManagedComponent {
 						}						
 					}
 					// trigger room creation, splitting, merging, maintenance
+          log("processOverwrittenPlace 6");
 					maintainRooms();
+          log("processOverwrittenPlace 7");
 				}				
 				_removeFilterAfterwards = true;
 			}
