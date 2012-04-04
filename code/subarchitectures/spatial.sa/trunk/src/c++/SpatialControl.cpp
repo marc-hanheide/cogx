@@ -2463,6 +2463,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
             return false;
           }
           else if (dist2sq < 2 * 2){
+            counter6++;
             int xi = x + m_lgm->getSize();
             int yi = y + m_lgm->getSize();
             int nodexi, nodeyi;
@@ -2573,11 +2574,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     counter3 = 0;
     counter4 = 0;
     counter5 = 0;
-
-    for (int i=0;i<50;i++){
+    counter6 = 0;
+    for (int i=0;i<30;i++){
       double theta = (rand() % 360) * M_PI / 180; 
 //      int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
-      int r = round(m_maxMovePlaceholderRadius/50*i/m_lgm->getCellSize());
+      int r = round(m_maxMovePlaceholderRadius/30*i/m_lgm->getCellSize());
 
       for (int j=0;j<36;j++){
         int x= round(hypxi+r*cos(theta+j*2*3.14/36)); 
@@ -2594,7 +2595,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         }
       }
     }
-    log("check_point %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5);
+    log("check_point %d %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5, counter6);
 //ELSE SKIP, IT WILL BE DELETED
   }
 }
@@ -2621,10 +2622,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   counter3 = 0;
   counter4 = 0;
   counter5 = 0;
+  counter6 = 0;
 
-  for (int i=0;i<50;i++){
+  for (int i=0;i<30;i++){
     double theta = (rand() % 360) * M_PI / 180; 
-    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/50*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
+    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/30*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
 //    int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
@@ -2642,7 +2644,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       }
     }
   }
-  log("check_point %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5);
+  log("check_point %d %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5,counter6);
 }
 
 }
