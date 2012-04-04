@@ -2464,7 +2464,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
             log("check_point counter %d",counter);
             return false;
           }
-          else if (dist2sq < 40 * 0.05){
+          else if (dist2sq < m_maxNewPlaceholderRadius * m_maxNewPlaceholderRadius){
             int xi = x + m_lgm->getSize();
             int yi = y + m_lgm->getSize();
             int nodexi, nodeyi;
@@ -2572,14 +2572,14 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
 
-    for (int i=0;i<30;i++){
+    for (int i=0;i<50;i++){
       double theta = (rand() % 360) * M_PI / 180; 
 //      int r = rand() % (int)(m_maxMovePlaceholderRadius/m_lgm->getCellSize());
-      int r = round(m_maxMovePlaceholderRadius/30*i/m_lgm->getCellSize());
+      int r = round(m_maxMovePlaceholderRadius/50*i/m_lgm->getCellSize());
 
-      for (int j=0;j<30;j++){
-        int x= round(hypxi+r*cos(theta+j*2*3.14/30)); 
-        int y= round(hypyi+r*sin(theta+j*2*3.14/30)); 
+      for (int j=0;j<36;j++){
+        int x= round(hypxi+r*cos(theta+j*2*3.14/36)); 
+        int y= round(hypyi+r*sin(theta+j*2*3.14/36)); 
         int originNodeID;
         if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
           SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
@@ -2613,15 +2613,15 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 {
   SCOPED_TIME_LOG;
 
-  for (int i=0;i<30;i++){
+  for (int i=0;i<50;i++){
     double theta = (rand() % 360) * M_PI / 180; 
-    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/30*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
+    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/50*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
 //    int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
-    for (int j=0;j<30;j++){
-      int x= round(robotxi+r*cos(theta+j*2*3.14/30)); 
-      int y= round(robotyi+r*sin(theta+j*2*3.14/30)); 
+    for (int j=0;j<36;j++){
+      int x= round(robotxi+r*cos(theta+j*2*3.14/36)); 
+      int y= round(robotyi+r*sin(theta+j*2*3.14/36)); 
       if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         new_nh->x=x*m_lgm->getCellSize();
