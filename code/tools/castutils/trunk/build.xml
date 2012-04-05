@@ -32,7 +32,7 @@
 	<!-- Source generation                                                   -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
-		<slice2java tie="true" outputdir="${src.dir}">
+		<slice2java tie="true" outputdir="${src.dir}" stream="yes">
 			<fileset dir="${slice.dir}" includes="castutils.ice" />
 			<includepath>
 				<pathelement path="${slice.dir}" />
