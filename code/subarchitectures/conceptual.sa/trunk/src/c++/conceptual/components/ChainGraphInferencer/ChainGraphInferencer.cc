@@ -65,7 +65,7 @@ ChainGraphInferencer::ChainGraphInferencer() :
 // -------------------------------------------------------
 ChainGraphInferencer::~ChainGraphInferencer()
 {
-	pthread_cond_destroy(&_inferenceQueryAddedSignalCond);
+ 	pthread_cond_destroy(&_inferenceQueryAddedSignalCond);
 	pthread_mutex_destroy(&_inferenceQueryAddedSignalMutex);
 	pthread_mutex_destroy(&_worldStateMutex);
 	pthread_mutex_destroy(&_graphMutex);
