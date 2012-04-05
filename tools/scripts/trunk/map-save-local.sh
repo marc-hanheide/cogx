@@ -1,11 +1,11 @@
 #!/bin/bash
 
 FILES="robotpose.ccf
-		   NodeGridMaps.txt
-		   GridMap.txt
+       NodeGridMaps.txt
+       GridMap.txt
        HeightMap.txt
-		   tmpmap.graph
-		   tmpmap.metric
+       tmpmap.graph
+       tmpmap.metric
        Places.txt
        place_properties.bin"
 
