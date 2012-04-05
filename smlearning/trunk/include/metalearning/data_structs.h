@@ -764,7 +764,7 @@ struct LearningData {
 	}
 
 	template<class Normalization>
-	vector<FeatureVector> load_cryssmexinputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
+	static vector<FeatureVector> load_cryssmexinputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 
 		Chunk::Seq::const_iterator s_iter;
 		vector<FeatureVector> sequence;
@@ -918,9 +918,70 @@ struct LearningData {
 
 		return labelsSet;
 	}
-	
 
-};
+
+	template<class Denormalize>
+	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex,  Denormalize denormalize) {
+
+		currentPredictedPfSeq.clear();
+		for (int i=0; i < outputActivations.shape[0]; i++) {
+			golem::Mat34 currentPredictedPfPose;
+			// golem::Mat34 currentPredictedEfPose;
+			int startIndex = sIndex;
+
+			//extract effector Pose
+			// currentPredictedEfPose.p.v1 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+			// currentPredictedEfPose.p.v2 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+			// currentPredictedEfPose.p.v3 = denormalize(outputActivations[i][startIndex++], 0.0, maxRange);
+			// Real efRoll, efPitch, efYaw;
+			// efRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			// efPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			// efYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			// currentPredictedEfPose.R.fromEuler(efRoll, efPitch, efYaw);
+			// currentPredictedEfSeq.push_back (currentPredictedEfPose);
+		
+			//extract polyflap Pose
+			currentPredictedPfPose.p.v1 = denormalize(outputActivations[i][startIndex++], featLimits.minX, featLimits.maxX);
+			currentPredictedPfPose.p.v2 = denormalize(outputActivations[i][startIndex++], featLimits.minY, featLimits.maxY);
+			currentPredictedPfPose.p.v3 = denormalize(outputActivations[i][startIndex++], featLimits.minZ, featLimits.maxZ);
+			Real pfRoll, pfPitch, pfYaw;
+			pfRoll = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			pfPitch = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			pfYaw = denormalize(outputActivations[i][startIndex++], -REAL_PI, REAL_PI);
+			currentPredictedPfPose.R.fromEuler(pfRoll, pfPitch, pfYaw);
+			currentPredictedPfSeq.push_back (currentPredictedPfPose);
+		}
+	}
+
+
+	template<class Denormalize>
+	void get_pfSeq_from_cryssmexquantization (const vector<vector<double> >& predictedSequence, Denormalize denormalize) {
+
+		currentPredictedPfSeq.clear();
+		for (int i=0; i < predictedSequence.size(); i++) {
+			golem::Mat34 currentPredictedPfPose;
+
+			int startIndex = 0;
+		
+			//extract polyflap Pose
+			currentPredictedPfPose.p.v1 = denormalize(predictedSequence[i][startIndex++], featLimits.minX, featLimits.maxX);
+			currentPredictedPfPose.p.v2 = denormalize(predictedSequence[i][startIndex++], featLimits.minY, featLimits.maxY);
+			currentPredictedPfPose.p.v3 = denormalize(predictedSequence[i][startIndex++], featLimits.minZ, featLimits.maxZ);
+			Real pfRoll, pfPitch, pfYaw;
+			pfRoll = denormalize(predictedSequence[i][startIndex++], -REAL_PI, REAL_PI);
+			pfPitch = denormalize(predictedSequence[i][startIndex++], -REAL_PI, REAL_PI);
+			pfYaw = denormalize(predictedSequence[i][startIndex++], -REAL_PI, REAL_PI);
+			currentPredictedPfPose.R.fromEuler(pfRoll, pfPitch, pfYaw);
+			currentPredictedPfSeq.push_back (currentPredictedPfPose);
+		}
+
+	}
+
+	
+}; /* LearningData class */
+
+
+
 
 }; /* smlearning namespace */
 

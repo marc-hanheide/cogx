@@ -144,6 +144,7 @@ SET(METALEARNING_SOURCES
 #	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenario.cpp
 	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
+	${SMLEARNING_ROOT}/src/metalearning/CrySSMEx.cpp
 )
 
 # SET(OFFLINE_EXPERIMENT_SOURCE
@@ -172,6 +173,7 @@ SET(METALEARNING_HEADERS
 #	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
 #	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/metalearning/data_structs.h
+	${SMLEARNING_ROOT}/include/metalearning/CrySSMEx.h
 )
 INSTALL(FILES ${METALEARNING_HEADERS} DESTINATION include/SMLearning/metalearning/)
 

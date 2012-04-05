@@ -9,16 +9,8 @@
 #define SMLEARNING_PREDICTINGSCENARIO_H_
 
 #include <scenario/Scenario.h>
-#include "ssm/ssm_file_export.hh"
-#include "ssm/ssm_parser.hh"
-#include "cryssmex/exceptions.hh"
-#include "quantizing/quantizer_file_export.hh"
-
-using namespace ssm;
-using namespace cryssmex;
-using namespace basic_stochastics;
-using namespace naming;
-using namespace quantizing;
+#include <metalearning/CrySSMEx.h>
+#include <boost/function.hpp>
 
 namespace smlearning {
 
@@ -50,25 +42,34 @@ public:
 	void run(int argc, char* argv[]);
 	/** set experiment default values */
 	virtual void init(boost::program_options::variables_map vm);
+
+protected:
 	/** select a random action */
 	virtual void chooseAction ();
 	/** calculate the start coordinates of the arm */
 	virtual void calculateStartCoordinates();
 	/** Describe the experiment trajectory */
 	virtual void initMovement();
-
-
-protected:
+	/** Renders the object. */
+        virtual void render();
+	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
+	virtual void postprocess(golem::SecTmReal elapsedTime);
+	/** Encapsulation of CrySSMEx components */
+	CrySSMEx cryssmex;
 	/** method for feature selection */
 	unsigned int featureSelectionMethod;
-	/** Substochastic sequential machine used for prediction */
-	SSM* ssm;
-	/** SSM parser used for prediction */
-	SSM_Parser *ssm_parser;
-	/** Input quantizer */
-	Quantizer *input_quantizer;
-	/** Output quantizer */
-	Quantizer *output_quantizer;
+	/** current data sequence (e.g. for predicting) */
+	vector<FeatureVector> currentSeq;
+	/** normalization function */
+	boost::function<float (const float&, const float&, const float&)> normalization;
+	/** denormalization function */
+	boost::function<float (const float&, const float&, const float&)> denormalization;
+	/** counter to get last index of sequence to be painted */
+	unsigned int counter_sequence;
+
+	/** default object bounds */
+	golem::Bounds::SeqPtr objectLocalBounds;
+
 
 };
 

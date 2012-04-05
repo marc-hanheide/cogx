@@ -13,27 +13,18 @@ namespace smlearning {
 
 PredictingScenario::PredictingScenario(golem::Scene &scene) : Scenario (scene)
 {
-	ssm = 0;
-	ssm_parser = 0;
-	input_quantizer = 0;
-	output_quantizer = 0;
+	normalization = donotnormalize<float>;
+	denormalization = donotdenormalize<float>;
 }
 
 PredictingScenario::~PredictingScenario()
 {
-	if (ssm != 0)
-		delete ssm;
-	if (ssm_parser != 0)
-		delete ssm_parser;
-	if (input_quantizer != 0)
-		delete input_quantizer;
-	if (output_quantizer != 0)
-		delete output_quantizer;
 }
 
 void PredictingScenario::init (boost::program_options::variables_map vm) {
 	Scenario::init (vm);
 
+	// Set feature selection method
 	string fSMethod;
 	if (vm.count("featuresel"))
 		fSMethod = vm["featuresel"].as<string>();
@@ -54,64 +45,48 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 		featureSelectionMethod = _obpose_slide_flip_tilt;
 	else if (fSMethod == "efobpose_slide_flip_tilt")
 		featureSelectionMethod = _efobpose_slide_flip_tilt;
-	
-	try {
-		ssm = load (vm["ssmFile"].as<string>() );
-		if (ssm) {
-			ssm_parser = new SSM_Parser (*ssm);
-		}
-	}
-	catch(boost::archive::archive_exception) {
-		cout << vm["ssmFile"].as<string>() << " could not be loaded. File ignored.\n";
-		assert(ssm==0 && ssm_parser==0);
-	}
-	catch(const cryssmex_exception& e) {
-		cerr << "EXCEPTION: " << e.what() << endl;
-		delete ssm;
-		delete ssm_parser;
-		ssm = 0;
-		ssm_parser = 0;
-	}
 
-	try {
-		string inputqfile;
-		if (vm.count("quantizersPath"))
-			inputqfile =  vm["quantizersPath"].as<string>() + "/./" + "cryssmex_inputq.qnt";
-		else
-			inputqfile = "cryssmex_inputq.qnt";
-		input_quantizer = load_quantizer (inputqfile);
-		if (!input_quantizer) {
-			cerr << "cryssmex_input.qnt did not load correctly. Aborting.\n";
-			exit(-1);
-		}
-		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
-			assert (learningData.motorVectorSizeMarkov + learningData.efVectorSize == input_quantizer->dimensionality());
+	// Set Substochastic Sequential Machine
+	cryssmex.setSSM (vm["ssmFile"].as<string>());
 
-		else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
-			assert (learningData.motorVectorSizeMarkov == input_quantizer->dimensionality());
+	// Set Input Quantizer
+	string inputqfile;
+	if (vm.count("quantizersPath"))
+		inputqfile =  vm["quantizersPath"].as<string>() + "/./" + "cryssmex_inputq.qnt";
+	else
+		inputqfile = "cryssmex_inputq.qnt";
+	cryssmex.setInputQuantizer (inputqfile);
 
-	}
-	catch(boost::archive::archive_exception) {
-		cerr << "cryssmex_input.qnt did not load correctly. Aborting.\n";
-		exit(-1);
-	}
-	try {
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+		assert (learningData.motorVectorSizeMarkov + learningData.efVectorSize == cryssmex.getInputQuantizer()->dimensionality());
+
+	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+		assert (learningData.motorVectorSizeMarkov == cryssmex.getInputQuantizer()->dimensionality());
+
+	// Set Output Quantizer
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction)
+	{
 		string outputqfile;
 		if (vm.count("quantizersPath"))
 			outputqfile =  vm["quantizersPath"].as<string>() + "/./" + "cryssmex_outputq.qnt";
 		else
 			outputqfile = "cryssmex_outputq.qnt";
-		output_quantizer = load_quantizer (outputqfile);
-		if (!output_quantizer) {
-			cerr << "cryssmex_output.qnt did not load correctly. Aborting.\n";
-			exit(-1);
-		}
-	}
-	catch(boost::archive::archive_exception) {
-		cerr << "cryssmex_output.qnt did not load correctly. Aborting.\n";
-		exit(-1);
+		cryssmex.setOutputQuantizer (outputqfile);
+		assert (learningData.pfVectorSize == cryssmex.getOutputQuantizer()->dimensionality());
+		
 	}
 
+	// Set State Quantizer
+	cryssmex.setStateQuantizer (vm["cvqFile"].as<string>());
+
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+		assert (learningData.pfVectorSize  == cryssmex.getStateQuantizer()->dimensionality());
+
+	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+		assert (learningData.efVectorSize + learningData.pfVectorSize == cryssmex.getStateQuantizer()->dimensionality());
+	cryssmex.average_model_vectors ();
+
+	// Set data sequence
 	if (vm.count("seqFile"))
 	{
 		if (!LearningData::read_dataset (vm["seqFile"].as<string>(), data, learningData.featLimits )) {
@@ -119,6 +94,13 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 			exit(-1);
 		}
 	}
+
+	// Set (de)normalization functions
+	if (vm.count("normalize"))
+	{
+		normalization = normalize<float>;
+		denormalization = denormalize<float>;
+	}	
 
 }
 
@@ -131,6 +113,14 @@ void PredictingScenario::chooseAction () {
 	{
 		int index = static_cast<int>(floor(randomG.nextUniform (0.0, Real(data.size() - 1))));
 		learningData.currentChunkSeq = data[index];
+		if (learningData.currentChunkSeq.size() > 2) {
+			currentSeq = LearningData::load_cryssmexinputsequence (learningData.currentChunkSeq, featureSelectionMethod, normalization, learningData.featLimits);
+				
+			cryssmex.parseSequence (currentSeq);
+		
+			learningData.get_pfSeq_from_cryssmexquantization (cryssmex.getPredictedSequence(), denormalize<Real>);
+		}
+		counter_sequence = 0;
 	}
 	else
 		Scenario::chooseAction ();
@@ -186,6 +176,59 @@ void PredictingScenario::initMovement()
 		Scenario::initMovement ();
 }
 
+void PredictingScenario::render () {
+	CriticalSectionWrapper csw (cs);
+	unsigned int seq_size;
+	if (data.size() == 0)
+		seq_size = learningData.currentPredictedPfSeq.size();
+	else
+		seq_size = counter_sequence;
+
+	if ( seq_size == 0 || object == NULL || seq_size > learningData.currentPredictedPfSeq.size())
+		return;
+
+	golem::BoundsRenderer boundsRenderer;
+	vector<int> idx;
+	idx.push_back(0);
+	idx.push_back (seq_size - 1);
+
+	for (int i=0; i<2; i++) {
+		Mat34 currentPose = learningData.currentPredictedPfSeq[idx[i]];
+		
+		boundsRenderer.setMat(currentPose);
+		if (idx[i] == seq_size - 1)
+			boundsRenderer.setWireColour (RGBA::RED);
+		else if (idx[i] == 0)
+			boundsRenderer.setWireColour (RGBA::BLUE);			
+		
+		boundsRenderer.renderWire (objectLocalBounds->begin(), objectLocalBounds->end());
+	}
+
+}
+
+
+void PredictingScenario::postprocess(SecTmReal elapsedTime) {
+	if (bStart) {
+		CriticalSectionWrapper csw(cs);
+		if (object == NULL) {
+			return;
+		}
+
+		if (data.size() == 0)
+		{
+			LearningData::Chunk chunk;
+			writeChunk (chunk);
+			learningData.currentChunkSeq.push_back (chunk);
+		}
+		else
+		{
+			counter_sequence++;
+		}
+		
+	}
+}
+
+
 void PredictingScenario::run (int argc, char* argv[]) {
 	//set: random seed;init arm; get initial config
 	std::cout <<"_init "<<std::endl;
@@ -199,8 +242,11 @@ void PredictingScenario::run (int argc, char* argv[]) {
 		std::cout <<"creating object "<<std::endl;
 		object = dynamic_cast<ActorObject*>(scene.createObject(desc.descActorObject));
 		object->setShape(scene,_concreteActor);
-		std::cout <<"choose action "<<std::endl;
+		if (iteration == 0) objectLocalBounds = object->getLocalBoundsSeq();
+		//create sequence for this loop run
+		learningData.currentChunkSeq.clear ();
 		//select a random action
+		std::cout <<"choose action "<<std::endl;
 		chooseAction ();
 		//compute coordinates of start position	      
 		std::cout <<"calculate starting coordinates "<<std::endl;
@@ -229,7 +275,8 @@ void PredictingScenario::run (int argc, char* argv[]) {
 		if (universe.interrupted()) throw Interrupted();
 
 	}
-	arm->moveArmToStartPose(context); 	//move the arm to its initial position 
+	//move the arm to its initial position
+	arm->moveArmToStartPose(context); 
 
 }
 
