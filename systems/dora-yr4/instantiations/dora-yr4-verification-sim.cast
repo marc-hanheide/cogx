@@ -1,0 +1,43 @@
+SETVAR feature_options=<multiline>
+    spatial			# enable the spatial core
+    binder			# enable all mediators in the cores enabled and the binding working memory
+    vision			# enable the vision core, object recognition (depending on the hardware setting)
+    peekabot		# use peekabot
+	man_ctrl		# enable manual GUIs for navigation, PTZ, planning, etc.
+    avs			# enable AVS view cone planning and relation manager
+    execution		# enable execution framework to let the planner trigger actions
+	conceptual		# enable conceptual framework
+	default			# enable default
+	coma			# enable coma
+    categorisation	# enable place categorisation
+    planning_sa		# enable planning core
+    debug			# enable more debug GUIs and WM loggers
+    dialogue		# enable dialogue
+    motivation		# enable motivation base
+    !motivation_external	# enable motivation via external goal infusion
+    motivation_explanation	# enable motivation via explanation
+    visualization	# enable visualisation (see debug)
+</multiline>
+
+### all types to be logged from WMs if debug is enabled
+VARDEFAULT logged_types=<multiline>
+  execution.slice.Action, 
+  SpatialData.ObjectSearchResult, 
+  SpatialData.ViewPoint, 
+  SpatialData.ProcessConeGroup, 
+  comadata.ComaRoom,
+  SpatialData.RelationalViewPointGenerationCommand,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask,
+  SpatialData.NodeHypothesis,
+  eu.cogx.beliefs.slice.GroundedBelief,
+  eu.cogx.beliefs.slice.HypotheticalBelief,
+  SpatialProperties.PlaceProperty
+</multiline>
+
+### the default goals passed on to the planner GUI
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+
+SETVAR hardware=simulation
+
+INCLUDE dora-yr4.cast
