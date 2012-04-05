@@ -9,14 +9,15 @@ SETVAR feature_options=<multiline>
     categorisation	
     categorisation-visual
     categorisation-size
-    categorisation-sickscans
+    !categorisation-sickscans # does not work at the moment
     !binder			
     vision			
-    !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
+    man_ctrl		 # manual GUIs for navigation, PTZ, planning, etc.
     !avs			
     !execution		
     !planning_sa	# enable planning core
-    !debug		# enable more debug GUIs and WM loggers
+    !simple_placeholder_exploration
+    debug        # enable more debug GUIs and WM loggers
     !dialogue		
     !motivation		
     !visualization	
@@ -43,6 +44,25 @@ SETVAR default_knowledge="instantiations/defaultprobs/cvap-semmap.xml"
 SETVAR conceptual_defaults="instantiations/defaultprobs/cvap-semmap.txt"
 SETVAR categorisation_config=subarchitectures/categorical.sa/config/cvap-semmap-size-shape-appearance.cfg
 SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
+
+
+# Display door hypotheses
+# FIXME: seems to only display for 1 frame
+# --display-doors
+SETVAR display_doors=--display-doors
+
+# Show heightmap in PB
+# --show3Dobstacles
+SETVAR spatial_show_3d_obstacles=
+
+# Create doors only close to door hypotheses
+# --filter-doors
+SETVAR filter_doors=--filter-doors
+
+# no placeholder generation
+# --no-placeholders
+SETVAR no_placeholders=--no-placeholders
+
 
 
 INCLUDE dora-yr4.cast

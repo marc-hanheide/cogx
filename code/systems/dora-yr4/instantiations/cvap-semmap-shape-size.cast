@@ -1,3 +1,6 @@
+SETVAR hardware=real
+#real or simulation
+
 SETVAR feature_options=<multiline>
     spatial		# enable the spatial core
     peekabot		# use peekabot
@@ -14,7 +17,7 @@ SETVAR feature_options=<multiline>
     !debug		# enable more debug GUIs and WM loggers
     !dialogue		
     !motivation		
-    !visualization	
+    visualization	
 </multiline>
 
 SETVAR hardware_options=<multiline>
@@ -30,8 +33,7 @@ SETVAR logged_types=<multiline>
   SpatialData.ObjectSearchResult, 
   comadata.ComaRoom,
   SpatialData.NodeHypothesis,
-  SpatialData.MapLoadStatus,
-  SpatialProperties.PlaceProperty
+  SpatialData.MapLoadStatus
 </multiline>
 
 SETVAR default_knowledge="instantiations/defaultprobs/cvap-semmap.xml"
@@ -39,6 +41,11 @@ SETVAR conceptual_defaults="instantiations/defaultprobs/cvap-semmap.txt"
 SETVAR categorisation_config=subarchitectures/categorical.sa/config/cvap-semmap-size-shape.cfg
 SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
 
+SETVAR no_placeholders=--no-placeholders
+
+# Testing for minnie
+#SETVAR spatial_cureconfig=instantiations/cureconfig/cogxp3-minnie.ccf
+#SETVAR vision_calib_root=instantiations/calibration/minnie-at-kth
 
 INCLUDE dora-yr4.cast
 
