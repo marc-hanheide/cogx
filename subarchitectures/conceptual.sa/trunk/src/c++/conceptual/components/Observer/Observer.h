@@ -98,6 +98,9 @@ private:
 	/** Change event. */
 	void associatedSpacePlaceholderPropertyChanged(const cast::cdl::WorkingMemoryChange &wmChange);
 
+	/** Change event. */
+	void mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &wmChange);
+
 
 private:
 
@@ -223,6 +226,12 @@ private:
 	double _associatedSpaceThreshold;
 	double _betaThreshold;
 	bool _includePlaceholderInfo;
+
+        /** If true, we're in the map loading mode. */
+        bool _mapLoadingMode;
+
+        /** If true, world state can be updated. */
+        bool _worldStateUpdatesUnlocked;
 
 }; // class Observer
 } // namespace
