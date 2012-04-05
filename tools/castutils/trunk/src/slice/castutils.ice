@@ -4,7 +4,14 @@
 #include <cast/slice/CDL.ice>
 
 module castutils {
-    module slice {
+
+  module slice {
+
+    // General string to object sequence dictionary
+    sequence<Object> ObjectSeq;
+    dictionary<string, ObjectSeq > ObjectSeqDict;
+
+
 
 		dictionary<cast::cdl::WorkingMemoryAddress,cast::cdl::WorkingMemoryAddress> WMAddressMap;
 		
