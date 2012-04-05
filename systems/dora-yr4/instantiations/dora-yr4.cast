@@ -225,6 +225,9 @@ VARDEFAULT visual_exploration=--visual-exploration
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
 VARDEFAULT exclude_exploration=
 
+# of --filter-doors is supplied, create doors only close to door hypotheses
+VARDEFAULT filter_doors=
+
 ### AVS options
 # distance in metres at which the objects should be detectable
 VARDEFAULT avs_cone_depth=4
@@ -303,7 +306,7 @@ IFOPTALL(%(feature_options), spatial)
     CPP GD slam.process         SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
-    CPP GD navgraph.process     NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width)
+    CPP GD navgraph.process     NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width) %(filter_doors)
 
 ### Creates SpatialData::Place from FNode. Creates NodeHypothesis.
 # Maintains connection between Place on the one hand and either a FNode or a
