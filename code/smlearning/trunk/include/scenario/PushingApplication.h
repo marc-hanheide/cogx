@@ -91,8 +91,10 @@ void PushingApplication<S,D>::define_program_options_desc()
 			prgOptDesc.add_options ()
 				("featuresel,f", po::value<string>()->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label,\nobpose_direction, obpose_slide_flip_tilt\nefobpose, efobpose_label,\nefobpose_direction, efobpose_slide_flip_tilt)")
 				("ssmFile,s", po::value<string>(), "name of SSM file")
-				("seqFile,d", po::value<string>(), "name of file containing data sequences (do not type .seq extension)")
-				("quantizersPath,p", po::value<string>(), "path for looking for quantizer_inputq.qnt and quantizer_outputq.qnt files");
+				("cvqFile,c", po::value<string>(), "name of CVQ quantizer file")
+				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension)")
+				("normalize,n", "normalize sequences")
+				("quantizersPath,p", po::value<string>(), "path for looking for quantizer_inputq.qnt quantizer_outputq.qnt and cvq quantizer files");
 			
 		}
 		
@@ -127,6 +129,11 @@ int PushingApplication<S,D>::read_program_options(int argc, char *argv[]) {
 		if (S::getName() == "PredictingScenario" ) {
 			if (!vm.count("ssmFile")) {
 				cerr << "You should provide a .ssm file name" << endl;
+				cout << prgOptDesc << endl;
+				return 1;
+			}
+			if (!vm.count("cvqFile")) {
+				cerr << "You should provide a CVQ .qnt file name" << endl;
 				cout << prgOptDesc << endl;
 				return 1;
 			}
