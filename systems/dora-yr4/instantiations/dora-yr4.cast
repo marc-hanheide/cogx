@@ -45,6 +45,9 @@ VARDEFAULT feature_options=<multiline>
     !datasaving
 # if enabled, images will also be saved
     !datasaving-visual
+# get automated exploration until there are no more placeholders, that is much
+# fast than the full-fledged planner
+    !simple_placeholder_exploration
 # enable planning core
     planning_sa
 # enable more debug GUIs and WM loggers
@@ -344,6 +347,11 @@ IFOPTALL(%(feature_options), spatial)
         CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --no-vision --ptzserver ptz.server --display-objects-in-pb
         CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz
     ENDIF
+
+    IFOPTALL(%(feature_options), simple_placeholder_exploration)
+        CPP MG placeholderexplorer.navigation PlaceholderExplorer
+    ENDIF
+
 ENDIF
 
 
