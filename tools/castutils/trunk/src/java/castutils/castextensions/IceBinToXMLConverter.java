@@ -63,12 +63,31 @@ public final class IceBinToXMLConverter {
     // inspection. Pass --full to output in a way that could be read back in.
     if (!verbose) {
       xstream.aliasPackage("", "SpatialProperties");
+      xstream.aliasPackage("", "SpatialData");
+
       xstream.omitField(SpatialProperties.PlaceProperty.class, "distribution");
       xstream.omitField(SpatialProperties.PlaceProperty.class, "inferred");
+      xstream.aliasField("place", SpatialProperties.PlaceProperty.class, "placeId");
       xstream.useAttributeFor(SpatialProperties.PlaceProperty.class, "placeId");
       xstream.useAttributeFor(SpatialProperties.PlaceProperty.class, "mapValue");
-      xstream.useAttributeFor(SpatialProperties.PlaceProperty.class, "mapValueReliable");
       xstream.registerConverter(new PropertyValueConverter());
+      xstream.useAttributeFor(SpatialProperties.PlaceProperty.class, "mapValueReliable");
+
+      xstream.useAttributeFor(SpatialProperties.ObjectPlaceProperty.class, "category");
+      xstream.useAttributeFor(SpatialProperties.ObjectPlaceProperty.class, "supportObjectCategory");
+      xstream.aliasField("supportObject", SpatialProperties.ObjectPlaceProperty.class, "supportObjectId");
+      xstream.useAttributeFor(SpatialProperties.ObjectPlaceProperty.class, "supportObjectId");
+      xstream.useAttributeFor(SpatialProperties.ObjectPlaceProperty.class, "relation");
+
+
+      xstream.useAttributeFor(SpatialData.ObjectSearchResult.class, "searchedObjectCategory");
+      xstream.useAttributeFor(SpatialData.ObjectSearchResult.class, "relation");
+      xstream.useAttributeFor(SpatialData.ObjectSearchResult.class, "supportObjectCategory");
+      xstream.aliasField("supportObject", SpatialData.ObjectSearchResult.class, "supportObjectId");
+      xstream.useAttributeFor(SpatialData.ObjectSearchResult.class, "supportObjectId");
+      xstream.aliasField("room", SpatialData.ObjectSearchResult.class, "roomId");
+      xstream.useAttributeFor(SpatialData.ObjectSearchResult.class, "roomId");
+      xstream.useAttributeFor(SpatialData.ObjectSearchResult.class, "beta");
     }
 
 
