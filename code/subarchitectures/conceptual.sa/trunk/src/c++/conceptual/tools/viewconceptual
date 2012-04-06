@@ -1,5 +1,5 @@
 #!/bin/bash
-DIR="$( cd "$( dirname "$0" )" && pwd )"
-$DIR/../../../../../../output/bin/conceptualviewer $1 $2 output
+DIR=$(dirname $(readlink -f $0))
+$DIR/../../../../../../output/bin/conceptualviewer $1 $2 fg.dot
 $DIR/../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps > fg.ps
 $DIR/../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps | okular -
