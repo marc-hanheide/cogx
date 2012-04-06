@@ -1,10 +1,12 @@
 <!-- Inner build file for the coma.sa module in the CogX system -->
 <project name="coma.sa" default="compile" basedir=".">
+	<property name="projectroot.dir" value="${basedir}/../.." />
 
         <!-- =================================================================== -->
         <!-- Add JAR files to classpath                                          -->
         <!-- =================================================================== -->
         <path id="build.classpath">
+          <fileset dir="${projectroot.dir}/tools/castutils/lib" includes="*.jar" />
           <fileset dir="lib">
             <include name="**/*.jar"/>
           </fileset>
