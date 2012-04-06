@@ -7,14 +7,15 @@ SETVAR feature_options=<multiline>
     conceptual	
     default		
     coma		
-    categorisation	
+    categorisation
+    categorisation-size
     !binder			
     !vision			
-    !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
+    man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
     !avs			
     !execution		
     !planning_sa	# enable planning core
-    !debug		# enable more debug GUIs and WM loggers
+    debug		# enable more debug GUIs and WM loggers
     !dialogue		
     !motivation		
     visualization	
@@ -41,7 +42,20 @@ SETVAR conceptual_defaults="instantiations/defaultprobs/cvap-semmap.txt"
 SETVAR categorisation_config=subarchitectures/categorical.sa/config/cvap-semmap-size-shape.cfg
 SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
 
-SETVAR no_placeholders=--no-placeholders
+
+# Display door hypotheses
+# FIXME: seems to only display for 1 frame
+SETVAR display_doors=--display-doors
+
+# Don't show heightmap in PB
+SETVAR spatial_show_3d_obstacles=
+
+# Create doors only close to door hypotheses
+SETVAR filter_doors=--filter-doors
+
+# no placeholder generation
+#SETVAR no_placeholders=--no-placeholders
+
 
 # Testing for minnie
 #SETVAR spatial_cureconfig=instantiations/cureconfig/cogxp3-minnie.ccf
