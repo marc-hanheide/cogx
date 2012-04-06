@@ -48,21 +48,16 @@ SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,double
 
 # Display door hypotheses
 # FIXME: seems to only display for 1 frame
-# --display-doors
 SETVAR display_doors=--display-doors
 
-# Show heightmap in PB
-# --show3Dobstacles
+# Don't show heightmap in PB
 SETVAR spatial_show_3d_obstacles=
 
 # Create doors only close to door hypotheses
-# --filter-doors
 SETVAR filter_doors=--filter-doors
 
 # no placeholder generation
-# --no-placeholders
-SETVAR no_placeholders=--no-placeholders
-
+#SETVAR no_placeholders=--no-placeholders
 
 
 INCLUDE dora-yr4.cast
