@@ -1076,7 +1076,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventObjectPlacePropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     if (old->relation==SpatialData::INROOM)
     {
@@ -1251,6 +1251,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
   {
   case cdl::ADD:
   {
+    log("ADD");
     SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr;
     try
     {
@@ -1297,6 +1298,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 
   case cdl::OVERWRITE:
   {
+    log("OVERWRITE");
     SpatialProperties::RoomShapePlacePropertyPtr shapePlacePropertyPtr;
     try
     {
@@ -1353,14 +1355,16 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
 
   case cdl::DELETE:
   {
+    log("DELETE");
     pthread_mutex_lock(&_worldStateMutex);
 
     SpatialProperties::RoomShapePlacePropertyPtr old = _shapePlacePropertyWmAddressMap[wmChange.address];
+
     ConceptualData::EventInfo ei;
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventShapePlacePropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     _shapePlacePropertyWmAddressMap.erase(wmChange.address);
     _acceptedShapePlacePropertyWmAddressMap.erase(wmChange.address);
@@ -1496,7 +1500,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventSizePlacePropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     _sizePlacePropertyWmAddressMap.erase(wmChange.address);
     _acceptedSizePlacePropertyWmAddressMap.erase(wmChange.address);
@@ -1631,7 +1635,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventAppearancePlacePropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     _appearancePlacePropertyWmAddressMap.erase(wmChange.address);
     _acceptedAppearancePlacePropertyWmAddressMap.erase(wmChange.address);
@@ -1748,7 +1752,7 @@ void Observer::humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemory
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventHumanAssertionPlacePropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     ei.propertyInfo = old->assertion;
     _humanAssertionPlacePropertyWmAddressMap.erase(wmChange.address);
@@ -1857,7 +1861,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventGatewayPlaceholderPropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     _gatewayPlaceholderPropertyWmAddressMap.erase(wmChange.address);
     _acceptedGatewayPlaceholderPropertyWmAddressMap.erase(wmChange.address);
@@ -1970,13 +1974,13 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
     pthread_mutex_lock(&_worldStateMutex);
 
     SpatialProperties::AssociatedSpacePlaceholderPropertyPtr old = _associatedSpacePlaceholderPropertyWmAddressMap[wmChange.address];
-    log("associatedSpacePlaceholderPropertyChanged DELETE %d", old->placeId);
+    log("associatedSpacePlaceholderPropertyChanged DELETE %d", old ? old->placeId : -1);
 
     ConceptualData::EventInfo ei;
     ei.time = castTimeToSeconds(getCASTTime());
     ei.type = ConceptualData::EventAssociatedSpacePlaceholderPropertyDeleted;
     ei.roomId = -1;
-    ei.place1Id = old->placeId;
+    ei.place1Id = old ? old->placeId : -1;
     ei.place2Id = -1;
     _associatedSpacePlaceholderPropertyWmAddressMap.erase(wmChange.address);
     _acceptedAssociatedSpacePlaceholderPropertyWmAddressMap.erase(wmChange.address);
@@ -2117,6 +2121,7 @@ void Observer::mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &wmChan
   {
     // Signal that we should start updating
     _worldStateUpdatesUnlocked = true;
+    updateWorldState();
   }
 
 }
