@@ -10,6 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
+
 import DefaultData.ChainGraphInferencerServerInterfacePrx;
 import SpatialData.MapLoadStatus;
 import SpatialData.Place;
@@ -112,6 +119,14 @@ public class PlaceMonitor extends ManagedComponent {
 	
 	private boolean maintainRoomsTaskPending = false;
 
+    // When loading rooms from file, this initially contains the mapping from seed
+    // places to rooms. Those are used to ensure loaded rooms get their old id.
+    // After loading is finished, this is set to null
+    private Map<Long, Integer> m_seedPlaceToRoomLoading;
+
+    // Filename where to save to and load from seed place to room mapping.
+    private String m_saveRoomsFile;
+
 	public void configure(Map<String, String> args) {
 		log("configure() called");
 
@@ -129,6 +144,11 @@ public class PlaceMonitor extends ManagedComponent {
 				m_createDummyObjects = true;
 			}
 		}
+        if (args.containsKey("--save-rooms-file")) {
+            m_saveRoomsFile = args.get("--save-rooms-file");
+        } else {
+            m_saveRoomsFile = "rooms.xml";
+        }
 
 		m_placeholders = new HashSet<Long>();
 		m_trueplaces = new HashSet<Long>();
@@ -302,6 +322,9 @@ public class PlaceMonitor extends ManagedComponent {
 		else { 
 			log("No chaingraph inferencer component name specified. Ignoring...");
 		}
+
+        // Load rooms
+        m_seedPlaceToRoomLoading = loadRooms();
 	}
 
 	@Override
@@ -1235,6 +1258,10 @@ public class PlaceMonitor extends ManagedComponent {
 				}}});
 		debug("sorted _knownRoomsOnWM: " + _knownRoomsOnWM);
 
+        // create a mapping of seed place ids to room ids to that can be saved to
+        // file. The mapping is assumed to be injective.
+        Map<Long, Integer> _seedPlaceToRoom = new HashMap<Long, Integer>();
+
 		// for each known room:
 		for (CASTData<ComaRoom> comaRoomWME : _knownRoomsOnWM) {
 			ComaRoom _currentRoomStruct = comaRoomWME.getData();
@@ -1383,6 +1410,10 @@ public class PlaceMonitor extends ManagedComponent {
 				} else {
 					logRoom(_currentRoomStruct, "did not update room WME or proxy. Room hasn't changed. ", comaRoomWME.getID());
 				}
+
+                // Record the room id to seed place id mapping
+                _seedPlaceToRoom.put(_seedPlaceId, _currentRoomStruct.roomId);
+
 			}
 			debug("remaining places: " + _remainingPlaceIds);
 		} // end for each room loop
@@ -1390,20 +1421,75 @@ public class PlaceMonitor extends ManagedComponent {
 
 		// for each remaining place
 		while (!_remainingPlaceIds.isEmpty()) {
-			//			for (Long _remainingPlace : _remainingPlaceIds
-			Long _remainingPlace = _remainingPlaceIds.poll();
+
+            Integer _loadedRoomId = null;
+            Long _remainingPlace = null;
+
+            // Are we still loading rooms. We assume that if we load at all,
+            // loading is only done the first time this function is called and
+            // we load all rooms in one go and no places remain.
+            if (currentlyLoadingRooms()) {
+                // Yes. loading
+                for (Long _placeId: _remainingPlaceIds) {
+                    _loadedRoomId = m_seedPlaceToRoomLoading.get(_placeId);
+                    if (null != _loadedRoomId) {
+                        // found a seed place. Creat this room next
+                        m_seedPlaceToRoomLoading.remove(_placeId);
+                        _remainingPlace = _placeId;
+                        break;
+                    }
+                }
+
+                if (null == _loadedRoomId) {
+                    // could be doorway. If this is not doorway, it is an error,
+                    // but that is checked later.
+                    _remainingPlace = _remainingPlaceIds.poll();
+                }
+            } else {
+                // No loading
+                _remainingPlace = _remainingPlaceIds.poll();
+            }
+
 			// check if current place can be a seed, i.e., it is not a doorway
 			String _currentplaceInstance = "dora:place"+_remainingPlace;
 			if (m_comareasoner.isInstanceOf(_currentplaceInstance, "dora:Doorway")) {
 				// current place is a doorway
 				debug(_currentplaceInstance + " is a doorway. discarding this place...");
 				_remainingPlaceIds.remove(_remainingPlace);
+
+                if(null != _loadedRoomId) { 
+                    // if that was a loaded seed place, this is very strange
+                    getLogger().error("Loaded seed place " + _remainingPlace + " is a doorway. Should not happen.");
+                }
 			} else {
 				// current place can be a seed for a new room
 				log(_currentplaceInstance + " serving as seed for a new room");
+
+                if (currentlyLoadingRooms() && null == _loadedRoomId) {
+                    // this is strange
+                    getLogger().error(
+                        "Remaining places " + _remainingPlaceIds + " during loading, but no seed found. " +
+                        "A new room will be created. The roomId might well be in conflict with a to be loaded room." +
+                        "(Remaing seed to room mapping " + m_seedPlaceToRoomLoading + ").");
+
+                    // continue somehow anyway
+                }
+
+                int roomId;
+
+                if (_loadedRoomId == null) {
+                    // no room loading
+                    roomId = m_roomIndexCounter;
+                    ++m_roomIndexCounter;
+                } else {
+                    // room loading
+                    roomId = _loadedRoomId;
+                    // adjust the next room index. Loading of places could be in any order.
+                    m_roomIndexCounter = Math.max(m_roomIndexCounter, _loadedRoomId+1);
+                }
+
 				// create new room
-				// ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new String[0], new ProbabilityDistribution()); // uncomment this
-				ComaRoom _newRoom = new ComaRoom(m_roomIndexCounter++, _currentplaceInstance, new long[0], new ProbabilityDistribution()); // comment this out
+				ComaRoom _newRoom = new ComaRoom(roomId, _currentplaceInstance, new long[0], new ProbabilityDistribution());
 
 				synchronized (m_comareasoner) {
 					// create new room on the reasoner
@@ -1464,6 +1550,10 @@ public class PlaceMonitor extends ManagedComponent {
 					logException(e);
 				}
 				logRoom(_newRoom, "added new room WME. ", _newRoomWMEID);
+
+                // Record the room id to seed place id mapping
+                _seedPlaceToRoom.put(_remainingPlace, _newRoom.roomId);
+
 				// 2010-09-13-YR2 maintainRoomProxy(_newRoom, _newRoomWMEID);
 			} // end else create a new room for non-doorway seeds
 			debug("remaining places: " + _remainingPlaceIds);				
@@ -1490,6 +1580,20 @@ public class PlaceMonitor extends ManagedComponent {
 		logInstances("owl:Thing");
 		
 		if(this.mapLoadMode == true && this.mapLoadRoomsWritten==false) {
+
+            if (currentlyLoadingRooms()) {
+                if (!m_seedPlaceToRoomLoading.isEmpty()) {
+                    // we are loading rooms, but not all seed places seem to have been created...
+                    getLogger().error(
+                        "After loading the rooms there are room-to-seed-place mappings left. " +
+                        "Something fishy is going on during map-loading. " + m_seedPlaceToRoomLoading);
+                }
+                m_seedPlaceToRoomLoading = null; // indicate that we are done with loading rooms
+            } 
+            else {
+                getLogger().error("mapLoadMode was true, but not loading rooms. Strange.");
+            }
+
 			log("Done with room maintenance while mapLoadMode == true && mapLoadRoomsWritten == false; going to report MapLoadStatus.roomsWritten=true");
 		  	try {
 				// We can mark the Coma rooms as
@@ -1521,6 +1625,9 @@ public class PlaceMonitor extends ManagedComponent {
 				e.printStackTrace();
 			}
 		}
+
+        saveRooms(_seedPlaceToRoom);
+
 	}
 	
 	
@@ -1627,4 +1734,103 @@ public class PlaceMonitor extends ManagedComponent {
 		}
 	}
 
+    private void saveRooms(Map<Long, Integer> _seedPlaceToRoom) {
+
+        debug("Saving rooms to file " + m_saveRoomsFile);
+
+        String error = seedPlaceToRoomMappingValid(_seedPlaceToRoom);
+        if (null != error) {
+            getLogger().error("Invalid seed place to room mapping during saving: " + error);
+        }
+
+        try {
+
+            FileOutputStream fs = null;
+            try {
+                fs = new FileOutputStream(m_saveRoomsFile);
+                XStream xs = new XStream();
+                xs.toXML(_seedPlaceToRoom, fs); 
+            }
+            finally {
+                if (fs != null)
+                    fs.close();
+            }
+
+        } 
+        catch(IOException e) {
+            getLogger().error("Error while saving rooms: " + e);
+        } 
+        catch (XStreamException e) {
+            getLogger().error("Error while writing the content of the room file: " + e);
+        } 
+    }
+
+    private Map<Long, Integer> loadRooms() {
+        // should return null if no loading is going on (i.e. file is not found)
+
+        debug("Reading rooms from file " + m_saveRoomsFile);
+        
+        try {
+            Map<Long, Integer> _result;
+
+            FileInputStream fs = null;
+            try {
+                fs = new FileInputStream(m_saveRoomsFile);
+                XStream xs = new XStream();
+                _result = (Map<Long, Integer>) xs.fromXML(fs); 
+            }
+            finally {
+                if (fs != null)
+                    fs.close();
+            }
+
+            String error = seedPlaceToRoomMappingValid(_result);
+            if (null != error) {
+                getLogger().error("Invalid seed place to room mapping during saving: " + error);
+            }
+
+            return _result;
+        } 
+        catch(FileNotFoundException e) {
+            // thats ok. Just no loading going on
+            return null;
+        } 
+        catch(IOException e) {
+            getLogger().error("Error while loading rooms: " + e);
+            return null;
+        } 
+        catch (XStreamException e) {
+            getLogger().error("Error while reading the content of the room file: " + e);
+            return null;
+        } 
+        catch (ClassCastException e) {
+            getLogger().error("Content of room file is of wrong type: " + e);
+            return null;
+        }
+
+    }
+
+    // Returns null if everyhting is ok. Otherwise a String containing a
+    // descriptions of what is wrong
+    private String seedPlaceToRoomMappingValid(Map<Long, Integer> _seedPlaceToRoom) {
+        // check for duplicates
+        Set rooms = new HashSet<Integer>(_seedPlaceToRoom.values());
+        if (rooms.size() != _seedPlaceToRoom.size()) {
+            return "Same room id occures multiple times.";
+        }
+        // check for  negative
+        for (Map.Entry<Long,Integer> e: _seedPlaceToRoom.entrySet()) {
+            if (e.getKey() < 0) {
+                return "Negative place id " + e.getKey() + " detected.";
+            }
+            if (e.getValue() < 0) {
+                return "Negative room id " + e.getValue() + " detected.";
+            }
+        }
+        return null;
+    }
+
+    private boolean currentlyLoadingRooms() {
+        return null != m_seedPlaceToRoomLoading;
+    }
 }
