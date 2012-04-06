@@ -798,7 +798,7 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactorCounting(int roo
 	string room1VarName = "room"+lexical_cast<string>(room1Id)+"_category";
 	string objectVarName = VariableNameGenerator::getDefaultObjectPropertyVarName(
 			objectCategory, relation, supportObjectCategory);
-	string observedObjectVarName = VariableNameGenerator::getExploredObjectVarName(
+	string objectObservationVarName = VariableNameGenerator::getObjectObservationVarName(
 			room1Id, objectCategory, relation, supportObjectCategory, supportObjectId);
 
 	debug("Creating DAI observed object property factor for variable '%s' and object '%s'", room1VarName.c_str(),
@@ -807,7 +807,7 @@ void ChainGraphInferencer::createDaiObservedObjectPropertyFactorCounting(int roo
 	vector<string> values(2);
 	values[0] = ConceptualData::NOTEXISTS;
 	values[1] = ConceptualData::EXISTS;
-	createAndSetObservedVariable(observedObjectVarName, values, (objectCount>0)?1:0);
+	createAndSetObservedVariable(objectObservationVarName, values, (objectCount>0)?1:0);
 	createDaiVariable(room1VarName, _roomCategories);
 	DaiVariable &dv1 = _variableNameToDai[room1VarName];
 
