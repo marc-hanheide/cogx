@@ -1,4 +1,5 @@
 #!/bin/bash
-../../../../../../output/bin/conceptualviewer $1 $2 output
-../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps > fg.ps
-../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps | okular -
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+$DIR/../../../../../../output/bin/conceptualviewer $1 $2 output
+$DIR/../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps > fg.ps
+$DIR/../../../../../../output/bin/conceptualviewer $1 $2 - | neato -T ps | okular -
