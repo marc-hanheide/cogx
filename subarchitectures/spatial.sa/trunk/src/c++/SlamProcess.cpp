@@ -555,7 +555,7 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
   Cure::Pose3D cp = m_PP->getPose();
   m_Mutex.unlock();
 
-  NavData::LineMap *lineMap = new NavData::LineMap();
+  NavData::LineMapPtr lineMap = new NavData::LineMap();
   lineMap->time.s = cp.getTime().Seconds;
   lineMap->time.us = cp.getTime().Microsec;
   if (walls.size() > 0) {
