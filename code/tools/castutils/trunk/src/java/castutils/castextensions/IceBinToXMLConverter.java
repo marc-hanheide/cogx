@@ -67,6 +67,7 @@ public final class IceBinToXMLConverter {
 
       xstream.omitField(SpatialProperties.PlaceProperty.class, "distribution");
       xstream.omitField(SpatialProperties.PlaceProperty.class, "inferred");
+      xstream.omitField(SpatialProperties.PlaceProperty.class, "mapValueReliable");
       xstream.aliasField("place", SpatialProperties.PlaceProperty.class, "placeId");
       xstream.useAttributeFor(SpatialProperties.PlaceProperty.class, "placeId");
       xstream.useAttributeFor(SpatialProperties.PlaceProperty.class, "mapValue");
