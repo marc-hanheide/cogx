@@ -262,6 +262,15 @@ ENDIF
 
 
 
+### Controling PTU
+IFOPTALL(%(hardware_options), ptz)
+    VARDEFAULT spatial_ctrl_ptu=--ctrl-ptu
+ELSE
+    VARDEFAULT spatial_ctrl_ptu=
+ENDIF
+
+
+
 IFOPTALL(%(feature_options), spatial)
 
     ### Basic components
@@ -302,7 +311,7 @@ IFOPTALL(%(feature_options), spatial)
 ### Reads NavData::InternalNavCmd to control the robot
 #EXPAND spatial_show_3d_obstacles=%(spatial_show_3d_obstacles)
 # Maintains three-state grid map for exploration and obstacle avoidance
-    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) --ctrl-ptu %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6
+    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6
 
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
