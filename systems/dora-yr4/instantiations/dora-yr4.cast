@@ -244,7 +244,10 @@ VARDEFAULT visual_exploration=--visual-exploration
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
 VARDEFAULT exclude_exploration=
 
-# of --filter-doors is supplied, create doors only close to door hypotheses
+# If --follow-robot is supplied, PB will follow the robot with the camera
+VARDEFAULT follow_robot=--follow-robot
+
+# If --filter-doors is supplied, create doors only close to door hypotheses
 VARDEFAULT filter_doors=
 
 ### AVS options
@@ -298,7 +301,7 @@ IFOPTALL(%(feature_options), spatial)
     ### Whether to display spatial information in Peekabot
     IFOPTALL(%(feature_options), peekabot)
 #EXPAND --no_load_robot_file=%(no_load_robot_file)
-        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" --follow-robot %(no_load_robot_file)
+        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" %(follow_robot) %(no_load_robot_file)
         SETVAR usePB=--usepeekabot
     ELSE
         SETVAR usePB=
