@@ -182,7 +182,7 @@ RobotbaseServerPlayer::runComponent()
   //FIXME a really big hack to see if we're running in simulation or not      
   bool useWallclockTimestamps = true;
   const cast::interfaces::TimeServerPrx timeServer(getTimeServer());
-  if(isRunning()) {
+  if(isRunning() && !m_RandData) {
     m_PlayerClient->Read();
     
     //timestamp on the data as an int
@@ -274,9 +274,8 @@ RobotbaseServerPlayer::runComponent()
       lockComponent();
       m_Odom.odompose.resize(1);
       m_Odom.odompose[0].x += 0.01;
+      m_Odom.time = getCASTTime();
       unlockComponent();
-      //nah: removed this... why the extra assignment without offset?
-      //      m_Odom.time = getCASTTime();
       sleepComponent(100);
     }
     saveOdomToFile(m_Odom);
