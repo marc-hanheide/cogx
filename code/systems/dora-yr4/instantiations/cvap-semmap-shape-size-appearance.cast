@@ -9,6 +9,7 @@ SETVAR feature_options=<multiline>
     categorisation	
     categorisation-visual
     categorisation-size
+    place-property-persistence
     !categorisation-sickscans # does not work at the moment
     !binder			
     vision			

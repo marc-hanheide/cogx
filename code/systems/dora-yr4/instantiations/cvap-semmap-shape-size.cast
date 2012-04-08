@@ -11,6 +11,7 @@ SETVAR feature_options=<multiline>
     categorisation-size
     !binder			
     !vision			
+    place-property-persistence
     man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
     !avs			
     !execution		
