@@ -39,7 +39,7 @@ SETVAR logged_types=<multiline>
 
 SETVAR default_knowledge="instantiations/defaultprobs/cvap-semmap.xml"
 SETVAR conceptual_defaults="instantiations/defaultprobs/cvap-semmap.txt"
-SETVAR categorisation_config=subarchitectures/categorical.sa/config/cvap-semmap-size-shape.cfg
+SETVAR categorisation_config=subarchitectures/categorical.sa/config/cvap-semmap-hokuyo-size-shape.cfg
 SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
 
 
