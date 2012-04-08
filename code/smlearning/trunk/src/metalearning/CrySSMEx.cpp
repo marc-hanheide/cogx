@@ -113,26 +113,42 @@ void CrySSMEx::setStateQuantizer (std::string cvqfile)
 
 }
 
-void CrySSMEx::parseSequence (DataSequence& sequence)
+int CrySSMEx::parseInput (std::vector<double>& chunk)
 {
+	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
+	unsigned int input = static_cast<GNG_Quantizer*>(input_quantizer)->quantize (chunk);
+	std::cout << "parsing " << input << std::endl;
+	ssm_parser->parse (input);
+	std::cout << "parser output: " << ssm_parser->output()
+		  << ", (Q: " << ssm_parser->state() << "), ";
+	int state;
+	const Distribution& _state = ssm_parser->state().distr();
+	if (_state.size() == 1)
+		state = _state.distr().begin()->first;
+	else if (_state.size() == 0)
+		state = -1;
+	else
+		state = _state.max_p ();
+	std::cout  << "MV: " << qnt_mv_map[state] << std::endl;
+	std::cout << "Entropy: " << ssm_parser->state().entropy() << std::endl;
+	return state;
+}
+
+void CrySSMEx::parseSequence (DataSequence& sequence, DataSequence& predicted_sequence)
+{
+	predicted_sequence.clear ();
 	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
 	for (unsigned int i=0; i<sequence.size() && !ssm_parser->state().empty(); i++)
 	{
-		unsigned int input = static_cast<GNG_Quantizer*>(input_quantizer)->quantize (sequence[i]);
-		std::cout << "parsing " << input << std::endl;
-		ssm_parser->parse (input);
-		std::cout << "parser output: " << ssm_parser->output()
-			  << ", (Q: " << ssm_parser->state() << "), ";
-		unsigned int state;
-		const Distribution& _state = ssm_parser->state().distr();
-		if (_state.size() == 1)
-			state = _state.distr().begin()->first;
-		else
-			state = _state.max_p ();
-		std::cout  << "MV: " << qnt_mv_map[state] << std::endl;
-		predicted_sequence.push_back (qnt_mv_map[state][0].vector);
-		
+		int state = parseInput (sequence[i]);
+		if (state >= 0)
+			predicted_sequence.push_back (qnt_mv_map[state][0].vector);
 	}
+}
+
+void CrySSMEx::setUniformDistribution ()
+{
+	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
 }
 
 void CrySSMEx::average_model_vectors ()

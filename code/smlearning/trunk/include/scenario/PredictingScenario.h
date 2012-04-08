@@ -65,10 +65,14 @@ protected:
 	/** denormalization function */
 	boost::function<float (const float&, const float&, const float&)> denormalization;
 	/** counter to get last index of sequence to be painted */
-	unsigned int counter_sequence;
+	int counter_sequence;
+	/** predicted sequence */
+	vector<FeatureVector> predictedSeq;
 
 	/** default object bounds */
 	golem::Bounds::SeqPtr objectLocalBounds;
+
+	LearningData::Chunk::Seq seqDataset;
 
 
 };
