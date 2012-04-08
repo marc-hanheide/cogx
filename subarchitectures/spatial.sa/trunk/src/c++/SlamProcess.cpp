@@ -140,7 +140,7 @@ void SlamProcess::configure(const map<string,string>& _config)
       m_PP = 0;
     } else if ( loc->loadMap(m_MapFilename) != 0) {
       printf("SlamThread::configure Failed to load map \"%s\"\n",
-	  configfile.c_str());
+	  m_MapFilename.c_str());
       m_PP = 0;
     }
 
@@ -575,14 +575,14 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
     overwriteWorkingMemory<NavData::LineMap>(m_LineMapIdString,
                                              lineMap); // synch!
     char buf[128];
-    sprintf(buf, "Overwriting wm linemap object \"%s\" with %d lines ", 
+    sprintf(buf, "Overwriting wm linemap object \"%s\" with %lu lines ", 
             m_LineMapIdString.c_str(), walls.size());
     debug(buf);
   } else {
     m_LineMapIdString = newDataID();
     addToWorkingMemory<NavData::LineMap>(m_LineMapIdString, lineMap);
     char buf[128];
-    sprintf(buf, "Adding wm linemap object \"%s\" with %d lines ", 
+    sprintf(buf, "Adding wm linemap object \"%s\" with %lu lines ", 
             m_LineMapIdString.c_str(), walls.size());
     debug(buf);
   }
