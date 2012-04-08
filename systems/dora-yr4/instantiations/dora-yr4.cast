@@ -41,6 +41,8 @@ VARDEFAULT feature_options=<multiline>
     !categorisation-visual
 # use size categorisation
     !categorisation-size
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
 # if enabled, categorical will save a data stream to file
     !datasaving
 # if enabled, images will also be saved
@@ -320,9 +322,6 @@ IFOPTALL(%(feature_options), spatial)
 # ICE interfaces
     CPP GD map.manager          LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
 
-    ### Saves and Loads place properties as part of the map (size, shape, appearance, objects)
-    CPP MG place.property.saver PlacePropertySaver --save true --save-file-name %(place_properties_save_file) --save-continuously true --save-interval 10000 --load true --load-file-name %(place_properties_save_file) --wait-before-loading 0 --wait-between-loading 0 --wait-for-map-load-status true
-
     IFOPTALL(%(feature_options), binder)
         ### run the spatial mediators so that the spatial stuff shows up in the binder/planner
         INCLUDE includes/spatial.sa/spatial-mediator.cast
@@ -538,6 +537,12 @@ IFOPTALL(%(feature_options), categorisation)
     IFOPTALL(%(feature_options), categorisation-size)
         CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config %(categorisation_config) --placemanager place.manager
     ENDIF
+
+    IFOPTALL(%(feature_options), place-property-persistence)
+        ### Saves and Loads place properties as part of the map (size, shape, appearance, objects)
+        CPP MG place.property.saver PlacePropertySaver --save true --save-file-name %(place_properties_save_file) --save-continuously true --save-interval 10000 --load true --load-file-name %(place_properties_save_file) --wait-before-loading 0 --wait-between-loading 0 --wait-for-map-load-status true
+    ENDIF
+
 ENDIF
 
 
