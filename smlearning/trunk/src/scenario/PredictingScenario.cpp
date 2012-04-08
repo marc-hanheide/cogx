@@ -37,6 +37,8 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 		featureSelectionMethod = _obpose_direction;
 	else if (fSMethod == "efobpose_direction")
 		featureSelectionMethod = _efobpose_direction;
+	else if (fSMethod == "mcobpose_obpose_direction")
+		featureSelectionMethod = _mcobpose_obpose_direction;
 	else if (fSMethod == "obpose_rough_direction")
 		featureSelectionMethod = _obpose_rough_direction;
 	else if (fSMethod == "efobpose_rough_direction")
@@ -62,9 +64,11 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 
 	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
 		assert (learningData.motorVectorSizeMarkov == cryssmex.getInputQuantizer()->dimensionality());
+	else if (featureSelectionMethod == _mcobpose_obpose_direction)
+		assert (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize == cryssmex.getInputQuantizer()->dimensionality());
 
 	// Set Output Quantizer
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction)
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 	{
 		string outputqfile;
 		if (vm.count("quantizersPath"))
@@ -79,7 +83,7 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 	// Set State Quantizer
 	cryssmex.setStateQuantizer (vm["cvqFile"].as<string>());
 
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
 		assert (learningData.pfVectorSize  == cryssmex.getStateQuantizer()->dimensionality());
 
 	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
@@ -112,18 +116,31 @@ void PredictingScenario::chooseAction () {
 	if (data.size() > 0)
 	{
 		int index = static_cast<int>(floor(randomG.nextUniform (0.0, Real(data.size() - 1))));
-		learningData.currentChunkSeq = data[index];
-		if (learningData.currentChunkSeq.size() > 2) {
+		// learningData.currentChunkSeq = data[index];
+		seqDataset = data[index];
+		/*if (learningData.currentChunkSeq.size() > 2) {
 			currentSeq = LearningData::load_cryssmexinputsequence (learningData.currentChunkSeq, featureSelectionMethod, normalization, learningData.featLimits);
 				
-			cryssmex.parseSequence (currentSeq);
-		
-			learningData.get_pfSeq_from_cryssmexquantization (cryssmex.getPredictedSequence(), denormalize<Real>);
+			cryssmex.parseSequence (currentSeq, predictedSeq);
+
+			if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+				learningData.get_pfSeq_from_cryssmexquantization (predictedSeq, 0, denormalization);
+
+			else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+				learningData.get_pfSeq_from_cryssmexquantization (predictedSeq, learningData.efVectorSize, denormalization);
+
+			
 		}
-		counter_sequence = 0;
+		counter_sequence = -2;*/
 	}
 	else
+	{
+		// learningData.currentPredictedPfSeq.clear();
+		// cryssmex.setUniformDistribution ();
 		Scenario::chooseAction ();
+	}
+	learningData.currentPredictedPfSeq.clear();
+	// cryssmex.setUniformDistribution ();
 }
 
 ///////// Protected //////////
@@ -133,7 +150,8 @@ void PredictingScenario::calculateStartCoordinates()
 {
 	if (data.size() > 0)
 	{
-		LearningData::Chunk chunk = learningData.currentChunkSeq[0];
+		// LearningData::Chunk chunk = learningData.currentChunkSeq[0];
+		LearningData::Chunk chunk = seqDataset[0];
 		target.pos = chunk.action.effectorPose;
 		target.vel.setId(); // it doesn't move
 		
@@ -152,7 +170,8 @@ void PredictingScenario::initMovement()
 {
 	if (data.size() > 0)
 	{
-		LearningData::Chunk chunk = learningData.currentChunkSeq[0];
+		// LearningData::Chunk chunk = learningData.currentChunkSeq[0];
+		LearningData::Chunk chunk = seqDataset[0];
 		duration = chunk.action.pushDuration;
 		cout << "push duration: " << duration << endl;
 		end = target.pos;
@@ -179,27 +198,27 @@ void PredictingScenario::initMovement()
 void PredictingScenario::render () {
 	CriticalSectionWrapper csw (cs);
 	unsigned int seq_size;
-	if (data.size() == 0)
-		seq_size = learningData.currentPredictedPfSeq.size();
-	else
-		seq_size = counter_sequence;
+	// if (data.size() == 0)
+		seq_size = learningData.currentPredictedPfSeq.size() - 1;
+	// else
+	// 	seq_size = counter_sequence;
 
-	if ( seq_size == 0 || object == NULL || seq_size > learningData.currentPredictedPfSeq.size())
+	if ( seq_size < 0 || object == NULL || seq_size >= learningData.currentPredictedPfSeq.size())
 		return;
 
 	golem::BoundsRenderer boundsRenderer;
 	vector<int> idx;
 	idx.push_back(0);
-	idx.push_back (seq_size - 1);
+	idx.push_back (seq_size);
 
-	for (int i=0; i<2; i++) {
+	for (int i=1; i<2; i++) {
 		Mat34 currentPose = learningData.currentPredictedPfSeq[idx[i]];
 		
 		boundsRenderer.setMat(currentPose);
-		if (idx[i] == seq_size - 1)
+		if (idx[i] == seq_size)
 			boundsRenderer.setWireColour (RGBA::RED);
-		else if (idx[i] == 0)
-			boundsRenderer.setWireColour (RGBA::BLUE);			
+		// else if (idx[i] == 0)
+		// 	boundsRenderer.setWireColour (RGBA::BLUE);			
 		
 		boundsRenderer.renderWire (objectLocalBounds->begin(), objectLocalBounds->end());
 	}
@@ -214,16 +233,32 @@ void PredictingScenario::postprocess(SecTmReal elapsedTime) {
 			return;
 		}
 
-		if (data.size() == 0)
-		{
+		// if (data.size() == 0)
+		// {
 			LearningData::Chunk chunk;
 			writeChunk (chunk);
 			learningData.currentChunkSeq.push_back (chunk);
-		}
-		else
-		{
-			counter_sequence++;
-		}
+
+			FeatureVector inputVector;
+			LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
+
+			int state = cryssmex.parseInput (inputVector);
+			if (state >= 0)
+			{
+				FeatureVector predictedVector = cryssmex.getQntMvMapVector(state);
+
+				if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+					learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
+
+				else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+					learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
+			}
+
+		// }
+		// else
+		// {
+		// 	counter_sequence++;
+		// }
 		
 	}
 }

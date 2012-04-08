@@ -19,7 +19,7 @@ int main (int argc, char* argv[]) {
 		("help,h", "produce help message")
 		("seqfile,s", po::value (&seqFile), "Sequence file (without extension).\n(Required parameter)")
 		("targetdir,t", po::value (&target_dir)->default_value ("./"), "Target directory")
-		("featuresel,f", po::value (&fSMethod)->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label,\nobpose_direction, obpose_slide_flip_tilt\nefobpose, efobpose_label,\nefobpose_direction, efobpose_slide_flip_tilt)")
+		("featuresel,f", po::value (&fSMethod)->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label|\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
 		("normalize,n", "Normalize data");
 
 	// Declare an options description instance which will include
@@ -49,6 +49,8 @@ int main (int argc, char* argv[]) {
 		featureSelectionMethod = _obpose_direction;
 	else if (fSMethod == "efobpose_direction")
 		featureSelectionMethod = _efobpose_direction;
+	else if (fSMethod == "mcobpose_obpose_direction")
+		featureSelectionMethod = _mcobpose_obpose_direction;
 	else if (fSMethod == "obpose_rough_direction")
 		featureSelectionMethod = _obpose_rough_direction;
 	else if (fSMethod == "efobpose_rough_direction")

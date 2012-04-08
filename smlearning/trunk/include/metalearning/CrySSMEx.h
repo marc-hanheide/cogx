@@ -50,12 +50,16 @@ public:
 	Quantizer* getOutputQuantizer () { return output_quantizer; }
 	/** get State Quantizer from file */
 	Quantizer* getStateQuantizer () { return state_quantizer; }
-	/** get predicted sequence */
-	DataSequence& getPredictedSequence () { return predicted_sequence; }
-	/** parse a data sequence for prediction */
-	void parseSequence (DataSequence& sequence);
+	/** parse an input data sequence for prediction */
+	void parseSequence (DataSequence& sequence, DataSequence& predicted_sequence);
+	/** parse an input chunk for prediction */
+	int parseInput (std::vector<double>& chunk);
 	/** average model vectors for cases with more than 1 model vector in \p qnt_mv_map */
 	void average_model_vectors ();
+	/** get quantization/model vectors map */
+	std::vector<double> getQntMvMapVector (unsigned int index) { return qnt_mv_map[index][0].vector; }
+	/** set uniform distribution to initialize parsing */
+	void setUniformDistribution ();
 	
 private:	
 	/** Substochastic sequential machine used for prediction */
@@ -70,8 +74,6 @@ private:
 	Quantizer *state_quantizer;
 	/** map of quantization ids and CVQ classified model vectors */
 	std::map<unsigned int, Classified_Vectors> qnt_mv_map;
-	/** predicted sequence */
-	DataSequence predicted_sequence;
 
 };
 

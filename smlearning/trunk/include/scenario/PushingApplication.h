@@ -89,7 +89,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 		}
 		if (S::getName() == "PredictingScenario" ) {
 			prgOptDesc.add_options ()
-				("featuresel,f", po::value<string>()->default_value ("efobpose"), "Feature selection method\n(obpose, obpose_label,\nobpose_direction, obpose_slide_flip_tilt\nefobpose, efobpose_label,\nefobpose_direction, efobpose_slide_flip_tilt)")
+				("featuresel,f", po::value<string>()->default_value ("efobpose"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
 				("ssmFile,s", po::value<string>(), "name of SSM file")
 				("cvqFile,c", po::value<string>(), "name of CVQ quantizer file")
 				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension)")
