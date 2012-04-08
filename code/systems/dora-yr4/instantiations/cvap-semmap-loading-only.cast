@@ -1,0 +1,49 @@
+SETVAR hardware=none
+
+SETVAR feature_options=<multiline>
+    spatial         # enable the spatial core
+    peekabot        # use peekabot
+    conceptual
+    default
+    coma
+    place-property-persistence
+    !categorisation
+    !categorisation-visual
+    !categorisation-size
+    !categorisation-sickscans # does not work at the moment
+    !binder
+    !vision
+    !man_ctrl       # manual GUIs for navigation, PTZ, planning, etc.
+    !avs
+    !execution
+    !planning_sa    # enable planning core
+    !simple_placeholder_exploration
+    !debug          # enable more debug GUIs and WM loggers
+    !dialogue
+    !motivation
+    !visualization
+</multiline>
+
+SETVAR logged_types=<multiline>
+  SpatialData.ObjectSearchResult,
+  comadata.ComaRoom,
+  SpatialData.NodeHypothesis,
+  SpatialData.MapLoadStatus,
+  SpatialProperties.PlaceProperty
+</multiline>
+
+
+SETVAR default_knowledge="instantiations/defaultprobs/cvap-semmap.xml"
+SETVAR conceptual_defaults="instantiations/defaultprobs/cvap-semmap.txt"
+SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,doubleoffice,hallway,kitchen,meetingroom,professorsoffice,robotlab,singleoffice
+
+
+# Don't show heightmap in PB
+SETVAR spatial_show_3d_obstacles=
+
+# no placeholder generation
+SETVAR no_placeholders=--no-placeholders
+
+
+INCLUDE dora-yr4.cast
+
