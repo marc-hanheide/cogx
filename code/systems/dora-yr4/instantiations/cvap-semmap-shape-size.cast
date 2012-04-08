@@ -1,38 +1,37 @@
 SETVAR hardware=real
-#real or simulation
 
 SETVAR feature_options=<multiline>
-    spatial		# enable the spatial core
-    peekabot		# use peekabot
-    conceptual	
-    default		
-    coma		
+    spatial         # enable the spatial core
+    peekabot        # use peekabot
+    conceptual
+    default
+    coma
     categorisation
     categorisation-size
-    !binder			
-    !vision			
     place-property-persistence
-    man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
-    !avs			
-    !execution		
-    !planning_sa	# enable planning core
-    debug		# enable more debug GUIs and WM loggers
-    !dialogue		
-    !motivation		
-    visualization	
+    !binder
+    !vision
+    man_ctrl        # manual GUIs for navigation, PTZ, planning, etc.
+    !avs
+    !execution
+    !planning_sa    # enable planning core
+    debug           # enable more debug GUIs and WM loggers
+    !dialogue
+    !motivation
+    visualization
 </multiline>
 
 SETVAR hardware_options=<multiline>
     !kinect
     !kinect-video
-    !video 
+    !video
     !prosilica
-    !blobfinder    
-    ptz  
+    !blobfinder
+    ptz
 </multiline>
 
 SETVAR logged_types=<multiline>
-  SpatialData.ObjectSearchResult, 
+  SpatialData.ObjectSearchResult,
   comadata.ComaRoom,
   SpatialData.NodeHypothesis,
   SpatialData.MapLoadStatus
@@ -45,7 +44,6 @@ SETVAR conceptual_categories=anteroom,bathroom,computerlab,conferencehall,double
 
 
 # Display door hypotheses
-# FIXME: seems to only display for 1 frame
 SETVAR display_doors=--display-doors
 
 # Don't show heightmap in PB
