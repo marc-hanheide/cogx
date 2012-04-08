@@ -32,7 +32,6 @@ SETVAR hardware_options=<multiline>
 
 
 # Display door hypotheses
-# FIXME: seems to only display for 1 frame
 # --display-doors
 SETVAR display_doors=--display-doors
 
