@@ -1,24 +1,24 @@
 SETVAR hardware=real
 
 SETVAR feature_options=<multiline>
-    spatial		# enable the spatial core
-    peekabot		# use peekabot
-    datasaving          # # if enabled, categorical will save a data stream to file
+    spatial             # enable the spatial core
+    peekabot            # use peekabot
+    datasaving          # if enabled, categorical will save a data stream to file
     datasaving-visual   # if enabled, images will also be saved
-    !conceptual	
-    !default		
-    !coma		
-    !binder			
-    vision			
-    !man_ctrl		# manual GUIs for navigation, PTZ, planning, etc.
-    !avs			
-    !execution		
-    !categorisation	# enable place categorisation
-    !planning_sa	# enable planning core
-    !debug		# enable more debug GUIs and WM loggers
-    !dialogue		
-    !motivation		
-    !visualization	
+    !conceptual
+    !default
+    !coma
+    !binder
+    vision
+    !man_ctrl           # manual GUIs for navigation, PTZ, planning, etc.
+    !avs
+    !execution
+    !categorisation     # enable place categorisation
+    !planning_sa        # enable planning core
+    !debug              # enable more debug GUIs and WM loggers
+    !dialogue
+    !motivation
+    !visualization
 </multiline>
 
 SETVAR hardware_options=<multiline>
