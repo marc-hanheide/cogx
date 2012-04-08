@@ -248,17 +248,18 @@ VARDEFAULT avs_random_vc=--random-vc
 # simulate_kinect - If this is set, only the wedge that the kinect can see in the navigation
 #                   position is treated as free space; if not, the whole laser scan is used
 
-    IFOPTALL(%(hardware_options), kinect)
-        ### Connect to and use Kinect point cloud server
-        SETVAR spatial_pcserver=--pcserver pcserver
-        SETVAR vision_pcserver=--pcserver pcserver
-        SETVAR simulate_kinect=
-    ELSE
-        ### Simulate Kinect point cloud for free space clearing
-        SETVAR spatial_pcserver=
-        SETVAR vision_pcserver=
-        SETVAR simulate_kinect=--simulate-kinect
-    ENDIF
+IFOPTALL(%(hardware_options), kinect)
+    ### Connect to and use Kinect point cloud server
+    SETVAR spatial_pcserver=--pcserver pcserver
+    SETVAR vision_pcserver=--pcserver pcserver
+    SETVAR simulate_kinect=
+ELSE
+    ### Simulate Kinect point cloud for free space clearing
+    SETVAR spatial_pcserver=
+    SETVAR vision_pcserver=
+    SETVAR simulate_kinect=--simulate-kinect
+ENDIF
+
 
 
 IFOPTALL(%(feature_options), spatial)
@@ -280,12 +281,12 @@ IFOPTALL(%(feature_options), spatial)
     ### Pan-tilt-zoom server: This is the CAST Pan-Tilt Server that listens for SetPTZCommand objects being written
     ### to WM and then react upon that as described in https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/PanTilt
     IFOPTALL(%(hardware_options), ptz)
-    IFOPTALL(%(feature_options), man_ctrl)
-        ### The --shake command is needed to "wake up" the PTU
-        JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui) --shake --tilt "-0.7854"
-    ELSE
-        JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer
-    ENDIF
+        IFOPTALL(%(feature_options), man_ctrl)
+            ### The --shake command is needed to "wake up" the PTU
+            JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui) --shake --tilt "-0.7854"
+        ELSE
+            JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer
+        ENDIF
     ENDIF
 
 
