@@ -17,6 +17,9 @@ add_cast_component(RobotbaseServerPlayer RobotbaseServerPlayer.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} ${PLAYER_LIBRARIES})
 link_cast_component(${CAST_COMPONENT_NAME} Robotbase JoystickDrivable ${X11_LIBRARIES})
 
+add_cast_component(RobotbaseServerFake RobotbaseServerFake.cpp)
+link_cast_component(${CAST_COMPONENT_NAME} Robotbase)
+
 add_cast_component(RobotbaseServerCure RobotbaseServerCure.cpp)
 link_cast_component(${CAST_COMPONENT_NAME} Robotbase JoystickDrivable)
 link_cast_component(${CAST_COMPONENT_NAME} CureUtils CureMath CureTransformation CureGeometry CureSensorData CureSensory CureAddressBank CureFilters CureMSpace CureNav CureMapApps CureNavX CureMapX CureHalDeviceBase CureHalHardwareUtils CureHalRobotP2OS CureHalJoystick)
