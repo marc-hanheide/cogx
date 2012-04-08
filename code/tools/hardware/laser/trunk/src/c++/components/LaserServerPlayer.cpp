@@ -185,7 +185,7 @@ LaserServerPlayer::runComponent()
   //FIXME a really big hack to see if we're running in simulation or not      
   bool useWallclockTimestamps = true;
   const cast::interfaces::TimeServerPrx timeServer(getTimeServer());
-  if(isRunning()) {
+  if(isRunning() && !m_RandData) {
     m_PlayerClient->Read();
     
     //timestamp on the data as an int
