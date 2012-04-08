@@ -515,7 +515,7 @@ PlaceManager::checkUnassignedEdges(int newPlaceID)
     try {
       if ((*it)->startNodeId == newPlaceID ||
 	  (*it)->endNodeId == newPlaceID) {
-	processEdge(*it);
+	processEdge(*it); // this could invalidate 'it', but it's ok since we return
 	return;
       }
     }
@@ -570,6 +570,7 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 	log("Error! edge objects disappeared from memory!");
       }
     }
+    // FIXME @demmeln 08.04.2012: unlocking something we have not locked??
     unlockEntry(objID.address.id);
   } catch (DoesNotExistOnWMException e) {
     log("Error! edge object disappeared!");
