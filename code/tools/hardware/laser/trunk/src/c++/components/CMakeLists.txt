@@ -12,9 +12,11 @@ include_directories(${PEEKABOT_INSTALLROOT}/include)
 
 
 add_cast_component(LaserServerPlayer LaserServerPlayer.cpp)
-target_link_libraries(LaserServerPlayer ${PLAYER_LIBRARIES})
-target_link_libraries(LaserServerPlayer Laser)
+target_link_libraries(${CAST_COMPONENT_NAME} ${PLAYER_LIBRARIES})
+target_link_libraries(${CAST_COMPONENT_NAME} Laser)
 
+add_cast_component(LaserServerFake LaserServerFake.cpp)
+target_link_libraries(${CAST_COMPONENT_NAME} Laser)
 
 
 # Set the sources.
