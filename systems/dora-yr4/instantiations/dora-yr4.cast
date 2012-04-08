@@ -6,9 +6,10 @@ INCLUDE dora-hosts.incl
 ###########################################################################
 #             DEFAULT CONFIGURATION                                       #
 ###########################################################################
-# real or simulation
+# real, simulation, or none (e.g. just loading the map)
 VARDEFAULT hardware=simulation
 #SETVAR hardware=real
+#SETVAR hardware=none
 
 ###########################################################################
 # the following define the features we want to have enabled in the system #
@@ -80,7 +81,8 @@ IFEQ(%(hardware),real)
 # use ptz (starts different components depending on %(hardware)
     ptz
   </multiline>
-ELSE # simulation
+ELSE 
+IFEQ(%(hardware),simulation)
   VARDEFAULT hardware_options=<multiline>
     !kinect
     !kinect-video
@@ -89,6 +91,16 @@ ELSE # simulation
     blobfinder
     ptz
   </multiline>
+ELSE # none
+  VARDEFAULT hardware_options=<multiline>
+    !kinect
+    !kinect-video
+    !video
+    !prosilica
+    !blobfinder
+    !ptz
+  </multiline>
+ENDIF
 ENDIF
 
 ### the directory containing the calibration files to use
@@ -171,11 +183,16 @@ IFOPTALL(%(hardware_options), ptz)
     IFEQ(%(hardware),real)
         COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
     ELSE
-        COMPONENT CPP ptz.server PlayerActServer --ptz-device 0 --player-host %(host:PlayerHost)
+        COMPONENT CPP ptz.server PlayerActServer --player-host %(host:PlayerHost) --ptz-device 0
     ENDIF
 ENDIF
-COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost)
-COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(host:PlayerHost) --ctrl-ptu
+IFEQ(%(hardware),none)
+  COMPONENT CPP laser.server LaserServerFake
+  COMPONENT CPP robot.server RobotbaseServerFake
+ELSE
+  COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost)
+  COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(host:PlayerHost)
+ENDIF
 IFOPTALL(%(hardware_options), blobfinder)
     COMPONENT CPP blob.server PlayerBlobFinderServer --player-host %(host:PlayerHost)
 ENDIF
@@ -313,9 +330,13 @@ IFOPTALL(%(feature_options), spatial)
 # Maintains three-state grid map for exploration and obstacle avoidance
     CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6
 
-### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
-# If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
-    CPP GD slam.process         SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
+    IFEQ(%(hardware),none)
+        CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) -m tmpmap.metric
+    ELSE
+        ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
+        # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
+        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
+    ENDIF
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
     CPP GD navgraph.process     NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width) %(filter_doors)
@@ -573,6 +594,21 @@ IFOPTALL(%(feature_options), datasaving)
         CPP GD categorical.datasaver CategoricalDataSaver --config %(categorisation_config)
 
 ENDIF
+
+
+IFEQ(%(hardware),none)
+    IFOPTALL(%(feature_options), place-property-persistence)
+
+        SUBARCHITECTURE categorical.sa
+        JAVA WM cast.architecture.SubarchitectureWorkingMemory
+        CPP TM AlwaysPositiveTaskManager
+
+        ### Saves and Loads place properties as part of the map (size, shape, appearance, objects)
+        CPP MG place.property.saver PlacePropertySaver --save true --save-file-name %(place_properties_save_file) --save-continuously true --save-interval 10000 --load true --load-file-name %(place_properties_save_file) --wait-before-loading 0 --wait-between-loading 0 --wait-for-map-load-status true
+
+    ENDIF
+ENDIF
+
 
 
 # visualization ##########################################################
