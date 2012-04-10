@@ -3,7 +3,7 @@
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 
 # don't load the robot in peekabot
-SETVAR peekabot_no_load_robot_file=--no-load-robot-file
+SETVAR no_load_robot_file=--no-load-robot-file
 
 SETVAR feature_options=<multiline>
 # enable the spatial core
