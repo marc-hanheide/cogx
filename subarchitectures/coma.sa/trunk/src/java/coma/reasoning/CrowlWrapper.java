@@ -1,6 +1,7 @@
 package coma.reasoning;
 
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -58,7 +59,15 @@ public class CrowlWrapper {
 
 
 	public void addInstance(String _ins, String _con) throws ReasonerException {
-		if (isABoxInconsistent()) throw new RuntimeException("Inconsistent ABox! ABORT!");
+		if (isABoxInconsistent()) {
+			TreeSet<String> inconsistencies = getABoxInconsistencies();
+			StringBuilder inc_sb = new StringBuilder();
+			for (String string : inconsistencies) {
+				inc_sb.append(string);
+				inc_sb.append(" ");
+			}
+			throw new RuntimeException("Inconsistent ABox! ABORT! Inconsistencies = " + inc_sb.toString());
+		}
 		
 //		OntModel m;
 //		try {
@@ -89,6 +98,13 @@ public class CrowlWrapper {
 		m_mycrowl.execute(addQuery);
 		
 		if (isABoxInconsistent()) {
+			TreeSet<String> inconsistencies = getABoxInconsistencies();
+			StringBuilder inc_sb = new StringBuilder();
+			for (String string : inconsistencies) {
+				inc_sb.append(string);
+				inc_sb.append(" ");
+			}
+
 			m_mycrowl.execute("DELETE { " +
 					_ins +
 					" rdf:type " +
@@ -99,10 +115,24 @@ public class CrowlWrapper {
 					" rdf:type " +
 					" oe:Failure" +
 			" }");
-			throw new ReasonerException("ABox was inconsistent; retracted previous assertion.");
+			
+			TreeSet<String> inconsistencies_new = getABoxInconsistencies();
+			StringBuilder inc_sb2 = new StringBuilder();
+			for (String string : inconsistencies_new) {
+				inc_sb2.append(string);
+				inc_sb2.append(" ");
+			}
+
+			throw new ReasonerException("ABox was inconsistent; retracted previous assertion. Old inconsistencies = " + inc_sb.toString() + " -- current inconsistencies = " + inc_sb2.toString());
 		}
 		if (isABoxInconsistent()) {
-			throw new RuntimeException("ABox still inconsistent!");
+			TreeSet<String> inconsistencies = getABoxInconsistencies();
+			StringBuilder inc_sb = new StringBuilder();
+			for (String string : inconsistencies) {
+				inc_sb.append(string);
+				inc_sb.append(" ");
+			}
+			throw new RuntimeException("ABox still inconsistent! Inconsistencies = " + inc_sb.toString());
 		}
 	}
 
@@ -665,6 +695,25 @@ public class CrowlWrapper {
 			}
 		}
 		return _returnSet.size()>0;
+	}
+	
+	private TreeSet<String> getABoxInconsistencies() {
+		ResultSet results = (ResultSet) m_mycrowl.execute("SELECT ?ins WHERE { " +
+				" ?ins " +
+				" rdf:type owl:Nothing } "); 
+//				m_ontoMemberFactory.createConcept("owl", ":", "Nothing").getFullName() + " } ");
+		TreeSet<String> _returnSet = new TreeSet<String>();
+		while (results.hasNext()) {
+			QuerySolution _qs = (QuerySolution) results.next();
+			Resource _currAnswerRersource = _qs.getResource("?ins");
+			try {
+				_returnSet.add(m_mycrowl.getOWLOntoModel().shortForm(_currAnswerRersource.toString()));
+			} catch (ConfigError e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return _returnSet;		
 	}
 	
 	public Set<String> getNames(String _ins) {

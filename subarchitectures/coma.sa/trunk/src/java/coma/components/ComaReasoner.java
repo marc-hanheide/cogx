@@ -143,12 +143,18 @@ public class ComaReasoner extends ManagedComponent {
 		}
 
 		public boolean addInstance(String instance, String concept, Current __current) {
+			log("addInstance("+instance+", "+concept+") called.");
 			try {
+				log("trying to add instance");
 				m_reasoner.addInstance(instance, concept);
+				log("added instance");
 			} catch (ReasonerException e) {
+				logException(e);
 				e.printStackTrace();
+				log("ended up in catch ReasonerException block -- returning false.");
 				return false;
 			}
+			log("successfully finished trying to add instance -- returning true");
 			return true;
 		}
 
