@@ -21,6 +21,7 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
 		double pdfthreshold, double robotx, double roboty)
 {
 	// TODO Auto-generated destructor stub
+
 	m_component = component;
 	lgm = new CureObstMap(*plgm);
 	bloxelmap= new BloxelMap(*pbloxelmap);
@@ -44,7 +45,7 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
     m_tiltstep = tiltstep*M_PI/180;
 }
 
-vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones(){
+vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones(vector<NavData::FNodePtr> &nodes){
 
 	m_component->log("ViewPointGenerator::GetBest3DViewCones");
 
@@ -58,7 +59,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 	double lastConePDFSum = 1;
 	vector<SensingAction> result3DVCList;
 	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold)){
-	vector<pair<unsigned int, double> > ordered2DVClist = getOrdered2DCandidateViewCones();
+	vector<pair<unsigned int, double> > ordered2DVClist = getOrdered2DCandidateViewCones(nodes);
 	
   if (ordered2DVClist.size() == 0)
  {
@@ -190,11 +191,16 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(st
 	return samplepoints;
 }
 
-vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateViewCones(){
+vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateViewCones(vector<NavData::FNodePtr> &nodes){
 
 	m_component->log("ViewPointGenerator::getOrdered3DCandidateViewCones");
 	std::vector<std::vector<pair<int, int> > > VCones;
-	m_samples2D = sample2DGrid();
+
+
+	if (m_component->m_sampleRandomPoints) m_samples2D = sample2DGrid();
+  else m_samples2D = sample2DGridFromNodes(nodes);
+
+
 	vector<pair<unsigned int, double> > orderedVClist, tmp;
   if(m_samples2D.size() == 0){
     return orderedVClist;
@@ -349,6 +355,34 @@ double ViewPointGenerator::getPathLength(Cure::Pose3D start,
 		return -1;
 	}
 
+}
+std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<NavData::FNodePtr> &nodes) {
+	m_component->log("ViewPointGenerator::sample2DGridFromNodes2DGrid");
+	srand(time(NULL));
+	std::vector<Cure::Pose3D> samples;
+	/*Sampling free space BEGIN*/
+  double dist = 0.2;
+
+  for (int i=0; i<nodes.size(); i++) {
+    double theta = (rand() % 360) * M_PI / 180;
+    for (int j=0; j<10; j++) {
+      double angle = theta + j /10 * 2 * M_PI;
+      double x = nodes[i]->x + dist * cos(angle);
+      double y = nodes[i]->y + dist * sin(angle);
+      int cx,cy;
+      if (lgm->worldCoords2Index(x,y,cx,cy)==0){
+        Cure::Pose3D singlesample;
+			  singlesample.setX(cx);
+			  singlesample.setY(cy);
+			  singlesample.setTheta(angle);
+			  samples.push_back(singlesample);
+      }
+    }
+  }
+
+	m_component->log("Got %d 2D samples", samples.size());
+
+	return samples;
 }
 
 std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
