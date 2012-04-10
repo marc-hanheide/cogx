@@ -515,6 +515,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		log("Generating View Cones for %s", id.c_str());
 
+
 	// if we already don't have a room map for this then get the combined map
 	if (m_templateRoomBloxelMaps.count(newVPCommand->roomId) == 0) {
 		log("Creating a new BloxelMap for room: %d", newVPCommand->roomId);
@@ -560,15 +561,19 @@ void AVS_ContinualPlanner::generateViewCones(
 		 * This is to avoid spillage of metric space from other rooms
 		 * */
 		cout << "Removing all free space not belongin to this room" << endl;
-		std::set<int> currentRoomPlaceIds;
-		double xW,yW;
-		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
-			currentRoomPlaceIds.insert(comarooms[i]->containedPlaceIds[j]);
-		}
+
 		log("Throwing away all known space in LGMap of this room belonging to another room");
 		FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface> ("place.manager"));
 		log("got interface");
 
+		std::set<int> currentRoomPlaceIds;
+
+		double xW,yW;
+		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
+			currentRoomPlaceIds.insert(comarooms[i]->containedPlaceIds[j]);
+		  m_roomNodes[newVPCommand->roomId].push_back(agg->getNodeFromPlaceID(comarooms[i]->containedPlaceIds[j]));
+		}
+    
 		vector<SpatialData::PlacePtr> placesInMap;
 		getMemoryEntries<SpatialData::Place>(placesInMap, "spatial.sa");
 
@@ -841,7 +846,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			m_conedepth, m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance, pdfmass,
 			m_pdfthreshold, node->x, node->y);
 	vector<ViewPointGenerator::SensingAction> viewcones =
-			coneGenerator.getBest3DViewCones();
+			coneGenerator.getBest3DViewCones(m_roomNodes[newVPCommand->roomId]);
 
 	log("got %d cones..", viewcones.size());
 
@@ -1457,6 +1462,10 @@ void AVS_ContinualPlanner::configure(
 	  str >> m_RetryDelay;
 	}
 
+  m_sampleRandomPoints = false;
+	if (_config.find("--sample-random-points") != _config.end()) {
+	      m_sampleRandomPoints = true;
+  }
 	m_gridsize = 200;
 	m_cellsize = 0.05;
 	it = _config.find("--gridsize");

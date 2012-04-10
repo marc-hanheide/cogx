@@ -10,6 +10,7 @@
 
 #include "SpatialGridMap.hh"
 #include "GridMapData.hh"
+#include <NavData.hpp>
 
 #include "NewNavController.hpp"
 #include <Navigation/LocalGridMap.hh>
@@ -48,7 +49,7 @@ public:
 			double minDistance, double pdfsum, double pdfthreshold, double robotx, double roboty);
 	virtual ~ViewPointGenerator();
 
-	vector<pair<unsigned int, double> > getOrdered2DCandidateViewCones();
+	vector<pair<unsigned int, double> > getOrdered2DCandidateViewCones(vector<NavData::FNodePtr> &nodes);
 
 	bool isPointSameSide(XVector3D p1, XVector3D p2, XVector3D a, XVector3D b);
 	void findBoundingRectangle(XVector3D a, XVector3D b, XVector3D c,
@@ -68,13 +69,17 @@ public:
 
 	std::vector<SensingAction> getViewConeSums(std::vector <SensingAction > &samplepoints);
 
-	vector<ViewPointGenerator::SensingAction> getBest3DViewCones();
+	vector<ViewPointGenerator::SensingAction> getBest3DViewCones(vector<NavData::FNodePtr> &nodes);
+
+  std::vector<Cure::Pose3D> sample2DGridFromNodes(vector<NavData::FNodePtr> &nodes);
 
 	AVS_ContinualPlanner * m_component;
 	std::vector<Cure::Pose3D> m_samples2D;
 	CureObstMap* lgm;
 	BloxelMap* bloxelmap;
 	int m_samplesize;
+
+
 	double m_sampleawayfromobs;
 	double m_conedepth;
 	double m_horizangle, m_vertangle, m_minDistance;

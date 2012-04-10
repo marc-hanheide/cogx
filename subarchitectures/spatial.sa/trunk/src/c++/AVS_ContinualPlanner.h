@@ -120,7 +120,7 @@ public:
 public:
 	 bool m_usePeekabot;
 	 VisualPB_Bloxel* pbVis;
-
+    bool m_sampleRandomPoints;
 private:
 
     struct ForbiddenZone {
@@ -130,6 +130,8 @@ private:
       double maxY;
     };
     std::vector<ForbiddenZone> m_forbiddenZones;
+  	map<int,vector<NavData::FNodePtr> > m_roomNodes;
+
 
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
     peekabot::PeekabotClient m_PeekabotClient;
