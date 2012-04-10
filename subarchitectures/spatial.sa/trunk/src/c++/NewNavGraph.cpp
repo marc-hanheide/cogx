@@ -217,6 +217,8 @@ NewNavGraph::maybeAddNewNodeAt(double x, double y, double a,
       // Change curret node to the closest one
       double cost = hypot(m_CurrNode->getY() - nc->getY(),
                           m_CurrNode->getX() - nc->getX());
+//TODO check doors here
+
 
       connectNodes(m_CurrNode, nc, cost);
 
@@ -294,6 +296,63 @@ NewNavGraph::maybeAddNewNodeAt(double x, double y, double a,
   }
 
   NavGraphNode *n = m_Nodes.back();
+
+  // Check the doors
+  if (n->getType() != NavGraphNode::NODETYPE_GATEWAY){
+    if (m_CurrNode->getType() != NavGraphNode::NODETYPE_GATEWAY){
+      // Loop over all gateways
+      for (std::list<NavGraphGateway*>::iterator gi = m_Gateways.begin();
+           gi != m_Gateways.end(); gi++) {
+        // Loop over all edges
+        for (std::list<NavGraphEdge*>::iterator ei = (*gi)->m_Edges.begin();
+             ei != (*gi)->m_Edges.end(); ei++) {
+          
+          // Get a pointer to the node connected to by this edge
+          NavGraphNode *next = (*ei)->getNext(*gi);
+          if (next) {
+            if (next->getId() == m_CurrNode->getId()){
+              // The node we are moving from is connected to a door, check if both nodes are on the same side of the door
+              bool side1 = (m_CurrNode->getY() < (*gi)->getY() + tan((*gi)->getTheta())*(m_CurrNode->getX()-(*gi)->getX()));
+              bool side2 = (n->getY() < (*gi)->getY() + tan((*gi)->getTheta())*(n->getX()-(*gi)->getX()));
+              if (side1 == side2){
+                // Both node are on the same side - connect nodes
+              }
+              else {
+                // On the different sides - connect to the door
+                m_CurrNode = (*gi);
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+    else {
+      // Previous node was doorway
+      NavGraphNode** gi = &m_CurrNode;
+      for (std::list<NavGraphEdge*>::iterator ei = (*gi)->m_Edges.begin();
+           ei != (*gi)->m_Edges.end(); ei++) {
+        
+        // Get a pointer to the node connected to by this edge
+        NavGraphNode *next = (*ei)->getNext(*gi);
+        if (next) {
+          // The node we are moving from is connected to a door, check if both nodes are on the same side of the door
+          bool side1 = (next->getY() < (*gi)->getY() + tan((*gi)->getTheta())*(next->getX()-(*gi)->getX()));
+          bool side2 = (n->getY() < (*gi)->getY() + tan((*gi)->getTheta())*(n->getX()-(*gi)->getX()));
+          if (side1 == side2){
+            // Both node are on the same side - connect nodes
+            m_CurrNode = next;
+            break;
+          }
+          else {
+            // On the different sides - connect to the door
+          }
+        }
+      }      
+    }
+  }
+  // end door check
+
   if (m_CurrNode->getType() == NavGraphNode::NODETYPE_GATEWAY) {
     // we are leving a gateway and entering what seems to be a new area
     m_LastAreaId++;
@@ -305,7 +364,7 @@ NewNavGraph::maybeAddNewNodeAt(double x, double y, double a,
                << *m_CurrNode << std::endl;
   m_AssignedNewAreaId = true;
   m_NextNodeId++;
-
+  
   // Conect the nodes
   connectNodes(m_CurrNode, n, d);
   
