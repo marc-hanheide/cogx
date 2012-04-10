@@ -650,9 +650,6 @@ void NavGraphProcess::changedCurrentNode(int fromId, int toId)
   // added, if it has been added it should be the last one in the list
   while (m_AccessEdges.size() + m_NewAEdges.size() < 
          m_cureNavGraph.m_Edges.size()) {
-
-
-//CHECK FOR DOORWAY NODE HERE
     
     // Check if the last added edge in the cure nav graph is the
     // missing edge
