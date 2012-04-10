@@ -570,8 +570,6 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 	log("Error! edge objects disappeared from memory!");
       }
     }
-    // FIXME @demmeln 08.04.2012: unlocking something we have not locked??
-    unlockEntry(objID.address.id);
   } catch (DoesNotExistOnWMException e) {
     log("Error! edge object disappeared!");
   }
