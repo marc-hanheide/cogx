@@ -276,30 +276,30 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	      debug("abort?");
 	      // abort got?
 	      try {
-	        debug("locking");
-	        lockEntry(navCmdId, cdl::LOCKEDODR);
-	        debug("locked");
-	        try {
+		debug("locking");
+		lockEntry(navCmdId, cdl::LOCKEDOD);
+		debug("locked");
+		try {
 
-	          shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
-	            getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
+		  shared_ptr<CASTData<SpatialData::NavCommand> > pcmd = 
+		    getWorkingMemoryEntry<SpatialData::NavCommand>(navCmdId);
 
-            if(pcmd){
-              status = pcmd->getData()->status;
-              aborted = (status != SpatialData::NONE);
-              log("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
-	            // I.e. someone outside decided we're done now - the internal cmd needs
-	            // to be cancelled either way.
-	          }else{
-	            log("The NavCommand suddenly disappeared...");
-	            some_error = true;
-	          }
-	        } catch (DoesNotExistOnWMException) {
-	          log("The NavCommand suddenly disappeared...");
-	          some_error = true;
-	        }				
-	        debug("unlocking");
-	        unlockEntry(navCmdId);
+		  if(pcmd){
+		    status = pcmd->getData()->status;
+		    aborted = (status != SpatialData::NONE);
+		    log("%s overwrote current command with status %d (aborted? %d)", change.src.c_str(), status, aborted);
+		    // I.e. someone outside decided we're done now - the internal cmd needs
+		    // to be cancelled either way.
+		  }else{
+		    log("The NavCommand suddenly disappeared...");
+		    some_error = true;
+		  }
+		} catch (DoesNotExistOnWMException) {
+		  log("The NavCommand suddenly disappeared...");
+		  some_error = true;
+		}				
+		debug("unlocking");
+		unlockEntry(navCmdId);
 	      }
 	      catch (DoesNotExistOnWMException) {
 	        log("The NavCommand disappeared while waiting to lock.");
@@ -311,6 +311,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	      debug(aborted? "yes": "no");
       } 
       else if(type == typeName<NavData::InternalNavCommand>()){
+	if (change.address.id == navCtrlCmdId) {
 	      log("nav ctrl cmd finished?");
 	      // nav ctrl cmd finished?
 	      shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
@@ -336,12 +337,16 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
             else finished = true;
 
 	          m_isExplorationAction = false;
+
+		  navCtrlCmdId = "";
 	          break;
 	        case NavData::ABORTED:
 	        case NavData::FAILED:
 
 	          some_error = true;
 	          status = SpatialData::TARGETUNREACHABLE;
+
+		  navCtrlCmdId = "";
 	          break;
 	        default: break;
 	        }
@@ -361,6 +366,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	        log("The InternalNavCommand suddenly disappeared...");
 	        some_error = true;
 	      }
+	}
       }
       else if (type== typeName<NavData::VisualExplorationCommand>()) {
 	      log("Visual exploration cmd finished");
@@ -378,6 +384,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       }
 
       else if (type == typeName<NavData::FNode>()) {
+	if (navCtrlCmdId != "") {
 	      log("Halting movement: exploration reached new node");
 
 	      navCtrlCmdId = newDataID();
@@ -392,6 +399,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	      stopCommand->theta = 0.0;
 
 	      addToWorkingMemory(navCtrlCmdId, stopCommand);
+	}
       }
     } // while(...)
 		
@@ -990,10 +998,10 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
 
   log("SpatialTranslation.cpp: %i", __LINE__);
   try {
-    lockEntry(id, cdl::LOCKEDODR);
-  log("SpatialTranslation.cpp: %i", __LINE__);
+    lockEntry(id, cdl::LOCKEDOD);
+    log("SpatialTranslation.cpp: %i", __LINE__);
     pcmd = getWorkingMemoryEntry<SpatialData::NavCommand>(id);	
-  log("SpatialTranslation.cpp: %i", __LINE__);
+    log("SpatialTranslation.cpp: %i", __LINE__);
   } catch (DoesNotExistOnWMException) {
     debug("changeNavCmdCompletion called for nonexistent NavCommand");
   log("SpatialTranslation.cpp: %i", __LINE__);
@@ -1005,19 +1013,19 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
     newcmd->status = status;
 
     try {
-  log("SpatialTranslation.cpp: %i", __LINE__);
+      log("SpatialTranslation.cpp: %i", __LINE__);
       overwriteWorkingMemory<SpatialData::NavCommand>(id, newcmd);
       log(std::string("Overwrote Nav Command: ") + id);
       stop = true;
     }catch(ConsistencyException){
 
-  log("SpatialTranslation.cpp: %i", __LINE__);
+      log("SpatialTranslation.cpp: %i", __LINE__);
       // repeat only if the completion we are setting is 
       // more important than the one set				
       pcmd = getWorkingMemoryEntry<SpatialData::NavCommand>(id);
       stop = (completion <= pcmd->getData()->comp);
     }catch(DoesNotExistOnWMException){
-  log("SpatialTranslation.cpp: %i", __LINE__);
+      log("SpatialTranslation.cpp: %i", __LINE__);
       // we can get an exception for trying to update an already
       // deleted entry (because it was aborted)
       stop = true;
