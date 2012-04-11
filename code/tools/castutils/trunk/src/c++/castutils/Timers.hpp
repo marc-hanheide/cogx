@@ -52,6 +52,14 @@ public:
    {
       return elapsed_micros() > timeout;
    }
+
+   // Time in milliseconds before the timeout is reached.
+   long timeToWait()
+   {
+      long long tm = elapsed_micros();
+      if (tm >= timeout) return 0;
+      return (timeout - tm) / 1000;
+   }
 };
 
 /**
