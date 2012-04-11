@@ -94,6 +94,7 @@ public class POPlanMonitor extends ManagedComponent {
 			//_ln.reason.modalArguments;
 			//_ln.reason.modality;
 			//_ln.reason.value
+			// je nach typ, ElementaryFormula (string), BooleanFormula, IntegerFormula, FloatFormula, UnknownFormula, PointerFormula //
 		}
 
 		StringBuilder return_sb = new StringBuilder(40 + action_sb.length() + link_sb.length());
