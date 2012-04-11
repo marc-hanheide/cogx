@@ -1056,36 +1056,36 @@ public class PlaceMonitor extends ManagedComponent {
 			// for the moment we are only interested in true places
 			if (_newPlaceNode.status.equals(PlaceStatus.TRUEPLACE)) {
 				log("create dora:Place instance " + "dora:place"+_newPlaceNode.id);
-        log("processOverwrittenPlace -4");
+				log("processOverwrittenPlace -4");
 				synchronized (m_comareasoner) {
-          log("processOverwrittenPlace -3");
+					log("processOverwrittenPlace -3");
 					m_comareasoner.addInstance("dora:place"+_newPlaceNode.id, "dora:Place");
-          log("processOverwrittenPlace -2");
+					log("processOverwrittenPlace -2");
 				}
 				logInstances("owl:Thing");
-        log("processOverwrittenPlace -1");
+				log("processOverwrittenPlace -1");
 				logInstances("dora:Place");
-        log("processOverwrittenPlace 0");
+				log("processOverwrittenPlace 0");
 				logInstances("dora:PhysicalRoom");
 
-        log("processOverwrittenPlace 1");
+				log("processOverwrittenPlace 1");
 
 				m_placeholders.remove(Long.valueOf(_newPlaceNode.id));
 				m_trueplaces.add(Long.valueOf(_newPlaceNode.id));
-        log("processOverwrittenPlace 2");
-				
+				log("processOverwrittenPlace 2");
+
 				// process pending paths
 				HashSet<WorkingMemoryAddress> _pendingPaths = m_tempAdjacencyStore.remove(_newPlaceNode.id);
 
-        log("processOverwrittenPlace 3");
+				log("processOverwrittenPlace 3");
 
 				if (_pendingPaths!=null) {
-          log("processOverwrittenPlace 4");
+					log("processOverwrittenPlace 4");
 
 					debug("process pending paths:");
 					for (WorkingMemoryAddress _workingMemoryAddress : _pendingPaths) {
 						try {
-              log("processOverwrittenPlace 5");
+							log("processOverwrittenPlace 5");
 
 							synchronized (m_comareasoner) {
 								ConnectivityPathProperty _currPendingPath = getMemoryEntry(_workingMemoryAddress, ConnectivityPathProperty.class);
@@ -1131,62 +1131,64 @@ public class PlaceMonitor extends ManagedComponent {
 	private void logInstances(String _con) {
 		// logInstances is now restricted to debug mode only. otherwise it gets too messy.
 		if (!m_bDebugOutput) return;
-		
-		StringBuffer _allInsLogMsg = new StringBuffer("all instances of " + _con + " ==> ");
-		String[] _allIns = m_comareasoner.getAllInstances(_con);
-		StringBuffer[] _allRelInsLogArray = new StringBuffer[_allIns.length];
-		StringBuffer[] _allRelInsByRelLogArray = new StringBuffer[_allIns.length];
-		StringBuffer[] _allRelInsByRel2LogArray = new StringBuffer[_allIns.length];
-		StringBuffer[] _allRelInsByRel3LogArray = new StringBuffer[_allIns.length];
-		StringBuffer[] _allConsLogArray = new StringBuffer[_allIns.length];
-		
-		for (int i = 0; i < _allIns.length; i++) {
-			String _currIns = _allIns[i];
-			if (!_currIns.startsWith("dora")) _currIns="dora"+_currIns.replaceFirst("http://dora.cogx.eu#", ":");
-			_allInsLogMsg.append(_currIns + " ");
 
-			_allRelInsLogArray[i] = new StringBuffer("all related instances of " + _currIns + " ==> ");
-			for (String _currRelIns : m_comareasoner.getRelatedInstances(_currIns)) {
-				_allRelInsLogArray[i].append(_currRelIns + " ");
-			}
-			
-			_allRelInsByRelLogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:sameRoomAs ==> ");
-			for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:sameRoomAs")) {
-				_allRelInsByRelLogArray[i].append(_currRelIns + " ");
+		synchronized (m_comareasoner) {
+			StringBuffer _allInsLogMsg = new StringBuffer("all instances of " + _con + " ==> ");
+			String[] _allIns = m_comareasoner.getAllInstances(_con);
+			StringBuffer[] _allRelInsLogArray = new StringBuffer[_allIns.length];
+			StringBuffer[] _allRelInsByRelLogArray = new StringBuffer[_allIns.length];
+			StringBuffer[] _allRelInsByRel2LogArray = new StringBuffer[_allIns.length];
+			StringBuffer[] _allRelInsByRel3LogArray = new StringBuffer[_allIns.length];
+			StringBuffer[] _allConsLogArray = new StringBuffer[_allIns.length];
+
+			for (int i = 0; i < _allIns.length; i++) {
+				String _currIns = _allIns[i];
+				if (!_currIns.startsWith("dora")) _currIns="dora"+_currIns.replaceFirst("http://dora.cogx.eu#", ":");
+				_allInsLogMsg.append(_currIns + " ");
+
+				_allRelInsLogArray[i] = new StringBuffer("all related instances of " + _currIns + " ==> ");
+				for (String _currRelIns : m_comareasoner.getRelatedInstances(_currIns)) {
+					_allRelInsLogArray[i].append(_currRelIns + " ");
+				}
+
+				_allRelInsByRelLogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:sameRoomAs ==> ");
+				for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:sameRoomAs")) {
+					_allRelInsByRelLogArray[i].append(_currRelIns + " ");
+				}
+
+				_allRelInsByRel2LogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:constituentOfRoom ==> ");
+				for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:constituentOfRoom")) {
+					_allRelInsByRel2LogArray[i].append(_currRelIns + " ");
+				}
+
+				_allRelInsByRel3LogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:in ==> ");
+				for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:in")) {
+					_allRelInsByRel3LogArray[i].append(_currRelIns + " ");
+				}
+
+				_allConsLogArray[i] = new StringBuffer("all concepts of " + _currIns + " ==> ");
+				for (String _currCon : m_comareasoner.getAllConcepts(_currIns)) {
+					_allConsLogArray[i].append(_currCon + " ");
+				}
+
 			}
 
-			_allRelInsByRel2LogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:constituentOfRoom ==> ");
-			for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:constituentOfRoom")) {
-				_allRelInsByRel2LogArray[i].append(_currRelIns + " ");
+			log(_allInsLogMsg);
+			for (StringBuffer stringBuffer : _allRelInsLogArray) {
+				log(stringBuffer);
 			}
-
-			_allRelInsByRel3LogArray[i] = new StringBuffer("all related instances of " + _currIns + " via dora:in ==> ");
-			for (String _currRelIns : m_comareasoner.getRelatedInstancesByRelation(_currIns, "dora:in")) {
-				_allRelInsByRel3LogArray[i].append(_currRelIns + " ");
+			for (StringBuffer stringBuffer : _allRelInsByRelLogArray) {
+				log(stringBuffer);
 			}
-
-			_allConsLogArray[i] = new StringBuffer("all concepts of " + _currIns + " ==> ");
-			for (String _currCon : m_comareasoner.getAllConcepts(_currIns)) {
-				_allConsLogArray[i].append(_currCon + " ");
+			for (StringBuffer stringBuffer : _allRelInsByRel2LogArray) {
+				log(stringBuffer);
 			}
-			
-		}
-		
-		log(_allInsLogMsg);
-		for (StringBuffer stringBuffer : _allRelInsLogArray) {
-			log(stringBuffer);
-		}
-		for (StringBuffer stringBuffer : _allRelInsByRelLogArray) {
-			log(stringBuffer);
-		}
-		for (StringBuffer stringBuffer : _allRelInsByRel2LogArray) {
-			log(stringBuffer);
-		}
-		for (StringBuffer stringBuffer : _allRelInsByRel3LogArray) {
-			log(stringBuffer);
-		}
-		for (StringBuffer stringBuffer : _allConsLogArray) {
-			log(stringBuffer);
+			for (StringBuffer stringBuffer : _allRelInsByRel3LogArray) {
+				log(stringBuffer);
+			}
+			for (StringBuffer stringBuffer : _allConsLogArray) {
+				log(stringBuffer);
+			}
 		}
 	}
 	
@@ -1273,8 +1275,13 @@ public class PlaceMonitor extends ManagedComponent {
 			// or if the current room's seed is not in the list of remaining places,
 			// which means that that seed must already be in another room.
 			// in both cases, the existing room is obsolete and can be deleted
-			if (m_comareasoner.isInstanceOf(_seedPlaceInstance, "dora:Doorway")
-					|| !_remainingPlaceIds.contains(_seedPlaceId)) {
+			
+			boolean _seedIsInsOfDoorway = false;
+			synchronized(m_comareasoner) {
+				_seedIsInsOfDoorway = m_comareasoner.isInstanceOf(_seedPlaceInstance, "dora:Doorway");
+			}
+			
+			if (_seedIsInsOfDoorway	|| !_remainingPlaceIds.contains(_seedPlaceId)) {
 				log("current room's seed has turned into a doorway or the seed has been merged with an existing room.");
 				// if the current room's seed is a Doorway
 				// remove the seed from the remaining places
@@ -1452,7 +1459,13 @@ public class PlaceMonitor extends ManagedComponent {
 
 			// check if current place can be a seed, i.e., it is not a doorway
 			String _currentplaceInstance = "dora:place"+_remainingPlace;
-			if (m_comareasoner.isInstanceOf(_currentplaceInstance, "dora:Doorway")) {
+			boolean _currPlaceInsIsInsOfDoor = false;
+			
+			synchronized(m_comareasoner) {
+				_currPlaceInsIsInsOfDoor = m_comareasoner.isInstanceOf(_currentplaceInstance, "dora:Doorway");
+			}
+			
+			if (_currPlaceInsIsInsOfDoor) {
 				// current place is a doorway
 				debug(_currentplaceInstance + " is a doorway. discarding this place...");
 				_remainingPlaceIds.remove(_remainingPlace);
