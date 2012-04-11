@@ -38,8 +38,7 @@ const string PlacePropertySaver::cWorkingMemoryID("spatial.sa");
 
 
 // ------------------------------------------------------
-PlacePropertySaver::PlacePropertySaver():
-    castutils::CASTComponentOptionParserMixin(this)
+PlacePropertySaver::PlacePropertySaver()
 {
   debug("Created.");
 }
