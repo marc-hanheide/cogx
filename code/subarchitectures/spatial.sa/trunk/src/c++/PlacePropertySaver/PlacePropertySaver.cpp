@@ -170,7 +170,7 @@ void PlacePropertySaver::runComponent()
     loadPlaceProperties();
   }
 
-  if (_waitForMapLoadStatus && isRunning())
+  if (isRunning())
   {
     // update map load status even if loading is disabled to that map loading
     // procedure does not get stuck even if we don't load place properties.
