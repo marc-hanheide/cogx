@@ -14,7 +14,7 @@ namespace castutils {
 
 void LoggerMixin::warn(const std::string &s)
 {
-  warn(s.c_str());
+  warn("%s", s.c_str());
 }
 
 
@@ -35,7 +35,7 @@ void LoggerMixin::warn(const char *format, ...)
 
 void LoggerMixin::fatal(const std::string &s)
 {
-  fatal(s.c_str());
+  fatal("%s", s.c_str());
 }
 
 
@@ -57,7 +57,7 @@ void LoggerMixin::fatal(const char *format, ...)
 void LoggerMixin::cast_assert(
     const bool condition, const std::string &s)
 {
-  cast_assert(condition, s.c_str());
+  cast_assert(condition, "%s", s.c_str());
 }
 
 
