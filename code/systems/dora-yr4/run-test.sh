@@ -11,6 +11,13 @@ function storeCoreDump {
 	fi
 }
 
+function makeGdbCmdFile {
+rm -f gdb-cmd.txt
+cat > gdb-cmd.txt <<EOF
+backtrace
+quit
+EOF
+}
 
 if [ "$1" ]; then
     configFile="$1"
@@ -214,11 +221,17 @@ if [ $PEEKABOT_CRASHED -eq 1 ]; then
 	if [ $PEEKABOT_CRASH_COUNT -eq 1 ]; then
 		if [ -e "core" ]; then
 			zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-core.zip core
+      makeGdbCmdFile
+      gdb /usr/local/bin/peekabot -x gdb-cmd.txt -c core > peekabot_crash_logs/peekabot-crash"$PEEKABOT_CRASH_COUNT"-backtrace.txt
 		fi	
 		mv logs/log.xml logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
 		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.zip logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
 	fi
 else
+  if [ -e "core" ]; then
+    makeGdbCmdFile
+    gdb /usr/local/bin/cast-server-c++ -x gdb-cmd.txt -c core > logs/cast-server-c++-backtrace.txt
+  fi
 	tools/scripts/collect-logs.sh
 fi
 
