@@ -54,7 +54,7 @@ SETVAR feature_options=<multiline>
 # enable motivation via explanation
     motivation_explanation	
 # disable visualisation (see debug)
-    visualization	
+    !visualization	
 </multiline>
 
 
