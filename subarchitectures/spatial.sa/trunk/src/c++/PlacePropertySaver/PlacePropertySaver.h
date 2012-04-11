@@ -8,7 +8,7 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 
-#include <castutils/CASTComponentOptionParserMixin.hpp>
+#include <castutils/OptionParserMixin.hpp>
 
 
 // FIXME: add something like this to cast utils instead of having it here
@@ -80,8 +80,7 @@ const std::string& dynamicTypeName(const IceInternal::Handle<T> object) {
  * once we are finished loading stuff.
  */
 class PlacePropertySaver:
-    public cast::ManagedComponent, 
-    public castutils::CASTComponentOptionParserMixin
+    public castutils::OptionParserMixinBaseclass<cast::ManagedComponent>
 {
 public:
   

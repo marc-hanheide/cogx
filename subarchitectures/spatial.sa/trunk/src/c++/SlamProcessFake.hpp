@@ -21,7 +21,7 @@
 //#include <peekabot/Types.hh>
 
 #include <cast/architecture/ManagedComponent.hpp>
-#include <castutils/CASTComponentOptionParserMixin.hpp>
+#include <castutils/OptionParserMixin.hpp>
 #include <OdometryReceiver.hpp>
 #include <NavData.hpp>
 #include <Robotbase.hpp>
@@ -55,9 +55,9 @@ namespace navsa {
  * @param -m optional map file. If the file exist it will be loaded and the
  *   metric map will be written to working memory.
  */
-class SlamProcessFake : public cast::ManagedComponent,
-                        public OdometryReceiver,
-                        public castutils::CASTComponentOptionParserMixin
+  class SlamProcessFake: 
+      public castutils::OptionParserMixinBaseclass<cast::ManagedComponent>,
+      public OdometryReceiver
 {
 public:
   SlamProcessFake();

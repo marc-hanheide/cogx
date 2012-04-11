@@ -40,8 +40,7 @@ extern "C" {
 }
 
 
-SlamProcessFake::SlamProcessFake():
-    castutils::CASTComponentOptionParserMixin(this)
+SlamProcessFake::SlamProcessFake()
 {
 }
 
