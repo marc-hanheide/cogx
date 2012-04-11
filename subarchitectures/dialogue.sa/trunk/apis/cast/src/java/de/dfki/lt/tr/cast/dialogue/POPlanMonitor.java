@@ -14,6 +14,7 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 
 public class POPlanMonitor extends ManagedComponent {
 
@@ -74,27 +75,36 @@ public class POPlanMonitor extends ManagedComponent {
 	private String poplanToString(POPlan _poPlan) {
 		StringBuilder action_sb = new StringBuilder(22 * _poPlan.actions.length);
 		for (Action _ac : _poPlan.actions) {
-			action_sb.append("Action fullName = ");
+			action_sb.append("\nAction fullName: ");
 			action_sb.append(_ac.fullName);
+			action_sb.append(" status: ");
+			action_sb.append(_ac.status);
 		}
 		
 		StringBuilder link_sb = new StringBuilder(42 * _poPlan.links.length);
 		for (Link _ln : _poPlan.links) {
-			link_sb.append("Link  =");
-			link_sb.append(" src: " + _ln.src);
-			link_sb.append(" dest: " + _ln.dest);
-			link_sb.append(" reason fact name: " + _ln.reason.name);
+			link_sb.append("\nLink  =");
+			link_sb.append(" src: ");
+			link_sb.append(_ln.src);
+			link_sb.append(" dest: ");
+			link_sb.append(_ln.dest);
+			link_sb.append(" reason fact name: ");
+			link_sb.append(_ln.reason.name);
+			dFormula df = _ln.reason.arguments[0];
+			//_ln.reason.modalArguments;
+			//_ln.reason.modality;
+			//_ln.reason.value
 		}
 
 		StringBuilder return_sb = new StringBuilder(40 + action_sb.length() + link_sb.length());
-		return_sb.append("processAddedPOPlan() called: ");
+		return_sb.append("processAddedPOPlan() called: \n");
 		return_sb.append("Task ID = ");
 		return_sb.append(_poPlan.taskID);
-		return_sb.append(" Status name = ");
+		return_sb.append("\nStatus name = ");
 		return_sb.append(_poPlan.status.name());
-		return_sb.append(" Actions: ");
+		return_sb.append("\nActions: ");
 		return_sb.append(action_sb);
-		return_sb.append(" Links: ");
+		return_sb.append("\nLinks: ");
 		return_sb.append(link_sb);
 		
 		return return_sb.toString();
