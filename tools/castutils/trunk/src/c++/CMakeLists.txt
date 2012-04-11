@@ -1,6 +1,8 @@
 
-SET(SOURCES castutils/OptionParserMixin.cpp)
-SET(HEADERS castutils/OptionParserMixin.hpp)
+SET(SOURCES castutils/OptionParserMixin.cpp
+            castutils/LoggerMixin.cpp)
+SET(HEADERS castutils/OptionParserMixin.hpp
+            castutils/LoggerMixin.hpp)
 
 
 FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS filesystem)
