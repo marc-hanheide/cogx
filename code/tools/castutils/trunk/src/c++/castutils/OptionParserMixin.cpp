@@ -3,7 +3,7 @@
  * Date:   27.03.2012
  **/
 
-#include "CASTComponentOptionParserMixin.hpp"
+#include "OptionParserMixin.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -15,18 +15,19 @@ namespace castutils {
 
 
 // ------------------------------------------------------
-string CASTComponentOptionParserMixin::parseOption(
-    const string name, 
+string OptionParserMixin::parseOption(
+    const string name,
     const string defaultValue) const
 {
+  checkConfigSet();
   return parseOption(_config, name, defaultValue);
 }
 
 
 // ------------------------------------------------------
-string CASTComponentOptionParserMixin::parseOption(
+string OptionParserMixin::parseOption(
     const map<string, string> &config,
-    const string name, 
+    const string name,
     const string defaultValue) const
 {
   map<string, string>::const_iterator it = config.find(name);
@@ -39,21 +40,22 @@ string CASTComponentOptionParserMixin::parseOption(
 
 
 // ------------------------------------------------------
-bool CASTComponentOptionParserMixin::parseOptionFlag(
+bool OptionParserMixin::parseOptionFlag(
     const string name) const
 {
+  checkConfigSet();
   return parseOptionFlag(_config, name);
 }
 
 
 // ------------------------------------------------------
-bool CASTComponentOptionParserMixin::parseOptionFlag(
+bool OptionParserMixin::parseOptionFlag(
     const map<string, string> &config,
     const string name) const
 {
   map<string, string>::const_iterator it = config.find(name);
 
-  if (it != config.end()) 
+  if (it != config.end())
   {
     if (it->second == "true")
     {
@@ -66,7 +68,7 @@ bool CASTComponentOptionParserMixin::parseOptionFlag(
     else
     {
       _component->error("Invalid value '%s' for flag option '%s'. "
-                        "Should be one of {'true', 'false'}", 
+                        "Should be one of {'true', 'false'}",
                         it->second.c_str(), name.c_str());
 
       return false; // default if malformed
@@ -78,18 +80,19 @@ bool CASTComponentOptionParserMixin::parseOptionFlag(
 
 
 // ------------------------------------------------------
-string CASTComponentOptionParserMixin::parseOptionPath(
-    const string name, 
+string OptionParserMixin::parseOptionPath(
+    const string name,
     const string defaultValue) const
 {
+  checkConfigSet();
   return parseOptionPath(_config, name, defaultValue);
 }
 
 
 // ------------------------------------------------------
-string CASTComponentOptionParserMixin::parseOptionPath(
+string OptionParserMixin::parseOptionPath(
     const map<string, string> &config,
-    const string name, 
+    const string name,
     const string defaultValue) const
 {
   filesystem::path tmp = parseOption(config, name, defaultValue);
@@ -109,9 +112,21 @@ string CASTComponentOptionParserMixin::parseOptionPath(
 
 
 // ------------------------------------------------------
-void CASTComponentOptionParserMixin::setConfig(const map<string, string> &config)
+void OptionParserMixin::setConfig(const map<string, string> &config)
 {
   _config = config;
+  _configSet = true;
+}
+
+
+// ------------------------------------------------------
+void OptionParserMixin::checkConfigSet() const
+{
+  if (!_configSet)
+  {
+    _component->error("OptionParserMixin: Accessing saved config "
+                      "config, but no config set");
+  }
 }
 
 
