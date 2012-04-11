@@ -30,6 +30,17 @@ SETVAR feature_options=<multiline>
     categorisation	
 # use visaul categorisation
     !categorisation-visual 
+# use size categorisation
+    !categorisation-size
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
+# get automated exploration until there are no more placeholders, that is much
+# fast than the full-fledged planner
+    !simple_placeholder_exploration
 # enable planning core
     planning_sa
 # disable more debug GUIs and WM loggers		
@@ -43,7 +54,7 @@ SETVAR feature_options=<multiline>
 # enable motivation via explanation
     motivation_explanation	
 # disable visualisation (see debug)
-    !visualization	
+    visualization	
 </multiline>
 
 
