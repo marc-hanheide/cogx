@@ -594,7 +594,7 @@ void AVS_ContinualPlanner::generateViewCones(
                   //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
                   //    	  log("checking against: %.02g, %.02g", newX, newY);
                   if ((x*m_cellsize <= fbIt->maxX && x*m_cellsize >= fbIt->minX &&
-                        y*m_cellsize <= fbIt->maxY && x*m_cellsize >= fbIt->minY)) {
+                        y*m_cellsize <= fbIt->maxY && y*m_cellsize >= fbIt->minY)) {
                     log("point in forbidden zone excluded");
                     (*lgm)(x,y) = '2';
                     excluded= true;
