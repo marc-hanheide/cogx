@@ -2410,6 +2410,9 @@ PlaceManager::upgradePlaceholder(int placeID, NavData::FNodePtr newNode)
     place->status = TRUEPLACE;
     log("overwrite 4: %s", goalPlaceWMID.c_str());
     _upgradePlaceholderMappings(placeID, place, newNode);
+
+    checkUnassignedEdges(placeID);
+
     unlockEntry(goalPlaceWMID);
     log("unlock 1");
   }
