@@ -944,9 +944,10 @@ void AVS_ContinualPlanner::generateViewCones(
     for (int i=0; i < (*plIt).second.size(); i++){
       if ((*plIt).second[i].pan < minAngle) minAngle = viewcones[i].pan;
       if ((*plIt).second[i].pan > maxAngle) maxAngle = viewcones[i].pan;
+      log("vc %d %f %f", gr.size(), minAngle, maxAngle);
       double m_max_range = 0.9*M_PI;
       if ((maxAngle - minAngle > m_max_range) || (m_sampleRandomPoints) || (i==0)){
-        log("vc %d %f %f", gr.size(), minAngle, maxAngle);
+        
         if (!gr.empty()){  
           grouped_cones.push_back(gr);
         }
@@ -957,6 +958,8 @@ void AVS_ContinualPlanner::generateViewCones(
       gr.push_back((*plIt).second[i]);
     }
   }
+  log("vc %d %f %f", gr.size(), minAngle, maxAngle);
+  grouped_cones.push_back(gr);
 
 	for (unsigned int i=0; i < grouped_cones.size(); i++){
 		/* GETTING PLACE BELIEFS */
