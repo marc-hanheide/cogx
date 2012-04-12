@@ -600,7 +600,7 @@ void TomGineThread::AddGraphModel(std::vector<cv::Point3d> first, std::vector<cv
  */
 void TomGineThread::SetPointCloud(cv::Mat_<cv::Point3f> &matCloud, cv::Mat_<cv::Point3f> &colCloud)
 {
-  printf("TomGineThread::SetPointCloud: Antiquated!\n");
+  //printf("TomGineThread::SetPointCloud: Antiquated!\n");
   pthread_mutex_lock(&dataMutex);
   matCloud.copyTo(mCloud);
   colCloud.copyTo(cCloud);
