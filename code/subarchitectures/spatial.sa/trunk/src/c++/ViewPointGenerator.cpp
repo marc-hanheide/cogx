@@ -367,6 +367,9 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<NavDa
     double theta = (rand() % 360) * M_PI / 180;
     for (int j=0; j<10; j++) {
       double angle = theta + j /10 * 2 * M_PI;
+      while (angle > M_PI) angle-= 2 * M_PI;
+      while (angle < -M_PI) angle+= 2 * M_PI;
+
       double x = nodes[i]->x + dist * cos(angle);
       double y = nodes[i]->y + dist * sin(angle);
       int cx,cy;
