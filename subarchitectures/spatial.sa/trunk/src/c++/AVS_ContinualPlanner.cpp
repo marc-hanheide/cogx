@@ -1299,7 +1299,6 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       double dist = 0.2;
       pos.setX(m_currentViewCone.second.pos[0]-dist*cos(m_currentViewCone.second.pan));
       pos.setY(m_currentViewCone.second.pos[1]-dist*sin(m_currentViewCone.second.pan));
-      double avg = 0;      
       double minAngle = 10;
       double maxAngle = -10;
       for(int j=0; j < m_currentConeGroup->viewcones.size(); j++){
@@ -1308,7 +1307,12 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       }
       double range = maxAngle - minAngle;
       double tol = M_PI - 0.5 * range;
-			pos.setTheta((maxAngle + minAngle)/2); //TODO not nessacerely - maybe between
+      double theta = (maxAngle + minAngle)/2;
+      if ((fabs(maxAngle - theta) > M_PI * 0.9 / 2 ) || (fabs(minAngle - theta) > M_PI * 0.9 / 2)){
+        theta = theta + M_PI;
+      }
+			pos.setTheta(theta); //TODO not nessacerely - maybe between
+
 			PostNavCommand(pos, SpatialData::GOTOPOSITION,tol);
 			log("Posting a nav command");
     }
@@ -1880,8 +1884,8 @@ void AVS_ContinualPlanner::owtNavCommand(
             ChangeCurrentViewConeColor(0.1,0.9,0.1);
         }			
         double angle = m_currentViewCone.second.pan-lastRobotPose->theta;
-        if (angle < -M_PI) angle += 2*M_PI; 
-        if (angle > M_PI) angle -= 2*M_PI; 
+        while (angle < -M_PI) angle += 2*M_PI; 
+        while (angle > M_PI) angle -= 2*M_PI; 
 
         startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
   			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
