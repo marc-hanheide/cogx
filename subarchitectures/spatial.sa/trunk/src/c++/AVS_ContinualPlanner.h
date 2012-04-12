@@ -90,7 +90,7 @@ public:
 	void receivePointCloud(FrontierInterface::WeightedPointCloudPtr cloud, double totalMass);
 	 void owtWeightedPointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	 void newRobotPose(const cdl::WorkingMemoryChange &objID);
-	 void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype);
+	 void PostNavCommand(Cure::Pose3D position, SpatialData::CommandType cmdtype, double tol = 0.1);
 	 void startMovePanTilt(double pan, double tilt, double tolerance);
 	 void overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID);
 //	 void MovePanTilt(double pan, double tilt, double tolerance);
@@ -228,6 +228,8 @@ private:
 
 	 ConeGroup* m_currentConeGroup;
 	 std::pair<int,ViewPointGenerator::SensingAction> m_currentViewCone; // Id of this SensingAction's ConeGroup and the SensingAction itself
+   int m_currentViewConeNumber;
+   int m_currentConeGroupNumber;
 	 int m_coneGroupId; // Unique Id for each cone group
 	MainDialog *_mainDialog;
 
