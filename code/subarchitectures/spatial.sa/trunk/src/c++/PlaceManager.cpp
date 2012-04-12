@@ -1813,7 +1813,7 @@ PlaceManager::processPlaceArrival(bool failed)
           closeToGoal = distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation;
         }
         //The transition was an exploration action
-        if (!placeExisted && closeToGoal) { //No Place exists for current node -> it must be new.
+        if (!placeExisted && closeToGoal && (curNodeGateway == 0)) { //No Place exists for current node -> it must be new.
           arrivalCase = 1;
           //CASE 1: We were exploring a path, and a new node was discovered.
           //Stop moving, upgrade the placeholder we were heading for and connect it
@@ -1837,6 +1837,14 @@ PlaceManager::processPlaceArrival(bool failed)
             log("processPlaceArrival exited");
             return;
           }
+        }
+        else if (!placeExisted && closeToGoal && (curNodeGateway == 1)) {
+          arrivalCase = 7;
+          //CASE 7: 
+          log("  CASE 7: Door");
+          
+          /* If we are not close enough we came to a new node with no place, so we add one and DON'T cancel the movement */
+          addPlaceForNode(curNode);
         }
 
         else if (!placeExisted && !closeToGoal) {

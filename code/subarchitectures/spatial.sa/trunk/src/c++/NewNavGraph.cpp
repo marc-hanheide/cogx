@@ -624,7 +624,7 @@ NewNavGraph::addGatewayNode(double x, double y, double a, double width)
       if (m_CurrNode->getName() == "-" &&
           m_CurrNode->getType() == NavGraphNode::NODETYPE_NODE &&
           hypot(y - m_CurrNode->getY(), 
-                x - m_CurrNode->getX()) < 0.2 * m_NodeDist) {
+                x - m_CurrNode->getX()) < 0.5 * m_NodeDist) {
         if ((m_CurrNode->m_FlagMask & NavGraphNode::NODEFLAG_NOGATEWAY) == 0) {
           ret = makeGatewayOutOfNode(m_CurrNode, x,y,a,width);
         } else {

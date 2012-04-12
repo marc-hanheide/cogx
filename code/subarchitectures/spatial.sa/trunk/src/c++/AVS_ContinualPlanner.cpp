@@ -358,11 +358,31 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	if (m_currentConeGroup){
 	  VisionData::ARTagCommandPtr newObj =
 	    getMemoryEntry<VisionData::ARTagCommand>(objID.address);
-	log("Overwritten ARTagCommand: %s", newObj->label.c_str());
-	ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
-	m_ptzWaitingStatus = WAITING_TO_RETURN;
+	  log("Overwritten ARTagCommand: %s", newObj->label.c_str());
+	  ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 
-	startMovePanTilt(0.0,0.0,0.08);
+    m_currentViewConeNumber++;
+    if (m_currentViewConeNumber >= m_currentConeGroup->viewcones.size()){
+    	startMovePanTilt(0.0,0.0,0.08);
+    	m_ptzWaitingStatus = WAITING_TO_RETURN;
+    }
+    else {
+      m_processedViewConeIDs.insert(m_currentViewCone.first); 
+      m_currentViewCone.first = m_currentConeGroupNumber * 1000 + m_currentViewConeNumber;
+      m_currentViewCone.second = m_currentConeGroup->viewcones[m_currentViewConeNumber];
+      if(m_usePeekabot){         
+          m_proxyCone=&m_ProxyViewPointsList[m_currentViewCone.first];
+          m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_currentViewCone.first];   
+          ChangeCurrentViewConeColor(0.1,0.9,0.1);
+      }			
+      double angle = m_currentViewCone.second.pan-lastRobotPose->theta;
+      if (angle < -M_PI) angle += 2*M_PI; 
+      if (angle > M_PI) angle -= 2*M_PI; 
+
+      startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
+			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+    }
+
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 //	log("Overwriting command to change status to: SUCCESS");
 //	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
@@ -373,17 +393,55 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 void
 AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChange &objID)
 {
+  log("entered owtRecognizer3DCommand");
 	if(m_currentConeGroup){
 	  VisionData::Recognizer3DCommandPtr newObj =
 	    getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
 	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
-	startMovePanTilt(0.0,0.0,0.08);
-	m_ptzWaitingStatus = WAITING_TO_RETURN;
+    log("finished ViewConeUpdate");
+    m_currentViewConeNumber++;
+    if (m_currentViewConeNumber >= m_currentConeGroup->viewcones.size()){
+      log("1");
+    	startMovePanTilt(0.0,0.0,0.08);
+      log("2");
+    	m_ptzWaitingStatus = WAITING_TO_RETURN;
+    }
+    else {
+      log("3");
+      m_processedViewConeIDs.insert(m_currentViewCone.first); 
+      log("4");
+      m_currentViewCone.first = m_currentConeGroupNumber * 1000 + m_currentViewConeNumber;
+      log("5");
+      m_currentViewCone.second = m_currentConeGroup->viewcones[m_currentViewConeNumber];
+      log("6");
+      if(m_usePeekabot){         
+      log("7");
+          m_proxyCone=&m_ProxyViewPointsList[m_currentViewCone.first];
+      log("8");
+          m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_currentViewCone.first];   
+      log("9");
+          ChangeCurrentViewConeColor(0.1,0.9,0.1);
+      }			
+      log("10");
+      double angle = m_currentViewCone.second.pan-lastRobotPose->theta;
+      log("11");
+      if (angle < -M_PI) angle += 2*M_PI; 
+      log("12");
+      if (angle > M_PI) angle -= 2*M_PI; 
+      log("13");
+
+      startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
+      log("14");
+			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+      log("15");
+    }
+
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
 //	log("Overwriting command to change status to: SUCCESS");
 //	overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 	}
+  log("exited owtRecognizer3DCommand");
 }
 
 void
@@ -870,20 +928,45 @@ void AVS_ContinualPlanner::generateViewCones(
 	// 2. Fill in relevant fields
 	// 3. Create beliefs about them
 
-	for (unsigned int i=0; i < viewcones.size(); i++){
-		log("1");
+  map< int, vector<ViewPointGenerator::SensingAction> > place_cones;
+	for (int i=0; i < viewcones.size(); i++){
+    int closestnode = GetClosestNodeId(viewcones[i].pos[0], viewcones[i].pos[1], viewcones[i].pos[2]);
+		int conePlaceId = GetPlaceIdFromNodeId(closestnode);
+    place_cones[conePlaceId].push_back(viewcones[i]);
+  }
+  
+  vector< vector<ViewPointGenerator::SensingAction> > grouped_cones;
+  vector<ViewPointGenerator::SensingAction> gr;
+  double minAngle=10;
+  double maxAngle=-10;
+	for (map< int, vector<ViewPointGenerator::SensingAction> >::iterator plIt = place_cones.begin();
+            plIt != place_cones.end(); plIt++) {
+    for (int i=0; i < (*plIt).second.size(); i++){
+      if ((*plIt).second[i].pan < minAngle) minAngle = viewcones[i].pan;
+      if ((*plIt).second[i].pan > maxAngle) maxAngle = viewcones[i].pan;
+      double m_max_range = 0.9*M_PI;
+      if ((maxAngle - minAngle > m_max_range) || (m_sampleRandomPoints) || (i==0)){
+        log("vc %d %f %f", gr.size(), minAngle, maxAngle);
+        if (!gr.empty()){  
+          grouped_cones.push_back(gr);
+        }
+        gr.clear();
+        minAngle=10;
+        maxAngle=-10;
+      }
+      gr.push_back((*plIt).second[i]);
+    }
+  }
 
+	for (unsigned int i=0; i < grouped_cones.size(); i++){
 		/* GETTING PLACE BELIEFS */
 
-		int closestnode = GetClosestNodeId(viewcones[i].pos[0], viewcones[i].pos[1], viewcones[i].pos[2]);
-		log("2");
+		int closestnode = GetClosestNodeId(grouped_cones[i][0].pos[0], grouped_cones[i][0].pos[1], grouped_cones[i][0].pos[2]);
 		int conePlaceId = GetPlaceIdFromNodeId(closestnode);
-		log("3");
 		cast::cdl::WorkingMemoryAddress placeWMaddress;
 		// Get the place id for this cone
 		vector< boost::shared_ptr< cast::CASTData<GroundedBelief> > > placeBeliefs;
 			getWorkingMemoryEntries<GroundedBelief> ("spatial.sa", 0, placeBeliefs);
-			log("4");
 			if (placeBeliefs.size() ==0){
 				log("Could not get any  GroundedBeliefs from spatial.sa returning without doing anything...");
 				return;
@@ -915,7 +998,7 @@ void AVS_ContinualPlanner::generateViewCones(
 				break;
 			}
 		}
-
+    
 
 
 
@@ -923,7 +1006,9 @@ void AVS_ContinualPlanner::generateViewCones(
 		ConeGroup c;
 		c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
 		c.bloxelMapId = id;
-		c.viewcones.push_back(viewcones[i]);
+    for (int j = 0;j<grouped_cones[i].size();j++){
+  		c.viewcones.push_back(grouped_cones[i][j]);
+    }
 		c.roomId = newVPCommand->roomId;
 		c.placeId = conePlaceId;
 		c.relation = newVPCommand->relation;
@@ -992,7 +1077,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_coneGroupId++;
 
 		if(m_usePeekabot){
-  		PostViewCone(c.viewcones.back(),m_coneGroupId);
+  		for(int coneNumber=0;coneNumber<c.viewcones.size();coneNumber++)
+        PostViewCone(c.viewcones[coneNumber],m_coneGroupId * 1000 + coneNumber);
 		}
 
 		m_beliefConeGroups[m_coneGroupId] = c;
@@ -1166,9 +1252,11 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
 		return;
 	}
 	log("Processing Cone Group with id %d, totalprob %f", id, m_beliefConeGroups[id].getTotalProb());
-	m_currentConeGroup = &m_beliefConeGroups[id];
-	m_currentViewCone.first = id;
-	m_currentViewCone.second = m_currentConeGroup->viewcones[0]; // FIXME one cone per conegroup!
+  m_currentConeGroupNumber = id;
+  m_currentViewConeNumber = 0;
+	m_currentConeGroup = &m_beliefConeGroups[m_currentConeGroupNumber];
+	m_currentViewCone.first = m_currentConeGroupNumber*1000 + m_currentViewConeNumber;
+	m_currentViewCone.second = m_currentConeGroup->viewcones[m_currentViewConeNumber];
 
 	if(skipNav){
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
@@ -1186,9 +1274,9 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       ViewPointGenerator::SensingAction s = getRandomViewCone(m_currentViewCone.second);
       m_coneGroupId++;
       if(m_usePeekabot){
-          PostViewCone(s,m_coneGroupId);
-          m_proxyCone=&m_ProxyViewPointsList[m_coneGroupId];
-          m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_coneGroupId];
+          PostViewCone(s,m_currentViewCone.first);
+          m_proxyCone=&m_ProxyViewPointsList[m_currentViewCone.first];
+          m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
           ChangeCurrentViewConeColor(0.1,0.1,0.9);
       }  
 
@@ -1208,10 +1296,20 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
           ChangeCurrentViewConeColor(0.1,0.1,0.9);
       }
       Cure::Pose3D pos;
-      pos.setX(m_currentViewCone.second.pos[0]);
-      pos.setY(m_currentViewCone.second.pos[1]);
-			pos.setTheta(m_currentViewCone.second.pan);
-			PostNavCommand(pos, SpatialData::GOTOPOSITION);
+      double dist = 0.2;
+      pos.setX(m_currentViewCone.second.pos[0]-dist*cos(m_currentViewCone.second.pan));
+      pos.setY(m_currentViewCone.second.pos[1]-dist*sin(m_currentViewCone.second.pan));
+      double avg = 0;      
+      double minAngle = 10;
+      double maxAngle = -10;
+      for(int j=0; j < m_currentConeGroup->viewcones.size(); j++){
+        if (m_currentConeGroup->viewcones[j].pan < minAngle) minAngle = m_currentConeGroup->viewcones[j].pan;
+        if (m_currentConeGroup->viewcones[j].pan > maxAngle) maxAngle = m_currentConeGroup->viewcones[j].pan;
+      }
+      double range = maxAngle - minAngle;
+      double tol = M_PI - 0.5 * range;
+			pos.setTheta((maxAngle + minAngle)/2); //TODO not nessacerely - maybe between
+			PostNavCommand(pos, SpatialData::GOTOPOSITION,tol);
 			log("Posting a nav command");
     }
     }
@@ -1339,8 +1437,8 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 	//get the belief id
 	try{
-		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[viewcone.first].c_str());
-		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[viewcone.first],"binder");
+		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[round(viewcone.first / 1000)].c_str());
+		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[round(viewcone.first / 1000)],"binder");
 
 		CondIndependentDistribsPtr dist = CondIndependentDistribsPtr::dynamicCast(belief->content);
 		BasicProbDistributionPtr  basicdist = BasicProbDistributionPtr::dynamicCast(dist->distribs["p-visible"]);
@@ -1350,7 +1448,7 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		log("Will substract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
 		floatformula->val = floatformula->val - differenceMapPDFSum*(1/m_coneGroupNormalization); // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
-		overwriteWorkingMemory(m_coneGroupIdToBeliefId[viewcone.first], "binder", belief);
+		overwriteWorkingMemory(m_coneGroupIdToBeliefId[round(viewcone.first / 1000)], "binder", belief);
 
 	} catch (DoesNotExistOnWMException e) {
 		log("Error! ConeGroup belief missing on WM!");
@@ -1778,19 +1876,23 @@ void AVS_ContinualPlanner::owtNavCommand(
 		// it means we've reached viewcone position
 		if(!m_runInSimulation){
 			log("Not running in simulation mode, moving pan tilt");
-            if(m_usePeekabot){            
-                ChangeCurrentViewConeColor(0.1,0.9,0.1);
-            }			
-            startMovePanTilt(0.0, m_currentViewCone.second.tilt, 0.08);
-			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+        if(m_usePeekabot){            
+            ChangeCurrentViewConeColor(0.1,0.9,0.1);
+        }			
+        double angle = m_currentViewCone.second.pan-lastRobotPose->theta;
+        if (angle < -M_PI) angle += 2*M_PI; 
+        if (angle > M_PI) angle -= 2*M_PI; 
+
+        startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
+  			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
 //			Recognize();
 		}
 		if(m_runInSimulation){
-		log("Updating the %s bloxel map", m_currentConeGroup->bloxelMapId.c_str());
-		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
-		m_currentProcessConeGroup->status = SpatialData::SUCCESS;
-		log("Overwriting command to change status to: SUCCESS");
-		overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
+		  log("Updating the %s bloxel map", m_currentConeGroup->bloxelMapId.c_str());
+		  ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
+		  m_currentProcessConeGroup->status = SpatialData::SUCCESS;
+		  log("Overwriting command to change status to: SUCCESS");
+		  overwriteWorkingMemory<SpatialData::ProcessConeGroup>(m_processConeGroupCommandWMAddress , m_currentProcessConeGroup);
 		}
 	}
 	else if (cmd->comp == SpatialData::COMMANDFAILED) {
@@ -1806,7 +1908,7 @@ void AVS_ContinualPlanner::owtNavCommand(
 	}
 
 void AVS_ContinualPlanner::PostNavCommand(Cure::Pose3D position,
-		SpatialData::CommandType cmdtype) {
+		SpatialData::CommandType cmdtype, double tol) {
 	SpatialData::NavCommandPtr cmd = new SpatialData::NavCommand();
 	cmd->prio = SpatialData::URGENT;
 	cmd->cmd = cmdtype;
@@ -1816,6 +1918,8 @@ void AVS_ContinualPlanner::PostNavCommand(Cure::Pose3D position,
 	cmd->pose[2] = position.getTheta();
 	cmd->tolerance.resize(1);
 	cmd->tolerance[0] = 0.1;
+//TODO use tol
+
 	cmd->status = SpatialData::NONE;
 	cmd->comp = SpatialData::COMMANDPENDING;
 	new NavCommandReceiver(*this, cmd);
