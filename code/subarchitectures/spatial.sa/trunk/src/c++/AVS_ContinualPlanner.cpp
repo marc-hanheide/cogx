@@ -1462,10 +1462,6 @@ void AVS_ContinualPlanner::configure(
 	  str >> m_RetryDelay;
 	}
 
-  m_sampleRandomPoints = false;
-	if (_config.find("--sample-random-points") != _config.end()) {
-	      m_sampleRandomPoints = true;
-  }
 	m_gridsize = 200;
 	m_cellsize = 0.05;
 	it = _config.find("--gridsize");
@@ -1635,11 +1631,20 @@ void AVS_ContinualPlanner::configure(
 		log("will use ptu");
 	}
 
-	m_randomViewCones = false;
-	if (_config.find("--random-vc") != _config.end()) {
-		m_randomViewCones = true;
-		log("Will generate random view cones.");
+	m_sampleRandomPoints = false;
+	if (_config.find("--sample-random-points") != _config.end()) {
+	  m_sampleRandomPoints = true;
 	}
+
+	m_randomViewCones = false;
+	if (m_sampleRandomPoints)  {
+	  // Disallow randomization of view cones if only locations at nodes are permitted
+	  if (_config.find("--random-vc") != _config.end()) {
+	    m_randomViewCones = true;
+	    log("Will generate random view cones.");
+	  }
+	}
+
 	m_runInSimulation = false;
 	if (_config.find("--simulation") != _config.end()) {
 			m_runInSimulation = true;
