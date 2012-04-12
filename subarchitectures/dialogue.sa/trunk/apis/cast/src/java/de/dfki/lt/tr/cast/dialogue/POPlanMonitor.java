@@ -14,6 +14,11 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import cast.core.CASTUtils;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 
 public class POPlanMonitor extends ManagedComponent {
@@ -73,6 +78,7 @@ public class POPlanMonitor extends ManagedComponent {
 	}
 
 	private String poplanToString(POPlan _poPlan) {
+
 		StringBuilder action_sb = new StringBuilder(22 * _poPlan.actions.length);
 		for (Action _ac : _poPlan.actions) {
 			action_sb.append("\nAction fullName: ");
@@ -83,18 +89,96 @@ public class POPlanMonitor extends ManagedComponent {
 		
 		StringBuilder link_sb = new StringBuilder(42 * _poPlan.links.length);
 		for (Link _ln : _poPlan.links) {
-			link_sb.append("\nLink  =");
+			/*link_sb.append("\nLink  =");
 			link_sb.append(" src: ");
 			link_sb.append(_ln.src);
 			link_sb.append(" dest: ");
 			link_sb.append(_ln.dest);
 			link_sb.append(" reason fact name: ");
-			link_sb.append(_ln.reason.name);
-			dFormula df = _ln.reason.arguments[0];
+			link_sb.append(_ln.reason.name);*/
+			
+			link_sb.append("\n" + _ln.src + " " + _ln.dest + " " + _ln.type.name() + " " + _ln.reason.name + " ");
+			
+			//dFormula df = _ln.reason.modality
+			
+			//((PointerFormula)df).pointer.id
+			
+			//CASTUtils.toString(((PointerFormula)_df).pointer)
+			
+			// je nach typ, ElementaryFormula (string), BooleanFormula, IntegerFormula, FloatFormula, UnknownFormula, PointerFormula //
+			
+			
+			/*if (_ln.reason.value != null) {
+				link_sb.append("Value: " + _ln.reason.value.id);
+			}*/
+			
+			for (dFormula _df : _ln.reason.arguments) {
+				
+				if (_df instanceof PointerFormula) {
+					if (((PointerFormula)_df).pointer != null) {
+						link_sb.append(((PointerFormula)_df).pointer.id);
+						link_sb.append("@");
+						link_sb.append(((PointerFormula)_df).pointer.subarchitecture);
+						link_sb.append(" ");
+					}	
+				} else if (_df instanceof ElementaryFormula) {
+					link_sb.append(((ElementaryFormula)_df).prop + " ");
+					
+				}
+				else {
+					link_sb.append("\nArgument has a special type.");
+					link_sb.append("\n" + _df.getClass().toString());
+				}
+			}
+			
+			for (dFormula _df : _ln.reason.modalArguments) {
+				
+				if (_df instanceof PointerFormula) {
+					link_sb.append("MODALITY: " + _ln.reason.modality + " ");
+					if (((PointerFormula)_df).pointer != null) {
+						link_sb.append(((PointerFormula)_df).pointer.id);
+						link_sb.append("@");
+						link_sb.append(((PointerFormula)_df).pointer.subarchitecture);
+						link_sb.append(" ");
+					}
+				} else if (_df instanceof ElementaryFormula) {
+					link_sb.append("MODALITY: " + _ln.reason.modality);
+					//link_sb.append(((ElementaryFormula)_df).prop + " ");
+					
+				} else if (_df instanceof BooleanFormula) {
+					link_sb.append("MODALITY: " + _ln.reason.modality + " ");
+					link_sb.append(((BooleanFormula)_df).val);
+				}
+				else {
+					link_sb.append("\nModalArgument has a special type.");
+					link_sb.append("\n" + _df.getClass().toString());
+				}
+			}
+			
+			
+			if (_ln.reason.value instanceof BooleanFormula) {
+				link_sb.append(" Value: " + ((BooleanFormula)_ln.reason.value).val);
+				
+			} else if (_ln.reason.value instanceof PointerFormula) {
+				if (((PointerFormula)_ln.reason.value).pointer != null) {
+					link_sb.append("Value: " + ((PointerFormula)_ln.reason.value).pointer.id);
+					link_sb.append("@");
+					link_sb.append(((PointerFormula)_ln.reason.value).pointer.subarchitecture);
+					link_sb.append(" ");
+				}
+			} else if (_ln.reason.value instanceof ElementaryFormula) {
+				link_sb.append("Vaule: " + ((ElementaryFormula)_ln.reason.value).prop + " ");
+				
+			} else if (_ln.reason.value instanceof FloatFormula) {
+				link_sb.append("Vaule: " + ((FloatFormula)_ln.reason.value).val + " ");
+				
+			} else {
+				link_sb.append("Test: " + _ln.reason.value.getClass().toString());
+			}
+			
 			//_ln.reason.modalArguments;
 			//_ln.reason.modality;
 			//_ln.reason.value
-			// je nach typ, ElementaryFormula (string), BooleanFormula, IntegerFormula, FloatFormula, UnknownFormula, PointerFormula //
 		}
 
 		StringBuilder return_sb = new StringBuilder(40 + action_sb.length() + link_sb.length());
