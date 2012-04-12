@@ -90,8 +90,8 @@ log4j.appender.cliSocketApp=cast.core.logging.IceAppender
 log4j.appender.cliSocketApp.Host=localhost
 
 log4j.logger.coma=TRACE
-log4j.logger.spatial.sa.display.process=TRACE
-log4j.logger.spatial.sa.place.manager=TRACE
+#log4j.logger.spatial.sa.display.process=TRACE
+#log4j.logger.spatial.sa.place.manager=TRACE
 EOF
 
 
