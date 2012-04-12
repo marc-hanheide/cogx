@@ -12,6 +12,8 @@
 // CAST
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
+#include <algorithm>
+
 
 /** The function called to create a new instance of our component. */
 extern "C"
@@ -107,7 +109,7 @@ void PlaceholderPropertyUpdater::runComponent()
 		timespec ts;
 		timeval tv;
 		gettimeofday(&tv, NULL);
-		ts.tv_sec = tv.tv_sec + 1;
+		ts.tv_sec = tv.tv_sec + 5; // FIXME @demmeln 12.04.2012: Hack, should be 1 second
 		ts.tv_nsec = 0;
 
 		// Wait if necessary
@@ -115,12 +117,24 @@ void PlaceholderPropertyUpdater::runComponent()
 		if (!_worldStateChanged)
 			pthread_cond_timedwait(&_worldStateChangedSignalCond, &_worldStateChangedSignalMutex, &ts);
 
+    // FIXME @demmeln 12.04.2012: This is a hack to make placeholders work that
+    // are associated to doors.
+    // 
+    // Possibly uncomment this to force an update of the placeholders even
+    // without conceptual world state getting an update.
+    // 
+    // if (!_worldStateChanged)
+    // {
+		// 	log("Timeout on world state change. Forcing update of placeholders [HACK].");
+    //   _worldStateChanged = true;
+    // }
+
 		// Handle signal if signal arrived
 		if ((!isRunning()) || (!_worldStateChanged))
 			pthread_mutex_unlock(&_worldStateChangedSignalMutex);
 		else
 		{
-			debug("Processing a world state change.");
+			log("Processing a world state change.");
 
 			// Mark that we have handled the world state change
 			_worldStateChanged=false;
@@ -132,10 +146,51 @@ void PlaceholderPropertyUpdater::runComponent()
 
 			sched_yield();
 
+      // FIXME @demmeln 12.04.2012: Hack for placeholders connected to doors
+      vector<int> unassociatedPlaceholderIds;
+      {
+        map<cdl::WorkingMemoryAddress, int>::iterator it;
+        for (it = _placeWmAddressMap.begin(); it != _placeWmAddressMap.end(); ++it)
+        {
+          int placeholderId = it->second;
+            
+          if (find(placeholderIds.begin(), placeholderIds.end(), placeholderId) == placeholderIds.end())
+          {
+            // placeholder in WM not found in placeholderIds, which is generated from conceptual world
+            // give it some default placeholder room category property.
+
+            log("Placeholder %d not associated to a room. Giving default room category propertoies. [HACK]",
+                placeholderId);
+            
+            // For each room category
+            for (unsigned j=0; j<_roomCategories.size(); j++)
+            {
+              string roomCategory = _roomCategories[j];
+
+              SpatialProbabilities::ProbabilityDistribution probDist;
+
+              // set default value of 0.3 existance
+              probDist.massFunction.resize(2);
+              probDist.massFunction[0].variableValues.push_back(
+                  new SpatialProbabilities::IntRandomVariableValue(0));
+              probDist.massFunction[0].probability = 0.7;
+              probDist.massFunction[1].variableValues.push_back(
+                  new SpatialProbabilities::IntRandomVariableValue(1));
+              probDist.massFunction[1].probability = 0.3;
+
+              updateRoomCategoryPlaceholderProperty(placeholderId, roomCategory, probDist);
+            }
+          }
+        }
+      }
+
 			// Update the properties of each placeholder
 			for (unsigned i=0; i<placeholderIds.size(); i++)
 			{
 				int placeholderId = placeholderIds[i];
+
+        log("Placeholder %d associated to a room. Updating its category propertoies.",
+            placeholderId);
 
 				// For each room category
 				for (unsigned j=0; j<_roomCategories.size(); j++)
