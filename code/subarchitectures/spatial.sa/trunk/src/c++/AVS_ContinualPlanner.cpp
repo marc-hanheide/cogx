@@ -947,7 +947,6 @@ void AVS_ContinualPlanner::generateViewCones(
       log("vc %d %f %f", gr.size(), minAngle, maxAngle);
       double m_max_range = 0.9*M_PI;
       if ((maxAngle - minAngle > m_max_range) || (m_sampleRandomPoints) || (i==0)){
-        
         if (!gr.empty()){  
           grouped_cones.push_back(gr);
         }
@@ -1311,7 +1310,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       double range = maxAngle - minAngle;
       double tol = M_PI - 0.5 * range;
       double theta = (maxAngle + minAngle)/2;
-      if ((fabs(maxAngle - theta) > M_PI * 0.9 / 2 ) || (fabs(minAngle - theta) > M_PI * 0.9 / 2)){
+      if ((fabs(maxAngle - theta) > M_PI / 2 ) || (fabs(minAngle - theta) > M_PI / 2)){
         theta = theta + M_PI;
       }
 			pos.setTheta(theta); //TODO not nessacerely - maybe between

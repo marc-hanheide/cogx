@@ -252,7 +252,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
     // Wait until resolution...
     cdl::WorkingMemoryChange change;
     bool finished = false;
-    while(!aborted && !some_error && !finished){
+    while(!aborted && !finished){
       log("before rv wait...");
       change = rv->wait();
       log("after rv wait");
@@ -293,10 +293,12 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 		  }else{
 		    log("The NavCommand suddenly disappeared...");
 		    some_error = true;
+        finished = true;
 		  }
 		} catch (DoesNotExistOnWMException) {
 		  log("The NavCommand suddenly disappeared...");
 		  some_error = true;
+      finished = true;
 		}				
 		debug("unlocking");
 		unlockEntry(navCmdId);
@@ -304,6 +306,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	      catch (DoesNotExistOnWMException) {
 	        log("The NavCommand disappeared while waiting to lock.");
 	        some_error = true;
+          finished = true;
 	      }
         catch (ConsistencyException e) {
 	        log("Error! ConsistencyException in SpatialTranslation::executeCommand!");
@@ -320,15 +323,14 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	      if(pcmd){
 	        switch(pcmd->getData()->comp){
 	        case NavData::SUCCEEDED:
+            m_placeInterface->endPlaceTransition(false);
 
 	          if (m_isExplorationAction) {
-
               if (m_issueVisualExplorationActions){
                 issueVisualExplorationCommand(*rv);
               }
               else {
 	              issuePlaceholderEnumeratingCommand(*rv);
-      //        m_placeInterface->endPlaceTransition(!finished);
 	            }
 	          }
             else if (m_generatePlaceholdersOnPlace){
@@ -342,8 +344,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	          break;
 	        case NavData::ABORTED:
 	        case NavData::FAILED:
-
+            m_placeInterface->endPlaceTransition(true);
 	          some_error = true;
+            issuePlaceholderEnumeratingCommand(*rv);
+
 	          status = SpatialData::TARGETUNREACHABLE;
 
 		  navCtrlCmdId = "";
@@ -351,20 +355,12 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	        default: break;
 	        }
 
-	        // For Place transitions, send completion message to
-	        // PlaceManager
-          if (some_error){
-            issuePlaceholderEnumeratingCommand(*rv);
-          }
-	        else if (finished) {
-	          m_placeInterface->endPlaceTransition(!finished);
-	        }
-
 	        log(finished? "yes": "no");
 	      }
         else{
 	        log("The InternalNavCommand suddenly disappeared...");
 	        some_error = true;
+          issuePlaceholderEnumeratingCommand(*rv);
 	      }
 	}
       }
@@ -375,12 +371,6 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       else if (type== typeName<NavData::PlaceholderEnumeratingCommand>()) {
 	      log("Placeholder enumerating cmd finished");
 	      finished = true;
-        if (some_error){
-          m_placeInterface->endPlaceTransition(true);
-        }
-        else if (finished) {
-          m_placeInterface->endPlaceTransition(!finished);
-        }
       }
 
       else if (type == typeName<NavData::FNode>()) {
