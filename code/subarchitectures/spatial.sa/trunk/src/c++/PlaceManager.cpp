@@ -1396,9 +1396,10 @@ void PlaceManager::evaluateUnexploredPaths()
       if (newHyp->hypID==-1){
         log("create new placeholder");
 //        newHyp->hypID = m_hypIDCounter;
-//        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = getPlaceFromNodeID(newHyp->originNodeID)->id;
+        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = _getPlaceForNode(newHyp->originNodeID);
 //          log("Couldn't find closest node. Connecting with the current");
-        newHyp->originPlaceID = _getPlace(curPlace)->id;
+ 
+//       newHyp->originPlaceID = _getPlace(curPlace)->id;
 
         bool excluded = false;
         for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
@@ -1423,8 +1424,8 @@ void PlaceManager::evaluateUnexploredPaths()
               newHyp->y, newHyp->hypID);
 
           // Add connectivity property (one-way)
-          createConnectivityProperty(m_hypPathLength, curPlace, newPlaceID);
-          m_hypotheticalConnectivities.push_back(pair<int, int>(curPlace, newPlaceID));
+          createConnectivityProperty(m_hypPathLength, newHyp->originPlaceID, newPlaceID);
+          m_hypotheticalConnectivities.push_back(pair<int, int>(newHyp->originPlaceID, newPlaceID));
         }
       }
     }
