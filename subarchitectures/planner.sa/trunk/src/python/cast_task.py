@@ -420,7 +420,7 @@ class CASTTask(object):
             if result:
                 self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_FOUND) 
                 facts = reduce(lambda x,y:x|y.effects, result, set())
-                log.info("Found explanations: %s", ", ".join(str(f) for f in facts))
+                log.debug("Raw explanations: %s", ", ".join(str(f) for f in facts))
                 beliefs = list(self.facts_to_belief(facts))
 
                 expl_poplan = self.make_cast_poplan(expl_plan, is_completed=True)
@@ -478,10 +478,10 @@ class CASTTask(object):
                 
 
         beliefs = []
-        print "\nexplanations:"
+        log.info("\nexplanations:")
         for o, vals in obj_to_feature.iteritems():
             obj_facts = itertools.chain(vals, obj_to_relation.get(o, []))
-            print "  %s: %s" % (str(o), ", ".join(str(f) for f in obj_facts))
+            log.info("  %s: %s", str(o), ", ".join(str(f) for f in obj_facts))
             features = sum((self.state.make_features(f) for f in vals), [])
             # bel = self.state.make_belief(features, HypotheticalBelief)
             bel = self.state.make_belief(features, HypotheticalBelief)
@@ -495,7 +495,7 @@ class CASTTask(object):
             
         for o, vals in obj_to_relation.iteritems():
             if o not in obj_to_feature:
-                print "  %s: %s" % (str(o), ", ".join(str(f) for f in vals))
+                log.info("  %s: %s", str(o), ", ".join(str(f) for f in vals))
 
             for f in vals:
                 bel = self.state.make_belief(self.state.make_features(f), HypotheticalBelief)
