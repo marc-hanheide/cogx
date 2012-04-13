@@ -749,7 +749,12 @@ bool SpatialTranslation::translateCommand(const SpatialData::NavCommandPtr &nav,
 	if (destNode != 0) {
 	  ctrl.cmd = NavData::lGOTONODE;
 	  ctrl.nodeId = destNode->nodeId;
-	  ctrl.tolerance = nav->tolerance;
+    if (nav->tolerance.empty()){
+      vector<double> tol;
+      tol.push_back(0.15);
+      ctrl.tolerance = tol;
+    }
+    else ctrl.tolerance = nav->tolerance;
 	}
 	else {
 	  SpatialData::NodeHypothesisPtr destHyp = m_placeInterface->getHypFromPlaceID(nav->destId[0]);

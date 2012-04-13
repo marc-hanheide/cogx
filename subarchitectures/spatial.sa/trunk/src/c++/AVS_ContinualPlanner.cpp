@@ -1308,7 +1308,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
         if (m_currentConeGroup->viewcones[j].pan > maxAngle) maxAngle = m_currentConeGroup->viewcones[j].pan;
       }
       double range = maxAngle - minAngle;
-      double tol = M_PI - 0.5 * range;
+      double tol = 0.9 * M_PI - 0.5 * range;
       double theta = (maxAngle + minAngle)/2;
       if ((fabs(maxAngle - theta) > M_PI / 2 ) || (fabs(minAngle - theta) > M_PI / 2)){
         theta = theta + M_PI;
@@ -1922,9 +1922,15 @@ void AVS_ContinualPlanner::PostNavCommand(Cure::Pose3D position,
 	cmd->pose[0] = position.getX();
 	cmd->pose[1] = position.getY();
 	cmd->pose[2] = position.getTheta();
-	cmd->tolerance.resize(1);
-	cmd->tolerance[0] = 0.1;
-//TODO use tol
+  if (tol == 0){
+	  cmd->tolerance.resize(1);
+	  cmd->tolerance[0] = 0.1;
+  }
+  else {
+	  cmd->tolerance.resize(2);
+	  cmd->tolerance[0] = 0.1;
+	  cmd->tolerance[1] = tol;
+  }
 
 	cmd->status = SpatialData::NONE;
 	cmd->comp = SpatialData::COMMANDPENDING;
