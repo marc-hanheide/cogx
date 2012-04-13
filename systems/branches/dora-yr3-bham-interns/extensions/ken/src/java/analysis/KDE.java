@@ -52,8 +52,8 @@ public class KDE {
 		// + values[1][i]);
 		// }
 
-		// double[][] curve = curvify(values);
-		// values[1] = kde.smooth(values[1]);
+		 double[][] curve = curvify(values);
+		 values[1] = kde.smooth(values[1]);
 		double[] diffd1 = kde.differentiate(values[1]);
 		// double[] diffd2 = kde.differentiate(diffd1);
 
@@ -71,8 +71,8 @@ public class KDE {
 		// System.out.println("paths" + paths.length);
 		Graph gO = new Graph(paths, "raw data");
 		// // System.out.println(values[1].length);
-		//Graph gV = new Graph(values[1], values[0], "kde values");
-		// // System.out.println(diffd1.length);
+		Graph gV = new Graph(values[1], values[0], "kde values");
+		 // System.out.println(diffd1.length);
 	//	Graph gD1 = new Graph(diffd1, values[0], "diffd once");
 		// // System.out.println(diffd2.length);
 		// Graph gD = new Graph(diffd2, values[0], "double differentiated");

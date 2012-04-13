@@ -13,6 +13,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import displays.PathVisualization;
+
 /**
  * stores a edge, and all the runs across that edge
  * 
@@ -25,9 +27,11 @@ public class PathTimes implements Serializable {
 
 		Vector<PathTimes> pathTimes = new Vector<PathTimes>();
 		try {
+			// ObjectInputStream in = new ObjectInputStream(
+			// new BufferedInputStream(new FileInputStream("timings.txt")));
 			ObjectInputStream in = new ObjectInputStream(
-					new BufferedInputStream(new FileInputStream("timings.txt")));
-
+					new BufferedInputStream(new FileInputStream(
+							"timings.txt")));
 			pathTimes = ((PathTimesWrapper) (in.readObject())).getPathTimes();
 
 			in.close();
@@ -44,28 +48,28 @@ public class PathTimes implements Serializable {
 		}
 		System.out.println(pathTimes);
 		PathTimes.printList(pathTimes);
-//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
-//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
-//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
-//pathTimes.remove(pathTimes.get(pathTimes.size()-1));
-//PathTimes.printList(pathTimes);
-//ObjectOutputStream out;
-//try {
-//	File file = new File("timings.txt");
-//	file.delete();
-//	out = new ObjectOutputStream(new BufferedOutputStream(
-//			new FileOutputStream("timings.txt")));
-//	PathTimesWrapper wrap = new PathTimesWrapper(pathTimes);
-//	out.writeObject(wrap);
-//	out.close();
-//	
-//} catch (FileNotFoundException e) {
-//	
-//	e.printStackTrace();
-//} catch (IOException e) {
-//	
-//	e.printStackTrace();
-//}
+		// pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+		// pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+		// pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+		// pathTimes.remove(pathTimes.get(pathTimes.size()-1));
+		// PathTimes.printList(pathTimes);
+		// ObjectOutputStream out;
+		// try {
+		// File file = new File("timings.txt");
+		// file.delete();
+		// out = new ObjectOutputStream(new BufferedOutputStream(
+		// new FileOutputStream("timings.txt")));
+		// PathTimesWrapper wrap = new PathTimesWrapper(pathTimes);
+		// out.writeObject(wrap);
+		// out.close();
+		//	
+		// } catch (FileNotFoundException e) {
+		//	
+		// e.printStackTrace();
+		// } catch (IOException e) {
+		//	
+		// e.printStackTrace();
+		// }
 	}
 
 	/**
@@ -113,11 +117,11 @@ public class PathTimes implements Serializable {
 		returnV += "\nthere are " + count + " runs ";
 		return returnV;
 	}
-	
-	public static void printList(Vector<PathTimes> pT){
-		System.out.println("path list size of " +pT.size() );
-		for(PathTimes p:pT){
-			System.out.println(p.getA() +" "+p.getB());
+
+	public static void printList(Vector<PathTimes> pT) {
+		System.out.println("path list size of " + pT.size());
+		for (PathTimes p : pT) {
+			System.out.println(p.getA() + " " + p.getB());
 		}
 	}
 

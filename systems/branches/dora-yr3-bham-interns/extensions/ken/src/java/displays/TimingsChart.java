@@ -28,12 +28,14 @@ public class TimingsChart extends JFrame {
 	ChartPanel panel;
 
 	public static void main(String[] args) {
-		PathVisualization.value=PathVisualization.values[1];
+		PathVisualization.value=PathVisualization.values[0];
 		TimingsChart c = new TimingsChart(true);
 		//PathVisualization.value=PathVisualization.values[1];
 		//TimingsChart c1 = new TimingsChart(true);
-		PathVisualization.value=PathVisualization.values[0];
-		TimingsChart c2 = new TimingsChart(true);
+//		PathVisualization.value=PathVisualization.values[4];
+//		TimingsChart c2 = new TimingsChart(true);
+//		PathVisualization.value=PathVisualization.values[5];
+//		TimingsChart c3 = new TimingsChart(true);
 		//TimingsChart c2 = new TimingsChart(false);
 	}
 
