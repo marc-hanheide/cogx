@@ -25,7 +25,7 @@ public class Cluster {
 
 	public static void main(String[] args) {
 
-		Cluster c = new Cluster(64, true, true, true,1);
+		Cluster c = new Cluster(15, true, true, true,1);
 		// 50 actually has somethign happen
 	}
 	
@@ -62,6 +62,10 @@ public class Cluster {
 				h = cluster(1);
 			} catch (IllegalArgumentException e) {
 				System.out.println("can't perform clustering on this dataset");
+				if(data.size()==1){
+					means = new ArrayList<Integer>();
+					means.add((int)data.get(0).value(1));
+				}
 				return;
 			}
 			double startVar = variance(h);
@@ -156,7 +160,12 @@ public class Cluster {
 				if (list.size() != 0) {
 					if (zeroCount > (list.size() / 2)) {// if more than half our
 						// values are 0
-						means.add(0);
+						
+						if(zeroCount==0){
+							means.add(sumIns/list.size());
+						}else{
+							means.add(0);
+						}
 					} else {// if they are not, we want to ignore any that were
 						means.add(sumIns / (list.size() - zeroCount));
 						// System.out.println("sum is " + sumIns);

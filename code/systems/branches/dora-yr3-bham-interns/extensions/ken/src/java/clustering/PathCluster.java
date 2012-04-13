@@ -134,28 +134,35 @@ public class PathCluster {
 			for (PathRun r : pT.getRuns()) {
 				Date time = r.timeStarted();
 				int mins = time.getHours() * 60 + time.getMinutes();
-				if (hax) {
-					if (time.getDay() == 1) {
-						out.println(time.getDay() + " , " + mins + " , "
-								+ r.timeTaken());
-						out.println(3 + " , " + mins + " , " + r.timeTaken());
-						out.println(4 + " , " + mins + " , " + r.timeTaken());
-					} else {
-						out.println(time.getDay() + " , " + mins + " , "
-								+ r.timeTaken());
-						out.println(0 + " , " + mins + " , " + r.timeTaken());
-						out.println(2 + " , " + mins + " , " + r.timeTaken());
-					}
-				}
+//				if (hax) {
+//					if (time.getDay() == 1) {
+//						out.println(time.getDay() + " , " + mins + " , "
+//								+ r.timeTaken());
+//						out.println(3 + " , " + mins + " , " + r.timeTaken());
+//						out.println(4 + " , " + mins + " , " + r.timeTaken());
+//					} else {
+//						out.println(time.getDay() + " , " + mins + " , "
+//								+ r.timeTaken());
+//						out.println(0 + " , " + mins + " , " + r.timeTaken());
+//						out.println(2 + " , " + mins + " , " + r.timeTaken());
+//					}
+//				}
 				if (includeDay) {
 					if (time.getDay() == day) {
+						if(pT.getRuns().size()==1){
+							out.println((mins+10) + " , " + r.timeTaken());	
+						}
 						out.println(mins + " , " + r.timeTaken());
 					}
 				} else {
+					if(pT.getRuns().size()==1){
+						out.println((mins+10) + " , " + r.timeTaken());
+					}
 					out.println(mins + " , " + r.timeTaken());
 				}
 
 			}
+			
 			out.close();
 		} catch (IOException e) {
 			System.out.println(e);

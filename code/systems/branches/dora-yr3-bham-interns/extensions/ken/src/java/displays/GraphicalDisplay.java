@@ -125,15 +125,6 @@ public class GraphicalDisplay extends JPanel {
 		int height = frame.getHeight();
 		int width = frame.getWidth();
 
-		for (FNode node : nodes) {
-
-			g.fillOval((int) (((node.x - minX) / sizeX) * width),
-					(int) ((1 - (node.y - minY) / sizeY) * height), 5, 5);
-			g.drawString(Long.toString(node.nodeId),
-					(int) (((node.x - minX) / sizeX) * width),
-					(int) ((1 - (node.y - minY) / sizeY) * height));
-		}
-
 		for (int i = 0; i < pathTimes.size(); i++) {
 			PathTimes pT = pathTimes.get(i);
 
@@ -149,11 +140,25 @@ public class GraphicalDisplay extends JPanel {
 			if (containsPath(pT.getA(),pT.getB())) {
 				g.setColor(Color.green);
 			} else {
-				g.setColor(Color.black);
+				g.setColor(Color.blue);
 			}
 
 			g.drawLine(drawX1, drawY1, drawX2, drawY2);
 		}
+		
+		g.setColor(Color.black);
+		
+		for (FNode node : nodes) {
+
+			g.fillOval((int) (((node.x - minX) / sizeX) * width),
+					(int) ((1 - (node.y - minY) / sizeY) * height), 5, 5);
+	
+			g.drawString(Long.toString(node.nodeId),
+					(int) (((node.x - minX) / sizeX) * width),
+					(int) ((1 - (node.y - minY) / sizeY) * height));
+		}
+
+		
 
 	}
 	
