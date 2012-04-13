@@ -340,10 +340,8 @@ void WMControl::stateChanged(const cast::cdl::WorkingMemoryChange& wmc) {
             BeliefEntry entry;
             entry.address = wmc.address;
             entry.belief = getMemoryEntry<dBelief>(wmc.address);
-            if (!dynamic_cast<HypotheticalBelief*>(entry.belief.get())) {
-                m_currentState[wmc.address.id] = entry;
-                log("%s->id = %s", wmc.address.id.c_str(), entry.belief->id.c_str());
-            }
+            m_currentState[wmc.address.id] = entry;
+            log("%s->id = %s", wmc.address.id.c_str(), entry.belief->id.c_str());
         }
         catch(cast::DoesNotExistOnWMException) {
             log("%s vanished.", wmc.address.id.c_str());
