@@ -1308,7 +1308,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
         if (m_currentConeGroup->viewcones[j].pan > maxAngle) maxAngle = m_currentConeGroup->viewcones[j].pan;
       }
       double range = maxAngle - minAngle;
-      double tol = 0.9 * M_PI - 0.5 * range;
+      double tol = 0.9 * M_PI - range;
       double theta = (maxAngle + minAngle)/2;
       if ((fabs(maxAngle - theta) > M_PI / 2 ) || (fabs(minAngle - theta) > M_PI / 2)){
         theta = theta + M_PI;
