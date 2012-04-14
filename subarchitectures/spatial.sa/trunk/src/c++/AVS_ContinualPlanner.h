@@ -51,6 +51,9 @@ public:
 
 	struct ConeGroup{
 		std::vector<ViewPointGenerator::SensingAction> viewcones;
+    double minAngle;
+    double maxAngle;
+    
 		std::string bloxelMapId;
 		SpatialData::SpatialRelation relation;
 		std::string supportObjectId;
@@ -121,6 +124,7 @@ public:
 	 bool m_usePeekabot;
 	 VisualPB_Bloxel* pbVis;
     bool m_sampleRandomPoints;
+  double m_maxRange;
 private:
 
     struct ForbiddenZone {

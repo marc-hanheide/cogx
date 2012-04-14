@@ -934,31 +934,87 @@ void AVS_ContinualPlanner::generateViewCones(
 		int conePlaceId = GetPlaceIdFromNodeId(closestnode);
     place_cones[conePlaceId].push_back(viewcones[i]);
   }
-  
+
   vector< vector<ViewPointGenerator::SensingAction> > grouped_cones;
-  vector<ViewPointGenerator::SensingAction> gr;
-  double minAngle=10;
-  double maxAngle=-10;
-	for (map< int, vector<ViewPointGenerator::SensingAction> >::iterator plIt = place_cones.begin();
+  vector< double > grouped_cones_minAngle;
+  vector< double > grouped_cones_maxAngle;
+
+  for (map< int, vector<ViewPointGenerator::SensingAction> >::iterator plIt = place_cones.begin();
             plIt != place_cones.end(); plIt++) {
+    int min_counter = 4;
+    double opt_minAngle = 0;
+
     for (int i=0; i < (*plIt).second.size(); i++){
-      if ((*plIt).second[i].pan < minAngle) minAngle = viewcones[i].pan;
-      if ((*plIt).second[i].pan > maxAngle) maxAngle = viewcones[i].pan;
-      log("vc %d %f %f", gr.size(), minAngle, maxAngle);
-      double m_max_range = 0.9*M_PI;
-      if ((maxAngle - minAngle > m_max_range) || (m_sampleRandomPoints) || (i==0)){
-        if (!gr.empty()){  
-          grouped_cones.push_back(gr);
+      double minAngle = (*plIt).second[i].pan;
+      double stAngle = minAngle;
+      int counter = 0;
+      map<int, bool> collected_vc;
+      while (collected_vc.size()<(*plIt).second.size()){
+        double maxAngle = stAngle + m_maxRange;
+        double min_dist = 2 * M_PI;
+        for (int k=0; k < (*plIt).second.size(); k++){
+          double dist1 = (*plIt).second[k].pan - stAngle;
+          while (dist1 < 0) dist1+= 2 * M_PI;
+          while (dist1 > 2 * M_PI) dist1-= 2 * M_PI;
+
+          if (dist1 < m_maxRange){
+            collected_vc[k] = true;
+          }
+
+          double dist = (*plIt).second[k].pan - maxAngle;
+          while (dist < 0) dist+= 2 * M_PI;
+          while (dist > 2 * M_PI) dist-= 2 * M_PI;
+          if (dist < min_dist){
+            min_dist = dist;
+          }
         }
-        gr.clear();
-        minAngle=10;
-        maxAngle=-10;
+        stAngle = maxAngle + min_dist - 0.0001;
+        counter++;
       }
-      gr.push_back((*plIt).second[i]);
+      if (counter<min_counter){
+        min_counter = counter;
+        opt_minAngle = minAngle;
+      }
     }
+    log("alex viewcones in place %d", (*plIt).second.size());
+    double stAngle = opt_minAngle;
+    map<int, bool> collected_vc;
+    while (collected_vc.size()<(*plIt).second.size()){
+      double maxAngle = stAngle + m_maxRange;
+      double min_dist = 2 * M_PI;
+      double max_dist = 0;
+      vector<ViewPointGenerator::SensingAction> gr;
+      for (int k=0; k < (*plIt).second.size(); k++){
+
+        double dist1 = (*plIt).second[k].pan - stAngle;
+        while (dist1 < 0) dist1+= 2 * M_PI;
+        while (dist1 > 2 * M_PI) dist1-= 2 * M_PI;
+
+        if (dist1 < m_maxRange){
+          if (dist1 > max_dist) max_dist = dist1;
+          if (collected_vc.count(k)==0) 
+            gr.push_back((*plIt).second[k]);
+          collected_vc[k] = true;
+        }
+
+        double dist = (*plIt).second[k].pan - maxAngle;
+        while (dist < 0) dist+= 2 * M_PI;
+        while (dist > 2 * M_PI) dist-= 2 * M_PI;
+        if (dist < min_dist){
+          min_dist = dist;
+        }
+      }
+      grouped_cones_minAngle.push_back(stAngle);
+      grouped_cones_maxAngle.push_back(stAngle + max_dist);
+
+      stAngle = maxAngle + min_dist - 0.0001;
+      log("alex group size %d",gr.size());
+      grouped_cones.push_back(gr);
+
+    }
+    
   }
-  log("vc %d %f %f", gr.size(), minAngle, maxAngle);
-  grouped_cones.push_back(gr);
+  log("alex gcs %d", grouped_cones.size());
 
 	for (unsigned int i=0; i < grouped_cones.size(); i++){
 		/* GETTING PLACE BELIEFS */
@@ -1011,6 +1067,9 @@ void AVS_ContinualPlanner::generateViewCones(
     for (int j = 0;j<grouped_cones[i].size();j++){
   		c.viewcones.push_back(grouped_cones[i][j]);
     }
+    c.minAngle = grouped_cones_minAngle[i];
+    c.maxAngle = grouped_cones_maxAngle[i];
+
 		c.roomId = newVPCommand->roomId;
 		c.placeId = conePlaceId;
 		c.relation = newVPCommand->relation;
@@ -1301,14 +1360,10 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       double dist = 0.2;
       pos.setX(m_currentViewCone.second.pos[0]-dist*cos(m_currentViewCone.second.pan));
       pos.setY(m_currentViewCone.second.pos[1]-dist*sin(m_currentViewCone.second.pan));
-      double minAngle = 10;
-      double maxAngle = -10;
-      for(int j=0; j < m_currentConeGroup->viewcones.size(); j++){
-        if (m_currentConeGroup->viewcones[j].pan < minAngle) minAngle = m_currentConeGroup->viewcones[j].pan;
-        if (m_currentConeGroup->viewcones[j].pan > maxAngle) maxAngle = m_currentConeGroup->viewcones[j].pan;
-      }
+      double minAngle = m_currentConeGroup->minAngle;
+      double maxAngle = m_currentConeGroup->maxAngle;
       double range = maxAngle - minAngle;
-      double tol = 0.9 * M_PI - range;
+      double tol = 0;//m_maxRange - range;
       double theta = (maxAngle + minAngle)/2;
       if ((fabs(maxAngle - theta) > M_PI / 2 ) || (fabs(minAngle - theta) > M_PI / 2)){
         theta = theta + M_PI;
@@ -1559,7 +1614,7 @@ void AVS_ContinualPlanner::configure(
 	if (cfg && cfg->getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
 	  m_PbHost = tmp;
 	}
-
+  m_maxRange = 0.8*M_PI;
 	m_RetryDelay = 1000;
 	if(_config.find("--retry-interval") != _config.end()){
 	  std::istringstream str(_config.find("--retry-interval")->second);
