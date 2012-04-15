@@ -1139,6 +1139,9 @@ LocalMapManager::getCombinedGridMap(SpatialData::LocalGridMap &map,
         if (cureObstacleMap(xi,yi) == '1') {
           newMap(x,y) = '1';
         }
+        if (cureObstacleMap(xi,yi) == '2') {
+          newMap(x,y) = '2';
+        }
       }
     }
   }
