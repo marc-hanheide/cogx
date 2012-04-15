@@ -411,6 +411,7 @@ module SpatialData {
   };
 
   sequence<byte> CellSeq;
+  sequence<double> DoubleSeq;
 
   struct LocalGridMap
   {
@@ -420,6 +421,16 @@ module SpatialData {
 
     int size;
     CellSeq data;
+  };
+
+  struct HeightMap
+  {
+    double xCenter;
+    double yCenter;
+    double cellSize;
+
+    int size;
+    DoubleSeq data;
   };
   
   /**
@@ -458,6 +469,8 @@ class MapLoadStatus {
     bool isCircleObstacleFree(double x, double y, double radius);
     int findClosestNode(double x, double y);
     LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
+    HeightMap getHeightMap();
+    LocalGridMap getGridMap();
     DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount);
   };
 

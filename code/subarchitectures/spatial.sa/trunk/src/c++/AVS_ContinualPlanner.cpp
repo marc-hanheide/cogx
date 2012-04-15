@@ -573,6 +573,21 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		log("Generating View Cones for %s", id.c_str());
 
+  SpatialData::MapInterfacePrx mapPrx(getIceServer<SpatialData::MapInterface>("spatial.control"));
+
+
+  SpatialData::HeightMap KH = mapPrx->getHeightMap();
+
+  Cure::LocalGridMap<double> lgmKH(KH.size, KH.cellSize, FLT_MAX, Cure::LocalGridMap<double>::MAP1, KH.xCenter, KH.yCenter);
+
+  // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
+  int lp = 0;
+  for(int x = -KH.size ; x <= KH.size; x++){
+    for(int y = -KH.size ; y <= KH.size; y++){ 
+      lgmKH(x,y) = (KH.data[lp]);
+      lp++;
+    }
+  }
 
 	// if we already don't have a room map for this then get the combined map
 	if (m_templateRoomBloxelMaps.count(newVPCommand->roomId) == 0) {
@@ -598,11 +613,10 @@ void AVS_ContinualPlanner::generateViewCones(
 		for (unsigned int j =0; j < comarooms[i]->containedPlaceIds.size(); j++){
 					log("getting room which contains, placeid: %d", comarooms[i]->containedPlaceIds[j]);
 				}
+
 		FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
 				FrontierInterface::LocalMapInterface> ("map.manager"));
 		combined_lgm = agg2->getCombinedGridMap(comarooms[i]->containedPlaceIds);
-
-
 
 		m_templateRoomBloxelMaps[newVPCommand->roomId]
 				= new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2 + 1,
@@ -615,6 +629,20 @@ void AVS_ContinualPlanner::generateViewCones(
 				CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
 		IcetoCureLGM(combined_lgm, lgm);
 
+/*
+    SpatialData::LocalGridMapMap grid = mapPrx->getGridMap();
+
+    Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
+
+    // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
+    int lp1 = 0;
+    for(int x = -grid.size ; x <= grid.size; x++){
+      for(int y = -grid.size ; y <= grid.size; y++){ 
+        lgm(x,y) = (grid.data[lp1]);
+        lp1++;
+      }
+    }
+*/
 		/* Remove all free space and obstacle which does not belong to this room
 		 * This is to avoid spillage of metric space from other rooms
 		 * */
@@ -697,10 +725,22 @@ void AVS_ContinualPlanner::generateViewCones(
 		for (int x = -combined_lgm.size; x < combined_lgm.size; x++) {
 			for (int y = -combined_lgm.size; y < combined_lgm.size; y++) {
 				if ((*lgm)(x, y) == '1') {
-					m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
-							x + combined_lgm.size, y + combined_lgm.size,
-							m_LaserPoseR.getZ(),  m_minbloxel, makeobstacle);
-					//m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
+	        double dx, dy;
+	        (*lgm).index2WorldCoords(x, y, dx, dy);
+	        int nx, ny;
+	        if (lgmKH.worldCoords2Index(dx, dy, nx, ny)==0) {
+            if (lgmKH(nx, ny) < 1.){
+/*			  		  m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
+							    x + combined_lgm.size, y + combined_lgm.size,
+							    lgmKH(nx, ny) / 2,  lgmKH(nx, ny), makeobstacle);
+*/            }
+            else {
+			  		  m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
+							    x + combined_lgm.size, y + combined_lgm.size,
+							    m_LaserPoseR.getZ(),  m_minbloxel, makeobstacle);
+			  		  //m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
+            } 
+          }
 				}
 			}
 		}
@@ -822,6 +862,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		double fixedpdfvalue = pdfmass / (m_objectBloxelMaps[id]->getZBounds().second - m_objectBloxelMaps[id]->getZBounds().first);
 
 		GDProbInit initfunctor(fixedpdfvalue);
+    GDProbInit initfunctor2(fixedpdfvalue*5);
 		log("Setting each bloxel near an obstacle to a fixed value of %f, in total: %f", fixedpdfvalue, pdfmass);
 		pair<double,double> insideroom;
 		insideroom.first =0;
@@ -832,27 +873,41 @@ void AVS_ContinualPlanner::generateViewCones(
 			for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
 				int bloxelX = x + lgm->getSize();
 				int bloxelY = y + lgm->getSize();
+
 				if ((*lgm)(x, y) == '1') {
 					// For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
 					// (Only neighbors which are not unknown in the Cure map. Unknown 3D
 					// space is still assigned, though)
-
-					for (int i = -1; i <= 1; i++) {
-						for (int j = -1; j <= 1; j++) {
-
-							if ((*lgm)(x + i, y + j) == '0'
-									&& (bloxelX + i
-											<= m_objectBloxelMaps[id]->getMapSize().first
-											&& bloxelX + i > 0)
-									&& (bloxelY + i
-											<= m_objectBloxelMaps[id]->getMapSize().second
-											&& bloxelY + i > 0)) {
-//								/log("modifying bloxelmap pdf");
-								m_objectBloxelMaps[id]->boxSubColumnModifier(
-										bloxelX + i, bloxelY + j, .5, 1.0, initfunctor);
-							}
-						}
-					}
+	        double dx, dy;
+	        (*lgm).index2WorldCoords(x, y, dx, dy);
+	        int nx, ny;
+	        if (lgmKH.worldCoords2Index(dx, dy, nx, ny)==0) {
+            if (lgmKH(nx, ny) != FLT_MAX){
+              m_objectBloxelMaps[id]->boxSubColumnModifier(
+										  bloxelX, bloxelY, lgmKH(nx, ny) + 0.025,0.05, initfunctor2);
+            }
+            for (int i = -1; i <= 1; i++) {
+						  for (int j = -1; j <= 1; j++) {
+							  if ((*lgm)(x + i, y + j) == '0'
+									  && (bloxelX + i
+											  <= m_objectBloxelMaps[id]->getMapSize().first
+											  && bloxelX + i > 0)
+									  && (bloxelY + i
+											  <= m_objectBloxelMaps[id]->getMapSize().second
+											  && bloxelY + i > 0)) {
+  //								/log("modifying bloxelmap pdf");
+                  if (lgmKH(nx, ny) != FLT_MAX){
+								    m_objectBloxelMaps[id]->boxSubColumnModifier(
+										    bloxelX + i, bloxelY + j, lgmKH(nx, ny) / 2 + 0.025, lgmKH(nx, ny) + 0.05, initfunctor);
+                  }
+                  else {
+								    m_objectBloxelMaps[id]->boxSubColumnModifier(
+										    bloxelX + i, bloxelY + j, .5, 1.0, initfunctor);
+                  }
+							  }
+						  }
+					  }
+          }
 				}
 			}
 		}
@@ -1369,7 +1424,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
         theta = theta + M_PI;
       }
 			pos.setTheta(theta); //TODO not nessacerely - maybe between
-
+      log ("ALEX NAV %f %f",theta,m_currentViewCone.second.pan);
 			PostNavCommand(pos, SpatialData::GOTOPOSITION,tol);
 			log("Posting a nav command");
     }
