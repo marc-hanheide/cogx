@@ -1062,6 +1062,29 @@ void AVS_ContinualPlanner::generateViewCones(
       grouped_cones_minAngle.push_back(stAngle);
       grouped_cones_maxAngle.push_back(stAngle + max_dist);
 
+      bool swapped = true;
+      int j = 0;
+      ViewPointGenerator::SensingAction tmp;
+      while (swapped) {
+        swapped = false;
+        j++;
+        for (int k = 0; k < gr.size() - j; k++) {
+          double dist1 = gr[k].pan - stAngle;
+          while (dist1 < 0) dist1+= 2 * M_PI;
+          while (dist1 > 2 * M_PI) dist1-= 2 * M_PI;
+          double dist2 = gr[k+1].pan - stAngle;
+          while (dist2 < 0) dist2+= 2 * M_PI;
+          while (dist2 > 2 * M_PI) dist2-= 2 * M_PI;
+
+          if (dist1 < dist2) {
+                tmp = gr[k];
+                gr[k] = gr[k + 1];
+                gr[k + 1] = tmp;
+                swapped = true;
+          }
+        }
+      }
+
       stAngle = maxAngle + min_dist - 0.0001;
       log("alex group size %d",gr.size());
       grouped_cones.push_back(gr);
