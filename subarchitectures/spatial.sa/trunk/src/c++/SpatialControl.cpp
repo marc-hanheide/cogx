@@ -76,6 +76,14 @@ SpatialData::NodeHypothesisSeq SpatialControl::MapServer::refreshNodeHypothesis(
   return m_pOwner->refreshNodeHypothesis();
 }
 
+SpatialData::HeightMap SpatialControl::MapServer::getHeightMap(const Ice::Current &_context){
+  return m_pOwner->getHeightMap();
+}
+
+SpatialData::LocalGridMap SpatialControl::MapServer::getGridMap(const Ice::Current &_context){
+  return m_pOwner->getGridMap();
+}
+
 SpatialControl::SpatialControl()
   :NewNavController(m_NavGraph, m_LMap, this),
    NewNavControllerEventListener("SpatialControl"),
@@ -2492,6 +2500,36 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
   }
   counter5++;
   return false;
+}
+
+SpatialData::HeightMap SpatialControl::getHeightMap(){
+  SpatialData::HeightMap ret;
+  ret.xCenter = m_lgmKH->getCentXW();
+  ret.yCenter = m_lgmKH->getCentYW();
+  ret.cellSize = m_lgmKH->getCellSize();
+  ret.size = m_lgmKH->getSize();
+
+  for (int x = -m_lgmKH->getSize(); x <= m_lgmKH->getSize(); x++) {
+    for (int y = -m_lgmKH->getSize(); y <= m_lgmKH->getSize(); y++) {
+      ret.data.push_back((*(m_lgmKH))(x, y));
+    }
+  }
+  return ret;
+}
+
+SpatialData::LocalGridMap SpatialControl::getGridMap(){
+  SpatialData::LocalGridMap ret;
+  ret.xCenter = m_lgm->getCentXW();
+  ret.yCenter = m_lgm->getCentYW();
+  ret.cellSize = m_lgm->getCellSize();
+  ret.size = m_lgm->getSize();
+
+  for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
+    for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
+      ret.data.push_back((*(m_lgm))(x, y));
+    }
+  }
+  return ret;
 }
 
 SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){

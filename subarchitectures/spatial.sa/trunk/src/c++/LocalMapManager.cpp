@@ -1127,7 +1127,7 @@ LocalMapManager::getCombinedGridMap(SpatialData::LocalGridMap &map,
 
   for (int x = -newSize; x <= newSize; x++) {
     for (int y = -newSize; y <= newSize; y++) {
-      if(newMap(x,y) == '0') { // We only add obstacles on current free space
+      if((newMap(x,y) == '0') || (newMap(x,y) == '2') ){ //FIXME alex // We only add obstacles on current free space
         double xw, yw; // World coordinates
         int xi, yi; // obstaclemap coordinates
         if (newMap.index2WorldCoords(x,y,xw,yw) != 0)
