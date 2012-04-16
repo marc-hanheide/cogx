@@ -1127,19 +1127,15 @@ LocalMapManager::getCombinedGridMap(SpatialData::LocalGridMap &map,
 
   for (int x = -newSize; x <= newSize; x++) {
     for (int y = -newSize; y <= newSize; y++) {
-      double xw, yw; // World coordinates
-      int xi, yi; // obstaclemap coordinates
-      if (newMap.index2WorldCoords(x,y,xw,yw) != 0)
-        continue;
+      if(newMap(x,y) != '2' ){
+        double xw, yw; // World coordinates
+        int xi, yi; // obstaclemap coordinates
+        if (newMap.index2WorldCoords(x,y,xw,yw) != 0)
+          continue;
 
-      if (cureObstacleMap.worldCoords2Index(xw,yw,xi,yi) != 0)
-        continue;
-
-      if (cureObstacleMap(xi,yi) == '1') {
-        newMap(x,y) = '1';
-      }
-      if (cureObstacleMap(xi,yi) == '2') {
-        newMap(x,y) = '2';
+        if (cureObstacleMap.worldCoords2Index(xw,yw,xi,yi) != 0)
+          continue;
+        newMap(x,y) = cureObstacleMap(xi,yi);
       }
     }
   }

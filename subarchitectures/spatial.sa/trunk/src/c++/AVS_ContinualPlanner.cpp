@@ -594,41 +594,6 @@ void AVS_ContinualPlanner::generateViewCones(
 		log("Creating a new BloxelMap for room: %d", newVPCommand->roomId);
 		SpatialData::LocalGridMap combined_lgm;
 
-		vector<comadata::ComaRoomPtr> comarooms;
-		getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
-
-		log("Got %d rooms", comarooms.size());
-
-		if (comarooms.size() == 0){
-			log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
-			return;
-		}
-		unsigned int i = 0;
-		for (; i < comarooms.size(); i++) {
-			log("Got coma room with room id: %d", comarooms[i]->roomId);
-			if (comarooms[i]->roomId == newVPCommand->roomId) {
-				break;
-			}
-		}
-		for (unsigned int j =0; j < comarooms[i]->containedPlaceIds.size(); j++){
-					log("getting room which contains, placeid: %d", comarooms[i]->containedPlaceIds[j]);
-				}
-
-		FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
-				FrontierInterface::LocalMapInterface> ("map.manager"));
-		combined_lgm = agg2->getCombinedGridMap(comarooms[i]->containedPlaceIds);
-
-		m_templateRoomBloxelMaps[newVPCommand->roomId]
-				= new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2 + 1,
-						combined_lgm.size*2 + 1, m_cellsize, m_minbloxel, 0, 2.0,
-						combined_lgm.xCenter, combined_lgm.yCenter, 0,
-						m_defaultBloxelCell);
-
-		//convert 2D map to 3D
-		CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
-				CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
-		IcetoCureLGM(combined_lgm, lgm);
-
 /*
     SpatialData::LocalGridMapMap grid = mapPrx->getGridMap();
 
@@ -643,6 +608,34 @@ void AVS_ContinualPlanner::generateViewCones(
       }
     }
 */
+
+
+
+		vector<comadata::ComaRoomPtr> comarooms;
+		getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
+
+		log("Got %d rooms", comarooms.size());
+
+		if (comarooms.size() == 0){
+			log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
+			return;
+		}
+		unsigned int comarooms_i = -1;
+		for (int i=0; i < comarooms.size(); i++) {
+			log("Got coma room with room id: %d", comarooms[i]->roomId);
+			if (comarooms[i]->roomId == newVPCommand->roomId) {
+        comarooms_i = i;
+				break;
+			}
+		}
+    if (comarooms_i==-1){
+      error("no comaroom");
+      return;
+    }
+		for (unsigned int j =0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++){
+					log("getting room which contains, placeid: %d", comarooms[comarooms_i]->containedPlaceIds[j]);
+		}
+
 		/* Remove all free space and obstacle which does not belong to this room
 		 * This is to avoid spillage of metric space from other rooms
 		 * */
@@ -652,28 +645,67 @@ void AVS_ContinualPlanner::generateViewCones(
 		FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface> ("place.manager"));
 		log("got interface");
 
-		std::set<int> currentRoomPlaceIds;
+		SpatialData::PlaceIDSeq currentRoomPlaceIds;
 
 		double xW,yW;
-		for (unsigned int j=0; j <comarooms[i]->containedPlaceIds.size(); j++){
-			currentRoomPlaceIds.insert(comarooms[i]->containedPlaceIds[j]);
-		  m_roomNodes[newVPCommand->roomId].push_back(agg->getNodeFromPlaceID(comarooms[i]->containedPlaceIds[j]));
-		}
     
 		vector<SpatialData::PlacePtr> placesInMap;
 		getMemoryEntries<SpatialData::Place>(placesInMap, "spatial.sa");
 
+    std::vector<NavData::AEdgePtr> edges;
+    getMemoryEntries<NavData::AEdge>(edges);
+
 		vector<NavData::FNodePtr> nodesForPlaces;
 		for (unsigned int i = 0; i < placesInMap.size(); i++) {
-		  nodesForPlaces.push_back(agg->getNodeFromPlaceID(placesInMap[i]->id));
+      NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
+       nodesForPlaces.push_back(node);
+    }
+
+		for (unsigned int j=0; j <comarooms[comarooms_i]->containedPlaceIds.size(); j++){
+			currentRoomPlaceIds.push_back(comarooms[comarooms_i]->containedPlaceIds[j]);
+      NavData::FNodePtr node = agg->getNodeFromPlaceID(comarooms[comarooms_i]->containedPlaceIds[j]);
+ 		  m_roomNodes[newVPCommand->roomId].push_back(node);
+      for(std::vector<NavData::AEdgePtr>::iterator it = edges.begin();
+        it != edges.end(); ++it) {
+
+        NavData::FNodePtr node1 = agg->getNodeFromPlaceID(agg->getPlaceFromNodeID((*it)->startNodeId)->id);
+        NavData::FNodePtr node2 = agg->getNodeFromPlaceID(agg->getPlaceFromNodeID((*it)->endNodeId)->id);
+
+        if ((node1->gateway == 1) && (node2->nodeId == node->nodeId)){
+     		  m_roomNodes[newVPCommand->roomId].push_back(node1);
+          currentRoomPlaceIds.push_back(agg->getPlaceFromNodeID(node1->nodeId)->id);
+          break;
+        }
+        else if ((node2->gateway == 1) && (node1->nodeId == node->nodeId)){
+     		  m_roomNodes[newVPCommand->roomId].push_back(node2);
+          currentRoomPlaceIds.push_back(agg->getPlaceFromNodeID(node2->nodeId)->id);
+          break;
+        }
+      }
 		}
+
+		FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
+				FrontierInterface::LocalMapInterface> ("map.manager"));
+		combined_lgm = agg2->getCombinedGridMap(currentRoomPlaceIds);
+
+		m_templateRoomBloxelMaps[newVPCommand->roomId]
+				= new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size*2 + 1,
+						combined_lgm.size*2 + 1, m_cellsize, m_minbloxel, 0, 2.0,
+						combined_lgm.xCenter, combined_lgm.yCenter, 0,
+						m_defaultBloxelCell);
+
+		//convert 2D map to 3D
+		CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
+				CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
+		IcetoCureLGM(combined_lgm, lgm);
+
 
 		for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
 		  for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
 		    if ((*lgm)(x,y) != '2'){
 		      lgm->index2WorldCoords(x,y,xW,yW);
 		      double minDistance = FLT_MAX;
-		      unsigned int closestNodeIndex = 0;
+		      unsigned int closestNodeIdx = 0;
           bool excluded = false;
           for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
               fbIt != m_forbiddenZones.end(); fbIt++) {
@@ -693,13 +725,13 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		      for (unsigned int i = 0; i < nodesForPlaces.size(); i++) {
 	          try {
-	            if (nodesForPlaces[i] != 0) {
+	            if ((nodesForPlaces[i] != 0) && (nodesForPlaces[i]->gateway == 0)){ 
 	              double nX = nodesForPlaces[i]->x;
 	              double nY = nodesForPlaces[i]->y;
 
 	              double distance = (xW - nX)*(xW-nX) + (yW-nY)*(yW-nY);
 	              if (distance < minDistance) {
-	                closestNodeIndex = i;
+	                closestNodeIdx = i;
 	                minDistance = distance;
 	              }
 	            }
@@ -709,10 +741,11 @@ void AVS_ContinualPlanner::generateViewCones(
 	          }
 		      }
 
-		      SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIndex];
+		      SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIdx];
 
 		      //					placemem = agg->getPlaceMembership(xW,yW);
-		      if(currentRoomPlaceIds.find(closestPlace->id) == currentRoomPlaceIds.end()){
+          
+		      if(find(currentRoomPlaceIds.begin(), currentRoomPlaceIds.end(), closestPlace->id) == currentRoomPlaceIds.end()){
 			(*lgm)(x,y) = '2';
 		      }
 		    }
