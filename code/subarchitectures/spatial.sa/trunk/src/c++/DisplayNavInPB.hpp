@@ -127,6 +127,11 @@ private:
 	void newPlace(const cast::cdl::WorkingMemoryChange &objID);
 
 	void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
+
+	void newConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
+	void deleteConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
+  void displayConnectivityPathProperty(int place1Id, int place2Id);
+
 	void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
 	void newNavGraphObject(const cast::cdl::WorkingMemoryChange &objID);
@@ -161,6 +166,8 @@ private:
 	peekabot::GroupProxy m_ProxyLabels;
 	peekabot::GroupProxy m_ProxyRobot;
 	peekabot::GroupProxy m_ProxyTrajectory;
+
+	peekabot::GroupProxy m_ProxyConnectivityPathProperties;
 
 	peekabot::PointCloudProxy m_ProxyKinect;
 	peekabot::GroupProxy m_ProxyGraph;
@@ -234,6 +241,7 @@ private:
 	std::list< std::pair<long,long> > m_Edges;
 	std::list< std::pair<long,long> > m_NewEdges;
 	std::map<std::string, PlaceData> _places;
+	std::map<std::string, std::pair<long,long> > _cpp;
 
 	bool m_LaserConnected;
 	bool m_ReadPTU;

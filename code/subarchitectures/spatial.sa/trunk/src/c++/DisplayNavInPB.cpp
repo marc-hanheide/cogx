@@ -267,6 +267,17 @@ void DisplayNavInPB::start() {
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
                                         &DisplayNavInPB::newNavGraphEdge));
 
+  // SpatialProperties::ConnectivityPathProperty
+  addChangeFilter(createLocalTypeFilter<SpatialProperties::ConnectivityPathProperty>(cdl::ADD),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newConnectivityPathProperty));
+  addChangeFilter(createLocalTypeFilter<SpatialProperties::ConnectivityPathProperty>(cdl::OVERWRITE),
+                  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::newConnectivityPathProperty));
+  addChangeFilter(createLocalTypeFilter<SpatialProperties::ConnectivityPathProperty>(cdl::DELETE),
+		  	  	  new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
+                                        &DisplayNavInPB::deleteConnectivityPathProperty));
+
   // Places
   addChangeFilter(createLocalTypeFilter<SpatialData::Place>(cdl::ADD),
                   new MemberFunctionChangeReceiver<DisplayNavInPB>(this,
@@ -1768,6 +1779,17 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
 		NavData::FNodePtr fnode = oobj->getData();
 
+    int placeId = GetPlaceIdFromNodeId(fnode->nodeId);
+    if (placeId!=-1){
+      for (map<string, std::pair<long,long> >::iterator it
+		      = _cpp.begin();
+		      it != _cpp.end(); ++it){
+          if (it->second.first == placeId || it->second.second == placeId ){
+            displayConnectivityPathProperty(it->second.first,it->second.second);
+          }
+      }
+    }
+
 		// Update DisplayNavInPB
 		IceUtil::Mutex::Lock lock(m_Mutex);
 		m_PeekabotClient.begin_bundle();
@@ -1934,7 +1956,12 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
         debug("Exited movePlace");
 		return;
 	}
+  FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
 
+    SpatialData::PlacePtr placePtr = piPrx->getPlaceFromHypID(nodePtr->hypID);
+
+    if (placePtr){
+        int pid = placePtr->id;
 		if (m_ShowPlaceholders)
 		{
             	        
@@ -1946,24 +1973,21 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
             if( s.succeeded() ){
 
 		        sp.set_position(nodePtr->x,nodePtr->y,0);
-                FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+                
 
+
+				        // Delete ID text
 			    if (m_ShowLabels)
 			    {
-                    SpatialData::PlacePtr placePtr = piPrx->getPlaceFromHypID(nodePtr->hypID);
-
-                    if (placePtr){
-                        int pid = placePtr->id;
-				        // Delete ID text
 			
             	        peekabot::LabelProxy text;
 				        char buf[32];
 				        sprintf(buf, "%d", pid);
 				        text.assign(m_ProxyLabels, buf);
 				        text.set_position(nodePtr->x,nodePtr->y,0);
-                    }
-
 			    }
+
+
 
                   int nodeId;
                   int originPlaceID;
@@ -2001,7 +2025,18 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 
             }
 		}
-    
+
+	for (map<string, std::pair<long,long> >::iterator it
+			= _cpp.begin();
+			it != _cpp.end(); ++it){
+      if (it->second.first == pid || it->second.second == pid ){
+        displayConnectivityPathProperty(it->second.first,it->second.second);
+      }
+  }
+
+                    }
+
+   
   log("Exited movePlace");
 }
 
@@ -2311,8 +2346,12 @@ void DisplayNavInPB::addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &s
 int DisplayNavInPB::GetPlaceIdFromNodeId(int nodeId)
 {
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
-    int d = agg->getPlaceFromNodeID(nodeId)->id;
-    return d;
+    SpatialData::PlacePtr place = agg->getPlaceFromNodeID(nodeId);
+    if (place){
+      int d = place->id;
+      return d;
+    }
+    return -1;
 }
 
 void DisplayNavInPB::addDoorpost(double x, double y, double theta,
@@ -2338,6 +2377,106 @@ void DisplayNavInPB::addDoorpost(double x, double y, double theta,
   cpT.set_scale(width+0.1, 0.1, 0.1);
   cpT.set_pose(0, 0, 2.0, theta, 0, 0);
   cpT.set_color(1.0, 0.817, 0.269);
+}
+
+
+void DisplayNavInPB::newConnectivityPathProperty(const cdl::WorkingMemoryChange &objID){
+  log("Entered newConnectivityPathProperty");
+
+  if (!m_PeekabotClient.is_connected()) {
+    log("Exited newConnectivityPathProperty");
+    return;
+  }
+
+  shared_ptr<CASTData<SpatialProperties::ConnectivityPathProperty> > oobj =
+    getWorkingMemoryEntry<SpatialProperties::ConnectivityPathProperty>(objID.address);
+
+  SpatialProperties::ConnectivityPathPropertyPtr cpp = oobj->getData();
+  _cpp[objID.address.id]=std::make_pair(cpp->place1Id,
+                                        cpp->place2Id);
+
+  displayConnectivityPathProperty(cpp->place1Id,cpp->place2Id);
+
+  log("Exited newConnectivityPathProperty");
+}
+void DisplayNavInPB::displayConnectivityPathProperty(int place1Id, int place2Id){
+  FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
+  double fx,fy,tx,ty;
+  NavData::FNodePtr fnodePtr;
+  fnodePtr = piPrx->getNodeFromPlaceID(place1Id);
+  if (!fnodePtr){
+    //Placeholder
+  	SpatialData::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(place1Id);
+    if(!nodeHypPtr) {
+      log("Hyp doesnt exist\nExiting.\n");
+      return;
+    }
+    fx = nodeHypPtr->x;
+    fy = nodeHypPtr->y;    
+  }
+  else {
+    //Place
+    fx = fnodePtr->x;
+    fy = fnodePtr->y;
+  }
+
+  fnodePtr = piPrx->getNodeFromPlaceID(place2Id);
+  if (!fnodePtr){
+    //Placeholder
+  	SpatialData::NodeHypothesisPtr nodeHypPtr = piPrx->getHypFromPlaceID(place2Id);
+    if(!nodeHypPtr) {
+      log("Hyp doesnt exist\nExiting.\n");
+      return;
+    }
+    tx = nodeHypPtr->x;
+    ty = nodeHypPtr->y;    
+  }
+  else {
+    //Place
+    tx = fnodePtr->x;
+    ty = fnodePtr->y;
+  }
+  double angle = atan2(ty - fy,tx - fx);
+  log("alex lp %f %f %f %f %f %f",fx,fy,tx,ty,tx - 0.05*cos(angle - M_PI/6),ty - 0.05*sin(angle - M_PI/6));
+  char name[32];
+  sprintf(name, "cpp%06ld", place1Id*1000+place2Id);
+  peekabot::LineCloudProxy lp;
+  peekabot::VertexSet vs;
+  lp.add(m_ProxyConnectivityPathProperties, name, peekabot::REPLACE_ON_CONFLICT);
+  vs.add(fx, fy, 0);
+  vs.add(tx, ty, 0);
+  vs.add(tx, ty, 0);
+  vs.add(tx - 0.3*cos(angle - M_PI/6), ty - 0.3*sin(angle - M_PI/6), 0);
+
+  lp.add_vertices(vs);
+  lp.set_color(0., 0., 0.);
+  lp.set_opacity(1);
+  lp.set_line_width(3);
+
+}
+void DisplayNavInPB::deleteConnectivityPathProperty(const cdl::WorkingMemoryChange &objID){
+  log("Entered deleteConnectivityPathProperty");
+
+  if (!m_PeekabotClient.is_connected()) {
+    log("Exited deleteConnectivityPathProperty");
+    return;
+  }
+
+	map<string, std::pair<long,long> >::iterator it = _cpp.find(objID.address.id);
+	if ( it == _cpp.end()) {
+    debug("Exited deleteConnectivityPathProperty");
+		return;
+  }
+
+  char name[32];
+  sprintf(name, "cpp%06ld", it->second.first*1000+it->second.second);
+  peekabot::LineCloudProxy lp;
+  peekabot::Status s = lp.assign(m_ProxyConnectivityPathProperties, name).status();
+	if ( s.succeeded() ) {
+    lp.remove();
+  }
+
+  log("Exited deleteConnectivityPathProperty");
 }
 
 void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
@@ -2685,6 +2824,10 @@ void DisplayNavInPB::connectPeekabot()
 
     m_ProxyNodes.add(m_ProxyGraph,
                      "nodes",
+                     peekabot::REPLACE_ON_CONFLICT);
+
+    m_ProxyConnectivityPathProperties.add(m_ProxyGraph,
+                     "cpp",
                      peekabot::REPLACE_ON_CONFLICT);
 
 
