@@ -674,38 +674,39 @@ void AVS_ContinualPlanner::generateViewCones(
 		      lgm->index2WorldCoords(x,y,xW,yW);
 		      double minDistance = FLT_MAX;
 		      unsigned int closestNodeIndex = 0;
-              bool excluded = false;
-                for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
-                    fbIt != m_forbiddenZones.end(); fbIt++) {
-                  //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
-                  //    	  log("checking against: %.02g, %.02g", newX, newY);
-                  if ((x*m_cellsize <= fbIt->maxX && x*m_cellsize >= fbIt->minX &&
-                        y*m_cellsize <= fbIt->maxY && y*m_cellsize >= fbIt->minY)) {
-                    log("point in forbidden zone excluded");
-                    (*lgm)(x,y) = '2';
-                    excluded= true;
-                    break;
-                  }
-                }
-                if (excluded) continue;
-
+          bool excluded = false;
+          for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
+              fbIt != m_forbiddenZones.end(); fbIt++) {
+            //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+            //    	  log("checking against: %.02g, %.02g", newX, newY);
+            double dx, dy;
+            (*lgm).index2WorldCoords(x, y, dx, dy);
+            if ((dx <= fbIt->maxX && dx >= fbIt->minX &&
+                  dy <= fbIt->maxY && dy >= fbIt->minY)) {
+              log("point in forbidden zone excluded");
+              (*lgm)(x,y) = '2';
+              excluded= true;
+              break;
+            }
+          }
+          if (excluded) continue;
 
 		      for (unsigned int i = 0; i < nodesForPlaces.size(); i++) {
-			try {
-			  if (nodesForPlaces[i] != 0) {
-			    double nX = nodesForPlaces[i]->x;
-			    double nY = nodesForPlaces[i]->y;
+	          try {
+	            if (nodesForPlaces[i] != 0) {
+	              double nX = nodesForPlaces[i]->x;
+	              double nY = nodesForPlaces[i]->y;
 
-			    double distance = (xW - nX)*(xW-nX) + (yW-nY)*(yW-nY);
-			    if (distance < minDistance) {
-			      closestNodeIndex = i;
-			      minDistance = distance;
-			    }
-			  }
-			}
-			catch (IceUtil::NullHandleException e) {
-			  log("Error! FNode suddenly disappeared!");
-			}
+	              double distance = (xW - nX)*(xW-nX) + (yW-nY)*(yW-nY);
+	              if (distance < minDistance) {
+	                closestNodeIndex = i;
+	                minDistance = distance;
+	              }
+	            }
+	          }
+	          catch (IceUtil::NullHandleException e) {
+	            log("Error! FNode suddenly disappeared!");
+	          }
 		      }
 
 		      SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIndex];

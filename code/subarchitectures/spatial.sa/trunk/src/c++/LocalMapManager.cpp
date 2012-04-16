@@ -1127,21 +1127,19 @@ LocalMapManager::getCombinedGridMap(SpatialData::LocalGridMap &map,
 
   for (int x = -newSize; x <= newSize; x++) {
     for (int y = -newSize; y <= newSize; y++) {
-      if((newMap(x,y) == '0') || (newMap(x,y) == '2') ){ //FIXME alex // We only add obstacles on current free space
-        double xw, yw; // World coordinates
-        int xi, yi; // obstaclemap coordinates
-        if (newMap.index2WorldCoords(x,y,xw,yw) != 0)
-          continue;
+      double xw, yw; // World coordinates
+      int xi, yi; // obstaclemap coordinates
+      if (newMap.index2WorldCoords(x,y,xw,yw) != 0)
+        continue;
 
-        if (cureObstacleMap.worldCoords2Index(xw,yw,xi,yi) != 0)
-          continue;
+      if (cureObstacleMap.worldCoords2Index(xw,yw,xi,yi) != 0)
+        continue;
 
-        if (cureObstacleMap(xi,yi) == '1') {
-          newMap(x,y) = '1';
-        }
-        if (cureObstacleMap(xi,yi) == '2') {
-          newMap(x,y) = '2';
-        }
+      if (cureObstacleMap(xi,yi) == '1') {
+        newMap(x,y) = '1';
+      }
+      if (cureObstacleMap(xi,yi) == '2') {
+        newMap(x,y) = '2';
       }
     }
   }
