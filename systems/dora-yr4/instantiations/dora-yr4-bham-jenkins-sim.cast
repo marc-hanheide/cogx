@@ -57,5 +57,6 @@ SETVAR feature_options=<multiline>
     !visualization	
 </multiline>
 
+SETVAR avs_cone_depth=2.0
 
 INCLUDE dora-yr4.cast
