@@ -315,7 +315,6 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
       } 
       else if(type == typeName<NavData::InternalNavCommand>()){
 	if (change.address.id == navCtrlCmdId) {
-	      log("nav ctrl cmd finished?");
 	      // nav ctrl cmd finished?
 	      shared_ptr<CASTData<NavData::InternalNavCommand> > pcmd = 
 	        getWorkingMemoryEntry<NavData::InternalNavCommand>(navCtrlCmdId);
@@ -325,18 +324,25 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	        case NavData::SUCCEEDED:
             m_placeInterface->endPlaceTransition(false);
 
+		  log("nav ctrl cmd succeeded");
 	          if (m_isExplorationAction) {
               if (m_issueVisualExplorationActions){
+		log("issuing exploration command");
                 issueVisualExplorationCommand(*rv);
               }
               else {
+		log("issuing placeholder enumerating command");
 	              issuePlaceholderEnumeratingCommand(*rv);
 	            }
 	          }
             else if (m_generatePlaceholdersOnPlace){
+		log("issuing placeholder enumerating command");
                 issuePlaceholderEnumeratingCommand(*rv);
             }
-            else finished = true;
+            else {
+	      log("NavCommand finished");
+	      finished = true;
+	    }
 
 	          m_isExplorationAction = false;
 
@@ -345,6 +351,8 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	        case NavData::ABORTED:
 	        case NavData::FAILED:
             m_placeInterface->endPlaceTransition(true);
+		  log("nav ctrl command failed");
+
 	          some_error = true;
             issuePlaceholderEnumeratingCommand(*rv);
 
@@ -355,7 +363,6 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	        default: break;
 	        }
 
-	        log(finished? "yes": "no");
 	      }
         else{
 	        log("The InternalNavCommand suddenly disappeared...");
