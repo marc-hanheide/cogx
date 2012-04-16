@@ -57,10 +57,10 @@ namespace spatial {
     public:
     SpatialData::PlacePtr _getPlace(PlaceID id);
 
-    PlaceID _getPlaceForNode(NodeID id);
+    PlaceID _getPlaceIDForNode(NodeID id);
     NavData::FNodePtr _getNodeForPlace(PlaceID id);
 
-    PlaceID _getPlaceForHyp(HypID id);
+    PlaceID _getPlaceIDForHyp(HypID id);
     SpatialData::NodeHypothesisPtr _getHypForPlace(PlaceID id);
 
     std::string _getPlaceWMIDForPlace(PlaceID id);
@@ -228,7 +228,7 @@ class PlaceManager : public PlaceMapper
     void cancelMovement(bool failed);
 
     // Methods to deal with synchronisation of edge addition
-    void checkUnassignedEdges(int newPlaceID);
+    void checkUnassignedEdges(int newNodeID);
     void processEdge(NavData::AEdgePtr edge);
 
     // Frontier based exploration path parameters
