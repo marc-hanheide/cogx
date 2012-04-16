@@ -154,7 +154,7 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 	  str >> newZone.maxX;
 	}
 	else {
-	  log("Warning: Malformed --exclude-from-exploration string");
+	  log("Warning: Malformed --exclude-from-exploration string %s", _config.find("--exclude-from-exploration")->second.c_str());
 	  break;
 	}
       }
@@ -167,12 +167,12 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 	  str >> newZone.maxY;
 	}
 	else {
-	  log("Warning: Malformed --exclude-from-exploration string");
+	  log("Warning: Malformed --exclude-from-exploration string", _config.find("--exclude-from-exploration")->second.c_str());
 	  break;
 	}
       }
       else {
-	log("Warning: Malformed --exclude-from-exploration string");
+	log("Warning: Malformed --exclude-from-exploration string", _config.find("--exclude-from-exploration")->second.c_str());
 	break;
       }
     }
@@ -308,13 +308,6 @@ void PlaceMapper::LoadPlaces(const std::string &filename){
 void 
 PlaceManager::runComponent()
 {
-  string babam("5:A");
-  int laala = 5;
-  log("Test: %s", babam.c_str());
-  log("Test: %i, %s", laala, babam.c_str());
-  log("Test: %i, %i, %s", laala, laala, babam.c_str());
-  log("Test: %i, %s, %s", laala, babam.c_str(), babam.c_str());
-  log("Test: %i, %i[%s]", laala, laala, babam.c_str());
   log("PlaceManager::runComponent: now at start of runComponent");
 
   Rendezvous *rv = new Rendezvous(*this);
@@ -344,7 +337,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   try {
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
-    log("newNavNode called");
+    log("newNavNode called (%s)", objID.address.id.c_str());
 //    log("Nav Node is: %li, (%f,%f:%f), %i on %s", 
 //	oobj->nodeId, oobj->x, oobj->y, oobj->theta, oobj->gateway,
 //	objID.address.id.c_str());
@@ -366,7 +359,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
       
       PlaceID newPlaceID = _addPlaceWithNode(p, oobj);
 
-      checkUnassignedEdges(newPlaceID);
+      checkUnassignedEdges(oobj->nodeId);
 
       if(oobj->gateway == 1) {
 	addNewGatewayProperty(newPlaceID);			
@@ -383,7 +376,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 void
 PlaceManager::cancelMovement(bool failed = false)
 {
-  log("CancelMovement called");
+  log("CancelMovement(%i) called", failed);
 
   m_goalPlaceForCurrentPath = -1;
   m_isPathFollowing = false;
@@ -423,7 +416,7 @@ PlaceManager::cancelMovement(bool failed = false)
 //FIXME: evaluateUnexploredPaths shouldn't be called in the message thread!
 void PlaceManager::newPlaceholderEnumeratingCommand(const cdl::WorkingMemoryChange &objID) 
 {
-  log("Received new PlaceholderEnumeratingCommand");
+  log("Received new PlaceholderEnumeratingCommand (%s)", objID.address.id.c_str());
   try {
     NavData::PlaceholderEnumeratingCommandPtr obj =
       getMemoryEntry<NavData::PlaceholderEnumeratingCommand>(objID.address);
@@ -440,14 +433,14 @@ void PlaceManager::newPlaceholderEnumeratingCommand(const cdl::WorkingMemoryChan
 void 
 PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  log("modifiedNavNode called");
+  log("modifiedNavNode called (%s)", objID.address.id.c_str());
   try {
     NavData::FNodePtr oobj =
       getMemoryEntry<NavData::FNode>(objID.address);
 
     if (oobj != 0) {
 
-      PlaceID correspondingPlaceID = _getPlaceForNode(oobj->nodeId);
+      PlaceID correspondingPlaceID = _getPlaceIDForNode(oobj->nodeId);
 
       NavData::FNodePtr prev = _getNodeForPlace(correspondingPlaceID);
       if (prev == 0) {
@@ -492,7 +485,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
-  log("deletedNavNode called");
+  log("deletedNavNode called (%s)", objID.address.id.c_str());
   //TODO: This will never work!
   shared_ptr<CASTData<NavData::FNode> > oobj =
     getWorkingMemoryEntry<NavData::FNode>(objID.address);
@@ -500,7 +493,7 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
   if (oobj != 0) {
 
     PlaceID correspondingPlaceID = 
-      _getPlaceForNode(oobj->getData()->nodeId);
+      _getPlaceIDForNode(oobj->getData()->nodeId);
 
     _deletePlace(correspondingPlaceID);
   }
@@ -508,13 +501,14 @@ PlaceManager::deletedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 }
 
 void
-PlaceManager::checkUnassignedEdges(int newPlaceID) 
+PlaceManager::checkUnassignedEdges(int newNodeID) 
 {
   for (set<NavData::AEdgePtr>::iterator it = 
       m_unprocessedEdges.begin(); it != m_unprocessedEdges.end(); it++) {
     try {
-      if ((*it)->startNodeId == newPlaceID ||
-	  (*it)->endNodeId == newPlaceID) {
+      if ((*it)->startNodeId == newNodeID ||
+	  (*it)->endNodeId == newNodeID) {
+	log("Processing deferred edge between nodes %i and %i", (*it)->startNodeId, (*it)->endNodeId);
 	processEdge(*it); // this could invalidate 'it', but it's ok since we return
 	return;
       }
@@ -531,8 +525,8 @@ void
 PlaceManager::processEdge(NavData::AEdgePtr oobj) 
 {
   try {
-    PlaceID startPlace = _getPlaceForNode(oobj->startNodeId);
-    PlaceID endPlace = _getPlaceForNode(oobj->endNodeId);
+    PlaceID startPlace = _getPlaceIDForNode(oobj->startNodeId);
+    PlaceID endPlace = _getPlaceIDForNode(oobj->endNodeId);
     if (startPlace >= 0 && endPlace >= 0) {
       int newEdgeStartId = startPlace;
       int newEdgeEndId = endPlace;
@@ -544,7 +538,7 @@ PlaceManager::processEdge(NavData::AEdgePtr oobj)
       m_unprocessedEdges.erase(oobj);
     }
     else {
-      log("Warning: New edge was detected, but connected Places were missing!");
+      log("Warning: New edge was detected between %i and %i, but connected Places were missing!", startPlace, endPlace);
       m_unprocessedEdges.insert(oobj);
       return;
     }
@@ -557,7 +551,7 @@ PlaceManager::processEdge(NavData::AEdgePtr oobj)
 void 
 PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
-  log("newEdge called");
+  log("newEdge called (%s)", objID.address.id.c_str());
   try {
     NavData::AEdgePtr oobj =
       getMemoryEntry<NavData::AEdge>(objID.address);
@@ -579,7 +573,7 @@ PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::modifiedEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
-  log("modifiedEdge called");
+  log("modifiedEdge called (%s)", objID.address.id.c_str());
   // This will probably never be called...
   /*
      shared_ptr<CASTData<NavData::AEdge> > oobj =
@@ -597,7 +591,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 {
 	// Commented out as for the AVS IROS paper, the AVS is creating the objectplaceproperties!
 
-/**  log("newObject called");
+/**  log("newObject called (%s)", objID.address.id.c_str());
   try {
     lockEntry(objID.address, cdl::LOCKEDOD);
     vector<NavData::FNodePtr> nodes;
@@ -648,7 +642,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
     }
 
     if (closestNode != 0) {
-      PlacePtr place = _getPlaceForNode(closestNode->nodeId);
+      PlacePtr place = _getPlaceIDForNode(closestNode->nodeId);
       if (place != 0) {
 	int placeID = place->id;
 	try {
@@ -707,6 +701,7 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 {
+  log("newDoorHypothesis called  (%s)", objID.address.id.c_str());
   try {
     FrontierInterface::DoorHypothesisPtr doorHyp =
       getMemoryEntry<FrontierInterface::DoorHypothesis>(objID.address);
@@ -748,7 +743,7 @@ PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 //      hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
 //    NodeHypothesisPtr extantHyp = *extantHypIt;
 //    try {
-//        PlacePtr placeholder = _getPlaceForNode(extantHyp->hypID);
+//        PlacePtr placeholder = _getPlaceIDForNode(extantHyp->hypID);
 //        int pid = placeholder->id;
 //      log("Checking against placeholder = %d", pid);
 //      if (curPlaceId < 0 || extantHyp->originPlaceID == curPlaceId) {
@@ -781,8 +776,8 @@ std::map<int, std::vector<int> > PlaceManager::getAdjacencyLists() {
 //      it != edges.end(); ++it) {
 //
 //    try {
-//      PlacePtr place1 = _getPlaceForNode((*it)->startNodeId);
-//      PlacePtr place2 = _getPlaceForNode((*it)->endNodeId);
+//      PlacePtr place1 = _getPlaceIDForNode((*it)->startNodeId);
+//      PlacePtr place2 = _getPlaceIDForNode((*it)->endNodeId);
 //
 //      adjacencyLists[place1->id].push_back(place2->id);
 //      adjacencyLists[place2->id].push_back(place1->id);
@@ -948,7 +943,7 @@ void PlaceManager::connectPeekabot()
 //  }
 //
 //  int curNodeId = curNode->nodeId;
-//  PlacePtr curPlace = _getPlaceForNode(curNodeId);
+//  PlacePtr curPlace = _getPlaceIDForNode(curNodeId);
 //
 //  if (curPlace == 0) {
 //    log("Could not find current place. Can not create placeholder.");
@@ -1009,15 +1004,15 @@ int PlaceManager::updatePlaceholderEdge(int placeholderId) {
 
   int originPlaceId = hyp->originPlaceID;
 
-  log("Finding closest node.");
+  log("Finding closest node to placeholder %i.", placeholderId);
   int closestNodeId = m_mapInterface->findClosestNode(hyp->x, hyp->y);
   if(closestNodeId < 0) {
     log("Error in finding closest node. Returning.");
     return -1;
   }
 
-  PlaceID closestPlace = _getPlaceForHyp(closestNodeId);
-//  PlacePtr closestPlace = _getPlaceForNode(closestNodeId);
+  PlaceID closestPlace = _getPlaceIDForHyp(closestNodeId);
+//  PlacePtr closestPlace = _getPlaceIDForNode(closestNodeId);
   if(closestPlace < 0) {
     log("No place attached to node. Try again later.");
     return -1;
@@ -1058,7 +1053,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
         int hypID = hyp->hypID;
 
 
-        PlaceID placeholderID = _getPlaceForHyp(hypID);
+        PlaceID placeholderID = _getPlaceIDForHyp(hypID);
 
         if (placeholderID >= 0) {
 
@@ -1295,7 +1290,7 @@ void PlaceManager::evaluateUnexploredPaths()
   IceUtil::Mutex::Lock locks(m_PlaceholderMutex);
   if(!m_bNoPlaceholders) {
     NavData::FNodePtr curNode = getCurrentNavNode();
-    PlaceID curPlace = _getPlaceForNode(curNode->nodeId);
+    PlaceID curPlace = _getPlaceIDForNode(curNode->nodeId);
     
     if(curPlace < 0) {
       error("Could not find current place on %i.", __LINE__);
@@ -1347,7 +1342,7 @@ void PlaceManager::evaluateUnexploredPaths()
                   log("move overlapped placeholder");
                   nodeHyp->x=extantHyp->x;
                   nodeHyp->y=extantHyp->y;
-                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = _getPlace(_getPlaceForNode(extantHyp->originNodeID))->id;
+                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = _getPlace(_getPlaceIDForNode(extantHyp->originNodeID))->id;
                   if (nodeHyp->originPlaceID != extantHyp->originPlaceID){
                     log("Found closest node. Connecting with the current");
 
@@ -1396,7 +1391,7 @@ void PlaceManager::evaluateUnexploredPaths()
       if (newHyp->hypID==-1){
         log("create new placeholder");
 //        newHyp->hypID = m_hypIDCounter;
-        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = _getPlaceForNode(newHyp->originNodeID);
+        if (newHyp->originPlaceID == -1) newHyp->originPlaceID = _getPlaceIDForNode(newHyp->originNodeID);
 //          log("Couldn't find closest node. Connecting with the current");
  
 //       newHyp->originPlaceID = _getPlace(curPlace)->id;
@@ -1469,7 +1464,7 @@ PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID, double va
     new SpatialProperties::DiscreteProbabilityDistribution;
   discDistr->data = pairs;
 
-  PlaceID placeholderID = _getPlaceForHyp(hypothesisID);
+  PlaceID placeholderID = _getPlaceIDForHyp(hypothesisID);
   if (placeholderID < 0) {
     error("Error! Hypothesis missing on %i", __LINE__);
     return;
@@ -1557,7 +1552,7 @@ PlaceManager::getGatewayness(double x, double y)
 PlacePtr PlaceManager::getCurrentPlace() {
   NavData::FNodePtr curNode = getCurrentNavNode();
   if(curNode != 0){
-    PlacePtr curPlace = _getPlace(_getPlaceForNode(curNode->nodeId));
+    PlacePtr curPlace = _getPlace(_getPlaceIDForNode(curNode->nodeId));
     return curPlace;
   } else {
     return 0;
@@ -1609,7 +1604,7 @@ PlaceManager::getCurrentNavNode()
 FrontierInterface::PlaceMembership
 PlaceManager::getPlaceMembership(double inX, double inY)
 {
-  log("getPlaceMembership called");
+  log("getPlaceMembership called (%i, %i)", inX, inY);
   vector<NavData::FNodePtr> nodes;
   getMemoryEntries<NavData::FNode>(nodes, 0);
 
@@ -1640,7 +1635,7 @@ PlaceManager::getPlaceMembership(double inX, double inY)
     placeID = 0;
   }
   else {
-    placeID = _getPlaceForNode(closestNodeID);
+    placeID = _getPlaceIDForNode(closestNodeID);
   }
 
   FrontierInterface::PlaceMembership ret;
@@ -1780,7 +1775,7 @@ void
 PlaceManager::processPlaceArrival(bool failed) 
 {
   try {
-    log("processPlaceArrival called");
+    log("processPlaceArrival called (failed=%i)", failed);
     log("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
 
     int wasHeadingForPlace = m_goalPlaceForCurrentPath;
@@ -1796,7 +1791,7 @@ PlaceManager::processPlaceArrival(bool failed)
       int curNodeId = curNode->nodeId;
       log("current node id: %i", curNodeId);
 
-      PlaceID curPlaceID = _getPlaceForNode(curNodeId);
+      PlaceID curPlaceID = _getPlaceIDForNode(curNodeId);
       bool placeExisted = (curPlaceID >= 0);
 
       double curNodeX = curNode->x;
@@ -1861,7 +1856,7 @@ PlaceManager::processPlaceArrival(bool failed)
 
         else if (!failed && curNodeId != wasComingFromNode && closeToGoal) {
           arrivalCase = 3;
-          int currentPlaceID = curPlaceID;
+//          int currentPlaceID = curPlaceID;
           //CASE 3: We were exploring, but ended up in a known Place which was not
           //the one we started from.
           //Remove the NodeHypothesis and its Placeholder, and
@@ -1939,7 +1934,7 @@ PlaceManager::processPlaceArrival(bool failed)
           log("processPlaceArrival:2");
 
           if (wasComingFromNode >= 0) {
-	    PlaceID prevPlaceID = _getPlaceForNode(wasComingFromNode);
+	    PlaceID prevPlaceID = _getPlaceIDForNode(wasComingFromNode);
             if (prevPlaceID >= 0) {
 	      vector<PlaceID> placeholders;
 	      _getPlaceholders(placeholders);
@@ -1991,7 +1986,7 @@ PlaceManager::processPlaceArrival(bool failed)
             p->status = TRUEPLACE;
 	    PlaceID newPlaceID = _addPlaceWithNode(p, curNode);
 
-            checkUnassignedEdges(newPlaceID);
+            checkUnassignedEdges(curNode->nodeId);
 
             //Write the Gateway property if present
             if (curNodeGateway == 1) {
@@ -2001,7 +1996,7 @@ PlaceManager::processPlaceArrival(bool failed)
           }
         }
         else {
-          arrivalCase = 7;
+          arrivalCase = 8;
           // We weren't exploring, and the place was known before - don't
           // do anything.
           // (Could check whether we ended up in the expected Place, but
@@ -2059,7 +2054,7 @@ PlaceManager::PlaceServer::getPlaceFromNodeID(int nodeID,
     const Ice::Current &_context)
 {
 //  m_pOwner->lockComponent();
-  PlacePtr ptr = m_pOwner->_getPlace(m_pOwner->_getPlaceForNode(nodeID));
+  PlacePtr ptr = m_pOwner->_getPlace(m_pOwner->_getPlaceIDForNode(nodeID));
 
   //Copy for thread safety
   if (ptr != 0)
@@ -2073,7 +2068,7 @@ PlacePtr PlaceManager::PlaceServer::getPlaceFromHypID(int hypID,
     const Ice::Current &_context)
 {
 //  m_pOwner->lockComponent();
-  PlacePtr ptr = m_pOwner->_getPlace(m_pOwner->_getPlaceForHyp(hypID));
+  PlacePtr ptr = m_pOwner->_getPlace(m_pOwner->_getPlaceIDForHyp(hypID));
 
   //Copy for thread safety
   if (ptr != 0)
@@ -2163,7 +2158,7 @@ PlaceManager::PlaceServer::endPlaceTransition(int failed, const Ice::Current &_c
 void PlaceManager::deletePlaceholder(int placeID) {
   // TODO: Delete connectivities
 
-  log("deletePlaceholder entered");
+  log("deletePlaceholder entered (ID=%i)", placeID);
   PlacePtr place = _getPlace(placeID);
   NodeHypothesisPtr nodeHyp = _getHypForPlace(placeID);
 
@@ -2262,7 +2257,7 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
 void 
 PlaceManager::deletePlaceProperties(int placeID)
 {
-  log("deletePlaceProperties called");
+  log("deletePlaceProperties called (placeID = %i)", placeID);
   deletePlaceholderProperties(placeID);
   {
     m_PlacePropsMutex.lock();
@@ -2290,7 +2285,7 @@ PlaceManager::deletePlaceProperties(int placeID)
 void 
 PlaceManager::deletePlaceholderProperties(int placeID)
 {
-  log("deletePlaceholderProperties called");
+  log("deletePlaceholderProperties called (placeID = %i)", placeID);
   m_PlacePropsMutex.lock();
   {  
     //Delete free space property
@@ -2420,7 +2415,7 @@ PlaceManager::upgradePlaceholder(int placeID, NavData::FNodePtr newNode)
     log("overwrite 4: %s", goalPlaceWMID.c_str());
     _upgradePlaceholderMappings(placeID, place, newNode);
 
-    checkUnassignedEdges(placeID);
+    checkUnassignedEdges(newNode->nodeId);
 
     unlockEntry(goalPlaceWMID);
     log("unlock 1");
@@ -2559,7 +2554,7 @@ int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
 
 	PlaceID newPlaceID = _addPlaceWithNode(p, node);
 
-	checkUnassignedEdges(newPlaceID);
+	checkUnassignedEdges(node->nodeId);
 
 	//Write the Gateway property if present
 	if (node->gateway == 1) {
@@ -2572,7 +2567,7 @@ int PlaceManager::addPlaceForNode(NavData::FNodePtr node) {
 void 
 PlaceManager::mapLoadStatusOverwritten(const cdl::WorkingMemoryChange &wmc)
 {
-  log("mapLoadStatusOverwritten");
+  log("mapLoadStatusOverwritten (%s)", wmc.address.id.c_str());
   try {
     lockEntry(wmc.address, cdl::LOCKEDOD);
     MapLoadStatusPtr statusStruct = getMemoryEntry<MapLoadStatus>(wmc.address);
@@ -2662,9 +2657,9 @@ PlaceMapper::_getPlace(PlaceID id)
 }
 
 PlaceID
-PlaceMapper::_getPlaceForNode(NodeID id)
+PlaceMapper::_getPlaceIDForNode(NodeID id)
 {
-  log("Entering PlaceMapper::_getPlaceForNode(%i)", id);
+  log("Entering PlaceMapper::_getPlaceIDForNode(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2697,9 +2692,9 @@ PlaceMapper::_getNodeForPlace(PlaceID id)
 }
 
 PlaceID
-PlaceMapper::_getPlaceForHyp(HypID id)
+PlaceMapper::_getPlaceIDForHyp(HypID id)
 {
-  log("Entering PlaceMapper::_getPlaceForHyp(%i)", id);
+  log("Entering PlaceMapper::_getPlaceIDForHyp(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2713,7 +2708,7 @@ PlaceMapper::_getPlaceForHyp(HypID id)
 NodeHypothesisPtr
 PlaceMapper::_getHypForPlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_getHypForPlace(%i)", id);
+  log("Entering PlaceMapper::_getHypIDForPlace(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2799,7 +2794,7 @@ PlaceMapper::_getTruePlaces(std::vector<PlaceID> &ret)
 void
 PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp)
 {
-  log("Entering PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp)");
+  log("Entering PlaceMapper::_overwriteHypForPlace(placeID=%i, hypID=%i)", placeID, hyp==0?-1:hyp->hypID);
   _checkConsistency(__LINE__);
   {
     IceUtil::Mutex::Lock lock(m_mutex);
@@ -2913,7 +2908,7 @@ void
 PlaceMapper::_upgradePlaceholderMappings(PlaceID placeID, 
     PlacePtr place, NavData::FNodePtr node)
 {
-  log("Entering PlaceMapper::_upgradePlaceholderMappings()");
+  log("Entering PlaceMapper::_upgradePlaceholderMappings(placeID=%i)", placeID);
   string placeWMID = "";
   string hypWMID = "";
 
