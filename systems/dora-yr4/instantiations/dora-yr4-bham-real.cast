@@ -1,9 +1,11 @@
 
 ### the directory containing the calibration files to use
-SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
+SETVAR vision_calib_root=instantiations/calibration/dora-at-kth
 
 #### TODO create categorical data for BHAM
 #SETVAR categorisation_config=subarchitectures/categorical.sa/config/ALU-sim-shape-appearance.cfg
+
+SETVAR spatial_load_map=--load-map --save-map
 
 SETVAR hardware=real
 
@@ -20,6 +22,14 @@ SETVAR feature_options=<multiline>
 	coma			
     categorisation
     !categorisation-visual
+    !categorisation-size
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
+
     planning_sa		
     debug			
     dialogue		
@@ -48,7 +58,7 @@ SETVAR hardware_options=<multiline>
 SETVAR spatial_min_door_width=0.70
 SETVAR spatial_max_door_width=0.92
 
-#SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
 
 ### the prior for a room having a person in it 
 SETVAR room_has_person=0.9
@@ -61,10 +71,11 @@ SETVAR room_has_person=0.9
 
 #SETVAR conceptual_categories=corridor,office,meetingroom
 
-#SETVAR avs_cone_depth=2.5
+SETVAR avs_cone_depth=2.0
 
 ### Prohibit the creation of placeholders in certain zones
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
-SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
+SETVAR exclude_exploration=--exclude-from-exploration "y < -3 or y > 3 or x > 5"
+#SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
 
 INCLUDE dora-yr4.cast
