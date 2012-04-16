@@ -157,20 +157,33 @@ void WMControl::runComponent() {
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 log("Sending task update for task %d", *it);
                 lockComponent();
-                PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
-                unlockComponent();
-                log("sending task update...");
-                pyServer->updateTask(task);
-                log("task returned");
+                if (activeTasks.find(*it) != activeTasks.end()) {
+                    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
+                    unlockComponent();
+                    log("sending task update...");
+                    pyServer->updateTask(task);
+                    log("task returned");
+                }
+                else {
+                    unlockComponent();
+                    log("Task %d is no longer active", *it);
+                }
+
             }
             for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
                 log("Sending task timeout for task %d", *it);
                 lockComponent();
-                PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
-                unlockComponent();
-                log("task timeout reached.");
-                pyServer->taskTimedOut(task);
-                log("task returned");
+                if (activeTasks.find(*it) != activeTasks.end()) {
+                    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
+                    unlockComponent();
+                    log("task timeout reached.");
+                    pyServer->taskTimedOut(task);
+                    log("task returned");
+                }
+                else {
+                    unlockComponent();
+                    log("Task %d is no longer active", *it);
+                }
             }
             execute.clear();
             timed_out.clear();
