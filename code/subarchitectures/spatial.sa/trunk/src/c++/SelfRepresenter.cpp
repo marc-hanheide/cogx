@@ -101,6 +101,7 @@ SelfRepresenter::runComponent()
 	int curPlaceID = curPlace->id;
 	if (curPlaceID != prevPlaceID) {
 	  // Place has changed!
+	  log("Robot is now at Place %i", curPlaceID);
 
 	  SpatialProperties::IntegerValuePtr placeIDValue = 
 	    new SpatialProperties::IntegerValue;
