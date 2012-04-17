@@ -25,6 +25,7 @@
             <object hidden="true">pdf1</object>
             <object hidden="true">planned_viewpoints</object>
             <object hidden="true">kinect</object>
+            <object>graph/cpp</object>
         </objects>
     </view>
     <view>
