@@ -1288,8 +1288,9 @@ void PlaceManager::evaluateUnexploredPaths()
 {
   log("Entering evaluateUnexplorePaths");
   IceUtil::Mutex::Lock locks(m_PlaceholderMutex);
+  NavData::FNodePtr curNode = getCurrentNavNode();
+
   if(!m_bNoPlaceholders) {
-    NavData::FNodePtr curNode = getCurrentNavNode();
     PlaceID curPlace = _getPlaceIDForNode(curNode->nodeId);
     
     if(curPlace < 0) {
@@ -1429,7 +1430,74 @@ void PlaceManager::evaluateUnexploredPaths()
     log("Updating reachable placeholder properties.");
     updateReachablePlaceholderProperties(curPlace);
   }
+  int curPlaceID = _getPlaceIDForNode(curNode->nodeId);
+  if (curPlaceID>=0){
+    set<int> curPlaceConnectivities = m_connectivities[curPlaceID];
+    vector<PlaceMapEntry> gr;
+    for (int k = 0; k < entries.size(); k++) {
+      if (entries[k].node != 0)
+        gr.push_back(entries[k]);
+    }
 
+    bool swapped = true;
+    int j = 0;
+    PlaceMapEntry tmp;
+    while (swapped) {
+      swapped = false;
+      j++;
+      for (int k = 0; k < gr.size() - j; k++) {
+        double dist1 = (gr[k].node->x - curNode->x)*(gr[k].node->x - curNode->x) + (gr[k].node->y - curNode->y) * (gr[k].node->y - curNode->y);
+        double dist2 = (gr[k + 1].node->x - curNode->x)*(gr[k + 1].node->x - curNode->x) + (gr[k + 1].node->y - curNode->y) * (gr[k + 1].node->y - curNode->y);
+        if (dist2 < dist1) {
+              tmp = gr[k];
+              gr[k] = gr[k + 1];
+              gr[k + 1] = tmp;
+              swapped = true;
+        }
+      }
+    }
+
+
+
+
+
+    for(vector<PlaceMapEntry>::iterator it = gr.begin(); it != gr.end(); it++) {
+      if ((it->node != 0) && (it->node->nodeId != curNode->nodeId) && (curPlaceConnectivities.find(it->place->id) == curPlaceConnectivities.end())){ 
+        // Check if was checked already            
+
+        // Check if are connected via node
+        double max_dist = 2.2;    
+        bool link_gateway = false;
+        for(set<int>::iterator it1 = curPlaceConnectivities.begin(); it1 != curPlaceConnectivities.end(); it1++) {
+          set<int> placeConnectivities = m_connectivities[(*it1)];
+          set<int>::iterator it2 = placeConnectivities.find(it->place->id);
+          if (it2 != placeConnectivities.end()){
+            max_dist = 1.5;
+            NavData::FNodePtr link = _getNodeForPlace(*it2);
+            log("alex link %d %d - %d", curPlaceID, it->place->id, (*it1));
+                        
+            if (link->gateway == 1){
+              link_gateway = true;
+              break;
+            }              
+          } 
+        }
+        // Connected via doorway - skip
+        if (link_gateway) continue;
+        double dist2 = (it->node->x - curNode->x)*(it->node->x - curNode->x) + (it->node->y - curNode->y) * (it->node->y - curNode->y);
+                    
+        if (dist2 < max_dist * max_dist){
+          // Check path
+          double path_dist = m_mapInterface->getPathLength(it->node->x,it->node->y,curNode->x,curNode->y);
+          log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->place->id, max_dist,sqrt(dist2), path_dist, path_dist/sqrt(dist2));
+          if (path_dist/sqrt(dist2) > 0 && path_dist/sqrt(dist2) < 22){
+            createConnectivityProperty(m_hypPathLength, curPlaceID, it->place->id);
+            createConnectivityProperty(m_hypPathLength, it->place->id, curPlaceID);
+          }
+        }
+      }
+    }
+  }
   log("Exiting evaluateUnexplorePaths");
 }
 
@@ -2005,13 +2073,6 @@ PlaceManager::processPlaceArrival(bool failed)
 
         m_isPathFollowing = false; 
       }
-//TODO
-//Connect with reachable nodes around the correct
-//Check if was checked already
-//Check intersection
-//Check doors, side
-//Check path
-//------------------------
     }
   }
   catch(CASTException &e) {

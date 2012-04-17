@@ -63,6 +63,9 @@ extern "C" {
     return new SpatialControl();
   }
 }
+double SpatialControl::MapServer::getPathLength(double x1, double y1,double x2, double y2, const Ice::Current &_context){
+  return m_pOwner->getPathLength(x1,y1,x2,y2);
+}
 
 int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Current &_context) {
   return m_pOwner->findClosestNode(x,y);
@@ -2372,6 +2375,30 @@ void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &fronti
       map.setBit(x,y+1,true);
     }
   }
+}
+
+double SpatialControl::getPathLength(double x1, double y1,double x2, double y2) {
+  double maxDist = 50;
+  Cure::BinaryMatrix map;
+  // Mutual exclusion vs. changes to m_lgm in the main loop (updateGridMaps)
+//  IceUtil::Mutex::Lock lock(m_MapsMutex);
+
+  // Get the expanded binary map used to search 
+  getExpandedBinaryMap(m_lgm, map, 1.5,0);
+
+  int x1i, y1i;
+  if(m_lgm->worldCoords2Index(x1, y1, x1i, y1i) != 0) {
+    return -2;
+  }
+
+  int x2i, y2i;
+  if(m_lgm->worldCoords2Index(x2, y2, x2i, y2i) != 0) {
+    return -3;
+  }
+  Cure::ShortMatrix path;
+  double dist = map.path(x1i + m_lgm->getSize(),y1i + m_lgm->getSize(),x2i + m_lgm->getSize(),y2i + m_lgm->getSize(), path, maxDist);
+
+  return dist;
 }
 
 /* Finds the node with the shortest path from (x,y) in an expanded binarymap

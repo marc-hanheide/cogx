@@ -467,6 +467,7 @@ class MapLoadStatus {
   interface MapInterface {
     NodeHypothesisSeq refreshNodeHypothesis();
     bool isCircleObstacleFree(double x, double y, double radius);
+    double getPathLength(double x1, double y1,double x2, double y2);
     int findClosestNode(double x, double y);
     LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
     HeightMap getHeightMap();

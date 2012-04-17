@@ -35,6 +35,15 @@ namespace spatial {
 
   class PlaceMapper : public cast::ManagedComponent
   {
+
+    int m_placeIDCounter;
+    int m_hypIDCounter;
+
+    std::map<int, int> m_NodeIDToPlaceIDMap; // For map loading
+
+    IceUtil::Mutex m_mutex;
+
+    public:
     struct PlaceMapEntry 
     {
       SpatialData::PlacePtr place;
@@ -47,14 +56,7 @@ namespace spatial {
     };
 
     std::vector<PlaceMapEntry> entries;
-    int m_placeIDCounter;
-    int m_hypIDCounter;
 
-    std::map<int, int> m_NodeIDToPlaceIDMap; // For map loading
-
-    IceUtil::Mutex m_mutex;
-
-    public:
     SpatialData::PlacePtr _getPlace(PlaceID id);
 
     PlaceID _getPlaceIDForNode(NodeID id);
