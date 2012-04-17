@@ -2494,6 +2494,7 @@ void DisplayNavInPB::deleteConnectivityPathProperty(const cdl::WorkingMemoryChan
     log("alex 4 %s",name);
     lp.remove();
   }
+  _cpp.erase(it);
 
   log("Exited deleteConnectivityPathProperty");
 }
