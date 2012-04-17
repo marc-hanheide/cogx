@@ -1342,19 +1342,19 @@ void PlaceManager::evaluateUnexploredPaths()
                   log("move overlapped placeholder");
                   nodeHyp->x=extantHyp->x;
                   nodeHyp->y=extantHyp->y;
-                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = _getPlace(_getPlaceIDForNode(extantHyp->originNodeID))->id;
+                  if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = _getPlaceIDForNode(extantHyp->originNodeID);
                   if (nodeHyp->originPlaceID != extantHyp->originPlaceID){
                     log("Found closest node. Connecting with the current");
 
 		    log("Deleting connectivity between %i and %i", nodeHyp->originPlaceID, place->id);
                     deleteConnectivityProperty(nodeHyp->originPlaceID, place->id);
 		    for (list<std::pair<int, int> >::iterator
-			hit = m_hypotheticalConnectivities.begin();
-			hit != m_hypotheticalConnectivities.end(); hit++) {
+			      hit = m_hypotheticalConnectivities.begin();
+			      hit != m_hypotheticalConnectivities.end(); hit++) {
 		      if (hit->first == nodeHyp->originPlaceID &&
-			  hit->second == place->id) {
-			m_hypotheticalConnectivities.erase(hit);
-			break;
+			        hit->second == place->id) {
+			      m_hypotheticalConnectivities.erase(hit);
+			      break;
 		      }
 		    }
 
