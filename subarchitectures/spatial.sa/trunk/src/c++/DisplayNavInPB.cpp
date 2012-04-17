@@ -2449,7 +2449,7 @@ void DisplayNavInPB::displayConnectivityPathProperty(int place1Id, int place2Id)
   vs.add(tx - 0.3*cos(angle - M_PI/6), ty - 0.3*sin(angle - M_PI/6), 0);
 
   lp.add_vertices(vs);
-  lp.set_color(0., 0., 0.);
+  lp.set_color(1., 0., 0.);
   lp.set_opacity(1);
   lp.set_line_width(3);
 
@@ -2829,7 +2829,7 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyConnectivityPathProperties.add(m_ProxyGraph,
                      "cpp",
                      peekabot::REPLACE_ON_CONFLICT);
-
+    m_ProxyConnectivityPathProperties.hide();
 
     m_ProxyEdges.add(m_ProxyGraph,
                      "edges",

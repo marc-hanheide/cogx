@@ -2005,11 +2005,13 @@ PlaceManager::processPlaceArrival(bool failed)
 
         m_isPathFollowing = false; 
       }
-
-      log("Calling evaluateUnexploredPaths from processPlaceArrival!");
-//NOTE moved to PlaceholderEnumerating command
-//      evaluateUnexploredPaths();
-      log("evaluateUnexploredPaths exited");
+//TODO
+//Connect with reachable nodes around the correct
+//Check if was checked already
+//Check intersection
+//Check doors, side
+//Check path
+//------------------------
     }
   }
   catch(CASTException &e) {
