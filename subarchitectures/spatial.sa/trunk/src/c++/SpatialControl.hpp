@@ -107,6 +107,7 @@ class SpatialControl : public cast::ManagedComponent ,
         virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis(const Ice::Current &_context);
         virtual SpatialData::HeightMap getHeightMap(const Ice::Current &_context);
         virtual SpatialData::LocalGridMap getGridMap(const Ice::Current &_context);
+        virtual double getPathLength(double x1, double y1,double x2, double y2, const Ice::Current &_context);
         virtual int findClosestNode(double x, double y, const Ice::Current &_context);
 //        virtual int findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context);
 
@@ -199,6 +200,8 @@ protected:
   virtual SpatialData::HeightMap getHeightMap();
   virtual SpatialData::LocalGridMap getGridMap();
   virtual int findClosestNode(double x, double y);
+  virtual double getPathLength(double x1, double y1,double x2, double y2);
+
 //  virtual int findClosestPlace(double x, double y,const SpatialData::NodeIDSeq& nodeids);
   void getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char> *gridmap, double minx, double maxx, double miny, double maxy) const;
 
