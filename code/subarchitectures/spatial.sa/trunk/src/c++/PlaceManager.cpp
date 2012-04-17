@@ -1466,7 +1466,7 @@ void PlaceManager::evaluateUnexploredPaths()
         // Check if was checked already            
 
         // Check if are connected via node
-        double max_dist = 2.2;    
+        double max_dist = 2.1;    
         bool link_gateway = false;
         for(set<int>::iterator it1 = curPlaceConnectivities.begin(); it1 != curPlaceConnectivities.end(); it1++) {
           set<int> placeConnectivities = m_connectivities[(*it1)];
