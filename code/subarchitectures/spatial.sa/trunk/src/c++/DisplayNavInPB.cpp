@@ -1784,6 +1784,8 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
       for (map<string, std::pair<long,long> >::iterator it
 		      = _cpp.begin();
 		      it != _cpp.end(); ++it){
+      log("alex 6 %d - %d %d", placeId, it->second.first,it->second.second);
+
           if (it->second.first == placeId || it->second.second == placeId ){
             displayConnectivityPathProperty(it->second.first,it->second.second);
           }
@@ -1939,6 +1941,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 	{
 		log("Error! SpatialObject disappeared from WM!");
 	}
+	log("Exited newNavGraphNode");
 
 }
 
@@ -2029,6 +2032,7 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange){
 	for (map<string, std::pair<long,long> >::iterator it
 			= _cpp.begin();
 			it != _cpp.end(); ++it){
+      log("alex 1 %d - %d %d", pid, it->second.first,it->second.second);
       if (it->second.first == pid || it->second.second == pid ){
         displayConnectivityPathProperty(it->second.first,it->second.second);
       }
@@ -2210,6 +2214,19 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange)
 			}
 		}
 	}
+  if (placeId!=-1){
+    for (map<string, std::pair<long,long> >::iterator it
+	      = _cpp.begin();
+	      it != _cpp.end(); ++it){
+    log("alex 8 %d - %d %d", placeId, it->second.first,it->second.second);
+
+        if (it->second.first == placeId || it->second.second == placeId ){
+          displayConnectivityPathProperty(it->second.first,it->second.second);
+        }
+    }
+  }
+
+
   log("Exited newPlace");
 }
 
@@ -2470,9 +2487,11 @@ void DisplayNavInPB::deleteConnectivityPathProperty(const cdl::WorkingMemoryChan
 
   char name[32];
   sprintf(name, "cpp%06ld", it->second.first*1000+it->second.second);
+  log("alex 3 %s",name);
   peekabot::LineCloudProxy lp;
   peekabot::Status s = lp.assign(m_ProxyConnectivityPathProperties, name).status();
 	if ( s.succeeded() ) {
+    log("alex 4 %s",name);
     lp.remove();
   }
 
