@@ -2850,7 +2850,7 @@ void DisplayNavInPB::connectPeekabot()
                      "cpp",
                      peekabot::REPLACE_ON_CONFLICT);
     m_ProxyConnectivityPathProperties.hide();
-
+    m_ProxyConnectivityPathProperties.set_position(0, 0, 0.01);
     m_ProxyEdges.add(m_ProxyGraph,
                      "edges",
                      peekabot::REPLACE_ON_CONFLICT);

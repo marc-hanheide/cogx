@@ -1491,8 +1491,8 @@ void PlaceManager::evaluateUnexploredPaths()
           double path_dist = m_mapInterface->getPathLength(it->node->x,it->node->y,curNode->x,curNode->y);
           log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->place->id, max_dist,sqrt(dist2), path_dist, path_dist/sqrt(dist2));
           if (path_dist/sqrt(dist2) > 0 && path_dist/sqrt(dist2) < 22){
-            createConnectivityProperty(m_hypPathLength, curPlaceID, it->place->id);
-            createConnectivityProperty(m_hypPathLength, it->place->id, curPlaceID);
+            createConnectivityProperty(sqrt(dist2), curPlaceID, it->place->id);
+            createConnectivityProperty(sqrt(dist2), it->place->id, curPlaceID);
           }
         }
       }
