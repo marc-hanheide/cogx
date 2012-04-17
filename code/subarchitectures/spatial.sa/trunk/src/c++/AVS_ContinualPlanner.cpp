@@ -358,7 +358,8 @@ AVS_ContinualPlanner::owtARTagCommand(const cast::cdl::WorkingMemoryChange &objI
 	if (m_currentConeGroup){
 	  VisionData::ARTagCommandPtr newObj =
 	    getMemoryEntry<VisionData::ARTagCommand>(objID.address);
-	  log("Overwritten ARTagCommand: %s", newObj->label.c_str());
+	log("Overwritten ARTagCommand: %s (%s)", newObj->label.c_str(), 
+	    objID.address.id.c_str());
 	  ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 
     m_currentViewConeNumber++;
@@ -397,7 +398,8 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
 	if(m_currentConeGroup){
 	  VisionData::Recognizer3DCommandPtr newObj =
 	    getMemoryEntry<VisionData::Recognizer3DCommand>(objID.address);
-	  log("Overwritten Recognizer3D Command: %s", newObj->label.c_str());
+	  log("Overwritten Recognizer3D Command: %s (%s)", newObj->label.c_str(), 
+	      objID.address.id.c_str());
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
     log("finished ViewConeUpdate");
     m_currentViewConeNumber++;
@@ -462,7 +464,7 @@ try {
 
 void AVS_ContinualPlanner::newProcessConeCommand(
 		const cast::cdl::WorkingMemoryChange &objID) {
-log("Got Process Cone Group Command");
+log("Got Process Cone Group Command %s", objID.address.id.c_str());
 	SpatialData::ProcessConeGroupPtr cmd = getMemoryEntry<SpatialData::ProcessConeGroup> (
 						objID.address);
 	m_processConeGroupCommandWMAddress = objID.address.id;
@@ -474,6 +476,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
 		const cast::cdl::WorkingMemoryChange &objID) {
 	// If this is an visualobject belief then add as an ObjectPlaceProperty
 	// Based on the current ConeGroup know the location of the object
+   	try {
 	dBeliefPtr belief = new dBelief;
 	belief = getMemoryEntry<dBelief>(objID.address);
 
@@ -532,12 +535,17 @@ void AVS_ContinualPlanner::newGroundedBelief(
 	  			result->category.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
 
 	  	addToWorkingMemory(newDataID(), result);
-}
-else{
-	log("Empty VisualObject belief!");
-}
+		}
+		else{
+		  log("Empty VisualObject belief!");
+		}
+	}
 	}
 
+	catch (DoesNotExistOnWMException) {
+	    log("Belief disappeared from WM!");
+	    return;
+	}
 }
 void AVS_ContinualPlanner::newViewPointGenerationCommand(
 		const cast::cdl::WorkingMemoryChange &objID) {
@@ -1543,6 +1551,7 @@ for(std::map<int,ConeGroup>::const_iterator it = m_beliefConeGroups.begin(); it!
 		if (!it->second.isprocessed){
 			log("Not all cone groups for this location are processed yet");
 			isAllConeGroupsProcessed = false;
+			break;
 		}
 	}
 }
@@ -1618,7 +1627,7 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		FormulaValuesPtr formulaValues = FormulaValuesPtr::dynamicCast(basicdist->values);
 		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
 		log("Got conegroup beliefs probability %f ", floatformula->val);
-		log("Will substract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
+		log("Will subtract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
 		floatformula->val = floatformula->val - differenceMapPDFSum*(1/m_coneGroupNormalization); // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[round(viewcone.first / 1000)], "binder", belief);
@@ -2114,8 +2123,9 @@ void AVS_ContinualPlanner::addRecognizer3DCommand(
 	rec_cmd->cmd = cmd;
 	rec_cmd->label = label;
 	rec_cmd->visualObjectID = visualObjectID;
-	log("constructed visual command, adding to WM");
-	addToWorkingMemory(newDataID(), "vision.sa", rec_cmd);
+	string id = newDataID();
+	log("constructed visual command, adding to WM (%s)", id.c_str());
+	addToWorkingMemory(id, "vision.sa", rec_cmd);
 	log("added to WM");
 }
 
