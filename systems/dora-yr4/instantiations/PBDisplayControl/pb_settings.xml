@@ -126,6 +126,7 @@
     </view>
 </views>
 <toggles>
+    <toggle>graph/cpp</toggle>
     <toggle>kinect</toggle>
     <toggle>grid_map</toggle>
     <toggle>grid_map_kinect</toggle>
