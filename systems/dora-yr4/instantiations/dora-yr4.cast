@@ -247,6 +247,8 @@ VARDEFAULT exclude_exploration=
 # If --follow-robot is supplied, PB will follow the robot with the camera
 VARDEFAULT follow_robot=--follow-robot
 
+VARDEFAULT show_connectivities=
+
 # If --filter-doors is supplied, create doors only close to door hypotheses
 VARDEFAULT filter_doors=
 
@@ -301,7 +303,7 @@ IFOPTALL(%(feature_options), spatial)
     ### Whether to display spatial information in Peekabot
     IFOPTALL(%(feature_options), peekabot)
 #EXPAND --no_load_robot_file=%(no_load_robot_file)
-        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" %(follow_robot) %(no_load_robot_file)
+        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" %(follow_robot) %(no_load_robot_file) %(show_connectivities)
         SETVAR usePB=--usepeekabot
     ELSE
         SETVAR usePB=
