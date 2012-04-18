@@ -41,6 +41,8 @@
 #ifndef SMLEARNING_SCENARIO_H_
 #define SMLEARNING_SCENARIO_H_
 
+#include <boost/iostreams/tee.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <Golem/Tools/XMLParser.h>
 #include <Golem/Device/Katana/Katana.h>
 #include <Golem/Tools/Message.h>
@@ -191,8 +193,7 @@ class Scenario : public golem::Object
 		golem::CriticalSection cs;
 		volatile bool bStart;
 		volatile bool bStop;
-		volatile bool bRec;
-			
+		volatile bool bRec;			
 
 			
 

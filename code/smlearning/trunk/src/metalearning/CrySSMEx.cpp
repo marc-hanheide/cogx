@@ -151,7 +151,7 @@ void CrySSMEx::setUniformDistribution ()
 	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
 }
 
-void CrySSMEx::average_model_vectors ()
+void CrySSMEx::averageModelVectors ()
 {
 	for (unsigned int i=0; i<qnt_mv_map.size() ; i++)
 	{
@@ -167,5 +167,23 @@ void CrySSMEx::average_model_vectors ()
 	}
 
 }
+
+void ActiveCrySSMEx::initializeInputQuantizer (unsigned int dim)
+{
+	input_quantizer = new ActiveGNG_Quantizer (dim);
+}
+
+void ActiveCrySSMEx::initializeOutputQuantizer (unsigned int dim)
+{
+	output_quantizer = new ActiveGNG_Quantizer (dim);
+}
+
+void ActiveCrySSMEx::initializeStateQuantizer (unsigned int dim)
+{
+	state_quantizer = new CVQ (dim);
+}
+
+// void ActiveCrySSMEx::trainInputQuantizer (
+
 
 }; // smlearning namespace

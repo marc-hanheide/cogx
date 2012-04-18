@@ -25,6 +25,7 @@
 #ifndef SMLEARNING_DATASTRUCTS_H_
 #define SMLEARNING_DATASTRUCTS_H_
 
+
 #include <Demo/Common/Tools.h>
 
 #include <netcdf.h>
@@ -485,7 +486,7 @@ struct LearningData {
 	/// generate a feature vector containing, for now, a direction vector of the object
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& prev_chunk, Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _direction)
+	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& prev_chunk, const Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _direction)
 	{
 		try { 
 			if ( flags & _direction ) {
@@ -774,7 +775,7 @@ struct LearningData {
 		else if (featureSelectionMethod == _mcobpose_obpose_direction)
 			write_chunk_to_featvector (inputVector, chunk, normalize, limits, _end_effector_pos | _effector_pos | _object);
 	}
-
+	
 	template<class Normalization>
 	static vector<FeatureVector> load_cryssmexinputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 
@@ -792,7 +793,40 @@ struct LearningData {
 		return sequence;
 	}
 		
+	template<class Normalization>
+	static void load_cryssmexoutput (FeatureVector& outputVector, const Chunk& currentChunk, const Chunk& nextChunk, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _efobpose)
+			write_chunk_to_featvector (outputVector, nextChunk, normalize, limits, _object);
+		else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+			write_chunk_to_featvector (outputVector, currentChunk, normalize, limits, _label);
+		else if (featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+			write_chunk_to_featvector (outputVector, currentChunk, nextChunk, normalize, limits, _direction);
 
+	}
+
+	template<class Normalization>
+	static vector<FeatureVector> load_cryssmexoutputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
+
+		Chunk::Seq::const_iterator s_iter;
+		vector<FeatureVector> sequence;
+
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+			label_seq (&seq, _rough_direction | _slide_flip_tilt);
+		else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
+			label_seq (&seq, _rough_direction);
+
+		if (seq.size() > 2) {
+			for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
+				if (s_iter+1 != seq.end()) {
+					FeatureVector outputVector;
+					load_cryssmexoutput (outputVector, *s_iter, *(s_iter+1), featureSelectionMethod, normalize, limits);
+					sequence.push_back (outputVector);
+				}
+			}
+		}
+		return sequence;
+	}
+	
 	///
 	///Writing a dataset in CrySSMEx format.
 	///If output is continuos CrySSMEx acts as a regression method

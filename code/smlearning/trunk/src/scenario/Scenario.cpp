@@ -68,7 +68,7 @@ void Scenario::init(boost::program_options::variables_map vm)
 	}
 
 	if (vm.count("startingPosition")) {
-		startingPosition = atoi(vm["startingPosition"].as<string>().c_str());
+		startingPosition = vm["startingPosition"].as<int>();
 	}
 
 	// if (vm.count("storeLabels")) {
@@ -130,9 +130,9 @@ void Scenario::postprocess(SecTmReal elapsedTime) {
 		writeChunk (chunk);
 
 		//LearningData::write_chunk_to_featvector (chunk.featureVector, chunk, normalize<Real>, learningData.featLimits);
-
-// 		learningData.data.push_back(chunk);
-
+		
+		// 		learningData.data.push_back(chunk);
+			
 		learningData.currentChunkSeq.push_back (chunk);
 
 		// currentPfRoll = chunk.object.obRoll;

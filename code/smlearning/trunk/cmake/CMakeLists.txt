@@ -183,6 +183,7 @@ SET(SCENARIO_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
 	${SMLEARNING_ROOT}/src/scenario/Scenario.cpp	
 	${SMLEARNING_ROOT}/src/scenario/PredictingScenario.cpp
+	${SMLEARNING_ROOT}/src/scenario/ActiveGNGScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
 	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
 )
@@ -197,6 +198,7 @@ SET(SCENARIO_HEADERS
 	${SMLEARNING_ROOT}/include/scenario/PushingApplication.h
 	${SMLEARNING_ROOT}/include/scenario/Scenario.h
 	${SMLEARNING_ROOT}/include/scenario/PredictingScenario.h
+	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
 	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
 )
 
@@ -208,6 +210,10 @@ SET(PREDICTION_EXPERIMENT_SOURCE
 
 SET(OFFLINE_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/scenario/offline_experiment.cpp
+)
+
+SET(ACTIVEGNG_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/activegng_experiment.cpp
 )
 
 SET(TRACKER_TEST_SOURCE
@@ -286,6 +292,7 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/defaultnet.config
 	${SMLEARNING_ROOT}/config/offline_experiment.xml
 	${SMLEARNING_ROOT}/config/prediction_experiment.xml
+	${SMLEARNING_ROOT}/config/activegng_experiment.xml
 #	${SMLEARNING_ROOT}/config/pushing_appl.xml
 #	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
@@ -365,6 +372,7 @@ ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 ADD_EXECUTABLE(tracker_test ${TRACKER_TEST_SOURCE})
 ADD_EXECUTABLE(prediction_experiment ${PREDICTION_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(activegng_experiment ${ACTIVEGNG_EXPERIMENT_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/training.sh DESTINATION bin/SMLearning)
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/ensemble_experiment.sh DESTINATION bin/SMLearning)
@@ -373,6 +381,7 @@ INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)

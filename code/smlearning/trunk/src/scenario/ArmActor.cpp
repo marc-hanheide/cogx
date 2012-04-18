@@ -36,6 +36,7 @@ void ArmActor::init(const golem::Context &context)
 {
 
 	_tmDeltaAsync = _arm->getReacPlanner().getTimeDeltaAsync();
+	// _tmDeltaDiff = 0;
 	_arm->getArm().lookupState(_initial, context.getTimer().elapsed()); //other possibility: lookupCommand
 	_home.pos = _desc.homePose;
 
@@ -80,19 +81,22 @@ void ArmActor::moveArmToStartPose(const golem::Context &context)
 void ArmActor::moveFinger(golem::Context &context,golem::GenWorkspaceState& target,volatile bool& bStart, SecTmReal& duration, WorkspaceCoord& end){
 	target.pos = end;
 	target.t = context.getTimer().elapsed() + getDeltaAsync() + duration;
-	
+
 	setCollisionDetection(false);	
 	_arm->getReacPlanner().send(target, ReacPlanner::ACTION_LOCAL);
 		
 	// wait for the movement to start, but no longer than 60 seconds
 	(void)_arm->getReacPlanner().waitForBegin(60000);
-	context.getTimer().sleep(getDeltaAsync());
+	// context.getTimer().sleep(getDeltaAsync() + delay);
+	PerfTimer::sleep (getDeltaAsync());
 	bStart = true;
 		
 	// wait for the movement end, no longer than 60 seconds
 	(void)_arm->getReacPlanner().waitForEnd(60000);
-	context.getTimer().sleep(getDeltaAsync() + _desc.speriod);
+	// context.getTimer().sleep(getDeltaAsync() + _desc.speriod);
+	PerfTimer::sleep (getDeltaAsync() + _desc.speriod);
 	bStart = false;
+
 }
 
 ///////// Public //////////
@@ -109,9 +113,9 @@ void ArmActor::moveFingerToStartPose(golem::Context &context)
 	
 	//move the finger to home position
 	sendPosition(context,_home , ReacPlanner::ACTION_GLOBAL);
-	
+
 	context.getMessageStream()->write(Message::LEVEL_INFO, "Moving home...");
-	_arm->getReacPlanner().waitForEnd(60000);
+
 }
 
 
@@ -137,9 +141,33 @@ void ArmActor::moveFingerUp(const golem::Context &context, golem::GenWorkspaceSt
 	// set the initial pose of the arm, force the global movement (with planning in the entire arm workspace)
 	_arm->getReacPlanner().send(preHome, ReacPlanner::ACTION_GLOBAL);
 	// wait for completion of the action (until the arm moves to the initial pose)
-	_arm->getReacPlanner().waitForEnd();
+	_arm->getReacPlanner().waitForEnd(60000);
 }
 
+void ArmActor::moveFingerToStartPushing(golem::Context &context, golem::GenWorkspaceState& target)
+{
+	target.t = context.getTimer().elapsed() + getDeltaAsync() + SecTmReal(5.0); // i.e. the movement will last at least 3 sec
+
+	//turn on collision detection
+	setCollisionDetection(true);
+	
+	//move the finger to home position
+	sendPosition(context,target, ReacPlanner::ACTION_GLOBAL);
+
+	// _arm->getReacPlanner().waitForBegin();
+	// context.getTimer().sleep(getDeltaAsync());
+
+	// (void)_arm->getReacPlanner().waitForEnd();
+	// if (_tmDeltaDiff != 0)
+	// 	context.getTimer().sleep(getDeltaAsync() + context.getTimer().elapsed() - _tmDeltaDiff);
+
+	// _arm->getReacPlanner().stop();
+
+	context.getMessageStream()->write(Message::LEVEL_INFO, "Moving to object...");
+
+
+
+}
 
 ///////// Public //////////
 /** \brief try to find a path to given position, if found, move the finegr along it and wait for it to stop
@@ -158,10 +186,10 @@ void ArmActor::sendPosition(golem::Context &context,const golem::GenWorkspaceSta
 		context.getMessageStream()->write(Message::LEVEL_INFO, "Unable to find path to polyflap, trying again.");
 	}
 
-
 	context.getMessageStream()->write(Message::LEVEL_INFO, "Moving...");
 	// wait for completion of the action (until the arm stops moving)
-	_arm->getReacPlanner().waitForEnd(60000);
+	_arm->getReacPlanner().waitForEnd();
+
 }
 
 ///////// Public //////////

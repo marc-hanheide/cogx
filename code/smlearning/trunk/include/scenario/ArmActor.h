@@ -59,7 +59,9 @@ public:
 		/** Motion effects stabilization time period */
 		golem::SecTmReal speriod;
 		/** Constructs description object */
-		Desc(){Desc::setToDefault();}
+		Desc(){
+			Desc::setToDefault();
+		}
 		/** Checks if the description is valid. */
 		virtual bool isValid() const 
 		{
@@ -141,6 +143,8 @@ public:
 	void moveFinger(golem::Context&,golem::GenWorkspaceState&,volatile bool&, SecTmReal&, WorkspaceCoord&);
 	/** move finger to initial position */
 	void moveFingerToStartPose(golem::Context&);
+	/** move finger to start position of pushing */
+	void moveFingerToStartPushing(golem::Context&, golem::GenWorkspaceState&);
 	/** move finger up in order to increase the chances of finding a suitable path to home position */
 	void moveFingerUp(const golem::Context&,golem::GenWorkspaceState&,const Vec3&);
 

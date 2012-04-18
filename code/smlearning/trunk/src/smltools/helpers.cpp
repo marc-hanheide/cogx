@@ -23,7 +23,7 @@
 */
 
 #include <smltools/helpers.h>
-
+#include <boost/regex.hpp>
 
 namespace smlearning {
 
