@@ -2624,22 +2624,22 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
     bool overlapped = false;
 //CHECK IF OVERLAPPED
-    if (extantHyp->doorway) continue;
+    if (!extantHyp->doorway) {
+      int hypxi, hypyi;
+      if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
+        continue;
+      if (map(hypxi+m_lgm->getSize(), hypyi+m_lgm->getSize())==true) overlapped=true;
 
-    int hypxi, hypyi;
-    if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
-      continue;
-    if (map(hypxi+m_lgm->getSize(), hypyi+m_lgm->getSize())==true) overlapped=true;
-
-    for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); (nodeIt != nodes.end()) && !overlapped; ++nodeIt) {
-      try {
-        double dist2sq = (extantHyp->x - (*nodeIt)->x) * (extantHyp->x - (*nodeIt)->x) + (extantHyp->y - (*nodeIt)->y) * (extantHyp->y - (*nodeIt)->y);
-        if (dist2sq < m_min_sep_dist * m_min_sep_dist){
-          overlapped=true;
-          overlapped_hypotheses.push_back(extantHyp);
+      for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); (nodeIt != nodes.end()) && !overlapped; ++nodeIt) {
+        try {
+          double dist2sq = (extantHyp->x - (*nodeIt)->x) * (extantHyp->x - (*nodeIt)->x) + (extantHyp->y - (*nodeIt)->y) * (extantHyp->y - (*nodeIt)->y);
+          if (dist2sq < m_min_sep_dist * m_min_sep_dist){
+            overlapped=true;
+            overlapped_hypotheses.push_back(extantHyp);
+          }
+        } catch(IceUtil::NullHandleException e) {
+          log("Node suddenly disappeared..");
         }
-      } catch(IceUtil::NullHandleException e) {
-        log("Node suddenly disappeared..");
       }
     }
     if (!overlapped){
