@@ -110,9 +110,13 @@ void DisplayNavInPB::configure(const map<string,string>& _config)
   m_ShowPlaceholders = (_config.find("--no-placeholders") == _config.end());
   m_ShowRoomId = (_config.find("--no-roomid") == _config.end());
   m_ShowRoomCategory = (_config.find("--no-areaclass") == _config.end());
+  m_ShowConnectivities = (_config.find("--show-connectivities") != _config.end());
+
+
 
   m_ShowPath = (_config.find("--log-path") != _config.end());
   m_ShowCommands = (_config.find("--log-commands") != _config.end());
+
 
   if (_config.find("--laser-server") != _config.end()) {
     std::istringstream str(_config.find("--laser-server")->second);
@@ -2849,7 +2853,9 @@ void DisplayNavInPB::connectPeekabot()
     m_ProxyConnectivityPathProperties.add(m_ProxyGraph,
                      "cpp",
                      peekabot::REPLACE_ON_CONFLICT);
-    m_ProxyConnectivityPathProperties.hide();
+    if (!m_ShowConnectivities) {
+      m_ProxyConnectivityPathProperties.hide();
+    }
     m_ProxyConnectivityPathProperties.set_position(0, 0, 0.01);
     m_ProxyEdges.add(m_ProxyGraph,
                      "edges",
