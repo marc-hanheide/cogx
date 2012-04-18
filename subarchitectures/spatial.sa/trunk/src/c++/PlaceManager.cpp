@@ -1528,6 +1528,7 @@ void PlaceManager::evaluateUnexploredPaths()
                 
                 if (t > 0 && t < l && (s > -width/2) && (s < width/2)){
                   NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
+                  if (t>l/2) t=l/2;
                   newHyp->x=x1 + nx*t;
                   newHyp->y=y1 + ny*t;
                   newHyp->hypID=-1;
