@@ -209,6 +209,7 @@ private:
 	bool m_ShowCommands;
 	bool m_NonUniqueObjects;
   bool m_ShowPointCloud;
+  bool m_ShowConnectivities;
 
   int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 	int m_currGoalPlace;
