@@ -1956,6 +1956,7 @@ PlaceManager::processPlaceArrival(bool failed)
           
           /* If we are not close enough we came to a new node with no place, so we add one and DON'T cancel the movement */
           addPlaceForNode(curNode);
+          
         }
 
         else if (!placeExisted && !closeToGoal) {
@@ -1979,6 +1980,11 @@ PlaceManager::processPlaceArrival(bool failed)
           log("  CASE 3: Exploration action failed - place already known. Deleting Place %i", wasHeadingForPlace);
 
           m_isPathFollowing = false; 
+
+          deletePlaceProperties(wasHeadingForPlace);
+          m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
+      	  deletePlaceholder(wasHeadingForPlace);
+
 /*
           deletePlaceProperties(wasHeadingForPlace);
 
