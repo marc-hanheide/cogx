@@ -1505,51 +1505,53 @@ void PlaceManager::evaluateUnexploredPaths()
           if (path_dist/sqrt(dist2) > 0 && path_dist/sqrt(dist2) < 22){
             // Check doorHyps
             bool intersects_door = false;
-            for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
-                doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
-              double x1 = it->node->x;
-              double y1 = it->node->y;
-              double x2 = curNode->x;
-              double y2 = curNode->y;
+            if ((it->node->gateway == 0) && (curNode->gateway == 0)){
+              for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
+                  doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
+                double x1 = it->node->x;
+                double y1 = it->node->y;
+                double x2 = curNode->x;
+                double y2 = curNode->y;
 
-              double dx = (*itDoor)->x;
-              double dy = (*itDoor)->y;
-              double theta = (*itDoor)->theta;
-              double width = (*itDoor)->width;
+                double dx = (*itDoor)->x;
+                double dy = (*itDoor)->y;
+                double theta = (*itDoor)->theta;
+                double width = (*itDoor)->width;
 
-              double l = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));         
-              double nx = (x2-x1)/l;                
-              double ny = (y2-y1)/l;                
-              double n2x = cos(theta);
-              double n2y = sin(theta);
-              if (((n2x*ny-n2y*nx)!=0) && ((n2y*nx-n2x*ny)!=0)){
-                double s = (ny*x1-nx*y1 - dx*ny + dy*nx)/(n2x*ny-n2y*nx);
-                double t = (dx*n2y-dy*n2x - x1*n2y + y1*n2x)/(n2y*nx-n2x*ny);
-                
-                if (t > 0 && t < l && (s > -width/2) && (s < width/2)){
-                  NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
-                  if (t>l/2) t=l/2;
-                  newHyp->x=x1 + nx*t;
-                  newHyp->y=y1 + ny*t;
-                  newHyp->hypID=-1;
-                  newHyp->originPlaceID=curPlaceID;
-                  newHyp->originNodeID=curNode->nodeId;
-                  newHyp->doorway=true;
-                  PlacePtr p;
-                  p = new Place;   
-                  p->status = PLACEHOLDER;
+                double l = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));         
+                double nx = (x2-x1)/l;                
+                double ny = (y2-y1)/l;                
+                double n2x = cos(theta);
+                double n2y = sin(theta);
+                if (((n2x*ny-n2y*nx)!=0) && ((n2y*nx-n2x*ny)!=0)){
+                  double s = (ny*x1-nx*y1 - dx*ny + dy*nx)/(n2x*ny-n2y*nx);
+                  double t = (dx*n2y-dy*n2x - x1*n2y + y1*n2x)/(n2y*nx-n2x*ny);
+                  
+                  if (t > 0 && t < l && (s > -width/2) && (s < width/2)){
+                    NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
+                    if (t>l/2) t=l/2;
+                    newHyp->x=x1 + nx*t;
+                    newHyp->y=y1 + ny*t;
+                    newHyp->hypID=-1;
+                    newHyp->originPlaceID=curPlaceID;
+                    newHyp->originNodeID=curNode->nodeId;
+                    newHyp->doorway=true;
+                    PlacePtr p;
+                    p = new Place;   
+                    p->status = PLACEHOLDER;
 
-              	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
-                  log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
-                      newHyp->y, newHyp->hypID);
+                	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
+                    log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
+                        newHyp->y, newHyp->hypID);
 
-                  // Add connectivity property (one-way)
-                  createConnectivityProperty(m_hypPathLength, curPlaceID, newPlaceID);
-                  m_hypotheticalConnectivities.push_back(pair<int, int>(newHyp->originPlaceID, newPlaceID));
+                    // Add connectivity property (one-way)
+                    createConnectivityProperty(m_hypPathLength, curPlaceID, newPlaceID);
+                    m_hypotheticalConnectivities.push_back(pair<int, int>(newHyp->originPlaceID, newPlaceID));
 
-                  intersects_door = true;
-                  break;
-                }  
+                    intersects_door = true;
+                    break;
+                  }  
+                }
               }
             }
             if (!intersects_door){
