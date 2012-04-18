@@ -161,7 +161,6 @@ module FrontierInterface {
     SpatialData::Place getPlaceFromNodeID(int nodeID);
     SpatialData::Place getPlaceFromHypID(int hypID);
     void beginPlaceTransition(int goalPlaceID);
-    void endPlaceTransition(int failed);
     SpatialData::Place getCurrentPlace();
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
     int updatePlaceholderEdge(int placeholderId);
@@ -173,7 +172,6 @@ module FrontierInterface {
     SpatialData::Place getPlaceFromNodeID(int nodeID);
     SpatialData::Place getPlaceFromHypID(int hypID);
     void beginPlaceTransition(int goalPlaceID);
-    void endPlaceTransition(int failed);
     SpatialData::Place getCurrentPlace();
     FrontierInterface::PlaceMembership getPlaceMembership(double x, double y);
   };

@@ -118,7 +118,7 @@ void SpatialTranslation::runComponent() {
       Rendezvous rv(*this);  
       issueVisualExplorationCommand(rv);
       rv.wait();
-      issuePlaceholderEnumeratingCommand(rv);
+      issueEndPlaceTransitionCommand(rv,false,true);
       rv.wait();
     }
 
@@ -322,7 +322,6 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	      if(pcmd){
 	        switch(pcmd->getData()->comp){
 	        case NavData::SUCCEEDED:
-            m_placeInterface->endPlaceTransition(false);
 
 		  log("nav ctrl cmd succeeded");
 	          if (m_isExplorationAction) {
@@ -332,15 +331,17 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
               }
               else {
 		log("issuing placeholder enumerating command");
-	              issuePlaceholderEnumeratingCommand(*rv);
+	              issueEndPlaceTransitionCommand(*rv,false,true);
 	            }
 	          }
             else if (m_generatePlaceholdersOnPlace){
 		log("issuing placeholder enumerating command");
-                issuePlaceholderEnumeratingCommand(*rv);
+                issueEndPlaceTransitionCommand(*rv,false,true);
             }
             else {
 	      log("NavCommand finished");
+            issueEndPlaceTransitionCommand(*rv,false,false);
+
 	      finished = true;
 	    }
 
@@ -350,11 +351,10 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
 	          break;
 	        case NavData::ABORTED:
 	        case NavData::FAILED:
-            m_placeInterface->endPlaceTransition(true);
 		  log("nav ctrl command failed");
 
 	          some_error = true;
-            issuePlaceholderEnumeratingCommand(*rv);
+            issueEndPlaceTransitionCommand(*rv,true,true);
 
 	          status = SpatialData::TARGETUNREACHABLE;
 
@@ -367,16 +367,16 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd){
         else{
 	        log("The InternalNavCommand suddenly disappeared...");
 	        some_error = true;
-          issuePlaceholderEnumeratingCommand(*rv);
+          issueEndPlaceTransitionCommand(*rv,true,true);
 	      }
 	}
       }
       else if (type== typeName<NavData::VisualExplorationCommand>()) {
 	      log("Visual exploration cmd finished");
-        issuePlaceholderEnumeratingCommand(*rv);
+        issueEndPlaceTransitionCommand(*rv,false,true);
       }
-      else if (type== typeName<NavData::PlaceholderEnumeratingCommand>()) {
-	      log("Placeholder enumerating cmd finished");
+      else if (type== typeName<NavData::EndPlaceTransitionCommand>()) {
+	      log("EndPlaceTransition cmd finished");
 	      finished = true;
       }
 
@@ -453,15 +453,17 @@ void SpatialTranslation::issueVisualExplorationCommand(Rendezvous &rv)
   addToWorkingMemory<NavData::VisualExplorationCommand>(ID, cmd);
 }
 
-void SpatialTranslation::issuePlaceholderEnumeratingCommand(Rendezvous &rv)
+void SpatialTranslation::issueEndPlaceTransitionCommand(Rendezvous &rv,bool failed,bool generate_placeholders)
 {
   std::string ID = newDataID();
-  NavData::PlaceholderEnumeratingCommandPtr cmd = new NavData::PlaceholderEnumeratingCommand;
-  cmd->comp = NavData::PENDING;
+  NavData::EndPlaceTransitionCommandPtr cmd = new NavData::EndPlaceTransitionCommand;
+  cmd->comp = NavData::PENDING; 
+  cmd->failed = failed;
+  cmd->generatePlaceholders = generate_placeholders;
 
   rv.addChangeFilter(
-      createLocalTypeFilter<NavData::PlaceholderEnumeratingCommand>(cdl::OVERWRITE)); // local
-  addToWorkingMemory<NavData::PlaceholderEnumeratingCommand>(ID, cmd);
+      createLocalTypeFilter<NavData::EndPlaceTransitionCommand>(cdl::OVERWRITE)); // local
+  addToWorkingMemory<NavData::EndPlaceTransitionCommand>(ID, cmd);
 }
 
 
