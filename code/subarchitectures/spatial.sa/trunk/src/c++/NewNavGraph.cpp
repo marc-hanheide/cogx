@@ -220,7 +220,7 @@ NewNavGraph::maybeAddNewNodeAt(double x, double y, double a,
 //TODO check doors here
 
 
-      connectNodes(m_CurrNode, nc, cost);
+      connectNodes(m_CurrNode->getId(), nc->getId(), cost);
 
       // Check to see if we detect any anomalities with the graph. If
       // we get to a new node (nc) and this node and the one we are
@@ -366,7 +366,7 @@ NewNavGraph::maybeAddNewNodeAt(double x, double y, double a,
   m_NextNodeId++;
   
   // Conect the nodes
-  connectNodes(m_CurrNode, n, d);
+  connectNodes(m_CurrNode->getId(), n->getId(), d);
   
   // Make the new node the current node
   if (m_CurrNode->getAreaId() != n->getAreaId()) {
@@ -642,7 +642,7 @@ NewNavGraph::addGatewayNode(double x, double y, double a, double width)
            ei != m_CurrNode->m_Edges.end(); ei++) {
         NavGraphNode *next = (*ei)->getNext(m_CurrNode);
         if (next != 0 && next->getName() == "-") { // normal node
-          if (hypot(y - next->getY(), x - next->getY()) < 0.5 * m_NodeDist) {
+          if (hypot(y - next->getY(), x - next->getX()) < 0.5 * m_NodeDist) {
             if ((next->m_FlagMask & NavGraphNode::NODEFLAG_NOGATEWAY) == 0) {
               ret = makeGatewayOutOfNode(next, x, y, a, width);
             } else {
@@ -823,8 +823,8 @@ NewNavGraph::replaceNode(NavGraphNode *origNode, NavGraphNode *newNode)
   // Connect the new node to the neighbors of the node it replaces
   for (std::list<NavGraphNode*>::iterator ni = neighbors.begin();
        ni != neighbors.end(); ni++) {
-    connectNodes(newNode, *ni, hypot(newNode->getY() - (*ni)->getY(),
-                                     newNode->getY() - (*ni)->getY()));
+    connectNodes(newNode->getId(), (*ni)->getId(), hypot(newNode->getY() - (*ni)->getY(),
+                                     newNode->getX() - (*ni)->getX()));
   }
 
   return 0;
@@ -1067,8 +1067,11 @@ NewNavGraph::mergeAreaIds(long aid1, long aid2)
 }
 
 int 
-NewNavGraph::connectNodes(NavGraphNode *n1, NavGraphNode *n2, double cost)
+NewNavGraph::connectNodes(int id1, int id2, double cost)
 {
+  NavGraphNode *n1 = getNode(id1);
+  NavGraphNode *n2 = getNode(id2);
+
   if (n1 == 0 || n2 == 0) {
     CureCERR(20) << "Cannot connect nodes==0, n1=" 
                  << n1 << " n2=" << n2 << "\n";

@@ -520,8 +520,10 @@ interface NavGraphInterface{
   class VisualExplorationCommand {
     Completion comp;
   };
-  class PlaceholderEnumeratingCommand {
+  class EndPlaceTransitionCommand {
     Completion comp;
+    bool failed;
+    bool generatePlaceholders;
   };
 
   /**

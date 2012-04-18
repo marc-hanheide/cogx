@@ -424,7 +424,7 @@ protected:
   /**
    * Connect two nodes and give the edge between them a certain cost
    */
-  int connectNodes(NavGraphNode *n1, NavGraphNode *n2, double cost);
+  int connectNodes(int id1, int id2, double cost);
 
 
   /**

@@ -118,7 +118,6 @@ class PlaceManager : public PlaceMapper
       virtual NavData::FNodePtr getNodeFromPlaceID(int placeID,
 	  const Ice::Current &_context);
       virtual void beginPlaceTransition(int goalPlaceID, const Ice::Current &_context);
-      virtual void endPlaceTransition(int failed, const Ice::Current &_context);
       virtual SpatialData::PlacePtr getCurrentPlace(const Ice::Current &_context);
       virtual FrontierInterface::PlaceMembership getPlaceMembership(double x, double y,
 	  const Ice::Current &_context);
@@ -148,7 +147,7 @@ class PlaceManager : public PlaceMapper
     virtual void configure(const std::map<std::string, std::string>& _config);
 
   protected:
-    void newPlaceholderEnumeratingCommand(const cast::cdl::WorkingMemoryChange &objID);
+    void newEndPlaceTransitionCommand(const cast::cdl::WorkingMemoryChange &objID);
     // Call back functions for nodes 
     void newNavNode(const cast::cdl::WorkingMemoryChange &objID);
     void modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID);
@@ -177,7 +176,6 @@ class PlaceManager : public PlaceMapper
     SpatialData::PlacePtr getCurrentPlace();
     NavData::FNodePtr getCurrentNavNode();
     void beginPlaceTransition(int goalPlaceID);
-    void endPlaceTransition(int failed);
 
   private:
     bool m_usePeekabot;

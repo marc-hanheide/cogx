@@ -105,6 +105,9 @@ class SpatialControl : public cast::ManagedComponent ,
         }
 
         virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis(const Ice::Current &_context);
+        virtual void addConnection(int node1id,int node2id,const Ice::Current &_context);
+        virtual void removeConnection(int node1id,int node2id,const Ice::Current &_context);
+
         virtual SpatialData::HeightMap getHeightMap(const Ice::Current &_context);
         virtual SpatialData::LocalGridMap getGridMap(const Ice::Current &_context);
         virtual double getPathLength(double x1, double y1,double x2, double y2, const Ice::Current &_context);
@@ -197,6 +200,9 @@ protected:
   virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId);
   virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis();
+  virtual void addConnection(int node1id,int node2id);
+  virtual void removeConnection(int node1id,int node2id);
+
   virtual SpatialData::HeightMap getHeightMap();
   virtual SpatialData::LocalGridMap getGridMap();
   virtual int findClosestNode(double x, double y);
@@ -207,6 +213,7 @@ protected:
 
   void processOdometry(Cure::Pose3D);
 
+  void refreshNavGraph();
   void SaveGridMap();
   void SaveHeightMap();
   void LoadGridMap(std::string filename);
@@ -284,6 +291,9 @@ protected:
   double m_TolPos;
   double m_TolRot;
   bool m_ready;
+  
+  set< pair<int,int> > m_extraEdges;
+  NavData::NavGraphPtr m_last_ng;
 
   class PersonData {
   public:

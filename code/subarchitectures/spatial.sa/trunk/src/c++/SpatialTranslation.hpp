@@ -131,7 +131,7 @@ private:
    */
   void issueVisualExplorationCommand(Rendezvous &rv);
 
-  void issuePlaceholderEnumeratingCommand(Rendezvous &rv);
+  void issueEndPlaceTransitionCommand(Rendezvous &rv,bool failed,bool generate_placeholders);
 
   /* Executes the given command, marks its completion and status
    * and returns when it is over.

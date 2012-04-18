@@ -222,9 +222,9 @@ PlaceManager::start()
         }
 	}
 
-  addChangeFilter(createLocalTypeFilter<NavData::PlaceholderEnumeratingCommand>(cdl::ADD),
+  addChangeFilter(createLocalTypeFilter<NavData::EndPlaceTransitionCommand>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<PlaceManager>(this,
-								  &PlaceManager::newPlaceholderEnumeratingCommand));
+								  &PlaceManager::newEndPlaceTransitionCommand));
 
   addChangeFilter(createLocalTypeFilter<NavData::FNode>(cdl::ADD),
       new MemberFunctionChangeReceiver<PlaceManager>(this,
@@ -414,15 +414,28 @@ PlaceManager::cancelMovement(bool failed = false)
 }
 
 //FIXME: evaluateUnexploredPaths shouldn't be called in the message thread!
-void PlaceManager::newPlaceholderEnumeratingCommand(const cdl::WorkingMemoryChange &objID) 
+void PlaceManager::newEndPlaceTransitionCommand(const cdl::WorkingMemoryChange &objID) 
 {
-  log("Received new PlaceholderEnumeratingCommand (%s)", objID.address.id.c_str());
+  log("Received new EndPlaceTransitionCommand (%s)", objID.address.id.c_str());
   try {
-    NavData::PlaceholderEnumeratingCommandPtr obj =
-      getMemoryEntry<NavData::PlaceholderEnumeratingCommand>(objID.address);
-    evaluateUnexploredPaths();
+    NavData::EndPlaceTransitionCommandPtr obj =
+      getMemoryEntry<NavData::EndPlaceTransitionCommand>(objID.address);
+    if (m_isPathFollowing) {
+      log("  We were still trying to follow a path; must have failed");
+      m_isPathFollowing = false;
+      // If successful and the transition was unexplored, 
+      // check current node.
+      // If the node is different from the previous,
+      // change the Place struct to non-placeholder,
+      // remove the NodeHypothesis struct and change the
+      // m_PlaceToNodeIDMap/m_PlaceToHypIDMap members
+      processPlaceArrival(obj->failed);
+    }
+    if (obj->generatePlaceholders){ 
+      evaluateUnexploredPaths();
+    }
     obj->comp = NavData::SUCCEEDED;
-    overwriteWorkingMemory<NavData::PlaceholderEnumeratingCommand>(objID.address, obj);
+    overwriteWorkingMemory<NavData::EndPlaceTransitionCommand>(objID.address, obj);
   }
   catch (DoesNotExistOnWMException) {
     log("Could not find PlaceholderEnumeratingCommand on WM!");
@@ -1822,24 +1835,6 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
 }
 
 void 
-PlaceManager::endPlaceTransition(int failed)
-{
-  log("endPlaceTransition called");
-  if (m_isPathFollowing) {
-    log("  We were still trying to follow a path; must have failed");
-    m_isPathFollowing = false;
-    // If successful and the transition was unexplored, 
-    // check current node.
-    // If the node is different from the previous,
-    // change the Place struct to non-placeholder,
-    // remove the NodeHypothesis struct and change the
-    // m_PlaceToNodeIDMap/m_PlaceToHypIDMap members
-    processPlaceArrival(failed);
-  }
-  log("endPlaceTransition exited");
-}
-
-void 
 PlaceManager::processPlaceArrival(bool failed) 
 {
   try {
@@ -2149,13 +2144,6 @@ PlaceManager::PlaceServer::beginPlaceTransition(int goalPlaceID, const Ice::Curr
 //  m_pOwner->unlockComponent();
 }
 
-void 
-PlaceManager::PlaceServer::endPlaceTransition(int failed, const Ice::Current &_context)
-{
-//  m_pOwner->lockComponent();
-  m_pOwner->endPlaceTransition(failed);
-//  m_pOwner->unlockComponent();
-}
 
 ///* Remove placeholders that are not close to any coordinate in coords, but only
 //   if it's close to the robot. Ignore placeholders that are far away.*/
@@ -2544,6 +2532,13 @@ PlaceManager::upgradePlaceholder(int placeID, NavData::FNodePtr newNode)
 void
 PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID)
 {
+  NavData::FNodePtr node1 = _getNodeForPlace(place1ID);
+  NavData::FNodePtr node2 = _getNodeForPlace(place2ID);
+
+  if (node1 != 0 && node2 != 0) {
+    m_mapInterface->addConnection(node1->nodeId,node2->nodeId);
+  }
+
   set<int> &place1Connectivities = m_connectivities[place1ID];
   if (place1Connectivities.find(place2ID) == 
       place1Connectivities.end()) {
@@ -2593,6 +2588,13 @@ std::string PlaceManager::concatenatePlaceIDs(int place1ID, int place2ID) {
 }
 
 bool PlaceManager::deleteConnectivityProperty(int place1ID, int place2ID) {
+  NavData::FNodePtr node1 = _getNodeForPlace(place1ID);
+  NavData::FNodePtr node2 = _getNodeForPlace(place2ID);
+
+  if (node1 != 0 && node2 != 0) {
+    m_mapInterface->removeConnection(node1->nodeId,node2->nodeId);
+  }
+
   set<int> &place1Connectivities = m_connectivities[place1ID];
   if(place1Connectivities.find(place2ID) != place1Connectivities.end()) {
     string placeIDstr = concatenatePlaceIDs(place1ID,place2ID);

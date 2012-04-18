@@ -79,6 +79,13 @@ SpatialData::NodeHypothesisSeq SpatialControl::MapServer::refreshNodeHypothesis(
   return m_pOwner->refreshNodeHypothesis();
 }
 
+void SpatialControl::MapServer::addConnection(int node1id,int node2id,const Ice::Current &_context){
+  return m_pOwner->addConnection(node1id, node2id);
+}
+void SpatialControl::MapServer::removeConnection(int node1id,int node2id,const Ice::Current &_context){
+  return m_pOwner->removeConnection(node1id, node2id);
+}
+
 SpatialData::HeightMap SpatialControl::MapServer::getHeightMap(const Ice::Current &_context){
   return m_pOwner->getHeightMap();
 }
@@ -1477,19 +1484,23 @@ void SpatialControl::runComponent()
   }
 } 
 
-
 void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
-//  m_Mutex.lock();
-	
-  m_NavGraph.clear();
-  bool gateway = false;
   shared_ptr<CASTData<NavData::NavGraph> > oobj =
     getWorkingMemoryEntry<NavData::NavGraph>(objID.address);
   
   if (oobj != 0) {
+    m_last_ng = oobj->getData();
+    refreshNavGraph();
+  }
+}
+
+void SpatialControl::refreshNavGraph(){
+//  m_Mutex.lock();
+	NavData::NavGraphPtr& ng = m_last_ng;
+  if (ng!=0){
+    m_NavGraph.clear();
+    bool gateway = false;
     
-    NavData::NavGraphPtr ng = oobj->getData();
-        
     for (unsigned int i=0;i<ng->fNodes.size();i++){
       
       double x = ng->fNodes[i]->x;
@@ -1506,18 +1517,18 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
       
       if (ng->fNodes[i]->gateway){ // add gateway node
                
-	double width = 1;
+  double width = 1;
         if (!ng->fNodes[i]->width.empty()) {
           width = ng->fNodes[i]->width[0];
         }
-	m_NavGraph.addDoorToNodeList(nodeId, areaId, x, y, theta, 
+  m_NavGraph.addDoorToNodeList(nodeId, areaId, x, y, theta, 
                                      width, areaType, maxSpeed);
-	gateway = true;
+  gateway = true;
       }
 
       else { // add ordinary node
 
-	m_NavGraph.addNodeToNodeList(nodeId, areaId, x, y, theta, 
+  m_NavGraph.addNodeToNodeList(nodeId, areaId, x, y, theta, 
                                       areaType, maxSpeed);
 
       }
@@ -1532,7 +1543,11 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
       m_NavGraph.addEdgeToEdgeList(n1, n2);
       
     }
-    
+    for (std::set< pair<int,int> >::iterator it = m_extraEdges.begin();
+       it != m_extraEdges.end(); it++) {
+       m_NavGraph.addEdgeToEdgeList(it->first, it->second);
+    }
+
     m_NavGraph.connectNodes();
 
     debug("Got a new graph with %d doors and a total of %d nodes", m_NavGraph.m_Gateways.size(), m_NavGraph.m_Nodes.size());
@@ -1541,10 +1556,18 @@ void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
 
     if (m_ready) debug("m_ready is true");
     else debug("m_ready is false");    
-    
   }
-
 //  m_Mutex.unlock();
+}
+
+void SpatialControl::addConnection(int node1id,int node2id){
+  m_extraEdges.insert(std::make_pair(node1id,node2id));
+  refreshNavGraph();
+}
+
+void SpatialControl::removeConnection(int node1id,int node2id){
+  m_extraEdges.erase(std::make_pair(node1id,node2id));
+  refreshNavGraph();
 }
 
 void SpatialControl::newPersonData(const cdl::WorkingMemoryChange &objID)
