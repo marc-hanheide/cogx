@@ -1533,7 +1533,7 @@ void PlaceManager::evaluateUnexploredPaths()
                   newHyp->hypID=-1;
                   newHyp->originPlaceID=curPlaceID;
                   newHyp->originNodeID=curNode->nodeId;
-
+                  newHyp->doorway=true;
                   PlacePtr p;
                   p = new Place;   
                   p->status = PLACEHOLDER;

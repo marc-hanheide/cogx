@@ -2624,6 +2624,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     SpatialData::NodeHypothesisPtr extantHyp = *extantHypIt;
     bool overlapped = false;
 //CHECK IF OVERLAPPED
+    if (extantHyp->doorway) continue;
+
     int hypxi, hypyi;
     if(m_lgm->worldCoords2Index(extantHyp->x,extantHyp->y, hypxi, hypyi) != 0)
       continue;
@@ -2679,6 +2681,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
           new_nh->hypID=extantHyp->hypID;
           new_nh->originPlaceID=-1;
           new_nh->originNodeID=originNodeID;
+          new_nh->doorway = extantHyp->doorway;
+
           ret.push_back(new_nh);
         }
       }
@@ -2728,6 +2732,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         new_nh->hypID=-1;
         new_nh->originPlaceID=-1;
         new_nh->originNodeID=originNodeID;
+        new_nh->doorway = false;
         ret.push_back(new_nh);
       }
     }
