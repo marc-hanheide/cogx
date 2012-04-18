@@ -1980,11 +1980,6 @@ PlaceManager::processPlaceArrival(bool failed)
           log("  CASE 3: Exploration action failed - place already known. Deleting Place %i", wasHeadingForPlace);
 
           m_isPathFollowing = false; 
-
-          deletePlaceProperties(wasHeadingForPlace);
-          m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
-      	  deletePlaceholder(wasHeadingForPlace);
-
 /*
           deletePlaceProperties(wasHeadingForPlace);
 
