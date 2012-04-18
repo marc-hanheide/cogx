@@ -442,7 +442,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 
       PlaceID correspondingPlaceID = _getPlaceIDForNode(oobj->nodeId);
 
-      NavData::FNodePtr prev = _getNodeForPlace(correspondingPlaceID);
+      const NavData::FNodePtr prev = _getNodeForPlace(correspondingPlaceID);
       if (prev == 0) {
 	// If the node is not in our 
 	log("Did not find the node from before, have to assume that we did not start early enough to catch it, will treat it as new");
@@ -470,7 +470,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
 	evaluateUnexploredPaths();
       }
 
-      *prev = *oobj;
+      _updateNodeForPlace(correspondingPlaceID, oobj);
 
       log("modifiedNavNode exited");
       return;
@@ -997,7 +997,7 @@ void PlaceManager::connectPeekabot()
    Returns the place id the placeholder is linked to or -1 on error*/
 int PlaceManager::updatePlaceholderEdge(int placeholderId) {
 
-  NodeHypothesisPtr hyp = _getHypForPlace(placeholderId);
+  const NodeHypothesisPtr hyp = _getHypForPlace(placeholderId);
   if(!hyp) {
     return -1;
   }
@@ -1313,7 +1313,7 @@ void PlaceManager::evaluateUnexploredPaths()
       if ((*it)->status == PLACEHOLDER) {
         try {
           PlacePtr place = *it;
-          NodeHypothesisPtr nodeHyp = _getHypForPlace(place->id);
+          const NodeHypothesisPtr nodeHyp = _getHypForPlace(place->id);
 	  
 	  if (nodeHyp == 0) {
 	    getLogger()->warn("Couldn't find NodeHypothesis!");
@@ -1793,7 +1793,7 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
   // Check whether the transition is an explored or unexplored edge
   // Store where it was we came from
   
-  NodeHypothesisPtr goalHypothesis = _getHypForPlace(goalPlaceID);
+  const NodeHypothesisPtr goalHypothesis = _getHypForPlace(goalPlaceID);
 
   if (goalHypothesis == 0) {
     // Goal is not unexplored
@@ -1849,7 +1849,7 @@ PlaceManager::processPlaceArrival(bool failed)
     int wasHeadingForPlace = m_goalPlaceForCurrentPath;
     int wasComingFromNode = m_startNodeForCurrentPath;
 
-    NodeHypothesisPtr goalHyp =
+    const NodeHypothesisPtr goalHyp =
       _getHypForPlace(wasHeadingForPlace);
 
     bool wasExploring = (goalHyp != 0);
@@ -2013,7 +2013,7 @@ PlaceManager::processPlaceArrival(bool failed)
 	      for(vector<PlaceID>::iterator
 		  phIt = placeholders.begin(); phIt != placeholders.end(); phIt++) {
 		PlaceID placeholderID = *phIt;
-		NodeHypothesisPtr hyp = _getHypForPlace(placeholderID);
+		const NodeHypothesisPtr hyp = _getHypForPlace(placeholderID);
 		if (hyp != 0) {
 		  if (prevPlaceID == hyp->originPlaceID) {
 		    double distSq = (curNodeX-hyp->x)*(curNodeX-hyp->x) + 
@@ -2705,7 +2705,7 @@ entry.hyp->x , hypEntry->x ,
 }
 
 
-PlacePtr
+const PlacePtr
 PlaceMapper::_getPlace(PlaceID id)
 {
   log("Entering PlaceMapper::_getPlace(%i)", id);
@@ -2733,7 +2733,7 @@ PlaceMapper::_getPlaceIDForNode(NodeID id)
   return -1;
 }
 
-NavData::FNodePtr
+const NavData::FNodePtr
 PlaceMapper::_getNodeForPlace(PlaceID id)
 {
   log("Entering PlaceMapper::_getNodeForPlace(PlaceID id=%i)", id);
@@ -2768,7 +2768,7 @@ PlaceMapper::_getPlaceIDForHyp(HypID id)
   return -1;
 }
 
-NodeHypothesisPtr
+const NodeHypothesisPtr
 PlaceMapper::_getHypForPlace(PlaceID id)
 {
   log("Entering PlaceMapper::_getHypIDForPlace(%i)", id);
@@ -2887,6 +2887,23 @@ PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp)
     }
   }
   _checkConsistency(__LINE__);
+}
+
+void
+PlaceMapper::_updateNodeForPlace(PlaceID placeID, NavData::FNodePtr node)
+{
+  log("Entering PlaceMapper::_updateNodeForPlace(placeID=%i, nodeID=%i)", placeID, node==0?-1:node->nodeId);
+  _checkConsistency(__LINE__);
+  {
+    IceUtil::Mutex::Lock lock(m_mutex);
+      for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
+	if (it->place->id == placeID) {
+	  it->node = new NavData::FNode(*node);
+	  return;
+	}
+      }
+  }
+  error("Error! entry not found on line %i", __LINE__);
 }
 
 void
@@ -3068,8 +3085,8 @@ PlaceMapper::_addPlaceWithNode(PlacePtr _place,
 
     //TODO: maybe no need to lock this - will only be a problem if 
     //another thread is overwriting this
-    log("Adding place %ld, based on FNode %ld", _place->id,
-	_node->nodeId);//, _nodeWMID);
+    log("Adding place %ld, based on FNode %ld, at %s", _place->id,
+	_node->nodeId, newWMID.c_str());//, _nodeWMID);
     addToWorkingMemory<Place>(newWMID, _place);
   }
   _checkConsistency(__LINE__);
@@ -3109,8 +3126,8 @@ PlaceMapper::_addPlaceWithHyp(PlacePtr _place, NodeHypothesisPtr _hyp)
 
     //TODO: maybe no need to lock this - will only be a problem if 
     //another thread is overwriting this
-    log("Adding place %ld, based on hypothesis %i",
-	_place->id, _hyp->hypID);
+    log("Adding place %ld, based on hypothesis %i, at %s",
+	_place->id, _hyp->hypID, newWMID.c_str());
     addToWorkingMemory<Place>(newWMID, _place);
   }
   _checkConsistency(__LINE__);

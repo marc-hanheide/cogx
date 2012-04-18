@@ -57,13 +57,13 @@ namespace spatial {
 
     std::vector<PlaceMapEntry> entries;
 
-    SpatialData::PlacePtr _getPlace(PlaceID id);
+    const SpatialData::PlacePtr _getPlace(PlaceID id);
 
     PlaceID _getPlaceIDForNode(NodeID id);
-    NavData::FNodePtr _getNodeForPlace(PlaceID id);
+    const NavData::FNodePtr _getNodeForPlace(PlaceID id);
 
     PlaceID _getPlaceIDForHyp(HypID id);
-    SpatialData::NodeHypothesisPtr _getHypForPlace(PlaceID id);
+    const SpatialData::NodeHypothesisPtr _getHypForPlace(PlaceID id);
 
     std::string _getPlaceWMIDForPlace(PlaceID id);
 //    std::string _getNodeWMIDForPlace(PlaceID id);
@@ -73,6 +73,7 @@ namespace spatial {
     void _getTruePlaces(std::vector<PlaceID> &ret);
 
     void _overwriteHypForPlace(PlaceID placeID, SpatialData::NodeHypothesisPtr hyp);
+    void _updateNodeForPlace(PlaceID placeID, NavData::FNodePtr node);
 
     void _deletePlace(PlaceID id);
 //    void _deleteHypothesis(PlaceID id);
