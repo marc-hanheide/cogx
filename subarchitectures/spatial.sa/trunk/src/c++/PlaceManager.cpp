@@ -1445,7 +1445,7 @@ void PlaceManager::evaluateUnexploredPaths()
   }
   int curPlaceID = _getPlaceIDForNode(curNode->nodeId);
   if (curPlaceID>=0){
-    set<int> curPlaceConnectivities = m_connectivities[curPlaceID];
+    set<int> &curPlaceConnectivities = m_connectivities[curPlaceID];
     vector<PlaceMapEntry> gr;
     for (int k = 0; k < entries.size(); k++) {
       if (entries[k].node != 0)
