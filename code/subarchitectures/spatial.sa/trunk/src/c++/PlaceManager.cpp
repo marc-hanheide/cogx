@@ -1428,7 +1428,7 @@ void PlaceManager::evaluateUnexploredPaths()
           p = new Place;   
           p->status = PLACEHOLDER;
 
-	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
+      	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
           log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
               newHyp->y, newHyp->hypID);
 
@@ -1470,9 +1470,8 @@ void PlaceManager::evaluateUnexploredPaths()
       }
     }
 
-
-
-
+    vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
+    getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
 
     for(vector<PlaceMapEntry>::iterator it = gr.begin(); it != gr.end(); it++) {
       if ((it->node != 0) && (it->node->nodeId != curNode->nodeId) && (curPlaceConnectivities.find(it->place->id) == curPlaceConnectivities.end())){ 
@@ -1486,7 +1485,7 @@ void PlaceManager::evaluateUnexploredPaths()
           set<int>::iterator it2 = placeConnectivities.find(it->place->id);
           if (it2 != placeConnectivities.end()){
             max_dist = 1.5;
-            NavData::FNodePtr link = _getNodeForPlace(*it2);
+            NavData::FNodePtr link = _getNodeForPlace(*it1);
             log("alex link %d %d - %d", curPlaceID, it->place->id, (*it1));
                         
             if (link->gateway == 1){
@@ -1504,8 +1503,58 @@ void PlaceManager::evaluateUnexploredPaths()
           double path_dist = m_mapInterface->getPathLength(it->node->x,it->node->y,curNode->x,curNode->y);
           log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->place->id, max_dist,sqrt(dist2), path_dist, path_dist/sqrt(dist2));
           if (path_dist/sqrt(dist2) > 0 && path_dist/sqrt(dist2) < 22){
-            createConnectivityProperty(sqrt(dist2), curPlaceID, it->place->id);
-            createConnectivityProperty(sqrt(dist2), it->place->id, curPlaceID);
+            // Check doorHyps
+            bool intersects_door = false;
+            for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
+                doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
+              double x1 = it->node->x;
+              double y1 = it->node->y;
+              double x2 = curNode->x;
+              double y2 = curNode->y;
+
+              double dx = (*itDoor)->x;
+              double dy = (*itDoor)->y;
+              double theta = (*itDoor)->theta;
+              double width = (*itDoor)->width;
+
+              double l = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));         
+              double nx = (x2-x1)/l;                
+              double ny = (y2-y1)/l;                
+              double n2x = cos(theta);
+              double n2y = sin(theta);
+              if (((n2x*ny-n2y*nx)!=0) && ((n2y*nx-n2x*ny)!=0)){
+                double s = (ny*x1-nx*y1 - dx*ny + dy*nx)/(n2x*ny-n2y*nx);
+                double t = (dx*n2y-dy*n2x - x1*n2y + y1*n2x)/(n2y*nx-n2x*ny);
+                
+                if (t > 0 && t < l && (s > -width/2) && (s < width/2)){
+                  NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
+                  newHyp->x=x1 + nx*t;
+                  newHyp->y=y1 + ny*t;
+                  newHyp->hypID=-1;
+                  newHyp->originPlaceID=curPlaceID;
+                  newHyp->originNodeID=curNode->nodeId;
+
+                  PlacePtr p;
+                  p = new Place;   
+                  p->status = PLACEHOLDER;
+
+              	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
+                  log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
+                      newHyp->y, newHyp->hypID);
+
+                  // Add connectivity property (one-way)
+                  createConnectivityProperty(m_hypPathLength, curPlaceID, newPlaceID);
+                  m_hypotheticalConnectivities.push_back(pair<int, int>(newHyp->originPlaceID, newPlaceID));
+
+                  intersects_door = true;
+                  break;
+                }  
+              }
+            }
+            if (!intersects_door){
+              createConnectivityProperty(sqrt(dist2), curPlaceID, it->place->id);
+              createConnectivityProperty(sqrt(dist2), it->place->id, curPlaceID);
+            }
           }
         }
       }
