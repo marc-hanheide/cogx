@@ -8,14 +8,14 @@
 #ifndef SMLEARNING_PREDICTINGSCENARIO_H_
 #define SMLEARNING_PREDICTINGSCENARIO_H_
 
+#include <boost/function.hpp>
 #include <scenario/Scenario.h>
 #include <metalearning/CrySSMEx.h>
-#include <boost/function.hpp>
 
 namespace smlearning {
 
 //! \class PredictingScenario
-/*! \brief Intended to be used for predicting by using Substochastic sequential machines
+/*! \brief For predicting by using Substochastic sequential machines
  */
 class PredictingScenario : public Scenario {
 public:
@@ -58,8 +58,8 @@ protected:
 	CrySSMEx cryssmex;
 	/** method for feature selection */
 	unsigned int featureSelectionMethod;
-	/** current data sequence (e.g. for predicting) */
-	vector<FeatureVector> currentSeq;
+	// /** current data sequence (e.g. for predicting) */
+	// vector<FeatureVector> currentSeq;
 	/** normalization function */
 	boost::function<float (const float&, const float&, const float&)> normalization;
 	/** denormalization function */
@@ -71,7 +71,7 @@ protected:
 
 	/** default object bounds */
 	golem::Bounds::SeqPtr objectLocalBounds;
-
+	/** current sequence from the data set when predicting from it */
 	LearningData::Chunk::Seq seqDataset;
 
 

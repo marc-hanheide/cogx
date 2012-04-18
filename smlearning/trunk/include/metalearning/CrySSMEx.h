@@ -9,10 +9,10 @@
 #define SMLEARNING_CRYSSMEX_H_
 
 
-#include "ssm/ssm_file_export.hh"
-#include "ssm/ssm_parser.hh"
-#include "cryssmex/exceptions.hh"
-#include "quantizing/quantizer_file_export.hh"
+#include <quantizing/quantizer_file_export.hh>
+#include <ssm/ssm_file_export.hh>
+#include <ssm/ssm_parser.hh>
+#include <cryssmex/exceptions.hh>
 
 using namespace ssm;
 using namespace cryssmex;
@@ -53,15 +53,15 @@ public:
 	/** parse an input data sequence for prediction */
 	void parseSequence (DataSequence& sequence, DataSequence& predicted_sequence);
 	/** parse an input chunk for prediction */
-	int parseInput (std::vector<double>& chunk);
+	virtual int parseInput (std::vector<double>& chunk);
 	/** average model vectors for cases with more than 1 model vector in \p qnt_mv_map */
-	void average_model_vectors ();
+	void averageModelVectors ();
 	/** get quantization/model vectors map */
 	std::vector<double> getQntMvMapVector (unsigned int index) { return qnt_mv_map[index][0].vector; }
 	/** set uniform distribution to initialize parsing */
 	void setUniformDistribution ();
 	
-private:	
+protected:
 	/** Substochastic sequential machine used for prediction */
 	SSM* ssm;
 	/** SSM parser used for prediction */
@@ -75,9 +75,22 @@ private:
 	/** map of quantization ids and CVQ classified model vectors */
 	std::map<unsigned int, Classified_Vectors> qnt_mv_map;
 
-};
+}; // CrySSMEx class
 
+//! \class ActiveCrySSMEx
+/*! \brief For dealing with active learning quantization algorithms
+ */
+class ActiveCrySSMEx : public CrySSMEx
+{
+public:
+	/** initialize input quantizer */
+	void initializeInputQuantizer (unsigned int dim);
+	/** initialize output quantizer */
+	void initializeOutputQuantizer (unsigned int dim);
+	/** initialize state quantizer */
+	void initializeStateQuantizer (unsigned int dim);
 
+}; // ActiveCrySSMEx class
 
 }; // smlearning namespace
 

@@ -11,14 +11,12 @@ using namespace golem;
 
 namespace smlearning {
 
-PredictingScenario::PredictingScenario(golem::Scene &scene) : Scenario (scene)
-{
+PredictingScenario::PredictingScenario(golem::Scene &scene) : Scenario (scene) {
 	normalization = donotnormalize<float>;
 	denormalization = donotdenormalize<float>;
 }
 
-PredictingScenario::~PredictingScenario()
-{
+PredictingScenario::~PredictingScenario() {
 }
 
 void PredictingScenario::init (boost::program_options::variables_map vm) {
@@ -26,8 +24,7 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 
 	// Set feature selection method
 	string fSMethod;
-	if (vm.count("featuresel"))
-		fSMethod = vm["featuresel"].as<string>();
+	fSMethod = vm["featuresel"].as<string>();
 
 	if (fSMethod == "obpose")
 		featureSelectionMethod = _obpose;
@@ -88,7 +85,7 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 
 	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
 		assert (learningData.efVectorSize + learningData.pfVectorSize == cryssmex.getStateQuantizer()->dimensionality());
-	cryssmex.average_model_vectors ();
+	cryssmex.averageModelVectors ();
 
 	// Set data sequence
 	if (vm.count("seqFile"))
@@ -146,8 +143,7 @@ void PredictingScenario::chooseAction () {
 ///////// Protected //////////
 /** \brief calculate the start coordinates of the arm
 */
-void PredictingScenario::calculateStartCoordinates()
-{
+void PredictingScenario::calculateStartCoordinates() {
 	if (data.size() > 0)
 	{
 		// LearningData::Chunk chunk = learningData.currentChunkSeq[0];
@@ -166,8 +162,7 @@ void PredictingScenario::calculateStartCoordinates()
 /** \brief Describe the experiment trajectory
 *
 */
-void PredictingScenario::initMovement()
-{
+void PredictingScenario::initMovement() {
 	if (data.size() > 0)
 	{
 		// LearningData::Chunk chunk = learningData.currentChunkSeq[0];
@@ -259,7 +254,6 @@ void PredictingScenario::postprocess(SecTmReal elapsedTime) {
 		// {
 		// 	counter_sequence++;
 		// }
-		
 	}
 }
 
@@ -295,7 +289,7 @@ void PredictingScenario::run (int argc, char* argv[]) {
 		initMovement();
 		std::cout << "move finger"<<std::endl;
 		//move the finger along described experiment trajectory
-		arm->moveFinger(context,target, bStart,duration,end);
+		arm->moveFinger(context,target, bStart, duration,end);
 		//turn off collision detection
 		arm->setCollisionDetection(false);
 		//move the finger up to avoid path finding problems 

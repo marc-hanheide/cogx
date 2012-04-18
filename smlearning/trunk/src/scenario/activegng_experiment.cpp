@@ -1,4 +1,4 @@
-/** @file prediction_experiment.cpp
+/** @file activegng_experiment.cpp
  *
  *
  * Program which moves the arm along a straight line
@@ -10,7 +10,7 @@
  * - the first uses real Katana arm
  * - the second runs the arm simulators
  *
- * a Substochastic Sequential Machine is used for prediction
+ * An Active GNG algorithm learns input and output spaces online
  *
  * @author      Sergio Roa - DFKI
  * @version 2.0 beta
@@ -24,7 +24,7 @@ using namespace smlearning;
 
 int main(int argc, char *argv[]) {
 
-	PushingApplication<PredictingScenario, PredictingScenario::Desc>().main(argc, argv);
+	PushingApplication<ActiveGNGScenario, ActiveGNGScenario::Desc>().main(argc, argv);
 
 	return 0;
 }

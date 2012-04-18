@@ -50,7 +50,7 @@
 <polyflapInteraction>
 	<maxX>0.4</maxX>
 	<maxY>0.4</maxY>
-	<maxZ>0.4</maxZ>
+	<maxZ>0.12</maxZ>
 	<minX>0.0</minX>
 	<minY>0.0</minY>
 	<minZ>-0.01</minZ>
