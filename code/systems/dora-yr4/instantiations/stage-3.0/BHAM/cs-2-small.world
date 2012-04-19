@@ -13,25 +13,25 @@ window
 
 floorplan
 (
-	bitmap "./cs-2.png"
+	bitmap "./cs-2-dist.png"
 	#size of map in metre
 	size [50.625 35.290 1.500]
 )
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [16.810 12.235 0 -90.000]
+	pose [16.73 12.02 0 -90.000]
 	color "red"
 )
 
 # cereal box
 
- box2d
- (
- name "redbox1"
- color "red"
- pose [21.835 10.145 0 0]
- )
+# box2d
+# (
+# name "redbox1"
+# color "red"
+# pose [21.835 10.145 0 0]
+# )
 
 # extra barriers to block the corridor next to the meeting room (245)
 
