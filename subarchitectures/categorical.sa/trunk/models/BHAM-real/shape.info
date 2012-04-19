@@ -1,0 +1,8 @@
+Training sets:
+ - data/1334827430-annotated.data
+Parameter selection: No parameter selection (default used)
+Features: geometrical features
+SVM Kernel: Gaussian
+SVM Multi-class: One-against-all
+SVM C: 100
+SVM Kernel Gamma: 0.07
