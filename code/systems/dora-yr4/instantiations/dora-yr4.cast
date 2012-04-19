@@ -466,6 +466,7 @@ IFOPTALL(%(feature_options), dialogue)
     INCLUDE includes/dialogue.sa/INCL/dora-live.cast
     INCLUDE includes/dialogue.sa/dialogue-exe.cast
     JAVA MG verbalisation verbalisation.DoraVerbalisation
+    JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain %(planning_domain) --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml"
 ENDIF
 
 # planning and motivation #####################################################
