@@ -20,7 +20,7 @@ module SpatialData {
     int hypID;
     int originPlaceID;
     int originNodeID;
-    bool doorway;
+    bool gateway;
   };
 
   sequence<double> DoubleOpt;
