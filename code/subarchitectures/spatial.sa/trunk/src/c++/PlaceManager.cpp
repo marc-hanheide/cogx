@@ -1476,9 +1476,11 @@ void PlaceManager::evaluateUnexploredPaths()
                 double ny = (y2-y1)/l;                
                 double n2x = cos(theta);
                 double n2y = sin(theta);
+      
                 if (((n2x*ny-n2y*nx)!=0) && ((n2y*nx-n2x*ny)!=0)){
                   double s = (ny*x1-nx*y1 - dx*ny + dy*nx)/(n2x*ny-n2y*nx);
                   double t = (dx*n2y-dy*n2x - x1*n2y + y1*n2x)/(n2y*nx-n2x*ny);
+                  log("dx %f dy %f theta %f width %f s %f t %f",dx,dy,theta,width,s,t);
                   
                   if (t > 0 && t < l && (s > -width/2) && (s < width/2)){
                     NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
@@ -1885,7 +1887,7 @@ PlaceManager::processPlaceArrival(bool failed)
         }
       }
 
-      if (curNodeId != wasComingFromNode){
+      if ((curNodeId != wasComingFromNode) && (!placeExisted)){
         log("alex 1");
         if (closestPlaceholderId != -1){
           log("alex 2");
