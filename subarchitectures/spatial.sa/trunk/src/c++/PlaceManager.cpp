@@ -343,10 +343,10 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 //	objID.address.id.c_str());
 
     if (m_firstMovementRegistered) {
-    	log("");
-      
       if (oobj != 0) {
-	processPlaceArrival(false);
+
+        if (!m_isPathFollowing)
+        	processPlaceArrival(false);
       }
     }
     else {
@@ -373,64 +373,16 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   log("newNavNode exited");
 }
 
-void
-PlaceManager::cancelMovement(bool failed = false)
-{
-  log("CancelMovement(%i) called", failed);
-
-  m_goalPlaceForCurrentPath = -1;
-  m_isPathFollowing = false;
-
-  // Stop the robot
-  vector<CASTData<NavCommand> > commands;
-  getMemoryEntriesWithData<NavCommand>(commands, "spatial.sa");
-  for (vector<CASTData<NavCommand> >::iterator it =
-      commands.begin(); it != commands.end(); it++) {
-    try {
-      log("locking");
-      lockEntry(it->getID(), cdl::LOCKEDOD);
-      log("locked");
-      //Re-read after lock
-      NavCommandPtr ptr = getMemoryEntry<NavCommand>(it->getID());
-      if (ptr->cmd == GOTOPLACE &&
-          ptr->comp == COMMANDINPROGRESS) {
-        ptr->status = failed ? TARGETUNREACHABLE : UNKNOWN;
-        log("overwrite 1: %s", it->getID().c_str());
-        overwriteWorkingMemory<NavCommand>(it->getID(), ptr);
-      }
-      log("unlocking");
-      unlockEntry(it->getID());
-    }
-    catch (IceUtil::NullHandleException e) {
-      //Just ignore it, it obviously doesn't need to be cancelled
-    }
-    catch (cast::DoesNotExistOnWMException e) {
-    }
-    catch (cast::ConsistencyException e) {
-      log("Error! ConsistencyException in cancelMovement!");
-    }
-  }
-  log("CancelMovement exited");
-}
-
-//FIXME: evaluateUnexploredPaths shouldn't be called in the message thread!
 void PlaceManager::newEndPlaceTransitionCommand(const cdl::WorkingMemoryChange &objID) 
 {
   log("Received new EndPlaceTransitionCommand (%s)", objID.address.id.c_str());
   try {
     NavData::EndPlaceTransitionCommandPtr obj =
       getMemoryEntry<NavData::EndPlaceTransitionCommand>(objID.address);
-    if (m_isPathFollowing) {
-      log("  We were still trying to follow a path; must have failed");
-      m_isPathFollowing = false;
-      // If successful and the transition was unexplored, 
-      // check current node.
-      // If the node is different from the previous,
-      // change the Place struct to non-placeholder,
-      // remove the NodeHypothesis struct and change the
-      // m_PlaceToNodeIDMap/m_PlaceToHypIDMap members
-      processPlaceArrival(obj->failed);
-    }
+
+    processPlaceArrival(obj->failed);
+    m_isPathFollowing = false;
+
     if (obj->generatePlaceholders){ 
       evaluateUnexploredPaths();
     }
@@ -1446,21 +1398,22 @@ void PlaceManager::evaluateUnexploredPaths()
   int curPlaceID = _getPlaceIDForNode(curNode->nodeId);
   if (curPlaceID>=0){
     set<int> &curPlaceConnectivities = m_connectivities[curPlaceID];
-    vector<PlaceMapEntry> gr;
-    for (int k = 0; k < entries.size(); k++) {
-      if (entries[k].node != 0)
-        gr.push_back(entries[k]);
+    vector<pair<PlaceID, NavData::FNodePtr> > gr;
+    std::vector<PlaceID> places;
+    _getTruePlaces(places);
+    for (int k = 0; k < places.size(); k++) {
+      gr.push_back(make_pair(places[k],_getNodeForPlace(places[k])));
     }
 
     bool swapped = true;
     int j = 0;
-    PlaceMapEntry tmp;
+    pair<PlaceID, NavData::FNodePtr> tmp;
     while (swapped) {
       swapped = false;
       j++;
       for (int k = 0; k < gr.size() - j; k++) {
-        double dist1 = (gr[k].node->x - curNode->x)*(gr[k].node->x - curNode->x) + (gr[k].node->y - curNode->y) * (gr[k].node->y - curNode->y);
-        double dist2 = (gr[k + 1].node->x - curNode->x)*(gr[k + 1].node->x - curNode->x) + (gr[k + 1].node->y - curNode->y) * (gr[k + 1].node->y - curNode->y);
+        double dist1 = (gr[k].second->x - curNode->x)*(gr[k].second->x - curNode->x) + (gr[k].second->y - curNode->y) * (gr[k].second->y - curNode->y);
+        double dist2 = (gr[k + 1].second->x - curNode->x)*(gr[k + 1].second->x - curNode->x) + (gr[k + 1].second->y - curNode->y) * (gr[k + 1].second->y - curNode->y);
         if (dist2 < dist1) {
               tmp = gr[k];
               gr[k] = gr[k + 1];
@@ -1473,8 +1426,8 @@ void PlaceManager::evaluateUnexploredPaths()
     vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
     getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
 
-    for(vector<PlaceMapEntry>::iterator it = gr.begin(); it != gr.end(); it++) {
-      if ((it->node != 0) && (it->node->nodeId != curNode->nodeId) && (curPlaceConnectivities.find(it->place->id) == curPlaceConnectivities.end())){ 
+    for( vector<pair<PlaceID, NavData::FNodePtr> >::iterator it = gr.begin(); it != gr.end(); it++) {
+      if ((it->second->nodeId != curNode->nodeId) && (curPlaceConnectivities.find(it->first) == curPlaceConnectivities.end())){ 
         // Check if was checked already            
 
         // Check if are connected via node
@@ -1482,11 +1435,11 @@ void PlaceManager::evaluateUnexploredPaths()
         bool link_gateway = false;
         for(set<int>::iterator it1 = curPlaceConnectivities.begin(); it1 != curPlaceConnectivities.end(); it1++) {
           set<int> placeConnectivities = m_connectivities[(*it1)];
-          set<int>::iterator it2 = placeConnectivities.find(it->place->id);
+          set<int>::iterator it2 = placeConnectivities.find(it->first);
           if (it2 != placeConnectivities.end()){
             max_dist = 1.5;
             NavData::FNodePtr link = _getNodeForPlace(*it1);
-            log("alex link %d %d - %d", curPlaceID, it->place->id, (*it1));
+            log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
                         
             if (link->gateway == 1){
               link_gateway = true;
@@ -1494,22 +1447,22 @@ void PlaceManager::evaluateUnexploredPaths()
             }              
           } 
         }
-        // Connected via doorway - skip
+        // Connected via gateway - skip
         if (link_gateway) continue;
-        double dist2 = (it->node->x - curNode->x)*(it->node->x - curNode->x) + (it->node->y - curNode->y) * (it->node->y - curNode->y);
+        double dist2 = (it->second->x - curNode->x)*(it->second->x - curNode->x) + (it->second->y - curNode->y) * (it->second->y - curNode->y);
                     
         if (dist2 < max_dist * max_dist){
           // Check path
-          double path_dist = m_mapInterface->getPathLength(it->node->x,it->node->y,curNode->x,curNode->y);
-          log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->place->id, max_dist,sqrt(dist2), path_dist, path_dist/sqrt(dist2));
+          double path_dist = m_mapInterface->getPathLength(it->second->x,it->second->y,curNode->x,curNode->y);
+          log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->first, max_dist,sqrt(dist2), path_dist, path_dist/sqrt(dist2));
           if (path_dist/sqrt(dist2) > 0 && path_dist/sqrt(dist2) < 22){
             // Check doorHyps
             bool intersects_door = false;
-            if ((it->node->gateway == 0) && (curNode->gateway == 0)){
+            if ((it->second->gateway == 0) && (curNode->gateway == 0)){
               for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
                   doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
-                double x1 = it->node->x;
-                double y1 = it->node->y;
+                double x1 = it->second->x;
+                double y1 = it->second->y;
                 double x2 = curNode->x;
                 double y2 = curNode->y;
 
@@ -1535,7 +1488,7 @@ void PlaceManager::evaluateUnexploredPaths()
                     newHyp->hypID=-1;
                     newHyp->originPlaceID=curPlaceID;
                     newHyp->originNodeID=curNode->nodeId;
-                    newHyp->doorway=true;
+                    newHyp->gateway=true;
                     PlacePtr p;
                     p = new Place;   
                     p->status = PLACEHOLDER;
@@ -1555,8 +1508,8 @@ void PlaceManager::evaluateUnexploredPaths()
               }
             }
             if (!intersects_door){
-              createConnectivityProperty(sqrt(dist2), curPlaceID, it->place->id);
-              createConnectivityProperty(sqrt(dist2), it->place->id, curPlaceID);
+              createConnectivityProperty(sqrt(dist2), curPlaceID, it->first);
+              createConnectivityProperty(sqrt(dist2), it->first, curPlaceID);
             }
           }
         }
@@ -1875,7 +1828,6 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
   NavData::FNodePtr curNode = getCurrentNavNode();
   if (curNode != 0) {
     m_startNodeForCurrentPath = curNode->nodeId;
-    m_currentNodeOnPath = curNode->nodeId;
   }
   else {
     log("Error! Could not find current Nav node!");
@@ -1896,8 +1848,7 @@ PlaceManager::processPlaceArrival(bool failed)
     int wasHeadingForPlace = m_goalPlaceForCurrentPath;
     int wasComingFromNode = m_startNodeForCurrentPath;
 
-    const NodeHypothesisPtr goalHyp =
-      _getHypForPlace(wasHeadingForPlace);
+    const NodeHypothesisPtr goalHyp = _getHypForPlace(wasHeadingForPlace);
 
     bool wasExploring = (goalHyp != 0);
 
@@ -1912,221 +1863,64 @@ PlaceManager::processPlaceArrival(bool failed)
       double curNodeX = curNode->x;
       double curNodeY = curNode->y;
       int curNodeGateway = curNode->gateway;
+      std::vector<PlaceID> placeholders;
+      _getPlaceholders(placeholders);
+      
+      PlaceID closestPlaceholderId = -1;
 
-      int arrivalCase = -1;
-
-      if (wasExploring) {
-        bool closeToGoal = false;
-        vector<NavData::RobotPose2dPtr> robotPoses;
-        getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+      vector<NavData::RobotPose2dPtr> robotPoses;
+      getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+      
+      for (int i=0;i<placeholders.size();i++){
+        double min_dist = 100;
         if (robotPoses.size() != 0) {
-          double distSq = (robotPoses[0]->x-goalHyp->x)*(robotPoses[0]->x-goalHyp->x) + (robotPoses[0]->y-goalHyp->y)*(robotPoses[0]->y-goalHyp->y);
-          closeToGoal = distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation;
-        }
-        //The transition was an exploration action
-        if (!placeExisted && closeToGoal && (curNodeGateway == 0)) { //No Place exists for current node -> it must be new.
-          arrivalCase = 1;
-          //CASE 1: We were exploring a path, and a new node was discovered.
-          //Stop moving, upgrade the placeholder we were heading for and connect it
-          //to this new node, and delete the NodeHypotheses
-          log("  CASE 1: New node close to goal discovered while exploring");
-
-	  PlacePtr goalPlace = _getPlace(wasHeadingForPlace);
-
-          if (goalPlace != 0) {
-            //Upgrade Place "wasHeadingForPlace"; delete hypothesis goalHyp; 
-            //make the Place refer to node curNode
-            upgradePlaceholder(wasHeadingForPlace, curNode);
-
-            if (curNodeGateway == 1) {
-              addNewGatewayProperty(wasHeadingForPlace);
+          const NodeHypothesisPtr hyp = _getHypForPlace(placeholders[i]);
+          double distSq = (robotPoses[0]->x-hyp->x)*(robotPoses[0]->x-hyp->x) + (robotPoses[0]->y-hyp->y)*(robotPoses[0]->y-hyp->y);
+          if (distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation){
+            if (distSq<min_dist){
+              closestPlaceholderId=placeholders[i];
+              min_dist = distSq;
             }
-          }
-          else {
-            log("Missing place %i on %i! Cancelling movement!", wasHeadingForPlace, __LINE__);
-            cancelMovement();
-            log("processPlaceArrival exited");
-            return;
-          }
+          };
         }
-        else if (!placeExisted && closeToGoal && (curNodeGateway == 1)) {
-          arrivalCase = 7;
-          //CASE 7: 
-          log("  CASE 7: Door");
-          
-          /* If we are not close enough we came to a new node with no place, so we add one and DON'T cancel the movement */
-          addPlaceForNode(curNode);
-          
-        }
-
-        else if (!placeExisted && !closeToGoal) {
-          //No Place exists for current node -> it must be new BUT too far away from our goal to be upgraded in CASE 1.
-          arrivalCase = 2;
-          //CASE 2: We were exploring a path, and a new far from the goal node was discovered.
-          //Don't stop our movement, just add a new node and continue our path.
-          log("  CASE 2: New node far from goal discovered while exploring");
-          
-          /* If we are not close enough we came to a new node with no place, so we add one and DON'T cancel the movement */
-          addPlaceForNode(curNode);
-        }
-
-        else if (!failed && curNodeId != wasComingFromNode && closeToGoal) {
-          arrivalCase = 3;
-//          int currentPlaceID = curPlaceID;
-          //CASE 3: We were exploring, but ended up in a known Place which was not
-          //the one we started from.
-          //Remove the NodeHypothesis and its Placeholder, and
-          //send the Place merge message
-          log("  CASE 3: Exploration action failed - place already known. Deleting Place %i", wasHeadingForPlace);
-
-          m_isPathFollowing = false; 
-/*
-          deletePlaceProperties(wasHeadingForPlace);
-
-          m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
-      	  deletePlaceholder(wasHeadingForPlace);
-
-          //Prepare and send merge notification
-          PlaceMergeNotificationPtr newNotify = new
-            PlaceMergeNotification;
-          newNotify->mergedPlaces.push_back(wasHeadingForPlace);
-          newNotify->mergedPlaces.push_back(currentPlaceID);
-          newNotify->resultingPlace = currentPlaceID;
-          log("Sending merge notification between places %i and %i", 
-              currentPlaceID, wasHeadingForPlace);
-
-          addToWorkingMemory<PlaceMergeNotification>(newDataID(), newNotify);
-*/          //TODO:delete notifications sometime
-        }
-        
-        else if (!failed && curNodeId != wasComingFromNode && !closeToGoal) {
-          arrivalCase = 4;
-          //CASE 4: We were exploring, but ended up in a known Place which was
-          //not the one we started from.
-          //Since we are not close to the goal we do NOT merge the goal and
-          //the known place (ie. allow travelling over already visited
-          //places).
-          log("   CASE 4: travelling over known place %d distant from goal %d, ignoring.", curPlaceID, m_goalPlaceForCurrentPath);
-        }
-
-        else if (failed) {//curPlace != 0 && (failed || curNodeId == wasComingFromNode))
-          arrivalCase = 5;
-          //CASE 5: We were exploring but one way or another, we failed or 
-          //ended up were we'd started.
-          //Just delete the NodeHypothesis and its Placeholder.
-          log("  CASE 5: Exploration action failed; couldn't reach goal. Deleting place %i",
-              wasHeadingForPlace);
-
-          m_isPathFollowing = false; 
-
-          //int currentPlaceID = curPlace->id;
-
-          deletePlaceProperties(wasHeadingForPlace);
-          m_rejectedHypotheses[wasComingFromNode].push_back(goalHyp);
-	  deletePlaceholder(wasHeadingForPlace);
-        }
-
       }
-      else { // (wasExploring); i.e. the goal place was not hypothetical
-        PlacePtr curPlace = _getPlace(curPlaceID);
-        bool placeExisted = (curPlace != 0);
 
-        if (!placeExisted) { 
-          arrivalCase = 6;
-          //CASE 6: We were *not* exploring, but a new node was discovered.
-          //We may have been going between known Places, or following a person
-          //or pushed around in Stage.
-          //Create a new Place for this node. If the node matches a hypothesis
-          //belonging to the Place we just came from, upgrade that node as in
-          //Case 1, above.
-          log("  CASE 6: Node (%d) found while not exploring", curNodeId);
+      if (curNodeId != wasComingFromNode){
+        log("alex 1");
+        if (closestPlaceholderId != -1){
+          log("alex 2");
+          PlaceID newPlaceId = closestPlaceholderId;
+          upgradePlaceholder(closestPlaceholderId, curNode);
+          if (curNodeGateway == 1) {
+            log("alex 4");
 
-          //Check the previous Place for NodeHypotheses matching this one
-          bool foundHypothesis = 0;
-
-          log("processPlaceArrival:1");
-          vector<NodeHypothesisPtr> hyps;
-          getMemoryEntries<NodeHypothesis>(hyps);
-          log("processPlaceArrival:2");
-
-          if (wasComingFromNode >= 0) {
-	    PlaceID prevPlaceID = _getPlaceIDForNode(wasComingFromNode);
-            if (prevPlaceID >= 0) {
-	      vector<PlaceID> placeholders;
-	      _getPlaceholders(placeholders);
-	      NavData::FNodePtr prevNode = _getNodeForPlace(prevPlaceID);
-
-	      // Find Placeholders that have the previous node as their origin
-	      // and close enough to the new one to be upgraded
-	      for(vector<PlaceID>::iterator
-		  phIt = placeholders.begin(); phIt != placeholders.end(); phIt++) {
-		PlaceID placeholderID = *phIt;
-		const NodeHypothesisPtr hyp = _getHypForPlace(placeholderID);
-		if (hyp != 0) {
-		  if (prevPlaceID == hyp->originPlaceID) {
-		    double distSq = (curNodeX-hyp->x)*(curNodeX-hyp->x) + 
-		      (curNodeY-hyp->y)*(curNodeY-hyp->y);
-		    log("  checking hypothesis %i with distance %f (%f,%f)-(%f,%f)",
-			hyp->hypID, distSq, curNodeX, curNodeY, hyp->x, hyp->y);
-		    if (distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation) {
-		      //Close enough 
-		      //FIXME: should really check just bearing, not distance (because
-		      //of m_hypPathLength
-		      PlacePtr placeholder = _getPlace(placeholderID);
-		      if (placeholder == 0) {
-			log("Could not find placeholder to upgrade");
-			m_goalPlaceForCurrentPath = -1;
-			m_isPathFollowing = false;
-			log("processPlaceArrival exited");
-			return;
-		      }
-
-		      foundHypothesis = true;
-		      upgradePlaceholder(placeholderID, curNode);
-
-		      //Write the Gateway property if present
-		      if (curNodeGateway == 1) {
-			addNewGatewayProperty(placeholderID);
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-
-          if (!foundHypothesis) {
-            //Found no prior hypothesis to upgrade. Create new Place instead.
-
-	    PlacePtr p = new Place;   
-            p->status = TRUEPLACE;
-	    PlaceID newPlaceID = _addPlaceWithNode(p, curNode);
-
-            checkUnassignedEdges(curNode->nodeId);
-
-            //Write the Gateway property if present
-            if (curNodeGateway == 1) {
-              addNewGatewayProperty(newPlaceID);
-            }
-            
+            addNewGatewayProperty(newPlaceId);
           }
         }
         else {
-          arrivalCase = 8;
-          // We weren't exploring, and the place was known before - don't
-          // do anything.
-          // (Could check whether we ended up in the expected Place, but
-          // that's for the future)
+          log("alex 3");
+          if (_getPlaceIDForNode(curNode)==-1){
+            PlaceID newPlaceId = addPlaceForNode(curNode);
+            if (curNodeGateway == 1) {
+              log("alex 4");
+
+              addNewGatewayProperty(newPlaceId);
+            }
+          }
         }
 
-        m_isPathFollowing = false; 
       }
+      else if (wasExploring) {
+        log("alex 5");
+
+        deletePlaceProperties(wasHeadingForPlace);
+    	  deletePlaceholder(wasHeadingForPlace);
+      }        
     }
   }
   catch(CASTException &e) {
-    cout<<e.what()<<endl;
-    cout<<e.message<<endl;
-    abort();
+    error("%s",e.what());
+    error("%s",e.message.c_str());
   }
   log("processPlaceArrival exited");
 }
@@ -2280,9 +2074,6 @@ void PlaceManager::deletePlaceholder(int placeID) {
 
   _deletePlace(placeID);
 
-  if (placeID == m_goalPlaceForCurrentPath){
-    cancelMovement(true);
-  }
   log("deletePlaceholder exited");
 }
 
@@ -2299,16 +2090,6 @@ PlaceManager::robotMoved(const cast::cdl::WorkingMemoryChange &objID)
   if (curNode != 0) {
     if (!m_isPathFollowing) {
       m_startNodeForCurrentPath = curNode->nodeId;
-    }
-    else {
-      // If we were following a path and changed nodes, we've arrived at a Place
-      if (curNode->nodeId != m_startNodeForCurrentPath) {
-        // Make sure we haven't processed this place already
-        if (curNode->nodeId != m_currentNodeOnPath) {
-          m_currentNodeOnPath = curNode->nodeId;
-          processPlaceArrival(false);
-        }
-      }
     }
   }
 

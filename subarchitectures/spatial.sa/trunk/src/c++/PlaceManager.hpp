@@ -43,7 +43,6 @@ namespace spatial {
 
     IceUtil::Mutex m_mutex;
 
-    public:
     struct PlaceMapEntry 
     {
       SpatialData::PlacePtr place;
@@ -56,6 +55,9 @@ namespace spatial {
     };
 
     std::vector<PlaceMapEntry> entries;
+
+    public:
+
 
     const SpatialData::PlacePtr _getPlace(PlaceID id);
 
@@ -224,9 +226,6 @@ class PlaceManager : public PlaceMapper
 
     /* Helper function for adding a place to a node */
     int addPlaceForNode(NavData::FNodePtr node);
-
-    // Abort any movement commands
-    void cancelMovement(bool failed);
 
     // Methods to deal with synchronisation of edge addition
     void checkUnassignedEdges(int newNodeID);
