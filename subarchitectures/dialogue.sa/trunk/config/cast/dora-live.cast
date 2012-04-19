@@ -5,3 +5,5 @@ INCLUDE default+gui.cast
 
 INCLUDE modules/refres-fake.incl
 #INCLUDE modules/refgen-fake.incl
+
+#JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true
