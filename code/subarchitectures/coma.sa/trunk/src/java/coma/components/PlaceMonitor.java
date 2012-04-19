@@ -365,15 +365,17 @@ public class PlaceMonitor extends ManagedComponent {
 				log("waited long enough. no more fresh maintenance tasks for a while. gonna process them!");
 				// execute the room maintenance algorithm
 				this.lockComponent();
-				executeMaintainRoomsAlgorithm();
-				// handled in finally...
-				// this.unlockComponent();
+        try {
+				  executeMaintainRoomsAlgorithm();
+        } finally {
+				  this.unlockComponent();
+        }
 			}  catch (InterruptedException e) {
 				logException(e);
-			} finally {
-				log("entered finally block in runComponent()");
-				this.unlockComponent();
-			}
+			} //finally {
+//				log("entered finally block in runComponent()");
+//				this.unlockComponent();
+//			}
 		}
 	}
 	
