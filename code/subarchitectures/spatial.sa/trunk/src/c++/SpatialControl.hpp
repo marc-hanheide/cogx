@@ -294,6 +294,8 @@ protected:
   
   set< pair<int,int> > m_extraEdges;
   NavData::NavGraphPtr m_last_ng;
+  bool m_bNavGraphNeedsRefreshing;
+  IceUtil::Mutex m_extraEdgesMutex;
 
   class PersonData {
   public:
