@@ -1,24 +1,30 @@
 SETVAR hardware=real
 
 SETVAR feature_options=<multiline>
-    spatial              # enable the spatial core
-    peekabot             # use peekabot
-    datasaving           # if enabled, categorical will save a data stream to file
-    !datasaving-visual   # if enabled, images will also be saved
+    spatial              
+    peekabot             
+    datasaving           
+    !datasaving-visual  
     !conceptual
     !default
     !coma
     !binder
     !vision
-    !man_ctrl            # manual GUIs for navigation, PTZ, planning, etc.
+    !man_ctrl            
     !avs
     !execution
-    !categorisation      # enable place categorisation
-    !planning_sa         # enable planning core
-    !debug               # enable more debug GUIs and WM loggers
+    !categorisation      
+    !categorisation-visual
+    !categorisation-size
+    !place-property-persistence
+    !planning_sa         
+    !debug               
     !dialogue
     !motivation
     !visualization
+    !motivation_external
+    !motivation_explanation
+    !simple_placeholder_exploration
 </multiline>
 
 SETVAR hardware_options=<multiline>
@@ -35,7 +41,7 @@ SETVAR hardware_options=<multiline>
 SETVAR display_doors=--display-doors
 
 # Don't show heightmap in PB
-SETVAR spatial_show_3d_obstacles=
+#SETVAR spatial_show_3d_obstacles=
 
 # Create doors only close to door hypotheses
 SETVAR filter_doors=--filter-doors
