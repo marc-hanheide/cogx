@@ -111,6 +111,9 @@ SpatialControl::SpatialControl()
   
   cure_debug_level = 10;
 
+  m_last_ng = 0;
+  m_bNavGraphNeedsRefreshing = false;
+
   m_RobotServerName = "robot.server";
 
   m_waitingForPTZCommandID = "";
@@ -1359,6 +1362,13 @@ void SpatialControl::runComponent()
     }
     count++;
 
+    if (m_bNavGraphNeedsRefreshing) {
+      //May change to true while refreshNavGraph is ongoing;
+      //in that case it will simply run again next pass
+      m_bNavGraphNeedsRefreshing = false;
+      refreshNavGraph();
+    }
+
     {
       m_OdomQueueMutex.lock();
     }
@@ -1480,23 +1490,31 @@ void SpatialControl::runComponent()
 	  }
 	}
       }
-    }	  
+    }
   }
-} 
+}
 
 void SpatialControl::newNavGraph(const cdl::WorkingMemoryChange &objID){
-  shared_ptr<CASTData<NavData::NavGraph> > oobj =
-    getWorkingMemoryEntry<NavData::NavGraph>(objID.address);
+  NavData::NavGraphPtr oobj =
+    getMemoryEntry<NavData::NavGraph>(objID.address);
   
   if (oobj != 0) {
-    m_last_ng = oobj->getData();
-    refreshNavGraph();
+    m_last_ng = oobj;
+    m_bNavGraphNeedsRefreshing = true;
   }
 }
 
 void SpatialControl::refreshNavGraph(){
+  SCOPED_TIME_LOG;
 //  m_Mutex.lock();
-	NavData::NavGraphPtr& ng = m_last_ng;
+
+  // Lock just in case m_last_ng is being updated by newNavGraph()
+  // Barring that, smart pointer will point at old nav graph, not the one
+  // being overwritten, so should be thread-safe
+  lockComponent();
+  NavData::NavGraphPtr ng = m_last_ng;
+  unlockComponent();
+
   if (ng!=0){
     m_NavGraph.clear();
     bool gateway = false;
@@ -1543,9 +1561,15 @@ void SpatialControl::refreshNavGraph(){
       m_NavGraph.addEdgeToEdgeList(n1, n2);
       
     }
-    for (std::set< pair<int,int> >::iterator it = m_extraEdges.begin();
-       it != m_extraEdges.end(); it++) {
-       m_NavGraph.addEdgeToEdgeList(it->first, it->second);
+
+    //Lock to prevent addConnection/removeConnection from invalidating 
+    //the iterator
+    {
+      IceUtil::Mutex::Lock lock(m_extraEdgesMutex);
+      for (std::set< pair<int,int> >::iterator it = m_extraEdges.begin();
+	  it != m_extraEdges.end(); it++) {
+	m_NavGraph.addEdgeToEdgeList(it->first, it->second);
+      }
     }
 
     m_NavGraph.connectNodes();
@@ -1561,13 +1585,15 @@ void SpatialControl::refreshNavGraph(){
 }
 
 void SpatialControl::addConnection(int node1id,int node2id){
+  IceUtil::Mutex::Lock lock(m_extraEdgesMutex);
   m_extraEdges.insert(std::make_pair(node1id,node2id));
-  refreshNavGraph();
+  m_bNavGraphNeedsRefreshing = true;
 }
 
 void SpatialControl::removeConnection(int node1id,int node2id){
+  IceUtil::Mutex::Lock lock(m_extraEdgesMutex);
   m_extraEdges.erase(std::make_pair(node1id,node2id));
-  refreshNavGraph();
+  m_bNavGraphNeedsRefreshing = true;
 }
 
 void SpatialControl::newPersonData(const cdl::WorkingMemoryChange &objID)
