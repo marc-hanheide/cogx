@@ -5,7 +5,7 @@
   <cols>1</cols>
   <dt>d</dt>
   <data>
-    0.00 0.08 0.015</data></tvec>
+    0.00 -0.08 0.015</data></tvec>
 <rmat type_id="opencv-matrix">
   <rows>3</rows>
   <cols>3</cols>
