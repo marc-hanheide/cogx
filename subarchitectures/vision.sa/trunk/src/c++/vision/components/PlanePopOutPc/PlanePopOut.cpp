@@ -857,6 +857,10 @@ void PlanePopOut::runComponent()
 	    }
 	    try {
 		GetPlaneAndSOIs();
+#ifdef FEAT_VISUALIZATION
+		if (m_bSendSois)
+		    SendSOIs(pcl_sois);
+#endif
 	    }
 	    catch (exception& e) {
 		error(" *** PPO GetPlaneANdSOIs HAS CRASHED *** with: '%s'", e.what());
@@ -1095,11 +1099,6 @@ void PlanePopOut::GetPlaneAndSOIs()
 
 	if(ppo_ok)
 	{
-    #ifdef FEAT_VISUALIZATION
-	    // NOTE: not nice having visualisiaton code here, but ok
-	    if (m_bSendSois)
-		SendSOIs(pcl_sois);
-    #endif
 	    // fill our dominant plane structure
 	    dominantPlane.init(pcl_cloud, planepoints, pcl_domplane, tablehull);
 	    if(dominantPlane.valid)
