@@ -2964,7 +2964,7 @@ PlaceMapper::_addPlaceWithHyp(PlacePtr _place, NodeHypothesisPtr _hyp)
 
     //TODO: maybe no need to lock this - will only be a problem if 
     //another thread is overwriting this
-    log("Adding place %ld, based on hypothesis %i, at %s",
+    log("Adding place %llu, based on hypothesis %i, at %s",
 	_place->id, _hyp->hypID, newWMID.c_str());
     addToWorkingMemory<Place>(newWMID, _place);
   }
