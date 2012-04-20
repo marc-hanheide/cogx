@@ -62,9 +62,9 @@ SET(NEURALGAS_INCLUDE /usr/local/include/NeuralGas CACHE PATH "Path prefix for N
 SET(NEURALGAS_LIBRARY /usr/local/lib CACHE PATH "Path prefix for NEURALGAS library")
 
 SET(Boost_MAJOR_VERSION 1)
-SET(Boost_MINOR_VERSION 36)
+SET(Boost_MINOR_VERSION 42)
 # SET(Boost_SUBMINOR_VERSION 0)
-FIND_PACKAGE( Boost 1.36 COMPONENTS filesystem regex program_options)
+FIND_PACKAGE( Boost 1.42 COMPONENTS filesystem regex program_options)
 
 # If boost was not found:
 # Use the following values if you use Ubuntu 8.10 and boost 1.39.0
