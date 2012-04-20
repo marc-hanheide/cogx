@@ -2923,7 +2923,7 @@ PlaceMapper::_addPlaceWithNode(PlacePtr _place,
 
     //TODO: maybe no need to lock this - will only be a problem if 
     //another thread is overwriting this
-    log("Adding place %ld, based on FNode %ld, at %s", _place->id,
+    log("Adding place %lld, based on FNode %lld, at %s", _place->id,
 	_node->nodeId, newWMID.c_str());//, _nodeWMID);
     addToWorkingMemory<Place>(newWMID, _place);
   }
