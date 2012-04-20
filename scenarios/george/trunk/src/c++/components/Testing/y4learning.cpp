@@ -25,23 +25,6 @@ public:
   }
 };
 
-#if 0
-CStatePtr CY4Learning::stStart(CCastMachine* pMachine)
-{
-  auto pStart = pMachine->addState("Start");
-  pStart->setSleepTime(20, 30 * 1000);
-  pStart->setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
-  auto stEmpty = pStart->linkedState("TableEmpty");
-
-  auto fnWork = [=](CState* pState) {
-    pMachine->switchToState(stEmpty);
-    return Continue;
-  };
-  pStart->setWork(fnWork);
-  return pStart;
-}
-#endif
-
 class CstTableEmpty: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
@@ -82,44 +65,6 @@ public:
   }
 };
 
-#if 0
-CStatePtr CY4Learning::stTableEmpty(CCastMachine* pMachine)
-{
-  auto pEmpty = pMachine->addState("TableEmpty");
-  pEmpty->setSleepTime(20);
-  // TODO pEmpty->setTimeout()
-  pEmpty->setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
-  auto stFinished = pEmpty->linkedState("Finished");
-  auto stWait = pEmpty->linkedState("WaitToAppear");
-
-  auto fnEnter = [=](CState* pState) {
-    pMachine->verifyCount("VisualObject", 0);
-    if (pMachine->getCount("VisualObject") > 0) {
-      return WaitChange;
-    }
-    return Continue;
-  };
-  pEmpty->setEnter(fnEnter);
-
-  auto fnWork = [=, &mSceneId](CState* pState) {
-    if (pMachine->getCount("VisualObject") < 1) {
-      ++mSceneId;
-      if (pMachine->loadScene(mSceneId)) {
-        pMachine->switchToState(stWait);
-      }
-      else {
-        pMachine->switchToState(stFinished);
-      }
-      return Continue;
-    }
-    return WaitChange;
-  };
-  pEmpty->setWork(fnWork);
-
-  return pEmpty;
-}
-#endif
-
 class CstWaitToAppear: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
@@ -142,28 +87,6 @@ public:
     return Continue;
   }
 };
-
-#if 0
-CStatePtr CY4Learning::stWaitToAppear(CCastMachine* pMachine)
-{
-  auto pWaitAppear = pMachine->addState("WaitToAppear");
-  pWaitAppear->setSleepTime(20);
-  // TODO pWaitAppear->setTimeout()
-  pWaitAppear->setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
-  auto stStartTeach = pWaitAppear->linkedState("StartTeaching");
-
-  auto fnWork = [=] (CState* pState) {
-    if (pMachine->getCount("VisualObject") < 1) {
-      return WaitChange;
-    }
-    pMachine->switchToState(stStartTeach);
-    return Continue;
-  };
-  pWaitAppear->setWork(fnWork);
-
-  return pWaitAppear;
-}
-#endif
 
 class CstStartTeach: public CState, public CMachineStateMixin<CCastMachine>
 {
@@ -274,103 +197,18 @@ public:
   }
 };
 
-// The sub-automaton for teaching the robot the properties of an object.
-CStatePtr CY4Learning::stTeach(CCastMachine* pMachine)
-{
-#if 0
-  auto pStartTeach = pMachine->addState("StartTeaching");
-  auto stTeachStep = pStartTeach->linkedState("TeachOneStep");
-  auto fnWork = [=, &mTeachingStep, &mStepsTaught] (CState* pState) {
-    mTeachingStep = 0;
-    mStepsTaught = 0;
-    pMachine->switchToState(stTeachStep);
-    return Continue;
-  };
-  pStartTeach->setWork(fnWork);
-#endif
-
-
-#if 0
-  auto pTeach = pMachine->addState("TeachOneStep");
-  pTeach->setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
-  pTeach->setTimeout(30 * 1000);
-  auto stEndTeach = pTeach->linkedState("EndTeaching", "NoMoreSteps,Timeout");
-  auto stWaitResponse = pTeach->linkedState("WaitResponse", "Verbalized");
-  auto fnTeachWork = [=, &mTeachingStep] (CState* pState) {
-    pMachine->verifyCount("VisualObject", 1);
-    if (pMachine->getCount("VisualObject") != 1) {
-      if (pState->hasTimedOut()) {
-        pMachine->reportTimeout("Waiting for VisualObject count==1");
-        pMachine->switchToState(stEndTeach);
-        return Continue;
-      }
-      return WaitChange;
-    }
-    // TODO: pMachine->clearSpokenItems()
-    if (pMachine->sayLesson(mTeachingStep)) {
-      pMachine->switchToState(stWaitResponse);
-    }
-    else {
-      pMachine->switchToState(stEndTeach);
-    }
-    return Continue;
-  };
-  pTeach->setWork(fnTeachWork);
-#endif
-
-
-#if 0
-  auto pWaitResponse = pMachine->addState("WaitResponse");
-  pWaitResponse->linkedState("TeachOneStep", "Confirmed,Timeout");
-  pWaitResponse->setWatchEvents({ "synthesize::SpokenOutputItem" });
-  pWaitResponse->setTimeout(60 * 1000);
-  auto fnWaitRespEnter = [=](CState* pState) {
-    return WaitChange;
-  };
-  pWaitResponse->setEnter(fnWaitRespEnter);
-
-  auto fnWaitRespWork = [=, &mStepsTaught](CState* pState) {
-    if (pState->hasTimedOut()) {
-      pMachine->reportTimeout("Waiting for Robot Response");
-      pMachine->switchToState(stEndTeach);
-      return Continue;
-    }
-    // TODO WaitResponse:  if (pMachine->robotSaidOk()) {
-    //    ++mStepsTaught;
-    //    pMachine->switchToState(stTeachStep);
-    // else {
-    //    return WaitChange;
-    // }
-    return Continue;
-  };
-  pWaitResponse->setWork(fnWaitRespWork);
-#endif
-
-
-#if 0
-  auto pEndTeach = pMachine->addState("EndTeaching");
-  auto stTableEmpty = pEndTeach->linkedState("TableEmpty");
-  auto fnEndTeachWork = [=, &mStepsTaught](CState* pState) {
-    // TODO EndTeaching: pMachine->clearScene();
-    // TODO if (mStepsTaught > 0) pMachine->saveKnowledge();
-    pMachine->switchToState(stTableEmpty);
-    return Continue;
-  };
-
-  return pStartTeach;
-#endif
-}
-
 CMachinePtr CY4Learning::init()
 {
   TStateFunction fnEnter, fnWork, fnExit;
   CCastMachine* pMachine = new CCastMachine();
 
   auto pFinish = pMachine->addState("Finished");
-  auto pStart = stStart(pMachine);
-  //stTableEmpty(pMachine);
-  //stWaitToAppear(pMachine);
-  //stTeach(pMachine);
+  auto pStart = pMachine->addState(new CstStart(pMachine));
+  pMachine->addState(new CstTableEmpty(pMachine));
+  pMachine->addState(new CstStartTeach(pMachine));
+  pMachine->addState(new CstTeachOneStep(pMachine));
+  pMachine->addState(new CstWaitResponse(pMachine));
+  pMachine->addState(new CstEndTeach(pMachine));
 
   pMachine->switchToState(pStart);
   return CMachinePtr(pMachine);

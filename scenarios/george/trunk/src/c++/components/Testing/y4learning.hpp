@@ -12,13 +12,6 @@ namespace testing
 
 class CY4Learning // This is a state-machine factory
 {
-  CStatePtr stStart(CCastMachine*);
-  CStatePtr stTableEmpty(CCastMachine*);
-  CStatePtr stWaitToAppear(CCastMachine*);
-  CStatePtr stTeach(CCastMachine* pMachine);
-  long mSceneId;
-  long mTeachingStep;
-  long mStepsTaught;
 public:
   CMachinePtr init(); // TODO: better factory interface
 };

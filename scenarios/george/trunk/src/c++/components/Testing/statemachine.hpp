@@ -124,6 +124,7 @@ private:
   CStatePtr mpNextState;
 public:
   CStatePtr addState(std::string id);
+  CStatePtr addState(CState* pState);
   CStatePtr findState(std::string id);
   void switchToState(CState* pNextState);
   void switchToState(CStatePtr pNextState);
@@ -226,6 +227,15 @@ CStatePtr CMachine::addState(std::string id)
   CStatePtr pState(new CState(this, id));
   mStates[id] = pState;
   return pState;
+}
+
+inline
+CStatePtr CMachine::addState(CState* pState)
+{
+  assert(pState);
+  CStatePtr pst(pState);
+  mStates[pst->mId] = pst;
+  return pst;
 }
 
 inline
