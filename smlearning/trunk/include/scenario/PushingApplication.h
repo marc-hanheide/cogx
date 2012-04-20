@@ -95,20 +95,23 @@ void PushingApplication<S,D>::define_program_options_desc()
 				("cvqFile,c", po::value<string>(), "name of CVQ quantizer file")
 				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension)")
 				("quantizersPath,p", po::value<string>(), "path for looking for quantizer_inputq.qnt quantizer_outputq.qnt and cvq quantizer files");
-			
+
 		}
 		if (S::getName() == "ActiveGNGScenario" ) {
 			prgOptDesc.add_options ()
 				("maxepochsmdl,e", po::value<unsigned int>()->default_value (100), "Set maximum nr of epochs after mdl reduction is expected (for GNG based quantizing). This value should be proportionally changed depending on maxepochserror parameter.")
 				("maxepochserror", po::value<unsigned int>()->default_value (1), "Set maximum nr of epochs after error reduction is expected (for GNG based quantizing)")
-				("modelefficiency,c", po::value<double>()->default_value (1), "model efficiency constant (for GNG based quantizing) for input space")
+				("modelefficiency,c", po::value<double>()->default_value (5), "model efficiency constant (for GNG based quantizing) for input space")
 				("output_modelefficiency", po::value<double>()->default_value(10), "model efficiency constant (for GNG based quantizing) for output space")
 				("learningrate,l", po::value<double>()->default_value (0.8), "default learning rate for winner nodes (for GNG based quantizing)")
 				("accuracy,y", po::value<double>()->default_value(0.001), "data accuracy constant for input space GNG quantization")
 				("output_accuracy", po::value<double>()->default_value (0.0001), "data accuracy constant for output space GNG quantization")
+				("input_quantizer,i", po::value<string>(), "Pretrained Input quantizer if available")
+				("output_quantizer,o", po::value<string>(), "Pretrained Output quantizer if available")
+				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension) if available")
 				("inputout", po::value<string>(), "file for redirecting input space quantization output")
 				("outputout", po::value<string>(), "file for redirecting output space quantization output")
-				("mdl,o", "save MDL history to a file mdl.txt");
+				("mdl,m", "save MDL history to a file mdl.txt");
 
 				
 		}
@@ -116,6 +119,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 			prgOptDesc.add_options ()
 				("featuresel,f", po::value<string>()->default_value ("obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
 				("normalize,n", "normalize sequences");
+			;
 
 	} catch(std::exception& e) {
 		cerr << "error: " << e.what() << "\n";

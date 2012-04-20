@@ -59,6 +59,8 @@ protected:
 	void saveInputQuantizer ();
 	/** save output quantizer */
 	void saveOutputQuantizer ();
+	/** set data set if it was used for pretraining of quantizers */
+	void setData (string seqFile);
 	/** Encapsulation of CrySSMEx components */
 	ActiveCrySSMEx cryssmex;
 	/** method for feature selection */

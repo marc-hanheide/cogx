@@ -47,18 +47,49 @@ void ActiveGNGScenario::init (boost::program_options::variables_map vm) {
 	else if (fSMethod == "efobpose_slide_flip_tilt")
 		featureSelectionMethod = _efobpose_slide_flip_tilt;
 
-	// Initialize Input Quantizer
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
-		cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov + learningData.efVectorSize);
-	
-	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
-		cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov);
-	else if (featureSelectionMethod == _mcobpose_obpose_direction)
-		cryssmex.initializeInputQuantizer (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize);
+	if (vm.count("input_quantizer"))
+	{
+		cryssmex.setInputQuantizer (vm["input_quantizer"].as<string>());
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+			assert (learningData.motorVectorSizeMarkov + learningData.efVectorSize == cryssmex.getInputQuantizer()->dimensionality());
 
-	// Initialize Output Quantizer 
+		else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+			assert (learningData.motorVectorSizeMarkov == cryssmex.getInputQuantizer()->dimensionality());
+		else if (featureSelectionMethod == _mcobpose_obpose_direction)
+			assert (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize == cryssmex.getInputQuantizer()->dimensionality());
+
+	}
+	else
+	{
+		// Initialize Input Quantizer
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+			cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov + learningData.efVectorSize);
+	
+		else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+			cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov);
+		else if (featureSelectionMethod == _mcobpose_obpose_direction)
+			cryssmex.initializeInputQuantizer (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize);
+
+	}
+		
+
 	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
-		cryssmex.initializeOutputQuantizer (learningData.pfVectorSize);
+	{
+		if (vm.count("output_quantizer"))
+		{
+			cryssmex.setOutputQuantizer (vm["output_quantizer"].as<string>());
+			assert (learningData.pfVectorSize == cryssmex.getOutputQuantizer()->dimensionality());
+			
+		}
+		// Initialize Output Quantizer 
+		else
+			cryssmex.initializeOutputQuantizer (learningData.pfVectorSize);
+			
+
+	}
+	
+
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 
 	// Initialize state quantizer
 	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
@@ -101,6 +132,9 @@ void ActiveGNGScenario::init (boost::program_options::variables_map vm) {
 	// outputQuantizer->setMeanDistanceMode (arithmetic);
 	outputQuantizer->setStoppingCriterion (stability);
 	
+	if (vm.count("seqFile"))
+		setData (vm["seqFile"].as<string>());
+
 	if (vm.count("mdl"))
 	{
 		inputQuantizer->saveMDLHistory ("mdlinput.txt");
@@ -114,21 +148,6 @@ void ActiveGNGScenario::init (boost::program_options::variables_map vm) {
 
 }
 
-
-// void ActiveGNGScenario::postprocess(SecTmReal elapsedTime) {
-// 	if (bStart) {
-// 		CriticalSectionWrapper csw(cs);
-// 		if (object == NULL) {
-// 			return;
-// 		}
-
-// 		LearningData::Chunk chunk;
-// 		writeChunk (chunk);
-
-// 		learningData.currentChunkSeq.push_back (chunk);
-
-// 	}
-// }
 
 void ActiveGNGScenario::trainInputQuantizer (int iteration) {
 	CriticalSectionWrapper csw(cs);
@@ -146,7 +165,8 @@ void ActiveGNGScenario::trainInputQuantizer (int iteration) {
 
 	if (iteration == 0)
 	{
-		inputQuantizer->setRefVectors(2);
+		if (inputQuantizer->graphsize() == 0)
+			inputQuantizer->setRefVectors(2);
 		inputQuantizer->open();
 	}
 
@@ -180,7 +200,8 @@ void ActiveGNGScenario::trainOutputQuantizer (int iteration) {
 
 		if (iteration == 0)
 		{
-			outputQuantizer->setRefVectors(2);
+			if (outputQuantizer->graphsize() == 0)
+				outputQuantizer->setRefVectors(2);
 			outputQuantizer->open();
 		}
 
@@ -223,6 +244,54 @@ void ActiveGNGScenario::saveOutputQuantizer () {
 
 }
 
+void ActiveGNGScenario::setData (string seqFile) {
+	if (!LearningData::read_dataset (seqFile, data, learningData.featLimits )) {
+		cerr << "error reading data" << endl;
+		exit(-1);
+	}
+
+	assert (data.size());
+	// This data copying is really hacky... 
+	std::vector<neuralgas::Vector<double>*>* inputData = new std::vector<neuralgas::Vector<double>*>;
+
+	//Get input feature vectors
+	for (unsigned int i=0; i<data.size(); i++)
+	{
+		vector<FeatureVector> inputSeq = LearningData::load_cryssmexinputsequence (data[i], featureSelectionMethod, normalization, learningData.featLimits);
+		for (unsigned int j=0; j<inputSeq.size(); j++)
+		{
+			neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(inputSeq[j]);
+			inputData->push_back (new_item);
+		}
+	}
+	static_cast<ActiveGNG_Quantizer*>(cryssmex.getInputQuantizer())->setData (inputData);
+	for(unsigned int i=0; i < inputData->size(); i++)
+		delete (*inputData)[i];
+	inputData->clear();
+	delete inputData;
+
+	//Get output feature vectors
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+	{
+		std::vector<neuralgas::Vector<double>*>* outputData = new std::vector<neuralgas::Vector<double>*>;
+		for (unsigned int i=0; i<data.size(); i++)
+		{
+			vector<FeatureVector> outputSeq = LearningData::load_cryssmexoutputsequence (data[i], featureSelectionMethod, normalization, learningData.featLimits);
+			for (unsigned int j=0; j<outputSeq.size(); j++)
+			{
+				neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(outputSeq[j]);
+				outputData->push_back (new_item);
+			}
+		}
+		static_cast<ActiveGNG_Quantizer*>(cryssmex.getOutputQuantizer())->setData (outputData);
+		for (unsigned int i=0; i<outputData->size(); i++)
+			delete (*outputData)[i];
+		outputData->clear();
+		delete outputData;
+	}
+
+	
+}
 
 void ActiveGNGScenario::run (int argc, char* argv[]) {
 
