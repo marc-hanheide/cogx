@@ -236,7 +236,7 @@ void PeekabotControl::runComponent() {
                             }
                             if (!isadded){
                             	placeseq.push_back(place->id);
-                            	log("placeid : %i (fnodeid: %li) added to search plan!",place->id,fnodeseq[h]->nodeId);
+                            	log("placeid : %lli (fnodeid: %lli) added to search plan!",place->id,fnodeseq[h]->nodeId);
                             }
                         }
                     }
