@@ -1901,8 +1901,10 @@ PlaceManager::processPlaceArrival(bool failed)
         }
         else {
           log("alex 3");
-          if (_getPlaceIDForNode(curNode)==-1){
+          if (_getPlaceIDForNode(curNodeId)==-1){
+            log("Adding a place for node ID %i", curNodeId);
             PlaceID newPlaceId = addPlaceForNode(curNode);
+            log("New place ID is %i", newPlaceId);
             if (curNodeGateway == 1) {
               log("alex 4");
 
