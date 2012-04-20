@@ -560,14 +560,14 @@ void Observer::updateWorldState()
 
   if (_worldStateId.empty())
   { // Publish the initial world state on the working memory
-    log("Adding WorldState to the working memory.");
     _worldStateId = newDataID();
+    log("Adding WorldState to the working memory (%s).", _worldStateId.c_str());
     addToWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
   }
   else
   { // Overwrite the world state on the WM
-    log("Updating WorldState in the working memory.");
-    lockEntry(_worldStateId, cdl::LOCKEDODR);
+    log("Updating WorldState in the working memory (%s).", _worldStateId.c_str());
+    lockEntry(_worldStateId, cdl::LOCKEDOD);
     overwriteWorkingMemory<ConceptualData::WorldState>(_worldStateId, _worldStatePtr);
     unlockEntry(_worldStateId);
   }
@@ -2119,9 +2119,12 @@ void Observer::mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &wmChan
   // Check if everything required is loaded
   if ((mapLoadStatusPtr->roomsWritten) && (mapLoadStatusPtr->categoryDataWritten))
   {
+
+    pthread_mutex_lock(&_worldStateMutex);
     // Signal that we should start updating
     _worldStateUpdatesUnlocked = true;
     updateWorldState();
+    pthread_mutex_unlock(&_worldStateMutex);
   }
 
 }
