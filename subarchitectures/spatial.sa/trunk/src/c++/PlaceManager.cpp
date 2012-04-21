@@ -1401,7 +1401,7 @@ void PlaceManager::evaluateUnexploredPaths()
     vector<pair<PlaceID, NavData::FNodePtr> > gr;
     std::vector<PlaceID> places;
     _getTruePlaces(places);
-    for (int k = 0; k < places.size(); k++) {
+    for (size_t k = 0; k < places.size(); k++) {
       gr.push_back(make_pair(places[k],_getNodeForPlace(places[k])));
     }
 
@@ -1411,7 +1411,7 @@ void PlaceManager::evaluateUnexploredPaths()
     while (swapped) {
       swapped = false;
       j++;
-      for (int k = 0; k < gr.size() - j; k++) {
+      for (size_t k = 0; k < gr.size() - j; k++) {
         double dist1 = (gr[k].second->x - curNode->x)*(gr[k].second->x - curNode->x) + (gr[k].second->y - curNode->y) * (gr[k].second->y - curNode->y);
         double dist2 = (gr[k + 1].second->x - curNode->x)*(gr[k + 1].second->x - curNode->x) + (gr[k + 1].second->y - curNode->y) * (gr[k + 1].second->y - curNode->y);
         if (dist2 < dist1) {
@@ -1862,8 +1862,6 @@ PlaceManager::processPlaceArrival(bool failed)
       PlaceID curPlaceID = _getPlaceIDForNode(curNodeId);
       bool placeExisted = (curPlaceID >= 0);
 
-      double curNodeX = curNode->x;
-      double curNodeY = curNode->y;
       int curNodeGateway = curNode->gateway;
       std::vector<PlaceID> placeholders;
       _getPlaceholders(placeholders);
@@ -1873,7 +1871,7 @@ PlaceManager::processPlaceArrival(bool failed)
       vector<NavData::RobotPose2dPtr> robotPoses;
       getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
       
-      for (int i=0;i<placeholders.size();i++){
+      for (size_t i=0;i<placeholders.size();i++){
         double min_dist = 100;
         if (robotPoses.size() != 0) {
           const NodeHypothesisPtr hyp = _getHypForPlace(placeholders[i]);
@@ -2966,8 +2964,8 @@ PlaceMapper::_addPlaceWithHyp(PlacePtr _place, NodeHypothesisPtr _hyp)
 
     //TODO: maybe no need to lock this - will only be a problem if 
     //another thread is overwriting this
-    log("Adding place %llu, based on hypothesis %i, at %s",
-	_place->id, _hyp->hypID, newWMID.c_str());
+    log("Adding (%s) place %llu, based on hypothesis %i",
+	newWMID.c_str(), _place->id, _hyp->hypID);
     addToWorkingMemory<Place>(newWMID, _place);
   }
   _checkConsistency(__LINE__);
