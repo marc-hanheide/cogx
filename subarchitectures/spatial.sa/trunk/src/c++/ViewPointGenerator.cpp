@@ -73,9 +73,9 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		// We have the VC candidate list ordered according to their 2D pdf sums
 		// now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
 		double xW, yW;
-    int maxiterations = 10 < ordered2DVClist.size() ? 10 : ordered2DVClist.size();
-		for (unsigned int j = 0; j < maxiterations; j++) {
-	//	for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) {
+    size_t maxiterations = 10 < ordered2DVClist.size() ? 10 : ordered2DVClist.size();
+		for (size_t j = 0; j < maxiterations; j++) {
+	//	for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) 
 			lgm->index2WorldCoords(m_samples2D[ordered2DVClist[j].first].getX(),
 					m_samples2D[ordered2DVClist[j].first].getY(), xW, yW);
 
@@ -144,13 +144,11 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 
 		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
 			}
-		m_component->log("Returning %d 3D viewcones \n", result3DVCList.size());
-				for (unsigned int i=0; i < result3DVCList.size(); i++){
-				for (unsigned int i=0; i < result3DVCList.size(); i++){
-					m_component->log("3DCone #%d, sum: %f", i, result3DVCList[i].totalprob);
-				}
-		return result3DVCList;
-}
+	m_component->log("Returning %d 3D viewcones \n", result3DVCList.size());
+	for (unsigned int i=0; i < result3DVCList.size(); i++){
+	    m_component->log("3DCone #%d, sum: %f", i, result3DVCList[i].totalprob);
+	}
+	return result3DVCList;
 }
 
 vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getViewConeSums(std::vector<SensingAction> &samplepoints) {
@@ -363,7 +361,7 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<NavDa
 	/*Sampling free space BEGIN*/
   double dist = 0.2;
 
-  for (int i=0; i<nodes.size(); i++) {
+  for (size_t i=0; i<nodes.size(); i++) {
     double theta = (rand() % 360) * M_PI / 180;
     for (int j=0; j<10; j++) {
       double angle = theta + j /10 * 2 * M_PI;
