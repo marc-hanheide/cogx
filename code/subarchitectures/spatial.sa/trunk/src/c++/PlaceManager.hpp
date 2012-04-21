@@ -203,6 +203,7 @@ class PlaceManager : public PlaceMapper
     // Callback function for metric movement
     void robotMoved(const cast::cdl::WorkingMemoryChange &objID);
     void processPlaceArrival(bool failed); 
+    void processNewNode(const NavData::FNodePtr node); 
 
     void upgradePlaceholder(int placeID, NavData::FNodePtr newNode);
     void deletePlaceProperties(int placeID);
@@ -278,6 +279,7 @@ class PlaceManager : public PlaceMapper
     std::map<int, std::string> m_borderProperties; // Keeps track of the
     				// border placeholder properties maintained
     bool m_firstMovementRegistered;
+		bool m_foundNodeThisMovement;
 
     std::set<NavData::AEdgePtr> m_unprocessedEdges;
 

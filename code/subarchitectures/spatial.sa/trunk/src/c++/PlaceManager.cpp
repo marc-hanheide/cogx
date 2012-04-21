@@ -59,7 +59,8 @@ PlaceManager::PlaceManager() : PlaceMapper(),
     m_startNodeForCurrentPath(-1),
     m_goalPlaceForCurrentPath(-1),
     m_currentNodeOnPath(-1),
-    m_firstMovementRegistered(false)
+    m_firstMovementRegistered(false),
+		m_foundNodeThisMovement(false)
 {
   cout<<"PlaceManager::PlaceManager()"<<endl;
 }
@@ -344,9 +345,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 
     if (m_firstMovementRegistered) {
       if (oobj != 0) {
-
-        if (!m_isPathFollowing)
-        	processPlaceArrival(false);
+				processNewNode(oobj);
       }
     }
     else {
@@ -1812,6 +1811,8 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
   log("beginPlaceTransition called; goal place ID=%i", goalPlaceID);
   // Check whether the transition is an explored or unexplored edge
   // Store where it was we came from
+
+	m_foundNodeThisMovement = false;
   
   const NodeHypothesisPtr goalHypothesis = _getHypForPlace(goalPlaceID);
 
@@ -1841,129 +1842,140 @@ PlaceManager::beginPlaceTransition(int goalPlaceID)
 }
 
 void 
+PlaceManager::processNewNode(NavData::FNodePtr node) 
+{
+	try {
+		log("processNewNode called (%i)", node->nodeId);
+		log("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
+
+		// Signals that a node was found during this movement
+		// meaning the exploration action is no failure
+		m_foundNodeThisMovement = true;
+
+		int wasHeadingForPlace = m_goalPlaceForCurrentPath;
+		int wasComingFromNode = m_startNodeForCurrentPath;
+
+		int newNodeID = node->nodeId;
+		log("new node id: %i", newNodeID);
+
+		int newNodeGateway = node->gateway;
+		std::vector<PlaceID> placeholders;
+		_getPlaceholders(placeholders);
+
+		PlaceID closestPlaceholderId = -1;
+
+		vector<NavData::RobotPose2dPtr> robotPoses;
+		getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
+
+		if (robotPoses.size() != 0) {
+			double min_dist = 100;
+			for (int i=0;i<placeholders.size();i++){
+				const NodeHypothesisPtr hyp = _getHypForPlace(placeholders[i]);
+				double distSq = (robotPoses[0]->x-hyp->x)*(robotPoses[0]->x-hyp->x) + (robotPoses[0]->y-hyp->y)*(robotPoses[0]->y-hyp->y);
+				if (distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation){
+					if (distSq<min_dist){
+						closestPlaceholderId=placeholders[i];
+						min_dist = distSq;
+					}
+				};
+			}
+		}
+
+		if (closestPlaceholderId != -1){
+			PlaceID newPlaceId = closestPlaceholderId;
+			upgradePlaceholder(closestPlaceholderId, node);
+			if (newNodeGateway == 1) {
+
+				addNewGatewayProperty(newPlaceId);
+			}
+		}
+		else {
+			PlaceID newPlaceId = addPlaceForNode(node);
+			if (newNodeGateway == 1) {
+				addNewGatewayProperty(newPlaceId);
+			}
+		}
+	}
+	catch(CASTException &e) {
+		error("%s",e.what());
+		error("%s",e.message.c_str());
+	}
+	log("processNewNode exited");
+}
+
+void 
 PlaceManager::processPlaceArrival(bool failed) 
 {
-  try {
-    log("processPlaceArrival called (failed=%i)", failed);
-    log("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
+	try {
+		log("processPlaceArrival called (failed=%i)", failed);
+		log("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
 
-    int wasHeadingForPlace = m_goalPlaceForCurrentPath;
-    int wasComingFromNode = m_startNodeForCurrentPath;
+		int wasHeadingForPlace = m_goalPlaceForCurrentPath;
+		int wasComingFromNode = m_startNodeForCurrentPath;
 
-    const NodeHypothesisPtr goalHyp = _getHypForPlace(wasHeadingForPlace);
+		const NodeHypothesisPtr goalHyp = _getHypForPlace(wasHeadingForPlace);
 
-    bool wasExploring = (goalHyp != 0);
+		bool wasExploring = (goalHyp != 0);
 
-    NavData::FNodePtr curNode = getCurrentNavNode();
-    if (curNode != 0) {
-      int curNodeId = curNode->nodeId;
-      log("current node id: %i", curNodeId);
+		if (wasExploring && !m_foundNodeThisMovement) {
+			// There is still a hypothesis for the place we were going to
+			// This means we were exploring. But no new node was found
+			// so this exploration action failed. Delete the placeholder
+			// (We don't delete the placeholder if some *other* placeholder
+			// was explored by mistake though)
 
-      PlaceID curPlaceID = _getPlaceIDForNode(curNodeId);
-      bool placeExisted = (curPlaceID >= 0);
+			log("alex 5");
 
-      int curNodeGateway = curNode->gateway;
-      std::vector<PlaceID> placeholders;
-      _getPlaceholders(placeholders);
-      
-      PlaceID closestPlaceholderId = -1;
-
-      vector<NavData::RobotPose2dPtr> robotPoses;
-      getMemoryEntries<NavData::RobotPose2d>(robotPoses, 0);
-      
-      for (size_t i=0;i<placeholders.size();i++){
-        double min_dist = 100;
-        if (robotPoses.size() != 0) {
-          const NodeHypothesisPtr hyp = _getHypForPlace(placeholders[i]);
-          double distSq = (robotPoses[0]->x-hyp->x)*(robotPoses[0]->x-hyp->x) + (robotPoses[0]->y-hyp->y)*(robotPoses[0]->y-hyp->y);
-          if (distSq < 0.25*m_minNodeSeparation*m_minNodeSeparation){
-            if (distSq<min_dist){
-              closestPlaceholderId=placeholders[i];
-              min_dist = distSq;
-            }
-          };
-        }
-      }
-
-      if ((curNodeId != wasComingFromNode) && (!placeExisted)){
-        log("alex 1");
-        if (closestPlaceholderId != -1){
-          log("alex 2");
-          PlaceID newPlaceId = closestPlaceholderId;
-          upgradePlaceholder(closestPlaceholderId, curNode);
-          if (curNodeGateway == 1) {
-            log("alex 4");
-
-            addNewGatewayProperty(newPlaceId);
-          }
-        }
-        else {
-          log("alex 3");
-          if (_getPlaceIDForNode(curNodeId)==-1){
-            log("Adding a place for node ID %i", curNodeId);
-            PlaceID newPlaceId = addPlaceForNode(curNode);
-            log("New place ID is %i", newPlaceId);
-            if (curNodeGateway == 1) {
-              log("alex 4");
-
-              addNewGatewayProperty(newPlaceId);
-            }
-          }
-        }
-
-      }
-      else if (wasExploring) {
-        log("alex 5");
-
-        deletePlaceProperties(wasHeadingForPlace);
-    	  deletePlaceholder(wasHeadingForPlace);
-      }        
-    }
-  }
-  catch(CASTException &e) {
-    error("%s",e.what());
-    error("%s",e.message.c_str());
-  }
-  log("processPlaceArrival exited");
+			deletePlaceProperties(wasHeadingForPlace);
+			deletePlaceholder(wasHeadingForPlace);
+		}        
+	}
+	catch(CASTException &e) {
+		error("%s",e.what());
+		error("%s",e.message.c_str());
+	}
+	m_foundNodeThisMovement = false;
+	// Set to false here too, in case someone starts to drive around manually
+	log("processPlaceArrival exited");
 }
 
 
 NodeHypothesisPtr 
 PlaceManager::PlaceServer::getHypFromPlaceID(int placeID,
-    const Ice::Current &_context) {
-//  m_pOwner->lockComponent();
-  NodeHypothesisPtr ptr = m_pOwner->_getHypForPlace(placeID);
+		const Ice::Current &_context) {
+	//  m_pOwner->lockComponent();
+	NodeHypothesisPtr ptr = m_pOwner->_getHypForPlace(placeID);
 
-  //Copy for thread safety
-  if (ptr != 0)
-    ptr = new NodeHypothesis(*ptr);
+	//Copy for thread safety
+	if (ptr != 0)
+		ptr = new NodeHypothesis(*ptr);
 
-//  m_pOwner->unlockComponent();
-  return ptr;
+	//  m_pOwner->unlockComponent();
+	return ptr;
 }
 
 NavData::FNodePtr
 PlaceManager::PlaceServer::getNodeFromPlaceID(int placeID,
-    const Ice::Current &_context) {
-//  m_pOwner->lockComponent();
-  NavData::FNodePtr ptr = m_pOwner->_getNodeForPlace(placeID);
+		const Ice::Current &_context) {
+	//  m_pOwner->lockComponent();
+	NavData::FNodePtr ptr = m_pOwner->_getNodeForPlace(placeID);
 
-  //Copy for thread safety
-  if (ptr != 0)
-    ptr = new NavData::FNode(*ptr);
+	//Copy for thread safety
+	if (ptr != 0)
+		ptr = new NavData::FNode(*ptr);
 
-//  m_pOwner->unlockComponent();
-  return ptr;
+	//  m_pOwner->unlockComponent();
+	return ptr;
 }
 
-PlacePtr 
+	PlacePtr 
 PlaceManager::PlaceServer::getPlaceFromNodeID(int nodeID,
-    const Ice::Current &_context)
+		const Ice::Current &_context)
 {
-//  m_pOwner->lockComponent();
-  PlacePtr ptr = m_pOwner->_getPlace(m_pOwner->_getPlaceIDForNode(nodeID));
+	//  m_pOwner->lockComponent();
+	PlacePtr ptr = m_pOwner->_getPlace(m_pOwner->_getPlaceIDForNode(nodeID));
 
-  //Copy for thread safety
+	//Copy for thread safety
   if (ptr != 0)
     ptr = new Place(*ptr);
 
