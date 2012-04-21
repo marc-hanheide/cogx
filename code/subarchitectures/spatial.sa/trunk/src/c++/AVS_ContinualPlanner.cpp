@@ -78,50 +78,64 @@ void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy, peekabot::Poly
   const double fovVerti = fovVertiAngle*M_PI/180.0/2;
   
   proxyConeParts[0].add(proxy, "top");
-  proxyConeParts[0].add_vertex(0,0,0);
-  proxyConeParts[0].add_vertex(coneLen,
+  peekabot::VertexSet vs1;
+  vs1.add(0,0,0);
+  vs1.add(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(fovVerti));
-  proxyConeParts[0].add_vertex(coneLen,
+  vs1.add(coneLen,
                                coneLen*tan(-fovHoriz),
                                coneLen*tan(fovVerti));
+  proxyConeParts[0].add_vertices(vs1);
+  vs1.clear();
+
   proxyConeParts[1].add(proxy, "bottom");
-  proxyConeParts[1].add_vertex(0,0,0);
-  proxyConeParts[1].add_vertex(coneLen,
+  vs1.add(0,0,0);
+  vs1.add(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[1].add_vertex(coneLen,
+  vs1.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
+  proxyConeParts[1].add_vertices(vs1);
+  vs1.clear();
+
   proxyConeParts[2].add(proxy, "left");
-  proxyConeParts[2].add_vertex(0,0,0);
-  proxyConeParts[2].add_vertex(coneLen,
+  vs1.add(0,0,0);
+  vs1.add(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(-fovVerti));
-  proxyConeParts[2].add_vertex(coneLen,
+  vs1.add(coneLen,
                                coneLen*tan(fovHoriz),
                                coneLen*tan(fovVerti));
+  proxyConeParts[2].add_vertices(vs1);
+  vs1.clear();
+
   proxyConeParts[3].add(proxy, "right");
-  proxyConeParts[3].add_vertex(0,0,0);
-  proxyConeParts[3].add_vertex(coneLen,
+  vs1.add(0,0,0);
+  vs1.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[3].add_vertex(coneLen,
+  vs1.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(fovVerti));
+  proxyConeParts[3].add_vertices(vs1);
+  vs1.clear();
+
   proxyConeParts[4].add(proxy, "image");
-  proxyConeParts[4].add_vertex(coneLen,
+  vs1.add(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(fovVerti));
-  proxyConeParts[4].add_vertex(coneLen,
+  vs1.add(coneLen,
                           coneLen*tan(fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[4].add_vertex(coneLen,
+  vs1.add(coneLen,
                           coneLen*tan(-fovHoriz),
                           coneLen*tan(-fovVerti));
-  proxyConeParts[4].add_vertex(coneLen,
+  vs1.add(coneLen,
                           coneLen*tan(-fovHoriz),
                                coneLen*tan(fovVerti));
+  proxyConeParts[4].add_vertices(vs1);
 
   for (int i = 0; i < 5; i++) {
     proxyConeParts[i].set_color(color[0],color[1],color[2]);
@@ -294,10 +308,12 @@ void AVS_ContinualPlanner::start() {
             
             p->add(m_ProxyForbiddenMap, "zone");
             p->set_color(1,0.1,0.1);
-            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
-            p->add_vertex( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            p->add_vertex( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+	    peekabot::VertexSet vs;
+            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
+            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
+	    p->add_vertices(vs);
         }
   
 	}
@@ -404,39 +420,24 @@ AVS_ContinualPlanner::owtRecognizer3DCommand(const cast::cdl::WorkingMemoryChang
     log("finished ViewConeUpdate");
     m_currentViewConeNumber++;
     if (m_currentViewConeNumber >= m_currentConeGroup->viewcones.size()){
-      log("1");
     	startMovePanTilt(0.0,0.0,0.08);
-      log("2");
     	m_ptzWaitingStatus = WAITING_TO_RETURN;
     }
     else {
-      log("3");
       m_processedViewConeIDs.insert(m_currentViewCone.first); 
-      log("4");
       m_currentViewCone.first = m_currentConeGroupNumber * 1000 + m_currentViewConeNumber;
-      log("5");
       m_currentViewCone.second = m_currentConeGroup->viewcones[m_currentViewConeNumber];
-      log("6");
       if(m_usePeekabot){         
-      log("7");
           m_proxyCone=&m_ProxyViewPointsList[m_currentViewCone.first];
-      log("8");
           m_proxyConePolygons=m_ProxyViewPointsPolygonsList[m_currentViewCone.first];   
-      log("9");
           ChangeCurrentViewConeColor(0.1,0.9,0.1);
       }			
-      log("10");
       double angle = m_currentViewCone.second.pan-lastRobotPose->theta;
-      log("11");
       if (angle < -M_PI) angle += 2*M_PI; 
-      log("12");
       if (angle > M_PI) angle -= 2*M_PI; 
-      log("13");
 
       startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
-      log("14");
 			m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
-      log("15");
     }
 
 //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
@@ -629,7 +630,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			return;
 		}
 		unsigned int comarooms_i = -1;
-		for (int i=0; i < comarooms.size(); i++) {
+		for (size_t i=0; i < comarooms.size(); i++) {
 			log("Got coma room with room id: %d", comarooms[i]->roomId);
 			if (comarooms[i]->roomId == newVPCommand->roomId) {
         comarooms_i = i;
@@ -1026,7 +1027,7 @@ void AVS_ContinualPlanner::generateViewCones(
 	// 3. Create beliefs about them
 
   map< int, vector<ViewPointGenerator::SensingAction> > place_cones;
-	for (int i=0; i < viewcones.size(); i++){
+	for (size_t i=0; i < viewcones.size(); i++){
     int closestnode = GetClosestNodeId(viewcones[i].pos[0], viewcones[i].pos[1], viewcones[i].pos[2]);
 		int conePlaceId = GetPlaceIdFromNodeId(closestnode);
     place_cones[conePlaceId].push_back(viewcones[i]);
@@ -1041,7 +1042,7 @@ void AVS_ContinualPlanner::generateViewCones(
     int min_counter = 4;
     double opt_minAngle = 0;
 
-    for (int i=0; i < (*plIt).second.size(); i++){
+    for (size_t i=0; i < (*plIt).second.size(); i++){
       double minAngle = (*plIt).second[i].pan;
       double stAngle = minAngle;
       int counter = 0;
@@ -1049,7 +1050,7 @@ void AVS_ContinualPlanner::generateViewCones(
       while (collected_vc.size()<(*plIt).second.size()){
         double maxAngle = stAngle + m_maxRange;
         double min_dist = 2 * M_PI;
-        for (int k=0; k < (*plIt).second.size(); k++){
+        for (size_t k=0; k < (*plIt).second.size(); k++){
           double dist1 = (*plIt).second[k].pan - stAngle;
           while (dist1 < 0) dist1+= 2 * M_PI;
           while (dist1 > 2 * M_PI) dist1-= 2 * M_PI;
@@ -1081,7 +1082,7 @@ void AVS_ContinualPlanner::generateViewCones(
       double min_dist = 2 * M_PI;
       double max_dist = 0;
       vector<ViewPointGenerator::SensingAction> gr;
-      for (int k=0; k < (*plIt).second.size(); k++){
+      for (size_t k=0; k < (*plIt).second.size(); k++){
 
         double dist1 = (*plIt).second[k].pan - stAngle;
         while (dist1 < 0) dist1+= 2 * M_PI;
@@ -1110,7 +1111,7 @@ void AVS_ContinualPlanner::generateViewCones(
       while (swapped) {
         swapped = false;
         j++;
-        for (int k = 0; k < gr.size() - j; k++) {
+        for (size_t k = 0; k < gr.size() - j; k++) {
           double dist1 = gr[k].pan - stAngle;
           while (dist1 < 0) dist1+= 2 * M_PI;
           while (dist1 > 2 * M_PI) dist1-= 2 * M_PI;
@@ -1184,7 +1185,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		ConeGroup c;
 		c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
 		c.bloxelMapId = id;
-    for (int j = 0;j<grouped_cones[i].size();j++){
+    for (size_t j = 0;j<grouped_cones[i].size();j++){
   		c.viewcones.push_back(grouped_cones[i][j]);
     }
     c.minAngle = grouped_cones_minAngle[i];
@@ -1258,7 +1259,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_coneGroupId++;
 
 		if(m_usePeekabot){
-  		for(int coneNumber=0;coneNumber<c.viewcones.size();coneNumber++)
+  		for(size_t coneNumber=0;coneNumber<c.viewcones.size();coneNumber++)
         PostViewCone(c.viewcones[coneNumber],m_coneGroupId * 1000 + coneNumber);
 		}
 
@@ -1619,8 +1620,9 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 	//get the belief id
 	try{
-		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[round(viewcone.first / 1000)].c_str());
-		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[round(viewcone.first / 1000)],"binder");
+	  	int coneGroupID = viewcone.first / 1000;
+		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[coneGroupID].c_str());
+		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[coneGroupID],"binder");
 
 		CondIndependentDistribsPtr dist = CondIndependentDistribsPtr::dynamicCast(belief->content);
 		BasicProbDistributionPtr  basicdist = BasicProbDistributionPtr::dynamicCast(dist->distribs["p-visible"]);
@@ -1628,9 +1630,13 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
 		log("Got conegroup beliefs probability %f ", floatformula->val);
 		log("Will subtract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
-		floatformula->val = floatformula->val - differenceMapPDFSum*(1/m_coneGroupNormalization); // remove current conesum's result
+		double newValue = floatformula->val - differenceMapPDFSum*(1/m_coneGroupNormalization);
+		double factor = newValue/floatformula->val;
+		floatformula->val = newValue; // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
-		overwriteWorkingMemory(m_coneGroupIdToBeliefId[round(viewcone.first / 1000)], "binder", belief);
+		overwriteWorkingMemory(m_coneGroupIdToBeliefId[coneGroupID], "binder", belief);
+		m_beliefConeGroups[coneGroupID].scaleProbabilities(factor);
+		log("Sum probabilities check: %f", m_beliefConeGroups[coneGroupID].getTotalProb());
 
 	} catch (DoesNotExistOnWMException e) {
 		log("Error! ConeGroup belief missing on WM!");
@@ -2241,7 +2247,7 @@ int AVS_ContinualPlanner::GetPlaceIdFromNodeId(int nodeId){
   FrontierInterface::PlaceInterfacePrx agg(getIceServer<FrontierInterface::PlaceInterface>("place.manager"));
   SpatialData::PlacePtr p = new SpatialData::Place;
    p = agg->getPlaceFromNodeID(nodeId);
-   if (p != NULL)
+   if (p != 0)
      return p->id;
    else
      return -1;

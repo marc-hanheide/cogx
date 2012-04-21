@@ -64,10 +64,15 @@ public:
 
 		double getTotalProb(){
 			double tmp = 0;
-			for (unsigned int i =0; i < viewcones.size(); i++){
+			for (size_t i =0; i < viewcones.size(); i++){
 				tmp += viewcones[i].totalprob;
 			}
 			return tmp;
+		}
+		void scaleProbabilities(double factor) {
+			for (size_t i =0; i < viewcones.size(); i++){
+				viewcones[i].totalprob *= factor;
+			}
 		}
 
 		bool isprocessed;
@@ -232,7 +237,7 @@ private:
 
 	 ConeGroup* m_currentConeGroup;
 	 std::pair<int,ViewPointGenerator::SensingAction> m_currentViewCone; // Id of this SensingAction's ConeGroup and the SensingAction itself
-   int m_currentViewConeNumber;
+   size_t m_currentViewConeNumber;
    int m_currentConeGroupNumber;
 	 int m_coneGroupId; // Unique Id for each cone group
 	MainDialog *_mainDialog;
