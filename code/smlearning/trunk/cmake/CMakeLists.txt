@@ -216,6 +216,10 @@ SET(ACTIVEGNG_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/scenario/activegng_experiment.cpp
 )
 
+SET(OFFLINEACTIVEGNG_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/metalearning/offlineactivegng_experiment.cpp
+)
+
 SET(TRACKER_TEST_SOURCE
  	${SMLEARNING_ROOT}/src/tests/TrackerTest.cpp
 )
@@ -373,6 +377,7 @@ ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 ADD_EXECUTABLE(tracker_test ${TRACKER_TEST_SOURCE})
 ADD_EXECUTABLE(prediction_experiment ${PREDICTION_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(activegng_experiment ${ACTIVEGNG_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(offlineactivegng_experiment ${OFFLINEACTIVEGNG_EXPERIMENT_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/training.sh DESTINATION bin/SMLearning)
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/ensemble_experiment.sh DESTINATION bin/SMLearning)
@@ -382,6 +387,7 @@ INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS offlineactivegng_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)

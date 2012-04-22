@@ -9,10 +9,14 @@
 #define SMLEARNING_CRYSSMEX_H_
 
 
+#include <boost/iostreams/tee.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <metalearning/data_structs.h>
 #include <quantizing/quantizer_file_export.hh>
 #include <ssm/ssm_file_export.hh>
 #include <ssm/ssm_parser.hh>
 #include <cryssmex/exceptions.hh>
+#include <boost/function.hpp>
 
 using namespace ssm;
 using namespace cryssmex;
@@ -50,6 +54,10 @@ public:
 	Quantizer* getOutputQuantizer () { return output_quantizer; }
 	/** get State Quantizer from file */
 	Quantizer* getStateQuantizer () { return state_quantizer; }
+	/** save input quantizer */
+	void saveInputQuantizer ();
+	/** save output quantizer */
+	void saveOutputQuantizer ();
 	/** parse an input data sequence for prediction */
 	void parseSequence (DataSequence& sequence, DataSequence& predicted_sequence);
 	/** parse an input chunk for prediction */
@@ -89,6 +97,16 @@ public:
 	void initializeOutputQuantizer (unsigned int dim);
 	/** initialize state quantizer */
 	void initializeStateQuantizer (unsigned int dim);
+	/** set present data sequences */
+	void setData (std::string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod, int index = -1);
+	/** train input quantizer with a new data sequence */
+	void trainInputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
+	/** train output quantizer with a new data sequence */
+	void trainOutputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
+	/** Wait for input quantizer to finish learning */
+	void waitForInputQuantizer ();
+	/** Wait for output quantizer to finish learning */
+	void waitForOutputQuantizer ();
 
 }; // ActiveCrySSMEx class
 

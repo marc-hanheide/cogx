@@ -43,24 +43,6 @@ public:
 	/** set experiment default values */
 	virtual void init(boost::program_options::variables_map vm);
 protected:
-	// /** Renders the object. */
-        // virtual void render();
-	// /** (Post)processing function called AFTER every physics simulation step and before rendering. */
-	// virtual void postprocess(golem::SecTmReal elapsedTime);
-	/** Input Quantizer learning process for current sequence */
-	void trainInputQuantizer (int iteration);
-	/** Output Quantizer learning process for current sequence */
-	void trainOutputQuantizer (int iteration);
-	/** Wait for input quantizer to finish learning */
-	void waitForInputQuantizer ();
-	/** Wait for output quantizer to finish learning */
-	void waitForOutputQuantizer ();
-	/** save input quantizer */
-	void saveInputQuantizer ();
-	/** save output quantizer */
-	void saveOutputQuantizer ();
-	/** set data set if it was used for pretraining of quantizers */
-	void setData (string seqFile);
 	/** Encapsulation of CrySSMEx components */
 	ActiveCrySSMEx cryssmex;
 	/** method for feature selection */
