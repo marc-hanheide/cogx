@@ -88,9 +88,6 @@ void ActiveGNGScenario::init (boost::program_options::variables_map vm) {
 
 	}
 	
-
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
-
 	// Initialize state quantizer
 	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
 		cryssmex.initializeStateQuantizer (learningData.pfVectorSize);
@@ -133,7 +130,7 @@ void ActiveGNGScenario::init (boost::program_options::variables_map vm) {
 	outputQuantizer->setStoppingCriterion (stability);
 	
 	if (vm.count("seqFile"))
-		setData (vm["seqFile"].as<string>());
+		cryssmex.setData (vm["seqFile"].as<string>(), data, learningData.featLimits, normalization, featureSelectionMethod);
 
 	if (vm.count("mdl"))
 	{
@@ -146,151 +143,6 @@ void ActiveGNGScenario::init (boost::program_options::variables_map vm) {
 	if (vm.count("outputout"))
 		outputQuantizer->redirectOutput (vm["outputout"].as<string>());
 
-}
-
-
-void ActiveGNGScenario::trainInputQuantizer (int iteration) {
-	CriticalSectionWrapper csw(cs);
-
-	currentInputSeq = LearningData::load_cryssmexinputsequence (learningData.currentChunkSeq, featureSelectionMethod, normalization, learningData.featLimits);
-	// hacky conversion
-	vector<neuralgas::Vector<double>* >* newInputSeq = new vector<neuralgas::Vector<double>* >;
-	for (unsigned int i=0; i<currentInputSeq.size(); i++)
-	{
-		neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(currentInputSeq[i]);
-		newInputSeq->push_back (new_item);
-	}
-	ActiveGNG_Quantizer* inputQuantizer = static_cast<ActiveGNG_Quantizer*>(cryssmex.getInputQuantizer());
-	inputQuantizer->addData (newInputSeq);
-
-	if (iteration == 0)
-	{
-		if (inputQuantizer->graphsize() == 0)
-			inputQuantizer->setRefVectors(2);
-		inputQuantizer->open();
-	}
-
-	inputQuantizer->setInsertionRate (newInputSeq->size());
-
-	for (unsigned int i=0; i < newInputSeq->size(); i++)
-		delete (*newInputSeq)[i];
-	newInputSeq->clear();
-	delete newInputSeq;
-
-	inputQuantizer->begin ();
-
-}
-
-void ActiveGNGScenario::trainOutputQuantizer (int iteration) {
-
-	CriticalSectionWrapper csw(cs);
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
-	{
-
-		currentOutputSeq = LearningData::load_cryssmexoutputsequence (learningData.currentChunkSeq, featureSelectionMethod, normalization, learningData.featLimits);
-		// hacky conversion
-		vector<neuralgas::Vector<double>* >* newOutputSeq = new vector<neuralgas::Vector<double>* >;
-		for (unsigned int i=0; i<currentOutputSeq.size(); i++)
-		{
-			neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(currentOutputSeq[i]);
-			newOutputSeq->push_back (new_item);
-		}
-		ActiveGNG_Quantizer* outputQuantizer = static_cast<ActiveGNG_Quantizer*>(cryssmex.getOutputQuantizer());
-		outputQuantizer->addData (newOutputSeq);
-
-		if (iteration == 0)
-		{
-			if (outputQuantizer->graphsize() == 0)
-				outputQuantizer->setRefVectors(2);
-			outputQuantizer->open();
-		}
-
-		outputQuantizer->setInsertionRate (newOutputSeq->size());
-
-		for (unsigned int i=0; i < newOutputSeq->size(); i++)
-			delete (*newOutputSeq)[i];
-		newOutputSeq->clear();
-		delete newOutputSeq;
-
-		outputQuantizer->begin ();
-	}
-
-}
-
-void ActiveGNGScenario::waitForInputQuantizer () {
-	static_cast<ActiveGNG_Quantizer*>(cryssmex.getInputQuantizer())->wait ();
-	static_cast<ActiveGNG_Quantizer*>(cryssmex.getInputQuantizer())->showGraph ();
-}
-
-void ActiveGNGScenario::waitForOutputQuantizer () {
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
-	{
-		static_cast<ActiveGNG_Quantizer*>(cryssmex.getOutputQuantizer())->wait ();
-		static_cast<ActiveGNG_Quantizer*>(cryssmex.getOutputQuantizer())->showGraph ();
-	}
-}
-
-void ActiveGNGScenario::saveInputQuantizer () {
-
-	cryssmex.getInputQuantizer()->close ();
-	save_quantizer (cryssmex.getInputQuantizer(), "cryssmex_inputq.qnt");
-
-}
-
-void ActiveGNGScenario::saveOutputQuantizer () {
-
-	cryssmex.getOutputQuantizer()->close ();
-	save_quantizer (cryssmex.getOutputQuantizer(), "cryssmex_outputq.qnt");
-
-}
-
-void ActiveGNGScenario::setData (string seqFile) {
-	if (!LearningData::read_dataset (seqFile, data, learningData.featLimits )) {
-		cerr << "error reading data" << endl;
-		exit(-1);
-	}
-
-	assert (data.size());
-	// This data copying is really hacky... 
-	std::vector<neuralgas::Vector<double>*>* inputData = new std::vector<neuralgas::Vector<double>*>;
-
-	//Get input feature vectors
-	for (unsigned int i=0; i<data.size(); i++)
-	{
-		vector<FeatureVector> inputSeq = LearningData::load_cryssmexinputsequence (data[i], featureSelectionMethod, normalization, learningData.featLimits);
-		for (unsigned int j=0; j<inputSeq.size(); j++)
-		{
-			neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(inputSeq[j]);
-			inputData->push_back (new_item);
-		}
-	}
-	static_cast<ActiveGNG_Quantizer*>(cryssmex.getInputQuantizer())->setData (inputData);
-	for(unsigned int i=0; i < inputData->size(); i++)
-		delete (*inputData)[i];
-	inputData->clear();
-	delete inputData;
-
-	//Get output feature vectors
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
-	{
-		std::vector<neuralgas::Vector<double>*>* outputData = new std::vector<neuralgas::Vector<double>*>;
-		for (unsigned int i=0; i<data.size(); i++)
-		{
-			vector<FeatureVector> outputSeq = LearningData::load_cryssmexoutputsequence (data[i], featureSelectionMethod, normalization, learningData.featLimits);
-			for (unsigned int j=0; j<outputSeq.size(); j++)
-			{
-				neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(outputSeq[j]);
-				outputData->push_back (new_item);
-			}
-		}
-		static_cast<ActiveGNG_Quantizer*>(cryssmex.getOutputQuantizer())->setData (outputData);
-		for (unsigned int i=0; i<outputData->size(); i++)
-			delete (*outputData)[i];
-		outputData->clear();
-		delete outputData;
-	}
-
-	
 }
 
 void ActiveGNGScenario::run (int argc, char* argv[]) {
@@ -339,11 +191,12 @@ void ActiveGNGScenario::run (int argc, char* argv[]) {
 		{
 			//learn from current sequence
 			CriticalSectionWrapper csw (cs);
-			trainInputQuantizer (iteration);
-			trainOutputQuantizer (iteration);
+			cryssmex.trainInputQuantizer (iteration, learningData.currentChunkSeq, learningData.featLimits, normalization, featureSelectionMethod);
+			cryssmex.trainOutputQuantizer (iteration, learningData.currentChunkSeq, learningData.featLimits, normalization, featureSelectionMethod);
 			// wait until learning is performed
-			waitForInputQuantizer ();
-			waitForOutputQuantizer ();
+			cryssmex.waitForInputQuantizer ();
+			if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+				cryssmex.waitForOutputQuantizer ();
 		}
 		arm->moveFingerToStartPose(context);
 		context.getMessageStream()->write(Message::LEVEL_INFO, "Done");
@@ -354,8 +207,8 @@ void ActiveGNGScenario::run (int argc, char* argv[]) {
 	}
 	//move the arm to its initial position
 	arm->moveArmToStartPose(context);
-	saveInputQuantizer ();
-	saveOutputQuantizer ();
+	cryssmex.saveInputQuantizer ();
+	cryssmex.saveOutputQuantizer ();
 	writeData ();
 }
 
