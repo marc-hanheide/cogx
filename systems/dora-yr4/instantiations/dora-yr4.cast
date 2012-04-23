@@ -254,7 +254,7 @@ VARDEFAULT filter_doors=
 
 ### AVS options
 # distance in metres at which the objects should be detectable
-VARDEFAULT avs_cone_depth=4
+VARDEFAULT avs_cone_depth=2
 
 # closest distance in metres from an obstacle (putting this comment on the line below caused a problem
 VARDEFAULT avs_sample_from_obs=0.4
@@ -262,7 +262,8 @@ VARDEFAULT avs_sample_from_obs=0.4
 VARDEFAULT avs_sift_objects="table cerealbox magazine"
 
 # Do generate random view cones for second and subsequent views
-VARDEFAULT avs_random_vc=--random-vc
+#--random-vc
+VARDEFAULT avs_random_vc=
 
 
 ### Kinect options
