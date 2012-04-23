@@ -27,7 +27,6 @@ endif(BUILD_SA_MANIPULATION_GAZEBO_TURNTABLE)
 
 option(BUILD_SA_MANIPULATION_ARMMANAGER "build arm manager component" NO)
 if(BUILD_SA_MANIPULATION_ARMMANAGER)
-  add_subdirectory (src/c++/autogen/execution)
   add_subdirectory (src/c++/components/ArmManager)
 endif(BUILD_SA_MANIPULATION_ARMMANAGER)
 
