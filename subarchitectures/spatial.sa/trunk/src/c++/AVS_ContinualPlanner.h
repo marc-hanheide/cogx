@@ -194,6 +194,7 @@ private:
 	bool m_runInSimulation;
 	VariableNameGenerator m_namegenerator;
 	int m_gridsize;
+	double m_sensingProb;
 	double m_samplesize;
 	double m_cellsize, m_sampleawayfromobs;
 	double m_minbloxel;
