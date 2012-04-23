@@ -1,0 +1,29 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --max-v 0.2 --max-w 0.4 --max-joyv 10 --max-joyw 10 --cure-config-file  instantiations/cureconfig/cogxp3.ccf #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host localhost #--log
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# With pan tilt
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+
+# Without pan tilt
+CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instantiations/kinect/camPose/campose-kinect.xml" --fixed_pan_tilt "0 -0.52324971"
+
+
+
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4 
+
+JAVA MG person.runner vision.components.PersonDetectorRunner --integrate-detections 10 --gui --continuous 500
+
+
+#CPP MG pcserver KinectPCServer --camids "2" --kconfig "/home/cogx/gar-installer/contrib/openNI/work/main.d/OpenNI-OpenNI-f846740/Data/SamplesConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --subsample-scale 4  --detect-persons
+
+
+JAVA MG visualobjectdisplay castutils.viewer.V11WMViewerComponent $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv" --subscribe "VisionData.VisualObject,VisionData.Person,execution.slice.person.PersonObservation" --generic-col --compact 

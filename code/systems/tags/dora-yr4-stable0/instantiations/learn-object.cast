@@ -1,0 +1,49 @@
+# Learn a new object, in real.
+
+
+VARDEFAULT siftroot_=./instantiations/sift-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+VARDEFAULT objname_=kelloggs
+
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/%(objname_).sift
+</multiline>
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/%(objname_).ply
+</multiline>
+VARDEFAULT or3d_labels=%(objname_)
+
+
+SETVAR playerhost= %(host:localhost)
+SETVAR ptz_server=ptz.server
+
+SETVAR vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+HOST localhost
+
+INCLUDE includes/spatial.sa/spatial-ptz.cast
+SUBARCHITECTURE visualization.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
+SUBARCHITECTURE vision.sa 
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devclass FIREWIRE --devnums "1" --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+CPP MG viewer VideoViewer --videohost localhost --videoname VideoServer --camid 0 $V11N_STANDALONE $V11N_STANDALONE_HOST --displayserver "display.srv"
+
+#CPP MG cameramount 	CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver %(ptz_server)
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI #--shake --tilt "-0.7854"
+
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2
+
+CPP MG Recognizer3D ObjectRecognizer3D --videoname VideoServer --display --camid "0" --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --initpose "[0.743 -0.005 0.872][0.00 0.00 0.0]" 
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "%(or3d_labels)" --mode RECOGNIZE
+
+

@@ -1,0 +1,59 @@
+
+### Do not use this file directly!
+### Use dora-yr4-bham-real.cast or dora-yr4-kth-real.cast
+
+SETVAR spatial_load_map=--load-map --save-map
+
+SETVAR hardware=real
+
+SETVAR feature_options=<multiline>
+    spatial			
+    binder			
+    vision			
+    peekabot		
+	man_ctrl		
+    avs			
+    execution		
+	conceptual		
+	default			
+	coma			
+    categorisation
+# use visaul categorisation
+    !categorisation-visual 
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
+    !categorisation-size
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
+    planning_sa		
+    debug			
+    dialogue		
+    motivation	
+    !motivation_external
+    !motivation_explanation
+    visualization
+</multiline>
+
+SETVAR hardware_options=<multiline>
+   kinect			
+   !kinect-video	
+   video 			
+   !prosilica 
+   !blobfinder	
+   ptz  			
+  </multiline>
+
+SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (kval ROBOT (category ROOM)); (forall (?p - place) (= (placestatus ?p) trueplace)); (and (forall (?p - place) (= (placestatus ?p) trueplace)) (exists (?p - person) (kval ROBOT (is-in ?p))))"
+
+### the prior for a room having a person in it 
+SETVAR room_has_person=0.9
+
+SETVAR avs_cone_depth=2.0
+
+INCLUDE dora-yr4.cast

@@ -1,0 +1,656 @@
+# CAST config file
+
+# The default HOSTNAMEs are defined in dora-hosts.incl and are all set to localhost.
+INCLUDE dora-hosts.incl
+
+###########################################################################
+#             DEFAULT CONFIGURATION                                       #
+###########################################################################
+# real, simulation, or none (e.g. just loading the map)
+VARDEFAULT hardware=simulation
+#SETVAR hardware=real
+#SETVAR hardware=none
+
+###########################################################################
+# the following define the features we want to have enabled in the system #
+# (comments in multiline blocks can only be at the start of the line)     #
+###########################################################################
+
+VARDEFAULT feature_options=<multiline>
+# enable the spatial core
+    spatial
+# enable all mediators in the cores enabled and the binding working memory
+    binder
+# enable the vision core, object recognition (depending on the hardware setting)
+    vision
+# use peekabot
+    peekabot
+# enable manual GUIs for navigation, PTZ, planning, etc.
+    man_ctrl
+# enable AVS view cone planning and relation manager
+    avs
+# enable execution framework to let the planner trigger actions
+    execution
+# enable conceptual framework
+    conceptual
+# enable default
+    default
+    coma
+# enable place categorisation
+    categorisation
+# use visual categorisation
+    !categorisation-visual
+# use size categorisation
+    !categorisation-size
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
+# get automated exploration until there are no more placeholders, that is much
+# fast than the full-fledged planner
+    !simple_placeholder_exploration
+# enable planning core
+    planning_sa
+# enable more debug GUIs and WM loggers
+    debug
+    dialogue
+# enable motivation base
+    motivation
+# enable motivation via external goal infusion
+    !motivation_external
+# enable motivation via explanation
+    !motivation_explanation
+# enable visualisation (see debug)
+    visualization
+</multiline>
+
+IFEQ(%(hardware),real)
+  VARDEFAULT hardware_options=<multiline>
+# use the kinect point cloud server for obstacle avoidance and person detection
+    kinect
+# use the kinect as video source for object recognition
+    kinect-video
+# use OpenCV cameras as video source for object recognition
+    !video
+# use the Prosilica camera
+    !prosilica
+# use blobfinder to simulate object and person detection
+    !blobfinder
+# use ptz (starts different components depending on %(hardware)
+    ptz
+  </multiline>
+ELSE 
+IFEQ(%(hardware),simulation)
+  VARDEFAULT hardware_options=<multiline>
+    !kinect
+    !kinect-video
+    !video
+    !prosilica
+    blobfinder
+    ptz
+  </multiline>
+ELSE # none
+  VARDEFAULT hardware_options=<multiline>
+    !kinect
+    !kinect-video
+    !video
+    !prosilica
+    !blobfinder
+    !ptz
+  </multiline>
+ENDIF
+ENDIF
+
+### the directory containing the calibration files to use
+VARDEFAULT vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+### the default camera ID
+VARDEFAULT prosilica_id=37105
+
+### default MTU value
+VARDEFAULT prosilica_packet_size=1500
+
+### the default goals passed on to the planner GUI
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+
+### the planning domain to use
+VARDEFAULT planning_domain=dora-interactive.pddl
+
+### the default knowledge to use
+VARDEFAULT default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-sim.xml"
+
+### the default probabilities
+VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
+
+### the Haar-like face detector file to use by the people detector
+VARDEFAULT face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
+
+### run coma mediators in a discretising way (only for experiments)
+VARDEFAULT discrete_room_cats=
+#--discrete
+
+### the prior for a room having a person in it
+VARDEFAULT room_has_person=0.2
+
+### all types to be logged from WMs if debug is enabled
+VARDEFAULT logged_types=<multiline>
+  execution.slice.Action,
+  SpatialData.ObjectSearchResult,
+  SpatialData.ViewPoint,
+  SpatialData.ProcessConeGroup,
+  comadata.ComaRoom,
+  SpatialData.RelationalViewPointGenerationCommand,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask,
+  SpatialData.NodeHypothesis,
+  eu.cogx.beliefs.slice.GroundedBelief,
+  SpatialData.MapLoadStatus,
+  SpatialProperties.PlaceProperty
+</multiline>
+
+### root for the sift-models
+VARDEFAULT siftroot_=./instantiations/sift-models
+### root for the ply-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+### siftfiles
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/frosties.sift
+   %(siftroot_)/AImagazineSpring1999.sift
+</multiline>
+### ply files
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/frosties.ply
+   %(plyroot_)/AImagazineSpring1999.ply
+</multiline>
+### object labels
+VARDEFAULT or3d_labels=cerealbox magazine
+VARDEFAULT fake_tables=<multiline>
+   --pos-table "3.6, 4.4, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "3.6, 2.0, 8.0, 8.0"
+</multiline>
+
+
+VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim2-shape.cfg
+
+###########################################################################
+###########################################################################
+###########################################################################
+###########################################################################
+
+HOST [Main]
+IFOPTALL(%(hardware_options), ptz)
+    IFEQ(%(hardware),real)
+        COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
+    ELSE
+        COMPONENT CPP ptz.server PlayerActServer --player-host %(host:PlayerHost) --ptz-device 0
+    ENDIF
+ENDIF
+IFEQ(%(hardware),none)
+  COMPONENT CPP laser.server LaserServerFake
+  COMPONENT CPP robot.server RobotbaseServerFake
+ELSE
+  COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost)
+  COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(host:PlayerHost)
+ENDIF
+IFOPTALL(%(hardware_options), blobfinder)
+    COMPONENT CPP blob.server PlayerBlobFinderServer --player-host %(host:PlayerHost)
+ENDIF
+
+
+# spatial ################################################################
+
+### CURE config file
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+
+####
+#### VISUALIZATION OPTIONS
+
+
+### Whether to show remotely detected doors in PB
+# (different from door nodes)
+VARDEFAULT display_doors=
+
+VARDEFAULT conceptual_categories=corridor,office,meetingroom
+
+####
+#### GUI OPTIONS
+
+### Show PTZ control gui
+VARDEFAULT ptz_test_gui=--testGUI
+
+### SPATIAL.SA parameters
+VARDEFAULT spatial_min_door_width=0.75  # Lower boundary on width of doorways
+VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
+VARDEFAULT min_obstacle_height=0.25
+VARDEFAULT explore_range=2.0
+VARDEFAULT spatial_load_map=--load-map --save-map
+VARDEFAULT spatial_node_obstacle_margin=1.5
+VARDEFAULT spatial_node_unknown_margin=0.5
+VARDEFAULT place_properties_save_file="place_properties.bin"
+
+# If the flag --show3Dobstacles is present then show the height map in Peekabot (in green)
+VARDEFAULT spatial_show_3d_obstacles=--show3Dobstacles
+
+# if the flag --no-load-robot-file is present then a simple cube with orientation marker will be drawn in peekabot
+# this was added to try to deal with the peekabot crashes on Jenkins
+VARDEFAULT no_load_robot_file=
+
+### Disable placeholder generation (no exploration)
+VARDEFAULT no_placeholders=
+### Perform visual exploration after exploratory movement (i.e. to placeholders)
+VARDEFAULT visual_exploration=--visual-exploration
+### Prohibit the creation of placeholders in certain zones
+# template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
+VARDEFAULT exclude_exploration=
+
+# If --follow-robot is supplied, PB will follow the robot with the camera
+VARDEFAULT follow_robot=--follow-robot
+
+VARDEFAULT show_connectivities=
+
+# If --filter-doors is supplied, create doors only close to door hypotheses
+VARDEFAULT filter_doors=
+
+### AVS options
+# distance in metres at which the objects should be detectable
+VARDEFAULT avs_cone_depth=2
+
+# closest distance in metres from an obstacle (putting this comment on the line below caused a problem
+VARDEFAULT avs_sample_from_obs=0.4
+
+VARDEFAULT avs_sift_objects="table cerealbox magazine"
+
+# Do generate random view cones for second and subsequent views
+#--random-vc
+VARDEFAULT avs_random_vc=
+
+
+### Kinect options
+
+# simulate_kinect - If this is set, only the wedge that the kinect can see in the navigation
+#                   position is treated as free space; if not, the whole laser scan is used
+
+IFOPTALL(%(hardware_options), kinect)
+    ### Connect to and use Kinect point cloud server
+    SETVAR spatial_pcserver=--pcserver pcserver
+    SETVAR vision_pcserver=--pcserver pcserver
+    SETVAR simulate_kinect=
+ELSE
+    ### Simulate Kinect point cloud for free space clearing
+    SETVAR spatial_pcserver=
+    SETVAR vision_pcserver=
+    SETVAR simulate_kinect=--simulate-kinect
+ENDIF
+
+
+
+### Controling PTU
+IFOPTALL(%(hardware_options), ptz)
+    VARDEFAULT spatial_ctrl_ptu=--ctrl-ptu
+ELSE
+    VARDEFAULT spatial_ctrl_ptu=
+ENDIF
+
+
+
+IFOPTALL(%(feature_options), spatial)
+
+    ### Basic components
+    SUBARCHITECTURE spatial.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
+    ### Whether to display spatial information in Peekabot
+    IFOPTALL(%(feature_options), peekabot)
+#EXPAND --no_load_robot_file=%(no_load_robot_file)
+        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" %(follow_robot) %(no_load_robot_file) %(show_connectivities)
+        SETVAR usePB=--usepeekabot
+    ELSE
+        SETVAR usePB=
+    ENDIF
+
+    ### Pan-tilt-zoom server: This is the CAST Pan-Tilt Server that listens for SetPTZCommand objects being written
+    ### to WM and then react upon that as described in https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/PanTilt
+    IFOPTALL(%(hardware_options), ptz)
+        IFOPTALL(%(feature_options), man_ctrl)
+            ### The --shake command is needed to "wake up" the PTU
+            JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer %(ptz_test_gui) --shake --tilt "-0.7854"
+        ELSE
+            JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer
+        ENDIF
+    ENDIF
+
+
+
+### Puts the robot's own belief on WM, along with it's location
+    CPP GD self.representer     SelfRepresenter
+
+### Translates and queues Spatial::NavCommands;
+# writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
+#EXPAND visual_exploration=%(visual_exploration)
+    CPP MG spatial.translation  SpatialTranslation %(visual_exploration) --generate-placeholders-on-place
+
+### Reads NavData::InternalNavCmd to control the robot
+#EXPAND spatial_show_3d_obstacles=%(spatial_show_3d_obstacles)
+# Maintains three-state grid map for exploration and obstacle avoidance
+    CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6
+
+    IFEQ(%(hardware),none)
+        CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) -m tmpmap.metric
+    ELSE
+        ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
+        # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
+        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
+    ENDIF
+
+### Creates NavData::FNode and AEdge as the robot traverses space
+    CPP GD navgraph.process     NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width) %(filter_doors)
+
+### Creates SpatialData::Place from FNode. Creates NodeHypothesis.
+# Maintains connection between Place on the one hand and either a FNode or a
+# NodeHypothesis on the other. Supplies ICE interfaces for translating between the
+# two.
+    CPP GD place.manager        PlaceManager --no-update-placeholders %(exclude_exploration) --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
+
+### Maintains local obstacle grid maps around individual nodes
+# Provides placeholder properties (length of associated frontier, size of
+# associated free space, nearness to a door hypothesis), exposed through
+# ICE interfaces
+    CPP GD map.manager          LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
+
+    IFOPTALL(%(feature_options), binder)
+        ### run the spatial mediators so that the spatial stuff shows up in the binder/planner
+        INCLUDE includes/spatial.sa/spatial-mediator.cast
+        ### this is a dedicated garbage collection that removes any SpatialProperties for which the referred Place has been removed. It
+        ### makes sure that there are no orphaned properties on WM left
+        JAVA MG SpatialPropertyRemover spatial.SpatialPropertyRemover
+    ENDIF
+
+
+    IFOPTALL(%(feature_options), execution)
+        ### the interface to translate and monitor execution actions into spatial actions
+        JAVA MG exe-spatial spatial.execution.SpatialActionInterface
+    ENDIF
+
+    IFOPTALL(%(feature_options), man_ctrl)
+        ### a GUI to allow for manual NavCommands for GOTOXY and GOTO_PLACE
+        JAVA MG spatial-manual spatial.manual.ManualNavControl
+    ENDIF
+
+ #EXPAND avs_cone_depth=%(avs_cone_depth)
+ #EXPAND avs_sample_from_obs=%(avs_sample_from_obs)
+ #EXPAND avs_sift_objects=%(avs_sift_objects)
+ #EXPAND avs_random_vc=%(avs_random_vc)
+    IFOPTALL(%(feature_options), avs)
+        CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --no-vision --ptzserver ptz.server --display-objects-in-pb
+        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz
+    ENDIF
+
+    IFOPTALL(%(feature_options), simple_placeholder_exploration)
+        CPP MG placeholderexplorer.navigation PlaceholderExplorer
+    ENDIF
+
+ENDIF
+
+
+# vision #################################################################
+IFOPTALL(%(feature_options), vision)
+    INCLUDE includes/vision.sa/vision-base.cast
+    IFOPTALL(%(feature_options), execution)
+        ### the interface to translate and monitor execution actions into vision actions
+        INCLUDE includes/vision.sa/vision-execution.cast
+    ENDIF
+    IFOPTALL(%(feature_options), binder)
+        ### run the vision mediators so that the vision stuff shows up in the binder/planner
+        INCLUDE includes/vision.sa/vision-mediators-dora.cast
+    ENDIF
+
+    ### read https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/CameraMount
+    CPP MG cameramount  CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(vision_calib_root)/ptu-pose-cam-left-sim.xml %(vision_calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(vision_calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(vision_calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(vision_calib_root)/ptu-pose-tilt-sim.xml --ptzserver ptz.server
+
+#EXPAND hardware_options=%(hardware_options)
+
+    IFOPTALL(%(hardware_options), video)
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
+        CPP MG VideoServer  PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
+        CPP MG viewer       VideoViewer --videohost localhost --videoname VideoServer --camid 0
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
+        CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images
+    ENDIF
+
+    IFOPTALL(%(hardware_options), prosilica)
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
+        CPP MG ProsilicaServer  ProsilicaServer --camids "3" --cam-id %(prosilica_id) --mtu %(prosilica_packet_size)
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
+        CPP MG viewer.prosilica         VideoViewer --videohost localhost --videoname ProsilicaServer --camid 3
+    ENDIF
+
+    IFOPTALL(%(hardware_options), kinect)
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/PointCloudServers
+        CPP MG pcserver     KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "%(vision_calib_root)/camcalib-kinect.xml" --create-viewcone
+
+        CPP MG recognizer.people PCPeopleDetector --displayserver "display.srv" %(vision_pcserver) --faceCascade %(face_detector) --numattempts 4
+    ENDIF
+
+    IFOPTALL(%(hardware_options), blobfinder)
+        JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
+        CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
+        JAVA MG recognizer.people vision.components.BlobbyPeopleDetector --label-person 255,255,0
+    ENDIF
+
+    IFOPTALL(%(hardware_options), kinect-video)
+        ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
+        CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images
+    ENDIF
+
+    IFOPTALL(%(feature_options), fake-table-detect)
+        JAVA MG FakeDetector vision.components.FakeDetector %(fake_tables)
+    ENDIF
+ENDIF
+
+
+# binder #################################################################
+IFOPTALL(%(feature_options), binder)
+    INCLUDE includes/binder.sa/binder-base.cast
+ENDIF
+
+
+# dialogue ###################################################################
+IFOPTALL(%(feature_options), dialogue)
+    INCLUDE includes/dialogue.sa/INCL/dora-live.cast
+    INCLUDE includes/dialogue.sa/dialogue-exe.cast
+    JAVA MG verbalisation verbalisation.DoraVerbalisation
+    JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain %(planning_domain) --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml"
+ENDIF
+
+# planning and motivation #####################################################
+IFOPTALL(%(feature_options), planning_sa)
+    VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
+    VARDEFAULT planning_domain=dora-interactive.pddl
+    VARDEFAULT planning_goal="(exists (?p - person) (kval (is-in ?p)))"
+    VARDEFAULT expl_rules=explanations-dora.pddl
+    VARDEFAULT cons_rules=consistency-dora.pddl
+    VARDEFAULT planning_config="config.dora.ini"
+    COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules)
+    COMPONENT CPP PlannerDTServer DTPCONTROL
+
+    INCLUDE includes/planner.sa/planner-base.cast
+    INCLUDE includes/planner.sa/viz-plan.cast
+    IFOPTALL(%(feature_options), man_ctrl)
+        JAVA MG manual.planning motivation.components.generators.SimulatedPersonGoalGenerator --goals %(planning_goal)
+    ENDIF
+
+    # exection ####################################################################
+    IFOPTALL(%(feature_options), man_ctrl)
+        JAVA MG manual.execution dora.execution.components.GraphicalExecutionManager --labels table,cerealbox
+    ENDIF
+    JAVA MG executor dora.execution.components.DoraExecutionMediator
+
+    JAVA MG exec-monitor dora.execution.components.ExecutionMonitor --displayserver "display.srv"
+
+    IFOPTALL(%(feature_options), motivation)
+        IFOPTALL(%(feature_options), motivation_external)
+            ### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
+            JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
+        ENDIF
+        IFOPTALL(%(feature_options), motivation_explanation)
+            ### creates goals from hypothesis about visualobjects
+            JAVA MG goal.hyp-generator motivation.components.generators.VisualObjectHypothesisGoalGenerator
+        ENDIF
+        ### this instantiates the scheduler (or manager) layer of the motivation architecture
+        ### here: it's a simple scheduler which will just plan for all the goals present at once and will NOT look for opportunities,
+        ### but rather execute a plan once it has been found and only after the completion of the plan will look for new goals
+        IFOPTALL(%(feature_options), motivation_deadlines)
+            ### creates goals from hypothesis about visualobjects
+            JAVA MG goal.explore-generator spatial.motivation.ExplorePlaceGenerator
+            JAVA MG goal.goto-generator spatial.motivation.GotoPlaceGenerator --placeID 1 --deadline 5
+            JAVA MG goal.scheduler motivation.components.managers.DeadlineScheduler --no-execution
+            JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter"
+        ELSE
+            ### this instantiates the filter layer of the motivation architecture, here: it's a PassAllFilter, that let's Dora adhere anything
+            JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "PassAllFilter"
+            JAVA MG goal.scheduler motivation.components.managers.SimpleScheduler
+        ENDIF
+    ENDIF
+ENDIF
+
+# coma ######################################################################
+IFOPTALL(%(feature_options), coma)
+    INCLUDE includes/coma.sa/coma-base.cast
+    INCLUDE includes/coma.sa/coma-crowl.cast
+    IFOPTALL(%(feature_options), binder)
+        JAVA MG pm-coma          eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats) --has-person %(room_has_person)
+        JAVA MG pm-coma-in-place eu.cogx.perceptmediator.components.RoomMembershipMediator
+    ENDIF
+ENDIF
+
+# Default.SA ################################################################
+IFOPTALL(%(feature_options), default)
+    INCLUDE includes/default.sa/default-base.cast
+    INCLUDE includes/coma.sa/coma-defaultsa.cast
+
+    CPP GD default.queryhandler DefaultQueryHandler
+    CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(conceptual_defaults)
+ENDIF
+
+# Conceptual.SA  ############################################################
+IFOPTALL(%(feature_options), conceptual)
+    INCLUDE includes/conceptual.sa/conceptual-base.cast
+    CPP GD conceptual.queryhandler ConceptualQueryHandler
+
+    CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
+    CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects magazine,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+    CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+
+    INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
+    INCLUDE includes/conceptual.sa/conceptual-test.cast
+ENDIF
+
+# Categorical.SA ############################################################
+IFOPTALL(%(feature_options), categorisation)
+    SUBARCHITECTURE categorical.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
+    IFOPTALL(%(feature_options), categorisation-sickscans)
+        CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config) --laser-server laser.server --robot-server robot.server --correct-scans --convert-scans-to-sick
+    ELSE
+        CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config) --laser-server laser.server --robot-server robot.server
+    ENDIF
+
+    IFOPTALL(%(feature_options), categorisation-visual)
+        CPP GD categorical.visualprocessor CategoricalVisualProcessor --config %(categorisation_config)
+        CPP GD categorical.appearanceintegrator CategoricalAppearanceIntegrator --config %(categorisation_config) --placemanager place.manager
+    ENDIF
+    CPP GD categorical.laserprocessor CategoricalLaserProcessor --config %(categorisation_config)
+    CPP GD categorical.shapeintegrator CategoricalShapeIntegrator --config %(categorisation_config) --placemanager place.manager
+
+    IFOPTALL(%(feature_options), categorisation-size)
+        CPP GD categorical.sizeintegrator CategoricalSizeIntegrator --config %(categorisation_config) --placemanager place.manager
+    ENDIF
+
+    IFOPTALL(%(feature_options), place-property-persistence)
+        ### Saves and Loads place properties as part of the map (size, shape, appearance, objects)
+        CPP MG place.property.saver PlacePropertySaver --save true --save-file-name %(place_properties_save_file) --save-continuously true --save-interval 10000 --load true --load-file-name %(place_properties_save_file) --wait-before-loading 0 --wait-between-loading 0 --wait-for-map-load-status true
+    ENDIF
+
+ENDIF
+
+
+IFOPTALL(%(feature_options), datasaving)
+    SETVAR categorisation_config = subarchitectures/categorical.sa/config/dora-yr4-saving.cfg
+
+    SUBARCHITECTURE categorical.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
+        # Add a fake video server if we want to grab only laser data
+        IFOPTALL(%(feature_options), datasaving-visual)
+        ELSE
+           CPP MG ProsilicaServer OpenCvImgSeqServer --camids "0" --files "instantiations/test-recognition3d/frosties-%d.jpg" --start 0 --end 0 --framerate_ms 200 --camconfigs "instantiations/test-recognition3d/dora.right.cal"
+        ENDIF
+
+        CPP GD categorical.dataprovider CategoricalDataProvider --config %(categorisation_config)  --laser-server laser.server --robot-server robot.server
+        CPP GD categorical.datasaver CategoricalDataSaver --config %(categorisation_config)
+
+ENDIF
+
+
+IFEQ(%(hardware),none)
+    IFOPTALL(%(feature_options), place-property-persistence)
+
+        SUBARCHITECTURE categorical.sa
+        JAVA WM cast.architecture.SubarchitectureWorkingMemory
+        CPP TM AlwaysPositiveTaskManager
+
+        ### Saves and Loads place properties as part of the map (size, shape, appearance, objects)
+        CPP MG place.property.saver PlacePropertySaver --save true --save-file-name %(place_properties_save_file) --save-continuously true --save-interval 10000 --load true --load-file-name %(place_properties_save_file) --wait-before-loading 0 --wait-between-loading 0 --wait-for-map-load-status true
+
+    ENDIF
+ENDIF
+
+
+
+# visualization ##########################################################
+IFOPTALL(%(feature_options), visualization)
+    SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
+    VARDEFAULT displaysrv_param_redirect=
+
+    SUBARCHITECTURE visualization.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+    CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
+
+
+    IFOPTALL(%(feature_options), planning debug)
+        JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
+        ### add some time measurements on planning in the logs (useful for debugging and experiments)
+        JAVA MG plannerstopwatch castutils.experimentation.PlannerStopWatch
+    ENDIF
+
+    IFOPTALL(%(feature_options), motivation debug)
+        ### adds a graphical representation of the motives and their status to the display server (SVG mode)
+        JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
+        JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+    ENDIF
+
+    IFOPTALL(%(feature_options), debug)
+        ### starts the WM editor that let's you see and modify WM content in a Java GUI. Set %(logged_types) to select the types
+        ### you are interested in
+        JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "%(logged_types)"
+        JAVA MG workingmemory.display castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe  "%(logged_types)" --generic-col --compact
+        ### starts the WM logger that logs all operation of subscribed types on INFO level in the logs.
+        ### Set %(logged_types) to select the types you are interested in
+        JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
+        ### log the distance travelled every 5 seconds
+        JAVA MG distancelogger castutils.experimentation.DistanceMonitor
+    ENDIF
+ENDIF
+

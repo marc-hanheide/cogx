@@ -1,0 +1,39 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+VARDEFAULT calib_root=instantiations/calibration/alu-robot-at-kth
+
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost --max-v 0.2 --max-w 0.4 --max-joyv 10 --max-joyw 10 --cure-config-file  instantiations/cureconfig/cogxp3.ccf #--rand-data
+COMPONENT CPP laser.server LaserServerPlayer --player-host localhost #--rand-data
+COMPONENT CPP ptz.server PlayerPTZServer --ptz-device 0 --player-host localhost #--log
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# With pan tilt
+JAVA MG ptzServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+CPP MG cameramount CameraMount --use_ptz --camids "0 2" --cam_poses_xml "%(calib_root)/ptu-pose-cam-left-sim.xml %(calib_root)/ptu-pose-kinect-sim.xml" --pt_base_xml %(calib_root)/ptu-pose-base-sim.xml --pt_pan_xml %(calib_root)/ptu-pose-pan-sim.xml --pt_tilt_xml %(calib_root)/ptu-pose-tilt-sim.xml --log --debug --ptzserver ptz.server
+#CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "instantiations/kinect/camPose/campose-kinect.xml" --fixed_pan_tilt "0 -0.52324971" --pt_base_xml "instantiations/kinect/camPose/ptu-pose-base-sim.xml" --pt_pan_xml "instantiations/kinect/camPose/ptu-pose-pan-sim.xml" --pt_tilt_xml "instantiations/kinect/camPose/ptu-pose-tilt-sim.xml" --cam_poses_xml "instantiations/kinect/camPose/ptu-pose-kinect-sim.xml" --ptzserver ptz.server
+# Without pan tilt
+#CPP MG cameramount CameraMount --log --camids "2" --fixed_cam_poses_xml "kinectpics/distorted/campose-right.xml" --fixed_pan_tilt "0 -0.52324971"
+
+
+#CPP MG cameramounttest CameraMountTest --pan 0.0 --tilt -0.52324971 # -30 degrees
+CPP MG pcserver KinectPCServer --camids "2" --kconfig "instantiations/kinect/KinectConfig.xml" --camconfigs "instantiations/kinect/camPose/camcalib-kinect.xml" --log --create-viewcone
+
+
+SUBARCHITECTURE spatial.sa
+CPP WM SubarchitectureWorkingMemory #--log #--debug
+CPP TM AlwaysPositiveTaskManager
+CPP MG spatial.translation SpatialTranslation  #--log #--debug
+CPP GD spatial.control SpatialControl -c instantiations/cureconfig/cogxp3.ccf  --log --pcserver pcserver --explore-range 2.0 --min-obstacle-height 0.25 #--debug --no-x-window 
+CPP GD slam.process SlamProcess -c instantiations/cureconfig/cogxp3.ccf --max-scan-rate 5 #-m tmpmap.metric #--no-file-output
+CPP GD navgraph.process NavGraphProcess -c instantiations/cureconfig/cogxp3.ccf -m tmpmap.graph #--filter-doors --no-file-output
+CPP GD place.manager PlaceManager --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2
+CPP GD display.process DisplayNavInPB --retry-interval 10 -c instantiations/cureconfig/cogxp3.ccf --no-sois --pcserver pcserver #--no-nodeclass #--no-areaclass #--log #--read-ptu
+CPP GD map.manager LocalMapManager -c instantiations/cureconfig/cogxp3.ccf  --no-tentative-window --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls #--load-nodemap #--debug 
+#CPP GD test.component TestComponent
+#CPP MG placeholderexplorer.navigation PlaceholderExplorer
+#JAVA MG manual.nav spatial.manual.ManualNavControl

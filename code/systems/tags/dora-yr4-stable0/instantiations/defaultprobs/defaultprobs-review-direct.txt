@@ -1,0 +1,70 @@
+COST_INROOM cerealbox 200
+COST_ON cerealbox table 30
+
+COST_INROOM book 200
+COST_ON book table 30
+
+COST_INROOM tea 200
+COST_ON tea table 30
+
+COST_INROOM coffee 200
+COST_ON coffee table 30
+
+COST_INROOM juice 200
+COST_ON juice table 30
+
+COST_INROOM pizza 200
+COST_ON pizza table 30
+
+COST_INROOM joystick 200
+COST_ON joystick table 30
+
+INROOM joystick corridor 0.0
+INROOM joystick kitchen 0.15371014
+INROOM joystick meetingroom 0.0
+INROOM joystick office 0.46623915
+
+INROOM pizza corridor 0.025235098
+INROOM pizza kitchen 0.48782033
+INROOM pizza meetingroom 0.04198787
+INROOM pizza office 0.26994422
+
+INROOM juice corridor 0.024542753
+INROOM juice kitchen 0.4768059
+INROOM juice meetingroom 0.018174686
+INROOM juice office 0.15421732
+
+INROOM coffee corridor 0.04747875
+INROOM coffee kitchen 0.57454646
+INROOM coffee meetingroom 0.09345645
+INROOM coffee office 0.25422904
+
+INROOM tea corridor 0.038969487
+INROOM tea kitchen 0.51447165
+INROOM tea meetingroom 0.0582405
+INROOM tea office 0.17742857
+
+INROOM table kitchen 0.55362135
+INROOM table meetingroom 0.10420009
+INROOM table office 0.51997805
+INROOM table corridor 0.0594
+
+INROOM cerealbox kitchen 0.581
+INROOM cerealbox meetingroom 0.06
+INROOM cerealbox office 0.02529
+INROOM cerealbox corridor 0.0519
+
+INROOM book kitchen 0.0366
+INROOM book meetingroom 0.0154
+INROOM book office 0.1285
+INROOM book corridor 0.0025
+
+ON cerealbox table kitchen 0.3
+ON cerealbox table meetingroom 0.03
+ON cerealbox table office 0.03
+ON cerealbox table corridor 0.03
+
+ON book table kitchen 0.03
+ON book table meetingroom 0.3
+ON book table office 0.1
+ON book table corridor 0.03

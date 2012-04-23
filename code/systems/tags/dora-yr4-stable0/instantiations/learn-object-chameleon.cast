@@ -1,0 +1,25 @@
+HOST localhost
+SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
+
+SETVAR obj_name=AImagazineSpring1999
+
+COMPONENT CPP laser.server LaserServerPlayer --log --player-host localhost #--rand-data
+COMPONENT CPP robot.server RobotbaseServerPlayer --log --player-host localhost #--rand-data
+
+COMPONENT CPP ptz.server PlayerPTZServer --log --player-host localhost 
+
+SUBARCHITECTURE vision.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG VideoServer 	PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
+       
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --coordinateframe --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 2
+
+CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --display --plyfiles "instantiations/ply-models/%(obj_name).ply" --siftfiles "instantiations/sift-models/%(obj_name).sift" --labels "%(obj_name)"
+
+# mode can be RECOGNIZE or LEARN
+CPP MG Recognizer3DDriver ObjectRecognizer3DDriver --labels "%(obj_name)" --mode LEARN
+
+JAVA MG ptzJavaServer eu.cogx.ptz.PanTiltZoomServer --testGUI
+

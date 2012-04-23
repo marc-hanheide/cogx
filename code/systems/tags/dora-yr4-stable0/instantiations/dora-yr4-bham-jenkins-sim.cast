@@ -1,0 +1,64 @@
+
+### the directory containing the calibration files to use
+SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
+
+# don't load the robot in peekabot
+SETVAR no_load_robot_file=--no-load-robot-file
+
+SETVAR show_connectivities=--show-connectivities
+
+SETVAR feature_options=<multiline>
+# enable the spatial core
+    spatial			
+# enable all mediators in the cores enabled and the binding working memory
+    binder			
+# enable the vision core, object recognition (depending on the hardware setting)
+    vision			
+# use peekabot
+    peekabot
+# disable manual GUIs for navigation, PTZ, planning, etc.		
+	!man_ctrl
+# enable AVS view cone planning and relation manager
+    avs			
+# enable execution framework to let the planner trigger actions
+    execution		
+# enable conceptual framework
+	conceptual
+# enable default		
+	default
+# enable coma
+	coma			
+# enable place categorisation
+    categorisation	
+# use visaul categorisation
+    !categorisation-visual 
+# use size categorisation
+    !categorisation-size
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
+# if enabled, categorical will save a data stream to file
+    !datasaving
+# if enabled, images will also be saved
+    !datasaving-visual
+# get automated exploration until there are no more placeholders, that is much
+# fast than the full-fledged planner
+    !simple_placeholder_exploration
+# enable planning core
+    planning_sa
+# disable more debug GUIs and WM loggers		
+    !debug		
+# enable dialogue	
+    dialogue		
+# enable motivation base
+    motivation		
+# enable motivation via external goal infusion
+    motivation_external	
+# enable motivation via explanation
+    motivation_explanation	
+# disable visualisation (see debug)
+    !visualization	
+</multiline>
+
+SETVAR avs_cone_depth=2.0
+
+INCLUDE dora-yr4.cast
