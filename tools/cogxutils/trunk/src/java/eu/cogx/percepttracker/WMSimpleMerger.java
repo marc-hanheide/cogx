@@ -348,7 +348,7 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 									+ " (" + viaWMA.id + ")");
 							
 							component.log("have filled with values:" + via.type + " ("
-									+ viaWMA.id + "), ready to write to WM now.");
+									+ viaWMA.id +  " sa: " + viaWMA.subarchitecture + "), ready to write to WM now.");
 							component.addToWorkingMemory(viaWMA, via);
 							component.log("written to WM, insert into map now:" + via.type
 									+ " (" + viaWMA.id + ")");
@@ -377,7 +377,7 @@ public class WMSimpleMerger<Src1 extends dBelief, Src2 extends dBelief, Dest ext
 							manageHistory(viaWMA, srcType2.getName(), via, to);
 							manageHistory(ev.address, srcType1.getName(), from, to);
 							component.log("have filled with values:" + to.type + " ("
-									+ toWMA.id + "), ready to write to WM now.");
+									+ toWMA.id +  " sa: " + toWMA.subarchitecture + "), ready to write to WM now.");
 							component.addToWorkingMemory(toWMA, to);
 							component.log("written to WM, insert into map now:" + to.type
 									+ " (" + toWMA.id + ")");

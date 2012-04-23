@@ -194,7 +194,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 	/** the registered TransferFunction for PerceptMonitor */
 	protected MatcherFunction<From, To> matcherFunction;
 
-	// private ExecutorService executor;
+	// private ExecutorService executor; " sa: " + toWMA.subarchitecture + 
 
 	/**
 	 * a map to keep track of all the relations between From and To beliefs
@@ -253,10 +253,10 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 		if (!matcherFunction.canHandle(from))
 			return;
 		final WorkingMemoryAddress matchingWMA = bestMatch(ev, from);
-		executor.submit(new Runnable() {
+//		executor.submit(new Runnable() {
 
-			@Override
-			public void run() {
+//			@Override
+//			public void run() {
 				try {
 					if (matchingWMA == null) {
 						log("found no match for observation "
@@ -275,7 +275,7 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 							matcherFunction.update(ev, from, to);
 							manageHistory(ev, from, to);
 							log("have filled with values:" + to.type + " ("
-									+ toWMA.id + "), ready to write to WM now.");
+									+ toWMA.id + " sa: " + toWMA.subarchitecture + "), ready to write to WM now.");
 							component.addToWorkingMemory(toWMA, to);
 							log("written to WM, insert into map now:" + to.type
 									+ " (" + toWMA.id + ")");
@@ -321,8 +321,8 @@ public class WMTracker<From extends dBelief, To extends dBelief> extends
 				} catch (CASTException e) {
 					getLogger().error("during update:", e);
 				}
-			}
-		});
+//			}
+//		});
 
 	}
 
