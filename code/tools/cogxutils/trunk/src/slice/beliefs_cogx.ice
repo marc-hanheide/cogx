@@ -65,7 +65,7 @@ class MergedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief
 };
 
 class VerifiedBelief extends de::dfki::lt::tr::beliefs::slice::sitbeliefs::dBelief {
-	cast::cdl::WorkingMemoryAddress resolvedAddr;
+//	cast::cdl::WorkingMemoryAddress resolvedAddr;
 };
 
 }; 
