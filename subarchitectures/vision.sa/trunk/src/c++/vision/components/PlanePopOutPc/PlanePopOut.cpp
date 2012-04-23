@@ -1087,10 +1087,11 @@ void PlanePopOut::GetPlaneAndSOIs()
 		m_planePopout->GetTableHull(tablehull);
 		m_planePopout->CollectTableInliers(pcl_cloud, pcl_domplane);
 		m_planePopout->GetPlanePoints(planepoints);
-		log("****** HAPPY HAPPY SOIs");
 	    }
 	    else
-		log("****** failed to calulcate SOIs");
+	    {
+		log("v4r plane popout failed to calulcate SOIs");
+	    }
 	}
 
 	if(ppo_ok)
