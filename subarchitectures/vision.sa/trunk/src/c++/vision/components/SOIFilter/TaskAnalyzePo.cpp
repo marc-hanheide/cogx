@@ -162,6 +162,7 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   // XXX: Problems may arise because VO points to PO and PO points to VO !!!
   // We write first the PO because usually PO is used through the reference in VO.
 
+  pobj->visualObject.clear(); // at most one object is associated with PO
   pobj->visualObject.push_back(createWmPointer<VisualObject>(voAddr));
   try {
     pSoiFilter->overwriteWorkingMemory(cmd.pcmd->protoObjectAddr, pobj);	
