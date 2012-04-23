@@ -1,0 +1,32 @@
+# Author
+# Alper Aydemir 
+
+include "../common/p3dx_with_urg.inc"
+include "../common/box.inc"
+include "../common/map.inc"
+
+
+# set the size of a pixel in meters
+resolution 0.05
+
+# configure the GUI window
+window
+( 
+  size [ 2000.000 1000.000 ] 
+  scale 40
+)
+
+
+# load an environment bitmap
+floorplan
+(
+  bitmap "../common/cas_floor7.jpg"
+  size [38.95 12.6 1.5]
+)
+
+
+p3dx_with_urg_and_blobfinder (
+	name "dora"
+    pose [-3.0 -2.4 0 0]
+	color "red"
+)

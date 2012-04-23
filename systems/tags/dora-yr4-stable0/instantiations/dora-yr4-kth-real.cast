@@ -1,0 +1,21 @@
+
+### the directory containing the calibration files to use
+SETVAR vision_calib_root=instantiations/calibration/dora-at-kth
+
+#### This config created 19 April 2012, shape only
+SETVAR categorisation_config=subarchitectures/categorical.sa/config/BHAM-real-shape.cfg
+
+### KTH values for prosilica
+SETVAR prosilica_id=37105
+SETVAR prosilica_packet_size=7000
+
+### SPATIAL.SA DOOR DETECTION SETTINGS
+SETVAR spatial_min_door_width=0.70
+SETVAR spatial_max_door_width=0.85
+
+### Prohibit the creation of placeholders in certain zones
+# template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
+#SETVAR exclude_exploration=--exclude-from-exploration "y < -3 or y > 3 or x > 5"
+#SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
+
+INCLUDE dora-yr4-real.cast

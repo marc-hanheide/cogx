@@ -1,0 +1,232 @@
+INROOM counter kitchen 0.55616346
+INROOM counter meetingroom 0.03347149
+INROOM counter office 0.27807754
+INROOM counter corridor 0.0587
+
+INROOM table kitchen 0.55362135
+INROOM table meetingroom 0.10420009
+INROOM table office 0.51997805
+INROOM table corridor 0.0594
+
+INROOM box kitchen 0.25457517
+INROOM box meetingroom 0.011069357
+INROOM box office 0.49933626
+INROOM box corridor 0
+
+INROOM bookcase kitchen 0.35544333
+INROOM bookcase meetingroom 0.015040721
+INROOM bookcase office 0.5326703
+INROOM bookcase corridor 0.0878
+
+INROOM cerealbox kitchen 0.0381
+INROOM cerealbox meetingroom 0.006
+INROOM cerealbox office 0.0529
+INROOM cerealbox corridor 0.0219
+
+INROOM paperclip kitchen 0.0726
+INROOM paperclip meetingroom 0.0
+INROOM paperclip office 0.2399
+INROOM paperclip corridor 0.0060
+
+INROOM stapler kitchen 0.1750
+INROOM stapler meetingroom 0.0110
+INROOM stapler office 0.4025
+INROOM stapler corridor 0.0035
+
+INROOM mug kitchen 0.0402
+INROOM mug meetingroom 0.0019
+INROOM mug office 0.1429
+INROOM mug corridor 0.0
+
+INROOM whiteboardmarker kitchen 0.0282
+INROOM whiteboardmarker meetingroom 0.7770
+INROOM whiteboardmarker office 0.0259
+INROOM whiteboardmarker corridor 0.0070
+
+INROOM book kitchen 0.0366
+INROOM book meetingroom 0.0154
+INROOM book office 0.1285
+INROOM book corridor 0.0025
+
+ON mug table kitchen 0.3
+ON mug table meetingroom 0.02
+ON mug table office 0.3
+ON mug table corridor 0.0
+
+ON mug counter kitchen 0.4
+ON mug counter meetingroom 0.01
+ON mug counter office 0.3
+ON mug counter corridor 0.0
+
+INOBJECT mug bookcase kitchen 0.03
+INOBJECT mug bookcase meetingroom 0.01
+INOBJECT mug bookcase office 0.1
+INOBJECT mug bookcase corridor 0.0
+
+INOBJECT mug box kitchen 0.03
+INOBJECT mug box meetingroom 0.01
+INOBJECT mug box office 0.03
+INOBJECT mug box corridor 0.0
+
+ON cerealbox table kitchen 0.3
+ON cerealbox table meetingroom 0.03
+ON cerealbox table office 0.03
+ON cerealbox table corridor 0.03
+
+ON cerealbox counter kitchen 0.2
+ON cerealbox counter meetingroom 0.03
+ON cerealbox counter office 0.03
+ON cerealbox counter corridor 0.03
+
+INOBJECT cerealbox bookcase kitchen 0.03
+INOBJECT cerealbox bookcase meetingroom 0.03
+INOBJECT cerealbox bookcase office 0.03
+INOBJECT cerealbox bookcase corridor 0.03
+
+INOBJECT cerealbox box kitchen 0.4
+INOBJECT cerealbox box meetingroom 0.03
+INOBJECT cerealbox box office 0.03
+INOBJECT cerealbox box corridor 0.03
+
+ON paperclip table kitchen 0.03
+ON paperclip table meetingroom 0.0
+ON paperclip table office 0.3
+ON paperclip table corridor 0.1
+
+ON paperclip counter kitchen 0.03
+ON paperclip counter meetingroom 0.0
+ON paperclip counter office 0.3
+ON paperclip counter corridor 0.2
+
+INOBJECT paperclip bookcase kitchen 0.03
+INOBJECT paperclip bookcase meetingroom 0.0
+INOBJECT paperclip bookcase office 0.1
+INOBJECT paperclip bookcase corridor 0.03
+
+INOBJECT paperclip box kitchen 0.03
+INOBJECT paperclip box meetingroom 0.0
+INOBJECT paperclip box office 0.1
+INOBJECT paperclip box corridor 0.03
+
+ON stapler table kitchen 0.03
+ON stapler table meetingroom 0.03
+ON stapler table office 0.6
+ON stapler table corridor 0.05
+
+ON stapler counter kitchen 0.03
+ON stapler counter meetingroom 0.03
+ON stapler counter office 0.3
+ON stapler counter corridor 0.15
+
+INOBJECT stapler bookcase kitchen 0.03
+INOBJECT stapler bookcase meetingroom 0.01
+INOBJECT stapler bookcase office 0.1
+INOBJECT stapler bookcase corridor 0.03
+
+INOBJECT stapler box kitchen 0.03
+INOBJECT stapler box meetingroom 0.01
+INOBJECT stapler box office 0.01
+INOBJECT stapler box corridor 0.03
+
+ON marker table kitchen 0.03
+ON marker table meetingroom 0.7
+ON marker table office 0.3
+ON marker table corridor 0.03
+
+ON marker counter kitchen 0.03
+ON marker counter meetingroom 0.7
+ON marker counter office 0.2
+ON marker counter corridor 0.03
+
+INOBJECT marker bookcase kitchen 0.03
+INOBJECT marker bookcase meetingroom 0.3
+INOBJECT marker bookcase office 0.03
+INOBJECT marker bookcase corridor 0.03
+
+INOBJECT marker box kitchen 0.03
+INOBJECT marker box meetingroom 0.3
+INOBJECT marker box office 0.1
+INOBJECT marker box corridor 0.1
+
+ON book table kitchen 0.03
+ON book table meetingroom 0.3
+ON book table office 0.1
+ON book table corridor 0.03
+
+ON book counter kitchen 0.03
+ON book counter meetingroom 0.1
+ON book counter office 0.1
+ON book counter corridor 0.1
+
+INOBJECT book bookcase kitchen 0.2
+INOBJECT book bookcase meetingroom 0.5
+INOBJECT book bookcase office 0.4
+INOBJECT book bookcase corridor 0.2
+
+INOBJECT book box kitchen 0.01
+INOBJECT book box meetingroom 0.3
+INOBJECT book box office 0.05
+INOBJECT book box corridor 0.1
+
+COST_INROOM mug 200
+
+COST_ON mug table 30
+COST_ON mug counter 30
+
+COST_INOBJECT mug box 50
+COST_INOBJECT mug bookcase 40
+
+
+COST_INROOM table 50
+COST_INROOM box 50
+COST_INROOM bookcase 50
+COST_INROOM counter 50
+
+
+COST_INROOM cerealbox 200
+
+COST_ON cerealbox table 30
+COST_ON cerealbox counter 30
+
+COST_INOBJECT cerealbox box 50
+COST_INOBJECT cerealbox bookcase 40
+
+
+COST_INROOM paperclip 200
+
+COST_ON paperclip table 30
+COST_ON paperclip counter 30
+
+COST_INOBJECT paperclip box 50
+COST_INOBJECT paperclip bookcase 40
+
+
+COST_INROOM stapler 200
+
+COST_ON stapler table 30
+COST_ON stapler counter 30
+
+COST_INOBJECT stapler box 50
+COST_INOBJECT stapler bookcase 40
+
+
+
+COST_INROOM marker 200
+
+COST_ON marker table 30
+COST_ON marker counter 30
+
+COST_INOBJECT marker box 50
+COST_INOBJECT marker bookcase 40
+
+
+
+COST_INROOM book 200
+
+COST_ON book table 30
+COST_ON book counter 30
+
+COST_INOBJECT book box 50
+COST_INOBJECT book bookcase 40
+
+

@@ -1,0 +1,51 @@
+SETVAR hardware=real
+
+SETVAR feature_options=<multiline>
+    spatial             # enable the spatial core
+    peekabot            # use peekabot
+    datasaving          # if enabled, categorical will save a data stream to file
+    datasaving-visual   # if enabled, images will also be saved
+    !conceptual
+    !default
+    !coma
+    !binder
+    vision
+    !man_ctrl           # manual GUIs for navigation, PTZ, planning, etc.
+    !avs
+    !execution
+    !categorisation     # enable place categorisation
+    !planning_sa        # enable planning core
+    !debug              # enable more debug GUIs and WM loggers
+    !dialogue
+    !motivation
+    !visualization
+</multiline>
+
+SETVAR hardware_options=<multiline>
+    prosilica
+    ptz
+    !kinect
+    !kinect-video
+    !video
+    !blobfinder
+</multiline>
+
+
+# Display door hypotheses
+# --display-doors
+SETVAR display_doors=--display-doors
+
+# Show heightmap in PB
+# --show3Dobstacles
+SETVAR spatial_show_3d_obstacles=
+
+# Create doors only close to door hypotheses
+# --filter-doors
+SETVAR filter_doors=--filter-doors
+
+# no placeholder generation
+# --no-placeholders
+SETVAR no_placeholders=--no-placeholders
+
+
+INCLUDE dora-yr4.cast
