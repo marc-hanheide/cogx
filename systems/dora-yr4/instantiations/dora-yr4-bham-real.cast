@@ -17,6 +17,9 @@ SETVAR spatial_max_door_width=0.85
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
 #SETVAR exclude_exploration=--exclude-from-exploration "y < -3 or y > 3 or x > 5"
 #SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
-SETVAR exclude_exploration=--exclude-from-exploration "x > 10.5"
+SETVAR exclude_exploration=--exclude-from-exploration "x > 10.5 y > 1.4 y < 4 or x < 2.7 y > 1.8 y < 2.7"
+
+#do not show the height map
+SETVAR spatial_show_3d_obstacles=
 
 INCLUDE dora-yr4-real.cast
