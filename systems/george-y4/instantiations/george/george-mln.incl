@@ -9,7 +9,7 @@ SETVAR evdFilter_params=<multiline>
    --type visualobject
    --keys color,shape
    --inst belief
-   --epstatus shared
+   # --epstatus shared
 </multiline>
 CPP MG evdFilter MLNBeliefEvdFilter %(evdFilter_params)
 
