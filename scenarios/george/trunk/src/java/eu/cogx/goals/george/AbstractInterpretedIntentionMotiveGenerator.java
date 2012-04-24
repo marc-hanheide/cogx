@@ -1,5 +1,7 @@
 package eu.cogx.goals.george;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,8 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
+import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.Robot;
@@ -294,6 +298,24 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			WorkingMemoryAddress _groundedBeliefAddr);
 
 	private TutorInitiativeLearningMotive tutorDrivenAscription(
+			InterpretedIntention _intention) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException, AlreadyExistsOnWMException,
+			ConsistencyException, PermissionException {
+
+		println("about to decode...");
+		FeatureAscriptionIntention decoded = FeatureAscriptionIntention.Transcoder.INSTANCE
+				.tryDecode(_intention);
+		println("decoded it.");
+
+		assertNotNull(decoded);
+		CASTEffect successEffect = decoded.getOnSuccessEffect();
+		successEffect.makeItSo(this);
+
+		return null;
+	}
+
+	@Deprecated
+	private TutorInitiativeLearningMotive tutorDrivenAscriptionY3(
 			InterpretedIntention _intention) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException, AlreadyExistsOnWMException,
 			ConsistencyException, PermissionException {
