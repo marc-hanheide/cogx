@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import VisionData.ProtoObject;
 import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
@@ -22,8 +23,12 @@ public class SharedBeliefTracker extends ManagedComponent {
 
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
+	
+	private static final String PROTOOBJECTTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
 
-	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
+
+	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE, PROTOOBJECTTYPE	);
 
 	WMTracker<GroundedBelief, SharedBelief> tracker = null;
 
