@@ -32,6 +32,8 @@ OPTDEFAULT feature_options=<multiline>
    vision-execution
    vision-mediators
    vision-monitors
+   visual-learner
+   object-recognizer
    spatial
    binder
    binder-mln
