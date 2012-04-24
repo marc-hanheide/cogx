@@ -12,7 +12,7 @@ include_directories(${COGX_ROOT}/subarchitectures/spatial.sa/src/c++/autogen)
 if(1)
    include_directories(${COGX_ROOT}/subarchitectures/manipulation.sa/src/c++/autogen)
    add_definitions(-DFEAT_TRACK_ARM)
-   set(ARM_TRACKING_LIBRARIES ManipulationExeData)
+   set(ARM_TRACKING_LIBRARIES ManipulationData)
 endif()
 
 ENABLE_COGX_VISUALIZATION(TRUE OPENCV)
