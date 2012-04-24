@@ -315,7 +315,12 @@ vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPo
   else
     pos =COLOR_SAMPLE_IMG_HEIGHT ;
 
-  cvSetImageROI(colorFiltering, cvRect( 0, pos, srcL->width, srcL->height) );
+  if (srcL->width < 1 || srcL->height < 1) {
+    error("%d: cvSetImageROI, Invalid Image Width or Height", __LINE__);
+  }
+  else {
+    cvSetImageROI(colorFiltering, cvRect( 0, pos, srcL->width, srcL->height) );
+  }
   cvCopyImage(srcL, colorFiltering);
   cvResetImageROI(colorFiltering);	
 
@@ -567,9 +572,14 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
       }
       cvCvtColor(src, dst, CV_HLS2RGB);
       cvResize(dst, dstL, CV_INTER_NN);
-      cvSetImageROI(colorFiltering, cvRect( 0, COLOR_SAMPLE_IMG_HEIGHT*2, dstL->width, dstL->height) );
-      cvCopyImage(dstL, colorFiltering);
-      cvResetImageROI(colorFiltering);	
+      if (dstL->width < 1 || dstL->height < 1) {
+        error("%d: cvSetImageROI, Invalid Image Width or Height", __LINE__);
+      }
+      else {
+        cvSetImageROI(colorFiltering, cvRect( 0, COLOR_SAMPLE_IMG_HEIGHT*2, dstL->width, dstL->height) );
+        cvCopyImage(dstL, colorFiltering);
+        cvResetImageROI(colorFiltering);	
+      }
 
       cvReleaseImage(&dst);
       cvReleaseImage(&dstL);
@@ -736,7 +746,12 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
       << " w=" << rect.width << " h=" << rect.height << "<br>";
 #endif
 
-    cvSetImageROI(iplImg, rect);
+    if (rect.width < 1 || rect.height < 1) {
+      error("%d: cvSetImageROI, Invalid Image Width or Height", __LINE__);
+    }
+    else {
+      cvSetImageROI(iplImg, rect);
+    }
 
     double patchScale = 1.0; // Strange: = 1.0 * cvGetSize(iplImg).width / cvGetSize(iplImg).height;
     //if ( patchScale > MAX_PATCH_SIZE) patchScale = sqrt(MAX_PATCH_SIZE / patchScale);
@@ -852,7 +867,12 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
         << " w=" << rectLarge.width << " h=" << rectLarge.height << "<br>";
 #endif
 
-      cvSetImageROI(iplFull, rectLarge);
+      if (rectLarge.width < 1 || rectLarge.height < 1) {
+        error("%d: cvSetImageROI, Invalid Image Width or Height", __LINE__);
+      }
+      else {
+        cvSetImageROI(iplFull, rectLarge);
+      }
       sz = cvGetSize(iplFull);
 #if 1 && defined(FEAT_VISUALIZATION)
       ss << "Full Patch Size w=" << sz.width << " h=" << sz.height << "<br>";
@@ -890,14 +910,19 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
 
       cv::Ptr<IplImage> tetraPatch = cvCreateImage(cvSize(size.width*2, size.height*2), IPL_DEPTH_8U, 3);
 
-      cvSetImageROI(tetraPatch, cvRect( 0, 0, size.width, size.height) );
-      cvCopyImage(iplPatch, tetraPatch);
-      cvSetImageROI(tetraPatch, cvRect( size.width, 0, size.width, size.height) );
-      cvCvtColor(smallIplMask, tetraPatch, CV_GRAY2RGB);
-      cvSetImageROI(tetraPatch, cvRect( 0, size.height, size.width, size.height) );
-      cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
-      cvSetImageROI(tetraPatch, cvRect( size.width, size.height, size.width, size.height) );
-      cvCvtColor(bgCostPatch, tetraPatch, CV_GRAY2RGB);
+      if (size.width < 1 || size.height < 1) {
+        error("%d: cvSetImageROI, Invalid Image Width or Height", __LINE__);
+      }
+      else {
+        cvSetImageROI(tetraPatch, cvRect( 0, 0, size.width, size.height) );
+        cvCopyImage(iplPatch, tetraPatch);
+        cvSetImageROI(tetraPatch, cvRect( size.width, 0, size.width, size.height) );
+        cvCvtColor(smallIplMask, tetraPatch, CV_GRAY2RGB);
+        cvSetImageROI(tetraPatch, cvRect( 0, size.height, size.width, size.height) );
+        cvCvtColor(costPatch, tetraPatch, CV_GRAY2RGB);
+        cvSetImageROI(tetraPatch, cvRect( size.width, size.height, size.width, size.height) );
+        cvCvtColor(bgCostPatch, tetraPatch, CV_GRAY2RGB);
+      }
 
       cvResetImageROI(tetraPatch);
 
