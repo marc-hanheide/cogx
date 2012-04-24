@@ -107,6 +107,8 @@ private:
 
   std::vector<CvScalar> colorFilter(std::vector<CvScalar> colors,
       std::vector<CvScalar> filterColors, int k, int tolerance);
+  void verifySetRoi(cv::Ptr<IplImage> imagePtr, CvRect rect, long line=-1);
+  void verifySetRoi(IplImage *img, CvRect rect, long line=-1);
 };
 
 } // namespace
