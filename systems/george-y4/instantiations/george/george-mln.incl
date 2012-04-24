@@ -6,10 +6,10 @@ JAVA MG MLNSerializer eu.cogx.mln.MLNSerializer
 SETVAR evdFilter_params=<multiline>
    --sa binder
    --evd-ids mlnEngine1
-   --type VisualObject
+   --type visualobject
    --keys color,shape
    --inst belief
-   --epstatus shared,attributed
+   --epstatus shared
 </multiline>
 CPP MG evdFilter MLNBeliefEvdFilter %(evdFilter_params)
 
