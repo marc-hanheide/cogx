@@ -1,17 +1,21 @@
 HOST localhost
 
+SUBARCHITECTURE visualization.sa
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG display.srv DisplayServer --redirect-to-host localhost
+
 SUBARCHITECTURE vision.sa 
 CPP WM SubarchitectureWorkingMemory
 CPP TM AlwaysPositiveTaskManager
 
 
-# live images from stereo rig with PointGreyUSB
-###############################################
-#CPP MG VideoServer PointGreyServerUSB --imgsize "640 480" --framerate_fps "7" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue # --setAutPropAdj "1 1 1 1 1 0"  --format7 "640 480 0 0 1 1600" 
-CPP MG VideoServer PointGreyServerUSB --imgsize "1280 960" --framerate_fps "3" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-right.xml"  --log --debug --swapredblue # --setAutPropAdj "1 1 1 1 1 0"  --format7 "640 480 0 0 1 1600" 
-
+# live images from single PointGrey chameleon
+# NOTE: calibration file is wrong
+#############################################
+CPP MG VideoServer PointGreyServerUSB --camids "0" --camconfigs "subarchitectures/vision.sa/config/2011-11-16-stable/camcalib-left.xml" --imgsize "1280 960" --framerate_fps "7" --swapredblue --log --debug
 
 # start cast-components
 #######################
-#CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0" --log
-CPP MG PointGreyViewer PointGreyViewer --videoname VideoServer --camids "0 1" --log
+CPP MG VideoViewer VideoViewer --videoname VideoServer --camids "0" --displayserver "display.srv" --log
+
