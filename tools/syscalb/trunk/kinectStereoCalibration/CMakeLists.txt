@@ -14,7 +14,7 @@ include_directories(${OPENCV_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "-Wall -Werror -g")
 
 set(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS date_time thread program_options serialization regex filesystem signals)
+FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS system date_time thread program_options serialization regex filesystem signals)
 set (BOOST_LIBRARIES ${Boost_LIBRARIES})
 
 add_executable(calib_stereo main.cpp)

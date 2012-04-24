@@ -19,19 +19,20 @@
  */
 
 #include <cstdio>
+#include <cctype>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
-#include <cctype>
+#include <stdexcept>
+#include <iomanip>
 #include <boost/regex.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <iomanip>
+#include <boost/concept_check.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include <boost/concept_check.hpp>
 
 
 #define CVPRINT( A ) print( A, #A"");
@@ -121,7 +122,11 @@ inline void print ( const cv::Mat &rMatix, const char *pInfo = NULL) {
 }
 
 void createFolder ( const std::string &rFolder ) {
-    boost::filesystem::path dir_path = boost::filesystem::complete ( boost::filesystem::path ( rFolder, boost::filesystem::native ) );
+    /* the following is deprecated aka STOPPED FUCKING WORKING with boost
+     * filesystem version 3
+    boost::filesystem::path dir_path = boost::filesystem::absolute( boost::filesystem::path ( rFolder, boost::filesystem::native ) );
+    */
+    boost::filesystem::path dir_path = boost::filesystem::absolute( boost::filesystem::path ( rFolder ) );
     if ( !boost::filesystem::exists ( dir_path ) || !boost::filesystem::is_directory ( dir_path ) ) {
         boost::filesystem::create_directory ( dir_path );
     }
@@ -142,7 +147,11 @@ bool compareCaseInsensitive( const std::string &left, const std::string &right )
 }
 
 bool existsFolder ( const std::string &rFolder ) {
+    /* the following is deprecated aka STOPPED FUCKING WORKING with boost
+     * filesystem version 3
     boost::filesystem::path dir_path = boost::filesystem::complete ( boost::filesystem::path ( rFolder, boost::filesystem::native ) );
+    */
+    boost::filesystem::path dir_path = boost::filesystem::absolute ( boost::filesystem::path ( rFolder ) );
     if ( boost::filesystem::exists ( dir_path ) && boost::filesystem::is_directory(dir_path)) {
         return true;
     } else {
@@ -167,7 +176,11 @@ std::vector < std::vector <cv::Point2f> > undistortPoints(const std::vector < st
 
 int getFilesInFolder ( const std::string &rFolder,  std::vector<std::string> &rFiles, const std::string regx) {
     using namespace boost::filesystem;
+    /* the following is deprecated aka STOPPED FUCKING WORKING with boost
+     * filesystem version 3
     path fullPath = system_complete ( path ( rFolder.c_str(), native ) );
+    */
+    path fullPath = system_complete ( path ( rFolder.c_str() ) );
 
     if ( !exists ( fullPath ) ) {
         std::cerr << "Error: the directory " << fullPath.string( ) << " does not exist.\n";
@@ -182,9 +195,9 @@ int getFilesInFolder ( const std::string &rFolder,  std::vector<std::string> &rF
     int nrOfFiles = 0;
     directory_iterator end;
     for ( directory_iterator it ( fullPath ); it != end; ++it ) {
-        std::string filename = it->filename();
+        std::string filename = it->path().filename().string();
         if ( !is_directory ( *it ) && boost::regex_match ( filename, expression ) ) {
-            std::string fileNameFull = it->string();
+            std::string fileNameFull = it->path().string();
             rFiles.push_back ( fileNameFull );
             //cout << it->filename() << endl;
             nrOfFiles++;
@@ -374,7 +387,7 @@ int main ( int argc, char *argv[] ) {
                 cameraMatrix1 = intr;
                 distCoeffs1 = dist;
             } else {
-                throw runtime_error("failed to read left calibration file");
+                throw std::runtime_error("failed to read left calibration file");
             }
             
             cv::FileStorage rightFile(nameIntrRight, cv::FileStorage::READ);
@@ -384,7 +397,7 @@ int main ( int argc, char *argv[] ) {
                 cameraMatrix2 = intr;
                 distCoeffs2 = dist;
             } else {
-                throw runtime_error("failed to read left calibration file");
+                throw std::runtime_error("failed to read left calibration file");
             }
         }
         CVPRINT(cameraMatrix1);
