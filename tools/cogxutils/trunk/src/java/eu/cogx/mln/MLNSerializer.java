@@ -3,9 +3,9 @@ package eu.cogx.mln;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map.Entry;
 
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -16,86 +16,90 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import castutils.castextensions.WMEventQueue;
-import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
-import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
-import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.slice.epstatus.AttributedEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus;
+import de.dfki.lt.tr.beliefs.slice.epstatus.SharedEpistemicStatus;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefException;
 import de.dfki.lt.tr.beliefs.util.ProbFormula;
-import eu.cogx.mln.slice.MLNState;
+import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.mln.slice.MLNFact;
-
-import static java.lang.System.out;
+import eu.cogx.mln.slice.MLNState;
 
 public class MLNSerializer extends ManagedComponent {
 
 	WMEventQueue queue = new WMEventQueue();
+	
 	Set<WorkingMemoryAddress> allBeliefWMA = Collections
 			.synchronizedSet(new HashSet<WorkingMemoryAddress>());
+	
 	private String stateId = null;
+	
 	private static final int TIME_TO_WAIT_TO_SETTLE = 100;
 
-	static void addToMLN(dBelief bel, Vector<MLNFact> facts) throws BeliefException {
+	static void addToMLN(dBelief bel, Vector<MLNFact> facts)
+			throws BeliefException {
+	
 		IndependentFormulaDistributionsBelief<dBelief> b = IndependentFormulaDistributionsBelief
-				.create(dBelief.class, bel);	
-		// Do not add anything if not visible	
+				.create(dBelief.class, bel);
+		// Do not add anything if not visible
 		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet()) {
-			if(d.getKey().equals("presence")) {
+			if (d.getKey().equals("presence")) {
 				for (ProbFormula v : d.getValue()) {
-					ElementaryFormula pf = (ElementaryFormula) v.getFormula().get();
-					if(pf.prop.equals("removed") && v.getProbability() > 0.8)
-						return;	
+					ElementaryFormula pf = (ElementaryFormula) v.getFormula()
+							.get();
+					if (pf.prop.equals("removed") && v.getProbability() > 0.8)
+						return;
 				}
 			}
 			// HACK: Filtering out phantom shared beliefs
-			if(d.getKey().equals("color")) {
-				if(d.getValue().size() == 0) 
-						return;	
+			if (d.getKey().equals("color")) {
+				if (d.getValue().size() == 0)
+					return;
 			}
 		}
-		
+
 		MLNFact bfact = new MLNFact();
 		MLNFact sfact = new MLNFact();
-		
-		bfact.prob = sfact.prob = 1;				
-		bfact.type = sfact.type = bel.type;	
+
+		bfact.prob = sfact.prob = 1;
+		bfact.type = sfact.type = bel.type;
 		bfact.id = sfact.id = bel.id;
 		bfact.key = "belief";
-		sfact.key = "epstatus";		
-		
-		if(bel.estatus instanceof PrivateEpistemicStatus) {
+		sfact.key = "epstatus";
+
+		if (bel.estatus instanceof PrivateEpistemicStatus) {
 			bfact.estatus = sfact.estatus = "private";
 			sfact.atom = sfact.key + "(" + sfact.id + ", " + "Private)";
-		} else if(bel.estatus instanceof AttributedEpistemicStatus) {
+		} else if (bel.estatus instanceof AttributedEpistemicStatus) {
 			bfact.estatus = sfact.estatus = "attributed";
 			sfact.atom = sfact.key + "(" + sfact.id + ", " + "Attributed)";
-		} else if(bel.estatus instanceof SharedEpistemicStatus) {			
+		} else if (bel.estatus instanceof SharedEpistemicStatus) {
 			bfact.estatus = sfact.estatus = "shared";
 			sfact.atom = sfact.key + "(" + sfact.id + ", " + "Shared)";
-		}	
+		}
 		bfact.atom = bfact.key + "(" + bfact.id + ")";
-		
-		facts.add(bfact);	
+
+		facts.add(bfact);
 		facts.add(sfact);
-		
-		
+
 		for (Entry<String, FormulaDistribution> d : b.getContent().entrySet()) {
 			for (ProbFormula v : d.getValue()) {
 				if (b.getType().equals("relation")) {
 					// not looking at relations yet
 				} else {
 					MLNFact fact = new MLNFact();
-					fact.prob = weight(v.getProbability());				
+					fact.prob = weight(v.getProbability());
 					fact.type = bel.type;
-//					fact.key = d.getKey();
+					// fact.key = d.getKey();
 					fact.id = b.getId();
 					fact.estatus = bfact.estatus;
-						
+
 					String formula = v.getFormula().toString();
 					if (v.getFormula().get() instanceof PointerFormula) {
 						PointerFormula pf = (PointerFormula) v.getFormula()
@@ -106,19 +110,23 @@ public class MLNSerializer extends ManagedComponent {
 								.getFormula().get();
 						formula = pf.prop;
 					}
-					if(bel.estatus instanceof PrivateEpistemicStatus) {
+					if (bel.estatus instanceof PrivateEpistemicStatus) {
 						fact.key = "private_" + d.getKey();
-						fact.atom = fact.key + "(" + b.getId() + ", P_" + formula + ")";
-					} else if(bel.estatus instanceof AttributedEpistemicStatus) {
+						fact.atom = fact.key + "(" + b.getId() + ", P_"
+								+ formula + ")";
+					} else if (bel.estatus instanceof AttributedEpistemicStatus) {
 						fact.key = "attributed_" + d.getKey();
-						fact.atom = fact.key + "(" + b.getId() + ", A_" + formula + ")";
-					} else if(bel.estatus instanceof SharedEpistemicStatus) {
+						fact.atom = fact.key + "(" + b.getId() + ", A_"
+								+ formula + ")";
+					} else if (bel.estatus instanceof SharedEpistemicStatus) {
 						fact.key = d.getKey();
-						fact.atom = fact.key + "(" + b.getId() + ", P_" + formula + ")";
+						fact.atom = fact.key + "(" + b.getId() + ", P_"
+								+ formula + ")";
 					}
-					
-//					fact.atom = "   " + d.getKey() + "(" + b.getType() + "_" + b.getId() + ", V_"
-//							+ formula + ")";		
+
+					// fact.atom = "   " + d.getKey() + "(" + b.getType() + "_"
+					// + b.getId() + ", V_"
+					// + formula + ")";
 					facts.add(fact);
 				}
 			}
@@ -131,18 +139,13 @@ public class MLNSerializer extends ManagedComponent {
 		return probability;
 	}
 
-	@Override
-	protected void configure(Map<String, String> config) {
-		// TODO Auto-generated method stub
-		super.configure(config);
-	}
 
 	@Override
 	protected void runComponent() {
-		
+
 		while (isRunning()) {
 			Vector<MLNFact> facts = new Vector<MLNFact>();
-			
+
 			try {
 				queue.take();
 				log("got an belief update event, will wait now for "
@@ -163,12 +166,13 @@ public class MLNSerializer extends ManagedComponent {
 						logException(e);
 					}
 				}
-				
+
 				MLNState mlnState = new MLNState(facts.toArray(new MLNFact[0]));
-				
+
 				for (int i = 0; i < facts.size(); i++)
-					log(mlnState.facts[i].type + " | " + mlnState.facts[i].id + " | " +
-						mlnState.facts[i].prob + " | " + mlnState.facts[i].atom);
+					log(mlnState.facts[i].type + " | " + mlnState.facts[i].id
+							+ " | " + mlnState.facts[i].prob + " | "
+							+ mlnState.facts[i].atom);
 				if (stateId == null) {
 					stateId = newDataID();
 					addToWorkingMemory(stateId, mlnState);
@@ -194,8 +198,8 @@ public class MLNSerializer extends ManagedComponent {
 
 	@Override
 	protected void start() {
-		addChangeFilter(ChangeFilterFactory
-				.createGlobalTypeFilter(dBelief.class),
+		addChangeFilter(
+				ChangeFilterFactory.createGlobalTypeFilter(MergedBelief.class),
 				new WorkingMemoryChangeReceiver() {
 
 					@Override
@@ -234,10 +238,11 @@ public class MLNSerializer extends ManagedComponent {
 
 		Vector<MLNFact> facts = new Vector<MLNFact>();
 		addToMLN(b.get(), facts);
-		
+
 		MLNState mlnState = new MLNState(facts.toArray(new MLNFact[0]));
-		
+
 		for (int i = 0; i < facts.size(); i++)
-			System.out.println(mlnState.facts[i].prob +" "+mlnState.facts[i].atom);
+			System.out.println(mlnState.facts[i].prob + " "
+					+ mlnState.facts[i].atom);
 	}
 }
