@@ -16,7 +16,6 @@ import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFun
 import eu.cogx.percepttracker.RRSimpleMergeFunction;
 import eu.cogx.percepttracker.WMSimpleMerger;
 /**
- * @author Nick Hawes, but copied from Marc Hanheide (marc@hanheide.de)
  * 
  */
 public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
