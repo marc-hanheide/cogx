@@ -172,7 +172,7 @@ IFOPTALL(%(feature_options), planning)
       JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
 
       # Y3: JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
-      JAVA MG private-tracker eu.cogx.belieftracker.george.PrivateVisualObjectTracker --write-to-sa binder --log true
+      JAVA MG assumed-tracker eu.cogx.belieftracker.george.AssumedBeliefTracker --write-to-sa binder --log true
       JAVA MG assumed-verified-merger eu.cogx.belieftracker.george.AssumedVerifiedVisualObjectMerger --write-to-sa binder  --log true
    ENDIF
 ENDIF
