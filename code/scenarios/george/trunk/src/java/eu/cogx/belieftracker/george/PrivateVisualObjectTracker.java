@@ -9,7 +9,7 @@ import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
 import castutils.slice.PrivateToAssumedBeliefMap;
-import eu.cogx.beliefs.slice.PrivateBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.AssumedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import eu.cogx.percepttracker.ThresholdedBeliefMatcher;
@@ -25,7 +25,7 @@ public class PrivateVisualObjectTracker extends ManagedComponent {
 
 	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
 
-	WMTracker<PrivateBelief, AssumedBelief> tracker = null;
+	WMTracker<GroundedBelief, AssumedBelief> tracker = null;
 
 	/**
 	 * configure the component --write-to-sa <subarchitectureID> the SA to write
@@ -39,10 +39,10 @@ public class PrivateVisualObjectTracker extends ManagedComponent {
 		try {
 			wm2wmMap = new PointerMap<PrivateToAssumedBeliefMap>(this,
 					PrivateToAssumedBeliefMap.class);
-			tracker = WMTracker.create(this, PrivateBelief.class,
+			tracker = WMTracker.create(this, GroundedBelief.class,
 					AssumedBelief.class,
-					new ThresholdedBeliefMatcher<PrivateBelief, AssumedBelief>(
-							types, wm2wmMap, PrivateBelief.class,
+					new ThresholdedBeliefMatcher<GroundedBelief, AssumedBelief>(
+							types, wm2wmMap, GroundedBelief.class,
 							AssumedBelief.class), wm2wmMap, config
 							.get("--write-to-sa"));
 			tracker.setShouldPropagateDeletion(true);
