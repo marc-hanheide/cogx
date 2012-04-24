@@ -213,10 +213,16 @@ bool MLNRefResolutionClient::makeHypothesis(string id, double prob, EpistemicRef
 	
 	PointerFormulaPtr f = new PointerFormula();
 	f->id = rand();
-	history::CASTBeliefHistory* hist = dynamic_cast<history::CASTBeliefHistory*>(b->hist.get());
-	f->pointer = hist->ancestors[0]->address;
-	f->type = "dBelief";
-	
+
+	//Y3 hack to return first ancestor
+	//history::CASTBeliefHistory* hist = dynamic_cast<history::CASTBeliefHistory*>(b->hist.get());
+	//f->pointer = hist->ancestors[0]->address;
+	//f->type = "dBelief";
+	//end Y3 hack
+
+	f->pointer = wma;
+	f->type = b->ice_staticId();
+
 	h = new EpistemicReferenceHypothesis();
 	h->epst = b->estatus;
 	h->referent = f;
