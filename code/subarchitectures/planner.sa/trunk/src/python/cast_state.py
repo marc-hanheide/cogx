@@ -31,8 +31,15 @@ class CASTState(object):
         self.consistency_cond = consistency_cond
         self.beliefs = []
         #print beliefs
+        try:
+            exclude_beliefnames = [n.strip() for n in global_vars.config.exclude_beliefs]
+        except AttributeError:
+            exclude_beliefnames = [c.__name__ for c in (eubm.PerceptBelief,)]
+
+        log.debug("ignoring beliefs of type: %s", ", ".join(exclude_beliefnames))
+            
         for b in beliefs:
-            if isinstance(b, eubm.PerceptBelief):
+            if type(b).__name__ in exclude_beliefnames:
                 continue
             if isinstance(b.estatus, bm.epstatus.PrivateEpistemicStatus) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus) \
                     or isinstance(b, eubm.AssertedBelief):
