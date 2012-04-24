@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import VisionData.ProtoObject;
 import VisionData.VisualObject;
 import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
@@ -18,12 +19,16 @@ import eu.cogx.percepttracker.WMTracker;
  * @author Nick Hawes, but copied from Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class PrivateVisualObjectTracker extends ManagedComponent {
+public class AssumedBeliefTracker extends ManagedComponent {
 
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
-	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
+	private static final String PROTOOBJECTTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
+
+
+	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE, PROTOOBJECTTYPE);
 
 	WMTracker<GroundedBelief, AssumedBelief> tracker = null;
 
