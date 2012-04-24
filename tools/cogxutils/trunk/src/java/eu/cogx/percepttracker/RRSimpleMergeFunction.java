@@ -464,7 +464,7 @@ private final Class<Via> m_viaCls;
 				beliefView.entrySet());
 		for (Entry<WorkingMemoryAddress, To> i : copy)
 			if(from.type == "VerifiedBelief") {
-				if (((VerifiedBelief) from).resolvedAddr == i.getKey())
+//				if (((VerifiedBelief) from).resolvedAddr == i.getKey())
 					return i.getKey();
 			}
 	
