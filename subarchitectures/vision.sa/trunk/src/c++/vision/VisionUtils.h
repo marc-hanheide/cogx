@@ -7,6 +7,7 @@
 #define VISION_UTILS_H
 
 #include <iostream>
+#include <algorithm>
 #include <VideoUtils.h>
 #include <Sphere3.h>
 #include <Box3.h>
@@ -29,13 +30,32 @@ inline cogx::Math::Rect2 projectSphere(const Video::CameraParameters &cam, const
   return rect;
 }
 
+inline cogx::Math::Rect2 cropRectToImage(const Video::CameraParameters &cam,
+    const cogx::Math::Rect2 &rect)
+{
+  cogx::Math::Rect2 crop;
+  double x1 = rect.pos.x - rect.width/2.;
+  double y1 = rect.pos.y - rect.height/2.;
+  double x2 = rect.pos.x + rect.width/2.;
+  double y2 = rect.pos.y + rect.height/2.;
+  x1 = std::min(std::max(x1, 0.), (double)(cam.width - 1));
+  y1 = std::min(std::max(y1, 0.), (double)(cam.height - 1));
+  x2 = std::min(std::max(x2, 0.), (double)(cam.width - 1));
+  y2 = std::min(std::max(y2, 0.), (double)(cam.height - 1));
+  crop.pos.x = (x1 + x2)/2.;
+  crop.pos.y = (y1 + y2)/2.;
+  crop.width = x2 - x1;
+  crop.height = y2 - y1;
+  return crop;
+}
+
 /**
  * Project a SOI in world co-ordinates to an image ROI.
  */
 inline VisionData::ROIPtr projectSOI(const Video::CameraParameters &cam, const VisionData::SOI &soi)
 {
    VisionData::ROIPtr roi = new VisionData::ROI;
-   roi->rect = projectSphere(cam, soi.boundingSphere);
+   roi->rect = cropRectToImage(cam, projectSphere(cam, soi.boundingSphere));
    roi->time = soi.time;
    return roi;
 }
