@@ -14,4 +14,4 @@ Find_package(Player)
 ENABLE_COGX_VISUALIZATION(TRUE)
 
 add_cast_component(ArmManager ArmManager.cpp)
-target_link_libraries(ArmManager ManipulationData ManipulationExeData VisionData ${PLAYER_LDFLAGS} ${VISUALIZATION_LIBRARIES} ${OPENCV_LDFLAGS})
+target_link_libraries(ArmManager ManipulationData VisionData ${PLAYER_LDFLAGS} ${VISUALIZATION_LIBRARIES} ${OPENCV_LDFLAGS})
