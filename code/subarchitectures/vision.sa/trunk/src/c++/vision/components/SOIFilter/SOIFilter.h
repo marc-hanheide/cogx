@@ -42,7 +42,7 @@
 #include <cast/architecture/ManagedComponent.hpp>
 
 #ifdef FEAT_TRACK_ARM
-#include <execution/manipulation_exe.hpp>
+#include <manipulation_exe.hpp>
 #endif
 
 #include <IceUtil/IceUtil.h>
