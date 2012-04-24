@@ -45,8 +45,8 @@ OPTDEFAULT feature_options=<multiline>
    vision
    !vision-execution
    !vision-mediators
-   # TODO !visual-learner
-   # TODO !object-recognizer
+   !visual-learner
+   !object-recognizer
    spatial
    !binder
    !binder-mln
@@ -224,5 +224,10 @@ IFOPTALL(%(feature_options), visualization)
       JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
 
       JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
+   ENDIF
+
+   # main_camera_id is defined by xxx/cameras-xxx.incl
+   IFNEQ(%(main_camera_id),)
+       CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
    ENDIF
 ENDIF
