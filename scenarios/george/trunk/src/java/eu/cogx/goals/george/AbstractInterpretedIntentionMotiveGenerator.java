@@ -26,10 +26,12 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.slice.Robot;
 
 public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.Object>
@@ -105,14 +107,14 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			}
 
 			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
-				if (beliefEntry.getData().type.equals("Robot")) {
+				if (beliefEntry.getData().type.equalsIgnoreCase("robot")) {
 					m_robotBeliefAddr = new WorkingMemoryAddress(
 							beliefEntry.getID(), "binder");
 					break;
 				}
 			}
 			if (m_robotBeliefAddr == null) {
-				getLogger().warn("unable to find belief '" + "Robot" + "'");
+				getLogger().warn("unable to find belief '" + "robot" + "'");
 			}
 		}
 		return m_robotBeliefAddr;
@@ -300,16 +302,48 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			UnknownSubarchitectureException, AlreadyExistsOnWMException,
 			ConsistencyException, PermissionException {
 
+		println("tutorDrivenAscription");
+		logIntention(_intention);
+
 		println("about to decode...");
 		FeatureAscriptionIntention decoded = FeatureAscriptionIntention.Transcoder.INSTANCE
 				.tryDecode(_intention);
 		println("decoded it.");
 
-		assert(decoded != null);
+		assert (decoded != null);
 		CASTEffect successEffect = decoded.getOnSuccessEffect();
 		successEffect.makeItSo(this);
 
-		return null;
+		String feature = decoded.getFeatureName();
+		String value = decoded.getFeatureValue();
+		boolean learn = decoded.isPositive();
+
+		TutorInitiativeLearningMotive motive = VisualObjectMotiveGenerator
+				.newMotive(TutorInitiativeLearningMotive.class, null,
+						getCASTTime());
+
+		String goalString = conjoinGoalStrings(new String[] {
+				getAdditionalGoals(),
+				getAscriptionGoalString(feature, learn,
+						groundedBeliefID(_intention)) });
+
+		// HACK used later for adding attribution to all possible referentss
+		motive.assertedFeature = feature;
+		motive.assertedValue = value;
+		motive.assertedLearn = learn;
+		// HACK END
+
+		motive.goal = new Goal(100f, -1, goalString, false);
+
+		log("goal is " + motive.goal.goalString + " with inf-gain "
+				+ motive.informationGain);
+
+		// HACK or NOT-HACK? add attributed feature into ground belief
+		addAttribution(_intention.addressContent.get("about"), feature, value,
+				learn);
+
+		return motive;
+
 	}
 
 	@Deprecated
@@ -398,39 +432,23 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		return _intention.addressContent.get("about").id;
 	}
 
-	public void addBooleanFeature(WorkingMemoryAddress _groundedBeliefAddr,
-			String _feature, boolean _value) throws DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
-
-		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-
-		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
-
-		pb.getContent().put(_feature, fd);
-		overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
-	}
-
-	public void addStringFeature(WorkingMemoryAddress _groundedBeliefAddr,
-			String _feature, String _value) throws DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
-
-		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-
-		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
-
-		pb.getContent().put(_feature, fd);
-		overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
-	}
+	// public void addStringFeature(WorkingMemoryAddress _groundedBeliefAddr,
+	// String _feature, String _value) throws DoesNotExistOnWMException,
+	// ConsistencyException, PermissionException,
+	// UnknownSubarchitectureException {
+	//
+	// GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+	// GroundedBelief.class);
+	// CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb =
+	// CASTIndependentFormulaDistributionsBelief
+	// .create(GroundedBelief.class, belief);
+	//
+	// FormulaDistribution fd = FormulaDistribution.create();
+	// fd.add(_value, 1);
+	//
+	// pb.getContent().put(_feature, fd);
+	// overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
+	// }
 
 	/**
 	 * Mark the referred-to belief as a potential referent in question
@@ -447,11 +465,20 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	protected void markReferent(WorkingMemoryAddress _groundedBeliefAddr)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
-		println("marking referent");
-		addBooleanFeature(
-				_groundedBeliefAddr,
-				AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
-				true);
+		log("marking referent");
+		// addBooleanFeature(
+		// _groundedBeliefAddr,
+		// AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
+		// true);
+
+		BeliefUtils
+				.addFeature(
+						this,
+						_groundedBeliefAddr,
+						dBelief.class,
+						AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
+						Boolean.TRUE);
+
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
 		sleepComponent(500);
@@ -466,7 +493,13 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		println("adding attribution: (" + attributionPredication + " " + _value
 				+ ")");
 
-		addStringFeature(_groundedBeliefAddr, attributionPredication, _value);
+		// addStringFeature(_groundedBeliefAddr, attributionPredication,
+		// _value);
+
+		// keep dBelief here to allow switches between different subclasses,
+		// e.g. Grounded or Merged
+		BeliefUtils.addFeature(this, _groundedBeliefAddr, dBelief.class,
+				attributionPredication, _value);
 
 		// planning won't work without this in place anyway, but it probably
 		// isn't required on faster machines
