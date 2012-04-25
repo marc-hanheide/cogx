@@ -292,7 +292,9 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 		try {
 			toBelief.setTime(toBelief.getStartTime(), fromBelief.getEndTime());
 			toBelief.getContent().putAll(fromBelief.getContent());
+logger.info("ready to propagate pointers.");
 			propagatePointers(toBelief, ignoreForPointerPropagationSet);
+logger.info("done propagating pointers.");
 		} catch (InterruptedException e) {
 			logger.error("interrupted", e);
 		}
