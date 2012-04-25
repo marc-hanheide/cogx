@@ -82,6 +82,7 @@ public class GotoPlaceGenerator extends
 			result.priority = MotivePriority.UNSURFACE;
 			result.referenceEntry = adr;
 			result.status = MotiveStatus.UNSURFACED;
+			result.lastVisisted=result.created;
 			fillValues(belief, result);
 			return result;
 		}
@@ -102,6 +103,7 @@ public class GotoPlaceGenerator extends
 		// if that is a place holder
 		if (isExplored) {
 			log("place is explored, so it is a goal to patrol");
+			motive.lastVisisted=getCASTTime();
 			fillValues(belief, motive);
 			return motive;
 		} else {
@@ -118,20 +120,20 @@ public class GotoPlaceGenerator extends
 	@Override
 	protected void start() {
 		super.start();
-		try {
-			SpatialFacade.get(this).registerPlaceChangedCallback(
-					new SpatialFacade.PlaceChangedHandler() {
-						@Override
-						public synchronized void update(Place p) {
-							log("explicitly scheduling all motives to be checked due to place change. new place is "
-									+ p.id);
-							recheckAllMotives();
-						}
-					});
-		} catch (CASTException e1) {
-			println("exception when registering placeChangedCallbacks");
-			e1.printStackTrace();
-		}
+//		try {
+//			SpatialFacade.get(this).registerPlaceChangedCallback(
+//					new SpatialFacade.PlaceChangedHandler() {
+//						@Override
+//						public synchronized void update(Place p) {
+//							log("explicitly scheduling all motives to be checked due to place change. new place is "
+//									+ p.id);
+//							recheckAllMotives();
+//						}
+//					});
+//		} catch (CASTException e1) {
+//			println("exception when registering placeChangedCallbacks");
+//			e1.printStackTrace();
+//		}
 
 	}
 
