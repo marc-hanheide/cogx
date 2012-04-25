@@ -64,7 +64,7 @@ IFOPTALL(%(hardware_options), ptz cameramount )
     VARDEFAULT cameramount_camera_ids=%(left_cam_id) %(right_cam_id)
     VARDEFAULT cameramount_camera_poses=<multiline>
         %(camera_config_dir)/ptu-pose-cam-left-sim.xml
-        %(camera_config_dir)/campose-right2left-tuw-11-05-11.xml
+        %(camera_config_dir)/campose-right2left-sim.xml
     </multiline>
     VARDEFAULT cameramount_ref_cam_id=%(left_cam_id)
 
