@@ -3,10 +3,11 @@
 COMA_CLASS_PATH=`ls -1 @PREFIX@/classes/coma.libs/*.jar | tr "\n" ":"`
 CASTUTILS_CLASS_PATH=`ls -1 @COGX_ROOT@/tools/castutils/lib/*.jar | tr "\n" ":"`
 DIALOGUE_CLASS_PATH=`ls -1 @COGX_ROOT@/subarchitectures/dialogue.sa/apis/dialogue/lib/*.jar | tr "\n" ":"`
+DIALOGUE_PEV_CLASS_PATH=`ls -1 @COGX_ROOT@/subarchitectures/dialogue.sa/jar/*.jar | tr "\n" ":"`
 MOTIVATION_CLASS_PATH=`ls -1 @COGX_ROOT@/subarchitectures/motivation.sa/lib/*.jar | tr "\n" ":"`
 
 echo "added coma external libs to CLASSPATH: $COMA_CLASS_PATH" >&2
-export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:$COMA_CLASS_PATH:$CASTUTILS_CLASS_PATH:$DIALOGUE_CLASS_PATH:/usr/share/java/log4j-1.2.jar:$CLASSPATH:$MOTIVATION_CLASS_PATH
+export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:$COMA_CLASS_PATH:$CASTUTILS_CLASS_PATH:$DIALOGUE_CLASS_PATH:$DIALOGUE_PEV_CLASS_PATH:/usr/share/java/log4j-1.2.jar:$CLASSPATH:$MOTIVATION_CLASS_PATH
 echo "CLASSPATH=$CLASSPATH"
 export LD_LIBRARY_PATH=@PREFIX@/lib:@PREFIX@/rocs/lib:@CURE_INSTALLROOT@/lib/cure:$LD_LIBRARY_PATH:@COGX_ROOT@/tools/v4r/lib
 export PYTHONPATH=@PREFIX@/planner:@PREFIX@/python:$PYTHONPATH:
