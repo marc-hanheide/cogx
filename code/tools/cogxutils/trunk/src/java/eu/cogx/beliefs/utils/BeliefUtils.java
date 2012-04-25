@@ -84,6 +84,21 @@ public class BeliefUtils {
 		_component.overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
+	
+	public static <BeliefClass extends dBelief> void addFeature(
+			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
+			Class<BeliefClass> _clz, String _feature, boolean _value)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
+
+		BeliefClass belief = _component.getMemoryEntry(_beliefAddress, _clz);
+		CASTIndependentFormulaDistributionsBelief<BeliefClass> pb = CASTIndependentFormulaDistributionsBelief
+				.create(_clz, belief);
+		addFeature(pb, _feature, _value);
+		_component.overwriteWorkingMemory(_beliefAddress, pb.get());
+	}
+
+	
 	public static <BeliefClass extends dBelief> void addFeature(
 			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
 			String _feature, String _value) {
@@ -100,4 +115,11 @@ public class BeliefUtils {
 		_belief.getContent().put(_feature, fd);
 	}
 
+	public static <BeliefClass extends dBelief> void addFeature(
+			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
+			String _feature, boolean _value) {
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+		_belief.getContent().put(_feature, fd);
+	}
 }
