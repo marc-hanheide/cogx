@@ -133,8 +133,8 @@ public class FormulaMatcher<From extends dBelief, To extends dBelief>
 	 */
 	@Override
 	public double match(WorkingMemoryChange wmc, From from, To to) {
-		logger.debug("match new belief for PerceptBelief " + from.id
-				+ " with existing GroundedBelief " + to.id);
+		logger.debug("match new belief for " + from.id
+				+ " with existing " + to.id);
 		if (beliefTypes != null)
 			if (!beliefTypes.contains(from.type))
 				return 0.0;
