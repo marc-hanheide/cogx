@@ -18,7 +18,7 @@
 #endif
 
 #include <manipulation.hpp>
-#include <execution/manipulation_exe.hpp>
+#include <manipulation_exe.hpp>
 #include <VisionData.hpp>
 #include <Pose3.h>
 
