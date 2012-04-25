@@ -1,6 +1,6 @@
 GARDIR ?= ../..
 GARNAME = libpcl
-GARVERSION = 1.4
+GARVERSION = 1.5
 CATEGORIES = bootstrap
 DISTFILES =
 MAINTAINER = mmarko
