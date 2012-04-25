@@ -127,7 +127,7 @@ void GraphCutSegmenter::verifySetRoi(IplImage* pImg, CvRect r, long line)
   if (r.width < 1 || r.height < 1) {
     error("%d: cvSetImageROI, Invalid Image Width or Height", line);
   }
-  if (r.x < 0 || r.y < 9) {
+  if (r.x < 0 || r.y < 0) {
     error("%d: cvSetImageROI, Invalid Image Top-Left Coordinate", line);
   }
   if (r.x + r.width > pImg->width || r.y + r.height > pImg->height) {
