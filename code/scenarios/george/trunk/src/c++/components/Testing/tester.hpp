@@ -9,12 +9,17 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 
+#include <map>
+#include <string>
+
 namespace testing
 {
 
 class CTester: public cast::ManagedComponent
 {
+  std::vector<CMachinePtr> mMachines;
 public:
+  void configure(const std::map<std::string,std::string> & _config);
   void runComponent();
 };
 

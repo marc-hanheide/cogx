@@ -44,7 +44,7 @@ public:
 
   TStateFunctionResult enter() {
     machine()->verifyCount("VisualObject", 0);
-    if (machine()->getCount("VisualObject") > 0) {
+    if (machine()->getCount("VisualObject") != 0) {
       return WaitChange;
     }
     return Continue;
@@ -168,9 +168,12 @@ public:
       machine()->switchToState(mEndTeach);
       return Continue;
     }
-    // TODO WaitResponse:  if (pMachine->robotSaidOk()) {
-    //    ++mStepsTaught;
-    //    pMachine->switchToState(mTeachStep);
+    // TODO WaitResponse:  if (machine()->robotSaidOk()) {
+    //    ++machine()->mStepsTaught;
+    //    machine()->switchToState(mTeachStep);
+    // else if (machine()->robotSaidNotOk()) {
+    //    machine()->switchToState(mTeachStep);
+    // }
     // else {
     //    return WaitChange;
     // }
@@ -190,17 +193,20 @@ public:
   {
   }
   TStateFunctionResult work() {
-    // TODO EndTeaching: pMachine->clearScene();
-    // TODO if (mStepsTaught > 0) pMachine->saveKnowledge();
+    machine()->clearScene();
+    if (machine()->mStepsTaught > 0) {
+      // TODO machine()->saveKnowledge();
+    }
     machine()->switchToState(mTableEmpty);
     return Continue;
   }
 };
 
-CMachinePtr CY4Learning::init()
+CMachinePtr CY4Learning::createMachine(cast::ManagedComponent* pOwner)
 {
   TStateFunction fnEnter, fnWork, fnExit;
-  CCastMachine* pMachine = new CCastMachine();
+  CCastMachine* pMachine = new CCastMachine(pOwner);
+  //pMachine->castInit(pOwner);
 
   auto pFinish = pMachine->addState("Finished");
   auto pStart = pMachine->addState(new CstStart(pMachine));

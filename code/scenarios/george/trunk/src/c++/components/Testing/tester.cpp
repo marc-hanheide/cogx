@@ -12,7 +12,7 @@ extern "C"
   }
 }
 
-#include "objectcount.hpp"
+#include "y4learning.hpp"
 
 namespace testing { 
 
@@ -42,22 +42,34 @@ ResultT min_value(const IterableT& list) {
   return r;
 }
 
+void CTester::configure(const std::map<std::string,std::string> & _config)
+{
+  std::map<std::string,std::string>::const_iterator it;
+  CCastComponentMixin* pCastMix;
+  CMachinePtr pMachine;
+
+  CY4Learning t;
+  pMachine = t.createMachine(this);
+  pCastMix = dynamic_cast<CCastComponentMixin*>(&*pMachine);
+  if (pCastMix) {
+    pCastMix->configure(_config);
+  }
+  mMachines.push_back(pMachine);
+}
+
 void CTester::runComponent()
 {
   std::vector<std::string> mEvents;
-  std::vector<CMachinePtr> machines;
-  CObjectCountTest t;
-  machines.push_back(t.init());
 
   while (isRunning()) {
     if (mEvents.size()) {
-      for (auto m : machines) {
+      for (auto m : mMachines) {
         m->checkEvents(mEvents);
       }
     }
 
     // See if you can put the thread to sleep (time-to-sleep)
-    long tts = min_value<long>(machines, [](CMachinePtr m) -> long {
+    long tts = min_value<long>(mMachines, [](CMachinePtr m) -> long {
         if (m->isWaitingForEvent()) {
           return 1;
         }
@@ -69,12 +81,12 @@ void CTester::runComponent()
     if (tts > 0) {
       sleepComponent(tts);
       if (mEvents.size()) {
-        for (auto m : machines) {
+        for (auto m : mMachines) {
           m->checkEvents(mEvents);
         }
       }
     }
-    for (auto m : machines) {
+    for (auto m : mMachines) {
       m->runOneStep();
     }
   }
