@@ -1,4 +1,4 @@
 JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg #--log true
 JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --chaingraph-name default.chaingraphinferencer --log true # --debug true #--marshaller-name proxy.marshaller -bsa binder --log false
 ###JAVA MG comagui  coma.components.ComaInputWindow --reasoner-name comareasoner --log true #--hfcserver-name hfcserver --log true #--debug true
-JAVA MG comagre coma.components.ComaReferringExpressionGeneration --reasoner-name comareasoner --log true #--debug true
+###JAVA MG comagre coma.components.ComaReferringExpressionGeneration --reasoner-name comareasoner --log true #--debug true
