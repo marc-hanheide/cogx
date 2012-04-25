@@ -75,8 +75,8 @@ void AVS_ContinualPlanner::createFOV(peekabot::GroupProxy &proxy, peekabot::Poly
 
   const double coneLen = viewpoint.length;
   // The "half angle" of the field of view
-  const double fovHoriz = fovHorizAngle*M_PI/180.0/2;
-  const double fovVerti = fovVertiAngle*M_PI/180.0/2;
+  const double fovHoriz = fovHorizAngle/2;
+  const double fovVerti = fovVertiAngle/2;
   
   proxyConeParts[0].add(proxy, "top");
   peekabot::VertexSet vs1;
@@ -165,9 +165,6 @@ void AVS_ContinualPlanner::connectPeekabot()
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
     if(m_usePeekabot){
-      m_FovH = 45.0;
-      m_FovV = 35.0;
-
       m_ProxyViewPoints.add(m_PeekabotClient, "planned_viewpoints",peekabot::REPLACE_ON_CONFLICT);
     }
 
@@ -914,46 +911,49 @@ void AVS_ContinualPlanner::generateViewCones(
 
 		CureObstMap* lgm = m_templateRoomGridMaps[newVPCommand->roomId];
 		for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
-			for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
-				int bloxelX = x + lgm->getSize();
-				int bloxelY = y + lgm->getSize();
+		  for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
+		    int bloxelX = x + lgm->getSize();
+		    int bloxelY = y + lgm->getSize();
 
-				if ((*lgm)(x, y) == '1') {
-					// For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
-					// (Only neighbors which are not unknown in the Cure map. Unknown 3D
-					// space is still assigned, though)
-	        double dx, dy;
-	        (*lgm).index2WorldCoords(x, y, dx, dy);
-	        int nx, ny;
-	        if (lgmKH.worldCoords2Index(dx, dy, nx, ny)==0) {
-            if (lgmKH(nx, ny) != FLT_MAX){
-              m_objectBloxelMaps[id]->boxSubColumnModifier(
-										  bloxelX, bloxelY, lgmKH(nx, ny) + 0.025,0.05, initfunctor2);
-            }
-            for (int i = -1; i <= 1; i++) {
-						  for (int j = -1; j <= 1; j++) {
-							  if ((*lgm)(x + i, y + j) == '0'
-									  && (bloxelX + i
-											  <= m_objectBloxelMaps[id]->getMapSize().first
-											  && bloxelX + i > 0)
-									  && (bloxelY + i
-											  <= m_objectBloxelMaps[id]->getMapSize().second
-											  && bloxelY + i > 0)) {
-  //								/log("modifying bloxelmap pdf");
-                  if (lgmKH(nx, ny) != FLT_MAX){
-								    m_objectBloxelMaps[id]->boxSubColumnModifier(
-										    bloxelX + i, bloxelY + j, lgmKH(nx, ny) / 2 + 0.025, lgmKH(nx, ny) + 0.05, initfunctor);
-                  }
-                  else {
-								    m_objectBloxelMaps[id]->boxSubColumnModifier(
-										    bloxelX + i, bloxelY + j, .5, 1.0, initfunctor);
-                  }
-							  }
-						  }
-					  }
-          }
-				}
+		    if ((*lgm)(x, y) == '1') {
+		      // For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
+		      // (Only neighbors which are not unknown in the Cure map. Unknown 3D
+		      // space is still assigned, though)
+		      double dx, dy;
+		      (*lgm).index2WorldCoords(x, y, dx, dy);
+		      int nx, ny;
+		      if (lgmKH.worldCoords2Index(dx, dy, nx, ny)==0) {
+			if (lgmKH(nx, ny) != FLT_MAX){
+			  m_objectBloxelMaps[id]->boxSubColumnModifier(
+			      bloxelX, bloxelY, lgmKH(nx, ny) + 0.025,0.05, initfunctor2);
 			}
+
+			if (m_bUseWallPrior) {
+			  for (int i = -1; i <= 1; i++) {
+			    for (int j = -1; j <= 1; j++) {
+			      if ((*lgm)(x + i, y + j) == '0'
+				  && (bloxelX + i
+				    <= m_objectBloxelMaps[id]->getMapSize().first
+				    && bloxelX + i > 0)
+				  && (bloxelY + i
+				    <= m_objectBloxelMaps[id]->getMapSize().second
+				    && bloxelY + i > 0)) {
+				//								/log("modifying bloxelmap pdf");
+				if (lgmKH(nx, ny) != FLT_MAX){
+				  m_objectBloxelMaps[id]->boxSubColumnModifier(
+				      bloxelX + i, bloxelY + j, lgmKH(nx, ny) / 2 + 0.025, lgmKH(nx, ny) + 0.05, initfunctor);
+				}
+				else {
+				  m_objectBloxelMaps[id]->boxSubColumnModifier(
+				      bloxelX + i, bloxelY + j, .5, 1.0, initfunctor);
+				}
+			      }
+			    }
+			  }
+			}
+		      }
+		    }
+		  }
 		}
 
 		double massAfterInit = initfunctor.getTotal();
@@ -1799,12 +1799,14 @@ void AVS_ContinualPlanner::configure(
 
 	m_horizangle = M_PI / 4;
 	it = _config.find("--cam-horizangle");
+	// NOTE: expecting angle in degrees in cast file!
 	if (it != _config.end()) {
 		m_horizangle = (atof(it->second.c_str())) * M_PI / 180.0;
 		log("Camera FoV horizontal angle set to: %f", m_horizangle);
 	}
 
 	m_vertangle = M_PI / 4;
+	// NOTE: expecting angle in degrees in cast file!
 	it = _config.find("--cam-vertangle");
 	if (it != _config.end()) {
 		m_vertangle = (atof(it->second.c_str())) * M_PI / 180.0;
@@ -1816,6 +1818,12 @@ void AVS_ContinualPlanner::configure(
 	if (it != _config.end()) {
 		m_conedepth = (atof(it->second.c_str()));
 		log("Camera view cone depth set to: %f", m_conedepth);
+	}
+
+	m_bUseWallPrior = false;
+	it = _config.find("--use-wall-prior");
+	if (it != _config.end()) {
+	  	m_bUseWallPrior = true;
 	}
 
 	m_panstep = 30.0;
@@ -2285,7 +2293,7 @@ void AVS_ContinualPlanner::PostViewCone(const ViewPointGenerator::SensingAction 
 
   m_ProxyViewPointsList[id].add(m_ProxyViewPoints, path, peekabot::REPLACE_ON_CONFLICT);
   m_ProxyViewPointsPolygonsList[id] = new peekabot::PolygonProxy[5];
-  createFOV(m_ProxyViewPointsList[id], m_ProxyViewPointsPolygonsList[id], m_FovH, m_FovV, color, 0.15, viewpoint);
+  createFOV(m_ProxyViewPointsList[id], m_ProxyViewPointsPolygonsList[id], m_horizangle, m_vertangle, color, 0.15, viewpoint);
 }
 void
 AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map, spatial::Object *object)
