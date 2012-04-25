@@ -358,15 +358,19 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 			if (PlannerFacade.get(this).isGoalAchieved(motive.goal.goalString)) {
 				WorkingMemoryAddress wma = m.getKey();
 
-				log("flag achieved goal " + motive.goal.goalString);
-				motive.status = MotiveStatus.COMPLETED;
 				try {
+					log("flag achieved goal " + motive.goal.goalString);
 					lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
+					motive = getMemoryEntry(wma, Motive.class);
+					motive.status = MotiveStatus.COMPLETED;
 					overwriteWorkingMemory(m.getKey(), motive);
-					// motives.remove(m.getKey());
+				} catch (CASTException e) {
+					getLogger().warn("CASTException when flagging goal as achieved: "+e.message);
 				} finally {
-					unlockEntry(wma);
+					if (this.holdsLock(wma.id, wma.subarchitecture))
+						unlockEntry(wma);
 				}
+
 			}
 		}
 	}
