@@ -26,7 +26,7 @@ public class InterpretedIntentionMotiveGenerator extends
 			WorkingMemoryAddress _addr, InterpretedIntention _intention) {
 		TutorInitiativeMotive motive = null;
 		try {
-			motive = generateMotiveFromIntention(_addr, _intention);
+			motive = generateMotiveFromIntention(_addr, _intention, false);
 			// mark referents of chosen intention
 			if (motive != null) {
 				markReferent(_intention.addressContent.get("about"));
@@ -81,8 +81,5 @@ public class InterpretedIntentionMotiveGenerator extends
 		}
 
 	}
-
-
-
 
 }

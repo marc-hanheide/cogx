@@ -99,13 +99,13 @@ public class PossibleInterpretationsMotiveGenerator
 
 		// TODO Make this smarter next year...
 		TutorInitiativeMotive motive = generateMotiveFromIntention(_piiAddr,
-				mostConfidentIntention);
+				mostConfidentIntention, true);
 
 		// mark referents from /all/ interpretations.
 
 		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 			InterpretedIntention iint = _pii.intentions.get(addr);
-			markReferent(iint.addressContent.get("about"));
+			markReferent(aboutBeliefAddress(iint));
 		}
 
 		// if this is an attributed belief task, mark attributions in all
@@ -116,7 +116,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 			for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 				InterpretedIntention iint = _pii.intentions.get(addr);
-				addAttribution(iint.addressContent.get("about"),
+				addAttribution(aboutBeliefAddress(iint),
 						tilm.assertedFeature, tilm.assertedValue, tilm.assertedLearn);
 			}
 		}
@@ -207,7 +207,7 @@ public class PossibleInterpretationsMotiveGenerator
 		// clean up all beliefs involved in action
 		for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 			InterpretedIntention iint = _pii.intentions.get(addr);
-			cleanBelief(iint.addressContent.get("about"));
+			cleanBelief(aboutBeliefAddress(iint));
 		}
 
 		updateFeatureExclusion(false, false);
