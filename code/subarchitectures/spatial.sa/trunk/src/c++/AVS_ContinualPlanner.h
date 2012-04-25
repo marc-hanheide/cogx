@@ -149,8 +149,6 @@ private:
     peekabot::GroupProxy* m_proxyCone;
     peekabot::PolygonProxy* m_proxyConePolygons;
     peekabot::GroupProxy m_ProxyViewPoints;
-	  double m_FovH; // horisontal fov in degs
-	  double m_FovV; // vertical fov in degs
     peekabot::GroupProxy m_ProxyForbiddenMap;
 
     void connectPeekabot();
@@ -192,6 +190,7 @@ private:
   bool m_usePTZ;
 	bool m_ignoreTilt;
 	bool m_runInSimulation;
+	bool m_bUseWallPrior;
 	VariableNameGenerator m_namegenerator;
 	int m_gridsize;
 	double m_sensingProb;
