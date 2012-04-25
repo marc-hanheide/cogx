@@ -141,9 +141,9 @@ public class GotoPlaceGenerator extends
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
 			PatrolMotive motive) {
 		motive.updated = getCASTTime();
-
-		motive.goal = new Goal(computeImportance(motive), deadLine, "(= (is-in "
-				+ this.getRobotBeliefAddr().id + ") " + belief.getId() + ")",
+		motive.informationGain=1.0;
+		motive.goal = new Goal(computeImportance(motive), deadLine, "(= (is-in '"
+				+ this.getRobotBeliefAddr().id + "') '" + belief.getId() + "')",
 				false);
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
