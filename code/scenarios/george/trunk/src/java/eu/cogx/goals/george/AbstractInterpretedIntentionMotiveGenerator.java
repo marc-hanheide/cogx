@@ -29,6 +29,9 @@ import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.FeatureQuestionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
@@ -150,13 +153,14 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected TutorInitiativeLearningMotive newAssertionIntention(
-			InterpretedIntention _intention) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, AlreadyExistsOnWMException,
-			ConsistencyException, PermissionException {
+			InterpretedIntention _intention, boolean _ambiguous)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			AlreadyExistsOnWMException, ConsistencyException,
+			PermissionException {
 
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("ascription")) {
-			return tutorDrivenAscription(_intention);
+			return tutorDrivenAscription(_intention, _ambiguous);
 		} else {
 			log("unknown InterpretedIntention type");
 			logIntention(_intention);
@@ -165,6 +169,64 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected TutorInitiativeQuestionMotive newQuestionIntention(
+			InterpretedIntention _intention, boolean _ambiguous) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		// [LOG gg.ii: unknown InterpretedIntention type]
+		// [gg.ii: stringContent]
+		// [gg.ii: subtype -> polar]
+		// [gg.ii: subclass -> info-request]
+		// [gg.ii: class -> communication]
+		// [gg.ii: feature -> color]
+		// [gg.ii: type -> question]
+		// [gg.ii: hypothesis -> red]
+		// [gg.ii: ]
+		// [gg.ii: addressContent]
+		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
+
+		log("question intention");
+		
+		
+		String subtype = _intention.stringContent.get("subtype");
+		if (subtype.equals("open")) {
+
+			log("open question intention");
+			
+			OpenFeatureQuestionIntention decoded = OpenFeatureQuestionIntention.Transcoder.INSTANCE
+					.tryDecode(_intention);
+			assert (decoded != null);			
+			
+			if (!_ambiguous) {
+				CASTEffect successEffect = decoded.getOnAcceptEffect();
+				successEffect.makeItSo(this);
+			}
+			
+			return openQuestion(decoded.getFeatureName(),
+					aboutBeliefAddress(_intention));
+		} else if (subtype.equals("polar")) {
+			log("polar question intention");
+			
+			PolarFeatureQuestionIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
+					.tryDecode(_intention);
+			assert(decoded != null);
+			
+			if (!_ambiguous) {
+				CASTEffect successEffect = decoded.getOnAcceptEffect();
+				successEffect.makeItSo(this);
+			}
+			
+			return polarQuestion(decoded.getFeatureName(),
+					decoded.getHypothesis(),
+					aboutBeliefAddress(_intention));
+		} else {
+			log("unknown InterpretedIntention type");
+			logIntention(_intention);
+			return null;
+		}
+	}
+	
+	@Deprecated
+	protected TutorInitiativeQuestionMotive newQuestionIntentionY3(
 			InterpretedIntention _intention) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
 
@@ -181,16 +243,19 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
 
 		log("question intention");
+		
+		
+		
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("open")) {
 			log("open question intention");
 			return openQuestion(_intention.stringContent.get("feature"),
-					_intention.addressContent.get("about"));
+					aboutBeliefAddress(_intention));
 		} else if (subtype.equals("polar")) {
 			log("polar question intention");
 			return polarQuestion(_intention.stringContent.get("feature"),
 					_intention.stringContent.get("hypothesis"),
-					_intention.addressContent.get("about"));
+					aboutBeliefAddress(_intention));
 		} else {
 			log("unknown InterpretedIntention type");
 			logIntention(_intention);
@@ -213,17 +278,17 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * @throws PermissionException
 	 */
 	protected TutorInitiativeMotive generateMotiveFromIntention(
-			WorkingMemoryAddress _addr, InterpretedIntention _intention)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
-			AlreadyExistsOnWMException, ConsistencyException,
-			PermissionException {
+			WorkingMemoryAddress _addr, InterpretedIntention _intention,
+			boolean _ambiguous) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException, AlreadyExistsOnWMException,
+			ConsistencyException, PermissionException {
 
 		TutorInitiativeMotive motive = null;
 		String type = _intention.stringContent.get("type");
 		if (type.equals("assertion")) {
-			motive = newAssertionIntention(_intention);
+			motive = newAssertionIntention(_intention, _ambiguous);
 		} else if (type.equals("question")) {
-			motive = newQuestionIntention(_intention);
+			motive = newQuestionIntention(_intention, _ambiguous);
 		}
 
 		if (motive != null) {
@@ -297,10 +362,24 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	protected abstract String getOpenQuestionGoalString(String _feature,
 			WorkingMemoryAddress _groundedBeliefAddr);
 
+	/**
+	 * 
+	 * @param _intention
+	 * @param _ambiguous
+	 *            Used to signal whether this intention is ambigious in its
+	 *            referent or not.
+	 * @return
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 * @throws AlreadyExistsOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 */
 	private TutorInitiativeLearningMotive tutorDrivenAscription(
-			InterpretedIntention _intention) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException, AlreadyExistsOnWMException,
-			ConsistencyException, PermissionException {
+			InterpretedIntention _intention, boolean _ambiguous)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
+			AlreadyExistsOnWMException, ConsistencyException,
+			PermissionException {
 
 		println("tutorDrivenAscription");
 		logIntention(_intention);
@@ -311,8 +390,11 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		println("decoded it.");
 
 		assert (decoded != null);
-		CASTEffect successEffect = decoded.getOnSuccessEffect();
-		successEffect.makeItSo(this);
+
+		if (!_ambiguous) {
+			CASTEffect successEffect = decoded.getOnAcceptEffect();
+			successEffect.makeItSo(this);
+		}
 
 		String feature = decoded.getFeatureName();
 		String value = decoded.getFeatureValue();
@@ -325,7 +407,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getAscriptionGoalString(feature, learn,
-						groundedBeliefID(_intention)) });
+						aboutBeliefAddress(_intention).id) });
 
 		// HACK used later for adding attribution to all possible referentss
 		motive.assertedFeature = feature;
@@ -339,8 +421,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				+ motive.informationGain);
 
 		// HACK or NOT-HACK? add attributed feature into ground belief
-		addAttribution(_intention.addressContent.get("about"), feature, value,
-				learn);
+		addAttribution(aboutBeliefAddress(_intention), feature, value, learn);
 
 		return motive;
 
@@ -387,7 +468,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getAscriptionGoalString(feature, learn,
-						groundedBeliefID(_intention)) });
+						aboutBeliefAddress(_intention).id) });
 
 		// HACK used later for adding attribution to all possible referentss
 		motive.assertedFeature = feature;
@@ -401,8 +482,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				+ motive.informationGain);
 
 		// HACK or NOT-HACK? add attributed feature into ground belief
-		addAttribution(_intention.addressContent.get("about"), feature, value,
-				learn);
+		addAttribution(aboutBeliefAddress(_intention), feature, value, learn);
 
 		return motive;
 	}
@@ -427,9 +507,10 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * @throws DoesNotExistOnWMException
 	 * @throws UnknownSubarchitectureException
 	 */
-	private String groundedBeliefID(InterpretedIntention _intention)
-			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		return _intention.addressContent.get("about").id;
+	protected WorkingMemoryAddress aboutBeliefAddress(
+			InterpretedIntention _intention) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+		return _intention.addressContent.get("about");
 	}
 
 	// public void addStringFeature(WorkingMemoryAddress _groundedBeliefAddr,
