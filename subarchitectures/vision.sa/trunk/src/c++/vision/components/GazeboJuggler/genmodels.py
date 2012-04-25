@@ -331,3 +331,9 @@ for l in labels:
 fmat.close()
 fscn.close()
 
+objs = open("xdata/scene.objects.in").read()
+wrld = open("res/bigtest.world.in").read()
+
+wrld = wrld.replace("#OBJECTLIST#", objs)
+
+open("xdata/bigtest.world", "w").write(wrld)
