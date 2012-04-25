@@ -243,7 +243,8 @@
      # This is for handling the dummy noun for the contextual 'the ones on the table'
 	 context-n(ones, entity, s-pl full)  
 	 context-n(one, entity, s-sg full)
-	   
+
+  number-irr(zero, zeroth, "0", "0th")  
   number-irr(two, second, "2", "2nd")
   number-irr(three, third, "3", "3rd")
   number(four, "4")

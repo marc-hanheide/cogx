@@ -68,7 +68,6 @@
     <member stem="student-noun-n" pred="student"/>
     <member stem="researcher-noun-n" pred="researcher"/>
     <member stem="pirate-noun-n" pred="pirate"/>
-    <member stem="victim-noun-n" pred="victim"/>
     <member stem="rowboat-noun-n" pred="Robot"/>
     <member stem="Borland-noun-n" pred="Borland"/>
     <member stem="dog-noun-n" pred="dog"/>
@@ -104,7 +103,6 @@
     <member stem="car-noun-n" pred="car"/>
     <member stem="wall-noun-n" pred="wall"/>
     <member stem="pizza-noun-n" pred="pizza"/>
-    <member stem="cerealbox-noun-n" pred="cerealbox"/>
     <member stem="book-noun-n" pred="book"/>
     <member stem="ball-noun-n" pred="ball"/>
     <member stem="block-noun-n" pred="block"/>
@@ -120,9 +118,7 @@
     <member stem="mug-noun-n" pred="mug"/>
     <member stem="cup-noun-n" pred="cup"/>
     <member stem="jug-noun-n" pred="jug"/>
-    <member stem="stapler-noun-n" pred="stapler"/>
     <member stem="keyboard-noun-n" pred="keyboard"/>
-    <member stem="joystick-noun-n" pred="joystick"/>
     <member stem="laptop-noun-n" pred="laptop"/>
     <member stem="screen-noun-n" pred="screen"/>
     <member stem="computer-noun-n" pred="computer"/>
@@ -172,17 +168,11 @@
     <member stem="food-mass-n" pred="food"/>
     <member stem="chocolate-noun-n" pred="chocolate"/>
     <member stem="tea-noun-n" pred="tea"/>
-    <member stem="juice-noun-n" pred="juice"/>
     <member stem="coffee-noun-n" pred="coffee"/>
-    <member stem="cornflakes-noun-n" pred="cornflakes"/>
-    <member stem="cookies-noun-n" pred="cookies"/>
     <member stem="water-noun-n" pred="water"/>
     <member stem="tea-mass-n" pred="tea"/>
-    <member stem="juice-mass-n" pred="juice"/>
     <member stem="coffee-mass-n" pred="coffee"/>
     <member stem="chocolate-mass-n" pred="chocolate"/>
-    <member stem="cornflakes-mass-n" pred="cornflakes"/>
-    <member stem="cookies-mass-n" pred="cookies"/>
     <member stem="water-mass-n" pred="water"/>
     <member stem="tee-mass-n" pred="tee"/>
     <member stem="iron-mass-n" pred="iron"/>
@@ -196,8 +186,8 @@
     <member stem="office-noun-n" pred="office"/>
     <member stem="room-noun-n" pred="room"/>
     <member stem="hall-noun-n" pred="hall"/>
-    <member stem="corridor-noun-n" pred="corridor"/>
-    <member stem="hallway-noun-n" pred="corridor"/>
+    <member stem="hallway-noun-n" pred="hall"/>
+    <member stem="corridor-noun-n" pred="hall"/>
     <member stem="bathroom-noun-n" pred="bathroom"/>
     <member stem="washroom-noun-n" pred="bathroom"/>
     <member stem="toilet-noun-n" pred="bathroom"/>
@@ -207,7 +197,6 @@
     <member stem="kitchen-noun-n" pred="kitchen"/>
     <member stem="library-noun-n" pred="library"/>
     <member stem="livingroom-noun-n" pred="livingroom"/>
-    <member stem="meetingroom-noun-n" pred="meetingroom"/>
     <member stem="recreationroom-noun-n" pred="recreationroom"/>
     <member stem="secretariat-noun-n" pred="secretariat"/>
     <member stem="lobby-noun-n" pred="lobby"/>
@@ -505,7 +494,6 @@
     <member stem="Chandana-name" pred="Chandana"/>
     <member stem="Hans-name" pred="Hans"/>
     <member stem="Dennis-name" pred="Dennis"/>
-    <member stem="George-name" pred="George"/>
     <member stem="Robot-name" pred="Robot"/>
     <member stem="robot-name" pred="Robot"/>
     <member stem="DFKI-name" pred="DFKI"/>
@@ -1320,7 +1308,6 @@
     <member stem="truetrue-adj" pred="true"/>
     <member stem="falsefalse-adj" pred="false"/>
     <member stem="elongatedelongated-adj" pred="elongated"/>
-    <member stem="compactcompact-adj" pred="compact"/>
     <member stem="big-adj" pred="big"/>
     <member stem="small-adj" pred="small"/>
     <member stem="tiny-adj" pred="tiny"/>
@@ -14698,7 +14685,6 @@
     <member stem="Chandanaxx-du" pred="Chandana"/>
     <member stem="Hansxx-du" pred="Hans"/>
     <member stem="Dennisxx-du" pred="Dennis"/>
-    <member stem="Georgexx-du" pred="George"/>
     <member stem="Robotxx-du" pred="Robot"/>
     <member stem="robotxx-du" pred="Robot"/>
     <member stem="rightxx-du" pred="right"/>
@@ -14714,8 +14700,6 @@
     <member stem="wellxx-du" pred="well"/>
     <member stem="huhxx-du" pred="huh"/>
     <member stem="umxx-du" pred="um"/>
-    <member stem="ahaxx-du" pred="aha"/>
-    <member stem="humxx-du" pred="hum"/>
     <member stem="butxx-du" pred="but"/>
     <member stem="andxx-du" pred="and"/>
     <member stem="soxx-du" pred="so"/>
@@ -14729,7 +14713,6 @@
     <member stem="byexx-du" pred="bye"/>
     <member stem="ciaoxx-du" pred="ciao"/>
     <member stem="good_byexx-du" pred="good_bye"/>
-    <member stem="goodbyexx-du" pred="goodbye"/>
     <member stem="so_longxx-du" pred="so_long"/>
   </family>
   <family name="DM+np" pos="du" closed="true">
@@ -14782,7 +14765,6 @@
     <member stem="bye-du+np" pred="bye"/>
     <member stem="ciao-du+np" pred="ciao"/>
     <member stem="good_bye-du+np" pred="good_bye"/>
-    <member stem="goodbye-du+np" pred="goodbye"/>
     <member stem="so_long-du+np" pred="so_long"/>
   </family>
   <family name="Wh-np-" pos="Wh" closed="true">

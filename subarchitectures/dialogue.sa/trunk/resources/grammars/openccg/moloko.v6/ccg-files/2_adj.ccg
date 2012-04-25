@@ -6,7 +6,8 @@
 
   def adj(args)         { adj<25>[M DEGREE args] }
   def from-adj(args)    { adj<~25>[M args] }
-
+	
+  def nid(args)			{nid<~25>[M args] }
 
 ##############
 ## FAMILIES ##
@@ -51,6 +52,9 @@
 
   rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; } 
   
+  rule { typechange: nid(post-n)$1  =>  post-n(, $1) :  ENTITY( MODIFIER() ) ; } 
+  
+  
 #######################
 ## DICTIONARY FORMS  ##
 #######################
@@ -69,4 +73,13 @@
 	  sup  : s-superlative pre-n superlative args;
     }
   }
+  
   def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, class, args) }
+
+
+  	 
+  
+  
+  
+  
+  
