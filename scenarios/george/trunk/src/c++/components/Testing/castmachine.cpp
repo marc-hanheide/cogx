@@ -5,10 +5,107 @@
 #include "castmachine.hpp"
 
 #include <sstream>
+#include <fstream>
 
 namespace testing {
 
 #define MSSG(streamexpr)  ((std::ostringstream&)(std::ostringstream() << std::flush << streamexpr))
+
+void CCastMachine::configure(const std::map<std::string,std::string> & _config)
+{
+  std::map<std::string,std::string>::const_iterator it;
+
+  if((it = _config.find("--player-host")) != _config.end()) {
+    mPlayerHost = it->second;
+  }
+  if((it = _config.find("--player-port")) != _config.end()) {
+    std::istringstream str(it->second);
+    str >> mPlayerPort;
+  }
+  if((it = _config.find("--objects")) != _config.end()) {
+    loadObjectsAndPlaces(it->second);
+  }
+
+  mpRobot = std::unique_ptr<PlayerCc::PlayerClient>(new PlayerCc::PlayerClient(mPlayerHost, mPlayerPort));
+  mpSim = std::unique_ptr<PlayerCc::SimulationProxy>(new PlayerCc::SimulationProxy(&*mpRobot, 0));
+  log("Connected to Player %x", &*mpRobot);
+
+  prepareObjects();
+}
+
+void CCastMachine::loadObjectsAndPlaces(const std::string& fname)
+{
+  mObjects.clear();
+  mLocations.clear();
+  std::ifstream f;
+  f.open(fname.c_str());
+  if (f.fail()) {
+    error("File not found: '" + fname + "'");
+  }
+  else {
+    int mode = 0; // 1 - objects, 2 - places
+    while (f.good() && !f.eof()) {
+      std::string line, tok;
+      std::getline(f, line);
+      //println(" GJ **** " + line);
+      std::istringstream itok(line);
+
+      // TODO: objects have additional fields: color, shape, type
+
+      int newmode = mode;
+      itok >> tok;
+      if (tok == "[objects]") newmode = 1;
+      else if (tok == "[places]") newmode = 2;
+      if (mode != newmode) {
+        mode = newmode;
+        continue;
+      }
+
+      if (mode == 1) {
+        if (tok != "")
+          // In Gazebo 0.9 top objects didn't have a prefix.
+          // In Gazebo 0.10 the prefix is "noname::"
+          mObjects.push_back(GObject(tok, "noname::" + tok));
+      }
+      else if (mode == 2) {
+        cogx::Math::Vector3 v;
+        int n;
+        n = sscanf(line.c_str(), "%lf %lf %lf", &v.x, &v.y, &v.z);
+        if (n > 1) {
+          if (n != 3) v.z = 1.0;
+          else v.z += 0.5;
+          mLocations.push_back(v);
+        }
+      }
+    }
+    f.close();
+  }
+}
+
+const double OFF = 121231e99; 
+void CCastMachine::prepareObjects()
+{
+  double time;
+  // Discover and keep valid objects
+  std::vector<GObject> objs = mObjects;
+  std::vector<GObject> notthere;
+  mObjects.clear();
+  for (int i = 0; i < objs.size(); i++) {
+    GObject& o = objs[i];
+    o.loc.x = OFF;
+    mpSim->GetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z, time);
+    if (o.loc.x == OFF) {
+      println(" *** Object '%s' is not in the scene.", o.label.c_str());
+      notthere.push_back(o);
+      continue;
+    }
+    o.loc.x = 100 + i * 10;
+    o.loc.y = 100 + i * 10;
+    mpSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
+    mObjects.push_back(o);
+  }
+  println("%ld objects managed in the scene.", mObjects.size());
+}
 
 long CCastMachine::getCount(const std::string& counter)
 {
