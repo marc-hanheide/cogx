@@ -118,8 +118,15 @@ public class POPlanUtils {
 						link_sb.append(((PointerFormula)_df).pointer.subarchitecture);
 					}	
 				} else if (_df instanceof ElementaryFormula) {
-					link_sb.append(" " + transformElFoPropToPoFoWMA(((ElementaryFormula)_df).prop));
-					
+					String origProp = ((ElementaryFormula)_df).prop;
+					if (origProp != null) {
+						if (origProp.startsWith("place")) {
+							String wmp = POPlanUtils.transformElFoPropToPoFoWMA(origProp);
+							link_sb.append(" " + wmp);
+						} else {
+							link_sb.append(" " + origProp);
+						}
+					}
 				}
 				else {
 					link_sb.append("\nArgument has a special type.");
