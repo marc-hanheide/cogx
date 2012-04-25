@@ -8,18 +8,21 @@ import gnu.trove.TObjectIntHashMap;
  */
 public class IntIDMap<THING> extends IDMap<THING> {
   /** data structure to map from the thing to the corresponding id */
-  protected TObjectIntHashMap<THING> type2Number;
+  // protected TObjectIntHashMap<THING> type2Number; // commented out because of trove compile errors
+  protected TObjectIntHashMap type2Number;
 
   private static final int ILLEGAL_VALUE = -1;
 
   public IntIDMap() {
     super();
-    type2Number = new TObjectIntHashMap<THING>();
+    // type2Number = new TObjectIntHashMap<THING>(); // commented out because of trove compile errors
+    type2Number = new TObjectIntHashMap();
   }
 
   public IntIDMap(int initialCapacity) {
     super(initialCapacity);
-    type2Number = new TObjectIntHashMap<THING>(initialCapacity);
+    //type2Number = new TObjectIntHashMap<THING>(initialCapacity); // commented out because of trove compile errors
+    type2Number = new TObjectIntHashMap(initialCapacity);
   }
 
   public int register(THING thing) {
