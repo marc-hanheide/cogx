@@ -49,9 +49,10 @@
 	    <copy todir="${jar.dir}" file="./lib/jena.jar"/>
 	    <copy todir="${jar.dir}" file="./lib/xercesImpl.jar"/>
 	    <!-- <copy todir="${jar.dir}" file="./lib/log4j-1.2.12.jar"/> -->
-	    <copy todir="${jar.dir}" file="./lib/commons-logging-1.1.jar"/>  	</target>
+	    <copy todir="${jar.dir}" file="./lib/commons-logging-1.1.jar"/>  	
+	</target>
 
-<!-- =================================================================== -->
+	<!-- =================================================================== -->
 	<!-- Source generation                                                   -->
 	<!-- =================================================================== -->
 	<target name="slice" depends="prepare" description="generates source from slice">
