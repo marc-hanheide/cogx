@@ -17,19 +17,19 @@
    )
 
   (:predicates
-;;LF connected => @{state_?block_?step:event}(context ^ <Subject>(=var:castreferent ^ =var) ^ <Modifier>(next1:m-whereto ^ next ^ <Anchor>(=var:castreferent ^ =var))) 
+;;LF connected => @{state_?block_?step:event}(context ^ <Subject>(=var:castreferent ^ =var) ^ <Modifier>(next_?block_?step:m-location ^ next ^ <Anchor>(=var:castreferent ^ =var))) 
    (connected ?p1 ?p2 - place)
-;;LF position-reported => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(l1:m-location ^ position ^ <Modifier>(w1:whose ^ of ^ <Anchor>(=var:castreferent ^ =var))) ^ <Cop-Scope>(s1:state ^ reported))
+;;LF position-reported => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(postion_?block_?step:m-location ^ position ^ <Modifier>(of_?block_?step:whose ^ of ^ <Anchor>(=var:castreferent ^ =var))) ^ <Cop-Scope>(reported_?block_?step:state ^ reported))
    (position-reported ?o - visualobject)
-;;LF is_visited => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(s1:state ^ visited))
+;;LF is_visited => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(visited_?block_?step:state ^ visited))
    (is-visited ?c - conegroup)
-;;LF is_virtual => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(s1:state ^ virtual))
+;;LF is_virtual => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(virtual_?block_?step:state ^ virtual))
    (is-virtual ?o - object)
 
    ;; derived predicates
-;;LF attached_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(s1:state ^ attached ^ <Modifier>(w1:whoto ^ to ^ <Anchor>(=var:castreferent ^ =var))))
+;;LF attached_to_room => @{state_?block_?step:event}(context ^ <Subject>(=var:castreferent ^ =var) ^ <Modifier>(next_?block_?step:m-location ^ next ^ <Anchor>(=var:castreferent ^ =var)))
    (attached_to_room ?p - place ?r - room)
-;;LF not_fully_explored => @{state_?block_?step:ascripton}(be ^ <Polarity>neg ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(s1:state ^ explored ^ <Modifier>(m1:modifier ^ full))
+;;LF not_fully_explored => @{state_?block_?step:ascripton}(be ^ <Polarity>neg ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(explored_?block_?step:state ^ explored ^ <Modifier>(full_?block_?step:modifier ^ full))
    (not_fully_explored ?r)
    (trans_related ?o - visualobject ?where - (either visualobject room))
    (cones_exist  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
@@ -37,11 +37,11 @@
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
 
    ;; (any-engaged)
-;;LF engaged => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(s1:state ^ engaged)
+;;LF engaged => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(engaged_?block_?step:state ^ engaged)
    (engaged ?p - person)
 
    ;;virtual predicates
-;;LF cones_created => @{state_?block_?step:ascription}(be ^ <Cop-Rest>(e1:entity ^ cones ^ <Number>pl ^ <Modifier>(w1:whatfor ^ for ^ <Anchor>(=var:castreferent ^ =var))) ^ <Cop-Scope>(s1:state ^ created ^ <Modifier>(=var:castreferent ^ =var ^ <Anchor>(=var:castreferent ^ =var))))
+;;LF cones_created => @{state_?block_?step:ascription}(be ^ <Cop-Rest>(viewcones_?block_?step:entity ^ cones ^ <Delimitation>variable ^ <Quantification>unspecific ^ <Modifier>(for_?block_?step:whatfor ^ for ^ <Anchor>(=var:castreferent ^ =var)) ^ <Cop-Scope>(created_?block_?step:state ^ created ^ <Modifier>(=var:castreferent ^ =var ^ <Anchor>(=var:castreferent ^ =var))))
    (cones_created  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
 
    ;;used to early prevent instantiation of operators with undefined probability/costs
@@ -60,7 +60,7 @@
 
 
   (:functions
-;;LF is-in => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(l1:m-location ^ in ^ <Anchor>(=val:castreferent ^ =val)))
+;;LF is-in => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=val:castreferent ^ =val)))
    (is-in ?o - robot) - place
    (is-in ?o - person) - place
 
@@ -86,7 +86,7 @@
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
    ;; === room properties ===
-;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(=var?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
+;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
    (category ?r - room) - category
    (identity ?r - room) - category
    (roomid ?r - room) - number
@@ -96,12 +96,12 @@
    ;; === place properties ===
 ;;LF placestatus => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ placestatus ^ <Modifier>(w1:whose ^ of ^ <Anchor>(=var:castreferent ^ =var))) ^ <Cop-Scope>(=val:castreferent ^ =val))
    (placestatus ?n - place) - place_status
-;;LF in-room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(w1:where ^ in ^ <Anchor>(l1:m-location ^ room)))
+;;LF in-room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(room_?block_?step:m-location ^ room)))
    (in-room ?p - place) - room
    (place-exists ?p - place) - boolean
 
    ;; === placeholder properties ===
-;;LF leads_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(w1:m-location ^ in ^ <Anchor>(=var:castreferent ^ =var))) 
+;;LF leads_to_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))) 
    (leads_to_room ?p - place ?c - category) - boolean
 
    ;; === person properties ===
@@ -113,7 +113,7 @@
 
    ;; === object properties ===
    (label ?o - visualobject) - label
-;;LF related-to => @{state_?block_?step:cognition}(know ^ <Actor>(=modv:castreferent ^ =modv) ^ <Patient>(l1:m-location ^ location ^ <Modifier>(w1:whatof ^ of ^ <Anchor>(=var:castreferent ^ =var))))
+;;LF related-to => @{state_?block_?step:cognition}(know ^ <Actor>(=modv:castreferent ^ =modv) ^ <Patient>(location_?block_?step:m-location ^ location ^ <Modifier>(of_?block_?step:whatof ^ of ^ <Anchor>(=var:castreferent ^ =var))))
    (related-to ?o - visualobject) - location
    (relation ?o - visualobject) -  spatial_relation
 
@@ -283,7 +283,7 @@
 
   ;; rules that model the conditional probabilities from default sa
   
-;;LF obj_in_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(w1:m-location ^ in ^ <Anchor>(=var:castreferent ^ =var ^ <Role-In>(b1:ascription ^ be ^ <Cop-Restr>(l1:m-location ^ that) ^ <Cop-Scope>(=var:castreferent ^ =var)))))
+;;LF obj_in_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var:castreferent ^ =var)))
   ;; p(?label IN ?room | category(?room) = ?cat)
   (:dtrule obj_in_room
            :parameters (?l - label ?r - room ?c - category)
@@ -320,7 +320,7 @@
 
   ;; use posterior information from conceptual.sa 
   ;; force commitment to a room category to help the heuristic
-;;LF object_existence_room => @{state_?block_?step:event}(context ^ <Subject>(=var?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(=var?step:m-location ^ =var ^ <Anchor>(=var:castreferent ^ =var)))
+;;LF object_existence_room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(=var:castreferent ^ =var)))
   (:dtrule object_existence_room
            :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
            :precondition (and (= (category ?where) ?c)
@@ -348,7 +348,7 @@
 
   ;; probability of an object being at a specific location
   ;;used only by DT (?)
-;;LF sample_object_location => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var?step:label ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
+;;LF sample_object_location => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:label ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
   (:dtrule sample_object_location
            :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room))
            :precondition (and (= (label ?o) ?l)
@@ -374,7 +374,7 @@
 
 
   ;; Assign virtual room to a placeholder
-;;LF room_from_placeholder => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(w1:m-location ^ in ^ <Anchor>(=var:castreferent ^ =var ^ <Role-In>(b1:ascription ^ be ^ <Cop-Restr>(l2:m-location ^ that) ^ <Cop-Scope>(=var:castreferent ^ =var)))))
+;;LF room_from_placeholder => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(=var:castreferent ^ =var)))
   (:dtrule room_from_placeholder
            :parameters (?p - place ?r - room ?c - category)
            :precondition (and (= (placestatus ?p) placeholder)
@@ -404,7 +404,7 @@
   ;;          :effect (assign (placestatus ?loc) trueplace)
   ;;          )
 
-;;LF report_position => @{step_?block_?step:action-non-motion}(report ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(w1:whoto ^ to ^ <Anchor>(?h:castreferent ^ ?h)) ^ <Role-In>(b1:ascription ^ be ^ <Cop-Restr>(?o:castreferent ^ ?o) ^ <Cop-Scope>(l1:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
+;;LF report_position => @{step_?block_?step:action-non-motion}(report ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?h:castreferent ^ ?h) ^ <Event>(ascription_?block_?step:ascription ^ be ^ <Cop-Restr>(?o:castreferent ^ ?o) ^ <Cop-Scope>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
   (:action report_position
            :agent (?a - robot)
            :parameters (?o - visualobject)
@@ -417,7 +417,7 @@
                         (increase (total-cost) 1))
            )
 
-;;LF move => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_1:m-wherefrom ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_1:m-whereto ^ to ^ <Anchor>(?to:castreferent ^ ?to)))
+;;LF move => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_?block_?step:m-wherefrom ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_?block_?step:m-whereto ^ to ^ <Anchor>(?to:castreferent ^ ?to)))
    (:action move
             :agent (?a - robot)
             :parameters (?to - place)
@@ -433,7 +433,7 @@
 
             )
 
-;;LF move_direct => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(f1:m-wherefrom ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(t1:m-whereto ^ to ^ <Anchor>(?to:castreferent ^ ?to)) ^ <Modifier>(v1:m-wherefrom ^ via ^ <Anchor>(?via:castreferent ^ ?via)))
+;;LF move_direct => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_?block_?step:m-location ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_?block_?step:m-location ^ to ^ <Anchor>(?to:castreferent ^ ?to)) ^ <Modifier>(via_?block_?step:m-location ^ via ^ <Anchor>(?via:castreferent ^ ?via)))
    (:action move_direct
             :agent (?a - robot)
             :parameters (?to - place)
@@ -468,7 +468,7 @@
    ;; create cones for search in a room
    ;; precondition: robot is in the specified room
 
-;;LF create_cones_in_room => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(l1:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(l2:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF create_cones_in_room => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action create_cones_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
@@ -485,7 +485,7 @@
    ;; create cones for search in or on another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF create_cones_at_object => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(cones_1:thing ^ cones ^ <Num>pl) ^ <Modifier>(l1:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(l2:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF create_cones_at_object => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cones ^ <Num>pl) ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action create_cones_at_object
             :agent (?a - robot)
             :parameters (?l ?lsupp - label ?rel - spatial_relation ?o - visualobject ?r - room)
@@ -538,7 +538,7 @@
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
 
-;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(l1:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(l2:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action search_for_object_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
@@ -580,7 +580,7 @@
    ;; Searches for an object ON another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(l1:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(l2:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action search_for_object_at_object
             :agent (?a - robot)
             :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
@@ -604,7 +604,7 @@
    ;;       and movement between conegroups?
    ;;       Currently, precondition is to be in the same room as the conegroup
 
-;;LF process_conegroup => @{step_?block_?step:action-non-motion}(process ^ <Actor>(?a:castreferent ^ ?a) ^  <Patient>(?c:castreferent ^ ?c) ^ <Modifier>(l1:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF process_conegroup => @{step_?block_?step:action-non-motion}(process ^ <Actor>(?a:castreferent ^ ?a) ^  <Patient>(?c:castreferent ^ ?c) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action process_conegroup
             :agent (?a - robot)
             :parameters (?c - conegroup)
@@ -643,7 +643,7 @@
    ;;                          (probabilistic 0.9 (observed (related-to ?o) ?r))))
    ;;           )
 
-;;LF engage => @{step_?block_?step:action-non-motion}(talk & <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(w1:whoto ^ to ^ <Anchor>(?h:castreferent ^ ?h)) ^ <Modifier>(w2:whatabout ^ about ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF engage => @{step_?block_?step:action-non-motion}(tell ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?h:castreferent ^ ?h) ^ <Modifier>(about_?block_?step:whatabout ^ about ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action engage
             :agent (?a - robot)
             :parameters (?h - person)
@@ -686,7 +686,7 @@
    ;;          :sense (category ?r)
    ;;          )
 
-;;LF ask-for-category-polar => @{step_?block_?step:action-non-motion}(ask ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?h:castreferent ^ ?h) ^ <Role-in>(t1:thing ^ if ^ <Scope>(b1:ascription ^ be ^ <Cop-Restr>(?r:castreferent ^ ?r) ^ <Cop-Scope>(?c:castreferent ^ ?c)))
+;;LF ask-for-category-polar => @{step_?block_?step:action-non-motion}(ask ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?h:castreferent ^ ?h) ^ <Modifier>(if_?block_?step:thing ^ if ^ <Anchor>(b1:ascription ^ be ^ <Cop-Restr>(?r:castreferent ^ ?r) ^ <Cop-Scope>(?c:castreferent ^ ?c)))
    (:action ask-for-category-polar
             :agent (?a - robot)
             :parameters (?r - room ?c - category)
@@ -727,7 +727,7 @@
    ;;           )
 
 
-;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(w1:whatfor ^ for ^ <Anchor>(p1:person ^ people)) ^ <Modifier>(l1:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(for_?block_?step:whatfor ^ for ^ <Anchor>(p1:person ^ people)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action look-for-people
             :agent (?a - robot)
             :variables (?p - place)
