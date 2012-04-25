@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: set fileencoding=utf-8 sw=4 sts=4 ts=8 et :vim
 
-import sys
+import sys, os, re
 #from PIL import Image, ImageDraw, ImageColor as ico, ImageFont
 #import cv
 from PyQt4 import QtGui, QtCore
@@ -53,7 +53,7 @@ def readConfig(fname):
         if sline.startswith("[") and sline.endswith("]"):
             if section != None:
                 addSection(section, content)
-                content = []
+            content = []
             section = sline.strip(" \t[]")
             continue
         content.append(line)
@@ -88,11 +88,14 @@ class OgreBox:
         self.size = size
         self.color = color
 
+    @property
+    def material_name(self):
+        if self.prefix == "": return self.name
+
+        return "%s/%s" % (self.prefix, self.name)
+
     def makeModel(self):
         (sx, sy, sz) = self.size
-
-        if self.prefix == "": material_name = self.name
-        else: material_name = "%s/%s" % (self.prefix, self.name)
 
         faces = []
         face_locations = tmpl_box["face-locations"]
@@ -100,7 +103,7 @@ class OgreBox:
             faces.append(tmpl_box["face"] % {
                     "px": f[0] * sx, "py": f[1] * sy, "pz": f[2] * sz,
                     "sx": f[3] * sx, "sy": f[4] * sy, "sz": f[5] * sz,
-                    "material_name": "%s-%s" % (material_name, f[6])
+                    "material_name": "%s-%s" % (self.material_name, f[6])
                    })
 
         geometry = tmpl_box["geometry"] % {
@@ -261,8 +264,8 @@ class OgreBox:
             fim = img.copy(QtCore.QRect(fp[0], fp[1], fp[2] - fp[0], fp[3] - fp[1]))
             fname = "x-%s-%s.png" % (self.name.lower(), fl[6])
             fname = fname.replace(" ", "-")
-            matname = "%s-%s" % (self.name, fl[6]) 
-            fim.save("xdata/%s"  % fname)
+            matname = "%s-%s" % (self.material_name, fl[6]) 
+            fim.save("xdata/Media/materials/textures/%s"  % fname)
             materials.append(tmpl_material % {
                     "material_name": matname,
                     "image_filename": fname })
@@ -276,13 +279,29 @@ sizes  = [(0.5, 0.3, 0.6), (0.4, 0.2, 0.6), (0.5, 0.3, 0.2)]
 # rgb
 colors = [(0x20, 0x40, 0xe0, "b"), (0xe0, 0x30, 0x10, "r"), (0x10, 0xd0, 0x30, "g")]
 
+def mkdir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+mkdir("xdata/Media/materials/scripts")
+mkdir("xdata/Media/materials/textures")
+mkdir("xdata/models")
+
+fmat = open("xdata/Media/materials/scripts/genmodels.material", "w")
 a = QtGui.QApplication(sys.argv)
 for l in labels:
     for si,s in enumerate(sizes):
         for ci,c in enumerate(colors):
             name = "%s-%s-%d" % (c[3], l, si)
-            b = OgreBox(name, size = s, color = c[:3])
-            print b.makeModel()
-            print b.makeMaterials()
+            name = re.sub("([a-z])\s*([A-Z])", "\\1\\2", name)
+            name = re.sub("[^a-zA-Z0-9.]+", "-", name)
+            b = OgreBox(name, size = s, color = c[:3], prefix = "cogx")
+
+            fname = "xdata/models/gen-%s.model" % (name)
+            fmod = open(fname, "w")
+            fmod.write("""<?xml version="1.0"?>\n""");
+            fmod.write(b.makeModel())
+            fmod.close()
+
+            fmat.write(b.makeMaterials())
 
 
