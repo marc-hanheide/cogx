@@ -83,8 +83,12 @@ public class POPlanUtils {
 				} else if (_df instanceof ElementaryFormula) {
 					String origProp = ((ElementaryFormula)_df).prop;
 					if (origProp != null) {
-						String wmp = POPlanUtils.transformElFoPropToPoFoWMA(origProp);
-						args = args + " " + wmp;
+						if (origProp.startsWith("place")) {
+							String wmp = POPlanUtils.transformElFoPropToPoFoWMA(origProp);
+							args = args + " " + wmp;
+						} else {
+							args = args + " " + origProp;
+						}
 					} 
 				} else {
 					// TODO handle this case

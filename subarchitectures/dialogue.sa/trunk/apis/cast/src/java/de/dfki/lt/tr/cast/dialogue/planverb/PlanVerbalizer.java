@@ -115,6 +115,9 @@ public class PlanVerbalizer {
 		
 		m_preLexicalSub. put(" create ", " make ");
 
+		m_preLexicalSub. put(" magazine ", " book ");
+		m_postLexicalSub.put("book", "magazine");
+
 		m_preLexicalSub. put("<Modifier>(v1:m-wherefrom ^ via", "<Modifier>(via:m-through ^ through");
         // TODO find a solution for indirect speech
 		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
@@ -421,7 +424,7 @@ public class PlanVerbalizer {
 			int placeID = gbProxy.getContent().get(
 					PlaceTransferFunction.PLACE_ID_ID).
 					getDistribution().getMostLikely().getInteger();
-			if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
+			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
 			final String placeIDF = new Integer(placeID).toString();
 			
 			m_castComponent.log("Gbelief is a place with place ID: " + placeIDF);
@@ -432,10 +435,10 @@ public class PlanVerbalizer {
 
 	                String depStateNom = BasicUtils.uniqueNominal(lfBuilder);
 
-	                BasicState depState = BasicState.newBuilder("number-ordinal")
+	                BasicState depState = BasicState.newBuilder("number-id") //"number-ordinal")
 	                        .setProposition(placeIDF)
 	                        .build();
-
+	                
 	                BasicState headState = BasicState.newBuilder("e-place")
 	                        .setProposition("place")
 	                        .addFeature("Delimitation", "unique")
