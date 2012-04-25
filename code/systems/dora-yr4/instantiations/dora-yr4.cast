@@ -103,6 +103,8 @@ ELSE # none
 ENDIF
 ENDIF
 
+VARDEFAULT host:PlayerHost=localhost
+
 ### the directory containing the calibration files to use
 VARDEFAULT vision_calib_root=instantiations/calibration/alu-robot-at-kth
 
@@ -238,6 +240,7 @@ VARDEFAULT no_load_robot_file=
 
 ### Disable placeholder generation (no exploration)
 VARDEFAULT no_placeholders=
+#    VARDEFAULT no_placeholders=--no-placeholders
 ### Perform visual exploration after exploratory movement (i.e. to placeholders)
 VARDEFAULT visual_exploration=--visual-exploration
 ### Prohibit the creation of placeholders in certain zones
@@ -255,6 +258,11 @@ VARDEFAULT filter_doors=
 ### AVS options
 # distance in metres at which the objects should be detectable
 VARDEFAULT avs_cone_depth=2
+
+# Whether to generate a prior probability along (laser-detected) wall
+# obstacles in uninformed AVS (otherwise, only the Kinect heightmap will be
+# used)
+VARDEFAULT use_wall_prob=--use-wall-prob
 
 # closest distance in metres from an obstacle (putting this comment on the line below caused a problem
 VARDEFAULT avs_sample_from_obs=0.4
@@ -283,6 +291,11 @@ ELSE
     SETVAR simulate_kinect=--simulate-kinect
 ENDIF
 
+    IFOPTALL(%(hardware_options), ptz)
+  	SETVAR ctrl_ptu=--ctrl-ptu 
+    ELSE
+    	SETVAR ctrl_ptu=--ctrl-ptu 
+    ENDIF
 
 
 ### Controling PTU
@@ -355,7 +368,7 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Maintains local obstacle grid maps around individual nodes
 # Provides placeholder properties (length of associated frontier, size of
-# associated free space, nearness to a door hypothesis), exposed through
+# associated free space), exposed through
 # ICE interfaces
     CPP GD map.manager          LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
 
@@ -384,7 +397,7 @@ IFOPTALL(%(feature_options), spatial)
  #EXPAND avs_random_vc=%(avs_random_vc)
     IFOPTALL(%(feature_options), avs)
         CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --no-vision --ptzserver ptz.server --display-objects-in-pb
-        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz
+        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz
     ENDIF
 
     IFOPTALL(%(feature_options), simple_placeholder_exploration)
