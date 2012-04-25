@@ -414,7 +414,8 @@ private final Class<Via> m_viaCls;
 
 					WMPointer wmp = WMPointer.create((Ice.Object) f
 							.getFormula().get());
-					if (!wmp.getType().equals(CASTUtils.typeName(m_fromCls))) {
+					if (!wmp.getType().equals(CASTUtils.typeName(m_fromCls)) && 
+                                             !wmp.getType().equals(CASTUtils.typeName(m_viaCls))) {
 						logger
 								.debug("ignore WMPointer as it is pointing out of the layer");
 						continue;
