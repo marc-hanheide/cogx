@@ -11,6 +11,7 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.util.LocalActionStateManager;
 
 /**
@@ -45,16 +46,8 @@ public abstract class AbstractActionInterface extends ManagedComponent {
 			ConsistencyException, PermissionException,
 			UnknownSubarchitectureException {
 
-		GroundedBelief belief = getMemoryEntry(_beliefAddress,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
-
-		FormulaDistribution fd = FormulaDistribution.create();
-		fd.add(_value, 1);
-
-		pb.getContent().put(_feature, fd);
-		overwriteWorkingMemory(_beliefAddress, pb.get());
+		BeliefUtils.addFeature(this, _beliefAddress, GroundedBelief.class, _feature, _value);
+		
 	}
 
 	protected WorkingMemoryPointer getFirstAncestorOfBelief(
