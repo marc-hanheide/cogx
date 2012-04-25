@@ -344,6 +344,8 @@ PlanePopOut::PlanePopOut()
     // filter points depending on z value (default = 0.5m - 1.5m)
     par.minZ = 0.3;
     par.maxZ = 1.5;
+    // filter planes that deviate more than 10° from horizontal
+    par.delta = 0.18;
     m_planePopout = new pclA::PlanePopout(par);
     m_componentCount++;
 }
@@ -1077,8 +1079,7 @@ void PlanePopOut::GetPlaneAndSOIs()
 
 	    //log("got %d points, after conversion: %d", (int)points.size(), (int)pcl_cloud->points.size());
 
-	    /// TODO
-	    std::vector<unsigned> labels;   /// TODO unused?
+	    std::vector<unsigned> labels;
 	    ppo_ok = m_planePopout->CalculateSOIs(pcl_cloud);
 	    if(ppo_ok)
 	    {
