@@ -1,6 +1,7 @@
 package de.dfki.lt.tr.cast.dialogue.util;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.BooleanFormula;
@@ -8,6 +9,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.FloatFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.planverb.history.Step;
 
 import autogen.Planner.Action;
 import autogen.Planner.Link;
@@ -17,20 +19,14 @@ public class POPlanUtils {
 	
 	public static String POPlanToString (POPlan _poPlan) {
 		
+		List<Step<String>> listSteps = POPlanUtils.extractSteps(_poPlan);
 		StringBuilder action_sb = new StringBuilder(22 * _poPlan.actions.length);
-		for (Action _ac : _poPlan.actions) {
-			action_sb.append("\nAction fullName: ");
-			action_sb.append(_ac.fullName);
-			action_sb.append(" status: ");
-			action_sb.append(_ac.status);
+		for (Step<String> s : listSteps) {
+			action_sb.append(s.getStep() + "\n");
 		}
 		
-		List<String> listLinks = new ArrayList<String>();
-		
-		listLinks = POPlanUtils.extractLinks(_poPlan);
-		
+		List<String> listLinks = POPlanUtils.extractLinks(_poPlan);
 		StringBuilder link_sb = new StringBuilder(42 * _poPlan.links.length);
-		
 		for (String s : listLinks) {
 			link_sb.append(s + "\n");
 		}
@@ -47,6 +43,58 @@ public class POPlanUtils {
 		return_sb.append(link_sb);
 		
 		return return_sb.toString();
+	}
+	
+	/**
+	 * This is a helper method for hacking around the planner bug that sometimes
+	 * causes ElementaryFormulas (ElFo) appearing as arguments where PointerFormulas (PoFo) 
+	 * are expected.
+	 * 
+	 * It expects as input the prop(osition) of the ElFo, and returns a String rendering
+	 * correspoding to a WMA derived from a PoFo.
+	 * 
+	 * E.g., it turns 'place_2__b' into '2:B@spatial.sa'
+	 * NB This is an ugly hack!
+	 * 
+	 * @param prop - prop(osition) of the ElFo (e.g. place_2__b)
+	 * @return a String correspoding to a WMA (e.g. 2:B@spatial.sa)
+	 */
+	public static String transformElFoPropToPoFoWMA(String prop) {
+		String pointerID = prop.replace("place_", "");
+		pointerID = pointerID.replace("__", ":");
+		pointerID = pointerID.toUpperCase();
+		return pointerID +  "@" + "spatial.sa";
+	}
+	
+	
+	public static List<Step<String>> extractSteps (POPlan _poPlan) {
+		List<Step<String>> actionList = new LinkedList<Step<String>>();
+
+		for (int i = 0; i < _poPlan.actions.length; i++) {
+			dFormula[] allArgs = _poPlan.actions[i].allArguments;
+			String args = "";
+			for (int j = 0; j < allArgs.length; j++) {
+				dFormula _df = allArgs[j];
+				if (_df instanceof PointerFormula) {
+					if (((PointerFormula)_df).pointer != null) {
+						String wmp = ((PointerFormula)_df).pointer.id +  "@" + ((PointerFormula)_df).pointer.subarchitecture;
+						args = args + " " + wmp;
+					} 
+				} else if (_df instanceof ElementaryFormula) {
+					String origProp = ((ElementaryFormula)_df).prop;
+					if (origProp != null) {
+						String wmp = POPlanUtils.transformElFoPropToPoFoWMA(origProp);
+						args = args + " " + wmp;
+					} 
+				} else {
+					// TODO handle this case
+					// log("current argument with index " + j + " is neither of type PointerFormular nor ElementaryFormula, but of type " + _df.ice_id());
+				}
+			}
+			String currStepLine = new Integer(i).toString()+ ": " + _poPlan.actions[i].status.name()  + " " + _poPlan.actions[i].name + args;
+			actionList.add(new Step<String>(currStepLine.trim()));
+		}
+		return actionList;
 	}
 	
 	public static List<String> extractLinks (POPlan _poPlan) {
@@ -66,7 +114,7 @@ public class POPlanUtils {
 						link_sb.append(((PointerFormula)_df).pointer.subarchitecture);
 					}	
 				} else if (_df instanceof ElementaryFormula) {
-					link_sb.append(" " + ((ElementaryFormula)_df).prop);
+					link_sb.append(" " + transformElFoPropToPoFoWMA(((ElementaryFormula)_df).prop));
 					
 				}
 				else {

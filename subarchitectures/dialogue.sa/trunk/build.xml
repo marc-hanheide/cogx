@@ -9,6 +9,8 @@
 	<property name="generated.dir" value="src-generated/java"/>
 	<property name="slice.dir" value="src/slice"/>
 
+	<property name="jar.dir" value="../../output/jar" />
+	
 	<property name="junit.jar" value="/usr/share/java/junit.jar" />
 	<property name="ice.jar" value="/usr/share/java/Ice.jar" />
   
@@ -26,6 +28,18 @@
 	<!-- =================================================================== -->
 	<target name="all" depends="compile" description="compiles the source code">
 	</target>
+
+	<!-- =================================================================== -->
+ 	<!-- Expand libraries                                                    -->
+	<!-- =================================================================== -->
+	<target name="expandlibs" depends="">
+		<copy todir="${jar.dir}">
+			<fileset dir="${projectroot.dir}/subarchitectures/dialogue.sa/jar">
+		            <include name="*.jar"/>
+         		</fileset>
+		</copy>
+	</target>
+
 
 	<!-- =========================================
 	     Template target.  Never called explicitly, 
@@ -87,7 +101,7 @@
 	<!-- =================================================================== -->
 	<!-- Compiles all subdirs                                                -->
 	<!-- =================================================================== -->
-	<target name="compile" depends="compile-slice" if="build.dialogue_sa">
+	<target name="compile" depends="compile-slice,expandlibs" if="build.dialogue_sa">
 		<echo>compiling all builds"</echo>
 		<antcall target="template">
 		     <param name="target" value="compile" />
