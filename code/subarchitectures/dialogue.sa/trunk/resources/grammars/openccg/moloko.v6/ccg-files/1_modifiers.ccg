@@ -115,6 +115,8 @@
   #       is handled using the semantic sort hierarchy (see types-ontology.ccg)
 
   def MODIFIER(args) {<Modifier>(M  args) }
+  
+  def PURPOSE(args) {<Purpose>(M args) }
 
   # This is the semantic dependency relation used by modifier modifiers,
   #     e.g.  'really' big , 'over' on the table, etc. 
