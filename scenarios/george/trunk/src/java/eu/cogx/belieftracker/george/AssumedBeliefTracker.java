@@ -39,7 +39,7 @@ public class AssumedBeliefTracker extends ManagedComponent {
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
 	@Override
-	protected void configure(Map<String, String> config) {log("Private tracker running");
+	protected void configure(Map<String, String> config) {
 		PointerMap<PrivateToAssumedBeliefMap> wm2wmMap;
 		try {
 			wm2wmMap = new PointerMap<PrivateToAssumedBeliefMap>(this,
@@ -67,7 +67,7 @@ public class AssumedBeliefTracker extends ManagedComponent {
 	 * @see cast.core.CASTComponent#runComponent()
 	 */
 	@Override
-	protected void runComponent() {log("Private tracker running2");
+	protected void runComponent() {
 		tracker.run();
 	}
 
