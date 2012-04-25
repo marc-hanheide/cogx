@@ -90,7 +90,8 @@ extends AbstractDialogueComponent
 			// TODO the second argument should be the path to the directory where
 			// the function plugin jar(s) can be found
 			File domainFile = new File(args.get("--domainFile"));
-			planner = new CPlanWrapper(domainFile, null);
+			// TODO fix this ! commented out to prevent double trove.jar issues (hz, 2012-04-20)
+			// planner = new CPlanWrapper(domainFile, null);
 		}
 		if (args.containsKey("--contentRel")) {
 			contentRel = args.get("--contentRel");

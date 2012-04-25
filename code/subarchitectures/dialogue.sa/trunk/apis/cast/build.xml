@@ -4,16 +4,18 @@
     <property name="build.sysclasspath" value="last" />
 
 	<!-- =================================================================== -->
-     <!-- Add JAR files to classpath                                          -->
-     <!-- =================================================================== -->
-     <path id="build.classpath">
+	<!-- Add JAR files to classpath                                          -->
+	<!-- =================================================================== -->
+	<path id="build.classpath">
          <fileset dir="${jar.dir}" includes="*.jar"/>
          <pathelement path="${ice.jar}"/>
          <pathelement path="${cast.jar}"/>
          <pathelement path="${antice.jar}"/>
-
-          <pathelement path="${log4j.jar}"/>
-     </path>
+         <pathelement path="${log4j.jar}"/>
+         <fileset dir="${projectroot.dir}/subarchitectures/dialogue.sa/jar">
+            <include name="*.jar"/>
+         </fileset>
+	</path>
 
 	  
 	<!-- =================================================================== -->

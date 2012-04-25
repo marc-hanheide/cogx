@@ -1,10 +1,12 @@
 package de.dfki.lt.tr.cast.dialogue;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import autogen.Planner.Action;
 import autogen.Planner.POPlan;
 
 import cast.CASTException;
@@ -15,27 +17,49 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
+import de.dfki.lt.tr.cast.dialogue.planverb.PlanVerbalizer;
 import de.dfki.lt.tr.cast.dialogue.util.POPlanUtils;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
+import de.dfki.lt.tr.planverb.history.Step;
 
 public class POPlanMonitor extends ManagedComponent {
 
 	private Map<Integer,List<POPlan>> runningMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,List<POPlan>> finishedMap = new HashMap<Integer,List<POPlan>>();
-	private String pddldomain = "";
-	private String grammarpath = "";
+
+	private PlanVerbalizer pevModule; 
 	
 	protected void configure(Map<String, String> args) {
+		String pddldomain = "";
+		String grammarpath = "";
+		String domainannotation = "";
+		
 		// TODO Auto-generated method stub
 		super.configure(args);
 		if (args.containsKey("--pddldomain")) {
 			pddldomain = args.get("--pddldomain");
-			log(pddldomain);
+			log("pddldomain=" + pddldomain);
 		}
 		if (args.containsKey("--grammarpath")) {
 			grammarpath = args.get("--grammarpath");
-			log(grammarpath);
+			log("grammarpath=" + grammarpath);
 		}
+		if (args.containsKey("--domainannotation")) {
+			domainannotation = args.get("--domainannotation");
+			log("domainannotation=" + domainannotation);
+		}
+		
+		try {
+			log("trying to create PEV Module with domainannotation=" + domainannotation + "pddldomain=" + pddldomain + "grammarpath=" + grammarpath);
+			pevModule = new PlanVerbalizer(domainannotation, pddldomain, grammarpath, this);
+			log("created PEV Module with domainannotation=" + domainannotation + "pddldomain=" + pddldomain + "grammarpath=" + grammarpath);
+		} catch (IOException e) {
+			logException(e);
+		}
+		
 	}
 
 	protected void start() {
@@ -70,7 +94,7 @@ public class POPlanMonitor extends ManagedComponent {
 			return;
 		}
 		log("ADDED POPlan: " + poplanToString(_newPOPlan));
-		VerbalisationUtils.verbaliseString(this, "Got a new POPlan");
+		// VerbalisationUtils.verbaliseString(this, "Got a new POPlan");
 		if (_newPOPlan.status.name().equals("RUNNING")) {
 			runningMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			runningMap.get(_newPOPlan.taskID).add(_newPOPlan);
@@ -78,6 +102,8 @@ public class POPlanMonitor extends ManagedComponent {
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			finishedMap.get(_newPOPlan.taskID).add(_newPOPlan);
+			log("about to report finished POPlan...");
+			reportFinishedPOPlan(_newPOPlan);
 		}
 	}
 	
@@ -93,13 +119,15 @@ public class POPlanMonitor extends ManagedComponent {
 			return;
 		}
 		log("OVERWRITTEN POPlan: " + poplanToString(_oldPOPlan));
-		VerbalisationUtils.verbaliseString(this, "Got an overwritten POPlan");
+		// VerbalisationUtils.verbaliseString(this, "Got an overwritten POPlan");
 		
 		if (_oldPOPlan.status.name().equals("RUNNING")) {
 			runningMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
+			log("about to report finished POPlan...");
+			reportFinishedPOPlan(_oldPOPlan);
 		}
 		
 		/*for (Map.Entry<Integer, List<POPlan>> entry : runningMap.entrySet()) {
@@ -115,8 +143,31 @@ public class POPlanMonitor extends ManagedComponent {
 		}*/
 	}
 
+	private void reportFinishedPOPlan(POPlan pp) {
+		log("entered reportFinishedPOPlan()");
+		List<Step<String>> actionList = POPlanUtils.extractSteps(pp);
+		
+		List<String> linkList = POPlanUtils.extractLinks(pp);
+		StringBuilder linksSection = new StringBuilder();
+		
+		for (String link : linkList) {
+			linksSection.append(link + "\n");
+		}
+		
+		log("links: " + linksSection);
+		
+		log("constructing a de.dfki.lt.tr.planverb.planning.pddl.POPlan from the autogen.Planner.POPlan");
+		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = 
+				new de.dfki.lt.tr.planverb.planning.pddl.
+				POPlan(new Integer(pp.taskID).toString(), actionList, linksSection.toString());
+		log("calling PEV Module");
+		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
+		log("REPORTING FINISHED POPLAN:\n" + report);
+		VerbalisationUtils.verbaliseString(this, report);
+	}
+	
+	
 	private String poplanToString(POPlan _poPlan) {
-
 		return POPlanUtils.POPlanToString(_poPlan);
 	}
 	
