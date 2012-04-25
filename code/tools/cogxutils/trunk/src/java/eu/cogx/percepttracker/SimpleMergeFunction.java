@@ -1,5 +1,5 @@
 /**
- * @author Marc Hanheide (marc@hanheide.de)
+ * @author Marc Hanheide (marc@hanheide.de) 
  */
 package eu.cogx.percepttracker;
 
@@ -46,7 +46,7 @@ import eu.cogx.beliefs.slice.VerifiedBelief;
  * @author Marc Hanheide (marc@hanheide.de)
  * 
  */
-public class RRSimpleMergeFunction<From extends dBelief, Via extends dBelief, To extends dBelief>
+public class SimpleMergeFunction<From extends dBelief, Via extends dBelief, To extends dBelief>
 		implements WMSimpleMerger.MergeFunction<From, Via, To> {
 
 	/** the very small epsilon to test doubles for equality */
@@ -69,7 +69,7 @@ private final Class<Via> m_viaCls;
 	 *            they will never match and an update will cause an
 	 *            {@link IncompatibleAssignmentException}
 	 */
-	public RRSimpleMergeFunction(List<String> types, PointerMap<?> map,
+	public SimpleMergeFunction(List<String> types, PointerMap<?> map,
 			Class<From> _fromCls, Class<Via> _viaCls, Class<To> _toCls) {
 		super();
 		this.beliefTypes = types;
@@ -81,7 +81,7 @@ private final Class<Via> m_viaCls;
 
 	}
 
-	public RRSimpleMergeFunction(List<String> types, PointerMap<?> map,
+	public SimpleMergeFunction(List<String> types, PointerMap<?> map,
 			Collection<String> ignoreKeys, Class<From> _fromCls, Class<Via> _viaCls,
 			Class<To> _toCls) {
 		this(types, map, _fromCls, _viaCls, _toCls);
