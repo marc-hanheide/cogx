@@ -3,16 +3,20 @@
  */
 package eu.cogx.beliefs.utils;
 
+import cast.ConsistencyException;
 import cast.DoesNotExistOnWMException;
+import cast.PermissionException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
+import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.data.specificproxies.IndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
-import eu.cogx.beliefs.slice.GroundedBelief;
-import eu.cogx.beliefs.slice.PerceptBelief;
 
 /**
  * 
@@ -51,6 +55,49 @@ public class BeliefUtils {
 		WorkingMemoryPointer ancestorPtr = getMostRecentAncestorPointer(_pb);
 		assert ancestorPtr.type.equals(CASTUtils.typeName(_pCls)) : "type mismatch for requested percept ancestor";
 		return _component.getMemoryEntry(ancestorPtr.address, _pCls);
+	}
+
+	/**
+	 * Add or update a feature-value pair in a belief. Fetches the belief from
+	 * WM and writes the value back.
+	 * 
+	 * @param _component
+	 * @param _beliefAddress
+	 * @param _clz
+	 * @param _feature
+	 * @param _value
+	 * @throws DoesNotExistOnWMException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 * @throws UnknownSubarchitectureException
+	 */
+	public static <BeliefClass extends dBelief> void addFeature(
+			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
+			Class<BeliefClass> _clz, String _feature, String _value)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
+
+		BeliefClass belief = _component.getMemoryEntry(_beliefAddress, _clz);
+		CASTIndependentFormulaDistributionsBelief<BeliefClass> pb = CASTIndependentFormulaDistributionsBelief
+				.create(_clz, belief);
+		addFeature(pb, _feature, _value);
+		_component.overwriteWorkingMemory(_beliefAddress, pb.get());
+	}
+
+	public static <BeliefClass extends dBelief> void addFeature(
+			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
+			String _feature, String _value) {
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+		_belief.getContent().put(_feature, fd);
+	}
+
+	public static <BeliefClass extends dBelief> void addFeature(
+			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
+			String _feature, dFormula _value) {
+		FormulaDistribution fd = FormulaDistribution.create();
+		fd.add(_value, 1);
+		_belief.getContent().put(_feature, fd);
 	}
 
 }
