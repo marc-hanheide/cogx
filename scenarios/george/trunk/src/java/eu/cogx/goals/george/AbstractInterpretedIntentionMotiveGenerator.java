@@ -1,7 +1,5 @@
 package eu.cogx.goals.george;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -307,7 +305,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 				.tryDecode(_intention);
 		println("decoded it.");
 
-		assertNotNull(decoded);
+		assert(decoded != null);
 		CASTEffect successEffect = decoded.getOnSuccessEffect();
 		successEffect.makeItSo(this);
 
