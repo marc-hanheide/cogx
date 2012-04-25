@@ -10,10 +10,10 @@ import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
 import castutils.slice.PrivateToAssumedBeliefMap;
-import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.AssumedBelief;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import eu.cogx.percepttracker.ThresholdedBeliefMatcher;
+import eu.cogx.percepttracker.AlwaysFalseMatcher;
 import eu.cogx.percepttracker.WMTracker;
 /**
  * @author Nick Hawes, but copied from Marc Hanheide (marc@hanheide.de)
@@ -46,7 +46,7 @@ public class AssumedBeliefTracker extends ManagedComponent {
 					PrivateToAssumedBeliefMap.class);
 			tracker = WMTracker.create(this, GroundedBelief.class,
 					AssumedBelief.class,
-					new ThresholdedBeliefMatcher<GroundedBelief, AssumedBelief>(
+					new AlwaysFalseMatcher<GroundedBelief, AssumedBelief>(
 							types, wm2wmMap, GroundedBelief.class,
 							AssumedBelief.class), wm2wmMap, config
 							.get("--write-to-sa"));
