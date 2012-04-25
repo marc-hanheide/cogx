@@ -39,11 +39,11 @@
 	<condition property="build.vision_sa">
 		<equals arg1="${build_sa_vision}" arg2="ON" />
 	</condition>
-	<condition property="build.dialogue_sa">
-		<equals arg1="${build_sa_dialogue}" arg2="ON" />
-	</condition>
 	<condition property="build.coma_sa">
 		<equals arg1="${build_sa_coma}" arg2="ON" />
+	</condition>
+	<condition property="build.dialogue_sa">
+		<equals arg1="${build_sa_dialogue}" arg2="ON" />
 	</condition>
 	<condition property="build.categorical_sa">
 		<equals arg1="${build_sa_categorical}" arg2="ON" />
@@ -82,11 +82,11 @@
 	<target name="abducer" if="build.abducer">
 	  <ant target="${target}" dir="tools/abducer/api-java" />
 	</target>
-	<target name="sa.dialogue" if="build.dialogue_sa">
-	  <ant target="${target}" dir="subarchitectures/dialogue.sa" />
-	</target>
 	<target name="sa.coma" if="build.coma_sa">
 	  <ant target="${target}" dir="subarchitectures/coma.sa" />
+	</target>
+	<target name="sa.dialogue" if="build.dialogue_sa">
+	  <ant target="${target}" dir="subarchitectures/dialogue.sa" />
 	</target>
 	<target name="sa.categorical" if="build.categorical_sa">
 	  <ant target="${target}" dir="subarchitectures/categorical.sa" />
@@ -157,10 +157,10 @@
 		<antcall target="abducer">
 		  <param name="target" value="${target}" />
 		</antcall>
-		<antcall target="sa.dialogue">
+		<antcall target="sa.coma">
 		  <param name="target" value="${target}" />
 		</antcall>
-		<antcall target="sa.coma">
+		<antcall target="sa.dialogue">
 		  <param name="target" value="${target}" />
 		</antcall>
 		<antcall target="sa.categorical">
