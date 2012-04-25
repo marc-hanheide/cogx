@@ -12,6 +12,7 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 
 public class VerifiedBeliefUpdateEffect implements CASTEffect {
 
@@ -70,7 +71,7 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 
 				// update the verified belief in memory
 				for (String feature : featuresToSet.keySet()) {
-					component.getLogger().info(
+					component.log(
 							"setting "
 									+ feature
 									+ " -> "
@@ -78,11 +79,12 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 											.dFormulaToString(featuresToSet
 													.get(feature)) + "...");
 
-					// TODO: do the actual update here
-
+					BeliefUtils.addFeature(verifiedBelief, feature,
+							featuresToSet.get(feature));
 
 				}
-				component.getLogger().info("done setting up things");
+				
+				component.log("done setting up things");
 
 				component.overwriteWorkingMemory(verifiedBeliefWMP.address,
 						verifiedBelief.get());
@@ -93,5 +95,4 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 		}
 
 	}
-
 }
