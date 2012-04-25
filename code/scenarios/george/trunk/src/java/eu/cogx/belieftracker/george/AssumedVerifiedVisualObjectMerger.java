@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import VisionData.VisualObject;
+import VisionData.ProtoObject;
+
 import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
@@ -13,7 +15,7 @@ import eu.cogx.beliefs.slice.AssumedBelief;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import eu.cogx.percepttracker.RRSimpleMergeFunction;
+import eu.cogx.percepttracker.RRMergeFunction;
 import eu.cogx.percepttracker.WMSimpleMerger;
 /**
  * 
@@ -23,7 +25,10 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
-	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE);
+        private static final String PROTOOBJECTTYPE = SimpleDiscreteTransferFunction
+                        .getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
+
+	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE,PROTOOBJECTTYPE);
 
 	WMSimpleMerger<AssumedBelief, VerifiedBelief, MergedBelief> merger = null;
 
@@ -43,10 +48,10 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 			srcSrcMap = new PointerMap<WMMap>(this, WMMap.class);
 			merger = WMSimpleMerger.create(this, AssumedBelief.class, VerifiedBelief.class,
 					MergedBelief.class,
-					new RRSimpleMergeFunction<AssumedBelief, VerifiedBelief, MergedBelief>(
+					new RRMergeFunction<AssumedBelief, VerifiedBelief, MergedBelief>(
 							types, srcDestMap, AssumedBelief.class, VerifiedBelief.class,
 							MergedBelief.class),
-					new RRSimpleMergeFunction<VerifiedBelief, AssumedBelief, MergedBelief>(
+					new RRMergeFunction<VerifiedBelief, AssumedBelief, MergedBelief>(
 							types, srcDestMap, VerifiedBelief.class, AssumedBelief.class,
 							MergedBelief.class), 		
 							 srcDestMap, srcSrcMap, config
