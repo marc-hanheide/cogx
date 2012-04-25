@@ -79,6 +79,18 @@ material %(material_name)s
 }
 """
 
+tmpl_include_model = """
+  <model:physical name="%(model_name)s"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>%(x)f %(y)f %(z)f</xyz>
+  <rpy>0 0 %(zrot)f</rpy>
+
+  <include embedded="true">
+    <xi:include href="%(model_file)s" />
+  </include>
+  </model:physical>
+"""
+
 tmpl_box = readConfig("res/box.tmpl")
 
 class OgreBox:
@@ -287,7 +299,10 @@ mkdir("xdata/Media/materials/textures")
 mkdir("xdata/models")
 
 fmat = open("xdata/Media/materials/scripts/genmodels.material", "w")
-a = QtGui.QApplication(sys.argv)
+fscn = open("xdata/scene.objects.in", "w")
+
+a = QtGui.QApplication(sys.argv) # Qt is used for rendering
+x = 0.1; y = 0.8; z = 1.5; zrot = 0
 for l in labels:
     for si,s in enumerate(sizes):
         for ci,c in enumerate(colors):
@@ -304,4 +319,15 @@ for l in labels:
 
             fmat.write(b.makeMaterials())
 
+            z += 1.1
+            zrot = (zrot + 7) % 360
+            fscn.write(tmpl_include_model % {
+                    "model_name": name,
+                    "model_file": fname[fname.find('/')+1:],
+                    "x": x, "y": y, "z": z,
+                    "zrot": zrot
+                   })
+
+fmat.close()
+fscn.close()
 
