@@ -41,7 +41,7 @@ public class FeatureAscriptionIntention extends AssertionIntention {
 	@Override
 	public CASTEffect getOnSuccessEffect() {
 		Map<String, dFormula> updates = new HashMap<String, dFormula>();
-		updates.put(getFeatureName(), BeliefFormulaFactory.maybeNegatedElementaryFormula(getFeatureValue(), isPositive()));
+		updates.put(getFeatureName(), BeliefFormulaFactory.maybeNegatedElementaryFormula(getFeatureValue(), !isPositive()));
 		return new VerifiedBeliefUpdateEffect(getEntity(), updates);
 	}
 	
