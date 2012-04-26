@@ -46,26 +46,27 @@ namespace smlearning {
 */
 struct Action 
 {
-	// Action (const Action& action_to_cpy){(*this)=action_to_cpy; return *this;}
-	// Action& operator=(const Action& a)
-	// {
-	// 	if (this != &a)
-	// 	{
-	// 		armState = a.armState;
-	// 		efRoll = a.efRoll;
-	// 		efPitch = a.efPitch;
-	// 		efYaw = a.efYaw;
-	// 		horizontalAngle = ef.horizontalAngle;
-	// 		pushDuration = a.pushDuration;
-	// 		effectorPose = a.effectorPose;
-	// 		endEffectorPose = a.endEffectorPose;
-	// 		endEfRoll = a.endEfRoll;
-	// 		endEfPitch = a.endEfPitch;
-	// 		endEfYaw = a.endEfYaw;
-	// 		featureVector = a.featureVector;
-	// 	}
-	// 	return *this;
-	// }
+	Action () {}
+	Action (const Action& action_to_cpy){(*this)=action_to_cpy;}
+	Action& operator=(const Action& a)
+	{
+		if (this != &a)
+		{
+			armState = a.armState;
+			efRoll = a.efRoll;
+			efPitch = a.efPitch;
+			efYaw = a.efYaw;
+			horizontalAngle = a.horizontalAngle;
+			pushDuration = a.pushDuration;
+			effectorPose = a.effectorPose;
+			endEffectorPose = a.endEffectorPose;
+			endEfRoll = a.endEfRoll;
+			endEfPitch = a.endEfPitch;
+			endEfYaw = a.endEfYaw;
+			featureVector = a.featureVector;
+		}
+		return *this;
+	}
 	/** Arm state - (joint) dynamic configuration */
 	golem::GenConfigspaceState armState;
 	/** End-effector GLOBAL pose */

@@ -139,6 +139,7 @@ SET(METALEARNING_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
 	${SMLEARNING_ROOT}/src/metalearning/SMRegion.cpp
+	${SMLEARNING_ROOT}/src/metalearning/GNGSMRegion.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ActiveLearnScenarioIce.cpp
@@ -168,6 +169,7 @@ SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
 	${SMLEARNING_ROOT}/include/metalearning/SMRegion.h
+	${SMLEARNING_ROOT}/include/metalearning/GNGSMRegion.h
 #	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
 #	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
 #	${SMLEARNING_ROOT}/include/metalearning/ActiveLearnScenarioIce.h
@@ -183,7 +185,8 @@ SET(SCENARIO_SOURCES
 	${SMLEARNING_ROOT}/src/metalearning/data_structs.cpp
 	${SMLEARNING_ROOT}/src/scenario/Scenario.cpp	
 	${SMLEARNING_ROOT}/src/scenario/PredictingScenario.cpp
-	${SMLEARNING_ROOT}/src/scenario/ActiveGNGScenario.cpp
+#	${SMLEARNING_ROOT}/src/scenario/ActiveGNGScenario.cpp
+	${SMLEARNING_ROOT}/src/scenario/ActiveLearnScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
 	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
 )
@@ -198,7 +201,8 @@ SET(SCENARIO_HEADERS
 	${SMLEARNING_ROOT}/include/scenario/PushingApplication.h
 	${SMLEARNING_ROOT}/include/scenario/Scenario.h
 	${SMLEARNING_ROOT}/include/scenario/PredictingScenario.h
-	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
+#	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
+	${SMLEARNING_ROOT}/include/scenario/ActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
 )
 
@@ -212,8 +216,11 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/scenario/offline_experiment.cpp
 )
 
-SET(ACTIVEGNG_EXPERIMENT_SOURCE
-	${SMLEARNING_ROOT}/src/scenario/activegng_experiment.cpp
+# SET(ACTIVEGNG_EXPERIMENT_SOURCE
+# 	${SMLEARNING_ROOT}/src/scenario/activegng_experiment.cpp
+# )
+SET(ACTIVELEARN_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/activelearn_experiment.cpp
 )
 
 SET(OFFLINEACTIVEGNG_EXPERIMENT_SOURCE
@@ -296,9 +303,8 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/defaultnet.config
 	${SMLEARNING_ROOT}/config/offline_experiment.xml
 	${SMLEARNING_ROOT}/config/prediction_experiment.xml
-	${SMLEARNING_ROOT}/config/activegng_experiment.xml
-#	${SMLEARNING_ROOT}/config/pushing_appl.xml
-#	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
+#	${SMLEARNING_ROOT}/config/activegng_experiment.xml
+	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
@@ -359,7 +365,7 @@ INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 #ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 #ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
-#ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
@@ -376,7 +382,7 @@ ADD_EXECUTABLE(data_plot_test_client ${DATA_PLOT_TEST_CLIENT_SOURCE})
 ADD_EXECUTABLE(data_plot_server ${DATA_PLOT_SERVER_SOURCE})
 ADD_EXECUTABLE(tracker_test ${TRACKER_TEST_SOURCE})
 ADD_EXECUTABLE(prediction_experiment ${PREDICTION_EXPERIMENT_SOURCE})
-ADD_EXECUTABLE(activegng_experiment ${ACTIVEGNG_EXPERIMENT_SOURCE})
+# ADD_EXECUTABLE(activegng_experiment ${ACTIVEGNG_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(offlineactivegng_experiment ${OFFLINEACTIVEGNG_EXPERIMENT_SOURCE})
 
 INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/training.sh DESTINATION bin/SMLearning)
@@ -384,9 +390,9 @@ INSTALL(PROGRAMS ${SMLEARNING_ROOT}/src/scripts/ensemble_experiment.sh DESTINATI
 INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
-#INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
+# INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS offlineactivegng_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)

@@ -57,6 +57,36 @@ void CrySSMEx::setSSM (std::string ssmfile)
 
 }
 
+void CrySSMEx::initializeInputQuantizer (unsigned int dim)
+{
+	input_quantizer = new GNG_Quantizer (dim);
+}
+
+void CrySSMEx::initializeOutputQuantizer (unsigned int dim)
+{
+	output_quantizer = new GNG_Quantizer (dim);
+}
+
+void CrySSMEx::initializeStateQuantizer (unsigned int dim)
+{
+	state_quantizer = new CVQ (dim);
+}
+
+void CrySSMEx::setInputQuantizer (const GNG_Quantizer& q)
+{
+	input_quantizer = new GNG_Quantizer (q);
+}
+
+void CrySSMEx::setOutputQuantizer (const GNG_Quantizer& q)
+{
+	output_quantizer = new GNG_Quantizer (q);
+}
+
+void CrySSMEx::setStateQuantizer (const CVQ& q)
+{
+	state_quantizer = new CVQ (q);
+}
+
 void CrySSMEx::setInputQuantizer (std::string inputqfile)
 {
 	try {
@@ -168,18 +198,173 @@ void CrySSMEx::averageModelVectors ()
 
 }
 
-void CrySSMEx::saveInputQuantizer () {
+void CrySSMEx::saveInputQuantizer (string filename) {
 
-	input_quantizer->close ();
-	save_quantizer (input_quantizer, "cryssmex_inputq.qnt");
+	if (input_quantizer->is_open ())
+		input_quantizer->close ();
+	save_quantizer (input_quantizer, filename);
 
 }
 
-void CrySSMEx::saveOutputQuantizer () {
+void CrySSMEx::saveOutputQuantizer (string filename) {
 
+	if (output_quantizer->is_open ())
+		output_quantizer->close ();
+	save_quantizer (output_quantizer, filename);
+
+}
+
+void CrySSMEx::setData (string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod)
+{
+	if (!LearningData::read_dataset (seqFile, data, featLimits )) {
+		cerr << "error reading data" << endl;
+		exit(-1);
+	}
+	setData (data, featLimits, normalization, featureSelectionMethod);
+}
+
+void CrySSMEx::setData (LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod) {
+
+	assert (data.size());
+	// This data copying is really hacky... 
+	std::vector<neuralgas::Vector<double>*>* inputData = new std::vector<neuralgas::Vector<double>*>;
+
+	//Get input feature vectors
+	for (unsigned int i=0; i<data.size(); i++)
+	{
+		vector<FeatureVector> inputSeq = LearningData::load_cryssmexinputsequence (data[i], featureSelectionMethod, normalization, featLimits);
+		for (unsigned int j=0; j<inputSeq.size(); j++)
+		{
+			neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(inputSeq[j]);
+			inputData->push_back (new_item);
+		}
+	}
+	static_cast<GNG_Quantizer*>(input_quantizer)->setData (inputData);
+	for(unsigned int i=0; i < inputData->size(); i++)
+		delete (*inputData)[i];
+	inputData->clear();
+	delete inputData;
+
+	//Get output feature vectors
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+	{
+		std::vector<neuralgas::Vector<double>*>* outputData = new std::vector<neuralgas::Vector<double>*>;
+		for (unsigned int i=0; i<data.size(); i++)
+		{
+			vector<FeatureVector> outputSeq = LearningData::load_cryssmexoutputsequence (data[i], featureSelectionMethod, normalization, featLimits);
+			for (unsigned int j=0; j<outputSeq.size(); j++)
+			{
+				neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(outputSeq[j]);
+				outputData->push_back (new_item);
+			}
+		}
+		static_cast<GNG_Quantizer*>(output_quantizer)->setData (outputData);
+		for (unsigned int i=0; i<outputData->size(); i++)
+			delete (*outputData)[i];
+		outputData->clear();
+		delete outputData;
+	}
+
+	
+}
+
+void CrySSMEx::findDislocatedNodes ()
+{
+	GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(input_quantizer);
+	GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(output_quantizer);
+	if (inputQuantizer->size())
+	{
+		inputQuantizer->calculateValueRange ();
+		inputQuantizer->calculateMinimumDescriptionLength ();
+		inputQuantizer->findDislocatedNodesStableGraph ();
+	}
+	if (outputQuantizer->size())
+	{
+		outputQuantizer->calculateValueRange ();
+		outputQuantizer->calculateMinimumDescriptionLength ();
+		outputQuantizer->findDislocatedNodesStableGraph ();
+	}
+
+}
+
+void CrySSMEx::trainInputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod) {
+
+	vector<FeatureVector> currentInputSeq = LearningData::load_cryssmexinputsequence (currentChunkSeq, featureSelectionMethod, normalization, featLimits);
+	// hacky conversion
+	vector<neuralgas::Vector<double>* >* newInputSeq = new vector<neuralgas::Vector<double>* >;
+	for (unsigned int i=0; i<currentInputSeq.size(); i++)
+	{
+		neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(currentInputSeq[i]);
+		newInputSeq->push_back (new_item);
+	}
+	GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(input_quantizer);
+	inputQuantizer->addData (newInputSeq);
+
+	if (iteration == 0)
+	{
+		if (inputQuantizer->graphsize() == 0)
+			inputQuantizer->setRefVectors(2);
+	}
+	inputQuantizer->open();
+	inputQuantizer->resetLearning ();
+	inputQuantizer->setInsertionRate (newInputSeq->size());
+
+	for (unsigned int i=0; i < newInputSeq->size(); i++)
+		delete (*newInputSeq)[i];
+	newInputSeq->clear();
+	delete newInputSeq;
+
+	inputQuantizer->begin ();
+
+}
+
+void CrySSMEx::trainOutputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod) {
+
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+	{
+
+		vector<FeatureVector> currentOutputSeq = LearningData::load_cryssmexoutputsequence (currentChunkSeq, featureSelectionMethod, normalization, featLimits);
+		// hacky conversion
+		vector<neuralgas::Vector<double>* >* newOutputSeq = new vector<neuralgas::Vector<double>* >;
+		for (unsigned int i=0; i<currentOutputSeq.size(); i++)
+		{
+			neuralgas::Vector<double> *new_item = new neuralgas::Vector<double>(currentOutputSeq[i]);
+			newOutputSeq->push_back (new_item);
+		}
+		GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(output_quantizer);
+		outputQuantizer->addData (newOutputSeq);
+
+		if (iteration == 0)
+		{
+			if (outputQuantizer->graphsize() == 0)
+				outputQuantizer->setRefVectors(2);
+		}
+		outputQuantizer->open();
+		outputQuantizer->resetLearning ();
+
+		outputQuantizer->setInsertionRate (newOutputSeq->size());
+
+		for (unsigned int i=0; i < newOutputSeq->size(); i++)
+			delete (*newOutputSeq)[i];
+		newOutputSeq->clear();
+		delete newOutputSeq;
+
+		outputQuantizer->begin ();
+	}
+
+}
+
+void CrySSMEx::waitForInputQuantizer () {
+	static_cast<GNG_Quantizer*>(input_quantizer)->wait ();
+	static_cast<GNG_Quantizer*>(input_quantizer)->showGraph ();
+	input_quantizer->close ();
+
+}
+
+void CrySSMEx::waitForOutputQuantizer () {
+	static_cast<GNG_Quantizer*>(output_quantizer)->wait ();
+	static_cast<GNG_Quantizer*>(output_quantizer)->showGraph ();
 	output_quantizer->close ();
-	save_quantizer (output_quantizer, "cryssmex_outputq.qnt");
-
 }
 
 
@@ -191,11 +376,6 @@ void ActiveCrySSMEx::initializeInputQuantizer (unsigned int dim)
 void ActiveCrySSMEx::initializeOutputQuantizer (unsigned int dim)
 {
 	output_quantizer = new ActiveGNG_Quantizer (dim);
-}
-
-void ActiveCrySSMEx::initializeStateQuantizer (unsigned int dim)
-{
-	state_quantizer = new CVQ (dim);
 }
 
 void ActiveCrySSMEx::setData (string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod, int index) {

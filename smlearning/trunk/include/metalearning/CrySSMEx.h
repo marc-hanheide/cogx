@@ -40,12 +40,24 @@ public:
 	~CrySSMEx ();
 	/** set Substochastic Sequential Machine from file */
 	void setSSM (std::string ssmfile);
+	/** initialize input quantizer */
+	virtual void initializeInputQuantizer (unsigned int dim);
+	/** initialize output quantizer */
+	virtual void initializeOutputQuantizer (unsigned int dim);
+	/** initialize state quantizer */
+	void initializeStateQuantizer (unsigned int dim);
 	/** set Input Quantizer from file */
 	void setInputQuantizer (std::string inputqfile);
 	/** set Output Quantizer from file */
 	void setOutputQuantizer (std::string outputqfile);
 	/** set State Quantizer from file */
 	void setStateQuantizer (std::string cvqfile);
+	/** set input quantizer from GNG quantizer */
+	void setInputQuantizer (const GNG_Quantizer&);
+	/** set output quantizer from GNG quantizer */
+	void setOutputQuantizer (const GNG_Quantizer&);
+	/** set state quantizer from CVQ quantizer */
+	void setStateQuantizer (const CVQ&);
 	/** get Substochastic Sequential Machine from file */
 	SSM* getSSM () { return ssm; }
 	/** get Input Quantizer from file */
@@ -54,10 +66,24 @@ public:
 	Quantizer* getOutputQuantizer () { return output_quantizer; }
 	/** get State Quantizer from file */
 	Quantizer* getStateQuantizer () { return state_quantizer; }
+	/** set present data sequences from file */
+	void setData (std::string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
+	/** set data sequences from present data set */
+	void setData (LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
+	/** find dislocated nodes in input and output quantizers */
+	void findDislocatedNodes ();
+	/** train input quantizer with a new data sequence */
+	void trainInputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
+	/** train output quantizer with a new data sequence */
+	void trainOutputQuantizer (int iteration, LearningData::Chunk::Seq& currentChunkSeq, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
+	/** Wait for input quantizer to finish learning */
+	void waitForInputQuantizer ();
+	/** Wait for output quantizer to finish learning */
+	void waitForOutputQuantizer ();
 	/** save input quantizer */
-	void saveInputQuantizer ();
+	void saveInputQuantizer (string file = "cryssmex_inputq.qnt");
 	/** save output quantizer */
-	void saveOutputQuantizer ();
+	void saveOutputQuantizer (string file = "cryssmex_outputq.qnt");
 	/** parse an input data sequence for prediction */
 	void parseSequence (DataSequence& sequence, DataSequence& predicted_sequence);
 	/** parse an input chunk for prediction */
@@ -92,11 +118,9 @@ class ActiveCrySSMEx : public CrySSMEx
 {
 public:
 	/** initialize input quantizer */
-	void initializeInputQuantizer (unsigned int dim);
+	virtual void initializeInputQuantizer (unsigned int dim);
 	/** initialize output quantizer */
-	void initializeOutputQuantizer (unsigned int dim);
-	/** initialize state quantizer */
-	void initializeStateQuantizer (unsigned int dim);
+	virtual void initializeOutputQuantizer (unsigned int dim);
 	/** set present data sequences */
 	void setData (std::string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod, int index = -1);
 	/** train input quantizer with a new data sequence */

@@ -36,7 +36,8 @@
 
 #include <scenario/Scenario.h>
 #include <scenario/PredictingScenario.h>
-#include <scenario/ActiveGNGScenario.h>
+// #include <scenario/ActiveGNGScenario.h>
+#include <scenario/ActiveLearnScenario.h>
 #include <scenario/Polyflap.h>
 
 namespace po = boost::program_options;
@@ -45,7 +46,8 @@ namespace smlearning {
 
 bool XMLData(Scenario::Desc&, XMLContext*, Context*);
 bool XMLData(PredictingScenario::Desc&, XMLContext*, Context*);
-bool XMLData(ActiveGNGScenario::Desc&, XMLContext*, Context*);
+// bool XMLData(ActiveGNGScenario::Desc&, XMLContext*, Context*);
+bool XMLData(ActiveLearnScenario::Desc&, XMLContext*, Context*);
 
 /** Application */
 template<typename S, typename D>
@@ -81,7 +83,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 {
 	try {
 
-		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario") {
+		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario" || S::getName() == "ActiveLearnScenario") {
 			prgOptDesc.add_options()
 				("help,h", "produce help message")
 				("numSequences,S", po::value<string>(), "number of sequences")
@@ -97,29 +99,43 @@ void PushingApplication<S,D>::define_program_options_desc()
 				("quantizersPath,p", po::value<string>(), "path for looking for quantizer_inputq.qnt quantizer_outputq.qnt and cvq quantizer files");
 
 		}
-		if (S::getName() == "ActiveGNGScenario" ) {
+		// if (S::getName() == "ActiveGNGScenario" ) {
+		// 	prgOptDesc.add_options ()
+		// 		("maxepochsmdl,e", po::value<unsigned int>()->default_value (100), "Set maximum nr of epochs after mdl reduction is expected (for GNG based quantizing). This value should be proportionally changed depending on maxepochserror parameter.")
+		// 		("maxepochserror", po::value<unsigned int>()->default_value (1), "Set maximum nr of epochs after error reduction is expected (for GNG based quantizing)")
+		// 		("modelefficiency,c", po::value<double>()->default_value (5), "model efficiency constant (for GNG based quantizing) for input space")
+		// 		("output_modelefficiency", po::value<double>()->default_value(10), "model efficiency constant (for GNG based quantizing) for output space")
+		// 		("learningrate,l", po::value<double>()->default_value (0.8), "default learning rate for winner nodes (for GNG based quantizing)")
+		// 		("accuracy,y", po::value<double>()->default_value(0.001), "data accuracy constant for input space GNG quantization")
+		// 		("output_accuracy", po::value<double>()->default_value (0.0001), "data accuracy constant for output space GNG quantization")
+		// 		("input_quantizer,i", po::value<string>(), "Pretrained Input quantizer if available")
+		// 		("output_quantizer,o", po::value<string>(), "Pretrained Output quantizer if available")
+		// 		("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension) if available")
+		// 		("inputout", po::value<string>(), "file for redirecting input space quantization output")
+		// 		("outputout", po::value<string>(), "file for redirecting output space quantization output")
+		// 		("mdl,m", "save MDL history to a file mdl.txt");
+
+				
+		// }
+		if (/*S::getName() == "ActiveGNGScenario" || */S::getName() == "PredictingScenario")
+			prgOptDesc.add_options ()
+				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
+				("normalize,n", "normalize sequences");
+
+		if (S::getName() == "ActiveLearnScenario" ) {
 			prgOptDesc.add_options ()
 				("maxepochsmdl,e", po::value<unsigned int>()->default_value (100), "Set maximum nr of epochs after mdl reduction is expected (for GNG based quantizing). This value should be proportionally changed depending on maxepochserror parameter.")
 				("maxepochserror", po::value<unsigned int>()->default_value (1), "Set maximum nr of epochs after error reduction is expected (for GNG based quantizing)")
-				("modelefficiency,c", po::value<double>()->default_value (5), "model efficiency constant (for GNG based quantizing) for input space")
+				("modelefficiency,c", po::value<double>()->default_value (1), "model efficiency constant (for GNG based quantizing) for input space")
 				("output_modelefficiency", po::value<double>()->default_value(10), "model efficiency constant (for GNG based quantizing) for output space")
 				("learningrate,l", po::value<double>()->default_value (0.8), "default learning rate for winner nodes (for GNG based quantizing)")
-				("accuracy,y", po::value<double>()->default_value(0.001), "data accuracy constant for input space GNG quantization")
+				("accuracy,y", po::value<double>()->default_value(0.0001), "data accuracy constant for input space GNG quantization")
 				("output_accuracy", po::value<double>()->default_value (0.0001), "data accuracy constant for output space GNG quantization")
-				("input_quantizer,i", po::value<string>(), "Pretrained Input quantizer if available")
-				("output_quantizer,o", po::value<string>(), "Pretrained Output quantizer if available")
-				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension) if available")
-				("inputout", po::value<string>(), "file for redirecting input space quantization output")
-				("outputout", po::value<string>(), "file for redirecting output space quantization output")
-				("mdl,m", "save MDL history to a file mdl.txt");
+				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
+				("splitting,s", po::value<unsigned int>()->default_value (30), "Splitting criterion (nr of sequences needed for splitting")
+				("mdl,m", "save MDL history");
 
-				
 		}
-		if (S::getName() == "ActiveGNGScenario" || S::getName() == "PredictingScenario")
-			prgOptDesc.add_options ()
-				("featuresel,f", po::value<string>()->default_value ("obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
-				("normalize,n", "normalize sequences");
-			;
 
 	} catch(std::exception& e) {
 		cerr << "error: " << e.what() << "\n";
