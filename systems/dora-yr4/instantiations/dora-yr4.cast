@@ -14,6 +14,8 @@ VARDEFAULT hardware=simulation
 ###########################################################################
 # the following define the features we want to have enabled in the system #
 # (comments in multiline blocks can only be at the start of the line)     #
+# Override using VARSET (Note: any line not present in the VARSET	  #
+# statement will be set to False, NOT to the default value!		  #
 ###########################################################################
 
 VARDEFAULT feature_options=<multiline>
@@ -104,77 +106,6 @@ ENDIF
 ENDIF
 
 VARDEFAULT host:PlayerHost=localhost
-
-### the directory containing the calibration files to use
-VARDEFAULT vision_calib_root=instantiations/calibration/alu-robot-at-kth
-
-### the default camera ID
-VARDEFAULT prosilica_id=37105
-
-### default MTU value
-VARDEFAULT prosilica_packet_size=1500
-
-### the default goals passed on to the planner GUI
-VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
-
-### the planning domain to use
-VARDEFAULT planning_domain=dora-interactive.pddl
-
-### the default knowledge to use
-VARDEFAULT default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-sim.xml"
-
-### the default probabilities
-VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
-
-### the Haar-like face detector file to use by the people detector
-VARDEFAULT face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
-
-### run coma mediators in a discretising way (only for experiments)
-VARDEFAULT discrete_room_cats=
-#--discrete
-
-### the prior for a room having a person in it
-VARDEFAULT room_has_person=0.2
-
-### all types to be logged from WMs if debug is enabled
-VARDEFAULT logged_types=<multiline>
-  execution.slice.Action,
-  SpatialData.ObjectSearchResult,
-  SpatialData.ViewPoint,
-  SpatialData.ProcessConeGroup,
-  comadata.ComaRoom,
-  SpatialData.RelationalViewPointGenerationCommand,
-  autogen.Planner.Action,
-  autogen.Planner.PlanningTask,
-  SpatialData.NodeHypothesis,
-  eu.cogx.beliefs.slice.GroundedBelief,
-  SpatialData.MapLoadStatus,
-  SpatialProperties.PlaceProperty
-</multiline>
-
-### root for the sift-models
-VARDEFAULT siftroot_=./instantiations/sift-models
-### root for the ply-models
-VARDEFAULT plyroot_=./instantiations/ply-models
-### siftfiles
-VARDEFAULT or3d_sift_files=<multiline>
-   %(siftroot_)/frosties.sift
-   %(siftroot_)/AImagazineSpring1999.sift
-</multiline>
-### ply files
-VARDEFAULT or3d_ply_files=<multiline>
-   %(plyroot_)/frosties.ply
-   %(plyroot_)/AImagazineSpring1999.ply
-</multiline>
-### object labels
-VARDEFAULT or3d_labels=cerealbox magazine
-VARDEFAULT fake_tables=<multiline>
-   --pos-table "3.6, 4.4, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "3.6, 2.0, 8.0, 8.0"
-</multiline>
-
-
-VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim2-shape.cfg
-
 ###########################################################################
 ###########################################################################
 ###########################################################################
@@ -183,37 +114,27 @@ VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim
 HOST [Main]
 IFOPTALL(%(hardware_options), ptz)
     IFEQ(%(hardware),real)
+#### Server that communicates with the PTU through Player
         COMPONENT CPP ptz.server PlayerPTZServer --player-host %(host:PlayerHost) --ptz-device 0
     ELSE
+#### Server that communicates with the Stage simulated PTU through Player
         COMPONENT CPP ptz.server PlayerActServer --player-host %(host:PlayerHost) --ptz-device 0
     ENDIF
 ENDIF
+
 IFEQ(%(hardware),none)
   COMPONENT CPP laser.server LaserServerFake
   COMPONENT CPP robot.server RobotbaseServerFake
 ELSE
+#### Laser server using Player (real robot or Stage simulation)
   COMPONENT CPP laser.server LaserServerPlayer --player-host %(host:PlayerHost)
+#### Odometry/motor server using Player (real robot or Stage simulation)
   COMPONENT CPP robot.server RobotbaseServerPlayer --player-host %(host:PlayerHost)
 ENDIF
 IFOPTALL(%(hardware_options), blobfinder)
+#### Server that provides a simple simulated vision input from Player/Stage
     COMPONENT CPP blob.server PlayerBlobFinderServer --player-host %(host:PlayerHost)
 ENDIF
-
-
-# spatial ################################################################
-
-### CURE config file
-VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
-
-####
-#### VISUALIZATION OPTIONS
-
-
-### Whether to show remotely detected doors in PB
-# (different from door nodes)
-VARDEFAULT display_doors=
-
-VARDEFAULT conceptual_categories=corridor,office,meetingroom
 
 ####
 #### GUI OPTIONS
@@ -221,35 +142,69 @@ VARDEFAULT conceptual_categories=corridor,office,meetingroom
 ### Show PTZ control gui
 VARDEFAULT ptz_test_gui=--testGUI
 
-### SPATIAL.SA parameters
-VARDEFAULT spatial_min_door_width=0.75  # Lower boundary on width of doorways
-VARDEFAULT spatial_max_door_width=0.9  # Upper boundary on width of doorways
-VARDEFAULT min_obstacle_height=0.25
-VARDEFAULT explore_range=2.0
-VARDEFAULT spatial_load_map=--load-map --save-map
-VARDEFAULT spatial_node_obstacle_margin=1.5
-VARDEFAULT spatial_node_unknown_margin=0.5
-VARDEFAULT place_properties_save_file="place_properties.bin"
+##########################################################################
+# spatial ################################################################
+##########################################################################
 
-# If the flag --show3Dobstacles is present then show the height map in Peekabot (in green)
+### CURE config file
+VARDEFAULT spatial_cureconfig=instantiations/cureconfig/cogxp3.ccf
+
+####
+#### VISUALIZATION OPTIONS
+
+### Whether to show remotely detected doors in PB
+# (different from door nodes)
+VARDEFAULT display_doors=
+
+### Room category labels (for PB display component only)
+VARDEFAULT conceptual_categories=corridor,office,meetingroom
+
+### If the flag --show3Dobstacles is present then show the height map in Peekabot (in green)
 VARDEFAULT spatial_show_3d_obstacles=--show3Dobstacles
+
+### Peekabot model files to use for VisualObjects. List of pairs, with 
+#   VisualObject label first, Peekabot model file name second
+VARDEFAULT pb_object_models="cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf"
+
+### SPATIAL.SA parameters
+# Lower boundary on width of doorways
+VARDEFAULT spatial_min_door_width=0.75  
+# Upper boundary on width of doorways
+VARDEFAULT spatial_max_door_width=0.9  
+# Kinect obstacles taller than this are treated as obstacles
+VARDEFAULT min_obstacle_height=0.25 
+# Laser scans are clipped to this range for purposes of
+# determining free space
+VARDEFAULT explore_range=2.0
+# Whether to save and load obstacle grid map
+VARDEFAULT spatial_load_map=--load-map --save-map
+# Placeholders must be this far from obstacles (times robot width)
+VARDEFAULT spatial_node_obstacle_margin=1.5
+# Placeholders must be this far from unexplored space (times robot width)
+VARDEFAULT spatial_node_unknown_margin=0.5
 
 # if the flag --no-load-robot-file is present then a simple cube with orientation marker will be drawn in peekabot
 # this was added to try to deal with the peekabot crashes on Jenkins
 VARDEFAULT no_load_robot_file=
 
-### Disable placeholder generation (no exploration)
+### Disable placeholder generation (no exploration): --no-placeholders
 VARDEFAULT no_placeholders=
-#    VARDEFAULT no_placeholders=--no-placeholders
+
+### Save and load local gridmaps for nodes in LocalMapManager
+VARDEFAULT save_load_nodemaps=--save-nodemap --load-nodemap
+
 ### Perform visual exploration after exploratory movement (i.e. to placeholders)
 VARDEFAULT visual_exploration=--visual-exploration
+
 ### Prohibit the creation of placeholders in certain zones
-# template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
+# Example: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
 VARDEFAULT exclude_exploration=
 
 # If --follow-robot is supplied, PB will follow the robot with the camera
 VARDEFAULT follow_robot=--follow-robot
 
+# If --show-connectivities is supplied, PB will display SpatialProperties::
+# ConnectivityProperty as read, directed arrows
 VARDEFAULT show_connectivities=
 
 # If --filter-doors is supplied, create doors only close to door hypotheses
@@ -264,20 +219,24 @@ VARDEFAULT avs_cone_depth=2
 # used)
 VARDEFAULT use_wall_prob=--use-wall-prob
 
-# closest distance in metres from an obstacle (putting this comment on the line below caused a problem
-VARDEFAULT avs_sample_from_obs=0.4
-
+# List of allowable objects for which to perform AVS
 VARDEFAULT avs_sift_objects="table cerealbox magazine"
 
 # Do generate random view cones for second and subsequent views
 #--random-vc
 VARDEFAULT avs_random_vc=
 
+# closest distance in metres from an obstacle that random view cones
+# may originate from
+VARDEFAULT avs_sample_from_obs=0.4
+
+
 
 ### Kinect options
 
-# simulate_kinect - If this is set, only the wedge that the kinect can see in the navigation
-#                   position is treated as free space; if not, the whole laser scan is used
+# simulate_kinect - If this is set, only the wedge that the 
+# simulated kinect can see, when in the navigation position,
+# is treated as free space; if not, the whole laser scan is used
 
 IFOPTALL(%(hardware_options), kinect)
     ### Connect to and use Kinect point cloud server
@@ -291,14 +250,9 @@ ELSE
     SETVAR simulate_kinect=--simulate-kinect
 ENDIF
 
-    IFOPTALL(%(hardware_options), ptz)
-  	SETVAR ctrl_ptu=--ctrl-ptu 
-    ELSE
-    	SETVAR ctrl_ptu=--ctrl-ptu 
-    ENDIF
 
-
-### Controling PTU
+### With --ctrl-ptu, SpatialControl will send the PTU to the specified
+#   navigation pose before it allows the robot to start moving
 IFOPTALL(%(hardware_options), ptz)
     VARDEFAULT spatial_ctrl_ptu=--ctrl-ptu
 ELSE
@@ -316,9 +270,16 @@ IFOPTALL(%(feature_options), spatial)
 
     ### Whether to display spatial information in Peekabot
     IFOPTALL(%(feature_options), peekabot)
-#EXPAND --no_load_robot_file=%(no_load_robot_file)
-        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models "cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf" %(follow_robot) %(no_load_robot_file) %(show_connectivities)
+  	
+### Main Peekabot visualisation component. Displays nav nodes, nav graph edges, node hypotheses,
+#   robot position, room category probability distribution, Place connectivities, 
+#   ComaRoom membership, ongoing NavCommand, map loading status, people detection,
+#   metric line map, visual objects...
+        CPP GD display.process DisplayNavInPB --retry-interval 10 -c %(spatial_cureconfig) --no-sois %(vision_pcserver) --room-categories %(conceptual_categories) --object-models %(pb_object_models) %(follow_robot) %(no_load_robot_file) %(show_connectivities)
+
+# Enable PB visualization in spatial components
         SETVAR usePB=--usepeekabot
+
     ELSE
         SETVAR usePB=
     ENDIF
@@ -341,73 +302,130 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Translates and queues Spatial::NavCommands;
 # writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
-#EXPAND visual_exploration=%(visual_exploration)
     CPP MG spatial.translation  SpatialTranslation %(visual_exploration) --generate-placeholders-on-place
 
 ### Reads NavData::InternalNavCmd to control the robot
-#EXPAND spatial_show_3d_obstacles=%(spatial_show_3d_obstacles)
 # Maintains three-state grid map for exploration and obstacle avoidance
+# Maintains Kinect obstacles in a height map (highest obstacle height detected
+# in a cell)
+# Generates node hypotheses for PlaceManager on request, using grid map
+# Receives VisualExplorationCommand and controls PTU to explore space
+# Visualizes grid map, local odometry position estimate (red tick), laser scan
     CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6
 
     IFEQ(%(hardware),none)
         CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) -m tmpmap.metric
     ELSE
-        ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
-        # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
+### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
+# If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
         CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
     ENDIF
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
     CPP GD navgraph.process     NavGraphProcess -c %(spatial_cureconfig) -m tmpmap.graph --min-door-width %(spatial_min_door_width) --max-door-width %(spatial_max_door_width) %(filter_doors)
 
-### Creates SpatialData::Place from FNode. Creates NodeHypothesis.
+### Creates SpatialData::Place from FNode, as well as from NodeHypothesis
+# (placeholder). Deletes Placeholders on exploration failure.
 # Maintains connection between Place on the one hand and either a FNode or a
 # NodeHypothesis on the other. Supplies ICE interfaces for translating between the
-# two.
-    CPP GD place.manager        PlaceManager --no-update-placeholders %(exclude_exploration) --min-frontier-dist 0.1 --min-frontier-length 0.5 --min-node-separation 2.0 --hyp-path-length 1.5 --min-placeholder-to-wall-distance 0.2 %(no_placeholders)
+# two. Writes ConnectivityPathProperty structs.
+    CPP GD place.manager        PlaceManager --no-update-placeholders %(exclude_exploration) --min-node-separation 2.0 --hyp-path-length 1.5 %(no_placeholders)
 
 ### Maintains local obstacle grid maps around individual nodes
+# Also detects and displays door hypotheses at a distance (with --detect-doors)
 # Provides placeholder properties (length of associated frontier, size of
-# associated free space), exposed through
+# associated free space, nearness to door hypothesis), exposed through 
 # ICE interfaces
-    CPP GD map.manager          LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --no-walls --detect-doors %(display_doors) --save-nodemap --load-nodemap
+    CPP GD map.manager          LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --detect-doors %(display_doors) %(save_load_nodemaps)
 
     IFOPTALL(%(feature_options), binder)
-        ### run the spatial mediators so that the spatial stuff shows up in the binder/planner
+### run the spatial mediators so that the spatial stuff shows up in the binder/planner
         INCLUDE includes/spatial.sa/spatial-mediator.cast
-        ### this is a dedicated garbage collection that removes any SpatialProperties for which the referred Place has been removed. It
-        ### makes sure that there are no orphaned properties on WM left
+### this is a dedicated garbage collection that removes any SpatialProperties for which the referred Place has been removed. It
+### makes sure that there are no orphaned properties on WM left
         JAVA MG SpatialPropertyRemover spatial.SpatialPropertyRemover
     ENDIF
 
 
     IFOPTALL(%(feature_options), execution)
-        ### the interface to translate and monitor execution actions into spatial actions
+### the interface to translate and monitor execution actions into spatial actions
         JAVA MG exe-spatial spatial.execution.SpatialActionInterface
     ENDIF
 
     IFOPTALL(%(feature_options), man_ctrl)
-        ### a GUI to allow for manual NavCommands for GOTOXY and GOTO_PLACE
+### a GUI to allow for manual NavCommands for GOTOXY and GOTO_PLACE
         JAVA MG spatial-manual spatial.manual.ManualNavControl
     ENDIF
 
- #EXPAND avs_cone_depth=%(avs_cone_depth)
- #EXPAND avs_sample_from_obs=%(avs_sample_from_obs)
- #EXPAND avs_sift_objects=%(avs_sift_objects)
- #EXPAND avs_random_vc=%(avs_random_vc)
     IFOPTALL(%(feature_options), avs)
-        CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --no-vision --ptzserver ptz.server --display-objects-in-pb
-        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc --usepeekabot ######--ctrl-ptz
+### Computes probability distribution, in metric space, of an object
+# that is "in" or "on" another object. Responds to an ObjectPriorRequest
+# sent by AVS. Object geometries are currently hard-coded 
+# (in RelationEvaluation.cpp)
+        CPP GD relation.manager ObjectRelationManager -c %(spatial_cureconfig) --ptzserver ptz.server --display-objects-in-pb
+
+### Active visual search component. Responds to RelationViewPointGenerationCommand
+# by generating and displaying (in PB) a prior distribution for the object,
+# and a set of possible view cone (group) beliefs for the planner to use.
+# Also responds to ProcessConeGroup commands, by moving the robot and turning
+# the PTU and sending recognition commands, and subsequently updating the
+# probability associated with that cone group.
+        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc %(usePB)
     ENDIF
 
     IFOPTALL(%(feature_options), simple_placeholder_exploration)
+### Component that does exploration of placeholders
+# without the planning pipeline being involved
         CPP MG placeholderexplorer.navigation PlaceholderExplorer
     ENDIF
 
 ENDIF
 
 
+##########################################################################
 # vision #################################################################
+##########################################################################
+
+### the directory containing the calibration files to use
+VARDEFAULT vision_calib_root=instantiations/calibration/alu-robot-at-kth
+
+### the default camera ID
+VARDEFAULT prosilica_id=37105
+
+### default MTU value
+VARDEFAULT prosilica_packet_size=1500
+
+### the Haar-like face detector file to use by the people detector
+VARDEFAULT face_detector=instantiations/data/haarcascade_frontalface_alt2.xml
+
+### root for the sift-models
+VARDEFAULT siftroot_=./instantiations/sift-models
+
+### root for the ply-models
+VARDEFAULT plyroot_=./instantiations/ply-models
+
+### siftfiles
+VARDEFAULT or3d_sift_files=<multiline>
+   %(siftroot_)/frosties.sift
+   %(siftroot_)/AImagazineSpring1999.sift
+</multiline>
+
+### ply files
+VARDEFAULT or3d_ply_files=<multiline>
+   %(plyroot_)/frosties.ply
+   %(plyroot_)/AImagazineSpring1999.ply
+</multiline>
+
+### object labels
+VARDEFAULT or3d_labels=cerealbox magazine
+
+### fake tables (subject to fake_table_detect)
+VARDEFAULT fake_tables=<multiline>
+   --pos-table "3.6, 4.4, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "3.6, 2.0, 8.0, 8.0"
+</multiline>
+
+
+
 IFOPTALL(%(feature_options), vision)
     INCLUDE includes/vision.sa/vision-base.cast
     IFOPTALL(%(feature_options), execution)
@@ -469,13 +487,17 @@ IFOPTALL(%(feature_options), vision)
 ENDIF
 
 
+##########################################################################
 # binder #################################################################
+##########################################################################
 IFOPTALL(%(feature_options), binder)
     INCLUDE includes/binder.sa/binder-base.cast
 ENDIF
 
 
+##########################################################################
 # dialogue ###################################################################
+##########################################################################
 IFOPTALL(%(feature_options), dialogue)
     INCLUDE includes/dialogue.sa/INCL/dora-live.cast
     INCLUDE includes/dialogue.sa/dialogue-exe.cast
@@ -483,7 +505,23 @@ IFOPTALL(%(feature_options), dialogue)
     JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain "subarchitectures/dialogue.sa/resources/domain2test.pddl" --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml" --domainannotation "subarchitectures/dialogue.sa/resources/dora-interactive_annotated.txt"
 ENDIF
 
+##########################################################################
 # planning and motivation #####################################################
+##########################################################################
+
+### the default goals passed on to the planner GUI
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+
+### the planning domain to use
+VARDEFAULT planning_domain=dora-interactive.pddl
+
+### the default knowledge to use
+VARDEFAULT default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-sim.xml"
+
+### the default probabilities
+VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
+
+
 IFOPTALL(%(feature_options), planning_sa)
     VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
     VARDEFAULT planning_domain=dora-interactive.pddl
@@ -500,7 +538,9 @@ IFOPTALL(%(feature_options), planning_sa)
         JAVA MG manual.planning motivation.components.generators.SimulatedPersonGoalGenerator --goals %(planning_goal)
     ENDIF
 
-    # exection ####################################################################
+##########################################################################
+# exection ###############################################################
+##########################################################################
     IFOPTALL(%(feature_options), man_ctrl)
         JAVA MG manual.execution dora.execution.components.GraphicalExecutionManager --labels table,cerealbox
     ENDIF
@@ -534,7 +574,17 @@ IFOPTALL(%(feature_options), planning_sa)
     ENDIF
 ENDIF
 
-# coma ######################################################################
+##########################################################################
+# coma ###################################################################
+##########################################################################
+
+### the prior for a room having a person in it
+VARDEFAULT room_has_person=0.2
+
+### run coma mediators in a discretising way (only for experiments)
+VARDEFAULT discrete_room_cats=
+#--discrete
+
 IFOPTALL(%(feature_options), coma)
     INCLUDE includes/coma.sa/coma-base.cast
     INCLUDE includes/coma.sa/coma-crowl.cast
@@ -544,7 +594,9 @@ IFOPTALL(%(feature_options), coma)
     ENDIF
 ENDIF
 
-# Default.SA ################################################################
+##########################################################################
+# Default.SA ##############################################################
+##########################################################################
 IFOPTALL(%(feature_options), default)
     INCLUDE includes/default.sa/default-base.cast
     INCLUDE includes/coma.sa/coma-defaultsa.cast
@@ -553,7 +605,9 @@ IFOPTALL(%(feature_options), default)
     CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(conceptual_defaults)
 ENDIF
 
-# Conceptual.SA  ############################################################
+##########################################################################
+# Conceptual.SA  #########################################################
+##########################################################################
 IFOPTALL(%(feature_options), conceptual)
     INCLUDE includes/conceptual.sa/conceptual-base.cast
     CPP GD conceptual.queryhandler ConceptualQueryHandler
@@ -566,7 +620,14 @@ IFOPTALL(%(feature_options), conceptual)
     INCLUDE includes/conceptual.sa/conceptual-test.cast
 ENDIF
 
-# Categorical.SA ############################################################
+##########################################################################
+# Categorical.SA #########################################################
+##########################################################################
+
+VARDEFAULT categorisation_config=subarchitectures/categorical.sa/config/BHAM-sim2-shape.cfg
+
+VARDEFAULT place_properties_save_file="place_properties.bin"
+
 IFOPTALL(%(feature_options), categorisation)
     SUBARCHITECTURE categorical.sa
     JAVA WM cast.architecture.SubarchitectureWorkingMemory
@@ -631,7 +692,26 @@ ENDIF
 
 
 
+##########################################################################
 # visualization ##########################################################
+##########################################################################
+
+### all types to be logged from WMs if debug is enabled
+VARDEFAULT logged_types=<multiline>
+  execution.slice.Action,
+  SpatialData.ObjectSearchResult,
+  SpatialData.ViewPoint,
+  SpatialData.ProcessConeGroup,
+  comadata.ComaRoom,
+  SpatialData.RelationalViewPointGenerationCommand,
+  autogen.Planner.Action,
+  autogen.Planner.PlanningTask,
+  SpatialData.NodeHypothesis,
+  eu.cogx.beliefs.slice.GroundedBelief,
+  SpatialData.MapLoadStatus,
+  SpatialProperties.PlaceProperty
+</multiline>
+
 IFOPTALL(%(feature_options), visualization)
     SETVAR displaysrv_param_redirect=--redirect-to-host %(host:DisplayHost)
     VARDEFAULT displaysrv_param_redirect=
