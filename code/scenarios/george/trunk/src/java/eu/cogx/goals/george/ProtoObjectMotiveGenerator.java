@@ -9,12 +9,12 @@ import autogen.Planner.Goal;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.perceptmediator.transferfunctions.ProtoObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class ProtoObjectMotiveGenerator extends
-		AbstractBeliefMotiveGenerator<AnalyzeProtoObjectMotive, GroundedBelief> {
+		AbstractBeliefMotiveGenerator<AnalyzeProtoObjectMotive, MergedBelief> {
 
 	private static final String PO_TYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
@@ -24,20 +24,20 @@ public class ProtoObjectMotiveGenerator extends
 	private static final int MAX_PLANNING_TIME = 30;
 
 	public ProtoObjectMotiveGenerator() {
-		super(PO_TYPE, AnalyzeProtoObjectMotive.class, GroundedBelief.class);
+		super(PO_TYPE, AnalyzeProtoObjectMotive.class, MergedBelief.class);
 	}
 
 	@Override
 	protected AnalyzeProtoObjectMotive checkForAddition(
-			WorkingMemoryAddress _wma, GroundedBelief _newEntry) {
+			WorkingMemoryAddress _wma, MergedBelief _newEntry) {
 
 		assert (_newEntry.type.equals(PO_TYPE));
 
 		log("checkForAddition(): check belief " + _newEntry.id
 				+ " for addition");
 
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, _newEntry);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, _newEntry);
 
 		AnalyzeProtoObjectMotive result = null;
 
@@ -71,11 +71,11 @@ public class ProtoObjectMotiveGenerator extends
 	}
 
 	@Override
-	protected AnalyzeProtoObjectMotive checkForUpdate(GroundedBelief _newEntry,
+	protected AnalyzeProtoObjectMotive checkForUpdate(MergedBelief _newEntry,
 			AnalyzeProtoObjectMotive _motive) {
 
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, _newEntry);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, _newEntry);
 
 		if (!belief.getContent().containsKey(
 				ProtoObjectTransferFunction.VISUAL_OBJECT_LINK)) {

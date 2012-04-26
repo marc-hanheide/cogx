@@ -33,7 +33,7 @@ import de.dfki.lt.tr.dialogue.intentions.inst.FeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.slice.Robot;
 
@@ -100,16 +100,16 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	@Override
 	protected WorkingMemoryAddress getRobotBeliefAddr() {
 		if (m_robotBeliefAddr == null) {
-			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
+			List<CASTData<MergedBelief>> groundedBeliefs = new ArrayList<CASTData<MergedBelief>>();
 			try {
-				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
+				getMemoryEntriesWithData(MergedBelief.class, groundedBeliefs,
 						"binder", 0);
 			} catch (UnknownSubarchitectureException e) {
 				logException(e);
 				return null;
 			}
 
-			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
+			for (CASTData<MergedBelief> beliefEntry : groundedBeliefs) {
 				if (beliefEntry.getData().type.equalsIgnoreCase("robot")) {
 					m_robotBeliefAddr = new WorkingMemoryAddress(
 							beliefEntry.getID(), "binder");
@@ -128,10 +128,10 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			UnknownSubarchitectureException {
 
 		println("fetching robot belief from " + getRobotBeliefAddr());
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class,
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class,
 						getMemoryEntry(getRobotBeliefAddr(),
-								GroundedBelief.class));
+								MergedBelief.class));
 
 		return VisualObjectMotiveGenerator.beliefPredicateGoal(
 				"arm-in-resting-position", belief);
@@ -330,7 +330,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		return motive;
 	}
 
-	// private WorkingMemoryAddress getGroundedBeliefAddress(
+	// private WorkingMemoryAddress getMergedBeliefAddress(
 	// WorkingMemoryAddress _sharedBeliefAddress)
 	// throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 	// SharedBelief belief = getMemoryEntry(_sharedBeliefAddress,
@@ -518,11 +518,11 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// ConsistencyException, PermissionException,
 	// UnknownSubarchitectureException {
 	//
-	// GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
-	// GroundedBelief.class);
-	// CASTIndependentFormulaDistributionsBelief<GroundedBelief> pb =
+	// MergedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+	// MergedBelief.class);
+	// CASTIndependentFormulaDistributionsBelief<MergedBelief> pb =
 	// CASTIndependentFormulaDistributionsBelief
-	// .create(GroundedBelief.class, belief);
+	// .create(MergedBelief.class, belief);
 	//
 	// FormulaDistribution fd = FormulaDistribution.create();
 	// fd.add(_value, 1);
@@ -578,7 +578,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// _value);
 
 		// keep dBelief here to allow switches between different subclasses,
-		// e.g. Grounded or Merged
+		// e.g. Merged or Merged
 		BeliefUtils.addFeature(this, _groundedBeliefAddr, dBelief.class,
 				attributionPredication, _value);
 
@@ -599,7 +599,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * @param _gb
 	 */
 	protected void unmarkReferent(
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _gb) {
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _gb) {
 
 		_gb.getContent()
 				.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
@@ -618,7 +618,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			"polar-type-question-answered" };
 
 	protected void removeActionEffects(
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb) {
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> gb) {
 
 		for (String potentialEffect : POTENTIAL_ACTION_EFFECTS) {
 			FormulaDistribution removed = gb.getContent().remove(
@@ -633,10 +633,10 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 
-		GroundedBelief belief = getMemoryEntry(_groundedBeliefAddr,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
+		MergedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+				MergedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, belief);
 
 		// remove marking for reference
 		unmarkReferent(gb);
