@@ -7,6 +7,8 @@ george:
 	$(MAKE) -C cogx/U11.10-george-y4_450_x64 install
 	
 
+v4r:
+	$(MAKE) -C cogx/v4r install
 
 
 %:
