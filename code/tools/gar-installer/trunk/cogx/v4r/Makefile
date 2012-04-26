@@ -16,7 +16,7 @@ MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/trunk/
 
 DEB_PACKAGES=	libglew1.5-dev@ubuntu \
 		libdevil-dev@ubuntu \
-		libpcl-all-dev@ubuntu \
+		libpcl-1.5-all-dev@ubuntu \
 		libcminpack-dev@ubuntu
 
 LIBDEPS = 
