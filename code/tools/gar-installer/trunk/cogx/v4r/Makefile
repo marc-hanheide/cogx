@@ -38,3 +38,7 @@ include ../../gar.extend.mk
 
 CONFIGURE_ARGS = -D CMAKE_INSTALL_PREFIX:PATH=$(prefix) -D OUTPUT:PATH=$(prefix) -D CMAKE_BUILD_TYPE=Debug -D GOOGLE_PROFILER=On
 
+checksum-$(DISTFILES):  
+	@true
+checksum-$(PATCHFILES): 
+	@true
