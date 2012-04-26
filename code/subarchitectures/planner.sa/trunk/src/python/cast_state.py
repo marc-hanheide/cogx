@@ -42,7 +42,7 @@ class CASTState(object):
             if type(b).__name__ in exclude_beliefnames:
                 continue
             if isinstance(b.estatus, bm.epstatus.PrivateEpistemicStatus) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus) \
-                    or isinstance(b, eubm.AssertedBelief):
+                    or isinstance(b, eubm.AssertedBelief) or isinstance(b, eubm.MergedBelief):
                 self.beliefs.append(b)
 
         self.beliefdict = dict((b.id, b) for b in self.beliefs)
