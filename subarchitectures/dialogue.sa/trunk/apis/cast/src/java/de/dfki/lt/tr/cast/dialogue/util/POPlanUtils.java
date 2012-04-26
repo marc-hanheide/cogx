@@ -83,7 +83,7 @@ public class POPlanUtils {
 				} else if (_df instanceof ElementaryFormula) {
 					String origProp = ((ElementaryFormula)_df).prop;
 					if (origProp != null) {
-						if (origProp.startsWith("place")) {
+						if (origProp.startsWith("place") || origProp.startsWith("room")) {
 							String wmp = POPlanUtils.transformElFoPropToPoFoWMA(origProp);
 							args = args + " " + wmp;
 						} else {
@@ -120,7 +120,7 @@ public class POPlanUtils {
 				} else if (_df instanceof ElementaryFormula) {
 					String origProp = ((ElementaryFormula)_df).prop;
 					if (origProp != null) {
-						if (origProp.startsWith("place")) {
+						if (origProp.startsWith("place")  || origProp.startsWith("room")) {
 							String wmp = POPlanUtils.transformElFoPropToPoFoWMA(origProp);
 							link_sb.append(" " + wmp);
 						} else {

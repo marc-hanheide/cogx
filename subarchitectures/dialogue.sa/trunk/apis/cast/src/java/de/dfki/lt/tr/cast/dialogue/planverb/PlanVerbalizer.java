@@ -60,7 +60,6 @@ public class PlanVerbalizer {
 	 * Creates and initializes a new PlanVerbalizer object.
 	 * After initialization, it can be queried subsequently for verbalizations of event structures.
 	 * The domains and grammar etc. it operates on remain static.
-	 * 
 	 * @param annotatedDomainFile
 	 * @param pddlDomainFile
 	 * @param grammarFile
@@ -77,19 +76,13 @@ public class PlanVerbalizer {
 //		static String defaultDomainDictionaryFile = "./resources/dora-interactive_annotated.txt";
 //	    static String defaultGrammarPath = "/de/dfki/tarot/nlp/resources/moloko/grammar.xml";
 		
-		
 		// initialize planner-related stuff
-		m_castComponent.log("before creating new PDDLDomainModel 1");
 		File adf = new File(annotatedDomainFile);
-		m_castComponent.log("before creating new PDDLDomainModel 2");
 		File pddf = new File(pddlDomainFile);
-		m_castComponent.log("before creating new PDDLDomainModel 3");
 		PDDLDomainModel domainModel = new PDDLDomainModel(adf, pddf);
-		m_castComponent.log("before creating new PDDLContentDeterminator");
 		m_contentDeterminator = new PDDLContentDeterminator(domainModel);
 
 		// initialize grammar-related stuff
-		m_castComponent.log("before creating new Grammar and CCGRealiser");		
 		Grammar grammar = new Grammar(grammarFile);
 				//new Object().getClass().getResource(grammarFile));
 		m_realiser = new CCGRealiser(grammar);
@@ -113,7 +106,7 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put(" cerealbox ", " box ");
 		m_postLexicalSub.put("box", "cerealbox");
 		
-		m_preLexicalSub. put(" create ", " make ");
+		m_preLexicalSub. put("create ", "make ");
 
 		m_preLexicalSub. put(" magazine ", " book ");
 		m_postLexicalSub.put("book", "magazine");
@@ -121,6 +114,7 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put("<Modifier>(v1:m-wherefrom ^ via", "<Modifier>(via:m-through ^ through");
         // TODO find a solution for indirect speech
 		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
+		m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 	}
 	
 	
@@ -146,7 +140,7 @@ public class PlanVerbalizer {
 		}
 		// if errors prevented the creation of a meesage list, report it...
 		if (messages==null) return "I am sorry. I don't know what to say about this Pee Oh Plan.";
-		else m_castComponent.log("determined " + messages.size() + " messages for POPlan.");
+		else m_castComponent.log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
 		// construct a holder for the verbalized string
         StringBuilder verbalizationBldr = new StringBuilder();
         
@@ -154,40 +148,55 @@ public class PlanVerbalizer {
         
         // realize each message
         for (Message msg : messages) {
-            if (msg instanceof ProtoLFMessage) {
-            	m_castComponent.log("Message is of type ProtoLFMessage: " + ((ProtoLFMessage) msg).getProtoLF());
-            	BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
-            	if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
-            		m_castComponent.log("Error: I got as 'assume that' protoLF -- ignoring it!");
-            		continue;
-            	}
-            	// perform lexical substitution before realization
-            	try {
-					protoLF = preProcessLexiconSubstitution(protoLF);
-				} catch (BuildException e) {
-					m_castComponent.logException(e);
-				} catch (ParseException e) {
-					m_castComponent.logException(e);
-				}
+    		StringBuilder log_sb = new StringBuilder();
+        	if (msg instanceof ProtoLFMessage) {
+        		log_sb.append("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
+        		BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
+        		if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
+        			log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
+        			m_castComponent.log(log_sb);
+        			continue;
+        		}
+        		// perform lexical substitution before realization
+        		try {
+        			protoLF = preProcessLexiconSubstitution(protoLF);
+        			log_sb.append("\n lexical substitution before realization yielded: \n" + protoLF.toString());
+        		} catch (BuildException e) {
+        			m_castComponent.logException(e);
+        		} catch (ParseException e) {
+        			m_castComponent.logException(e);
+        		}
 
-            	// do GRE 
-            	protoLF = doGRE(protoLF);
+        		// do GRE 
+        		protoLF = doGRE(protoLF);
+        		log_sb.append("\n doGRE() yielded: \n" + protoLF.toString());
 
-            	// make missing parts consistent (e.g. subj agreement)
-            	BasicLogicalForm finalLF = finalizeProtoLF(protoLF);
-            	
-            	// surface realization
-            	// perform lexical re-substitution after realization, before appending to the verbal report
-            	String realization = realizeLF(finalLF);
-            	if (! realization.equals("")) verbalizationBldr.append(postProcessLexiconSubstitution(realization) + ".\n");
-            } else {
-                if (msg instanceof StringMessage) {
-                	verbalizationBldr.append(((StringMessage) msg).getText() + ".\n");
-                }
-            }
+        		// make missing parts consistent (e.g. subj agreement)
+        		BasicLogicalForm finalLF = finalizeProtoLF(protoLF);
+        		log_sb.append("\n finalizeProtoLF() yielded: \n" + finalLF.toString());
+
+        		// surface realization
+        		// perform lexical re-substitution after realization, before appending to the verbal report
+        		String realization = realizeLF(finalLF);
+        		log_sb.append("\n realizeLF() yielded: \n" + realization);
+
+        		if (!realization.equals("")) {
+        			String outputText = postProcessLexiconSubstitution(realization);
+            		log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
+        			verbalizationBldr.append(outputText + ". \n");
+        		} else {
+            		log_sb.append("\n not appending any output text.");        			
+        		}
+        	} else if (msg instanceof StringMessage) {
+        		String outputText = ((StringMessage) msg).getText();
+        		log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
+        		
+        		verbalizationBldr.append(outputText + ". \n");
+        	}
+        	m_castComponent.log(log_sb);
         }
         // return the generated report
-	    return verbalizationBldr.toString();
+        return verbalizationBldr.toString();
 	}
 
 	
@@ -234,43 +243,46 @@ public class PlanVerbalizer {
      */
     private BasicLogicalForm doGRE(BasicLogicalForm protoLF) {
     	// protoLF = CogXJavaHelpers.replaceSelfReferenceByI(protoLF, new WMAddress("0:D","spatial.sa"));
+    	StringBuilder log_sb = new StringBuilder("doGRE() for protoLF: \n" + protoLF.toString());
     	
     	Set<WMAddress> swma = CASTLogicalForms.referentsInLF(protoLF);
     	Collection<WMAddress> jswma = scala.collection.JavaConversions.asJavaCollection(swma);
     	for (WMAddress referentWMA : jswma) {
-    		m_castComponent.log("current referentWMA = " + referentWMA);
+    		log_sb.append("\n current referentWMA = " + referentWMA);
     		try {
     			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
     			// check if it is the robot itself
     			if (isRobot(gbWME)) {
-        			m_castComponent.log("WMA = " + referentWMA.id() + "@" + referentWMA.subarchitecture() + " is the robot itself.");
+    				log_sb.append("\n WMA is the robot itself.");
         			protoLF = CogXJavaHelpers.replaceSelfReferenceByI(protoLF, referentWMA);
         		} else {
-            		m_castComponent.log("doGRE for WMA = " + referentWMA.id() + "@" + referentWMA.subarchitecture());
+        			log_sb.append("\n attempting GRE via the GBelief.");
         			ReferentReplacer myRefRep = getGBeliefCategoryReplacer(gbWME);
         			if (myRefRep!=null) {    	        
-        				m_castComponent.log("got a GBeliefCategoryReplacer for " + referentWMA);
+        				log_sb.append("\n got a GBeliefCategoryReplacer for " + referentWMA);
         				protoLF = CogXJavaHelpers.replaceReferent(protoLF, referentWMA, myRefRep);
+        				log_sb.append("\n GBeliefCategoryReplacer yielded protoLF: \n " + protoLF);
         			} else {
-        				m_castComponent.log("got no reference replacer! WMA type unknown... ignoring...");
+        				log_sb.append("\n got a null reference replacer via GBelief! WMA type unknown... ignoring...");
         			}
         		}
 			} catch (DoesNotExistOnWMException e) {
-				m_castComponent.log(e + ": " + referentWMA);
+				log_sb.append("\n " + e + ": " + referentWMA + " attempting GRE via alternative method.");
 				ReferentReplacer myRefRep = getDoesNotExistReplacer(referentWMA);
 				if (myRefRep!=null) {    	        
-    				m_castComponent.log("got a DoesNotExistReplacer for " + referentWMA);
+					log_sb.append("\n got a DoesNotExistReplacer for " + referentWMA);
     				protoLF = CogXJavaHelpers.replaceReferent(protoLF, referentWMA, myRefRep);
-    				m_castComponent.log("doGRE returns protoLF: " + protoLF.toString());
-    		    	return protoLF;
+    				log_sb.append("\n DoesNotExistReplacer yielded protoLF: \n " + protoLF);
     			} else {
-    				m_castComponent.log("got no reference replacer! WMA type unknown... ignoring...");
+    				log_sb.append("\n got a null reference replacer via alternative method! ignoring...");
     			}
 			} catch (UnknownSubarchitectureException e) {
+				log_sb.append(e);
 				m_castComponent.logException(e);
 			}
     	}
-    	m_castComponent.log("doGRE returns protoLF: " + (protoLF==null ? "null" : protoLF.toString()));
+    	log_sb.append("\n *** doGRE returns protoLF: *** \n " + (protoLF==null ? "null" : protoLF.toString()));
+    	m_castComponent.log(log_sb);
     	return protoLF;
     }
     
@@ -278,6 +290,7 @@ public class PlanVerbalizer {
 	/**
 	 * This method expands several proto features to correct grammar features:
 	 * - <ExecutionStatus>SUCCEEDED => <Mood>ind ^ <Tense>past
+	 * - <ExecutionStatus>PENDING => <Mood>ind ^ <Tense>fut
 	 * - Subject-Actor agreement
 	 * 
 	 * @param protoLF
@@ -298,6 +311,7 @@ public class PlanVerbalizer {
         FeatureReplacer pendingReplacer = new FeatureReplacer() {
             @Override
             public BasicState.Builder doWork(BasicState.Builder builder) {
+            	
                 return builder.addFeature("Mood", "ind").addFeature("Tense", "fut");
             }
         };
@@ -360,7 +374,7 @@ public class PlanVerbalizer {
 	 * @return most likely category_id (for rooms) or label_id (for visual objects) or empty String if n/a
 	 */
 	public ReferentReplacer getGBeliefCategoryReplacer(GroundedBelief gb) {
-		m_castComponent.log("getGBeliefCategoryReplacer called");
+//		m_castComponent.log("getGBeliefCategoryReplacer called");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = CASTIndependentFormulaDistributionsBelief
 		.create(GroundedBelief.class, gb);
 		
@@ -375,7 +389,7 @@ public class PlanVerbalizer {
 			if (cat==null || cat.equals("")) cat = "room";
 			final String catF = cat;
 			
-			m_castComponent.log("Gbelief is a room with category: " + catF);
+//			m_castComponent.log("Gbelief is a room with category: " + catF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -401,7 +415,7 @@ public class PlanVerbalizer {
 			if (cat==null || cat.equals("")) cat = "object";
 			final String catF = cat;
 			
-			m_castComponent.log("Gbelief is a visual object with category: " + catF);
+//			m_castComponent.log("Gbelief is a visual object with category: " + catF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -427,7 +441,7 @@ public class PlanVerbalizer {
 			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
 			final String placeIDF = new Integer(placeID).toString();
 			
-			m_castComponent.log("Gbelief is a place with place ID: " + placeIDF);
+//			m_castComponent.log("Gbelief is a place with place ID: " + placeIDF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -454,7 +468,7 @@ public class PlanVerbalizer {
 	        return myRefRep;
 			
 		} else {
-			m_castComponent.log("GBelief is of type: " + gbProxy.getType());
+//			m_castComponent.log("GBelief is of type: " + gbProxy.getType());
 		}
 		return null;
 	}
@@ -517,7 +531,7 @@ public class PlanVerbalizer {
 				return myRefRep;
 			} // end if well-formed WMA
 			else {
-				// assuming it is a MAGAZINE@spatial.sa or MEETINGROOM@spatial.sa type
+				// assuming it is a ROOM0@spatial.sa type
 				m_castComponent.log(_lfWMA + " looks like a dummy-object or object category (buggy) WMA...");
 //				@book1_0:thing(book ^ 
 //		                 <Delimitation>existential ^ 

@@ -102,7 +102,6 @@ public class POPlanMonitor extends ManagedComponent {
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			finishedMap.get(_newPOPlan.taskID).add(_newPOPlan);
-			log("about to report finished POPlan...");
 			reportFinishedPOPlan(_newPOPlan);
 		}
 	}
@@ -126,7 +125,6 @@ public class POPlanMonitor extends ManagedComponent {
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
-			log("about to report finished POPlan...");
 			reportFinishedPOPlan(_oldPOPlan);
 		}
 		
@@ -144,25 +142,24 @@ public class POPlanMonitor extends ManagedComponent {
 	}
 
 	private void reportFinishedPOPlan(POPlan pp) {
-		log("entered reportFinishedPOPlan()");
+		log("************ reportFinishedPOPlan() called ************");
+
 		List<Step<String>> actionList = POPlanUtils.extractSteps(pp);
 		
 		List<String> linkList = POPlanUtils.extractLinks(pp);
 		StringBuilder linksSection = new StringBuilder();
-		
 		for (String link : linkList) {
 			linksSection.append(link + "\n");
 		}
 		
-		log("links: " + linksSection);
-		
-		log("constructing a de.dfki.lt.tr.planverb.planning.pddl.POPlan from the autogen.Planner.POPlan");
+		// log("links: " + linksSection);
+		// log("constructing a de.dfki.lt.tr.planverb.planning.pddl.POPlan from the autogen.Planner.POPlan");
 		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = 
 				new de.dfki.lt.tr.planverb.planning.pddl.
 				POPlan(new Integer(pp.taskID).toString(), actionList, linksSection.toString());
-		log("calling PEV Module");
+		log("calling PEV Module verbalizePOPlan()");
 		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
-		log("REPORTING FINISHED POPLAN:\n" + report);
+		log("REPORTING FINISHED POPLAN: \n" + report);
 		VerbalisationUtils.verbaliseString(this, report);
 	}
 	
