@@ -6,6 +6,8 @@ import java.util.Map;
 
 import VisionData.ProtoObject;
 import VisionData.VisualObject;
+import VisionData.ViewCone;
+import execution.slice.Robot;
 import cast.architecture.ManagedComponent;
 import cast.core.CASTUtils;
 import castutils.castextensions.PointerMap;
@@ -26,9 +28,15 @@ public class AssumedBeliefTracker extends ManagedComponent {
 
 	private static final String PROTOOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
+			
+  private static final String VISUALCONETYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewCone.class));
+			
+	private static final String ROBOTTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(Robot.class));
 
-
-	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE, PROTOOBJECTTYPE);
+	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE,
+													PROTOOBJECTTYPE, VISUALCONETYPE, ROBOTTYPE);
 
 	WMTracker<GroundedBelief, AssumedBelief> tracker = null;
 
