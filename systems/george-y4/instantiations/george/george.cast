@@ -215,7 +215,7 @@ IFOPTALL(%(feature_options), visualization)
    CPP MG display.srv DisplayServer %(displaysrv_param_redirect)
 
    JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
-
+   JAVA MG mergedbeliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.MergedBelief"  --generic-col --compact --omit-fields "content"
    IFOPTALL(%(feature_options), planning)
       JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
    ENDIF
