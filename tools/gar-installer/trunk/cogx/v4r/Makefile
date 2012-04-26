@@ -1,5 +1,5 @@
 GARNAME = v4r
-GARVERSION = 1.0
+GARVERSION = 1.1
 CATEGORIES = bootstrap
 DISTFILES = $(GARNAME)-$(GARVERSION).tar.gz
 MAINTAINER = ari
@@ -10,7 +10,8 @@ ifneq ($(CASTV4RPASS),)
 endif
 
 
-MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
+#MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
+MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/trunk
 
 
 DEB_PACKAGES=	libglew1.5-dev@ubuntu \
