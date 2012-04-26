@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This is a prebuild step for Jenkins. It will compile and buils Ice libraries
+# of all components. The initial cmake cache will be applied.
+
 # workaround for missing "readlink -f"
 cd -P -- "$(dirname -- "$0")" &&
 SCRIPT=$(printf '%s\n' "$(pwd -P)/$(basename -- "$0")")
