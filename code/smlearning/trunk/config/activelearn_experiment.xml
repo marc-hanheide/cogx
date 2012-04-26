@@ -10,7 +10,7 @@
     <recorder frame_drop="1" file_name="screen" file_ext=".png" leading_zeros="1" encoder_str="image/png" buffer_len="100"></recorder>
   </universe>
 
-  <scene name="Active Learning Experiment">
+  <scene name="Offline Learning Experiment">
     <physx restitution="0.1" static_friction="0.4" dynamic_friction="0.2">
       <gravity v1="0.0" v2="0.0" v3="-9.81"></gravity>
     </physx>
@@ -24,19 +24,6 @@
 
 
   <arm driver="GolemDeviceKatana300Sim"/>
-<!-- doens't work anymore
-  <arm type="kat_sim_arm"> <!- - type="gen_sim_arm" type="kat_sim_arm" type="kat_serial_arm"- ->
-    <kat_serial_arm>
-      <config path="katana6M180.cfg"></config>
-      <comm port="4"></comm>
-    </kat_serial_arm>
-    <kat_sim_arm></kat_sim_arm>
-    <gen_sim_arm></gen_sim_arm>
-
-    <calibration delta_offs="0.02" skew_offs="0.01"></calibration>
-    <pose v1="0.0" v2="0.0" v3="0.0" roll="0.0" pitch="0.0" yaw="0.0"></pose>
-  </arm>
--->
 
 
   <effector>
@@ -47,7 +34,7 @@
   </effector>
 
 
-<polyflapInteraction>
+<ObjectInteraction>
 	<maxX>0.4</maxX>
 	<maxY>0.4</maxY>
 	<maxZ>0.12</maxZ>
@@ -59,36 +46,33 @@
 	<minDuration>5.0</minDuration>
 	<minValLabel>-1.0</minValLabel>
 	<maxValLabel>1.0</maxValLabel>
-	<startPolyflapPosition>
+	<startPosition>
 		<x>0.2</x>
 		<y>0.2</y>
 		<z>0.0</z>
-	</startPolyflapPosition>
-	<startPolyflapRotation>
+	</startPosition>
+	<startRotation>
 		<y>0.0</y>
 		<x>0.0</x>
 		<z>0.0</z>
-	</startPolyflapRotation>
-	<polyflapDimensions> <!-- w,h,l -->
+	</startRotation>
+	<ObjectDimensions> <!-- w,h,l -->
 		<x>0.1</x>
 		<y>0.1</y>
 		<z>0.1</z>
 		<width>0.002</width>
-	</polyflapDimensions>
+	</ObjectDimensions>
 	<over>0.017</over>
 	<dist>0.05</dist>
 	<side>0.6</side>
 	<center>0.6</center>
 	<top>0.02</top>
 	<distance>0.2</distance>
-</polyflapInteraction>
+</ObjectInteraction>
 
 <loop>
 	<startingPositions>1-18</startingPositions>
 </loop>
-
-
-
 
 
 

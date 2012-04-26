@@ -169,7 +169,7 @@ void ActiveGNGScenario::run (int argc, char* argv[]) {
 		calculateStartCoordinates ();
 		std::cout << "sending position ";
 		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;		
-		//move the finger to the beginnnig of experiment trajectory
+		//move the finger to the beginning of experiment trajectory
 		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);
 		// arm->moveFingerToStartPushing (context, target);
 		std::cout << "init movement"<<std::endl;

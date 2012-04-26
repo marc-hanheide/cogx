@@ -430,7 +430,7 @@ struct LearningData {
 				featVector.push_back (normalize(chunk.label, featLimits.minValLabel, featLimits.maxValLabel));
 			}
 		} catch ( ... ) {
-			cerr << "Error normalizing effector feature vector " << endl;
+			cerr << "Error normalizing feature vector " << endl;
 		};
 	}
 
@@ -477,7 +477,7 @@ struct LearningData {
 				featVector[vectorIndex++] = normalize(chunk.label, featLimits.minValLabel, featLimits.maxValLabel);
 			}
 		} catch ( ... ) {
-			cerr << "Error normalizing effector feature vector " << endl;
+			cerr << "Error normalizing feature vector " << endl;
 		};			
 
 	}
@@ -505,7 +505,7 @@ struct LearningData {
 				featVector.push_back (normalize(dYaw, -REAL_PI, REAL_PI));
 			}
 		} catch ( ... ) {
-			cerr << "Error normalizing effector feature vector " << endl;
+			cerr << "Error normalizing feature vector " << endl;
 		};			
 	}
 

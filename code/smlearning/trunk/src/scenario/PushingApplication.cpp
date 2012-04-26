@@ -157,7 +157,11 @@ bool XMLData(PredictingScenario::Desc &val, XMLContext* xmlcontext, Context *con
 	XMLData ((Scenario::Desc&)val, xmlcontext, context);
 }
 
-bool XMLData(ActiveGNGScenario::Desc &val, XMLContext* xmlcontext, Context *context) {
+// bool XMLData(ActiveGNGScenario::Desc &val, XMLContext* xmlcontext, Context *context) {
+// 	XMLData ((Scenario::Desc&)val, xmlcontext, context);
+// }
+
+bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* xmlcontext, Context *context) {
 	XMLData ((Scenario::Desc&)val, xmlcontext, context);
 }
 

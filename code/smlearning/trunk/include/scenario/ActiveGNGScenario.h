@@ -47,10 +47,6 @@ protected:
 	ActiveCrySSMEx cryssmex;
 	/** method for feature selection */
 	unsigned int featureSelectionMethod;
-	/** current input data sequence (for quantization) */
-	vector<FeatureVector> currentInputSeq;
-	/** current output data sequence (for quantization) */
-	vector<FeatureVector> currentOutputSeq;
 	/** normalization function */
 	boost::function<float (const float&, const float&, const float&)> normalization;
 	/** denormalization function */
