@@ -20,12 +20,12 @@ import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import dialogue.execution.AbstractDialogueActionInterface;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.perceptmediator.george.transferfunctions.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class VisualObjectMotiveGenerator extends
-		AbstractBeliefMotiveGenerator<LearnObjectFeatureMotive, GroundedBelief> {
+		AbstractBeliefMotiveGenerator<LearnObjectFeatureMotive, MergedBelief> {
 
 	private static final String VO_TYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
@@ -53,7 +53,7 @@ public class VisualObjectMotiveGenerator extends
 	private boolean m_identityEnabled = false;
 
 	public VisualObjectMotiveGenerator() {
-		super(VO_TYPE, LearnObjectFeatureMotive.class, GroundedBelief.class);
+		super(VO_TYPE, LearnObjectFeatureMotive.class, MergedBelief.class);
 		monitorMotivesForDeletion(true);
 	}
 
@@ -64,10 +64,10 @@ public class VisualObjectMotiveGenerator extends
 		// if dialogue was involved, then the belief may have been marked as a
 		// referent. this needs cleaning up...
 
-		GroundedBelief belief = getMemoryEntry(_motive.referenceEntry,
-				GroundedBelief.class);
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, belief);
+		MergedBelief belief = getMemoryEntry(_motive.referenceEntry,
+				MergedBelief.class);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, belief);
 		gb.getContent()
 				.remove(AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION);
 		overwriteWorkingMemory(_motive.referenceEntry, gb.get());
@@ -76,13 +76,13 @@ public class VisualObjectMotiveGenerator extends
 
 	private boolean motiveFeatureLearnt(String _featureKey,
 			String _featureLearntPredicate, LearnObjectFeatureMotive _motive,
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
 		return _motive.feature.equals(_featureKey)
 				&& _belief.getContent().containsKey(_featureLearntPredicate);
 	}
 
 	@Override
-	protected LearnObjectFeatureMotive checkForUpdate(GroundedBelief _newEntry,
+	protected LearnObjectFeatureMotive checkForUpdate(MergedBelief _newEntry,
 			LearnObjectFeatureMotive _motive) {
 		if (_motive.feature == null) {
 			getLogger().warn("LearnObjectFeatureMotive.feature is null",
@@ -90,8 +90,8 @@ public class VisualObjectMotiveGenerator extends
 			return null;
 		} else {
 
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-					.create(GroundedBelief.class, _newEntry);
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+					.create(MergedBelief.class, _newEntry);
 
 			// only generate things if the VO is actually visible
 
@@ -113,13 +113,13 @@ public class VisualObjectMotiveGenerator extends
 
 	@Override
 	protected LearnObjectFeatureMotive checkForAddition(
-			WorkingMemoryAddress addr, GroundedBelief newEntry) {
+			WorkingMemoryAddress addr, MergedBelief newEntry) {
 		throw new RuntimeException(
 				"The single motive version should not be called directly for this generator");
 	}
 
 	protected boolean visualObjectIsVisible(
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
 		FormulaDistribution fd = _belief.getContent().get(
 				VisualObjectTransferFunction.PRESENCE_KEY);
 		String presenceValue = fd.getDistribution().firstValue()
@@ -132,13 +132,13 @@ public class VisualObjectMotiveGenerator extends
 
 	@Override
 	protected void checkForAdditions(WorkingMemoryAddress addr,
-			GroundedBelief _newEntry,
+			MergedBelief _newEntry,
 			List<LearnObjectFeatureMotive> newAdditions) {
 
 		assert (_newEntry.type.equals(VO_TYPE));
 
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, _newEntry);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, _newEntry);
 
 		// only generate things if the VO is actually visible
 
@@ -181,16 +181,16 @@ public class VisualObjectMotiveGenerator extends
 	@Override
 	protected WorkingMemoryAddress getRobotBeliefAddr() {
 		if (m_robotBeliefAddr == null) {
-			List<CASTData<GroundedBelief>> groundedBeliefs = new ArrayList<CASTData<GroundedBelief>>();
+			List<CASTData<MergedBelief>> groundedBeliefs = new ArrayList<CASTData<MergedBelief>>();
 			try {
-				getMemoryEntriesWithData(GroundedBelief.class, groundedBeliefs,
+				getMemoryEntriesWithData(MergedBelief.class, groundedBeliefs,
 						"binder", 0);
 			} catch (UnknownSubarchitectureException e) {
 				logException(e);
 				return null;
 			}
 
-			for (CASTData<GroundedBelief> beliefEntry : groundedBeliefs) {
+			for (CASTData<MergedBelief> beliefEntry : groundedBeliefs) {
 				if (beliefEntry.getData().type.equals("Robot")) {
 					m_robotBeliefAddr = new WorkingMemoryAddress(
 							beliefEntry.getID(), "binder");
@@ -209,10 +209,10 @@ public class VisualObjectMotiveGenerator extends
 			UnknownSubarchitectureException {
 
 		println("fetching robot belief from " + getRobotBeliefAddr());
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class,
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class,
 						getMemoryEntry(getRobotBeliefAddr(),
-								GroundedBelief.class));
+								MergedBelief.class));
 
 		return VisualObjectMotiveGenerator.beliefPredicateGoal(
 				"arm-in-resting-position", belief);
@@ -222,7 +222,7 @@ public class VisualObjectMotiveGenerator extends
 	private LearnObjectFeatureMotive generateLearnFeatureMotive(
 			String _featureKey, String _featureLearntPredicate,
 			WorkingMemoryAddress _wma,
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief)
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
 		LearnObjectFeatureMotive result = null;
@@ -267,7 +267,7 @@ public class VisualObjectMotiveGenerator extends
 	}
 
 	public static String beliefPredicateGoal(String _predicate,
-			CASTIndependentFormulaDistributionsBelief<GroundedBelief> _belief) {
+			CASTIndependentFormulaDistributionsBelief<MergedBelief> _belief) {
 		return beliefPredicateGoal(_predicate, _belief.getId());
 	}
 

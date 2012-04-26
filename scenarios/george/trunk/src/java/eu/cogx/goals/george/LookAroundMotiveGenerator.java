@@ -22,11 +22,11 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
-import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
 public class LookAroundMotiveGenerator extends
-		AbstractBeliefMotiveGenerator<LookAtViewConeMotive, GroundedBelief> {
+		AbstractBeliefMotiveGenerator<LookAtViewConeMotive, MergedBelief> {
 
 	// TODO hardcoded vision.sa
 
@@ -125,7 +125,7 @@ public class LookAroundMotiveGenerator extends
 	private boolean m_fired;
 
 	public LookAroundMotiveGenerator() {
-		super(VC_TYPE, LookAtViewConeMotive.class, GroundedBelief.class);
+		super(VC_TYPE, LookAtViewConeMotive.class, MergedBelief.class);
 		m_fired = false;
 	}
 
@@ -160,15 +160,15 @@ public class LookAroundMotiveGenerator extends
 
 	@Override
 	protected LookAtViewConeMotive checkForAddition(WorkingMemoryAddress _wma,
-			GroundedBelief _newEntry) {
+			MergedBelief _newEntry) {
 
 		assert (_newEntry.type.equals(VC_TYPE));
 
 		log("checkForAddition(): check belief " + _newEntry.id
 				+ " for addition");
 
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, _newEntry);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, _newEntry);
 
 		CASTBeliefHistory hist = (CASTBeliefHistory) _newEntry.hist;
 		WorkingMemoryAddress coneAddr = hist.ancestors.get(0).address;
@@ -203,10 +203,10 @@ public class LookAroundMotiveGenerator extends
 	}
 
 	@Override
-	protected LookAtViewConeMotive checkForUpdate(GroundedBelief _newEntry,
+	protected LookAtViewConeMotive checkForUpdate(MergedBelief _newEntry,
 			LookAtViewConeMotive _existingMotive) {
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, _newEntry);
+		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
+				.create(MergedBelief.class, _newEntry);
 
 		if (!belief.getContent().containsKey("looked-at")) {
 			log("ViewCone belief is still not looked at, so leaving motive unchanged.");
