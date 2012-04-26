@@ -99,7 +99,6 @@
 
     (current-viewcone ?r - Robot) - ViewCone
     (currently-points-at ?r - Robot) - VisualObject
-    (move-to-viewcone-cost ?vc1 - ViewCone ?vc2 - ViewCone) - number
 
     (presence ?v - VisualObject) - Visibility
 
@@ -111,16 +110,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;                   INIT RULES                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  (:init-rule set-move-to-viewcone-cost
-    :parameters (?vc1 - ViewCone ?vc2 - ViewCone)
-    :precondition 
-      (and 
-        (= (move-to-viewcone-cost ?vc1 ?vc2) UNKNOWN)
-        (not (= (move-to-viewcone-cost ?vc2 ?vc1) UNKNOWN))
-      )
-    :effect (assign (move-to-viewcone-cost ?vc1 ?vc2) (move-to-viewcone-cost ?vc2 ?vc1))
-  )
 
   (:init-rule set-polar-question-color-threshold
     :parameters (?r - Robot)
@@ -293,7 +282,6 @@
       (and
         (assign (current-viewcone ?r) ?vc2)
         (looked-at ?vc2)
-        (increase (total-cost) (move-to-viewcone-cost ?vc1 ?vc2))
       )
   )
 
