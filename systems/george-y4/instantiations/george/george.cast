@@ -140,7 +140,7 @@ IFOPTALL(%(feature_options), planning)
    # modifiable options
    VARDEFAULT planner_show_dot=--nodot
    VARDEFAULT planner_workdir=subarchitectures/planner.sa/src/python
-   VARDEFAULT planner_domain=george.domain.year3.mapl
+   VARDEFAULT planner_domain=george.domain.year4.mapl
    VARDEFAULT planner_monitor_files=<multiline>
       CurrentPlan#plan=dot:%(planner_workdir)/{plan*.dot}
    </multiline>

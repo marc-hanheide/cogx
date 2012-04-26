@@ -3,3 +3,8 @@ JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
 JAVA WM cast.architecture.SubarchitectureWorkingMemory
 
 
+JAVA MG wmeditor.yaml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.VerifiedBelief"
+
+
+
+
