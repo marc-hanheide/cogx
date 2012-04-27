@@ -111,10 +111,12 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put(" magazine ", " book ");
 		m_postLexicalSub.put("book", "magazine");
 
-		m_preLexicalSub. put("<Modifier>(v1:m-wherefrom ^ via", "<Modifier>(via:m-through ^ through");
+		m_preLexicalSub. put("m-location ^ via ", "m-through ^ through");
         // TODO find a solution for indirect speech
 		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
 		m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
+		
+		m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 	}
 	
 	
@@ -290,7 +292,7 @@ public class PlanVerbalizer {
 	/**
 	 * This method expands several proto features to correct grammar features:
 	 * - <ExecutionStatus>SUCCEEDED => <Mood>ind ^ <Tense>past
-	 * - <ExecutionStatus>PENDING => <Mood>ind ^ <Tense>fut
+	 * // - <ExecutionStatus>PENDING => <Mood>ind ^ <Tense>fut
 	 * - Subject-Actor agreement
 	 * 
 	 * @param protoLF
