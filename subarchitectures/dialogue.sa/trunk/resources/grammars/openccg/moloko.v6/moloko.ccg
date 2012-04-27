@@ -1,13 +1,4 @@
-
- 
- 
- ################################################################ 
-# I AM A GENERATED FILE (by merge-ccg.pl)                      #  
-# DO NOT EDIT ME DIRECTLY !!!                                  #
-# INSTEAD, EDIT THE SOURCE .CCG FILES IN ./ccg-files FOLDER    #
-################################################################ 
- 
- # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains a cats, families, and dicionary-forms for
 # important things (sentence, subject, coordination and particles). 
@@ -77,7 +68,6 @@
 
   def prt(args)      { prt<25>[P args] }
   family Particle    { entry:  prt(MARK= *) : P(*) ;}
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains the 'basic' semantic and syntactic features 
@@ -202,7 +192,6 @@ feature {
   CORRECTED<1,10,15,25,34>: default asr-correction ;
 
 } 
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains the semantic ontologies (type-heirarchies) 
@@ -324,8 +313,7 @@ feature{
   # this needs re-doing!
   ont-discourse: marker{ d-units alignment cue greeting closing reject acknowledge evaluate };
 				
-}
-# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+}# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains the more 'complex' features used in defining
 # word classes. Specifically, event modifier restriction classes for verbs
@@ -462,8 +450,7 @@ feature {
   
    ;
 
-} # end feature
-# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+} # end feature# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains some important categories used by modifiers like
 # adjectives, adverbs and prepositions 
@@ -580,6 +567,8 @@ feature {
   #       is handled using the semantic sort hierarchy (see types-ontology.ccg)
 
   def MODIFIER(args) {<Modifier>(M  args) }
+  
+  def PURPOSE(args) {<Purpose>(M args) }
 
   # This is the semantic dependency relation used by modifier modifiers,
   #     e.g.  'really' big , 'over' on the table, etc. 
@@ -622,7 +611,6 @@ feature {
     word form.-mod-.side."-".pos."-".class : "Mod-" . side . "-" . pos ."-" ("m-".class, pred=prd)
 	{form;}
   } 
-
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
@@ -848,7 +836,6 @@ feature {
               word . s))
   }
 
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 ###########################
@@ -857,7 +844,8 @@ feature {
 
   def adj(args)         { adj<25>[M DEGREE args] }
   def from-adj(args)    { adj<~25>[M args] }
-
+	
+  def nid(args)			{nid<~25>[M args] }
 
 ##############
 ## FAMILIES ##
@@ -902,6 +890,9 @@ feature {
 
   rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; } 
   
+  rule { typechange: nid(post-n)$1  =>  post-n(, $1) :  ENTITY( MODIFIER() ) ; } 
+  
+  
 #######################
 ## DICTIONARY FORMS  ##
 #######################
@@ -920,9 +911,16 @@ feature {
 	  sup  : s-superlative pre-n superlative args;
     }
   }
+  
   def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, class, args) }
 
-# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+  	 
+  
+  
+  
+  
+  # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains the stuff necessary for determiners, both those
 # handled via features only (a, the, some, this, that) and those
@@ -1041,7 +1039,6 @@ feature {
       word form."-number-id": Number-id("number-id", pred=prd) { form; }
     }
   
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 ###########################
@@ -1205,7 +1202,6 @@ feature {
   }
  def prp--(subsort, form, class, args) { _prp--(subsort, form, form, class, args) }
 
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 ###########################
@@ -1311,7 +1307,6 @@ feature {
 	{form : x-.class cc-class args;}
   } 
 
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # The mood of a clause is projected as early as possible. i.e. we don't wait for the verb.
@@ -1389,7 +1384,6 @@ feature {
    # AUG  5   ADDED vf-to-imp value, this allows verbs to  lexically select whether or not they receive an imp 
    #                (see verb and verb-no-imp dictionary macros below)         
    #
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains everything necessary for standard verbs, and some
@@ -1728,7 +1722,6 @@ feature {
      {stem: vf-be mod;}
  }
 
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
  
 # This file contains the families for various markers, including
@@ -1786,7 +1779,6 @@ feature {
 
   
  
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
  
 # This file contains the stuff for the copular and presentational 
@@ -1894,8 +1886,7 @@ feature {
 
   }
 
- 
-# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+ # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
  
 # This file contains the stuff for: 
 #    1) auxillaries : do, have, be (as progr, passive and predictival verb)
@@ -2049,8 +2040,7 @@ feature {
 
  
  
- 
-# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+ # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains various 'discourse related' families (e.g. Discourse Markers)
 # and also rules handling discourse phenomena like discourse 'fragments', 
@@ -2170,7 +2160,6 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
 
 
   # These handle extra-syntactic phenomena 'floating' phrases, pre and post nps.
-
 
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
@@ -2494,7 +2483,6 @@ def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1 
   }
 
 
-
 # This contains the dictionary items and testbed for 
 # the COMSYS-DEVIL release
 
@@ -2605,7 +2593,6 @@ testbed {
         so_long and thanks for all the fish: 1;
 	
 }  
-
 
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
@@ -2852,7 +2839,8 @@ testbed {
      # This is for handling the dummy noun for the contextual 'the ones on the table'
 	 context-n(ones, entity, s-pl full)  
 	 context-n(one, entity, s-sg full)
-	   
+
+  number-irr(zero, zeroth, "0", "0th")  
   number-irr(two, second, "2", "2nd")
   number-irr(three, third, "3", "3rd")
   number(four, "4")
@@ -2867,6 +2855,91 @@ testbed {
   number(thirteen, "13")
   number(fourteen, "14")
   number(fifteen, "15")
+  number(sixteen, "16")
+  number(seventeen, "17")
+  number(eighteen, "18")
+  number(nineteen, "19")
+  number(twenty, "20")
+  number(twentyone, "21")
+  number(twentytwo, "22")
+  number(twentythree, "23")
+  number(twentyfour, "24")
+  number(twentyfive, "25")
+  number(twentysix, "26")
+  number(twentyseven, "27")
+  number(twentyeight, "28")
+  number(twentynine, "29")
+  number(thirty, "30")
+  number(thirtyone, "31")
+  number(thirtytwo, "32")
+  number(thirtythree, "33")
+  number(thirtyfour, "34")
+  number(thirtyfive, "35")
+  number(thirtysix, "36")
+  number(thirtyseven, "37")
+  number(thirtyeight, "38")
+  number(thirtynine, "39")
+  number(forty, "40")
+  number(fortyone, "41")
+  number(fortytwo, "42")
+  number(fortythree, "43")
+  number(fortyfour, "44")
+  number(fortyfive, "45")
+  number(fortysix, "46")
+  number(fortyseven, "47")
+  number(fortyeight, "48")
+  number(fortynine, "49")
+  number(fifty, "50")
+  number(fiftyone, "51")
+  number(fiftytwo, "52")
+  number(fiftythree, "53")
+  number(fiftyfour, "54")
+  number(fiftyfive, "55")
+  number(fiftysix, "56")
+  number(fiftyseven, "57")
+  number(fiftyeight, "58")
+  number(fiftynine, "59")
+  number(sixty, "60")
+  number(sixtyone, "61")
+  number(sixtytwo, "62")
+  number(sixtythree, "63")
+  number(sixtyfour, "64")
+  number(sixtyfive, "65")
+  number(sixtysix, "66")
+  number(sixtyseven, "67")
+  number(sixtyeight, "68")
+  number(sixtynine, "69")
+  number(seventy, "70")
+  number(seventyone, "71")
+  number(seventytwo, "72")
+  number(seventythree, "73")
+  number(seventyfour, "74")
+  number(seventyfive, "75")
+  number(seventysix, "76")
+  number(seventyseven, "77")
+  number(seventyeight, "78")
+  number(seventynine, "79")
+  number(eighty, "80")
+  number(eightyone, "81")
+  number(eightytwo, "82")
+  number(eightythree, "83")
+  number(eightyfour, "84")
+  number(eightyfive, "85")
+  number(eightysix, "86")
+  number(eightyseven, "87")
+  number(eightyeight, "88")
+  number(eightynine, "89")
+  number(ninety, "90")
+  number(ninetyone, "91")
+  number(ninetytwo, "92")
+  number(ninetythree, "93")
+  number(ninetyfour, "94")
+  number(ninetyfive, "95")
+  number(ninetysix, "96")
+  number(ninetyseven, "97")
+  number(ninetyeight, "98")
+  number(ninetynine, "99")
+
  
 ###############
 ## ADVERBS   ##
@@ -3210,7 +3283,6 @@ def be-forms (args) {
      getting:  ing      passive;       
      got:      pp       passive;            
   } 
-
 # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
 
 # This file contains most dictionary entries, specifically, the 'open class words' 
@@ -3670,6 +3742,10 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
 
   adj-none(same,quality,)
   adj-none(raw,quality,)
+
+  adj-none(meeting,q-purpose,)
+
+
 
 
 ############
@@ -4155,7 +4231,6 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   
   modifier(right, prep, pre, manner )
   modifier(up, prep, pre, manner )
-
 
 
 
@@ -4768,7 +4843,6 @@ testbed {
         
 }
 
-
 rule { typechange: np[D x2du]  =>  du[D]  :  ; } 
 
 rule { typechange: n[D x2du]  =>  du[D] :  ; } 
@@ -4794,4 +4868,3 @@ rule { typechange: n[B correction] => n<99>[A]/^n<99>[A]: A ( <Deleted>(B) ) ; }
 #rule { typechange: np[B correction]/^n => np<100>/^n<100>[A] /^ (np<100>/^n<100>[A]) : A ( <Deleted>(B) ) ; }
 
 #rule { typechange: pp[B correction]/^np => pp<100>/^np[A] /^ (pp<100>/^np[A]) : A ( <Deleted>(B) ) ; }
-
