@@ -29,7 +29,13 @@ ActiveLearnScenario::ActiveLearnScenario(golem::Scene &scene) : Scenario (scene)
 	denormalization = denormalize<Real>;
 	chosenAction = NULL;
 	saveMDLHistory = false;
+	currentRegion = NULL;
 }
+
+ActiveLearnScenario::~ActiveLearnScenario ()
+{
+}
+
 
 void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 	
@@ -198,7 +204,7 @@ void ActiveLearnScenario::chooseAction () {
 			}
 
 			// current chosen Action
-			if (chosenAction == NULL)
+			if (chosenAction != NULL)
 				delete chosenAction;
 			chosenAction = new Action(candidateActions[getActionMaxAvgError(candidateActions)]);
 			
@@ -382,6 +388,9 @@ void ActiveLearnScenario::run(int argc, char* argv[]) {
 	
 	//write obtained data into a binary file
 	writeData (true);
+
+	if (chosenAction != NULL)
+		delete chosenAction;
 	
 }
 
@@ -507,10 +516,6 @@ void ActiveLearnScenario::splitRegion (GNGSMRegion& region) {
 	LearningData::DataSet secondSplittingSet;
 	double cuttingValue = -1.0;
 	int cuttingIdx = -1;
-	for (int unavariable=0; unavariable < region.data.size(); unavariable++) {
-		print_featvector (region.data[unavariable][0].featureVector);
-		cout << endl;
-	}
 
 	//for (int i=0; i<region.sMContextSize; i++) {
 	for (int i=0; i<motorContextSize; i++) {

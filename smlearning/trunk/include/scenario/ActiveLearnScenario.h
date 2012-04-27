@@ -43,7 +43,7 @@ public:
 	/** Objects can be constructed only in the Scene context. */
 	ActiveLearnScenario(golem::Scene &scene);
 	/** destructor */
-	~ActiveLearnScenario () {}
+	~ActiveLearnScenario ();
 
 	/** Run experiment */
 	///

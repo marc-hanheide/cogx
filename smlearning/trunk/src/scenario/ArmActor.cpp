@@ -29,6 +29,16 @@
 
 namespace smlearning {
 
+
+ArmActor::ArmActor(const ArmActor::Desc& desc, golem::Scene& scene)
+{
+	create(desc,scene);
+}
+/** std dto */
+ArmActor::~ArmActor ()
+{
+}
+
 ///////// Public //////////
 /** \brief initializes the arm, sets async time, home position and orientation 
 */

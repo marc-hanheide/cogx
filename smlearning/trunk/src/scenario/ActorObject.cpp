@@ -44,7 +44,7 @@ void ActorObject::setShape(golem::Scene& scene,ConcreteActor* concreteActor)
 	_shapeDesc->nxActorDesc.globalPose.M.rotY(_desc.startRotation.v2);	
 	_shapeDesc->nxActorDesc.globalPose.M.rotZ(_desc.startRotation.v3);
 
-	Actor::create(*_shapeDesc);	
+	Actor::create(*_shapeDesc);
 
 	getPose().R.toEuler (_obRoll, _obPitch, _obYaw);
 
