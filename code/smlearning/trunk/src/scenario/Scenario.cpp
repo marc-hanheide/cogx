@@ -54,6 +54,25 @@ Scenario::Scenario(golem::Scene &scene) : Object(scene), creator(scene) {
 	bStart = bStop = bRec = false;
 }
 
+/** \brief Destructor
+ */
+Scenario::~Scenario ()
+{
+	if (arm != NULL)
+		delete arm;
+	if (_concreteActor != NULL)
+		delete _concreteActor;
+	
+}
+
+
+void Scenario::release() {
+	if (arm->getArm() != NULL)
+		scene.releaseObject(*arm->getArm());
+	if (groundPlane != NULL)
+		scene.releaseObject(*groundPlane);
+}
+
 ///////// Public //////////
 /**  \brief set experiment default values such as the number of sequences, the starting pos and whether to store labels or not
 */

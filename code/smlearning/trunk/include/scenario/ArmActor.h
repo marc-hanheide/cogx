@@ -89,7 +89,9 @@ public:
 	};
 		
 	/** std cto */
-	ArmActor(const ArmActor::Desc& desc, golem::Scene& scene){create(desc,scene);}
+	ArmActor(const ArmActor::Desc& desc, golem::Scene& scene);
+	/** std dto */
+	~ArmActor ();
 	/** try to find a path to given position, if found, move the finegr along it and wait for it to stop */
 	void sendPosition(golem::Context&,const golem::GenWorkspaceState&,const golem::ReacPlanner::Action);
 	/** turns collision detection on/off */

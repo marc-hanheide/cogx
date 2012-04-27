@@ -110,6 +110,8 @@ class Scenario : public golem::Object
 
 		/** cto, such that Scenario can only be created with(in) a scene (context) [requirement of golem]*/
 		Scenario(golem::Scene&);
+		/** destructor */
+		~Scenario ();
 		/** set experiment default values */
 		virtual void init(boost::program_options::variables_map vm);
 		/** remove the actor object from the scene */
@@ -124,6 +126,8 @@ class Scenario : public golem::Object
 	protected:
 		/** const number of starting positions */
 		static const int startingPositionsCount = 24;
+		/** Releases resources */
+		virtual void release();
 		/** calculate the start coordinates of the arm */
 		virtual void calculateStartCoordinates();
 		/** select a random action */
