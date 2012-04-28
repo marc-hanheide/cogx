@@ -11,7 +11,7 @@
   </universe>
 
   <scene name="Active Learning Experiment">
-    <physx restitution="0.1" static_friction="0.4" dynamic_friction="0.2">
+    <physx restitution="0.1" static_friction="0.2" dynamic_friction="0.1">
       <gravity v1="0.0" v2="0.0" v3="-9.81"></gravity>
     </physx>
     <opengl>
