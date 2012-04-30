@@ -65,7 +65,7 @@ public:
 	/** get Output Quantizer from file */
 	Quantizer* getOutputQuantizer () { return output_quantizer; }
 	/** get State Quantizer from file */
-	Quantizer* getStateQuantizer () { return state_quantizer; }
+	CVQ* getStateQuantizer () { return state_quantizer; }
 	/** set present data sequences from file */
 	void setData (std::string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
 	/** set data sequences from present data set */
@@ -105,7 +105,7 @@ protected:
 	/** Output quantizer */
 	Quantizer *output_quantizer;
 	/** State quantizer */
-	Quantizer *state_quantizer;
+	CVQ *state_quantizer;
 	/** map of quantization ids and CVQ classified model vectors */
 	std::map<unsigned int, Classified_Vectors> qnt_mv_map;
 

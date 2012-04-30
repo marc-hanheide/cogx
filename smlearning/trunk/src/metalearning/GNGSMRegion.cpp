@@ -24,6 +24,8 @@
  */
 
 #include <metalearning/GNGSMRegion.h>
+#include <dynamic_system_modeling/dynamic_system_event_sequence_set.hh>
+#include <cryssmex/cryssmex.hh>
 
 namespace smlearning {
 
@@ -133,6 +135,8 @@ bool GNGSMRegion::readData (string fileName) {
 	
 	readFile.close ();
 
+	sMContextSize = minValuesSMVector.size ();
+
 	cryssmex.setInputQuantizer (fileName + "_inputq.qnt");
 	cryssmex.setOutputQuantizer (fileName + "_outputq.qnt");
 	
@@ -158,6 +162,15 @@ void GNGSMRegion::printData () {
 }
 
 
+bool GNGSMRegion::checkSMRegionMembership (const FeatureVector& sMContext)
+{
+	for (int i=0; i<sMContextSize; i++) {
+		if (minValuesSMVector[i] > sMContext[i] || maxValuesSMVector[i] < sMContext[i])
+			return false;
+	}
+	return true;
+}
+	
 ///
 ///Find the appropriate region index according to the given sensorimotor context
 ///
@@ -187,5 +200,83 @@ void GNGSMRegion::redirectOutputToNull ()
 	static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer())->redirectOutput ("/dev/null");
 	static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer())->redirectOutput ("/dev/null");
 }
+
+void GNGSMRegion::generateCryssmexFiles (unsigned int max_iterations, ssm::SSM::Type ssm/*, bool save_all*/, string prefix, string regionFileName, LearningData::FeaturesLimits& limits, feature_selection featureSelectionMethod)
+{
+	LearningData::write_cryssmexdataset (regionFileName, data, normalize<double>, limits, featureSelectionMethod);
+
+	// From here on, this is mostly copying CrySSMEx learning process
+	dynamic_system_modeling::Dynamic_System_Event_Sequence_Set dsess(regionFileName + ".cry");
+	cryssmex::CrySSMEx::Parameters cryssmex_parameters;
+	cryssmex_parameters.ssm_type = ssm;
+	cryssmex_parameters.merge_mode = cryssmex::CrySSMEx::undi;
+	cryssmex_parameters.split_mode = cryssmex::CrySSMEx::basic;
+	
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+		cryssmex.initializeStateQuantizer (LearningData::pfVectorSize);
+
+	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+		cryssmex.initializeStateQuantizer (LearningData::efVectorSize + LearningData::pfVectorSize);
+
+	cryssmex::CrySSMEx _cryssmex(dsess, cryssmex.getInputQuantizer(), cryssmex.getOutputQuantizer(), cryssmex.getStateQuantizer(), cryssmex_parameters);
+
+	bool first_loop = true;
+  
+	string log_filename(prefix + regionFileName + "_cryssmex.log");
+	cout << "Logging in " << log_filename << endl;
+
+	ofstream log(log_filename.c_str());
+	log << "# CrySSMEx log: " << log_filename << endl
+	    << "# Col 1: iteration \n"
+	    << "# Col 2: |Q|\n"
+	    << "# Col 3: max level of CVQ graph\n"
+	    << "# Col 4: node count of CVQ\n";
+
+	unsigned int max_state_count = _cryssmex.ssm()->state_count();
+	unsigned int iter_max_state_count = 0;
+	while(!_cryssmex.ssm()->properties.test_determinism() && 
+	      (_cryssmex.iteration() - iter_max_state_count < max_iterations)) {
+		if (!first_loop) {
+			_cryssmex.split();    
+		}
+    
+		cout << "CrySSMEx iteration: " 
+		     << _cryssmex.iteration() 
+		     << " (" << _cryssmex.ssm()->state_count() 
+		     << ")"<< endl;
+    
+		// if(save_all) {
+		// 	save_cryssmex_stuff(_cryssmex, prefix + "cryssmex_", 1);
+		// }
+    
+		log << _cryssmex.iteration()
+		    << " " << _cryssmex.ssm()->state_count()
+		    << " " << _cryssmex.cvq()->max_level()
+		    << " " << _cryssmex.cvq()->node_count()
+		    << endl;
+
+		if (_cryssmex.ssm()->state_count() > max_state_count)
+		{
+			max_state_count = _cryssmex.ssm()->state_count();
+			iter_max_state_count = _cryssmex.iteration();
+		}
+      
+		first_loop = false;
+		//save(cryssmex.ssm(), ssm_filename);
+	}
+	log.close();
+  
+	string ssm_filename(prefix + "cryssmex_ssm_final.ssm");
+	cout << "Saving " << ssm_filename << endl;
+	save(_cryssmex.ssm(), ssm_filename);
+
+	string cvq_filename(prefix + "cryssmex_cvq_final.qnt");
+	cout << "Saving " << cvq_filename << endl;
+	save_quantizer(_cryssmex.cvq(), cvq_filename);
+
+	
+}
+
+
 
 }; /* namespace smlearning */

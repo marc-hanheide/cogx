@@ -83,7 +83,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 {
 	try {
 
-		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario" || S::getName() == "ActiveLearnScenario") {
+		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario" || S::getName() == "ActiveLearnScenario" || S::getName() == "PredictingActiveLearnScenario") {
 			prgOptDesc.add_options()
 				("help,h", "produce help message")
 				("numSequences,S", po::value<string>(), "number of sequences")
@@ -135,6 +135,11 @@ void PushingApplication<S,D>::define_program_options_desc()
 				("splitting,s", po::value<unsigned int>()->default_value (30), "Splitting criterion (nr of sequences needed for splitting")
 				("mdl,m", "save MDL history");
 
+		}
+		if (S::getName() == "PredictingActiveLearnScenario" ) {
+			prgOptDesc.add_options ()
+				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)");
+				("learnersPath,p", po::value<string>(), "path for looking for quantization and SSMs machines");
 		}
 
 	} catch(std::exception& e) {

@@ -124,7 +124,7 @@ void CrySSMEx::setOutputQuantizer (std::string outputqfile)
 void CrySSMEx::setStateQuantizer (std::string cvqfile)
 {
 	try {
-		state_quantizer = load_quantizer (cvqfile);
+		state_quantizer = static_cast<CVQ*>(load_quantizer (cvqfile));
 		if (!state_quantizer) {
 			std::cerr << cvqfile << " could not be loaded.\n";
 			exit(-1);

@@ -93,7 +93,10 @@ struct GNGSMRegion {
 	void redirectOutputToNull ();
 	/** Find the appropriate region index according to the given sensorimotor context */
 	static int getSMRegion (const RegionsMap& regions, const FeatureVector& SMContext);
-	
+	/** Check if sMContext is a member of this region */
+	bool checkSMRegionMembership (const FeatureVector& sMContext);
+	/** Generate CVQ quantizer and SSM files from input and output quantizers */
+	void generateCryssmexFiles (unsigned int max_iterations, ssm::SSM::Type ssm/*, bool save_all*/, string prefix, string regionFileName, LearningData::FeaturesLimits& limits, feature_selection featureSelectionMethod);
 };
 
 
