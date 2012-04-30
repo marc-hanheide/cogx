@@ -41,6 +41,8 @@ const string PlacePropertySaver::cWorkingMemoryID("spatial.sa");
 PlacePropertySaver::PlacePropertySaver()
 {
   debug("Created.");
+
+	_mapLoadStatusOk = false;
 }
 
 

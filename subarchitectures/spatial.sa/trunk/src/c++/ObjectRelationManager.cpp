@@ -278,12 +278,16 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
   double oldY = 0.0;
   double oldTheta = 0.0;
   double oldTime;
+	bool isFirstRobotPose = false;
   if (lastRobotPose) {
     oldX = lastRobotPose->x;
     oldY = lastRobotPose->y;
     oldTheta = lastRobotPose->theta;
     oldTime = lastRobotPose->time.s + 0.000001*lastRobotPose->time.us;
   }
+	else {
+		isFirstRobotPose = true;
+	}
 
   try {
     lastRobotPose =
@@ -293,6 +297,9 @@ ObjectRelationManager::newRobotPose(const cdl::WorkingMemoryChange &objID)
     log("Error! robotPose missing on WM!");
     return;
   }
+
+	if (isFirstRobotPose) 
+		return;
 
   double distMoved = sqrt((oldX - lastRobotPose->x)*(oldX - lastRobotPose->x) +
       (oldY - lastRobotPose->y)*(oldY - lastRobotPose->y));
