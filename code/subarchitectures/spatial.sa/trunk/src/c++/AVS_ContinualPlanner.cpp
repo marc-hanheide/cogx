@@ -1558,7 +1558,7 @@ void AVS_ContinualPlanner::showProbability(int coneGroupID){
 	text.set_rotation(theta,0,0);
 	text.set_scale(20, 20, 20);
 	text.set_alignment(peekabot::ALIGN_CENTER);
-	text.set_color(1,1,1);
+	text.set_color(0,0,0);
 }
 
 void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::SensingAction> viewcone, BloxelMap* map){
