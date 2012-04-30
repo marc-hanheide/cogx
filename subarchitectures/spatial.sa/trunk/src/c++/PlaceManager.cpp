@@ -1481,7 +1481,7 @@ void PlaceManager::evaluateUnexploredPaths()
                   double t = (dx*n2y-dy*n2x - x1*n2y + y1*n2x)/(n2y*nx-n2x*ny);
                   log("dx %f dy %f theta %f width %f s %f t %f",dx,dy,theta,width,s,t);
                   
-                  if (t > 0 && t < l && (s > -width/2) && (s < width/2)){
+                  if (t > 0 && t < l && (s > -width/2 * 1.5) && (s < width/2 * 1.5)){
                     NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
                     if (t>l/2) t=l/2;
                     newHyp->x=x1 + nx*t;
