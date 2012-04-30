@@ -61,6 +61,7 @@ AVS_ContinualPlanner::AVS_ContinualPlanner() :
 	m_currentVPGenerationCommand = new SpatialData::RelationalViewPointGenerationCommand;
 	m_currentConeGroup = 0;
 
+	m_ptzWaitingStatus = NO_WAITING;
 	m_waitingForPTZCommandID = "";
 }
 
@@ -1388,6 +1389,7 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_coneGroupIdToBeliefId[m_coneGroupId] = b->id;
 		addToWorkingMemory(b->id, "binder", b);
 		log("wrote belief to WM..");
+    showProbability(m_coneGroupId);
 	}
 
 if (WMAddress != ""){
@@ -1533,6 +1535,32 @@ ViewPointGenerator::SensingAction AVS_ContinualPlanner::getRandomViewCone(ViewPo
   return ret;
 }
 
+
+void AVS_ContinualPlanner::showProbability(int coneGroupID){
+	char buf[32];
+	peekabot::LabelProxy text;
+	sprintf(buf, "%d", coneGroupID);
+	text.add(m_ProxyViewPoints, buf, peekabot::REPLACE_ON_CONFLICT);
+	sprintf(buf, "%.0f", round(m_beliefConeGroups[coneGroupID].getTotalProb()*100));
+	text.set_text(buf);
+
+  double dist = 0.2;
+  double x = m_beliefConeGroups[coneGroupID].viewcones[0].pos[0]-dist*cos(m_beliefConeGroups[coneGroupID].viewcones[0].pan);
+  double y = m_beliefConeGroups[coneGroupID].viewcones[0].pos[1]-dist*sin(m_beliefConeGroups[coneGroupID].viewcones[0].pan);
+  double minAngle = m_beliefConeGroups[coneGroupID].minAngle;
+  double maxAngle = m_beliefConeGroups[coneGroupID].maxAngle;
+  double theta = (maxAngle + minAngle)/2;
+  if ((fabs(maxAngle - theta) > M_PI / 2 ) || (fabs(minAngle - theta) > M_PI / 2)){
+    theta = theta + M_PI;
+  }
+
+	text.set_pose(x+dist*3*cos(theta),y+dist*3*sin(theta),2,0,0,0);
+	text.set_rotation(theta,0,0);
+	text.set_scale(20, 20, 20);
+	text.set_alignment(peekabot::ALIGN_CENTER);
+	text.set_color(1,1,1);
+}
+
 void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::SensingAction> viewcone, BloxelMap* map){
 
 	log("Making VC update at: %f, %f, %f", viewcone.second.pos[0],viewcone.second.pos[1],viewcone.second.pos[2]);
@@ -1634,9 +1662,11 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		double factor = newValue/floatformula->val;
 		floatformula->val = newValue; // remove current conesum's result
 		log("Changing conegroup probability to %f", floatformula->val);
+
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[coneGroupID], "binder", belief);
 		m_beliefConeGroups[coneGroupID].scaleProbabilities(factor);
 		log("Sum probabilities check: %f", m_beliefConeGroups[coneGroupID].getTotalProb());
+    showProbability(coneGroupID);
 
 	} catch (DoesNotExistOnWMException e) {
 		log("Error! ConeGroup belief missing on WM!");
@@ -2101,6 +2131,10 @@ void AVS_ContinualPlanner::owtNavCommand(
 	}
 	else if (cmd->comp == SpatialData::COMMANDFAILED) {
 				// it means we've failed to reach the viewcone position
+        if(m_usePeekabot){            
+            ChangeCurrentViewConeColor(0.9,0.1,0.1);
+        }
+
 		ViewConeUpdate(m_currentViewCone, m_objectBloxelMaps[m_currentConeGroup->bloxelMapId]);
 				m_currentProcessConeGroup->status = SpatialData::FAILED;
 				log("Overwriting command to change status to: FAILED");

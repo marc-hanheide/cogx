@@ -106,6 +106,7 @@ public:
 	 void addRecognizer3DCommand(VisionData::Recognizer3DCommandType cmd, std::string label,
 		std::string visualObjectID);
 
+   void showProbability(int coneGroupID);
 	 void Recognize();
 	 void addARTagCommand();
 	 void PostViewCone(const ViewPointGenerator::SensingAction &nbv,int id);

@@ -878,6 +878,7 @@ NewNavController::updateCtrl()
 
   Cure::MotionAlgorithm::MotionCmd cmd;
   cmd.type = Cure::MotionAlgorithm::CMD_TYPE_STOP;
+	cmd.v = cmd.w = cmd.dir = 0;
 
   m_sc->log("m_TaskType=%d\n",m_TaskType);
 

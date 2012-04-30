@@ -835,13 +835,9 @@ void SpatialControl::start()
 m_RobotServer = getIceServer<Robotbase::RobotbaseServer>(m_RobotServerName);
 	
   if(m_sendPTZCommands) {	
+    m_ptzInMappingPose = false;
+    m_ptzInNavigationPose = false;
   	m_ptzInterface = getIceServer<ptz::PTZInterface>("ptz.server");
-  	ptz::PTZReading reading = m_ptzInterface->getPose();
-  
-
-    checkPTZPose(reading.pose);
-
-    m_lastPtzNavPoseCompletion = getCASTTime();
   }
 
   addChangeFilter(createLocalTypeFilter<NavData::InternalNavCommand>(cdl::ADD), 
@@ -1342,6 +1338,15 @@ void SpatialControl::runComponent()
 {
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
+
+  if(m_sendPTZCommands) {	
+		ptz::PTZReading reading = m_ptzInterface->getPose();
+
+		checkPTZPose(reading.pose);
+
+		m_lastPtzNavPoseCompletion = getCASTTime();
+	}
+	m_lastPointCloudTime = getCASTTime();
 
   if(m_usePeekabot){
     while(!m_PeekabotClient.is_connected() && (m_RetryDelay > -1)){
