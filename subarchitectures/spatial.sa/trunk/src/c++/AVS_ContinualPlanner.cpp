@@ -903,8 +903,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_objectBloxelMaps[id]->universalQuery(resetter, true);
 		double fixedpdfvalue = pdfmass / (m_objectBloxelMaps[id]->getZBounds().second - m_objectBloxelMaps[id]->getZBounds().first);
 
-		GDProbInit initfunctor(fixedpdfvalue);
-    GDProbInit initfunctor2(fixedpdfvalue*2);
+		GDProbInit initfunctor(fixedpdfvalue*0.5);
+    GDProbInit initfunctor2(fixedpdfvalue);
 		log("Setting each bloxel near an obstacle to a fixed value of %f, in total: %f", fixedpdfvalue, pdfmass);
 		pair<double,double> insideroom;
 		insideroom.first =0;
