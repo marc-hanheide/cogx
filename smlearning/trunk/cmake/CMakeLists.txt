@@ -269,6 +269,9 @@ SET(EVALUATE_OFFLINELEARN_SOURCE
         ${SMLEARNING_ROOT}/src/metalearning/evaluate_offlinelearn.cpp
 )
 
+SET(GENERATE_CRYSSMEX_FILES_ACTIVELEARNING_SOURCE
+        ${SMLEARNING_ROOT}/src/metalearning/generate_cryssmex_files_activelearning.cpp
+)
 
 SET(N_FOLD_CVSETS_NETS_SOURCE
         ${SMLEARNING_ROOT}/src/smltools/n_fold_cvsets_nets.cpp
@@ -374,6 +377,7 @@ ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
 ADD_EXECUTABLE(eval_plotting ${EVAL_PLOTTING_SOURCE})
 ADD_EXECUTABLE(evaluate_activelearn ${EVALUATE_ACTIVELEARN_SOURCE})
 ADD_EXECUTABLE(evaluate_offlinelearn ${EVALUATE_OFFLINELEARN_SOURCE})
+ADD_EXECUTABLE(generate_cryssmex_files_activelearning ${GENERATE_CRYSSMEX_FILES_ACTIVELEARNING_SOURCE})
 ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
 ADD_EXECUTABLE(write_data_cryssmex_fmt ${WRITE_DATA_CRYSSMEX_FMT_SOURCE})
@@ -399,6 +403,7 @@ INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evaluate_activelearn RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evaluate_offlinelearn RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS generate_cryssmex_files_activelearning RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS write_data_cryssmex_fmt RUNTIME DESTINATION bin/SMLearning)
