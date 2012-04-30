@@ -1389,7 +1389,9 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_coneGroupIdToBeliefId[m_coneGroupId] = b->id;
 		addToWorkingMemory(b->id, "binder", b);
 		log("wrote belief to WM..");
-    showProbability(m_coneGroupId);
+		if(m_usePeekabot){
+      showProbability(m_coneGroupId);
+    }
 	}
 
 if (WMAddress != ""){
@@ -1666,7 +1668,9 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[coneGroupID], "binder", belief);
 		m_beliefConeGroups[coneGroupID].scaleProbabilities(factor);
 		log("Sum probabilities check: %f", m_beliefConeGroups[coneGroupID].getTotalProb());
-    showProbability(coneGroupID);
+ 		if(m_usePeekabot){
+      showProbability(coneGroupID);
+    }
 
 	} catch (DoesNotExistOnWMException e) {
 		log("Error! ConeGroup belief missing on WM!");
