@@ -266,11 +266,11 @@ void GNGSMRegion::generateCryssmexFiles (unsigned int max_iterations, ssm::SSM::
 	}
 	log.close();
   
-	string ssm_filename(prefix + "cryssmex_ssm_final.ssm");
+	string ssm_filename(prefix + regionFileName + "_cryssmex_ssm_final.ssm");
 	cout << "Saving " << ssm_filename << endl;
 	save(_cryssmex.ssm(), ssm_filename);
 
-	string cvq_filename(prefix + "cryssmex_cvq_final.qnt");
+	string cvq_filename(prefix + regionFileName + "_cryssmex_cvq_final.qnt");
 	cout << "Saving " << cvq_filename << endl;
 	save_quantizer(_cryssmex.cvq(), cvq_filename);
 
