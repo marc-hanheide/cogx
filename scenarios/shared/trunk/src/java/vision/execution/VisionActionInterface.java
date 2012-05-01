@@ -13,6 +13,7 @@ import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryAddress;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.TriBool;
 import execution.slice.actions.BackgroundModels;
@@ -34,7 +35,8 @@ import execution.util.NonBlockingCompleteOnOperationExecutor;
  * @author nah
  * 
  */
-public class VisionActionInterface extends AbstractActionInterface {
+public class VisionActionInterface extends
+		AbstractActionInterface<GroundedBelief> {
 
 	/**
 	 * An action executor to handle object detection.
@@ -210,6 +212,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 	private final Hashtable<String, WorkingMemoryAddress> m_foregroundedModels;
 
 	public VisionActionInterface() {
+		super(GroundedBelief.class);
 		m_foregroundedModels = new Hashtable<String, WorkingMemoryAddress>();
 	}
 
