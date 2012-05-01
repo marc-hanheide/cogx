@@ -2,6 +2,7 @@ package dialogue.execution.dora;
 
 import cast.architecture.ManagedComponent;
 import dialogue.execution.AbstractDialogueActionInterface;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import execution.slice.TriBool;
 import execution.slice.actions.ReportPosition;
 import execution.util.BlockingActionExecutor;
@@ -15,8 +16,13 @@ import execution.util.ComponentActionFactory;
  * 
  */
 public class SimpleDialogueActionInterface extends
-		AbstractDialogueActionInterface {
+		AbstractDialogueActionInterface<GroundedBelief> {
 
+	
+	public SimpleDialogueActionInterface() {
+		super(GroundedBelief.class);
+	}
+	
 	public static class ReportPositionDialogue extends
 			BlockingActionExecutor<ReportPosition> {
 
