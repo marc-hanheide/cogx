@@ -30,6 +30,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -59,8 +60,8 @@ import execution.util.LocalActionStateManager;
  * @author nah
  * 
  */
-public abstract class AbstractDialogueActionInterface extends
-		AbstractActionInterface {
+public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief>
+		extends AbstractActionInterface<BeliefType> {
 
 	// FIXME: hacky, but this must not be in scenarios/george!
 	public static final String IS_POTENTIAL_OBJECT_IN_QUESTION = "is-potential-object-in-question";
@@ -72,6 +73,10 @@ public abstract class AbstractDialogueActionInterface extends
 	boolean madeup;
 
 	protected boolean m_fakeIt;
+
+	public AbstractDialogueActionInterface(Class<BeliefType> _beliefCls) {
+		super(_beliefCls);
+	}
 
 	public abstract static class IntentionDialogueAction<T extends Action>
 			extends BlockingActionExecutor<T> {
@@ -105,7 +110,7 @@ public abstract class AbstractDialogueActionInterface extends
 					new HashMap<String, String>(),
 					new HashMap<String, WorkingMemoryAddress>());
 
-			((AbstractDialogueActionInterface) getComponent()).enableASR();
+			((AbstractDialogueActionInterface<?>) getComponent()).enableASR();
 
 			addStringContent(actint.stringContent);
 			addAddressContent(actint.addressContent);
@@ -120,15 +125,14 @@ public abstract class AbstractDialogueActionInterface extends
 			} catch (CASTException e) {
 				logException(e);
 			} finally {
-				((AbstractDialogueActionInterface) getComponent()).disableASR();
+				((AbstractDialogueActionInterface<?>) getComponent())
+						.disableASR();
 			}
 			return res;
 		}
 
 		@Override
 		public void stopExecution() {
-			// TODO Auto-generated method stub
-
 		}
 
 		/**
@@ -358,8 +362,8 @@ public abstract class AbstractDialogueActionInterface extends
 
 			// also flag grounded belief with reference potential
 			try {
-				((AbstractDialogueActionInterface) getComponent())
-						.addBooleanFeature(getAction().beliefAddress,
+				((AbstractDialogueActionInterface<?>) getComponent())
+						.addFeature(getAction().beliefAddress,
 								IS_POTENTIAL_OBJECT_IN_QUESTION, true);
 			} catch (SubarchitectureComponentException e) {
 				logException(e);
@@ -389,9 +393,10 @@ public abstract class AbstractDialogueActionInterface extends
 			String value = _ii.stringContent.get("asserted-value");
 			try {
 
-				((AbstractDialogueActionInterface) getComponent())
-						.addStringFeature(getAction().beliefAddress,
-								"attributed-" + feature, value);
+				((AbstractDialogueActionInterface<?>) getComponent())
+						.addFeature(getAction().beliefAddress, "attributed-"
+								+ feature, value);
+
 			} catch (SubarchitectureComponentException e) {
 				logException(e);
 			}
@@ -510,7 +515,7 @@ public abstract class AbstractDialogueActionInterface extends
 			// pointer across multiple calls of the executor
 			_addressContent
 					.put("verification-of",
-							((AbstractDialogueActionInterface) getComponent()).m_lastPossibleIntentionsAddition);
+							((AbstractDialogueActionInterface<?>) getComponent()).m_lastPossibleIntentionsAddition);
 		}
 
 		/**
@@ -632,14 +637,14 @@ public abstract class AbstractDialogueActionInterface extends
 				throws DoesNotExistOnWMException,
 				UnknownSubarchitectureException, ConsistencyException,
 				PermissionException {
-			
+
 			println("removing reference marker from belief at "
 					+ CASTUtils.toString(_refGroundBelAddr));
-		
+
 			GroundedBelief belief = getComponent().getMemoryEntry(
 					_refGroundBelAddr, GroundedBelief.class);
 
-			if (!((AbstractDialogueActionInterface) getComponent())
+			if (!((AbstractDialogueActionInterface<?>) getComponent())
 					.removeQuestionReference(_refGroundBelAddr, belief)) {
 				getComponent().getLogger().warn(
 						"Verified belief didn't have field"
@@ -706,7 +711,7 @@ public abstract class AbstractDialogueActionInterface extends
 						+ "-question-answered";
 				// record that we have looked at it
 
-				((AbstractActionInterface) getComponent()).addBooleanFeature(
+				((AbstractActionInterface<?>) getComponent()).addFeature(
 						getAction().beliefAddress, answeredPredictate, true);
 			} catch (CASTException e) {
 				getComponent().logException(e);
@@ -748,14 +753,14 @@ public abstract class AbstractDialogueActionInterface extends
 						+ "-question-answered";
 				// record that we have looked at it
 
-				((AbstractActionInterface) getComponent()).addStringFeature(
-						getAction().beliefAddress, answeredPredictate,
-						getAction().value);
+				BeliefUtils.addFeature(getComponent(),
+						getAction().beliefAddress, GroundedBelief.class,
+						answeredPredictate, getAction().value);
+
 			} catch (CASTException e) {
 				getComponent().logException(e);
 			}
 		}
-
 	}
 
 	public static class AskForIdentityPolarDialogue extends
@@ -777,7 +782,7 @@ public abstract class AbstractDialogueActionInterface extends
 
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((AbstractDialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface<?>) getComponent())
 						.askForFeatureThenSetDirect("shape", getAction());
 				result = TriBool.TRITRUE;
 
@@ -803,7 +808,7 @@ public abstract class AbstractDialogueActionInterface extends
 
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((AbstractDialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface<?>) getComponent())
 						.askForFeatureThenSetDirect("identity", getAction());
 				result = TriBool.TRITRUE;
 
@@ -830,7 +835,7 @@ public abstract class AbstractDialogueActionInterface extends
 			TriBool result = TriBool.TRIFALSE;
 			try {
 
-				((AbstractDialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface<?>) getComponent())
 						.askPolarFeatureThenSetDirect("shape", getAction());
 				result = TriBool.TRITRUE;
 
@@ -856,7 +861,7 @@ public abstract class AbstractDialogueActionInterface extends
 			TriBool result = TriBool.TRIFALSE;
 			try {
 
-				((AbstractDialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface<?>) getComponent())
 						.askPolarFeatureThenSetDirect("color", getAction());
 				result = TriBool.TRITRUE;
 
@@ -882,7 +887,7 @@ public abstract class AbstractDialogueActionInterface extends
 			TriBool result = TriBool.TRIFALSE;
 			try {
 
-				((AbstractDialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface<?>) getComponent())
 						.askPolarFeatureThenSetDirect("identity", getAction());
 				result = TriBool.TRITRUE;
 
@@ -921,7 +926,7 @@ public abstract class AbstractDialogueActionInterface extends
 		public TriBool execute() {
 			TriBool result = TriBool.TRIFALSE;
 			try {
-				((AbstractDialogueActionInterface) getComponent())
+				((AbstractDialogueActionInterface<?>) getComponent())
 						.askForFeatureThenSetDirect("color", getAction());
 				result = TriBool.TRITRUE;
 
@@ -1003,7 +1008,7 @@ public abstract class AbstractDialogueActionInterface extends
 		// END HACK
 
 		boolean result = false;
-		
+
 		if (belief.getContent().containsKey(IS_POTENTIAL_OBJECT_IN_QUESTION)) {
 			belief.getContent().remove(IS_POTENTIAL_OBJECT_IN_QUESTION);
 			result = true;
@@ -1048,16 +1053,17 @@ public abstract class AbstractDialogueActionInterface extends
 
 	private WorkingMemoryAddress m_lastPossibleIntentionsAddition;
 
-//	public static void main(String[] args) throws SecurityException,
-//			NoSuchMethodException {
-//
-//		DialogueActionInterface diag = new DialogueActionInterface();
-//		Constructor<VerifyReferenceExecutor> constructor = VerifyReferenceExecutor.class
-//				.getConstructor(ManagedComponent.class);
-//	
-//		System.out.println("asdasds");
-//	
-//	}
+	// public static void main(String[] args) throws SecurityException,
+	// NoSuchMethodException {
+	//
+	// DialogueActionInterface diag = new DialogueActionInterface();
+	// Constructor<VerifyReferenceExecutor> constructor =
+	// VerifyReferenceExecutor.class
+	// .getConstructor(ManagedComponent.class);
+	//
+	// System.out.println("asdasds");
+	//
+	// }
 
 	@Override
 	protected void start() {
