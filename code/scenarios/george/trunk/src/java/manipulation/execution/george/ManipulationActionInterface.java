@@ -14,6 +14,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
+import eu.cogx.beliefs.slice.MergedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
@@ -23,10 +24,15 @@ import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
 import execution.util.NonBlockingCompleteFromStatusExecutor;
 
-public class ManipulationActionInterface extends AbstractActionInterface {
+public class ManipulationActionInterface extends AbstractActionInterface<MergedBelief> {
 
 	private static final boolean ARM_IS_RESTING = true;
 
+	
+	public ManipulationActionInterface() {
+		super(MergedBelief.class);
+	}
+	
 	public static class PointToObjectExecutor
 			extends
 			NonBlockingCompleteFromStatusExecutor<PointToObject, ArmMovementTask> {

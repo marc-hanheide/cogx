@@ -11,6 +11,7 @@ import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
+import eu.cogx.beliefs.slice.MergedBelief;
 import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
@@ -20,17 +21,21 @@ import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
 
-
 /**
  * 
  * TODO Refactor so that it shares code with real interface.
  * 
  * @author nah
- *
+ * 
  */
-public class FakeManipulationActionInterface extends AbstractActionInterface {
+public class FakeManipulationActionInterface extends
+		AbstractActionInterface<MergedBelief> {
 
 	private static final boolean ARM_IS_RESTING = true;
+
+	public FakeManipulationActionInterface() {
+		super(MergedBelief.class);
+	}
 
 	public static class PointToObjectExecutor extends
 			BlockingActionExecutor<PointToObject> {

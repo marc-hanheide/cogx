@@ -29,7 +29,6 @@ import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
-import de.dfki.lt.tr.dialogue.intentions.inst.FeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import dialogue.execution.AbstractDialogueActionInterface;
@@ -187,6 +186,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		log("question intention");
 		
 		
+		//TODO " you can to decode polar first, and if that fails, try the open question"
+		
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("open")) {
 
@@ -264,7 +265,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected abstract String getPolarQuestionGoalString(String _feature,
-			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddr);
+			String _hypothesis, WorkingMemoryAddress _beliefAddr);
 
 	/**
 	 * @param _addr
@@ -301,7 +302,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	private TutorInitiativeQuestionMotive polarQuestion(String _feature,
-			String _hypothesis, WorkingMemoryAddress _groundedBeliefAddress)
+			String _hypothesis, WorkingMemoryAddress _beliefAddress)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		// [LOG gg.ii: polar question intention]
 		// [LOG gg.ii: unknown InterpretedIntention type]
@@ -320,7 +321,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
 				getPolarQuestionGoalString(_feature, _hypothesis,
-						_groundedBeliefAddress) });
+						_beliefAddress) });
 
 		motive.goal = new Goal(100f, -1, goalString, false);
 
@@ -339,7 +340,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// }
 
 	private TutorInitiativeQuestionMotive openQuestion(String _feature,
-			WorkingMemoryAddress _groundedBeliefAddress)
+			WorkingMemoryAddress _beliefAddress)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
 		TutorInitiativeQuestionMotive motive = VisualObjectMotiveGenerator
@@ -348,7 +349,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		String goalString = conjoinGoalStrings(new String[] {
 				getAdditionalGoals(),
-				getOpenQuestionGoalString(_feature, _groundedBeliefAddress) });
+				getOpenQuestionGoalString(_feature, _beliefAddress) });
 
 		motive.goal = new Goal(100f, -1, goalString, false);
 
@@ -360,7 +361,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected abstract String getOpenQuestionGoalString(String _feature,
-			WorkingMemoryAddress _groundedBeliefAddr);
+			WorkingMemoryAddress _beliefAddr);
 
 	/**
 	 * 
@@ -513,12 +514,12 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		return _intention.addressContent.get("about");
 	}
 
-	// public void addStringFeature(WorkingMemoryAddress _groundedBeliefAddr,
+	// public void addStringFeature(WorkingMemoryAddress _beliefAddr,
 	// String _feature, String _value) throws DoesNotExistOnWMException,
 	// ConsistencyException, PermissionException,
 	// UnknownSubarchitectureException {
 	//
-	// MergedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+	// MergedBelief belief = getMemoryEntry(_beliefAddr,
 	// MergedBelief.class);
 	// CASTIndependentFormulaDistributionsBelief<MergedBelief> pb =
 	// CASTIndependentFormulaDistributionsBelief
@@ -528,7 +529,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	// fd.add(_value, 1);
 	//
 	// pb.getContent().put(_feature, fd);
-	// overwriteWorkingMemory(_groundedBeliefAddr, pb.get());
+	// overwriteWorkingMemory(_beliefAddr, pb.get());
 	// }
 
 	/**
@@ -537,25 +538,25 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	 * 
 	 * TODO handle multiple intentions/ambiguous referents
 	 * 
-	 * @param _groundedBeliefAddr
+	 * @param _beliefAddr
 	 * @throws DoesNotExistOnWMException
 	 * @throws ConsistencyException
 	 * @throws PermissionException
 	 * @throws UnknownSubarchitectureException
 	 */
-	protected void markReferent(WorkingMemoryAddress _groundedBeliefAddr)
+	protected void markReferent(WorkingMemoryAddress _beliefAddr)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
 		log("marking referent");
 		// addBooleanFeature(
-		// _groundedBeliefAddr,
+		// _beliefAddr,
 		// AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
 		// true);
 
 		BeliefUtils
 				.addFeature(
 						this,
-						_groundedBeliefAddr,
+						_beliefAddr,
 						dBelief.class,
 						AbstractDialogueActionInterface.IS_POTENTIAL_OBJECT_IN_QUESTION,
 						Boolean.TRUE);
@@ -565,7 +566,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		sleepComponent(500);
 	}
 
-	protected void addAttribution(WorkingMemoryAddress _groundedBeliefAddr,
+	protected void addAttribution(WorkingMemoryAddress _beliefAddr,
 			String _feature, String _value, boolean _polarity)
 			throws DoesNotExistOnWMException, ConsistencyException,
 			PermissionException, UnknownSubarchitectureException {
@@ -574,12 +575,12 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		println("adding attribution: (" + attributionPredication + " " + _value
 				+ ")");
 
-		// addStringFeature(_groundedBeliefAddr, attributionPredication,
+		// addStringFeature(_beliefAddr, attributionPredication,
 		// _value);
 
 		// keep dBelief here to allow switches between different subclasses,
 		// e.g. Merged or Merged
-		BeliefUtils.addFeature(this, _groundedBeliefAddr, dBelief.class,
+		BeliefUtils.addFeature(this, _beliefAddr, dBelief.class,
 				attributionPredication, _value);
 
 		// planning won't work without this in place anyway, but it probably
@@ -629,11 +630,11 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		}
 	}
 
-	protected void cleanBelief(WorkingMemoryAddress _groundedBeliefAddr)
+	protected void cleanBelief(WorkingMemoryAddress _beliefAddr)
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 
-		MergedBelief belief = getMemoryEntry(_groundedBeliefAddr,
+		MergedBelief belief = getMemoryEntry(_beliefAddr,
 				MergedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, belief);
@@ -643,6 +644,6 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// remove potential results of learning and dialoguate
 		removeActionEffects(gb);
 
-		overwriteWorkingMemory(_groundedBeliefAddr, gb.get());
+		overwriteWorkingMemory(_beliefAddr, gb.get());
 	}
 }

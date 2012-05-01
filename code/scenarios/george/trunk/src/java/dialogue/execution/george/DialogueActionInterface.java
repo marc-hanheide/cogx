@@ -1,7 +1,7 @@
 package dialogue.execution.george;
 
-
 import dialogue.execution.AbstractDialogueActionInterface;
+import eu.cogx.beliefs.slice.MergedBelief;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -11,8 +11,10 @@ import dialogue.execution.AbstractDialogueActionInterface;
  * 
  */
 public class DialogueActionInterface extends
-		AbstractDialogueActionInterface {
+		AbstractDialogueActionInterface<MergedBelief> {
 
-	
+	public DialogueActionInterface() {
+		super(MergedBelief.class);
+	}
 
 }
