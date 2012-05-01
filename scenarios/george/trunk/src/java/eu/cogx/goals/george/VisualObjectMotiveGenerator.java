@@ -191,7 +191,7 @@ public class VisualObjectMotiveGenerator extends
 			}
 
 			for (CASTData<MergedBelief> beliefEntry : groundedBeliefs) {
-				if (beliefEntry.getData().type.equals("Robot")) {
+				if (beliefEntry.getData().type.equalsIgnoreCase("Robot")) {
 					m_robotBeliefAddr = new WorkingMemoryAddress(
 							beliefEntry.getID(), "binder");
 					break;

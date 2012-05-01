@@ -11,6 +11,7 @@ import ptz.PTZReading;
 import NavData.RobotPose2d;
 import VisionData.AnalyzeProtoObjectCommand;
 import VisionData.MoveToViewConeCommand;
+import VisionData.ProtoObject;
 import VisionData.ViewCone;
 import VisionData.VisionCommandStatus;
 import VisionData.VisualLearningTask;
@@ -29,6 +30,8 @@ import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import cogx.Math.Vector3;
+import eu.cogx.beliefs.slice.MergedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
@@ -52,7 +55,8 @@ import execution.util.NonBlockingCompleteFromStatusExecutor;
  * @author nah
  * 
  */
-public class VisionActionInterface extends AbstractActionInterface {
+public class VisionActionInterface extends
+		AbstractActionInterface<MergedBelief> {
 
 	public static final String LEARNED_FEATURE_POSTFIX = "-learned";
 	public static final String UNLEARNED_FEATURE_POSTFIX = "-unlearned";
@@ -65,6 +69,10 @@ public class VisionActionInterface extends AbstractActionInterface {
 	private boolean m_fakeRobotPose;
 	// is the arm resting at system startup?
 	private boolean m_armIsRestingInitially;
+
+	public VisionActionInterface() {
+		super(MergedBelief.class);
+	}
 
 	public static class MoveToViewConeExecutor
 			extends
@@ -86,8 +94,12 @@ public class VisionActionInterface extends AbstractActionInterface {
 		public void executeAction() {
 
 			try {
-				WorkingMemoryPointer viewConePtr = ((VisionActionInterface) getComponent())
-						.getFirstAncestorOfBelief(getAction().beliefAddress);
+
+				WorkingMemoryPointer viewConePtr = BeliefUtils
+						.recurseAncestorsForType(getComponent(),
+								getAction().beliefAddress,
+								CASTUtils.typeName(ViewCone.class));
+
 				if (viewConePtr == null) {
 					getComponent().getLogger().warn(
 							"Action failed because ViewCone pointer was null",
@@ -117,9 +129,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 							.recordCurrentViewCone(_cmd.target);
 
 					// record that we have looked at it
-					((AbstractActionInterface) getComponent())
-							.addBooleanFeature(getAction().beliefAddress,
-									"looked-at", true);
+					((VisionActionInterface) getComponent()).addFeature(
+							getAction().beliefAddress, "looked-at", true);
 
 					return TriBool.TRITRUE;
 				} else {
@@ -167,8 +178,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 		}
 
 		@Override
-		protected AbstractActionInterface getComponent() {
-			return (AbstractActionInterface) super.getComponent();
+		protected VisionActionInterface getComponent() {
+			return (VisionActionInterface) super.getComponent();
 		}
 
 		@Override
@@ -202,7 +213,7 @@ public class VisionActionInterface extends AbstractActionInterface {
 		@Override
 		protected void actionComplete() {
 			try {
-				getComponent().addBooleanFeature(getAction().beliefAddress,
+				getComponent().addFeature(getAction().beliefAddress,
 						m_concept + m_featurePostfix, true);
 
 				// Hack by Alen
@@ -296,8 +307,10 @@ public class VisionActionInterface extends AbstractActionInterface {
 		public void executeAction() {
 			try {
 
-				WorkingMemoryPointer protoObjPtr = ((VisionActionInterface) getComponent())
-						.getFirstAncestorOfBelief(getAction().beliefAddress);
+				WorkingMemoryPointer protoObjPtr = BeliefUtils
+						.recurseAncestorsForType(getComponent(),
+								getAction().beliefAddress,
+								CASTUtils.typeName(ProtoObject.class));
 
 				if (protoObjPtr == null) {
 					getComponent()
@@ -340,7 +353,8 @@ public class VisionActionInterface extends AbstractActionInterface {
 		if (m_viewStateAddress == null) {
 			m_viewStateAddress = new WorkingMemoryAddress(newDataID(),
 					getSubarchitectureID());
-			Robot rbt = new Robot(_viewconePtr, m_armIsRestingInitially, false, false);
+			Robot rbt = new Robot(_viewconePtr, m_armIsRestingInitially, false,
+					false);
 			addToWorkingMemory(m_viewStateAddress, rbt);
 		} else {
 			lockEntry(m_viewStateAddress, WorkingMemoryPermissions.LOCKEDODR);
