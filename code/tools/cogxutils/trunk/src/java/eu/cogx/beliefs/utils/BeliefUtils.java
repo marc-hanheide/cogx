@@ -41,6 +41,63 @@ public class BeliefUtils {
 
 	}
 
+	public static <BeliefClass extends dBelief> WorkingMemoryPointer getMostRecentAncestorPointer(
+			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
+			Class<BeliefClass> _clz) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		BeliefClass belief = _component.getMemoryEntry(_beliefAddress, _clz);
+		CASTIndependentFormulaDistributionsBelief<BeliefClass> pb = CASTIndependentFormulaDistributionsBelief
+				.create(_clz, belief);
+		CASTBeliefHistory hist = (CASTBeliefHistory) pb.get().hist;
+		return hist.ancestors.get(hist.ancestors.size() - 1);
+	}
+
+	/**
+	 * Goes through all ancestors of a belief until it finds one with a matching
+	 * type.
+	 * 
+	 * @param _component
+	 * @param _beliefAddress
+	 * @param _type
+	 * @return
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 */
+	public static WorkingMemoryPointer recurseAncestorsForType(
+			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
+			String _type) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException {
+
+		// TODO need to catch something for incorrect class here I think
+
+		// starting belief
+		dBelief belief = _component.getMemoryEntry(_beliefAddress,
+				dBelief.class);
+		CASTIndependentFormulaDistributionsBelief<dBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(dBelief.class, belief);
+
+		// if it's not an instance of this then it has not been set yet
+		if (pb.get().hist instanceof CASTBeliefHistory) {
+
+			CASTBeliefHistory hist = (CASTBeliefHistory) pb.get().hist;
+
+			for (WorkingMemoryPointer ancestor : hist.ancestors) {
+				if (ancestor.type.equals(_type)) {
+					return ancestor;
+				} else {
+					WorkingMemoryPointer recurseResult = recurseAncestorsForType(
+							_component, ancestor.address, _type);
+					if (recurseResult != null) {
+						return recurseResult;
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public static WorkingMemoryPointer getMostRecentAncestorPointer(
 			IndependentFormulaDistributionsBelief<?> _pb) {
 		CASTBeliefHistory hist = (CASTBeliefHistory) _pb.get().hist;
@@ -84,7 +141,6 @@ public class BeliefUtils {
 		_component.overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
-	
 	public static <BeliefClass extends dBelief> void addFeature(
 			ManagedComponent _component, WorkingMemoryAddress _beliefAddress,
 			Class<BeliefClass> _clz, String _feature, boolean _value)
@@ -98,7 +154,6 @@ public class BeliefUtils {
 		_component.overwriteWorkingMemory(_beliefAddress, pb.get());
 	}
 
-	
 	public static <BeliefClass extends dBelief> void addFeature(
 			CASTIndependentFormulaDistributionsBelief<BeliefClass> _belief,
 			String _feature, String _value) {
