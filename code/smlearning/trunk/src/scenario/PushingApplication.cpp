@@ -165,6 +165,10 @@ bool XMLData(ActiveLearnScenario::Desc &val, XMLContext* xmlcontext, Context *co
 	XMLData ((Scenario::Desc&)val, xmlcontext, context);
 }
 
+bool XMLData(PredictingActiveLearnScenario::Desc &val, XMLContext* xmlcontext, Context *context) {
+	XMLData ((Scenario::Desc&)val, xmlcontext, context);
+}
+
 
 }; // namespace smlearning 
 

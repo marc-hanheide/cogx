@@ -187,6 +187,7 @@ SET(SCENARIO_SOURCES
 	${SMLEARNING_ROOT}/src/scenario/PredictingScenario.cpp
 #	${SMLEARNING_ROOT}/src/scenario/ActiveGNGScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/ActiveLearnScenario.cpp
+	${SMLEARNING_ROOT}/src/scenario/PredictingActiveLearnScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
 	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
 )
@@ -203,6 +204,7 @@ SET(SCENARIO_HEADERS
 	${SMLEARNING_ROOT}/include/scenario/PredictingScenario.h
 #	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
 	${SMLEARNING_ROOT}/include/scenario/ActiveLearnScenario.h
+	${SMLEARNING_ROOT}/include/scenario/PredictingActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
 )
 
@@ -221,6 +223,10 @@ SET(OFFLINE_EXPERIMENT_SOURCE
 # )
 SET(ACTIVELEARN_EXPERIMENT_SOURCE
 	${SMLEARNING_ROOT}/src/scenario/activelearn_experiment.cpp
+)
+
+SET(ACTIVELEARN_PREDICTION_EXPERIMENT_SOURCE
+	${SMLEARNING_ROOT}/src/scenario/activelearn_prediction_experiment.cpp
 )
 
 SET(OFFLINEACTIVEGNG_EXPERIMENT_SOURCE
@@ -308,6 +314,7 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/prediction_experiment.xml
 #	${SMLEARNING_ROOT}/config/activegng_experiment.xml
 	${SMLEARNING_ROOT}/config/activelearn_experiment.xml
+	${SMLEARNING_ROOT}/config/activelearn_prediction_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
@@ -369,6 +376,7 @@ ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 #ADD_EXECUTABLE(offline_experiment_ice ${OFFLINE_EXPERIMENT_ICE_SOURCE})
 #ADD_EXECUTABLE(activelearn_experiment_ice ${ACTIVELEARN_EXPERIMENT_ICE_SOURCE})
 ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
+ADD_EXECUTABLE(activelearn_prediction_experiment ${ACTIVELEARN_PREDICTION_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
 ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
@@ -395,6 +403,7 @@ INSTALL(TARGETS offline_experiment RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS offline_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 #INSTALL(TARGETS activelearn_experiment_ice RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS activelearn_experiment RUNTIME DESTINATION bin/SMLearning)
+INSTALL(TARGETS activelearn_prediction_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS prediction_experiment RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS activegng_experiment RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS offlineactivegng_experiment RUNTIME DESTINATION bin/SMLearning)

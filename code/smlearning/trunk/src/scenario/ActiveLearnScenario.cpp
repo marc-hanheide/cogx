@@ -7,10 +7,8 @@
  * - the second runs the Katana arm simulator
  * 
  * @author	Sergio Roa (DFKI)
- * @author	Marek Kopicki (The University Of Birmingham)
- * @author	Jan Hanzelka (DFKI)
  *
- * @version 1.0
+ * @version 2.0 beta
  *
  */
 
@@ -168,6 +166,9 @@ void ActiveLearnScenario::chooseAction () {
 		
 		cout << "neargreedyRand: " << neargreedyActionRand << endl;
 		if (neargreedyActionRand <= neargreedyActionProb) {
+			if (chosenAction != NULL)
+				delete chosenAction;
+			chosenAction = NULL;
 			Scenario::chooseAction ();
 		}
 		
@@ -207,6 +208,7 @@ void ActiveLearnScenario::chooseAction () {
 			if (chosenAction != NULL)
 				delete chosenAction;
 			chosenAction = new Action(candidateActions[getActionMaxAvgError(candidateActions)]);
+			// chosenAction = new Action(candidateActions[floor(randomG.nextUniform (0.0,Real(candidateActions.size())))]);
 			
 			// this->pushDuration = chosenAction.pushDuration;
 			// this->horizontalAngle = chosenAction.horizontalAngle;

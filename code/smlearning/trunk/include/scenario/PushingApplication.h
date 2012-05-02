@@ -38,6 +38,7 @@
 #include <scenario/PredictingScenario.h>
 // #include <scenario/ActiveGNGScenario.h>
 #include <scenario/ActiveLearnScenario.h>
+#include <scenario/PredictingActiveLearnScenario.h>
 #include <scenario/Polyflap.h>
 
 namespace po = boost::program_options;
@@ -48,6 +49,7 @@ bool XMLData(Scenario::Desc&, XMLContext*, Context*);
 bool XMLData(PredictingScenario::Desc&, XMLContext*, Context*);
 // bool XMLData(ActiveGNGScenario::Desc&, XMLContext*, Context*);
 bool XMLData(ActiveLearnScenario::Desc&, XMLContext*, Context*);
+bool XMLData(PredictingActiveLearnScenario::Desc&, XMLContext*, Context*);
 
 /** Application */
 template<typename S, typename D>
@@ -138,8 +140,9 @@ void PushingApplication<S,D>::define_program_options_desc()
 		}
 		if (S::getName() == "PredictingActiveLearnScenario" ) {
 			prgOptDesc.add_options ()
-				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)");
-				("learnersPath,p", po::value<string>(), "path for looking for quantization and SSMs machines");
+				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
+				("prefix,p", po::value<string>()->default_value("./"), "path for looking for quantization and SSMs machines")
+				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension)");
 		}
 
 	} catch(std::exception& e) {

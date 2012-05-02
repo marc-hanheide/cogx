@@ -35,10 +35,10 @@
 
 
 <ObjectInteraction>
-	<maxX>0.4</maxX>
+	<maxX>0.2</maxX>
 	<maxY>0.4</maxY>
 	<maxZ>0.12</maxZ>
-	<minX>0.0</minX>
+	<minX>-0.2</minX>
 	<minY>0.0</minY>
 	<minZ>-0.01</minZ>
 	<minPushDuration>3.0</minPushDuration>
@@ -47,7 +47,7 @@
 	<minValLabel>-1.0</minValLabel>
 	<maxValLabel>1.0</maxValLabel>
 	<startPosition>
-		<x>0.2</x>
+		<x>0.0</x>
 		<y>0.2</y>
 		<z>0.0</z>
 	</startPosition>

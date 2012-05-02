@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
 	po::options_description desc("Allowed parameters:");
 	desc.add_options()
 		("help,h", "produce help message")
-		("prefix,p", po::value(&prefix)->default_value("./"), "Prefix for where results should be stored.")
+		("prefix,p", po::value(&prefix)->default_value("./"), "Prefix for results to be stored.")
 		("max_iterations,t", po::value(&max_iterations)->default_value(5), "max number of iterations in the cryssmex main loop before an SSM is found with more states")
 		("ssm", po::value(&ssm)->default_value(ssm::SSM::mealy), "[mealy|moore] Extraction of Mealy or Moore machines")
 		// ("save_all,a", po::bool_switch(&save_all), "Saves SSMs and CVQs in all iterations")
