@@ -472,7 +472,7 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(hardware_options), video)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
-        CPP MG VideoServer  PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "15" --imgsize "640 480"
+        CPP MG VideoServer  PointGreyServerUSB --camids "0" --camconfigs "%(vision_calib_root)/camcalib-left.xml" --framerate_fps "7" --imgsize "1280 960" --swapredblue
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
         CPP MG viewer       VideoViewer --videohost localhost --videoname VideoServer --camid 0
@@ -834,7 +834,8 @@ VARDEFAULT logged_types=<multiline>
   SpatialData.NodeHypothesis,
   eu.cogx.beliefs.slice.GroundedBelief,
   SpatialData.MapLoadStatus,
-  SpatialProperties.PlaceProperty
+  SpatialProperties.PlaceProperty,
+  execution.slice.person.PersonObservation
 </multiline>
 
 IFOPTALL(%(feature_options), visualization)
