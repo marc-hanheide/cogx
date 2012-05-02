@@ -146,7 +146,7 @@ void displayDoorMeas(peekabot::GroupProxy &root,
                      HSS::DoorExtractor &doorExtractor)
 {
   peekabot::GroupProxy doormeas;
-  doormeas.add(root, "doormeas", peekabot::REPLACE_ON_CONFLICT);
+  doormeas.add(root, "doormeas", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
   
   Eigen::Vector3d xsW(HSS::compound(X, xsR));
 

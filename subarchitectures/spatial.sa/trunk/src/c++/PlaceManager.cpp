@@ -1480,8 +1480,8 @@ void PlaceManager::evaluateUnexploredPaths()
                   double s = (ny*x1-nx*y1 - dx*ny + dy*nx)/(n2x*ny-n2y*nx);
                   double t = (dx*n2y-dy*n2x - x1*n2y + y1*n2x)/(n2y*nx-n2x*ny);
                   log("dx %f dy %f theta %f width %f s %f t %f",dx,dy,theta,width,s,t);
-                  
-                  if (t > 0 && t < l && (s > -width/2 * 1.5) && (s < width/2 * 1.5)){
+                  double door_tolerance = 0.15;
+                  if ((t > -door_tolerance) && (t < l + door_tolerance) && (s > -width/2 * 1.5) && (s < width/2 * 1.5) && (max_dist > 1.5)){
                     NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
                     //if (t>l/2) t=l/2;
                     t = 0;
@@ -2559,7 +2559,7 @@ entry.hyp->x , hypEntry->x ,
 const PlacePtr
 PlaceMapper::_getPlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_getPlace(%i)", id);
+//  log("Entering PlaceMapper::_getPlace(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2573,7 +2573,7 @@ PlaceMapper::_getPlace(PlaceID id)
 PlaceID
 PlaceMapper::_getPlaceIDForNode(NodeID id)
 {
-  log("Entering PlaceMapper::_getPlaceIDForNode(%i)", id);
+//  log("Entering PlaceMapper::_getPlaceIDForNode(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2587,7 +2587,7 @@ PlaceMapper::_getPlaceIDForNode(NodeID id)
 const NavData::FNodePtr
 PlaceMapper::_getNodeForPlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_getNodeForPlace(PlaceID id=%i)", id);
+//  log("Entering PlaceMapper::_getNodeForPlace(PlaceID id=%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2608,7 +2608,7 @@ PlaceMapper::_getNodeForPlace(PlaceID id)
 PlaceID
 PlaceMapper::_getPlaceIDForHyp(HypID id)
 {
-  log("Entering PlaceMapper::_getPlaceIDForHyp(%i)", id);
+//  log("Entering PlaceMapper::_getPlaceIDForHyp(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2622,7 +2622,7 @@ PlaceMapper::_getPlaceIDForHyp(HypID id)
 const NodeHypothesisPtr
 PlaceMapper::_getHypForPlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_getHypIDForPlace(%i)", id);
+//  log("Entering PlaceMapper::_getHypIDForPlace(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2639,7 +2639,7 @@ PlaceMapper::_getHypForPlace(PlaceID id)
 string
 PlaceMapper::_getPlaceWMIDForPlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_getPlaceWMIDForPlace(%i)", id);
+//  log("Entering PlaceMapper::_getPlaceWMIDForPlace(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2666,7 +2666,7 @@ PlaceMapper::_getPlaceWMIDForPlace(PlaceID id)
 string
 PlaceMapper::_getHypWMIDForPlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_getHypWMIDForPlace(%i)", id);
+//  log("Entering PlaceMapper::_getHypWMIDForPlace(%i)", id);
   IceUtil::Mutex::Lock lock(m_mutex);
 
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2681,7 +2681,7 @@ PlaceMapper::_getHypWMIDForPlace(PlaceID id)
 void 
 PlaceMapper::_getPlaceholders(std::vector<PlaceID> &ret)
 {
-  log("Entering PlaceMapper::_getPlaceholders(std::vector<PlaceID> &ret)");
+//  log("Entering PlaceMapper::_getPlaceholders(std::vector<PlaceID> &ret)");
   IceUtil::Mutex::Lock lock(m_mutex);
   
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2695,7 +2695,7 @@ PlaceMapper::_getPlaceholders(std::vector<PlaceID> &ret)
 void 
 PlaceMapper::_getTruePlaces(std::vector<PlaceID> &ret)
 {
-  log("Entering PlaceMapper::_getTruePlaces(std::vector<PlaceID> &ret)");
+//  log("Entering PlaceMapper::_getTruePlaces(std::vector<PlaceID> &ret)");
   IceUtil::Mutex::Lock lock(m_mutex);
   
   for (vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -2708,7 +2708,7 @@ PlaceMapper::_getTruePlaces(std::vector<PlaceID> &ret)
 void
 PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp)
 {
-  log("Entering PlaceMapper::_overwriteHypForPlace(placeID=%i, hypID=%i)", placeID, hyp==0?-1:hyp->hypID);
+//  log("Entering PlaceMapper::_overwriteHypForPlace(placeID=%i, hypID=%i)", placeID, hyp==0?-1:hyp->hypID);
   _checkConsistency(__LINE__);
   {
     IceUtil::Mutex::Lock lock(m_mutex);
@@ -2743,7 +2743,7 @@ PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp)
 void
 PlaceMapper::_updateNodeForPlace(PlaceID placeID, NavData::FNodePtr node)
 {
-  log("Entering PlaceMapper::_updateNodeForPlace(placeID=%i, nodeID=%i)", placeID, node==0?-1:node->nodeId);
+//  log("Entering PlaceMapper::_updateNodeForPlace(placeID=%i, nodeID=%i)", placeID, node==0?-1:node->nodeId);
   _checkConsistency(__LINE__);
   {
     IceUtil::Mutex::Lock lock(m_mutex);
@@ -2760,7 +2760,7 @@ PlaceMapper::_updateNodeForPlace(PlaceID placeID, NavData::FNodePtr node)
 void
 PlaceMapper::_deletePlace(PlaceID id)
 {
-  log("Entering PlaceMapper::_deletePlace(%i)", id);
+//  log("Entering PlaceMapper::_deletePlace(%i)", id);
   string deletePlaceWMID = "";
   string deleteHypWMID = "";
   {
