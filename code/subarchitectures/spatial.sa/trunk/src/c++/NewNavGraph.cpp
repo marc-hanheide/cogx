@@ -211,12 +211,13 @@ NewNavGraph::maybeAddNewNodeAt(double x, double y, double a,
     if (nc != 0) {
       dc = hypot(y - nc->getY(), x - nc->getX());
     }
-    
-    if (nc != m_CurrNode &&
-        dc < d && dc <= m_NodeDist) {
-      // Change curret node to the closest one
-      double cost = hypot(m_CurrNode->getY() - nc->getY(),
+
+    double cost = hypot(m_CurrNode->getY() - nc->getY(),
                           m_CurrNode->getX() - nc->getX());
+    if (nc != m_CurrNode &&
+        dc < d && dc <= m_NodeDist && cost < 1.5*m_NodeDist) {
+      // Change curret node to the closest one
+      
 //TODO check doors here
 
 

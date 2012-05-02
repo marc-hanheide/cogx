@@ -667,10 +667,6 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser
 	odomNew[1] = lastRobotPose->y;
 	odomNew[2] = lastRobotPose->theta;
 
-	if (m_bShowDoorsInPB) {
-	  HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
-	}
-
 	for (list<HSS::RedundantLine2DRep>::iterator it = detDoors.begin();
 	    it != detDoors.end(); it++) {
 	  bool found = false;
@@ -689,6 +685,9 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser
 	    }
 	  }
 	  if (!found) {
+      if (m_bShowDoorsInPB) {
+        HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
+      }
 	    double doorTheta = odomNew[2] + it->theta();
 	    if (doorTheta < -M_PI) doorTheta += 2*M_PI;
 	    if (doorTheta > M_PI) doorTheta -= 2*M_PI;
