@@ -38,6 +38,10 @@ public:
 	CrySSMEx ();
 	/** default destructor */
 	~CrySSMEx ();
+	/** copy constructor */
+	CrySSMEx (const CrySSMEx& c);
+	/** overloaded assignment operator */
+	const CrySSMEx& operator= (const CrySSMEx& c);
 	/** set Substochastic Sequential Machine from file */
 	void setSSM (std::string ssmfile);
 	/** initialize input quantizer */

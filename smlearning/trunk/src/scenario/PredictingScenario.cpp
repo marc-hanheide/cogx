@@ -136,7 +136,6 @@ void PredictingScenario::chooseAction () {
 		// cryssmex.setUniformDistribution ();
 		Scenario::chooseAction ();
 	}
-	learningData.currentPredictedPfSeq.clear();
 	// cryssmex.setUniformDistribution ();
 }
 
@@ -274,6 +273,7 @@ void PredictingScenario::run (int argc, char* argv[]) {
 		if (iteration == 0) objectLocalBounds = object->getLocalBoundsSeq();
 		//create sequence for this loop run
 		learningData.currentChunkSeq.clear ();
+		learningData.currentPredictedPfSeq.clear();
 		//select a random action
 		std::cout <<"choose action "<<std::endl;
 		chooseAction ();

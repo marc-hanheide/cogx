@@ -1,9 +1,8 @@
 /** @file ActiveLearnScenario.h
  * 
  * @author	Sergio Roa (DFKI)
- * @author	Marek Kopicki (The University Of Birmingham)
  *
- * @version 1.0
+ * @version 2.0 beta
  *
  */
 
@@ -62,9 +61,6 @@ public:
 	
 protected:
 
-	/** Encapsulation of CrySSMEx components */
-	ActiveCrySSMEx cryssmex;
-
 	/** map of indexed sensorimotor regions */
 	GNGSMRegion::RegionsMap regions;
 
@@ -81,7 +77,7 @@ protected:
 	/** constant number of maximum candidate actions */
 	static const int maxNumberCandidateActions = 1000;
 	/** near greedy action selection probability bound for choosing random actions */
-	static const double neargreedyActionProb = 0.3;
+	static const double neargreedyActionProb = 1.0;
 	/** number of instances to decide splitting a region */
 	int splittingCriterion1;
 	/** size of motor Context Vector */
