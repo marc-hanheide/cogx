@@ -510,7 +510,25 @@ ENDIF
 ##########################################################################
 
 ### the default goals passed on to the planner GUI
-VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
+# ROBOT and ROOM need to be replaced by the addresses of the beliefs
+# before issuing the goals
+#
+# Find the magazine and report its position:
+# (exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o)))
+#
+# Find a person:
+# (exists (?p - person) (kval ROBOT (is-in ?p)))
+#
+# Find the magazine:
+# (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o))))
+#
+# Explore all placeholders:
+# (forall (?p - place) (= (placestatus ?p) trueplace))
+#
+# Find out the category of the ROOM
+# (kval ROBOT (category ROOM))
+#
+VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazine) (position-reported ?o))); (exists (?p - person) (kval ROBOT (is-in ?p))); (exists (?o - visualobject) (and (= (label ?o) magazine) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace)); (kval ROBOT (category ROOM))"
 
 ### the planning domain to use
 VARDEFAULT planning_domain=dora-interactive.pddl
