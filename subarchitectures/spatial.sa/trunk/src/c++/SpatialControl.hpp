@@ -74,6 +74,23 @@ class SpatialControl : public cast::ManagedComponent ,
 		   public Cure::LocalMap,
 		   public cast::PointCloudClient
 {
+  class DisplayHelperThread : public IceUtil::Thread
+  {
+    public:
+    DisplayHelperThread(SpatialControl& comp) 
+      : m_controlComponent(comp)
+    {
+    }
+
+    virtual void run() {
+      m_controlComponent.displayHelperLoop();
+    }
+
+    protected:
+    SpatialControl& m_controlComponent;
+
+  };
+
   private:
     class FrontierServer: public FrontierInterface::FrontierReader {
       virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
@@ -148,7 +165,7 @@ public:
 
   virtual void runComponent();
   virtual void start();
-
+  IceUtil::ThreadPtr m_dhthread;
   void abortTask(int taskID);
   void doneTask(int taskID);
   void failTask(int taskID, int error);
@@ -353,6 +370,9 @@ protected:
   double m_obstacleMaxHeight;
   bool m_DisplayCureObstacleMap;
 
+  bool m_bDoPBSync;
+  IceUtil::Mutex m_PBDisplayMutex;
+
   cast::cdl::CASTTime m_lastSLAMPoseTime;
 
 protected:
@@ -382,6 +402,8 @@ private:
 	void moveSimulatedPTZ(double pan);
 
   bool isPointVisible(const cogx::Math::Vector3 &pos);
+
+  void displayHelperLoop();
 
   FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
