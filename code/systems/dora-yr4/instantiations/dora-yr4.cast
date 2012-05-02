@@ -342,10 +342,26 @@ IFOPTALL(%(feature_options), spatial)
     CPP GD map.manager          LocalMapManager -c %(spatial_cureconfig) --planemap-size 100 --planemap-cellsize 0.05 --no-planes --detect-doors %(display_doors) %(save_load_nodemaps)
 
     IFOPTALL(%(feature_options), binder)
-### run the spatial mediators so that the spatial stuff shows up in the binder/planner
-        INCLUDE includes/spatial.sa/spatial-mediator.cast
-### this is a dedicated garbage collection that removes any SpatialProperties for which the referred Place has been removed. It
-### makes sure that there are no orphaned properties on WM left
+        ### run the spatial mediators so that the spatial stuff shows up in the binder/planner
+        # simple mediators:
+        JAVA MG pm-place	eu.cogx.perceptmediator.components.PlaceMediator 
+        JAVA MG pm-agent 	eu.cogx.perceptmediator.components.AgentMediator 
+        JAVA MG pm-viewpoint 	eu.cogx.perceptmediator.dora.ViewPointMediator 
+
+        # property mediators
+        JAVA MG pm-gateway 	eu.cogx.perceptmediator.components.GatewayPropertyMediator
+        ####JAVA MG pm-space 	eu.cogx.perceptmediator.components.AssociatedSpacePropertyMediator
+        ####JAVA MG pm-border  eu.cogx.perceptmediator.components.AssociatedBorderPropertyMediator
+ 
+
+        # relation mediators:
+        JAVA MG pm-place-conn 	eu.cogx.perceptmediator.components.PlaceConnectivityMediator 
+        JAVA MG pm-placeholder-cat 	eu.cogx.perceptmediator.components.PlaceholderCategoryMediator 
+        #JAVA MG pm-agent-rel 	eu.cogx.perceptmediator.components.PlaceContainmentAgentMediator
+
+        ### this is a dedicated garbage collection that removes any SpatialProperties 
+        ### for which the referred Place has been removed.
+        ### It makes sure that there are no orphaned properties on WM left
         JAVA MG SpatialPropertyRemover spatial.SpatialPropertyRemover
     ENDIF
 
@@ -438,11 +454,15 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(feature_options), execution)
         ### the interface to translate and monitor execution actions into vision actions
-        INCLUDE includes/vision.sa/vision-execution.cast
+        JAVA MG exe.vision vision.execution.VisionActionInterface
     ENDIF
+
     IFOPTALL(%(feature_options), binder)
         ### run the vision mediators so that the vision stuff shows up in the binder/planner
-        INCLUDE includes/vision.sa/vision-mediators-dora.cast
+        JAVA MG pm.visualobject eu.cogx.perceptmediator.dora.VisualObjectMediatorComponent 
+        JAVA MG pt.visualobject eu.cogx.percepttracker.dora.DoraVisualObjectTracker
+        JAVA MG pm.person 	eu.cogx.perceptmediator.dora.PersonMediator
+        JAVA MG pt.person 	eu.cogx.percepttracker.dora.DoraPersonTracker #--update-on-move
     ENDIF
 
     ### read https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/CameraMount
@@ -612,11 +632,16 @@ IFOPTALL(%(feature_options), planning_sa)
     VARDEFAULT expl_rules=explanations-dora.pddl
     VARDEFAULT cons_rules=consistency-dora.pddl
     VARDEFAULT planning_config="config.dora.ini"
+
     COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules)
     COMPONENT CPP PlannerDTServer DTPCONTROL
+    
+    SUBARCHITECTURE planner.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+    CPP MG Planner WMControl --belief-timeout 500 #--log 
+    CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "plandir=subarchitectures/planner.sa/src/python"  --monitor "CurrentPlan=dot:%(plandir)/{plan*.dot}"
 
-    INCLUDE includes/planner.sa/planner-base.cast
-    INCLUDE includes/planner.sa/viz-plan.cast
     IFOPTALL(%(feature_options), man_ctrl)
         JAVA MG manual.planning motivation.components.generators.SimulatedPersonGoalGenerator --goals %(planning_goal)
     ENDIF
@@ -669,8 +694,14 @@ VARDEFAULT discrete_room_cats=
 #--discrete
 
 IFOPTALL(%(feature_options), coma)
-    INCLUDE includes/coma.sa/coma-base.cast
-    INCLUDE includes/coma.sa/coma-crowl.cast
+    SUBARCHITECTURE coma
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    JAVA TM cast.architecture.AlwaysPositiveTaskManager
+    JAVA MG comareasoner coma.components.ComaReasoner --crowl-cfg subarchitectures/coma.sa/ontologies/dora.cfg #--log true
+    JAVA MG placemon coma.components.PlaceMonitor --reasoner-name comareasoner --chaingraph-name default.chaingraphinferencer --log true # --debug true #--marshaller-name proxy.marshaller -bsa binder --log false
+###JAVA MG comagui  coma.components.ComaInputWindow --reasoner-name comareasoner --log true #--hfcserver-name hfcserver --log true #--debug true
+###JAVA MG comagre coma.components.ComaReferringExpressionGeneration --reasoner-name comareasoner --log true #--debug true
+
     IFOPTALL(%(feature_options), binder)
         JAVA MG pm-coma          eu.cogx.perceptmediator.components.ComaRoomMediator %(discrete_room_cats) --has-person %(room_has_person)
         JAVA MG pm-coma-in-place eu.cogx.perceptmediator.components.RoomMembershipMediator
@@ -681,8 +712,13 @@ ENDIF
 # Default.SA ##############################################################
 ##########################################################################
 IFOPTALL(%(feature_options), default)
-    INCLUDE includes/default.sa/default-base.cast
-    INCLUDE includes/coma.sa/coma-defaultsa.cast
+    SUBARCHITECTURE default.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
+    JAVA MG hfcserver coma.components.HFCServer --stdNSFile "subarchitectures/coma.sa/ontologies/dora-yr2/dora.ns" --stdRuleFile "subarchitectures/coma.sa/ontologies/hfcowl/default.rdl" --otherRuleFiles "subarchitectures/coma.sa/ontologies/defaultsa/defaultsa.rdl" --stdTupleFile "subarchitectures/coma.sa/ontologies/hfcowl/default.nt" --otherTupleFiles "subarchitectures/coma.sa/ontologies/defaultsa/objloc-defaults-subset1_5.nt,subarchitectures/coma.sa/ontologies/dora-yr2/dora-yr2-objs.nt" --log true
+
+# JAVA MG hfctester coma.components.HFCTester --hfcserver-name hfcserver --log true
 
     CPP GD default.queryhandler DefaultQueryHandler
     CPP GD default.chaingraphinferencer DefaultChainGraphInferencer --hfcserver hfcserver --config %(default_knowledge) --objects-from-defaultprob %(conceptual_defaults)
@@ -692,15 +728,21 @@ ENDIF
 # Conceptual.SA  #########################################################
 ##########################################################################
 IFOPTALL(%(feature_options), conceptual)
-    INCLUDE includes/conceptual.sa/conceptual-base.cast
+    SUBARCHITECTURE conceptual.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
     CPP GD conceptual.queryhandler ConceptualQueryHandler
 
     CPP GD conceptual.observer ConceptualObserver --shape-threshold 0.05 --size-threshold 0.05 --appearance-threshold 0.05 --beta-threshold 0.01 --gateway-placeholder-threshold 0.05 --associatedspace-placeholder-threshold 50
-    CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects magazine,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
-    CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
+    
+CPP GD conceptual.chaingraphinferencer ConceptualChainGraphInferencer --freespace-placeholder-rate 10 --defaultchaingraphinferencer default.chaingraphinferencer  --add-unobserved-shape --add-unobserved-size --add-unobserved-appearance --add-unobserved-objects magazine,cerealbox  --save-graph conceptual.fg --save-graph-info conceptual.info --opm-counting
+    
+CPP GD conceptual.comaroomupdater ConceptualComaRoomUpdater --queryhandler conceptual.queryhandler
 
-    INCLUDE includes/conceptual.sa/conceptual-placeholders.cast
-    INCLUDE includes/conceptual.sa/conceptual-test.cast
+    CPP GD conceptual.placeholderpropertyupdater ConceptualPlaceholderPropertyUpdater --queryhandler conceptual.queryhandler --defaultchaingraphinferencer default.chaingraphinferencer
+    
+CPP GD conceptual.tester ConceptualTester --queryhandler conceptual.queryhandler --chaingraphinferencer conceptual.chaingraphinferencer --defaultchaingraphinferencer default.chaingraphinferencer --placemanager place.manager --visualized-objects book,cerealbox,computer,robot,stapler,toiletpaper --save-events
 ENDIF
 
 ##########################################################################
