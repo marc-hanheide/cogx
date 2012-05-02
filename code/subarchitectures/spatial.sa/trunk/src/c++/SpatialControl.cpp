@@ -132,6 +132,8 @@ SpatialControl::SpatialControl()
   m_lgmKH = NULL;
   m_binaryMap = NULL;
   m_obstacleMap = NULL;
+
+  m_bDoPBSync = false;
 }
 
 void SpatialControl::connectPeekabot()
@@ -1175,38 +1177,48 @@ void SpatialControl::updateGridMaps(){
       blitHeightMap(*tmp_lgm, m_lgmKH, min(pointcloudMinXi,laserMinXi), max(pointcloudMaxXi,laserMaxXi), min(pointcloudMinYi,laserMinYi), max(pointcloudMaxYi,laserMaxYi), m_obstacleMinHeight, m_obstacleMaxHeight);
     }
     if(m_usePeekabot){
-    	SCOPED_TIME_LOG;
+      SCOPED_TIME_LOG;
 
-      peekabot::OccupancySet2D cells;
-      double cellSize=m_lgm->getCellSize();
-      for (int yi = min(pointcloudMinYi,laserMinYi)+1; yi < max(pointcloudMaxYi,laserMaxYi); yi++) {
-        for (int xi =  min(pointcloudMinXi,laserMinXi)+1; xi < max(pointcloudMaxXi,laserMaxXi); xi++) {
-              if ((*tmp_lgm)(xi, yi)=='0')
-                  cells.add(xi*cellSize,yi*cellSize,0);
-              else if ((*tmp_lgm)(xi, yi)=='1')
-                  cells.add(xi*cellSize,yi*cellSize,1);
-        }
-      }
-      m_ProxyGridMap.set_cells(cells);
-      if (m_show3Dobstacles){
-        peekabot::OccupancySet3D cells1;
-        for (int yi = pointcloudMinYi; yi <= pointcloudMaxYi; yi++) {
-          for (int xi = pointcloudMinXi; xi <= pointcloudMaxXi; xi++) {
-            if ((*tmp_lgm)(xi,yi) == '1'){ 
-              if ((*m_lgmKH)(xi, yi) != FLT_MAX){
-                for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
-                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
-                }
-              }
-            }
-            else if ((*tmp_lgm)(xi,yi) == '0'){
-                for (double zi = 0; zi <= kinectZ; zi+=0.05) {
-                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
-                }
-            } 
-          }
-        }
-        m_ProxyGridMapKinect.set_cells(cells1);
+      if (m_PBDisplayMutex.tryLock()) {
+	if (!m_bDoPBSync) {
+
+	  peekabot::OccupancySet2D cells;
+	  double cellSize=m_lgm->getCellSize();
+	  for (int yi = min(pointcloudMinYi,laserMinYi)+1; yi < max(pointcloudMaxYi,laserMaxYi); yi++) {
+	    for (int xi =  min(pointcloudMinXi,laserMinXi)+1; xi < max(pointcloudMaxXi,laserMaxXi); xi++) {
+	      if ((*tmp_lgm)(xi, yi)=='0')
+		cells.add(xi*cellSize,yi*cellSize,0);
+	      else if ((*tmp_lgm)(xi, yi)=='1')
+		cells.add(xi*cellSize,yi*cellSize,1);
+	    }
+	  }
+	  m_ProxyGridMap.set_cells(cells);
+	  if (m_show3Dobstacles){
+	    peekabot::OccupancySet3D cells1;
+	    for (int yi = pointcloudMinYi; yi <= pointcloudMaxYi; yi++) {
+	      for (int xi = pointcloudMinXi; xi <= pointcloudMaxXi; xi++) {
+		if ((*tmp_lgm)(xi,yi) == '1'){ 
+		  if ((*m_lgmKH)(xi, yi) != FLT_MAX){
+		    for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
+		      cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
+		    }
+		  }
+		}
+		else if ((*tmp_lgm)(xi,yi) == '0'){
+		  for (double zi = 0; zi <= kinectZ; zi+=0.05) {
+		    cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
+		  }
+		} 
+	      }
+	    }
+	    m_ProxyGridMapKinect.set_cells(cells1);
+	  }
+	  m_bDoPBSync = true;
+	}
+	else {
+	  log("Skipping obstacle map update in PB; last one not finished");
+	}
+	m_PBDisplayMutex.unlock();
       }
     }
 
@@ -1338,6 +1350,9 @@ void SpatialControl::runComponent()
 {
   setupPushScan2d(*this, 0.1);
   setupPushOdometry(*this);
+  
+  m_dhthread = new DisplayHelperThread(*this);
+  m_dhthread->start();
 
   if(m_sendPTZCommands) {	
 		ptz::PTZReading reading = m_ptzInterface->getPose();
@@ -2948,4 +2963,24 @@ SpatialControl::getFrontiers()
 //  m_MapsMutex.unlock();
   log("exit getFrontiers");
   return outArray;
+}
+
+void
+SpatialControl::displayHelperLoop()
+{
+  // Whenever m_bDoPBSync is set by the main thread,
+  // this thread will lock the mutex until sync is completed
+  // which prevents further updates from the main thread
+  // until that is done.
+  while (isRunning()) {
+    {
+      IceUtil::Mutex::Lock lock(m_PBDisplayMutex);
+      if (m_bDoPBSync) {
+	m_bDoPBSync = false;
+
+	m_PeekabotClient.sync();
+      }
+    }
+    sleepComponent(250);
+  }
 }
