@@ -14,8 +14,8 @@ VARDEFAULT hardware=simulation
 ###########################################################################
 # the following define the features we want to have enabled in the system #
 # (comments in multiline blocks can only be at the start of the line)     #
-# Override using VARSET (Note: any line not present in the VARSET	  #
-# statement will be set to False, NOT to the default value!		  #
+# Override using SETVAR (Note: any line not present in the SETVAR     	  #
+# statement will be set to False, NOT to the default value!		            #
 ###########################################################################
 
 VARDEFAULT feature_options=<multiline>
@@ -37,6 +37,7 @@ VARDEFAULT feature_options=<multiline>
     conceptual
 # enable default
     default
+# enable coma
     coma
 # enable place categorisation
     categorisation
@@ -57,6 +58,7 @@ VARDEFAULT feature_options=<multiline>
     planning_sa
 # enable more debug GUIs and WM loggers
     debug
+# enable dialogue
     dialogue
 # enable motivation base
     motivation
@@ -107,8 +109,9 @@ ENDIF
 
 VARDEFAULT host:PlayerHost=localhost
 ###########################################################################
+
 ###########################################################################
-###########################################################################
+### hardware    ###########################################################
 ###########################################################################
 
 HOST [Main]
@@ -427,7 +430,12 @@ VARDEFAULT fake_tables=<multiline>
 
 
 IFOPTALL(%(feature_options), vision)
-    INCLUDE includes/vision.sa/vision-base.cast
+
+    ### Basic components
+    SUBARCHITECTURE vision.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
     IFOPTALL(%(feature_options), execution)
         ### the interface to translate and monitor execution actions into vision actions
         INCLUDE includes/vision.sa/vision-execution.cast
@@ -491,7 +499,9 @@ ENDIF
 # binder #################################################################
 ##########################################################################
 IFOPTALL(%(feature_options), binder)
-    INCLUDE includes/binder.sa/binder-base.cast
+    SUBARCHITECTURE binder 
+    JAVA TM cast.architecture.AlwaysPositiveTaskManager #--log
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
 ENDIF
 
 
@@ -499,8 +509,66 @@ ENDIF
 # dialogue ###################################################################
 ##########################################################################
 IFOPTALL(%(feature_options), dialogue)
-    INCLUDE includes/dialogue.sa/INCL/dora-live.cast
-    INCLUDE includes/dialogue.sa/dialogue-exe.cast
+    SETVAR mary_voice=dfki-prudence-hsmm
+    SETVAR max_readings=1
+    SETVAR parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
+    SETVAR irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
+    SETVAR dm_policy=subarchitectures/dialogue.sa/config/policies/yr2/fullpolicy_george.xml
+    SETVAR irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+    SETVAR cplan_rules=subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf
+    SETVAR realize_grammar=%(parsing_grammar)
+    SETVAR realize_ngrams=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt
+    SETVAR dump_file=/tmp/belief-model.abd
+
+    # Basic dialogue.sa setup.
+    SUBARCHITECTURE  dialogue %(host:AbducerHost)
+    JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+    JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+
+    VARDEFAULT parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
+
+    #JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.StandbyModeManager --unlock-phrase "continue" --unlock-threshold 0.65
+    JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.SilentStandbyModeManager
+
+    # phonological string -> linguistic meaning
+    JAVA MG	parser	             de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar %(parsing_grammar) --log true
+    JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.SimpleParseSelection
+    
+    VARDEFAULT irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+    VARDEFAULT cplan_rules=subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf
+    VARDEFAULT realize_grammar=subarchitectures/dialogue.sa/grammars/openccg/moloko.v6/grammar.xml
+    VARDEFAULT realize_ngrams=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt
+
+    # intention realisation
+    JAVA MG cplan                de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile %(cplan_rules) --contentRel Content --log true
+    JAVA MG realizer             de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg %(realize_grammar) --ngrams %(realize_ngrams) --log true
+
+    VARDEFAULT mary_server_host=localhost
+    VARDEFAULT mary_voice=dfki-spike-hsmm
+
+    JAVA GD tts-mary    de.dfki.lt.tr.cast.dialogue.MaryTTS --serverHost %(mary_server_host) --serverPort 59125 --voice %(mary_voice) --log true #--debug true
+
+    VARDEFAULT loquendo_server_endpoint="tcp -h localhost -p 9021"
+
+    JAVA MG	asr-loquendo    de.dfki.lt.tr.cast.dialogue.LoquendoASR --serverName LoquendoASRServer --serverEndpoint %(loquendo_server_endpoint) --threshold .4 --log true
+    JAVA MG asr-clarifier  de.dfki.lt.tr.cast.dialogue.ASRClarifier --threshold .6
+
+    VARDEFAULT irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
+    VARDEFAULT max_readings=1
+
+    JAVA MG	int-recognizer       de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer --ruleset %(irecog_abd_domain) --abd-host %(host:AbducerHost) --max-readings %(max_readings)
+
+    VARDEFAULT irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+
+    # intention realisation
+    JAVA MG	int-realizer         de.dfki.lt.tr.cast.dialogue.NewIntentionRealizer --ruleset %(irealize_abd_domain) --timeout 250 --abd-host %(host:AbducerHost)
+
+    JAVA MG interaction-manager  de.dfki.lt.tr.cast.dialogue.InteractionManager
+    JAVA MG discourse-ref-resolution  de.dfki.lt.tr.cast.dialogue.DiscourseReferenceResolution
+    JAVA MG	gui-local    de.dfki.lt.tr.cast.dialogue.DialogueGUI --log true
+    JAVA MG ref-resolution  de.dfki.lt.tr.cast.dialogue.FakeReferenceResolution
+    
+    JAVA MG diag-exe dialogue.execution.dora.DialogueActionInterface
     JAVA MG verbalisation verbalisation.DoraVerbalisation
     JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain "subarchitectures/dialogue.sa/resources/domain2test.pddl" --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml" --domainannotation "subarchitectures/dialogue.sa/resources/dora-interactive_annotated.txt"
 ENDIF
@@ -533,17 +601,14 @@ VARDEFAULT planning_goal="(exists (?o - visualobject) (and (= (label ?o) magazin
 ### the planning domain to use
 VARDEFAULT planning_domain=dora-interactive.pddl
 
-### the default knowledge to use
+### the default knowledge to use - used by default SA
 VARDEFAULT default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-sim.xml"
 
-### the default probabilities
+### the default probabilities - used by planning and default SAs
 VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct.txt"
 
 
 IFOPTALL(%(feature_options), planning_sa)
-    VARDEFAULT conceptual_defaults="instantiations/defaultprobs/defaultprobs-semmap.txt"
-    VARDEFAULT planning_domain=dora-interactive.pddl
-    VARDEFAULT planning_goal="(exists (?p - person) (kval (is-in ?p)))"
     VARDEFAULT expl_rules=explanations-dora.pddl
     VARDEFAULT cons_rules=consistency-dora.pddl
     VARDEFAULT planning_config="config.dora.ini"
