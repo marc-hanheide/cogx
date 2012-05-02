@@ -135,7 +135,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 		m_component->log("Best index %d", bestindex);
 		//lastConePDFSum = unordered3DVCList[bestindex].totalprob;
 		lastConePDFSum = initialMapPDFSum - postMapPDFSum; 
-		if(lastConePDFSum < 0.001 || result3DVCList.size() > 10){
+		if(lastConePDFSum < 0.001 || result3DVCList.size() > 20){
 			m_component->log("Best cone's prob. sum. is less than 0.1%, returning what we have so far");
 			break;
 		}
@@ -363,8 +363,8 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<NavDa
 
   for (size_t i=0; i<nodes.size(); i++) {
     double theta = (rand() % 360) * M_PI / 180;
-    for (int j=0; j<50; j++) {
-      double angle = theta + j /50 * 2 * M_PI;
+    for (int j=0; j<18; j++) {
+      double angle = theta + j /18 * 2 * M_PI;
       while (angle > M_PI) angle-= 2 * M_PI;
       while (angle < -M_PI) angle+= 2 * M_PI;
 

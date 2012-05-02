@@ -903,8 +903,8 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_objectBloxelMaps[id]->universalQuery(resetter, true);
 		double fixedpdfvalue = pdfmass / (m_objectBloxelMaps[id]->getZBounds().second - m_objectBloxelMaps[id]->getZBounds().first);
 
-		GDProbInit initfunctor(fixedpdfvalue*0.25);
-    GDProbInit initfunctor2(fixedpdfvalue*0.5);
+		GDProbInit initfunctor(fixedpdfvalue/25);
+    GDProbInit initfunctor2(fixedpdfvalue);
 		log("Setting each bloxel near an obstacle to a fixed value of %f, in total: %f", fixedpdfvalue, pdfmass);
 		pair<double,double> insideroom;
 		insideroom.first =0;
@@ -957,9 +957,10 @@ void AVS_ContinualPlanner::generateViewCones(
 		  }
 		}
 
-		double massAfterInit = initfunctor.getTotal();
+		double massAfterInit = initfunctor.getTotal() + initfunctor2.getTotal();
 			//    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
 		normalizePDF(*m_objectBloxelMaps[id], pdfmass, massAfterInit);
+
 		log("Done setting.");
 	}else if (!alreadyGenerated){
 		log("Something weird happened!");
@@ -1854,10 +1855,10 @@ void AVS_ContinualPlanner::configure(
 		log("Camera view cone depth set to: %f", m_conedepth);
 	}
 
-	m_bUseWallPrior = false;
-	it = _config.find("--use-wall-prior");
+	m_bUseWallPrior = true;
+	it = _config.find("--no-wall-prior");
 	if (it != _config.end()) {
-	  	m_bUseWallPrior = true;
+	  	m_bUseWallPrior = false;
 	}
 
 	m_panstep = 30.0;
@@ -2037,7 +2038,7 @@ void AVS_ContinualPlanner::configure(
 		for (unsigned int i = 0; i < m_ARtaggedObjects.size(); i++)
 			log("%s , ", m_ARtaggedObjects[i].c_str());
 
-    m_pdfthreshold = 0.7;
+    m_pdfthreshold = 0.9;
     if((it = _config.find("--pdfthreshold")) != _config.end()) {
       m_pdfthreshold = atof(it->second.c_str());
     }
