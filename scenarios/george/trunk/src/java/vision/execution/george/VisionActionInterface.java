@@ -15,6 +15,7 @@ import VisionData.ProtoObject;
 import VisionData.ViewCone;
 import VisionData.VisionCommandStatus;
 import VisionData.VisualLearningTask;
+import VisionData.VisualObject;
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
 import cast.ConsistencyException;
@@ -189,9 +190,11 @@ public class VisionActionInterface extends
 
 				VisualLearningTask cmd = null;
 
-				WorkingMemoryPointer visualObectPtr = ((VisionActionInterface) getComponent())
-						.getFirstAncestorOfBelief(getAction().beliefAddress);
-
+				WorkingMemoryPointer visualObectPtr = BeliefUtils
+						.recurseAncestorsForType(getComponent(),
+								getAction().beliefAddress,
+								CASTUtils.typeName(VisualObject.class));
+				
 				cmd = new VisualLearningTask(visualObectPtr, beliefID.id,
 						m_concept, new String[] { getAction().value },
 						new double[] { m_weight },
