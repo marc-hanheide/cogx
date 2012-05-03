@@ -590,9 +590,9 @@
                                 (= (cg-related-to ?c) ?where))
                                 
              :effect (and (when (= (visible_from ?o) ?c)
-                            (probabilistic 0.8 (observed (related-to ?o) ?where)))
-                          (when (not (= (visible_from ?o) ?c))
-                            (probabilistic 0.05 (observed (related-to ?o) ?where)))
+                            (probabilistic 1.0 (observed (related-to ?o) ?where)))
+                          ;; (when (not (= (visible_from ?o) ?c))
+                          ;;   (probabilistic 0.05 (observed (related-to ?o) ?where)))
                           )
              )
 
