@@ -198,8 +198,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			assert (decoded != null);
 
 			if (!_ambiguous) {
-				CASTEffect successEffect = decoded.getOnAcceptEffect();
-				successEffect.makeItSo(this);
+				CASTEffect acceptEffect = decoded.getOnAcceptEffect();
+				acceptEffect.makeItSo(this);
 			}
 
 			return openQuestion(decoded.getFeatureName(),
@@ -212,8 +212,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			assert (decoded != null);
 
 			if (!_ambiguous) {
-				CASTEffect successEffect = decoded.getOnAcceptEffect();
-				successEffect.makeItSo(this);
+				CASTEffect acceptEffect = decoded.getOnAcceptEffect();
+				acceptEffect.makeItSo(this);
 			}
 
 			return polarQuestion(decoded.getFeatureName(),
@@ -390,8 +390,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		assert (decoded != null);
 
 		if (!_ambiguous) {
-			CASTEffect successEffect = decoded.getOnAcceptEffect();
-			successEffect.makeItSo(this);
+			CASTEffect acceptEffect = decoded.getOnAcceptEffect();
+			acceptEffect.makeItSo(this);
 		}
 
 		String feature = decoded.getFeatureName();

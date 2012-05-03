@@ -6,6 +6,11 @@ import cast.SubarchitectureComponentException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
+import de.dfki.lt.tr.dialogue.intentions.RichIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 
 public class InterpretedIntentionMotiveGenerator extends
 		AbstractInterpretedIntentionMotiveGenerator<InterpretedIntention> {
@@ -74,12 +79,38 @@ public class InterpretedIntentionMotiveGenerator extends
 			InterpretedIntention ii = getMemoryEntry(_motive.referenceEntry,
 					InterpretedIntention.class);
 
-			cleanBelief(ii.addressContent.get("about"));
+			cleanBelief(aboutBeliefAddress(ii));
+
+			// and signal intention success
+
+			// go through all types we know how to decode... can it be more
+			// elegant than this?
+			RichIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
+					.tryDecode(ii);
+
+			if (decoded == null) {
+				decoded = OpenFeatureQuestionIntention.Transcoder.INSTANCE
+						.tryDecode(ii);
+			}
+
+			if (decoded == null) {
+				decoded = FeatureAscriptionIntention.Transcoder.INSTANCE
+						.tryDecode(ii);
+			}
+
+			if (decoded == null) {
+				getLogger().warn("Unable to decode intention",
+						getLogAdditions());
+				logIntention(ii);
+			} else {
+				CASTEffect successEffect = decoded.getOnSuccessEffect();
+				successEffect.makeItSo(this);
+				log("executed success effect");
+			}
 
 		} catch (SubarchitectureComponentException e) {
 			logException(e);
 		}
 
 	}
-
 }
