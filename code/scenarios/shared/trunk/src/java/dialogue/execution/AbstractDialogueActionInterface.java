@@ -29,8 +29,11 @@ import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
+import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
+import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
+import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -577,6 +580,23 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 							.get("about");
 					if (!potentialReferentAddr.equals(correctReferentAddr)) {
 						unmarkReferent(potentialReferentAddr);
+					} else {
+						// else decode and mark as accepted
+						RichIntention decoded = AbstractInterpretedIntentionMotiveGenerator
+								.extractRichIntention(iint);
+
+						if (decoded == null) {
+							getComponent().getLogger().warn(
+									"Unable to decode intention",
+									getComponent().getLogAdditions());
+
+						} else {
+							CASTEffect acceptEffect = decoded
+									.getOnAcceptEffect();
+							acceptEffect.makeItSo(getComponent());
+							log("executed accept effect");
+						}
+
 					}
 				}
 
