@@ -771,11 +771,12 @@ void AVS_ContinualPlanner::generateViewCones(
 	        (*lgm).index2WorldCoords(x, y, dx, dy);
 	        int nx, ny;
 	        if (lgmKH.worldCoords2Index(dx, dy, nx, ny)==0) {
-            if (lgmKH(nx, ny) < 1.){
-/*			  		  m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
-							    x + combined_lgm.size, y + combined_lgm.size,
-							    lgmKH(nx, ny) / 2,  lgmKH(nx, ny), makeobstacle);
-*/            }
+            if (lgmKH(nx, ny) != FLT_MAX){
+              if (lgmKH(nx, ny)-0.1 > 0)
+			    		  m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
+							      x + combined_lgm.size, y + combined_lgm.size,
+							      lgmKH(nx, ny) / 2,  lgmKH(nx, ny)-0.1, makeobstacle);
+            }
             else {
 			  		  m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
 							    x + combined_lgm.size, y + combined_lgm.size,
