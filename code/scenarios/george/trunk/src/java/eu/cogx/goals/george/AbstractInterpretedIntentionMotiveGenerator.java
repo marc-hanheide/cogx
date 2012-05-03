@@ -129,8 +129,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		println("fetching robot belief from " + getRobotBeliefAddr());
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class,
-						getMemoryEntry(getRobotBeliefAddr(),
-								MergedBelief.class));
+						getMemoryEntry(getRobotBeliefAddr(), MergedBelief.class));
 
 		return VisualObjectMotiveGenerator.beliefPredicateGoal(
 				"arm-in-resting-position", belief);
@@ -168,8 +167,8 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 	}
 
 	protected TutorInitiativeQuestionMotive newQuestionIntention(
-			InterpretedIntention _intention, boolean _ambiguous) throws DoesNotExistOnWMException,
-			UnknownSubarchitectureException {
+			InterpretedIntention _intention, boolean _ambiguous)
+			throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 
 		// [LOG gg.ii: unknown InterpretedIntention type]
 		// [gg.ii: stringContent]
@@ -184,48 +183,48 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
 
 		log("question intention");
-		
-		
-		//TODO " you can to decode polar first, and if that fails, try the open question"
-		
+
+		// TODO
+		// " you can to decode polar first, and if that fails, try the open question"
+		// - no real neat way of doing it though
+
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("open")) {
 
 			log("open question intention");
-			
+
 			OpenFeatureQuestionIntention decoded = OpenFeatureQuestionIntention.Transcoder.INSTANCE
 					.tryDecode(_intention);
-			assert (decoded != null);			
-			
+			assert (decoded != null);
+
 			if (!_ambiguous) {
 				CASTEffect successEffect = decoded.getOnAcceptEffect();
 				successEffect.makeItSo(this);
 			}
-			
+
 			return openQuestion(decoded.getFeatureName(),
 					aboutBeliefAddress(_intention));
 		} else if (subtype.equals("polar")) {
 			log("polar question intention");
-			
+
 			PolarFeatureQuestionIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
 					.tryDecode(_intention);
-			assert(decoded != null);
-			
+			assert (decoded != null);
+
 			if (!_ambiguous) {
 				CASTEffect successEffect = decoded.getOnAcceptEffect();
 				successEffect.makeItSo(this);
 			}
-			
+
 			return polarQuestion(decoded.getFeatureName(),
-					decoded.getHypothesis(),
-					aboutBeliefAddress(_intention));
+					decoded.getHypothesis(), aboutBeliefAddress(_intention));
 		} else {
 			log("unknown InterpretedIntention type");
 			logIntention(_intention);
 			return null;
 		}
 	}
-	
+
 	@Deprecated
 	protected TutorInitiativeQuestionMotive newQuestionIntentionY3(
 			InterpretedIntention _intention) throws DoesNotExistOnWMException,
@@ -244,9 +243,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 		// [gg.ii: about -> [WMA id = 1:31 : sa = binder]]
 
 		log("question intention");
-		
-		
-		
+
 		String subtype = _intention.stringContent.get("subtype");
 		if (subtype.equals("open")) {
 			log("open question intention");
@@ -634,8 +631,7 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 
-		MergedBelief belief = getMemoryEntry(_beliefAddr,
-				MergedBelief.class);
+		MergedBelief belief = getMemoryEntry(_beliefAddr, MergedBelief.class);
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> gb = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class, belief);
 
