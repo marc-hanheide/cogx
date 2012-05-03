@@ -833,6 +833,8 @@ void AVS_ContinualPlanner::generateViewCones(
 	double pdfmass = probdist.massFunction[0].probability;
 	log("Got probability for %s Conceptual %f",id.c_str(),pdfmass);
 
+  m_locationToInitialPdfmass[id]=pdfmass;
+
 	//Todo: Generate viewpoints on the selected room's bloxel map and for a given pdf id
 	if (newVPCommand->relation != SpatialData::INROOM && !alreadyGenerated) {
 		log("Searching with a support object");
@@ -1004,6 +1006,7 @@ void AVS_ContinualPlanner::generateViewCones(
 			m_objectBloxelMaps[id], m_samplesize, m_sampleawayfromobs,
 			m_conedepth, m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance, pdfmass,
 			m_pdfthreshold, node->x, node->y);
+
 	vector<ViewPointGenerator::SensingAction> viewcones =
 			coneGenerator.getBest3DViewCones(m_roomNodes[newVPCommand->roomId]);
 
@@ -1011,15 +1014,20 @@ void AVS_ContinualPlanner::generateViewCones(
 
 	// normalizing cone probabilities
 	log("normalizing viewcone probabilities");
-	m_coneGroupNormalization = 0;
+	m_locationToConeGroupNormalization[id] = 0;
 	for (unsigned int i=0; i < viewcones.size(); i++){
-		m_coneGroupNormalization += viewcones[i].totalprob;
+		m_locationToConeGroupNormalization[id] += viewcones[i].totalprob;
 	}
-
-	log("Total prob %f, normalizing constant %f", m_coneGroupNormalization, 1/m_coneGroupNormalization);
+  m_locationToConeGroupNormalization[id] /= pdfmass;
+	log("%f Total prob %f, normalizing constant %f", pdfmass, m_locationToConeGroupNormalization[id], 1/m_locationToConeGroupNormalization[id]);
 
 	for (unsigned int i=0; i < viewcones.size(); i++){
-		viewcones[i].totalprob = viewcones[i].totalprob * (1/m_coneGroupNormalization);
+	  log("viewcone %d before blow up  %f", i, viewcones[i].totalprob);
+
+		viewcones[i].totalprob = viewcones[i].totalprob * (1/m_locationToConeGroupNormalization[id]);
+
+  	log("viewcone %d after blow up  %f", i, viewcones[i].totalprob);
+    log("viewcone %d pos %f %f %f",i, viewcones[i].pos[0], viewcones[i].pos[1], viewcones[i].pos[2]);
 	}
 
 	//Getting the place belief pointer
@@ -1262,8 +1270,10 @@ void AVS_ContinualPlanner::generateViewCones(
 		m_coneGroupId++;
 
 		if(m_usePeekabot){
-  		for(size_t coneNumber=0;coneNumber<c.viewcones.size();coneNumber++)
+  		for(size_t coneNumber=0;coneNumber<c.viewcones.size();coneNumber++){
         PostViewCone(c.viewcones[coneNumber],m_coneGroupId * 1000 + coneNumber);
+        log("post viewcone %d pos %f %f %f",m_coneGroupId * 1000 + coneNumber, c.viewcones[coneNumber].pos[0], c.viewcones[coneNumber].pos[1], c.viewcones[coneNumber].pos[2]);
+      }
 		}
 
 		m_beliefConeGroups[m_coneGroupId] = c;
@@ -1570,6 +1580,8 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,ViewPointGenerator::Sens
 m_currentConeGroup->isprocessed = true;
 bool isAllConeGroupsProcessed = true;
 
+	  int coneGroupID = viewcone.first / 1000;
+
 /* FIXME
  *  !!! HACK !!!
  *  Since creating cones to cover %100 of the space is intractable with planner
@@ -1589,39 +1601,41 @@ for(std::map<int,ConeGroup>::const_iterator it = m_beliefConeGroups.begin(); it!
 	}
 }
 
-GDProbSum sumcells;
+//GDProbSum sumcells;
 GDIsObstacle isobstacle;
-/* DEBUG */
-GDProbSum conesum;
-map->coneQuery(viewcone.second.pos[0],viewcone.second.pos[1],
-    viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, conesum, conesum, m_minDistance);
-	log("ViewConeUpdate: Cone sums to %f",conesum.getResult());
+///* DEBUG */
+//GDProbSum conesum;
+//map->coneQuery(viewcone.second.pos[0],viewcone.second.pos[1],
+//    viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt, m_horizangle, m_vertangle, m_conedepth, 5, 5, isobstacle, conesum, conesum, m_minDistance);
+//	log("ViewConeUpdate: Cone sums to %f",conesum.getResult());
 
 /* DEBUG */
 
 
-map->universalQuery(sumcells);
-double initialMapPDFSum = sumcells.getResult();
-log("ViewConeUpdate: Whole map PDF sums to: %f", initialMapPDFSum);
+//map->universalQuery(sumcells);
+//double initialMapPDFSum = sumcells.getResult();
+//log("ViewConeUpdate: Whole map PDF sums to: %f", initialMapPDFSum);
 // then deal with those bloxels that belongs to this cone
 
 GDProbScale scalefunctor(1-m_sensingProb);
 map->coneModifier(viewcone.second.pos[0],viewcone.second.pos[1],
     viewcone.second.pos[2], viewcone.second.pan, viewcone.second.tilt, m_horizangle, m_vertangle, m_conedepth, 10, 10, isobstacle, scalefunctor,scalefunctor, m_minDistance);
-sumcells.reset();
-map->universalQuery(sumcells);
+//sumcells.reset();
+//map->universalQuery(sumcells);
 
-double finalMapPDFSum = sumcells.getResult();
-double differenceMapPDFSum = initialMapPDFSum - finalMapPDFSum;
+log("process viewcone pos %f %f %f",viewcone.second.pos[0], viewcone.second.pos[1], viewcone.second.pos[2]);
 
-// Removing prob. from internal ConeGroup representation
-m_currentConeGroup->viewcones[0].totalprob -= differenceMapPDFSum;
 
-if (differenceMapPDFSum < 0){
-	log("We managed to observe negative probability, something is very wrong!");
-}
 
-log("ViewConeUpdate: After cone update map sums to: %f", sumcells.getResult());
+//double finalMapPDFSum = sumcells.getResult();
+//double differenceMapPDFSum = initialMapPDFSum - finalMapPDFSum;
+//log("diff map pdf sum %f",differenceMapPDFSum);
+
+//if (differenceMapPDFSum < 0){
+//	error("We managed to observe negative probability, something is very wrong!");
+//}
+
+//log("ViewConeUpdate: After cone update map sums to: %f", sumcells.getResult());
 
 SpatialData::ObjectSearchResultPtr result = new SpatialData::ObjectSearchResult;
 result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
@@ -1630,19 +1644,21 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 	result->supportObjectId = m_currentConeGroup->supportObjectId;
 	result->roomId = m_currentConeGroup->roomId;
 
+  double oldConeProbability = m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob;
+  double lostProbability = oldConeProbability * m_sensingProb;
+  double newConeProbability = oldConeProbability - lostProbability;
+
 	// ASSUMPTION: m_locationToBeta has such a key since it's filled in generateViewCones first!
 	if (isAllConeGroupsProcessed){
 		log("All cone groups for this location are processed return very high beta to Conceptual!");
 
 		result->beta = 0.99;
 	}else{
-		result->beta = m_locationToBeta[m_currentConeGroup->bloxelMapId] + differenceMapPDFSum/initialMapPDFSum;
+		result->beta = m_locationToBeta[m_currentConeGroup->bloxelMapId] + lostProbability/m_locationToInitialPdfmass[m_currentConeGroup->bloxelMapId];
 	}
 	m_locationToBeta[m_currentConeGroup->bloxelMapId] = result->beta;
 
-
-
-	log("The observed ratio of location: %f", result->beta);
+  log("The observed ratio of location: %f", result->beta);
 
 	log("Publishing ObjectSearchResult with: category: %s, relation: %s, supportObjectCategory: %s, supportObjectId: %s",
   			result->searchedObjectCategory.c_str(), relationToString(result->relation).c_str(), result->supportObjectCategory.c_str(), result->supportObjectId.c_str());
@@ -1651,7 +1667,6 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 
 	//get the belief id
 	try{
-	  	int coneGroupID = viewcone.first / 1000;
 		log("Getting relevant conegroup belief with %s", m_coneGroupIdToBeliefId[coneGroupID].c_str());
 		eu::cogx::beliefs::slice::GroundedBeliefPtr belief = getMemoryEntry<GroundedBelief>(m_coneGroupIdToBeliefId[coneGroupID],"binder");
 
@@ -1660,15 +1675,24 @@ result->searchedObjectCategory = m_currentConeGroup->searchedObjectCategory;
 		FormulaValuesPtr formulaValues = FormulaValuesPtr::dynamicCast(basicdist->values);
 		FloatFormulaPtr floatformula = FloatFormulaPtr::dynamicCast(formulaValues->values[0].val);
 		log("Got conegroup beliefs probability %f ", floatformula->val);
-		log("Will subtract %f from it:", differenceMapPDFSum* (1/ m_coneGroupNormalization));
-		double newValue = floatformula->val - differenceMapPDFSum*(1/m_coneGroupNormalization);
-		double factor = newValue/floatformula->val;
-		floatformula->val = newValue; // remove current conesum's result
-		log("Changing conegroup probability to %f", floatformula->val);
+//		log("Will subtract %f from it:", differenceMapPDFSum* (1/ m_locationToConeGroupNormalization[m_currentConeGroup->bloxelMapId]));
 
+		log("Sum probabilities check (before): %f", m_beliefConeGroups[coneGroupID].getTotalProb());
+    log("current viewcone prob: %f", m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob);
+
+    m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob = newConeProbability;
+//    m_beliefConeGroups[coneGroupID].viewcones[m_currentViewConeNumber].totalprob -= differenceMapPDFSum*(1/m_locationToConeGroupNormalization[m_currentConeGroup->bloxelMapId]);
+
+		log("Sum probabilities check (should be equal to conegroup probability above): %f", m_beliefConeGroups[coneGroupID].getTotalProb());
+
+
+    floatformula->val = m_beliefConeGroups[coneGroupID].getTotalProb();
+//		double newValue = floatformula->val - differenceMapPDFSum*(1/m_locationToConeGroupNormalization[m_currentConeGroup->bloxelMapId]);
+//		floatformula->val = newValue; // remove current conesum's result
+		log("Changing conegroup probability to %f", floatformula->val);
+    
 		overwriteWorkingMemory(m_coneGroupIdToBeliefId[coneGroupID], "binder", belief);
-		m_beliefConeGroups[coneGroupID].scaleProbabilities(factor);
-		log("Sum probabilities check: %f", m_beliefConeGroups[coneGroupID].getTotalProb());
+    
  		if(m_usePeekabot){
       showProbability(coneGroupID);
     }

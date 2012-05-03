@@ -152,6 +152,9 @@ private:
     peekabot::GroupProxy m_ProxyViewPoints;
     peekabot::GroupProxy m_ProxyForbiddenMap;
 
+    std::map<std::string, double> m_locationToInitialPdfmass;
+    std::map<std::string, double> m_locationToConeGroupNormalization;
+
     void connectPeekabot();
     void createFOV(peekabot::GroupProxy &proxy, peekabot::PolygonProxy* &proxyConeParts,
                                double fovHorizAngle, double fovVertiAngle,
@@ -204,7 +207,6 @@ private:
 	double m_vertangle;
 	double m_tiltstep;
 	double m_panstep;
-	double m_coneGroupNormalization;
   double m_pdfthreshold;
 
 	SpatialGridMap::GridMapData m_defaultBloxelCell;
