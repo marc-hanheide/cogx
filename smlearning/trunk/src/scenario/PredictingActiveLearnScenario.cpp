@@ -215,8 +215,29 @@ void PredictingActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 			else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
 				learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
 		}
-
 	}
+}
+
+void PredictingActiveLearnScenario::updateAvgError ()
+{
+	double avgerror = 0.0;
+	assert (learningData.currentPredictedPfSeq.size () == learningData.currentChunkSeq.size ());
+	for (unsigned int i=0; i<learningData.currentPredictedPfSeq.size(); i++)
+	{
+		double error = 0.0;
+		error += pow(learningData.currentPredictedPfSeq[i].p.v1 - learningData.currentChunkSeq[i].object.objectPose.p.v1, 2);
+		error += pow(learningData.currentPredictedPfSeq[i].p.v2 - learningData.currentChunkSeq[i].object.objectPose.p.v2, 2);
+		error += pow(learningData.currentPredictedPfSeq[i].p.v3 - learningData.currentChunkSeq[i].object.objectPose.p.v3, 2);
+		Real predRoll, predPitch, predYaw;
+		learningData.currentPredictedPfSeq[i].R.toEuler (predRoll, predPitch, predYaw);
+		error += pow(predRoll - learningData.currentChunkSeq[i].object.obRoll, 2);
+		error += pow(predPitch - learningData.currentChunkSeq[i].object.obPitch, 2);
+		error += pow(predYaw - learningData.currentChunkSeq[i].object.obYaw, 2);
+		error = sqrt (error);
+		avgerror += error;
+	}
+	avgerror /= learningData.currentChunkSeq.size();
+	avgerrors.push_back (avgerror);
 }
 
 void PredictingActiveLearnScenario::run (int argc, char* argv[]) {
@@ -258,6 +279,8 @@ void PredictingActiveLearnScenario::run (int argc, char* argv[]) {
 		arm->moveFingerUp(context,target, object->getDescription().dimensions);
 		//remove polyflap object from the scene
 		removeObject();
+		//update avg error in prediction
+		updateAvgError ();
 		//move finger to initial position
 		arm->moveFingerToStartPose(context);
 		context.getMessageStream()->write(Message::LEVEL_INFO, "Done");
@@ -267,7 +290,13 @@ void PredictingActiveLearnScenario::run (int argc, char* argv[]) {
 
 	}
 	//move the arm to its initial position
-	arm->moveArmToStartPose(context); 
+	arm->moveArmToStartPose(context);
+
+	double avgerror = 0.0;
+	for (unsigned int i=0; i<avgerrors.size (); i++)
+		avgerror += avgerrors[i];
+	avgerror /= avgerrors.size();
+	cout << endl << "Avg Error: " << avgerror << endl;
 
 }
 

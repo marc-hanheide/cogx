@@ -94,9 +94,6 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		// Initialize Output Quantizer 
 		currentRegion->cryssmex.initializeOutputQuantizer (learningData.pfVectorSize);
 	
-	if (saveMDLHistory)
-		currentRegion->saveMDLHistory ();
-	
 	GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getInputQuantizer());
 	GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getOutputQuantizer());
 	
@@ -569,11 +566,6 @@ void ActiveLearnScenario::splitRegion (GNGSMRegion& region) {
 	// Delete dislocated nodes
 	regions[firstRegion.index].cryssmex.findDislocatedNodes ();
 	regions[secondRegion.index].cryssmex.findDislocatedNodes ();
-	if (saveMDLHistory)
-	{
-		regions[firstRegion.index].saveMDLHistory ();
-		regions[secondRegion.index].saveMDLHistory ();
-	}
 
 	bool regiondeleted = regions.erase (region.index);
 	assert (regiondeleted == 1);
