@@ -1041,6 +1041,7 @@ class ModalPredicateCompiler(Translator):
         self.depends = [MAPLCompiler(**kwargs)]
         self.set_copy(copy)
         self.used_functions = defaultdict(set)
+        self.handled_axioms = set()
         
     def compile_modal_args(self, args, functions):
         func_arg = None
@@ -1101,8 +1102,9 @@ class ModalPredicateCompiler(Translator):
             return literal
 
         pred = scope.predicates.get("-".join(name_elems), args)
-        if not pred:
-            return None
+        assert pred, "Couldn't find predicate %s" % "-".join(name_elems)
+        # if not pred:
+        #     return None
         result = literal.new_literal(predicate=pred, args=args)
         return result#.copy_instance()#FIXME: is this copy required?
                 
@@ -1175,6 +1177,37 @@ class ModalPredicateCompiler(Translator):
             axiom.condition = visitors.visit(axiom.condition, cond_visitor)
             return axiom
 
+
+    def translate_relevant_axioms(self, olddomain, newdomain):
+        prev_used = defaultdict(set)
+        while True:
+            added = False
+            for ax in olddomain.axioms:
+                used_functions = self.used_functions[ax.predicate] - prev_used[ax.predicate]
+                used_functions = [f for f in used_functions if (f, ax) not in self.handled_axioms]
+                self.handled_axioms.union((f, ax) for f in used_functions)
+                
+                func_arg, compiled = self.compile_modal_args(ax.args, used_functions)
+                # print ax.predicate, map(str,used_functions)
+                if not func_arg:
+                    continue
+                for f, args in compiled:
+                    added = True
+                    ax.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
+                    new_pred = newdomain.predicates.get("%s-%s" % (ax.predicate.name, f.name), args)
+                    a2 = self.translate_axiom(ax, newdomain, args, new_pred)
+                    a2.copy()
+                    ax.uninstantiate()
+                    newdomain.axioms.append(a2)
+            for k,v in self.used_functions.iteritems():
+                prev_used[k] |= v
+            self.used_functions.clear()
+            
+            if not added:
+                newdomain.stratify_axioms()
+                newdomain.name2action = None
+                return
+        
         
     @requires('modal-predicates')
     def translate_domain(self, _domain):
@@ -1192,20 +1225,29 @@ class ModalPredicateCompiler(Translator):
 
         funcs = [f for f in _domain.functions if not f.builtin]
 
-        new_pred_dict = {}
-        new_preds = []
+        compiled_predicates = scope.FunctionTable()
         for pred in modal:
             func_arg, compiled = self.compile_modal_args(pred.args, funcs)
             for f, args in compiled:
                 new_p = Predicate("%s-%s" % (pred.name, f.name), args)
-                new_pred_dict[(pred, f)] = new_p
-                new_preds.append(new_p)
+                compiled_predicates.add(new_p)
+                # new_pred_dict[(pred, f)] = new_p
+                # new_preds.append(new_p)
 
-        nonmodal += new_preds
+        # nonmodal += new_preds
 
         dom = _domain.copy_skeleton()
         dom.requirements.discard("modal-predicates")
         dom.predicates = scope.FunctionTable(nonmodal)
+
+        def predicate_handler(name, args):
+            print "------"
+            result = compiled_predicates.get(name, args)
+            assert result is not None, "Couldn't find compiled predicate for (%s %s)" % (name, " ".join(str(a) for a in args))
+            dom.predicates.add(result)
+            return [result]
+
+        dom.predicates.set_default_handler(predicate_handler)
         
         for ac in _domain.get_action_like():
             func_arg, compiled = self.compile_modal_args(ac.args, funcs)
@@ -1225,36 +1267,7 @@ class ModalPredicateCompiler(Translator):
             if not func_arg:
                 dom.axioms.append(self.translate_axiom(ax, dom))
 
-        prev_used = defaultdict(set)
-        while True:
-            added = False
-            for ax in _domain.axioms:
-                used_functions = self.used_functions[ax.predicate] - prev_used[ax.predicate]
-                func_arg, compiled = self.compile_modal_args(ax.args, used_functions)
-                # print ax.predicate, map(str,used_functions)
-                if not func_arg:
-                    continue
-                for f, args in compiled:
-                    added = True
-                    ax.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
-                    new_pred = dom.predicates.get("%s-%s" % (ax.predicate.name, f.name), args)
-                    a2 = self.translate_axiom(ax, dom, args, new_pred)
-                    a2.copy()
-                    ax.uninstantiate()
-                    dom.axioms.append(a2)
-            for k,v in self.used_functions.iteritems():
-                prev_used[k] |= v
-            self.used_functions.clear()
-            
-            if not added:
-                break
-            
-        for (p, f), compiled in new_pred_dict.iteritems():
-            if f not in prev_used[p]:
-                dom.predicates.remove(compiled)
-            
-        dom.stratify_axioms()
-        dom.name2action = None
+        self.translate_relevant_axioms(_domain, dom)
 
         return dom
     
@@ -1273,6 +1286,12 @@ class ModalPredicateCompiler(Translator):
 
         if _problem.goal:
             p2.goal = _problem.goal.visit(lit_visitor)
+            self.translate_relevant_axioms(_problem.domain, domain)
+        
+
+        # print id(p2.domain.predicates)
+        # for p in p2.domain.predicates:
+        #     print p
 
         for i in _problem.init:
             res = i.visit(lit_visitor)

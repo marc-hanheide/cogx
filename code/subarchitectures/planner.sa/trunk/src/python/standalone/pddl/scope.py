@@ -21,6 +21,8 @@ class FunctionTable(dict):
 
         Arguments:
         functions -- List of Function objects this table should contain."""
+        self.default_fn = None
+        
         for f in functions:
             self.add(f)
 
@@ -30,6 +32,9 @@ class FunctionTable(dict):
         for f in self:
             c.add(f)
         return c
+
+    def set_default_handler(self, fn):
+        self.default_fn = fn
 
     def add(self, function):
         """Add a new Function to the table. If a function with
@@ -72,14 +77,11 @@ class FunctionTable(dict):
         if not fs:
             del self[function.name]
                 
-        
-    def get(self, name, args, function_scope=SCOPE_ALL):
+    def get_all(self, name, args, function_scope=SCOPE_ALL):
         """Get all functions matching the provided name and argument
         types and which can be used in the given scope.
 
-        If excactly one function matches the supplied information, it
-        will be returned. Otherwise a list of matching Functions will
-        be returned.
+        Returns a list of matching Functions.
 
         Arguments:
         name -- the name of the function to look for
@@ -87,6 +89,8 @@ class FunctionTable(dict):
         the arguments of the function that is searched."""
         
         if name not in self:
+            if self.default_fn is not None:
+                return self.default_fn(name, args)
             return []
         
         fs = dict.__getitem__(self, name.lower())
@@ -129,9 +133,34 @@ class FunctionTable(dict):
 #                print map(lambda t, fa: "%s <= %s: %s" %(str(t), str(fa.type),str(t.equal_or_subtype_of(fa.type))), argtypes, f.args)
                     result.append(f)
 
-        if len(result) == 1:
-            return iter(result).next()
-        return list(result)
+        if not result and self.default_fn is not None:
+            # avoid possible infinite recursion when default_fn tries to add a function,
+            # as this triggers a lookup to check whether the function already exists
+            default_fn = self.default_fn
+            default_fn = None
+            result = default_fn(name, args)
+            self.default_fn = default_fn
+                    
+        return result
+        
+    def get(self, name, args, function_scope=SCOPE_ALL):
+        """Get the unique function matching the provided name and argument
+        types and which can be used in the given scope.
+
+        If excactly one function matches the supplied information, it
+        will be returned. Otherwise, the return value is None.
+
+        Arguments:
+        name -- the name of the function to look for
+        args -- a list of Terms, TypedObjects or Types that describe
+        the arguments of the function that is searched."""
+
+        all_results = self.get_all(name, args, function_scope)
+
+        if len(all_results) == 1:
+            return all_results[0]
+        
+        return None
 
     def __iter__(self):
         return itertools.chain(*self.itervalues())

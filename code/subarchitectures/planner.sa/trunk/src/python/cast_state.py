@@ -32,7 +32,10 @@ class CASTState(object):
         self.beliefs = []
         #print beliefs
         try:
-            exclude_beliefnames = [n.strip() for n in global_vars.config.exclude_beliefs]
+            if isinstance(global_vars.config.exclude_beliefs, str):
+                exclude_beliefnames = [global_vars.config.exclude_beliefs.strip()]
+            else:
+                exclude_beliefnames = [n.strip() for n in global_vars.config.exclude_beliefs]
         except AttributeError:
             exclude_beliefnames = [c.__name__ for c in (eubm.PerceptBelief,)]
 
@@ -41,7 +44,7 @@ class CASTState(object):
         for b in beliefs:
             if type(b).__name__ in exclude_beliefnames:
                 continue
-            if isinstance(b.estatus, bm.epstatus.PrivateEpistemicStatus) or isinstance(b.estatus, bm.epstatus.AttributedEpistemicStatus) \
+            if isinstance(b.estatus, (bm.epstatus.PrivateEpistemicStatus, bm.epstatus.AttributedEpistemicStatus)) \
                     or isinstance(b, eubm.AssertedBelief) or isinstance(b, eubm.MergedBelief):
                 self.beliefs.append(b)
 
