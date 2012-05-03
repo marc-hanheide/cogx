@@ -88,7 +88,7 @@ void GNGSMRegion::saveMDLHistory ()
 	stringstream ssindex;
 	ssindex << index;
 	static_cast<GNG_Quantizer*>(cryssmex.getInputQuantizer ())->saveMDLHistory ("mdlinput_region" + ssindex.str() + ".txt", true);
-static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->saveMDLHistory ("mdloutput_region"  + ssindex.str() + ".txt", true);
+	static_cast<GNG_Quantizer*>(cryssmex.getOutputQuantizer ())->saveMDLHistory ("mdloutput_region"  + ssindex.str() + ".txt", true);
 }
 
 ///

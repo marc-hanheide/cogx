@@ -61,6 +61,8 @@ protected:
         virtual void render();
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
+	/** update average error in prediction */
+	void updateAvgError ();
 	/** normalization function */
 	boost::function<float (const float&, const float&, const float&)> normalization;
 	/** denormalization function */
@@ -79,6 +81,8 @@ protected:
 	LearningData::Chunk::Seq seqDataset;
 	/** current chosen Action */
 	Action chosenAction;
+	/** average error in prediction */
+	vector<double> avgerrors;
 
 }; // class
 

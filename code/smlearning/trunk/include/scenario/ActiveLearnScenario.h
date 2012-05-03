@@ -77,7 +77,7 @@ protected:
 	/** constant number of maximum candidate actions */
 	static const int maxNumberCandidateActions = 1000;
 	/** near greedy action selection probability bound for choosing random actions */
-	static const double neargreedyActionProb = 1.0;
+	static const double neargreedyActionProb = 0.3;
 	/** number of instances to decide splitting a region */
 	int splittingCriterion1;
 	/** size of motor Context Vector */
