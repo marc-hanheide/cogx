@@ -19,11 +19,16 @@ public class dBeliefInfo extends DefaultXMLInfo {
 
 	@Override
 	public Vector<Object> toVector(Ice.ObjectImpl iceObject) {
+
 		Vector<Object> extraInfo = new Vector<Object>();
+
 		Belief<dBelief> belief = Belief.create(dBelief.class,
 				(dBelief) iceObject);
+
 		String agentStatus = belief.getStatus().getClass().getSimpleName();
-		extraInfo.add(belief.getId()+": Status: " + agentStatus);
+
+		extraInfo.add(belief.getId() + ": Status: " + agentStatus);
+
 		extraInfo.add("Type: " + belief.getType());
 
 		// try to convert into an IndependentFormulaDistributionsBelief
@@ -37,8 +42,7 @@ public class dBeliefInfo extends DefaultXMLInfo {
 				for (ProbFormula i : distr.getValue()) {
 					if (i.getFormula().get() instanceof PointerFormula) {
 						distrStr += WMPointer.create(i.getFormula().get())
-								.toString()
-								+ " (" + i.getProbability() + ") ";
+								.toString() + " (" + i.getProbability() + ") ";
 					} else {
 						distrStr += i.getFormula().toString() + " ("
 								+ i.getProbability() + ") ";
@@ -49,7 +53,10 @@ public class dBeliefInfo extends DefaultXMLInfo {
 			}
 			extraInfo.add(distrStr);
 		} catch (ClassCastException e) {
-			return super.toVector(iceObject);
+			// nah: the distribution list type is rendered through the below
+			// call, and it makes the display a mess
+			// return super.toVector(iceObject);
+			return null;
 		}
 
 		// String offsprings = "";
