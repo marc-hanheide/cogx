@@ -12,8 +12,10 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.planverb.history.Step;
 
 import autogen.Planner.Action;
+import autogen.Planner.Goal;
 import autogen.Planner.Link;
 import autogen.Planner.POPlan;
+import autogen.Planner.PlanningTask;
 
 public class POPlanUtils {
 	
@@ -41,6 +43,21 @@ public class POPlanUtils {
 		return_sb.append(action_sb);
 		return_sb.append("\nLinks: \n");
 		return_sb.append(link_sb);
+		
+		return return_sb.toString();
+	}
+	
+	public static String PlanningTaskToString(PlanningTask _planningTask) {
+		
+		StringBuilder return_sb = new StringBuilder();
+		return_sb.append("ID: ");
+		return_sb.append(_planningTask.id);
+		return_sb.append(" Goal: ");
+		for (Goal goal : _planningTask.goals) {
+			return_sb.append(goal.goalString + "\n");
+		}
+		return_sb.append("Status: ");
+		return_sb.append(_planningTask.executionStatus);
 		
 		return return_sb.toString();
 	}
