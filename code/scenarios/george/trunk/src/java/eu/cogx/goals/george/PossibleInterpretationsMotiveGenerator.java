@@ -126,6 +126,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 	private boolean neeedsDisambiguation(PossibleInterpretedIntentions _pii) {
 		// TODO something more principled
+
 		if (_pii.intentions.size() == 1) {
 			return false;
 		} else {
@@ -136,6 +137,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 			InterpretedIntention mostConfidentIntention = IntentionUnpacker
 					.getMostConfidentIntention(_pii);
+		
 			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;
 		}
 	}

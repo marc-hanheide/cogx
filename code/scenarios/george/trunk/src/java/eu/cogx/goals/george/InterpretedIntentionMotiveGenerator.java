@@ -85,18 +85,7 @@ public class InterpretedIntentionMotiveGenerator extends
 
 			// go through all types we know how to decode... can it be more
 			// elegant than this?
-			RichIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
-					.tryDecode(ii);
-
-			if (decoded == null) {
-				decoded = OpenFeatureQuestionIntention.Transcoder.INSTANCE
-						.tryDecode(ii);
-			}
-
-			if (decoded == null) {
-				decoded = FeatureAscriptionIntention.Transcoder.INSTANCE
-						.tryDecode(ii);
-			}
+			RichIntention decoded = extractRichIntention(ii);
 
 			if (decoded == null) {
 				getLogger().warn("Unable to decode intention",
@@ -113,4 +102,6 @@ public class InterpretedIntentionMotiveGenerator extends
 		}
 
 	}
+
+	
 }

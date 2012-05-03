@@ -28,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
+import de.dfki.lt.tr.dialogue.intentions.RichIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
 import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
@@ -642,4 +643,31 @@ public abstract class AbstractInterpretedIntentionMotiveGenerator<T extends Ice.
 
 		overwriteWorkingMemory(_beliefAddr, gb.get());
 	}
+	
+	/**
+	 * Utility method to try all extractions when you don't know the type. I
+	 * would like there to be a nicer way to do this. Is it even necessary?
+	 * 
+	 * @param ii
+	 * @return
+	 */
+	public static RichIntention extractRichIntention(InterpretedIntention ii) {
+
+		RichIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
+				.tryDecode(ii);
+
+		if (decoded == null) {
+			decoded = OpenFeatureQuestionIntention.Transcoder.INSTANCE
+					.tryDecode(ii);
+		}
+
+		if (decoded == null) {
+			decoded = FeatureAscriptionIntention.Transcoder.INSTANCE
+					.tryDecode(ii);
+		}
+
+		return decoded;
+	}
+	
+	
 }
