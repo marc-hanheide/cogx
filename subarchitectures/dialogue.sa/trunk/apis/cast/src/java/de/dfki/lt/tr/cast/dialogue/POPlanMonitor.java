@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import autogen.Planner.Action;
+import autogen.Planner.Goal;
 import autogen.Planner.POPlan;
+import autogen.Planner.PlanningTask;
 
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
@@ -29,6 +31,7 @@ public class POPlanMonitor extends ManagedComponent {
 
 	private Map<Integer,List<POPlan>> runningMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,List<POPlan>> finishedMap = new HashMap<Integer,List<POPlan>>();
+	private Map<Integer,PlanningTask> planningTaskMap = new HashMap<Integer,PlanningTask>();
 
 	private PlanVerbalizer pevModule; 
 	
@@ -79,7 +82,23 @@ public class POPlanMonitor extends ManagedComponent {
 			throws CASTException {
 				processOverwrittenPOPlan(_wmc);
 			}
-		});		
+		});
+		
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(PlanningTask.class, WorkingMemoryOperation.ADD), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processAddedPlanningTask(_wmc);
+			}
+		});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(PlanningTask.class, WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processOverwrittenPlanningTask(_wmc);
+			}
+		});
 	}
 	
 	private void processAddedPOPlan(WorkingMemoryChange _wmc) {
@@ -127,18 +146,49 @@ public class POPlanMonitor extends ManagedComponent {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 			reportFinishedPOPlan(_oldPOPlan);
 		}
-		
-		/*for (Map.Entry<Integer, List<POPlan>> entry : runningMap.entrySet()) {
-			for (POPlan _plan : entry.getValue()) {
-				log(entry.getKey() + ":" + poplanToString(_plan));
-			}
+	}
+	
+	private void processAddedPlanningTask(WorkingMemoryChange _wmc) {
+		PlanningTask _newPlanningTask;
+		try {
+			_newPlanningTask = getMemoryEntry(_wmc.address, PlanningTask.class);
+		} catch (DoesNotExistOnWMException e) {
+			logException(e);
+			return;
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+			return;
 		}
+		log("ADDED PlanningTask: " + planningTaskToString(_newPlanningTask));
+		// VerbalisationUtils.verbaliseString(this, "Got a new POPlan");
 		
-		for (Map.Entry<Integer, List<POPlan>> entry : finishedMap.entrySet()) {
-			for (POPlan _plan : entry.getValue()) {
-				log(entry.getKey() + ":" + poplanToString(_plan));
-			}
-		}*/
+		planningTaskMap.put(_newPlanningTask.id, _newPlanningTask);
+	}
+	
+	private void processOverwrittenPlanningTask(WorkingMemoryChange _wmc) {
+		PlanningTask _oldPlanningTask;
+		try {
+			_oldPlanningTask = getMemoryEntry(_wmc.address, PlanningTask.class);
+		} catch (DoesNotExistOnWMException e) {
+			logException(e);
+			return;
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+			return;
+		}
+		log("OVERWRITTEN PlanningTask: " + planningTaskToString(_oldPlanningTask));
+		// VerbalisationUtils.verbaliseString(this, "Got an overwritten POPlan");
+		
+		planningTaskMap.put(_oldPlanningTask.id, _oldPlanningTask);
+		
+		StringBuilder log_sb = new StringBuilder();
+		
+		if (finishedMap.containsKey(_oldPlanningTask.id)) {
+			log_sb.append("History:\n");
+			log(getHistory(_oldPlanningTask.id));
+			log_sb.append("History End");
+			log(log_sb.toString());
+		}
 	}
 
 	private void reportFinishedPOPlan(POPlan pp) {
@@ -168,6 +218,20 @@ public class POPlanMonitor extends ManagedComponent {
 		return POPlanUtils.POPlanToString(_poPlan);
 	}
 	
+	private String planningTaskToString(PlanningTask _planningTask) {
+		return POPlanUtils.PlanningTaskToString(_planningTask);
+	}
+	
+	private String getHistory(int id) {
+		StringBuilder history_sb = new StringBuilder();
+		
+		for (POPlan _plan : finishedMap.get(id)) {
+			history_sb.append(poplanToString(_plan));
+		}
+		
+		return history_sb.toString();
+	}
+	
 	
 	protected void runComponent() {
 		log("POPlanMonitor running...");
@@ -176,7 +240,7 @@ public class POPlanMonitor extends ManagedComponent {
 }
 
 /*
- * Behavior: 1. Goal: Goto-Place ( (= (is-in ROBOT) Place) ) : Adds a new task, does what it should and that's it. No confirmation after task succeeded.
- * 			 2. Give a new Goal while old one is still active: Adds a new Task and only the newer task is overwritten, updated, etc.
+ * Behavior: 1. Goal: Goto-Place ( (= (is-in ROBOT) Place) ) : Adds a new task but no confirmation after task succeeded.
+ * 			 2. Give a new goal while old one is still active: Adds a new task and only the newer task is overwritten, updated, etc.
  */
 
