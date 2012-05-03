@@ -190,11 +190,11 @@ class DTTest(common.PddlTest):
         t2 = dtpddl.DTPDDLCompiler()
         t = translators.ChainingTranslator(t1, t2)
 
-        dom2 = t.translate(dom)
         prob2 = t.translate(prob)
+        dom2 = prob2.domain
         self.assertEqual(len(dom2.observe), 1)
         
-        self.roundtrip(dom2, prob2)
+        self.roundtrip(dom2, prob2, print_result=False)
 
     def testMDTTPDDLtoSimpleDTPDDL(self):
         """Testing compilation of DTPDDL/MAPL to DTPDDL/ADL"""
@@ -208,8 +208,8 @@ class DTTest(common.PddlTest):
         t3 = dtpddl.ProbADLCompiler()
         t = translators.ChainingTranslator(t1, t2, t3)
 
-        dom2 = t.translate(dom)
         prob2 = t.translate(prob)
+        dom2 = prob2.domain
 
         self.assertEqual(len(dom2.observe), 1)
         
