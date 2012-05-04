@@ -28,6 +28,13 @@
 
 namespace smlearning {
 
+std::ostream& operator<<(std::ostream& _out, feature_selection _e) {
+	return feature_selection_binder().print_enum(_out, _e);
+}
+  
+std::istream& operator>>(std::istream& _in, feature_selection& _e) {
+	return feature_selection_binder().read_enum(_in, _e);
+}
 
 ///
 ///Write DataSet vector to a file
@@ -381,6 +388,5 @@ bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 
 
 }
-
 
 };  /* smlearning namespace */

@@ -35,6 +35,7 @@
 #include <smltools/helpers.h>
 #include <metalearning/Object.h>
 #include <metalearning/Action.h>
+#include <misc/enum_utils.hh>
 
 using namespace golem;
 using namespace std;
@@ -111,6 +112,35 @@ enum feature_selection {
 	_efobpose_slide_flip_tilt /**< For automata generation: input are action related features, states are object and effector f., output is trajectory classification f. */
 };
 
+static const cryssmex::enum_utils::Enum_String_Binder<feature_selection>& feature_selection_binder() {
+	using namespace boost::assign;    
+	using namespace std;
+	static cryssmex::enum_utils::Enum_String_Binder<feature_selection> 
+		binder(list_of<pair<string, feature_selection> >
+		       ("basis",_basis)
+		       ("markov",_markov)
+		       ("obpose",_obpose)
+		       ("efobpose",_efobpose)
+		       ("obpose_label",_obpose_label)
+		       ("efobpose_label",_efobpose_label)
+		       ("obpose_direction",_obpose_direction)
+		       ("efobpose_direction",_efobpose_direction)
+		       ("mcobpose_obpose_direction",_mcobpose_obpose_direction)
+		       ("obpose_rough_direction",_obpose_rough_direction)
+		       ("efobpose_rough_direction",_efobpose_rough_direction)
+		       ("obpose_slide_flip_tilt",_obpose_slide_flip_tilt)
+		       ("efobpose_slide_flip_tilt",_efobpose_slide_flip_tilt)
+		       );	
+	return binder;
+}
+
+static string feature_selection_options () {
+	return "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)";
+}
+
+std::ostream& operator<<(std::ostream& _out, feature_selection _e);
+  
+std::istream& operator>>(std::istream& _in, feature_selection& _e);
 
 /**
    \class LearningData
