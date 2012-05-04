@@ -76,6 +76,8 @@ int main (int argc, char* argv[])
 		cerr << "error reading sequence data file" << endl;
 		return 1;
 	}
+	for (int i=0; i<data.size(); i++)
+		LearningData::write_chunk_to_featvector (data[i][0].featureVector, data[i][0], normalize<double>, limits, _end_effector_pos | _effector_pos /*| _action_params*/ );
 
 	boost::regex regfile_re ("(.*_final)\\.reg");
 	boost::cmatch matches;
@@ -105,13 +107,9 @@ int main (int argc, char* argv[])
 				return 1;
 			}
 			for (int i=0; i<data.size(); i++)
-			{
-				FeatureVector featureVector;
-				LearningData::write_chunk_to_featvector (featureVector, data[i][0], normalize<double>, limits, _end_effector_pos | _effector_pos /*| _action_params*/ );
-				if (currentRegion.checkSMRegionMembership (featureVector))
+				if (currentRegion.checkSMRegionMembership (data[i][0].featureVector))
 					currentRegion.data.push_back (data[i]);
-				
-			}
+			
 			currentRegion.generateCryssmexFiles (max_iterations, ssm/*, save_all*/, prefix, regionFileName, limits, featureSelectionMethod);
 		}
 	}
