@@ -8,9 +8,7 @@ import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
-import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
-import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
-import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
+import dialogue.execution.AbstractDialogueActionInterface;
 
 public class InterpretedIntentionMotiveGenerator extends
 		AbstractInterpretedIntentionMotiveGenerator<InterpretedIntention> {
@@ -85,7 +83,7 @@ public class InterpretedIntentionMotiveGenerator extends
 
 			// go through all types we know how to decode... can it be more
 			// elegant than this?
-			RichIntention decoded = extractRichIntention(ii);
+			RichIntention decoded = AbstractDialogueActionInterface.extractRichIntention(ii);
 
 			if (decoded == null) {
 				getLogger().warn("Unable to decode intention",
