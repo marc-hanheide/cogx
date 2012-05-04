@@ -29,6 +29,8 @@ import de.dfki.lt.tr.planverb.generation.StringMessage;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLContentDeterminator;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLDomainModel;
 import de.dfki.lt.tr.planverb.planning.pddl.POPlan;
+import de.dfki.lt.tr.planverb.history.Episode;
+import de.dfki.lt.tr.planverb.history.History;
 import de.dfki.tarot.cogx.CASTLogicalForms;
 import de.dfki.tarot.cogx.CogXJavaHelpers;
 import de.dfki.tarot.cogx.FeatureReplacer;
@@ -117,6 +119,29 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
 		m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
+	}
+	
+	public String verbalizeHistory(final List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> hlist) {
+		
+		History h = new History() {
+			
+			// ??? String goal = "";
+			@Override
+			public boolean hasSharedGoal() {
+				return true;
+			}
+			
+			@Override
+			public List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> getEpisodes() {
+				return hlist;
+			}
+		};
+		
+		List<Message> messages = null;
+		
+		messages = m_contentDeterminator.determineMessages(h);
+			
+		return "Got " + ((messages == null) ? "null" : Integer.toString(messages.size())) + " messages";
 	}
 	
 	
