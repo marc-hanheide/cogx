@@ -674,25 +674,34 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser
 	  double doorY = odomNew[1] + sin(odomNew[2])*it->xC() + cos(odomNew[2])*it->yC();
 
 	  debug("Door detected at (%f,%f)", doorX, doorY);
+    double doorTheta = odomNew[2] + it->theta();
+    if (doorTheta < -M_PI) doorTheta += 2*M_PI;
+    if (doorTheta > M_PI) doorTheta -= 2*M_PI;
+    double doorWidth = it->length();
+
 	  for (map<string, FrontierInterface::DoorHypothesisPtr>::iterator it2 =
 	      m_detectedDoors.begin(); it2 != m_detectedDoors.end(); it2++) {
 	    double dx = it2->second->x - doorX;
 	    double dy = it2->second->y - doorY;
 	    double dist = dx*dx+dy*dy;
 	    if (dist < 1.0) {
+        it2->second->x = (it2->second->x * m_detectedDoorsNum[it2->first] + doorX) / (m_detectedDoorsNum[it2->first] + 1);
+        it2->second->y = (it2->second->y * m_detectedDoorsNum[it2->first] + doorY) / (m_detectedDoorsNum[it2->first] + 1);
+        it2->second->width = (it2->second->width * m_detectedDoorsNum[it2->first] + doorWidth) / (m_detectedDoorsNum[it2->first] + 1);
+        it2->second->theta = (it2->second->theta * m_detectedDoorsNum[it2->first] + doorTheta) / (m_detectedDoorsNum[it2->first] + 1);
+        if (it2->second->theta < -M_PI) it2->second->theta += 2*M_PI;
+        if (it2->second->theta > M_PI) it2->second->theta -= 2*M_PI;
+        
+        m_detectedDoorsNum[it2->first] = m_detectedDoorsNum[it2->first] + 1;
+        if (m_bShowDoorsInPB) {
+          HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor,it2->first);
+        }
+
 	      found = true;
 	      break;
 	    }
 	  }
 	  if (!found) {
-      if (m_bShowDoorsInPB) {
-        HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor);
-      }
-	    double doorTheta = odomNew[2] + it->theta();
-	    if (doorTheta < -M_PI) doorTheta += 2*M_PI;
-	    if (doorTheta > M_PI) doorTheta -= 2*M_PI;
-	    double doorWidth = it->length();
-
 	    FrontierInterface::DoorHypothesisPtr newDoor =
 	      new FrontierInterface::DoorHypothesis;
 	    newDoor->x = doorX;
@@ -704,6 +713,10 @@ void LocalMapManager::receiveScan2d(const Laser::Scan2d &castScan) // <--- Laser
 	    addToWorkingMemory<FrontierInterface::DoorHypothesis>(newID,
 		newDoor);
 	    m_detectedDoors[newID] = newDoor;
+      m_detectedDoorsNum[newID] = 1;
+      if (m_bShowDoorsInPB) {
+        HSS::displayDoorMeas(m_HSSGroupProxy, odomNew, xsR, m_doorExtractor,newID);
+      }
 
 	 /*   if (m_bShowDoorsInPB) {
 	      peekabot::SphereProxy sph;

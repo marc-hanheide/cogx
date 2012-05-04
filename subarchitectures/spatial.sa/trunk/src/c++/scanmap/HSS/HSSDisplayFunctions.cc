@@ -143,10 +143,14 @@ void addDoorPost(peekabot::GroupProxy &door, double width,
 
 void displayDoorMeas(peekabot::GroupProxy &root,
                      const Eigen::VectorXd &X, const Eigen::Vector3d &xsR,
-                     HSS::DoorExtractor &doorExtractor)
+                     HSS::DoorExtractor &doorExtractor, std::string id)
 {
   peekabot::GroupProxy doormeas;
-  doormeas.add(root, "doormeas", peekabot::AUTO_ENUMERATE_ON_CONFLICT);
+  std::string str;
+  str.append("doormeas");
+  str.append(id);
+
+  doormeas.add(root, str, peekabot::REPLACE_ON_CONFLICT);
   
   Eigen::Vector3d xsW(HSS::compound(X, xsR));
 

@@ -499,7 +499,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
     }
 
     IceUtil::Mutex::Lock lock(m_Mutex);
-    m_PeekabotClient.begin_bundle();
 
 	_shapeProps[property->placeId] = property;
 
@@ -508,7 +507,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 
     if (nodeIter == m_Nodes.end()) {
         println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
-        m_PeekabotClient.end_bundle();
 
         debug("Exited newShapeProperty");
         return;
@@ -526,7 +524,6 @@ void DisplayNavInPB::newShapeProperty(const cast::cdl::WorkingMemoryChange &objI
 
     addProperties(sp, property->placeId);
 
-    m_PeekabotClient.end_bundle();
 
     debug("Exited newShapeProperty");
 }
@@ -566,7 +563,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
     }
 
     IceUtil::Mutex::Lock lock(m_Mutex);
-    m_PeekabotClient.begin_bundle();
 
 	_sizeProps[property->placeId] = property;
 
@@ -575,7 +571,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 
     if (nodeIter == m_Nodes.end()) {
         println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
-        m_PeekabotClient.end_bundle();
 
         debug("Exited newSizeProperty");
         return;
@@ -593,7 +588,6 @@ void DisplayNavInPB::newSizeProperty(const cast::cdl::WorkingMemoryChange &objID
 
     addProperties(sp, property->placeId);
 
-    m_PeekabotClient.end_bundle();
 
     debug("Exited newSizeProperty");
 }
@@ -633,7 +627,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
     }
 
 	IceUtil::Mutex::Lock lock(m_Mutex);
-	m_PeekabotClient.begin_bundle();
 
 	_appearanceProps[property->placeId] = property;
 
@@ -642,7 +635,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 
     if (nodeIter == m_Nodes.end()) {
         println("error: coma room contains a node I do not know about: placeID = %d",property->placeId);
-        m_PeekabotClient.end_bundle();
 
         debug("Exited newAppearanceProperty");
         return;
@@ -658,7 +650,6 @@ void DisplayNavInPB::newAppearanceProperty(const cast::cdl::WorkingMemoryChange 
 
     addProperties(sp,property->placeId);
 
-    m_PeekabotClient.end_bundle();
 
     debug("Exited newAppearanceProperty");
 }
@@ -711,7 +702,6 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 
 	// Update DisplayNavInPB
 	IceUtil::Mutex::Lock lock(m_Mutex);
-	m_PeekabotClient.begin_bundle();
 
 	// For each place in the room
 	for (::std::vector< ::Ice::Long>::iterator iter = croom->containedPlaceIds.begin();
@@ -832,7 +822,6 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID)
 			redisplayEdgesToNode(node);
 		}
 	} // end for
-	m_PeekabotClient.end_bundle();
   log("Exited newComaRoom");
 }
 
@@ -860,7 +849,6 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
     SpatialData::NodeHypothesisPtr nodeHypPtr = agg->getHypFromPlaceID( (::Ice::Int) (property->placeId));
 
     IceUtil::Mutex::Lock lock(m_Mutex);
-    m_PeekabotClient.begin_bundle();
 
     // Remember the property
     stringstream ss;
@@ -879,7 +867,6 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(const cast::cdl::Working
 		addRoomCategoryPlaceholderProperties(sp, property->placeId);
     }
 
-    m_PeekabotClient.end_bundle();
     debug("Exited newRoomCategoryPlaceholderProperty");
 }
 
@@ -1203,8 +1190,6 @@ void DisplayNavInPB::runComponent() {
       }
 
 
-      m_PeekabotClient.begin_bundle();
-
       {
       IceUtil::Mutex::Lock lock(m_Mutex);
 
@@ -1305,15 +1290,9 @@ void DisplayNavInPB::runComponent() {
 
       }
 
-      peekabot::Status s = m_PeekabotClient.end_bundle().status();
 
       // Make sure the server processed what we've sent
       m_PeekabotClient.sync();
-
-      if( s.failed() ) {
-        debug("Bundle failed with error message: %s",
-	      s.get_error_message().c_str());
-      }
 
 
       usleep(250000);
@@ -1517,8 +1496,6 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
 
   IceUtil::Mutex::Lock lock(m_Mutex);
 
-  m_PeekabotClient.begin_bundle();
-
   peekabot::CylinderProxy sp;
   peekabot::LabelProxy text;
 
@@ -1597,7 +1574,6 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID)
   text.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
   text.set_color(0,0,1);
 
-  m_PeekabotClient.end_bundle();
 
   debug("Exited newNavGraphObject");
 }
@@ -1809,7 +1785,6 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 
 		// Update DisplayNavInPB
 		IceUtil::Mutex::Lock lock(m_Mutex);
-		m_PeekabotClient.begin_bundle();
 
 		// Update the node
 		std::map<long,Node>::iterator n = m_Nodes.find(fnode->nodeId);
@@ -1950,7 +1925,6 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 				ei++;
 			}
 		}
-		m_PeekabotClient.end_bundle();
 	}
 	catch (DoesNotExistOnWMException e)
 	{
@@ -2530,8 +2504,6 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
   IceUtil::Mutex::Lock lock(m_Mutex);
 
-  m_PeekabotClient.begin_bundle();
-
   // Check if the nodes are there now
   std::map<long,Node>::iterator n1 = m_Nodes.find(aedge->startNodeId);
   std::map<long,Node>::iterator n2 = m_Nodes.find(aedge->endNodeId);
@@ -2549,8 +2521,6 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID)
 
   debug("Got a new edge connecting nodes %d and %d",
         aedge->startNodeId, aedge->endNodeId);
-
-  m_PeekabotClient.end_bundle();
 
   debug("Exited newNavGraphEdge");
 }

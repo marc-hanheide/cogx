@@ -227,6 +227,7 @@ protected:
   HSS::DoorExtractor m_doorExtractor;
   //Detected doors
   std::map<std::string, FrontierInterface::DoorHypothesisPtr> m_detectedDoors;
+  std::map<std::string, int> m_detectedDoorsNum;
   //Falloff for gateway property value with distance to nearest detected door
   double m_doorwayWidth;
 
