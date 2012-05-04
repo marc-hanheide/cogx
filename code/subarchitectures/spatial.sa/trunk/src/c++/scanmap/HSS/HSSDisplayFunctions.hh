@@ -41,7 +41,7 @@ namespace HSS {
   
   void displayDoorMeas(peekabot::GroupProxy &root,
                        const Eigen::VectorXd &X, const Eigen::Vector3d &xsR,
-                       HSS::DoorExtractor &doorExtractor);
+                       HSS::DoorExtractor &doorExtractor, std::string id);
   
   void displayStateWithUnc(peekabot::GroupProxy &refroot,
                            const Eigen::VectorXd &X, const Eigen::MatrixXd &P,

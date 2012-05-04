@@ -297,22 +297,23 @@ void AVS_ContinualPlanner::start() {
         if( s.succeeded() ) m_pdf.remove();
         s = m_2DOccGridProxy.assign(m_PeekabotClient, "combined_placemap2D3").status();
         if( s.succeeded() ) m_2DOccGridProxy.remove();
-
+        
         m_ProxyForbiddenMap.add(m_PeekabotClient, "avs_forbidden",peekabot::REPLACE_ON_CONFLICT);
         m_ProxyForbiddenMap.set_position(0,0,-0.005);
-
+        int i=0;
         for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
             fbIt != m_forbiddenZones.end(); fbIt++) {
             peekabot::PolygonProxy* p = new peekabot::PolygonProxy();
             
             p->add(m_ProxyForbiddenMap, "zone");
             p->set_color(1,0.1,0.1);
-	    peekabot::VertexSet vs;
-            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
-            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
-	    p->add_vertices(vs);
+      	    peekabot::VertexSet vs;
+            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, i*0.002 );
+            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, i*0.002 );
+            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, i*0.002 );
+            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, i*0.002 );
+      	    p->add_vertices(vs);
+            i++;
         }
   
 	}
