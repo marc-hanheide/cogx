@@ -13,7 +13,7 @@ from standalone.task import PlanningStatusEnum
 from standalone.utils import Enum, Struct
 from standalone.pddl import state
 
-import cast_state
+import cast_state, planner_log
 import explanations
 
 TaskStateEnum = Enum("INITIALISED",
@@ -123,6 +123,8 @@ class CASTTask(object):
         self.fail_count = defaultdict(lambda: 0)
         self.failure_simulated = False
         self.expl_rules_fn = args.get('expl_rules_fn', None)
+        log_fn = abspath(join(self.component.get_path(), 'planner-log-%d.log' % self.id))
+        self.plan_log = planner_log.PlannerLog(log_fn)
 
         self.load_domain(domain_fn)
 
@@ -146,6 +148,7 @@ class CASTTask(object):
             self.state = cast_state.CASTState(beliefs, self.domain, component=component, consistency_cond=self.consistency_cond)
             self.init_state = self.state
             
+        self.plan_log.append(planner_log.StateEntry(self.state, self.slice_goals))
         self.percepts = []
 
         cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
@@ -335,6 +338,7 @@ class CASTTask(object):
         self.plan_state = self.state
         self.cp_task.replan()
         log.debug("Planning done: %.2f sec", global_vars.get_time())
+        self.plan_log.append(planner_log.PlanEntry(self.cp_task.get_plan()))
 
         if self.cp_task.get_plan() is None:
             self.plan_history.append(None)
@@ -373,6 +377,7 @@ class CASTTask(object):
 
         if self.cp_task.get_plan() != plan:
             problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
+            self.plan_log.append(planner_log.PlanEntry(self.cp_task.get_plan()))
             self.write_cp_problem(problem_fn)
             #way may reach this point without ever having planned before. Check that case
             if self.plan_state is not None:
@@ -553,6 +558,7 @@ class CASTTask(object):
             
             if self.dt_planning_active():
                 log.info("starting dt task")
+                self.plan_log.append(planner_log.DTEntry(enabled=True))
                 self.dt_task.initialize(self.state.prob_state)
                 self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
                 for pnode in self.dt_task.subplan_actions:
@@ -599,11 +605,12 @@ class CASTTask(object):
         elif dt_action.status == Planner.Completion.SUCCEEDED:
             finished_actions.append(dt_pnode)
             dt_pnode.status = plans.ActionStatusEnum.EXECUTED
-        
+            
         if finished_actions or failed_actions:
             self.action_feedback(finished_actions, failed_actions)
 
         if failed_actions:
+            self.plan_log.append(planner_log.DTEntry(cancelled=True))
             self.dt_done()
             return
         self.monitor_dt()
@@ -672,6 +679,7 @@ class CASTTask(object):
             #     log.debug("effects are satisfied: %s", ", ".join(map(str, pnode.effects)))
         if sat:
             log.info("dt planner reached its goal.")
+            self.plan_log.append(planner_log.DTEntry(enabled=False))
             self.dt_done()
             return
 
@@ -679,7 +687,6 @@ class CASTTask(object):
 
         if self.dt_task.replanning_neccessary(self.state.prob_state):
             log.info("DT task requires replanning")
-            #send empty observations to terminate previous task
             self.component.cancel_dt_session(self)
             self.dt_task.recompute_problem(self.state.prob_state)
             self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
@@ -760,6 +767,7 @@ class CASTTask(object):
                 if self.cp_task.get_plan() != plan:
                     problem_fn = abspath(join(self.component.get_path(), "problem%d-%d.pddl" % (self.id, len(self.plan_history)+1)))
                     self.write_cp_problem(problem_fn)
+                    self.plan_log.append(planner_log.PlanEntry(self.cp_task.get_plan()))
                     self.plan_history.append(plan)
                     po_plan = self.make_cast_poplan(plan, is_completed=True)
                     self.plan_state_history.append((plan, po_plan, self.plan_state))
@@ -835,6 +843,7 @@ class CASTTask(object):
 
         if self.dt_task.is_goal_action(pddl_action.name):
             log.info("Goal action recieved. DT task completed")
+            self.plan_log.append(planner_log.DTEntry(enabled=False))
             self.dt_done()
             return
 
@@ -853,8 +862,11 @@ class CASTTask(object):
                     yield to.next()
 
         except TimedOut:
+            self.plan_log.append(planner_log.DTEntry(cancelled=True))
             for pnode in self.dt_task.subplan_actions:
                 pnode.status = plans.ActionStatusEnum.FAILED
+                self.plan_log.append(planner_log.ActionEntry(pnode))
+
             self.plan_history.append(self.dt_task)
             # self.cp_task.set_plan(None, update_status=True)
             self.component.cancel_dt_session(self)
@@ -879,6 +891,7 @@ class CASTTask(object):
         if outplan:
             log.info("First action: %s == %s", str(nodes[0]), outplan[0].fullName)
             nodes[0].status = plans.ActionStatusEnum.IN_PROGRESS
+            self.plan_log.append(planner_log.ActionEntry(nodes[0]))
             self.update_status(TaskStateEnum.WAITING_FOR_ACTION, TaskStateInfoEnum.WAITING_FOR_ACTION)
         else:
             log.info("Plan is empty")
@@ -961,6 +974,9 @@ class CASTTask(object):
             yield "%d %d %s %s" % (link.src, link.dest, link.type, fact)
         
     def action_feedback(self, finished_actions, failed_actions):
+        for pnode in itertools.chain(finished_actions, failed_actions):
+            self.plan_log.append(planner_log.ActionEntry(pnode))
+
         diffstate = compute_state_updates(self.cp_task.get_state(), finished_actions, failed_actions)
         for fact in diffstate.iterfacts():
             self.cp_task.get_state().set(fact)
@@ -1016,6 +1032,7 @@ class CASTTask(object):
         self.cp_task.mapltask = new_cp_problem
         self.cp_task.set_state(self.state.state)
         log.debug("State update done: %.2f sec", global_vars.get_time())
+        self.plan_log.append(planner_log.StateEntry(self.state, self.slice_goals))
         
         return True
 
