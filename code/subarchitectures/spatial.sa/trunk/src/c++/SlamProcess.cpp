@@ -203,6 +203,10 @@ void SlamProcess::configure(const map<string,string>& _config)
     m_UpdateWithoutMotion = false;
   }
 
+  
+  if (m_odomfile.openWriteFile("odom.tdf")) return;
+  if (m_scanfile.openWriteFile("scan.tdf")) return;
+
   printf("SlamProcess::configure successful\n");
 }
 
@@ -287,6 +291,9 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
      m_PP->addOdometry(odom);
    }
 
+   m_odomfile.write(odom);
+
+
     if (m_usePeekabot){
         m_SLAMPoseProxy.set_pose(m_PP->getPose().getX(), m_PP->getPose().getY(), 2, m_PP->getPose().getTheta(), 0, 0);
     }
@@ -315,6 +322,8 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);  
+
+  m_scanfile.write(cureScan);
 
   double timeDiffToWarn = 0.5;
   if (m_MaxScanRate>0) timeDiffToWarn += 1.0 / m_MaxScanRate;
