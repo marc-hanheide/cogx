@@ -31,9 +31,11 @@ import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.FeatureAscriptionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.OpenFeatureQuestionIntention;
+import de.dfki.lt.tr.dialogue.intentions.inst.PolarFeatureQuestionIntention;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
-import eu.cogx.goals.george.AbstractInterpretedIntentionMotiveGenerator;
 import execution.components.AbstractActionInterface;
 import execution.slice.Action;
 import execution.slice.ConfidenceLevel;
@@ -582,7 +584,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 						unmarkReferent(potentialReferentAddr);
 					} else {
 						// else decode and mark as accepted
-						RichIntention decoded = AbstractInterpretedIntentionMotiveGenerator
+						RichIntention decoded = AbstractDialogueActionInterface
 								.extractRichIntention(iint);
 
 						if (decoded == null) {
@@ -1248,15 +1250,29 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		m_fakeIt = _config.containsKey("--fake-it");
 	}
 
-	// private WorkingMemoryAddress getSharedBeliefAddress(
-	// WorkingMemoryAddress _groundedBeliefAddress) {
-	// WorkingMemoryAddress addr = null;
-	// if (m_groundedToShared != null) {
-	// addr = m_groundedToShared.map.get(_groundedBeliefAddress);
-	// } else {
-	// println("trying to get shared belief address before map has been generated");
-	// }
-	// return addr;
-	// }
+	/**
+	 * Utility method to try all extractions when you don't know the type. I
+	 * would like there to be a nicer way to do this. Is it even necessary?
+	 * 
+	 * @param ii
+	 * @return
+	 */
+	public static RichIntention extractRichIntention(InterpretedIntention ii) {
+
+		RichIntention decoded = PolarFeatureQuestionIntention.Transcoder.INSTANCE
+				.tryDecode(ii);
+
+		if (decoded == null) {
+			decoded = OpenFeatureQuestionIntention.Transcoder.INSTANCE
+					.tryDecode(ii);
+		}
+
+		if (decoded == null) {
+			decoded = FeatureAscriptionIntention.Transcoder.INSTANCE
+					.tryDecode(ii);
+		}
+
+		return decoded;
+	}
 
 }
