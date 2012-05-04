@@ -137,7 +137,7 @@ class FunctionTable(dict):
             # avoid possible infinite recursion when default_fn tries to add a function,
             # as this triggers a lookup to check whether the function already exists
             default_fn = self.default_fn
-            default_fn = None
+            self.default_fn = None
             result = default_fn(name, args)
             self.default_fn = default_fn
                     
