@@ -24,28 +24,8 @@ void PredictingActiveLearnScenario::init (boost::program_options::variables_map 
 	Scenario::init (vm);
 
 	// Set feature selection method
-	string fSMethod;
-	fSMethod = vm["featuresel"].as<string>();
-
-	if (fSMethod == "obpose")
-		featureSelectionMethod = _obpose;
-	else if (fSMethod == "efobpose")
-		featureSelectionMethod = _efobpose;
-	else if (fSMethod == "obpose_direction")
-		featureSelectionMethod = _obpose_direction;
-	else if (fSMethod == "efobpose_direction")
-		featureSelectionMethod = _efobpose_direction;
-	else if (fSMethod == "mcobpose_obpose_direction")
-		featureSelectionMethod = _mcobpose_obpose_direction;
-	else if (fSMethod == "obpose_rough_direction")
-		featureSelectionMethod = _obpose_rough_direction;
-	else if (fSMethod == "efobpose_rough_direction")
-		featureSelectionMethod = _efobpose_rough_direction;
-	else if (fSMethod == "obpose_slide_flip_tilt")
-		featureSelectionMethod = _obpose_slide_flip_tilt;
-	else if (fSMethod == "efobpose_slide_flip_tilt")
-		featureSelectionMethod = _efobpose_slide_flip_tilt;
-
+	featureSelectionMethod = vm["featuresel"].as<feature_selection>();
+	
 	boost::regex regfile_re ("(.*_final)\\.reg");
 	boost::cmatch matches;
 	string prefix = vm["prefix"].as<string>();

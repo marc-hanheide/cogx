@@ -121,7 +121,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 		// }
 		if (/*S::getName() == "ActiveGNGScenario" || */S::getName() == "PredictingScenario")
 			prgOptDesc.add_options ()
-				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
+				("featuresel,f", po::value<feature_selection>()->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())
 				("normalize,n", "normalize sequences");
 
 		if (S::getName() == "ActiveLearnScenario" ) {
@@ -134,7 +134,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 				("accuracy,y", po::value<double>()->default_value(0.0001), "data accuracy constant for input space GNG quantization")
 				("output_accuracy", po::value<double>()->default_value (0.0001), "data accuracy constant for output space GNG quantization")
 				("ngactionprob,n", po::value<double>()->default_value (0.3), "near greedy action probability")
-				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
+				("featuresel,f", po::value<feature_selection>()->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())
 				("splitting,s", po::value<unsigned int>()->default_value (30), "Splitting criterion (nr of sequences needed for splitting")
 				("regionsPath,r", po::value<string>(), "Path for regions already obtained if available")
 				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension) if regionsPath is available")
@@ -143,7 +143,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 		}
 		if (S::getName() == "PredictingActiveLearnScenario" ) {
 			prgOptDesc.add_options ()
-				("featuresel,f", po::value<string>()->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
+				("featuresel,f", po::value<feature_selection>()->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())
 				("prefix,p", po::value<string>()->default_value("./"), "path for looking for quantization and SSMs machines")
 				("seqFile,d", po::value<string>(), "name of file containing data sequences\n(do not type .seq extension)");
 		}

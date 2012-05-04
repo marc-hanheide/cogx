@@ -26,11 +26,11 @@ int main (int argc, char* argv[])
 {
 	
 	po::options_description desc("Allowed parameters:");
+	unsigned int featureSelectionMethod;
 
 	desc.add_options ()
 		("help,h", "produce help message")
-		("featuresel,f", po::value<string>()->default_value ("obpose_direction"), "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)")
-		("normalize,n", "normalize sequences")
+		("featuresel,f", po::value(&featureSelectionMethod)->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str())		("normalize,n", "normalize sequences")
 		("maxepochsmdl,e", po::value<unsigned int>()->default_value (100), "Set maximum nr of epochs after mdl reduction is expected (for GNG based quantizing). This value should be proportionally changed depending on maxepochserror parameter.")
 		("maxepochserror", po::value<unsigned int>()->default_value (1), "Set maximum nr of epochs after error reduction is expected (for GNG based quantizing)")
 		("modelefficiency,c", po::value<double>()->default_value (5), "model efficiency constant (for GNG based quantizing) for input space")
@@ -55,31 +55,6 @@ int main (int argc, char* argv[])
 	po::store(po::command_line_parser(argc, argv).
 		  options(all).run(), vm);
 	po::notify(vm);
-
-
-	// Set feature selection method
-	string fSMethod;
-	fSMethod = vm["featuresel"].as<string>();
-	unsigned int featureSelectionMethod;
-
-	if (fSMethod == "obpose")
-		featureSelectionMethod = _obpose;
-	else if (fSMethod == "efobpose")
-		featureSelectionMethod = _efobpose;
-	else if (fSMethod == "obpose_direction")
-		featureSelectionMethod = _obpose_direction;
-	else if (fSMethod == "efobpose_direction")
-		featureSelectionMethod = _efobpose_direction;
-	else if (fSMethod == "mcobpose_obpose_direction")
-		featureSelectionMethod = _mcobpose_obpose_direction;
-	else if (fSMethod == "obpose_rough_direction")
-		featureSelectionMethod = _obpose_rough_direction;
-	else if (fSMethod == "efobpose_rough_direction")
-		featureSelectionMethod = _efobpose_rough_direction;
-	else if (fSMethod == "obpose_slide_flip_tilt")
-		featureSelectionMethod = _obpose_slide_flip_tilt;
-	else if (fSMethod == "efobpose_slide_flip_tilt")
-		featureSelectionMethod = _efobpose_slide_flip_tilt;
 
 	if (vm.count("help")) {
 		cout << desc << "\n";

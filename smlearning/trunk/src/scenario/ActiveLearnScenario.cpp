@@ -49,26 +49,7 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 	
 	cout << "splitting criterion: " << splittingCriterion1 << endl;
 	
-	string fSMethod = vm["featuresel"].as<string>();
-
-	if (fSMethod == "obpose")
-		featureSelectionMethod = _obpose;
-	else if (fSMethod == "efobpose")
-		featureSelectionMethod = _efobpose;
-	else if (fSMethod == "obpose_direction")
-		featureSelectionMethod = _obpose_direction;
-	else if (fSMethod == "efobpose_direction")
-		featureSelectionMethod = _efobpose_direction;
-	else if (fSMethod == "mcobpose_obpose_direction")
-		featureSelectionMethod = _mcobpose_obpose_direction;
-	else if (fSMethod == "obpose_rough_direction")
-		featureSelectionMethod = _obpose_rough_direction;
-	else if (fSMethod == "efobpose_rough_direction")
-		featureSelectionMethod = _efobpose_rough_direction;
-	else if (fSMethod == "obpose_slide_flip_tilt")
-		featureSelectionMethod = _obpose_slide_flip_tilt;
-	else if (fSMethod == "efobpose_slide_flip_tilt")
-		featureSelectionMethod = _efobpose_slide_flip_tilt;
+	featureSelectionMethod = vm["featuresel"].as<feature_selection>();
 
 	neargreedyActionProb = vm["ngactionprob"].as<double>();
 	if (neargreedyActionProb < 0.0 || neargreedyActionProb > 1.0)

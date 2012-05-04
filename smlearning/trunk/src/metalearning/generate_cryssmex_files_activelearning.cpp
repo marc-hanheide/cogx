@@ -22,7 +22,6 @@ int main (int argc, char* argv[])
 	ssm::SSM::Type ssm; // = {mealy, moore}
 	// bool save_all;
 	string seqFile;
-	string fSMethod;
 	feature_selection featureSelectionMethod;
 	
 	po::options_description desc("Allowed parameters:");
@@ -33,7 +32,7 @@ int main (int argc, char* argv[])
 		("ssm", po::value(&ssm)->default_value(ssm::SSM::mealy), "[mealy|moore] Extraction of Mealy or Moore machines")
 		// ("save_all,a", po::bool_switch(&save_all), "Saves SSMs and CVQs in all iterations")
 		("seqFile,d", po::value(&seqFile), "name of file containing data sequences\n(do not type .seq extension)")
-		("featuresel,f", po::value(&fSMethod)->default_value ("mcobpose_obpose_direction"), "Feature selection method\n(_obpose|_obpose_label|\n_obpose_direction|_obpose_slide_flip_tilt\n_efobpose|_efobpose_label\n_efobpose_direction|_efobpose_slide_flip_tilt\n_mcobpose_obpose_direction)");
+		("featuresel,f", po::value(&featureSelectionMethod)->default_value (_mcobpose_obpose_direction), feature_selection_options ().c_str());
 
 	// Declare an options description instance which will include
 	// all the options
@@ -49,25 +48,6 @@ int main (int argc, char* argv[])
 		cout << desc << "\n";
 		return 0;
 	}
-
-	if (fSMethod == "obpose")
-		featureSelectionMethod = _obpose;
-	else if (fSMethod == "efobpose")
-		featureSelectionMethod = _efobpose;
-	else if (fSMethod == "obpose_direction")
-		featureSelectionMethod = _obpose_direction;
-	else if (fSMethod == "efobpose_direction")
-		featureSelectionMethod = _efobpose_direction;
-	else if (fSMethod == "mcobpose_obpose_direction")
-		featureSelectionMethod = _mcobpose_obpose_direction;
-	else if (fSMethod == "obpose_rough_direction")
-		featureSelectionMethod = _obpose_rough_direction;
-	else if (fSMethod == "efobpose_rough_direction")
-		featureSelectionMethod = _efobpose_rough_direction;
-	else if (fSMethod == "obpose_slide_flip_tilt")
-		featureSelectionMethod = _obpose_slide_flip_tilt;
-	else if (fSMethod == "efobpose_slide_flip_tilt")
-		featureSelectionMethod = _efobpose_slide_flip_tilt;
 	
 	LearningData::DataSet data;
 	LearningData::FeaturesLimits limits;
