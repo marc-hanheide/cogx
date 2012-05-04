@@ -166,6 +166,7 @@ private:
 	peekabot::GroupProxy m_ProxyLabels;
 	peekabot::GroupProxy m_ProxyRobot;
 	peekabot::GroupProxy m_ProxyTrajectory;
+	peekabot::GroupProxy m_ProxyWalls;
 
 	peekabot::GroupProxy m_ProxyConnectivityPathProperties;
 

@@ -28,6 +28,7 @@
 #include <cast/core/CASTTimer.hpp>
 
 // Cure stuff
+#include <AddressBank/FileAddress.hh>
 #include <Map/PoseProvider.hh>
 #include <SensorData/LaserScan2d.hh>
 #include <Map/WrappedSLAM.hh>
@@ -100,6 +101,9 @@ public:
   // If true we are running in slam mode, else we run in localization
   // mode
   bool m_RunningSLAM;
+
+  Cure::FileAddress m_odomfile;
+  Cure::FileAddress m_scanfile;
 
   // Segmentation method
   Cure::RANSACSegmentor m_Seg;

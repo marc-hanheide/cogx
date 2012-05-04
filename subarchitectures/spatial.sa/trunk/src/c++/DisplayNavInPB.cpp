@@ -1255,17 +1255,27 @@ void DisplayNavInPB::runComponent() {
       // Display the line map
       if(m_ShowWalls && m_LineMap) {
 
-        peekabot::GroupProxy walls;
-        walls.add(m_PeekabotClient,
-                  "walls",
-                  peekabot::REPLACE_ON_CONFLICT);
+				log("Displaying %d wall segments", m_LineMap->lines.size());
+
+        for (int i = m_LineMap->lines.size(); i > 10000; i++) {
+          peekabot::PolygonProxy pp;
+          char name[32];
+	        sprintf(name, "wall%d", i);
+	        peekabot::Status s = pp.assign(m_ProxyWalls, name).status();
+          if( s.succeeded() ){
+            pp.remove();
+          }
+          else {
+            break;
+          }
+        }
 
         for (unsigned int i = 0; i < m_LineMap->lines.size(); i++) {
 
           peekabot::PolygonProxy pp;
           char buf[32];
-          sprintf(buf, "poly%d", i);
-          pp.add(walls, buf);
+          sprintf(buf, "wall%d", i);
+          pp.add(m_ProxyWalls, buf, peekabot::REPLACE_ON_CONFLICT);
 
 	  peekabot::VertexSet vs;
           vs.add(m_LineMap->lines[i].start.x,
@@ -1784,6 +1794,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID)
 		NavData::FNodePtr fnode = oobj->getData();
 
     int placeId = GetPlaceIdFromNodeId(fnode->nodeId);
+    log("alex 5 %d %d", placeId, fnode->nodeId);
     if (placeId!=-1){
       for (map<string, std::pair<long,long> >::iterator it
 		      = _cpp.begin();
@@ -2841,6 +2852,13 @@ void DisplayNavInPB::connectPeekabot()
     }
     m_ProxyKinect.set_max_vertices(10);
     m_ProxyKinect.set_vertex_overflow_policy(peekabot::VERTEX_OVERFLOW_TRUNCATE_HALF);
+
+		if (m_ShowWalls) {
+        m_ProxyWalls.add(m_PeekabotClient,
+                  "walls",
+                  peekabot::REPLACE_ON_CONFLICT);
+		}
+
 
     m_ProxyGraph.add(m_PeekabotClient,
                      "graph",
