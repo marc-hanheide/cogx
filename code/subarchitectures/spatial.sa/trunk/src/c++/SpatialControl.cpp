@@ -1199,7 +1199,7 @@ void SpatialControl::updateGridMaps(){
 	      for (int xi = pointcloudMinXi; xi <= pointcloudMaxXi; xi++) {
 		if ((*tmp_lgm)(xi,yi) == '1'){ 
 		  if ((*m_lgmKH)(xi, yi) != FLT_MAX){
-		    for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
+		    for (double zi = 0; zi <= floor((*m_lgmKH)(xi, yi)/0.05)*0.05; zi+=0.05) {
 		      cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
 		    }
 		  }
