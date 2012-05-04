@@ -197,4 +197,22 @@ public class POPlanUtils {
 		}
 		return linksList;
 	}
+	
+	public static de.dfki.lt.tr.planverb.planning.pddl.POPlan convertPOPlan(POPlan pp) {
+List<Step<String>> actionList = POPlanUtils.extractSteps(pp);
+		
+		List<String> linkList = POPlanUtils.extractLinks(pp);
+		StringBuilder linksSection = new StringBuilder();
+		for (String link : linkList) {
+			linksSection.append(link + "\n");
+		}
+		
+		// log("links: " + linksSection);
+		// log("constructing a de.dfki.lt.tr.planverb.planning.pddl.POPlan from the autogen.Planner.POPlan");
+		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = 
+				new de.dfki.lt.tr.planverb.planning.pddl.
+				POPlan(new Integer(pp.taskID).toString(), actionList, linksSection.toString());
+		
+		return pevPOPlan;
+	}
 }

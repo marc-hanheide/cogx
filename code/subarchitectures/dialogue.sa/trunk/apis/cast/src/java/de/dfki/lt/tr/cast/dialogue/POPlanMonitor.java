@@ -1,10 +1,13 @@
 package de.dfki.lt.tr.cast.dialogue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import jline.History;
 
 import autogen.Planner.Action;
 import autogen.Planner.Goal;
@@ -139,6 +142,7 @@ public class POPlanMonitor extends ManagedComponent {
 		log("OVERWRITTEN POPlan: " + poplanToString(_oldPOPlan));
 		// VerbalisationUtils.verbaliseString(this, "Got an overwritten POPlan");
 		
+		
 		if (_oldPOPlan.status.name().equals("RUNNING")) {
 			runningMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 		}
@@ -185,16 +189,20 @@ public class POPlanMonitor extends ManagedComponent {
 		
 		if (finishedMap.containsKey(_oldPlanningTask.id)) {
 			log_sb.append("History:\n");
-			log(getHistory(_oldPlanningTask.id));
+			log_sb.append(getHistory(_oldPlanningTask.id));
 			log_sb.append("History End");
 			log(log_sb.toString());
+		}
+		
+		if (_oldPlanningTask.executionStatus.toString().equals("SUCCEEDED")) {
+			reportFinishedHistory(_oldPlanningTask.id);
 		}
 	}
 
 	private void reportFinishedPOPlan(POPlan pp) {
 		log("************ reportFinishedPOPlan() called ************");
 
-		List<Step<String>> actionList = POPlanUtils.extractSteps(pp);
+		/*List<Step<String>> actionList = POPlanUtils.extractSteps(pp);
 		
 		List<String> linkList = POPlanUtils.extractLinks(pp);
 		StringBuilder linksSection = new StringBuilder();
@@ -206,11 +214,33 @@ public class POPlanMonitor extends ManagedComponent {
 		// log("constructing a de.dfki.lt.tr.planverb.planning.pddl.POPlan from the autogen.Planner.POPlan");
 		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = 
 				new de.dfki.lt.tr.planverb.planning.pddl.
-				POPlan(new Integer(pp.taskID).toString(), actionList, linksSection.toString());
+				POPlan(new Integer(pp.taskID).toString(), actionList, linksSection.toString());*/
+		
+		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
+		
 		log("calling PEV Module verbalizePOPlan()");
 		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
 		log("REPORTING FINISHED POPLAN: \n" + report);
 		VerbalisationUtils.verbaliseString(this, report);
+	}
+	
+	private void reportFinishedHistory(int taskID) {
+		log("************ reportFinishedHistory() called ************");
+
+		List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> hlist = new ArrayList<de.dfki.lt.tr.planverb.planning.pddl.POPlan>();
+		
+		if (finishedMap.containsKey(taskID)) {
+			for (POPlan pp : finishedMap.get(taskID)) {
+				de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
+				hlist.add(pevPOPlan);
+			}
+		}
+		
+		log("calling PEV Module verbalizeHistory()");
+		String report = this.pevModule.verbalizeHistory(hlist);
+		log("REPORTING FINISHED HISTORY: \n" + report);
+		//VerbalisationUtils.verbaliseString(this, report);
+		
 	}
 	
 	
