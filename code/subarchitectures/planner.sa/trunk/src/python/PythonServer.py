@@ -311,7 +311,9 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.tasks[task.id] = task
     if task.status != Planner.Completion.FAILED:
         task.run()
-    
+
+    task.plan_log.write()
+        
   @pdbdebug
   def deliver_plan(self, task, slice_plan):
       task.status = Planner.Completion.SUCCEEDED
@@ -356,6 +358,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       standalone.globals.set_time()
       task.wait_update()
 
+      task.plan_log.write()
+      
   @pdbdebug
   def taskTimedOut(self, task_desc, current=None):
       if task_desc.id not in self.tasks:
@@ -365,6 +369,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       standalone.globals.set_time()
       task = self.tasks[task_desc.id]
       task.wait_timeout()
+
+      task.plan_log.write()
       
   @pdbdebug
   def updateTask(self, task_desc, current=None):
@@ -395,6 +401,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           task.action_executed_dt(task_desc.plan)
       else:
           task.action_executed_cp(task_desc.plan)
+          
+      task.plan_log.write()
 
 
   @pdbdebug
@@ -419,6 +427,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           task.update_info_status(info_state)
           
       task.handle_task_failure()
+      task.plan_log.write()
           
   @pdbdebug
   def start_dt_planning(self, task):
@@ -485,6 +494,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
       task = self.dt_tasks[taskId]
       task.action_delivered(action)
 
+      task.plan_log.write()
+
       
   @pdbdebug
   def updateStatus(self, taskId, status, message, current=None):
@@ -514,6 +525,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           self.getClient().deliverHypotheses(task.id, hypotheses)
 
   def deliver_po_plan(self, task, po_plan):
+      # print "deliver poplan, status:", po_plan.status
       if task.id != -1:
           self.getClient().deliverPOPlan(task.id, po_plan)
           
