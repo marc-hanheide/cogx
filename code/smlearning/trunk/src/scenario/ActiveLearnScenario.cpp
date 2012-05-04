@@ -70,58 +70,124 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 	else if (fSMethod == "efobpose_slide_flip_tilt")
 		featureSelectionMethod = _efobpose_slide_flip_tilt;
 
+	neargreedyActionProb = vm["ngactionprob"].as<double>();
+	if (neargreedyActionProb < 0.0 || neargreedyActionProb > 1.0)
+	{
+		cerr<< "You need to provide a valid probability value" << endl;
+		exit (-1);
+	}
+	
 	if (vm.count("mdl"))
 		saveMDLHistory = true;
 
+	if (vm.count("regionsPath"))
+	{
+		if (!vm.count("seqFile"))
+		{
+			cerr<< "You need to provide a sequence data file from which the regions were obtained" << endl;
+			exit (-1);
+		}
+		LearningData::DataSet data;
+		LearningData::FeaturesLimits limits;
+		
+		if (!LearningData::read_dataset (vm["seqFile"].as<string>(), data, limits)) {
+			cerr << "error reading sequence data file" << endl;
+			exit (-1);
+		}
+		for (int i=0; i<data.size(); i++)
+			for (int j=0; j<data[i].size(); j++)
+				LearningData::write_chunk_to_featvector (data[i][j].featureVector, data[i][j], normalize<double>, limits, _end_effector_pos | _effector_pos | _object /*| _action_params*/ );
+		
+		regionsCount = 0;
+		boost::regex regfile_re ("(.*_final)\\.reg");
+		boost::cmatch matches;
+		string prefix = vm["regionsPath"].as<string>();
+		// cout << matches.size() << endl;
+		path p(prefix);
+		if(!exists(p)) {
+			cerr<<p.leaf()<<" does not exist." << endl;
+			exit (-1);
+		}
 
-	//Set first sensorimotor region and corresponding learner
-	regionsCount = 0;
-	GNGSMRegion firstRegion (regionsCount, motorContextSize);
-	regions[regionsCount] = firstRegion;
+		directory_iterator dir_iter (p), dir_end;
+		for (;dir_iter != dir_end; ++dir_iter)
+		{
+			string dirstring (dir_iter->leaf().c_str());
+			char *dirchar = (char *)dirstring.c_str();
+			if (boost::regex_match ((const char*)dirchar, matches, regfile_re))
+			{
+				GNGSMRegion region;
+				string regionFileName (matches[1].first, matches[1].second);
+				cout << dir_iter->leaf() << endl;
+				cout << regionFileName << endl;
+				if (region.readData (regionFileName)) {
+					cout << "region data correctly read..." << endl << "======" << endl;
+				}
+				else {
+					cerr << "Error by readying region data..." << endl;
+					exit(-1);
+				}
+				for (int i=0; i<data.size(); i++)
+					if (region.checkSMRegionMembership (data[i][0].featureVector))
+						region.data.push_back (data[i]);
+				
+				regions[region.index] = region;
+				if (regionsCount < region.index)
+					regionsCount = region.index;
+			}
+		}
+	}
+	else
+	{
+		//Set first sensorimotor region and corresponding learner
+		regionsCount = 0;
+		GNGSMRegion firstRegion (regionsCount, motorContextSize);
+		regions[regionsCount] = firstRegion;
 
-	currentRegion = &regions[regionsCount];
+		currentRegion = &regions[regionsCount];
 
-	// create new quantizers
-	// Initialize Input Quantizer
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
-		currentRegion->cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov + learningData.efVectorSize);
-	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
-		currentRegion->cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov);
-	else if (featureSelectionMethod == _mcobpose_obpose_direction)
-		currentRegion->cryssmex.initializeInputQuantizer (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize);
+		// create new quantizers
+		// Initialize Input Quantizer
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt) //suitable for Mealy machines
+			currentRegion->cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov + learningData.efVectorSize);
+		else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+			currentRegion->cryssmex.initializeInputQuantizer (learningData.motorVectorSizeMarkov);
+		else if (featureSelectionMethod == _mcobpose_obpose_direction)
+			currentRegion->cryssmex.initializeInputQuantizer (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize);
 
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
-		// Initialize Output Quantizer 
-		currentRegion->cryssmex.initializeOutputQuantizer (learningData.pfVectorSize);
+		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
+			// Initialize Output Quantizer 
+			currentRegion->cryssmex.initializeOutputQuantizer (learningData.pfVectorSize);
 	
-	GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getInputQuantizer());
-	GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getOutputQuantizer());
+		GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getInputQuantizer());
+		GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getOutputQuantizer());
 	
-	inputQuantizer->setMaxEpochsErrorReduction (vm["maxepochserror"].as<unsigned int>());
-	inputQuantizer->setMaxEpochsMDLReduction (vm["maxepochsmdl"].as<unsigned int>());
-	inputQuantizer->setModelEfficiencyConst (vm["modelefficiency"].as<double>());
-	inputQuantizer->setLearningRates (vm["learningrate"].as<double>(), 0.001);
-	inputQuantizer->setDataAccuracy (vm["accuracy"].as<double>());
-	inputQuantizer->setTimeWindows (20, 12, 100);
-	inputQuantizer->setAdaptationThreshold (0.0);
-	inputQuantizer->setMaximalEdgeAge (50);
-	inputQuantizer->setSamplingMode (randomly);
-	// inputQuantizer->setMeanDistanceMode (arithmetic);
-	inputQuantizer->setStoppingCriterion (stability);
+		inputQuantizer->setMaxEpochsErrorReduction (vm["maxepochserror"].as<unsigned int>());
+		inputQuantizer->setMaxEpochsMDLReduction (vm["maxepochsmdl"].as<unsigned int>());
+		inputQuantizer->setModelEfficiencyConst (vm["modelefficiency"].as<double>());
+		inputQuantizer->setLearningRates (vm["learningrate"].as<double>(), 0.001);
+		inputQuantizer->setDataAccuracy (vm["accuracy"].as<double>());
+		inputQuantizer->setTimeWindows (20, 12, 100);
+		inputQuantizer->setAdaptationThreshold (0.0);
+		inputQuantizer->setMaximalEdgeAge (50);
+		inputQuantizer->setSamplingMode (randomly);
+		// inputQuantizer->setMeanDistanceMode (arithmetic);
+		inputQuantizer->setStoppingCriterion (stability);
 
-	outputQuantizer->setMaxEpochsErrorReduction (vm["maxepochserror"].as<unsigned int>());
-	outputQuantizer->setMaxEpochsMDLReduction (vm["maxepochsmdl"].as<unsigned int>());
-	outputQuantizer->setModelEfficiencyConst (vm["output_modelefficiency"].as<double>());
-	outputQuantizer->setLearningRates (vm["learningrate"].as<double>(), 0.001);
-	outputQuantizer->setDataAccuracy (vm["output_accuracy"].as<double>());
-	outputQuantizer->setTimeWindows (20, 12, 100);
-	outputQuantizer->setAdaptationThreshold (0.0);
-	outputQuantizer->setMaximalEdgeAge (50);
-	outputQuantizer->setSamplingMode (randomly);
-	// outputQuantizer->setMeanDistanceMode (arithmetic);
-	outputQuantizer->setStoppingCriterion (stability);
+		outputQuantizer->setMaxEpochsErrorReduction (vm["maxepochserror"].as<unsigned int>());
+		outputQuantizer->setMaxEpochsMDLReduction (vm["maxepochsmdl"].as<unsigned int>());
+		outputQuantizer->setModelEfficiencyConst (vm["output_modelefficiency"].as<double>());
+		outputQuantizer->setLearningRates (vm["learningrate"].as<double>(), 0.001);
+		outputQuantizer->setDataAccuracy (vm["output_accuracy"].as<double>());
+		outputQuantizer->setTimeWindows (20, 12, 100);
+		outputQuantizer->setAdaptationThreshold (0.0);
+		outputQuantizer->setMaximalEdgeAge (50);
+		outputQuantizer->setSamplingMode (randomly);
+		// outputQuantizer->setMeanDistanceMode (arithmetic);
+		outputQuantizer->setStoppingCriterion (stability);
 
-	currentRegion->redirectOutputToNull ();
+		currentRegion->redirectOutputToNull ();
+	}
 	
 }
 
