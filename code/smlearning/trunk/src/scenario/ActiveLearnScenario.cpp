@@ -75,9 +75,14 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 			cerr << "error reading sequence data file" << endl;
 			exit (-1);
 		}
+		if (!LearningData::check_limits (limits, learningData.featLimits))
+		{
+			cerr << "Sequence data file limits do not correspond to scenario limits" << endl;
+			abort ();			
+		}
 		for (int i=0; i<data.size(); i++)
 			for (int j=0; j<data[i].size(); j++)
-				LearningData::write_chunk_to_featvector (data[i][j].featureVector, data[i][j], normalize<double>, limits, _end_effector_pos | _effector_pos | _object /*| _action_params*/ );
+				LearningData::write_chunk_to_featvector (data[i][j].featureVector, data[i][j], normalization, limits, _end_effector_pos | _effector_pos | _object /*| _action_params*/ );
 		
 		regionsCount = 0;
 		boost::regex regfile_re ("(.*_final)\\.reg");
@@ -101,7 +106,7 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 				string regionFileName (matches[1].first, matches[1].second);
 				cout << dir_iter->leaf() << endl;
 				cout << regionFileName << endl;
-				if (region.readData (regionFileName)) {
+				if (region.readData (prefix + regionFileName)) {
 					cout << "region data correctly read..." << endl << "======" << endl;
 				}
 				else {
@@ -111,8 +116,10 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 				for (int i=0; i<data.size(); i++)
 					if (region.checkSMRegionMembership (data[i][0].featureVector))
 						region.data.push_back (data[i]);
-				
+				region.cryssmex.setData (region.data, learningData.featLimits, normalization, featureSelectionMethod);
 				regions[region.index] = region;
+				regions[region.index].redirectOutputToNull ();
+
 				if (regionsCount < region.index)
 					regionsCount = region.index;
 			}

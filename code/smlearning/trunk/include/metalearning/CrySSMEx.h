@@ -95,11 +95,13 @@ public:
 	/** average model vectors for cases with more than 1 model vector in \p qnt_mv_map */
 	void averageModelVectors ();
 	/** get quantization/model vectors map */
-	std::vector<double> getQntMvMapVector (unsigned int index) { return qnt_mv_map[index][0].vector; }
+	std::vector<double> getQntMvMapVector (unsigned int index);
 	/** set uniform distribution to initialize parsing */
 	void setUniformDistribution ();
 	
 protected:
+	/** resetting quantizer before learning with new sequences*/
+	void resetLearning ();
 	/** Substochastic sequential machine used for prediction */
 	SSM* ssm;
 	/** SSM parser used for prediction */

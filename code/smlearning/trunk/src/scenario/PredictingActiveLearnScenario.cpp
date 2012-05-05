@@ -47,7 +47,7 @@ void PredictingActiveLearnScenario::init (boost::program_options::variables_map 
 			string regionFileName (matches[1].first, matches[1].second);
 			cout << dir_iter->leaf() << endl;
 			cout << regionFileName << endl;
-			if (region.readData (regionFileName)) {
+			if (region.readData (prefix + regionFileName)) {
 				cout << "region data correctly read..." << endl << "======" << endl;
 			}
 			else {
@@ -188,36 +188,41 @@ void PredictingActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		if (state >= 0)
 		{
 			FeatureVector predictedVector = currentRegion->cryssmex.getQntMvMapVector(state);
+			if (predictedVector.size() > 0)
+			{
 
-			if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
-				learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
+				if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+					learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
 
-			else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
-				learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
+				else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+					learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
+			}
 		}
 	}
 }
 
 void PredictingActiveLearnScenario::updateAvgError ()
 {
-	double avgerror = 0.0;
-	assert (learningData.currentPredictedPfSeq.size () == learningData.currentChunkSeq.size ());
-	for (unsigned int i=0; i<learningData.currentPredictedPfSeq.size(); i++)
+	if (learningData.currentPredictedPfSeq.size () == learningData.currentChunkSeq.size ())
 	{
-		double error = 0.0;
-		error += pow(learningData.currentPredictedPfSeq[i].p.v1 - learningData.currentChunkSeq[i].object.objectPose.p.v1, 2);
-		error += pow(learningData.currentPredictedPfSeq[i].p.v2 - learningData.currentChunkSeq[i].object.objectPose.p.v2, 2);
-		error += pow(learningData.currentPredictedPfSeq[i].p.v3 - learningData.currentChunkSeq[i].object.objectPose.p.v3, 2);
-		Real predRoll, predPitch, predYaw;
-		learningData.currentPredictedPfSeq[i].R.toEuler (predRoll, predPitch, predYaw);
-		error += pow(predRoll - learningData.currentChunkSeq[i].object.obRoll, 2);
-		error += pow(predPitch - learningData.currentChunkSeq[i].object.obPitch, 2);
-		error += pow(predYaw - learningData.currentChunkSeq[i].object.obYaw, 2);
-		error = sqrt (error);
-		avgerror += error;
+		double avgerror = 0.0;
+		for (unsigned int i=0; i<learningData.currentPredictedPfSeq.size(); i++)
+		{
+			double error = 0.0;
+			error += pow(learningData.currentPredictedPfSeq[i].p.v1 - learningData.currentChunkSeq[i].object.objectPose.p.v1, 2);
+			error += pow(learningData.currentPredictedPfSeq[i].p.v2 - learningData.currentChunkSeq[i].object.objectPose.p.v2, 2);
+			error += pow(learningData.currentPredictedPfSeq[i].p.v3 - learningData.currentChunkSeq[i].object.objectPose.p.v3, 2);
+			Real predRoll, predPitch, predYaw;
+			learningData.currentPredictedPfSeq[i].R.toEuler (predRoll, predPitch, predYaw);
+			error += pow(predRoll - learningData.currentChunkSeq[i].object.obRoll, 2);
+			error += pow(predPitch - learningData.currentChunkSeq[i].object.obPitch, 2);
+			error += pow(predYaw - learningData.currentChunkSeq[i].object.obYaw, 2);
+			error = sqrt (error);
+			avgerror += error;
+		}
+		avgerror /= learningData.currentChunkSeq.size();
+		avgerrors.push_back (avgerror);
 	}
-	avgerror /= learningData.currentChunkSeq.size();
-	avgerrors.push_back (avgerror);
 }
 
 void PredictingActiveLearnScenario::run (int argc, char* argv[]) {
