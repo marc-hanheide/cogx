@@ -97,6 +97,8 @@ void Scenario::init(boost::program_options::variables_map vm)
 	dataFileName = get_base_filename_from_time ();
 
 	availableStartingPositions = parse_startingPositions(desc.startingPositionsConfig, startingPositionsCount);
+	learningData.setToDefault(desc.featLimits);
+
 }
 
 ///////// Public //////////
@@ -378,7 +380,6 @@ void Scenario::_init()
 	// Define the initial pose in the Cartesian workspace
 	orientationTarget.set(Real(-0.5*REAL_PI), Real(0.0*REAL_PI), Real(0.0*REAL_PI));
 	arm->setMaxTrials(MAX_PLANNER_TRIALS);
-	learningData.setToDefault(desc.featLimits);
 
 }
 

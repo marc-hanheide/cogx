@@ -177,6 +177,16 @@ void CrySSMEx::setStateQuantizer (std::string cvqfile)
 
 }
 
+std::vector<double> CrySSMEx::getQntMvMapVector (unsigned int index)
+{
+	vector<double> dummy;
+	if (qnt_mv_map[index].size () > 0)
+		return qnt_mv_map[index][0].vector;
+	else
+		return dummy;
+}
+
+
 int CrySSMEx::parseInput (std::vector<double>& chunk)
 {
 	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
@@ -228,6 +238,11 @@ void CrySSMEx::averageModelVectors ()
 			qnt_mv_map[i].clear();
 			qnt_mv_map[i].push_back (avg);
 		}
+		else if (qnt_mv_map[i].size() == 0)
+		{
+			std::cerr << "State vector has no model vectors" << std::endl;
+			abort ();
+		}
 	}
 
 }
@@ -247,6 +262,13 @@ void CrySSMEx::saveOutputQuantizer (string filename) {
 	save_quantizer (output_quantizer, filename);
 
 }
+
+void CrySSMEx::resetLearning ()
+{
+	static_cast<GNG_Quantizer*>(input_quantizer)->resetLearning ();
+	static_cast<GNG_Quantizer*>(output_quantizer)->resetLearning ();
+}
+
 
 void CrySSMEx::setData (string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod)
 {
@@ -299,6 +321,7 @@ void CrySSMEx::setData (LearningData::DataSet& data, LearningData::FeaturesLimit
 		delete outputData;
 	}
 
+	resetLearning ();
 	
 }
 
