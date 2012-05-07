@@ -184,10 +184,10 @@ void PredictingActiveLearnScenario::postprocess(SecTmReal elapsedTime) {
 		FeatureVector inputVector;
 		LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
 
-		int state = currentRegion->cryssmex.parseInput (inputVector);
-		if (state >= 0)
+		pair<int,int> result = currentRegion->cryssmex.parseInput (inputVector);
+		if (result.first >= 0)
 		{
-			FeatureVector predictedVector = currentRegion->cryssmex.getQntMvMapVector(state);
+			FeatureVector predictedVector = currentRegion->cryssmex.getQntMvMapVector(result.first);
 			if (predictedVector.size() > 0)
 			{
 

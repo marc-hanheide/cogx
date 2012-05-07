@@ -54,6 +54,10 @@ protected:
         virtual void render();
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
+	/** update error in output prediction */
+	void updateOutputError ();
+	/** enumerate output labels */
+	void enumerate_labels ();
 	/** Encapsulation of CrySSMEx components */
 	CrySSMEx cryssmex;
 	/** method for feature selection */
@@ -73,6 +77,13 @@ protected:
 	golem::Bounds::SeqPtr objectLocalBounds;
 	/** current sequence from the data set when predicting from it */
 	LearningData::Chunk::Seq seqDataset;
+	/** map of label seq to output quanta used to count errors */
+	std::map<string, unsigned int> output_map;
+	/** average error in prediction */
+	vector<double> avgoutputerrors;
+	/** current predicted output */
+	vector<unsigned int> currentPredictedOutput;
+
 
 
 };
