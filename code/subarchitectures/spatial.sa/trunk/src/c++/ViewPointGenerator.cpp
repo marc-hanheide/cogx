@@ -7,6 +7,8 @@
 
 #include "ViewPointGenerator.h"
 #include "AVS_ContinualPlanner.h"
+#include "TimeLogger.hpp"
+#define SCOPED_TIME_LOG TimeLogger logger(m_component, __FILE__, __LINE__);
 
 using namespace SpatialGridMap;
 namespace spatial {
@@ -48,9 +50,9 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component, CureObst
 vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones(vector<NavData::FNodePtr> &nodes){
 
 	m_component->log("ViewPointGenerator::GetBest3DViewCones");
-
+  m_lastMapPDFSum = -1;
 	std::vector<double> angles;
-	for (double rad = -30 * M_PI / 180; rad < 30 * M_PI / 180; rad = rad
+	for (double rad = -30 * M_PI / 180; rad < -29 * M_PI / 180; rad = rad
 			+ m_tiltstep) {
 		angles.push_back(rad);
 	}
@@ -58,22 +60,31 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 	double totalprobsum = 0;
 	double lastConePDFSum = 1;
 	vector<SensingAction> result3DVCList;
-	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold)){
+{
+SCOPED_TIME_LOG;
+  int test_num = 0;
+	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold) &&(result3DVCList.size() < 20) && (test_num < 30)){
+test_num++;
+SCOPED_TIME_LOG;
+  vector<SensingAction> unordered3DVCList, ordered3DVCList,  tmp;
+	  SensingAction sample;
+		std::vector<SensingAction> samplepoints;
+{
+SCOPED_TIME_LOG;
 	vector<pair<unsigned int, double> > ordered2DVClist = getOrdered2DCandidateViewCones(nodes);
 	
   if (ordered2DVClist.size() == 0)
- {
+  {
    return result3DVCList;
   }
-  vector<SensingAction> unordered3DVCList, ordered3DVCList,  tmp;
 
-	SensingAction sample;
-		std::vector<SensingAction> samplepoints;
+
+
 
 		// We have the VC candidate list ordered according to their 2D pdf sums
 		// now for the top X candidate get a bunch of tilt angles and calculate the 3D cone sums
 		double xW, yW;
-    size_t maxiterations = 10 < ordered2DVClist.size() ? 10 : ordered2DVClist.size();
+    size_t maxiterations = 1 < ordered2DVClist.size() ? 1 : ordered2DVClist.size();
 		for (size_t j = 0; j < maxiterations; j++) {
 	//	for (unsigned int j = 0; j < ordered2DVClist.size() * m_best3DConeRatio; j++) 
 			lgm->index2WorldCoords(m_samples2D[ordered2DVClist[j].first].getX(),
@@ -91,6 +102,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 				sample.pan = m_samples2D[ordered2DVClist[j].first].getTheta();
 				// sample.pan = m_SlamRobotPose.getTheta();
 				sample.tilt = angles[i];
+        sample.totalprob = ordered2DVClist[j].second;
 				samplepoints.push_back(sample);
 			}
 		}
@@ -98,11 +110,16 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 
 		unordered3DVCList = samplepoints;
 
-			// turn
-			unordered3DVCList = getViewConeSums(samplepoints);
-			double maxpdf = -1;
-			int bestindex = -1;
-			GDIsObstacle isobstacle;
+		// turn
+}
+		int bestindex = -1;
+		GDIsObstacle isobstacle;
+{
+SCOPED_TIME_LOG;
+//		unordered3DVCList = getViewConeSums(samplepoints);
+		double maxpdf = -1;
+
+
 
 		for (unsigned int i=0; i < unordered3DVCList.size(); i++) {
 			if (unordered3DVCList[i].totalprob > maxpdf){
@@ -110,40 +127,61 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 				bestindex = i;
 			}
 		}
-
-	GDProbSum sumcells;
+}
+{ 
+SCOPED_TIME_LOG;
+	  GDProbSum sumcells;
 		GDProbScale scalefunctor(1-m_sensingProb);
-
-		bloxelmap->universalQuery(sumcells);
-		double initialMapPDFSum = sumcells.getResult();
+    double initialMapPDFSum = 0;
+{ 
+SCOPED_TIME_LOG;
+    if (m_lastMapPDFSum < 0){
+		  bloxelmap->universalQuery(sumcells);
+		  initialMapPDFSum = sumcells.getResult();
+  		sumcells.reset();
+    }
+    else {
+      initialMapPDFSum = m_lastMapPDFSum;
+    }
 		m_component->log("getBest3DViewCones: Before whole map PDF sums to: %f", initialMapPDFSum);
-		sumcells.reset();
+
 		// Got the best cone for this map, now change the map and get a new sum of remaining 3D cones
 		bloxelmap->coneModifier(unordered3DVCList[bestindex].pos[0], unordered3DVCList[bestindex].pos[1],
 				unordered3DVCList[bestindex].pos[2], unordered3DVCList[bestindex].pan,
 				unordered3DVCList[bestindex].tilt, m_horizangle, m_vertangle,
-				m_conedepth, 20, 20, isobstacle, scalefunctor, scalefunctor,
+				m_conedepth, 5, 5, isobstacle, scalefunctor, scalefunctor,
 				m_minDistance);
 		if (m_component->m_usePeekabot){
 			m_component->displayPDF(*bloxelmap);
 		}
+}
+{ 
+SCOPED_TIME_LOG;
+
 		bloxelmap->universalQuery(sumcells);
 		double postMapPDFSum = sumcells.getResult();
+
 		m_component->log("getBest3DViewCones: After whole map PDF sums to: %f", postMapPDFSum);
 
 
 		m_component->log("Best index %d", bestindex);
 		//lastConePDFSum = unordered3DVCList[bestindex].totalprob;
 		lastConePDFSum = initialMapPDFSum - postMapPDFSum; 
-		if(lastConePDFSum < 0.001 || result3DVCList.size() > 20){
+		if(lastConePDFSum < 0.001){
 			m_component->log("Best cone's prob. sum. is less than 0.1%, returning what we have so far");
-			break;
+			continue;
 		}
+    m_lastMapPDFSum = postMapPDFSum;
+
 		totalprobsum += lastConePDFSum;
+    unordered3DVCList[bestindex].totalprob = lastConePDFSum;
 		result3DVCList.push_back(unordered3DVCList[bestindex]);
 
 		m_component->log("Added new 3DCone to result set with prob: %f, total so far: %f",unordered3DVCList[bestindex].totalprob, totalprobsum);
-			}
+}
+} //SCOPE
+	}
+}
 	m_component->log("Returning %d 3D viewcones \n", result3DVCList.size());
 	for (unsigned int i=0; i < result3DVCList.size(); i++){
 	    m_component->log("3DCone #%d, sum: %f", i, result3DVCList[i].totalprob);
@@ -204,6 +242,7 @@ vector<pair<unsigned int, double> > ViewPointGenerator::getOrdered2DCandidateVie
     return orderedVClist;
   }
 	VCones = calculate2DConesRegion();
+
 	CurePDFMap* lgmpdf  = new CurePDFMap(lgm->getSize(),lgm->getCellSize() ,0, CureObstMap::MAP1,lgm->getCentXW(), lgm->getCentYW());
     m_component->log("BloxelMap size: %d, %d LGMPDF size: %d", bloxelmap->getMapSize().first,bloxelmap->getMapSize().second, lgmpdf->getSize());
 
@@ -363,8 +402,8 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGridFromNodes(vector<NavDa
 
   for (size_t i=0; i<nodes.size(); i++) {
     double theta = (rand() % 360) * M_PI / 180;
-    for (int j=0; j<18; j++) {
-      double angle = theta + j /18 * 2 * M_PI;
+    for (int j=0; j<10; j++) {
+      double angle = theta + j /10 * 2 * M_PI;
       while (angle > M_PI) angle-= 2 * M_PI;
       while (angle < -M_PI) angle+= 2 * M_PI;
 
@@ -465,6 +504,106 @@ std::vector<Cure::Pose3D> ViewPointGenerator::sample2DGrid() {
 
 	return samples;
 }
+
+/* Check whether P and Q lie on the same side of line AB */
+float ViewPointGenerator::Side(XVector3D p, XVector3D q, XVector3D a, XVector3D b)
+{
+    float z1 = (b.x - a.x) * (p.y - a.y) - (p.x - a.x) * (b.y - a.y);
+    float z2 = (b.x - a.x) * (q.y - a.y) - (q.x - a.x) * (b.y - a.y);
+    return z1 * z2;
+}
+
+/* Check whether segment P0P1 intersects with triangle t0t1t2 */
+int ViewPointGenerator::Intersecting(XVector3D p0, XVector3D p1, XVector3D t0, XVector3D t1, XVector3D t2)
+{
+    /* Check whether segment is outside one of the three half-planes
+     * delimited by the triangle. */
+    float f1 = Side(p0, t2, t0, t1), f2 = Side(p1, t2, t0, t1);
+    float f3 = Side(p0, t0, t1, t2), f4 = Side(p1, t0, t1, t2);
+    float f5 = Side(p0, t1, t2, t0), f6 = Side(p1, t1, t2, t0);
+    /* Check whether triangle is totally inside one of the two half-planes
+     * delimited by the segment. */
+    float f7 = Side(t0, t1, p0, p1);
+    float f8 = Side(t1, t2, p0, p1);
+
+    /* If segment is strictly outside triangle, or triangle is strictly
+     * apart from the line, we're not intersecting */
+    if ((f1 < 0 && f2 < 0) || (f3 < 0 && f4 < 0) || (f5 < 0 && f6 < 0)
+          || (f7 > 0 && f8 > 0))
+        return 0;
+
+    /* If segment is aligned with one of the edges, we're overlapping */
+    if ((f1 == 0 && f2 == 0) || (f3 == 0 && f4 == 0) || (f5 == 0 && f6 == 0))
+        return 0; //OVERLAPPING;
+
+    /* If segment is outside but not strictly, or triangle is apart but
+     * not strictly, we're touching */
+    if ((f1 <= 0 && f2 <= 0) || (f3 <= 0 && f4 <= 0) || (f5 <= 0 && f6 <= 0)
+          || (f7 >= 0 && f8 >= 0))
+        return 0; //TOUCHING;
+
+    /* If both segment points are strictly inside the triangle, we
+     * are not intersecting either */
+    if (f1 > 0 && f2 > 0 && f3 > 0 && f4 > 0 && f5 > 0 && f6 > 0)
+        return 0; //NOT_INTERSECTING;
+
+    /* Otherwise we're intersecting with at least one edge */
+    return 1;
+}
+
+int ViewPointGenerator::TrianglesIntersecting(XVector3D p0, XVector3D p1, XVector3D p2, XVector3D t0, XVector3D t1, XVector3D t2){
+  if (!Intersecting(p0,p1,t0,t1,t2) && !Intersecting(p0,p2,t0,t1,t2) && !Intersecting(p1,p2,t0,t1,t2)) return 0;
+  return 1;
+}
+
+void ViewPointGenerator::findIntersectingCones2D(){
+	for (int y = 0; y < m_samples2D.size(); y++) { //calc. view cone for each sample
+    XVector3D a;
+		lgm->index2WorldCoords(m_samples2D[y].getX(), m_samples2D[y].getY(), a.x,
+				a.y);
+		a.theta = m_samples2D[y].getTheta();
+    XVector3D b, c;
+    XVector3D m_a, m_b, m_c;
+    int h, k;
+    get2DViewConeCorners(a, a.theta, m_conedepth, m_horizangle, b, c);
+
+    lgm->worldCoords2Index(a.x, a.y, h, k);
+    m_a.x = h;
+    m_a.y = k;
+    lgm->worldCoords2Index(b.x, b.y, h, k);
+    m_b.x = h;
+    m_b.y = k;
+    lgm->worldCoords2Index(c.x, c.y, h, k);
+    m_c.x = h;
+    m_c.y = k;
+  	for (int z = 0; z < m_samples2D.size(); z++) { //calc. view cone for each sample
+      if (y!=z){
+        XVector3D a1;
+	      lgm->index2WorldCoords(m_samples2D[z].getX(), m_samples2D[z].getY(), a1.x,
+			      a1.y);
+	      a1.theta = m_samples2D[z].getTheta();
+        XVector3D b1, c1;
+        XVector3D m_a1, m_b1, m_c1;
+        get2DViewConeCorners(a1, a1.theta, m_conedepth, m_horizangle, b1, c1);
+
+        lgm->worldCoords2Index(a1.x, a1.y, h, k);
+        m_a1.x = h;
+        m_a1.y = k;
+        lgm->worldCoords2Index(b1.x, b1.y, h, k);
+        m_b1.x = h;
+        m_b1.y = k;
+        lgm->worldCoords2Index(c1.x, c1.y, h, k);
+        m_c1.x = h;
+        m_c1.y = k;
+        if (ViewPointGenerator::TrianglesIntersecting(m_a1,m_b1,m_c1,m_a,m_b,m_c)){
+          m_viewconesIntersections[y].push_back(z);
+          m_viewconesIntersections[z].push_back(y);
+        }
+      }  
+    }
+	}
+}
+
 std::vector<std::vector<pair<int, int> > > ViewPointGenerator::calculate2DConesRegion() {
 	m_component->log("Calculating 3D view cones for generated 2D samples");
 	Cure::Pose3D candidatePose;

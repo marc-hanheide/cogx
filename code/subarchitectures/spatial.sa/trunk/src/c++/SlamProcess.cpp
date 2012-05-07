@@ -205,7 +205,7 @@ void SlamProcess::configure(const map<string,string>& _config)
 
   
   if (m_odomfile.openWriteFile("odom.tdf")) return;
-  if (m_scanfile.openWriteFile("scan.tdf")) return;
+  if (m_scanfile.openWriteFile("scans.tdf")) return;
 
   printf("SlamProcess::configure successful\n");
 }
