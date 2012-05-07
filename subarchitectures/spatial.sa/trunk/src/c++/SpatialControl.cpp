@@ -2783,6 +2783,23 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       }
     }
   }
+  vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
+  getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
+  for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
+                  doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
+    double x = it->second->x;
+    double y = it->second->y;
+    if (check_point(x,y,nodes,ret,map1,map1,originNodeID)){
+      SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
+      new_nh->x=x*m_lgm->getCellSize();
+      new_nh->y=y*m_lgm->getCellSize();
+      new_nh->hypID=-1;
+      new_nh->originPlaceID=-1;
+      new_nh->originNodeID=originNodeID;
+      new_nh->gateway = true;
+      ret.push_back(new_nh);
+    }
+  }
   log("check_point %d %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5,counter6);
 }
 
