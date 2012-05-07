@@ -283,6 +283,11 @@ if (EXISTS ${COGX_ROOT}/tools/PBDisplayControl)
    cogx_add_subdir (BUILD_PB_DISPLAY tools/PBDisplayControl ${NO_SLICE})
 endif()
 
+if (EXISTS ${COGX_ROOT}/tools/exslamloc)
+   option(BUILD_EXSLAMLOC "Build exslamloc" YES)
+   cogx_add_subdir (BUILD_EXSLAMLOC tools/exslamloc ${NO_SLICE})
+endif()
+
 #option(BUILD_HAL_STEREO "Build hardware stereo" NO)
 #if(BUILD_HAL_STEREO)
 #add_subdirectory (tools/hardware/stereo)
