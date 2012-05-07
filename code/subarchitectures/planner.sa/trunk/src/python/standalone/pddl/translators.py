@@ -1241,7 +1241,6 @@ class ModalPredicateCompiler(Translator):
         dom.predicates = scope.FunctionTable(nonmodal)
 
         def predicate_handler(name, args):
-            print "------"
             result = compiled_predicates.get(name, args)
             assert result is not None, "Couldn't find compiled predicate for (%s %s)" % (name, " ".join(str(a) for a in args))
             dom.predicates.add(result)
