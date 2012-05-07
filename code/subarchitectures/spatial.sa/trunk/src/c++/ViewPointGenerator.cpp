@@ -167,8 +167,8 @@ SCOPED_TIME_LOG;
 		m_component->log("Best index %d", bestindex);
 		//lastConePDFSum = unordered3DVCList[bestindex].totalprob;
 		lastConePDFSum = initialMapPDFSum - postMapPDFSum; 
-		if(lastConePDFSum < 0.001){
-			m_component->log("Best cone's prob. sum. is less than 0.1%, returning what we have so far");
+		if(lastConePDFSum < 0.01){
+			m_component->log("Best cone's prob. sum. is less than 1%, skip");
       test_num++;
 			continue;
 		}
