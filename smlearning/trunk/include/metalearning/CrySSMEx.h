@@ -91,7 +91,7 @@ public:
 	/** parse an input data sequence for prediction */
 	void parseSequence (DataSequence& sequence, DataSequence& predicted_sequence);
 	/** parse an input chunk for prediction */
-	virtual int parseInput (std::vector<double>& chunk);
+	virtual std::pair<int, int> parseInput (std::vector<double>& chunk);
 	/** average model vectors for cases with more than 1 model vector in \p qnt_mv_map */
 	void averageModelVectors ();
 	/** get quantization/model vectors map */

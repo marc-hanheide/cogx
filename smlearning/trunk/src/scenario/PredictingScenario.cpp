@@ -74,6 +74,8 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 			cerr << "error reading data" << endl;
 			exit(-1);
 		}
+		enumerate_labels ();
+
 	}
 
 	// Set (de)normalization functions
@@ -216,16 +218,21 @@ void PredictingScenario::postprocess(SecTmReal elapsedTime) {
 			FeatureVector inputVector;
 			LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
 
-			int state = cryssmex.parseInput (inputVector);
-			if (state >= 0)
+			pair<int, int> result = cryssmex.parseInput (inputVector);
+			if (result.first >= 0)
 			{
-				FeatureVector predictedVector = cryssmex.getQntMvMapVector(state);
+				FeatureVector predictedVector = cryssmex.getQntMvMapVector(result.first);
 
 				if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
 					learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
 
 				else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
 					learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
+			}
+			if (result.second >= 0)
+			{
+				
+				currentPredictedOutput.push_back (result.second);
 			}
 
 		// }
@@ -236,6 +243,53 @@ void PredictingScenario::postprocess(SecTmReal elapsedTime) {
 	}
 }
 
+void PredictingScenario::enumerate_labels ()
+{
+	LearningData::DataSet::iterator d_iter;
+	for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
+		LearningData::Chunk::Seq* seq = &(*d_iter);
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+			LearningData::label_seq (seq, _rough_direction | _slide_flip_tilt);
+		else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
+			LearningData::label_seq (seq, _rough_direction);
+	}	
+
+	if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction) {
+		set<string> labelsSet = LearningData::labels_enumerator (data);
+		set<string>::iterator it;
+		unsigned int i;
+		for (i=0, it=labelsSet.begin(); it!=labelsSet.end(); it++, i++)
+			output_map[*it] = i;
+	}
+			
+
+}
+
+
+void PredictingScenario::updateOutputError ()
+{
+	if (data.size () > 0)
+	{
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction) {
+			if (currentPredictedOutput.size () == learningData.currentChunkSeq.size ())
+			{
+				unsigned int false_counts = 0;
+				for (unsigned int i=0; i<currentPredictedOutput.size(); i++)
+				{
+					stringstream labelStr;
+					labelStr << learningData.currentChunkSeq[i].label;
+					string label = labelStr.str();
+					if (currentPredictedOutput[i] != output_map[label]) {
+						false_counts++;
+					}
+				}
+				double error = (double)false_counts / (double)currentPredictedOutput.size();
+				avgoutputerrors.push_back (error);
+			}
+		}
+	}
+	
+}
 
 void PredictingScenario::run (int argc, char* argv[]) {
 	//set: random seed;init arm; get initial config
@@ -285,7 +339,14 @@ void PredictingScenario::run (int argc, char* argv[]) {
 
 	}
 	//move the arm to its initial position
-	arm->moveArmToStartPose(context); 
+	arm->moveArmToStartPose(context);
+
+	double misclass_percentage = 0.0;
+	for (unsigned int i=0; i<avgoutputerrors.size (); i++)
+		misclass_percentage += avgoutputerrors[i];
+	misclass_percentage /= avgoutputerrors.size ();
+	cout << endl << "Avg Misclassification percentage: " << misclass_percentage << endl;
+	
 
 }
 
