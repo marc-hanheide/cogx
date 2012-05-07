@@ -1,0 +1,96 @@
+PlayerDataToCure.cc[hh]:   Functions that converts between player's C++ client
+                           interface data types to those that cure uses
+
+1. Config file
+
+You need to specify the hardware setup in a configuration file. See for 
+example robone.ccf under cure/toolbox/cfg. 
+
+The robot specific configuration files should ideally give information
+about the robot that does not change between exeriments. Therefore I
+would advice against changing these and instead use the ability to
+include configuration files from other configuration files. This way
+you can put stuff that is specific to your experiments, i.e. if, how
+and where to display, what the initial robot pose is, etc in a
+experiment config file and then include the robot specific stuff from
+another file. The linemap.ccf config file in this directory shows how
+that can be done. This is the same was as the robot files are built up
+themself, robots that use laser scanners include a config file for the
+laser. 
+
+The robotpose.ccf file is a special file that will be updated by the
+program player_nav
+
+The most important thing about the config file if you want to use the
+example programs for another robot is to make sure that the definition
+for the SENSORPOSE for sensor 1, i.e. the laser is correct. The
+position is defined as the position where the laser beam
+originates. When using the config files it is good to keep in mind
+that you do not have to specify everything in your own file, you can
+include other files. Note here that it is the first config file in the
+chain that defines what the INCLUDEPATH will be. The INCLUEPATH of the
+other files will be ignored. All files will be searched for in the
+current directory first , then in the same directory as the config
+file specified on the command line and then in the directory specified
+by INCLUDEPATH of the first config file.
+
+2. Command line options
+
+There are some command line options common to most programs. 
+-h host running player (for example minnie or robone)
+-c config file
+-m map file (to write to (slam) or read from (nav/loc))
+-p port for player (defaults to PLAYER_PORTNUM)
+
+3. Displaying
+
+3.1 Peekabot
+
+It is quite handy to be able to see what is going on when the robot is
+building a map for example. For this purpose you can use the Peekabot
+program
+
+
+4. Moving the robot
+
+Many of the example programs allow you to control the motion of
+the robot with the keyboard. The mapping is
+  u/U/+ - increase forward speed
+  n/N/- - increase backing speed
+    h   - increase left turn speed
+    k   - increase right turn speed
+    j   - stop turning
+  SPACE - stop
+
+In some programs you can make the robot follow you by pressing 'f'.
+
+
+5. Running the programs
+
+player_nav:      Program that can buid a linebased map using SLAM or use an 
+                 existing map and do localization. You can control the
+		 robot with the keybaord as indicated above. If you press `x`
+		 you can mark the current robot position in the navigation
+		 graph. You will be asked to enter a name for that position.
+
+		 If you give a -m argument you can specify a filename for the
+		 map to be stored under or loaded from if it existed (and then
+                 do localization). If you give the name foobar you will
+		 have the lines stored under foobar and a navigation graph
+		 under the name foobar.graph. You can go into the navigation
+		 graph manually and add or edit stuff in there.
+
+                 When you quit the program a file robotpose.ccf will
+                 be written to give the last known pose of the
+                 robot. You can include this file in the your confile
+                 file (see linemap.ccf). This way you the robot will know 
+                 where it starts. 
+                 
+                 You can move with the keyboard, in following mode or
+                 autonomously. If you press 's' it will try to read a
+                 file path.txt with node ids to move between. If file
+                 is not found it will go to node 0.
+
+
+		 Ex: ./player_nav -c linemap.ccf -m floor1.fmf -h minnie
+
