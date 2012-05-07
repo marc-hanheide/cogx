@@ -84,3 +84,12 @@ class PlanEntry(PlannerLogEntry):
         lines = ("(%s %s)" % (pnode.action.name, " ".join(a.name for a in pnode.full_args))
                  for pnode in self.plan.topological_sort())
         return "\n".join(lines)
+
+class TaskStatusEntry(PlannerLogEntry):
+    def __init__(self, status):
+        PlannerLogEntry.__init__(self, "status")
+        self.status = status
+
+    def to_string(self):
+        return str(self.status)
+    
