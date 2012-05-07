@@ -48,6 +48,13 @@ public:
 			double sampleawayfromobs, double conedepth,  double tiltstep, double panstep, double horizangle, double vertangle,
 			double minDistance, double pdfsum, double pdfthreshold, double robotx, double roboty);
 	virtual ~ViewPointGenerator();
+  double m_lastMapPDFSum;
+//NEW
+  void findIntersectingCones2D();
+  int TrianglesIntersecting(XVector3D p0, XVector3D p1, XVector3D p2, XVector3D t0, XVector3D t1, XVector3D t2);
+  int Intersecting(XVector3D p0, XVector3D p1, XVector3D t0, XVector3D t1, XVector3D t2);
+  float Side(XVector3D p, XVector3D q, XVector3D a, XVector3D b);
+  map<int, vector<int> > m_viewconesIntersections;
 
 	vector<pair<unsigned int, double> > getOrdered2DCandidateViewCones(vector<NavData::FNodePtr> &nodes);
 
