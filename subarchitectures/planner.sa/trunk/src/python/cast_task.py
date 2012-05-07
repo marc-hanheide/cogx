@@ -397,6 +397,7 @@ class CASTTask(object):
     def handle_task_failure(self):
         from standalone import merge_plans
         log.info("Trying to find explanations for failure of task %d", self.id)
+        self.plan_log.append(planner_log.TaskStatusEntry(TaskStateEnum.FAILED))
         
         plan = self.cp_task.get_plan()
         if not self.failure_simulated:
@@ -895,6 +896,7 @@ class CASTTask(object):
             self.update_status(TaskStateEnum.WAITING_FOR_ACTION, TaskStateInfoEnum.WAITING_FOR_ACTION)
         else:
             log.info("Plan is empty")
+            self.plan_log.append(planner_log.TaskStatusEntry(TaskStateEnum.COMPLETED))
             self.update_status(TaskStateEnum.COMPLETED, TaskStateInfoEnum.COMPLETED)
 
         self.component.deliver_plan(self, outplan)
