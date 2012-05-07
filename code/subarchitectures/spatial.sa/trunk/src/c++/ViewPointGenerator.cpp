@@ -63,8 +63,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
 {
 SCOPED_TIME_LOG;
   int test_num = 0;
-	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold) &&(result3DVCList.size() < 20) && (test_num < 30)){
-test_num++;
+	while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold) &&(result3DVCList.size() < 20) && (test_num < 10)){
+
 SCOPED_TIME_LOG;
   vector<SensingAction> unordered3DVCList, ordered3DVCList,  tmp;
 	  SensingAction sample;
@@ -169,6 +169,7 @@ SCOPED_TIME_LOG;
 		lastConePDFSum = initialMapPDFSum - postMapPDFSum; 
 		if(lastConePDFSum < 0.001){
 			m_component->log("Best cone's prob. sum. is less than 0.1%, returning what we have so far");
+      test_num++;
 			continue;
 		}
     m_lastMapPDFSum = postMapPDFSum;
