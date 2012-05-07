@@ -2787,8 +2787,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
   for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
                   doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
-    double x = it->second->x;
-    double y = it->second->y;
+    double x = (*itDoor)->x;
+    double y = (*itDoor)->y;
     if (check_point(x,y,nodes,ret,map1,map1,originNodeID)){
       SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
       new_nh->x=x*m_lgm->getCellSize();
