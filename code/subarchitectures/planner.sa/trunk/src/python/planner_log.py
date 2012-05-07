@@ -17,7 +17,7 @@ class PlannerLog(object):
             print >>f, "(:log"
             for e in self.log:
                 print >>f, e
-                print >>f, ")"
+            print >>f, ")"
             
         self.dirty = False
 
