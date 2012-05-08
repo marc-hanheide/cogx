@@ -35,19 +35,7 @@ CrySSMEx::~CrySSMEx ()
 
 CrySSMEx::CrySSMEx (const CrySSMEx& c)
 {
-	/*	if (c.ssm != 0)
-	{
-		if (c.ssm->is_moore ())
-			ssm = new Moore_SSM (static_cast<Moore_SSM&>(*c.ssm));
-	}
-	else ssm = 0;
-			
-	c.ssm != 0 ? ssm_parser = new SSM_Parser (*ssm) : ssm_parser = 0; 
-	c.input_quantizer != 0 ? input_quantizer = new GNG_Quantizer (static_cast<GNG_Quantizer&>(*c.input_quantizer)) : input_quantizer = 0;
-	c.output_quantizer != 0 ? output_quantizer = new GNG_Quantizer (static_cast<GNG_Quantizer&>(*c.output_quantizer)) : output_quantizer = 0;
-	c.state_quantizer != 0 ? state_quantizer = new CVQ (*c.state_quantizer) : state_quantizer = 0;*/
-	*this = c;
-	
+	*this = c;	
 }
 
 const CrySSMEx& CrySSMEx::operator= (const CrySSMEx& c)
@@ -59,11 +47,26 @@ const CrySSMEx& CrySSMEx::operator= (const CrySSMEx& c)
 	}
 	else ssm = 0;
 			
-	c.ssm != 0 ? ssm_parser = new SSM_Parser (*ssm) : ssm_parser = 0; 
-	c.input_quantizer != 0 ? input_quantizer = new GNG_Quantizer (static_cast<GNG_Quantizer&>(*c.input_quantizer)) : input_quantizer = 0;
-	c.output_quantizer != 0 ? output_quantizer = new GNG_Quantizer (static_cast<GNG_Quantizer&>(*c.output_quantizer)) : output_quantizer = 0;
+	c.ssm != 0 ? ssm_parser = new SSM_Parser (*ssm) : ssm_parser = 0;
+	if (c.input_quantizer != 0) {
+		input_quantizer = new GNG_Quantizer (static_cast<GNG_Quantizer&>(*c.input_quantizer));
+		GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(input_quantizer);
+		GNG_Quantizer* inputQuantizerCopy = static_cast<GNG_Quantizer*>(c.input_quantizer);
+		if (inputQuantizerCopy->getData() != 0)
+			inputQuantizer->setData (inputQuantizerCopy->getData());
+	}
+	else
+		input_quantizer = 0;
+	if (c.output_quantizer != 0) {
+		output_quantizer = new GNG_Quantizer (static_cast<GNG_Quantizer&>(*c.output_quantizer));
+		GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(output_quantizer);
+		GNG_Quantizer* outputQuantizerCopy = static_cast<GNG_Quantizer*>(c.output_quantizer);
+		if (outputQuantizerCopy->getData() != 0)
+			outputQuantizer->setData (outputQuantizerCopy->getData());
+	}
+	else
+		output_quantizer = 0;
 	c.state_quantizer != 0 ? state_quantizer = new CVQ (*c.state_quantizer) : state_quantizer = 0;
-	
 }
 
 

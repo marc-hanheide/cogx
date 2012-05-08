@@ -280,6 +280,8 @@ void PredictingScenario::updateOutputError ()
 					labelStr << learningData.currentChunkSeq[i].label;
 					string label = labelStr.str();
 					if (currentPredictedOutput[i] != output_map[label]) {
+						cout << "predicted: " << currentPredictedOutput[i] << endl;
+						cout << "real: " << output_map[label] << endl;
 						false_counts++;
 					}
 				}
