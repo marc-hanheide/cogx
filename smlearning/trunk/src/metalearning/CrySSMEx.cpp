@@ -190,7 +190,7 @@ std::vector<double> CrySSMEx::getQntMvMapVector (unsigned int index)
 }
 
 
-std::pair<int, int> CrySSMEx::parseInput (std::vector<double>& chunk)
+std::pair<int, string> CrySSMEx::parseInput (std::vector<double>& chunk)
 {
 	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
 	unsigned int input = static_cast<GNG_Quantizer*>(input_quantizer)->quantize (chunk);
@@ -215,8 +215,11 @@ std::pair<int, int> CrySSMEx::parseInput (std::vector<double>& chunk)
 		output = -1;
 	else
 		output = _output.max_p ();
+	string outputStr = "dummy";
+	if (output != -1)
+		outputStr = (*(ssm_parser->output().element_naming))(output);
 	// std::cout << "Entropy: " << ssm_parser->state().entropy() << std::endl;
-	return make_pair(state,output);
+	return make_pair(state,outputStr);
 }
 
 void CrySSMEx::parseSequence (DataSequence& sequence, DataSequence& predicted_sequence)
@@ -225,7 +228,7 @@ void CrySSMEx::parseSequence (DataSequence& sequence, DataSequence& predicted_se
 	ssm_parser->set_state(Distribution().make_uniform(ssm->state_count()));
 	for (unsigned int i=0; i<sequence.size() && !ssm_parser->state().empty(); i++)
 	{
-		std::pair<int, int> result = parseInput (sequence[i]);
+		std::pair<int, string> result = parseInput (sequence[i]);
 		if (result.first >= 0)
 			predicted_sequence.push_back (qnt_mv_map[result.first][0].vector);
 	}

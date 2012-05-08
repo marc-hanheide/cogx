@@ -63,6 +63,10 @@ protected:
 	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** update average error in prediction */
 	void updateAvgError ();
+	/** update error in output prediction */
+	void updateOutputError ();
+	/** enumerate output labels */
+	void enumerate_labels ();
 	/** normalization function */
 	boost::function<float (const float&, const float&, const float&)> normalization;
 	/** denormalization function */
@@ -83,6 +87,12 @@ protected:
 	Action chosenAction;
 	/** average error in prediction */
 	vector<double> avgerrors;
+	/** average error in output prediction */
+	vector<double> avgoutputerrors;
+	/** average error in grob classification */
+	vector<double> avgclassiferrors;
+	/** current predicted output */
+	vector<string> currentPredictedOutput;
 
 }; // class
 

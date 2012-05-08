@@ -77,12 +77,12 @@ protected:
 	golem::Bounds::SeqPtr objectLocalBounds;
 	/** current sequence from the data set when predicting from it */
 	LearningData::Chunk::Seq seqDataset;
-	/** map of label seq to output quanta used to count errors */
-	std::map<string, unsigned int> output_map;
-	/** average error in prediction */
+	// /** map of label seq to output quanta used to count errors */
+	// std::map<string, unsigned int> output_map;
+	/** average error in output prediction */
 	vector<double> avgoutputerrors;
 	/** current predicted output */
-	vector<unsigned int> currentPredictedOutput;
+	vector<string> currentPredictedOutput;
 
 
 
