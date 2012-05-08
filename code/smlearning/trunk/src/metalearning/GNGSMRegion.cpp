@@ -212,11 +212,19 @@ void GNGSMRegion::generateCryssmexFiles (unsigned int max_iterations, ssm::SSM::
 	cryssmex_parameters.merge_mode = cryssmex::CrySSMEx::undi;
 	cryssmex_parameters.split_mode = cryssmex::CrySSMEx::basic;
 	
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft ) //suitable for Mealy machines
 		cryssmex.initializeStateQuantizer (LearningData::pfVectorSize);
 
 	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
 		cryssmex.initializeStateQuantizer (LearningData::efVectorSize + LearningData::pfVectorSize);
+	if (featureSelectionMethod == _mcobpose_obpose_sft)
+	{
+		if (cryssmex.getOutputQuantizer() != 0)
+		{
+			delete cryssmex.getOutputQuantizer();
+			cryssmex.initializeOutputQuantizer (0);
+		}
+	}
 
 	cryssmex::CrySSMEx _cryssmex(dsess, cryssmex.getInputQuantizer(), cryssmex.getOutputQuantizer(), cryssmex.getStateQuantizer(), cryssmex_parameters);
 

@@ -41,7 +41,7 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 
 	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
 		assert (learningData.motorVectorSizeMarkov == cryssmex.getInputQuantizer()->dimensionality());
-	else if (featureSelectionMethod == _mcobpose_obpose_direction)
+	else if (featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft)
 		assert (2*learningData.motorVectorSizeMarkov + learningData.pfVectorSize == cryssmex.getInputQuantizer()->dimensionality());
 
 	// Set Output Quantizer
@@ -60,7 +60,7 @@ void PredictingScenario::init (boost::program_options::variables_map vm) {
 	// Set State Quantizer
 	cryssmex.setStateQuantizer (vm["cvqFile"].as<string>());
 
-	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+	if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft) //suitable for Mealy machines
 		assert (learningData.pfVectorSize  == cryssmex.getStateQuantizer()->dimensionality());
 
 	else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
@@ -218,22 +218,18 @@ void PredictingScenario::postprocess(SecTmReal elapsedTime) {
 			FeatureVector inputVector;
 			LearningData::load_cryssmexinput (inputVector, chunk, featureSelectionMethod, normalization, learningData.featLimits);
 
-			pair<int, int> result = cryssmex.parseInput (inputVector);
+			pair<int, string> result = cryssmex.parseInput (inputVector);
 			if (result.first >= 0)
 			{
 				FeatureVector predictedVector = cryssmex.getQntMvMapVector(result.first);
 
-				if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction) //suitable for Mealy machines
+				if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _obpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft) //suitable for Mealy machines
 					learningData.get_pfPose_from_cryssmexquantization (predictedVector, 0, denormalization);
 
-				else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt) //suitable for Moore machines
+				else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt ) //suitable for Moore machines
 					learningData.get_pfPose_from_cryssmexquantization (predictedVector, learningData.efVectorSize, denormalization);
 			}
-			if (result.second >= 0)
-			{
-				
-				currentPredictedOutput.push_back (result.second);
-			}
+			currentPredictedOutput.push_back (result.second);
 
 		// }
 		// else
@@ -248,21 +244,11 @@ void PredictingScenario::enumerate_labels ()
 	LearningData::DataSet::iterator d_iter;
 	for (d_iter = data.begin(); d_iter != data.end(); d_iter++) {
 		LearningData::Chunk::Seq* seq = &(*d_iter);
-		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft )
 			LearningData::label_seq (seq, _rough_direction | _slide_flip_tilt);
 		else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
 			LearningData::label_seq (seq, _rough_direction);
 	}	
-
-	if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction) {
-		set<string> labelsSet = LearningData::labels_enumerator (data);
-		set<string>::iterator it;
-		unsigned int i;
-		for (i=0, it=labelsSet.begin(); it!=labelsSet.end(); it++, i++)
-			output_map[*it] = i;
-	}
-			
-
 }
 
 
@@ -270,7 +256,12 @@ void PredictingScenario::updateOutputError ()
 {
 	if (data.size () > 0)
 	{
-		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction) {
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft)
+			LearningData::label_seq (&learningData.currentChunkSeq, _rough_direction | _slide_flip_tilt);
+		else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
+			LearningData::label_seq (&learningData.currentChunkSeq, _rough_direction);
+
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction) {
 			if (currentPredictedOutput.size () == learningData.currentChunkSeq.size ())
 			{
 				unsigned int false_counts = 0;
@@ -279,9 +270,9 @@ void PredictingScenario::updateOutputError ()
 					stringstream labelStr;
 					labelStr << learningData.currentChunkSeq[i].label;
 					string label = labelStr.str();
-					if (currentPredictedOutput[i] != output_map[label]) {
-						cout << "predicted: " << currentPredictedOutput[i] << endl;
-						cout << "real: " << output_map[label] << endl;
+					cout << "predicted: " << currentPredictedOutput[i] << endl;
+					if (currentPredictedOutput[i].compare(label) != 0) {
+						cout << "real: " << label << endl;
 						false_counts++;
 					}
 				}
@@ -310,6 +301,7 @@ void PredictingScenario::run (int argc, char* argv[]) {
 		//create sequence for this loop run
 		learningData.currentChunkSeq.clear ();
 		learningData.currentPredictedPfSeq.clear();
+		currentPredictedOutput.clear();
 		//select a random action
 		std::cout <<"choose action "<<std::endl;
 		chooseAction ();
@@ -332,6 +324,8 @@ void PredictingScenario::run (int argc, char* argv[]) {
 		arm->moveFingerUp(context,target, object->getDescription().dimensions);
 		//remove polyflap object from the scene
 		removeObject();
+		//update error in output prediction
+		updateOutputError ();
 		//move finger to initial position
 		arm->moveFingerToStartPose(context);
 		context.getMessageStream()->write(Message::LEVEL_INFO, "Done");
@@ -343,12 +337,14 @@ void PredictingScenario::run (int argc, char* argv[]) {
 	//move the arm to its initial position
 	arm->moveArmToStartPose(context);
 
-	double misclass_percentage = 0.0;
-	for (unsigned int i=0; i<avgoutputerrors.size (); i++)
-		misclass_percentage += avgoutputerrors[i];
-	misclass_percentage /= avgoutputerrors.size ();
-	cout << endl << "Avg Misclassification percentage: " << misclass_percentage << endl;
-	
+	if (data.size() > 0 && featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
+	{
+		double misclass_percentage = 0.0;
+		for (unsigned int i=0; i<avgoutputerrors.size (); i++)
+			misclass_percentage += avgoutputerrors[i];
+		misclass_percentage /= avgoutputerrors.size ();
+		cout << endl << "Avg Misclassification percentage: " << misclass_percentage << endl;
+	}
 
 }
 

@@ -105,11 +105,12 @@ enum feature_selection {
 	_efobpose_label, /**< For automata generation: input are action related features, states are object and effector f., output is label */
 	_obpose_direction, /**< For automata generation: input are action related features, states are object f., output is object direction f. */
 	_efobpose_direction, /**< For automata generation: input are action related features, states are object and effector f., output is object direction f. */
-	_mcobpose_obpose_direction, /**< For automata generation: input is end effector pos. and object f., states are object f., output is object direction f. */
+	_mcobpose_obpose_direction, /**< For automata generation: input is end effector, effector pos. and object f., states are object f., output is object direction f. */
 	_obpose_rough_direction, /**< For automata generation: input are action related features, states are object f., output is object rough direction f. */
 	_efobpose_rough_direction, /**< For automata generation: input are action related features, states are object and effector f., output is object rough direction f. */
 	_obpose_slide_flip_tilt, /**< For automata generation: input are action related features, states are object f., output is trajectory classification f. */
-	_efobpose_slide_flip_tilt /**< For automata generation: input are action related features, states are object and effector f., output is trajectory classification f. */
+	_efobpose_slide_flip_tilt, /**< For automata generation: input are action related features, states are object and effector f., output is trajectory classification f. */
+	_mcobpose_obpose_sft /**<  For automata generation: input is end effector pos., effector pos. and object f., states are object f., output is trajectory classification f. */
 };
 
 static const cryssmex::enum_utils::Enum_String_Binder<feature_selection>& feature_selection_binder() {
@@ -130,12 +131,13 @@ static const cryssmex::enum_utils::Enum_String_Binder<feature_selection>& featur
 		       ("efobpose_rough_direction",_efobpose_rough_direction)
 		       ("obpose_slide_flip_tilt",_obpose_slide_flip_tilt)
 		       ("efobpose_slide_flip_tilt",_efobpose_slide_flip_tilt)
+		       ("mcobpose_obpose_sft",_mcobpose_obpose_sft)
 		       );	
 	return binder;
 }
 
 static string feature_selection_options () {
-	return "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction)";
+	return "Feature selection method\n(obpose|obpose_label|\nobpose_direction|obpose_slide_flip_tilt\nefobpose|efobpose_label\nefobpose_direction|efobpose_slide_flip_tilt\nmcobpose_obpose_direction\nmcobpose_obpose_sft)";
 }
 
 std::ostream& operator<<(std::ostream& _out, feature_selection _e);
@@ -802,7 +804,7 @@ struct LearningData {
 					
 		else if (featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _efobpose_slide_flip_tilt)
 			write_chunk_to_featvector (inputVector, chunk, normalize, limits, /*_action_params |*/ _end_effector_pos );
-		else if (featureSelectionMethod == _mcobpose_obpose_direction)
+		else if (featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft )
 			write_chunk_to_featvector (inputVector, chunk, normalize, limits, _end_effector_pos | _effector_pos | _object);
 	}
 	
@@ -827,7 +829,7 @@ struct LearningData {
 	static void load_cryssmexoutput (FeatureVector& outputVector, const Chunk& currentChunk, const Chunk& nextChunk, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 		if (featureSelectionMethod == _obpose || featureSelectionMethod == _efobpose)
 			write_chunk_to_featvector (outputVector, nextChunk, normalize, limits, _object);
-		else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+		else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft )
 			write_chunk_to_featvector (outputVector, currentChunk, normalize, limits, _label);
 		else if (featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 			write_chunk_to_featvector (outputVector, currentChunk, nextChunk, normalize, limits, _direction);
@@ -840,7 +842,7 @@ struct LearningData {
 		Chunk::Seq::const_iterator s_iter;
 		vector<FeatureVector> sequence;
 
-		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+		if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft )
 			label_seq (&seq, _rough_direction | _slide_flip_tilt);
 		else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
 			label_seq (&seq, _rough_direction);
@@ -881,7 +883,7 @@ struct LearningData {
 			inputVectorSize = motorVectorSizeMarkov /*+ efVectorSize*/;
 			stateVectorSize = efVectorSize + pfVectorSize;
 		}
-		else if (featureSelectionMethod == _mcobpose_obpose_direction) {
+		else if (featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft ) {
 			inputVectorSize = 2*motorVectorSizeMarkov + pfVectorSize;
 			stateVectorSize = pfVectorSize;
 		}
@@ -889,7 +891,7 @@ struct LearningData {
 		if (featureSelectionMethod == _obpose || featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 			outputVectorSize = pfVectorSize;
 
-		else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+		else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft)
 			outputVectorSize = 0;
 		ofstream writeFile(writeFileName.c_str(), ios::out);
 
@@ -912,7 +914,7 @@ struct LearningData {
 
 			Chunk::Seq::iterator s_iter;
 
-			if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+			if (featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft)
 				label_seq (seq, _rough_direction | _slide_flip_tilt);
 			else if (featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction)
 				label_seq (seq, _rough_direction);
@@ -931,14 +933,14 @@ struct LearningData {
 						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, /*_action_params |*/ _end_effector_pos );
 						write_chunk_to_featvector (stateVector, *s_iter, normalize, limits, _effector_pos | _effector_orient | _object);
 					}
-					else if (featureSelectionMethod == _mcobpose_obpose_direction) {
+					else if (featureSelectionMethod == _mcobpose_obpose_direction || featureSelectionMethod == _mcobpose_obpose_sft ) {
 						write_chunk_to_featvector (inputVector, *s_iter, normalize, limits, _end_effector_pos | _effector_pos | _object);
 						write_chunk_to_featvector (stateVector, *(s_iter+1), normalize, limits, _object);
 					}
 
 					if (featureSelectionMethod == _obpose || featureSelectionMethod == _efobpose)
 						write_chunk_to_featvector (outputVector, *(s_iter+1), normalize, limits, _object);
-					else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt)
+					else if (featureSelectionMethod == _obpose_label || featureSelectionMethod == _efobpose_label || featureSelectionMethod == _obpose_rough_direction || featureSelectionMethod == _efobpose_rough_direction || featureSelectionMethod == _obpose_slide_flip_tilt || featureSelectionMethod == _efobpose_slide_flip_tilt || featureSelectionMethod == _mcobpose_obpose_sft )
 						write_chunk_to_featvector (outputVector, *s_iter, normalize, limits, _label);
 					else if (featureSelectionMethod == _obpose_direction || featureSelectionMethod == _efobpose_direction || featureSelectionMethod == _mcobpose_obpose_direction)
 						write_chunk_to_featvector (outputVector, *s_iter, *(s_iter+1), normalize, limits, _direction);
