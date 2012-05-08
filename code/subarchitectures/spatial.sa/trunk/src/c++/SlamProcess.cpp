@@ -27,11 +27,13 @@
 #include <Utils/HelpFunctions.hh>
 #include <Utils/CureDebug.hh>
 #include <SensorData/SensorData.hh>
+#include "TimeLogger.hpp"
 
 using namespace cast;
 using namespace std;
 using namespace navsa;
 
+#define SCOPED_TIME_LOG TimeLogger logger(this, __FILE__, __LINE__);
 
 /**
  * The function called to create a new instance of our component.
@@ -94,15 +96,16 @@ void SlamProcess::configure(const map<string,string>& _config)
   std::string configfile = "";
   it = _config.find("-c");
   if(it == _config.end()) {
-    printf("SlamThread::configure need name of config file (-c option)\n");
+    error("SlamThread::configure need name of config file (-c option)\n");
     exit(0);
   } else {
     configfile = it->second;
+    log("Cure config file: %s", configfile.c_str());
   }
 
   Cure::ConfigFileReader cfg;
   if (cfg.init(configfile)) {
-    printf("configure failed to config with \"%s\"\n", configfile.c_str());
+    error("configure failed to config with \"%s\"\n", configfile.c_str());
     exit(0);
   }  
 
@@ -203,9 +206,13 @@ void SlamProcess::configure(const map<string,string>& _config)
     m_UpdateWithoutMotion = false;
   }
 
-  
-  if (m_odomfile.openWriteFile("odom.tdf")) return;
-  if (m_scanfile.openWriteFile("scans.tdf")) return;
+
+  m_outputRawData = false;
+  if (_config.find("--output-raw-data") != _config.end()) {
+    if (m_odomfile.openWriteFile("odom.tdf")) return;
+    if (m_scanfile.openWriteFile("scans.tdf")) return;
+    m_outputRawData = true;
+  }
 
   printf("SlamProcess::configure successful\n");
 }
@@ -232,6 +239,7 @@ void SlamProcess::runComponent()
 
 void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
+  SCOPED_TIME_LOG;
   if (castOdom.odompose.empty()) {
     println("WARNING: Odometry struct contained no odompose which si needed");
     return;
@@ -291,7 +299,8 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
      m_PP->addOdometry(odom);
    }
 
-   m_odomfile.write(odom);
+   if (m_outputRawData) 
+     m_odomfile.write(odom);
 
 
     if (m_usePeekabot){
@@ -301,6 +310,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
 
 void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 {
+  SCOPED_TIME_LOG;
   if (m_ScansToIgnoreBeforeStart > 0) {
     m_ScansToIgnoreBeforeStart--;
     return;
@@ -311,7 +321,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
     return;
   }
 
-  debug("Got scan n=%d, r[0]=%.3f, r[n-1]=%.3f t=%ld.%06ld",
+  log("Got scan n=%d, r[0]=%.3f, r[n-1]=%.3f t=%ld.%06ld",
         castScan.ranges.size(), castScan.ranges[0], 
         castScan.ranges[castScan.ranges.size()-1],
         (long)castScan.time.s, (long)castScan.time.us);
@@ -323,7 +333,8 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);  
 
-  m_scanfile.write(cureScan);
+  if (m_outputRawData) 
+    m_scanfile.write(cureScan);
 
   double timeDiffToWarn = 0.5;
   if (m_MaxScanRate>0) timeDiffToWarn += 1.0 / m_MaxScanRate;
@@ -410,6 +421,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
       }
 
     } else {
+      SCOPED_TIME_LOG;
 
       debug("addXXXX(#=%d a0=%.2f aS=%.4f r0=%.2f rEnd=%.2f t=%ld.%06ld)",
             cureScan.getNPts(), cureScan.getStartAngle(), 
@@ -426,8 +438,9 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
       debug("Took %.3fs to extract %d lines, %.3fs to update (tot %.3fs)",
             dt, n, timer.stop()-dt, timer.stop());
       {
+	SCOPED_TIME_LOG;
 	IceUtil::Mutex::Lock lock(m_Mutex);
-	m_PP->addMeasurementSet(measSet);
+	int err = m_PP->addMeasurementSet(measSet);
       }
 
 
@@ -437,12 +450,15 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
           m_PP->getPose().getTheta(),
           m_PP->getPose().getTime().getDouble());
 
+      {
+      SCOPED_TIME_LOG;
       updateRobotPoseInWM();
       
       storeDataToFile();
       
       if (m_WriteMapToWorkingMemory) {
         writeLineMapToWorkingMemory(true);
+      }
       }
     }
 
@@ -483,6 +499,9 @@ void SlamProcess::updateRobotPoseInWM()
   pRP->x = pose.getX();
   pRP->y = pose.getY();
   pRP->theta = pose.getTheta(); 
+  double poseAge = (getCASTTime().s + getCASTTime().us * 1e-6) -
+    (pose.getTime().Seconds + pose.getTime().Microsec * 1e-6);
+  log("Writing %f s old robotpose to WM", poseAge);
 
   if(m_RobotPoseIdString == ""){
     m_RobotPoseIdString = newDataID();
