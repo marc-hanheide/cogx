@@ -242,6 +242,8 @@ protected:
   double m_MaxExplorationRange; 
 
   Cure::LocalMap m_LMap; 
+  IceUtil::Mutex m_LMapMutex;
+
   // Used by NavController; Needs no lock protecting it, as only the main thread
   // modifies and reads it
   Cure::NavGraph m_NavGraph;
@@ -335,9 +337,12 @@ protected:
   };
 
   int m_taskId;
-  IceUtil::Mutex m_taskStatusMutex; // protects flags and info about task
+  // protects flags and info about task, and m_waitingForMapSave
+  IceUtil::Mutex m_taskStatusMutex; 
   bool m_currentTaskIsExploration; // says when doneTask events must be ignored
   TaskStatus m_taskStatus;
+  bool m_waitingForMapSave; 
+  int m_mapUpdatesSinceLastSave;
 
   // To return information
   cast::cdl::WorkingMemoryAddress m_CurrentCmdAddress;
@@ -375,6 +380,24 @@ protected:
 
   cast::cdl::CASTTime m_lastSLAMPoseTime;
 
+  class MapUpdaterThread : public IceUtil::Thread
+  {
+    public:
+    MapUpdaterThread(SpatialControl& comp) 
+      : m_controlComponent(comp)
+    {
+    }
+
+    virtual void run() {
+      m_controlComponent.mapUpdaterLoop();
+    }
+
+    protected:
+    SpatialControl& m_controlComponent;
+
+  };
+
+
 protected:
   /* 
    * This functions is called with m_taskStatusMutex locked
@@ -397,6 +420,8 @@ private:
   void deletePersonData(const cast::cdl::WorkingMemoryChange &objID);
   void newPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
   void overwrittenPanTiltCommand(const cast::cdl::WorkingMemoryChange &objID);
+
+  void mapUpdaterLoop();
 
   void startMovePanTilt(double pan, double tilt, double tolerance);
 	void moveSimulatedPTZ(double pan);

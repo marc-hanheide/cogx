@@ -121,6 +121,9 @@ SpatialControl::SpatialControl()
   m_NumInhibitors = 0;
   m_SentInhibitStop = false;
 
+  m_mapUpdatesSinceLastSave = 0;
+  m_waitingForMapSave = false;
+
   m_Glrt = NULL;
   m_catGlrt = NULL;
   m_Displaylgm = NULL;
@@ -881,7 +884,7 @@ void SpatialControl::abortTask(int taskId) {
 }
 
 void SpatialControl::doneTask(int taskId) {
-  log("doneTask");
+  getLogger()->info("Task finished");
 
   IceUtil::Mutex::Lock lock(m_taskStatusMutex);
 
@@ -898,7 +901,7 @@ void SpatialControl::doneTask(int taskId) {
 
 
 void SpatialControl::failTask(int taskId, int error) {
-  log("failTask");
+  getLogger()->info("Task failed");
   m_TolRot = Cure::HelpFunctions::deg2rad(5);
 
   IceUtil::Mutex::Lock lock(m_taskStatusMutex);
@@ -913,8 +916,7 @@ void SpatialControl::failTask(int taskId, int error) {
 // FrontierExplorer exploration done overload function
 void SpatialControl::explorationDone(int taskId, int status)
 {
-
-  log("explorationDone");
+  getLogger()->info("Exploration finished");
 
   IceUtil::Mutex::Lock lock(m_taskStatusMutex);
 
@@ -1010,7 +1012,7 @@ void SpatialControl::updateGridMaps(){
 
   /* Add all queued laser scans */
   {
-    SCOPED_TIME_LOG;
+//    SCOPED_TIME_LOG;
     m_ScanQueueMutex.lock();
   }
   while (!m_LScanQueue.empty()){
@@ -1028,7 +1030,7 @@ void SpatialControl::updateGridMaps(){
     if (status == 0) {
       lpW.add(LscanPose, m_LaserPoseR);		
       if (m_usePeekabot){
-        SCOPED_TIME_LOG;        
+//        SCOPED_TIME_LOG;        
         m_ProxyScan.clear_vertices();
         double angStep = scan.getAngleStep();
         double startAng = scan.getStartAngle();
@@ -1043,7 +1045,7 @@ void SpatialControl::updateGridMaps(){
         m_ProxyScan.set_pose(lpW.getX(), lpW.getY(), lpW.getZ(), lpW.getTheta(), 0, 0);
       }
       {
-        SCOPED_TIME_LOG;
+//        SCOPED_TIME_LOG;
         tmp_glrt.addScan(scan, lpW, m_MaxExplorationRange);
         tmp_lgm->setValueInsideCircle(LscanPose.getX(), LscanPose.getY(),
             0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
@@ -1061,7 +1063,7 @@ void SpatialControl::updateGridMaps(){
         laserMaxY = lpW.getY();
     }
     {
-      SCOPED_TIME_LOG;
+//      SCOPED_TIME_LOG;
       m_ScanQueueMutex.lock();
     }
   }
@@ -1255,7 +1257,7 @@ void SpatialControl::updateGridMaps(){
 		}
 
     if(m_usePeekabot){
-    	SCOPED_TIME_LOG;
+//    	SCOPED_TIME_LOG;
 
       peekabot::OccupancySet2D cells;
       double cellSize=m_lgm->getCellSize();
@@ -1269,33 +1271,41 @@ void SpatialControl::updateGridMaps(){
       }
       m_ProxyGridMap.set_cells(cells);
       if (m_show3Dobstacles){
-        peekabot::OccupancySet3D cells1;
-        for (int yi = minY+1; yi < maxY; yi++) {
-          for (int xi = minX+1; xi < maxX; xi++) {
-            if ((*tmp_lgm)(xi,yi) == '1'){ 
-              if ((*m_lgmKH)(xi, yi) != FLT_MAX){
-                for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
-                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
-                }
-              }
-            }
-            else if ((*tmp_lgm)(xi,yi) == '0'){
-                for (double zi = 0; zi <= kinectZ; zi+=0.05) {
-                  cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
-                }
-            } 
-          }
-        }
-        m_ProxyGridMapKinect.set_cells(cells1);
+	if (m_PBDisplayMutex.tryLock()) {
+	  if (!m_bDoPBSync) {
+	    peekabot::OccupancySet3D cells1;
+	    for (int yi = minY+1; yi < maxY; yi++) {
+	      for (int xi = minX+1; xi < maxX; xi++) {
+		if ((*tmp_lgm)(xi,yi) == '1'){ 
+		  if ((*m_lgmKH)(xi, yi) != FLT_MAX){
+		    for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
+		      cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
+		    }
+		  }
+		}
+		else if ((*tmp_lgm)(xi,yi) == '0'){
+		  for (double zi = 0; zi <= kinectZ; zi+=0.05) {
+		    cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
+		  }
+		} 
+	      }
+	    }
+	    m_ProxyGridMapKinect.set_cells(cells1);
+	  }
+	  else {
+	    log("Skipping obstacle map update in PB; last one not finished");
+	  }
+	  m_PBDisplayMutex.unlock();
+	}
       }
     }
-		m_lastPointCloudTime = getCASTTime();
+    m_lastPointCloudTime = getCASTTime();
   }
-  const int deltaN = 3;
-  double d = m_lgm->getCellSize()/deltaN;
-  int maxcellstocheck = int (5.0/d);
-  double xWT,yWT;
-  double theta;
+//  const int deltaN = 3;
+//  double d = m_lgm->getCellSize()/deltaN;
+//  int maxcellstocheck = int (5.0/d);
+//  double xWT,yWT;
+//  double theta;
 
 
   Cure::Pose3D currPose;
@@ -1304,20 +1314,45 @@ void SpatialControl::updateGridMaps(){
     currPose = m_TOPP.getPose();		
   }
   /* Update the nav map */
-  m_LMap.clearMap();
-  tmp_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(), 0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
-  for (int i = 0; i < m_Npts; i++) {
-    theta = m_StartAngle + m_AngleStep * i;
-    for (int j = 1; j < deltaN*maxcellstocheck; j++){
-      xWT = currPose.getX()+j*d*cos(theta);
-      yWT = currPose.getY()+j*d*sin(theta);
-      if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
-	      if((*tmp_lgm)(xi,yi) == '1'){
-	        m_LMap.addObstacle(xWT, yWT, 1);
-	        break;    
-	      }
+  {
+    IceUtil::Mutex::Lock lock(m_LMapMutex);
+//    SCOPED_TIME_LOG;
+    m_LMap.clearMap();
+    tmp_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(), 0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
+
+    long nObstacles = 0;
+    int iCenter, jCenter;
+    m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), iCenter, jCenter);
+    double radius = 3.0; //Distance to consider obstacles at
+    int maxDelta = radius/m_lgm->getCellSize();
+
+    for (int i = iCenter-maxDelta; i < iCenter+maxDelta; i++) {
+      for (int j = jCenter-maxDelta; j < jCenter+maxDelta; j++) {
+	if ((*tmp_lgm)(i,j) == '1') {
+	  double xWT, yWT;
+	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
+	  m_LMap.addObstacle(xWT, yWT, 1);
+	}
       }
     }
+
+    if (nObstacles > 2000) {
+      getLogger()->warn("High obstacle count!");
+    }
+
+//    for (int i = 0; i < m_Npts; i++) {
+//      theta = m_StartAngle + m_AngleStep * i;
+//      for (int j = 1; j < deltaN*maxcellstocheck; j++){
+//	xWT = currPose.getX()+j*d*cos(theta);
+//	yWT = currPose.getY()+j*d*sin(theta);
+//	if(m_lgm->worldCoords2Index(xWT,yWT,xi,yi)==0){
+//	  if((*tmp_lgm)(xi,yi) == '1'){
+//	    m_LMap.addObstacle(xWT, yWT, 1);
+//	    break;    
+//	  }
+//	}
+//      }
+//    }
   }
 
 //MERGE MAPS
@@ -1371,18 +1406,15 @@ void SpatialControl::runComponent()
     CreateGridMap(); 
 
   }
-  int count = 0;
+
+  MapUpdaterThread updaterThread(*this);
+
+  updaterThread.start();
+
   while(isRunning()){
-    if(count  == 12){
-      if (m_saveLgm){ 
-        SaveGridMap();
-        SaveHeightMap();
-      }
-      count = 0;
-    }
-    count++;
 
     if (m_bNavGraphNeedsRefreshing) {
+      SCOPED_TIME_LOG;
       //May change to true while refreshNavGraph is ongoing;
       //in that case it will simply run again next pass
       m_bNavGraphNeedsRefreshing = false;
@@ -1407,19 +1439,21 @@ void SpatialControl::runComponent()
     }
     m_OdomQueueMutex.unlock();
 
-    {
+//    {
+//
+//      //FIXME use robot pose
+//
+//
+//      {
+//	SCOPED_TIME_LOG;
+//	updateGridMaps();
+//      }
+//
+//    }
 
-      //FIXME use robot pose
-
-
-      {
-	SCOPED_TIME_LOG;
-	updateGridMaps();
-      }
-
-    }
     //FIXME Too slow!
     {
+//      SCOPED_TIME_LOG;
       Cure::Pose3D currentPose = m_TOPP.getPose();
       {
 	if (m_Displaylgm) {
@@ -1445,15 +1479,20 @@ void SpatialControl::runComponent()
 	      (*m_obstacleMap)(i,j) = '0';
 	    }
 	  }
-	  for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
-	    ObstPt obspt = m_LMap.obstRef(i);
-	    (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+	  {
+	    IceUtil::Mutex::Lock lock(m_LMapMutex);
+	    for(unsigned int i = 0; i < m_LMap.nObst(); i++) {
+	      ObstPt obspt = m_LMap.obstRef(i);
+	      (*m_obstacleMap)((obspt.x)/0.05, (obspt.y)/0.05) = '1';
+	    }
 	  }
 
 	  m_displayObstacleMap->updateDisplay(&currentPose);
 	}
       }
     }
+
+//    SCOPED_TIME_LOG;
 
     if (m_visualExplorationOngoing && m_waitingForPTZCommandID == "") {
       // If we've gotten at least one cloud since we finished moving the
@@ -1537,7 +1576,6 @@ void SpatialControl::refreshNavGraph(){
 
   if (ng!=0){
     m_NavGraph.clear();
-    bool gateway = false;
     
     for (unsigned int i=0;i<ng->fNodes.size();i++){
       
@@ -1561,7 +1599,6 @@ void SpatialControl::refreshNavGraph(){
         }
   m_NavGraph.addDoorToNodeList(nodeId, areaId, x, y, theta, 
                                      width, areaType, maxSpeed);
-  gateway = true;
       }
 
       else { // add ordinary node
@@ -1889,6 +1926,9 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
   Cure::Pose3D cureOdom;
   CureHWUtils::convOdomToCure(castOdom, cureOdom);
+  log("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+        cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
+        cureOdom.getTime().getDouble());
 
   //Can't defer this; odometry must be in the TOPP before
   //the new RobotPose arrives
@@ -1918,7 +1958,7 @@ void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 
 void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 {
-  log("Got odometry x=%.2f y=%.2f a=%.4f t=%.6f",
+  log("Processing odometry x=%.2f y=%.2f a=%.4f t=%.6f",
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
   log("CASTTime: %f",getCASTTime().s+1e-6*getCASTTime().us);
@@ -1927,11 +1967,11 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
                  // to be ready
     
     {
-      {
-	IceUtil::Mutex::Lock lock(m_taskStatusMutex); // acquire mutex!
-      }
+//      SCOPED_TIME_LOG;
+      IceUtil::Mutex::Lock lock(m_taskStatusMutex); // acquire mutex!
 
       if(m_taskStatus == TaskFinished){
+	getLogger()->info("Task finished");
 	// report final status
 	changeCurrentCommandCompletion(m_CurrentCmdFinalCompletion,
 	    m_CurrentCmdFinalStatus);
@@ -1940,230 +1980,295 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
       }else if(m_taskStatus == NewTask 
 	  && (m_commandType == NavData::lSTOPROBOT || m_waitingForPTZCommandID == ""))
       {
-
-	//      m_Mutex.lock();
-
-	// Result of m_NavCtrl.operationX
-	int ret = -1; // -1:operation not done, 0:ok, >0:error
-	m_currentTaskIsExploration = false; // set later
-
-	// Task id
-	int currentTaskId = m_taskId++;
-
-	// GOTO_XYA        
-	if ((m_commandType == NavData::lGOTOXYA)) {
-
-	  log("executing command GOTOXYA");  	
-
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::gotoXYA
-	    (currentTaskId, m_commandX, m_commandY, m_commandTheta);
+	// Don't take up the new task if waiting for e.g.
+	// map saving to conclude
+	if (m_waitingForMapSave) {
+	  log("New task pending, waiting for map saving to finish");
 	}
+	else {
+	  //      m_Mutex.lock();
 
-	// GOTO_XY_ROUGH
+	  // Result of m_NavCtrl.operationX
+	  int ret = -1; // -1:operation not done, 0:ok, >0:error
+	  m_currentTaskIsExploration = false; // set later
 
-	else if ((m_commandType == NavData::lGOTOXYROUGH)){ 
+	  // Task id
+	  int currentTaskId = m_taskId++;
 
-	  log("executing command GOTOXYROUGH"); 
+	  // GOTO_XYA        
+	  if ((m_commandType == NavData::lGOTOXYA)) {
 
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
-	}
+	    log("executing command GOTOXYA");  	
 
-
-	// GOTO_XY
-
-	else if ((m_commandType == NavData::lGOTOXY)){ 
-
-	  log("executing command GOTOXY"); 
-
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
-	  //Clean out path; use only final waypoint
-	  if(!m_Path.empty()) {
-	    Cure::NavGraphNode lastNode = m_Path.back();
-	    m_Path.clear();
-	    m_Path.push_back(lastNode);
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::gotoXYA
+	      (currentTaskId, m_commandX, m_commandY, m_commandTheta);
 	  }
-	  log("sent command.");
-	}
 
-	// GOTO_POLAR
+	  // GOTO_XY_ROUGH
 
-	else if ((m_commandType == NavData::lGOTOPOLAR)) {
+	  else if ((m_commandType == NavData::lGOTOXYROUGH)){ 
 
-	  log("executing command GOTOPOLAR"); 
+	    log("executing command GOTOXYROUGH"); 
 
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::gotoPolar(currentTaskId,m_commandTheta,m_commandR);
-	}
-
-	// GOTO_AREA
-
-	else if ((m_commandType == NavData::lGOTOAREA)) {
-
-	  log("executing command GOTOAREA"); 
-
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::gotoArea(currentTaskId, m_commandAreaId);
-	}
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+	  }
 
 
-	// GOTO_NODE
+	  // GOTO_XY
 
-	else if ((m_commandType == NavData::lGOTONODE)) {
+	  else if ((m_commandType == NavData::lGOTOXY)){ 
 
-	  log("executing command GOTONODE"); 
+	    log("executing command GOTOXY"); 
 
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::gotoNode(currentTaskId, m_commandNodeId);
-	}
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::gotoXY(currentTaskId, m_commandX, m_commandY);
+	    //Clean out path; use only final waypoint
+	    if(!m_Path.empty()) {
+	      Cure::NavGraphNode lastNode = m_Path.back();
+	      m_Path.clear();
+	      m_Path.push_back(lastNode);
+	    }
+	    log("sent command.");
+	  }
 
-	// ROTATE_REL
+	  // GOTO_POLAR
 
-	else if ((m_commandType == NavData::lROTATEREL)) {  
+	  else if ((m_commandType == NavData::lGOTOPOLAR)) {
 
-	  log("executing command ROTATEREL"); 
+	    log("executing command GOTOPOLAR"); 
 
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::rotateRel(currentTaskId, m_commandTheta);
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::gotoPolar(currentTaskId,m_commandTheta,m_commandR);
+	  }
 
-	}
+	  // GOTO_AREA
 
+	  else if ((m_commandType == NavData::lGOTOAREA)) {
 
-	// ROTATE_ABS
+	    log("executing command GOTOAREA"); 
 
-	else if ((m_commandType == NavData::lROTATEABS)) {
-
-	  log("executing command ROTATEABS"); 
-
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::rotateAbs(currentTaskId, m_commandTheta);
-
-	}
-
-	// BACK_OFF
-
-	else if ((m_commandType == NavData::lBACKOFF)) {
-
-	  log("executing command BACKOFF"); 
-
-	  Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
-	  Cure::NewNavController::setOrientationTolerance(m_TolRot);
-	  ret = Cure::NewNavController::backOff(currentTaskId, m_commandDistance);
-
-	}
-
-	// STOP
-
-	else if ((m_commandType == NavData::lSTOPROBOT)) {
-
-	  log("executing command STOPROBOT"); 
-
-	  // This command is special:
-	  // It is always accomplished at the moment, by this thread,
-	  // and does not raise a doneTask calling (but can raise
-	  // abortTask).
-	  // 
-	  ret = Cure::NewNavController::stop();
-
-	}
-
-	// EXPLORE
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::gotoArea(currentTaskId, m_commandAreaId);
+	  }
 
 
-	// Change completion now
+	  // GOTO_NODE
 
-	// First treat stop case
-	if(m_commandType == NavData::lSTOPROBOT){
-	  changeCurrentCommandCompletion(NavData::SUCCEEDED,
-	      NavData::UNKNOWN);
-	  m_taskStatus = NothingToDo;
+	  else if ((m_commandType == NavData::lGOTONODE)) {
 
-	} else if(m_taskStatus != TaskFinished){
+	    log("executing command GOTONODE"); 
 
-	  if ((m_commandType == NavData::lFOLLOWPERSON)) {
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::gotoNode(currentTaskId, m_commandNodeId);
+	  }
 
-	    IceUtil::Mutex::Lock lock2(m_PeopleMutex);
+	  // ROTATE_REL
 
-	    if (m_CurrPerson < 0 || m_CurrPerson > (int)m_People.size()-1) {
+	  else if ((m_commandType == NavData::lROTATEREL)) {  
 
-	      m_CurrPerson = -1;
-	      m_taskStatus = NothingToDo;
-	      changeCurrentCommandCompletion(NavData::ABORTED,
-		  NavData::PERSONNOTFOUND);
+	    log("executing command ROTATEREL"); 
 
-	      log("Lost the person we were tracking");
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::rotateRel(currentTaskId, m_commandTheta);
+
+	  }
 
 
+	  // ROTATE_ABS
+
+	  else if ((m_commandType == NavData::lROTATEABS)) {
+
+	    log("executing command ROTATEABS"); 
+
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::rotateAbs(currentTaskId, m_commandTheta);
+
+	  }
+
+	  // BACK_OFF
+
+	  else if ((m_commandType == NavData::lBACKOFF)) {
+
+	    log("executing command BACKOFF"); 
+
+	    Cure::NewNavController::setPositionToleranceFinal(m_TolPos);
+	    Cure::NewNavController::setOrientationTolerance(m_TolRot);
+	    ret = Cure::NewNavController::backOff(currentTaskId, m_commandDistance);
+
+	  }
+
+	  // STOP
+
+	  else if ((m_commandType == NavData::lSTOPROBOT)) {
+
+	    log("executing command STOPROBOT"); 
+
+	    // This command is special:
+	    // It is always accomplished at the moment, by this thread,
+	    // and does not raise a doneTask calling (but can raise
+	    // abortTask).
+	    // 
+	    ret = Cure::NewNavController::stop();
+
+	  }
+
+	  // EXPLORE
+
+
+	  // Change completion now
+
+	  // First treat stop case
+	  if(m_commandType == NavData::lSTOPROBOT){
+	    getLogger()->info("Robot stopped");
+	    changeCurrentCommandCompletion(NavData::SUCCEEDED,
+		NavData::UNKNOWN);
+	    m_taskStatus = NothingToDo;
+
+	  } else if(m_taskStatus != TaskFinished){
+
+	    if ((m_commandType == NavData::lFOLLOWPERSON)) {
+
+	      IceUtil::Mutex::Lock lock2(m_PeopleMutex);
+
+	      if (m_CurrPerson < 0 || m_CurrPerson > (int)m_People.size()-1) {
+
+		m_CurrPerson = -1;
+		m_taskStatus = NothingToDo;
+		changeCurrentCommandCompletion(NavData::ABORTED,
+		    NavData::PERSONNOTFOUND);
+
+		log("Lost the person we were tracking");
+
+
+
+	      } else {
+
+		ret = Cure::NewNavController::followPerson(currentTaskId,
+		    m_People[m_CurrPerson].m_data->x,
+		    m_People[m_CurrPerson].m_data->y,
+		    m_People[m_CurrPerson].m_data->direction,
+		    m_People[m_CurrPerson].m_data->speed,
+		    0);
+
+	      }
 
 	    } else {
-
-	      ret = Cure::NewNavController::followPerson(currentTaskId,
-		  m_People[m_CurrPerson].m_data->x,
-		  m_People[m_CurrPerson].m_data->y,
-		  m_People[m_CurrPerson].m_data->direction,
-		  m_People[m_CurrPerson].m_data->speed,
-		  0);
-
-	    }
-
-	  } else {
-	    // this means that the m_navCtrl events were not triggered off,
-	    // so we have to send a completion now
-	    if(ret == 0){
-	      m_taskStatus = ExecutingTask;
-	      changeCurrentCommandCompletion(NavData::INPROGRESS,
-		  NavData::UNKNOWN);
-	    }else if(ret > 0){
-	      m_taskStatus = NothingToDo;
-	      changeCurrentCommandCompletion(NavData::FAILED,
-		  NavData::UNKNOWN);
+	      // this means that the m_navCtrl events were not triggered off,
+	      // so we have to send a completion now
+	      if(ret == 0){
+		m_logger->info("Begin executing command");
+		m_taskStatus = ExecutingTask;
+		changeCurrentCommandCompletion(NavData::INPROGRESS,
+		    NavData::UNKNOWN);
+	      }else if(ret > 0){
+		m_taskStatus = NothingToDo;
+		m_logger->info("Failed command");
+		changeCurrentCommandCompletion(NavData::FAILED,
+		    NavData::UNKNOWN);
+	      }
 	    }
 	  }
+	  //      m_Mutex.unlock();
 	}
-	//      m_Mutex.unlock();
-      }
 
+      }
     }
 
     {
+//      SCOPED_TIME_LOG;
+      IceUtil::Mutex::Lock lock(m_LMapMutex);
+
       m_LMap.moveRobot(m_CurrPose);
     }
 
-  static cast::cdl::CASTTime oldTime = getCASTTime();
-  cast::cdl::CASTTime newTime = getCASTTime();
-  long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
-  oldTime = newTime;
-  if (diff > 1500000) {
-    error("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
-  }
-  else {
-    log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
-  }
-
-  diff = (newTime.s-m_lastSLAMPoseTime.s)*1000000l+(newTime.us-m_lastSLAMPoseTime.us);
-  if (diff > 1500000) {
-    error("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
-  }
-  else {
-    log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
-  }
 
     {
       SCOPED_TIME_LOG;
-    Cure::NewNavController::updateCtrl();
+      m_LMapMutex.lock();
     }
+    {
+
+      static cast::cdl::CASTTime oldTime = getCASTTime();
+      cast::cdl::CASTTime newTime = getCASTTime();
+      long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
+      oldTime = newTime;
+      if (diff > 1500000) {
+	error("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+      }
+      else {
+	log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+      }
+
+      diff = (newTime.s-m_lastSLAMPoseTime.s)*1000000l+(newTime.us-m_lastSLAMPoseTime.us);
+      if (diff > 1500000) {
+	error("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+      }
+      else {
+	log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+      }
+
+      SCOPED_TIME_LOG;
+      Cure::NewNavController::updateCtrl();
+    }
+    m_LMapMutex.unlock();
 
   } // if (m_ready)    
+}
+
+void
+SpatialControl::mapUpdaterLoop()
+{
+  while (isRunning()) 
+  {
+    {
+      // IF robot is standing still, and 
+      // IF it has been a sufficiently long time since the maps
+      // were last saved, then 
+      // save the maps
+      // AND 
+      // prevent component from processing movement commands until
+      // the maps are saved
+      if (m_saveLgm){ 
+
+	m_mapUpdatesSinceLastSave++;
+
+	m_taskStatusMutex.lock();
+
+	if (m_taskStatus == NothingToDo &&
+	    m_mapUpdatesSinceLastSave >= 60) {
+	  m_waitingForMapSave = true;
+
+	  m_taskStatusMutex.unlock();
+
+	  getLogger()->info("Saving grid map");
+	  SaveGridMap();
+	  SaveHeightMap();
+	  getLogger()->info("Saved grid map");
+
+	  m_taskStatusMutex.lock();
+	  m_waitingForMapSave = false;
+
+	  m_mapUpdatesSinceLastSave = 0;
+	}
+
+	m_taskStatusMutex.unlock();
+      }
+
+      SCOPED_TIME_LOG;
+      updateGridMaps();
+    }
+    sleepComponent(500);
+  }
 }
 
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
@@ -2303,7 +2408,7 @@ SpatialControl::execCtrl(Cure::MotionAlgorithm::MotionCmd &cureCmd)
 
   debug("execCtrl sending (v=%fm/s,w=%frad/s) to RobotServer", cmd.speed, cmd.rotspeed);
   
-  SCOPED_TIME_LOG;
+//  SCOPED_TIME_LOG;
   m_RobotServer->execMotionCommand(cmd);
 }
 
@@ -2630,6 +2735,7 @@ SpatialData::LocalGridMap SpatialControl::getGridMap(){
 
 SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   SCOPED_TIME_LOG;
+  getLogger()->info("Refreshing node hypotheses");
 
   SpatialData::NodeHypothesisSeq ret;
 
@@ -2804,6 +2910,7 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 }
 
 }
+  log("Finished refreshing node hypotheses");
   return ret;
 }
 
