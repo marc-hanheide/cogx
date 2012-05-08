@@ -168,6 +168,10 @@ VARDEFAULT spatial_show_3d_obstacles=--show3Dobstacles
 ### Peekabot model files to use for VisualObjects. List of pairs, with 
 #   VisualObject label first, Peekabot model file name second
 VARDEFAULT pb_object_models="cornflakes musli.pbmf rice rice.pbmf keyboard keyboard.pbmf book book.pbmf"
+# if the flag --no-load-robot-file is present then a simple cube with orientation marker will be drawn in peekabot
+# this was added to try to deal with the peekabot crashes on Jenkins
+VARDEFAULT no_load_robot_file=
+
 
 ### SPATIAL.SA parameters
 # Lower boundary on width of doorways
@@ -185,10 +189,16 @@ VARDEFAULT spatial_load_map=--load-map --save-map
 VARDEFAULT spatial_node_obstacle_margin=1.5
 # Placeholders must be this far from unexplored space (times robot width)
 VARDEFAULT spatial_node_unknown_margin=0.5
+# Whether to output SLAM map and robot pose
+VARDEFAULT spatial_output_slam_files=yes
+# Whether to output raw odometry and laser scans for debug
+VARDEFAULT spatial_output_raw_data=--output-raw-data
 
-# if the flag --no-load-robot-file is present then a simple cube with orientation marker will be drawn in peekabot
-# this was added to try to deal with the peekabot crashes on Jenkins
-VARDEFAULT no_load_robot_file=
+IFEQ(%(spatial_output_slam_files),yes)
+  VARDEFAULT slam_mapconfig=-m tmpmap.metric 
+ELSE
+  VARDEFAULT slam_mapconfig=--no-file-output
+ENDIF
 
 ### Disable placeholder generation (no exploration): --no-placeholders
 VARDEFAULT no_placeholders=
@@ -317,11 +327,11 @@ IFOPTALL(%(feature_options), spatial)
     CPP GD spatial.control      SpatialControl -c %(spatial_cureconfig) --node-obstacle-margin %(spatial_node_obstacle_margin) --node-unknown-margin %(spatial_node_unknown_margin) %(spatial_load_map) %(spatial_show_3d_obstacles) --min-obstacle-height %(min_obstacle_height) --explore-range %(explore_range) %(spatial_ctrl_ptu) %(spatial_pcserver) %(usePB) %(simulate_kinect) #--cat-explore-range 5.6
 
     IFEQ(%(hardware),none)
-        CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) -m tmpmap.metric
+        CPP GD slam.process     SlamProcessFake -c %(spatial_cureconfig) %(slam_mapconfig) -m tmpmap.metric
     ELSE
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
-        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 -m tmpmap.metric %(usePB)
+        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 %(slam_mapconfig) %(usePB)
     ENDIF
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
