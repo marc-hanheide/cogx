@@ -50,6 +50,8 @@ public class ProtoObjectTransferFunction extends
 		//only 0 or 1 for optional vo argument
 		assert (from.visualObject.length <= 1);
 
+		logger.debug("get feature value called for protoobject transfer");
+		
 		// if there is a VO associated with this PO
 		if (from.visualObject.length == 1) {
 			WorkingMemoryAddress voAddr = from.visualObject[0].address;
