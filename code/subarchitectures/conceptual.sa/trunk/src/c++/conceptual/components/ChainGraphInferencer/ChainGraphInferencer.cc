@@ -53,7 +53,7 @@ ChainGraphInferencer::ChainGraphInferencer() :
     // Store the constants in a PropertySet object
 	size_t maxiter = 10000;
     dai::Real   tol = 1e-9;
-    size_t verb = 1;
+    size_t verb = 0;
 
      // Store the constants in a PropertySet object
      _daiOptions.set("maxiter",maxiter);  // Maximum number of iterations
