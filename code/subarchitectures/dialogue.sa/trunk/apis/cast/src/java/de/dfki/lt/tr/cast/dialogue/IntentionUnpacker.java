@@ -51,7 +51,8 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 	}
 
 	/**
-	 * Unpack the most confident intention.
+	 * /** Unpack the most confident intention from the input address to working
+	 * memory.
 	 * 
 	 * @param _component
 	 * @param addr
@@ -71,6 +72,9 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 	}
 
 	/**
+	 * Unpack the most confident intention to working memory.
+	 * 
+	 * 
 	 * @param _component
 	 * @param pii
 	 * @throws AlreadyExistsOnWMException
@@ -86,7 +90,7 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 	}
 
 	/**
-	 * Unpack the intention with the given address.
+	 * Unpack the intention with the given address to working memory.
 	 * 
 	 * @param _component
 	 * @param _intentionAddr
@@ -100,6 +104,7 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 			PossibleInterpretedIntentions _interpretations)
 			throws AlreadyExistsOnWMException, DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
+
 		InterpretedIntention iint = _interpretations.intentions
 				.get(_intentionAddr);
 
@@ -142,9 +147,9 @@ public class IntentionUnpacker extends AbstractDialogueComponent {
 		for (WorkingMemoryAddress addr : pii.intentions.keySet()) {
 			InterpretedIntention iint = pii.intentions.get(addr);
 
-//			System.out.println("most confident intention: "
-//					+ InterpretedUserIntention
-//							.interpretedIntentionToString(iint));
+			// System.out.println("most confident intention: "
+			// + InterpretedUserIntention
+			// .interpretedIntentionToString(iint));
 
 			if (iint.confidence > best) {
 				bestAddr = addr;
