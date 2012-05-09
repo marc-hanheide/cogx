@@ -199,16 +199,18 @@ void SpatialControl::CreateGridMap() {
         peekabot::OccupancySet3D cells1;
         for (int yi = -m_lgmKH->getSize(); yi <= m_lgmKH->getSize(); yi++) {
           for (int xi = -m_lgmKH->getSize(); xi <= m_lgmKH->getSize(); xi++) {
+            double xr, yr;      
+            m_lgm->index2WorldCoords(xi, yi, xr, yr);
             if ((*m_lgm)(xi,yi) == '1'){ 
               if ((*m_lgmKH)(xi, yi) != FLT_MAX){
                 for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
-                  cells1.set_cell(xi*m_lgm->getCellSize(),yi*m_lgm->getCellSize(),zi,1);
+                  cells1.set_cell(xr,yr,zi,1);
                 }
               }
             }
             else if ((*m_lgm)(xi,yi) == '0'){
                 for (double zi = 0; zi <= kinectZ; zi+=0.05) {
-                  cells1.set_cell(xi*m_lgm->getCellSize(),yi*m_lgm->getCellSize(),zi,0);
+                  cells1.set_cell(xr,yr,zi,0);
                 }
             } 
           }
@@ -1185,13 +1187,15 @@ void SpatialControl::updateGridMaps(){
 	if (!m_bDoPBSync) {
 
 	  peekabot::OccupancySet2D cells;
-	  double cellSize=m_lgm->getCellSize();
+
 	  for (int yi = min(pointcloudMinYi,laserMinYi)+1; yi < max(pointcloudMaxYi,laserMaxYi); yi++) {
 	    for (int xi =  min(pointcloudMinXi,laserMinXi)+1; xi < max(pointcloudMaxXi,laserMaxXi); xi++) {
+                  double xr, yr;      
+                  m_lgm->index2WorldCoords(xi, yi, xr, yr);
 	      if ((*tmp_lgm)(xi, yi)=='0')
-		cells.add(xi*cellSize,yi*cellSize,0);
+		cells.add(xr,yr,0);
 	      else if ((*tmp_lgm)(xi, yi)=='1')
-		cells.add(xi*cellSize,yi*cellSize,1);
+		cells.add(xr,yr,1);
 	    }
 	  }
 	  m_ProxyGridMap.set_cells(cells);
@@ -1199,16 +1203,18 @@ void SpatialControl::updateGridMaps(){
 	    peekabot::OccupancySet3D cells1;
 	    for (int yi = pointcloudMinYi; yi <= pointcloudMaxYi; yi++) {
 	      for (int xi = pointcloudMinXi; xi <= pointcloudMaxXi; xi++) {
+                  double xr, yr;      
+                  m_lgm->index2WorldCoords(xi, yi, xr, yr);
 		if ((*tmp_lgm)(xi,yi) == '1'){ 
 		  if ((*m_lgmKH)(xi, yi) != FLT_MAX){
 		    for (double zi = 0; zi <= floor((*m_lgmKH)(xi, yi)/0.05)*0.05; zi+=0.05) {
-		      cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
+		      cells1.set_cell(xr,yr,zi,1);
 		    }
 		  }
 		}
 		else if ((*tmp_lgm)(xi,yi) == '0'){
 		  for (double zi = 0; zi <= kinectZ; zi+=0.05) {
-		    cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
+		    cells1.set_cell(xr,yr,zi,0);
 		  }
 		} 
 	      }
@@ -1242,10 +1248,11 @@ void SpatialControl::updateGridMaps(){
 
 		for (int yi = minY; yi <= maxY; yi++) {
 			for (int xi = minX; xi <= maxX; xi++) {
-					double cellsize = m_lgm->getCellSize();
+          double xr, yr;      
+          m_lgm->index2WorldCoords(xi, yi, xr, yr);
 					double al = -(lpW.getTheta()+m_currentPTZPose.pan);
-					double nx = (xi*cellsize-lpW.getX()) * cos(al) - (yi*cellsize-lpW.getY()) * sin(al);
-					double ny = (xi*cellsize-lpW.getX()) * sin(al) + (yi*cellsize-lpW.getY()) * cos(al);
+					double nx = (xr-lpW.getX()) * cos(al) - (yr-lpW.getY()) * sin(al);
+					double ny = (xr-lpW.getX()) * sin(al) + (yr-lpW.getY()) * cos(al);
   				if ((nx > m_maxKinectX) || (m_KinectK * nx - ny < 0) || (-m_KinectK * nx - ny > 0)) {
 						if ((*tmp_lgm)(xi, yi) != '1') (*tmp_lgm)(xi, yi) = '2';
           }
@@ -1260,13 +1267,14 @@ void SpatialControl::updateGridMaps(){
 //    	SCOPED_TIME_LOG;
 
       peekabot::OccupancySet2D cells;
-      double cellSize=m_lgm->getCellSize();
       for (int yi = minY+1; yi < maxY; yi++) {
         for (int xi = minX+1; xi < maxX; xi++) {
+                  double xr, yr;      
+                  m_lgm->index2WorldCoords(xi, yi, xr, yr);
               if ((*tmp_lgm)(xi, yi)=='0')
-                  cells.add(xi*cellSize,yi*cellSize,0);
+                  cells.add(xr,yr,0);
               else if ((*tmp_lgm)(xi, yi)=='1')
-                  cells.add(xi*cellSize,yi*cellSize,1);
+                  cells.add(xr,yr,1);
         }
       }
       m_ProxyGridMap.set_cells(cells);
@@ -1276,16 +1284,19 @@ void SpatialControl::updateGridMaps(){
 	    peekabot::OccupancySet3D cells1;
 	    for (int yi = minY+1; yi < maxY; yi++) {
 	      for (int xi = minX+1; xi < maxX; xi++) {
+                  double xr, yr;      
+                  m_lgm->index2WorldCoords(xi, yi, xr, yr);
 		if ((*tmp_lgm)(xi,yi) == '1'){ 
 		  if ((*m_lgmKH)(xi, yi) != FLT_MAX){
+
 		    for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi+=0.05) {
-		      cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,1);
+		      cells1.set_cell(xr,yr,zi,1);
 		    }
 		  }
 		}
 		else if ((*tmp_lgm)(xi,yi) == '0'){
 		  for (double zi = 0; zi <= kinectZ; zi+=0.05) {
-		    cells1.set_cell(xi*tmp_lgm->getCellSize(),yi*tmp_lgm->getCellSize(),zi,0);
+		    cells1.set_cell(xr,yr,zi,0);
 		  }
 		} 
 	      }
@@ -2646,13 +2657,14 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
     int maxDist = 40; // The first maximum distance to try
     closestNodeId = -1;
     int minDistance = 10000;
+    double xr, yr;      
+    m_lgm->index2WorldCoords(x, y, xr, yr);
 
 //CHECK AGAINST NODE_HYP
     for (vector<SpatialData::NodeHypothesisPtr>::iterator extantHypIt =
         non_overlapped_hypotheses.end(); extantHypIt !=  non_overlapped_hypotheses.begin(); ) {
       SpatialData::NodeHypothesisPtr extantHyp = *(--extantHypIt);
-
-      double dist2sq = (x*m_lgm->getCellSize() - extantHyp->x) * (x*m_lgm->getCellSize() - extantHyp->x) + (y*m_lgm->getCellSize() - extantHyp->y) * (y*m_lgm->getCellSize() - extantHyp->y);
+      double dist2sq = (xr - extantHyp->x) * (xr - extantHyp->x) + (yr - extantHyp->y) * (yr - extantHyp->y);
       if (dist2sq < 1 * 1){
         counter1++;
         return false;
@@ -2666,7 +2678,7 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
       }
       for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
         try {
-          double dist2sq = (x*m_lgm->getCellSize() - (*nodeIt)->x) * (x*m_lgm->getCellSize() - (*nodeIt)->x) + (y*m_lgm->getCellSize() - (*nodeIt)->y) * (y*m_lgm->getCellSize() - (*nodeIt)->y);
+          double dist2sq = (xr - (*nodeIt)->x) * (xr - (*nodeIt)->x) + (yr - (*nodeIt)->y) * (yr - (*nodeIt)->y);
           if (dist2sq < m_min_sep_dist*m_min_sep_dist){
             counter3++;
             return false;
@@ -2828,8 +2840,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         int originNodeID;
         if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
           SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
-          new_nh->x=x*m_lgm->getCellSize();
-          new_nh->y=y*m_lgm->getCellSize();
+          double xr, yr;      
+          m_lgm->index2WorldCoords(x, y, xr, yr);
+
+          new_nh->x=xr;
+          new_nh->y=yr;
           new_nh->hypID=extantHyp->hypID;
           new_nh->originPlaceID=-1;
           new_nh->originNodeID=originNodeID;
@@ -2879,8 +2894,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
       int y= round(robotyi+r*sin(theta+j*2*3.14/36)); 
       if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
-        new_nh->x=x*m_lgm->getCellSize();
-        new_nh->y=y*m_lgm->getCellSize();
+        double xr, yr;      
+        m_lgm->index2WorldCoords(x, y, xr, yr);
+
+        new_nh->x=xr;
+        new_nh->y=yr;
         new_nh->hypID=-1;
         new_nh->originPlaceID=-1;
         new_nh->originNodeID=originNodeID;
@@ -2897,8 +2915,11 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     double y = (*itDoor)->y;
     if (check_point(x,y,nodes,ret,map1,map1,originNodeID)){
       SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
-      new_nh->x=x*m_lgm->getCellSize();
-      new_nh->y=y*m_lgm->getCellSize();
+      double xr, yr;      
+      m_lgm->index2WorldCoords(x, y, xr, yr);
+
+      new_nh->x=xr;
+      new_nh->y=yr;
       new_nh->hypID=-1;
       new_nh->originPlaceID=-1;
       new_nh->originNodeID=originNodeID;
