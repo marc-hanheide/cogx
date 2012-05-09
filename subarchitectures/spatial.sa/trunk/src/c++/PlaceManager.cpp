@@ -206,20 +206,21 @@ PlaceManager::start()
             connectPeekabot();
         }
         m_ProxyForbiddenMap.add(m_PeekabotClient, "pm_forbidden",peekabot::REPLACE_ON_CONFLICT);
-        m_ProxyForbiddenMap.set_position(0,0,-0.004);
-
+        m_ProxyForbiddenMap.set_position(0,0,-0.005);
+        int i=0;
         for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
             fbIt != m_forbiddenZones.end(); fbIt++) {
             peekabot::PolygonProxy* p = new peekabot::PolygonProxy();
             
-	    peekabot::VertexSet vs;
+	          peekabot::VertexSet vs;
             p->add(m_ProxyForbiddenMap, "zone");
             p->set_color(1,0.1,0.1);
-            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
-            vs.add( fbIt->minX < -10 ? -10 : fbIt->minX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->maxY > 10 ? 10 : fbIt->maxY, 0 );
-            vs.add( fbIt->maxX > 10 ? 10 : fbIt->maxX, fbIt->minY < -10 ? -10 : fbIt->minY, 0 );
-	    p->add_vertices(vs);
+            vs.add( fbIt->minX < -30 ? -30 : fbIt->minX, fbIt->minY < -30 ? -30 : fbIt->minY, i*0.001 );
+            vs.add( fbIt->minX < -30 ? -30 : fbIt->minX, fbIt->maxY > 30 ? 30 : fbIt->maxY, i*0.001 );
+            vs.add( fbIt->maxX > 30 ? 30 : fbIt->maxX, fbIt->maxY > 30 ? 30 : fbIt->maxY, i*0.001 );
+            vs.add( fbIt->maxX > 30 ? 30 : fbIt->maxX, fbIt->minY < -30 ? -30 : fbIt->minY, i*0.001 );
+      	    p->add_vertices(vs);
+            i++;
         }
 	}
 
