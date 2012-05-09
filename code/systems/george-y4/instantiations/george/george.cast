@@ -141,6 +141,7 @@ IFOPTALL(%(feature_options), planning)
    VARDEFAULT planner_show_dot=--nodot
    VARDEFAULT planner_workdir=subarchitectures/planner.sa/src/python
    VARDEFAULT planner_domain=george.domain.year4.mapl
+   VARDEFAULT planner_config="config.george.ini"
    VARDEFAULT planner_monitor_files=<multiline>
       CurrentPlan#plan=dot:%(planner_workdir)/{plan*.dot}
    </multiline>
@@ -148,6 +149,7 @@ IFOPTALL(%(feature_options), planning)
    SETVAR planner_srv_params=<multiline>
        --domain %(planner_domain)
        --displayserver "display.srv"
+       --config %(planner_config)
         %(planner_show_dot)
    </multiline>
    # WARNING: COMPONENT ends a SA and all MG and UM components are skipped until next SA
