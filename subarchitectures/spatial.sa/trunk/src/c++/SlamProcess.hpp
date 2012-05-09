@@ -152,6 +152,7 @@ public:
   bool m_RobotIsMoving;
 
   bool m_DontWriteFiles;
+  bool m_outputRawData;
 
   bool m_UpdateWithoutMotion;
 
