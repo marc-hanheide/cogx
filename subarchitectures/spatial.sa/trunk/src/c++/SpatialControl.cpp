@@ -2883,15 +2883,36 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   counter5 = 0;
   counter6 = 0;
 
-  for (int i=0;i<30;i++){
+  vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
+  getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
+  for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
+                  doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
+    double x = (*itDoor)->x;
+    double y = (*itDoor)->y;
+    if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
+      SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
+      double xr, yr;      
+      m_lgm->index2WorldCoords(x, y, xr, yr);
+
+      new_nh->x=xr;
+      new_nh->y=yr;
+      new_nh->hypID=-1;
+      new_nh->originPlaceID=-1;
+      new_nh->originNodeID=originNodeID;
+      new_nh->gateway = true;
+      ret.push_back(new_nh);
+    }
+  }
+
+  for (int i=0;i<20;i++){
     double theta = (rand() % 360) * M_PI / 180; 
-    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/30*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
+    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/20*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
 //    int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
-    for (int j=0;j<36;j++){
-      int x= round(robotxi+r*cos(theta+j*2*3.14/36)); 
-      int y= round(robotyi+r*sin(theta+j*2*3.14/36)); 
+    for (int j=0;j<72;j++){
+      int x= round(robotxi+r*cos(theta+j*2*3.14/72)); 
+      int y= round(robotyi+r*sin(theta+j*2*3.14/72)); 
       if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         double xr, yr;      
@@ -2905,26 +2926,6 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
         new_nh->gateway = false;
         ret.push_back(new_nh);
       }
-    }
-  }
-  vector<FrontierInterface::DoorHypothesisPtr> doorHyps;
-  getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
-  for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
-                  doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
-    double x = (*itDoor)->x;
-    double y = (*itDoor)->y;
-    if (check_point(x,y,nodes,ret,map1,map1,originNodeID)){
-      SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
-      double xr, yr;      
-      m_lgm->index2WorldCoords(x, y, xr, yr);
-
-      new_nh->x=xr;
-      new_nh->y=yr;
-      new_nh->hypID=-1;
-      new_nh->originPlaceID=-1;
-      new_nh->originNodeID=originNodeID;
-      new_nh->gateway = true;
-      ret.push_back(new_nh);
     }
   }
   log("check_point %d %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5,counter6);
