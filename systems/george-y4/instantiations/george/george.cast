@@ -53,7 +53,7 @@ OPTDEFAULT feature_options=<multiline>
    !dialogue
    !planning
    # Include Manual Planning, only if planning is also enabled
-   manual-planning
+   !manual-planning
    !motivation
    !manipulation
    visualization
@@ -165,9 +165,9 @@ IFOPTALL(%(feature_options), planning)
 
    IFOPTALL(%(feature_options), manual-planning)
       JAVA MG manual.planning eu.cogx.planner.facade.ManualPlanningTaskComponent
+      JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
    ENDIF
-
-   JAVA MG manual.execution george.execution.components.GraphicalExecutionManager
+   
    JAVA MG execution-mediator george.execution.components.GeorgeExecutionMediator
 
    IFOPTALL(%(feature_options), binder)
@@ -176,6 +176,8 @@ IFOPTALL(%(feature_options), planning)
       # Y3: JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
       JAVA MG assumed-tracker eu.cogx.belieftracker.george.AssumedBeliefTracker --write-to-sa binder --log true
       JAVA MG assumed-verified-merger eu.cogx.belieftracker.george.AssumedVerifiedVisualObjectMerger --write-to-sa binder  --log true
+      
+      # JAVA MG wmeditor.yaml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.VerifiedBelief"
    ENDIF
 ENDIF
 
@@ -218,13 +220,14 @@ IFOPTALL(%(feature_options), visualization)
 
    JAVA MG beliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief"  --generic-col --compact --omit-fields "content"
    JAVA MG mergedbeliefdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "eu.cogx.beliefs.slice.MergedBelief"  --generic-col --compact --omit-fields "content"
+   JAVA MG intentiondisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention"  --generic-col --compact --omit-fields "content"
+
    IFOPTALL(%(feature_options), planning)
       JAVA MG plannertasksdisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "autogen.Planner.PlanningTask" --generic-col
    ENDIF
 
    IFOPTALL(%(feature_options), motivation)
       JAVA MG motivedisplay motivation.util.viewer.MotiveChartViewer --displayserver "display.srv" --mode SVG
-
       JAVA MG goaldisplay castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe "motivation.slice.Motive"
    ENDIF
 
