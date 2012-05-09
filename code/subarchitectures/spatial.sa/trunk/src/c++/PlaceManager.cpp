@@ -1308,6 +1308,25 @@ void PlaceManager::evaluateUnexploredPaths()
                   nodeHyp->x=extantHyp->x;
                   nodeHyp->y=extantHyp->y;
                   if (extantHyp->originPlaceID == -1) extantHyp->originPlaceID = _getPlaceIDForNode(extantHyp->originNodeID);
+                  //Check if there's a place on this side of the door
+                  NavData::FNodePtr originNode = _getNodeForPlace(extantHyp->originPlaceID);        
+                  if (originNode->gateway){
+                    set<int> placeConnectivities = m_connectivities[extantHyp->originPlaceID];
+                    for(set<int>::iterator it1 = placeConnectivities.begin(); it1 != placeConnectivities.end(); it1++) { 
+                      NavData::FNodePtr testNode = _getNodeForPlace((*it1));    
+                      if (testNode!=0){                      
+                        bool side1 = (extantHyp->y < originNode->y + tan(originNode->theta)*(extantHyp->x-originNode->x));
+                        bool side2 = (testNode->y < originNode->y + tan(originNode->theta)*(testNode->x-originNode->x));
+                        if (side1 == side2){
+                          // Both node are on the same side - connect nodes
+                          extantHyp->originPlaceID = (*it1);
+                          break;
+                        }
+                      }
+                    } 
+                  }
+
+
                   if (nodeHyp->originPlaceID != extantHyp->originPlaceID){
                     log("Found closest node. Connecting with the current");
 
@@ -1324,6 +1343,8 @@ void PlaceManager::evaluateUnexploredPaths()
 		    }
 
                     nodeHyp->originPlaceID = extantHyp->originPlaceID;
+
+
 
 		    log("Adding connectivity between %i and %i", extantHyp->originPlaceID, place->id);
                     createConnectivityProperty(m_hypPathLength, 
@@ -1357,6 +1378,26 @@ void PlaceManager::evaluateUnexploredPaths()
         log("create new placeholder");
 //        newHyp->hypID = m_hypIDCounter;
         if (newHyp->originPlaceID == -1) newHyp->originPlaceID = _getPlaceIDForNode(newHyp->originNodeID);
+        //Check if there's a place on this side of the door
+        NavData::FNodePtr originNode = _getNodeForPlace(newHyp->originPlaceID);        
+        if (originNode->gateway){
+          set<int> placeConnectivities = m_connectivities[newHyp->originPlaceID];
+          for(set<int>::iterator it1 = placeConnectivities.begin(); it1 != placeConnectivities.end(); it1++) { 
+            NavData::FNodePtr testNode = _getNodeForPlace((*it1));  
+            if (testNode!=0){  
+              bool side1 = (newHyp->y < originNode->y + tan(originNode->theta)*(newHyp->x -originNode->x));
+              bool side2 = (testNode->y< originNode->y + tan(originNode->theta)*(testNode->x-originNode->x));
+              if (side1 == side2){
+                // Both node are on the same side - connect nodes
+                newHyp->originPlaceID = (*it1);
+                break;
+              }
+            } 
+          } 
+        }
+
+
+
 //          log("Couldn't find closest node. Connecting with the current");
  
 //       newHyp->originPlaceID = _getPlace(curPlace)->id;
