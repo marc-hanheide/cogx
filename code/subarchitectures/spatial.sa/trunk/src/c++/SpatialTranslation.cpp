@@ -113,7 +113,7 @@ void SpatialTranslation::stop(){
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::runComponent() {
-  
+    sleepComponent(4000);
     if (m_issueVisualExplorationActions) {
       Rendezvous rv(*this);  
       issueVisualExplorationCommand(rv);
