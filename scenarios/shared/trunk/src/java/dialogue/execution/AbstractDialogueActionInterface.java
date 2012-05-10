@@ -28,6 +28,7 @@ import de.dfki.lt.tr.beliefs.slice.intentions.IntentionToAct;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
 import de.dfki.lt.tr.dialogue.intentions.RichIntention;
@@ -106,7 +107,6 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				Class<T> _cls) {
 			this(_component, _cls, DLG_TIMEOUT, TriBool.TRIFALSE);
 		}
-
 
 		@Override
 		public TriBool execute() {
@@ -585,6 +585,15 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 					if (!potentialReferentAddr.equals(correctReferentAddr)) {
 						unmarkReferent(potentialReferentAddr);
 					} else {
+
+						assert (pii.resolvedIntention.equals(NewIntentionRecognizer.EMPTY_ADDRESS));
+
+						// store the correctly resolved intention address in the
+						// possibles structure
+						pii.resolvedIntention = addr;
+						//write PII back to wm to reflect update to 
+						getComponent().overwriteWorkingMemory(piiAddr, pii);
+						
 						// else decode and mark as accepted
 						RichIntention decoded = AbstractDialogueActionInterface
 								.extractRichIntention(iint);
@@ -603,6 +612,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 					}
 				}
+				
+
 
 			} else {
 				// this is the wrong thing
@@ -665,10 +676,9 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			println("removing reference marker from belief at "
 					+ CASTUtils.toString(_refGroundBelAddr));
 
-			
-
 			if (!((AbstractDialogueActionInterface<?>) getComponent())
-					.removeQuestionReference(_refGroundBelAddr, _refGroundBelAddr)) {
+					.removeQuestionReference(_refGroundBelAddr,
+							_refGroundBelAddr)) {
 				getComponent().getLogger().warn(
 						"Verified belief didn't have field"
 								+ IS_POTENTIAL_OBJECT_IN_QUESTION,
@@ -1017,13 +1027,12 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	 * @throws UnknownSubarchitectureException
 	 */
 	protected boolean removeQuestionReference(WorkingMemoryAddress _beliefAddr,
-			WorkingMemoryAddress _refGroundBelAddr) throws DoesNotExistOnWMException,
-			ConsistencyException, PermissionException,
-			UnknownSubarchitectureException {
+			WorkingMemoryAddress _refGroundBelAddr)
+			throws DoesNotExistOnWMException, ConsistencyException,
+			PermissionException, UnknownSubarchitectureException {
 
-		BeliefType rawBelief = getMemoryEntry(
-				_refGroundBelAddr, m_beliefCls);
-		
+		BeliefType rawBelief = getMemoryEntry(_refGroundBelAddr, m_beliefCls);
+
 		CASTIndependentFormulaDistributionsBelief<BeliefType> belief = CASTIndependentFormulaDistributionsBelief
 				.create(m_beliefCls, rawBelief);
 
