@@ -89,19 +89,19 @@ void VL_recognise_attributes(const ProtoObject &Object, vector<string> &labels,
        attr = "compact";
        labels.push_back(attr);
        labelConcepts.push_back(labelConceptMap[attr]);
-       probs.push_back(0.8);
+       probs.push_back(0.1);
        gains.push_back(0.2);
    } else {
        attr = "blue";
        labels.push_back(attr);
        labelConcepts.push_back(labelConceptMap[attr]);
-       probs.push_back(0.99);
+       probs.push_back(0.9);
        gains.push_back(0.2);
 
        attr = "compact";
        labels.push_back(attr);
        labelConcepts.push_back(labelConceptMap[attr]);
-       probs.push_back(0.55);
+       probs.push_back(0.1);
        gains.push_back(0.2);
    }
    ++count;
