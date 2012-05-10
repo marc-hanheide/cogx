@@ -24,7 +24,7 @@ IFEQ(%(hardware),real)
     cameramount
     robot
     !laser
-    !katana
+    katana
   </multiline>
 ELSE # simulation
   OPTDEFAULT hardware_options=<multiline>
@@ -55,7 +55,7 @@ OPTDEFAULT feature_options=<multiline>
    # Include Manual Planning, only if planning is also enabled
    !manual-planning
    !motivation
-   !manipulation
+   manipulation
    visualization
    standalone-display
 </multiline>
@@ -104,7 +104,7 @@ IFOPTALL(%(feature_options), vision)
 
    # belief mediators, execution
    IFOPTALL(%(feature_options), vision-execution)
-      JAVA MG exe.vision vision.execution.george.VisionActionInterface --fake-pose --log 
+      JAVA MG exe.vision vision.execution.george.VisionActionInterface --fake-pose 
       # INCLUDE includes/vision.sa/vision-execution.cast
    ENDIF
 
@@ -159,7 +159,7 @@ IFOPTALL(%(feature_options), planning)
    JAVA WM cast.architecture.SubarchitectureWorkingMemory
    CPP TM AlwaysPositiveTaskManager
 
-   CPP MG Planner WMControl --log
+   CPP MG Planner WMControl 
 
    CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --monitor "%(planner_monitor_files)"
 
@@ -174,8 +174,8 @@ IFOPTALL(%(feature_options), planning)
       JAVA MG rbt-mediator eu.cogx.perceptmediator.george.components.RobotMediatorComponent --write-to-sa binder
 
       # Y3: JAVA MG shared-tracker eu.cogx.sharedtracker.george.SharedBeliefTracker --write-to-sa binder
-      JAVA MG assumed-tracker eu.cogx.belieftracker.george.AssumedBeliefTracker --write-to-sa binder --log true
-      JAVA MG assumed-verified-merger eu.cogx.belieftracker.george.AssumedVerifiedVisualObjectMerger --write-to-sa binder  --log true
+      JAVA MG assumed-tracker eu.cogx.belieftracker.george.AssumedBeliefTracker --write-to-sa binder 
+      JAVA MG assumed-verified-merger eu.cogx.belieftracker.george.AssumedVerifiedVisualObjectMerger --write-to-sa binder 
       
       # JAVA MG wmeditor.yaml castutils.castextensions.wmeditor.XMLEditor --subscribe "eu.cogx.beliefs.slice.VerifiedBelief"
    ENDIF
@@ -187,11 +187,13 @@ IFOPTALL(%(feature_options), motivation)
 ENDIF
 
 # manipulation #####################################################################
+
 IFOPTALL(%(feature_options), manipulation)
+
    SUBARCHITECTURE manipulation.sa
    JAVA WM cast.architecture.SubarchitectureWorkingMemory
    CPP TM AlwaysPositiveTaskManager
-
+   
    # Include the appropriate Katana config
    # TODO: select katana 300 or 450
    IFOPTALL(%(hardware_options), katana)
@@ -201,6 +203,8 @@ IFOPTALL(%(feature_options), manipulation)
       IFEQ(%(hardware),real)
          INCLUDE  real/katana300-real.incl
       ENDIF
+   ELSE
+	JAVA MG exe.manipulation manipulation.execution.george.FakeManipulationActionInterface 
    ENDIF
 ENDIF
 
@@ -233,6 +237,6 @@ IFOPTALL(%(feature_options), visualization)
 
    # main_camera_id is defined by xxx/cameras-xxx.incl
    IFNEQ(%(main_camera_id),)
-       CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" #--log --debug
+       CPP MG scene.2d VirtualScene2D  --v11n-objects "video.viewer.0" 
    ENDIF
 ENDIF
