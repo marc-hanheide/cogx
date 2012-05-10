@@ -14,6 +14,10 @@ import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.beliefs.slice.intentions.PossibleInterpretedIntentions;
 import de.dfki.lt.tr.cast.dialogue.IntentionUnpacker;
+import de.dfki.lt.tr.cast.dialogue.NewIntentionRecognizer;
+import de.dfki.lt.tr.dialogue.intentions.CASTEffect;
+import de.dfki.lt.tr.dialogue.intentions.RichIntention;
+import dialogue.execution.AbstractDialogueActionInterface;
 import execution.slice.Robot;
 
 /**
@@ -39,7 +43,7 @@ public class PossibleInterpretationsMotiveGenerator
 			boolean _excludeShape) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException, ConsistencyException,
 			PermissionException {
-		
+
 		lockEntry(getRobotAddress(), WorkingMemoryPermissions.LOCKEDODR);
 		Robot rbt = getMemoryEntry(getRobotAddress(), Robot.class);
 		rbt.excludeColor = _excludeColor;
@@ -116,8 +120,8 @@ public class PossibleInterpretationsMotiveGenerator
 
 			for (WorkingMemoryAddress addr : _pii.intentions.keySet()) {
 				InterpretedIntention iint = _pii.intentions.get(addr);
-				addAttribution(aboutBeliefAddress(iint),
-						tilm.assertedFeature, tilm.assertedValue, tilm.assertedLearn);
+				addAttribution(aboutBeliefAddress(iint), tilm.assertedFeature,
+						tilm.assertedValue, tilm.assertedLearn);
 			}
 		}
 
@@ -137,7 +141,7 @@ public class PossibleInterpretationsMotiveGenerator
 
 			InterpretedIntention mostConfidentIntention = IntentionUnpacker
 					.getMostConfidentIntention(_pii);
-		
+
 			return mostConfidentIntention.confidence < DISAMBIGUATION_CONFIDENCE_THRESHOLD;
 		}
 	}
@@ -212,7 +216,29 @@ public class PossibleInterpretationsMotiveGenerator
 			cleanBelief(aboutBeliefAddress(iint));
 		}
 
+		// now execute success effects on resolved intention
+		if (!_pii.resolvedIntention.equals(NewIntentionRecognizer.EMPTY_ADDRESS)) {
+			InterpretedIntention iint = _pii.intentions
+					.get(_pii.resolvedIntention);
+
+			RichIntention decoded = AbstractDialogueActionInterface
+					.extractRichIntention(iint);
+
+			if (decoded == null) {
+				getLogger().warn("Unable to decode intention",
+						getLogAdditions());
+			} else {
+				CASTEffect successEffect = decoded.getOnSuccessEffect();
+				successEffect.makeItSo(this);
+				println("executed success effect");
+			}
+
+		} else {
+			getLogger().warn(
+					"diambiguation motive was completed but no referent set",
+					getLogAdditions());
+		}
+
 		updateFeatureExclusion(false, false);
 	}
-
 }
