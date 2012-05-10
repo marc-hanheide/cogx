@@ -898,7 +898,7 @@ void AVS_ContinualPlanner::generateViewCones(
 					pdfmass, m_templateRoomGridMaps[newVPCommand->roomId]);
 			normalizePDF(*m_objectBloxelMaps[id], pdfmass);
 		}
-		m_conedepth = 2;
+		m_conedepth = 2; //FIXME
 
 	} else if (newVPCommand->relation == SpatialData::INROOM && !alreadyGenerated) {
 		log("Searching in the room, assuming uniform probability");

@@ -237,7 +237,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
   m_mapsize = MapSize;
   m_cellsize = CellSize;
   PlaneData mpty;
-  m_planeMap = new PlaneMap(MapSize, CellSize, mpty, PlaneMap::MAP1);
 
   m_lgm1 = new CharMap(MapSize, CellSize, '2', CharMap::MAP1);
   m_nodeGridMaps[0] = m_lgm1;

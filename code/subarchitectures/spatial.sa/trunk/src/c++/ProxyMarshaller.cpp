@@ -494,7 +494,7 @@ ProxyMarshaller::newPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 void
 ProxyMarshaller::changedPlace(const cast::cdl::WorkingMemoryChange &_wmc)
 {
-  lockEntry(_wmc.address.id, cdl::LOCKEDODR);
+  lockEntry(_wmc.address.id, cdl::LOCKEDOD);
   SpatialData::PlacePtr place = getMemoryEntry<SpatialData::Place>(_wmc.address);
   if (place != 0) {
     stringstream ss;

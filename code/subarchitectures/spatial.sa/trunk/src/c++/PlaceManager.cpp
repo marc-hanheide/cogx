@@ -88,13 +88,13 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_useLocalMaps = true;
   }
 
-  if(_config.find("--min-frontier-dist") != _config.end()) {
-    std::istringstream str(_config.find("--min-frontier-dist")->second);
-    str >> m_minFrontierDist;
-  }
-  else {
-    m_minFrontierDist = 0.5;
-  }
+//  if(_config.find("--min-frontier-dist") != _config.end()) {
+//    std::istringstream str(_config.find("--min-frontier-dist")->second);
+//    str >> m_minFrontierDist;
+//  }
+//  else {
+//    m_minFrontierDist = 0.5;
+//  }
 
   if(_config.find("--min-node-separation") != _config.end()) {
     std::istringstream str(_config.find("--min-node-separation")->second);

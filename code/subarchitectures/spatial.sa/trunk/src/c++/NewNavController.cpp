@@ -441,7 +441,7 @@ NewNavController::gotoXYA(int taskID, double x, double y, double a)
   //                   x, y, a,
   //                   m_Path, 0)) {
   if (findPath(x, y, a, m_Path)) {
-    m_sc->error("Failed to plan path to x=%f y=%f a=%a\n",x,y,a);
+    m_sc->error("Failed to plan path to x=%f y=%f a=%f\n",x,y,a);
     return RETVAL_NOPATH;
   }
 
