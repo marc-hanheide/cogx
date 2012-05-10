@@ -107,6 +107,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			this(_component, _cls, DLG_TIMEOUT, TriBool.TRIFALSE);
 		}
 
+
 		@Override
 		public TriBool execute() {
 			log("IntentionDialogueAction.execute()");
@@ -125,8 +126,9 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				prepareCheckAndResponse(id);
 				getComponent().addToWorkingMemory(id, actint);
 				res = waitAndCheckResponse(id);
-				if (res == TriBool.TRITRUE)
+				if (res == TriBool.TRITRUE) {
 					actionComplete();
+				}
 			} catch (CASTException e) {
 				logException(e);
 			} finally {
@@ -663,11 +665,10 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			println("removing reference marker from belief at "
 					+ CASTUtils.toString(_refGroundBelAddr));
 
-			GroundedBelief belief = getComponent().getMemoryEntry(
-					_refGroundBelAddr, GroundedBelief.class);
+			
 
 			if (!((AbstractDialogueActionInterface<?>) getComponent())
-					.removeQuestionReference(_refGroundBelAddr, belief)) {
+					.removeQuestionReference(_refGroundBelAddr, _refGroundBelAddr)) {
 				getComponent().getLogger().warn(
 						"Verified belief didn't have field"
 								+ IS_POTENTIAL_OBJECT_IN_QUESTION,
@@ -980,7 +981,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	 * called when the robot should STOP listening
 	 */
 	public void disableASR() {
-		println("disbaling ASR not implemented in "
+		println("disabling ASR not implemented in "
 				+ AbstractDialogueActionInterface.class.toString());
 
 	}
@@ -1016,12 +1017,15 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	 * @throws UnknownSubarchitectureException
 	 */
 	protected boolean removeQuestionReference(WorkingMemoryAddress _beliefAddr,
-			GroundedBelief _belief) throws DoesNotExistOnWMException,
+			WorkingMemoryAddress _refGroundBelAddr) throws DoesNotExistOnWMException,
 			ConsistencyException, PermissionException,
 			UnknownSubarchitectureException {
 
-		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, _belief);
+		BeliefType rawBelief = getMemoryEntry(
+				_refGroundBelAddr, m_beliefCls);
+		
+		CASTIndependentFormulaDistributionsBelief<BeliefType> belief = CASTIndependentFormulaDistributionsBelief
+				.create(m_beliefCls, rawBelief);
 
 		// HACK - this is the more efficient place to do this
 		belief.getContent().remove("attributed-color");
