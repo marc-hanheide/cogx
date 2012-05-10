@@ -180,6 +180,9 @@ class PlaceManager : public PlaceMapper
     void beginPlaceTransition(int goalPlaceID);
 
   private:
+
+    void LoadConnectivityProperties(const std::string &filename);
+    void SaveConnectivityProperties();
     bool m_usePeekabot;
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
     peekabot::PeekabotClient m_PeekabotClient;
@@ -190,6 +193,7 @@ class PlaceManager : public PlaceMapper
   double m_robotInitialX;
   double m_robotInitialY;
   double m_initialMovementThreshold;
+  bool m_placesWritten;
 
     void connectPeekabot();
 

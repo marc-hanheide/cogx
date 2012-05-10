@@ -74,6 +74,8 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
 {
   log("Configure entered");
 
+  m_placesWritten = false;
+
   m_usePeekabot = false;
   if (_config.find("--usepeekabot") != _config.end()) {
     m_usePeekabot= true;
@@ -306,6 +308,38 @@ void PlaceMapper::LoadPlaces(const std::string &filename){
   }
 }
 
+void PlaceManager::SaveConnectivityProperties(){
+  vector<SpatialProperties::ConnectivityPathPropertyPtr> cpps;
+  getMemoryEntries<SpatialProperties::ConnectivityPathProperty>(cpps);
+
+  ofstream fout("Connectivities.txt");
+  for (vector<SpatialProperties::ConnectivityPathPropertyPtr>::iterator it = cpps.begin();
+	  it != cpps.end(); it++) {
+      fout << (*it)->place1Id << " " << (*it)->place2Id << " " << (SpatialProperties::DiscreteProbabilityDistributionPtr::dynamicCast((*it)->distribution))->data[0].value << endl;
+  }
+}
+
+void PlaceManager::LoadConnectivityProperties(const std::string &filename){
+  ifstream file(filename.c_str());
+  if (!file.good()){
+    log("Could not read connectivity properties file, exiting.");
+    return;
+  }
+  string line,tmp;
+
+  while(!getline(file,line).eof()){
+    istringstream istr(line); 
+    istr >> tmp;
+    int PlaceID1 = atoi(tmp.c_str());
+    istr >> tmp;
+    int PlaceID2 = atoi(tmp.c_str());
+
+    istr >> tmp;
+    double cost = atof(tmp.c_str());
+    log("alex cre %d %d %f", PlaceID1, PlaceID2,cost);
+    createConnectivityProperty(cost, PlaceID1, PlaceID2);
+  }
+}
 
 void 
 PlaceManager::runComponent()
@@ -325,6 +359,7 @@ PlaceManager::runComponent()
     sleepComponent(100);
     if(count == 0) {
       SavePlaces();
+      if (m_placesWritten)SaveConnectivityProperties();
       // Execute this every 5 seconds.  However we don't want to sleep for so
       // long to be able to react to the component being stopped, thus we break
       // it up into sleeps of 100ms.
@@ -2423,16 +2458,17 @@ PlaceManager::upgradePlaceholder(int placeID, NavData::FNodePtr newNode)
 void
 PlaceManager::createConnectivityProperty(double cost, int place1ID, int place2ID)
 {
-  NavData::FNodePtr node1 = _getNodeForPlace(place1ID);
-  NavData::FNodePtr node2 = _getNodeForPlace(place2ID);
-
-  if (node1 != 0 && node2 != 0) {
-    m_mapInterface->addConnection(node1->nodeId,node2->nodeId);
-  }
-
   set<int> &place1Connectivities = m_connectivities[place1ID];
   if (place1Connectivities.find(place2ID) == 
       place1Connectivities.end()) {
+
+    NavData::FNodePtr node1 = _getNodeForPlace(place1ID);
+    NavData::FNodePtr node2 = _getNodeForPlace(place2ID);
+
+    if (node1 != 0 && node2 != 0) {
+      m_mapInterface->addConnection(node1->nodeId,node2->nodeId);
+    }
+
     SpatialProperties::FloatValuePtr costValue1 = 
       new SpatialProperties::FloatValue;
     SpatialProperties::FloatValuePtr costValue2 = 
@@ -2531,8 +2567,10 @@ PlaceManager::mapLoadStatusOverwritten(const cdl::WorkingMemoryChange &wmc)
       // If we receive the signal that all nodes have been written, 
       // then we will already have received all those nodes
       // and all the Places corresponding to them will be written too
+      LoadConnectivityProperties("Connectivities.txt");
       statusStruct->placesWritten = true;
       overwriteWorkingMemory<MapLoadStatus>(wmc.address.id, statusStruct);
+      m_placesWritten = true;
     }
     unlockEntry(wmc.address);
   }
