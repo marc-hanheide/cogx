@@ -571,13 +571,13 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_maxKinectX = 1.5;
   m_KinectK = 0.535;
 
-  m_nodeObstacleMargin = 1;
+  m_nodeObstacleMargin = 0.5;
   map<string,string>::const_iterator it = _config.find("--node-obstacle-margin");
   if (it != _config.end()) {
     m_nodeObstacleMargin = atof(it->second.c_str());
   }
 
-  m_nodeUnknownMargin = 1;
+  m_nodeUnknownMargin = 1.5;
   it = _config.find("--node-unknown-margin");
   if (it != _config.end()) {
     m_nodeUnknownMargin = atof(it->second.c_str());

@@ -411,6 +411,7 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 void PlaceManager::newEndPlaceTransitionCommand(const cdl::WorkingMemoryChange &objID) 
 {
   log("Received new EndPlaceTransitionCommand (%s)", objID.address.id.c_str());
+  m_placesWritten = true;
   try {
     NavData::EndPlaceTransitionCommandPtr obj =
       getMemoryEntry<NavData::EndPlaceTransitionCommand>(objID.address);
