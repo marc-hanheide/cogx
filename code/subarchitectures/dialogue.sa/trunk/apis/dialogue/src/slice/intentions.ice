@@ -45,6 +45,8 @@ dictionary<cast::cdl::WorkingMemoryAddress, sitbeliefs::dBelief> AddressToBelief
 class PossibleInterpretedIntentions {
 	AddressToIntentionMap intentions;
 	AddressToBeliefMap beliefs;
+	//if set, this indicates which intention in the intentions map was the correct one
+	cast::cdl::WorkingMemoryAddress resolvedIntention;
 };
 
 };

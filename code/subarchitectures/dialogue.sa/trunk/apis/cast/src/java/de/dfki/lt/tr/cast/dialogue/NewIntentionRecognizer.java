@@ -1,5 +1,15 @@
 package de.dfki.lt.tr.cast.dialogue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
@@ -17,7 +27,6 @@ import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.dialogue.interpret.AbducerUtils;
 import de.dfki.lt.tr.dialogue.interpret.CASTResultWrapper;
-import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.ConversionUtils;
 import de.dfki.lt.tr.dialogue.interpret.GeneratedWMAddressTranslator;
 import de.dfki.lt.tr.dialogue.interpret.IntentionManagementConstants;
@@ -30,6 +39,7 @@ import de.dfki.lt.tr.dialogue.interpret.RobotCommunicativeAction;
 import de.dfki.lt.tr.dialogue.interpret.TerminationCondition;
 import de.dfki.lt.tr.dialogue.interpret.WMAddressTranslator;
 import de.dfki.lt.tr.dialogue.interpret.WMAddressTranslatorFactory;
+import de.dfki.lt.tr.dialogue.interpret.atoms.AssertedReferenceAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.FromLFAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.IntentionIDAtom;
 import de.dfki.lt.tr.dialogue.interpret.atoms.NewBeliefAtom;
@@ -74,19 +84,11 @@ import de.dfki.lt.tr.infer.abducer.proof.pruners.LengthPruner;
 import de.dfki.lt.tr.infer.abducer.util.AbductionEngineConnection;
 import de.dfki.lt.tr.infer.abducer.util.PrettyPrint;
 import de.dfki.lt.tr.infer.abducer.util.TermAtomFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class NewIntentionRecognizer
 extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
+	public static final WorkingMemoryAddress EMPTY_ADDRESS = new WorkingMemoryAddress("nobody", "home");
 	public final String DEFAULT_ABD_SERVER_NAME = "AbducerServer";
 	public final int DEFAULT_ABD_PORT = 9100;
 	public final String DEFAULT_ABD_ENDPOINT_CONFIG = "default";
@@ -268,8 +270,8 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public PossibleInterpretedIntentions createPossibleInterpretedIntentions(WMAddressTranslatorFactory translatorFactory, List<InterpretedUserIntention> listIpret) {
 		PossibleInterpretedIntentions pii = new PossibleInterpretedIntentions(
 				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
-				new HashMap<WorkingMemoryAddress, dBelief>()
-				);
+				new HashMap<WorkingMemoryAddress, dBelief>(),
+				EMPTY_ADDRESS);
 
 		for (InterpretedUserIntention iui : listIpret) {
 			WMAddressTranslator translator = translatorFactory.newTranslator();
@@ -351,7 +353,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public PossibleInterpretedIntentions extractFromRoot(WorkingMemoryAddress wma, PossibleInterpretedIntentions pii) {
 		PossibleInterpretedIntentions newPii = new PossibleInterpretedIntentions(
 				new HashMap<WorkingMemoryAddress, InterpretedIntention>(),
-				new HashMap<WorkingMemoryAddress, dBelief>());
+				new HashMap<WorkingMemoryAddress, dBelief>(), EMPTY_ADDRESS);
 
 		InterpretedIntention iint = pii.intentions.get(wma);
 		newPii.intentions.put(wma, iint);
