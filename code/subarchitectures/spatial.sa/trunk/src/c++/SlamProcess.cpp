@@ -515,7 +515,7 @@ void SlamProcess::updateRobotPoseInWM()
     sprintf(buf, "Overwriting RobotPose in WM x=%.3f y=%.3f theta=%.3f t=%ld.%06ld",
             pose.getX(), pose.getY(), pose.getTheta(),
             pose.getTime().Seconds, pose.getTime().Microsec);
-    debug(buf);
+    log(buf);
   }
 }
 
