@@ -7,14 +7,16 @@ public interface CASTEffect {
 	public void makeItSo(ManagedComponent component);
 
 	public static final class NoOpEffect implements CASTEffect {
-		
+
 		public static NoOpEffect INSTANCE = new NoOpEffect();
 
 		@Override
 		public void makeItSo(ManagedComponent component) {
-			component.getLogger().debug("no need to do anything here, captain!");
+			component.getLogger().debug(
+					"CASTEffect: no need to do anything here, captain!",
+					component.getLogAdditions());
 		}
-		
+
 	}
-	
+
 }
