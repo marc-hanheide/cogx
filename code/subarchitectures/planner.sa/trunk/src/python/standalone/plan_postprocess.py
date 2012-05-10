@@ -281,7 +281,8 @@ def make_po_plan(actions, task):
         plan.add_node(pnode)
 
         if not pnode.replanconds and not pnode.preconds:
-            plan.add_link(plan.init_node, pnode, "started", pddl.TRUE)
+            plan.add_edge(plan.init_node, pnode,  svar=None, val=None, type="implicit_depends")
+            # plan.add_link(plan.init_node, pnode, None, pddl.TRUE)
             log.trace("%s depends artificially on init", pnode)
                          
         for svar, val in itertools.chain(pnode.replanconds, pnode.preconds):
