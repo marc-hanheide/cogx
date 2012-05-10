@@ -438,9 +438,13 @@ ts.tv_nsec = 0;
 						addToWorkingMemory<SpatialProperties::RoomShapePlaceProperty>(
 								_placeShapePropertyIds[curPlace->id], propertyPtr);
 					}
-					else
+					else {
+
+					  lockEntry(_placeShapePropertyIds[curPlace->id], cdl::LOCKEDOD);
+					  getMemoryEntry<SpatialProperties::RoomShapePlaceProperty>(_placeShapePropertyIds[curPlace->id]);
 						overwriteWorkingMemory<SpatialProperties::RoomShapePlaceProperty>(
 								_placeShapePropertyIds[curPlace->id], propertyPtr);
+					}
 
 					// Unock the internal data
 					pthread_mutex_unlock(&_intrDataMutex);
