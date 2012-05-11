@@ -1331,24 +1331,42 @@ void SpatialControl::updateGridMaps(){
     m_LMap.clearMap();
     tmp_lgm->setValueInsideCircle(currPose.getX(), currPose.getY(), 0.55*Cure::NewNavController::getRobotWidth(), '0');                                  
 
+
+
+//Warning: m_LMap has an internal limit to the number of obstacles (1720).
+//Must keep the obstacle count below this limit.
+//The following scheme adds at most a third of the cells in the 
+//3x3 square around the robot, making 1/3*3600=1200 obstacles
     long nObstacles = 0;
     int iCenter, jCenter;
     m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), iCenter, jCenter);
-    double radius = 3.0; //Distance to consider obstacles at
+    double radius = 1.5; //Distance to consider obstacles at
     int maxDelta = radius/m_lgm->getCellSize();
 
+bool addFail = false;
     for (int i = iCenter-maxDelta; i < iCenter+maxDelta; i++) {
-      for (int j = jCenter-maxDelta; j < jCenter+maxDelta; j++) {
+      for (int j = jCenter; j < jCenter+maxDelta; j++) {
 	if ((*tmp_lgm)(i,j) == '1') {
 	  double xWT, yWT;
 	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
-	  m_LMap.addObstacle(xWT, yWT, 1);
+    if (!m_LMap.addObstacle(xWT, yWT, 1))
+      addFail = true;
+    j+=2;
+	}
+      }
+      for (int j = jCenter; j > jCenter-maxDelta; j--) {
+	if ((*tmp_lgm)(i,j) == '1') {
+	  double xWT, yWT;
+	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
+    if (!m_LMap.addObstacle(xWT, yWT, 1))
+      addFail = true;
+    j-=2;
 	}
       }
     }
 
-    if (nObstacles > 2000) {
-      getLogger()->warn("High obstacle count!");
+    if (addFail) {
+      error("Cure LocalMap failed to add all obstacles!");
     }
 
 //    for (int i = 0; i < m_Npts; i++) {
