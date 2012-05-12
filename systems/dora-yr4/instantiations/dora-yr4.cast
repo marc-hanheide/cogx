@@ -188,7 +188,7 @@ VARDEFAULT spatial_load_map=--load-map --save-map
 # Placeholders must be this far from obstacles (times robot width)
 VARDEFAULT spatial_node_obstacle_margin=0.5
 # Placeholders must be this far from unexplored space (times robot width)
-VARDEFAULT spatial_node_unknown_margin=1.5
+VARDEFAULT spatial_node_unknown_margin=1
 # Whether to output SLAM map and robot pose
 VARDEFAULT spatial_output_slam_files=yes
 # Whether to output raw odometry and laser scans for debug
