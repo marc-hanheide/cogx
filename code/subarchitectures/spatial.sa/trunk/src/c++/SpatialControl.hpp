@@ -176,6 +176,8 @@ protected:
     peekabot::PeekabotClient m_PeekabotClient;
     peekabot::GroupProxy m_ProxyMap;
     peekabot::OccupancyGrid2DProxy m_ProxyGridMap;
+    peekabot::OccupancyGrid2DProxy m_ProxyGridMapExpanded;
+    peekabot::OccupancyGrid2DProxy m_ProxyGridMapExpanded2;
     peekabot::OccupancyGrid3DProxy m_ProxyGridMapKinect;
 
     double m_maxNewPlaceholderRadius;
