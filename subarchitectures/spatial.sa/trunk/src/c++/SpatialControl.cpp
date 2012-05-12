@@ -177,6 +177,19 @@ void SpatialControl::CreateGridMap() {
     m_ProxyGridMap.set_unoccupied_color(0.8,0.9,1);
     m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
+    m_ProxyGridMap.hide();
+
+    m_ProxyGridMapExpanded.add(m_PeekabotClient, "grid_map_expanded", cellSize,
+	peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyGridMapExpanded.set_occupied_color(0.1,0.1,0.1);
+    m_ProxyGridMapExpanded.set_unoccupied_color(0.8,0.9,1);
+    m_ProxyGridMapExpanded.set_position(0,0,-0.02);
+
+    m_ProxyGridMapExpanded2.add(m_PeekabotClient, "grid_map_expanded2", cellSize,
+	peekabot::REPLACE_ON_CONFLICT);
+    m_ProxyGridMapExpanded2.set_occupied_color(0.1,0.1,0.1);
+    m_ProxyGridMapExpanded2.set_unoccupied_color(0.8,0.9,1);
+    m_ProxyGridMapExpanded2.set_position(0,0,-0.03);
 
     m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize,0.05, 
   peekabot::REPLACE_ON_CONFLICT);
@@ -2876,6 +2889,18 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 //ELSE SKIP, IT WILL BE DELETED
   }
 }
+
+  double cellSize = m_lgm->getCellSize();
+  peekabot::OccupancySet2D cells;
+  for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize(); yi++) {
+    for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize(); xi++) {
+          if (map(xi+m_lgm->getSize(), yi+m_lgm->getSize())==false)
+              cells.add(xi*cellSize,yi*cellSize,0);
+          else if (map(xi+m_lgm->getSize(), yi+m_lgm->getSize())==true)
+              cells.add(xi*cellSize,yi*cellSize,1);
+    }
+  }
+
 //2. LOOP POINTS AROUND ROBOT
 {
   SCOPED_TIME_LOG;
@@ -2905,13 +2930,16 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   getMemoryEntries<FrontierInterface::DoorHypothesis>(doorHyps);
   for (vector<FrontierInterface::DoorHypothesisPtr>::iterator itDoor = 
                   doorHyps.begin(); itDoor != doorHyps.end(); itDoor++) {
-    double x = (*itDoor)->x;
-    double y = (*itDoor)->y;
+    double xr = (*itDoor)->x;
+    double yr = (*itDoor)->y;
+    int x = 0;
+    int y = 0;    
+    m_lgm->worldCoords2Index(xr, yr, x, y);
+
+    cells.add(x*cellSize,y*cellSize,0.5);
+
     if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
       SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
-      double xr, yr;      
-      m_lgm->index2WorldCoords(x, y, xr, yr);
-
       new_nh->x=xr;
       new_nh->y=yr;
       new_nh->hypID=-1;
@@ -2922,15 +2950,16 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
     }
   }
 
-  for (int i=0;i<20;i++){
+  for (int i=0;i<40;i++){
     double theta = (rand() % 360) * M_PI / 180; 
-    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/20*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
+    int r = round((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/40*i/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
 //    int r = rand() % (int)((m_maxNewPlaceholderRadius-m_minNewPlaceholderRadius)/m_lgm->getCellSize()) + round(m_minNewPlaceholderRadius/m_lgm->getCellSize());
 
     for (int j=0;j<72;j++){
       int x= round(robotxi+r*cos(theta+j*2*3.14/72)); 
       int y= round(robotyi+r*sin(theta+j*2*3.14/72)); 
+      cells.add(x*cellSize,y*cellSize,0.5);
       if (check_point(x,y,nodes,ret,map,map1,originNodeID)){
         SpatialData::NodeHypothesisPtr new_nh = new SpatialData::NodeHypothesis();
         double xr, yr;      
@@ -2948,6 +2977,21 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   }
   log("check_point %d %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5,counter6);
 }
+
+  m_ProxyGridMapExpanded.set_cells(cells);
+
+
+  peekabot::OccupancySet2D cells1;
+  for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize(); yi++) {
+    for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize(); xi++) {
+          if (map1(xi+m_lgm->getSize(), yi+m_lgm->getSize())==false)
+              cells1.add(xi*cellSize,yi*cellSize,0);
+          else if (map1(xi+m_lgm->getSize(), yi+m_lgm->getSize())==true)
+              cells1.add(xi*cellSize,yi*cellSize,1);
+    }
+  }
+  m_ProxyGridMapExpanded2.set_cells(cells1);
+
 
 }
   log("Finished refreshing node hypotheses");
