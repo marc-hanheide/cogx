@@ -103,9 +103,6 @@ void LocalMapManager::configure(const map<string,string>& _config)
   }
   std::string configfile = it->second;
 
-  m_PbPort = 5050;
-  m_PbHost = "localhost";
-
   Cure::ConfigFileReader cfg;
   if (cfg.init(configfile)) {
     println("configure(...) Failed to open with \"%s\"\n",
@@ -113,10 +110,13 @@ void LocalMapManager::configure(const map<string,string>& _config)
     std::abort();
   }  
 
-  if (cfg.getSensorPose(1, m_LaserPoseR)) {
-    println("configure(...) Failed to get sensor pose for laser");
-    std::abort();
-  } 
+  m_PbPort = 5050;
+  m_PbHost = "localhost";
+  cfg.getRoboLookHost(m_PbHost);
+  std::string usedCfgFile, tmp;
+  if (cfg.getString("PEEKABOT_HOST", true, tmp, usedCfgFile) == 0) {
+    m_PbHost = tmp;
+  }
 
   m_loadNodeLgms = false;
   m_saveNodeLgms = false;

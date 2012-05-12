@@ -441,6 +441,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 	SCOPED_TIME_LOG;
 	IceUtil::Mutex::Lock lock(m_Mutex);
 	int err = m_PP->addMeasurementSet(measSet);
+  if (err < 0) log("Got error value %d from addMeasurementSet!", err);
       }
 
 
