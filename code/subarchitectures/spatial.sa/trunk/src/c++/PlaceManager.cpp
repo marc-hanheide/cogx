@@ -1340,6 +1340,23 @@ void PlaceManager::evaluateUnexploredPaths()
                     break;
                   }
                 }
+                log("remove door placeholders");
+                if (extantHyp->gateway){
+                  int closestNodeId = m_mapInterface->findClosestNode(extantHyp->x, extantHyp->y);
+                  int pid = _getPlaceIDForNode(closestNodeId);
+                  if (pid!=-1){
+                    set<int> curPlaceConnectivities = m_connectivities[pid];
+                    for(set<int>::iterator it1 = curPlaceConnectivities.begin(); it1 != curPlaceConnectivities.end(); it1++) {
+                      set<int> placeConnectivities = m_connectivities[(*it1)];
+                      set<int>::iterator it2 = placeConnectivities.find(_getPlaceIDForNode(extantHyp->originNodeID));
+                      if (it2 != placeConnectivities.end()){
+                        exists = false;
+                        break;
+                      }
+                    }
+                  }
+                }
+
                 if (exists){
                   log("move overlapped placeholder");
                   nodeHyp->x=extantHyp->x;
