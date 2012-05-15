@@ -69,9 +69,12 @@ public class InterpretedIntentionMotiveGenerator extends
 				getAscriptionPredicate(feature, learn), groundedBeliefID);
 	}
 
+	/**
+	 * Interpreting all deletes as successes. This is will break at some point.
+	 */
 	@Override
-	protected void motiveWasDeleted(TutorInitiativeMotive _motive) {
-		log("Got back a deleted motive");
+	protected void motiveWasCompleted(TutorInitiativeMotive _motive) {
+		println("Got back a deleted motive. Treating this as success.");
 		try {
 			// the intention that generated the motive
 			InterpretedIntention ii = getMemoryEntry(_motive.referenceEntry,
@@ -83,7 +86,8 @@ public class InterpretedIntentionMotiveGenerator extends
 
 			// go through all types we know how to decode... can it be more
 			// elegant than this?
-			RichIntention decoded = AbstractDialogueActionInterface.extractRichIntention(ii);
+			RichIntention decoded = AbstractDialogueActionInterface
+					.extractRichIntention(ii);
 
 			if (decoded == null) {
 				getLogger().warn("Unable to decode intention",
@@ -101,5 +105,4 @@ public class InterpretedIntentionMotiveGenerator extends
 
 	}
 
-	
 }

@@ -82,8 +82,9 @@ public class ProtoObjectMotiveGenerator extends
 			log("ProtoObject belief is still not linked to VisualObject, so leaving motive unchanged.");
 			return _motive;
 		} else {
-			log("ProtoObject belief is now linked to VisualObject, so removing motive.");
-			return null;
+			log("ProtoObject belief is now linked to VisualObject, so marking as complete.");
+			_motive.status = MotiveStatus.COMPLETED;
+			return _motive;
 		}
 	}
 }

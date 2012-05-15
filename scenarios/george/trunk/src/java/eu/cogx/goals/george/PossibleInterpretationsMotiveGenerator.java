@@ -202,7 +202,7 @@ public class PossibleInterpretationsMotiveGenerator
 	}
 
 	@Override
-	protected void motiveWasDeleted(TutorInitiativeMotive _motive)
+	protected void motiveWasCompleted(TutorInitiativeMotive _motive)
 			throws SubarchitectureComponentException {
 
 		println("cleaning beliefs after disambiguation goal");
