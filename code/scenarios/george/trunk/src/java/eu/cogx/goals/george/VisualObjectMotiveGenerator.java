@@ -49,7 +49,7 @@ public class VisualObjectMotiveGenerator extends
 
 	// TODO Add config options to set these
 	private boolean m_colourEnabled = true;
-	private boolean m_shapeEnabled = true;
+	private boolean m_shapeEnabled = false;
 	private boolean m_identityEnabled = false;
 
 	public VisualObjectMotiveGenerator() {
@@ -58,7 +58,7 @@ public class VisualObjectMotiveGenerator extends
 	}
 
 	@Override
-	protected void motiveWasDeleted(LearnObjectFeatureMotive _motive)
+	protected void motiveWasCompleted(LearnObjectFeatureMotive _motive)
 			throws SubarchitectureComponentException {
 
 		// if dialogue was involved, then the belief may have been marked as a
@@ -93,17 +93,20 @@ public class VisualObjectMotiveGenerator extends
 			CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 					.create(MergedBelief.class, _newEntry);
 
-			// only generate things if the VO is actually visible
-
+			// delete motive if object is no longer visible
 			if (!visualObjectIsVisible(belief)) {
 				return null;
-			} else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
+			}
+			// if the motive's feature is now present in the belief then mark as
+			// completed
+			else if ((m_colourEnabled && motiveFeatureLearnt(COLOUR_KEY,
 					COLOUR_LEARNT_KEY, _motive, belief))
 					|| (m_shapeEnabled && motiveFeatureLearnt(SHAPE_KEY,
 							SHAPE_LEARNT_KEY, _motive, belief))
 					|| (m_identityEnabled && motiveFeatureLearnt(IDENTITY_KEY,
 							IDENTITY_LEARNT_KEY, _motive, belief))) {
-				return null;
+				_motive.status = MotiveStatus.COMPLETED;
+				return _motive;
 			} else {
 				return _motive;
 			}
@@ -132,8 +135,7 @@ public class VisualObjectMotiveGenerator extends
 
 	@Override
 	protected void checkForAdditions(WorkingMemoryAddress addr,
-			MergedBelief _newEntry,
-			List<LearnObjectFeatureMotive> newAdditions) {
+			MergedBelief _newEntry, List<LearnObjectFeatureMotive> newAdditions) {
 
 		assert (_newEntry.type.equals(VO_TYPE));
 
@@ -211,8 +213,7 @@ public class VisualObjectMotiveGenerator extends
 		println("fetching robot belief from " + getRobotBeliefAddr());
 		CASTIndependentFormulaDistributionsBelief<MergedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(MergedBelief.class,
-						getMemoryEntry(getRobotBeliefAddr(),
-								MergedBelief.class));
+						getMemoryEntry(getRobotBeliefAddr(), MergedBelief.class));
 
 		return VisualObjectMotiveGenerator.beliefPredicateGoal(
 				"arm-in-resting-position", belief);
