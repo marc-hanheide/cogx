@@ -23,7 +23,8 @@ import castutils.castextensions.WMView;
  * @author marc
  * 
  */
-public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler<Motive> {
+public class WMMotiveView extends WMView<Motive> implements
+		WMView.ChangeHandler<Motive> {
 
 	public static class MotiveStateTransition {
 
@@ -74,6 +75,7 @@ public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler
 		public MotiveStatus getTo() {
 			return to;
 		}
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -102,7 +104,6 @@ public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler
 		return s;
 	}
 
-
 	protected ChangeHandler<Motive> externalHandler;
 
 	Map<MotiveStateTransition, ChangeHandler<Motive>> stateChangeReceivers;
@@ -117,24 +118,29 @@ public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler
 	public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
 			WorkingMemoryChange wmc, Motive newObj, Motive oldObj)
 			throws CASTException {
-		if (externalHandler != null)
+		if (externalHandler != null) {
 			externalHandler.entryChanged(map, wmc, newObj, oldObj);
+		}
+
 		Motive newMotive = newObj;
 		Motive oldMotive = oldObj;
 		MotiveStatus fromState = MotiveStatus.WILDCARD;
 		MotiveStatus toState = MotiveStatus.WILDCARD;
 
-		if (wmc.operation != WorkingMemoryOperation.DELETE)
+		if (wmc.operation != WorkingMemoryOperation.DELETE) {
 			toState = newMotive.status;
-		if (wmc.operation != WorkingMemoryOperation.ADD)
+		}
+		if (wmc.operation != WorkingMemoryOperation.ADD) {
 			fromState = oldMotive.status;
+		}
 
 		Set<ChangeHandler<Motive>> handlersToCall = new HashSet<ChangeHandler<Motive>>();
 
 		ChangeHandler<Motive> enterReceiver = null;
 
 		// call all handlers, including wildcards
-		component.debug("status transition check " + fromState + " -> " + toState);
+		component.debug("status transition check " + fromState + " -> "
+				+ toState);
 		enterReceiver = stateChangeReceivers.get(new MotiveStateTransition(
 				fromState, toState));
 		if (enterReceiver != null) {
@@ -226,10 +232,9 @@ public class WMMotiveView extends WMView<Motive> implements WMView.ChangeHandler
 					WorkingMemoryChange wmc, Motive newEntry, Motive oldEntry)
 					throws CASTException {
 				handler.workingMemoryChanged(wmc);
-				
+
 			}
 		});
 	}
-
 
 }
