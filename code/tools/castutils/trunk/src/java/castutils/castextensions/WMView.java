@@ -141,8 +141,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 						map.put(_wmc.address, (T) m.clone());
 						if (oldEntry != null)
 							newWmc.operation = WorkingMemoryOperation.OVERWRITE;
-						dispatchChangeEvent(map, newWmc, map
-								.get(newWmc.address), oldEntry);
+						dispatchChangeEvent(map, newWmc,
+								map.get(newWmc.address), oldEntry);
 					}
 				} catch (DoesNotExistOnWMException e) {
 					// it's fine... if it's been deleted already, we have
@@ -155,8 +155,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 					T m = component.getMemoryEntry(newWmc.address, specClass);
 					if (filter.matches(m)) {
 						map.put(newWmc.address, (T) m.clone());
-						dispatchChangeEvent(map, newWmc, map
-								.get(newWmc.address), oldEntry);
+						dispatchChangeEvent(map, newWmc,
+								map.get(newWmc.address), oldEntry);
 					}
 				} catch (DoesNotExistOnWMException e) {
 					// remove it locally
@@ -315,12 +315,14 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 
 	private void register() {
 		log("register listeners");
-		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
-				WorkingMemoryOperation.ADD), new WMChangeReceiver(type));
-		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
-				WorkingMemoryOperation.DELETE), new WMChangeReceiver(type));
-		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(type,
-				WorkingMemoryOperation.OVERWRITE), new WMChangeReceiver(type));
+		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				type, WorkingMemoryOperation.ADD), new WMChangeReceiver(type));
+		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				type, WorkingMemoryOperation.DELETE),
+				new WMChangeReceiver(type));
+		component.addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+				type, WorkingMemoryOperation.OVERWRITE), new WMChangeReceiver(
+				type));
 
 	}
 
@@ -343,8 +345,8 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 			log("found " + entries.size() + " of type" + type.getSimpleName()
 					+ "entries in SA " + subarchitecturId);
 			for (CASTData<T> entry : entries) {
-				WorkingMemoryAddress wma = new WorkingMemoryAddress(entry
-						.getID(), subarchitecturId);
+				WorkingMemoryAddress wma = new WorkingMemoryAddress(
+						entry.getID(), subarchitecturId);
 				if (filter.matches(entry.getData())) {
 					map.put(wma, entry.getData());
 				}
@@ -533,6 +535,17 @@ public class WMView<T extends Ice.ObjectImpl> extends CASTHelper implements
 		} catch (PermissionException e) {
 			e.printStackTrace();
 		}
+		return map.remove(key);
+	}
+
+	/**
+	 * Removes the key from this view without deleting it from WM. If you want
+	 * the object to be deleted as well, use {@link WMView.remove}.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public T removeFromView(Object key) {
 		return map.remove(key);
 	}
 
