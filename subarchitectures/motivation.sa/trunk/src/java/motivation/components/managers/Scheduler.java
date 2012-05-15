@@ -48,24 +48,13 @@ public class Scheduler extends AbstractScheduler {
 				if (executionFuture != null
 						&& (executionFuture.isDone() || executionFuture
 								.isCancelled())) {
+					
 					log("execution has finished... de-activate goals!");
 					setStatus(activeGoals, MotiveStatus.SURFACED);
 					sleepComponent(1000);
-					// check if there are any goals that need to be deleted
-					// if goal is achieved already we should remove it!
-					{
-						Set<Entry<WorkingMemoryAddress, Motive>> copySet = new HashSet<Entry<WorkingMemoryAddress, Motive>>(
-								motives.entrySet());
-
-						for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
-							if (PlannerFacade.get(this).isGoalAchieved(
-									m.getValue().goal.goalString)) {
-								log("remove achieved goal "
-										+ m.getValue().goal.goalString);
-								motives.remove(m.getKey());
-							}
-						}
-					}
+					
+					log("flag achieved goals");
+					flagAchievedGoals();
 
 					executionFuture = null;
 					continue;
