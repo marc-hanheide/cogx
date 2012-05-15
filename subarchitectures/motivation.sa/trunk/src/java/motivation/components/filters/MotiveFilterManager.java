@@ -14,16 +14,20 @@ import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import motivation.util.WMMotiveView;
+import motivation.util.WMMotiveView.MotiveStateTransition;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ChangeFilterFactory;
 import cast.architecture.ManagedComponent;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.cdl.WorkingMemoryPermissions;
 import cast.core.CASTUtils;
 import castutils.castextensions.WMEventQueue;
+import castutils.castextensions.WMView;
+import castutils.castextensions.WMView.ChangeHandler;
 
 /**
  * @author marc
@@ -34,9 +38,11 @@ public class MotiveFilterManager extends ManagedComponent {
 	private static final int RECHECK_INTERVAL_DEFAULT = 5000;
 	private int recheckInterval = RECHECK_INTERVAL_DEFAULT;
 	WMEventQueue receiver;
-	WMMotiveView motives;
+	private WMMotiveView motives;
 
 	List<MotiveFilter> pipe;
+
+	private List<WMView.ChangeHandler<Motive>> m_completionHandlers;
 
 	public MotiveFilterManager() {
 		super();
@@ -44,6 +50,8 @@ public class MotiveFilterManager extends ManagedComponent {
 		motives = WMMotiveView.create(this);
 
 		receiver = new WMEventQueue();
+
+		m_completionHandlers = new LinkedList<WMView.ChangeHandler<Motive>>();
 
 		// new WorkingMemoryChangeReceiver() {
 		// public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -100,6 +108,15 @@ public class MotiveFilterManager extends ManagedComponent {
 		// avoid self calls
 		if (_wmc.src.equals(getComponentID()))
 			return;
+
+		// if the motive was deleted but we're seeing some residual overwrite
+		// messages
+		if (_wmc.operation == WorkingMemoryOperation.OVERWRITE
+				&& !motives.containsKey(_wmc.address)) {
+			log("Receiving left-over overwrites, ignoring");
+			return;
+		}
+
 		debug("src of motive change: " + _wmc.src);
 		try {
 			lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDO);
@@ -110,7 +127,7 @@ public class MotiveFilterManager extends ManagedComponent {
 				switch (priority) {
 				case UNSURFACE: // if the priority is UNSURFACE then
 					// change status
-					if (motive.status!=MotiveStatus.COMPLETED)
+					if (motive.status != MotiveStatus.COMPLETED)
 						motive.status = MotiveStatus.UNSURFACED;
 					break;
 				default:
@@ -124,12 +141,12 @@ public class MotiveFilterManager extends ManagedComponent {
 				overwriteWorkingMemory(_wmc.address, motive);
 			}
 		} catch (CASTException e) {
-			logException("CASTException in motive filtering ",e);
+			logException("CASTException in motive filtering ", e);
 		} finally {
 			try {
 				unlockEntry(_wmc.address);
 			} catch (CASTException e) {
-				logException("CASTException in motive filtering ",e);
+				logException("CASTException in motive filtering ", e);
 			}
 		}
 
@@ -143,6 +160,7 @@ public class MotiveFilterManager extends ManagedComponent {
 		if (argStr != null) {
 			recheckInterval = Integer.parseInt(argStr);
 		}
+
 		argStr = arg0.get("--filter");
 		if (argStr != null) {
 			StringTokenizer st = new StringTokenizer(argStr, ",");
@@ -158,7 +176,9 @@ public class MotiveFilterManager extends ManagedComponent {
 					filter.configure(arg0);
 					addFilter(filter);
 				} catch (ClassNotFoundException e) {
-					logException("trying to register for a class that doesn't exist ",e);
+					logException(
+							"trying to register for a class that doesn't exist ",
+							e);
 				} catch (InstantiationException e) {
 					logException(e);
 				} catch (IllegalAccessException e) {
@@ -166,11 +186,47 @@ public class MotiveFilterManager extends ManagedComponent {
 				}
 			}
 		}
+
+		if (arg0.containsKey("--delete-on-complete")) {
+			log("Will delete motives when marked as complete");
+			addMotiveCompletionHandler(new WMView.ChangeHandler<Motive>() {
+
+				@Override
+				public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
+						WorkingMemoryChange wmc, Motive newEntry,
+						Motive oldEntry) throws CASTException {
+
+					println("Motive transitioned to completed");
+					println("Deleting achieved motive "
+							+ newEntry.goal.goalString);
+
+					WorkingMemoryAddress wma = wmc.address;
+
+					try {
+						// this seems to be the pattern elsewhere
+						lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
+						// delete from wm
+						motives.remove(wma);
+
+					} catch (CASTException e) {
+						getLogger().warn(
+								"CASTException when deleting achieved motive: "
+										+ e.message);
+					}
+				}
+
+			});
+		}
+
 	}
 
 	public void addFilter(MotiveFilter mf) {
 		mf.setManager(this);
 		pipe.add(mf);
+	}
+
+	public void addMotiveCompletionHandler(ChangeHandler<Motive> _handler) {
+		m_completionHandlers.add(_handler);
 	}
 
 	/*
@@ -186,6 +242,27 @@ public class MotiveFilterManager extends ManagedComponent {
 		} catch (UnknownSubarchitectureException e) {
 			logException(e);
 		}
+
+		// register a handler for completed motives. this should be before
+		// starting filters in case they also add filters in their start methods
+		// (so this component gets to act first)
+		motives.setStateChangeHandler(new MotiveStateTransition(
+				MotiveStatus.WILDCARD, MotiveStatus.COMPLETED),
+				new WMView.ChangeHandler<Motive>() {
+
+					@Override
+					public void entryChanged(
+							Map<WorkingMemoryAddress, Motive> map,
+							WorkingMemoryChange wmc, Motive newEntry,
+							Motive oldEntry) throws CASTException {
+
+						for (WMView.ChangeHandler<Motive> handler : m_completionHandlers) {
+							// dispatch to others
+							handler.entryChanged(map, wmc, newEntry, oldEntry);
+						}
+					}
+
+				});
 
 		for (MotiveFilter f : pipe) {
 			f.start();
@@ -249,6 +326,8 @@ public class MotiveFilterManager extends ManagedComponent {
 		MotivePriority result = MotivePriority.HIGH;
 		for (MotiveFilter filter : pipe) {
 			MotivePriority filterResult = filter.checkMotive(motive, wmc);
+			assert (filterResult != null);
+
 			// if one filter rejects, reject this motive
 			if (filterResult == MotivePriority.UNSURFACE)
 				return MotivePriority.UNSURFACE;
