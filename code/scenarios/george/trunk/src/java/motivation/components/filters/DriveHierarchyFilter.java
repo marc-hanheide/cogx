@@ -11,8 +11,11 @@ import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeQuestionMotive;
+import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import cast.CASTException;
+import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
+import castutils.castextensions.WMView.ChangeHandler;
 
 /**
  * 
@@ -21,7 +24,8 @@ import cast.cdl.WorkingMemoryChange;
  * @author nah
  * 
  */
-public class DriveHierarchyFilter implements MotiveFilter {
+public class DriveHierarchyFilter implements MotiveFilter,
+		ChangeHandler<Motive> {
 
 	private static final int UNKNOWN_CLASS_VALUE = Integer.MAX_VALUE;
 
@@ -60,6 +64,8 @@ public class DriveHierarchyFilter implements MotiveFilter {
 			m_activeLevel = priority;
 			m_component.println("Switched to priority level " + m_activeLevel
 					+ " for motive class " + motiveCls);
+			m_display.updateActiveLevel(m_activeLevel);
+
 			// schedule a recheck, which will come back to this motive
 			try {
 				m_component.checkAll();
@@ -74,10 +80,14 @@ public class DriveHierarchyFilter implements MotiveFilter {
 	@Override
 	public void setManager(MotiveFilterManager motiveFilterManager) {
 		m_component = motiveFilterManager;
+
 	}
 
 	@Override
 	public void start() {
+		m_component.addMotiveCompletionHandler(this);
+		m_display.connectIceClient(m_component);
+		m_display.updateActiveLevel(m_activeLevel);
 	}
 
 	private void addPrioritySet(Class<? extends Motive>... _motiveClasses) {
@@ -110,6 +120,61 @@ public class DriveHierarchyFilter implements MotiveFilter {
 				TutorInitiativeQuestionMotive.class);
 		addPrioritySet(AnalyzeProtoObjectMotive.class,
 				LearnObjectFeatureMotive.class);
+
+		m_display.configureDisplayClient(_config);
 	}
 
+	/**
+	 * Called when a motive has completed.
+	 */
+	@Override
+	public void entryChanged(Map<WorkingMemoryAddress, Motive> map,
+			WorkingMemoryChange wmc, Motive newEntry, Motive oldEntry)
+			throws CASTException {
+
+		// The motives remaining in map are what is left on WM. The new active
+		// level should be the maximum represented one there, else reset to
+		// unknown.
+
+		int newLevel = UNKNOWN_CLASS_VALUE;
+		for (Motive mtv : map.values()) {
+			newLevel = Math.min(getPriority(mtv.getClass()), newLevel);
+		}
+
+		if (newLevel != m_activeLevel) {
+			m_activeLevel = newLevel;
+			if (m_activeLevel != UNKNOWN_CLASS_VALUE) {
+				m_component
+						.println("after completion, switching active level to "
+								+ m_activeLevel);
+			} else {
+				m_component
+						.println("after completion, switching active level to allow all");
+
+			}
+
+			m_display.updateActiveLevel(m_activeLevel);
+
+			try {
+				m_component.checkAll();
+			} catch (CASTException e) {
+				m_component.logException(e);
+			}
+		}
+
+	}
+
+	private final DriveHierarchyDisplayClient m_display = new DriveHierarchyDisplayClient();
+
+	private class DriveHierarchyDisplayClient extends DisplayClient {
+		public void updateActiveLevel(int _level) {
+			if (_level == UNKNOWN_CLASS_VALUE) {
+				m_display.setHtml("drive.filter", "001",
+						"Waiting for any input ");
+			} else {
+				m_display.setHtml("drive.filter", "001", "Active level is "
+						+ _level);
+			}
+		}
+	}
 }
