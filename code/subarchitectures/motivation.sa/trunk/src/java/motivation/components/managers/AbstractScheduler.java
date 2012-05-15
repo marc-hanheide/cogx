@@ -283,6 +283,27 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		}
 	}
 
+	private void lockSingle(WorkingMemoryAddress wma)
+			throws UnknownSubarchitectureException {
+		debug("lockSingle(): locking component");
+		try {
+			lockComponent();
+			getLogger().debug("lockSingle(): component locked");
+			debug("lockSingle(): locking entry " + wma.id);
+			try {
+				lockEntry(wma, WorkingMemoryPermissions.LOCKEDOD);
+			} catch (DoesNotExistOnWMException e) {
+				getLogger()
+						.warn("cannot lock entry that already disappeared. will remove it from the set now.",
+								e);
+			}
+			debug("lockSingle(): entry " + wma.id + " is locked");
+		} finally {
+			unlockComponent();
+			debug("lockSingle(): component unlocked");
+		}
+	}
+
 	@Override
 	protected abstract void runComponent();
 
@@ -293,17 +314,50 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		try {
 			lockSet(motiveMap);
 			for (Entry<WorkingMemoryAddress, Motive> e : motiveMap.entrySet()) {
-				Motive goal = getMemoryEntry(e.getKey(), Motive.class);
-				goal.status = status;
-				if (status == MotiveStatus.ACTIVE)
-					goal.tries++;
-				overwriteWorkingMemory(e.getKey(), goal);
+				setStatusInternal(e.getKey(), status);
 			}
 		} catch (CASTException e) {
 			getLogger().warn("exception when setting status: ", e);
 		} finally {
 			unlockSet(motiveMap);
 		}
+	}
+
+	protected void setStatus(WorkingMemoryAddress motiveAddr,
+			MotiveStatus status) throws UnknownSubarchitectureException,
+			DoesNotExistOnWMException, ConsistencyException,
+			PermissionException {
+		try {
+			lockSingle(motiveAddr);
+			setStatusInternal(motiveAddr, status);
+		} catch (CASTException e) {
+			getLogger().warn("exception when setting status: ", e);
+		} finally {
+			unlockSingle(motiveAddr);
+		}
+	}
+
+	/**
+	 * Do not use directly. Use setStatus() instead as they respect the locking
+	 * protocol.
+	 * 
+	 * @param motiveAddr
+	 * @param status
+	 * @throws DoesNotExistOnWMException
+	 * @throws UnknownSubarchitectureException
+	 * @throws ConsistencyException
+	 * @throws PermissionException
+	 */
+	private void setStatusInternal(WorkingMemoryAddress motiveAddr,
+			MotiveStatus status) throws DoesNotExistOnWMException,
+			UnknownSubarchitectureException, ConsistencyException,
+			PermissionException {
+		Motive goal = getMemoryEntry(motiveAddr, Motive.class);
+		goal.status = status;
+		if (status == MotiveStatus.ACTIVE) {
+			goal.tries++;
+		}
+		overwriteWorkingMemory(motiveAddr, goal);
 	}
 
 	/*
@@ -349,6 +403,24 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 		}
 	}
 
+	private void unlockSingle(WorkingMemoryAddress wma)
+			throws UnknownSubarchitectureException, ConsistencyException {
+		try {
+			lockComponent();
+			if (holdsLock(wma.id, wma.subarchitecture)) {
+				try {
+					unlockEntry(wma);
+				} catch (DoesNotExistOnWMException e) {
+					logException("when unlocking " + CASTUtils.toString(wma)
+							+ " didn't exist anymore, remove it from the set",
+							e);
+				}
+			}
+		} finally {
+			unlockComponent();
+		}
+	}
+
 	protected void flagAchievedGoals() throws CASTException {
 		Set<Entry<WorkingMemoryAddress, Motive>> copySet = new HashSet<Entry<WorkingMemoryAddress, Motive>>(
 				motives.entrySet());
@@ -365,7 +437,9 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 					motive.status = MotiveStatus.COMPLETED;
 					overwriteWorkingMemory(m.getKey(), motive);
 				} catch (CASTException e) {
-					getLogger().warn("CASTException when flagging goal as achieved: "+e.message);
+					getLogger().warn(
+							"CASTException when flagging goal as achieved: "
+									+ e.message);
 				} finally {
 					if (this.holdsLock(wma.id, wma.subarchitecture))
 						unlockEntry(wma);
