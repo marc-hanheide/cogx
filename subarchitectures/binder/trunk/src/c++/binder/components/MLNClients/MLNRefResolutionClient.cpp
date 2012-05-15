@@ -134,9 +134,13 @@ void MLNRefResolutionClient::runComponent()
 */  
   while(isRunning())	  
   {
+    //nah: replaced sleepComponent(100) with waitForChanges() which fires on every WM change as this seems more like what was wanted
+    waitForChanges();
 		if( newResultReady()) {
 			InferredResultPtr infRes = getInfResult();
-			log("New inference result available from MLN engine ID %s", getInfEngineID().c_str());
+
+			//nah: this seems to be continually true...
+			//log("New inference result available from MLN engine ID %s", getInfEngineID().c_str());
 		
 			if(infRes->token == m_constraintAddr.id && infRes->tokenSamples >= 400) {
 				vector<EpistemicReferenceHypothesisPtr> hypos = getHypothesisList(infRes);
@@ -154,7 +158,7 @@ void MLNRefResolutionClient::runComponent()
 				}
 			}
 		}
-		sleepComponent(100);
+		
   }
 }
 
