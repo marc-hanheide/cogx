@@ -22,6 +22,8 @@
 #include <QAction>
 #include "../convenience.hpp"
 
+#include "GL/glu.h"
+
 const int ZOOM_RANGE = 5; // -N .. N
 
 namespace la = linalgebra;
