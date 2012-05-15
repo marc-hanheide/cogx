@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import motivation.slice.Motive;
+import motivation.slice.MotiveStatus;
 import autogen.Planner.Completion;
 import autogen.Planner.Goal;
 import autogen.Planner.PlanningTask;
@@ -129,7 +130,9 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 						}
 
 					} catch (CASTException e) {
-						logException(e);
+						getLogger()
+								.warn("this is probably safe, particularly after a goal completion",
+										e);
 					} finally {
 						if (holdsLock(correspondingWMA.id,
 								correspondingWMA.subarchitecture))
@@ -193,51 +196,48 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	 * @author nah
 	 * 
 	 */
-	private class MotiveDeletionChangeReceiver implements
+	private class MotiveCompletionChangeReceiver implements
 			WorkingMemoryChangeReceiver {
-
-		private final M m_motive;
-
-		public MotiveDeletionChangeReceiver(M _motive) {
-			m_motive = _motive;
-		}
 
 		@Override
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
-			assert (_wmc.operation == WorkingMemoryOperation.DELETE);
-			assert (CASTUtils.typeName(m_motive).equals(_wmc.type));
-			try {
-				motiveWasDeleted(m_motive);
-			} catch (SubarchitectureComponentException e) {
-				logException(e);
+			assert (_wmc.operation == WorkingMemoryOperation.OVERWRITE);
+			M motive = getMemoryEntry(_wmc.address, motiveClass);
+			assert (CASTUtils.typeName(motive).equals(_wmc.type));
+			if (motive.status == MotiveStatus.COMPLETED) {
+				try {
+					motiveWasCompleted(motive);
+				} catch (SubarchitectureComponentException e) {
+					logException(e);
+				}
+				removeChangeFilter(this);
 			}
-			removeChangeFilter(this);
 		}
 
 	}
 
 	/**
-	 * Registered to return the motive after it was deleted, useful for cleanup
-	 * on planner-determine successful cases.
+	 * Registered to return the motive after it was completed, useful for
+	 * cleanup on planner-determine successful cases.
 	 * 
 	 * @param _motive
-	 *            The motive that was deleted
+	 *            The motive that was completed
 	 * @throws SubarchitectureComponentException
 	 */
-	protected void motiveWasDeleted(M _motive)
+	protected void motiveWasCompleted(M _motive)
 			throws SubarchitectureComponentException {
 
 	}
 
-	private boolean m_monitorMotivesForDeletion = false;
+	private boolean m_monitorMotivesForCompletion = false;
 
-	public boolean isMonitoringMotivesForDeletion() {
-		return m_monitorMotivesForDeletion;
+	public boolean isMonitoringMotivesForCompletion() {
+		return m_monitorMotivesForCompletion;
 	}
 
 	public void monitorMotivesForDeletion(boolean _monitorMotivesForDeletion) {
-		this.m_monitorMotivesForDeletion = _monitorMotivesForDeletion;
+		this.m_monitorMotivesForCompletion = _monitorMotivesForDeletion;
 	}
 
 	private void checkForAdditions(WorkingMemoryChange wmc, T newEntry)
@@ -257,12 +257,12 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 					motive.thisEntry = new WorkingMemoryAddress(newDataID(),
 							getSubarchitectureID());
 					assignCosts(motive);
-					if (isMonitoringMotivesForDeletion()) {
+					if (isMonitoringMotivesForCompletion()) {
 						addChangeFilter(
 								ChangeFilterFactory.createAddressFilter(
 										motive.thisEntry,
-										WorkingMemoryOperation.DELETE),
-								new MotiveDeletionChangeReceiver(motive));
+										WorkingMemoryOperation.OVERWRITE),
+								new MotiveCompletionChangeReceiver());
 					}
 					addToWorkingMemory(motive.thisEntry, motive);
 					motiveAddresses.add(motive.thisEntry);
