@@ -59,6 +59,10 @@ OPTDEFAULT feature_options=<multiline>
    visualization
    standalone-display
 </multiline>
+
+OPTDEFAULT test_options=<multiline>
+    !tutor-assisted-test
+</multiline>
 ###########################################################################
 
 HOST     [Main]
@@ -82,8 +86,8 @@ IFOPTANY(%(feature_options) %(hardware_params), spatial ptz-wmcall)
 ENDIF
 
 # --pan "0.0" --tilt "-0.8"  # --testGUI
-VARDEFAULT ptzwmi_params=--pan "0.0" --tilt "-0.8"
 IFOPTALL(%(hardware_options), ptz-wmcall)
+    VARDEFAULT ptzwmi_params=--pan "0.0" --tilt "-0.8"
    JAVA MG ptz.wmi.server eu.cogx.ptz.PanTiltZoomServer %(ptzwmi_params)
 ENDIF
 
@@ -113,12 +117,19 @@ IFOPTALL(%(feature_options), vision)
       JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent --write-to-sa binder
       JAVA MG vcmc-mediator eu.cogx.perceptmediator.components.ViewConeMoveCostsMediatorComponent --write-to-sa binder
       JAVA MG vo-mediator eu.cogx.perceptmediator.george.components.VisualObjectMediatorComponent  --write-to-sa binder
+      # JAVA MG vms-mediator eu.cogx.perceptmediator.george.components.ModelStatusMediator  --write-to-sa binder
       #INCLUDE includes/vision.sa/vision-mediators.cast
    ENDIF
 
    CPP MG vc-costs ViewConeMoveCostGenerator
 ENDIF
 
+# testing George in simulation; the tester is in the vision.sa
+IFEQ(%(hardware), simulation)
+    IFOPTALL(%(test_options), tutor-assisted-test)
+        CPP MG test-assisted GeorgeTester --player-host %(host:PlayerHost)
+    ENDIF
+ENDIF
 
 # binder #################################################################
 IFOPTALL(%(feature_options), binder)
