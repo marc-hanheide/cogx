@@ -20,7 +20,7 @@
 
 #include <Map/FeatureData.hh>
 #include <Geometry/Line2D.hh>
-#include <Map/WrappedSLAM.hh>
+#include "NewWrappedSLAM.hpp"
 #include <Map/RLDisplayFeatureMap.hh>
 #include <Transformation/Pose3D.hh> 
 #include <AddressBank/ConfigFileReader.hh>
@@ -69,10 +69,10 @@ SlamProcess::SlamProcess()
   m_MaxScanRate = 5;
 }
 
-SlamProcess::~SlamProcess() 
+SlamProcess::~SlamProcess()
 { 
   if (m_RunningSLAM && !m_DontWriteFiles) {
-    ((Cure::WrappedSLAM*)m_PP)->saveMap(m_MapFilename);
+    ((Cure::NewWrappedSLAM*)m_PP)->saveMap(m_MapFilename);
   }
 }
 
@@ -88,8 +88,8 @@ void SlamProcess::configure(const map<string,string>& _config)
   else log("Will output files with robotpose and map"); 
 
   m_usePeekabot = false;
-    if (_config.find("--usepeekabot") != _config.end())
-      m_usePeekabot= true;
+  if (_config.find("--usepeekabot") != _config.end())
+    m_usePeekabot= true;
 
   map<string,string>::const_iterator it;
 
@@ -139,11 +139,11 @@ void SlamProcess::configure(const map<string,string>& _config)
 
     if (loc->config(configfile)) {
       printf("SlamThread::configure Failed to config localization with \"%s\"\n",
-	  configfile.c_str());
+	     configfile.c_str());
       m_PP = 0;
     } else if ( loc->loadMap(m_MapFilename) != 0) {
       printf("SlamThread::configure Failed to load map \"%s\"\n",
-	  m_MapFilename.c_str());
+	     m_MapFilename.c_str());
       m_PP = 0;
     }
 
@@ -160,7 +160,7 @@ void SlamProcess::configure(const map<string,string>& _config)
   }
 
   if (m_PP == 0) {
-    Cure::WrappedSLAM *slam = new Cure::WrappedSLAM;
+    Cure::NewWrappedSLAM *slam = new Cure::NewWrappedSLAM;
     slam->dontDisplay();
     m_PP = slam;
     m_RunningSLAM = true;
@@ -182,7 +182,7 @@ void SlamProcess::configure(const map<string,string>& _config)
     str >> m_ScansToIgnoreBeforeStart;
   }
   printf("Will ignore first %d scans to make sure simulation is started",
-      m_ScansToIgnoreBeforeStart);
+	 m_ScansToIgnoreBeforeStart);
 
   it = _config.find("--max-scan-rate");
   if (it != _config.end()) {
@@ -224,7 +224,7 @@ void SlamProcess::runComponent()
       sleepComponent(1000);
       connectPeekabot();
       if (!isRunning())
-        return;
+	return;
     }
   }
 
@@ -250,62 +250,66 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
 
   char buf[256];
   sprintf(buf, "Got odometry x=%.3f, y=%.3f, theta=%.3f t=%ld.%06ld",
-          p.x, p.y, p.theta, (long)castOdom.time.s, (long)castOdom.time.us);
+	  p.x, p.y, p.theta, (long)castOdom.time.s, (long)castOdom.time.us);
   log(buf);
 
-   Cure::Pose3D odom;  
-   CureHWUtils::convOdomToCure(castOdom, odom);
+  Cure::Pose3D odom;  
+  CureHWUtils::convOdomToCure(castOdom, odom);
   
-   const double timeDiffToWarn = 0.5;
-   if ( (m_LastOdom.getTime() > 0) &&
-        (odom.getDoubleTime() - m_LastOdom.getDoubleTime() > timeDiffToWarn) ) {
-     log("WARNING: Very long time between odometry timestamps %fs",
-         odom.getDoubleTime() - m_LastOdom.getDoubleTime());
-   }
-  
-   if (m_OdomTimer.isRunning()) {
-     if (m_OdomTimer.stop() > timeDiffToWarn) {
-       log("WARNING: receiveOdomData called very seldom (%fs since last), bad sign!!", m_OdomTimer.stop());
-     }
-   }
-   m_OdomTimer.restart();
-
-   m_LastOdom = odom;
-
-   if (m_LastUsedOdom.getTime() == Cure::Timestamp(0) ||
-       hypot(m_LastUsedOdom.getX() - odom.getX(), 
-             m_LastUsedOdom.getY() - odom.getY()) > 1e-3 ||
-       fabs(Cure::HelpFunctions::angleDiffRad(m_LastUsedOdom.getTheta(), 
-                                              odom.getTheta())) > 1e-2) {
-     m_RobotIsMoving = true;
-
-     IceUtil::Mutex::Lock lock(m_Mutex);
-
-     m_LastUsedOdom = odom;
-   } else {
-     m_RobotIsMoving = false;
-   }
-   
-   if (m_NotRunningYet) {
-     return;
-   }
-
-   
-   debug("addOdom(x=%.2f y=%.2f a=%.2f t=%ld.%06ld)",
-         odom.getX(), odom.getY(), odom.getTheta(), 
-         odom.getTime().Seconds, odom.getTime().Microsec);
-   {
-     IceUtil::Mutex::Lock lock(m_Mutex);
-     m_PP->addOdometry(odom);
-   }
-
-   if (m_outputRawData) 
-     m_odomfile.write(odom);
-
-
-    if (m_usePeekabot){
-        m_SLAMPoseProxy.set_pose(m_PP->getPose().getX(), m_PP->getPose().getY(), 2, m_PP->getPose().getTheta(), 0, 0);
+  const double timeDiffToWarn = 0.5;
+  if ( (m_LastOdom.getTime() > 0) &&
+       (odom.getDoubleTime() - m_LastOdom.getDoubleTime() > timeDiffToWarn) ) {
+    log("WARNING: Very long time between odometry timestamps %fs",
+	odom.getDoubleTime() - m_LastOdom.getDoubleTime());
+  }
+  if (m_LastOdom.getDoubleTime() > odom.getDoubleTime()) {
+    error("Odometry data out of sequence. Skipping data!!!");
+    return;
+  }
+ 
+  if (m_OdomTimer.isRunning()) {
+    if (m_OdomTimer.stop() > timeDiffToWarn) {
+      log("WARNING: receiveOdomData called very seldom (%fs since last), bad sign!!", m_OdomTimer.stop());
     }
+  }
+  m_OdomTimer.restart();
+
+  m_LastOdom = odom;
+
+  if (m_LastUsedOdom.getTime() == Cure::Timestamp(0) ||
+      hypot(m_LastUsedOdom.getX() - odom.getX(), 
+	    m_LastUsedOdom.getY() - odom.getY()) > 1e-3 ||
+      fabs(Cure::HelpFunctions::angleDiffRad(m_LastUsedOdom.getTheta(), 
+					     odom.getTheta())) > 1e-2) {
+    m_RobotIsMoving = true;
+
+    IceUtil::Mutex::Lock lock(m_Mutex);
+
+    m_LastUsedOdom = odom;
+  } else {
+    m_RobotIsMoving = false;
+  }
+   
+  if (m_NotRunningYet) {
+    return;
+  }
+
+   
+  debug("addOdom(x=%.2f y=%.2f a=%.2f t=%ld.%06ld)",
+	odom.getX(), odom.getY(), odom.getTheta(), 
+	odom.getTime().Seconds, odom.getTime().Microsec);
+  {
+    IceUtil::Mutex::Lock lock(m_Mutex);
+    m_PP->addOdometry(odom);
+  }
+
+  if (m_outputRawData) 
+    m_odomfile.write(odom);
+
+
+  if (m_usePeekabot){
+    m_SLAMPoseProxy.set_pose(m_PP->getPose().getX(), m_PP->getPose().getY(), 2, m_PP->getPose().getTheta(), 0, 0);
+  }
 }
 
 void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
@@ -322,9 +326,9 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
   }
 
   log("Got scan n=%d, r[0]=%.3f, r[n-1]=%.3f t=%ld.%06ld",
-        castScan.ranges.size(), castScan.ranges[0], 
-        castScan.ranges[castScan.ranges.size()-1],
-        (long)castScan.time.s, (long)castScan.time.us);
+      castScan.ranges.size(), castScan.ranges[0], 
+      castScan.ranges[castScan.ranges.size()-1],
+      (long)castScan.time.s, (long)castScan.time.us);
   
   if (m_WriteMapToWorkingMemory) {
     writeLineMapToWorkingMemory(false);
@@ -360,16 +364,16 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 
       if (m_LastUsedOdom.getTime() > 0) {
 
-        println("Performing fake measurement update to kick start");
+	println("Performing fake measurement update to kick start");
 
 	{
 	  IceUtil::Mutex::Lock lock(m_Mutex);
 
 	  debug("pose est before fake x=%.2f y=%.2f a=%.4f t=%.6f",
-	      m_PP->getPose().getX(), 
-	      m_PP->getPose().getY(), 
-	      m_PP->getPose().getTheta(),
-	      m_PP->getPose().getTime().getDouble());
+		m_PP->getPose().getX(), 
+		m_PP->getPose().getY(), 
+		m_PP->getPose().getTheta(),
+		m_PP->getPose().getTime().getDouble());
 
 	  if (!m_InitedFakeRoutine) {
 	    m_LastTimestampWhileNotRunningYet = m_PP->getPose().getTime();
@@ -397,37 +401,37 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
 	  m_PP->addMeasurementSet(ms);
 
 	  debug("pose est after fake x=%.2f y=%.2f a=%.4f t=%.6f",
-	      m_PP->getPose().getX(), 
-	      m_PP->getPose().getY(), 
-	      m_PP->getPose().getTheta(),
-	      m_PP->getPose().getTime().getDouble());
+		m_PP->getPose().getX(), 
+		m_PP->getPose().getY(), 
+		m_PP->getPose().getTheta(),
+		m_PP->getPose().getTime().getDouble());
 
 	  m_NotRunningYet = (m_PP->getPose().getTime() ==
-	      m_LastTimestampWhileNotRunningYet);      
+			     m_LastTimestampWhileNotRunningYet);      
 	  m_LastTimestampWhileNotRunningYet = m_PP->getPose().getTime();
 	}
       }
 
       if (m_NotRunningYet) {
-        println("Still waiting for SLAM to initialize");
+	println("Still waiting for SLAM to initialize");
       } else {
-        println("Fake measurement kick start finished x=%.2f y=%.2f a=%.4f t=%.6f",
-                m_PP->getPose().getX(), 
-                m_PP->getPose().getY(), 
-                m_PP->getPose().getTheta(),
-                m_PP->getPose().getTime().getDouble());
+	println("Fake measurement kick start finished x=%.2f y=%.2f a=%.4f t=%.6f",
+		m_PP->getPose().getX(), 
+		m_PP->getPose().getY(), 
+		m_PP->getPose().getTheta(),
+		m_PP->getPose().getTime().getDouble());
 
-        updateRobotPoseInWM();
+	updateRobotPoseInWM();
       }
 
     } else {
       SCOPED_TIME_LOG;
 
       debug("addXXXX(#=%d a0=%.2f aS=%.4f r0=%.2f rEnd=%.2f t=%ld.%06ld)",
-            cureScan.getNPts(), cureScan.getStartAngle(), 
-            cureScan.getAngleStep(), cureScan.getRange(0),
-            cureScan.getRange(cureScan.getNPts()-1),
-            cureScan.getTime().Seconds, cureScan.getTime().Microsec);
+	    cureScan.getNPts(), cureScan.getStartAngle(), 
+	    cureScan.getAngleStep(), cureScan.getRange(0),
+	    cureScan.getRange(cureScan.getNPts()-1),
+	    cureScan.getTime().Seconds, cureScan.getTime().Microsec);
 
       CASTTimer timer(true);
       Cure::MeasurementSet measSet;
@@ -436,52 +440,58 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan)
       timer.stop();
       
       debug("Took %.3fs to extract %d lines, %.3fs to update (tot %.3fs)",
-            dt, n, timer.stop()-dt, timer.stop());
+	    dt, n, timer.stop()-dt, timer.stop());
       {
 	SCOPED_TIME_LOG;
 	IceUtil::Mutex::Lock lock(m_Mutex);
 	int err = m_PP->addMeasurementSet(measSet);
-  if (err < 0) log("Got error value %d from addMeasurementSet!", err);
+	if (err < 0) log("Got error value %d from addMeasurementSet!", err);
       }
 
 
       log("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",
-          m_PP->getPose().getX(), 
-          m_PP->getPose().getY(), 
-          m_PP->getPose().getTheta(),
-          m_PP->getPose().getTime().getDouble());
+	  m_PP->getPose().getX(), 
+	  m_PP->getPose().getY(), 
+	  m_PP->getPose().getTheta(),
+	  m_PP->getPose().getTime().getDouble());
 
       {
-      SCOPED_TIME_LOG;
-      updateRobotPoseInWM();
+	SCOPED_TIME_LOG;
+	updateRobotPoseInWM();
       
-      storeDataToFile();
+	storeDataToFile();
       
-      if (m_WriteMapToWorkingMemory) {
-        writeLineMapToWorkingMemory(true);
-      }
+	if (m_WriteMapToWorkingMemory) {
+	  writeLineMapToWorkingMemory(true);
+	}
       }
     }
 
   } else {
 
-      debug("No update, since not moving");
+    debug("No update, since not moving");
 
   }
 }
 
 int
 SlamProcess::extractMeasSet(Cure::LaserScan2d &cureScan,
-                            Cure::MeasurementSet &measSet)
+			    Cure::MeasurementSet &measSet)
 {
   m_Seg.segment(cureScan);
   m_Lsq.doFit(m_Seg.m_Segments, cureScan);
   debug("Extracted %d lines with RANSAC+LSQ", m_Lsq.m_Lines.size());
   
   Cure::RedundantLine2DRep::makeMeasurementSetFromLines(m_Lsq.m_Lines,
-                                                        measSet,
-                                                        &m_Seg.m_Segments,
-                                                        &cureScan);
+							measSet,
+							&m_Seg.m_Segments,
+							&cureScan);
+  /* Make sure all measurement sets have a timestamp */
+  measSet.setTime(cureScan.getTime());
+
+  if (measSet.Time.Seconds == 0) {
+    error("Measurement set has timestamp 0");
+  }
 
   return m_Lsq.m_Lines.size();
 }
@@ -507,15 +517,15 @@ void SlamProcess::updateRobotPoseInWM()
   if(m_RobotPoseIdString == ""){
     m_RobotPoseIdString = newDataID();
     addToWorkingMemory<NavData::RobotPose2d>(m_RobotPoseIdString, 
-                                           pRP); // sync!
+					     pRP); // sync!
     debug("Added RobotPose to WM");
   }else{
     overwriteWorkingMemory<NavData::RobotPose2d>(m_RobotPoseIdString, 
-                                               pRP);
+						 pRP);
     char buf[256];
     sprintf(buf, "Overwriting RobotPose in WM x=%.3f y=%.3f theta=%.3f t=%ld.%06ld",
-            pose.getX(), pose.getY(), pose.getTheta(),
-            pose.getTime().Seconds, pose.getTime().Microsec);
+	    pose.getX(), pose.getY(), pose.getTheta(),
+	    pose.getTime().Seconds, pose.getTime().Microsec);
     log(buf);
   }
 }
@@ -530,7 +540,7 @@ void SlamProcess::storeDataToFile()
       if (!m_DontWriteFiles) {
 	IceUtil::Mutex::Lock lock(m_Mutex);
 
-        ((Cure::WrappedSLAM*)m_PP)->saveMap(m_MapFilename);
+	((Cure::NewWrappedSLAM*)m_PP)->saveMap(m_MapFilename);
       }
       
       m_WriteMapToWorkingMemory = true;
@@ -540,18 +550,18 @@ void SlamProcess::storeDataToFile()
       std::fstream fsl;
       fsl.open("robotpose.ccf", std::ios::out);
       if (fsl > 0) {
-        m_Mutex.lock();
-        Cure::Pose3D p = m_PP->getPose();
-        m_Mutex.unlock();
-        double ang[3];
-        p.getAngles(ang);
-        fsl << "ROBOTPOSE\n";
-        fsl << p.getX() << " "
-            << p.getY() << " "
-            << p.getZ() << " "
-            << ang[0] << " "
-            << ang[1] << " "
-            << ang[2] << std::endl;
+	m_Mutex.lock();
+	Cure::Pose3D p = m_PP->getPose();
+	m_Mutex.unlock();
+	double ang[3];
+	p.getAngles(ang);
+	fsl << "ROBOTPOSE\n";
+	fsl << p.getX() << " "
+	    << p.getY() << " "
+	    << p.getZ() << " "
+	    << ang[0] << " "
+	    << ang[1] << " "
+	    << ang[2] << std::endl;
       }
       fsl.close();
     }
@@ -567,7 +577,7 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
 
   Cure::FeatureMap *fm = 0;
   if (m_RunningSLAM) {
-    fm = &(((Cure::WrappedSLAM*)m_PP)->m_Map);
+    fm = &(((Cure::NewWrappedSLAM*)m_PP)->m_Map);
   } else {
     fm = &(((Cure::WrappedLocalization*)m_PP)->m_Map);
   }
@@ -590,7 +600,7 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
   if (walls.size() > 0) {
     int i = 0;
     for (std::list<Cure::Line2D>::iterator w = walls.begin();
-         w != walls.end(); w++) {
+	 w != walls.end(); w++) {
       lineMap->lines.push_back(NavData::LineMapSegement());
       lineMap->lines.back().start.x = w->StartPoint.getX();
       lineMap->lines.back().start.y = w->StartPoint.getY();
@@ -602,17 +612,17 @@ SlamProcess::writeLineMapToWorkingMemory(bool overwrite)
 
   if (overwrite) {
     overwriteWorkingMemory<NavData::LineMap>(m_LineMapIdString,
-                                             lineMap); // synch!
+					     lineMap); // synch!
     char buf[128];
     sprintf(buf, "Overwriting wm linemap object \"%s\" with %lu lines ", 
-            m_LineMapIdString.c_str(), walls.size());
+	    m_LineMapIdString.c_str(), walls.size());
     debug(buf);
   } else {
     m_LineMapIdString = newDataID();
     addToWorkingMemory<NavData::LineMap>(m_LineMapIdString, lineMap);
     char buf[128];
     sprintf(buf, "Adding wm linemap object \"%s\" with %lu lines ", 
-            m_LineMapIdString.c_str(), walls.size());
+	    m_LineMapIdString.c_str(), walls.size());
     debug(buf);
   }
 
@@ -625,22 +635,22 @@ void SlamProcess::connectPeekabot()
 {
   try {
     log("Trying to connect to Peekabot (again?) on host %s and port %d",
-        m_PbHost.c_str(), m_PbPort);
+	m_PbHost.c_str(), m_PbPort);
     
     m_PeekabotClient.connect(m_PbHost, m_PbPort);
 
-        m_ScanAngFOV = M_PI/180.0*240;
-        m_ScanMaxRange = 5.6;
+    m_ScanAngFOV = M_PI/180.0*240;
+    m_ScanMaxRange = 5.6;
 
-      m_SLAMPoseProxy.add(m_PeekabotClient, "SLAM_Pose",peekabot::REPLACE_ON_CONFLICT);
-      m_SLAMPoseProxy.set_scale(0.1,0.04,0.04);
+    m_SLAMPoseProxy.add(m_PeekabotClient, "SLAM_Pose",peekabot::REPLACE_ON_CONFLICT);
+    m_SLAMPoseProxy.set_scale(0.1,0.04,0.04);
 
     log("Connection to Peekabot established");
 
     
   } catch(std::exception &e) {
     log("Caught exception when connecting to peekabot (%s)",
-        e.what());
+	e.what());
     return;
   }
 }
