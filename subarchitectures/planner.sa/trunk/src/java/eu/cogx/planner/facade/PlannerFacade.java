@@ -119,12 +119,12 @@ public class PlannerFacade {
 								.log("could not generate a plan... we have to abort for this time and remove the listener");
 						component.removeChangeFilter(planQueue);
 						planQueue = null;
-						try {
-							component
-									.deleteFromWorkingMemory(pt.getEvent().address);
-						} catch (CASTException e) {
-							component.println("CASTException: " + e.message);
-						}
+//						try {
+//							component
+//									.deleteFromWorkingMemory(pt.getEvent().address);
+//						} catch (CASTException e) {
+//							component.println("CASTException: " + e.message);
+//						}
 						pt = null;
 						// stop waiting for further changes
 						continueWaiting = false;
