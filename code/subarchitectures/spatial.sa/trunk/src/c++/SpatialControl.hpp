@@ -195,6 +195,8 @@ protected:
 
     bool m_usePeekabot;
     bool m_show3Dobstacles; 
+    bool m_showExpandedMap;
+
     void connectPeekabot();
     void CreateGridMap();
     void UpdateGridMap();
