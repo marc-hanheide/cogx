@@ -75,6 +75,7 @@
   noun(student, person,)
   noun(researcher, person,)
   noun(pirate, person,)
+  noun(victim, person,)
 
   name+vocative(GJ, person,)
   name+vocative(Trevor, person,)	
@@ -92,6 +93,7 @@
   name+vocative(Chandana, person,)	
    name+vocative(Hans, person,)
    name+vocative(Dennis, person,)
+   name+vocative(George, person,)
 
   _noun(Robot, rowboat, animate, asr-correction)
 
@@ -145,6 +147,7 @@
   noun(wall, thing,)
     
   noun(pizza, thing,) 
+  noun(cerealbox, thing,) 
   noun(thing, thing,) 
   noun(book, thing,) 
   noun(ball, thing,) 
@@ -165,7 +168,9 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun(mug, thing,) 
   noun(cup, thing,) 
   noun(jug, thing,) 
+  noun(stapler, thing,) 
   noun(keyboard, thing,) 
+  noun(joystick, thing,) 
   noun(laptop, thing,) 
   noun(screen, thing,) 
   noun(computer, thing,) 
@@ -208,14 +213,20 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
  
   noun(chocolate, thing,)
   noun(tea, thing,) 
+  noun(juice, thing,) 
   noun(coffee, thing,) 
+  noun-irr(cornflakes, cornflakes, thing,)
+  noun-irr(cookies, cookies, thing,)
   noun(water, thing,) 
    
   #-- e-substance --#
 
   noun-mass(tea, e-substance,)
+  noun-mass(juice, e-substance,)
   noun-mass(coffee, e-substance,)
   noun-mass(chocolate, e-substance,) 
+  noun-mass(cornflakes, e-substance,)
+  noun-mass(cookies, e-substance,)
   noun-mass(water, e-substance,) 
   
   noun-mass(tee, e-substance,)
@@ -236,7 +247,8 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   noun(place, e-place,) 
   noun(office, e-place,) 
   noun(room, e-place,)   
-  noun(hall, e-place,)  _noun(hall, hallway, e-place,) _noun(hall, corridor, e-place,)
+  noun(hall, e-place,)   
+  noun(corridor, e-place,)  _noun(corridor, hallway, e-place,)
   noun(bathroom, e-place,) _noun(bathroom, washroom, e-place,) _noun(bathroom, toilet, e-place,) _noun(bathroom, wc, e-place,)
   noun(lab, e-place,)  _noun(lab, laboratory, e-place,) 
   noun(kitchen, e-place,) 
@@ -356,6 +368,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   adj-none(false, q-attitude,)  
   
   adj-none(elongated,q-shape,)
+  adj-none(compact,q-shape,)
 
   #-- q-size --#
   
@@ -904,6 +917,8 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   dis-marker(well, marker)
   dis-marker(huh, marker)
   dis-marker(um, marker)
+  dis-marker(aha, marker)
+  dis-marker(hum, marker)
   dis-marker(but, marker)
   dis-marker(and, marker)
   dis-marker(so, marker)
@@ -922,6 +937,7 @@ word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
   dis-marker( bye , closing)  dis-marker+np( bye , closing)
   dis-marker( ciao , closing)  dis-marker+np( ciao , closing)
   dis-marker( good_bye , closing)  dis-marker+np( good_bye , closing)
+  dis-marker( goodbye , closing)  dis-marker+np( goodbye , closing)
   dis-marker( so_long , closing)  dis-marker+np( so_long , closing)
   
 

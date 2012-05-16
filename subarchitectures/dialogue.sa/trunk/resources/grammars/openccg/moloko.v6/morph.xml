@@ -4023,6 +4023,8 @@
   <entry word="researchers" macros="@s-pl-unsp @full" pos="Noun" stem="researcher-noun-n" class="person" pred="researcher"/>
   <entry word="pirate" macros="@s-sg @full" pos="Noun" stem="pirate-noun-n" class="person" pred="pirate"/>
   <entry word="pirates" macros="@s-pl-unsp @full" pos="Noun" stem="pirate-noun-n" class="person" pred="pirate"/>
+  <entry word="victim" macros="@s-sg @full" pos="Noun" stem="victim-noun-n" class="person" pred="victim"/>
+  <entry word="victims" macros="@s-pl-unsp @full" pos="Noun" stem="victim-noun-n" class="person" pred="victim"/>
   <entry word="GJ" macros="@s-sg @3rd @full" pos="Bare-np" stem="GJ-name" class="person" pred="GJ"/>
   <entry word="GJ" macros="@fin-full" pos="du" stem="GJxx-du" class="person" pred="GJ"/>
   <entry word="Trevor" macros="@s-sg @3rd @full" pos="Bare-np" stem="Trevor-name" class="person" pred="Trevor"/>
@@ -4055,6 +4057,8 @@
   <entry word="Hans" macros="@fin-full" pos="du" stem="Hansxx-du" class="person" pred="Hans"/>
   <entry word="Dennis" macros="@s-sg @3rd @full" pos="Bare-np" stem="Dennis-name" class="person" pred="Dennis"/>
   <entry word="Dennis" macros="@fin-full" pos="du" stem="Dennisxx-du" class="person" pred="Dennis"/>
+  <entry word="George" macros="@s-sg @3rd @full" pos="Bare-np" stem="George-name" class="person" pred="George"/>
+  <entry word="George" macros="@fin-full" pos="du" stem="Georgexx-du" class="person" pred="George"/>
   <entry word="rowboat" macros="@s-sg @full @asr-correction" pos="Noun" stem="rowboat-noun-n" class="animate" pred="Robot"/>
   <entry word="rowboats" macros="@s-pl-unsp @full @asr-correction" pos="Noun" stem="rowboat-noun-n" class="animate" pred="Robot"/>
   <entry word="Borland" macros="@s-sg @full" pos="Noun" stem="Borland-noun-n" class="entity" pred="Borland"/>
@@ -4129,6 +4133,8 @@
   <entry word="walls" macros="@s-pl-unsp @full" pos="Noun" stem="wall-noun-n" class="thing" pred="wall"/>
   <entry word="pizza" macros="@s-sg @full" pos="Noun" stem="pizza-noun-n" class="thing" pred="pizza"/>
   <entry word="pizzas" macros="@s-pl-unsp @full" pos="Noun" stem="pizza-noun-n" class="thing" pred="pizza"/>
+  <entry word="cerealbox" macros="@s-sg @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
+  <entry word="cerealboxes" macros="@s-pl-unsp @full" pos="Noun" stem="cerealbox-noun-n" class="thing" pred="cerealbox"/>
   <entry word="thing" macros="@s-sg @full" pos="Noun" stem="thing-noun-n" class="thing" pred="thing"/>
   <entry word="things" macros="@s-pl-unsp @full" pos="Noun" stem="thing-noun-n" class="thing" pred="thing"/>
   <entry word="book" macros="@s-sg @full" pos="Noun" stem="book-noun-n" class="thing" pred="book"/>
@@ -4158,8 +4164,12 @@
   <entry word="cups" macros="@s-pl-unsp @full" pos="Noun" stem="cup-noun-n" class="thing" pred="cup"/>
   <entry word="jug" macros="@s-sg @full" pos="Noun" stem="jug-noun-n" class="thing" pred="jug"/>
   <entry word="jugs" macros="@s-pl-unsp @full" pos="Noun" stem="jug-noun-n" class="thing" pred="jug"/>
+  <entry word="stapler" macros="@s-sg @full" pos="Noun" stem="stapler-noun-n" class="thing" pred="stapler"/>
+  <entry word="staplers" macros="@s-pl-unsp @full" pos="Noun" stem="stapler-noun-n" class="thing" pred="stapler"/>
   <entry word="keyboard" macros="@s-sg @full" pos="Noun" stem="keyboard-noun-n" class="thing" pred="keyboard"/>
   <entry word="keyboards" macros="@s-pl-unsp @full" pos="Noun" stem="keyboard-noun-n" class="thing" pred="keyboard"/>
+  <entry word="joystick" macros="@s-sg @full" pos="Noun" stem="joystick-noun-n" class="thing" pred="joystick"/>
+  <entry word="joysticks" macros="@s-pl-unsp @full" pos="Noun" stem="joystick-noun-n" class="thing" pred="joystick"/>
   <entry word="laptop" macros="@s-sg @full" pos="Noun" stem="laptop-noun-n" class="thing" pred="laptop"/>
   <entry word="laptops" macros="@s-pl-unsp @full" pos="Noun" stem="laptop-noun-n" class="thing" pred="laptop"/>
   <entry word="screen" macros="@s-sg @full" pos="Noun" stem="screen-noun-n" class="thing" pred="screen"/>
@@ -4256,13 +4266,22 @@
   <entry word="chocolates" macros="@s-pl-unsp @full" pos="Noun" stem="chocolate-noun-n" class="thing" pred="chocolate"/>
   <entry word="tea" macros="@s-sg @full" pos="Noun" stem="tea-noun-n" class="thing" pred="tea"/>
   <entry word="teas" macros="@s-pl-unsp @full" pos="Noun" stem="tea-noun-n" class="thing" pred="tea"/>
+  <entry word="juice" macros="@s-sg @full" pos="Noun" stem="juice-noun-n" class="thing" pred="juice"/>
+  <entry word="juices" macros="@s-pl-unsp @full" pos="Noun" stem="juice-noun-n" class="thing" pred="juice"/>
   <entry word="coffee" macros="@s-sg @full" pos="Noun" stem="coffee-noun-n" class="thing" pred="coffee"/>
   <entry word="coffees" macros="@s-pl-unsp @full" pos="Noun" stem="coffee-noun-n" class="thing" pred="coffee"/>
+  <entry word="cornflakes" macros="@s-sg @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
+  <entry word="cornflakes" macros="@s-pl-unsp @full" pos="Noun" stem="cornflakes-noun-n" class="thing" pred="cornflakes"/>
+  <entry word="cookies" macros="@s-sg @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
+  <entry word="cookies" macros="@s-pl-unsp @full" pos="Noun" stem="cookies-noun-n" class="thing" pred="cookies"/>
   <entry word="water" macros="@s-sg @full" pos="Noun" stem="water-noun-n" class="thing" pred="water"/>
   <entry word="waters" macros="@s-pl-unsp @full" pos="Noun" stem="water-noun-n" class="thing" pred="water"/>
   <entry word="tea" macros="@s-mass @full" pos="Noun" stem="tea-mass-n" class="e-substance" pred="tea"/>
+  <entry word="juice" macros="@s-mass @full" pos="Noun" stem="juice-mass-n" class="e-substance" pred="juice"/>
   <entry word="coffee" macros="@s-mass @full" pos="Noun" stem="coffee-mass-n" class="e-substance" pred="coffee"/>
   <entry word="chocolate" macros="@s-mass @full" pos="Noun" stem="chocolate-mass-n" class="e-substance" pred="chocolate"/>
+  <entry word="cornflakes" macros="@s-mass @full" pos="Noun" stem="cornflakes-mass-n" class="e-substance" pred="cornflakes"/>
+  <entry word="cookies" macros="@s-mass @full" pos="Noun" stem="cookies-mass-n" class="e-substance" pred="cookies"/>
   <entry word="water" macros="@s-mass @full" pos="Noun" stem="water-mass-n" class="e-substance" pred="water"/>
   <entry word="tee" macros="@s-mass @full" pos="Noun" stem="tee-mass-n" class="e-substance" pred="tee"/>
   <entry word="iron" macros="@s-mass @full" pos="Noun" stem="iron-mass-n" class="e-substance" pred="iron"/>
@@ -4283,10 +4302,10 @@
   <entry word="rooms" macros="@s-pl-unsp @full" pos="Noun" stem="room-noun-n" class="e-place" pred="room"/>
   <entry word="hall" macros="@s-sg @full" pos="Noun" stem="hall-noun-n" class="e-place" pred="hall"/>
   <entry word="halls" macros="@s-pl-unsp @full" pos="Noun" stem="hall-noun-n" class="e-place" pred="hall"/>
-  <entry word="hallway" macros="@s-sg @full" pos="Noun" stem="hallway-noun-n" class="e-place" pred="hall"/>
-  <entry word="hallways" macros="@s-pl-unsp @full" pos="Noun" stem="hallway-noun-n" class="e-place" pred="hall"/>
-  <entry word="corridor" macros="@s-sg @full" pos="Noun" stem="corridor-noun-n" class="e-place" pred="hall"/>
-  <entry word="corridors" macros="@s-pl-unsp @full" pos="Noun" stem="corridor-noun-n" class="e-place" pred="hall"/>
+  <entry word="corridor" macros="@s-sg @full" pos="Noun" stem="corridor-noun-n" class="e-place" pred="corridor"/>
+  <entry word="corridors" macros="@s-pl-unsp @full" pos="Noun" stem="corridor-noun-n" class="e-place" pred="corridor"/>
+  <entry word="hallway" macros="@s-sg @full" pos="Noun" stem="hallway-noun-n" class="e-place" pred="corridor"/>
+  <entry word="hallways" macros="@s-pl-unsp @full" pos="Noun" stem="hallway-noun-n" class="e-place" pred="corridor"/>
   <entry word="bathroom" macros="@s-sg @full" pos="Noun" stem="bathroom-noun-n" class="e-place" pred="bathroom"/>
   <entry word="bathrooms" macros="@s-pl-unsp @full" pos="Noun" stem="bathroom-noun-n" class="e-place" pred="bathroom"/>
   <entry word="washroom" macros="@s-sg @full" pos="Noun" stem="washroom-noun-n" class="e-place" pred="bathroom"/>
@@ -4514,6 +4533,7 @@
   <entry word="true" macros="@s-degree-base" pos="Adj" stem="truetrue-adj" class="q-attitude" pred="true"/>
   <entry word="false" macros="@s-degree-base" pos="Adj" stem="falsefalse-adj" class="q-attitude" pred="false"/>
   <entry word="elongated" macros="@s-degree-base" pos="Adj" stem="elongatedelongated-adj" class="q-shape" pred="elongated"/>
+  <entry word="compact" macros="@s-degree-base" pos="Adj" stem="compactcompact-adj" class="q-shape" pred="compact"/>
   <entry word="big" macros="@s-degree-base @pre-n" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="bigger" macros="@s-comparative @pre-n @comparative" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
   <entry word="biggest" macros="@s-superlative @pre-n @superlative" pos="Adj" stem="big-adj" class="q-size" pred="big"/>
@@ -5742,6 +5762,8 @@
   <entry word="well" pos="du" stem="wellxx-du" class="marker" pred="well"/>
   <entry word="huh" pos="du" stem="huhxx-du" class="marker" pred="huh"/>
   <entry word="um" pos="du" stem="umxx-du" class="marker" pred="um"/>
+  <entry word="aha" pos="du" stem="ahaxx-du" class="marker" pred="aha"/>
+  <entry word="hum" pos="du" stem="humxx-du" class="marker" pred="hum"/>
   <entry word="but" pos="du" stem="butxx-du" class="marker" pred="but"/>
   <entry word="and" pos="du" stem="andxx-du" class="marker" pred="and"/>
   <entry word="so" pos="du" stem="soxx-du" class="marker" pred="so"/>
@@ -5760,6 +5782,8 @@
   <entry word="ciao" pos="du" stem="ciao-du+np" class="closing" pred="ciao"/>
   <entry word="good_bye" pos="du" stem="good_byexx-du" class="closing" pred="good_bye"/>
   <entry word="good_bye" pos="du" stem="good_bye-du+np" class="closing" pred="good_bye"/>
+  <entry word="goodbye" pos="du" stem="goodbyexx-du" class="closing" pred="goodbye"/>
+  <entry word="goodbye" pos="du" stem="goodbye-du+np" class="closing" pred="goodbye"/>
   <entry word="so_long" pos="du" stem="so_longxx-du" class="closing" pred="so_long"/>
   <entry word="so_long" pos="du" stem="so_long-du+np" class="closing" pred="so_long"/>
   <entry word="really" pos="Mod-pre-adj-" stem="really-mod-pre-adj-intensity" class="m-intensity" pred="really"/>
