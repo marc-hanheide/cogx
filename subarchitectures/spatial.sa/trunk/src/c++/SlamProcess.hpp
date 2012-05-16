@@ -31,7 +31,7 @@
 #include <AddressBank/FileAddress.hh>
 #include <Map/PoseProvider.hh>
 #include <SensorData/LaserScan2d.hh>
-#include <Map/WrappedSLAM.hh>
+#include "NewWrappedSLAM.hpp"
 #include <Map/WrappedLocalization.hh>
 #include <Transformation/Pose3D.hh>
 #include <AddressBank/ConfigFileReader.hh>

@@ -2004,6 +2004,27 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
         cureOdom.getX(), cureOdom.getY(), cureOdom.getTheta(),
         cureOdom.getTime().getDouble());
   log("CASTTime: %f",getCASTTime().s+1e-6*getCASTTime().us);
+
+  {
+    static cast::cdl::CASTTime oldTime = getCASTTime();
+    cast::cdl::CASTTime newTime = getCASTTime();
+    long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
+    oldTime = newTime;
+    if (diff > 1500000) {
+    error("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+    }
+    else {
+    log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
+    }
+
+    diff = (newTime.s-m_lastSLAMPoseTime.s)*1000000l+(newTime.us-m_lastSLAMPoseTime.us);
+    if (diff > 1500000) {
+    error("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+    }
+    else {
+    log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
+    }
+  }
   
   if (m_ready || m_bNoNavGraph) { // have to get a first nav graph 
                  // to be ready
@@ -2240,24 +2261,6 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
     }
     {
 
-      static cast::cdl::CASTTime oldTime = getCASTTime();
-      cast::cdl::CASTTime newTime = getCASTTime();
-      long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
-      oldTime = newTime;
-      if (diff > 1500000) {
-	error("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
-      }
-      else {
-	log("SpatialControl::updateCtrl - interval: %f s", ((double)diff)*1e-6);
-      }
-
-      diff = (newTime.s-m_lastSLAMPoseTime.s)*1000000l+(newTime.us-m_lastSLAMPoseTime.us);
-      if (diff > 1500000) {
-	error("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
-      }
-      else {
-	log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double)diff)*1e-6);
-      }
 
       SCOPED_TIME_LOG;
       Cure::NewNavController::updateCtrl();
