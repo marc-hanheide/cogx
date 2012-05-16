@@ -171,7 +171,7 @@ void displayDoorMeas(peekabot::GroupProxy &root,
     peekabot::GroupProxy door;
     door.add(doormeas, "door");
     door.set_pose(xdW[0], xdW[1], 0 , xdW[2], 0, 0);
-    float col[] = {1.0, 0.817, 0.269};
+    float col[] = {0.269, 0.817, 1.0};
     HSS::addDoorPost(door, width, col[0],col[1],col[2]);
   }
 }
