@@ -177,20 +177,19 @@ void SpatialControl::CreateGridMap() {
     m_ProxyGridMap.set_unoccupied_color(0.8,0.9,1);
     m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
-    m_ProxyGridMap.hide();
+  if(m_showExpandedMap){
+      m_ProxyGridMapExpanded.add(m_PeekabotClient, "grid_map_expanded", cellSize,
+	  peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyGridMapExpanded.set_occupied_color(0.1,0.1,0.1);
+      m_ProxyGridMapExpanded.set_unoccupied_color(0.8,0.9,1);
+      m_ProxyGridMapExpanded.set_position(0,0,-0.02);
 
-    m_ProxyGridMapExpanded.add(m_PeekabotClient, "grid_map_expanded", cellSize,
-	peekabot::REPLACE_ON_CONFLICT);
-    m_ProxyGridMapExpanded.set_occupied_color(0.1,0.1,0.1);
-    m_ProxyGridMapExpanded.set_unoccupied_color(0.8,0.9,1);
-    m_ProxyGridMapExpanded.set_position(0,0,-0.02);
-
-    m_ProxyGridMapExpanded2.add(m_PeekabotClient, "grid_map_expanded2", cellSize,
-	peekabot::REPLACE_ON_CONFLICT);
-    m_ProxyGridMapExpanded2.set_occupied_color(0.1,0.1,0.1);
-    m_ProxyGridMapExpanded2.set_unoccupied_color(0.8,0.9,1);
-    m_ProxyGridMapExpanded2.set_position(0,0,-0.03);
-
+      m_ProxyGridMapExpanded2.add(m_PeekabotClient, "grid_map_expanded2", cellSize,
+	  peekabot::REPLACE_ON_CONFLICT);
+      m_ProxyGridMapExpanded2.set_occupied_color(0.1,0.1,0.1);
+      m_ProxyGridMapExpanded2.set_unoccupied_color(0.8,0.9,1);
+      m_ProxyGridMapExpanded2.set_position(0,0,-0.03);
+  }
     m_ProxyGridMapKinect.add(m_PeekabotClient, "grid_map_kinect", cellSize,0.05, 
   peekabot::REPLACE_ON_CONFLICT);
     m_ProxyGridMapKinect.set_position(0,0,0);
@@ -550,6 +549,12 @@ void SpatialControl::configure(const map<string,string>& _config)
   m_show3Dobstacles = false;
     if (_config.find("--show3Dobstacles") != _config.end())
       m_show3Dobstacles = true;
+  m_showExpandedMap = false;
+    if (_config.find("--showExpandedMap") != _config.end())
+      m_showExpandedMap = true;
+
+
+
 
   m_UsePointCloud = false;
   if (_config.find("--pcserver") != _config.end()) {
@@ -2981,20 +2986,22 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   log("check_point %d %d %d %d %d %d",counter1,counter2,counter3,counter4,counter5,counter6);
 }
 
-  m_ProxyGridMapExpanded.set_cells(cells);
+
+  if (m_showExpandedMap){
+    m_ProxyGridMapExpanded.set_cells(cells);
 
 
-  peekabot::OccupancySet2D cells1;
-  for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize(); yi++) {
-    for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize(); xi++) {
-          if (map1(xi+m_lgm->getSize(), yi+m_lgm->getSize())==false)
-              cells1.add(xi*cellSize,yi*cellSize,0);
-          else if (map1(xi+m_lgm->getSize(), yi+m_lgm->getSize())==true)
-              cells1.add(xi*cellSize,yi*cellSize,1);
+    peekabot::OccupancySet2D cells1;
+    for (int yi = -m_lgm->getSize(); yi < m_lgm->getSize(); yi++) {
+      for (int xi = -m_lgm->getSize(); xi < m_lgm->getSize(); xi++) {
+            if (map1(xi+m_lgm->getSize(), yi+m_lgm->getSize())==false)
+                cells1.add(xi*cellSize,yi*cellSize,0);
+            else if (map1(xi+m_lgm->getSize(), yi+m_lgm->getSize())==true)
+                cells1.add(xi*cellSize,yi*cellSize,1);
+      }
     }
+    m_ProxyGridMapExpanded2.set_cells(cells1);
   }
-  m_ProxyGridMapExpanded2.set_cells(cells1);
-
 
 }
   log("Finished refreshing node hypotheses");
