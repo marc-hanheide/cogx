@@ -19,9 +19,14 @@ VARDEFAULT feature_options=<multiline>
 	default
 	coma			
 # enable place categorisation
-    !categorisation	
+    categorisation	
 # use visaul categorisation
     !categorisation-visual 
+# if enabled, place properties will be saved and loaded
+    place-property-persistence
+# get automated exploration until there are no more placeholders, that is much
+# fast than the full-fledged planner
+    !simple_placeholder_exploration
 # if enabled, categorical will save a data stream to file
     !datasaving
 # if enabled, images will also be saved

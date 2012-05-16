@@ -682,7 +682,7 @@ IFOPTALL(%(feature_options), planning_sa)
         IFOPTALL(%(feature_options), motivation_deadlines)
             ### creates goals from hypothesis about visualobjects
             JAVA MG goal.explore-generator spatial.motivation.ExplorePlaceGenerator
-            JAVA MG goal.goto-generator spatial.motivation.GotoPlaceGenerator --placeID 1 --deadline 5
+            JAVA MG goal.goto-generator spatial.motivation.GotoPlaceGenerator --placeID 10 --deadline 15
             JAVA MG goal.scheduler motivation.components.managers.DeadlineScheduler --no-execution
             JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "ManualSelectFilter"
         ELSE
