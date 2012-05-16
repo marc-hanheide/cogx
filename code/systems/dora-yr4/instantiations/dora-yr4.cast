@@ -198,11 +198,12 @@ VARDEFAULT explore_range=2.0
 # Whether to save and load obstacle grid map
 VARDEFAULT spatial_load_map=--load-map --save-map
 
-# Placeholders must be this far from obstacles (times robot width)
+## Placeholder generation parameters:
+# Obstacles are expanded by 
+# (spatial_node_obstacle_margin + spatial_unknown_margin) * 0.5 * (robot width)
+# Free space is reduced by (spatial_unknown_margin) * 0.5 * (robot width)
 VARDEFAULT spatial_node_obstacle_margin=1.0
-
-# Placeholders must be this far from unexplored space (times robot width)
-VARDEFAULT spatial_node_unknown_margin=1.25
+VARDEFAULT spatial_unknown_margin=1.25
 
 # Whether to output SLAM map and robot pose
 VARDEFAULT spatial_output_slam_files=yes
