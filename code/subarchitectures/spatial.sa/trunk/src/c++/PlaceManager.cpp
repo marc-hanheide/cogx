@@ -1525,6 +1525,7 @@ void PlaceManager::evaluateUnexploredPaths()
         // Check if was checked already            
 
         // Check if are connected via node
+        //TODO connected via two nodes (1 is gateway)
         double max_dist = 2.0;    
         bool link_gateway = false;
         for(set<int>::iterator it1 = curPlaceConnectivities.begin(); it1 != curPlaceConnectivities.end(); it1++) {
@@ -1533,13 +1534,15 @@ void PlaceManager::evaluateUnexploredPaths()
           if (it2 != placeConnectivities.end()){
             max_dist = 1.5;
             NavData::FNodePtr link = _getNodeForPlace(*it1);
-            log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
-                        
-            if (link->gateway == 1){
-              link_gateway = true;
-              break;
+            if (link != 0){
+              log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
+                          
+              if (link->gateway == 1){
+                link_gateway = true;
+                break;
+              }
             }              
-          } 
+          }
         }
         // Connected via gateway - skip
         if (link_gateway) continue;
