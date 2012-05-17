@@ -200,17 +200,16 @@ VARDEFAULT spatial_load_map=--load-map --save-map
 
 ## Placeholder generation parameters:
 # Obstacles are expanded by 
-# (spatial_node_obstacle_margin + spatial_unknown_margin) * 0.5 * (robot width)
-# Free space is reduced by (spatial_unknown_margin) * 0.5 * (robot width)
+# (spatial_node_obstacle_margin + spatial_node_unknown_margin) * 0.5 * (robot width)
+# Free space is reduced by (spatial_node_unknown_margin) * 0.5 * (robot width)
 VARDEFAULT spatial_node_obstacle_margin=1.0
-VARDEFAULT spatial_unknown_margin=1.25
+VARDEFAULT spatial_node_unknown_margin=1.25
 
 # Whether to output SLAM map and robot pose
 VARDEFAULT spatial_output_slam_files=yes
 
 # Whether to output raw odometry and laser scans for debug
-VARDEFAULT spatial_output_raw_data=
-#--output-raw-data
+VARDEFAULT spatial_output_raw_data=--output-raw-data
 
 IFEQ(%(spatial_output_slam_files),yes)
 
@@ -357,7 +356,7 @@ IFOPTALL(%(feature_options), spatial)
     ELSE
 ### Uses laser scans and odometry to maintain NavData::RobotPose2d struct
 # If the tmpmap.metric file exists then localisation mode will be used instead of the SLAM mode
-        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 %(slam_mapconfig) %(usePB)
+        CPP GD slam.process     SlamProcess -c %(spatial_cureconfig) --max-scan-rate 5 %(slam_mapconfig) %(usePB) %(spatial_output_raw_data)
     ENDIF
 
 ### Creates NavData::FNode and AEdge as the robot traverses space
