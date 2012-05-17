@@ -203,13 +203,14 @@ VARDEFAULT spatial_load_map=--load-map --save-map
 # (spatial_node_obstacle_margin + spatial_node_unknown_margin) * 0.5 * (robot width)
 # Free space is reduced by (spatial_node_unknown_margin) * 0.5 * (robot width)
 VARDEFAULT spatial_node_obstacle_margin=1.0
-VARDEFAULT spatial_node_unknown_margin=1.25
+VARDEFAULT spatial_node_unknown_margin=1.0
 
 # Whether to output SLAM map and robot pose
 VARDEFAULT spatial_output_slam_files=yes
 
 # Whether to output raw odometry and laser scans for debug
-VARDEFAULT spatial_output_raw_data=--output-raw-data
+VARDEFAULT spatial_output_raw_data=
+#--output-raw-data
 
 IFEQ(%(spatial_output_slam_files),yes)
 
