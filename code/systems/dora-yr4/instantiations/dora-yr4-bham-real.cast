@@ -17,9 +17,33 @@ SETVAR spatial_max_door_width=0.85
 # template: --exclude-from-exploration "x < 2.0 y > 0 or y < -5"
 #SETVAR exclude_exploration=--exclude-from-exploration "y < -3 or y > 3 or x > 5"
 #SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
-SETVAR exclude_exploration=--exclude-from-exploration "x > 10.5 y > 1.4 y < 4 or x < 2.7 y > 1.8 y < 2.7"
+#
+## exclude 233 and down corridor past 245
+SETVAR exclude_exploration=--exclude-from-exploration "x > 10.7 x < 12 y > 2 y < 3.7 or x > 1.7 x < 2.7 y > 1.9 y < 3"
 
 #do not show the height map
-SETVAR spatial_show_3d_obstacles=
+#SETVAR spatial_show_3d_obstacles=
+
+# Don't generate a prior probability along (laser-detected) wall
+# obstacles in uninformed AVS (i.e. only the Kinect heightmap will be
+# used)
+SETVAR use_wall_prob=
+
+# Whether to output SLAM map and robot pose
+#SETVAR spatial_output_slam_files=no
+
+# Whether to output raw odometry and laser scans for debug
+SETVAR spatial_output_raw_data=
+
+### If the flag --showExpandedMap is present then show the region around the robot in which
+# placeholders may be generated
+SETVAR spatial_show_expanded_map=--showExpandedMap
+
+## Placeholder generation parameters:
+# Obstacles are expanded by 
+# (spatial_node_obstacle_margin + spatial_node_unknown_margin) * 0.5 * (robot width)
+# Free space is reduced by (spatial_node_unknown_margin) * 0.5 * (robot width)
+SETVAR spatial_node_obstacle_margin=1.0
+SETVAR spatial_node_unknown_margin=1.0
 
 INCLUDE dora-yr4-real.cast
