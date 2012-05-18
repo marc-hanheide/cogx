@@ -136,6 +136,7 @@ void CTester::runComponent()
       if (n == lastReport[i] && !pm->isSwitching() && tmSend.elapsed() < 2000) {
         continue;
       }
+      bool bNewState = (n != lastReport[i]);
       lastReport[i] = n;
       tmSend.restart();
       if (removedReport[i] < n - nDisplay) {
@@ -159,6 +160,9 @@ void CTester::runComponent()
       std::sprintf(cbuf, "011-%08d", LONG_MAX - n);
       //log("htmlsize(%s): %d", cbuf, ss.str().size());
       mDisplay.setHtml(sViewName, cbuf, ss.str());
+      if (bNewState) {
+        log("%s", ss.str().c_str());
+      }
 
       ss.str("");
       pm->writeMachineDescription(ss);
