@@ -32,7 +32,12 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	Map<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel> panels = new LinkedHashMap<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel>();
 
-	Map<String, Map<Class<? extends Motive>, MotivePriority>> defaults = new LinkedHashMap<String, Map<Class<? extends Motive>, MotivePriority>>();
+	/**
+	 * a map of all presets, with the name of the preset as key, and then a map of Motive type=>Priority to actually represent the respective preset
+	 */
+	Map<String, Map<Class<? extends Motive>, MotivePriority>> presets = new LinkedHashMap<String, Map<Class<? extends Motive>, MotivePriority>>();
+
+	public static final String STARTUP_PRIORITIES = "startup-priorities";
 
 	/**
 	 * @throws ClassNotFoundException
@@ -51,17 +56,18 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	protected void addDefault(String name, Class<? extends Motive> c,
 			MotivePriority prio) {
-		Map<Class<? extends Motive>, MotivePriority> d = defaults.get(name);
+		Map<Class<? extends Motive>, MotivePriority> d = presets.get(name);
 		if (d == null) {
 			d = new HashMap<Class<? extends Motive>, MotivePriority>();
-			defaults.put(name, d);
+			presets.put(name, d);
 		}
 		d.put(c, prio);
 		if (panels.get(c) == null)
 			getFilterPanel(c);
 	}
 
-	protected FilterPanel getFilterPanel(String type) throws ClassNotFoundException {
+	protected FilterPanel getFilterPanel(String type)
+			throws ClassNotFoundException {
 		@SuppressWarnings("unchecked")
 		Class<? extends Motive> c = (Class<? extends Motive>) Class
 				.forName(type);
@@ -90,7 +96,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			this.add(new JLabel(type.getSimpleName()), BorderLayout.NORTH);
 			this.add(getSlider(), BorderLayout.CENTER);
 			this.setPreferredSize(new Dimension(500, 80));
-			this.add(new JSeparator(),BorderLayout.SOUTH);
+			this.add(new JSeparator(), BorderLayout.SOUTH);
 		}
 
 		public Class<? extends Motive> getType() {
@@ -105,14 +111,20 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 						MotivePriority.UNSURFACE.ordinal());
 				Dictionary<Integer, JComponent> labels;
 				labels = new Hashtable<Integer, JComponent>();
-				labels.put(MotivePriority.UNSURFACE.ordinal(), new JLabel(
-						MotivePriority.UNSURFACE.name()));
-				labels.put(MotivePriority.LOW.ordinal(), new JLabel(
-						MotivePriority.LOW.name()));
-				labels.put(MotivePriority.NORMAL.ordinal(), new JLabel(
-						MotivePriority.NORMAL.name()));
-				labels.put(MotivePriority.HIGH.ordinal(), new JLabel(
-						MotivePriority.HIGH.name()));
+				for (MotivePriority p : MotivePriority.values()) {
+					JLabel l=new JLabel(p.name());
+					l.setFont(l.getFont().deriveFont(9f));
+					labels.put(p.ordinal(), l);
+				}
+//				
+//				labels.put(MotivePriority.UNSURFACE.ordinal(), new JLabel(
+//						MotivePriority.UNSURFACE.name()));
+//				labels.put(MotivePriority.LOW.ordinal(), new JLabel(
+//						MotivePriority.LOW.name()));
+//				labels.put(MotivePriority.NORMAL.ordinal(), new JLabel(
+//						MotivePriority.NORMAL.name()));
+//				labels.put(MotivePriority.HIGH.ordinal(), new JLabel(
+//						MotivePriority.HIGH.name()));
 				jSlider.setLabelTable(labels);
 				jSlider.setPaintTicks(true);
 				jSlider.setPaintLabels(true);
@@ -152,7 +164,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 	private JFrame getJFrame() {
 		if (jFrame == null) {
 			jFrame = new JFrame();
-			jFrame.setTitle("Motivation::ManualSelectFilter");
+			jFrame.setTitle(this.getClass().getSimpleName());
 			jFrame.setContentPane(getJContentPane());
 		}
 		return jFrame;
@@ -168,7 +180,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new GridLayout(0, 1));
 			jContentPane.add(getJMotivesPanel());
-			jMotivesPanel.add(getJButtonUpdate());
+			//jMotivesPanel.add(getJButtonUpdate());
 		}
 		return jContentPane;
 	}
@@ -219,7 +231,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.setLayout(gridLayout);
 			for (FilterPanel p : panels.values()) {
 				jMotivesPanel.add(p);
-				
+
 			}
 			jMotivesPanel.add(getPresetPanel());
 
@@ -229,8 +241,12 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 
 	private JPanel getPresetPanel() {
 		JPanel presetPanel = new JPanel();
-		presetPanel.add(new JLabel("presets:"));
-
+		//presetPanel.add(new JLabel("presets:"));
+		GridLayout gridLayout = new GridLayout(0, 3);
+		gridLayout.setHgap(5);
+		gridLayout.setVgap(5);
+		presetPanel.setLayout(gridLayout);
+		
 		JButton nullButton = new JButton("unsurface all");
 		nullButton.addActionListener(new ActionListener() {
 			@Override
@@ -249,19 +265,20 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 		});
 		presetPanel.add(nullButton);
 
-		for (final Entry<String, Map<Class<? extends Motive>, MotivePriority>> def : defaults
+		for (final Entry<String, Map<Class<? extends Motive>, MotivePriority>> def : presets
 				.entrySet()) {
-			JButton button = new JButton(def.getKey());
+			String name = def.getKey();
+			// skip the STARTUP_PRIORITIES
+			if (name.equals(STARTUP_PRIORITIES))
+				continue;
+			JButton button = new JButton(name);
+			final Map<Class<? extends Motive>, MotivePriority> preset = def
+					.getValue();
 			button.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
-						for (FilterPanel p : panels.values()) {
-							MotivePriority prio = def.getValue().get(
-									p.getType());
-							if (prio != null)
-								p.getSlider().setValue(prio.ordinal());
-						}
+						applyPreset(preset);
 						if (component != null)
 							component.checkAll();
 					} catch (CASTException e1) {
@@ -280,6 +297,10 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 	@Override
 	public void start() {
 		registerTypes();
+		Map<Class<? extends Motive>, MotivePriority> defSet = presets
+				.get(STARTUP_PRIORITIES);
+		if (defSet != null)
+			applyPreset(defSet);
 		getJFrame().setVisible(true);
 		getJFrame().pack();
 		// getJFrame().setSize(800, 600);
@@ -298,6 +319,14 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 	public void configure(Map<String, String> arg0) {
 		// TODO Auto-generated method stub
 
+	}
+
+	void applyPreset(final Map<Class<? extends Motive>, MotivePriority> preset) {
+		for (FilterPanel p : panels.values()) {
+			MotivePriority prio = preset.get(p.getType());
+			if (prio != null)
+				p.getSlider().setValue(prio.ordinal());
+		}
 	}
 
 	public static void main(String[] args) {
