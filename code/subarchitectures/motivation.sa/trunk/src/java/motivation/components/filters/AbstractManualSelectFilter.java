@@ -29,7 +29,7 @@ import cast.cdl.WorkingMemoryChange;
 
 public class AbstractManualSelectFilter implements MotiveFilter {
 
-	Map<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel> panels = new HashMap<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel>();
+	Map<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel> panels = new LinkedHashMap<Class<? extends Motive>, AbstractManualSelectFilter.FilterPanel>();
 
 	Map<String, Map<Class<? extends Motive>, MotivePriority>> defaults = new LinkedHashMap<String, Map<Class<? extends Motive>, MotivePriority>>();
 
@@ -60,7 +60,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			getFilterPanel(c);
 	}
 
-	protected FilterPanel addType(String type) throws ClassNotFoundException {
+	protected FilterPanel getFilterPanel(String type) throws ClassNotFoundException {
 		@SuppressWarnings("unchecked")
 		Class<? extends Motive> c = (Class<? extends Motive>) Class
 				.forName(type);
