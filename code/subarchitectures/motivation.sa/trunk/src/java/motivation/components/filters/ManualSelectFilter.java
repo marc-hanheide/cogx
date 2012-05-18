@@ -29,7 +29,10 @@ public class ManualSelectFilter extends AbstractManualSelectFilter {
 				MotivePriority.LOW);
 		addDefault("CogX default", AnalyzeProtoObjectMotive.class,
 				MotivePriority.NORMAL);
-		getFilterPanel(TutorInitiativeMotive.class).getSlider().setValue(2);
+		
+		addDefault(STARTUP_PRIORITIES, TutorInitiativeMotive.class,
+				MotivePriority.NORMAL);
+		
 
 	}
 
