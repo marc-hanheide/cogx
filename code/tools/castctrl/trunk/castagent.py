@@ -12,6 +12,10 @@ from core import castagentsrv, procman, options, messages, logger, log4util
 from core.castagentsrv import RSYNC_DAEMON
 LOGGER = logger.get()
 
+import pconfig
+from pconfig.configwidget import CConfigWidget
+from pconfig.manager import CServerManager
+
 import threading
 import Ice
 import core.modice
@@ -93,16 +97,47 @@ class CConsoleAgent:
         self._options.configEnvironment()
         self.address = "tcp -p %d" % port
         self.agent = None
+
+        self.serverManager = CServerManager()
+        fn = os.path.join(os.path.dirname(pconfig.__file__), "castservers.txt")
+        self.serverManager.addServersFromFile(fn)
+        fn = os.path.join(os.path.dirname(pconfig.__file__), "cogxservers.txt")
+        self.serverManager.addServersFromFile(fn)
+
         self._options.appOptions = appOptions
         self._initLocalProcesses(appOptions)
         self._initMessagePump(appOptions)
 
 
+    def _addProcess(self, name, dictParams=None):
+        csi = self.serverManager.getServerInfo(name)
+        if csi == None:
+            LOGGER.error("Server '%s' is not registered." % name)
+            return
+        if dictParams != None:
+            for (k,v) in dictParams.iteritems():
+                p = csi.getProperty(k)
+                if p == None:
+                    LOGGER.error("Server '%s' has no property named '%s'." % (name, k))
+                    continue
+                p.value = v
+        extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
+        command = self._options.xe(csi.getCommand(extenv), environ=extenv)
+        workdir = self._options.xe(csi.workdir, environ=extenv) if csi.workdir != None else None
+        print command
+        print csi.getParameters()
+        proc = procman.CProcess(name=name, command=command, params=csi.getParameters(),
+                workdir=workdir, allowTerminate=not csi.isServer)
+        self.manager.addProcess(proc)
+
     def _initLocalProcesses(self, appOptions):
-        self.manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
-        self.manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
-        self.manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
+        #self.manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
+        #self.manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
+        #self.manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
         #self.manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
+        self._addProcess('cast-java')
+        self._addProcess('cast-cpp')
+        self._addProcess('cast-python')
 
         p = procman.CProcess(procman.LOG4J_PROCESS, self._options.xe("${CMD_LOG4J_SERVER}"))
         p.messageProcessor = log4util.CLog4MessageProcessor()
@@ -113,9 +148,25 @@ class CConsoleAgent:
             if not os.path.exists(appOptions.player_cfg):
                 LOGGER.warn("Player configuration file '%s' not found." % appOptions.player_cfg)
             else:
-                cmd = self._options.xe("${CMD_PLAYER}")
-                cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
-                self.manager.addProcess(procman.CProcess("Player", cmd))
+                self._addProcess('Player', { 'CONFIG': appOptions.player_cfg })
+                #csi = self.serverManager.getServerInfo("Player")
+                #if csi == None:
+                #    LOGGER.error("'Player' server is not registered")
+                #else:
+                #    #p = csi.getProperty("CONFIG")
+                #    #if p != None: p.value = appOptions.player_cfg
+                #    #extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
+                #    #command = self._options.xe(csi.getCommand(extenv), environ=extenv)
+                #    #workdir = self._options.xe(csi.workdir, environ=extenv) if csi.workdir != None else None
+                #    #print command
+                #    #print csi.getParameters()
+                #    #proc = procman.CProcess(command=command, params=params,
+                #    #        workdir=workdir, allowTerminate=not csi.isServer)
+                #    #self.manager.addProcess(proc)
+
+                ##cmd = self._options.xe("${CMD_PLAYER}")
+                ##cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
+                ##self.manager.addProcess(procman.CProcess("Player", cmd))
 
         if appOptions.golem_cfg != None:
             if not os.path.exists(appOptions.golem_cfg):
