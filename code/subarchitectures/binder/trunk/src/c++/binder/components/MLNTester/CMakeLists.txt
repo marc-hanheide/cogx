@@ -46,7 +46,7 @@ SET(SOURCES MLNTester.cpp)
 add_cast_component(MLNTester ${SOURCES} )
 
 #add_dependencies(${CAST_COMPONENT_NAME} alchemy) 
-link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder RefSlice)
+link_cast_component(${CAST_COMPONENT_NAME} BeliefsCAST Binder DialogueIce)
 
 
 
