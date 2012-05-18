@@ -263,7 +263,7 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom)
 	odom.getDoubleTime() - m_LastOdom.getDoubleTime());
   }
   if (m_LastOdom.getDoubleTime() > odom.getDoubleTime()) {
-    error("Odometry data out of sequence. Skipping data!!!");
+    log("WARNING: Odometry data out of sequence. Skipping data!!!");
     return;
   }
  

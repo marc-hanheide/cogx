@@ -1525,25 +1525,40 @@ void PlaceManager::evaluateUnexploredPaths()
         // Check if was checked already            
 
         // Check if are connected via node
-        //TODO connected via two nodes (1 is gateway)
         double max_dist = 2.0;    
         bool link_gateway = false;
+        bool link_gateway2 = false;
         for(set<int>::iterator it1 = curPlaceConnectivities.begin(); it1 != curPlaceConnectivities.end(); it1++) {
-          set<int> placeConnectivities = m_connectivities[(*it1)];
-          set<int>::iterator it2 = placeConnectivities.find(it->first);
-          if (it2 != placeConnectivities.end()){
-            max_dist = 1.5;
-            NavData::FNodePtr link = _getNodeForPlace(*it1);
-            if (link != 0){
+          NavData::FNodePtr link = _getNodeForPlace(*it1);
+          if (link != 0){
+            set<int> placeConnectivities = m_connectivities[(*it1)];
+            log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
+
+            set<int>::iterator it2 = placeConnectivities.find(it->first);
+            if (it2 != placeConnectivities.end()){
+              max_dist = 1.5;
               log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
                           
               if (link->gateway == 1){
                 link_gateway = true;
                 break;
               }
-            }              
-          }
+            }
+            for(set<int>::iterator it3 = placeConnectivities.begin(); it3 != placeConnectivities.end(); it3++) {
+              NavData::FNodePtr link2 = _getNodeForPlace(*it3);
+              if (link2 != 0){
+                set<int> placeConnectivities2 = m_connectivities[(*it3)];
+                set<int>::iterator it4 = placeConnectivities2.find(it->first);
+                if (it4 != placeConnectivities2.end()){
+                  if ((link->gateway == 1) || (link2->gateway == 1)){
+                    link_gateway2 = true;
+                  }
+                }
+              }
+            }
+          }              
         }
+
         // Connected via gateway - skip
         if (link_gateway) continue;
         double dist2 = (it->second->x - curNode->x)*(it->second->x - curNode->x) + (it->second->y - curNode->y) * (it->second->y - curNode->y);
@@ -1580,27 +1595,28 @@ void PlaceManager::evaluateUnexploredPaths()
                   log("dx %f dy %f theta %f width %f s %f t %f",dx,dy,theta,width,s,t);
                   double door_tolerance = 0.15;
                   if ((t > -door_tolerance) && (t < l + door_tolerance) && (s > -width/2 * 1.5) && (s < width/2 * 1.5) && (max_dist > 1.5)){
-                    NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
-                    //if (t>l/2) t=l/2;
-                    t = 0;
-                    newHyp->x=x1 + nx*t;
-                    newHyp->y=y1 + ny*t;
-                    newHyp->hypID=-1;
-                    newHyp->originPlaceID=curPlaceID;
-                    newHyp->originNodeID=curNode->nodeId;
-                    newHyp->gateway=true;
-                    PlacePtr p;
-                    p = new Place;   
-                    p->status = PLACEHOLDER;
+                    if (!link_gateway2){
+                      NodeHypothesisPtr newHyp = new SpatialData::NodeHypothesis();
+                      //if (t>l/2) t=l/2;
+                      t = 0;
+                      newHyp->x=x1 + nx*t;
+                      newHyp->y=y1 + ny*t;
+                      newHyp->hypID=-1;
+                      newHyp->originPlaceID=curPlaceID;
+                      newHyp->originNodeID=curNode->nodeId;
+                      newHyp->gateway=true;
+                      PlacePtr p;
+                      p = new Place;   
+                      p->status = PLACEHOLDER;
 
-                	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
-                    log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
-                        newHyp->y, newHyp->hypID);
+                  	  PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
+                      log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
+                          newHyp->y, newHyp->hypID);
 
-                    // Add connectivity property (one-way)
-                    createConnectivityProperty(m_hypPathLength, curPlaceID, newPlaceID);
-                    m_hypotheticalConnectivities.push_back(pair<int, int>(newHyp->originPlaceID, newPlaceID));
-
+                      // Add connectivity property (one-way)
+                      createConnectivityProperty(m_hypPathLength, curPlaceID, newPlaceID);
+                      m_hypotheticalConnectivities.push_back(pair<int, int>(newHyp->originPlaceID, newPlaceID));
+                    }
                     intersects_door = true;
                     break;
                   }  
