@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import motivation.slice.Motive;
+import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
 import autogen.Planner.Completion;
 import autogen.Planner.Goal;
@@ -203,15 +204,27 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 		public void workingMemoryChanged(WorkingMemoryChange _wmc)
 				throws CASTException {
 			assert (_wmc.operation == WorkingMemoryOperation.OVERWRITE);
-			M motive = getMemoryEntry(_wmc.address, motiveClass);
-			assert (CASTUtils.typeName(motive).equals(_wmc.type));
-			if (motive.status == MotiveStatus.COMPLETED) {
-				try {
-					motiveWasCompleted(motive);
-				} catch (SubarchitectureComponentException e) {
-					logException(e);
+			try {
+				lockEntry(_wmc.address, WorkingMemoryPermissions.LOCKEDOD);
+				M motive = getMemoryEntry(_wmc.address, motiveClass);
+				assert (CASTUtils.typeName(motive).equals(_wmc.type));
+				if (motive.status == MotiveStatus.COMPLETED) {
+					try {
+						if (isMonitoringMotivesForReactivation()) {
+							reactivateMotive(_wmc, motive);
+						} else {
+							motiveWasCompleted(motive);
+						}
+					} catch (SubarchitectureComponentException e) {
+						logException(e);
+					} finally {
+						unlockEntry(_wmc.address);
+					}
+					if (!isMonitoringMotivesForReactivation())
+						removeChangeFilter(this);
 				}
-				removeChangeFilter(this);
+			} finally {
+				unlockEntry(_wmc.address);
 			}
 		}
 
@@ -227,17 +240,40 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 	 */
 	protected void motiveWasCompleted(M _motive)
 			throws SubarchitectureComponentException {
+		log("goal " + _motive.goal.goalString + " completed.");
+	}
 
+	void reactivateMotive(WorkingMemoryChange _wmc, M motive) {
+		log("reactivate goal " + motive.goal.goalString);
+		motive.status = MotiveStatus.UNSURFACED;
+		motive.priority = MotivePriority.UNSURFACE;
+		try {
+			overwriteWorkingMemory(_wmc.address, motive);
+			log("goal " + motive.goal.goalString + " reactivated.");
+		} catch (CASTException e) {
+			logException(e);
+		}
 	}
 
 	private boolean m_monitorMotivesForCompletion = false;
+	private boolean m_monitorMotivesForReactivation = false;
 
 	public boolean isMonitoringMotivesForCompletion() {
 		return m_monitorMotivesForCompletion;
 	}
 
+	public boolean isMonitoringMotivesForReactivation() {
+		return m_monitorMotivesForReactivation;
+	}
+
 	public void monitorMotivesForDeletion(boolean _monitorMotivesForDeletion) {
 		this.m_monitorMotivesForCompletion = _monitorMotivesForDeletion;
+	}
+
+	public void reactivateCompleteMotives(boolean _monitorMotivesForReactivation) {
+		println("reactivateCompleteMotives set to "
+				+ _monitorMotivesForReactivation);
+		this.m_monitorMotivesForReactivation = _monitorMotivesForReactivation;
 	}
 
 	private void checkForAdditions(WorkingMemoryChange wmc, T newEntry)
