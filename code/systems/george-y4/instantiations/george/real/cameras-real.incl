@@ -25,8 +25,8 @@ IFOPTANY(%(hardware_options), video)
     </multiline>
     #-------------------------------------------------------
     SETVAR OpenCvLiveServer_Params=<multiline>
-       --camids  "%(CameraIds_01)"
-       --devnums "%(CameraDevs_01)"
+       --camids  "%(CameraIds)"
+       --devnums "%(CameraDevs)"
        --camconfigs "%(CameraConfigs_01)"
        --imgsize "640 480"
        --framerate_fps 30

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./ccagent --player=instantiations/player/cogx-platform-sim.cfg  --text2speech --gazebo-world=instantiations/gazebo/george-01.world
