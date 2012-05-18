@@ -9,7 +9,6 @@ import motivation.slice.PatrolMotive;
 import SpatialData.Place;
 import SpatialData.PlaceStatus;
 import autogen.Planner.Goal;
-import cast.CASTException;
 import cast.cdl.WorkingMemoryAddress;
 import cast.core.CASTUtils;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
@@ -17,10 +16,9 @@ import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
-import facades.SpatialFacade;
 
 public class GotoPlaceGenerator extends
-		AbstractBeliefMotiveGenerator<PatrolMotive, GroundedBelief> {
+		AbstractBeliefMotiveGenerator<PatrolMotive, GroundedBelief>  {
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
 	private static final int MAX_EXECUTION_TIME = 60 * 5;
@@ -32,7 +30,7 @@ public class GotoPlaceGenerator extends
 	 */
 	private static final double MAX_COSTS_TO_DROP = 50;
 	private int targetPlaceID = 0;
-	private int deadLine=-1;
+	private int deadLine = -1;
 
 	public GotoPlaceGenerator() {
 		super(PLACETYPE, PatrolMotive.class, GroundedBelief.class);
@@ -45,6 +43,8 @@ public class GotoPlaceGenerator extends
 	 */
 	@Override
 	protected void configure(Map<String, String> config) {
+		reactivateCompleteMotives(true);
+		monitorMotivesForDeletion(true);
 		String intStr = config.get("--placeID");
 		if (intStr != null)
 			targetPlaceID = Integer.parseInt(intStr);
@@ -72,7 +72,9 @@ public class GotoPlaceGenerator extends
 		log("checkForAddition(): placestatus="
 				+ belief.getContent().get("placestatus").getDistribution()
 						.getMostLikely().getProposition());
-		// if that is a place holder
+
+		// register on any changes to this motive, so we can reactivate it
+		
 		if (isExplored) {
 			log("place is explored, so it is a goal to goto");
 			PatrolMotive result = new PatrolMotive();
@@ -82,12 +84,13 @@ public class GotoPlaceGenerator extends
 			result.priority = MotivePriority.UNSURFACE;
 			result.referenceEntry = adr;
 			result.status = MotiveStatus.UNSURFACED;
-			result.lastVisisted=result.created;
+			result.lastVisisted = result.created;
 			fillValues(belief, result);
 			return result;
 		}
 		return null;
 	}
+
 
 	@Override
 	protected PatrolMotive checkForUpdate(GroundedBelief newEntry,
@@ -103,7 +106,7 @@ public class GotoPlaceGenerator extends
 		// if that is a place holder
 		if (isExplored) {
 			log("place is explored, so it is a goal to patrol");
-			motive.lastVisisted=getCASTTime();
+			motive.lastVisisted = getCASTTime();
 			fillValues(belief, motive);
 			return motive;
 		} else {
@@ -120,20 +123,20 @@ public class GotoPlaceGenerator extends
 	@Override
 	protected void start() {
 		super.start();
-//		try {
-//			SpatialFacade.get(this).registerPlaceChangedCallback(
-//					new SpatialFacade.PlaceChangedHandler() {
-//						@Override
-//						public synchronized void update(Place p) {
-//							log("explicitly scheduling all motives to be checked due to place change. new place is "
-//									+ p.id);
-//							recheckAllMotives();
-//						}
-//					});
-//		} catch (CASTException e1) {
-//			println("exception when registering placeChangedCallbacks");
-//			e1.printStackTrace();
-//		}
+		// try {
+		// SpatialFacade.get(this).registerPlaceChangedCallback(
+		// new SpatialFacade.PlaceChangedHandler() {
+		// @Override
+		// public synchronized void update(Place p) {
+		// log("explicitly scheduling all motives to be checked due to place change. new place is "
+		// + p.id);
+		// recheckAllMotives();
+		// }
+		// });
+		// } catch (CASTException e1) {
+		// println("exception when registering placeChangedCallbacks");
+		// e1.printStackTrace();
+		// }
 
 	}
 
@@ -141,10 +144,10 @@ public class GotoPlaceGenerator extends
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
 			PatrolMotive motive) {
 		motive.updated = getCASTTime();
-		motive.informationGain=1.0;
-		motive.goal = new Goal(computeImportance(motive), deadLine, "(= (is-in '"
-				+ this.getRobotBeliefAddr().id + "') '" + belief.getId() + "')",
-				false);
+		motive.informationGain = 1.0;
+		motive.goal = new Goal(computeImportance(motive), deadLine,
+				"(= (is-in '" + this.getRobotBeliefAddr().id + "') '"
+						+ belief.getId() + "')", false);
 		log("goal is " + motive.goal.goalString + " with inf-gain "
 				+ motive.informationGain);
 
@@ -156,5 +159,7 @@ public class GotoPlaceGenerator extends
 		else
 			return (float) (m.informationGain * MAX_COSTS_TO_DROP);
 	}
+
+
 
 }
