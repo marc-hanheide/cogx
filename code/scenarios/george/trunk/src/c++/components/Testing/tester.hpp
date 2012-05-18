@@ -9,6 +9,10 @@
 
 #include <cast/architecture/ManagedComponent.hpp>
 
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
+
 #include <map>
 #include <string>
 
@@ -18,9 +22,16 @@ namespace testing
 class CTester: public cast::ManagedComponent
 {
   std::vector<CMachinePtr> mMachines;
-public:
+
+protected:
   void configure(const std::map<std::string,std::string> & _config);
+  void start();
   void runComponent();
+
+public:
+#ifdef FEAT_VISUALIZATION
+  cogx::display::CDisplayClient mDisplay;
+#endif
 };
 
 }// namespace

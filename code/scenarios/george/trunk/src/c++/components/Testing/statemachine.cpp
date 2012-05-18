@@ -27,6 +27,14 @@ TStateFunctionResult CState::noAction(CState* pState)
   return Continue;
 }
 
+void CState::restart()
+{
+  mPhase = CState::phInit;
+  mActivity = CState::acActive;
+  mbSwitchStateCalled = false;
+  msExitReason = "";
+}
+
 TStateFunctionResult CState::enter()
 {
   if (_enter)
@@ -75,11 +83,12 @@ void CState::execute()
 
   switch(mPhase) {
     case phInit:
+      restart();
       mPhase = phEnter;
-      break;
+      // fall through
 
     case phEnter:
-      this->enter();
+      rv = this->enter();
       if (mFirstSleepMs > 0) {
         mSleepTimer.setTimeout(mFirstSleepMs, true);
         mActivity = acSleeping;
@@ -149,19 +158,52 @@ std::string CLinkedState::description()
   return ss.str();
 }
 
-
-void CMachine::switchToState(CState* pState)
+void CMachine::writeStateDescription(std::ostringstream& ss)
 {
-  assert(pState);
+  if (!mpCurrentState.get()) {
+    ss << "NULL";
+    return;
+  }
+  ss << mpCurrentState->id();
+  ss << "</td><td>";
+  if (mpCurrentState->mActivity == CState::acSleeping) {
+    long tts = timeToSleep();
+    //if (tts > 0) {
+    char cbuf[20];
+    std::sprintf(cbuf, " Sleep(%.3fs)", tts / 1000.0);
+    ss << cbuf;
+    //}
+  }
+  if (isWaitingForEvent()) {
+    ss << " WaitEvent";
+  }
+  if (mpCurrentState->msExitReason.size()) {
+    ss << " " << mpCurrentState->msExitReason;
+  }
+}
+
+void CMachine::writeMachineDescription(std::ostringstream& ss)
+{
+}
+
+void CMachine::onTransition(CStatePtr fromState, CStatePtr toState)
+{
+}
+
+void CMachine::switchToState(CStatePtr pState, const std::string& reason)
+{
+  assert(pState.get());
   if (! mpCurrentState.get()) {
     // Initial state
-    mpCurrentState.reset(pState);
+    mpCurrentState = pState;
     mpNextState.reset();
+    mStepNumber = 1;
     return;
   }
   assert (mpCurrentState->mPhase == CState::phWork);
-  mpNextState.reset(pState);
+  mpNextState = pState;
   mpCurrentState->mbSwitchStateCalled = true;
+  mpCurrentState->msExitReason = "Done(" + reason + ")";
 }
 
 void CMachine::runOneStep()
@@ -174,7 +216,7 @@ void CMachine::runOneStep()
     mpCurrentState->mActivity = CState::acActive;
   }
 
-  if (mpCurrentState->mActivity == CState::acWaiting) {
+  if (mpCurrentState->mActivity == CState::acWaiting && !mpCurrentState->hasTimedOut()) {
     if (mpCurrentState->mEvents.size() > 0) {
       // The caller will call checkEvents() which may cause the activity to
       // become other than acWaiting.
@@ -191,10 +233,10 @@ void CMachine::runOneStep()
     }
     onTransition(mpCurrentState, mpNextState);
 
+    ++mStepNumber;
     mpPrevState = mpCurrentState;
     mpCurrentState = mpNextState;
-    mpCurrentState->mPhase = CState::phInit;
-    mpCurrentState->mActivity = CState::acActive;
+    mpCurrentState->restart();
     mpNextState.reset();
   }
   mpCurrentState->execute();

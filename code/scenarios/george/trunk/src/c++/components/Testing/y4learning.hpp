@@ -13,7 +13,7 @@ namespace testing
 class CY4Learning // This is a state-machine factory
 {
 public:
-  CMachinePtr createMachine(cast::ManagedComponent* pOwner); // TODO: better factory interface
+  CMachinePtr createMachine(CTester* pOwner); // TODO: better factory interface
 };
 
 } // namespace

@@ -3,6 +3,9 @@
  * @created April 2012
  */
 #include "castmachine.hpp"
+#include "tester.hpp"
+
+#include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <sstream>
 #include <fstream>
@@ -10,6 +13,17 @@
 namespace testing {
 
 #define MSSG(streamexpr)  ((std::ostringstream&)(std::ostringstream() << std::flush << streamexpr))
+
+CCastMachine::CCastMachine(CTester* pOwner)
+#ifdef FEAT_VISUALIZATION
+  : mDisplay(pOwner->mDisplay)
+#endif
+{
+  setCastComponent(pOwner);
+  setLoggingComponent(pOwner);
+  mPlayerHost = "localhost";
+  mPlayerPort = 6665;
+}
 
 void CCastMachine::configure(const std::map<std::string,std::string> & _config)
 {
@@ -243,19 +257,46 @@ void CCastMachine::clearScene()
 #endif
 }
 
-# if 0
-void CCastMachine::onStart()
+void CCastMachine::writeMachineDescription(std::ostringstream& ss)
 {
-   m_pOwner->addChangeFilter(
-      createLocalTypeFilter<VisualObject>(cdl::ADD),
-      new MemberFunctionChangeReceiver<CCastMachine>(
+  for (auto v : mCount) {
+    ss << v.first << ": " << v.second << "<br>\n";
+  }
+}
+
+void CCastMachine::start()
+{
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualObject>(cast::cdl::ADD),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
          this, &CCastMachine::onAdd_VisualObject)
       );
-   m_pOwner->addChangeFilter(
-      createLocalTypeFilter<VisualObject>(cdl::DELETE),
-      new MemberFunctionChangeReceiver<CCastMachine>(
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualObject>(cast::cdl::DELETE),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
          this, &CCastMachine::onDel_VisualObject)
       );
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualObject>(cast::cdl::OVERWRITE),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
+         this, &CCastMachine::onChange_VisualObject)
+      );
+
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::ProtoObject>(cast::cdl::ADD),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
+         this, &CCastMachine::onAdd_ProtoObject)
+      );
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::ProtoObject>(cast::cdl::DELETE),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
+         this, &CCastMachine::onDel_ProtoObject)
+      );
+
+   mCount["VisualObject"] = 0;
+   mCount["ProtoObject"] = 0;
+
+#if 0
    m_pOwner->addChangeFilter(
       createLocalTypeFilter<VisualLearningTask>(cdl::ADD),
       new MemberFunctionChangeReceiver<CCastMachine>(
@@ -274,26 +315,104 @@ void CCastMachine::onStart()
 
    loadEmptyScene();
    switchState(stStart);
+#endif
 }
 
 void CCastMachine::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
+#if 0
    {
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
       m_ObjectCount++;
    }
    m_EventMonitor.notify();
+#endif
+   checkReceivedEvent("::VisionData::VisualObject");
+
+   auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+   mVisualObjects[_wmc.address] = pvo;
+
+   long count = 0;
+   for(auto v : mVisualObjects) {
+     if (! v.second.get()) continue;
+     if (v.second->presence == VisionData::VopVISIBLE)
+       ++count;
+   }
+   mCount["VisualObject"] = count;
 }
 
 void CCastMachine::onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
+#if 0
    {
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
       m_ObjectCount--;
    }
    m_EventMonitor.notify();
+#endif
+   checkReceivedEvent("::VisionData::VisualObject");
+
+   mVisualObjects[_wmc.address] = VisionData::VisualObjectPtr();
+
+   long count = 0;
+   for(auto v : mVisualObjects) {
+     if (! v.second.get()) continue;
+     if (v.second->presence == VisionData::VopVISIBLE)
+       ++count;
+   }
+   mCount["VisualObject"] = count;
 }
 
+void CCastMachine::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+#if 0
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+      m_ObjectCount--;
+   }
+   m_EventMonitor.notify();
+#endif
+   checkReceivedEvent("::VisionData::VisualObject");
+
+   auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+   mVisualObjects[_wmc.address] = pvo;
+
+   long count = 0;
+   for(auto v : mVisualObjects) {
+     if (! v.second.get()) continue;
+     if (v.second->presence == VisionData::VopVISIBLE)
+       ++count;
+   }
+   mCount["VisualObject"] = count;
+}
+
+void CCastMachine::onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+#if 0
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+      m_ObjectCount++;
+   }
+   m_EventMonitor.notify();
+#endif
+   mCount["ProtoObject"] += 1;
+   checkReceivedEvent("::VisionData::ProtoObject");
+}
+
+void CCastMachine::onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+#if 0
+   {
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+      m_ObjectCount--;
+   }
+   m_EventMonitor.notify();
+#endif
+   mCount["ProtoObject"] -= 1;
+   checkReceivedEvent("::VisionData::ProtoObject");
+}
+
+#if 0
 void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    report(MSSG("Learnig task added: " << _wmc.address));
