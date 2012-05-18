@@ -95,7 +95,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			this.setLayout(new BorderLayout());
 			this.add(new JLabel(type.getSimpleName()), BorderLayout.NORTH);
 			this.add(getSlider(), BorderLayout.CENTER);
-			this.setPreferredSize(new Dimension(500, 80));
+			this.setPreferredSize(new Dimension(600, 90));
 			this.add(new JSeparator(), BorderLayout.SOUTH);
 		}
 
