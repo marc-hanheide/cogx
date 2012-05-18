@@ -1,13 +1,13 @@
 # vim: set ft=cast sw=4 sts=4 ts=8 et :vim
 
-VARDEFAULT hardware=simulation
-#VARDEFAULT hardware=real
+SETVAR hardware=simulation
+SETVAR hardware=real
 
 IFEQ(%(hardware),real)
   OPTDEFAULT hardware_options=<multiline>
     kinect
     !kinect-video
-    !video 
+    video 
     !stereo
     ptz
     cameramount
