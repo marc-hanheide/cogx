@@ -173,6 +173,8 @@ private:
   void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
   void onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
   void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
 };
 
 }// namespace

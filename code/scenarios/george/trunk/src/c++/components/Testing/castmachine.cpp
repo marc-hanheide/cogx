@@ -500,21 +500,22 @@ void CCastMachine::start()
          this, &CCastMachine::onAdd_SpokenItem)
       );
 
-   mCount["VisualObject"] = 0;
-   mCount["ProtoObject"] = 0;
-
-#if 0
-   m_pOwner->addChangeFilter(
-      createLocalTypeFilter<VisualLearningTask>(cdl::ADD),
-      new MemberFunctionChangeReceiver<CCastMachine>(
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualLearningTask>(cast::cdl::ADD),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
          this, &CCastMachine::onAdd_LearningTask)
       );
-   m_pOwner->addChangeFilter(
-      createLocalTypeFilter<VisualLearningTask>(cdl::OVERWRITE),
-      new MemberFunctionChangeReceiver<CCastMachine>(
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualLearningTask>(cast::cdl::OVERWRITE),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
          this, &CCastMachine::onChange_LearningTask)
       );
 
+   mCount["VisualObject"] = 0;
+   mCount["ProtoObject"] = 0;
+   mCount["LearnigTask"] = 0;
+
+#if 0
    loadEmptyScene();
    switchState(stStart);
 #endif
@@ -629,27 +630,27 @@ void CCastMachine::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
   checkReceivedEvent("::synthesize::SpokenOutputItem");
 }
 
-#if 0
 void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   report(MSSG("Learnig task added: " << _wmc.address));
+   //report(MSSG("Learnig task added: " << _wmc.address));
    //{
    //   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
    //   m_LearnTaskCount++;
    //}
    //m_EventMonitor.notify();
+   mCount["LearnigTask"] += 1000;
 }
 
 void CCastMachine::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   report(MSSG("Learnig task changed: " << _wmc.address));
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_LearnTaskCount++;
-   }
-   m_EventMonitor.notify();
+   //report(MSSG("Learnig task changed: " << _wmc.address));
+   //{
+   //   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+   //   m_LearnTaskCount++;
+   //}
+   //m_EventMonitor.notify();
+   mCount["LearnigTask"] += 1;
 }
-#endif
 
 }// namespace
 // vim: set fileencoding=utf-8 sw=2 sts=4 ts=8 et ft=cpp11.cpp :vim
