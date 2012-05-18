@@ -124,17 +124,13 @@ class CConsoleAgent:
         extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
         command = self._options.xe(csi.getCommand(extenv), environ=extenv)
         workdir = self._options.xe(csi.workdir, environ=extenv) if csi.workdir != None else None
-        print command
-        print csi.getParameters()
+        #print command
+        #print csi.getParameters()
         proc = procman.CProcess(name=name, command=command, params=csi.getParameters(),
                 workdir=workdir, allowTerminate=not csi.isServer)
         self.manager.addProcess(proc)
 
     def _initLocalProcesses(self, appOptions):
-        #self.manager.addProcess(procman.CProcess("cast-java", self._options.xe("${CMD_JAVA_SERVER}")))
-        #self.manager.addProcess(procman.CProcess("cast-cpp", self._options.xe("${CMD_CPP_SERVER}")))
-        #self.manager.addProcess(procman.CProcess("cast-python", self._options.xe("${CMD_PYTHON_SERVER}")))
-        #self.manager.addProcess(procman.CProcess("client", self._options.xe("${CMD_CAST_CLIENT}")))
         self._addProcess('cast-java')
         self._addProcess('cast-cpp')
         self._addProcess('cast-python')
@@ -149,62 +145,27 @@ class CConsoleAgent:
                 LOGGER.warn("Player configuration file '%s' not found." % appOptions.player_cfg)
             else:
                 self._addProcess('Player', { 'CONFIG': appOptions.player_cfg })
-                #csi = self.serverManager.getServerInfo("Player")
-                #if csi == None:
-                #    LOGGER.error("'Player' server is not registered")
-                #else:
-                #    #p = csi.getProperty("CONFIG")
-                #    #if p != None: p.value = appOptions.player_cfg
-                #    #extenv = self._options.getExtendedEnviron(defaults=csi.getEnvVarScript())
-                #    #command = self._options.xe(csi.getCommand(extenv), environ=extenv)
-                #    #workdir = self._options.xe(csi.workdir, environ=extenv) if csi.workdir != None else None
-                #    #print command
-                #    #print csi.getParameters()
-                #    #proc = procman.CProcess(command=command, params=params,
-                #    #        workdir=workdir, allowTerminate=not csi.isServer)
-                #    #self.manager.addProcess(proc)
-
-                ##cmd = self._options.xe("${CMD_PLAYER}")
-                ##cmd = cmd.replace("[PLAYER_CONFIG]", appOptions.player_cfg)
-                ##self.manager.addProcess(procman.CProcess("Player", cmd))
 
         if appOptions.golem_cfg != None:
-            if not os.path.exists(appOptions.golem_cfg):
-                LOGGER.warn("Golem configuration file '%s' not found." % appOptions.golem_cfg)
-
-            cmd = self._options.xe("${CMD_GOLEM}")
-            cmd = cmd.replace("[GOLEM_CONFIG]", appOptions.golem_cfg)
-            wkd = self._options.xe("${CMD_GOLEM_WORKDIR}")
-            if not os.path.exists(wkd):
-                wkd = None
-            self.manager.addProcess(procman.CProcess("Golem", cmd, workdir=wkd))
+            self._addProcess('Golem') # NOTE: No configuration is needed any more.
 
         if appOptions.gazebo_world != None:
             if not os.path.exists(appOptions.gazebo_world):
                 LOGGER.warn("Gazebo world file '%s' not found." % appOptions.gazebo_world)
             else:
-                cmd = self._options.xe("${CMD_GAZEBO}")
-                cmd = cmd.replace("[GUI]", "")
-                cmd = cmd.replace("[PHYSICS]", "")
-                cmd = cmd.replace("[WORLD]", appOptions.gazebo_world)
-                self.manager.addProcess(procman.CProcess("Gazebo", cmd))
-            pass
+                self._addProcess('Gazebo', { 'WORLD': appOptions.gazebo_world })
 
         if appOptions.abducer != None and appOptions.abducer:
-            cmd = self._options.xe("${CMD_ABDUCER_SERVER}")
-            self.manager.addProcess(procman.CProcess("Abducer", cmd))
+            self._addProcess('Abducer')
 
         if appOptions.display_srv != None and appOptions.display_srv:
-            cmd = self._options.xe("${CMD_DISPLAY_SERVER}")
-            self.manager.addProcess(procman.CProcess("Display", cmd))
+            self._addProcess('Display')
 
         if appOptions.peekabot != None and appOptions.peekabot:
-            cmd = self._options.xe("${CMD_PEEKABOT}")
-            self.manager.addProcess(procman.CProcess("Peekabot", cmd))
+            self._addProcess('Peekabot')
 
         if appOptions.text2speech != None and appOptions.text2speech:
-            cmd = self._options.xe("${CMD_SPEECH_SERVER}")
-            self.manager.addProcess(procman.CProcess("Mary.tts", cmd))
+            self._addProcess('Mary.tts')
 
         if appOptions.can_build:
             cmd = "make [TARGET]"
@@ -219,10 +180,7 @@ class CConsoleAgent:
             self.manager.addProcess(p)
 
         if  appOptions.cleanup_script != None:
-            cmd = "sh " + appOptions.cleanup_script
-            p = procman.CProcess("cleanup-pre-cast", cmd)
-            p.allowTerminate = True
-            self.manager.addProcess(p)
+            self._addProcess('Cleanup', { 'SCRIPT': appOptions.cleanup_script })
 
 
 
