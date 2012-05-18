@@ -12,7 +12,7 @@ VARDEFAULT feature_options=<multiline>
 # enable AVS view cone planning and relation manager
     !avs			
 # enable execution framework to let the planner trigger actions
-    !execution		
+    execution		
 # enable conceptual framework
 	conceptual
 # enable default		
