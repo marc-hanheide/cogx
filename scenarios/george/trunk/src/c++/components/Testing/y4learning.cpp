@@ -17,7 +17,7 @@ public:
     mTableEmpty(linkedState("TableEmpty"))
   {
     setSleepTime(20, 30 * 1000);
-    setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
+    setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
   }
   TStateFunctionResult work() {
     machine()->switchToState(mTableEmpty);
@@ -39,7 +39,7 @@ public:
   {
     setSleepTime(20);
     // TODO pEmpty->setTimeout()
-    setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
+    setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
   }
 
   TStateFunctionResult enter() {
@@ -57,7 +57,7 @@ public:
         machine()->switchToState(mWaitToAppear);
       }
       else {
-        machine()->switchToState(mFinished);
+        machine()->switchToState(mFinished, "no-next-scene");
       }
       return Continue;
     }
@@ -77,13 +77,13 @@ public:
   {
     setSleepTime(20);
     // TODO pWaitAppear->setTimeout()
-    setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
+    setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
   }
   TStateFunctionResult work() {
     if (machine()->getCount("VisualObject") < 1) {
       return WaitChange;
     }
-    machine()->switchToState(mStartTeach);
+    machine()->switchToState(mStartTeach, "I-see-VO");
     return Continue;
   }
 };
@@ -119,7 +119,7 @@ public:
     mWaitResponse(linkedState("WaitResponse", "LessonSpoken")),
     mEndTeach(linkedState("EndTeaching", "NoMoreLessons,Timeout"))
   {
-    setWatchEvents({ "::Video::VisualObject", "::Video::ProtoObject" });
+    setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
     setTimeout(30 * 1000);
   }
   TStateFunctionResult work() {
@@ -127,17 +127,17 @@ public:
     if (machine()->getCount("VisualObject") != 1) {
       if (hasTimedOut()) {
         machine()->reportTimeout("Waiting for VisualObject count==1");
-        machine()->switchToState(mEndTeach);
+        machine()->switchToState(mEndTeach, "timeout");
         return Continue;
       }
       return WaitChange;
     }
     // TODO: pMachine->clearSpokenItems()
     if (machine()->sayLesson(machine()->mTeachingStep)) {
-      machine()->switchToState(mWaitResponse);
+      machine()->switchToState(mWaitResponse, "lesson-spoken");
     }
     else {
-      machine()->switchToState(mEndTeach);
+      machine()->switchToState(mEndTeach, "no-more-lessons");
     }
     return Continue;
   }
@@ -163,9 +163,10 @@ public:
     return WaitChange;
   }
   TStateFunctionResult work() {
+    machine()->log("WaitResponse work");
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Robot Response");
-      machine()->switchToState(mEndTeach);
+      machine()->switchToState(mEndTeach, "timeout");
       return Continue;
     }
     // TODO WaitResponse:  if (machine()->robotSaidOk()) {
@@ -202,7 +203,7 @@ public:
   }
 };
 
-CMachinePtr CY4Learning::createMachine(cast::ManagedComponent* pOwner)
+CMachinePtr CY4Learning::createMachine(CTester* pOwner)
 {
   TStateFunction fnEnter, fnWork, fnExit;
   CCastMachine* pMachine = new CCastMachine(pOwner);
@@ -210,6 +211,7 @@ CMachinePtr CY4Learning::createMachine(cast::ManagedComponent* pOwner)
 
   auto pFinish = pMachine->addState("Finished");
   auto pStart = pMachine->addState(new CstStart(pMachine));
+  pMachine->addState(new CstWaitToAppear(pMachine));
   pMachine->addState(new CstTableEmpty(pMachine));
   pMachine->addState(new CstStartTeach(pMachine));
   pMachine->addState(new CstTeachOneStep(pMachine));

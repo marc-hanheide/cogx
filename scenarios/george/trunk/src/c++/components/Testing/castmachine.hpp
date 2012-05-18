@@ -7,9 +7,14 @@
 
 #include "statemachine.hpp"
 
+#include <VisionData.hpp>
 #include <castutils/CastLoggerMixin.hpp>
 #include <cast/architecture/ManagedComponent.hpp>
 #include <cogxmath.h>
+
+#ifdef FEAT_VISUALIZATION
+#include <CDisplayClient.hpp>
+#endif
 
 #include <libplayerc++/playerc++.h>
 
@@ -17,6 +22,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+//#include <atomic>
 
 namespace testing
 {
@@ -41,6 +47,12 @@ public:
 class CCastComponentMixin
 {
   cast::ManagedComponent* mpOwner;
+protected:
+  cast::ManagedComponent* castComponent()
+  {
+    return mpOwner;
+  }
+
 public:
   void setCastComponent(cast::ManagedComponent* pOwner)
   {
@@ -56,6 +68,7 @@ public:
   }
 };
 
+class CTester;
 class CCastMachine: public CMachine, public CCastComponentMixin, public castutils::CCastLoggerMixin
 {
   std::string mPlayerHost;
@@ -66,23 +79,25 @@ class CCastMachine: public CMachine, public CCastComponentMixin, public castutil
   void prepareObjects();
   std::vector<GObject> mObjects;
   std::vector<cogx::Math::Vector3> mLocations;
+  std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mVisualObjects;
 
 private:
   void loadObjectsAndPlaces(const std::string& fname);
 
 public:
-  CCastMachine(cast::ManagedComponent* pOwner)
-  {
-    setCastComponent(pOwner);
-    setLoggingComponent(pOwner);
-    mPlayerHost = "localhost";
-    mPlayerPort = 6665;
-  }
+#ifdef FEAT_VISUALIZATION
+  cogx::display::CDisplayClient& mDisplay;
+#endif
   long mSceneId;
   long mTeachingStep;
   long mStepsTaught;
   long mCurrentTest;
+
+public:
+  CCastMachine(CTester* pOwner);
+
   void configure(const std::map<std::string,std::string> & _config);
+  void start(); /*override*/
   long getCount(const std::string& counter);
   bool verifyCount(const std::string& counter, long min, long max=-1);
   void report(const std::string& message);
@@ -93,6 +108,14 @@ public:
   bool loadScene();
   void clearScene();
   bool sayLesson(long stepId);
+
+  void writeMachineDescription(std::ostringstream& ss) /*override*/;
+private:
+  void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
 };
 
 }// namespace

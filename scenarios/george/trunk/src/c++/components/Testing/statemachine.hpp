@@ -8,10 +8,13 @@
 #include <castutils/Timers.hpp>
 
 #include <cassert>
+#include <stdexcept>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <map>
 #include <functional>
+#include <mutex>
 
 namespace testing
 {
@@ -58,6 +61,7 @@ private:
   castutils::CMilliTimer mSleepTimer;
   castutils::CMilliTimer mTimeoutTimer;
   std::vector<std::string> mEvents;
+  std::string msExitReason;
 
   // List of registered exits from this state. It enables link verification
   // before the machine is started. Entries are added in linkedState().
@@ -84,7 +88,7 @@ public:
   virtual TStateFunctionResult exit();
 
   // set in enter or during configuration
-  void setSleepTime(long working, long first=0);
+  void setSleepTime(long workingMs, long firstTimeMs=0);
   void setTimeout(long milliseconds);
   void setWatchEvents(const std::vector<std::string>& events);
 
@@ -95,6 +99,7 @@ public:
   bool hasTimedOut();
 
 private:
+  void restart();
   void execute();
   void advance();
   static TStateFunctionResult noAction(CState* pState); // default TStateFunction
@@ -108,10 +113,10 @@ private:
   std::string mId;
   std::string mReasons;
   CState* mpFromState;
-  CState* mpToState;
+  CStatePtr mpToState;
   CLinkedState(CMachine* pMachine, CState* pFromState, const std::string& toStateName, const std::string& reasons);
 public:
-  CState* getState();
+  CStatePtr getState();
   std::string description();
 };
 
@@ -122,19 +127,29 @@ private:
   CStatePtr mpPrevState;
   CStatePtr mpCurrentState;
   CStatePtr mpNextState;
+  long mStepNumber;
+
+protected:
+  std::mutex mReceivedEventsMutex;
+  std::map<std::string, bool> mReceivedEvents;
+  void checkReceivedEvent(const std::string& event);
+
 public:
   CStatePtr addState(std::string id);
   CStatePtr addState(CState* pState);
   CStatePtr findState(std::string id);
-  void switchToState(CState* pNextState);
-  void switchToState(CStatePtr pNextState);
-  void switchToState(CLinkedStatePtr pNextState);
+  void switchToState(CStatePtr pNextState, const std::string& reason = "");
+  void switchToState(CLinkedStatePtr pNextState, const std::string& reason = "");
   void runOneStep();
   virtual void onTransition(CStatePtr fromState, CStatePtr toState);
   bool isWaitingForEvent();
   bool isFinished();
-  void checkEvents(const std::vector<std::string>& events);
+  bool isSwitching();
+  void checkEvents();
   long timeToSleep();
+  long getStepNumber();
+  virtual void writeStateDescription(std::ostringstream& ss);
+  virtual void writeMachineDescription(std::ostringstream& ss);
 };
 
 template<class MachineT>
@@ -158,6 +173,19 @@ inline
 const std::string& CState::id()
 {
   return mId;
+}
+
+inline
+void CState::setSleepTime(long workingMs, long firstTimeMs)
+{
+  mSleepMs = workingMs;
+  mFirstSleepMs = firstTimeMs;
+}
+
+inline
+void CState::setTimeout(long milliseconds)
+{
+  mTimeoutMs = milliseconds;
 }
 
 inline
@@ -213,10 +241,10 @@ CLinkedState::CLinkedState(CMachine* pMachine, CState* pFromState,
 }
 
 inline
-CState* CLinkedState::getState()
+CStatePtr CLinkedState::getState()
 {
   if (!mpToState) {
-    mpToState = mpMachine->findState(mId).get();
+    mpToState = mpMachine->findState(mId);
   }
   return mpToState;
 }
@@ -243,21 +271,22 @@ CStatePtr CMachine::findState(std::string id)
 {
   auto it = mStates.find(id);
   if (it == mStates.end()) {
+    throw std::runtime_error((std::string("State not found: ") + id));
     return CStatePtr();
   }
   return mStates[id];
 }
 
 inline
-void CMachine::switchToState(CStatePtr pNextState)
+void CMachine::switchToState(CLinkedStatePtr pNextState, const std::string& reason)
 {
-  switchToState(pNextState.get());
+  switchToState(pNextState->getState(), reason);
 }
 
 inline
-void CMachine::switchToState(CLinkedStatePtr pNextState)
+long CMachine::getStepNumber()
 {
-  switchToState(pNextState->getState());
+  return mStepNumber;
 }
 
 inline
@@ -275,11 +304,31 @@ bool CMachine::isFinished()
 }
 
 inline
-void CMachine::checkEvents(const std::vector<std::string>& events)
+bool CMachine::isSwitching()
 {
-  if (isWaitingForEvent()) {
-    for (auto s : events) {
-      if (mpCurrentState->isWaitingForEvent(s)) {
+  if (! mpCurrentState.get()) return true;
+  return (mpCurrentState->mbSwitchStateCalled);
+}
+
+inline
+void CMachine::checkReceivedEvent(const std::string& event)
+{
+  std::lock_guard<std::mutex> lock(mReceivedEventsMutex);
+  mReceivedEvents[event] = true;
+}
+
+inline
+void CMachine::checkEvents()
+{
+  if (isWaitingForEvent() && mReceivedEvents.size()) {
+    std::map<std::string, bool> tmp;
+    {
+      std::lock_guard<std::mutex> lock(mReceivedEventsMutex);
+      tmp = mReceivedEvents; // TODO: verify if anything is actually copied!
+      mReceivedEvents.clear();
+    }
+    for (auto s : tmp) {
+      if (mpCurrentState->isWaitingForEvent(s.first)) {
         mpCurrentState->mActivity = CState::acActive;
         break;
       }
