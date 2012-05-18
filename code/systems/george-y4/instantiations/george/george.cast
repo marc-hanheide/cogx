@@ -61,7 +61,7 @@ OPTDEFAULT feature_options=<multiline>
 </multiline>
 
 OPTDEFAULT test_options=<multiline>
-    !tutor-assisted-test
+    !tutor-driven-test
 </multiline>
 ###########################################################################
 
@@ -126,8 +126,8 @@ ENDIF
 
 # testing George in simulation; the tester is in the vision.sa
 IFEQ(%(hardware), simulation)
-    IFOPTALL(%(test_options), tutor-assisted-test)
-        CPP MG test-assisted GeorgeTester --player-host %(host:PlayerHost)
+    IFOPTALL(%(test_options), tutor-driven-test)
+        CPP MG test-george GeorgeTester --player-host %(host:PlayerHost) --objects "%(JugglerObjectList)"
     ENDIF
 ENDIF
 
