@@ -307,6 +307,7 @@ bool CCastMachine::loadScene()
   if (pe) {
     bool rv = moveObject(pe->mLabel, 0);
     msObjectOnScene = pe->mLabel;
+    castComponent()->log("Placing '%s' on the scene.", pe->mLabel.c_str());
     return rv;
   }
 
@@ -338,6 +339,7 @@ void CCastMachine::clearScene()
 {
   if (msObjectOnScene != "") {
     moveObject(msObjectOnScene, -1);
+    castComponent()->log("Removing '%s' from the scene.", msObjectOnScene.c_str());
   }
 
 #if 0
@@ -401,6 +403,7 @@ bool CCastMachine::sayLesson()
   sayWhat->id = addr.id;
   sayWhat->wordSequence = text;
   report(MSSG("Tutor: " << text));
+  castComponent()->log("Saying: '%s'.", text.c_str());
 
   castComponent()->addToWorkingMemory(addr, sayWhat);
   return true;
