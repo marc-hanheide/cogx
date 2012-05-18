@@ -33,7 +33,7 @@ IFOPTANY(%(hardware_options), video)
     </multiline>
     CPP MG videoserver OpenCvLiveServer %(OpenCvLiveServer_Params)
 
-    SETVAR real_camera_ids=%(real_camera_ids) %(CameraIds_01)
+    SETVAR real_camera_ids=%(real_camera_ids) %(CameraIds)
     IFEQ(%(main_camera_id),)
         SETVAR main_camera_id=%(left_cam_id)
     ENDIF
