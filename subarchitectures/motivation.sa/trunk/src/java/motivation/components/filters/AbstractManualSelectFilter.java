@@ -1,6 +1,7 @@
 package motivation.components.filters;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -88,6 +89,8 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			this.setLayout(new BorderLayout());
 			this.add(new JLabel(type.getSimpleName()), BorderLayout.NORTH);
 			this.add(getSlider(), BorderLayout.CENTER);
+			this.setPreferredSize(new Dimension(500, 80));
+			this.add(new JSeparator(),BorderLayout.SOUTH);
 		}
 
 		public Class<? extends Motive> getType() {
@@ -216,7 +219,7 @@ public class AbstractManualSelectFilter implements MotiveFilter {
 			jMotivesPanel.setLayout(gridLayout);
 			for (FilterPanel p : panels.values()) {
 				jMotivesPanel.add(p);
-				jMotivesPanel.add(new JSeparator());
+				
 			}
 			jMotivesPanel.add(getPresetPanel());
 
