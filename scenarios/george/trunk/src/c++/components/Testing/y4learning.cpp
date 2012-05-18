@@ -30,6 +30,7 @@ class CstTableEmpty: public CState, public CMachineStateMixin<CCastMachine>
 private:
   CLinkedStatePtr mFinished;
   CLinkedStatePtr mWaitToAppear;
+  bool mSceneFound;
 public:
   CstTableEmpty(CCastMachine* pMachine)
     : CState(pMachine, "TableEmpty"),
@@ -43,6 +44,8 @@ public:
   }
 
   TStateFunctionResult enter() {
+    machine()->clearScene();
+    mSceneFound = machine()->nextScene();
     machine()->verifyCount("VisualObject", 0);
     if (machine()->getCount("VisualObject") != 0) {
       return WaitChange;
@@ -52,9 +55,9 @@ public:
 
   TStateFunctionResult work() {
     if (machine()->getCount("VisualObject") < 1) {
-      if (machine()->nextScene()) {
+      if (mSceneFound) {
         machine()->loadScene();
-        machine()->switchToState(mWaitToAppear);
+        machine()->switchToState(mWaitToAppear, "scene-loaded");
       }
       else {
         machine()->switchToState(mFinished, "no-next-scene");
@@ -112,16 +115,24 @@ class CstTeachOneStep: public CState, public CMachineStateMixin<CCastMachine>
 private:
   CLinkedStatePtr mWaitResponse;
   CLinkedStatePtr mEndTeach;
+  CLinkedStatePtr mSelf; // this will probably cause a memory leak
 public:
   CstTeachOneStep(CCastMachine* pMachine)
     : CState(pMachine, "TeachOneStep"),
     CMachineStateMixin(pMachine),
     mWaitResponse(linkedState("WaitResponse", "LessonSpoken")),
-    mEndTeach(linkedState("EndTeaching", "NoMoreLessons,Timeout"))
+    mEndTeach(linkedState("EndTeaching", "NoMoreLessons,Timeout")),
+    mSelf(linkedState("TeachOneStep", "SkippedLesson"))
   {
     setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
     setTimeout(30 * 1000);
   }
+
+  TStateFunctionResult enter() {
+    machine()->nextLesson();
+    return Continue;
+  }
+
   TStateFunctionResult work() {
     machine()->verifyCount("VisualObject", 1);
     if (machine()->getCount("VisualObject") != 1) {
@@ -132,9 +143,12 @@ public:
       }
       return WaitChange;
     }
-    // TODO: pMachine->clearSpokenItems()
-    if (machine()->sayLesson(machine()->mTeachingStep)) {
+    machine()->clearRobotResponses();
+    if (machine()->sayLesson()) {
       machine()->switchToState(mWaitResponse, "lesson-spoken");
+    }
+    else if (machine()->hasMoreLessons()) {
+      machine()->switchToState(mSelf, "skipped-lesson");
     }
     else {
       machine()->switchToState(mEndTeach, "no-more-lessons");
@@ -156,7 +170,7 @@ public:
     mEndTeach(linkedState("EndTeaching", "Timeout"))
   {
     setWatchEvents({ "synthesize::SpokenOutputItem" });
-    setTimeout(60 * 1000);
+    setTimeout(20 * 1000);
     setSleepTime(20);
   }
   TStateFunctionResult enter() {
@@ -166,18 +180,21 @@ public:
     machine()->log("WaitResponse work");
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Robot Response");
-      machine()->switchToState(mEndTeach, "timeout");
+      machine()->switchToState(mTeachStep, "timeout");
       return Continue;
     }
-    // TODO WaitResponse:  if (machine()->robotSaidOk()) {
-    //    ++machine()->mStepsTaught;
-    //    machine()->switchToState(mTeachStep);
-    // else if (machine()->robotSaidNotOk()) {
-    //    machine()->switchToState(mTeachStep);
-    // }
-    // else {
-    //    return WaitChange;
-    // }
+
+    long resp = machine()->getRobotAnswerClass();
+    if (resp == 1) { // TODO: constant YES
+       ++machine()->mStepsTaught;
+       machine()->switchToState(mTeachStep);
+    }
+    else if (resp == 2) { // TODO: constant NO
+       machine()->switchToState(mTeachStep);
+    }
+    else { // something else or no response
+       return WaitChange;
+    }
     return Continue;
   }
 };

@@ -44,6 +44,52 @@ public:
   }
 };
 
+class CTestEntry
+{
+public:
+  virtual long getLessonCount()
+  {
+    return 3;
+  }
+  virtual std::string getLessonText(int numLesson)
+  {
+    if (numLesson <= getLessonCount()) {
+      switch (numLesson % 3) {
+        case 1: return "hello";
+        case 2: return "hi";
+        default: return "";
+      }
+    }
+    return "";
+  }
+  virtual long classifyResponse(int numLesson, const std::string& response)
+  {
+    return 0;
+  }
+};
+typedef std::shared_ptr<CTestEntry> CTestEntryPtr;
+
+class CTeachTestEntry: public CTestEntry
+{
+public:
+  std::string mLabel;
+  std::string mColor;
+  std::string mShape;
+  CTeachTestEntry(std::string label, std::string color, std::string shape)
+  {
+    mLabel = label;
+    mColor = color;
+    mShape = shape;
+  }
+
+  virtual long getLessonCount()
+  {
+    return 2;
+  }
+  virtual std::string getLessonText(int numLesson);
+  virtual long classifyResponse(int numLesson, const std::string& response);
+};
+
 class CCastComponentMixin
 {
   cast::ManagedComponent* mpOwner;
@@ -78,18 +124,23 @@ class CCastMachine: public CMachine, public CCastComponentMixin, public castutil
   std::map<std::string, long> mCount;
   void prepareObjects();
   std::vector<GObject> mObjects;
+  std::string msObjectOnScene;
   std::vector<cogx::Math::Vector3> mLocations;
   std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mVisualObjects;
+  std::map<std::string, std::string> mOptions;
+  std::vector<CTestEntryPtr> mTestEntries;
+  std::vector<std::string> mRobotResponses; // what the robot said
 
 private:
   void loadObjectsAndPlaces(const std::string& fname);
+  bool moveObject(const std::string& label, int placeIndex);
 
 public:
 #ifdef FEAT_VISUALIZATION
   cogx::display::CDisplayClient& mDisplay;
 #endif
   long mSceneId;
-  long mTeachingStep;
+  long mTeachingStep; // 0-start; 1-first lesson, ...
   long mStepsTaught;
   long mCurrentTest;
 
@@ -103,11 +154,16 @@ public:
   void report(const std::string& message);
   void report(std::ostringstream& what);
   void reportTimeout(const std::string& reason);
-  bool getCurrentTest();
+  CTestEntryPtr getCurrentTest();
   bool nextScene();
   bool loadScene();
   void clearScene();
-  bool sayLesson(long stepId);
+  bool hasMoreLessons();
+  bool nextLesson();
+  bool sayLesson();
+  void addRobotResponse(const std::string &response);
+  void clearRobotResponses();
+  long getRobotAnswerClass();
 
   void writeMachineDescription(std::ostringstream& ss) /*override*/;
 private:
@@ -116,6 +172,7 @@ private:
   void onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
   void onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
   void onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
 };
 
 }// namespace
