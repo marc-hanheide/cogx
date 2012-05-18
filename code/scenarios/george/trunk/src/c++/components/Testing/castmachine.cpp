@@ -5,14 +5,34 @@
 #include "castmachine.hpp"
 #include "tester.hpp"
 
+#include <dialogue.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <sstream>
 #include <fstream>
 
+namespace dlgice = de::dfki::lt::tr::dialogue::slice;
+
 namespace testing {
 
 #define MSSG(streamexpr)  ((std::ostringstream&)(std::ostringstream() << std::flush << streamexpr))
+
+std::string CTeachTestEntry::getLessonText(int numLesson)
+{
+  if (numLesson == 1 && mColor != "")
+    return "the object is " + mColor;
+  if (numLesson == 2 && mShape != "")
+    return "the object is " + mShape;
+
+  return "";
+}
+
+// TODO 0 NO answer, 1 YES, 2 NO
+long CTeachTestEntry::classifyResponse(int numLesson, const std::string& response)
+{
+  // TODO parse the answer
+  return 1; // for now accept anything; TODO constant YES
+}
 
 CCastMachine::CCastMachine(CTester* pOwner)
 #ifdef FEAT_VISUALIZATION
@@ -23,6 +43,9 @@ CCastMachine::CCastMachine(CTester* pOwner)
   setLoggingComponent(pOwner);
   mPlayerHost = "localhost";
   mPlayerPort = 6665;
+  mCurrentTest = 0;
+  mOptions["dialogue.sa"] = "dialogue"; // hardcoded default SA name; change with --dialogue-sa
+  mOptions["vision.sa"] = pOwner->getSubarchitectureID(); // change with --vision-sa
 }
 
 void CCastMachine::configure(const std::map<std::string,std::string> & _config)
@@ -40,11 +63,49 @@ void CCastMachine::configure(const std::map<std::string,std::string> & _config)
     loadObjectsAndPlaces(it->second);
   }
 
+  // CONFIG: --dialogue-sa
+  // TYPE: string (subarchitecture-id)
+  // DEFAULT: "dialogue"
+  // The subarchitecture id in which ASR is running
+  if((it = _config.find("--dialogue-sa")) != _config.end())
+  {
+    if (it->second == "") mOptions["dialogue.sa"] = castComponent()->getSubarchitectureID();
+    else mOptions["dialogue.sa"] = it->second;
+  }
+
+  // CONFIG: --vision-sa
+  // TYPE: string (subarchitecture-id)
+  // DEFAULT: ""
+  // The subarchitecture id in which SOIFilter, ObjectAnalyzer and OpenCvImgSeqServer
+  // video server are running. The default is empty which means that the components
+  // are running in the same SA as this component.
+  if((it = _config.find("--vision-sa")) != _config.end())
+  {
+    if (it->second == "") mOptions["vision.sa"] = castComponent()->getSubarchitectureID();
+    else mOptions["vision.sa"] = it->second;
+  }
+
+  // CONFIG: --start-number
+  // TYPE: integer
+  // The number of the test to start with. The number of the first test is 0.
+  //if((it = _config.find("--start-number")) != _config.end())
+  //{
+  //  istringstream ss(it->second);
+  //  ss >> m_currentTest;
+  //  if (m_currentTest < 0) m_currentTest = 0;
+  //}
+
   mpRobot = std::unique_ptr<PlayerCc::PlayerClient>(new PlayerCc::PlayerClient(mPlayerHost, mPlayerPort));
   mpSim = std::unique_ptr<PlayerCc::SimulationProxy>(new PlayerCc::SimulationProxy(&*mpRobot, 0));
   log("Connected to Player %x", &*mpRobot);
 
   prepareObjects();
+
+  for (int i = 0; i < 3; i++) {
+    auto pe = new CTeachTestEntry(mObjects[i].label, "orange", "elongated");
+    mTestEntries.push_back(CTestEntryPtr(pe));
+  }
+  msObjectOnScene = "";
 }
 
 void CCastMachine::loadObjectsAndPlaces(const std::string& fname)
@@ -191,24 +252,66 @@ bool CCastMachine::verifyCount(const std::string& counter, long min, long max)
   }
 #endif
 }
-bool CCastMachine::getCurrentTest()
+
+void CCastMachine::addRobotResponse(const std::string &response)
 {
-  return false;
-#if 0
-  if (mCurrentTest < 0 || mCurrentTest >= mTestEntries.size())
-    return 0;
-  return mTestEntries[mCurrentTest];
-#endif
+  // TODO: lock
+  mRobotResponses.push_back(response);
+}
+
+void CCastMachine::clearRobotResponses()
+{
+  // TODO: lock
+  mRobotResponses.clear();
+}
+
+
+CTestEntryPtr CCastMachine::getCurrentTest()
+{
+  if (mCurrentTest <= 0 || mCurrentTest > mTestEntries.size())
+    return CTestEntryPtr();
+  return mTestEntries[mCurrentTest-1];
 }
 
 bool CCastMachine::nextScene()
 {
-  return true;
+  ++mCurrentTest;
+  mTeachingStep = 0;
+  return getCurrentTest().get() != nullptr;
+}
+
+bool CCastMachine::moveObject(const std::string& label, int placeIndex)
+{
+  for(int i = 0; i < mObjects.size(); i++) {
+    GObject& o = mObjects[i];
+    if (o.label != label)
+      continue;
+    if (placeIndex < 0 || placeIndex >= mLocations.size()) {
+      o.loc.x = 100 + i * 10;
+      o.loc.y = 100 + i * 10;
+    }
+    else
+      o.loc = mLocations[placeIndex];
+    mpSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
+    return true;
+  }
+  return false;
 }
 
 bool CCastMachine::loadScene()
 {
-  return true;
+  CTestEntryPtr pt(getCurrentTest());
+  if (! pt) return false;
+
+  CTeachTestEntry* pe = dynamic_cast<CTeachTestEntry*>(pt.get());
+  if (pe) {
+    bool rv = moveObject(pe->mLabel, 0);
+    msObjectOnScene = pe->mLabel;
+    return rv;
+  }
+
+  return false;
+
 #if 0
    CTestEntry *pinfo = getCurrentTest();
    if (! pinfo) return;
@@ -231,13 +334,12 @@ bool CCastMachine::loadScene()
 #endif
 }
 
-bool CCastMachine::sayLesson(long stepId)
-{
-  return stepId < 2;
-}
-
 void CCastMachine::clearScene()
 {
+  if (msObjectOnScene != "") {
+    moveObject(msObjectOnScene, -1);
+  }
+
 #if 0
    Video::VideoSequenceInfoPtr pseq = new Video::VideoSequenceInfo();
 
@@ -255,6 +357,105 @@ void CCastMachine::clearScene()
    m_pOwner->addToWorkingMemory(addr, pseq);
    report("SCENE: empty");
 #endif
+}
+
+
+// If hasMoreLessons then nextLesson will select a valid lesson
+bool CCastMachine::hasMoreLessons()
+{
+  CTestEntryPtr pt(getCurrentTest());
+  if (mTeachingStep < 0) mTeachingStep = 0;
+  return pt.get() != nullptr && mTeachingStep < pt->getLessonCount();
+}
+
+bool CCastMachine::nextLesson()
+{
+  ++mTeachingStep;
+  CTestEntryPtr pt(getCurrentTest());
+  return pt.get() != nullptr && mTeachingStep >= 0 && mTeachingStep <= pt->getLessonCount();
+}
+
+bool CCastMachine::sayLesson()
+{
+  CTestEntryPtr pinfo = getCurrentTest();
+
+  std::string text;
+  
+  if (mTeachingStep < 1 || !pinfo) {
+    return false;
+  }
+  if (mTeachingStep > pinfo->getLessonCount()) {
+    return false;
+  }
+
+  text = pinfo->getLessonText(mTeachingStep);
+  if (text == "") {
+    return false;
+  }
+
+  cast::cdl::WorkingMemoryAddress addr;
+  addr.subarchitecture = mOptions["dialogue.sa"];
+  addr.id = castComponent()->newDataID();
+
+  dlgice::asr::PhonStringPtr sayWhat = new dlgice::asr::PhonString();
+  sayWhat->id = addr.id;
+  sayWhat->wordSequence = text;
+  report(MSSG("Tutor: " << text));
+
+  castComponent()->addToWorkingMemory(addr, sayWhat);
+  return true;
+
+#if 0 // OLD
+  //m_bLearningExpected = false;
+  if (! pinfo)
+    sayWhat->wordSequence = "hi";
+  else {
+    // describe the object, or say hello if the attribute is not present.
+    switch(stepId) {
+      case 1: 
+        if (pinfo->shape == "") sayWhat->wordSequence = "hello";
+        else {
+          sayWhat->wordSequence = "the object is " + pinfo->shape;
+          report(MSSG("Tutor: the object is " << pinfo->shape));
+          m_bLearningExpected = true;
+        }
+        break;
+      case 2: 
+        if (pinfo->color == "") sayWhat->wordSequence = "hello";
+        else {
+          sayWhat->wordSequence = "the object is " + pinfo->color;
+          report(MSSG("Tutor: the object is " << pinfo->color));
+          m_bLearningExpected = true;
+        }
+        break;
+      default:
+        sayWhat->wordSequence = "hello";
+        break;
+    }
+  }
+#endif
+}
+
+long CCastMachine::getRobotAnswerClass()
+{
+  CTestEntryPtr pinfo = getCurrentTest();
+
+  if (mTeachingStep < 1 || !pinfo) {
+    return 0;
+  }
+  if (mTeachingStep > pinfo->getLessonCount()) {
+    return 0;
+  }
+
+  // TODO Lock
+  auto resps = mRobotResponses;
+  for (auto r : resps) {
+    long cls = pinfo->classifyResponse(mTeachingStep, r); 
+    if (cls != 0) {
+      return cls;
+    }
+  }
+  return 0;
 }
 
 void CCastMachine::writeMachineDescription(std::ostringstream& ss)
@@ -293,6 +494,12 @@ void CCastMachine::start()
          this, &CCastMachine::onDel_ProtoObject)
       );
 
+   castComponent()->addChangeFilter(
+      cast::createGlobalTypeFilter<dlgice::synthesize::SpokenOutputItem>(cast::cdl::ADD),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
+         this, &CCastMachine::onAdd_SpokenItem)
+      );
+
    mCount["VisualObject"] = 0;
    mCount["ProtoObject"] = 0;
 
@@ -306,11 +513,6 @@ void CCastMachine::start()
       createLocalTypeFilter<VisualLearningTask>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<CCastMachine>(
          this, &CCastMachine::onChange_LearningTask)
-      );
-   m_pOwner->addChangeFilter(
-      createGlobalTypeFilter<synthesize::SpokenOutputItem>(cdl::ADD),
-      new MemberFunctionChangeReceiver<CCastMachine>(
-         this, &CCastMachine::onAdd_SpokenItem)
       );
 
    loadEmptyScene();
@@ -412,6 +614,21 @@ void CCastMachine::onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc
    checkReceivedEvent("::VisionData::ProtoObject");
 }
 
+void CCastMachine::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  dlgice::synthesize::SpokenOutputItemPtr psaid =
+    castComponent()->getMemoryEntry<dlgice::synthesize::SpokenOutputItem>(_wmc.address);
+#if 0
+  {
+    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
+    m_RobotResponse = psaid->phonString;
+  }
+  m_EventMonitor.notify();
+#endif
+  addRobotResponse(psaid->phonString);
+  checkReceivedEvent("::synthesize::SpokenOutputItem");
+}
+
 #if 0
 void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
@@ -429,16 +646,6 @@ void CCastMachine::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & 
    {
       IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
       m_LearnTaskCount++;
-   }
-   m_EventMonitor.notify();
-}
-
-void CCastMachine::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
-{
-   synthesize::SpokenOutputItemPtr psaid = m_pOwner->getMemoryEntry<synthesize::SpokenOutputItem>(_wmc.address);
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_RobotResponse = psaid->phonString;
    }
    m_EventMonitor.notify();
 }

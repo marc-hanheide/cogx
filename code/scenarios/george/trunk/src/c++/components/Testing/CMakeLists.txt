@@ -13,6 +13,10 @@ include_directories(
    # VisionData -> PointCloud -> Laser
    ${COGX_ROOT}/tools/hardware/pointCloud/src/c++/autogen
    ${COGX_ROOT}/tools/hardware/laser/src/c++/autogen
+   # Dialogue -> Beliefs, Abducer
+   ${COGX_ROOT}/subarchitectures/dialogue.sa/apis/dialogue/src/c++/autogen
+   ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen
+   ${COGX_ROOT}/tools/abducer/src/c++/autogen
    )
 set(SOURCES
    tester.cpp
@@ -26,6 +30,7 @@ link_cast_component(${CAST_COMPONENT_NAME}
    ${PLAYER_LDFLAGS}
    ${VISUALIZATION_LIBRARIES}
    VisionData PointCloud
+   DialogueIce
 #   VideoUtils
 #   DialogueData
 #   Beliefs
