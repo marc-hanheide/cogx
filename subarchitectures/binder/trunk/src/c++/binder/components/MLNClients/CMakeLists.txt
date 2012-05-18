@@ -12,7 +12,7 @@ add_cast_component(MLNBeliefEvdFilter MLNBeliefEvdFilter.cpp)
 add_cast_component(MLNRefResolutionClient MLNRefResolutionClient.cpp)
 # MLNBeliefEvdFilter
 link_cast_component(MLNBeliefEvdFilter BeliefsCAST Binder BeliefsCogX)
-link_cast_component(MLNRefResolutionClient BeliefsCAST Binder BeliefsCogX RefSlice)
+link_cast_component(MLNRefResolutionClient BeliefsCAST Binder BeliefsCogX DialogueIce)
 
 
 
