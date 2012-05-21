@@ -144,7 +144,7 @@ public:
       }
       return WaitChange;
     }
-    machine()->clearRobotResponses();
+
     if (machine()->sayLesson()) {
       machine()->switchToState(mWaitResponse, "lesson-spoken");
     }
