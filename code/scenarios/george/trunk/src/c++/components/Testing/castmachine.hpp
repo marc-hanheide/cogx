@@ -117,19 +117,30 @@ public:
 class CTester;
 class CCastMachine: public CMachine, public CCastComponentMixin, public castutils::CCastLoggerMixin
 {
+private:
   std::string mPlayerHost;
   long mPlayerPort;
   std::unique_ptr<PlayerCc::PlayerClient> mpRobot;
   std::unique_ptr<PlayerCc::SimulationProxy> mpSim;
-  std::map<std::string, long> mCount;
   void prepareObjects();
   std::vector<GObject> mObjects;
   std::string msObjectOnScene;
   std::vector<cogx::Math::Vector3> mLocations;
-  std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mVisualObjects;
   std::map<std::string, std::string> mOptions;
   std::vector<CTestEntryPtr> mTestEntries;
+
+private:
+  // A mutex for protecting data that is transferred from wm filters to the main thread.
+  std::mutex mWmCopyMutex;
+  std::map<std::string, long> mCount;
+  std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mVisualObjects;
   std::vector<std::string> mRobotResponses; // what the robot said
+
+private:
+  // Management of WM copies.
+  long getVisibleVisualObjectCount();
+  void addRobotResponse(const std::string &response);
+  void clearRobotResponses();
 
 private:
   void loadObjectsAndPlaces(const std::string& fname);
@@ -161,11 +172,10 @@ public:
   bool hasMoreLessons();
   bool nextLesson();
   bool sayLesson();
-  void addRobotResponse(const std::string &response);
-  void clearRobotResponses();
   long getRobotAnswerClass();
 
   void writeMachineDescription(std::ostringstream& ss) /*override*/;
+
 private:
   void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
   void onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);

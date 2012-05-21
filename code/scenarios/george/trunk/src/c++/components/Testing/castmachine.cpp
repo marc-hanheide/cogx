@@ -183,6 +183,7 @@ void CCastMachine::prepareObjects()
 }
 
 long CCastMachine::getCount(const std::string& counter)
+  // Enter: Locked mCount
 {
   auto p = mCount.find(counter);
   if (p == mCount.end()) return 0;
@@ -206,6 +207,7 @@ void CCastMachine::reportTimeout(const std::string& reason)
 
 bool CCastMachine::verifyCount(const std::string& counter, long min, long max)
 { 
+  { 
   long count = getCount(counter);
   if (min < 0) min = 0;
   if (max < min) max = min;
@@ -254,14 +256,14 @@ bool CCastMachine::verifyCount(const std::string& counter, long min, long max)
 }
 
 void CCastMachine::addRobotResponse(const std::string &response)
+  // Enter: Locked mRobotResponses
 {
-  // TODO: lock
   mRobotResponses.push_back(response);
 }
 
 void CCastMachine::clearRobotResponses()
+  // Enter: Locked mRobotResponses
 {
-  // TODO: lock
   mRobotResponses.clear();
 }
 
@@ -405,6 +407,11 @@ bool CCastMachine::sayLesson()
   report(MSSG("Tutor: " << text));
   castComponent()->log("Saying: '%s'.", text.c_str());
 
+  { 
+    std::lock_guard(mWmCopyMutex);
+    clearRobotResponses();
+  }
+
   castComponent()->addToWorkingMemory(addr, sayWhat);
   return true;
 
@@ -450,12 +457,13 @@ long CCastMachine::getRobotAnswerClass()
     return 0;
   }
 
-  // TODO Lock
-  auto resps = mRobotResponses;
-  for (auto r : resps) {
-    long cls = pinfo->classifyResponse(mTeachingStep, r); 
-    if (cls != 0) {
-      return cls;
+  {
+    std::lock_guard(mWmCopyMutex);
+    for (auto r : mRobotResponses) {
+      long cls = pinfo->classifyResponse(mTeachingStep, r); 
+      if (cls != 0) {
+        return cls;
+      }
     }
   }
   return 0;
@@ -463,8 +471,11 @@ long CCastMachine::getRobotAnswerClass()
 
 void CCastMachine::writeMachineDescription(std::ostringstream& ss)
 {
-  for (auto v : mCount) {
-    ss << v.first << ": " << v.second << "<br>\n";
+  {
+    std::lock_guard(mWmCopyMutex);
+    for (auto v : mCount) {
+      ss << v.first << ": " << v.second << "<br>\n";
+    }
   }
 }
 
@@ -524,135 +535,92 @@ void CCastMachine::start()
 #endif
 }
 
-void CCastMachine::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
+long CCastMachine::getVisibleVisualObjectCount()
+  // Enter: Locked mVisualObjects
 {
-#if 0
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_ObjectCount++;
-   }
-   m_EventMonitor.notify();
-#endif
-   checkReceivedEvent("::VisionData::VisualObject");
-
-   auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-   mVisualObjects[_wmc.address] = pvo;
-
    long count = 0;
    for(auto v : mVisualObjects) {
      if (! v.second.get()) continue;
      if (v.second->presence == VisionData::VopVISIBLE)
        ++count;
    }
-   mCount["VisualObject"] = count;
+}
+
+void CCastMachine::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+   auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
+   {
+     std::lock_guard(mWmCopyMutex);
+     mVisualObjects[_wmc.address] = pvo;
+     mCount["VisualObject"] = getVisibleVisualObjectCount();
+     checkReceivedEvent("::VisionData::VisualObject");
+   }
 }
 
 void CCastMachine::onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-#if 0
    {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_ObjectCount--;
+     std::lock_guard(mWmCopyMutex);
+     mVisualObjects[_wmc.address] = VisionData::VisualObjectPtr();
+     mCount["VisualObject"] = getVisibleVisualObjectCount();
+     checkReceivedEvent("::VisionData::VisualObject");
    }
-   m_EventMonitor.notify();
-#endif
-   checkReceivedEvent("::VisionData::VisualObject");
-
-   mVisualObjects[_wmc.address] = VisionData::VisualObjectPtr();
-
-   long count = 0;
-   for(auto v : mVisualObjects) {
-     if (! v.second.get()) continue;
-     if (v.second->presence == VisionData::VopVISIBLE)
-       ++count;
-   }
-   mCount["VisualObject"] = count;
 }
 
 void CCastMachine::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-#if 0
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_ObjectCount--;
-   }
-   m_EventMonitor.notify();
-#endif
-   checkReceivedEvent("::VisionData::VisualObject");
-
    auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
-   mVisualObjects[_wmc.address] = pvo;
-
-   long count = 0;
-   for(auto v : mVisualObjects) {
-     if (! v.second.get()) continue;
-     if (v.second->presence == VisionData::VopVISIBLE)
-       ++count;
+   {
+     std::lock_guard(mWmCopyMutex);
+     mVisualObjects[_wmc.address] = pvo;
+     mCount["VisualObject"] = getVisibleVisualObjectCount();
+     checkReceivedEvent("::VisionData::VisualObject");
    }
-   mCount["VisualObject"] = count;
 }
 
 void CCastMachine::onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-#if 0
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_ObjectCount++;
-   }
-   m_EventMonitor.notify();
-#endif
-   mCount["ProtoObject"] += 1;
-   checkReceivedEvent("::VisionData::ProtoObject");
+  {
+    std::lock_guard(mWmCopyMutex);
+    mCount["ProtoObject"] += 1;
+    checkReceivedEvent("::VisionData::ProtoObject");
+  }
 }
 
 void CCastMachine::onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-#if 0
-   {
-      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-      m_ObjectCount--;
-   }
-   m_EventMonitor.notify();
-#endif
-   mCount["ProtoObject"] -= 1;
-   checkReceivedEvent("::VisionData::ProtoObject");
+  {
+    std::lock_guard(mWmCopyMutex);
+    mCount["ProtoObject"] -= 1;
+    checkReceivedEvent("::VisionData::ProtoObject");
+  }
 }
 
 void CCastMachine::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   dlgice::synthesize::SpokenOutputItemPtr psaid =
     castComponent()->getMemoryEntry<dlgice::synthesize::SpokenOutputItem>(_wmc.address);
-#if 0
   {
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-    m_RobotResponse = psaid->phonString;
+    std::lock_guard(mWmCopyMutex);
+    addRobotResponse(psaid->phonString);
+    checkReceivedEvent("::synthesize::SpokenOutputItem");
   }
-  m_EventMonitor.notify();
-#endif
-  addRobotResponse(psaid->phonString);
-  checkReceivedEvent("::synthesize::SpokenOutputItem");
 }
 
 void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   //report(MSSG("Learnig task added: " << _wmc.address));
-   //{
-   //   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   //   m_LearnTaskCount++;
-   //}
-   //m_EventMonitor.notify();
-   mCount["LearnigTask"] += 1000;
+  {
+    std::lock_guard(mWmCopyMutex);
+    mCount["LearnigTask-add"] += 1;
+  }
 }
 
 void CCastMachine::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
-   //report(MSSG("Learnig task changed: " << _wmc.address));
-   //{
-   //   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_EventMonitor);
-   //   m_LearnTaskCount++;
-   //}
-   //m_EventMonitor.notify();
-   mCount["LearnigTask"] += 1;
+  {
+    std::lock_guard(mWmCopyMutex);
+    mCount["LearnigTask"] += 1;
+  }
 }
 
 }// namespace
