@@ -1468,6 +1468,19 @@ void PlaceManager::evaluateUnexploredPaths()
             break;
           }
         }
+        double minDistanceSq = 0.5;
+        int maxTimesRejected = 5;
+        for (vector<pair<int, NodeHypothesisPtr> >::iterator rejectedHypIt =
+            m_rejectedHypotheses.begin(); rejectedHypIt != m_rejectedHypotheses.end(); rejectedHypIt++) {
+          if ((*rejectedHypIt).first >=maxTimesRejected){
+            double distanceSq = ((*rejectedHypIt).second->x - newHyp->x)*((*rejectedHypIt).second->x - newHyp->x) + ((*rejectedHypIt).second->y - newHyp->y)*((*rejectedHypIt).second->y - newHyp->y);
+            if (distanceSq < minDistanceSq) {
+              excluded = true;
+              break;
+            }
+          }
+        }
+
         if (!excluded){
           // Create the Place struct corresponding to the hypothesis
           PlacePtr p;
@@ -2038,8 +2051,24 @@ PlaceManager::processPlaceArrival(bool failed)
 			// so this exploration action failed. Delete the placeholder
 			// (We don't delete the placeholder if some *other* placeholder
 			// was explored by mistake though)
+      bool excluded = false;
+      double minDistanceSq = 0.5;
+      for (vector<pair<int, NodeHypothesisPtr> >::iterator rejectedHypIt =
+        m_rejectedHypotheses.begin(); rejectedHypIt != m_rejectedHypotheses.end(); rejectedHypIt++) {
+        double distanceSq = ((*rejectedHypIt).second->x - goalHyp->x)*((*rejectedHypIt).second->x - goalHyp->x) + ((*rejectedHypIt).second->y - goalHyp->y)*((*rejectedHypIt).second->y - goalHyp->y);
+        if (distanceSq < minDistanceSq) {
+          (*rejectedHypIt).second->x = ((*rejectedHypIt).second->x*(*rejectedHypIt).first + goalHyp->x)/ ((*rejectedHypIt).first + 1);
+          (*rejectedHypIt).second->y = ((*rejectedHypIt).second->y*(*rejectedHypIt).first + goalHyp->y)/ ((*rejectedHypIt).first + 1);
+          (*rejectedHypIt).first = (*rejectedHypIt).first + 1;
 
-			log("alex 5");
+          excluded = false;          
+          break;
+        }
+      }
+      if (!excluded){
+        m_rejectedHypotheses.push_back(make_pair(1,goalHyp));
+      }
+			log("Deleting placeholder");
 
 			deletePlaceProperties(wasHeadingForPlace);
 			deletePlaceholder(wasHeadingForPlace);

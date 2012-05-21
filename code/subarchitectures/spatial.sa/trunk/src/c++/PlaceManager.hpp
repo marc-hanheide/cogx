@@ -250,9 +250,9 @@ class PlaceManager : public PlaceMapper
 //    bool m_updatePlaceholderPositions;
 
     //List of hypotheses that have already been tried and failed from each Node
-    std::map<int, std::vector<SpatialData::NodeHypothesisPtr> > m_rejectedHypotheses; 
+    std::vector<std::pair<int, SpatialData::NodeHypothesisPtr> > m_rejectedHypotheses; 
     bool m_isPathFollowing;
-  bool m_nickSanity;
+    bool m_nickSanity;
     int m_startNodeForCurrentPath; // During transitions, stores where the robot
     				   // came from last
     int m_goalPlaceForCurrentPath; // During transitions, stores where the robot
