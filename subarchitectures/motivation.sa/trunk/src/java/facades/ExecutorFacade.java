@@ -49,11 +49,24 @@ public class ExecutorFacade extends CASTHelper {
 			// TODO: we should move to status information in here and not
 			// only
 			// listen for deletion
-			planProxyQueue.take();
-			getLogger().debug("plan proxy deletion seen");
-			component.removeChangeFilter(planProxyQueue);
-			for (Callable<?> c : listeners) {
-				c.call();
+			try {
+				planProxyQueue.take();
+				getLogger().debug("plan proxy deletion seen");
+				component.removeChangeFilter(planProxyQueue);
+				for (Callable<?> c : listeners) {
+					c.call();
+				}
+			} catch (InterruptedException e) {
+				// if we are interrupted (we were cancelled) then we have to
+				// delete the proxy to signal execution that we want to cancel.
+				try {
+					component.removeChangeFilter(planProxyQueue);
+					component.deleteFromWorkingMemory(id);
+					return null;
+				} catch (CASTException e1) {
+					component.getLogger().warn(
+							"cancel execution caused exception: ", e1);
+				}
 			}
 			return planProxy;
 
@@ -95,8 +108,8 @@ public class ExecutorFacade extends CASTHelper {
 		} catch (InterruptedException e) {
 			component.logException(e);
 		}
-		getLogger().info("starting execution for planID "
-				+ CASTUtils.toString(planID));
+		getLogger().info(
+				"starting execution for planID " + CASTUtils.toString(planID));
 		FutureExecutionTask futureExecution = new FutureExecutionTask(planID);
 		executorService.execute(futureExecution);
 		return futureExecution;
