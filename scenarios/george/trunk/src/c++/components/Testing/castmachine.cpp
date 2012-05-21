@@ -207,7 +207,6 @@ void CCastMachine::reportTimeout(const std::string& reason)
 
 bool CCastMachine::verifyCount(const std::string& counter, long min, long max)
 { 
-  { 
   long count = getCount(counter);
   if (min < 0) min = 0;
   if (max < min) max = min;
@@ -408,7 +407,7 @@ bool CCastMachine::sayLesson()
   castComponent()->log("Saying: '%s'.", text.c_str());
 
   { 
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     clearRobotResponses();
   }
 
@@ -458,7 +457,7 @@ long CCastMachine::getRobotAnswerClass()
   }
 
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     for (auto r : mRobotResponses) {
       long cls = pinfo->classifyResponse(mTeachingStep, r); 
       if (cls != 0) {
@@ -472,7 +471,7 @@ long CCastMachine::getRobotAnswerClass()
 void CCastMachine::writeMachineDescription(std::ostringstream& ss)
 {
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     for (auto v : mCount) {
       ss << v.first << ": " << v.second << "<br>\n";
     }
@@ -544,13 +543,14 @@ long CCastMachine::getVisibleVisualObjectCount()
      if (v.second->presence == VisionData::VopVISIBLE)
        ++count;
    }
+   return count;
 }
 
 void CCastMachine::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
    {
-     std::lock_guard(mWmCopyMutex);
+     std::lock_guard<std::mutex> lock(mWmCopyMutex);
      mVisualObjects[_wmc.address] = pvo;
      mCount["VisualObject"] = getVisibleVisualObjectCount();
      checkReceivedEvent("::VisionData::VisualObject");
@@ -560,7 +560,7 @@ void CCastMachine::onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wm
 void CCastMachine::onDel_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
    {
-     std::lock_guard(mWmCopyMutex);
+     std::lock_guard<std::mutex> lock(mWmCopyMutex);
      mVisualObjects[_wmc.address] = VisionData::VisualObjectPtr();
      mCount["VisualObject"] = getVisibleVisualObjectCount();
      checkReceivedEvent("::VisionData::VisualObject");
@@ -571,7 +571,7 @@ void CCastMachine::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & 
 {
    auto pvo = castComponent()->getMemoryEntry<VisionData::VisualObject>(_wmc.address);
    {
-     std::lock_guard(mWmCopyMutex);
+     std::lock_guard<std::mutex> lock(mWmCopyMutex);
      mVisualObjects[_wmc.address] = pvo;
      mCount["VisualObject"] = getVisibleVisualObjectCount();
      checkReceivedEvent("::VisionData::VisualObject");
@@ -581,7 +581,7 @@ void CCastMachine::onChange_VisualObject(const cast::cdl::WorkingMemoryChange & 
 void CCastMachine::onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     mCount["ProtoObject"] += 1;
     checkReceivedEvent("::VisionData::ProtoObject");
   }
@@ -590,7 +590,7 @@ void CCastMachine::onAdd_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc
 void CCastMachine::onDel_ProtoObject(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     mCount["ProtoObject"] -= 1;
     checkReceivedEvent("::VisionData::ProtoObject");
   }
@@ -601,7 +601,7 @@ void CCastMachine::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
   dlgice::synthesize::SpokenOutputItemPtr psaid =
     castComponent()->getMemoryEntry<dlgice::synthesize::SpokenOutputItem>(_wmc.address);
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     addRobotResponse(psaid->phonString);
     checkReceivedEvent("::synthesize::SpokenOutputItem");
   }
@@ -610,7 +610,7 @@ void CCastMachine::onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc)
 void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     mCount["LearnigTask-add"] += 1;
   }
 }
@@ -618,7 +618,7 @@ void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wm
 void CCastMachine::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc)
 {
   {
-    std::lock_guard(mWmCopyMutex);
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
     mCount["LearnigTask"] += 1;
   }
 }
