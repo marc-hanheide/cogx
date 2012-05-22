@@ -16,6 +16,7 @@ MASTER_SITES = http://vicos.fri.uni-lj.si/data/cogx/gazebo/
 include $(GARDIR)/gar.detect.mk
 
 DEB_PACKAGES=\
+	libtbb-dev@ubuntu \
 	libode1sp@ubuntu \
 	libode-sp-dev@ubuntu \
 	libogre-dev@ubuntu \
@@ -28,7 +29,9 @@ ifeq ("$(SYSTEM_RELEASE)","Ubuntu-11.10")
 	libwxgtk2.8-dev@ubuntu
 endif
 
-LIBDEPS = contrib/player-3.0.2
+LIBDEPS = \
+	  contrib/player-3.0.2
+	  contrib/assimp
 
 DESCRIPTION = gazebo for cogx platform
 define BLURB
