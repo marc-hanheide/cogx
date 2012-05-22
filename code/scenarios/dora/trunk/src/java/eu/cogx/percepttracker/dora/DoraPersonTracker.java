@@ -35,6 +35,7 @@ import castutils.castextensions.WMView;
 import comadata.ComaRoom;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.beliefs.data.formulas.DoubleFormula;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
@@ -239,11 +240,26 @@ public class DoraPersonTracker extends ManagedComponent implements
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = getGroundedBelief(wmaGrounded);
+		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief.create(PerceptBelief.class, from);
 		log("we have found a person in the same room, " + roomAdr.id);
+		log("let's access the angle of this observation");
+		transferAngle(gb, pb);
 		manageHistory(event, from, gb.get());
 		addRoomReference(roomAdr, gb);
 		updateGroundedBelief(placeDistribution, wmaGrounded,
 				existsDistribution, gb);
+	}
+
+	private void transferAngle(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb,
+			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb) {
+		double theta=pb.getContent().get(PersonTransferFunction.ATTR_POS_THETA).getDistribution().getMostLikely().getDouble();
+		if (!Double.isNaN(theta)) {
+			log("there is a real angle (not NaN), so updating the theta to " + theta);
+			FormulaDistribution fd = FormulaDistribution.create();
+			fd.add((float) theta, 1.0);
+			gb.getContent().put(PersonTransferFunction.ATTR_POS_THETA,fd);
+		}
 	}
 
 	/**
