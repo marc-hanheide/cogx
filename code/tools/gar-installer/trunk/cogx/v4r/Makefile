@@ -10,8 +10,7 @@ ifneq ($(CASTV4RPASS),)
 endif
 
 
-#MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
-MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/trunk/
+MASTER_SITES = svnhttps://repo.acin.tuwien.ac.at/v4r/stable/castv4r/
 
 
 DEB_PACKAGES=	libglew1.5-dev@ubuntu \
