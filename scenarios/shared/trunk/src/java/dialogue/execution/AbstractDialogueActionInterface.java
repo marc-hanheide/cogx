@@ -88,8 +88,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	public abstract static class IntentionDialogueAction<T extends Action>
 			extends NonBlockingActionExecutor<T> {
 
-		// Testting, big timeout -- default 20
-		private static final int DLG_TIMEOUT = 600;
+		private static final int DLG_TIMEOUT = 30;
 
 		private final int m_timeoutSeconds;
 		private final int m_pollFrequencyMilliseconds;
