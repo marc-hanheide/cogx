@@ -9,6 +9,7 @@ import motivation.slice.AnalyzeProtoObjectMotive;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
+import motivation.slice.MotiveStatus;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeQuestionMotive;
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
@@ -39,6 +40,24 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		m_driveHierarchy = new ArrayList<Set<Class<? extends Motive>>>();
 	}
 
+	/**
+	 * Returns true if this motive should be ignored when setting drive up.
+	 * 
+	 * @param motive
+	 * @return
+	 */
+	private boolean ignoreThis(Motive motive) {
+		if (motive.status == MotiveStatus.COMPLETED) {
+			return true;
+		}
+		else if (motive.status == MotiveStatus.IMPOSSIBLE) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	@Override
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
@@ -50,6 +69,12 @@ public class DriveHierarchyFilter implements MotiveFilter,
 			return null;
 		}
 
+		// ignore completed etc. motives as we don't want them to influence
+		// drive calculations
+		if(ignoreThis(motive)) {
+			return motive.priority;
+		}
+		
 		// if in a surfaced class, return surface
 		if (priority == m_activeLevel) {
 			return MotivePriority.NORMAL;
@@ -116,8 +141,10 @@ public class DriveHierarchyFilter implements MotiveFilter,
 	@Override
 	public void configure(Map<String, String> _config) {
 		// define priority levels, highest first
+
 		addPrioritySet(TutorInitiativeLearningMotive.class,
 				TutorInitiativeQuestionMotive.class);
+
 		addPrioritySet(AnalyzeProtoObjectMotive.class,
 				LearnObjectFeatureMotive.class);
 
@@ -138,7 +165,10 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 		int newLevel = UNKNOWN_CLASS_VALUE;
 		for (Motive mtv : map.values()) {
-			newLevel = Math.min(getPriority(mtv.getClass()), newLevel);
+			// ignore motives that are done or impossible
+			if (!ignoreThis(mtv)) {
+				newLevel = Math.min(getPriority(mtv.getClass()), newLevel);
+			}
 		}
 
 		if (newLevel != m_activeLevel) {
@@ -154,6 +184,9 @@ public class DriveHierarchyFilter implements MotiveFilter,
 			}
 
 			m_display.updateActiveLevel(m_activeLevel);
+
+			// trigger recheck after level change
+			m_component.checkAll();
 
 			try {
 				m_component.checkAll();

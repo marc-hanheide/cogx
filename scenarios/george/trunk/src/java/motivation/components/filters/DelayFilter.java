@@ -75,7 +75,8 @@ public class DelayFilter implements MotiveFilter {
 
 	@Override
 	public void configure(Map<String, String> arg0) {
-		m_delayMap.put(LearnObjectFeatureMotive.class, 20000);
+//		m_delayMap.put(LearnObjectFeatureMotive.class, 20000);
+		
 	}
 
 }
