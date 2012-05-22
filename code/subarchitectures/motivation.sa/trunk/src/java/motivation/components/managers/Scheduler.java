@@ -130,8 +130,9 @@ public class Scheduler extends AbstractScheduler {
 						// high priority than the activated ones we have to
 						// reschedule.
 						log("there are goals which are not in the current plan which should be tried to include into it. Canceling execution.");
-						if (!executionFuture.isDone())
+						if (!executionFuture.isDone()) {
 							executionFuture.cancel(true);
+						}
 						setStatus(activeGoals, MotiveStatus.SURFACED);
 						log("deactiveated all currently executed goals, let's check again");
 						continue;

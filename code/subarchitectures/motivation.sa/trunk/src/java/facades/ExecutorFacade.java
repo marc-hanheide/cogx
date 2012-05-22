@@ -60,6 +60,7 @@ public class ExecutorFacade extends CASTHelper {
 				// if we are interrupted (we were cancelled) then we have to
 				// delete the proxy to signal execution that we want to cancel.
 				try {
+					component.log("execution cancelled");
 					component.removeChangeFilter(planProxyQueue);
 					component.deleteFromWorkingMemory(id);
 					return null;
