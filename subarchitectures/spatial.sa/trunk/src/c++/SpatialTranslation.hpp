@@ -65,7 +65,7 @@ private:
   void owtNavGraph(const cast::cdl::WorkingMemoryChange &objID);
  
 private:
-
+  int m_StartupDelay;
   // The last NavGraph used by some operation
   // Attention! It may not be updated, use getNavGraph instead
   NavData::NavGraphPtr m_TmpNavGraph;

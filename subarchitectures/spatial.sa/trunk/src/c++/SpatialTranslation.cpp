@@ -65,6 +65,16 @@ SpatialTranslation::~SpatialTranslation() {
 void SpatialTranslation::configure(const map<string,string>& config) 
 {
   println("configure entered");
+
+  m_StartupDelay = 4000;
+
+  map<string, string>::const_iterator it;
+  it = config.find("--startup-delay");
+  if (it != config.end()) {
+    std::istringstream str(it->second);
+    str >> m_StartupDelay;
+  }
+
   m_bNoNavGraph = false;
   if(config.find("--no-graph") != config.end()){
     m_bNoNavGraph = true;
@@ -113,7 +123,8 @@ void SpatialTranslation::stop(){
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::runComponent() {
-    sleepComponent(4000);
+    
+    sleepComponent(m_StartupDelay);
     if (m_issueVisualExplorationActions) {
       Rendezvous rv(*this);  
       issueVisualExplorationCommand(rv);
