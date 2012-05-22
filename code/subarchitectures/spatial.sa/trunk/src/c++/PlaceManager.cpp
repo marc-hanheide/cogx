@@ -1366,6 +1366,10 @@ void PlaceManager::evaluateUnexploredPaths()
                   NavData::FNodePtr originNode = _getNodeForPlace(extantHyp->originPlaceID);        
                   if (originNode->gateway){
                     set<int> placeConnectivities = m_connectivities[extantHyp->originPlaceID];
+
+                    double minDist = 100;
+                    int minDistPlaceID = -1;
+
                     for(set<int>::iterator it1 = placeConnectivities.begin(); it1 != placeConnectivities.end(); it1++) { 
                       NavData::FNodePtr testNode = _getNodeForPlace((*it1));    
                       if (testNode!=0){                      
@@ -1373,10 +1377,16 @@ void PlaceManager::evaluateUnexploredPaths()
                         bool side2 = (testNode->y < originNode->y + tan(originNode->theta)*(testNode->x-originNode->x));
                         if (side1 == side2){
                           // Both node are on the same side - connect nodes
-                          extantHyp->originPlaceID = (*it1);
-                          break;
+                          double dist = (extantHyp->y - testNode->y)*(extantHyp->y - testNode->y) + (extantHyp->x - testNode->x)*(extantHyp->x - testNode->x);
+                          if (dist < minDist){
+                            minDist = dist;
+                            minDistPlaceID = (*it1);
+                          }
                         }
                       }
+                    }
+                    if (minDistPlaceID!=-1){
+                      extantHyp->originPlaceID = minDistPlaceID;
                     } 
                   }
 
@@ -1436,6 +1446,8 @@ void PlaceManager::evaluateUnexploredPaths()
         NavData::FNodePtr originNode = _getNodeForPlace(newHyp->originPlaceID);        
         if (originNode->gateway){
           set<int> placeConnectivities = m_connectivities[newHyp->originPlaceID];
+          double minDist = 100;
+          int minDistPlaceID = -1;
           for(set<int>::iterator it1 = placeConnectivities.begin(); it1 != placeConnectivities.end(); it1++) { 
             NavData::FNodePtr testNode = _getNodeForPlace((*it1));  
             if (testNode!=0){  
@@ -1443,10 +1455,17 @@ void PlaceManager::evaluateUnexploredPaths()
               bool side2 = (testNode->y< originNode->y + tan(originNode->theta)*(testNode->x-originNode->x));
               if (side1 == side2){
                 // Both node are on the same side - connect nodes
-                newHyp->originPlaceID = (*it1);
-                break;
+
+                double dist = (newHyp->y - testNode->y)*(newHyp->y - testNode->y) + (newHyp->x - testNode->x)*(newHyp->x - testNode->x);
+                if (dist < minDist){
+                  minDist = dist;
+                  minDistPlaceID = (*it1);
+                }
               }
             } 
+          }
+          if (minDistPlaceID!=-1){
+            newHyp->originPlaceID = minDistPlaceID;
           } 
         }
 
