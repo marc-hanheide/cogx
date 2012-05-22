@@ -10,7 +10,7 @@ env
 
 /usr/bin/make -C $dname clean
 
-if [ "$1" == "" ]
+if [ "$1" == "" ]; then
    /usr/bin/make -C $dname george SVNUSER=cogx
 else
    /usr/bin/make -C $dname $1 SVNUSER=cogx
