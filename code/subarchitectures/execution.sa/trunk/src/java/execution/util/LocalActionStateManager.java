@@ -140,6 +140,7 @@ public class LocalActionStateManager extends Thread {
 		@Override
 		public void workingMemoryChanged(WorkingMemoryChange _arg0)
 				throws CASTException {
+			m_component.log("Seen delete, so stopping execution...");
 			m_executor.stopExecution();
 			m_component.removeChangeFilter(this);
 		}

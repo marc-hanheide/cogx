@@ -59,7 +59,6 @@ public abstract class BlockingActionExecutor<ActionType extends Action> extends
 
 	@Override
 	public void stopExecution() {
-		// can't stop blocking execution
 	}
 
 	@Override
