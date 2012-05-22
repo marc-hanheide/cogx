@@ -81,7 +81,7 @@ svnhttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	(cd $< && \
 	 rm -rf * && \
 	 echo "exporting from SVN: svn export $(SVN_REVISION) https://$(*D)" && \
-	 svn export $(SVNUSERARG) $(SVN_REVISION) https://$(*D) && \
+	 svn export --non-interactive $(SVNUSERARG) $(SVN_REVISION) https://$(*D) && \
 	 mv * $(GARNAME)-$(GARVERSION)\
 	)
 	tar czv -C $< -f $(PARTIALDIR)/$(DISTFILES) .
