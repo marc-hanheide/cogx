@@ -58,6 +58,7 @@ import execution.slice.actions.VerifyReferenceByFeatureValue;
 import execution.util.BlockingActionExecutor;
 import execution.util.ComponentActionFactory;
 import execution.util.LocalActionStateManager;
+import execution.util.NonBlockingActionExecutor;
 
 /**
  * Receives actions from the execution system and interfaces with the rest of
@@ -85,22 +86,27 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 	}
 
 	public abstract static class IntentionDialogueAction<T extends Action>
-			extends BlockingActionExecutor<T> {
+			extends NonBlockingActionExecutor<T> {
 
-		private static final int DLG_TIMEOUT = 20;
+		// Testting, big timeout -- default 20
+		private static final int DLG_TIMEOUT = 600;
 
 		private final int m_timeoutSeconds;
+		private final int m_pollFrequencyMilliseconds;
 
 		WMEventQueue eventQueue = new WMEventQueue();
 
 		// the tribool to return on a timeout
 		private final TriBool m_timeoutResponse;
 
+		private boolean m_stopped = false;
+
 		public IntentionDialogueAction(ManagedComponent _component,
 				Class<T> _cls, int _timeoutSeconds, TriBool _timeoutResponse) {
 			super(_component, _cls);
 			m_timeoutSeconds = _timeoutSeconds;
 			m_timeoutResponse = _timeoutResponse;
+			m_pollFrequencyMilliseconds = 200;
 		}
 
 		public IntentionDialogueAction(ManagedComponent _component,
@@ -109,7 +115,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		}
 
 		@Override
-		public TriBool execute() {
+		public void executeAction() {
 			log("IntentionDialogueAction.execute()");
 
 			IntentionToAct actint = new IntentionToAct(
@@ -126,8 +132,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				prepareCheckAndResponse(id);
 				getComponent().addToWorkingMemory(id, actint);
 				res = waitAndCheckResponse(id);
-				if (res == TriBool.TRITRUE) {
-					actionComplete();
+				if (m_stopped) {
+					return;
 				}
 			} catch (CASTException e) {
 				logException(e);
@@ -135,17 +141,21 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				((AbstractDialogueActionInterface<?>) getComponent())
 						.disableASR();
 			}
-			return res;
+			if (res == TriBool.TRITRUE) {
+				actionSuccessfullyCompleted();
+			}
+			executionComplete(res);
 		}
 
 		@Override
 		public void stopExecution() {
+			m_stopped = true;
 		}
 
 		/**
 		 * Hack to provide the same interface as the non-blocking version.
 		 */
-		protected void actionComplete() {
+		protected void actionSuccessfullyCompleted() {
 		}
 
 		protected void prepareCheckAndResponse(WorkingMemoryAddress id) {
@@ -161,13 +171,21 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 				// if we received an update we're happy
 				println("wait for the intention of the human to pop up for "
 						+ m_timeoutSeconds + " seconds");
+
+				long timeoutMillis = TimeUnit.SECONDS
+						.toMillis(m_timeoutSeconds);
+				long elapsedMillis = 0;
+
 				while (!gotAnswer) {
-					WorkingMemoryChange e = eventQueue.poll(m_timeoutSeconds,
-							TimeUnit.SECONDS);
-					if (e == null) {
-						println("didn't get the intention in time... action halting");
+					WorkingMemoryChange e = eventQueue.poll(
+							m_pollFrequencyMilliseconds, TimeUnit.MILLISECONDS);
+
+					if (m_stopped) {
+						println("stop has been triggered before intention arrived... action halting");
 						return m_timeoutResponse;
-					} else {
+					}
+
+					if (e != null) {
 						println("got human intention... check if it is the right one");
 						PossibleInterpretedIntentions possInterpretedIntentions = getComponent()
 								.getMemoryEntry(e.address,
@@ -214,9 +232,20 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 								return TriBool.TRIFALSE;
 							}
 						}
+					}
 
+					// the above statements will have returned if the action has
+					// been stopped or if the matching intention was found,
+					// therefore we only get here if no intention has been found
+
+					if (elapsedMillis < timeoutMillis) {
+						elapsedMillis += m_pollFrequencyMilliseconds;
+					} else {
+						println("didn't get the intention in time... action halting");
+						return m_timeoutResponse;
 					}
 				}
+
 			} catch (InterruptedException e) {
 				logException(e);
 			} catch (CASTException e) {
@@ -586,14 +615,15 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 						unmarkReferent(potentialReferentAddr);
 					} else {
 
-						assert (pii.resolvedIntention.equals(NewIntentionRecognizer.EMPTY_ADDRESS));
+						assert (pii.resolvedIntention
+								.equals(NewIntentionRecognizer.EMPTY_ADDRESS));
 
 						// store the correctly resolved intention address in the
 						// possibles structure
 						pii.resolvedIntention = addr;
-						//write PII back to wm to reflect update to 
+						// write PII back to wm to reflect update to
 						getComponent().overwriteWorkingMemory(piiAddr, pii);
-						
+
 						// else decode and mark as accepted
 						RichIntention decoded = AbstractDialogueActionInterface
 								.extractRichIntention(iint);
@@ -612,8 +642,6 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 					}
 				}
-				
-
 
 			} else {
 				// this is the wrong thing
@@ -737,7 +765,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		}
 
 		@Override
-		protected void actionComplete() {
+		protected void actionSuccessfullyCompleted() {
 			try {
 				// global-type-question-answered
 				String answeredPredictate = "global-" + getAction().feature
@@ -779,7 +807,7 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		}
 
 		@Override
-		protected void actionComplete() {
+		protected void actionSuccessfullyCompleted() {
 			try {
 				// global-type-question-answered
 				String answeredPredictate = "polar-" + getAction().feature
