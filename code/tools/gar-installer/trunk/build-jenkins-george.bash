@@ -9,4 +9,9 @@ export SVNUSER=cogx
 env
 
 /usr/bin/make -C $dname clean
-/usr/bin/make -C $dname george SVNUSER=cogx
+
+if [ "$1" == "" ]
+   /usr/bin/make -C $dname george SVNUSER=cogx
+else
+   /usr/bin/make -C $dname $1 SVNUSER=cogx
+fi
