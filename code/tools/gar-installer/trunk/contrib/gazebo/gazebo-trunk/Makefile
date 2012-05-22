@@ -30,7 +30,7 @@ ifeq ("$(SYSTEM_RELEASE)","Ubuntu-11.10")
 endif
 
 LIBDEPS = \
-	  contrib/player-3.0.2
+	  contrib/player-3.0.2 \
 	  contrib/assimp
 
 DESCRIPTION = gazebo for cogx platform
