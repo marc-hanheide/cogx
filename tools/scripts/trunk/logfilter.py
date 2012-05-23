@@ -60,7 +60,7 @@ written = 0
 t0 = time.time()
 
 try:
-    for event, elem in etree.iterparse(args.infile, events=("start", "end")):
+    for event, elem in etree.iterparse(args.file, events=("start", "end")):
         if event == "start" and elem.tag == "{http://jakarta.apache.org/log4j/}logsequence":
             print_header(elem)
             root = elem
