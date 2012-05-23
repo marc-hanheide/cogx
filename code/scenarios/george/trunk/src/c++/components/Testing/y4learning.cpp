@@ -101,7 +101,8 @@ public:
     CMachineStateMixin(pMachine),
     mTeachStep(linkedState("TeachOneStep"))
   {
-    setSleepTime(20, 30 * 1000);
+    //setSleepTime(20, 30 * 1000); // TODO: initial timeout could be configurable with params!
+    setSleepTime(20, 5 * 1000);
   }
   TStateFunctionResult work() {
     machine()->mTeachingStep = 0;
@@ -171,7 +172,7 @@ public:
     mEndTeach(linkedState("EndTeaching", "Timeout"))
   {
     setWatchEvents({ "synthesize::SpokenOutputItem" });
-    setTimeout(30 * 1000);
+    setTimeout(60 * 1000);
     setSleepTime(20);
   }
   TStateFunctionResult enter() {
