@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Map.Entry;
@@ -66,8 +67,10 @@ public class DoraPersonTracker extends ManagedComponent implements
 	WMEventQueue evQueue = new WMEventQueue();
 	public static final String UPDATE_ON_MOVE = "--update-on-move";
 	// create a view of all places and room beliefs
-	WMView<GroundedBelief> spatialBeliefs = WMBeliefView.create(this,
-			GroundedBelief.class, new String[] {
+	WMView<GroundedBelief> spatialBeliefs = WMBeliefView.create(
+			this,
+			GroundedBelief.class,
+			new String[] {
 					SimpleDiscreteTransferFunction
 							.getBeliefTypeFromCastType(Place.class),
 					SimpleDiscreteTransferFunction
@@ -111,25 +114,24 @@ public class DoraPersonTracker extends ManagedComponent implements
 			Map<String, Vector<Double>> marginals) {
 
 		FormulaDistribution placeDistribution = FormulaDistribution.create();
-		int i=0;
+		int i = 0;
+		Vector<Double> marginalForPlace = marginals
+				.get(PersonReasoningEngine.LOCALISED);
+		Vector<Double> marginalForExist = marginals
+				.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_ROOM);
+		assert (marginalForPlace != null);
 		for (WorkingMemoryAddress wmaPlaceInRoom : placesInRoomAdr.keySet()) {
-//			log("looking up marginals for place " + wmaPlaceInRoom.id);
-//			Vector<Double> marginalForPlace = marginals
-//					.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_PLACE_PREFIX
-//							+ wmaPlaceInRoom.id);
-//			assert (marginalForPlace != null);
-			log("looking up marginals for place " + wmaPlaceInRoom.id);
-			Vector<Double> marginalForPlace = marginals
-					.get(PersonReasoningEngine.LOCALISED);
-			Vector<Double> marginalForExist = marginals
-			.get(PersonReasoningEngine.NODE_PERSON_EXISTS_IN_ROOM);
-			assert (marginalForPlace != null);
+			log("looking up marginals for place " + wmaPlaceInRoom.id
+					+ " P(atPlace)=" + marginalForPlace.get(i) + ", P(exists)="
+					+ marginalForExist.get(0));
 
-			placeDistribution.add(WMPointer.create(
-					wmaPlaceInRoom,
-					SimpleDiscreteTransferFunction
-							.getBeliefTypeFromCastType(Place.class)).get(),
-					marginalForPlace.get(i++)*marginalForExist.get(0));
+			placeDistribution.add(
+					WMPointer.create(
+							wmaPlaceInRoom,
+							SimpleDiscreteTransferFunction
+									.getBeliefTypeFromCastType(Place.class))
+							.get(), marginalForPlace.get(i++)
+							* marginalForExist.get(0));
 		}
 		return placeDistribution;
 	}
@@ -157,8 +159,8 @@ public class DoraPersonTracker extends ManagedComponent implements
 					}
 				} else {
 					PointerFormula placePtr = (PointerFormula) belPrx
-							.getContent().get(
-									RoomMembershipMediator.ROOM_PROPERTY)
+							.getContent()
+							.get(RoomMembershipMediator.ROOM_PROPERTY)
 							.getDistribution().getMostLikely().get();
 					return placePtr.pointer;
 				}
@@ -175,7 +177,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 	private void generateBeliefNet(
 			Map<WorkingMemoryAddress, GroundedBelief> placesInRoomAdr) {
 		Collection<String> obsIdsForRoom = new Vector<String>();
-		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
+		Map<String, Collection<Boolean>> allObs = new LinkedHashMap<String, Collection<Boolean>>();
 		for (WorkingMemoryAddress wmaPlaceInRoom : placesInRoomAdr.keySet()) {
 			Collection<Boolean> obsPerPlace = placeObservations
 					.get(wmaPlaceInRoom.id);
@@ -189,7 +191,7 @@ public class DoraPersonTracker extends ManagedComponent implements
 
 	private Map<WorkingMemoryAddress, GroundedBelief> getPlaceBeliefsForRoom(
 			WorkingMemoryAddress comaRoomAdr) {
-		Map<WorkingMemoryAddress, GroundedBelief> places = new HashMap<WorkingMemoryAddress, GroundedBelief>();
+		Map<WorkingMemoryAddress, GroundedBelief> places = new LinkedHashMap<WorkingMemoryAddress, GroundedBelief>();
 		for (Entry<WorkingMemoryAddress, GroundedBelief> bel : spatialBeliefs
 				.entrySet()) {
 			// skip everything that is not a place!
@@ -240,7 +242,8 @@ public class DoraPersonTracker extends ManagedComponent implements
 			throws DoesNotExistOnWMException, UnknownSubarchitectureException,
 			ConsistencyException, PermissionException {
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = getGroundedBelief(wmaGrounded);
-		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief.create(PerceptBelief.class, from);
+		CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb = CASTIndependentFormulaDistributionsBelief
+				.create(PerceptBelief.class, from);
 		log("we have found a person in the same room, " + roomAdr.id);
 		log("let's access the angle of this observation");
 		transferAngle(gb, pb);
@@ -253,12 +256,15 @@ public class DoraPersonTracker extends ManagedComponent implements
 	private void transferAngle(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb,
 			CASTIndependentFormulaDistributionsBelief<PerceptBelief> pb) {
-		double theta=pb.getContent().get(PersonTransferFunction.ATTR_POS_THETA).getDistribution().getMostLikely().getDouble();
+		double theta = pb.getContent()
+				.get(PersonTransferFunction.ATTR_POS_THETA).getDistribution()
+				.getMostLikely().getDouble();
 		if (!Double.isNaN(theta)) {
-			log("there is a real angle (not NaN), so updating the theta to " + theta);
+			log("there is a real angle (not NaN), so updating the theta to "
+					+ theta);
 			FormulaDistribution fd = FormulaDistribution.create();
 			fd.add((float) theta, 1.0);
-			gb.getContent().put(PersonTransferFunction.ATTR_POS_THETA,fd);
+			gb.getContent().put(PersonTransferFunction.ATTR_POS_THETA, fd);
 		}
 	}
 
@@ -294,8 +300,8 @@ public class DoraPersonTracker extends ManagedComponent implements
 			WorkingMemoryAddress wmaGrounded) throws DoesNotExistOnWMException,
 			UnknownSubarchitectureException {
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gb = CASTIndependentFormulaDistributionsBelief
-				.create(GroundedBelief.class, getMemoryEntry(wmaGrounded,
-						GroundedBelief.class));
+				.create(GroundedBelief.class,
+						getMemoryEntry(wmaGrounded, GroundedBelief.class));
 		return gb;
 	}
 
@@ -336,11 +342,11 @@ public class DoraPersonTracker extends ManagedComponent implements
 			UnknownSubarchitectureException, ConsistencyException,
 			PermissionException {
 		try {
-			PointerFormula placePtr = (PointerFormula) (pb.getContent().get(
-					PersonTransferFunction.IS_IN).getDistribution()
+			PointerFormula placePtr = (PointerFormula) (pb.getContent()
+					.get(PersonTransferFunction.IS_IN).getDistribution()
 					.getMostLikely().get());
-			Boolean probExist = pb.getContent().get(
-					PersonTransferFunction.EXISTS).getDistribution().get().values
+			Boolean probExist = pb.getContent()
+					.get(PersonTransferFunction.EXISTS).getDistribution().get().values
 					.get(0).prob > 0.5;
 			addObservations(placePtr, probExist);
 
