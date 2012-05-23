@@ -538,6 +538,9 @@ list<double> SpatialControl::getVisualExplorationAngles(){
 void SpatialControl::configure(const map<string,string>& _config) 
 {
   log("started configure");
+
+  m_mapUpdateStatus = true;
+  
   if (_config.find("--save-map") != _config.end()) {
     m_saveLgm = true;
   }
@@ -795,6 +798,10 @@ void SpatialControl::start()
   }
   //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
     //(getComponentPointer());
+
+  addChangeFilter(createLocalTypeFilter<NavData::MapUpdateStatusChange>(cdl::ADD),
+		  new MemberFunctionChangeReceiver<SpatialControl>(this,
+								  &SpatialControl::newMapUpdateStatusChange));
  
   addChangeFilter(createLocalTypeFilter<NavData::InhibitNavControl>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
@@ -1351,41 +1358,6 @@ void SpatialControl::updateGridMaps(){
 
 
 
-//Warning: m_LMap has an internal limit to the number of obstacles (1720).
-//Must keep the obstacle count below this limit.
-//The following scheme adds at most a third of the cells in the 
-//3x3 square around the robot, making 1/3*3600=1200 obstacles
-    long nObstacles = 0;
-    int iCenter, jCenter;
-    m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), iCenter, jCenter);
-    double radius = 1.5; //Distance to consider obstacles at
-    int maxDelta = radius/m_lgm->getCellSize();
-
-bool addFail = false;
-    for (int i = iCenter-maxDelta; i < iCenter+maxDelta; i++) {
-      for (int j = jCenter; j < jCenter+maxDelta; j++) {
-	if ((*tmp_lgm)(i,j) == '1') {
-	  double xWT, yWT;
-	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
-    if (!m_LMap.addObstacle(xWT, yWT, 1))
-      addFail = true;
-    j+=2;
-	}
-      }
-      for (int j = jCenter; j > jCenter-maxDelta; j--) {
-	if ((*tmp_lgm)(i,j) == '1') {
-	  double xWT, yWT;
-	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
-    if (!m_LMap.addObstacle(xWT, yWT, 1))
-      addFail = true;
-    j-=2;
-	}
-      }
-    }
-
-    if (addFail) {
-      error("Cure LocalMap failed to add all obstacles!");
-    }
 
 //    for (int i = 0; i < m_Npts; i++) {
 //      theta = m_StartAngle + m_AngleStep * i;
@@ -1417,11 +1389,52 @@ bool addFail = false;
   if (maxY >= m_lgm->getSize())
     maxY = m_lgm->getSize() - 1;
 
-	for (int yi = minY; yi <= maxY; yi++) {
-		for (int xi = minX; xi <= maxX; xi++) {
-			if ((*tmp_lgm)(xi, yi) != '2') (*m_lgm)(xi, yi)=(*tmp_lgm)(xi, yi);
+  if (m_mapUpdateStatus){
+	  for (int yi = minY; yi <= maxY; yi++) {
+		  for (int xi = minX; xi <= maxX; xi++) {
+			  if ((*tmp_lgm)(xi, yi) != '2') (*m_lgm)(xi, yi)=(*tmp_lgm)(xi, yi);
+      }
     }
   }
+
+
+//Warning: m_LMap has an internal limit to the number of obstacles (1720).
+//Must keep the obstacle count below this limit.
+//The following scheme adds at most a third of the cells in the 
+//3x3 square around the robot, making 1/3*3600=1200 obstacles
+    long nObstacles = 0;
+    int iCenter, jCenter;
+    m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), iCenter, jCenter);
+    double radius = 1.5; //Distance to consider obstacles at
+    int maxDelta = radius/m_lgm->getCellSize();
+
+bool addFail = false;
+    for (int i = iCenter-maxDelta; i < iCenter+maxDelta; i++) {
+      for (int j = jCenter; j < jCenter+maxDelta; j++) {
+	if ((*m_lgm)(i,j) == '1') {
+	  double xWT, yWT;
+	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
+    if (!m_LMap.addObstacle(xWT, yWT, 1))
+      addFail = true;
+    j+=2;
+	}
+      }
+      for (int j = jCenter; j > jCenter-maxDelta; j--) {
+	if ((*m_lgm)(i,j) == '1') {
+	  double xWT, yWT;
+	  m_lgm->index2WorldCoords(i, j, xWT, yWT);
+    if (!m_LMap.addObstacle(xWT, yWT, 1))
+      addFail = true;
+    j-=2;
+	}
+      }
+    }
+
+    if (addFail) {
+      error("Cure LocalMap failed to add all obstacles!");
+    }
+
+
   delete tmp_lgm;
 
   /* Copy the temporary map */
@@ -1767,7 +1780,17 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
     }
   }
 }
-
+void SpatialControl::newMapUpdateStatusChange(const cdl::WorkingMemoryChange &objID) {
+  log("Received new VisualExplorationCommand");
+  try {
+    NavData::MapUpdateStatusChangePtr obj =
+      getMemoryEntry<NavData::MapUpdateStatusChange>(objID.address);
+    m_mapUpdateStatus = obj->enabled;
+  }
+  catch (DoesNotExistOnWMException) {
+    log("Could not find MapUpdateStatusChange on WM!");
+  }
+}
 
 void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange &objID) 
 {

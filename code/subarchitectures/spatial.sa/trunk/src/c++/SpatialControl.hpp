@@ -190,6 +190,8 @@ protected:
     double m_nodeObstacleMargin;
     double m_nodeUnknownMargin;
 
+    bool m_mapUpdateStatus;
+
     list<double> m_visualExplorationAngles;
     list<double> getVisualExplorationAngles();
 
@@ -414,6 +416,9 @@ private:
   void execCtrl(Cure::MotionAlgorithm::MotionCmd&);
   void receiveScan2d(const Laser::Scan2d &castScan);
   void receiveOdometry(const Robotbase::Odometry &castOdom);
+
+  void newMapUpdateStatusChange(const cast::cdl::WorkingMemoryChange &objID);
+
   void newVisualExplorationCommand(const cast::cdl::WorkingMemoryChange &objID);
   void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
   void newNavCtrlCommand(const cast::cdl::WorkingMemoryChange &objID);
