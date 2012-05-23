@@ -59,7 +59,7 @@ public class DialogueActionInterface extends
 		}
 
 		@Override
-		protected void actionComplete() {
+		protected void actionSuccessfullyCompleted() {
 			try {
 				((DialogueActionInterface) getComponent()).addFeature(
 						getAction().beliefAddress, "position-reported", true);
