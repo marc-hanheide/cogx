@@ -1896,10 +1896,39 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
     }
     
     m_commandType = oobj->getData()->cmd;
-    m_commandX = oobj->getData()->x;
-    m_commandY = oobj->getData()->y;
-    m_commandR = oobj->getData()->r;
-    m_commandTheta = oobj->getData()->theta;
+    if (!isnan(oobj->getData()->x)){
+      m_commandX = oobj->getData()->x;
+    }
+    else {
+      m_commandX = 0;
+      log("WARNING: x is nan");
+    }
+
+    if (!isnan(oobj->getData()->y)){
+      m_commandY = oobj->getData()->y;
+    }
+    else {
+      m_commandY = 0;
+      log("WARNING: y is nan");
+    }
+
+    if (!isnan(oobj->getData()->r)){
+      m_commandR = oobj->getData()->r;
+    }
+    else {
+      m_commandR = 0;
+      log("WARNING: r is nan");
+    }
+
+    if (!isnan(oobj->getData()->theta)){
+      m_commandTheta = oobj->getData()->theta;
+      while (m_commandTheta>M_PI)m_commandTheta-=2*M_PI;
+      while (m_commandTheta<-M_PI)m_commandTheta+=2*M_PI;
+    }
+    else {
+      m_commandTheta = 0;
+      log("WARNING: theta is nan");
+    }
     m_commandDistance = oobj->getData()->distance;
     m_commandAreaId = oobj->getData()->areaId;
     m_commandNodeId = oobj->getData()->nodeId;
@@ -1908,10 +1937,12 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
     m_TolRot = m_DefTolRot;
     if (m_commandType == NavData::lGOTOXYA) {
       if (oobj->getData()->tolerance.size() > 1) {
-        m_TolRot = oobj->getData()->tolerance[1];
+        if (!isnan(oobj->getData()->tolerance[1]))
+            m_TolRot = oobj->getData()->tolerance[1];
       }
       if (oobj->getData()->tolerance.size() > 0) {
-        m_TolPos = oobj->getData()->tolerance[0];
+        if (!isnan(oobj->getData()->tolerance[0]))
+            m_TolPos = oobj->getData()->tolerance[0];
       }
     } else if (m_commandType == NavData::lGOTOXY ||
                m_commandType == NavData::lGOTOXYROUGH ||
@@ -1919,12 +1950,14 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
                m_commandType == NavData::lGOTONODE ||
                m_commandType == NavData::lBACKOFF) {
       if (oobj->getData()->tolerance.size() > 0) {
-        m_TolPos = oobj->getData()->tolerance[0];
+        if (!isnan(oobj->getData()->tolerance[0]))
+          m_TolPos = oobj->getData()->tolerance[0];
       }      
     } else if (m_commandType == NavData::lROTATEREL ||
                m_commandType == NavData::lROTATEABS) {
       if (oobj->getData()->tolerance.size() > 0) {
-        m_TolRot = oobj->getData()->tolerance[0];
+        if (!isnan(oobj->getData()->tolerance[0]))
+          m_TolRot = oobj->getData()->tolerance[0];
       }
     }
 
