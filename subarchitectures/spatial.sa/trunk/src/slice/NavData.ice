@@ -27,6 +27,9 @@ class ObjectSearchPlan{
   SearchPlan planlist;
 };
 
+  class MapUpdateStatusChange {
+    bool enabled;
+  };
 
  sequence<cogx::Math::Vector3> PointCloud;
  sequence<int> PointCloudLabels;
