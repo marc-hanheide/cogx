@@ -6,6 +6,7 @@ package eu.cogx.percepttracker.dora;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -47,13 +48,15 @@ public class PersonReasoningEngine {
 	private static final double PRIOR_PERSON_EXISTS_IN_ROOM = 0.9;
 
 	public static void main(String[] argv) {
-		Map<String, Collection<Boolean>> allObs = new HashMap<String, Collection<Boolean>>();
+		Map<String, Collection<Boolean>> allObs = new LinkedHashMap<String, Collection<Boolean>>();
 		Collection<Boolean> placeObs;
-		placeObs = Arrays.asList();
+		placeObs = Arrays.asList(false,false);
 		allObs.put("p1", placeObs);
+		placeObs = Arrays.asList(true);
+		allObs.put("p2", placeObs);
 		placeObs = Arrays.asList();
-//		allObs.put("p2", placeObs);
-//		placeObs = Arrays.asList();
+		allObs.put("p3", placeObs);
+		placeObs = Arrays.asList();
 //		allObs.put("p3", placeObs);
 //		placeObs = Arrays.asList();
 //		allObs.put("p4", placeObs);
@@ -63,9 +66,10 @@ public class PersonReasoningEngine {
 //		allObs.put("p6", placeObs);
 //		placeObs = Arrays.asList();
 //		allObs.put("p7", placeObs);
-
+		
 		PersonReasoningEngine pre = new PersonReasoningEngine();
 		pre.submit(allObs);
+		pre.queryMarginals();
 		for (BeliefNode n : pre.getNetwork().getNodes()) {
 			CPF res = pre.getInferenceEngine().queryMarginal(n);
 
@@ -80,6 +84,7 @@ public class PersonReasoningEngine {
 	}
 
 	Logger logger = Logger.getLogger(PersonReasoningEngine.class);
+	
 
 	BeliefNetwork bn;
 
@@ -214,6 +219,11 @@ public class PersonReasoningEngine {
 			}
 			logger.debug("queryMarginal for " + node.getName() + ": "
 					+ IceXMLSerializer.toXMLString(marginalsNode));
+			Discrete d=((Discrete)node.getDomain());
+			for (int i=0; i< cpf.size(); i++) {
+				logger.debug("  domain item: "+d.getName(i));
+			}
+			
 			marginals.put(node.getName(), marginalsNode);
 		}
 		return marginals;
