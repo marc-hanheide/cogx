@@ -259,12 +259,27 @@ public class DoraPersonTracker extends ManagedComponent implements
 		double theta = pb.getContent()
 				.get(PersonTransferFunction.ATTR_POS_THETA).getDistribution()
 				.getMostLikely().getDouble();
+		double X = pb.getContent()
+				.get(PersonTransferFunction.ATTR_POS_X).getDistribution()
+				.getMostLikely().getDouble();
+		double Y = pb.getContent()
+				.get(PersonTransferFunction.ATTR_POS_Y).getDistribution()
+				.getMostLikely().getDouble();
 		if (!Double.isNaN(theta)) {
 			log("there is a real angle (not NaN), so updating the theta to "
 					+ theta);
 			FormulaDistribution fd = FormulaDistribution.create();
 			fd.add((float) theta, 1.0);
 			gb.getContent().put(PersonTransferFunction.ATTR_POS_THETA, fd);
+			
+			fd = FormulaDistribution.create();
+			fd.add((float) X, 1.0);
+			gb.getContent().put(PersonTransferFunction.ATTR_POS_X, fd);
+
+			fd = FormulaDistribution.create();
+			fd.add((float) Y, 1.0);
+			gb.getContent().put(PersonTransferFunction.ATTR_POS_Y, fd);
+
 		}
 	}
 
