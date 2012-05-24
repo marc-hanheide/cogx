@@ -6,6 +6,7 @@
 #include "tester.hpp"
 
 #include <dialogue.hpp>
+#include <dialogue_utils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
 #include <sstream>
@@ -400,9 +401,15 @@ bool CCastMachine::sayLesson()
   addr.subarchitecture = mOptions["dialogue.sa"];
   addr.id = castComponent()->newDataID();
 
-  dlgice::asr::PhonStringPtr sayWhat = new dlgice::asr::PhonString();
+  //dlgice::asr::PhonStringPtr sayWhat = new dlgice::asr::PhonString();
+  dlgice::asr::PhonStringPtr sayWhat = dlgice::asr::newPhonString(text);
   sayWhat->id = addr.id;
-  sayWhat->wordSequence = text;
+  //sayWhat->wordSequence = text;
+  //sayWhat->confidenceValue = 1.0;
+
+  long now = castComponent()->getCASTTime().s * 1000;
+  sayWhat->ival->begin->msec = now;
+  sayWhat->ival->end->msec = now + 500;
   report(MSSG("Tutor: " << text));
   castComponent()->log("Saying: '%s'.", text.c_str());
 
