@@ -1943,15 +1943,17 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
       log("WARNING: r is nan");
     }
 
-    if (!isnan(oobj->getData()->theta)){
+    if ((!isnan(oobj->getData()->theta) && (m_commandTheta<2*M_PI) && (m_commandTheta>-2*M_PI))){
       m_commandTheta = oobj->getData()->theta;
-      while (m_commandTheta>M_PI)m_commandTheta-=2*M_PI;
-      while (m_commandTheta<-M_PI)m_commandTheta+=2*M_PI;
+
+      if (m_commandTheta>M_PI)m_commandTheta-=2*M_PI;
+      if (m_commandTheta<-M_PI)m_commandTheta+=2*M_PI;
     }
     else {
       m_commandTheta = 0;
-      log("WARNING: theta is nan");
+      log("WARNING: theta is nan or very high");
     }
+
     m_commandDistance = oobj->getData()->distance;
     m_commandAreaId = oobj->getData()->areaId;
     m_commandNodeId = oobj->getData()->nodeId;
@@ -1983,7 +1985,6 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
           m_TolRot = oobj->getData()->tolerance[0];
       }
     }
-
 
     // If we are supposed to follow a person we pick the currently
     // closest one
