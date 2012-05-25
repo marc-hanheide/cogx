@@ -6,9 +6,11 @@
 //
 // = AUTHOR(S)
 //    Patric Jensfelt
+//    Alexey Bezugly
 //
 // = COPYRIGHT
 //    Copyright (c) 2009 Patric Jensfelt
+//    Copyright (c) 2012 Alexey Bezugly
 //
 /*----------------------------------------------------------------------*/
 
@@ -803,107 +805,6 @@ std::map<int, std::vector<int> > PlaceManager::getAdjacencyLists() {
 }
 
 
-//bool 
-//FrontierPtCompare(const FrontierInterface::FrontierPtPtr &a, const FrontierInterface::FrontierPtPtr &b)
-//{
-//  return a->mWidth < b->mWidth;
-//}
-
-
-/* Returns the a list of coordinates of positions where placeholders can
-   be placed after checking them for a series of criterias.
- 
-   placeId: the Id of the place to use as the current place */
-//std::vector<pair <double,double> >
-//PlaceManager::getPlaceholderPositionsFromFrontiers(
-//    FrontierInterface::FrontierPtSeq frontiers,
-//    int placeId) {
-//  debug("Entered getplaceholderpositionsfromfrontiers\n");
-//
-//  std::vector<pair <double,double> > ret;
-//
-//  NavData::FNodePtr curNode = getNodeFromPlaceID(placeId);
-//  if(!curNode) {
-//    log("Couldnt find node from the placeid specified");
-//    return ret;
-//  }
-//  // @demmeln 22.03.2012: curNodeId seems to be unused, so comment out.
-//  // int curNodeId = curNode->nodeId 
-//  double nodeX = curNode->x;
-//  double nodeY = curNode->y;
-//
-//  // Find out which points are reachable
-//  log("Find out which points are reachable");
-//  std::vector<std::vector<double> > coords;
-//  for(FrontierInterface::FrontierPtSeq::iterator frontierIt =
-//      frontiers.begin(); frontierIt != frontiers.end(); frontierIt++) {
-//    std::vector<double> coord;
-//    coord.push_back((*frontierIt)->x);
-//    coord.push_back((*frontierIt)->y);
-//    coords.push_back(coord);
-//  }
-//
-//  // Loop over currently observed frontiers
-//  log("looping over frontiers\n");
-//  for (FrontierInterface::FrontierPtSeq::iterator frontierIt =
-//      frontiers.begin(); frontierIt != frontiers.end(); frontierIt++) {
-//    FrontierInterface::FrontierPtPtr frontierPt = *frontierIt;
-//    double x = frontierPt->x;
-//    double y = frontierPt->y;
-//    double nodeDistanceSq = (x - nodeX)*(x - nodeX) + (y - nodeY)*(y - nodeY);
-//    log("Evaluating frontier at (%f, %f) with square-distance %f and length %f", x, y, nodeDistanceSq, frontierPt->mWidth);
-//
-//    double newX = x;// + m_hypPathLength * (x - nodeX)/sqrt(nodeDistanceSq);
-//    double newY = y;// + m_hypPathLength * (y - nodeY)/sqrt(nodeDistanceSq);
-//
-//    // Consider only frontiers with an open path to them
-//    if ((*frontierIt)->mState != FrontierInterface::FRONTIERSTATUSOPEN)
-//      continue;
-//
-//    bool excluded = false;
-//    for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin();
-//        fbIt != m_forbiddenZones.end(); fbIt++) {
-//          	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
-//          	  log("checking against: %.02g, %.02g", newX, newY);
-//      if (newX <= fbIt->maxX && newX >= fbIt->minX &&
-//            newY <= fbIt->maxY && newY >= fbIt->minY) {
-//        log("Placeholder in forbidden zone excluded");
-//        excluded = true;
-//        break;
-//      }
-//    }
-//
-//    if(excluded)
-//      continue;
-//
-//    // Consider only frontiers at a great enough distance to the current Nav node
-//    if (nodeDistanceSq < m_minFrontierDist*m_minFrontierDist) {
-//      continue;
-//    }
-//    
-//    double minDistanceSq = FLT_MAX;
-//
-///*
-//    if (m_rejectedHypotheses.find(curNodeId) != m_rejectedHypotheses.end()) {
-//      for (vector<NodeHypothesisPtr>::iterator rejectedHypIt =
-//          m_rejectedHypotheses[curNodeId].begin(); rejectedHypIt != m_rejectedHypotheses[curNodeId].end(); rejectedHypIt++) {
-//        double distanceSq = ((*rejectedHypIt)->x - newX)*((*rejectedHypIt)->x - newX) + ((*rejectedHypIt)->y - newY)*((*rejectedHypIt)->y - newY);
-//        log ("distanceSq = %f", distanceSq);
-//        if (distanceSq < minDistanceSq) {
-//          minDistanceSq = distanceSq;
-//        }
-//      }
-//    }
-//*/
-//    if (minDistanceSq < m_minNodeSeparation * m_minNodeSeparation) {
-//      continue;
-//    }
-//
-//    // This frontier passed all tests. Add the coordinates to the return list.
-//    ret.push_back(make_pair(newX,newY));
-//  }
-//  return ret;
-//}
 
 void PlaceManager::connectPeekabot()
 {
@@ -922,67 +823,6 @@ void PlaceManager::connectPeekabot()
     return;
   }
 }
-
-
-
-///* Creates a nodehypothesis with a placeholder at (x,y) connected to placeId */
-//bool PlaceManager::createPlaceholder(int curPlaceId, double x, double y)
-//{
-//  NavData::FNodePtr curNode = m_PlaceIDToNodeMap[curPlaceId];
-//  if (curNode == 0) {
-//    log ("Could not determine current nav node! Can not create placeholder.");
-//    return false;
-//  }
-//
-//  int curNodeId = curNode->nodeId;
-//  PlacePtr curPlace = _getPlaceIDForNode(curNodeId);
-//
-//  if (curPlace == 0) {
-//    log("Could not find current place. Can not create placeholder.");
-//    return false;
-//  }
-//
-//  int currentPlaceID = curPlace->id;
-//
-//  NodeHypothesisPtr newHyp = 
-//    new NodeHypothesis;
-//  newHyp->x = x;
-//  newHyp->y = y;
-//  newHyp->hypID = m_hypIDCounter;
-//  newHyp->originPlaceID = currentPlaceID;
-//
-//  log("Adding new hypothesis at (%f, %f) with ID %i", newHyp->x,
-//      newHyp->y, newHyp->hypID);
-//
-//  string newID = newDataID();
-//  m_HypIDToWMIDMap[newHyp->hypID]=newID;
-//
-//  // Create the Place struct corresponding to the hypothesis
-//  PlaceHolder p;
-//  p.m_data = new Place;   
-//  //p.m_data->id = oobj->getData()->nodeId;
-//
-//  int newPlaceID = m_placeIDCounter;
-//  m_placeIDCounter++;
-//  p.m_data->id = newPlaceID;
-//  m_PlaceIDToHypMap[newPlaceID] = newHyp;
-//  m_hypIDCounter++;
-//
-//  // Add connectivity property (one-way)
-//  createConnectivityProperty(m_hypPathLength, currentPlaceID, newPlaceID);
-//  m_hypotheticalConnectivities.push_back(pair<int, int>(currentPlaceID, newPlaceID));
-//
-//  p.m_data->status = PLACEHOLDER;
-//  p.m_WMid = newDataID();
-//  log("Adding placeholder %ld, with tag %s", p.m_data->id, p.m_WMid.c_str());
-//  addToWorkingMemory<Place>(p.m_WMid, p.m_data);
-//  addToWorkingMemory<NodeHypothesis>(newID, newHyp);
-//
-//  m_Places[newPlaceID]=p;
-//
-//  return true;
-//}
-
 
 /* Updates the edge of the placeholder so that it is linked to the node to
    which it has the shortest path.
