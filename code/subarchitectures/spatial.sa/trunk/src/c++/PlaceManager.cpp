@@ -90,13 +90,6 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
     m_useLocalMaps = true;
   }
 
-//  if(_config.find("--min-frontier-dist") != _config.end()) {
-//    std::istringstream str(_config.find("--min-frontier-dist")->second);
-//    str >> m_minFrontierDist;
-//  }
-//  else {
-//    m_minFrontierDist = 0.5;
-//  }
 
   if(_config.find("--min-node-separation") != _config.end()) {
     std::istringstream str(_config.find("--min-node-separation")->second);
@@ -263,7 +256,6 @@ PlaceManager::start()
       new MemberFunctionChangeReceiver<PlaceManager>(this,
 	&PlaceManager::mapLoadStatusOverwritten));
 
-  frontierReader = FrontierInterface::FrontierReaderPrx(getIceServer<FrontierInterface::FrontierReader>("spatial.control"));
   m_mapInterface = MapInterfacePrx(getIceServer<MapInterface>("spatial.control"));
   if (m_useLocalMaps) {
     hypothesisEvaluator = FrontierInterface::HypothesisEvaluatorPrx(getIceServer<FrontierInterface::HypothesisEvaluator>("map.manager"));
@@ -466,8 +458,7 @@ PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID)
        */
       // FIXME: evaluateUnexploredPaths shouldn't be called in the message thread
       if (prev->x != oobj->x || prev->y != oobj->y) {
-	// If the node has been moved, frontiers must be reevaluated
-	// and, if necessary, moved.
+	// If the node has been moved, ph
 	evaluateUnexploredPaths();
       }
 

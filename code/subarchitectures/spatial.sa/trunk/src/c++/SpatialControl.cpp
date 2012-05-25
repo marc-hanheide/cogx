@@ -24,7 +24,6 @@
 
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
-#include <FrontierInterface.hpp>
 #include <Utils/CureDebug.hh>
 #include "PTZ.hpp"
 #include <Rendezvous.h>
@@ -96,8 +95,7 @@ SpatialData::LocalGridMap SpatialControl::MapServer::getGridMap(const Ice::Curre
 
 SpatialControl::SpatialControl()
   :NewNavController(m_NavGraph, m_LMap, this),
-   NewNavControllerEventListener("SpatialControl"),
-   FrontierExplorerEventListener("SpatialControl")
+   NewNavControllerEventListener("SpatialControl")
 {
   m_CurrPerson = -1;
   m_CurrPersonWMid = "";
@@ -129,7 +127,6 @@ SpatialControl::SpatialControl()
   m_Displaylgm = NULL;
   m_displayBinaryMap = NULL;
   m_displayObstacleMap = NULL;
-  m_FrontierFinder = NULL;
   m_lgm = NULL;
   m_lgmLM = NULL;
   m_lgmKH = NULL;
@@ -139,6 +136,9 @@ SpatialControl::SpatialControl()
   m_bDoPBSync = false;
 }
 
+/*
+  Connects to peekabot and create odometry pose and scan proxies 
+*/
 void SpatialControl::connectPeekabot()
 {
   try {
@@ -149,7 +149,6 @@ void SpatialControl::connectPeekabot()
 
     if (m_usePeekabot){
       log("Showing grid map in Peekabot");
-      m_ProxyMap.add(m_PeekabotClient, "frontiers",peekabot::REPLACE_ON_CONFLICT);
 
       m_OdomPoseProxy.add(m_PeekabotClient, "Odom_pose_SC",peekabot::REPLACE_ON_CONFLICT);
       m_OdomPoseProxy.set_scale(0.1,0.04,0.04);
@@ -169,13 +168,17 @@ void SpatialControl::connectPeekabot()
   }
 }
 
+/*
+  Creates peekabot proxies for the grid map, expanded grid map (which is used for placeholder
+  generation) and 3d obstacle map (grid_map_kinect). Populate grid map cells form the pre-loaded
+  grid maps' values
+*/
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
     m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize,
 	peekabot::REPLACE_ON_CONFLICT);
     m_ProxyGridMap.set_occupied_color(0.1,0.1,0.1);
     m_ProxyGridMap.set_unoccupied_color(0.8,0.9,1);
-    m_ProxyMap.set_position(0,0,-0.005);
     m_ProxyGridMap.set_position(0,0,-0.01);
   if(m_showExpandedMap){
       m_ProxyGridMapExpanded.add(m_PeekabotClient, "grid_map_expanded", cellSize,
@@ -221,6 +224,7 @@ void SpatialControl::CreateGridMap() {
               }
             }
             else if ((*m_lgm)(xi,yi) == '0'){
+/* Can't just set a one big cell, we have to set many small cubes */
                 for (double zi = 0; zi <= kinectZ; zi+=0.05) {
                   cells1.set_cell(xr,yr,zi,0);
                 }
@@ -231,64 +235,6 @@ void SpatialControl::CreateGridMap() {
       }
 
 }
-
-void SpatialControl::UpdateGridMap() {
-    if (m_FrontierMutex.tryLock()) {
-      std::list<Cure::FrontierPt> *fPts = &m_Frontiers;
-      m_ProxyMap.clear();
-      if (fPts) {
-//        int r = int(0.8 / m_lgm->getCellSize() + 0.5);
-        for (std::list<Cure::FrontierPt>::const_iterator fi = fPts->begin();
-             fi != fPts->end(); fi++) {
-          int i, j;
-          if (m_lgm->worldCoords2Index(fi->getX(), fi->getY(), i, j) == 0) {        
-            i = i + m_lgm->getSize();
-            j = m_lgm->getSize() - j;
-
-//            double halfLen = 0.5 * fi->m_Width / m_lgm->getCellSize();
-            double color[3];
-            color[0] = 0.1;
-            color[1] = 0.1;
-            color[2] = 0.9;
-            if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_CURRENT) {
-                color[0] = 0.9;
-                color[1] = 0.9;
-                color[2] = 0.1;
-            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE) {
-                color[0] = 0.9;
-                color[1] = 0.1;
-                color[2] = 0.1;
-            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED) {
-                color[0] = 0.9;
-                color[1] = 0.1;
-                color[2] = 0.9;
-            } else if (fi->m_State == Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED) {
-                color[0] = 0.1;
-                color[1] = 0.9;
-                color[2] = 0.1;
-            }
-
-            fi->m_Width;
-
-            peekabot::PolygonProxy p;
-            p.add(m_ProxyMap,"frontier",peekabot::AUTO_ENUMERATE_ON_CONFLICT);
-            int num_points = 10;
-	    peekabot::VertexSet vSet;
-            for(int k=0;k<num_points;k++)
-                vSet.add(0.5*cos(k * 2 * M_PI_2 / num_points ),0.3*fi->m_Width*0.5*sin(k * 2 * M_PI_2 / num_points),0.);
-	    p.add_vertices(vSet);
-            p.set_color(color[0],color[1],color[2]);
-            p.set_opacity(1);
-            p.set_position(fi->getX(), fi->getY(),0);
-            p.set_rotation(fi->getTheta() - M_PI_2,0,0);
-          }
-        }
-        m_FrontierMutex.unlock();
-      }
-  }
-}
-
-
 
 void 
 SpatialControl::moveSimulatedPTZ(double pan)
@@ -376,7 +322,6 @@ SpatialControl::~SpatialControl()
   delete m_Displaylgm;
   delete m_displayBinaryMap;
   delete m_displayObstacleMap;
-  delete m_FrontierFinder;
   delete m_lgm;
   delete m_lgmLM;
   delete m_lgmKH;
@@ -719,9 +664,6 @@ void SpatialControl::configure(const map<string,string>& _config)
 
   m_Glrt  = new Cure::GridLineRayTracer<unsigned char>(*m_lgm);
 
-  m_FrontierFinder = new Cure::FrontierFinder<unsigned char>(*m_lgm);
-  //  m_FrontierFinderKinect = new Cure::FrontierFinder<unsigned char>(*m_kinlgm);
-
   if ((_config.find("--x-window") != _config.end())) {
     m_Displaylgm = new Cure::XDisplayLocalGridMap<unsigned char>(*m_lgm);
     println("Will use X window to show the exploration map");
@@ -785,9 +727,6 @@ void SpatialControl::configure(const map<string,string>& _config)
   //  m_RobotServer = RobotbaseClientUtils::getServerPrx(*this,
   //                                                     m_RobotServerHost);
 
-  FrontierInterface::FrontierReaderPtr servant = new FrontierServer(this);
-  registerIceServer<FrontierInterface::FrontierReader, FrontierInterface::FrontierReader>(servant);
-
   registerIceServer<SpatialData::MapInterface, SpatialData::MapInterface>(new MapServer(this));
 } 
 
@@ -796,8 +735,6 @@ void SpatialControl::start()
   if (m_UsePointCloud) {
     startPCCServerCommunication(*this);
   }
-  //registerIceServer<cast::CASTComponent,FrontierReaderAsComponent>
-    //(getComponentPointer());
 
   addChangeFilter(createLocalTypeFilter<NavData::MapUpdateStatusChange>(cdl::ADD),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
@@ -918,11 +855,6 @@ void SpatialControl::doneTask(int taskId) {
   m_TolRot = Cure::HelpFunctions::deg2rad(5);
   if(taskId == m_taskId - 1){ // else, it is an old command
   log("this is an old command...");
-    if(!m_currentTaskIsExploration){ // @see explorationDone
-      m_CurrentCmdFinalCompletion = NavData::SUCCEEDED;
-      m_CurrentCmdFinalStatus = NavData::NONE;
-      m_taskStatus = TaskFinished;
-    }
   }
 }
 
@@ -936,21 +868,6 @@ void SpatialControl::failTask(int taskId, int error) {
   if(taskId == m_taskId - 1){ // else, it is an old command
     m_CurrentCmdFinalCompletion = NavData::FAILED;
     m_CurrentCmdFinalStatus = NavData::UNKNOWN;
-    m_taskStatus = TaskFinished;
-  }
-}
-
-// FrontierExplorer exploration done overload function
-void SpatialControl::explorationDone(int taskId, int status)
-{
-  getLogger()->info("Exploration finished");
-
-  IceUtil::Mutex::Lock lock(m_taskStatusMutex);
-
-  m_TolRot = Cure::HelpFunctions::deg2rad(5);
-  if(taskId == m_taskId - 1){ // else, it is an old command
-    m_CurrentCmdFinalCompletion = NavData::SUCCEEDED;
-    m_CurrentCmdFinalStatus = NavData::NONE;
     m_taskStatus = TaskFinished;
   }
 }
@@ -1515,16 +1432,9 @@ void SpatialControl::runComponent()
     {
 //      SCOPED_TIME_LOG;
       Cure::Pose3D currentPose = m_TOPP.getPose();
-      {
-	if (m_Displaylgm) {
-	  if (m_FrontierMutex.tryLock()) {
-	    m_Displaylgm->updateDisplay(&currentPose,
-		&m_NavGraph, 
-		&m_Frontiers);
-	    m_FrontierMutex.unlock();
-	  }
-	}
-      }
+	    if (m_Displaylgm) {
+	        m_Displaylgm->updateDisplay(&currentPose, &m_NavGraph);
+	    }
 
       {
 	if(m_displayBinaryMap)
@@ -2115,7 +2025,6 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 
 	  // Result of m_NavCtrl.operationX
 	  int ret = -1; // -1:operation not done, 0:ok, >0:error
-	  m_currentTaskIsExploration = false; // set later
 
 	  // Task id
 	  int currentTaskId = m_taskId++;
@@ -2567,95 +2476,6 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
 //  if(lockMapsMutex) {
 //    m_MapsMutex.unlock();
 //  }
-}
-
-void SpatialControl::setFrontierReachability(std::list<Cure::FrontierPt> &frontiers) {
-  Cure::BinaryMatrix map;
-
-//  //Mutual exclusion vs. changes to m_lgm in updateGridMaps
-//  IceUtil::Mutex::Lock lock(m_MapsMutex); 
-
-  getExpandedBinaryMap(m_lgm, map);
-
-  for(std::list<Cure::FrontierPt>::iterator it = frontiers.begin();
-      it != frontiers.end(); ++it) {
-    it->m_State = Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE;
-  }
-
-  /* Update the map used for visualization of the binarymap.
-     Note that we don't lock the map mutex here, since m_binaryMap
-     is not important for robot behaviour, only visualization.
-     Not waiting for a lock takes precedence to always getting the
-     correct visualization */
-  for(int x = -m_binaryMap->getSize(); x < m_binaryMap->getSize(); ++x) {
-    for(int y = -m_binaryMap->getSize(); y < m_binaryMap->getSize(); ++y) {
-      (*m_binaryMap)(x,y) = map(x+m_binaryMap->getSize(),y+m_binaryMap->getSize()) ? '1' : '0';
-    }
-  }
-  
-  int rX, rY; // Robot position index
-
-  // Get robot position
-  Cure::Pose3D robotPose = m_TOPP.getPose();
-  if(m_lgm->worldCoords2Index(robotPose.getX(), robotPose.getY(), rX, rY) != 0) {
-    log("Robot position is outside of gridmap! Returning.");
-    return;
-  }
-
-  // Offset the indices so that top left is (0,0).
-  rX += m_lgm->getSize();
-  rY += m_lgm->getSize();
-
-  /* Do a BFS over the reachable parts of the map to see if the coorinates in
-     points are reachable */
-  std::queue<std::pair<int, int> > toVisit;
-  toVisit.push(make_pair(rX,rY));
-
-  while (!toVisit.empty()) {
-    std::pair<int,int> coord = toVisit.front();
-    toVisit.pop();
-
-    int x = coord.first;
-    int y = coord.second;
-
-    map.setBit(x,y, true); // Set as visited
-
-    // Check if this coordinate is in points
-    for(list<Cure::FrontierPt>::iterator it = frontiers.begin();
-        it != frontiers.end(); ++it) {
-      int pX, pY;
-      if(m_lgm->worldCoords2Index(it->getX(),it->getY(), pX,pY) != 0) {
-        log("Coordinate is outside of map.");
-        continue;
-      }
-
-      // Offset the indices so that top left is (0,0)
-      pX += m_lgm->getSize();
-      pY += m_lgm->getSize();
-
-      if(pX == x && pY == y)
-        it->m_State = Cure::FrontierPt::FRONTIER_STATUS_OPEN;
-    }
-
-    // Add neighbors if they are in free space, has not been visited before
-    // and are not out of bounds
-    if(y-1 >= 0 && !map(x  , y-1)) {
-      toVisit.push(make_pair(x  , y-1));
-      map.setBit(x,y-1,true);
-    }
-    if(x-1 >= 0 && !map(x-1, y  )){
-      toVisit.push(make_pair(x-1, y  ));
-      map.setBit(x-1,y,true);
-    }
-    if(x+1 < map.Columns-1 && !map(x+1, y  )){
-      toVisit.push(make_pair(x+1, y  ));
-      map.setBit(x+1,y,true);
-    }
-    if(y+1 < map.Rows-1 && !map(x  , y+1)) {
-      toVisit.push(make_pair(x  , y+1));
-      map.setBit(x,y+1,true);
-    }
-  }
 }
 
 double SpatialControl::getPathLength(double x1, double y1,double x2, double y2) {
@@ -3177,67 +2997,6 @@ void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, const Cure::L
       }
     }
   }
-}
-
-FrontierInterface::FrontierPtSeq
-SpatialControl::getFrontiers()
-{
-  log("SpatialControl::getFrontiers() called");
-
-  // Mutual exclusion vs. changes to m_lgm in main thread
-//  m_MapsMutex.lock();
-
-  while (!m_firstScanAdded) {
-    log("  Waiting for first scan to be added...");
-//    m_MapsMutex.unlock();
-    usleep(1000000);
-//    m_MapsMutex.lock();
-  }
-
-  {
-    IceUtil::Mutex::Lock lock(m_FrontierMutex);
-    m_Frontiers.clear();
-    debug("calling findFrontiers");
-    m_FrontierFinder->findFrontiers(0.8,2.0,m_Frontiers);
-    //  m_FrontierFinderKinect->findFrontiers(0.8,2.0,m_Frontiers);
-
-    setFrontierReachability(m_Frontiers);
-  }
-
-
-  FrontierInterface::FrontierPtSeq outArray;
-  log("m_Frontiers contains %i frontiers", m_Frontiers.size());
-  for (list<Cure::FrontierPt>::iterator it =  m_Frontiers.begin();
-      it != m_Frontiers.end(); it++) {
-    FrontierInterface::FrontierPtPtr newPt = new FrontierInterface::FrontierPt;
-    newPt->mWidth = it->m_Width;
-    switch (it->m_State) {
-      case Cure::FrontierPt::FRONTIER_STATUS_OPEN:
-        newPt->mState = FrontierInterface::FRONTIERSTATUSOPEN;
-        break;
-      case Cure::FrontierPt::FRONTIER_STATUS_CURRENT:
-        newPt->mState = FrontierInterface::FRONTIERSTATUSCURRENT;
-        break;
-      case Cure::FrontierPt::FRONTIER_STATUS_UNREACHABLE:
-        newPt->mState = FrontierInterface::FRONTIERSTATUSUNREACHABLE;
-        break;
-      case Cure::FrontierPt::FRONTIER_STATUS_PATHBLOCKED:
-        newPt->mState = FrontierInterface::FRONTIERSTATUSPATHBLOCKED;
-        break;
-      case Cure::FrontierPt::FRONTIER_STATUS_GATEWAYBLOCKED:
-        newPt->mState = FrontierInterface::FRONTIERSTATUSGATEWAYBLOCKED;
-        break;
-      case Cure::FrontierPt::FRONTIER_STATUS_UNKNOWN:
-      default:
-        newPt->mState = FrontierInterface::FRONTIERSTATUSUNKNOWN;
-    }
-    newPt->x = it->getX();
-    newPt->y = it->getY();
-    outArray.push_back(newPt);
-  }
-//  m_MapsMutex.unlock();
-  log("exit getFrontiers");
-  return outArray;
 }
 
 void
