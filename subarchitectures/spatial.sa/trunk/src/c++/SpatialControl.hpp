@@ -40,7 +40,7 @@
 #include <SensorData/LaserScan2d.hh>
 #include <Navigation/NavGraph.hh>
 #include "NewNavController.hpp"
-#include <Navigation/FrontierExplorer.hh>
+
 #include "GridLineRayTracerModified.hh"
 #include <NavX/XDisplayLocalGridMap.hh>
 #include <Map/TransformedOdomPoseProvider.hh>
@@ -70,7 +70,6 @@ class SpatialControl : public cast::ManagedComponent ,
                    public OdometryReceiver,
                    public Cure::NewNavController,                  
                    public Cure::NewNavControllerEventListener,
-		   public Cure::FrontierExplorerEventListener,
 		   public Cure::LocalMap,
 		   public cast::PointCloudClient
 {
@@ -92,20 +91,6 @@ class SpatialControl : public cast::ManagedComponent ,
   };
 
   private:
-    class FrontierServer: public FrontierInterface::FrontierReader {
-      virtual FrontierInterface::FrontierPtSeq getFrontiers(const Ice::Current &_context) {
-				FrontierInterface::FrontierPtSeq ret =
-					m_pOwner->getFrontiers();
-				return ret;
-      }
-      SpatialControl *m_pOwner;
-      FrontierServer(SpatialControl *owner) : m_pOwner(owner)
-      {}
-      friend class SpatialControl;
-    };
-    friend class FrontierServer;
-
-
     class MapServer: public SpatialData::MapInterface {
       private:
         virtual bool isCircleObstacleFree(double x, double y, double radius, const Ice::Current &_context) {
@@ -174,7 +159,6 @@ public:
 protected:
     int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
     peekabot::PeekabotClient m_PeekabotClient;
-    peekabot::GroupProxy m_ProxyMap;
     peekabot::OccupancyGrid2DProxy m_ProxyGridMap;
     peekabot::OccupancyGrid2DProxy m_ProxyGridMapExpanded;
     peekabot::OccupancyGrid2DProxy m_ProxyGridMapExpanded2;
@@ -201,7 +185,6 @@ protected:
 
     void connectPeekabot();
     void CreateGridMap();
-    void UpdateGridMap();
 
     peekabot::CubeProxy m_OdomPoseProxy;
     peekabot::PointCloudProxy m_ProxyScan;
@@ -220,7 +203,6 @@ protected:
   virtual void taskAdopted(const std::string &_taskID) {};
   virtual void taskRejected(const std::string &_taskID) {};
   void getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap, Cure::BinaryMatrix &map,double k = 1, double k2 = 0);
-  virtual void setFrontierReachability(std::list<Cure::FrontierPt> &frontiers);
   bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId);
   virtual SpatialData::NodeHypothesisSeq refreshNodeHypothesis();
   virtual void addConnection(int node1id,int node2id);
@@ -262,18 +244,12 @@ protected:
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayBinaryMap;
   Cure::XDisplayLocalGridMap<unsigned char>* m_displayObstacleMap;
 
-  Cure::FrontierFinder<unsigned char>* m_FrontierFinder;
-  Cure::FrontierFinder<unsigned char>* m_FrontierFinderKinect;
-
-  std::list<Cure::FrontierPt> m_Frontiers;
-
   std::deque<Cure::Pose3D> m_odometryQueue;
 
   IceUtil::Mutex m_PPMutex;		// Protects m_TOPP
   IceUtil::Mutex m_ScanQueueMutex; 	// Protects m_LScanQueue
   IceUtil::Mutex m_OdomQueueMutex;	// Protects m_odometryQueue
   IceUtil::Mutex m_PeopleMutex;		// Protects m_People
-  IceUtil::Mutex m_FrontierMutex;       // Protects m_Frontiers
 
   bool m_loadLgm,m_saveLgm; 
 
@@ -438,8 +414,6 @@ private:
   bool isPointVisible(const cogx::Math::Vector3 &pos);
 
   void displayHelperLoop();
-
-  FrontierInterface::FrontierPtSeq getFrontiers();
 }; 
 
 }; // namespace spatial
