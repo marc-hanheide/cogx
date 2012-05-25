@@ -15,6 +15,7 @@
 //                  2007 Dorian Galvez Lopez
 //                  2009 Patric Jensfelt
 //                  2009 Kristoffer Sjöö
+//                  2012 Alexey Bezugly
 //
 /*----------------------------------------------------------------------*/
 
@@ -1416,18 +1417,6 @@ void SpatialControl::runComponent()
     }
     m_OdomQueueMutex.unlock();
 
-//    {
-//
-//      //FIXME use robot pose
-//
-//
-//      {
-//	SCOPED_TIME_LOG;
-//	updateGridMaps();
-//      }
-//
-//    }
-
     //FIXME Too slow!
     {
 //      SCOPED_TIME_LOG;
@@ -1462,19 +1451,12 @@ void SpatialControl::runComponent()
       }
     }
 
-//    SCOPED_TIME_LOG;
-
     if (m_visualExplorationOngoing && m_waitingForPTZCommandID == "") {
       // If we've gotten at least one cloud since we finished moving the
       // PTU, we can move on to the next phase
       debug("last Point cloud time: %f", m_lastPointCloudTime.s+m_lastPointCloudTime.us*1e-6);
       debug("last PTU time: %f", m_lastPtzNavPoseCompletion.s+m_lastPtzNavPoseCompletion.us*1e-6);
       if (m_lastPointCloudTime > m_lastPtzNavPoseCompletion) {
-	//      cdl::CASTTime diff = getCASTTime() - m_lastPtzNavPoseCompletion;
-	////FIXME time is negative !
-	//    error("alex time diff %f",(double)diff.s + (double)diff.us*(1e-6));
-	//    error("alex m_visualExplorationPhase = %d",m_visualExplorationPhase);
-	//    if (fabs((double)diff.s + (double)diff.us*1e-6) > 2.0) 
 	if (m_visualExplorationPhase == 1) {
 	  log("m_visualExplorationPhase == 1");
     
@@ -1755,20 +1737,6 @@ void SpatialControl::deleteInhibitor(const cdl::WorkingMemoryChange &objID)
 
 void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID) 
 {
-//  static cast::cdl::CASTTime oldTime = getCASTTime();
-//  cast::cdl::CASTTime newTime = getCASTTime();
-//  long int diff = (newTime.s-oldTime.s)*1000000l+(newTime.us-oldTime.us);
-//  oldTime = newTime;
-//  if (diff > 500000) {
-//    error("SpatialControl::newRobotPose - interval: %f s", ((double)diff)*1e-6);
-//  }
-//  else if (diff > 100000) {
-//    log("SpatialControl::newRobotPose - interval: %f s", ((double)diff)*1e-6);
-//  }
-//  else {
-//    log("SpatialControl::newRobotPose - interval: %f s", ((double)diff)*1e-6);
-//  }
-
   debug("SpatialControl::newRobotPose");
   NavData::RobotPose2dPtr oobj =
     getMemoryEntry<NavData::RobotPose2d>(objID.address);
@@ -1797,7 +1765,6 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
   // This component only manages one nav ctrl command at a time
   log("newNavCtrlCommand called");
   
-  //REMOVEME
   SaveGridMap();
 
   shared_ptr<CASTData<NavData::InternalNavCommand> > oobj =
@@ -2300,34 +2267,6 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);
 
-//  if (!m_UsePointCloud) {
-//
-//    Cure::Pose3D scanPose;
-//    int status = 1;
-//    {
-//      IceUtil::Mutex::Lock lock(m_PPMutex);
-//
-//
-//      if (m_TOPP.isTransformDefined()) {
-//	status = m_TOPP.getPoseAtTime(cureScan.getTime(), scanPose);
-//      }
-//    }
-//
-//    if (status == 0) {
-//      IceUtil::Mutex::Lock lock(m_MapsMutex);
-//
-//      m_LMap.addScan(cureScan, m_LaserPoseR, scanPose);
-//
-//      Cure::Pose3D lpW;
-//      m_lgm->setValueInsideCircle(scanPose.getX(), scanPose.getY(),
-//	  0.5*Cure::NewNavController::getRobotWidth(), 
-//	  '0');
-//      lpW.add(scanPose, m_LaserPoseR);
-//      m_Glrt->addScan(cureScan, lpW, m_MaxExplorationRange);      
-//      m_firstScanAdded = true;
-//    }
-//  }
-//  else 
   {
     IceUtil::Mutex::Lock lock(m_ScanQueueMutex);
     if (m_LScanQueue.size() == 0) {
@@ -2675,19 +2614,6 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
 
   // Get the expanded binary map used to search 
   getExpandedBinaryMap(m_lgm, map1, 1.5,0);
-/*    peekabot::OccupancySet2D cells;
-    double cellSize=m_lgm->getCellSize();
-    int gridmapSize = m_lgm->getSize();
-    for(int x = -100; x < 100; ++x) {
-      for(int y = -100; y < 100; ++y) {
-            if (map(x + gridmapSize, y + gridmapSize)==false)
-                cells.add(x*cellSize,y*cellSize,0);
-            else
-                cells.add(x*cellSize,y*cellSize,1);
-        }
-    }
-    m_ProxyGridMapKinect.set_cells(cells);
-*/
 
   // Get all the navigation nodes
   vector<NavData::FNodePtr> nodes;
@@ -2884,74 +2810,6 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   log("Finished refreshing node hypotheses");
   return ret;
 }
-
-///* Finds the node with the shortest path from (x,y) in an expanded binarymap
-//   Returns -1 on error of if there are no nodes to search or if no node
-//   was found */
-//int SpatialControl::findClosestPlace(double x, double y, const SpatialData::NodeSeq& nodes) {
-//  double maxDist = 20; // The first maximum distance to try
-//  Cure::BinaryMatrix map;
-//
-//  // Get the expanded binary map used to search 
-//  getExpandedBinaryMap(m_lgm, map);
-//
-//  // Get all the navigation nodes
-//  vector<NavData::FNodePtr> nodes;
-//  getMemoryEntries<NavData::FNode>(nodes, 0);
-//
-//  if(nodes.size() == 0)
-//    return -1;
-//
-//  int xi, yi;
-//  if(m_lgm->worldCoords2Index(x, y, xi, yi) != 0) {
-//    return -1;
-//  }
-//  
-//  // Offset the indices so that top left is (0,0).
-//  xi += m_lgm->getSize();
-//  yi += m_lgm->getSize();
-//
-//  int closestNodeId = -1;
-//  double minDistance = FLT_MAX;
-//  Cure::ShortMatrix path;
-//
-//  while(closestNodeId == -1) {
-//    for(vector<NavData::FNodePtr>::iterator nodeIt = nodes.begin(); nodeIt != nodes.end(); ++nodeIt) {
-//      try {
-//          bool b=true;
-//          for (size_t g = 0; (g < nodeids.size()) && b; g++)
-//              if (nodeids[g]==((*nodeIt)->nodeId)) b=false;
-//
-//          if (!b) {
-//            int nodexi, nodeyi;
-//            if(m_lgm->worldCoords2Index((*nodeIt)->x,(*nodeIt)->y, nodexi, nodeyi) != 0)
-//              continue;
-//
-//            // Offset the indices so that top left is (0,0).
-//            nodexi += m_lgm->getSize();
-//            nodeyi += m_lgm->getSize();
-//
-//            double dist = map.path(xi,yi,nodexi,nodeyi, path, maxDist);
-//            if(dist >= 0) { // If a path was found.. 
-//              if(dist < minDistance) {
-//                closestNodeId = (*nodeIt)->nodeId;
-//                minDistance = dist;
-//              }
-//          }
-//        } 
-//      } catch(IceUtil::NullHandleException e) {
-//        log("Node suddenly disappeared..");
-//      }
-//    }
-//
-//    if(maxDist > map.Columns*map.Rows)
-//      return -1;
-//
-//    maxDist *= 2; // Double the maximum distance to search for the next loop
-//  }
-//
-//  return closestNodeId;
-//}
 
 
 void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char>* gridmap, double minx, double maxx, double miny, double maxy) const {
