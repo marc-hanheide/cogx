@@ -22,6 +22,9 @@ set(MOTIVATION_DIR ${COGX_ROOT}/subarchitectures/motivation.sa)
 set(MOTIVATION_SLICE ${MOTIVATION_DIR}/src/slice)
 set(MOTIVATION_INCLUDE ${MOTIVATION_DIR}/src/c++/autogen)
 
+set(VISION_DIR ${COGX_ROOT}/subarchitectures/vision.sa)
+set(VISION_SLICE ${VISION_DIR}/src/slice)
+set(VISION_INCLUDE ${VISION_DIR}/src/c++/vision/autogen)
 
 include_directories(src/c++)
 include_directories(src/c++/autogen)
@@ -29,10 +32,11 @@ include_directories(${BELIEF_INCLUDE})
 include_directories(${PLANNER_INCLUDE})
 include_directories(${EXECUTION_INCLUDE})
 include_directories(${MOTIVATION_INCLUDE})
+include_directories(${VISION_INCLUDE})
 
 add_subdirectory(src/c++/autogen)
 if (DO_SLICE_ONLY)
    return()
 endif()
 
-
+add_subdirectory(src/c++/components/Testing)
