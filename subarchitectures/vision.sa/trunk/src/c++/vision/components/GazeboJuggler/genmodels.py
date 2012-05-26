@@ -2,6 +2,7 @@
 # vim: set fileencoding=utf-8 sw=4 sts=4 ts=8 et :vim
 
 import sys, os, re
+import random
 #from PIL import Image, ImageDraw, ImageColor as ico, ImageFont
 #import cv
 from PyQt4 import QtGui, QtCore
@@ -290,6 +291,32 @@ class OgreBox:
 
         return "\n".join(materials)
 
+# x:-, y:/, z:|
+class SizeGenerator:
+    def __init__(self):
+        self.low = 0.1
+        self.size = 0.4
+        high = self.low + self.size
+        self.minv = self.low**3 + (high**3 - self.low**3) * 0.2
+        self.stat = {"compact": 0, "elongated": 0}
+
+    def getSize(self):
+        s = 0
+        while s < self.minv:
+            x = self.low + random.random() * self.size
+            y = self.low + random.random() * self.size
+            z = self.low + random.random() * self.size
+            s = x * y * z
+        dxy = min(x/y, y/x)
+        dxz = min(x/z, z/x)
+        dyz = min(y/z, z/y)
+        r = min(dxy, min(dxz, dyz))
+        if r < 0.6: rn = "elongated"
+        else: rn = "compact"
+        self.stat[rn] += 1
+        return (x, y, z, rn, r)
+
+
 class ProjectWriter:
     def __init__(self, prjname):
         self.prjname = prjname
@@ -365,6 +392,8 @@ def createObjects(prjname):
     PW.prepareDirs()
     PW.openFiles()
 
+    SG = SizeGenerator()
+
     a = QtGui.QApplication(sys.argv) # Qt is used for rendering
     x = 0.1; y = 0.8; z = 1.5; zrot = 0
 
@@ -376,8 +405,12 @@ def createObjects(prjname):
         return sizeNum[key]
 
     for l in labels:
-        for s in sizes:
+        for s in xrange(3):
             for c in colors:
+                s = SG.getSize()
+                print s
+                r = s[3]
+                s = s[:3]
                 label = "%s-%s-%d" % (c[3], l, getSizeNum(l, c[3]))
                 b = OgreBox(label, size = s, color = c[:3], prefix = "cogx")
                 PW.createOjbect(label, b)
@@ -386,6 +419,7 @@ def createObjects(prjname):
                 zrot = (zrot + 7) % 360
     PW.closeFiles()
     PW.mergeWorld("res/bigtest.world.in", "#OBJECTLIST#", "xdata/%s.world" % prjname)
+    print SG.stat
 
 createObjects("test1")
 
