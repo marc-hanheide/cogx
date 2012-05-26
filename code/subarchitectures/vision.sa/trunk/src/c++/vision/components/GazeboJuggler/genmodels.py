@@ -291,7 +291,7 @@ class OgreBox:
 
         return "\n".join(materials)
 
-# x:-, y:/, z:|
+# x:-, y:/, z:|, class, min ratio (used to determine the class)
 class SizeGenerator:
     def __init__(self):
         self.low = 0.1
@@ -315,6 +315,49 @@ class SizeGenerator:
         else: rn = "compact"
         self.stat[rn] += 1
         return (x, y, z, rn, r)
+
+class ColorGenerator:
+    def __init__(self):
+        self.colors = {}
+        self.stat = {}
+        self._vals = None
+
+    @property
+    def vals(self):
+        if self._vals == None:
+            names = sorted(self.colors.keys())
+            self._vals = []
+            for co in names:
+                self._vals += [(co, i) for i,v in enumerate(self.colors[co])]
+        return self._vals
+
+    def addColor(self, name, values):
+        if not name in self.colors:
+            self.colors[name] = values
+        else:
+            self.colors[name] += values
+        self._vals = None
+
+    def addSimpleColors(self):
+        self.addColor("blue",   [(0x20, 0x40, 0xe0), (0x1e, 0x90, 0xff)])
+        self.addColor("red",    [(0xe0, 0x30, 0x10), (0xff, 0x24, 0x00)])
+        self.addColor("green",  [(0x10, 0xd0, 0x30), (0x32, 0xcd, 0x32)])
+        self.addColor("yellow", [(0xf0, 0xf0, 0x00), (0xff, 0xd7, 0x00)])
+        self.addColor("brown",  [(0xa0, 0x52, 0x2d), (0xcd, 0x85, 0x3f)])
+
+    def getColor(self):
+        vals = self.vals
+        i = random.randint(0, len(vals)-1)
+        v = vals[i] # (color label, index)
+        co = v[0]
+        rgb = self.colors[co][v[1]]
+
+        if not co in self.stat:
+            self.stat[co] = 1
+        else:
+            self.stat[co] += 1
+
+        return (rgb[0], rgb[1], rgb[2], co)
 
 
 class ProjectWriter:
@@ -382,17 +425,18 @@ class ProjectWriter:
 
 
 def createObjects(prjname):
-    labels = ["SanDisk Flash", "Nokia Phone", "Staedtler Textsurfer", "Jaffa Cakes"]
-    # x:-, y:/, z:|
-    sizes  = [(0.5, 0.3, 0.6), (0.4, 0.2, 0.6), (0.5, 0.3, 0.2)]
-    # rgb
-    colors = [(0x20, 0x40, 0xe0, "b"), (0xe0, 0x30, 0x10, "r"), (0x10, 0xd0, 0x30, "g")]
+    labels = ["SanDisk Flash", "Nokia Phone",
+            "Staedtler Textsurfer", "Lipton Ice Tea",
+            "Logitech Mouse", "Atari Computer",
+            "Webster Dictionary", "Jaffa Cakes"]
 
     PW = ProjectWriter(prjname)
     PW.prepareDirs()
     PW.openFiles()
 
     SG = SizeGenerator()
+    CG = ColorGenerator()
+    CG.addSimpleColors()
 
     a = QtGui.QApplication(sys.argv) # Qt is used for rendering
     x = 0.1; y = 0.8; z = 1.5; zrot = 0
@@ -404,22 +448,24 @@ def createObjects(prjname):
         else: sizeNum[key] = 0
         return sizeNum[key]
 
-    for l in labels:
-        for s in xrange(3):
-            for c in colors:
-                s = SG.getSize()
-                print s
-                r = s[3]
-                s = s[:3]
-                label = "%s-%s-%d" % (c[3], l, getSizeNum(l, c[3]))
-                b = OgreBox(label, size = s, color = c[:3], prefix = "cogx")
-                PW.createOjbect(label, b)
-                PW.insertObject(label, x, y, z, zrot=zrot)
-                z += 1.1
-                zrot = (zrot + 7) % 360
+    for io in xrange(300):
+        l = labels[io % len(labels)]
+        s = SG.getSize()
+        dim = s[:3]; compact = s[3]
+        c = CG.getColor()
+        rgb = c[:3]; color = c[3]
+
+        label = "%s-%s-%d" % (color, l, getSizeNum(l, color))
+        b = OgreBox(label, size=dim, color=rgb, prefix="cogx")
+        PW.createOjbect(label, b)
+        PW.insertObject(label, x, y, z, zrot=zrot)
+        z += 1.1
+        zrot = (zrot + 7) % 360
+
     PW.closeFiles()
     PW.mergeWorld("res/bigtest.world.in", "#OBJECTLIST#", "xdata/%s.world" % prjname)
-    print SG.stat
+    print SG.minv, SG.stat
+    print CG.stat
 
 createObjects("test1")
 
