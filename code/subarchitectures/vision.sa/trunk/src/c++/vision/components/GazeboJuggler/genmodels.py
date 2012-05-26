@@ -377,7 +377,7 @@ class ProjectWriter:
         mkdir("xdata/models")
 
     def openFiles(self):
-        self.fmat = open("xdata/Media/materials/scripts/%s.material" % self.prjname, "w")
+        self.fmat = open("xdata/Media/materials/scripts/genmodels.material", "w")
         self.fscn = open("xdata/%s.objects.scn" % self.prjname, "w")
         self.juggler = open("xdata/%s.objects.txt" % self.prjname, "w")
         self.juggler.write("[objects]\n")
@@ -455,7 +455,7 @@ def createObjects(prjname):
         c = CG.getColor()
         rgb = c[:3]; color = c[3]
 
-        label = "%s-%s-%d" % (color, l, getSizeNum(l, color))
+        label = "%s-%s-%d" % (color, PW.label2modelname(l), getSizeNum(l, color))
         b = OgreBox(label, size=dim, color=rgb, prefix="cogx")
         PW.createOjbect(label, b)
         PW.insertObject(label, x, y, z, zrot=zrot)
