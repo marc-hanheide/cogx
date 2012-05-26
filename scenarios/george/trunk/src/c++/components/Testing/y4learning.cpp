@@ -3,6 +3,7 @@
  * @created April 2012
  */
 #include "y4learning.hpp"
+#include <cstdlib>
 
 namespace testing { 
 
@@ -116,13 +117,15 @@ class CstTeachOneStep: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
   CLinkedStatePtr mWaitResponse;
+  CLinkedStatePtr mWaitLearningTask;
   CLinkedStatePtr mEndTeach;
   CLinkedStatePtr mSelf; // this will probably cause a memory leak
 public:
   CstTeachOneStep(CCastMachine* pMachine)
     : CState(pMachine, "TeachOneStep"),
     CMachineStateMixin(pMachine),
-    mWaitResponse(linkedState("WaitResponse", "LessonSpoken")),
+    //mWaitResponse(linkedState("WaitResponse", "LessonSpoken")),
+    mWaitLearningTask(linkedState("WaitLearningTask", "LessonSpoken")),
     mEndTeach(linkedState("EndTeaching", "NoMoreLessons,Timeout")),
     mSelf(linkedState("TeachOneStep", "SkippedLesson"))
   {
@@ -146,8 +149,14 @@ public:
       return WaitChange;
     }
 
+    TStateInfoMap info;
+    info["LearningTask-add"] = std::to_string(machine()->getCount("LearningTask-add"));
+    info["LearningTask-done"] = std::to_string(machine()->getCount("LearningTask-done"));
+    mWaitLearningTask->getState()->setInfo(info);
+
     if (machine()->sayLesson()) {
-      machine()->switchToState(mWaitResponse, "lesson-spoken");
+      //machine()->switchToState(mWaitResponse, "lesson-spoken");
+      machine()->switchToState(mWaitLearningTask, "lesson-spoken");
     }
     else if (machine()->hasMoreLessons()) {
       machine()->switchToState(mSelf, "skipped-lesson");
@@ -159,6 +168,7 @@ public:
   }
 };
 
+#if 0
 class CstWaitResponse: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
@@ -179,7 +189,6 @@ public:
     return WaitChange;
   }
   TStateFunctionResult work() {
-    machine()->log("WaitResponse work");
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Robot Response");
       machine()->switchToState(mTeachStep, "timeout");
@@ -198,6 +207,102 @@ public:
        return WaitChange;
     }
     return Continue;
+  }
+};
+#endif
+
+class CstWaitLearningTask: public CState, public CMachineStateMixin<CCastMachine>
+{
+protected:
+  CLinkedStatePtr mTeachStep;
+  CLinkedStatePtr mEndTeach;
+  CLinkedStatePtr mSelf;
+  CLinkedStatePtr mWLearnTaskComplete;
+  long mPrevTaskAddCount, mPrevTaskDoneCount;
+  std::string mDebug;
+
+  void initLinkedStates()
+  {
+    mTeachStep = linkedState("TeachOneStep", "Confirmed");
+    mWLearnTaskComplete = linkedState("WaitLearningTaskComplete", "TaskCreated");
+    mEndTeach = linkedState("EndTeaching", "Timeout");
+  }
+
+  virtual std::string getProgressText()
+  {
+    return mDebug;
+  }
+
+public:
+  CstWaitLearningTask(CCastMachine* pMachine, const std::string name="WaitLearningTask")
+    : CState(pMachine, name),
+    CMachineStateMixin(pMachine)
+  {
+    initLinkedStates();
+    setWatchEvents({ "::VisionData::VisualLearningTask" });
+    setTimeout(30 * 1000);
+    setSleepTime(20);
+  }
+
+  TStateFunctionResult enter() {
+    mDebug = "";
+    mPrevTaskAddCount = std::strtol(mInfo["LearningTask-add"].c_str(), nullptr, 10);
+    mPrevTaskDoneCount = std::strtol(mInfo["LearningTask-done"].c_str(), nullptr, 10);
+    return Continue;
+  }
+
+  void exitLesson(const std::string& reason)
+  {
+    if (machine()->hasMoreLessons()) {
+      machine()->switchToState(mTeachStep, reason);
+    }
+    else {
+      machine()->switchToState(mEndTeach, reason + ",no-more-lessons");
+    }
+  }
+
+  TStateFunctionResult work() {
+    long cntAdd = machine()->getCount("LearningTask-add");
+
+    if (cntAdd != mPrevTaskAddCount) {
+      mWLearnTaskComplete->getState()->setInfo(mInfo);
+      machine()->switchToState(mWLearnTaskComplete, "task-created");
+      return Continue;
+    }
+
+    if (hasTimedOut()) {
+      machine()->reportTimeout("Waiting for Learning Task");
+      exitLesson("timeout");
+      return Continue;
+    }
+
+    return WaitChange;
+  }
+};
+
+class CstWaitLearningTaskComplete: public CstWaitLearningTask
+{
+public:
+  CstWaitLearningTaskComplete(CCastMachine* pMachine)
+    : CstWaitLearningTask(pMachine, "WaitLearningTaskComplete")
+  {
+  }
+
+  TStateFunctionResult work() {
+    long cntDone = machine()->getCount("LearningTask-done");
+
+    if (cntDone != mPrevTaskDoneCount) {
+      exitLesson("task-completed");
+      return Continue;
+    }
+
+    if (hasTimedOut()) {
+      machine()->reportTimeout("Waiting for Learning Task Completion");
+      exitLesson("timeout");
+      return Continue;
+    }
+
+    return WaitChange;
   }
 };
 
@@ -234,7 +339,9 @@ CMachinePtr CY4Learning::createMachine(CTester* pOwner)
   pMachine->addState(new CstTableEmpty(pMachine));
   pMachine->addState(new CstStartTeach(pMachine));
   pMachine->addState(new CstTeachOneStep(pMachine));
-  pMachine->addState(new CstWaitResponse(pMachine));
+  //pMachine->addState(new CstWaitResponse(pMachine));
+  pMachine->addState(new CstWaitLearningTask(pMachine));
+  pMachine->addState(new CstWaitLearningTaskComplete(pMachine));
   pMachine->addState(new CstEndTeach(pMachine));
 
   pMachine->switchToState(pStart);

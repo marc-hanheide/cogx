@@ -29,6 +29,7 @@ TStateFunctionResult CState::noAction(CState* pState)
 
 void CState::restart()
 {
+  mInfo = mInitInfo;
   mPhase = CState::phInit;
   mActivity = CState::acActive;
   mbSwitchStateCalled = false;
@@ -74,6 +75,11 @@ void CState::advance()
       break;
     default: break; // assert(can't advance)
   }
+}
+
+std::string CState::getProgressText()
+{
+  return "";
 }
 
 void CState::execute()
@@ -180,6 +186,8 @@ void CMachine::writeStateDescription(std::ostringstream& ss)
   if (mpCurrentState->msExitReason.size()) {
     ss << " " << mpCurrentState->msExitReason;
   }
+  ss << "</td><td>";
+  ss << mpCurrentState->getProgressText();
 }
 
 void CMachine::writeMachineDescription(std::ostringstream& ss)
@@ -206,6 +214,25 @@ void CMachine::switchToState(CStatePtr pState, const std::string& reason)
   mpCurrentState->msExitReason = "Done(" + reason + ")";
 }
 
+void CMachine::checkEvents()
+{
+  if (isWaitingForEvent() && mReceivedEvents.size()) {
+    std::map<std::string, bool> tmp;
+    {
+      std::lock_guard<std::mutex> lock(mReceivedEventsMutex);
+      tmp = mReceivedEvents;
+      mReceivedEvents.clear();
+    }
+    for (auto s : tmp) {
+      if (mpCurrentState->isWaitingForEvent(s.first)) {
+        mpCurrentState->mActivity = CState::acActive;
+        break;
+      }
+    }
+  }
+}
+
+
 void CMachine::runOneStep()
 {
   if (! mpCurrentState.get()) return;
@@ -218,6 +245,12 @@ void CMachine::runOneStep()
 
   if (mpCurrentState->mActivity == CState::acWaiting && !mpCurrentState->hasTimedOut()) {
     if (mpCurrentState->mEvents.size() > 0) {
+      // Periodically wake-up a waiting state
+      if (mWaitTimer.elapsed() > 2000) {
+        mpCurrentState->execute();
+        mWaitTimer.restart();
+      }
+
       // The caller will call checkEvents() which may cause the activity to
       // become other than acWaiting.
       return;
@@ -238,6 +271,7 @@ void CMachine::runOneStep()
     mpCurrentState = mpNextState;
     mpCurrentState->restart();
     mpNextState.reset();
+    mWaitTimer.restart();
   }
   mpCurrentState->execute();
 }

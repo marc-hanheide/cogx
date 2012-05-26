@@ -533,7 +533,8 @@ void CCastMachine::start()
 
    mCount["VisualObject"] = 0;
    mCount["ProtoObject"] = 0;
-   mCount["LearnigTask"] = 0;
+   mCount["LearningTask-add"] = 0;
+   mCount["LearningTask-done"] = 0;
 
 #if 0
    loadEmptyScene();
@@ -618,7 +619,8 @@ void CCastMachine::onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wm
 {
   {
     std::lock_guard<std::mutex> lock(mWmCopyMutex);
-    mCount["LearnigTask-add"] += 1;
+    mCount["LearningTask-add"] += 1;
+    checkReceivedEvent("::VisionData::VisualLearningTask");
   }
 }
 
@@ -626,7 +628,8 @@ void CCastMachine::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & 
 {
   {
     std::lock_guard<std::mutex> lock(mWmCopyMutex);
-    mCount["LearnigTask"] += 1;
+    mCount["LearningTask-done"] += 1;
+    checkReceivedEvent("::VisionData::VisualLearningTask");
   }
 }
 

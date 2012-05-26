@@ -28,6 +28,10 @@ typedef std::shared_ptr<CState> CStatePtr;
 class CLinkedState;
 typedef std::shared_ptr<CLinkedState> CLinkedStatePtr;
 
+// The state can contain varios fields with arbitrary infromation that can be
+// used for processing.
+typedef std::map<std::string, std::string> TStateInfoMap;
+
 enum TStateFunctionResult {
   Continue,    // go to next stage/state
   Sleep,       // wait in this stage (uses sleep timer)
@@ -40,7 +44,7 @@ class CState
 {
 private:
   enum EActivity {
-    acActive, acSleeping, acWaiting, acDone
+    acActive, acSleeping, acWaiting, acWaitInt, acDone
   };
   enum EPhase {
     phInit, phEnter, phWork, phExit, phDone
@@ -62,7 +66,12 @@ private:
   castutils::CMilliTimer mTimeoutTimer;
   std::vector<std::string> mEvents;
   std::string msExitReason;
+  TStateInfoMap mInitInfo; // this is copied to mStateInfo in phInit/restart().
 
+protected:
+  TStateInfoMap mInfo;
+
+private:
   // List of registered exits from this state. It enables link verification
   // before the machine is started. Entries are added in linkedState().
   std::vector<CLinkedStatePtr> mLinkedStates;
@@ -92,12 +101,16 @@ public:
   void setTimeout(long milliseconds);
   void setWatchEvents(const std::vector<std::string>& events);
 
+  // Can be used to transfer some info between states
+  void setInfo(const TStateInfoMap& info);
+
   CLinkedStatePtr linkedState(const std::string& stateName, const std::string& reasons="");
   // TODO: std::vector<CLinkedStatePtr> getBadLinks();
 
   bool isWaitingForEvent(const std::string& evnet);
   bool hasTimedOut();
 
+  virtual std::string getProgressText();
 private:
   void restart();
   void execute();
@@ -127,6 +140,7 @@ private:
   CStatePtr mpPrevState;
   CStatePtr mpCurrentState;
   CStatePtr mpNextState;
+  castutils::CMilliTimer mWaitTimer; // periodically activate even if there are no events
   long mStepNumber;
 
 protected:
@@ -192,6 +206,12 @@ inline
 void CState::setWatchEvents(const std::vector<std::string>& events)
 {
   mEvents = events;
+}
+
+inline
+void CState::setInfo(const TStateInfoMap& info)
+{
+  mInitInfo = info;
 }
 
 inline
@@ -315,25 +335,6 @@ void CMachine::checkReceivedEvent(const std::string& event)
 {
   std::lock_guard<std::mutex> lock(mReceivedEventsMutex);
   mReceivedEvents[event] = true;
-}
-
-inline
-void CMachine::checkEvents()
-{
-  if (isWaitingForEvent() && mReceivedEvents.size()) {
-    std::map<std::string, bool> tmp;
-    {
-      std::lock_guard<std::mutex> lock(mReceivedEventsMutex);
-      tmp = mReceivedEvents; // TODO: verify if anything is actually copied!
-      mReceivedEvents.clear();
-    }
-    for (auto s : tmp) {
-      if (mpCurrentState->isWaitingForEvent(s.first)) {
-        mpCurrentState->mActivity = CState::acActive;
-        break;
-      }
-    }
-  }
 }
 
 inline
