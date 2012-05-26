@@ -367,10 +367,18 @@ def createObjects(prjname):
 
     a = QtGui.QApplication(sys.argv) # Qt is used for rendering
     x = 0.1; y = 0.8; z = 1.5; zrot = 0
+
+    sizeNum = {}
+    def getSizeNum(label, color):
+        key = "%s#%s" % (label, color)
+        if key in sizeNum: sizeNum[key] += 1
+        else: sizeNum[key] = 0
+        return sizeNum[key]
+
     for l in labels:
-        for si,s in enumerate(sizes):
-            for ci,c in enumerate(colors):
-                label = "%s-%s-%d" % (c[3], l, si)
+        for s in sizes:
+            for c in colors:
+                label = "%s-%s-%d" % (c[3], l, getSizeNum(l, c[3]))
                 b = OgreBox(label, size = s, color = c[:3], prefix = "cogx")
                 PW.createOjbect(label, b)
                 PW.insertObject(label, x, y, z, zrot=zrot)
