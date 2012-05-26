@@ -78,8 +78,25 @@ void CTester::start()
 #endif
 }
 
+std::string mkseqid_rev(const std::string& prefix, long id)
+{
+  std::ostringstream ss;
+  ss << (LONG_MAX - id);
+  std::string sid = ss.str();
+
+  while (sid.length() < 8) {
+    sid = "0" + sid;
+  }
+
+  return prefix + sid;
+}
+
 void CTester::runComponent()
 {
+  time_t t = time(0);
+  tm *curTime = localtime(&t);
+  char cbuf[32];
+
 #ifdef FEAT_VISUALIZATION
   const long nDisplay = 100;
   const long nRemoveBatch = nDisplay * 0.2;
@@ -94,6 +111,8 @@ void CTester::runComponent()
   castutils::CMilliTimer tmSend;
   tmSend.restart();
 
+  strftime(cbuf, 32, "Start time: %H:%M:%S", curTime);
+  mDisplay.setHtml(sViewName, "009", cbuf);
   mDisplay.setHtml(sViewName, "010", "<table>");
   mDisplay.setHtml(sViewName, "500", "</table>");
 #endif
@@ -130,7 +149,6 @@ void CTester::runComponent()
     }
 #ifdef FEAT_VISUALIZATION
     for (int i = 0; i < mMachines.size(); i++) {
-      char cbuf[32];
       auto& pm = mMachines[i];
       long n = pm->getStepNumber();
       if (n == lastReport[i] && !pm->isSwitching() && tmSend.elapsed() < 2000) {
@@ -141,14 +159,13 @@ void CTester::runComponent()
       tmSend.restart();
       if (removedReport[i] < n - nDisplay) {
         for (int j = 0; j < nRemoveBatch; j++) {
-          std::sprintf(cbuf, "011-%08d", LONG_MAX - removedReport[i]);
-          mDisplay.removePart(sViewName, cbuf);
+          mDisplay.removePart(sViewName, mkseqid_rev("011-", removedReport[i]));
           ++removedReport[i];
         }
       }
 
-      time_t t = time(0);
-      tm *curTime = localtime(&t);
+      t = time(0);
+      curTime = localtime(&t);
 
       ss.str("");
       strftime(cbuf, 32, "%H:%M:%S", curTime);
@@ -157,9 +174,7 @@ void CTester::runComponent()
         << "</td><td>";
       pm->writeStateDescription(ss);
       ss << "</td></tr>\n";
-      std::sprintf(cbuf, "011-%08d", LONG_MAX - n);
-      //log("htmlsize(%s): %d", cbuf, ss.str().size());
-      mDisplay.setHtml(sViewName, cbuf, ss.str());
+      mDisplay.setHtml(sViewName, mkseqid_rev("011-", n), ss.str());
       if (bNewState) {
         log("%s", ss.str().c_str());
       }
@@ -167,7 +182,6 @@ void CTester::runComponent()
       ss.str("");
       pm->writeMachineDescription(ss);
       ss << "<hr>\n";
-      //log("htmlsize(005): %d", ss.str().size());
       mDisplay.setHtml(sViewName, "005", ss.str());
     }
 #endif

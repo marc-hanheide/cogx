@@ -73,17 +73,23 @@ class CstWaitToAppear: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
   CLinkedStatePtr mStartTeach;
+  CLinkedStatePtr mTableEmpty;
 public:
   CstWaitToAppear(CCastMachine* pMachine)
     : CState(pMachine, "WaitToAppear"),
     CMachineStateMixin(pMachine),
-    mStartTeach(linkedState("StartTeaching"))
+    mStartTeach(linkedState("StartTeaching")),
+    mTableEmpty(linkedState("TableEmpty"))
   {
     setSleepTime(20);
-    // TODO pWaitAppear->setTimeout()
+    setTimeout(30 * 1000);
     setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
   }
   TStateFunctionResult work() {
+    if (hasTimedOut()) {
+      machine()->clearScene();
+      machine()->switchToState(mTableEmpty, "timeout");
+    }
     if (machine()->getCount("VisualObject") < 1) {
       return WaitChange;
     }
