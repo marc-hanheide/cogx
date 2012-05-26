@@ -93,6 +93,12 @@ tmpl_include_model = """
 
 tmpl_box = readConfig("res/box.tmpl")
 
+tmpl_places="""
+[places]
+1  0.150  0.176
+1 -0.150  0.176
+"""
+
 class OgreBox:
     def __init__(self, name, prefix="cogxGeneratedModel", size = (1.0, 1.0, 1.0), color = (0.2, 0.4, 1.0)):
         self.name = name
@@ -284,56 +290,94 @@ class OgreBox:
 
         return "\n".join(materials)
 
+class ProjectWriter:
+    def __init__(self, prjname):
+        self.prjname = prjname
+        self.fmat = None
+        self.fscn = None
+        self.juggler = None
+        pass
 
-labels = ["SanDisk Flash", "Nokia Phone", "Staedtler Textsurfer", "Jaffa Cakes"]
-# x:-, y:/, z:|
-sizes  = [(0.5, 0.3, 0.6), (0.4, 0.2, 0.6), (0.5, 0.3, 0.2)]
-# rgb
-colors = [(0x20, 0x40, 0xe0, "b"), (0xe0, 0x30, 0x10, "r"), (0x10, 0xd0, 0x30, "g")]
+    def prepareDirs(self):
+        def mkdir(path):
+            if not os.path.exists(path):
+                os.makedirs(path)
+        mkdir("xdata/Media/materials/scripts")
+        mkdir("xdata/Media/materials/textures")
+        mkdir("xdata/models")
 
-def mkdir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-mkdir("xdata/Media/materials/scripts")
-mkdir("xdata/Media/materials/textures")
-mkdir("xdata/models")
+    def openFiles(self):
+        self.fmat = open("xdata/Media/materials/scripts/%s.material" % self.prjname, "w")
+        self.fscn = open("xdata/%s.objects.scn" % self.prjname, "w")
+        self.juggler = open("xdata/%s.objects.txt" % self.prjname, "w")
+        self.juggler.write("[objects]\n")
 
-fmat = open("xdata/Media/materials/scripts/genmodels.material", "w")
-fscn = open("xdata/scene.objects.in", "w")
+    def closeFiles(self):
+        self.fmat.close()
+        self.fscn.close()
+        self.juggler.write(tmpl_places)
+        self.juggler.close()
 
-a = QtGui.QApplication(sys.argv) # Qt is used for rendering
-x = 0.1; y = 0.8; z = 1.5; zrot = 0
-for l in labels:
-    for si,s in enumerate(sizes):
-        for ci,c in enumerate(colors):
-            name = "%s-%s-%d" % (c[3], l, si)
-            name = re.sub("([a-z])\s*([A-Z])", "\\1\\2", name)
-            name = re.sub("[^a-zA-Z0-9.]+", "-", name)
-            b = OgreBox(name, size = s, color = c[:3], prefix = "cogx")
+    def label2modelname(self, label):
+        name = re.sub("([a-z])\s*([A-Z])", "\\1\\2", label)
+        name = re.sub("[^a-zA-Z0-9.]+", "-", name)
+        return name
 
-            fname = "xdata/models/gen-%s.model" % (name)
-            fmod = open(fname, "w")
-            fmod.write("""<?xml version="1.0"?>\n""");
-            fmod.write(b.makeModel())
-            fmod.close()
+    def label2filename(self, label):
+        name = "xdata/models/gen-%s.model" % (self.label2modelname(label))
+        return name
 
-            fmat.write(b.makeMaterials())
+    def createOjbect(self, label, ogreObj):
+        fname = self.label2filename(label)
+        fmod = open(fname, "w")
+        fmod.write("""<?xml version="1.0"?>\n""");
+        fmod.write(ogreObj.makeModel())
+        fmod.close()
 
-            z += 1.1
-            zrot = (zrot + 7) % 360
-            fscn.write(tmpl_include_model % {
-                    "model_name": name,
-                    "model_file": fname[fname.find('/')+1:],
-                    "x": x, "y": y, "z": z,
-                    "zrot": zrot
-                   })
+        self.fmat.write(ogreObj.makeMaterials())
 
-fmat.close()
-fscn.close()
+    def insertObject(self, label, x, y, z, xrot=0, yrot=0, zrot=0):
+        name = self.label2modelname(label)
+        fname = self.label2filename(label)
+        self.fscn.write(tmpl_include_model % {
+                "model_name": name,
+                "model_file": fname[fname.find('/')+1:],
+                "x": x, "y": y, "z": z,
+                "xrot": xrot, "yrot": yrot, "zrot": zrot
+               })
+        self.juggler.write("%s\n" % (name))
 
-objs = open("xdata/scene.objects.in").read()
-wrld = open("res/bigtest.world.in").read()
+    def mergeWorld(self, template, placeholder, outfile):
+        wrld = open(template).read()
+        objs = open("xdata/%s.objects.scn" % self.prjname).read()
+        wrld = wrld.replace(placeholder, objs)
+        open(outfile, "w").write(wrld)
 
-wrld = wrld.replace("#OBJECTLIST#", objs)
 
-open("xdata/bigtest.world", "w").write(wrld)
+def createObjects(prjname):
+    labels = ["SanDisk Flash", "Nokia Phone", "Staedtler Textsurfer", "Jaffa Cakes"]
+    # x:-, y:/, z:|
+    sizes  = [(0.5, 0.3, 0.6), (0.4, 0.2, 0.6), (0.5, 0.3, 0.2)]
+    # rgb
+    colors = [(0x20, 0x40, 0xe0, "b"), (0xe0, 0x30, 0x10, "r"), (0x10, 0xd0, 0x30, "g")]
+
+    PW = ProjectWriter(prjname)
+    PW.prepareDirs()
+    PW.openFiles()
+
+    a = QtGui.QApplication(sys.argv) # Qt is used for rendering
+    x = 0.1; y = 0.8; z = 1.5; zrot = 0
+    for l in labels:
+        for si,s in enumerate(sizes):
+            for ci,c in enumerate(colors):
+                label = "%s-%s-%d" % (c[3], l, si)
+                b = OgreBox(label, size = s, color = c[:3], prefix = "cogx")
+                PW.createOjbect(label, b)
+                PW.insertObject(label, x, y, z, zrot=zrot)
+                z += 1.1
+                zrot = (zrot + 7) % 360
+    PW.closeFiles()
+    PW.mergeWorld("res/bigtest.world.in", "#OBJECTLIST#", "xdata/%s.world" % prjname)
+
+createObjects("test1")
+
