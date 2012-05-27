@@ -96,9 +96,9 @@ tmpl_box = readConfig("res/box.tmpl")
 
 tmpl_places="""
 [places]
-0.8  0.000  0.176
-0.8  0.150  0.176
-0.8 -0.150  0.176
+1  0.000  0.088
+1  0.150  0.176
+1 -0.150  0.176
 """
 
 class OgreBox:
@@ -295,8 +295,8 @@ class OgreBox:
 # x:-, y:/, z:|, class, min ratio (used to determine the class)
 class SizeGenerator:
     def __init__(self):
-        self.low = 0.05
-        self.size = 0.2
+        self.low = 0.04
+        self.size = 0.18
         high = self.low + self.size
         self.minv = self.low**3 + (high**3 - self.low**3) * 0.2
         self.stat = {"compact": 0, "elongated": 0}
@@ -317,7 +317,7 @@ class SizeGenerator:
         self.stat[rn] += 1
         return (x, y, z, rn, r)
 
-class ColorGenerator:
+class RandomColorSelector:
     def __init__(self):
         self.colors = {}
         self.stat = {}
@@ -334,9 +334,14 @@ class ColorGenerator:
 
     def addColor(self, name, values):
         if not name in self.colors:
-            self.colors[name] = values
-        else:
-            self.colors[name] += values
+            self.colors[name] = []
+
+        for v in values:
+            if not v in self.colors[name]:
+                self.colors[name].append(v)
+            else:
+                print "Duplicate RGB triplet", v,  "for", name
+
         self._vals = None
 
     def addSimpleColors(self):
@@ -345,6 +350,32 @@ class ColorGenerator:
         self.addColor("green",  [(0x10, 0xd0, 0x30), (0x32, 0xcd, 0x32)])
         self.addColor("yellow", [(0xf0, 0xf0, 0x00), (0xff, 0xd7, 0x00)])
         self.addColor("brown",  [(0xa0, 0x52, 0x2d), (0xcd, 0x85, 0x3f)])
+
+    def loadColorsRgb(self, tripletsFilename, labelsFilename=None):
+        f = open("xdata/debug.out", "w")
+        labels = None
+        if labelsFilename != None:
+            labels = {}
+            for l in open(labelsFilename):
+                l = l.strip()
+                if l.startswith(";") or l.startswith("#"):
+                    continue
+                l = l.split()
+                labels[l[0]] = l[1]
+        for l in open(tripletsFilename):
+            l = l.strip()
+            if l.startswith(";") or l.startswith("#"):
+                continue
+            f.write(l)
+            l = l.split()
+            coname = l[3]
+            if labels != None: coname = labels[coname]
+            f.write(" %s" % coname)
+            rgb = [int(float(c) * 255) for c in l[:3]]
+            f.write(" %s\n" % rgb)
+            self.addColor(coname, [(rgb[0], rgb[1], rgb[2])] )
+
+        f.close()
 
     def getColor(self):
         vals = self.vals
@@ -360,6 +391,13 @@ class ColorGenerator:
 
         return (rgb[0], rgb[1], rgb[2], co)
 
+    def printStats(self):
+        print "Known colors:"
+        for k,v in self.colors.iteritems():
+            print k, len(v)
+        print "Used colors:"
+        for k,v in self.stat.iteritems():
+            print k, v
 
 class ProjectWriter:
     def __init__(self, prjname):
@@ -436,8 +474,11 @@ def createObjects(prjname):
     PW.openFiles()
 
     SG = SizeGenerator()
-    CG = ColorGenerator()
-    CG.addSimpleColors()
+    CG = RandomColorSelector()
+    #CG.addSimpleColors()
+    CG.loadColorsRgb("res/colors01.txt", "res/colorlabels.txt")
+
+    flrn = open("xdata/%s.attrs.txt" % prjname, "w")
 
     a = QtGui.QApplication(sys.argv) # Qt is used for rendering
     x = 0.1; y = 0.8; z = 1.5; zrot = 0
@@ -456,17 +497,22 @@ def createObjects(prjname):
         c = CG.getColor()
         rgb = c[:3]; color = c[3]
 
-        label = "%s-%s-%d" % (color, PW.label2modelname(l), getSizeNum(l, color))
+        labelcolor = color[:3]
+        #labelcolor = "%s-%02x%02x%02x" % (color, rgb[0], rgb[1], rgb[2])
+        label = "%s-%s-%d" % (labelcolor, PW.label2modelname(l), getSizeNum(l, color))
         b = OgreBox(label, size=dim, color=rgb, prefix="cogx")
         PW.createOjbect(label, b)
         PW.insertObject(label, x, y, z, zrot=zrot)
         z += 1.1
         zrot = (zrot + 7) % 360
 
+        flrn.write("%s\t%s\t%s\n" % (label, color, compact))
+
+    flrn.close()
     PW.closeFiles()
     PW.mergeWorld("res/bigtest.world.in", "#OBJECTLIST#", "xdata/%s.world" % prjname)
     print SG.minv, SG.stat
-    print CG.stat
+    CG.printStats()
 
 createObjects("test1")
 
