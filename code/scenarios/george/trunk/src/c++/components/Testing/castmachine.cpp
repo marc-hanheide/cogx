@@ -159,6 +159,15 @@ void CCastMachine::loadObjectsAndPlaces(const std::string& fname)
 
 void CCastMachine::loadLearningAttributes(const std::string& fname)
 {
+#if 0 // debugging, with george-01.world
+  for (int i = 0; i < 10; i++) { 
+    if (i >= mObjects.size()) break; 
+    auto pe = new CTeachTestEntry(mObjects[i].label, "orange", "elongated"); 
+    mTestEntries.push_back(CTestEntryPtr(pe)); 
+  } 
+  return;
+#endif
+
   mTestEntries.clear();
   std::ifstream f;
   f.open(fname.c_str());
@@ -328,7 +337,7 @@ bool CCastMachine::moveObject(const std::string& label, int placeIndex)
       physon = true;
     }
     auto pose_z = o.pose.z;
-    pose_z = (std::rand() % 30 - 15) * 3.16 / 180;
+    // XXX: causes problems (unstable stereo): pose_z = (std::rand() % 30 - 15) * 3.16 / 180;
     mpSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, pose_z);
     return true;
   }
