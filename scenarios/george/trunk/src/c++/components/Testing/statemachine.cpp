@@ -157,6 +157,17 @@ CLinkedStatePtr CState::linkedState(const std::string& stateName, const std::str
   return st;
 }
 
+TStateFunctionResult CWaitState::enter()
+{
+  return Sleep;
+}
+
+TStateFunctionResult CWaitState::work()
+{
+  mpMachine->switchToState(mExitState);
+  return Continue;
+}
+
 std::string CLinkedState::description()
 {
   std::ostringstream ss;
@@ -212,6 +223,21 @@ void CMachine::switchToState(CStatePtr pState, const std::string& reason)
   mpNextState = pState;
   mpCurrentState->mbSwitchStateCalled = true;
   mpCurrentState->msExitReason = "Done(" + reason + ")";
+}
+
+void CMachine::switchToState(CLinkedStatePtr pNextState, long timeoutMs, const std::string& reason)
+{
+  if (!mWaitState.get()) {
+    mWaitState = CStatePtr(new CWaitState(this));
+  }
+  CWaitState* pws = dynamic_cast<CWaitState*>(mWaitState.get());
+  if (! pws) {
+    switchToState(pNextState, reason);
+  }
+  else {
+    pws->setNextState(pNextState, timeoutMs);
+    switchToState(mWaitState, reason);
+  }
 }
 
 void CMachine::checkEvents()

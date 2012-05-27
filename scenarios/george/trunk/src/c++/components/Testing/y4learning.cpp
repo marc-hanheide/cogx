@@ -31,7 +31,7 @@ class CstTableEmpty: public CState, public CMachineStateMixin<CCastMachine>
 private:
   CLinkedStatePtr mSelf;
   CLinkedStatePtr mFinished;
-  CLinkedStatePtr mWaitToAppear;
+  CLinkedStatePtr mLoadScene;
   bool mSceneFound;
 public:
   CstTableEmpty(CCastMachine* pMachine)
@@ -39,7 +39,7 @@ public:
     CMachineStateMixin(pMachine),
     mSelf(linkedState("TableEmpty")),
     mFinished(linkedState("Finished")),
-    mWaitToAppear(linkedState("WaitToAppear"))
+    mLoadScene(linkedState("LoadScene"))
   {
     setSleepTime(20);
     setTimeout(90 * 1000);
@@ -59,8 +59,7 @@ public:
   TStateFunctionResult work() {
     if (machine()->getCount("VisualObject") < 1 && machine()->getCount("ProtoObject") < 1) {
       if (mSceneFound) {
-        machine()->loadScene();
-        machine()->switchToState(mWaitToAppear, "scene-loaded");
+        machine()->switchToState(mLoadScene, "table-empty");
       }
       else {
         machine()->switchToState(mFinished, "no-next-scene");
@@ -75,15 +74,35 @@ public:
   }
 };
 
+class CstLoadScene: public CState, public CMachineStateMixin<CCastMachine>
+{
+  CLinkedStatePtr mWaitToAppear;
+public:
+  CstLoadScene(CCastMachine* pMachine)
+    : CState(pMachine, "LoadScene"),
+    CMachineStateMixin(pMachine),
+    mWaitToAppear(linkedState("WaitToAppear"))
+  {
+    setSleepTime(20, 1 * 1000);
+  }
+  TStateFunctionResult work() {
+    machine()->loadScene();
+    machine()->switchToState(mWaitToAppear, "scene-loaded");
+    return Continue;
+  }
+};
+
 class CstWaitToAppear: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
   CLinkedStatePtr mStartTeach;
   CLinkedStatePtr mTableEmpty;
+  CLinkedStatePtr mWaitRecogTask;
 public:
   CstWaitToAppear(CCastMachine* pMachine)
     : CState(pMachine, "WaitToAppear"),
     CMachineStateMixin(pMachine),
+    mWaitRecogTask(linkedState("WaitRecognitionTask")),
     mStartTeach(linkedState("StartTeaching")),
     mTableEmpty(linkedState("TableEmpty"))
   {
@@ -99,8 +118,26 @@ public:
     if (machine()->getCount("VisualObject") < 1) {
       return WaitChange;
     }
-    machine()->switchToState(mStartTeach, "I-see-VO");
+    //machine()->switchToState(mStartTeach, "I-see-VO");
+    machine()->switchToState(mWaitRecogTask, "I-see-VO");
     return Continue;
+  }
+};
+
+class CstWaitRecognitionTask: public CState, public CMachineStateMixin<CCastMachine>
+{
+  CLinkedStatePtr mStartTeach;
+public:
+  CstWaitRecognitionTask(CCastMachine* pMachine)
+    : CState(pMachine, "WaitRecognitionTask"),
+    CMachineStateMixin(pMachine),
+    mStartTeach(linkedState("StartTeaching"))
+  {
+    setSleepTime(20, 3 * 1000);
+  }
+  TStateFunctionResult work() {
+    // TODO: should actually wait for RecognitionTask; now we just sleep a while
+    machine()->switchToState(mStartTeach);
   }
 };
 
@@ -265,7 +302,7 @@ public:
   void exitLesson(const std::string& reason)
   {
     if (machine()->hasMoreLessons()) {
-      machine()->switchToState(mTeachStep, reason);
+      machine()->switchToState(mTeachStep, 9000, reason);
     }
     else {
       machine()->switchToState(mEndTeach, reason + ",no-more-lessons");
@@ -346,8 +383,10 @@ CMachinePtr CY4Learning::createMachine(CTester* pOwner)
 
   auto pFinish = pMachine->addState("Finished");
   auto pStart = pMachine->addState(new CstStart(pMachine));
-  pMachine->addState(new CstWaitToAppear(pMachine));
   pMachine->addState(new CstTableEmpty(pMachine));
+  pMachine->addState(new CstLoadScene(pMachine));
+  pMachine->addState(new CstWaitToAppear(pMachine));
+  pMachine->addState(new CstWaitRecognitionTask(pMachine));
   pMachine->addState(new CstStartTeach(pMachine));
   pMachine->addState(new CstTeachOneStep(pMachine));
   //pMachine->addState(new CstWaitResponse(pMachine));

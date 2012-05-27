@@ -54,6 +54,7 @@ private:
 
 private:
   friend class CMachine;
+  friend class CWaitState;
   CMachine* mpMachine;
   std::string mId;
   EPhase mPhase;
@@ -133,6 +134,26 @@ public:
   std::string description();
 };
 
+class CWaitState: public CState
+{
+private:
+  friend class CMachine;
+  CLinkedStatePtr mExitState;
+  CWaitState(CMachine* pmachine): CState(pmachine, "(Wait)")
+  {
+  }
+
+  void setNextState(CLinkedStatePtr state, long timeoutMs=1000)
+  {
+    mExitState = state;
+    setSleepTime(20, timeoutMs);
+  }
+
+protected:
+  virtual TStateFunctionResult enter();
+  virtual TStateFunctionResult work();
+};
+
 class CMachine
 {
 private:
@@ -142,6 +163,7 @@ private:
   CStatePtr mpNextState;
   castutils::CMilliTimer mWaitTimer; // periodically activate even if there are no events
   long mStepNumber;
+  CStatePtr mWaitState;
 
 protected:
   std::mutex mReceivedEventsMutex;
@@ -154,6 +176,7 @@ public:
   CStatePtr findState(std::string id);
   void switchToState(CStatePtr pNextState, const std::string& reason = "");
   void switchToState(CLinkedStatePtr pNextState, const std::string& reason = "");
+  void switchToState(CLinkedStatePtr pNextState, long timeoutMs, const std::string& reason = "");
   void runOneStep();
   virtual void onTransition(CStatePtr fromState, CStatePtr toState);
   bool isWaitingForEvent();
