@@ -29,6 +29,7 @@ public:
 class CstTableEmpty: public CState, public CMachineStateMixin<CCastMachine>
 {
 private:
+  CLinkedStatePtr mSelf;
   CLinkedStatePtr mFinished;
   CLinkedStatePtr mWaitToAppear;
   bool mSceneFound;
@@ -36,11 +37,12 @@ public:
   CstTableEmpty(CCastMachine* pMachine)
     : CState(pMachine, "TableEmpty"),
     CMachineStateMixin(pMachine),
+    mSelf(linkedState("TableEmpty")),
     mFinished(linkedState("Finished")),
     mWaitToAppear(linkedState("WaitToAppear"))
   {
     setSleepTime(20);
-    // TODO pEmpty->setTimeout()
+    setTimeout(90 * 1000);
     setWatchEvents({ "::VisionData::VisualObject", "::VisionData::ProtoObject" });
   }
 
@@ -55,7 +57,7 @@ public:
   }
 
   TStateFunctionResult work() {
-    if (machine()->getCount("VisualObject") < 1) {
+    if (machine()->getCount("VisualObject") < 1 && machine()->getCount("ProtoObject") < 1) {
       if (mSceneFound) {
         machine()->loadScene();
         machine()->switchToState(mWaitToAppear, "scene-loaded");
@@ -64,6 +66,10 @@ public:
         machine()->switchToState(mFinished, "no-next-scene");
       }
       return Continue;
+    }
+    if (hasTimedOut()) {
+      // TODO: should we try to turn the head?
+      machine()->switchToState(mSelf, "timeout");
     }
     return WaitChange;
   }
@@ -108,8 +114,7 @@ public:
     CMachineStateMixin(pMachine),
     mTeachStep(linkedState("TeachOneStep"))
   {
-    //setSleepTime(20, 30 * 1000); // TODO: initial timeout could be configurable with params!
-    setSleepTime(20, 5 * 1000);
+    setSleepTime(20, 2 * 1000);
   }
   TStateFunctionResult work() {
     machine()->mTeachingStep = 0;

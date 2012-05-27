@@ -102,7 +102,8 @@ void CCastMachine::configure(const std::map<std::string,std::string> & _config)
 
   prepareObjects();
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 10; i++) {
+    if (i >= mObjects.size()) break;
     auto pe = new CTeachTestEntry(mObjects[i].label, "orange", "elongated");
     mTestEntries.push_back(CTestEntryPtr(pe));
   }
