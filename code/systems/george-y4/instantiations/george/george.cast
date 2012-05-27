@@ -127,7 +127,14 @@ ENDIF
 # testing George in simulation; the tester is in the vision.sa
 IFEQ(%(hardware), simulation)
     IFOPTALL(%(test_options), tutor-driven-test)
-        CPP MG test-george GeorgeTester --player-host %(host:PlayerHost) --objects "%(JugglerObjectList)"
+        VARDEFAULT JugglerObjectList=%(CONFIG_DIR)/../gazebo/test1.objects.txt
+        VARDEFAULT TesterLearnAttrs=%(CONFIG_DIR)/../gazebo/test1.attrs.txt
+        SETVAR tester_attrs=<multiline>
+            --player-host %(host:PlayerHost)
+            --objects "%(JugglerObjectList)"
+            --learn-attrs "%(TesterLearnAttrs)"
+        </multiline>
+        CPP MG test-george GeorgeTester %(tester_attrs)
     ENDIF
 ENDIF
 
