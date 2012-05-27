@@ -302,7 +302,7 @@ public:
   void exitLesson(const std::string& reason)
   {
     if (machine()->hasMoreLessons()) {
-      machine()->switchToState(mTeachStep, 9000, reason);
+      machine()->switchToState(mTeachStep, 2000, reason);
     }
     else {
       machine()->switchToState(mEndTeach, reason + ",no-more-lessons");
