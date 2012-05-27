@@ -144,6 +144,7 @@ private:
 
 private:
   void loadObjectsAndPlaces(const std::string& fname);
+  void loadLearningAttributes(const std::string& fname);
   bool moveObject(const std::string& label, int placeIndex);
 
 public:
@@ -185,6 +186,8 @@ private:
   void onAdd_SpokenItem(const cast::cdl::WorkingMemoryChange & _wmc);
   void onAdd_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
   void onChange_LearningTask(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onAdd_LearnerRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onChange_LearnerRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc);
 };
 
 }// namespace

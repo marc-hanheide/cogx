@@ -11,6 +11,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
 
 namespace dlgice = de::dfki::lt::tr::dialogue::slice;
 
@@ -61,7 +62,12 @@ void CCastMachine::configure(const std::map<std::string,std::string> & _config)
     str >> mPlayerPort;
   }
   if((it = _config.find("--objects")) != _config.end()) {
+    // This defines what objects and places are available. Shared with GazeboJuggler.
     loadObjectsAndPlaces(it->second);
+  }
+  if((it = _config.find("--learn-attrs")) != _config.end()) {
+    // This loads attributes for the objects in --objects.
+    loadLearningAttributes(it->second);
   }
 
   // CONFIG: --dialogue-sa
@@ -101,12 +107,6 @@ void CCastMachine::configure(const std::map<std::string,std::string> & _config)
   log("Connected to Player %x", &*mpRobot);
 
   prepareObjects();
-
-  for (int i = 0; i < 10; i++) {
-    if (i >= mObjects.size()) break;
-    auto pe = new CTeachTestEntry(mObjects[i].label, "orange", "elongated");
-    mTestEntries.push_back(CTestEntryPtr(pe));
-  }
   msObjectOnScene = "";
 }
 
@@ -126,8 +126,6 @@ void CCastMachine::loadObjectsAndPlaces(const std::string& fname)
       std::getline(f, line);
       //println(" GJ **** " + line);
       std::istringstream itok(line);
-
-      // TODO: objects have additional fields: color, shape, type
 
       int newmode = mode;
       itok >> tok;
@@ -159,6 +157,36 @@ void CCastMachine::loadObjectsAndPlaces(const std::string& fname)
   }
 }
 
+void CCastMachine::loadLearningAttributes(const std::string& fname)
+{
+  mTestEntries.clear();
+  std::ifstream f;
+  f.open(fname.c_str());
+  if (f.fail()) {
+    error("File not found: '" + fname + "'");
+  }
+  else {
+    while (f.good() && !f.eof()) {
+      std::string line, name, color, shape;
+      std::getline(f, line);
+      std::istringstream itok(line);
+
+      itok >> name >> color >> shape;
+
+      auto iobj = std::find_if(mObjects.begin(), mObjects.end(), [&name](GObject& obj) {
+            return obj.label == name;
+          });
+      if (iobj == mObjects.end()) {
+        castComponent()->log("Object '%s' is in --learn-attrs but not in --objects", name.c_str());
+        continue;
+      }
+      auto pe = new CTeachTestEntry(name, color, shape);
+      mTestEntries.push_back(CTestEntryPtr(pe));
+    }
+    f.close();
+  }
+}
+
 const double OFF = 121231e99; 
 void CCastMachine::prepareObjects()
 {
@@ -167,7 +195,7 @@ void CCastMachine::prepareObjects()
   std::vector<GObject> objs = mObjects;
   std::vector<GObject> notthere;
   mObjects.clear();
-  for (int i = 0; i < objs.size(); i++) {
+  for (unsigned int i = 0; i < objs.size(); i++) {
     GObject& o = objs[i];
     o.loc.x = OFF;
     mpSim->GetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z, time);
@@ -285,17 +313,23 @@ bool CCastMachine::nextScene()
 
 bool CCastMachine::moveObject(const std::string& label, int placeIndex)
 {
-  for(int i = 0; i < mObjects.size(); i++) {
+  for(unsigned int i = 0; i < mObjects.size(); i++) {
     GObject& o = mObjects[i];
     if (o.label != label)
       continue;
+    bool physon = false;
     if (placeIndex < 0 || placeIndex >= mLocations.size()) {
       o.loc.x = 100 + i * 10;
       o.loc.y = 100 + i * 10;
+      physon = false;
     }
-    else
+    else {
       o.loc = mLocations[placeIndex];
-    mpSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
+      physon = true;
+    }
+    auto pose_z = o.pose.z;
+    pose_z = (std::rand() % 30 - 15) * 3.16 / 180;
+    mpSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, pose_z);
     return true;
   }
   return false;
@@ -532,10 +566,23 @@ void CCastMachine::start()
          this, &CCastMachine::onChange_LearningTask)
       );
 
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualLearnerRecognitionTask>(cast::cdl::ADD),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
+         this, &CCastMachine::onAdd_LearnerRecognitionTask)
+      );
+   castComponent()->addChangeFilter(
+      cast::createLocalTypeFilter<VisionData::VisualLearnerRecognitionTask>(cast::cdl::OVERWRITE),
+      new cast::MemberFunctionChangeReceiver<CCastMachine>(
+         this, &CCastMachine::onChange_LearnerRecognitionTask)
+      );
+
    mCount["VisualObject"] = 0;
    mCount["ProtoObject"] = 0;
    mCount["LearningTask-add"] = 0;
    mCount["LearningTask-done"] = 0;
+   mCount["LearnerRecognitionTask-add"] = 0;
+   mCount["LearnerRecognitionTask-done"] = 0;
 
 #if 0
    loadEmptyScene();
@@ -631,6 +678,24 @@ void CCastMachine::onChange_LearningTask(const cast::cdl::WorkingMemoryChange & 
     std::lock_guard<std::mutex> lock(mWmCopyMutex);
     mCount["LearningTask-done"] += 1;
     checkReceivedEvent("::VisionData::VisualLearningTask");
+  }
+}
+
+void CCastMachine::onAdd_LearnerRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
+    mCount["LearnerRecognitionTask-add"] += 1;
+    checkReceivedEvent("::VisionData::VisualLearnerRecognitionTask");
+  }
+}
+
+void CCastMachine::onChange_LearnerRecognitionTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    std::lock_guard<std::mutex> lock(mWmCopyMutex);
+    mCount["LearnerRecognitionTask-done"] += 1;
+    checkReceivedEvent("::VisionData::VisualLearnerRecognitionTask");
   }
 }
 
