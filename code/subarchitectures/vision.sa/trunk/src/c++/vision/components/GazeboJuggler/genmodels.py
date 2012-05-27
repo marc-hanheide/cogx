@@ -96,8 +96,9 @@ tmpl_box = readConfig("res/box.tmpl")
 
 tmpl_places="""
 [places]
-1  0.150  0.176
-1 -0.150  0.176
+0.8  0.000  0.176
+0.8  0.150  0.176
+0.8 -0.150  0.176
 """
 
 class OgreBox:
@@ -294,8 +295,8 @@ class OgreBox:
 # x:-, y:/, z:|, class, min ratio (used to determine the class)
 class SizeGenerator:
     def __init__(self):
-        self.low = 0.1
-        self.size = 0.4
+        self.low = 0.05
+        self.size = 0.2
         high = self.low + self.size
         self.minv = self.low**3 + (high**3 - self.low**3) * 0.2
         self.stat = {"compact": 0, "elongated": 0}
@@ -448,7 +449,7 @@ def createObjects(prjname):
         else: sizeNum[key] = 0
         return sizeNum[key]
 
-    for io in xrange(300):
+    for io in xrange(50):
         l = labels[io % len(labels)]
         s = SG.getSize()
         dim = s[:3]; compact = s[3]
