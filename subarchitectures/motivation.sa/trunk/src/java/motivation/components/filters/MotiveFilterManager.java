@@ -42,7 +42,8 @@ public class MotiveFilterManager extends ManagedComponent {
 
 	List<MotiveFilter> pipe;
 
-	private List<WMView.ChangeHandler<Motive>> m_completionHandlers;
+	private final List<WMView.ChangeHandler<Motive>> m_completionHandlers;
+	private final List<WMView.ChangeHandler<Motive>> m_activationHandlers;
 
 	public MotiveFilterManager() {
 		super();
@@ -52,6 +53,7 @@ public class MotiveFilterManager extends ManagedComponent {
 		receiver = new WMEventQueue();
 
 		m_completionHandlers = new LinkedList<WMView.ChangeHandler<Motive>>();
+		m_activationHandlers = new LinkedList<WMView.ChangeHandler<Motive>>();
 
 		// new WorkingMemoryChangeReceiver() {
 		// public void workingMemoryChanged(WorkingMemoryChange _wmc) {
@@ -229,6 +231,10 @@ public class MotiveFilterManager extends ManagedComponent {
 		m_completionHandlers.add(_handler);
 	}
 
+	public void addMotiveActivationHandler(ChangeHandler<Motive> _handler) {
+		m_activationHandlers.add(_handler);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -264,6 +270,28 @@ public class MotiveFilterManager extends ManagedComponent {
 
 				});
 
+		// register a handler for activated motives. this should be before
+		// starting filters in case they also add filters in their start methods
+		// (so this component gets to act first)
+		motives.setStateChangeHandler(new MotiveStateTransition(
+				MotiveStatus.WILDCARD, MotiveStatus.ACTIVE),
+				new WMView.ChangeHandler<Motive>() {
+
+					@Override
+					public void entryChanged(
+							Map<WorkingMemoryAddress, Motive> map,
+							WorkingMemoryChange wmc, Motive newEntry,
+							Motive oldEntry) throws CASTException {
+
+						for (WMView.ChangeHandler<Motive> handler : m_activationHandlers) {
+							// dispatch to others
+							handler.entryChanged(map, wmc, newEntry, oldEntry);
+						}
+					}
+
+				});
+		
+		
 		for (MotiveFilter f : pipe) {
 			f.start();
 		}
