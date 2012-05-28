@@ -42,51 +42,49 @@
 #include "scanmap/HSS/HSSDoorExtractor.hh"
 #include "scanmap/HSS/HSSRedundantLine2DRep.hh"
 
-
 namespace spatial {
 
-  typedef std::vector<std::pair<double, double> > PlaneList;
-	
+typedef std::vector<std::pair<double, double> > PlaneList;
 
 struct PlaneData {
-  //first component is the Z position; the second, the confidence.
-  PlaneList planes; 
+	//first component is the Z position; the second, the confidence.
+	PlaneList planes;
 };
 
-std::ostream &operator<<(std::ostream &os, const PlaneData &data)
-{
-  os.precision(2);
-  double maxHeight = 0.0;
-  for (PlaneList::const_iterator it = data.planes.begin();
-      it != data.planes.end(); it++) {
-    if (it->second > 10.0) {
-      if (it->first > maxHeight) 
-	maxHeight = it->first;
-    }
-  }
-  os << maxHeight;
-  return os;
+std::ostream &operator<<(std::ostream &os, const PlaneData &data) {
+	os.precision(2);
+	double maxHeight = 0.0;
+	for (PlaneList::const_iterator it = data.planes.begin(); it
+			!= data.planes.end(); it++) {
+		if (it->second > 10.0) {
+			if (it->first > maxHeight)
+				maxHeight = it->first;
+		}
+	}
+	os << maxHeight;
+	return os;
 }
 
-bool operator==(const PlaneData &data, char cmp)
-{
-  if (cmp == '2') { //Unknown
-    return data.planes.empty();
-  }
+bool operator==(const PlaneData &data, char cmp) {
+	if (cmp == '2') { //Unknown
+		return data.planes.empty();
+	}
 
-  double maxHeight = 0.0;
-  for (PlaneList::const_iterator it = data.planes.begin();
-      it != data.planes.end(); it++) {
-    if (it->second > 10.0) {
-      if (it->first > maxHeight) maxHeight = it->first;
-    }
-  }
+	double maxHeight = 0.0;
+	for (PlaneList::const_iterator it = data.planes.begin(); it
+			!= data.planes.end(); it++) {
+		if (it->second > 10.0) {
+			if (it->first > maxHeight)
+				maxHeight = it->first;
+		}
+	}
 
-  if (cmp == '0') return maxHeight == 0.0;
-  return maxHeight != 0.0;
+	if (cmp == '0')
+		return maxHeight == 0.0;
+	return maxHeight != 0.0;
 }
 
-typedef Cure::LocalGridMap<unsigned char> CharMap ; // <------------ ~/cosycure/trunk/include/cure/Navigation/LocalGridMap.hh
+typedef Cure::LocalGridMap<unsigned char> CharMap; // <------------ ~/cosycure/trunk/include/cure/Navigation/LocalGridMap.hh
 typedef Cure::GridLineRayTracer<unsigned char> CharGridLineRayTracer; // <--------- ~/cosycure/trunk/include/cure/Navigation/GridLineRayTracer.hh
 typedef Cure::LocalGridMap<PlaneData> PlaneMap;
 /**
@@ -118,147 +116,153 @@ typedef Cure::LocalGridMap<PlaneData> PlaneMap;
  * @author Kristoffer Sjöö
  * @see
  */
-class LocalMapManager : public cast::ManagedComponent,
-  		  								public OdometryReceiver,
-		  									public Scan2dReceiver
-{
-  private:
-    class EvaluationServer: public FrontierInterface::HypothesisEvaluator {
-      virtual FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID, const Ice::Current &_context);
-      LocalMapManager *m_pOwner;
-      EvaluationServer(LocalMapManager *owner) : m_pOwner(owner)
-      {}
-      friend class LocalMapManager;
-    };
-    friend class EvaluationServer;
-    
-    class LocalMapServer: public FrontierInterface::LocalMapInterface {
-      virtual SpatialData::LocalGridMap getCombinedGridMap(const SpatialData::PlaceIDSeq &places,
-	  const Ice::Current &_context);
-      LocalMapManager *m_pOwner;
-      LocalMapServer(LocalMapManager *owner) : m_pOwner(owner)
-      {}
-      friend class LocalMapManager;
-    };
-    friend class LocalMapServer;
-public:
-  LocalMapManager();
-  virtual ~LocalMapManager();
+class LocalMapManager: public cast::ManagedComponent,
+		public OdometryReceiver,
+		public Scan2dReceiver {
+private:
+	class EvaluationServer: public FrontierInterface::HypothesisEvaluator {
+		virtual FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(
+				int hypID, const Ice::Current &_context);
+		LocalMapManager *m_pOwner;
+		EvaluationServer(LocalMapManager *owner) :
+			m_pOwner(owner) {
+		}
+		friend class LocalMapManager;
+	};
+	friend class EvaluationServer;
 
-  virtual void runComponent();
-  virtual void start();
+	class LocalMapServer: public FrontierInterface::LocalMapInterface {
+		virtual SpatialData::LocalGridMap getCombinedGridMap(
+				const SpatialData::PlaceIDSeq &places, const Ice::Current &_context);
+		LocalMapManager *m_pOwner;
+		LocalMapServer(LocalMapManager *owner) :
+			m_pOwner(owner) {
+		}
+		friend class LocalMapManager;
+	};
+	friend class LocalMapServer;
+public:
+	LocalMapManager();
+	virtual ~LocalMapManager();
+
+	virtual void runComponent();
+	virtual void start();
 
 protected:
-  virtual void configure(const std::map<std::string, std::string>& _config);
-  virtual void taskAdopted(const std::string &_taskID) {};
-  virtual void taskRejected(const std::string &_taskID) {};
+	virtual void configure(const std::map<std::string, std::string>& _config);
+	virtual void taskAdopted(const std::string &_taskID) {
+	}
+	;
+	virtual void taskRejected(const std::string &_taskID) {
+	}
+	;
 
-  double m_MaxLaserRangeForPlaceholders; 
-  double m_MaxLaserRangeForCombinedMaps;
+	double m_MaxLaserRangeForPlaceholders;
+	double m_MaxLaserRangeForCombinedMaps;
 
-  bool m_bShowDoorsInPB;
-  bool m_bNoPlanes;
-  bool m_bNoPTZ;
-  bool m_bNoPlaces;
-  bool m_bDetectDoors;
-  std::string m_planeObjectFilename;
-  std::string m_planeModelFilename;
+	bool m_bShowDoorsInPB;
+	bool m_bNoPlanes;
+	bool m_bNoPTZ;
+	bool m_bNoPlaces;
+	bool m_bDetectDoors;
+	std::string m_planeObjectFilename;
+	std::string m_planeModelFilename;
 
-  IceUtil::Mutex m_Mutex;
+	IceUtil::Mutex m_Mutex;
 
-  //SLAM related
-  Cure::TransformedOdomPoseProvider m_TOPP;
+	//SLAM related
+	Cure::TransformedOdomPoseProvider m_TOPP;
 
-  bool m_firstScanReceived;
+	bool m_firstScanReceived;
 
-  NavData::RobotPose2dPtr lastRobotPose;
+	NavData::RobotPose2dPtr lastRobotPose;
 
-  Cure::Pose3D m_SlamRobotPose;
-  Cure::Pose3D m_CurrPose;
-  Cure::SensorPose m_LaserPoseR;
-  Cure::SensorPose m_CameraPoseR;
+	Cure::Pose3D m_SlamRobotPose;
+	Cure::Pose3D m_CurrPose;
+	Cure::SensorPose m_LaserPoseR;
+	Cure::SensorPose m_CameraPoseR;
 
-  // This grid map represents the current Place
-  CharMap* m_lgm1;
-  CharGridLineRayTracer* m_Glrt1;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm1;
+	// This grid map represents the current Place
+	CharMap* m_lgm1;
+	CharGridLineRayTracer* m_Glrt1;
+	Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm1;
 
-  // This grid map represents a potential new place and
-  // is reset each time the robot changes Place.
-  CharMap* m_lgm2;
-  CharGridLineRayTracer* m_Glrt2;
-  Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm2;
+	// This grid map represents a potential new place and
+	// is reset each time the robot changes Place.
+	CharMap* m_lgm2;
+	CharGridLineRayTracer* m_Glrt2;
+	Cure::XDisplayLocalGridMap<unsigned char>* m_Displaylgm2;
 
+	//Same as above, for use if we're using different horizons for
+	//placeholder property evaluation and combined local map retrieval
+	CharMap* m_lgm1_alt;
+	CharGridLineRayTracer* m_Glrt1_alt;
+	CharMap* m_lgm2_alt;
+	CharGridLineRayTracer* m_Glrt2_alt;
 
-  //Same as above, for use if we're using different horizons for
-  //placeholder property evaluation and combined local map retrieval
-  CharMap* m_lgm1_alt;
-  CharGridLineRayTracer* m_Glrt1_alt;
-  CharMap* m_lgm2_alt;
-  CharGridLineRayTracer* m_Glrt2_alt;
+	std::map<int, CharMap *> m_nodeGridMaps;
+	bool m_isUsingSeparateGridMaps;
+	std::map<int, CharMap *> m_nodeGridMapsAlt;
 
-  std::map<int, CharMap *> m_nodeGridMaps;
-  bool m_isUsingSeparateGridMaps;
-  std::map<int, CharMap *> m_nodeGridMapsAlt;
+	//For plane object extraction
+	std::vector<GridObjectFinder *> m_planeObjectFinders;
+	//  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
+	PlaneMap* m_planeMap;
+	std::vector<CharMap *> m_planeObstacleMaps;
+	std::vector<double> m_planeHeights;
+	unsigned int m_currentNumberOfClusters;
+	std::map<int, std::string> m_planeObjectWMIDs;
+	unsigned int m_maxNumberOfClusters;
+	double m_maxClusterDeviation;
+	cast::CASTTimer m_planeProcessingCooldown;
 
-  //For plane object extraction
-  std::vector<GridObjectFinder *> m_planeObjectFinders;
-//  Cure::XDisplayLocalGridMap<unsigned char>* m_DisplayPlaneMap;
-  PlaneMap* m_planeMap;
-  std::vector<CharMap *> m_planeObstacleMaps;
-  std::vector<double> m_planeHeights;
-  unsigned int m_currentNumberOfClusters;
-  std::map<int, std::string> m_planeObjectWMIDs;
-  unsigned int m_maxNumberOfClusters;
-  double m_maxClusterDeviation;
-  cast::CASTTimer m_planeProcessingCooldown;
+	// Map from cluster numbers to WM IDs
+	std::map<int, std::string> m_planeClusterWMIDs;
 
-  // Map from cluster numbers to WM IDs
-  std::map<int, std::string> m_planeClusterWMIDs;
+	//Interfaces
+	ptz::PTZInterfacePrx m_ptzInterface;
 
-  //Interfaces
-  ptz::PTZInterfacePrx m_ptzInterface;
+	std::string m_RobotServerName;
+	Robotbase::RobotbaseServerPrx m_RobotServer;
+	FrontierInterface::PlaceInterfacePrx m_placeInterface;
 
-  std::string m_RobotServerName;
-  Robotbase::RobotbaseServerPrx m_RobotServer;
-  FrontierInterface::PlaceInterfacePrx m_placeInterface;
+	//Remote door extractor
+	HSS::DoorExtractor m_doorExtractor;
+	//Detected doors
+	std::map<std::string, FrontierInterface::DoorHypothesisPtr> m_detectedDoors;
+	std::map<std::string, int> m_detectedDoorsNum;
+	//Falloff for gateway property value with distance to nearest detected door
+	double m_doorwayWidth;
 
-  //Remote door extractor
-  HSS::DoorExtractor m_doorExtractor;
-  //Detected doors
-  std::map<std::string, FrontierInterface::DoorHypothesisPtr> m_detectedDoors;
-  std::map<std::string, int> m_detectedDoorsNum;
-  //Falloff for gateway property value with distance to nearest detected door
-  double m_doorwayWidth;
+	//Peekabot
+	std::string m_PbHost;
+	int m_PbPort;
 
-  //Peekabot
-  std::string m_PbHost;
-  int m_PbPort;
+	peekabot::PeekabotClient m_peekabotClient;
+	peekabot::GroupProxy m_HSSGroupProxy;
 
-  peekabot::PeekabotClient m_peekabotClient;
-  peekabot::GroupProxy m_HSSGroupProxy;
+	//For keeping track of when the robot is moving (to filter planes)
+	double m_standingStillThreshold;
+	cast::cdl::CASTTime m_lastTimeMoved;
 
-  //For keeping track of when the robot is moving (to filter planes)
-  double m_standingStillThreshold;
-  cast::cdl::CASTTime m_lastTimeMoved;
-
-  int m_mapsize;
-  double m_cellsize;
-  bool m_loadNodeLgms,m_saveNodeLgms;
+	int m_mapsize;
+	double m_cellsize;
+	bool m_loadNodeLgms, m_saveNodeLgms;
 private:
-  void receiveScan2d(const Laser::Scan2d &castScan);
-  void receiveOdometry(const Robotbase::Odometry &castOdom);
-  void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
-	
-  NavData::FNodePtr getCurrentNavNode();
-  FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
-  void getCombinedGridMap(SpatialData::LocalGridMap &map, 
-      const std::vector<NavData::FNodePtr> &nodes);
-  Cure::Transformation3D getCameraToWorldTransform();
-  void SaveNodeGridMaps();
-  void LoadNodeGridMaps(std::string filename);
+	void receiveScan2d(const Laser::Scan2d &castScan);
+	void receiveOdometry(const Robotbase::Odometry &castOdom);
+	void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+
+	NavData::FNodePtr getCurrentNavNode();
+	FrontierInterface::HypothesisEvaluation getHypothesisEvaluation(int hypID);
+	void getCombinedGridMap(SpatialData::LocalGridMap &map, const std::vector<
+			NavData::FNodePtr> &nodes);
+	Cure::Transformation3D getCameraToWorldTransform();
+	void SaveNodeGridMaps();
+	void LoadNodeGridMaps(std::string filename);
 };
-}; // namespace spatial
+}
+; // namespace spatial
 
 
 #endif

@@ -65,107 +65,106 @@ namespace navsa {
  *   we want at most to the slam process. Give negative number to
  *   get as fast as possible
  */
-class SlamProcess : public cast::ManagedComponent,
-                    public Scan2dReceiver,
-                    public OdometryReceiver
-{
+class SlamProcess: public cast::ManagedComponent,
+		public Scan2dReceiver,
+		public OdometryReceiver {
 public:
-  SlamProcess();
-  virtual ~SlamProcess();
-  
-  virtual void runComponent();
-  virtual void stop();
+	SlamProcess();
+	virtual ~SlamProcess();
 
-  void processScan2d(const Laser::Scan2d &scan);
-  inline void receiveScan2d(const Laser::Scan2d &castScan)
-  {
-    processScan2d(castScan);
-  }
-  void receiveOdometry(const Robotbase::Odometry &odom);
+	virtual void runComponent();
+	virtual void stop();
 
- protected:
-  virtual void configure(const std::map<std::string, std::string>& _config);
+	void processScan2d(const Laser::Scan2d &scan);
+	inline void receiveScan2d(const Laser::Scan2d &castScan) {
+		processScan2d(castScan);
+	}
+	void receiveOdometry(const Robotbase::Odometry &odom);
 
-  void updateRobotPoseInWM();
-  int writeLineMapToWorkingMemory(bool overwrite);
-  int extractMeasSet(Cure::LaserScan2d &cureScan, Cure::MeasurementSet &mSet);
+protected:
+	virtual void configure(const std::map<std::string, std::string>& _config);
 
-  void connectPeekabot();
- private:
-    bool m_usePeekabot;
+	void updateRobotPoseInWM();
+	int writeLineMapToWorkingMemory(bool overwrite);
+	int extractMeasSet(Cure::LaserScan2d &cureScan, Cure::MeasurementSet &mSet);
 
-  void storeDataToFile();
+	void connectPeekabot();
+private:
+	bool m_usePeekabot;
 
-  IceUtil::Mutex m_Mutex;
+	void storeDataToFile();
 
-  // If true we are running in slam mode, else we run in localization
-  // mode
-  bool m_RunningSLAM;
+	IceUtil::Mutex m_Mutex;
 
-  Cure::FileAddress m_odomfile;
-  Cure::FileAddress m_scanfile;
+	// If true we are running in slam mode, else we run in localization
+	// mode
+	bool m_RunningSLAM;
 
-  // Segmentation method
-  Cure::RANSACSegmentor m_Seg;
+	Cure::FileAddress m_odomfile;
+	Cure::FileAddress m_scanfile;
 
-  // Line fitting method
-  Cure::LsqLineFitter m_Lsq;
+	// Segmentation method
+	Cure::RANSACSegmentor m_Seg;
 
-  // This is a pointer to either a localization or a slam objects
-  Cure::PoseProvider *m_PP;
+	// Line fitting method
+	Cure::LsqLineFitter m_Lsq;
 
-  // The string that identifies the robotpose in the working memory
-  std::string m_RobotPoseIdString;
+	// This is a pointer to either a localization or a slam objects
+	Cure::PoseProvider *m_PP;
 
-  // True when we have to write the map to working memory
-  bool m_WriteMapToWorkingMemory;
+	// The string that identifies the robotpose in the working memory
+	std::string m_RobotPoseIdString;
 
-  // The string that identifies the map in the working memory
-  std::string m_LineMapIdString;
+	// True when we have to write the map to working memory
+	bool m_WriteMapToWorkingMemory;
 
-  // The name of the map file we read from / write to
-  std::string m_MapFilename;
+	// The string that identifies the map in the working memory
+	std::string m_LineMapIdString;
 
-  // Maximum desired scan rate from the server
-  double m_MaxScanRate;
+	// The name of the map file we read from / write to
+	std::string m_MapFilename;
 
-  // Interval with which we save map data to file and write it to
-  // working memory
-  double m_SaveMapInterval;
+	// Maximum desired scan rate from the server
+	double m_MaxScanRate;
 
-  // Time when the map was saved to file and written to working memory
-  // last
-  Cure::Timestamp m_TimeMapLastSaved;
+	// Interval with which we save map data to file and write it to
+	// working memory
+	double m_SaveMapInterval;
 
-  bool m_InitedFakeRoutine;
-  Cure::Timestamp m_LastTimestampWhileNotRunningYet;
-  bool m_NotRunningYet;
+	// Time when the map was saved to file and written to working memory
+	// last
+	Cure::Timestamp m_TimeMapLastSaved;
 
-  int m_ScansToIgnoreBeforeStart;
+	bool m_InitedFakeRoutine;
+	Cure::Timestamp m_LastTimestampWhileNotRunningYet;
+	bool m_NotRunningYet;
 
-  cast::CASTTimer m_OdomTimer;
-  cast::CASTTimer m_ScanTimer;
+	int m_ScansToIgnoreBeforeStart;
 
-  Cure::Pose3D m_LastOdom;
-  Cure::Pose3D m_LastUsedOdom;
+	cast::CASTTimer m_OdomTimer;
+	cast::CASTTimer m_ScanTimer;
 
-  bool m_RobotIsMoving;
+	Cure::Pose3D m_LastOdom;
+	Cure::Pose3D m_LastUsedOdom;
 
-  bool m_DontWriteFiles;
-  bool m_outputRawData;
+	bool m_RobotIsMoving;
 
-  bool m_UpdateWithoutMotion;
+	bool m_DontWriteFiles;
+	bool m_outputRawData;
 
-  double m_ScanAngFOV;
-  double m_ScanMaxRange;
-  Cure::SensorPose m_LaserPoseR;
-  peekabot::PeekabotClient m_PeekabotClient;
-  std::string m_PbHost;
-  int m_PbPort;
-  peekabot::CubeProxy m_SLAMPoseProxy;
+	bool m_UpdateWithoutMotion;
+
+	double m_ScanAngFOV;
+	double m_ScanMaxRange;
+	Cure::SensorPose m_LaserPoseR;
+	peekabot::PeekabotClient m_PeekabotClient;
+	std::string m_PbHost;
+	int m_PbPort;
+	peekabot::CubeProxy m_SLAMPoseProxy;
 
 };
 
-}; // namespace navsa
+}
+; // namespace navsa
 
 #endif // SlamProcess_hpp

@@ -41,186 +41,172 @@ namespace Spatial {
 /// a component which writes nav WM entries, and checks the 
 /// resulting Binder state
 
-class SpatialTester : 
-    public AbstractBinder,
-    public Cure::NavGraphEventListener {
-  /// the test number
-  int m_test;
-  
-  /// the latest registered status of the binder
-  BindingData::BinderStatus m_status;
-    /// the id of the status
-  std::string m_statusID;
+class SpatialTester: public AbstractBinder, public Cure::NavGraphEventListener {
+	/// the test number
+	int m_test;
 
-  std::string m_comsysID;
-  std::set<std::string> m_addSignalledProxyIDs;
+	/// the latest registered status of the binder
+	BindingData::BinderStatus m_status;
+	/// the id of the status
+	std::string m_statusID;
 
-  BindingGraphHandler m_handler;
+	std::string m_comsysID;
+	std::set<std::string> m_addSignalledProxyIDs;
 
-  bool m_testFinished;
+	BindingGraphHandler m_handler;
 
-  std::string m_navSubarchID;
+	bool m_testFinished;
+
+	std::string m_navSubarchID;
 
 public:
-  SpatialTester(const std::string &_id);
+	SpatialTester(const std::string &_id);
 
-  /// overridden start method used to set filters
-  virtual void start();
-  virtual void configure(std::map<std::string,std::string> & _config);
-  
+	/// overridden start method used to set filters
+	virtual void start();
+	virtual void configure(std::map<std::string, std::string> & _config);
+
 protected:
-  void bindingProxyAdded(const cast::cdl::WorkingMemoryChange & _wmc);
-  void bindingProxyUpdated(const cast::cdl::WorkingMemoryChange & _wmc);
-  void bindingProxyDeleted(const cast::cdl::WorkingMemoryChange & _wmc);
-  void statusUpdated(const cast::cdl::WorkingMemoryChange & _wmc);
-  void testerCommandReceived(const cast::cdl::WorkingMemoryChange & _wmc);
+	void bindingProxyAdded(const cast::cdl::WorkingMemoryChange & _wmc);
+	void bindingProxyUpdated(const cast::cdl::WorkingMemoryChange & _wmc);
+	void bindingProxyDeleted(const cast::cdl::WorkingMemoryChange & _wmc);
+	void statusUpdated(const cast::cdl::WorkingMemoryChange & _wmc);
+	void testerCommandReceived(const cast::cdl::WorkingMemoryChange & _wmc);
 
-  void CreateNewNavGraphIDL();
+	void CreateNewNavGraphIDL();
 
-  void taskAdopted(const std::string& _taskID);
-  void taskRejected(const std::string& _taskID);
-  void runComponent();
-  void setNavSubarchID(const std::string &_saID) {
-    m_navSubarchID = _saID;
-  }
-  std::string getNavSubarchID() const {
-    return m_navSubarchID;
-  }
-  /// exits and signals success
-  void successExit() const {
-    const_cast<SpatialTester&>(*this).sleepProcess(2000); // sleep for a while to allow dotviewer to finish
-    log("\nSUCCESS\n");
-    ::exit(cast::cdl::testing::CAST_TEST_PASS);
-  }
-  /// exits and signals failure
-  void failExit() const {
-    log("\nFAILURE\n");
-    //::exit(cast::cdl::testing::CAST_TEST_FAIL);
-    abort();
-  }
-  
-  /// tests if the binding is now complete and exits with a success
-  /// signal if so.
-  void testCompleteness();
-  /// returns true if all added proxies are bound
-  bool allBound();
+	void taskAdopted(const std::string& _taskID);
+	void taskRejected(const std::string& _taskID);
+	void runComponent();
+	void setNavSubarchID(const std::string &_saID) {
+		m_navSubarchID = _saID;
+	}
+	std::string getNavSubarchID() const {
+		return m_navSubarchID;
+	}
+	/// exits and signals success
+	void successExit() const {
+		const_cast<SpatialTester&> (*this).sleepProcess(2000); // sleep for a while to allow dotviewer to finish
+		log("\nSUCCESS\n");
+		::exit(cast::cdl::testing::CAST_TEST_PASS);
+	}
+	/// exits and signals failure
+	void failExit() const {
+		log("\nFAILURE\n");
+		//::exit(cast::cdl::testing::CAST_TEST_FAIL);
+		abort();
+	}
 
-  /// Performs a consistency check on Binding proxies
-  void proxyConsistencyCheck(std::string &str);
+	/// tests if the binding is now complete and exits with a success
+	/// signal if so.
+	void testCompleteness();
+	/// returns true if all added proxies are bound
+	bool allBound();
+
+	/// Performs a consistency check on Binding proxies
+	void proxyConsistencyCheck(std::string &str);
 private:
-  /// Methods to write to Spatial WM
-  void ConvertCureNavGraphToIDL();
-  void WriteNavGraphToWorkingMemory();
-  void WriteTopologicalPosToWorkingMemory(int aid);
-  void AddFreeNode(long nodeID, 
-                   double x, double y, double z, double theta,
-                   long areaID, const std::string &areaType, 
-                   short gateway, 
-                   double maxSpeed, double width,
-                   const std::string &name);
- 
-  void AddObjectNode(long nodeID, 
-                     double x, double y, double z,
-                     long areaID, const std::string &areaType, 
-                     const std::string &category, 
-                     double radius, 
-                     long objectID);
+	/// Methods to write to Spatial WM
+	void ConvertCureNavGraphToIDL();
+	void WriteNavGraphToWorkingMemory();
+	void WriteTopologicalPosToWorkingMemory(int aid);
+	void AddFreeNode(long nodeID, double x, double y, double z, double theta,
+			long areaID, const std::string &areaType, short gateway, double maxSpeed,
+			double width, const std::string &name);
 
-  void AddPerson(long personID, 
-                   double x, double y, double theta,
-		   double speed, double visiblity,
-		   long areaID);
-  void MovePerson(long personID, 
-                   double x, double y, double theta,
-		   long areaID);
-  void RemovePerson(long personID);  
+	void AddObjectNode(long nodeID, double x, double y, double z, long areaID,
+			const std::string &areaType, const std::string &category, double radius,
+			long objectID);
 
-  void AddAccessEdge(long startNodeID, long endNodeID, double weight);
-  void AddVisibilityEdge(long startNodeID, long endNodeID, double weight);
-  void setRobotArea(long id);
-  void updatePeopleInWM();
-  void setRobotPose(double x, double y, double theta);
-  void updateTrackedPersonInWM(long id);
+	void AddPerson(long personID, double x, double y, double theta, double speed,
+			double visiblity, long areaID);
+	void MovePerson(long personID, double x, double y, double theta, long areaID);
+	void RemovePerson(long personID);
 
-  void changedArea(int aid);
-  void checkAndAddNewArea(int aid);
-  void mergedAreaIds(int aid1, int aid2);
+	void AddAccessEdge(long startNodeID, long endNodeID, double weight);
+	void AddVisibilityEdge(long startNodeID, long endNodeID, double weight);
+	void setRobotArea(long id);
+	void updatePeopleInWM();
+	void setRobotPose(double x, double y, double theta);
+	void updateTrackedPersonInWM(long id);
 
-  /// Methods for predicate handling
-  
-  /// Gets a conjunction or disjunction of predicates from string
-  boost::shared_ptr<AbstractPredicate<ProxyPtr> > getPredicates(std::istream &str);
-  /// Gets a single predicate from string
-  boost::shared_ptr<AbstractPredicate<ProxyPtr> > getPredicate(std::istream &str);
+	void changedArea(int aid);
+	void checkAndAddNewArea(int aid);
+	void mergedAreaIds(int aid1, int aid2);
 
-  class PersonHyp {
-  public:
+	/// Methods for predicate handling
 
-    enum Status {
-      STATUS_UNKNOWN = 0,
-      STATUS_FOUND,
-      STATUS_DELETE,
-      STATUS_CREATE,
-    };
+	/// Gets a conjunction or disjunction of predicates from string
+	boost::shared_ptr<AbstractPredicate<ProxyPtr> > getPredicates(
+			std::istream &str);
+	/// Gets a single predicate from string
+	boost::shared_ptr<AbstractPredicate<ProxyPtr> > getPredicate(
+			std::istream &str);
 
-    /// The status of this person hypothesis. This is used to tell
-    /// what to do with the working memory image of this object (if it
-    /// exist)
-    int m_Status;
+	class PersonHyp {
+	public:
 
-    /// The id of this person in the working memory
-    std::string m_WMid;
+		enum Status {
+			STATUS_UNKNOWN = 0, STATUS_FOUND, STATUS_DELETE, STATUS_CREATE,
+		};
 
-    ///// The data about the person
-    //SpatialData::Person m_data;
-  };
+		/// The status of this person hypothesis. This is used to tell
+		/// what to do with the working memory image of this object (if it
+		/// exist)
+		int m_Status;
 
-  std::vector<PersonHyp> m_People;
+		/// The id of this person in the working memory
+		std::string m_WMid;
 
-  Cure::NavGraph m_cureNavGraph;
-  Cure::MutexWrapper m_cureNavGraphLock;
+		///// The data about the person
+		//SpatialData::Person m_data;
+	};
 
-  std::fstream m_EventFile;
+	std::vector<PersonHyp> m_People;
 
-  ///// This class holds the data for the areas and pointers to where
-  ///// they can be found in working memory
-  //class Area {
-  //public:
-    //std::string m_WMid;
-    //NavData::Area m_data;
-  //};
-  
-  class Place {
-    public:
-      std::string m_WMid;
-      SpatialData::Place m_place;
-  };
+	Cure::NavGraph m_cureNavGraph;
+	Cure::MutexWrapper m_cureNavGraphLock;
 
-  // List of areas
-  std::list<Place> m_places;
+	std::fstream m_EventFile;
 
-  //// Pointer to the struct in working memory that holds the
-  //// topological position
-  //NavData::TopologicalRobotPos m_TopRobPos;
-  //std::string m_TopRobPosWMid;
-  //bool m_WriteFirstTopologicalPose; // true when navgraph read from file
+	///// This class holds the data for the areas and pointers to where
+	///// they can be found in working memory
+	//class Area {
+	//public:
+	//std::string m_WMid;
+	//NavData::Area m_data;
+	//};
 
-  // The string that identifies the robotpose in the working memory
-  std::string m_RobotPoseWMid;
+	class Place {
+	public:
+		std::string m_WMid;
+		SpatialData::Place m_place;
+	};
 
-  // Whether the tester itself should create Spatial WM entries rather than wait for them
-  bool m_fakeTest;
-  double m_Threshold;
+	// List of areas
+	std::list<Place> m_places;
 
-  NavData::NavGraph* m_pNavGraph;
-  std::string m_NavGraphWMid;
+	//// Pointer to the struct in working memory that holds the
+	//// topological position
+	//NavData::TopologicalRobotPos m_TopRobPos;
+	//std::string m_TopRobPosWMid;
+	//bool m_WriteFirstTopologicalPose; // true when navgraph read from file
 
-  //int m_CurrPerson;
-  //std::string m_CurrPersonWMid;
+	// The string that identifies the robotpose in the working memory
+	std::string m_RobotPoseWMid;
 
-  bool m_cureNavGraphChanged;  
+	// Whether the tester itself should create Spatial WM entries rather than wait for them
+	bool m_fakeTest;
+	double m_Threshold;
+
+	NavData::NavGraph* m_pNavGraph;
+	std::string m_NavGraphWMid;
+
+	//int m_CurrPerson;
+	//std::string m_CurrPersonWMid;
+
+	bool m_cureNavGraphChanged;
 }; // ComsysTester
 } // namespace Binding
 
 #endif // TESTER_MONITOR_H_
-

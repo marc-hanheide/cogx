@@ -14,7 +14,7 @@
 #include "ConceptualData.hpp"
 #include "VariableNameGenerator.h"
 
-class ConceptualQueryMaker : public cast::ManagedComponent {
+class ConceptualQueryMaker: public cast::ManagedComponent {
 
 public:
 	ConceptualQueryMaker();
@@ -34,7 +34,8 @@ public:
 	std::vector<std::string> m_visualObjects;
 	std::vector<std::string> m_visualObjectsBeliefIds;
 
-	ConceptualData::QueryHandlerServerInterfacePrx m_queryHandlerServerInterfacePrx;
+	ConceptualData::QueryHandlerServerInterfacePrx
+			m_queryHandlerServerInterfacePrx;
 	std::string m_queryHandlerName;
 	VariableNameGenerator m_namegenerator;
 

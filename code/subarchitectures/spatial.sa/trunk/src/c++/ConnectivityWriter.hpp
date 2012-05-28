@@ -12,7 +12,6 @@
 //
 /*----------------------------------------------------------------------*/
 
-
 #ifndef ConnectivityWriter_hpp
 #define ConnectivityWriter_hpp
 
@@ -29,32 +28,32 @@ using namespace cast;
 using namespace binder::autogen::core;
 
 namespace spatial {
-  class ConnectivityWriter : public cast::ManagedComponent
-  {
+class ConnectivityWriter: public cast::ManagedComponent {
 
-    public:
-    /**
-     * Constructor
-     */
-    ConnectivityWriter();
+public:
+	/**
+	 * Constructor
+	 */
+	ConnectivityWriter();
 
-    /**
-     * Destructor
-     */
-    virtual ~ConnectivityWriter();
+	/**
+	 * Destructor
+	 */
+	virtual ~ConnectivityWriter();
 
-    virtual void start();
-    virtual void stop();
-    virtual void runComponent();
-    virtual void configure(const std::map<std::string, std::string>& _config);
+	virtual void start();
+	virtual void stop();
+	virtual void runComponent();
+	virtual void configure(const std::map<std::string, std::string>& _config);
 
-    private:
-    void newConnectivity(const cdl::WorkingMemoryChange &wmc);
-    void changedGateway(const cdl::WorkingMemoryChange &wmc);
+private:
+	void newConnectivity(const cdl::WorkingMemoryChange &wmc);
+	void changedGateway(const cdl::WorkingMemoryChange &wmc);
 
-    Marshalling::MarshallerPrx m_marshaller;
+	Marshalling::MarshallerPrx m_marshaller;
 };
-};
+}
+;
 
 #endif
 
