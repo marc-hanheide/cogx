@@ -59,205 +59,205 @@ namespace spatial {
  */
 
 class DisplayNavInPB: public cast::ManagedComponent,
-		public cast::PointCloudClient {
+    public cast::PointCloudClient {
 
 public:
-	DisplayNavInPB();
-	virtual ~DisplayNavInPB();
-	virtual void runComponent();
-	virtual void start();
+  DisplayNavInPB();
+  virtual ~DisplayNavInPB();
+  virtual void runComponent();
+  virtual void start();
 
 protected:
-	virtual void configure(const std::map<std::string, std::string>& _config);
-	void debugScanPush(const char* msg) {
-	} //debug(msg); }
-	void logScanPush(const char* msg) {
-	} // log(msg); }
+  virtual void configure(const std::map<std::string, std::string>& _config);
+  void debugScanPush(const char* msg) {
+  } //debug(msg); }
+  void logScanPush(const char* msg) {
+  } // log(msg); }
 
 private:
 
-	struct PersonData {
-		std::string m_WMid;
-		NavData::PersonPtr m_data;
-		bool m_Followed;
-	};
+  struct PersonData {
+    std::string m_WMid;
+    NavData::PersonPtr m_data;
+    bool m_Followed;
+  };
 
-	struct Node {
-		long m_Id;
-		bool m_Gateway;
-		long m_areaId;
-		double m_X;
-		double m_Y;
-		long m_AreaClassNo;
-	};
+  struct Node {
+    long m_Id;
+    bool m_Gateway;
+    long m_areaId;
+    double m_X;
+    double m_Y;
+    long m_AreaClassNo;
+  };
 
-	struct PlaceData {
-		int placeId;
-		SpatialData::PlaceStatus placeStatus;
-		int nodeId;
-	};
+  struct PlaceData {
+    int placeId;
+    SpatialData::PlaceStatus placeStatus;
+    int nodeId;
+  };
 
-	void receiveScan2d(const Laser::Scan2d &scan);
-	void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);
-	void newComaRoom(const cast::cdl::WorkingMemoryChange &objID);
+  void receiveScan2d(const Laser::Scan2d &scan);
+  void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);
+  void newComaRoom(const cast::cdl::WorkingMemoryChange &objID);
 
-	void newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID);
-	void newARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
-	void newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID);
-	void logDetectionCommand(const std::string &label);
+  void newViewpointGenCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void newARTagCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void newRecognizerCommand(const cast::cdl::WorkingMemoryChange &objID);
+  void logDetectionCommand(const std::string &label);
 
-	void newShapeProperty(const cast::cdl::WorkingMemoryChange &objID);
-	void newSizeProperty(const cast::cdl::WorkingMemoryChange &objID);
-	void newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID);
-	void newRoomCategoryPlaceholderProperty(
-			const cast::cdl::WorkingMemoryChange &objID);
+  void newShapeProperty(const cast::cdl::WorkingMemoryChange &objID);
+  void newSizeProperty(const cast::cdl::WorkingMemoryChange &objID);
+  void newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID);
+  void newRoomCategoryPlaceholderProperty(
+      const cast::cdl::WorkingMemoryChange &objID);
 
-	void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
-	void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
-	void newNavCommand(const cast::cdl::WorkingMemoryChange & objID);
-	void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
+  void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
+  void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
+  void newNavCommand(const cast::cdl::WorkingMemoryChange & objID);
+  void newNavGraphNode(const cast::cdl::WorkingMemoryChange &objID);
 
-	void mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &objID);
+  void mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &objID);
 
-	void movePlace(const cast::cdl::WorkingMemoryChange &objID);
-	void newPlace(const cast::cdl::WorkingMemoryChange &objID);
+  void movePlace(const cast::cdl::WorkingMemoryChange &objID);
+  void newPlace(const cast::cdl::WorkingMemoryChange &objID);
 
-	void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
+  void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
 
-	void newConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
-	void deleteConnectivityPathProperty(
-			const cast::cdl::WorkingMemoryChange &objID);
-	void displayConnectivityPathProperty(int place1Id, int place2Id);
+  void newConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
+  void deleteConnectivityPathProperty(
+      const cast::cdl::WorkingMemoryChange &objID);
+  void displayConnectivityPathProperty(int place1Id, int place2Id);
 
-	void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
-	void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
-	void newNavGraphObject(const cast::cdl::WorkingMemoryChange &objID);
-	void newLineMap(const cast::cdl::WorkingMemoryChange &objID);
-	void newPerson(const cast::cdl::WorkingMemoryChange &objID);
-	void deletePerson(const cast::cdl::WorkingMemoryChange &objID);
-	void newPersonFollowed(const cast::cdl::WorkingMemoryChange &objID);
+  void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
+  void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
+  void newNavGraphObject(const cast::cdl::WorkingMemoryChange &objID);
+  void newLineMap(const cast::cdl::WorkingMemoryChange &objID);
+  void newPerson(const cast::cdl::WorkingMemoryChange &objID);
+  void deletePerson(const cast::cdl::WorkingMemoryChange &objID);
+  void newPersonFollowed(const cast::cdl::WorkingMemoryChange &objID);
 
-	void addEdgeToList(long id1, long id2);
-	void displayEdge(const DisplayNavInPB::Node &node1,
-			const DisplayNavInPB::Node &node2);
-	void redisplayEdgesToNode(const DisplayNavInPB::Node &node);
-	void addDoorpost(double x, double y, double theta, double width,
-			peekabot::SphereProxy &node);
-	void createSimpleRobotModel();
-	void connectPeekabot();
-	void createFOV(peekabot::GroupProxy &proxy, const char* path,
-			double fovHorizAngle, double fovVertiAngle, double* color,
-			double opacity, NavData::ViewPoint viewpoint, bool robotfov = true);
-	void createRobotFOV();
-	void getColorByIndex(int id, float &r, float &g, float &b);
-	double getProbabilityValue(
-			const SpatialProbabilities::ProbabilityDistribution &pd,
-			std::string varValue);
-	double getProbabilityValue(
-			const SpatialProperties::ProbabilityDistributionPtr pd, int varValue);
-	int GetPlaceIdFromNodeId(int nodeId);
-	void addProperties(peekabot::SphereProxy &sp, int placeId);
-	void addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &sp,
-			int placeId);
-	void displayPeople();
-	Cure::Transformation3D getCameraToWorldTransform();
+  void addEdgeToList(long id1, long id2);
+  void displayEdge(const DisplayNavInPB::Node &node1,
+      const DisplayNavInPB::Node &node2);
+  void redisplayEdgesToNode(const DisplayNavInPB::Node &node);
+  void addDoorpost(double x, double y, double theta, double width,
+      peekabot::SphereProxy &node);
+  void createSimpleRobotModel();
+  void connectPeekabot();
+  void createFOV(peekabot::GroupProxy &proxy, const char* path,
+      double fovHorizAngle, double fovVertiAngle, double* color,
+      double opacity, NavData::ViewPoint viewpoint, bool robotfov = true);
+  void createRobotFOV();
+  void getColorByIndex(int id, float &r, float &g, float &b);
+  double getProbabilityValue(
+      const SpatialProbabilities::ProbabilityDistribution &pd,
+      std::string varValue);
+  double getProbabilityValue(
+      const SpatialProperties::ProbabilityDistributionPtr pd, int varValue);
+  int GetPlaceIdFromNodeId(int nodeId);
+  void addProperties(peekabot::SphereProxy &sp, int placeId);
+  void addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &sp,
+      int placeId);
+  void displayPeople();
+  Cure::Transformation3D getCameraToWorldTransform();
 
 private:
-	peekabot::PeekabotClient m_PeekabotClient;
-	peekabot::GroupProxy m_ProxyLabels;
-	peekabot::GroupProxy m_ProxyRobot;
-	peekabot::GroupProxy m_ProxyTrajectory;
-	peekabot::GroupProxy m_ProxyWalls;
+  peekabot::PeekabotClient m_PeekabotClient;
+  peekabot::GroupProxy m_ProxyLabels;
+  peekabot::GroupProxy m_ProxyRobot;
+  peekabot::GroupProxy m_ProxyTrajectory;
+  peekabot::GroupProxy m_ProxyWalls;
 
-	peekabot::GroupProxy m_ProxyConnectivityPathProperties;
+  peekabot::GroupProxy m_ProxyConnectivityPathProperties;
 
-	peekabot::PointCloudProxy m_ProxyKinect;
-	peekabot::GroupProxy m_ProxyGraph;
-	peekabot::GroupProxy m_ProxyNodes;
-	peekabot::GroupProxy m_ProxyEdges;
-	peekabot::GroupProxy m_ProxyObjects;
-	peekabot::GroupProxy m_ProxyObjectLabels;
-	peekabot::PolylineProxy m_ProxyPathLog;
-	peekabot::PolygonProxy m_ProxyPathStartMarker;
-	peekabot::PolygonProxy m_ProxyPathEndMarker;
-	peekabot::GroupProxy m_ProxyViewpointGenCommands;
-	peekabot::GroupProxy m_ProxyDetectionCommands;
+  peekabot::PointCloudProxy m_ProxyKinect;
+  peekabot::GroupProxy m_ProxyGraph;
+  peekabot::GroupProxy m_ProxyNodes;
+  peekabot::GroupProxy m_ProxyEdges;
+  peekabot::GroupProxy m_ProxyObjects;
+  peekabot::GroupProxy m_ProxyObjectLabels;
+  peekabot::PolylineProxy m_ProxyPathLog;
+  peekabot::PolygonProxy m_ProxyPathStartMarker;
+  peekabot::PolygonProxy m_ProxyPathEndMarker;
+  peekabot::GroupProxy m_ProxyViewpointGenCommands;
+  peekabot::GroupProxy m_ProxyDetectionCommands;
 
-	peekabot::ObjectProxy m_ProxyCam;
-	peekabot::HingeProxy m_ProxyPan;
-	peekabot::HingeProxy m_ProxyTilt;
+  peekabot::ObjectProxy m_ProxyCam;
+  peekabot::HingeProxy m_ProxyPan;
+  peekabot::HingeProxy m_ProxyTilt;
 
-	peekabot::CameraProxy m_DefCam;
+  peekabot::CameraProxy m_DefCam;
 
-	bool m_ShowPanTilt;
-	bool m_LoadRobotFile;
-	bool m_FollowRobot;
-	bool m_ShowLabels;
-	bool m_ShowWalls;
-	bool m_ShowGraph;
-	bool m_ShowPeople;
-	bool m_ShowPeopleId;
-	bool m_ShowRobot;
-	bool m_ShowScans;
-	bool m_ShowObjects;
-	bool m_ShowRoomId;
-	bool m_ShowProperties;
-	bool m_ShowPlaceholders;
-	bool m_ShowRoomCategory;
-	bool m_ShowRobotViewCone;
-	bool m_ShowPlanePoints;
-	bool m_ShowSOIs;
-	bool m_ShowPath;
-	bool m_ShowCommands;
-	bool m_NonUniqueObjects;
-	bool m_ShowPointCloud;
-	bool m_ShowConnectivities;
+  bool m_ShowPanTilt;
+  bool m_LoadRobotFile;
+  bool m_FollowRobot;
+  bool m_ShowLabels;
+  bool m_ShowWalls;
+  bool m_ShowGraph;
+  bool m_ShowPeople;
+  bool m_ShowPeopleId;
+  bool m_ShowRobot;
+  bool m_ShowScans;
+  bool m_ShowObjects;
+  bool m_ShowRoomId;
+  bool m_ShowProperties;
+  bool m_ShowPlaceholders;
+  bool m_ShowRoomCategory;
+  bool m_ShowRobotViewCone;
+  bool m_ShowPlanePoints;
+  bool m_ShowSOIs;
+  bool m_ShowPath;
+  bool m_ShowCommands;
+  bool m_NonUniqueObjects;
+  bool m_ShowPointCloud;
+  bool m_ShowConnectivities;
 
-	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
-	int m_currGoalPlace;
+  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+  int m_currGoalPlace;
 
-	std::map<std::string, std::string> m_peekabotObjectFiles;
+  std::map<std::string, std::string> m_peekabotObjectFiles;
 
-	double m_FovH; // horisontal fov in degs
-	double m_FovV; // vertical fov in degs
-	std::vector<double> previouscenter;
-	std::string m_LaserServerName;
-	IceUtil::Mutex m_Mutex;
-	NavData::RobotPose2dPtr m_RobotPose;
-	NavData::LineMapPtr m_LineMap;
-	Laser::Scan2d m_Scan;
-	IceUtil::Mutex m_scanMutex;
-	std::string m_PbHost;
-	int m_PbPort;
-	std::string m_PbRobotFile;
-	std::string m_PbRobotName;
-	std::string m_PbPersonFile;
-	bool m_NoPeopleModel;
-	int m_CurrPersonId;
-	double m_lastLoggedX;
-	double m_lastLoggedY;
-	std::string m_currentMostLikelyRoom;
+  double m_FovH; // horisontal fov in degs
+  double m_FovV; // vertical fov in degs
+  std::vector<double> previouscenter;
+  std::string m_LaserServerName;
+  IceUtil::Mutex m_Mutex;
+  NavData::RobotPose2dPtr m_RobotPose;
+  NavData::LineMapPtr m_LineMap;
+  Laser::Scan2d m_Scan;
+  IceUtil::Mutex m_scanMutex;
+  std::string m_PbHost;
+  int m_PbPort;
+  std::string m_PbRobotFile;
+  std::string m_PbRobotName;
+  std::string m_PbPersonFile;
+  bool m_NoPeopleModel;
+  int m_CurrPersonId;
+  double m_lastLoggedX;
+  double m_lastLoggedY;
+  std::string m_currentMostLikelyRoom;
 
-	std::vector<PersonData> m_People; // The people that are currently in view
-	std::map<long, Node> m_Nodes;
-	std::list<std::pair<long, long> > m_Edges;
-	std::list<std::pair<long, long> > m_NewEdges;
-	std::map<std::string, PlaceData> _places;
-	std::map<std::string, std::pair<long, long> > _cpp;
+  std::vector<PersonData> m_People; // The people that are currently in view
+  std::map<long, Node> m_Nodes;
+  std::list<std::pair<long, long> > m_Edges;
+  std::list<std::pair<long, long> > m_NewEdges;
+  std::map<std::string, PlaceData> _places;
+  std::map<std::string, std::pair<long, long> > _cpp;
 
-	bool m_LaserConnected;
-	bool m_ReadPTU;
-	ptz::PTZInterfacePrx m_PTUServer;
-	Cure::SensorPose m_CameraPoseR;
+  bool m_LaserConnected;
+  bool m_ReadPTU;
+  ptz::PTZInterfacePrx m_PTUServer;
+  Cure::SensorPose m_CameraPoseR;
 
-	/** List of categories of rooms that we know about. */
-	std::vector<std::string> _roomCategories;
-	std::map<int, SpatialProperties::RoomShapePlacePropertyPtr> _shapeProps;
-	std::map<int, SpatialProperties::RoomSizePlacePropertyPtr> _sizeProps;
-	std::map<int, SpatialProperties::RoomAppearancePlacePropertyPtr>
-			_appearanceProps;
-	std::map<std::string, SpatialProperties::RoomCategoryPlaceholderPropertyPtr>
-			_roomCatPlaceholderProps;
+  /** List of categories of rooms that we know about. */
+  std::vector<std::string> _roomCategories;
+  std::map<int, SpatialProperties::RoomShapePlacePropertyPtr> _shapeProps;
+  std::map<int, SpatialProperties::RoomSizePlacePropertyPtr> _sizeProps;
+  std::map<int, SpatialProperties::RoomAppearancePlacePropertyPtr>
+      _appearanceProps;
+  std::map<std::string, SpatialProperties::RoomCategoryPlaceholderPropertyPtr>
+      _roomCatPlaceholderProps;
 
 };
 

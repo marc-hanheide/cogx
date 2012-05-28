@@ -31,23 +31,23 @@ namespace spatial {
 class SelfRepresenter: public cast::ManagedComponent {
 
 public:
-	/**
-	 * Constructor
-	 */
-	SelfRepresenter();
+  /**
+   * Constructor
+   */
+  SelfRepresenter();
 
-	/**
-	 * Destructor
-	 */
-	virtual ~SelfRepresenter();
+  /**
+   * Destructor
+   */
+  virtual ~SelfRepresenter();
 
-	virtual void start();
-	virtual void stop();
-	virtual void runComponent();
-	virtual void configure(const std::map<std::string, std::string>& _config);
+  virtual void start();
+  virtual void stop();
+  virtual void runComponent();
+  virtual void configure(const std::map<std::string, std::string>& _config);
 
 private:
-	NavData::FNodePtr getCurrentNavNode();
+  NavData::FNodePtr getCurrentNavNode();
 };
 }
 ;

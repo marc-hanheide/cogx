@@ -51,141 +51,141 @@ istream &operator>>(istream &o, SampleCloud &c);
 
 class SampleCloud {
 public:
-	friend class DensitySampler;
-	SampleCloud(const spatial::Object *o1, const spatial::Object *o2,
-			spatial::SpatialRelationType rel, Vector3 offset,
-			double intervalQuantum,
-			int intervalMultiplier, //Set to 0 if all extents are 0 (i.e. single sample)
-			int xExt, int yExt, int zExt, const vector<Matrix33> &orientations1,
-			const vector<Matrix33> &orientations2);
-	SampleCloud() :
-		object1(0), object2(0) {
-	}
-	SampleCloud(const SampleCloud &a);
-	~SampleCloud() {
-		delete object1;
-		delete object2;
-	}
-	;
-	SampleCloud &operator=(const SampleCloud &a);
+  friend class DensitySampler;
+  SampleCloud(const spatial::Object *o1, const spatial::Object *o2,
+      spatial::SpatialRelationType rel, Vector3 offset,
+      double intervalQuantum,
+      int intervalMultiplier, //Set to 0 if all extents are 0 (i.e. single sample)
+      int xExt, int yExt, int zExt, const vector<Matrix33> &orientations1,
+      const vector<Matrix33> &orientations2);
+  SampleCloud() :
+    object1(0), object2(0) {
+  }
+  SampleCloud(const SampleCloud &a);
+  ~SampleCloud() {
+    delete object1;
+    delete object2;
+  }
+  ;
+  SampleCloud &operator=(const SampleCloud &a);
 
-	friend ostream &spatial::operator<<(ostream &o, const SampleCloud &c);
-	friend istream &spatial::operator>>(istream &o, SampleCloud &c);
+  friend ostream &spatial::operator<<(ostream &o, const SampleCloud &c);
+  friend istream &spatial::operator>>(istream &o, SampleCloud &c);
 
-	void compute(RelationEvaluator &evaluator);
+  void compute(RelationEvaluator &evaluator);
 
-	SampleCloud composit(const SampleCloud &B) const;
+  SampleCloud composit(const SampleCloud &B) const;
 
-	void compact();
-	void makePointCloud(Vector3 &center, double &interval, int &xExt, int &yExt,
-			int &zExt, vector<double> &weights) const;
+  void compact();
+  void makePointCloud(Vector3 &center, double &interval, int &xExt, int &yExt,
+      int &zExt, vector<double> &weights) const;
 
-	void KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
-			Vector3 cloudCenter, double kernelWidthFactor, double &total,
-			double baseValue);
+  void KernelDensityEstimation2D(Cure::LocalGridMap<double> &outMap,
+      Vector3 cloudCenter, double kernelWidthFactor, double &total,
+      double baseValue);
 
-	vector<double> values;
+  vector<double> values;
 private:
 
-	spatial::Object *object1;
-	spatial::Object *object2;
-	spatial::SpatialRelationType rel;
+  spatial::Object *object1;
+  spatial::Object *object2;
+  spatial::SpatialRelationType rel;
 
-	Vector3 sampleOffset;
-	double sampleIntervalQuantum;
-	double kernelRadius;
-	int sampleIntervalMultiplier;
-	int xExtent;
-	int yExtent;
-	int zExtent;
-	vector<Matrix33> object1Orientations;
-	vector<Matrix33> object2Orientations;
+  Vector3 sampleOffset;
+  double sampleIntervalQuantum;
+  double kernelRadius;
+  int sampleIntervalMultiplier;
+  int xExtent;
+  int yExtent;
+  int zExtent;
+  vector<Matrix33> object1Orientations;
+  vector<Matrix33> object2Orientations;
 
 };
 
 struct SampleCloudContainer {
-	SampleCloud *cloud;
-	string obj1Label;
-	string obj2Label;
+  SampleCloud *cloud;
+  string obj1Label;
+  string obj2Label;
 };
 
 class DensitySampler {
 public:
-	DensitySampler(RelationEvaluator *evaluator) :
-		m_evaluator(evaluator), m_orientationQuantization(4), m_sampleNumberTarget(
-				5000), m_kernelWidthFactor(1.5) {
-	}
-	;
-	~DensitySampler() {
-		for (vector<SampleCloudContainer>::iterator it = m_sampleClouds.begin(); it
-				!= m_sampleClouds.end(); it++) {
-			delete it->cloud;
-		}
-	}
+  DensitySampler(RelationEvaluator *evaluator) :
+    m_evaluator(evaluator), m_orientationQuantization(4), m_sampleNumberTarget(
+        5000), m_kernelWidthFactor(1.5) {
+  }
+  ;
+  ~DensitySampler() {
+    for (vector<SampleCloudContainer>::iterator it = m_sampleClouds.begin(); it
+        != m_sampleClouds.end(); it++) {
+      delete it->cloud;
+    }
+  }
 
-	void
-	sampleBinaryRelationRecursively(
-			const vector<spatial::SpatialRelationType> &relations, const std::vector<
-					spatial::Object *> &objects, int currentLevel, Cure::LocalGridMap<
-					double> &map, double &total, const std::vector<Vector3> &triangle =
-					std::vector<Vector3>(), double baseOnness = 1.0);
+  void
+  sampleBinaryRelationRecursively(
+      const vector<spatial::SpatialRelationType> &relations, const std::vector<
+          spatial::Object *> &objects, int currentLevel, Cure::LocalGridMap<
+          double> &map, double &total, const std::vector<Vector3> &triangle =
+          std::vector<Vector3>(), double baseOnness = 1.0);
 
-	void
-	sampleBinaryRelationSystematically(
-			const std::vector<SpatialRelationType> &relations, const std::vector<
-					spatial::Object *> &objects, const std::vector<string> &objectLabels,
-			double cellSize, SampleCloud &outCloud);
+  void
+  sampleBinaryRelationSystematically(
+      const std::vector<SpatialRelationType> &relations, const std::vector<
+          spatial::Object *> &objects, const std::vector<string> &objectLabels,
+      double cellSize, SampleCloud &outCloud);
 
-	double kernelDensityEstimation3D(SpatialGridMap::GridMap<
-			SpatialGridMap::GridMapData> &map,
-			const vector<cogx::Math::Vector3> &centers, double interval, int xExtent,
-			int yExtent, int zExtent, const vector<double> &values,
-			double baseMultiplier, double totalWeight, const Cure::LocalGridMap<
-					unsigned char> *lgm = 0);
+  double kernelDensityEstimation3D(SpatialGridMap::GridMap<
+      SpatialGridMap::GridMapData> &map,
+      const vector<cogx::Math::Vector3> &centers, double interval, int xExtent,
+      int yExtent, int zExtent, const vector<double> &values,
+      double baseMultiplier, double totalWeight, const Cure::LocalGridMap<
+          unsigned char> *lgm = 0);
 
-	void setOrientationQuantization(int q) {
-		m_orientationQuantization = q;
-	}
-	void setSampleNumberTarget(int n) {
-		m_sampleNumberTarget = n;
-	}
-	void setKernelWidthFactor(double f) {
-		m_kernelWidthFactor = f;
-	}
-	double getKernelWidthFactor() const {
-		return m_kernelWidthFactor;
-	}
+  void setOrientationQuantization(int q) {
+    m_orientationQuantization = q;
+  }
+  void setSampleNumberTarget(int n) {
+    m_sampleNumberTarget = n;
+  }
+  void setKernelWidthFactor(double f) {
+    m_kernelWidthFactor = f;
+  }
+  double getKernelWidthFactor() const {
+    return m_kernelWidthFactor;
+  }
 
-	SampleCloud *
-	tryLoadCloudFromFile(const string &supportObjectLabel,
-			const string &onObjectLabel, SpatialRelationType type);
-	void
-	writeCloudToFile(const SampleCloud *cloud, const string &supportObjectLabel,
-			const string &onObjectLabel, SpatialRelationType type);
+  SampleCloud *
+  tryLoadCloudFromFile(const string &supportObjectLabel,
+      const string &onObjectLabel, SpatialRelationType type);
+  void
+  writeCloudToFile(const SampleCloud *cloud, const string &supportObjectLabel,
+      const string &onObjectLabel, SpatialRelationType type);
 
-	bool tryLoadOrientationsFromFile(const string &label);
-	void writeOrientationsToFile(const string &label);
+  bool tryLoadOrientationsFromFile(const string &label);
+  void writeOrientationsToFile(const string &label);
 
 protected:
-	RelationEvaluator * m_evaluator;
+  RelationEvaluator * m_evaluator;
 
-	SampleCloud *
-	createRelativeSampleCloud(SpatialRelationType relationType, Object *o1,
-			Object *o2, const vector<Matrix33> &orientations1,
-			const vector<Matrix33> &orientations2, double cellSize);
-	vector<SampleCloudContainer> m_sampleClouds;
-	map<string, vector<Matrix33> > m_objectOrientations;
+  SampleCloud *
+  createRelativeSampleCloud(SpatialRelationType relationType, Object *o1,
+      Object *o2, const vector<Matrix33> &orientations1,
+      const vector<Matrix33> &orientations2, double cellSize);
+  vector<SampleCloudContainer> m_sampleClouds;
+  map<string, vector<Matrix33> > m_objectOrientations;
 
-	//The actual number of orientations
-	// will be this number cubed
-	int m_orientationQuantization;
+  //The actual number of orientations
+  // will be this number cubed
+  int m_orientationQuantization;
 
-	//Number of positional samples in total to go for when sampling 
-	//a distribution. 
-	unsigned long m_sampleNumberTarget;
+  //Number of positional samples in total to go for when sampling 
+  //a distribution. 
+  unsigned long m_sampleNumberTarget;
 
-	//Width of kernels, relative to the distance between them.
-	double m_kernelWidthFactor;
+  //Width of kernels, relative to the distance between them.
+  double m_kernelWidthFactor;
 };
 
 }

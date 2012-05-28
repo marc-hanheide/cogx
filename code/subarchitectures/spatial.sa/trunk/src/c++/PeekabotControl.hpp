@@ -38,25 +38,25 @@ namespace navsa {
  */
 class PeekabotControl: public cast::ManagedComponent {
 public:
-	PeekabotControl();
-	virtual ~PeekabotControl();
+  PeekabotControl();
+  virtual ~PeekabotControl();
 
 protected:
 
-	virtual void configure(const std::map<std::string, std::string>& config);
-	virtual void start();
-	virtual void runComponent();
+  virtual void configure(const std::map<std::string, std::string>& config);
+  virtual void start();
+  virtual void runComponent();
 
-	void connectPeekabot();
+  void connectPeekabot();
 
-	std::string m_PbHost;
-	int m_PbPort;
+  std::string m_PbHost;
+  int m_PbPort;
 
-	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
-	int m_CtrlAction;
-	SpatialData::PlaceIDSeq placeseq;
-	peekabot::PeekabotClient m_PeekabotClient;
+  int m_CtrlAction;
+  SpatialData::PlaceIDSeq placeseq;
+  peekabot::PeekabotClient m_PeekabotClient;
 };
 
 }

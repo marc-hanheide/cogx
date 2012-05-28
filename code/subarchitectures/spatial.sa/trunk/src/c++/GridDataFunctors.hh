@@ -45,34 +45,34 @@ namespace SpatialGridMap {
  */
 class GDProbMax {
 private:
-	bool first;
-	double result;
+  bool first;
+  double result;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	GDProbMax() {
-		reset();
-	}
-	;
-	inline void operator()(const GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		if (first) {
-			result = data.pdf;
-			first = false;
-		} else {
-			result = result < data.pdf ? data.pdf : result;
-		}
-	}
-	;
-	double getResult() const {
-		return result;
-	}
-	;
-	void reset() {
-		first = true;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  GDProbMax() {
+    reset();
+  }
+  ;
+  inline void operator()(const GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    if (first) {
+      result = data.pdf;
+      first = false;
+    } else {
+      result = result < data.pdf ? data.pdf : result;
+    }
+  }
+  ;
+  double getResult() const {
+    return result;
+  }
+  ;
+  void reset() {
+    first = true;
+  }
+  ;
 };
 
 /**
@@ -84,28 +84,28 @@ public:
  */
 class GDProbSum {
 private:
-	double result;
+  double result;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	GDProbSum() {
-		reset();
-	}
-	;
-	inline void operator()(const GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		result = result + data.pdf * size;
-	}
-	;
-	double getResult() const {
-		return result;
-	}
-	;
-	void reset() {
-		result = 0;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  GDProbSum() {
+    reset();
+  }
+  ;
+  inline void operator()(const GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    result = result + data.pdf * size;
+  }
+  ;
+  double getResult() const {
+    return result;
+  }
+  ;
+  void reset() {
+    result = 0;
+  }
+  ;
 };
 
 /**
@@ -122,24 +122,24 @@ public:
  */
 class GDMeasUpdateGetDenominator {
 private:
-	double sensorDetectionProb, denominator;
+  double sensorDetectionProb, denominator;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	GDMeasUpdateGetDenominator(double sensorDetectionProb, double probDensitySum) :
-		sensorDetectionProb(sensorDetectionProb), denominator(probDensitySum) {
-	}
-	;
-	inline void operator()(const GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		denominator -= data.pdf * size * sensorDetectionProb;
-	}
-	;
-	double getResult() const {
-		return denominator;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  GDMeasUpdateGetDenominator(double sensorDetectionProb, double probDensitySum) :
+    sensorDetectionProb(sensorDetectionProb), denominator(probDensitySum) {
+  }
+  ;
+  inline void operator()(const GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    denominator -= data.pdf * size * sensorDetectionProb;
+  }
+  ;
+  double getResult() const {
+    return denominator;
+  }
+  ;
 };
 
 /**
@@ -149,20 +149,20 @@ public:
  */
 class GDUnsuccessfulMeasUpdate {
 private:
-	double denominator, sensorDetectionProb;
+  double denominator, sensorDetectionProb;
 public:
-	static FunctorType type() {
-		return Split;
-	}
-	GDUnsuccessfulMeasUpdate(double denominator, double sensorDetectionProb) :
-		denominator(denominator), sensorDetectionProb(sensorDetectionProb) {
-	}
-	;
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		data.pdf -= data.pdf * (sensorDetectionProb / denominator);
-	}
-	;
+  static FunctorType type() {
+    return Split;
+  }
+  GDUnsuccessfulMeasUpdate(double denominator, double sensorDetectionProb) :
+    denominator(denominator), sensorDetectionProb(sensorDetectionProb) {
+  }
+  ;
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    data.pdf -= data.pdf * (sensorDetectionProb / denominator);
+  }
+  ;
 };
 
 /**
@@ -171,28 +171,28 @@ public:
  */
 class GDIsFree {
 private:
-	bool result;
+  bool result;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	GDIsFree() {
-		reset();
-	}
-	;
-	inline void operator()(const GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		result = result && !data.occupancy == OCCUPIED;
-	}
-	;
-	double getResult() const {
-		return result;
-	}
-	;
-	void reset() {
-		result = true;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  GDIsFree() {
+    reset();
+  }
+  ;
+  inline void operator()(const GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    result = result && !data.occupancy == OCCUPIED;
+  }
+  ;
+  double getResult() const {
+    return result;
+  }
+  ;
+  void reset() {
+    result = true;
+  }
+  ;
 };
 
 //
@@ -204,23 +204,23 @@ public:
  */
 class GDSet {
 private:
-	GridMapData value;
+  GridMapData value;
 public:
-	static FunctorType type() {
-		return Replace;
-	}
-	GDSet(GridMapData value) :
-		value(value) {
-	}
-	;
-	void setValue(GridMapData value) {
-		this->value = value;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data = value;
-	}
-	;
+  static FunctorType type() {
+    return Replace;
+  }
+  GDSet(GridMapData value) :
+    value(value) {
+  }
+  ;
+  void setValue(GridMapData value) {
+    this->value = value;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data = value;
+  }
+  ;
 };
 
 /**
@@ -228,23 +228,23 @@ public:
  */
 class GDProbSet {
 private:
-	double value;
+  double value;
 public:
-	static FunctorType type() {
-		return Replace;
-	}
-	GDProbSet(double value) :
-		value(value) {
-	}
-	;
-	void setValue(double value) {
-		this->value = value;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data.pdf = value;
-	}
-	;
+  static FunctorType type() {
+    return Replace;
+  }
+  GDProbSet(double value) :
+    value(value) {
+  }
+  ;
+  void setValue(double value) {
+    this->value = value;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data.pdf = value;
+  }
+  ;
 };
 
 /**
@@ -254,27 +254,27 @@ public:
  */
 class GDProbInit {
 private:
-	double value;
-	double total;
+  double value;
+  double total;
 public:
-	static FunctorType type() {
-		return Iterate;
-	}
-	GDProbInit(double value) :
-		value(value), total(0.0) {
-	}
-	;
-	double getTotal() {
-		return total;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		if (data.occupancy != OCCUPIED) {
-			total += (value - data.pdf) * size;
-			data.pdf = value;
-		}
-	}
-	;
+  static FunctorType type() {
+    return Iterate;
+  }
+  GDProbInit(double value) :
+    value(value), total(0.0) {
+  }
+  ;
+  double getTotal() {
+    return total;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    if (data.occupancy != OCCUPIED) {
+      total += (value - data.pdf) * size;
+      data.pdf = value;
+    }
+  }
+  ;
 };
 
 /**
@@ -282,23 +282,23 @@ public:
  Useful for normalizing the map.*/
 class GDProbScale {
 private:
-	double factor;
+  double factor;
 public:
-	static FunctorType type() {
-		return Iterate;
-	}
-	GDProbScale(double factor) :
-		factor(factor) {
-	}
-	;
-	void setFactor(double factor) {
-		this->factor = factor;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data.pdf *= factor;
-	}
-	;
+  static FunctorType type() {
+    return Iterate;
+  }
+  GDProbScale(double factor) :
+    factor(factor) {
+  }
+  ;
+  void setFactor(double factor) {
+    this->factor = factor;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data.pdf *= factor;
+  }
+  ;
 };
 
 /**
@@ -306,81 +306,81 @@ public:
  */
 class GDProbAdd {
 private:
-	double value;
+  double value;
 public:
-	static FunctorType type() {
-		return Iterate;
-	}
-	GDProbAdd(double value) :
-		value(value) {
-	}
-	;
-	void setValue(double value) {
-		this->value = value;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data.pdf += value;
-	}
-	;
+  static FunctorType type() {
+    return Iterate;
+  }
+  GDProbAdd(double value) :
+    value(value) {
+  }
+  ;
+  void setValue(double value) {
+    this->value = value;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data.pdf += value;
+  }
+  ;
 };
 
 class GDMakeObstacle {
 public:
-	static FunctorType type() {
-		return Iterate;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data.occupancy = OCCUPIED;
-	}
-	;
+  static FunctorType type() {
+    return Iterate;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data.occupancy = OCCUPIED;
+  }
+  ;
 };
 
 class GDMakeFree {
 public:
-	static bool type() {
-		return Iterate;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data.occupancy = FREE;
-	}
-	;
+  static bool type() {
+    return Iterate;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data.occupancy = FREE;
+  }
+  ;
 };
 
 class GDMakeUnknown {
 public:
-	static bool type() {
-		return Iterate;
-	}
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data.occupancy = UNKNOWN;
-	}
-	;
+  static bool type() {
+    return Iterate;
+  }
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data.occupancy = UNKNOWN;
+  }
+  ;
 };
 
 // This is mostly for testing of split functionality
 class GDSplitZMult {
 private:
-	double value;
+  double value;
 public:
-	static FunctorType type() {
-		return Split;
-	}
-	GDSplitZMult(double value) :
-		value(value) {
-	}
-	;
-	inline void operator()(GridMapData & data, double size, double xPos,
-			double yPos, double zPos) {
-		data.pdf = value * zPos;
-	}
-	;
-	void setValue(double value) {
-		this->value = value;
-	}
+  static FunctorType type() {
+    return Split;
+  }
+  GDSplitZMult(double value) :
+    value(value) {
+  }
+  ;
+  inline void operator()(GridMapData & data, double size, double xPos,
+      double yPos, double zPos) {
+    data.pdf = value * zPos;
+  }
+  ;
+  void setValue(double value) {
+    this->value = value;
+  }
 };
 
 /**
@@ -390,45 +390,45 @@ public:
 
 class GDIsObstacle {
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	inline bool operator()(const GridMapData & data) const {
-		return data.occupancy == OCCUPIED;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  inline bool operator()(const GridMapData & data) const {
+    return data.occupancy == OCCUPIED;
+  }
+  ;
 };
 
 class GDObstacleOrUnknown {
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	inline bool operator()(const GridMapData & data) const {
-		return data.occupancy == OCCUPIED || data.occupancy == UNKNOWN;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  inline bool operator()(const GridMapData & data) const {
+    return data.occupancy == OCCUPIED || data.occupancy == UNKNOWN;
+  }
+  ;
 };
 
 inline double normalizePDF(GridMap<GridMapData> & map, double pTarget,
-		double currentWeight = 0.0) {
-	if (currentWeight <= 0.0) {
-		GDProbSum sumFunctor;
-		map.universalQuery(sumFunctor);
-		currentWeight = sumFunctor.getResult();
-	}
-	//	currentWeight += pOut;
-	double scaleFactor = pTarget / currentWeight;
-	GDProbScale scaleFunctor(scaleFactor);
-	map.universalQuery(scaleFunctor, false);
-	//	pOut = pOut * (1/currentWeight);
+    double currentWeight = 0.0) {
+  if (currentWeight <= 0.0) {
+    GDProbSum sumFunctor;
+    map.universalQuery(sumFunctor);
+    currentWeight = sumFunctor.getResult();
+  }
+  //	currentWeight += pOut;
+  double scaleFactor = pTarget / currentWeight;
+  GDProbScale scaleFunctor(scaleFactor);
+  map.universalQuery(scaleFunctor, false);
+  //	pOut = pOut * (1/currentWeight);
 
-	//TODO: This check can be removed
-	GDProbSum sumFunctor;
-	map.universalQuery(sumFunctor);
-	currentWeight = sumFunctor.getResult();
-	cout << "normalized to: " << currentWeight << endl;
-	return scaleFactor;
+  //TODO: This check can be removed
+  GDProbSum sumFunctor;
+  map.universalQuery(sumFunctor);
+  currentWeight = sumFunctor.getResult();
+  cout << "normalized to: " << currentWeight << endl;
+  return scaleFactor;
 }
 
 }

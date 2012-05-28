@@ -31,26 +31,26 @@ namespace spatial {
 class ConnectivityWriter: public cast::ManagedComponent {
 
 public:
-	/**
-	 * Constructor
-	 */
-	ConnectivityWriter();
+  /**
+   * Constructor
+   */
+  ConnectivityWriter();
 
-	/**
-	 * Destructor
-	 */
-	virtual ~ConnectivityWriter();
+  /**
+   * Destructor
+   */
+  virtual ~ConnectivityWriter();
 
-	virtual void start();
-	virtual void stop();
-	virtual void runComponent();
-	virtual void configure(const std::map<std::string, std::string>& _config);
+  virtual void start();
+  virtual void stop();
+  virtual void runComponent();
+  virtual void configure(const std::map<std::string, std::string>& _config);
 
 private:
-	void newConnectivity(const cdl::WorkingMemoryChange &wmc);
-	void changedGateway(const cdl::WorkingMemoryChange &wmc);
+  void newConnectivity(const cdl::WorkingMemoryChange &wmc);
+  void changedGateway(const cdl::WorkingMemoryChange &wmc);
 
-	Marshalling::MarshallerPrx m_marshaller;
+  Marshalling::MarshallerPrx m_marshaller;
 };
 }
 ;
