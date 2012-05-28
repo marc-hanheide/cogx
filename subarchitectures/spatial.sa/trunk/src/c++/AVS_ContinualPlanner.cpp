@@ -623,7 +623,7 @@ void AVS_ContinualPlanner::generateViewCones(
       return;
     }
     int comarooms_i = -1;
-    for (int i = 0; i < comarooms.size(); i++) {
+    for (size_t i = 0; i < comarooms.size(); i++) {
       log("Got coma room with room id: %d", comarooms[i]->roomId);
       if (comarooms[i]->roomId == newVPCommand->roomId) {
         comarooms_i = i;
@@ -634,7 +634,7 @@ void AVS_ContinualPlanner::generateViewCones(
       error("no comaroom");
       return;
     }
-    for (int j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
+    for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
       log("getting room which contains, placeid: %d",
           comarooms[comarooms_i]->containedPlaceIds[j]);
     }

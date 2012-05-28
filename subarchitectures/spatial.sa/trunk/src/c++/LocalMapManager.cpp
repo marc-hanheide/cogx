@@ -533,11 +533,11 @@ void LocalMapManager::newRobotPose(const cdl::WorkingMemoryChange &objID) {
     return;
   }
 
-  if (m_ptzInterface != 0) {
-    ptz::PTZReading reading = m_ptzInterface->getPose();
+//  if (m_ptzInterface != 0) {
+    //ptz::PTZReading reading = m_ptzInterface->getPose();
     //sprintf(buff,"Pan-Tilt(%f,%f)",reading.pose.pan,reading.pose.tilt);
     //log(buff);
-  }
+//  }
 
   double distMoved = sqrt((oldX - lastRobotPose->x) * (oldX - lastRobotPose->x)
       + (oldY - lastRobotPose->y) * (oldY - lastRobotPose->y));

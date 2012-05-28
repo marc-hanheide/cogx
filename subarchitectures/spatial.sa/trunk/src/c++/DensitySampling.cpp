@@ -504,7 +504,7 @@ void DensitySampler::sampleBinaryRelationSystematically(const vector<
       return;
     }
 
-    Pose3 oldPose = onObject->pose;
+//    Pose3 oldPose = onObject->pose;
 
     SampleCloud *cloud = 0;
 

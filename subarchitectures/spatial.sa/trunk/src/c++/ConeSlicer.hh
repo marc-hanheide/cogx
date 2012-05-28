@@ -91,10 +91,10 @@ private:
   vector<int> upwardVerticalPlanes;
   vector<int> downwardVerticalPlanes;
   vector<vector<SlicePlane> > farClipPlanes;
-  int upH;
-  int upV;
-  int dnH;
-  int dnV;
+  size_t upH;
+  size_t upV;
+  size_t dnH;
+  size_t dnV;
 
   // Per-column members
   double x, y;

@@ -571,7 +571,7 @@ int ViewPointGenerator::TrianglesIntersecting(XVector3D p0, XVector3D p1,
 }
 
 void ViewPointGenerator::findIntersectingCones2D() {
-  for (int y = 0; y < m_samples2D.size(); y++) { //calc. view cone for each sample
+  for (size_t y = 0; y < m_samples2D.size(); y++) { //calc. view cone for each sample
     XVector3D a;
     lgm->index2WorldCoords(m_samples2D[y].getX(), m_samples2D[y].getY(), a.x,
         a.y);
@@ -590,7 +590,7 @@ void ViewPointGenerator::findIntersectingCones2D() {
     lgm->worldCoords2Index(c.x, c.y, h, k);
     m_c.x = h;
     m_c.y = k;
-    for (int z = 0; z < m_samples2D.size(); z++) { //calc. view cone for each sample
+    for (size_t z = 0; z < m_samples2D.size(); z++) { //calc. view cone for each sample
       if (y != z) {
         XVector3D a1;
         lgm->index2WorldCoords(m_samples2D[z].getX(), m_samples2D[z].getY(),

@@ -1792,8 +1792,8 @@ void PlaceManager::processNewNode(NavData::FNodePtr node) {
     // meaning the exploration action is no failure
     m_foundNodeThisMovement = true;
 
-    int wasHeadingForPlace = m_goalPlaceForCurrentPath;
-    int wasComingFromNode = m_startNodeForCurrentPath;
+ //   int wasHeadingForPlace = m_goalPlaceForCurrentPath;
+ //   int wasComingFromNode = m_startNodeForCurrentPath;
 
     int newNodeID = node->nodeId;
     log("new node id: %i", newNodeID);
@@ -1809,7 +1809,7 @@ void PlaceManager::processNewNode(NavData::FNodePtr node) {
 
     if (robotPoses.size() != 0) {
       double min_dist = 100;
-      for (int i = 0; i < placeholders.size(); i++) {
+      for (size_t i = 0; i < placeholders.size(); i++) {
         const NodeHypothesisPtr hyp = _getHypForPlace(placeholders[i]);
         double distSq = (robotPoses[0]->x - hyp->x) * (robotPoses[0]->x
             - hyp->x) + (robotPoses[0]->y - hyp->y) * (robotPoses[0]->y
@@ -1849,7 +1849,7 @@ void PlaceManager::processPlaceArrival(bool failed) {
     log("m_goalPlaceForCurrentPath was %i", m_goalPlaceForCurrentPath);
 
     int wasHeadingForPlace = m_goalPlaceForCurrentPath;
-    int wasComingFromNode = m_startNodeForCurrentPath;
+//    int wasComingFromNode = m_startNodeForCurrentPath;
 
     const NodeHypothesisPtr goalHyp = _getHypForPlace(wasHeadingForPlace);
 

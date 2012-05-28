@@ -1103,7 +1103,7 @@ void GridMap<MapData>::boxQuery(double xPos, double yPos, double zPos,
 
     // Iterate between the inner intersections
     for (int j = minBound; j <= maxBound; j++) {
-      pair<double, double> coords = gridToWorldCoords(i, j);
+      //pair<double, double> coords = gridToWorldCoords(i, j);
       colQuery(i, j, functor, zPos - zSize / 2, zPos + zSize / 2);
     }
   }
@@ -1196,7 +1196,7 @@ inline double GridMap<MapData>::rayCollisionDistance(cv::Mat_<double> origin,
     double nextY = originCellMiddle.second + j * cellSize + 0.5 * cellSize
         * stepY;
     double nextZ;
-    double nextDepth;
+    //double nextDepth;
 
     //How far along the line is that?
     double depthStepX = (nextX - currentX) * depthPerX;
@@ -1209,7 +1209,7 @@ inline double GridMap<MapData>::rayCollisionDistance(cv::Mat_<double> origin,
       depthStep = depthStepX;
       nextY = currentY + depthStep * direction(1, 0);
       nextZ = currentZ + depthStep * direction(2, 0);
-      nextDepth = currentDepth + depthStep;
+      //nextDepth = currentDepth + depthStep;
 
       nexti += stepX;
     } else {
@@ -1217,7 +1217,7 @@ inline double GridMap<MapData>::rayCollisionDistance(cv::Mat_<double> origin,
       depthStep = depthStepY;
       nextX = currentX + depthStep * direction(0, 0);
       nextZ = currentZ + depthStep * direction(2, 0);
-      nextDepth = currentDepth + depthStep;
+      //nextDepth = currentDepth + depthStep;
 
       nextj += stepY;
     }

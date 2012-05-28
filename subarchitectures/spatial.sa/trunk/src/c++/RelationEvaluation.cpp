@@ -644,7 +644,7 @@ void RelationEvaluator::computeConvexHull(const std::vector<Vector3>& points,
 double RelationEvaluator::findOverlappingArea(
     const std::vector<Vector3>& polygon, Vector3 circleCenter,
     double circleRadius, const Vector3 &circleNormal) {
-  const Vector3 zeroVec = vector3(0, 0, 0);
+//  const Vector3 zeroVec = vector3(0, 0, 0);
   unsigned nextIndex = 1;
   vector<Vector3> entryEgressPoints;
   vector<Vector3> internalPolygonPoints;
@@ -1473,7 +1473,7 @@ Vector3 RelationEvaluator::computeAttentionVectorSumForPatch(const vector<
 
   //Divide polygon into triangles
   int apexIndex = 0;
-  for (int index2 = apexIndex + 1; index2 < patch.size() - 1; index2++) {
+  for (size_t index2 = apexIndex + 1; index2 < patch.size() - 1; index2++) {
     Vector3 v1 = patch[index2] - patch[apexIndex];
     Vector3 v2 = patch[index2 + 1] - patch[apexIndex];
 
