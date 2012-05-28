@@ -1,9 +1,6 @@
 package motivation.components.filters;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import motivation.slice.AnalyzeProtoObjectMotive;
 import motivation.slice.LearnObjectFeatureMotive;
@@ -28,16 +25,14 @@ import castutils.castextensions.WMView.ChangeHandler;
 public class DriveHierarchyFilter implements MotiveFilter,
 		ChangeHandler<Motive> {
 
-	private static final int UNKNOWN_CLASS_VALUE = Integer.MAX_VALUE;
-
 	private MotiveFilterManager m_component;
 
-	private final ArrayList<Set<Class<? extends Motive>>> m_driveHierarchy;
+	private final DriveHierarchy m_driveHierarchy;
 
 	int m_activeLevel = Integer.MAX_VALUE;
 
 	public DriveHierarchyFilter() {
-		m_driveHierarchy = new ArrayList<Set<Class<? extends Motive>>>();
+		m_driveHierarchy = new DriveHierarchy();
 	}
 
 	/**
@@ -49,11 +44,9 @@ public class DriveHierarchyFilter implements MotiveFilter,
 	private boolean ignoreThis(Motive motive) {
 		if (motive.status == MotiveStatus.COMPLETED) {
 			return true;
-		}
-		else if (motive.status == MotiveStatus.IMPOSSIBLE) {
+		} else if (motive.status == MotiveStatus.IMPOSSIBLE) {
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -62,8 +55,8 @@ public class DriveHierarchyFilter implements MotiveFilter,
 	public MotivePriority checkMotive(Motive motive, WorkingMemoryChange wmc) {
 
 		Class<? extends Motive> motiveCls = motive.getClass();
-		int priority = getPriority(motiveCls);
-		if (priority == UNKNOWN_CLASS_VALUE) {
+		int priority = m_driveHierarchy.getPriority(motiveCls);
+		if (priority == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 			m_component.getLogger().warn("Unknown motive class: " + motiveCls,
 					m_component.getLogAdditions());
 			return null;
@@ -71,10 +64,10 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 		// ignore completed etc. motives as we don't want them to influence
 		// drive calculations
-		if(ignoreThis(motive)) {
+		if (ignoreThis(motive)) {
 			return motive.priority;
 		}
-		
+
 		// if in a surfaced class, return surface
 		if (priority == m_activeLevel) {
 			return MotivePriority.NORMAL;
@@ -115,37 +108,15 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		m_display.updateActiveLevel(m_activeLevel);
 	}
 
-	private void addPrioritySet(Class<? extends Motive>... _motiveClasses) {
-		HashSet<Class<? extends Motive>> motiveClasses = new HashSet<Class<? extends Motive>>(
-				_motiveClasses.length);
-
-		for (Class<? extends Motive> cls : _motiveClasses) {
-			motiveClasses.add(cls);
-		}
-
-		m_driveHierarchy.add(motiveClasses);
-	}
-
-	private int getPriority(Class<? extends Motive> _motiveCls) {
-		int priority = UNKNOWN_CLASS_VALUE;
-		for (int i = 0; i < m_driveHierarchy.size(); i++) {
-			if (m_driveHierarchy.get(i).contains(_motiveCls)) {
-				priority = i;
-				break;
-			}
-		}
-		return priority;
-	}
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public void configure(Map<String, String> _config) {
 		// define priority levels, highest first
 
-		addPrioritySet(TutorInitiativeLearningMotive.class,
+		m_driveHierarchy.addPrioritySet(TutorInitiativeLearningMotive.class,
 				TutorInitiativeQuestionMotive.class);
 
-		addPrioritySet(AnalyzeProtoObjectMotive.class,
+		m_driveHierarchy.addPrioritySet(AnalyzeProtoObjectMotive.class,
 				LearnObjectFeatureMotive.class);
 
 		m_display.configureDisplayClient(_config);
@@ -163,17 +134,18 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		// level should be the maximum represented one there, else reset to
 		// unknown.
 
-		int newLevel = UNKNOWN_CLASS_VALUE;
+		int newLevel = DriveHierarchy.UNKNOWN_CLASS_VALUE;
 		for (Motive mtv : map.values()) {
 			// ignore motives that are done or impossible
 			if (!ignoreThis(mtv)) {
-				newLevel = Math.min(getPriority(mtv.getClass()), newLevel);
+				newLevel = Math.min(
+						m_driveHierarchy.getPriority(mtv.getClass()), newLevel);
 			}
 		}
 
 		if (newLevel != m_activeLevel) {
 			m_activeLevel = newLevel;
-			if (m_activeLevel != UNKNOWN_CLASS_VALUE) {
+			if (m_activeLevel != DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 				m_component
 						.println("after completion, switching active level to "
 								+ m_activeLevel);
@@ -201,7 +173,7 @@ public class DriveHierarchyFilter implements MotiveFilter,
 
 	private class DriveHierarchyDisplayClient extends DisplayClient {
 		public void updateActiveLevel(int _level) {
-			if (_level == UNKNOWN_CLASS_VALUE) {
+			if (_level == DriveHierarchy.UNKNOWN_CLASS_VALUE) {
 				m_display.setHtml("drive.filter", "001",
 						"Waiting for any input ");
 			} else {
