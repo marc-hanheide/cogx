@@ -660,7 +660,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID) {
 
 	map<long, long> nodeIDs;
 	// For each place in the room
-	for (::std::vector<::Ice::Long>::iterator iter =
+	for (std::vector<Ice::Long>::iterator iter =
 			croom->containedPlaceIds.begin(); iter != croom->containedPlaceIds.end(); iter++) {
 		// Get node id from place id
 		::NavData::FNodePtr fnodePtr = agg->getNodeFromPlaceID((::Ice::Int) * iter); // why is iter a long?
@@ -675,7 +675,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID) {
 	IceUtil::Mutex::Lock lock(m_Mutex);
 
 	// For each place in the room
-	for (::std::vector<::Ice::Long>::iterator iter =
+	for (std::vector<Ice::Long>::iterator iter =
 			croom->containedPlaceIds.begin(); iter != croom->containedPlaceIds.end(); iter++) {
 
 		// Search m_Nodes for place and change its room id
