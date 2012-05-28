@@ -6,5 +6,5 @@ JAVA MG gg.pii      eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator 
 # JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 
 # JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter" --delete-on-complete
-JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "DriveHierarchyFilter,DelayFilter" --recheck-interval 5000 
+JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 
 
