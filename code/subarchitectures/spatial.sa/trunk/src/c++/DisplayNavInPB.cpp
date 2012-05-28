@@ -1853,11 +1853,11 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange) {
           text.set_position(nodePtr->x, nodePtr->y, 0);
         }
 
-        int nodeId;
+//        int nodeId;
         int originPlaceID;
         double hypX, hypY;
         try {
-          nodeId = nodePtr->hypID;
+  //        nodeId = nodePtr->hypID;
           originPlaceID = nodePtr->originPlaceID;
           hypX = nodePtr->x;
           hypY = nodePtr->y;
@@ -2285,7 +2285,7 @@ void DisplayNavInPB::displayConnectivityPathProperty(int place1Id, int place2Id)
   log("alex lp %f %f %f %f %f %f", fx, fy, tx, ty, tx - 0.05 * cos(angle - M_PI
       / 6), ty - 0.05 * sin(angle - M_PI / 6));
   char name[32];
-  sprintf(name, "cpp%06ld", place1Id * 1000 + place2Id);
+  sprintf(name, "cpp%06d", place1Id * 1000 + place2Id);
   peekabot::LineCloudProxy lp;
   peekabot::VertexSet vs;
   lp.add(m_ProxyConnectivityPathProperties, name, peekabot::REPLACE_ON_CONFLICT);

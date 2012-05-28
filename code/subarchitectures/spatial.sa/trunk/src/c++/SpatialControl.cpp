@@ -1362,7 +1362,7 @@ void SpatialControl::updateGridMaps() {
   //Must keep the obstacle count below this limit.
   //The following scheme adds at most a third of the cells in the 
   //3x3 square around the robot, making 1/3*3600=1200 obstacles
-  long nObstacles = 0;
+//  long nObstacles = 0;
   int iCenter, jCenter;
   m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), iCenter, jCenter);
   double radius = 1.5; //Distance to consider obstacles at

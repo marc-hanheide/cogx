@@ -15,10 +15,10 @@ const double planeThickness = 0.05;
 double RelationEvaluator::evaluateOnness(const Object *objectS,
     const Object *objectO) {
   // Retrieve pose for supporting object (S)
-  Pose3 Spose = objectS->pose;
+//  Pose3 Spose = objectS->pose;
   // Retrieve model for S
   // Retrieve pose for supported object (O)
-  Pose3 Opose = objectO->pose;
+//  Pose3 Opose = objectO->pose;
   // Retrieve model for O
 
   //int supportSurfaceType; // 0 for point, 1 for line segment, 2 for circle, 3 for polygon
@@ -310,7 +310,7 @@ Witness RelationEvaluator::findContactPatch(const BoxObject &boxA,
 
   if (intersecting) {
     bestWitness.distance = -FLT_MAX;
-    bool found = false;
+//    bool found = false;
     wr = boxA.radius1;
     dr = boxA.radius2;
     hr = boxA.radius3;
@@ -328,7 +328,7 @@ Witness RelationEvaluator::findContactPatch(const BoxObject &boxA,
         bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
         bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 
-        found = true;
+//        found = true;
       }
     }
     wr = boxB.radius1;
@@ -348,7 +348,7 @@ Witness RelationEvaluator::findContactPatch(const BoxObject &boxA,
         bestWitness.point2 = transform(boxB.pose, bestWitness.point2);
         bestWitness.normal = boxB.pose.rot * bestWitness.normal;
 
-        found = true;
+//        found = true;
       }
     }
     for (unsigned int i = 0; i < edgeWitnesses.size(); i++) {
@@ -361,7 +361,7 @@ Witness RelationEvaluator::findContactPatch(const BoxObject &boxA,
         bestWitness.point2 = transform(boxA.pose, bestWitness.point2);
         bestWitness.normal = boxA.pose.rot * bestWitness.normal;
 
-        found = true;
+//        found = true;
       }
     }
   }
