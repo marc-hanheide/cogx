@@ -459,7 +459,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
     dBeliefPtr belief = new dBelief;
     belief = getMemoryEntry<dBelief> (objID.address);
 
-    if (belief->type == "VisualObject") {
+    if (belief->type == "visualobject") {
       CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(
           belief->content));
       if (dist->distribs.count("label") != 0) {
