@@ -55,41 +55,40 @@ namespace navsa {
  * @param -m optional map file. If the file exist it will be loaded and the
  *   metric map will be written to working memory.
  */
-  class SlamProcessFake: 
-      public castutils::OptionParserMixinBaseclass<cast::ManagedComponent>,
-      public OdometryReceiver
-{
+class SlamProcessFake: public castutils::OptionParserMixinBaseclass<
+		cast::ManagedComponent>, public OdometryReceiver {
 public:
-  SlamProcessFake();
-  virtual ~SlamProcessFake();
+	SlamProcessFake();
+	virtual ~SlamProcessFake();
 
-  void receiveOdometry(const Robotbase::Odometry &odom);
+	void receiveOdometry(const Robotbase::Odometry &odom);
 
 protected:
-  virtual void runComponent();
-  virtual void configure(const std::map<std::string, std::string> &config);
+	virtual void runComponent();
+	virtual void configure(const std::map<std::string, std::string> &config);
 
-  void updateRobotPoseInWM(const NavData::RobotPose2dPtr &pose);
-  void writeLineMapToWorkingMemory(Cure::FeatureMap &fm);
+	void updateRobotPoseInWM(const NavData::RobotPose2dPtr &pose);
+	void writeLineMapToWorkingMemory(Cure::FeatureMap &fm);
 
-  void connectPeekabot();
+	void connectPeekabot();
 
 private:
 
-  // The string that identifies the robotpose in the working memory
-  std::string _robotPoseIdString;
+	// The string that identifies the robotpose in the working memory
+	std::string _robotPoseIdString;
 
-  // The string that identifies the map in the working memory
-  std::string _lineMapIdString;
+	// The string that identifies the map in the working memory
+	std::string _lineMapIdString;
 
-  // The name of the map file we read from / write to
-  std::string _mapFilename;
+	// The name of the map file we read from / write to
+	std::string _mapFilename;
 
-  // The config file for loading the metric map
-  std::string _configFilename;
+	// The config file for loading the metric map
+	std::string _configFilename;
 
 };
 
-}; // namespace navsa
+}
+; // namespace navsa
 
 #endif

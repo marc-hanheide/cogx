@@ -10,25 +10,27 @@ using namespace std;
 
 namespace navsa {
 
-  class PlaceholderExplorer : public cast::ManagedComponent
-  {
-    public:
-      PlaceholderExplorer();
-      virtual ~PlaceholderExplorer() {};
+class PlaceholderExplorer: public cast::ManagedComponent {
+public:
+	PlaceholderExplorer();
+	virtual ~PlaceholderExplorer() {
+	}
+	;
 
-      virtual void runComponent();
-      virtual void start();
-    protected:
-      virtual void configure(const map<string, string>& config);
-    private:
-      int m_status;
-      float m_x, m_y, m_theta;
-      bool m_hasPosition;
-      void poseChange(const cast::cdl::WorkingMemoryChange &objID);
-      void navCommandResponse(const cast::cdl::WorkingMemoryChange &objID);
-      void goToPlace(int placeId);
-      int findClosestPlaceholderInNodeGraph(int curPlaceId);
-  };
+	virtual void runComponent();
+	virtual void start();
+protected:
+	virtual void configure(const map<string, string>& config);
+private:
+	int m_status;
+	float m_x, m_y, m_theta;
+	bool m_hasPosition;
+	void poseChange(const cast::cdl::WorkingMemoryChange &objID);
+	void navCommandResponse(const cast::cdl::WorkingMemoryChange &objID);
+	void goToPlace(int placeId);
+	int findClosestPlaceholderInNodeGraph(int curPlaceId);
 };
+}
+;
 
 #endif

@@ -12,7 +12,6 @@
 //
 /*----------------------------------------------------------------------*/
 
-
 #ifndef SelfRepresenter_hpp
 #define SelfRepresenter_hpp
 
@@ -29,30 +28,29 @@ using namespace std;
 using namespace cast;
 
 namespace spatial {
-  class SelfRepresenter : public cast::ManagedComponent
-  {
+class SelfRepresenter: public cast::ManagedComponent {
 
-    public:
-    /**
-     * Constructor
-     */
-    SelfRepresenter();
+public:
+	/**
+	 * Constructor
+	 */
+	SelfRepresenter();
 
-    /**
-     * Destructor
-     */
-    virtual ~SelfRepresenter();
+	/**
+	 * Destructor
+	 */
+	virtual ~SelfRepresenter();
 
-    virtual void start();
-    virtual void stop();
-    virtual void runComponent();
-    virtual void configure(const std::map<std::string, std::string>& _config);
+	virtual void start();
+	virtual void stop();
+	virtual void runComponent();
+	virtual void configure(const std::map<std::string, std::string>& _config);
 
-    private:
-    NavData::FNodePtr getCurrentNavNode();
+private:
+	NavData::FNodePtr getCurrentNavNode();
 };
-};
+}
+;
 
 #endif
-
 

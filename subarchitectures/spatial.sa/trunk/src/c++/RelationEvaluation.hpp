@@ -9,182 +9,183 @@
 using namespace cogx::Math;
 
 namespace spatial {
-  enum SpatialObjectType {OBJECT_PLANE, OBJECT_BOX, OBJECT_CYLINDER, OBJECT_SPHERE, OBJECT_HOLLOW_BOX};
+enum SpatialObjectType {
+	OBJECT_PLANE, OBJECT_BOX, OBJECT_CYLINDER, OBJECT_SPHERE, OBJECT_HOLLOW_BOX
+};
 
-enum SpatialRelationType {RELATION_ON, RELATION_IN, RELATION_COMPOSITE};
+enum SpatialRelationType {
+	RELATION_ON, RELATION_IN, RELATION_COMPOSITE
+};
 
 struct Object {
-  SpatialObjectType type;
+	SpatialObjectType type;
 
-  cogx::Math::Pose3 pose;
+	cogx::Math::Pose3 pose;
 };
 
-enum PlaneObjectShape {PLANE_OBJECT_RECTANGLE, PLANE_OBJECT_CIRCLE};
-
-struct PlaneObject : public Object {
-  PlaneObjectShape shape;
-
-  double radius1;
-  double radius2;
+enum PlaneObjectShape {
+	PLANE_OBJECT_RECTANGLE, PLANE_OBJECT_CIRCLE
 };
 
-struct BoxObject : public Object {
-  double radius1;
-  double radius2;
-  double radius3;
+struct PlaneObject: public Object {
+	PlaneObjectShape shape;
+
+	double radius1;
+	double radius2;
 };
 
-struct CylinderObject : public Object {
-  double radius1;
-  double radius2;
+struct BoxObject: public Object {
+	double radius1;
+	double radius2;
+	double radius3;
 };
 
-struct SphereObject : public Object {
-  double radius1;
+struct CylinderObject: public Object {
+	double radius1;
+	double radius2;
+};
+
+struct SphereObject: public Object {
+	double radius1;
 };
 
 //Box with the top (Z+) side open
-struct HollowBoxObject : public BoxObject {
-  double thickness;
-  int sideOpen;
+struct HollowBoxObject: public BoxObject {
+	double thickness;
+	int sideOpen;
 };
 
-enum WitnessType {WITNESS_VERTEX, WITNESS_EDGE, WITNESS_FACE};
+enum WitnessType {
+	WITNESS_VERTEX, WITNESS_EDGE, WITNESS_FACE
+};
 struct Witness {
-  Vector3 point1;
-  Vector3 point2;
-  double distance;
-  WitnessType typeOnA;
-  WitnessType typeOnB;
-  int idOnA; //Vertex, edge or face number 
-  int idOnB; //Vertex, edge or face number 
-  double paramOnA; //Parameter along edge
-  double paramOnB;
-  Vector3 normal; //Normal direction from A to B
+	Vector3 point1;
+	Vector3 point2;
+	double distance;
+	WitnessType typeOnA;
+	WitnessType typeOnB;
+	int idOnA; //Vertex, edge or face number 
+	int idOnB; //Vertex, edge or face number 
+	double paramOnA; //Parameter along edge
+	double paramOnB;
+	Vector3 normal; //Normal direction from A to B
 };
-
-
-
 
 class RelationEvaluator {
-  public:
-    RelationEvaluator();
+public:
+	RelationEvaluator();
 
+	typedef std::pair<int, int> Edge;
 
+	struct Polyhedron {
+		std::vector<Vector3> vertices;
+		std::vector<std::vector<Edge> > faces; //Edge list around face (positive direction)
+	};
 
-    typedef std::pair<int, int> Edge;
+public:
 
-    struct Polyhedron {
-      std::vector<Vector3> vertices;
-      std::vector<std::vector<Edge> > faces; //Edge list around face (positive direction)
-    };
+	double
+	evaluateInness(const Object *objectC, const Object *objectO);
 
-  public:
+	double
+	evaluateOnness(const Object *objectS, const Object *objectO);
 
-    double
-      evaluateInness(const Object *objectC, const Object *objectO);
+	void
+	sampleOnnessDistribution(const Object *objectS, Object *objectO, std::vector<
+			Vector3> &outPoints, double xmin, double xmax, double ymin, double ymax,
+			double zmin, double zmax, double startStep, double minStep);
 
-    double
-      evaluateOnness(const Object *objectS, const Object *objectO);
+	std::vector<Vector3>
+	findPolygonIntersection(const std::vector<Vector3> &polygon1,
+			const std::vector<Vector3> &polygon2);
 
-    void
-      sampleOnnessDistribution(const Object *objectS, Object *objectO, 
-	  std::vector<Vector3> &outPoints, 
-	  double xmin, double xmax, 
-	  double ymin, double ymax,
-	  double zmin, double zmax, 
-	  double startStep, double minStep); 
+	double
+	computePolyhedronVolume(const Polyhedron &polyhedron);
 
-    std::vector<Vector3>
-      findPolygonIntersection(const std::vector<Vector3> &polygon1, 
-	  const std::vector<Vector3> &polygon2);
+	void
+	computeConvexHull(const std::vector<Vector3>& points,
+			const Vector3 &polygonNormal, std::vector<Vector3>& hull);
 
-    double
-      computePolyhedronVolume(const Polyhedron &polyhedron);
+	double
+	getPolygonArea(const std::vector<Vector3> &polygon);
 
-    void
-      computeConvexHull(const std::vector<Vector3>& points, 
-	  const Vector3 &polygonNormal, std::vector<Vector3>& hull);
+	double
+	getPolygonAreaAndCentroid(const std::vector<Vector3> &polygon,
+			Vector3 &centroid);
 
-    double
-      getPolygonArea(const std::vector<Vector3> &polygon);
+	Witness
+	findContactPatch(const BoxObject &boxA, const BoxObject &boxB, std::vector<
+			Vector3> *outPatch = 0, double *maxPatchClearance = 0);
 
-    double
-      getPolygonAreaAndCentroid(const std::vector<Vector3> &polygon, 
-	  Vector3 &centroid);
+	Vector3
+	computeAttentionVectorSumForPatch(const std::vector<Vector3> patch,
+			const Vector3 &focus, const Vector3 &trajector, double falloff);
 
-    Witness
-      findContactPatch(const BoxObject &boxA, const BoxObject &boxB, 
-	  std::vector<Vector3> *outPatch = 0, double *maxPatchClearance = 0);
+	Vector3
+	computeAttentionVectorSumForSolid(const Object *obj, const Vector3 &focus,
+			const Vector3 &trajector, double falloff);
 
-    Vector3
-      computeAttentionVectorSumForPatch(const std::vector<Vector3> patch,
-	  const Vector3 &focus, const Vector3 &trajector, double falloff);
+protected:
 
-    Vector3
-      computeAttentionVectorSumForSolid(const Object *obj,
-	  const Vector3 &focus, const Vector3 &trajector, double falloff);
+	void
+	mergeAnyOverlappingVertices(Polyhedron &polyhedron, double epsilon);
 
-  protected:
+	void
+	clipPolyhedronToPlane(Polyhedron &polyhedron, const Vector3 &pointInPlane,
+			const Vector3 &planeNormal);
 
+	double
+	findOverlappingArea(const std::vector<Vector3>& polygon,
+			Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal);
 
-    void
-      mergeAnyOverlappingVertices(Polyhedron &polyhedron, double epsilon);
+	double
+	getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon);
 
-    void
-      clipPolyhedronToPlane(Polyhedron &polyhedron, const Vector3 &pointInPlane,
-	  const Vector3 &planeNormal);
+	double
+	getMaxPolygonClearance(const std::vector<Vector3> &polygon);
 
-    double
-      findOverlappingArea(const std::vector<Vector3>& polygon, Vector3 circleCenter, double circleRadius, const Vector3 &circleNormal);
+	bool
+	isIntersecting(double wr, double dr, double hr, const Vector3[]);
 
-    double
-      getDistanceToPolygon(const Vector3 &ref, const std::vector<Vector3> &polygon);
+	void
+	getCornerWitnesses(double wr, double dr, double hr,
+			const Vector3 BVertices[], const std::vector<Vector3> & BEdges,
+			std::vector<Witness> &cornerWitnesses);
 
-    double
-      getMaxPolygonClearance(const std::vector<Vector3> &polygon);
+	void
+	getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
+			const std::vector<Vector3> & BEdges, std::vector<Witness> &edgeWitnesses,
+			bool intersecting);
 
-    bool
-      isIntersecting(double wr, double dr, double hr, const Vector3[]);
+public:
+	//Onness parameters
+	double patchThreshold;
+	double distanceFalloffOutside;
+	double distanceFalloffInside;
+	double supportCOMContainmentOffset;
+	double supportCOMContainmentSteepness;
 
-    void
-      getCornerWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
-	  const std::vector<Vector3> & BEdges, std::vector<Witness> &cornerWitnesses);
+	//Inness parameters
+	double planeThickness;
+	double circlePlaneApproximationThreshold; //Controls number of
+	//edges in polygon used to approximate circular planes
+	double cylinderApproximationThreshold;
+	int sphereTessellationFactor; //Number of latitudes and half number of
+	//longitudes. 2 makes the sphere an octahedron
+	double boxThickness; //Controls thickness of walls of hollow container
 
-    void
-      getEdgeWitnesses(double wr, double dr, double hr, const Vector3 BVertices[],
-	  const std::vector<Vector3> & BEdges, std::vector<Witness> &edgeWitnesses,
-	  bool intersecting);
-
-
-  public:
-    //Onness parameters
-    double patchThreshold;
-    double distanceFalloffOutside;
-    double distanceFalloffInside;
-    double supportCOMContainmentOffset;
-    double supportCOMContainmentSteepness;
-
-    //Inness parameters
-    double planeThickness;
-    double circlePlaneApproximationThreshold; //Controls number of
-    //edges in polygon used to approximate circular planes
-    double cylinderApproximationThreshold;
-    int sphereTessellationFactor; //Number of latitudes and half number of
-    //longitudes. 2 makes the sphere an octahedron
-    double boxThickness; //Controls thickness of walls of hollow container
-
-    Witness m_lastWitness;
-    double m_lastDistanceFactor;
-    std::vector<Vector3> m_lastPatch;
+	Witness m_lastWitness;
+	double m_lastDistanceFactor;
+	std::vector<Vector3> m_lastPatch;
 };
 
 void
 randomizeOrientation(Pose3 &pose);
 
 bool
-inferRelationsThreeObjects(std::vector<double> &ret, double BOnA, double AOnB, double BOnT,
-   double AOnT, double BInA, double AInB, double BInT, double AInT);
+inferRelationsThreeObjects(std::vector<double> &ret, double BOnA, double AOnB,
+		double BOnT, double AOnT, double BInA, double AInB, double BInT,
+		double AInT);
 
 void
 getRandomSampleSphere(std::vector<Matrix33> &orientations, int n);
@@ -195,5 +196,6 @@ getRandomSampleCircle(std::vector<Matrix33> &orientations, int n);
 spatial::Object *
 generateNewObjectModel(const std::string &label);
 
-};
+}
+;
 #endif //RelationEvaluation_hpp

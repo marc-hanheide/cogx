@@ -30,8 +30,7 @@
 #include <Transformation/Transformation3D.hh>
 #include <string>
 
-namespace spatial
-{
+namespace spatial {
 
 /**
  * Command line options:
@@ -59,9 +58,8 @@ namespace spatial
  * @author Patric Jensfelt
  */
 
-
-class DisplayNavInPB : public cast::ManagedComponent, public cast::PointCloudClient
-{
+class DisplayNavInPB: public cast::ManagedComponent,
+		public cast::PointCloudClient {
 
 public:
 	DisplayNavInPB();
@@ -69,23 +67,22 @@ public:
 	virtual void runComponent();
 	virtual void start();
 
- 
 protected:
 	virtual void configure(const std::map<std::string, std::string>& _config);
-	void debugScanPush(const char* msg) {} //debug(msg); }
-	void logScanPush(const char* msg) {} // log(msg); }
+	void debugScanPush(const char* msg) {
+	} //debug(msg); }
+	void logScanPush(const char* msg) {
+	} // log(msg); }
 
 private:
 
-	struct PersonData
-	{
+	struct PersonData {
 		std::string m_WMid;
 		NavData::PersonPtr m_data;
 		bool m_Followed;
 	};
 
-	struct Node
-	{
+	struct Node {
 		long m_Id;
 		bool m_Gateway;
 		long m_areaId;
@@ -94,13 +91,11 @@ private:
 		long m_AreaClassNo;
 	};
 
-	struct PlaceData
-	{
+	struct PlaceData {
 		int placeId;
 		SpatialData::PlaceStatus placeStatus;
 		int nodeId;
 	};
-
 
 	void receiveScan2d(const Laser::Scan2d &scan);
 	void newPointCloud(const cast::cdl::WorkingMemoryChange &objID);
@@ -114,7 +109,8 @@ private:
 	void newShapeProperty(const cast::cdl::WorkingMemoryChange &objID);
 	void newSizeProperty(const cast::cdl::WorkingMemoryChange &objID);
 	void newAppearanceProperty(const cast::cdl::WorkingMemoryChange &objID);
-	void newRoomCategoryPlaceholderProperty(const cast::cdl::WorkingMemoryChange &objID);
+	void newRoomCategoryPlaceholderProperty(
+			const cast::cdl::WorkingMemoryChange &objID);
 
 	void newVPlist(const cast::cdl::WorkingMemoryChange &objID);
 	void newRobotPose(const cast::cdl::WorkingMemoryChange &objID);
@@ -129,8 +125,9 @@ private:
 	void deletePlace(const cast::cdl::WorkingMemoryChange &objID);
 
 	void newConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
-	void deleteConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
-  void displayConnectivityPathProperty(int place1Id, int place2Id);
+	void deleteConnectivityPathProperty(
+			const cast::cdl::WorkingMemoryChange &objID);
+	void displayConnectivityPathProperty(int place1Id, int place2Id);
 
 	void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
 	void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
@@ -141,23 +138,27 @@ private:
 	void newPersonFollowed(const cast::cdl::WorkingMemoryChange &objID);
 
 	void addEdgeToList(long id1, long id2);
-	void displayEdge(const DisplayNavInPB::Node &node1, const DisplayNavInPB::Node &node2);
+	void displayEdge(const DisplayNavInPB::Node &node1,
+			const DisplayNavInPB::Node &node2);
 	void redisplayEdgesToNode(const DisplayNavInPB::Node &node);
-	void addDoorpost(double x, double y, double theta, double width, peekabot::SphereProxy &node);
-  void createSimpleRobotModel();
+	void addDoorpost(double x, double y, double theta, double width,
+			peekabot::SphereProxy &node);
+	void createSimpleRobotModel();
 	void connectPeekabot();
-	void createFOV(peekabot::GroupProxy &proxy,const char* path, double fovHorizAngle,
-			double fovVertiAngle, double* color, double opacity,
-			NavData::ViewPoint viewpoint,  bool robotfov = true);
+	void createFOV(peekabot::GroupProxy &proxy, const char* path,
+			double fovHorizAngle, double fovVertiAngle, double* color,
+			double opacity, NavData::ViewPoint viewpoint, bool robotfov = true);
 	void createRobotFOV();
 	void getColorByIndex(int id, float &r, float &g, float &b);
-	double getProbabilityValue(const SpatialProbabilities::ProbabilityDistribution &pd,
+	double getProbabilityValue(
+			const SpatialProbabilities::ProbabilityDistribution &pd,
 			std::string varValue);
-	double getProbabilityValue(const SpatialProperties::ProbabilityDistributionPtr pd,
-			int varValue);
+	double getProbabilityValue(
+			const SpatialProperties::ProbabilityDistributionPtr pd, int varValue);
 	int GetPlaceIdFromNodeId(int nodeId);
 	void addProperties(peekabot::SphereProxy &sp, int placeId);
-	void addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &sp, int placeId);
+	void addRoomCategoryPlaceholderProperties(peekabot::CubeProxy &sp,
+			int placeId);
 	void displayPeople();
 	Cure::Transformation3D getCameraToWorldTransform();
 
@@ -188,8 +189,8 @@ private:
 
 	peekabot::CameraProxy m_DefCam;
 
-  bool m_ShowPanTilt;
-  bool m_LoadRobotFile;
+	bool m_ShowPanTilt;
+	bool m_LoadRobotFile;
 	bool m_FollowRobot;
 	bool m_ShowLabels;
 	bool m_ShowWalls;
@@ -209,10 +210,10 @@ private:
 	bool m_ShowPath;
 	bool m_ShowCommands;
 	bool m_NonUniqueObjects;
-  bool m_ShowPointCloud;
-  bool m_ShowConnectivities;
+	bool m_ShowPointCloud;
+	bool m_ShowConnectivities;
 
-  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 	int m_currGoalPlace;
 
 	std::map<std::string, std::string> m_peekabotObjectFiles;
@@ -237,13 +238,12 @@ private:
 	double m_lastLoggedY;
 	std::string m_currentMostLikelyRoom;
 
-
 	std::vector<PersonData> m_People; // The people that are currently in view
 	std::map<long, Node> m_Nodes;
-	std::list< std::pair<long,long> > m_Edges;
-	std::list< std::pair<long,long> > m_NewEdges;
+	std::list<std::pair<long, long> > m_Edges;
+	std::list<std::pair<long, long> > m_NewEdges;
 	std::map<std::string, PlaceData> _places;
-	std::map<std::string, std::pair<long,long> > _cpp;
+	std::map<std::string, std::pair<long, long> > _cpp;
 
 	bool m_LaserConnected;
 	bool m_ReadPTU;
@@ -254,11 +254,14 @@ private:
 	std::vector<std::string> _roomCategories;
 	std::map<int, SpatialProperties::RoomShapePlacePropertyPtr> _shapeProps;
 	std::map<int, SpatialProperties::RoomSizePlacePropertyPtr> _sizeProps;
-	std::map<int, SpatialProperties::RoomAppearancePlacePropertyPtr> _appearanceProps;
-	std::map<std::string, SpatialProperties::RoomCategoryPlaceholderPropertyPtr> _roomCatPlaceholderProps;
+	std::map<int, SpatialProperties::RoomAppearancePlacePropertyPtr>
+			_appearanceProps;
+	std::map<std::string, SpatialProperties::RoomCategoryPlaceholderPropertyPtr>
+			_roomCatPlaceholderProps;
 
 };
 
-}; // namespace spatial
+}
+; // namespace spatial
 
 #endif // DisplaySpatialInPB_hpp
