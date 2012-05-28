@@ -208,22 +208,22 @@ ENDIF
 
 IFOPTALL(%(feature_options), manipulation)
 
-   SUBARCHITECTURE manipulation.sa
-   JAVA WM cast.architecture.SubarchitectureWorkingMemory
-   CPP TM AlwaysPositiveTaskManager
-   
-   # Include the appropriate Katana config
-   # TODO: select katana 300 or 450
-   IFOPTALL(%(hardware_options), katana)
-      IFEQ(%(hardware),simulation)
-         INCLUDE  sim/katana300-sim.incl
-      ENDIF
-      IFEQ(%(hardware),real)
-         INCLUDE  real/katana300-real.incl
-      ENDIF
-   ELSE
-	JAVA MG exe.manipulation manipulation.execution.george.FakeManipulationActionInterface 
-   ENDIF
+    SUBARCHITECTURE manipulation.sa
+    JAVA WM cast.architecture.SubarchitectureWorkingMemory
+    CPP TM AlwaysPositiveTaskManager
+
+    # Include the appropriate Katana config
+    # TODO: select katana 300 or 450
+    IFOPTALL(%(hardware_options), katana)
+        IFEQ(%(hardware),simulation)
+            INCLUDE  sim/katana300-sim.incl
+        ENDIF
+        IFEQ(%(hardware),real)
+            INCLUDE  real/katana300-real.incl
+        ENDIF
+    ELSE
+        JAVA MG exe.manipulation manipulation.execution.george.FakeManipulationActionInterface 
+    ENDIF
 ENDIF
 
 

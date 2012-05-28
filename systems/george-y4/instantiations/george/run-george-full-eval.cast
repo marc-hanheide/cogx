@@ -41,7 +41,7 @@ OPTDEFAULT feature_options=<multiline>
    dialogue
    planning
    motivation
-   !manipulation
+   manipulation
    visualization
 </multiline>
 
