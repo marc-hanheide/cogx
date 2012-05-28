@@ -53,7 +53,7 @@ using namespace spatial;
 //SpatialData doesn't have everything that NavData does; the extraneous
 //portions of this code have been commented out.
  
-/**
+/*
  * The function called to create a new instance of our component.
  *
  * Taken from zwork
@@ -70,10 +70,6 @@ double SpatialControl::MapServer::getPathLength(double x1, double y1,double x2, 
 int SpatialControl::MapServer::findClosestNode(double x, double y, const Ice::Current &_context) {
   return m_pOwner->findClosestNode(x,y);
 }
-
-//int SpatialControl::MapServer::findClosestPlace(double x, double y, const SpatialData::NodeIDSeq& nodeids, const Ice::Current &_context) {
-//  return m_pOwner->findClosestPlace(x,y, nodeids);
-//}
 
 SpatialData::NodeHypothesisSeq SpatialControl::MapServer::refreshNodeHypothesis(const Ice::Current &_context){
   return m_pOwner->refreshNodeHypothesis();
@@ -138,8 +134,8 @@ SpatialControl::SpatialControl()
 }
 
 /*
-  Connects to peekabot and create odometry pose and scan proxies 
-*/
+ * Connects to peekabot and create odometry pose and scan proxies 
+ */
 void SpatialControl::connectPeekabot()
 {
   try {
@@ -170,10 +166,10 @@ void SpatialControl::connectPeekabot()
 }
 
 /*
-  Creates peekabot proxies for the grid map, expanded grid map (which is used for placeholder
-  generation) and 3d obstacle map (grid_map_kinect). Populate grid map cells form the pre-loaded
-  grid maps' values
-*/
+ * Creates peekabot proxies for the grid map, expanded grid map (which is used for placeholder
+ * generation) and 3d obstacle map (grid_map_kinect). Populate grid map cells form the pre-loaded
+ * grid maps' values
+ */
 void SpatialControl::CreateGridMap() {
     double cellSize=m_lgm->getCellSize();
     m_ProxyGridMap.add(m_PeekabotClient, "grid_map", cellSize,
@@ -245,6 +241,9 @@ SpatialControl::moveSimulatedPTZ(double pan)
 	m_lastPtzNavPoseCompletion = getCASTTime();
 }
 
+/* 
+ * Issues a new PTZPoseCommand and saves a working memory id of this command in m_waitingForPTZCommandID 
+ */
 void
 SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance) 
 {
@@ -260,11 +259,15 @@ SpatialControl::startMovePanTilt(double pan, double tilt, double tolerance)
   log("startMovePanTilt %s",m_waitingForPTZCommandID.c_str());
 }
 
+
 void SpatialControl::newPanTiltCommand(const cdl::WorkingMemoryChange &objID) {
   m_ptzInNavigationPose = false; // Wait until the command is done before checking the pose
   m_ptzInMappingPose = false; 
 }
 
+/*
+ * Listens to working memory to check when the PanTiltCommand is finished.
+ */
 void
 SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID) 
 {
@@ -292,6 +295,9 @@ SpatialControl::overwrittenPanTiltCommand(const cdl::WorkingMemoryChange &objID)
       m_waitingForPTZCommandID = "";
 }
 
+/*
+ * Checks if PanTilt is in mapping or navigation pose and sets the corresponding flags
+ */
 void
 SpatialControl::checkPTZPose(const ptz::PTZPose &pose)
 {
@@ -316,6 +322,9 @@ SpatialControl::checkPTZPose(const ptz::PTZPose &pose)
   m_currentPTZPose = pose;
 }
 
+/*
+ * Clears the memory 
+ */
 SpatialControl::~SpatialControl() 
 { 
   delete m_Glrt;
@@ -330,7 +339,9 @@ SpatialControl::~SpatialControl()
   delete m_obstacleMap;
 }
 
-//saves m_lgm
+/*
+ * Saves the obstacle grid map (m_lgm) to the file
+ */
 void SpatialControl::SaveGridMap(){
   log("SaveGridMap");
   ofstream fout("GridMap.txt");
@@ -353,6 +364,9 @@ void SpatialControl::SaveGridMap(){
   fout.close();
 }
 
+/*
+ * Saves the kinect height map (m_lgmKH) to the file
+ */
 void SpatialControl::SaveHeightMap(){
   log("SaveHeightMap");
   ofstream fout("HeightMap.txt");
@@ -379,7 +393,9 @@ void SpatialControl::SaveHeightMap(){
 }
 
 
-// load from the file
+/*
+ * Loads the grid map (m_lgm) from the file
+ */
 void SpatialControl::LoadGridMap(std::string filename){
   ifstream file(filename.c_str());
   if (!file.good()){
@@ -423,6 +439,9 @@ void SpatialControl::LoadGridMap(std::string filename){
     log("loaded gridmap");
 }
 
+/*
+ * Loads the kinect height map from the file
+ */
 void SpatialControl::LoadHeightMap(std::string filename){
   ifstream file(filename.c_str());
   if (!file.good()){
@@ -466,6 +485,10 @@ void SpatialControl::LoadHeightMap(std::string filename){
   log("loaded heightmap");
 }
 
+/*
+ * Generates a list of angles for visual exploration
+ * TODO: Do not look to already explored areas
+ */
 list<double> SpatialControl::getVisualExplorationAngles(){
   list<double> ret;
   double angle;
@@ -480,7 +503,9 @@ list<double> SpatialControl::getVisualExplorationAngles(){
   return ret;
 }
 
-
+/*
+ * Loads the constants and flags from the cast and cure config files
+ */
 void SpatialControl::configure(const map<string,string>& _config) 
 {
   log("started configure");
@@ -640,7 +665,11 @@ void SpatialControl::configure(const map<string,string>& _config)
     LoadGridMap("GridMap.txt");
     LoadHeightMap("HeightMap.txt");
   } else {
-    m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
+/*
+ * Robot is in the unexplored are on startup. We need to make a corridor of 
+ * a free space near the robot to be able to navigate
+ */
+  	m_lgm->setValueInsideCircle(0,   0, 0.5, '0'); 
     m_lgm->setValueInsideCircle(0.1, 0, 0.5, '0'); 
     m_lgm->setValueInsideCircle(0.2, 0, 0.5, '0'); 
     m_lgm->setValueInsideCircle(0.3, 0, 0.5, '0'); 
@@ -731,6 +760,9 @@ void SpatialControl::configure(const map<string,string>& _config)
   registerIceServer<SpatialData::MapInterface, SpatialData::MapInterface>(new MapServer(this));
 } 
 
+/*
+ * Adds some working memory listeners 
+ */
 void SpatialControl::start() 
 {
   if (m_UsePointCloud) {
@@ -787,7 +819,7 @@ void SpatialControl::start()
   addChangeFilter(createGlobalTypeFilter<ptz::SetPTZPoseCommand>(cdl::OVERWRITE),
 		  new MemberFunctionChangeReceiver<SpatialControl>(this,
                                                                &SpatialControl::overwrittenPanTiltCommand));   
-               /*                             
+ /*                             
 		// connecting Pan-Tilt server                   
     Ice::CommunicatorPtr ic = getCommunicator();
     Ice::Identity id;
@@ -876,6 +908,9 @@ void SpatialControl::failTask(int taskId, int error) {
   }
 }
 
+/*
+ * Projects the height map to the obstacle map and filters it with the low-pass filter
+ */
 void SpatialControl::blitHeightMap(Cure::LocalGridMap<unsigned char>& lgm, Cure::LocalGridMap<double>* heightMap, int minX, int maxX, int minY, int maxY, double obstacleMinHeight, double obstacleMaxHeight)
 {
   int xi, yi;
@@ -935,6 +970,10 @@ bool SpatialControl::isPointVisible(const cogx::Math::Vector3 &pos)
   return Video::isPointVisible(params, pos);
 }
 
+/*
+ * Takes the laser scan and kinect point cloud and projects them to the grid map and the height map.
+ * Uses just the laser data and cuts a triangle from it in simulation
+ */
 void SpatialControl::updateGridMaps(){
   Cure::Pose3D scanPose;
   Cure::Pose3D LscanPose;
@@ -1596,12 +1635,18 @@ void SpatialControl::refreshNavGraph(){
 //  m_Mutex.unlock();
 }
 
+/*
+ * Adds an extra connection (edge= to the navgraph. Called via ICE interface
+ */
 void SpatialControl::addConnection(int node1id,int node2id){
   IceUtil::Mutex::Lock lock(m_extraEdgesMutex);
   m_extraEdges.insert(std::make_pair(node1id,node2id));
   m_bNavGraphNeedsRefreshing = true;
 }
 
+/*
+ * Removes an extra connection (edge= to the navgraph. Called via ICE interface
+ */
 void SpatialControl::removeConnection(int node1id,int node2id){
   IceUtil::Mutex::Lock lock(m_extraEdgesMutex);
   m_extraEdges.erase(std::make_pair(node1id,node2id));
@@ -1675,6 +1720,11 @@ void SpatialControl::deletePersonData(const cdl::WorkingMemoryChange &objID)
     }
   }
 }
+
+/*
+ * Enables or disables the grid map update. May be used when the robot interacts with people.
+ * Called via working memory change.
+ */
 void SpatialControl::newMapUpdateStatusChange(const cdl::WorkingMemoryChange &objID) {
   log("Received new VisualExplorationCommand");
   try {
@@ -1687,6 +1737,10 @@ void SpatialControl::newMapUpdateStatusChange(const cdl::WorkingMemoryChange &ob
   }
 }
 
+/*
+ * Starts performing the visual exploration (rotates the pantilt). 
+ * Called from spatial translation via working memory command.
+ */
 void SpatialControl::newVisualExplorationCommand(const cdl::WorkingMemoryChange &objID) 
 {
   log("Received new VisualExplorationCommand");
@@ -1762,7 +1816,9 @@ void SpatialControl::newRobotPose(const cdl::WorkingMemoryChange &objID)
   debug("defined: %i", m_TOPP.isTransformDefined());
 }
 
-
+/*
+ * Listens the working memory for the new nav control comands. Usually they are issued by the planner
+ */
 void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) 
 {
   // This component only manages one nav ctrl command at a time
