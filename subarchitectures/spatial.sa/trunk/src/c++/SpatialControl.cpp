@@ -1961,7 +1961,9 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID)
   }
 }
 
-
+/*
+ * Receives odometry data and put it to the queue to be processed.
+ */
 void SpatialControl::receiveOdometry(const Robotbase::Odometry &castOdom)
 {
   Cure::Pose3D cureOdom;
@@ -2266,7 +2268,9 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom)
 
   } // if (m_ready)    
 }
-
+/*
+ * Saves the grid map and the height map if the robot is standing.
+ */
 void
 SpatialControl::mapUpdaterLoop()
 {
@@ -2313,6 +2317,9 @@ SpatialControl::mapUpdaterLoop()
   }
 }
 
+/*
+ * Receives the laser scans data and put them in the queue to be processed
+ */
 void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan)
 {
 	
@@ -2476,6 +2483,9 @@ void SpatialControl::getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char
 //  }
 }
 
+/*
+ * Returns the cell-based path length between two points on m_lgm
+ */
 double SpatialControl::getPathLength(double x1, double y1,double x2, double y2) {
   double maxDist = 50;
   Cure::BinaryMatrix map;
@@ -2565,6 +2575,10 @@ int SpatialControl::findClosestNode(double x, double y) {
   return closestNodeId;
 }
 
+/*
+ * Checks the point to put a placeholder on. First it checks if the point is not on the obstacle and reachable.
+ * Then checks if it is far enough from existing nodes and placeholders 
+ */
 bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,vector<SpatialData::NodeHypothesisPtr> &non_overlapped_hypotheses, Cure::BinaryMatrix& map, Cure::BinaryMatrix& map1, int &closestNodeId){
   closestNodeId = -1;
   if (map(x+m_lgm->getSize(), y+m_lgm->getSize())==false){
@@ -2629,6 +2643,9 @@ bool SpatialControl::check_point(int x, int y, vector<NavData::FNodePtr> &nodes,
   return false;
 }
 
+/*
+ * Return the height map. Called from AVS via the ICE interface.
+ */
 SpatialData::HeightMap SpatialControl::getHeightMap(){
   SpatialData::HeightMap ret;
   ret.xCenter = m_lgmKH->getCentXW();
@@ -2644,6 +2661,9 @@ SpatialData::HeightMap SpatialControl::getHeightMap(){
   return ret;
 }
 
+/*
+ * Return the grid map. Called from AVS via the ICE interface.
+ */
 SpatialData::LocalGridMap SpatialControl::getGridMap(){
   SpatialData::LocalGridMap ret;
   ret.xCenter = m_lgm->getCentXW();
@@ -2659,6 +2679,9 @@ SpatialData::LocalGridMap SpatialControl::getGridMap(){
   return ret;
 }
 
+/*
+ * Removes unreachable and overlapped node hypotheses, samples the new ones, assigns the the parent nodes.
+ */
 SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   SCOPED_TIME_LOG;
   getLogger()->info("Refreshing node hypotheses");
@@ -2870,7 +2893,9 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis(){
   return ret;
 }
 
-
+/*
+ * Returns a piece of the grid map. Called from the local map manager and AVS via the ICE interface.
+ */
 void SpatialControl::getBoundedMap(SpatialData::LocalGridMap &map, const Cure::LocalGridMap<unsigned char>* gridmap, double minx, double maxx, double miny, double maxy) const {
   int minxi, minyi, maxxi, maxyi; // Cure::LocalGridMap indices
   int lgmsize = gridmap->getSize(); // Size of real gridmap
