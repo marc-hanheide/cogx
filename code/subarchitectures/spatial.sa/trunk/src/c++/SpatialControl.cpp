@@ -855,7 +855,10 @@ void SpatialControl::doneTask(int taskId) {
 
   m_TolRot = Cure::HelpFunctions::deg2rad(5);
   if(taskId == m_taskId - 1){ // else, it is an old command
-  log("this is an old command...");
+    log("this is an old command...");
+    m_CurrentCmdFinalCompletion = NavData::SUCCEEDED; 
+    m_CurrentCmdFinalStatus = NavData::NONE; 
+    m_taskStatus = TaskFinished; 
   }
 }
 
