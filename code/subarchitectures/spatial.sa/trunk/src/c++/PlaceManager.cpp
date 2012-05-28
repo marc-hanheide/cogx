@@ -71,6 +71,9 @@ PlaceManager::~PlaceManager()
 {
 }
 
+/*
+ * Reads flags and constants from the cast file and the cure config file 
+ */
 void
 PlaceManager::configure(const std::map<std::string, std::string>& _config)
 {
@@ -194,6 +197,9 @@ PlaceManager::configure(const std::map<std::string, std::string>& _config)
   registerIceServer<FrontierInterface::PlaceInterface, FrontierInterface::PlaceInterface>(servant);
 }
 
+/*
+ * Visualizes forbidden zone and creates the working memory listeners
+ */
 void 
 PlaceManager::start()
 {
@@ -273,6 +279,9 @@ PlaceManager::stop()
 {
 }
 
+/*
+ * Saves the PlaceID-NodeID map to the file
+ */
 void PlaceMapper::SavePlaces(){
   ofstream fout("Places.txt");
   for(vector<PlaceMapEntry>::iterator it = entries.begin(); it != entries.end(); it++) {
@@ -284,6 +293,9 @@ void PlaceMapper::SavePlaces(){
   }
 }
 
+/*
+ * Loads the PlaceID-NodeID map from the file
+ */
 void PlaceMapper::LoadPlaces(const std::string &filename){
   ifstream file(filename.c_str());
   if (!file.good()){
@@ -302,6 +314,9 @@ void PlaceMapper::LoadPlaces(const std::string &filename){
   }
 }
 
+/*
+ * Saves ConnectivityPathProperties to the file
+ */
 void PlaceManager::SaveConnectivityProperties(){
   vector<SpatialProperties::ConnectivityPathPropertyPtr> cpps;
   getMemoryEntries<SpatialProperties::ConnectivityPathProperty>(cpps);
@@ -313,6 +328,9 @@ void PlaceManager::SaveConnectivityProperties(){
   }
 }
 
+/*
+ * Loads ConnectivityPathProperties from the file and creates them in the memory
+ */
 void PlaceManager::LoadConnectivityProperties(const std::string &filename){
   ifstream file(filename.c_str());
   if (!file.good()){
@@ -362,6 +380,9 @@ PlaceManager::runComponent()
   }
 }
 
+/*
+ * Listens to the new nav nodes in the working memory
+ */
 void 
 PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
 {
@@ -402,6 +423,10 @@ PlaceManager::newNavNode(const cast::cdl::WorkingMemoryChange &objID)
   log("newNavNode exited");
 }
 
+/*
+ * Listens for the EndPlaceTransitionCommands in the working memory. It is issued by spatial translation.
+ * Function resamples placeholders if needed and bans the unreachable placeholder positions 
+ */
 void PlaceManager::newEndPlaceTransitionCommand(const cdl::WorkingMemoryChange &objID) 
 {
   log("Received new EndPlaceTransitionCommand (%s)", objID.address.id.c_str());
@@ -420,7 +445,7 @@ void PlaceManager::newEndPlaceTransitionCommand(const cdl::WorkingMemoryChange &
     overwriteWorkingMemory<NavData::EndPlaceTransitionCommand>(objID.address, obj);
   }
   catch (DoesNotExistOnWMException) {
-    log("Could not find PlaceholderEnumeratingCommand on WM!");
+    log("Could not find EndPlaceTransitionCommand on WM!");
   }
 }
 
@@ -515,6 +540,9 @@ PlaceManager::checkUnassignedEdges(int newNodeID)
   }
 }
 
+/*
+ * Creates ConnectivityPathProperties from the edges
+ */
 void
 PlaceManager::processEdge(NavData::AEdgePtr oobj) 
 {
@@ -542,6 +570,9 @@ PlaceManager::processEdge(NavData::AEdgePtr oobj)
   }
 }
 
+/*
+ * Listens for the new edges in the working memory
+ */
 void 
 PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID)
 {
@@ -692,6 +723,9 @@ PlaceManager::newObject(const cast::cdl::WorkingMemoryChange &objID)
   log("newObject exited"); */
 }
 
+/*
+ * Listens to the door hypotheses
+ */
 void 
 PlaceManager::newDoorHypothesis(const cast::cdl::WorkingMemoryChange &objID)
 {
@@ -805,7 +839,9 @@ std::map<int, std::vector<int> > PlaceManager::getAdjacencyLists() {
 }
 
 
-
+/*
+ * Connects to peekabot
+ */
 void PlaceManager::connectPeekabot()
 {
   try {
