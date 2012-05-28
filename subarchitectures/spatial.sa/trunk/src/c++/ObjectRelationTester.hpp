@@ -26,51 +26,51 @@ namespace spatial {
 class ObjectRelationTester: public cast::ManagedComponent {
 public:
 
-	ObjectRelationTester();
-	virtual ~ObjectRelationTester();
+  ObjectRelationTester();
+  virtual ~ObjectRelationTester();
 
-	virtual void runComponent();
-	virtual void start();
+  virtual void runComponent();
+  virtual void start();
 
 protected:
-	RelationEvaluator m_evaluator;
+  RelationEvaluator m_evaluator;
 
-	bool m_bTestOnness;
-	bool m_bSampleOnness;
-	bool m_bTestInness;
-	bool m_bSampleInness;
-	bool m_bTestInference;
-	bool m_bDemoSampling;
-	bool m_bNoPTZ;
-	bool m_bNoVision;
-	bool m_bShowPoses;
+  bool m_bTestOnness;
+  bool m_bSampleOnness;
+  bool m_bTestInness;
+  bool m_bSampleInness;
+  bool m_bTestInference;
+  bool m_bDemoSampling;
+  bool m_bNoPTZ;
+  bool m_bNoVision;
+  bool m_bShowPoses;
 
-	vector<spatial::Object *> m_testObjects;
-	vector<peekabot::GroupProxy> m_testObjectProxies;
+  vector<spatial::Object *> m_testObjects;
+  vector<peekabot::GroupProxy> m_testObjectProxies;
 
-	peekabot::PeekabotClient m_PeekabotClient;
-	peekabot::GroupProxy m_relationTester;
-	std::string m_PbHost;
-	int m_PbPort;
-	int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
+  peekabot::PeekabotClient m_PeekabotClient;
+  peekabot::GroupProxy m_relationTester;
+  std::string m_PbHost;
+  int m_PbPort;
+  int m_RetryDelay; // Seconds to retry if cannot connect. -1 means dont retry
 
-	void connectPeekabot();
+  void connectPeekabot();
 
-	virtual void configure(const std::map<std::string, std::string>& _config);
+  virtual void configure(const std::map<std::string, std::string>& _config);
 
-	void addProxy(const spatial::Object* obj, const string &label);
-	void updatePosesFromPB();
+  void addProxy(const spatial::Object* obj, const string &label);
+  void updatePosesFromPB();
 
-	DensitySampler m_sampler;
+  DensitySampler m_sampler;
 
-	void sampleOnnessForObject(const spatial::Object *objectS,
-			spatial::Object *objectO);
-	void sampleRecursively(const vector<spatial::SpatialRelationType> &types,
-			const vector<spatial::Object*> &objects, unsigned int nSamplesPerStep,
-			unsigned int nMaxSamples, vector<vector<Pose3> > &outPoints,
-			spatial::Object *supportObject, unsigned int currentLevel = UINT_MAX
-	//    , const vector<Vector3> &triangle
-			);
+  void sampleOnnessForObject(const spatial::Object *objectS,
+      spatial::Object *objectO);
+  void sampleRecursively(const vector<spatial::SpatialRelationType> &types,
+      const vector<spatial::Object*> &objects, unsigned int nSamplesPerStep,
+      unsigned int nMaxSamples, vector<vector<Pose3> > &outPoints,
+      spatial::Object *supportObject, unsigned int currentLevel = UINT_MAX
+  //    , const vector<Vector3> &triangle
+      );
 };
 }
 ;

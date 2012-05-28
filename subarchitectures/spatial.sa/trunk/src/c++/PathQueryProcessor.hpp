@@ -37,34 +37,34 @@ class PathQueryProcessor: public cast::ManagedComponent
 
 {
 public:
-	/**
-	 * Constructor
-	 */
-	PathQueryProcessor();
+  /**
+   * Constructor
+   */
+  PathQueryProcessor();
 
-	/**
-	 * Destructor
-	 */
-	virtual ~PathQueryProcessor();
+  /**
+   * Destructor
+   */
+  virtual ~PathQueryProcessor();
 
-	virtual void start();
-	virtual void stop();
-	virtual void runComponent();
+  virtual void start();
+  virtual void stop();
+  virtual void runComponent();
 
 protected:
-	virtual void configure(const std::map<std::string, std::string>& _config);
-	void newNavGraph(const cast::cdl::WorkingMemoryChange &objID);
-	void
-			newPathTransitionProbRequest(const cast::cdl::WorkingMemoryChange &objID);
-	void
-			newPathTransitionCostRequest(const cast::cdl::WorkingMemoryChange &objID);
+  virtual void configure(const std::map<std::string, std::string>& _config);
+  void newNavGraph(const cast::cdl::WorkingMemoryChange &objID);
+  void
+  newPathTransitionProbRequest(const cast::cdl::WorkingMemoryChange &objID);
+  void
+  newPathTransitionCostRequest(const cast::cdl::WorkingMemoryChange &objID);
 
-	bool m_GotGraph;
-	bool m_noIndirectPaths;
-	IceUtil::Mutex m_GraphMutex;
-	Cure::NavGraph m_NavGraph;
+  bool m_GotGraph;
+  bool m_noIndirectPaths;
+  IceUtil::Mutex m_GraphMutex;
+  Cure::NavGraph m_NavGraph;
 
-	FrontierInterface::PlaceInterfacePrx m_placeInterface;
+  FrontierInterface::PlaceInterfacePrx m_placeInterface;
 }; // class PathQueryProcessor
 
 }

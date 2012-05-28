@@ -39,16 +39,16 @@ template<typename MapData>
 class BloxelFalse {
 private:
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	BloxelFalse() {
-	}
-	;
-	inline bool operator()(const MapData &data) const {
-		return false;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  BloxelFalse() {
+  }
+  ;
+  inline bool operator()(const MapData &data) const {
+    return false;
+  }
+  ;
 };
 
 /**
@@ -59,34 +59,34 @@ public:
 template<typename MapData>
 class BloxelMax {
 private:
-	bool first;
-	MapData result;
+  bool first;
+  MapData result;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	BloxelMax() :
-		first(true) {
-	}
-	;
-	inline void operator()(MapData data, double size, double xPos, double yPos,
-			double zPos) {
-		if (first) {
-			result = data;
-			first = false;
-		} else {
-			result = (result < data) ? data : result;
-		}
-	}
-	;
-	MapData getResult() const {
-		return result;
-	}
-	;
-	void reset() {
-		first = true;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  BloxelMax() :
+    first(true) {
+  }
+  ;
+  inline void operator()(MapData data, double size, double xPos, double yPos,
+      double zPos) {
+    if (first) {
+      result = data;
+      first = false;
+    } else {
+      result = (result < data) ? data : result;
+    }
+  }
+  ;
+  MapData getResult() const {
+    return result;
+  }
+  ;
+  void reset() {
+    first = true;
+  }
+  ;
 };
 
 /**
@@ -99,28 +99,28 @@ public:
 template<typename MapData>
 class BloxelSum {
 private:
-	MapData result;
+  MapData result;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	BloxelSum() :
-		result() {
-	}
-	;
-	inline void operator()(MapData data, double size, double xPos, double yPos,
-			double zPos) {
-		result = result + data * size;
-	}
-	;
-	MapData getResult() const {
-		return result;
-	}
-	;
-	void reset() {
-		result = MapData();
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  BloxelSum() :
+    result() {
+  }
+  ;
+  inline void operator()(MapData data, double size, double xPos, double yPos,
+      double zPos) {
+    result = result + data * size;
+  }
+  ;
+  MapData getResult() const {
+    return result;
+  }
+  ;
+  void reset() {
+    result = MapData();
+  }
+  ;
 };
 
 /**
@@ -129,20 +129,20 @@ public:
 template<typename MapData>
 class BloxelEquals {
 private:
-	MapData value;
+  MapData value;
 public:
-	static FunctorType type() {
-		return Replace;
-	}
-	BloxelEquals(MapData value) :
-		value(value) {
-	}
-	;
-	inline MapData operator()(MapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data = value;
-	}
-	;
+  static FunctorType type() {
+    return Replace;
+  }
+  BloxelEquals(MapData value) :
+    value(value) {
+  }
+  ;
+  inline MapData operator()(MapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data = value;
+  }
+  ;
 };
 
 /**
@@ -151,70 +151,70 @@ public:
 template<typename MapData>
 class BloxelAdd {
 private:
-	MapData value;
+  MapData value;
 public:
-	static FunctorType type() {
-		return Iterate;
-	}
-	BloxelAdd(MapData value) :
-		value(value) {
-	}
-	;
-	inline MapData operator()(MapData & data, double size, double xPos,
-			double yPos, double zPos) const {
-		data += value;
-	}
-	;
+  static FunctorType type() {
+    return Iterate;
+  }
+  BloxelAdd(MapData value) :
+    value(value) {
+  }
+  ;
+  inline MapData operator()(MapData & data, double size, double xPos,
+      double yPos, double zPos) const {
+    data += value;
+  }
+  ;
 };
 
 template<typename MapData>
 class MakeObstacle {
 public:
-	static FunctorType type() {
-		return Replace;
-	}
-	inline void operator()(MapData &data, double size, double xPos, double yPos,
-			double zPos) const {
-		data.occupancy = OCCUPIED;
-	}
-	;
+  static FunctorType type() {
+    return Replace;
+  }
+  inline void operator()(MapData &data, double size, double xPos, double yPos,
+      double zPos) const {
+    data.occupancy = OCCUPIED;
+  }
+  ;
 };
 
 template<typename MapData>
 class MakeFree {
 public:
-	static FunctorType type() {
-		return Replace;
-	}
-	inline void operator()(MapData &data, double size, double xPos, double yPos,
-			double zPos) const {
-		data.occupancy = FREE;
-	}
-	;
+  static FunctorType type() {
+    return Replace;
+  }
+  inline void operator()(MapData &data, double size, double xPos, double yPos,
+      double zPos) const {
+    data.occupancy = FREE;
+  }
+  ;
 };
 
 template<typename MapData>
 class isRegionFree {
 private:
-	bool result;
+  bool result;
 public:
-	static FunctorType type() {
-		return Read;
-	}
-	isRegionFree() {
-		result = true;
-	}
-	;
-	bool getResult() {
-		return result;
-	}
-	;
-	inline void operator()(const MapData &data, double size, double xPos,
-			double yPos, double zPos) {
-		if (data.occupancy == OCCUPIED)
-			result = false;
-	}
-	;
+  static FunctorType type() {
+    return Read;
+  }
+  isRegionFree() {
+    result = true;
+  }
+  ;
+  bool getResult() {
+    return result;
+  }
+  ;
+  inline void operator()(const MapData &data, double size, double xPos,
+      double yPos, double zPos) {
+    if (data.occupancy == OCCUPIED)
+      result = false;
+  }
+  ;
 };
 
 /**
@@ -229,28 +229,28 @@ public:
 template<typename MapData>
 class BloxelThreshold {
 private:
-	MapData threshold;
+  MapData threshold;
 public:
-	BloxelThreshold(MapData thr) :
-		threshold(thr) {
-	}
-	;
-	inline bool operator()(MapData data) const {
-		return threshold < data;
-	}
-	;
+  BloxelThreshold(MapData thr) :
+    threshold(thr) {
+  }
+  ;
+  inline bool operator()(MapData data) const {
+    return threshold < data;
+  }
+  ;
 };
 
 template<typename MapData>
 class isObstacle {
 public:
-	isObstacle() {
-	}
-	;
-	inline bool operator()(MapData data) const {
-		return data.occupancy == OCCUPIED ? true : false;
-	}
-	;
+  isObstacle() {
+  }
+  ;
+  inline bool operator()(MapData data) const {
+    return data.occupancy == OCCUPIED ? true : false;
+  }
+  ;
 };
 
 }

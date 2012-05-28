@@ -16,7 +16,7 @@ namespace SpatialGridMap {
  */
 
 enum FunctorType {
-	Read, Replace, Iterate, Split
+  Read, Replace, Iterate, Split
 };
 
 }
