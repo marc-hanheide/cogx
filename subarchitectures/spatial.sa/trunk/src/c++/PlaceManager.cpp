@@ -905,7 +905,9 @@ int PlaceManager::updatePlaceholderEdge(int placeholderId) {
 
 
 
-/* Upgrades placeholderproperties of placeholders reachable from placeID */
+/* 
+ * Upgrades placeholderproperties of placeholders reachable from placeID 
+ */
 void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
 
   m_PlacePropsMutex.lock();
@@ -1089,69 +1091,12 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
   m_PlacePropsMutex.unlock();
 }
 
-///* Updates the position of a placeholder to match the position of a frontier
-//   close to it. If the frontier has moved slightly, the placeholder will move
-//   with it. */
-//void PlaceManager::updatePlaceholderPositions(FrontierInterface::FrontierPtSeq frontiers) {
-//  vector<NodeHypothesisPtr> hypotheses;
-//  getMemoryEntries<NodeHypothesis>(hypotheses);
-//  for (FrontierInterface::FrontierPtSeq::iterator frontierIt = frontiers.begin(); frontierIt != frontiers.end(); frontierIt++) {
-//    FrontierInterface::FrontierPtPtr frontierPt = *frontierIt;
-//    double frontierX = frontierPt->x;
-//    double frontierY = frontierPt->y;
-//    double minDistanceSq = FLT_MAX;
-//    int minDistID = -1;
-//
-//    for (vector<NodeHypothesisPtr>::iterator extantHypIt =
-//        hypotheses.begin(); extantHypIt != hypotheses.end(); extantHypIt++) {
-//      NodeHypothesisPtr extantHyp = *extantHypIt;
-//      try {
-//        // if (extantHyp->originPlaceID == currentPlaceID) {
-//        double distanceSq = (extantHyp->x - frontierX)*(extantHyp->x - frontierX) + (extantHyp->y - frontierY)*(extantHyp->y - frontierY);
-//        log("2distanceSq = %f", distanceSq);
-//        if (distanceSq < minDistanceSq) {
-//          minDistanceSq = distanceSq;
-//          minDistID = extantHyp->hypID;
-//        }
-//        //}
-//      }
-//      catch (IceUtil::NullHandleException e) {
-//        log("Error: hypothesis suddenly disappeared!");
-//      }
-//    }
-//
-//    if (minDistanceSq < m_minNodeSeparation * m_minNodeSeparation && minDistID != -1 && minDistanceSq > 0) {
-//      // Modify the extant hypothesis that best matched the
-//      // new position indicated by the frontier
-//      try {
-//        lockEntry(m_HypIDToWMIDMap[minDistID], cdl::LOCKEDOD);
-//        NodeHypothesisPtr updatedHyp = 
-//          getMemoryEntry<NodeHypothesis>(m_HypIDToWMIDMap[minDistID]);
-//
-//        // Remove the hypothesis from our local list so we don't move
-//        // it back again in the next iteration...
-//        for (vector<NodeHypothesisPtr>::iterator iter =
-//            hypotheses.begin(); iter != hypotheses.end(); iter++) {
-//          if ((*iter)->hypID == minDistID) {
-//            hypotheses.erase(iter);
-//            break;
-//          }
-//        }
-//        log("Updating hypothesis at (%f, %f) with ID %i to (%f, %f)", updatedHyp->x, updatedHyp->y, updatedHyp->hypID, frontierX, frontierY);
-//
-//        updatedHyp->x = frontierX;
-//        updatedHyp->y = frontierY;
-//
-//        overwriteWorkingMemory<NodeHypothesis>(m_HypIDToWMIDMap[minDistID], updatedHyp);
-//        unlockEntry(m_HypIDToWMIDMap[minDistID]);
-//      }
-//      catch (const std::exception& e) {
-//        log("Could not update hypothesis! Caught exception at %s. Message: %s", __HERE__, e.what());
-//      }
-//    }
-//  }
-//}
-
+/*
+ * Calls spatial control to receive an updated node hypotheses list. Creates new placeholders,
+ * removes unreachable and overlapped ones. Also creates the new extra connections between the nodes
+ * and prevents the systems to have direct connections through the doors and some other fancy connections
+ * related things.
+ */
 void PlaceManager::evaluateUnexploredPaths()
 {
   log("Entering evaluateUnexplorePaths");
