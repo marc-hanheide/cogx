@@ -33,7 +33,7 @@ using namespace HelpFunctions;
 
 NewTurnMotion::NewTurnMotion(cast::ManagedComponent* sc,
     double securityDistance) :
-  ds_(securityDistance), mode_(MODE_TURN), m_sc(sc) {
+  m_sc(sc), ds_(securityDistance), mode_(MODE_TURN) {
   m_sc->debug("NewTurnMotion started");
   nClosePts_ = 0;
   closePts_ = new CloseObstPt[2000];
