@@ -1556,8 +1556,14 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
       //double range = maxAngle - minAngle;
       double tol = 0;//m_maxRange - range;
       double theta = (maxAngle + minAngle) / 2;
-      if ((fabs(maxAngle - theta) > M_PI / 2) || (fabs(minAngle - theta) > M_PI
-          / 2)) {
+      double diff1 = fabs(maxAngle - theta);
+      if (diff1 > M_PI)
+        diff1 -= M_PI;
+      double diff2 = fabs(minAngle - theta);
+      if (diff2 > M_PI)
+        diff2 -= M_PI;
+
+      if ((diff1 > M_PI / 2) || (diff2 > M_PI / 2)) {
         theta = theta + M_PI;
       }
       pos.setTheta(theta); //TODO not nessacerely - maybe between
@@ -1620,8 +1626,14 @@ void AVS_ContinualPlanner::showProbability(int coneGroupID) {
   double minAngle = m_beliefConeGroups[coneGroupID].minAngle;
   double maxAngle = m_beliefConeGroups[coneGroupID].maxAngle;
   double theta = (maxAngle + minAngle) / 2;
-  if ((fabs(maxAngle - theta) > M_PI / 2)
-      || (fabs(minAngle - theta) > M_PI / 2)) {
+  double diff1 = fabs(maxAngle - theta);
+  if (diff1 > M_PI)
+    diff1 -= M_PI;
+  double diff2 = fabs(minAngle - theta);
+  if (diff2 > M_PI)
+    diff2 -= M_PI;
+
+  if ((diff1 > M_PI / 2) || (diff2 > M_PI / 2)) {
     theta = theta + M_PI;
   }
 
