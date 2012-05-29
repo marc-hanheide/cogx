@@ -344,6 +344,10 @@ class RandomColorSelector:
 
         self._vals = None
 
+    def removeColor(self, name):
+        if name in self.colors:
+            del self.colors[name]
+
     def addSimpleColors(self):
         self.addColor("blue",   [(0x20, 0x40, 0xe0), (0x1e, 0x90, 0xff)])
         self.addColor("red",    [(0xe0, 0x30, 0x10), (0xff, 0x24, 0x00)])
@@ -477,6 +481,7 @@ def createObjects(prjname):
     CG = RandomColorSelector()
     #CG.addSimpleColors()
     CG.loadColorsRgb("res/colors01.txt", "res/colorlabels.txt")
+    CG.removeColor("pink")
 
     flrn = open("xdata/%s.attrs.txt" % prjname, "w")
 
