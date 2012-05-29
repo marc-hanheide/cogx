@@ -41,12 +41,15 @@ TASK_HTML = """
 <h2>Planning Task %(task_id)d (%(internal_state)s)</h2>
 %(desc)s
 
+<p>
 %(goals)s
 Deadline: %(deadline)s
+</p>
 
 %(planner_type)s
 
 %(current_plan)s
+%(current_dt_plan)s
 
 <h3>Plan history:</h3>
 %(history)s
@@ -177,14 +180,15 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             current_plan = make_html_table(["Action", "Cost", "p", "State"], rows , ["class", "%s", "%.2f", "%.3f", "%s"])
         else:
             current_plan = "<p>Planning (Continual)...</p>"
-            
+
+        current_dt_plan = ""
         if task.dt_planning_active():
             dt_plan = task.dt_task.dt_plan
             if dt_plan:
-                current_plan = "<h3>DT plan:</h3>"
-                current_plan += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
+                current_dt_plan = "<h3>DT plan:</h3>"
+                current_dt_plan += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
             else:
-                current_plan = "<p>Planning (DT)...</p>"
+                current_dt_plan = "<p>Planning (DT)...</p>"
 
         history = ""
         if task.plan_history:
