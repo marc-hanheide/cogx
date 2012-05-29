@@ -355,25 +355,29 @@ void AVS_ContinualPlanner::owtARTagCommand(
       startMovePanTilt(0.0, 0.0, 0.08);
       m_ptzWaitingStatus = WAITING_TO_RETURN;
     } else {
-      m_processedViewConeIDs.insert(m_currentViewCone.first);
       m_currentViewCone.first = m_currentConeGroupNumber * 1000
           + m_currentViewConeNumber;
       m_currentViewCone.second
           = m_currentConeGroup->viewcones[m_currentViewConeNumber];
-      if (m_usePeekabot) {
-        m_proxyCone = &m_ProxyViewPointsList[m_currentViewCone.first];
-        m_proxyConePolygons
-            = m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
-        ChangeCurrentViewConeColor(0.1, 0.9, 0.1);
-      }
       double angle = m_currentViewCone.second.pan - lastRobotPose->theta;
       if (angle < -M_PI)
         angle += 2 * M_PI;
       if (angle > M_PI)
         angle -= 2 * M_PI;
-
-      startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
-      m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+      if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
+        startMovePanTilt(0.0, 0.0, 0.08);
+        m_ptzWaitingStatus = WAITING_TO_RETURN;
+      } else {
+        m_processedViewConeIDs.insert(m_currentViewCone.first);
+        if (m_usePeekabot) {
+          m_proxyCone = &m_ProxyViewPointsList[m_currentViewCone.first];
+          m_proxyConePolygons
+              = m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
+          ChangeCurrentViewConeColor(0.1, 0.9, 0.1);
+        }
+        startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
+        m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+      }
     }
 
     //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
