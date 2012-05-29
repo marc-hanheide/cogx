@@ -586,7 +586,7 @@ class Downward(BasePlanner):
         
 class ProbDownward(Downward):
     def _run(self, input_data, task):
-        if task.deadline > -1:
+        if task.deadline is not None:
             oldargs = self.config.search_args
             self.config.search_args += "d%d" % task.deadline
             res = Downward._run(self, input_data, task)

@@ -154,7 +154,7 @@ class CASTTask(object):
         cp_problem, cp_domain, self.goaldict = self.state.to_problem(self.slice_goals, deterministic=True)
         self.cp_task = task.Task(self.id, cp_problem)
 
-        deadline = -1
+        deadline = None
         for g in self.slice_goals:
             if g.importance == -1 and g.goalString not in self.goaldict:
                 log.info("Hard goal %s cannot be parsed; planning failed" % g.goalString)
@@ -892,6 +892,12 @@ class CASTTask(object):
         if outplan:
             log.info("First action: %s == %s", str(nodes[0]), outplan[0].fullName)
             nodes[0].status = plans.ActionStatusEnum.IN_PROGRESS
+
+            cost_term = nodes[0].action.get_total_cost()
+            if cost_term is not None and self.cp_task.deadline is not None:
+                cost = cost_term.object.value
+                self.cp_task.deadline -= cost
+            
             self.plan_log.append(planner_log.ActionEntry(nodes[0]))
             self.update_status(TaskStateEnum.WAITING_FOR_ACTION, TaskStateInfoEnum.WAITING_FOR_ACTION)
         else:

@@ -30,49 +30,32 @@ tr.dt.in_progress {background-color: #88ffff}
 tr.dt.executed {background-color: #6666dd}
 """
 
+STATE_HTML = """
+<h2>Planning state of task %(task_id)d</h2>
+<p>
+%(table)s
+</p>
+"""
+
+TASK_HTML = """
+<h2>Planning Task %(task_id)d (%(internal_state)s)</h2>
+%(desc)s
+
+%(goals)s
+Deadline: %(deadline)s
+
+%(planner_type)s
+
+%(current_plan)s
+
+<h3>Plan history:</h3>
+%(history)s
+
+"""
+
 class PlannerDisplayClient(DisplayClient.CDisplayClient):
     def __init__(self):
         DisplayClient.CDisplayClient.__init__(self)
-
-    # def handleEvent(self, event):
-    #     if self.m_test == None: return
-    #     t = self.m_test
-    #     if event.sourceId == "cb.test.onoff":
-    #         if event.data == "0": t.m_ckTestValue = 0
-    #         else: t.m_ckTestValue = 2
-    #         if t.m_ckTestValue > 0: t.appendMessage("Check box " + event.sourceId + " is ON")
-    #         else: t.appendMessage("Check box " + event.sourceId + " is OFF")
-
-    #     if event.sourceId == "button.test":
-    #        t.appendMessage("Button " + event.sourceId + " PRESSED")
-
-    # def getControlState(self, ctrlId):
-    #     if self.m_test == None: return
-    #     t = self.m_test
-    #     if ctrlId == "cb.test.onoff":
-    #         if t.m_ckTestValue != 0: return "2"
-    #         else: return "0"
-    #     return ""
-
-    # def handleForm(self, id, partId, fields):
-    #     if self.m_test == None: return
-    #     t = self.m_test
-    #     #t.log("PYTHON handleForm " + id + ":" + partId)
-    #     if id == "v11n.python.setHtmlForm" and partId == "101":
-    #         if fields.has_key("textfield"):
-    #             t.m_textField = fields["textfield"]
-    #             t.log("Got textfield: " + t.m_textField);
-    #             t.appendMessage(t.m_textField);
-
-    # def getFormData(self, id, partId, fields):
-    #     if self.m_test == None: return False
-    #     t = self.m_test
-    #     #t.log("PYTHON getFormData " + id + ":" + partId)
-    #     if id == "v11n.python.setHtmlForm" and partId == "101":
-    #         fields["textfield"] = t.m_textField
-    #         return True
-
-    #     return False
 
     def init_html(self):
         head = "<style type=\"text/css\">%s</style>" % STYLE
@@ -83,8 +66,6 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         state = task.state.prob_state
 
         ignore = ("i_in-domain", "defined", "poss", "search_cost")
-
-        html = "<h2>Planning state of task %d</h2>" % (task.id)
 
         def var_row(svar, dist):
             if dist.value is not None:
@@ -111,8 +92,10 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
                 rows.append(("sep", "", "", 0.0))
                 prev_function = (svar.function, svar.modality)
             rows += list(var_row(svar, dist))
-        
-        html += make_html_table(["Variable", "Value", "p"], rows, ["class", "%s", "%s", "%.3f"])
+
+        task_id = task.id
+        table = make_html_table(["Variable", "Value", "p"], rows, ["class", "%s", "%s", "%.3f"])
+        html = STATE_HTML % locals()
 
         self.setHtml(STATE_ID, "state", html);
 
@@ -149,11 +132,11 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
         
     def update_task(self, task, info_status=None, append=False):
         id = "%04d" % task.id
-        
-        html = "<h2>Planning Task %d (%s)</h2>" % (task.id, task.internal_state)
+
+        task_id = task.id
+        internal_state = task.internal_state
         desc = self.get_task_state_desc(info_status)
-        if desc:
-            html += "<h3>%s</h3>" % desc
+        desc = "<h3>%s</h3>" % desc if desc else ""
 
         def goal_row(g):
             if g.isInPlan:
@@ -163,13 +146,16 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             else:
                 _class = ""
             return (_class, g.goalString, g.importance, g.isInPlan)
+
+        goals = make_html_table(["Goal", "Importance", "satisfied"], (goal_row(g) for g in task.slice_goals), ["class", "%s", "%d", "%s"])
+        deadline = "%d" % task.cp_task.deadline if task.cp_task.deadline is not None else "None"
         
-        html += make_html_table(["Goal", "Importance", "satisfied"], (goal_row(g) for g in task.slice_goals), ["class", "%s", "%d", "%s"])
+        planner_type = ""
         if task.internal_state not in (TaskStateEnum.INITIALISED, TaskStateEnum.FAILED, TaskStateEnum.COMPLETED):
             if task.dt_planning_active():
-                html += "<p>Decision theoretic planner is active</p>"
+                planner_type = "<p>Decision theoretic planner is active</p>"
             else:
-                html += "<p>Continual planner is active:</p>"
+                planner_type = "<p>Continual planner is active:</p>"
 
         def action_row(pnode):
             args = [a.name for a in pnode.args]
@@ -180,7 +166,7 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             return (_class, name, float(pnode.cost), float(pnode.prob), pnode.status)
 
         if task.cp_task.planning_status == PlanningStatusEnum.PLANNING_FAILURE:
-            html += "<p>No plan found</p>"
+            current_plan = "<p>No plan found</p>"
         elif task.cp_task.get_plan():
             ordered_plan = task.cp_task.get_plan().topological_sort()
             c_total = sum(a.cost for a in ordered_plan)
@@ -188,31 +174,33 @@ class PlannerDisplayClient(DisplayClient.CDisplayClient):
             summary = ("summary", "Total:", c_total, p_total, "")
             rows = chain((action_row(a) for a in ordered_plan), [summary])
             
-            html += make_html_table(["Action", "Cost", "p", "State"], rows , ["class", "%s", "%.2f", "%.3f", "%s"])
+            current_plan = make_html_table(["Action", "Cost", "p", "State"], rows , ["class", "%s", "%.2f", "%.3f", "%s"])
         else:
-            html += "<p>Planning (Continual)...</p>"
+            current_plan = "<p>Planning (Continual)...</p>"
             
         if task.dt_planning_active():
             dt_plan = task.dt_task.dt_plan
             if dt_plan:
-                html += "<h3>DT plan:</h3>"
-                html += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
+                current_plan = "<h3>DT plan:</h3>"
+                current_plan += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in dt_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
             else:
-                html += "<p>Planning (DT)...</p>"
+                current_plan = "<p>Planning (DT)...</p>"
 
+        history = ""
         if task.plan_history:
-            html += "<h3>Plan history</h3>"
             for elem in task.plan_history:
                 if elem is None:
-                    html += '<p>No plan found</p>'
+                    history += '<p>No plan found</p>'
                 else:
                     if isinstance(elem, standalone.plans.MAPLPlan):
                         ordered_plan = elem.topological_sort()
                     else:
                         ordered_plan = elem.dt_plan
-                    html += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
+                    history += make_html_table(["Action", "Cost", "p", "State"], (action_row(a) for a in ordered_plan), ["class", "%s", "%.2f", "%.3f", "%s"])
                 
-        
+
+        html = TASK_HTML % locals()
+                    
         # A multi-part HTML document.
         # Parts will be added every time the form (setHtmlForm below) is submitted (see handleForm).
         if append:
