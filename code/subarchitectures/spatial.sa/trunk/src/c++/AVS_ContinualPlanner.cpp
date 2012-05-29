@@ -365,6 +365,7 @@ void AVS_ContinualPlanner::owtARTagCommand(
       if (angle > M_PI)
         angle -= 2 * M_PI;
       if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
+        log("WARNING: Skipping the viewcone group. Can't pan that far.");
         startMovePanTilt(0.0, 0.0, 0.08);
         m_ptzWaitingStatus = WAITING_TO_RETURN;
       } else {
