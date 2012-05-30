@@ -49,12 +49,17 @@ OPTDEFAULT test_options=<multiline>
     tutor-driven-test
 </multiline>
 
-# The world used is test1.world, it must be specified at Gazebo startup.
-# The object list is shared between GazeboJuggler and GeorgeTester.
 IFOPTANY(%(test_options), tutor-driven-test)
+    # The world used is test1.world, it must be specified at Gazebo startup.
+    # The object list is shared between GazeboJuggler and GeorgeTester.
     SETVAR GazeboWorldDir=%(CONFIG_DIR)/../gazebo
     SETVAR JugglerObjectList=%(GazeboWorldDir)/test1.objects.txt
     SETVAR TesterLearnAttrs=%(GazeboWorldDir)/test1.attrs.txt
+
+    # We choose the manual filter. (2012-05-30) it sets the following goal filters:
+    # Tutor initiative: ON, Analyze PO: ON, everything else is off.
+    # These settings are required for the tutor-driven test.
+    SETVAR MotiveFileManagerGoalFilter=manual
 ENDIF
 
 #SETOPT feature_options=!visualization
