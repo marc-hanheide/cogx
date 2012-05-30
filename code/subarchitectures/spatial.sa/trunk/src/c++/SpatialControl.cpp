@@ -1869,8 +1869,8 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
       log("WARNING: r is nan");
     }
 
-    if ((!isnan(oobj->getData()->theta) && (m_commandTheta < 2 * M_PI)
-        && (m_commandTheta > -2 * M_PI))) {
+    if ((!isnan(oobj->getData()->theta) && (oobj->getData()->theta < 2 * M_PI)
+        && (oobj->getData()->theta > -2 * M_PI))) {
       m_commandTheta = oobj->getData()->theta;
 
       if (m_commandTheta > M_PI)
