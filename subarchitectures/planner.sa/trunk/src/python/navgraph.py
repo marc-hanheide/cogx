@@ -3,11 +3,13 @@ import re, sys, time
 from pygraphviz import AGraph
 
 import standalone.task, standalone.planner
-from standalone import plans, pddl
+from standalone import config, plans, pddl
 import standalone.globals as global_vars
 import autogen
 import history
 import networkx
+
+config.logging_settings_from_dict({'root:level' : 'DEBUG'})
 
 global_vars.config.__dict__['enable_switching_planner'] = True
 
@@ -21,7 +23,10 @@ consistency_fn = "../../domains/consistency-dora.pddl"
 print "Loading domain..."
 dom = pddl.load_domain(domain_fn)
 
-consistency_cond = pddl.parser.Parser.parse_as(open(consistency_fn), pddl.Conjunction, dom)
+try:
+    consistency_cond = pddl.parser.Parser.parse_as(open(consistency_fn), pddl.Conjunction, dom)
+except pddl.parser.ParseError:
+    consistency_cond = None
 
 t_room = dom.types["room"]
 t_place = dom.types["place"]
@@ -139,7 +144,15 @@ def show_step(state, plan, domain=None):
         attrs = {'dir' : 'none'}
         G.add_edge(n1, n2, **attrs)
 
+    def edge_decorator(n1, n2, data):
+        if n1 == plan.init_node:
+            return {'style' : 'invis', 'label' : ''}
+            
+        
     if plan:
+        Gp = plan.to_dot(edge_deco=edge_decorator)
+        Gp.layout(prog='dot')
+        Gp.draw("plan.pdf")
         for pnode in plan:
             if pnode.action.name not in ("move", "move_direct"):
                 continue
@@ -157,6 +170,8 @@ def show_step(state, plan, domain=None):
 
     G.layout(prog='neato')
     G.draw("nodes.pdf")
+
+
 
 def replan(cast_state):
     global planner
@@ -196,7 +211,7 @@ print "Loading problem..."
 try:
     prob = pddl.load_problem(problem_fn, dom)
     state = pddl.prob_state.ProbabilisticState.from_problem(prob)
-    show_step(staet, None)
+    show_step(state, None)
 except:
     history_iter = history.load_history(problem_fn, dom, consistency_cond=consistency_cond)
     h_list = []
