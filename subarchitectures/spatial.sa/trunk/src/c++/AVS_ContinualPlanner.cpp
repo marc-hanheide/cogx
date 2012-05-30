@@ -1550,7 +1550,6 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
           s.pos[0], s.pos[1], s.pos[2], s.pan, s.tilt, s.conedepth,
           s.horizangle, s.vertangle);
     } else {
-      m_processedViewConeIDs.insert(m_currentViewCone.first);
       if (m_usePeekabot) {
         m_proxyCone = &m_ProxyViewPointsList[m_currentViewCone.first];
         m_proxyConePolygons
@@ -1579,7 +1578,7 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
         theta = theta + M_PI;
       }
       pos.setTheta(theta); //TODO not nessacerely - maybe between
-      debug("nav %f %f", theta, m_currentViewCone.second.pan);
+      log("nav theta %f first vc %f min %f max %f", theta, m_currentViewCone.second.pan,minAngle,maxAngle);
       PostNavCommand(pos, SpatialData::GOTOPOSITION, tol);
       log("Posting a nav command");
     }
@@ -2259,6 +2258,7 @@ void AVS_ContinualPlanner::owtNavCommand(
         //			Recognize();
       }
       if (m_runInSimulation) {
+        m_processedViewConeIDs.insert(m_currentViewCone.first);
         log("Updating the %s bloxel map",
             m_currentConeGroup->bloxelMapId.c_str());
         ViewConeUpdate(m_currentViewCone,
