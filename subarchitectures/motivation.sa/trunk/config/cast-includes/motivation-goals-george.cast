@@ -5,6 +5,13 @@ JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log
 JAVA MG gg.pii      eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator --log
 # JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 
-# JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter" --delete-on-complete
-JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 
+# Choose automatic or manual filtering
+VARDEFAULT MotiveFileManagerGoalFilter=automatic
+
+IFEQ(%(MotiveFileManagerGoalFilter), manual)
+    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter" --delete-on-complete
+ENDIF
+IFEQ(%(MotiveFileManagerGoalFilter), automatic)
+    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 
+ENDIF
 
