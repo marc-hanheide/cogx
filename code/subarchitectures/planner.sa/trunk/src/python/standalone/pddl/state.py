@@ -1065,6 +1065,7 @@ class State(dict):
         """
         t0 = time.time()
 
+
         stratification = self.problem.domain.stratification
         if not stratification:
             #we don't have axioms
@@ -1092,21 +1093,25 @@ class State(dict):
                 closed.add(sv)
                 for ax in self.problem.domain.axioms:
                     if ax.predicate == sv.get_predicate():
-                        ax.instantiate(sv.get_args(), self.problem)
-                        for dep in self.get_relevant_vars(ax.condition, derived):
-                            if dep.get_predicate() in derived and dep not in closed:
-                                open.add(dep)
-                        ax.uninstantiate()
+                        if ax.tryInstantiate(sv.get_args(), self.problem):
+                            for dep in self.get_relevant_vars(ax.condition, derived):
+                                if dep.get_predicate() in derived and dep not in closed:
+                                    open.add(dep)
+                            ax.uninstantiate()
             return closed
                     
         relevant = set()
         if svars is not None:
+            auto_eval = self.auto_axiom_evaluation
+            self.auto_axiom_evaluation = False
             for s in svars:
                 pred = s.get_predicate()
                 if pred in stratification[1] and pred in self.problem.domain.nonrecursive:
                     relevant.add(s) #shortcut for nonrecursive, level 1 axioms
                 elif pred in derived:
                     relevant |= getDependencies(s, derived)
+            self.auto_axiom_evaluation = auto_eval
+            
             if not relevant:
                 if getReasons:
                     return self, {}, {}
@@ -1200,6 +1205,7 @@ class State(dict):
                                         reasons[svar].add(other_svar)
                                     for param in universal:
                                         universalReasons[svar].add(param)
+                                ax.uninstantiate()
                                 break
                                 
                             ax.uninstantiate()
