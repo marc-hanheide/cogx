@@ -11,7 +11,7 @@ env
 /usr/bin/make -C $dname clean
 
 if [ "$1" == "" ]; then
-   /usr/bin/make -C $dname george SVNUSER=cogx
+   /usr/bin/make -C $dname george SVNUSER=cogx SVNNONINTERACTIVE=--non-interactive
 else
-   /usr/bin/make -C $dname $1 SVNUSER=cogx
+   /usr/bin/make -C $dname $1 SVNUSER=cogx SVNNONINTERACTIVE=--non-interactive
 fi
