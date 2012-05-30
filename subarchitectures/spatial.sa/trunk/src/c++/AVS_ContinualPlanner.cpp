@@ -403,25 +403,30 @@ void AVS_ContinualPlanner::owtRecognizer3DCommand(
       startMovePanTilt(0.0, 0.0, 0.08);
       m_ptzWaitingStatus = WAITING_TO_RETURN;
     } else {
-      m_processedViewConeIDs.insert(m_currentViewCone.first);
       m_currentViewCone.first = m_currentConeGroupNumber * 1000
           + m_currentViewConeNumber;
       m_currentViewCone.second
           = m_currentConeGroup->viewcones[m_currentViewConeNumber];
-      if (m_usePeekabot) {
-        m_proxyCone = &m_ProxyViewPointsList[m_currentViewCone.first];
-        m_proxyConePolygons
-            = m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
-        ChangeCurrentViewConeColor(0.1, 0.9, 0.1);
-      }
       double angle = m_currentViewCone.second.pan - lastRobotPose->theta;
       if (angle < -M_PI)
         angle += 2 * M_PI;
       if (angle > M_PI)
         angle -= 2 * M_PI;
-
-      startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
-      m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+      if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
+        log("WARNING: Skipping the viewcone group. Can't pan that far.");
+        startMovePanTilt(0.0, 0.0, 0.08);
+        m_ptzWaitingStatus = WAITING_TO_RETURN;
+      } else {
+        m_processedViewConeIDs.insert(m_currentViewCone.first);
+        if (m_usePeekabot) {
+          m_proxyCone = &m_ProxyViewPointsList[m_currentViewCone.first];
+          m_proxyConePolygons
+              = m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
+          ChangeCurrentViewConeColor(0.1, 0.9, 0.1);
+        }
+        startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
+        m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+      }
     }
 
     //	m_currentProcessConeGroup->status = SpatialData::SUCCESS;
@@ -2227,17 +2232,28 @@ void AVS_ContinualPlanner::owtNavCommand(
       // it means we've reached viewcone position
       if (!m_runInSimulation) {
         log("Not running in simulation mode, moving pan tilt");
-        if (m_usePeekabot) {
-          ChangeCurrentViewConeColor(0.1, 0.9, 0.1);
-        }
         double angle = m_currentViewCone.second.pan - lastRobotPose->theta;
-        while (angle < -M_PI)
-          angle += 2 * M_PI;
-        while (angle > M_PI)
-          angle -= 2 * M_PI;
 
-        startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
-        m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+        if (angle < -M_PI)
+          angle += 2 * M_PI;
+        if (angle > M_PI)
+          angle -= 2 * M_PI;
+        if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
+          log("WARNING: Skipping the viewcone group. Can't pan that far.");
+          startMovePanTilt(0.0, 0.0, 0.08);
+          m_ptzWaitingStatus = WAITING_TO_RETURN;
+        } else {
+          m_processedViewConeIDs.insert(m_currentViewCone.first);
+          if (m_usePeekabot) {
+            m_proxyCone = &m_ProxyViewPointsList[m_currentViewCone.first];
+            m_proxyConePolygons
+                = m_ProxyViewPointsPolygonsList[m_currentViewCone.first];
+            ChangeCurrentViewConeColor(0.1, 0.9, 0.1);
+          }
+          startMovePanTilt(angle, m_currentViewCone.second.tilt, 0.08);
+          m_ptzWaitingStatus = WAITING_TO_RECOGNIZE;
+        }
+
         //			Recognize();
       }
       if (m_runInSimulation) {
