@@ -1388,6 +1388,12 @@ void PlaceManager::evaluateUnexploredPaths() {
         // Connected via gateway - skip
         if (link_gateway)
           continue;
+        
+        // One of the nodes is a door and they are connected through some node - skip
+        if ((max_dist == 1.5) && ((curNode->gateway == 1) || (it->second->gateway == 1))){
+          continue;
+        }
+        
         double dist2 = (it->second->x - curNode->x) * (it->second->x
             - curNode->x) + (it->second->y - curNode->y) * (it->second->y
             - curNode->y);
@@ -1398,7 +1404,7 @@ void PlaceManager::evaluateUnexploredPaths() {
               it->second->y, curNode->x, curNode->y);
           log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->first,
               max_dist, sqrt(dist2), path_dist, path_dist / sqrt(dist2));
-          if (path_dist / sqrt(dist2) > 0 && path_dist / sqrt(dist2) < 22) {
+          if (path_dist / sqrt(dist2) > 0 && path_dist / sqrt(dist2) < 21) {
             // Check doorHyps
             bool intersects_door = false;
             if ((it->second->gateway == 0) && (curNode->gateway == 0)) {
