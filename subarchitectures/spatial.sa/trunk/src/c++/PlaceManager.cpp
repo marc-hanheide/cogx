@@ -1404,7 +1404,7 @@ void PlaceManager::evaluateUnexploredPaths() {
               it->second->y, curNode->x, curNode->y);
           log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->first,
               max_dist, sqrt(dist2), path_dist, path_dist / sqrt(dist2));
-          if (path_dist / sqrt(dist2) > 0 && path_dist / sqrt(dist2) < 21) {
+          if (path_dist / sqrt(dist2) > 0 && path_dist / sqrt(dist2) < 22) {
             // Check doorHyps
             bool intersects_door = false;
             if ((it->second->gateway == 0) && (curNode->gateway == 0)) {
