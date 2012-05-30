@@ -12,6 +12,8 @@
  *
  */
 
+#define wrn(X) getLogger()->warn(X)
+
 #include <CureHWUtils.hpp>
 #include <AddressBank/ConfigFileReader.hh>
 
@@ -365,7 +367,7 @@ void AVS_ContinualPlanner::owtARTagCommand(
       if (angle > M_PI)
         angle -= 2 * M_PI;
       if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
-        log("WARNING: Skipping the viewcone group. Can't pan that far.");
+        wrn("WARNING: Skipping the viewcone group. Can't pan that far.");
         startMovePanTilt(0.0, 0.0, 0.08);
         m_ptzWaitingStatus = WAITING_TO_RETURN;
       } else {
@@ -413,7 +415,7 @@ void AVS_ContinualPlanner::owtRecognizer3DCommand(
       if (angle > M_PI)
         angle -= 2 * M_PI;
       if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
-        log("WARNING: Skipping the viewcone group. Can't pan that far.");
+        wrn("WARNING: Skipping the viewcone group. Can't pan that far.");
         startMovePanTilt(0.0, 0.0, 0.08);
         m_ptzWaitingStatus = WAITING_TO_RETURN;
       } else {
@@ -2052,7 +2054,7 @@ void AVS_ContinualPlanner::configure(
         } else if (buf == "<") {
           str >> newZone.maxX;
         } else {
-          log("Warning: Malformed --exclude-from-exploration string");
+          wrn("Warning: Malformed --exclude-from-exploration string");
           break;
         }
       } else if (buf == "y") {
@@ -2062,11 +2064,11 @@ void AVS_ContinualPlanner::configure(
         } else if (buf == "<") {
           str >> newZone.maxY;
         } else {
-          log("Warning: Malformed --exclude-from-exploration string");
+          wrn("Warning: Malformed --exclude-from-exploration string");
           break;
         }
       } else {
-        log("Warning: Malformed --exclude-from-exploration string");
+        wrn("Warning: Malformed --exclude-from-exploration string");
         break;
       }
     }
@@ -2239,7 +2241,7 @@ void AVS_ContinualPlanner::owtNavCommand(
         if (angle > M_PI)
           angle -= 2 * M_PI;
         if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
-          log("WARNING: Skipping the viewcone group. Can't pan that far.");
+          wrn("WARNING: Skipping the viewcone group. Can't pan that far.");
           startMovePanTilt(0.0, 0.0, 0.08);
           m_ptzWaitingStatus = WAITING_TO_RETURN;
         } else {
@@ -2345,7 +2347,7 @@ void AVS_ContinualPlanner::overwrittenPanTiltCommand(
       if (overwritten->comp == ptz::SUCCEEDED) {
 
       } else {
-        log("Warning! Failed to move PTZ before moving!");
+        wrn("Warning! Failed to move PTZ before moving!");
       }
       deleteFromWorkingMemory(objID.address);
     } catch (DoesNotExistOnWMException e) {
