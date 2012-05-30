@@ -136,6 +136,7 @@ class FunctionTable(dict):
         if not result and self.default_fn is not None:
             # avoid possible infinite recursion when default_fn tries to add a function,
             # as this triggers a lookup to check whether the function already exists
+            # TODO: this is not ideal, should be done in a better way
             default_fn = self.default_fn
             self.default_fn = None
             result = default_fn(name, args)
@@ -335,6 +336,7 @@ class Scope(dict):
         Arguments:
         mapping -- dictionary from parameter to object.
         parent -- scope object (usually a pddl.Problem) that should be the base for instantiation"""
+        # assert not any(v.is_instantiated() for v in self.itervalues())
         self.uninstantiate()
 
         if parent:
@@ -358,6 +360,7 @@ class Scope(dict):
             if not isinstance(val, types.Parameter):
                 val = self[val]
             key.instantiate(val)
+
 
     def smart_instantiate(self, func, args, arglists, parent=None, partial_mapping={}):
         self.uninstantiate()
