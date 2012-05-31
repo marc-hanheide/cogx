@@ -1,6 +1,12 @@
 #!/bin/bash
 
-root="."
+# Prepare Gazebo paths
+root=$(pwd)
+cd instantiations/jenkins/data/gazebo
+python $root/tools/scripts/gazebo-install-path
+cd $root
+
+#root="."
 runner="python tools/castctrl/castrunner.py"
 
 abducer="--abducer"
