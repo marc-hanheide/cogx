@@ -35,6 +35,9 @@ def addOptions(parser):
     # * CAST file
     # * Logging levels
     # * Logger output (filename)
+    parser.add_option("", "--cast-file", action="store", type="string", default=None, dest="cast_file",
+            help= "Set the CAST configuration file."
+           )
     return
 
 def okToStart(task): return True
