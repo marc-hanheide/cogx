@@ -834,7 +834,7 @@ int PlaceManager::updatePlaceholderEdge(int placeholderId) {
     return -1;
   }
 
-  PlaceID closestPlace = _getPlaceIDForHyp(closestNodeId);
+  PlaceID closestPlace = _getPlaceIDForNode(closestNodeId);
   //  PlacePtr closestPlace = _getPlaceIDForNode(closestNodeId);
   if (closestPlace < 0) {
     log("No place attached to node. Try again later.");
@@ -1124,7 +1124,7 @@ void PlaceManager::evaluateUnexploredPaths() {
               }
 
               if (exists) {
-                log("move overlapped placeholder");
+                log("move overlapped placeholder %d",_getPlaceIDForHyp(nodeHyp->hypID));
                 nodeHyp->x = extantHyp->x;
                 nodeHyp->y = extantHyp->y;
                 if (extantHyp->originPlaceID == -1)
@@ -1200,7 +1200,7 @@ void PlaceManager::evaluateUnexploredPaths() {
           }
           //2. DELETE NON EXISTING PLACEHOLDERS
           if (!exists) {
-            log("delete overlapped placeholder");
+            log("delete overlapped placeholder %d",place->id);
             deletePlaceholder(place->id);
           }
         } catch (IceUtil::NullHandleException e) {
@@ -1291,8 +1291,8 @@ void PlaceManager::evaluateUnexploredPaths() {
           p->status = PLACEHOLDER;
 
           PlaceID newPlaceID = _addPlaceWithHyp(p, newHyp);
-          log("Added new hypothesis at (%f, %f) with ID %i", newHyp->x,
-              newHyp->y, newHyp->hypID);
+          log("Added new hypothesis at (%f, %f) with ID %i and PlaceID %d", newHyp->x,
+              newHyp->y, newHyp->hypID,newPlaceID);
 
           // Add connectivity property (one-way)
           createConnectivityProperty(m_hypPathLength, newHyp->originPlaceID,
