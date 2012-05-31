@@ -306,10 +306,13 @@ def main():
     agent.startServing()
     try:
         print "Press Ctrl-C to stop serving."
-        while True: time.sleep(1.0)
+        while True:
+            time.sleep(0.2)
     except KeyboardInterrupt:
+        print "\nKeyboardInterrupt\n"
+    except:
         print "\nInterrupted\n"
-        agent.stopServing()
+    agent.stopServing()
 
 if __name__ == "__main__": main()
 
