@@ -97,6 +97,7 @@ class CConsoleAgent:
         self._options.configEnvironment()
         self.address = "tcp -p %d" % port
         self.agent = None
+        self.mainLog = None
 
         self.serverManager = CServerManager()
         fn = os.path.join(os.path.dirname(pconfig.__file__), "castservers.txt")
@@ -106,8 +107,9 @@ class CConsoleAgent:
 
         self._options.appOptions = appOptions
         self._initLocalProcesses(appOptions)
-        self._initMessagePump(appOptions)
 
+    def __del__(self):
+        self.manager.stopReaderThread()
 
     def _addProcess(self, name, dictParams=None):
         csi = self.serverManager.getServerInfo(name)
@@ -182,9 +184,7 @@ class CConsoleAgent:
         if  appOptions.cleanup_script != None:
             self._addProcess('Cleanup', { 'SCRIPT': appOptions.cleanup_script })
 
-
-
-    def _initMessagePump(self, appOptions):
+    def _initMessagePump(self):
         self.mainLog = CLogDisplayer()
         for proc in self.manager.proclist:
             self.mainLog.log.addSource(proc)
@@ -208,6 +208,9 @@ class CConsoleAgent:
         else:
             LOGGER.log("ICE Server stopped.")
 
+    def startLogging(self):
+        self._initMessagePump()
+
     def startServing(self):
         if self.agent != None: self.stopServing()
         self.agent = castagentsrv.CCastSlave(self.manager, self._options, self.address)
@@ -218,7 +221,8 @@ class CConsoleAgent:
         if self.agent != None: self._shutdown(self.agent)
         self.agent = None
         self.manager.stopReaderThread()
-        self.mainLog.shutdown()
+        if self.mainLog != None:
+            self.mainLog.shutdown()
 
 def createOptionParser():
     usage = "Usage: %prog [options] args"
@@ -309,6 +313,7 @@ def main():
         try: print "%14s:\t%s" % (o, eval("opts.%s" % o))
         except: pass
     agent = CConsoleAgent(opts)
+    agent.startLogging()
     agent.startServing()
     try:
         print "Press Ctrl-C to stop serving."
