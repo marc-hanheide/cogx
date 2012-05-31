@@ -19,6 +19,8 @@
 //
 /*----------------------------------------------------------------------*/
 
+#define wrn(args...); {char buf[512]; sprintf(buf,args); getLogger()->warn(buf);}
+
 #include "SpatialControl.hpp"
 #include <CureHWUtils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
@@ -273,7 +275,7 @@ void SpatialControl::overwrittenPanTiltCommand(
 
     if (objID.address.id == m_waitingForPTZCommandID) {
       if (overwritten->comp != ptz::SUCCEEDED) {
-        log("Warning! Failed to move PTZ before moving!");
+        wrn("WARNING: Failed to move PTZ before moving!");
       }
       deleteFromWorkingMemory(objID.address);
     }
@@ -1362,7 +1364,7 @@ void SpatialControl::updateGridMaps() {
   //Must keep the obstacle count below this limit.
   //The following scheme adds at most a third of the cells in the 
   //3x3 square around the robot, making 1/3*3600=1200 obstacles
-//  long nObstacles = 0;
+  //  long nObstacles = 0;
   int iCenter, jCenter;
   m_lgm->worldCoords2Index(currPose.getX(), currPose.getY(), iCenter, jCenter);
   double radius = 1.5; //Distance to consider obstacles at
@@ -1754,8 +1756,7 @@ void SpatialControl::newVisualExplorationCommand(
       obj->comp = NavData::SUCCEEDED;
       overwriteWorkingMemory<NavData::VisualExplorationCommand> (objID.address,
           obj);
-      getLogger()->warn(
-          "Warning: ignoring VisualExplorationCommand; marking as SUCCEEDED");
+      wrn("WARNING: ignoring VisualExplorationCommand; marking as SUCCEEDED");
     } else if (!m_UsePointCloud && m_simulateKinect) {
       // simulated visual exploration action
       m_visualExplorationOngoing = true;
@@ -1768,8 +1769,7 @@ void SpatialControl::newVisualExplorationCommand(
       log("m_visualExplorationPhase = %d", m_visualExplorationPhase);
       m_visualExplorationCommand = objID.address.id;
     } else {
-      getLogger()->warn(
-          "Warning: SpatialControl busy; cannot execute VisualExplorationCommand. Marking as FAILED");
+      wrn("Warning: SpatialControl busy; cannot execute VisualExplorationCommand. Marking as FAILED");
       obj->comp = NavData::FAILED;
       overwriteWorkingMemory<NavData::VisualExplorationCommand> (
           objID.address.id, obj);
@@ -1847,39 +1847,45 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
       startMovePanTilt(0, -M_PI / 4, 0);
     }
 
+    log(
+        "New NavCommand: x=%f, y=%f, r=%f, theta=%f, distance=%, areId=%d, nodeId=%d",
+        oobj->getData()->x, oobj->getData()->y, oobj->getData()->r,
+        oobj->getData()->theta, oobj->getData()->areaId,
+        oobj->getData()->nodeId);
     m_commandType = oobj->getData()->cmd;
+
     if (!isnan(oobj->getData()->x)) {
       m_commandX = oobj->getData()->x;
     } else {
       m_commandX = 0;
-      log("WARNING: x is nan");
+      wrn("WARNING: x is nan");
     }
 
     if (!isnan(oobj->getData()->y)) {
       m_commandY = oobj->getData()->y;
     } else {
       m_commandY = 0;
-      log("WARNING: y is nan");
+      wrn("WARNING: y is nan");
     }
 
     if (!isnan(oobj->getData()->r)) {
       m_commandR = oobj->getData()->r;
     } else {
       m_commandR = 0;
-      log("WARNING: r is nan");
+      wrn("WARNING: r is nan");
     }
 
-    if ((!isnan(oobj->getData()->theta) && (oobj->getData()->theta < 2 * M_PI)
-        && (oobj->getData()->theta > -2 * M_PI))) {
+    if ((!isnan(oobj->getData()->theta) && (oobj->getData()->theta < 100)
+        && (oobj->getData()->theta > -100))) {
       m_commandTheta = oobj->getData()->theta;
 
-      if (m_commandTheta > M_PI)
+      while (m_commandTheta > M_PI)
         m_commandTheta -= 2 * M_PI;
-      if (m_commandTheta < -M_PI)
+      while (m_commandTheta < -M_PI)
         m_commandTheta += 2 * M_PI;
     } else {
       m_commandTheta = 0;
-      log("WARNING: theta is nan or very high");
+      wrn("WARNING: theta is nan or very high");
     }
 
     m_commandDistance = oobj->getData()->distance;
@@ -1890,6 +1896,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
     m_TolPos = m_DefTolPos;
     m_TolRot = m_DefTolRot;
     if (m_commandType == NavData::lGOTOXYA) {
+      log("New NavCommand: type=lGOTOXYA");
       if (oobj->getData()->tolerance.size() > 1) {
         if (!isnan(oobj->getData()->tolerance[1]))
           m_TolRot = oobj->getData()->tolerance[1];
@@ -1902,12 +1909,17 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
         == NavData::lGOTOXYROUGH || m_commandType == NavData::lGOTOPOLAR
         || m_commandType == NavData::lGOTONODE || m_commandType
         == NavData::lBACKOFF) {
+      log(
+          "New NavCommand: type=lGOTOXY or lGOTOXYROUGH or lGOTOPOLAR or lGOTONODE or lBACKOFF");
+
       if (oobj->getData()->tolerance.size() > 0) {
         if (!isnan(oobj->getData()->tolerance[0]))
           m_TolPos = oobj->getData()->tolerance[0];
       }
     } else if (m_commandType == NavData::lROTATEREL || m_commandType
         == NavData::lROTATEABS) {
+      log("New NavCommand: type=lROTATEREL or lROTATEABS");
+
       if (oobj->getData()->tolerance.size() > 0) {
         if (!isnan(oobj->getData()->tolerance[0]))
           m_TolRot = oobj->getData()->tolerance[0];
@@ -1917,6 +1929,8 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
     // If we are supposed to follow a person we pick the currently
     // closest one
     if (m_commandType == NavData::lFOLLOWPERSON) {
+      log("New NavCommand: type=lFOLLOWPERSON");
+
       double minD = 1e10;
       m_CurrPerson = -1;
 
@@ -1999,7 +2013,7 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
         - oldTime.us);
     oldTime = newTime;
     if (diff > 1500000) {
-      log("WARNING: SpatialControl::updateCtrl - interval: %f s",
+      wrn ("WARNING: SpatialControl::updateCtrl - interval: %f s",
           ((double) diff) * 1e-6);
     } else {
       log("SpatialControl::updateCtrl - interval: %f s", ((double) diff) * 1e-6);
@@ -2008,7 +2022,7 @@ void SpatialControl::processOdometry(Cure::Pose3D cureOdom) {
     diff = (newTime.s - m_lastSLAMPoseTime.s) * 1000000l + (newTime.us
         - m_lastSLAMPoseTime.us);
     if (diff > 1500000) {
-      log("WARNING: SpatialControl::updateCtrl - SLAM pose age: %f s",
+      wrn("WARNING: SpatialControl::updateCtrl - SLAM pose age: %f s",
           ((double) diff) * 1e-6);
     } else {
       log("SpatialControl::updateCtrl - SLAM pose age: %f s", ((double) diff)

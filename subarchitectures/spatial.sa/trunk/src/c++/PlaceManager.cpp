@@ -13,6 +13,7 @@
 //    Copyright (c) 2012 Alexey Bezugly
 //
 /*----------------------------------------------------------------------*/
+#define wrn(args...); {char buf[512]; sprintf(buf,args); getLogger()->warn(buf);}
 
 #include "PlaceManager.hpp"
 #include <cast/architecture/ChangeFilterFactory.hpp>

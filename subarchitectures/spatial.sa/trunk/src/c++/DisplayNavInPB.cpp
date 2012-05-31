@@ -14,6 +14,8 @@
 //
 /*----------------------------------------------------------------------*/
 
+#define wrn(args...); {char buf[512]; sprintf(buf,args); getLogger()->warn(buf);}
+
 #include "DisplayNavInPB.hpp"
 
 #include "NavData.hpp"
