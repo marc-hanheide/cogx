@@ -502,8 +502,12 @@ void CategoricalDataProvider::newDataProviderCommandAdded(const cdl::WorkingMemo
   CategoricalData::DataProviderCommandAckPtr commandAck = new CategoricalData::DataProviderCommandAck;
   commandAck->cmd = command;
   commandAck->src = wmc.src;
-  overwriteWorkingMemory(_dataProviderCommandAckId, commandAck);
-
+  try {
+    overwriteWorkingMemory(_dataProviderCommandAckId, commandAck);
+  }
+  catch (const CASTException& e) {
+    getLogger()->warn("caught CASTException in newDataProviderCommandAdded(): "+ std::string(e.what()));
+  }
   // Execute command
   if (command->cmd==CategoricalData::DpCmdUpdate)
   {
@@ -694,7 +698,12 @@ cast::cdl::CASTTime CategoricalDataProvider::outputImage()
 
   // Overwrite in the working memory
   cdl::CASTTime imageTimeStamp = image->realTimeStamp;
-  overwriteWorkingMemory(_imageId, image);
+  try {
+    overwriteWorkingMemory(_imageId, image);
+  }
+  catch (const CASTException& e) {
+    getLogger()->warn("caught CASTException in outputImage(): "+ std::string(e.what()));
+  }
   debug("Image placed in the WM at %f.", castTimeToSeconds(wmTimeStamp));
 
   // Return the image timestamp
@@ -809,7 +818,12 @@ cast::cdl::CASTTime CategoricalDataProvider::outputLaserScan(const cast::cdl::CA
 
   // Overwrite in the working memory
   cdl::CASTTime scanTimeStamp=scan->realTimeStamp;
-  overwriteWorkingMemory(_laserScanId, scan);
+  try {
+    overwriteWorkingMemory(_laserScanId, scan);
+  }
+  catch (const CASTException& e) {
+    getLogger()->warn("caught CASTException in outputLaserScan(): "+ std::string(e.what()));
+  }
   debug("Laser scan placed in the WM at %f.", castTimeToSeconds(wmTimeStamp));
 
   // Return the scan timestamp
@@ -923,7 +937,12 @@ cast::cdl::CASTTime CategoricalDataProvider::outputOdometryReading(const cast::c
 
   // Overwrite in the working memory
   cdl::CASTTime odomTimeStamp=odom->realTimeStamp;
-  overwriteWorkingMemory(_odometryId, odom);
+  try {
+    overwriteWorkingMemory(_odometryId, odom);
+  }
+  catch (const CASTException& e) {
+    getLogger()->warn("caught CASTException in outputOdometryReading(): "+ std::string(e.what()));
+  }
   debug("Odometry reading placed in the WM at %f.", castTimeToSeconds(wmTimeStamp));
 
   // Return the odometry timestamp
@@ -953,7 +972,12 @@ void CategoricalDataProvider::outputTarget()
   }
 
   // Overwrite in the working memory
-  overwriteWorkingMemory(_targetId, target);
+  try {
+    overwriteWorkingMemory(_targetId, target);
+  }
+  catch (const CASTException& e) {
+    getLogger()->warn("caught CASTException in outputTarget(): "+ std::string(e.what()));
+  }
   debug("Target placed in the WM.");
 }
 
