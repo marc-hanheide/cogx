@@ -1662,11 +1662,11 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID) {
     NavData::FNodePtr fnode = oobj->getData();
 
     int placeId = GetPlaceIdFromNodeId(fnode->nodeId);
-    log("alex 5 %d %d", placeId, fnode->nodeId);
+    debug("5 %d %d", placeId, fnode->nodeId);
     if (placeId != -1) {
       for (map<string, std::pair<long, long> >::iterator it = _cpp.begin(); it
           != _cpp.end(); ++it) {
-        log("alex 6 %d - %d %d", placeId, it->second.first, it->second.second);
+        debug("6 %d - %d %d", placeId, it->second.first, it->second.second);
 
         if (it->second.first == placeId || it->second.second == placeId) {
           displayConnectivityPathProperty(it->second.first, it->second.second);
@@ -1891,7 +1891,7 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange) {
 
     for (map<string, std::pair<long, long> >::iterator it = _cpp.begin(); it
         != _cpp.end(); ++it) {
-      log("alex 1 %d - %d %d", pid, it->second.first, it->second.second);
+      debug("1 %d - %d %d", pid, it->second.first, it->second.second);
       if (it->second.first == pid || it->second.second == pid) {
         displayConnectivityPathProperty(it->second.first, it->second.second);
       }
@@ -2063,7 +2063,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange) {
   if (placeId != -1) {
     for (map<string, std::pair<long, long> >::iterator it = _cpp.begin(); it
         != _cpp.end(); ++it) {
-      log("alex 8 %d - %d %d", placeId, it->second.first, it->second.second);
+      debug("8 %d - %d %d", placeId, it->second.first, it->second.second);
 
       if (it->second.first == placeId || it->second.second == placeId) {
         displayConnectivityPathProperty(it->second.first, it->second.second);
@@ -2282,7 +2282,7 @@ void DisplayNavInPB::displayConnectivityPathProperty(int place1Id, int place2Id)
     ty = fnodePtr->y;
   }
   double angle = atan2(ty - fy, tx - fx);
-  log("alex lp %f %f %f %f %f %f", fx, fy, tx, ty, tx - 0.05 * cos(angle - M_PI
+  debug("lp %f %f %f %f %f %f", fx, fy, tx, ty, tx - 0.05 * cos(angle - M_PI
       / 6), ty - 0.05 * sin(angle - M_PI / 6));
   char name[32];
   sprintf(name, "cpp%06d", place1Id * 1000 + place2Id);
@@ -2318,12 +2318,12 @@ void DisplayNavInPB::deleteConnectivityPathProperty(
 
   char name[32];
   sprintf(name, "cpp%06ld", it->second.first * 1000 + it->second.second);
-  log("alex 3 %s", name);
+  debug("3 %s", name);
   peekabot::LineCloudProxy lp;
   peekabot::Status s =
       lp.assign(m_ProxyConnectivityPathProperties, name).status();
   if (s.succeeded()) {
-    log("alex 4 %s", name);
+    debug("4 %s", name);
     lp.remove();
   }
   _cpp.erase(it);
