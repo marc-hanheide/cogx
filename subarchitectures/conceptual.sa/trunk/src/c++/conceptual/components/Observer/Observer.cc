@@ -643,7 +643,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("comaRoomChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -674,7 +674,7 @@ void Observer::comaRoomChanged(const cast::cdl::WorkingMemoryChange & wmChange)
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("comaRoomChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -770,7 +770,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("placeChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -812,7 +812,7 @@ void Observer::placeChanged(const cast::cdl::WorkingMemoryChange &wmChange)
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("placeChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -891,7 +891,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("gatewayPlacePropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -921,7 +921,7 @@ void Observer::gatewayPlacePropertyChanged(const cast::cdl::WorkingMemoryChange 
     }// Room added
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("gatewayPlacePropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -989,7 +989,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("objectPlacePropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1030,7 +1030,7 @@ void Observer::objectPlacePropertyChanged(const cast::cdl::WorkingMemoryChange &
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("objectPlacePropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1120,7 +1120,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("objectSearchResultChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1162,7 +1162,7 @@ void Observer::objectSearchResultChanged(const cast::cdl::WorkingMemoryChange &w
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("objectSearchResultChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1260,7 +1260,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("shapePlacePropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -1307,7 +1307,7 @@ void Observer::shapePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &w
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("shapePlacePropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -1399,7 +1399,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("sizePlacePropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -1444,7 +1444,7 @@ void Observer::sizePlacePropertyChanged(const cast::cdl::WorkingMemoryChange &wm
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("sizePlacePropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -1534,7 +1534,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("appearancePlacePropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -1579,7 +1579,7 @@ void Observer::appearancePlacePropertyChanged(const cast::cdl::WorkingMemoryChan
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("appearancePlacePropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
 
@@ -1669,7 +1669,7 @@ void Observer::humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemory
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("humanAssertionPlacePropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1708,7 +1708,7 @@ void Observer::humanAssertionPlacePropertyChanged(const cast::cdl::WorkingMemory
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("humanAssertionPlacePropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1787,7 +1787,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("gatewayPlaceholderPropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1819,7 +1819,7 @@ void Observer::gatewayPlaceholderPropertyChanged(const cast::cdl::WorkingMemoryC
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("gatewayPlaceholderPropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1895,7 +1895,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("associatedSpacePlaceholderPropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -1929,7 +1929,7 @@ void Observer::associatedSpacePlaceholderPropertyChanged(const cast::cdl::Workin
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("associatedSpacePlaceholderPropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -2015,7 +2015,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("connectivityPathPropertyChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -2045,7 +2045,7 @@ void Observer::connectivityPathPropertyChanged(const cast::cdl::WorkingMemoryCha
     }
     catch(CASTException &e)
     {
-      log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+      log("connectivityPathPropertyChanged overwrite. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
       return;
     }
     pthread_mutex_lock(&_worldStateMutex);
@@ -2109,7 +2109,7 @@ void Observer::mapLoadStatusChanged(const cast::cdl::WorkingMemoryChange &wmChan
   }
   catch(CASTException &e)
   {
-    log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
+    log("mapLoadStatusChanged add. Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
     return;
   }
 
