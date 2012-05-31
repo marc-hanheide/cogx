@@ -1107,7 +1107,7 @@ void AVS_ContinualPlanner::generateViewCones(
         opt_minAngle = minAngle;
       }
     }
-    log("alex viewcones in place %d", (*plIt).second.size());
+    debug("viewcones in place %d", (*plIt).second.size());
     double stAngle = opt_minAngle;
     map<int, bool> collected_vc;
     while (collected_vc.size() < (*plIt).second.size()) {
@@ -1171,13 +1171,13 @@ void AVS_ContinualPlanner::generateViewCones(
       }
 
       stAngle = maxAngle + min_dist - 0.0001;
-      log("alex group size %d", gr.size());
+      debug("group size %d", gr.size());
       grouped_cones.push_back(gr);
 
     }
 
   }
-  log("alex gcs %d", grouped_cones.size());
+  debug("gcs %d", grouped_cones.size());
 
   for (unsigned int i = 0; i < grouped_cones.size(); i++) {
     /* GETTING PLACE BELIEFS */

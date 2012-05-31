@@ -335,7 +335,7 @@ void PlaceManager::LoadConnectivityProperties(const std::string &filename) {
 
     istr >> tmp;
     double cost = atof(tmp.c_str());
-    log("alex cre %d %d %f", PlaceID1, PlaceID2, cost);
+    debug("cre %d %d %f", PlaceID1, PlaceID2, cost);
     createConnectivityProperty(cost, PlaceID1, PlaceID2);
   }
 }
@@ -1357,12 +1357,12 @@ void PlaceManager::evaluateUnexploredPaths() {
           NavData::FNodePtr link = _getNodeForPlace(*it1);
           if (link != 0) {
             set<int> placeConnectivities = m_connectivities[(*it1)];
-            log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
+            debug("link %d %d - %d", curPlaceID, it->first, (*it1));
 
             set<int>::iterator it2 = placeConnectivities.find(it->first);
             if (it2 != placeConnectivities.end()) {
               max_dist = 1.5;
-              log("alex link %d %d - %d", curPlaceID, it->first, (*it1));
+              debug("link %d %d - %d", curPlaceID, it->first, (*it1));
 
               if (link->gateway == 1) {
                 link_gateway = true;
@@ -1402,7 +1402,7 @@ void PlaceManager::evaluateUnexploredPaths() {
           // Check path
           double path_dist = m_mapInterface->getPathLength(it->second->x,
               it->second->y, curNode->x, curNode->y);
-          log("alex path_dist %d %d - %f %f %f %f", curPlaceID, it->first,
+          debug("path_dist %d %d - %f %f %f %f", curPlaceID, it->first,
               max_dist, sqrt(dist2), path_dist, path_dist / sqrt(dist2));
           if (path_dist / sqrt(dist2) > 0 && path_dist / sqrt(dist2) < 22) {
             // Check doorHyps
