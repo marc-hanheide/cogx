@@ -149,8 +149,7 @@
                                  (not (exists (?p - person ?pl - place)
                                               (or (and (= (in-room ?pl) ?r)
                                                        (in-domain (is-in ?p) ?pl))
-                                                  (and (is-virtual ?p)
-                                                       (= (associated-with ?p) ?r))))))
+                                                  (= (associated-with ?p) ?r)))))
               :effect (create (?p - person) (and
                                              (is-virtual ?p)
                                              (assign (associated-with ?p) ?r))
