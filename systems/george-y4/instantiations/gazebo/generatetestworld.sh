@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd ../../subarchitectures/vision.sa/src/c++/vision/components/GazeboJuggler
+cd $(dirname "$0")/../../subarchitectures/vision.sa/src/c++/vision/components/GazeboJuggler
 source mkmodels.sh
