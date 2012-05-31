@@ -10,7 +10,7 @@ log4jlevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
 
 class CLog4Config:
     def __init__(self):
-        self._logDir = os.path.abspath("./logs")
+        self._logDir = "./logs"
         self._logFile = "cast-log.xml"
         self._serverConf = "cctmp.log4server.conf"
         self._clientConf = "cctmp.log4client.conf"
@@ -64,7 +64,7 @@ class CLog4Config:
     @property
     def logFile(self):
         # MUST be relative if used on a remote agent, so _logDir can't be used
-        return self._logFile
+        return os.path.join(self._logDir, self._logFile)
 
     @property
     def logServerDir(self):

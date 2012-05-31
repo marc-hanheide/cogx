@@ -6,8 +6,30 @@
 # that are not supported by castagent.
 #
 import castagent as cca
-from core import procman
+from core import procman, log4util
 import time
+
+# Log4j settings
+serverHost = "localhost"
+serverPort = "48143"
+serverOutFile = "log-castrunner.xml"
+consoleLevel = "DEBUG"
+xmlFileLevel = "TRACE"
+
+def getLog4jConfig():
+    try:
+        log4 = log4util.CLog4Config()
+        log4._serverConf = "ccrtmp.log4server.conf"
+        log4._clientConf = "ccrtmp.log4client.conf"
+        log4.setXmlLogFilename(serverOutFile)
+        log4.setServerConsoleLevel(consoleLevel)
+        log4.setServerXmlFileLevel(xmlFileLevel)
+        log4.setServerPort(serverPort)
+        log4.serverHost = serverHost # configuredHosts.expandHostName(self.serverHost)
+        return log4
+    except Exception as e:
+        print e
+    return None
 
 def addOptions(parser):
     # * CAST file
@@ -15,16 +37,17 @@ def addOptions(parser):
     # * Logger output (filename)
     return
 
-def okToStart(): return True
+def okToStart(task): return True
 
 # waitFor: list of (taskname, seconds)
 class CRunOrder:
-    def __init__(self, name, waitFor=None, sleepAfter=0, fnPreStart=okToStart):
+    def __init__(self, name, waitFor=None, sleepAfter=0, fnPreStart=None, fnGetParams=None):
         self.name = name
         self._waitForNames = [] if waitFor == None else waitFor
         self.waitFor = None
         self.sleepAfter = sleepAfter
         self.fnPreStart = fnPreStart
+        self.fnGetParams = fnGetParams
         self.startedAt = None
         self.process = None
 
@@ -59,15 +82,33 @@ class CRunOrder:
         return ttw
 
     def startProcess(self):
-        self.process.start()
-        time.sleep(0.2)
+        if self.fnPreStart != None:
+            self.fnPreStart(self)
+        params = None
+        if self.fnGetParams != None:
+            params = self.fnGetParams(self)
+        self.process.start(params=params)
         self.startedAt = time.time()
+        time.sleep(0.2)
 
-def prepareServerLog4j():
+# Callbacks for log4j server
+def clbkPrepareLog4jServer(task):
+    log4 = getLog4jConfig()
+    log4.prepareServerConfig()
     return True
 
-def prepareClientLog4j():
+def clbkPrepareLog4jClient(task):
+    log4 = getLog4jConfig()
+    log4.prepareClientConfig()
     return True
+
+def clbkGetLog4jParameters(task):
+    log4 = getLog4jConfig()
+    params = {
+        "LOG4J_PORT": log4.serverPort,
+        "LOG4J_SERVER_CONFIG": log4.serverConfigFile
+        }
+    return params
 
 # Remove nonexisting processes from the group.
 # Convert (name, time) to (task, time) in waitFor.
@@ -104,7 +145,6 @@ def tryStartGroup(group, processManager):
             if hasToWait: continue
             print time.time(), "Starting", task.name
 
-            task.fnPreStart()
             task.startProcess()
             if task.sleepAfter > 0:
                 time.sleep(task.sleepAfter)
@@ -127,25 +167,33 @@ def getRunningTasks(group):
 
 def main():
     groupA = []
-    groupA.append(CRunOrder(procman.LOG4J_PROCESS, sleepAfter=2, fnPreStart=prepareServerLog4j))
+    groupA.append(CRunOrder(procman.LOG4J_PROCESS, sleepAfter=2,
+            fnPreStart=clbkPrepareLog4jServer,
+            fnGetParams=clbkGetLog4jParameters
+            ))
+    groupA.append(CRunOrder("Abducer",
+            fnPreStart=clbkPrepareLog4jClient))
     groupA.append(CRunOrder("Display"))
-    groupA.append(CRunOrder("Abducer"))
     groupA.append(CRunOrder("Gazebo"))
     groupA.append(CRunOrder("Mary.tts"))
     groupA.append(CRunOrder("Golem"))
     groupA.append(CRunOrder("Player", waitFor=[("Gazebo", 10)] ))
     groupA.append(CRunOrder("Peekabot", waitFor=[("Player", 5)] ))
+
     groupB = []
-    groupB.append(CRunOrder("cast-java"))
+    groupB.append(CRunOrder("cast-java",
+            fnPreStart=clbkPrepareLog4jClient))
     groupB.append(CRunOrder("cast-cpp"))
     groupB.append(CRunOrder("cast-python"))
+
     groupC = []
-    groupC.append(CRunOrder("cast-client", fnPreStart=prepareClientLog4j))
+    groupC.append(CRunOrder("cast-client"))
 
     parser = cca.createOptionParser()
     addOptions(parser)
     opts, args = cca.parseOptions(parser)
     agent = cca.CConsoleAgent(opts)
+    agent.startLogging()
 
     try:
         groups = [ prepareGroup(g, agent.manager) for g in [groupA, groupB, groupC] ]
