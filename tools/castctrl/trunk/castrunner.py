@@ -7,6 +7,7 @@
 #
 import castagent as cca
 from core import procman
+import time
 
 def addOptions(parser):
     # * CAST file
@@ -14,16 +15,53 @@ def addOptions(parser):
     # * Logger output (filename)
     return
 
-def okToStart: return True
+def okToStart(): return True
 
+# waitFor: list of (taskname, seconds)
 class CRunOrder:
-    def __init__(name, waitFor=None, sleepAfter=0, fnPreStart=okToStart):
+    def __init__(self, name, waitFor=None, sleepAfter=0, fnPreStart=okToStart):
         self.name = name
-        self.waitFor = waitFor
+        self._waitForNames = [] if waitFor == None else waitFor
+        self.waitFor = None
         self.sleepAfter = sleepAfter
         self.fnPreStart = fnPreStart
         self.startedAt = None
         self.process = None
+
+    # Resolve the list of tasks that this task has to wait for; convert names
+    # to tasks. Self should belong to the group.
+    def resolveWaitFor(self, group):
+        tasks = {}
+        for task in group:
+            tasks[task.name] = task
+        #print self.name, self._waitForNames
+        self.waitFor = [ (tasks[pn], s) for (pn, s) in self._waitForNames if pn in tasks ]
+
+    def __repr__(self):
+        if self.waitFor == None: ref = ":*Unresolved*"
+        else:
+            if len(self.waitFor) == 0: ref = ""
+            else:
+                ref = ":" + (",".join( [ "%s+%ds" % (t[0].name, t[1]) for t in self.waitFor ] ))
+        s = "CRunOrder(%s%s)" % (self.name, ref)
+        return s
+
+    # Return if the task was started and its running time is at least runTimeS seconds.
+    def wasStartedBefore(self, runTimeS):
+        if self.startedAt == None: return False
+        return self.startedAt + runTimeS <= time.time()
+
+    def getTimeToWait(self, runTimeS):
+        if self.startedAt == None:
+            return runTimeS
+        ttw = (self.startedAt + runTimeS) - time.time()
+        if ttw < 0: ttw = 0
+        return ttw
+
+    def startProcess(self):
+        self.process.start()
+        time.sleep(0.2)
+        self.startedAt = time.time()
 
 def prepareServerLog4j():
     return True
@@ -31,14 +69,18 @@ def prepareServerLog4j():
 def prepareClientLog4j():
     return True
 
-# Remove nonexisting processes from the group
-def filterGroup(group, processManager):
+# Remove nonexisting processes from the group.
+# Convert (name, time) to (task, time) in waitFor.
+def prepareGroup(group, processManager):
     pm = processManager
     for task in group:
         task.process = pm.getProcess(task.name)
     group = [ task for task in group if task.process != None ]
+    for task in group:
+        task.resolveWaitFor(group)
     return group
 
+# Try to start the processes in the order defined by waitFor.
 def tryStartGroup(group, processManager):
     if len(group) < 1:
         return True
@@ -46,6 +88,41 @@ def tryStartGroup(group, processManager):
     processNames = {}
     for task in group:
         processNames[task.name] = task
+
+    waiting = [t for t in group]
+    while len(waiting):
+        alltasks = waiting
+        waiting = []
+        for task in alltasks:
+            hasToWait = False
+            for ttwf in task.waitFor: # ttwf = (CRunOrder, seconds)
+                if not ttwf[0].wasStartedBefore(ttwf[1]):
+                    #print task.name, "will wait for", ttwf[0].name, ttwf[1]
+                    hasToWait = True
+                    waiting.append(task)
+                    break
+            if hasToWait: continue
+            print time.time(), "Starting", task.name
+
+            task.fnPreStart()
+            task.startProcess()
+            if task.sleepAfter > 0:
+                time.sleep(task.sleepAfter)
+
+        if len(waiting):
+            print "Waiting:", waiting
+            minTtw = 5
+            for task in waiting:
+                for ttwf in task.waitFor: # ttwf = (CRunOrder, seconds)
+                    wf = ttwf[0].getTimeToWait(ttwf[1])
+                    if wf > 0: wf += 0.1
+                    if wf < minTtw: minTtw = wf
+            if minTtw > 0:
+                print "Sleeping", minTtw, "s"
+                time.sleep(minTtw)
+
+def getRunningTasks(group):
+    return [ t for t in group if t.process.isRunning() ]
 
 
 def main():
@@ -68,9 +145,19 @@ def main():
     parser = cca.createOptionParser()
     addOptions(parser)
     opts, args = cca.parseOptions(parser)
-    agent = CConsoleAgent(opts)
+    agent = cca.CConsoleAgent(opts)
 
-    groups = [ filterGroup(g, agent.manager) for g in [groupA, groupB, groupC] ]
+    try:
+        groups = [ prepareGroup(g, agent.manager) for g in [groupA, groupB, groupC] ]
+        tryStartGroup(groups[0], agent.manager)
+        print "Running:", getRunningTasks(groups[0])
+        while True:
+            time.sleep(0.2)
+    except KeyboardInterrupt:
+        print "\nKeyboard Interrupt\n"
+    #except Exception as e:
+    #    print e
+    agent.stopServing()
 
 
 if __name__ == "__main__": main()
