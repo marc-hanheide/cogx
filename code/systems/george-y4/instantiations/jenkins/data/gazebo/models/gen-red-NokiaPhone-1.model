@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<model:physical name="red-NokiaPhone-1-model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>red-NokiaPhone-1_body</canonicalBody>
+
+  <body:box name="red-NokiaPhone-1-body">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+
+  <mass>0.05</mass>
+  <massMatrix>true</massMatrix>
+  <ixx>0.001</ixx>
+  <ixy>0.0</ixy>
+  <ixz>0.0</ixz>
+  <iyy>0.0005</iyy>
+  <iyz>0.0</iyz>
+  <izz>0.001</izz>
+  <cx>0.0</cx>
+  <cy>0.0</cy>
+  <cz>0.0</cz>
+
+  <geom:box name="red-NokiaPhone-1-geom">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <size>0.194281 0.133022 0.212</size>
+  <mass>0.1</mass>
+
+  <visual>
+  <xyz>0.0971403 0 0</xyz>
+  <scale>1.94281e-05 0.133022 0.212</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/red-NokiaPhone-1-left</material>
+</visual>
+
+
+<visual>
+  <xyz>-0.0971403 0 0</xyz>
+  <scale>1.94281e-05 0.133022 0.212</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/red-NokiaPhone-1-right</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0.066511 0</xyz>
+  <scale>0.194281 1.33022e-05 0.212</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/red-NokiaPhone-1-front</material>
+</visual>
+
+
+<visual>
+  <xyz>0 -0.066511 0</xyz>
+  <scale>0.194281 1.33022e-05 0.212</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/red-NokiaPhone-1-back</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 0.106</xyz>
+  <scale>0.194281 0.133022 2.12e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/red-NokiaPhone-1-top</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 -0.106</xyz>
+  <scale>0.194281 0.133022 2.12e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/red-NokiaPhone-1-bottom</material>
+</visual>
+
+
+
+</geom:box>
+
+
+
+</body:box>
+
+
+
+</model:physical>
+

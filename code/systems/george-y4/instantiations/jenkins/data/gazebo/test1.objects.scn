@@ -1,0 +1,200 @@
+
+  <model:physical name="ora-SanDiskFlash-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 1.500000</xyz>
+  <rpy>0 0 0.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-ora-SanDiskFlash-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="yel-NokiaPhone-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 2.600000</xyz>
+  <rpy>0 0 7.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-yel-NokiaPhone-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="gre-StaedtlerTextsurfer-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 3.700000</xyz>
+  <rpy>0 0 14.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-gre-StaedtlerTextsurfer-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="blu-LiptonIceTea-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 4.800000</xyz>
+  <rpy>0 0 21.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-blu-LiptonIceTea-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="bla-LogitechMouse-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 5.900000</xyz>
+  <rpy>0 0 28.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-bla-LogitechMouse-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="yel-AtariComputer-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 7.000000</xyz>
+  <rpy>0 0 35.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-yel-AtariComputer-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="red-WebsterDictionary-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 8.100000</xyz>
+  <rpy>0 0 42.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-red-WebsterDictionary-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="whi-JaffaCakes-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 9.200000</xyz>
+  <rpy>0 0 49.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-whi-JaffaCakes-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="yel-SanDiskFlash-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 10.300000</xyz>
+  <rpy>0 0 56.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-yel-SanDiskFlash-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="red-NokiaPhone-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 11.400000</xyz>
+  <rpy>0 0 63.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-red-NokiaPhone-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="bla-StaedtlerTextsurfer-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 12.500000</xyz>
+  <rpy>0 0 70.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-bla-StaedtlerTextsurfer-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="red-LiptonIceTea-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 13.600000</xyz>
+  <rpy>0 0 77.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-red-LiptonIceTea-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="red-LogitechMouse-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 14.700000</xyz>
+  <rpy>0 0 84.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-red-LogitechMouse-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="blu-AtariComputer-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 15.800000</xyz>
+  <rpy>0 0 91.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-blu-AtariComputer-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="blu-WebsterDictionary-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 16.900000</xyz>
+  <rpy>0 0 98.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-blu-WebsterDictionary-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="ora-JaffaCakes-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 18.000000</xyz>
+  <rpy>0 0 105.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-ora-JaffaCakes-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="gre-SanDiskFlash-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 19.100000</xyz>
+  <rpy>0 0 112.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-gre-SanDiskFlash-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="red-NokiaPhone-1"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 20.200000</xyz>
+  <rpy>0 0 119.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-red-NokiaPhone-1.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="yel-StaedtlerTextsurfer-0"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 21.300000</xyz>
+  <rpy>0 0 126.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-yel-StaedtlerTextsurfer-0.model" />
+  </include>
+  </model:physical>
+
+  <model:physical name="blu-LiptonIceTea-1"> <!-- OBJECT -->
+  <static>true</static>
+  <xyz>0.100000 0.800000 22.400000</xyz>
+  <rpy>0 0 133.000000</rpy>
+
+  <include embedded="true">
+    <xi:include href="models/gen-blu-LiptonIceTea-1.model" />
+  </include>
+  </model:physical>

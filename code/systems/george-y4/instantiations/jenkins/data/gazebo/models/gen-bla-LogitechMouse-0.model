@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<model:physical name="bla-LogitechMouse-0-model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>bla-LogitechMouse-0_body</canonicalBody>
+
+  <body:box name="bla-LogitechMouse-0-body">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+
+  <mass>0.05</mass>
+  <massMatrix>true</massMatrix>
+  <ixx>0.001</ixx>
+  <ixy>0.0</ixy>
+  <ixz>0.0</ixz>
+  <iyy>0.0005</iyy>
+  <iyz>0.0</iyz>
+  <izz>0.001</izz>
+  <cx>0.0</cx>
+  <cy>0.0</cy>
+  <cz>0.0</cz>
+
+  <geom:box name="bla-LogitechMouse-0-geom">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <size>0.142606 0.129552 0.193695</size>
+  <mass>0.1</mass>
+
+  <visual>
+  <xyz>0.0713029 0 0</xyz>
+  <scale>1.42606e-05 0.129552 0.193695</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/bla-LogitechMouse-0-left</material>
+</visual>
+
+
+<visual>
+  <xyz>-0.0713029 0 0</xyz>
+  <scale>1.42606e-05 0.129552 0.193695</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/bla-LogitechMouse-0-right</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0.0647761 0</xyz>
+  <scale>0.142606 1.29552e-05 0.193695</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/bla-LogitechMouse-0-front</material>
+</visual>
+
+
+<visual>
+  <xyz>0 -0.0647761 0</xyz>
+  <scale>0.142606 1.29552e-05 0.193695</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/bla-LogitechMouse-0-back</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 0.0968473</xyz>
+  <scale>0.142606 0.129552 1.93695e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/bla-LogitechMouse-0-top</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 -0.0968473</xyz>
+  <scale>0.142606 0.129552 1.93695e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/bla-LogitechMouse-0-bottom</material>
+</visual>
+
+
+
+</geom:box>
+
+
+
+</body:box>
+
+
+
+</model:physical>
+

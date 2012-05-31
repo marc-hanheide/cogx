@@ -1,0 +1,26 @@
+[objects]
+ora-SanDiskFlash-0
+yel-NokiaPhone-0
+gre-StaedtlerTextsurfer-0
+blu-LiptonIceTea-0
+bla-LogitechMouse-0
+yel-AtariComputer-0
+red-WebsterDictionary-0
+whi-JaffaCakes-0
+yel-SanDiskFlash-0
+red-NokiaPhone-0
+bla-StaedtlerTextsurfer-0
+red-LiptonIceTea-0
+red-LogitechMouse-0
+blu-AtariComputer-0
+blu-WebsterDictionary-0
+ora-JaffaCakes-0
+gre-SanDiskFlash-0
+red-NokiaPhone-1
+yel-StaedtlerTextsurfer-0
+blu-LiptonIceTea-1
+
+[places]
+1  0.000  0.088
+1  0.150  0.176
+1 -0.150  0.176

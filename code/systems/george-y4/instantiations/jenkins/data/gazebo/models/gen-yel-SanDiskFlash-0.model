@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<model:physical name="yel-SanDiskFlash-0-model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>yel-SanDiskFlash-0_body</canonicalBody>
+
+  <body:box name="yel-SanDiskFlash-0-body">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+
+  <mass>0.05</mass>
+  <massMatrix>true</massMatrix>
+  <ixx>0.001</ixx>
+  <ixy>0.0</ixy>
+  <ixz>0.0</ixz>
+  <iyy>0.0005</iyy>
+  <iyz>0.0</iyz>
+  <izz>0.001</izz>
+  <cx>0.0</cx>
+  <cy>0.0</cy>
+  <cz>0.0</cz>
+
+  <geom:box name="yel-SanDiskFlash-0-geom">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <size>0.137872 0.159244 0.198412</size>
+  <mass>0.1</mass>
+
+  <visual>
+  <xyz>0.068936 0 0</xyz>
+  <scale>1.37872e-05 0.159244 0.198412</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/yel-SanDiskFlash-0-left</material>
+</visual>
+
+
+<visual>
+  <xyz>-0.068936 0 0</xyz>
+  <scale>1.37872e-05 0.159244 0.198412</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/yel-SanDiskFlash-0-right</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0.0796218 0</xyz>
+  <scale>0.137872 1.59244e-05 0.198412</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/yel-SanDiskFlash-0-front</material>
+</visual>
+
+
+<visual>
+  <xyz>0 -0.0796218 0</xyz>
+  <scale>0.137872 1.59244e-05 0.198412</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/yel-SanDiskFlash-0-back</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 0.0992059</xyz>
+  <scale>0.137872 0.159244 1.98412e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/yel-SanDiskFlash-0-top</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 -0.0992059</xyz>
+  <scale>0.137872 0.159244 1.98412e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/yel-SanDiskFlash-0-bottom</material>
+</visual>
+
+
+
+</geom:box>
+
+
+
+</body:box>
+
+
+
+</model:physical>
+
