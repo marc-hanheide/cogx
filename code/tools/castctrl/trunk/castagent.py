@@ -197,11 +197,12 @@ class CConsoleAgent:
         count = 10
         agent.shutdown()
         LOGGER.log("Shutdown")
+        time.sleep(0.5)
         while agent.isAlive():
-            LOGGER.log("... waiting for shutdown")
-            time.sleep(1.0)
             count -= 1
+            LOGGER.log("... waiting for shutdown (%d)" % count)
             if count <= 0: break
+            time.sleep(1.0)
         if agent.isAlive():
             LOGGER.warn("ICE Server didn't shut down")
         else:
@@ -219,7 +220,7 @@ class CConsoleAgent:
         self.manager.stopReaderThread()
         self.mainLog.shutdown()
 
-def parseOptions():
+def createOptionParser():
     usage = "Usage: %prog [options] args"
     parser = optparse.OptionParser(usage)
 
@@ -288,6 +289,10 @@ def parseOptions():
             "Set the cleanup script. The script will be executed before the CAST servers are started."
            )
 
+    return parser
+
+
+def parseOptions(parser):
     (options, args) = parser.parse_args()
     # if options.verbose > 3: print "Options parsed"
     # if len(args) != 1: parser.error("incorrect number of arguments")
@@ -295,7 +300,8 @@ def parseOptions():
 
 
 def main():
-    opts, args = parseOptions()
+    parser = createOptionParser()
+    opts, args = parseOptions(parser)
     print "Settings:"
     for o in dir(opts):
         if o.startswith("_"): continue
@@ -309,7 +315,7 @@ def main():
         while True:
             time.sleep(0.2)
     except KeyboardInterrupt:
-        print "\nKeyboardInterrupt\n"
+        print "\nKeyboard Interrupt\n"
     except:
         print "\nInterrupted\n"
     agent.stopServing()
