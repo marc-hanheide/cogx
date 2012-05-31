@@ -202,12 +202,15 @@ def main():
         groups = [ prepareGroup(g, agent.manager) for g in [groupA, groupB, groupC] ]
         tryStartGroup(groups[0], agent.manager)
         print "Running:", getRunningTasks(groups[0])
-        while True:
-            time.sleep(0.2)
+        #while True:
+        #    time.sleep(0.2)
+        time.sleep(60) # TODO: We need another way to stop the system or detect that it is done
     except KeyboardInterrupt:
         print "\nKeyboard Interrupt\n"
     except Exception as e:
        print " ******* ", e
+
+    print "Running:", getRunningTasks(groups[0])
     agent.stopServing()
 
 
