@@ -1,0 +1,11 @@
+
+OPTDEFAULT test_options=<multiline>
+    tutor-driven-test
+</multiline>
+
+IFOPTANY(%(test_options), tutor-driven-test)
+    # Jenkins needs a prepared world.
+    VARDEFAULT GazeboWorldDir=%(CONFIG_DIR)/../jenkins/data/gazebo
+ENDIF
+
+INCLUDE run-george-full-eval.cast
