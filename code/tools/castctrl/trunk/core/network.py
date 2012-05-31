@@ -24,7 +24,7 @@ if os.name == "posix":
 
 def get_ip_address(interface_list = None):
     ip = socket.gethostbyname(socket.gethostname())
-    if not ip.startswith("127."): return ip
+    #if not ip.startswith("127."): return ip
     if interface_list == None:
         interface_list = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
 
