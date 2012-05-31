@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<model:physical name="blu-AtariComputer-0-model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <static>false</static>
+  <canonicalBody>blu-AtariComputer-0_body</canonicalBody>
+
+  <body:box name="blu-AtariComputer-0-body">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+
+  <mass>0.05</mass>
+  <massMatrix>true</massMatrix>
+  <ixx>0.001</ixx>
+  <ixy>0.0</ixy>
+  <ixz>0.0</ixz>
+  <iyy>0.0005</iyy>
+  <iyz>0.0</iyz>
+  <izz>0.001</izz>
+  <cx>0.0</cx>
+  <cy>0.0</cy>
+  <cz>0.0</cz>
+
+  <geom:box name="blu-AtariComputer-0-geom">
+  <xyz>0 0 0</xyz>
+  <rpy>0 0 0</rpy>
+  <size>0.101111 0.179807 0.184371</size>
+  <mass>0.1</mass>
+
+  <visual>
+  <xyz>0.0505553 0 0</xyz>
+  <scale>1.01111e-05 0.179807 0.184371</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/blu-AtariComputer-0-left</material>
+</visual>
+
+
+<visual>
+  <xyz>-0.0505553 0 0</xyz>
+  <scale>1.01111e-05 0.179807 0.184371</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/blu-AtariComputer-0-right</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0.0899035 0</xyz>
+  <scale>0.101111 1.79807e-05 0.184371</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/blu-AtariComputer-0-front</material>
+</visual>
+
+
+<visual>
+  <xyz>0 -0.0899035 0</xyz>
+  <scale>0.101111 1.79807e-05 0.184371</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/blu-AtariComputer-0-back</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 0.0921856</xyz>
+  <scale>0.101111 0.179807 1.84371e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/blu-AtariComputer-0-top</material>
+</visual>
+
+
+<visual>
+  <xyz>0 0 -0.0921856</xyz>
+  <scale>0.101111 0.179807 1.84371e-05</scale>
+  <mesh>unit_box</mesh>
+  <material>cogx/blu-AtariComputer-0-bottom</material>
+</visual>
+
+
+
+</geom:box>
+
+
+
+</body:box>
+
+
+
+</model:physical>
+

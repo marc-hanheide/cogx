@@ -1,0 +1,1780 @@
+
+material cogx/ora-SanDiskFlash-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-sandiskflash-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-SanDiskFlash-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-sandiskflash-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-SanDiskFlash-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-sandiskflash-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-SanDiskFlash-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-sandiskflash-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-SanDiskFlash-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-sandiskflash-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-SanDiskFlash-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-sandiskflash-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/yel-NokiaPhone-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-nokiaphone-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-NokiaPhone-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-nokiaphone-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-NokiaPhone-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-nokiaphone-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-NokiaPhone-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-nokiaphone-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-NokiaPhone-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-nokiaphone-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-NokiaPhone-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-nokiaphone-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/gre-StaedtlerTextsurfer-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-staedtlertextsurfer-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-StaedtlerTextsurfer-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-staedtlertextsurfer-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-StaedtlerTextsurfer-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-staedtlertextsurfer-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-StaedtlerTextsurfer-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-staedtlertextsurfer-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-StaedtlerTextsurfer-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-staedtlertextsurfer-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-StaedtlerTextsurfer-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-staedtlertextsurfer-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/blu-LiptonIceTea-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/bla-LogitechMouse-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-logitechmouse-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-LogitechMouse-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-logitechmouse-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-LogitechMouse-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-logitechmouse-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-LogitechMouse-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-logitechmouse-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-LogitechMouse-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-logitechmouse-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-LogitechMouse-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-logitechmouse-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/yel-AtariComputer-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-ataricomputer-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-AtariComputer-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-ataricomputer-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-AtariComputer-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-ataricomputer-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-AtariComputer-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-ataricomputer-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-AtariComputer-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-ataricomputer-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-AtariComputer-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-ataricomputer-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/red-WebsterDictionary-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-websterdictionary-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-WebsterDictionary-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-websterdictionary-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-WebsterDictionary-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-websterdictionary-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-WebsterDictionary-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-websterdictionary-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-WebsterDictionary-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-websterdictionary-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-WebsterDictionary-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-websterdictionary-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/whi-JaffaCakes-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-whi-jaffacakes-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/whi-JaffaCakes-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-whi-jaffacakes-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/whi-JaffaCakes-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-whi-jaffacakes-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/whi-JaffaCakes-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-whi-jaffacakes-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/whi-JaffaCakes-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-whi-jaffacakes-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/whi-JaffaCakes-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-whi-jaffacakes-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/yel-SanDiskFlash-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-sandiskflash-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-SanDiskFlash-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-sandiskflash-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-SanDiskFlash-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-sandiskflash-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-SanDiskFlash-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-sandiskflash-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-SanDiskFlash-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-sandiskflash-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-SanDiskFlash-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-sandiskflash-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/red-NokiaPhone-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/bla-StaedtlerTextsurfer-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-staedtlertextsurfer-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-StaedtlerTextsurfer-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-staedtlertextsurfer-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-StaedtlerTextsurfer-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-staedtlertextsurfer-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-StaedtlerTextsurfer-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-staedtlertextsurfer-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-StaedtlerTextsurfer-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-staedtlertextsurfer-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/bla-StaedtlerTextsurfer-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-bla-staedtlertextsurfer-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/red-LiptonIceTea-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-liptonicetea-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LiptonIceTea-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-liptonicetea-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LiptonIceTea-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-liptonicetea-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LiptonIceTea-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-liptonicetea-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LiptonIceTea-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-liptonicetea-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LiptonIceTea-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-liptonicetea-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/red-LogitechMouse-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-logitechmouse-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LogitechMouse-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-logitechmouse-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LogitechMouse-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-logitechmouse-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LogitechMouse-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-logitechmouse-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LogitechMouse-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-logitechmouse-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-LogitechMouse-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-logitechmouse-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/blu-AtariComputer-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-ataricomputer-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-AtariComputer-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-ataricomputer-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-AtariComputer-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-ataricomputer-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-AtariComputer-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-ataricomputer-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-AtariComputer-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-ataricomputer-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-AtariComputer-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-ataricomputer-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/blu-WebsterDictionary-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-websterdictionary-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-WebsterDictionary-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-websterdictionary-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-WebsterDictionary-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-websterdictionary-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-WebsterDictionary-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-websterdictionary-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-WebsterDictionary-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-websterdictionary-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-WebsterDictionary-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-websterdictionary-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/ora-JaffaCakes-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-jaffacakes-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-JaffaCakes-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-jaffacakes-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-JaffaCakes-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-jaffacakes-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-JaffaCakes-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-jaffacakes-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-JaffaCakes-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-jaffacakes-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/ora-JaffaCakes-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-ora-jaffacakes-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/gre-SanDiskFlash-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-sandiskflash-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-SanDiskFlash-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-sandiskflash-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-SanDiskFlash-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-sandiskflash-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-SanDiskFlash-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-sandiskflash-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-SanDiskFlash-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-sandiskflash-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/gre-SanDiskFlash-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-gre-sandiskflash-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/red-NokiaPhone-1-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-1-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-1-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-1-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-1-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-1-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-1-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-1-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-1-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-1-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/red-NokiaPhone-1-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-red-nokiaphone-1-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/yel-StaedtlerTextsurfer-0-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-staedtlertextsurfer-0-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-StaedtlerTextsurfer-0-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-staedtlertextsurfer-0-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-StaedtlerTextsurfer-0-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-staedtlertextsurfer-0-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-StaedtlerTextsurfer-0-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-staedtlertextsurfer-0-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-StaedtlerTextsurfer-0-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-staedtlertextsurfer-0-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/yel-StaedtlerTextsurfer-0-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-yel-staedtlertextsurfer-0-bottom.png
+      }
+    }
+  }
+}
+
+material cogx/blu-LiptonIceTea-1-top
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-1-top.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-1-left
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-1-left.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-1-front
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-1-front.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-1-right
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-1-right.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-1-back
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-1-back.png
+      }
+    }
+  }
+}
+
+
+material cogx/blu-LiptonIceTea-1-bottom
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture x-blu-liptonicetea-1-bottom.png
+      }
+    }
+  }
+}
