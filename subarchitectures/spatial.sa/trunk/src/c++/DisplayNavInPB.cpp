@@ -464,7 +464,7 @@ void DisplayNavInPB::newPlanePointCloud(
     log("Error! plane point cloud disappeared from WM.");
   }
 
-  debug("Exited newPlacePointCloud");
+  log("Exited newPlacePointCloud");
 }
 
 void DisplayNavInPB::newShapeProperty(
@@ -478,7 +478,7 @@ void DisplayNavInPB::newShapeProperty(
         objID.address);
   } catch (...) {
     log("Error! property disappeared from WM.");
-    debug("Exited newShapeProperty");
+    log("Exited newShapeProperty");
     return;
   }
 
@@ -507,7 +507,7 @@ void DisplayNavInPB::newShapeProperty(
         "error: coma room contains a node I do not know about: placeID = %d",
         property->placeId);
 
-    debug("Exited newShapeProperty");
+    log("Exited newShapeProperty");
     return;
   }
 
@@ -521,7 +521,7 @@ void DisplayNavInPB::newShapeProperty(
 
   addProperties(sp, property->placeId);
 
-  debug("Exited newShapeProperty");
+  log("Exited newShapeProperty");
 }
 
 void DisplayNavInPB::newSizeProperty(
@@ -535,8 +535,8 @@ void DisplayNavInPB::newSizeProperty(
     property = getMemoryEntry<SpatialProperties::RoomSizePlaceProperty> (
         objID.address);
   } catch (...) {
-    debug("Error! property disappeared from WM.");
-    debug("Exited newSizeProperty");
+    log("Error! property disappeared from WM.");
+    log("Exited newSizeProperty");
     return;
   }
 
@@ -565,7 +565,7 @@ void DisplayNavInPB::newSizeProperty(
         "error: coma room contains a node I do not know about: placeID = %d",
         property->placeId);
 
-    debug("Exited newSizeProperty");
+    log("Exited newSizeProperty");
     return;
   }
 
@@ -579,7 +579,7 @@ void DisplayNavInPB::newSizeProperty(
 
   addProperties(sp, property->placeId);
 
-  debug("Exited newSizeProperty");
+  log("Exited newSizeProperty");
 }
 
 void DisplayNavInPB::newAppearanceProperty(
@@ -592,7 +592,7 @@ void DisplayNavInPB::newAppearanceProperty(
         objID.address);
   } catch (...) {
     log("Error! property disappeared from WM.");
-    debug("Exited newAppearanceProperty");
+    log("Exited newAppearanceProperty");
     return;
   }
 
@@ -621,7 +621,7 @@ void DisplayNavInPB::newAppearanceProperty(
         "error: coma room contains a node I do not know about: placeID = %d",
         property->placeId);
 
-    debug("Exited newAppearanceProperty");
+    log("Exited newAppearanceProperty");
     return;
   }
 
@@ -635,7 +635,7 @@ void DisplayNavInPB::newAppearanceProperty(
 
   addProperties(sp, property->placeId);
 
-  debug("Exited newAppearanceProperty");
+  log("Exited newAppearanceProperty");
 }
 
 void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID) {
@@ -659,7 +659,7 @@ void DisplayNavInPB::newComaRoom(const cast::cdl::WorkingMemoryChange &objID) {
   ::Ice::Int roomId = croom->roomId;
   ::FrontierInterface::PlaceInterfacePrx agg(getIceServer<
       FrontierInterface::PlaceInterface> ("place.manager"));
-  debug("New Coma Room recieved: id=%d", roomId);
+  log("New Coma Room recieved: id=%d", roomId);
 
   map<long, long> nodeIDs;
   // For each place in the room
@@ -806,7 +806,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(
         SpatialProperties::RoomCategoryPlaceholderProperty> (objID.address);
   } catch (...) {
     log("Error! property disappeared from WM.");
-    debug("Exited newRoomCategoryPlaceholderProperty");
+    log("Exited newRoomCategoryPlaceholderProperty");
     return;
   }
 
@@ -1026,7 +1026,7 @@ void DisplayNavInPB::createFOV(peekabot::GroupProxy &proxy, const char* path,
 }
 
 void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID) {
-  debug("Entered newPointCloud");
+  log("Entered newPointCloud");
   log("Got new SOI points.");
   double color[3] = { 0.9, 0, 0 };
 
@@ -1077,7 +1077,7 @@ void DisplayNavInPB::newPointCloud(const cdl::WorkingMemoryChange &objID) {
     log("Error! SOI WM entry went missing!");
   }
 
-  debug("Exited newPointCloud");
+  log("Exited newPointCloud");
 }
 
 void DisplayNavInPB::runComponent() {
@@ -1139,7 +1139,7 @@ void DisplayNavInPB::runComponent() {
           m_ProxyKinect.set_vertices(kinectVerts);
         }
 
-        debug("Display robot pose");
+        log("Display robot pose");
         // Display robot pose
         if (m_ShowRobot && m_RobotPose) {
           m_ProxyRobot.set_pose(m_RobotPose->x, m_RobotPose->y, 0,
@@ -1380,7 +1380,7 @@ void DisplayNavInPB::newRobotPose(const cdl::WorkingMemoryChange &objID) {
       }
     }
   }
-  debug("Exited newRobotPose");
+  log("Exited newRobotPose");
 }
 
 void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID) {
@@ -1398,7 +1398,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID) {
     log(
         "Received an object of category %s, not displaying it since not connected to peekabot",
         objData->category.c_str());
-    debug("Exited newNavGraphObject");
+    log("Exited newNavGraphObject");
     return;
   }
   log("Received an object of category %s", objData->category.c_str());
@@ -1478,7 +1478,7 @@ void DisplayNavInPB::newNavGraphObject(const cdl::WorkingMemoryChange &objID) {
   text.set_alignment(peekabot::ALIGN_CENTER); //see TextAlignment in peekabot/src/Types.hh for more.
   text.set_color(0, 0, 1);
 
-  debug("Exited newNavGraphObject");
+  log("Exited newNavGraphObject");
 }
 
 void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID) {
@@ -1491,11 +1491,11 @@ void DisplayNavInPB::newLineMap(const cdl::WorkingMemoryChange &objID) {
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_LineMap = oobj->getData();
   }
-  debug("Exited newLineMap");
+  log("Exited newLineMap");
 }
 
 void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID) {
-  debug("Entered newPerson");
+  log("Entered newPerson");
   // Person entries can be removed at any time
   try {
     shared_ptr<CASTData<NavData::Person> > oobj = getWorkingMemoryEntry<
@@ -1533,11 +1533,11 @@ void DisplayNavInPB::newPerson(const cdl::WorkingMemoryChange &objID) {
   } catch (DoesNotExistOnWMException) {
   }
 
-  debug("Exited newPerson");
+  log("Exited newPerson");
 }
 
 void DisplayNavInPB::deletePerson(const cdl::WorkingMemoryChange &objID) {
-  debug("Entered deletePerson");
+  log("Entered deletePerson");
   int i = 0;
   for (std::vector<DisplayNavInPB::PersonData>::iterator pi = m_People.begin(); pi
       != m_People.end(); pi++, i++) {
@@ -1547,11 +1547,11 @@ void DisplayNavInPB::deletePerson(const cdl::WorkingMemoryChange &objID) {
       break;
     }
   }
-  debug("Exited deletePerson");
+  log("Exited deletePerson");
 }
 
 void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID) {
-  debug("Entered newPersonFollowed");
+  log("Entered newPersonFollowed");
   shared_ptr<CASTData<NavData::PersonFollowed> > oobj = getWorkingMemoryEntry<
       NavData::PersonFollowed> (objID.address);
 
@@ -1560,11 +1560,11 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID) {
   char buf[256];
   sprintf(buf, "Got id of person being tracked %d", m_CurrPersonId);
   debug(buf);
-  debug("Exited newPersonFollowed");
+  log("Exited newPersonFollowed");
 }
 
 void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID) {
-  debug("Entered newNavCommand");
+  log("Entered newNavCommand");
   try {
     SpatialData::NavCommandPtr oobj = getMemoryEntry<SpatialData::NavCommand> (
         objID.address);
@@ -1601,7 +1601,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID) {
 
       if (oobj->destId.empty()) {
         log("No destID. Returning.");
-        debug("Exited newNavCommand");
+        log("Exited newNavCommand");
         return;
       }
 
@@ -1646,7 +1646,7 @@ void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID) {
     log("NavCommand %s disppeared from WM in newNavCommand!",
         objID.address.id.c_str());
   }
-  debug("Exited newNavCommand");
+  log("Exited newNavCommand");
 }
 
 void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID) {
@@ -1654,7 +1654,7 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID) {
 
   try {
     if (!m_PeekabotClient.is_connected()) {
-      debug("Exited newNavGraphNode");
+      log("Exited newNavGraphNode");
       return;
     }
 
@@ -1824,7 +1824,7 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange) {
     nodePtr = getMemoryEntry<SpatialData::NodeHypothesis> (wmChange.address);
   } catch (CASTException &e) {
     log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
-    debug("Exited movePlace");
+    log("Exited movePlace");
     return;
   }
   FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<
@@ -1911,7 +1911,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange) {
     placePtr = getMemoryEntry<SpatialData::Place> (wmChange.address);
   } catch (CASTException &e) {
     log("Caught exception at %s. Message: %s", __HERE__, e.message.c_str());
-    debug("Exited newPlace");
+    log("Exited newPlace");
     return;
   }
 
@@ -1923,7 +1923,7 @@ void DisplayNavInPB::newPlace(const cdl::WorkingMemoryChange &wmChange) {
     placeholder = (placePtr->status == SpatialData::PLACEHOLDER);
   } catch (IceUtil::NullHandleException e) {
     log("Place suddenly disappeared!\n");
-    debug("Exited newPlace");
+    log("Exited newPlace");
     return;
   }
   // Get node Id for this place
@@ -2082,7 +2082,7 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange) {
   string wmId = wmChange.address.id;
   map<string, PlaceData>::iterator it = _places.find(wmChange.address.id);
   if (it == _places.end()) {
-    debug("Exited deletePlace");
+    log("Exited deletePlace");
     return;
   }
   PlaceData pd = it->second;
@@ -2118,7 +2118,7 @@ void DisplayNavInPB::deletePlace(const cdl::WorkingMemoryChange &wmChange) {
       text.remove();
     }
   }
-  debug("Exited deletePlace");
+  log("Exited deletePlace");
 }
 
 void DisplayNavInPB::addRoomCategoryPlaceholderProperties(
@@ -2314,7 +2314,7 @@ void DisplayNavInPB::deleteConnectivityPathProperty(
   map<string, std::pair<long, long> >::iterator it =
       _cpp.find(objID.address.id);
   if (it == _cpp.end()) {
-    debug("Exited deleteConnectivityPathProperty");
+    log("Exited deleteConnectivityPathProperty");
     return;
   }
 
@@ -2337,7 +2337,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID) {
   log("Entered newNavGraphEdge");
 
   if (!m_PeekabotClient.is_connected()) {
-    debug("Exited newNavGraphEdge");
+    log("Exited newNavGraphEdge");
     return;
   }
 
@@ -2365,7 +2365,7 @@ void DisplayNavInPB::newNavGraphEdge(const cdl::WorkingMemoryChange &objID) {
   debug("Got a new edge connecting nodes %d and %d", aedge->startNodeId,
       aedge->endNodeId);
 
-  debug("Exited newNavGraphEdge");
+  log("Exited newNavGraphEdge");
 }
 
 void DisplayNavInPB::getColorByIndex(int id, float &r, float &g, float &b) {
@@ -2748,7 +2748,7 @@ void DisplayNavInPB::newViewpointGenCommand(
     const cast::cdl::WorkingMemoryChange &objID) {
   log("Entered newViewpointGenCommand");
   if (!m_PeekabotClient.is_connected() || !m_ShowCommands || !m_RobotPose) {
-    debug("Exited newViewpointGenCommand");
+    log("Exited newViewpointGenCommand");
     return;
   }
 
@@ -2782,17 +2782,17 @@ void DisplayNavInPB::newViewpointGenCommand(
     crossProxy.set_color(1.0, 0.5, 0);
   } catch (...) {
     log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
-    debug("Exited newViewpointGenCommand");
+    log("Exited newViewpointGenCommand");
     return;
   }
-  debug("Exited newViewpointGenCommand");
+  log("Exited newViewpointGenCommand");
 }
 
 void DisplayNavInPB::newARTagCommand(
     const cast::cdl::WorkingMemoryChange &objID) {
   log("Entered newARTagCommand");
   if (!m_PeekabotClient.is_connected() || !m_RobotPose || !m_ShowCommands) {
-    debug("Exited newARTagCommand");
+    log("Exited newARTagCommand");
     return;
   }
 
@@ -2803,17 +2803,17 @@ void DisplayNavInPB::newARTagCommand(
     logDetectionCommand(obj->label);
   } catch (...) {
     log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
-    debug("Exited newARTagCommand");
+    log("Exited newARTagCommand");
     return;
   }
-  debug("Exited newARTagCommand");
+  log("Exited newARTagCommand");
 }
 
 void DisplayNavInPB::newRecognizerCommand(
     const cast::cdl::WorkingMemoryChange &objID) {
-  debug("Entered newRecognizerCommand");
+  log("Entered newRecognizerCommand");
   if (!m_PeekabotClient.is_connected() || !m_RobotPose || !m_ShowCommands) {
-    debug("Exited newRecognizerCommand");
+    log("Exited newRecognizerCommand");
     return;
   }
 
@@ -2824,10 +2824,10 @@ void DisplayNavInPB::newRecognizerCommand(
     logDetectionCommand(obj->label);
   } catch (...) {
     log("Error! %s %i: disappeared from WM.", __FILE__, __LINE__);
-    debug("Exited newRecognizerCommand");
+    log("Exited newRecognizerCommand");
     return;
   }
-  debug("Exited newRecognizerCommand");
+  log("Exited newRecognizerCommand");
 }
 
 void DisplayNavInPB::logDetectionCommand(const string &label) {
