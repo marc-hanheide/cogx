@@ -834,7 +834,7 @@ void DisplayNavInPB::newRoomCategoryPlaceholderProperty(
     addRoomCategoryPlaceholderProperties(sp, property->placeId);
   }
 
-  debug("Exited newRoomCategoryPlaceholderProperty");
+  log("Exited newRoomCategoryPlaceholderProperty");
 }
 
 void DisplayNavInPB::addProperties(peekabot::SphereProxy &sp, int placeId) {
