@@ -206,8 +206,8 @@ def main():
             time.sleep(0.2)
     except KeyboardInterrupt:
         print "\nKeyboard Interrupt\n"
-    #except Exception as e:
-    #    print e
+    except Exception as e:
+       print " ******* ", e
     agent.stopServing()
 
 
