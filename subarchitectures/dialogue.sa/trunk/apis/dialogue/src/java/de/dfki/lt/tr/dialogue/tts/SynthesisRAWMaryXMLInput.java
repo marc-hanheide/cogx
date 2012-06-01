@@ -24,6 +24,7 @@ package de.dfki.lt.tr.dialogue.tts;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.concurrent.CountDownLatch;
 
 import marytts.client.MaryClient;
 //import marytts.client.MaryClient;
@@ -55,7 +56,7 @@ public SynthesisRAWMaryXMLInput(MaryTTSLocal i_ttslocal){
         }
      }
 	
-	public void Utter(String i_filename) {
+	public void Utter(String i_filename, CountDownLatch finished) {
 		
        //System.out.println("Synthesize RAWMARYXML file: "+ i_filename);
        	StringBuffer output = new StringBuffer();
@@ -71,7 +72,7 @@ public SynthesisRAWMaryXMLInput(MaryTTSLocal i_ttslocal){
 		catch (Exception fx) {
 			System.out.println("IO error in Synthesis: " + fx.toString());
 		}
-		m_ttsLocal.speak(output.toString());
+		m_ttsLocal.speak(output.toString(), finished);
 	}
 	
 	public void Save2Wave(String i_filename) {
