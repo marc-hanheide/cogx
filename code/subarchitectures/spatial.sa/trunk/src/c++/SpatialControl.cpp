@@ -2798,8 +2798,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
           }
         }
       }
-      log("check_point %d %d %d %d %d %d", counter1, counter2, counter3,
-          counter4, counter5, counter6);
+      //log("check_point %d %d %d %d %d %d", counter1, counter2, counter3,
+      //    counter4, counter5, counter6);
       //ELSE SKIP, IT WILL BE DELETED
     }
   }
@@ -2893,8 +2893,8 @@ SpatialData::NodeHypothesisSeq SpatialControl::refreshNodeHypothesis() {
           }
         }
       }
-      log("check_point %d %d %d %d %d %d", counter1, counter2, counter3,
-          counter4, counter5, counter6);
+      //log("check_point %d %d %d %d %d %d", counter1, counter2, counter3,
+      //    counter4, counter5, counter6);
     }
 
     if (m_showExpandedMap) {

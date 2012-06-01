@@ -108,7 +108,6 @@ void SpatialTranslation::start() {
       FrontierInterface::PlaceInterface> ("place.manager"));
 
   log("SpatialTranslation started");
-
 }
 
 // ----------------------------------------------------------------------------
@@ -613,26 +612,6 @@ void SpatialTranslation::newNavCommand(const cdl::WorkingMemoryChange & objID) {
   }
 }
 
-//void
-//SpatialTranslation::newNavNode(const WorkingMemoryChange &wmc)
-//{
-//  debug("Received new navNode");
-//  try {
-//    NavData::VisualExplorationCommandPtr obj =
-//      getMemoryEntry<NavData::FNode>(objID.address);
-//
-//    if (m_isExplorationAction) {
-//      // A new node was created while carrying out an explorative movement
-//      // 
-//    }
-//  }
-//  catch (DoesNotExistOnWMException)
-//  {
-//    log("Error: new FNode disappeared from WM!");
-//  }
-//}
-
-
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::addTaskToQueue(const std::string &id,
@@ -732,7 +711,6 @@ bool SpatialTranslation::translateCommand(
     log("read navcommand: GOTOPOSITION");
 
     if (nav->pose.size() < 2) {
-      println("cmd syntax error, need NavCommand.pose (size 2)");
       status = SpatialData::CMDMALFORMATTED;
       return false;
     } else {
@@ -754,7 +732,6 @@ bool SpatialTranslation::translateCommand(
     if (!m_bNoNavGraph) {
 
       if (nav->destId.size() < 1) {
-        println("cmd syntax error, need NavCommand.destId (size 1)");
         status = SpatialData::CMDMALFORMATTED;
         return false;
       } else {
@@ -799,13 +776,11 @@ bool SpatialTranslation::translateCommand(
     // find the position of the robot
     NavData::RobotPose2dPtr pose;
     if (!getRobotPose(pose) && pose) {
-      println("Could not find robot pose and cannot GOFORWARD");
       status = SpatialData::CMDMALFORMATTED;
       return false;
     }
 
     if (nav->distance.empty()) {
-      println("Need distance in GOFOWARD command");
       status = SpatialData::CMDMALFORMATTED;
       return false;
     }
@@ -823,7 +798,6 @@ bool SpatialTranslation::translateCommand(
     log("read navcommand: GO_BACK");
 
     if (nav->distance.empty()) {
-      println("Need distance in GOBACK command");
       status = SpatialData::CMDMALFORMATTED;
       return false;
     }
@@ -857,7 +831,6 @@ bool SpatialTranslation::translateCommand(
        }
        ctrl.tolerance = nav->tolerance;*/
     } else {
-      println("NavCommand TURN lacks target spec");
       status = SpatialData::CMDMALFORMATTED;
       return false;
     }
@@ -867,7 +840,6 @@ bool SpatialTranslation::translateCommand(
     log("read navcommand: TURNTO");
 
     if (nav->angle.empty()) {
-      println("NavCommand TURNTO lacks angle spec");
       status = SpatialData::CMDMALFORMATTED;
       return false;
     }
@@ -1043,6 +1015,3 @@ void SpatialTranslation::changeNavCmdCompletion(const std::string &id,
   unlockEntry(id);
   log("SpatialTranslation.cpp: %i", __LINE__);
 }
-
-// ----------------------------------------------------------------------------
-

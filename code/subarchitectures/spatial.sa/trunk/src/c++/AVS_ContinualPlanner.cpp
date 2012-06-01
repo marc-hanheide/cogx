@@ -198,7 +198,7 @@ void AVS_ContinualPlanner::owtWeightedPointCloud(
     m_cloud = req->outCloud;
     receivePointCloud(cloud, req->totalMass);
   } catch (DoesNotExistOnWMException excp) {
-    log("Error!  WeightedPointCloud does not exist on WM!");
+    error("Error!  WeightedPointCloud does not exist on WM!");
     return;
   }
 }
@@ -448,7 +448,7 @@ void AVS_ContinualPlanner::newSpatialObject(
     log("Got Spatial Object: %s", newObj->label.c_str());
     model->pose = newObj->pose;
   } catch (DoesNotExistOnWMException e) {
-    log("Error! SpatialObject disappeared from WM!");
+    error("Error! SpatialObject disappeared from WM!");
   }
 
 }
@@ -481,8 +481,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
         CASTBeliefHistoryPtr history(CASTBeliefHistoryPtr::dynamicCast(
             belief->hist));
 
-        log(
-            "getting percept belief associated with this grounded object at: %s",
+        log("getting percept belief associated with this grounded object at: %s",
             history->ancestors[0]->address.id.c_str());
 
         PerceptBeliefPtr visualpercept = new PerceptBelief;
@@ -547,7 +546,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
   }
 
   catch (DoesNotExistOnWMException) {
-    log("Belief disappeared from WM!");
+    wrn("Belief disappeared from WM!");
     return;
   }
 }
@@ -568,7 +567,6 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
     //
   } catch (const CASTException &e) {
     log("owtRecognizer3DCommand disappeared from WM: %s", e.message.c_str());
-
   }
 }
 
@@ -656,8 +654,7 @@ void AVS_ContinualPlanner::generateViewCones(
      * */
     cout << "Removing all free space not belongin to this room" << endl;
 
-    log(
-        "Throwing away all known space in LGMap of this room belonging to another room");
+    log("Throwing away all known space in LGMap of this room belonging to another room");
     FrontierInterface::PlaceInterfacePrx agg(getIceServer<
         FrontierInterface::PlaceInterface> ("place.manager"));
     log("got interface");
@@ -678,7 +675,7 @@ void AVS_ContinualPlanner::generateViewCones(
       nodesForPlaces.push_back(node);
     }
 
-    for (unsigned int j = 0; j
+    for (size_t j = 0; j
         < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
       currentRoomPlaceIds.push_back(
           comarooms[comarooms_i]->containedPlaceIds[j]);
@@ -745,7 +742,7 @@ void AVS_ContinualPlanner::generateViewCones(
           if (excluded)
             continue;
 
-          for (unsigned int i = 0; i < nodesForPlaces.size(); i++) {
+          for (size_t i = 0; i < nodesForPlaces.size(); i++) {
             try {
               if ((nodesForPlaces[i] != 0) && (nodesForPlaces[i]->gateway == 0)) {
                 double nX = nodesForPlaces[i]->x;
@@ -774,7 +771,6 @@ void AVS_ContinualPlanner::generateViewCones(
       }
     }
     log("removed");
-    cout << " done " << endl;
 
     m_templateRoomGridMaps[newVPCommand->roomId] = lgm;
     GDMakeObstacle makeobstacle;
@@ -1107,7 +1103,7 @@ void AVS_ContinualPlanner::generateViewCones(
         opt_minAngle = minAngle;
       }
     }
-    debug("viewcones in place %d", (*plIt).second.size());
+//    debug("viewcones in place %d", (*plIt).second.size());
     double stAngle = opt_minAngle;
     map<int, bool> collected_vc;
     while (collected_vc.size() < (*plIt).second.size()) {
@@ -1171,13 +1167,11 @@ void AVS_ContinualPlanner::generateViewCones(
       }
 
       stAngle = maxAngle + min_dist - 0.0001;
-      debug("group size %d", gr.size());
+//      debug("group size %d", gr.size());
       grouped_cones.push_back(gr);
-
     }
-
   }
-  debug("gcs %d", grouped_cones.size());
+//  debug("gcs %d", grouped_cones.size());
 
   for (unsigned int i = 0; i < grouped_cones.size(); i++) {
     /* GETTING PLACE BELIEFS */
@@ -1229,7 +1223,6 @@ void AVS_ContinualPlanner::generateViewCones(
       }
     }
 
-    // FIXME ASSUMPTION: One cone per conegroup
     ConeGroup c;
     c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
     c.bloxelMapId = id;
@@ -1486,7 +1479,6 @@ void AVS_ContinualPlanner::IcetoCureLGM(SpatialData::LocalGridMap icemap,
 /* Process ConeGroup with id */
 void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
   // Todo: Loop over cones in conegroup
-  // FIXME ASSUMPTION ConeGroup contains one cone
   // FIXME ASSUMPTION Always observe one object at a time
 
   // Todo: Once we get a response from vision, calculate the remaining prob. value
@@ -1578,7 +1570,8 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
         theta = theta + M_PI;
       }
       pos.setTheta(theta); //TODO not nessacerely - maybe between
-      log("nav theta %f first vc %f min %f max %f", theta, m_currentViewCone.second.pan,minAngle,maxAngle);
+ //     log("nav theta %f first vc %f min %f max %f", theta,
+ //         m_currentViewCone.second.pan, minAngle, maxAngle);
       PostNavCommand(pos, SpatialData::GOTOPOSITION, tol);
       log("Posting a nav command");
     }
@@ -2194,7 +2187,7 @@ void AVS_ContinualPlanner::newRobotPose(const cdl::WorkingMemoryChange &objID) {
     lastRobotPose = getMemoryEntry<NavData::RobotPose2d> (objID.address);
 
   } catch (DoesNotExistOnWMException e) {
-    log("Error! robotPose missing on WM!");
+    error("Error! robotPose missing on WM!");
     return;
   }
 
@@ -2351,71 +2344,17 @@ void AVS_ContinualPlanner::overwrittenPanTiltCommand(
       }
       deleteFromWorkingMemory(objID.address);
     } catch (DoesNotExistOnWMException e) {
-      log("Error: SetPTZPoseCommand went missing! ");
+      error("Error: SetPTZPoseCommand went missing! ");
     }
 
     m_waitingForPTZCommandID = "";
   }
 }
 
-//void AVS_ContinualPlanner::MovePanTilt(double pan, double tilt, double tolerance) {
-//
-//	if (m_usePTZ) {
-//		log(" Moving pantilt to: %f %f with %f tolerance", pan, tilt, tolerance);
-//		ptz::PTZPose p;
-//		ptz::PTZReading ptuPose;
-//		p.pan = pan;
-//		p.tilt = tilt;
-//
-//		p.zoom = 0;
-//		m_ptzInterface->setPose(p);
-//		bool run = true;
-//		ptuPose = m_ptzInterface->getPose();
-//		double actualpan = ptuPose.pose.pan;
-//		double actualtilt = ptuPose.pose.tilt;
-//
-//		while (run) {
-//
-//			m_ptzInterface->setPose(p);
-//			ptuPose = m_ptzInterface->getPose();
-//			actualpan = ptuPose.pose.pan;
-//			actualtilt = ptuPose.pose.tilt;
-//
-//			log("desired pan tilt is: %f %f", pan, tilt);
-//			log("actual pan tilt is: %f %f", actualpan, actualtilt);
-//			log("tolerance is: %f", tolerance);
-//
-//			//check that pan falls in tolerance range
-//			if (actualpan < (pan + tolerance) && actualpan > (pan - tolerance)) {
-//				run = false;
-//			}
-//
-//			//only check tilt if pan is ok
-//
-//			if (!run) {
-//				if (m_ignoreTilt) {
-//					run = false;
-//				} else {
-//					if (actualtilt < (tilt + tolerance) && actualtilt > (tilt
-//							- tolerance)) {
-//						run = false;
-//					} else {
-//						//if the previous check fails, loop again
-//						run = true;
-//					}
-//				}
-//			}
-//
-//			usleep(100000);
-//		}
-//		log("Moved.");
-//		sleep(1);
-//	}
-//}
-
 void AVS_ContinualPlanner::addARTagCommand() {
   //todo: add new AR tag command
 }
+
 string AVS_ContinualPlanner::relationToString(SpatialData::SpatialRelation rel) {
   if (rel == SpatialData::INROOM)
     return "inroom";
@@ -2628,4 +2567,3 @@ void AVS_ContinualPlanner::displayPDF(BloxelMap map) {
 }
 
 } //namespace
-
