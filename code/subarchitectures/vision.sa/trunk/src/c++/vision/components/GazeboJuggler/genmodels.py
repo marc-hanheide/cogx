@@ -381,13 +381,25 @@ class RandomColorSelector:
 
         f.close()
 
-    def getColor(self):
-        vals = self.vals
-        i = random.randint(0, len(vals)-1)
-        v = vals[i] # (color label, index)
-        co = v[0]
-        rgb = self.colors[co][v[1]]
+    #def getColor(self):
+    #    vals = self.vals
+    #    i = random.randint(0, len(vals)-1)
+    #    v = vals[i] # (color label, index)
+    #    co = v[0]
+    #    rgb = self.colors[co][v[1]]
+    #    if not co in self.stat:
+    #        self.stat[co] = 1
+    #    else:
+    #        self.stat[co] += 1
+    #    return (rgb[0], rgb[1], rgb[2], co)
 
+    def getColor(self):
+        cols = self.colors.keys()
+        i = random.randint(0, len(cols)-1)
+        co = cols[i]
+        v = self.colors[co]
+        i = random.randint(0, len(v)-1)
+        rgb = v[i]
         if not co in self.stat:
             self.stat[co] = 1
         else:
@@ -480,8 +492,12 @@ def createObjects(prjname):
     SG = SizeGenerator()
     CG = RandomColorSelector()
     #CG.addSimpleColors()
+    validColors = ["red", "green", "blue", "yellow", "orange"]
     CG.loadColorsRgb("res/colors01.txt", "res/colorlabels.txt")
-    CG.removeColor("pink")
+    cs = CG.colors.keys()
+    for c in cs:
+        if not c in validColors:
+            CG.removeColor(c)
 
     flrn = open("xdata/%s.attrs.txt" % prjname, "w")
 
