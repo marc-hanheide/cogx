@@ -137,6 +137,7 @@ class CASTTask(object):
             self.load_history(component.history_fn, component)
             self.failure_simulated = True
         elif args.get('problem_fn', None):
+            problem_fn = args['problem_fn']
             import fake_cast_state, history
             log.info("Loading predefined problem: %s.", problem_fn)
             add_problem = pddl.load_problem(problem_fn, self.domain)
@@ -163,7 +164,7 @@ class CASTTask(object):
             if g.deadline != -1:
                 if g.importance != -1:
                     log.error("Deadline for softgoal %s not supported. Will be ignored" % g.goalString)
-                elif deadline == -1 :
+                elif deadline is None :
                     deadline = g.deadline
                 else:
                     deadline = min(deadline, g.deadline)
