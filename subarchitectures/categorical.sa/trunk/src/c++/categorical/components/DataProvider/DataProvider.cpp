@@ -496,8 +496,12 @@ void CategoricalDataProvider::newDataProviderCommandAdded(const cdl::WorkingMemo
     return;
   CategoricalData::DataProviderCommandPtr command =
       new CategoricalData::DataProviderCommand(*commandCast->getData());
-  deleteFromWorkingMemory(wmc.address);
-
+  try {
+    deleteFromWorkingMemory(wmc.address);
+  }
+  catch (const CASTException& e) {
+    getLogger()->warn("delete. caught CASTException in newDataProviderCommandAdded(): "+ std::string(e.what()));
+  }
   // Send the ack
   CategoricalData::DataProviderCommandAckPtr commandAck = new CategoricalData::DataProviderCommandAck;
   commandAck->cmd = command;
@@ -506,7 +510,7 @@ void CategoricalDataProvider::newDataProviderCommandAdded(const cdl::WorkingMemo
     overwriteWorkingMemory(_dataProviderCommandAckId, commandAck);
   }
   catch (const CASTException& e) {
-    getLogger()->warn("caught CASTException in newDataProviderCommandAdded(): "+ std::string(e.what()));
+    getLogger()->warn("add. caught CASTException in newDataProviderCommandAdded(): "+ std::string(e.what()));
   }
   // Execute command
   if (command->cmd==CategoricalData::DpCmdUpdate)
