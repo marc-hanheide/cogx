@@ -124,7 +124,7 @@ public class POPlanMonitor extends ManagedComponent {
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			finishedMap.get(_newPOPlan.taskID).add(_newPOPlan);
-			reportFinishedPOPlan(_newPOPlan);
+			//reportFinishedPOPlan(_newPOPlan);
 		}
 	}
 	
@@ -148,7 +148,7 @@ public class POPlanMonitor extends ManagedComponent {
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
-			reportFinishedPOPlan(_oldPOPlan);
+			//reportFinishedPOPlan(_oldPOPlan);
 		}
 	}
 	
@@ -221,7 +221,7 @@ public class POPlanMonitor extends ManagedComponent {
 		log("calling PEV Module verbalizePOPlan()");
 		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
 		log("REPORTING FINISHED POPLAN: \n" + report);
-		VerbalisationUtils.verbaliseString(this, report);
+		//VerbalisationUtils.verbaliseString(this, report);
 	}
 	
 	private void reportFinishedHistory(int taskID) {
@@ -239,7 +239,7 @@ public class POPlanMonitor extends ManagedComponent {
 		log("calling PEV Module verbalizeHistory()");
 		String report = this.pevModule.verbalizeHistory(hlist);
 		log("REPORTING FINISHED HISTORY: \n" + report);
-		//VerbalisationUtils.verbaliseString(this, report);
+		VerbalisationUtils.verbaliseString(this, report);
 		
 	}
 	

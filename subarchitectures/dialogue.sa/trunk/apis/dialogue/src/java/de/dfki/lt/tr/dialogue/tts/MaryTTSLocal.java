@@ -121,6 +121,7 @@ public class MaryTTSLocal {
 							System.err.println("Audio started playing.");
 						} else if (event.getType() == LineEvent.Type.STOP) {
 							// 3
+							finished.countDown();
 							System.err.println("Audio stopped playing.");
 						} else if (event.getType() == LineEvent.Type.OPEN) {
 							// 1
@@ -135,6 +136,7 @@ public class MaryTTSLocal {
 
 				AudioPlayer ap = new AudioPlayer(ais, lineListener);
 				ap.start();
+				
 
 				if(m_SaveAudio2Wav){
 
