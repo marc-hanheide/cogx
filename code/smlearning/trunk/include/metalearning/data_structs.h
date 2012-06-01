@@ -30,16 +30,17 @@
 
 #include <netcdf.h>
 #include <boost/filesystem/operations.hpp>
-#include <metalearning/RNN.h>
+// #include <metalearning/RNN.h>
 #include <smltools/math_helpers.h>
 #include <smltools/helpers.h>
 #include <metalearning/Object.h>
 #include <metalearning/Action.h>
 #include <misc/enum_utils.hh>
 
-using namespace golem;
-using namespace std;
-using namespace boost::filesystem;
+// using namespace golem;
+// using namespace std;
+// using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 
 /** \namespace smlearning
     \brief The highest namespace in the hierarchy of this package
@@ -177,9 +178,9 @@ struct LearningData {
 	Chunk::Seq currentChunkSeq;
 	//DataSet data;
 	/** current predicted polyflap poses sequence */
-	vector<Mat34> currentPredictedPfSeq;
+	std::vector<golem::Mat34> currentPredictedPfSeq;
 	/** current predicted effector poses sequence */
-	vector<Mat34> currentPredictedEfSeq;
+	std::vector<golem::Mat34> currentPredictedEfSeq;
 	/** size of motor vector for NN training for basis representation */
 	static const int motorVectorSizeBasis = 3;
 	/** size of motor vector for NN training for markov representation */
@@ -308,7 +309,7 @@ struct LearningData {
 
 		FeatureVector inputVector;
 		FeatureVector targetVector;
-		vector<int> seqLengthsVector;
+		std::vector<int> seqLengthsVector;
 		size_t numTimesteps_len = 0;
 		const int motorVectorSize = motorVectorSizeBasis;
 		const int inputSize = motorVectorSize + pfVectorSize + efVectorSize;
@@ -374,7 +375,7 @@ struct LearningData {
 
 		FeatureVector inputVector;
 		FeatureVector targetVector;
-		vector<int> seqLengthsVector;
+		std::vector<int> seqLengthsVector;
 		size_t numTimesteps_len = 0;
 		const int motorVectorSize = motorVectorSizeMarkov;
 
@@ -422,7 +423,7 @@ struct LearningData {
 	///write a chunk to feature vector
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params | _label ) {
+	static void write_chunk_to_featvector (std::vector<T>& featVector, const Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params | _label ) {
 		try { 
 			if ( flags & _action_params ) {
 				featVector.push_back (normalize(chunk.action.pushDuration, featLimits.minDuration, featLimits.maxDuration));
@@ -470,7 +471,7 @@ struct LearningData {
 	///write a chunk to feature vector with memory assigned
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params | _label ) {
+	static void write_chunk_to_featvector (std::vector<T>& featVector, const Chunk& chunk, int& vectorIndex, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _object | _effector_pos | _effector_orient | _end_effector_pos | _end_effector_orient | _action_params | _label ) {
 		try { 
 			if ( flags & _action_params ) {
 				featVector[vectorIndex++] = normalize(chunk.action.pushDuration, featLimits.minDuration, featLimits.maxDuration);
@@ -518,7 +519,7 @@ struct LearningData {
 	/// generate a feature vector containing, for now, a direction vector of the object
 	///
 	template<typename T, class Normalization>
-	static void write_chunk_to_featvector (vector<T>& featVector, const Chunk& prev_chunk, const Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _direction)
+	static void write_chunk_to_featvector (std::vector<T>& featVector, const Chunk& prev_chunk, const Chunk& chunk, Normalization normalize, FeaturesLimits featLimits, chunk_flags flags = _direction)
 	{
 		try { 
 			if ( flags & _direction ) {
@@ -593,7 +594,7 @@ struct LearningData {
 	///
 	///almost automatically generated netcdf function to store netcdf data files
 	///
-	static bool write_nc_data (string fileName, size_t numSeqs_len, int inputVectorSize, int targetVectorSize, FeatureVector& inputVector, FeatureVector& targetVector, vector<int>& seqLengthsVector, size_t& numTimesteps_len);
+	static bool write_nc_data (string fileName, size_t numSeqs_len, int inputVectorSize, int targetVectorSize, FeatureVector& inputVector, FeatureVector& targetVector, std::vector<int>& seqLengthsVector, size_t& numTimesteps_len);
 
 
 	///
@@ -625,8 +626,8 @@ struct LearningData {
 		cout << "seqFile: " << seqFileName << endl;
 
 	
-		vector<DataSet> partitions_testing;
-		vector<DataSet> partitions_training;
+		std::vector<DataSet> partitions_testing;
+		std::vector<DataSet> partitions_training;
 	
 		// initialize random seed:
 		srand ((unsigned)time(NULL) );
@@ -635,7 +636,7 @@ struct LearningData {
 		int randNr;
 
 		long int partitionSize = data.size() / n;
-		vector<bool> availablePartitions;
+		std::vector<bool> availablePartitions;
 	
 		for (int i=0; i<n; i++) {
 			DataSet partition_testing;
@@ -704,7 +705,7 @@ struct LearningData {
 	///load a sequence into inputs and target vectors (for NN training) (NN basis representation)
 	///
 	template<class Normalization>
-	static void load_NNsequence_basis (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, FeaturesLimits limits) {
+	static void load_NNsequence_basis (std::vector<float>& inputVector, std::vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, FeaturesLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
 		const int motorVectorSize = motorVectorSizeBasis;
@@ -743,7 +744,7 @@ struct LearningData {
 	///load a sequence into inputs and target vectors (for NN training) (NN basis representation)
 	///
 	template<class Normalization>
-	static void load_NNsequence_markov (vector<float>& inputVector, vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, FeaturesLimits limits) {
+	static void load_NNsequence_markov (std::vector<float>& inputVector, std::vector<float>& targetVector, const Chunk::Seq seq, Normalization normalize, FeaturesLimits limits) {
 		int contInput = 0;
 		int contTarget = 0;
 
@@ -765,7 +766,7 @@ struct LearningData {
 	///
 	///load training data in RNNLIB format
 	///
-	template<class Normalization >
+	/* template<class Normalization >
 	static rnnlib::DataSequence* load_NNtrainSeq ( Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 		int motorVectorSize;
 		if (featureSelectionMethod == _basis)
@@ -795,7 +796,7 @@ struct LearningData {
 		return trainSeq;
 	
 	
-	}
+	}*/
 
 	template<class Normalization>
 	static void load_cryssmexinput (FeatureVector& inputVector, const Chunk& chunk, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
@@ -812,7 +813,7 @@ struct LearningData {
 	static vector<FeatureVector> load_cryssmexinputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 
 		Chunk::Seq::const_iterator s_iter;
-		vector<FeatureVector> sequence;
+		std::vector<FeatureVector> sequence;
 		if (seq.size() > 2) {
 			for (s_iter=seq.begin(); s_iter!= seq.end(); s_iter++) {
 				if (s_iter+1 != seq.end()) {
@@ -837,7 +838,7 @@ struct LearningData {
 	}
 
 	template<class Normalization>
-	static vector<FeatureVector> load_cryssmexoutputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
+	static std::vector<FeatureVector> load_cryssmexoutputsequence (Chunk::Seq& seq, unsigned int featureSelectionMethod, Normalization normalize, FeaturesLimits limits) {
 
 		Chunk::Seq::const_iterator s_iter;
 		vector<FeatureVector> sequence;
@@ -1002,7 +1003,7 @@ struct LearningData {
 	}
 
 
-	template<class Denormalize>
+	/* template<class Denormalize>
 	void get_pfefSeq_from_outputActivations (const rnnlib::SeqBuffer<double>& outputActivations, int sIndex,  Denormalize denormalize) {
 
 		currentPredictedPfSeq.clear();
@@ -1033,11 +1034,11 @@ struct LearningData {
 			currentPredictedPfPose.R.fromEuler(pfRoll, pfPitch, pfYaw);
 			currentPredictedPfSeq.push_back (currentPredictedPfPose);
 		}
-	}
+	}*/
 
 
 	template<class Denormalize>
-	void get_pfSeq_from_cryssmexquantization (const vector<vector<double> >& predictedSequence, int sIndex, Denormalize denormalize) {
+	void get_pfSeq_from_cryssmexquantization (const std::vector<vector<double> >& predictedSequence, int sIndex, Denormalize denormalize) {
 
 		currentPredictedPfSeq.clear();
 		for (int i=0; i < predictedSequence.size(); i++) {
@@ -1060,7 +1061,7 @@ struct LearningData {
 	}
 
 	template<class Denormalize>
-	void get_pfPose_from_cryssmexquantization (const vector<double>& chunk, int sIndex, Denormalize denormalize) {
+	void get_pfPose_from_cryssmexquantization (const std::vector<double>& chunk, int sIndex, Denormalize denormalize) {
 
 		golem::Mat34 currentPredictedPfPose;
 

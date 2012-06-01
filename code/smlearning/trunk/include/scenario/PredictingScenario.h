@@ -8,8 +8,8 @@
 #ifndef SMLEARNING_PREDICTINGSCENARIO_H_
 #define SMLEARNING_PREDICTINGSCENARIO_H_
 
-#include <boost/function.hpp>
 #include <scenario/Scenario.h>
+#include <boost/function.hpp>
 #include <metalearning/CrySSMEx.h>
 
 namespace smlearning {

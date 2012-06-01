@@ -18,12 +18,6 @@
 #include <cryssmex/exceptions.hh>
 #include <boost/function.hpp>
 
-using namespace ssm;
-using namespace cryssmex;
-using namespace basic_stochastics;
-using namespace naming;
-using namespace quantizing;
-
 namespace smlearning {
 
 typedef std::vector<std::vector<double> > DataSequence;
@@ -57,19 +51,19 @@ public:
 	/** set State Quantizer from file */
 	void setStateQuantizer (std::string cvqfile);
 	/** set input quantizer from GNG quantizer */
-	void setInputQuantizer (const GNG_Quantizer&);
+	void setInputQuantizer (const quantizing::GNG_Quantizer&);
 	/** set output quantizer from GNG quantizer */
-	void setOutputQuantizer (const GNG_Quantizer&);
+	void setOutputQuantizer (const quantizing::GNG_Quantizer&);
 	/** set state quantizer from CVQ quantizer */
-	void setStateQuantizer (const CVQ&);
+	void setStateQuantizer (const quantizing::CVQ&);
 	/** get Substochastic Sequential Machine from file */
-	SSM* getSSM () { return ssm; }
+	ssm::SSM* getSSM () { return ssm; }
 	/** get Input Quantizer from file */
-	Quantizer* getInputQuantizer () { return input_quantizer; }
+	quantizing::Quantizer* getInputQuantizer () { return input_quantizer; }
 	/** get Output Quantizer from file */
-	Quantizer* getOutputQuantizer () { return output_quantizer; }
+	quantizing::Quantizer* getOutputQuantizer () { return output_quantizer; }
 	/** get State Quantizer from file */
-	CVQ* getStateQuantizer () { return state_quantizer; }
+	quantizing::CVQ* getStateQuantizer () { return state_quantizer; }
 	/** set present data sequences from file */
 	void setData (std::string seqFile, LearningData::DataSet& data, LearningData::FeaturesLimits& featLimits, boost::function<float (const float&, const float&, const float&)> normalization, unsigned int featureSelectionMethod);
 	/** set data sequences from present data set */
@@ -103,17 +97,17 @@ protected:
 	/** resetting quantizer before learning with new sequences*/
 	void resetLearning ();
 	/** Substochastic sequential machine used for prediction */
-	SSM* ssm;
+	ssm::SSM* ssm;
 	/** SSM parser used for prediction */
-	SSM_Parser *ssm_parser;
+	ssm::SSM_Parser *ssm_parser;
 	/** Input quantizer */
-	Quantizer *input_quantizer;
+	quantizing::Quantizer *input_quantizer;
 	/** Output quantizer */
-	Quantizer *output_quantizer;
+	quantizing::Quantizer *output_quantizer;
 	/** State quantizer */
-	CVQ *state_quantizer;
+	quantizing::CVQ *state_quantizer;
 	/** map of quantization ids and CVQ classified model vectors */
-	std::map<unsigned int, Classified_Vectors> qnt_mv_map;
+	std::map<unsigned int, quantizing::Classified_Vectors> qnt_mv_map;
 
 }; // CrySSMEx class
 

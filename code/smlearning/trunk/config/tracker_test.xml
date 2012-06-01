@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<golem>
+  <rand seed="0"></rand>
+  <parallels threads="0"></parallels>
+  <messages level="info"/>
+  <universe name="Golem">
+    <window x="0" y="0" width="800" height="600"></window>
+    <physx fps="30" skin_width="0.005" sleep_lin_vel_squared="0.0025" sleep_ang_vel_squared="0.0025" max_angular_velocity="7.0" bounce_threshold="-2.0"></physx>
+    <recorder frame_drop="1" file_name="screen" file_ext=".png" leading_zeros="1" encoder_str="image/png" buffer_len="100"></recorder>
+  </universe>
+
+  <scene name="Offline Learning Experiment">
+    <physx restitution="0.1" static_friction="0.4" dynamic_friction="0.2">
+      <gravity v1="0.0" v2="0.0" v3="-9.81"></gravity>
+    </physx>
+    <opengl>
+      <view_dir v1="-1.0" v2="-1.0" v3="-0.7"></view_dir>
+      <view_point v1="6.0" v2="6.0" v3="6.0"></view_point>
+      <clear_color R="55" G="55" B="60" A="255"></clear_color>
+      <draw solid="1" wire="0" shadow="1" debug="0"></draw>
+    </opengl>
+  </scene>
+
+
+  <arm driver="GolemDeviceKatana300Sim"/>
+
+
+  <effector>
+    <base_length>0.1848</base_length>
+    <finger_length>0.104</finger_length>
+    <finger_diameter>0.003</finger_diameter>
+    <tip_radius>0.015</tip_radius>
+  </effector>
+
+
+<ObjectInteraction>
+	<maxX>0.2</maxX>
+	<maxY>0.4</maxY>
+	<maxZ>0.12</maxZ>
+	<minX>-0.2</minX>
+	<minY>0.0</minY>
+	<minZ>-0.01</minZ>
+	<minPushDuration>3.0</minPushDuration>
+	<maxPushDuration>5.0</maxPushDuration>
+	<minDuration>5.0</minDuration>
+	<minValLabel>-1.0</minValLabel>
+	<maxValLabel>1.0</maxValLabel>
+	<startPosition>
+		<x>0.0</x>
+		<y>0.2</y>
+		<z>0.0</z>
+	</startPosition>
+	<startRotation>
+		<y>0.0</y>
+		<x>0.0</x>
+		<z>0.0</z>
+	</startRotation>
+	<ObjectDimensions> <!-- w,h,l -->
+		<x>0.1</x>
+		<y>0.1</y>
+		<z>0.1</z>
+		<width>0.002</width>
+	</ObjectDimensions>
+	<over>0.017</over>
+	<dist>0.05</dist>
+	<side>0.6</side>
+	<center>0.6</center>
+	<top>0.02</top>
+	<distance>0.2</distance>
+</ObjectInteraction>
+
+<loop>
+	<startingPositions>1-18</startingPositions>
+</loop>
+
+<!-- type="opencv" type="point_grey" -->
+<camera type="opencv">
+  <opencv></opencv>
+  <point_grey></point_grey>
+  <!-- codec="I420" codec="DIVX" codec="XVID" codec="X264" -->
+  <recorder enabled="0" video="1" codec="XVID"/>
+  <calibration camera_file="cam.cal" pose_file="pose.cal"/>
+</camera>
+
+<tracker config_file="tracking.ini" confidence="0" font_name="/usr/local/bin/SMLearning/FreeSerifBold.ttf"/>
+
+
+</golem>

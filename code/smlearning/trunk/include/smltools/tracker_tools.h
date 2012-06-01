@@ -22,8 +22,10 @@
 #include <Tracker/CDataFile.h>
 #include <GLWindow/GLWindow.h>
 
-using namespace Tracking;
-using namespace std;
+// using namespace Tracking;
+// using namespace std;
+
+namespace smlearning {
 
 struct Parameters{
 	int width;
@@ -82,7 +84,7 @@ int getCamHeight(const char* filename){
 }
 
 
-bool InputControl(Tracker* tracker, blortGLWindow::Event& event){
+bool InputControl(Tracking::Tracker* tracker, blortGLWindow::Event& event){
 	
 	switch (event.type)
 	{
@@ -147,6 +149,6 @@ bool InputControl(Tracker* tracker, blortGLWindow::Event& event){
 }
 
 
-
+} //namespace 
 
 #endif 

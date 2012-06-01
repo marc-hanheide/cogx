@@ -49,8 +49,8 @@ SET(PHYSX_LIBRARY /usr/lib/PhysX/v2.8.1 CACHE PATH "Path prefix for PhysX librar
 SET(GOLEM_INCLUDE /usr/local/include/Golem CACHE PATH "Path prefix for Golem include")
 SET(GOLEM_LIBRARY /usr/local/lib CACHE PATH "Path prefix for Golem library")
 
-SET(RNNLIB_INCLUDE /usr/local/include/rnnlib CACHE PATH "Path prefix for RNNLIB include")
-SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
+# SET(RNNLIB_INCLUDE /usr/local/include/rnnlib CACHE PATH "Path prefix for RNNLIB include")
+# SET(RNNLIB_LIBRARY /usr/local/lib CACHE PATH "Path prefix for RNNLIB library")
 
 SET(BLORT_INCLUDE /usr/local/include/Blort CACHE PATH "Path prefix for BLORT include files")
 SET(BLORT_LIBRARY /usr/local/lib CACHE PATH "Path prefix for BLORT libraries")
@@ -88,6 +88,9 @@ SET(ICE_INCLUDE /usr/include CACHE PATH "Path prefix for ZeroC Ice include")
 SET(ICE_LIBRARY /usr/lib CACHE PATH "Path prefix for ZeroC Ice library")
 SET(ICE_BIN /usr/bin CACHE PATH "Path prefix for ZeroC Ice binaries")
 
+SET(OPENCV_INCLUDE /usr/local/include/opencv CACHE PATH "Path prefix for OpenCV include")
+SET(OPENCV_LIBRARY /usr/local/lib CACHE PATH "Path prefix for OpenCV library")
+
 SET(SMLEARNING_INCLUDE ${SMLEARNING_ROOT}/include CACHE PATH "Path prefix for SMLearning include")
 
 ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
@@ -95,10 +98,11 @@ ADD_DEFINITIONS(-DLINUX -fpermissive -DNX_DISABLE_FLUIDS)
 LINK_LIBRARIES(NxCharacter NxCooking PhysXCore PhysXLoader #KNI
                GolemSys GolemCtrl GolemPhys GolemPhysCtrl GolemTools #GolemTinyIce !!not created anymore
 	       GolemDemoCommon
-	       pthread rt GL glut GLU expat SMLearning netcdf rnnlib cryssmexlib 
+	       pthread rt GLEW GL glut GLU expat SMLearning netcdf #rnnlib
+	       cryssmexlib 
  	       ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	       ${QT_LIBRARIES} qwt-qt4
-	       cv highgui GLEW ftgl
+	       cv highgui ftgl
 	       TomGine Tracker GLWindow ThreadObject
 	       Ice IceUtil)
 
@@ -113,13 +117,14 @@ INCLUDE_DIRECTORIES(
 	${PHYSX_INCLUDE}/SDKs/Cooking/include
 	#${KNI_INCLUDE}
 	${Boost_INCLUDE_DIRS}
-	${RNNLIB_INCLUDE}
+	#${RNNLIB_INCLUDE}
 	${NEURALGAS_INCLUDE}
 	${CRYSSMEX_INCLUDE}
 	${QT_INCLUDE_DIR}
 	${QWT_INCLUDE}
 	${BLORT_INCLUDE}
 	${ICE_INCLUDE}
+	${OPENCV_INCLUDE}
 )
 
 LINK_DIRECTORIES(
@@ -127,18 +132,19 @@ LINK_DIRECTORIES(
 	#${KNI_LIBRARY}
 	${GOLEM_LIBRARY}
 	${Boost_LIBRARY_DIRS}
-	${RNNLIB_LIBRARY}
+	#${RNNLIB_LIBRARY}
 	${NEURALGAS_LIBRARY}
 	${CRYSSMEX_LIBRARY}
 	${QWT_LIBRARY}
 	${ICE_LIBRARY}
 	${BLORT_LIBRARY}
+	${OPENCV_LIBRARY}
 )
 
 SET(METALEARNING_SOURCES
-	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
-	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
-	${SMLEARNING_ROOT}/src/metalearning/SMRegion.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/RNN.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/ActiveRNN.cpp
+#	${SMLEARNING_ROOT}/src/metalearning/SMRegion.cpp
 	${SMLEARNING_ROOT}/src/metalearning/GNGSMRegion.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/Scenario.cpp
 #	${SMLEARNING_ROOT}/src/metalearning/ScenarioIce.cpp
@@ -168,7 +174,7 @@ SET(METALEARNING_SOURCES
 SET(METALEARNING_HEADERS
 	${SMLEARNING_ROOT}/include/metalearning/RNN.h
 	${SMLEARNING_ROOT}/include/metalearning/ActiveRNN.h
-	${SMLEARNING_ROOT}/include/metalearning/SMRegion.h
+#	${SMLEARNING_ROOT}/include/metalearning/SMRegion.h
 	${SMLEARNING_ROOT}/include/metalearning/GNGSMRegion.h
 #	${SMLEARNING_ROOT}/include/metalearning/Scenario.h
 #	${SMLEARNING_ROOT}/include/metalearning/ScenarioIce.h
@@ -188,8 +194,9 @@ SET(SCENARIO_SOURCES
 #	${SMLEARNING_ROOT}/src/scenario/ActiveGNGScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/ActiveLearnScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PredictingActiveLearnScenario.cpp
+        ${SMLEARNING_ROOT}/src/scenario/TrackerScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
-	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
+#	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
 )
 
 
@@ -205,7 +212,8 @@ SET(SCENARIO_HEADERS
 #	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
 	${SMLEARNING_ROOT}/include/scenario/ActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/scenario/PredictingActiveLearnScenario.h
-	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
+#	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
+        ${SMLEARNING_ROOT}/include/scenario/TrackerScenario.h
 )
 
 INSTALL(FILES ${SCENARIO_HEADERS} DESTINATION include/SMLearning/scenario/)
@@ -247,9 +255,9 @@ SET(SEQUENCES_TEST_SOURCE
        ${SMLEARNING_ROOT}/src/tests/sequences_test.cpp
 )
 
-SET(PARSING_TEST_SOURCE
-        ${SMLEARNING_ROOT}/src/tests/parsing_test.cpp
-)
+# SET(PARSING_TEST_SOURCE
+#         ${SMLEARNING_ROOT}/src/tests/parsing_test.cpp
+# )
 
 SET(DATA_PLOT_TEST_SOURCE
         ${SMLEARNING_ROOT}/src/tests/data_plot_test.cpp
@@ -271,21 +279,21 @@ SET(EVALPLOT_ACTIVELEARNING_SOURCE
         ${SMLEARNING_ROOT}/src/smltools/evalplot_activelearning.cpp
 )
 
-SET(EVALUATE_ACTIVELEARN_SOURCE
-        ${SMLEARNING_ROOT}/src/metalearning/evaluate_activelearn.cpp
-)
+# SET(EVALUATE_ACTIVELEARN_SOURCE
+#         ${SMLEARNING_ROOT}/src/metalearning/evaluate_activelearn.cpp
+# )
 
-SET(EVALUATE_OFFLINELEARN_SOURCE
-        ${SMLEARNING_ROOT}/src/metalearning/evaluate_offlinelearn.cpp
-)
+# SET(EVALUATE_OFFLINELEARN_SOURCE
+#         ${SMLEARNING_ROOT}/src/metalearning/evaluate_offlinelearn.cpp
+# )
 
 SET(GENERATE_CRYSSMEX_FILES_ACTIVELEARNING_SOURCE
         ${SMLEARNING_ROOT}/src/metalearning/generate_cryssmex_files_activelearning.cpp
 )
 
-SET(N_FOLD_CVSETS_NETS_SOURCE
-        ${SMLEARNING_ROOT}/src/smltools/n_fold_cvsets_nets.cpp
-)
+# SET(N_FOLD_CVSETS_NETS_SOURCE
+#         ${SMLEARNING_ROOT}/src/smltools/n_fold_cvsets_nets.cpp
+# )
 
 SET(CONCATENATE_SEQUENCEDATASETS_SOURCE
         ${SMLEARNING_ROOT}/src/smltools/concatenate_sequencedatasets.cpp
@@ -321,6 +329,9 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/activelearn_prediction_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
+	${SMLEARNING_ROOT}/config/comic.ttf
+	${SMLEARNING_ROOT}/config/FreeSerifBold.ttf
+	${SMLEARNING_ROOT}/config/tracker_test.xml
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300.xml
 #	${SMLEARNING_ROOT}/config/katana300_6M180.cfg
@@ -382,16 +393,16 @@ ADD_EXECUTABLE(offline_experiment ${OFFLINE_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(activelearn_experiment ${ACTIVELEARN_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(activelearn_prediction_experiment ${ACTIVELEARN_PREDICTION_EXPERIMENT_SOURCE})
 ADD_EXECUTABLE(sequences_test ${SEQUENCES_TEST_SOURCE})
-ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
+# ADD_EXECUTABLE(parsing_test ${PARSING_TEST_SOURCE})
 ADD_EXECUTABLE(data_plot_test ${DATA_PLOT_TEST_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
 # ADD_EXECUTABLE(canonical_input_output_enumerator_test ${CANONICAL_INPUT_OUTPUT_ENUMERATOR_TEST_SOURCE})
 ADD_EXECUTABLE(print_dataset ${PRINT_DATASET_SOURCE})
 # ADD_EXECUTABLE(eval_plotting ${EVAL_PLOTTING_SOURCE})
 ADD_EXECUTABLE(evalplot_activelearning ${EVALPLOT_ACTIVELEARNING_SOURCE})
-ADD_EXECUTABLE(evaluate_activelearn ${EVALUATE_ACTIVELEARN_SOURCE})
-ADD_EXECUTABLE(evaluate_offlinelearn ${EVALUATE_OFFLINELEARN_SOURCE})
+# ADD_EXECUTABLE(evaluate_activelearn ${EVALUATE_ACTIVELEARN_SOURCE})
+# ADD_EXECUTABLE(evaluate_offlinelearn ${EVALUATE_OFFLINELEARN_SOURCE})
 ADD_EXECUTABLE(generate_cryssmex_files_activelearning ${GENERATE_CRYSSMEX_FILES_ACTIVELEARNING_SOURCE})
-ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
+#ADD_EXECUTABLE(n_fold_cvsets_nets ${N_FOLD_CVSETS_NETS_SOURCE})
 ADD_EXECUTABLE(concatenate_sequencedatasets ${CONCATENATE_SEQUENCEDATASETS_SOURCE})
 ADD_EXECUTABLE(write_data_cryssmex_fmt ${WRITE_DATA_CRYSSMEX_FMT_SOURCE})
 ADD_EXECUTABLE(data_plot_test_server ${DATA_PLOT_TEST_SERVER_SOURCE} ${DATA_PLOT_TEST_GEN_MOC})
@@ -416,10 +427,10 @@ INSTALL(TARGETS tracker_test RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS print_dataset RUNTIME DESTINATION bin/SMLearning)
 # INSTALL(TARGETS eval_plotting RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS evalplot_activelearning RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS evaluate_activelearn RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS evaluate_offlinelearn RUNTIME DESTINATION bin/SMLearning)
+# INSTALL(TARGETS evaluate_activelearn RUNTIME DESTINATION bin/SMLearning)
+# INSTALL(TARGETS evaluate_offlinelearn RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS generate_cryssmex_files_activelearning RUNTIME DESTINATION bin/SMLearning)
-INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
+# INSTALL(TARGETS n_fold_cvsets_nets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS concatenate_sequencedatasets RUNTIME DESTINATION bin/SMLearning)
 INSTALL(TARGETS write_data_cryssmex_fmt RUNTIME DESTINATION bin/SMLearning)
 INSTALL(FILES ${CONFIG_FILES} DESTINATION bin/SMLearning)

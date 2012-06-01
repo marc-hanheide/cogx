@@ -31,7 +31,6 @@
 #define PUSHINGAPPLICATION_H
 
 
-#include <Golem/Phys/Application.h>
 #include <boost/program_options.hpp>
 
 #include <scenario/Scenario.h>
@@ -39,7 +38,10 @@
 // #include <scenario/ActiveGNGScenario.h>
 #include <scenario/ActiveLearnScenario.h>
 #include <scenario/PredictingActiveLearnScenario.h>
+// #include <scenario/TrackerScenario.h>
 #include <scenario/Polyflap.h>
+
+#include <Golem/Phys/Application.h>
 
 namespace po = boost::program_options;
 
@@ -50,6 +52,7 @@ bool XMLData(PredictingScenario::Desc&, XMLContext*, Context*);
 // bool XMLData(ActiveGNGScenario::Desc&, XMLContext*, Context*);
 bool XMLData(ActiveLearnScenario::Desc&, XMLContext*, Context*);
 bool XMLData(PredictingActiveLearnScenario::Desc&, XMLContext*, Context*);
+// bool XMLData(TrackerScenario::Desc&, XMLContext*, Context*);
 
 /** Application */
 template<typename S, typename D>
@@ -85,7 +88,7 @@ void PushingApplication<S,D>::define_program_options_desc()
 {
 	try {
 
-		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario" || S::getName() == "ActiveLearnScenario" || S::getName() == "PredictingActiveLearnScenario") {
+		if (S::getName() == "Scenario" || S::getName() == "PredictingScenario" || S::getName() == "ActiveGNGScenario" || S::getName() == "ActiveLearnScenario" || S::getName() == "PredictingActiveLearnScenario" || S::getName() == "TrackerScenario") {
 			prgOptDesc.add_options()
 				("help,h", "produce help message")
 				("numSequences,S", po::value<string>(), "number of sequences")

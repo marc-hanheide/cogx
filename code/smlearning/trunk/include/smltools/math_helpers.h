@@ -33,7 +33,7 @@
 #include <Math/Vec3.h>
 #include <iostream>
 
-using namespace golem;
+// using namespace golem;
 using namespace std;
 
 namespace smlearning {
@@ -51,8 +51,8 @@ R donotnormalize (R const& value, R const& min, R const& max) {
 template <typename R>
 R normalize(R const& value, R const& min, R const& max) {
 	R val;
-	if (min == -REAL_PI && max == REAL_PI && (value > max || value < min)) {
-		val = fmod(value, (R)REAL_PI);
+	if (min == -golem::REAL_PI && max == golem::REAL_PI && (value > max || value < min)) {
+		val = fmod(value, (R)golem::REAL_PI);
 	}
 	else {
 		val = value;
@@ -143,8 +143,8 @@ double fRand(double min = 0., double max = 1.);
 ///
 class compare_Vec3 { // simple comparison function
 public:
-	bool operator()(const Vec3& v1, const Vec3& v2) {
-		Real epsilon = 1e-8;
+	bool operator()(const golem::Vec3& v1, const golem::Vec3& v2) {
+		golem::Real epsilon = 1e-8;
 		if (((v1.v1 - epsilon) < v2.v1) && (v2.v1 < (v1.v1 + epsilon)) &&
 		    ((v1.v2 - epsilon) < v2.v2) && (v2.v2 < (v1.v2 + epsilon)) &&
 		    ((v1.v3 - epsilon) < v2.v3) && (v2.v3 < (v1.v3 + epsilon)))
@@ -157,7 +157,7 @@ public:
 ///
 ///calls set_point_coordinates for a discrete canonical number of different actions
 ///
-void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over);
+void set_coordinates_into_target(const int startPosition, golem::Vec3& positionT,const golem::Vec3& polyflapNormalVec, const golem::Vec3& polyflapOrthogonalVec,const golem::Real& dist, const golem::Real& side, const golem::Real& center, const golem::Real& top, const golem::Real& over);
 
 
 

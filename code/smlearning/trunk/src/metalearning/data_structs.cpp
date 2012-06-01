@@ -59,13 +59,13 @@ bool LearningData::write_dataset (string fileName, const DataSet& data, const Fe
 
 	long numSeqs = data.size();
 	writeFile.write ((const char*)&numSeqs, sizeof(numSeqs));
-	cout << numSeqs << " sequences." << endl;
+	std::cout << numSeqs << " sequences." << std::endl;
 	DataSet::const_iterator d_iter;
 	for (d_iter=data.begin(); d_iter!=data.end(); d_iter++) {
 		Chunk::Seq seq = *d_iter;
 		long seqSize = seq.size();
 		writeFile.write ((const char*)&seqSize, sizeof (seqSize));
-  		// cout << "\t" << seqSize << endl;
+  		// std::cout << "\t" << seqSize << std::endl;
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter != seq.end(); s_iter++) {
 			Chunk currentChunk = *s_iter;
@@ -104,14 +104,14 @@ bool LearningData::read_dataset (string fileName, DataSet& data, FeaturesLimits&
 	
 	long numSeq;
 	readFile.read ((char*)&numSeq, sizeof(numSeq));
-// 	cout << "Nr. of seq.: " << numSeq << endl;
+// 	std::cout << "Nr. of seq.: " << numSeq << std::endl;
 
 	for (int s=0; s<numSeq; s++) {
 		Chunk::Seq currentChunkSeq;
 
 		long seqSize;
 		readFile.read((char *)&seqSize, sizeof(seqSize));
-// 		cout << "  Seq. size: " << seqSize << endl;
+// 		std::cout << "  Seq. size: " << seqSize << std::endl;
 		for (int c=0; c<seqSize; c++) {
 			Chunk currentChunk;
 			readFile.read((char *)&currentChunk.object, sizeof(currentChunk.object));
@@ -131,36 +131,36 @@ bool LearningData::read_dataset (string fileName, DataSet& data, FeaturesLimits&
 ///print a chunk
 ///
 void LearningData::print_Chunk (const Chunk& c) {
-	cout << "\tC=[";
-	cout << " pD=" << c.action.pushDuration << ", ";
-	cout << " hA=" << c.action.horizontalAngle << ", ";
-	cout << " eP=" << c.action.effectorPose.p.v1 << " "
+	std::cout << "\tC=[";
+	std::cout << " pD=" << c.action.pushDuration << ", ";
+	std::cout << " hA=" << c.action.horizontalAngle << ", ";
+	std::cout << " eP=" << c.action.effectorPose.p.v1 << " "
 	     << c.action.effectorPose.p.v2 << " " << c.action.effectorPose.p.v3 << ",";
-	cout << " eO=" << c.action.efRoll << " " << c.action.efPitch << " " << c.action.efYaw << ",";
-	cout << " eeP=" << c.action.endEffectorPose.p.v1 << " "
+	std::cout << " eO=" << c.action.efRoll << " " << c.action.efPitch << " " << c.action.efYaw << ",";
+	std::cout << " eeP=" << c.action.endEffectorPose.p.v1 << " "
 	     << c.action.endEffectorPose.p.v2 << " " << c.action.endEffectorPose.p.v3 << ",";
-	cout << " eeO=" << c.action.endEfRoll << " " << c.action.endEfPitch << " " << c.action.endEfYaw << ",";
-	cout << " oP=" << c.object.objectPose.p.v1 << " "
+	std::cout << " eeO=" << c.action.endEfRoll << " " << c.action.endEfPitch << " " << c.action.endEfYaw << ",";
+	std::cout << " oP=" << c.object.objectPose.p.v1 << " "
 	     << c.object.objectPose.p.v2 << " " << c.object.objectPose.p.v3 << ",";
-	cout << " oO=" << c.object.obRoll << " " << c.object.obPitch << " " << c.object.obYaw << ", ";
-	cout << " l=" << c.label << " ]" << endl;
+	std::cout << " oO=" << c.object.obRoll << " " << c.object.obPitch << " " << c.object.obYaw << ", ";
+	std::cout << " l=" << c.label << " ]" << std::endl;
 }
 
 ///
 ///print coordinate limits for a dataset
 ///
 void LearningData::print_dataset_limits (const FeaturesLimits limits) {
-	cout << "Dataset limits: " << endl;
-	cout << "min X = " << limits.minX << endl;
-	cout << "min Y = " << limits.minY << endl;
-	cout << "min Z = " << limits.minZ << endl;
-	cout << "max X = " << limits.maxX << endl;
-	cout << "max Y = " << limits.maxY << endl;
-	cout << "max Z = " << limits.maxZ << endl;
-	cout << "min Push Duration = " << limits.minDuration << endl;
-	cout << "max Push Duration = " << limits.maxDuration << endl;
-	cout << "min Label Value = " << limits.minValLabel << endl;
-	cout << "max Label Value = " << limits.maxValLabel << endl;
+	std::cout << "Dataset limits: " << std::endl;
+	std::cout << "min X = " << limits.minX << std::endl;
+	std::cout << "min Y = " << limits.minY << std::endl;
+	std::cout << "min Z = " << limits.minZ << std::endl;
+	std::cout << "max X = " << limits.maxX << std::endl;
+	std::cout << "max Y = " << limits.maxY << std::endl;
+	std::cout << "max Z = " << limits.maxZ << std::endl;
+	std::cout << "min Push Duration = " << limits.minDuration << std::endl;
+	std::cout << "max Push Duration = " << limits.maxDuration << std::endl;
+	std::cout << "min Label Value = " << limits.minValLabel << std::endl;
+	std::cout << "max Label Value = " << limits.maxValLabel << std::endl;
 }
 
 
@@ -168,23 +168,23 @@ void LearningData::print_dataset_limits (const FeaturesLimits limits) {
 ///print a DataSet vector
 ///
 void LearningData::print_dataset (const DataSet &d) {
-	cout << "Dataset size: " << d.size() << endl;
+	std::cout << "Dataset size: " << d.size() << std::endl;
 	
 	DataSet::const_iterator d_iter;
 
 	for (d_iter = d.begin(); d_iter != d.end(); d_iter++) {
 		//MotorCommand mC = d_iter->first;
-		cout << "{";
+		std::cout << "{";
 
 		Chunk::Seq seq = *d_iter;
 
-		cout << "\tSeq (size=" << seq.size() << ")" << "=(\n";
+		std::cout << "\tSeq (size=" << seq.size() << ")" << "=(\n";
 
 		Chunk::Seq::const_iterator s_iter;
 		for (s_iter=seq.begin(); s_iter != seq.end(); s_iter++) {
 			print_Chunk (*s_iter);
 		}
-		cout << "\t)\n} " << endl;
+		std::cout << "\t)\n} " << std::endl;
 
 		
 	}
@@ -193,7 +193,7 @@ void LearningData::print_dataset (const DataSet &d) {
 
 bool check_nc_err(const int stat, const int line, const char *file) {
 	if (stat != NC_NOERR) {
-		cerr << "line" <<  line << "of" << file << ": " << nc_strerror(stat) << endl;
+		cerr << "line" <<  line << "of" << file << ": " << nc_strerror(stat) << std::endl;
 		return true;
 	}
 	return false;
@@ -265,9 +265,9 @@ bool LearningData::write_nc_data (string fileName, size_t numSeqs_len, int input
 	if (check_nc_err (stat, __LINE__, __FILE__))
 		return false;
 
-	cout << "numTimesteps: " << numTimesteps_len << endl << "inputPattSize: " << inputPattSize_len << endl << "targetPattSize: " << targetPattSize_len << endl;
-	cout << "inputVector.size(): " << inputVector.size() << endl;
-	cout << "targetVector.size(): " << targetVector.size() << endl;
+	std::cout << "numTimesteps: " << numTimesteps_len << std::endl << "inputPattSize: " << inputPattSize_len << std::endl << "targetPattSize: " << targetPattSize_len << std::endl;
+	std::cout << "inputVector.size(): " << inputVector.size() << std::endl;
+	std::cout << "targetVector.size(): " << targetVector.size() << std::endl;
 	assert (numTimesteps_len * inputPattSize_len == inputVector.size ());
 	assert (numTimesteps_len * targetPattSize_len == targetVector.size ());
 
@@ -284,7 +284,7 @@ bool LearningData::write_nc_data (string fileName, size_t numSeqs_len, int input
 	}
 	{ //store seqLengths
 		int seqLengths[seqLengthsVector.size()];
-		vector<int>::iterator it = seqLengthsVector.begin();
+		std::vector<int>::iterator it = seqLengthsVector.begin();
 		for (int i=0; it != seqLengthsVector.end(); i++, it++)
 			seqLengths[i] = *it;
 		stat = nc_put_var_int(ncid, seqLengths_id, seqLengths);
@@ -344,13 +344,13 @@ bool LearningData::check_limits (FeaturesLimits params1, FeaturesLimits params2)
 bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 	boost::regex seqfile_re ("(.*)\\.seq");
 	boost::cmatch matches;
-	path p(dir);
+	fs::path p(dir);
 	if(!exists(p)) {
-		cerr<<p.leaf()<<" does not exist." << endl;
+		cerr<<p.leaf()<<" does not exist." << std::endl;
 		return false;
 	}
 
-	directory_iterator dir_iter(p), dir_end;
+	fs::directory_iterator dir_iter(p), dir_end;
 	DataSet data;
 	FeaturesLimits featLimits;
 	bool checkFlag = false;
@@ -362,8 +362,8 @@ bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 			DataSet currentData;
 			FeaturesLimits currentFeatLimits;
 			string dataBaseName (matches[1].first, matches[1].second);
-			cout << dir_iter->leaf() << endl;
-			cout << dataBaseName << endl;
+			std::cout << dir_iter->leaf() << std::endl;
+			std::cout << dataBaseName << std::endl;
 			read_dataset (dataBaseName, currentData, currentFeatLimits);
 			if (!checkFlag) {
 				featLimits = currentFeatLimits;
@@ -373,14 +373,14 @@ bool LearningData::concatenate_datasets (string dir, string writeFileName) {
 				assert (check_limits (featLimits, currentFeatLimits));
 			}
 
-			cout << "size current data: " << currentData.size() << endl;
+			std::cout << "size current data: " << currentData.size() << std::endl;
 			DataSet::iterator it = data.end();
 			data.insert (it, currentData.begin(), currentData.end());
 		}
 	}
-	cout << "size data: " << data.size() << endl;
+	std::cout << "size data: " << data.size() << std::endl;
 	if (!write_dataset (writeFileName, data, featLimits) ) {
-		cerr << "Error writing dataset file!" << endl;
+		cerr << "Error writing dataset file!" << std::endl;
 		return false;
 	}
 	

@@ -68,7 +68,6 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 			cerr<< "You need to provide a sequence data file from which the regions were obtained" << endl;
 			exit (-1);
 		}
-		LearningData::DataSet data;
 		LearningData::FeaturesLimits limits;
 		
 		if (!LearningData::read_dataset (vm["seqFile"].as<string>(), data, limits)) {
@@ -89,13 +88,13 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 		boost::cmatch matches;
 		string prefix = vm["regionsPath"].as<string>();
 		// cout << matches.size() << endl;
-		path p(prefix);
+		fs::path p(prefix);
 		if(!exists(p)) {
 			cerr<<p.leaf()<<" does not exist." << endl;
 			exit (-1);
 		}
 
-		directory_iterator dir_iter (p), dir_end;
+		fs::directory_iterator dir_iter (p), dir_end;
 		for (;dir_iter != dir_end; ++dir_iter)
 		{
 			string dirstring (dir_iter->leaf().c_str());
@@ -147,8 +146,8 @@ void ActiveLearnScenario::init(boost::program_options::variables_map vm) {
 			// Initialize Output Quantizer 
 			currentRegion->cryssmex.initializeOutputQuantizer (learningData.pfVectorSize);
 	
-		GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getInputQuantizer());
-		GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(currentRegion->cryssmex.getOutputQuantizer());
+		quantizing::GNG_Quantizer* inputQuantizer = static_cast<quantizing::GNG_Quantizer*>(currentRegion->cryssmex.getInputQuantizer());
+		quantizing::GNG_Quantizer* outputQuantizer = static_cast<quantizing::GNG_Quantizer*>(currentRegion->cryssmex.getOutputQuantizer());
 	
 		inputQuantizer->setMaxEpochsErrorReduction (vm["maxepochserror"].as<unsigned int>());
 		inputQuantizer->setMaxEpochsMDLReduction (vm["maxepochsmdl"].as<unsigned int>());
@@ -606,8 +605,8 @@ void ActiveLearnScenario::splitRegion (GNGSMRegion& region) {
 	regions[secondRegion.index] = secondRegion;
 
 	// create new quantizers
-	GNG_Quantizer* inputQuantizer = static_cast<GNG_Quantizer*>(region.cryssmex.getInputQuantizer());
-	GNG_Quantizer* outputQuantizer = static_cast<GNG_Quantizer*>(region.cryssmex.getOutputQuantizer());	
+	quantizing::GNG_Quantizer* inputQuantizer = static_cast<quantizing::GNG_Quantizer*>(region.cryssmex.getInputQuantizer());
+	quantizing::GNG_Quantizer* outputQuantizer = static_cast<quantizing::GNG_Quantizer*>(region.cryssmex.getOutputQuantizer());	
 	regions[firstRegion.index].cryssmex.setInputQuantizer (*inputQuantizer);
 	regions[firstRegion.index].cryssmex.setOutputQuantizer (*outputQuantizer);
 	regions[secondRegion.index].cryssmex.setInputQuantizer (*inputQuantizer);

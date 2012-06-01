@@ -12,6 +12,7 @@
 #include <metalearning/GNGSMRegion.h>
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 using namespace smlearning;
 
@@ -62,13 +63,13 @@ int main (int argc, char* argv[])
 	boost::regex regfile_re ("(.*_final)\\.reg");
 	boost::cmatch matches;
 	// cout << matches.size() << endl;
-	path p(prefix);
+	fs::path p(prefix);
 	if(!exists(p)) {
 		cerr<<p.leaf()<<" does not exist." << endl;
 		return 1;
 	}
 
-	directory_iterator dir_iter (p), dir_end;
+	fs::directory_iterator dir_iter (p), dir_end;
 	for (;dir_iter != dir_end; ++dir_iter)
 	{
 		string dirstring (dir_iter->leaf().c_str());

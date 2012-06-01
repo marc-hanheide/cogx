@@ -131,7 +131,7 @@ BOOL TrackerThread::OnTask()
 // Main Loop
 	blortGLWindow::Event event;
 	while( ! _quit ){
-		
+		printf("Entering loop...\n");
 		// grab new image from camera
 		_img = g_Resources->GetNewImage();
 		

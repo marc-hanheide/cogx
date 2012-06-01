@@ -26,6 +26,9 @@
 
 #include <scenario/ActorObject.h>
 
+using namespace golem;
+using namespace std;
+
 namespace smlearning {
 
 ///////// Public //////////
