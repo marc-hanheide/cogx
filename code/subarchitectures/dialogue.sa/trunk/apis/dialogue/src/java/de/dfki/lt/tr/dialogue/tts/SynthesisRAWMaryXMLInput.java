@@ -49,7 +49,7 @@ public SynthesisRAWMaryXMLInput(MaryTTSLocal i_ttslocal){
 			l_ttslocal.m_AudioFileName=args[1];
 			l_ttslocal.m_SaveAudio2Wav=Boolean.valueOf(args[2]);
 			SynthesisRAWMaryXMLInput l_synth = new SynthesisRAWMaryXMLInput(l_ttslocal);
-			l_synth.Utter(args[1], new CountDownLatch(1));
+			l_synth.Utter(args[1], new CountDownLatch(0));
 		}
         catch (Exception e) {
         	System.out.println(e);
