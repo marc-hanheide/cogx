@@ -26,6 +26,7 @@ import java.io.*;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 import marytts.client.MaryClient;
 
@@ -367,7 +368,7 @@ public static void main(String[] args) {
 		l_synth.m_ttsLocal.m_AudioFileName=l_xmlfile;
 		l_synth.m_ttsLocal.m_SaveAudio2Wav=Boolean.valueOf(args[3]);
 		l_synth.m_ttsLocal.m_voiceName=l_voicename;
-		l_synth.Utter(l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename));
+		l_synth.Utter(l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename), new CountDownLatch(0));
 		
 		if(!l_synth.m_ttsLocal.m_SaveAudio2Wav){
 			File f = new File(l_convert.GenratedXMLFileLocation.concat(l_convert.g_xmlfilename));
