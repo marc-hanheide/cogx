@@ -662,7 +662,7 @@ public class MaryTTS extends ManagedComponent {
 			//             new TTSRemote(m_mary, m_voiceName, m_bSilentModeRemote);
 
 			if (!startingUp.equals("")) { 
-				m_ttsLocal.speak(startingUp);
+				m_ttsLocal.speak(startingUp, new CountDownLatch(0));
 			}
 
 		}
