@@ -34,6 +34,7 @@ import marytts.util.data.audio.AudioPlayer;
 import java.io.File;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
 /**
  * TTS system for local synthesis (ie. using directly accessible speakers).
  */
@@ -47,42 +48,42 @@ public class MaryTTSLocal {
 	private  String m_outputType = "AUDIO";
 	private  String m_audioType = "WAVE";
 	//private  String m_locale = "en_US"; for Mary.4
-	
+
 	// The name of the voice to be used
 	//private   String m_voiceName = "female";
 	public   String m_voiceName = "us2"; //MBROLO male sounds
-		
+
 	// System lock
 	protected boolean m_isFree = true ;
-	
+
 	// Silence
 	private boolean m_bSilentMode;
-	
+
 	//Prosodic changes 
 	private ByteArrayOutputStream m_baos;
-	
+
 	//Whether to save wav files or not.
 	public  boolean m_SaveAudio2Wav=false;
 	public  String m_AudioFileName=null;
-	
+
 	/** 
 	 * Create a local TTS system.
 	 *
 	 * @param mary A mary client
 	 * @param voiceName a string representing the voice name 
 	          (must correspond to one voice installed on the mary server)
-	* @param m_bSilentMode true if system must remain silent, false otherwise
-	*/
-	
+	 * @param m_bSilentMode true if system must remain silent, false otherwise
+	 */
+
 	public MaryTTSLocal (MaryClient mary, String inputType, String voiceName, boolean bSilentMode,  String audioType) {
-			this.m_mary = mary ;
-			this.m_inputType = inputType;
-			this.m_voiceName = voiceName ;
-			this.m_bSilentMode = bSilentMode;
-			this.m_audioType = audioType;
-							
+		this.m_mary = mary ;
+		this.m_inputType = inputType;
+		this.m_voiceName = voiceName ;
+		this.m_bSilentMode = bSilentMode;
+		this.m_audioType = audioType;
+
 	}
-	
+
 	/* for Mary.4
 	public TTSLocal (MaryClient mary, String voiceName, boolean bSilentMode, String locale, String audioType) {
 		this.m_mary = mary ;
@@ -92,7 +93,7 @@ public class MaryTTSLocal {
 		this.m_locale=locale;
 }*/
 
-	
+
 	/**
 	 * Utters something using the local TTS system.
 	 *
@@ -101,95 +102,90 @@ public class MaryTTSLocal {
 	 * 
 	 * @param tosay the string to utter
 	 */
-	   public void  speak(String tosay)   {
-		   if (m_bSilentMode)   System.out.println("(silent mode) - \"" + tosay + "\"");
-		   else {
-			   try {
+	public void  speak(String tosay, final CountDownLatch finished)   {
+		if (m_bSilentMode)   System.out.println("(silent mode) - \"" + tosay + "\"");
+		else {
+			try {
 				m_baos = new ByteArrayOutputStream();
 				//m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
 				//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-//		   		m_mary.process(tosay, m_inputType, "AUDIO", "en_GB", m_audioType, m_voiceName, "", "WAVE", null, m_baos);
+				//		   		m_mary.process(tosay, m_inputType, "AUDIO", "en_GB", m_audioType, m_voiceName, "", "WAVE", null, m_baos);
 
 				m_mary.process(tosay, "TEXT", "AUDIO", "en-GB", "WAVE", m_voiceName, m_baos);
 
 				AudioInputStream ais = AudioSystem.getAudioInputStream(new ByteArrayInputStream(m_baos.toByteArray()));
-			        LineListener lineListener = new LineListener() {
-			            public void update(LineEvent event) {
-			                if (event.getType() == LineEvent.Type.START) {
-			                	// 2
-			                    System.err.println("Audio started playing.");
-			                } else if (event.getType() == LineEvent.Type.STOP) {
-			                	// 3
-			                    System.err.println("Audio stopped playing.");
-			                } else if (event.getType() == LineEvent.Type.OPEN) {
-			                	// 1
-			                  	System.err.println("Audio line opened.");	
-			                  	m_isFree = false;
-			                  	notifyAll();
-			                } else if (event.getType() == LineEvent.Type.CLOSE) {
-			                	// 4
-			                    System.err.println("Audio line closed.");
-			                    m_isFree = true;
-			                    notifyAll();
-			                }
-			            }
-			        };
+				LineListener lineListener = new LineListener() {
+					public void update(LineEvent event) {
+						if (event.getType() == LineEvent.Type.START) {
+							// 2
+							System.err.println("Audio started playing.");
+						} else if (event.getType() == LineEvent.Type.STOP) {
+							// 3
+							System.err.println("Audio stopped playing.");
+						} else if (event.getType() == LineEvent.Type.OPEN) {
+							// 1
+							System.err.println("Audio line opened.");	
+						} else if (event.getType() == LineEvent.Type.CLOSE) {
+							// 4
+							System.err.println("Audio line closed.");
+							finished.countDown();
+						}
+					}
+				};
 
-			        if (!m_isFree) this.wait();
-			        AudioPlayer ap = new AudioPlayer(ais, lineListener);
-			        if (!m_isFree) this.wait();
-			        ap.start();
-			        
-			        if(m_SaveAudio2Wav){
-			        	 
-			        	//File name
-			        	m_AudioFileName=m_AudioFileName.replaceAll(".xml",".wav");
-			        	System.out.println("Wave file saved to: "+ m_AudioFileName );
-			        	File file = new File(m_AudioFileName);
-			        	AudioInputStream ais_w = AudioSystem.getAudioInputStream(
-							     new ByteArrayInputStream(m_baos.toByteArray()));
-			        	AudioSystem.write(ais_w, AudioFileFormat.Type.WAVE, file);
-					  }
-			       			   
-		   }
-		   catch (Exception e) {e.printStackTrace() ; } 
-		   }
-		   
-	   } // end speak
-	
-		/**
-		 * Utters something using the local TTS system.
-		 *
-		 * <p> Note: at least one audio line (ie. speakers) must be available and accessible 
-		 * on the local machine.
-		 * 
-		 * @param tosay the string to utter
-		 */
-		   public void  SaveToFile(String tosay)   {
-			   if (m_bSilentMode)
-				   System.out.println("(silent mode) - \"" + tosay + "\"");
-			   
-			   else {
-			   try {
-			         
-					m_baos = new ByteArrayOutputStream();
-			        //m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
-				   	//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
-				   	m_mary.process(tosay, m_inputType, "AUDIO",
-			   			    "en-US", m_audioType, m_voiceName, "", "", null, m_baos);
-			    	 		   	 
-				   	m_AudioFileName = m_AudioFileName.replaceAll(".xml",".wav");
-		        	System.out.println("Wave file saved to: "+ m_AudioFileName );
-		        	
-				   	File file = new File(m_AudioFileName);
-				    AudioInputStream ais = AudioSystem.getAudioInputStream(
-				     new ByteArrayInputStream(m_baos.toByteArray()));
-				    AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
-				    
-			   }
-			   catch (Exception e) {e.printStackTrace() ; } 
-			   }
-			   
-		   } // end SpeakAndSaveToFile
-			
+				AudioPlayer ap = new AudioPlayer(ais, lineListener);
+				ap.start();
+
+				if(m_SaveAudio2Wav){
+
+					//File name
+					m_AudioFileName=m_AudioFileName.replaceAll(".xml",".wav");
+					System.out.println("Wave file saved to: "+ m_AudioFileName );
+					File file = new File(m_AudioFileName);
+					AudioInputStream ais_w = AudioSystem.getAudioInputStream(
+							new ByteArrayInputStream(m_baos.toByteArray()));
+					AudioSystem.write(ais_w, AudioFileFormat.Type.WAVE, file);
+				}
+
+			}
+			catch (Exception e) {e.printStackTrace() ; } 
+		}
+
+	} // end speak
+
+	/**
+	 * Utters something using the local TTS system.
+	 *
+	 * <p> Note: at least one audio line (ie. speakers) must be available and accessible 
+	 * on the local machine.
+	 * 
+	 * @param tosay the string to utter
+	 */
+	public void  SaveToFile(String tosay)   {
+		if (m_bSilentMode)
+			System.out.println("(silent mode) - \"" + tosay + "\"");
+
+		else {
+			try {
+
+				m_baos = new ByteArrayOutputStream();
+				//m_mary.process(tosay, m_inputType, m_outputType, m_locale, m_audioType, m_voiceName, baos); for Mary.4
+				//m_mary.process(tosay, m_inputType, m_outputType, m_audioType, m_voiceName, m_baos);
+				m_mary.process(tosay, m_inputType, "AUDIO",
+						"en-US", m_audioType, m_voiceName, "", "", null, m_baos);
+
+				m_AudioFileName = m_AudioFileName.replaceAll(".xml",".wav");
+				System.out.println("Wave file saved to: "+ m_AudioFileName );
+
+				File file = new File(m_AudioFileName);
+				AudioInputStream ais = AudioSystem.getAudioInputStream(
+						new ByteArrayInputStream(m_baos.toByteArray()));
+				AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
+
+			}
+			catch (Exception e) {e.printStackTrace() ; } 
+		}
+
+	} // end SpeakAndSaveToFile
+
 }

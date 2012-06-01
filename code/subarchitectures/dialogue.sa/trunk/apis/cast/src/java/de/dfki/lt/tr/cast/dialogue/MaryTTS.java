@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.io.File;
 
 // Dialogue API slice
@@ -456,7 +457,9 @@ public class MaryTTS extends ManagedComponent {
 							//Save Audio to wav options
 
 							SynthesisRAWMaryXMLInput l_synthsis = new SynthesisRAWMaryXMLInput(m_ttsLocal);
-							l_synthsis.Utter(m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename));
+							CountDownLatch finished = new CountDownLatch(1);
+							l_synthsis.Utter(m_GenrtdXMLFileLoc.concat(l_convert.g_xmlfilename), finished);
+							finished.await();
 
 							//Delete the generated RAWMaryXML
 							if(!m_SaveGenrtdXMLFile){
@@ -468,15 +471,17 @@ public class MaryTTS extends ManagedComponent {
 										throw new IllegalArgumentException("Delete RamMaryXMl failed");
 								}
 							}
-							Thread.sleep(2500);
+//							Thread.sleep(2500);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}else {
 						m_ttsLocal.m_inputType="TEXT";
-						m_ttsLocal.speak(soi.phonString);
-						Thread.sleep(2500);
+						CountDownLatch finished = new CountDownLatch(1);
+						m_ttsLocal.speak(soi.phonString, finished);
+						finished.await();
+//						Thread.sleep(2500);
 					}
 					// Synthesize speech remotely
 					/**          byte[] data = ttsRemote.speak(soi.phonString);
