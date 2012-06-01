@@ -1373,7 +1373,9 @@ void SpatialControl::updateGridMaps() {
   bool addFail = false;
   for (int i = iCenter - maxDelta; i < iCenter + maxDelta; i++) {
     for (int j = jCenter; j < jCenter + maxDelta; j++) {
-      if ((*m_lgm)(i, j) == '1') {
+      if (((*m_lgm)(i, j) == '1') || (i >= m_lgm->getSize()) || (j
+          >= m_lgm->getSize()) || (i <= -m_lgm->getSize()) || (j
+          <= -m_lgm->getSize())) {
         double xWT, yWT;
         m_lgm->index2WorldCoords(i, j, xWT, yWT);
         if (!m_LMap.addObstacle(xWT, yWT, 1))
@@ -1382,7 +1384,9 @@ void SpatialControl::updateGridMaps() {
       }
     }
     for (int j = jCenter; j > jCenter - maxDelta; j--) {
-      if ((*m_lgm)(i, j) == '1') {
+      if (((*m_lgm)(i, j) == '1') || (i >= m_lgm->getSize()) || (j
+          >= m_lgm->getSize()) || (i <= -m_lgm->getSize()) || (j
+          <= -m_lgm->getSize())) {
         double xWT, yWT;
         m_lgm->index2WorldCoords(i, j, xWT, yWT);
         if (!m_LMap.addObstacle(xWT, yWT, 1))
