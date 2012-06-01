@@ -30,13 +30,13 @@ void PredictingActiveLearnScenario::init (boost::program_options::variables_map 
 	boost::cmatch matches;
 	string prefix = vm["prefix"].as<string>();
 	// cout << matches.size() << endl;
-	path p(prefix);
+	fs::path p(prefix);
 	if(!exists(p)) {
 		cerr<<p.leaf()<<" does not exist." << endl;
 		exit (-1);
 	}
 
-	directory_iterator dir_iter (p), dir_end;
+	fs::directory_iterator dir_iter (p), dir_end;
 	for (;dir_iter != dir_end; ++dir_iter)
 	{
 		string dirstring (dir_iter->leaf().c_str());
@@ -93,7 +93,13 @@ void PredictingActiveLearnScenario::chooseAction () {
 	}
 	else
 	{
-		int startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
+		int startPosition;
+
+		if (startingPosition == 0)
+			startPosition = availableStartingPositions[floor(randomG.nextUniform (0.0,Real(availableStartingPositions.size())))];
+		else
+			startPosition = startingPosition;
+		
 		//action.pushDuration = floor (randomG.nextUniform (3.0, 6.0));
 		chunk.action.pushDuration = 3.0;
 		chunk.action.horizontalAngle = chooseAngle(Real(60.0), Real(120.0));
@@ -239,7 +245,7 @@ void PredictingActiveLearnScenario::updateOutputError ()
 					double predictedLabel;
 					try {
 						predictedLabel = boost::lexical_cast<double>(currentPredictedOutput[i]);
-					} catch(bad_lexical_cast&) {
+					} catch(boost::bad_lexical_cast&) {
 						cerr << "Error converting string" << endl;
 					}
 					cout << "predicted: " << predictedLabel << endl;
@@ -276,18 +282,20 @@ void PredictingActiveLearnScenario::updateAvgError ()
 		for (unsigned int i=0; i<learningData.currentPredictedPfSeq.size(); i++)
 		{
 			double error = 0.0;
-			error += pow(learningData.currentPredictedPfSeq[i].p.v1 - learningData.currentChunkSeq[i].object.objectPose.p.v1, 2);
-			error += pow(learningData.currentPredictedPfSeq[i].p.v2 - learningData.currentChunkSeq[i].object.objectPose.p.v2, 2);
-			error += pow(learningData.currentPredictedPfSeq[i].p.v3 - learningData.currentChunkSeq[i].object.objectPose.p.v3, 2);
+			error += pow(normalization(learningData.currentPredictedPfSeq[i].p.v1, learningData.featLimits.minX, learningData.featLimits.maxX) - normalization(learningData.currentChunkSeq[i].object.objectPose.p.v1, learningData.featLimits.minX, learningData.featLimits.maxX), 2);
+			error += pow(normalization(learningData.currentPredictedPfSeq[i].p.v2, learningData.featLimits.minY, learningData.featLimits.maxY) - normalization(learningData.currentChunkSeq[i].object.objectPose.p.v2, learningData.featLimits.minY, learningData.featLimits.maxY), 2);
+			error += pow(normalization(learningData.currentPredictedPfSeq[i].p.v3, learningData.featLimits.minZ, learningData.featLimits.maxZ) - normalization(learningData.currentChunkSeq[i].object.objectPose.p.v3, learningData.featLimits.minZ, learningData.featLimits.maxZ), 2);
 			Real predRoll, predPitch, predYaw;
 			learningData.currentPredictedPfSeq[i].R.toEuler (predRoll, predPitch, predYaw);
-			error += pow(predRoll - learningData.currentChunkSeq[i].object.obRoll, 2);
-			error += pow(predPitch - learningData.currentChunkSeq[i].object.obPitch, 2);
-			error += pow(predYaw - learningData.currentChunkSeq[i].object.obYaw, 2);
+			error += pow(normalization(predRoll,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obRoll, -REAL_PI, REAL_PI), 2);
+			error += pow(normalization(predPitch,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obPitch, -REAL_PI, REAL_PI), 2);
+			error += pow(normalization(predYaw,-REAL_PI, REAL_PI) - normalization(learningData.currentChunkSeq[i].object.obYaw,-REAL_PI, REAL_PI), 2);
 			error = sqrt (error);
+			cout << "error: " << error << endl;
 			avgerror += error;
 		}
 		avgerror /= learningData.currentChunkSeq.size();
+		cout << "avg error: " << avgerror << endl;
 		avgerrors.push_back (avgerror);
 	}
 }

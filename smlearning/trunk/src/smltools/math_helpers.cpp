@@ -39,7 +39,7 @@ double fRand(double min, double max) {
 ///
 ///calculate position to direct the arm given parameters set in the learning scenario
 ///
-void set_point_coordinates(Vec3& position, const Vec3& normalVec, const Vec3& orthogonalVec, const Real& spacing, const Real& horizontal, const Real& vertical) {
+void set_point_coordinates(golem::Vec3& position, const golem::Vec3& normalVec, const golem::Vec3& orthogonalVec, const golem::Real& spacing, const golem::Real& horizontal, const golem::Real& vertical) {
 	position.v1 += (spacing*normalVec.v1); 
 	position.v2 += (spacing*normalVec.v2); 
 	position.v1 += (horizontal*orthogonalVec.v1); 
@@ -51,7 +51,7 @@ void set_point_coordinates(Vec3& position, const Vec3& normalVec, const Vec3& or
 ///
 ///calls set_point_coordinates for a discrete canonical number of different actions
 ///
-void set_coordinates_into_target(const int startPosition, Vec3& positionT,const Vec3& polyflapNormalVec, const Vec3& polyflapOrthogonalVec,const Real& dist, const Real& side, const Real& center, const Real& top, const Real& over) {
+void set_coordinates_into_target(const int startPosition, golem::Vec3& positionT,const golem::Vec3& polyflapNormalVec, const golem::Vec3& polyflapOrthogonalVec,const golem::Real& dist, const golem::Real& side, const golem::Real& center, const golem::Real& top, const golem::Real& over) {
 
 
 	//set it's coordinates into target
@@ -62,7 +62,7 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 2:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, golem::Real(0.0), over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front down middle (2)");
 		break;
 
@@ -77,7 +77,7 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 5:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, golem::Real(0.0), center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front center middle (5)");
 		break;
 
@@ -92,7 +92,7 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 8:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, Real(0.0), top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, dist, golem::Real(0.0), top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Front up middle (8)");
 		break;
 
@@ -107,7 +107,7 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 11:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, golem::Real(0.0), over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back down middle (11)");
 		break;
 
@@ -122,7 +122,7 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 14:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, golem::Real(0.0), center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back center middle (14)");
 		break;
 
@@ -137,7 +137,7 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 17:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, Real(0.0), top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, -dist, golem::Real(0.0), top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Back up middle (17)");
 		break;
 
@@ -147,32 +147,32 @@ void set_coordinates_into_target(const int startPosition, Vec3& positionT,const 
 		break;
 
 	case 19:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, golem::Real(0.0), side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side down left (19)");
 		break;
 
 	case 20:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, over);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, golem::Real(0.0), -side, over);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side down right (20)");
 		break;
 
 	case 21:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, golem::Real(0.0), side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side center left (21)");
 		break;
 
 	case 22:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, center);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, golem::Real(0.0), -side, center);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side center right (22)");
 		break;
 
 	case 23:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, golem::Real(0.0), side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side up left (23)");
 		break;
 
 	case 24:
-		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, Real(0.0), -side, top);
+		set_point_coordinates(positionT, polyflapNormalVec, polyflapOrthogonalVec, golem::Real(0.0), -side, top);
 		//context->getLogger()->post(Message::LEVEL_INFO, "Side up right (24)");
 		break;
 

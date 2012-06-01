@@ -32,8 +32,8 @@
 #include <Golem/Phys/Object.h>
 #include <metalearning/data_structs.h>
 
-using namespace golem;
-using namespace std;
+// using namespace golem;
+// using namespace std;
 
 namespace smlearning {
 
@@ -70,24 +70,24 @@ public:
 		/** Sets the parameters to the default values */
 		void setToDefault();			
 
-		Vec3 		dimensions;
+		golem::Vec3 		dimensions;
 		FeatureVector 	initialFeatureVector;
 		golem::Mat34 	initialObjectPose;
 		golem::Real 	initialObRoll, initialObPitch, initialObYaw;
-		Vec3 		startRotation;
-		Vec3		startPosition;
+		golem::Vec3 		startRotation;
+		golem::Vec3		startPosition;
 		/** vertical distance from the ground considering fingertip radius */
-		Real over;
+		golem::Real over;
 		/** distance from the front/back of the polyflap */
-		Real dist; 
+		golem::Real dist; 
 		/** distance from the side of the polyflap */
-		Real side; 
+		golem::Real side; 
 		/** center of the polyflap */
-		Real center; 
+		golem::Real center; 
 		/** distance from the top of the polyflap */
-		Real top; 
+		golem::Real top; 
 		/** polyflap width */
-		Real width;
+		golem::Real width;
 
 	protected:
 		/** Creates the object from the description. */
@@ -107,11 +107,11 @@ public:
 	/** returns the feature vector of the object */
 	inline FeatureVector getFeatureVector() const {return _featureVector;}
 	/** returns the normal vector */
-	inline Vec3 getNormalVec() const{return _normalVec;}
+	inline golem::Vec3 getNormalVec() const{return _normalVec;}
 	/** returns orienation of the object */
-	inline Vec3 getOrientation() const{return _orientation;}
+	inline golem::Vec3 getOrientation() const{return _orientation;}
 	/** returns the orthogonal vector*/
-	inline Vec3 getOrthogonalVec() const {return _orthogonalVec;}
+	inline golem::Vec3 getOrthogonalVec() const {return _orthogonalVec;}
 	/** returns the pitch of the object */
 	inline golem::Real getPitch() const {return _obPitch;}
 	/** returns the position of the object */
@@ -150,15 +150,15 @@ private:
 	/** feature vector (here any vectorial representation is possible) */
 	FeatureVector 		_featureVector;
 	/** normal vector of the object */
-	Vec3			_normalVec;
+	golem::Vec3			_normalVec;
 	/** Object orientation in Euler coordinates */
 	golem::Real 		_obRoll, _obPitch, _obYaw;
 	/** orientation of the object */
-	Vec3			_orientation;
+	golem::Vec3		_orientation;
 	/** orthogonal vector of the object */
-	Vec3			_orthogonalVec;
+	golem::Vec3		_orthogonalVec;
 	/** coordinates vector used for target description */
-	Vec3 			_position;
+	golem::Vec3		_position;
 		
 		
 };

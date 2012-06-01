@@ -8,14 +8,16 @@
  *
  */
 
-#include <scenario/TrackerThread.h>
+#include <scenario/TrackerScenario.h>
 
 
 using namespace smlearning;
 
 int main(int argc, char *argv[]) {
 
-	TrackerThread th;
+	// TrackerThread th;
+	// th.OnTask ();
+	TrackerScenarioApp ().main(argc, argv);
 
 	return 0;
 }

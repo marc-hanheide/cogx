@@ -27,8 +27,9 @@
 
 #include <vector>
 #include <metalearning/CrySSMEx.h>
+#include <boost/unordered_map.hpp>
 
-using namespace std;
+// using namespace std;
 
 namespace smlearning {
 
@@ -41,16 +42,16 @@ namespace smlearning {
 */
 struct GNGSMRegion {
 
-	typedef map<int, GNGSMRegion> RegionsMap;
+	typedef boost::unordered_map<int, GNGSMRegion> RegionsMap;
 
 	/** Encapsulation of input/output quantizers */
 	CrySSMEx cryssmex;
 	/** index coming from a map of regions in the Scenario */
 	int index;
 	/** vector of minimum values of the motor context vectors in the dataset */
-	vector<double> minValuesSMVector;
+	std::vector<double> minValuesSMVector;
 	/** vector of maximum values of the motor context vectors in the dataset */
-	vector<double> maxValuesSMVector;
+	std::vector<double> maxValuesSMVector;
 	/** size of the motor context */
 	int sMContextSize;
 	/** instances corresponding to the region */
@@ -58,13 +59,13 @@ struct GNGSMRegion {
 	// /** vector corresponding to history of starting positions */
 	// vector<double> startingPositionsHistory;	
 	/** vector of history of avg errors for input quantizer */
-	vector<double> inputqErrorsHistory;
+	std::vector<double> inputqErrorsHistory;
 	/** vector of history of avg errors for output quantizer */
-	vector<double> outputqErrorsHistory;
+	std::vector<double> outputqErrorsHistory;
 	/** vector of history of graph size for input quantizer */
-	vector<double> inputqGraphSizeHistory;
+	std::vector<double> inputqGraphSizeHistory;
 	/** vector of history of graph size for output quantizer */
-	vector<double> outputqGraphSizeHistory;
+	std::vector<double> outputqGraphSizeHistory;
 
 	GNGSMRegion () { }
 	

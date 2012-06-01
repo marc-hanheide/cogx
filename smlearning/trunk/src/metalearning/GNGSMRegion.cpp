@@ -27,6 +27,11 @@
 #include <dynamic_system_modeling/dynamic_system_event_sequence_set.hh>
 #include <cryssmex/cryssmex.hh>
 
+using namespace ssm;
+using namespace cryssmex;
+using namespace naming;
+using namespace quantizing;
+
 namespace smlearning {
 
 GNGSMRegion::GNGSMRegion (int idx, int smCtxtSize/*, int created = 0*/) :

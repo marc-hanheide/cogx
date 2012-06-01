@@ -7,6 +7,12 @@
  */
 #include <metalearning/CrySSMEx.h>
 
+using namespace ssm;
+using namespace cryssmex;
+using namespace basic_stochastics;
+using namespace naming;
+using namespace quantizing;
+
 namespace smlearning {
 
 CrySSMEx::CrySSMEx ()
@@ -44,6 +50,8 @@ const CrySSMEx& CrySSMEx::operator= (const CrySSMEx& c)
 	{
 		if (c.ssm->is_moore ())
 			ssm = new Moore_SSM (static_cast<Moore_SSM&>(*c.ssm));
+		else if (c.ssm->is_mealy ())
+			ssm = new Mealy_SSM (static_cast<Mealy_SSM&>(*c.ssm));
 	}
 	else ssm = 0;
 			
