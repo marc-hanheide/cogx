@@ -116,18 +116,28 @@ public class MaryTTSLocal {
 			        LineListener lineListener = new LineListener() {
 			            public void update(LineEvent event) {
 			                if (event.getType() == LineEvent.Type.START) {
+			                	// 2
 			                    System.err.println("Audio started playing.");
 			                } else if (event.getType() == LineEvent.Type.STOP) {
+			                	// 3
 			                    System.err.println("Audio stopped playing.");
 			                } else if (event.getType() == LineEvent.Type.OPEN) {
-			                  	System.err.println("Audio line opened.");			                 
+			                	// 1
+			                  	System.err.println("Audio line opened.");	
+			                  	m_isFree = false;
+			                  	notifyAll();
 			                } else if (event.getType() == LineEvent.Type.CLOSE) {
-			                    System.err.println("Audio line closed.");			                    
+			                	// 4
+			                    System.err.println("Audio line closed.");
+			                    m_isFree = true;
+			                    notifyAll();
 			                }
 			            }
 			        };
 
+			        if (!m_isFree) this.wait();
 			        AudioPlayer ap = new AudioPlayer(ais, lineListener);
+			        if (!m_isFree) this.wait();
 			        ap.start();
 			        
 			        if(m_SaveAudio2Wav){
