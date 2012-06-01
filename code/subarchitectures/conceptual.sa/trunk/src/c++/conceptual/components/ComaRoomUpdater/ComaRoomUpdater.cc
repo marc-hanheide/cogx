@@ -127,7 +127,7 @@ void ComaRoomUpdater::runComponent()
 				debug("Updating ComaRoom ID:%d with room category information ...", it->first);
 				try
 				{
-					lockEntry(it->second, cdl::LOCKEDODR);
+					lockEntry(it->second, cdl::LOCKEDOD);
 					// Get the coma room
 					comadata::ComaRoomPtr comaRoomPtr = getMemoryEntry<comadata::ComaRoom>(it->second);
 

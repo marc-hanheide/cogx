@@ -105,13 +105,13 @@ void QueryHandler::retrieveInferenceResult(std::string queryId,
 		// Any results received?
 		if (_receivedResults.empty())
 		{
-			debug("retrieveInferenceResult waiting for query result!");
+			log("retrieveInferenceResult waiting for query result!");
 
 			// Nope, wait
 			pthread_cond_wait(&_queryAddedSignalCond, &_queryAddedSignalMutex);
 		}
 
-		debug("retrieveInferenceResult received query result!");
+		log("retrieveInferenceResult received query result!");
 
 		// Something must have arrived, check if that's what we want
 		std::list<ConceptualData::InferenceResultPtr>::iterator rrIt;
