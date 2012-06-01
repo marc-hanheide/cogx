@@ -141,7 +141,7 @@ public class PlanVerbalizer {
 		
 		messages = m_contentDeterminator.determineMessages(h);
 			
-		return "Got " + ((messages == null) ? "null" : Integer.toString(messages.size())) + " messages";
+		return "Got " + ((hlist == null) ? "null" : Integer.toString(hlist.size())) + " messages";
 	}
 	
 	
