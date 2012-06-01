@@ -299,7 +299,7 @@ void PlaceholderPropertyUpdater::updateRoomCategoryPlaceholderProperty(int place
 			if (placeholderExists(placeholderId))
 			{
 
-				lockEntry(wmAddress, cdl::LOCKEDODR);
+				lockEntry(wmAddress, cdl::LOCKEDOD);
 				SpatialProperties::RoomCategoryPlaceholderPropertyPtr propertyPtr =
 						getMemoryEntry<SpatialProperties::RoomCategoryPlaceholderProperty>(wmAddress);
 				setRoomCategoryPlaceholderPropertyDistribution(propertyPtr, pd);

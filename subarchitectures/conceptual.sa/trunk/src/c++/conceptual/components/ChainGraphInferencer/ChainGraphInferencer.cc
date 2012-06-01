@@ -216,7 +216,7 @@ void ChainGraphInferencer::runComponent()
 
 			pthread_mutex_unlock(&_inferenceQueryAddedSignalMutex);
 
-			debug("Processing inference query '%s' (type = %s)",
+			log("Processing inference query '%s' (type = %s)",
 							q.queryPtr->queryString.c_str(),
 							(q.queryPtr->type==ConceptualData::STANDARDQUERY)?"standard":
 							((q.queryPtr->type==ConceptualData::IMAGINARYQUERY)?"imaginary":"factor"));
@@ -298,7 +298,7 @@ void ChainGraphInferencer::runComponent()
 			} // if (!queryVariables.empty())
 
 			// Return result
-			debug("Sending out inference result for query '"+q.queryPtr->queryString+"'");
+			log("Sending out inference result for query '"+q.queryPtr->queryString+"'");
 			string inferenceResultId = newDataID();
 			addToWorkingMemory<ConceptualData::InferenceResult>(inferenceResultId, inferenceResultPtr);
 
@@ -337,7 +337,7 @@ void ChainGraphInferencer::inferenceQueryAdded(const cast::cdl::WorkingMemoryCha
 	q.wmAddress = wmChange.address;
 	_receivedQueries.push_back(q);
 
-	debug("Received inference query '"+inferenceQueryPtr->queryString+"'");
+	log("Received inference query '"+inferenceQueryPtr->queryString+"'");
 
 	// Signal to make an inference and update coma room structs.
 	pthread_cond_signal(&_inferenceQueryAddedSignalCond);
