@@ -57,6 +57,7 @@ public class RelativeAreaOverlapGenerator {
 								.parseDouble(split[i + 3])));
 				lastSuccess = (i + 3);
 			} catch (NumberFormatException e) {
+				System.out.println("Number format exception");
 				// HACK this not really a good way of solving this problem
 			}
 		}
