@@ -92,6 +92,9 @@ public class LineMapImageGenerator {
 			if (line.y1 > maxY) {
 				maxY = line.y1;
 			}
+			if (line.x1 < minX) {
+				minX = line.x1;
+			}
 			if (line.y1 < minY) {
 				minY = line.y1;
 			}
