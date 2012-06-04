@@ -82,24 +82,24 @@ class DynamicTest(common.PddlTest):
         
         st = state.State.from_problem(prob)
         oldlen = len(prob)
-        a_create.instantiate([prob["agent"], prob["tru1"]], prob)
-        st.apply_effect(a_create.effect)
+        with a_create.instantiate([prob["agent"], prob["tru1"]], prob):
+            st.apply_effect(a_create.effect)
 
-        b = Builder(prob)
-        
-        self.assertEqual(len(prob), oldlen+1)
-        self.assert_("package0" in prob)
-        svar = b.svar("location-of", "package0")
-        self.assert_(st[svar] == prob["tru1"])
+            b = Builder(prob)
 
-        st.apply_effect(a_create.effect)
-        st.apply_effect(a_create.effect)
+            self.assertEqual(len(prob), oldlen+1)
+            self.assert_("package0" in prob)
+            svar = b.svar("location-of", "package0")
+            self.assert_(st[svar] == prob["tru1"])
 
-        self.assertEqual(len(prob), oldlen+3)
-        self.assert_("package1" in prob)
-        self.assert_("package2" in prob)
-        svar1 = b.svar("location-of", "package2")
-        self.assert_(st[svar1] == prob["tru1"])
+            st.apply_effect(a_create.effect)
+            st.apply_effect(a_create.effect)
+
+            self.assertEqual(len(prob), oldlen+3)
+            self.assert_("package1" in prob)
+            self.assert_("package2" in prob)
+            svar1 = b.svar("location-of", "package2")
+            self.assert_(st[svar1] == prob["tru1"])
         
     # def testModalAction(self):
     #     """Testing modal action parsing"""

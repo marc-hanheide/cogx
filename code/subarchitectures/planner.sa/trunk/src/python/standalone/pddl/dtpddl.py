@@ -29,6 +29,8 @@ total_p_cost = Function("total-p-cost", [], t_number)
 probability = Function("probability", [], t_number)
 p_cost_value = 200
 
+unknown_p_cost = 400
+
 pddl_module = True
 
 default_types = [t_node, t_node_choice]
@@ -539,282 +541,6 @@ class DTRule(scope.Scope):
         return s
     
 
-        
-class DTRuleOld(scope.Scope):
-    def __init__(self, function, args, add_args, conditions, values, domain, name=None):
-        scope.Scope.__init__(self, args+add_args, domain)
-        self.name = (name if name else function.name)
-        self.function = function
-        self.args = args
-        self.add_args = add_args
-        self.conditions = [c.copy(new_scope=self) for c in conditions]
-        self.values = [tuple(self.lookup(c)) for c in values]
-        self.inst_func_init = False
-
-    def deps(self):
-        funcs = sum((lit.visit(visitors.collect_functions) for lit in self.conditions), [])
-        return set(f for f in funcs if f != self.function)
-
-    def depends_on(self, other):
-        return other.function in self.deps()
-    
-    def copy(self, newdomain=None):
-        """Create a deep copy of this Rule.
-
-        Arguments:
-        newdomain -- if not None, the copy will be created inside this scope."""
-        if not newdomain:
-            newdomain = self.parent
-            
-        r = DTRule(self.function, [], [], [], [], newdomain, self.name)
-        r.args = r.copy_args(self.args)
-        r.add_args = r.copy_args(self.add_args)
-        r.conditions = [c.copy(new_scope=r) for c in self.conditions]
-        r.values = [tuple(r.lookup(c)) for c in self.values]
-        
-        return r
-
-    def instantiate(self, mapping, parent=None):
-        """Instantiate the Parameters of this action.
-
-        Arguments:
-        mapping -- either a dictionary from Parameters to TypedObjects
-        or a list of TypedObjects. In the latetr case, the list is
-        assumed to be in the order of the Action's Parameters."""
-        if not isinstance(mapping, dict):
-            mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
-        scope.Scope.instantiate(self, mapping, parent)
-
-    def instantiate_all(self, mapping, parent=None):
-        """Instantiate the Parameters of this action.
-
-        Arguments:
-        mapping -- either a dictionary from Parameters to TypedObjects
-        or a list of TypedObjects. In the latetr case, the list is
-        assumed to be in the order of the Action's Parameters."""
-        if not isinstance(mapping, dict):
-            mapping = dict((param.name, c) for (param, c) in zip(self.args+self.add_args, mapping))
-        scope.Scope.instantiate(self, mapping, parent)
-
-    def prepare_inst_func(self):
-        self.pcond = None
-        if len(self.values) == 1 and not isinstance(self.values[0][0], predicates.ConstantTerm):
-            self.pcond = conditions.LiteralCondition(builtin.gt, [self.values[0][0], predicates.Term(0)])
-
-        self.lit_by_arg = defaultdict(set)
-        self.free_args = {}
-
-        for lit in self.conditions + [self.pcond]:
-            if lit:
-                free = lit.free()
-                self.free_args[lit] = free
-                for arg in free:
-                    self.lit_by_arg[arg].add(lit)
-        self.inst_func_init = True
-
-    def get_inst_func(self, st, ignored_cond=None):
-        import state
-        def args_visitor(term, results):
-            if isinstance(term, FunctionTerm):
-                return sum(results, [])
-            return [term]
-
-        if not self.inst_func_init:
-            self.prepare_inst_func()
-                    
-        prev_mapping = {}
-        checked = set()
-            
-        def inst_func(mapping, args):
-            next_candidates = []
-            if checked:
-                for k,v in prev_mapping.iteritems():
-                    if mapping.get(k, None) != v:
-                        checked.difference_update(self.lit_by_arg[k])
-            prev_mapping.update(mapping)
-            
-            #print [a.name for a in mapping.iterkeys()]
-            forced = None
-            forced_lit = None
-            for lit in self.conditions + [self.pcond]:
-                if lit == ignored_cond or lit in checked or lit is None:
-                    continue
-                # print lit.pddl_str()
-
-                if lit.predicate == builtin.equals and isinstance(lit.args[0], FunctionTerm) and isinstance(lit.args[1], VariableTerm):
-                    v = lit.args[-1]
-                    if all(a.is_instantiated() for a in lit.args[0].args if isinstance(a, VariableTerm)) and  isinstance(v, VariableTerm) and not v.is_instantiated():
-                        svar = state.StateVariable.from_literal(lit, st)
-                        forced = v.object, st[svar]
-                        forced_lit = lit
-
-                if all(a.is_instantiated() for a in self.free_args[lit]):
-                    if lit == self.pcond:
-                        svar = state.StateVariable.from_literal(lit, st)
-                        val = st[svar]
-                        if val == builtin.UNKNOWN or val.value <= 0.001:
-                            # print "failed:", svar, val
-                            return None, None
-                    else:
-                        fact = state.Fact.from_literal(lit, st)
-                        #cvar = state.StateVariable(t.function, state.instantiate_args(t.args))
-                        exst = st.get_extended_state([fact.svar])
-                        #val = st.evaluate_term(v)
-                        if exst[fact.svar] != fact.value:
-                            # print "failed:", fact, exst[fact.svar]
-                            return None, None
-                    checked.add(lit)
-                else:
-                    next_candidates.append([a for a in self.free_args[lit] if not a.is_instantiated()])
-
-            if forced:
-                checked.add(forced_lit)
-                #print "Forced %s = %s" % (str(forced[0]), str(forced[1]))
-                return forced
-            if next_candidates:
-                next_candidates = sorted(next_candidates, key=lambda l: len(l))
-                #print "Next:", next_candidates[0][0]
-                return next_candidates[0][0], None
-            #print self, [a.get_instance().name for a in  args]
-            return True, None
-        return inst_func
-        
-    # def get_probability(self, args, value, parent=None):
-    #     varg = None
-    #     pterm = None
-    #     for p, v in self.values:
-    #         if isinstance(v, predicates.ConstantTerm) and v.object == value:
-    #             pterm = p
-    #             varg = v.object
-    #             break
-    #         elif isinstance(v, predicates.VariableTerm) and value.is_instance_of(v.get_type()):
-    #             pterm = p
-    #             varg = v.object
-    #             break
-    #     if varg is None:
-    #         return predicates.Term(0)
-    #     mapping = dict((param.name, c) for (param,c ) in zip(self.args, args))
-    #     if isinstance(varg, Parameter):
-    #         mapping[varg.name] = value
-    #     self.instantiate(mapping, parent)
-    #     result = p.copy_instance()
-    #     self.uninstantiate()
-    #     return result
-
-    def match_args(self, facts):
-        mapping = {}
-        for svar, val in facts:
-            for lit in self.conditions:
-                if lit.predicate == builtin.equals and lit.args[0].function == svar.function:
-                    for a, a2 in zip(lit.args[0].args + [lit.args[1]], svar.args + (val,)):
-                        if isinstance(a, VariableTerm):
-                            assert mapping.get(a.object, a2) == a2
-                            mapping[a.object] = a2
-                        elif isinstance(a, ConstantTerm) and a.object != a2:
-                            return None
-                elif lit.predicate == svar.function:
-                    v = builtin.TRUE if not lit.negated else builtin.FALSE
-                    for a, a2 in zip(lit.args + [v], self.svar.args + (val,)):
-                        if isinstance(a, VariableTerm):
-                            assert mapping.get(a.object, a2) == a2
-                            mapping[a.object] = a2
-                        elif isinstance(a, ConstantTerm) and a.object != a2:
-                            return None
-        return mapping
-
-
-    def get_value_args(self):
-        result = set()
-        for t,v in self.values:
-            if isinstance(v, predicates.VariableTerm):
-                result.add(v.object)
-        return result
-        
-    @staticmethod
-    def from_action(action):
-        @visitors.collect
-        def extract_terms_with_prob(eff, results):
-            if isinstance(eff, effects.SimpleEffect):
-                assert eff.predicate in builtin.assignment_ops
-                term = eff.args[0]
-                value = eff.args[1]
-                return (1, term, value)
-            if isinstance(eff, effects.ProbabilisticEffect):
-                res = []
-                for p, results2 in results:
-                    for p_old, term, value in results2:
-                        if p_old == 1:
-                            res.append((p, term, value))
-                        else:
-                            p_new = predicates.FunctionTerm(builtin.mult, [p, p_old])
-                            res.append((p_new, term, value))
-                return res
-
-        @visitors.collect
-        def extract_conditions(cond, results):
-            if isinstance(cond, conditions.LiteralCondition):
-                if cond.predicate in (builtin.equals, builtin.eq):
-                    term = cond.args[0]
-                    value = cond.args[1]
-                else:
-                    term = predicates.FunctionTerm(cond.predicate, cond.args)
-                    if cond.negated:
-                        value = predicates.Term(builtin.FALSE)
-                    else:
-                        value = predicates.Term(builtin.TRUE)
-                return (term, value)
-
-        #conds = visitors.visit(action.precondition, extract_conditions, [])
-        conds = visitors.visit(action.precondition, visitors.collect_literals, [])
-        
-        values = defaultdict(list)
-        for p, term, value in visitors.visit(action.effect, extract_terms_with_prob, []):
-            values[term].append((p, value))
-
-        rules = []
-        for term, tvals in values.iteritems():
-            term_args = [a.object for a in term.args]
-            other_args = set()
-            rule_values = []
-            for p, val in tvals:
-                rule_values.append((p, val))
-                other_args |= set(val.visit(collect_param_visitor))
-                if p is not None:
-                    other_args |= set(p.visit(collect_param_visitor))
-
-            if len(rule_values) == 2 and rule_values[1][0] is None:
-                #special case for p/1-p distributions
-                rule_values[1] = (predicates.FunctionTerm(builtin.minus, [predicates.Term(1), rule_values[0][0]]), rule_values[1][1])
-                
-            rel_conditions = []
-            changed = True
-            while changed:
-                changed = False
-                for lit in conds:
-                    if lit in rel_conditions:
-                        continue
-                    #cargs = set(t.visit(collect_param_visitor) + v.visit(collect_param_visitor))
-                    cargs = lit.free()
-                    if cargs & (set(term_args) | other_args):
-                        other_args |= cargs
-                        rel_conditions.append(lit)
-                        changed = True
-            rules.append(DTRule(term.function, term_args, list(other_args - set(term_args)), rel_conditions, rule_values, action.parent, name=action.name))
-        return rules
-
-    def __str__(self):
-        cstr = ", ".join("%s" % lit.pddl_str() for lit in self.conditions)
-        vstrs = []
-        for p,v in self.values:
-            if p is None:
-                vstrs.append("rest: %s" % v.pddl_str())
-            else:
-                vstrs.append("%s: %s" % (p.pddl_str(), v.pddl_str()))
-                
-        vstr = ", ".join(vstrs)
-        s = "%s: (%s %s) (when %s) %s" % (self.name, self.function.name, " ".join(a.name for a in self.args), cstr, vstr)
-        return s
-
 def collect_param_visitor(term, results):
     """This visitor collects all TypedObjects that occur in this Term
     (and it's children) and returns them as a list."""
@@ -880,39 +606,38 @@ class DT2MAPLCompiler(translators.Translator):
                     renamings[arg.name] = oldname
             
             mapping = dict(zip(match.args, a.args))
-            observe.instantiate(mapping)
-            for atom in sensable_atoms:
-                assert atom.predicate in (builtin.equals, builtin.eq)
-                term = atom.args[0]
-                value = atom.args[1]
-                for arg in term.args:
-                    if isinstance(arg, predicates.VariableTerm) and not arg.is_instantiated():
-                        # print a.name, "-", map(str, a.args), "-", map(str, a.vars)
-                        new_arg = a.copy_args([arg.object])[0]
-                        a.args.append(new_arg)
-                        a.vars = a.vars + [new_arg]
-                        mapping[arg] = new_arg
-                        observe.uninstantiate()
-                        observe.instantiate(mapping)
-                        # print a.name, "-", map(str, a.args), "-", map(str, a.vars)
-                        
-                # if atom.predicate in (builtin.equals, builtin.eq):
-                #     lhs = atom
-                #     s_atom = atom.copy_instance()
-                #     s_atom.set_scope(a)
-                #     a.sensors.append(mapl.SenseEffect(s_atom, a))
-                # else:
-                    #Free parameter on rhs => fully observable
-                if isinstance(value, predicates.VariableTerm) and not value.is_instantiated():
-                    s_term = a.lookup([atom.args[0].copy_instance()])[0]
-                    a.sensors.append(mapl.SenseEffect(s_term, a))
-                # elif any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
-                else:
-                    # print map(str, atom.visit(visitors.collect_free_vars))
-                    s_atom = atom.copy_instance()
-                    s_atom.set_scope(a)
-                    a.sensors.append(mapl.SenseEffect(s_atom, a))
-            observe.uninstantiate()
+            with observe.instantiate(mapping):
+                for atom in sensable_atoms:
+                    assert atom.predicate in (builtin.equals, builtin.eq)
+                    term = atom.args[0]
+                    value = atom.args[1]
+                    for arg in term.args:
+                        if isinstance(arg, predicates.VariableTerm) and not arg.is_instantiated():
+                            # print a.name, "-", map(str, a.args), "-", map(str, a.vars)
+                            new_arg = a.copy_args([arg.object])[0]
+                            a.args.append(new_arg)
+                            a.vars = a.vars + [new_arg]
+                            mapping[arg] = new_arg
+                            observe.uninstantiate()
+                            observe.instantiate(mapping)
+                            # print a.name, "-", map(str, a.args), "-", map(str, a.vars)
+
+                    # if atom.predicate in (builtin.equals, builtin.eq):
+                    #     lhs = atom
+                    #     s_atom = atom.copy_instance()
+                    #     s_atom.set_scope(a)
+                    #     a.sensors.append(mapl.SenseEffect(s_atom, a))
+                    # else:
+                        #Free parameter on rhs => fully observable
+                    if isinstance(value, predicates.VariableTerm) and not value.is_instantiated():
+                        s_term = a.lookup([atom.args[0].copy_instance()])[0]
+                        a.sensors.append(mapl.SenseEffect(s_term, a))
+                    # elif any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
+                    else:
+                        # print map(str, atom.visit(visitors.collect_free_vars))
+                        s_atom = atom.copy_instance()
+                        s_atom.set_scope(a)
+                        a.sensors.append(mapl.SenseEffect(s_atom, a))
             for s in a.sensors:
                 self.annotations[a.name].add(s)
 
@@ -1115,7 +840,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
         # for n in self.pnodes:
         #     actions += n.to_actions(domain)
             
-        return actions + self.commit_actions_from_rules(domain, prob_functions)
+        return actions + self.commit_actions_from_rules(domain, prob_functions) + self.knowledge_actions_from_rules(domain, prob_functions)
     
     @translators.requires('partial-observability')
     def translate_problem(self, _problem):
@@ -1124,6 +849,67 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
             p2.remove_object(c)
             
         return p2
+
+    def knowledge_actions_from_rules(self, domain, prob_functions):
+        import durative
+
+        if "probability" not in domain.functions:
+            domain.functions.add(probability)
+        
+        actions = []
+        action_count = defaultdict(lambda: 0)
+        
+        started_pred = domain.predicates.get("started", [])
+        
+        for r in domain.dt_rules:
+            for p, values in r.values:
+                agent = predicates.Parameter("?a", mapl.t_planning_agent)
+                i = action_count[r]
+                action_count[r] += 1
+                a = mapl.MAPLAction("__knowledge-%s-%d" % (r.name,i), [agent], r.args, [], None, None, None, [], domain)
+                b = Builder(a)
+                cparts = []
+                rparts = []
+                    
+                for lit in r.conditions:
+                    if lit.predicate == builtin.equals and lit.args[0].function in prob_functions:
+                        cparts.append(b.cond(mapl.commit, lit.args[0], lit.args[1]))
+                        rparts.append(b.cond(mapl.knowledge, agent, lit.args[0]))
+                    else:
+                        cparts.append(lit)
+
+                commit_effects = []
+                for (f, args), v in zip(r.variables, values):
+                    commit_effects.append(b.effect(mapl.direct_knowledge, agent, b(f, *args)))
+                    cparts.append(b.cond(mapl.commit, b(f, *args), v))
+                    
+                prob_eff = b.effect("assign", (probability,), p )
+                
+
+                # make a distinction between certain knowledge transfer (if p ~= 1) and uncertain
+                # knowledge transfer. The former can be applied even if the precondition is true in the initial state,
+                # the latter not.
+                try:
+                    pval = p.object.value
+                except AttributeError:
+                    pval = 0.5
+                    
+                if pval > 0.999:
+                    a.precondition = conditions.Conjunction(cparts+rparts, a)
+                else:
+                    a.precondition = conditions.Conjunction(cparts, a)
+                    a.replan = conditions.Conjunction(rparts, a)
+                
+                a.effect = effects.ConjunctiveEffect(commit_effects + [prob_eff], a)
+                a.set_total_cost(0)
+                # if r.costs is None:
+                #     a.set_total_cost(0)
+                # else:
+                #     a.set_total_cost(r.costs)
+
+                actions.append(a)
+            
+        return actions
     
     def commit_actions_from_rules(self, domain, prob_functions):
         import durative
@@ -1157,14 +943,17 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
                 for (f, args), v in zip(r.variables, values):
                     commit_effects.append(b.effect(mapl.commit, b(f, *args), v))
                     cparts.append(b.cond("not", (mapl.committed, b(f, *args))))
-                prob_eff = b.effect("assign", (probability,), p )
+
+                cost = r.costs if r.costs is not None else 0
+                if isinstance(p, ConstantTerm) and p.object == UNKNOWN:
+                    prob_eff = []
+                    cost += unknown_p_cost
+                else:
+                    prob_eff = [b.effect("assign", (probability,), p )]
                 
                 a.precondition = conditions.Conjunction(cparts)
-                a.effect = effects.ConjunctiveEffect(commit_effects + [prob_eff], a)
-                if r.costs is None:
-                    a.set_total_cost(0)
-                else:
-                    a.set_total_cost(r.costs)
+                a.effect = effects.ConjunctiveEffect(commit_effects + prob_eff, a)
+                a.set_total_cost(cost)
 
                 actions.append(a)
             

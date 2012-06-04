@@ -576,17 +576,18 @@ class PNode(object):
 
         return actions
 
-    def to_init(self, selected_facts=None, observable_facts=None, filter_fn=None, parent_facts={}):
+    def to_init(self, selected_facts=None, filter_fn=None, parent_facts={}):
         def make_unknown(val):
             return pddl.TypedObject("other-%s" % val.type.name, val.type)
 
+        written_facts = set()
         if filter_fn and not filter_fn(self, parent_facts):
-            return None, False
+            return None, written_facts
 
         t0 = time.time()
         
         selected_svars = set(f.svar for f in selected_facts) if selected_facts is not None else None
-        observable = False if observable_facts is not None else True
+
         effs = []
         normalize = 1.0
         p_sum = sum(p for p,_,_ in self.children.itervalues())
@@ -608,23 +609,71 @@ class PNode(object):
                     #     f = state.Fact(svar, make_unknown(val))
                     # else:
                     continue
-                if observable_facts is not None and f in observable_facts:
-                    observable = True
+                written_facts.add(f)
                     
                 eff = f.as_literal(_class=pddl.SimpleEffect)
                 ceff.parts.append(eff)
             for n in nodes:
-                eff, obs = n.to_init(selected_facts, observable_facts, filter_fn, new_parent_facts)
+                eff, new_written = n.to_init(selected_facts, filter_fn, new_parent_facts)
                 if eff:
                     ceff.parts.append(eff)
-                if obs:
-                    observable = True
+                written_facts |= new_written
             if ceff.parts:
                 effs.append((pddl.Term(p*normalize), ceff))
         # print "%s took: %.2f secs" % (self, time.time()-t0)
-        if effs and observable:
-            return effects.ProbabilisticEffect(effs), observable
-        return None, False
+        if effs:
+            return effects.ProbabilisticEffect(effs), written_facts
+        return None, set()
+
+    # def to_init(self, selected_facts=None, observable_facts=None, filter_fn=None, parent_facts={}):
+    #     def make_unknown(val):
+    #         return pddl.TypedObject("other-%s" % val.type.name, val.type)
+
+    #     if filter_fn and not filter_fn(self, parent_facts):
+    #         return None, False
+
+    #     t0 = time.time()
+        
+    #     selected_svars = set(f.svar for f in selected_facts) if selected_facts is not None else None
+    #     observable = False if observable_facts is not None else True
+    #     effs = []
+    #     normalize = 1.0
+    #     p_sum = sum(p for p,_,_ in self.children.itervalues())
+    #     if p_sum > 1.0:
+    #         normalize = 1.0 / p_sum
+        
+    #     for val, (p, nodes, facts) in self.children.iteritems():
+    #         if p < 0.0001:
+    #             continue
+    #         ceff = pddl.ConjunctiveEffect([])
+    #         new_parent_facts = parent_facts.copy()
+    #         for svar, val in chain(facts.iteritems(), [(self.svar, val)]):
+    #             new_parent_facts[svar] = val
+    #             #if svar.function == selected:
+    #             #    continue
+    #             f = state.Fact(svar, val)
+    #             if selected_facts is not None and f not in selected_facts:
+    #                 # if f.svar in selected_svars and f.svar.function != selected:
+    #                 #     f = state.Fact(svar, make_unknown(val))
+    #                 # else:
+    #                 continue
+    #             if observable_facts is not None and f in observable_facts:
+    #                 observable = True
+                    
+    #             eff = f.as_literal(_class=pddl.SimpleEffect)
+    #             ceff.parts.append(eff)
+    #         for n in nodes:
+    #             eff, obs = n.to_init(selected_facts, observable_facts, filter_fn, new_parent_facts)
+    #             if eff:
+    #                 ceff.parts.append(eff)
+    #             if obs:
+    #                 observable = True
+    #         if ceff.parts:
+    #             effs.append((pddl.Term(p*normalize), ceff))
+    #     # print "%s took: %.2f secs" % (self, time.time()-t0)
+    #     if effs and observable:
+    #         return effects.ProbabilisticEffect(effs), observable
+    #     return None, False
 
     def __str__(self):
         return "PNode: %s (%d: %s)" % (str(self.svar), len(self.children), ", ".join(v.name for v in self.children.iterkeys()) )

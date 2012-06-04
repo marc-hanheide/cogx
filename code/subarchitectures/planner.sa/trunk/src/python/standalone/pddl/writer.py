@@ -192,6 +192,8 @@ class Writer(object):
                 e_str = self.write_effect(e)
                 if p is None:
                     strings += self.section("", e_str, parens=False)
+                elif isinstance(p, predicates.ConstantTerm) and isinstance(p.object, types.TypedNumber) and p.object.value > 0.99999999:
+                    return e_str
                 else:
                     p_str = self.write_term(p)
                     strings += self.section(p_str, e_str, parens=False)

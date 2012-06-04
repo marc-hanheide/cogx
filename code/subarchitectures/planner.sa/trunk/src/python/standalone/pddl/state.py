@@ -812,10 +812,9 @@ class State(dict):
         """
 
         def instantianteAndCheck(cond, params):
-            cond.instantiate(dict(zip(cond.args, params)), self.problem)
-            result = checkConditionVisitor(cond.condition)
-            cond.uninstantiate()
-            return result
+            with cond.instantiate(dict(zip(cond.args, params)), self.problem):
+                result = checkConditionVisitor(cond.condition)
+                return result
 
         def allFacts(iterable):
             newfacts = []
@@ -921,9 +920,8 @@ class State(dict):
             elif isinstance(cond, conditions.QuantifiedCondition):
                 combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), cond.args))
                 for c in combinations:
-                    cond.instantiate(dict(zip(cond.args, c)), self.problem)
-                    dependenciesVisitor(cond.condition)
-                    cond.uninstantiate()
+                    with cond.instantiate(dict(zip(cond.args, c)), self.problem):
+                        dependenciesVisitor(cond.condition)
             elif isinstance(cond, conditions.PreferenceCondition):
                 dependenciesVisitor(cond.cond)
             elif isinstance(cond, effects.Effect):
@@ -963,9 +961,8 @@ class State(dict):
         if isinstance(effect, effects.UniversalEffect):
             combinations = product(*map(lambda a: list(self.problem.get_all_objects(a.type)), effect.args))
             for params in combinations:
-                effect.instantiate(dict(zip(effect.args, params)), self.problem)
-                facts.update(self.get_effect_facts(effect.effect, trace_vars))
-                effect.uninstantiate()
+                with effect.instantiate(dict(zip(effect.args, params)), self.problem):
+                    facts.update(self.get_effect_facts(effect.effect, trace_vars))
                 
         elif isinstance(effect, effects.ConditionalEffect):
             read_vars = set(self.read_svars) #backup as it may get cleared by is_satisfied()
@@ -1008,9 +1005,8 @@ class State(dict):
                 new_objects.append(obj)
                 self.problem.add_object(obj)
 
-            effect.instantiate(dict(zip(effect.args, new_objects)), self.problem)
-            facts.update(self.get_effect_facts(effect.effect, trace_vars))
-            effect.uninstantiate()
+            with effect.instantiate(dict(zip(effect.args, new_objects)), self.problem):
+                facts.update(self.get_effect_facts(effect.effect, trace_vars))
 
         elif isinstance(effect, dynamic_objects.DestroyEffect):
             pass
@@ -1093,11 +1089,11 @@ class State(dict):
                 closed.add(sv)
                 for ax in self.problem.domain.axioms:
                     if ax.predicate == sv.get_predicate():
-                        if ax.tryInstantiate(sv.get_args(), self.problem):
-                            for dep in self.get_relevant_vars(ax.condition, derived):
-                                if dep.get_predicate() in derived and dep not in closed:
-                                    open.add(dep)
-                            ax.uninstantiate()
+                        with ax.tryInstantiate(sv.get_args(), self.problem) as success:
+                            if success:
+                                for dep in self.get_relevant_vars(ax.condition, derived):
+                                    if dep.get_predicate() in derived and dep not in closed:
+                                        open.add(dep)
             return closed
                     
         relevant = set()
@@ -1186,7 +1182,10 @@ class State(dict):
                 for svar in open:
                     #t3 = time.time()
                     for ax in pred_to_axioms[svar.get_predicate()]:
-                        if ax.tryInstantiate(svar.get_args(), self.problem):
+                        with ax.tryInstantiate(svar.get_args(), self.problem) as success:
+                            if not success:
+                                continue
+                            
                             if getReasons:
                                 vars = []
                                 universal = []
@@ -1205,10 +1204,8 @@ class State(dict):
                                         reasons[svar].add(other_svar)
                                     for param in universal:
                                         universalReasons[svar].add(param)
-                                ax.uninstantiate()
                                 break
                                 
-                            ax.uninstantiate()
                     #print "atom:", time.time()-t3
 
                 nonrecursive_atoms = set()
@@ -1232,11 +1229,9 @@ class State(dict):
 
         for rule in prules:
             combinations = list(product(*map(lambda arg: list(self.problem.get_all_objects(arg.type)), rule.args)))
-            for c in combinations:
-                rule.instantiate(c, self.problem)
+            for m in rule.instantiateAll(combinations, self.problem):
                 if rule.precondition is None or self.is_satisfied(rule.precondition):
                     self.apply_effect(rule.effect)
-                rule.uninstantiate()
 
 
 class SubState(State):

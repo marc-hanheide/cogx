@@ -88,12 +88,12 @@ def build_operator_for_ground_action(i, action, args):
     expl_domain.add_constant(types.TypedObject(action_id, action_t))
     name = "_%s_%s" % (action_id, action.name)
     new_op = pddl.Action(name, [], None, None, None, None)
-    action.instantiate(args, expl_domain)
-    if action.precondition:
-        new_op.precondition = action.precondition.copy(copy_instance=True)
-    #new_op.precondition = pddl.Conjunction([]) # TEST
-    if action.effect:
-        new_op.effect = action.effect.copy(copy_instance=True)
+    with action.instantiate(args, expl_domain):
+        if action.precondition:
+            new_op.precondition = action.precondition.copy(copy_instance=True)
+        #new_op.precondition = pddl.Conjunction([]) # TEST
+        if action.effect:
+            new_op.effect = action.effect.copy(copy_instance=True)
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
     for cond in [se_condition, enabled_cond]:
         new_op.extend_precondition(cond)
@@ -128,9 +128,8 @@ def state_rule_conditions(fact):
     for r in state_rules:
         mapping = fact.match_literal(r.effect)
         if mapping is not None:
-            r.instantiate(mapping, expl_domain)
-            pre = r.precondition.copy(copy_instance=True)
-            r.uninstantiate()
+            with r.instantiate(mapping, expl_domain):
+                pre = r.precondition.copy(copy_instance=True)
             break
     return pddl.visitors.visit(pre, pddl.visitors.collect_conditions, [])
 
@@ -329,19 +328,18 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
 
 
 def get_causal_relations(node):
-    node.action.instantiate(node.full_args, parent=expl_domain) #FIXME: crashes here sometimes
     @pddl.visitors.collect
     def get_ceffs(elem, results):
         if isinstance(elem, pddl.effects.ConditionalEffect):
             return elem
-        
-    for ceff in pddl.visitors.visit(node.action.effect, get_ceffs, []):
-        conds = ceff.condition.visit(pddl.visitors.collect_literals)
-        effs = ceff.effect.visit(pddl.visitors.collect_literals)
-        c_facts = [pddl.state.Fact.from_literal(l) for l in conds]
-        e_facts = [pddl.state.Fact.from_literal(l) for l in effs]
-        yield c_facts, e_facts
-    node.action.uninstantiate()
+
+    with node.action.instantiate(node.full_args, parent=expl_domain): #FIXME: crashes here sometimes
+        for ceff in pddl.visitors.visit(node.action.effect, get_ceffs, []):
+            conds = ceff.condition.visit(pddl.visitors.collect_literals)
+            effs = ceff.effect.visit(pddl.visitors.collect_literals)
+            c_facts = [pddl.state.Fact.from_literal(l) for l in conds]
+            e_facts = [pddl.state.Fact.from_literal(l) for l in effs]
+            yield c_facts, e_facts
     
       
 def postprocess_explanations(expl_plan, exec_plan):

@@ -25,6 +25,7 @@
    (cones_exist  ?l - label ?rel - spatial_relation ?where - (either visualobject room))
    ;; (cones-exist ?l - label ?r - room)
    ;; (obj-possibly-in-room ?o - visualobject ?r - room)
+   (can-relate ?a - agent ?o - location ?h - person)
 
    ;; (any-engaged)
    (engaged ?p - person)
@@ -97,6 +98,7 @@
    (label ?o - visualobject) - label
    (related-to ?o - visualobject) - location
    (relation ?o - visualobject) -  spatial_relation
+   (location ?o - visualobject) - location
 
    ;; === conegroup properties ===
    ;; basic properties that determine what the conegroup was generated for 
@@ -242,23 +244,65 @@
             (exists (?c - conegroup) (and (= (cg-label ?c) ?l)
                                           (= (cg-related-to ?c) ?where)
                                           (= (cg-relation ?c) ?rel))))
-                                          
 
-  ;; (:derived (obj-possibly-in-room ?o - visualobject ?r - room)
-  ;;           (exists (?p - place) (and (= (in-room ?p) ?r)
-  ;;                                     (in-domain (is-in ?o) ?p))))
 
-  ;; (:derived (cones-exist ?l - label ?r - room)
-  ;;           (exists (?c - cone ?p - place) (and (= (in-room ?p) ?r)
-  ;;                                               (= (is-in ?c) ?p)
-  ;;                                               (= (label ?c) ?l)))
-  ;;           )
+  (:derived (can-relate ?a - robot ?r - room ?h - person)
+            (exists (?p ?p2 - place)
+                    (and (poss (is-in ?h) ?p)
+                         (= (is-in ?a) ?p2)
+                         (poss (in-room ?p) ?r)
+                         (poss (in-room ?p2) ?r))))
 
-  ;; (:derived (not_fully_explored ?r - room)
-  ;;           (exists (?p ?p2 - place) (and (= (in-room ?p) ?r)
-  ;;                                         (not (= (placestatus ?p2) trueplace))
-  ;;                                         (connected ?p ?p2))))
+  (:derived (can-relate ?a - robot ?o - visualobject ?h - person)
+            (exists (?r - room)
+                    (and (poss (related-to ?o) ?r)
+                         (can-relate ?a ?r ?h))))
 
+  ;;
+  ;; Assumptions
+  ;;
+
+  ;; (:dtrule object_nonexistence
+  ;;          :parameters (?l - label ?r - room ?c - category)
+  ;;          :precondition (and (= (category ?r) ?c)
+  ;;                             (not (defined (dora__inroom ?l ?c)))
+  ;;                             (not (defined (p-obj_exists ?l in ?r ?c))))
+  ;;          :effect (and (assign (obj_exists ?l in ?r) false)
+  ;;                       (increase (total-cost) 100 )))
+
+  ;; (:dtrule obj_in_obj_nonexistence
+  ;;          :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category)
+  ;;          :precondition (and (= (category ?r) ?c)
+  ;;                             (= (label ?o) ?l2)
+  ;;                             (= (related-to ?o) ?r)
+  ;;                             (= (relation ?o) in)
+  ;;                             (not (defined (dora__inobject ?l1 ?l2 ?c)))
+  ;;                             (not (defined (p-obj_exists ?l1 in ?o ?c))))
+  ;;          :effect (and (assign (obj_exists ?l1 in ?o) false)
+  ;;                       (increase (total-cost) 100 )))
+
+  (:dtrule object-existence-default
+           :parameters (?l - label ?r - room ?c - category ?val - boolean)
+           :precondition (and (= (category ?r) ?c)
+                              (not (defined (dora__inroom ?l ?c)))
+                              (not (defined (p-obj_exists ?l in ?r ?c))))
+           :effect (and (probabilistic unknown (assign (obj_exists ?l in ?r) ?val))))
+
+  (:dtrule obj-in-obj-existence-default
+           :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category ?val - boolean)
+           :precondition (and (= (category ?r) ?c)
+                              (= (label ?o) ?l2)
+                              (= (related-to ?o) ?r)
+                              (= (relation ?o) in)
+                              (= (entity-exists ?o) true)
+                              (not (defined (dora__inobject ?l1 ?l2 ?c)))
+                              (not (defined (p-obj_exists ?l1 in ?o ?c))))
+           :effect (and (probabilistic unknown (assign (obj_exists ?l1 in ?o) ?val))))
+
+  (:dtrule nonexistence-in-nonexistence
+           :parameters (?l - label ?rel - spatial_relation ?where - (either visualobject room))
+           :precondition (and (= (entity-exists ?where) false))
+           :effect (and (assign (obj_exists ?l ?rel ?where) false)))
 
 
   ;; rules that model the conditional probabilities from default sa
@@ -335,6 +379,16 @@
                                            (assign (relation ?o) ?rel)))
            )
 
+  (:dtrule sample_object_existence
+           :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room) ?val - boolean)
+           :precondition (and (= (label ?o) ?l)
+                              (= (related-to ?o) ?where)
+                              (= (relation ?o) ?rel)
+                              ;; (is-virtual ?o)
+                              (= (obj_exists ?l ?rel ?where) ?val))
+           :effect (probabilistic 1.0 (and (assign (entity-exists ?o) ?val)))
+           )
+
   ;; probability of finding a specific object in a conegroup
   ;;used only by DT (?)
   (:dtrule sample_cone_visibility
@@ -360,26 +414,12 @@
            :effect (and (probabilistic 1.0 (and (assign (in-room ?p) ?r)
                                                 (assign (category ?r) ?c)))
                         (increase (total-cost) 10))
-           )                                                                                                                                              
+           )
+
+
+  ;;; Epistemic actions
+
    
-  ;; (:dtrule room_from_placeholder
-  ;;          :parameters (?p - place ?r - room ?c - category)
-  ;;          :precondition (and (= (placestatus ?p) placeholder)
-  ;;                             (= (virtual-category ?r) ?c)
-  ;;                             (= (leads_to_room ?p ?c) true)
-  ;;                             (is-virtual ?r))
-  ;;          :effect (probabilistic 1.0 (and (assign (in-room ?p) ?r)
-  ;;                                          (assign (category ?r) ?c))))
-
-  ;; (:action explore_place
-  ;;          :agent (?a - robot)
-  ;;          :parameters (?loc - place)
-  ;;          :duration (= ?duration 0.1)
-  ;;          :precondition (and  (= (is-in ?a) ?loc)
-  ;;                           (= (placestatus ?loc) placeholder))
-  ;;          :effect (assign (placestatus ?loc) trueplace)
-  ;;          )
-
   (:action report_position
            :agent (?a - robot)
            :parameters (?o - visualobject)
@@ -423,21 +463,6 @@
                          (increase (total-cost) 3))
             )
 
-   ;; (:durative-action move_direct
-   ;;                   :agent (?a - robot)
-   ;;                   :parameters (?to - place)
-   ;;                   :variables (?from - place ?r - room)
-   ;;                   :duration (= ?duration 8)
-   ;;                   :condition (and 
-   ;;                                   (over all (and (= (in-room ?from) ?r)
-   ;;                                                  (or (= (in-room ?to) ?r)
-   ;;                                                      (attached_to_room ?to ?r))))
-   ;;                                   (over all (not (done)))
-   ;;                                   (at start (= (is-in ?a) ?from)))
-   ;;                   :effect (and (change (is-in ?a) ?to)
-   ;;                                (change (placestatus ?to) trueplace))
-   ;;                   )
-
    ;; create cones for search in a room
    ;; precondition: robot is in the specified room
    (:action create_cones_in_room
@@ -469,40 +494,6 @@
                          (increase (total-cost) 4))
             )
 
-   ;; (:action request-put-on-robot
-   ;;          :agent (?a - robot)
-   ;;          :parameters (?l - label)
-   ;;          :variables (?p - person ?pl - place ?r - room ?o - visualobject)
-   ;;          :precondition (and (not (done))
-   ;;                          (= (is-in ?a) ?pl)
-   ;;                          (= (is-in ?p) ?pl)
-   ;;                          (= (in-room ?pl) ?r)
-   ;;                          (trans_related ?o ?r)
-   ;;                          (kval ?a (related-to ?o))
-   ;;                          (= (label ?o) ?l))
-   ;;          :effect (and 
-   ;;                   (assign (related-to ?o) ?a)
-   ;;                   (assign (relation ?o) on)
-   ;;                   (increase (total-cost) 10))
-   ;;          )
-
-   ;; (:action request-pick-up
-   ;;          :agent (?a - robot)
-   ;;          :parameters (?l - label)
-   ;;          :variables (?p - person ?pl - place ?o - visualobject)
-   ;;          :precondition (and (not (done))
-   ;;                          (= (is-in ?a) ?pl)
-   ;;                          (= (is-in ?p) ?pl)
-   ;;                          (= (related-to ?o) ?a)
-   ;;                          (= (relation ?o) on)
-   ;;                          (= (label ?o) ?l))
-   ;;          :effect (and 
-   ;;                   (assign (related-to ?o) ?p)
-   ;;                   ;; (assign (relation ?o) on)
-   ;;                   (increase (total-cost) 10))
-   ;;          )
-
-
    ;; Abstract search action for the CP planner
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
@@ -520,28 +511,9 @@
                                (not (done)))
             :effect (and (increase (total-cost) (search_cost ?l in ?r)))
             :sense (= (related-to ?o) ?r)
+            ;; :sense (location ?o)
             )
                      
-
-   ;; ;; Abstract search action for the CP planner
-   ;; ;; Searches for an object IN another object
-   ;; ;; precondition: robot is in the same room as the specified object
-   ;; (:durative-action search_for_object_in_object
-   ;;                   :agent (?a - robot)
-   ;;                   :parameters (?l - label ?o - visualobject)
-   ;;                   :variables (?p - place ?r - room ?o2 - visualobject)
-   ;;                   :duration (= ?duration (search_cost ?l in ?o))
-   ;;                   :condition (and (at start (and (= (is-in ?a) ?p)
-   ;;                                                  (= (in-room ?p) ?r)
-   ;;                                                  (poss (related-to ?o) ?r)
-   ;;                                                  (kval ?a (related-to ?o))
-   ;;                                                  (= (label ?o2) ?l)
-   ;;                                                  (cones_created ?l in ?o)
-   ;;                                                  (poss (obj_exists ?l in ?o) true)
-   ;;                                                  (not (done))))
-   ;;                                   )
-   ;;                   :effect (kval ?a (related-to ?o2))
-   ;;                   )
 
    ;; Abstract search action for the CP planner
    ;; Searches for an object ON another object
@@ -596,16 +568,6 @@
              )
 
 
-   ;; (:observe abstract_observe_object_in_room
-   ;;           :agent (?a - robot)
-   ;;           :parameters (?l - label ?r - room ?p - place ?o - visualobject)
-   ;;           :execution (search_for_object_in_room ?a ?l ?r ?p ?o)
-   ;;           :precondition (and (= (label ?o) ?l))
-                                
-   ;;           :effect (and (when (= (related-to ?o) ?r)
-   ;;                          (probabilistic 0.9 (observed (related-to ?o) ?r))))
-   ;;           )
-
    (:action engage
             :agent (?a - robot)
             :parameters (?h - person)
@@ -613,40 +575,13 @@
             :precondition (and (not (done))
                                ;; (not (any-engaged))
                                (not (= (unresponsive ?h) true))
-                               (= (is-in ?h) ?p)                               
+                               (= (is-in ?h) ?p)
                                (= (is-in ?a) ?p))
-            :effect (and 
+            :effect (and
                      (engaged ?h)
                      (increase (total-cost) 1)
                      (assign (failure-cost) 5000))
             )
-
-
-   ;; (:action disengage
-   ;;          :agent (?a - robot)
-   ;;          :parameters (?h - person)
-   ;;          :variables (?p - place)
-   ;;          :precondition (and (not (done))
-   ;;                             (any-engaged)
-   ;;                             (= (is-in ?h) ?p)                               
-   ;;                             (= (is-in ?a) ?p))
-   ;;          :effect (and 
-   ;;                   (not (any-engaged))
-   ;;                   (increase (total-cost) 1))
-   ;;          )
-
-
-   ;; (:action sense-category
-   ;;          :agent (?a - robot)
-   ;;          :parameters (?r - room)
-   ;;          :variables ( ?p - place  ?c - category)
-   ;;          :precondition (and (not (done))
-   ;;                             (= (is-in ?a) ?p)
-   ;;                             (= (in-room ?p) ?r)
-   ;;                             (poss (category ?r) ?c))
-   ;;          :effect (and (increase (total-cost) 5))
-   ;;          :sense (category ?r)
-   ;;          )
 
    (:action ask-for-category-polar
             :agent (?a - robot)
@@ -675,6 +610,64 @@
                             (probabilistic 0.95 (observed (identity ?r) ?c))))
              )
 
+
+
+   ;; (:action ask-for-object-existence
+   ;;          :agent (?a - robot)
+   ;;          :parameters (?l - label)
+   ;;          :variables (?h - person ?r - room ?p - place)
+   ;;          :precondition (and (not (done))
+   ;;                             (engaged ?h)
+   ;;                             (= (is-in ?h) ?p)
+   ;;                             (= (is-in ?a) ?p)
+   ;;                             (= (in-room ?p) ?r))
+   ;;          :effect (and 
+   ;;                   (increase (total-cost) 500)
+   ;;                   ;; (assign (failure-cost) 100)
+   ;;                   )
+   ;;          )
+
+   ;; (:observe object-existence
+   ;;           :agent (?a - robot)
+   ;;           :parameters (?l - label ?h - person ?p - place ?r - room ?val - boolean)
+   ;;           :execution (ask-for-object-existence ?a ?l ?h ?r ?p)
+   ;;           :precondition (and
+   ;;                          ;; (engaged ?h)
+   ;;                          ;; (= (is-in ?h) ?p)
+   ;;                          ;; (= (label ?o) ?l)
+   ;;                          )
+   ;;           :effect (and (when (= (obj_exists ?l in ?r) ?val)
+   ;;                          (probabilistic 0.95 (observed (obj_exists ?l in ?r) ?val))))
+   ;;           )
+
+
+   (:action ask-for-object-existence
+            :agent (?a - robot)
+            :parameters (?l - label ?o - visualobject ?rel - spatial_relation ?what - (either visualobject room))
+            :variables (?p - place ?h - person)
+            :precondition (and (not (done))
+                               (engaged ?h)
+                               (= (label ?o) ?l)
+                               (= (is-in ?h) ?p)
+                               (= (is-in ?a) ?p)
+                               (poss (related-to ?o) ?what)
+                               (= (entity-exists ?what) true)
+                               (can-relate ?a ?what ?h)
+                               )
+            :effect (and 
+                     (increase (total-cost) 500)
+                     ;; (assign (failure-cost) 100)
+                     )
+            )
+
+   (:observe object-existence
+             :agent (?a - robot)
+             :parameters (?l - label ?o - visualobject ?h - person ?p - place ?what - (either visualobject room) ?rel - spatial_relation ?val - boolean)
+             :execution (ask-for-object-existence ?a ?l ?o ?rel ?what ?p ?h)
+             :precondition (and)
+             :effect (and (when (= (entity-exists ?o) ?val)
+                            (probabilistic 0.95 (observed (entity-exists ?o) ?val))))
+             )
 
    ;; (:observe engagement
    ;;           :agent (?a - robot)

@@ -7,6 +7,7 @@ from standalone import pddl
 from standalone.pddl import state, prob_state
 
 from de.dfki.lt.tr.beliefs.slice import logicalcontent, distribs
+import eu.cogx.beliefs.slice as cogxbm
 
 log = standalone.config.logger("belief-preprocessor")
 
@@ -124,7 +125,6 @@ def gen_fact_tuples(beliefs):
     #   #ignore existence probability for now
     #   return extract_features(dist.Pc)
     if isinstance(dist, distribs.CondIndependentDistribs):
-      result = []
       for feat, fval_dist in dist.distribs.iteritems():
         if feat == "given":
           continue
@@ -134,7 +134,7 @@ def gen_fact_tuples(beliefs):
         
         if isinstance(value, distribs.FormulaValues):
           if len(value.values) == 0:
-              result.append((feat, pddl.UNKNOWN, 1.0))
+              yield (feat, pddl.UNKNOWN, 1.0)
           for valpair in value.values:
             if isinstance(valpair.val, logicalcontent.NegatedFormula):
               val = feature_val_to_object(valpair.val.negForm)
@@ -144,15 +144,14 @@ def gen_fact_tuples(beliefs):
               prob = valpair.prob
             if val is not None:
               #log.debug("%s = %s:%.2f", feat, val, prob)
-              result.append((feat, val, prob))
+              yield (feat, val, prob)
         elif isinstance(value, distribs.NormalValues):
           #TODO: discretize?
           val = feature_val_to_object(value.mean)
           if val is not None:
             #log.debug("%s = %s", feat, val)
-            result.append((feat, val , 1.0))
-      return result
-    assert False, "class %s of %s not supported" % (str(type(dist)), str(dist))
+            yield (feat, val , 1.0)
+
 
   def decode_relation(dist):
     factdict = defaultdict(list)
@@ -179,6 +178,7 @@ def gen_fact_tuples(beliefs):
   for bel in beliefs:
     # print "Belief:", bel.id
     # print "   ep. status:", type(bel.estatus)
+    
     #always treat CondIndependentDistribList as list of relations
     if isinstance(bel.content, distribs.CondIndependentDistribList):
       # print "   is list"
@@ -187,6 +187,9 @@ def gen_fact_tuples(beliefs):
           yield fact
 
     elif bel.type == "relation":
+      if isinstance(bel, cogxbm.HypotheticalBelief):
+        #TODO: which hypothetical relations so we want to keep?
+        continue
       # print "   is relation"
       for fact in decode_relation(bel.content):
         yield fact
@@ -199,8 +202,11 @@ def gen_fact_tuples(beliefs):
         if feat == "about":
           attributed_object = val
         factdict[str(feat)].append((val, prob))
-      
-      if attributed_object is not None:
+
+      if attributed_object is not None and isinstance(bel, cogxbm.HypotheticalBelief):
+        #Don't put hypotheses about existing objects into the state
+        continue
+      elif attributed_object is not None:
         yield SVarDistribution("existence",  [attributed_object], [])
         agent = pddl.TypedObject("tutor",pddl.mapl.t_agent)
         for feat,vals in factdict.iteritems():
@@ -208,7 +214,11 @@ def gen_fact_tuples(beliefs):
           yield AttributedSVarDistribution(agent, feat, [attributed_object], vals)
       else:
         obj = belief_to_object(bel)
-        yield SVarDistribution("existence",  [obj], [])
+        if isinstance(bel, cogxbm.HypotheticalBelief):
+          yield SVarDistribution("is-virtual", [obj], [(pddl.TRUE, 1.0)])
+        else:
+          yield SVarDistribution("entity-exists",  [obj], [(pddl.TRUE, 1.0)])
+
         for feat,vals in factdict.iteritems():
           # for val, prob in vals:
           #   log.debug("(%s %s) = %s : %f", feat, obj, val, prob)

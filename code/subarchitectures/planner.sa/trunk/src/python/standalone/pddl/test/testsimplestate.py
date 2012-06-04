@@ -151,25 +151,24 @@ class StateTest(unittest.TestCase):
         localScope = self.getLocalScope()
         cond = Parser.parse_as(test.split("\n"), conditions.Condition, localScope)
 
-        localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE})
-        fact = Fact.from_literal(cond)
+        with localScope.instantiate({"?p1" : self.c1, "?p2" : self.c2, "?p3" : self.c1, "?v" : TRUE}):
+            fact = Fact.from_literal(cond)
 
-        #check that svar and value are correct
-        self.assertEqual(fact.value, TRUE)
-        self.assertEqual(fact.svar, StateVariable(self.func1, [self.c1, self.c2, self.c1]))
-        #check that comparison with a manually constructed fact work
-        self.assertEqual(fact, Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
-        self.assertNotEqual(fact, Fact(StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, Fact(StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
-        #check that comparison with a tuple work
-        self.assertEqual(fact, (StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, (StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
-        self.assertNotEqual(fact, (StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
-        self.assertNotEqual(fact, (StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
+            #check that svar and value are correct
+            self.assertEqual(fact.value, TRUE)
+            self.assertEqual(fact.svar, StateVariable(self.func1, [self.c1, self.c2, self.c1]))
+            #check that comparison with a manually constructed fact work
+            self.assertEqual(fact, Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
+            self.assertNotEqual(fact, Fact(StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
+            self.assertNotEqual(fact, Fact(StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
+            self.assertNotEqual(fact, Fact(StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
+            #check that comparison with a tuple work
+            self.assertEqual(fact, (StateVariable(self.func1, [self.c1, self.c2, self.c1]), TRUE))
+            self.assertNotEqual(fact, (StateVariable(self.func1, [self.c1, self.c2, self.c1]), FALSE))
+            self.assertNotEqual(fact, (StateVariable(self.func1, [self.c2, self.c2, self.c1]), TRUE))
+            self.assertNotEqual(fact, (StateVariable(self.pred1, [self.c1, self.c2, self.c1]), TRUE))
 
         #check that trying to get a fact from an uninstantiated literal will fail
-        localScope.uninstantiate()
         self.assertRaises(Exception, Fact.from_literal, cond)
         
         #instancing via objects and via names should be equivalent

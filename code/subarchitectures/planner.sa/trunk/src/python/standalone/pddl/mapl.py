@@ -399,7 +399,7 @@ class MAPLDurativeAction(MAPLAction, durative.DurativeAction):
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
         mapping["?duration"] = self.duration[0].term.copy_instance()
-        actions.Action.instantiate(self, mapping, parent)
+        return actions.Action.instantiate(self, mapping, parent)
 
     def knowledge_effect(self):
         effs = [s.knowledge_effect() for s in self.sensors]

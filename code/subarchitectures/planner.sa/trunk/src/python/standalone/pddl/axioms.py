@@ -21,7 +21,7 @@ class Axiom(Scope):
     def instantiate(self, mapping, parent=None):
         if not isinstance(mapping, dict):
             mapping = dict([(param.name, c) for (param, c) in zip(self.args, mapping)])
-        Scope.instantiate(self, mapping, parent)
+        return Scope.instantiate(self, mapping, parent)
 
     def copy(self, newdomain=None):
         if not newdomain:
