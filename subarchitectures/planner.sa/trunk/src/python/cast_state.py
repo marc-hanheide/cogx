@@ -208,18 +208,17 @@ class CASTState(object):
             rules = type_to_rule[o.type]
             # ok = True
             for r in rules:
-                r.instantiate({r.args[0] : o}, parent=detstate.problem)
-                # print r.args[0], r.args[0].get_instance()
                 rel = []
-                if not detstate.is_satisfied(r.condition, relevantVars=rel):
-                    log.warning("Object %s fails test: %s", str(o), r.pddl_str())
-                    # ok = False
-                    r.uninstantiate()
-                    # print "consistency check took %.2f sec" % (time.time() - t0)
-                    return False
+                with r.instantiate({r.args[0] : o}, parent=detstate.problem):
+                    # print r.args[0], r.args[0].get_instance()
+                    if not detstate.is_satisfied(r.condition, relevantVars=rel):
+                        log.warning("Object %s fails test: %s", str(o), r.pddl_str())
+                        # ok = False
+                        # print "consistency check took %.2f sec" % (time.time() - t0)
+                        return False
                 # for svar in rel:
                 #     print "   ",svar, probstate[svar]
-                r.uninstantiate()
+
         # probstate.handler_func = None
         # probstate.auto_axiom_evaluation = True
         # print "consistency check took %.2f sec" % (time.time() - t0)

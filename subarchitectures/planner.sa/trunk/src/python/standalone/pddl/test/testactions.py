@@ -251,15 +251,53 @@ class ActionTest(common.PddlTest):
         term = predicates.FunctionTerm(self.domain.functions["location-of"][0], [Term(Parameter("?c", self.domain.types["city"]))])
         action.instantiate({"?var" : term})
 
+    def testInstantiation(self):
+        """Testing action instatiation"""
+        
+        action = Parser.parse_as(drive.split("\n"), Action, self.domain)
+        mapping = {"?t" : self.truck, "?to" : self.loc2 }
+        mapping2 = {"?t" : self.loc1, "?to" : self.loc2 }
+
+        #normal instantiation
+        action.instantiate(mapping)
+        self.assert_(all(a.is_instantiated() for a in action.args))
+        action.uninstantiate()
+        self.assert_(not any(a.is_instantiated() for a in action.args))
+
+        
+        #instantiation using "with"
+        with action.instantiate(mapping):
+            self.assert_(all(a.is_instantiated() for a in action.args))
+        self.assert_(not any(a.is_instantiated() for a in action.args))
+            
+
+    def testTryInstantiation(self):
+        """Testing action instatiation with tryInstantiate"""
+        
+        action = Parser.parse_as(drive.split("\n"), Action, self.domain)
+        mapping = {"?t" : self.truck, "?to" : self.loc2 }
+        mapping2 = {"?t" : self.loc1, "?to" : self.loc2 }
+
+        #successful instantiation using "with"
+        with action.tryInstantiate(mapping) as success:
+            self.assert_(all(a.is_instantiated() for a in action.args))
+            self.assert_(success)
+        self.assert_(not any(a.is_instantiated() for a in action.args))
+
+        #unsuccessful instantiation using "with"
+        with action.tryInstantiate(mapping2) as success:
+            self.assertFalse(success)
+            self.assert_(not any(a.is_instantiated() for a in action.args))
+            
+        
     def testTermInstantiation(self):
         """Testing instantiation of variables with function terms"""
         
         action = Parser.parse_as(normalized_drive.split("\n"), Action, self.domain)
         term = Builder(action)("location-of", "?t")
-        action.instantiate({"?from" : term})
-        pre2 = action.precondition.copy(copy_instance=True)
-        self.assertEqual(pre2.pddl_str(), "(and (= (location-of ?t) (location-of ?t)) (= (city-of (location-of ?t)) ?c) (= (city-of ?to) ?c))")
-        action.uninstantiate()
+        with action.instantiate({"?from" : term}):
+            pre2 = action.precondition.copy(copy_instance=True)
+            self.assertEqual(pre2.pddl_str(), "(and (= (location-of ?t) (location-of ?t)) (= (city-of (location-of ?t)) ?c) (= (city-of ?to) ?c))")
 
     def testSmartInstantiation(self):
         """Testing smart instantiation of actions"""
@@ -275,14 +313,12 @@ class ActionTest(common.PddlTest):
         ccount = 0
         for action in dom.actions:
             combinations = state.product(*map(lambda a: list(prob.get_all_objects(a.type)), action.args))
-            for c in combinations:
-                action.instantiate(c, prob)
+            for m in action.instantiateAll(combinations, prob):
                 extstate = st.get_extended_state(st.get_relevant_vars(action.precondition))
                 if extstate.is_satisfied(action.precondition):
                     #print "(%s %s)" % (action.name, " ".join(a.name for a in c))
                     ncount += 1
                 ccount += 1
-                action.uninstantiate()
         print "total time for naive instantiation: %.2f" % (time.time()-t0)
         print ccount
 

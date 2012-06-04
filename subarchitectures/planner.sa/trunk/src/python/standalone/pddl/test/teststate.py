@@ -72,13 +72,11 @@ class StateTest(common.PddlTest):
         state = State.from_problem(self.prob)
         
         drive = self.dom.get_action("drive")
-        drive.instantiate(["agent", "tru1", "apt1"], self.prob)
-        self.assert_(state.is_satisfied(drive.precondition))
-        drive.uninstantiate()
+        with drive.instantiate(["agent", "tru1", "apt1"], self.prob):
+            self.assert_(state.is_satisfied(drive.precondition))
 
-        drive.instantiate(["agent", "tru1", "apt2"], self.prob)
-        self.assertFalse(state.is_satisfied(drive.precondition))
-        drive.uninstantiate()
+        with drive.instantiate(["agent", "tru1", "apt2"], self.prob):
+            self.assertFalse(state.is_satisfied(drive.precondition))
 
     def testNumericConditions(self):
         """Testing numeric conditions"""
@@ -87,34 +85,32 @@ class StateTest(common.PddlTest):
         num_packages = StateVariable(self.prob.functions["num_packages"][0], [self.prob["tru2"]])
         
         load = self.dom.get_action("load")
-        load.instantiate(["agent", "obj21", "tru2"], self.prob)
-        self.assert_(state.is_satisfied(load.precondition))
+        with load.instantiate(["agent", "obj21", "tru2"], self.prob):
+            self.assert_(state.is_satisfied(load.precondition))
         
-        state[num_packages] = TypedNumber(4)
-        self.assertFalse(state.is_satisfied(load.precondition))
+            state[num_packages] = TypedNumber(4)
+            self.assertFalse(state.is_satisfied(load.precondition))
 
-        state[num_packages] = TypedNumber(5)
-        self.assertFalse(state.is_satisfied(load.precondition))
-        
-        load.uninstantiate()
+            state[num_packages] = TypedNumber(5)
+            self.assertFalse(state.is_satisfied(load.precondition))
+            
         
     def testEffects(self):
         """Testing applying of effects"""
 
         state = State.from_problem(self.prob)
         
-        drive = self.dom.get_action("drive")
-        drive.instantiate(["agent", "tru1", "apt1"], self.prob)
-
         fold = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]]), self.prob["pos1"])
-        self.assert_(fold in state)
-                           
-        state.apply_effect(drive.effect)
-                
         fnew = Fact(StateVariable(self.prob.functions["location-of"][0], [self.prob["tru1"]]), self.prob["apt1"])
+        self.assert_(fold in state)
+
+        drive = self.dom.get_action("drive")
+        with drive.instantiate(["agent", "tru1", "apt1"], self.prob):
+            state.apply_effect(drive.effect)
+
         self.assert_(fnew in state)
         self.assertFalse(fold in state)
-        drive.uninstantiate()
+
 
     def testNumericEffects(self):
         """Testing numeric effects"""
@@ -122,31 +118,27 @@ class StateTest(common.PddlTest):
         state = State.from_problem(self.prob)
         num_packages = StateVariable(self.prob.functions["num_packages"][0], [self.prob["tru2"]])
         
-        load = self.dom.get_action("load")
-        load.instantiate(["agent", "obj21", "tru2"], self.prob)
-
         fold = Fact(num_packages, TypedNumber(0))
         self.assert_(fold in state)
-                           
-        state.apply_effect(load.effect)
-                
+
+        load = self.dom.get_action("load")
+        with load.instantiate(["agent", "obj21", "tru2"], self.prob):
+            state.apply_effect(load.effect)
+
         fnew = Fact(num_packages, TypedNumber(1))
         self.assert_(fnew in state)
         self.assertFalse(fold in state)
-        load.uninstantiate()
         
-        load.instantiate(["agent", "obj22", "tru2"], self.prob)
-        state.apply_effect(load.effect)
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj22", "tru2"], self.prob):
+            state.apply_effect(load.effect)
 
         fnew2 = Fact(num_packages, TypedNumber(2))
         self.assert_(fnew2 in state)
         self.assertEqual(state[num_packages].value, 2)
         
         unload = self.dom.get_action("unload")
-        unload.instantiate(["agent", "obj21", "tru2"], self.prob)
-        state.apply_effect(unload.effect)
-        unload.uninstantiate()
+        with unload.instantiate(["agent", "obj21", "tru2"], self.prob):
+            state.apply_effect(unload.effect)
 
         self.assert_(fnew in state)
 
@@ -156,22 +148,18 @@ class StateTest(common.PddlTest):
         self.assert_(fold in state)
         
         double = self.dom.get_action("double_capacity")
-        double.instantiate(["agent", "tru1"], self.prob)
-        
-        state.apply_effect(double.effect)
+        with double.instantiate(["agent", "tru1"], self.prob):
+            state.apply_effect(double.effect)
         
         self.assertFalse(fold in state)
         self.assert_(fnew in state)
-        double.uninstantiate()
 
         halve = self.dom.get_action("halve_capacity")
-        halve.instantiate(["agent", "tru1"], self.prob)
-
-        state.apply_effect(halve.effect)
+        with halve.instantiate(["agent", "tru1"], self.prob):
+            state.apply_effect(halve.effect)
 
         self.assertFalse(fnew in state)
         self.assert_(fold in state)
-        halve.uninstantiate()
         
         
     def testConditionReasons(self):
@@ -181,9 +169,8 @@ class StateTest(common.PddlTest):
 
         relevantVars = []
         drive = self.dom.get_action("drive")
-        drive.instantiate(["agent", "tru1", "apt1"], self.prob)
-        self.assert_(state.is_satisfied(drive.precondition, relevantVars))
-        drive.uninstantiate()
+        with drive.instantiate(["agent", "tru1", "apt1"], self.prob):
+            self.assert_(state.is_satisfied(drive.precondition, relevantVars))
 
         relevantVars = set(relevantVars)
         
@@ -215,43 +202,38 @@ class StateTest(common.PddlTest):
         self.assert_(id11 in extstate)
         
         load = self.dom.get_action("a_load")
-        load.instantiate(["agent", "obj11", "tru1"], self.prob)
-        self.assert_(extstate.is_satisfied(load.replan))
-        self.assert_(extstate.is_satisfied(load.precondition))
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj11", "tru1"], self.prob):
+            self.assert_(extstate.is_satisfied(load.replan))
+            self.assert_(extstate.is_satisfied(load.precondition))
 
-        load.instantiate(["agent", "obj12", "tru1"], self.prob)
-        self.assertFalse(extstate.is_satisfied(load.replan))
-        self.assertFalse(extstate.is_satisfied(load.precondition))
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj12", "tru1"], self.prob):
+            self.assertFalse(extstate.is_satisfied(load.replan))
+            self.assertFalse(extstate.is_satisfied(load.precondition))
 
-        load.instantiate(["agent", "obj13", "tru1"], self.prob)
-        self.assert_(extstate.is_satisfied(load.replan))
-        self.assert_(extstate.is_satisfied(load.precondition))
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj13", "tru1"], self.prob):
+            self.assert_(extstate.is_satisfied(load.replan))
+            self.assert_(extstate.is_satisfied(load.precondition))
 
+            
     def testPartialAxiomEvaluation(self):
         """Testing partial axiom evaluation"""
         state = State.from_problem(self.prob)
 
         load = self.dom.get_action("a_load")
-        load.instantiate(["agent", "obj11", "tru1"], self.prob)
-        extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
-        self.assert_(extstate.is_satisfied(load.replan))
-        self.assert_(extstate.is_satisfied(load.precondition))
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj11", "tru1"], self.prob):
+            extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
+            self.assert_(extstate.is_satisfied(load.replan))
+            self.assert_(extstate.is_satisfied(load.precondition))
 
-        load.instantiate(["agent", "obj12", "tru1"], self.prob)
-        extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
-        self.assertFalse(extstate.is_satisfied(load.replan))
-        self.assertFalse(extstate.is_satisfied(load.precondition))
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj12", "tru1"], self.prob):
+            extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
+            self.assertFalse(extstate.is_satisfied(load.replan))
+            self.assertFalse(extstate.is_satisfied(load.precondition))
 
-        load.instantiate(["agent", "obj13", "tru1"], self.prob)
-        extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
-        self.assert_(extstate.is_satisfied(load.replan))
-        self.assert_(extstate.is_satisfied(load.precondition))
-        load.uninstantiate()
+        with load.instantiate(["agent", "obj13", "tru1"], self.prob):
+            extstate = state.get_extended_state(state.get_relevant_vars(load.replan) | state.get_relevant_vars(load.precondition))
+            self.assert_(extstate.is_satisfied(load.replan))
+            self.assert_(extstate.is_satisfied(load.precondition))
         
     def testAxiomReasoning(self):
         """Testing finding reasons of derived predicates """
@@ -262,9 +244,9 @@ class StateTest(common.PddlTest):
         relevantVars = []
         relevantReplanVars = []
         load = self.dom.get_action("a_load")
-        load.instantiate(["agent", "obj11", "tru1"], self.prob)
-        self.assert_(extstate.is_satisfied(load.precondition, relevantVars))
-        self.assert_(extstate.is_satisfied(load.replan, relevantReplanVars))
+        with load.instantiate(["agent", "obj11", "tru1"], self.prob):
+            self.assert_(extstate.is_satisfied(load.precondition, relevantVars))
+            self.assert_(extstate.is_satisfied(load.replan, relevantReplanVars))
 
         all_reasons = set(relevantVars)
         for v in relevantVars:
@@ -323,10 +305,16 @@ class StateTest(common.PddlTest):
         free3 = StateVariable(self.prob.predicates["free"][0], [self.prob["apt1"]])
         free4 = StateVariable(self.prob.predicates["free"][0], [self.prob["apt2"]])
 
+        # print "-----------------_"
+        # print state[free1]
+        # print state
+        # print "-----------------"
+        # print state[free1]
         self.assertEqual(state[free1], FALSE)
         self.assertEqual(state[free2], FALSE)
         self.assertEqual(state[free3], TRUE)
         self.assertEqual(state[free4], FALSE)
+
 
         
 if __name__ == '__main__':

@@ -66,7 +66,7 @@ class FakeCASTState(cast_state.CASTState):
         self.state = self.prob_state.determinized_state(0.05, 0.95)
         log.debug("time to state determinisation: %.2f", time.time() - t0)
 
-        self.check_consistency(self.state)
+        self.consistent = self.check_consistency(self.state)
         log.debug("time to consistency check: %.2f", time.time() - t0)
         
         self.generate_belief_state(self.prob_state, self.state)

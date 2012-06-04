@@ -142,15 +142,12 @@ class Planner(object):
         if conds:
             cond = pddl.Conjunction.join(conds)
             try:
-                action.instantiate(pnode.full_args, state.problem)
                 state.clear_axiom_cache()
-                extstate = state.get_extended_state(state.get_relevant_vars(cond))
-                result = extstate.is_satisfied(cond)
+                with action.instantiate(pnode.full_args, state.problem):
+                    extstate = state.get_extended_state(state.get_relevant_vars(cond))
+                    return extstate.is_satisfied(cond)
             except:
                 return False
-            finally:
-                action.uninstantiate()
-            return result
         
         return True
 

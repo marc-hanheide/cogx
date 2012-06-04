@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import itertools
+import itertools, contextlib
 
 import mapltypes as types
 import predicates
@@ -311,6 +311,7 @@ class Scope(dict):
                 
     #         dict.__setitem__(self, entry.name, entry)
 
+    @contextlib.contextmanager
     def tryInstantiate(self, mapping, parent=None):
         """Try to instantiate parameters in this scope. If
         instantiation fails (see instantiate() method), this method
@@ -318,13 +319,32 @@ class Scope(dict):
 
         Arguments:
         mapping -- dictionary from parameter to object."""
+        
         try:
             self.instantiate(mapping, parent)
         except:
             self.uninstantiate()
-            return False
-        return True
-            
+            yield False
+            return
+        
+        yield True
+        self.uninstantiate()
+
+    def instantiateAll(self, mappings, parent=None):
+        """Instantiate in sequence all mappings provided to this
+        functions. This function returns an iterable which returns the
+        mapping the scope is currently instantiated with. When
+        iteration finishes, the scope will be uninstantiated.
+
+        Arguments:
+        mappings -- list of dictionaries from parameter to object.
+        parent -- if not none, use this scope as a parent"""
+
+        for m in mappings:
+            self.instantiate(m, parent)
+            yield m
+        self.uninstantiate()
+        
     def instantiate(self, mapping, parent=None):
         """Instantiate Parameters. All parameters and values must be
         defined in this Scope or one of its ancestors. An exception is
@@ -337,7 +357,7 @@ class Scope(dict):
         mapping -- dictionary from parameter to object.
         parent -- scope object (usually a pddl.Problem) that should be the base for instantiation"""
         # assert not any(v.is_instantiated() for v in self.itervalues())
-        self.uninstantiate()
+        # self.uninstantiate()
 
         if parent:
             self.original_parent = self.parent
@@ -361,6 +381,12 @@ class Scope(dict):
                 val = self[val]
             key.instantiate(val)
 
+        @contextlib.contextmanager
+        def cmgr():
+            yield self
+            self.uninstantiate()
+
+        return cmgr()
 
     def smart_instantiate(self, func, args, arglists, parent=None, partial_mapping={}):
         self.uninstantiate()

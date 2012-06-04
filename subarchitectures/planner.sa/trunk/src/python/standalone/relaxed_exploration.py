@@ -46,9 +46,8 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
 
         def instantianteAndCheck(cond, combinations, func):
             for c in combinations:
-                cond.instantiate(dict(zip(cond.args, c)), problem)
-                result = func()
-                cond.uninstantiate()
+                with cond.instantiate(dict(zip(cond.args, c)), problem):
+                    result = func()
                 yield result
         
         # print "mapping:", [(a.name, a.is_instantiated(), id(a)) for a in mapping.iterkeys()]
@@ -451,7 +450,7 @@ def get_observe_effects(action, observes, prob_functions = None):
             if isinstance(value, pddl.VariableTerm) and not value.is_instantiated() and value.object not in new_args:
                 new_args.add(value.object)
                 s_term = atom.args[0].copy_instance()
-                sensors.append(mapl.SenseEffect(s_term, action))
+                sensors.append((mapl.SenseEffect(s_term, action), None))
             # elif any(isinstance(a, types.Parameter) and not a.is_instantiated() for a in atom.visit(visitors.collect_free_vars)):
             else:
                 # print map(str, atom.visit(visitors.collect_free_vars))
@@ -802,9 +801,9 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
             fact_by_cond.clear()
             # all_checked_facts = set()
             if any(isinstance(a.type, pddl.types.ProxyType) for a in action.args):
-                action.instantiate(mapping, stat.problem)
-                arg_lists = [get_objects(a) for a in action.args]
-                action.uninstantiate()
+                with action.instantiate(mapping, stat.problem):
+                    arg_lists = [get_objects(a) for a in action.args]
+
             else:
                 arg_lists = [get_objects(a) for a in action.args]
 
@@ -908,7 +907,7 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
             facts |= next.all_preconds
             actions.add((next.action, next.args))
         
-        print next#, "=>", map(str, unary_successors[next.effect])
+        # print next#, "=>", map(str, unary_successors[next.effect])
         if next.effect:
             reached_by[next.effect] = next
 
@@ -921,29 +920,31 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
 
             succ.unsat_preconds -= 1
             if succ.unsat_preconds == 0:
-                print " *", succ
+                # print " *", succ
                 forward_open.append(succ)
                 forward_closed.add(succ.effect)
                 # forward_closed.add(succ)
-            else:
-                print "  ", succ, succ.unsat_preconds 
+            # else:
+            #     print "  ", succ, succ.unsat_preconds 
 
     # print "time for relaxed plangraph: %.3f" % (time.time()-t1)
 
     #extract relaxed plan:
     while goal:
         fact = goal.pop()
+        print "pop goal:", fact
         if fact not in reached_by:
             continue
         next = reached_by[fact]
+        print "action:", next.action.name
         actions.add((next.action, next.args))
         goal |= (next.preconds - facts)
         # print next, map(str, next.all_preconds)
         facts |= next.all_preconds
 
-    log.debug("relaxed plan:")
-    for a, args in actions:
-        log.debug("(%s %s)", a.name, " ".join(str(ar) for ar in args))
+    # log.debug("relaxed plan:")
+    # for a, args in actions:
+    #     log.debug("(%s %s)", a.name, " ".join(str(ar) for ar in args))
 
     # print "total time  for exploration: %.3f" % (time.time()-t0)
     return [a for a in actions if not a[0].name.startswith("axiom_")], facts

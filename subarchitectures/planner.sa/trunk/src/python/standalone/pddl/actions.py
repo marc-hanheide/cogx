@@ -47,7 +47,7 @@ class Action(Scope):
         assumed to be in the order of the Action's Parameters."""
         if not isinstance(mapping, dict):
             mapping = dict((param.name, c) for (param, c) in zip(self.args, mapping))
-        Scope.instantiate(self, mapping, parent)
+        return Scope.instantiate(self, mapping, parent)
 
     def to_pddl(self):
         pass
@@ -91,9 +91,8 @@ class Action(Scope):
             
             def instantianteAndCheck(cond, combinations, func):
                 for c in combinations:
-                    cond.instantiate(dict(zip(cond.args, c)), st.problem)
-                    result = func()
-                    cond.uninstantiate()
+                    with cond.instantiate(dict(zip(cond.args, c)), st.problem):
+                        result = func()
                     yield result
 
             #print [a.name for a in mapping.iterkeys()]

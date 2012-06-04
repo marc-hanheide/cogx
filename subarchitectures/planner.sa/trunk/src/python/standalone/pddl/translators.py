@@ -1193,11 +1193,10 @@ class ModalPredicateCompiler(Translator):
                     continue
                 for f, args in compiled:
                     added = True
-                    ax.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
                     new_pred = newdomain.predicates.get("%s-%s" % (ax.predicate.name, f.name), args)
-                    a2 = self.translate_axiom(ax, newdomain, args, new_pred)
-                    a2.copy()
-                    ax.uninstantiate()
+                    with ax.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])}):
+                        a2 = self.translate_axiom(ax, newdomain, args, new_pred)
+                    a2.copy() #TODO: why is this there?
                     newdomain.axioms.append(a2)
             for k,v in self.used_functions.iteritems():
                 prev_used[k] |= v
@@ -1254,9 +1253,8 @@ class ModalPredicateCompiler(Translator):
                 dom.add_action(self.translate_action(ac, dom))
             else:
                 for f, args in compiled:
-                    ac.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])})
-                    a2 = self.translate_action(ac, dom, args)
-                    ac.uninstantiate()
+                    with ac.instantiate({func_arg : FunctionTerm(f, [Term(a) for a in f.args])}):
+                        a2 = self.translate_action(ac, dom, args)
                     a2.name = "%s-%s" % (a2.name, f.name)
                     dom.add_action(a2)
 
@@ -1339,14 +1337,12 @@ class RemoveTimeCompiler(Translator):
             args = [a for a in action.args if a.name != "?duration"]
             a2 = actions.Action(action.name, args, None, None, domain)
 
-        action.instantiate({'?duration' : duration_term})
-        action.set_total_cost(duration_term)
+        with action.instantiate({'?duration' : duration_term}):
+            action.set_total_cost(duration_term)
         
-        a2.precondition = visitors.visit(action.precondition, visitor)
-        a2.replan = visitors.visit(action.replan, visitor)
-        a2.effect = visitors.visit(action.effect, visitor)
-
-        action.uninstantiate()
+            a2.precondition = visitors.visit(action.precondition, visitor)
+            a2.replan = visitors.visit(action.replan, visitor)
+            a2.effect = visitors.visit(action.effect, visitor)
         
         if a2.precondition:
             a2.precondition.set_scope(a2)

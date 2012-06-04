@@ -93,28 +93,26 @@ class ProbStateTest(common.PddlTest):
         action = Parser.parse_as(prob_load.split("\n"), actions.Action, prob)
 
         s2 = state.copy()
-        action.instantiate(["obj11", "apn1"])
-        s2.apply_effect(action.effect)
-        
-        svar_loc11 = StateVariable(prob.functions["location-of"][0], [prob["obj11"]])
+        with action.instantiate(["obj11", "apn1"]):
+            s2.apply_effect(action.effect)
 
-        self.assertAlmostEqual(s2[svar_loc11][prob["apn1"]], 0.8)
-        self.assertAlmostEqual(s2[svar_loc11][prob["pos1"]], 0.3*0.2)
-        self.assertAlmostEqual(s2[svar_loc11][prob["pos2"]], 0.4*0.2)
-        self.assertAlmostEqual(s2[svar_loc11][prob["apt2"]], 0.3*0.2)
+            svar_loc11 = StateVariable(prob.functions["location-of"][0], [prob["obj11"]])
 
-        s2.apply_effect(action.effect)
+            self.assertAlmostEqual(s2[svar_loc11][prob["apn1"]], 0.8)
+            self.assertAlmostEqual(s2[svar_loc11][prob["pos1"]], 0.3*0.2)
+            self.assertAlmostEqual(s2[svar_loc11][prob["pos2"]], 0.4*0.2)
+            self.assertAlmostEqual(s2[svar_loc11][prob["apt2"]], 0.3*0.2)
 
-        self.assertAlmostEqual(s2[svar_loc11][prob["apn1"]], 0.8+(0.2*0.8))
-        self.assertAlmostEqual(s2[svar_loc11][prob["pos1"]], 0.3*0.2**2)
-        self.assertAlmostEqual(s2[svar_loc11][prob["pos2"]], 0.4*0.2**2)
-        self.assertAlmostEqual(s2[svar_loc11][prob["apt2"]], 0.3*0.2**2)
-        
-        action.uninstantiate()
+            s2.apply_effect(action.effect)
+
+            self.assertAlmostEqual(s2[svar_loc11][prob["apn1"]], 0.8+(0.2*0.8))
+            self.assertAlmostEqual(s2[svar_loc11][prob["pos1"]], 0.3*0.2**2)
+            self.assertAlmostEqual(s2[svar_loc11][prob["pos2"]], 0.4*0.2**2)
+            self.assertAlmostEqual(s2[svar_loc11][prob["apt2"]], 0.3*0.2**2)
         
         s2 = state.copy()
-        action.instantiate(["obj11", "tru1"])
-        s2.apply_effect(action.effect)
+        with action.instantiate(["obj11", "tru1"]):
+            s2.apply_effect(action.effect)
         
         self.assertAlmostEqual(s2[svar_loc11][prob["tru1"]], 0.7)
         self.assertAlmostEqual(s2[svar_loc11][prob["pos1"]], 0.3*0.3)
@@ -130,27 +128,26 @@ class ProbStateTest(common.PddlTest):
         
         action = Parser.parse_as(prob_load.split("\n"), actions.Action, prob)
 
-        action.instantiate(["obj11", "apn1"])
-        svar_loc11 = StateVariable(prob.functions["location-of"][0], [prob["obj11"]])
+        with action.instantiate(["obj11", "apn1"]):
+            svar_loc11 = StateVariable(prob.functions["location-of"][0], [prob["obj11"]])
 
-        eff = dstate.get_effect_facts(action.effect)
-        self.assertEqual(eff[svar_loc11], prob["apn1"])
-        eff = dstate.get_effect_facts(action.effect)
-        self.assertEqual(eff, {})
-        eff = dstate.get_effect_facts(action.effect)
-        self.assertEqual(eff[svar_loc11], prob["apn1"])
-        
-        dstate = state.determinized_state(0.1, 0.9)
-        dstate.set_random_seed(1)
-        dstate.apply_effect(action.effect)
-        self.assertEqual(dstate[svar_loc11], prob["apn1"])
+            eff = dstate.get_effect_facts(action.effect)
+            self.assertEqual(eff[svar_loc11], prob["apn1"])
+            eff = dstate.get_effect_facts(action.effect)
+            self.assertEqual(eff, {})
+            eff = dstate.get_effect_facts(action.effect)
+            self.assertEqual(eff[svar_loc11], prob["apn1"])
 
-        dstate = state.determinized_state(0.1, 0.9)
-        dstate.set_random_seed(2)
-        dstate.apply_effect(action.effect)
-        self.assertEqual(dstate[svar_loc11], UNKNOWN)
+            dstate = state.determinized_state(0.1, 0.9)
+            dstate.set_random_seed(1)
+            dstate.apply_effect(action.effect)
+            self.assertEqual(dstate[svar_loc11], prob["apn1"])
+
+            dstate = state.determinized_state(0.1, 0.9)
+            dstate.set_random_seed(2)
+            dstate.apply_effect(action.effect)
+            self.assertEqual(dstate[svar_loc11], UNKNOWN)
         
-        action.uninstantiate()
         
 if __name__ == '__main__':
     unittest.main()    
