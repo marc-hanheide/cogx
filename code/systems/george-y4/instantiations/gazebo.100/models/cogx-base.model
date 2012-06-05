@@ -1,0 +1,203 @@
+<gazebo version="1.0">
+
+<!-- The cogx platform base, including the super structure to mount the PTU.
+     Tested with gazebo-1.0.0 (17 Apr 2012)
+     Michael Zillich
+     May 2012 -->
+<model name="cogx-base">
+  <link name="chassis">
+    <origin pose="-0.045 0.000 0.1375 0 0 0"/>
+
+    <inertial mass="5.0">
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+
+    <collision name="chassis_collision">
+      <geometry>
+        <box size="0.510 0.300 0.205"/>
+      </geometry>
+    </collision>
+
+    <visual name="chassis_visual">
+      <geometry>
+        <box size="0.510 0.300 0.205"/>
+      </geometry>
+      <material>
+        <ambient rgba="1 0 0 1"/>
+        <diffuse rgba="1 0 0 1"/>
+        <specular rgba="0.1 0.1 0.1 0.5"/>
+      </material>
+    </visual>
+
+    <collision name="caster_collision">
+      <origin pose="-0.170 0 -0.120 0 0 0"/>
+      <geometry>
+        <sphere radius="0.0175"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode mu="0" mu2="0" slip1="1.0" slip2="1.0"/>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name="caster_visual">
+      <origin pose="-0.170 0 -0.120 0 0 0"/>
+      <geometry>
+        <sphere radius="0.0175"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+  </link>
+
+  <link name="superstructure">
+    <origin pose="-0.140 0 0.24 0 0 0"/>
+
+    <inertial mass="2.0">
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+
+    <collision name="collision1">
+      <origin pose="0 0 0.520 0 0 0"/>
+      <geometry>
+        <box size="0.044 0.044 1.040"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual1">
+      <origin pose="0 0 0.520 0 0 0"/>
+      <geometry>
+        <box size="0.044 0.044 1.040"/>
+      </geometry>
+      <material>
+        <ambient rgba="0.8 0.8 0.8 1"/>
+        <diffuse rgba="0.8 0.8 0.8 1"/>
+        <specular rgba="0.1 0.1 0.1 0.5"/>
+      </material>
+    </visual>
+
+    <collision name="collision2">
+      <origin pose="-0.047 0 1.028 0 0 0"/>
+      <geometry>
+        <box size="0.05 0.044 0.024"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual2">
+      <origin pose="-0.047 0 1.028 0 0 0"/>
+      <geometry>
+        <box size="0.05 0.044 0.024"/>
+      </geometry>
+      <material>
+        <ambient rgba="0.8 0.8 0.8 1"/>
+        <diffuse rgba="0.8 0.8 0.8 1"/>
+        <specular rgba="0.1 0.1 0.1 0.5"/>
+      </material>
+    </visual>
+
+    <collision name="collision3">
+      <origin pose="0.152 0 1.028 0 0 0"/>
+      <geometry>
+        <box size="0.26 0.044 0.024"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual3">
+      <origin pose="0.152 0 1.028 0 0 0"/>
+      <geometry>
+        <box size="0.26 0.044 0.024"/>
+      </geometry>
+      <material>
+        <ambient rgba="0.8 0.8 0.8 1"/>
+        <diffuse rgba="0.8 0.8 0.8 1"/>
+        <specular rgba="0.1 0.1 0.1 0.5"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="left_wheel">
+    <origin pose="0.000 -0.176 0.095 0 1.5707 1.5707"/>
+
+    <inertial mass="0.5">
+      <inertia ixx='0.001' ixy='0.0' ixz='0'
+               iyy='0.001' iyz='0.0'
+               izz='0.001'/>
+    </inertial>
+
+    <collision name="collision">
+      <geometry>
+        <cylinder radius="0.095" length="0.05"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode mu="100000.0" mu2="100000.0" slip1="0.0" slip2="0.0"/>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name="visual">
+      <geometry>
+        <cylinder radius="0.095" length="0.05"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+  </link>
+
+  <link name="right_wheel">
+    <origin pose="0.000 0.176 0.095 0 1.5707 1.5707"/>
+
+    <inertial mass="0.5">
+      <inertia ixx='0.001' ixy='0.0' ixz='0'
+               iyy='0.001' iyz='0.0'
+               izz='0.001'/>
+    </inertial>
+
+    <collision name="collision">
+      <geometry>
+        <cylinder radius="0.095" length="0.05"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode mu="100000.0" mu2="100000.0" slip1="0.0" slip2="0.0"/>
+        </friction>
+      </surface>
+    </collision>
+
+    <visual name="visual">
+      <geometry>
+        <cylinder radius="0.095" length="0.05"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+  </link>
+
+  <joint type="revolute" name="left_wheel_hinge">
+    <parent link="chassis"/>
+    <child link="left_wheel"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <joint type="revolute" name="right_wheel_hinge">
+    <parent link="chassis"/>
+    <child link="right_wheel"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+
+  <!-- connect superstructure to chassis with a "stiff" joint -->
+  <joint type="prismatic" name="stiff">
+    <parent link="chassis"/>
+    <child link="superstructure"/>
+    <axis xyz='0 0 1'>
+      <limit lower="0" upper="0"/>
+    </axis>
+  </joint>
+
+  <plugin filename="libDiffDrivePlugin.so" name="diff_drive">
+    <left_joint>left_wheel_hinge</left_joint>
+    <right_joint>right_wheel_hinge</right_joint>
+    <torque>10</torque>
+  </plugin>
+</model>
+
+</gazebo>
+

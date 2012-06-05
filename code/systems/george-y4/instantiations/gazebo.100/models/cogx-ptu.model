@@ -1,0 +1,144 @@
+<gazebo version="1.0">
+
+<!-- The cogx PTU: Simulated Perception PTU with stereo cameras mounted on top.
+     Tested with gazebo-1.0.0 (17 Apr 2012)
+     Michael Zillich
+     May 2012 -->
+<model name="cogx-ptu">
+  <link name="base">
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.025 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.07 0.05"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.025 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.07 0.05"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+  </link>
+
+  <link name="pan_link">
+    <origin pose="0.0 0.0 0.05 0 0 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.03 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.04 0.06"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.03 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.04 0.06"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+  </link>
+
+  <link name="tilt_link">
+    <origin pose="0.0 0.0 0.13 0 0 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision-bar">
+      <origin pose="0.0 0.0 0.01 0 0 0"/>
+      <geometry>
+        <box size="0.03 0.24 0.02"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual-bar">
+      <origin pose="0.0 0.0 0.01 0 0 0"/>
+      <geometry>
+        <box size="0.03 0.24 0.02"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+
+    <collision name="collision-left">
+      <origin pose="0 0.025 -0.03 0 0 0"/>
+      <geometry>
+        <box size="0.03 0.01 0.06"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual-left">
+      <origin pose="0 0.025 -0.03 0 0 0"/>
+      <geometry>
+        <box size="0.03 0.01 0.06"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+
+    <collision name="collision-right">
+      <origin pose="0 -0.025 -0.03 0 0 0"/>
+      <geometry>
+        <box size="0.03 0.01 0.06"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual-right">
+      <origin pose="0 -0.025 -0.03 0 0 0"/>
+      <geometry>
+        <box size="0.03 0.01 0.06"/>
+      </geometry>
+      <material script="Gazebo/FlatBlack"/>
+    </visual>
+  </link>
+
+  <joint name="pan_joint" type="revolute">
+    <parent link="base"/>
+    <child link="pan_link"/>
+    <origin pose="-0.10 0 -1.28 0 0 0"/>
+    <axis xyz='0 0 1'>
+      <limit lower="-3.14" upper="3.14"/>
+    </axis>
+  </joint>
+
+  <joint name="tilt_joint" type="revolute">
+    <parent link="pan_link"/>
+    <child link="tilt_link"/>
+    <origin pose="-0.10 0 -1.28 0 0 0"/>
+    <axis xyz='0 -1 0'>
+      <limit lower="-1.57" upper="1.57"/>
+    </axis>
+  </joint>
+
+  <include filename="cogx-camera.model" model_pose="0.0 0.06 0.16 0 0 0" model_name="camera0"/>
+  <include filename="cogx-camera.model" model_pose="0.0 -0.06 0.16 0 0 0" model_name="camera1"/>
+
+  <joint name="camera0_joint" type="prismatic">
+    <parent link="tilt_link"/>
+    <child link="camera0__body"/>
+    <origin pose="-0.10 0 -1.28 0 0 0"/>
+    <axis xyz='0 0 1'>
+      <limit lower="0" upper="0"/>
+    </axis>
+  </joint>
+
+  <joint name="camera1_joint" type="prismatic">
+    <parent link="tilt_link"/>
+    <child link="camera1__body"/>
+    <origin pose="-0.10 0 -1.28 0 0 0"/>
+    <axis xyz='0 0 1'>
+      <limit lower="0" upper="0"/>
+    </axis>
+  </joint>
+</model>
+
+</gazebo>
+

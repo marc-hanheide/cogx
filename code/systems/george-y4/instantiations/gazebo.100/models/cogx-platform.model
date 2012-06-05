@@ -1,0 +1,32 @@
+<gazebo version="1.0">
+
+<!-- The complete cogx platform, with laser, PTU, cameras, arm.
+     Tested with gazebo-1.0.0 (17 Apr 2012)
+     Michael Zillich
+     May 2012 -->
+<model name="cogx-platform">
+  <include filename="cogx-base.model" model_name="base"/>
+
+  <include filename="hokuyo.model" model_name="hokuyo" model_pose="0.14 0.00 0.275 0 0 0"/>
+  <!-- connect hokuyo to the base -->
+  <joint name="hokuyo_joint" type="prismatic">
+    <parent link="base__chassis"/>
+    <child link="hokuyo__link"/>
+    <axis xyz='0 0 1'>
+      <limit lower="0" upper="0"/>
+    </axis>
+  </joint>
+
+  <include filename="cogx-ptu.model" model_name="ptu" model_pose="0.10 0 1.28 0 0 0"/>
+  <!-- connect ptu to the base -->
+  <joint name="ptu_joint" type="prismatic">
+    <parent link="base__chassis"/>
+    <child link="ptu__base"/>
+    <axis xyz='0 0 1'>
+      <limit lower="0" upper="0"/>
+    </axis>
+  </joint>
+</model>
+
+</gazebo>
+
