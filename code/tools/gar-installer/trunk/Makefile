@@ -9,8 +9,14 @@ george:
 v4r:
 	$(MAKE) -C cogx/v4r install
 
+
+gazebo:
+	$(MAKE) -C contrib/gazebo install
+
 cosycure:
 	$(MAKE) -C cogx/cosycure install
+
+
 
 %:
 	(for f in */*/Makefile; do echo "$@-ing in `dirname $$f`"; $(MAKE) -C `dirname $$f` $@; done)
