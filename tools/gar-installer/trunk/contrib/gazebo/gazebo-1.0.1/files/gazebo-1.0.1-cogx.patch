@@ -1,0 +1,422 @@
+diff -u -r gazebo-1.0.1/interfaces/player/CMakeLists.txt gazebo-1.0.1-cogx/interfaces/player/CMakeLists.txt
+--- gazebo-1.0.1/interfaces/player/CMakeLists.txt	2012-05-15 19:35:21.000000000 +0200
++++ gazebo-1.0.1-cogx/interfaces/player/CMakeLists.txt	2012-05-31 11:53:07.713303229 +0200
+@@ -5,11 +5,11 @@
+              Position2dInterface.cc
+              LaserInterface.cc
+              CameraInterface.cc
++             PTZInterface.cc
+              ../../src/gazebo.cc
+ )
+              #Position3dInterface.cc
+              #FiducialInterface.cc
+-             #PTZInterface.cc
+              #OpaqueInterface.cc
+              #ActarrayInterface.cc
+              #GripperInterface.cc
+diff -u -r gazebo-1.0.1/interfaces/player/GazeboDriver.cc gazebo-1.0.1-cogx/interfaces/player/GazeboDriver.cc
+--- gazebo-1.0.1/interfaces/player/GazeboDriver.cc	2012-05-15 19:35:21.000000000 +0200
++++ gazebo-1.0.1-cogx/interfaces/player/GazeboDriver.cc	2012-05-31 11:53:21.833303160 +0200
+@@ -27,12 +27,12 @@
+ #include "Position2dInterface.hh"
+ #include "LaserInterface.hh"
+ #include "CameraInterface.hh"
++#include "PTZInterface.hh"
+ // #include "Graphics3dInterface.hh"
+ // #include "FiducialInterface.hh"
+ // #include "Position3dInterface.hh"
+ // #include "ActarrayInterface.hh"
+ // #include "OpaqueInterface.hh"
+-// #include "PTZInterface.hh"
+ // #include "BumperInterface.hh"
+ // #include "GripperInterface.hh"
+ // #include "IRInterface.hh"
+@@ -263,6 +263,11 @@
+         ifsrc = new CameraInterface(playerAddr, this, _cf, _section);
+         break;
+ 
++      case PLAYER_PTZ_CODE:
++        if (!player_quiet_startup) printf(" a ptz interface.\n");
++        ifsrc = new PTZInterface(playerAddr, this, _cf, _section);
++        break;
++
+       /*case PLAYER_GRAPHICS3D_CODE:
+         if (!player_quiet_startup) printf(" a graphics3d interface.\n");
+         ifsrc = new Graphics3dInterface(playerAddr, this, _cf, _section);
+@@ -289,11 +294,6 @@
+         ifsrc = new OpaqueInterface(playerAddr, this, _cf, _section);
+         break;
+ 
+-      case PLAYER_PTZ_CODE:
+-        if (!player_quiet_startup) printf(" a ptz interface.\n");
+-        ifsrc = new PTZInterface(playerAddr, this, _cf, _section);
+-        break;
+-
+       case PLAYER_GRIPPER_CODE:
+         if (!player_quiet_startup) printf(" a gripper interface.\n");
+         ifsrc = new GripperInterface(playerAddr, this, _cf, _section);
+diff -u -r gazebo-1.0.1/interfaces/player/PTZInterface.cc gazebo-1.0.1-cogx/interfaces/player/PTZInterface.cc
+--- gazebo-1.0.1/interfaces/player/PTZInterface.cc	2012-05-15 19:35:21.000000000 +0200
++++ gazebo-1.0.1-cogx/interfaces/player/PTZInterface.cc	2012-05-31 15:32:20.189239326 +0200
+@@ -28,52 +28,66 @@
+ /* TODO
+    PLAYER_PTZ_REQ_GEOM
+    */
+-
+ #include <math.h>
+ #include <iostream>
+-#include <boost/thread/recursive_mutex.hpp>
+ 
++#include "transport/transport.h"
++#include "msgs/msgs.h"
++#include "math/gzmath.h"
+ #include "GazeboDriver.hh"
+ #include "PTZInterface.hh"
+ 
+-using namespace libgazebo;
+-
+-boost::recursive_mutex *PTZInterface::mutex = NULL;
+-
+ /////////////////////////////////////////////////
+-PTZInterface::PTZInterface(player_devaddr_t addr,
+-    GazeboDriver *driver, ConfigFile *cf, int section)
+-: GazeboInterface(addr, driver, cf, section)
++// Constructor
++PTZInterface::PTZInterface(player_devaddr_t _addr,
++    GazeboDriver *_driver, ConfigFile *_cf, int _section)
++    : GazeboInterface(_addr, _driver, _cf, _section)
+ {
+-  /*
+-  // Get the ID of the interface
+-  this->gz_id = (char*) calloc(1024, sizeof(char));
+-  strcat(this->gz_id, GazeboClient::prefixId);
+-  strcat(this->gz_id, cf->ReadString(section, "gz_id", ""));
+-
+-  // Allocate a Position Interface
+-  this->iface = new PTZIface();
+-
+   this->datatime = -1;
++  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
++  this->node->Init(this->worldName);
++  this->modelName = _cf->ReadString(_section, "model_name", "default");
++  this->panJointName = _cf->ReadString(_section, "pan_joint_name", "default");
++  this->tiltJointName = _cf->ReadString(_section, "tilt_joint_name", "default");
+ 
+-  if (this->mutex == NULL)
+-    this->mutex = new boost::recursive_mutex();
+-    */
++  this->jointPub = this->node->Advertise<gazebo::msgs::JointCmd>(
++      std::string("~/") + this->modelName + "/joint_cmd");
++
++  pan = tilt = 0.;
++  SetPanTilt(0., 0.);
+ }
+ 
+ /////////////////////////////////////////////////
++// Destructor
+ PTZInterface::~PTZInterface()
+ {
+-  /*
+-  // Release this interface
+-  delete this->iface;
+-  */
+ }
+ 
+ /////////////////////////////////////////////////
+-int PTZInterface::ProcessMessage(QueuePointer &respQueue,
+-    player_msghdr_t *hdr, void *data)
+-{
++// Handle all messages. This is called from GazeboDriver
++int PTZInterface::ProcessMessage(QueuePointer &_respQueue,
++                                 player_msghdr_t *_hdr, void *_data)
++{
++  int result = 0;
++
++  // COMMAND STATE
++  if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_CMD,
++        PLAYER_POSITION2D_CMD_VEL, this->device_addr))
++  {
++    player_ptz_cmd_t *cmd;
++    cmd = static_cast<player_ptz_cmd_t*>(_data);
++
++    SetPanTilt(cmd->pan, cmd->tilt);
++
++    result = 0;
++  }
++  else
++  {
++    result = -1;
++  }
++
++  return result;
++
+   /*
+   boost::recursive_mutex::scoped_lock lock(*this->mutex);
+   if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
+@@ -151,64 +165,65 @@
+   return -1;
+ }
+ 
+-/////////////////////////////////////////////////
++//////////////////////////////////////////////////
++// Update this interface, publish new info. This is
++// called from GazeboDriver::Update
+ void PTZInterface::Update()
+ {
+-  /*
+-  player_ptz_data_t data;
+-  struct timeval ts;
+-
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  this->iface->Lock(1);
+-
+-  // Only Update when new data is present
+-  if (this->iface->data->head.time > this->datatime)
+-  {
+-    this->datatime = this->iface->data->head.time;
+-
+-    ts.tv_sec = (int) (this->iface->data->head.time);
+-    ts.tv_usec = (int) (fmod(this->iface->data->head.time, 1) * 1e6);
+-
+-    memset(&data, 0, sizeof(data));
+-
+-    data.pan = this->iface->data->pan;
+-    data.tilt = this->iface->data->tilt;
+-    data.zoom = this->iface->data->zoom;
+-
+-    this->driver->Publish(this->device_addr,
+-        PLAYER_MSGTYPE_DATA,
+-        PLAYER_PTZ_DATA_STATE,
+-        (void*)&data, sizeof(data), &this->datatime);
+-  }
+-
+-  this->iface->Unlock();
+-  */
+ }
+ 
+ /////////////////////////////////////////////////
+ void PTZInterface::Subscribe()
+ {
+-  /*
+-  try
+-  {
+-    boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-    this->iface->Open(GazeboClient::client, this->gz_id);
+-  }
+-  catch (std::string &e)
+-  {
+-    // std::ostringstream stream;
+-    std::cout << "Error subscribing to Gazebo PTZ Interface\n" << e << "\n";
+-    // gzthrow(stream.str());
+-    exit(0);
+-  }
+-  */
++  //this->jointSub = this->node->Subscribe("~/joint",
++  this->jointSub = this->node->Subscribe("~/pose/info",
++      &PTZInterface::OnJointMsg, this);
+ }
+ 
+ /////////////////////////////////////////////////
+ void PTZInterface::Unsubscribe()
+ {
+-  /*
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  this->iface->Close();
+-  */
++  this->jointSub.reset();
++}
++
++void PTZInterface::SetPanTilt(double _pan, double _tilt)
++{
++  pan = _pan;
++  tilt = _tilt;
++  // NOTE: pan and tilt speed as well as zoom are ignored
++  // NOTE: these values for the gains seem to be generally fine
++  // TODO: make gains settable from cfg
++  gazebo::msgs::JointCmd panMsg;
++  panMsg.set_name(this->panJointName);
++  panMsg.mutable_position()->set_target(pan);
++  panMsg.mutable_position()->set_p_gain(0.5);
++  panMsg.mutable_position()->set_i_gain(0.01);
++  panMsg.mutable_position()->set_d_gain(0.05);
++  this->jointPub->Publish(panMsg);
++
++  gazebo::msgs::JointCmd tiltMsg;
++  tiltMsg.set_name(this->tiltJointName);
++  tiltMsg.mutable_position()->set_target(tilt);
++  tiltMsg.mutable_position()->set_p_gain(0.5);
++  tiltMsg.mutable_position()->set_i_gain(0.01);
++  tiltMsg.mutable_position()->set_d_gain(0.05);
++  this->jointPub->Publish(tiltMsg);
++}
++
++void PTZInterface::OnJointMsg(ConstJointPtr &_msg)
++{
++  player_ptz_data_t data;
++  memset(&data, 0, sizeof(data));
++
++  this->datatime = gazebo::common::Time::GetWallTime().Double();
++  // return the currently set values (which differ from the actual values while
++  // the PTZ is moving)
++  data.pan = pan;
++  data.tilt = tilt;
++  data.zoom = 0.;
++
++  this->driver->Publish(this->device_addr,
++      PLAYER_MSGTYPE_DATA,
++      PLAYER_PTZ_DATA_STATE,
++      static_cast<void*>(&data), sizeof(data), &this->datatime);
+ }
+diff -u -r gazebo-1.0.1/interfaces/player/PTZInterface.hh gazebo-1.0.1-cogx/interfaces/player/PTZInterface.hh
+--- gazebo-1.0.1/interfaces/player/PTZInterface.hh	2012-05-15 19:35:21.000000000 +0200
++++ gazebo-1.0.1-cogx/interfaces/player/PTZInterface.hh	2012-05-31 14:53:09.221250747 +0200
+@@ -15,65 +15,62 @@
+  *
+ */
+ /* Desc: PTZ Interface for Player
+- * Author: Nate Koenig
+- * Date: 2 March 2006
++ * Author: Nate Koenig, Michael Zillich
++ * Date: 31 May 2012
+  */
+ 
+-#ifndef PTZINTERFACE_HH
+-#define PTZINTERFACE_HH
++#ifndef GAZEBO_PTZINTERFACE_HH
++#define GAZEBO_PTZINTERFACE_HH
+ 
++#include <string>
+ #include "GazeboInterface.hh"
+ 
+-namespace boost
++/// \addtogroup player_iface
++/// \{
++/// \defgroup ptz_player PTZ Interface
++/// \brief Interface for controling a ptz
++/// \{
++/// \brief PTZ Interface
++class PTZInterface : public GazeboInterface
+ {
+-  class recursive_mutex;
+-}
++  /// \brief Constructor
++  public: PTZInterface(player_devaddr_t _addr, GazeboDriver *_driver,
++                       ConfigFile *_cf, int _section);
+ 
+-namespace libgazebo
+-{
+-  /// \addtogroup player_iface
+-  /// \{
+-  /// \defgroup ptz_player PTZ Interface
+-  /// \brief Interface for controling a ptz
+-  /// \{
+-  class PTZIface;
+-
+-  /// \brief PTZ Interface
+-  class PTZInterface : public GazeboInterface
+-  {
+-    /// \brief Constructor
+-    public: PTZInterface(player_devaddr_t addr, GazeboDriver *driver,
+-                         ConfigFile *cf, int section);
+-
+-    /// \brief Destructor
+-    public: virtual ~PTZInterface();
+-
+-    /// \brief Handle all messages. This is called from GazeboDriver
+-    public: virtual int ProcessMessage(QueuePointer &respQueue,
+-                                       player_msghdr_t *hdr, void *data);
+-
+-    /// \brief Update this interface, publish new info.
+-    public: virtual void Update();
+-
+-    /// \brief Open a SHM interface when a subscription is received.
+-    ///        This is called fromGazeboDriver::Subscribe
+-    public: virtual void Subscribe();
+-
+-    /// \brief Close a SHM interface. This is called from
+-    ///        GazeboDriver::Unsubscribe
+-    public: virtual void Unsubscribe();
+-
+-    private: PTZIface *iface;
+-
+-    /// \brief Gazebo id. This needs to match and ID in a Gazebo WorldFile
+-    private: char *gz_id;
+-
+-    /// \brief Timestamp on last data update
+-    private: double datatime;
+-
+-    private: static boost::recursive_mutex *mutex;
+-  };
+-}
+-#endif
++  /// \brief Destructor
++  public: virtual ~PTZInterface();
++
++  /// \brief Handle all messages. This is called from GazeboDriver
++  public: virtual int ProcessMessage(QueuePointer &_respQueue,
++                                     player_msghdr_t *_hdr, void *_data);
++
++  /// \brief Update this interface, publish new info.
++  public: virtual void Update();
++
++  /// \brief Open a SHM interface when a subscription is received.
++  ///        This is called fromGazeboDriver::Subscribe
++  public: virtual void Subscribe();
++
++  /// \brief Close a SHM interface. This is called from
++  ///        GazeboDriver::Unsubscribe
++  public: virtual void Unsubscribe();
+ 
++  private: void SetPanTilt(double pan, double tilt);
+ 
++  private: void OnJointMsg(ConstJointPtr &_msg);
++
++  /// \brief Timestamp on last data update
++  private: double datatime;
++
++  private: gazebo::transport::PublisherPtr jointPub;
++  private: gazebo::transport::SubscriberPtr jointSub;
++  private: std::string modelName;
++  private: std::string panJointName;
++  private: std::string tiltJointName;
++  private: double pan;
++  private: double tilt;
++
++  private: static boost::recursive_mutex *mutex;
++};
++
++#endif
+diff -u -r gazebo-1.0.1/plugins/SimpleArmPlugin.cc gazebo-1.0.1-cogx/plugins/SimpleArmPlugin.cc
+--- gazebo-1.0.1/plugins/SimpleArmPlugin.cc	2012-05-15 19:35:21.000000000 +0200
++++ gazebo-1.0.1-cogx/plugins/SimpleArmPlugin.cc	2012-05-29 16:31:07.672836225 +0200
+@@ -115,7 +115,7 @@
+   for (int i = 0; i < NUM_JOINTS; i++)
+   {
+     // ignore everything else, get position and force only
+-    this->jointPositions[i] = _msg->position();
++    this->jointPositions[i] = _msg->position().target();
+     this->jointMaxEfforts[i] = _msg->force();
+   }
+ }
+diff -u -r gazebo-1.0.1/src/sensors/CameraSensor.cc gazebo-1.0.1-cogx/src/sensors/CameraSensor.cc
+--- gazebo-1.0.1/src/sensors/CameraSensor.cc	2012-05-15 19:35:20.000000000 +0200
++++ gazebo-1.0.1-cogx/src/sensors/CameraSensor.cc	2012-05-31 15:37:53.497237705 +0200
+@@ -23,6 +23,7 @@
+ 
+ #include "common/Events.hh"
+ #include "common/Exception.hh"
++#include "common/Image.hh"
+ 
+ #include "transport/transport.h"
+ #include "msgs/msgs.h"
+@@ -158,7 +159,9 @@
+       msgs::Set(msg.mutable_time(), this->world->GetSimTime());
+       msg.mutable_image()->set_width(this->camera->GetImageWidth());
+       msg.mutable_image()->set_height(this->camera->GetImageHeight());
+-      // msg.mutable_image()->set_pixel_format(this->camera->GetImageFormat());
++      //msg.mutable_image()->set_pixel_format(this->camera->GetImageFormat());
++      // TODO: get actual image format and translate from string to enum
++      msg.mutable_image()->set_pixel_format(gazebo::common::Image::RGB_INT8);
+       msg.mutable_image()->set_step(this->camera->GetImageWidth() * 3);
+       msg.mutable_image()->set_data(this->camera->GetImageData(),
+           msg.image().width() * 3 * msg.image().height());
