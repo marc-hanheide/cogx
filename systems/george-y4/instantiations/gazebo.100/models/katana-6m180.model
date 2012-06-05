@@ -1,0 +1,340 @@
+<?xml version="1.0"?>
+
+<!-- Neuronics Katana 6M180 arm
+     Michael Zillich
+		 April 2011
+
+
+            t1    t2                t3               t4       
+            ^    ^                 ^           ^ Z  ^         
+            |   /                 /            |   /          
+            |  /                 /             |  /           
+            | /                 /              | /            
+            |/       l1        /       l2      |/       Y     
+            O*****************O****************O=========> t5 
+           /*                /                /               
+          / *               /                /   T            
+         /  *              /                /                  
+        /   * l0          /                V X                  
+            *                                                 
+            *^ Z                                              
+            *|                                                
+            *|                                                
+            *| S     Y                                        
+             O========>                                       
+            /                                                 
+           /                                                  
+          / X                                                 
+         v                                                    
+
+  l0 = 202 (201.5)
+  l1 = 190
+  l2 = 139
+  l3 = 188 (188.3)
+-->
+
+<model:physical name="katana_6m180_model"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" 
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" 
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" 
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" 
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" 
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" 
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" 
+  >
+
+  <xyz>0 0 0</xyz>
+  <rpy>0.0 0.0 0.0</rpy>
+  <static>false</static>
+  <enableGravity>false</enableGravity>
+
+  <canonicalBody>katana_base_body</canonicalBody>
+
+  <body:cylinder name="katana_base_body">
+    <xyz>0.0 0.0 0.0</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+  </body:cylinder>
+
+  <body:cylinder name="katana_link0_body">
+    <xyz>0.0 0.0 0.0</xyz>
+    <rpy>0.0 0.0 0.0</rpy>
+
+    <geom:cylinder name="katana_link0_geom">
+      <xyz>0.0 0.0 0.101</xyz>
+      <size>0.02 0.202</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.04 0.04 0.202</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="katana_link1_body">
+    <xyz>0.0 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:cylinder name="katana_link1_geom">
+      <xyz>0.0 0.0 0.095</xyz>
+      <size>0.020 0.190</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.190</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0 0 -0.095</xyz>
+        <rpy>90 0 0</rpy>
+        <scale>0.060 0.060 0.060</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="katana_link2_body">
+    <xyz>0.190 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:cylinder name="katana_link2_geom">
+      <xyz>0.0 0.0 0.0695</xyz>
+      <size>0.020 0.139</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.139</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0 0 -0.0695</xyz>
+        <rpy>90 0 0</rpy>
+        <scale>0.060 0.060 0.060</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:cylinder name="katana_link3_body">
+    <xyz>0.329 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:cylinder name="katana_link3_geom">
+      <xyz>0.0 0.0 0.094</xyz>
+      <size>0.020 0.188</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.040 0.040 0.188</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+      <visual>
+        <xyz>0 0 -0.094</xyz>
+        <rpy>90 0 0</rpy>
+        <scale>0.060 0.060 0.060</scale>
+        <mesh>unit_cylinder</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+
+    </geom:cylinder>
+  </body:cylinder>
+
+  <body:box name="katana_gripper_body">
+    <xyz>0.517 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:box name="katana_gripper_geom">
+      <xyz>0.0 0.0 0.025</xyz>
+      <size>0.05 0.05 0.05</size>
+      <mass>0.1</mass>
+
+      <visual>
+        <scale>0.050 0.050 0.050</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <body:box name="katana_left_finger_body">
+    <xyz>0.567 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:box name="katana_left_finger_geom">
+      <xyz>0.0 0.005 0.04</xyz>
+      <size>0.04 0.01 0.08</size>
+      <mass>0.01</mass>
+
+      <visual>
+        <scale>0.040 0.010 0.080</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+  <body:box name="katana_right_finger_body">
+    <xyz>0.567 0.0 0.202</xyz>
+    <rpy>0.0 90.0 0.0</rpy>
+
+    <geom:box name="katana_right_finger_geom">
+      <xyz>0.0 -0.005 0.04</xyz>
+      <size>0.04 0.01 0.08</size>
+      <mass>0.01</mass>
+
+      <visual>
+        <scale>0.040 0.010 0.080</scale>
+        <mesh>unit_box</mesh>
+        <material>Gazebo/Grey</material>
+      </visual>
+    </geom:box>
+  </body:box>
+
+<!-- for debugging: display the tool center point (TCP)
+  <model:physical name = "katana_tcp_model">	
+    <xyz>0.627 0.0 0.202</xyz>-
+    <canonical_body>katana_tcp_body</canonical_body>
+    <attach>
+      <parentBody>katana_gripper_body</parentBody>
+      <myBody>katana_tcp_body</myBody>
+    </attach>
+
+    <body:sphere name="katana_tcp_body">
+      <geom:sphere name="katana_tcp_geom">
+        <size>0.01</size>
+         <visual>
+           <scale>0.01 0.01 0.01</scale>
+           <mesh>unit_sphere</mesh>
+           <material>Gazebo/Red</material>
+         </visual>
+      </geom:sphere>
+    </body:sphere>
+  </model:physical>-->
+
+  <joint:hinge name="base_link0_joint">
+    <body1>katana_link0_body</body1>
+    <body2>katana_base_body</body2>
+    <anchor>katana_link0_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 0 1</axis>
+    <lowstop>-170</lowstop>
+    <highstop>170</highstop>
+  </joint:hinge>
+
+  <joint:hinge name="link0_link1_joint">
+    <body1>katana_link1_body</body1>
+    <body2>katana_link0_body</body2>
+    <anchor>katana_link1_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="link1_link2_joint">
+    <body1>katana_link2_body</body1>
+    <body2>katana_link1_body</body2>
+    <anchor>katana_link2_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="link2_link3_joint">
+    <body1>katana_link3_body</body1>
+    <body2>katana_link2_body</body2>
+    <anchor>katana_link3_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+  </joint:hinge>
+
+  <joint:hinge name="link3_gripper_joint">
+    <body1>katana_gripper_body</body1>
+    <body2>katana_link3_body</body2>
+    <anchor>katana_gripper_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>1 0 0</axis>
+  </joint:hinge>
+
+  <joint:slider name="gripper_left_finger_joint">
+    <body1>katana_left_finger_body</body1>
+    <body2>katana_gripper_body</body2>
+    <anchor>katana_left_finger_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 1 0</axis>
+    <lowStop>0</lowStop>
+    <highStop>0.05</highStop>
+  </joint:slider>
+
+  <joint:slider name="gripper_right_finger_joint">
+    <body1>katana_right_finger_body</body1>
+    <body2>katana_gripper_body</body2>
+    <anchor>katana_right_finger_body</anchor>
+    <anchorOffset>0 0 0</anchorOffset>
+    <axis>0 -1 0</axis>
+    <lowStop>0</lowStop>
+    <highStop>0.05</highStop>
+  </joint:slider>
+
+<!-- finger hinges instead of parallel sliding fingers: did not work properly
+  <joint:hinge name="gripper_left_finger_joint">
+    <body1>katana_left_finger_body</body1>
+    <body2>katana_gripper_body</body2>
+    <anchor>katana_left_finger_body</anchor>
+    <anchorOffset>-0.1 0 0</anchorOffset>
+    <axis>0 0 1</axis>
+    <lowStop>0</lowStop>
+    <highStop>15</highStop>
+    <cfm>0.001</cfm>
+    <erp>0.8</erp>
+  </joint:hinge>
+
+  <joint:hinge name="gripper_right_finger_joint">
+    <body1>katana_right_finger_body</body1>
+    <body2>katana_gripper_body</body2>
+    <anchor>katana_right_finger_body</anchor>
+    <anchorOffset>-0.1 0 0</anchorOffset>
+    <axis>0 0 -1</axis>
+    <lowStop>0</lowStop>
+    <highStop>15</highStop>
+    <cfm>0.001</cfm>
+    <erp>0.8</erp>
+  </joint:hinge>
+-->
+
+  <controller:generic_actarray name="controller">
+    <joint name="base_link0_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link0_link1_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link1_link2_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link2_link3_joint">
+      <force>50</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="link3_gripper_joint">
+      <force>10</force>
+      <gain>2</gain>
+    </joint>
+    <joint name="gripper_left_finger_joint">
+      <force>20</force>
+      <gain>1</gain>
+    </joint>
+    <joint name="gripper_right_finger_joint">
+      <force>20</force>
+      <gain>1</gain>
+    </joint>    <interface:actarray name="generic_actarray_iface_0"/>
+  </controller:generic_actarray>
+
+</model:physical>
+

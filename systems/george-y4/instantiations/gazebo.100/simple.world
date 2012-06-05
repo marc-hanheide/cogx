@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<gazebo version="1.0">
+
+<!-- A simple world file with a box on a table
+     Tested with gazebo-1.0.0 (17 Apr 2012)
+     Michael Zillich
+     May 2012 -->
+
+<world name="simple_world">
+  <include filename="sun.light"/>
+  <include filename="hardwood_floor.model"/>
+
+  <!-- some walls 
+  TODO: convert to new gazebo model format
+  <model:physical name="walls_model">
+    <static>true</static>
+    <body:box name="walls_body">
+      <geom:box name="wall_front_geom">
+        <xyz>5 0 1.4</xyz>
+        <size>0.1 10 2.8</size>
+        <visual>
+          <size>0.1 10 2.8</size>
+          <mesh>unit_box</mesh>
+	        <uvTile>10 3</uvTile>
+          <material>cogx/white-wall</material>
+        </visual>
+      </geom:box>
+      <geom:box name="wall_left_geom">
+        <xyz>0 5 1.4</xyz>
+        <size>10 0.1 2.8</size>
+        <visual>
+          <size>10 0.1 2.8</size>
+          <mesh>unit_box</mesh>
+	        <uvTile>10 3</uvTile>
+          <material>cogx/white-wall</material>
+        </visual>
+      </geom:box>
+      <geom:box name="wall_back_geom">
+        <xyz>-5 0 1.4</xyz>
+        <size>0.1 10 2.8</size>
+        <visual>
+          <size>0.1 10 2.8</size>
+          <mesh>unit_box</mesh>
+	        <uvTile>10 3</uvTile>
+          <material>cogx/white-wall</material>
+        </visual>
+      </geom:box>
+      <geom:box name="wall_right_geom">
+        <xyz>0 -5 1.4</xyz>
+        <size>10 0.1 2.8</size>
+        <visual>
+          <size>10 0.1 2.8</size>
+          <mesh>unit_box</mesh>
+	        <uvTile>10 3</uvTile>
+          <material>cogx/white-wall</material>
+        </visual>
+      </geom:box>
+    </body:box>
+  </model:physical>-->
+
+
+  <!-- the robot -->
+  <include filename="cogx-platform.model" model_name="robot" model_pose="-2.0 0.0 0.01 0 0 0"/>
+
+  <!-- a low table made of boxes -->
+  <include filename="table.model" model_name="table1" model_pose="0 0 0 0 0 0"/>
+  <include filename="table.model" model_name="table2" model_pose="0 0.350 0 0 0 0"/>
+  <include filename="table.model" model_name="table3" model_pose="0 -0.350 0 0 0 0"/>
+
+  <!-- and finally a cereal box! -->
+  <include filename="cereals-bircher.model" model_name="cereals1" model_pose="0 0 0.5 0 0 0"/>
+</world>
+
+</gazebo>
+

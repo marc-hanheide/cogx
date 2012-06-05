@@ -1,0 +1,41 @@
+<gazebo version="1.0">
+
+<!-- The cogx camera: roughly simulates a point grey flea with 6 mm lens.
+     Tested with gazebo-1.0.0 (17 Apr 2012)
+     Michael Zillich
+     May 2012 -->
+<model name="cogx-camera" static="false">
+  <link name="body">
+    <inertial mass="0.05">
+      <inertia ixx="0.01" ixy="0" ixz="0" 
+               iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <geometry>
+        <box size="0.02 0.02 0.02"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <geometry>
+        <box size="0.02 0.02 0.02"/>
+      </geometry>
+      <material script="Gazebo/Blue"/>
+    </visual>
+
+    <sensor name="camera" type="camera" always_on="true" update_rate=".1" visualize='true'>
+      <camera>
+        <horizontal_fov angle="0.78540"/>
+        <image width="640" height="480" format="R8G8B8"/>
+        <clip near="0.1" far="50"/>
+        <save enabled="false" path="/tmp/camera"/>
+      </camera>
+
+      <plugin filename="libCameraPlugin.so" name="camera_plugin"/>
+    </sensor>
+  </link>
+</model>
+
+</gazebo>
+
