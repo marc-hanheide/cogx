@@ -146,6 +146,8 @@ private:
   void loadObjectsAndPlaces(const std::string& fname);
   void loadLearningAttributes(const std::string& fname);
   bool moveObject(const std::string& label, int placeIndex);
+  bool loadObjectModel(const std::string& label, const std::string& modelFilename);
+  bool deleteObjectModel(const std::string& label);
 
 public:
 #ifdef FEAT_VISUALIZATION
