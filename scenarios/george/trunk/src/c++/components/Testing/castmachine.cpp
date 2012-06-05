@@ -213,8 +213,8 @@ void CCastMachine::prepareObjects()
       notthere.push_back(o);
       continue;
     }
-    o.loc.x = 100 + i * 10;
-    o.loc.y = 100 + i * 10;
+    o.loc.x = 100 + (i / 10) * 3;
+    o.loc.y = 100 + (i % 10) * 3;
     mpSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
     mObjects.push_back(o);
   }
@@ -320,6 +320,52 @@ bool CCastMachine::nextScene()
   return getCurrentTest().get() != nullptr;
 }
 
+bool CCastMachine::loadObjectModel(const std::string& label, const std::string& modelFilename)
+{
+  static long modelId = 0;
+
+  auto ito = std::find_if(mObjects.begin(), mObjects.end(), [&label](GObject& obj) {
+      return obj.label == label;
+      });
+  if (ito != mObjects.end()) {
+    deleteObjectModel(label);
+  }
+
+  ++modelId;
+  GObject go(label, "noname::" + label);
+  go.loc.x =  100 + (modelId / 10) * 3;
+  go.loc.y = -100 - (modelId % 10) * 3;
+  go.loc.z = 1.5;
+
+  std::ostringstream cmd("gzfactory spawn -f '" + modelFilename + "' -m " + label);
+  cmd << " -x " << go.loc.x;
+  cmd << " -y " << go.loc.y;
+  cmd << " -z " << go.loc.z;
+  int rv = system(cmd.str().c_str());
+
+  if (rv == 0) {
+    mObjects.push_back(go);
+  }
+
+  return rv == 0;
+}
+
+bool CCastMachine::deleteObjectModel(const std::string& label)
+{
+  auto ito = std::find_if(mObjects.begin(), mObjects.end(), [&label](GObject& obj) {
+      return obj.label == label;
+      });
+  if (ito == mObjects.end()) {
+    return false;
+  }
+  mObjects.erase(ito);
+
+  std::string cmd("gzfactory delete -m " + label);
+  int rv = system(cmd.c_str());
+
+  return rv == 0;
+}
+
 bool CCastMachine::moveObject(const std::string& label, int placeIndex)
 {
   for(unsigned int i = 0; i < mObjects.size(); i++) {
@@ -328,8 +374,8 @@ bool CCastMachine::moveObject(const std::string& label, int placeIndex)
       continue;
     bool physon = false;
     if (placeIndex < 0 || placeIndex >= mLocations.size()) {
-      o.loc.x = 100 + i * 10;
-      o.loc.y = 100 + i * 10;
+      o.loc.x = 100 + (i / 10) * 3;
+      o.loc.y = 100 + (i % 10) * 3;
       physon = false;
     }
     else {
@@ -351,7 +397,10 @@ bool CCastMachine::loadScene()
 
   CTeachTestEntry* pe = dynamic_cast<CTeachTestEntry*>(pt.get());
   if (pe) {
-    bool rv = moveObject(pe->mLabel, 0);
+    bool rv;
+    std::string model = "instantiations/gazebo/models/gen-" + label + ".model"; // XXX HARDCODED :(
+    rv = loadObjectModel(pe->mLabel, model);
+    rv = moveObject(pe->mLabel, 0);
     msObjectOnScene = pe->mLabel;
     castComponent()->log("Placing '%s' on the scene.", pe->mLabel.c_str());
     return rv;
@@ -385,6 +434,7 @@ void CCastMachine::clearScene()
 {
   if (msObjectOnScene != "") {
     moveObject(msObjectOnScene, -1);
+    deleteObjectModel(msObjectOnScene);
     castComponent()->log("Removing '%s' from the scene.", msObjectOnScene.c_str());
   }
 

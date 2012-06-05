@@ -368,7 +368,7 @@ public:
   TStateFunctionResult work() {
     machine()->clearScene();
     if (machine()->mStepsTaught > 0) {
-      // TODO machine()->saveKnowledge();
+      // machine()->saveKnowledge(); // XXX: this is done by Matlab: ASV=1 in config
     }
     machine()->switchToState(mTableEmpty);
     return Continue;
