@@ -1102,6 +1102,12 @@ void PlaceManager::evaluateUnexploredPaths() {
                   break;
                 }
               }
+              /* Door placeholders are the special type of placeholders which are created
+               * in order to go through the door if we alredy have the nodes on both sides
+               * of the door, but we didn't go through it. They can be removed only if
+               * we tried to go through the door. It this case we eigher reach the placeholder
+               * or get a door node which becomes connected with the nodes on both sides of the door
+               */
               log("remove door placeholders");
               if (extantHyp->gateway) {
                 int closestNodeId = m_mapInterface->findClosestNode(
@@ -1191,7 +1197,6 @@ void PlaceManager::evaluateUnexploredPaths() {
                       place->id, extantHyp->originPlaceID));
 
                 }
-                //TODO CHANGE origplace and connectivity
                 _overwriteHypForPlace(place->id, nodeHyp);
               }
               //}
