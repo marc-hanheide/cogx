@@ -1312,6 +1312,9 @@ void PlaceManager::evaluateUnexploredPaths() {
     log("Updating reachable placeholder properties.");
     updateReachablePlaceholderProperties(curPlace);
   }
+
+  // Adding extra connections between nodes
+
   int curPlaceID = _getPlaceIDForNode(curNode->nodeId);
   if (curPlaceID >= 0) {
     set<int> &curPlaceConnectivities = m_connectivities[curPlaceID];
@@ -1321,7 +1324,7 @@ void PlaceManager::evaluateUnexploredPaths() {
     for (size_t k = 0; k < places.size(); k++) {
       gr.push_back(make_pair(places[k], _getNodeForPlace(places[k])));
     }
-
+    // We sort the nodes connected to the current node by the order of distance. 
     bool swapped = true;
     int j = 0;
     pair<PlaceID, NavData::FNodePtr> tmp;
@@ -1354,7 +1357,7 @@ void PlaceManager::evaluateUnexploredPaths() {
               == curPlaceConnectivities.end())) {
         // Check if was checked already            
 
-        // Check if are connected via node
+        // Check if are connected via node or two nodes
         double max_dist = 2.0;
         bool link_gateway = false;
         bool link_gateway2 = false;
@@ -1372,6 +1375,7 @@ void PlaceManager::evaluateUnexploredPaths() {
 
               if (link->gateway == 1) {
                 link_gateway = true;
+                // Connected via door
                 break;
               }
             }
@@ -1384,6 +1388,7 @@ void PlaceManager::evaluateUnexploredPaths() {
                 if (it4 != placeConnectivities2.end()) {
                   if ((link->gateway == 1) || (link2->gateway == 1)) {
                     link_gateway2 = true;
+                    // One of the nodes in the connection chain was a door node.
                   }
                 }
               }
@@ -1406,7 +1411,7 @@ void PlaceManager::evaluateUnexploredPaths() {
             - curNode->y);
 
         if (dist2 < max_dist * max_dist) {
-          // Check path
+          // Check path distance. Is the connection line straight?
           double path_dist = m_mapInterface->getPathLength(it->second->x,
               it->second->y, curNode->x, curNode->y);
           //          debug("path_dist %d %d - %f %f %f %f", curPlaceID, it->first,
@@ -1445,9 +1450,13 @@ void PlaceManager::evaluateUnexploredPaths() {
                   if ((t > -door_tolerance) && (t < l + door_tolerance) && (s
                       > -width / 2 * 1.5) && (s < width / 2 * 1.5) && (max_dist
                       > 1.5)) {
+                    // The connection line goes through a door
                     if (!link_gateway2) {
                       NodeHypothesisPtr newHyp =
                           new SpatialData::NodeHypothesis();
+                      // There were no door nodes in the connection chain
+                      // Create a door placeholder (see information above)
+                      
                       //if (t>l/2) t=l/2;
                       t = 0;
                       newHyp->x = x1 + nx * t;
@@ -1477,6 +1486,7 @@ void PlaceManager::evaluateUnexploredPaths() {
               }
             }
             if (!intersects_door) {
+              // Connection line didn't go through the door, so we create a normal connection
               createConnectivityProperty(sqrt(dist2), curPlaceID, it->first);
               createConnectivityProperty(sqrt(dist2), it->first, curPlaceID);
             }
