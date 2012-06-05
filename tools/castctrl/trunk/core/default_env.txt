@@ -121,11 +121,10 @@ GAZEBO_PLUGIN_PATH=<pathlist>
    /usr/local/lib/${GAZEBO_DIRNAME}/plugins
 </pathlist>
 GAZEBO_RESOURCE_PATH=<pathlist>
-   /usr/local/share/${GAZEBO_DIRNAME}
-   ${COGX_ROOT}/instantiations/gazebo
    ${COGX_ROOT}/instantiations/gazebo.100
    ${COGX_ROOT}/instantiations/${GAZEBO_DIRNAME}
    ${COGX_ROOT}/instantiations/xdata/gazebo
+   /usr/local/share/${GAZEBO_DIRNAME}
 </pathlist>
 OGRE_RESOURCE_PATH=<pathlist>
    /usr/lib/OGRE
