@@ -7,7 +7,9 @@ import random
 #import cv
 from PyQt4 import QtGui, QtCore
 
-print dir()
+GazeboVersion = 100
+
+#print dir()
 
 def rectPoly(x0, y0, w, h):
     return (( (x0, y0), (x0+w, y0), (x0+w, y0+h), (x0, y0+h), (x0, y0) ), )
@@ -92,7 +94,10 @@ tmpl_include_model = """
   </model:physical>
 """
 
-tmpl_box = readConfig("res/box.tmpl")
+if GazeboVersion < 100:
+    tmpl_box = readConfig("res/box.tmpl")
+else:
+    tmpl_box = readConfig("res/box-1.0.tmpl")
 
 tmpl_places="""
 [places]
@@ -123,6 +128,7 @@ class OgreBox:
             faces.append(tmpl_box["face"] % {
                     "px": f[0] * sx, "py": f[1] * sy, "pz": f[2] * sz,
                     "sx": f[3] * sx, "sy": f[4] * sy, "sz": f[5] * sz,
+                    "partname": f[6],
                     "material_name": "%s-%s" % (self.material_name, f[6])
                    })
 
@@ -133,6 +139,7 @@ class OgreBox:
                }
 
         body = tmpl_box["body"] % {
+                "sx": sx, "sy": sy, "sz": sz,
                 "model_name": self.name,
                 "geometry": geometry
                }
@@ -282,7 +289,7 @@ class OgreBox:
             fl = faces[i][4]  # face_location
             print fp, fl
             fim = img.copy(QtCore.QRect(fp[0], fp[1], fp[2] - fp[0], fp[3] - fp[1]))
-            fname = "x-%s-%s.png" % (self.name.lower(), fl[6])
+            fname = "x-%s-%s.jpg" % (self.name.lower(), fl[6])
             fname = fname.replace(" ", "-")
             matname = "%s-%s" % (self.material_name, fl[6]) 
             fim.save("xdata/Media/materials/textures/%s"  % fname)
@@ -408,10 +415,10 @@ class RandomColorSelector:
         return (rgb[0], rgb[1], rgb[2], co)
 
     def printStats(self):
-        print "Known colors:"
+        print "* Known colors:"
         for k,v in self.colors.iteritems():
             print k, len(v)
-        print "Used colors:"
+        print "* Generated colors:"
         for k,v in self.stat.iteritems():
             print k, v
 
@@ -455,7 +462,7 @@ class ProjectWriter:
     def createOjbect(self, label, ogreObj):
         fname = self.label2filename(label)
         fmod = open(fname, "w")
-        fmod.write("""<?xml version="1.0"?>\n""");
+        #fmod.write("""<?xml version="1.0"?>\n""");
         fmod.write(ogreObj.makeModel())
         fmod.close()
 
@@ -495,9 +502,12 @@ def createObjects(prjname):
     validColors = ["red", "green", "blue", "yellow", "orange"]
     CG.loadColorsRgb("res/colors01.txt", "res/colorlabels.txt")
     cs = CG.colors.keys()
+    colorCount = {}
     for c in cs:
         if not c in validColors:
             CG.removeColor(c)
+            continue
+        colorCount[c] = 0
 
     flrn = open("xdata/%s.attrs.txt" % prjname, "w")
 
@@ -515,8 +525,15 @@ def createObjects(prjname):
         l = labels[io % len(labels)]
         s = SG.getSize()
         dim = s[:3]; compact = s[3]
+
+        minc = sorted(colorCount.values())[0] # min color count
         c = CG.getColor()
+        while colorCount[c[3]] > minc + 1:
+            print minc, colorCount[c[3]], c
+            print colorCount
+            c = CG.getColor()
         rgb = c[:3]; color = c[3]
+        colorCount[color] += 1
 
         labelcolor = color[:3]
         #labelcolor = "%s-%02x%02x%02x" % (color, rgb[0], rgb[1], rgb[2])
@@ -534,6 +551,8 @@ def createObjects(prjname):
     PW.mergeWorld("res/bigtest.world.in", "#OBJECTLIST#", "xdata/%s.world" % prjname)
     print SG.minv, SG.stat
     CG.printStats()
+    print "* Used colors:"
+    print colorCount
 
 createObjects("test1")
 

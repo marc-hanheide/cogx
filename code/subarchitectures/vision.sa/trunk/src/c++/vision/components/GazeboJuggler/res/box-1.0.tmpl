@@ -1,0 +1,48 @@
+# Template for the model generator (genmodels.py)
+# vim: set ft=dosini sw=2 ts=8 et :vim
+[face]
+      <visual name="visual-%(partname)s">
+        <origin pose="%(px)g %(py)g %(pz)g 0 0 0"/>
+        <geometry>
+           <box size="%(sx)g %(sy)g %(sz)g"/>
+        </geometry>
+        <material script="%(material_name)s"/>
+      </visual>
+
+[geometry]
+%(faces)s
+
+[body]
+    <link name="body">
+      <inertial mass="1.0">
+        <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+      </inertial>
+
+      <collision name="collision">
+        <geometry>
+          <box size="%(sx)g %(sy)g %(sz)g"/>
+        </geometry>
+      </collision>
+
+%(geometry)s
+
+    </link>
+
+[model]
+<gazebo version="1.0">
+  <model name="%(model_name)s-model" static="false">
+
+%(body)s
+
+  </model>
+</gazebo>
+
+[python:face-locations]
+    [ # position, scale, name; side thicknes=0.0001, otherwise the bitmap disappears
+      ( 0.5, 0, 0, 0.0001, 1, 1, "left"),
+      (-0.5, 0, 0, 0.0001, 1, 1, "right"),
+      (0,  0.5, 0, 1, 0.0001, 1, "front"),
+      (0, -0.5, 0, 1, 0.0001, 1, "back"),
+      (0, 0,  0.5, 1, 1, 0.0001, "top"),
+      (0, 0, -0.5, 1, 1, 0.0001, "bottom"),
+     ]
