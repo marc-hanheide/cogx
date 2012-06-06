@@ -65,10 +65,13 @@ private:
     void writeAction(ActionPtr& action, PlanningTaskPtr& task);
     void dispatchPlanning(PlanningTaskPtr& task, int msecs=0);
 
+    bool makeTaskNonactive(int id);
+    PlanningTaskPtr getTaskIfActive(int id);
+
     inline bool later_than(const timeval& t1, const timeval& t2);
 
     typedef std::tr1::unordered_map<int,cast::cdl::WorkingMemoryAddress> taskMap;
-    taskMap activeTasks;
+    taskMap m_tasks;
 
     typedef std::tr1::unordered_map<int, std::string> POPlanMap;
     POPlanMap m_running_poplans;
