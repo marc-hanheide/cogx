@@ -157,8 +157,8 @@ void WMControl::runComponent() {
             for (std::vector<int>::iterator it=execute.begin(); it != execute.end(); ++it) {
                 log("Sending task update for task %d", *it);
                 lockComponent();
-                if (activeTasks.find(*it) != activeTasks.end()) {
-                    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
+                PlanningTaskPtr task = getTaskIfActive(*it);
+                if (task) {
                     unlockComponent();
                     log("sending task update...");
                     pyServer->updateTask(task);
@@ -173,8 +173,8 @@ void WMControl::runComponent() {
             for (std::vector<int>::iterator it=timed_out.begin(); it != timed_out.end(); ++it) {
                 log("Sending task timeout for task %d", *it);
                 lockComponent();
-                if (activeTasks.find(*it) != activeTasks.end()) {
-                    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[*it]);
+                PlanningTaskPtr task = getTaskIfActive(*it);
+                if (task) {
                     unlockComponent();
                     log("task timeout reached.");
                     pyServer->taskTimedOut(task);
@@ -206,6 +206,11 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     }
 
     if (task->executePlan) {
+        if (m_active_task_id != -1) {
+            PlanningTaskPtr old_task = getMemoryEntry<PlanningTask>(m_tasks[m_active_task_id]);
+            old_task->executionStatus = ABORTED;
+            overwriteWorkingMemory(m_tasks[m_active_task_id], old_task);
+        }
         m_active_task_id = TASK_ID;
     }
 
@@ -216,7 +221,7 @@ void WMControl::receivePlannerCommands(const cast::cdl::WorkingMemoryChange& wmc
     task->planningStatus = PENDING;
     task->planningRetries = 0;
     task->executionRetries = 0;
-    activeTasks[task->id] = wmc.address;
+    m_tasks[task->id] = wmc.address;
 
     overwriteWorkingMemory(wmc.address, task);
     
@@ -243,11 +248,17 @@ void WMControl::taskChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         return;
     }
 
+
+    if (task->executionStatus == ABORTED) {
+        makeTaskNonactive(task->id);
+        return;
+    }
+
     if (task->executionStatus != PENDING) {
         return;
     }
 
-    assert(activeTasks.find(task->id) != activeTasks.end());
+    assert(m_tasks.find(task->id) != m_tasks.end());
 
     log("task update from: %s", wmc.src.c_str());
     if (task->executePlan && task->planningStatus == SUCCEEDED && task->firstActionID == "" && task->plan.size() > 0 ) {
@@ -258,7 +269,7 @@ void WMControl::taskChanged(const cast::cdl::WorkingMemoryChange& wmc) {
 }
 
 void WMControl::taskRemoved(const cast::cdl::WorkingMemoryChange& wmc) {
-    BOOST_FOREACH(taskMap::value_type entry, activeTasks) {
+    BOOST_FOREACH(taskMap::value_type entry, m_tasks) {
         if (entry.second == wmc.address) {
             //Delete the associated action (if it exists))
             vector<cast::CASTData<Action> > actions;
@@ -269,7 +280,8 @@ void WMControl::taskRemoved(const cast::cdl::WorkingMemoryChange& wmc) {
                     break;
                 }
             }
-            activeTasks.erase(entry.first);
+            m_tasks.erase(entry.first);
+            makeTaskNonactive(entry.first);
             break;
         }
     }
@@ -291,22 +303,25 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
     }
     log("Action %s changed to status %d", action->name.c_str(), action->status);
 
-    assert(activeTasks.find(action->taskID) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[action->taskID]);
+    PlanningTaskPtr task = getTaskIfActive(action->taskID);
     log("Action is associated with task %d", action->taskID);
+    if (task == 0) {
+        log("task %d is no longer active.", action->taskID);
+        return;
+    }
 
     assert(task->plan.size() > 0);
     task->plan[0]->status = action->status;
     
     if (action->status == ABORTED) {
         task->executionStatus = ABORTED;
-        overwriteWorkingMemory(activeTasks[task->id], task);
+        overwriteWorkingMemory(m_tasks[task->id], task);
     }
     else if (action->status == FAILED) {
         if (task->executionRetries >= MAX_EXEC_RETRIES) {
             log("Action %s failed, retries exhausted.", action->name.c_str());
             task->executionStatus = FAILED;
-            overwriteWorkingMemory(activeTasks[task->id], task);
+            overwriteWorkingMemory(m_tasks[task->id], task);
             pyServer->notifyFailure(task, EXECUTION);
         }
         else {
@@ -314,7 +329,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
             task->executionStatus = PENDING;
             //generateState(task);
             task->executionRetries++;
-            overwriteWorkingMemory(activeTasks[task->id], task);
+            overwriteWorkingMemory(m_tasks[task->id], task);
             dispatchPlanning(task, PLANNER_UPDATE_DELAY);
         }
     }
@@ -330,7 +345,7 @@ void WMControl::actionChanged(const cast::cdl::WorkingMemoryChange& wmc) {
         }*/
         task->executionRetries = 0;
         //generateState(task);
-        overwriteWorkingMemory(activeTasks[task->id], task);
+        overwriteWorkingMemory(m_tasks[task->id], task);
         //pyServer->updateTask(task);
         dispatchPlanning(task, PLANNER_UPDATE_DELAY);
     }
@@ -404,16 +419,40 @@ void WMControl::dispatchPlanning(PlanningTaskPtr& task, int msecs) {
     m_queue_mutex.unlock();
 }
 
+PlanningTaskPtr WMControl::getTaskIfActive(int id) {
+    if (m_active_task_id != id || m_tasks.find(id) == m_tasks.end()) {
+        return 0;
+    }
+    try {
+         return getMemoryEntry<PlanningTask>(m_tasks[id]);
+    }
+    catch (cast::DoesNotExistOnWMException) {
+        log("task has vanished");
+        m_tasks.erase(id);
+        makeTaskNonactive(id);
+        return 0;
+    }
+}
+
+
+bool WMControl::makeTaskNonactive(int id) {
+    if (m_active_task_id == id) {
+        log("Making active task %d non-active", id);
+        m_active_task_id = -1;
+        return true;
+    }
+    return false;
+}
 
 
 void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals) {
     log("Plan delivered");
-    if (activeTasks.find(id) == activeTasks.end()) {
+    if (m_tasks.find(id) == m_tasks.end()) {
         log("Task %d not found.", id);
         return;
     }
 
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(m_tasks[id]);
 
     double total_costs = 0;
     BOOST_FOREACH(ActionPtr action, plan) {
@@ -428,9 +467,9 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
 
     log("Task %d has costs %.2f.", task->id, task->costs);
 
-    if (!task->executePlan) {
-        log("Execution flag is not set.");
-        overwriteWorkingMemory(activeTasks[id], task);
+    if (m_active_task_id != id) {
+        log("Task is not active.");
+        overwriteWorkingMemory(m_tasks[id], task);
         return;
     }
 
@@ -452,8 +491,8 @@ void WMControl::deliverPlan(int id, const ActionSeq& plan, const GoalSeq& goals)
     else {
         log("Task %d succeeded.", task->id);
         task->executionStatus = SUCCEEDED;
-        overwriteWorkingMemory(activeTasks[id], task);
-        activeTasks.erase(id);
+        overwriteWorkingMemory(m_tasks[id], task);
+        makeTaskNonactive(id);
     }
 
 }
@@ -486,31 +525,30 @@ void WMControl::deliverPOPlan(int task_id, const POPlanPtr& po_plan) {
 
 void WMControl::deliverHypotheses(int id, const BeliefSeq& hypotheses) {
     log("Hypotheses delivered");
-    if (activeTasks.find(id) == activeTasks.end()) {
-        log("Task %d not found.", id);
-        BOOST_FOREACH(dBeliefPtr belief, hypotheses) {
-            WorkingMemoryAddress wma;
-            wma.id = belief->id;
-            wma.subarchitecture = subarchitectureID();
-            log("adding hypothesis %s", wma.id.c_str());
-            addToWorkingMemory(wma, belief);
-        }
-        return;
+    PlanningTaskPtr task = 0;
+    if (m_tasks.find(id) != m_tasks.end()) {
+        task = getMemoryEntry<PlanningTask>(m_tasks[id]);
+        task->executionStatus = FAILED;
+        task->hypotheses = vector<WorkingMemoryAddress>();
     }
-
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
-    task->executionStatus = FAILED;
-    task->hypotheses = vector<WorkingMemoryAddress>();
+    else {
+        log("Task %d not found.", id);
+    }
+    
     BOOST_FOREACH(dBeliefPtr belief, hypotheses) {
         WorkingMemoryAddress wma;
         wma.id = belief->id;
         wma.subarchitecture = subarchitectureID();
         log("adding hypothesis %s", wma.id.c_str());
         addToWorkingMemory(wma, belief);
-        task->hypotheses.push_back(wma);
+        if (task) {
+            task->hypotheses.push_back(wma);
+        }
     }
 
-    overwriteWorkingMemory(activeTasks[id], task);
+    if (task) {
+        overwriteWorkingMemory(m_tasks[id], task);
+    }
 }
 
 void WMControl::updateBeliefState(const BeliefEntrySeq& beliefs) {
@@ -566,11 +604,12 @@ void WMControl::updateBeliefState(const BeliefEntrySeq& beliefs) {
 
 void WMControl::updateStatus(int id, Completion status) {
     log("entering method updateStatus()");
-    assert(activeTasks.find(id) != activeTasks.end());
-    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(activeTasks[id]);
+    assert(m_tasks.find(id) != m_tasks.end());
+    PlanningTaskPtr task = getMemoryEntry<PlanningTask>(m_tasks[id]);
     task->planningStatus = status;
     log("Settings planning status of task %d to %d", id, status);
     if (status == ABORTED) {
+        makeTaskNonactive(id);
         log("Planning aborted, setting status of task %d to %d", id, status);
         task->executionStatus = status;
     }
@@ -578,10 +617,11 @@ void WMControl::updateStatus(int id, Completion status) {
             task->planningRetries = 0;
     }
     else if (status == FAILED) {
+        makeTaskNonactive(id);
         if (task->planningRetries >= MAX_PLANNING_RETRIES && task->executionStatus != FAILED) {
             log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);
             task->executionStatus = FAILED;
-            overwriteWorkingMemory(activeTasks[id], task);
+            overwriteWorkingMemory(m_tasks[id], task);
             pyServer->notifyFailure(task, PLANNING);
             return;
         }
@@ -592,18 +632,18 @@ void WMControl::updateStatus(int id, Completion status) {
             log("Planning failed, waiting and replanning.");
             task->planningStatus = PENDING;
             task->planningRetries++;
-            overwriteWorkingMemory(activeTasks[id], task);
+            overwriteWorkingMemory(m_tasks[id], task);
             //pyServer->updateTask(task);
             dispatchPlanning(task, REPLAN_DELAY);
             return;
         }
     }
-    overwriteWorkingMemory(activeTasks[id], task);
+    overwriteWorkingMemory(m_tasks[id], task);
 }
 
 
 void WMControl::waitForChanges(int id, int timeout) {
-    assert(activeTasks.find(id) != activeTasks.end());
+    assert(m_tasks.find(id) != m_tasks.end());
     timeval tval;
     gettimeofday(&tval, NULL);
     tval.tv_sec += timeout / 1000;
@@ -630,10 +670,10 @@ void WMControl::writeAction(ActionPtr& action, PlanningTaskPtr& task) {
         id = newDataID();
         task->firstActionID = id;
         addToWorkingMemory(id, action);
-        overwriteWorkingMemory(activeTasks[task->id], task);
+        overwriteWorkingMemory(m_tasks[task->id], task);
     }
     else {
-        overwriteWorkingMemory(activeTasks[task->id], task);
+        overwriteWorkingMemory(m_tasks[task->id], task);
         overwriteWorkingMemory(id, action);
     }
 }
