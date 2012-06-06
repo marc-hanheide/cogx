@@ -19,7 +19,8 @@ SETVAR spatial_max_door_width=0.85
 #SETVAR exclude_exploration=--exclude-from-exploration "x > 2.7 y < 0 or x > 10.5 or x > 9 y < -0.8"
 #
 ## exclude 233 and down corridor past 245
-SETVAR exclude_exploration=--exclude-from-exploration "x > 10.7 x < 12 y > 2 y < 3.7 or x > 1.7 x < 2.7 y > 1.9 y < 3"
+SETVAR exclude_exploration=--exclude-from-exploration "x > 10.5 x < 12 y > 1 y < 3.7 or x > 1.7 x < 2.7 y > 1.9 y < 3"
+# or x > 5 x < 11 y > 3.2 y < 4.5"
 
 #do not show the height map
 #SETVAR spatial_show_3d_obstacles=
@@ -43,7 +44,7 @@ SETVAR spatial_show_expanded_map=--showExpandedMap
 # Obstacles are expanded by 
 # (spatial_node_obstacle_margin + spatial_node_unknown_margin) * 0.5 * (robot width)
 # Free space is reduced by (spatial_node_unknown_margin) * 0.5 * (robot width)
-SETVAR spatial_node_obstacle_margin=1.0
+SETVAR spatial_node_obstacle_margin=0.9
 SETVAR spatial_node_unknown_margin=1.0
 
 INCLUDE dora-yr4-real.cast
