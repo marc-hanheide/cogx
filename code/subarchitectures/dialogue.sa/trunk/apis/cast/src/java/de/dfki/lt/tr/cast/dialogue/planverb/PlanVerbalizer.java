@@ -2,6 +2,7 @@ package de.dfki.lt.tr.cast.dialogue.planverb;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -137,11 +138,26 @@ public class PlanVerbalizer {
 			}
 		};
 		
-		List<Message> messages = null;
+		// this does not work yet!
+		// List<Message> messages = m_contentDeterminator.determineMessages(h);
+		// therefore process each POPlan individually:
 		
-		messages = m_contentDeterminator.determineMessages(h);
-			
-		return "Got " + ((hlist == null) ? "null" : Integer.toString(hlist.size())) + " messages";
+		List<Message> messages = new ArrayList<Message>();
+		for (POPlan poPlan : hlist) {
+			try {
+				messages.addAll(m_contentDeterminator.determineMessages(poPlan));
+			} catch (BuildException e) {
+				m_castComponent.logException(e);
+			} catch (ParseException e) {
+				m_castComponent.logException(e);
+			} catch (NoAnnotationFoundException e) {
+				m_castComponent.logException(e);
+			} catch (UnknownOperatorException e) {
+				m_castComponent.logException(e);
+			}
+		}
+		
+		return realizeMessages(messages);		
 	}
 	
 	
@@ -165,67 +181,70 @@ public class PlanVerbalizer {
 		} catch (UnknownOperatorException e) {
 			m_castComponent.logException(e);
 		}
-		// if errors prevented the creation of a meesage list, report it...
+		// if errors prevented the creation of a message list, report it...
 		if (messages==null) return "I am sorry. I don't know what to say about this Pee Oh Plan.";
 		else m_castComponent.log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
-		// construct a holder for the verbalized string
-        StringBuilder verbalizationBldr = new StringBuilder();
-        
-        // TODO missing: aggregation! 
-        
-        // realize each message
-        for (Message msg : messages) {
-    		StringBuilder log_sb = new StringBuilder();
-        	if (msg instanceof ProtoLFMessage) {
-        		log_sb.append("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
-        		BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
-        		if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
-        			log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
-        			m_castComponent.log(log_sb);
-        			continue;
-        		}
-        		// perform lexical substitution before realization
-        		try {
-        			protoLF = preProcessLexiconSubstitution(protoLF);
-        			log_sb.append("\n lexical substitution before realization yielded: \n" + protoLF.toString());
-        		} catch (BuildException e) {
-        			m_castComponent.logException(e);
-        		} catch (ParseException e) {
-        			m_castComponent.logException(e);
-        		}
 
-        		// do GRE 
-        		protoLF = doGRE(protoLF);
-        		log_sb.append("\n doGRE() yielded: \n" + protoLF.toString());
-
-        		// make missing parts consistent (e.g. subj agreement)
-        		BasicLogicalForm finalLF = finalizeProtoLF(protoLF);
-        		log_sb.append("\n finalizeProtoLF() yielded: \n" + finalLF.toString());
-
-        		// surface realization
-        		// perform lexical re-substitution after realization, before appending to the verbal report
-        		String realization = realizeLF(finalLF);
-        		log_sb.append("\n realizeLF() yielded: \n" + realization);
-
-        		if (!realization.equals("")) {
-        			String outputText = postProcessLexiconSubstitution(realization);
-            		log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
-        			verbalizationBldr.append(outputText + ". \n");
-        		} else {
-            		log_sb.append("\n not appending any output text.");        			
-        		}
-        	} else if (msg instanceof StringMessage) {
-        		String outputText = ((StringMessage) msg).getText();
-        		log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
-        		
-        		verbalizationBldr.append(outputText + ". \n");
-        	}
-        	m_castComponent.log(log_sb);
-        }
-        // return the generated report
-        return verbalizationBldr.toString();
+		return realizeMessages(messages);
 	}
 
+	
+	public String realizeMessages(List<Message> messages) {
+		StringBuilder log_sb = new StringBuilder();
+		StringBuilder output_sb = new StringBuilder();
+
+        // TODO missing: aggregation! 
+        
+		// realize each message
+		for (Message msg : messages) {
+			if (msg instanceof ProtoLFMessage) {
+				log_sb.append("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
+				BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
+				if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
+					log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
+					m_castComponent.log(log_sb);
+					return "";
+				}
+				// perform lexical substitution before realization
+				try {
+					protoLF = preProcessLexiconSubstitution(protoLF);
+					log_sb.append("\n lexical substitution before realization yielded: \n" + protoLF.toString());
+				} catch (BuildException e) {
+					m_castComponent.logException(e);
+				} catch (ParseException e) {
+					m_castComponent.logException(e);
+				}
+
+				// do GRE 
+				protoLF = doGRE(protoLF);
+				log_sb.append("\n doGRE() yielded: \n" + protoLF.toString());
+
+				// make missing parts consistent (e.g. subj agreement)
+				BasicLogicalForm finalLF = finalizeProtoLF(protoLF);
+				log_sb.append("\n finalizeProtoLF() yielded: \n" + finalLF.toString());
+
+				// surface realization
+				// perform lexical re-substitution after realization, before appending to the verbal report
+				String realization = realizeLF(finalLF);
+				log_sb.append("\n realizeLF() yielded: \n" + realization);
+
+				if (!realization.equals("")) {
+					String outputText = postProcessLexiconSubstitution(realization);
+					log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
+					output_sb.append(outputText + ". \n");
+				} else {
+					log_sb.append("\n not appending any output text.");        			
+				}
+			} else if (msg instanceof StringMessage) {
+				String outputText = ((StringMessage) msg).getText();
+				log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
+
+				output_sb.append(outputText + ". \n");
+			}
+        }
+    	m_castComponent.log(log_sb);
+    	return output_sb.toString();
+	}
 	
 
 	/**

@@ -115,8 +115,7 @@ public class POPlanMonitor extends ManagedComponent {
 			logException(e);
 			return;
 		}
-		log("ADDED POPlan: " + poplanToString(_newPOPlan));
-		// VerbalisationUtils.verbaliseString(this, "Got a new POPlan");
+		log("received ADD for POPlan: \n " + poplanToString(_newPOPlan));
 		if (_newPOPlan.status.name().equals("RUNNING")) {
 			runningMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			runningMap.get(_newPOPlan.taskID).add(_newPOPlan);
@@ -124,7 +123,8 @@ public class POPlanMonitor extends ManagedComponent {
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			finishedMap.get(_newPOPlan.taskID).add(_newPOPlan);
-			//reportFinishedPOPlan(_newPOPlan);
+			String report = generateHistoryReport(_newPOPlan.taskID);
+			log("received ADD for FINISHED POPlan with taskID " + _newPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
 		}
 	}
 	
@@ -139,16 +139,15 @@ public class POPlanMonitor extends ManagedComponent {
 			logException(e);
 			return;
 		}
-		log("OVERWRITTEN POPlan: " + poplanToString(_oldPOPlan));
-		// VerbalisationUtils.verbaliseString(this, "Got an overwritten POPlan");
-		
+		log("received OVERWRITE for POPlan: \n " + poplanToString(_oldPOPlan));
 		
 		if (_oldPOPlan.status.name().equals("RUNNING")) {
 			runningMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
-			//reportFinishedPOPlan(_oldPOPlan);
+			String report = generateHistoryReport(_oldPOPlan.taskID);
+			log("received OVERWRITE for FINISHED POPlan with taskID " + _oldPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
 		}
 	}
 	
@@ -164,8 +163,6 @@ public class POPlanMonitor extends ManagedComponent {
 			return;
 		}
 		log("ADDED PlanningTask: " + planningTaskToString(_newPlanningTask));
-		// VerbalisationUtils.verbaliseString(this, "Got a new POPlan");
-		
 		planningTaskMap.put(_newPlanningTask.id, _newPlanningTask);
 	}
 	
@@ -181,7 +178,6 @@ public class POPlanMonitor extends ManagedComponent {
 			return;
 		}
 		log("OVERWRITTEN PlanningTask: " + planningTaskToString(_oldPlanningTask));
-		// VerbalisationUtils.verbaliseString(this, "Got an overwritten POPlan");
 		
 		planningTaskMap.put(_oldPlanningTask.id, _oldPlanningTask);
 		
@@ -199,6 +195,25 @@ public class POPlanMonitor extends ManagedComponent {
 		}
 	}
 
+	
+	private String generateHistoryReport(int taskID) {
+		log("************ generateHistoryReport(" + taskID + ") called ************");
+
+		// construct history in our POPlan representation (from planner.sa POPlan objects)
+		List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> hlist = new ArrayList<de.dfki.lt.tr.planverb.planning.pddl.POPlan>();
+		if (finishedMap.containsKey(taskID)) {
+			for (POPlan pp : finishedMap.get(taskID)) {
+				de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
+				hlist.add(pevPOPlan);
+			}
+		}
+		
+		// hand history over to PEV
+		log("calling PEV Module verbalizeHistory()");
+		return this.pevModule.verbalizeHistory(hlist);
+	}
+
+	
 	private void reportFinishedPOPlan(POPlan pp) {
 		log("************ reportFinishedPOPlan() called ************");
 
