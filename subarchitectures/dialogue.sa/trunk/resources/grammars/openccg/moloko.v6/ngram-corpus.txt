@@ -69,3 +69,109 @@ the color game
 the shape game
 I am playing the color game
 I am playing the shape game
+I moved from the kitchen to the office
+I moved from place 1 to place 2 via place 3
+I moved from place 2 to place 3 through place 4
+I moved from place 4 to place 5
+I moved to place 6
+I moved to place 6 from place 7
+I moved from place 7 via place 8 to place 9
+I moved from place 9 to place 10
+place 11
+place 12
+place 13
+place 14
+place 15
+place 16
+place 17
+place 18
+place 19
+place 20
+place 21
+place 22
+place 23
+place 24
+place 25
+place 26
+place 27
+place 28
+place 29
+place 30
+place 31
+place 32
+place 33
+place 34
+place 35
+place 36
+place 37
+place 38
+place 39
+place 40
+I moved to the corridor
+I moved into the kitchen
+I went to the library
+I created cones in the room
+this room
+is this room a kitchen
+is this room an office
+is this room a meetingroom
+is this room a livingroom
+is there a book in this room
+is there a book here
+is there a cereakbox in the kitchen
+is there a cerealbox in this room
+is there a magazine here
+is there a magazine in this room
+is the magazine in the cupboard
+is the magazine in some container
+is there some container in this room
+is there some container here
+I search for a person
+I searched the room for a person
+I searched the meetingroom for a magazine
+I assumed this room is a kitchen
+I assumed there is a magazine in the meetingroom
+I assumed cerealboxes are in kitchens
+I assumed a cerealbox is in a kitchen
+I assumed the cerealbox is in some kitchen
+after that
+because I am in the kitchen
+because I was in the meetingroom
+in order to find a magazine
+in order to look for people
+in order to search for a person
+I planned to go to place 10
+I intended to move from place 8 to place 12
+I could not move to place 9
+I could not move from place 11 to place 12
+I could not move from place 13 to place 14 via place 15
+I failed to find the cerealbox
+I failed to search for a person
+I failed to find a person
+I failed to ask a person
+in order to ask someone I searched this room for a person
+I looked for people in order to ask a person
+I asked the person
+I asked someone
+I ask a person
+I try to find a magazine
+I try to move to place 18
+I tried to go to place 20
+I tried to go to place 21 from place 22
+I tried to move from place 23 to place 25 through place 24
+I moved and stopped
+I moved to place 12 and place 13 and place 14
+I went to the corridor and to the meetingroom
+I wanted to create cones in this room
+I want to go to place 1
+I wanted to move from place 30 to place 31
+I plan to go to the kitchen
+I planned to go to the meetingroom
+I intended to search the kitchen for cornflakes
+I planned to look for a magazine in the meetingroom
+I plan to look for magazines in the office
+I wanted to look for people
+I intended to ask someone
+I could not ask someone
+I could not go to the office
+I could not create cones in the meetingroom

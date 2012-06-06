@@ -18,6 +18,7 @@ import cast.architecture.WorkingMemoryReaderComponent;
 import cast.cdl.WorkingMemoryAddress;
 
 import opennlp.ccg.grammar.Grammar;
+import opennlp.ccg.synsem.SignScorer;
 import scala.Option;
 import scala.collection.immutable.Set;
 
@@ -41,6 +42,7 @@ import de.dfki.tarot.nlp.lf.BasicLogicalForm;
 import de.dfki.tarot.nlp.lf.BasicState;
 import de.dfki.tarot.nlp.lf.BasicUtils;
 import de.dfki.tarot.nlp.realisation.ccg.CCGRealiser;
+import de.dfki.tarot.nlp.realisation.openccg.NgramPrecisionModelFactory;
 import de.dfki.tarot.util.BuildException;
 import de.dfki.tarot.util.ParseException;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -88,7 +90,12 @@ public class PlanVerbalizer {
 		// initialize grammar-related stuff
 		Grammar grammar = new Grammar(grammarFile);
 				//new Object().getClass().getResource(grammarFile));
-		m_realiser = new CCGRealiser(grammar);
+		
+		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File("./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt").toURL(), "UTF-8");
+				
+			//	fromURL(getClass.getResource("/de/dfki/tarot/nlp/realisation/openccg/test-corpus.txt"), "UTF-8"));
+		m_realiser = new CCGRealiser(grammar, scorer);
+				
 		
 		// initialize lexicon substitutions for the time being...
 		initLexicalSubstitutions();
