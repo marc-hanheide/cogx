@@ -1880,6 +1880,10 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 					SpatialProbabilities::JointProbabilityValue jpv;
 					jpv.probability = marginalProb;
 					jpv.variableValues.push_back(rvvPtr);
+					log("massFunction[%i]=%f (\"%s\")",
+					    resultDistribution.massFunction.size(),
+					    marginalProb,
+					    vn.c_str());
 					resultDistribution.massFunction.push_back(jpv);
 				}
 			}
@@ -1910,6 +1914,10 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 					SpatialProbabilities::JointProbabilityValue jpv;
 					jpv.probability = (i == varIter->second.observedValue)?1.0:0.0;
 					jpv.variableValues.push_back(rvvPtr);
+					log("massFunction[%i]=%f (\"%s\")",
+					    resultDistribution.massFunction.size(),
+					    jpv.probability,
+					    vn.c_str());
 					resultDistribution.massFunction.push_back(jpv);
 				}
 			}
@@ -2024,6 +2032,12 @@ void ChainGraphInferencer::prepareInferenceResult(std::string queryString,
 							jpv.probability = marginalProb;
 							jpv.variableValues.push_back(rvv1Ptr);
 							jpv.variableValues.push_back(rvv2Ptr);
+							string s = rvv1Ptr->value + " "
+							  + rvv2Ptr->value;
+							log("massFunction[%i]=%f (\"%s\")",
+							    resultDistribution.massFunction.size(),
+							    marginalProb,
+							    s.c_str());
 							resultDistribution.massFunction.push_back(jpv);
 						}
 						++index;
