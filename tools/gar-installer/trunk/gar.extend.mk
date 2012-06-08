@@ -105,4 +105,15 @@ svn//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	@$(MAKE) makesum
 
 
+hghttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
+	@#env
+	(cd $< && \
+	 echo "exporting from HG: hg clone http://$(*D)" && \
+	 hg clone https://$(*D) && \
+	 mv * $(GARNAME)-$(GARVERSION) && \
+	 cd $(GARNAME)-$(GARVERSION) && \
+	 hg update $(HG_REVISION) dev && \
+	 cd .. \
+	)
+	tar czv --exclude-vcs -C $< -f $(PARTIALDIR)/$(DISTFILES) .
 
