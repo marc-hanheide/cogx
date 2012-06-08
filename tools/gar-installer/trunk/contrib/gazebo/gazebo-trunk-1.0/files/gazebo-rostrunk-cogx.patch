@@ -1,0 +1,951 @@
+diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.cc gazebo-mercurial-patched/interfaces/player/ActarrayInterface.cc
+--- gazebo-mercurial/interfaces/player/ActarrayInterface.cc	2012-06-06 15:43:57.701033756 +0200
++++ gazebo-mercurial-patched/interfaces/player/ActarrayInterface.cc	2012-06-06 12:08:28.081665726 +0200
+@@ -15,22 +15,21 @@
+  *
+  */
+ /* Desc: Actarray Interface for Player-Gazebo
+- * Author: Alexis Maldonado
++ * Author: Alexis Maldonado, Michael Zillich
++ * Date: 6 June 2012
+  * Date: 19 September 2006
+  */
+ 
+ 
+ #include <math.h>
+ #include <iostream>
+-#include <boost/thread/recursive_mutex.hpp>
+ 
++#include "transport/transport.h"
++#include "msgs/msgs.h"
++#include "math/gzmath.h"
+ #include "GazeboDriver.hh"
+ #include "ActarrayInterface.hh"
+ 
+-using namespace libgazebo;
+-
+-boost::recursive_mutex *ActarrayInterface::mutex = NULL;
+-
+ // The data for the interface (gz_actarray_data_t in gazebo.h) contains
+ // information about each joint plus variables to store the commands. When
+ // a new command is sent, it modifies the cmd_pos, cmd_speed, ... variables
+@@ -42,61 +41,74 @@
+ // a sensible meaning in velocity or position commands.
+ // If the models need it, this interface should be extended.
+ 
+-ActarrayInterface::ActarrayInterface(player_devaddr_t addr,
+-    GazeboDriver *driver, ConfigFile *cf,
+-    int section)
+-: GazeboInterface(addr, driver, cf, section)
++/////////////////////////////////////////////////
++// Constructor
++ActarrayInterface::ActarrayInterface(player_devaddr_t _addr,
++    GazeboDriver *_driver, ConfigFile *_cf, int _section)
++    : GazeboInterface(_addr, _driver, _cf, _section)
+ {
+-  /*
+-  // Get the ID of the interface
+-  this->gz_id = GazeboClient::prefixId + cf->ReadString(section, "gz_id", "");
+-
+-  // Allocate a Actarray Interface
+-  this->iface = new ActarrayIface();
+-
+-  memset(&this->actData, 0, sizeof(this->actData));
+-
+   this->datatime = -1;
++  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
++  this->node->Init(this->worldName);
++  this->modelName = _cf->ReadString(_section, "model_name", "default");
++  bool doneJoints = false;
++  int n = 0;
++  while(!doneJoints)
++  {
++    std::stringstream jointN;
++    jointN << "joint" << n << "_name";
++    std::string jointName = _cf->ReadString(_section, jointN.str().c_str(), "none");
++    if(jointName != "none")
++    {
++      jointNames.push_back(jointName);
++      n++;
++    }
++    else
++    {
++      doneJoints = true;
++    }
++  }
++  this->jointPub = this->node->Advertise<gazebo::msgs::JointCmd>(
++      std::string("~/") + this->modelName + "/joint_cmd");
+ 
+-  if (this->mutex == NULL)
+-    this->mutex = new boost::recursive_mutex();
+-    */
++  this->actData.actuators_count = jointNames.size();
++  this->actData.actuators = new player_actarray_actuator_t[this->actData.actuators_count];
++  this->actData.motor_state = 0;
++  for(size_t i = 0; i < this->actData.actuators_count; i++)
++  {
++    this->actData.actuators[i].position = 0.;
++    this->actData.actuators[i].speed = 0.;
++    this->actData.actuators[i].acceleration = 0.;
++    this->actData.actuators[i].current = 0.;
++    this->actData.actuators[i].state = 0;
++    SetJoint(i, 0.);
++  }
+ }
+ 
+ ActarrayInterface::~ActarrayInterface()
+ {
+-  /*
+   delete [] this->actData.actuators;
+-
+-  // Release this interface
+-  delete this->iface;
+-  */
+ }
+ 
+-
+-int ActarrayInterface::ProcessMessage(QueuePointer &respQueue,
+-    player_msghdr_t *hdr, void *data)
++int ActarrayInterface::ProcessMessage(QueuePointer &_respQueue,
++    player_msghdr_t *_hdr, void *_data)
+ {
+-  /*
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
++  int result = -1;
++
++  // COMMAND POS
++  if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_CMD,
+         PLAYER_ACTARRAY_CMD_POS, this->device_addr))
+   {
+-    assert(hdr->size >= sizeof(player_actarray_position_cmd_t));
+-
++    assert(hdr->_size >= sizeof(player_actarray_position_cmd_t));
+     player_actarray_position_cmd_t *cmd;
+-    cmd = (player_actarray_position_cmd_t*) data;
++    cmd = static_cast<player_actarray_position_cmd_t*>(_data);
+ 
+-    this->iface->Lock(1);
+-    this->iface->data->cmd_pos[cmd->joint] = cmd->position;
+-    this->iface->data->joint_mode[cmd->joint] =
+-      GAZEBO_ACTARRAY_JOINT_POSITION_MODE;
+-    this->iface->data->new_cmd = true;
+-    this->iface->Unlock();
+-
+-    return(0);
++    assert((unsigned)cmd->joint < this->actData.actuators_count);
++    this->SetJoint(cmd->joint, cmd->position);
+ 
++    result = 0;
+   }
++  /*
+   else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
+         PLAYER_ACTARRAY_CMD_SPEED, this->device_addr))
+   {
+@@ -115,142 +127,109 @@
+ 
+     return(0);
+ 
+-  }
+-  else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
++  }*/
++  // COMMAND HOME
++  else if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_CMD,
+         PLAYER_ACTARRAY_CMD_HOME, this->device_addr))
+   {
+-    assert(hdr->size >= sizeof(player_actarray_home_cmd_t));
++    assert(_hdr->size >= sizeof(player_actarray_home_cmd_t));
+     player_actarray_home_cmd_t *cmd;
+-    cmd = (player_actarray_home_cmd_t*) data;
++    cmd = static_cast<player_actarray_home_cmd_t*>(_data);
+ 
+-    this->iface->Lock(1);
+-
+-    this->iface->data->cmd_pos[cmd->joint]= 0.0;
+-    this->iface->data->joint_mode[cmd->joint] =
+-      GAZEBO_ACTARRAY_JOINT_POSITION_MODE;
+-    this->iface->data->new_cmd = true;
+-
+-    this->iface->Unlock();
+-
+-    return(0);
++    for(size_t i = 0; i < this->actData.actuators_count; i++)
++      SetJoint(i, 0.);
+ 
++    result = 0;
+   }
+-  else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
++  // REQ SPEED
++  else if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_REQ,
+         PLAYER_ACTARRAY_REQ_SPEED, this->device_addr))
+   {
+-    assert(hdr->size >= sizeof(player_actarray_speed_config_t));
++    assert(_hdr->size >= sizeof(player_actarray_speed_config_t));
+     player_actarray_speed_config_t *req;
+     player_actarray_speed_config_t response;
++    req = static_cast<player_actarray_speed_config_t*>(_data);
+ 
+-    req = (player_actarray_speed_config_t*)(data);
+-
+-    if (req->joint < GAZEBO_ACTARRAY_MAX_NUM_ACTUATORS)
+-    {
+-      this->iface->Lock(1);
+-
+-      response.joint = req->joint;
+-      response.speed = this->iface->data->actuators[req->joint].speed;
+-
+-      this->iface->Unlock();
++    assert((unsigned)req->joint < this->actData.actuators_count);
++    response.joint = req->joint;
++    response.speed = this->actData.actuators[req->joint].speed;
+ 
+-      driver->Publish(this->device_addr, respQueue,
+-          PLAYER_MSGTYPE_RESP_ACK, PLAYER_ACTARRAY_REQ_SPEED, &response);
++    driver->Publish(this->device_addr, _respQueue,
++        PLAYER_MSGTYPE_RESP_ACK, PLAYER_ACTARRAY_REQ_SPEED, &response);
+ 
+-    }
++    result = 0;
+   }
+-  else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
++  // REQ BRAKES
++  else if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_REQ,
+         PLAYER_ACTARRAY_REQ_BRAKES, this->device_addr))
+   {
+-    assert(hdr->size >= sizeof(player_actarray_brakes_config_t));
++    assert(_hdr->size >= sizeof(player_actarray_brakes_config_t));
+     player_actarray_brakes_config_t *req;
+-    req = (player_actarray_brakes_config_t*) data;
++    req = static_cast<player_actarray_brakes_config_t*>(_data);
+ 
+     // If brakes = on -> Stop all the joints. If they are off, don't do anything
+     if (req->value == 1)
+     {
+-      this->iface->Lock(1);
+-
+-      for (unsigned int i = 0 ; i != GAZEBO_ACTARRAY_MAX_NUM_ACTUATORS ; ++i)
+-      {
+-        this->iface->data->cmd_speed[i] = 0.0;
+-        this->iface->data->joint_mode[i] = GAZEBO_ACTARRAY_JOINT_SPEED_MODE;
+-        this->iface->data->new_cmd = true;
+-
+-      }
+-      this->iface->Unlock();
++      // TODO: implement: set speed of all joints to 0
+     }
+ 
+-
+-    driver->Publish(this->device_addr, respQueue,
++    driver->Publish(this->device_addr, _respQueue,
+         PLAYER_MSGTYPE_RESP_ACK, PLAYER_ACTARRAY_REQ_BRAKES);
+-    return(0);
+ 
++    result = 0;
+   }
+-  else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
++  // REQ POWER
++  else if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_REQ,
+         PLAYER_ACTARRAY_REQ_POWER, this->device_addr))
+   {
+-    assert(hdr->size >= sizeof(player_actarray_power_config_t));
++    assert(_hdr->size >= sizeof(player_actarray_power_config_t));
+     player_actarray_power_config_t *req;
+-    req = (player_actarray_power_config_t*) data;
++    req = static_cast<player_actarray_power_config_t*>(_data);
+ 
+     // If power = off -> Stop all the joints. If power = on, don't do anything
+     if (req->value == 0)
+     {
+-      this->iface->Lock(1);
+-
+-      for (unsigned int i = 0 ; i != GAZEBO_ACTARRAY_MAX_NUM_ACTUATORS ; ++i)
+-      {
+-        this->iface->data->cmd_speed[i]= 0.0;
+-        this->iface->data->joint_mode[i]= GAZEBO_ACTARRAY_JOINT_SPEED_MODE;
+-        this->iface->data->new_cmd = true;
+-      }
+-      this->iface->Unlock();
++      // TODO: implement: set all joint gains to 0?
+     }
+ 
+-    driver->Publish(this->device_addr, respQueue,
++    driver->Publish(this->device_addr, _respQueue,
+         PLAYER_MSGTYPE_RESP_ACK, PLAYER_ACTARRAY_REQ_POWER);
+-    return(0);
++
++    result = 0;
+   }
+-  else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
++  else if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_REQ,
+         PLAYER_ACTARRAY_REQ_GET_GEOM, this->device_addr))
+   {
+     player_actarray_geom response;
+-    this->iface->Lock(1);
+-    response.actuators_count = this->iface->data->actuators_count;
++    response.actuators_count = this->actData.actuators_count;
+ 
+-    player_actarray_actuatorgeom_t geoms[GAZEBO_ACTARRAY_MAX_NUM_ACTUATORS];
+-    for (unsigned int i = 0; i < GAZEBO_ACTARRAY_MAX_NUM_ACTUATORS; ++i)
++    player_actarray_actuatorgeom_t geoms[this->actData.actuators_count];
++    for (unsigned int i = 0; i < this->actData.actuators_count; ++i)
+     {
+-      ActarrayActuatorGeom& gazeboGeom = this->iface->data->actuator_geoms[i];
+-      geoms[i].type = gazeboGeom.type;
+-      // unused
+-      geoms[i].length = 0;
+-      // unused
++      // TODO: all these values are just (reasonable) dummies
++      geoms[i].type = PLAYER_ACTARRAY_TYPE_ROTARY;
++      geoms[i].length = 0.;
+       memset(&(geoms[i].orientation), 0, sizeof(geoms[i].orientation));
+-      // unused
+       memset(&(geoms[i].axis), 0, sizeof(geoms[i].axis));
+-      geoms[i].min = gazeboGeom.min;
+-      geoms[i].centre = gazeboGeom.center;
+-      geoms[i].max = gazeboGeom.max;
+-      geoms[i].home = gazeboGeom.home;
+-      geoms[i].config_speed = gazeboGeom.config_speed;
+-      geoms[i].hasbrakes = gazeboGeom.hasbrakes;
++      geoms[i].min = -10.;
++      geoms[i].centre = 0.;
++      geoms[i].max = 10.;
++      geoms[i].home = 0.;
++      geoms[i].config_speed = 1.;
++      geoms[i].hasbrakes = 0;
+     }
+     response.actuators = geoms;
+ 
+-    // unused
+     memset(&response.base_pos, 0, sizeof(response.base_pos));
+-    // unused
+     memset(&response.base_orientation, 0, sizeof(response.base_orientation));
+-    this->iface->Unlock();
+ 
+-    driver->Publish(this->device_addr, respQueue,
++    driver->Publish(this->device_addr, _respQueue,
+         PLAYER_MSGTYPE_RESP_ACK, PLAYER_ACTARRAY_REQ_GET_GEOM, &response);
+-    return(0);
++
++    result = 0;
+   }
+ 
+-  */
+-  return -1;
++  return result;
+ }
+ 
+ void ActarrayInterface::Update()
+@@ -302,30 +281,46 @@
+   */
+ }
+ 
+-
++/////////////////////////////////////////////////
+ void ActarrayInterface::Subscribe()
+ {
+-  /*
+-  try
+-  {
+-    boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-    this->iface->Open(GazeboClient::client, this->gz_id);
+-  }
+-  catch (std::string &e)
+-  {
+-    // std::ostringstream stream;
+-    std::cout << "Error subscribing to Gazebo Actarray Interface\n"
+-              << e << "\n";
+-    // gzthrow(stream.str());
+-    exit(0);
+-  }
+-  */
++  // TODO: How can we actually query the current state of a joint from gazebo?
++  // Using pose/info is just a hack for now
++  //this->jointSub = this->node->Subscribe("~/joint",
++  this->jointSub = this->node->Subscribe("~/pose/info",
++      &ActarrayInterface::OnJointMsg, this);
+ }
+ 
++/////////////////////////////////////////////////
+ void ActarrayInterface::Unsubscribe()
+ {
+-  /*
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  this->iface->Close();
+-  */
++  this->jointSub.reset();
++}
++
++void ActarrayInterface::SetJoint(unsigned _idx, double _val)
++{
++  assert(_idx < this->actData.actuators_count);
++  this->actData.actuators[_idx].position = _val;
++  // NOTE: these values for the gains seem to be generally fine
++  // TODO: make gains settable from cfg
++  gazebo::msgs::JointCmd msg;
++  msg.set_name(this->jointNames[_idx]);
++  msg.mutable_position()->set_target(_val);
++  msg.mutable_position()->set_p_gain(5.);
++  msg.mutable_position()->set_i_gain(1.);
++  msg.mutable_position()->set_d_gain(5.);
++  this->jointPub->Publish(msg);
+ }
++
++void ActarrayInterface::OnJointMsg(ConstJointPtr &_msg)
++{
++  this->datatime = gazebo::common::Time::GetWallTime().Double();
++  // return the currently set values (which differ from the actual values while
++  // the arm is moving)
++
++  this->driver->Publish(this->device_addr,
++      PLAYER_MSGTYPE_DATA,
++      PLAYER_ACTARRAY_DATA_STATE,
++      static_cast<void*>(&this->actData), sizeof(this->actData), &this->datatime);
++}
++
+Only in gazebo-mercurial-patched/interfaces/player: .ActarrayInterface.cc.swp
+diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.hh gazebo-mercurial-patched/interfaces/player/ActarrayInterface.hh
+--- gazebo-mercurial/interfaces/player/ActarrayInterface.hh	2012-06-06 15:43:57.701033756 +0200
++++ gazebo-mercurial-patched/interfaces/player/ActarrayInterface.hh	2012-06-06 10:31:05.037458211 +0200
+@@ -14,70 +14,59 @@
+  * limitations under the License.
+  *
+ */
+-/* Desc: Actarray Interface for Player
+- * Author: Alexis Maldonado
+- * Date: 19 September 2006
++/* Desc: Actarray Interface for Player-Gazebo
++ * Author: Alexis Maldonado, Michael Zillich
++ * Date: 6 June 2012
+  */
+ 
+-#ifndef ACTARRAYINTERFACE_HH
+-#define ACTARRAYINTERFACE_HH
++#ifndef GAZEBO_ACTARRAYINTERFACE_HH
++#define GAZEBO_ACTARRAYINTERFACE_HH
+ 
+ #include <string>
+-
+ #include "GazeboInterface.hh"
+ 
+-namespace boost
+-{
+-  class recursive_mutex;
+-}
+-
+-namespace libgazebo
+-{
+ /// \addtogroup player_iface
+ /// \{
+ /// \defgroup actarray_player Actarray Interface
+ /// \brief Interface for controller an actuator array
+ /// \{
+-  class ActarrayIface;
+-
+-  /// \brief Actarray interface
+-  class ActarrayInterface : public GazeboInterface
+-  {
+-    /// \brief Constructor
+-    public: ActarrayInterface(player_devaddr_t addr, GazeboDriver *driver,
+-                               ConfigFile *cf, int section);
++/// \brief Actarray interface
++class ActarrayInterface : public GazeboInterface
++{
++  /// \brief Constructor
++  public: ActarrayInterface(player_devaddr_t _addr, GazeboDriver *_driver,
++                            ConfigFile *_cf, int _section);
+ 
+-    /// \brief Destructor
+-    public: virtual ~ActarrayInterface();
++  /// \brief Destructor
++  public: virtual ~ActarrayInterface();
+ 
+-    /// \brief Handle all messages. This is called from GazeboDriver
+-    public: virtual int ProcessMessage(QueuePointer &respQueue,
+-                                       player_msghdr_t *hdr, void *data);
++  /// \brief Handle all messages. This is called from GazeboDriver
++  public: virtual int ProcessMessage(QueuePointer &_respQueue,
++                                     player_msghdr_t *_hdr, void *_data);
+ 
+-    /// \brief Update this interface, publish new info.
+-    public: virtual void Update();
++  /// \brief Update this interface, publish new info.
++  public: virtual void Update();
+ 
+-    /// \brief Open a SHM interface when a subscription is received.
+-    ///        This is called fromGazeboDriver::Subscribe
+-    public: virtual void Subscribe();
++  /// \brief Open a SHM interface when a subscription is received.
++  ///        This is called fromGazeboDriver::Subscribe
++  public: virtual void Subscribe();
+ 
+-    /// \brief Close a SHM interface. This is called from
+-    /// GazeboDriver::Unsubscribe
+-    public: virtual void Unsubscribe();
++  /// \brief Close a SHM interface. This is called from
++  /// GazeboDriver::Unsubscribe
++  public: virtual void Unsubscribe();
+ 
+-    private: ActarrayIface *iface;
++  private: void SetJoint(unsigned _idx, double _val);
+ 
+-    /// Gazebo id. This needs to match and ID in a Gazebo WorldFile
+-    private: std::string gz_id;
++  private: void OnJointMsg(ConstJointPtr &_msg);
+ 
+-    /// Timestamp on last data update
+-    private: double datatime;
++  /// Timestamp on last data update
++  private: double datatime;
+ 
+-    private: player_actarray_data_t actData;
++  private: gazebo::transport::PublisherPtr jointPub;
++  private: gazebo::transport::SubscriberPtr jointSub;
++  private: std::string modelName;
++  private: std::vector<std::string> jointNames;
++  private: player_actarray_data_t actData;
++};
+ 
+-    private: static boost::recursive_mutex *mutex;
+-  };
+-  /// \}
+-  /// \}
+-}
+ #endif
+diff -ur gazebo-mercurial/interfaces/player/CMakeLists.txt gazebo-mercurial-patched/interfaces/player/CMakeLists.txt
+--- gazebo-mercurial/interfaces/player/CMakeLists.txt	2012-06-06 15:57:20.921062279 +0200
++++ gazebo-mercurial-patched/interfaces/player/CMakeLists.txt	2012-06-06 10:26:58.265449447 +0200
+@@ -5,13 +5,13 @@
+              Position2dInterface.cc
+              LaserInterface.cc
+              CameraInterface.cc
+-             ../../gazebo/gazebo.cc
++             PTZInterface.cc
++             ActarrayInterface.cc
++             ../../src/gazebo.cc
+ )
+              #Position3dInterface.cc
+              #FiducialInterface.cc
+-             #PTZInterface.cc
+              #OpaqueInterface.cc
+-             #ActarrayInterface.cc
+              #GripperInterface.cc
+              #BumperInterface.cc
+              #IRInterface.cc
+@@ -19,8 +19,8 @@
+ 
+ include_directories( 
+   ${PLAYER_INCLUDE_DIRS} 
+-  ${PROJECT_SOURCE_DIR}/gazebo 
+-  ${PROJECT_BINARY_DIR}/gazebo 
++  ${PROJECT_SOURCE_DIR}/src 
++  ${PROJECT_BINARY_DIR}/src 
+   ${OPENGL_INCLUDE_DIR}
+   ${OGRE_INCLUDE_DIRS}
+   ${Boost_INCLUDE_DIRS}
+Only in gazebo-mercurial-patched/interfaces/player: CMakeLists.txt.rej
+diff -ur gazebo-mercurial/interfaces/player/GazeboDriver.cc gazebo-mercurial-patched/interfaces/player/GazeboDriver.cc
+--- gazebo-mercurial/interfaces/player/GazeboDriver.cc	2012-06-06 15:43:57.701033756 +0200
++++ gazebo-mercurial-patched/interfaces/player/GazeboDriver.cc	2012-06-06 11:09:36.053540286 +0200
+@@ -27,12 +27,12 @@
+ #include "Position2dInterface.hh"
+ #include "LaserInterface.hh"
+ #include "CameraInterface.hh"
++#include "PTZInterface.hh"
++#include "ActarrayInterface.hh"
+ // #include "Graphics3dInterface.hh"
+ // #include "FiducialInterface.hh"
+ // #include "Position3dInterface.hh"
+-// #include "ActarrayInterface.hh"
+ // #include "OpaqueInterface.hh"
+-// #include "PTZInterface.hh"
+ // #include "BumperInterface.hh"
+ // #include "GripperInterface.hh"
+ // #include "IRInterface.hh"
+@@ -263,6 +263,16 @@
+         ifsrc = new CameraInterface(playerAddr, this, _cf, _section);
+         break;
+ 
++      case PLAYER_PTZ_CODE:
++        if (!player_quiet_startup) printf(" a ptz interface.\n");
++        ifsrc = new PTZInterface(playerAddr, this, _cf, _section);
++        break;
++
++      case PLAYER_ACTARRAY_CODE:
++        if (!player_quiet_startup) printf(" an actarray interface.\n");
++        ifsrc = new ActarrayInterface(playerAddr, this, _cf, _section);
++        break;
++
+       /*case PLAYER_GRAPHICS3D_CODE:
+         if (!player_quiet_startup) printf(" a graphics3d interface.\n");
+         ifsrc = new Graphics3dInterface(playerAddr, this, _cf, _section);
+@@ -279,21 +289,11 @@
+         ifsrc = new Position3dInterface(playerAddr, this, _cf, _section);
+         break;
+ 
+-      case PLAYER_ACTARRAY_CODE:
+-        if (!player_quiet_startup) printf(" an actarray interface.\n");
+-        ifsrc = new ActarrayInterface(playerAddr, this, _cf, _section);
+-        break;
+-
+       case PLAYER_OPAQUE_CODE:
+         if (!player_quiet_startup) printf(" an opaque interface.\n");
+         ifsrc = new OpaqueInterface(playerAddr, this, _cf, _section);
+         break;
+ 
+-      case PLAYER_PTZ_CODE:
+-        if (!player_quiet_startup) printf(" a ptz interface.\n");
+-        ifsrc = new PTZInterface(playerAddr, this, _cf, _section);
+-        break;
+-
+       case PLAYER_GRIPPER_CODE:
+         if (!player_quiet_startup) printf(" a gripper interface.\n");
+         ifsrc = new GripperInterface(playerAddr, this, _cf, _section);
+Only in gazebo-mercurial-patched/interfaces/player: GazeboDriver.cc.rej
+diff -ur gazebo-mercurial/interfaces/player/PTZInterface.cc gazebo-mercurial-patched/interfaces/player/PTZInterface.cc
+--- gazebo-mercurial/interfaces/player/PTZInterface.cc	2012-06-06 15:43:57.705033755 +0200
++++ gazebo-mercurial-patched/interfaces/player/PTZInterface.cc	2012-06-06 11:03:47.225527896 +0200
+@@ -14,9 +14,9 @@
+  * limitations under the License.
+  *
+  */
+-/* Desc: PTZ Interface for Player
+- * Author: Nate Koenig
+- * Date: 2 March 2006
++/* Desc: PTZ Interface for Player-Gazebo
++ * Author: Nate Koenig, Michael Zillich
++ * Date: 31 May 2012
+  */
+ 
+ /**
+@@ -28,52 +28,62 @@
+ /* TODO
+    PLAYER_PTZ_REQ_GEOM
+    */
+-
+ #include <math.h>
+ #include <iostream>
+-#include <boost/thread/recursive_mutex.hpp>
+ 
++#include "transport/transport.h"
++#include "msgs/msgs.h"
++#include "math/gzmath.h"
+ #include "GazeboDriver.hh"
+ #include "PTZInterface.hh"
+ 
+-using namespace libgazebo;
+-
+-boost::recursive_mutex *PTZInterface::mutex = NULL;
+-
+ /////////////////////////////////////////////////
+-PTZInterface::PTZInterface(player_devaddr_t addr,
+-    GazeboDriver *driver, ConfigFile *cf, int section)
+-: GazeboInterface(addr, driver, cf, section)
++// Constructor
++PTZInterface::PTZInterface(player_devaddr_t _addr,
++    GazeboDriver *_driver, ConfigFile *_cf, int _section)
++    : GazeboInterface(_addr, _driver, _cf, _section)
+ {
+-  /*
+-  // Get the ID of the interface
+-  this->gz_id = (char*) calloc(1024, sizeof(char));
+-  strcat(this->gz_id, GazeboClient::prefixId);
+-  strcat(this->gz_id, cf->ReadString(section, "gz_id", ""));
+-
+-  // Allocate a Position Interface
+-  this->iface = new PTZIface();
+-
+   this->datatime = -1;
++  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
++  this->node->Init(this->worldName);
++  this->modelName = _cf->ReadString(_section, "model_name", "default");
++  this->panJointName = _cf->ReadString(_section, "pan_joint_name", "default");
++  this->tiltJointName = _cf->ReadString(_section, "tilt_joint_name", "default");
++
++  this->jointPub = this->node->Advertise<gazebo::msgs::JointCmd>(
++      std::string("~/") + this->modelName + "/joint_cmd");
+ 
+-  if (this->mutex == NULL)
+-    this->mutex = new boost::recursive_mutex();
+-    */
++  pan = tilt = 0.;
++  SetPanTilt(0., 0.);
+ }
+ 
+ /////////////////////////////////////////////////
++// Destructor
+ PTZInterface::~PTZInterface()
+ {
+-  /*
+-  // Release this interface
+-  delete this->iface;
+-  */
+ }
+ 
+ /////////////////////////////////////////////////
+-int PTZInterface::ProcessMessage(QueuePointer &respQueue,
+-    player_msghdr_t *hdr, void *data)
++// Handle all messages. This is called from GazeboDriver
++int PTZInterface::ProcessMessage(QueuePointer &_respQueue,
++                                 player_msghdr_t *_hdr, void *_data)
+ {
++  int result = -1;
++
++  // COMMAND STATE
++  if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_CMD,
++        PLAYER_PTZ_CMD_STATE, this->device_addr))
++  {
++    player_ptz_cmd_t *cmd;
++    cmd = static_cast<player_ptz_cmd_t*>(_data);
++
++    SetPanTilt(cmd->pan, cmd->tilt);
++
++    result = 0;
++  }
++
++  return result;
++
+   /*
+   boost::recursive_mutex::scoped_lock lock(*this->mutex);
+   if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
+@@ -148,67 +158,70 @@
+   }
+ 
+ */
+-  return -1;
+ }
+ 
+-/////////////////////////////////////////////////
++//////////////////////////////////////////////////
++// Update this interface, publish new info. This is
++// called from GazeboDriver::Update
+ void PTZInterface::Update()
+ {
+-  /*
+-  player_ptz_data_t data;
+-  struct timeval ts;
+-
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  this->iface->Lock(1);
+-
+-  // Only Update when new data is present
+-  if (this->iface->data->head.time > this->datatime)
+-  {
+-    this->datatime = this->iface->data->head.time;
+-
+-    ts.tv_sec = (int) (this->iface->data->head.time);
+-    ts.tv_usec = (int) (fmod(this->iface->data->head.time, 1) * 1e6);
+-
+-    memset(&data, 0, sizeof(data));
+-
+-    data.pan = this->iface->data->pan;
+-    data.tilt = this->iface->data->tilt;
+-    data.zoom = this->iface->data->zoom;
+-
+-    this->driver->Publish(this->device_addr,
+-        PLAYER_MSGTYPE_DATA,
+-        PLAYER_PTZ_DATA_STATE,
+-        (void*)&data, sizeof(data), &this->datatime);
+-  }
+-
+-  this->iface->Unlock();
+-  */
+ }
+ 
+ /////////////////////////////////////////////////
+ void PTZInterface::Subscribe()
+ {
+-  /*
+-  try
+-  {
+-    boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-    this->iface->Open(GazeboClient::client, this->gz_id);
+-  }
+-  catch (std::string &e)
+-  {
+-    // std::ostringstream stream;
+-    std::cout << "Error subscribing to Gazebo PTZ Interface\n" << e << "\n";
+-    // gzthrow(stream.str());
+-    exit(0);
+-  }
+-  */
++  // TODO: How can we actually query the current state of a joint from gazebo?
++  // Using pose/info is just a hack for now
++  //this->jointSub = this->node->Subscribe("~/joint",
++  this->jointSub = this->node->Subscribe("~/pose/info",
++      &PTZInterface::OnJointMsg, this);
+ }
+ 
+ /////////////////////////////////////////////////
+ void PTZInterface::Unsubscribe()
+ {
+-  /*
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  this->iface->Close();
+-  */
++  this->jointSub.reset();
++}
++
++void PTZInterface::SetPanTilt(double _pan, double _tilt)
++{
++  pan = _pan;
++  tilt = _tilt;
++  // NOTE: pan and tilt speed as well as zoom are ignored
++  // NOTE: these values for the gains seem to be generally fine
++  // TODO: make gains settable from cfg
++  gazebo::msgs::JointCmd panMsg;
++  panMsg.set_name(this->panJointName);
++  panMsg.mutable_position()->set_target(pan);
++  panMsg.mutable_position()->set_p_gain(5.);
++  panMsg.mutable_position()->set_i_gain(1.);
++  panMsg.mutable_position()->set_d_gain(5.);
++  this->jointPub->Publish(panMsg);
++
++  gazebo::msgs::JointCmd tiltMsg;
++  tiltMsg.set_name(this->tiltJointName);
++  tiltMsg.mutable_position()->set_target(tilt);
++  tiltMsg.mutable_position()->set_p_gain(5.);
++  tiltMsg.mutable_position()->set_i_gain(1.);
++  tiltMsg.mutable_position()->set_d_gain(5.);
++  this->jointPub->Publish(tiltMsg);
+ }
++
++void PTZInterface::OnJointMsg(ConstJointPtr &_msg)
++{
++  player_ptz_data_t data;
++  memset(&data, 0, sizeof(data));
++
++  this->datatime = gazebo::common::Time::GetWallTime().Double();
++  // return the currently set values (which differ from the actual values while
++  // the PTZ is moving)
++  data.pan = pan;
++  data.tilt = tilt;
++  data.zoom = 0.;
++
++  this->driver->Publish(this->device_addr,
++      PLAYER_MSGTYPE_DATA,
++      PLAYER_PTZ_DATA_STATE,
++      static_cast<void*>(&data), sizeof(data), &this->datatime);
++}
++
+Only in gazebo-mercurial-patched/interfaces/player: PTZInterface.cc.rej
+diff -ur gazebo-mercurial/interfaces/player/PTZInterface.hh gazebo-mercurial-patched/interfaces/player/PTZInterface.hh
+--- gazebo-mercurial/interfaces/player/PTZInterface.hh	2012-06-06 15:43:57.705033755 +0200
++++ gazebo-mercurial-patched/interfaces/player/PTZInterface.hh	2012-06-06 10:04:15.205401037 +0200
+@@ -14,66 +14,61 @@
+  * limitations under the License.
+  *
+ */
+-/* Desc: PTZ Interface for Player
+- * Author: Nate Koenig
+- * Date: 2 March 2006
++/* Desc: PTZ Interface for Player-Gazebo
++ * Author: Nate Koenig, Michael Zillich
++ * Date: 31 May 2012
+  */
+ 
+-#ifndef PTZINTERFACE_HH
+-#define PTZINTERFACE_HH
++#ifndef GAZEBO_PTZINTERFACE_HH
++#define GAZEBO_PTZINTERFACE_HH
+ 
++#include <string>
+ #include "GazeboInterface.hh"
+ 
+-namespace boost
++/// \addtogroup player_iface
++/// \{
++/// \defgroup ptz_player PTZ Interface
++/// \brief Interface for controling a ptz
++/// \{
++/// \brief PTZ Interface
++class PTZInterface : public GazeboInterface
+ {
+-  class recursive_mutex;
+-}
++  /// \brief Constructor
++  public: PTZInterface(player_devaddr_t _addr, GazeboDriver *_driver,
++                       ConfigFile *_cf, int _section);
++
++  /// \brief Destructor
++  public: virtual ~PTZInterface();
++
++  /// \brief Handle all messages. This is called from GazeboDriver
++  public: virtual int ProcessMessage(QueuePointer &_respQueue,
++                                     player_msghdr_t *_hdr, void *_data);
++
++  /// \brief Update this interface, publish new info.
++  public: virtual void Update();
++
++  /// \brief Open a SHM interface when a subscription is received.
++  ///        This is called fromGazeboDriver::Subscribe
++  public: virtual void Subscribe();
++
++  /// \brief Close a SHM interface. This is called from
++  ///        GazeboDriver::Unsubscribe
++  public: virtual void Unsubscribe();
++
++  private: void SetPanTilt(double pan, double tilt);
++
++  private: void OnJointMsg(ConstJointPtr &_msg);
++
++  /// \brief Timestamp on last data update
++  private: double datatime;
++
++  private: gazebo::transport::PublisherPtr jointPub;
++  private: gazebo::transport::SubscriberPtr jointSub;
++  private: std::string modelName;
++  private: std::string panJointName;
++  private: std::string tiltJointName;
++  private: double pan;
++  private: double tilt;
++};
+ 
+-namespace libgazebo
+-{
+-  /// \addtogroup player_iface
+-  /// \{
+-  /// \defgroup ptz_player PTZ Interface
+-  /// \brief Interface for controling a ptz
+-  /// \{
+-  class PTZIface;
+-
+-  /// \brief PTZ Interface
+-  class PTZInterface : public GazeboInterface
+-  {
+-    /// \brief Constructor
+-    public: PTZInterface(player_devaddr_t addr, GazeboDriver *driver,
+-                         ConfigFile *cf, int section);
+-
+-    /// \brief Destructor
+-    public: virtual ~PTZInterface();
+-
+-    /// \brief Handle all messages. This is called from GazeboDriver
+-    public: virtual int ProcessMessage(QueuePointer &respQueue,
+-                                       player_msghdr_t *hdr, void *data);
+-
+-    /// \brief Update this interface, publish new info.
+-    public: virtual void Update();
+-
+-    /// \brief Open a SHM interface when a subscription is received.
+-    ///        This is called fromGazeboDriver::Subscribe
+-    public: virtual void Subscribe();
+-
+-    /// \brief Close a SHM interface. This is called from
+-    ///        GazeboDriver::Unsubscribe
+-    public: virtual void Unsubscribe();
+-
+-    private: PTZIface *iface;
+-
+-    /// \brief Gazebo id. This needs to match and ID in a Gazebo WorldFile
+-    private: char *gz_id;
+-
+-    /// \brief Timestamp on last data update
+-    private: double datatime;
+-
+-    private: static boost::recursive_mutex *mutex;
+-  };
+-}
+ #endif
+-
+-
+Only in gazebo-mercurial-patched/interfaces/player: PTZInterface.hh.rej
