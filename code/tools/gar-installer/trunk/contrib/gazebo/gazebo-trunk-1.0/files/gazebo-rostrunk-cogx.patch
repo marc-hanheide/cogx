@@ -514,14 +514,13 @@ diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.hh gazebo-mercuria
 diff -ur gazebo-mercurial/interfaces/player/CMakeLists.txt gazebo-mercurial-patched/interfaces/player/CMakeLists.txt
 --- gazebo-mercurial/interfaces/player/CMakeLists.txt	2012-06-06 15:57:20.921062279 +0200
 +++ gazebo-mercurial-patched/interfaces/player/CMakeLists.txt	2012-06-06 10:26:58.265449447 +0200
-@@ -5,13 +5,13 @@
+@@ -5,12 +5,12 @@
               Position2dInterface.cc
               LaserInterface.cc
               CameraInterface.cc
--             ../../gazebo/gazebo.cc
 +             PTZInterface.cc
 +             ActarrayInterface.cc
-+             ../../src/gazebo.cc
+              ../../gazebo/gazebo.cc
  )
               #Position3dInterface.cc
               #FiducialInterface.cc
@@ -531,17 +530,6 @@ diff -ur gazebo-mercurial/interfaces/player/CMakeLists.txt gazebo-mercurial-patc
               #GripperInterface.cc
               #BumperInterface.cc
               #IRInterface.cc
-@@ -19,8 +19,8 @@
- 
- include_directories( 
-   ${PLAYER_INCLUDE_DIRS} 
--  ${PROJECT_SOURCE_DIR}/gazebo 
--  ${PROJECT_BINARY_DIR}/gazebo 
-+  ${PROJECT_SOURCE_DIR}/src 
-+  ${PROJECT_BINARY_DIR}/src 
-   ${OPENGL_INCLUDE_DIR}
-   ${OGRE_INCLUDE_DIRS}
-   ${Boost_INCLUDE_DIRS}
 Only in gazebo-mercurial-patched/interfaces/player: CMakeLists.txt.rej
 diff -ur gazebo-mercurial/interfaces/player/GazeboDriver.cc gazebo-mercurial-patched/interfaces/player/GazeboDriver.cc
 --- gazebo-mercurial/interfaces/player/GazeboDriver.cc	2012-06-06 15:43:57.701033756 +0200
