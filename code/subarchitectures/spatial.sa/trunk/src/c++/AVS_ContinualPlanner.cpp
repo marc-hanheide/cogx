@@ -1021,6 +1021,17 @@ void AVS_ContinualPlanner::generateViewCones(
 
   log("got %d cones..", viewcones.size());
 
+  if (viewcones.size() == 0) {
+    error("Error! Cone generation did not produce any cones!");
+    if (WMAddress != "") {
+      newVPCommand->status = SpatialData::FAILED;
+      log("Overwriting command to change status to: FAILED");
+      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
+	  WMAddress, newVPCommand);
+    }
+    return;
+  }
+
   // normalizing cone probabilities
   log("normalizing viewcone probabilities");
   m_locationToConeGroupNormalization[id] = 0;
