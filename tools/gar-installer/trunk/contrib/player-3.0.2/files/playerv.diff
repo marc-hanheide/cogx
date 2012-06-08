@@ -1,0 +1,10 @@
+--- player-3.0.2/utils/playerv/pv_dev_actarray.c	2009-06-07 09:44:40.000000000 +0200
++++ player-3.0.2-patched/utils/playerv/pv_dev_actarray.c	2012-06-06 12:05:10.525658709 +0200
+@@ -71,6 +71,7 @@
+   rtk_menuitem_check(actarray->subscribe_item, actarray->proxy->info.subscribed);
+ 
+   // Construct figures
++  actarray->fig_count = 0;
+   actarray->actuator_fig = NULL;
+   actarray->actuator_fig_cmd = NULL;
+   actarray->lastvalue = NULL;
