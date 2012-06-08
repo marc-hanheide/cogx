@@ -291,30 +291,31 @@ class CASTTask(object):
             os.system("%s %s" % (show_dot_script, dot_fn))
 
     def write_history(self):
-        history_fn = abspath(join(self.component.get_path(), "history-%d.pddl" % self.id))
-        f = open(history_fn, "w")
-        log.debug("writing history to %s", history_fn)
+        pass
+        # history_fn = abspath(join(self.component.get_path(), "history-%d.pddl" % self.id))
+        # f = open(history_fn, "w")
+        # log.debug("writing history to %s", history_fn)
         
-        for plan, po_plan, state in self.plan_state_history:
-            problem, _, _ = state.to_problem(self.slice_goals, deterministic=False)
-            w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
-            _, prob_str = w.write(problem)
-            for l in prob_str:
-                f.write(l)
-                f.write("\n")
-            f.write("END_PROBLEM\n")
-            if plan is not None:
-                for pnode in plan.topological_sort():
-                    s = "(%s %s), %s" % (pnode.action.name, " ".join(a.name for a in pnode.full_args), pnode.status)
-                    f.write(s)
-                    f.write("\n")
-            f.write("END_PLAN\n")
-            for s in self.poplan_to_string(po_plan):
-                f.write(s)
-                f.write("\n")
-            f.write("END_POPLAN\n")
+        # for plan, po_plan, state in self.plan_state_history:
+        #     problem, _, _ = state.to_problem(self.slice_goals, deterministic=False)
+        #     w = task.PDDLOutput(writer=pddl.mapl.MAPLWriter())
+        #     _, prob_str = w.write(problem)
+        #     for l in prob_str:
+        #         f.write(l)
+        #         f.write("\n")
+        #     f.write("END_PROBLEM\n")
+        #     if plan is not None:
+        #         for pnode in plan.topological_sort():
+        #             s = "(%s %s), %s" % (pnode.action.name, " ".join(a.name for a in pnode.full_args), pnode.status)
+        #             f.write(s)
+        #             f.write("\n")
+        #     f.write("END_PLAN\n")
+        #     for s in self.poplan_to_string(po_plan):
+        #         f.write(s)
+        #         f.write("\n")
+        #     f.write("END_POPLAN\n")
                 
-        f.close()
+        # f.close()
 
     @coroutine
     def run(self):
