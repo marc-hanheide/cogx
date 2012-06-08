@@ -19,9 +19,9 @@ for version in $VERSIONS; do
    if [ "$version" == "Ubuntu-11.04" ]; then
       wrkdir='gazebo-0.9'
    elif [ "$version" == "Ubuntu-11.10" ]; then
-      wrkdir='gazebo-1.0.1'
+      wrkdir='gazebo-1.0'
    elif [ "$version" == "Darwin-x" ]; then
-      wrkdir='gazebo-trunk'
+      wrkdir='gazebo-trunk-0.10'
    else
       echo "Invalid system version: '$version'"
       exit

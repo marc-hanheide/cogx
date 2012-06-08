@@ -44,50 +44,50 @@ install-Ubuntu-11.04:
 	cd gazebo-0.9 && make install
 
 clean-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make clean
+	cd gazebo-1.0 && make clean
 
 fetch-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make fetch
+	cd gazebo-1.0 && make fetch
 
 checksum-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make checksum
+	cd gazebo-1.0 && make checksum
 
 extract-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make extract
+	cd gazebo-1.0 && make extract
 
 patch-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make patch
+	cd gazebo-1.0 && make patch
 
 configure-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make configure
+	cd gazebo-1.0 && make configure
 
 build-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make build
+	cd gazebo-1.0 && make build
 
 install-Ubuntu-11.10:
-	cd gazebo-1.0.1 && make install
+	cd gazebo-1.0 && make install
 
 clean-Darwin-x:
-	cd gazebo-trunk && make clean
+	cd gazebo-trunk-0.10 && make clean
 
 fetch-Darwin-x:
-	cd gazebo-trunk && make fetch
+	cd gazebo-trunk-0.10 && make fetch
 
 checksum-Darwin-x:
-	cd gazebo-trunk && make checksum
+	cd gazebo-trunk-0.10 && make checksum
 
 extract-Darwin-x:
-	cd gazebo-trunk && make extract
+	cd gazebo-trunk-0.10 && make extract
 
 patch-Darwin-x:
-	cd gazebo-trunk && make patch
+	cd gazebo-trunk-0.10 && make patch
 
 configure-Darwin-x:
-	cd gazebo-trunk && make configure
+	cd gazebo-trunk-0.10 && make configure
 
 build-Darwin-x:
-	cd gazebo-trunk && make build
+	cd gazebo-trunk-0.10 && make build
 
 install-Darwin-x:
-	cd gazebo-trunk && make install
+	cd gazebo-trunk-0.10 && make install
 
