@@ -172,8 +172,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           m_component->log("Best index %d", bestindex);
           //lastConePDFSum = unordered3DVCList[bestindex].totalprob;
           lastConePDFSum = initialMapPDFSum - postMapPDFSum;
-          if (lastConePDFSum < 0.01) {
-            m_component->log("Best cone's prob. sum. is less than 1%, skip");
+          if (lastConePDFSum < 0.05 * initialMapPDFSum) {
+            m_component->log("Best cone's prob. sum. is less than 5% of total, skip");
             test_num++;
             continue;
           }
