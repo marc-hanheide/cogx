@@ -19,7 +19,7 @@
 //
 /*----------------------------------------------------------------------*/
 
-#define wrn(args...); {char buf[512]; sprintf(buf,args); getLogger()->warn(buf);}
+#define wrn(args...) {char buf[512]; sprintf(buf,args); getLogger()->warn(buf);}
 
 #include "SpatialControl.hpp"
 #include <CureHWUtils.hpp>
