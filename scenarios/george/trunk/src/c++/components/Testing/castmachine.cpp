@@ -398,7 +398,7 @@ bool CCastMachine::loadScene()
   CTeachTestEntry* pe = dynamic_cast<CTeachTestEntry*>(pt.get());
   if (pe) {
     bool rv;
-    std::string model = "instantiations/gazebo/models/gen-" + label + ".model"; // XXX HARDCODED :(
+    std::string model = "instantiations/gazebo/models/gen-" + pe->mLabel + ".model"; // XXX HARDCODED :(
     rv = loadObjectModel(pe->mLabel, model);
     rv = moveObject(pe->mLabel, 0);
     msObjectOnScene = pe->mLabel;
