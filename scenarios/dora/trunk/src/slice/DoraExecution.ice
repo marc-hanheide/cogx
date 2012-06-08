@@ -70,6 +70,17 @@ module execution {
 				string relation;
 			};
 
+			class AskForBKLabelInCategory extends Action {
+				string label;
+				string category;
+			};
+
+			class AskForBKLabelRelLabel extends Action {
+				string label;
+				string relation;
+				string otherLabel;
+			};
+
 		};
 	};
 };
