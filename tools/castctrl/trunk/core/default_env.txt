@@ -116,7 +116,7 @@ CMD_LOG4J_SERVER=${CMD_LOG4J_SOCKET_SERVER}
 
 # Gazebo 1.x
 # CMD_GAZEBO=gzserver  [WORLD]
-GAZEBO_DIRNAME=gazebo-1.0.1
+GAZEBO_DIRNAME=gazebo-1.0.2
 GAZEBO_PLUGIN_PATH=<pathlist>
    /usr/local/lib/${GAZEBO_DIRNAME}/plugins
 </pathlist>

@@ -113,7 +113,25 @@ CMD_LOG4J_SERVER=${CMD_LOG4J_SOCKET_SERVER}
 
 # CMD_DISPLAY_SERVER=${COGX_ROOT}/output/bin/display-server
 
+# Gazebo 0.x
 # CMD_GAZEBO=gazebo  [GUI]  [PHYSICS]  [WORLD]
+
+# Gazebo 1.x
+# CMD_GAZEBO=gzserver  [WORLD]
+GAZEBO_DIRNAME=gazebo-1.0.2
+GAZEBO_PLUGIN_PATH=<pathlist>
+   /usr/local/lib/${GAZEBO_DIRNAME}/plugins
+</pathlist>
+GAZEBO_RESOURCE_PATH=<pathlist>
+   ${COGX_ROOT}/instantiations/gazebo.100
+   ${COGX_ROOT}/instantiations/${GAZEBO_DIRNAME}
+   ${COGX_ROOT}/instantiations/xdata/gazebo
+   /usr/local/share/${GAZEBO_DIRNAME}
+</pathlist>
+OGRE_RESOURCE_PATH=<pathlist>
+   /usr/lib/OGRE
+</pathlist>
+
 
 # Abducer Server
 #ABDUCER_ROOT=${COGX_ROOT}/tools/abducer
