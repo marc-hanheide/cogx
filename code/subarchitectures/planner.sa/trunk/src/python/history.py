@@ -3,6 +3,12 @@ import fake_cast_state
 from standalone import task, pddl, plans, plan_postprocess
 from autogen import Planner
 
+def first(fn, seq):
+    for x in seq:
+        if fn(x):
+            return x
+    return None
+
 def slice_goals_from_problem(problem):
     softgoals = []
 
@@ -27,6 +33,13 @@ def parse_history_new(history_fn, domain):
 
     def history_iter():
         action_states = {}
+
+        def is_auto_exec(a):
+            if a == "init":
+                return True
+            if a.startswith("__"):
+                return True
+        
         def get_action_status(a):
             #get actions by prefix, as the :action events only specify partial parameter lists
             #can break, but better than nothing.
@@ -41,6 +54,8 @@ def parse_history_new(history_fn, domain):
         last_state = None
         last_plan_state = None
         last_plan = None
+        dt = True
+        dt_action = None
         for elem in it:
             jt = iter(elem)
             tag = jt.get('terminal').token.string
@@ -54,13 +69,36 @@ def parse_history_new(history_fn, domain):
                     yield problem, plan
 
                 action_states.clear()
-                last_plan = [" ".join(e.token.string for e in action) for action in jt]
+                last_plan = []
+                for elems in jt:
+                    action = " ".join(e.token.string for e in elems)
+                    last_plan.append(action)
+                    if is_auto_exec(action):
+                        action_states[action] = plans.ActionStatusEnum.EXECUTED
                 last_plan_state = last_state
-            elif tag == ":action":
+            elif tag == ":action" and not dt:
+                #reconstruct action status at the end of plan execution
                 action, status = tuple(jt.get(list))
                 action = " ".join(e.token.string for e in action)
                 status = plans.ActionStatusEnum.__dict__[status.token.string.upper()]
                 action_states[action] = status
+            elif tag == ":dt":
+                dtstatus = jt.get('terminal').token.string
+                if dtstatus == ":started":
+                    #get first nonexecuted action that (probably) triggered DT
+                    dt_action = first(lambda x: get_action_status(x) == plans.ActionStatusEnum.EXECUTABLE, last_plan)
+                    action_states[dt_action] = plans.ActionStatusEnum.IN_PROGRESS
+                    # print "dt action is:", dt_action
+                    dt = True
+                elif dtstatus == ":cancelled":
+                    action_states[dt_action] = plans.ActionStatusEnum.FAILED
+                    dt = False
+                else:
+                    action_states[dt_action] = plans.ActionStatusEnum.EXECUTED
+                    dt = False
+                # print dt_action, action_states[dt_action]
+
+                    
         if last_plan is not None:
             plan = [(a, get_action_status(a)) for a in last_plan]
             problem = pddl.problem.Problem.parse(last_plan_state, domain)

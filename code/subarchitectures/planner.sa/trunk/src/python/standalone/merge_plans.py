@@ -146,6 +146,8 @@ def merge_plans(_plans, init_state, final_state):
                 #found action that provided (part of the) knowledge
                 n.effects |= knode.effects
                 knowledge_maps[knode] = n
+                for succ, svar, val, typ in plan.outgoing_links(knode):
+                    plan.add_link(n, succ, svar, val)
                 return
         assert False
                 
@@ -224,6 +226,7 @@ def merge_plans(_plans, init_state, final_state):
     init_dict = {}
     used_objects = set()
     prev_init_node = None
+    prev_exec_node = None
     conflicting_svars = defaultdict(set)
     prev_was_init = False
     i = 0
@@ -283,7 +286,6 @@ def merge_plans(_plans, init_state, final_state):
             for svar, val in mapped_n.effects:
                 observed[svar] = new_n, val
                 
-            plan.add_edge(prev_init_node, new_n, type="order")
             print "init link:", prev_init_node, new_n
             init_dict[n] = new_n
             print "insert init", id(n)
@@ -296,16 +298,23 @@ def merge_plans(_plans, init_state, final_state):
             add_node(mapped_n)
             new_n = mapped_n
             prev_was_init = False
-
+        
         if new_n not in plan:
             print "add:", new_n
             plan.add_node(new_n)
-
+            
         add_links(n, new_n)
         for f in itertools.chain(new_n.preconds, new_n.effects):
             for o in itertools.chain(f.svar.args, f.svar.modal_args, [f.value]):
                 used_objects.add(o)
 
+        if prev_exec_node is not None and prev_exec_node not in plan.pred_closure(new_n):
+            if not prev_exec_node.is_virtual() and not new_n.is_virtual():
+                print "enforce ordering:", prev_exec_node, new_n
+                plan.add_edge(prev_exec_node, new_n, type="order")
+        if not new_n.is_virtual():
+            prev_exec_node = new_n
+                
         for svar, val in new_n.effects:
             written[svar] = (new_n, val)
             if svar in observed:
@@ -376,7 +385,8 @@ def merge_plans(_plans, init_state, final_state):
     merged_init_state = pddl.state.State([mapped_fact(f) for f in init_state.iterfacts()], init_problem)
     merged_final_state = pddl.state.State([mapped_fact(f) for f in final_state.iterfacts() if not is_virtual_fact(f)], init_problem)
 
-    print merged_init_state
+    # print merged_init_state
+    print plan
 
     return plan, merged_init_state, merged_final_state
 
