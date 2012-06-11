@@ -178,6 +178,7 @@ protected:
   double m_nodeObstacleMargin;
   double m_nodeUnknownMargin;
 
+  bool m_receivedScan;
   bool m_mapUpdateStatus;
 
   list<double> m_visualExplorationAngles;

@@ -277,6 +277,7 @@ void SpatialControl::overwrittenPanTiltCommand(
       if (overwritten->comp != ptz::SUCCEEDED) {
         wrn("WARNING: Failed to move PTZ before moving!");
       }
+      
       deleteFromWorkingMemory(objID.address);
     }
 
@@ -287,8 +288,10 @@ void SpatialControl::overwrittenPanTiltCommand(
     log("Error: SetPTZPoseCommand went missing! ");
   }
 
-  if (objID.address.id == m_waitingForPTZCommandID)
+  if (objID.address.id == m_waitingForPTZCommandID){
     m_waitingForPTZCommandID = "";
+    m_receivedScan = false;
+  }
 }
 
 /*
@@ -1509,13 +1512,15 @@ void SpatialControl::runComponent() {
 
           m_visualExplorationAngles = getVisualExplorationAngles();
           m_visualExplorationPhase = 2;
+          m_receivedScan = true;
         }
         if (m_visualExplorationPhase == 2) {
-          if (!m_visualExplorationAngles.empty()) {
+          if ((!m_visualExplorationAngles.empty()) && (m_receivedScan)) {
             double angle = m_visualExplorationAngles.front();
             m_visualExplorationAngles.pop_front();
             if (m_simulateKinect) {
               moveSimulatedPTZ(angle);
+              m_receivedScan = true;
             } else {
               startMovePanTilt(angle, -M_PI / 4, 0);
             }
@@ -2326,7 +2331,7 @@ void SpatialControl::receiveScan2d(const Laser::Scan2d &castScan) {
   //  debug("lock acquired");
   debug("Got scan with n=%d and t=%ld.%06ld", castScan.ranges.size(),
       (long) castScan.time.s, (long) castScan.time.us);
-
+  m_receivedScan = true;
   Cure::LaserScan2d cureScan;
   CureHWUtils::convScan2dToCure(castScan, cureScan);
 
