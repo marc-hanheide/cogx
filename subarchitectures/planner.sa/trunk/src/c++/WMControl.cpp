@@ -607,7 +607,7 @@ void WMControl::updateStatus(int id, Completion status) {
     assert(m_tasks.find(id) != m_tasks.end());
     PlanningTaskPtr task = getMemoryEntry<PlanningTask>(m_tasks[id]);
     task->planningStatus = status;
-    log("Settings planning status of task %d to %d", id, status);
+    log("Setting planning status of task %d to %d", id, status);
     if (status == ABORTED) {
         makeTaskNonactive(id);
         log("Planning aborted, setting status of task %d to %d", id, status);
@@ -617,9 +617,9 @@ void WMControl::updateStatus(int id, Completion status) {
             task->planningRetries = 0;
     }
     else if (status == FAILED) {
-        makeTaskNonactive(id);
         if (task->planningRetries >= MAX_PLANNING_RETRIES && task->executionStatus != FAILED) {
             log("Planning failed %d times, setting status of task %d to %d", MAX_PLANNING_RETRIES, id, status);
+            makeTaskNonactive(id);
             task->executionStatus = FAILED;
             overwriteWorkingMemory(m_tasks[id], task);
             pyServer->notifyFailure(task, PLANNING);
