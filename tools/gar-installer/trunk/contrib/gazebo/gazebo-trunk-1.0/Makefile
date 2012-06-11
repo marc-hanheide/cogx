@@ -7,8 +7,12 @@ DISTNAME   = $(GARNAME)-$(GARVERSION)
 DISTFILES  = $(DISTNAME).tar.gz
 
 MASTER_SITES = hghttps://kforge.ros.org/gazebo/hg/
-# XXX HG_REVISION = -r 2717
-PATCHFILES   = $(DISTNAME)-cogx.patch
+PATCHFILES   = $(DISTNAME)-2707-cogx.patch
+# Select the revision:
+#  * dev     : the latest on development branch
+#  * default : the latest on default branch
+#  * -r NNN  : select a particular revision
+HG_REVISION = -r 2707
 
 include $(GARDIR)/gar.detect.mk
 
