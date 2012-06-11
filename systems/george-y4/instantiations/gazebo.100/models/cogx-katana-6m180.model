@@ -1,0 +1,269 @@
+<gazebo version="1.0">
+
+<!-- Neuronics Katana 6M180 arm
+     Tested with gazebo-1.0.0 (17 Apr 2012)
+     Michael Zillich
+     May 2012
+
+
+            t1    t2                t3               t4       
+            ^    ^                 ^           ^ Z  ^         
+            |   /                 /            |   /          
+            |  /                 /             |  /           
+            | /                 /              | /            
+            |/       l1        /       l2      |/       Y     
+            O*****************O****************O=========> t5 
+           /*                /                /               
+          / *               /                /   T            
+         /  *              /                /                  
+        /   * l0          /                V X                  
+            *                                                 
+            *^ Z                                              
+            *|                                                
+            *|                                                
+            *| S     Y                                        
+             O========>                                       
+            /                                                 
+           /                                                  
+          / X                                                 
+         v                                                    
+
+  l0 = 202 (201.5)
+  l1 = 190
+  l2 = 139
+  l3 = 188 (188.3)
+-->
+
+<model name="cogx-katana-6m180">
+  <link name="base" gravity="false">
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <geometry>
+        <cylinder radius="0.05" length="0.001"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <geometry>
+        <cylinder radius="0.05" length="0.001"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="link0" gravity="false">
+    <origin pose="0 0 0 0 0 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.101 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.202"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.101 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.202"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="link1" gravity="false">
+    <origin pose="0.0 0.0 0.202 0 1.5708 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.095 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.190"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.095 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.190"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="link2" gravity="false">
+    <origin pose="0.190 0.0 0.202 0 1.5708 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.0695 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.139"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.0695 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.139"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="link3" gravity="false">
+    <origin pose="0.329 0.0 0.202 0 1.5708 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.094 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.188"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.094 0 0 0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.188"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="gripper" gravity="false">
+    <origin pose="0.517 0.0 0.202 0 1.5708 0"/>
+    <inertial mass="0.1">
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.0 0.025 0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.0 0.025 0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="left_finger" gravity="false">
+    <origin pose="0.567 0.0 0.202 0 1.5708 0"/>
+    <inertial mass="0.01">
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 0.005 0.04 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.01 0.08"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 0.005 0.04 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.01 0.08"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <link name="right_finger" gravity="false">
+    <origin pose="0.567 0.0 0.202 0 1.5708 0"/>
+    <inertial mass="0.01">
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+
+    <collision name="collision">
+      <origin pose="0.0 -0.005 0.04 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.01 0.08"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual">
+      <origin pose="0.0 -0.005 0.04 0 0 0"/>
+      <geometry>
+        <box size="0.04 0.01 0.08"/>
+      </geometry>
+      <material script="cogx/Grey"/>
+    </visual>
+  </link>
+
+  <joint name="base_link0_joint" type="revolute">
+    <parent link="base"/>
+    <child link="link0"/>
+    <axis xyz='0 0 1'>
+      <limit lower="-3.14" upper="3.14"/>
+    </axis>
+  </joint>
+
+  <joint name="link0_link1_joint" type="revolute">
+    <parent link="link0"/>
+    <child link="link1"/>
+    <axis xyz='0 1 0'>
+      <limit lower="-4.71" upper="1.57"/>
+    </axis>
+  </joint>
+
+  <joint name="link1_link2_joint" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <axis xyz='0 1 0'>
+      <limit lower="-3.14" upper="3.14"/>
+    </axis>
+  </joint>
+
+  <joint name="link2_link3_joint" type="revolute">
+    <parent link="link2"/>
+    <child link="link3"/>
+    <axis xyz='0 1 0'>
+      <limit lower="-3.14" upper="3.14"/>
+    </axis>
+  </joint>
+
+  <joint name="link3_gripper_joint" type="revolute">
+    <parent link="link3"/>
+    <child link="gripper"/>
+    <axis xyz='1 0 0'>
+      <limit lower="-3.14" upper="3.14"/>
+    </axis>
+  </joint>
+
+  <joint name="gripper_left_finger_joint" type="prismatic">
+    <parent link="gripper"/>
+    <child link="left_finger"/>
+    <axis xyz='0 1 0'>
+      <limit lower="0" upper="0.05"/>
+    </axis>
+  </joint>
+
+  <joint name="gripper_right_finger_joint" type="prismatic">
+    <parent link="gripper"/>
+    <child link="right_finger"/>
+    <axis xyz='0 -1 0'>
+      <limit lower="0" upper="0.05"/>
+    </axis>
+  </joint>
+</model>
+
+</gazebo>
+

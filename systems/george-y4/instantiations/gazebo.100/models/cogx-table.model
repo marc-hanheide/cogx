@@ -1,0 +1,68 @@
+<gazebo version="1.0">
+
+<model name="cardboard_box_table" static="false">
+  <link name="body">
+    <origin pose="0 0 0.175 0 0 0"/>
+
+    <inertial mass="1.0">
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+
+    <collision name="collision">
+      <geometry>
+        <box size="0.465 0.350 0.350"/>
+      </geometry>
+    </collision>
+
+    <visual name="visual-front">
+      <origin pose="0 0.175 0 0 0 0"/>
+      <geometry>
+        <box size="0.465 0.001 0.350"/>
+      </geometry>
+      <material script="cogx/table-front"/>
+    </visual>
+
+    <visual name="visual-back">
+      <origin pose="0 -0.175 0 0 0 0"/>
+      <geometry>
+        <box size="0.465 0.001 0.350"/>
+      </geometry>
+      <material script="cogx/table-front"/>
+    </visual>
+
+    <visual name="visual_left">
+      <origin pose="0.2325 0 0 0 0 0"/>
+      <geometry>
+        <box size="0.001 0.350 0.350"/>
+      </geometry>
+      <material script="cogx/table-left"/>
+    </visual>
+
+    <visual name="visual_right">
+      <origin pose="-0.2325 0 0 0 0 0"/>
+      <geometry>
+        <box size="0.001 0.350 0.350"/>
+      </geometry>
+      <material script="cogx/table-right"/>
+    </visual>
+
+    <visual name="visual_top">
+      <origin pose="0 0 0.175 0 0 0"/>
+      <geometry>
+        <box size="0.465 0.350 0.001"/>
+      </geometry>
+      <material script="cogx/table-top"/>
+    </visual>
+
+    <visual name="visual_bottom">
+      <origin pose="0 0 -0.175 0 0 0"/>
+      <geometry>
+        <box size="0.465 0.350 0.001"/>
+      </geometry>
+      <material script="cogx/table-bottom"/>
+    </visual>
+  </link>
+</model>
+
+</gazebo>
+

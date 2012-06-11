@@ -1,5 +1,33 @@
 // our own textures
 
+// medium grey
+material cogx/Grey
+{
+  technique
+  {
+    pass
+    {
+      ambient .5 .5 .5
+      diffuse .5 .5 .5
+      specular 0.1 0.1 0.1 1.0 1.0
+    }
+  }
+}
+
+// light grey
+material cogx/LightGrey
+{
+  technique
+  {
+    pass
+    {
+      ambient .8 .8 .8
+      diffuse .8 .8 .8
+      specular 0.2 0.2 0.2 1.0 1.0
+    }
+  }
+}
+
 // floors
 material cogx/tiled-floor
 {
