@@ -332,15 +332,18 @@ bool CCastMachine::loadObjectModel(const std::string& label, const std::string& 
   }
 
   ++modelId;
-  GObject go(label, "noname::" + label);
-  go.loc.x =  100 + (modelId / 10) * 3;
-  go.loc.y = -100 - (modelId % 10) * 3;
+  //GObject go(label, "noname::" + label);
+  GObject go(label, label);
+  go.loc.x =  1 + (modelId / 10) * 3;
+  go.loc.y = -1 - (modelId % 10) * 3;
   go.loc.z = 1.5;
 
-  std::ostringstream cmd("gzfactory spawn -f '" + modelFilename + "' -m " + label);
+  std::ostringstream cmd;
+  cmd << "gzfactory spawn -f " << modelFilename << " -m " << label;
   cmd << " -x " << go.loc.x;
   cmd << " -y " << go.loc.y;
   cmd << " -z " << go.loc.z;
+  log("Executing w. system: %s", cmd.str().c_str());
   int rv = system(cmd.str().c_str());
 
   if (rv == 0) {
@@ -361,6 +364,7 @@ bool CCastMachine::deleteObjectModel(const std::string& label)
   mObjects.erase(ito);
 
   std::string cmd("gzfactory delete -m " + label);
+  log("Executing w. system: %s", cmd.c_str());
   int rv = system(cmd.c_str());
 
   return rv == 0;
@@ -398,7 +402,7 @@ bool CCastMachine::loadScene()
   CTeachTestEntry* pe = dynamic_cast<CTeachTestEntry*>(pt.get());
   if (pe) {
     bool rv;
-    std::string model = "instantiations/gazebo/models/gen-" + pe->mLabel + ".model"; // XXX HARDCODED :(
+    std::string model = "instantiations/xdata/gazebo/models/gen-" + pe->mLabel + ".model"; // XXX HARDCODED :(
     rv = loadObjectModel(pe->mLabel, model);
     rv = moveObject(pe->mLabel, 0);
     msObjectOnScene = pe->mLabel;
