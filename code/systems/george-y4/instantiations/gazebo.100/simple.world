@@ -63,9 +63,9 @@
   <include filename="cogx-platform.model" model_name="robot" model_pose="-2.0 0.0 0.01 0 0 0"/>
 
   <!-- a low table made of boxes -->
-  <include filename="table.model" model_name="table1" model_pose="0 0 0 0 0 0"/>
-  <include filename="table.model" model_name="table2" model_pose="0 0.350 0 0 0 0"/>
-  <include filename="table.model" model_name="table3" model_pose="0 -0.350 0 0 0 0"/>
+  <include filename="cogx-table.model" model_name="table1" model_pose="0 0 0 0 0 0"/>
+  <include filename="cogx-table.model" model_name="table2" model_pose="0 0.350 0 0 0 0"/>
+  <include filename="cogx-table.model" model_name="table3" model_pose="0 -0.350 0 0 0 0"/>
 
   <!-- and finally a cereal box! -->
   <include filename="cereals-bircher.model" model_name="cereals1" model_pose="0 0 0.5 0 0 0"/>

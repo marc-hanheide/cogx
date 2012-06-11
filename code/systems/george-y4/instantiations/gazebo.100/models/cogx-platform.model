@@ -26,6 +26,16 @@
       <limit lower="0" upper="0"/>
     </axis>
   </joint>
+
+  <include filename="cogx-katana-6m180.model" model_name="arm" model_pose="0.04 0.00 0.24 0 0 0"/>
+  <!-- connect arm to the base -->
+  <joint name="arm_joint" type="prismatic">
+    <parent link="base__chassis"/>
+    <child link="arm__base"/>
+    <axis xyz='0 0 1'>
+      <limit lower="0" upper="0"/>
+    </axis>
+  </joint>
 </model>
 
 </gazebo>
