@@ -31,7 +31,6 @@ import de.dfki.lt.tr.planverb.generation.StringMessage;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLContentDeterminator;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLDomainModel;
 import de.dfki.lt.tr.planverb.planning.pddl.POPlan;
-import de.dfki.lt.tr.planverb.history.Episode;
 import de.dfki.lt.tr.planverb.history.History;
 import de.dfki.tarot.cogx.CASTLogicalForms;
 import de.dfki.tarot.cogx.CogXJavaHelpers;
@@ -77,10 +76,6 @@ public class PlanVerbalizer {
 		m_castComponent.log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
 				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
 		
-//		static String defaultDomainFile = "./resources/domain2test.pddl";
-//		static String defaultDomainDictionaryFile = "./resources/dora-interactive_annotated.txt";
-//	    static String defaultGrammarPath = "/de/dfki/tarot/nlp/resources/moloko/grammar.xml";
-		
 		// initialize planner-related stuff
 		File adf = new File(annotatedDomainFile);
 		File pddf = new File(pddlDomainFile);
@@ -89,14 +84,9 @@ public class PlanVerbalizer {
 
 		// initialize grammar-related stuff
 		Grammar grammar = new Grammar(grammarFile);
-				//new Object().getClass().getResource(grammarFile));
-		
-		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File("./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt ").toURL(), "UTF-8");
-				
-			//	fromURL(getClass.getResource("/de/dfki/tarot/nlp/realisation/openccg/test-corpus.txt"), "UTF-8"));
+		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File("subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt").toURI().toURL(), "UTF-8");
 		m_realiser = new CCGRealiser(grammar, scorer);
 				
-		
 		// initialize lexicon substitutions for the time being...
 		initLexicalSubstitutions();
 		m_castComponent.log("finished PlanVerbalizer constructor");
@@ -129,7 +119,8 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 	}
 	
-	public String verbalizeHistory(final List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> hlist) {
+	public String verbalizeHistory(final List<POPlan> hlist) {
+	m_castComponent.log("entering verbalizeHistory()");
 		
 		History h = new History() {
 			
@@ -140,31 +131,39 @@ public class PlanVerbalizer {
 			}
 			
 			@Override
-			public List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> getEpisodes() {
+			public List<POPlan> getEpisodes() {
 				return hlist;
 			}
 		};
 		
 		// this does not work yet!
-		// List<Message> messages = m_contentDeterminator.determineMessages(h);
-		// therefore process each POPlan individually:
-		
-		List<Message> messages = new ArrayList<Message>();
-		for (POPlan poPlan : hlist) {
-			try {
-				messages.addAll(m_contentDeterminator.determineMessages(poPlan, 1));
-			} catch (BuildException e) {
-				m_castComponent.logException(e);
-			} catch (ParseException e) {
-				m_castComponent.logException(e);
-			} catch (NoAnnotationFoundException e) {
-				m_castComponent.logException(e);
-			} catch (UnknownOperatorException e) {
-				m_castComponent.logException(e);
+		List<Message> messages = m_contentDeterminator.determineMessages(h);
+		if (messages!=null) {
+			m_castComponent.log("contentDeterminator returned " + messages.size() + " messages for the full History.");
+		} else {
+			// therefore process each POPlan individually:
+			m_castComponent.log("determineMessages(History) doesn't work yet. Verbalizing each POPlan individually instead.");
+
+			messages = new ArrayList<Message>();
+			int _currPOPlanBlock = 0;
+			for (POPlan poPlan : (List<POPlan>) h.getEpisodes()) {
+				try {
+					messages.addAll(m_contentDeterminator.determineMessages(poPlan, _currPOPlanBlock));
+				} catch (BuildException e) {
+					m_castComponent.logException(e);
+				} catch (ParseException e) {
+					m_castComponent.logException(e);
+				} catch (NoAnnotationFoundException e) {
+					m_castComponent.logException(e);
+				} catch (UnknownOperatorException e) {
+					m_castComponent.logException(e);
+				}
+				_currPOPlanBlock+=1;
 			}
+
+			m_castComponent.log("contentDeterminator returned " + messages.size() + " messages.");
 		}
-		
-		return realizeMessages(messages);		
+		return realizeMessages(messages);
 	}
 	
 	
