@@ -126,6 +126,15 @@ static double CompareHistKLD(CvHistogram* h1, CvHistogram* h2)
     int h_bins = PPO_COLHIST_H_BINS, s_bins = PPO_COLHIST_S_BINS;
     double KLD = 0.0;
 
+    if(h1 == 0)
+        throw runtime_error(cast::exceptionMessage(__HERE__, "h1 is NULL"));
+    if(h1->bins == 0)
+        throw runtime_error(cast::exceptionMessage(__HERE__, "h1 is invalid"));
+    if(h2 == 0)
+        throw runtime_error(cast::exceptionMessage(__HERE__, "h2 is NULL"));
+    if(h2->bins == 0)
+        throw runtime_error(cast::exceptionMessage(__HERE__, "h2 is invalid"));
+
     for(int h = 0; h < h_bins; h++)
     {
 	for(int s = 0; s < s_bins; s++)
@@ -190,9 +199,12 @@ void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
     boundingBox.size.z = boundingSphere.rad;
 
     // background points
+    // use an enlarged bounding sphere to collect the BG points
+    boundingSphere.rad *= 1.5;
     for (size_t i = 0; i < domPlane.planePoints.size(); i++)
       if(pointInsideSphere(boundingSphere, domPlane.planePoints[i].p))
         BGpoints.push_back(domPlane.planePoints[i]);
+    boundingSphere.rad /= 1.5;
 
     calcHistogram();
 
@@ -1245,8 +1257,9 @@ void PlanePopOut::TrackSOIs()
 	}
     }
 
-#if 0
+#if 1
     log("have %d tracked sois", (int)trackedSOIs.size());
+    log("table time %d, agonal time %d", StableTime, AgonalTime);
     for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
     {
 	ostringstream str;
