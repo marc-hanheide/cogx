@@ -26,7 +26,18 @@ def parse_history_new(history_fn, domain):
     it.get(":log")
 
     def history_iter():
-        action_states = collections.defaultdict(lambda: plans.ActionStatusEnum.EXECUTABLE)
+        action_states = {}
+        def get_action_status(a):
+            #get actions by prefix, as the :action events only specify partial parameter lists
+            #can break, but better than nothing.
+            keys = []
+            for k in a.split():
+                keys.append(k)
+                k_new = " ".join(keys)
+                if k_new in action_states:
+                    return action_states[k_new]
+            return plans.ActionStatusEnum.EXECUTABLE
+        
         last_state = None
         last_plan_state = None
         last_plan = None
@@ -38,7 +49,7 @@ def parse_history_new(history_fn, domain):
                 last_state = jt.get()
             elif tag == ":plan":
                 if last_plan is not None:
-                    plan = [(a, action_states[a]) for a in last_plan]
+                    plan = [(a, get_action_status(a)) for a in last_plan]
                     problem = pddl.problem.Problem.parse(last_plan_state, domain)
                     yield problem, plan
 
@@ -51,7 +62,7 @@ def parse_history_new(history_fn, domain):
                 status = plans.ActionStatusEnum.__dict__[status.token.string.upper()]
                 action_states[action] = status
         if last_plan is not None:
-            plan = [(a, action_states[a]) for a in last_plan]
+            plan = [(a, get_action_status(a)) for a in last_plan]
             problem = pddl.problem.Problem.parse(last_plan_state, domain)
             yield problem, plan
         elif last_state is not None:
@@ -141,6 +152,8 @@ def load_history(history_fn, domain, component=None, consistency_cond = None):
             for n in plan.nodes_iter():
                 key = "%s %s" % (n.action.name, " ".join(a.name for a in n.full_args))
                 n.status = actions_status[key.strip()]
+                if n.is_virtual() or n == plan.init_node:
+                    n.status = plans.ActionStatusEnum.EXECUTED
         else:
             plan = None
         print "plan post-processing: %.2f" % (time.time() - t0)
