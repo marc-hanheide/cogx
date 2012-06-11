@@ -49,20 +49,20 @@
   </link>
 
   <link name="tilt_link">
-    <origin pose="0.0 0.0 0.13 0 0 0"/>
+    <origin pose="0.0 0.0 0.09 0 0 0"/>
     <inertial mass="0.1">
       <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
     </inertial>
 
     <collision name="collision-bar">
-      <origin pose="0.0 0.0 0.01 0 0 0"/>
+      <origin pose="0.0 0.0 0.05 0 0 0"/>
       <geometry>
         <box size="0.03 0.24 0.02"/>
       </geometry>
     </collision>
 
     <visual name="visual-bar">
-      <origin pose="0.0 0.0 0.01 0 0 0"/>
+      <origin pose="0.0 0.0 0.05 0 0 0"/>
       <geometry>
         <box size="0.03 0.24 0.02"/>
       </geometry>
@@ -70,14 +70,14 @@
     </visual>
 
     <collision name="collision-left">
-      <origin pose="0 0.025 -0.03 0 0 0"/>
+      <origin pose="0 0.025 0.01 0 0 0"/>
       <geometry>
         <box size="0.03 0.01 0.06"/>
       </geometry>
     </collision>
 
     <visual name="visual-left">
-      <origin pose="0 0.025 -0.03 0 0 0"/>
+      <origin pose="0 0.025 0.01 0 0 0"/>
       <geometry>
         <box size="0.03 0.01 0.06"/>
       </geometry>
@@ -85,14 +85,14 @@
     </visual>
 
     <collision name="collision-right">
-      <origin pose="0 -0.025 -0.03 0 0 0"/>
+      <origin pose="0 -0.025 0.01 0 0 0"/>
       <geometry>
         <box size="0.03 0.01 0.06"/>
       </geometry>
     </collision>
 
     <visual name="visual-right">
-      <origin pose="0 -0.025 -0.03 0 0 0"/>
+      <origin pose="0 -0.025 0.01 0 0 0"/>
       <geometry>
         <box size="0.03 0.01 0.06"/>
       </geometry>
