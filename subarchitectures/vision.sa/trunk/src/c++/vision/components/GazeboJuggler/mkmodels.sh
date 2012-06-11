@@ -3,6 +3,16 @@
 GazeboVersion=100
 
 root=../../../../../../..
+if [ ! -d $root/instantiations ]; then
+   echo "PWD=$(pwd)"
+   echo "The directory $root/instantiations doesn't exist"
+   exit 1
+fi
+
+if [ ! -d $root/instantiations/xdata ]; then
+   mkdir $root/instantiations/xdata 
+fi
+
 gazebo="$root/instantiations/xdata/gazebo"
 #ls $gazebo
 python genmodels.py
