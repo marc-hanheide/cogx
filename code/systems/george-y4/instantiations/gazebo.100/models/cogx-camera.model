@@ -24,7 +24,7 @@
       <material script="Gazebo/Blue"/>
     </visual>
 
-    <sensor name="camera" type="camera" always_on="true" update_rate=".1" visualize='true'>
+    <sensor name="camera" type="camera" always_on="true" update_rate="5" visualize='true'>
       <camera>
         <horizontal_fov angle="0.78540"/>
         <image width="640" height="480" format="R8G8B8"/>
