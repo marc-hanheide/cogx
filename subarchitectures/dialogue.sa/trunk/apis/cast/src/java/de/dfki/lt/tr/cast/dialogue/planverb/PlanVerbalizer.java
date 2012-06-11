@@ -91,7 +91,7 @@ public class PlanVerbalizer {
 		Grammar grammar = new Grammar(grammarFile);
 				//new Object().getClass().getResource(grammarFile));
 		
-		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File("./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt").toURL(), "UTF-8");
+		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File("./subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt ").toURL(), "UTF-8");
 				
 			//	fromURL(getClass.getResource("/de/dfki/tarot/nlp/realisation/openccg/test-corpus.txt"), "UTF-8"));
 		m_realiser = new CCGRealiser(grammar, scorer);
@@ -152,7 +152,7 @@ public class PlanVerbalizer {
 		List<Message> messages = new ArrayList<Message>();
 		for (POPlan poPlan : hlist) {
 			try {
-				messages.addAll(m_contentDeterminator.determineMessages(poPlan));
+				messages.addAll(m_contentDeterminator.determineMessages(poPlan, 1));
 			} catch (BuildException e) {
 				m_castComponent.logException(e);
 			} catch (ParseException e) {
@@ -178,7 +178,7 @@ public class PlanVerbalizer {
         // call the content determinator
 		List<Message> messages = null;
 		try {
-			messages = m_contentDeterminator.determineMessages(poplan);
+			messages = m_contentDeterminator.determineMessages(poplan, 1);
 		} catch (BuildException e) {
 			m_castComponent.logException(e);
 		} catch (ParseException e) {
