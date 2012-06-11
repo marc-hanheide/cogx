@@ -1,14 +1,14 @@
-diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.cc gazebo-mercurial-patched/interfaces/player/ActarrayInterface.cc
---- gazebo-mercurial/interfaces/player/ActarrayInterface.cc	2012-06-06 15:43:57.701033756 +0200
-+++ gazebo-mercurial-patched/interfaces/player/ActarrayInterface.cc	2012-06-06 12:08:28.081665726 +0200
-@@ -15,22 +15,21 @@
+diff -ur gazebo-dev-2707/interfaces/player/ActarrayInterface.cc gazebo-dev-2707-patched/interfaces/player/ActarrayInterface.cc
+--- gazebo-dev-2707/interfaces/player/ActarrayInterface.cc	2012-06-11 10:15:52.315161985 +0200
++++ gazebo-dev-2707-patched/interfaces/player/ActarrayInterface.cc	2012-06-11 10:29:22.451181255 +0200
+@@ -15,22 +15,20 @@
   *
   */
  /* Desc: Actarray Interface for Player-Gazebo
 - * Author: Alexis Maldonado
+- * Date: 19 September 2006
 + * Author: Alexis Maldonado, Michael Zillich
 + * Date: 6 June 2012
-  * Date: 19 September 2006
   */
  
  
@@ -29,7 +29,7 @@ diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.cc gazebo-mercuria
  // The data for the interface (gz_actarray_data_t in gazebo.h) contains
  // information about each joint plus variables to store the commands. When
  // a new command is sent, it modifies the cmd_pos, cmd_speed, ... variables
-@@ -42,61 +41,74 @@
+@@ -42,61 +40,74 @@
  // a sensible meaning in velocity or position commands.
  // If the models need it, this interface should be extended.
  
@@ -142,7 +142,7 @@ diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.cc gazebo-mercuria
    else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
          PLAYER_ACTARRAY_CMD_SPEED, this->device_addr))
    {
-@@ -115,142 +127,109 @@
+@@ -115,142 +126,109 @@
  
      return(0);
  
@@ -335,7 +335,7 @@ diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.cc gazebo-mercuria
  }
  
  void ActarrayInterface::Update()
-@@ -302,30 +281,46 @@
+@@ -302,30 +280,46 @@
    */
  }
  
@@ -402,10 +402,9 @@ diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.cc gazebo-mercuria
 +      static_cast<void*>(&this->actData), sizeof(this->actData), &this->datatime);
 +}
 +
-Only in gazebo-mercurial-patched/interfaces/player: .ActarrayInterface.cc.swp
-diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.hh gazebo-mercurial-patched/interfaces/player/ActarrayInterface.hh
---- gazebo-mercurial/interfaces/player/ActarrayInterface.hh	2012-06-06 15:43:57.701033756 +0200
-+++ gazebo-mercurial-patched/interfaces/player/ActarrayInterface.hh	2012-06-06 10:31:05.037458211 +0200
+diff -ur gazebo-dev-2707/interfaces/player/ActarrayInterface.hh gazebo-dev-2707-patched/interfaces/player/ActarrayInterface.hh
+--- gazebo-dev-2707/interfaces/player/ActarrayInterface.hh	2012-06-11 10:15:52.315161985 +0200
++++ gazebo-dev-2707-patched/interfaces/player/ActarrayInterface.hh	2012-06-06 10:31:05.037458211 +0200
 @@ -14,70 +14,59 @@
   * limitations under the License.
   *
@@ -511,16 +510,16 @@ diff -ur gazebo-mercurial/interfaces/player/ActarrayInterface.hh gazebo-mercuria
 -  /// \}
 -}
  #endif
-diff -ur gazebo-mercurial/interfaces/player/CMakeLists.txt gazebo-mercurial-patched/interfaces/player/CMakeLists.txt
---- gazebo-mercurial/interfaces/player/CMakeLists.txt	2012-06-06 15:57:20.921062279 +0200
-+++ gazebo-mercurial-patched/interfaces/player/CMakeLists.txt	2012-06-06 10:26:58.265449447 +0200
-@@ -5,12 +5,12 @@
+diff -ur gazebo-dev-2707/interfaces/player/CMakeLists.txt gazebo-dev-2707-patched/interfaces/player/CMakeLists.txt
+--- gazebo-dev-2707/interfaces/player/CMakeLists.txt	2012-06-11 10:20:10.823168126 +0200
++++ gazebo-dev-2707-patched/interfaces/player/CMakeLists.txt	2012-06-06 10:26:58.265449447 +0200
+@@ -5,13 +5,13 @@
               Position2dInterface.cc
               LaserInterface.cc
               CameraInterface.cc
 +             PTZInterface.cc
 +             ActarrayInterface.cc
-              ../../gazebo/gazebo.cc
+              ../../src/gazebo.cc
  )
               #Position3dInterface.cc
               #FiducialInterface.cc
@@ -530,10 +529,9 @@ diff -ur gazebo-mercurial/interfaces/player/CMakeLists.txt gazebo-mercurial-patc
               #GripperInterface.cc
               #BumperInterface.cc
               #IRInterface.cc
-Only in gazebo-mercurial-patched/interfaces/player: CMakeLists.txt.rej
-diff -ur gazebo-mercurial/interfaces/player/GazeboDriver.cc gazebo-mercurial-patched/interfaces/player/GazeboDriver.cc
---- gazebo-mercurial/interfaces/player/GazeboDriver.cc	2012-06-06 15:43:57.701033756 +0200
-+++ gazebo-mercurial-patched/interfaces/player/GazeboDriver.cc	2012-06-06 11:09:36.053540286 +0200
+diff -ur gazebo-dev-2707/interfaces/player/GazeboDriver.cc gazebo-dev-2707-patched/interfaces/player/GazeboDriver.cc
+--- gazebo-dev-2707/interfaces/player/GazeboDriver.cc	2012-06-11 10:15:52.319161983 +0200
++++ gazebo-dev-2707-patched/interfaces/player/GazeboDriver.cc	2012-06-06 11:09:36.053540286 +0200
 @@ -27,12 +27,12 @@
  #include "Position2dInterface.hh"
  #include "LaserInterface.hh"
@@ -588,10 +586,9 @@ diff -ur gazebo-mercurial/interfaces/player/GazeboDriver.cc gazebo-mercurial-pat
        case PLAYER_GRIPPER_CODE:
          if (!player_quiet_startup) printf(" a gripper interface.\n");
          ifsrc = new GripperInterface(playerAddr, this, _cf, _section);
-Only in gazebo-mercurial-patched/interfaces/player: GazeboDriver.cc.rej
-diff -ur gazebo-mercurial/interfaces/player/PTZInterface.cc gazebo-mercurial-patched/interfaces/player/PTZInterface.cc
---- gazebo-mercurial/interfaces/player/PTZInterface.cc	2012-06-06 15:43:57.705033755 +0200
-+++ gazebo-mercurial-patched/interfaces/player/PTZInterface.cc	2012-06-06 11:03:47.225527896 +0200
+diff -ur gazebo-dev-2707/interfaces/player/PTZInterface.cc gazebo-dev-2707-patched/interfaces/player/PTZInterface.cc
+--- gazebo-dev-2707/interfaces/player/PTZInterface.cc	2012-06-11 10:15:52.319161983 +0200
++++ gazebo-dev-2707-patched/interfaces/player/PTZInterface.cc	2012-06-06 11:03:47.225527896 +0200
 @@ -14,9 +14,9 @@
   * limitations under the License.
   *
@@ -815,10 +812,9 @@ diff -ur gazebo-mercurial/interfaces/player/PTZInterface.cc gazebo-mercurial-pat
 +      static_cast<void*>(&data), sizeof(data), &this->datatime);
 +}
 +
-Only in gazebo-mercurial-patched/interfaces/player: PTZInterface.cc.rej
-diff -ur gazebo-mercurial/interfaces/player/PTZInterface.hh gazebo-mercurial-patched/interfaces/player/PTZInterface.hh
---- gazebo-mercurial/interfaces/player/PTZInterface.hh	2012-06-06 15:43:57.705033755 +0200
-+++ gazebo-mercurial-patched/interfaces/player/PTZInterface.hh	2012-06-06 10:04:15.205401037 +0200
+diff -ur gazebo-dev-2707/interfaces/player/PTZInterface.hh gazebo-dev-2707-patched/interfaces/player/PTZInterface.hh
+--- gazebo-dev-2707/interfaces/player/PTZInterface.hh	2012-06-11 10:15:52.319161983 +0200
++++ gazebo-dev-2707-patched/interfaces/player/PTZInterface.hh	2012-06-06 10:04:15.205401037 +0200
 @@ -14,66 +14,61 @@
   * limitations under the License.
   *
@@ -936,4 +932,61 @@ diff -ur gazebo-mercurial/interfaces/player/PTZInterface.hh gazebo-mercurial-pat
  #endif
 -
 -
-Only in gazebo-mercurial-patched/interfaces/player: PTZInterface.hh.rej
+diff -ur gazebo-dev-2707/src/sensors/CameraSensor.cc gazebo-dev-2707-patched/src/sensors/CameraSensor.cc
+--- gazebo-dev-2707/src/sensors/CameraSensor.cc	2012-06-11 10:20:10.979168136 +0200
++++ gazebo-dev-2707-patched/src/sensors/CameraSensor.cc	2012-06-05 16:24:23.730399348 +0200
+@@ -23,6 +23,7 @@
+ 
+ #include "common/Events.hh"
+ #include "common/Exception.hh"
++#include "common/Image.hh"
+ 
+ #include "transport/transport.hh"
+ #include "msgs/msgs.hh"
+@@ -158,7 +159,9 @@
+       msgs::Set(msg.mutable_time(), this->world->GetSimTime());
+       msg.mutable_image()->set_width(this->camera->GetImageWidth());
+       msg.mutable_image()->set_height(this->camera->GetImageHeight());
+-      // msg.mutable_image()->set_pixel_format(this->camera->GetImageFormat());
++      //msg.mutable_image()->set_pixel_format(this->camera->GetImageFormat());
++      // TODO: get actual image format and translate from string to enum
++      msg.mutable_image()->set_pixel_format(gazebo::common::Image::RGB_INT8);
+       msg.mutable_image()->set_step(this->camera->GetImageWidth() * 3);
+       msg.mutable_image()->set_data(this->camera->GetImageData(),
+           msg.image().width() * 3 * msg.image().height());
+Only in gazebo-dev-2707-patched/src/sensors: CameraSensor.cc.orig
+diff -U3 gazebo-dev-2707/src/physics/Model.cc gazebo-dev-2707-patched/src/physics/Model.cc
+--- gazebo-dev-2707/src/physics/Model.cc	2012-06-11 10:57:24.182842971 +0200
++++ gazebo-dev-2707-patched/src/physics/Model.cc	2012-06-11 15:08:22.626475639 +0200
+@@ -715,17 +715,24 @@
+ //////////////////////////////////////////////////
+ void Model::ProcessMsg(const msgs::Model &_msg)
+ {
+-  if (!(_msg.has_id() && _msg.id() == this->GetId()))
++  if (!_msg.has_id())
+   {
+-    gzerr << "Incorrect ID[" << _msg.id() << " != " << this->GetId() << "]\n";
++    gzerr << "Missing ID[??? != " << this->GetId() << "]\n";
+     return;
+   }
+-  else if ((_msg.has_id() && _msg.id() != this->GetId()) &&
+-            _msg.name() != this->GetScopedName())
++  else if (_msg.id() != this->GetId())
+   {
+-    gzerr << "Incorrect name[" << _msg.name() << " != " << this->GetName()
+-      << "]\n";
+-    return;
++    if (_msg.name() == "")
++    {
++      gzerr << "Incorrect ID[" << _msg.id() << " != " << this->GetId() << "]\n";
++      return;
++    }
++    else if (_msg.name() != this->GetScopedName())
++    {
++      gzerr << "Incorrect name[" << _msg.name() << " != " << this->GetName()
++        << "]\n";
++      return;
++    }
+   }
+ 
+   this->SetName(this->world->StripWorldName(_msg.name()));
