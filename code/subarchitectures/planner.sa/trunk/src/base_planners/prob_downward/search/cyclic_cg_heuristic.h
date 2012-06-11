@@ -168,6 +168,7 @@ class CyclicCGHeuristic : public Heuristic {
     std::vector<std::vector<LocalProblemNode *> > buckets;
     int heap_size;
     int mode;
+    double p_heuristic;
 
     int compute_costs(const State &state);
     void initialize_heap();
@@ -185,6 +186,8 @@ public:
     CyclicCGHeuristic();
     ~CyclicCGHeuristic();
     virtual bool dead_ends_are_reliable() {return false;}
+    virtual double get_p_heuristic() const {return p_heuristic;}
+
 };
 
 

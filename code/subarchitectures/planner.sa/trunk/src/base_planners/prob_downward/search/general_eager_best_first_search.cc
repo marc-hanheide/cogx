@@ -126,17 +126,29 @@ int GeneralEagerBestFirstSearch::step() {
             EvalInfo succ_info = node.get_info()->succ(op);
             // if (succ_info.get_g() > g_reward * g_multiplier) {
             if (succ_info.get_p() < g_min_p) {
+                cout << "hit p-limit: " << succ_info.get_p() << endl;
                 continue;
             }
+
             if (g_use_deadline && succ_info.get_t() > g_deadline) {
                 // cout << "hit deadline:" << succ_info.get_t() << endl;
                 continue;
             }
 
+            double p_max = -1.0;
             for (unsigned int i = 0; i < heuristics.size(); i++) {
                 heuristics[i]->reach_state(s, *op, succ_node.get_state());
                 // heuristics[i]->evaluate(node.get_info(), succ_state);
                 heuristics[i]->evaluate(&succ_info, succ_state);
+                double h_p = heuristics[i]->get_p_heuristic();
+                if (h_p > p_max) {
+                    p_max = h_p;
+                }
+            }
+
+            if (p_max > -0.5 and (p_max * succ_info.get_p()) < g_min_p) {
+                cout << "hit h_p-limit: " << p_max << " * " <<  succ_info.get_p() << " = " << p_max * succ_info.get_p() << endl;
+                continue;
             }
             // cout << "---------" << endl;
             search_progress.inc_evaluated();

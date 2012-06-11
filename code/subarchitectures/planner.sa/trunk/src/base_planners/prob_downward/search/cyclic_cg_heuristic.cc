@@ -669,6 +669,7 @@ int CyclicCGHeuristic::compute_costs(const State &state) {
                     return 0;
                 
                 // cout << node->action_cost << " / "  << node->prob << " - " << p_init * node->prob <<  " // " << node->action_cost + (1-node->prob) * g_reward << endl;
+                p_heuristic = node->prob;
                 return node->action_cost + p_init * (1-node->prob) * g_reward;
                 // return 1 + (1-node->prob) * g_reward;
             }
