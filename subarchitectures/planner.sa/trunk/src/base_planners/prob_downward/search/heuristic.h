@@ -44,6 +44,7 @@ public:
     void evaluate(EvalInfo const* info, const State &state);
     bool is_dead_end() const;
     int get_heuristic();
+    virtual double get_p_heuristic() const {return -1.0;}
     // changed to virtual, so HeuristicProxy can delegate this:
     virtual void get_preferred_operators(std::vector<const Operator *> &result);
     virtual bool dead_ends_are_reliable() const {return true;}
