@@ -54,7 +54,7 @@ IFOPTANY(%(test_options), tutor-driven-test)
     # The object list is shared between GazeboJuggler and GeorgeTester.
     VARDEFAULT GazeboWorldDir=%(CONFIG_DIR)/../gazebo
     SETVAR JugglerObjectList=%(GazeboWorldDir)/test1.objects.txt
-    SETVAR TesterLearnAttrs=%(GazeboWorldDir)/test1.attrs.txt
+    SETVAR TesterLearnAttrs=%(CONFIG_DIR)/../xdata/gazebo/test1.attrs.txt
 
     # We choose the manual filter. (2012-05-30) it sets the following goal filters:
     # Tutor initiative: ON, Analyze PO: ON, everything else is off.
