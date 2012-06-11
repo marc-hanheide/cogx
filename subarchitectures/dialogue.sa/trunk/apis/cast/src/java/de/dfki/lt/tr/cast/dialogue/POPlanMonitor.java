@@ -190,11 +190,30 @@ public class POPlanMonitor extends ManagedComponent {
 			log(log_sb.toString());
 		}
 		
-		if (_oldPlanningTask.executionStatus.toString().equals("SUCCEEDED")) {
-			reportFinishedHistory(_oldPlanningTask.id);
+		switch (_oldPlanningTask.executionStatus) {
+			case INPROGRESS:
+				log("PlanningTask " + _oldPlanningTask.id + " is still INPROGRESS. Not reporting verbally.");
+				break;
+			case PENDING:
+				log("PlanningTask " + _oldPlanningTask.id + " is still PENDING. Not reporting verbally.");
+				break;
+			case ABORTED:
+				log("PlanningTask " + _oldPlanningTask.id + " is ABORTED. Reporting verbally.");
+				reportFinishedHistory(_oldPlanningTask.id);
+				break;
+			case FAILED:
+				log("PlanningTask " + _oldPlanningTask.id + " is FAILED. Reporting verbally.");
+				reportFinishedHistory(_oldPlanningTask.id);
+				break;
+			case SUCCEEDED:
+				log("PlanningTask " + _oldPlanningTask.id + " is SUCCEEDED. Reporting verbally.");
+				reportFinishedHistory(_oldPlanningTask.id);
+				break;
+			default:
+				break;
 		}
+		
 	}
-
 	
 	private String generateHistoryReport(int taskID) {
 		log("************ generateHistoryReport(" + taskID + ") called ************");
@@ -207,37 +226,21 @@ public class POPlanMonitor extends ManagedComponent {
 				hlist.add(pevPOPlan);
 			}
 		}
-		
-		// quick fix, return ""
-		log("verbalizeHistory doesn't work as of now -- returning empty string to maintain a running system...");
-		return "";
-		
+
 		// hand history over to PEV
-		//log("calling PEV Module verbalizeHistory()")
-		//String report = this.pevModule.verbalizeHistory(hlist);
-		//if (report==null) {
-		//	log("generated report is null! returning empty String history report.");
-		//	return "";
-		//} else return report; 
+		log("calling PEV Module verbalizeHistory()");
+		return this.pevModule.verbalizeHistory(hlist);
+	}
+
+	private void reportFinishedHistory(int taskID) {
+		String report = generateHistoryReport(taskID);
+		log("REPORTING FINISHED HISTORY: \n" + report);
+		VerbalisationUtils.verbaliseString(this, report);
 	}
 
 	
 	private void reportFinishedPOPlan(POPlan pp) {
 		log("************ reportFinishedPOPlan() called ************");
-
-		/*List<Step<String>> actionList = POPlanUtils.extractSteps(pp);
-		
-		List<String> linkList = POPlanUtils.extractLinks(pp);
-		StringBuilder linksSection = new StringBuilder();
-		for (String link : linkList) {
-			linksSection.append(link + "\n");
-		}
-		
-		// log("links: " + linksSection);
-		// log("constructing a de.dfki.lt.tr.planverb.planning.pddl.POPlan from the autogen.Planner.POPlan");
-		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = 
-				new de.dfki.lt.tr.planverb.planning.pddl.
-				POPlan(new Integer(pp.taskID).toString(), actionList, linksSection.toString());*/
 		
 		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
 		
@@ -246,26 +249,6 @@ public class POPlanMonitor extends ManagedComponent {
 		log("REPORTING FINISHED POPLAN: \n" + report);
 		//VerbalisationUtils.verbaliseString(this, report);
 	}
-	
-	private void reportFinishedHistory(int taskID) {
-		log("************ reportFinishedHistory() called ************");
-
-		List<de.dfki.lt.tr.planverb.planning.pddl.POPlan> hlist = new ArrayList<de.dfki.lt.tr.planverb.planning.pddl.POPlan>();
-		
-		if (finishedMap.containsKey(taskID)) {
-			for (POPlan pp : finishedMap.get(taskID)) {
-				de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
-				hlist.add(pevPOPlan);
-			}
-		}
-		
-		log("calling PEV Module verbalizeHistory()");
-		String report = this.pevModule.verbalizeHistory(hlist);
-		log("REPORTING FINISHED HISTORY: \n" + report);
-		VerbalisationUtils.verbaliseString(this, report);
-		
-	}
-	
 	
 	private String poplanToString(POPlan _poPlan) {
 		return POPlanUtils.POPlanToString(_poPlan);
