@@ -208,9 +208,17 @@ public class POPlanMonitor extends ManagedComponent {
 			}
 		}
 		
+		// quick fix, return ""
+		log("verbalizeHistory doesn't work as of now -- returning empty string to maintain a running system...");
+		return "";
+		
 		// hand history over to PEV
-		log("calling PEV Module verbalizeHistory()");
-		return this.pevModule.verbalizeHistory(hlist);
+		//log("calling PEV Module verbalizeHistory()")
+		//String report = this.pevModule.verbalizeHistory(hlist);
+		//if (report==null) {
+		//	log("generated report is null! returning empty String history report.");
+		//	return "";
+		//} else return report; 
 	}
 
 	
