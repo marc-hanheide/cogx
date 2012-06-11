@@ -105,15 +105,21 @@ svn//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	@$(MAKE) makesum
 
 
+# Select the revision with HG_REVISION:
+#  * dev     : the latest on development branch
+#  * default : the latest on default branch
+#  * -r NNN  : select a particular revision
+#  * (empty) : update to the latest
 hghttps//%:	/tmp/gartmp-$(USER)-$(GARNAME)
 	@#env
-	(cd $< && \
-	 echo "exporting from HG: hg clone http://$(*D)" && \
-	 hg clone https://$(*D) && \
-	 mv * $(GARNAME)-$(GARVERSION) && \
-	 cd $(GARNAME)-$(GARVERSION) && \
-	 hg update $(HG_REVISION) dev && \
-	 cd .. \
+	(cd $< \
+	 && echo "exporting from HG: hg clone http://$(*D)" \
+	 && hg clone https://$(*D)  $(GARNAME)-$(GARVERSION) \
+	 && cd $(GARNAME)-$(GARVERSION) \
+	 && hg up $(HG_REVISION) \
+	 && hg branches > gar-hg-branches.lst \
+	 && echo "---" >> gar-hg-branches.lst \
+	 && hg summary >> gar-hg-branches.lst \
 	)
 	tar czv --exclude-vcs -C $< -f $(PARTIALDIR)/$(DISTFILES) .
 
