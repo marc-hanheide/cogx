@@ -11,6 +11,7 @@ def merge_plans(_plans, init_state, final_state):
     latest_node = {}
     all_nodes = defaultdict(set)
     virtual_mappings = {}
+    knowledge_maps = {}
 
     def add_node(n):
         key = (n.action.name,)+tuple(virtual_mappings.get(a,a) for a in  n.full_args)
@@ -18,6 +19,8 @@ def merge_plans(_plans, init_state, final_state):
         all_nodes[key].add(n)
 
     def get_node(n):
+        if n in knowledge_maps:
+            n = knowledge_maps[n]
         key = (n.action.name,)+tuple(virtual_mappings.get(a,a) for a in  n.full_args)
         if key not in nodedict:
             nodedict[key] = n
@@ -129,13 +132,23 @@ def merge_plans(_plans, init_state, final_state):
     current_state = init_state.copy()
     get_node(plan.init_node)
     get_node(plan.goal_node)
-
+    
     written = {}
     observed = {}
     executed = []
     unexecuted = []
     last_plan = None
 
+    def collapse_knowledge_effects(topoplan, plan, knode):
+        pred = set(p for p in plan.pred_closure(knode, link_type="depends") if not p.is_virtual())
+        for n in reversed(topoplan):
+            if n in pred:
+                #found action that provided (part of the) knowledge
+                n.effects |= knode.effects
+                knowledge_maps[knode] = n
+                return
+        assert False
+                
     for i, p in enumerate(_plans):
         if not isinstance(p, plans.MAPLPlan):
             continue
@@ -144,13 +157,17 @@ def merge_plans(_plans, init_state, final_state):
         G.draw("plan%d.pdf" % i)
 
         last_plan = p
-        for n in p.topological_sort():
+        topo_plan = p.topological_sort()
+        for n in topo_plan:
             if n.action.name == 'init':
                 add_virtual_objects(n)
 
             if n.action.name == 'init' or n.is_virtual():
                 for f in n.effects:
                     add_virtual_object_facts(f)
+            if n.action.name.startswith("__knowledge"):
+                collapse_knowledge_effects(topo_plan, p, n)
+                continue
 
             for o in all_objects(n):
                 if o not in init_problem:

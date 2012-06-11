@@ -238,6 +238,8 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
           if default_fname:
               return self.set_filename(*paths, attr_name=default_fname)
           return True # No given value: success
+      else:
+          filename = os.path.expanduser(filename)
       
       if search_paths is None:
           search_paths = [path.dirname(__file__)]
