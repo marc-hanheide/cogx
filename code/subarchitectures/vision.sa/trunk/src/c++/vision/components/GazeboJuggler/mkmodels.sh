@@ -27,6 +27,7 @@ if [ "$GazeboVersion" -lt "100" ]; then
 else
    cp -ru xdata/Media $gazebo
    cp -ru xdata/models $gazebo
+   cp xdata/test1.objects.txt $gazebo
    cp xdata/test1.attrs.txt $gazebo
 fi
 
