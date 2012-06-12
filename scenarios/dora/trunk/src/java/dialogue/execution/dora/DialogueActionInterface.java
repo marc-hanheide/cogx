@@ -2,18 +2,20 @@ package dialogue.execution.dora;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import cast.AlreadyExistsOnWMException;
 import cast.CASTException;
+import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
-import castutils.castextensions.WMEventQueue;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
+import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
 import de.dfki.lt.tr.dialogue.slice.StandbyMode;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import dialogue.execution.AbstractDialogueActionInterface;
@@ -23,6 +25,7 @@ import eu.cogx.perceptmediator.dora.VisualObjectTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import execution.slice.TriBool;
+import execution.slice.actions.AskForLabelExistence;
 import execution.slice.actions.EngageWithHuman;
 import execution.slice.actions.ReportPosition;
 import execution.util.BlockingActionExecutor;
@@ -43,6 +46,57 @@ public class DialogueActionInterface extends
 
 	public DialogueActionInterface() {
 		super(GroundedBelief.class);
+	}
+
+	/**
+	 * Class to represent the HGV dialogue action to ask if an object exists.
+	 * see https://codex.cs.bham.ac.uk/trac/cogx/ticket/516
+	 * 
+	 * @author marc
+	 * 
+	 */
+	public static class AskForLabelExistenceDialogue extends
+			BeliefIntentionDialogueAction<AskForLabelExistence> {
+		public AskForLabelExistenceDialogue(ManagedComponent _component) {
+			super(_component, AskForLabelExistence.class);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+			super.addStringContent(_stringContent);
+			// overwrite it to be a polar question
+			_stringContent.put("subtype", "polar");
+			// TODO: modify according to Mira's instructions
+			_stringContent.put("hypothesis", "exists");
+			_stringContent.put("label", getAction().label);
+			_stringContent.put("relation", getAction().relation);
+			getComponent().log(AskForLabelExistenceDialogue.class.getSimpleName()+": created string content for intention");
+			for (Entry<String, String> e : _stringContent.entrySet()) {
+				getComponent().log("  "+e.getKey()+" => " + e.getValue());
+			}
+		}
+
+		@Override
+		protected TriBool checkResponse(InterpretedIntention _ii)
+				throws SubarchitectureComponentException {
+			getComponent().log(AskForLabelExistenceDialogue.class.getSimpleName()+": check response:");
+			for (Entry<String, String> e : _ii.stringContent.entrySet()) {
+				getComponent().log("  "+e.getKey()+" => " + e.getValue());
+			}
+
+			// TODO check if it was either "yes" or "no"
+			// String value = _ii.stringContent.get("exists");
+			// try {
+			//
+			// ((AbstractDialogueActionInterface<?>) getComponent())
+			// .addFeature(getAction().beliefAddress, "exists", value);
+			//
+			// } catch (SubarchitectureComponentException e) {
+			// logException(e);
+			// }
+			return TriBool.TRITRUE;
+		}
+
 	}
 
 	public static class ReportPositionDialogue extends
@@ -216,6 +270,12 @@ public class DialogueActionInterface extends
 							EngageWithHuman.class,
 							new ComponentActionFactory<EngageWithHuman, HumanEngagementExecutor>(
 									this, HumanEngagementExecutor.class));
+
+			m_actionStateManager
+					.registerActionType(
+							AskForLabelExistence.class,
+							new ComponentActionFactory<AskForLabelExistence, AskForLabelExistenceDialogue>(
+									this, AskForLabelExistenceDialogue.class));
 
 		}
 	}
