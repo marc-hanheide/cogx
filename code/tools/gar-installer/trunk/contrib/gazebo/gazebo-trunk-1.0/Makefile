@@ -17,6 +17,7 @@ HG_REVISION = -r 2707
 include $(GARDIR)/gar.detect.mk
 
 DEB_PACKAGES=\
+	mercurial@ubuntu \
 	libtinyxml-dev@ubuntu \
 	ogre-tools@ubuntu \
 	libogre-dev@ubuntu
