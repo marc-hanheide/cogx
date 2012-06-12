@@ -9,13 +9,24 @@ if [ ! -d $root/instantiations ]; then
    exit 1
 fi
 
+python genmodels.py
+
 if [ ! -d $root/instantiations/xdata ]; then
    mkdir $root/instantiations/xdata 
+fi
+if [ ! -d $root/instantiations/xdata/gazebo ]; then
+   mkdir $root/instantiations/xdata/gazebo 
 fi
 
 gazebo="$root/instantiations/xdata/gazebo"
 #ls $gazebo
-python genmodels.py
+
+if [ ! -d $gazebo/Media ]; then
+   mkdir $gazebo/Media 
+fi
+if [ ! -d $gazebo/models ]; then
+   mkdir $gazebo/models 
+fi
 
 # install models
 if [ "$GazeboVersion" -lt "100" ]; then
