@@ -12,6 +12,7 @@ import pstatenode, domain_query_graph
 
 log = config.logger("dt")
 
+function_blacklist = ["entity-exists"]
 
 def list_to_dict(facts):
     d = {}
@@ -157,7 +158,7 @@ class DTProblem(object):
         self.goal_generator = None
 
         # dom_str, prob_str = DTPDDLOutput().write(self.problem)
-        # print "\n".join(dom_str)
+        # printlb "\n".join(dom_str)
         # print "\n".join(prob_str)
         
     def initialize(self, prob_state):
@@ -508,13 +509,13 @@ class DTProblem(object):
                             return relaxed_exploration.FACT_CURRENTLY_FALSE
                     else:
                         if fact in self.detstate:
-                            print "det true"
+                            # print "det true"
                             return relaxed_exploration.FACT_STATICALLY_TRUE                        
                         elif fact.svar in self.detstate:
-                            print "det false"
+                            # print "det false"
                             return relaxed_exploration.FACT_STATICALLY_FALSE
                         elif fact.svar.function not in self.prob_functions:
-                            print "det undefined"
+                            # print "det undefined"
                             return relaxed_exploration.FACT_STATICALLY_FALSE
                             
                         # print "test reachability:", fact
@@ -522,11 +523,9 @@ class DTProblem(object):
                             check_count[1] += 1
                             if self.dtstate.is_reachable(fact):
                                 # print fact, "reachable"
-                                print "reachable"
                                 factcache[fact] = relaxed_exploration.FACT_CURRENTLY_TRUE
                             else:
                                 # print fact, "unreachable"
-                                print "unreachable"
                                 factcache[fact] = relaxed_exploration.FACT_STATICALLY_FALSE
                             # print "%s reachable: %s"x % (fact, factcache[fact])
                         check_count[2] += 1
@@ -572,7 +571,7 @@ class DTProblem(object):
             reachable = self.dtstate.get_reachable_facts(n, assumptions)
             # print n, "reachable:", map(str, reachable)
             if len(reachable) == len(assumptions):
-                facts = self.dtstate.get_observable_facts(n)
+                facts = set(f for f in self.dtstate.get_observable_facts(n) if f.svar.function.name not in function_blacklist)
                 candidates |= set(facts)
             #     print "ok:", map(str, facts)
             # else:
@@ -594,7 +593,7 @@ class DTProblem(object):
                 continue
 
             
-            print "Plan:\n",rplan
+            # print "Plan:\n",rplan
             o_depends = [g for g in rplan.facts if self.dtstate.has_observations(g) and g != f]
             p_depends = [g for g in rplan.facts if g.svar.function in self.prob_functions and g not in self.detstate and g != f]
 

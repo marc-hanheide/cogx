@@ -770,7 +770,7 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
         
         all_checked_facts = set()
         for action, mapping in next_actions:
-            print action.name, map(str, (mapping.get(a,a) for a in action.args))
+            # print action.name, map(str, (mapping.get(a,a) for a in action.args))
             partial_action_key  = (action.name, tuple(mapping.get(a,a) for a in action.args))
             # cache_key = partial_action_key
             # if cache.has_ops(cache_key):
@@ -888,7 +888,6 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
         return ga_count < 0
 
     # print map(str, start)
-    
     reached_by = {}
     forward_open = applicable_ops[:]
     # print map(str, applicable_ops)
