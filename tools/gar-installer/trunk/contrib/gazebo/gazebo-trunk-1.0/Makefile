@@ -54,6 +54,8 @@ makesum-$(DISTFILES):
 	true
 checksum-$(DISTFILES):  
 	true
-checksum-$(PATCHFILES): 
-	true
+#checksum-$(DISTNAME)-2707-cogx.patch: 
+#        true
+#checksum-$(DISTNAME)-2707-cogx.a.patch: 
+#        true
 
