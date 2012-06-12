@@ -932,11 +932,11 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
     #extract relaxed plan:
     while goal:
         fact = goal.pop()
-        print "pop goal:", fact
+        # print "pop goal:", fact
         if fact not in reached_by:
             continue
         next = reached_by[fact]
-        print "action:", next.action.name
+        # print "action:", next.action.name
         actions.add((next.action, next.args))
         goal |= (next.preconds - facts)
         # print next, map(str, next.all_preconds)
