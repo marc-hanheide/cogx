@@ -200,11 +200,14 @@ void PlanePopOut::SOIEntry::init(const PlaneEntry &domPlane)
 
     // background points
     // use an enlarged bounding sphere to collect the BG points
-    boundingSphere.rad *= 1.5;
+    Sphere3 inner = boundingSphere;
+    Sphere3 outer = boundingSphere;
+    inner.rad *= 1.2;
+    outer.rad *= 1.5;
     for (size_t i = 0; i < domPlane.planePoints.size(); i++)
-      if(pointInsideSphere(boundingSphere, domPlane.planePoints[i].p))
+      if(pointInsideSphere(outer, domPlane.planePoints[i].p) &&
+	 !pointInsideSphere(inner, domPlane.planePoints[i].p))
         BGpoints.push_back(domPlane.planePoints[i]);
-    boundingSphere.rad /= 1.5;
 
     calcHistogram();
 
