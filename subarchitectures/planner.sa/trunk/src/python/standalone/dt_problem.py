@@ -493,7 +493,7 @@ class DTProblem(object):
             def exploration_check_fn(fact):
                 t0 = time.time()
                 try:
-                    print "test:", fact
+                    # print "test:", fact
                     if fact.svar.modality == pddl.mapl.commit:
                         fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
 
