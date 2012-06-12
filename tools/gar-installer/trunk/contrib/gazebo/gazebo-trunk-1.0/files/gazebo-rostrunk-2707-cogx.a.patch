@@ -1,0 +1,33 @@
+--- gazebo-dev-2707/src/physics/Model.cc	2012-06-11 10:57:24.182842971 +0200
++++ gazebo-dev-2707-patched/src/physics/Model.cc	2012-06-12 15:11:39.014092288 +0200
+@@ -715,17 +715,22 @@
+ //////////////////////////////////////////////////
+ void Model::ProcessMsg(const msgs::Model &_msg)
+ {
+-  if (!(_msg.has_id() && _msg.id() == this->GetId()))
++  if (_msg.has_id())
+   {
+-    gzerr << "Incorrect ID[" << _msg.id() << " != " << this->GetId() << "]\n";
+-    return;
++    if (_msg.id() != this->GetId())
++    {
++      gzerr << "Incorrect ID[" << _msg.id() << " != " << this->GetId() << "]\n";
++      return;
++    }
+   }
+-  else if ((_msg.has_id() && _msg.id() != this->GetId()) &&
+-            _msg.name() != this->GetScopedName())
++  else 
+   {
+-    gzerr << "Incorrect name[" << _msg.name() << " != " << this->GetName()
+-      << "]\n";
+-    return;
++    if (_msg.name() != this->GetScopedName())
++    {
++      gzerr << "Incorrect name[" << _msg.name() << " != " << this->GetName()
++        << "]\n";
++      return;
++    }
+   }
+ 
+   this->SetName(this->world->StripWorldName(_msg.name()));
