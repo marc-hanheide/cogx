@@ -1,3 +1,4 @@
+diff -U3 gazebo-dev-2707/src/physics/Model.cc gazebo-dev-2707-patched/src/physics/Model.cc 
 --- gazebo-dev-2707/src/physics/Model.cc	2012-06-11 10:57:24.182842971 +0200
 +++ gazebo-dev-2707-patched/src/physics/Model.cc	2012-06-12 15:11:39.014092288 +0200
 @@ -715,17 +715,22 @@
