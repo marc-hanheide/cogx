@@ -23,6 +23,42 @@ verbalised_feature(objecttype, [kind, of, object]).
 verbalised_feature(identity, [kind, of, room]).
 
 %-------------------------------------------------------------------------
+% DORA DEFAULT KNOWLEDGE QUESTIONS
+%-------------------------------------------------------------------------
+
+% "UBK1"
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, label, Label),
+	i : int : string_content(IntAddr, category, Category),
+
+	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
+	plural(Label, LabelPl),
+
+	event : produce_text([are, LabelPl, typically, in, a, Category]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% "UBK2"
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, label, Label),
+	i : int : string_content(IntAddr, relation, Relation),
+	i : int : string_content(IntAddr, otherlabel, OtherLabel),
+
+	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
+	plural(Label, LabelPl),
+	plural(OtherLabel, OtherLabelPl),
+
+	event : produce_text([are, LabelPl, typically, Relation, OtherLabelPl]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+plural(X, [plural, of, X]).
+
+%-------------------------------------------------------------------------
 % WH- QUESTIONS
 %-------------------------------------------------------------------------
 

@@ -30,6 +30,7 @@ public class LabelQuestionIntention extends QuestionIntention {
         protected void encodeContent(LabelQuestionIntention rich, BaseIntention poor) {
             QuestionIntention.Transcoder.INSTANCE.encodeContent(rich, poor);
             poor.stringContent.put(SKEY_LABEL, rich.getLabel());
+            poor.stringContent.put(SKEY_SUBTYPE, "polar");
         }
 
         @Override
