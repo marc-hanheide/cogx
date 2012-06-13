@@ -27,6 +27,8 @@ ELSE # simulation
     !laser
     !katana
   </multiline>
+
+  SETVAR JugglerObjectList=%(CONFIG_DIR)/../xdata/gazebo/test1.objects.txt
 ENDIF
 
 OPTDEFAULT feature_options=<multiline>
@@ -44,5 +46,6 @@ OPTDEFAULT feature_options=<multiline>
    visualization
    standalone-display
 </multiline>
+
 
 INCLUDE george.cast

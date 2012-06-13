@@ -52,7 +52,6 @@ OPTDEFAULT test_options=<multiline>
 IFOPTANY(%(test_options), tutor-driven-test)
     # The world used is george-02.world, it must be specified at Gazebo startup.
     # The object list is shared between GazeboJuggler and GeorgeTester.
-    VARDEFAULT GazeboWorldDir=%(CONFIG_DIR)/../gazebo.100
     SETVAR JugglerObjectList=%(CONFIG_DIR)/../xdata/gazebo/test1.objects.txt
     SETVAR TesterLearnAttrs=%(CONFIG_DIR)/../xdata/gazebo/test1.attrs.txt
 

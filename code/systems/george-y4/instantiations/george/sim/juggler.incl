@@ -1,6 +1,5 @@
 # Special components for simulation
-VARDEFAULT GazeboWorldDir=%(CURRENT_DIR)/../../gazebo
-VARDEFAULT JugglerObjectList=%(GazeboWorldDir)/george-01.objects.txt
+VARDEFAULT JugglerObjectList=%(CURRENT_DIR)/../../gazebo/george-01.objects.txt
 CPP MG gazebo.juggler GazeboJuggler --player-host %(host:PlayerHost) --objects "%(JugglerObjectList)"
 
 
