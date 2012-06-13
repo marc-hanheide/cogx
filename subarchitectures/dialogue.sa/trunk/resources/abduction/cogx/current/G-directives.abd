@@ -38,7 +38,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 	get_rexp_for_related(RelatedEntity, RExp),
 
-	event : produce_text([is, there, a, Label, Relation, in, RExp]) / -1.0.
+	event : produce_text([is, there, a, Label, Relation, RExp]) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
