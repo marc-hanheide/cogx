@@ -11,6 +11,7 @@ import cast.SubarchitectureComponentException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
+import cast.core.CASTUtils;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
@@ -62,6 +63,24 @@ public class DialogueActionInterface extends
 		}
 
 		@Override
+		protected void addAddressContent(
+				Map<String, WorkingMemoryAddress> _addressContent) {
+			super.addAddressContent(_addressContent);
+			_addressContent.put("about", getAction().beliefAddress);
+			_addressContent.put("related-to" ,getAction().pointer);
+			getComponent().println(
+					AskForLabelExistenceDialogue.class.getSimpleName()
+							+ ": created address content for intention");
+			for (Entry<String, WorkingMemoryAddress> e : _addressContent
+					.entrySet()) {
+				getComponent().println(
+						"  " + e.getKey() + " => "
+								+ CASTUtils.toString(e.getValue()));
+			}
+
+		}
+
+		@Override
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
 			// overwrite it to be a polar question
@@ -70,30 +89,40 @@ public class DialogueActionInterface extends
 			_stringContent.put("hypothesis", "exists");
 			_stringContent.put("label", getAction().label);
 			_stringContent.put("relation", getAction().relation);
-			getComponent().log(AskForLabelExistenceDialogue.class.getSimpleName()+": created string content for intention");
+			getComponent().println(
+					AskForLabelExistenceDialogue.class.getSimpleName()
+							+ ": created string content for intention");
 			for (Entry<String, String> e : _stringContent.entrySet()) {
-				getComponent().log("  "+e.getKey()+" => " + e.getValue());
+				getComponent().println(
+						"  " + e.getKey() + " => " + e.getValue());
 			}
 		}
 
 		@Override
 		protected TriBool checkResponse(InterpretedIntention _ii)
 				throws SubarchitectureComponentException {
-			getComponent().log(AskForLabelExistenceDialogue.class.getSimpleName()+": check response:");
+			getComponent().println(
+					AskForLabelExistenceDialogue.class.getSimpleName()
+							+ ": check response:");
 			for (Entry<String, String> e : _ii.stringContent.entrySet()) {
-				getComponent().log("  "+e.getKey()+" => " + e.getValue());
+				getComponent().println(
+						"  " + e.getKey() + " => " + e.getValue());
 			}
 
 			// TODO check if it was either "yes" or "no"
-			// String value = _ii.stringContent.get("exists");
-			// try {
-			//
-			// ((AbstractDialogueActionInterface<?>) getComponent())
-			// .addFeature(getAction().beliefAddress, "exists", value);
-			//
-			// } catch (SubarchitectureComponentException e) {
-			// logException(e);
-			// }
+			String value = "false";
+			if (_ii.stringContent.get("exists").equals("yes"))
+				value = "true";
+
+			try {
+
+				((AbstractDialogueActionInterface<?>) getComponent())
+						.addFeature(getAction().beliefAddress, "entity-exists",
+								value);
+
+			} catch (SubarchitectureComponentException e) {
+				logException(e);
+			}
 			return TriBool.TRITRUE;
 		}
 
