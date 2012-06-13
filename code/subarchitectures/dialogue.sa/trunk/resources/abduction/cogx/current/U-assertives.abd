@@ -110,6 +110,19 @@ polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, 
 
 	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
 
+% Dora's HGV polar question
+polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity) <-
+	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity),
+	i : int : string_content(QUDAddr, type, 'question'),
+	i : int : string_content(QUDAddr, subtype, 'polar'),
+	i : int : string_content(QUDAddr, subsubtype, 'hgv'),
+%	i : int : address_content(QUDAddr, about, BeliefAddr),
+%	aboutness(Int, BeliefAddr),
+	int : string_content(Int, subtype, 'hgv-answer') / p(1.0),
+	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
+
+	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
+
 %polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, unknown, Polarity) <-
 %	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, Feature, Value, Polarity),
 %	i : int : string_content(QUDAddr, type, 'question'),
