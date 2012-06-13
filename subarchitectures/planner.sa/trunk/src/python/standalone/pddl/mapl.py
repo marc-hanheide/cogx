@@ -7,7 +7,7 @@ from scope import Scope, SCOPE_CONDITION
 from parser import ParseError, UnexpectedTokenError
 from mapltypes import Type, Parameter
 from predicates import Predicate
-from builtin import t_object, t_any
+from builtin import t_object, t_number, t_any
 
 pddl_module = True
 
@@ -22,6 +22,9 @@ mapl_types = [t_agent, t_planning_agent, t_subgoal, t_feature]
 #mapl predicates
 knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
+num_knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_number))], builtin=True)
+num_direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_number))], builtin=True)
+
 p = Parameter("?f", types.FunctionType(t_object))
 indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
 p = Parameter("?f", types.FunctionType(t_object))
@@ -51,8 +54,8 @@ failure_cost = predicates.Function("failure-cost", [], builtin.t_number, builtin
 
 # shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 
-modal_predicates = [knowledge, indomain,\
-                    direct_knowledge, i_indomain, \
+modal_predicates = [knowledge, indomain, num_knowledge,\
+                    direct_knowledge, i_indomain, num_direct_knowledge,\
                     commit, committed, attributed, neg_attributed, \
                     update, update_fail, defined]
 # shared_knowledge, , ,\
@@ -83,6 +86,14 @@ kval_axiom = """
 )
 """
 
+num_kval_axiom = """
+(:derived (kval ?a - agent ?svar - (function number))
+          (or (kd ?a ?svar)
+              (defined ?svar)
+          )
+)
+"""
+
 # hyp_axiom = """
 # (:derived (hyp ?svar - (function object) ?val - (typeof ?svar))
 #           (or (= ?svar ?val)
@@ -109,7 +120,7 @@ in_domain_axiom = """
 )
 """
 
-mapl_axioms = [kval_axiom, in_domain_axiom, committed_axiom]
+mapl_axioms = [kval_axiom, num_kval_axiom, in_domain_axiom, committed_axiom]
 
 def prepare_domain(domain):
     domain.init_rules = []

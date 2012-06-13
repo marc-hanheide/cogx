@@ -10,6 +10,8 @@ w = None
 
 ignored_functions = set()
 
+svars_to_check = set()
+
 def fact_filter(fact):
     if fact.svar.function in ignored_functions:
         return False
@@ -80,26 +82,52 @@ def add_explanation_rules(expl_rules_fn):
             else:
                 alist.append(a)
                 if isinstance(a, pddl.Action):
+                    add_consistence_checks(a)
                     a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
 
+def add_consistence_checks(action):
+    for eff in action.effect.visit(pddl.visitors.collect_effects):
+        if eff.predicate == pddl.mapl.commit:
+            term = eff.args[0]
+            cond = pddl.LiteralCondition(pddl.mapl.committed, [term], negated=True)
+            # cond = pddl.LiteralCondition(compatible, eff.args)
+            action.extend_precondition(cond)
+                    
 def build_operator_for_ground_action(i, action, args):
     action_t = expl_domain.types["action"]
     action_id = "action_" + str(i).zfill(3)
     expl_domain.add_constant(types.TypedObject(action_id, action_t))
     name = "_%s_%s" % (action_id, action.name)
-    new_op = pddl.Action(name, [], None, None, None, None)
+    new_op = pddl.Action(name, [], None, None, expl_domain)
     with action.instantiate(args, expl_domain):
         if action.precondition:
             new_op.precondition = action.precondition.copy(copy_instance=True)
         #new_op.precondition = pddl.Conjunction([]) # TEST
         if action.effect:
             new_op.effect = action.effect.copy(copy_instance=True)
+
+    @pddl.visitors.collect
+    def get_cconds(elem, results):
+        if isinstance(elem, pddl.effects.ConditionalEffect):
+            return elem.condition.visit(pddl.visitors.collect_conditions)
+            
+    #Commit preconditions: if there is a conditional effect, make sure
+    #that we commit to something to prevent "explanation by inaction"
+    for eff in pddl.visitors.visit(new_op.effect, get_cconds, []):
+        if eff.predicate in (pddl.mapl.commit, pddl.builtin.equals) and not eff.negated:
+            term = eff.args[0]
+            cond = pddl.LiteralCondition(pddl.mapl.committed, [term], scope=new_op)
+            new_op.extend_precondition(cond)
+            svars_to_check.add(pddl.state.StateVariable.from_term(term))
+            
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
     for cond in [se_condition, enabled_cond]:
         new_op.extend_precondition(cond)
     enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
     new_op.set_total_cost(pddl.Term(1))
     return [new_op], enabled_eff
+
+
 
 def possible_cond_effect(fact):
     @pddl.visitors.collect
@@ -133,8 +161,18 @@ def state_rule_conditions(fact):
             break
     return pddl.visitors.visit(pre, pddl.visitors.collect_conditions, [])
 
+def possible_compatibility_effect(fact):
+    if fact.svar.modality:
+        return False
+    if isinstance(fact.svar.function, pddl.Predicate):
+        return False
+    return fact_filter(fact)
+
 def build_operator_for_new_facts(i, node):
     compatibility_conds = set(pddl.state.Fact(f.svar.as_modality(compatible, [f.value]), pddl.TRUE) for f in node.preconds if possible_commit_effect(f))
+
+    compatibility_conds |= set(pddl.state.Fact(f.svar.as_modality(compatible, [f.value]), pddl.TRUE) for f in node.effects if possible_compatibility_effect(f))
+    
     node.preconds = set(f for f in node.preconds if possible_cond_effect(f))
 
     rule_conditions = sum((state_rule_conditions(f) for f in node.effects if fact_filter(f)), [])
@@ -283,13 +321,13 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
     # gfacts += [f.to_condition().negate() for f in relevant if f.svar not in extstate and filter_fn(f)]
     # for f in sorted(relevant,key=str):
     #     print f, observed_state[f.svar]
-    gfacts = [f.to_condition() for f in commitments]
-    goal = pddl.Conjunction(gfacts)
-    #goal = pddl.Conjunction([])  # TEST
-    if not isinstance(goal, pddl.Conjunction):
-        goal = pddl.Conjunction([goal])
-    goal.parts.append(str2cond("(= (phase) achieve_goal)", expl_domain))
-    p.goal = goal
+    # gfacts = [f.to_condition() for f in commitments]
+    # goal = pddl.Conjunction(gfacts)
+    # #goal = pddl.Conjunction([])  # TEST
+    # if not isinstance(goal, pddl.Conjunction):
+    #     goal = pddl.Conjunction([goal])
+    # goal.parts.append(str2cond("(= (phase) achieve_goal)", expl_domain))
+    p.goal = pddl.Conjunction([str2cond("(= (phase) achieve_goal)", expl_domain)])
     return p
     
 

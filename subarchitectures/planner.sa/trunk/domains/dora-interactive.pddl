@@ -65,6 +65,10 @@
 
    (dora__not_inroom ?l - label ?c - category) - number
 
+   (likely_dora__inroom ?l - label ?c - category) - boolean
+   (likely_dora__inobject ?l1 ?l2 - label ?c - category) - boolean
+   (likely_dora__on ?l1 ?l2 - label ?c - category) - boolean
+
    ;; === inferred knowledge ===
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
@@ -682,17 +686,20 @@
 
    (:action look-for-people
             :agent (?a - robot)
-            :variables (?p - place)
+            :variables (?p - place ?r - room)
             :precondition (and (not (done))
-                            (= (is-in ?a) ?p))
+                            (= (is-in ?a) ?p)
+                            (= (in-room ?p) ?r)
+                            (not (not_fully_explored ?r))
+                            )
             :effect (and 
                      (increase (total-cost) 10))
             )
 
    (:observe person
              :agent (?a - robot)
-             :parameters (?p - person ?pl - place)
-             :execution (look-for-people ?a ?pl)
+             :parameters (?p - person ?pl - place ?r - room)
+             :execution (look-for-people ?a ?pl ?r)
              :precondition (and )
                                 
              :effect (and (when (= (is-in ?p) ?pl)
