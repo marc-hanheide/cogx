@@ -15,13 +15,16 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include "v4r/PCLAddOns/PCLUtils.h"
+#include "v4r/PCLAddOns/PCLFunctions.h"
 #include "v4r/PCore/PMath.hh"
-#include "v4r/CModelRecogniser/CModelHandler.hh"
-#include "v4r/CModelRecogniser/KeypointDetectorSURF.hh"
-#include "v4r/CModelRecogniser/KeypointDetector.hh"
-#include "v4r/CModelRecogniser/ObjectLocation.hh"
-#include "v4r/CModelRecogniser/RecogniserCore.hh"
-#include <v4r/CModelRecogniser/RecogniserThread.hh>
+#include "v4r/PCore/Pose.hh"
+#include "v4r/CModel/CModelThread.hh"
+#include "v4r/CModel/ObjectModel.hh"
+#include "v4r/CModel/PSiftGPU.hh"
+#include "v4r/CModel/CModelHandler.hh"
+#include "v4r/CModel/ObjectLocation.hh"
+#include "v4r/CModel/VoxelGrid.hh"
 #include <cast/architecture/ManagedComponent.hpp>
 #include <VideoClient.h>
 #include <PointCloudClient.h>
@@ -33,10 +36,11 @@
 namespace cast
 {
 
-using namespace VisionData;
+using namespace std;
 using namespace cogx;
 using namespace Math;
-using namespace std;
+using namespace Video;
+using namespace VisionData;
 
 class ObjectRecognizer3D : public VideoClient, public ManagedComponent
 {
@@ -44,10 +48,10 @@ private:
   int camId;
   string videoServerName;
   Video::VideoInterfacePrx videoServer;
-  map<string, string> modelFiles;
-  map<string, string> objectWMIds;
-  vector<cv::Ptr<P::CModel> > models;
-  cv::Ptr<P::RecogniserThread> recogniser;
+  cv::Ptr<P::CModelThread> recogniser;
+  //map<string, string> objectWMIds;
+  map<string, P::ObjectModel::Ptr> models;
+  int modelNameCnt;
 
 #ifdef FEAT_VISUALIZATION
   class CDisplayClient: public cogx::display::CDisplayClient
@@ -60,12 +64,16 @@ private:
   };
 CDisplayClient m_display;
 #endif
-
-  void recognize(vector<string> &labels, cv::Mat &colImg,
-    Video::CameraParameters &camPars, cv::Mat &mask,
+  cv::Mat generateMaskImage(VisualObjectPtr visObj,
+      const CameraParameters &camPars, bool boundingBoxOnly);
+  void recognize(const Image &image,
+    const vector<PointCloud::SurfacePoint> &points,
     vector<P::ObjectLocation> &objects);
+  void learn(const string &label, const Image &image,
+    const vector<PointCloud::SurfacePoint> &points);
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveRecognitionCommand(const cdl::WorkingMemoryChange & _wmc);
+  void receiveLearnObjectViewCommand(const cdl::WorkingMemoryChange & _wmc);
   void objectLoationToVisualObject(P::ObjectLocation &objLoc,
       VisualObjectPtr &visObj);
 
