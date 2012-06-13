@@ -17,6 +17,8 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
 import de.dfki.lt.tr.beliefs.data.specificproxies.FormulaDistribution;
 import de.dfki.lt.tr.beliefs.slice.intentions.InterpretedIntention;
+import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
+import de.dfki.lt.tr.dialogue.intentions.inst.HypothesisGenerationVerificationQuestionIntention;
 import de.dfki.lt.tr.dialogue.slice.StandbyMode;
 import de.dfki.lt.tr.dialogue.slice.synthesize.SpokenOutputItem;
 import dialogue.execution.AbstractDialogueActionInterface;
@@ -40,13 +42,13 @@ import execution.util.ComponentActionFactory;
  * 
  */
 public class DialogueActionInterface extends
-		AbstractDialogueActionInterface<GroundedBelief> {
+		AbstractDialogueActionInterface<dBelief> {
 
 	WMView<StandbyMode> standbyModeView = WMView
 			.create(this, StandbyMode.class);
 
 	public DialogueActionInterface() {
-		super(GroundedBelief.class);
+		super(dBelief.class);
 	}
 
 	/**
@@ -66,8 +68,8 @@ public class DialogueActionInterface extends
 		protected void addAddressContent(
 				Map<String, WorkingMemoryAddress> _addressContent) {
 			super.addAddressContent(_addressContent);
-			_addressContent.put("about", getAction().beliefAddress);
-			_addressContent.put("related-to" ,getAction().pointer);
+			_addressContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.PKEY_ABOUT, getAction().beliefAddress);
+			_addressContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.PKEY_RELATED_ENTITY ,getAction().pointer);
 			getComponent().println(
 					AskForLabelExistenceDialogue.class.getSimpleName()
 							+ ": created address content for intention");
@@ -84,11 +86,13 @@ public class DialogueActionInterface extends
 		protected void addStringContent(Map<String, String> _stringContent) {
 			super.addStringContent(_stringContent);
 			// overwrite it to be a polar question
-			_stringContent.put("subtype", "polar");
+			
+			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_TYPE, "question");
+			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_SUBTYPE, "polar");
+			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_SUBSUBTYPE, "hgv");
 			// TODO: modify according to Mira's instructions
-			_stringContent.put("hypothesis", "exists");
-			_stringContent.put("label", getAction().label);
-			_stringContent.put("relation", getAction().relation);
+			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_LABEL, getAction().label);
+			_stringContent.put(HypothesisGenerationVerificationQuestionIntention.Transcoder.INSTANCE.SKEY_RELATION, getAction().relation);
 			getComponent().println(
 					AskForLabelExistenceDialogue.class.getSimpleName()
 							+ ": created string content for intention");
@@ -111,7 +115,7 @@ public class DialogueActionInterface extends
 
 			// TODO check if it was either "yes" or "no"
 			String value = "false";
-			if (_ii.stringContent.get("exists").equals("yes"))
+			if (_ii.stringContent.get("asserted-polarity").equals("pos"))
 				value = "true";
 
 			try {
