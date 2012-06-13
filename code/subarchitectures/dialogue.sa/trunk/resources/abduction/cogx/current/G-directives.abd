@@ -26,6 +26,26 @@ verbalised_feature(identity, [kind, of, room]).
 % DORA DEFAULT KNOWLEDGE QUESTIONS
 %-------------------------------------------------------------------------
 
+% "HGV"
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'question'),
+	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, subsubtype, 'hgv'),
+	i : int : string_content(IntAddr, label, Label),
+	i : int : string_content(IntAddr, relation, Relation),
+	i : int : address_content(IntAddr, relatedentity, RelatedEntity),
+	i : int : address_content(IntAddr, about, AboutEntity),
+
+	get_rexp_for_related(RelatedEntity, RExp),
+
+	event : produce_text([is, there, a, LabelPl, Relation, in, RExp]) / -1.0.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+get_rexp_for_related(Entity, [the, dummy, referring, expression]).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 % "UBK1"
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'question'),
@@ -33,7 +53,6 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, label, Label),
 	i : int : string_content(IntAddr, category, Category),
 
-	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
 	plural(Label, LabelPl),
 
 	event : produce_text([are, LabelPl, typically, in, a, Category]) / -1.0.
@@ -48,7 +67,6 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, relation, Relation),
 	i : int : string_content(IntAddr, otherlabel, OtherLabel),
 
-	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
 	plural(Label, LabelPl),
 	plural(OtherLabel, OtherLabelPl),
 
