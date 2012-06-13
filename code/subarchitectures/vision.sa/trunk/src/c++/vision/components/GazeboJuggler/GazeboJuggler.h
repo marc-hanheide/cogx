@@ -102,7 +102,6 @@ protected:
   bool isObjectLoaded(const std::string& label);
   bool tryLoadObject(const std::string& label);
   bool tryRemoveObject(const std::string& label);
-  std::map<int, std::string> mPlaceContent;
   std::map<std::string, bool> mKnownObjects;
   std::vector<std::string> mGazeboResourcePath;
 public:
