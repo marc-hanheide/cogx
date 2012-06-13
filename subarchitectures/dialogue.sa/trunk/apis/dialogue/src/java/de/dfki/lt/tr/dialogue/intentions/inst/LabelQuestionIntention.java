@@ -38,6 +38,7 @@ public class LabelQuestionIntention extends QuestionIntention {
             try {
                 QuestionIntention qint = QuestionIntention.Transcoder.INSTANCE.tryDecode(poor);
                 if (qint != null) {
+                    DecodingUtils.stringCheck(poor, SKEY_SUBTYPE, "polar");
                     String feature = DecodingUtils.stringGet(poor, SKEY_LABEL);
                     return new LabelQuestionIntention(feature);
                 }
