@@ -18,6 +18,8 @@
 //SpatialData doesn't have everything that NavData does; the extraneous
 //portions of this code have been commented out. /KS
 
+#define wrn(args...) {char buf[512]; sprintf(buf,args); getLogger()->warn(buf);}
+
 #include "SpatialTranslation.hpp"
 #include <NavData.hpp>
 #include <Rendezvous.h>
@@ -62,7 +64,7 @@ SpatialTranslation::~SpatialTranslation() {
 // ----------------------------------------------------------------------------
 
 void SpatialTranslation::configure(const map<string, string>& config) {
-  println("configure entered");
+  log("configure entered");
 
   m_StartupDelay = 4000;
 
@@ -363,7 +365,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd) {
               break;
             case NavData::ABORTED:
             case NavData::FAILED:
-              log("nav ctrl command failed");
+              wrn("nav ctrl command failed");
 
               some_error = true;
               issueEndPlaceTransitionCommand(*rv, true, true);
@@ -377,7 +379,7 @@ void SpatialTranslation::executeCommand(const tpNavCommandWithId &cmd) {
             }
 
           } else {
-            log("The InternalNavCommand suddenly disappeared...");
+            wrn("The InternalNavCommand suddenly disappeared...");
             some_error = true;
             issueEndPlaceTransitionCommand(*rv, true, true);
           }
@@ -537,7 +539,6 @@ void SpatialTranslation::executeBlockCommand(const tpNavCommandWithId &cmd) {
   // if aborted, the ABORT completion was filled by cancelQueueTasks
 
   log("Block command execution finished");
-
 }
 
 // ----------------------------------------------------------------------------
@@ -759,7 +760,7 @@ bool SpatialTranslation::translateCommand(
             ctrl.tolerance = nav->tolerance;
             m_isExplorationAction = true;
           } else {//destNode == 0 && destHyp == 0
-            log("cmd error; could not find destination Place");
+            error("cmd error; could not find destination Place");
             status = SpatialData::CMDMALFORMATTED;
             return false;
           }

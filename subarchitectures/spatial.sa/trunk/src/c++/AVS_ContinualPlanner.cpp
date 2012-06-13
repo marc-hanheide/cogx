@@ -151,7 +151,7 @@ void AVS_ContinualPlanner::connectPeekabot() {
     log("Connection to Peekabot established");
 
   } catch (std::exception &e) {
-    log("Caught exception when connecting to peekabot (%s)", e.what());
+    error("Caught exception when connecting to peekabot (%s)", e.what());
     return;
   }
 }
@@ -216,7 +216,7 @@ void AVS_ContinualPlanner::receivePointCloud(
         cloud->values, 1.0, totalMass, m_currentCureObstMap);
     normalizePDF(*m_currentBloxelMap, totalMass);
   } else {
-    log(
+    error(
         "Base object is not known! This means support object is not known to ObjectRelationManager. Something is very wrong!");
   }
 
@@ -232,16 +232,12 @@ void AVS_ContinualPlanner::start() {
       connectPeekabot();
     }
     peekabot::ObjectProxy m_grid_map;
-    peekabot::ObjectProxy m_frontiers;
     peekabot::ObjectProxy m_pdf;
     peekabot::ObjectProxy m_2DOccGridProxy;
     peekabot::Status s;
     s = m_grid_map.assign(m_PeekabotClient, "grid_map").status();
     if (s.succeeded())
       m_grid_map.remove();
-    s = m_frontiers.assign(m_PeekabotClient, "frontiers").status();
-    if (s.succeeded())
-      m_frontiers.remove();
     s = m_pdf.assign(m_PeekabotClient, "pdf").status();
     if (s.succeeded())
       m_pdf.remove();
@@ -629,7 +625,7 @@ void AVS_ContinualPlanner::generateViewCones(
     log("Got %d rooms", comarooms.size());
 
     if (comarooms.size() == 0) {
-      log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
+      wrn("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
       return;
     }
     int comarooms_i = -1;
@@ -641,7 +637,7 @@ void AVS_ContinualPlanner::generateViewCones(
       }
     }
     if (comarooms_i == -1) {
-      error("no comaroom");
+      wrn("no comaroom");
       return;
     }
     for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
@@ -755,7 +751,7 @@ void AVS_ContinualPlanner::generateViewCones(
                 }
               }
             } catch (IceUtil::NullHandleException e) {
-              log("Error! FNode suddenly disappeared!");
+              error("Error! FNode suddenly disappeared!");
             }
           }
 
@@ -886,7 +882,7 @@ void AVS_ContinualPlanner::generateViewCones(
   if (queryError) {
     if (WMAddress != "") {
       newVPCommand->status = SpatialData::FAILED;
-      log("Overwriting command to change status to: FAILED");
+      wrn("Overwriting command to change status to: FAILED");
       overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
 	  WMAddress, newVPCommand);
     }
@@ -1029,7 +1025,7 @@ void AVS_ContinualPlanner::generateViewCones(
 
     log("Done setting.");
   } else if (!alreadyGenerated) {
-    log("Something weird happened!");
+    wrn("Something weird happened!");
   }
 
   //Now that we've got our map generate cones for this
@@ -1325,7 +1321,7 @@ void AVS_ContinualPlanner::generateViewCones(
       getWorkingMemoryEntries<GroundedBelief> ("coma", 0, comaRoomBeliefs);
 
       if (comaRoomBeliefs.size() == 0) {
-        log(
+        wrn(
             "Could not get any grounded beliefs returning without doing anything...");
         return;
       } else {
@@ -1862,7 +1858,7 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
     }
 
   } catch (DoesNotExistOnWMException e) {
-    log("Error! ConeGroup belief missing on WM!");
+    error("Error! ConeGroup belief missing on WM!");
   }
 
   // this means it's the first time we're reporting search result
@@ -1880,7 +1876,7 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
       overwriteWorkingMemory(
           m_locationToBetaWMAddress[m_currentConeGroup->bloxelMapId], result);
     } catch (DoesNotExistOnWMException e) {
-      log("Error! ObjectSearchResult missing on WM!");
+      error("Error! ObjectSearchResult missing on WM!");
     }
   }
 }
@@ -1933,7 +1929,7 @@ void AVS_ContinualPlanner::configure(
   map<string, string>::const_iterator it = _config.find("-c");
 
   if (it == _config.end()) {
-    println("configure(...) Need config file (use -c option)\n");
+    log("configure(...) Need config file (use -c option)\n");
     std::abort();
   }
   std::string configfile = it->second;
@@ -1945,14 +1941,14 @@ void AVS_ContinualPlanner::configure(
     if (cfg->init(it->second) != 0) {
       delete cfg;
       cfg = 0;
-      log("Could not init Cure::ConfigFileReader with -c argument");
+      wrn("Could not init Cure::ConfigFileReader with -c argument");
     } else {
       log("Managed to open the Cure config file");
     }
   }
 
   if (cfg->getSensorPose(1, m_LaserPoseR)) {
-    println("configure(...) Failed to get sensor pose for laser");
+    wrn("configure(...) Failed to get sensor pose for laser");
     std::abort();
   }
 
@@ -2129,7 +2125,7 @@ void AVS_ContinualPlanner::configure(
         break;
       }
     }
-    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX,
+    log("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX,
         newZone.minY, newZone.maxX, newZone.maxY);
 
     m_forbiddenZones.push_back(newZone);
@@ -2621,7 +2617,7 @@ void AVS_ContinualPlanner::putObjectInMap(GridMap<GridMapData> &map,
   }
     break;
   default:
-    log("Error! Unsupported object type in puObjectInMap!");
+    error("Error! Unsupported object type in puObjectInMap!");
     return;
   }
   log("returning");
