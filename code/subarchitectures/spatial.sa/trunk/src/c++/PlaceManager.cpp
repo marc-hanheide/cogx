@@ -139,7 +139,7 @@ void PlaceManager::configure(const std::map<std::string, std::string>& _config) 
         } else if (buf == "<") {
           str >> newZone.maxX;
         } else {
-          log("Warning: Malformed --exclude-from-exploration string %s",
+          wrn("Warning: Malformed --exclude-from-exploration string %s",
               _config.find("--exclude-from-exploration")->second.c_str());
           break;
         }
@@ -150,17 +150,17 @@ void PlaceManager::configure(const std::map<std::string, std::string>& _config) 
         } else if (buf == "<") {
           str >> newZone.maxY;
         } else {
-          log("Warning: Malformed --exclude-from-exploration string",
+          wrn("Warning: Malformed --exclude-from-exploration string",
               _config.find("--exclude-from-exploration")->second.c_str());
           break;
         }
       } else {
-        log("Warning: Malformed --exclude-from-exploration string",
+        wrn("Warning: Malformed --exclude-from-exploration string",
             _config.find("--exclude-from-exploration")->second.c_str());
         break;
       }
     }
-    println("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX,
+    log("new forbidden zone: %.02g, %.02g, %.02g, %.02g", newZone.minX,
         newZone.minY, newZone.maxX, newZone.maxY);
 
     m_forbiddenZones.push_back(newZone);
@@ -473,7 +473,7 @@ void PlaceManager::modifiedNavNode(const cast::cdl::WorkingMemoryChange &objID) 
       return;
     }
   } catch (DoesNotExistOnWMException e) {
-    log("Couldn't find supposedly modified node!");
+    wrn("Couldn't find supposedly modified node!");
   }
   log("modifiedNavNode exited");
 }
@@ -504,7 +504,7 @@ void PlaceManager::checkUnassignedEdges(int newNodeID) {
         return;
       }
     } catch (IceUtil::NullHandleException e) {
-      log("Error! edge in list of unassigned edges was null!");
+      error("Error! edge in list of unassigned edges was null!");
       m_unprocessedEdges.erase(it);
       it = m_unprocessedEdges.begin();
     }
@@ -534,7 +534,7 @@ void PlaceManager::processEdge(NavData::AEdgePtr oobj) {
       return;
     }
   } catch (IceUtil::NullHandleException e) {
-    log("Error! edge objects disappeared from memory!");
+    error("Error! edge objects disappeared from memory!");
   }
 }
 
@@ -550,11 +550,11 @@ void PlaceManager::newEdge(const cast::cdl::WorkingMemoryChange &objID) {
       try {
         processEdge(oobj);
       } catch (IceUtil::NullHandleException e) {
-        log("Error! edge objects disappeared from memory!");
+        error("Error! edge objects disappeared from memory!");
       }
     }
   } catch (DoesNotExistOnWMException e) {
-    log("Error! edge object disappeared!");
+    error("Error! edge object disappeared!");
   }
   log("newEdge exited");
 }
@@ -809,7 +809,7 @@ void PlaceManager::connectPeekabot() {
     log("Connection to Peekabot established");
 
   } catch (std::exception &e) {
-    log("Caught exception when connecting to peekabot (%s)", e.what());
+    wrn("Caught exception when connecting to peekabot (%s)", e.what());
     return;
   }
 }
@@ -829,7 +829,7 @@ int PlaceManager::updatePlaceholderEdge(int placeholderId) {
   log("Finding closest node to placeholder %i.", placeholderId);
   int closestNodeId = m_mapInterface->findClosestNode(hyp->x, hyp->y);
   if (closestNodeId < 0) {
-    log("Error in finding closest node. Returning.");
+    error("Error in finding closest node. Returning.");
     return -1;
   }
 
@@ -935,7 +935,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                 unlockEntry(foundFSIt->second);
                 //     log("unlock 6");
               } catch (DoesNotExistOnWMException e) {
-                log("Property missing!");
+                wrn("Property missing!");
               }
             } else {
               SpatialProperties::AssociatedSpacePlaceholderPropertyPtr
@@ -1003,7 +1003,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                           foundUnexpIt->second, borderProp);
                       done = true;
                     } catch (PermissionException e) {
-                      log("Error! permissionException! Trying again...");
+                      error("Error! permissionException! Trying again...");
                     }
                   }
                 }
@@ -1011,7 +1011,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
                 unlockEntry(foundUnexpIt->second);
                 //          log("unlock 7");
               } catch (DoesNotExistOnWMException e) {
-                log("Property missing!");
+                wrn("Property missing!");
               }
 
             } else {
@@ -1033,7 +1033,7 @@ void PlaceManager::updateReachablePlaceholderProperties(int placeID) {
         }
       }
     } catch (IceUtil::NullHandleException e) {
-      log("Error: hypothesis suddenly disappeared!");
+      error("Error: hypothesis suddenly disappeared!");
     }
   }
 
@@ -1077,7 +1077,7 @@ void PlaceManager::evaluateUnexploredPaths() {
           const NodeHypothesisPtr nodeHyp = _getHypForPlace(place->id);
 
           if (nodeHyp == 0) {
-            getLogger()->warn("Couldn't find NodeHypothesis!");
+            wrn("Couldn't find NodeHypothesis!");
             continue;
           }
 
@@ -1209,7 +1209,7 @@ void PlaceManager::evaluateUnexploredPaths() {
             deletePlaceholder(place->id);
           }
         } catch (IceUtil::NullHandleException e) {
-          log("Place suddenly disappeared!\n");
+          wrn("Place suddenly disappeared!\n");
         }
       }
     }
@@ -1456,7 +1456,7 @@ void PlaceManager::evaluateUnexploredPaths() {
                           new SpatialData::NodeHypothesis();
                       // There were no door nodes in the connection chain
                       // Create a door placeholder (see information above)
-                      
+
                       //if (t>l/2) t=l/2;
                       t = 0;
                       newHyp->x = x1 + nx * t;
@@ -1563,14 +1563,14 @@ void PlaceManager::setOrUpgradePlaceholderGatewayProperty(int hypothesisID,
                   foundFSIt->second, gwProp);
               done = true;
             } catch (PermissionException e) {
-              log("Error! permissionException! Trying again...");
+              error("Error! permissionException! Trying again...");
             }
           }
         }
       }
       unlockEntry(foundFSIt->second);
     } catch (DoesNotExistOnWMException e) {
-      log("Property missing!");
+      wrn("Property missing!");
     }
   } else {
     SpatialProperties::GatewayPlaceholderPropertyPtr gwProp =
@@ -1649,7 +1649,7 @@ NavData::FNodePtr PlaceManager::getCurrentNavNode() {
         minDistance = distance;
       }
     } catch (IceUtil::NullHandleException e) {
-      println("Error! FNode suddenly disappeared!");
+      error("Error! FNode suddenly disappeared!");
     }
   }
   // log("getCurrentNavNode exited");
@@ -2149,7 +2149,7 @@ void PlaceManager::upgradePlaceholder(int placeID, NavData::FNodePtr newNode) {
     unlockEntry(goalPlaceWMID);
     //    log("unlock 1");
   } catch (DoesNotExistOnWMException e) {
-    log("The Place has disappeared! Re-adding it!");
+    wrn("The Place has disappeared! Re-adding it!");
 
     PlacePtr place = new Place;
     place->status = TRUEPLACE;
@@ -2322,8 +2322,7 @@ void PlaceManager::mapLoadStatusOverwritten(const cdl::WorkingMemoryChange &wmc)
     }
     unlockEntry(wmc.address);
   } catch (DoesNotExistOnWMException) {
-    getLogger()->warn(
-        "MapLoadStatus struct disappeared from WM! Map loading procedure may get stuck.");
+    wrn("MapLoadStatus struct disappeared from WM! Map loading procedure may get stuck.");
   }
 }
 
@@ -2535,7 +2534,7 @@ void PlaceMapper::_overwriteHypForPlace(PlaceID placeID, NodeHypothesisPtr hyp) 
       unlockEntry(hypWMID);
 
     } catch (DoesNotExistOnWMException) {
-      log("Error! Could not update hypothesis on WM - entry missing on %i!",
+      error("Error! Could not update hypothesis on WM - entry missing on %i!",
           __LINE__);
     }
   }
@@ -2591,7 +2590,7 @@ void PlaceMapper::_deletePlace(PlaceID id) {
     try {
       deleteFromWorkingMemory(deletePlaceWMID);
     } catch (DoesNotExistOnWMException) {
-      log("Error! Could not find Place %s for deletion on %i!",
+      error("Error! Could not find Place %s for deletion on %i!",
           deletePlaceWMID.c_str(), __LINE__);
     }
 
@@ -2599,7 +2598,7 @@ void PlaceMapper::_deletePlace(PlaceID id) {
       try {
         deleteFromWorkingMemory(deleteHypWMID);
       } catch (DoesNotExistOnWMException) {
-        log("Error! Could not find NodeHypothesis %s for deletion on %i!",
+        error("Error! Could not find NodeHypothesis %s for deletion on %i!",
             deleteHypWMID.c_str(), __LINE__);
       }
     }
@@ -2649,19 +2648,19 @@ void PlaceMapper::_upgradePlaceholderMappings(PlaceID placeID, PlacePtr place,
     overwriteWorkingMemory(placeWMID, place);
     unlockEntry(placeWMID);
   } catch (DoesNotExistOnWMException) {
-    log("Error! Could not find Place %s for overwrite on %i!",
+    error("Error! Could not find Place %s for overwrite on %i!",
         placeWMID.c_str(), __LINE__);
   }
 
   if (hypWMID == "") {
-    getLogger()->warn("Warning: hypothesis missing");
+    wrn("Warning: hypothesis missing");
     return;
   }
 
   try {
     deleteFromWorkingMemory(hypWMID);
   } catch (DoesNotExistOnWMException) {
-    log("Error! Could not find Hypothesis %s for overwrite on %i!",
+    error("Error! Could not find Hypothesis %s for overwrite on %i!",
         hypWMID.c_str(), __LINE__);
   }
 
