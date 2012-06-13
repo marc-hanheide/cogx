@@ -1565,6 +1565,13 @@ void DisplayNavInPB::newPersonFollowed(const cdl::WorkingMemoryChange &objID) {
 
 void DisplayNavInPB::newNavCommand(const cdl::WorkingMemoryChange & objID) {
   log("Entered newNavCommand");
+
+  peekabot::ObjectProxy m_mapStatusLabel;
+  peekabot::Status s;
+  s = m_mapStatusLabel.assign(m_PeekabotClient, "MapStatus").status();
+  if (s.succeeded())
+    m_mapStatusLabel.hide();
+
   try {
     SpatialData::NavCommandPtr oobj = getMemoryEntry<SpatialData::NavCommand> (
         objID.address);
