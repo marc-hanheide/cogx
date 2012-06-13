@@ -7,6 +7,8 @@
 //#include <../../VisionUtils.h>
 #include "GazeboJuggler.h"
 #include <fstream>
+#include <cstdlib>
+#include <cstring>
 
 extern "C"
 {
@@ -34,6 +36,20 @@ GazeboJuggler::GazeboJuggler()
   pSim = 0;
   m_playerHost = PlayerCc::PLAYER_HOSTNAME;
   m_playerPort = PlayerCc::PLAYER_PORTNUM;
+  mGazeboVersion = 100;
+
+  auto sp = strdup(getenv("GAZEBO_RESOURCE_PATH"));
+  // Split into individual paths.
+  std::vector<std::string> paths;
+  auto pcp = strtok(sp, ":"); // strtok is destructive!
+  while (pcp) {
+    std::string p(pcp);
+    if (p.length() > 1) {
+      mGazeboResourcePath.push_back(p);
+    }
+    pcp = strtok(nullptr, ":");
+  }
+  delete sp;
 }
 
 void GazeboJuggler::configure(const map<string,string> & _config)
@@ -49,6 +65,12 @@ void GazeboJuggler::configure(const map<string,string> & _config)
     istringstream str(it->second);
     str >> m_playerPort;
   }
+  if((it = _config.find("--gazebo-version")) != _config.end())
+  {
+     istringstream iss(it->second);
+     iss >> mGazeboVersion;
+  }
+
   // Path to a configuration file with objects. The file has the format:
   // [objects]
   // object1-name
@@ -63,7 +85,7 @@ void GazeboJuggler::configure(const map<string,string> & _config)
     m_objects.clear();
     m_locations.clear();
     string fname = it->second;
-    //println(" GJ **** " + fname);
+    //println(" GzJ **** " + fname);
     ifstream f;
     f.open(fname.c_str());
     if (f.fail()) {
@@ -74,7 +96,7 @@ void GazeboJuggler::configure(const map<string,string> & _config)
       while (f.good() && !f.eof()) {
         string line, tok;
         getline(f, line);
-        //println(" GJ **** " + line);
+        //println(" GzJ **** " + line);
         istringstream itok(line);
 
         int newmode = mode;
@@ -88,9 +110,15 @@ void GazeboJuggler::configure(const map<string,string> & _config)
 
         if (mode == 1) {
           if (tok != "")
-            // In Gazebo 0.9 top objects didn't have a prefix.
-            // In Gazebo 0.10 the prefix is "noname::"
-            m_objects.push_back(GObject(tok, "noname::" + tok));
+            if (mGazeboVersion < 100) {
+              // In Gazebo 0.9 top objects didn't have a prefix.
+              // In Gazebo 0.10 the prefix is "noname::"
+              m_objects.push_back(GObject(tok, "noname::" + tok));
+            }
+            else {
+              // In Gazebo 1.0 the prefix was removed again
+              m_objects.push_back(GObject(tok, tok));
+            }
         }
         else if (mode == 2) {
           Vector3 v;
@@ -120,21 +148,55 @@ void GazeboJuggler::configure(const map<string,string> & _config)
 
 #ifdef FEAT_VISUALIZATION
 #define DLG_JUGGLER "GazeboJuggler"
+#define STR_EMPTY "<empty>"
 void GazeboJuggler::CDisplayClient::onDialogValueChanged(const std::string& dialogId,
     const std::string& name, const std::string& value)
 {
   if (dialogId == DLG_JUGGLER) {
     if (name.substr(0, 8) == "cbxPlace") {
       pJuggler->println(" *** cbxPlace *** %s=%s", name.c_str(), value.c_str());
+
       int placeId;
-      if (value == "<empty>")
-        placeId = -1;
-      else {
-        string id = name.substr(8);
-        if (id[0] == '0') id = id.substr(1);
-        placeId = atoi(id.c_str()) - 1;
+      string id = name.substr(8);
+      if (id[0] == '0') id = id.substr(1);
+      placeId = atoi(id.c_str()) - 1;
+
+      int toPlaceId = placeId;
+      if (value == STR_EMPTY)
+        toPlaceId = -1;
+      
+#if 0 // It is impossible to retrieve information from Gazebo 1.0 (rev2707)
+      if (placeId >= 0 && pJuggler->mGazeboVersion >= 100 ) {
+        pJuggler->println(" ****** isObjectLoaded ***** ");
+        if (!pJuggler->isObjectLoaded(value))
+            pJuggler->tryLoadObject(value);
       }
-      pJuggler->moveObject(value, placeId);
+#endif
+      if (pJuggler->mGazeboVersion >= 100 && toPlaceId >= 0) {
+        auto ito = pJuggler->mKnownObjects.find(value);
+        if (ito == pJuggler->mKnownObjects.end()) {
+          bool rv = pJuggler->tryLoadObject(value);
+          pJuggler->mKnownObjects[value] = true;
+        }
+        //if (placeId >= 0) {
+        //  std::string pc = pJuggler->mPlaceContent[placeId];
+        //  if (pc != "" && pc != STR_EMPTY)
+        //    pJuggler->tryRemoveObject(pc);
+        //  if (value != pc)
+        //    pJuggler->tryRemoveObject(value);
+        //  pJuggler->tryLoadObject(value);
+
+        //  if (value != STR_EMPTY) {
+        //    for (auto p : pJuggler->mPlaceContent) {
+        //      if (p.second == value) {
+        //        p.second = STR_EMPTY;
+        //      }
+        //    }
+        //  }
+        //}
+        //pJuggler->mPlaceContent[placeId] = value;
+      }
+      pJuggler->moveObject(value, toPlaceId);
     }
   }
 }
@@ -160,10 +222,10 @@ void GazeboJuggler::start()
 #endif
 }
 
-const double OFF = 121231e99; 
 void GazeboJuggler::prepareObjects()
 {
   double time;
+  println(" *** Preparing objects");
 
   // Discover and keep valid objects
   vector<GObject> objs = m_objects;
@@ -171,9 +233,7 @@ void GazeboJuggler::prepareObjects()
   m_objects.clear();
   for(int i = 0; i < objs.size(); i++) {
     GObject& o = objs[i];
-    o.loc.x = OFF;
-    pSim->GetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z, time);
-    if (o.loc.x == OFF) {
+    if (mGazeboVersion < 100 && !isObjectLoaded(o.label)) {
       println(" *** Object '%s' is not in the scene.", o.label.c_str());
       notthere.push_back(o);
       continue;
@@ -183,6 +243,16 @@ void GazeboJuggler::prepareObjects()
     pSim->SetPose3d((char*)o.gazeboName.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z);
     m_objects.push_back(o);
   }
+
+  // In Gazebo 1.0 we can load objects later. The various GetXXX functions
+  // don't work in rev 2707.
+  if (mGazeboVersion >= 100) {
+    for (auto o : notthere) {
+      m_objects.push_back(o);
+    }
+    notthere.clear();
+  }
+
   println("%ld objects managed in the scene.", m_objects.size());
 
 #ifdef FEAT_VISUALIZATION
@@ -203,7 +273,7 @@ void GazeboJuggler::prepareObjects()
 
   ss.str("");
   ss.clear();
-  ss << "juggler.emptyObject = '<empty>';";
+  ss << "juggler.emptyObject = '" << STR_EMPTY << "';";
   ss << "juggler.setPlaceCount(" << m_locations.size() << ");";
   if (m_objects.size()) {
     ss << "juggler.setObjectNames([";
@@ -219,6 +289,105 @@ void GazeboJuggler::prepareObjects()
 #endif
 }
 
+bool GazeboJuggler::isObjectLoaded(const std::string& label)
+{
+  if (mGazeboVersion < 100) {
+    const double OFF = 121231e99; 
+    double time;
+    GObject o("", "");
+    o.loc.x = OFF;
+    pSim->GetPose3d((char*)label.c_str(), o.loc.x, o.loc.y, o.loc.z, o.pose.x, o.pose.y, o.pose.z, time);
+
+    return o.loc.x != OFF;
+  }
+
+  return 0;
+#if 0 // It is impossible to retrieve information from Gazebo 1.0 (rev2707)
+  long exists = 0;
+  pSim->GetProperty((char*)label.c_str(), "exists", &exists, sizeof(exists));
+  log(" isObjectLoaded %s -> %ld ", label.c_str(), exists);
+
+  return exists != 0;
+#endif
+}
+
+bool GazeboJuggler::tryRemoveObject(const std::string& label)
+{
+  std::ostringstream cmd;
+  cmd << "gzfactory delete -m " << label;
+  log("Executing w. system: %s", cmd.str().c_str());
+  int rv = system(cmd.str().c_str());
+
+  return rv == 0;
+}
+
+bool GazeboJuggler::tryLoadObject(const std::string& label)
+{
+#if 0
+  log ("***** 0 *****");
+  if (isObjectLoaded(label))
+    return true;
+#endif
+
+  if (mGazeboResourcePath.size() < 1) {
+    return false;
+  }
+
+  auto joinPath = [](const std::vector<std::string>& parts) -> std::string {
+    ostringstream ss;
+    int count = 0;
+    for (unsigned int i = 0; i < parts.size(); i++) {
+      auto p = parts[i];
+      auto j = p.length();
+      while (j > 0 && p[j-1] == '/') {
+        --j;
+      }
+      if (j < 1) continue;
+      p = p.substr(0, j);
+      if (count > 0) ss << '/';
+      ss << p;
+      ++count;
+    }
+    return ss.str();
+  };
+
+  auto fileExists = [](const std::string &fname) -> bool {
+    ifstream ifile(fname);
+    return ifile;
+  };
+
+  std::string modelFilename = "";
+  for (auto p : mGazeboResourcePath) {
+    // Try to find the model-file with various prefixes used in CogX
+    for (std::string pfx : { "", "gen-", "cereals-" }) {
+      auto fn = joinPath({ p, "models", pfx + label + ".model" });
+      //log("Trying: %s", fn.c_str());
+      if (fileExists(fn)) {
+        modelFilename = fn;
+        break;
+      }
+    }
+    if (modelFilename != "") 
+      break;
+  }
+
+  if (modelFilename == "") {
+    return false;
+  }
+
+  static long modelId = 0;
+  ++modelId;
+  std::ostringstream cmd;
+  cmd << "gzfactory spawn -f " << modelFilename << " -m " << label;
+  cmd << " -x " << ( 1 + (modelId / 10) * 3);
+  cmd << " -y " << (-1 - (modelId % 10) * 3);
+  cmd << " -z " << 1.5;
+  //log("Executing w. system: %s", cmd.str().c_str());
+  int rv = system(cmd.str().c_str());
+
+  return rv == 0; //  && isObjectLoaded(label);
+}
+
 void GazeboJuggler::moveObject(const std::string& label, int placeIndex)
 {
   for(int i = 0; i < m_objects.size(); i++) {
@@ -226,8 +395,8 @@ void GazeboJuggler::moveObject(const std::string& label, int placeIndex)
     if (o.label != label)
       continue;
     if (placeIndex < 0 || placeIndex >= m_locations.size()) {
-      o.loc.x = 100 + i * 10;
-      o.loc.y = 100 + i * 10;
+      o.loc.x = 100 + i / 20;
+      o.loc.y = 100 + i % 20;
     }
     else
       o.loc = m_locations[placeIndex];
@@ -246,6 +415,7 @@ void GazeboJuggler::destroy()
 
 void GazeboJuggler::runComponent()
 {
+  sleepComponent(1000);
 
   prepareObjects();
 
@@ -256,4 +426,4 @@ void GazeboJuggler::runComponent()
 }
 
 }
-
+// vim: set sw=2 sts=4 ts=8 et :vim

@@ -53,6 +53,8 @@ private:
    */
   uint32_t m_playerPort;
 
+  long mGazeboVersion; // xyy = x.yy
+
   /** player client object */
   PlayerCc::PlayerClient *pRobot;
   /** interface to the simulation */
@@ -97,6 +99,12 @@ protected:
 
   // placeIndes out of range => remove object
   void moveObject(const std::string& label, int placeIndex);
+  bool isObjectLoaded(const std::string& label);
+  bool tryLoadObject(const std::string& label);
+  bool tryRemoveObject(const std::string& label);
+  std::map<int, std::string> mPlaceContent;
+  std::map<std::string, bool> mKnownObjects;
+  std::vector<std::string> mGazeboResourcePath;
 public:
   GazeboJuggler();
 };
