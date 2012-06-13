@@ -46,7 +46,8 @@ void MLNRefResolutionClient::newConstraints(const cdl::WorkingMemoryChange & _wm
 	vector<ConstraintPtr>::iterator it;
 	vector<ConstraintPtr> constraints = req->constraints;
 	for(it=constraints.begin(); it != constraints.end(); it++) {
-		m_currentConstraints.push_back((*it)->feature + "_constraint(A_" + (*it)->value + ")");
+		if(m_supportedConstraintTypes.find((*it)->feature) != m_supportedConstraintTypes.end())
+			m_currentConstraints.push_back((*it)->feature + "_constraint(A_" + (*it)->value + ")");
 	}
 	
 	evd->trueEvidence = m_currentConstraints;
@@ -91,6 +92,10 @@ void MLNRefResolutionClient::start()
   // filters 
   AbsMLNClient::start();
   m_constraintAddr.id = "no constraint";
+  
+  string constraints[] = {"color","shape","type"};
+  
+  m_supportedConstraintTypes = set<string>(constraints, constraints + 3); 
   
   addChangeFilter(createGlobalTypeFilter<ReferenceResolutionRequest>(cdl::ADD),
 		new MemberFunctionChangeReceiver<MLNRefResolutionClient>(this,

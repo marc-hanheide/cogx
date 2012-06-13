@@ -27,6 +27,8 @@ class MLNRefResolutionClient : public AbsMLNClient
   cast::cdl::WorkingMemoryAddress m_constraintAddr;
   std::vector<std::string> m_currentConstraints;
 //  std::vector<std::string> m_evdEngIds;
+
+  std::set<std::string> m_supportedConstraintTypes;
     
   std::vector<EpistemicReferenceHypothesisPtr> getHypothesisList(InferredResultPtr infRes);
   
