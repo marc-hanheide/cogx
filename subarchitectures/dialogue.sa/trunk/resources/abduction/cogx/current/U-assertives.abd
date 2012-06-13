@@ -110,15 +110,21 @@ polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, 
 
 	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).
 
+% Dora's polar questions
+question_type_to_answer_type(hgv, 'hgv-answer').
+question_type_to_answer_type('ubk-label', 'ubk-label-answer').
+question_type_to_answer_type('ubk-category', 'ubk-category-answer').
+
 % Dora's HGV polar question
 polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity) <-
 	i : polar_question_under_discussion(Speaker, Hearer, QUDAddr, Nom, Int, none, none, Polarity),
 	i : int : string_content(QUDAddr, type, 'question'),
 	i : int : string_content(QUDAddr, subtype, 'polar'),
-	i : int : string_content(QUDAddr, subsubtype, 'hgv'),
-%	i : int : address_content(QUDAddr, about, BeliefAddr),
-%	aboutness(Int, BeliefAddr),
-	int : string_content(Int, subtype, 'hgv-answer') / p(1.0),
+	i : int : string_content(QUDAddr, subsubtype, QuestionSubsubtype),
+
+	question_type_to_answer_type(QuestionSubsubtype, AnswerSubtype),
+
+	int : string_content(Int, subtype, AnswerSubtype) / p(1.0),
 	int : address_content(Int, 'answer-to', QUDAddr) / p(1.0),
 
 	int : string_content(Int, 'asserted-polarity', Polarity) / p(1.0).

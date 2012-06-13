@@ -34,7 +34,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, label, Label),
 	i : int : string_content(IntAddr, relation, Relation),
 	i : int : address_content(IntAddr, relatedentity, RelatedEntity),
-	i : int : address_content(IntAddr, about, AboutEntity),
+	i : int : address_content(IntAddr, about, _AboutEntity),
 
 	get_rexp_for_related(RelatedEntity, RExp),
 
@@ -42,7 +42,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-get_rexp_for_related(Entity, [the, dummy, referring, expression]).
+get_rexp_for_related(Entity, [the, dummy]).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -50,6 +50,7 @@ get_rexp_for_related(Entity, [the, dummy, referring, expression]).
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'question'),
 	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, subsubtype, 'ubk-category'),
 	i : int : string_content(IntAddr, label, Label),
 	i : int : string_content(IntAddr, category, Category),
 
@@ -63,6 +64,7 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, type, 'question'),
 	i : int : string_content(IntAddr, subtype, 'polar'),
+	i : int : string_content(IntAddr, subsubtype, 'ubk-label'),
 	i : int : string_content(IntAddr, label, Label),
 	i : int : string_content(IntAddr, relation, Relation),
 	i : int : string_content(IntAddr, otherlabel, OtherLabel),
