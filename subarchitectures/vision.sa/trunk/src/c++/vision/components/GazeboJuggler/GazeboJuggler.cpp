@@ -171,31 +171,15 @@ void GazeboJuggler::CDisplayClient::onDialogValueChanged(const std::string& dial
         if (!pJuggler->isObjectLoaded(value))
             pJuggler->tryLoadObject(value);
       }
-#endif
+#else
       if (pJuggler->mGazeboVersion >= 100 && toPlaceId >= 0) {
         auto ito = pJuggler->mKnownObjects.find(value);
         if (ito == pJuggler->mKnownObjects.end()) {
           bool rv = pJuggler->tryLoadObject(value);
           pJuggler->mKnownObjects[value] = true;
         }
-        //if (placeId >= 0) {
-        //  std::string pc = pJuggler->mPlaceContent[placeId];
-        //  if (pc != "" && pc != STR_EMPTY)
-        //    pJuggler->tryRemoveObject(pc);
-        //  if (value != pc)
-        //    pJuggler->tryRemoveObject(value);
-        //  pJuggler->tryLoadObject(value);
-
-        //  if (value != STR_EMPTY) {
-        //    for (auto p : pJuggler->mPlaceContent) {
-        //      if (p.second == value) {
-        //        p.second = STR_EMPTY;
-        //      }
-        //    }
-        //  }
-        //}
-        //pJuggler->mPlaceContent[placeId] = value;
       }
+#endif
       pJuggler->moveObject(value, toPlaceId);
     }
   }
