@@ -30,7 +30,7 @@ public class DefLabelRelationLabelQuestionIntention extends LabelQuestionIntenti
         public static final Transcoder INSTANCE = new Transcoder();
 
         public final String SKEY_RELATION = "relation";
-        public final String SKEY_OTHERLABEL = "otherLabel";
+        public final String SKEY_OTHERLABEL = "otherlabel";
 
         @Override
         protected void encodeContent(DefLabelRelationLabelQuestionIntention rich, BaseIntention poor) {
