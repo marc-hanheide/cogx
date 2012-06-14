@@ -519,7 +519,7 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(hardware_options), prosilica)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoServers
-        CPP MG ProsilicaServer  ProsilicaServer --camids "3" --cam-id %(prosilica_id) --mtu %(prosilica_packet_size)
+        CPP MG ProsilicaServer  ProsilicaServer --camids "3" --cam-id %(prosilica_id) --mtu %(prosilica_packet_size) --swapredblue
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/vision.sa.tutorial/VideoClients
         CPP MG viewer.prosilica         VideoViewer --videohost localhost --videoname ProsilicaServer --camid 3
