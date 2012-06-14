@@ -277,7 +277,7 @@ void SpatialControl::overwrittenPanTiltCommand(
       if (overwritten->comp != ptz::SUCCEEDED) {
         wrn("WARNING: Failed to move PTZ before moving!");
       }
-      
+
       deleteFromWorkingMemory(objID.address);
     }
 
@@ -288,7 +288,7 @@ void SpatialControl::overwrittenPanTiltCommand(
     log("Error: SetPTZPoseCommand went missing! ");
   }
 
-  if (objID.address.id == m_waitingForPTZCommandID){
+  if (objID.address.id == m_waitingForPTZCommandID) {
     m_waitingForPTZCommandID = "";
     m_receivedScan = false;
   }
@@ -1546,8 +1546,7 @@ void SpatialControl::runComponent() {
                 m_visualExplorationCommand, cmd);
             debug("overwriting VisualExplorationCommand: SUCCEEDED;");
           } catch (DoesNotExistOnWMException) {
-            getLogger()->warn(
-                "Could not find visual exploration command for overwriting!");
+            wrn("Could not find visual exploration command for overwriting!");
           }
         }
       }

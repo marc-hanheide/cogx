@@ -1677,8 +1677,12 @@ void DisplayNavInPB::newNavGraphNode(const cdl::WorkingMemoryChange &objID) {
           != _cpp.end(); ++it) {
         debug("6 %d - %d %d", placeId, it->second.first, it->second.second);
 
-        if (it->second.first == placeId || it->second.second == placeId) {
-          displayConnectivityPathProperty(it->second.first, it->second.second);
+        if (it->second.first == placeId) {
+          displayConnectivityPathProperty(it->second.first, it->second.second,
+              fnode->x, fnode->y, 1);
+        } else if (it->second.second == placeId) {
+          displayConnectivityPathProperty(it->second.first, it->second.second,
+              fnode->x, fnode->y, 2);
         }
       }
     }
@@ -1862,11 +1866,11 @@ void DisplayNavInPB::movePlace(const cdl::WorkingMemoryChange &wmChange) {
           text.set_position(nodePtr->x, nodePtr->y, 0);
         }
 
-//        int nodeId;
+        //        int nodeId;
         int originPlaceID;
         double hypX, hypY;
         try {
-  //        nodeId = nodePtr->hypID;
+          //        nodeId = nodePtr->hypID;
           originPlaceID = nodePtr->originPlaceID;
           hypX = nodePtr->x;
           hypY = nodePtr->y;
@@ -2252,7 +2256,8 @@ void DisplayNavInPB::newConnectivityPathProperty(
 
   log("Exited newConnectivityPathProperty");
 }
-void DisplayNavInPB::displayConnectivityPathProperty(int place1Id, int place2Id) {
+void DisplayNavInPB::displayConnectivityPathProperty(int place1Id,
+    int place2Id, double nx, double ny, int coord) {
   FrontierInterface::PlaceInterfacePrx piPrx(getIceServer<
       FrontierInterface::PlaceInterface> ("place.manager"));
   double fx, fy, tx, ty;
@@ -2290,6 +2295,14 @@ void DisplayNavInPB::displayConnectivityPathProperty(int place1Id, int place2Id)
     tx = fnodePtr->x;
     ty = fnodePtr->y;
   }
+  if (coord == 1) {
+    fx = nx;
+    fy = ny;
+  } else if (coord == 2) {
+    tx = nx;
+    ty = ny;
+  }
+
   double angle = atan2(ty - fy, tx - fx);
   debug("lp %f %f %f %f %f %f", fx, fy, tx, ty, tx - 0.05 * cos(angle - M_PI
       / 6), ty - 0.05 * sin(angle - M_PI / 6));
