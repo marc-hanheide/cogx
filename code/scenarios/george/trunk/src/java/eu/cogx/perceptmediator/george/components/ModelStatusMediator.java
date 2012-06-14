@@ -1,8 +1,10 @@
-package eu.cogx.perceptmediator;
+package eu.cogx.perceptmediator.george.components;
 
 import VisionData.VisualConceptModelStatus;
 import eu.cogx.beliefs.slice.GroundedBelief;
+import eu.cogx.perceptmediator.PerceptBindingMediator;
 import eu.cogx.perceptmediator.components.abstr.PerceptMediatorComponent;
+import eu.cogx.perceptmediator.george.transferfunctions.ModelStatusTransferFunction;
 
 public class ModelStatusMediator extends PerceptMediatorComponent {
 
