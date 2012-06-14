@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import jline.History;
 
@@ -35,6 +37,8 @@ public class POPlanMonitor extends ManagedComponent {
 	private Map<Integer,List<POPlan>> runningMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,List<POPlan>> finishedMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,PlanningTask> planningTaskMap = new HashMap<Integer,PlanningTask>();
+	
+	private Set<Integer> reportedTasks = new HashSet<Integer>();
 
 	private PlanVerbalizer pevModule; 
 	
@@ -215,16 +219,22 @@ public class POPlanMonitor extends ManagedComponent {
 				log("PlanningTask " + _oldPlanningTask.id + " is still PENDING. Not reporting verbally.");
 				break;
 			case ABORTED:
+				if (reportedTasks.contains(_oldPlanningTask.id)) break;
+				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is ABORTED. Reporting verbally.");
 				VerbalisationUtils.verbaliseString(this, "I aborted my previous task. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			case FAILED:
+				if (reportedTasks.contains(_oldPlanningTask.id)) break;
+				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is FAILED. Reporting verbally.");
 				VerbalisationUtils.verbaliseString(this, "My task failed. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			case SUCCEEDED:
+				if (reportedTasks.contains(_oldPlanningTask.id)) break;
+				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is SUCCEEDED. Reporting verbally.");
 				VerbalisationUtils.verbaliseString(this, "I finished my task successfully. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
