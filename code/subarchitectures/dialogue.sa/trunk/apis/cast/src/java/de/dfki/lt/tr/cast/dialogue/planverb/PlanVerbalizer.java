@@ -2,6 +2,7 @@ package de.dfki.lt.tr.cast.dialogue.planverb;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,12 +18,12 @@ import cast.UnknownSubarchitectureException;
 import cast.architecture.WorkingMemoryReaderComponent;
 import cast.cdl.WorkingMemoryAddress;
 
-import opennlp.ccg.grammar.Grammar;
-import opennlp.ccg.synsem.SignScorer;
-import scala.Option;
 import scala.collection.immutable.Set;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.cast.dialogue.realisation.LFRealiser;
+import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
+import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
 import de.dfki.lt.tr.planverb.domain.NoAnnotationFoundException;
 import de.dfki.lt.tr.planverb.domain.UnknownOperatorException;
 import de.dfki.lt.tr.planverb.generation.Message;
@@ -40,8 +41,7 @@ import de.dfki.tarot.cogx.WMAddress;
 import de.dfki.tarot.nlp.lf.BasicLogicalForm;
 import de.dfki.tarot.nlp.lf.BasicState;
 import de.dfki.tarot.nlp.lf.BasicUtils;
-import de.dfki.tarot.nlp.realisation.ccg.CCGRealiser;
-import de.dfki.tarot.nlp.realisation.openccg.NgramPrecisionModelFactory;
+import de.dfki.tarot.nlp.lf.pattern.BasicPatterns;
 import de.dfki.tarot.util.BuildException;
 import de.dfki.tarot.util.ParseException;
 import eu.cogx.beliefs.slice.GroundedBelief;
@@ -49,27 +49,32 @@ import eu.cogx.perceptmediator.transferfunctions.ComaRoomTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.PlaceTransferFunction;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 
-import static scala.collection.JavaConversions.*;
-
 public class PlanVerbalizer {
 	
 	private final PDDLContentDeterminator m_contentDeterminator;
-	private final CCGRealiser m_realiser;
-	private final WorkingMemoryReaderComponent m_castComponent;
+	private LFRealiser m_realiser;
+	private static WorkingMemoryReaderComponent m_castComponent;
 	
 	private HashMap<String, String> m_preLexicalSub  = new HashMap<String, String>();
 	private HashMap<String, String> m_postLexicalSub = new HashMap<String, String>();
 	
+	private final static String DEFAULTNGRAMFILE   = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt";
+	private final static String DEFAULTGRAMMARFILE = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml";
+	
+
 	/**
 	 * Creates and initializes a new PlanVerbalizer object.
 	 * After initialization, it can be queried subsequently for verbalizations of event structures.
 	 * The domains and grammar etc. it operates on remain static.
 	 * @param annotatedDomainFile
 	 * @param pddlDomainFile
-	 * @param grammarFile
+	 * @param grammarFile -- or "" -> not needed for the realiserver // or use default file 
+	 * @param ngramFile  -- or "" -> not needed for the realiserver // or use default file
+	 * @param hostname -- or "" -> try default hostname (localhost) or fallback to internal tarot realiser
+	 * @param port -- or null -> try default port (4444) or fallback to internal tarot realiser
 	 * @throws IOException
 	 */
-	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, WorkingMemoryReaderComponent component) throws IOException {
+	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, String ngramFile, String hostname, Integer port, WorkingMemoryReaderComponent component) throws IOException  {
 		// init CAST component for WM access and logging
 		m_castComponent = component;
 
@@ -82,11 +87,23 @@ public class PlanVerbalizer {
 		PDDLDomainModel domainModel = new PDDLDomainModel(adf, pddf);
 		m_contentDeterminator = new PDDLContentDeterminator(domainModel);
 
-		// initialize grammar-related stuff
-		Grammar grammar = new Grammar(grammarFile);
-		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File("subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt").toURI().toURL(), "UTF-8");
-		m_realiser = new CCGRealiser(grammar, scorer);
-				
+	
+		try {
+			m_realiser = new RealisationClient(hostname, port);
+		} catch (UnknownHostException e) {
+			m_castComponent.logException(e);
+			m_castComponent.log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		} catch (IOException e) {
+			m_castComponent.logException(e);
+			m_castComponent.log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		}
+		
 		// initialize lexicon substitutions for the time being...
 		initLexicalSubstitutions();
 		m_castComponent.log("finished PlanVerbalizer constructor");
@@ -114,7 +131,7 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put("m-location ^ via ", "m-through ^ through");
         // TODO find a solution for indirect speech
 		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
-		m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
+		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
 		m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 	}
@@ -231,7 +248,7 @@ public class PlanVerbalizer {
 
 				// surface realization
 				// perform lexical re-substitution after realization, before appending to the verbal report
-				String realization = realizeLF(finalLF);
+				String realization = m_realiser.realiseLF(finalLF);
 				log_sb.append("\n realizeLF() yielded: \n" + realization);
 
 				if (!realization.equals("")) {
@@ -253,38 +270,7 @@ public class PlanVerbalizer {
 	}
 	
 
-	/**
-	 * This method realizes a given BasicLogicalForm into a surface String 
-	 * as defined by the grammar realizer. 
-	 * 
-	 * @param blf
-	 * @return a natural language surface realization of the blf
-	 */
-    private String realizeLF(BasicLogicalForm blf) {
-    	//if (blf.toString().contains("PENDING")) {
-    	//	return "not verbalizing pending steps";
-    	//}
-    	
-    	StringBuilder outputBldr = new StringBuilder(); 
 
-    	// realize thru the CCG Realizer
-    	Option<scala.collection.immutable.List<String>> result = m_realiser.bestRealisationFor(blf);
-    	if (result.isDefined()) {
-    		List<String> words =  seqAsJavaList(result.get());
-    		for (String w: words) {
-    			outputBldr.append(w + " ");
-    		}
-    	} else {
-    		if (blf.toString().contains("assume")) {
-    			m_castComponent.log("not verbalising un-realizable assumption");
-    			// outputBldr.append("I made another assumption");
-    		} else {
-    			m_castComponent.log("NO REALISATION FOUND for LF: " + blf.toString());
-    		}
-    	}
-    	
-    	return outputBldr.toString();
-    }
     
     /**
      * This method performs GRE. It replaces castreferents with their appropriate natural language semantics.
@@ -303,6 +289,7 @@ public class PlanVerbalizer {
     		log_sb.append("\n current referentWMA = " + referentWMA);
     		try {
     			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+    			
     			// check if it is the robot itself
     			if (isRobot(gbWME)) {
     				log_sb.append("\n WMA is the robot itself.");
@@ -359,15 +346,54 @@ public class PlanVerbalizer {
         };
         protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "SUCCEEDED", successReplacer);
 
-        // execution status = pending yields future tense report
-        FeatureReplacer pendingReplacer = new FeatureReplacer() {
-            @Override
-            public BasicState.Builder doWork(BasicState.Builder builder) {
-            	
-                return builder.addFeature("Mood", "ind").addFeature("Tense", "fut");
+        // execution status = pending will be removed and the overall LF will be put into a control verb
+        if (protoLF.toString().contains("<ExecutionStatus>PENDING")) {
+            FeatureReplacer pendingReplacer = new FeatureReplacer() {
+                @Override
+                public BasicState.Builder doWork(BasicState.Builder builder) {
+
+                	return builder;
+                }
+            };
+            protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "PENDING", pendingReplacer);
+
+            String wantLFString = "@{want1_0:cognition}(want ^ <Mood>ind ^ <Tense>past ^ <Actor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\"))";
+            BasicLogicalForm wantLF;
+            try {
+            	wantLF = BasicLogicalForm.checkedFromString(wantLFString);
+            	BasicLogicalForm outputLF = BasicPatterns.attachLogicalFormAsSubtree(wantLF, protoLF, wantLF.root(), "Event", BasicPatterns.ignoreAdded());
+            	protoLF = outputLF;
+            } catch (BuildException e) {
+            	m_castComponent.logException(e);
+            } catch (ParseException e) {
+            	m_castComponent.logException(e);
             }
-        };
-        protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "PENDING", pendingReplacer);
+        }
+        
+//        String inputString = "@{step_0_0:action-motion}(move ^ <Mood>ind ^ <Tense>past ^ <Modifier>(from_1:m-wherefrom ^ from ^ <Anchor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\")) ^ <Modifier>(to_1:m-whereto ^ to ^ <Anchor>(\"1:X@spatial.sa\":castreferent ^ \"1:X@spatial.sa\")))";
+//        String expectedOutputString = "@{step_0_0:action-motion}(move ^ <Mood>ind ^ <Tense>past ^ <Actor>(\"0:D@spatial.sa\":person ^ I ^ <Num>sg) ^ <Modifier>(from_1:m-wherefrom ^ from ^ <Anchor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\")) ^ <Modifier>(to_1:m-whereto ^ to ^ <Anchor>(\"1:X@spatial.sa\":castreferent ^ \"1:X@spatial.sa\")))";
+//        	
+//        String attachmentString = "@{\"0:D@spatial.sa\":person}(I ^ <Num>sg)";
+//        	
+//        BasicLogicalForm input = BasicLogicalForm.checkedFromString(inputString);
+//        BasicLogicalForm attachmentLF = BasicLogicalForm.checkedFromString(attachmentString);
+//        BasicLogicalForm expectedOutput = BasicLogicalForm.checkedFromString(expectedOutputString);
+//        BasicLogicalForm output = BasicPatterns.attachLogicalFormAsSubtree(input, attachmentLF, input.root(), "Actor", BasicPatterns.ignoreAdded());
+        
+//        @want1_0:cognition(want ^
+//        		<Mood>ind ^
+//        		<Tense>pres ^
+//        		<Actor>(i1_0:person ^ I ^
+//        		<Num>sg) ^
+//        		<Event>(find1_0:action-non-motion ^ find ^
+//        		<Actor>i1_0:person ^
+//        		<Patient>(book1_0:thing ^ book ^
+//        		<Delimitation>existential ^
+//        		<Num>sg ^
+//        		<Quantification>specific)) ^
+//        		<Subject>i1_0:person)
+        
+        
         
         // make sure there is an appropriate subject
         // TODO cop-restr as subject!
@@ -376,6 +402,7 @@ public class PlanVerbalizer {
         return protoLF;
     }
 
+    
 	/**
 	 * This method performs the lexical substitution pre-processing step.
 	 * 
