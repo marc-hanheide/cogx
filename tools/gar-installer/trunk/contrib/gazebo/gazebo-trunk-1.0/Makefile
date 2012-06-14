@@ -14,7 +14,7 @@ MASTER_SITES = hghttps://kforge.ros.org/gazebo/hg/
 HG_REVISION = -r 2707
 PATCHFILES   = \
 	$(DISTNAME)-2707-cogx.patch \
-	$(DISTNAME)-2707-cogx.a.patch
+	$(DISTNAME)-2707-cogx.a.patch \
 	$(DISTNAME)-2707-cogx.b.patch
 
 
