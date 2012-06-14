@@ -151,6 +151,9 @@ void WmTaskExecutor_Analyze::handle_add_task(WmEvent* pEvent)
   if (! pvo.get()) {
     debug("analyze_task: creating new VisualObject.");
     pvo = createVisualObject();
+    cast::cdl::CASTTime tm = pSoiFilter->getCASTTime();
+    pvo->salience = tm.s + 1e-6 * tm.us;
+
     pvo->protoObject = createWmPointer<ProtoObject>(cmd.pcmd->protoObjectAddr);
     pvo->lastProtoObject = pvo->protoObject;
     pvo->pose.pos = pobj->position;

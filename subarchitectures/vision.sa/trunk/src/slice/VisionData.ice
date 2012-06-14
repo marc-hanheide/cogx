@@ -181,7 +181,9 @@ enum VisionCommandStatus {
     // typically confidence of the recognition process that produced the label)
     //double labelConfidence;
 
-    // a value between 0 and 1
+    // Y1-3: a value between 0 and 1
+    // Y4: a timestamp of the object's first appearance on the scene (getCASTTime->double,
+    //     it is set in SOIFilter/TaskAnalyzePO.cpp)
     double salience;
 
     // Distribution of identity labels (from object recognizer)
