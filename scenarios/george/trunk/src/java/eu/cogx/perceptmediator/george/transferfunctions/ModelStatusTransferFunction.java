@@ -50,8 +50,10 @@ public class ModelStatusTransferFunction
 		}
 		if (maxLabel == null)
 			return null;
+		
 		result.put(MOST_PROMISING, PropositionFormula.create(maxLabel)
 				.getAsFormula());
+		
 		result.put(GAIN, DoubleFormula.create(maxGain).getAsFormula());
 
 		return result;
