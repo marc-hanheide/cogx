@@ -15,6 +15,7 @@ HG_REVISION = -r 2707
 PATCHFILES   = \
 	$(DISTNAME)-2707-cogx.patch \
 	$(DISTNAME)-2707-cogx.a.patch
+	$(DISTNAME)-2707-cogx.b.patch
 
 
 include $(GARDIR)/gar.detect.mk
