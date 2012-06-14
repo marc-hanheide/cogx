@@ -17,10 +17,7 @@
     BLUE - ColorName
     YELLOW - ColorName
     ORANGE - ColorName
-    WHITE - ColorName
-    BLACK - ColorName
-    PINK - ColorName
-
+    
     UNKNOWN_SHAPE - ShapeName
     COMPACT - ShapeName
     ELONGATED - ShapeName
@@ -323,7 +320,6 @@
     :effect 
       (and
         (assign (attributed-color ?v) (color ?v))
-        ;; (assign (attributed-color ?v) UNKNOWN_COLOR)
         (is-potential-object-in-question ?v)
         (increase (total-cost) 2)
       )
@@ -1084,51 +1080,51 @@
 ;;;;;;;;;;;;;;;;;                  UNLEARNING             ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  ;; (:action unlearn-color
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?c - ColorName)
-  ;;   :precondition
-  ;;     (and
-  ;;       (not (color-unlearned ?v))
-  ;;       (not (= (attributed-color ?v) (color ?v)))
-  ;;       (not (= ?c UNKNOWN_COLOR))
-  ;;       (exists (?p - ProtoObject)
-  ;;         (and 
-  ;;           (= (po-is-associated-with ?p) ?v)
-  ;;           (= (target-object (current-viewcone ?r)) ?p)
-  ;;         )
-  ;;       )
-  ;;       (is-object-in-question ?v)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (color-unlearned ?v)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action unlearn-color
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?c - ColorName)
+    :precondition
+      (and
+        (not (color-unlearned ?v))
+        (not (= (attributed-color ?v) (color ?v)))
+        (not (= ?c UNKNOWN_COLOR))
+        (exists (?p - ProtoObject)
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+        (is-object-in-question ?v)
+      )
+    :effect 
+      (and
+        (color-unlearned ?v)
+        (increase (total-cost) 1)
+      )
+  )
 
-  ;; (:action unlearn-shape
-  ;;   :agent (?r - Robot)
-  ;;   :parameters (?v - VisualObject ?s - ShapeName)
-  ;;   :precondition 
-  ;;     (and
-  ;;       (not (shape-unlearned ?v))
-  ;;       (not (= (attributed-shape ?v) (shape ?v)))
-  ;;       (not (= ?s UNKNOWN_SHAPE))
-  ;;       (exists (?p - ProtoObject) 
-  ;;         (and 
-  ;;           (= (po-is-associated-with ?p) ?v)
-  ;;           (= (target-object (current-viewcone ?r)) ?p)
-  ;;         )
-  ;;       )
-  ;;       (is-object-in-question ?v)
-  ;;     )
-  ;;   :effect 
-  ;;     (and
-  ;;       (shape-unlearned ?v)
-  ;;       (increase (total-cost) 1)
-  ;;     )
-  ;; )
+  (:action unlearn-shape
+    :agent (?r - Robot)
+    :parameters (?v - VisualObject ?s - ShapeName)
+    :precondition 
+      (and
+        (not (shape-unlearned ?v))
+        (not (= (attributed-shape ?v) (shape ?v)))
+        (not (= ?s UNKNOWN_SHAPE))
+        (exists (?p - ProtoObject) 
+          (and 
+            (= (po-is-associated-with ?p) ?v)
+            (= (target-object (current-viewcone ?r)) ?p)
+          )
+        )
+        (is-object-in-question ?v)
+      )
+    :effect 
+      (and
+        (shape-unlearned ?v)
+        (increase (total-cost) 1)
+      )
+  )
 
   ;; (:action unlearn-type
   ;;   :agent (?r - Robot)
