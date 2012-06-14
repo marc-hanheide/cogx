@@ -1303,6 +1303,82 @@ void SpatialControl::updateGridMaps() {
       }
     }
     m_lastPointCloudTime = getCASTTime();
+  } else {
+    int minX = laserMinXi;
+    int maxX = laserMaxXi;
+    int minY = laserMinYi;
+    int maxY = laserMaxYi;
+
+    if (minX <= -m_lgm->getSize())
+      minX = -m_lgm->getSize() + 1;
+    if (maxX >= m_lgm->getSize())
+      maxX = m_lgm->getSize() - 1;
+    if (minY <= -m_lgm->getSize())
+      minY = -m_lgm->getSize() + 1;
+    if (maxY >= m_lgm->getSize())
+      maxY = m_lgm->getSize() - 1;
+
+    for (int yi = minY; yi <= maxY; yi++) {
+      for (int xi = minX; xi <= maxX; xi++) {
+        double xr, yr;
+        m_lgm->index2WorldCoords(xi, yi, xr, yr);
+        
+        if ((*tmp_lgm)(xi, yi) != '1')
+            (*tmp_lgm)(xi, yi) = '2';
+
+        if ((*tmp_lgm)(xi, yi) == '1')
+          lgmKH(xi, yi) = 1.;
+        else if ((*tmp_lgm)(xi, yi) == '0')
+          lgmKH(xi, yi) = 0.;
+      }
+    }
+
+    if (m_usePeekabot) {
+      //        SCOPED_TIME_LOG;
+
+      peekabot::OccupancySet2D cells;
+      for (int yi = minY + 1; yi < maxY; yi++) {
+        for (int xi = minX + 1; xi < maxX; xi++) {
+          double xr, yr;
+          m_lgm->index2WorldCoords(xi, yi, xr, yr);
+          if ((*tmp_lgm)(xi, yi) == '0')
+            cells.add(xr, yr, 0);
+          else if ((*tmp_lgm)(xi, yi) == '1')
+            cells.add(xr, yr, 1);
+        }
+      }
+      m_ProxyGridMap.set_cells(cells);
+      if (m_show3Dobstacles) {
+        if (m_PBDisplayMutex.tryLock()) {
+          if (!m_bDoPBSync) {
+            peekabot::OccupancySet3D cells1;
+            for (int yi = minY + 1; yi < maxY; yi++) {
+              for (int xi = minX + 1; xi < maxX; xi++) {
+                double xr, yr;
+                m_lgm->index2WorldCoords(xi, yi, xr, yr);
+                if ((*tmp_lgm)(xi, yi) == '1') {
+                  if ((*m_lgmKH)(xi, yi) != FLT_MAX) {
+
+                    for (double zi = 0; zi <= (*m_lgmKH)(xi, yi); zi += 0.05) {
+                      cells1.set_cell(xr, yr, zi, 1);
+                    }
+                  }
+                } else if ((*tmp_lgm)(xi, yi) == '0') {
+                  for (double zi = 0; zi <= kinectZ; zi += 0.05) {
+                    cells1.set_cell(xr, yr, zi, 0);
+                  }
+                }
+              }
+            }
+            m_ProxyGridMapKinect.set_cells(cells1);
+          } else {
+            log("Skipping obstacle map update in PB; last one not finished");
+          }
+          m_PBDisplayMutex.unlock();
+        }
+      }
+    }
+    m_lastPointCloudTime = getCASTTime();
   }
   //  const int deltaN = 3;
   //  double d = m_lgm->getCellSize()/deltaN;
