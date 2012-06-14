@@ -1,0 +1,193 @@
+diff -u gazebo-rostrunk/interfaces/player/ActarrayInterface.cc /usr/local/src/gazebo-mercurial/interfaces/player/ActarrayInterface.cc
+--- gazebo-rostrunk/interfaces/player/ActarrayInterface.cc	2012-06-13 16:32:37.962454370 +0200
++++ /usr/local/src/gazebo-mercurial/interfaces/player/ActarrayInterface.cc	2012-06-12 11:01:05.521687090 +0200
+@@ -47,19 +47,25 @@
+     : GazeboInterface(_addr, _driver, _cf, _section)
+ {
+   this->datatime = -1;
+-  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
+-  this->node->Init(this->worldName);
+   this->modelName = _cf->ReadString(_section, "model_name", "default");
+   bool doneJoints = false;
+   int n = 0;
+   while(!doneJoints)
+   {
+-    std::stringstream jointN;
++    std::stringstream jointN, pidN;
+     jointN << "joint" << n << "_name";
++    pidN << "joint" << n << "_pid";
+     std::string jointName = _cf->ReadString(_section, jointN.str().c_str(), "none");
++    PIDGains pid;
+     if(jointName != "none")
+     {
+-      jointNames.push_back(jointName);
++      this->jointNames.push_back(jointName);
++      pid.pGain = _cf->ReadTupleFloat(_section, pidN.str().c_str(), 0, 1.);
++      pid.iGain = _cf->ReadTupleFloat(_section, pidN.str().c_str(), 1, 0.1);
++      pid.dGain = _cf->ReadTupleFloat(_section, pidN.str().c_str(), 2, 0.01);
++      std::cout << "ActarrayInterface: joint " << jointName << " PID gains: " <<
++        pid.pGain << " " << pid.iGain << " " << pid.dGain << "\n";
++      this->posGains.push_back(pid);
+       n++;
+     }
+     else
+@@ -67,6 +73,9 @@
+       doneJoints = true;
+     }
+   }
++
++  this->node = gazebo::transport::NodePtr(new gazebo::transport::Node());
++  this->node->Init(this->worldName);
+   this->jointPub = this->node->Advertise<gazebo::msgs::JointCmd>(
+       std::string("~/") + this->modelName + "/joint_cmd");
+ 
+@@ -137,6 +146,7 @@
+ 
+     for(size_t i = 0; i < this->actData.actuators_count; i++)
+       SetJoint(i, 0.);
++    std::cout << "set home: joint " << cmd->joint << "\n";
+ 
+     result = 0;
+   }
+@@ -300,14 +310,12 @@
+ {
+   assert(_idx < this->actData.actuators_count);
+   this->actData.actuators[_idx].position = _val;
+-  // NOTE: these values for the gains seem to be generally fine
+-  // TODO: make gains settable from cfg
+   gazebo::msgs::JointCmd msg;
+   msg.set_name(this->jointNames[_idx]);
+   msg.mutable_position()->set_target(_val);
+-  msg.mutable_position()->set_p_gain(5.);
+-  msg.mutable_position()->set_i_gain(1.);
+-  msg.mutable_position()->set_d_gain(5.);
++  msg.mutable_position()->set_p_gain(this->posGains[_idx].pGain);
++  msg.mutable_position()->set_i_gain(this->posGains[_idx].iGain);
++  msg.mutable_position()->set_d_gain(this->posGains[_idx].dGain);
+   this->jointPub->Publish(msg);
+ }
+ 
+diff -u gazebo-rostrunk/interfaces/player/ActarrayInterface.hh /usr/local/src/gazebo-mercurial/interfaces/player/ActarrayInterface.hh
+--- gazebo-rostrunk/interfaces/player/ActarrayInterface.hh	2012-06-13 16:32:37.962454370 +0200
++++ /usr/local/src/gazebo-mercurial/interfaces/player/ActarrayInterface.hh	2012-06-12 10:45:40.953665114 +0200
+@@ -33,6 +33,14 @@
+ /// \brief Actarray interface
+ class ActarrayInterface : public GazeboInterface
+ {
++  private:
++    class PIDGains
++    {
++      public: double pGain;
++      public: double iGain;
++      public: double dGain;
++    };
++
+   /// \brief Constructor
+   public: ActarrayInterface(player_devaddr_t _addr, GazeboDriver *_driver,
+                             ConfigFile *_cf, int _section);
+@@ -66,6 +74,7 @@
+   private: gazebo::transport::SubscriberPtr jointSub;
+   private: std::string modelName;
+   private: std::vector<std::string> jointNames;
++  private: std::vector<PIDGains> posGains;
+   private: player_actarray_data_t actData;
+ };
+ 
+Only in gazebo-rostrunk/interfaces/player: CMakeFiles
+Only in gazebo-rostrunk/interfaces/player: cmake_install.cmake
+Only in gazebo-rostrunk/interfaces/player: CTestTestfile.cmake
+Only in gazebo-rostrunk/interfaces/player: libgazebo_player.so
+Only in gazebo-rostrunk/interfaces/player: libgazebo_player.so.1
+Only in gazebo-rostrunk/interfaces/player: libgazebo_player.so.1.0.2
+Only in gazebo-rostrunk/interfaces/player: Makefile
+Common subdirectories: gazebo-rostrunk/interfaces/player/player_cfgs and /usr/local/src/gazebo-mercurial/interfaces/player/player_cfgs
+diff -u gazebo-rostrunk/interfaces/player/PTZInterface.cc /usr/local/src/gazebo-mercurial/interfaces/player/PTZInterface.cc
+--- gazebo-rostrunk/interfaces/player/PTZInterface.cc	2012-06-13 16:32:37.962454370 +0200
++++ /usr/local/src/gazebo-mercurial/interfaces/player/PTZInterface.cc	2012-06-14 10:24:37.375041062 +0200
+@@ -70,6 +70,15 @@
+ {
+   int result = -1;
+ 
++  // No REQ_GENERIC
++  if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_REQ,
++         PLAYER_PTZ_REQ_GENERIC, this->device_addr))
++  {
++    this->driver->Publish(this->device_addr, _respQueue,
++        PLAYER_MSGTYPE_RESP_NACK, PLAYER_PTZ_REQ_GENERIC);
++
++    result = 0;
++  }
+   // COMMAND STATE
+   if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_CMD,
+         PLAYER_PTZ_CMD_STATE, this->device_addr))
+@@ -81,53 +90,31 @@
+ 
+     result = 0;
+   }
+-
+-  return result;
+-
+-  /*
+-  boost::recursive_mutex::scoped_lock lock(*this->mutex);
+-  if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_CMD,
+-        PLAYER_PTZ_CMD_STATE, this->device_addr))
+-  {
+-    player_ptz_cmd_t *cmd;
+-
+-    assert(hdr->size >= sizeof(player_ptz_cmd_t));
+-
+-    cmd = (player_ptz_cmd_t*) data;
+-
+-    this->iface->Lock(1);
+-
+-    this->iface->data->cmd_pan = cmd->pan;
+-    this->iface->data->cmd_tilt = cmd->tilt;
+-    this->iface->data->cmd_zoom = cmd->zoom;
+-    this->iface->data->cmd_tilt_speed = cmd->tiltspeed;
+-    this->iface->data->cmd_pan_speed = cmd->panspeed;
+-
+-    this->iface->Unlock();
+-
+-    return 0;
+-  }
+-
+-  else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
++  // REQ CONTROL MODE: position or velocity
++  else if (Message::MatchMessage(_hdr, PLAYER_MSGTYPE_REQ,
+         PLAYER_PTZ_REQ_CONTROL_MODE, this->device_addr))
+   {
+     player_ptz_req_control_mode_t *req;
++    req = static_cast<player_ptz_req_control_mode_t *>(_data);
+ 
+-    assert(hdr->size >= sizeof(player_ptz_req_control_mode_t));
+-
+-    req = (player_ptz_req_control_mode_t *) data;
+-
+-    if (req->mode == PLAYER_PTZ_VELOCITY_CONTROL)
+-      this->iface->data->control_mode = GAZEBO_PTZ_VELOCITY_CONTROL;
++    // we only support position control
++    if (req->mode == PLAYER_PTZ_POSITION_CONTROL)
++      this->driver->Publish(this->device_addr, _respQueue,
++          PLAYER_MSGTYPE_RESP_ACK,
++          PLAYER_PTZ_REQ_CONTROL_MODE);
+     else
+-      this->iface->data->control_mode = GAZEBO_PTZ_POSITION_CONTROL;
++      this->driver->Publish(this->device_addr, _respQueue,
++          PLAYER_MSGTYPE_RESP_NACK,
++          PLAYER_PTZ_REQ_CONTROL_MODE);
+ 
+-    this->driver->Publish(this->device_addr, respQueue,
+-        PLAYER_MSGTYPE_RESP_ACK,
+-        PLAYER_PTZ_REQ_CONTROL_MODE);
+-    return(0);
++    result = 0;
+   }
+ 
++  return result;
++
++  /*
++  boost::recursive_mutex::scoped_lock lock(*this->mutex);
++
+   // Is it a request for ptz geometry?
+   else if (Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ,
+         PLAYER_PTZ_REQ_GEOM, this->device_addr))
