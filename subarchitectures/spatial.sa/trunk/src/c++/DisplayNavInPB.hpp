@@ -127,7 +127,8 @@ private:
   void newConnectivityPathProperty(const cast::cdl::WorkingMemoryChange &objID);
   void deleteConnectivityPathProperty(
       const cast::cdl::WorkingMemoryChange &objID);
-  void displayConnectivityPathProperty(int place1Id, int place2Id);
+  void displayConnectivityPathProperty(int place1Id, int place2Id,
+      double nx = 0, double ny = 0, int coord = 0);
 
   void newPlanePointCloud(const cast::cdl::WorkingMemoryChange &objID);
   void newNavGraphEdge(const cast::cdl::WorkingMemoryChange &objID);
