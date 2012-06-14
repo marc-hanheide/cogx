@@ -40,8 +40,11 @@ public class POPlanMonitor extends ManagedComponent {
 	
 	protected void configure(Map<String, String> args) {
 		String pddldomain = "";
-		String grammarpath = "";
 		String domainannotation = "";
+		String grammarFile = "";
+		String ngramFile = "";
+		String hostname = "";
+		Integer port = null;
 		
 		// TODO Auto-generated method stub
 		super.configure(args);
@@ -49,19 +52,33 @@ public class POPlanMonitor extends ManagedComponent {
 			pddldomain = args.get("--pddldomain");
 			log("pddldomain=" + pddldomain);
 		}
-		if (args.containsKey("--grammarpath")) {
-			grammarpath = args.get("--grammarpath");
-			log("grammarpath=" + grammarpath);
-		}
 		if (args.containsKey("--domainannotation")) {
 			domainannotation = args.get("--domainannotation");
 			log("domainannotation=" + domainannotation);
 		}
+		if (args.containsKey("--grammarpath")) {
+			grammarFile = args.get("--grammarpath");
+			log("grammarpath=" + grammarFile);
+		}
+		if (args.containsKey("--ngrampath")) {
+			ngramFile = args.get("--ngrampath");
+			log("ngrampath=" + ngramFile);
+		}
+		if (args.containsKey("--hostname")) {
+			hostname = args.get("--hostname");
+			log("hostname=" + hostname);
+		}
+		if (args.containsKey("--port")) {
+			port = Integer.parseInt(args.get("--port"));
+			log("port=" + port);
+		}
 		
 		try {
-			log("trying to create PEV Module with domainannotation=" + domainannotation + "pddldomain=" + pddldomain + "grammarpath=" + grammarpath);
-			pevModule = new PlanVerbalizer(domainannotation, pddldomain, grammarpath, this);
-			log("created PEV Module with domainannotation=" + domainannotation + "pddldomain=" + pddldomain + "grammarpath=" + grammarpath);
+			log("trying to create PEV Module with domainannotation=" + domainannotation + ", pddldomain=" + pddldomain + 
+					", grammarpath=" + grammarFile + ", ngrampath=" + ngramFile + 
+					", hostname=" + hostname + ", port=" + (port!=null ? port : "null") );
+			pevModule = new PlanVerbalizer(domainannotation, pddldomain, grammarFile, ngramFile, hostname, port, this);
+			log("created PEV Module");
 		} catch (IOException e) {
 			logException(e);
 		}
@@ -199,14 +216,17 @@ public class POPlanMonitor extends ManagedComponent {
 				break;
 			case ABORTED:
 				log("PlanningTask " + _oldPlanningTask.id + " is ABORTED. Reporting verbally.");
+				VerbalisationUtils.verbaliseString(this, "I aborted my previous task. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			case FAILED:
 				log("PlanningTask " + _oldPlanningTask.id + " is FAILED. Reporting verbally.");
+				VerbalisationUtils.verbaliseString(this, "My task failed. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			case SUCCEEDED:
 				log("PlanningTask " + _oldPlanningTask.id + " is SUCCEEDED. Reporting verbally.");
+				VerbalisationUtils.verbaliseString(this, "I finished my task successfully. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			default:
@@ -273,6 +293,7 @@ public class POPlanMonitor extends ManagedComponent {
 		log("POPlanMonitor running...");
 	}
 
+	
 }
 
 /*
