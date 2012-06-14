@@ -161,6 +161,10 @@ xterm -title "Abducer" -e bash -c "ulimit -c unlimited; tools/abducer/bin/abduce
 ABDUCERPID="$!"
 PIDS="$PIDS $ABDUCERPID"
 
+xterm -title "OpenCCG-Realiserver" -e bash -c "tools/openccg-realiserver/start-server.sh 2>&1 | tee logs/openccg-realiserver.log" &
+OPENCCG_REALISERVER_PID="$!"
+PIDS="$PIDS $OPENCCG_REALISERVER_PID"
+
 sleep 10
 
 xterm -title "CAST client: $configFile" -e bash -c "ulimit -c unlimited; output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
