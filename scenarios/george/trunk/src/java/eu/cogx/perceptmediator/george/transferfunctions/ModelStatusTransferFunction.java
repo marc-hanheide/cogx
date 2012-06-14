@@ -1,7 +1,7 @@
 /**
  * 
  */
-package eu.cogx.perceptmediator;
+package eu.cogx.perceptmediator.george.transferfunctions;
 
 import java.util.HashMap;
 import java.util.Map;
