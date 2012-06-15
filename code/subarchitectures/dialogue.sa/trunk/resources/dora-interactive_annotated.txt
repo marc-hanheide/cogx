@@ -469,7 +469,7 @@
    ;; create cones for search in a room
    ;; precondition: robot is in the specified room
 
-;;LF create_cones_in_room => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p))))))
+;;LF create_cones_in_room => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
    (:action create_cones_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
@@ -486,7 +486,7 @@
    ;; create cones for search in or on another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF create_cones_at_object => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p))))))
+;;LF create_cones_at_object => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cones ^ <Num>pl) ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action create_cones_at_object
             :agent (?a - robot)
             :parameters (?l ?lsupp - label ?rel - spatial_relation ?o - visualobject ?r - room)
@@ -539,7 +539,7 @@
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
 
-;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p))))))
+;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r) ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p)))))
    (:action search_for_object_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
@@ -581,7 +581,7 @@
    ;; Searches for an object ON another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
+;;LF search_for_object_at_object => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action search_for_object_at_object
             :agent (?a - robot)
             :parameters (?l - label ?o - visualobject ?rel - spatial_relation)
