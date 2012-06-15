@@ -2,4 +2,5 @@ JAVA MG po-mediator eu.cogx.perceptmediator.components.ProtoObjectMediatorCompon
 JAVA MG vc-mediator eu.cogx.perceptmediator.components.ViewConeMediatorComponent --write-to-sa binder
 JAVA MG vcmc-mediator eu.cogx.perceptmediator.components.ViewConeMoveCostsMediatorComponent --write-to-sa binder
 JAVA MG vo-mediator eu.cogx.perceptmediator.george.components.VisualObjectMediatorComponent  --write-to-sa binder
+JAVA MG vms-mediator eu.cogx.perceptmediator.george.components.ModelStatusMediator --write-to-sa binder
 
