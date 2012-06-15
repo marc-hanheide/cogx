@@ -7,6 +7,8 @@ import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.wmeditor.serializer.XMLSerializer;
 import execution.slice.ActionStatus;
 import execution.slice.TriBool;
+import execution.slice.actions.AskForBKLabelInCategory;
+import execution.slice.actions.AskForBKLabelRelLabel;
 import execution.slice.actions.AskForLabelExistence;
 
 /**
@@ -21,7 +23,9 @@ public class MemTypeXMLFactoryApp {
 	public static void main(String[] args) {
 		XMLSerializer s = new XMLSerializer();
 		AskForLabelExistence a= new AskForLabelExistence(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, new WorkingMemoryAddress("id", "sa"), new WorkingMemoryAddress("id", "sa"), "label", "relation");
-		System.out.println(s.dump(a));
+		AskForBKLabelInCategory b= new AskForBKLabelInCategory(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, "magazine", "kitchen");
+		AskForBKLabelRelLabel c= new AskForBKLabelRelLabel(ActionStatus.PENDING, TriBool.TRIINDETERMINATE,  "magazine", "in", "box");
+		System.out.println(s.dump(c));
 		System.exit(0);
 	}
 
