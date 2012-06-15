@@ -8,7 +8,8 @@ FILES="robotpose.ccf
        tmpmap.metric
        Places.txt
        rooms.xml
-       place_properties.bin"
+       place_properties.bin
+       Connectivities.txt"
 
 for f in $FILES ; do
 	cp $f local-saved-map/
