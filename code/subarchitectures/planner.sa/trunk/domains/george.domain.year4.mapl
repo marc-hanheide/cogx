@@ -221,6 +221,7 @@
     (and
       (= (color ?v) ?c)
       (>= (color-prob ?v) (polar-question-color-threshold ?r))
+      (not (= (presence ?v) REMOVED))
     )
   )
 
@@ -228,6 +229,7 @@
     (and
       (= (shape ?v) ?s)
       (>= (shape-prob ?v) (polar-question-shape-threshold ?r))
+      (not (= (presence ?v) REMOVED))
     )
   )
 
@@ -235,6 +237,7 @@
     (and
       (= (type ?v) ?t)
       (>= (type-prob ?v) (polar-question-type-threshold ?r))
+      (not (= (presence ?v) REMOVED))
     )
   )
 
@@ -242,6 +245,7 @@
     (and
       (>= (color-prob ?v) (learn-autonomous-color-threshold ?r))
       (= (color ?v) ?c)
+      (not (= (presence ?v) REMOVED))
     )
   )
 
@@ -249,6 +253,7 @@
     (and
       (>= (shape-prob ?v) (learn-autonomous-shape-threshold ?r))
       (= (shape ?v) ?s)
+      (not (= (presence ?v) REMOVED))
     )
   )
 
@@ -256,6 +261,7 @@
     (and
       (>= (type-prob ?v) (learn-autonomous-shape-threshold ?r))
       (= (type ?v) ?t)
+      (not (= (presence ?v) REMOVED))
     )
   )
 
@@ -316,6 +322,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
           (= (currently-points-at ?r) ?v)
@@ -335,6 +342,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-color-question ?v ?c ?r)
         (or
@@ -355,6 +363,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
           (= (currently-points-at ?r) ?v)
@@ -374,6 +383,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-shape-question ?v ?s ?r)
         (or
@@ -394,6 +404,7 @@
     :parameters (?v - VisualObject)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (or
           (= (currently-points-at ?r) ?v)
@@ -413,6 +424,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
         (allow-polar-type-question ?v ?t ?r)
         (or
@@ -555,6 +567,7 @@
     :precondition
       (and
         (not (= ?v VISUAL_OBJECT_DUMMY))
+        (not (= (presence ?v) REMOVED))
       )
     :effect
       (and
@@ -572,6 +585,7 @@
     :precondition 
       (and
         (= (currently-points-at ?r) ?v)
+        (not (= (presence ?v) REMOVED))
       )
     :effect 
       (and
@@ -664,9 +678,7 @@
   (:action retract-arm
     :agent (?r - Robot)
     :precondition
-      (and
-        (forall (?p - ProtoObject) (exists (?v - VisualObject) (= (po-is-associated-with ?p) ?v)))
-      )
+      (and )
     :effect
       (and
         (assign (currently-points-at ?r) VISUAL_OBJECT_DUMMY)
@@ -1064,6 +1076,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (= (currently-points-at ?r) ?v)
         (>= (color-prob ?v) (believe-in-color-threshold ?r))
         (= (color ?v) ?c)
@@ -1080,6 +1093,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (= (currently-points-at ?r) ?v)
         (>= (shape-prob ?v) (believe-in-shape-threshold ?r))
         (= (shape ?v) ?s)
@@ -1096,6 +1110,7 @@
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (= (currently-points-at ?r) ?v)
         (>= (type-prob ?v) (believe-in-type-threshold ?r))
         (= (type ?v) ?t)
@@ -1116,6 +1131,7 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
+        (not (= (presence ?v) REMOVED))
         (not (= (attributed-color ?v) (color ?v)))
         (not (= ?c UNKNOWN_COLOR))
         (exists (?p - ProtoObject)
@@ -1138,6 +1154,7 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition 
       (and
+        (not (= (presence ?v) REMOVED))
         (not (= (attributed-shape ?v) (shape ?v)))
         (not (= ?s UNKNOWN_SHAPE))
         (exists (?p - ProtoObject) 
