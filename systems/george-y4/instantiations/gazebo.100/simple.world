@@ -69,6 +69,13 @@
 
   <!-- and finally a cereal box! -->
   <include filename="cereals-bircher.model" model_name="cereals1" model_pose="1 0 0.5 0 0 0"/>
+  <!--<include filename="cereals-chocos.model" model_name="cereals2" model_pose="1 0.3 0.5 0 0 0"/>
+  <include filename="cereals-fruchtemusli.model" model_name="cereals3" model_pose="1 0.6 0.5 0 0 0"/>
+  <include filename="cereals-manner.model" model_name="cereals4" model_pose="1 0.9 0.5 0 0 0"/>
+  <include filename="cereals-schokomusli.model" model_name="cereals5" model_pose="1 1.2 0.5 0 0 0"/>
+  <include filename="cereals-toppas.model" model_name="cereals6" model_pose="1 1.5 0.5 0 0 0"/>
+  <include filename="cereals-weetabix.model" model_name="cereals7" model_pose="1 1.8 0.5 0 0 0"/>-->
+
 </world>
 
 </gazebo>
