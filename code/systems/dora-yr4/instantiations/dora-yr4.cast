@@ -228,6 +228,13 @@ VARDEFAULT save_load_nodemaps=--save-nodemap --load-nodemap
 ### Perform visual exploration after exploratory movement (i.e. to placeholders)
 VARDEFAULT visual_exploration=--visual-exploration
 
+### Generate placeholders AND connectivities when the robot arrives at a Place
+# This is signaled to PlaceManager via the endplacetransition command
+VARDEFAULT spatial_generate_placeholders_on_place=--generate-placeholders-on-place
+
+### Delay in ms before starting visual exploration at system start up.
+VARDEFAULT spatial_visual_exploration_startup_delay=4000
+
 ### Prohibit the creation of placeholders in certain zones
 # Note: visualisation of exclusion zones is limited to 30 m from the initial location
 # Exclusion zones that are further away will not be visualised correctly
@@ -341,7 +348,7 @@ IFOPTALL(%(feature_options), spatial)
 
 ### Translates and queues Spatial::NavCommands;
 # writes NavData::InternalNavCmd and NavData::VisualExplorationCommand
-    CPP MG spatial.translation  SpatialTranslation %(visual_exploration) --generate-placeholders-on-place
+    CPP MG spatial.translation  SpatialTranslation %(visual_exploration) %(spatial_generate_placeholders_on_place) --startup-delay %(spatial_visual_exploration_startup_delay)
 
 ### Reads NavData::InternalNavCmd to control the robot
 # Maintains three-state grid map for exploration and obstacle avoidance
