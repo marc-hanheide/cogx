@@ -10,21 +10,21 @@ import opennlp.ccg.grammar.Grammar;
 import opennlp.ccg.synsem.SignScorer;
 import scala.Option;
 import de.dfki.tarot.nlp.lf.BasicLogicalForm;
-import de.dfki.tarot.nlp.realisation.ccg.CCGRealiser;
+import de.dfki.tarot.nlp.realisation.openccg.CCGSurfaceRealiser;
 import de.dfki.tarot.nlp.realisation.openccg.NgramPrecisionModelFactory;
 import de.dfki.tarot.util.BuildException;
 import de.dfki.tarot.util.ParseException;
 
 public class TarotCCGRealiser implements LFRealiser {
 	
-	private CCGRealiser m_realiser;
+	private CCGSurfaceRealiser m_realiser;
 	
 	public TarotCCGRealiser(String grammarFile, String ngramFile) throws IOException {
 		// "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt"
 		// initialize grammar-related stuff
 		Grammar grammar = new Grammar(grammarFile);
 		SignScorer scorer = NgramPrecisionModelFactory.fromURL(new File(ngramFile).toURI().toURL(), "UTF-8");
-		m_realiser = new CCGRealiser(grammar, scorer);
+		m_realiser = new CCGSurfaceRealiser(grammar, scorer);
 	}
 	
 
