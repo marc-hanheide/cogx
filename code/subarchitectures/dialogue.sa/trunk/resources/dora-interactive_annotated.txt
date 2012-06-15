@@ -82,6 +82,7 @@
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
+;;LF obj_exists => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var  ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(=var:castreferent ^ =var)))
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
@@ -433,7 +434,7 @@
 
             )
 
-;;LF move_direct => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_?block_?step:m-location ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_?block_?step:m-location ^ to ^ <Anchor>(?to:castreferent ^ ?to)) ^ <Modifier>(via_?block_?step:m-location ^ via ^ <Anchor>(?via:castreferent ^ ?via)))
+;;LF move_direct => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_?block_?step:m-location ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_?block_?step:m-location ^ to ^ <Anchor>(?to:castreferent ^ ?to)) ^ <Modifier>(via_?block_?step:m-through ^ via ^ <Anchor>(?via:castreferent ^ ?via)))
    (:action move_direct
             :agent (?a - robot)
             :parameters (?to - place)
@@ -686,7 +687,7 @@
    ;;          :sense (category ?r)
    ;;          )
 
-;;LF ask-for-category-polar => @{step_?block_?step:action-non-motion}(ask ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?h:castreferent ^ ?h) ^ <Modifier>(if_?block_?step:thing ^ if ^ <Anchor>(b1:ascription ^ be ^ <Cop-Restr>(?r:castreferent ^ ?r) ^ <Cop-Scope>(?c:castreferent ^ ?c)))
+;;LF ask-for-category-polar => @{step_?block_?step:action-non-motion}(ask ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?h:castreferent ^ ?h) ^ <Event>(be_?block_?step:ascription ^ be ^ <Cop-Restr>(?r:castreferent ^ ?r) ^ <Cop-Scope>(?c_?block_?step:category ^ ?c ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific)))
    (:action ask-for-category-polar
             :agent (?a - robot)
             :parameters (?r - room ?c - category)
@@ -727,7 +728,7 @@
    ;;           )
 
 
-;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(for_?block_?step:whatfor ^ for ^ <Anchor>(p1:person ^ people)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(people_?block_?step:person ^ people ^ <Delimitation>variable ^ <Num>pl ^ <Quantification>unspecific ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
    (:action look-for-people
             :agent (?a - robot)
             :variables (?p - place)
