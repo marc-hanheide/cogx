@@ -32,6 +32,7 @@ import de.dfki.lt.tr.planverb.generation.StringMessage;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLContentDeterminator;
 import de.dfki.lt.tr.planverb.planning.pddl.PDDLDomainModel;
 import de.dfki.lt.tr.planverb.planning.pddl.POPlan;
+import de.dfki.lt.tr.planverb.planning.pddl.PDDLHistory;
 import de.dfki.lt.tr.planverb.history.History;
 import de.dfki.tarot.cogx.CASTLogicalForms;
 import de.dfki.tarot.cogx.CogXJavaHelpers;
@@ -138,19 +139,7 @@ public class PlanVerbalizer {
 	public String verbalizeHistory(final List<POPlan> hlist) {
 	m_castComponent.log("entering verbalizeHistory()");
 		
-		History h = new History() {
-			
-			// ??? String goal = "";
-			@Override
-			public boolean hasSharedGoal() {
-				return true;
-			}
-			
-			@Override
-			public List<POPlan> getEpisodes() {
-				return hlist;
-			}
-		};
+		History h = new PDDLHistory(hlist);
 		
 		// this does not work yet!
 		List<Message> messages = m_contentDeterminator.determineMessages(h);
