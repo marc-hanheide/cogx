@@ -294,6 +294,31 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 		}
 
+		protected void logAddressContent(Map<String, WorkingMemoryAddress> _addressContent) {
+			getComponent().println(
+					this.getClass().getSimpleName()
+							+ ": created address content for intention");
+			for (Entry<String, WorkingMemoryAddress> e : _addressContent
+					.entrySet()) {
+				getComponent().println(
+						"  " + e.getKey() + " => "
+								+ CASTUtils.toString(e.getValue()));
+			}
+		}
+
+		protected void logStringContent(Map<String, String> _stringContent) {
+			getComponent().println(
+					this.getClass().getSimpleName()
+							+ ": created address content for intention");
+			for (Entry<String, String> e : _stringContent
+					.entrySet()) {
+				getComponent().println(
+						"  " + e.getKey() + " => "
+								+ e.getValue());
+			}
+		}
+
+		
 		protected void addStringContent(Map<String, String> _stringContent) {
 
 		}
