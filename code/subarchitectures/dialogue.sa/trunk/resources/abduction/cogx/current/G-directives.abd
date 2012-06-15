@@ -80,8 +80,9 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 	i : int : string_content(IntAddr, category, Category),
 
 	plural(Label, LabelPl),
+	plural(Category, CategoryPl),
 
-	event : produce_text([are, LabelPl, typically, in, a, Category]) / -1.0.
+	event : produce_text([are, LabelPl, typically, in, CategoryPl]) / -1.0.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -101,7 +102,16 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-plural(X, [plural, of, X]).
+plural(book, books).
+plural(cerealbox, [cereal, boxes]).
+plural(magazine, magazines).
+plural(table, tables).
+
+plural(corridor, corridors).
+plural(meetingroom, [meeting, rooms]).
+plural(office, offices).
+
+plural(X, [plural, of, X]) <- unknown_plural(X) / 1.0.
 
 %-------------------------------------------------------------------------
 % WH- QUESTIONS
