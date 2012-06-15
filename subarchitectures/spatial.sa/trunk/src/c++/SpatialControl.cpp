@@ -1932,27 +1932,27 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
     }
 
     log(
-        "New NavCommand: x=%f, y=%f, r=%f, theta=%f, distance=%, areId=%d, nodeId=%d",
+        "New NavCommand: x=%f, y=%f, r=%f, theta=%f, distance=%f, areId=%d, nodeId=%d",
         oobj->getData()->x, oobj->getData()->y, oobj->getData()->r,
         oobj->getData()->theta, oobj->getData()->areaId,
         oobj->getData()->nodeId);
     m_commandType = oobj->getData()->cmd;
 
-    if (!isnan(oobj->getData()->x)) {
+    if ((!isnan(oobj->getData()->x))&&(oobj->getData()->x<1000)&&(oobj->getData()->x>-1000)) {
       m_commandX = oobj->getData()->x;
     } else {
       m_commandX = 0;
       wrn("WARNING: x is nan");
     }
 
-    if (!isnan(oobj->getData()->y)) {
+    if ((!isnan(oobj->getData()->y))&&(oobj->getData()->y<1000)&&(oobj->getData()->y>-1000)) {
       m_commandY = oobj->getData()->y;
     } else {
       m_commandY = 0;
       wrn("WARNING: y is nan");
     }
 
-    if (!isnan(oobj->getData()->r)) {
+    if ((!isnan(oobj->getData()->r))&&(oobj->getData()->r<1000)&&(oobj->getData()->r>-1000)) {
       m_commandR = oobj->getData()->r;
     } else {
       m_commandR = 0;
