@@ -469,7 +469,7 @@
    ;; create cones for search in a room
    ;; precondition: robot is in the specified room
 
-;;LF create_cones_in_room => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific) ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF create_cones_in_room => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cone ^ <Delimitation>variable ^ <Quantification>unspecific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p))))))
    (:action create_cones_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
@@ -486,7 +486,7 @@
    ;; create cones for search in or on another object
    ;; precondition: robot is in the same room as the specified object
 
-;;LF create_cones_at_object => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cones ^ <Num>pl) ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r)) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
+;;LF create_cones_at_object => @{step_?block_?step:action-non-motion}(create ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(viewcones_?block_?step:thing ^ cones ^ <Num>pl ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p)))))
    (:action create_cones_at_object
             :agent (?a - robot)
             :parameters (?l ?lsupp - label ?rel - spatial_relation ?o - visualobject ?r - room)
@@ -539,32 +539,7 @@
    ;; Searches for an object in the room
    ;; precondition: robot is in the specified room
 
- @w1:cognition(want ^
-                <Mood>ind ^
-                <Tense>past ^
-                <Actor>(w0:person ^ I ^
-                        <Num>sg) ^
-                <Event>(w3:action-non-motion ^ search ^
-                        <Actor>w0:person ^
-                        <Patient>(w6:thing ^ magazine ^
-                                  <Delimitation>existential ^
-                                  <Num>sg ^
-                                  <Quantification>specific ^
-                                  <Modifier>(w7:m-location ^ in ^
-                                             <Anchor>(w9:e-place ^ room ^
-                                                      <Delimitation>unique ^
-                                                      <Num>sg ^
-                                                      <Quantification>specific ^
-                                                      <Modifier>(w10:m-location ^ around ^
-                                                                 <Anchor>(w12:e-place ^ place ^
-                                                                          <Delimitation>unique ^
-                                                                          <Num>sg ^
-                                                                          <Quantification>specific ^
-                                                                          <Modifier>(w13:number-id ^ 2))))))) ^
-                <Subject>w0:person)
-
-
-;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r) ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p)))))
+;;LF search_for_object_in_room => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(?l_?block_?step:thing ^ ?l ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(in_?block_?step:m-location ^ in ^ <Anchor>(?r:castreferent ^ ?r ^ <Modifier>(at_?block_?step:m-location ^ around ^ <Anchor>(?p:castreferent ^ ?p))))))
    (:action search_for_object_in_room
             :agent (?a - robot)
             :parameters (?l - label ?r - room)
