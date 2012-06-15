@@ -1,4 +1,18 @@
 %-------------------------------------------------------------------------
+% REQUESTS
+%-------------------------------------------------------------------------
+
+generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
+	i : int : string_content(IntAddr, type, 'request'),
+	i : int : string_content(IntAddr, subtype, 'non-situated'),
+	i : int : string_content(IntAddr, feature, _Feature),
+	i : int : string_content(IntAddr, value, Value),
+
+%	verbalised_feature_value(Feature, Hypo, pos, VerbalisedHypo),
+
+	event : produce_text([show, me, something, Value, please]) / -1.0.
+
+%-------------------------------------------------------------------------
 % POLAR QUESTIONS
 %-------------------------------------------------------------------------
 
