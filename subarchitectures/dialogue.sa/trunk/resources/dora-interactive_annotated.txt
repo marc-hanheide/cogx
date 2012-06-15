@@ -731,9 +731,12 @@
 ;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(people_?block_?step:person ^ people ^ <Delimitation>variable ^ <Num>pl ^ <Quantification>unspecific ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
    (:action look-for-people
             :agent (?a - robot)
-            :variables (?p - place)
+            :variables (?p - place ?r - room)
             :precondition (and (not (done))
-                            (= (is-in ?a) ?p))
+                            (= (is-in ?a) ?p)
+                            (= (in-room ?p) ?r)
+                            (not (not_fully_explored ?r))
+                            )
             :effect (and 
                      (increase (total-cost) 10))
             )
