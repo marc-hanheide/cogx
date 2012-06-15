@@ -25,7 +25,9 @@
     UNKNOWN_TYPE - TypeName
 
     VISIBLE - Visibility
+    WAS-VISIBLE - Visibility
     REMOVED - Visibility
+    UNKNOWN - Visibility
 
     TUTOR - agent
   )
@@ -37,7 +39,7 @@
 
     (color-unlearned ?v - VisualObject)
     (shape-unlearned ?v - VisualObject)
-    (type-unlearned ?v - VisualObject)
+    ;;(type-unlearned ?v - VisualObject)
 
     (allow-polar-color-question ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-polar-shape-question ?v - VisualObject ?s - ShapeName ?r - Robot)
@@ -53,6 +55,9 @@
     (is-potential-object-in-question ?v - VisualObject)
 
     (arm-in-resting-position ?r - Robot)
+
+    (object-of-desired-color-available ?c - ColorName)
+    (object-of-desired-shape-available ?s - ShapeName)
 
     (global-color-question-answered ?v - VisualObject)
     (global-shape-question-answered ?v - VisualObject)
@@ -673,6 +678,32 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;      ASK FOR OBJECT OF PROPERTY         ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  (:action ask-for-and-object-with-color
+    :agent (?r - Robot)
+    :parameters (?c - ColorName)
+    :precondition (and)
+    :effect 
+      (and 
+     	(object-of-desired-color-available ?c) 
+	(update (object-of-desired-color-available ?c) true)
+      )
+  )
+
+  (:action ask-for-and-object-with-shape
+    :agent (?r - Robot)
+    :parameters (?s - ShapeName)
+    :precondition (and)
+    :effect 
+      (and 
+     	(object-of-desired-shape-available ?s)
+	(update (object-of-desired-shape-available ?s) true)
+      )
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;           QUESTION ANSWERING            ;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1085,7 +1116,6 @@
     :parameters (?v - VisualObject ?c - ColorName)
     :precondition
       (and
-        (not (color-unlearned ?v))
         (not (= (attributed-color ?v) (color ?v)))
         (not (= ?c UNKNOWN_COLOR))
         (exists (?p - ProtoObject)
@@ -1108,7 +1138,6 @@
     :parameters (?v - VisualObject ?s - ShapeName)
     :precondition 
       (and
-        (not (shape-unlearned ?v))
         (not (= (attributed-shape ?v) (shape ?v)))
         (not (= ?s UNKNOWN_SHAPE))
         (exists (?p - ProtoObject) 
