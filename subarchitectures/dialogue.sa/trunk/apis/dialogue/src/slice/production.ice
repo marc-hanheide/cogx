@@ -24,6 +24,10 @@ module production {
 		string refEx;
 	};
 
+	class PlanVerbalizationRequest {
+		int taskID;
+	};
+
 };
 };
 };
