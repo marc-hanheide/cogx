@@ -114,26 +114,26 @@ public class PlanVerbalizer {
 	 * caution: please add blanks before and after each word!
 	 */
 	private void initLexicalSubstitutions() {
-		m_preLexicalSub. put(" meetingroom ", " lab ");
-		m_postLexicalSub.put("lab", "meetingroom");
+		//m_preLexicalSub. put(" meetingroom ", " lab ");
+		//m_postLexicalSub.put("lab", "meetingroom");
 		
-		m_preLexicalSub. put(" corridor ", " hall ");
-		m_postLexicalSub.put("hall", "corridor");
+		//m_preLexicalSub. put(" corridor ", " hall ");
+		//m_postLexicalSub.put("hall", "corridor");
 		
-		m_preLexicalSub. put(" cerealbox ", " box ");
-		m_postLexicalSub.put("box", "cerealbox");
+		//m_preLexicalSub. put(" cerealbox ", " box ");
+		//m_postLexicalSub.put("box", "cerealbox");
 		
-		m_preLexicalSub. put("create ", "make ");
+		//com_preLexicalSub. put("create ", "make ");
 
-		m_preLexicalSub. put(" magazine ", " book ");
-		m_postLexicalSub.put("book", "magazine");
+		//m_preLexicalSub. put(" magazine ", " book ");
+		//m_postLexicalSub.put("book", "magazine");
 
-		m_preLexicalSub. put("m-location ^ via ", "m-through ^ through");
+		//m_preLexicalSub. put("m-location ^ via ", "m-through ^ through");
         // TODO find a solution for indirect speech
 		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
 		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
-		m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
+		//m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 	}
 	
 	public String verbalizeHistory(final List<POPlan> hlist) {
@@ -326,66 +326,43 @@ public class PlanVerbalizer {
     private static BasicLogicalForm finalizeProtoLF(BasicLogicalForm protoLF) {
 
     	// execution status = success yields past tense report
-        FeatureReplacer successReplacer = new FeatureReplacer() {
+        FeatureReplacer pastTenseReplacer = new FeatureReplacer() {
             @Override
             public BasicState.Builder doWork(BasicState.Builder builder) {
                 return builder.addFeature("Mood", "ind").addFeature("Tense", "past");
             }
         };
-        protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "SUCCEEDED", successReplacer);
+        protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "SUCCEEDED", pastTenseReplacer);
+        protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "PENDING", pastTenseReplacer);
 
         // execution status = pending will be removed and the overall LF will be put into a control verb
-        if (protoLF.toString().contains("<ExecutionStatus>PENDING")) {
-            FeatureReplacer pendingReplacer = new FeatureReplacer() {
-                @Override
-                public BasicState.Builder doWork(BasicState.Builder builder) {
-
-                	return builder;
-                }
-            };
-            protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "PENDING", pendingReplacer);
-
-            String wantLFString = "@{want1_0:cognition}(want ^ <Mood>ind ^ <Tense>past ^ <Actor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\"))";
-            BasicLogicalForm wantLF;
-            try {
-            	wantLF = BasicLogicalForm.checkedFromString(wantLFString);
-            	BasicLogicalForm outputLF = BasicPatterns.attachLogicalFormAsSubtree(wantLF, protoLF, wantLF.root(), "Event", BasicPatterns.ignoreAdded());
-            	protoLF = outputLF;
-            } catch (BuildException e) {
-            	m_castComponent.logException(e);
-            } catch (ParseException e) {
-            	m_castComponent.logException(e);
-            }
-        }
-        
-//        String inputString = "@{step_0_0:action-motion}(move ^ <Mood>ind ^ <Tense>past ^ <Modifier>(from_1:m-wherefrom ^ from ^ <Anchor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\")) ^ <Modifier>(to_1:m-whereto ^ to ^ <Anchor>(\"1:X@spatial.sa\":castreferent ^ \"1:X@spatial.sa\")))";
-//        String expectedOutputString = "@{step_0_0:action-motion}(move ^ <Mood>ind ^ <Tense>past ^ <Actor>(\"0:D@spatial.sa\":person ^ I ^ <Num>sg) ^ <Modifier>(from_1:m-wherefrom ^ from ^ <Anchor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\")) ^ <Modifier>(to_1:m-whereto ^ to ^ <Anchor>(\"1:X@spatial.sa\":castreferent ^ \"1:X@spatial.sa\")))";
-//        	
-//        String attachmentString = "@{\"0:D@spatial.sa\":person}(I ^ <Num>sg)";
-//        	
-//        BasicLogicalForm input = BasicLogicalForm.checkedFromString(inputString);
-//        BasicLogicalForm attachmentLF = BasicLogicalForm.checkedFromString(attachmentString);
-//        BasicLogicalForm expectedOutput = BasicLogicalForm.checkedFromString(expectedOutputString);
-//        BasicLogicalForm output = BasicPatterns.attachLogicalFormAsSubtree(input, attachmentLF, input.root(), "Actor", BasicPatterns.ignoreAdded());
-        
-//        @want1_0:cognition(want ^
-//        		<Mood>ind ^
-//        		<Tense>pres ^
-//        		<Actor>(i1_0:person ^ I ^
-//        		<Num>sg) ^
-//        		<Event>(find1_0:action-non-motion ^ find ^
-//        		<Actor>i1_0:person ^
-//        		<Patient>(book1_0:thing ^ book ^
-//        		<Delimitation>existential ^
-//        		<Num>sg ^
-//        		<Quantification>specific)) ^
-//        		<Subject>i1_0:person)
-        
+//        if (protoLF.toString().contains("<ExecutionStatus>PENDING")) {
+//            FeatureReplacer pendingReplacer = new FeatureReplacer() {
+//                @Override
+//                public BasicState.Builder doWork(BasicState.Builder builder) {
+//
+//                	return builder;
+//                }
+//            };
+//            protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "PENDING", pendingReplacer);
+//
+//            String wantLFString = "@{want1_0:cognition}(want ^ <Mood>ind ^ <Tense>past ^ <Actor>(\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\"))";
+//            BasicLogicalForm wantLF;
+//            try {
+//            	wantLF = BasicLogicalForm.checkedFromString(wantLFString);
+//            	BasicLogicalForm outputLF = BasicPatterns.attachLogicalFormAsSubtree(wantLF, protoLF, wantLF.root(), "Event", BasicPatterns.ignoreAdded());
+//            	protoLF = outputLF;
+//            } catch (BuildException e) {
+//            	m_castComponent.logException(e);
+//            } catch (ParseException e) {
+//            	m_castComponent.logException(e);
+//            }
+//        }
         
         
         // make sure there is an appropriate subject
         // TODO cop-restr as subject!
-        protoLF = CogXJavaHelpers.ensureSubjectFilled(protoLF);
+        // protoLF = CogXJavaHelpers.ensureSubjectFilled(protoLF);
 
         return protoLF;
     }
