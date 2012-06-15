@@ -40,7 +40,6 @@ import de.dfki.tarot.cogx.ReferentReplacer;
 import de.dfki.tarot.cogx.WMAddress;
 import de.dfki.tarot.nlp.lf.BasicLogicalForm;
 import de.dfki.tarot.nlp.lf.BasicState;
-import de.dfki.tarot.nlp.lf.BasicUtils;
 import de.dfki.tarot.nlp.lf.pattern.BasicPatterns;
 import de.dfki.tarot.util.BuildException;
 import de.dfki.tarot.util.ParseException;
@@ -526,7 +525,7 @@ public class PlanVerbalizer {
 	            @Override
 	            public BasicLogicalForm.Builder doWork(String nom, BasicState s, BasicLogicalForm.Builder lfBuilder) {
 
-	                String depStateNom = BasicUtils.uniqueNominal(lfBuilder);
+	                String depStateNom = BasicPatterns.uniqueNominal(lfBuilder);
 
 	                BasicState depState = BasicState.newBuilder("number-id") //"number-ordinal")
 	                        .setProposition(placeIDF)
