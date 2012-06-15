@@ -9,10 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
-import jline.History;
-
-import autogen.Planner.Action;
-import autogen.Planner.Goal;
 import autogen.Planner.POPlan;
 import autogen.Planner.PlanningTask;
 
@@ -24,13 +20,10 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
-import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.cast.dialogue.planverb.PlanVerbalizer;
 import de.dfki.lt.tr.cast.dialogue.util.POPlanUtils;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
-import de.dfki.lt.tr.planverb.history.Step;
+import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
 
 public class POPlanMonitor extends ManagedComponent {
 
@@ -123,7 +116,32 @@ public class POPlanMonitor extends ManagedComponent {
 				processOverwrittenPlanningTask(_wmc);
 			}
 		});
+		
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(PlanVerbalizationRequest.class, WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processPlanVerbRequest(_wmc);
+			}
+		});
+		
 	}
+	
+	private void processPlanVerbRequest(WorkingMemoryChange _wmc) {
+		PlanVerbalizationRequest _pevReq;
+		try {
+			_pevReq = getMemoryEntry(_wmc.address, PlanVerbalizationRequest.class);
+		} catch (DoesNotExistOnWMException e) {
+			logException(e);
+			return;
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+			return;
+		}
+		log("received ADD for PlanVerbalizationRequest: " + _pevReq.taskID);
+		reportFinishedHistory(_pevReq.taskID);
+	}
+	
 	
 	private void processAddedPOPlan(WorkingMemoryChange _wmc) {
 		POPlan _newPOPlan;
@@ -221,22 +239,22 @@ public class POPlanMonitor extends ManagedComponent {
 			case ABORTED:
 				if (reportedTasks.contains(_oldPlanningTask.id)) break;
 				reportedTasks.add(_oldPlanningTask.id);
+				VerbalisationUtils.verbaliseString(this, "I aborted my previous task.");
 				log("PlanningTask " + _oldPlanningTask.id + " is ABORTED. Reporting verbally.");
-				VerbalisationUtils.verbaliseString(this, "I aborted my previous task. I will tell you what I did in a moment.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			case FAILED:
 				if (reportedTasks.contains(_oldPlanningTask.id)) break;
 				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is FAILED. Reporting verbally.");
-				VerbalisationUtils.verbaliseString(this, "My task failed. I will tell you what I did in a moment.");
+				VerbalisationUtils.verbaliseString(this, "My task failed.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			case SUCCEEDED:
 				if (reportedTasks.contains(_oldPlanningTask.id)) break;
 				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is SUCCEEDED. Reporting verbally.");
-				VerbalisationUtils.verbaliseString(this, "I finished my task successfully. I will tell you what I did in a moment.");
+				VerbalisationUtils.verbaliseString(this, "I finished my task successfully.");
 				reportFinishedHistory(_oldPlanningTask.id);
 				break;
 			default:
@@ -263,6 +281,7 @@ public class POPlanMonitor extends ManagedComponent {
 	}
 
 	private void reportFinishedHistory(int taskID) {
+		VerbalisationUtils.verbaliseString(this, "I will tell you what I did in a moment.");		
 		String report = generateHistoryReport(taskID);
 		log("REPORTING FINISHED HISTORY: \n" + report);
 		VerbalisationUtils.verbaliseString(this, report);
