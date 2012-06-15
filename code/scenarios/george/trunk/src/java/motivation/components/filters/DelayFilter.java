@@ -6,7 +6,7 @@ import java.util.Map;
 import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
-import cast.cdl.WorkingMemoryAddress;
+import motivation.slice.RobotNonSituatedMotive;
 import cast.cdl.WorkingMemoryChange;
 
 /**
@@ -99,8 +99,9 @@ public class DelayFilter implements MotiveFilter {
 
 	@Override
 	public void configure(Map<String, String> arg0) {
-		m_delayMap.put(LearnObjectFeatureMotive.class, 20000);
-
+		int postDialogueDelay = 20000;
+		m_delayMap.put(LearnObjectFeatureMotive.class, postDialogueDelay);
+		m_delayMap.put(RobotNonSituatedMotive.class, postDialogueDelay);
 	}
 
 }

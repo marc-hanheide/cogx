@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import VisionData.VisualConceptModelStatus;
 import VisionData.VisualObject;
 import VisionData.ProtoObject;
 import VisionData.ViewCone;
@@ -19,6 +20,7 @@ import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.perceptmediator.transferfunctions.abstr.SimpleDiscreteTransferFunction;
 import eu.cogx.percepttracker.RRMergeFunction;
 import eu.cogx.percepttracker.WMSimpleMerger;
+
 /**
  * 
  */
@@ -27,17 +29,21 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 	private static final String VISUALOBJECTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(VisualObject.class));
 
-  private static final String PROTOOBJECTTYPE = SimpleDiscreteTransferFunction
-                        .getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
-                         			
-  private static final String VISUALCONETYPE = SimpleDiscreteTransferFunction
+	private static final String PROTOOBJECTTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils.typeName(ProtoObject.class));
+
+	private static final String VISUALCONETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(ViewCone.class));
-			
+
 	private static final String ROBOTTYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Robot.class));
 
+	private static final String MSTYPE = SimpleDiscreteTransferFunction
+			.getBeliefTypeFromCastType(CASTUtils
+					.typeName(VisualConceptModelStatus.class));
+
 	private static final List<String> types = Arrays.asList(VISUALOBJECTTYPE,
-								PROTOOBJECTTYPE, VISUALCONETYPE, ROBOTTYPE);
+			PROTOOBJECTTYPE, VISUALCONETYPE, ROBOTTYPE, MSTYPE);
 
 	WMSimpleMerger<AssumedBelief, VerifiedBelief, MergedBelief> merger = null;
 
@@ -48,23 +54,26 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 	 * @see cast.core.CASTComponent#configure(java.util.Map)
 	 */
 	@Override
-	protected void configure(Map<String, String> config) {log("WMMerger running");
+	protected void configure(Map<String, String> config) {
+		log("WMMerger running");
 		super.configure(config);
 		PointerMap<WMMap> srcDestMap;
 		PointerMap<WMMap> srcSrcMap;
 		try {
 			srcDestMap = new PointerMap<WMMap>(this, WMMap.class);
 			srcSrcMap = new PointerMap<WMMap>(this, WMMap.class);
-			merger = WMSimpleMerger.create(this, AssumedBelief.class, VerifiedBelief.class,
-					MergedBelief.class,
-					new RRMergeFunction<AssumedBelief, VerifiedBelief, MergedBelief>(
-							types, srcDestMap, AssumedBelief.class, VerifiedBelief.class,
-							MergedBelief.class),
-					new RRMergeFunction<VerifiedBelief, AssumedBelief, MergedBelief>(
-							types, srcDestMap, VerifiedBelief.class, AssumedBelief.class,
-							MergedBelief.class), 		
-							 srcDestMap, srcSrcMap, config
-							.get("--write-to-sa"));
+			merger = WMSimpleMerger
+					.create(this,
+							AssumedBelief.class,
+							VerifiedBelief.class,
+							MergedBelief.class,
+							new RRMergeFunction<AssumedBelief, VerifiedBelief, MergedBelief>(
+									types, srcDestMap, AssumedBelief.class,
+									VerifiedBelief.class, MergedBelief.class),
+							new RRMergeFunction<VerifiedBelief, AssumedBelief, MergedBelief>(
+									types, srcDestMap, VerifiedBelief.class,
+									AssumedBelief.class, MergedBelief.class),
+							srcDestMap, srcSrcMap, config.get("--write-to-sa"));
 			merger.setShouldPropagateDeletion(true);
 		} catch (InstantiationException e) {
 			logException("cannot create pointer maps and merger", e);
@@ -72,8 +81,6 @@ public class AssumedVerifiedVisualObjectMerger extends ManagedComponent {
 			logException("cannot create pointer maps and merger", e);
 		}
 
-		
-		
 	}
 
 	/*
