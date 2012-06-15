@@ -2,11 +2,13 @@ include "../common/map.inc"
 include "../common/p3dx_with_urg.inc"
 include "../common/box.inc"
 include "barrier.inc"
+include "fakebookcase.inc"
+include "filingcabinet.inc"
 
 window
 (
 	#This is the size the simulation window will be in pixels
-	size [1215.000 940.000]
+	size [1215.000 716.000]
 	#This is how many metres of the simulated environment each pixel shows
 	scale 18.181
 )
@@ -20,9 +22,23 @@ floorplan
 
 p3dx_with_urg_and_blobfinder (
 	name "dora"
-	pose [16.73 12.02 0 -90.000]
+	pose [16.730 12.020 0 -90.000]
 	color "red"
 )
+
+ filingcabinet
+ (
+ name "cabinet1"
+ color "black"
+ pose [17.105 7.220 0 0]
+ )
+
+ fakebookcase
+ (
+ name "polystyrene1"
+ color "black"
+ pose [18.190 4.730 0 90.000]
+ )
 
 # cereal box
 
@@ -39,14 +55,14 @@ p3dx_with_urg_and_blobfinder (
  (
  name "extrabarrier1"
  color "black"
- pose [18.600 1.225 0 0]
+ pose [14.530 -0.920 0 0]
  )
 
  barrier
  (
  name "extrabarrier2"
  color "black"
- pose [19.060 1.225 0 0]
+ pose [15.815 -0.975 0 0]
  )
 
 # barriers to close office doors:
@@ -90,7 +106,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "barrier6"
  color "black"
- pose [19.800 -7.200 0 90.000]
+ pose [19.745 8.256 0 90.000]
  )
 
  barrier
