@@ -7,6 +7,7 @@ import motivation.slice.LearnObjectFeatureMotive;
 import motivation.slice.Motive;
 import motivation.slice.MotivePriority;
 import motivation.slice.MotiveStatus;
+import motivation.slice.RobotNonSituatedMotive;
 import motivation.slice.TutorInitiativeLearningMotive;
 import motivation.slice.TutorInitiativeQuestionMotive;
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
@@ -119,6 +120,8 @@ public class DriveHierarchyFilter implements MotiveFilter,
 		m_driveHierarchy.addPrioritySet(AnalyzeProtoObjectMotive.class,
 				LearnObjectFeatureMotive.class);
 
+		m_driveHierarchy.addPrioritySet(RobotNonSituatedMotive.class);
+		
 		m_display.configureDisplayClient(_config);
 	}
 

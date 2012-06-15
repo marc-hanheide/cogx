@@ -26,7 +26,7 @@ public class ModelStatusTransferFunction
 
 	public static final String GAIN = "gain";
 	public static final String MOST_PROMISING = "most-promising";
-	private static final String CONCEPT_ID = "concept";
+	public static final String CONCEPT_ID = "concept";
 
 	public ModelStatusTransferFunction(ManagedComponent component) {
 		super(component, component.getLogger(), GroundedBelief.class);
