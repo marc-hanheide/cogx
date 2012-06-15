@@ -22,7 +22,12 @@ import eu.cogx.perceptmediator.transferfunctions.helpers.PlaceMatchingFunction;
 public class ConnectivityTransferFunction extends
 		DependentDiscreteTransferFunction<ConnectivityPathProperty, GroundedBelief> {
 
-	static final String ATTR_CONNECTED = "connected";
+	public static final String LABEL_RELATION = "relation";
+	public static final String LABEL_CONNECTED = "connected";
+	public static final String LABEL_VAL1 = "val1";
+	public static final String LABEL_VAL0 = "val0";
+	
+	static final String ATTR_CONNECTED = LABEL_CONNECTED;
 
 	/**
 	 * @param GroundedBeliefs
@@ -45,7 +50,7 @@ public class ConnectivityTransferFunction extends
 	public GroundedBelief create(WorkingMemoryAddress newAddr,
 			WorkingMemoryChange wmc, ConnectivityPathProperty from) {
 		GroundedBelief bel = super.create(newAddr, wmc, from);
-		bel.type = "relation";
+		bel.type = LABEL_RELATION;
 		return bel;
 	}
 
@@ -63,9 +68,9 @@ public class ConnectivityTransferFunction extends
 		WorkingMemoryAddress wmaPlace2 = getReferredBelief(new PlaceMatchingFunction(
 				from.place2Id));
 		log("got all required beliefs");
-		result.put("val0", WMPointer.create(wmaPlace1, CASTUtils.typeName(this.beliefClass)).getAsFormula());
-		result.put("val1", WMPointer.create(wmaPlace2, CASTUtils.typeName(this.beliefClass)).getAsFormula());
-		result.put("connected", BoolFormula.create(true).getAsFormula());
+		result.put(LABEL_VAL0, WMPointer.create(wmaPlace1, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+		result.put(LABEL_VAL1, WMPointer.create(wmaPlace2, CASTUtils.typeName(this.beliefClass)).getAsFormula());
+		result.put(LABEL_CONNECTED, BoolFormula.create(true).getAsFormula());
 		return result;
 	}
 
