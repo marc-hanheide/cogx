@@ -1,15 +1,17 @@
 # year 4
 JAVA MG gg.po 		eu.cogx.goals.george.ProtoObjectMotiveGenerator
 JAVA MG gg.vo 		eu.cogx.goals.george.VisualObjectMotiveGenerator
-JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log
-JAVA MG gg.pii      eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator --log
+JAVA MG gg.ii 		eu.cogx.goals.george.InterpretedIntentionMotiveGenerator --log 
+JAVA MG gg.pii     eu.cogx.goals.george.PossibleInterpretationsMotiveGenerator --log
+JAVA MG gg.ms 	   eu.cogx.goals.george.ModelStatusMotiveGenerator
+
 # JAVA MG gg.la 		eu.cogx.goals.george.LookAroundMotiveGenerator --log
 
 # Choose automatic or manual filtering
 VARDEFAULT MotiveFileManagerGoalFilter=automatic
 
 IFEQ(%(MotiveFileManagerGoalFilter), manual)
-    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter" --delete-on-complete
+    JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "GeorgeManualSelectFilter"  #--delete-on-complete
 ENDIF
 IFEQ(%(MotiveFileManagerGoalFilter), automatic)
     JAVA MG goal.filter motivation.components.filters.MotiveFilterManager --filter "DriveHierarchyFilter,RestartDelayFilter" --recheck-interval 5000 
