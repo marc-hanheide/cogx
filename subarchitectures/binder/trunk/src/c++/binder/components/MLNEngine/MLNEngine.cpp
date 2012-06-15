@@ -161,24 +161,50 @@ void MLNEngine::runComponent()
  
   while(isRunning())
   {
+	sleepComponent(DEFAULT_INFERENCE_PAUSE);
 	
-	while(!m_queryQueue.empty())
+	// Process pending queries
+	std::queue<QueryData> queryQueue;
 	{
+	  while (!queryQueue.empty()) queryQueue.pop();
+	  IceUtil::Mutex::Lock lock(m_eventQueueMutex);
+	  while (!m_queryQueue.empty()) {
+		queryQueue.push(m_queryQueue.front());
+		m_queryQueue.pop();
+	  }
+	}
+	while(!queryQueue.empty())
+	{
+	  if (!isRunning())
+	   	break;
 	  log("A new query...");
-	  QueryPtr q = m_queryQueue.front().query;
-	
+	  QueryPtr q = queryQueue.front().query;
+
 	  m_query.clear();
 	  m_query=q->atoms;
-	
-	  m_queryQueue.front().status=USED;
-	  m_removeQueue.push(m_queryQueue.front().addr);
-	  m_queryQueue.pop();
+
+	  queryQueue.front().status=USED;
+	  m_removeQueue.push(queryQueue.front().addr);
+	  queryQueue.pop();
 	}
 	
-	while(!m_evidenceQueue.empty())
+	// Porcess pending evidence
+	std::queue<EvidenceData> evidenceQueue;  
 	{
+	  while (!evidenceQueue.empty()) evidenceQueue.pop();
+	  IceUtil::Mutex::Lock lock(m_eventQueueMutex);
+	  while (!m_evidenceQueue.empty()) {
+		evidenceQueue.push(m_evidenceQueue.front());
+		m_evidenceQueue.pop();
+	  }
+	}
+	while(!evidenceQueue.empty())
+	{
+	  if (!isRunning())
+	   	break;
+
 	  log("Adding new evidence...");
-	  EvidencePtr evd = m_evidenceQueue.front().evidence;
+	  EvidencePtr evd = evidenceQueue.front().evidence;
 
 	  vector<Instance>::iterator it;
 	  for(it=evd->newInstances.begin(); it!=evd->newInstances.end(); it++) {
@@ -193,9 +219,9 @@ void MLNEngine::runComponent()
 	  m_oe->addFalseEvidence(replaceInstWithConst(evd->falseEvidence));
 	  m_oe->removeEvidence(replaceInstWithConst(evd->noEvidence));
 
-	  m_evidenceQueue.front().status=USED;
-	  m_removeQueue.push(m_evidenceQueue.front().addr);
-	  m_evidenceQueue.pop();	
+	  evidenceQueue.front().status=USED;
+	  m_removeQueue.push(evidenceQueue.front().addr);
+	  evidenceQueue.pop();	
 
 	  m_oe->adaptProbs(evd->prevInfSteps);
 //	  m_oe->setMaxInferenceSteps(evd->initInfSteps);
@@ -233,15 +259,27 @@ void MLNEngine::runComponent()
 	  m_overallSamples = 0;
 	}
 	
-	while(!m_learnWtsQueue.empty())
+	// Process pending learning instructions
+	std::queue<LearnWtsData> learnWtsQueue;  
 	{
+	  while (!learnWtsQueue.empty()) learnWtsQueue.pop();
+	  IceUtil::Mutex::Lock lock(m_eventQueueMutex);
+	  while (!m_learnWtsQueue.empty()) {
+		learnWtsQueue.push(m_learnWtsQueue.front());
+		m_learnWtsQueue.pop();
+	  }
+	}
+	while(!learnWtsQueue.empty())
+	{
+	  if (!isRunning())
+	   	break;
 	  log("Executing weight learning instruction...");
-	  LearnWtsPtr lw = m_learnWtsQueue.front().learnWts;
+	  LearnWtsPtr lw = learnWtsQueue.front().learnWts;
 
 
-	  m_learnWtsQueue.front().status=USED;
-	  m_removeQueue.push(m_learnWtsQueue.front().addr);
-	  m_learnWtsQueue.pop();
+	  learnWtsQueue.front().status=USED;
+	  m_removeQueue.push(learnWtsQueue.front().addr);
+	  learnWtsQueue.pop();
 	
 	  m_oe->genLearnWts(lw->trueEvidence, lw->falseEvidence, lw->noEvidence, 1);
 	  	  
@@ -304,7 +342,6 @@ void MLNEngine::runComponent()
 //	debug("Samples: %i", m_oe->getNumSamples());
 //	debug("Num true cnts: %i", m_oe->getClauseTrueCnts(0));
 	 
-	sleepComponent(DEFAULT_INFERENCE_PAUSE);
   }
   
   delete m_oe;

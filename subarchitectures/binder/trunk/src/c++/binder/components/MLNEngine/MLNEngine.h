@@ -23,6 +23,8 @@
 #include <binder.hpp>
 #include <onlineengine.h>
 
+#include <IceUtil/IceUtil.h>
+
 #ifdef FEAT_VISUALIZATION
 #include <CDisplayClient.hpp>
 #endif
@@ -74,6 +76,9 @@ class MLNEngine :  public ManagedComponent
   };
   
   std::queue<EvidenceData> m_evidenceQueue;  
+
+  // Protects: m_evidenceQueue, m_queryQueue, m_learnWtsQueue
+  IceUtil::Mutex m_eventQueueMutex;
   
   
   struct QueryData {
@@ -139,16 +144,19 @@ class MLNEngine :  public ManagedComponent
 
   void queueNewEvidence(EvidenceData data)
   {
+	IceUtil::Mutex::Lock lock(m_eventQueueMutex);
 	m_evidenceQueue.push(data);
   }
 
   void queueNewQuery(QueryData data)
   {
+	IceUtil::Mutex::Lock lock(m_eventQueueMutex);
 	m_queryQueue.push(data);
   }
 
   void queueLearnWts(LearnWtsData data)
   {
+	IceUtil::Mutex::Lock lock(m_eventQueueMutex);
 	m_learnWtsQueue.push(data);
   }
   
