@@ -18,20 +18,24 @@ public class CASTHelper {
 	protected ManagedComponent component;
 	protected String name;
 	private Logger logger = null;
-	
+
 	protected CASTHelper(ManagedComponent c) {
 		component = c;
 		name = this.getClass().getSimpleName();
 	}
 
 	protected Logger getLogger() {
-		if (logger == null) {
-			if (component.getLoggerName().equals("null.null"))
-				return Logger.getLogger(name);
-			else
-				logger = Logger.getLogger(component.getLoggerName() + "."
-						+ name);
-		} 
+		if (component == null) {
+			logger = Logger.getLogger(this.getClass());
+		} else {
+			if (logger == null) {
+				if (component.getLoggerName().equals("null.null"))
+					return Logger.getLogger(name);
+				else
+					logger = Logger.getLogger(component.getLoggerName() + "."
+							+ name);
+			}
+		}
 		return logger;
 	}
 
