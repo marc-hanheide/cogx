@@ -71,6 +71,7 @@ private:
 
 protected:
   TStateInfoMap mInfo;
+  castutils::CMilliTimer mRunningTimer; // how long are we in phWork
 
 private:
   // List of registered exits from this state. It enables link verification

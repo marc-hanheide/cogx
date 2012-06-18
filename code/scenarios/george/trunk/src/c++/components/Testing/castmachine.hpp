@@ -152,6 +152,7 @@ private:
 public:
 #ifdef FEAT_VISUALIZATION
   cogx::display::CDisplayClient& mDisplay;
+  std::map<std::string, std::vector<double>> mRunningTimes;
 #endif
   long mSceneId;
   long mTeachingStep; // 0-start; 1-first lesson, ...
@@ -168,6 +169,7 @@ public:
   void report(const std::string& message);
   void report(std::ostringstream& what);
   void reportTimeout(const std::string& reason);
+  void reportRunningTime(const std::string& id, double seconds);
   CTestEntryPtr getCurrentTest();
   bool nextScene();
   bool loadScene();
