@@ -126,7 +126,7 @@ void MLNEngine::start()
 
   m_oe = new OnlineEngine(m_inferenceString);
   m_oe->init();
-  m_oe->saveAllCounts(true);
+  m_oe->saveAllCounts(false);
    
   log("MLN engine ID '%s': MRF initialized", m_id.c_str());
   
