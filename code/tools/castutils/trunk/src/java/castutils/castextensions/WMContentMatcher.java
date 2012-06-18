@@ -37,6 +37,15 @@ public class WMContentMatcher<T extends Ice.Object> extends CASTHelper {
 	};
 
 	Qualification qualifier = Qualification.ALL;
+	private boolean printMatches = false;
+
+	public boolean isPrintMatches() {
+		return printMatches;
+	}
+
+	public void setPrintMatches(boolean printMatches) {
+		this.printMatches = printMatches;
+	}
 
 	public static <T2 extends Ice.Object> WMContentMatcher<T2> create(
 			ManagedComponent c, Class<T2> type, String sa, String xpath,
@@ -60,7 +69,8 @@ public class WMContentMatcher<T extends Ice.Object> extends CASTHelper {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T2 extends Ice.Object> WMContentMatcher<T2> create(
-			ManagedComponent component, String specs) throws ClassNotFoundException {
+			ManagedComponent component, String specs)
+			throws ClassNotFoundException {
 		StringTokenizer st = new StringTokenizer(specs, ";");
 		String xpath = null;
 		String sa = null;
@@ -130,6 +140,8 @@ public class WMContentMatcher<T extends Ice.Object> extends CASTHelper {
 				if (res.size() > 0) {
 					matchedOne = true;
 					log("    matched xpath " + xpath);
+					if (printMatches)
+						println(d.getValue());
 					// break;
 				} else {
 					matchedAll = false;
