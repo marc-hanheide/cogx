@@ -29,9 +29,13 @@ module motivation {
     		WILDCARD
     	};
 
-      interface ExternalGoalServer {
-      	MotiveStatus submitGoal(string goalString, float importance);
-      };
+
+		dictionary<string, string> ExternalGoalServerConfig;
+ 		
+      	interface ExternalGoalServer {
+      		MotiveStatus submitGoal(string goalString, float importance);
+			void config(ExternalGoalServerConfig cfg);
+     	};
     	
     	enum MotivePriority {
     		UNSURFACE,
