@@ -27,7 +27,7 @@
     VISIBLE - Visibility
     WAS-VISIBLE - Visibility
     REMOVED - Visibility
-    UNKNOWN - Visibility
+    ;;UNKNOWN_VISIBILITY - Visibility
 
     TUTOR - agent
   )
