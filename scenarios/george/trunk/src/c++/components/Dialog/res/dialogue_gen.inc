@@ -1,0 +1,489 @@
+// C++11 include file
+// --------------------------------------------------
+
+// Generated from dialogue.ui
+const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialgueInteraction</class>
+ <widget class="QWidget" name="DialgueInteraction">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>454</width>
+    <height>421</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Dialogue</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPlainTextEdit" name="txtHistory">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="undoRedoEnabled">
+         <bool>false</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="plainText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>160</width>
+          <height>0</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>4</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbQuestion">
+           <item>
+            <property name="text">
+             <string>&lt;question&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Do you know this object?</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>What is this?</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>What colour is</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>What shape is</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Is this</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbAssertion">
+           <item>
+            <property name="text">
+             <string>&lt;assertion&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>The object is</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>This is</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>It is</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Minimum</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>4</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="1">
+            <widget class="QPushButton" name="btNo">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>no</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="btYes">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>yes</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="btThe">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>the</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="btA">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>a</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="btObject">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>object</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="btNot">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>not</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="btIs">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>is</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QPushButton" name="btIt">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>it</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Minimum</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>4</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbColor">
+           <item>
+            <property name="text">
+             <string>&lt;color&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>red</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>green</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>blue</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>yellow</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbShape">
+           <item>
+            <property name="text">
+             <string>&lt;shape&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>compact</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>elongated</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbType">
+           <item>
+            <property name="text">
+             <string>&lt;type&gt;</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>tea box</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>coke can</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QComboBox" name="edHuman">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="maxVisibleItems">
+        <number>15</number>
+       </property>
+       <property name="insertPolicy">
+        <enum>QComboBox::NoInsert</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btSay">
+       <property name="text">
+        <string>&amp;Say</string>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+S</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btClear">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+)--"; // res_dialogue_ui
+// --------------------------------------------------
+
+// Generated from dialogue.js
+const char res_dialogue_js[] = R"--(Function.prototype.bind = function() {
+  var func = this;
+  var thisObject = arguments[0];
+  var args = Array.prototype.slice.call(arguments, 1);
+  return function() {
+    return func.apply(thisObject, args);
+  }
+}
+
+function dump(name, object)
+{
+  var output = '<h3>Dump of ' + name + '</h3>';
+  output += '<ul>'
+    for (property in object) {
+      output += '<li>' + property + ': ' + object[property]+';';
+    }
+  output += '</ul>'
+    dialogOwner.setHtml('@dump', name, output);
+}
+
+function DialogueInteraction(ui)
+{
+  var ctrl;
+  this.ui = ui;
+  this.edHuman = this.ui.findChild('edHuman');
+  this.txtHistory = this.ui.findChild('txtHistory');
+  this.itemList = new Array();
+
+  dump('edHuman', this.edHuman);
+  dump('txtHistory', this.txtHistory);
+
+  var cbs = [ 'cbQuestion', 'cbAssertion', 'cbColor', 'cbShape', 'cbType' ];
+  dump('cbs', cbs);
+  for ( i = 0; i < cbs.length; i++) {
+    name = cbs[i];
+    ctrl = this.ui.findChild(name);
+
+
+    ctrl['activated(QString)'].connect(this.stringSelected.bind(this, name));
+  }
+
+  var bts = [ 'Yes', 'No', 'The', 'Is', 'Not', 'A', 'It', 'Object' ];
+  for ( i = 0; i < bts.length; i++) {
+    name = 'bt' + bts[i];
+    ctrl = this.ui.findChild(name);
+    if (ctrl != null) {
+      ctrl['clicked()'].connect(this.wordSelected.bind(this, bts[i].toLowerCase()));
+    }
+  }
+  this.ui.findChild('btSay').clicked.connect(this, this.onSay_clicked);
+  this.ui.findChild('btClear').clicked.connect(this, this.onClear_clicked);
+}
+
+DialogueInteraction.prototype.stringSelected = function(name)
+{
+  var cbctrl = this.ui.findChild(name);
+  var text = cbctrl.currentText;
+  if (text[0] != '<') {
+    this.edHuman.setEditText(this.edHuman.currentText + ' ' + text);
+  }
+}
+
+DialogueInteraction.prototype.wordSelected = function(name)
+{
+  this.edHuman.setEditText(this.edHuman.currentText + ' ' + name);
+}
+
+DialogueInteraction.prototype.onSay_clicked = function()
+{
+  var text = this.edHuman.currentText;
+  if (text != '') {
+
+    this.itemList = [text].concat(this.itemList);
+    if (this.itemList.length > 20) {
+      this.itemList.pop();
+    }
+    dialogOwner.setComboBoxItems('edHuman', this.itemList);
+    this.edHuman.clearEditText();
+    dialogOwner.setValue("HumanSaid", text);
+  }
+}
+
+DialogueInteraction.prototype.onClear_clicked = function()
+{
+  this.edHuman.clearEditText();
+}
+
+DialogueInteraction.prototype.addSpokenText = function(text)
+{
+  this.txtHistory.appendPlainText(text);
+}
+
+
+)--"; // res_dialogue_js
+// --------------------------------------------------
+
