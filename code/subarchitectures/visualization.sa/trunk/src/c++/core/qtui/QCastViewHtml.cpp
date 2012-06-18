@@ -222,6 +222,7 @@ void QCastViewHtml::doUpdateContent()
       return;
    }
    m_Chunks.clear();
+   // TODO: BUG!!! We are accessing chunks, but they are not locked! They could be deleted in the model!
    // TODO: should getHtmlChunks observe CViewedObjectState.m_bVisible?
    pView->getHtmlChunks(m_Chunks, cxd::CHtmlChunk::form | cxd::CHtmlChunk::activehtml);
 
