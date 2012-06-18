@@ -391,7 +391,10 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
 // --------------------------------------------------
 
 // Generated from dialogue.js
-const char res_dialogue_js[] = R"--(Function.prototype.bind = function() {
+const char res_dialogue_js[] = R"--(
+
+
+Function.prototype.bind = function() {
   var func = this;
   var thisObject = arguments[0];
   var args = Array.prototype.slice.call(arguments, 1);

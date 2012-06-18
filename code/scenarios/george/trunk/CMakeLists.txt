@@ -40,3 +40,4 @@ if (DO_SLICE_ONLY)
 endif()
 
 add_subdirectory(src/c++/components/Testing)
+add_subdirectory(src/c++/components/Dialog)
