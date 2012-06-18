@@ -40,7 +40,7 @@ fi
 if [ "$4" ]; then
     TEST_CONFIG="$4"
 else
-    stageFile=""
+    TEST_CONFIG=""
 fi
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
