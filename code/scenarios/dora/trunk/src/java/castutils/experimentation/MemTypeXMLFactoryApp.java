@@ -3,6 +3,8 @@
  */
 package castutils.experimentation;
 
+import SpatialData.Place;
+import SpatialData.PlaceStatus;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.wmeditor.serializer.XMLSerializer;
 import execution.slice.ActionStatus;
@@ -25,7 +27,8 @@ public class MemTypeXMLFactoryApp {
 		AskForLabelExistence a= new AskForLabelExistence(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, new WorkingMemoryAddress("id", "sa"), new WorkingMemoryAddress("id", "sa"), "label", "relation");
 		AskForBKLabelInCategory b= new AskForBKLabelInCategory(ActionStatus.PENDING, TriBool.TRIINDETERMINATE, "magazine", "kitchen");
 		AskForBKLabelRelLabel c= new AskForBKLabelRelLabel(ActionStatus.PENDING, TriBool.TRIINDETERMINATE,  "magazine", "in", "box");
-		System.out.println(s.dump(c));
+		Place p = new Place(4, PlaceStatus.TRUEPLACE);
+		System.out.println(s.dump(p));
 		System.exit(0);
 	}
 
