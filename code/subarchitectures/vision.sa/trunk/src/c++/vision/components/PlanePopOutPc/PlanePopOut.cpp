@@ -1261,15 +1261,17 @@ void PlanePopOut::TrackSOIs()
     }
 
 #if 1
-    log("have %d tracked sois", (int)trackedSOIs.size());
-    log("table time %d, agonal time %d", StableTime, AgonalTime);
-    for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
-    {
-	ostringstream str;
-	str << "tracked SOI at: "
-	    << it->boundingSphere.pos << " with " << it->points.size() << " points "
-            << " stable: " << it->numStableFrames << " not seen:" << it->numFramesNotSeen;
-	log("%s", str.str().c_str());
+    if (!mCounts.sameCount("ppo-sois", trackedSOIs.size())) {
+	log("have %d tracked sois", (int)trackedSOIs.size());
+	log("table time %d, agonal time %d", StableTime, AgonalTime);
+	for (list<SOIEntry>::iterator it = trackedSOIs.begin(); it != trackedSOIs.end(); it++)
+	{
+	    ostringstream str;
+	    str << "tracked SOI at: "
+		<< it->boundingSphere.pos << " with " << it->points.size() << " points "
+		<< " stable: " << it->numStableFrames << " not seen:" << it->numFramesNotSeen;
+	    log("%s", str.str().c_str());
+	}
     }
 #endif
 }
