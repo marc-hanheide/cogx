@@ -702,7 +702,7 @@ IFOPTALL(%(feature_options), planning_sa)
     IFOPTALL(%(feature_options), motivation)
         IFOPTALL(%(feature_options), motivation_external)
             ### accepts goals given externally via the ExternalGoalGeneratorClient process, useful for external JUnit test by jenkins
-            JAVA MG goal.server motivation.components.generators.ExternalGoalGenerator
+            JAVA MG goal.server dora.test.DoraTestRunner
         ENDIF
         IFOPTALL(%(feature_options), motivation_explanation)
             ### creates goals from hypothesis about visualobjects
@@ -876,9 +876,11 @@ VARDEFAULT logged_types=<multiline>
   autogen.Planner.PlanningTask,
   SpatialData.NodeHypothesis,
   eu.cogx.beliefs.slice.GroundedBelief,
+  eu.cogx.beliefs.slice.HypotheticalBelief,
   SpatialData.MapLoadStatus,
   SpatialProperties.PlaceProperty,
-  execution.slice.person.PersonObservation
+  execution.slice.person.PersonObservation,
+  de.dfki.lt.tr.beliefs.slice.intentions.BaseIntention
 </multiline>
 
 IFOPTALL(%(feature_options), visualization)
