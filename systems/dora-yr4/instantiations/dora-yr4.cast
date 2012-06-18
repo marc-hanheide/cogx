@@ -540,7 +540,7 @@ IFOPTALL(%(feature_options), vision)
     ENDIF
 
     IFOPTALL(%(hardware_options), blobfinder)
-        JAVA MG blobdetector  vision.components.BlobjectDetector --label-cerealbox 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
+        JAVA MG blobdetector  vision.components.BlobjectDetector --label-magazine 255,0,0 --label-table 0,255,0 --label-chocolate_chips 0,0,255  --label-sugar 255,0,255
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
         CPP MG recognizer.3D ObjectRecognizer3D --no-learning --simulation-only --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)"
