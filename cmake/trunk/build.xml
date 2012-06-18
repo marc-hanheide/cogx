@@ -249,6 +249,7 @@
 	<target name="goaltest">
 		<junit fork="no">
 			<sysproperty key="goal" value="${test.goal}"/>
+			<sysproperty key="config" value="${test.config}"/>
 		  	<classpath>
 				<fileset dir="${jar.dir}">
   					<include name="*.jar"/>
