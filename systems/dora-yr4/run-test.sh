@@ -37,6 +37,12 @@ else
     stageFile="instantiations/stage/BHAM/cs-2-small-furniture2.cfg"
 fi
 
+if [ "$4" ]; then
+    TEST_CONFIG="$4"
+else
+    stageFile=""
+fi
+
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$DIR"
@@ -198,7 +204,7 @@ if [ "$window_id" ]; then
 	sleep 2
 	if [ "$GOAL" ]; then
         	echo "running test for goal $GOAL" 
-		if ant -Dtest.goal="$GOAL" goaltest; then TESTREST=0; else TESTREST=1; fi
+		if ant -Dtest.goal="$GOAL" -Dtest.config="$TEST_CONFIG" goaltest; then TESTREST=0; else TESTREST=1; fi
         	echo "test returned"
 	fi
 	TEST_COMPLETE=1
