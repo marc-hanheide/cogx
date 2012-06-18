@@ -23,6 +23,7 @@
 #include <VisionData.hpp>
 #include "TomGineWraper/TomGineThread.hh"
 
+#include <castutils/ValueTracker.hpp>
 //#undef FEAT_VISUALIZATION
 
 #ifdef FEAT_VISUALIZATION
@@ -167,6 +168,8 @@ private:
      */
     std::map<unsigned, SOIEntry> currentSOIs;
     bool m_bWriteSoisToWm;
+
+    castutils::CNumericValueTracker<long long> mCounts;
 
     void GetImageData();
     void GetPlaneAndSOIs();
