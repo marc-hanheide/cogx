@@ -66,6 +66,7 @@ void CState::advance()
       break;
     case phEnter:
       mPhase = phWork;
+      mRunningTimer.restart();
       break;
     case phWork:
       mPhase = phExit;

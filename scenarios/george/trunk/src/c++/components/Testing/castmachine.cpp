@@ -36,6 +36,8 @@ long CTeachTestEntry::classifyResponse(int numLesson, const std::string& respons
   return 1; // for now accept anything; TODO constant YES
 }
 
+#define TIME_VIEW "Evaluator.tm"
+
 CCastMachine::CCastMachine(CTester* pOwner)
 #ifdef FEAT_VISUALIZATION
   : mDisplay(pOwner->mDisplay)
@@ -48,6 +50,7 @@ CCastMachine::CCastMachine(CTester* pOwner)
   mCurrentTest = 0;
   mOptions["dialogue.sa"] = "dialogue"; // hardcoded default SA name; change with --dialogue-sa
   mOptions["vision.sa"] = pOwner->getSubarchitectureID(); // change with --vision-sa
+
 }
 
 void CCastMachine::configure(const std::map<std::string,std::string> & _config)
@@ -236,12 +239,67 @@ void CCastMachine::report(std::ostringstream& what)
 
 void CCastMachine::report(const std::string& message)
 {
-  printf("%s", message.c_str());
+  log("%s", message.c_str());
 }
 
 void CCastMachine::reportTimeout(const std::string& reason)
 {
   report("Timeout (" + reason + ")");
+}
+
+void CCastMachine::reportRunningTime(const std::string& id, double seconds)
+{
+  log("%s finished in %.3g", id.c_str(), seconds);
+
+#ifdef FEAT_VISUALIZATION
+  auto it = mRunningTimes.find(id);
+  if (it == mRunningTimes.end()) {
+    mRunningTimes[id] = std::vector<double>();
+    it = mRunningTimes.find(id);
+  }
+  auto& times = it->second;
+  times.push_back(seconds);
+
+  std::string idhtm = "110." + id;
+  std::ostringstream ss;
+  ss << "<tr><td>" << id << "</td>";
+
+  ss << "<td>Now(" << times.size() << "):</td>";
+  int pos = times.size() - 1;
+  int i = 5;
+  while (i > 0 && pos >= 0) {
+    ss << "<td>" << times[pos] << "</td>";
+    --pos;
+    --i;
+  }
+  while (--i >= 0) ss << "<td>&nbsp;</td>";
+
+  i = 3;
+  if (pos <= 16) {
+    ss << "<td>Mid:</td>";
+  }
+  else {
+    pos /= 2;
+    ss << "<td>Mid(" << (pos - times.size()) << "):</td>";
+    while (i > 0 && pos >= 0) {
+      ss << "<td>" << times[pos] << "</td>";
+      --pos;
+      --i;
+    }
+  }
+  while (--i >= 0) ss << "<td>&nbsp;</td>";
+
+  if (pos >= 3) {
+    ss << "<td>Start:</td>";
+    pos = 2;
+    while (pos >= 0) {
+      ss << "<td>" << times[pos] << "</td>";
+      --pos;
+    }
+  }
+  ss << "</tr>";
+  mDisplay.setHtml(TIME_VIEW, idhtm, ss.str());
+#endif
 }
 
 bool CCastMachine::verifyCount(const std::string& counter, long min, long max)
@@ -650,6 +708,10 @@ void CCastMachine::start()
 #if 0
    loadEmptyScene();
    switchState(stStart);
+#endif
+#ifdef FEAT_VISUALIZATION
+  mDisplay.setHtml(TIME_VIEW, "100", "<table border='1' style='border-collapse:collapse;'>");
+  mDisplay.setHtml(TIME_VIEW, "199", "</table>");
 #endif
 }
 

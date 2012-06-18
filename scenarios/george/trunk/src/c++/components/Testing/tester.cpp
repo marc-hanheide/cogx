@@ -66,16 +66,16 @@ void CTester::configure(const std::map<std::string,std::string> & _config)
 
 void CTester::start()
 {
+#ifdef FEAT_VISUALIZATION
+  mDisplay.connectIceClient(*this);
+#endif
+
   for (auto pm : mMachines) {
     auto pCastMix = dynamic_cast<CCastComponentMixin*>(&*pm);
     if (pCastMix) {
       pCastMix->start();
     }
   }
-
-#ifdef FEAT_VISUALIZATION
-  mDisplay.connectIceClient(*this);
-#endif
 }
 
 std::string mkseqid_rev(const std::string& prefix, long id)

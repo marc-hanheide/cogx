@@ -50,7 +50,8 @@ public:
     machine()->clearScene();
     mSceneFound = machine()->nextScene();
     machine()->verifyCount("VisualObject", 0);
-    if (machine()->getCount("VisualObject") != 0) {
+    machine()->verifyCount("ProtoObject", 0);
+    if (machine()->getCount("VisualObject") != 0 || machine()->getCount("ProtoObject") != 0) {
       return WaitChange;
     }
     return Continue;
@@ -68,7 +69,7 @@ public:
     }
     if (hasTimedOut()) {
       // TODO: should we try to turn the head?
-      machine()->switchToState(mSelf, "timeout");
+      machine()->switchToState(mSelf, "<b>timeout</b>");
     }
     return WaitChange;
   }
@@ -113,12 +114,13 @@ public:
   TStateFunctionResult work() {
     if (hasTimedOut()) {
       machine()->clearScene();
-      machine()->switchToState(mTableEmpty, "timeout");
+      machine()->switchToState(mTableEmpty, "<b>timeout</b>");
     }
     if (machine()->getCount("VisualObject") < 1) {
       return WaitChange;
     }
     //machine()->switchToState(mStartTeach, "I-see-VO");
+    machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
     machine()->switchToState(mWaitRecogTask, "I-see-VO");
     return Continue;
   }
@@ -188,10 +190,11 @@ public:
 
   TStateFunctionResult work() {
     machine()->verifyCount("VisualObject", 1);
-    if (machine()->getCount("VisualObject") != 1) {
+    machine()->verifyCount("ProtoObject", 1);
+    if (machine()->getCount("VisualObject") != 1 || machine()->getCount("ProtoObject") != 1) {
       if (hasTimedOut()) {
         machine()->reportTimeout("Waiting for VisualObject count==1");
-        machine()->switchToState(mEndTeach, "timeout");
+        machine()->switchToState(mEndTeach, "<b>timeout</b>");
         return Continue;
       }
       return WaitChange;
@@ -288,7 +291,7 @@ public:
   {
     initLinkedStates();
     setWatchEvents({ "::VisionData::VisualLearningTask" });
-    setTimeout(30 * 1000);
+    setTimeout(180 * 1000); // 30 standalone, 180 valgrind
     setSleepTime(20);
   }
 
@@ -314,13 +317,14 @@ public:
 
     if (cntAdd != mPrevTaskAddCount) {
       mWLearnTaskComplete->getState()->setInfo(mInfo);
+      machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
       machine()->switchToState(mWLearnTaskComplete, "task-created");
       return Continue;
     }
 
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Learning Task");
-      exitLesson("timeout");
+      exitLesson("<b>timeout</b>");
       return Continue;
     }
 
@@ -340,13 +344,14 @@ public:
     long cntDone = machine()->getCount("LearningTask-done");
 
     if (cntDone != mPrevTaskDoneCount) {
+      machine()->reportRunningTime(id(), mRunningTimer.elapsed() * 1e-3);
       exitLesson("task-completed");
       return Continue;
     }
 
     if (hasTimedOut()) {
       machine()->reportTimeout("Waiting for Learning Task Completion");
-      exitLesson("timeout");
+      exitLesson("<b>timeout</b>");
       return Continue;
     }
 
@@ -364,6 +369,9 @@ public:
     CMachineStateMixin(pMachine),
     mTableEmpty(linkedState("TableEmpty"))
   {
+    // We sleep before we unload the scene since somebody may still
+    // need the object to update some internal state.
+    setSleepTime(20, 3 * 1000);
   }
   TStateFunctionResult work() {
     machine()->clearScene();
