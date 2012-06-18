@@ -29,11 +29,11 @@ function DialogueInteraction(ui)
   this.txtHistory = this.ui.findChild('txtHistory');
   this.itemList = new Array();
 
-  dump('edHuman', this.edHuman);
-  dump('txtHistory', this.txtHistory);
+  //dump('edHuman', this.edHuman);
+  //dump('txtHistory', this.txtHistory);
 
   var cbs = [ 'cbQuestion', 'cbAssertion', 'cbColor', 'cbShape', 'cbType' ];
-  dump('cbs', cbs);
+  //dump('cbs', cbs);
   for ( i = 0; i < cbs.length; i++) {
     name = cbs[i];
     ctrl = this.ui.findChild(name);
