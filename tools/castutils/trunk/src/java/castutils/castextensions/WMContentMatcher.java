@@ -54,7 +54,7 @@ public class WMContentMatcher<T extends Ice.Object> extends CASTHelper {
 	 *            a 'key=value' specification of the parameters for the
 	 *            {@link WMContentMatcher} to be created. An example looks like
 	 *            this:
-	 *            <code>sa=testsa;xpath=//*[@prop='test'];type=eu.cogx.beliefs.slice.PerceptBelief;qualifier=EXISTS</code>
+	 *            <code>sa=testsa;xpath=//status[node()='TRUEPLACE'];type=eu.cogx.beliefs.slice.PerceptBelief;qualifier=EXISTS</code>
 	 * @return the created instance of {@link WMContentMatcher}
 	 * @throws ClassNotFoundException
 	 */
