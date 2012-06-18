@@ -7,7 +7,6 @@
 #define _CASTUTILS_COUNTTRACKER_HPP_4FDF10E9_
 #include <map>
 #include <string>
-#include <cmath>
 
 namespace castutils
 {
@@ -28,7 +27,7 @@ public:
     if (mCount.find(counter) == mCount.end()) {
       mCount[counter] = 0;
     }
-    bool same = fabs(mCount[counter] - value) < mTollerance;
+    bool same = std::abs(mCount[counter] - value) <= mTollerance;
     mCount[counter] = value;
     return same;
   }
