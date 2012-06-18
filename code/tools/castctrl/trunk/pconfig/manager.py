@@ -53,7 +53,9 @@ class CServerInfo(CPropertySet):
         return lines
 
     def setPathList(self, name, value):
-        self.setVar(name, ":".join(self._valid_lines(value)))
+        #self.setVar(name, ":".join(self._valid_lines(value)))
+        pl = "<pathlist>\n%s\n</pathlist>" % ("\n".join(self._valid_lines(value)))
+        self.defaultVars.append((name, pl))
 
     def setCommand(self, cmd, workdir=None):
         self._command = " ".join(self._valid_lines(cmd))
