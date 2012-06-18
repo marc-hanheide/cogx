@@ -136,7 +136,7 @@ golem.setCommand("${CMD_GOLEM}", workdir="${CMD_GOLEM_WORKDIR}")
 openccg = Server("OpenCcg", label="Open CCG")
 openccg.integerField("PORT",
         label="Port", range=(2000,50000), default=4321)
-openccg.setVar("OPEN_CCG_ROOT", "dora-yr4/tools/openccg-realiserver")
+openccg.setVar("OPEN_CCG_ROOT", "${COGX_ROOT}/tools/openccg-realiserver")
 openccg.setPathList("OPENCCG_CLASSPATH", """
       <glob>${OPEN_CCG_ROOT}/*.jar</glob>
       """)
