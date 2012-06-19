@@ -89,6 +89,7 @@ public:
 
   void start();
   void runComponent();
+  int createRoomBloxelMap(int roomId);
   void generateViewCones(
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
       std::string WMAddress);
@@ -187,6 +188,8 @@ private:
 
   NavData::RobotPose2dPtr lastRobotPose;
 
+  Cure::LocalGridMap<double> *m_lgmKH;
+  
   std::map<std::string, BloxelMap*> m_objectBloxelMaps; // this holds bloxel maps for each location i.e. <object,rel,(object2),room>
   std::map<int, BloxelMap*> m_templateRoomBloxelMaps; // template room bloxel maps to instantiate objectBloxelMaps from
   std::map<int, CureObstMap*> m_templateRoomGridMaps; // template room 2D grid maps
