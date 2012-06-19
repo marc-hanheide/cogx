@@ -1062,8 +1062,10 @@ void AVS_ContinualPlanner::generateViewCones(
 
   ViewPointGenerator coneGenerator(this,
       m_templateRoomGridMaps[newVPCommand->roomId], m_objectBloxelMaps[id],
-      m_samplesize, m_sampleawayfromobs, m_conedepth, m_tiltstep, m_panstep,
-      m_horizangle, m_vertangle, m_minDistance, pdfmass, m_pdfthreshold,
+      m_samplesize, m_maxViewConeCount,
+      m_sampleawayfromobs, m_conedepth, m_tiltstep, m_panstep,
+      m_horizangle, m_vertangle, m_minDistance, 
+      m_minConeProb, m_minRelativeConeProb, pdfmass, m_pdfthreshold,
       node->x, node->y);
 
   vector<ViewPointGenerator::SensingAction> viewcones =
@@ -1080,28 +1082,6 @@ void AVS_ContinualPlanner::generateViewCones(
 	  WMAddress, newVPCommand);
     }
     return;
-  }
-
-  // normalizing cone probabilities
-  log("normalizing viewcone probabilities");
-  m_locationToConeGroupNormalization[id] = 0;
-  for (unsigned int i = 0; i < viewcones.size(); i++) {
-    m_locationToConeGroupNormalization[id] += viewcones[i].totalprob;
-  }
-  m_locationToConeGroupNormalization[id] /= pdfmass;
-  log("%f Total prob %f, normalizing constant %f", pdfmass,
-      m_locationToConeGroupNormalization[id], 1
-          / m_locationToConeGroupNormalization[id]);
-
-  for (unsigned int i = 0; i < viewcones.size(); i++) {
-    log("viewcone %d before blow up  %f", i, viewcones[i].totalprob);
-
-    viewcones[i].totalprob = viewcones[i].totalprob * (1
-        / m_locationToConeGroupNormalization[id]);
-
-    log("viewcone %d after blow up  %f", i, viewcones[i].totalprob);
-    log("viewcone %d pos %f %f %f", i, viewcones[i].pos[0],
-        viewcones[i].pos[1], viewcones[i].pos[2]);
   }
 
   //Getting the place belief pointer
@@ -1164,6 +1144,7 @@ void AVS_ContinualPlanner::generateViewCones(
         opt_minAngle = minAngle;
       }
     }
+
 //    debug("viewcones in place %d", (*plIt).second.size());
     double stAngle = opt_minAngle;
     map<int, bool> collected_vc;
@@ -1172,6 +1153,7 @@ void AVS_ContinualPlanner::generateViewCones(
       double min_dist = 2 * M_PI;
       double max_dist = 0;
       vector<ViewPointGenerator::SensingAction> gr;
+      double probInThisGroup = 0;
       for (size_t k = 0; k < (*plIt).second.size(); k++) {
 
         double dist1 = (*plIt).second[k].pan - stAngle;
@@ -1183,8 +1165,10 @@ void AVS_ContinualPlanner::generateViewCones(
         if (dist1 < m_maxRange) {
           if (dist1 > max_dist)
             max_dist = dist1;
-          if (collected_vc.count(k) == 0)
+          if (collected_vc.count(k) == 0) {
             gr.push_back((*plIt).second[k]);
+	    probInThisGroup += (*plIt).second[k].totalprob;
+	  }
           collected_vc[k] = true;
         }
 
@@ -1197,8 +1181,6 @@ void AVS_ContinualPlanner::generateViewCones(
           min_dist = dist;
         }
       }
-      grouped_cones_minAngle.push_back(stAngle);
-      grouped_cones_maxAngle.push_back(stAngle + max_dist);
 
       bool swapped = true;
       int j = 0;
@@ -1227,9 +1209,62 @@ void AVS_ContinualPlanner::generateViewCones(
         }
       }
 
-      stAngle = maxAngle + min_dist - 0.0001;
-//      debug("group size %d", gr.size());
-      grouped_cones.push_back(gr);
+      if (probInThisGroup > m_minConeGroupProb) {
+
+	grouped_cones_minAngle.push_back(stAngle);
+	grouped_cones_maxAngle.push_back(stAngle + max_dist);
+	stAngle = maxAngle + min_dist - 0.0001;
+	//      debug("group size %d", gr.size());
+	grouped_cones.push_back(gr);
+      }
+      else {
+	log("Rejecting cone group with total probability %f", probInThisGroup);
+      }
+    }
+  }
+
+  if (grouped_cones.size() == 0) {
+    error("Error! Cone generation did not accept any cone groups!");
+    if (WMAddress != "") {
+      newVPCommand->status = SpatialData::FAILED;
+      log("Overwriting command to change status to: FAILED");
+      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
+	  WMAddress, newVPCommand);
+    }
+    return;
+  }
+
+  // Scale each cone group (all cones in each) so that total equals
+  // the region's total mass
+
+  // normalizing cone probabilities
+  log("normalizing viewcone probabilities");
+  m_locationToConeGroupNormalization[id] = 0;
+  for (size_t i = 0; i < grouped_cones.size(); i++) {
+    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
+    for (size_t j = 0; j < curConeGroup.size(); j++) {
+      m_locationToConeGroupNormalization[id] += curConeGroup[j].totalprob;
+    }
+  }
+
+  m_locationToConeGroupNormalization[id] /= pdfmass;
+
+  log("%f Total prob %f, normalizing constant %f", pdfmass,
+      m_locationToConeGroupNormalization[id], 1
+          / m_locationToConeGroupNormalization[id]);
+
+  for (size_t i = 0; i < grouped_cones.size(); i++) {
+    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
+    for (size_t j = 0; j < curConeGroup.size(); j++) {
+
+      log("viewcone %d before blow up  %f", i, curConeGroup[j].totalprob);
+
+      curConeGroup[j].totalprob = curConeGroup[j].totalprob * (1
+	  / m_locationToConeGroupNormalization[id]);
+
+      log("viewcone %d after blow up  %f", i, curConeGroup[j].totalprob);
+      log("viewcone %d pos %f %f %f", i, curConeGroup[j].pos[0],
+	  curConeGroup[j].pos[1], curConeGroup[j].pos[2]);
     }
   }
 //  debug("gcs %d", grouped_cones.size());
@@ -1995,12 +2030,41 @@ void AVS_ContinualPlanner::configure(
     log("Samplesize set to: %d", m_samplesize);
   }
 
+  m_maxViewConeCount = 20;
+  it = _config.find("--maxViewConeCount");
+  if (it != _config.end()) {
+    m_samplesize = (atof(it->second.c_str()));
+    log("Max view cone count: %d", m_maxViewConeCount);
+  }
+
   m_minbloxel = 0.05;
   it = _config.find("--minbloxel");
   if (it != _config.end()) {
     m_minbloxel = (atof(it->second.c_str()));
     log("Min bloxel height set to: %f", m_minbloxel);
   }
+
+  m_minConeProb = 0.01;
+  it = _config.find("--minConeProb");
+  if (it != _config.end()) {
+    m_minConeProb = (atof(it->second.c_str()));
+    log("Min cone probability: %f", m_minConeProb);
+  }
+
+  m_minRelativeConeProb = 0.05;
+  it = _config.find("--minRelativeConeProb");
+  if (it != _config.end()) {
+    m_minRelativeConeProb = (atof(it->second.c_str()));
+    log("Min relative cone probability: %f", m_minRelativeConeProb);
+  }
+
+  m_minConeGroupProb = 0.0;
+  it = _config.find("--minConeGroupProb");
+  if (it != _config.end()) {
+    m_minConeGroupProb = (atof(it->second.c_str()));
+    log("Min cone group probability: %f", m_minConeGroupProb);
+  }
+
 
   m_mapceiling = 2.0;
   it = _config.find("--mapceiling");
