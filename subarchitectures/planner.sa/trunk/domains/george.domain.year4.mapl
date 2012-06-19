@@ -47,7 +47,7 @@
 
     (allow-autonomous-color-learning ?v - VisualObject ?c - ColorName ?r - Robot)
     (allow-autonomous-shape-learning ?v - VisualObject ?s - ShapeName ?r - Robot)
-    (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
+    ;;(allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
 
     (looked-at ?vc - ViewCone)
 
@@ -257,13 +257,13 @@
     )
   )
 
-  (:derived (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
-    (and
-      (>= (type-prob ?v) (learn-autonomous-shape-threshold ?r))
-      (= (type ?v) ?t)
-      (not (= (presence ?v) REMOVED))
-    )
-  )
+  ;;(:derived (allow-autonomous-type-learning ?v - VisualObject ?t - TypeName ?r - Robot)
+  ;;  (and
+  ;;    (>= (type-prob ?v) (learn-autonomous-shape-threshold ?r))
+  ;;    (= (type ?v) ?t)
+  ;;    (not (= (presence ?v) REMOVED))
+  ;;  )
+  ;;)
 
   (:derived (is-object-in-question ?v - VisualObject)
     (and
@@ -399,46 +399,46 @@
       )
   )
 
-  (:action ask-for-an-objects-type-general
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject)
-    :precondition
-      (and
-        (not (= (presence ?v) REMOVED))
-        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        (or
-          (= (currently-points-at ?r) ?v)
-          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        )
-      )
-    :effect 
-      (and 
-        (assign (attributed-type ?v) (type ?v))
-        (is-potential-object-in-question ?v)
-        (increase (total-cost) 2)
-      )
-  )
+;;  (:action ask-for-an-objects-type-general
+;;    :agent (?r - Robot)
+;;    :parameters (?v - VisualObject)
+;;    :precondition
+;;      (and
+;;        (not (= (presence ?v) REMOVED))
+;;        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+;;        (or
+;;          (= (currently-points-at ?r) ?v)
+;;          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+;;        )
+;;      )
+;;    :effect 
+;;      (and 
+;;        (assign (attributed-type ?v) (type ?v))
+;;        (is-potential-object-in-question ?v)
+;;        (increase (total-cost) 2)
+;;      )
+;;  )
 
-  (:action ask-for-an-objects-type-polar
-    :agent (?r - Robot)
-    :parameters (?v - VisualObject ?t - TypeName)
-    :precondition
-      (and
-        (not (= (presence ?v) REMOVED))
-        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        (allow-polar-type-question ?v ?t ?r)
-        (or
-          (= (currently-points-at ?r) ?v)
-          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
-        )
-      )
-    :effect 
-      (and 
-        (assign (attributed-type ?v) ?t)
-        (is-potential-object-in-question ?v)
-        (increase (total-cost) 1)
-      )
-  )
+;;  (:action ask-for-an-objects-type-polar
+;;    :agent (?r - Robot)
+;;    :parameters (?v - VisualObject ?t - TypeName)
+;;   :precondition
+;;      (and
+;;        (not (= (presence ?v) REMOVED))
+;;        (exists (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+;;        (allow-polar-type-question ?v ?t ?r)
+;;        (or
+;;          (= (currently-points-at ?r) ?v)
+;;          (forall (?p - ProtoObject) (= (po-is-associated-with ?p) ?v))
+;;        )
+;;      )
+;;    :effect 
+;;      (and 
+;;        (assign (attributed-type ?v) ?t)
+;;        (is-potential-object-in-question ?v)
+;;        (increase (total-cost) 1)
+;;      )
+;;  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;                   LEARNING              ;;;;;;;;;;;;;;;;;;;;;;;
@@ -524,7 +524,7 @@
     :agent (?r - Robot)
     :parameters (?v - VisualObject ?t - TypeName)
     :precondition 
-      (or
+      ;;(or
         (and
           (not (type-learned ?v))
           (= (attributed-type ?v) ?t)
@@ -537,17 +537,17 @@
           )
           (is-object-in-question ?v)
         )
-        (and
-          (allow-autonomous-type-learning ?v ?t ?r)
-          (not (type-learned ?v))
-          (exists (?p - ProtoObject) 
-            (and 
-              (= (po-is-associated-with ?p) ?v)
-              (= (target-object (current-viewcone ?r)) ?p)
-            )
-          )
-        )
-      )
+        ;;(and
+        ;;  (allow-autonomous-type-learning ?v ?t ?r)
+        ;;  (not (type-learned ?v))
+        ;;  (exists (?p - ProtoObject) 
+        ;;    (and 
+        ;;      (= (po-is-associated-with ?p) ?v)
+        ;;      (= (target-object (current-viewcone ?r)) ?p)
+        ;;    )
+        ;;  )
+        ;;)
+      ;;)
     :effect 
       (and
         (type-learned ?v)
