@@ -60,6 +60,8 @@ class Builder(object):
 
         if isinstance(func, list):
             func = func[0]
+
+        assert func
             
         if isinstance(func, predicates.Predicate):
             if function_scope & SCOPE_CONDITION and not function_scope & SCOPE_EFFECT:

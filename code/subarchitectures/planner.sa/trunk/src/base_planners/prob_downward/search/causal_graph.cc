@@ -34,18 +34,18 @@ CausalGraph::CausalGraph(istream &in) {
     edges[i].erase(unique(edges[i].begin(), edges[i].end()), edges[i].end());
   }
   
-  vector<set<int> > temp;
-  temp.resize(var_count);
-  calc_closure(inverse_arcs, temp);
-  for(int i = 0; i < var_count; i++) {
-      inverse_closures[i].insert(inverse_closures[i].begin(), temp[i].begin(), temp[i].end());
-      if (g_debug && !inverse_closures[i].empty()) {
-          cout << "predecessors of " << g_variable_name[i] << endl;
-          for (int j = 0; j < inverse_closures[i].size(); j++) {
-              cout << "    " << g_variable_name[inverse_closures[i][j]] << endl;
-          }
-      }
-  }
+  // vector<set<int> > temp;
+  // temp.resize(var_count);
+  // calc_closure(inverse_arcs, temp);
+  // for(int i = 0; i < var_count; i++) {
+  //     inverse_closures[i].insert(inverse_closures[i].begin(), temp[i].begin(), temp[i].end());
+  //     if (g_debug && !inverse_closures[i].empty()) {
+  //         cout << "predecessors of " << g_variable_name[i] << endl;
+  //         for (int j = 0; j < inverse_closures[i].size(); j++) {
+  //             cout << "    " << g_variable_name[inverse_closures[i][j]] << endl;
+  //         }
+  //     }
+  // }
 }
 
 void CausalGraph::calc_closure(vector<vector<int> >& base, vector<set<int> >& result) {

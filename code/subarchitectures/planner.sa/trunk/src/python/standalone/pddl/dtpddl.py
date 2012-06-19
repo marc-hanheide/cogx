@@ -333,6 +333,8 @@ class DTPDDLWriter(writer.Writer):
             strings += self.write_axiom(a)
             
         for a in domain.actions:
+            if a.name.startswith("__"):
+                continue
             strings.append("")
             strings += self.write_action(a)
 

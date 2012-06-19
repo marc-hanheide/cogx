@@ -126,7 +126,7 @@ int GeneralEagerBestFirstSearch::step() {
             EvalInfo succ_info = node.get_info()->succ(op);
             // if (succ_info.get_g() > g_reward * g_multiplier) {
             if (succ_info.get_p() < g_min_p) {
-                cout << "hit p-limit: " << succ_info.get_p() << endl;
+                // cout << "hit p-limit: " << succ_info.get_p() << endl;
                 continue;
             }
 
@@ -147,7 +147,7 @@ int GeneralEagerBestFirstSearch::step() {
             }
 
             if (p_max > -0.5 and (p_max * succ_info.get_p()) < g_min_p) {
-                cout << "hit h_p-limit: " << p_max << " * " <<  succ_info.get_p() << " = " << p_max * succ_info.get_p() << endl;
+                // cout << "hit h_p-limit: " << p_max << " * " <<  succ_info.get_p() << " = " << p_max * succ_info.get_p() << endl;
                 continue;
             }
             // cout << "---------" << endl;
