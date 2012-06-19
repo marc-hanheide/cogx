@@ -112,12 +112,16 @@ EOF
 #ffmpeg -f x11grab -s $DIM  -r 1  -i $DISPLAY logs/screencast.mov 2>&1  &
 
 # Make a flash video
-flvrec.py -o logs/screencast.flv -K 15 -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
-PIDS="$PIDS $!"
+
+if [ "$NOVNC" ]; then
+	echo "not recoring in NOVNC mode" >&2
+else
+	flvrec.py -o logs/screencast.flv -K 15 -P ~/.vnc/passwd.decrypt -r 1 $DISPLAY 2>&1 &
+	PIDS="$PIDS $!"
+fi
 
 xterm -title "log server" -e bash -c "cd logs; cast-log-server" &
 PIDS="$PIDS $!"
-sleep 2
 
 xterm -e player $stageFile &
 PIDS="$PIDS $!"
@@ -132,27 +136,37 @@ echo "starting peekabot"
 export XAUTHORITY=~/.Xauthority
 xauth -v exit
 
-xterm -title "peekabot-xterm" -e "ulimit -c unlimited; /opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
-PIDS="$PIDS $!"
+if [ "$NOVNC" ]; then
+	xterm -title "peekabot-xterm" -e "/usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
+	PIDS="$PIDS $!"
+	sleep 10
+	wmctrl -l | grep "peekabot$"
 
-sleep 10
-wmctrl -l | grep "peekabot$"
+	window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+	echo "peekabot window id is " $window_id
+else
+	xterm -title "peekabot-xterm" -e "ulimit -c unlimited; /opt/VirtualGL/bin/vglrun +v -c proxy /usr/local/bin/peekabot 2>&1 | tee logs/peekabot.log" &
+	PIDS="$PIDS $!"
+	sleep 10
+	wmctrl -l | grep "peekabot$"
 
-window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
-echo "peekabot window id is " $window_id
-xdotool windowactivate $window_id key alt+F5
-xdotool windowactivate $window_id key F9
-xdotool windowsize $window_id 40% 40%
+	window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
+	echo "peekabot window id is " $window_id
+	xdotool windowactivate $window_id key alt+F5
+	xdotool windowactivate $window_id key F9
+	xdotool windowsize $window_id 40% 40%
 
-sleep 2
+	sleep 2
 
-echo "--------------------------"
-echo "starting PBDisplayControl"
+	echo "--------------------------"
+	echo "starting PBDisplayControl"
 
-xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl --exec \"Top down\" 2>&1 | tee logs/PBDisplayControl.log" &
-PIDS="$PIDS $!"
-sleep 7
-echo "--------------------------"
+	xterm -title "PBDisplayControl" -e bash -c "sleep 5; output/bin/PBDisplayControl --exec \"Top down\" 2>&1 | tee logs/PBDisplayControl.log" &
+	PIDS="$PIDS $!"
+	sleep 7
+	echo "--------------------------"
+fi
+
 
 xterm -title "CAST server" -e bash -c "ulimit -c unlimited; output/bin/cast-server-start 2>&1 | tee logs/server.log" &
 SERVERPID="$!"
@@ -176,19 +190,20 @@ sleep 10
 xterm -title "CAST client: $configFile" -e bash -c "ulimit -c unlimited; output/bin/cast-client-start $configFile  2>&1 | tee logs/client.log" &
 PIDS="$PIDS $!"
 
-# in the future we will wait for the junit result here... for now, let's run the system for 60 seconds
-#waitForTrigger
-# (Wait for 100 seconds to ensure everything has loaded)
 echo "--------------------------"
-echo "Sleeping for 20 secs"
-sleep 20
+echo "Sleeping for 3 secs"
+sleep 3
 
 TESTREST=0
 PEEKABOT_CRASHED=0
 window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
 if [ "$window_id" ]; then
-	echo "Sleeping for another 80 secs"
-	sleep 80
+	echo "Sleeping for another max 80 secs"
+	#sleep 80
+	count=0	
+	# this will make the script wait until all the components have started by looking at the castclient log
+	while test ! `grep running logs/client.log |tail -n1 | sed 's@.*\[\(.*\)/\([0-9]*\).*@\1 = \2@' `; do echo "wait for all components to be running [$count]"; sleep 1; count=`expr $count + 1`; if [ $count -gt 80 ]; then break; fi; done
+
 	window_id=$(wmctrl -l | grep "peekabot$" | sed "s/ .*$//");
 else
 	echo "peekabot has crashed already"
@@ -201,7 +216,7 @@ if [ "$window_id" ]; then
 	xdotool windowmove $window_id 0 0
 	xdotool windowsize $window_id 70% 70%
 	echo "Done moving Peekabot"
-	sleep 2
+	#sleep 2
 	if [ "$GOAL" ]; then
         	echo "running test for goal $GOAL" 
 		if ant -Dtest.goal="$GOAL" -Dtest.config="$TEST_CONFIG" goaltest; then TESTREST=0; else TESTREST=1; fi
