@@ -31,7 +31,7 @@ public final class IceXMLSerializer {
 		xstream.omitField(definedIn, fieldName);
 	}
 
-	public static <T extends Ice.Object> T fromXMLString(String in, Class<T> type) {
+	public static <T extends Object> T fromXMLString(String in, Class<T> type) {
 		return type.cast(xstream.fromXML(in));
 	}
 	
