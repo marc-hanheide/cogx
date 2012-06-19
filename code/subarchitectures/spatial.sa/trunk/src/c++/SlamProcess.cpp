@@ -441,8 +441,11 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
         SCOPED_TIME_LOG;
         IceUtil::Mutex::Lock lock(m_Mutex);
         int err = m_PP->addMeasurementSet(measSet);
-        if (err < 0)
+        if (err != 0) {
           log("Got error value %d from addMeasurementSet!", err);
+          if (m_LastUsedOdom.getDoubleTime() > cureScan.getDoubleTime())
+            getLogger()->warn("Update failed, should have worked!");
+        }
       }
 
       log("pose est after addXXXX x=%.2f y=%.2f a=%.4f t=%.6f",

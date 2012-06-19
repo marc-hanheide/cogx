@@ -747,7 +747,8 @@ int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
             if ((*m_lgmKH)(nx, ny) - 0.1 > 0)
               m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
                   + combined_lgm.size, y + combined_lgm.size,
-                  (*m_lgmKH)(nx, ny) / 2, (*m_lgmKH)(nx, ny) - 0.1, makeobstacle);
+                  (*m_lgmKH)(nx, ny) / 2, (*m_lgmKH)(nx, ny) - 0.1,
+                  makeobstacle);
           } else {
             m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
                 + combined_lgm.size, y + combined_lgm.size,
@@ -759,6 +760,145 @@ int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
     }
   }
   return 0;
+}
+
+void AVS_ContinualPlanner::generateBloxelMap(
+    SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
+    string id, double pdfmass) {
+  //Todo: Generate viewpoints on the selected room's bloxel map and for a given pdf id
+  if (newVPCommand->relation != SpatialData::INROOM) {
+    log("Searching with a support object");
+    // indirect search this must be known object
+    // Ask for the cloud
+
+    // Construct Request object
+    std::vector<std::string> labels;
+    vector<Vector3> centers;
+    std::vector<FrontierInterface::ObjectRelation> relation;
+    if (m_fromBeliefIdtoVisualLabel.count(newVPCommand->supportObject) == 0) {
+      log("No such visual object! I am not going to do anything!");
+      log("The ones we know are:");
+      map<string, string>::const_iterator end =
+          m_fromBeliefIdtoVisualLabel.end();
+      for (map<string, string>::const_iterator it =
+          m_fromBeliefIdtoVisualLabel.begin(); it != end; ++it) {
+        log("beliefid: %s", it->first.c_str());
+        log("visualid: %s", it->second.c_str());
+      }
+      return;
+    }
+
+    labels.push_back(newVPCommand->searchedObjectCategory);
+    labels.push_back(m_fromBeliefIdtoVisualLabel[newVPCommand->supportObject]);
+
+    for (unsigned int j = 0; j < labels.size(); j++) {
+      log("ObjectPriorRequest for: %s", labels[j].c_str());
+    }
+    relation.push_back(
+        (newVPCommand->relation == SpatialData::INOBJECT ? FrontierInterface::IN
+            : FrontierInterface::ON));
+
+    FrontierInterface::WeightedPointCloudPtr queryCloud =
+        new FrontierInterface::WeightedPointCloud;
+    FrontierInterface::ObjectPriorRequestPtr objreq =
+        new FrontierInterface::ObjectPriorRequest;
+    objreq->relationTypes = relation; // ON or IN or whatnot
+    objreq->objects = labels; // Names of objects, starting with the query object
+    objreq->cellSize = m_cellsize; // CelGOTONODEll size of map (affects spacing of samples)
+    objreq->outCloud = queryCloud; // Data struct to receive output
+    objreq->totalMass = 1.0; // we will normalize anyways
+    //wait until we get the cloud back
+    {
+      log("Asking for ObjectPriorRequest");
+      m_gotPC = false;
+      addToWorkingMemory(newDataID(), objreq);
+      log("ObjectPriorRequest added to WM");
+      while (!m_gotPC)
+        usleep(2500);
+      log("got PC for direct search");
+    }
+
+    if (m_cloud->isBaseObjectKnown) {
+      log("Got distribution around known object pose");
+      m_sampler.kernelDensityEstimation3D(*m_objectBloxelMaps[id], centers,
+          m_cloud->interval, m_cloud->xExtent, m_cloud->yExtent,
+          m_cloud->zExtent, m_cloud->values, 1.0, pdfmass,
+          m_templateRoomGridMaps[newVPCommand->roomId]);
+      normalizePDF(*m_objectBloxelMaps[id], pdfmass);
+    }
+    m_conedepth = 2; //FIXME
+
+  } else if (newVPCommand->relation == SpatialData::INROOM) {
+    log("Searching in the room, assuming uniform probability");
+    // uniform over the room
+    GDProbSet resetter(0.0);
+    m_objectBloxelMaps[id]->universalQuery(resetter, true);
+    double fixedpdfvalue = pdfmass
+        / (m_objectBloxelMaps[id]->getZBounds().second
+            - m_objectBloxelMaps[id]->getZBounds().first);
+
+    GDProbInit initfunctor(fixedpdfvalue / 25);
+    GDProbInit initfunctor2(fixedpdfvalue);
+    log(
+        "Setting each bloxel near an obstacle to a fixed value of %f, in total: %f",
+        fixedpdfvalue, pdfmass);
+    pair<double, double> insideroom;
+    insideroom.first = 0;
+    insideroom.second = 0;
+
+    CureObstMap* lgm = m_templateRoomGridMaps[newVPCommand->roomId];
+    for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
+      for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
+        int bloxelX = x + lgm->getSize();
+        int bloxelY = y + lgm->getSize();
+
+        if ((*lgm)(x, y) == '1') {
+          // For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
+          // (Only neighbors which are not unknown in the Cure map. Unknown 3D
+          // space is still assigned, though)
+          double dx, dy;
+          (*lgm).index2WorldCoords(x, y, dx, dy);
+          int nx, ny;
+          if ((*m_lgmKH).worldCoords2Index(dx, dy, nx, ny) == 0) {
+            if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
+              m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX, bloxelY,
+                  (*m_lgmKH)(nx, ny) + 0.025, 0.05, initfunctor2);
+            }
+
+            if (m_bUseWallPrior) {
+              for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                  if ((*lgm)(x + i, y + j) == '0' && (bloxelX + i
+                      <= m_objectBloxelMaps[id]->getMapSize().first && bloxelX
+                      + i > 0) && (bloxelY + i
+                      <= m_objectBloxelMaps[id]->getMapSize().second && bloxelY
+                      + i > 0)) {
+                    //                              /log("modifying bloxelmap pdf");
+                    if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
+                      m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX + i,
+                          bloxelY + j, (*m_lgmKH)(nx, ny) / 2 + 0.025,
+                          (*m_lgmKH)(nx, ny) + 0.05, initfunctor);
+                    } else {
+                      m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX + i,
+                          bloxelY + j, .5, 1.0, initfunctor);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    double massAfterInit = initfunctor.getTotal() + initfunctor2.getTotal();
+    //    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
+    normalizePDF(*m_objectBloxelMaps[id], pdfmass, massAfterInit);
+
+    log("Done setting.");
+  } else {
+    wrn("Something weird happened!");
+  }
 }
 
 /* Generate view cones for <object,relation , object/room, room> */
@@ -797,7 +937,7 @@ void AVS_ContinualPlanner::generateViewCones(
   // if we already don't have a room map for this then get the combined map
   if (m_templateRoomBloxelMaps.count(newVPCommand->roomId) == 0) {
     log("Creating a new BloxelMap for room: %d", newVPCommand->roomId);
-    
+
     // This is a template map. Contains a room and obstacles
     if (createRoomBloxelMap(newVPCommand->roomId) < 0)
       return;
@@ -813,6 +953,9 @@ void AVS_ContinualPlanner::generateViewCones(
     log("A bloxel map for this location is already generated.");
     alreadyGenerated = true;
   }
+
+  // BEGIN GENERATE BLOXEL MAP
+
   // if we already have a bloxel map for configuration
   // else create a new one
   if (!alreadyGenerated) {
@@ -900,140 +1043,10 @@ void AVS_ContinualPlanner::generateViewCones(
 
   m_locationToInitialPdfmass[id] = pdfmass;
 
-  //Todo: Generate viewpoints on the selected room's bloxel map and for a given pdf id
-  if (newVPCommand->relation != SpatialData::INROOM && !alreadyGenerated) {
-    log("Searching with a support object");
-    // indirect search this must be known object
-    // Ask for the cloud
+  if (!alreadyGenerated)
+    generateBloxelMap(newVPCommand, id, pdfmass);
 
-    // Construct Request object
-    std::vector<std::string> labels;
-    vector<Vector3> centers;
-    std::vector<FrontierInterface::ObjectRelation> relation;
-    if (m_fromBeliefIdtoVisualLabel.count(newVPCommand->supportObject) == 0) {
-      log("No such visual object! I am not going to do anything!");
-      log("The ones we know are:");
-      map<string, string>::const_iterator end =
-          m_fromBeliefIdtoVisualLabel.end();
-      for (map<string, string>::const_iterator it =
-          m_fromBeliefIdtoVisualLabel.begin(); it != end; ++it) {
-        log("beliefid: %s", it->first.c_str());
-        log("visualid: %s", it->second.c_str());
-      }
-      return;
-    }
-
-    labels.push_back(newVPCommand->searchedObjectCategory);
-    labels.push_back(m_fromBeliefIdtoVisualLabel[newVPCommand->supportObject]);
-
-    for (unsigned int j = 0; j < labels.size(); j++) {
-      log("ObjectPriorRequest for: %s", labels[j].c_str());
-    }
-    relation.push_back(
-        (newVPCommand->relation == SpatialData::INOBJECT ? FrontierInterface::IN
-            : FrontierInterface::ON));
-
-    FrontierInterface::WeightedPointCloudPtr queryCloud =
-        new FrontierInterface::WeightedPointCloud;
-    FrontierInterface::ObjectPriorRequestPtr objreq =
-        new FrontierInterface::ObjectPriorRequest;
-    objreq->relationTypes = relation; // ON or IN or whatnot
-    objreq->objects = labels; // Names of objects, starting with the query object
-    objreq->cellSize = m_cellsize; // CelGOTONODEll size of map (affects spacing of samples)
-    objreq->outCloud = queryCloud; // Data struct to receive output
-    objreq->totalMass = 1.0; // we will normalize anyways
-    //wait until we get the cloud back
-    {
-      log("Asking for ObjectPriorRequest");
-      m_gotPC = false;
-      addToWorkingMemory(newDataID(), objreq);
-      log("ObjectPriorRequest added to WM");
-      while (!m_gotPC)
-        usleep(2500);
-      log("got PC for direct search");
-    }
-
-    if (m_cloud->isBaseObjectKnown) {
-      log("Got distribution around known object pose");
-      m_sampler.kernelDensityEstimation3D(*m_objectBloxelMaps[id], centers,
-          m_cloud->interval, m_cloud->xExtent, m_cloud->yExtent,
-          m_cloud->zExtent, m_cloud->values, 1.0, pdfmass,
-          m_templateRoomGridMaps[newVPCommand->roomId]);
-      normalizePDF(*m_objectBloxelMaps[id], pdfmass);
-    }
-    m_conedepth = 2; //FIXME
-
-  } else if (newVPCommand->relation == SpatialData::INROOM && !alreadyGenerated) {
-    log("Searching in the room, assuming uniform probability");
-    // uniform over the room
-    GDProbSet resetter(0.0);
-    m_objectBloxelMaps[id]->universalQuery(resetter, true);
-    double fixedpdfvalue = pdfmass
-        / (m_objectBloxelMaps[id]->getZBounds().second
-            - m_objectBloxelMaps[id]->getZBounds().first);
-
-    GDProbInit initfunctor(fixedpdfvalue / 25);
-    GDProbInit initfunctor2(fixedpdfvalue);
-    log(
-        "Setting each bloxel near an obstacle to a fixed value of %f, in total: %f",
-        fixedpdfvalue, pdfmass);
-    pair<double, double> insideroom;
-    insideroom.first = 0;
-    insideroom.second = 0;
-
-    CureObstMap* lgm = m_templateRoomGridMaps[newVPCommand->roomId];
-    for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
-      for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
-        int bloxelX = x + lgm->getSize();
-        int bloxelY = y + lgm->getSize();
-
-        if ((*lgm)(x, y) == '1') {
-          // For each "high" obstacle cell, assign a uniform probability density to its immediate neighbors
-          // (Only neighbors which are not unknown in the Cure map. Unknown 3D
-          // space is still assigned, though)
-          double dx, dy;
-          (*lgm).index2WorldCoords(x, y, dx, dy);
-          int nx, ny;
-          if ((*m_lgmKH).worldCoords2Index(dx, dy, nx, ny) == 0) {
-            if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
-              m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX, bloxelY,
-                  (*m_lgmKH)(nx, ny) + 0.025, 0.05, initfunctor2);
-            }
-
-            if (m_bUseWallPrior) {
-              for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                  if ((*lgm)(x + i, y + j) == '0' && (bloxelX + i
-                      <= m_objectBloxelMaps[id]->getMapSize().first && bloxelX
-                      + i > 0) && (bloxelY + i
-                      <= m_objectBloxelMaps[id]->getMapSize().second && bloxelY
-                      + i > 0)) {
-                    //								/log("modifying bloxelmap pdf");
-                    if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
-                      m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX + i,
-                          bloxelY + j, (*m_lgmKH)(nx, ny) / 2 + 0.025, (*m_lgmKH)(nx, ny)
-                              + 0.05, initfunctor);
-                    } else {
-                      m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX + i,
-                          bloxelY + j, .5, 1.0, initfunctor);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    double massAfterInit = initfunctor.getTotal() + initfunctor2.getTotal();
-    //    double normalizeTo = (initfunctor.getTotal()*m_pout)/(1 - m_pout);
-    normalizePDF(*m_objectBloxelMaps[id], pdfmass, massAfterInit);
-
-    log("Done setting.");
-  } else if (!alreadyGenerated) {
-    wrn("Something weird happened!");
-  }
+  // END GENERATE BLOXEL MAP  
 
   //Now that we've got our map generate cones for this
   //Todo: and generateViewCones based on this
