@@ -85,6 +85,14 @@ void ObjectRecognizer3D::configure(const map<string,string> & _config){
   	m_showCV = false;
   }
 
+  if((it = _config.find("--confidence")) != _config.end()){
+    istringstream str(it->second);
+    str >> m_confidence;
+  }else{
+    // use default value
+  }
+  log("Using detection confidence threshold of %f", m_confidence);
+
   if((it = _config.find("--save-images")) != _config.end()){
     m_saveImages = true;
     log("Saving images");
