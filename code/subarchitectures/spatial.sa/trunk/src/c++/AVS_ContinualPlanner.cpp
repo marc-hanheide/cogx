@@ -363,7 +363,7 @@ void AVS_ContinualPlanner::owtARTagCommand(
       if (angle > M_PI)
         angle -= 2 * M_PI;
       if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
-        wrn("WARNING: Skipping the viewcone group. Can't pan that far.");
+        wrn("Skipping the viewcone group. Can't pan that far.");
         startMovePanTilt(0.0, 0.0, 0.08);
         m_ptzWaitingStatus = WAITING_TO_RETURN;
       } else {
@@ -411,7 +411,7 @@ void AVS_ContinualPlanner::owtRecognizer3DCommand(
       if (angle > M_PI)
         angle -= 2 * M_PI;
       if ((angle < -M_PI / 2) || (angle > M_PI / 2)) {
-        wrn("WARNING: Skipping the viewcone group. Can't pan that far.");
+        wrn("Skipping the viewcone group. Can't pan that far.");
         startMovePanTilt(0.0, 0.0, 0.08);
         m_ptzWaitingStatus = WAITING_TO_RETURN;
       } else {
@@ -477,7 +477,8 @@ void AVS_ContinualPlanner::newGroundedBelief(
         CASTBeliefHistoryPtr history(CASTBeliefHistoryPtr::dynamicCast(
             belief->hist));
 
-        log("getting percept belief associated with this grounded object at: %s",
+        log(
+            "getting percept belief associated with this grounded object at: %s",
             history->ancestors[0]->address.id.c_str());
 
         PerceptBeliefPtr visualpercept = new PerceptBelief;
@@ -546,6 +547,7 @@ void AVS_ContinualPlanner::newGroundedBelief(
     return;
   }
 }
+
 void AVS_ContinualPlanner::newViewPointGenerationCommand(
     const cast::cdl::WorkingMemoryChange &objID) {
   try {
@@ -564,6 +566,199 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
   } catch (const CASTException &e) {
     log("owtRecognizer3DCommand disappeared from WM: %s", e.message.c_str());
   }
+}
+
+int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
+  SpatialData::LocalGridMap combined_lgm;
+
+  /*
+   SpatialData::LocalGridMapMap grid = mapPrx->getGridMap();
+
+   Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
+
+   // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
+   int lp1 = 0;
+   for(int x = -grid.size ; x <= grid.size; x++){
+   for(int y = -grid.size ; y <= grid.size; y++){ 
+   lgm(x,y) = (grid.data[lp1]);
+   lp1++;
+   }
+   }
+   */
+
+  vector<comadata::ComaRoomPtr> comarooms;
+  getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
+
+  log("Got %d rooms", comarooms.size());
+
+  if (comarooms.size() == 0) {
+    wrn("No such ComaRoom with id %d! Returning", roomId);
+    return -1;
+  }
+  int comarooms_i = -1;
+  for (size_t i = 0; i < comarooms.size(); i++) {
+    log("Got coma room with room id: %d", comarooms[i]->roomId);
+    if (comarooms[i]->roomId == roomId) {
+      comarooms_i = i;
+      break;
+    }
+  }
+  if (comarooms_i == -1) {
+    wrn("no comaroom");
+    return -1;
+  }
+  for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
+    log("getting room which contains, placeid: %d",
+        comarooms[comarooms_i]->containedPlaceIds[j]);
+  }
+
+  /* Remove all free space and obstacle which does not belong to this room
+   * This is to avoid spillage of metric space from other rooms
+   * */
+  log("Removing all free space not belongin to this room");
+
+  log(
+      "Throwing away all known space in LGMap of this room belonging to another room");
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer<
+      FrontierInterface::PlaceInterface> ("place.manager"));
+  log("got interface");
+
+  SpatialData::PlaceIDSeq currentRoomPlaceIds;
+
+  double xW, yW;
+
+  vector<SpatialData::PlacePtr> placesInMap;
+  getMemoryEntries<SpatialData::Place> (placesInMap, "spatial.sa");
+
+  std::vector<NavData::AEdgePtr> edges;
+  getMemoryEntries<NavData::AEdge> (edges);
+
+  vector<NavData::FNodePtr> nodesForPlaces;
+  for (unsigned int i = 0; i < placesInMap.size(); i++) {
+    NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
+    nodesForPlaces.push_back(node);
+  }
+
+  for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
+    currentRoomPlaceIds.push_back(comarooms[comarooms_i]->containedPlaceIds[j]);
+    NavData::FNodePtr node = agg->getNodeFromPlaceID(
+        comarooms[comarooms_i]->containedPlaceIds[j]);
+    m_roomNodes[roomId].push_back(node);
+    for (std::vector<NavData::AEdgePtr>::iterator it = edges.begin(); it
+        != edges.end(); ++it) {
+
+      NavData::FNodePtr node1 = agg->getNodeFromPlaceID(
+          agg->getPlaceFromNodeID((*it)->startNodeId)->id);
+      NavData::FNodePtr node2 = agg->getNodeFromPlaceID(
+          agg->getPlaceFromNodeID((*it)->endNodeId)->id);
+
+      if ((node1->gateway == 1) && (node2->nodeId == node->nodeId)) {
+        m_roomNodes[roomId].push_back(node1);
+        currentRoomPlaceIds.push_back(
+            agg->getPlaceFromNodeID(node1->nodeId)->id);
+        break;
+      } else if ((node2->gateway == 1) && (node1->nodeId == node->nodeId)) {
+        m_roomNodes[roomId].push_back(node2);
+        currentRoomPlaceIds.push_back(
+            agg->getPlaceFromNodeID(node2->nodeId)->id);
+        break;
+      }
+    }
+  }
+
+  FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
+      FrontierInterface::LocalMapInterface> ("map.manager"));
+  combined_lgm = agg2->getCombinedGridMap(currentRoomPlaceIds);
+
+  m_templateRoomBloxelMaps[roomId] = new SpatialGridMap::GridMap<GridMapData>(
+      combined_lgm.size * 2 + 1, combined_lgm.size * 2 + 1, m_cellsize,
+      m_minbloxel, 0, 2.0, combined_lgm.xCenter, combined_lgm.yCenter, 0,
+      m_defaultBloxelCell);
+
+  //convert 2D map to 3D
+  CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
+      CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
+  IcetoCureLGM(combined_lgm, lgm);
+
+  for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
+    for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
+      if ((*lgm)(x, y) != '2') {
+        lgm->index2WorldCoords(x, y, xW, yW);
+        double minDistance = FLT_MAX;
+        unsigned int closestNodeIdx = 0;
+        bool excluded = false;
+        for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin(); fbIt
+            != m_forbiddenZones.end(); fbIt++) {
+          //        log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
+          //        log("checking against: %.02g, %.02g", newX, newY);
+          double dx, dy;
+          (*lgm).index2WorldCoords(x, y, dx, dy);
+          if ((dx <= fbIt->maxX && dx >= fbIt->minX && dy <= fbIt->maxY && dy
+              >= fbIt->minY)) {
+            log("point in forbidden zone excluded");
+            (*lgm)(x, y) = '2';
+            excluded = true;
+            break;
+          }
+        }
+        if (excluded)
+          continue;
+
+        for (size_t i = 0; i < nodesForPlaces.size(); i++) {
+          try {
+            if ((nodesForPlaces[i] != 0) && (nodesForPlaces[i]->gateway == 0)) {
+              double nX = nodesForPlaces[i]->x;
+              double nY = nodesForPlaces[i]->y;
+
+              double distance = (xW - nX) * (xW - nX) + (yW - nY) * (yW - nY);
+              if (distance < minDistance) {
+                closestNodeIdx = i;
+                minDistance = distance;
+              }
+            }
+          } catch (IceUtil::NullHandleException e) {
+            error("Error! FNode suddenly disappeared!");
+          }
+        }
+
+        SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIdx];
+
+        //                    placemem = agg->getPlaceMembership(xW,yW);
+
+        if (find(currentRoomPlaceIds.begin(), currentRoomPlaceIds.end(),
+            closestPlace->id) == currentRoomPlaceIds.end()) {
+          (*lgm)(x, y) = '2';
+        }
+      }
+    }
+  }
+  log("removed");
+
+  m_templateRoomGridMaps[roomId] = lgm;
+  GDMakeObstacle makeobstacle;
+  for (int x = -combined_lgm.size; x < combined_lgm.size; x++) {
+    for (int y = -combined_lgm.size; y < combined_lgm.size; y++) {
+      if ((*lgm)(x, y) == '1') {
+        double dx, dy;
+        (*lgm).index2WorldCoords(x, y, dx, dy);
+        int nx, ny;
+        if ((*m_lgmKH).worldCoords2Index(dx, dy, nx, ny) == 0) {
+          if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
+            if ((*m_lgmKH)(nx, ny) - 0.1 > 0)
+              m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
+                  + combined_lgm.size, y + combined_lgm.size,
+                  (*m_lgmKH)(nx, ny) / 2, (*m_lgmKH)(nx, ny) - 0.1, makeobstacle);
+          } else {
+            m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
+                + combined_lgm.size, y + combined_lgm.size,
+                m_LaserPoseR.getZ(), m_minbloxel, makeobstacle);
+            //m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
+          }
+        }
+      }
+    }
+  }
+  return 0;
 }
 
 /* Generate view cones for <object,relation , object/room, room> */
@@ -587,14 +782,14 @@ void AVS_ContinualPlanner::generateViewCones(
 
   SpatialData::HeightMap KH = mapPrx->getHeightMap();
 
-  Cure::LocalGridMap<double> lgmKH(KH.size, KH.cellSize, FLT_MAX,
+  m_lgmKH = new Cure::LocalGridMap<double>(KH.size, KH.cellSize, FLT_MAX,
       Cure::LocalGridMap<double>::MAP1, KH.xCenter, KH.yCenter);
 
   // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
   int lp = 0;
   for (int x = -KH.size; x <= KH.size; x++) {
     for (int y = -KH.size; y <= KH.size; y++) {
-      lgmKH(x, y) = (KH.data[lp]);
+      (*m_lgmKH)(x, y) = (KH.data[lp]);
       lp++;
     }
   }
@@ -602,202 +797,15 @@ void AVS_ContinualPlanner::generateViewCones(
   // if we already don't have a room map for this then get the combined map
   if (m_templateRoomBloxelMaps.count(newVPCommand->roomId) == 0) {
     log("Creating a new BloxelMap for room: %d", newVPCommand->roomId);
-    SpatialData::LocalGridMap combined_lgm;
-
-    /*
-     SpatialData::LocalGridMapMap grid = mapPrx->getGridMap();
-
-     Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
-
-     // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
-     int lp1 = 0;
-     for(int x = -grid.size ; x <= grid.size; x++){
-     for(int y = -grid.size ; y <= grid.size; y++){ 
-     lgm(x,y) = (grid.data[lp1]);
-     lp1++;
-     }
-     }
-     */
-
-    vector<comadata::ComaRoomPtr> comarooms;
-    getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
-
-    log("Got %d rooms", comarooms.size());
-
-    if (comarooms.size() == 0) {
-      wrn("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
+    
+    // This is a template map. Contains a room and obstacles
+    if (createRoomBloxelMap(newVPCommand->roomId) < 0)
       return;
-    }
-    int comarooms_i = -1;
-    for (size_t i = 0; i < comarooms.size(); i++) {
-      log("Got coma room with room id: %d", comarooms[i]->roomId);
-      if (comarooms[i]->roomId == newVPCommand->roomId) {
-        comarooms_i = i;
-        break;
-      }
-    }
-    if (comarooms_i == -1) {
-      wrn("no comaroom");
-      return;
-    }
-    for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
-      log("getting room which contains, placeid: %d",
-          comarooms[comarooms_i]->containedPlaceIds[j]);
-    }
-
-    /* Remove all free space and obstacle which does not belong to this room
-     * This is to avoid spillage of metric space from other rooms
-     * */
-    cout << "Removing all free space not belongin to this room" << endl;
-
-    log("Throwing away all known space in LGMap of this room belonging to another room");
-    FrontierInterface::PlaceInterfacePrx agg(getIceServer<
-        FrontierInterface::PlaceInterface> ("place.manager"));
-    log("got interface");
-
-    SpatialData::PlaceIDSeq currentRoomPlaceIds;
-
-    double xW, yW;
-
-    vector<SpatialData::PlacePtr> placesInMap;
-    getMemoryEntries<SpatialData::Place> (placesInMap, "spatial.sa");
-
-    std::vector<NavData::AEdgePtr> edges;
-    getMemoryEntries<NavData::AEdge> (edges);
-
-    vector<NavData::FNodePtr> nodesForPlaces;
-    for (unsigned int i = 0; i < placesInMap.size(); i++) {
-      NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
-      nodesForPlaces.push_back(node);
-    }
-
-    for (size_t j = 0; j
-        < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
-      currentRoomPlaceIds.push_back(
-          comarooms[comarooms_i]->containedPlaceIds[j]);
-      NavData::FNodePtr node = agg->getNodeFromPlaceID(
-          comarooms[comarooms_i]->containedPlaceIds[j]);
-      m_roomNodes[newVPCommand->roomId].push_back(node);
-      for (std::vector<NavData::AEdgePtr>::iterator it = edges.begin(); it
-          != edges.end(); ++it) {
-
-        NavData::FNodePtr node1 = agg->getNodeFromPlaceID(
-            agg->getPlaceFromNodeID((*it)->startNodeId)->id);
-        NavData::FNodePtr node2 = agg->getNodeFromPlaceID(
-            agg->getPlaceFromNodeID((*it)->endNodeId)->id);
-
-        if ((node1->gateway == 1) && (node2->nodeId == node->nodeId)) {
-          m_roomNodes[newVPCommand->roomId].push_back(node1);
-          currentRoomPlaceIds.push_back(
-              agg->getPlaceFromNodeID(node1->nodeId)->id);
-          break;
-        } else if ((node2->gateway == 1) && (node1->nodeId == node->nodeId)) {
-          m_roomNodes[newVPCommand->roomId].push_back(node2);
-          currentRoomPlaceIds.push_back(
-              agg->getPlaceFromNodeID(node2->nodeId)->id);
-          break;
-        }
-      }
-    }
-
-    FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
-        FrontierInterface::LocalMapInterface> ("map.manager"));
-    combined_lgm = agg2->getCombinedGridMap(currentRoomPlaceIds);
-
-    m_templateRoomBloxelMaps[newVPCommand->roomId]
-        = new SpatialGridMap::GridMap<GridMapData>(combined_lgm.size * 2 + 1,
-            combined_lgm.size * 2 + 1, m_cellsize, m_minbloxel, 0, 2.0,
-            combined_lgm.xCenter, combined_lgm.yCenter, 0, m_defaultBloxelCell);
-
-    //convert 2D map to 3D
-    CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
-        CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
-    IcetoCureLGM(combined_lgm, lgm);
-
-    for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
-      for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
-        if ((*lgm)(x, y) != '2') {
-          lgm->index2WorldCoords(x, y, xW, yW);
-          double minDistance = FLT_MAX;
-          unsigned int closestNodeIdx = 0;
-          bool excluded = false;
-          for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin(); fbIt
-              != m_forbiddenZones.end(); fbIt++) {
-            //    	  log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
-            //    	  log("checking against: %.02g, %.02g", newX, newY);
-            double dx, dy;
-            (*lgm).index2WorldCoords(x, y, dx, dy);
-            if ((dx <= fbIt->maxX && dx >= fbIt->minX && dy <= fbIt->maxY && dy
-                >= fbIt->minY)) {
-              log("point in forbidden zone excluded");
-              (*lgm)(x, y) = '2';
-              excluded = true;
-              break;
-            }
-          }
-          if (excluded)
-            continue;
-
-          for (size_t i = 0; i < nodesForPlaces.size(); i++) {
-            try {
-              if ((nodesForPlaces[i] != 0) && (nodesForPlaces[i]->gateway == 0)) {
-                double nX = nodesForPlaces[i]->x;
-                double nY = nodesForPlaces[i]->y;
-
-                double distance = (xW - nX) * (xW - nX) + (yW - nY) * (yW - nY);
-                if (distance < minDistance) {
-                  closestNodeIdx = i;
-                  minDistance = distance;
-                }
-              }
-            } catch (IceUtil::NullHandleException e) {
-              error("Error! FNode suddenly disappeared!");
-            }
-          }
-
-          SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIdx];
-
-          //					placemem = agg->getPlaceMembership(xW,yW);
-
-          if (find(currentRoomPlaceIds.begin(), currentRoomPlaceIds.end(),
-              closestPlace->id) == currentRoomPlaceIds.end()) {
-            (*lgm)(x, y) = '2';
-          }
-        }
-      }
-    }
-    log("removed");
-
-    m_templateRoomGridMaps[newVPCommand->roomId] = lgm;
-    GDMakeObstacle makeobstacle;
-    for (int x = -combined_lgm.size; x < combined_lgm.size; x++) {
-      for (int y = -combined_lgm.size; y < combined_lgm.size; y++) {
-        if ((*lgm)(x, y) == '1') {
-          double dx, dy;
-          (*lgm).index2WorldCoords(x, y, dx, dy);
-          int nx, ny;
-          if (lgmKH.worldCoords2Index(dx, dy, nx, ny) == 0) {
-            if (lgmKH(nx, ny) != FLT_MAX) {
-              if (lgmKH(nx, ny) - 0.1 > 0)
-                m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
-                    x + combined_lgm.size, y + combined_lgm.size, lgmKH(nx, ny)
-                        / 2, lgmKH(nx, ny) - 0.1, makeobstacle);
-            } else {
-              m_templateRoomBloxelMaps[newVPCommand->roomId]->boxSubColumnModifier(
-                  x + combined_lgm.size, y + combined_lgm.size,
-                  m_LaserPoseR.getZ(), m_minbloxel, makeobstacle);
-              //m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
-            }
-          }
-        }
-      }
-    }
   } else {
     log("Already have this bloxel map");
   }
 
   // FIXME !!! This check should be done for all objects that we can find !!!
-
 
   bool alreadyGenerated = false;
 
@@ -835,48 +843,47 @@ void AVS_ContinualPlanner::generateViewCones(
     log("Got an empty distribution!");
   }
 
-//  for (size_t i = 0; i < probdist.massFunction.size(); i++) {
-//    ostringstream ss;
-//    for (size_t j = 0; j < probdist.massFunction[i].variableValues.size(); j++) {
-//      SpatialProbabilities::StringRandomVariableValuePtr tmp =
-//	SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[i].variableValues[j]);
-//      if (tmp != 0) {
-//	ss << tmp->value << " ";
-//      }
-//    }
-//    log ("ProbDist element %i: %f (%s)", i, 
-//	probdist.massFunction[i].probability,
-//	ss.str().c_str());
-//  }
+  //  for (size_t i = 0; i < probdist.massFunction.size(); i++) {
+  //    ostringstream ss;
+  //    for (size_t j = 0; j < probdist.massFunction[i].variableValues.size(); j++) {
+  //      SpatialProbabilities::StringRandomVariableValuePtr tmp =
+  //	SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[i].variableValues[j]);
+  //      if (tmp != 0) {
+  //	ss << tmp->value << " ";
+  //      }
+  //    }
+  //    log ("ProbDist element %i: %f (%s)", i, 
+  //	probdist.massFunction[i].probability,
+  //	ss.str().c_str());
+  //  }
 
   // Find the probability value that corresponds to existence of the object
   bool queryError = false;
   double pdfmass;
   if (probdist.massFunction.size() != 2) {
-    error("Unexpected probability distribution cardinality %i!", probdist.massFunction.size());
+    error("Unexpected probability distribution cardinality %i!",
+        probdist.massFunction.size());
     queryError = true;
-  }
-  else if (probdist.massFunction[0].variableValues.size() != 1 ||
-	probdist.massFunction[1].variableValues.size() != 1) {
+  } else if (probdist.massFunction[0].variableValues.size() != 1
+      || probdist.massFunction[1].variableValues.size() != 1) {
     error("Unexpected number of variablesi!", probdist.massFunction.size());
     queryError = true;
-  }
-  else {
-      SpatialProbabilities::StringRandomVariableValuePtr tmp1 =
-	SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[0].variableValues[0]);
-      SpatialProbabilities::StringRandomVariableValuePtr tmp2 =
-	SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(probdist.massFunction[1].variableValues[0]);
+  } else {
+    SpatialProbabilities::StringRandomVariableValuePtr tmp1 =
+        SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+            probdist.massFunction[0].variableValues[0]);
+    SpatialProbabilities::StringRandomVariableValuePtr tmp2 =
+        SpatialProbabilities::StringRandomVariableValuePtr::dynamicCast(
+            probdist.massFunction[1].variableValues[0]);
 
-      if (tmp1->value == "exists") {
-	pdfmass = probdist.massFunction[0].probability;
-      }
-      else if (tmp2->value == "exists") {
-	pdfmass = probdist.massFunction[1].probability;
-      }
-      else {
-	error("No \"exists\" value in query result!");
-	queryError = true;
-      }
+    if (tmp1->value == "exists") {
+      pdfmass = probdist.massFunction[0].probability;
+    } else if (tmp2->value == "exists") {
+      pdfmass = probdist.massFunction[1].probability;
+    } else {
+      error("No \"exists\" value in query result!");
+      queryError = true;
+    }
   }
 
   if (queryError) {
@@ -884,7 +891,7 @@ void AVS_ContinualPlanner::generateViewCones(
       newVPCommand->status = SpatialData::FAILED;
       wrn("Overwriting command to change status to: FAILED");
       overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
-	  WMAddress, newVPCommand);
+          WMAddress, newVPCommand);
     }
     return;
   }
@@ -987,10 +994,10 @@ void AVS_ContinualPlanner::generateViewCones(
           double dx, dy;
           (*lgm).index2WorldCoords(x, y, dx, dy);
           int nx, ny;
-          if (lgmKH.worldCoords2Index(dx, dy, nx, ny) == 0) {
-            if (lgmKH(nx, ny) != FLT_MAX) {
+          if ((*m_lgmKH).worldCoords2Index(dx, dy, nx, ny) == 0) {
+            if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
               m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX, bloxelY,
-                  lgmKH(nx, ny) + 0.025, 0.05, initfunctor2);
+                  (*m_lgmKH)(nx, ny) + 0.025, 0.05, initfunctor2);
             }
 
             if (m_bUseWallPrior) {
@@ -1002,9 +1009,9 @@ void AVS_ContinualPlanner::generateViewCones(
                       <= m_objectBloxelMaps[id]->getMapSize().second && bloxelY
                       + i > 0)) {
                     //								/log("modifying bloxelmap pdf");
-                    if (lgmKH(nx, ny) != FLT_MAX) {
+                    if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
                       m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX + i,
-                          bloxelY + j, lgmKH(nx, ny) / 2 + 0.025, lgmKH(nx, ny)
+                          bloxelY + j, (*m_lgmKH)(nx, ny) / 2 + 0.025, (*m_lgmKH)(nx, ny)
                               + 0.05, initfunctor);
                     } else {
                       m_objectBloxelMaps[id]->boxSubColumnModifier(bloxelX + i,
@@ -1062,11 +1069,10 @@ void AVS_ContinualPlanner::generateViewCones(
 
   ViewPointGenerator coneGenerator(this,
       m_templateRoomGridMaps[newVPCommand->roomId], m_objectBloxelMaps[id],
-      m_samplesize, m_maxViewConeCount,
-      m_sampleawayfromobs, m_conedepth, m_tiltstep, m_panstep,
-      m_horizangle, m_vertangle, m_minDistance, 
-      m_minConeProb, m_minRelativeConeProb, pdfmass, m_pdfthreshold,
-      node->x, node->y);
+      m_samplesize, m_maxViewConeCount, m_sampleawayfromobs, m_conedepth,
+      m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance,
+      m_minConeProb, m_minRelativeConeProb, pdfmass, m_pdfthreshold, node->x,
+      node->y);
 
   vector<ViewPointGenerator::SensingAction> viewcones =
       coneGenerator.getBest3DViewCones(m_roomNodes[newVPCommand->roomId]);
@@ -1079,7 +1085,7 @@ void AVS_ContinualPlanner::generateViewCones(
       newVPCommand->status = SpatialData::FAILED;
       log("Overwriting command to change status to: FAILED");
       overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
-	  WMAddress, newVPCommand);
+          WMAddress, newVPCommand);
     }
     return;
   }
@@ -1145,7 +1151,7 @@ void AVS_ContinualPlanner::generateViewCones(
       }
     }
 
-//    debug("viewcones in place %d", (*plIt).second.size());
+    //    debug("viewcones in place %d", (*plIt).second.size());
     double stAngle = opt_minAngle;
     map<int, bool> collected_vc;
     while (collected_vc.size() < (*plIt).second.size()) {
@@ -1167,8 +1173,8 @@ void AVS_ContinualPlanner::generateViewCones(
             max_dist = dist1;
           if (collected_vc.count(k) == 0) {
             gr.push_back((*plIt).second[k]);
-	    probInThisGroup += (*plIt).second[k].totalprob;
-	  }
+            probInThisGroup += (*plIt).second[k].totalprob;
+          }
           collected_vc[k] = true;
         }
 
@@ -1211,14 +1217,13 @@ void AVS_ContinualPlanner::generateViewCones(
 
       if (probInThisGroup > m_minConeGroupProb) {
 
-	grouped_cones_minAngle.push_back(stAngle);
-	grouped_cones_maxAngle.push_back(stAngle + max_dist);
-	stAngle = maxAngle + min_dist - 0.0001;
-	//      debug("group size %d", gr.size());
-	grouped_cones.push_back(gr);
-      }
-      else {
-	log("Rejecting cone group with total probability %f", probInThisGroup);
+        grouped_cones_minAngle.push_back(stAngle);
+        grouped_cones_maxAngle.push_back(stAngle + max_dist);
+        stAngle = maxAngle + min_dist - 0.0001;
+        //      debug("group size %d", gr.size());
+        grouped_cones.push_back(gr);
+      } else {
+        log("Rejecting cone group with total probability %f", probInThisGroup);
       }
     }
   }
@@ -1229,7 +1234,7 @@ void AVS_ContinualPlanner::generateViewCones(
       newVPCommand->status = SpatialData::FAILED;
       log("Overwriting command to change status to: FAILED");
       overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
-	  WMAddress, newVPCommand);
+          WMAddress, newVPCommand);
     }
     return;
   }
@@ -1260,14 +1265,14 @@ void AVS_ContinualPlanner::generateViewCones(
       log("viewcone %d before blow up  %f", i, curConeGroup[j].totalprob);
 
       curConeGroup[j].totalprob = curConeGroup[j].totalprob * (1
-	  / m_locationToConeGroupNormalization[id]);
+          / m_locationToConeGroupNormalization[id]);
 
       log("viewcone %d after blow up  %f", i, curConeGroup[j].totalprob);
       log("viewcone %d pos %f %f %f", i, curConeGroup[j].pos[0],
-	  curConeGroup[j].pos[1], curConeGroup[j].pos[2]);
+          curConeGroup[j].pos[1], curConeGroup[j].pos[2]);
     }
   }
-//  debug("gcs %d", grouped_cones.size());
+  //  debug("gcs %d", grouped_cones.size());
 
   for (unsigned int i = 0; i < grouped_cones.size(); i++) {
     /* GETTING PLACE BELIEFS */
@@ -1666,8 +1671,8 @@ void AVS_ContinualPlanner::processConeGroup(int id, bool skipNav) {
         theta = theta + M_PI;
       }
       pos.setTheta(theta); //TODO not nessacerely - maybe between
- //     log("nav theta %f first vc %f min %f max %f", theta,
- //         m_currentViewCone.second.pan, minAngle, maxAngle);
+      //     log("nav theta %f first vc %f min %f max %f", theta,
+      //         m_currentViewCone.second.pan, minAngle, maxAngle);
       PostNavCommand(pos, SpatialData::GOTOPOSITION, tol);
       log("Posting a nav command");
     }
@@ -2064,7 +2069,6 @@ void AVS_ContinualPlanner::configure(
     m_minConeGroupProb = (atof(it->second.c_str()));
     log("Min cone group probability: %f", m_minConeGroupProb);
   }
-
 
   m_mapceiling = 2.0;
   it = _config.find("--mapceiling");
