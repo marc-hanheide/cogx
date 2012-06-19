@@ -165,6 +165,9 @@ class CyclicCGHeuristic : public Heuristic {
     LocalProblem *goal_problem;
     LocalProblemNode *goal_node;
 
+    int curr_priority;
+    int new_priority;
+
     std::vector<std::vector<LocalProblemNode *> > buckets;
     int heap_size;
     int mode;

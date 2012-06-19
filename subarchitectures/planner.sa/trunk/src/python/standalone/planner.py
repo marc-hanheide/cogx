@@ -505,6 +505,7 @@ class Downward(BasePlanner):
         with statistics.time_block_for_statistics(self.main_planner, "translate_time"):
             proc, translate_out,_ = utils.run_process(cmd, error=subprocess.STDOUT, dir=tmp_dir, wait=True)
         output.write(translate_out)
+        log.debug("translate command: %s" % cmd)
         log.debug("translate output:")
         log.debug(translate_out)
         

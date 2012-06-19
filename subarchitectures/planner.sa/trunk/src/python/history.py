@@ -54,7 +54,7 @@ def parse_history_new(history_fn, domain):
         last_state = None
         last_plan_state = None
         last_plan = None
-        dt = True
+        dt = False
         dt_action = None
         for elem in it:
             jt = iter(elem)
@@ -71,6 +71,9 @@ def parse_history_new(history_fn, domain):
                 action_states.clear()
                 last_plan = []
                 for elems in jt:
+                    if elems.is_terminal() and elems.token.string == ":notfound":
+                        last_plan = []
+                        break
                     action = " ".join(e.token.string for e in elems)
                     last_plan.append(action)
                     if is_auto_exec(action):

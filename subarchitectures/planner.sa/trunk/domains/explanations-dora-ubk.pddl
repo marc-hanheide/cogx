@@ -64,16 +64,20 @@
 ;; )
 
 (:action new-bk-inroom
-         :parameters (?l - label ?c - category)
-         :precondition (not (defined (dora__inroom ?l ?c)))
-         :effect (poss (likely_dora__inroom ?l ?c) true))
+         :parameters (?l - label ?c - category ?r - room)
+         :precondition (and (not (defined (dora__inroom ?l ?c)))
+                            (poss (category ?r) ?c))
+         :effect (and (poss (likely_dora__inroom ?l ?c) true)
+                      (poss (obj_exists_general ?l) true)))
 
 (:action new-bk-inobject
-         :parameters (?l ?l2 - label ?c - category)
+         :parameters (?l ?l2 - label ?c - category ?r - room)
          :precondition (and (defined (dora__inroom ?l ?c))
-                            (not (defined (dora__inobject ?l ?l2 ?c))))
+                            (not (defined (dora__inobject ?l ?l2 ?c)))
+                            (poss (category ?r) ?c))
          :effect (and (assign (probability) (dora__inroom ?l ?c))
-                      (poss (likely_dora__inobject ?l ?l2 ?c) true)))
+                      (poss (likely_dora__inobject ?l ?l2 ?c) true)
+                      (poss (obj_exists_general ?l) true)))
 
 ;; (:action new-bk-on
 ;;          :parameters (?l ?l2 - label ?c - category)
@@ -99,6 +103,7 @@
                             (poss (relation ?o) in)
                             (poss (likely_dora__inobject ?l1 ?l2 ?c) true))
          :effect (and (assign (probability) 0.9)
+                      (poss (obj_exists ?l1 in ?r) true)
                       (poss (obj_exists ?l1 in ?o) true)))
 
 
@@ -132,11 +137,17 @@
 ;;         :precondition (not (committed (entity-exists ?o)))
 ;;         :effect (poss (entity-exists ?o) true))
 
-;; (:action commit-non-existence
-;;         :parameters (?o - object)
-;;         :precondition (and (not (committed (entity-exists ?o)))
-;;                                 (is-virtual ?o))
-;;         :effect (poss (entity-exists ?o) false))
+(:action commit-non-existence
+        :parameters (?o - room)
+        :precondition (and (not (committed (entity-exists ?o)))
+                                (is-virtual ?o))
+        :effect (poss (entity-exists ?o) false))
+
+;; (:action obj_indirectly_in_room
+;;          :parameters (?l - label ?o - visualobject ?rel - spatial_relation ?r - room)
+;;          :precondition (and (poss (related-to ?o) ?r)
+;;                             (poss (obj_exists ?l ?rel ?o) true))
+;;          :effect (and (poss (obj_exists ?l in ?r) true)))
 
 (:action commit-place-not-in-room
         :parameters (?p - place)
@@ -170,7 +181,8 @@
                             (poss (entity-exists ?where) true)
                             (poss (obj_exists ?l ?rel ?where) false))
          :effect (and (poss (related-to ?o) unknown-room)
-                      (poss (relation ?o) unknown-spatial_relation))
+                      (poss (relation ?o) unknown-spatial_relation)
+                      (poss (obj_exists_general ?l) false))
          )
 
 

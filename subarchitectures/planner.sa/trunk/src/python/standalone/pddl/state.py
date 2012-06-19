@@ -1185,6 +1185,7 @@ class State(dict):
                         with ax.tryInstantiate(svar.get_args(), self.problem) as success:
                             if not success:
                                 continue
+                            # print ax.condition.pddl_str
                             
                             if getReasons:
                                 vars = []

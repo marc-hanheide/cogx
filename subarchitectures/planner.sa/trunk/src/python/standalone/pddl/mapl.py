@@ -20,10 +20,10 @@ t_feature = Type("feature")
 mapl_types = [t_agent, t_planning_agent, t_subgoal, t_feature]
 
 #mapl predicates
-knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
-direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
-num_knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_number))], builtin=True)
-num_direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_number))], builtin=True)
+knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_any))], builtin=True)
+direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_any))], builtin=True)
+# num_knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_number))], builtin=True)
+# num_direct_knowledge = Predicate("kd", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_number))], builtin=True)
 
 p = Parameter("?f", types.FunctionType(t_object))
 indomain = Predicate("in-domain", [p, Parameter("?v", types.ProxyType(p)), ], builtin=True)
@@ -54,8 +54,8 @@ failure_cost = predicates.Function("failure-cost", [], builtin.t_number, builtin
 
 # shared_knowledge = Predicate("shval", [Parameter("?a", t_agent), Parameter("?a2", t_agent), Parameter("?f", types.FunctionType(t_object))], builtin=True)
 
-modal_predicates = [knowledge, indomain, num_knowledge,\
-                    direct_knowledge, i_indomain, num_direct_knowledge,\
+modal_predicates = [knowledge, indomain,\
+                    direct_knowledge, i_indomain,\
                     commit, committed, attributed, neg_attributed, \
                     update, update_fail, defined]
 # shared_knowledge, , ,\

@@ -54,7 +54,7 @@ class Action(Scope):
         #str = ["(:action %s" % self.name]
         #indent = len("(:action ")
 
-    def get_inst_func(self, st, condition=None):
+    def get_inst_func(self, st, condition=None, fact_check_fn=None):
         import itertools
         import state
         from predicates import FunctionTerm, FunctionVariableTerm, VariableTerm
@@ -112,9 +112,14 @@ class Action(Scope):
                     
                     if all(a.is_instantiated() for a in self.free_args[cond]):
                         fact = state.Fact.from_literal(cond, st)
-                        exst = st.get_extended_state([fact.svar])
-                        #TODO: handle all possible conditions
-                        if exst[fact.svar] != fact.value:
+                        res = None
+                        if fact_check_fn is not None:
+                            res = fact_check_fn(fact)
+                        if res is None:
+                            exst = st.get_extended_state([fact.svar])
+                            #TODO: handle all possible conditions
+                            res = exst[fact.svar] == fact.value
+                        if not res:
                             return False
                         checked.add(cond)
                         return True
@@ -160,22 +165,22 @@ class Action(Scope):
             result = check(condition)
             if result == True:
                 checked.add(condition)
-                #print self.name, "accept:", [a.get_instance().name for a in  args]
+                # print self.name, "accept:", [a.get_instance().name for a in  args]
                 return True, None
             elif result == False:
-                #print self.name, "reject:", [a.get_instance().name for a in  args]
+                # print self.name, "reject:", [a.get_instance().name for a in  args]
                 return None, None
             
             if forced:
                 svar, val, lit = forced[0]
                 checked.add(lit)
-                #print "Forced %s = %s" % (str(svar), val.name)
+                # print "Forced %s = %s" % (str(svar), val.name)
                 return (svar, val)
             if next_candidates:
                 next_candidates = sorted(next_candidates, key=lambda l: len(l))
-                #print "Next:", next_candidates[0][0]
+                # print "Next:", next_candidates[0][0]
                 return next_candidates[0][0], None
-            #print self, [a.get_instance().name for a in  args]
+            print self, [a.get_instance().name for a in  args]
             return True, None
         return inst_func
 

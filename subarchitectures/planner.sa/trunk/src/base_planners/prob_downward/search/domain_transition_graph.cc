@@ -62,6 +62,7 @@ void DomainTransitionGraph::read_data(istream &in) {
   //       that transitions in the input are not grouped by target
   //       like they should be. Change this.
 
+  // std::cout << "read:" << g_variable_name[var] << std::endl;
   for(int origin = 0; origin < nodes.size(); origin++) {
     int trans_count;
     in >> trans_count;
@@ -89,6 +90,8 @@ void DomainTransitionGraph::read_data(istream &in) {
         }
       }
 
+      // std::cout << "    " << origin << " -> " << target << " (" << the_operator->get_name() << ")"<< std::endl;
+
       pair<int, int> arc = make_pair(origin, target);
       if(!transition_index.count(arc)) {
         transition_index[arc] = nodes[origin].transitions.size();
@@ -109,6 +112,7 @@ void DomainTransitionGraph::read_data(istream &in) {
       for(int j = 0; j < precond_count; j++) {
         int global_var, val;
         in >> global_var >> val;
+        // std::cout << "    precond:" << g_variable_name[global_var] << " = " << val << std::endl;
         precond_pairs.push_back(make_pair(global_var, val));
 
         // Processing for pruned DTG.
@@ -124,6 +128,7 @@ void DomainTransitionGraph::read_data(istream &in) {
         // Processing for full DTG (cyclic CG).
         if(!global_to_ccg_parent.count(global_var)) {
           global_to_ccg_parent[global_var] = ccg_parents.size();
+          // std::cout << "    global var: " << g_variable_name[global_var] << std::endl;
           ccg_parents.push_back(global_var);
         }
         int ccg_parent = global_to_ccg_parent[global_var];
@@ -141,13 +146,20 @@ void DomainTransitionGraph::read_data(istream &in) {
           int pre = pre_post[j].pre;
           int post = pre_post[j].post;
 
-          if(var_no == var || !global_to_ccg_parent.count(var_no)) {
+          if(var_no == var) {// || !global_to_ccg_parent.count(var_no)) {
               // This is either an effect on the variable we're
               // building the DTG for, or an effect on a variable we
               // don't need to track because it doesn't appear in
               // conditions of this DTG. Ignore it.
+            // std::cout << "    no side effect var: " << g_variable_name[var_no] << std::endl;
               continue;
           }
+          else if (!global_to_ccg_parent.count(var_no)) {
+            global_to_ccg_parent[var_no] = ccg_parents.size();
+            // std::cout << "    additional global var: " << g_variable_name[var_no] << std::endl;
+            ccg_parents.push_back(var_no);
+          }
+          // std::cout << "    op precond:" << g_variable_name[var_no] << ": " << pre << " -> " << post << std::endl;
 
           vector<pair<int, int> > triggercond_pairs;
           if(pre != -1)
@@ -161,6 +173,7 @@ void DomainTransitionGraph::read_data(istream &in) {
           if(includes(precond_pairs.begin(), precond_pairs.end(),
                       triggercond_pairs.begin(), triggercond_pairs.end())) {
               int ccg_parent = global_to_ccg_parent[var_no];
+              // std::cout << "      cyclic effect:" << g_variable_name[var_no] << " = " << post << std::endl;
               cyclic_effect.push_back(LocalAssignment(ccg_parent, post));
           }
       }
@@ -177,12 +190,31 @@ void DomainTransitionGraph::read_data(istream &in) {
     }
   }
   check_magic(in, "end_DTG");
-  calc_connectivity();
+  // calc_connectivity();
 }
 
 void DomainTransitionGraph::dump() const {
-  cout << "DomainTransitionGraph::dump() not implemented." << endl;
-  assert(false);
+  std::cout << "graph for " << g_variable_name[var] << ":"<< std::endl;
+  for (int i=0; i < nodes.size(); ++i) {
+    for (int j=0; j < nodes[i].transitions.size(); ++j) {
+      const ValueTransition *t = &nodes[i].transitions[j];
+      std::cout << "    " << nodes[i].value << " -> " << t->target->value << std::endl;
+      for (int k=0; k < t->ccg_labels.size(); ++k) {
+        const ValueTransitionLabel *l = &t->ccg_labels[k];
+        std::cout << "       " << l->op->get_name() << std::endl;
+        for (int p=0; p < l->precond.size(); ++p) {
+          int p_var = ccg_parents[l->precond[p].local_var];
+          std::cout << "           " << g_variable_name[p_var] << " = " << l->precond[p].value << std::endl;
+        }
+        for (int p=0; p < l->effect.size(); ++p) {
+          int p_var = ccg_parents[l->effect[p].local_var];
+          std::cout << "           " << g_variable_name[p_var] << " -> " << l->effect[p].value << std::endl;
+        }
+      }
+    }
+  }
+  // cout << "DomainTransitionGraph::dump() not implemented." << endl;
+  // assert(false);
 }
 
 void DomainTransitionGraph::get_successors(int value, vector<int> &result) const {

@@ -75,6 +75,7 @@
    ;; Also see the rules below
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
+   (obj_exists_general ?l - label) - boolean
 
    ;; === room properties ===
    (category ?r - room) - category
@@ -317,7 +318,9 @@
            :precondition (and (= (category ?r) ?c)
                               (defined (dora__inroom ?l ?c))
                               (not (defined (p-obj_exists ?l in ?r ?c))))
-           :effect (probabilistic (dora__inroom ?l ?c) (assign (obj_exists ?l in ?r) true)))
+           :effect (probabilistic (dora__inroom ?l ?c) 
+                                  (and (assign (obj_exists ?l in ?r) true)
+                                       (assign (obj_exists_general ?l) true))))
 
 
   ;; p(?label IN ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -329,7 +332,9 @@
                               (= (relation ?o) in)
                               (defined (dora__inobject ?l1 ?l2 ?c))
                               (not (defined (p-obj_exists ?l1 in ?o ?c))))
-           :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) (assign (obj_exists ?l1 in ?o) true)))
+           :effect (probabilistic (dora__inobject ?l1 ?l2 ?c) 
+                                  (and (assign (obj_exists ?l1 in ?o) true)
+                                       (assign (obj_exists_general ?l1) true))))
 
 
   ;; p(?label ON ?object | label(?object) = ?l2 AND ?object IN ?room AND category(?room) = ?cat)
@@ -341,7 +346,9 @@
                               (= (relation ?o) in)
                               (defined (dora__on ?l1 ?l2 ?c))
                               (not (defined (p-obj_exists ?l1 on ?o ?c))))
-           :effect (probabilistic (dora__on ?l1 ?l2 ?c) (assign (obj_exists ?l1 on ?o) true)))
+           :effect (probabilistic (dora__on ?l1 ?l2 ?c) 
+                                  (and (assign (obj_exists ?l1 on ?o) true)
+                                       (assign (obj_exists_general ?l1) true))))
 
   ;; (assign (obj_in_room ?l ?r)
 
@@ -351,7 +358,9 @@
            :parameters (?l - label ?rel - spatial_relation ?where - room ?c - category)
            :precondition (and (= (category ?where) ?c)
                               (defined (p-obj_exists ?l ?rel ?where ?c)))
-           :effect (probabilistic (p-obj_exists ?l ?rel ?where ?c) (and (assign (obj_exists ?l ?rel ?where) true)))
+           :effect (probabilistic (p-obj_exists ?l ?rel ?where ?c) 
+                                  (and (assign (obj_exists ?l ?rel ?where) true)
+                                       (assign (obj_exists_general ?l) true)))
            )
 
   ;; use posterior information from conceptual.sa
@@ -360,7 +369,9 @@
            :precondition (and (= (related-to ?where) ?r)
                               (= (category ?r) ?c)
                               (defined (p-obj_exists ?l ?rel ?where ?c)))
-           :effect (probabilistic (p-obj_exists ?l ?rel ?where ?c) (and (assign (obj_exists ?l ?rel ?where) true)))
+           :effect (probabilistic (p-obj_exists ?l ?rel ?where ?c) 
+                                  (and (assign (obj_exists ?l ?rel ?where) true)
+                                       (assign (obj_exists_general ?l) true)))
            )
 
   ;; p(?label IN ?room | category(?room) = ?cat)
@@ -380,7 +391,9 @@
                               (is-virtual ?o)
                               (= (obj_exists ?l ?rel ?where) true))
            :effect (probabilistic 1.0 (and (assign (related-to ?o) ?where)
-                                           (assign (relation ?o) ?rel)))
+                                           (assign (relation ?o) ?rel)
+                                           (assign (entity-exists ?o) true)
+                                           ))
            )
 
   (:dtrule sample_object_existence
@@ -597,7 +610,7 @@
                                (= (is-in ?a) ?p)
                                (= (in-room ?p) ?r))
             :effect (and 
-                     (increase (total-cost) 5)
+                     (increase (total-cost) 10)
                      ;; (assign (failure-cost) 100)
                      )
             )
@@ -659,7 +672,7 @@
                                (can-relate ?a ?what ?h)
                                )
             :effect (and 
-                     (increase (total-cost) 500)
+                     (increase (total-cost) 10)
                      ;; (assign (failure-cost) 100)
                      )
             )
@@ -672,6 +685,36 @@
              :effect (and (when (= (entity-exists ?o) ?val)
                             (probabilistic 0.95 (observed (entity-exists ?o) ?val))))
              )
+
+
+   (:action ask-for-bk-inroom
+            :agent (?a - robot)
+            :parameters (?l - label ?c - category)
+            :variables (?p - place ?h - person)
+            :precondition (and (not (done))
+                               (engaged ?h)
+                               (= (is-in ?h) ?p)
+                               (= (is-in ?a) ?p)
+                               )
+            :effect (and 
+                     (increase (total-cost) 10))
+            :sense (dora__inroom ?l ?c)
+            )
+
+
+   (:action ask-for-bk-inobject
+            :agent (?a - robot)
+            :parameters (?l1 ?l2 - label ?c - category)
+            :variables (?p - place ?h - person)
+            :precondition (and (not (done))
+                               (engaged ?h)
+                               (= (is-in ?h) ?p)
+                               (= (is-in ?a) ?p)
+                               )
+            :effect (and 
+                     (increase (total-cost) 10))
+            :sense (dora__inobject ?l1 ?l2 ?c)
+            )
 
    ;; (:observe engagement
    ;;           :agent (?a - robot)
@@ -709,6 +752,17 @@
                           )
              )
 
+   (:action __knowledge_bk_inroom
+            :agent (?a - planning_agent)
+            :parameters (?l - label ?c - category)
+            :precondition (kval ?a (dora__inroom ?l ?c))
+            :effect (kd ?a (likely_dora__inroom ?l ?c)))
+
+   (:action __knowledge_bk_inobject
+            :agent (?a - planning_agent)
+            :parameters (?l1 ?l2 - label ?c - category)
+            :precondition (kval ?a (dora__inobject ?l1 ?l2 ?c))
+            :effect (kd ?a (likely_dora__inobject ?l1 ?l2 ?c)))
 
    ;; (:action ask-for-category-polar
    ;;          :agent (?a - robot)

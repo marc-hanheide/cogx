@@ -67,6 +67,11 @@ class CASTState(object):
         tp.current_domain = self.domain
         tp.belief_dict = self.beliefdict
 
+        # ftups = list(tp.gen_fact_tuples(self.beliefs))
+        # print map(str, ftups)
+        # obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(ftups)))
+        # print map(str, obj_descriptions)
+        
         obj_descriptions = list(tp.unify_objects(tp.filter_unknown_preds(tp.gen_fact_tuples(self.beliefs))))
         log.debug("time to belief conversion: %.2f", time.time() - t0)
   

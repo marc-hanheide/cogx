@@ -1,3 +1,4 @@
+from collections import defaultdict
 from itertools import chain
 from standalone import pddl, plans, config
 from standalone.pddl import types
@@ -11,6 +12,7 @@ w = None
 ignored_functions = set()
 
 svars_to_check = set()
+known_svars = set()
 
 def fact_filter(fact):
     if fact.svar.function in ignored_functions:
@@ -33,7 +35,6 @@ SWITCH_OP2 = """
    :effect (and (assign (phase) apply_rules))
   )
 """
-
 
 compatible_axiom = """
 (:derived (compatible ?svar - (function object)  ?val - (typeof ?svar))
@@ -83,7 +84,7 @@ def add_explanation_rules(expl_rules_fn):
                 alist.append(a)
                 if isinstance(a, pddl.Action):
                     add_consistence_checks(a)
-                    a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
+                    # a.extend_precondition(str2cond("(= (phase) apply_rules)", expl_domain))
 
 def add_consistence_checks(action):
     for eff in action.effect.visit(pddl.visitors.collect_effects):
@@ -121,7 +122,8 @@ def build_operator_for_ground_action(i, action, args):
             svars_to_check.add(pddl.state.StateVariable.from_term(term))
             
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
-    for cond in [se_condition, enabled_cond]:
+    # for cond in [se_condition, enabled_cond]:
+    for cond in [enabled_cond]:
         new_op.extend_precondition(cond)
     enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
     new_op.set_total_cost(pddl.Term(1))
@@ -166,6 +168,8 @@ def possible_compatibility_effect(fact):
         return False
     if isinstance(fact.svar.function, pddl.Predicate):
         return False
+    if fact.svar in known_svars:
+        return False
     return fact_filter(fact)
 
 def build_operator_for_new_facts(i, node):
@@ -174,6 +178,7 @@ def build_operator_for_new_facts(i, node):
     compatibility_conds |= set(pddl.state.Fact(f.svar.as_modality(compatible, [f.value]), pddl.TRUE) for f in node.effects if possible_compatibility_effect(f))
     
     node.preconds = set(f for f in node.preconds if possible_cond_effect(f))
+    known_svars.update(f.svar for f in node.effects if f.svar.modality is None)
 
     rule_conditions = sum((state_rule_conditions(f) for f in node.effects if fact_filter(f)), [])
     
@@ -185,16 +190,17 @@ def build_operator_for_new_facts(i, node):
     new_op.precondition = pddl.Conjunction(rule_conditions + [f.to_condition() for f in chain(node.preconds, compatibility_conds) if fact_filter(f)], new_op)
     new_op.effect = pddl.ConjunctiveEffect([f.to_effect() for f in node.effects if f not in node.preconds and fact_filter(f)], new_op)
     add_ops = []
-    for i, pre in enumerate(node.preconds):
-        name = "forfeit_%s_%s-%d" % (action_id, node.action.name, i)
-        new_op2 = pddl.Action(name, [], None, None, expl_domain, None)
-        new_op2.effect = pre.to_effect()
-        # new_op2.precondition = pddl.Conjunction([f.to_condition() for f in node.preconds if fact_filter(f)], new_op2)
-        new_op2.set_total_cost(pddl.Term(500))
-        add_ops.append(new_op2)
+    # for i, pre in enumerate(node.preconds):
+    #     name = "forfeit_%s_%s-%d" % (action_id, node.action.name, i)
+    #     new_op2 = pddl.Action(name, [], None, None, expl_domain, None)
+    #     new_op2.effect = pre.to_effect()
+    #     # new_op2.precondition = pddl.Conjunction([f.to_condition() for f in node.preconds if fact_filter(f)], new_op2)
+    #     new_op2.set_total_cost(pddl.Term(500))
+    #     add_ops.append(new_op2)
     
     enabled_cond = str2cond("(= (enabled) %s)" % action_id, expl_domain)
-    for cond in [se_condition, enabled_cond]:
+    # for cond in [se_condition, enabled_cond]:
+    for cond in [enabled_cond]:
         for op in chain([new_op], add_ops):
             op.extend_precondition(cond)
     enabled_eff = str2eff("(assign (enabled) %s)" % action_id, expl_domain)
@@ -229,12 +235,14 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
     # add objects from problem to domain as constants
     for obj in problem.objects:
         expl_domain.add_constant(obj)
-    for phase in ["make_alternative_assumptions", "apply_rules", "simulate_execution", "achieve_goal"]:
-        expl_domain.add_constant(types.TypedObject(phase, phase_t))
-    aa_condition = str2cond("(= (phase) make_alternative_assumptions)", expl_domain)
-    ar_condition = str2cond("(= (phase) apply_rules)", expl_domain)
-    se_condition = str2cond("(= (phase) simulate_execution)", expl_domain)
+    # for phase in ["make_alternative_assumptions", "apply_rules", "simulate_execution", "achieve_goal"]:
+    #     expl_domain.add_constant(types.TypedObject(phase, phase_t))
+    # aa_condition = str2cond("(= (phase) make_alternative_assumptions)", expl_domain)
+    # ar_condition = str2cond("(= (phase) apply_rules)", expl_domain)
+    # se_condition = str2cond("(= (phase) simulate_execution)", expl_domain)
 
+    expl_domain.add_constant(types.TypedObject("achieve_goal", action_t))
+        
     for t in expl_domain.types.itervalues():
         if t in (pddl.t_object, pddl.t_boolean, pddl.t_number) + tuple(pddl.mapl.mapl_types):
             continue
@@ -262,7 +270,7 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
                     # print "link:", n, succ, svar, val
                     commitments.add(pddl.state.Fact(svar.as_modality(pddl.mapl.committed), pddl.TRUE))
             a = a.copy()
-            a.extend_precondition(ar_condition)
+            # a.extend_precondition(ar_condition)
             #print "virtual action:", w.write_action(a)  
             expl_domain.add_action(a)
             continue
@@ -289,21 +297,198 @@ def build_explanation_domain(last_plan, problem, expl_rules_fn):
         #     break
         i += 1
     for op in last_actions:
-        op.extend_effect(str2eff("(assign (phase) achieve_goal)", expl_domain))
+        op.extend_effect(str2eff("(assign (enabled) achieve_goal)", expl_domain))
     # add action to switch phases
-    for swop in [SWITCH_OP1, SWITCH_OP2]:
-        switch_action = pddl.parser.Parser.parse_as(swop.splitlines(), pddl.Action, expl_domain)
-        expl_domain.add_action(switch_action)
+    # for swop in [SWITCH_OP1, SWITCH_OP2]:
+    #     switch_action = pddl.parser.Parser.parse_as(swop.splitlines(), pddl.Action, expl_domain)
+    #     expl_domain.add_action(switch_action)
+
+def apply_high_p_assumptions(init_state, domain):
+    problem = init_state.problem
+    def get_p(effects):
+        for svar, val in effects.iteritems():
+            if svar.function.name == "probability":
+                return val.value
+        return 1.0
+
+    probs = defaultdict(lambda: 0.0)
+    svar_facts = defaultdict(set)
+
+    def ignore_phase_check_fn(fact):
+        if fact.svar.function.name == "phase":
+            return True
+    
+    for action in domain.actions:
+        if not action.args:
+            continue
+        print "----",action.name
+        inst_func = action.get_inst_func(init_state, fact_check_fn=ignore_phase_check_fn)
+        print map(str, [map(str, list(problem.get_all_objects(a.type))) for a in action.args])
+        for mapping in action.smart_instantiate(inst_func, action.args, [list(problem.get_all_objects(a.type)) for a in action.args], problem):
+            effects = init_state.get_effect_facts(action.effect)
+            p = get_p(effects)
+            for svar, val in effects.iteritems():
+                if svar.modality == pddl.mapl.commit:
+                    fact = pddl.state.Fact(svar.nonmodal(), svar.modal_args[0])
+                    probs[fact] = max(probs[fact], p)
+                    svar_facts[fact.svar].add(fact)
+
+    new_state = init_state.copy()
+    for svar, facts in svar_facts.iteritems():
+        if sum(probs[f] for f in facts) > 1.0:
+            continue
+        for f in facts:
+            if probs[f] > 0.91 and probs[f] < 1.0:
+                print "set:", f, probs[f]
+                new_state.set(f)
+
+    return new_state
+
+def stratify_assumptions(domain):
+    all_functions = set()
+    all_actions = set()
+    conditions_to_actions = defaultdict(set)
+    effects_to_actions = defaultdict(set)
+    R=defaultdict(lambda: 0)
+    @pddl.visitors.collect
+    def get_assumptions(elem, results):
+        if isinstance(elem, pddl.Literal) and elem.predicate == pddl.mapl.commit:
+            return elem.args[0].function
+        
+    for a in domain.actions:
+        if a.name.startswith("_action_") or a.name.startswith("forfeit_action_"):
+            continue
+        all_actions.add(a)
+        for f2 in a.effect.visit(get_assumptions):
+            effects_to_actions[f2].add(a)
+            all_functions.add(f2)
+            for f in a.precondition.visit(get_assumptions):
+                conditions_to_actions[f].add(a)
+                all_functions.add(f)
+                R[f, f2] = 1
+
+    # for j in all_functions:
+    #     for i in all_functions:
+    #         for k in all_functions:
+    #             if min(R[i,j], R[j,k]) > 0:
+    #                 R[i,k] = max(R[i,j], R[j,k], R[i,k])
+
+    def succ(f):
+        return (x for x in all_functions if (f,x) in R)
+
+    #find strongly connected components
+    index = [0]
+    indexes = {}
+    lowlink = {}
+    S = []
+    scc = []
+
+    def tarjan_scc(f):
+        indexes[f] = index[0]
+        lowlink[f] = index[0]
+        index[0] += 1
+        S.append(f)
+
+        for f2 in succ(f):
+            if f2 not in indexes:
+                tarjan_scc(f2)
+                lowlink[f] = min(lowlink[f], lowlink[f2])
+            elif f2 in S:
+                lowlink[f] = min(lowlink[f], indexes[f2])
+
+        if lowlink[f] == indexes[f]:
+            comp = set([f])
+            f2 = S.pop(-1)
+            while f != f2:
+                comp.add(f2)
+                f2 = S.pop(-1)
+            # print map(str, comp)
+            scc.append(comp)
+        
+    for f in all_functions:
+        if f not in indexes:
+            tarjan_scc(f)
+                    
+
+    #extract strata
+    remaining = set(all_functions)
+    layers = []
+    
+    while remaining:
+        stratum = set()
+        for j in remaining:
+            # print j, [R[i,j] for i in remaining]
+            if all(R[i,j] != 1 for i in remaining):
+                layers.append([j])
+                stratum.add(j)
+                # print "layer:", j
+                
+        if not stratum:
+            for comp in scc:
+                if comp & remaining:
+                    other_remaining = remaining - comp
+                    if all(R[i,j] != 1 for i in other_remaining):
+                        layers.append(comp)
+                        stratum |= comp
+                        # print "layer:", map(str, comp)
+
+        remaining -= stratum
+
+    layers_for_actions = [list() for x in layers]
+    for i, l in reversed(list(enumerate(layers))):
+        for f in l:
+            for a in conditions_to_actions[f]:
+                if a in all_actions:
+                    # print "add:", a.name, "due to", f.name
+                    layers_for_actions[i].append(a)
+                    all_actions.remove(a)
+    for a in all_actions:
+        layers_for_actions.insert(0, [a])
+
+    phase_t = expl_domain.types["phase"]
+    action_t = expl_domain.types["action"]
+    phase = 0
+    phase_obj = types.TypedObject("apply_rules_" + str(phase).zfill(3), action_t)
+    expl_domain.add_constant(phase_obj)
+    for l in layers_for_actions:
+        if not l:
+            continue
+        
+        if phase != 0:
+            num = str(phase).zfill(3)
+            new_phase_obj = types.TypedObject("apply_rules_%s" % num , action_t)
+            expl_domain.add_constant(new_phase_obj)
+            switch = pddl.Action("_switch_rules_%s" % num, [], None, None, expl_domain)
+            switch.precondition = pddl.Builder(switch).cond("=", ("enabled",), phase_obj)
+            switch.effect = pddl.Builder(switch).effect("assign", ("enabled",), new_phase_obj)
+            expl_domain.add_action(switch)
+            phase_obj = new_phase_obj
+        
+        for a in l:
+            a.set_parent(expl_domain)
+            a.extend_precondition(pddl.Builder(a).cond("=", ("enabled",), phase_obj))
+
+        phase += 1
+        
+    switch = pddl.Action("_switch_phase_simulate_execution", [], None, None, expl_domain)
+    switch.precondition = pddl.Builder(switch).cond("=", ("enabled",), phase_obj)
+    switch.effect = pddl.Builder(switch).effect("assign", ("enabled",), "action_000")
+    expl_domain.add_action(switch)
+        
+        
 
 
 def build_explanation_problem(problem, last_plan, init_state, observed_state):
     assert expl_domain is not None
     p = problem.copy(newdomain=expl_domain)
     p.objects = set()
+    
+    stratify_assumptions(expl_domain)
+    high_p_init_state = apply_high_p_assumptions(init_state, expl_domain)
 
-    p.init = [f.to_init() for f in init_state.iterfacts()]
-    p.init.append(pddl.Builder(p).init("=", ("phase",), "apply_rules"))
-    p.init.append(pddl.Builder(p).init("=", ("enabled",), "action_000"))
+    p.init = [f.to_init() for f in high_p_init_state.iterfacts()]
+    p.init.append(pddl.Builder(p).init("=", ("enabled",), "apply_rules_000"))
+    # p.init.append(pddl.Builder(p).init("=", ("enabled",), "action_000"))
 
     relevant = set()
     for n in last_plan:
@@ -321,13 +506,15 @@ def build_explanation_problem(problem, last_plan, init_state, observed_state):
     # gfacts += [f.to_condition().negate() for f in relevant if f.svar not in extstate and filter_fn(f)]
     # for f in sorted(relevant,key=str):
     #     print f, observed_state[f.svar]
-    # gfacts = [f.to_condition() for f in commitments]
-    # goal = pddl.Conjunction(gfacts)
-    # #goal = pddl.Conjunction([])  # TEST
-    # if not isinstance(goal, pddl.Conjunction):
-    #     goal = pddl.Conjunction([goal])
+
+    gfacts = [f.to_condition() for f in commitments]
+    goal = pddl.Conjunction(gfacts)
+    if not isinstance(goal, pddl.Conjunction):
+        goal = pddl.Conjunction([goal])
     # goal.parts.append(str2cond("(= (phase) achieve_goal)", expl_domain))
-    p.goal = pddl.Conjunction([str2cond("(= (phase) achieve_goal)", expl_domain)])
+    goal.parts.append(str2cond("(= (enabled) achieve_goal)", expl_domain))
+    p.goal = goal
+    # p.goal = pddl.Conjunction([str2cond("(= (phase) achieve_goal)", expl_domain)])
     return p
     
 
@@ -340,6 +527,8 @@ def handle_failure(last_plan, problem, init_state, observed_state, expl_rules_fn
 
     sorted_plan = last_plan.topological_sort()
 
+    known_svars.update(f.svar for f in init_state.iterfacts() if f.svar.modality is None)
+    
     build_explanation_domain(last_plan, problem, expl_rules_fn)
     # print "\n".join(w.write_domain(expl_domain))
 
@@ -497,6 +686,8 @@ def postprocess_explanations(expl_plan, exec_plan):
     while open_expl:
         n = open_expl.pop()
         for pred in expl_plan.predecessors_iter(n):
+            if pred.action.name.startswith("_switch"):
+                continue
             if pred != expl_plan.init_node and pred.effects - old_assumptions:
                 relevant_expl.add(pred)
                 open_expl.add(pred)

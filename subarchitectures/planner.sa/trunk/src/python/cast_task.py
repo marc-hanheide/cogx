@@ -413,7 +413,8 @@ class CASTTask(object):
             self.component.verbalise("Oh, plan execution failed unexpectedly.  I'm searching for an explanation now.")
             time.sleep(5)
 
-        print self.init_state.state
+        # print self.init_state.state
+        print self.init_state.state.problem.domain.requirements
         print "==============================\n"*3
         merged_plan, init_state, final_state = merge_plans.merge_plans(self.plan_history, self.init_state.state, self.state.state)
         # last_plan = self.plan_history[-1].topological_sort()
@@ -432,8 +433,10 @@ class CASTTask(object):
                 beliefs = list(self.facts_to_belief(facts))
 
                 expl_poplan = self.make_cast_poplan(expl_plan, is_completed=True)
-                for s in self.poplan_to_string(expl_poplan):
-                    print s
+                # for s in self.poplan_to_string(expl_poplan):
+                #     print s
+                # for b in beliefs:
+                #     print b
                     
                 self.component.deliver_hypotheses(self, beliefs)
             else:
@@ -450,6 +453,9 @@ class CASTTask(object):
             if f.svar.modality == pddl.mapl.commit:
                 assert f.value == pddl.TRUE
                 f = pddl.state.Fact(f.svar.nonmodal(), f.svar.modal_args[0])
+            if f.svar.function.name in ("is-virtual", "entity-exists"):
+                continue
+            
             if len(f.svar.args) == 1:
                 obj_to_feature[f.svar.args[0]].add(f)
             elif len(f.svar.args) > 1:
@@ -468,7 +474,7 @@ class CASTTask(object):
         for o in obj_to_feature.keys():
             if is_virtual_object(o):
                 for f in self.state.state.iterfacts():
-                    if f.svar.modality is not None or f.svar.function.name == "is-virtual":
+                    if f.svar.modality is not None or f.svar.function.name in ("is-virtual", "entity-exists"):
                         continue
                     if o in f.svar.args:
                         if len(f.svar.args) == 1:
@@ -561,13 +567,16 @@ class CASTTask(object):
             
             if self.dt_planning_active():
                 log.info("starting dt task")
-                self.plan_log.append(planner_log.DTEntry(enabled=True))
-                self.dt_task.initialize(self.state.prob_state)
-                self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
-                for pnode in self.dt_task.subplan_actions:
-                    pnode.status = plans.ActionStatusEnum.IN_PROGRESS
-                self.component.start_dt_planning(self)
-                return
+                if self.dt_task.initialize(self.state.prob_state):
+                    self.plan_log.append(planner_log.DTEntry(enabled=True))
+                    self.update_status(TaskStateEnum.WAITING_FOR_DT, TaskStateInfoEnum.PLANNING_DT)
+                    for pnode in self.dt_task.subplan_actions:
+                        pnode.status = plans.ActionStatusEnum.IN_PROGRESS
+                    self.component.start_dt_planning(self)
+                    return
+                self.dt_task = None
+                log.info("failed to create dt task, continuing normally")
+                
             
         log.debug("Current plan:\n%s", plan)
 

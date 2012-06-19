@@ -42,7 +42,7 @@
          :parameters (?r - room ?cont - visualobject)
          :precondition (and (= (label ?cont) container))
          :effect (and 
-                  (committed (category ?r))
+                  ;; (committed (category ?r))
                   (poss (related-to ?cont ) ?r) 
                   (poss (relation ?cont ) in)
                   (poss (entity-exists ?cont ) true))
@@ -113,7 +113,9 @@
                             (poss (entity-exists ?where) true)
                             (poss (obj_exists ?l ?rel ?where) false))
          :effect (and (poss (related-to ?o) unknown-room)
-                      (poss (relation ?o) unknown-spatial_relation))
+                      (poss (relation ?o) unknown-spatial_relation)
+                      (poss (obj_exists_general ?l) false)
+                      (poss (entity-exists ?o) false))
          )
 
 

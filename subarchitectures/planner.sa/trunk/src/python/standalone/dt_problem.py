@@ -270,23 +270,32 @@ class DTProblem(object):
 
         self.goal_generator = DefaultGoalFactory(self.goals, self.selected_facts, self.assumptions, self.abstract_state, self.dtdomain)
         self.goal_generator.set_dt_problem(self)
-
+        
         self.dtdomain.actions += list(filter(None, self.goal_generator.get_goal_actions()))
         self.dtdomain.name2action = None
-        
+
+        if not self.goal_generator.got_goal_actions:
+            return False
+
         log.debug("Time to DT initialisation: %.2f sec", global_vars.get_time())
         log.debug("Node check time for goal creation: %.2f sec", domain_query_graph.check_time)
         self.write_dt_input("dtdomain.dtpddl", "dtproblem.dtpddl")
 
+        return True
+
     def extract_choices(self):
         choices = {}
         for pnode, level in self.assumptions:
-            # print pnode, level, map(str, pnode.effects)
+            print pnode, level, map(str, pnode.effects)
             for fact in pnode.effects:
                 if fact.svar.modality == mapl.commit:
                     fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
                 if not fact.svar.modality and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
+                    # print "=>",fact, level
                     choices[fact.svar] = (fact.value, level)
+                elif fact.svar.modality in (mapl.knowledge, mapl.direct_knowledge) and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
+                    # print "=>",fact, level
+                    choices[fact.svar.nonmodal()] = (pddl.UNKNOWN, level)
         return choices
 
     def write_dt_input(self, domain_fn, problem_fn, dt_id=0):
@@ -429,6 +438,7 @@ class DTProblem(object):
                     if fact.svar.function not in (pddl.builtin.total_cost, ):
                         goal_facts.add(fact)
                 self.subplan_actions.append(pnode)
+                # print "ok"
                 # print pnode
                 assumptions += [(pnode,0)] + [(pn, l) for pn, l in find_restrictions(pnode,0).iteritems()]
                 log.debug("assumptions: %s", ", ".join("%s/%d" % (str(a),l) for a,l in assumptions))
@@ -436,7 +446,8 @@ class DTProblem(object):
             
             # if pnode.action.name not in observe_actions and self.subplan_actions:
             #     break
-        
+
+        # print "goal facts:", map(str, goal_facts)
         self.remaining_costs = 0
         for pnode in plan.topological_sort():
             if pnode.status != plans.ActionStatusEnum.EXECUTED and not pnode.is_virtual() and pnode not in self.subplan_actions:
@@ -559,7 +570,11 @@ class DTProblem(object):
         assumptions = []
         for svar, (val, _) in choices.iteritems():
             if svar.function in self.prob_functions and svar not in self.detstate:
-                assumptions.append(state.Fact(svar, val))
+                if val == pddl.UNKNOWN:
+                    for obj in self.detstate.problem.get_all_objects(svar.function.type):
+                        assumptions.append(state.Fact(svar, obj))
+                else:
+                    assumptions.append(state.Fact(svar, val))
         log.debug("Facts from assumptions: %s", map(str, assumptions))
 
         #Get observable facts which are possibly correlated to out assumptions
@@ -914,6 +929,7 @@ class GoalActionFactory(object):
         self.confirm_dict = {}
         self.disconfirm_dict = {}
         self.goal_actions = set()
+        self.got_goal_actions = False
 
     def set_base_reward(self, reward):
         self.base_reward = reward
@@ -947,7 +963,7 @@ class GoalActionFactory(object):
                     p = 1.0 if self.state[svar] == f.value else 0.0
                 else:
                     p = self.state[svar][f.value]
-                    
+
                 if p == 0.0:
                     continue
                 
@@ -1000,6 +1016,8 @@ class GoalActionFactory(object):
         penalty_effect = b('when', ('not', ('=', term, fact.value)), ('assign', ('reward',), penalty))
         done_effect = b.effect('done')
         a.effect = b.effect('and', reward_effect, penalty_effect, done_effect, self.clear_state_effect())
+
+        self.got_goal_actions = True
 
         self.goal_actions.add(a.name)
         return a

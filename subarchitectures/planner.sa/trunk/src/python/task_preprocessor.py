@@ -214,6 +214,7 @@ def gen_fact_tuples(beliefs):
           yield AttributedSVarDistribution(agent, feat, [attributed_object], vals)
       else:
         obj = belief_to_object(bel)
+        # print bel.id, type(bel), isinstance(bel, cogxbm.HypotheticalBelief)
         if isinstance(bel, cogxbm.HypotheticalBelief):
           yield SVarDistribution("is-virtual", [obj], [(pddl.TRUE, 1.0)])
         else:
