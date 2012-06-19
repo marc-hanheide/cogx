@@ -258,6 +258,19 @@ VARDEFAULT filter_doors=
 # distance in metres at which the objects should be detectable
 VARDEFAULT avs_cone_depth=2
 
+# Greatest allowed number of generated view cones
+VARDEFAULT max_viewcones=20
+
+# Smallest allowed ABSOLUTE probability of any one view cone
+VARDEFAULT min_cone_prob=0
+
+# Smallest allowed RELATIVE probability of any one view cone
+# (i.e. its portion out of the total probability mass in a room)
+VARDEFAULT min_relative_cone_prob=0
+
+# Smallest allowed ABSOLUTE probability of any one cone group
+VARDEFAULT min_conegroup_prob=0.05
+
 # Whether to generate a prior probability along (laser-detected) wall
 # obstacles in uninformed AVS (otherwise, only the Kinect heightmap will be
 # used)
@@ -432,7 +445,7 @@ IFOPTALL(%(feature_options), spatial)
 # Also responds to ProcessConeGroup commands, by moving the robot and turning
 # the PTU and sending recognition commands, and subsequently updating the
 # probability associated with that cone group.
-        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects) --random-vc %(usePB)
+        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects)  --maxViewConeCount %(max_viewcones) --minConeProb %(min_cone_prob) --minRelativeConeProb %(min_relative_cone_prob)  --minConeGroupProb %(min_conegroup_prob) --random-vc %(usePB)
     ENDIF
 
     IFOPTALL(%(feature_options), simple_placeholder_exploration)
