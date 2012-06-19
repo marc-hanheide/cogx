@@ -901,6 +901,227 @@ void AVS_ContinualPlanner::generateBloxelMap(
   }
 }
 
+int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
+    ViewPointGenerator::SensingAction> > &grouped_cones,
+    vector<double> &grouped_cones_minAngle,
+    vector<double> &grouped_cones_maxAngle, string id, double pdfmass) {
+
+  log("getting cones..");
+
+  vector<comadata::ComaRoomPtr> comarooms;
+  getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
+
+  log("Got %d rooms", comarooms.size());
+
+  if (comarooms.size() == 0) {
+    log("No such ComaRoom with id %d! Returning", roomId);
+    return -1;
+  }
+  size_t comaroom_i = -1;
+  for (size_t i = 0; i < comarooms.size(); i++) {
+    log("Got coma room with room id: %d", comarooms[i]->roomId);
+    if (comarooms[i]->roomId == roomId) {
+      comaroom_i = i;
+      break;
+    }
+  }
+
+  FrontierInterface::PlaceInterfacePrx agg2(getIceServer<
+      FrontierInterface::PlaceInterface> ("place.manager"));
+  NavData::FNodePtr node = new NavData::FNode;
+  node = agg2->getNodeFromPlaceID(comarooms[comaroom_i]->containedPlaceIds[0]);
+
+  ViewPointGenerator coneGenerator(this, m_templateRoomGridMaps[roomId],
+      m_objectBloxelMaps[id], m_samplesize, m_maxViewConeCount,
+      m_sampleawayfromobs, m_conedepth, m_tiltstep, m_panstep, m_horizangle,
+      m_vertangle, m_minDistance, m_minConeProb, m_minRelativeConeProb,
+      pdfmass, m_pdfthreshold, node->x, node->y);
+
+  vector<ViewPointGenerator::SensingAction> viewcones =
+      coneGenerator.getBest3DViewCones(m_roomNodes[roomId]);
+
+  log("got %d cones..", viewcones.size());
+
+  if (viewcones.size() == 0) {
+    error("Error! Cone generation did not produce any cones!");
+    return -1;
+  }
+
+  //Getting the place belief pointer
+
+
+  // 1. Create conegroups out of viewcones
+  // 2. Fill in relevant fields
+  // 3. Create beliefs about them
+
+  map<int, vector<ViewPointGenerator::SensingAction> > place_cones;
+  for (size_t i = 0; i < viewcones.size(); i++) {
+    int closestnode = GetClosestNodeId(viewcones[i].pos[0],
+        viewcones[i].pos[1], viewcones[i].pos[2]);
+    int conePlaceId = GetPlaceIdFromNodeId(closestnode);
+    place_cones[conePlaceId].push_back(viewcones[i]);
+  }
+
+  for (map<int, vector<ViewPointGenerator::SensingAction> >::iterator plIt =
+      place_cones.begin(); plIt != place_cones.end(); plIt++) {
+    int min_counter = 4;
+    double opt_minAngle = 0;
+
+    for (size_t i = 0; i < (*plIt).second.size(); i++) {
+      double minAngle = (*plIt).second[i].pan;
+      double stAngle = minAngle;
+      int counter = 0;
+      map<int, bool> collected_vc;
+      while (collected_vc.size() < (*plIt).second.size()) {
+        double maxAngle = stAngle + m_maxRange;
+        double min_dist = 2 * M_PI;
+        for (size_t k = 0; k < (*plIt).second.size(); k++) {
+          double dist1 = (*plIt).second[k].pan - stAngle;
+          while (dist1 < 0)
+            dist1 += 2 * M_PI;
+          while (dist1 > 2 * M_PI)
+            dist1 -= 2 * M_PI;
+
+          if (dist1 < m_maxRange) {
+            collected_vc[k] = true;
+          }
+
+          double dist = (*plIt).second[k].pan - maxAngle;
+          while (dist < 0)
+            dist += 2 * M_PI;
+          while (dist > 2 * M_PI)
+            dist -= 2 * M_PI;
+          if (dist < min_dist) {
+            min_dist = dist;
+          }
+        }
+        stAngle = maxAngle + min_dist - 0.0001;
+        counter++;
+      }
+      if (counter < min_counter) {
+        min_counter = counter;
+        opt_minAngle = minAngle;
+      }
+    }
+
+    //    debug("viewcones in place %d", (*plIt).second.size());
+    double stAngle = opt_minAngle;
+    map<int, bool> collected_vc;
+    while (collected_vc.size() < (*plIt).second.size()) {
+      double maxAngle = stAngle + m_maxRange;
+      double min_dist = 2 * M_PI;
+      double max_dist = 0;
+      vector<ViewPointGenerator::SensingAction> gr;
+      double probInThisGroup = 0;
+      for (size_t k = 0; k < (*plIt).second.size(); k++) {
+
+        double dist1 = (*plIt).second[k].pan - stAngle;
+        while (dist1 < 0)
+          dist1 += 2 * M_PI;
+        while (dist1 > 2 * M_PI)
+          dist1 -= 2 * M_PI;
+
+        if (dist1 < m_maxRange) {
+          if (dist1 > max_dist)
+            max_dist = dist1;
+          if (collected_vc.count(k) == 0) {
+            gr.push_back((*plIt).second[k]);
+            probInThisGroup += (*plIt).second[k].totalprob;
+          }
+          collected_vc[k] = true;
+        }
+
+        double dist = (*plIt).second[k].pan - maxAngle;
+        while (dist < 0)
+          dist += 2 * M_PI;
+        while (dist > 2 * M_PI)
+          dist -= 2 * M_PI;
+        if (dist < min_dist) {
+          min_dist = dist;
+        }
+      }
+
+      bool swapped = true;
+      int j = 0;
+      ViewPointGenerator::SensingAction tmp;
+      while (swapped) {
+        swapped = false;
+        j++;
+        for (size_t k = 0; k < gr.size() - j; k++) {
+          double dist1 = gr[k].pan - stAngle;
+          while (dist1 < 0)
+            dist1 += 2 * M_PI;
+          while (dist1 > 2 * M_PI)
+            dist1 -= 2 * M_PI;
+          double dist2 = gr[k + 1].pan - stAngle;
+          while (dist2 < 0)
+            dist2 += 2 * M_PI;
+          while (dist2 > 2 * M_PI)
+            dist2 -= 2 * M_PI;
+
+          if (dist1 < dist2) {
+            tmp = gr[k];
+            gr[k] = gr[k + 1];
+            gr[k + 1] = tmp;
+            swapped = true;
+          }
+        }
+      }
+
+      if (probInThisGroup > m_minConeGroupProb) {
+
+        grouped_cones_minAngle.push_back(stAngle);
+        grouped_cones_maxAngle.push_back(stAngle + max_dist);
+        stAngle = maxAngle + min_dist - 0.0001;
+        //      debug("group size %d", gr.size());
+        grouped_cones.push_back(gr);
+      } else {
+        log("Rejecting cone group with total probability %f", probInThisGroup);
+      }
+    }
+  }
+
+  if (grouped_cones.size() == 0) {
+    error("Error! Cone generation did not accept any cone groups!");
+    return -1;
+  }
+
+  // Scale each cone group (all cones in each) so that total equals
+  // the region's total mass
+
+  // normalizing cone probabilities
+  log("normalizing viewcone probabilities");
+  m_locationToConeGroupNormalization[id] = 0;
+  for (size_t i = 0; i < grouped_cones.size(); i++) {
+    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
+    for (size_t j = 0; j < curConeGroup.size(); j++) {
+      m_locationToConeGroupNormalization[id] += curConeGroup[j].totalprob;
+    }
+  }
+
+  m_locationToConeGroupNormalization[id] /= pdfmass;
+
+  log("%f Total prob %f, normalizing constant %f", pdfmass,
+      m_locationToConeGroupNormalization[id], 1
+          / m_locationToConeGroupNormalization[id]);
+
+  for (size_t i = 0; i < grouped_cones.size(); i++) {
+    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
+    for (size_t j = 0; j < curConeGroup.size(); j++) {
+
+      log("viewcone %d before blow up  %f", i, curConeGroup[j].totalprob);
+
+      curConeGroup[j].totalprob = curConeGroup[j].totalprob * (1
+          / m_locationToConeGroupNormalization[id]);
+
+      log("viewcone %d after blow up  %f", i, curConeGroup[j].totalprob);
+      log("viewcone %d pos %f %f %f", i, curConeGroup[j].pos[0],
+          curConeGroup[j].pos[1], curConeGroup[j].pos[2]);
+    }
+  }
+  //  debug("gcs %d", grouped_cones.size());
+}
+
 /* Generate view cones for <object,relation , object/room, room> */
 void AVS_ContinualPlanner::generateViewCones(
     SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
@@ -1056,193 +1277,13 @@ void AVS_ContinualPlanner::generateViewCones(
     pbVis->Display2DCureMap(m_templateRoomGridMaps[newVPCommand->roomId],
         "roommap", true);
   }
-  log("getting cones..");
-
-  vector<comadata::ComaRoomPtr> comarooms;
-  getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
-
-  log("Got %d rooms", comarooms.size());
-
-  if (comarooms.size() == 0) {
-    log("No such ComaRoom with id %d! Returning", newVPCommand->roomId);
-    return;
-  }
-  unsigned int i = 0;
-  for (; i < comarooms.size(); i++) {
-    log("Got coma room with room id: %d", comarooms[i]->roomId);
-    if (comarooms[i]->roomId == newVPCommand->roomId) {
-      break;
-    }
-  }
-
-  FrontierInterface::PlaceInterfacePrx agg2(getIceServer<
-      FrontierInterface::PlaceInterface> ("place.manager"));
-  NavData::FNodePtr node = new NavData::FNode;
-  node = agg2->getNodeFromPlaceID(comarooms[i]->containedPlaceIds[0]);
-
-  ViewPointGenerator coneGenerator(this,
-      m_templateRoomGridMaps[newVPCommand->roomId], m_objectBloxelMaps[id],
-      m_samplesize, m_maxViewConeCount, m_sampleawayfromobs, m_conedepth,
-      m_tiltstep, m_panstep, m_horizangle, m_vertangle, m_minDistance,
-      m_minConeProb, m_minRelativeConeProb, pdfmass, m_pdfthreshold, node->x,
-      node->y);
-
-  vector<ViewPointGenerator::SensingAction> viewcones =
-      coneGenerator.getBest3DViewCones(m_roomNodes[newVPCommand->roomId]);
-
-  log("got %d cones..", viewcones.size());
-
-  if (viewcones.size() == 0) {
-    error("Error! Cone generation did not produce any cones!");
-    if (WMAddress != "") {
-      newVPCommand->status = SpatialData::FAILED;
-      log("Overwriting command to change status to: FAILED");
-      overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
-          WMAddress, newVPCommand);
-    }
-    return;
-  }
-
-  //Getting the place belief pointer
-
-
-  // 1. Create conegroups out of viewcones
-  // 2. Fill in relevant fields
-  // 3. Create beliefs about them
-
-  map<int, vector<ViewPointGenerator::SensingAction> > place_cones;
-  for (size_t i = 0; i < viewcones.size(); i++) {
-    int closestnode = GetClosestNodeId(viewcones[i].pos[0],
-        viewcones[i].pos[1], viewcones[i].pos[2]);
-    int conePlaceId = GetPlaceIdFromNodeId(closestnode);
-    place_cones[conePlaceId].push_back(viewcones[i]);
-  }
 
   vector<vector<ViewPointGenerator::SensingAction> > grouped_cones;
   vector<double> grouped_cones_minAngle;
   vector<double> grouped_cones_maxAngle;
 
-  for (map<int, vector<ViewPointGenerator::SensingAction> >::iterator plIt =
-      place_cones.begin(); plIt != place_cones.end(); plIt++) {
-    int min_counter = 4;
-    double opt_minAngle = 0;
-
-    for (size_t i = 0; i < (*plIt).second.size(); i++) {
-      double minAngle = (*plIt).second[i].pan;
-      double stAngle = minAngle;
-      int counter = 0;
-      map<int, bool> collected_vc;
-      while (collected_vc.size() < (*plIt).second.size()) {
-        double maxAngle = stAngle + m_maxRange;
-        double min_dist = 2 * M_PI;
-        for (size_t k = 0; k < (*plIt).second.size(); k++) {
-          double dist1 = (*plIt).second[k].pan - stAngle;
-          while (dist1 < 0)
-            dist1 += 2 * M_PI;
-          while (dist1 > 2 * M_PI)
-            dist1 -= 2 * M_PI;
-
-          if (dist1 < m_maxRange) {
-            collected_vc[k] = true;
-          }
-
-          double dist = (*plIt).second[k].pan - maxAngle;
-          while (dist < 0)
-            dist += 2 * M_PI;
-          while (dist > 2 * M_PI)
-            dist -= 2 * M_PI;
-          if (dist < min_dist) {
-            min_dist = dist;
-          }
-        }
-        stAngle = maxAngle + min_dist - 0.0001;
-        counter++;
-      }
-      if (counter < min_counter) {
-        min_counter = counter;
-        opt_minAngle = minAngle;
-      }
-    }
-
-    //    debug("viewcones in place %d", (*plIt).second.size());
-    double stAngle = opt_minAngle;
-    map<int, bool> collected_vc;
-    while (collected_vc.size() < (*plIt).second.size()) {
-      double maxAngle = stAngle + m_maxRange;
-      double min_dist = 2 * M_PI;
-      double max_dist = 0;
-      vector<ViewPointGenerator::SensingAction> gr;
-      double probInThisGroup = 0;
-      for (size_t k = 0; k < (*plIt).second.size(); k++) {
-
-        double dist1 = (*plIt).second[k].pan - stAngle;
-        while (dist1 < 0)
-          dist1 += 2 * M_PI;
-        while (dist1 > 2 * M_PI)
-          dist1 -= 2 * M_PI;
-
-        if (dist1 < m_maxRange) {
-          if (dist1 > max_dist)
-            max_dist = dist1;
-          if (collected_vc.count(k) == 0) {
-            gr.push_back((*plIt).second[k]);
-            probInThisGroup += (*plIt).second[k].totalprob;
-          }
-          collected_vc[k] = true;
-        }
-
-        double dist = (*plIt).second[k].pan - maxAngle;
-        while (dist < 0)
-          dist += 2 * M_PI;
-        while (dist > 2 * M_PI)
-          dist -= 2 * M_PI;
-        if (dist < min_dist) {
-          min_dist = dist;
-        }
-      }
-
-      bool swapped = true;
-      int j = 0;
-      ViewPointGenerator::SensingAction tmp;
-      while (swapped) {
-        swapped = false;
-        j++;
-        for (size_t k = 0; k < gr.size() - j; k++) {
-          double dist1 = gr[k].pan - stAngle;
-          while (dist1 < 0)
-            dist1 += 2 * M_PI;
-          while (dist1 > 2 * M_PI)
-            dist1 -= 2 * M_PI;
-          double dist2 = gr[k + 1].pan - stAngle;
-          while (dist2 < 0)
-            dist2 += 2 * M_PI;
-          while (dist2 > 2 * M_PI)
-            dist2 -= 2 * M_PI;
-
-          if (dist1 < dist2) {
-            tmp = gr[k];
-            gr[k] = gr[k + 1];
-            gr[k + 1] = tmp;
-            swapped = true;
-          }
-        }
-      }
-
-      if (probInThisGroup > m_minConeGroupProb) {
-
-        grouped_cones_minAngle.push_back(stAngle);
-        grouped_cones_maxAngle.push_back(stAngle + max_dist);
-        stAngle = maxAngle + min_dist - 0.0001;
-        //      debug("group size %d", gr.size());
-        grouped_cones.push_back(gr);
-      } else {
-        log("Rejecting cone group with total probability %f", probInThisGroup);
-      }
-    }
-  }
-
-  if (grouped_cones.size() == 0) {
-    error("Error! Cone generation did not accept any cone groups!");
+  if (generateViewConeGroups(newVPCommand->roomId, grouped_cones,
+      grouped_cones_minAngle, grouped_cones_maxAngle, id, pdfmass) < 0) {
     if (WMAddress != "") {
       newVPCommand->status = SpatialData::FAILED;
       log("Overwriting command to change status to: FAILED");
@@ -1252,42 +1293,7 @@ void AVS_ContinualPlanner::generateViewCones(
     return;
   }
 
-  // Scale each cone group (all cones in each) so that total equals
-  // the region's total mass
-
-  // normalizing cone probabilities
-  log("normalizing viewcone probabilities");
-  m_locationToConeGroupNormalization[id] = 0;
   for (size_t i = 0; i < grouped_cones.size(); i++) {
-    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
-    for (size_t j = 0; j < curConeGroup.size(); j++) {
-      m_locationToConeGroupNormalization[id] += curConeGroup[j].totalprob;
-    }
-  }
-
-  m_locationToConeGroupNormalization[id] /= pdfmass;
-
-  log("%f Total prob %f, normalizing constant %f", pdfmass,
-      m_locationToConeGroupNormalization[id], 1
-          / m_locationToConeGroupNormalization[id]);
-
-  for (size_t i = 0; i < grouped_cones.size(); i++) {
-    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
-    for (size_t j = 0; j < curConeGroup.size(); j++) {
-
-      log("viewcone %d before blow up  %f", i, curConeGroup[j].totalprob);
-
-      curConeGroup[j].totalprob = curConeGroup[j].totalprob * (1
-          / m_locationToConeGroupNormalization[id]);
-
-      log("viewcone %d after blow up  %f", i, curConeGroup[j].totalprob);
-      log("viewcone %d pos %f %f %f", i, curConeGroup[j].pos[0],
-          curConeGroup[j].pos[1], curConeGroup[j].pos[2]);
-    }
-  }
-  //  debug("gcs %d", grouped_cones.size());
-
-  for (unsigned int i = 0; i < grouped_cones.size(); i++) {
     /* GETTING PLACE BELIEFS */
 
     int closestnode = GetClosestNodeId(grouped_cones[i][0].pos[0],
