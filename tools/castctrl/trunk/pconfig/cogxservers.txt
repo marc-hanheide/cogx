@@ -133,19 +133,19 @@ golem.setVar("CMD_GOLEM", "${CMD_GOLEM_WORKDIR}/TinyIce")
 golem.setCommand("${CMD_GOLEM}", workdir="${CMD_GOLEM_WORKDIR}")
 
 
-openccg = Server("OpenCcg", label="Open CCG")
+openccg = Server("Realiserver", label="OpenCCG Realiserver")
 openccg.integerField("PORT",
         label="Port", range=(2000,50000), default=4321)
-openccg.setVar("OPENCCG_ROOT", "${COGX_ROOT}/tools/openccg-realiserver")
-openccg.setPathList("OPENCCG_CLASSPATH", """
-     <glob>${OPENCCG_ROOT}/*.jar</glob>
-     <glob>${OPENCCG_ROOT}/jars/*.jar</glob>
+openccg.setVar("OPENCCG_RS_ROOT", "${COGX_ROOT}/tools/openccg-realiserver")
+openccg.setPathList("OPENCCG_RS_CLASSPATH", """
+     <glob>${OPENCCG_RS_ROOT}/*.jar</glob>
+     <glob>${OPENCCG_RS_ROOT}/jars/*.jar</glob>
      """)
-openccg.setVar("CMD_OPENCCG_SERVER", """
-     java -classpath ${OPENCCG_CLASSPATH}
+openccg.setVar("CMD_OPENCCG_RS_SERVER", """
+     java -classpath ${OPENCCG_RS_CLASSPATH}
      de.dfki.lt.tr.realiserver.OpenCCGRealisationServer
      """)
-openccg.setCommand("${CMD_OPENCCG_SERVER}  [PORT]", workdir="${OPENCCG_ROOT}")
+openccg.setCommand("${CMD_OPENCCG_RS_SERVER}  [PORT]", workdir="${OPENCCG_RS_ROOT}")
 
 # * An external sever must be configured to run on an agent
 #    - confiugration in xml or ini; like setLog4jProperties (eg. rename to setServerProperties)
