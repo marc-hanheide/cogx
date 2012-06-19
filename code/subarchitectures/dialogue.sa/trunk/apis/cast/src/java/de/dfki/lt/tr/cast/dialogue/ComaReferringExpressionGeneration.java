@@ -122,11 +122,9 @@ public class ComaReferringExpressionGeneration extends
 								ComaGBeliefHelper.getGBeliefCategory(gbOfRelatedObjectInWM));
 					}
 				} catch (DoesNotExistOnWMException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					this.component.logException(e);
 				} catch (UnknownSubarchitectureException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					this.component.logException(e);
 				}
 			} else {
 				try {
@@ -143,14 +141,11 @@ public class ComaReferringExpressionGeneration extends
 								+ generateRefExFromGBeliefs(gbOfRelatedObjectInWM));
 					}
 				} catch (DoesNotExistOnWMException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					this.component.logException(e);
 				} catch (UnknownSubarchitectureException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					this.component.logException(e);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					this.component.logException(e);
 				}				
 			}
 			
@@ -159,6 +154,7 @@ public class ComaReferringExpressionGeneration extends
 		}
 		
 		private String generateRefExFromGBeliefs(GroundedBelief referentGB) {
+			 this.component.log("generateRefExFromGBeliefs("+ referentGB +")");
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = 
 				CASTIndependentFormulaDistributionsBelief.create(GroundedBelief.class, referentGB);
 		
