@@ -1322,9 +1322,9 @@ void SpatialControl::updateGridMaps() {
       for (int xi = minX; xi <= maxX; xi++) {
         double xr, yr;
         m_lgm->index2WorldCoords(xi, yi, xr, yr);
-        
+
         if ((*tmp_lgm)(xi, yi) != '1')
-            (*tmp_lgm)(xi, yi) = '2';
+          (*tmp_lgm)(xi, yi) = '2';
 
         if ((*tmp_lgm)(xi, yi) == '1')
           lgmKH(xi, yi) = 1.;
@@ -1938,25 +1938,34 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
         oobj->getData()->nodeId);
     m_commandType = oobj->getData()->cmd;
 
-    if ((!isnan(oobj->getData()->x))&&(oobj->getData()->x<1000)&&(oobj->getData()->x>-1000)) {
+    if ((!isnan(oobj->getData()->x)) && (oobj->getData()->x < 1000)
+        && (oobj->getData()->x > -1000)) {
       m_commandX = oobj->getData()->x;
     } else {
       m_commandX = 0;
-      wrn("WARNING: x is nan");
+      if ((m_commandType == NavData::lGOTOXY) || (m_commandType
+          == NavData::lGOTOXYROUGH) || (m_commandType == NavData::lGOTOXYA))
+        wrn("WARNING: x is nan");
     }
 
-    if ((!isnan(oobj->getData()->y))&&(oobj->getData()->y<1000)&&(oobj->getData()->y>-1000)) {
+    if ((!isnan(oobj->getData()->y)) && (oobj->getData()->y < 1000)
+        && (oobj->getData()->y > -1000)) {
       m_commandY = oobj->getData()->y;
     } else {
       m_commandY = 0;
-      wrn("WARNING: y is nan");
+      if ((m_commandType == NavData::lGOTOXY) || (m_commandType
+          == NavData::lGOTOXYROUGH) || (m_commandType == NavData::lGOTOXYA))
+        wrn("WARNING: y is nan");
     }
 
-    if ((!isnan(oobj->getData()->r))&&(oobj->getData()->r<1000)&&(oobj->getData()->r>-1000)) {
+    if ((!isnan(oobj->getData()->r)) && (oobj->getData()->r < 1000)
+        && (oobj->getData()->r > -1000)) {
       m_commandR = oobj->getData()->r;
     } else {
       m_commandR = 0;
-      wrn("WARNING: r is nan");
+      if (m_commandType == NavData::lGOTOPOLAR || m_commandType
+          == NavData::lBACKOFF)
+        wrn("WARNING: r is nan");
     }
 
     if ((!isnan(oobj->getData()->theta) && (oobj->getData()->theta < 100)
@@ -1969,7 +1978,9 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
         m_commandTheta += 2 * M_PI;
     } else {
       m_commandTheta = 0;
-      wrn("WARNING: theta is nan or very high");
+      if ((m_commandType == NavData::lGOTOXYA) || (m_commandType
+          == NavData::lROTATEREL) || (m_commandType == NavData::lROTATEABS))
+        wrn("WARNING: theta is nan or very high");
     }
 
     m_commandDistance = oobj->getData()->distance;

@@ -296,6 +296,10 @@ void SlamProcess::receiveOdometry(const Robotbase::Odometry &castOdom) {
   {
     IceUtil::Mutex::Lock lock(m_Mutex);
     m_PP->addOdometry(odom);
+
+		log("pose est after addOdometry x=%.2f y=%.2f a=%.4f t=%.6f",
+				m_PP->getPose().getX(), m_PP->getPose().getY(),
+				m_PP->getPose().getTheta(), m_PP->getPose().getTime().getDouble());
   }
 
   if (m_outputRawData)
@@ -413,7 +417,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
             m_PP->getPose().getX(), m_PP->getPose().getY(),
             m_PP->getPose().getTheta(), m_PP->getPose().getTime().getDouble());
 
-        updateRobotPoseInWM();
+        updateRobotPoseInWM(m_PP->getPose().getTime());
       }
 
     } else {
@@ -447,7 +451,7 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
 
       {
         SCOPED_TIME_LOG;
-        updateRobotPoseInWM();
+        updateRobotPoseInWM(m_PP->getPose().getTime());
 
         storeDataToFile();
 
@@ -459,7 +463,9 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
 
   } else {
 
-    debug("No update, since not moving");
+		updateRobotPoseInWM(cureScan.getTime());
+
+//    debug("No update, since not moving");
 
   }
 }
@@ -482,11 +488,14 @@ int SlamProcess::extractMeasSet(Cure::LaserScan2d &cureScan,
   return m_Lsq.m_Lines.size();
 }
 
-void SlamProcess::updateRobotPoseInWM() {
+void SlamProcess::updateRobotPoseInWM(const Cure::Timestamp &timestamp) {
   // Retrieve currently estimated robot pose
   m_Mutex.lock();
   Cure::Pose3D pose = m_PP->getPose();
   m_Mutex.unlock();
+
+	// Fake new timestamp for "updates" while robot is standing still
+	pose.setTime(timestamp); 
 
   // Write estimated robot pose data into robot pose IDL structure
   NavData::RobotPose2dPtr pRP = new NavData::RobotPose2d;
