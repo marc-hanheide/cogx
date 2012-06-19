@@ -84,7 +84,7 @@ public:
 protected:
   virtual void configure(const std::map<std::string, std::string>& _config);
 
-  void updateRobotPoseInWM();
+  void updateRobotPoseInWM(const Cure::Timestamp &timestamp);
   int writeLineMapToWorkingMemory(bool overwrite);
   int extractMeasSet(Cure::LaserScan2d &cureScan, Cure::MeasurementSet &mSet);
 
