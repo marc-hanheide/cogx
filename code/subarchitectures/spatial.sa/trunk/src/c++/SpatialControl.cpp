@@ -1945,7 +1945,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
       m_commandX = 0;
       if ((m_commandType == NavData::lGOTOXY) || (m_commandType
           == NavData::lGOTOXYROUGH) || (m_commandType == NavData::lGOTOXYA))
-        wrn("WARNING: x is nan");
+        wrn("x is nan");
     }
 
     if ((!isnan(oobj->getData()->y)) && (oobj->getData()->y < 1000)
@@ -1955,7 +1955,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
       m_commandY = 0;
       if ((m_commandType == NavData::lGOTOXY) || (m_commandType
           == NavData::lGOTOXYROUGH) || (m_commandType == NavData::lGOTOXYA))
-        wrn("WARNING: y is nan");
+        wrn("y is nan");
     }
 
     if ((!isnan(oobj->getData()->r)) && (oobj->getData()->r < 1000)
@@ -1965,7 +1965,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
       m_commandR = 0;
       if (m_commandType == NavData::lGOTOPOLAR || m_commandType
           == NavData::lBACKOFF)
-        wrn("WARNING: r is nan");
+        wrn("r is nan");
     }
 
     if ((!isnan(oobj->getData()->theta) && (oobj->getData()->theta < 100)
@@ -1980,7 +1980,7 @@ void SpatialControl::newNavCtrlCommand(const cdl::WorkingMemoryChange &objID) {
       m_commandTheta = 0;
       if ((m_commandType == NavData::lGOTOXYA) || (m_commandType
           == NavData::lROTATEREL) || (m_commandType == NavData::lROTATEABS))
-        wrn("WARNING: theta is nan or very high");
+        wrn("theta is nan or very high");
     }
 
     m_commandDistance = oobj->getData()->distance;
