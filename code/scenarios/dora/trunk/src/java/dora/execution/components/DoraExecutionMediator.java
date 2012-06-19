@@ -232,7 +232,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			ElementaryFormula label = (ElementaryFormula) _plannedAction.arguments[1];
 			dFormula belief = _plannedAction.arguments[2];
 			ElementaryFormula relation = (ElementaryFormula) _plannedAction.arguments[3];
-			dFormula target = _plannedAction.arguments[5];
+			dFormula target = _plannedAction.arguments[4];
 			
 			AskForLabelExistence act = newActionInstance(AskForLabelExistence.class);
 			beliefPointerToBeliefAction(belief, act);
