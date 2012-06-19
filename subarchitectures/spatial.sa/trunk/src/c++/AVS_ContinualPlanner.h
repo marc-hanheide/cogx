@@ -211,8 +211,12 @@ private:
   int m_gridsize;
   double m_sensingProb;
   double m_samplesize;
+  int m_maxViewConeCount;
   double m_cellsize, m_sampleawayfromobs;
   double m_minbloxel;
+  double m_minConeProb;
+  double m_minRelativeConeProb;
+  double m_minConeGroupProb;
   double m_conedepth;
   double m_horizangle;
   double m_minDistance;
