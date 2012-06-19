@@ -94,6 +94,11 @@ public:
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
       string id, double pdfmass);
   int createRoomBloxelMap(int roomId);
+  int generateViewConeGroups(int roomId, vector<vector<
+      ViewPointGenerator::SensingAction> > &grouped_cones,
+      vector<double> &grouped_cones_minAngle,
+      vector<double> &grouped_cones_maxAngle, string id, double pdfmass);
+
   void generateViewCones(
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
       std::string WMAddress);
