@@ -12,19 +12,24 @@ import castutils.castextensions.WMContentMatcher;
 
 public class DoraTestRunner extends ExternalGoalGenerator {
 
+	private static final String WAIT_KEY = "--wait";
 	public static final String WMCHECK_PREFIX = "--wmcheck-";
 	Map<String, WMContentMatcher<?>> checks = new HashMap<String, WMContentMatcher<?>>();
+	private int waitTime = 0;
 
 	@Override
 	public MotiveStatus submitGoal(String goalString, float importance,
 			Current __current) {
 		MotiveStatus goalExecutionStatus = super.submitGoal(goalString,
 				importance, __current);
-
-		boolean memCheck = verifyMemoryContent();
-		if (!memCheck)
-			return MotiveStatus.IMPOSSIBLE;
-		else
+		if (goalExecutionStatus == MotiveStatus.COMPLETED) {
+			sleepComponent(waitTime * 1000);
+			boolean memCheck = verifyMemoryContent();
+			if (!memCheck)
+				return MotiveStatus.IMPOSSIBLE;
+			else
+				return goalExecutionStatus;
+		} else
 			return goalExecutionStatus;
 	}
 
@@ -45,6 +50,10 @@ public class DoraTestRunner extends ExternalGoalGenerator {
 	protected void configure(Map<String, String> config) {
 		super.configure(config);
 		configureWMContentMatchers(config);
+		String waitTimeStr = config.get(WAIT_KEY);
+		if (waitTimeStr != null) {
+			waitTime = Integer.parseInt(waitTimeStr);
+		}
 
 	}
 
@@ -58,6 +67,7 @@ public class DoraTestRunner extends ExternalGoalGenerator {
 				try {
 					WMContentMatcher<Object> check = WMContentMatcher.create(
 							this, config.get(key));
+					check.setPrintMatches(true);
 					checks.put(checkName, check);
 					println("added check " + checkName + ": " + check);
 				} catch (ClassNotFoundException e) {
