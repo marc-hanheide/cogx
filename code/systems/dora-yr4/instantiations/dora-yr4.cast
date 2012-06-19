@@ -649,6 +649,11 @@ IFOPTALL(%(feature_options), dialogue)
     JAVA MG diag-exe dialogue.execution.dora.DialogueActionInterface
     JAVA MG verbalisation verbalisation.DoraVerbalisation
     JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain "subarchitectures/dialogue.sa/resources/domain2test.pddl" --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml" --domainannotation "subarchitectures/dialogue.sa/resources/dora-interactive_annotated.txt"
+
+    IFOPTALL(%(feature_options), man_ctrl)
+      JAVA MG pev.controller verbalisation.PlanVerbalisationController
+    ENDIF
+
 ENDIF
 
 ##########################################################################
