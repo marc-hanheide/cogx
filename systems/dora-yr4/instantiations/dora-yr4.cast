@@ -486,7 +486,9 @@ VARDEFAULT fake_tables=<multiline>
    --pos-table "3.6, 4.4, 0.6, 0.0" --dimensions-table "0.5, 0.5, 0.1" --visibility-area-table "3.6, 2.0, 8.0, 8.0"
 </multiline>
 
-
+## Use an increased confidence to avoid false postives
+# 0.08 is the default
+VARDEFAULT object_detector_confidence=0.08
 
 IFOPTALL(%(feature_options), vision)
 
@@ -521,7 +523,7 @@ IFOPTALL(%(feature_options), vision)
         CPP MG viewer       VideoViewer --videohost localhost --videoname VideoServer --camid 0
 
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
-        CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images
+        CPP MG recognizer.3D ObjectRecognizer3D --videoname VideoServer --camid "0" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --confidence %(object_detector_confidence) --save-images
     ENDIF
 
     IFOPTALL(%(hardware_options), prosilica)
@@ -549,7 +551,7 @@ IFOPTALL(%(feature_options), vision)
 
     IFOPTALL(%(hardware_options), kinect-video)
         ### see https://codex.cs.bham.ac.uk/trac/cogx/wiki/cast/ObjectRecognizer3D
-        CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --save-images
+        CPP MG recognizer.3D ObjectRecognizer3D --pcserver pcserver --camid "2" --no-learning --labels "%(or3d_labels)" --siftfiles "%(or3d_sift_files)" --plyfiles "%(or3d_ply_files)" --confidence %(object_detector_confidence) --save-images
     ENDIF
 
     IFOPTALL(%(feature_options), fake-table-detect)
