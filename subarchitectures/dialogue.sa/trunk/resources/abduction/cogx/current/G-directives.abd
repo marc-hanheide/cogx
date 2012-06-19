@@ -67,7 +67,9 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-get_rexp_for_related(Entity, [the, dummy]).
+%get_rexp_for_related(Entity, [the, dummy]).
+get_rexp_for_related(Entity, ObjectRE) <-
+	? generate : reference_generation(Entity, yes, no, ObjectRE, []).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -102,14 +104,17 @@ generate : event : from_intention(_Speaker, _Hearer, IntAddr) <-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+plural(box, boxes).
 plural(book, books).
 plural(cerealbox, [cereal, boxes]).
 plural(magazine, magazines).
 plural(table, tables).
+plural(container, containers).
 
 plural(corridor, corridors).
 plural(meetingroom, [meeting, rooms]).
 plural(office, offices).
+plural(kitchen, kitchens).
 
 plural(X, [plural, of, X]) <- unknown_plural(X) / 1.0.
 
