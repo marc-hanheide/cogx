@@ -55,6 +55,9 @@ def _getEnvVar(variable, env):
         return env[variable]
     return None
 
+def _hasVariables(value):
+    return regSimple.search(value) != None or regSimpleBrace.search(value) != None
+
 
 class CUserOptions(object):
     def __init__(self):
@@ -189,9 +192,12 @@ class CCastOptions(object):
         for (k, v, isPath) in defaults:
             if not k in self.environ:
                 v = _xe(v, self.environ, keepUnknown=True)
-                if isPath: v = self._cleanPathList(v)
+                if isPath:
+                    #v = self._globPathVar(v)
+                    v = self._cleanPathList(v)
                 enew[k] = v
                 enew_order.append(k)
+
         if len(enew) < 1:
             return self.environ.copy()
 
@@ -199,7 +205,12 @@ class CCastOptions(object):
         edef = self._mergeEnvironment(startup_environ, [])
         for k in enew_order:
             if k in enew:
-                edef[k] = _xe(enew[k], edef)
+                nv = _xe(enew[k], edef)
+                if nv.find("<glob>") >= 0 and not _hasVariables(nv):
+                    nv = self._globPathVar(nv)
+                    nv = self._cleanPathList(nv)
+                edef[k] = nv
+
         edef = self._mergeEnvironment(edef, self.environscript)
 
         return edef
@@ -317,10 +328,23 @@ class CCastOptions(object):
             p.set(section, "%s" % k, "%s" % v)
 
 
-    def _globFileList(self, globTag):
-        globTag = globTag.replace("<glob>", "").replace("</glob>", "")
-        globExpr = _xe(globTag, self._tempNewEnv)
-        return glob.glob(globExpr)
+    #def _globFileList(self, globTag):
+    #    globTag = globTag.replace("<glob>", "").replace("</glob>", "")
+    #    globExpr = _xe(globTag, self._tempNewEnv)
+    #    return glob.glob(globExpr)
+
+    def _globPathVar(self, pathRhs, separator=":"):
+        if pathRhs.find("<glob>") < 0:
+            return pathRhs
+        regl = re.compile(r"<glob>\s*(.*?)\s*</glob>")
+        mo = regl.search(pathRhs)
+        while mo != None:
+            paths = [ p.strip() for p in mo.group(1).split(":") if p.strip() != ""]
+            paths = [ ":".join(glob.glob(p)) for p in paths ]
+            pathRhs = pathRhs[:mo.start()] + ":" + (":".join(paths)) + ":" + pathRhs[mo.end():]
+            mo = regl.search(pathRhs)
+
+        return pathRhs
 
     def _readPathList(self, lineIterator, separator=":"):
         paths = []
@@ -329,15 +353,15 @@ class CCastOptions(object):
             stm = stm.strip()
             if len(stm) < 1: continue
             if stm == "</pathlist>": break
-            if stm.startswith("<glob>"):
-                paths += self._globFileList(stm)
-            else: paths.append(stm)
+            #if stm.startswith("<glob>"):
+            #    paths += self._globFileList(stm)
+            #else: paths.append(stm)
+            paths.append(stm)
         paths = separator.join(paths)
         return paths
 
     def _cleanPathList(self, pathString, delim=":"):
-        p = pathString.replace(": :", ":")
-        p = p.replace("::", ":")
+        p = re.sub(r":\s*:", ":", pathString)
         p = p.strip(": ")
         return p
 
@@ -382,7 +406,9 @@ class CCastOptions(object):
         elist = self._parseEnvironmentScript(expressionList)
         for (lhs, rhs, isPath) in elist:
             rhs = _xe(rhs, self._tempNewEnv)
-            if isPath: rhs = self._cleanPathList(rhs)
+            if isPath:
+                rhs = self._globPathVar(rhs)
+                rhs = self._cleanPathList(rhs)
             self._tempNewEnv[lhs] = rhs
 
         return self._tempNewEnv
