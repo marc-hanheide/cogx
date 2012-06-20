@@ -27,7 +27,7 @@ public class VisualObjectTransferFunction extends
 		SimpleDiscreteTransferFunction<VisualObject, GroundedBelief> {
 
 	public static final String PRESENCE_VISIBLE = "visible";
-	public static final String PRESENCE_UNKNOWN = "unknown";
+	public static final String PRESENCE_UNKNOWN = "unknown_presence";
 	public static final String PRESENCE_REMOVED = "removed";
 	public static final String PRESENCE_WAS_VISIBLE = "was-visible";
 
