@@ -7,6 +7,7 @@
 #include <dialogue.hpp>
 #include <dialogue_utils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <motivation.hpp>
 
 #include <sstream>
 #include <cmath>
@@ -162,6 +163,14 @@ void CTraceEvents::start()
       new MemberFunctionChangeReceiver<CTraceEvents>(this,
         &CTraceEvents::onChange_AnalyzeProtoObjectCommand));
 
+  // motivaion.slice.Motive
+  addChangeFilter(createGlobalTypeFilter<motivation::slice::Motive>(cdl::ADD),
+      new MemberFunctionChangeReceiver<CTraceEvents>(this,
+        &CTraceEvents::onAdd_Motive));
+
+  addChangeFilter(createGlobalTypeFilter<motivation::slice::Motive>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<CTraceEvents>(this,
+        &CTraceEvents::onChange_Motive));
 
 #ifdef FEAT_VISUALIZATION
   display().connectIceClient(*this);
@@ -364,6 +373,52 @@ void CTraceEvents::onChange_AnalyzeProtoObjectCommand(const cast::cdl::WorkingMe
     //std::lock_guard<std::mutex> lock(mWmCopyMutex);
     //mCount["VisualLearnerRecognitionTask-add"] += 1;
     display().addWmEntry("DONE AnalyzeProtoObjectCommand");
+  }
+}
+
+std::string motiveStatusStr(motivation::slice::MotiveStatus st)
+{
+  //char buf[16];
+  //sprintf(buf, "%d", (int)st);
+  //return buf;
+  std::string s;
+#define EN_PREFIX motivation::slice
+#define EN_CASE(X) case EN_PREFIX::X: s = #X; break
+  switch(st) {
+    EN_CASE(UNSURFACED);
+    EN_CASE(SURFACED);
+    EN_CASE(POSSIBLE);
+    EN_CASE(IMPOSSIBLE);
+    EN_CASE(ACTIVE);
+    EN_CASE(COMPLETED);
+    EN_CASE(WILDCARD);
+    default:
+      s = "?";
+  }
+#undef EN_CASE
+#undef EN_PREFIX
+  return s;
+}
+
+void CTraceEvents::onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    //std::lock_guard<std::mutex> lock(mWmCopyMutex);
+    //mCount["VisualLearnerRecognitionTask-add"] += 1;
+    auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
+    display().addWmEntry("ADD " + pmo->ice_id().substr(21) 
+        + " " + motiveStatusStr(pmo->status));
+  }
+}
+
+void CTraceEvents::onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    //std::lock_guard<std::mutex> lock(mWmCopyMutex);
+    //mCount["VisualLearnerRecognitionTask-add"] += 1;
+    auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
+    display().addWmEntry("CHG " + pmo->ice_id().substr(21)
+        + " " + motiveStatusStr(pmo->status));
   }
 }
 

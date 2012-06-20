@@ -15,6 +15,8 @@ include_directories(
    ${COGX_ROOT}/subarchitectures/dialogue.sa/apis/dialogue/src/c++/autogen
    ${COGX_ROOT}/tools/beliefs/apis/beliefs/src/cpp/autogen
    ${COGX_ROOT}/tools/abducer/src/c++/autogen
+   # motivation.sa
+   ${COGX_ROOT}/subarchitectures/motivation.sa/src/c++/autogen
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
@@ -28,6 +30,7 @@ if(BUILD_GEORGE_V11N_TRACE)
    link_cast_component(${CAST_COMPONENT_NAME}
       ${VISUALIZATION_LIBRARIES}
       VisionData
+      MotivationData
       DialogueIce
       )
 
