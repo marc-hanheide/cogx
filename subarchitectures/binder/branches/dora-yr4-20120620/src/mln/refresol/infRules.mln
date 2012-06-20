@@ -1,0 +1,32 @@
+// Inference rules
+
+// resolution should be unique
+belief(b) ^ resolution(b) ^ belief(b') ^ resolution(b') => (b = b').
+
+//color(b, c) ^ color(b, c') ^ belief(b) => (c = c').
+//shape(b, s) ^ shape(b, s') ^ belief(b) => (s = s').
+// if there exist a belief there must be a resolution (not really necessary)
+//(exist p belief(p) ) => (exist q resolution(q)).
+(exist c color_constraint(c)) => exist_constraint.
+(exist s shape_constraint(s)) => exist_constraint.
+
+(exist b belief(b) ^ resolution(b)) => !unknown.
+(forall b !resolution(b)) ^ exist_constraint => unknown.
+
+belief(b) ^ !(exist b' belief(b') ^ !(b = b')) ^ !exist_constraint => resolution(b).
+
+//resolution(b) ^ resolution(b') ^ belief(b) ^ belief (b') ^ !(b = b') => ambiguity.
+
+// a resolution can be only about a belief that exists ...
+resolution(b) => belief(b).
+// ... and if there is a constraint
+//resolution(b) => exist c color_constraint(c) v exist s shape_constraint(s).
+
+// rules for reference generation
+
+//solution(b) ^ belief(b') ^ !color_constraint(c) ^ !shape_constraint(s) ^ !ambiguity =>  (b = b').
+
+// rules for attributed beliefs
+//4 belief(b) ^ epstatus(b, Attributed) ^ attributed_color(b, c) ^ color_constraint(c) => resolution(b)
+//4 belief(b) ^ epstatus(b, Attributed) ^ attributed_shape(b, c) ^ shape_constraint(c) => resolution(b)
+//2 belief(b) ^ epstatus(b, Attributed) => !resolution(b)
