@@ -25,6 +25,15 @@ import autogen.Planner.PlanningTask;
 */
 public class PlanVerbalisationControllerFrame extends JFrame
 {
+	{
+		//Set Look & Feel
+		try {
+			javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
   private PlanVerbalisationController planVerbalisationController;
   private JTable tasksTable;
   private PlanningTaskTableModel tasksTableModel;
@@ -42,8 +51,12 @@ public class PlanVerbalisationControllerFrame extends JFrame
     tasksTableModel = new PlanningTaskTableModel();
     tasksTable = new JTable(tasksTableModel);   
     tasksTable.setModel(tasksTableModel);
-    tasksTable.getColumnModel().getColumn(0).setPreferredWidth(8);
-    tasksTable.getColumnModel().getColumn(2).setPreferredWidth(12);
+    tasksTable.getColumnModel().getColumn(0).setPreferredWidth(80);
+    tasksTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+    tasksTable.getColumnModel().getColumn(0).setMaxWidth(90);
+    tasksTable.getColumnModel().getColumn(2).setMaxWidth(180);
+    tasksTable.getColumnModel().getColumn(0).setMinWidth(80);
+    tasksTable.getColumnModel().getColumn(2).setMinWidth(150);
     tasksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     tasksTable.getSelectionModel().addListSelectionListener(new ListSelectionListener()
     {    
@@ -51,7 +64,7 @@ public class PlanVerbalisationControllerFrame extends JFrame
       {
         if (tasksTable.getSelectedRow() >= 0)
         {
-          taskIdField.setText(""+tasksTable.getSelectedRow());
+          taskIdField.setText(""+tasksTableModel.getTaskId(tasksTable.getSelectedRow()));
         }
       }
     });
@@ -60,10 +73,10 @@ public class PlanVerbalisationControllerFrame extends JFrame
     tasksTable.setFillsViewportHeight(true);
 
     controlsPanel = new JPanel();
-    taskIdField = new JTextField("  ");
+    taskIdField = new JTextField("      ");
     verbaliseButton = new JButton("Verbalise");
     controlsPanel.add(verbaliseButton);
-    controlsPanel.add(new JLabel(" task id "));
+    controlsPanel.add(new JLabel(" task ID = "));
     controlsPanel.add(taskIdField);
     verbaliseButton.addActionListener(new ActionListener()
     {    
@@ -102,6 +115,10 @@ public class PlanVerbalisationControllerFrame extends JFrame
   
   private class PlanningTaskTableModel extends AbstractTableModel
   {
+    public static final int TASK_ID_COLUMN = 0;
+    public static final int GOAL_COLUMN = 1;
+    public static final int STATUS_COLUMN = 2;
+
     private String[] columnNames = { "Task ID", "Goal", "Execution Status"};
     private ArrayList<PlanningTask> planningTasks;
     
@@ -109,37 +126,42 @@ public class PlanVerbalisationControllerFrame extends JFrame
       planningTasks = new ArrayList<PlanningTask>();
     }
 
+    public int getTaskId(int row)
+    {
+      return planningTasks.get(row).id;
+    }
+
     public int getColumnCount() {
       return columnNames.length;
-  }
+    }
 
-  public int getRowCount() {
+    public int getRowCount() {
       return planningTasks.size();
-  }
+    }
 
-  public String getColumnName(int col) {
+    public String getColumnName(int col) {
       return columnNames[col];
-  }
+    }
 
-  public Object getValueAt(int row, int col) {
+    public Object getValueAt(int row, int col) {
       PlanningTask planning_task = planningTasks.get(row);
       switch (col)
       {
-      case 0:
-      {
-        return planning_task.id;
-      }
-      case 1:
+        case TASK_ID_COLUMN:
+        {
+          return planning_task.id;
+        }
+        case GOAL_COLUMN:
         {
           return PlanVerbalisationController.goalToString(planning_task.goals[0]);
         }
-      case 2:
+        case STATUS_COLUMN:
         {
           return PlanVerbalisationController.planningTaskExecutionStatusToString(planning_task);
         }
       }
       return null;
-  }
+    }
   
     
     public void updatePlanningTask(PlanningTask planning_task)
