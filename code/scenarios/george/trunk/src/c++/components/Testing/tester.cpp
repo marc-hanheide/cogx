@@ -78,15 +78,16 @@ void CTester::start()
   }
 }
 
-std::string mkseqid_rev(const std::string& prefix, long id)
+std::string mkseqid(const std::string& prefix, long id, int dir=1)
 {
   std::ostringstream ss;
-  ss << (LONG_MAX - id);
+  if (dir >= 0) ss << id;
+  else ss << (LONG_MAX - id);
   std::string sid = ss.str();
 
-  while (sid.length() < 8) {
-    sid = "0" + sid;
-  }
+  while (sid.length() <= 4) sid = "0000" + sid;
+  while (sid.length() <= 6) sid = "00" + sid;
+  while (sid.length() < 8)  sid = "0" + sid;
 
   return prefix + sid;
 }
@@ -159,7 +160,7 @@ void CTester::runComponent()
       tmSend.restart();
       if (removedReport[i] < n - nDisplay) {
         for (int j = 0; j < nRemoveBatch; j++) {
-          mDisplay.removePart(sViewName, mkseqid_rev("011-", removedReport[i]));
+          mDisplay.removePart(sViewName, mkseqid("011-", removedReport[i], -1));
           ++removedReport[i];
         }
       }
@@ -174,7 +175,7 @@ void CTester::runComponent()
         << "</td><td>";
       pm->writeStateDescription(ss);
       ss << "</td></tr>\n";
-      mDisplay.setHtml(sViewName, mkseqid_rev("011-", n), ss.str());
+      mDisplay.setHtml(sViewName, mkseqid("011-", n, -1), ss.str());
       if (bNewState) {
         log("%s", ss.str().c_str());
       }
