@@ -695,8 +695,12 @@ IFOPTALL(%(feature_options), planning_sa)
     VARDEFAULT expl_rules=explanations-dora.pddl
     VARDEFAULT cons_rules=consistency-dora.pddl
     VARDEFAULT planning_config="config.dora.ini"
+    VARDEFAULT old_planning_history=
+    IFEQ(%(old_planning_history),true)
+        SETVAR old_planning_history=--oldhistory
+    ENDIF
 
-    COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules)
+    COMPONENT PYTHON PlannerPythonServer PythonServer --domain %(planning_domain) --nodot --pdb  --low-p-threshold 0.01 --default %(conceptual_defaults) --config %(planning_config) --expl_rules %(expl_rules) --consistency_rules %(cons_rules) %(old_planning_history)
     COMPONENT CPP PlannerDTServer DTPCONTROL
     
     SUBARCHITECTURE planner.sa
