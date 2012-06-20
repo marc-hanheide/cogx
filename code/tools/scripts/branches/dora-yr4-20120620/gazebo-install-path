@@ -1,0 +1,54 @@
+#!/usr/bin/python
+# vim: set fileencoding=utf-8 sw=4 ts=8 et :vim
+#
+# gazebo-install-path [directory]
+#    Adds the specified directory to Gazebo path to register the models and
+#    materials.
+#
+# Author: Marko Mahnič
+# Created: May 2011
+
+import os, sys
+
+grc = os.path.expanduser("~/.gazeborc")
+path = "."
+if len(sys.argv) > 1:
+    path = sys.argv[1]
+
+path = os.path.abspath(path)
+
+if not os.path.exists(grc):
+    print "Not found:", grc
+    print "Creating one ..."
+    f = open(grc, "w")
+    f.write("""\
+<?xml version="1.0"?>
+<gazeborc>
+  <gazeboPath>/usr/local/share/gazebo</gazeboPath>
+  <ogrePath>/usr/lib/OGRE</ogrePath>
+</gazeborc>
+""")
+    f.close()
+
+if not os.path.exists(grc):
+    print "Could not be created:", grc
+    sys.exit(1)
+
+if not os.path.exists("%s/Media" % path) and not os.path.exists("%s/models" % path):
+    print "Neither models nor Media found in:", path
+    sys.exit(2)
+
+grclines = open(grc).readlines()
+for line in grclines:
+    if line.find("<gazeboPath>%s" % path) >= 0:
+        print "Already registered:", path
+        sys.exit(0)
+
+for i,line in enumerate(grclines):
+    if line.find("<gazeborc>"):
+        grclines.insert(i+2, "  <gazeboPath>%s</gazeboPath>\n" % path)
+        break
+
+# print "".join(grclines)
+
+open(grc, "w").write("".join(grclines))

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+export CLASSPATH=@CAST_INSTALL_ROOT@/share/java/cast.jar:@ICE_HOME@/share/java/Ice.jar:@PREFIX@/classes:$CLASSPATH:
+export LD_LIBRARY_PATH=@PREFIX@/lib:@CURE_INSTALLROOT@/lib/cure:$LD_LIBRARY_PATH:
+export PYTHONPATH=@PREFIX@/python:@PREFIX@/planner:$PYTHONPATH:
+export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DYLD_LIBRARY_PATH:"
+
+if [ -z "${V11N_STANDALONE}" ] ; then
+  export V11N_STANDALONE=--ignore-this
+  export V11N_STANDALONE_HOST=please
+fi
+
+
+@CAST_INSTALL_ROOT@/bin/cast-client "$@"
+
+

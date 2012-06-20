@@ -1,0 +1,34 @@
+#!/bin/sh
+echo ""
+echo "----------Linux info"
+lsb_release -id --release --codename
+echo "Kernel:        " $(getconf LONG_BIT) "bit"
+echo ""
+echo "----------BASH"
+bash --version
+echo ""
+echo "----------GCC, CMAKE"
+gcc --version
+cmake --version
+echo ""
+echo "----------ICE"
+slice2cpp --version
+echo ""
+echo "----------JAVA, ANT"
+java -version
+ant -version
+echo ""
+echo "----------CUDA"
+which nvcc
+nvcc --version
+echo ""
+echo "----------PYTHON"
+python --version
+python -c "import opencv; print 'OpenCv %d.%d' %(opencv.CV_MAJOR_VERSION, opencv.CV_MINOR_VERSION)"
+echo ""
+echo "PYTHON Qt4"
+python -c "import PyQt4.QtCore as qt; print 'PyQt4 version', qt.PYQT_VERSION_STR"
+echo ""
+echo "----------COGX CODE"
+pwd
+svn info
