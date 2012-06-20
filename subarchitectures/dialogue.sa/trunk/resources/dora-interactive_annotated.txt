@@ -97,7 +97,7 @@
    ;; === place properties ===
 ;;LF placestatus => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ placestatus ^ <Modifier>(w1:whose ^ of ^ <Anchor>(=var:castreferent ^ =var))) ^ <Cop-Scope>(=val:castreferent ^ =val))
    (placestatus ?n - place) - place_status
-;;LF in-room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(room_?block_?step:m-location ^ room)))
+;;LF in-room => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var:castreferent ^ =var) ^ <Cop-Scope>(in_?block_?step:m-location ^ in ^ <Anchor>(room_?block_?step:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific)))
    (in-room ?p - place) - room
    (place-exists ?p - place) - boolean
 
@@ -728,7 +728,7 @@
    ;;           )
 
 
-;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(people_?block_?step:person ^ people ^ <Delimitation>variable ^ <Num>pl ^ <Quantification>unspecific ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p))))
+;;LF look-for-people => @{step_?block_?step:action-non-motion}(search ^ <Actor>(?a:castreferent ^ ?a) ^ <Patient>(context_?block_?step:person ^ context ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Modifier>(at_?block_?step:m-location ^ at ^ <Anchor>(?p:castreferent ^ ?p)))
    (:action look-for-people
             :agent (?a - robot)
             :variables (?p - place ?r - room)
