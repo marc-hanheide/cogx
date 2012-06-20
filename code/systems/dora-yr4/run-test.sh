@@ -218,7 +218,8 @@ if [ "$window_id" ]; then
 	xdotool windowmove $window_id 0 0
 	xdotool windowsize $window_id 70% 70%
 	echo "Done moving Peekabot"
-	#sleep 2
+  # added this sleep to ensure that the components are completely running
+	sleep 10
 	if [ "$GOAL" ]; then
         	echo "running test for goal $GOAL" 
 		if ant -Dtest.goal="$GOAL" -Dtest.config="$TEST_CONFIG" goaltest; then TESTREST=0; else TESTREST=1; fi
