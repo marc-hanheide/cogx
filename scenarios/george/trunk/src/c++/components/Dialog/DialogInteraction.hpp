@@ -34,10 +34,6 @@ public:
 
 #ifdef FEAT_VISUALIZATION
 private:
-  // bForce: set to true when the update was requested by the dialog
-  void sendPtuPositionToDialog(bool bForce = false);
-  void sendPtuStateToDialog(bool bMoving);
-
   friend class CDisplayClient;
   class CDisplayClient: public cogx::display::CDisplayClient
   {

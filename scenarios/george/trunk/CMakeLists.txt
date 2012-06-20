@@ -41,3 +41,4 @@ endif()
 
 add_subdirectory(src/c++/components/Testing)
 add_subdirectory(src/c++/components/Dialog)
+add_subdirectory(src/c++/components/Trace)
