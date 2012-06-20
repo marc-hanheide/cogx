@@ -117,7 +117,7 @@ public class POPlanMonitor extends ManagedComponent {
 			}
 		});
 		
-		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(PlanVerbalizationRequest.class, WorkingMemoryOperation.OVERWRITE), 
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(PlanVerbalizationRequest.class, WorkingMemoryOperation.ADD), 
 				new WorkingMemoryChangeReceiver() {
 			public void workingMemoryChanged(WorkingMemoryChange _wmc)
 			throws CASTException {
@@ -273,6 +273,9 @@ public class POPlanMonitor extends ManagedComponent {
 				de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
 				hlist.add(pevPOPlan);
 			}
+		} else {
+			// check if we know about the given taskID -- necessary when listening to external PEV Request triggers that might be illegal
+			return "I am sorry. Task ID " + taskID + " is not known to me.";
 		}
 
 		// hand history over to PEV
