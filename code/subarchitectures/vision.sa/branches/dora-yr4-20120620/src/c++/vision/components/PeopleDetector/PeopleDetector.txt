@@ -1,0 +1,132 @@
+Costas Christophi, University of Birmingham, Summer 2009
+
+==================================================================================
+                           PEOPLE DETECTOR/TRACKER
+==================================================================================
+
+This component  finds people  using face  and full-body  detectors in images taken
+from the cameras, and tracks them in 3d space using the laser.
+
+In short,  it assumes a  correspondence between the  camera inputs  and a z-buffer
+produced by  projection of the  3d laser scan on a 2d plane.  Any detection in the
+camera inputs marks the closest matching shape in  the z-buffer as an object to be
+tracked.  Subsequent detections  in close  proximity to  a previous  shape already
+being tracked are  assumed to of be the same person.  Tracking is done entirely in
+3d,  with each  track shifting  itself to the  nearest thing  within some  radius;
+previous  motion vectors are  taken into account,  but are not  used to  limit the
+search direction.
+
+
+-------------------------------  THE  MATH  --------------------------------------
+
+The math is  pretty simple when  you get your  head around it.  The first thing to
+notice is  that the laser scan  is actually in polar  coordinates,  which must  be
+converted to cartesian coordinates to do anything useful with them.  The following
+transformation seems to work:
+    with angle = scan angle from laser and
+    Z = value at angle from laser,
+    X = cos(angle)
+    Y = sin(angle)
+Drawing the XY on a 2d canvas will give a top-down view of what the laser sees (as
+in stage or peekabot),  where the robot always faces to the right from the origin.
+In other words,  larger X means further away from the robot, negative Y means left
+of the robot and positive  Y right (depends on the laser  --  the b21r needs to be
+reversed to get this right). All distances are in metres.
+
+The next step involves actually projecting this on the z-buffer:
+    bufX = (Y * Z * XSCALE) / (X * Z) + XCENTRE
+XCENTRE is the middle of the z-buffer, XSCALE is a scaling constant. Adjust XSCALE
+and XCENTRE to align the laser and cameras (on the b21r, good values are 0.525 for
+the left camera,  and screen width).  Yes, the Z actually cancels out in practice.
+This calculation needs to be applied on every value you get from the laser.
+More than one values may project into the same bufX slot  (it's unlikely but still
+possible  depending on  rounding  errors etc),  so you  need to  choose the  value
+closest to  the robot  (which is in front  of the other).  The result  will  be an
+incomplete z-buffer  with the same width as the image.  You'll need to fill in the
+gaps in this z-buffer where nothing was projected  by propagating the data already
+there:  fill gaps  with the closest  known value starting from  either the left or
+right.
+
+Even though not actually used in this project, the reverse math (i.e. to calculate
+the approximate z position of an object based on its width in an image) is:
+    Z = realWidth / (objImgWid / XSCALE)
+Given that the actual size of the object is known (in metres) as well as the image
+width (in pixels),  this can give a very rough idea  of how far away the object is
+(in metres).  This becomes very inaccurate if the object is further than ~5m away,
+with a 640x480 camera resolution.
+
+The  concepts should  be pretty  clear if  you also  look  at the code.  A further 
+assumption is that the PTU  is always looking to the front.  You can easily extend
+the code  to allow it to be moved  --  shifting the  values in  the laser array is
+equivalent  to  rotating the  laser itself,  with each  position  shifted being  a 
+rotation of scan.angleStep radians. If you rotate the PTU to the left, you need to
+shift the array to the right and vice versa.  Fill the new positions with far-away
+values and discard the redundant positions on the other side.
+
+
+---------------------------------  USAGE  ----------------------------------------
+
+Just  add  this  PeopleDetector  component  to  your  project.  It  will  generate
+VisionData::Person  objects and  put  them  in  working  memory  when  a person is
+detected,  update them  while  the person  is being  tracked and  removed when the
+person  is no longer visible or the  tracker has lost its target.  There will be a
+separate object in memory for each new person.
+
+Configuration parameters are:
+
+    --camid : The camera to capture images from (typically 0  for /dev/video0 or 1
+        for /dev/video1)
+
+    --deinterlace : 1 or 0.  Cameras on the  b21r produce interlaced  images which
+        mess with the detectors. This allows images to be deinterlaced with a fast
+        blending method. Defaults to 0 if not present.
+
+    --faceCascade : Path  to  face  cascade.   If parameter  is  not  found,  face
+        detection is disabled. This should point to the face detector cascade that
+        comes with opencv. Defaults to /usr/share/opencv/haarcascades/
+        haarcascade_frontalface_alt2.xml.
+
+    --fullbodyCascade : Path  to  fullbody  cascade.  If  parameter is  not found,
+        fullbody detection is disabled. This should point to the fullbody detector 
+        cascade that comes with opencv. Defaults to /usr/share/opencv/
+        haarcascades/haarcascade_fullbody.xml.
+
+    --trackerThreshold : Shapes within this threshold (in metres) are taken by the
+         tracker to correspond to the same person. Defaults to 1m.
+
+    --sleepForSync : The laser is much slower to refresh its scan than the cameras
+        which may lead to synchronisation errors. This delays asking the laser for
+        a scan after taking input from the cameras (in milliseconds).  Use only if
+        absolutely necessary, because this gives a slower overall framerate.
+
+    --removeAfterDistance,
+    --removeAfterFrames : An object  being tracked that  does not  move more  than
+        removeAfterDistance metres  in removeAfterFrames  frames is  taken to be a
+        false detection  or strayed track  and is removed.  Defaults to  1m and 15
+        frames  (which  means people  standing  still will  be removed;  these are
+        useless while the robot is moving).
+
+
+The Person record put into working memory contains the following:
+
+    class Person
+    {
+        // As taken from raw laser data, the angle and distance relative to the
+        // robot   
+        double angle;
+        double distance;
+
+        // The 3d position relative to the robot.
+        double locX;
+        double locZ;
+
+        // Direction of movement in last update; same coordinate system as
+        // position.
+        double deltaX;
+        double deltaZ;
+    }
+
+I am  still fuzzy  on the  details,  but I believe there  is a way to  convert the
+position into  World coordinates, which can be  displayed in peekabot.  I know the
+navigation code does it, but I'm not sure where.
+

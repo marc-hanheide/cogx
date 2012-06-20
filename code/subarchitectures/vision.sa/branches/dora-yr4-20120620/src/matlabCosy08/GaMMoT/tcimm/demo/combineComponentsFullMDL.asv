@@ -1,0 +1,201 @@
+function [ pdf_n, oneToOneCoherence ] = combineComponentsFullMDL( pdf_reference, pdf_to_reduce ) 
+
+len = length( pdf_n.weights) ;
+ 
+% initialize reduction matrices
+intMatrix = initializeIntegralMatrix( pdf_reference, pdf_to_reduce ) ;
+
+% see
+oneToOneCoherence = 1 ;
+i = 1 ; pdf_v = pdf_n ;
+% try to combine split pairs first
+for steps = 1 : len/2
+    [ changeX, intMatrix, pdf_to_reduce ] = tryToRemoveComponents( pdf_reference, pdf_to_reduce, intMatrix, i, j ) ;
+    [pdf_n, changeX] = tryToCombine( pdf_n, i, i+1 ) ;
+    if ( changeX == 0 ) i = i + 2 ; oneToOneCoherence = 0 ; end
+end
+
+
+
+% pdf_n = resortComponents( pdf_n ) ;
+%  pdf_n
+%  return
+change = 1 ;
+while change > 0
+    changeX = 0 ;
+    change = 0 ;
+    len = length( pdf_n.weights ) ;
+    for i = 1 : len
+        for j = i + 1 : len 
+           if ( i == j ) continue ; end  
+           
+           [ changeX, intMatrix, pdf_to_reduce ] = tryToRemoveComponents( pdf_reference, pdf_to_reduce, intMatrix, i, j ) ; 
+           change = change + changeX ;
+           if changeX > 0 oneToOneCoherence = 0 ; break ; end
+        end
+        if changeX > 0 break ; end
+    end
+end
+
+
+% figure(2) ; plot(1:length(pdf_n.weights),pdf_n.weights) ; drawnow ;
+ 
+% ------------------------------------------------------ %
+function intMatrix = initializeIntegralMatrix( pdf_reference, pdf_reduced )
+
+% horizontal ... reference
+% vertical   ... compressed
+P = zeros(length(pdf_reduced.weights),length(pdf_reference.weights)) ;
+for i = 1 : length(pdf_reduced.weights)
+    w1 = pdf_reduced.weights(i) ;
+    mu1 = pdf_reduced.mu(:,i) ;
+    C1 =  pdf_reduced.covariances(:,:,i) ;
+    for j = 1 : length(pdf_reference.weights)
+        w2 = pdf_reference.weights(j) ;
+        mu2 = pdf_reference.mu(:,j) ;
+        C2 = pdf_reference.covariances(:,:,j) ;
+
+        p_ji = normpdf(mu1, mu2, [], C1 + C2 ) ;
+        P(i,j) = p_ji ;
+    end
+end
+
+W = repmat(pdf_reference.weights,length(pdf_reduced.weights),1) ; % reference weight matrix
+N = (pdf_reference.weights)*pdf1.N ; % expected number of data-points
+
+intMatrix.P = P.*W ; % P matrix
+intMatrix.N = N ;
+intMatrix.N_samples = pdf_reference.N ;
+
+% ------------------------------------------------------ %
+function [ compress_this, intMatrix, pdf_reduced ] = tryToRemoveComponents( pdf_reference, pdf_reduced, intMatrix, i, j )
+
+compress_this = 0 ;
+% mask for components
+s = ones(1,length(pdf_reduced.weights)) ; 
+s([i, j]) = 0 ;
+S = repmat( s, rows(intMatrix) , 1 ) ;
+% mask generated
+
+Cw = intMatrix.P ;
+N = intMatrix.N ;
+
+% expected log-likelihood for full distribution
+Lf = sum(log(sum(Cw,1)).*N) ;
+
+% calculate the auxiliary component and integrals
+w1 = pdf_reduced.weights(i) ;
+mu1 = pdf_reduced.mu(:,i) ;
+C1 = pdf_reduced.covariances(:,:,i) ;
+
+w2 = pdf_reduced.weights(j) ;
+mu2 = pdf_reduced.mu(:,j) ;
+C2 = pdf_reduced.covariances(:,:,j) ;
+ 
+w_a = [ w1 w2 ] ; w_a = w_a / sum(w_a) ;
+mu = [mu1 , mu2 ] ; C = cat(3,C1,C2) ;
+[mu0, C0] = momentMatching( w_a, mu, C ) ;
+alpha0 = w1 + w2 ;
+% auxiliary component calculated
+
+% make auxiliary vector
+K = zeros(1,cols(Cw)) ;
+for ( k = 1 : length(K) )
+    m2 = pdf_reference.mu(:,k) ;
+    C2 = pdf_reference.covariances(:,:,k) ;
+    K(k) = normpdf(mu0, mu2, [], C0 + C2 ) ;
+end
+
+% expected log-likelihood for compressed distribution
+Lc = sum(log(sum(Cw.*S,1) + K*alpha0).*N) ;
+
+% Minimum Description Lengths
+mdl_f = getMDL( cols(pdf_reduced.mu), length(pdf_reduced), Lf, intMatrix.N_samples ) ;
+mdl_c = getMDL( cols(pdf_reduced.mu), length(pdf_reduced)-2, Lc, intMatrix.N_samples ) ;
+if ( mdl_c < mdl_f )
+    compress_this = 1 ;
+end
+
+% update compressed variables
+if ( compress_this == 1 )
+    id = find( s > 0 ) ;
+
+    % compress P matrix
+    P = P(:,id) ; P = [P, K*alpha0] ;
+    intMatrix.P = P ; 
+    
+    % compress distribution
+    mm = pdf_reduced.mu(:,id) ;
+    cc = pdf_reduced.covariances(:,:,id) ;
+    ww = pdf_reduced.weights(id) ;
+
+    pdf_reduced.weights = ww ;
+    pdf_reduced.mu = mm ;
+    pdf_reduced.covariances = cc ;
+
+    pdf_reduced.weights = [pdf_n.weights, alpha0] ;
+    pdf_reduced.mu = [pdf_n.mu, mu0] ;
+    pdf_reduced.covariances = cat(3,pdf_n.covariances,C0) ;
+
+    pdf_reduced.E = pdf_n.weights*N ;
+end
+
+% ------------------------------------------------------ %
+function mdl = getMDL( D, M, L, N )
+
+% M = length(pdf.weights) ;  number of components
+% D = rows(pdf.mu) ;  number of dimensions
+
+Ne = M - 1 + M*D + M*D*(D+1)/2 ;
+mdl = (1/2)*Ne*log2(N) - L ;
+
+
+% ------------------------------------------------------ %
+function [m0, C0] = momentMatching( w, m, C )
+
+d = rows(m) ;
+m0 = sum(repmat(w,d,1).*m,2) ;
+C0 = C(:,:,1)*0 ;
+for i = 1 : length(w)
+   C0 = C0 + w(i)*(C(:,:,i) + (m0-m(:,i))*(m0-m(:,i))') ;
+end
+
+% ------------------------------------------------------ %
+function dE = evalPairsIntegrals( w, mu, C, mu0, C0 ) 
+
+tol = 1e-5* 1/length(w) ;
+
+if ( sum(w < tol) > 1 )
+    dE = 10 ; return ;
+end
+
+D = rows(mu) ;
+Nn = w*N ;
+w12 = sum(w) ;
+P = zeros(1,4) ;
+
+mu1 = mu(:,1) ; mu2 = mu(:,2) ;
+w1 = w(1) ; w2 = w(2) ;
+C1 = C(:,:,1) ; C2 = C(:,:,2) ;
+
+p11 = bhatta( mu1, C1, mu1, C1 ) ;
+p12 = bhatta( mu1, C1, mu2, C2 ) ;
+p22 = bhatta( mu2, C2, mu2, C2 ) ;
+p01 = bhatta( mu0, C0, mu1, C1 ) ;
+p02 = bhatta( mu0, C0, mu2, C2 ) ;
+ 
+Es = (w(1)*p11 + w(2)*p12)^Nn(1) * (w(1)*p12 + w(2)*p22)^Nn(2) ;
+Em = (w12*p01)^Nn(1) * (w12*p02)^Nn(2) ;
+
+ttol = 0 ;
+if ( Es <= ttol )
+    dE = 10 ; return ;
+end
+
+if ( Em <= ttol )
+    dE = -10 ; return ;
+end
+
+% dE = (1/4)*D*(D+1)*log2(sum(Nn)) - log2(Es) + log2(Em) ;
+Ns = 5 ; Nm = 2 ;
+dE = (1/2)*log(sum(Nn))*(Ns - Nm) + log2(Em) - log2(Es) ;

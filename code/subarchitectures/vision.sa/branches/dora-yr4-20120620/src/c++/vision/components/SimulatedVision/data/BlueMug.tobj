@@ -1,0 +1,17 @@
+[color]
+@green=0.21
+@red=0.31
+ambiguity=0.1
+gain=0.2
+
+[shape]
+@compact=0.22
+@elongated=0.62
+ambiguity=0.4
+gain=0.3
+
+[label]
+@mug=0.63
+@teabox=0.23
+ambiguity=0.5
+gain=0.6

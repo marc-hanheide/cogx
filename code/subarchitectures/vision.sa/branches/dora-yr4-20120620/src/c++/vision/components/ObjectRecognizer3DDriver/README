@@ -1,0 +1,10 @@
+Driver for ObjectRecognizer3D
+
+Dependencies:
+-------------
+ObjectTracker					@compiletime (for loading 3D ply models)
+ObjectRecognizer3D		@runtime via WM
+
+
+- Loads ply model into Working Memory
+- Triggers Recognizer3D

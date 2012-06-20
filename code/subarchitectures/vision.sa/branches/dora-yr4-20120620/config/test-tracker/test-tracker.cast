@@ -1,0 +1,11 @@
+HOST localhost
+
+# reading stored images
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --camconfigs "subarchitectures/vision.sa/config/camSB.cal" #"calibration/calib.right.config"
+#CPP MG VideoServer OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-tracker/img%03d.jpg" --start 0 --end 38 --framerate_ms 500 --camconfigs "subarchitectures/vision.sa/config/tm.calb"
+CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 --textured --inifile "subarchitectures/vision.sa/config/objecttracker.ini" --maxModels 1 --log
+CPP MG TrackerTest ObjectTrackerTest --plyfile "subarchitectures/vision.sa/config/test-tracker/red_box.ply" --log

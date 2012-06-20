@@ -1,0 +1,6 @@
+function bel = getBeliefOfdata( pdf, data )
+
+p = evaluateDistributionAt( pdf.mu, pdf.weights, pdf.covariances, data ) ;
+bel = p/pdf.max.val ;
+%bel = min([bel,1]) ;
+

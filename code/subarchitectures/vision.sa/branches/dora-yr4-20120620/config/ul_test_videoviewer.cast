@@ -1,0 +1,15 @@
+# CAST config file
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# reading stored images
+# CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 250
+
+# live images
+CPP MG videoserver OpenCvLiveServer --imgsize "640 480" --camids 0 --devnums 0 --devclass FIREWIRE
+
+CPP MG viewer VideoViewer --videoname videoserver --camid 0
+

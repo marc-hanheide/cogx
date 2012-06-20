@@ -1,0 +1,673 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F4163D720EAF83A6007CC2F3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4163D300EAF8197007CC2F3 /* OpenGL.framework */; };
+		F4163D730EAF83AD007CC2F3 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4163D2D0EAF8181007CC2F3 /* GLUT.framework */; };
+		F4163D7A0EAF85C6007CC2F3 /* Cg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4163D790EAF85C6007CC2F3 /* Cg.framework */; };
+		F495818C0EBE162E007F2F19 /* libsiftgpu.so in Frameworks */ = {isa = PBXBuildFile; fileRef = F49581800EBE15B3007F2F19 /* libsiftgpu.so */; };
+		F495818D0EBE1636007F2F19 /* libsiftgpu.so in Frameworks */ = {isa = PBXBuildFile; fileRef = F49581800EBE15B3007F2F19 /* libsiftgpu.so */; };
+		F495818E0EBE163F007F2F19 /* libsiftgpu.so in Frameworks */ = {isa = PBXBuildFile; fileRef = F49581800EBE15B3007F2F19 /* libsiftgpu.so */; };
+		F49581EE0EBE1CC2007F2F19 /* SiftMatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49581EC0EBE1CC2007F2F19 /* SiftMatch.cpp */; };
+		F49581EF0EBE1CC2007F2F19 /* SiftMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = F49581ED0EBE1CC2007F2F19 /* SiftMatch.h */; };
+		F4BC2E210EAF9321009AA24C /* FrameBufferObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E0F0EAF9321009AA24C /* FrameBufferObject.cpp */; };
+		F4BC2E220EAF9321009AA24C /* FrameBufferObject.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E100EAF9321009AA24C /* FrameBufferObject.h */; };
+		F4BC2E230EAF9321009AA24C /* GlobalUtil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E110EAF9321009AA24C /* GlobalUtil.cpp */; };
+		F4BC2E240EAF9321009AA24C /* GlobalUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E120EAF9321009AA24C /* GlobalUtil.h */; };
+		F4BC2E250EAF9321009AA24C /* GLTexImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E130EAF9321009AA24C /* GLTexImage.cpp */; };
+		F4BC2E260EAF9321009AA24C /* GLTexImage.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E140EAF9321009AA24C /* GLTexImage.h */; };
+		F4BC2E270EAF9321009AA24C /* ProgramCG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E150EAF9321009AA24C /* ProgramCG.cpp */; };
+		F4BC2E280EAF9321009AA24C /* ProgramCG.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E160EAF9321009AA24C /* ProgramCG.h */; };
+		F4BC2E290EAF9321009AA24C /* ProgramGLSL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E170EAF9321009AA24C /* ProgramGLSL.cpp */; };
+		F4BC2E2A0EAF9321009AA24C /* ProgramGLSL.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E180EAF9321009AA24C /* ProgramGLSL.h */; };
+		F4BC2E2B0EAF9321009AA24C /* ProgramGPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E190EAF9321009AA24C /* ProgramGPU.cpp */; };
+		F4BC2E2C0EAF9321009AA24C /* ProgramGPU.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E1A0EAF9321009AA24C /* ProgramGPU.h */; };
+		F4BC2E2D0EAF9321009AA24C /* ShaderMan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E1B0EAF9321009AA24C /* ShaderMan.cpp */; };
+		F4BC2E2E0EAF9321009AA24C /* ShaderMan.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E1C0EAF9321009AA24C /* ShaderMan.h */; };
+		F4BC2E2F0EAF9321009AA24C /* SiftGPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E1D0EAF9321009AA24C /* SiftGPU.cpp */; };
+		F4BC2E300EAF9321009AA24C /* SiftGPU.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E1E0EAF9321009AA24C /* SiftGPU.h */; };
+		F4BC2E310EAF9321009AA24C /* SiftPyramid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E1F0EAF9321009AA24C /* SiftPyramid.cpp */; };
+		F4BC2E320EAF9321009AA24C /* SiftPyramid.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E200EAF9321009AA24C /* SiftPyramid.h */; };
+		F4BC2E920EAF94A4009AA24C /* GLTransform.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E360EAF9345009AA24C /* GLTransform.h */; };
+		F4BC2E930EAF94A4009AA24C /* BasicTestWin.h in Headers */ = {isa = PBXBuildFile; fileRef = F4BC2E340EAF9345009AA24C /* BasicTestWin.h */; };
+		F4BC2E940EAF94AA009AA24C /* TestWinGlut.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E390EAF9345009AA24C /* TestWinGlut.cpp */; };
+		F4BC2E950EAF94AA009AA24C /* BasicTestWin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E330EAF9345009AA24C /* BasicTestWin.cpp */; };
+		F4D855E40EB1C1BE00921FDD /* SimpleSIFT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E370EAF9345009AA24C /* SimpleSIFT.cpp */; };
+		F4D8561B0EB1C1E800921FDD /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4163D2D0EAF8181007CC2F3 /* GLUT.framework */; };
+		F4D8561E0EB1C1F000921FDD /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4163D300EAF8197007CC2F3 /* OpenGL.framework */; };
+		F4D8562E0EB1C22E00921FDD /* speed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4BC2E380EAF9345009AA24C /* speed.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F4BC2EAD0EAF94E2009AA24C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4163D0B0EAF7F96007CC2F3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4163D5A0EAF837B007CC2F3;
+			remoteInfo = SiftGPU;
+		};
+		F4D856230EB1C20700921FDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4163D0B0EAF7F96007CC2F3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4163D5A0EAF837B007CC2F3;
+			remoteInfo = SiftGPU;
+		};
+		F4D856320EB1C23C00921FDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F4163D0B0EAF7F96007CC2F3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4163D5A0EAF837B007CC2F3;
+			remoteInfo = SiftGPU;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F4163D2D0EAF8181007CC2F3 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = /System/Library/Frameworks/GLUT.framework; sourceTree = "<absolute>"; };
+		F4163D300EAF8197007CC2F3 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		F4163D790EAF85C6007CC2F3 /* Cg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cg.framework; path = /Library/Frameworks/Cg.framework; sourceTree = "<absolute>"; };
+		F49581800EBE15B3007F2F19 /* libsiftgpu.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libsiftgpu.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		F49581EC0EBE1CC2007F2F19 /* SiftMatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SiftMatch.cpp; path = ../SiftGPU/src/SiftMatch.cpp; sourceTree = SOURCE_ROOT; };
+		F49581ED0EBE1CC2007F2F19 /* SiftMatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SiftMatch.h; path = ../SiftGPU/src/SiftMatch.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E0F0EAF9321009AA24C /* FrameBufferObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBufferObject.cpp; path = ../SiftGPU/src/FrameBufferObject.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E100EAF9321009AA24C /* FrameBufferObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FrameBufferObject.h; path = ../SiftGPU/src/FrameBufferObject.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E110EAF9321009AA24C /* GlobalUtil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GlobalUtil.cpp; path = ../SiftGPU/src/GlobalUtil.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E120EAF9321009AA24C /* GlobalUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GlobalUtil.h; path = ../SiftGPU/src/GlobalUtil.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E130EAF9321009AA24C /* GLTexImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GLTexImage.cpp; path = ../SiftGPU/src/GLTexImage.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E140EAF9321009AA24C /* GLTexImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GLTexImage.h; path = ../SiftGPU/src/GLTexImage.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E150EAF9321009AA24C /* ProgramCG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProgramCG.cpp; path = ../SiftGPU/src/ProgramCG.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E160EAF9321009AA24C /* ProgramCG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProgramCG.h; path = ../SiftGPU/src/ProgramCG.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E170EAF9321009AA24C /* ProgramGLSL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProgramGLSL.cpp; path = ../SiftGPU/src/ProgramGLSL.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E180EAF9321009AA24C /* ProgramGLSL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProgramGLSL.h; path = ../SiftGPU/src/ProgramGLSL.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E190EAF9321009AA24C /* ProgramGPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProgramGPU.cpp; path = ../SiftGPU/src/ProgramGPU.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E1A0EAF9321009AA24C /* ProgramGPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ProgramGPU.h; path = ../SiftGPU/src/ProgramGPU.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E1B0EAF9321009AA24C /* ShaderMan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ShaderMan.cpp; path = ../SiftGPU/src/ShaderMan.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E1C0EAF9321009AA24C /* ShaderMan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShaderMan.h; path = ../SiftGPU/src/ShaderMan.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E1D0EAF9321009AA24C /* SiftGPU.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SiftGPU.cpp; path = ../SiftGPU/src/SiftGPU.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E1E0EAF9321009AA24C /* SiftGPU.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SiftGPU.h; path = ../SiftGPU/src/SiftGPU.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E1F0EAF9321009AA24C /* SiftPyramid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SiftPyramid.cpp; path = ../SiftGPU/src/SiftPyramid.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E200EAF9321009AA24C /* SiftPyramid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SiftPyramid.h; path = ../SiftGPU/src/SiftPyramid.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E330EAF9345009AA24C /* BasicTestWin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BasicTestWin.cpp; path = ../TestWin/src/BasicTestWin.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E340EAF9345009AA24C /* BasicTestWin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BasicTestWin.h; path = ../TestWin/src/BasicTestWin.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E360EAF9345009AA24C /* GLTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GLTransform.h; path = ../TestWin/src/GLTransform.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E370EAF9345009AA24C /* SimpleSIFT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleSIFT.cpp; path = ../TestWin/src/SimpleSIFT.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E380EAF9345009AA24C /* speed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = speed.cpp; path = ../TestWin/src/speed.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E390EAF9345009AA24C /* TestWinGlut.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TestWinGlut.cpp; path = ../TestWin/src/TestWinGlut.cpp; sourceTree = SOURCE_ROOT; };
+		F4BC2E3A0EAF9345009AA24C /* TestWinGlut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestWinGlut.h; path = ../TestWin/src/TestWinGlut.h; sourceTree = SOURCE_ROOT; };
+		F4BC2E8C0EAF947F009AA24C /* TestWin */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TestWin; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4D855DF0EB1C1A900921FDD /* SimpleSIFT */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SimpleSIFT; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4D856290EB1C21D00921FDD /* Speed */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Speed; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F4163D590EAF837B007CC2F3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4163D730EAF83AD007CC2F3 /* GLUT.framework in Frameworks */,
+				F4163D720EAF83A6007CC2F3 /* OpenGL.framework in Frameworks */,
+				F4163D7A0EAF85C6007CC2F3 /* Cg.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4BC2E8A0EAF947F009AA24C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F495818C0EBE162E007F2F19 /* libsiftgpu.so in Frameworks */,
+				F4D8561E0EB1C1F000921FDD /* OpenGL.framework in Frameworks */,
+				F4D8561B0EB1C1E800921FDD /* GLUT.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4D855DD0EB1C1A900921FDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F495818D0EBE1636007F2F19 /* libsiftgpu.so in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4D856270EB1C21D00921FDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F495818E0EBE163F007F2F19 /* libsiftgpu.so in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F4163D090EAF7F96007CC2F3 = {
+			isa = PBXGroup;
+			children = (
+				F4BC2EE90EB072F7009AA24C /* Frameworks */,
+				F4163D140EAF7FA3007CC2F3 /* SiftGPU */,
+				F4163D8B0EAF880A007CC2F3 /* TestWin */,
+				F4163D5C0EAF837B007CC2F3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F4163D140EAF7FA3007CC2F3 /* SiftGPU */ = {
+			isa = PBXGroup;
+			children = (
+				F4BC2EEB0EB0733D009AA24C /* src */,
+				F4BC2EEA0EB0730F009AA24C /* headers */,
+			);
+			name = SiftGPU;
+			sourceTree = "<group>";
+		};
+		F4163D5C0EAF837B007CC2F3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F4BC2E8C0EAF947F009AA24C /* TestWin */,
+				F4D855DF0EB1C1A900921FDD /* SimpleSIFT */,
+				F4D856290EB1C21D00921FDD /* Speed */,
+				F49581800EBE15B3007F2F19 /* libsiftgpu.so */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F4163D8B0EAF880A007CC2F3 /* TestWin */ = {
+			isa = PBXGroup;
+			children = (
+				F4BC2EED0EB0735C009AA24C /* src */,
+				F4BC2EEC0EB0734E009AA24C /* headers */,
+			);
+			name = TestWin;
+			sourceTree = "<group>";
+		};
+		F4BC2EE90EB072F7009AA24C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F4163D2D0EAF8181007CC2F3 /* GLUT.framework */,
+				F4163D300EAF8197007CC2F3 /* OpenGL.framework */,
+				F4163D790EAF85C6007CC2F3 /* Cg.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F4BC2EEA0EB0730F009AA24C /* headers */ = {
+			isa = PBXGroup;
+			children = (
+				F49581ED0EBE1CC2007F2F19 /* SiftMatch.h */,
+				F4BC2E100EAF9321009AA24C /* FrameBufferObject.h */,
+				F4BC2E120EAF9321009AA24C /* GlobalUtil.h */,
+				F4BC2E140EAF9321009AA24C /* GLTexImage.h */,
+				F4BC2E160EAF9321009AA24C /* ProgramCG.h */,
+				F4BC2E180EAF9321009AA24C /* ProgramGLSL.h */,
+				F4BC2E1A0EAF9321009AA24C /* ProgramGPU.h */,
+				F4BC2E1C0EAF9321009AA24C /* ShaderMan.h */,
+				F4BC2E1E0EAF9321009AA24C /* SiftGPU.h */,
+				F4BC2E200EAF9321009AA24C /* SiftPyramid.h */,
+			);
+			name = headers;
+			sourceTree = "<group>";
+		};
+		F4BC2EEB0EB0733D009AA24C /* src */ = {
+			isa = PBXGroup;
+			children = (
+				F49581EC0EBE1CC2007F2F19 /* SiftMatch.cpp */,
+				F4BC2E0F0EAF9321009AA24C /* FrameBufferObject.cpp */,
+				F4BC2E110EAF9321009AA24C /* GlobalUtil.cpp */,
+				F4BC2E130EAF9321009AA24C /* GLTexImage.cpp */,
+				F4BC2E150EAF9321009AA24C /* ProgramCG.cpp */,
+				F4BC2E170EAF9321009AA24C /* ProgramGLSL.cpp */,
+				F4BC2E190EAF9321009AA24C /* ProgramGPU.cpp */,
+				F4BC2E1B0EAF9321009AA24C /* ShaderMan.cpp */,
+				F4BC2E1D0EAF9321009AA24C /* SiftGPU.cpp */,
+				F4BC2E1F0EAF9321009AA24C /* SiftPyramid.cpp */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+		F4BC2EEC0EB0734E009AA24C /* headers */ = {
+			isa = PBXGroup;
+			children = (
+				F4BC2E340EAF9345009AA24C /* BasicTestWin.h */,
+				F4BC2E360EAF9345009AA24C /* GLTransform.h */,
+				F4BC2E3A0EAF9345009AA24C /* TestWinGlut.h */,
+			);
+			name = headers;
+			sourceTree = "<group>";
+		};
+		F4BC2EED0EB0735C009AA24C /* src */ = {
+			isa = PBXGroup;
+			children = (
+				F4BC2E330EAF9345009AA24C /* BasicTestWin.cpp */,
+				F4BC2E370EAF9345009AA24C /* SimpleSIFT.cpp */,
+				F4BC2E380EAF9345009AA24C /* speed.cpp */,
+				F4BC2E390EAF9345009AA24C /* TestWinGlut.cpp */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		F4163D570EAF837B007CC2F3 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4BC2E220EAF9321009AA24C /* FrameBufferObject.h in Headers */,
+				F4BC2E240EAF9321009AA24C /* GlobalUtil.h in Headers */,
+				F4BC2E260EAF9321009AA24C /* GLTexImage.h in Headers */,
+				F4BC2E280EAF9321009AA24C /* ProgramCG.h in Headers */,
+				F4BC2E2A0EAF9321009AA24C /* ProgramGLSL.h in Headers */,
+				F4BC2E2C0EAF9321009AA24C /* ProgramGPU.h in Headers */,
+				F4BC2E2E0EAF9321009AA24C /* ShaderMan.h in Headers */,
+				F4BC2E300EAF9321009AA24C /* SiftGPU.h in Headers */,
+				F4BC2E320EAF9321009AA24C /* SiftPyramid.h in Headers */,
+				F49581EF0EBE1CC2007F2F19 /* SiftMatch.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4BC2EAB0EAF94C0009AA24C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4BC2E920EAF94A4009AA24C /* GLTransform.h in Headers */,
+				F4BC2E930EAF94A4009AA24C /* BasicTestWin.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		F4163D5A0EAF837B007CC2F3 /* siftgpu */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4163D5F0EAF837B007CC2F3 /* Build configuration list for PBXNativeTarget "siftgpu" */;
+			buildPhases = (
+				F4163D570EAF837B007CC2F3 /* Headers */,
+				F4163D580EAF837B007CC2F3 /* Sources */,
+				F4163D590EAF837B007CC2F3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = siftgpu;
+			productName = SiftGPU;
+			productReference = F49581800EBE15B3007F2F19 /* libsiftgpu.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		F4BC2E8B0EAF947F009AA24C /* TestWin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4BC2EAC0EAF94C0009AA24C /* Build configuration list for PBXNativeTarget "TestWin" */;
+			buildPhases = (
+				F4BC2EAB0EAF94C0009AA24C /* Headers */,
+				F4BC2E890EAF947F009AA24C /* Sources */,
+				F4BC2E8A0EAF947F009AA24C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F4BC2EAE0EAF94E2009AA24C /* PBXTargetDependency */,
+			);
+			name = TestWin;
+			productName = TestWnd;
+			productReference = F4BC2E8C0EAF947F009AA24C /* TestWin */;
+			productType = "com.apple.product-type.tool";
+		};
+		F4D855DE0EB1C1A900921FDD /* SimpleSIFT */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4D855ED0EB1C1C800921FDD /* Build configuration list for PBXNativeTarget "SimpleSIFT" */;
+			buildPhases = (
+				F4D855DC0EB1C1A900921FDD /* Sources */,
+				F4D855DD0EB1C1A900921FDD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F4D856240EB1C20700921FDD /* PBXTargetDependency */,
+			);
+			name = SimpleSIFT;
+			productName = SimpleSIFT;
+			productReference = F4D855DF0EB1C1A900921FDD /* SimpleSIFT */;
+			productType = "com.apple.product-type.tool";
+		};
+		F4D856280EB1C21D00921FDD /* Speed */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4D8563C0EB1C24800921FDD /* Build configuration list for PBXNativeTarget "Speed" */;
+			buildPhases = (
+				F4D856260EB1C21D00921FDD /* Sources */,
+				F4D856270EB1C21D00921FDD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F4D856330EB1C23C00921FDD /* PBXTargetDependency */,
+			);
+			name = Speed;
+			productName = Speed;
+			productReference = F4D856290EB1C21D00921FDD /* Speed */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F4163D0B0EAF7F96007CC2F3 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = F4163D0E0EAF7F96007CC2F3 /* Build configuration list for PBXProject "SiftGPU" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 0;
+			mainGroup = F4163D090EAF7F96007CC2F3;
+			productRefGroup = F4163D5C0EAF837B007CC2F3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F4163D5A0EAF837B007CC2F3 /* siftgpu */,
+				F4BC2E8B0EAF947F009AA24C /* TestWin */,
+				F4D855DE0EB1C1A900921FDD /* SimpleSIFT */,
+				F4D856280EB1C21D00921FDD /* Speed */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F4163D580EAF837B007CC2F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4BC2E210EAF9321009AA24C /* FrameBufferObject.cpp in Sources */,
+				F4BC2E230EAF9321009AA24C /* GlobalUtil.cpp in Sources */,
+				F4BC2E250EAF9321009AA24C /* GLTexImage.cpp in Sources */,
+				F4BC2E270EAF9321009AA24C /* ProgramCG.cpp in Sources */,
+				F4BC2E290EAF9321009AA24C /* ProgramGLSL.cpp in Sources */,
+				F4BC2E2B0EAF9321009AA24C /* ProgramGPU.cpp in Sources */,
+				F4BC2E2D0EAF9321009AA24C /* ShaderMan.cpp in Sources */,
+				F4BC2E2F0EAF9321009AA24C /* SiftGPU.cpp in Sources */,
+				F4BC2E310EAF9321009AA24C /* SiftPyramid.cpp in Sources */,
+				F49581EE0EBE1CC2007F2F19 /* SiftMatch.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4BC2E890EAF947F009AA24C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4BC2E940EAF94AA009AA24C /* TestWinGlut.cpp in Sources */,
+				F4BC2E950EAF94AA009AA24C /* BasicTestWin.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4D855DC0EB1C1A900921FDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4D855E40EB1C1BE00921FDD /* SimpleSIFT.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4D856260EB1C21D00921FDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4D8562E0EB1C22E00921FDD /* speed.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F4BC2EAE0EAF94E2009AA24C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4163D5A0EAF837B007CC2F3 /* siftgpu */;
+			targetProxy = F4BC2EAD0EAF94E2009AA24C /* PBXContainerItemProxy */;
+		};
+		F4D856240EB1C20700921FDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4163D5A0EAF837B007CC2F3 /* siftgpu */;
+			targetProxy = F4D856230EB1C20700921FDD /* PBXContainerItemProxy */;
+		};
+		F4D856330EB1C23C00921FDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4163D5A0EAF837B007CC2F3 /* siftgpu */;
+			targetProxy = F4D856320EB1C23C00921FDD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F4163D0C0EAF7F96007CC2F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = /opt/local/include/;
+				LIBRARY_SEARCH_PATHS = /opt/local/lib;
+				OTHER_LDFLAGS = (
+					"-lIL",
+					"-lGLEW",
+				);
+			};
+			name = Debug;
+		};
+		F4163D0D0EAF7F96007CC2F3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				HEADER_SEARCH_PATHS = /opt/local/include/;
+				LIBRARY_SEARCH_PATHS = /opt/local/lib;
+				OTHER_LDFLAGS = (
+					"-lIL",
+					"-lGLEW",
+				);
+			};
+			name = Release;
+		};
+		F4163D5D0EAF837B007CC2F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/opt/local/include,
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/opt/local/lib,
+				);
+				OTHER_LDFLAGS = (
+					"-l",
+					IL,
+					"-l",
+					GLEW,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = siftgpu;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		F4163D5E0EAF837B007CC2F3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_EXTENSION = so;
+				EXECUTABLE_PREFIX = lib;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/opt/local/include,
+				);
+				INSTALL_PATH = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					/opt/local/lib,
+				);
+				OTHER_LDFLAGS = (
+					"-lIL",
+					"-lGLEW",
+				);
+				PREBINDING = NO;
+				PRELINK_FLAGS = "";
+				PRODUCT_NAME = siftgpu;
+				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		F4BC2E8E0EAF947F009AA24C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = TestWnd;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		F4BC2E8F0EAF947F009AA24C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = TestWin;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		F4D855E10EB1C1A900921FDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = SimpleSIFT;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		F4D855E20EB1C1A900921FDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = SimpleSIFT;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		F4D8562B0EB1C21D00921FDD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = Speed;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		F4D8562C0EB1C21D00921FDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = Speed;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F4163D0E0EAF7F96007CC2F3 /* Build configuration list for PBXProject "SiftGPU" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4163D0C0EAF7F96007CC2F3 /* Debug */,
+				F4163D0D0EAF7F96007CC2F3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4163D5F0EAF837B007CC2F3 /* Build configuration list for PBXNativeTarget "siftgpu" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4163D5D0EAF837B007CC2F3 /* Debug */,
+				F4163D5E0EAF837B007CC2F3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4BC2EAC0EAF94C0009AA24C /* Build configuration list for PBXNativeTarget "TestWin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4BC2E8E0EAF947F009AA24C /* Debug */,
+				F4BC2E8F0EAF947F009AA24C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4D855ED0EB1C1C800921FDD /* Build configuration list for PBXNativeTarget "SimpleSIFT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4D855E10EB1C1A900921FDD /* Debug */,
+				F4D855E20EB1C1A900921FDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4D8563C0EB1C24800921FDD /* Build configuration list for PBXNativeTarget "Speed" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4D8562B0EB1C21D00921FDD /* Debug */,
+				F4D8562C0EB1C21D00921FDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F4163D0B0EAF7F96007CC2F3 /* Project object */;
+}

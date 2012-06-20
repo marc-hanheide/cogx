@@ -1,0 +1,16 @@
+# NOTE: all file paths are relative, so you have to start cast-server from the
+# Cogx root directory!
+
+HOST localhost
+
+COMPONENT CPP stereoserver StereoServer --stereoname stereo --videoname VideoServer --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo.ini --display
+
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+# live images
+CPP MG VideoServer OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/tuw_stereo.ini:L  subarchitectures/vision.sa/config/tuw_stereo.ini:R"
+
+CPP MG PlanePopOut PlanePopOut --stereohost localhost --stereoname stereo --globalPoints true --log true --display
+

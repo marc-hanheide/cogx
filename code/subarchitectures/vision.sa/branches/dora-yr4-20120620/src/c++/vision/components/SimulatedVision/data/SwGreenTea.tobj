@@ -1,0 +1,16 @@
+[color]
+@blue=0.2
+@green=0.4
+ambiguity=0
+gain=0
+
+[shape]
+@compact=0.1
+@elongated=0.6
+ambiguity=0
+gain=0
+
+[label]
+@teabox=0.2
+ambiguity=0
+gain=0

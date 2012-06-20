@@ -1,0 +1,64 @@
+# camera parameter file generated Mon Aug 17 16:21:24 2009
+
+# Intrinsic parameters for pinhole camera model.
+# The pinhole camera model is as follows:
+# m = A*(R*M + t)
+#
+# M .. 3x1 world point [mm]
+# A .. 3x3 camera intrinsic matrix
+#          |f_x  0  c_x|
+#      A = | 0  f_y c_y|
+#          | 0   0   1 |
+#      c_x, c_y .. principal point [pix]
+#      f_x, f_y .. focal length in [pix]
+#                  f_x = f/s_x, f_y = f/s_y
+#                  with f the focal length in [mm] and s_x, s_y the pixel
+#                  sizes in [mm/pix]
+# R,t .. 3x3 rotation matrix and 3x1 translation vector [mm]
+#      pose of camera w.r.t. world (= extrinsic parameters)
+# m .. 3x1 image point in homogenous co-ordinates
+#      image point in cartesian pixel co-ordinates is given as
+#      (x, y) = (m_x/m_z, m_y/m_z)
+# Note that only the ratios focal length to pixel size can be determined.
+# Given a (known) nominal focal length f (e.g. from camera data sheet) we
+# can calculate:
+# s_x = f/f_x .. horizontal pixel size [mm/pix]
+# s_y = f/f_y .. vertical pixel size [mm/pix]
+# r = s_x/s_y .. pixel aspect ratio
+#
+# Distortion is modelled as follows:
+# x_d = x + x*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*x^2)
+# y_d = y + y*(k1*r^2 + k2*r^4) + 2*p1*x*y + p2*(r^2 + 2*y^2)
+#
+# where (x, y) are ideal, distortion-free image physical co-ordinates,
+# (x_d, y_d) are distorted image physical co-ordinates and r^2 = x^2 + y^2
+#
+# w, h .. image width and height
+
+# focal lengths in [pix]
+fx = 529.696777
+fy = 529.113281
+# principal point [pix]
+cx = 306.565125
+cy = 226.131149
+
+# (nominal) focal length [mm]
+f  = 5.000000
+# pixel size [mm/pix]
+sx = 0.009439
+sy = 0.009450
+# aspect ratio: pixel size x/y
+r  = 0.998898
+# image width and height
+w =  640
+h =  480
+
+# distortion parameters
+k1 = 0.014899
+k2 = -0.092157
+p1 = -0.002191
+p2 = 0.002411
+
+#pose = [0.098259 -0.131108 0.301873] [-2.416438 -0.017390 -0.014725]
+pose = [-0.140186 0.105214 0.264271] [2.180748 -0.009298 0.157958]
+
