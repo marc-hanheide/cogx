@@ -21,8 +21,8 @@ public class GotoPlaceGenerator extends
 		AbstractBeliefMotiveGenerator<PatrolMotive, GroundedBelief>  {
 	private static final String PLACETYPE = SimpleDiscreteTransferFunction
 			.getBeliefTypeFromCastType(CASTUtils.typeName(Place.class));
-	private static final int MAX_EXECUTION_TIME = 60 * 5;
-	private static final int MAX_PLANNING_TIME = 30;
+	protected static final int MAX_EXECUTION_TIME = 60 * 5;
+	protected static final int MAX_PLANNING_TIME = 30;
 
 	/**
 	 * the maximum costs to drop we assign if information gain is really high
@@ -60,15 +60,10 @@ public class GotoPlaceGenerator extends
 		log("checkForAddition(): check belief " + newEntry.id + " for addition");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		FormulaDistribution pIdFD = belief.getContent().get(
-				PlaceTransferFunction.PLACE_ID_ID);
-		int placeID = pIdFD.getDistribution().getMostLikely().getInteger();
+		int placeID = getPlaceId(belief);
 		if (placeID != targetPlaceID)
 			return null;
-		// get the most likely status
-		boolean isExplored = belief.getContent().get("placestatus")
-				.getDistribution().getMostLikely().getProposition()
-				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
+		boolean isExplored = isExploredPlace(belief);
 		log("checkForAddition(): placestatus="
 				+ belief.getContent().get("placestatus").getDistribution()
 						.getMostLikely().getProposition());
@@ -91,6 +86,14 @@ public class GotoPlaceGenerator extends
 		return null;
 	}
 
+	protected int getPlaceId(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief) {
+		FormulaDistribution pIdFD = belief.getContent().get(
+				PlaceTransferFunction.PLACE_ID_ID);
+		int placeID = pIdFD.getDistribution().getMostLikely().getInteger();
+		return placeID;
+	}
+
 
 	@Override
 	protected PatrolMotive checkForUpdate(GroundedBelief newEntry,
@@ -100,9 +103,7 @@ public class GotoPlaceGenerator extends
 				+ " for update");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief = CASTIndependentFormulaDistributionsBelief
 				.create(GroundedBelief.class, newEntry);
-		boolean isExplored = belief.getContent().get("placestatus")
-				.getDistribution().getMostLikely().getProposition()
-				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
+		boolean isExplored = isExploredPlace(belief);
 		// if that is a place holder
 		if (isExplored) {
 			log("place is explored, so it is a goal to patrol");
@@ -112,6 +113,14 @@ public class GotoPlaceGenerator extends
 		} else {
 			return null;
 		}
+	}
+
+	protected boolean isExploredPlace(
+			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief) {
+		boolean isExplored = belief.getContent().get("placestatus")
+				.getDistribution().getMostLikely().getProposition()
+				.equalsIgnoreCase(PlaceStatus.TRUEPLACE.name());
+		return isExplored;
 	}
 
 	/*
@@ -140,7 +149,7 @@ public class GotoPlaceGenerator extends
 
 	}
 
-	private void fillValues(
+	protected void fillValues(
 			CASTIndependentFormulaDistributionsBelief<GroundedBelief> belief,
 			PatrolMotive motive) {
 		motive.updated = getCASTTime();
