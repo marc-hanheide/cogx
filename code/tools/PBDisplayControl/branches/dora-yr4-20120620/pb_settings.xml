@@ -1,0 +1,81 @@
+<pb_settings>
+<pbhost>localhost</pbhost>
+<pbport>5050</pbport>
+<views>
+    <view>
+        <name>Top down</name>
+        <camera>
+            <orthographic>true</glob>
+            <glob>true</glob>
+            <x>0</x>        
+            <y>0</y>        
+            <z>0</z>        
+            <yaw>0</yaw>        
+            <pitch>1.57</pitch>        
+            <roll>0</roll>        
+        </camera>
+        <objects>
+            <object>robot</object>
+            <object>labels</object>
+            <object>graph</object>
+            <object>frontiers</object>
+            <object>grid_map</object>
+            <object hidden="true">walls</object>
+            <object hidden="true">pdf1</object>
+            <object hidden="true">planned_viewpoints</object>
+            <object hidden="true">kinect</object>
+        </objects>
+    </view>
+    <view>
+        <name>Scene</name>
+        <camera>
+            <glob>true</glob>
+            <x>1</x>        
+            <y>1</y>        
+            <z>1</z>        
+            <yaw>0</yaw>        
+            <pitch>0.5</pitch>        
+            <roll>0.01</roll>        
+        </camera>
+        <objects>
+            <object>robot</object>
+            <object>labels</object>
+            <object>graph</object>
+            <object>frontiers</object>
+            <object>grid_map</object>
+            <object>walls</object>
+            <object hidden="true">pdf1</object>
+            <object hidden="true">planned_viewpoints</object>
+            <object hidden="true">kinect</object>
+        </objects>
+    </view>
+    <view>
+        <name>Search scene</name>
+        <camera>
+            <glob>true</glob>
+            <x>0</x>        
+            <y>0</y>        
+            <z>0</z>        
+            <yaw>0</yaw>        
+            <pitch>0.5</pitch>        
+            <roll>0.01</roll>        
+        </camera>
+        <objects>
+            <object>robot</object>
+            <object>labels</object>
+            <object>graph</object>
+            <object>frontiers</object>
+            <object>grid_map</object>
+            <object>walls</object>
+            <object>pdf1</object>
+            <object>planned_viewpoints</object>
+            <object hidden="true">kinect</object>
+        </objects>
+    </view>
+</views>
+<toggles>
+    <toggle>kinect</toggle>
+    <toggle>grid_map</toggle>
+    <toggle>planned_viewpoints</toggle>
+</toggles>
+</pb_settings>
