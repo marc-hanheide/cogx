@@ -109,6 +109,13 @@
     <member stem="ball-noun-n" pred="ball"/>
     <member stem="block-noun-n" pred="block"/>
     <member stem="box-noun-n" pred="box"/>
+    <member stem="schokomusli-noun-n" pred="schokomusli"/>
+    <member stem="fruchtemusli-noun-n" pred="fruchtemusli"/>
+    <member stem="weetabix-noun-n" pred="weetabix"/>
+    <member stem="bircher-noun-n" pred="bircher"/>
+    <member stem="toppas-noun-n" pred="toppas"/>
+    <member stem="chocos-noun-n" pred="chocos"/>
+    <member stem="darjeeling-noun-n" pred="darjeeling"/>
     <member stem="box2-noun-n" pred="box"/>
     <member stem="box3-noun-n" pred="box"/>
     <member stem="box4-noun-n" pred="box"/>

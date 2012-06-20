@@ -154,6 +154,14 @@
   noun(block, thing,) 
   noun(box, thing,) 
 
+  noun(schokomusli, thing,) 
+  noun(fruchtemusli, thing,) 
+  noun(weetabix, thing,) 
+  noun(bircher, thing,) 
+  noun(toppas, thing,) 
+  noun(chocos, thing,) 
+  noun(darjeeling, thing,) 
+
   word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
   word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }
 word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
