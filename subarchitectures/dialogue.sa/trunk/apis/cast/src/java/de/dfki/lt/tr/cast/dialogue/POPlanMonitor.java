@@ -1,5 +1,8 @@
 package de.dfki.lt.tr.cast.dialogue;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,13 +30,18 @@ import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
 
 public class POPlanMonitor extends ManagedComponent {
 
+  private String fileName = "logs" + File.separator + "Verbalisations.txt";
+
 	private Map<Integer,List<POPlan>> runningMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,List<POPlan>> finishedMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,PlanningTask> planningTaskMap = new HashMap<Integer,PlanningTask>();
+  private Map<Integer,String> generatedReportsMap = new HashMap<Integer,String>();
 	
 	private Set<Integer> reportedTasks = new HashSet<Integer>();
 
 	private PlanVerbalizer pevModule; 
+
+  private boolean suppressVerbalisationUntilRequested;
 	
 	protected void configure(Map<String, String> args) {
 		String pddldomain = "";
@@ -43,7 +51,6 @@ public class POPlanMonitor extends ManagedComponent {
 		String hostname = "";
 		Integer port = null;
 		
-		// TODO Auto-generated method stub
 		super.configure(args);
 		if (args.containsKey("--pddldomain")) {
 			pddldomain = args.get("--pddldomain");
@@ -69,17 +76,24 @@ public class POPlanMonitor extends ManagedComponent {
 			port = Integer.parseInt(args.get("--port"));
 			log("port=" + port);
 		}
-		
+    if (args.containsKey("--only-verbalise-on-request")) {
+      suppressVerbalisationUntilRequested = true;
+    } else {
+      suppressVerbalisationUntilRequested = false;
+    }
+
 		try {
 			log("trying to create PEV Module with domainannotation=" + domainannotation + ", pddldomain=" + pddldomain + 
 					", grammarpath=" + grammarFile + ", ngrampath=" + ngramFile + 
-					", hostname=" + hostname + ", port=" + (port!=null ? port : "null") );
+					", hostname=" + hostname + ", port=" + (port!=null ? port : "null") +
+          ", " + (suppressVerbalisationUntilRequested ? "verbalisation on request only" : "") );
 			pevModule = new PlanVerbalizer(domainannotation, pddldomain, grammarFile, ngramFile, hostname, port, this);
 			log("created PEV Module");
 		} catch (IOException e) {
 			logException(e);
 		}
 		
+    deleteVerbalisationsFile();
 	}
 
 	protected void start() {
@@ -139,7 +153,7 @@ public class POPlanMonitor extends ManagedComponent {
 			return;
 		}
 		log("received ADD for PlanVerbalizationRequest: " + _pevReq.taskID);
-		reportFinishedHistory(_pevReq.taskID);
+		reportFinishedHistory(_pevReq.taskID, false);
 	}
 	
 	
@@ -241,21 +255,21 @@ public class POPlanMonitor extends ManagedComponent {
 				reportedTasks.add(_oldPlanningTask.id);
 				VerbalisationUtils.verbaliseString(this, "I aborted my previous task.");
 				log("PlanningTask " + _oldPlanningTask.id + " is ABORTED. Reporting verbally.");
-				reportFinishedHistory(_oldPlanningTask.id);
+				reportFinishedHistory(_oldPlanningTask.id, suppressVerbalisationUntilRequested);
 				break;
 			case FAILED:
 				if (reportedTasks.contains(_oldPlanningTask.id)) break;
 				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is FAILED. Reporting verbally.");
 				VerbalisationUtils.verbaliseString(this, "My task failed.");
-				reportFinishedHistory(_oldPlanningTask.id);
+				reportFinishedHistory(_oldPlanningTask.id, suppressVerbalisationUntilRequested);
 				break;
 			case SUCCEEDED:
 				if (reportedTasks.contains(_oldPlanningTask.id)) break;
 				reportedTasks.add(_oldPlanningTask.id);
 				log("PlanningTask " + _oldPlanningTask.id + " is SUCCEEDED. Reporting verbally.");
 				VerbalisationUtils.verbaliseString(this, "I finished my task successfully.");
-				reportFinishedHistory(_oldPlanningTask.id);
+				reportFinishedHistory(_oldPlanningTask.id, suppressVerbalisationUntilRequested);
 				break;
 			default:
 				break;
@@ -283,13 +297,80 @@ public class POPlanMonitor extends ManagedComponent {
 		return this.pevModule.verbalizeHistory(hlist);
 	}
 
-	private void reportFinishedHistory(int taskID) {
-		VerbalisationUtils.verbaliseString(this, "I will tell you what I did in a moment.");		
-		String report = generateHistoryReport(taskID);
-		log("REPORTING FINISHED HISTORY: \n" + report);
-		VerbalisationUtils.verbaliseString(this, report);
+  // Does this method need to be synchronized to handle multiple requests at the same time as 
+  // generation due to task completion? I think it is handled by the event queue.
+	private void reportFinishedHistory(int taskID, boolean suppress_verbalisation) {
+    String report = null;
+    if (generatedReportsMap.containsKey(taskID)) {
+      report = generatedReportsMap.get(taskID);
+    }
+
+    // If the PlanVerbalisationControllerGUI belonged to this component then we could
+    // indicate in the GUI when a completed task was ready to verbalise (i.e. report generated)
+
+    if (suppress_verbalisation == false && report == null && finishedMap.containsKey(taskID)) {
+		  VerbalisationUtils.verbaliseString(this, "I will tell you what I did in a moment.");		
+    }
+
+    if (report == null) {		
+      if (finishedMap.containsKey(taskID)) {     
+        report = generateHistoryReport(taskID);
+        // only store the report if the task has finished
+        // might get a verbalisation request earlier
+        PlanningTask planning_task = planningTaskMap.get(taskID);
+        switch (planning_task.executionStatus) {
+          case SUCCEEDED:
+          case ABORTED:
+          case FAILED:
+           generatedReportsMap.put(taskID, report);
+           break;
+          case INPROGRESS:
+          case PENDING:
+          default:
+           break;
+        }
+      } else {
+        report = "I am sorry. Task ID " + taskID + " is not known to me.";
+      }
+
+      if (suppress_verbalisation == true) {
+        log("GENERATED FINISHED HISTORY: \n" + report);
+      }
+    }
+	
+    if (suppress_verbalisation == false) {
+      log("VERBALISING FINISHED HISTORY: \n" + report);
+  		VerbalisationUtils.verbaliseString(this, report);
+
+      writeVerbalisationToFile(taskID, report);
+    }
 	}
 
+  private void deleteVerbalisationsFile() {
+    try {
+      File verbalisations_file = new File(fileName);
+      if (verbalisations_file.exists()) {
+        verbalisations_file.delete();
+      }
+    } catch (SecurityException e) {
+      // ignore silently
+    }
+  }
+
+  private void writeVerbalisationToFile(int taskID, String report) {
+    try {
+      BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
+      bw.write(planningTaskToString(planningTaskMap.get(taskID)));
+      bw.write("\n\n ****** Verbalisation ******\n");
+      bw.write(report);
+      bw.newLine();
+      bw.newLine();
+      bw.flush();
+      bw.close();
+    } catch (IOException e) {
+      log("WARN: unable to write verbalisation to file");
+    }
+  }
 	
 	private void reportFinishedPOPlan(POPlan pp) {
 		log("************ reportFinishedPOPlan() called ************");
