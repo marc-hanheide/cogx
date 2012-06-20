@@ -43,6 +43,7 @@ class GraphCutSegmenter
   float bgDistTolerance;
   int lblFixCost;
   int smoothCost;
+  int colFilThreshold;
   
   IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK

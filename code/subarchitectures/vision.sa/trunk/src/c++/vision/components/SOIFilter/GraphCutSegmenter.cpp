@@ -37,7 +37,7 @@ using namespace cogx::Math;
 #define MAX_PATCH_SIZE 36000
 
 #define MAX_COLOR_SAMPLE 90
-#define COLOR_FILTERING_THRESHOLD 7
+#define COLOR_FILTERING_THRESHOLD 10
 
 #define COLOR_SAMPLE_IMG_WIDTH 5
 #define COLOR_SAMPLE_IMG_HEIGHT 15
@@ -79,6 +79,7 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
   bgDistTolerance = BG_DIST_TOLERANCE;
   lblFixCost = LABEL_FIX_COST;
   smoothCost = SMOOTH_COST;
+  colFilThreshold = COLOR_FILTERING_THRESHOLD;
 
   if((it = _config.find("--display")) != _config.end())
   {
@@ -107,6 +108,12 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
   {
     istringstream str(it->second);
     str >> bgDistTolerance;
+  }
+  
+  if((it = _config.find("--color-filter-thr")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> colFilThreshold;
   }
 
   if((it = _config.find("--fixc")) != _config.end())
@@ -565,7 +572,7 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
   {	
     int size = sortHlsList.size();
     int k = filterList.size()/HSL_K_RATIO + 1;
-    sortHlsList = colorFilter(sortHlsList, filterList, k, COLOR_FILTERING_THRESHOLD);
+    sortHlsList = colorFilter(sortHlsList, filterList, k, colFilThreshold);
 
     colorKval = sortHlsList.size()/HSL_K_RATIO + 1;
 
