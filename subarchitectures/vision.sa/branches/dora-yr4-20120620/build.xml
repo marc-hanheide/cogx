@@ -1,0 +1,79 @@
+<!-- Inner build file for a module in the CogX system -->
+<project name="vision.sa" default="compile" basedir=".">
+	<property name="projectroot.dir" value="${basedir}/../.." />
+	<property file="${projectroot.dir}/build.properties" />
+	<!-- =================================================================== -->
+	<!-- Add JAR files to classpath                                          -->
+	<!-- =================================================================== -->
+	<path id="build.classpath">
+		<pathelement path="${ice.jar}" />
+		<pathelement path="${cast.jar}" />
+		<pathelement path="${log4j.jar}" />
+	</path>
+
+	<!-- Controls what is compiled -->
+	<property name="src.dir" value="./src/java" />
+	<property name="slice.dir" value="./src/slice" />
+
+	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+	<taskdef name="slice2java" classname="Slice2JavaTask" />
+
+
+	<!-- =================================================================== -->
+	<!-- Preparation                                                         -->
+	<!-- =================================================================== -->
+	<target name="prepare" description="any project-specific init">
+		<mkdir dir="${output.dir}" />
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Source generation                                                   -->
+	<!-- =================================================================== -->
+	<target name="slice" depends="prepare" description="generates source from slice">
+		<slice2java tie="true" outputdir="${src.dir}">
+			<fileset dir="${slice.dir}" includes="VisionData.ice ObjectRecognizerSrv.ice" />
+			<includepath>
+				<pathelement path="${basedir}/../../tools/hardware/video/src/slice" />
+				<pathelement path="${basedir}/../../tools/hardware/laser/src/slice"/>
+				<pathelement path="${basedir}/../../tools/math/src/slice" />
+				<pathelement path="${basedir}/../../tools/hardware/pointCloud/src/slice" />
+				<pathelement path="${slice.dir}" />
+				<pathelement path="${castslice.dir}" />
+				<pathelement path="/opt/local/share" />
+				<pathelement path="/usr/local/share" />
+				<pathelement path="/usr/share" />
+			</includepath>
+		</slice2java>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- slice file compilation                                              -->
+	<!-- =================================================================== -->
+	<target name="compile-slice" depends="slice" description="compiles the source code">
+		<javac srcdir="${src.dir}" includes="VisionData/** ObjectRecognizerSrv/**" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+			<classpath refid="build.classpath" />
+		</javac>
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Basic compilation                                                   -->
+	<!-- =================================================================== -->
+	<target name="compile" depends="compile-slice" description="compiles the source code">
+		<javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source">
+			<classpath refid="build.classpath" />
+		</javac>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Cleanup                                                             -->
+	<!-- =================================================================== -->
+	<target name="clean">
+		<delete file="${src.dir}/.depend" />
+		<delete dir="${src.dir}/VisionData" />
+		<delete dir="${src.dir}/ObjectRecognizerSrv" />
+		<delete dir="${src.dir}/ObjectRecognizerIce" />
+	</target>
+
+
+</project>

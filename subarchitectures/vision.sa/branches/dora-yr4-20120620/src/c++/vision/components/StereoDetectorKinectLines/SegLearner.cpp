@@ -1,0 +1,1029 @@
+/**
+ * @file SegLearner.cpp
+ * @author Andreas Richtsfeld
+ * @date 2011
+ * @version 0.1
+ * @brief Get properties to learn how to segment.
+ */
+
+
+#include <cast/architecture/ChangeFilterFactory.hpp>
+#include "SegLearner.h"
+
+using namespace std;
+using namespace VisionData;
+using namespace Video;
+
+/**
+ * @brief The function called to create a new instance of our component.
+ */
+extern "C" {
+  cast::CASTComponentPtr newComponent() {
+    return new cast::SegLearner();
+  }
+}
+
+namespace cast
+{
+
+// **************************** SegLearner **************************** //
+/**
+ * @brief Called by the framework to configure the component.
+ * @param _config Configuration
+ */
+void SegLearner::configure(const map<string,string> & _config)
+{
+  stopComponent = false;
+  deb = true;     // debug flag
+  labels = true;  // enable labels
+  
+  // first let the base classes configure themselves (for point clouds)
+  configureServerCommunication(_config);
+
+  // for one vision core: only lines
+  runtime = 10;                                    // processing time for image => we need no incremental processing (only line calculation)
+  cannyAlpha = 0.75;                                // Canny alpha and omega for MATAS canny only! (not for openCV CEdge)
+  cannyOmega = 0.001;
+  
+  vcore = new Z::VisionCore();                      // New vision core
+  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_SEGMENTS);
+  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_LINES);
+  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_JUNCTIONS);
+  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CORNERS);
+  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_CLOSURES);
+  vcore->EnableGestaltPrinciple(Z::GestaltPrinciple::FORM_RECTANGLES);
+
+  showImages = false;
+  single = false;
+  process_loaded_models = false;
+
+  map<string,string>::const_iterator it;
+
+  if((it = _config.find("--camids")) != _config.end())
+  {
+    istringstream str(it->second);
+    int id;
+    while(str >> id)
+      camIds.push_back(id);
+  }
+  
+  // note: it is ok to not specify these, defaults will be chosen in that case
+  if((it = _config.find("--camconfigs")) != _config.end())
+  {
+    istringstream str(it->second);
+    string file;
+    while(str >> file)
+    {
+      Video::CameraParameters pars;
+      if(file.find(":") == string::npos)
+      {
+        // monocular files can be either .cal (INI style) or .xml (from OpenCV file storage)
+        if(file.find(".xml") == string::npos)
+          loadCameraParameters(pars, file);
+        else
+          loadCameraParametersXML(pars, file);
+      }
+      else { // stereo case
+        size_t pos = file.find(":");
+        if(pos >= file.size() - 1)
+          throw runtime_error(exceptionMessage(__HERE__,
+                "please indicate camera L or R after ':' in config '%s'", file.c_str()));
+        char side = file[pos + 1];
+        string pure_filename(file, 0, pos);
+        if(side == 'L')
+          loadCameraParametersFromSVSCalib(pars, pure_filename, 0);   // 0 == LEFT
+        else if(side == 'R')
+          loadCameraParametersFromSVSCalib(pars, pure_filename, 1);   // 1 == RIGHT
+        else
+          throw runtime_error(exceptionMessage(__HERE__,
+                "camera '%c' invalid in config '%s', must be either :L or :R",
+                side, file.c_str()));
+      }
+      camPars.push_back(pars);
+    }
+  }
+  
+  // in case no camera config files were given, assume default configs
+  if(camPars.size() == 0) {
+    log("configure: Warning: No 'camconfigs' specified!");
+    camPars.resize(camIds.size());
+    for(size_t i = 0; i < camPars.size(); i++)
+      initCameraParameters(camPars[i]);
+  }
+
+  // fill camIds and current time stamp into cam parameters
+  // TODO: avoid this double ids at some point
+  for(size_t i = 0; i < camPars.size(); i++) {
+    camPars[i].id = camIds[i];
+    camPars[i].time = getCASTTime();
+  }
+  
+  if((it = _config.find("--showImages")) != _config.end())
+    showImages = true;
+
+  if((it = _config.find("--singleShot")) != _config.end()) {
+    log("single shot modus on.");
+    single = true;
+  }
+
+  if(showImages)
+  {
+    // initialize tgRenderer
+    cv::Mat R = (cv::Mat_<double>(3,3) << 1,0,0, 0,1,0, 0,0,1);
+    cv::Mat t = (cv::Mat_<double>(3,1) << 0,0,0);
+    cv::Vec3d rotCenter(0,0,0.4);
+    
+    cv::Mat intrinsic;
+    intrinsic = cv::Mat::zeros(3,3,CV_64F);
+    intrinsic.at<double>(0,0) = intrinsic.at<double>(1,1) = 525;
+    intrinsic.at<double>(0,2) = 320;
+    intrinsic.at<double>(1,2) = 240;
+    intrinsic.at<double>(2,2) = 1.;
+    
+    // Initialize 3D render engine 
+    tgRenderer = new TomGine::tgTomGineThread(640, 480);
+    tgRenderer->SetCamera(intrinsic);
+    tgRenderer->SetCamera(R, t);
+    tgRenderer->SetRotationCenter(rotCenter);
+//     tgRenderer->SetClearColor(1., 1., 1.); /// TODO Set color to white
+//     tgRenderer->SetCoordinateFrame();
+  }
+  else 
+    cvShowImage("Control window", iplImage_k);
+
+  /// ################### The new classes for calculation ################### ///
+  
+  // init bilateral filter
+  // bilateral = new pclA::BilateralFilter(pclA::BilateralFilter::Parameter());
+  
+  // init subsample-tool for point cloud
+  //subsample = new pclA::SubsamplePointCloud(pclA::SubsamplePointCloud::Parameter(2, .02, true, false, false));
+      
+  /// init model fitter (== plane fitter)
+  bool use_voxel_grid = false;
+  double voxel_grid_size = 0.005;           // 0.005 - 0.01
+  bool do_z_filtering = true;
+  double minZ = 0.3;
+  double maxZ = 1.5;
+  bool sac_optimal_distance = true;
+  double sac_optimal_weight_factor = 3.0;
+  double sac_distance = 0.002;
+  int sac_max_iterations = 250;
+  unsigned sac_min_inliers = 25;
+  double ec_cluster_tolerance = 0.01; //0.008,  /// TODO Calculate tolerance like sac_optimal_weight_factor?
+  int ec_min_cluster_size = 15;
+  int ec_max_cluster_size = 1000000;
+  pclA::ModelFitter::Parameter mf_param(use_voxel_grid, voxel_grid_size, 
+                                        do_z_filtering, minZ, maxZ, 
+                                        sac_optimal_distance,
+                                        sac_optimal_weight_factor, sac_distance, 
+                                        sac_max_iterations, sac_min_inliers, 
+                                        ec_cluster_tolerance, ec_min_cluster_size, 
+                                        ec_max_cluster_size);
+  model_fitter = new pclA::ModelFitter(mf_param);
+
+  /// init new plane fitting (MoSPlanes)
+  int pyrLevels = 3;                        // Number of pyramid levels
+  float nbDist = 0.02;                      // max. neighor distance for subsampling
+  float thrAngleNormalClustering = 0.5;     // maximum angle for clustering (0.5 = 28° (+5,7))
+  float inlDist = 0.008;                    // Inlier distance for planes
+  float sigma = 0.008;                      // TODO What sigma???
+  int minPoints = 9;                        // Minimum points for a plane (16)
+  planeFitter = new surface::MoSPlanes3D(
+      surface::MoSPlanes3D::Parameter(pyrLevels, nbDist, thrAngleNormalClustering, inlDist, sigma, minPoints,
+      pclA::NormalsEstimationNR::Parameter(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false),
+      surface::GreedySelection::Parameter(100.,1.,0.005) ) //10 .5 
+  );
+  
+  /// init nurbsfitting & model-selection
+  nurbsfitting::SequentialFitter::Parameter nurbsParams;
+  nurbsParams.order = 3;
+  nurbsParams.refinement = 0;
+  nurbsParams.iterationsQuad = 0;
+  nurbsParams.iterationsBoundary = 0;
+  nurbsParams.iterationsAdjust = 0;
+  nurbsParams.iterationsInterior = 3;
+  nurbsParams.forceBoundary = 100.0;
+  nurbsParams.forceBoundaryInside = 300.0;
+  nurbsParams.forceInterior = 1.0;
+  nurbsParams.stiffnessBoundary = 0.1;
+  nurbsParams.stiffnessInterior = 0.1;
+  nurbsParams.resolution = 16; 
+  surface::SurfaceModeling::Parameter sfmParams;
+  sfmParams.nurbsParams = nurbsParams;
+  sfmParams.sigmaError = 0.003;
+  sfmParams.kappa1 = 0.008;
+  sfmParams.kappa2 = 1.0;
+  sfmParams.useDominantPlane = true;
+  modeling = new surface::SurfaceModeling(sfmParams);
+  modeling->setIntrinsic(525., 525., 320., 240.);
+  Eigen::Matrix4d pose = Eigen::Matrix4d::Identity();
+  modeling->setExtrinsic(pose);
+  
+  /// init annotation for learning
+  annotation = new anno::Annotation();
+  annotation2 = new anno::Annotation();
+//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 0, 16);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 0, 11);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 8);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed%1d.png", 0, 8);
+  // eval svm
+//   annotation->init("/media/Daten/Object-Database/annotation/ocl_boxes%1d.png", 17, 32);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_cyl%1d.png", 12, 23);
+//   annotation->init("/media/Daten/Object-Database/annotation/box_world%1d.png", 0, 15);
+//   annotation->init("/media/Daten/Object-Database/annotation/cvww_mixed_fi%1d.png", 0, 8);
+//   annotation->init("/media/Daten/Object-Database/annotation/texture_box%1d.png", 0, 3);
+
+  /// IROS annotation
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros%1d.png", 0, 28);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 27);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/occlusions%1d.png", 0, 14);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/box_world%1d.png", 0, 15);
+//   annotation->init("/media/U-Daten/OD-IROS/annotation/cvww_mixed%1d.png", 4, 8);
+
+  /// IROS komplett
+  annotation->init("/media/Daten/OD-IROS/annotation/iros%1d.png", 0, 16);
+//   annotation->init("/media/Daten/OD-IROS/annotation/iros_eval%1d.png", 0, 42);
+  annotation2->init("/media/Daten/OD-IROS/annotation/iros_2nd_%1d.png", 0, 16);
+  
+  /// save models to file
+  save_models = false;
+  surface::SaveFileSequence::Parameter sp;
+  modelSaver = new surface::SaveFileSequence(sp);
+  modelSaver->InitFileSequence("/media/Daten/OD-IROS/results/iros_eval_model%1d.sfv", 0, 65);
+
+  /// load models from file
+  startID = 0;
+  endID = 16;
+  nextID = startID;
+  off_filename = "/media/Daten/OD-IROS/results/iros_result%1d.sfv";
+  off_pcd_file = "/media/Daten/OD-IROS/points2/iros%1d.pcd";
+  off_ipl_file = "/media/Daten/OD-IROS/image_color/iros%1d.png";
+  surface::LoadFileSequence::Parameter lp;
+  modelLoader = new surface::LoadFileSequence(lp);
+  modelLoader->InitFileSequence(off_filename, startID, endID);
+  
+  /// init patch class
+  patches = new surface::Patches();
+  patches->setZLimit(0.01);
+  
+  /// init svm-file-creator
+  svm = new svm::SVMFileCreator();
+}
+
+
+/**
+ * @brief Called by the framework after configuration, before run loop.
+ */
+void SegLearner::start()
+{
+  startPCCServerCommunication(*this);     // start point cloud communication
+  if(showImages) {
+    cvNamedWindow("Kinect image", CV_WINDOW_AUTOSIZE);
+    cvMoveWindow("Kinect image",  10, 500);
+  }
+}
+
+/**
+ * @brief Called by the framework to start component run loop.
+ * @TODO LOCKT DEN SPEICHERBEREICH IM WM NICHT, SOLANGE GEARBEITET WIRD
+ */
+void SegLearner::runComponent()
+{ 
+  while(single && isRunning() && !stopComponent){
+    SingleShotMode();
+  }
+  while(isRunning()) {
+    if(process_loaded_models)
+      processLoadedData();
+    else
+      processImageNew();
+  }
+
+  if(showImages)
+  {
+    cvReleaseImage(&iplImage_k);
+    log("destroy openCV windows.");
+    cvDestroyWindow("Kinect image");
+  }
+  log("windows destroyed");
+  log("deleted components: runComponent ended.");
+}
+
+  
+ 
+/**
+ * @brief Get images with the resolution, defined in the cast file, from video server.
+ */
+void SegLearner::GetImageData()
+{
+  pointCloudWidth = 640;
+  pointCloudHeight = pointCloudWidth *3/4;
+  rgbWidth = 640;
+  rgbHeight = rgbWidth *3/4;
+  if(deb) log("Get image data with size: %u-%u", pointCloudWidth, pointCloudHeight);
+  
+  points.resize(0);
+  getCompletePoints(false, pointCloudWidth, points);            // call get points only once, if noCont option is on!!! (false means no transformation!!!)
+  
+  ConvertKinectPoints2MatCloud(points, kinect_point_cloud, pointCloudWidth, pointCloudHeight, true);
+  pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud);
+
+  // get rectified kinect image from point cloud server
+  getRectImage(2, rgbWidth, image_k);            // 2 = kinect image / we take it with kinect image width
+  iplImage_k = convertImageToIpl(image_k);
+
+  /// calculate normals
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  if(deb) last = start;
+//   pclA::NormalsEstimationNR::Parameter param(5, 0.02, 1000, 0.001, 5, 0.001, 0.01, false, false);
+  pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
+  pclA::NormalsEstimationNR n;
+  n.setParameter(param);
+  n.setInputCloud(pcl_cloud);
+  n.compute();
+  n.getNormals(pcl_normals);
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Getting images => Calculate normals %4.3f\n", timespec_diff(&current, &last));
+  
+  // bilateral filter
+//   bilateral->setInputCloud(pcl_cloud);
+//   bilateral->compute();
+//   bilateral->getCloud(pcl_cloud);
+  
+  // subsample point cloud
+//   subsample->setInputCloud(pcl_cloud);
+//   subsample->compute();
+//   subsample->getCloud(pcl_cloud);
+//   pointCloudWidth = pointCloudWidth/2.;
+//   pointCloudHeight = pointCloudWidth *3/4;
+ 
+  if(showImages)
+    cvShowImage("Kinect image", iplImage_k);
+}
+
+/**
+ *  @brief Process data from stereo or Kinect.
+ */
+void SegLearner::processImageNew()
+{ 
+  static struct timespec overallStart, overallEnd;
+  static bool first = true;
+  if(first)
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallStart);
+  first = false;
+  
+  surfaces.clear();
+  
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  if(deb) last = start;
+
+  /// Get kinect data
+  GetImageData();
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Getting images (not correct): %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current;  
+  
+  /// Run vision core (for canny edges
+  vcore->NewImage(iplImage_k);
+  vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+  GetSegmentIndexes(vcore, texture, pointCloudWidth);
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Vision core: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current;  
+  
+  /// ModelFitter
+//   if(deb) log("ModelFitter start!");
+  std::vector<int> pcl_model_types;
+  std::vector< pcl::ModelCoefficients::Ptr > model_coefficients;
+//   std::vector< std::vector<double> > error;
+//   std::vector<double> square_error;
+//   model_fitter->addModelType(pcl::SACMODEL_PLANE);
+// //  model_fitter->addModelType(pcl::SACMODEL_NORMAL_PLANE);
+// //  model_fitter->addModelType(pcl::SACMODEL_CYLINDER);
+// //  model_fitter->addModelType(pcl::SACMODEL_SPHERE);
+//   model_fitter->setNormals(pcl_normals);
+//   model_fitter->useDominantPlane(true);
+//   model_fitter->setInputCloud(pcl_cloud);
+//   model_fitter->compute();
+//   model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices);         /// TODO Eigentlich sollte man hier nur mehr surfaces kriegen? => Anzeige ändern, dann löschen
+//   model_fitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_old);     /// TODO old nur für die Anzeige später!
+//   model_fitter->getError(error, square_error);
+//   if(deb) log("ModelFitter end!"); 
+//   if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+//   if(deb) printf("Runtime for SegLearner: Model fitting: %4.3f\n", timespec_diff(&current, &last));
+//   if(deb) last = current; 
+  
+  /// MOS-Plane fitting
+  if(deb) log("MoS-Plane fitter start!");
+//   pclA::ConvertCvMat2PCLCloud(kinect_point_cloud, pcl_cloud_filtered);
+  pclA::FilterZ(pcl_cloud, 0.3, 1.5);      // z filtering for 1.5 meters
+  planeFitter->setInputCloud(pcl_cloud);
+  planeFitter->setLineCheck(true, 8);                                                                                          /// TODO Line-Checker wieder einschalten
+  planeFitter->compute();
+  planeFitter->getSurfaceModels(surfaces);
+  planeFitter->getResults(pcl_model_types, model_coefficients, pcl_model_indices_planes);
+  /// TODO copy model indices before check!!! => For displaying
+  for(unsigned i=0; i<surfaces.size(); i++)
+    preProcessIndices.push_back(surfaces[i]->indices);
+    
+  // TODO Experimental function => use setLineCheck-options (button 5)
+//   std::vector<int> checkPCLines;
+//   planeFitter->checkPCLines(surfaces, checkPCLines);  // TODO Should we check that here or after the modeling
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: MoS plane fitting: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current; 
+
+  /// NURBS-Fitting and model selection
+  if(deb) log("NURBS-Fitting start!");
+  modeling->setInputCloud(pcl_cloud);
+  modeling->setInputPlanes(surfaces);
+  modeling->compute();
+  modeling->getSurfaceModels(surfaces);
+  if(deb) log("NURBS-Fitting end: size of surfaces: %u", surfaces.size());
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: NURBS & MODEL-SELECTION: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current; 
+
+  /// Save results of model fitter to sfv-file
+  if(save_models) {
+    if(deb) log("save surface models: start");
+    modelSaver->SaveNextView(surfaces);
+    if(deb) log("save surface models: end");
+  }
+  
+if(false) /// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO DEBUG
+{
+
+    /// Load annotation from file
+    if(deb) log("Load annotation: start");
+    std::vector< std::vector<int> > anno_pairs;
+    std::vector<int> anno_background_list;
+    annotation->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+    annotation->setSurfaceModels(surfaces);
+    annotation->calculate();
+    annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+    if(deb)
+      for(unsigned i=0; i<anno_pairs.size(); i++) {
+        printf("Annotation pairs for %u: ", i);
+        for(unsigned j=0; j<anno_pairs[i].size(); j++)
+          printf(" %u", anno_pairs[i][j]);
+        printf("\n");
+      }
+    std::vector< std::vector<int> > anno_pairs2;
+    std::vector<int> anno_background_list2;
+    annotation2->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+    annotation2->setSurfaceModels(surfaces);
+    annotation2->calculate();
+    annotation2->getResults(nr_anno, anno_pairs2, anno_background_list2);
+    if(deb)
+      for(unsigned i=0; i<anno_pairs2.size(); i++) {
+        printf("Annotation pairs for 2nd level: %u: ", i);
+        for(unsigned j=0; j<anno_pairs2[i].size(); j++)
+          printf(" %u", anno_pairs2[i][j]);
+        printf("\n");
+      }
+    if(deb) log("Load annotation: end");
+    
+    if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+    if(deb) log("Runtime for SegLearner: Annotation calculation: %4.3f", timespec_diff(&current, &last));
+    if(deb) last = current; 
+
+    /// Calculate patch relations
+//     pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud_copy (new pcl::PointCloud<pcl::PointXYZRGB>);         ///< PCL point cloud
+//     pcl::copyPointCloud(*pcl_cloud, *pcl_cloud_copy);
+    if(deb) log("Calculate patch-relations start!");
+    std::vector<Relation> relation_vector;
+    patches->setInputImage(iplImage_k);
+    patches->setInputCloud(pcl_cloud);                        /// TODO projects points to planes / changes normals, if setOptimalPatchModels is true
+    patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
+    patches->setSurfaceModels(surfaces);
+    patches->setAnnotion(anno_pairs, anno_background_list);
+    patches->setAnnotion2(anno_pairs2, anno_background_list2);
+    patches->setTexture(texture);
+    patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
+//     patches->computeLearnRelations();
+    if(deb) log("Calculate patch-relations for 2nd SVM: start!");
+//     patches->computeLearnRelations2();
+    patches->computeLearnRelations3();
+    if(deb) log("Calculate patch-relations for 2nd SVM: end!");
+    patches->getRelations(relation_vector);
+
+    pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
+    pcl_normals_repro->points.resize(pcl_normals->points.size());
+    patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);      // TODO Wieso braucht man hier noch die output-cloud?
+    if(deb) log("Calculate patch-relations ended!");
+
+    if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+    if(deb) log("Runtime for SegLearner: Calculate patch relations: %4.3f", timespec_diff(&current, &last));
+    if(deb) last = current;  
+
+    /// write svm-relations for svm to file!
+    if(deb) log("write svm learn file: start.");
+    svm->setRelations(relation_vector);
+    svm->setAnalyzeOutput(true);
+    svm->process();
+    if(deb) log("write svm learn file: end.");
+
+    if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+    if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
+  }
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
+  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
+  printf("\n");
+//   cv::waitKey(500);   // wait for images on opencv windows (when not single-shot-mode
+}
+
+
+
+/**
+ * @brief Single shot mode of the stereo detector for debugging.\n
+ * Catch keyboard events and change displayed results:\n
+ *   F9 ... Process single shot \n
+ *   
+ *   1 ... Show point cloud
+ *   5 ... Show surface models
+ *   6 ... Show normals
+ *   7 ... Show patches
+ *   8 ... Show annotation
+ *
+ *   0 ... Show surface mesh models 
+ *   
+ *   x ... stop single shot mode
+ *   s ... 
+ *   
+ */
+void SegLearner::SingleShotMode()
+{
+  static bool repro = true;
+
+  sleepComponent(10);
+  int key = 0;
+  key = cvWaitKey(20);
+  
+  if (key == 65471 || key == 1114047)  { // F2
+    log("unused");
+  }
+
+  if (key == 65472 || key == 1114048)  { // F3
+    const char* text = vcore->GetGestaltListInfo();
+    printf("\n%s\n", text);
+  }
+
+  if (key == 65473 || key == 1114049)  { // F4
+    log("unused");
+  }
+
+//   if (key == 65478 || key == 1114054)  { // F9
+//     log("process image in single shot mode with new implementations.");
+//     lockComponent();
+//     processImageNew();
+//     unlockComponent();
+//   }
+// 
+//   if (key == 65479 || key == 1114055)  { // F10
+//     log("unused");
+//   }
+
+    if (key == 65478 || key == 1114054)  { // F9
+    log("process images in single shot mode.");
+    lockComponent();
+    processImageNew();
+    unlockComponent();
+  }
+  if (key == 65479 || key == 1114055)  { // F10
+    log("process models from file in single shot mode");
+    single = false;
+  }
+  
+  if (key == 65480 || key == 1114056)  { // F11
+    log("process saved surface models: single shot modus.");
+    lockComponent();
+    processLoadedData();
+    unlockComponent();
+  }
+  if (key == 65481 || key == 1114057)  { // F12
+    log("process saved surface models: single shot modus ended.");
+    process_loaded_models = true;
+    single = false;
+  }
+  
+  // if (key != -1) log("StereoDetector::SingleShotMode: Pressed key: %i", key);
+  switch((char) key)
+  {
+    case '1':
+      log("Show POINT CLOUD");
+      if (showImages)
+      {
+        tgRenderer->Clear();
+        tgRenderer->Update();
+        tgRenderer->AddPointCloud(kinect_point_cloud);
+        tgRenderer->Update();
+      }
+      break;
+      
+      
+    // *** For new processing!!! *** //
+    case '3':
+      log("Show results from model fitter (or MoSPlanes3D.");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        cv::Vec4f planeCenter3D[pcl_model_indices_planes.size()];
+        RGBValue col[pcl_model_indices_planes.size()];
+        for(unsigned i=0; i<pcl_model_indices_planes.size(); i++) {
+          col[i].float_value = GetRandomColor();
+          for(unsigned j=0; j<pcl_model_indices_planes[i]->indices.size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[pcl_model_indices_planes[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[pcl_model_indices_planes[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[pcl_model_indices_planes[i]->indices[j]].z;
+            pt[3] = col[i].float_value;
+            planeCenter3D[i][0] = planeCenter3D[i][0] + pt[0];
+            planeCenter3D[i][1] = planeCenter3D[i][1] + pt[1];
+            planeCenter3D[i][2] = planeCenter3D[i][2] + pt[2];
+            col_points.push_back(pt);
+          }
+        }
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+
+        // Add labels
+        if(labels) {
+          for(size_t i=0; i<pcl_model_indices_planes.size(); i++) {
+            char label[5];
+            snprintf(label, 5, "%lu", i);
+            tgRenderer->AddLabel3D(label, 14, 
+                                    planeCenter3D[i][0]/pcl_model_indices_planes[i]->indices.size(), 
+                                    planeCenter3D[i][1]/pcl_model_indices_planes[i]->indices.size(), 
+                                    planeCenter3D[i][2]/pcl_model_indices_planes[i]->indices.size());
+          }
+        }
+        tgRenderer->Update();
+      }
+      break; 
+
+    case '4':
+      log("Show postprocess points (of MoSPlanes3D).");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        RGBValue col;
+        for(unsigned i=0; i<preProcessIndices.size(); i++) {
+          col.float_value = GetRandomColor();
+          for(unsigned j=0; j<preProcessIndices[i].size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[preProcessIndices[i][j]].x;
+            pt[1] = pcl_cloud->points[preProcessIndices[i][j]].y;
+            pt[2] = pcl_cloud->points[preProcessIndices[i][j]].z;
+            pt[3] = col.float_value;
+  // printf("Draw a preProcessIndices point [u]: %3.2f-%3.2f-%3.2f\n", preProcessIndices[i], pt[0], pt[1], pt[2]);
+            col_points.push_back(pt);
+          }
+        }
+        printf("col_points.size: %lu\n", col_points.size());
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+        tgRenderer->Update();
+      }
+      break; 
+      
+    case '5':
+      log("Show checkPCLines points (of MoSPlanes3D).");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        RGBValue col;
+        col.float_value = GetRandomColor();
+        for(unsigned i=0; i<checkPCLines.size(); i++) {
+          cv::Vec4f pt;
+          pt[0] = pcl_cloud->points[checkPCLines[i]].x;
+          pt[1] = pcl_cloud->points[checkPCLines[i]].y;
+          pt[2] = pcl_cloud->points[checkPCLines[i]].z;
+          pt[3] = col.float_value;
+          col_points.push_back(pt);
+        }
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+        tgRenderer->Update();
+      }
+      break; 
+
+    case '6':
+      log("Show PATCHES");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        std::vector<cv::Vec4f> col_points;
+        cv::Vec4f center3D[surfaces.size()];
+        RGBValue col[surfaces.size()];
+        for(unsigned i=0; i<surfaces.size(); i++) {
+          col[i].float_value = GetRandomColor();
+          for(unsigned j=0; j<surfaces[i]->indices.size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[surfaces[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[surfaces[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[surfaces[i]->indices[j]].z;
+            pt[3] = col[i].float_value;
+            center3D[i][0] = center3D[i][0] + pt[0];
+            center3D[i][1] = center3D[i][1] + pt[1];
+            center3D[i][2] = center3D[i][2] + pt[2];
+            col_points.push_back(pt);
+          }
+        }
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+
+        // Add labels
+        if(labels) {
+          for(size_t i=0; i<surfaces.size(); i++) {
+            char label[5];
+            snprintf(label, 5, "%lu", i);
+            tgRenderer->AddLabel3D(label, 14, 
+                                  center3D[i][0]/surfaces[i]->indices.size(), 
+                                  center3D[i][1]/surfaces[i]->indices.size(), 
+                                  center3D[i][2]/surfaces[i]->indices.size());
+          }
+        }
+        tgRenderer->Update();
+      }
+      break;
+      
+    case '7':
+      log("Draw normals");
+      if(repro) {
+        log("Draw original normals");
+        DrawNormals(pcl_cloud, pcl_normals, tgRenderer, 1);
+        repro = !repro;
+      }
+      else {
+        log("Draw repro normals");
+        DrawNormals(pcl_cloud, pcl_normals_repro, tgRenderer, 2);
+        repro = !repro;
+      }
+      tgRenderer->Update();
+      break;
+      
+    case '8':
+      log("Show annotated parts.");
+      tgRenderer->ClearModels();
+      if(showImages)
+      {
+        RGBValue col[nr_anno];
+        for(int i=0; i<nr_anno; i++)
+          col[i].float_value = GetRandomColor();
+        
+        std::vector<cv::Vec4f> col_points;
+        cv::Vec4f planeCenter3D[surfaces.size()];
+        for(unsigned i=0; i<surfaces.size(); i++) {
+          for(unsigned j=0; j<surfaces[i]->indices.size(); j++) {
+            cv::Vec4f pt;
+            pt[0] = pcl_cloud->points[surfaces[i]->indices[j]].x;
+            pt[1] = pcl_cloud->points[surfaces[i]->indices[j]].y;
+            pt[2] = pcl_cloud->points[surfaces[i]->indices[j]].z;
+            int number = anno[surfaces[i]->indices[j]]-1;
+            pt[3] = col[number].float_value;
+            planeCenter3D[i][0] = planeCenter3D[i][0] + pt[0];
+            planeCenter3D[i][1] = planeCenter3D[i][1] + pt[1];
+            planeCenter3D[i][2] = planeCenter3D[i][2] + pt[2];
+            col_points.push_back(pt);
+          }
+        }
+        tgRenderer->Clear();
+        tgRenderer->AddPointCloud(col_points);
+
+        // Add labels
+        if(labels) {
+          for(size_t i=0; i<surfaces.size(); i++) {
+            char label[5];
+            snprintf(label, 5, "%lu", i);
+            tgRenderer->AddLabel3D(label, 14, 
+                                    planeCenter3D[i][0]/surfaces[i]->indices.size(), 
+                                    planeCenter3D[i][1]/surfaces[i]->indices.size(), 
+                                    planeCenter3D[i][2]/surfaces[i]->indices.size());
+          }
+        }
+        tgRenderer->Update();
+      }
+      break; 
+      
+    case  '0':
+    {
+      log("Show mesh of surfaces. wait ...");
+        if(surfaces.size() != 0)
+          if(surfaces[0]->mesh.m_vertices.empty())
+          {
+            surface::CreateMeshModel createMesh(surface::CreateMeshModel::Parameter(.1));
+            createMesh.setInputCloud(pcl_cloud);
+            createMesh.compute(surfaces);
+          }
+        tgRenderer->Clear();
+        tgRenderer->ClearModels();
+        for (unsigned i=0; i<surfaces.size(); i++)
+          tgRenderer->AddModel(&surfaces[i]->mesh);
+        tgRenderer->Update();
+      log("Show mesh of surfaces. done.");
+      break;
+    }
+    
+
+    case 's':
+    {
+      log("Save results into pcd-file: Time to implement! NOW!");
+    }   
+    break;
+      
+    case '^':
+      log("Add labels: antiquated");
+      labels = !labels;
+      break;     
+      
+     case 'q':
+      log("Stop component.");
+      stopComponent = true;
+      break;  
+  }
+}
+
+
+void SegLearner::LoadImageData()
+{
+  log("Load image data: started.");
+ 
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+  last = start;
+  
+  pointCloudWidth = 640;
+  pointCloudHeight = pointCloudWidth *3/4;
+  rgbWidth = 640;
+  rgbHeight = rgbWidth *3/4;
+  
+  char pcd_next[256] = "";
+  std::sprintf(pcd_next, off_pcd_file, nextID);
+  pcl_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::io::loadPCDFile(pcd_next, *pcl_cloud);
+  pclA::ConvertPCLCloud2Image(pcl_cloud, kinect_point_cloud_image);
+  pclA::ConvertPCLCloud2CvMat(pcl_cloud, kinect_point_cloud);
+  
+  char ipl_next[256] = "";
+  std::sprintf(ipl_next, off_ipl_file, nextID);
+  iplImage_k = cvLoadImage(ipl_next);
+
+  surface::View view;
+  modelLoader->LoadNextView(view);
+  surfaces = view.surfaces;
+  if(deb) log("load next pcd-file: %s", pcd_next);
+  
+  tgRenderer->SetImage(kinect_point_cloud_image);
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Getting images: %4.3f\n", timespec_diff(&current, &last));
+  last = current;
+  
+  // calculate normals
+  pclA::NormalsEstimationNR::Parameter param(5, 0.025, 1000, 0.001, 5, 0.001, 0.015, 0.03, true, false);
+  pclA::NormalsEstimationNR n;
+  n.setParameter(param);
+  n.setInputCloud(pcl_cloud);
+  n.compute();
+  n.getNormals(pcl_normals);
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Calculate normals: %4.3f\n", timespec_diff(&current, &last));
+  
+  
+  if(showImages)
+    cvShowImage("Kinect image", iplImage_k);
+  
+  tgRenderer->Clear();
+  tgRenderer->AddPointCloud(kinect_point_cloud);
+  tgRenderer->Update();
+        
+  nextID++; 
+  log("Load image data ended.");
+}
+
+
+void SegLearner::processLoadedData()
+{
+  if(nextID > endID) {
+    cvWaitKey(1000);
+    exit(1);
+  }
+  
+  static struct timespec overallStart, overallEnd;
+  static bool first = true;
+  if(first)
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallStart);
+  first = false;
+
+  LoadImageData();
+  
+  static struct timespec start, last, current;
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);
+
+  /// Run vision core (for canny edges)
+  vcore->NewImage(iplImage_k);
+  vcore->ProcessImage(runtime, cannyAlpha, cannyOmega);  
+  GetSegmentIndexes(vcore, texture, pointCloudWidth);
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) printf("Runtime for SegLearner: Vision core: %4.3f\n", timespec_diff(&current, &last));
+  if(deb) last = current;  
+  
+  /// Load annotation from file
+  if(deb) log("Load annotation: start");
+  std::vector< std::vector<int> > anno_pairs;
+  std::vector<int> anno_background_list;
+  annotation->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation->setSurfaceModels(surfaces);
+  annotation->calculate();
+  annotation->getResults(nr_anno, anno_pairs, anno_background_list);
+  if(deb)
+    for(unsigned i=0; i<anno_pairs.size(); i++) {
+      printf("Annotation pairs for %u: ", i);
+      for(unsigned j=0; j<anno_pairs[i].size(); j++)
+        printf(" %u", anno_pairs[i][j]);
+      printf("\n");
+    }
+  std::vector< std::vector<int> > anno_pairs2;
+  std::vector<int> anno_background_list2;
+  annotation2->load(pointCloudWidth, anno, true);            /// TODO TODO Das ist überflüssig - Könnte intern aufgerufen werden
+  annotation2->setSurfaceModels(surfaces);
+  annotation2->calculate();
+  annotation2->getResults(nr_anno, anno_pairs2, anno_background_list2);
+  if(deb)
+    for(unsigned i=0; i<anno_pairs2.size(); i++) {
+      printf("Annotation pairs for 2nd level: %u: ", i);
+      for(unsigned j=0; j<anno_pairs2[i].size(); j++)
+        printf(" %u", anno_pairs2[i][j]);
+      printf("\n");
+    }
+  if(deb) log("Load annotation: end");
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Load annotation: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current; 
+
+  /// Calculate patch relations
+  if(deb) log("Calculate patch-relations start!");
+  std::vector<Relation> relation_vector;
+  patches->setInputImage(iplImage_k);
+  patches->setInputCloud(pcl_cloud);
+  patches->setNormals(pcl_normals);                         /// TODO Set normals sollte überflüssig sein, weil normalen in surfaces übergeben werden.
+  patches->setSurfaceModels(surfaces);
+  patches->setAnnotion(anno_pairs, anno_background_list);
+  patches->setAnnotion2(anno_pairs2, anno_background_list2);
+  patches->setTexture(texture);
+  patches->setOptimalPatchModels(true);                     /// TODO Do we really have the projected normals? Also for NURBS???
+  if(deb) log("Calculate patch-relations for 2nd SVM: start!");
+//   patches->computeLearnRelations2();
+  patches->computeLearnRelations3();
+  if(deb) log("Calculate patch-relations for 2nd SVM: end!");
+  patches->getRelations(relation_vector);
+  if(deb) log("Calculate patch-relations ended!");
+
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Calculate patch relations: %4.3f", timespec_diff(&current, &last));
+  if(deb) last = current;  
+
+  /// copy normals for displaying
+  pcl_normals_repro.reset(new pcl::PointCloud<pcl::Normal>);
+  pcl_normals_repro->points.resize(pcl_normals->points.size());
+  patches->getOutputCloud(pcl_model_cloud, pcl_normals_repro);      // TODO Wieso braucht man hier noch die output-cloud?
+
+  /// write svm-relations for svm to file!
+  if(deb) log("write svm learn file: start.");
+  svm->setRelations(relation_vector);
+  svm->setAnalyzeOutput(true);
+  svm->process();
+  if(deb) log("write svm learn file: end.");
+
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &current);
+  if(deb) log("Runtime for SegLearner: Overall processing time: %4.3f", timespec_diff(&current, &start));
+  
+  if(deb) clock_gettime(CLOCK_THREAD_CPUTIME_ID, &overallEnd);
+  if(deb) log("OVERALL RUNTIME for SegLearner: %4.3f (%4.3f min)", timespec_diff(&overallEnd, &overallStart), (double)timespec_diff(&overallEnd, &overallStart)/60.);
+  printf("\n");
+
+}
+
+
+}
+
+
+
+
+
+

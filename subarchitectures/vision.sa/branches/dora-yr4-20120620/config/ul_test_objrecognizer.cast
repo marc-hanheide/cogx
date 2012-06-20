@@ -1,0 +1,25 @@
+# Test
+HOST localhost
+
+# INCLUDE visualization.incl
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+# CPP MG VideoServer OpenCvLiveServer --camids 0 --devnums 0
+
+# reading stored images
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0" --devnums "0" --files "subarchitectures/vision.sa/config/test-objrecognizer/video/SwGreenTea/clutter100/image_%d.jpg" --start 0 --end 15 --framerate_ms 300
+
+#CPP MG video.viewer VideoViewer --displayserver display.srv --videohost localhost --videoname VideoServer --camid "0"
+
+# ----------------------------------------------
+# INCLUDE ONLY ONE OF THE TESTS BELOW
+
+INCLUDE test-objrecognizer/rcgnzr.001.server.incl
+#INCLUDE test-objrecognizer/rcgnzr.002.wmcall.incl
+
+# not working any more
+#INCLUDE test-objrecognizer/rcgnzr.000.old.incl

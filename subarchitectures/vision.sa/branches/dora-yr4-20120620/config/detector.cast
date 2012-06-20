@@ -1,0 +1,23 @@
+HOST localhost
+
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+# live images
+#######################
+CPP MG VideoServer OpenCvLiveServer --camids "0" --devnums "0" --devclass FIREWIRE --camconfigs "subarchitectures/vision.sa/config/cam.cal"
+
+# reading stored images
+#######################
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/tuw/cube/out%03d-L.png" --start 0 --end 3 --framerate_ms 500 --camconfigs "subarchitectures/vision.sa/config/cam.cal"
+
+#CPP MG VideoServer OpenCvImgSeqServer --camids "0" --files "instantiations/tuw/mug/out%03d-L.png" --start 0 --end 3 --framerate_ms 500 --camconfigs "subarchitectures/vision.sa/config/cam.cal"
+
+#CPP MG VideoServer OpenCvImgSeqServer --camids 0 --camconfigs "subarchitectures/vision.sa/config/camSB.cal" --files "subarchitectures/vision.sa/src/c++/vision/components/VisionDriver/img/00000%03d.jpg" --start 150 --end 400 --framerate_ms 20
+
+# start cast-components
+#######################
+CPP MG ObjectDetector ObjectDetector --videoname VideoServer --camid 0 --log #--debug 
+CPP MG DetectorDriver ObjectDetectorDriver --log
+

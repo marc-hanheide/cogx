@@ -1,0 +1,27 @@
+function pdf_res = incrementalCompression( pdf_ref, varargin )
+
+num_components = length(pdf_ref.weights) ;
+batch_step = 50 ;
+
+pdf_init.mu = [] ;
+pdf_init.weigths = [] ;
+pdf_init.covariances = [] ;
+for i = 0 : batch_step : num_components
+    select = [i+1 : min([i+batch_step,num_components])] ;
+    if isempty(select) break ; end
+    pdf2 = select_subPdf( pdf_ref, select ) ;
+    pdf2 = compressDistribution( pdf2, varargin{:}, 'modify', 1, 'gradient', 1 ) ;
+    pdf_init.mu = [pdf_init.mu, pdf2.mu] ;
+    pdf_init.weigths = [pdf_init.weigths, pdf2.weights*length(pdf2.weights)] ;
+    pdf_init.covariances = [pdf_init.covariances; pdf2.covariances] ;    
+end
+pdf_init.weigths = pdf_init.weigths/length(pdf_ref.weights) ;
+pdf_res = compressDistribution( pdf_ref, varargin{:}, 'f_init', pdf_init, 'gradient', 0 ) ;
+
+
+function pdf2 = select_subPdf( pdf, select )
+
+pdf2.mu = pdf.mu(:,select) ;
+pdf2.covariances = pdf.covariances(select,:) ;
+pdf2.weights = pdf.weights(select) ;
+

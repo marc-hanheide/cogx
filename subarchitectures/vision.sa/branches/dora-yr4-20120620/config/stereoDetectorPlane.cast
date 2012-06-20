@@ -1,0 +1,65 @@
+HOST localhost
+
+############ POINT CLOUD SERVER OLD ##############
+#COMPONENT CPP pcserver StereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --maxdisp 96 --imgsize "320 240" #--display #--logimages --log 
+#COMPONENT CPP pcserver KinectPCServer --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" #--imgsize "320 240" #--logimages --log --display
+#COMPONENT CPP pcserver KinectStereoServer --videoname videoserver --camids "0 1" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --maxdisp 96 --imgsize "320 240" --kconfig "subarchitectures/vision.sa/config/KinectConfig.xml" #--logimages --log --display
+#COMPONENT CPP pcserver KinectStereoSeqServer --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --maxdisp "64 128" --imgsize "640 480 320 240" --framerate_ms 1000 --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-K.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-C.pts" --start 0 --end 7 #--display 
+
+############ SUB ARCH THGS ##############
+SUBARCHITECTURE vision.sa 
+CPP WM SubarchitectureWorkingMemory #--debug
+CPP TM AlwaysPositiveTaskManager
+
+#### when PlanePopOut is running:
+#CPP MG display.srv DisplayServer
+#CPP MG fileviewer.cli FileMonitorDC --displayserver "display.srv" --setvars "dir=/tmp" --monitor "%(dir)/{popout.show.points}" --log true
+
+
+############ VIDEO SERVER ##############
+############ OPENCV IMG SEQ SERVER ##############
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw-okt-09/img%03d-L.bmp instantiations/tuw-okt-09/img%03d-R.bmp" --start 0 --end 8 --framerate_ms 2000 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/StereoCube/img%03d-L.jpg instantiations/tuw/StereoCube/img%03d-R.jpg" --start 0 --end 3 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/mug/out%03d-L.png instantiations/tuw/mug/out%03d-R.png" --start 0 --end 3 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_new.ini:L subarchitectures/vision.sa/config/tuw_stereo_new.ini:R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/mug/img%03d-L.bmp instantiations/tuw/mug/img%03d-R.bmp" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene/img%03d-L.jpg instantiations/tuw/TableScene/img%03d-R.jpg" --start 5 --end 5 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene100929/img%03d-L.jpg instantiations/tuw/TableScene100929/img%03d-R.jpg" --start 0 --end 0 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929.ini:L subarchitectures/vision.sa/config/tuw_stereo_100929.ini:R"
+
+#CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/TableScene100929-2/img%03d-L.jpg instantiations/tuw/TableScene100929-2/img%03d-R.jpg" --start 5 --end 5 --framerate_ms 50 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100929-2.ini:L subarchitectures/vision.sa/config/tuw_stereo_100929-2.ini:R"
+
+CPP MG videoserver OpenCvImgSeqServer --camids "0 1" --files "instantiations/tuw/2011-04-06-KSImgSeq/img%03d-L.jpg instantiations/tuw/2011-04-06-KSImgSeq/img%03d-R.jpg" --start 0 --end 7 --framerate_ms 1000 --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_110404.ini:L subarchitectures/vision.sa/config/tuw_stereo_110404.ini:R"
+
+############ OPENCV LIVE SERVER ##############
+#CPP MG videoserver OpenCvLiveServer --camids "0 1" --devnums "0 1" --devclass FIREWIRE --imgsize "640 480"
+
+############ POINT GREY SERVER ############
+#CPP MG videoserver PointGreyServer --setAutPropAdj "0 0 0 0 0 0" --imgsize "640 480" --framerate_fps "15" --camids "0 1" --log --camconfigs "subarchitectures/vision.sa/config/tuw_stereo_100520.ini:L subarchitectures/vision.sa/config/tuw_stereo_100520.ini:R" --log #--swapredblue --format7 "640 480 0 0 1 1600" #--debug 
+
+
+
+############ START CAST COMPONENTS ############
+#CPP MG PlanePopOut PlanePopOut --camid "0 1" --stereohost localhost --servername pcserver --videoname videoserver --log true --display
+CPP MG StereoDetector StereoDetector --servername pcserver --videoname videoserver --camids "0 1" --camconfig "subarchitectures/vision.sa/config/tuw_stereo_110404.ini" --stereoconfig subarchitectures/vision.sa/config/tuw_stereo_110404.ini --singleShot --showImages --log #--debug
+#CPP MG VirtualScene VirtualScene --videoname videoserver --camid 0 --normals #--labels --debug --log 
+
+
+
+############ OLD THINGS ##############
+#CPP MG VideoViewer VideoViewer --videoname VideoServer --camids "0 1"
+#CPP MG stereoviewer StereoViewer --stereohost localhost --stereoname pcserver --videoname VideoServer --camid 0
+
+#CPP MG Soi2Roi Soi2Roi --camid 0 --stereohost localhost --servername pcserver --videoname VideoServer #--log
+##CPP MG Filter SOIFilter --log true --videoname VideoServer --camid 0 --servername pcserver --objht 23 --objdt 60 --bght 24 --bgdt 9999 --fixc 24 --display 
+
+#CPP MG StereoDetectorReasoner StereoDetectorReasoner --log  #--debug 
+##CPP MG StereoDetectorDriver StereoDetectorDriver #--log
+##CPP MG Tracker ObjectTracker --videoname VideoServer --camid 0 #--log
+
+
+
+

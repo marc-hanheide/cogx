@@ -1,0 +1,74 @@
+/**
+ * @file SVector.ic
+ * @author Richtsfeld, Prankl
+ * @date March 2011
+ * @version 0.1
+ * @brief Vector class as inline implementation.
+ */
+
+namespace TGThread 
+{
+
+inline void Rotate2(double v[2], double phi, double r[2])
+{
+  double si = sin(phi), co = cos(phi);
+  r[0] = co*v[0] - si*v[1], r[1] = si*v[0] + co*v[1];
+}
+
+
+inline double Norm3(double v[3])
+{
+  return sqrt(Sqr(v[0]) + Sqr(v[1]) + Sqr(v[2]));
+}
+
+inline void Normalise3(double v[3])
+{
+  Div3(v,Norm3(v),v);
+}
+
+inline void Mul3(double v[3], double s, double r[3])
+{
+  r[0] = v[0]*s;
+  r[1] = v[1]*s;
+  r[2] = v[2]*s;
+}
+
+inline void Div3(double v[3], double s, double r[3])
+{
+  s = 1./s;
+  r[0] = v[0]*s;
+  r[1] = v[1]*s;
+  r[2] = v[2]*s;
+}
+
+inline void Sub3(double v1[3], double v2[3], double r[3])
+{
+  r[0] = v1[0]-v2[0];
+  r[1] = v1[1]-v2[1];
+  r[2] = v1[2]-v2[2];
+}
+
+inline void Add3(double v1[3], double v2[3], double r[3])
+{
+  r[0] = v1[0]+v2[0];
+  r[1] = v1[1]+v2[1];
+  r[2] = v1[2]+v2[2];
+}
+
+inline double Dot3(double v1[3], double v2[3])
+{
+  return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+}
+
+inline double Distance3(double d1[3], double d2[3])
+{
+  return sqrt(Sqr(d1[0]-d2[0])+Sqr(d1[1]-d2[1])+Sqr(d1[2]-d2[2]));
+}
+
+inline double DistanceSqr3(double d1[3], double d2[3])
+{
+  return Sqr(d1[0]-d2[0])+Sqr(d1[1]-d2[1])+Sqr(d1[2]-d2[2]);
+}
+
+}
+
