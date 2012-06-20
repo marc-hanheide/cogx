@@ -1,30 +1,39 @@
 package de.dfki.lt.tr.cast.dialogue.util;
 
-import cast.SubarchitectureComponentException;
 import cast.architecture.WorkingMemoryWriterComponent;
-import cast.cdl.WorkingMemoryAddress;
-import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
-import de.dfki.lt.tr.dialogue.util.LFUtils;
 
+// FIXME: this is a bad bad fix reversing code dependencies
+/**
+ * 
+ * @deprecated  use de.dfki.lt.tr.dialogue.util.VerbalisationUtils instead
+ */
+@Deprecated
 public class VerbalisationUtils {
 
-	public static final String DIALOGUE_SA = "dialogue";
+        /**
+         * 
+         * @deprecated  use de.dfki.lt.tr.dialogue.util.VerbalisationUtils instead
+         */
+        @Deprecated
+	public static final String DIALOGUE_SA = de.dfki.lt.tr.dialogue.util.VerbalisationUtils.DIALOGUE_SA;
 
+        /**
+         * 
+         * @deprecated  use de.dfki.lt.tr.dialogue.util.VerbalisationUtils instead
+         */
+        @Deprecated
 	public static void verbaliseString(WorkingMemoryWriterComponent component, String text) {
-		try {
-			WorkingMemoryAddress wma = new WorkingMemoryAddress(component.newDataID(), DIALOGUE_SA);
-			ContentPlanningGoal cpg = cannedContentPlanningGoal(wma.id, text);
-			component.addToWorkingMemory(wma, cpg);
-		}
-		catch (SubarchitectureComponentException ex) {
-			component.logException(ex);
-		}
+            de.dfki.lt.tr.dialogue.util.VerbalisationUtils.verbaliseString(component, text);
 	}
 
+        /**
+         * 
+         * @deprecated  use de.dfki.lt.tr.dialogue.util.VerbalisationUtils instead
+         */
+        @Deprecated
 	public static ContentPlanningGoal cannedContentPlanningGoal(String id, String text) {
-		LogicalForm lf = LFUtils.convertFromString("@d:dvp(<CannedText>" + text.replace(" ", "_") + ")");
-		return new ContentPlanningGoal(id, lf, null);
+            return de.dfki.lt.tr.dialogue.util.VerbalisationUtils.cannedContentPlanningGoal(id, text);
 	}
 
 }
