@@ -77,6 +77,8 @@ private:
   void onChange_MoveToVcCommand(const cast::cdl::WorkingMemoryChange & _wmc);
   void onAdd_AnalyzeProtoObjectCommand(const cast::cdl::WorkingMemoryChange & _wmc);
   void onChange_AnalyzeProtoObjectCommand(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc);
 };
 
 }
