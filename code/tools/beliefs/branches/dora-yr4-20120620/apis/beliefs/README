@@ -1,0 +1,28 @@
+README [de.dfki.lt.tr.beliefs]
+
+API for representing and reasoning with beliefs, intentions, and knowledge. The API adopts a view on beliefs that captures their situatedness, multi-agency, and uncertainty in content interpretation. 
+
+To compile: 
+* In the root directory of the API branch, issue [ ant ].
+
+To run the unit tests: 
+* In the root directory of the API branch, [ ant test -f apis/beliefs/build.xml ]
+* The reports are stored in [ reports/html ] and can be browsed with a web-browser
+
+To generate API documentation 
+* In the root directory of the API branch, [ ant doc -f apis/beliefs/build.xml ]
+* The documentation for the API production code is in [ doc/src ] 
+
+
+Version v0.3
+-----------------------------
+Scheduled release May 26 2010
+- 
+
+Open issues 
+-
+
+Authors
+- Geert-Jan M. Kruijff (gj@dfki.de)
+- Pierre Lison (plison@dfki.de)
+-----------------------------
