@@ -1,0 +1,10 @@
+percept(P1)
+feature(P1,VRed)
+
+percept(P2)
+feature(P2,VGreen)
+
+percept(P3)
+feature(P3,VGreen)
+
+attribute(LGreen)

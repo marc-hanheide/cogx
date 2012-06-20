@@ -1,0 +1,13 @@
+// domains
+t_null = {Null}
+t_color = {P_red, P_blue, P_green, P_yellow, P_orange}
+t_shape = {P_compact, P_elongated}
+t_default={Default}		
+t_attr_color = {A_red, A_blue, A_green, A_yellow, A_orange}
+t_attr_shape = {A_compact, A_elongated}
+t_attr_type = {A_something, A_object}
+t_attr_salience = {A_high, A_low}
+
+t_belief={Blf1, Blf2, Blf3, Blf4, Blf5, Blf6}
+//t_status = {Attributed, Shared}	
+

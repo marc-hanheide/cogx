@@ -1,0 +1,10 @@
+HOST localhost
+SUBARCHITECTURE binder.sa
+
+JAVA WM			cast.architecture.SubarchitectureWorkingMemory
+JAVA TM			cast.architecture.AlwaysPositiveTaskManager
+CPP MG	mlnengine MLNEngine --bsa binder.sa --inf "-ms -i subarchitectures/binder.sa/src/mln/refresol/rrKB.mln,subarchitectures/binder.sa/src/mln/refresol/infRules.mln -e subarchitectures/binder.sa/src/mln/refresol/defEvidence.db -q resolution -ow feature,attribute,percept "  --rid "testid" --log true --standalone-display-host localhost
+
+CPP MG	tester MLNTester --bsa binder.sa --rid "testid"  --log true # --display
+
+JAVA MG resultviewer castutils.viewer.V11WMViewerComponent --standalone-display-host localhost --subscribe "org.cognitivesystems.binder.mln.InferredResult" --generic-col

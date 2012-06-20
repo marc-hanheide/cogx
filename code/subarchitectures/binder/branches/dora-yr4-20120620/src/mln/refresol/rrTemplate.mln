@@ -1,0 +1,24 @@
+//#include "../../rrDomain.mln"
+
+//predicate declarations
+
+feature(perc, feat)
+attribute(attr)
+resolution(perc)
+percept(perc)
+//resolved(perc)
+
+//formulas
+
+feature(p, +f)
+attribute(+a)
+// affordf(p, +f)
+
+percept(p) ^ feature(p, +f) ^ attribute(+a) => resolution(p)
+percept(p) ^ feature(p, +f) ^ attribute(+a) => !resolution(p)
+
+// visualf(p1, +f1) ^ objpart(p1, o) ^ affordf(p2, +f2) => objpart(p2, o)
+// visualf(p1, +f1) ^ objpart(p1, o) ^ affordf(p2, +f2) => !objpart(p2, o)
+
+// affordf(p1, +f1) ^ objpart(p1, o) ^ lingf(p2, +f2) => objpart(p2, o)
+// affordf(p1, +f1) ^ objpart(p1, o) ^ lingf(p2, +f2) => !objpart(p2, o)
