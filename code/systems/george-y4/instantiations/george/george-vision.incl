@@ -39,6 +39,7 @@ SETVAR SOIFilter_Params=<multiline>
     --bgdt 9999
     --fixc 24
     --max-soi-dist 1.7
+    --color-filter-thr 8
 
     # Left camera from the fine point cloud server; used by the internal grabber for debugging
     %(SOIFilter_UseVideoserver)
@@ -51,7 +52,12 @@ SETVAR SOIFilter_Params=<multiline>
     --display 
     #--log --debug
 </multiline>
-CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)
+
+IFEQ(%(hardware), real)
+    CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params) --invert-rb    
+ELSE
+    CPP MG vis.SOI.filter SOIFilter %(SOIFilter_Params)   
+ENDIF
 
 
 IFOPTALL(%(feature_options), visual-learner)
