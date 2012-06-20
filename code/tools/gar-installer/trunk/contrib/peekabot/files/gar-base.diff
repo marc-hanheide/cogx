@@ -1,6 +1,6 @@
 diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/m4/boost.m4 peekabot-0.8.6/m4/boost.m4
 --- peekabot-0.8.6.orig/m4/boost.m4	2011-05-29 18:59:31.000000000 +0100
-+++ peekabot-0.8.6/m4/boost.m4	2011-11-21 10:54:31.000000000 +0000
++++ peekabot-0.8.6/m4/boost.m4	2012-06-20 10:17:13.431995678 +0100
 @@ -403,7 +403,7 @@
        LDFLAGS=$boost_save_LDFLAGS
        LIBS=$boost_save_LIBS
@@ -10,3 +10,74 @@ diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/m4/boost.m4 peekabot-
          Boost_lib_LDPATH="$boost_ldpath"
          break 6
        else
+diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/Main.cc peekabot-0.8.6/src/Main.cc
+--- peekabot-0.8.6.orig/src/Main.cc	2011-01-27 22:56:31.000000000 +0000
++++ peekabot-0.8.6/src/Main.cc	2012-06-20 10:19:29.355995030 +0100
+@@ -77,7 +77,7 @@
+      * \brief The formatter used to format the log messages.
+      */
+     const PrintfFormatter m_formatter;
+-    
++
+ public:
+     Console() throw() : m_is_active(false), m_formatter("%m\n") {}
+ 
+@@ -147,7 +147,7 @@
+     }
+     catch(po::error &e)
+     {
+-        std::cerr << "Error parsing command line arguments: " 
++        std::cerr << "Error parsing command line arguments: "
+                   << e.what() << std::endl;
+         return -1;
+     }
+@@ -203,7 +203,10 @@
+     fs::create_dir_if_inexistant(fs::get_resource_path());
+     fs::create_dir_if_inexistant(fs::get_resource_path() / "data");
+     fs::create_dir_if_inexistant(fs::get_resource_path() / "snapshots");
+-    fs::create_dir_if_inexistant(fs::get_temp_path() / "peekabot");
++    // this is a way to guarantee a unique temp dir to avoid problems occuring when running with different users (marc@hanheide.net)
++    std::string uniqName="peekabot";
++    uniqName=uniqName+"."+getenv("USER");
++    fs::create_dir_if_inexistant(fs::get_temp_path() / uniqName );
+ 
+     //
+     // Load configuration and setup default options
+@@ -215,7 +218,7 @@
+ 
+ 
+     //
+-    // Log various settings and data that might be useful in dismissing 
++    // Log various settings and data that might be useful in dismissing
+     // bug reports from users ;)
+     //
+     TheMessageHub::instance().publish(
+@@ -229,11 +232,11 @@
+         PEEKABOT_PBAR_COMPATIBLE_VERSION_STRING + " and later");
+ 
+     TheMessageHub::instance().publish(
+-        LOG_MESSAGE, "Resource directory: " + 
++        LOG_MESSAGE, "Resource directory: " +
+         fs::get_resource_path().string());
+ 
+     TheMessageHub::instance().publish(
+-        LOG_MESSAGE, "Pkgdatadir: " + 
++        LOG_MESSAGE, "Pkgdatadir: " +
+         fs::get_pkgdata_path().string());
+ 
+     TheMessageHub::instance().publish(
+diff --speed-large-files --minimal -ru peekabot-0.8.6.orig/src/UploadCache.cc peekabot-0.8.6/src/UploadCache.cc
+--- peekabot-0.8.6.orig/src/UploadCache.cc	2010-09-08 12:52:48.000000000 +0100
++++ peekabot-0.8.6/src/UploadCache.cc	2012-06-20 10:18:54.187995199 +0100
+@@ -155,7 +155,10 @@
+ 
+ boost::filesystem::path UploadCache::get_upload_directory()
+ {
+-    return fs::get_temp_path() / "peekabot" / "uploads";
++    std::string uniqName="peekabot";
++    uniqName=uniqName+"."+getenv("USER");
++
++    return fs::get_temp_path() / uniqName / "uploads";
+ }
+ 
+ 
