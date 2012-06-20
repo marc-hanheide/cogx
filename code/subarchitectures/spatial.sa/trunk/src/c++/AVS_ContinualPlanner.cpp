@@ -1008,11 +1008,15 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
     double stAngle = opt_minAngle;
     map<int, bool> collected_vc;
     while (collected_vc.size() < (*plIt).second.size()) {
+      log("a1");
+
       double maxAngle = stAngle + m_maxRange;
       double min_dist = 2 * M_PI;
       double max_dist = 0;
       vector<ViewPointGenerator::SensingAction> gr;
       double probInThisGroup = 0;
+      log("a2");
+
       for (size_t k = 0; k < (*plIt).second.size(); k++) {
 
         double dist1 = (*plIt).second[k].pan - stAngle;
@@ -1040,6 +1044,7 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
           min_dist = dist;
         }
       }
+      log("a3");
 
       bool swapped = true;
       int j = 0;
@@ -1047,7 +1052,11 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
       while (swapped) {
         swapped = false;
         j++;
+        log("a6");
+        log("a5 j=%d stAngle=%f gr.size=%d", j,stAngle,gr.size());
+
         for (size_t k = 0; k < gr.size() - j; k++) {
+          log("a7 k=%d",k);
           double dist1 = gr[k].pan - stAngle;
           while (dist1 < 0)
             dist1 += 2 * M_PI;
@@ -1067,14 +1076,22 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
           }
         }
       }
+      log("a4");
 
       if (probInThisGroup > m_minConeGroupProb) {
-
+        log("1");
         grouped_cones_minAngle.push_back(stAngle);
+        log("2");
         grouped_cones_maxAngle.push_back(stAngle + max_dist);
+        log("3");
+
         stAngle = maxAngle + min_dist - 0.0001;
+        log("4");
+
         //      debug("group size %d", gr.size());
         grouped_cones.push_back(gr);
+        log("5");
+
       } else {
         log("Rejecting cone group with total probability %f", probInThisGroup);
       }
@@ -1120,6 +1137,7 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
     }
   }
   //  debug("gcs %d", grouped_cones.size());
+  return 0;
 }
 
 /* Generate view cones for <object,relation , object/room, room> */
