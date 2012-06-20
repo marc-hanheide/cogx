@@ -32,7 +32,7 @@ public class PlanVerbalisationController extends ManagedComponent
     super();
     m_gui = new PlanVerbalisationControllerFrame(this);
     m_gui.pack();
-    m_gui.setSize(500, 200);
+    m_gui.setSize(700, 200);
     m_gui.setVisible(true);
   }
   
