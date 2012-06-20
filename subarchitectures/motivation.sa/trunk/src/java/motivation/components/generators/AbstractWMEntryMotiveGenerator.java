@@ -243,7 +243,7 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 		log("goal " + _motive.goal.goalString + " completed.");
 	}
 
-	void reactivateMotive(WorkingMemoryChange _wmc, M motive) {
+	protected void reactivateMotive(WorkingMemoryChange _wmc, M motive) {
 		log("reactivate goal " + motive.goal.goalString);
 		motive.status = MotiveStatus.UNSURFACED;
 		motive.priority = MotivePriority.UNSURFACE;
@@ -315,7 +315,9 @@ public abstract class AbstractWMEntryMotiveGenerator<M extends Motive, T extends
 
 	protected void checkForAdditions(WorkingMemoryAddress addr, T newEntry,
 			List<M> newAdditions) {
-		newAdditions.add(checkForAddition(addr, newEntry));
+		M n = checkForAddition(addr, newEntry);
+		if (n!=null)
+			newAdditions.add(n);
 	}
 
 	protected abstract M checkForAddition(WorkingMemoryAddress addr, T newEntry);
