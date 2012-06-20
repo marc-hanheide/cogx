@@ -27,6 +27,8 @@ import execution.components.BeliefBasedPlanExecutionMediator;
 import execution.slice.ActionExecutionException;
 import execution.slice.actions.AskPolarIdentity;
 import execution.slice.actions.AskForLabelExistence;
+import execution.slice.actions.AskForBKLabelInCategory;
+import execution.slice.actions.AskForBKLabelRelLabel;
 import execution.slice.actions.CreateConesForModel;
 import execution.slice.actions.CreateRelationalConesForModel;
 import execution.slice.actions.DetectObjects;
@@ -239,6 +241,29 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 			act.pointer = addressFromFormula(target);
 			act.label = stringFromElementaryFormula(label);
 			act.relation = stringFromElementaryFormula(relation);
+
+			return act;
+		} else if (_plannedAction.name.equals("ask-for-bk-inroom")) {
+			assert _plannedAction.arguments.length == 3 : "ask-for-bk-inroom action arity is expected to be 5";
+
+			ElementaryFormula label = (ElementaryFormula) _plannedAction.arguments[1];
+			ElementaryFormula category = (ElementaryFormula) _plannedAction.arguments[2];
+			
+			AskForBKLabelInCategory act = newActionInstance(AskForBKLabelInCategory.class);
+			act.label = stringFromElementaryFormula(label);
+			act.category = stringFromElementaryFormula(label);
+
+			return act;
+		} else if (_plannedAction.name.equals("ask-for-bk-inobject")) {
+			assert _plannedAction.arguments.length == 3 : "ask-for-bk-inobject action arity is expected to be 5";
+
+			ElementaryFormula label1 = (ElementaryFormula) _plannedAction.arguments[1];
+			ElementaryFormula label2 = (ElementaryFormula) _plannedAction.arguments[2];
+			
+			AskForBKLabelRelLabel act = newActionInstance(AskForBKLabelRelLabel.class);
+			act.label = stringFromElementaryFormula(label1);
+			act.relation = "in";
+			act.otherLabel = stringFromElementaryFormula(label2);
 
 			return act;
 		} else if (_plannedAction.name.equals("process_conegroup")) {
