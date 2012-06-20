@@ -42,6 +42,8 @@ using namespace cogx::Math;
 #define COLOR_SAMPLE_IMG_WIDTH 5
 #define COLOR_SAMPLE_IMG_HEIGHT 15
 
+#define INVERT_RED_BLUE false
+
 namespace cast
 {
 
@@ -67,6 +69,8 @@ GraphCutSegmenter::GraphCutSegmenter()
   bgDistTolerance = BG_DIST_TOLERANCE;
   lblFixCost = LABEL_FIX_COST;
   smoothCost = SMOOTH_COST;
+  colFilThreshold = COLOR_FILTERING_THRESHOLD;
+  m_invertRB = INVERT_RED_BLUE;
 }
 
 void GraphCutSegmenter::configure(const map<string,string> & _config)
@@ -80,10 +84,16 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
   lblFixCost = LABEL_FIX_COST;
   smoothCost = SMOOTH_COST;
   colFilThreshold = COLOR_FILTERING_THRESHOLD;
+  m_invertRB = INVERT_RED_BLUE;
 
   if((it = _config.find("--display")) != _config.end())
   {
     doDisplay = true;
+  }
+  
+  if((it = _config.find("--invert-rb")) != _config.end())
+  {
+    m_invertRB = true;
   }
 
   if((it = _config.find("--objht")) != _config.end())
@@ -305,10 +315,15 @@ vector<CvScalar> GraphCutSegmenter::getSortedHlsList(vector<SurfacePoint> surfPo
   for(int i=0; i< size; i++)
   {
     CvScalar v;
-    //log("red: %i green: %i blue: %i", surfPoints[i].c.r, surfPoints[i].c.g, surfPoints[i].c.b);	  
-    v.val[0] = surfPoints[i].c.r;
+    //log("red: %i green: %i blue: %i", surfPoints[i].c.r, surfPoints[i].c.g, surfPoints[i].c.b);
     v.val[1] = surfPoints[i].c.g;
-    v.val[2] = surfPoints[i].c.b;
+    
+    if(m_invertRB) {	  
+      v.val[0] = surfPoints[i].c.b; 
+      v.val[2] = surfPoints[i].c.r; }
+    else {
+      v.val[0] = surfPoints[i].c.r; 
+      v.val[2] = surfPoints[i].c.b; }
 
     cvSet2D(src, 0, i, v);
   }
