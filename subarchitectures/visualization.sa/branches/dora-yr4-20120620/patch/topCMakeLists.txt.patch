@@ -1,0 +1,24 @@
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 6934)
++++ CMakeLists.txt	(working copy)
+@@ -21,6 +21,19 @@
+ 
+ add_definitions(-Wall)
+ 
++option(BUILD_SA_VISUALIZATION "Build visualization libraries (Requires QT4)" NO)
++if(BUILD_SA_VISUALIZATION)
++   add_subdirectory(subarchitectures/visualization.sa)
++   set(VISUALIZATION_INCLUDE_DIRS
++      ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/autogen
++      ${COGX_ROOT}/subarchitectures/visualization.sa/src/c++/core
++      )
++   set(VISUALIZATION_LIBRARIES
++      DisplayClient VisualizationData
++      )
++   add_definitions(-DFEAT_VISUALIZATION)
++endif(BUILD_SA_VISUALIZATION)
++
+ # UNCOMMENT THE FOLLOWING FOR THE NAVIGATION SUBARCHITECTURE
+ 
+ add_subdirectory (tools/d-lib)

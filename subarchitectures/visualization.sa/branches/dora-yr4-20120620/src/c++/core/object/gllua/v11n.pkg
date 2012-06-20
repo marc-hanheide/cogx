@@ -1,0 +1,11 @@
+
+$#include "v11n.h"
+
+void* v11nGetOpenGlContext();
+
+void v11nCamera_SetPosition(void* scriptObj, char* name,
+      double x0, double y0, double z0,
+      double x1, double y1, double z1,
+      double xUp, double yUp, double zUp);
+
+void v11nGlw_RenderText(void* writerObject, double x, double y, double z, char* text, double size);

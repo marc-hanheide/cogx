@@ -1,0 +1,22 @@
+HOST localhost
+
+COMPONENT PYTHON v11n.test.python castmodule.cogxv11n.TestClient --displayserver "display.srv" --standalone-display-host $V11N_STANDALONE_HOST --debug true
+
+SUBARCHITECTURE v11n_java
+JAVA TM cast.architecture.AlwaysPositiveTaskManager
+JAVA WM cast.architecture.SubarchitectureWorkingMemory
+
+JAVA MG v11n.test.java si.unilj.fri.cogx.v11n.test.V11nJavaTestComponent --displayserver "display.srv" --standalone-display-host $V11N_STANDALONE_HOST --debug true
+
+SUBARCHITECTURE v11n_cpp
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG v11n.test.cpp VisualizationTest --videoname videoserver --displayserver "display.srv" --standalone-display-host $V11N_STANDALONE_HOST --camid 0 --debug true
+
+SUBARCHITECTURE vision.sa
+CPP WM SubarchitectureWorkingMemory
+CPP TM AlwaysPositiveTaskManager
+
+CPP MG videoserver OpenCvImgSeqServer --camids 0 --files "subarchitectures/vision.sa/config/test-ferns/tea%03d.jpg" --start 0 --end 3 --framerate_ms 100
+
