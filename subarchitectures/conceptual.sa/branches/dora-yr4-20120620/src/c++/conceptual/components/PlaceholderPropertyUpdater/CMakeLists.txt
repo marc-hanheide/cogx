@@ -1,0 +1,8 @@
+option(BUILD_SA_CONCEPTUAL_PLACEHOLDER_PROPERTY_UPDATER "Build Conceptual.SA PlaceholderPropertyUpdater component" NO)
+if(BUILD_SA_CONCEPTUAL_PLACEHOLDER_PROPERTY_UPDATER)
+
+    add_cast_component(ConceptualPlaceholderPropertyUpdater PlaceholderPropertyUpdater.cc)
+    link_cast_component(${CAST_COMPONENT_NAME} ConceptualData ComaData SpatialProbabilities SpatialProperties DefaultData)
+
+endif(BUILD_SA_CONCEPTUAL_PLACEHOLDER_PROPERTY_UPDATER)
+
