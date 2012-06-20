@@ -434,7 +434,7 @@
 
             )
 
-;;LF move_direct => @{step_?block_?step:action-motion}(move ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_?block_?step:m-location ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_?block_?step:m-location ^ to ^ <Anchor>(?to:castreferent ^ ?to)) ^ <Modifier>(via_?block_?step:m-through ^ via ^ <Anchor>(?via:castreferent ^ ?via)))
+;;LF move_direct => @{step_?block_?step:action-motion}(go ^ <Actor>(?a:castreferent ^ ?a) ^ <Modifier>(from_?block_?step:m-wherefrom ^ from ^ <Anchor>(?from:castreferent ^ ?from)) ^ <Modifier>(to_?block_?step:m-whereto ^ to ^ <Anchor>(?to:castreferent ^ ?to)) ^ <Modifier>(via_?block_?step:m-location ^ via ^ <Anchor>(?via:castreferent ^ ?via)))
    (:action move_direct
             :agent (?a - robot)
             :parameters (?to - place)
