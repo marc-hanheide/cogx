@@ -392,7 +392,7 @@ std::string motiveStatusStr(motivation::slice::MotiveStatus st)
     EN_CASE(ACTIVE);
     EN_CASE(COMPLETED);
     EN_CASE(WILDCARD);
-    default: s = "?"; break
+    default: s = "?"; break;
   }
 #undef EN_CASE
 #undef EN_PREFIX
