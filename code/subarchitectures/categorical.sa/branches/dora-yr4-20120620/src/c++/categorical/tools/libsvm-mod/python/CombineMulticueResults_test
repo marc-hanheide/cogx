@@ -1,0 +1,3 @@
+#!/bin/bash
+./CombineMulticueResults.py -v -a 3 -s 0.1 -f output.m  testdata/BO.target testdata/BO.out1 testdata/BO.out12 - testdata/CR.target testdata/CR.out1 testdata/CR.out12 - testdata/EO.target testdata/EO.out1 testdata/EO.out12 - testdata/KT.target testdata/KT.out1 testdata/KT.out12 -  testdata/PA.target testdata/PA.out1 testdata/PA.out12 -
+
