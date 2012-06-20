@@ -85,6 +85,8 @@ log4j.appender.srvConsole.layout=org.apache.log4j.PatternLayout
 log4j.appender.srvConsole.layout.ConversionPattern=[%p %c: %m]%n
 EOF
 
+echo "<log4j:logsequence>" > logs/log.xml
+
 # log specific components at TRACE (none at present), everything else at DEBUG
 rm -f log4j.properties
 cat > log4j.properties <<EOF
@@ -261,6 +263,7 @@ if [ $PEEKABOT_CRASHED -eq 1 ]; then
 		zip peekabot_crash_logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.zip logs/pb-crash"$PEEKABOT_CRASH_COUNT"-cast-log.xml
 	fi
 else
+	echo "</log4j:logsequence>" >> logs/log.xml
 	tools/scripts/collect-logs.sh
 fi
 
