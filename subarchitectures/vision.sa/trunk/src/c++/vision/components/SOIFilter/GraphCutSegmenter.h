@@ -47,6 +47,7 @@ class GraphCutSegmenter
   
   IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK
+  bool m_invertRB;
   std::vector<CvScalar> filterList;
 
   int doDisplay;
