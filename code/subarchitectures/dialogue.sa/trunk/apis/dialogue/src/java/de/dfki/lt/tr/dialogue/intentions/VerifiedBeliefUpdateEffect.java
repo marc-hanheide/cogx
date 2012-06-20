@@ -1,7 +1,5 @@
 package de.dfki.lt.tr.dialogue.intentions;
 
-import java.util.Map;
-
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
 import cast.cdl.WorkingMemoryAddress;
@@ -10,9 +8,11 @@ import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.dFormula;
 import de.dfki.lt.tr.dialogue.util.BeliefIntentionUtils;
+import de.dfki.lt.tr.dialogue.util.VerbalisationUtils;
 import eu.cogx.beliefs.slice.MergedBelief;
 import eu.cogx.beliefs.slice.VerifiedBelief;
 import eu.cogx.beliefs.utils.BeliefUtils;
+import java.util.Map;
 
 public class VerifiedBeliefUpdateEffect implements CASTEffect {
 
@@ -88,6 +88,8 @@ public class VerifiedBeliefUpdateEffect implements CASTEffect {
 
 				component.overwriteWorkingMemory(verifiedBeliefWMP.address,
 						verifiedBelief.get());
+                                
+                                VerbalisationUtils.verbaliseString(component, "ok");
 
 			}
 		} catch (CASTException e) {
