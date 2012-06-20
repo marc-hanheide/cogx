@@ -55,7 +55,9 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, class, 'communication') / p(1.0),
 	int : string_content(Int, subclass, 'info-request') / p(1.0),
-	int : string_content(Int, type, 'description-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'open') / p(1.0),
+	int : string_content(Int, feature, 'objecttype') / p(1.0),
 	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
 
 % do you know what X is
@@ -75,7 +77,9 @@ understand : event : from_logical_form(Speaker, Hearer, Nom) <-
 	int : agent(Int, Speaker) / p(1.0),
 	int : string_content(Int, class, 'communication') / p(1.0),
 	int : string_content(Int, subclass, 'info-request') / p(1.0),
-	int : string_content(Int, type, 'description-request') / p(1.0),
+	int : string_content(Int, type, 'question') / p(1.0),
+	int : string_content(Int, subtype, 'open') / p(1.0),
+	int : string_content(Int, feature, 'objecttype') / p(1.0),
 	understand : topic(Speaker, Hearer, _EpSt, Int, SubjNom, SubjNom).
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
