@@ -1,0 +1,12 @@
+CXX = g++
+CXXFLAGS = -I${CURE_ROOT}/include/cure -I/usr/local/include/player-3.0
+LDFLAGS = -L${CURE_ROOT}/lib/cure/ -lpeekabot -lplayerc++ -lCureTransformation -lCureSensory -lCureAddressBank -lCureFilters -lCureNav -lCureMapApps -lCureMSpace -lCureNavX -lCureMapX -lCureMapBase -lCureMapWall -lCureMapPoint -lCureMapHLine -lCureMapRangedPoint -lCureRelativePointFeature -lCureSensorData -lCureGeometry -lCureMath -lCureUtils
+
+all: exslamloc 
+
+exslamloc: PlayerDataToCure.o LsqLineExtractor.o DoorExtractor.o exslamloc.cc
+	g++ -I${CURE_ROOT}/include/cure -I/usr/local/include/player-3.0 -o exslamloc -L/usr/local/lib/cure -lpeekabot -lplayerc++ -lCureTransformation -lCureSensory -lCureAddressBank -lCureFilters -lCureNav -lCureMapApps -lCureMSpace -lCureNavX -lCureMapX -lCureMapBase -lCureMapWall -lCureMapPoint -lCureMapHLine -lCureMapRangedPoint -lCureRelativePointFeature -lCureSensorData -lCureGeometry -lCureMath -lCureUtils PlayerDataToCure.o LsqLineExtractor.o DoorExtractor.o exslamloc.cc
+
+
+clean:
+	rm -f exslamloc *.o *~
