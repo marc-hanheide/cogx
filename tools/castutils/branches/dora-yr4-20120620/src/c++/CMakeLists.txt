@@ -1,0 +1,15 @@
+
+SET(SOURCES castutils/OptionParserMixin.cpp
+            castutils/LoggerMixin.cpp)
+SET(HEADERS castutils/OptionParserMixin.hpp
+            castutils/LoggerMixin.hpp)
+
+
+FIND_PACKAGE (Boost 1.38.0 REQUIRED COMPONENTS filesystem)
+set (BOOST_LIBRARIES ${Boost_LIBRARIES})
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} CASTCore ${BOOST_LIBRARIES})
+
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
