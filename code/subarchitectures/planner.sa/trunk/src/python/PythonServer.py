@@ -187,6 +187,7 @@ class PythonServer(Planner.PythonServer, cast.core.CASTComponent):
     self.start_pdb = "--pdb" in config
     self.autorun = "--run-now" in config
     self.min_p = float(config.get("--low-p-threshold", 0.01))
+    self.write_old_history = "--oldhistory" in config
 
     domain_dir = standalone.globals.config.domain_dir
     problem_dir = standalone.globals.config.problem_dir
