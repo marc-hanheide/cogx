@@ -1,0 +1,69 @@
+<!-- Inner build file for a module in the CogX system -->
+<project name="myproject" default="compile" basedir=".">
+    <!-- =================================================================== -->
+    <!-- Add JAR files to classpath                                          -->
+    <!-- =================================================================== -->
+    <path id="build.classpath">
+      <pathelement path="${ice.jar}"/>
+     <pathelement path="${cast.jar}"/>
+    </path>
+
+	<!-- Controls where the output goes -->
+	<property name="output.dir" value="../../../output/classes" />
+
+	<!-- Controls what is compiled -->
+	<property name="src.dir" value="./src/java" />
+	<property name="slice.dir" value="./src/slice" />
+
+	<!-- Includes the slice2java task from Ice. Requires ant-ice.jar to be in your classpath -->
+	<taskdef name="slice2java" classname="Slice2JavaTask"/>
+
+	
+	<!-- =================================================================== -->
+	<!-- Preparation                                                         -->
+	<!-- =================================================================== -->
+	<target name="prepare"  description="any project-specific init">
+	  <mkdir dir="${output.dir}"/>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Source generation                                                   -->
+	<!-- =================================================================== -->
+	<target name="slice" depends="prepare" description="generates source from slice">
+	  <slice2java tie="true" outputdir="${src.dir}">
+	    <fileset dir="${slice.dir}" includes="Laser.ice"/>
+	    <includepath> 
+	  	<pathelement path="${basedir}/../../math/src/slice"/>
+  	    <pathelement path="${slice.dir}"/>
+  	    <pathelement path="${castslice.dir}"/>
+	    <pathelement path="/opt/local/share"/>
+            <pathelement path="/usr/local/share"/>
+            <pathelement path="/usr/share"/>
+	    </includepath>
+	  </slice2java>
+	</target>
+
+	<!-- =================================================================== -->
+        <!-- slice file compilation                                              -->
+        <!-- =================================================================== -->
+        <target name="compile-slice" depends="slice" description="compiles the source code">
+                <javac srcdir="${src.dir}" destdir="${output.dir}" debug="${debug}" deprecation="${deprecation}" optimize="${optimize}" debuglevel="lines,vars,source" >
+                <classpath refid="build.classpath"/> </javac>
+        </target>
+	
+	<!-- =================================================================== -->
+	<!-- Basic compilation                                                   -->
+	<!-- =================================================================== -->
+	<target name="compile" depends="compile-slice" description="compiles the source code">
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Cleanup                                                             -->
+	<!-- =================================================================== -->
+	<target name="clean">
+		<delete file="${src.dir}/.depend" />
+		<delete dir="${src.dir}/Laser" />
+	</target>
+
+
+</project>
