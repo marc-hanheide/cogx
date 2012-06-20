@@ -259,4 +259,5 @@ IFOPTALL(%(feature_options), visualization)
    ENDIF
 
    CPP MG dialogue.v11n DialogInteraction
+   CPP MG INFO.trace GeorgeEventTrace
 ENDIF
