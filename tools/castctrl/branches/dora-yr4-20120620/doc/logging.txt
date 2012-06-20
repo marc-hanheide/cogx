@@ -1,0 +1,77 @@
+To configure the logging levels for individual components, create a text file 
+(eg. logs/loggers.ini) with the logging levels of individual components. The 
+file is an ordinary dos-ini file where each section represents a 
+subarchitecture and each property in a section represents a component:
+
+   [<subarchitecture-1-id>]
+   <component-1-id>=LOGLEVEL
+   <component-2-id>=LOGLEVEL
+
+eg.:
+   [vision.sa]
+   videoserver=WARN
+   videoviewer=FATAL
+
+The valid log levels are: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+
+An empty section can be used for special logger names or if you want to
+specify the full name of the component's logger:
+
+   []
+   my.special.logger=DEBUG
+   vision.sa.stereoserver=INFO
+
+The empty section is the default section and is used if no other secitons are 
+specified. The ini file is read sequentially so multiple sections with the same
+name can be used.
+
+The logging level can be set for multiple components that match a pattern 
+(lines starting with '#' are comments):
+
+   []
+   # The level is set for all components 
+   *=FATAL
+
+   [vision.sa]
+   # The level is set for all components in vision.sa that match the pattern
+   video*=WARN
+
+In Cast Control enter the path to the in file into the 'Levels' field in 
+'Logs'.  The settings will be appended (with a prefix) to the log4j.properties 
+file for clients (logs/cctmp.log4client.conf). the above examples will generate:
+
+   log4j.logger.vision.sa.videoserver=WARN
+   log4j.logger.vision.sa.videoviewer=FATAL
+   log4j.logger.my.special.logger=DEBUG
+   log4j.logger.vision.sa.stereoserver=INFO
+
+Note that the logging messages will be additionally filtered by the appenders. 
+It is therefore necessary to set the 'Console Level' and 'XML File Level' to 
+pass as many messages as possible (usuall ALL, TRACE or DEBUG).
+
+A sensible default is:
+
+   Console Level and XML File Level: TRACE
+   loglevels.ini:
+      []
+      *=WARN
+      *_wm=ERROR
+      *_tm=ERROR
+
+      # increase the level for the components that you need ...
+
+
+
+Bugs
+
+The following loggers can't be configured:
+   * cast.init
+   * cast.server.c++.ComponentServer
+   * cast.server.java.ComponentServer
+   * cast.server.python.ComponentServer
+   * probably also other custom loggers
+
+   This is a bug in CAST implementation. If a logger is created through 
+   log4j.properties it is not of the correct type (the logger of the default 
+   type is created instead of a CAST-specific type).
+
