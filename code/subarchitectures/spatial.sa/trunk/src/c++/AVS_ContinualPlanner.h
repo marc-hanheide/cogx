@@ -89,16 +89,6 @@ public:
 
   void start();
   void runComponent();
-
-  void generateBloxelMap(
-      SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
-      string id, double pdfmass);
-  int createRoomBloxelMap(int roomId);
-  int generateViewConeGroups(int roomId, vector<vector<
-      ViewPointGenerator::SensingAction> > &grouped_cones,
-      vector<double> &grouped_cones_minAngle,
-      vector<double> &grouped_cones_maxAngle, string id, double pdfmass);
-
   void generateViewCones(
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
       std::string WMAddress);
@@ -197,8 +187,6 @@ private:
 
   NavData::RobotPose2dPtr lastRobotPose;
 
-  Cure::LocalGridMap<double> *m_lgmKH;
-
   std::map<std::string, BloxelMap*> m_objectBloxelMaps; // this holds bloxel maps for each location i.e. <object,rel,(object2),room>
   std::map<int, BloxelMap*> m_templateRoomBloxelMaps; // template room bloxel maps to instantiate objectBloxelMaps from
   std::map<int, CureObstMap*> m_templateRoomGridMaps; // template room 2D grid maps
@@ -223,12 +211,8 @@ private:
   int m_gridsize;
   double m_sensingProb;
   double m_samplesize;
-  int m_maxViewConeCount;
   double m_cellsize, m_sampleawayfromobs;
   double m_minbloxel;
-  double m_minConeProb;
-  double m_minRelativeConeProb;
-  double m_minConeGroupProb;
   double m_conedepth;
   double m_horizangle;
   double m_minDistance;

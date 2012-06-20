@@ -1654,7 +1654,8 @@ NavData::FNodePtr PlaceManager::getCurrentNavNode() {
   }
   // log("getCurrentNavNode exited");
   if (ret == 0)
-    wrn("Warning: Found no current Nav Node");
+// TODO this is printed often - why???
+    log("Warning: Found no current Nav Node");
   return ret;
 }
 

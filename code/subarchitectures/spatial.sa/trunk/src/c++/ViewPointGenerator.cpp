@@ -19,10 +19,8 @@ ViewPointGenerator::~ViewPointGenerator() {
 
 ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component,
     CureObstMap* plgm, BloxelMap* pbloxelmap, int samplesize,
-    size_t maxViewConeCount,
     double sampleawayfromobs, double conedepth, double tiltstep,
     double panstep, double horizangle, double vertangle, double minDistance,
-    double minConeProb, double minRelativeConeProb,
     double pdfsum, double pdfthreshold, double robotx, double roboty) {
   // TODO Auto-generated destructor stub
 
@@ -30,14 +28,11 @@ ViewPointGenerator::ViewPointGenerator(AVS_ContinualPlanner* component,
   lgm = new CureObstMap(*plgm);
   bloxelmap = new BloxelMap(*pbloxelmap);
   m_samplesize = samplesize;
-  m_maxViewConeCount = maxViewConeCount;
   m_sampleawayfromobs = sampleawayfromobs;
   m_conedepth = conedepth;
   m_horizangle = horizangle;
   m_vertangle = vertangle;
   m_minDistance = minDistance;
-  m_minConeProb = minConeProb;
-  m_minRelativeConeProb = minRelativeConeProb;
   m_bloxelmapPDFsum = pdfsum;
   m_pdfthreshold = pdfthreshold;
   m_robotx = robotx;
@@ -75,7 +70,7 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
     SCOPED_TIME_LOG;
     int test_num = 0;
     while ((totalprobsum < m_bloxelmapPDFsum * m_pdfthreshold)
-        && (result3DVCList.size() < m_maxViewConeCount) && (test_num < 10)) {
+        && (result3DVCList.size() < 20) && (test_num < 10)) {
       SCOPED_TIME_LOG;
       vector<SensingAction> unordered3DVCList, ordered3DVCList, tmp;
       SensingAction sample;
@@ -177,15 +172,8 @@ vector<ViewPointGenerator::SensingAction> ViewPointGenerator::getBest3DViewCones
           m_component->log("Best index %d", bestindex);
           //lastConePDFSum = unordered3DVCList[bestindex].totalprob;
           lastConePDFSum = initialMapPDFSum - postMapPDFSum;
-          if (lastConePDFSum < m_minRelativeConeProb * initialMapPDFSum) {
-            m_component->log("Best cone's prob. sum. is less than %f\% of total, skip",
-		m_minRelativeConeProb*100);
-            test_num++;
-            continue;
-          }
-          if (lastConePDFSum < m_minConeProb) {
-            m_component->log("Best cone's prob. sum. is less than %f\%, skip",
-		m_minConeProb*100);
+          if (lastConePDFSum < 0.05 * initialMapPDFSum) {
+            m_component->log("Best cone's prob. sum. is less than 5\% of total, skip");
             test_num++;
             continue;
           }
