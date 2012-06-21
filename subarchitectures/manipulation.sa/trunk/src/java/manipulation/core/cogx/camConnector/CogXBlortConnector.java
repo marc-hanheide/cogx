@@ -69,7 +69,7 @@ public class CogXBlortConnector implements CamConnector {
 		String bestLabel = "";
 
 		for (int i = 0; i < changedObject.identLabels.length; i++) {
-			if (!changedObject.identLabels[i].equals("unknown")) {
+			if (!changedObject.identLabels[i].equals("not-learned")) {
 				if (changedObject.identDistrib[i] > bestRecValue) {
 					bestRecValue = changedObject.identDistrib[i];
 					bestLabel = changedObject.identLabels[i];
@@ -152,7 +152,7 @@ public class CogXBlortConnector implements CamConnector {
 		String bestLabel = "";
 
 		for (int i = 0; i < changedObject.identLabels.length; i++) {
-			if (!changedObject.identLabels[i].equals("unknown")) {
+			if (!changedObject.identLabels[i].equals("not-learned")) {
 				if (changedObject.identDistrib[i] > bestRecValue) {
 					bestRecValue = changedObject.identDistrib[i];
 					bestLabel = changedObject.identLabels[i];
