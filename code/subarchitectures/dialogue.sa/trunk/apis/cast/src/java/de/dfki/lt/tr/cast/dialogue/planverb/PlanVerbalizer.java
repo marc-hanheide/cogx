@@ -53,7 +53,7 @@ public class PlanVerbalizer {
 	
 	private final PDDLContentDeterminator m_contentDeterminator;
 	private LFRealiser m_realiser;
-	private static WorkingMemoryReaderComponent m_castComponent;
+	private WorkingMemoryReaderComponent m_castComponent;
 	
 	private HashMap<String, String> m_preLexicalSub  = new HashMap<String, String>();
 	private HashMap<String, String> m_postLexicalSub = new HashMap<String, String>();
@@ -78,7 +78,7 @@ public class PlanVerbalizer {
 		// init CAST component for WM access and logging
 		m_castComponent = component;
 
-		m_castComponent.log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
+		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
 				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
 		
 		// initialize planner-related stuff
@@ -91,14 +91,14 @@ public class PlanVerbalizer {
 		try {
 			m_realiser = new RealisationClient(hostname, port);
 		} catch (UnknownHostException e) {
-			m_castComponent.logException(e);
-			m_castComponent.log("trying to use object-based tarot realiser instead of the realiserver.");
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
 			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
 			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
 			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
 		} catch (IOException e) {
-			m_castComponent.logException(e);
-			m_castComponent.log("trying to use object-based tarot realiser instead of the realiserver.");
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
 			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
 			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
 			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
@@ -106,7 +106,7 @@ public class PlanVerbalizer {
 		
 		// initialize lexicon substitutions for the time being...
 		initLexicalSubstitutions();
-		m_castComponent.log("finished PlanVerbalizer constructor");
+		log("finished PlanVerbalizer constructor");
 	}
 	
 	/**
@@ -133,21 +133,21 @@ public class PlanVerbalizer {
 		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
 		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
-		//m_preLexicalSub. put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Tense>past ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
+		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 	}
 	
 	public String verbalizeHistory(final List<POPlan> hlist) {
-	m_castComponent.log("entering verbalizeHistory()");
+	log("entering verbalizeHistory()");
 		
 		History h = new PDDLHistory(hlist);
 		
 		// this does not work yet!
 		List<Message> messages = m_contentDeterminator.determineMessages(h);
 		if (messages!=null) {
-			m_castComponent.log("contentDeterminator returned " + messages.size() + " messages for the full History.");
+			log("contentDeterminator returned " + messages.size() + " messages for the full History.");
 		} else {
 			// therefore process each POPlan individually:
-			m_castComponent.log("determineMessages(History) doesn't work yet. Verbalizing each POPlan individually instead.");
+			log("determineMessages(History) doesn't work yet. Verbalizing each POPlan individually instead.");
 
 			messages = new ArrayList<Message>();
 			int _currPOPlanBlock = 0;
@@ -155,18 +155,18 @@ public class PlanVerbalizer {
 				try {
 					messages.addAll(m_contentDeterminator.determineMessages(poPlan, _currPOPlanBlock));
 				} catch (BuildException e) {
-					m_castComponent.logException(e);
+					logException(e);
 				} catch (ParseException e) {
-					m_castComponent.logException(e);
+					logException(e);
 				} catch (NoAnnotationFoundException e) {
-					m_castComponent.logException(e);
+					logException(e);
 				} catch (UnknownOperatorException e) {
-					m_castComponent.logException(e);
+					logException(e);
 				}
 				_currPOPlanBlock+=1;
 			}
 
-			m_castComponent.log("contentDeterminator returned " + messages.size() + " messages.");
+			log("contentDeterminator returned " + messages.size() + " messages.");
 		}
 		return realizeMessages(messages);
 	}
@@ -184,17 +184,17 @@ public class PlanVerbalizer {
 		try {
 			messages = m_contentDeterminator.determineMessages(poplan, 1);
 		} catch (BuildException e) {
-			m_castComponent.logException(e);
+			logException(e);
 		} catch (ParseException e) {
-			m_castComponent.logException(e);
+			logException(e);
 		} catch (NoAnnotationFoundException e) {
-			m_castComponent.logException(e);
+			logException(e);
 		} catch (UnknownOperatorException e) {
-			m_castComponent.logException(e);
+			logException(e);
 		}
 		// if errors prevented the creation of a message list, report it...
 		if (messages==null) return "I am sorry. I don't know what to say about this Pee Oh Plan.";
-		else m_castComponent.log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
+		else log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
 
 		return realizeMessages(messages);
 	}
@@ -213,7 +213,7 @@ public class PlanVerbalizer {
 				BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
 				if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
 					log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
-					m_castComponent.log(log_sb);
+					log(log_sb);
 					return "";
 				}
 				// perform lexical substitution before realization
@@ -221,9 +221,9 @@ public class PlanVerbalizer {
 					protoLF = preProcessLexiconSubstitution(protoLF);
 					log_sb.append("\n lexical substitution before realization yielded: \n" + protoLF.toString());
 				} catch (BuildException e) {
-					m_castComponent.logException(e);
+					logException(e);
 				} catch (ParseException e) {
-					m_castComponent.logException(e);
+					logException(e);
 				}
 
 				// do GRE 
@@ -253,7 +253,7 @@ public class PlanVerbalizer {
 				output_sb.append(outputText + ". \n");
 			}
         }
-    	m_castComponent.log(log_sb);
+    	log(log_sb);
     	return output_sb.toString();
 	}
 	
@@ -305,11 +305,11 @@ public class PlanVerbalizer {
     			}
 			} catch (UnknownSubarchitectureException e) {
 				log_sb.append(e);
-				m_castComponent.logException(e);
+				logException(e);
 			}
     	}
     	log_sb.append("\n *** doGRE returns protoLF: *** \n " + (protoLF==null ? "null" : protoLF.toString()));
-    	m_castComponent.log(log_sb);
+    	log(log_sb);
     	return protoLF;
     }
     
@@ -335,6 +335,16 @@ public class PlanVerbalizer {
         protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "SUCCEEDED", pastTenseReplacer);
         protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "PENDING", pastTenseReplacer);
 
+        FeatureReplacer failedPastTenseReplacer = new FeatureReplacer() {
+        	// TODO add <Modifier>(w1:modal ^ could)
+        	@Override
+            public BasicState.Builder doWork(BasicState.Builder builder) {
+                return builder.addFeature("Mood", "ind").addFeature("Polarity", "neg"); 
+            }
+        };        
+        protoLF = CogXJavaHelpers.replaceFeature(protoLF, "ExecutionStatus", "FAILED", failedPastTenseReplacer);
+
+        
         // execution status = pending will be removed and the overall LF will be put into a control verb
 //        if (protoLF.toString().contains("<ExecutionStatus>PENDING")) {
 //            FeatureReplacer pendingReplacer = new FeatureReplacer() {
@@ -353,9 +363,9 @@ public class PlanVerbalizer {
 //            	BasicLogicalForm outputLF = BasicPatterns.attachLogicalFormAsSubtree(wantLF, protoLF, wantLF.root(), "Event", BasicPatterns.ignoreAdded());
 //            	protoLF = outputLF;
 //            } catch (BuildException e) {
-//            	m_castComponent.logException(e);
+//            	logException(e);
 //            } catch (ParseException e) {
-//            	m_castComponent.logException(e);
+//            	logException(e);
 //            }
 //        }
         
@@ -418,7 +428,7 @@ public class PlanVerbalizer {
 	 * @return most likely category_id (for rooms) or label_id (for visual objects) or empty String if n/a
 	 */
 	public ReferentReplacer getGBeliefCategoryReplacer(GroundedBelief gb) {
-//		m_castComponent.log("getGBeliefCategoryReplacer called");
+//		log("getGBeliefCategoryReplacer called");
 		CASTIndependentFormulaDistributionsBelief<GroundedBelief> gbProxy = CASTIndependentFormulaDistributionsBelief
 		.create(GroundedBelief.class, gb);
 		
@@ -433,7 +443,7 @@ public class PlanVerbalizer {
 			if (cat==null || cat.equals("")) cat = "room";
 			final String catF = cat;
 			
-//			m_castComponent.log("Gbelief is a room with category: " + catF);
+//			log("Gbelief is a room with category: " + catF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -459,7 +469,7 @@ public class PlanVerbalizer {
 			if (cat==null || cat.equals("")) cat = "object";
 			final String catF = cat;
 			
-//			m_castComponent.log("Gbelief is a visual object with category: " + catF);
+//			log("Gbelief is a visual object with category: " + catF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -485,7 +495,7 @@ public class PlanVerbalizer {
 			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
 			final String placeIDF = new Integer(placeID).toString();
 			
-//			m_castComponent.log("Gbelief is a place with place ID: " + placeIDF);
+//			log("Gbelief is a place with place ID: " + placeIDF);
 			
 			myRefRep = new ReferentReplacer() {
 	            @Override
@@ -512,7 +522,7 @@ public class PlanVerbalizer {
 	        return myRefRep;
 			
 		} else {
-//			m_castComponent.log("GBelief is of type: " + gbProxy.getType());
+//			log("GBelief is of type: " + gbProxy.getType());
 		}
 		return null;
 	}
@@ -526,13 +536,13 @@ public class PlanVerbalizer {
 //	 * @return most likely category_id (for rooms) or label_id (for visual objects) or empty String if n/a
 	 */
 	public ReferentReplacer getDoesNotExistReplacer(WMAddress _lfWMA) {
-		m_castComponent.log("getDoesNotExistReplacer called for " + _lfWMA);
+		log("getDoesNotExistReplacer called for " + _lfWMA);
 				
 		ReferentReplacer myRefRep = null;		
 
 		if (_lfWMA.subarchitecture().equals("spatial.sa")) {
 			if (_lfWMA.id().split(":").length==2) {
-				m_castComponent.log(_lfWMA + " looks like a well-formed place WMA, which just happens to have been deleted earlier...");
+				log(_lfWMA + " looks like a well-formed place WMA, which just happens to have been deleted earlier...");
 				//				@place1_0:e-place(place ^ 
 				//	                    <Delimitation> ^ 
 				//	                    <Num>sg ^ 
@@ -576,7 +586,7 @@ public class PlanVerbalizer {
 			} // end if well-formed WMA
 			else {
 				// assuming it is a ROOM0@spatial.sa type
-				m_castComponent.log(_lfWMA + " looks like a dummy-object or object category (buggy) WMA...");
+				log(_lfWMA + " looks like a dummy-object or object category (buggy) WMA...");
 //				@book1_0:thing(book ^ 
 //		                 <Delimitation>existential ^ 
 //		                 <Num>sg ^ 
@@ -607,7 +617,7 @@ public class PlanVerbalizer {
 				return myRefRep;
 			} // end else (i.e. spatial.sa but not well-formed WMA id
 		} // end if spatial.sa WMA
-		m_castComponent.log("Don't know what to do with WMA: " + _lfWMA);
+		log("Don't know what to do with WMA: " + _lfWMA);
 		return null;
 	}
 	
@@ -623,41 +633,18 @@ public class PlanVerbalizer {
 			
 	}
 	
-	
-//	private static String fillProtoSlots(String logicalform) {
-//        // room 0:71 = this room
-//        // GRE
-//        logicalform = logicalform.replace("\"0:71@coma\":castreferent ^ \"0:71@coma\"", "room_0_71:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific");
-//        logicalform = logicalform.replace("room_0_71:castreferent ^ room_0_71", "room_0_71:e-place ^ room ^ <Delimitation>unique ^ <Num>sg ^ <Proximity>proximal ^ <Quantification>specific");
-//        // cop-restr as subject
-//        logicalform = logicalform.replace("<Cop-Restr>(room_0_71", "<Subject>(room_0_71:e-place) ^ <Cop-Restr>(room_0_71");
-//
-//        // places
-//        // GRE
-//        logicalform = logicalform.replace("\"0:C@spatial.sa\":castreferent ^ \"0:C@spatial.sa\"", "\"0:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(empty1_0:q-state ^ empty)");
-//        logicalform = logicalform.replace("\"1:C@spatial.sa\":castreferent ^ \"1:C@spatial.sa\"", "\"1:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n1_0:number-ordinal ^ 1)");
-//        logicalform = logicalform.replace("\"2:C@spatial.sa\":castreferent ^ \"2:C@spatial.sa\"", "\"2:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n2_0:number-ordinal ^ 2)");
-//        logicalform = logicalform.replace("\"3:C@spatial.sa\":castreferent ^ \"3:C@spatial.sa\"", "\"3:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n3_0:number-ordinal ^ 3)");
-//        logicalform = logicalform.replace("\"4:C@spatial.sa\":castreferent ^ \"4:C@spatial.sa\"", "\"4:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n4_0:number-ordinal ^ 4)");
-//        logicalform = logicalform.replace("\"5:C@spatial.sa\":castreferent ^ \"5:C@spatial.sa\"", "\"5:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n5_0:number-ordinal ^ 5)");
-//        logicalform = logicalform.replace("\"6:C@spatial.sa\":castreferent ^ \"6:C@spatial.sa\"", "\"6:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n6_0:number-ordinal ^ 6)");
-//        logicalform = logicalform.replace("\"7:C@spatial.sa\":castreferent ^ \"7:C@spatial.sa\"", "\"7:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n7_0:number-ordinal ^ 7)");
-//        logicalform = logicalform.replace("\"8:C@spatial.sa\":castreferent ^ \"8:C@spatial.sa\"", "\"8:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n8_0:number-ordinal ^ 8)");
-//        logicalform = logicalform.replace("\"9:C@spatial.sa\":castreferent ^ \"9:C@spatial.sa\"", "\"9:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n9_0:number-ordinal ^ 9)");
-//        logicalform = logicalform.replace("\"10:C@spatial.sa\":castreferent ^ \"10:C@spatial.sa\"", "\"10:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n10_0:number-ordinal ^ 10)");
-//        // bug?
-//        logicalform = logicalform.replace("place_1__c:castreferent ^ place_1__c", "\"1:C@spatial.sa\":e-place ^ place ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific ^ <Modifier>(n1_0:number-ordinal ^ 1)");
-//
-//        // state ascriptions
-//        // obsolete
-//        // logicalform = logicalform.replace("ascription}(be", "ascription}(be ^ <Mood>ind ^ <Tense>past");
-//        // cop-rest as subj
-//        logicalform = logicalform.replace("<Cop-Restr>(\"0:D@spatial.sa\"", "<Subject>(\"0:D@spatial.sa\":person) ^ <Cop-Restr>(\"0:D@spatial.sa\"");
-//
-//        return logicalform;
-//    }
 
-    
+	
+	private void log(String s) {
+		if (this.m_castComponent!=null) m_castComponent.log(s);
+		else System.out.println(s);
+	}
+
+	private void logException(Throwable e) {
+		if (m_castComponent!=null) m_castComponent.logException(e);
+		else System.out.println(e.getLocalizedMessage());
+	}
+
 //	public static void main(String[] args) throws FileNotFoundException, IOException, BuildException, ParseException, NoAnnotationFoundException, UnknownOperatorException {
 //
 //        // for testing:
