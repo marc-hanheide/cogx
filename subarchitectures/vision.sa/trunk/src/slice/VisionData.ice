@@ -17,7 +17,7 @@ module VisionData {
   sequence<cast::cdl::WorkingMemoryPointer> WorkingMemoryPointerSeq;
   sequence<string> IdSeq;
 
-  const string IDENTITYxUNKNOWN = "unknown";
+  const string IDENTITYxUNKNOWN = "not-learned";
 
 /**
 * Enum for reporting status of vision commands. 
@@ -248,6 +248,15 @@ enum VisionCommandStatus {
   class RecognitionCommand {
     cast::cdl::WorkingMemoryPointer visualObject;
     StringSeq labels;
+  };
+
+  /**
+   * Ask the 3D object recognizer to learn a view of a given visual object.
+   *
+   * @author Michael Zillich
+   */
+  class LearnObjectViewCommand {
+    cast::cdl::WorkingMemoryPointer visualObject;
   };
 
   /**
