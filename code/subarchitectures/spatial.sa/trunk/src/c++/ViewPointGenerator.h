@@ -44,10 +44,11 @@ public:
   };
 
   ViewPointGenerator(AVS_ContinualPlanner* component, CureObstMap* plgm,
-      BloxelMap* pbloxelmap, int samplesize, double sampleawayfromobs,
-      double conedepth, double tiltstep, double panstep, double horizangle,
-      double vertangle, double minDistance, double pdfsum, double pdfthreshold,
-      double robotx, double roboty);
+      BloxelMap* pbloxelmap, int samplesize, size_t maxViewConeCount,
+      double sampleawayfromobs, double conedepth, double tiltstep,
+      double panstep, double horizangle, double vertangle, double minDistance,
+      double minConeProb, double minRelativeConeProb, double pdfsum,
+      double pdfthreshold, double robotx, double roboty);
   virtual ~ViewPointGenerator();
   double m_lastMapPDFSum;
   //NEW
@@ -92,11 +93,15 @@ public:
   BloxelMap* bloxelmap;
   int m_samplesize;
 
+  size_t m_maxViewConeCount;
+
   double m_sampleawayfromobs;
   double m_conedepth;
   double m_horizangle, m_vertangle, m_minDistance;
   double m_robotx, m_roboty, m_robottheta;
   double m_best3DConeRatio;
+  double m_minConeProb;
+  double m_minRelativeConeProb;
   double m_tiltstep;
   double m_bloxelmapPDFsum;
   double m_pdfthreshold;
