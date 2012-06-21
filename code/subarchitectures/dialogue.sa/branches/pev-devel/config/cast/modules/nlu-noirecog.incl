@@ -1,0 +1,8 @@
+VARDEFAULT parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
+
+#JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.StandbyModeManager --unlock-phrase "continue" --unlock-threshold 0.65
+JAVA MG standby-manager      de.dfki.lt.tr.cast.dialogue.SilentStandbyModeManager
+
+# phonological string -> linguistic meaning
+JAVA MG	parser	             de.dfki.lt.tr.cast.dialogue.IncrStringParser --grammar %(parsing_grammar) --log true
+JAVA MG parseselect	         de.dfki.lt.tr.cast.dialogue.SimpleParseSelection

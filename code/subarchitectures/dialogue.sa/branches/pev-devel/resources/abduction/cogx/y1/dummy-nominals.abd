@@ -1,0 +1,10 @@
+% The following dummy facts are bound to nominals in the rules for
+% generation.
+dummy_nom1(dummy1_1).
+dummy_nom2(dummy1_2).
+dummy_nom3(dummy1_3).
+dummy_nom4(dummy1_4).
+dummy_nom5(dummy1_5).
+dummy_nom6(dummy1_6).
+
+dummy_againnom(dummy2_1).

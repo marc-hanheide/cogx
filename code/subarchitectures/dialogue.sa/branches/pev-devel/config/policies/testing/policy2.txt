@@ -1,0 +1,9 @@
+start greet greetObs
+greet close closeObs
+close greet greetObs
+start sorry recogError
+greet sorry recogError
+close sorry recogError
+sorry greet greetObs
+sorry close closeObs
+close
