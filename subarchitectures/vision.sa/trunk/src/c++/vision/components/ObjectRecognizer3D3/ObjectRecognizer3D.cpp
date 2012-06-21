@@ -565,10 +565,11 @@ void ObjectRecognizer3D::receiveLearnObjectViewCommand(const cdl::WorkingMemoryC
   visObj = getMemoryEntry<VisualObject>(learn_cmd->visualObject->address);
   visObj->identLabels.clear();
   visObj->identDistrib.clear();
-  visObj->identLabels.push_back(label);
-  visObj->identDistrib.push_back(1.);
+  // note: "unknown" must always be the first entry in the list
   visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
   visObj->identDistrib.push_back(0.);
+  visObj->identLabels.push_back(label);
+  visObj->identDistrib.push_back(1.);
   log("overwriting WM entry with address.id '%s'",
       learn_cmd->visualObject->address.id.c_str());
   overwriteWorkingMemory(learn_cmd->visualObject->address, visObj);
@@ -584,13 +585,14 @@ void ObjectRecognizer3D::objectLoationToVisualObject(P::ObjectLocation &objLoc,
     VisualObjectPtr &visObj)
 {
   // create a very simple distribution: label and unknown
+  // note: "unknown" must always be the first entry in the list
   visObj->identLabels.clear();
-  visObj->identLabels.push_back(objLoc.idObject);
   visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
+  visObj->identLabels.push_back(objLoc.idObject);
   // note: distribution must of course sum to 1
   visObj->identDistrib.clear();
-  visObj->identDistrib.push_back(objLoc.conf);
   visObj->identDistrib.push_back(1. - objLoc.conf);
+  visObj->identDistrib.push_back(objLoc.conf);
   recalculateIdentGainAmbiguity(visObj);
   
   /* TODO: overwrite
