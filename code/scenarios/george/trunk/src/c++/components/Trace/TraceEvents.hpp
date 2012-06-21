@@ -46,11 +46,11 @@ private:
     CTraceEvents* mpTrace;
     std::string mDialogId;
     CDisplayClient(CTraceEvents* pDlgInt);
-    void addSpeech(const std::string& text);
-    void addCounts(const std::string& event, const std::string& text);
-    void addWmEntry(const std::string& text);
+    void addSpeech(const std::string& text, const std::string& info="");
+    void addCounts(const std::string& event, const std::string& text, const std::string& info="");
+    void addWmEntry(const std::string& text, const std::string& info="");
   private:
-    void sendTraceLine(const std::string& ta, const std::string& tb, const std::string& tc);
+    void sendTraceLine(const std::string& ta, const std::string& tb, const std::string& tc, const std::string& info);
   };
   CDisplayClient mDisplay;
   CDisplayClient& display()

@@ -405,9 +405,12 @@ void CTraceEvents::onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
     //std::lock_guard<std::mutex> lock(mWmCopyMutex);
     //mCount["VisualLearnerRecognitionTask-add"] += 1;
     auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
+    std::string info;
+    if (pmo->goal.get()) {
+      info = pmo->goal->goalString;
+    }
     display().addWmEntry("ADD " + pmo->ice_id().substr(21) 
-        + " " + motiveStatusStr(pmo->status));
-    // TODO: ::autogen::Planner::GoalPtr goal;
+        + " " + motiveStatusStr(pmo->status), info);
   }
 }
 
@@ -417,9 +420,12 @@ void CTraceEvents::onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
     //std::lock_guard<std::mutex> lock(mWmCopyMutex);
     //mCount["VisualLearnerRecognitionTask-add"] += 1;
     auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
+    std::string info;
+    if (pmo->goal.get() /*&& pmo->status == motivation::slice::SURFACED*/) {
+      info = pmo->goal->goalString;
+    }
     display().addWmEntry("CHG " + pmo->ice_id().substr(21)
-        + " " + motiveStatusStr(pmo->status));
-    // TODO: if SURFACED: ::autogen::Planner::GoalPtr goal;
+        + " " + motiveStatusStr(pmo->status), info);
   }
 }
 
@@ -431,19 +437,19 @@ CTraceEvents::CDisplayClient::CDisplayClient(CTraceEvents* pTrace)
   lineId = 0;
 }
 
-void CTraceEvents::CDisplayClient::addSpeech(const std::string& text)
+void CTraceEvents::CDisplayClient::addSpeech(const std::string& text, const std::string& info)
 {
-  sendTraceLine(text, "", "");
+  sendTraceLine(text, "", "", info);
 }
 
-void CTraceEvents::CDisplayClient::addCounts(const std::string& event, const std::string& text)
+void CTraceEvents::CDisplayClient::addCounts(const std::string& event, const std::string& text, const std::string& info)
 {
-  sendTraceLine("", event, text);
+  sendTraceLine("", event, text, info);
 }
 
-void CTraceEvents::CDisplayClient::addWmEntry(const std::string& text)
+void CTraceEvents::CDisplayClient::addWmEntry(const std::string& text, const std::string& info)
 {
-  sendTraceLine("", text, "");
+  sendTraceLine("", text, "", info);
 }
 
 std::string mkseqid(const std::string& prefix, long id, int dir=1)
@@ -460,7 +466,7 @@ std::string mkseqid(const std::string& prefix, long id, int dir=1)
   return prefix + sid;
 }
 
-void CTraceEvents::CDisplayClient::sendTraceLine(const std::string& ta, const std::string& tb, const std::string& tc)
+void CTraceEvents::CDisplayClient::sendTraceLine(const std::string& ta, const std::string& tb, const std::string& tc, const std::string& info)
 {
   cast::cdl::CASTTime tm = mpTrace->getCASTTime();
   double now = tm.s + 1e-6 * tm.us;
@@ -469,7 +475,7 @@ void CTraceEvents::CDisplayClient::sendTraceLine(const std::string& ta, const st
   sprintf(buf, "%.3f", now);
   std::ostringstream ss;
   ss << "<tr><td>" << buf << "</td>";
-  ss << "<td>" << ta << "</td><td>" << tb << "</td><td>" << tc << "</td></tr>";
+  ss << "<td>" << ta << "</td><td>" << tb << "</td><td>" << tc << "</td><td style='font-size:smaller;'>" << info << "</td></tr>";
 
   ++lineId;
   setHtml("GeorgeTrace", mkseqid("110-", lineId), ss.str());
