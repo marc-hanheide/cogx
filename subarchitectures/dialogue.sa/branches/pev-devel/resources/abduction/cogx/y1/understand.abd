@@ -1,0 +1,211 @@
+
+	% CLARIFICATION REQUESTS
+
+understand : event : clarify(X, CR) <-
+	i : cr_need(CR, Prop),
+	i : cr_entity(CR, Entity),
+	i : cr_modality(CR, Modality),
+	to_assertion_question(Prop, Entity),
+	intention : need_get_value(Modality, Entity, Prop, not_repeated) / 0.5.
+
+understand : event : clarify(X, CR) <-
+	i : cr_need(CR, Prop, Hypothesis),
+	i : cr_modality(CR, Modality),
+	i : cr_entity(CR, Entity),
+	to_asserted_predicate(Prop, Entity, Hypothesis),
+	intention : need_verify_hypothesis(Modality, Entity, Prop, Hypothesis) / 0.5.
+
+%-------------------------------------------------------------------------
+
+	% QUESTIONS (BY HUMAN)
+
+	% wh-questions
+
+% h: do you know what this is
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, cognition),
+	i : prop(Nom, know),  % type of cognition
+	i : feat_Mood(Nom, int),  % question
+	i : rel_Actor(Nom, ActorNom),
+		you(ActorNom),
+	i : rel_Patient(Nom, WhatNom),
+		what_which(WhatNom),
+		i : 'rel_Scope-in'(WhatNom, AscrNom),
+		i : 'rel_Cop-Scope'(AscrNom, WhatNom),
+	i : sort(AscrNom, ascription),
+	i : 'rel_Cop-Restr'(AscrNom, ThisNom),
+%		this(ThisNom),
+		att : refers_to(ThisNom, Ref) / ref_resolution,
+	intention : ask_known(h, Ref, objecttype) / 0.51.
+
+%h: what Prop is Ref
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	%polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	i : 'rel_Wh-Restr'(Nom, WhNom),
+		what_which(WhNom),
+		sought_property(WhNom, Prop),
+	sought_property_to_intention(RestrRef, Prop).
+%		Prop \= objecttype,
+%	intention : ask_property(h, RestrRef, Prop) / 0.2.
+
+sought_property(Nom, Prop) <-
+	i : rel_Scope(Nom, QueryNom),
+	i : prop(QueryNom, XProp),
+	to_property(XProp, Prop).
+
+sought_property(Nom, objecttype) <-
+	seeking_type(Nom) / 4.0.
+
+sought_property_to_intention(Union, Prop) <-
+	Prop \= objecttype,
+	intention : ask_property(h, Union, Prop) / 0.2.
+
+sought_property_to_intention(Union, objecttype) <-
+	intention : ask_known(h, Union, objecttype) / 1.2.
+
+% what is this
+%understand : event : uttered(h, Nom) <-
+%	i : sort(Nom, ascription),
+%	i : 'feat_Mood'(Nom, int),
+%	i : 'feat_Tense'(Nom, pres),
+%	%polarity(Nom, Polarity),
+%	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, RestrNom),
+%	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+%	%i : 'rel_Cop-Scope'(Nom, ScopeNom),
+%	i : 'rel_Wh-Restr'(Nom, WhNom),
+%		i : prop(WhNom, what),
+%	intention : ask_known(h, RestrRef, objecttype) / 10.2.
+
+% could you tell me what X is
+understand : event : uttered(h, Nom) <-
+	i:sort(Nom, communication),
+%	i:prop(Nom, tell),
+%	i:feat_Mood(Nom, int),
+%	i:rel_Recipient(Nom, RecipNom),
+%		me(RecipNom),
+%	i:rel_Actor(Nom, ActNom),
+%	i:rel_Subject(Nom, ActNom),
+%		you(ActNom),
+	i:rel_Patient(Nom, WhNom),
+%	i:rel_Modifier(Nom, ModalNom),
+%		i:sort(ModalNom, modal)
+%		i:prop(ModalNom, could),
+
+%	i:sort(BeNom, ascription),
+%	i:prop(BeNom, be),
+%	i:feat_Tense(BeNom, pres),
+	i:'rel_Cop-Restr'(BeNom, RefNom),
+	i:rel_Subject(BeNom, RefNom),
+%		this(RefNom),
+
+%	i:'rel_Cop-Scope'(BeNom, WhNom),
+		i:'rel_Scope-in'(WhNom, BeNom),
+%		what(WhNom),
+
+	att : refers_to(RefNom, UnionRef) / ref_resolution,
+	intention : ask_known(h, UnionRef, objecttype) / 0.5.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	% polar questions
+
+%h: is X Y
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	%polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	query_prop(ScopeNom, Prop, PropValue),
+	intention : value_verification_request(h, RestrRef, Prop, PropValue) / 1.2.
+
+%h: what is PROP
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, int),
+	i : 'feat_Tense'(Nom, pres),
+	i : 'rel_Subject'(Nom, SubjNom),
+%	i : 'rel_Cop-Restr'(Nom, SubjNom),
+	i : 'rel_Wh-Restr'(Nom, SubjNom),
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	query_prop(ScopeNom, Prop, PropValue),
+	intention : find_object(h, Prop, PropValue) / 0.2.
+
+%-------------------------------------------------------------------------
+
+	% ASSERTIONS (BY HUMAN)
+
+% h: X is Y
+understand : event : uttered(h, Nom) <-
+	i : sort(Nom, ascription),
+	i : 'feat_Mood'(Nom, ind),
+	i : 'feat_Tense'(Nom, pres),
+	polarity(Nom, Polarity),
+	i : 'rel_Subject'(Nom, SubjNom),
+	i : 'rel_Cop-Restr'(Nom, RestrNom),
+	att : refers_to(RestrNom, RestrRef) / ref_resolution,
+	i : 'rel_Cop-Scope'(Nom, ScopeNom),
+	assert_prop(RestrRef, Polarity, ScopeNom).
+
+%-------------------------------------------------------------------------
+
+	% ELLIPSES
+
+understand : event : uttered(h, Nom) <-
+	d_units_list(Nom, FirstNom, NextNom),
+	i : sort(FirstNom, marker),
+	i : prop(FirstNom, and),
+	union_id(NextNom, UnionId),
+	intention : reuse_last_intention(h, UnionId) / 10.0.
+
+%-------------------------------------------------------------------------
+
+	% GROUNDING
+
+	% verification
+
+understand : event : uttered(Ag, Nom) <-
+	marker_yes(Nom),
+	intention : grounding(Ag, discourse, assertionVerified) / 1.0.
+
+marker_yes(Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, yes).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	% falsification
+
+% falsification without reason
+understand : event : uttered(Ag, Nom) <-
+	marker_no(Nom),
+	intention : grounding(Ag, discourse, assertionFalsified) / 1.0.
+
+marker_no(Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, 'No').
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% falsification with reason
+understand : event : uttered(Ag, Nom) <-
+	d_units_list(Nom, NoNom, NextNom),
+	marker_no(NoNom),
+	d_units_list(NextNom, NomA, NomB),
+	i : feat_Mood(NomA, ind),
+	i : rel_Subject(NomA, SubjNom),
+	att : refers_to(SubjNom, Union) / reference_resolution,
+	polarity(Nom, Polarity),
+	assert_prop_noint(SubjNom, Union, Polarity),
+	intention : grounding(Ag, discourse, assertionFalsified) / 1.0.

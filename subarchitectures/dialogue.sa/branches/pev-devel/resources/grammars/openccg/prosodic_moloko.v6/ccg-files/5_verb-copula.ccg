@@ -1,0 +1,120 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+ 
+# This file contains the stuff for the copular and presentational 
+# uses of 'be'. 
+
+# NOTE: see modifiers.ccg for compliment and modifier definitions 
+#       due to DotCCG ORDERING ISSUES, they had to be put there
+
+
+##############
+## FAMILIES ##
+##############
+
+  
+  #---  Family Building Macros ----
+  
+  # These reduce redundancy of following families
+  # Note that cop-sem doesnt include the <Cop-Scope>, this is added below
+  # to allow the proper semantic subcategorization
+  #
+  def cop-sem(sem)  { EVENT(* <Cop-Restr>(S:entity) sem ) } 
+  def pres-sem(sem) { EVENT(* <Presented>(S:entity) sem ) }
+
+  def cop-entry(arg, sem){
+ 
+  #PROSG09: we comment 
+      entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+      entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+      entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
+  }
+     # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
+     #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
+     # NOTE: this is NOT INCREMENTAL! (**sigh**)
+
+  #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%" 
+  def cop-entry-ip(arg, sem){
+   #    entry: s(s-minor) +subj(nf-real) / (s() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+   #    entry: s(s-int) /(s() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+  }
+
+   #---  Families ----
+
+   family Copular(V){   
+    
+    # Need to sort out a way of having super semantic type 'm-mod-entity'
+    # which will then be subspecified when filled in
+    #
+    cop-entry( +cop-pp()  , <Cop-Scope>(X:m-benefactor) )  
+    cop-entry( +cop-pp()  , <Cop-Scope>(X:m-accompaniment) )  
+    cop-entry( +cop-pp()  , <Cop-Scope>(X:m-comparison) )
+  
+    cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
+    #PROSG09 : Rule for allowing intonational phrase like "the X_L+H* is LH% mod_H* LL%"
+    cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(X:quality) )  
+    
+    # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), 
+    # we must block the subj from being questionable for entity scopes
+    #
+    entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : cop-sem(                 <Cop-Scope>(X:entity) )  ; 
+    entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+    entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
+  }
+
+  # A second family to control locational modifiers (i.e. I am hungry at work, but I am in the kitchen at work, will combine)
+  #
+  family Copular-location(V) { cop-entry( +cop-pp()  , <Cop-Scope>(X:m-location) ) }
+ 
+ 		
+  family Presentational(V){
+
+       entry: s(s-minor) \! np[D dummy-there] / subj()         : pres-sem(                      );
+       entry: s(s-int)/ subj() / np[D dummy-there]             : pres-sem( INT() ^ <Subject>(D) ); 
+       entry: cop<10>[E] / subj() / np[D dummy-there]          : pres-sem(         <Subject>(D) );
+  } 
+									   
+  family Presentational-inverted(V){ 
+       
+       entry: s(s-ind) / subj(nf-real) \ pp_1(CC-TYPE:post-n)  : pres-sem( IND() ^ <Modifier>(X:m-location) )  ;
+  }
+
+ family Cop-negation (indexRel=Polarity) {
+      
+      entry: pre-cop-pp  (s-neg, s-prov-pos, )  ;  # This syn-cat is defined in modifiers.ccg
+      entry: pre-cop-np  (s-neg, s-prov-pos, )  ;
+      entry: pre-cop-adj (s-neg, s-prov-pos, )  ;
+  }					
+
+####################################
+# Wh-Interrogatives and the Copula #
+####################################
+ 
+  # The actual wh-cats are built in udc.ccg, i.e.
+  # the resquired entries are added to appropriate wh families defined there
+
+  # Questioning the <Cop-Scope>
+  # 
+  def wh-copular-entry(item, syn, sem)  {
+  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn
+                 : E:state( INT() <Wh-Restr>(sem) ); 
+  } 
+
+  # Handling Questions like 'when were you big' and 'where was there a ball',
+  # i.e. 's-modifier questions' for copula and presentational
+  #
+  def be-wh-sent-mod-entry(item){
+       entry: from-s(s-int) item  /^ subj() / vp-extr(be, item )
+            : E:state( INT() SUBJECT() WH-RESTR(V * <Scope>(E:event)) ); 
+  }
+ 
+  def be-wh-sent-mod-entries(){
+     be-wh-sent-mod-entry( +cop-pp() ) 
+     be-wh-sent-mod-entry( +cop-adj() ) 
+     be-wh-sent-mod-entry( / np() )    # either predicative np or presented
+
+  }
+
+ 

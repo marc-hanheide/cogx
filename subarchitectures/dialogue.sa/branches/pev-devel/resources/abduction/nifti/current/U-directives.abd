@@ -1,0 +1,178 @@
+int_id(i1).
+
+%-------------------------------------------------------------------------
+% COMMANDS WITH ONE ARGUMENT
+%-------------------------------------------------------------------------
+
+% actions with a single argument
+%understand : event : utter(S, H, Nom) <-
+%	i : prop(Nom, ActionProp),
+%	valid_action_prop(ActionProp, Action),
+%
+%	i : rel_Actor(Nom, _ActorNom),
+%
+%	understand : get_arg_nominal(Nom, ArgNom),
+%		i : prop(ArgNom, ArgProp),
+%		valid_argument(ArgProp, Arg),
+%
+%	valid_state(State),
+%	agent_of(State, H),
+%	action_of(State, Action),
+%	argument_of(State, Arg),
+%
+%	int_id(Int),
+%	int : agent(Int, S) / p(1.0),
+%	int : post(Int, State) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : event : utter(S, H, Nom) <-
+	i : prop(Nom, ActionProp),
+	valid_action_prop(ActionProp, Action),
+
+	i : rel_Actor(Nom, _ActorNom),
+
+	understand : get_arg_nominal(Nom, ArgNom),
+%		i : prop(ArgNom, ArgProp),
+%		understand : resolves_to_belief(ArgNom, Arg, _) / reference_resolution,
+		valid_argument_nom(ArgNom, Arg),
+
+	valid_state(State),
+	agent_of(State, H),
+	action_of(State, Action),
+	argument_of(State, Arg),
+
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, State) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : event : utter(S, H, Nom) <-
+	i : prop(Nom, listen),
+	i : sort(Nom, perception),
+	i : feat_Mood(Nom, imp),
+	i : feat_Polarity(Nom, neg),
+
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state(['dialogue-on-hold', agent(S)])) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+%understand : resolves_to_entity(Nom, var(Nom), _EpSt).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+% "move to the car"
+%@{move1_1:action-motion}(move ^ <Mood>imp ^ <Modifier>(to1_1:m-whereto ^ to ^ <Anchor>(car1_1:thing ^ car ^ <Delimitation>unique ^ <Num>sg ^ <Quantification>specific)) ^ <Actor>(addressee1_1:entity ^ addressee) ^ <Subject>(addressee1_1:entity))
+
+%understand : event : utter(S, H, Nom) <-
+%	i : prop(Nom, ActionProp),
+%	valid_action_prop(ActionProp, Action),
+%
+%	i : rel_Actor(Nom, _ActorNom),
+%
+%	understand : get_arg_nominal(Nom, ArgNom),
+%		i : prop(ArgNom, ArgProp),
+%		valid_object(ArgProp, Object),
+%		understand : is_reference(ArgNom, Object, Arg),
+%
+%	valid_state(State),
+%	agent_of(State, H),
+%	action_of(State, Action),
+%	argument_of(State, Arg),
+%
+%	int_id(Int),
+%	int : agent(Int, S) / p(1.0),
+%	int : post(Int, State) / p(1.0).
+%
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+%
+%understand : is_reference(_Nom, car, landmark(carx)) <-
+%	understand : refers_to(car, carx) / p(1.0).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+understand : get_arg_nominal(Nom, ArgNom) <-
+	i : rel_Modifier(Nom, ArgNom).
+
+understand : get_arg_nominal(Nom, ArgNom) <-
+	i : rel_Result(Nom, ArgNom).
+
+understand : get_arg_nominal(Nom, ArgNom) <-
+	i : rel_Modifier(Nom, ModNom),
+		i : prop(ModNom, P),
+		loc_preposition(P),
+		i : rel_Anchor(ModNom, ArgNom).
+
+loc_preposition(to).
+loc_preposition(over).
+
+%-------------------------------------------------------------------------
+% COMMANDS WITH NO ARGUMENTS
+%-------------------------------------------------------------------------
+
+% actions without arguments
+understand : event : utter(S, H, Nom) <-
+%	i : feat_Mood(Nom, imp),
+
+	i : prop(Nom, ActionProp),
+	valid_action_prop(ActionProp, Action),
+
+	valid_state(State),
+	agent_of(State, H),
+	action_of(State, Action),
+	has_no_arguments(State),
+
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, State) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+% actions without arguments
+understand : event : utter(S, H, Nom) <-
+%	i : feat_Mood(Nom, imp),
+
+	i : prop(Nom, ActionProp),
+	valid_action_prop(ActionProp, Action),
+
+	i : rel_Modifier(Nom, ModNom),
+		i : prop(ModNom, to),
+		i : rel_Anchor(ModNom, AnchorNom),
+			i : prop(AnchorNom, BaseProp),
+			is_baseprop(BaseProp),
+	Action = 'returned-to-base',
+
+	valid_state(State),
+	agent_of(State, H),
+	action_of(State, Action),
+	has_no_arguments(State),
+
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, State) / p(1.0).
+
+%-------------------------------------------------------------------------
+
+is_baseprop(entrance).
+
+%-------------------------------------------------------------------------
+% CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+understand : event : utter(S, _H, Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, Prop),
+	valid_yn(Prop, Confirm),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state([Confirm, agent(S), 'discourse-ref'(qud)])) / p(1.0).
+
+understand : event : utter(S, _H, Nom) <-
+	i : sort(Nom, 'q-attitude'),
+	i : prop(Nom, correct),
+	int_id(Int),
+	int : agent(Int, S) / p(1.0),
+	int : post(Int, state([confirmed, agent(S), 'discourse-ref'(qud)])) / p(1.0).

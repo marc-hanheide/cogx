@@ -1,0 +1,6 @@
+VARDEFAULT dm_policy=subarchitectures/dialogue.sa/config/policies/yr2/fullpolicy_george.xml
+
+# dialogue manager + intention -> comm. intention forwarding
+# also performs intention <-> comm. intention forwarding
+JAVA MG dialogue-manager     de.dfki.lt.tr.cast.dialogue.DialogueManagement --policy %(dm_policy) --useAck false --log true
+JAVA MG int-to-cint          de.dfki.lt.tr.cast.dialogue.IntentionToCommunicativeIntentionForwarder --log true

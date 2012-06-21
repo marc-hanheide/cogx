@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# set the PATH env variable
+TCCG_BIN_DIR="`readlink -f \"\`pwd\`/resources/grammars/openccg/bin\"`"
+export PATH="$PATH:$TCCG_BIN_DIR"
+
+# set the Java classpath
+OUTPUT_DIR="`readlink -f \"\`pwd\`/../../output\"`"
+JAR_CLASSPATH=`find -L "$OUTPUT_DIR/jar" -maxdepth 1 -type f -name '*.jar' \
+	| while read FILE; do
+		echo -n ":$FILE"
+	done`
+export CLASSPATH="$CLASSPATH:$OUTPUT_DIR/classes"
+export CLASSPATH="$CLASSPATH$JAR_CLASSPATH"
+
+cd resources/grammars/openccg/moloko.v6
+./run.sh

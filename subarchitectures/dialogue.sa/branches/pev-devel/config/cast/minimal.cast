@@ -1,0 +1,17 @@
+SETVAR parsing_grammar=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml
+SETVAR irecog_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.U.txt
+SETVAR dm_policy=subarchitectures/dialogue.sa/config/policies/yr2/fullpolicy_george.xml
+SETVAR irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+SETVAR cplan_rules=subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf
+SETVAR realize_grammar=%(parsing_grammar)
+SETVAR realize_ngrams=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt
+SETVAR dump_file=/tmp/belief-model.abd
+
+INCLUDE  modules/main.incl
+
+#INCLUDE  modules/context.incl
+
+INCLUDE  modules/nlu-noirecog.incl
+INCLUDE  modules/nlg-noireal.incl
+INCLUDE  modules/tts-mary.incl
+INCLUDE  modules/asr-loquendo.incl
