@@ -543,42 +543,17 @@ public class PlanVerbalizer {
 		if (_lfWMA.subarchitecture().equals("spatial.sa")) {
 			if (_lfWMA.id().split(":").length==2) {
 				log(_lfWMA + " looks like a well-formed place WMA, which just happens to have been deleted earlier...");
-				//				@place1_0:e-place(place ^ 
-				//	                    <Delimitation> ^ 
-				//	                    <Num>sg ^ 
-				//	                    <Quantification>specific ^ 
-				//	                    <Modifier>(away1_0:m-direction ^ away) ^ 
-				//	                    <Scope-in>(go1_0:action-motion ^ go ^ 
-				//	                               <Tense>past ^ 
-				//	                               <Actor>place1_0:e-place ^ 
-				//	                               <Subject>place1_0:e-place))
 				myRefRep = new ReferentReplacer() {
 					@Override
 					public BasicLogicalForm.Builder doWork(String nom, BasicState s, BasicLogicalForm.Builder lfBuilder) {
-
-//						String depModStateNom = BasicUtils.uniqueNominal(lfBuilder);
-//						BasicState depModState = BasicState.newBuilder("m-direction")
-//								.setProposition("away")
-//								.build();
-//
-//						String depScopStateNom = BasicUtils.uniqueNominal(lfBuilder);
-//						BasicState depScopState = BasicState.newBuilder("action-motion")
-//								.setProposition("go")
-//								.addFeature("Tense", "past")
-//								.addRelation("Actor", nom)
-//								.addRelation("Subject", nom)
-//								.build();
 
 						BasicState headState = BasicState.newBuilder("e-place")
 								.setProposition("place")
 								.addFeature("Delimitation", "existential")
 								.addFeature("Quantification", "specific")
 								.addFeature("Num", "sg")
-//								.addRelation("Modifier", depModStateNom)
-//								.addRelation("Scope-in", depScopStateNom)
 								.build();
 
-//						return lfBuilder.addState(depModStateNom, depModState).addState(depScopStateNom, depScopState).updateState(nom, headState);
 						return lfBuilder.updateState(nom, headState);
 					}
 				};
@@ -633,7 +608,6 @@ public class PlanVerbalizer {
 			
 	}
 	
-
 	
 	private void log(String s) {
 		if (this.m_castComponent!=null) m_castComponent.log(s);
