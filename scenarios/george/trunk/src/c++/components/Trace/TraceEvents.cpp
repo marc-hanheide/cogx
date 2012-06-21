@@ -407,6 +407,7 @@ void CTraceEvents::onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
     auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
     display().addWmEntry("ADD " + pmo->ice_id().substr(21) 
         + " " + motiveStatusStr(pmo->status));
+    // TODO: ::autogen::Planner::GoalPtr goal;
   }
 }
 
@@ -418,6 +419,7 @@ void CTraceEvents::onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
     auto pmo = getMemoryEntry<motivation::slice::Motive>(_wmc.address);
     display().addWmEntry("CHG " + pmo->ice_id().substr(21)
         + " " + motiveStatusStr(pmo->status));
+    // TODO: if SURFACED: ::autogen::Planner::GoalPtr goal;
   }
 }
 
