@@ -1,7 +1,10 @@
 package de.dfki.lt.tr.cast.dialogue.planverb;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +24,7 @@ import cast.cdl.WorkingMemoryAddress;
 import scala.collection.immutable.Set;
 
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
+import de.dfki.lt.tr.cast.dialogue.GBeliefMemory;
 import de.dfki.lt.tr.cast.dialogue.realisation.LFRealiser;
 import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
 import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
@@ -60,6 +64,8 @@ public class PlanVerbalizer {
 	
 	private final static String DEFAULTNGRAMFILE   = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt";
 	private final static String DEFAULTGRAMMARFILE = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml";
+	
+	public GBeliefMemory m_gbmemory = new GBeliefMemory();
 	
 
 	/**
@@ -109,6 +115,78 @@ public class PlanVerbalizer {
 		log("finished PlanVerbalizer constructor");
 	}
 	
+	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, String ngramFile, String hostname, Integer port, String gbmemoryFile) throws IOException  {
+		// init CAST component for WM access and logging
+		m_castComponent = null;
+
+		// Load gbmemory from file
+		File f = new File(gbmemoryFile);
+		readFromFile(f);
+		
+		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
+				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
+		
+		// initialize planner-related stuff
+		File adf = new File(annotatedDomainFile);
+		File pddf = new File(pddlDomainFile);
+		PDDLDomainModel domainModel = new PDDLDomainModel(adf, pddf);
+		m_contentDeterminator = new PDDLContentDeterminator(domainModel);
+
+	
+		try {
+			m_realiser = new RealisationClient(hostname, port);
+		} catch (UnknownHostException e) {
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		} catch (IOException e) {
+			logException(e);
+			log("trying to use object-based tarot realiser instead of the realiserver.");
+			if (grammarFile.equals("")) grammarFile = DEFAULTGRAMMARFILE;
+			if (ngramFile.equals("")) ngramFile = DEFAULTNGRAMFILE;
+			m_realiser = new TarotCCGRealiser(grammarFile, ngramFile);
+		}
+		
+		// initialize lexicon substitutions for the time being...
+		initLexicalSubstitutions();
+		log("finished PlanVerbalizer constructor");
+	}
+	
+	private GroundedBelief getGBelief(WMAddress referentWMA) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
+		if (m_castComponent != null) {
+			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+			return gbWME;
+		} else {
+			GroundedBelief gbWME = m_gbmemory.getLastValidGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()));
+			return gbWME;
+		}
+		
+	}
+	
+    private void readFromFile(File gbmemoryFile) {
+		
+		try {
+			FileInputStream f = new FileInputStream(gbmemoryFile);
+			ObjectInputStream s = new ObjectInputStream(f);
+			m_gbmemory = (GBeliefMemory) s.readObject();
+			s.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	     catch (ClassNotFoundException e) {
+		// TODO Auto-generated catch block
+		  e.printStackTrace();
+	    }
+		 catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * add missing lexical items to this method!
 	 * caution: please add blanks before and after each word!
@@ -137,12 +215,16 @@ public class PlanVerbalizer {
 	}
 	
 	public String verbalizeHistory(final List<POPlan> hlist) {
-	log("entering verbalizeHistory()");
-		
+		log("entering verbalizeHistory()");
 		History h = new PDDLHistory(hlist);
+		return verbalizeHistory(h);
+	}
+	
+	public String verbalizeHistory(History h) {
+	  log("entering verbalizeHistory()");
 		
 		// this does not work yet!
-		List<Message> messages = m_contentDeterminator.determineMessages(h);
+		List<Message> messages = m_contentDeterminator.determineMessages(h);	
 		if (messages!=null) {
 			log("contentDeterminator returned " + messages.size() + " messages for the full History.");
 		} else {
@@ -276,7 +358,8 @@ public class PlanVerbalizer {
     	for (WMAddress referentWMA : jswma) {
     		log_sb.append("\n current referentWMA = " + referentWMA);
     		try {
-    			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+    			//GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
+    			GroundedBelief gbWME = getGBelief(referentWMA);
     			
     			// check if it is the robot itself
     			if (isRobot(gbWME)) {
@@ -617,6 +700,23 @@ public class PlanVerbalizer {
 	private void logException(Throwable e) {
 		if (m_castComponent!=null) m_castComponent.logException(e);
 		else System.out.println(e.getLocalizedMessage());
+	}
+	
+	public static void main(String[] args) {
+		File f = new File(args[7]);
+		
+		PlanVerbalizer test;
+		try {
+			test = new PlanVerbalizer(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]), args[6]);
+			System.out.println(test.verbalizeHistory(new PDDLHistory(f)));
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 //	public static void main(String[] args) throws FileNotFoundException, IOException, BuildException, ParseException, NoAnnotationFoundException, UnknownOperatorException {
