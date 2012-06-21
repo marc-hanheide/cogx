@@ -42,6 +42,32 @@ public class GBeliefMemory implements Serializable{
 		return null;
 	}
 	
+    public GroundedBelief getLastGBelief (WorkingMemoryAddress _wma) {
+    	
+    	ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+		
+		while (iter.hasPrevious()) {
+			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+			return entry.getValue();
+		}
+		return null;
+	}
+    
+    public GroundedBelief getLastValidGBelief (WorkingMemoryAddress _wma) {
+		
+		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+		
+		while (iter.hasPrevious()) {
+			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+			if (entry.getValue() != null) {
+				  return entry.getValue();
+			}
+		}
+		return null;
+	}
+	
 	public GroundedBelief getValidGBelief (WorkingMemoryAddress _wma, CASTTime ct) {
 		
 		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
@@ -82,4 +108,12 @@ public class GBeliefMemory implements Serializable{
 		}
 		return returnMap;
 	}
+    
+    public Boolean ceasedToExist (WorkingMemoryAddress _wma) {
+    	
+    	if (getLastGBelief(_wma) == null) {
+    		return true;
+    	}
+    	return false;
+    }
 }

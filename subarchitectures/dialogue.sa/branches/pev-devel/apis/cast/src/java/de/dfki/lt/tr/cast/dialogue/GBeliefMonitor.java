@@ -95,7 +95,6 @@ public class GBeliefMonitor extends ManagedComponent {
 		}
 		
 		if (!_newPOPlan.status.name().equals("RUNNING")) {
-			
 			writeToFile();
 		}
 	}
