@@ -213,7 +213,7 @@ public class PlanVerbalizer {
 				BasicLogicalForm protoLF = ((ProtoLFMessage) msg).getProtoLF();
 				if (protoLF.toString().contains("assume") && protoLF.toString().contains("that")) {
 					log_sb.append("\n Error: I got as 'assume that' protoLF -- ignoring it!");
-					log(log_sb);
+					log(log_sb.toString());
 					return "";
 				}
 				// perform lexical substitution before realization
@@ -253,7 +253,7 @@ public class PlanVerbalizer {
 				output_sb.append(outputText + ". \n");
 			}
         }
-    	log(log_sb);
+    	log(log_sb.toString());
     	return output_sb.toString();
 	}
 	
@@ -309,7 +309,7 @@ public class PlanVerbalizer {
 			}
     	}
     	log_sb.append("\n *** doGRE returns protoLF: *** \n " + (protoLF==null ? "null" : protoLF.toString()));
-    	log(log_sb);
+    	log(log_sb.toString());
     	return protoLF;
     }
     
