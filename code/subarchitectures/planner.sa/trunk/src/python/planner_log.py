@@ -92,4 +92,14 @@ class TaskStatusEntry(PlannerLogEntry):
 
     def to_string(self):
         return str(self.status)
+
+
+class ExplanationEntry(PlannerLogEntry):
+    def __init__(self, explanations):
+        PlannerLogEntry.__init__(self, "explanation")
+        self.explanations = explanations
+
+    def to_string(self):
+        strs = ("(= (%s %s) %s)" % (f.svar.function.name, " ".join(str(a) for a in f.svar.args), str(f.value)) for f in self.explanations)
+        return " ".join(strs)
     
