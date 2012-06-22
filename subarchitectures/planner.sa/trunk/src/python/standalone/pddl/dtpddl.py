@@ -29,7 +29,8 @@ total_p_cost = Function("total-p-cost", [], t_number)
 probability = Function("probability", [], t_number)
 p_cost_value = 200
 
-unknown_p_cost = 400
+unknown_p_cost = 100
+unknown_p_prob = 0.9
 
 pddl_module = True
 
@@ -948,7 +949,7 @@ class DT2MAPLCompilerFD(DT2MAPLCompiler):
 
                 cost = r.costs if r.costs is not None else 0
                 if isinstance(p, ConstantTerm) and p.object == UNKNOWN:
-                    prob_eff = []
+                    prob_eff = [b.effect("assign", (probability,), unknown_p_prob )]
                     cost += unknown_p_cost
                 else:
                     prob_eff = [b.effect("assign", (probability,), p )]
