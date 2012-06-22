@@ -286,16 +286,18 @@ class DTProblem(object):
     def extract_choices(self):
         choices = {}
         for pnode, level in self.assumptions:
-            print pnode, level, map(str, pnode.effects)
-            for fact in pnode.effects:
-                if fact.svar.modality == mapl.commit:
-                    fact = state.Fact(fact.svar.nonmodal(), fact.svar.modal_args[0])
-                if not fact.svar.modality and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
+            # print pnode, level, map(str, pnode.effects)
+            for _, svar, val, linktype in self.plan.outgoing_links(pnode):
+                if linktype != "depends":
+                    continue
+                if svar.modality == mapl.commit:
+                    svar, val = svar.nonmodal(), svar.modal_args[0]
+                if not svar.modality and svar.get_type().equal_or_subtype_of(pddl.t_object):
                     # print "=>",fact, level
-                    choices[fact.svar] = (fact.value, level)
-                elif fact.svar.modality in (mapl.knowledge, mapl.direct_knowledge) and fact.svar.get_type().equal_or_subtype_of(pddl.t_object):
+                    choices[svar] = (val, level)
+                elif svar.modality in (mapl.knowledge, mapl.direct_knowledge) and svar.get_type().equal_or_subtype_of(pddl.t_object):
                     # print "=>",fact, level
-                    choices[fact.svar.nonmodal()] = (pddl.UNKNOWN, level)
+                    choices[svar.nonmodal()] = (pddl.UNKNOWN, level)
         return choices
 
     def write_dt_input(self, domain_fn, problem_fn, dt_id=0):
