@@ -326,7 +326,8 @@ public class PlanVerbalizer {
 					log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
 					output_sb.append(outputText + ". \n");
 				} else {
-					log_sb.append("\n not appending any output text.");        			
+					log_sb.append("\n appending original LF to output text.");
+					output_sb.append(finalLF.toString());
 				}
 			} else if (msg instanceof StringMessage) {
 				String outputText = ((StringMessage) msg).getText();
