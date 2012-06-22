@@ -16,7 +16,9 @@ module autogen {
       // aborted (if e.g a more important query occurs)???
       FAILED,      
       // no plan found
-      SUCCEEDED    
+      UNSUCCESSFUL,      
+      // Action succeeded, but effect not realized
+      SUCCEEDED
       // plan found
     };
 
