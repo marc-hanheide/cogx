@@ -175,7 +175,7 @@ class Planner(object):
         first_invalid_action = None
         for i,pnode in enumerate(plan):
             log.debug("Action: %s (%s)", str(pnode), str(pnode.status))
-            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED) and not pnode.is_virtual():
+            if isinstance(pnode, plans.DummyNode) or pnode.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED, plans.ActionStatusEnum.UNSUCCESSFUL) and not pnode.is_virtual():
                 continue
             
             t1 = time.time()
@@ -277,7 +277,7 @@ class Planner(object):
         for i, pnode in enumerate(plan):
             if pnode.status == plans.ActionStatusEnum.EXECUTED:
                 last_executed_index = i
-            elif pnode.status == plans.ActionStatusEnum.FAILED:
+            elif pnode.status in (plans.ActionStatusEnum.FAILED, plans.ActionStatusEnum.UNSUCCESSFUL):
                 last_executed_index = -1
                 break
             

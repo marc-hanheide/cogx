@@ -16,7 +16,7 @@ import constants
 import pddl
 from utils import Enum
 
-ActionStatusEnum = Enum("EXECUTABLE", "IN_PROGRESS", "EXECUTED", "FAILED")    
+ActionStatusEnum = Enum("EXECUTABLE", "IN_PROGRESS", "EXECUTED", "FAILED", "UNSUCCESSFUL")    
 
 class OrderingConstraint(object):
     """
@@ -297,6 +297,8 @@ class MAPLPlan(networkx.MultiDiGraph):
             if n.status == ActionStatusEnum.EXECUTED:
                 attrs["fillcolor"] = "grey"
             elif n.status == ActionStatusEnum.FAILED:
+                attrs["fillcolor"] = "tomato1"
+            elif n.status == ActionStatusEnum.UNSUCCESSFUL:
                 attrs["fillcolor"] = "tomato1"
             else:
                 attrs["fillcolor"] = "white"

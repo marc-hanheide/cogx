@@ -163,6 +163,8 @@ def show_step(state, plan, domain=None):
                 attrs['color'] = 'green'
             elif pnode.status == plans.ActionStatusEnum.FAILED:
                 attrs['color'] = 'red'
+            elif pnode.status == plans.ActionStatusEnum.UNSUCCESSFUL:
+                attrs['color'] = 'red'
             else:
                 attrs['color'] = 'blue'
 
@@ -201,6 +203,8 @@ def print_plan(plan):
             continue
         if pnode.status == plans.ActionStatusEnum.EXECUTED:
             print "  |",
+        elif pnode.status == plans.ActionStatusEnum.UNSUCCESSFUL:
+            print "  x",
         elif pnode.status == plans.ActionStatusEnum.FAILED:
             print "  X",
         else:

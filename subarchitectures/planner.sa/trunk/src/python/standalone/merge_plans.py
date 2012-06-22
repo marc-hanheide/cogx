@@ -175,7 +175,7 @@ def merge_plans(_plans, init_state, final_state):
                 if o not in init_problem:
                     init_problem.add_object(o)
             plan_dict[n] = p
-            if n.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED):
+            if n.status in (plans.ActionStatusEnum.EXECUTED, plans.ActionStatusEnum.FAILED, plans.ActionStatusEnum.UNSUCCESSFUL):
                 executed.append(n)
             else:
                 unexecuted.append(n)
