@@ -244,7 +244,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-bk-inroom")) {
-			assert _plannedAction.arguments.length == 3 : "ask-for-bk-inroom action arity is expected to be 5";
+			assert _plannedAction.arguments.length == 3 : "ask-for-bk-inroom action arity is expected to be 3";
 
 			ElementaryFormula label = (ElementaryFormula) _plannedAction.arguments[1];
 			ElementaryFormula category = (ElementaryFormula) _plannedAction.arguments[2];
@@ -255,7 +255,7 @@ public class DoraExecutionMediator extends BeliefBasedPlanExecutionMediator
 
 			return act;
 		} else if (_plannedAction.name.equals("ask-for-bk-inobject")) {
-			assert _plannedAction.arguments.length == 3 : "ask-for-bk-inobject action arity is expected to be 5";
+			assert _plannedAction.arguments.length == 3 : "ask-for-bk-inobject action arity is expected to be 3";
 
 			ElementaryFormula label1 = (ElementaryFormula) _plannedAction.arguments[1];
 			ElementaryFormula label2 = (ElementaryFormula) _plannedAction.arguments[2];
