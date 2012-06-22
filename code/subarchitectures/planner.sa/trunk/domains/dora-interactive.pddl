@@ -704,8 +704,8 @@
 
    (:action ask-for-bk-inobject
             :agent (?a - robot)
-            :parameters (?l1 ?l2 - label ?c - category)
-            :variables (?p - place ?h - person)
+            :parameters (?l1 ?l2 - label)
+            :variables ( ?c - category ?p - place ?h - person)
             :precondition (and (not (done))
                                (engaged ?h)
                                (= (is-in ?h) ?p)
