@@ -51,7 +51,8 @@ status_dict = {TaskStateEnum.INITIALISED : Planner.Completion.PENDING, \
 action_status_dict = {plans.ActionStatusEnum.EXECUTABLE : Planner.Completion.PENDING,
                       plans.ActionStatusEnum.IN_PROGRESS : Planner.Completion.INPROGRESS,
                       plans.ActionStatusEnum.EXECUTED : Planner.Completion.SUCCEEDED,
-                      plans.ActionStatusEnum.FAILED : Planner.Completion.FAILED}
+                      plans.ActionStatusEnum.FAILED : Planner.Completion.FAILED,
+                      plans.ActionStatusEnum.UNSUCCESSFUL : Planner.Completion.FAILED}
                    
 log = config.logger("plan-control")
 
@@ -804,6 +805,7 @@ class CASTTask(object):
             log.info("Wait for %s timed out. Plan failed.", str(self.cp_task.pending_action))
             # self.plan_history.append(plan)
             # self.cp_task.set_plan(None, update_status=True)
+            self.cp_task.pending_action.status = plans.ActionStatusEnum.UNSUCCESSFUL
             self.update_status(TaskStateEnum.FAILED, TaskStateInfoEnum.EXECUTION_FAILURE)
             return
         

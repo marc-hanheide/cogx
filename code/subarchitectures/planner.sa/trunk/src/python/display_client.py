@@ -23,6 +23,7 @@ tr.sep td {display:none;}
 
 tr.executed {background-color: #CCCCCC}
 tr.failed {background-color: #FF6666}
+tr.unsuccessful {background-color: #FF9966}
 tr.in_progress {background-color: #88FF88}
 tr.summary {font-weight: bold; font-size: 110%}
 tr.dt {background-color: #8888ff}
