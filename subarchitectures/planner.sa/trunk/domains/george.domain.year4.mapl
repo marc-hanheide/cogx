@@ -5,7 +5,7 @@
   (:types
     Robot - agent
     VisualObject ProtoObject ViewCone ConceptName - object
-    ColorName ShapeName TypeName Visibility - ConceptName
+    ColorName ShapeName IdentName Visibility - ConceptName
   )
 
   (:constants
