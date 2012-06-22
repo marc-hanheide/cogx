@@ -420,20 +420,23 @@ class CASTTask(object):
         print self.init_state.state.problem.domain.requirements
         print "==============================\n"*3
         merged_plan, init_state, final_state = merge_plans.merge_plans(self.plan_history, self.init_state.state, self.state.state)
-        # last_plan = self.plan_history[-1].topological_sort()
-        # last_plan = merged_plan.topological_sort()
-        # endstate = self.state.state.copy()
-        # for a in last_plan:
-        #     if a.status == plans.ActionStatusEnum.EXECUTED and not a.is_virtual():
-        #         for f in a.effects:
-        #             endstate.set(f)
+
+        def explanation_filter(facts):
+            for f in facts:
+                if f.svar.modality == pddl.mapl.commit:
+                    yield pddl.state.Fact(f.svar.nonmodal(), f.svar.modal_args[0])
+                elif f.svar.get_type().equal_or_subtype_of(pddl.t_object):
+                    yield f
+                
+
         if self.expl_rules_fn and len(merged_plan) > 2:
             result, expl_plan = explanations.handle_failure(merged_plan, init_state.problem, init_state, final_state, self.expl_rules_fn, self.cp_task, self.component)
             if result:
                 self.update_info_status(TaskStateInfoEnum.EXPLANATIONS_FOUND) 
-                facts = reduce(lambda x,y:x|y.effects, result, set())
+                facts = list(explanation_filter(reduce(lambda x,y: x|y.effects, result, set())))
                 log.debug("Raw explanations: %s", ", ".join(str(f) for f in facts))
                 beliefs = list(self.facts_to_belief(facts))
+                self.plan_log.append(planner_log.ExplanationEntry(facts))
 
                 expl_poplan = self.make_cast_poplan(expl_plan, is_completed=True)
                 # for s in self.poplan_to_string(expl_poplan):
