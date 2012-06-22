@@ -52,7 +52,7 @@ action_status_dict = {plans.ActionStatusEnum.EXECUTABLE : Planner.Completion.PEN
                       plans.ActionStatusEnum.IN_PROGRESS : Planner.Completion.INPROGRESS,
                       plans.ActionStatusEnum.EXECUTED : Planner.Completion.SUCCEEDED,
                       plans.ActionStatusEnum.FAILED : Planner.Completion.FAILED,
-                      plans.ActionStatusEnum.UNSUCCESSFUL : Planner.Completion.FAILED}
+                      plans.ActionStatusEnum.UNSUCCESSFUL : Planner.Completion.UNSUCCESSFUL}
                    
 log = config.logger("plan-control")
 
