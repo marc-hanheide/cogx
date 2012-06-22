@@ -49,6 +49,7 @@ SETVAR feature_options=<multiline>
     !debug		
 # enable dialogue	
     dialogue		
+    plan_verbalisation
 # enable motivation base
     motivation		
 # enable motivation via external goal infusion

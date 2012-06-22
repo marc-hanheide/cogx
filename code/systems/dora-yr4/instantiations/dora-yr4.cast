@@ -60,6 +60,7 @@ VARDEFAULT feature_options=<multiline>
     debug
 # enable dialogue
     dialogue
+    plan_verbalisation
 # enable motivation base
     motivation
 # enable motivation via external goal infusion
@@ -269,7 +270,7 @@ VARDEFAULT min_cone_prob=0.01
 VARDEFAULT min_relative_cone_prob=0.05
 
 # Smallest allowed ABSOLUTE probability of any one cone group
-VARDEFAULT min_conegroup_prob=0.05
+VARDEFAULT min_conegroup_prob=0.04
 
 # Whether to generate a prior probability along (laser-detected) wall
 # obstacles in uninformed AVS (otherwise, only the Kinect heightmap will be
@@ -445,7 +446,7 @@ IFOPTALL(%(feature_options), spatial)
 # Also responds to ProcessConeGroup commands, by moving the robot and turning
 # the PTU and sending recognition commands, and subsequently updating the
 # probability associated with that cone group.
-        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects)  --maxViewConeCount %(max_viewcones) --minConeProb %(min_cone_prob) --minRelativeConeProb %(min_relative_cone_prob)  --minConeGroupProb %(min_conegroup_prob) --random-vc %(usePB)
+        CPP MG avs.cpplanner AVS_ContinualPlanner -c %(spatial_cureconfig) %(exclude_exploration) %(use_wall_prob) --cam-horizangle 41 --cam-vertangle 31 --samplesize 300 --tiltstep 10 --panstep 30 --gridsize 700 --cellsize 0.05  --cam-conedepth %(avs_cone_depth) --kernel-width-factor 0.7 --sampleawayfromobs %(avs_sample_from_obs) --queryhandler conceptual.queryhandler --siftobjects %(avs_sift_objects)   %(usePB) --maxViewConeCount %(max_viewcones) --minConeProb %(min_cone_prob) --minRelativeConeProb %(min_relative_cone_prob)  --minConeGroupProb %(min_conegroup_prob) --random-vc
     ENDIF
 
     IFOPTALL(%(feature_options), simple_placeholder_exploration)
@@ -649,16 +650,19 @@ IFOPTALL(%(feature_options), dialogue)
     JAVA MG diag-exe dialogue.execution.dora.DialogueActionInterface
     JAVA MG verbalisation verbalisation.DoraVerbalisation
  
+  IFOPTALL(%(feature_options), plan_verbalisation)
     ## Limit verbalisation (output) to requests made via the WM entry PlanVerbalisationRequest
     #--only-verbalise-on-request
     VARDEFAULT only_verbalise_on_request=
 
-    JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain "subarchitectures/dialogue.sa/resources/domain2test.pddl" --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml" --domainannotation "subarchitectures/dialogue.sa/resources/dora-interactive_annotated.txt" %(only_verbalise_on_request)
+    VARDEFAULT openccg_realiserver_port=4321
+
+    JAVA MG poplanmon de.dfki.lt.tr.cast.dialogue.POPlanMonitor --log true --pddldomain "subarchitectures/dialogue.sa/resources/domain2test.pddl" --grammarpath "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml" --domainannotation "subarchitectures/dialogue.sa/resources/dora-interactive_annotated.txt" %(only_verbalise_on_request) --hostname %(host:DialogueHost) --port %(openccg_realiserver_port)
 
     IFOPTALL(%(feature_options), man_ctrl)
       JAVA MG pev.controller verbalisation.PlanVerbalisationController
     ENDIF
-
+  ENDIF
 ENDIF
 
 ##########################################################################
@@ -938,12 +942,13 @@ IFOPTALL(%(feature_options), visualization)
         ### starts the WM editor that let's you see and modify WM content in a Java GUI. Set %(logged_types) to select the types
         ### you are interested in
         JAVA MG wmeditor.xml castutils.castextensions.wmeditor.XMLEditor --subscribe "%(logged_types)"
-        JAVA MG workingmemory.display castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe  "%(logged_types)" --generic-col --compact
+        #JAVA MG workingmemory.display castutils.viewer.V11WMViewerComponent --displayserver "display.srv" --subscribe  "%(logged_types)" --generic-col --compact
         ### starts the WM logger that logs all operation of subscribed types on INFO level in the logs.
         ### Set %(logged_types) to select the types you are interested in
         JAVA MG wmlogger castutils.experimentation.WMLogger --subscribe "%(logged_types)"
         ### log the distance travelled every 5 seconds
-        JAVA MG distancelogger castutils.experimentation.DistanceMonitor
+        #JAVA MG distancelogger castutils.experimentation.DistanceMonitor
     ENDIF
+
 ENDIF
 

@@ -3,13 +3,13 @@
 SETVAR vision_calib_root=instantiations/calibration/dora-at-bham
 
 #### This config created 19 April 2012, shape only
-SETVAR categorisation_config=subarchitectures/categorical.sa/config/BHAM-real-shape.cfg
+#SETVAR categorisation_config=subarchitectures/categorical.sa/config/BHAM-real-shape.cfg
 
 ### This config created 18 June 2012, shape and appearance (one office, corridor and meeting room)
-#SETVAR categorisation_config=subarchitectures/categorical.sa/config/bham-real-2012-06-18-shape-appearance.cfg
+SETVAR categorisation_config=subarchitectures/categorical.sa/config/bham-real-2012-06-18-shape-appearance.cfg
 
 ### the default knowledge to use - used by default SA
-SETVAR default_knowledge="instantiations/defaultprobs/defaultprobs-dora-yr4-BHAM-real.xml"
+SETVAR default_knowledge="instantiations/defaultprobs/dora-yr4-BHAM-real-systems-paper.xml"
 
 
 ### BHAM values for prosilica
@@ -74,20 +74,20 @@ SETVAR spatial_node_obstacle_margin=0.9
 SETVAR spatial_node_unknown_margin=1.0
 
 # Greatest allowed number of generated view cones
-SETVAR max_viewcones=20
+#SETVAR max_viewcones=20
 
 # Smallest allowed ABSOLUTE probability of any one view cone
-SETVAR min_cone_prob=0.02
+#SETVAR min_cone_prob=0
 
 # Smallest allowed RELATIVE probability of any one view cone
 # (i.e. its portion out of the total probability mass in a room)
-SETVAR min_relative_cone_prob=0.05
+#SETVAR min_relative_cone_prob=0
 
 # Smallest allowed ABSOLUTE probability of any one cone group
-SETVAR min_conegroup_prob=0.04
+#SETVAR min_conegroup_prob=0.05
 
 ## Use an increased confidence to avoid false postives
-SETVAR object_detector_confidence=0.11
+SETVAR object_detector_confidence=0.12
 
 #INCLUDE dora-yr4-real.cast
 
@@ -108,7 +108,7 @@ SETVAR feature_options=<multiline>
 	coma			
     categorisation
 # use visaul categorisation
-    !categorisation-visual 
+    categorisation-visual 
 # if enabled, categorical will save a data stream to file
     !datasaving
 # if enabled, images will also be saved
@@ -123,7 +123,7 @@ SETVAR feature_options=<multiline>
     planning_sa		
     debug			
     dialogue	
-    plan_verbalisation
+    !plan_verbalisation	
     motivation	
     !motivation_external
     !motivation_explanation
@@ -134,7 +134,7 @@ SETVAR hardware_options=<multiline>
    kinect			
    !kinect-video	
    video 			
-   !prosilica 
+   prosilica 
    !blobfinder	
    ptz  			
   </multiline>

@@ -13,4 +13,4 @@ HOSTNAME  PlayerHost     [Main]
 HOSTNAME  PeekabotHost   [Main]
 HOSTNAME  DisplayHost    [Main]
 HOSTNAME  AbducerHost    [Main]
-
+HOSTNAME  DialogueHost   [Main]
