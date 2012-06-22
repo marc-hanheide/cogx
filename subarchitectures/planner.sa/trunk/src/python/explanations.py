@@ -315,7 +315,7 @@ def apply_high_p_assumptions(init_state, domain):
     svar_facts = defaultdict(set)
 
     def ignore_phase_check_fn(fact):
-        if fact.svar.function.name == "phase":
+        if fact.svar.function.name == "enabled":
             return True
     
     for action in domain.actions:
