@@ -1395,6 +1395,7 @@ int AVS_ContinualPlanner::createConeGroupBelief(ConeGroup c,SpatialData::Relatio
   m_coneGroupIdToBeliefId[m_coneGroupId] = b->id;
   addToWorkingMemory(b->id, "binder", b);
   log("wrote belief to WM..");
+  return 0;
 }
 
 /* Generate view cones for <object,relation , object/room, room> */
