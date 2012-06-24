@@ -1122,6 +1122,281 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
   return 0;
 }
 
+int AVS_ContinualPlanner::createConeGroup(ConeGroup &c, vector<
+    ViewPointGenerator::SensingAction> gr, double minAngle, double maxAngle,
+    SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
+    string id) {
+
+  int closestnode = GetClosestNodeId(gr[0].pos[0], gr[0].pos[1], gr[0].pos[2]);
+  int conePlaceId = GetPlaceIdFromNodeId(closestnode);
+
+  c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
+  c.bloxelMapId = id;
+  for (size_t j = 0; j < gr.size(); j++) {
+    c.viewcones.push_back(gr[j]);
+  }
+  c.minAngle = minAngle;
+  c.maxAngle = maxAngle;
+
+  c.roomId = newVPCommand->roomId;
+  c.placeId = conePlaceId;
+  c.relation = newVPCommand->relation;
+
+  if (newVPCommand->relation == SpatialData::INROOM) {
+    c.supportObjectId = "";
+    c.supportObjectCategory = "";
+    c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
+  } else {
+    c.relation
+        = (newVPCommand->relation == SpatialData::INOBJECT ? SpatialData::INOBJECT
+            : SpatialData::ON);
+    c.supportObjectId = newVPCommand->supportObject;
+    //FIXME: Get category from object ID
+    c.supportObjectCategory = "";
+    c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
+  }
+
+  if (m_usePeekabot) {
+    for (size_t coneNumber = 0; coneNumber < c.viewcones.size(); coneNumber++) {
+      PostViewCone(c.viewcones[coneNumber], m_coneGroupId * 1000 + coneNumber);
+      log("post viewcone %d pos %f %f %f", m_coneGroupId * 1000 + coneNumber,
+          c.viewcones[coneNumber].pos[0], c.viewcones[coneNumber].pos[1],
+          c.viewcones[coneNumber].pos[2]);
+    }
+  }
+
+  return 0;
+}
+
+int AVS_ContinualPlanner::createConeGroupBelief(ConeGroup c,SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand) {
+  cast::cdl::WorkingMemoryAddress placeWMaddress;
+  // Get the place id for this cone
+  vector<boost::shared_ptr<cast::CASTData<GroundedBelief> > > placeBeliefs;
+  getWorkingMemoryEntries<GroundedBelief> ("spatial.sa", 0, placeBeliefs);
+  if (placeBeliefs.size() == 0) {
+    wrn("Could not get any  GroundedBeliefs from spatial.sa returning without doing anything...");
+    return -1;
+  } else {
+    log("Got %d GroundedBeliefs from spatial.sa", placeBeliefs.size());
+  }
+
+  for (size_t j = 0; j < placeBeliefs.size(); j++) {
+    if (placeBeliefs[j]->getData()->type != "place") {
+      log("Not a place belief, but a %s belief",
+          placeBeliefs[j]->getData()->type.c_str());
+      continue;
+    }
+    CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(
+        placeBeliefs[j]->getData()->content));
+    BasicProbDistributionPtr basicdist(BasicProbDistributionPtr::dynamicCast(
+        dist->distribs["PlaceId"]));
+    FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(
+        basicdist->values));
+    BasicProbDistributionPtr basicdist1(BasicProbDistributionPtr::dynamicCast(
+        dist->distribs["placestatus"]));
+    FormulaValuesPtr formulaValues1(FormulaValuesPtr::dynamicCast(
+        basicdist1->values));
+
+    IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(
+        formulaValues->values[0].val));
+    ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(
+        formulaValues1->values[0].val));
+
+    int placeid = intformula->val;
+    //    log("Place Id for this belief: %d", placeid);
+    if (c.placeId == placeid && elformula->prop == "TRUEPLACE") {
+      //      log("Got  place belief from roomid: %d", c.placeId);
+      placeWMaddress.id = placeBeliefs[j]->getID();
+      placeWMaddress.subarchitecture = "spatial";
+      break;
+    }
+  }
+
+  /* GETTING COMAROOM BELIEFS */
+  log("Looking for Coma room beliefs...");
+  cast::cdl::WorkingMemoryAddress WMaddress;
+  if (newVPCommand->relation == SpatialData::INROOM) {
+    //get the roomid belief WMaddress
+    vector<boost::shared_ptr<cast::CASTData<GroundedBelief> > > comaRoomBeliefs;
+    getWorkingMemoryEntries<GroundedBelief> ("coma", 0, comaRoomBeliefs);
+
+    if (comaRoomBeliefs.size() == 0) {
+      wrn(
+          "Could not get any grounded beliefs returning without doing anything...");
+      return -1;
+    } else {
+      log("Got %d Grounded beliefs", comaRoomBeliefs.size());
+    }
+
+    for (size_t j = 0; j < comaRoomBeliefs.size(); j++) {
+      if ((comaRoomBeliefs[j]->getData()->type != "comaroom")) {
+        log("Not a place belief, but a %s belief",
+            comaRoomBeliefs[j]->getData()->type.c_str());
+        continue;
+      }
+      CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(
+          comaRoomBeliefs[j]->getData()->content));
+      BasicProbDistributionPtr basicdist(BasicProbDistributionPtr::dynamicCast(
+          dist->distribs["RoomId"]));
+      FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(
+          basicdist->values));
+
+      IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(
+          formulaValues->values[0].val));
+      int roomid = intformula->val;
+      log("ComaRoom Id for this belief: %d", roomid);
+      if (newVPCommand->roomId == roomid) {
+        log("Got room belief from roomid: %d", newVPCommand->roomId);
+        WMaddress.id = comaRoomBeliefs[j]->getID();
+        WMaddress.subarchitecture = "coma";
+        break;
+      }
+    }
+  } else if (newVPCommand->relation == SpatialData::INOBJECT
+      || newVPCommand->relation == SpatialData::ON) {
+    //else get the visualobject belief pointer instead
+    log("Getting VisualObject beliefs");
+
+    WMaddress.id = newVPCommand->supportObject;
+    WMaddress.subarchitecture = "vision.sa";
+  }
+
+  log("Creating ConeGroup belief");
+  m_coneGroupId++;
+
+  m_beliefConeGroups[m_coneGroupId] = c;
+  eu::cogx::beliefs::slice::GroundedBeliefPtr b =
+      new eu::cogx::beliefs::slice::GroundedBelief;
+  epstatus::PrivateEpistemicStatusPtr beliefEpStatus =
+      new epstatus::PrivateEpistemicStatus;
+  beliefEpStatus->agent = "self";
+
+  b->estatus = beliefEpStatus;
+  b->type = "conegroup";
+  b->id = newDataID();
+  CondIndependentDistribsPtr CondIndProbDist = new CondIndependentDistribs;
+
+  BasicProbDistributionPtr coneGroupIDProbDist = new BasicProbDistribution;
+  BasicProbDistributionPtr searchedObjectLabelProbDist =
+      new BasicProbDistribution;
+  BasicProbDistributionPtr relationLabelProbDist = new BasicProbDistribution;
+  BasicProbDistributionPtr supportObjectLabelProbDist =
+      new BasicProbDistribution;
+  BasicProbDistributionPtr coneProbabilityProbDist = new BasicProbDistribution;
+  BasicProbDistributionPtr placeFromWhichObjectCanBeSeenProbDist =
+      new BasicProbDistribution;
+  BasicProbDistributionPtr isVisitedProbDist = new BasicProbDistribution;
+
+  FormulaProbPairs pairs;
+  FormulaProbPair searchedObjectFormulaPair, coneGroupIDLabelFormulaPair,
+      relationLabelFormulaPair, supportObjectLabelFormulaPair,
+      coneProbabilityFormulaPair, placeFromWhichObjectCanBeSeenFormulaPair,
+      isVisitedFormulaPair;
+
+  IntegerFormulaPtr coneGroupIDLabelFormula = new IntegerFormula;
+  ElementaryFormulaPtr searchedObjectLabelFormula = new ElementaryFormula;
+  ElementaryFormulaPtr relationLabelFormula = new ElementaryFormula;
+  PointerFormulaPtr supportObjectLabelFormula = new PointerFormula;
+  PointerFormulaPtr placeFromWhichObjectCanBeSeenFormula = new PointerFormula;
+  FloatFormulaPtr coneProbabilityFormula = new FloatFormula;
+  BooleanFormulaPtr isVisitedFormula = new BooleanFormula;
+
+  coneGroupIDLabelFormula->val = m_coneGroupId;
+  searchedObjectLabelFormula->prop = c.searchedObjectCategory;
+  relationLabelFormula->prop
+      = (newVPCommand->relation == SpatialData::ON ? "on" : "in");
+  supportObjectLabelFormula->pointer = WMaddress; //c.supportObjectId; // this should be a pointer ideally
+  placeFromWhichObjectCanBeSeenFormula->pointer = placeWMaddress;
+  coneProbabilityFormula->val = c.getTotalProb();
+  isVisitedFormula->val = false;
+
+  searchedObjectFormulaPair.val = searchedObjectLabelFormula;
+  searchedObjectFormulaPair.prob = 1;
+
+  coneGroupIDLabelFormulaPair.val = coneGroupIDLabelFormula;
+  coneGroupIDLabelFormulaPair.prob = 1;
+
+  relationLabelFormulaPair.val = relationLabelFormula;
+  relationLabelFormulaPair.prob = 1;
+
+  supportObjectLabelFormulaPair.val = supportObjectLabelFormula;
+  supportObjectLabelFormulaPair.prob = 1;
+
+  coneProbabilityFormulaPair.val = coneProbabilityFormula;
+  coneProbabilityFormulaPair.prob = 1;
+
+  placeFromWhichObjectCanBeSeenFormulaPair.val
+      = placeFromWhichObjectCanBeSeenFormula;
+  placeFromWhichObjectCanBeSeenFormulaPair.prob = 1;
+
+  isVisitedFormulaPair.val = isVisitedFormula;
+  isVisitedFormulaPair.prob = 1;
+
+  pairs.push_back(coneGroupIDLabelFormulaPair);
+  FormulaValuesPtr formulaValues1 = new FormulaValues;
+  formulaValues1->values = pairs;
+  coneGroupIDProbDist->values = formulaValues1;
+  pairs.clear();
+
+  pairs.push_back(searchedObjectFormulaPair);
+  FormulaValuesPtr formulaValues2 = new FormulaValues;
+  formulaValues2->values = pairs;
+  searchedObjectLabelProbDist->values = formulaValues2;
+  pairs.clear();
+
+  pairs.push_back(coneProbabilityFormulaPair);
+  FormulaValuesPtr formulaValues3 = new FormulaValues;
+  formulaValues3->values = pairs;
+  coneProbabilityProbDist->values = formulaValues3;
+  pairs.clear();
+
+  pairs.push_back(relationLabelFormulaPair);
+  FormulaValuesPtr formulaValues4 = new FormulaValues;
+  formulaValues4->values = pairs;
+  relationLabelProbDist->values = formulaValues4;
+  pairs.clear();
+
+  pairs.push_back(supportObjectLabelFormulaPair);
+  FormulaValuesPtr formulaValues5 = new FormulaValues;
+  formulaValues5->values = pairs;
+  supportObjectLabelProbDist->values = formulaValues5;
+  pairs.clear();
+
+  pairs.push_back(placeFromWhichObjectCanBeSeenFormulaPair);
+  FormulaValuesPtr formulaValues6 = new FormulaValues;
+  formulaValues6->values = pairs;
+  placeFromWhichObjectCanBeSeenProbDist->values = formulaValues6;
+  pairs.clear();
+
+  pairs.push_back(isVisitedFormulaPair);
+  FormulaValuesPtr formulaValues7 = new FormulaValues;
+  formulaValues7->values = pairs;
+  isVisitedProbDist->values = formulaValues7;
+  pairs.clear();
+
+  coneGroupIDProbDist->key = "id";
+  CondIndProbDist->distribs["id"] = coneGroupIDProbDist;
+  searchedObjectLabelProbDist->key = "cg-label";
+  CondIndProbDist->distribs["cg-label"] = searchedObjectLabelProbDist;
+  relationLabelProbDist->key = "cg-relation";
+  CondIndProbDist->distribs["cg-relation"] = relationLabelProbDist;
+  supportObjectLabelProbDist->key = "cg-related-to";
+  CondIndProbDist->distribs["cg-related-to"] = supportObjectLabelProbDist;
+  coneProbabilityProbDist->key = "p-visible";
+  CondIndProbDist->distribs["p-visible"] = coneProbabilityProbDist;
+  placeFromWhichObjectCanBeSeenProbDist->key = "cg-place";
+  CondIndProbDist->distribs["cg-place"] = placeFromWhichObjectCanBeSeenProbDist;
+
+  isVisitedProbDist->key = "is-visited";
+  CondIndProbDist->distribs["is-visited"] = isVisitedProbDist;
+
+  b->content = CondIndProbDist;
+  log("writing belief to WM..");
+  m_coneGroupIdToBeliefId[m_coneGroupId] = b->id;
+  addToWorkingMemory(b->id, "binder", b);
+  log("wrote belief to WM..");
+}
+
 /* Generate view cones for <object,relation , object/room, room> */
 void AVS_ContinualPlanner::generateViewCones(
     SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
@@ -1295,277 +1570,12 @@ void AVS_ContinualPlanner::generateViewCones(
 
   for (size_t i = 0; i < grouped_cones.size(); i++) {
     /* GETTING PLACE BELIEFS */
-
-    int closestnode = GetClosestNodeId(grouped_cones[i][0].pos[0],
-        grouped_cones[i][0].pos[1], grouped_cones[i][0].pos[2]);
-    int conePlaceId = GetPlaceIdFromNodeId(closestnode);
-    cast::cdl::WorkingMemoryAddress placeWMaddress;
-    // Get the place id for this cone
-    vector<boost::shared_ptr<cast::CASTData<GroundedBelief> > > placeBeliefs;
-    getWorkingMemoryEntries<GroundedBelief> ("spatial.sa", 0, placeBeliefs);
-    if (placeBeliefs.size() == 0) {
-      log(
-          "Could not get any  GroundedBeliefs from spatial.sa returning without doing anything...");
-      return;
-    } else {
-      log("Got %d GroundedBeliefs from spatial.sa", placeBeliefs.size());
-    }
-
-    for (unsigned int j = 0; j < placeBeliefs.size(); j++) {
-      if (placeBeliefs[j]->getData()->type != "place") {
-        log("Not a place belief, but a %s belief",
-            placeBeliefs[j]->getData()->type.c_str());
-        continue;
-      }
-      CondIndependentDistribsPtr dist(CondIndependentDistribsPtr::dynamicCast(
-          placeBeliefs[j]->getData()->content));
-      BasicProbDistributionPtr basicdist(BasicProbDistributionPtr::dynamicCast(
-          dist->distribs["PlaceId"]));
-      FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(
-          basicdist->values));
-      BasicProbDistributionPtr basicdist1(
-          BasicProbDistributionPtr::dynamicCast(dist->distribs["placestatus"]));
-      FormulaValuesPtr formulaValues1(FormulaValuesPtr::dynamicCast(
-          basicdist1->values));
-
-      IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(
-          formulaValues->values[0].val));
-      ElementaryFormulaPtr elformula(ElementaryFormulaPtr::dynamicCast(
-          formulaValues1->values[0].val));
-
-      int placeid = intformula->val;
-      //	log("Place Id for this belief: %d", placeid);
-      if (conePlaceId == placeid && elformula->prop == "TRUEPLACE") {
-        //		log("Got  place belief from roomid: %d", conePlaceId);
-        placeWMaddress.id = placeBeliefs[j]->getID();
-        placeWMaddress.subarchitecture = "spatial";
-        break;
-      }
-    }
-
     ConeGroup c;
-    c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
-    c.bloxelMapId = id;
-    for (size_t j = 0; j < grouped_cones[i].size(); j++) {
-      c.viewcones.push_back(grouped_cones[i][j]);
-    }
-    c.minAngle = grouped_cones_minAngle[i];
-    c.maxAngle = grouped_cones_maxAngle[i];
-
-    c.roomId = newVPCommand->roomId;
-    c.placeId = conePlaceId;
-    c.relation = newVPCommand->relation;
-
-    if (newVPCommand->relation == SpatialData::INROOM) {
-      c.supportObjectId = "";
-      c.supportObjectCategory = "";
-      c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
-    } else {
-      c.relation
-          = (newVPCommand->relation == SpatialData::INOBJECT ? SpatialData::INOBJECT
-              : SpatialData::ON);
-      c.supportObjectId = newVPCommand->supportObject;
-      //FIXME: Get category from object ID
-      c.supportObjectCategory = "";
-      c.searchedObjectCategory = newVPCommand->searchedObjectCategory;
-    }
-
-    /* GETTING COMAROOM BELIEFS */
-    log("Looking for Coma room beliefs...");
-    cast::cdl::WorkingMemoryAddress WMaddress;
-    if (newVPCommand->relation == SpatialData::INROOM) {
-      //get the roomid belief WMaddress
-      vector<boost::shared_ptr<cast::CASTData<GroundedBelief> > >
-          comaRoomBeliefs;
-      getWorkingMemoryEntries<GroundedBelief> ("coma", 0, comaRoomBeliefs);
-
-      if (comaRoomBeliefs.size() == 0) {
-        wrn(
-            "Could not get any grounded beliefs returning without doing anything...");
-        return;
-      } else {
-        log("Got %d Grounded beliefs", comaRoomBeliefs.size());
-      }
-
-      for (unsigned int j = 0; j < comaRoomBeliefs.size(); j++) {
-        if ((comaRoomBeliefs[j]->getData()->type != "comaroom")) {
-          log("Not a place belief, but a %s belief",
-              comaRoomBeliefs[j]->getData()->type.c_str());
-          continue;
-        }
-        CondIndependentDistribsPtr dist(
-            CondIndependentDistribsPtr::dynamicCast(
-                comaRoomBeliefs[j]->getData()->content));
-        BasicProbDistributionPtr basicdist(
-            BasicProbDistributionPtr::dynamicCast(dist->distribs["RoomId"]));
-        FormulaValuesPtr formulaValues(FormulaValuesPtr::dynamicCast(
-            basicdist->values));
-
-        IntegerFormulaPtr intformula(IntegerFormulaPtr::dynamicCast(
-            formulaValues->values[0].val));
-        int roomid = intformula->val;
-        log("ComaRoom Id for this belief: %d", roomid);
-        if (newVPCommand->roomId == roomid) {
-          log("Got room belief from roomid: %d", newVPCommand->roomId);
-          WMaddress.id = comaRoomBeliefs[j]->getID();
-          WMaddress.subarchitecture = "coma";
-          break;
-        }
-      }
-    } else if (newVPCommand->relation == SpatialData::INOBJECT
-        || newVPCommand->relation == SpatialData::ON) {
-      //else get the visualobject belief pointer instead
-      log("Getting VisualObject beliefs");
-
-      WMaddress.id = newVPCommand->supportObject;
-      WMaddress.subarchitecture = "vision.sa";
-    }
-
-    log("Creating ConeGroup belief");
-    m_coneGroupId++;
-
-    if (m_usePeekabot) {
-      for (size_t coneNumber = 0; coneNumber < c.viewcones.size(); coneNumber++) {
-        PostViewCone(c.viewcones[coneNumber], m_coneGroupId * 1000 + coneNumber);
-        log("post viewcone %d pos %f %f %f", m_coneGroupId * 1000 + coneNumber,
-            c.viewcones[coneNumber].pos[0], c.viewcones[coneNumber].pos[1],
-            c.viewcones[coneNumber].pos[2]);
-      }
-    }
-
-    m_beliefConeGroups[m_coneGroupId] = c;
-    eu::cogx::beliefs::slice::GroundedBeliefPtr b =
-        new eu::cogx::beliefs::slice::GroundedBelief;
-    epstatus::PrivateEpistemicStatusPtr beliefEpStatus =
-        new epstatus::PrivateEpistemicStatus;
-    beliefEpStatus->agent = "self";
-
-    b->estatus = beliefEpStatus;
-    b->type = "conegroup";
-    b->id = newDataID();
-    CondIndependentDistribsPtr CondIndProbDist = new CondIndependentDistribs;
-
-    BasicProbDistributionPtr coneGroupIDProbDist = new BasicProbDistribution;
-    BasicProbDistributionPtr searchedObjectLabelProbDist =
-        new BasicProbDistribution;
-    BasicProbDistributionPtr relationLabelProbDist = new BasicProbDistribution;
-    BasicProbDistributionPtr supportObjectLabelProbDist =
-        new BasicProbDistribution;
-    BasicProbDistributionPtr coneProbabilityProbDist =
-        new BasicProbDistribution;
-    BasicProbDistributionPtr placeFromWhichObjectCanBeSeenProbDist =
-        new BasicProbDistribution;
-    BasicProbDistributionPtr isVisitedProbDist = new BasicProbDistribution;
-
-    FormulaProbPairs pairs;
-    FormulaProbPair searchedObjectFormulaPair, coneGroupIDLabelFormulaPair,
-        relationLabelFormulaPair, supportObjectLabelFormulaPair,
-        coneProbabilityFormulaPair, placeFromWhichObjectCanBeSeenFormulaPair,
-        isVisitedFormulaPair;
-
-    IntegerFormulaPtr coneGroupIDLabelFormula = new IntegerFormula;
-    ElementaryFormulaPtr searchedObjectLabelFormula = new ElementaryFormula;
-    ElementaryFormulaPtr relationLabelFormula = new ElementaryFormula;
-    PointerFormulaPtr supportObjectLabelFormula = new PointerFormula;
-    PointerFormulaPtr placeFromWhichObjectCanBeSeenFormula = new PointerFormula;
-    FloatFormulaPtr coneProbabilityFormula = new FloatFormula;
-    BooleanFormulaPtr isVisitedFormula = new BooleanFormula;
-
-    coneGroupIDLabelFormula->val = m_coneGroupId;
-    searchedObjectLabelFormula->prop = c.searchedObjectCategory;
-    relationLabelFormula->prop
-        = (newVPCommand->relation == SpatialData::ON ? "on" : "in");
-    supportObjectLabelFormula->pointer = WMaddress; //c.supportObjectId; // this should be a pointer ideally
-    placeFromWhichObjectCanBeSeenFormula->pointer = placeWMaddress;
-    coneProbabilityFormula->val = c.getTotalProb();
-    isVisitedFormula->val = false;
-
-    searchedObjectFormulaPair.val = searchedObjectLabelFormula;
-    searchedObjectFormulaPair.prob = 1;
-
-    coneGroupIDLabelFormulaPair.val = coneGroupIDLabelFormula;
-    coneGroupIDLabelFormulaPair.prob = 1;
-
-    relationLabelFormulaPair.val = relationLabelFormula;
-    relationLabelFormulaPair.prob = 1;
-
-    supportObjectLabelFormulaPair.val = supportObjectLabelFormula;
-    supportObjectLabelFormulaPair.prob = 1;
-
-    coneProbabilityFormulaPair.val = coneProbabilityFormula;
-    coneProbabilityFormulaPair.prob = 1;
-
-    placeFromWhichObjectCanBeSeenFormulaPair.val
-        = placeFromWhichObjectCanBeSeenFormula;
-    placeFromWhichObjectCanBeSeenFormulaPair.prob = 1;
-
-    isVisitedFormulaPair.val = isVisitedFormula;
-    isVisitedFormulaPair.prob = 1;
-
-    pairs.push_back(coneGroupIDLabelFormulaPair);
-    FormulaValuesPtr formulaValues1 = new FormulaValues;
-    formulaValues1->values = pairs;
-    coneGroupIDProbDist->values = formulaValues1;
-    pairs.clear();
-
-    pairs.push_back(searchedObjectFormulaPair);
-    FormulaValuesPtr formulaValues2 = new FormulaValues;
-    formulaValues2->values = pairs;
-    searchedObjectLabelProbDist->values = formulaValues2;
-    pairs.clear();
-
-    pairs.push_back(coneProbabilityFormulaPair);
-    FormulaValuesPtr formulaValues3 = new FormulaValues;
-    formulaValues3->values = pairs;
-    coneProbabilityProbDist->values = formulaValues3;
-    pairs.clear();
-
-    pairs.push_back(relationLabelFormulaPair);
-    FormulaValuesPtr formulaValues4 = new FormulaValues;
-    formulaValues4->values = pairs;
-    relationLabelProbDist->values = formulaValues4;
-    pairs.clear();
-
-    pairs.push_back(supportObjectLabelFormulaPair);
-    FormulaValuesPtr formulaValues5 = new FormulaValues;
-    formulaValues5->values = pairs;
-    supportObjectLabelProbDist->values = formulaValues5;
-    pairs.clear();
-
-    pairs.push_back(placeFromWhichObjectCanBeSeenFormulaPair);
-    FormulaValuesPtr formulaValues6 = new FormulaValues;
-    formulaValues6->values = pairs;
-    placeFromWhichObjectCanBeSeenProbDist->values = formulaValues6;
-    pairs.clear();
-
-    pairs.push_back(isVisitedFormulaPair);
-    FormulaValuesPtr formulaValues7 = new FormulaValues;
-    formulaValues7->values = pairs;
-    isVisitedProbDist->values = formulaValues7;
-    pairs.clear();
-
-    coneGroupIDProbDist->key = "id";
-    CondIndProbDist->distribs["id"] = coneGroupIDProbDist;
-    searchedObjectLabelProbDist->key = "cg-label";
-    CondIndProbDist->distribs["cg-label"] = searchedObjectLabelProbDist;
-    relationLabelProbDist->key = "cg-relation";
-    CondIndProbDist->distribs["cg-relation"] = relationLabelProbDist;
-    supportObjectLabelProbDist->key = "cg-related-to";
-    CondIndProbDist->distribs["cg-related-to"] = supportObjectLabelProbDist;
-    coneProbabilityProbDist->key = "p-visible";
-    CondIndProbDist->distribs["p-visible"] = coneProbabilityProbDist;
-    placeFromWhichObjectCanBeSeenProbDist->key = "cg-place";
-    CondIndProbDist->distribs["cg-place"]
-        = placeFromWhichObjectCanBeSeenProbDist;
-
-    isVisitedProbDist->key = "is-visited";
-    CondIndProbDist->distribs["is-visited"] = isVisitedProbDist;
-
-    b->content = CondIndProbDist;
-    log("writing belief to WM..");
-    m_coneGroupIdToBeliefId[m_coneGroupId] = b->id;
-    addToWorkingMemory(b->id, "binder", b);
-    log("wrote belief to WM..");
+    if (createConeGroup(c, grouped_cones[i], grouped_cones_minAngle[i],
+        grouped_cones_maxAngle[i], newVPCommand, id) < 0)
+      return;
+    if (createConeGroupBelief(c,newVPCommand) < 0)
+      return;
     if (m_usePeekabot) {
       showProbability( m_coneGroupId);
     }
@@ -1577,7 +1587,6 @@ void AVS_ContinualPlanner::generateViewCones(
     overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
         WMAddress, newVPCommand);
   }
-
 }
 
 void AVS_ContinualPlanner::IcetoCureLGM(SpatialData::LocalGridMap icemap,
