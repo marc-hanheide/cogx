@@ -1127,6 +1127,8 @@ int AVS_ContinualPlanner::createConeGroup(ConeGroup &c, vector<
     SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
     string id) {
 
+  m_coneGroupId++;
+  
   int closestnode = GetClosestNodeId(gr[0].pos[0], gr[0].pos[1], gr[0].pos[2]);
   int conePlaceId = GetPlaceIdFromNodeId(closestnode);
 
@@ -1262,7 +1264,7 @@ int AVS_ContinualPlanner::createConeGroupBelief(ConeGroup c,SpatialData::Relatio
   }
 
   log("Creating ConeGroup belief");
-  m_coneGroupId++;
+
 
   m_beliefConeGroups[m_coneGroupId] = c;
   eu::cogx::beliefs::slice::GroundedBeliefPtr b =
