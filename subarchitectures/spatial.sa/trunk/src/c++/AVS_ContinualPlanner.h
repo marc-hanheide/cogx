@@ -93,6 +93,7 @@ public:
   void generateBloxelMap(
       SpatialData::RelationalViewPointGenerationCommandPtr newVPCommand,
       string id, double pdfmass);
+  int createRoomObstacleMap(int roomId);
   int createRoomBloxelMap(int roomId);
   int generateViewConeGroups(int roomId, vector<vector<
       ViewPointGenerator::SensingAction> > &grouped_cones,
