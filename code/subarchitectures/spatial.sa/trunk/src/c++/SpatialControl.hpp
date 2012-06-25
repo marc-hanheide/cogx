@@ -113,6 +113,7 @@ private:
 
     virtual SpatialData::HeightMap getHeightMap(const Ice::Current &_context);
     virtual SpatialData::LocalGridMap getGridMap(const Ice::Current &_context);
+    virtual SpatialData::LocalGridMap getRoomGridMap(int roomId, const Ice::Current &_context);
     virtual double getPathLength(double x1, double y1, double x2, double y2,
         const Ice::Current &_context);
     virtual int findClosestNode(double x, double y,
@@ -211,6 +212,7 @@ protected:
   virtual void taskRejected(const std::string &_taskID) {
   }
   ;
+  void IcetoCureLGM(SpatialData::LocalGridMap icemap, Cure::LocalGridMap<unsigned char>* lgm);
   void getExpandedBinaryMap(const Cure::LocalGridMap<unsigned char>* gridmap,
       Cure::BinaryMatrix &map, double k = 1, double k2 = 0);
   bool check_point(int x, int y, vector<NavData::FNodePtr> &nodes, vector<
@@ -222,6 +224,7 @@ protected:
 
   virtual SpatialData::HeightMap getHeightMap();
   virtual SpatialData::LocalGridMap getGridMap();
+  virtual SpatialData::LocalGridMap getRoomGridMap(int roomId);
   virtual int findClosestNode(double x, double y);
   virtual double getPathLength(double x1, double y1, double x2, double y2);
 

@@ -569,119 +569,26 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
 }
 
 int AVS_ContinualPlanner::createRoomObstacleMap(int roomId){
-  SpatialData::LocalGridMap combined_lgm;
-
-  /*
-   SpatialData::LocalGridMapMap grid = mapPrx->getGridMap();
-
-   Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
-
-   // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
-   int lp1 = 0;
-   for(int x = -grid.size ; x <= grid.size; x++){
-   for(int y = -grid.size ; y <= grid.size; y++){ 
-   lgm(x,y) = (grid.data[lp1]);
-   lp1++;
-   }
-   }
-   */
-
-  vector<comadata::ComaRoomPtr> comarooms;
-  getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
-
-  log("Got %d rooms", comarooms.size());
-
-  if (comarooms.size() == 0) {
-    wrn("No such ComaRoom with id %d! Returning", roomId);
-    return -1;
-  }
-  int comarooms_i = -1;
-  for (size_t i = 0; i < comarooms.size(); i++) {
-    log("Got coma room with room id: %d", comarooms[i]->roomId);
-    if (comarooms[i]->roomId == roomId) {
-      comarooms_i = i;
-      break;
+  SpatialData::MapInterfacePrx mapPrx(getIceServer<SpatialData::MapInterface> (
+        "spatial.control"));
+  SpatialData::LocalGridMap grid = mapPrx->getRoomGridMap(roomId);
+  
+  Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(grid.size, grid.cellSize, '2', Cure::LocalGridMap<unsigned char>::MAP1, grid.xCenter, grid.yCenter);
+  
+  // Convert from SpatialData::LocalGridMap to Cure::LocalGridMap
+  int lp1 = 0;
+  for(int x = -grid.size ; x <= grid.size; x++){
+    for(int y = -grid.size ; y <= grid.size; y++){ 
+      (*lgm)(x,y) = (grid.data[lp1]);
+      lp1++;
     }
   }
-  if (comarooms_i == -1) {
-    wrn("no comaroom");
-    return -1;
-  }
-  for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
-    log("getting room which contains, placeid: %d",
-        comarooms[comarooms_i]->containedPlaceIds[j]);
-  }
-
-  /* Remove all free space and obstacle which does not belong to this room
-   * This is to avoid spillage of metric space from other rooms
-   * */
-  log("Removing all free space not belongin to this room");
-
-  log(
-      "Throwing away all known space in LGMap of this room belonging to another room");
-  FrontierInterface::PlaceInterfacePrx agg(getIceServer<
-      FrontierInterface::PlaceInterface> ("place.manager"));
-  log("got interface");
-
-  SpatialData::PlaceIDSeq currentRoomPlaceIds;
-
+ 
   double xW, yW;
-
-  vector<SpatialData::PlacePtr> placesInMap;
-  getMemoryEntries<SpatialData::Place> (placesInMap, "spatial.sa");
-
-  std::vector<NavData::AEdgePtr> edges;
-  getMemoryEntries<NavData::AEdge> (edges);
-
-  vector<NavData::FNodePtr> nodesForPlaces;
-  for (unsigned int i = 0; i < placesInMap.size(); i++) {
-    NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
-    nodesForPlaces.push_back(node);
-  }
-
-  for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
-    currentRoomPlaceIds.push_back(comarooms[comarooms_i]->containedPlaceIds[j]);
-    NavData::FNodePtr node = agg->getNodeFromPlaceID(
-        comarooms[comarooms_i]->containedPlaceIds[j]);
-    m_roomNodes[roomId].push_back(node);
-    for (std::vector<NavData::AEdgePtr>::iterator it = edges.begin(); it
-        != edges.end(); ++it) {
-
-      NavData::FNodePtr node1 = agg->getNodeFromPlaceID(
-          agg->getPlaceFromNodeID((*it)->startNodeId)->id);
-      NavData::FNodePtr node2 = agg->getNodeFromPlaceID(
-          agg->getPlaceFromNodeID((*it)->endNodeId)->id);
-
-      if ((node1->gateway == 1) && (node2->nodeId == node->nodeId)) {
-        m_roomNodes[roomId].push_back(node1);
-        currentRoomPlaceIds.push_back(
-            agg->getPlaceFromNodeID(node1->nodeId)->id);
-        break;
-      } else if ((node2->gateway == 1) && (node1->nodeId == node->nodeId)) {
-        m_roomNodes[roomId].push_back(node2);
-        currentRoomPlaceIds.push_back(
-            agg->getPlaceFromNodeID(node2->nodeId)->id);
-        break;
-      }
-    }
-  }
-
-  FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
-      FrontierInterface::LocalMapInterface> ("map.manager"));
-  combined_lgm = agg2->getCombinedGridMap(currentRoomPlaceIds);
-
-  //convert 2D map to 3D
-  CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
-      CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
-  IcetoCureLGM(combined_lgm, lgm);
-
   for (int x = -lgm->getSize(); x < lgm->getSize(); x++) {
     for (int y = -lgm->getSize(); y < lgm->getSize(); y++) {
       if ((*lgm)(x, y) != '2') {
         lgm->index2WorldCoords(x, y, xW, yW);
-        double minDistance = FLT_MAX;
-        unsigned int closestNodeIdx = 0;
-        bool excluded = false;
         for (vector<ForbiddenZone>::iterator fbIt = m_forbiddenZones.begin(); fbIt
             != m_forbiddenZones.end(); fbIt++) {
           //        log("checking forbidden zone: %.02g, %.02g, %.02g, %.02g,", fbIt->minX, fbIt->minY, fbIt->maxX, fbIt->maxY);
@@ -692,42 +599,13 @@ int AVS_ContinualPlanner::createRoomObstacleMap(int roomId){
               >= fbIt->minY)) {
             log("point in forbidden zone excluded");
             (*lgm)(x, y) = '2';
-            excluded = true;
             break;
           }
-        }
-        if (excluded)
-          continue;
-
-        for (size_t i = 0; i < nodesForPlaces.size(); i++) {
-          try {
-            if ((nodesForPlaces[i] != 0) && (nodesForPlaces[i]->gateway == 0)) {
-              double nX = nodesForPlaces[i]->x;
-              double nY = nodesForPlaces[i]->y;
-
-              double distance = (xW - nX) * (xW - nX) + (yW - nY) * (yW - nY);
-              if (distance < minDistance) {
-                closestNodeIdx = i;
-                minDistance = distance;
-              }
-            }
-          } catch (IceUtil::NullHandleException e) {
-            error("Error! FNode suddenly disappeared!");
-          }
-        }
-
-        SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIdx];
-
-        //                    placemem = agg->getPlaceMembership(xW,yW);
-
-        if (find(currentRoomPlaceIds.begin(), currentRoomPlaceIds.end(),
-            closestPlace->id) == currentRoomPlaceIds.end()) {
-          (*lgm)(x, y) = '2';
         }
       }
     }
   }
-  log("removed");
+  
   m_templateRoomGridMaps[roomId] = lgm;
 
   return 0;
@@ -947,6 +825,30 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
       m_vertangle, m_minDistance, m_minConeProb, m_minRelativeConeProb,
       pdfmass, m_pdfthreshold, node->x, node->y);
 
+  
+    
+  vector<SpatialData::PlacePtr> placesInMap;
+  getMemoryEntries<SpatialData::Place> (placesInMap, "spatial.sa");
+
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer<
+      FrontierInterface::PlaceInterface> ("place.manager"));
+  log("got interface");
+  
+  SpatialData::PlaceIDSeq currentRoomPlaceIds;
+  
+  vector<NavData::FNodePtr> nodesForPlaces;
+  for (unsigned int i = 0; i < placesInMap.size(); i++) {
+    NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
+    nodesForPlaces.push_back(node);
+  }
+  
+  for (size_t j = 0; j < comarooms[comaroom_i]->containedPlaceIds.size(); j++) {
+    currentRoomPlaceIds.push_back(comarooms[comaroom_i]->containedPlaceIds[j]);
+    NavData::FNodePtr node = agg->getNodeFromPlaceID(
+        comarooms[comaroom_i]->containedPlaceIds[j]);
+    m_roomNodes[roomId].push_back(node);
+  }
+  
   vector<ViewPointGenerator::SensingAction> viewcones =
       coneGenerator.getBest3DViewCones(m_roomNodes[roomId]);
 
@@ -1600,22 +1502,6 @@ void AVS_ContinualPlanner::generateViewCones(
     overwriteWorkingMemory<SpatialData::RelationalViewPointGenerationCommand> (
         WMAddress, newVPCommand);
   }
-}
-
-void AVS_ContinualPlanner::IcetoCureLGM(SpatialData::LocalGridMap icemap,
-    CureObstMap* lgm) {
-  log(
-      "icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",
-      icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter,
-      icemap.yCenter);
-  int lp = 0;
-  for (int x = -icemap.size; x <= icemap.size; x++) {
-    for (int y = -icemap.size; y <= icemap.size; y++) {
-      (*lgm)(x, y) = (icemap.data[lp]);
-      lp++;
-    }
-  }
-  log("converted icemap to Cure::LocalGridMap");
 }
 
 /* Process ConeGroup with id */
