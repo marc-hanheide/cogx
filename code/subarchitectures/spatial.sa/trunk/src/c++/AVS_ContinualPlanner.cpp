@@ -568,7 +568,7 @@ void AVS_ContinualPlanner::newViewPointGenerationCommand(
   }
 }
 
-int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
+int AVS_ContinualPlanner::createRoomObstacleMap(int roomId){
   SpatialData::LocalGridMap combined_lgm;
 
   /*
@@ -670,11 +670,6 @@ int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
       FrontierInterface::LocalMapInterface> ("map.manager"));
   combined_lgm = agg2->getCombinedGridMap(currentRoomPlaceIds);
 
-  m_templateRoomBloxelMaps[roomId] = new SpatialGridMap::GridMap<GridMapData>(
-      combined_lgm.size * 2 + 1, combined_lgm.size * 2 + 1, m_cellsize,
-      m_minbloxel, 0, 2.0, combined_lgm.xCenter, combined_lgm.yCenter, 0,
-      m_defaultBloxelCell);
-
   //convert 2D map to 3D
   CureObstMap* lgm = new CureObstMap(combined_lgm.size, m_cellsize, '2',
       CureObstMap::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
@@ -733,11 +728,26 @@ int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
     }
   }
   log("removed");
-
   m_templateRoomGridMaps[roomId] = lgm;
+
+  return 0;
+}
+
+int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
+  if (createRoomObstacleMap(roomId)<0)
+    return -1;
+  
+  CureObstMap* lgm = m_templateRoomGridMaps[roomId];
+  
+  m_templateRoomBloxelMaps[roomId] = new SpatialGridMap::GridMap<GridMapData>(
+      (*lgm).getSize() * 2 + 1, (*lgm).getSize() * 2 + 1, m_cellsize,
+      m_minbloxel, 0, 2.0, (*lgm).getCentXW(), (*lgm).getCentYW(), 0,
+      m_defaultBloxelCell);
+  
+  
   GDMakeObstacle makeobstacle;
-  for (int x = -combined_lgm.size; x < combined_lgm.size; x++) {
-    for (int y = -combined_lgm.size; y < combined_lgm.size; y++) {
+  for (int x = -(*lgm).getSize(); x < (*lgm).getSize(); x++) {
+    for (int y = -(*lgm).getSize(); y < (*lgm).getSize(); y++) {
       if ((*lgm)(x, y) == '1') {
         double dx, dy;
         (*lgm).index2WorldCoords(x, y, dx, dy);
@@ -746,12 +756,12 @@ int AVS_ContinualPlanner::createRoomBloxelMap(int roomId) {
           if ((*m_lgmKH)(nx, ny) != FLT_MAX) {
             if ((*m_lgmKH)(nx, ny) - 0.1 > 0)
               m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
-                  + combined_lgm.size, y + combined_lgm.size,
+                  + (*lgm).getSize(), y + (*lgm).getSize(),
                   (*m_lgmKH)(nx, ny) / 2, (*m_lgmKH)(nx, ny) - 0.1,
                   makeobstacle);
           } else {
             m_templateRoomBloxelMaps[roomId]->boxSubColumnModifier(x
-                + combined_lgm.size, y + combined_lgm.size,
+                + (*lgm).getSize(), y + (*lgm).getSize(),
                 m_LaserPoseR.getZ(), m_minbloxel, makeobstacle);
             //m_LaserPoseR.getZ()+0.775,  m_mapceiling, makeobstacle);
           }
