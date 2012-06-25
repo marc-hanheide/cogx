@@ -475,6 +475,7 @@ class MapLoadStatus {
     LocalGridMap getBoundedMap(double minx, double maxx, double miny, double maxy);
     HeightMap getHeightMap();
     LocalGridMap getGridMap();
+    LocalGridMap getRoomGridMap(int roomId);
     DoubleOpt getGridmapRaytrace(double startAngle, double angleStep, int beamCount);
   };
 

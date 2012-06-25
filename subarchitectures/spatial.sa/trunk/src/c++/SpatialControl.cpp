@@ -25,6 +25,8 @@
 #include <CureHWUtils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 
+#include "ComaData.hpp"
+
 #include <AddressBank/ConfigFileReader.hh>
 #include <RobotbaseClientUtils.hpp>
 #include <Utils/CureDebug.hh>
@@ -97,6 +99,11 @@ SpatialData::HeightMap SpatialControl::MapServer::getHeightMap(
 SpatialData::LocalGridMap SpatialControl::MapServer::getGridMap(
     const Ice::Current &_context) {
   return m_pOwner->getGridMap();
+}
+
+SpatialData::LocalGridMap SpatialControl::MapServer::getRoomGridMap(int roomId,
+    const Ice::Current &_context) {
+  return m_pOwner->getRoomGridMap(roomId);
 }
 
 SpatialControl::SpatialControl() :
@@ -2774,6 +2781,186 @@ SpatialData::LocalGridMap SpatialControl::getGridMap() {
   for (int x = -m_lgm->getSize(); x <= m_lgm->getSize(); x++) {
     for (int y = -m_lgm->getSize(); y <= m_lgm->getSize(); y++) {
       ret.data.push_back((*(m_lgm))(x, y));
+    }
+  }
+  return ret;
+}
+
+void SpatialControl::IcetoCureLGM(SpatialData::LocalGridMap icemap,
+    Cure::LocalGridMap<unsigned char>* lgm) {
+  log(
+      "icemap.size: %d, icemap.data.size %d, icemap.cellSize: %f, centerx,centery: %f,%f",
+      icemap.size, icemap.data.size(), icemap.cellSize, icemap.xCenter,
+      icemap.yCenter);
+  int lp = 0;
+  for (int x = -icemap.size; x <= icemap.size; x++) {
+    for (int y = -icemap.size; y <= icemap.size; y++) {
+      (*lgm)(x, y) = (icemap.data[lp]);
+      lp++;
+    }
+  }
+  log("converted icemap to Cure::LocalGridMap");
+}
+
+SpatialData::LocalGridMap SpatialControl::getRoomGridMap(int roomId) {
+
+  lockComponent();
+  NavData::NavGraphPtr ng = m_last_ng;
+  unlockComponent();
+    
+  vector<comadata::ComaRoomPtr> comarooms;
+  getMemoryEntries<comadata::ComaRoom> (comarooms, "coma");
+
+  log("Got %d rooms", comarooms.size());
+
+  if (comarooms.size() == 0) {
+    error("No such ComaRoom with id %d! Returning", roomId);
+    // return -1;
+  }
+  int comarooms_i = -1;
+  for (size_t i = 0; i < comarooms.size(); i++) {
+    log("Got coma room with room id: %d", comarooms[i]->roomId);
+    if (comarooms[i]->roomId == roomId) {
+      comarooms_i = i;
+      break;
+    }
+  }
+  if (comarooms_i == -1) {
+    error("no comaroom");
+    // return -1;
+  }
+  for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
+    log("getting room which contains, placeid: %d",
+        comarooms[comarooms_i]->containedPlaceIds[j]);
+  }
+
+  /* Remove all free space and obstacle which does not belong to this room
+   * This is to avoid spillage of metric space from other rooms
+   * */
+  log("Removing all free space not belongin to this room");
+
+  log(
+      "Throwing away all known space in LGMap of this room belonging to another room");
+  FrontierInterface::PlaceInterfacePrx agg(getIceServer<
+      FrontierInterface::PlaceInterface> ("place.manager"));
+  log("got interface");
+
+  SpatialData::PlaceIDSeq currentRoomPlaceIds;
+
+  double xW, yW;
+  
+  map<int, vector<NavData::FNodePtr> > m_roomNodes;
+  
+  vector<SpatialData::PlacePtr> placesInMap;
+  getMemoryEntries<SpatialData::Place> (placesInMap, "spatial.sa");
+
+  vector<NavData::FNodePtr> nodesForPlaces;
+  for (unsigned int i = 0; i < placesInMap.size(); i++) {
+    NavData::FNodePtr node = agg->getNodeFromPlaceID(placesInMap[i]->id);
+    nodesForPlaces.push_back(node);
+  }
+
+  for (size_t j = 0; j < comarooms[comarooms_i]->containedPlaceIds.size(); j++) {
+    currentRoomPlaceIds.push_back(comarooms[comarooms_i]->containedPlaceIds[j]);
+    NavData::FNodePtr node = agg->getNodeFromPlaceID(
+        comarooms[comarooms_i]->containedPlaceIds[j]);
+    m_roomNodes[roomId].push_back(node);
+
+    for (std::vector<NavData::AEdgePtr>::iterator it = ng->aEdges.begin(); it
+        != ng->aEdges.end(); ++it) {
+
+      NavData::FNodePtr node1 = agg->getNodeFromPlaceID(
+          agg->getPlaceFromNodeID((*it)->startNodeId)->id);
+      NavData::FNodePtr node2 = agg->getNodeFromPlaceID(
+          agg->getPlaceFromNodeID((*it)->endNodeId)->id);
+
+      if ((node1->gateway == 1) && (node2->nodeId == node->nodeId)) {
+        m_roomNodes[roomId].push_back(node1);
+        currentRoomPlaceIds.push_back(
+            agg->getPlaceFromNodeID(node1->nodeId)->id);
+        break;
+      } else if ((node2->gateway == 1) && (node1->nodeId == node->nodeId)) {
+        m_roomNodes[roomId].push_back(node2);
+        currentRoomPlaceIds.push_back(
+            agg->getPlaceFromNodeID(node2->nodeId)->id);
+        break;
+      }
+    }
+    {
+      IceUtil::Mutex::Lock lock(m_extraEdgesMutex);
+      for (std::set<pair<int, int> >::iterator it = m_extraEdges.begin(); it
+          != m_extraEdges.end(); it++) {
+        NavData::FNodePtr node1 = agg->getNodeFromPlaceID(
+            agg->getPlaceFromNodeID(it->first)->id);
+        NavData::FNodePtr node2 = agg->getNodeFromPlaceID(
+            agg->getPlaceFromNodeID(it->second)->id);
+
+        if ((node1->gateway == 1) && (node2->nodeId == node->nodeId)) {
+          m_roomNodes[roomId].push_back(node1);
+          currentRoomPlaceIds.push_back(
+              agg->getPlaceFromNodeID(node1->nodeId)->id);
+          break;
+        } else if ((node2->gateway == 1) && (node1->nodeId == node->nodeId)) {
+          m_roomNodes[roomId].push_back(node2);
+          currentRoomPlaceIds.push_back(
+              agg->getPlaceFromNodeID(node2->nodeId)->id);
+          break;
+        }
+      }
+    }
+
+  }
+
+  FrontierInterface::LocalMapInterfacePrx agg2(getIceServer<
+      FrontierInterface::LocalMapInterface> ("map.manager"));
+  SpatialData::LocalGridMap combined_lgm = agg2->getCombinedGridMap(currentRoomPlaceIds);
+
+  //convert 2D map to 3D
+  Cure::LocalGridMap<unsigned char>* lgm = new Cure::LocalGridMap<unsigned char>(combined_lgm.size, 0.05, '2',
+      Cure::LocalGridMap<unsigned char>::MAP1, combined_lgm.xCenter, combined_lgm.yCenter);
+  IcetoCureLGM(combined_lgm, lgm);
+
+  SpatialData::LocalGridMap ret;
+  ret.xCenter = lgm->getCentXW();
+  ret.yCenter = lgm->getCentYW();
+  ret.cellSize = lgm->getCellSize();
+  ret.size = lgm->getSize();
+
+  for (int x = -lgm->getSize(); x <= lgm->getSize(); x++) {
+    for (int y = -lgm->getSize(); y <= lgm->getSize(); y++) {
+      char point = (*lgm)(x, y);
+      if ((*lgm)(x, y) != '2') {
+        lgm->index2WorldCoords(x, y, xW, yW);
+        double minDistance = FLT_MAX;
+        unsigned int closestNodeIdx = 0;
+
+        for (size_t i = 0; i < nodesForPlaces.size(); i++) {
+          try {
+            if ((nodesForPlaces[i] != 0) && (nodesForPlaces[i]->gateway == 0)) {
+              double nX = nodesForPlaces[i]->x;
+              double nY = nodesForPlaces[i]->y;
+
+              double distance = (xW - nX) * (xW - nX) + (yW - nY) * (yW - nY);
+              if (distance < minDistance) {
+                closestNodeIdx = i;
+                minDistance = distance;
+              }
+            }
+          } catch (IceUtil::NullHandleException e) {
+            error("Error! FNode suddenly disappeared!");
+          }
+        }
+
+        SpatialData::PlacePtr closestPlace = placesInMap[closestNodeIdx];
+
+        // placemem = agg->getPlaceMembership(xW,yW);
+
+        if (find(currentRoomPlaceIds.begin(), currentRoomPlaceIds.end(),
+            closestPlace->id) == currentRoomPlaceIds.end()) {
+          point = '2';
+        }
+      }
+      ret.data.push_back(point);
     }
   }
   return ret;
