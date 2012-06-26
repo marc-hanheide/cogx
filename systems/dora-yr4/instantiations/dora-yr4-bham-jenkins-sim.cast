@@ -46,7 +46,7 @@ SETVAR feature_options=<multiline>
 # enable planning core
     planning_sa
 # disable more debug GUIs and WM loggers		
-    !debug		
+    debug		
 # enable dialogue	
     dialogue		
     plan_verbalisation
