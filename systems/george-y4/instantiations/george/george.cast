@@ -144,6 +144,8 @@ IFOPTALL(%(feature_options), binder)
    IFOPTALL(%(feature_options), binder-mln)
       INCLUDE george-mln.incl
    ENDIF
+
+   JAVA MG VisualSalienceRefResolver org.cognitivesystems.binder.ref.VisualSalienceReferenceResolution
 ENDIF
 
 
