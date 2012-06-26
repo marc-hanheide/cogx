@@ -28,11 +28,15 @@
 #include <scenario/Scenario.h>
 
 // TODO a proper fix to the warnings!
-#include <Tracker/Tracker.h>
+// #include <ThreadObject/CameraThread.h>
+// #include <Tracker/Tracker.h>
+#include <scenario/TrackerThread.h>
 #include <TomGine/tgFont.h>
-#include <GLWindow/GLWindow.h>
+// #include <GLWindow/GLWindow.h>
+#include <smltools/tracker_tools.h>
 
 #include <Golem/Phys/Application.h>
+#include <Golem/Device/Katana300/Katana300.h>
 
 // using namespace std;
 // using namespace golem;
@@ -61,8 +65,7 @@ public:
 		/** Pose calibration file */
 		std::string poseCalibrationFile;
 		/** font */
-		TomGine::tgFont *font;
-		string fontName;
+		TomGine::tgFont font;
 		/** Checks if the description is valid. */
 		virtual bool isValid() const 
 		{
@@ -77,10 +80,7 @@ public:
 			// pose calibration
 			poseCalibrationFile = "pose.cal";
 			// tracker
-			trackerConfig = "Tracking.ini";
-			// font
-			fontName = "/usr/local/bin/SMLearning/FreeSerifBold.ttf";
-			font = new TomGine::tgFont (fontName.c_str());
+			trackerConfig = "tracking.ini";
 		}
 
 	protected:
@@ -92,13 +92,13 @@ public:
 	/** cto, such that Scenario can only be created with(in) a scene (context) [requirement of golem]*/
 	TrackerScenario(golem::Scene&);
 	/** destructor */
-	~TrackerScenario () {}
+	~TrackerScenario ();
 	/** set experiment default values */
 	virtual void init(boost::program_options::variables_map vm);
 	/** Creates Capture from description. */
 	bool create(const TrackerScenario::Desc& desc);
-	/** Runs main task */
-	virtual void main();
+	// /** Runs main task */
+	// virtual void tracking();
 	/** Finish */
 	virtual void finish();
 	/** Run experiment */
@@ -116,33 +116,47 @@ protected:
 	// virtual void calculateStartCoordinates() {};
 	// /** Describe the experiment trajectory */
 	// virtual void initMovement() {};
-	// /** (Post)processing function called AFTER every physics simulation step and before rendering. */
-	// virtual void postprocess(golem::SecTmReal elapsedTime){};
+	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
+	virtual void postprocess(golem::SecTmReal elapsedTime);
 	/** Description */
 	TrackerScenario::Desc desc;
-	/** Tracker */
+	// /** Tracker thread */
+	TrackerThread* tracker_th;
+	// /** Tracker */
 	// golem::shared_ptr<Tracking::Tracker> m_tracker;
-	Tracking::Tracker* m_tracker;
-	/** Object model */
-	TomGine::tgModel m_object;
-	/* The path to load and save the ply model */
-	std::string m_plypath;
-	/** Captured camera Image */
-	IplImage* _img;
-	TomGine::tgPose m_track_pose, m_initialPose;
-	/** Tracker window */
-	golem::shared_ptr<blortGLWindow::GLWindow> glWindow;
-	/** Model id */
-	int m_trackpred_id, m_ground_id, m_track_id;
-	/** is the current state of the object movement (fast / slow / still ) */
-	Tracking::movement_state _movement;
-	/** is the current quality of object visibilty ( ok / occluded / lost / locked ) */
-	Tracking::quality_state _quality;
-	/** is the current confidence of the model ( good / fair / bad ) */
-	Tracking::confidence_state _confidence;
-	/** Event handling */
-	golem::Event ev;
+	// // Tracking::Tracker* m_tracker;
+	// /** Object model */
+	// TomGine::tgModel m_object;
+	// /* The path to load and save the ply model */
+	// std::string m_plypath;
+	// /** Captured camera Image */
+	// IplImage* _img;
+	// TomGine::tgPose m_track_pose, m_initialPose;
+	// /** Tracker window */
+	// golem::shared_ptr<blortGLWindow::GLWindow> glWindow;
+	// /** Tracker parameters */
+	// // Tracking::Tracker::Parameter trackParams;
+	// /** Camera thread */
+	// CCameraThread* pThreadCamera;
+	// /** Model id */
+	// int m_trackpred_id, m_ground_id, m_track_id;
+	// /** is the current state of the object movement (fast / slow / still ) */
+	// Tracking::movement_state _movement;
+	// /** is the current quality of object visibilty ( ok / occluded / lost / locked ) */
+	// Tracking::quality_state _quality;
+	// /** is the current confidence of the model ( good / fair / bad ) */
+	// Tracking::confidence_state _confidence;
+	/** Event handling (Pause) */
+	golem::Event evContinue;
+	/** Keyboard handler. */
+	virtual void keyboardHandler(unsigned char key, int x, int y);
 	bool _quit;
+	/** katana arm */
+	Katana300Arm* pKatana300Arm;
+	/** close arm gripper */
+	void closeGripper(Katana300Arm &arm);
+	/** calculate the start coordinates of the arm */
+	virtual void calculateStartCoordinates ();
 
 };
 

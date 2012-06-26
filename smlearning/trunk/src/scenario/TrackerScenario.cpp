@@ -22,7 +22,7 @@
  */
 
 #include <scenario/TrackerScenario.h>
-#include <smltools/tracker_tools.h>
+
 
 using namespace TomGine;
 using namespace blortGLWindow;
@@ -35,6 +35,11 @@ TrackerScenario::TrackerScenario (golem::Scene &scene) :
 {
 }
 
+TrackerScenario::~TrackerScenario ()
+{
+	// delete tracker_th;
+}
+
 void TrackerScenario::init(boost::program_options::variables_map vm)
 {
 	Scenario::init (vm);
@@ -43,118 +48,133 @@ void TrackerScenario::init(boost::program_options::variables_map vm)
 bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
 	if (!Scenario::create(desc)) // throws
 		return false;
+	
 	this->desc = desc;
 
-	this->desc.font = new TomGine::tgFont (desc.fontName.c_str());
 	// Tracker
-	const std::string& tracker_ini_file = desc.trackerConfig;
-	const std::string& cam_ini_file = desc.cameraCalibrationFile;
-	const std::string& pose_ini_file = desc.poseCalibrationFile;
-	
-	// PLY Model
-	m_plypath = getModelPath(tracker_ini_file.c_str());
-	std::string m_plyfile = getModelFile(tracker_ini_file.c_str());
-	std::string m_plyname = m_plyfile;
-	m_plyname.erase(m_plyname.begin()+m_plyname.find("."), m_plyname.end());
-	m_plyfile.insert(0, m_plypath);
-	
-	int cam_width = getCamWidth(cam_ini_file.c_str());
-	int cam_height = getCamHeight(cam_ini_file.c_str());	
-	// Initialize camera capture using opencv
-	g_Resources->InitCapture(float(cam_width), float(cam_height));
-	_img = g_Resources->GetNewImage();
+	golem::Mat34 object_initial_pose; 
+	fromCartesianPose (object_initial_pose, desc.descActorObject.startPosition, desc.descActorObject.startRotation);
 
-	
-	glWindow.reset(new blortGLWindow::GLWindow(cam_width,cam_height,"Tracking"));
-	
-	// m_tracker.reset(new Tracking::TextureTracker());
-	m_tracker = new Tracking::TextureTracker ();
-	if(!m_tracker->init(tracker_ini_file.c_str(), cam_ini_file.c_str(), pose_ini_file.c_str()))
-		throw golem::Message(golem::Message::LEVEL_CRIT, "TrackerPredOffline::create(): Failed to initialise tracker");
-	
-	m_initialPose = TomGine::tgPose();
-	m_initialPose.t = vec3(-0.05f, 0.25f, 0.0f);
-	m_initialPose.Rotate(0.0f, -1.57f, 0.0f);
-	m_trackpred_id = m_tracker->addModelFromFile(m_plyfile.c_str(), m_initialPose, m_plyname.c_str());
-	m_track_id = m_tracker->addModelFromFile(m_plyfile.c_str(), m_initialPose, m_plyname.c_str());
-	m_ground_id = m_tracker->addModelFromFile(m_plyfile.c_str(), m_initialPose, m_plyname.c_str());
-	
-	Tracking::ModelLoader m_ply_loader;
-	m_ply_loader.LoadPly(m_object, m_plyfile.c_str());
-
-	_quit = false;
+	tracker_th = new TrackerThread (desc.trackerConfig, desc.cameraCalibrationFile, desc.poseCalibrationFile, GolemToTracking (object_initial_pose));
 	
 	return true;
 }
 
-void TrackerScenario::main ()
+void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 {
-// Main Loop
-	blortGLWindow::Event event;
-	while( ! _quit ){
-		printf("Entering loop...\n");
-		// grab new image from camera
-		_img = g_Resources->GetNewImage();
-		
-		// Image processing
-		//m_tracker->image_processing_occluder((unsigned char*)img->imageData, model_occ, p_occ);
-		m_tracker->image_processing((unsigned char*)_img->imageData);
-		
-		// Tracking (particle filtering)
-		m_tracker->track(m_track_id);
-		
-		// store the updated position of the object
-		m_tracker->getModelPose(m_track_id,m_track_pose);
-		// _new_position = true;
-
-		// Draw result
-		//m_tracker->drawImage(0);
-		m_tracker->drawResult(2);
-		m_tracker->drawCoordinates();
-		
-		m_tracker->getModelMovementState(m_track_id, _movement);
-		m_tracker->getModelQualityState(m_track_id, _quality);
-		m_tracker->getModelConfidenceState(m_track_id, _confidence);
-		
-		
-		glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
-		if(_movement == ST_FAST)
-			desc.font->Print("fast", 20, 10, 50);
-		else if(_movement == ST_SLOW)
-			desc.font->Print("slow", 20, 10, 50);
-		else if(_movement == ST_STILL)
-			desc.font->Print("still", 20, 10, 50);
-			
-		if(_confidence == ST_GOOD)
-			desc.font->Print("good", 20, 10, 30);
-		else if(_confidence == ST_FAIR)
-			desc.font->Print("fair", 20, 10, 30);
-		else if(_confidence == ST_BAD)
-			desc.font->Print("bad", 20, 10, 30);
-		
-		if(_quality == ST_OK)
-			desc.font->Print("ok", 20, 10, 10);
-		else if(_quality == ST_OCCLUDED)
-			desc.font->Print("occluded", 20, 10, 10);
-		else if(_quality == ST_LOST)
-			desc.font->Print("lost", 20, 10, 10, 1,0,0);
-		else if(_quality == ST_LOCKED)
-			desc.font->Print("locked", 20, 10, 10);
-		
-		glWindow->Update();
-		
-		while( glWindow->GetEvent(event) )
-			_quit = !InputControl( m_tracker, event );
+	{
+		CriticalSectionWrapper csw (cs);
+		golem::Mat34 p = TrackingToGolem (tracker_th->getPose ());
+		Real obRoll, obPitch, obYaw;
+		p.R.toEuler (obRoll, obPitch, obYaw);
+		cout << p.p.v1 << ", " << p.p.v2 << ", " << p.p.v3 << ", " << obRoll << ", " << obPitch << ", " << obYaw << endl;
 	}
+}
+
+void TrackerScenario::closeGripper(Katana300Arm &arm) {
+	MessageStream* stream = arm.getContext().getMessageStream();
+	Katana300Arm::SensorDataSet zero, reading, threshold;
+
+	if (!arm.gripperRecvSensorData(reading))
+	{
+		cout << "Error receiving data... Have you activated the gripper in GolemDeviceKatana300?" << endl;
+		return;
+	}
+	
+	for (size_t i = 0; i < reading.size(); i++)
+		stream->write("Sensor #%d: {%d, %d}", i, reading[i].index, reading[i].value);
+
+	threshold = zero = reading;
+	for (size_t i = 0; i < threshold.size(); i++)
+		threshold[i].value += 50;
+	
+	stream->write("Closing gripper, low sensitivity...");
+	arm.gripperClose(threshold, 5000);
+	
+	arm.gripperRecvSensorData(reading);
+	for (size_t i = 0; i < reading.size(); i++)
+		stream->write("Sensor #%d: {%d, %d}", i, reading[i].index, reading[i].value);
+	
+}
+
+void TrackerScenario::calculateStartCoordinates ()
+{
+	positionTarget.set (Real(0.0),Real(0.2),Real(0.1));
+	fromCartesianPose (target.pos, positionTarget, orientationTarget);
+
+	target.vel.setId(); // it doesn't move
+	
+	target.t = context.getTimer().elapsed() + arm->getDeltaAsync() + desc.descArmActor.minDuration; // i.e. the movement will last at least 5 sec
+}
+
+void TrackerScenario::run (int argc, char* argv[])
+{
+	pKatana300Arm = static_cast<Katana300Arm*>(&(arm->getArm()->getArm()));
+	if (pKatana300Arm == NULL)
+	throw Message(Message::LEVEL_CRIT, "It is not Katana 300!");
+		
+	// Display arm information
+	armInfo(arm->getArm()->getArm());
+	
+	// Close Gripper
+	// closeGripper(*pKatana300Arm);
+
+	// Wait for some time
+	PerfTimer::sleep(SecTmReal(5.0));
+	//set: random seed;init arm; get initial config
+	std::cout <<"_init "<<std::endl;
+	_init();
+
+	// tracker_th->SetThreadType (ThreadTypeIntervalDriven,0);
+        tracker_th->Event ();
+	// tracker_th->run ();
+	// tracker_th->start ();
+
+	for (unsigned int i=0; i<1; i++)
+	{
+		// experiment main loops
+		creator.setToDefault();
+		std::cout <<"calculate starting coordinates "<<std::endl;
+		calculateStartCoordinates ();					
+		std::cout << "sending position ";
+		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
+		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);	//move the finger to the beginnnig of experiment trajectory
+		// wait for key
+		// tracking ();
+		evContinue.wait ();
+		evContinue.set(false);
+
+		//move finger to initial position
+		arm->moveFingerToStartPose(context);				
+	}
+	evContinue.set(true);
+	arm->moveArmToStartPose(context); 	//move the arm to its initial position
+	// tracker_th->Stop ();
+
+	// tracking ();
+
 }
 
 void TrackerScenario::finish() {
 	// m_tracker.release();
-	delete m_tracker;
-	glWindow.release();
+	// delete m_tracker;
+	// glWindow.release();
 	//capture->finish();
+	delete tracker_th;
 }
 
+void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
+	switch (key) {
+	case 'p': case 'P':
+		context.getMessageStream()->write(Message::LEVEL_INFO, "PAUSE\n");
+		evContinue.set(false);
+		break;
+	case 'r': case 'R':
+		context.getMessageStream()->write(Message::LEVEL_INFO, "RESUME\n");
+		evContinue.set(true);
+		break;
+	}
+}
 
 
 bool XMLData(TrackerScenario::Desc &val, XMLContext* xmlcontext, Context *context) {
@@ -281,7 +301,6 @@ bool XMLData(TrackerScenario::Desc &val, XMLContext* xmlcontext, Context *contex
 	golem::XMLData("camera_file", val.cameraCalibrationFile, xmlcontext->getContextFirst("camera calibration"));
 	golem::XMLData("pose_file", val.poseCalibrationFile, xmlcontext->getContextFirst("camera calibration"));
 	golem::XMLData("config_file", val.trackerConfig, xmlcontext->getContextFirst("tracker"));
-	golem::XMLData("font_name", val.fontName, xmlcontext->getContextFirst("tracker"));
 
 	return true;
 
@@ -300,7 +319,8 @@ void TrackerScenarioApp::run(int argc, char *argv[]) {
 	
 	try {
 		// todo 
-		pTrackerScenario->main();
+		//pTrackerScenario->main();
+		pTrackerScenario->run(argc, argv);
 	}
 	catch (const Scenario::Interrupted&) {
 		// todo

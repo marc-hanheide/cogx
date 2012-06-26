@@ -1,12 +1,12 @@
 /** @file TrackerThread.h
  * 
- * 
+ * @author      Sergio Roa (DFKI)
  * @author	Manuel Noll (DFKI)
  * @author      Thomas Mörwald
  *
  * @version 1.0
  *
- * 2011      Manuel Noll
+ *
  
    This is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,15 +26,19 @@
 #ifndef TRACKERTHREAD_H_
 #define TRACKERTHREAD_H_
 
+
 #include <ThreadObject/Thread.h>
-#include <TomGine/tgTimer.h>
-#include <TomGine/tgFont.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
 #include <smltools/tracker_tools.h>
 
-using namespace TomGine;
-using namespace blortGLWindow;
+// #include <Golem/Sys/Thread.h>
+// #include <ThreadObject/CameraThread.h>
+// #include <Tracker/Tracker.h>
+#include <TomGine/tgTimer.h>
+#include <TomGine/tgFont.h>
+#include <GLWindow/GLWindow.h>
+// #include <opencv/cv.h>
+// #include <opencv/highgui.h>
+// #include <string>
 
 namespace smlearning {
 
@@ -61,44 +65,67 @@ namespace smlearning {
 *
 */
 
-class TrackerThread : public CThread
+class TrackerThread : public CThread /*golem::Runnable*/
 {
 public:
 	// std cto initializing the thread
-	TrackerThread(const std::string& =string("tracking.ini"),const std::string& = string("cam.cal"),const std::string& = string("pose.cal"));
+	TrackerThread(const std::string,const std::string,const std::string, const TomGine::tgPose);
 	// std dto
 	~TrackerThread();
 	// executes the former standalone.cpp loop as the thread task
 	virtual BOOL OnTask();
+	// virtual void run () /*{ OnTask (); }*/;
+	// void start ();
 	// returns the current object position by reference
-	void getPose(mat3&, vec3&) const;
-private:
-	// contains the pose of the object
-	tgPose _object_pose;
+	TomGine::tgPose getPose() const;
+protected:
+	//golem::Thread thread;
+	//golem::CriticalSection cs;
+	// // contains the pose of the object
+	// TomGine::tgPose _object_pose;
 	// is true if the program was ended
 	bool _quit;
 	// is true if there was a new object position stored
 	bool _new_position;
-	// captured camera image
-	IplImage* _img;
-	// is tracking the object and containing all central information
-	Tracker* _m_tracker;
-	// is the ouput OpenGL Window
-	GLWindow* _m_window;
-	// is the object identification number
-	int _id_2;
-	// is the current state of the object movement (fast / slow / still )
-	movement_state _movement;
-	// is the current quality of object visibilty ( ok / occluded / lost / locked )
-	quality_state _quality;
-	// is the current confidence of the model ( good / fair / bad )
-	confidence_state _confidence;
 	// thread specific variable
-	tgTimer m_timer;
+	TomGine::tgTimer m_timer;
 	// thread specific variable
 	CEventClass m_evData;
+	CMutexClass m_running;
 	// font
-	tgFont* font;
+	TomGine::tgFont font;
+	/** Tracker */
+	// golem::shared_ptr<Tracking::Tracker> m_tracker;
+	Tracking::Tracker* m_tracker;
+	/** Object model */
+	TomGine::tgModel m_object;
+	/* The path to load and save the ply model */
+	std::string m_plypath;
+	/** Captured camera Image */
+	IplImage* _img;
+	TomGine::tgPose m_track_pose, m_initialPose;
+	/** Tracker window */
+	// golem::shared_ptr<blortGLWindow::GLWindow> glWindow;
+	blortGLWindow::GLWindow* glWindow;
+	/** Tracker parameters */
+	Tracking::Tracker::Parameter trackParams;
+	/** Camera thread */
+	// CCameraThread* pThreadCamera;
+	/** Model id */
+	int m_trackpred_id, m_ground_id, m_track_id;
+	/** is the current state of the object movement (fast / slow / still ) */
+	Tracking::movement_state _movement;
+	/** is the current quality of object visibilty ( ok / occluded / lost / locked ) */
+	Tracking::quality_state _quality;
+	/** is the current confidence of the model ( good / fair / bad ) */
+	Tracking::confidence_state _confidence;
+
+	std::string tracker_ini_file;
+	std::string cam_ini_file;
+	std::string pose_ini_file;
+
+
+
 };
 
 }; // namespace smlearning 
