@@ -13,6 +13,10 @@
 #include <string>
 #include <stdexcept>
 
+#include <Golem/Tools/Message.h>
+#include <Golem/Math/Math.h>
+#include <Golem/Math/Mat34.h>
+
 #include <Tracker/Tracker.h>
 #include <Tracker/EdgeTracker.h>
 #include <Tracker/TextureTracker.h>
@@ -35,117 +39,75 @@ struct Parameters{
 
 // *************************************************************************************
 // Load INI File
-string getModelFile(const char* filename){
-	CDataFile cdfParams;
+std::string getModelFile(const char* filename);
 
-	if(!cdfParams.Load(filename)){
-		char errmsg[128];
-		snprintf(errmsg, 128, "[GetTrackingParameter] Can not open file '%s'", filename);
-		throw std::runtime_error(errmsg);
-	}
-	
-	return cdfParams.GetString("Model", "Files");
+std::string getModelPath(const char* filename);
+
+int getCamWidth(const char* filename);
+
+int getCamHeight(const char* filename);
+
+bool InputControl(Tracking::Tracker* tracker, blortGLWindow::Event& event);
+
+void GetTrackingParameter( Tracking::Tracker::Parameter& params, const char* ini_file);
+
+inline golem::Mat33 TrackingToGolem( const mat3& m )
+{
+	golem::Mat33 r;
+	r.m11 = m.mat[0];
+	r.m21 = m.mat[1];
+	r.m31 = m.mat[2];
+	r.m12 = m.mat[3];
+	r.m22 = m.mat[4];
+	r.m32 = m.mat[5];
+	r.m13 = m.mat[6];
+	r.m23 = m.mat[7];
+	r.m33 = m.mat[8];
+	return r;
 }
 
-string getModelPath(const char* filename){
-	CDataFile cdfParams;
-
-	if(!cdfParams.Load(filename)){
-		char errmsg[128];
-		snprintf(errmsg, 128, "[GetTrackingParameter] Can not open file '%s'", filename);
-		throw std::runtime_error(errmsg);
-	}
-	
-	return cdfParams.GetString("ModelPath", "ResourcePath");
-}
-
-int getCamWidth(const char* filename){
-	CDataFile cdfParams;
-
-	if(!cdfParams.Load(filename)){
-		char errmsg[128];
-		snprintf(errmsg, 128, "[GetTrackingParameter] Can not open file '%s'", filename);
-		throw std::runtime_error(errmsg);
-	}
-	
-	return cdfParams.GetInt("w");
-}
-
-int getCamHeight(const char* filename){
-	CDataFile cdfParams;
-
-	if(!cdfParams.Load(filename)){
-		char errmsg[128];
-		snprintf(errmsg, 128, "[GetTrackingParameter] Can not open file '%s'", filename);
-		throw std::runtime_error(errmsg);
-	}
-	
-	return cdfParams.GetInt("h");
+inline golem::Vec3 TrackingToGolem( const vec3& v )
+{
+	return golem::Vec3(v.x, v.y, v.z);
 }
 
 
-bool InputControl(Tracking::Tracker* tracker, blortGLWindow::Event& event){
-	
-	switch (event.type)
-	{
-	case blortGLWindow::TMGL_Press:
-		switch (event.input)
-		{
-		case blortGLWindow::TMGL_q:
-		case blortGLWindow::TMGL_Escape:
-			return false;
-			break;
-		case blortGLWindow::TMGL_1: //1
-			tracker->setKernelSize(0);
-			printf("Kernel size: %d\n", (int)0);
-			break;				
-		case blortGLWindow::TMGL_2: //2
-			tracker->setKernelSize(1);
-			printf("Kernel size: %d\n", (int)1);
-			break;				
-		case blortGLWindow::TMGL_3: //3
-			tracker->setKernelSize(2);
-			printf("Kernel size: %d\n", (int)2);
-			break;
-		case blortGLWindow::TMGL_4: //4
-			tracker->setEdgeShader();
-			break;
-		case blortGLWindow::TMGL_5: //5
-			tracker->setColorShader();
-			break;
-		case blortGLWindow::TMGL_e: //e
-			tracker->setEdgesImageFlag( !tracker->getEdgesImageFlag() );
-			break;
-		case blortGLWindow::TMGL_i: //i
-			tracker->printStatistics();
-			break;
-		case blortGLWindow::TMGL_l: //l
-			tracker->setLockFlag( !tracker->getLockFlag() );
-			break;
-		case blortGLWindow::TMGL_m: //m
-			tracker->setModelModeFlag( tracker->getModelModeFlag()+1 );
-			break;
-		case blortGLWindow::TMGL_p: //p
-			tracker->setDrawParticlesFlag( !tracker->getDrawParticlesFlag() );
-			break;
-		case blortGLWindow::TMGL_r: //r
-			tracker->reset();
-			break;
-		case blortGLWindow::TMGL_s: //s
-			tracker->saveModels("../Resources/ply/");
-			break;				
-		case blortGLWindow::TMGL_t: //t
-			tracker->textureFromImage();
-			break;
-		case blortGLWindow::TMGL_u: //u
-			tracker->untextureModels();
-			break;
-		default:
-			break;
-		}
-		break;
-	}
-	return true;
+inline golem::Mat34 TrackingToGolem( const TomGine::tgPose& p )
+{
+	mat3 rot;
+	vec3 trn;
+	p.GetPose(rot,trn);
+	golem::Mat34 m(TrackingToGolem(rot), TrackingToGolem(trn));
+	return m;
+}
+
+inline mat3 GolemToTracking( const golem::Mat33& r )
+{
+	mat3 m;
+	m.mat[0] = (float)r.m11;
+	m.mat[1] = (float)r.m21;
+	m.mat[2] = (float)r.m31;
+	m.mat[3] = (float)r.m12;
+	m.mat[4] = (float)r.m22;
+	m.mat[5] = (float)r.m32;
+	m.mat[6] = (float)r.m13;
+	m.mat[7] = (float)r.m23;
+	m.mat[8] = (float)r.m33;
+	return m;
+}
+
+inline vec3 GolemToTracking( const golem::Vec3& v )
+{
+	return vec3((float)v.v1, (float)v.v2, (float)v.v3);
+}
+
+inline TomGine::tgPose GolemToTracking( const golem::Mat34& m)
+{
+	TomGine::tgPose p;
+	mat3 rot = GolemToTracking(m.R);
+	vec3 trn = GolemToTracking(m.p);
+	p.SetPose(rot,trn);
+	return p;
 }
 
 

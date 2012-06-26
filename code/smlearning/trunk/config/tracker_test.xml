@@ -23,7 +23,7 @@
   </scene>
 
 
-  <arm driver="GolemDeviceKatana300Sim"/>
+  <arm driver="GolemDeviceKatana300"/>
 
 
   <effector>
@@ -43,13 +43,13 @@
 	<minZ>-0.01</minZ>
 	<minPushDuration>3.0</minPushDuration>
 	<maxPushDuration>5.0</maxPushDuration>
-	<minDuration>5.0</minDuration>
+	<minDuration>10.0</minDuration>
 	<minValLabel>-1.0</minValLabel>
 	<maxValLabel>1.0</maxValLabel>
 	<startPosition>
-		<x>0.0</x>
-		<y>0.2</y>
-		<z>0.0</z>
+		<x>0.005</x>
+		<y>0.265</y>
+		<z>0.037</z>
 	</startPosition>
 	<startRotation>
 		<y>0.0</y>
@@ -83,7 +83,7 @@
   <calibration camera_file="cam.cal" pose_file="pose.cal"/>
 </camera>
 
-<tracker config_file="tracking.ini" confidence="0" font_name="/usr/local/bin/SMLearning/FreeSerifBold.ttf"/>
+<tracker config_file="tracking.ini" confidence="0"/>
 
 
 </golem>

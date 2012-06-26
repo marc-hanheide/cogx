@@ -1,13 +1,12 @@
 /** @file TrackerThread.cpp
  * 
- * 
+ * @author      Sergio Roa (DFKI) 
  * @author	Manuel Noll (DFKI)
  * @author      Thomas Mörwald
  *
  * @version 1.0
  *
- * 2011      Manuel Noll
- 
+ *
    This is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
@@ -27,14 +26,57 @@
 #include <iostream>
 
 using namespace std;
+using namespace TomGine;
+using namespace blortGLWindow;
+using namespace Tracking;
 
 namespace smlearning {
 
 /////////////PUBLIC/////////////
 /** \brief std cto initializing the thread
 */
-TrackerThread::TrackerThread(const std::string& ini_file, const std::string& cam_cal_file, const std::string& pose_cal_file )
+TrackerThread::TrackerThread(const std::string tracker_ini, const std::string cam_ini, const std::string pose_ini, const tgPose initial_object_pose )
 {
+	tracker_ini_file = tracker_ini;
+	cam_ini_file = cam_ini;
+	pose_ini_file = pose_ini;
+	m_track_pose = initial_object_pose;
+
+}
+
+/////////////PUBLIC/////////////
+/** \brief std destructor 
+*/
+TrackerThread::~TrackerThread()
+{
+
+	m_mutex.Lock ();
+	// {
+	// 	golem::CriticalSectionWrapper csw (cs);
+		_quit = true;
+ 	// }
+	m_mutex.Unlock ();
+	// m_evData.Set ();
+	m_running.Wait ();
+// Stop and destroy
+	// thread.join ();
+	printf("\n... done\n\n");
+	// this->Stop();
+}
+
+/*void TrackerThread::start ()
+{
+	thread.start (this);
+}*/
+
+/////////////PUBLIC/////////////
+/** \brief executes the former standalone.cpp loop as the thread task, updating the GL window and the pose of the object
+*/
+BOOL TrackerThread::OnTask()
+{
+// void TrackerThread::run () {
+
+	m_running.Lock ();
 	printf("\n Demo Tracker\n\n");
 
 	printf(" Tracking control\n");
@@ -57,145 +99,140 @@ TrackerThread::TrackerThread(const std::string& ini_file, const std::string& cam
 // *************************************************************************************
 // Initialisation
 
-	// Read inifile
+	// PLY Model
+	m_plypath = getModelPath(tracker_ini_file.c_str());
+	std::string m_plyfile = getModelFile(tracker_ini_file.c_str());
+	std::string m_plyname = m_plyfile;
+	m_plyname.erase(m_plyname.begin()+m_plyname.find("."), m_plyname.end());
+	m_plyfile.insert(0, m_plypath);
 	
-	int width = getCamWidth(cam_cal_file.c_str());
-	int height = getCamHeight(cam_cal_file.c_str());
-	
-	font = new TomGine::tgFont ("../Resources/fonts/comic.ttf");
+	int cam_width = getCamWidth(cam_ini_file.c_str());
+	int cam_height = getCamHeight(cam_ini_file.c_str());
+
+	GetTrackingParameter(trackParams, tracker_ini_file.c_str());
+	// pThreadCamera = new CCameraThread(0, trackParams.camPar.width, trackParams.camPar.height);
+	// pThreadCamera = new CCameraThread(0, cam_width, cam_height);
+	// pThreadCamera->SetThreadType(ThreadTypeIntervalDriven,0);
 
 	// Initialize camera capture using opencv
-	g_Resources->InitCapture(float(width), float(height));
-	//g_Resources->InitCapture("../Resources/videos/0028.avi");
+	g_Resources->InitCapture(float(cam_width), float(cam_height));
 	_img = g_Resources->GetNewImage();
+	// _img = cvCreateImage( cvSize(cam_width, cam_height), 8, 3 );
 
-	// Initialise OpenGL Window
-
-	_m_window = new GLWindow(width, height, "Tracking");
-
-	// Initialize tracker
-	//Tracker* m_tracker = new EdgeTracker();
-	_m_tracker = new TextureTracker();
-	if(! _m_tracker->init(ini_file.c_str(), cam_cal_file.c_str(), pose_cal_file.c_str())){
-		printf("Failed to initialise tracker!\n");
-		return;
-	}
-	//Load model
 	
-	tgPose p;
-	p.Rotate(0.0f, PI*0.5f, 0.0f);
-	//p.Rotate(0.0f, 0.0f, 0.5f);
-	p.Translate(0.0f, 0.0f, 0.0f);
-	//p.Translate(0.0f, 0.1f, 0.0f);
-	//p.t = vec3(0.037, 0.032, 0.06);
-	std::string plypath = getModelPath(ini_file.c_str());
-	std::string plyfile = getModelFile(ini_file.c_str());
-	std::string plyname = plyfile;
-	plyname.erase(plyname.begin()+plyname.find("."), plyname.end());
-	plyfile.insert(0,plypath);
+	// glWindow.reset(new blortGLWindow::GLWindow(cam_width,cam_height,"Tracking"));
+	glWindow = new blortGLWindow::GLWindow(cam_width,cam_height,"Tracking");
 	
-
-  	_id_2 = _m_tracker->addModelFromFile(plyfile.c_str(), p, plyname.c_str(), true);
+	// m_tracker.reset(new Tracking::TextureTracker());
+	m_tracker = new Tracking::TextureTracker();
+	// m_tracker = new Tracking::TextureTracker ();
+	if(!m_tracker->init(tracker_ini_file.c_str(), cam_ini_file.c_str(), pose_ini_file.c_str()))
+	// if(!m_tracker->init(trackParams))
+		cout << "TrackerPredOffline::create(): Failed to initialise tracker" << endl;
 	
-// 	ModelLoader m_loader;
-// 	TomGine::tgModel m_model;
-// 	m_loader.LoadPly(m_model, plyfile.c_str());
-// 	_id_2 = m_tracker->addModel(m_model, p, plyname.c_str(), true);
+	// m_initialPose = TomGine::tgPose();
+	// m_initialPose.Rotate (0.0f, 0.0f, 0.0f);
+	// m_initialPose.Translate (0.26f, 0.2f, 0.05f);
+	// m_track_pose = TomGine::tgPose();
+	// m_track_pose.Rotate (0.0f, 0.0f, 0.0f);
+	// m_track_pose.Translate (0.01f, 0.265f, 0.05f);
+	// m_trackpred_id = m_tracker->addModelFromFile(m_plyfile.c_str(), m_initialPose, m_plyname.c_str());
+	m_track_id = m_tracker->addModelFromFile(m_plyfile.c_str(), /*m_initialPose*/m_track_pose, m_plyname.c_str());
+	// m_ground_id = m_tracker->addModelFromFile(m_plyfile.c_str(), m_initialPose, m_plyname.c_str());
+	
+	Tracking::ModelLoader m_ply_loader;
+	m_ply_loader.LoadPly(m_object, m_plyfile.c_str());
 
 	_quit = false;
 
-	// _new_position = false;
 
 
-}
-
-/////////////PUBLIC/////////////
-/** \brief std destructor 
-*/
-TrackerThread::~TrackerThread()
-{
-
-// Stop and destroy
-	delete(_m_tracker);
-	delete font;
-	printf("\n... done\n\n");
-	this->Stop();
-}
-
-/////////////PUBLIC/////////////
-/** \brief executes the former standalone.cpp loop as the thread task, updating the GL window and the pose of the object
-*/
-BOOL TrackerThread::OnTask()
-{
-
-// Main Loop
+	// Main Loop
 	blortGLWindow::Event event;
-	while( ! _quit ){
-		printf("Entering loop...\n");
+	while(!_quit){
+		// golem::CriticalSectionWrapper csw (cs);
+		// printf("Entering loop...\n");
 		// grab new image from camera
+		// m_mutex.Lock ();
+
 		_img = g_Resources->GetNewImage();
+		// pThreadCamera->GetImage(_img);
 		
 		// Image processing
 		//m_tracker->image_processing_occluder((unsigned char*)img->imageData, model_occ, p_occ);
-		_m_tracker->image_processing((unsigned char*)_img->imageData);
+		m_tracker->image_processing((unsigned char*)_img->imageData);
 		
 		// Tracking (particle filtering)
-		_m_tracker->track(_id_2);
+		m_tracker->track(m_track_id);
 		
 		// store the updated position of the object
-		_m_tracker->getModelPose(_id_2,_object_pose);
-		_new_position = true;
+		m_tracker->getModelPose(m_track_id,m_track_pose);
+		// _new_position = true;
 
 		// Draw result
-		//m_tracker->drawImage(0);
-		_m_tracker->drawResult(2);
-		_m_tracker->drawCoordinates();
+	        m_tracker->drawImage(0);
+		m_tracker->drawResult(2.0f);
+		// m_tracker->drawCoordinateSystem(0.2f, 2.0f);
+		m_tracker->drawCoordinates ();
 		
-		_m_tracker->getModelMovementState(_id_2, _movement);
-		_m_tracker->getModelQualityState(_id_2, _quality);
-		_m_tracker->getModelConfidenceState(_id_2, _confidence);
+		m_tracker->getModelMovementState(m_track_id, _movement);
+		m_tracker->getModelQualityState(m_track_id, _quality);
+		m_tracker->getModelConfidenceState(m_track_id, _confidence);
 		
 		
 		glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
 		if(_movement == ST_FAST)
-			font->Print("fast", 20, 10, 50);
+			font.Print("fast", 20, 10, 50);
 		else if(_movement == ST_SLOW)
-			font->Print("slow", 20, 10, 50);
+			font.Print("slow", 20, 10, 50);
 		else if(_movement == ST_STILL)
-			font->Print("still", 20, 10, 50);
+			font.Print("still", 20, 10, 50);
 			
 		if(_confidence == ST_GOOD)
-			font->Print("good", 20, 10, 30);
+			font.Print("good", 20, 10, 30);
 		else if(_confidence == ST_FAIR)
-			font->Print("fair", 20, 10, 30);
+			font.Print("fair", 20, 10, 30);
 		else if(_confidence == ST_BAD)
-			font->Print("bad", 20, 10, 30);
+			font.Print("bad", 20, 10, 30);
 		
 		if(_quality == ST_OK)
-			font->Print("ok", 20, 10, 10);
+			font.Print("ok", 20, 10, 10);
 		else if(_quality == ST_OCCLUDED)
-			font->Print("occluded", 20, 10, 10);
+			font.Print("occluded", 20, 10, 10);
 		else if(_quality == ST_LOST)
-			font->Print("lost", 20, 10, 10, 1,0,0);
+			font.Print("lost", 20, 10, 10, 1,0,0);
 		else if(_quality == ST_LOCKED)
-			font->Print("locked", 20, 10, 10);
+			font.Print("locked", 20, 10, 10);
+
+		glWindow->Update();
+
+		while( glWindow->GetEvent(event) && !_quit )
+			_quit = !InputControl( m_tracker, event );
 		
-		_m_window->Update();
-		
-		while( _m_window->GetEvent(event) )
-			_quit = !InputControl( _m_tracker, event );
+		// m_evData.Set ();
+		// m_mutex.Unlock ();
 	}
+	if (m_tracker)
+		delete m_tracker;
+	if (glWindow)
+		delete glWindow;
+	if (_img)
+		cvReleaseImage (&_img);
+	m_running.Unlock ();
 	return TRUE;
+
+
+
 }
 
 /////////////PUBLIC/////////////
 /** \brief returns the current position of the object as 3x3 rotation matrix and translation vector by reference
 */
-void TrackerThread::getPose(mat3& matrix, vec3& vector) const
+TomGine::tgPose TrackerThread::getPose(/*mat3& matrix, vec3& vector*/) const
 {
 	// if (_new_position)
 	// {
-		_object_pose.GetPose(matrix,vector);
+		return m_track_pose;
 		// _new_position=false;
 	// }
 }

@@ -51,6 +51,7 @@ Scenario::Scenario(golem::Scene &scene) : Object(scene), creator(scene) {
 	arm = NULL;
 	object = NULL;
 	groundPlane = NULL;
+	_concreteActor = NULL;
 	bStart = bStop = bRec = false;
 }
 

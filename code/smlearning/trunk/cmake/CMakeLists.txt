@@ -196,7 +196,7 @@ SET(SCENARIO_SOURCES
 	${SMLEARNING_ROOT}/src/scenario/PredictingActiveLearnScenario.cpp
         ${SMLEARNING_ROOT}/src/scenario/TrackerScenario.cpp
 	${SMLEARNING_ROOT}/src/scenario/PushingApplication.cpp
-#	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
+	${SMLEARNING_ROOT}/src/scenario/TrackerThread.cpp
 )
 
 
@@ -212,7 +212,7 @@ SET(SCENARIO_HEADERS
 #	${SMLEARNING_ROOT}/include/scenario/ActiveGNGScenario.h
 	${SMLEARNING_ROOT}/include/scenario/ActiveLearnScenario.h
 	${SMLEARNING_ROOT}/include/scenario/PredictingActiveLearnScenario.h
-#	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
+	${SMLEARNING_ROOT}/include/scenario/TrackerThread.h
         ${SMLEARNING_ROOT}/include/scenario/TrackerScenario.h
 )
 
@@ -249,6 +249,7 @@ SET(TOOLS_SOURCES
 	${SMLEARNING_ROOT}/src/smltools/helpers.cpp
 	${SMLEARNING_ROOT}/src/smltools/math_helpers.cpp
 	${SMLEARNING_ROOT}/src/smltools/data_plot.cpp
+	${SMLEARNING_ROOT}/src/smltools/tracker_tools.cpp
 )
 
 SET(SEQUENCES_TEST_SOURCE
@@ -329,8 +330,6 @@ SET(CONFIG_FILES
 	${SMLEARNING_ROOT}/config/activelearn_prediction_experiment.xml
 	${SMLEARNING_ROOT}/config/train.nc
 	${SMLEARNING_ROOT}/config/valid.nc
-	${SMLEARNING_ROOT}/config/comic.ttf
-	${SMLEARNING_ROOT}/config/FreeSerifBold.ttf
 	${SMLEARNING_ROOT}/config/tracker_test.xml
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300Sim.xml  #For now this is not really useful
 #	${SMLEARNING_ROOT}/config/GolemDeviceKatana300.xml
