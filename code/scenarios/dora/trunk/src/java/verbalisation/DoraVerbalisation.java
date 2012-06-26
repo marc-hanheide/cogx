@@ -125,7 +125,7 @@ public class DoraVerbalisation extends ManagedComponent implements
 	private static final TextGenerator<LookForPeople> RECOGNIZER_PEOPLE_COMMAND_GENERATOR = new TextGenerator<LookForPeople>() {
 		@Override
 		public String toText(LookForPeople _i) {
-			return "let's see if there's is someone here" ;
+			return "let's see if there is someone here" ;
 		}
 	};
 
