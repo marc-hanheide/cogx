@@ -96,6 +96,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 	public final int DEFAULT_TIMEOUT = 250;
 
 	public final int DEFAULT_MAX_READINGS = 1;
+        public final int DEFAULT_NUM_REF_EX_RESOLVERS = 2;
 
 	private String abd_serverName = DEFAULT_ABD_SERVER_NAME;
 	private List<String> files = new LinkedList<String>();
@@ -104,6 +105,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 
 	private String rulesetFile = "/dev/null";
 
+        private int numRefExResolvers = DEFAULT_NUM_REF_EX_RESOLVERS;
 	private int timeout = DEFAULT_TIMEOUT;
 
 	private final Map<String, RemappedSLF> nomToLFMap;
@@ -166,9 +168,15 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 			String readingsStr = args.get("--max-readings");
 			maxReadings = Integer.parseInt(readingsStr);
 		}
+                if (args.containsKey("--num-resolvers")) {
+                    String numResolversStr = args.get("--num-resolvers");
+                    numRefExResolvers = Integer.parseInt(numResolversStr);
+                }
 
 		getLogger().debug("will only look at the " + maxReadings + " best reading(s)");
 		condition = new MaximumReadingsTerminationCondition(maxReadings);
+
+		getLogger().debug("will be combining the results of " + numRefExResolvers + " reference expression resolvers");
 
 		String abd_host = args.get("--abd-host");
 		abd_endpoints = AbducerUtils.getAbducerServerEndpointString(abd_host, DEFAULT_ABD_PORT);
@@ -582,7 +590,7 @@ extends AbstractAbductiveComponent<InterpretedUserIntention, String> {
 			rr.nom = remapped.remapper.remap(rr.nom);
 
 			WorkingMemoryAddress wma = new WorkingMemoryAddress(newDataID(), getSubarchitectureID());
-			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma, new MixingCombinator(2));
+			ResultGatherer<ReferenceResolutionResultWrapper> gatherer = new ResultGatherer(wma, new MixingCombinator(numRefExResolvers));
 			assert gatherer != null;
 			gatherers.put(wma, gatherer);
 
