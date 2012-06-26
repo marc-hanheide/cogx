@@ -319,17 +319,35 @@ void ObjectRecognizer3D::recognize(const Image &image,
 {
   IplImage *iplImage = convertImageToIpl(image);
   cv::Mat cvImage = cv::cvarrToMat(iplImage);
+  objects.clear();
 
-  // note that points are given in robot ego, need to be transformed into camera
-  vector<PointCloud::SurfacePoint> camPoints(points.size());
-  for(size_t i = 0; i < points.size(); i++)
-    camPoints[i].p = cogx::Math::transform(image.camPars.pose, points[i].p);
+  try
+  {
+    // note that points are given in robot ego, need to be transformed into camera
+    vector<PointCloud::SurfacePoint> camPoints(points.size());
+    for(size_t i = 0; i < points.size(); i++)
+      camPoints[i].p = cogx::Math::transform(image.camPars.pose, points[i].p);
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-  ConvertSurfacePoints2PCLCloud(camPoints, *pcl_cloud);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    ConvertSurfacePoints2PCLCloud(camPoints, *pcl_cloud);
 
-  recogniser->recognise(cvImage, pcl_cloud, pcl::PointCloud<pcl::Normal>::Ptr(),
-                        pcl::PointIndices::Ptr(), objects);
+    if(pcl_cloud.get() != 0 && pcl_cloud->points.size() >= 3)
+    {
+      recogniser->recognise(cvImage, pcl_cloud, pcl::PointCloud<pcl::Normal>::Ptr(),
+                            pcl::PointIndices::Ptr(), objects);
+    }
+    else
+    {
+      if(pcl_cloud.get() != 0)
+        log("***** point cloud is 0 ***");
+      if(pcl_cloud->points.size() >= 3)
+        log("***** point cloud has fewer than 3 points ***");
+    }
+  }
+  catch(runtime_error &e)
+  {
+    log("caught exception: " + string(e.what()));
+  }
 
   cvReleaseImage(&iplImage);
 }
@@ -340,50 +358,57 @@ void ObjectRecognizer3D::learn(const string &label, const Image &image,
   IplImage *iplImage = convertImageToIpl(image);
   cv::Mat cvImage = cv::cvarrToMat(iplImage);
 
-  // note that points are given in robot ego, need to be transformed into camera
-  vector<PointCloud::SurfacePoint> camPoints(points.size());
-  for(size_t i = 0; i < points.size(); i++)
-    camPoints[i].p = cogx::Math::transform(image.camPars.pose, points[i].p);
-
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-  ConvertSurfacePoints2PCLCloud(camPoints, *pcl_cloud);
-
-  // set model for learner
-  // see if we already know the model with given label
-  P::ObjectModel::Ptr model;
-  map<string, P::ObjectModel::Ptr>::iterator it;
-  if((it = models.find(label)) != models.end())
+  try
   {
-    model = it->second;
+    // note that points are given in robot ego, need to be transformed into camera
+    vector<PointCloud::SurfacePoint> camPoints(points.size());
+    for(size_t i = 0; i < points.size(); i++)
+      camPoints[i].p = cogx::Math::transform(image.camPars.pose, points[i].p);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    ConvertSurfacePoints2PCLCloud(camPoints, *pcl_cloud);
+
+    // set model for learner
+    // see if we already know the model with given label
+    P::ObjectModel::Ptr model;
+    map<string, P::ObjectModel::Ptr>::iterator it;
+    if((it = models.find(label)) != models.end())
+    {
+      model = it->second;
+    }
+    else
+    {
+      model.reset(new P::ObjectModel());
+      models[label] = model;
+    }
+    recogniser->setModelLearner(model);
+
+    // set pose for learner:
+    // a reasonable pose for the view: axis aligned and centroid
+    Eigen::Matrix4f pose;
+    Eigen::Vector4f t;
+    pcl::compute3DCentroid(*pcl_cloud, t);
+    // Note: learner requires inverse pose (pose of camera w.r.t. object)
+    pose.setIdentity();
+    pose.block<4,1> (0, 3) = -t;
+    recogniser->setPoseLearner(pose);
+
+    // now we are ready to learn
+    log("learn model with id '%s' with label '%s'", model->id.c_str(), label.c_str());
+    int status = recogniser->learn(cvImage, pcl_cloud, pcl::PointIndices::Ptr(), label, pose);
+    log("learned object '%s': status %d", label.c_str(), status);
+
+    // the recogniser needs to be cleared and all currentl known models added again
+    recogniser->clearRecogniser();
+    for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
+      recogniser->addModelRecogniser(it->second);
+    if(models.size() > 0)
+      recogniser->initFlannRecogniser();
   }
-  else
+  catch(runtime_error &e)
   {
-    model.reset(new P::ObjectModel());
-    models[label] = model;
+    log("caught exception: " + string(e.what()));
   }
-  recogniser->setModelLearner(model);
-
-  // set pose for learner:
-  // a reasonable pose for the view: axis aligned and centroid
-  Eigen::Matrix4f pose;
-  Eigen::Vector4f t;
-  pcl::compute3DCentroid(*pcl_cloud, t);
-  // Note: learner requires inverse pose (pose of camera w.r.t. object)
-  pose.setIdentity();
-  pose.block<4,1> (0, 3) = -t;
-  recogniser->setPoseLearner(pose);
-
-  // now we are ready to learn
-  log("learn model with id '%s' with label '%s'", model->id.c_str(), label.c_str());
-  int status = recogniser->learn(cvImage, pcl_cloud, pcl::PointIndices::Ptr(), label, pose);
-  log("learned object '%s': status %d", label.c_str(), status);
-
-  // the recogniser needs to be cleared and all currentl known models added again
-  recogniser->clearRecogniser();
-  for(map<string, P::ObjectModel::Ptr>::iterator it = models.begin(); it != models.end(); it++)
-    recogniser->addModelRecogniser(it->second);
-  if(models.size() > 0)
-    recogniser->initFlannRecogniser();
 
   cvReleaseImage(&iplImage);
 }
