@@ -4,7 +4,7 @@
 ################################################################################
 # define those to fit your case:
 CAST_CFG="instantiations/dora-yr4-bham-jenkins-sim.cast"
-GOAL="(forall (?p - place) (= (placestatus ?p) trueplace))"
+GOAL="(exists (?o - visualobject) (and (= (label ?o) magazine) (kval 'ROBOT' (related-to ?o))))"
 PLAYER_CFG="instantiations/stage/BHAM/cs-2-small-furniture2.cfg"
 TEST_CFG="--wait 30 --wmcheck-proposedContainer \\\"sa=planner.sa;xpath=//distribs[entry/de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution/values/values/de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair/val/prop[node()='magazine']
 and  entry/de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution/values/values/de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair/val/prop[node()='in']
