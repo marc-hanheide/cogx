@@ -443,8 +443,8 @@ void SlamProcess::processScan2d(const Laser::Scan2d &castScan) {
         int err = m_PP->addMeasurementSet(measSet);
         if (err != 0) {
           log("Got error value %d from addMeasurementSet!", err);
-          if (m_LastUsedOdom.getDoubleTime() > cureScan.getDoubleTime())
-            getLogger()->warn("Update failed, should have worked!");
+//          if (m_LastUsedOdom.getDoubleTime() > cureScan.getDoubleTime())
+//            getLogger()->warn("Update failed, should have worked!");
         }
       }
 
