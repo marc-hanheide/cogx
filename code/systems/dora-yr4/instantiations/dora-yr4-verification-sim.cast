@@ -10,6 +10,12 @@ SETVAR feature_options=<multiline>
 	default			# enable default
 	coma			# enable coma
     categorisation	# enable place categorisation
+    !categorisation-visual
+    !categorisation-size
+    place-property-persistence
+    !datasaving
+    !datasaving-visual
+    !simple_placeholder_exploration
     planning_sa		# enable planning core
     debug			# enable more debug GUIs and WM loggers
     dialogue		# enable dialogue
