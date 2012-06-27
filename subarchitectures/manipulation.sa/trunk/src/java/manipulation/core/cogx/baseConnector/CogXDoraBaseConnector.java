@@ -45,7 +45,8 @@ public class CogXDoraBaseConnector implements BaseConnector {
 	@Override
 	public BasePositionData getCurrentPosition() throws ExternalMemoryException {
 		if (currentPosition == null)
-			throw new ExternalMemoryException("No current position available");
+			//throw new ExternalMemoryException("No current position available");
+      return new BasePositionData(0, 0, 0); // HACK Michael
 		return currentPosition;
 	}
 
