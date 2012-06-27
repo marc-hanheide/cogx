@@ -83,9 +83,9 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createSingleBeliefAction(AskForShape.class,
 					_plannedAction.arguments[1]);
 		} else if (_plannedAction.name
-				.equals("ask-for-an-objects-ident-general")) {
+				.equals("ask-for-an-objects-objecttype-general")) {
 
-			assert _plannedAction.arguments.length == 2 : "ask-for-an-objects-ident-general is expected to be of arity 2";
+			assert _plannedAction.arguments.length == 2 : "ask-for-an-objects-objecttype-general is expected to be of arity 2";
 			return createSingleBeliefAction(AskForIdentity.class,
 					_plannedAction.arguments[1]);
 		} else if (_plannedAction.name.equals("ask-for-an-objects-color-polar")) {
@@ -98,9 +98,9 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-shape-polar is expected to be of arity 2";
 			return createBeliefPlusStringAction(AskPolarShape.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
-		} else if (_plannedAction.name.equals("ask-for-an-objects-ident-polar")) {
+		} else if (_plannedAction.name.equals("ask-for-an-objects-objecttype-polar")) {
 
-			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-ident-polar is expected to be of arity 2";
+			assert _plannedAction.arguments.length == 3 : "ask-for-an-objects-objecttype-polar is expected to be of arity 2";
 			return createBeliefPlusStringAction(AskPolarIdentity.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 		} else if (_plannedAction.name.equals("learn-color")) {
@@ -116,9 +116,9 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createBeliefPlusStringAction(LearnShape.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
-		} else if (_plannedAction.name.equals("learn-ident")) {
+		} else if (_plannedAction.name.equals("learn-objecttype")) {
 
-			assert _plannedAction.arguments.length == 3 : "learn-ident is expected to be of arity 3";
+			assert _plannedAction.arguments.length == 3 : "learn-objecttype is expected to be of arity 3";
 			return createBeliefPlusStringAction(LearnIdentity.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
@@ -133,8 +133,8 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createBeliefPlusStringAction(UnlearnShape.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 
-		} else if (_plannedAction.name.equals("unlearn-ident")) {
-			assert _plannedAction.arguments.length == 3 : "unlearn-ident is expected to be of arity 3";
+		} else if (_plannedAction.name.equals("unlearn-objecttype")) {
+			assert _plannedAction.arguments.length == 3 : "unlearn-objecttype is expected to be of arity 3";
 			return createBeliefPlusStringAction(UnlearnIdentity.class,
 					_plannedAction.arguments[1], _plannedAction.arguments[2]);
 		} else if (_plannedAction.name.equals("ask-for-and-object-with-color")) {
@@ -145,9 +145,9 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			assert _plannedAction.arguments.length == 2 : "ask-for-and-object-with-shape is expected to be of arity 2";
 			return createAskForAction("shape",
 					(ElementaryFormula) _plannedAction.arguments[1]);
-		} else if (_plannedAction.name.equals("ask-for-and-object-with-ident")) {
-			assert _plannedAction.arguments.length == 2 : "ask-for-and-object-with-ident is expected to be of arity 2";
-			return createAskForAction("ident",
+		} else if (_plannedAction.name.equals("ask-for-and-object-with-objecttype")) {
+			assert _plannedAction.arguments.length == 2 : "ask-for-and-object-with-objecttype is expected to be of arity 2";
+			return createAskForAction("objecttype",
 					(ElementaryFormula) _plannedAction.arguments[1]);
 		} else if (_plannedAction.name
 				.equals("answer-global-color-question-convinced")) {
@@ -174,16 +174,16 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createAnswerOpenAction(_plannedAction, "shape",
 					ConfidenceLevel.UNKNOWN);
 		} else if (_plannedAction.name
-				.equals("answer-global-type-question-convinced")) {
-			return createAnswerOpenAction(_plannedAction, "type",
+				.equals("answer-global-objecttype-question-convinced")) {
+			return createAnswerOpenAction(_plannedAction, "objecttype",
 					ConfidenceLevel.CONFIDENT);
 		} else if (_plannedAction.name
-				.equals("answer-global-type-question-believing")) {
-			return createAnswerOpenAction(_plannedAction, "type",
+				.equals("answer-global-objecttype-question-believing")) {
+			return createAnswerOpenAction(_plannedAction, "objecttype",
 					ConfidenceLevel.UNSURE);
 		} else if (_plannedAction.name
-				.equals("answer-global-type-question-unknown")) {
-			return createAnswerOpenAction(_plannedAction, "type",
+				.equals("answer-global-objecttype-question-unknown")) {
+			return createAnswerOpenAction(_plannedAction, "objecttype",
 					ConfidenceLevel.UNKNOWN);
 		} else if (_plannedAction.name
 				.equals("answer-polar-color-question-positively")) {
@@ -210,16 +210,16 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createAnswerPolarAction(_plannedAction, "shape",
 					ConfidenceLevel.UNKNOWN);
 		} else if (_plannedAction.name
-				.equals("answer-polar-type-question-positively")) {
-			return createAnswerPolarAction(_plannedAction, "type",
+				.equals("answer-polar-objecttype-question-positively")) {
+			return createAnswerPolarAction(_plannedAction, "objecttype",
 					ConfidenceLevel.CONFIDENT);
 		} else if (_plannedAction.name
-				.equals("answer-polar-type-question-believing")) {
-			return createAnswerPolarAction(_plannedAction, "type",
+				.equals("answer-polar-objecttype-question-believing")) {
+			return createAnswerPolarAction(_plannedAction, "objecttype",
 					ConfidenceLevel.UNSURE);
 		} else if (_plannedAction.name
-				.equals("answer-polar-type-question-negatively")) {
-			return createAnswerPolarAction(_plannedAction, "type",
+				.equals("answer-polar-objecttype-question-negatively")) {
+			return createAnswerPolarAction(_plannedAction, "objecttype",
 					ConfidenceLevel.UNKNOWN);
 		} else if (_plannedAction.name.equals("verify-reference")) {
 			assert _plannedAction.arguments.length == 2 : "verify-reference is expected to be of arity 2";
@@ -236,9 +236,9 @@ public class GeorgeExecutionMediator extends BeliefBasedPlanExecutionMediator
 			return createBeliefFeatureValueAction(VerifyReferenceByFeatureValue.class, _plannedAction.arguments[1], "shape", _plannedAction.arguments[2]);			
 		}
 		else if (_plannedAction.name
-				.equals("verify-reference-by-describing-its-type")) {
-			assert _plannedAction.arguments.length == 3 : "verify-reference-by-describing-its-type is expected to be of arity 3";			
-			return createBeliefFeatureValueAction(VerifyReferenceByFeatureValue.class, _plannedAction.arguments[1], "type", _plannedAction.arguments[2]);			
+				.equals("verify-reference-by-describing-its-objecttype")) {
+			assert _plannedAction.arguments.length == 3 : "verify-reference-by-describing-its-objecttype is expected to be of arity 3";			
+			return createBeliefFeatureValueAction(VerifyReferenceByFeatureValue.class, _plannedAction.arguments[1], "objecttype", _plannedAction.arguments[2]);			
 		}
 
 		throw new ActionExecutionException("No conversion available for: "
