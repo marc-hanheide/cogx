@@ -40,7 +40,8 @@ void ActorObject::setShape(golem::Scene& scene,ConcreteActor* concreteActor)
 {
 
 	Creator creator(scene);
-	Actor::Desc* _shapeDesc =  concreteActor->getShape(creator,_desc.dimensions,_desc.width); // Create shape of the actor;
+	concreteActor->setShape (creator,_desc.dimensions,_desc.width); // Create shape of the actor;
+	Actor::Desc* _shapeDesc =  concreteActor->getShape(); // Get shape of the actor;
 	_shapeDesc->nxActorDesc.globalPose.t.set(NxReal(_position.v1), NxReal(_position.v2), NxReal(_position.v3));		//-sets coordinates
 
 	_shapeDesc->nxActorDesc.globalPose.M.rotX(_desc.startRotation.v1); //-sets rotations	

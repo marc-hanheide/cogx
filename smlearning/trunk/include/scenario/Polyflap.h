@@ -37,13 +37,22 @@ namespace smlearning {
 class Polyflap : public ConcreteActor
 {
 
-	protected:
-		/** defines the concrete shape of a polyflap */
-		virtual Actor::Desc* getShape(Creator & creator,const Vec3& dimensions,const Real& width)
-		{
-			
-			return creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(width*0.5), REAL_PI_2);			
-		}	
+protected:
+	/** defines the concrete shape of a polyflap */
+	virtual void setShape(Creator & creator,const Vec3& dimensions,const Real& width)
+	{
+		
+		shapeDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(width*0.5), REAL_PI_2);
+		setupBounds ();
+	}
+
+	virtual Actor::Desc* getShape ()
+	{
+		return shapeDesc;
+	}
+
+
+	
 };
 
 }; // namespace smlearning 
