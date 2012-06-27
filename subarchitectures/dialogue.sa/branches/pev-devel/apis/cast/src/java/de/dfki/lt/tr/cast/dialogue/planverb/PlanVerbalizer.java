@@ -14,6 +14,7 @@ import java.util.List;
 import comadata.ComaRoom;
 
 import SpatialData.Place;
+import SpatialData.PlaceStatus;
 import VisionData.VisualObject;
 
 import cast.DoesNotExistOnWMException;
@@ -64,6 +65,8 @@ public class PlanVerbalizer {
 	
 	private final static String DEFAULTNGRAMFILE   = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt";
 	private final static String DEFAULTGRAMMARFILE = "subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/grammar.xml";
+	
+	public boolean debug_lf_out = false;
 	
 	public GBeliefMemory m_gbmemory = new GBeliefMemory();
 	
@@ -212,6 +215,9 @@ public class PlanVerbalizer {
 		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
+		
+		m_postLexicalSub.put("cones", "viewcones");
+		m_postLexicalSub.put("circle", "placeholder");
 	}
 	
 	public String verbalizeHistory(final List<POPlan> hlist) {
@@ -326,8 +332,13 @@ public class PlanVerbalizer {
 					log_sb.append("\n appending postProcessLexiconSubstitution() final output text: \n" + outputText);
 					output_sb.append(outputText + ". \n");
 				} else {
-					log_sb.append("\n appending original LF to output text.");
-					output_sb.append(finalLF.toString());
+					if (debug_lf_out) {
+						log_sb.append("\n appending original LF to output text.");
+						output_sb.append(finalLF.toString() + "\n");
+					} else {
+						log_sb.append("\n no realisation found for LF " + finalLF.toString());
+						output_sb.append("\n");
+					}
 				}
 			} else if (msg instanceof StringMessage) {
 				String outputText = ((StringMessage) msg).getText();
@@ -525,6 +536,13 @@ public class PlanVerbalizer {
 					ComaRoomTransferFunction.CATEGORY_ID)
 					.getDistribution().getMostLikely().getProposition();
 			if (cat==null || cat.equals("")) cat = "room";
+			// for PEV!!! 2012-06-25 (hz)
+			cat = "room";
+			int roomID = gbProxy.getContent().get(
+					ComaRoomTransferFunction.ROOM_ID).
+					getDistribution().getMostLikely().getInteger();
+			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
+			final String placeIDF = new Integer(roomID).toString();
 			final String catF = cat;
 			
 //			log("Gbelief is a room with category: " + catF);
@@ -533,14 +551,21 @@ public class PlanVerbalizer {
 	            @Override
 	            public BasicLogicalForm.Builder doWork(String nom, BasicState s, BasicLogicalForm.Builder lfBuilder) {
 
+	                String depStateNom = BasicPatterns.uniqueNominal(lfBuilder);
+
+	                BasicState depState = BasicState.newBuilder("number-id") //"number-ordinal")
+	                        .setProposition(placeIDF)
+	                        .build();
+	                
 	                BasicState headState = BasicState.newBuilder("e-place")
 	                        .setProposition(catF)
 	                        .addFeature("Delimitation", "unique")
 	                        .addFeature("Quantification", "specific")
 	                        .addFeature("Num", "sg")
+	                        .addRelation("Modifier", depStateNom)
 	                        .build();
 
-	                return lfBuilder.updateState(nom, headState);
+	                return lfBuilder.addState(depStateNom, depState).updateState(nom, headState);
 	            }
 	        };
 	        return myRefRep;
@@ -578,6 +603,12 @@ public class PlanVerbalizer {
 					getDistribution().getMostLikely().getInteger();
 			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
 			final String placeIDF = new Integer(placeID).toString();
+			int placestatus = gbProxy.getContent().get(
+					PlaceTransferFunction.PLACE_STATUS_ID).
+					getDistribution().getMostLikely().getInteger();
+			String placeStatus = "place";
+			if (placestatus==PlaceStatus.PLACEHOLDER.ordinal()) placeStatus = "placeholder";
+			final String placeStatusF = placeStatus;
 			
 //			log("Gbelief is a place with place ID: " + placeIDF);
 			
@@ -591,13 +622,24 @@ public class PlanVerbalizer {
 	                        .setProposition(placeIDF)
 	                        .build();
 	                
-	                BasicState headState = BasicState.newBuilder("e-place")
-	                        .setProposition("place")
-	                        .addFeature("Delimitation", "unique")
-	                        .addFeature("Quantification", "specific")
-	                        .addFeature("Num", "sg")
-	                        .addRelation("Modifier", depStateNom)
-	                        .build();
+	                BasicState headState; 
+	                if (placeStatusF.equals("placeholder")) {
+	                	headState = BasicState.newBuilder("e-place")
+	                			.setProposition("circle") // should be "placeholder"
+	                			.addFeature("Delimitation", "unique")
+	                			.addFeature("Quantification", "specific")
+	                			.addFeature("Num", "sg")
+	                			.addRelation("Modifier", depStateNom)
+	                			.build();
+	                } else {
+	                	headState = BasicState.newBuilder("e-place")
+	                			.setProposition("place")
+	                			.addFeature("Delimitation", "unique")
+	                			.addFeature("Quantification", "specific")
+	                			.addFeature("Num", "sg")
+	                			.addRelation("Modifier", depStateNom)
+	                			.build();
+	                }
 
 	                return lfBuilder.addState(depStateNom, depState).updateState(nom, headState);
 	            }
