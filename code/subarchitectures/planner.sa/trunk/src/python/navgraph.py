@@ -12,7 +12,8 @@ import networkx
 config.logging_settings_from_dict({'root:level' : 'DEBUG'})
 
 global_vars.config.__dict__['enable_switching_planner'] = True
-
+global_vars.update_config('config.dora.ini')
+    
 room_colors = ["red", "green", "blue", "yellow", "orange", "cyan", "black"]
 
 assert len(sys.argv) == 3, """Call 'navgraph.py domain.pddl problem.pddl' for a single planner call"""
