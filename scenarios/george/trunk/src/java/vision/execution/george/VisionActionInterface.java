@@ -251,7 +251,7 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<LearnIdentity> {
 
 		public LearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, LearnIdentity.class, "ident", 1,
+			super(_component, LearnIdentity.class, "objecttype", 1,
 					LEARNED_FEATURE_POSTFIX);
 		}
 	}
@@ -279,7 +279,7 @@ public class VisionActionInterface extends
 			LearnInstructionExecutor<UnlearnIdentity> {
 
 		public UnlearnIdentityExecutor(ManagedComponent _component) {
-			super(_component, UnlearnIdentity.class, "ident", -1, "-unlearned");
+			super(_component, UnlearnIdentity.class, "objecttype", -1, "-unlearned");
 		}
 	}
 
