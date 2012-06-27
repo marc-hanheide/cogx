@@ -69,11 +69,13 @@ CDisplayClient m_display;
   void recognize(const Image &image,
     const vector<PointCloud::SurfacePoint> &points,
     vector<P::ObjectLocation> &objects);
-  void learn(const string &label, const Image &image,
+  bool learn(const string &label, const Image &image,
     const vector<PointCloud::SurfacePoint> &points);
   void receiveDetectionCommand(const cdl::WorkingMemoryChange & _wmc);
   void receiveRecognitionCommand(const cdl::WorkingMemoryChange & _wmc);
+  void receiveVisualLearningTask(const cdl::WorkingMemoryChange & _wmc);
   void receiveLearnObjectViewCommand(const cdl::WorkingMemoryChange & _wmc);
+  bool learnObjectView(cast::cdl::WorkingMemoryAddress &visObjAddr, string label);
   void objectLoationToVisualObject(P::ObjectLocation &objLoc,
       VisualObjectPtr &visObj);
 

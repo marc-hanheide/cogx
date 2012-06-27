@@ -210,6 +210,10 @@ void ObjectRecognizer3D::start()
     new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
       &ObjectRecognizer3D::receiveLearnObjectViewCommand));
 
+  addChangeFilter(createGlobalTypeFilter<VisionData::VisualLearningTask>(cdl::ADD),
+    new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
+      &ObjectRecognizer3D::receiveVisualLearningTask));
+
   // get an image to obtain camera parameters and provide these for the recogniser
   Image image;
   videoServer->getImage(camId, image);
@@ -352,9 +356,10 @@ void ObjectRecognizer3D::recognize(const Image &image,
   cvReleaseImage(&iplImage);
 }
 
-void ObjectRecognizer3D::learn(const string &label, const Image &image,
+bool ObjectRecognizer3D::learn(const string &label, const Image &image,
     const vector<PointCloud::SurfacePoint> &points)
 {
+  bool succeed = false;
   IplImage *iplImage = convertImageToIpl(image);
   cv::Mat cvImage = cv::cvarrToMat(iplImage);
 
@@ -397,6 +402,9 @@ void ObjectRecognizer3D::learn(const string &label, const Image &image,
     log("learn model with id '%s' with label '%s'", model->id.c_str(), label.c_str());
     int status = recogniser->learn(cvImage, pcl_cloud, pcl::PointIndices::Ptr(), label, pose);
     log("learned object '%s': status %d", label.c_str(), status);
+    // (0..not_learned, 1..tracked, 2..recognised, 3..learned)
+    if(status == 3)
+      succeed = true;
 
     // the recogniser needs to be cleared and all currentl known models added again
     recogniser->clearRecogniser();
@@ -411,6 +419,8 @@ void ObjectRecognizer3D::learn(const string &label, const Image &image,
   }
 
   cvReleaseImage(&iplImage);
+
+  return succeed;
 }
 
 /**
@@ -554,18 +564,61 @@ void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChang
 }
 
 /**
+ * Perform a learning step, i.e. learn a new view of a given visual object.
+ */
+void ObjectRecognizer3D::receiveVisualLearningTask(const cdl::WorkingMemoryChange & _wmc)
+{
+  log("Receiving VisualLearningTask");
+  VisualLearningTaskPtr learn_task = getMemoryEntry<VisualLearningTask>(_wmc.address);
+  if(learn_task->concept == "objecttype")
+  {
+    bool succeed = false;
+    log("this is a objecttype/ident task");
+    if(learn_task->labels.size() == 1)
+    {
+      log("learning new vew for object '%s'", learn_task->labels[0].c_str());
+      // NOTE: we ignore the label weight
+      if(learnObjectView(learn_task->visualObjectAddr->address, learn_task->labels[0]))
+        succeed = true;
+    }
+    else
+    {
+      log("more than one label given!");
+    }
+    if(succeed)
+      learn_task->status = VisionData::VCSUCCEEDED;
+    else
+      learn_task->status = VisionData::VCFAILED;
+    // HACK: we need to overwrite the command with success. But right now the
+    // VisualLearner also overwrites the command, even if it should not as it is
+    // about type not color,shape
+    //overwriteWorkingMemory(_wmc.address, learn_task);
+  }
+  log("done VisualLearningTask");
+}
+
+/**
  * Learn a view of a given visual object.
  */
 void ObjectRecognizer3D::receiveLearnObjectViewCommand(const cdl::WorkingMemoryChange & _wmc)
 {
   log("Receiving LearnObjectViewCommand");
-
   LearnObjectViewCommandPtr learn_cmd = getMemoryEntry<LearnObjectViewCommand>(_wmc.address);
+  learnObjectView(learn_cmd->visualObject->address, string(""));
+  log("done LearnObjectViewCommand");
+}
+
+/**
+ * Learn a view of a given visual object.
+ * NOTE: label is passed by value on purpose.
+ */
+bool ObjectRecognizer3D::learnObjectView(cast::cdl::WorkingMemoryAddress
+    &visObjAddr, string label)
+{
   // TODO: catch exception and return with error condition if object is not
   // actually in WM
   VisualObjectPtr visObj =
-    getMemoryEntry<VisualObject>(learn_cmd->visualObject->address);
-
+    getMemoryEntry<VisualObject>(visObjAddr);
   // get image
   Image image;
   videoServer->getImage(camId, image);
@@ -573,9 +626,10 @@ void ObjectRecognizer3D::receiveLearnObjectViewCommand(const cdl::WorkingMemoryC
   ProtoObjectPtr protoObj =
       getMemoryEntry<ProtoObject>(visObj->protoObject->address.id);
 
-  // get the most likely label of the visual object
-  string label = GetBestLabel(*visObj);
-  // if it does not have any yet, invent one
+  // if no label given, get the currently most likely label of the visual object
+  if(label.empty())
+    label = GetBestLabel(*visObj);
+  // if we still have no label, invent one
   if(label.empty())
   {
     stringstream ss;
@@ -584,23 +638,28 @@ void ObjectRecognizer3D::receiveLearnObjectViewCommand(const cdl::WorkingMemoryC
   }
 
   log("learning new view for object '%s'", label.c_str());
-  learn(label, image, protoObj->points);
+  bool succeed = learn(label, image, protoObj->points);
+  if(succeed)
+  {
+    log("OK, learned a new view");
+    // read again to decrease likelihood of inconsitency
+    visObj = getMemoryEntry<VisualObject>(visObjAddr);
+    visObj->identLabels.clear();
+    visObj->identDistrib.clear();
+    // note: "unknown" must always be the first entry in the list
+    visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
+    visObj->identDistrib.push_back(0.);
+    visObj->identLabels.push_back(label);
+    visObj->identDistrib.push_back(1.);
+    log("overwriting WM entry with address.id '%s'", visObjAddr.id.c_str());
+    overwriteWorkingMemory(visObjAddr, visObj);
+  }
+  else
+  {
+    log("failed to learn a new view");
+  }
 
-  // read agagin to decrease likelihood of inconsitency
-  visObj = getMemoryEntry<VisualObject>(learn_cmd->visualObject->address);
-  visObj->identLabels.clear();
-  visObj->identDistrib.clear();
-  // note: "unknown" must always be the first entry in the list
-  visObj->identLabels.push_back(VisionData::IDENTITYxUNKNOWN);
-  visObj->identDistrib.push_back(0.);
-  visObj->identLabels.push_back(label);
-  visObj->identDistrib.push_back(1.);
-  log("overwriting WM entry with address.id '%s'",
-      learn_cmd->visualObject->address.id.c_str());
-  overwriteWorkingMemory(learn_cmd->visualObject->address, visObj);
-
-
-  log("done LearnObjectViewCommand");
+  return succeed;
 }
 
 /**
