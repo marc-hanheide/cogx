@@ -154,6 +154,11 @@ public class CogXRunner extends ManagedComponent implements Runner {
 	 * add the vision listener to the CAST working memory
 	 */
 	public void addVisionListener() {
+    /* NOTE: Michael Zillich, 2012-06-27
+     * We ignore visual objects, as the system crashes if we do not have proper
+     * geometries for the objects. And we don't have these for George.
+     * This was different for the spring school, where we had BLORT models, with
+     * all their geometry in WM.
 		addChangeFilter(ChangeFilterFactory.createTypeFilter(
 				VisualObject.class, WorkingMemoryOperation.ADD),
 				new WorkingMemoryChangeReceiver() {
@@ -180,6 +185,7 @@ public class CogXRunner extends ManagedComponent implements Runner {
 								.visualObjectDelete(_wmc);
 					}
 				});
+     */
 	}
 
 	/**
