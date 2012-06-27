@@ -217,6 +217,9 @@ public class PlanVerbalizer {
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
 		
 		m_postLexicalSub.put("cones", "viewcones");
+		m_postLexicalSub.put("could not search for", "did not find");
+
+		m_preLexicalSub.put("e-place ^ placeholder", "thing ^ circle");
 		m_postLexicalSub.put("circle", "placeholder");
 	}
 	
@@ -532,9 +535,14 @@ public class PlanVerbalizer {
 		if (gbProxy.getType().equals(
 				SimpleDiscreteTransferFunction
 				.getBeliefTypeFromCastType(ComaRoom.class))) {
-			String cat = gbProxy.getContent().get(
+			String cat = "";
+			try {
+				cat = gbProxy.getContent().get(
 					ComaRoomTransferFunction.CATEGORY_ID)
 					.getDistribution().getMostLikely().getProposition();
+			} catch (AssertionError ae) {
+				logException(ae);
+			}
 			if (cat==null || cat.equals("")) cat = "room";
 			// for PEV!!! 2012-06-25 (hz)
 			cat = "room";
@@ -603,12 +611,11 @@ public class PlanVerbalizer {
 					getDistribution().getMostLikely().getInteger();
 			// if (placeID==0) placeID = 10; // TODO temporary fix for out of vocab word 'zeroth'!
 			final String placeIDF = new Integer(placeID).toString();
-			int placestatus = gbProxy.getContent().get(
-					PlaceTransferFunction.PLACE_STATUS_ID).
-					getDistribution().getMostLikely().getInteger();
-			String placeStatus = "place";
-			if (placestatus==PlaceStatus.PLACEHOLDER.ordinal()) placeStatus = "placeholder";
-			final String placeStatusF = placeStatus;
+			String placestatus = gbProxy.getContent().get(PlaceTransferFunction.PLACE_STATUS_ID)
+					.getDistribution().getMostLikely().getProposition();
+			if (placestatus.equals(PlaceStatus.PLACEHOLDER.toString())) placestatus = "placeholder";
+			else placestatus = "place";
+			final String placeStatusF = placestatus;
 			
 //			log("Gbelief is a place with place ID: " + placeIDF);
 			
@@ -621,25 +628,14 @@ public class PlanVerbalizer {
 	                BasicState depState = BasicState.newBuilder("number-id") //"number-ordinal")
 	                        .setProposition(placeIDF)
 	                        .build();
-	                
-	                BasicState headState; 
-	                if (placeStatusF.equals("placeholder")) {
-	                	headState = BasicState.newBuilder("e-place")
-	                			.setProposition("circle") // should be "placeholder"
-	                			.addFeature("Delimitation", "unique")
-	                			.addFeature("Quantification", "specific")
-	                			.addFeature("Num", "sg")
-	                			.addRelation("Modifier", depStateNom)
+
+	                BasicState headState = BasicState.newBuilder("e-place")
+	                		.setProposition(placeStatusF) 
+	                		.addFeature("Delimitation", "unique")
+	                		.addFeature("Quantification", "specific")
+	                		.addFeature("Num", "sg")
+	                		.addRelation("Modifier", depStateNom)
 	                			.build();
-	                } else {
-	                	headState = BasicState.newBuilder("e-place")
-	                			.setProposition("place")
-	                			.addFeature("Delimitation", "unique")
-	                			.addFeature("Quantification", "specific")
-	                			.addFeature("Num", "sg")
-	                			.addRelation("Modifier", depStateNom)
-	                			.build();
-	                }
 
 	                return lfBuilder.addState(depStateNom, depState).updateState(nom, headState);
 	            }
