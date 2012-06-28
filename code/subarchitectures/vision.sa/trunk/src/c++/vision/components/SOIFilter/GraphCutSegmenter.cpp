@@ -44,6 +44,7 @@ using namespace cogx::Math;
 
 #define INVERT_RED_BLUE false
 
+#define EROSION_ITER 3
 namespace cast
 {
 
@@ -71,6 +72,7 @@ GraphCutSegmenter::GraphCutSegmenter()
   smoothCost = SMOOTH_COST;
   colFilThreshold = COLOR_FILTERING_THRESHOLD;
   m_invertRB = INVERT_RED_BLUE;
+  m_erosionIterations = EROSION_ITER;
 }
 
 void GraphCutSegmenter::configure(const map<string,string> & _config)
@@ -85,6 +87,7 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
   smoothCost = SMOOTH_COST;
   colFilThreshold = COLOR_FILTERING_THRESHOLD;
   m_invertRB = INVERT_RED_BLUE;
+  m_erosionIterations = EROSION_ITER;
 
   if((it = _config.find("--display")) != _config.end())
   {
@@ -136,6 +139,12 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
   {
     istringstream str(it->second);
     str >> smoothCost;
+  }
+  
+  if((it = _config.find("--erosion-iters")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> m_erosionIterations;
   }
 }
 
@@ -528,6 +537,31 @@ vector<SurfacePoint> GraphCutSegmenter::sample3DPoints(vector<SurfacePoint> poin
   }	  
 }
 
+vector<SurfacePoint> GraphCutSegmenter::erode3DPoints(vector<SurfacePoint> surfPoints, vector<CvPoint> projPoints, IplImage *invPatch, int erIter)
+{
+  assert(surfPoints.size() == projPoints.size());
+  
+  IplImage *erodedPatch = cvCreateImage(cvGetSize(invPatch), IPL_DEPTH_8U, 1);
+  vector<SurfacePoint> fltPoints;
+  
+  // Since invPatch is inverted we use dilate instead of erode
+  cvDilate(invPatch, erodedPatch, NULL, erIter);
+  
+  vector<SurfacePoint>::iterator sit = surfPoints.begin();
+  vector<CvPoint>::iterator pit;
+  int widthStep = erodedPatch->widthStep;
+  
+  for(pit=projPoints.begin(); pit!=projPoints.end(); pit++) {
+    if(erodedPatch->imageData[(int) (widthStep*pit->y + pit->x)] == 0)
+      fltPoints.push_back(*sit);
+    sit++;  
+   }
+      
+  cvReleaseImage(&erodedPatch);
+      
+  return fltPoints;
+}
+
 
 IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> allSurfPoints, float hlsSigma, float distSigma, bool distcost)
 {
@@ -570,6 +604,7 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
 
   if(filterFlag) //HACK
   {
+    surfPoints = erode3DPoints(surfPoints, projPoints, samplePatch, m_erosionIterations);
     if (surfPoints.size() > MAX_COLOR_SAMPLE)
       surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE);
   }
