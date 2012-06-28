@@ -4,7 +4,7 @@
 # Here you have to give the correct clibration file
 # with "--testGUI" you can try out the different commands
 SETVAR manipServer_config=<multiline>
-   --configPath "instantiations/george-y3/calibration/example-arm-pose.xml"
+   --configPath "instantiations/george/sim/calibration/example-arm-pose.xml"
    --armName "simulation"
    --enableTableObstacleHack true
    #--testGUI
