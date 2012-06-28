@@ -21,18 +21,38 @@ CTypeEnumerator Enumerator;
 std::map<std::string, int> labelConceptMap; // name -> 1=color, 2=shape
 std::string ClfStartConfig;
 
+#define YEAR4
+
 class _InitMe_
 {
 public:
    _InitMe_() {
+#ifdef YEAR4
       labelConceptMap.clear();
       labelConceptMap["red"] = 1;
       labelConceptMap["green"] = 1;
       labelConceptMap["blue"] = 1;
       labelConceptMap["yellow"] = 1;
+      labelConceptMap["orange"] = 1;
+      labelConceptMap["compact"] = 2;
+      labelConceptMap["elongated"] = 2;
+      Enumerator.clear();
+      Enumerator.addMapping("red", 1);
+      Enumerator.addMapping("green", 2);
+      Enumerator.addMapping("blue", 3);
+      Enumerator.addMapping("yellow", 4);
+      Enumerator.addMapping("orange", 5);
+      Enumerator.addMapping("compact", 6);
+      Enumerator.addMapping("elongated", 7);
+#else
+      labelConceptMap.clear();
+      labelConceptMap["red"] = 1;
+      labelConceptMap["green"] = 1;
+      labelConceptMap["blue"] = 1;
+      labelConceptMap["yellow"] = 1;
+      labelConceptMap["orange"] = 1;
       labelConceptMap["black"] = 1;
       labelConceptMap["white"] = 1;
-      labelConceptMap["orange"] = 1;
       labelConceptMap["pink"] = 1;
       labelConceptMap["compact"] = 2;
       labelConceptMap["elongated"] = 2;
@@ -47,6 +67,7 @@ public:
       Enumerator.addMapping("pink", 8);
       Enumerator.addMapping("compact", 9);
       Enumerator.addMapping("elongated", 10);
+#endif
    }
 } _init_me_;
 
