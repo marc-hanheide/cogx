@@ -5,46 +5,48 @@
 #include <Math.ice>
 
 module manipulation {
-	module execution {
-	module slice {
-	
-		/**
-		* Enum for reporting status of manipulation commands. 
-		*/
-		enum ManipulationTaskStatus {
-  		MCSUCCEEDED,
-  		MCFAILED,
-  		MCREQUESTED
-		};
-		
-		enum ManipulationTaskType {
-  		RETRACTARM,
-  		POINTOBJ0,
-  		IDLE
-		};
-		
-		sequence<cast::cdl::WorkingMemoryPointer> WMPointerSeq; 
+  module execution {
+    module slice {
 
-		class ArmMovementTask {
-    	// REQUEST:
-    	ManipulationTaskType taskType;
-    	WMPointerSeq objPointerSeq;
+      /**
+       * Enum for reporting status of manipulation commands. 
+       */
+      enum ManipulationTaskStatus {
+        MCSUCCEEDED,
+        MCFAILED,
+        MCREQUESTED
+      };
 
-    	// RESPONSE
-    	ManipulationTaskStatus status;
-  	};
-  	
-  	class ArmStatus {
-  		cogx::Math::Pose3 currentPose;
-  		cogx::Math::Pose3 targetPose;
-    
-    	ManipulationTaskType currentTask;
-    	ManipulationTaskType lastTask;
-    	ManipulationTaskStatus lastStatus;
-  	};
-		
-	};
-	};
+      enum ManipulationTaskType {
+        RETRACTARM,
+        POINTOBJ0,
+        IDLE
+      };
+
+      sequence<cast::cdl::WorkingMemoryPointer> WMPointerSeq; 
+
+      class ArmMovementTask {
+        // REQUEST:
+        ManipulationTaskType taskType;
+        // ID of the VisualObject (in vision.sa)
+        WMPointerSeq objPointerSeq;
+
+        // RESPONSE
+        ManipulationTaskStatus status;
+      };
+
+      class ArmStatus {
+        cogx::Math::Pose3 currentPose;
+        cogx::Math::Pose3 targetPose;
+
+        ManipulationTaskType currentTask;
+        ManipulationTaskType lastTask;
+        ManipulationTaskStatus lastStatus;
+      };
+
+    };
+  };
 };
 
 #endif
+// vim: set fileencoding=utf-8 sw=2 sts=4 ts=8 et :vim
