@@ -17,7 +17,9 @@
     BLUE - ColorName
     YELLOW - ColorName
     ORANGE - ColorName
+    BLACK - ColorName
     
+
     UNKNOWN_SHAPE - ShapeName
     COMPACT - ShapeName
     ELONGATED - ShapeName
