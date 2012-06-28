@@ -980,15 +980,68 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
         }
       }
 
-      if (probInThisGroup > m_minConeGroupProb) {
-        grouped_cones_minAngle.push_back(stAngle);
-        grouped_cones_maxAngle.push_back(stAngle + max_dist);
-        //      debug("group size %d", gr.size());
-        grouped_cones.push_back(gr);
-      } else {
-        log("Rejecting cone group with total probability %f", probInThisGroup);
-      }
+      grouped_cones_minAngle.push_back(stAngle);
+      grouped_cones_maxAngle.push_back(stAngle + max_dist);
+      //      debug("group size %d", gr.size());
+      grouped_cones.push_back(gr);
       stAngle = maxAngle + min_dist - 0.0001;
+    }
+  }
+
+  // Compute total un-normalised probability mass of cones
+  double totalUnNormalisedMass = 0;
+  for (size_t i = 0; i < grouped_cones.size(); i++) {
+    vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
+    for (size_t j = 0; j < curConeGroup.size(); j++) {
+      totalUnNormalisedMass += curConeGroup[j].totalprob;
+    }
+  }
+
+  // Loop over cone groups, find the one with the lowest probability, and 
+  // exclude it if it's too low (considering the probability it would have in the
+  // final computation); then, reweight so that the remainder of the
+  // cones sum to the correct probability - and repeat until all cone groups
+  // exceed the threshold
+
+  {
+    double probabilityRemoved = 0.0;
+    double finished = false;
+    while (!finished) {
+      finished = true;
+
+      // Find the lowest probability cone group
+      double lowestConeGroupProbability = FLT_MAX;
+      int lowestPropabilityID = -1;
+      for (size_t i = 0; i < grouped_cones.size(); i++) {
+	double probInThisGroup = 0; // Normalised probability
+	const vector<ViewPointGenerator::SensingAction> &group = grouped_cones[i];
+	for (size_t j = 0; j < group.size(); j++) {
+	  probInThisGroup += pdfmass * group[j].totalprob / (totalUnNormalisedMass - probabilityRemoved);
+	}
+	if (probInThisGroup < lowestConeGroupProbability) {
+	  lowestConeGroupProbability = probInThisGroup;
+	  lowestPropabilityID = i;
+	}
+      }
+
+      if (lowestConeGroupProbability < m_minConeGroupProb) {
+	// Need to prune away a cone group
+	finished = false;
+
+	double probInThisGroup = 0;// Non-normalised probability
+	const vector<ViewPointGenerator::SensingAction> &group = grouped_cones[lowestPropabilityID];
+	for (size_t j = 0; j < group.size(); j++) {
+	  probInThisGroup += group[j].totalprob; 
+	}
+
+	probabilityRemoved += probInThisGroup;
+
+	grouped_cones.erase(grouped_cones.begin() + lowestPropabilityID);
+	grouped_cones_minAngle.erase(grouped_cones_minAngle.begin() + lowestPropabilityID);
+	grouped_cones_maxAngle.erase(grouped_cones_maxAngle.begin() + lowestPropabilityID);
+
+	log("Rejecting cone group with total probability %f (scaled to %f)", probInThisGroup, lowestConeGroupProbability);
+      }
     }
   }
 
@@ -1020,13 +1073,13 @@ int AVS_ContinualPlanner::generateViewConeGroups(int roomId, vector<vector<
     vector<ViewPointGenerator::SensingAction> &curConeGroup = grouped_cones[i];
     for (size_t j = 0; j < curConeGroup.size(); j++) {
 
-      log("viewcone %d before blow up  %f", i, curConeGroup[j].totalprob);
+      log("viewcone %d in group %d before blow up  %f", j, i, curConeGroup[j].totalprob);
 
       curConeGroup[j].totalprob = curConeGroup[j].totalprob * (1
           / m_locationToConeGroupNormalization[id]);
 
-      log("viewcone %d after blow up  %f", i, curConeGroup[j].totalprob);
-      log("viewcone %d pos %f %f %f", i, curConeGroup[j].pos[0],
+      log("viewcone after blow up  %f", curConeGroup[j].totalprob);
+      log("viewcone pos %f %f %f", curConeGroup[j].pos[0],
           curConeGroup[j].pos[1], curConeGroup[j].pos[2]);
     }
   }
