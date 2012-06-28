@@ -43,7 +43,7 @@
      <x>0</x>
      <y>0</y>
      <width>724</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_View">
@@ -56,6 +56,7 @@
     <addaction name="actShowToolbars"/>
     <addaction name="actShowDialogWindow"/>
     <addaction name="actRefreshViewList"/>
+    <addaction name="actSaveHtmlViews"/>
    </widget>
    <widget class="QMenu" name="menuQuit">
     <property name="title">
@@ -347,6 +348,11 @@
    </property>
    <property name="text">
     <string>Show &amp;dialog window</string>
+   </property>
+  </action>
+  <action name="actSaveHtmlViews">
+   <property name="text">
+    <string>&amp;Save all HTML views</string>
    </property>
   </action>
  </widget>

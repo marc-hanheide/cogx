@@ -24,6 +24,9 @@
 #include <QInputDialog>
 #include <QToolButton>
 #include <QAction>
+#include <QFile>
+#include <QTextStream>
+#include <QRegExp>
 #ifdef V11N_OBJECT_HTML
 #include <QWebSettings>
 #endif
@@ -397,6 +400,9 @@ QCastMainFrame::QCastMainFrame(QWidget * parent, Qt::WindowFlags flags)
 
    connect(ui.actShowCustomControls, SIGNAL(triggered()),
          this, SLOT(onShowCustomControls()));
+
+   connect(ui.actSaveHtmlViews, SIGNAL(triggered()),
+         this, SLOT(onSaveHtmlViews()));
 
    connect(ui.treeObjects, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
          this, SLOT(onTreeItemChanged(QTreeWidgetItem*, int)));
@@ -987,4 +993,54 @@ void QCastMainFrame::doDialogAdded(cogx::display::CDisplayModel *pModel, cogx::d
       pdlgwin->addDialog(pDialog);
    }
    FrameManager.updateControlStateForAll();
+}
+
+void QCastMainFrame::saveHtmlViews(QString directoryName)
+{
+   for (auto pView : m_pModel->m_Views) {
+      if (pView.second) {
+         QStringList list, head, body;
+         pView.second->drawHtml(head, body);
+         if (head.length() < 1 && body.length() < 1) {
+            continue;
+         }
+         list.append(
+               "<html><head>"
+               "<style>"
+               " body { font-size: 10pt; }"
+               " .v11ninfo { font-size: 90%; color: #808080; }"
+               "</style>\n"
+               );
+
+         list <<
+            "<style>"
+            " .v11nformbar { background-color: #e0e0f0; }"
+            " .v11nformtitle { width: 200px; }"
+            " .v11nformbutton { background-color: white; color: blue; padding: 0 4 0 4px;}"
+            "</style>\n";
+
+         list << head;
+         list.append("</head><body>");
+         list << body;
+         list.append("</body></html>");
+
+         QString html = list.join("\n");
+
+         QString fname = "view-" + QString::fromStdString(pView.first);
+         fname.replace(QRegExp("[^a-zA-Z0-9.]+"), "-");
+         QFile file(directoryName + "/" + fname + ".html");
+         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            continue;
+         }
+
+         QTextStream out(&file);
+         out << html;
+         file.close();
+      }
+   }
+}
+
+void QCastMainFrame::onSaveHtmlViews()
+{
+   saveHtmlViews("logs");
 }
