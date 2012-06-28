@@ -214,18 +214,6 @@ void ObjectRecognizer3D::start()
     new MemberFunctionChangeReceiver<ObjectRecognizer3D>(this,
       &ObjectRecognizer3D::receiveVisualLearningTask));
 
-  // get an image to obtain camera parameters and provide these for the recogniser
-  Image image;
-  videoServer->getImage(camId, image);
-  // TODO; set actual distortion
-  cv::Mat intrinsic(cv::Mat::zeros(3,3,CV_64F)), distortion(cv::Mat::zeros(4,1,CV_64F));
-  intrinsic.at<double>(0, 0) = image.camPars.fx;
-  intrinsic.at<double>(0, 2) = image.camPars.cx;
-  intrinsic.at<double>(1, 1) = image.camPars.fy;
-  intrinsic.at<double>(1, 2) = image.camPars.cy;
-  intrinsic.at<double>(2, 2) = 1.;
-  recogniser->setCameraParameter(intrinsic, distortion);
-
 #ifdef FEAT_VISUALIZATION        
   m_display.connectIceClient(*this);
   m_display.setClientData(this);
@@ -316,6 +304,18 @@ void ObjectRecognizer3D::CDisplayClient::handleEvent(const Visualization::TEvent
   }
 }
 #endif
+
+void ObjectRecognizer3D::setRecogniserCamereParameters(Image &image)
+{
+  // TODO; set actual distortion
+  cv::Mat intrinsic(cv::Mat::zeros(3,3,CV_64F)), distortion(cv::Mat::zeros(4,1,CV_64F));
+  intrinsic.at<double>(0, 0) = image.camPars.fx;
+  intrinsic.at<double>(0, 2) = image.camPars.cx;
+  intrinsic.at<double>(1, 1) = image.camPars.fy;
+  intrinsic.at<double>(1, 2) = image.camPars.cy;
+  intrinsic.at<double>(2, 2) = 1.;
+  recogniser->setCameraParameter(intrinsic, distortion);
+}
 
 void ObjectRecognizer3D::recognize(const Image &image,
     const vector<PointCloud::SurfacePoint> &points,
@@ -441,6 +441,7 @@ void ObjectRecognizer3D::receiveDetectionCommand(const cdl::WorkingMemoryChange 
   // get image
   Image image;
   videoServer->getImage(camId, image);
+  setRecogniserCamereParameters(image);
   IplImage *iplImage = convertImageToIpl(image);
   cv::Mat col = cv::cvarrToMat(iplImage);
 
@@ -507,6 +508,7 @@ void ObjectRecognizer3D::receiveRecognitionCommand(const cdl::WorkingMemoryChang
   // get image
   Image image;
   videoServer->getImage(camId, image);
+  setRecogniserCamereParameters(image);
   // get proto object with points
   ProtoObjectPtr protoObj =
       getMemoryEntry<ProtoObject>(visObj->protoObject->address.id);
@@ -573,10 +575,10 @@ void ObjectRecognizer3D::receiveVisualLearningTask(const cdl::WorkingMemoryChang
   if(learn_task->concept == "objecttype")
   {
     bool succeed = false;
-    log("this is a objecttype/ident task");
+    log("this is an objecttype task");
     if(learn_task->labels.size() == 1)
     {
-      log("learning new vew for object '%s'", learn_task->labels[0].c_str());
+      log("learning new view for object '%s'", learn_task->labels[0].c_str());
       // NOTE: we ignore the label weight
       if(learnObjectView(learn_task->visualObjectAddr->address, learn_task->labels[0]))
         succeed = true;
@@ -622,6 +624,7 @@ bool ObjectRecognizer3D::learnObjectView(cast::cdl::WorkingMemoryAddress
   // get image
   Image image;
   videoServer->getImage(camId, image);
+  setRecogniserCamereParameters(image);
   // get proto object with points
   ProtoObjectPtr protoObj =
       getMemoryEntry<ProtoObject>(visObj->protoObject->address.id);
