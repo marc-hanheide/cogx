@@ -82,34 +82,48 @@ void ArmManager::runComponent()
 {
   while(isRunning())
   {
-    // SYNC: Lock the monitor
-    IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
-    // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
-    if (m_actionQueue.size() < 1)
-      m_queueMonitor.timedWait(IceUtil::Time::seconds(2));
+    std::queue<cdl::WorkingMemoryAddress> actionItems;
+    {
+      // SYNC: Lock the monitor
+      IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
 
-    // SYNC: Continue with a locked monitor
+      // SYNC: If queue is empty, unlock the monitor and wait for notify() or timeout
+      if (m_actionQueue.size() < 1)
+        m_queueMonitor.timedWait(IceUtil::Time::seconds(2));
 
+      // SYNC: Continue with a locked monitor
+      while (!actionItems.empty()) actionItems.pop(); // clear, just in case
+      while (!m_actionQueue.empty()) {
+        actionItems.push(m_actionQueue.front());
+        m_actionQueue.pop();
+      }
 
-    while (!m_actionQueue.empty())
+      // SYNC: unlock the queue monitor; items in actionItems will be processed while
+      // new ones can be added to the m_actionQueue.
+    }
+
+    while (!actionItems.empty())
     {
       cdl::WorkingMemoryAddress addr;
 
-      addr = m_actionQueue.front();
-      m_actionQueue.pop();
+      addr = actionItems.front();
+      actionItems.pop();
 
       ArmMovementTaskPtr task;
       try {
         task = getMemoryEntry<ArmMovementTask>(addr);
       }
       catch (DoesNotExistOnWMException e) {
-        log("WARNING: the arm movement task entry ID %s was removed before it could be processed.", addr.id.c_str());
-        exit;
+        println("WARNING: the arm movement task entry ID %s was removed before it could be processed.", addr.id.c_str());
       }
 
       switch (task->taskType) {
         case POINTOBJ0:
+          //log(""" **** 11 (%s - %s)""", 
+          //    task->objPointerSeq[0]->address.subarchitecture.c_str(),
+          //    task->objPointerSeq[0]->address.id.c_str());
           //      	  m_pointing_now = addFarArmMovementCommand(addr);
+          assert(task->objPointerSeq[0]->type.find("VisualObject") != string::npos);
           m_pointing_now = pointAtObject(task->objPointerSeq[0]->address);
 
           if(m_pointing_now)
@@ -139,8 +153,7 @@ void ArmManager::runComponent()
         overwriteWorkingMemory(addr, task);
       }
       catch (DoesNotExistOnWMException e) {
-        log("WARNING: could not overwrite WM entry ID '%s'.", addr.id.c_str());
-        exit;
+        println("WARNING: could not overwrite WM entry ID '%s'.", addr.id.c_str());
       }
     }
   }
@@ -167,11 +180,17 @@ Pose3 ArmManager::pointingPose(const Pose3 objPose)
 
 bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
 {
-  VisualObjectPtr obj = getMemoryEntry<VisualObject>(addr);
-
   Pose3 objPose;
   setIdentity(objPose);
-  objPose.pos = obj->pose.pos;
+
+  try {
+    VisualObjectPtr obj = getMemoryEntry<VisualObject>(addr);
+    objPose.pos = obj->pose.pos;
+  }
+  catch(DoesNotExistOnWMException e) {
+    println("pointAtObject: the object does not exist!");
+    return false;
+  }
 
   return addMoveArmToPose(pointingPose(objPose));
 
@@ -179,8 +198,7 @@ bool ArmManager::pointAtObject(cdl::WorkingMemoryAddress addr)
 
 void ArmManager::receiveNewCommand(const cdl::WorkingMemoryChange &_wmc)
 {	
-  log("received a new ArmMovementTask");
-
+  debug("received a new ArmMovementTask");
 
   IceUtil::Monitor<IceUtil::Mutex>::Lock lock(m_queueMonitor);
 
@@ -206,8 +224,7 @@ void ArmManager::receiveNewCommand(const cdl::WorkingMemoryChange &_wmc)
   //cmd->targetPose.rot.m22=1;
   //addToWorkingMemory(newDataID(), cmd);
 
-
-  log("added movement command");
+  debug("added movement command");
 }
 
 //void ArmManager::receiveDeletedObject(const cdl::WorkingMemoryChange &_wmc)
@@ -231,7 +248,7 @@ void ArmManager::receiveNewCommand(const cdl::WorkingMemoryChange &_wmc)
 
 bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector3 offset)
 {
-
+  log("Starting to move the arm (MoveArmToPose).");
   MoveArmToPosePtr moveArmCom = new MoveArmToPose();
   moveArmCom->comp = COMPINIT;
   moveArmCom->status = NEW;
@@ -240,11 +257,11 @@ bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector
   string data_id = newDataID();
   m_repeat_arm_movement = true;
 
-  while(m_repeat_arm_movement){
+  while(m_repeat_arm_movement) {
     m_repeat_arm_movement = false;
     addToWorkingMemory(data_id, moveArmCom);
     // Wait for arm to finish
-    log("Waiting for arm to finish movement");
+    debug("Waiting for arm to finish movement");
     while(m_halt_arm && isRunning())
       sleepComponent(100);
     m_halt_arm = true;
@@ -253,13 +270,13 @@ bool ArmManager::addMoveArmToPose(cogx::Math::Pose3 pose) //, cogx::Math::Vector
       return false;
     deleteFromWorkingMemory(data_id);	
   }
-  log("Arm movement finished");
+  log("Arm movement finished.");
   return true;
 }
 
 bool ArmManager::addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma) //, cogx::Math::Vector3 offset)
 {
-
+  log("Starting to move the arm (FarArmMovementCommand).");
   FarArmMovementCommandPtr farArmMovementCom = new FarArmMovementCommand();
   farArmMovementCom->comp = COMPINIT;
   farArmMovementCom->status = NEW;
@@ -272,7 +289,7 @@ bool ArmManager::addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma) /
     m_repeat_arm_movement = false;
     addToWorkingMemory(data_id, farArmMovementCom);
     // Wait for arm to finish
-    log("Waiting for arm to finish movement");
+    debug("Waiting for arm to finish movement");
     while(m_halt_arm && isRunning())
       sleepComponent(100);
     m_halt_arm = true;
@@ -281,12 +298,13 @@ bool ArmManager::addFarArmMovementCommand(cast::cdl::WorkingMemoryAddress wma) /
       return false;
     deleteFromWorkingMemory(data_id);	
   }
-  log("Arm movement finished");
+  log("Arm movement finished.");
   return true;
 }
 
 bool ArmManager::addMoveToHomeCommand()
 {
+  log("Starting to move the arm (MoveArmToHomePositionCommand).");
 
   MoveArmToHomePositionCommandPtr moveToHomeCom = new MoveArmToHomePositionCommand();
   moveToHomeCom->comp = COMPINIT;
@@ -300,7 +318,7 @@ bool ArmManager::addMoveToHomeCommand()
     m_repeat_arm_movement = false;
     addToWorkingMemory(data_id, moveToHomeCom);
     // Wait for arm to finish
-    log("Waiting for arm to finish movement");
+    debug("Waiting for arm to finish movement");
     while(m_halt_arm && isRunning())
       sleepComponent(100);
     m_halt_arm = true;
@@ -308,7 +326,7 @@ bool ArmManager::addMoveToHomeCommand()
       return false;
     deleteFromWorkingMemory(data_id);
   }
-  log("Arm movement finished");
+  log("Arm movement finished.");
   return true;
 }
 
@@ -317,7 +335,7 @@ void ArmManager::overwriteFarArmMovementCommand(const cdl::WorkingMemoryChange &
 {
   FarArmMovementCommandPtr cmd = getMemoryEntry<FarArmMovementCommand>(_wmc.address);
 
-  log("FarArmMovementCommand overwritten");
+  debug("FarArmMovementCommand overwritten");
 
   if(cmd->status == manipulation::slice::FINISHED){
     log("Arm movement finished");
