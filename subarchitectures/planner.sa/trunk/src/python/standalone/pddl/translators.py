@@ -445,7 +445,7 @@ class CompositeTypeCompiler(Translator):
         for arg in elem.args:
             arg = types.Parameter(arg.name, CompositeTypeCompiler.replacement_type(arg.type, elem.types))
             new_args.append(arg)
-        elem.args = elem.copy_args(new_args)
+        elem.args = elem.copy_args(new_args, reuse_names=True)
     
     @staticmethod
     def type_visitor(elem, results):
@@ -610,7 +610,7 @@ class ObjectFluentNormalizer(Translator):
             elif isinstance(cond, conditions.QuantifiedCondition):
                 #Terms that contain quantified variables must be handled inside the quantifier
                 subdict = self.dependent_terms(termdict, cond.args)
-                temp_scope = self.create_temp_scope(cond, termdict, domain)
+                temp_scope = self.create_temp_scope(cond.parent, termdict, domain)
                 if not subdict:
                     return cond.copy(new_parts=results, new_scope=temp_scope)
                 

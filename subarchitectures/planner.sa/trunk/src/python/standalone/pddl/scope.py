@@ -504,8 +504,8 @@ class Scope(dict):
                 dict.__setitem__(self, newname, entry)
         return renamings
 
-    def copy_args(self, args, copy_instance=False):
-        used_names = set()
+    def copy_args(self, args, copy_instance=False, reuse_names=False):
+        # used_names = set(self.iterkeys())
         result = []
         for arg in args:
             if isinstance(arg.type, types.ProxyType):
@@ -518,11 +518,11 @@ class Scope(dict):
 
             name = arg.name
             i=0
-            while name in used_names:
+            while name in self and not reuse_names:
                 name = "%s%d" % (arg.name, i)
                 i += 1
 
-            used_names.add(name)
+            # used_names.add(name)
             arg = types.Parameter(name, type)
             self.add(arg)
             result.append(arg)

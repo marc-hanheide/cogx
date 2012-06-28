@@ -126,10 +126,10 @@ def instantiation_function(action, problem, check_callback, force_callback, clea
         result = check(condition)
         if result == True:
             checked.add(condition)
-            #print self.name, "accept:", [a.get_instance().name for a in  args]
+            # print "accept:", [a.get_instance().name for a in  args]
             return True, None
         elif result == False:
-            #print self.name, "reject:", [a.get_instance().name for a in  args]
+            # print "reject:", [a.get_instance().name for a in  args]
             return None, None
 
         if forced:
@@ -186,6 +186,7 @@ class EffectGenerator(object):
                 continue
 
             self.funcdict[(modality, function)].append((args, modal_args, value, function_arg, action))
+            # print modality, function, " -> ", map(str, args) if args else "[]", action.name
             # if function_arg:
             #     print modality, function_arg, map(str, modal_args), value, action.name
             # else:
@@ -459,6 +460,17 @@ def get_observe_effects(action, observes, prob_functions = None):
                 sensors.append((mapl.SenseEffect(s_atom, action), det_cond))
         o.uninstantiate()
 
+        renamed_mapping = {}
+        for a in new_args:
+            if a.name in renamings:
+                renamed_mapping[a] = pddl.types.Parameter(a.name, a.type)
+                # print a, "is renamed"
+
+        if renamed_mapping:
+            with o.instantiate(renamed_mapping):
+                sensors = [(mapl.SenseEffect(s.sense.copy_instance(), s.sensor), c.copy(copy_instance=True) if c else none) for s,c in sensors]
+                new_args = [a.get_instance() if a.is_instantiated() else a]
+
         #undo renamings
         for name, oldname in renamings.iteritems():
             arg = o[name]
@@ -475,7 +487,7 @@ def add_sensors(action, domain, prob_functions):
         new_args = a2.copy_args(new_args)
         a2.args += new_args
         a2.vars += new_args
-
+        
     # print a2.name, [a.name for a in a2.args]
     sense_effects = []
     for s, cond in sensors:
@@ -615,7 +627,6 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
         action_cache = (actions, action_dict, cond_actions)
     else:
         actions, action_dict, cond_actions = action_cache
-        
 
     new_start_actions = []
     for sa, mapping in start_actions:
@@ -771,6 +782,8 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
         all_checked_facts = set()
         for action, mapping in next_actions:
             # print action.name, map(str, (mapping.get(a,a) for a in action.args))
+            # print "  ", action.precondition.pddl_str() if action.precondition else "None"
+            # print "  ", action.effect.pddl_str() if action.effect else "None"
             partial_action_key  = (action.name, tuple(mapping.get(a,a) for a in action.args))
             # cache_key = partial_action_key
             # if cache.has_ops(cache_key):
@@ -793,6 +806,7 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
             # #     print "no hit:", action.name, map(str, (mapping.get(a,a) for a in action.args))
                 
             if  partial_action_key in closed_actions:
+                # print "  closed"
                 for op in ops_by_partial_key[partial_action_key]:
                     cache.add_op(op, cache_key)
                 continue
@@ -809,8 +823,13 @@ def instantiate(actions, start, stat, domain, start_actions=[], prob_functions=N
 
             # import debug
             # debug.set_trace()
+            # for l, a in zip(arg_lists, action.args):
+            #     print "    ",a, ": ", map(str,l)
+    
+
             func = instantiation_function(action, stat.problem, check_func, force_func, clear_func)
             for full_mapping in action.smart_instantiate(func, action.args, arg_lists, stat.problem, mapping):
+                # print "    ", action.name, map(str, (full_mapping.get(a,a) for a in action.args))
                 action_key  = (action, tuple(full_mapping.get(a,a) for a in action.args))
                 if fact == "start":
                     goal_actions.add(action_key)
@@ -887,6 +906,7 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
     def goal_reached():
         return ga_count < 0
 
+    action_deps = {}
     # print map(str, start)
     reached_by = {}
     forward_open = applicable_ops[:]
@@ -904,7 +924,9 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
             # print "goal!"
             goal |= next.preconds
             facts |= next.all_preconds
-            actions.add((next.action, next.args))
+            action = (next.action, next.args)
+            actions.add(action)
+            action_deps[action] = set((r.action, r.args) for r in (reached_by[f] for f in next.all_preconds if f in reached_by))
         
         # print next#, "=>", map(str, unary_successors[next.effect])
         if next.effect:
@@ -928,6 +950,8 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
 
     # print "time for relaxed plangraph: %.3f" % (time.time()-t1)
 
+    goal_actions = actions[:]
+    facts = set()
     #extract relaxed plan:
     while goal:
         fact = goal.pop()
@@ -935,11 +959,21 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
         if fact not in reached_by:
             continue
         next = reached_by[fact]
+        action = (next.action, next.args)
         # print "action:", next.action.name
-        actions.add((next.action, next.args))
-        goal |= (next.preconds - facts)
+        actions.add(action)
+        deps = next.preconds - facts
+        goal |= deps
+        action_deps[action] = set((r.action, r.args) for r in (reached_by[f] for f in next.all_preconds if f in reached_by))
         # print next, map(str, next.all_preconds)
         facts |= next.all_preconds
+
+    for a, deps in action_deps.iteritems():
+        action, args = a
+        print "(%s %s) ->" % (action.name, " ".join(str(ar) for ar in args))
+        for action, args in deps:
+            print "    (%s %s)" % (action.name, " ".join(str(ar) for ar in args))
+            
 
     # log.debug("relaxed plan:")
     # for a, args in actions:
@@ -947,7 +981,124 @@ def explore(actions, start, stat, domain, start_actions=[], prob_state=None, pro
 
     # print "total time  for exploration: %.3f" % (time.time()-t0)
     return [a for a in actions if not a[0].name.startswith("axiom_")], facts
+
+
+def explore_deps(actions, start, stat, domain, start_actions=[], prob_state=None, prob_functions=None, check_fn=None):
+    t0 = time.time()
+    unary_successors, applicable_ops = instantiate(actions, start, stat, domain, start_actions, prob_functions, check_fn)
+    t1 = time.time()
+    
+    # def is_goal_action(op):
+    #     for action, mapping in start_actions:
+    #         if op.action.name == action.name:
+    #             # print op, [mapping.get(a,a2).name for a,a2 in zip(action.args, op.args)], all(mapping.get(a,a2) == a2 for a,a2 in zip(action.args, op.args))
+    #             if all(mapping.get(a,a2) == a2 for a,a2 in zip(action.args, op.args)):
+    #                 return True
+    #     return False
+    
+    goal = set(start)
+    facts = set()
+    actions = set()
+
+    ga_count = 0
+    for ops in unary_successors.itervalues():
+        for op in ops:
+            if op.effect in start:
+                ga_count += 1
+
+    def is_goal_action(op):
+        # print op
+        return op.effect in start
+
+    def goal_reached():
+        return ga_count < 0
+
+    action_deps = {}
+    # print map(str, start)
+    reached_by = {}
+    forward_open = applicable_ops[:]
+    # print map(str, applicable_ops)
+    forward_closed = set()
+    while forward_open and not goal_reached():
+        next = forward_open.pop(0)
+        if next.effect in reached_by and next.effect not in start:
+            continue
+        next.expanded = True
+        forward_closed.add(next.effect)
+
+        if is_goal_action(next):
+            ga_count -= 1
+            # print "goal!"
+            goal |= next.preconds
+            facts |= next.all_preconds
+            actions.add(next)
+            action_deps[next] = set(r for r in (reached_by[f] for f in next.all_preconds if f in reached_by))
         
+        # print next#, "=>", map(str, unary_successors[next.effect])
+        if next.effect:
+            reached_by[next.effect] = next
+
+        for succ in unary_successors[next.effect]:
+            if succ.expanded:
+                continue
+            if succ.effect in forward_closed and succ.effect not in start:
+                # print "  sat:", succ# , map(str, forward_closed)
+                continue
+
+            succ.unsat_preconds -= 1
+            if succ.unsat_preconds == 0:
+                # print " *", succ
+                forward_open.append(succ)
+                forward_closed.add(succ.effect)
+                # forward_closed.add(succ)
+            # else:
+            #     print "  ", succ, succ.unsat_preconds 
+
+    # print "time for relaxed plangraph: %.3f" % (time.time()-t1)
+
+    goal_actions = set(actions)
+    facts = set()
+    #extract relaxed plan:
+    while goal:
+        fact = goal.pop()
+        # print "pop goal:", fact
+        if fact not in reached_by:
+            continue
+        next = reached_by[fact]
+        action = (next.action, next.args)
+        # print "action:", next.action.name
+        actions.add(action)
+        deps = next.preconds - facts
+        goal |= deps
+        action_deps[action] = set((r.action, r.args) for r in (reached_by[f] for f in next.all_preconds if f in reached_by))
+        # print next, map(str, next.all_preconds)
+        facts |= next.all_preconds
+
+    # for a, deps in action_deps.iteritems():
+    #     action, args = a
+    #     print "(%s %s) ->" % (action.name, " ".join(str(ar) for ar in args))
+    #     for action, args in deps:
+    #         print "    (%s %s)" % (action.name, " ".join(str(ar) for ar in args))
+            
+
+    # log.debug("relaxed plan:")
+    # for a, args in actions:
+    #     log.debug("(%s %s)", a.name, " ".join(str(ar) for ar in args))
+    def collect_subplan(action):
+        plan = [(action.action, action.args)]
+        facts = action.all_preconds
+        for a in action_deps.get(action, []):
+            subplan, subfacts = collect_subplan(a)
+            plan = subplan + plan
+            facts |= subfacts
+        return plan, facts
+
+    for a in goal_actions:
+        plan, facts = collect_subplan(a)
+        yield [a for a in plan if not a[0].name.startswith("axiom_")], facts
+
+    # print "total time  for exploration: %.3f" % (time.time()-t0)
+
 
 def initialize_ops(successors, stat):
     applicable_ops = []

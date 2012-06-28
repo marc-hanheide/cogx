@@ -369,9 +369,10 @@ class QuantifiedCondition(Condition, Scope):
     
     def set_scope(self, new_scope):
         Scope.set_parent(self, new_scope)
+        self.clear()
         self.args = self.copy_args(self.args, False)
-        for a in self.args:
-            self.add(a)
+        # for a in self.args:
+        #     self.add(a)
         self.condition.set_scope(self)
 
     def __eq__(self, other):
