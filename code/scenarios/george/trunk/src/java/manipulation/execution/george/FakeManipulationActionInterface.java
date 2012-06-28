@@ -1,5 +1,6 @@
 package manipulation.execution.george;
 
+import VisionData.VisualObject;
 import cast.CASTException;
 import cast.SubarchitectureComponentException;
 import cast.architecture.ChangeFilterFactory;
@@ -12,6 +13,7 @@ import cast.cdl.WorkingMemoryPermissions;
 import cast.cdl.WorkingMemoryPointer;
 import cast.core.CASTUtils;
 import eu.cogx.beliefs.slice.MergedBelief;
+import eu.cogx.beliefs.utils.BeliefUtils;
 import execution.components.AbstractActionInterface;
 import execution.slice.Robot;
 import execution.slice.TriBool;
@@ -58,8 +60,10 @@ public class FakeManipulationActionInterface extends
 
 			try {
 
-				WorkingMemoryPointer visObjPtr = ((FakeManipulationActionInterface) getComponent())
-						.getFirstAncestorOfBelief(getAction().beliefAddress);
+				WorkingMemoryPointer visObjPtr = BeliefUtils
+						.recurseAncestorsForType(getComponent(),
+								getAction().beliefAddress,
+								CASTUtils.typeName(VisualObject.class));
 
 				if (visObjPtr == null) {
 					getComponent()
