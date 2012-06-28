@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
+import cast.DoesNotExistOnWMException;
 import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import castutils.CASTTimeUtil;
@@ -43,134 +44,154 @@ public class GBeliefMemory implements Serializable{
 		}
 	}
 	
-	public GroundedBelief getGBelief (WorkingMemoryAddress _wma, CASTTime ct) {
+	public GroundedBelief getGBelief (WorkingMemoryAddress _wma, CASTTime ct) throws DoesNotExistOnWMException {
 		
-		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
-				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
-		
-		while (iter.hasPrevious()) {
-			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
-			if (CASTTimeUtil.diff(ct, entry.getKey()) >= 0) {
-				return entry.getValue();
+		if (gbhistory.containsKey(_wma)) {
+			ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+					new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+			
+			while (iter.hasPrevious()) {
+				Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+				if (CASTTimeUtil.diff(ct, entry.getKey()) >= 0) {
+					return entry.getValue();
+				}
 			}
 		}
-		return null;
+		throw new DoesNotExistOnWMException();
 	}
 	
-    public GroundedBelief getGBelief (WorkingMemoryAddress _wma, int taskID, int poplanID) {
+    public GroundedBelief getGBelief (WorkingMemoryAddress _wma, int taskID, int poplanID) throws DoesNotExistOnWMException {
 		
-		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
-				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
-		
-		while (iter.hasPrevious()) {
-			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
-			if (CASTTimeUtil.diff(getTimeStamp(taskID, poplanID), entry.getKey()) >= 0) {
-				return entry.getValue();
+    	if (gbhistory.containsKey(_wma)) {
+	    	ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+					new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+			
+			while (iter.hasPrevious()) {
+				Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+				if (CASTTimeUtil.diff(getTimeStamp(taskID, poplanID), entry.getKey()) >= 0) {
+					return entry.getValue();
+				}
 			}
-		}
-		return null;
+    	}
+    	throw new DoesNotExistOnWMException();
 	}
 	
-    public GroundedBelief getLastGBelief (WorkingMemoryAddress _wma) {
+    public GroundedBelief getLastGBelief (WorkingMemoryAddress _wma) throws DoesNotExistOnWMException {
     	
-    	ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
-				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
-		
-		while (iter.hasPrevious()) {
-			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
-			return entry.getValue();
-		}
-		return null;
+    	if (gbhistory.containsKey(_wma)) {
+	    	ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+					new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+			
+			while (iter.hasPrevious()) {
+				Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+				return entry.getValue();
+			}
+    	}
+    	
+    	throw new DoesNotExistOnWMException();
 	}
     
-    public GroundedBelief getLastValidGBelief (WorkingMemoryAddress _wma) {
+    public GroundedBelief getLastValidGBelief (WorkingMemoryAddress _wma) throws DoesNotExistOnWMException {
 		
-		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+		if (gbhistory.containsKey(_wma)) {
+    	
+			ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
 				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
 		
-		while (iter.hasPrevious()) {
-			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
-			if (entry.getValue() != null) {
-				  return entry.getValue();
-			}
-		}
-		return null;
-	}
-	
-	public GroundedBelief getValidGBelief (WorkingMemoryAddress _wma, CASTTime ct) {
-		
-		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
-				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
-			
-		while (iter.hasPrevious()) {
-			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
-			if (CASTTimeUtil.diff(ct, entry.getKey()) >= 0) {
+			while (iter.hasPrevious()) {
+				Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
 				if (entry.getValue() != null) {
-					  return entry.getValue();
+					return entry.getValue();
 				}
 			}
 		}
-		return null;
+		throw new DoesNotExistOnWMException();
 	}
 	
-	public GroundedBelief getValidGBelief (WorkingMemoryAddress _wma, int taskID, int poplanID) {
+	public GroundedBelief getValidGBelief (WorkingMemoryAddress _wma, CASTTime ct) throws DoesNotExistOnWMException {
 		
-		ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
-				new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+		if (gbhistory.containsKey(_wma)) {
+			ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+					new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
 			
-		while (iter.hasPrevious()) {
-			Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
-			if (CASTTimeUtil.diff(getTimeStamp(taskID, poplanID), entry.getKey()) >= 0) {
-				if (entry.getValue() != null) {
-					  return entry.getValue();
+			while (iter.hasPrevious()) {
+				Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+				if (CASTTimeUtil.diff(ct, entry.getKey()) >= 0) {
+					if (entry.getValue() != null) {
+						  return entry.getValue();
+					}
 				}
 			}
 		}
-		return null;
+		throw new DoesNotExistOnWMException();
 	}
 	
-    public Map<CASTTime,GroundedBelief> getAllGBelief (WorkingMemoryAddress _wma) {
+	public GroundedBelief getValidGBelief (WorkingMemoryAddress _wma, int taskID, int poplanID) throws DoesNotExistOnWMException {
+		
+		if (gbhistory.containsKey(_wma)) {
+			ListIterator<Map.Entry<CASTTime,GroundedBelief>> iter =
+					new ArrayList(gbhistory.get(_wma).entrySet()).listIterator(gbhistory.get(_wma).size());
+				
+			while (iter.hasPrevious()) {
+				Map.Entry<CASTTime, GroundedBelief> entry = iter.previous();
+				if (CASTTimeUtil.diff(getTimeStamp(taskID, poplanID), entry.getKey()) >= 0) {
+					if (entry.getValue() != null) {
+						  return entry.getValue();
+					}
+				}
+			}
+		}
+		throw new DoesNotExistOnWMException();
+	}
+	
+    public Map<CASTTime,GroundedBelief> getAllGBelief (WorkingMemoryAddress _wma) throws DoesNotExistOnWMException {
 		
 		if (gbhistory.containsKey(_wma)) {
 			return gbhistory.get(_wma);
-		} else {
-			return null;
-		}
+		} 
+		throw new DoesNotExistOnWMException();
 	}
     
-    public Map<CASTTime,GroundedBelief> getAllGBeliefBefore (WorkingMemoryAddress _wma, CASTTime ct) {
+    public Map<CASTTime,GroundedBelief> getAllGBeliefBefore (WorkingMemoryAddress _wma, CASTTime ct) throws DoesNotExistOnWMException {
     	
-    	Map<CASTTime,GroundedBelief> returnMap = new LinkedHashMap<CASTTime,GroundedBelief>();
-			
-	    for (Map.Entry<CASTTime,GroundedBelief> entry : gbhistory.get(_wma).entrySet()) {
+    	if (gbhistory.containsKey(_wma)) {
+	    	Map<CASTTime,GroundedBelief> returnMap = new LinkedHashMap<CASTTime,GroundedBelief>();
 				
-			if (CASTTimeUtil.diff(ct, entry.getKey()) >= 0) {
-				returnMap.put(entry.getKey(), entry.getValue());
+		    for (Map.Entry<CASTTime,GroundedBelief> entry : gbhistory.get(_wma).entrySet()) {
+					
+				if (CASTTimeUtil.diff(ct, entry.getKey()) >= 0) {
+					returnMap.put(entry.getKey(), entry.getValue());
+				}
+				else {
+					break;
+				}
 			}
-			else {
-				break;
-			}
-		}
-		return returnMap;
+			return returnMap;
+    	}
+    	throw new DoesNotExistOnWMException();
 	}
     
-   public Map<CASTTime,GroundedBelief> getAllGBeliefBefore (WorkingMemoryAddress _wma, int taskID, int poplanID) {
+    public Map<CASTTime,GroundedBelief> getAllGBeliefBefore (WorkingMemoryAddress _wma, int taskID, int poplanID) throws DoesNotExistOnWMException {
+	   
+	   if (gbhistory.containsKey(_wma)) {
     	
-    	Map<CASTTime,GroundedBelief> returnMap = new LinkedHashMap<CASTTime,GroundedBelief>();
-			
-	    for (Map.Entry<CASTTime,GroundedBelief> entry : gbhistory.get(_wma).entrySet()) {
+		    Map<CASTTime,GroundedBelief> returnMap = new LinkedHashMap<CASTTime,GroundedBelief>();
 				
-			if (CASTTimeUtil.diff(getTimeStamp(taskID, poplanID), entry.getKey()) >= 0) {
-				returnMap.put(entry.getKey(), entry.getValue());
+		    for (Map.Entry<CASTTime,GroundedBelief> entry : gbhistory.get(_wma).entrySet()) {
+					
+				if (CASTTimeUtil.diff(getTimeStamp(taskID, poplanID), entry.getKey()) >= 0) {
+					returnMap.put(entry.getKey(), entry.getValue());
+				}
+				else {
+					break;
+				}
 			}
-			else {
-				break;
-			}
-		}
-		return returnMap;
+			return returnMap;
+	   }
+	   throw new DoesNotExistOnWMException();
 	}
     
-    public Boolean ceasedToExist (WorkingMemoryAddress _wma) {
+    public Boolean ceasedToExist (WorkingMemoryAddress _wma) throws DoesNotExistOnWMException {
     	
     	if (getLastGBelief(_wma) == null) {
     		return true;
