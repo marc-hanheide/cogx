@@ -17,6 +17,8 @@ include_directories(
    ${COGX_ROOT}/tools/abducer/src/c++/autogen
    # motivation.sa
    ${COGX_ROOT}/subarchitectures/motivation.sa/src/c++/autogen
+   # manipulation.sa
+   ${COGX_ROOT}/subarchitectures/manipulation.sa/src/c++/autogen
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
@@ -32,6 +34,7 @@ if(BUILD_GEORGE_V11N_TRACE)
       VisionData
       MotivationData
       DialogueIce
+      ManipulationData
       )
 
    #add_custom_target (DialogInteraction.Resources

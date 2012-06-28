@@ -8,6 +8,7 @@
 #include <dialogue_utils.hpp>
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <motivation.hpp>
+#include <manipulation_exe.hpp>
 
 #include <sstream>
 #include <cmath>
@@ -171,6 +172,16 @@ void CTraceEvents::start()
   addChangeFilter(createGlobalTypeFilter<motivation::slice::Motive>(cdl::OVERWRITE),
       new MemberFunctionChangeReceiver<CTraceEvents>(this,
         &CTraceEvents::onChange_Motive));
+
+  // manipulation.execution.slice.ArmMovementTask
+  addChangeFilter(createGlobalTypeFilter<manipulation::execution::slice::ArmMovementTask>(cdl::ADD),
+      new MemberFunctionChangeReceiver<CTraceEvents>(this,
+        &CTraceEvents::onAdd_ArmMovementTask));
+
+  addChangeFilter(createGlobalTypeFilter<manipulation::execution::slice::ArmMovementTask>(cdl::OVERWRITE),
+      new MemberFunctionChangeReceiver<CTraceEvents>(this,
+        &CTraceEvents::onChange_ArmMovementTask));
+
 
 #ifdef FEAT_VISUALIZATION
   display().connectIceClient(*this);
@@ -426,6 +437,22 @@ void CTraceEvents::onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc)
     }
     display().addWmEntry("CHG " + pmo->ice_id().substr(21)
         + " " + motiveStatusStr(pmo->status), info);
+  }
+}
+
+void CTraceEvents::onAdd_ArmMovementTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    //std::lock_guard<std::mutex> lock(mWmCopyMutex);
+    display().addWmEntry("ADD ArmMovementTask");
+  }
+}
+
+void CTraceEvents::onChange_ArmMovementTask(const cast::cdl::WorkingMemoryChange & _wmc)
+{
+  {
+    //std::lock_guard<std::mutex> lock(mWmCopyMutex);
+    display().addWmEntry("DONE ArmMovementTask");
   }
 }
 
