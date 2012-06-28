@@ -59,8 +59,16 @@ public class ModelStatusMotiveGenerator extends
 		
 		if (gain > GAIN_THRESHOLD) {
 
+			
 			String concept = getConcept(belief);
 			String value = getMostPromising(belief);
+
+			//HACK
+			if(concept.equals("shape")) {
+				return null;
+			}
+			//END HACK
+
 			
 			m_conceptValues.put(concept, value);
 			
