@@ -283,16 +283,22 @@ void VisualLearner::runComponent()
       if (cmd.read(addr)) {
         log("Learning Request addr popped: %s", descAddr(addr).c_str());
         try {
-          if (updateModel(cmd.pcmd))
-            cmd.succeed();
-          else
-            cmd.fail();
+          if (cmd.pcmd->concept != "color" && cmd.pcmd->concept != "shape") {
+            cmd.ignore();
+            log("VL_Learning Task ignored (%s)", cmd.pcmd->concept.c_str());
+          }
+          else {
+            if (updateModel(cmd.pcmd))
+              cmd.succeed();
+            else
+              cmd.fail();
+            log("VL_Learning Task processed (%s)", cmd.pcmd->concept.c_str());
+          }
         }
         catch(...) {
           log("VL_Learning: SOMETHING WENT WRONG");
           cmd.fail();
         }
-        log("VL_Learning Task processed");
       }
     }
 
