@@ -79,6 +79,8 @@ private:
   void onChange_AnalyzeProtoObjectCommand(const cast::cdl::WorkingMemoryChange & _wmc);
   void onAdd_Motive(const cast::cdl::WorkingMemoryChange & _wmc);
   void onChange_Motive(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onAdd_ArmMovementTask(const cast::cdl::WorkingMemoryChange & _wmc);
+  void onChange_ArmMovementTask(const cast::cdl::WorkingMemoryChange & _wmc);
 };
 
 }
