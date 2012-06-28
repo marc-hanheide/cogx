@@ -2,15 +2,21 @@ package de.dfki.lt.tr.cast.dialogue;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+
+import com.ibm.icu.text.SimpleDateFormat;
 
 import autogen.Planner.POPlan;
 import autogen.Planner.PlanningTask;
@@ -27,6 +33,7 @@ import de.dfki.lt.tr.cast.dialogue.planverb.PlanVerbalizer;
 import de.dfki.lt.tr.cast.dialogue.util.POPlanUtils;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
 import de.dfki.lt.tr.dialogue.production.PlanVerbalizationRequest;
+import eu.cogx.beliefs.slice.GroundedBelief;
 
 public class POPlanMonitor extends ManagedComponent {
 
@@ -35,13 +42,15 @@ public class POPlanMonitor extends ManagedComponent {
 	private Map<Integer,List<POPlan>> runningMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,List<POPlan>> finishedMap = new HashMap<Integer,List<POPlan>>();
 	private Map<Integer,PlanningTask> planningTaskMap = new HashMap<Integer,PlanningTask>();
-  private Map<Integer,String> generatedReportsMap = new HashMap<Integer,String>();
+    private Map<Integer,String> generatedReportsMap = new HashMap<Integer,String>();
 	
 	private Set<Integer> reportedTasks = new HashSet<Integer>();
 
-	private PlanVerbalizer pevModule; 
+	private PlanVerbalizer pevModule;
+	
+	private boolean saveGBHistoryFile = false;
 
-  private boolean suppressVerbalisationUntilRequested;
+    private boolean suppressVerbalisationUntilRequested;
 	
 	protected void configure(Map<String, String> args) {
 		String pddldomain = "";
@@ -76,11 +85,16 @@ public class POPlanMonitor extends ManagedComponent {
 			port = Integer.parseInt(args.get("--port"));
 			log("port=" + port);
 		}
-    if (args.containsKey("--only-verbalise-on-request")) {
-      suppressVerbalisationUntilRequested = true;
-    } else {
-      suppressVerbalisationUntilRequested = false;
-    }
+		if (args.containsKey("--only-verbalise-on-request")) {
+			suppressVerbalisationUntilRequested = true;
+		} else {
+			suppressVerbalisationUntilRequested = false;
+		}
+		if (args.containsKey("--saveGBHistoryFile")) {
+			saveGBHistoryFile = true;
+		} else {
+			saveGBHistoryFile = false;
+		}
 
 		try {
 			log("trying to create PEV Module with domainannotation=" + domainannotation + ", pddldomain=" + pddldomain + 
@@ -139,6 +153,30 @@ public class POPlanMonitor extends ManagedComponent {
 			}
 		});
 		
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(GroundedBelief.class, WorkingMemoryOperation.ADD), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processAddedGroundedBelief(_wmc);
+			}
+		});
+
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(GroundedBelief.class, WorkingMemoryOperation.OVERWRITE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processOverwrittenGroundedBelief(_wmc);
+			}
+		});
+		
+		addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(GroundedBelief.class, WorkingMemoryOperation.DELETE), 
+				new WorkingMemoryChangeReceiver() {
+			public void workingMemoryChanged(WorkingMemoryChange _wmc)
+			throws CASTException {
+				processDeletedGroundedBelief(_wmc);
+			}
+		});
+		
 	}
 	
 	private void processPlanVerbRequest(WorkingMemoryChange _wmc) {
@@ -168,16 +206,21 @@ public class POPlanMonitor extends ManagedComponent {
 			logException(e);
 			return;
 		}
+		
 		log("received ADD for POPlan: \n " + poplanToString(_newPOPlan));
 		if (_newPOPlan.status.name().equals("RUNNING")) {
 			runningMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			runningMap.get(_newPOPlan.taskID).add(_newPOPlan);
+			
+			pevModule.m_gbmemory.addTimeStamp(_newPOPlan.taskID, runningMap.get(_newPOPlan.taskID).size()-1, _wmc.timestamp);
+			
 		}
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			finishedMap.get(_newPOPlan.taskID).add(_newPOPlan);
 			String report = generateHistoryReport(_newPOPlan.taskID);
 			log("received ADD for FINISHED POPlan with taskID " + _newPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
+			writeToFile();
 		}
 	}
 	
@@ -196,11 +239,13 @@ public class POPlanMonitor extends ManagedComponent {
 		
 		if (_oldPOPlan.status.name().equals("RUNNING")) {
 			runningMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
+			pevModule.m_gbmemory.addTimeStamp(_oldPOPlan.taskID, runningMap.get(_oldPOPlan.taskID).size()-1, _wmc.timestamp);
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 			String report = generateHistoryReport(_oldPOPlan.taskID);
 			log("received OVERWRITE for FINISHED POPlan with taskID " + _oldPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
+			writeToFile();
 		}
 	}
 	
@@ -275,6 +320,76 @@ public class POPlanMonitor extends ManagedComponent {
 				break;
 		}
 		
+	}
+	
+	private void processAddedGroundedBelief(WorkingMemoryChange _wmc) {
+		GroundedBelief _newGroundedBelief;
+		try {
+			_newGroundedBelief = getMemoryEntry(_wmc.address, GroundedBelief.class);
+			
+			pevModule.m_gbmemory.addGBelief(_wmc.address, getCASTTime(), _newGroundedBelief);
+			
+		} catch (DoesNotExistOnWMException e) {
+			logException(e);
+			return;
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+			return;
+		}
+		//log("Received new GroundedBelief");
+	}
+	
+	private void processOverwrittenGroundedBelief(WorkingMemoryChange _wmc) {
+		GroundedBelief _oldGroundedBelief;
+		try {
+			_oldGroundedBelief = getMemoryEntry(_wmc.address, GroundedBelief.class);
+			
+			pevModule.m_gbmemory.addGBelief(_wmc.address, getCASTTime(), _oldGroundedBelief);
+			
+		} catch (DoesNotExistOnWMException e) {
+			logException(e);
+			return;
+		} catch (UnknownSubarchitectureException e) {
+			logException(e);
+			return;
+		}
+		//log("Received overwritten GroundedBelief");
+	}
+	
+	private void processDeletedGroundedBelief(WorkingMemoryChange _wmc) {
+		
+		pevModule.m_gbmemory.addGBelief(_wmc.address, getCASTTime(), null);
+		//log("Received deleted GroundedBelief");
+	}
+	
+	/**
+	 * Write the GBeliefMemory object to the given file
+	 * 
+	 */
+	private void writeToFile() {
+		if (saveGBHistoryFile) {
+			log("Writing GBeliefHistory ...");
+			
+			File file;
+		    file = new File("GBeliefHistory");
+		
+		    try {
+		    	FileOutputStream f = new FileOutputStream(file);
+		    	ObjectOutputStream s = new ObjectOutputStream(f);
+		    	s.writeObject(pevModule.m_gbmemory);
+		    	s.flush();
+		    	s.close();
+		    	f.close();
+			
+		    } catch (FileNotFoundException e) {
+		    	// TODO Auto-generated catch block
+		    	e.printStackTrace();
+		    }
+		    catch (IOException e) {
+		    	// TODO Auto-generated catch block
+		    	e.printStackTrace();
+		    }
+		}
 	}
 	
 	private String generateHistoryReport(int taskID) {
