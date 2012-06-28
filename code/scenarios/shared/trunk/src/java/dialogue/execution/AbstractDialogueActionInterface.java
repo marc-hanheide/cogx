@@ -294,7 +294,8 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 
 		}
 
-		protected void logAddressContent(Map<String, WorkingMemoryAddress> _addressContent) {
+		protected void logAddressContent(
+				Map<String, WorkingMemoryAddress> _addressContent) {
 			getComponent().println(
 					this.getClass().getSimpleName()
 							+ ": created address content for intention");
@@ -310,15 +311,12 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 			getComponent().println(
 					this.getClass().getSimpleName()
 							+ ": created address content for intention");
-			for (Entry<String, String> e : _stringContent
-					.entrySet()) {
+			for (Entry<String, String> e : _stringContent.entrySet()) {
 				getComponent().println(
-						"  " + e.getKey() + " => "
-								+ e.getValue());
+						"  " + e.getKey() + " => " + e.getValue());
 			}
 		}
 
-		
 		protected void addStringContent(Map<String, String> _stringContent) {
 
 		}
@@ -350,6 +348,33 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 		protected void addAddressContent(
 				Map<String, WorkingMemoryAddress> _addressContent) {
 			_addressContent.put("about", getAction().beliefAddress);
+		}
+
+	}
+
+	public static class AskForObjectWithFeatureExecutor extends
+			IntentionDialogueAction<AskForObjectWithFeatureValue> {
+
+		// TODO, what is happening here?
+		private static final int ANSWER_TIMEOUT_SECS = 5;
+
+		public AskForObjectWithFeatureExecutor(ManagedComponent _component) {
+			super(_component, AskForObjectWithFeatureValue.class,
+					ANSWER_TIMEOUT_SECS, TriBool.TRITRUE);
+		}
+
+		@Override
+		protected void addStringContent(Map<String, String> _stringContent) {
+
+			// http://codex.cs.bham.ac.uk/trac/cogx/ticket/466
+			// type = "request"
+			// subtype = "non-situated"
+			// feature = "color" | "shape"
+			// value = the desired value
+			_stringContent.put("type", "request");
+			_stringContent.put("subtype", "non-situated");
+			_stringContent.put("feature", getAction().feature);
+			_stringContent.put("value", getAction().value);
 		}
 
 	}
@@ -1278,12 +1303,11 @@ public abstract class AbstractDialogueActionInterface<BeliefType extends dBelief
 									this,
 									VerifyByFeatureValueReferenceExecutor.class));
 
-			// m_actionStateManager
-			// .registerActionType(
-			// AskForObjectWithFeatureValue.class,
-			// new ComponentActionFactory<AskForObjectWithFeatureValueDialogue>(
-			// this,
-			// AskForObjectWithFeatureValueDialogue.class));
+			m_actionStateManager
+					.registerActionType(
+							AskForObjectWithFeatureValue.class,
+							new ComponentActionFactory<AskForObjectWithFeatureValue, AskForObjectWithFeatureExecutor>(
+									this, AskForObjectWithFeatureExecutor.class));
 
 			// // TODO replace this with one of Marc's magic thingys
 			// WorkingMemoryChangeReceiver updater = new
