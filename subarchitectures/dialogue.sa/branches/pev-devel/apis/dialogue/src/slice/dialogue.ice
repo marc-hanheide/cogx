@@ -252,6 +252,10 @@ module discourse {
 
 module produce { 
 
+	class CannedUtterance {
+		string content;
+	};
+
 	//---------------------------------------------------------------------------
 	// Utterance planning and realization
 	//---------------------------------------------------------------------------
