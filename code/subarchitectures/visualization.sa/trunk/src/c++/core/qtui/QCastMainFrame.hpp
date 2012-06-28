@@ -118,6 +118,7 @@ private slots:
    void onCloseSomeWindows();
    void onRestoreWindowLayout();
    void onSetStartupLayout();
+   void onSaveHtmlViews();
 
 private:
    cogx::display::CDisplayView* getView();
@@ -130,6 +131,7 @@ private:
    void syncViewListItem();
    void updateObjectList(cogx::display::CDisplayView *pView);
    QWidgetList getCastFrames();
+   void saveHtmlViews(QString directoryName);
 
    // CDisplayModelObserver notifications
 private:
