@@ -158,17 +158,30 @@ public class PlanVerbalizer {
 	}
 	
 	private GroundedBelief getGBelief(WMAddress referentWMA) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
-		if (m_castComponent != null) {
+		//Uncommented but not the deleted, in case future generations don't want to use GBeliefMemory
+		
+		/*if (m_castComponent != null) {
 			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
 			return gbWME;
-		} else {
+		} else {*/
+		
+			//GroundedBelief gbWME = m_gbmemory.getGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), taskID, poplanID);
+			
 			GroundedBelief gbWME = m_gbmemory.getLastValidGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()));
 			return gbWME;
-		}
+		
+			
+		//}
 		
 	}
 	
-    private void readFromFile(File gbmemoryFile) {
+	/**
+	 * Read the GBeliefMemory object from the given file
+	 * 
+	 * @param gbmemoryFile
+	 * 				the file to read from
+	 */
+	private void readFromFile(File gbmemoryFile) {
 		
 		try {
 			FileInputStream f = new FileInputStream(gbmemoryFile);
