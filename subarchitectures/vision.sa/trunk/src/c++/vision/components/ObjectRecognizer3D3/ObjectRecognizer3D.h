@@ -64,6 +64,7 @@ private:
   };
 CDisplayClient m_display;
 #endif
+  void setRecogniserCamereParameters(Image &image);
   cv::Mat generateMaskImage(VisualObjectPtr visObj,
       const CameraParameters &camPars, bool boundingBoxOnly);
   void recognize(const Image &image,
