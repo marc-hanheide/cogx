@@ -36,6 +36,7 @@ class VisionCommandNotifier
 private:
   cast::WorkingMemoryReaderComponent* pComponent;
   bool doWrite;
+  bool ignoreCalled;
 public:
   cast::cdl::WorkingMemoryAddress addr;
   TPtr pcmd;
@@ -43,12 +44,14 @@ public:
   bool read(const cast::cdl::WorkingMemoryAddress& address)
   {
     doWrite = false;
+    ignoreCalled = false;
     addr = address;
     try {
       pcmd = pComponent->getMemoryEntry<T>(addr);
     }
     catch(cast::DoesNotExistOnWMException){
       pComponent->println("VisionCommandNotifier: Command deleted before read (id=%s).", addr.id.c_str());
+      ignore();
       return false;
     }
     return true;
@@ -56,6 +59,7 @@ public:
   VisionCommandNotifier(cast::WorkingMemoryReaderComponent* pReader)
   {
     pComponent = pReader;
+    ignoreCalled = false;
   }
   ~VisionCommandNotifier()
   {
@@ -70,13 +74,14 @@ public:
         pComponent->println("VisionCommandNotifier: Error in overwrite (id=%s).", addr.id.c_str());
       }
     }
-    else {
-      pComponent->log("VisionCommandNotifier destroyed without an overwrite (id=%s).", addr.id.c_str());
+    else if (! ignoreCalled) {
+      pComponent->error("VisionCommandNotifier destroyed without an overwrite (id=%s)."
+           " To fix this: call fail(), succeed() or ignore()", addr.id.c_str());
     }
   }
-  void fail() { doWrite = true; doFail(); }
-  void succeed() { doWrite = true; doSucceed(); }
-  void ignore() { doWrite = false; }
+  void fail() { doWrite = true; ignoreCalled = false; doFail(); }
+  void succeed() { doWrite = true; ignoreCalled = false; doSucceed(); }
+  void ignore() { doWrite = false; ignoreCalled = true; }
 protected:
   virtual void doFail() = 0; // { pcmd->status = VisionData::VCFAILED; }
   virtual void doSucceed() = 0; // { pcmd->status = VisionData::VCSUCCEEDED; }
