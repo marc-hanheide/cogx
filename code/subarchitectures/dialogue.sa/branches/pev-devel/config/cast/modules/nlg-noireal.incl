@@ -5,5 +5,6 @@ VARDEFAULT realize_ngrams=subarchitectures/dialogue.sa/resources/grammars/opencc
 
 
 # intention realisation
+JAVA MG cannedverbaliser  de.dfki.lt.tr.cast.dialogue.CannedUtteranceVerbaliser
 JAVA MG cplan                de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile %(cplan_rules) --contentRel Content --log true
 JAVA MG realizer             de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg %(realize_grammar) --ngrams %(realize_ngrams) --log true

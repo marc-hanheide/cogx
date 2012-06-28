@@ -1,5 +1,6 @@
 SETVAR mary_voice=dfki-obadiah-hsmm
 SETVAR max_readings=2
+SETVAR num_refex_resolvers=3
 
 INCLUDE default+gui.cast
 
