@@ -17,7 +17,7 @@ t_planning_agent = Type("planning_agent", [t_agent])
 t_subgoal = Type("subgoal")
 t_feature = Type("feature")
 
-mapl_types = [t_agent, t_planning_agent, t_subgoal, t_feature]
+mapl_types = [t_agent, t_planning_agent, t_subgoal, t_feature, t_number]
 
 #mapl predicates
 knowledge = Predicate("kval", [Parameter("?a", t_agent), Parameter("?f", types.FunctionType(t_any))], builtin=True)
@@ -297,7 +297,7 @@ class MAPLAction(actions.Action):
         params = [a for a in args if a not in agents and a not in vars]
 
         a = MAPLAction(self.name, agents, params, vars, None, None, None, [], newdomain)
-        a.args = a.copy_args(self.args)
+        a.args = a.copy_args(self.args, reuse_names=True)
         
         if self.precondition:
             a.precondition = self.precondition.copy(a)

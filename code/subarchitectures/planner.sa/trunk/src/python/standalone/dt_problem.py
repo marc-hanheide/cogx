@@ -557,14 +557,16 @@ class DTProblem(object):
             relaxed_exploration.cache.set_fact(cfact)
             for agent_obj in self.state.problem.get_all_objects(mapl.t_planning_agent):
                 goal_facts.append(state.Fact(fact.svar.as_modality(mapl.direct_knowledge, [agent_obj]), pddl.TRUE))
-            # print map(str, goal_facts)
-            actions, explored_facts = relaxed_exploration.explore(self.domain.actions, set(goal_facts), self.detstate, self.domain, prob_functions = self.prob_functions, check_fn=make_check_fn(fact))
+            plans = []
+            for actions, explored_facts in relaxed_exploration.explore_deps(self.domain.actions, set(goal_facts), self.detstate, self.domain, prob_functions = self.prob_functions, check_fn=make_check_fn(fact)):
+                if actions:
+                    plans.append(RelaxedPlan(actions, explored_facts))
             relaxed_exploration.cache.unset_fact(fact)
             relaxed_exploration.cache.unset_fact(cfact)
             # print "total check time: %.3f" % check_time[0]
             # print "number of complex queries: %d (cached: %d), total number of queries: %d" % (check_count[1], (check_count[2] -check_count[1]),  check_count[0])
 
-            return RelaxedPlan(actions, explored_facts)
+            return plans
 
         relaxed_exploration.init_cache(self.detstate)
                     
@@ -602,32 +604,36 @@ class DTProblem(object):
         #Get facts on which these candidates depend using a relaxed plangraph
         dependencies = {}
         observable_dependencies = {}
-        candidate_sets = []
+        candidate_sets = set()
         for f in candidates:
-            rplan = get_dependent_facts(f)
-            if not rplan:
+            rplans = get_dependent_facts(f)
+            if not rplans:
                 log.debug("no relaxed plan to observe %s:", str(f))
                 continue
+            for rplan in rplans:
+                print rplan
 
-            
-            # print "Plan:\n",rplan
-            o_depends = [g for g in rplan.facts if self.dtstate.has_observations(g) and g != f]
-            p_depends = [g for g in rplan.facts if g.svar.function in self.prob_functions and g not in self.detstate and g != f]
 
-            if o_depends:
-                log.debug("observable preconditions of %s:", str(f))
-                log.debug(", ".join(map(str, o_depends)))
-            if p_depends:
-                log.debug("probabilistic preconditions of %s:", str(f))
-                log.debug(", ".join(map(str, p_depends)))
-            observable_dependencies[f] = set(o_depends)
-            dependencies[f] = rplan
-            #TODO: this is not very generic, only works for one mutex set of dependencies
-            if o_depends:
-                for of in o_depends:
-                    candidate_sets.append((f, of))
-            else:
-                candidate_sets.append((f,))
+                # print "Plan:\n",rplan
+                o_depends = [g for g in rplan.facts if self.dtstate.has_observations(g) and g != f]
+                p_depends = [g for g in rplan.facts if g.svar.function in self.prob_functions and g not in self.detstate and g != f]
+
+                if o_depends:
+                    log.debug("observable preconditions of %s:", str(f))
+                    log.debug(", ".join(map(str, o_depends)))
+                    log.debug("ignoring!")
+                    continue
+                if p_depends:
+                    log.debug("probabilistic preconditions of %s:", str(f))
+                    log.debug(", ".join(map(str, p_depends)))
+                observable_dependencies[f] = set(o_depends)
+                dependencies[f] = rplan
+                #TODO: this is not very generic, only works for one mutex set of dependencies
+                if o_depends:
+                    for of in o_depends:
+                        candidate_sets.add((f, of))
+                else:
+                    candidate_sets.add((f,))
                 
         log.debug("Time to dependency detection: %.2f sec", global_vars.get_time())
 
@@ -673,6 +679,7 @@ class DTProblem(object):
                 
             
         # for c in candidate_sets:
+        #     print map(str, c)
         #     get_entropy(c, debug=True)
             
         candidate_queue = sorted(candidate_sets, key=lambda f: get_entropy(f))

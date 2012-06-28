@@ -185,7 +185,7 @@ class Observation(actions.Action):
         params = [a for a in args if a not in agents]
         
         o = Observation(self.name, agents, params, None, None, None, newdomain)
-        o.args = o.copy_args(o.args)
+        o.args = o.copy_args(o.args, reuse_names=True)
         
         if self.precondition:
             o.precondition = self.precondition.copy(o)
