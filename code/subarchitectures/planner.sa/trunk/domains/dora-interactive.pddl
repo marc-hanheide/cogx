@@ -286,28 +286,34 @@
   ;;          :effect (and (assign (obj_exists ?l1 in ?o) false)
   ;;                       (increase (total-cost) 100 )))
 
-  (:dtrule object-existence-default
-           :parameters (?l - label ?r - room ?c - category ?val - boolean)
-           :precondition (and (= (category ?r) ?c)
-                              (not (defined (dora__inroom ?l ?c)))
-                              (not (defined (p-obj_exists ?l in ?r ?c))))
-           :effect (and (probabilistic unknown (assign (obj_exists ?l in ?r) ?val))))
+  ;; (:dtrule object-existence-default
+  ;;          :parameters (?l - label ?r - room ?c - category ?val - boolean)
+  ;;          :precondition (and (= (category ?r) ?c)
+  ;;                             (not (defined (dora__inroom ?l ?c)))
+  ;;                             (not (defined (p-obj_exists ?l in ?r ?c))))
+  ;;          :effect (and (probabilistic unknown (assign (obj_exists ?l in ?r) ?val))))
 
-  (:dtrule obj-in-obj-existence-default
-           :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category ?val - boolean)
-           :precondition (and (= (category ?r) ?c)
-                              (= (label ?o) ?l2)
-                              (= (related-to ?o) ?r)
-                              (= (relation ?o) in)
-                              (= (entity-exists ?o) true)
-                              (not (defined (dora__inobject ?l1 ?l2 ?c)))
-                              (not (defined (p-obj_exists ?l1 in ?o ?c))))
-           :effect (and (probabilistic unknown (assign (obj_exists ?l1 in ?o) ?val))))
+  ;; (:dtrule obj-in-obj-existence-default
+  ;;          :parameters (?l1 ?l2 - label ?o - visualobject ?r - room ?c - category ?val - boolean)
+  ;;          :precondition (and (= (category ?r) ?c)
+  ;;                             (= (label ?o) ?l2)
+  ;;                             (= (related-to ?o) ?r)
+  ;;                             (= (relation ?o) in)
+  ;;                             (= (entity-exists ?o) true)
+  ;;                             (not (defined (dora__inobject ?l1 ?l2 ?c)))
+  ;;                             (not (defined (p-obj_exists ?l1 in ?o ?c))))
+  ;;          :effect (and (probabilistic unknown (assign (obj_exists ?l1 in ?o) ?val))))
 
   (:dtrule nonexistence-in-nonexistence
            :parameters (?l - label ?rel - spatial_relation ?where - (either visualobject room))
            :precondition (and (= (entity-exists ?where) false))
            :effect (and (assign (obj_exists ?l ?rel ?where) false)))
+
+  (:dtrule entity-nonexistence-in-nonexistence
+           :parameters (?o - visualobject ?where - (either visualobject room))
+           :precondition (and (= (entity-exists ?where) false)
+                              (= (related-to ?o) ?where))
+           :effect (and (assign (entity-exists ?o) false)))
 
 
   ;; rules that model the conditional probabilities from default sa
@@ -402,8 +408,21 @@
                               (= (related-to ?o) ?where)
                               (= (relation ?o) ?rel)
                               ;; (is-virtual ?o)
-                              (= (obj_exists ?l ?rel ?where) ?val))
+                              (= (obj_exists ?l ?rel ?where) ?val)
+                              )
            :effect (probabilistic 1.0 (and (assign (entity-exists ?o) ?val)))
+           )
+
+  (:dtrule sample_object_existence-default
+           :parameters (?o - visualobject ?l - label ?rel - spatial_relation ?where - (either visualobject room) ?val - boolean)
+           :precondition (and (= (label ?o) ?l)
+                              (= (related-to ?o) ?where)
+                              (= (relation ?o) ?rel)
+                              ;; (is-virtual ?o)
+                              ;; (= (obj_exists ?l ?rel ?where) ?val)
+                              )
+           :effect (probabilistic unknown (and (assign (entity-exists ?o) ?val)
+                                               (assign (obj_exists ?l ?rel ?where) ?val)))
            )
 
   ;; probability of finding a specific object in a conegroup
