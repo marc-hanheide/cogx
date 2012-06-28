@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.text.DecimalFormat;
 
 import si.unilj.fri.cogx.v11n.core.DisplayClient;
 import Ice.ObjectImpl;
 import cast.CASTException;
 import cast.architecture.ManagedComponent;
+import cast.cdl.CASTTime;
 import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
@@ -37,6 +39,7 @@ public class V11WMViewerComponent extends ManagedComponent {
 	public String omittedFields = null;
 	private boolean foundLargeGeneric = false;
 	private final DefaultXMLInfo genericPlugin = new DefaultXMLInfo();
+	private DecimalFormat timeFormat = new DecimalFormat("0.000");
 
 	private class MyDisplayClient extends DisplayClient implements
 			ChangeHandler {
@@ -52,14 +55,15 @@ public class V11WMViewerComponent extends ManagedComponent {
 				switch (wmc.operation) {
 				case ADD:
 				case OVERWRITE:
+					CASTTime now = getCASTTime();
 					Plugin pluginToCall = findPlugin(newEntry.getClass());
 
 					Vector<Object> row = new Vector<Object>();
 					// mark additions
 					if (wmc.operation == WorkingMemoryOperation.ADD)
-						row.add("*");
+						row.add("<b>*" + timeFormat.format(now.s + now.us * 1e-6) + "</b>");
 					else
-						row.add("");
+						row.add("" + timeFormat.format(now.s + now.us * 1e-6));
 					row.add(addrToString(wmc.address));
 					row.add(newEntry.getClass().getSimpleName());
 					if (pluginToCall != null) { // if we have a plugin for this
