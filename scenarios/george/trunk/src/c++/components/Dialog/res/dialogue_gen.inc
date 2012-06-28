@@ -10,7 +10,7 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
+    <width>475</width>
     <height>421</height>
    </rect>
   </property>
@@ -299,6 +299,11 @@ const char res_dialogue_ui[] = R"--(<?xml version="1.0" encoding="UTF-8"?>
            <item>
             <property name="text">
              <string>yellow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>orange</string>
             </property>
            </item>
           </widget>
