@@ -44,6 +44,7 @@ class GraphCutSegmenter
   int lblFixCost;
   int smoothCost;
   int colFilThreshold;
+  int m_erosionIterations;
   
   IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK
@@ -107,6 +108,10 @@ private:
       std::vector<PointCloud::SurfacePoint> surfPoints, float hslmod,
       float distmod, bool distcost);
 
+  std::vector<PointCloud::SurfacePoint> erode3DPoints(
+      std::vector<PointCloud::SurfacePoint> points, std::vector<CvPoint> projPoints,
+      IplImage *invPatch, int erIter);
+  
   std::vector<CvScalar> colorFilter(std::vector<CvScalar> colors,
       std::vector<CvScalar> filterColors, int k, int tolerance);
   void verifySetRoi(cv::Ptr<IplImage> imagePtr, CvRect rect, long line=-1);
