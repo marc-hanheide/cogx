@@ -19,7 +19,6 @@ import de.dfki.lt.tr.dialogue.slice.time.TimePoint;
 import de.dfki.lt.tr.dialogue.util.EpistemicStatusFactory;
 import eu.cogx.beliefs.slice.MergedBelief;
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Font;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -55,7 +54,6 @@ public class VisualSalienceReferenceResolution
     public void onStart() {
         super.onStart();
         
-        // TODO: start the visual component
         if (visualMode) {
             win = new DebugWindow();
             win.pack();
@@ -176,11 +174,24 @@ public class VisualSalienceReferenceResolution
         }        
         return Double.NaN;
     }
-    
+
+    public static boolean isVisualSalienceRequest(ReferenceResolutionRequest rr) {
+        boolean result = false;
+        if (ReferenceResolver.SORT_DISCOURSE.equals(rr.sort)) {
+            return false;
+        }
+        for (Constraint c : rr.constraints) {
+            if ("salience".equals(c.feature)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
     public class Resolver implements ReferenceResolver {
 
         private final EpistemicStatus epst = EpistemicStatusFactory.newSharedEpistemicStatus(IntentionManagementConstants.thisAgent, IntentionManagementConstants.humanAgent);
-
+        
         protected List<EpistemicReferenceHypothesis> getHypotheses() {
             List<EpistemicReferenceHypothesis> result = new LinkedList<EpistemicReferenceHypothesis>();
 
@@ -202,7 +213,6 @@ public class VisualSalienceReferenceResolution
                 }
             }
 
-            // TODO: this!
             if (latestAddr != null) {
                 dFormula referent = new PointerFormula(0, latestAddr, "");
                 double score = 1.0;
@@ -213,9 +223,14 @@ public class VisualSalienceReferenceResolution
         }
         
         public ReferenceResolutionResult resolve(ReferenceResolutionRequest rr, WorkingMemoryAddress origin) {
-            log("will return the current snapshot of salience");
-            ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, "salience");
-            result.hypos.addAll(getHypotheses());            
+            ReferenceResolutionResult result = ReferenceUtils.newEmptyResolutionResult(rr, origin, "visualsalience");
+            if (isVisualSalienceRequest(rr)) {
+                log("this is a request about visual salience");
+                result.hypos.addAll(getHypotheses());
+            }
+            else {
+                log("request doesn't seem to be about visual salience");
+            }
             return result;
         }
         
