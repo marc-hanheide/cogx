@@ -231,6 +231,7 @@ void ChainGraphInferencer::runComponent()
 			parseQuery(q.queryPtr->queryString, q.queryPtr->type, queryVariables);
 			if (!queryVariables.empty())
 			{
+			  try {
 				// Lock the graph mutex
 				pthread_mutex_lock(&_graphMutex);
 
@@ -294,6 +295,12 @@ void ChainGraphInferencer::runComponent()
 
 				// No more operations on the graph
 				pthread_mutex_unlock(&_graphMutex);
+			  }
+			  catch (std::exception &e)
+			  {
+			    error("Exception thrown by Chain graph! Skipped. (%s)", e.what());
+				pthread_mutex_unlock(&_graphMutex);
+			  }
 
 			} // if (!queryVariables.empty())
 
