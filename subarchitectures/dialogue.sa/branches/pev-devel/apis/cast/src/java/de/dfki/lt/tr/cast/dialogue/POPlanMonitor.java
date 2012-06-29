@@ -213,6 +213,7 @@ public class POPlanMonitor extends ManagedComponent {
 			runningMap.get(_newPOPlan.taskID).add(_newPOPlan);
 			
 			pevModule.m_gbmemory.addTimeStamp(_newPOPlan.taskID, runningMap.get(_newPOPlan.taskID).size()-1, _wmc.timestamp);
+			log(pevModule.m_gbmemory.getTimeStampMap());
 			log("added timestamp to GBeliefMemory: " + _newPOPlan.taskID + ", " + (runningMap.get(_newPOPlan.taskID).size()-1) + ", " + _wmc.timestamp);
 		}
 		else {
@@ -240,6 +241,7 @@ public class POPlanMonitor extends ManagedComponent {
 		if (_oldPOPlan.status.name().equals("RUNNING")) {
 			runningMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 			pevModule.m_gbmemory.addTimeStamp(_oldPOPlan.taskID, runningMap.get(_oldPOPlan.taskID).size()-1, _wmc.timestamp);
+			log(pevModule.m_gbmemory.getTimeStampMap());
 			log("added timestamp to GBeliefMemory: " + _oldPOPlan.taskID + ", " + (runningMap.get(_oldPOPlan.taskID).size()-1) + ", " + _wmc.timestamp);
 		}
 		else {
