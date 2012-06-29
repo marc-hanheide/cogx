@@ -77,6 +77,7 @@ public class VisualObjectTransferFunction extends
 
 		fillConcept("shape", result, from.shapeLabels, from.shapeDistrib);
 
+		fillConcept("objecttype", result, from.identLabels, from.identDistrib);
 		return result;
 	}
 
