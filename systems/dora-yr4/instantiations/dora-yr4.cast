@@ -267,10 +267,10 @@ VARDEFAULT min_cone_prob=0.01
 
 # Smallest allowed RELATIVE probability of any one view cone
 # (i.e. its portion out of the total probability mass in a room)
-VARDEFAULT min_relative_cone_prob=0.05
+VARDEFAULT min_relative_cone_prob=0.02
 
 # Smallest allowed ABSOLUTE probability of any one cone group
-VARDEFAULT min_conegroup_prob=0.04
+VARDEFAULT min_conegroup_prob=0.05
 
 # Whether to generate a prior probability along (laser-detected) wall
 # obstacles in uninformed AVS (otherwise, only the Kinect heightmap will be
