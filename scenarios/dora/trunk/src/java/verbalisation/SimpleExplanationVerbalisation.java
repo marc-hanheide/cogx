@@ -15,19 +15,22 @@ import cast.cdl.WorkingMemoryAddress;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
 import cast.core.CASTUtils;
-import castutils.castextensions.IceXMLSerializer;
 import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
 import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair;
 import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.IntegerFormula;
 import de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula;
 import de.dfki.lt.tr.dialogue.slice.lf.LogicalForm;
 import de.dfki.lt.tr.dialogue.slice.produce.ContentPlanningGoal;
 import de.dfki.lt.tr.dialogue.util.LFUtils;
+import eu.cogx.beliefs.slice.GroundedBelief;
 import eu.cogx.beliefs.slice.HypotheticalBelief;
 
 /** A simple component to produce some verbalisation for explanations.
- * 
+ * It assumes that the proposed object is in a room - an example verbalisation is:
+ * "Perhaps the magazine is in a container which is in room 0 which is most likely a meetingroom".
  * @author Graham Horn
  *
  */
@@ -36,7 +39,9 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
  
   private Set<HypotheticalBelief> hypotheticalBeliefs;
   private String dialogueSA = "dialogue";
-  
+  private HypotheticalBelief proposedObject;
+  private HypotheticalBelief proposedLocation;
+ 
   public SimpleExplanationVerbalisation()
   {
     super();
@@ -76,6 +81,7 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
       hypotheticalBeliefs.add(hypothetical_belief);
       if (hypotheticalBeliefs.size() == 2)
       {
+        // TODO wait for the "I have now found an explanation message"
         verbaliseExplanation();
       }
       else
@@ -92,33 +98,35 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
       logException(e);
     }
   }
-	
-  protected void verbaliseExplanation()
+  
+  protected void findProposedObjectAndLocation()
   {
     Iterator<HypotheticalBelief> beliefs_itr = hypotheticalBeliefs.iterator();
     HypotheticalBelief belief1 = beliefs_itr.next();
     HypotheticalBelief belief2 = beliefs_itr.next();
     
-    HypotheticalBelief proposed_object;
-    HypotheticalBelief proposed_location;
-    
     if (firstBeliefIsProposedObject(belief1, belief2))
     {
-      proposed_object = belief1;
-      proposed_location = belief2;
+      proposedObject = belief1;
+      proposedLocation = belief2;
     }
     else if (firstBeliefIsProposedObject(belief2, belief1))
     {
-      proposed_location = belief1;
-      proposed_object = belief2;
+      proposedLocation = belief1;
+      proposedObject = belief2;
     }
     else
     {
-      proposed_location = null;
-      proposed_object = null;
+      proposedLocation = null;
+      proposedObject = null;
     }
+  }
+  
+  protected void verbaliseExplanation()
+  {
+    findProposedObjectAndLocation();
     
-    String canned_text = generateText(proposed_object, proposed_location);
+    String canned_text = generateText();
     if (isRunning())
     {
       verbaliseCannedText(canned_text);
@@ -129,7 +137,7 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
     }
   }
   
-  protected String findLabel(CondIndependentDistribs ci_distribs)
+  private String findLabel(CondIndependentDistribs ci_distribs)
   {
     BasicProbDistribution prob_distribution_label = (BasicProbDistribution) ci_distribs.distribs.get("label");
     FormulaValues formula_values_label = (FormulaValues) prob_distribution_label.values;
@@ -137,7 +145,7 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
     return elementary_formula_label.prop;
   }
   
-  protected String findRelation(CondIndependentDistribs ci_distribs)
+  private String findRelation(CondIndependentDistribs ci_distribs)
   {
     BasicProbDistribution prob_distribution_relation = (BasicProbDistribution) ci_distribs.distribs.get("relation");
     FormulaValues formula_values_relation = (FormulaValues) prob_distribution_relation.values;
@@ -145,14 +153,89 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
     return elementary_formula_relation.prop;
   }
   
-  protected String generateText(HypotheticalBelief proposed_object, 
-      HypotheticalBelief proposed_location)
+  private WorkingMemoryAddress findRelatedToPointer(CondIndependentDistribs ci_distribs)
+  {
+    BasicProbDistribution prob_distribution = (BasicProbDistribution) ci_distribs.distribs.get("related-to");
+    FormulaValues formula_values = (FormulaValues) prob_distribution.values;
+    PointerFormula pointer_formula = (PointerFormula) formula_values.values.get(0).val;
+    
+    return pointer_formula.pointer;
+  } 
+  
+  private GroundedBelief getGroundedBelief(WorkingMemoryAddress _wma)
+  {
+    GroundedBelief result = null;
+    try 
+    {
+      result = getMemoryEntry(_wma, GroundedBelief.class);
+    }
+    catch (DoesNotExistOnWMException e) 
+    {
+      logException(e);
+    }
+    catch (UnknownSubarchitectureException e) 
+    {
+      logException(e);
+    }
+    
+    return result;
+  }
+  
+  protected String generateRoomText(GroundedBelief grounded_belief)
+  {
+    StringBuilder result = new StringBuilder();
+    
+    if ("comaroom".equals(grounded_belief.type))
+    {
+      result.append("room ");
+      CondIndependentDistribs ci_distribs = (CondIndependentDistribs) grounded_belief.content;
+      result.append(findRoomId(ci_distribs));
+      result.append(" which is most likely a ");
+      
+      result.append(findMostLikelyCategory(ci_distribs));
+    }
+    else
+    {
+      // unexpected type
+    }
+    
+    return result.toString();
+  }
+
+  private int findRoomId(CondIndependentDistribs ci_distribs) 
+  {
+    BasicProbDistribution prob_distribution = (BasicProbDistribution) ci_distribs.distribs.get("RoomId");
+    FormulaValues formula_values = (FormulaValues) prob_distribution.values;
+    IntegerFormula room_id = (IntegerFormula) formula_values.values.get(0).val;
+    return room_id.val;
+  }
+  
+  private String findMostLikelyCategory(CondIndependentDistribs ci_distribs)
+  {
+    BasicProbDistribution prob_distribution = (BasicProbDistribution) ci_distribs.distribs.get("category");
+    FormulaValues formula_values = (FormulaValues) prob_distribution.values;
+    Iterator<FormulaProbPair> values_itr = formula_values.values.iterator();
+    String most_likely_room_name = "unknown";
+    float highest_probability = 0;
+    while (values_itr.hasNext())
+    {
+      FormulaProbPair prob_pair = values_itr.next();
+      if (prob_pair.prob > highest_probability)
+      {
+        highest_probability = prob_pair.prob;
+        most_likely_room_name = ((ElementaryFormula) prob_pair.val).prop;
+      }
+    }
+    return most_likely_room_name;
+  }
+  
+  protected String generateText()
   {
     StringBuilder result = new StringBuilder();
     try
     {
       result.append("Perhaps the ");
-      CondIndependentDistribs loc_distribs = (CondIndependentDistribs) proposed_location.content;
+      CondIndependentDistribs loc_distribs = (CondIndependentDistribs) proposedLocation.content;
       
       result.append(findLabel(loc_distribs));     
       result.append(" is ");
@@ -160,22 +243,22 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
       
       result.append(" a ");
       
-      CondIndependentDistribs obj_distribs = (CondIndependentDistribs) proposed_object.content;
+      CondIndependentDistribs obj_distribs = (CondIndependentDistribs) proposedObject.content;
       
       result.append(findLabel(obj_distribs));          
       result.append(" which is ");
       result.append(findRelation(obj_distribs));
-      
-      // TODO use the WM entry for the coma room
-      
-      BasicProbDistribution prob_distribution = (BasicProbDistribution) obj_distribs.distribs.get("related-to");
-      FormulaValues formula_values = (FormulaValues) prob_distribution.values;
-      PointerFormula pointer_formula = (PointerFormula) formula_values.values
-          .get(0).val;
-      
-      WorkingMemoryAddress wma = pointer_formula.pointer;
-      
-      result.append(" WM address ").append(wma.id).append(" in SA ").append(wma.subarchitecture);
+    
+      WorkingMemoryAddress _wma = findRelatedToPointer(obj_distribs);
+      if (isRunning())
+      {
+        result.append(" ");
+        result.append(generateRoomText(getGroundedBelief(_wma)));
+      }
+      else
+      {
+       result.append(" WM address ").append(_wma.id).append(" in SA ").append(_wma.subarchitecture);
+      }
     }
     catch (NullPointerException npe)
     {
@@ -197,13 +280,9 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
       {
         CondIndependentDistribs distribs2 = (CondIndependentDistribs) belief2.content;
 
-        Object related_to2 = distribs2.distribs.get("related-to");
-        BasicProbDistribution prob_distribution2 = (BasicProbDistribution) related_to2;
-        FormulaValues formula_values2 = (FormulaValues) prob_distribution2.values;
-        PointerFormula pointer_formula2 = (PointerFormula) formula_values2.values
-            .get(0).val;
+        WorkingMemoryAddress pointer_address = findRelatedToPointer(distribs2);
         
-        if (belief1.id.equals(pointer_formula2.pointer.id)) 
+        if (belief1.id.equals(pointer_address.id)) 
         {
           result = true;
         }     
@@ -264,164 +343,4 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
     }
   }
   
-  public static void main(String[] argv)
-  {
-    String in1 =
-        "<eu.cogx.beliefs.slice.HypotheticalBelief>" +
-        "  <frame class=\"de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame\">" +
-        "    <place></place> " +
-        "    <existProb>0.0</existProb>" +
-        "  </frame>" +
-        "  <estatus class=\"de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus\">" +
-        "    <agent>robot</agent>" +
-        "  </estatus>" +
-        "  <id>7:t</id>" +
-        "  <type>visualobject</type>" +
-        "  <content class=\"de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs\">" +
-        "    <distribs>" +
-        "      <entry>" +
-        "        <string>relation</string>" +
-        "        <de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "          <key>relation</key>" +
-        "          <values class=\"de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues\">" +    
-        "            <values class=\"linked-list\">    " +
-        "          <de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "                <val class=\"de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula\">" +
-        "                  <id>0</id>" +
-        "                  <prop>in</prop>" +
-        "                </val>" +
-        "                <prob>1.0</prob>" +
-        "              </de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "            </values>" +
-        "          </values>" +
-        "        </de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "      </entry>" +
-        "      <entry>" +
-        "        <string>label</string>" +
-        "        <de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "          <key>label</key>" +
-        "          <values class=\"de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues\">" +
-        "            <values class=\"linked-list\">" +
-        "              <de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "                <val class=\"de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula\">" +
-        "                  <id>0</id>" +
-        "                  <prop>container</prop>" +
-        "                </val>" +
-        "                <prob>1.0</prob>" +
-        "              </de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "            </values>" +
-        "          </values>" +
-        "        </de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "      </entry>" +
-        "      <entry>" +
-        "        <string>related-to</string>" +
-        "        <de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "          <key>related-to</key>" +
-        "          <values class=\"de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues\">" +
-        "            <values class=\"linked-list\">" +
-        "              <de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "                <val class=\"de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula\">" +
-        "                  <id>0</id>" +
-        "                  <pointer>" +
-        "                    <id>0:61</id>" +
-        "                    <subarchitecture>coma</subarchitecture>" +
-        "                  </pointer>" +
-        "                  <type></type>" +
-        "                </val>" +
-        "                <prob>1.0</prob>" +
-        "              </de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "            </values>" +
-        "          </values>" +
-        "        </de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "      </entry>" +
-        "    </distribs>" +
-        "  </content>" +
-        "  <hist class=\"de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory\">" +
-        "    <ancestors/>" +
-        "    <offspring/>" +
-        "  </hist>" +
-        "</eu.cogx.beliefs.slice.HypotheticalBelief>";
-    
-    String in2 =
-        "<eu.cogx.beliefs.slice.HypotheticalBelief>" +
-        "  <frame class=\"de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame\">" +
-        "<place></place> " +
-        "<existProb>0.0</existProb>" +
-        "  </frame>" +
-        "  <estatus class=\"de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus\">" +
-        "    <agent>robot</agent>" +
-        "  </estatus>" +
-        "  <id>6:t</id>" +
-        "  <type>visualobject</type>" +
-        "  <content class=\"de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs\">" +
-        "    <distribs>" +
-        "      <entry>" +
-        "        <string>relation</string>" +
-        "        <de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "          <key>relation</key>" +
-        "          <values class=\"de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues\">" +    
-        "            <values class=\"linked-list\">    " +
-        "          <de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "                <val class=\"de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula\">" +
-        "                  <id>0</id>" +
-        "                  <prop>in</prop>" +
-        "                </val>" +
-        "                <prob>1.0</prob>" +
-        "              </de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "            </values>" +
-        "          </values>" +
-        "        </de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "      </entry>" +
-        "      <entry>" +
-        "        <string>label</string>" +
-        "        <de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "          <key>label</key>" +
-        "          <values class=\"de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues\">" +
-        "            <values class=\"linked-list\">" +
-        "              <de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "                <val class=\"de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula\">" +
-        "                  <id>0</id>" +
-        "                  <prop>magazine</prop>" +
-        "                </val>" +
-        "                <prob>1.0</prob>" +
-        "              </de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "            </values>" +
-        "          </values>" +
-        "        </de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "      </entry>" +
-        "      <entry>" +
-        "        <string>related-to</string>" +
-        "        <de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "          <key>related-to</key>" +
-        "          <values class=\"de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues\">" +
-        "            <values class=\"linked-list\">" +
-        "              <de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "                <val class=\"de.dfki.lt.tr.beliefs.slice.logicalcontent.PointerFormula\">" +
-        "                  <id>0</id>" +
-        "                  <pointer>" +
-        "                    <id>7:t</id>" +
-        "                    <subarchitecture>coma</subarchitecture>" +
-        "                  </pointer>" +
-        "                  <type></type>" +
-        "                </val>" +
-        "                <prob>1.0</prob>" +
-        "              </de.dfki.lt.tr.beliefs.slice.distribs.FormulaProbPair>" +
-        "            </values>" +
-        "          </values>" +
-        "        </de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution>" +
-        "      </entry>" +
-        "    </distribs>" +
-        "  </content>" +
-        "  <hist class=\"de.dfki.lt.tr.beliefs.slice.history.CASTBeliefHistory\">" +
-        "    <ancestors/>" +
-        "    <offspring/>" +
-        "  </hist>" +
-        "</eu.cogx.beliefs.slice.HypotheticalBelief>";
-    
-    HashSet<HypotheticalBelief> initial_beliefs = new HashSet<HypotheticalBelief>();
-    initial_beliefs.add(IceXMLSerializer.fromXMLString(in1, HypotheticalBelief.class));
-    initial_beliefs.add(IceXMLSerializer.fromXMLString(in2, HypotheticalBelief.class));
-    SimpleExplanationVerbalisation sev = new SimpleExplanationVerbalisation(initial_beliefs);
-    sev.verbaliseExplanation();
-  }
 }
