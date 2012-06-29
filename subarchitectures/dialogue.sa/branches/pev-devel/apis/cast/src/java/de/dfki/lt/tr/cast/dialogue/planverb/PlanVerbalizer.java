@@ -174,23 +174,22 @@ public class PlanVerbalizer {
 		int beliefPOPlanID = Integer.parseInt(beliefTempIndices[1]);
 
 		log("beliefWMA = " + beliefWMA.id + "@" + beliefWMA.subarchitecture + " - beliefTaskID = " + beliefTaskID + " - beliefPOPlanID = " + beliefPOPlanID);
-		
+
 		log(m_gbmemory.getLastValidGBelief(beliefWMA).type);
-		
+
 		log(m_gbmemory.getTimeStamp(0, 1).toString());
-		
-//		try {
+
+		try {
 			gbWME = m_gbmemory.getValidGBelief(beliefWMA, beliefTaskID, beliefPOPlanID);
-//		} catch (NullPointerException npe) {
-//			logException(npe);
-//			log("NullPointer trying to access " + referentWMA.toString());
-//			gbWME = m_castComponent.getMemoryEntry(beliefWMA, GroundedBelief.class);
-//			log("Belief at " + referentWMA.toString() + " is of type " + gbWME.type);
-//		}
+		} catch (NullPointerException npe) {
+			logException(npe);
+			log("NullPointer trying to access " + referentWMA.toString());
+			gbWME = m_castComponent.getMemoryEntry(beliefWMA, GroundedBelief.class);
+			log("Belief at " + referentWMA.toString() + " is of type " + gbWME.type);
+		}
 		return gbWME;
-		//}
 	}
-	
+
 	/**
 	 * Read the GBeliefMemory object from the given file
 	 * 
