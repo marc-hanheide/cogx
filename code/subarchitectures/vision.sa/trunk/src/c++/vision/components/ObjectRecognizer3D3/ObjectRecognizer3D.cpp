@@ -591,10 +591,7 @@ void ObjectRecognizer3D::receiveVisualLearningTask(const cdl::WorkingMemoryChang
       learn_task->status = VisionData::VCSUCCEEDED;
     else
       learn_task->status = VisionData::VCFAILED;
-    // HACK: we need to overwrite the command with success. But right now the
-    // VisualLearner also overwrites the command, even if it should not as it is
-    // about type not color,shape
-    //overwriteWorkingMemory(_wmc.address, learn_task);
+    overwriteWorkingMemory(_wmc.address, learn_task);
   }
   log("done VisualLearningTask");
 }
