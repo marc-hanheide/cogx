@@ -31,7 +31,10 @@ public class GBeliefMemory implements Serializable{
 	
 	public CASTTime getTimeStamp(int taskID, int poplanID) {
 		return timeStampMap.get(taskID).get(poplanID);
-			
+	}
+	
+	public String getTimeStampMap() {
+		return timeStampMap.toString();
 	}
 	
 	public void addGBelief(WorkingMemoryAddress _wma, CASTTime ct, GroundedBelief _newBelief) {

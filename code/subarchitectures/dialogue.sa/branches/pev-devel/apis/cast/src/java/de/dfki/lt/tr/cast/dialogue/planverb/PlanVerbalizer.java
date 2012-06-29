@@ -86,7 +86,7 @@ public class PlanVerbalizer {
 	public PlanVerbalizer(String annotatedDomainFile, String pddlDomainFile,  String grammarFile, String ngramFile, String hostname, Integer port, WorkingMemoryReaderComponent component) throws IOException  {
 		// init CAST component for WM access and logging
 		m_castComponent = component;
-
+		
 		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
 				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
 		
@@ -125,6 +125,8 @@ public class PlanVerbalizer {
 		// Load gbmemory from file
 		File f = new File(gbmemoryFile);
 		readFromFile(f);
+		
+		log(m_gbmemory.getTimeStampMap());
 		
 		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
 				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
@@ -177,16 +179,16 @@ public class PlanVerbalizer {
 
 		log(m_gbmemory.getLastValidGBelief(beliefWMA).type);
 
-		log(m_gbmemory.getTimeStamp(0, 1).toString());
+		//log(m_gbmemory.getTimeStamp(0, 1).toString());
 
-		try {
+		//try {
 			gbWME = m_gbmemory.getValidGBelief(beliefWMA, beliefTaskID, beliefPOPlanID);
-		} catch (NullPointerException npe) {
-			logException(npe);
-			log("NullPointer trying to access " + referentWMA.toString());
-			gbWME = m_castComponent.getMemoryEntry(beliefWMA, GroundedBelief.class);
-			log("Belief at " + referentWMA.toString() + " is of type " + gbWME.type);
-		}
+		//} catch (NullPointerException npe) {
+			//logException(npe);
+			//log("NullPointer trying to access " + referentWMA.toString());
+			//gbWME = m_castComponent.getMemoryEntry(beliefWMA, GroundedBelief.class);
+			//log("Belief at " + referentWMA.toString() + " is of type " + gbWME.type);
+		//}
 		return gbWME;
 	}
 
@@ -473,7 +475,7 @@ public class PlanVerbalizer {
         
         // execution status = pending will be removed and the overall LF will be put into a control verb
 //        if (protoLF.toString().contains("<ExecutionStatus>PENDING")) {
-//            FeatureReplacer pendingReplacer = new FeatureReplacer() {
+//            FeatureReplacer pendingReplacer = new FeatureReplacerPlanVerbalizer constructor cal() {
 //                @Override
 //                public BasicState.Builder doWork(BasicState.Builder builder) {
 //
