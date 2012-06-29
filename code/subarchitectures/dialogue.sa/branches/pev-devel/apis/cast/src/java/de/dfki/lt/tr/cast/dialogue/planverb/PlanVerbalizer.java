@@ -159,20 +159,36 @@ public class PlanVerbalizer {
 	
 	private GroundedBelief getGBelief(WMAddress referentWMA) throws DoesNotExistOnWMException, UnknownSubarchitectureException {
 		//Uncommented but not the deleted, in case future generations don't want to use GBeliefMemory
-		
+
 		/*if (m_castComponent != null) {
 			GroundedBelief gbWME = m_castComponent.getMemoryEntry(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), GroundedBelief.class);
 			return gbWME;
 		} else {*/
+		//GroundedBelief gbWME = m_gbmemory.getGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), taskID, poplanID);
+
+		GroundedBelief gbWME;
+		String[] beliefTempIndexWMA = referentWMA.id().split(",");
+		WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(beliefTempIndexWMA[1], referentWMA.subarchitecture());
+		String[] beliefTempIndices = beliefTempIndexWMA[0].split("_");
+		int beliefTaskID = Integer.parseInt(beliefTempIndices[0]);
+		int beliefPOPlanID = Integer.parseInt(beliefTempIndices[1]);
+
+		log("beliefWMA = " + beliefWMA.id + "@" + beliefWMA.subarchitecture + " - beliefTaskID = " + beliefTaskID + " - beliefPOPlanID = " + beliefPOPlanID);
 		
-			//GroundedBelief gbWME = m_gbmemory.getGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), taskID, poplanID);
-			
-			GroundedBelief gbWME = m_gbmemory.getLastValidGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()));
-			return gbWME;
+		log(m_gbmemory.getLastValidGBelief(beliefWMA).type);
 		
-			
+		log(m_gbmemory.getTimeStamp(0, 1).toString());
+		
+//		try {
+			gbWME = m_gbmemory.getValidGBelief(beliefWMA, beliefTaskID, beliefPOPlanID);
+//		} catch (NullPointerException npe) {
+//			logException(npe);
+//			log("NullPointer trying to access " + referentWMA.toString());
+//			gbWME = m_castComponent.getMemoryEntry(beliefWMA, GroundedBelief.class);
+//			log("Belief at " + referentWMA.toString() + " is of type " + gbWME.type);
+//		}
+		return gbWME;
 		//}
-		
 	}
 	
 	/**
@@ -236,72 +252,72 @@ public class PlanVerbalizer {
 		m_postLexicalSub.put("circle", "placeholder");
 	}
 	
-	public String verbalizeHistory(final List<POPlan> hlist) {
+	public String verbalizeHistory(final List<POPlan> hlist, int planningTaskID) {
 		log("entering verbalizeHistory()");
-		History h = new PDDLHistory(hlist);
+		History h = new PDDLHistory(hlist, planningTaskID);
 		return verbalizeHistory(h);
 	}
 	
 	public String verbalizeHistory(History h) {
 	  log("entering verbalizeHistory()");
 		
-		// this does not work yet!
 		List<Message> messages = m_contentDeterminator.determineMessages(h);	
-		if (messages!=null) {
-			log("contentDeterminator returned " + messages.size() + " messages for the full History.");
-		} else {
-			// therefore process each POPlan individually:
-			log("determineMessages(History) doesn't work yet. Verbalizing each POPlan individually instead.");
-
-			messages = new ArrayList<Message>();
-			int _currPOPlanBlock = 0;
-			for (POPlan poPlan : (List<POPlan>) h.getEpisodes()) {
-				try {
-					messages.addAll(m_contentDeterminator.determineMessages(poPlan, _currPOPlanBlock));
-				} catch (BuildException e) {
-					logException(e);
-				} catch (ParseException e) {
-					logException(e);
-				} catch (NoAnnotationFoundException e) {
-					logException(e);
-				} catch (UnknownOperatorException e) {
-					logException(e);
-				}
-				_currPOPlanBlock+=1;
-			}
-
-			log("contentDeterminator returned " + messages.size() + " messages.");
-		}
+		log("contentDeterminator returned " + messages.size() + " messages for the full History.");
+		
+//		if (messages!=null) {
+//		} else {
+//			// therefore process each POPlan individually:
+//			log("determineMessages(History) doesn't work yet. Verbalizing each POPlan individually instead.");
+//
+//			messages = new ArrayList<Message>();
+//			int _currPOPlanBlock = 0;
+//			for (POPlan poPlan : (List<POPlan>) h.getEpisodes()) {
+//				try {
+//					messages.addAll(m_contentDeterminator.determineMessages(poPlan, _currPOPlanBlock));
+//				} catch (BuildException e) {
+//					logException(e);
+//				} catch (ParseException e) {
+//					logException(e);
+//				} catch (NoAnnotationFoundException e) {
+//					logException(e);
+//				} catch (UnknownOperatorException e) {
+//					logException(e);
+//				}
+//				_currPOPlanBlock+=1;
+//			}
+//
+//			log("contentDeterminator returned " + messages.size() + " messages.");
+//		}
 		return realizeMessages(messages);
 	}
 	
 	
-	/**
-	 * The main interface method. Generates a verbal report for a given partially ordered plan (POPlan).
-	 * 
-	 * @param poplan
-	 * @return a string with the full verbal report of the POPlan
-	 */
-	public String verbalizePOPlan(POPlan poplan) {
-        // call the content determinator
-		List<Message> messages = null;
-		try {
-			messages = m_contentDeterminator.determineMessages(poplan, 1);
-		} catch (BuildException e) {
-			logException(e);
-		} catch (ParseException e) {
-			logException(e);
-		} catch (NoAnnotationFoundException e) {
-			logException(e);
-		} catch (UnknownOperatorException e) {
-			logException(e);
-		}
-		// if errors prevented the creation of a message list, report it...
-		if (messages==null) return "I am sorry. I don't know what to say about this Pee Oh Plan.";
-		else log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
-
-		return realizeMessages(messages);
-	}
+//	/**
+//	 * The main interface method. Generates a verbal report for a given partially ordered plan (POPlan).
+//	 * 
+//	 * @param poplan
+//	 * @return a string with the full verbal report of the POPlan
+//	 */
+//	public String verbalizePOPlan(POPlan poplan) {
+//        // call the content determinator
+//		List<Message> messages = null;
+//		try {
+//			messages = m_contentDeterminator.determineMessages(poplan, 1, 1);
+//		} catch (BuildException e) {
+//			logException(e);
+//		} catch (ParseException e) {
+//			logException(e);
+//		} catch (NoAnnotationFoundException e) {
+//			logException(e);
+//		} catch (UnknownOperatorException e) {
+//			logException(e);
+//		}
+//		// if errors prevented the creation of a message list, report it...
+//		if (messages==null) return "I am sorry. I don't know what to say about this Pee Oh Plan.";
+//		else log("verbalizePOPlan() determined " + messages.size() + " messages for POPlan.");
+//
+//		return realizeMessages(messages);
+//	}
 
 	
 	public String realizeMessages(List<Message> messages) {
@@ -760,7 +776,7 @@ public class PlanVerbalizer {
 		PlanVerbalizer test;
 		try {
 			test = new PlanVerbalizer(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]), args[6]);
-			System.out.println(test.verbalizeHistory(new PDDLHistory(f)));
+			System.out.println(test.verbalizeHistory(new PDDLHistory(f, Integer.parseInt(args[8]))));
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

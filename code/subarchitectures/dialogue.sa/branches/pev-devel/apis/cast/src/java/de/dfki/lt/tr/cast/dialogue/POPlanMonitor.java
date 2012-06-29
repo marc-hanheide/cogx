@@ -213,7 +213,7 @@ public class POPlanMonitor extends ManagedComponent {
 			runningMap.get(_newPOPlan.taskID).add(_newPOPlan);
 			
 			pevModule.m_gbmemory.addTimeStamp(_newPOPlan.taskID, runningMap.get(_newPOPlan.taskID).size()-1, _wmc.timestamp);
-			
+			log("added timestamp to GBeliefMemory: " + _newPOPlan.taskID + ", " + (runningMap.get(_newPOPlan.taskID).size()-1) + ", " + _wmc.timestamp);
 		}
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
@@ -240,6 +240,7 @@ public class POPlanMonitor extends ManagedComponent {
 		if (_oldPOPlan.status.name().equals("RUNNING")) {
 			runningMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
 			pevModule.m_gbmemory.addTimeStamp(_oldPOPlan.taskID, runningMap.get(_oldPOPlan.taskID).size()-1, _wmc.timestamp);
+			log("added timestamp to GBeliefMemory: " + _oldPOPlan.taskID + ", " + (runningMap.get(_oldPOPlan.taskID).size()-1) + ", " + _wmc.timestamp);
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
@@ -409,7 +410,7 @@ public class POPlanMonitor extends ManagedComponent {
 
 		// hand history over to PEV
 		log("calling PEV Module verbalizeHistory()");
-		return this.pevModule.verbalizeHistory(hlist);
+		return this.pevModule.verbalizeHistory(hlist, taskID);
 	}
 
   // Does this method need to be synchronized to handle multiple requests at the same time as 
@@ -487,16 +488,16 @@ public class POPlanMonitor extends ManagedComponent {
     }
   }
 	
-	private void reportFinishedPOPlan(POPlan pp) {
-		log("************ reportFinishedPOPlan() called ************");
-		
-		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
-		
-		log("calling PEV Module verbalizePOPlan()");
-		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
-		log("REPORTING FINISHED POPLAN: \n" + report);
-		//VerbalisationUtils.verbaliseString(this, report);
-	}
+//	private void reportFinishedPOPlan(POPlan pp) {
+//		log("************ reportFinishedPOPlan() called ************");
+//		
+//		de.dfki.lt.tr.planverb.planning.pddl.POPlan pevPOPlan = POPlanUtils.convertPOPlan(pp);
+//		
+//		log("calling PEV Module verbalizePOPlan()");
+//		String report = this.pevModule.verbalizePOPlan(pevPOPlan);
+//		log("REPORTING FINISHED POPLAN: \n" + report);
+//		//VerbalisationUtils.verbaliseString(this, report);
+//	}
 	
 	private String poplanToString(POPlan _poPlan) {
 		return POPlanUtils.POPlanToString(_poPlan);
