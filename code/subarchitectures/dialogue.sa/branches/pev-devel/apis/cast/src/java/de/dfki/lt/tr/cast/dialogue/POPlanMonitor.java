@@ -6,17 +6,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-
-import com.ibm.icu.text.SimpleDateFormat;
 
 import autogen.Planner.POPlan;
 import autogen.Planner.PlanningTask;
@@ -29,6 +27,7 @@ import cast.architecture.ManagedComponent;
 import cast.architecture.WorkingMemoryChangeReceiver;
 import cast.cdl.WorkingMemoryChange;
 import cast.cdl.WorkingMemoryOperation;
+import castutils.castextensions.IceXMLSerializer;
 import de.dfki.lt.tr.cast.dialogue.planverb.PlanVerbalizer;
 import de.dfki.lt.tr.cast.dialogue.util.POPlanUtils;
 import de.dfki.lt.tr.cast.dialogue.util.VerbalisationUtils;
@@ -215,13 +214,14 @@ public class POPlanMonitor extends ManagedComponent {
 			pevModule.m_gbmemory.addTimeStamp(_newPOPlan.taskID, runningMap.get(_newPOPlan.taskID).size()-1, _wmc.timestamp);
 			log(pevModule.m_gbmemory.getTimeStampMap());
 			log("added timestamp to GBeliefMemory: " + _newPOPlan.taskID + ", " + (runningMap.get(_newPOPlan.taskID).size()-1) + ", " + _wmc.timestamp);
+			writeToFile();
 		}
 		else {
 			finishedMap.put(_newPOPlan.taskID, new LinkedList<POPlan>());
 			finishedMap.get(_newPOPlan.taskID).add(_newPOPlan);
-			String report = generateHistoryReport(_newPOPlan.taskID);
-			log("received ADD for FINISHED POPlan with taskID " + _newPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
 			writeToFile();
+//			String report = generateHistoryReport(_newPOPlan.taskID);
+//			log("received ADD for FINISHED POPlan with taskID " + _newPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
 		}
 	}
 	
@@ -243,12 +243,13 @@ public class POPlanMonitor extends ManagedComponent {
 			pevModule.m_gbmemory.addTimeStamp(_oldPOPlan.taskID, runningMap.get(_oldPOPlan.taskID).size()-1, _wmc.timestamp);
 			log(pevModule.m_gbmemory.getTimeStampMap());
 			log("added timestamp to GBeliefMemory: " + _oldPOPlan.taskID + ", " + (runningMap.get(_oldPOPlan.taskID).size()-1) + ", " + _wmc.timestamp);
+			writeToFile();
 		}
 		else {
 			finishedMap.get(_oldPOPlan.taskID).add(_oldPOPlan);
-			String report = generateHistoryReport(_oldPOPlan.taskID);
-			log("received OVERWRITE for FINISHED POPlan with taskID " + _oldPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
 			writeToFile();
+//			String report = generateHistoryReport(_oldPOPlan.taskID);
+//			log("received OVERWRITE for FINISHED POPlan with taskID " + _oldPOPlan.taskID + " -- verbalizing past history of this task so far: \n " + report);
 		}
 	}
 	
@@ -332,6 +333,8 @@ public class POPlanMonitor extends ManagedComponent {
 			
 			pevModule.m_gbmemory.addGBelief(_wmc.address, getCASTTime(), _newGroundedBelief);
 			
+			writeToFile();
+			
 		} catch (DoesNotExistOnWMException e) {
 			logException(e);
 			return;
@@ -349,6 +352,8 @@ public class POPlanMonitor extends ManagedComponent {
 			
 			pevModule.m_gbmemory.addGBelief(_wmc.address, getCASTTime(), _oldGroundedBelief);
 			
+			writeToFile();
+			
 		} catch (DoesNotExistOnWMException e) {
 			logException(e);
 			return;
@@ -362,6 +367,7 @@ public class POPlanMonitor extends ManagedComponent {
 	private void processDeletedGroundedBelief(WorkingMemoryChange _wmc) {
 		
 		pevModule.m_gbmemory.addGBelief(_wmc.address, getCASTTime(), null);
+		writeToFile();
 		//log("Received deleted GroundedBelief");
 	}
 	
@@ -374,16 +380,18 @@ public class POPlanMonitor extends ManagedComponent {
 			log("Writing GBeliefHistory ...");
 			
 			File file;
-		    file = new File("GBeliefHistory");
+		    file = new File("GBeliefHistory.xml");
 		
 		    try {
-		    	FileOutputStream f = new FileOutputStream(file);
-		    	ObjectOutputStream s = new ObjectOutputStream(f);
-		    	s.writeObject(pevModule.m_gbmemory);
-		    	s.flush();
-		    	s.close();
-		    	f.close();
-			
+		    	String gbMemXMLString = IceXMLSerializer.toXMLString(pevModule.m_gbmemory);
+		    	
+		    	Writer out = new OutputStreamWriter(new FileOutputStream(file));
+		        try {
+		          out.write(gbMemXMLString);
+		        }
+		        finally {
+		          out.close();
+		        }			
 		    } catch (FileNotFoundException e) {
 		    	// TODO Auto-generated catch block
 		    	e.printStackTrace();
@@ -394,6 +402,9 @@ public class POPlanMonitor extends ManagedComponent {
 		    }
 		}
 	}
+	
+	
+	
 	
 	private String generateHistoryReport(int taskID) {
 		log("************ generateHistoryReport(" + taskID + ") called ************");

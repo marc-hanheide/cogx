@@ -4,12 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import comadata.ComaRoom;
 
@@ -21,6 +20,7 @@ import cast.DoesNotExistOnWMException;
 import cast.UnknownSubarchitectureException;
 import cast.architecture.WorkingMemoryReaderComponent;
 import cast.cdl.WorkingMemoryAddress;
+import castutils.castextensions.IceXMLSerializer;
 
 import scala.collection.immutable.Set;
 
@@ -29,8 +29,6 @@ import de.dfki.lt.tr.cast.dialogue.GBeliefMemory;
 import de.dfki.lt.tr.cast.dialogue.realisation.LFRealiser;
 import de.dfki.lt.tr.cast.dialogue.realisation.RealisationClient;
 import de.dfki.lt.tr.cast.dialogue.realisation.TarotCCGRealiser;
-import de.dfki.lt.tr.planverb.domain.NoAnnotationFoundException;
-import de.dfki.lt.tr.planverb.domain.UnknownOperatorException;
 import de.dfki.lt.tr.planverb.generation.Message;
 import de.dfki.lt.tr.planverb.generation.ProtoLFMessage;
 import de.dfki.lt.tr.planverb.generation.StringMessage;
@@ -129,7 +127,9 @@ public class PlanVerbalizer {
 		log(m_gbmemory.getTimeStampMap());
 		
 		log("PlanVerbalizer constructor called with annotatedDomainFile = " + annotatedDomainFile +
-				" pddlDomainFile = " + pddlDomainFile + " grammarFile = " + grammarFile);
+				"\npddlDomainFile = " + pddlDomainFile + "\ngrammarFile = " + grammarFile + 
+				"\nngamFile = " + ngramFile + "\nhostname = " + hostname + 
+				"\nport = " + port + "\ngbmemoryFile = " + gbmemoryFile);
 		
 		// initialize planner-related stuff
 		File adf = new File(annotatedDomainFile);
@@ -201,19 +201,28 @@ public class PlanVerbalizer {
 	private void readFromFile(File gbmemoryFile) {
 		
 		try {
-			FileInputStream f = new FileInputStream(gbmemoryFile);
-			ObjectInputStream s = new ObjectInputStream(f);
-			m_gbmemory = (GBeliefMemory) s.readObject();
-			s.close();
+//			FileInputStream f = new FileInputStream(gbmemoryFile);
+//			ObjectInputStream s = new ObjectInputStream(f);
+//			m_gbmemory = (GBeliefMemory) s.readObject();
+			StringBuilder text = new StringBuilder();
+		    String NL = System.getProperty("line.separator");
+		    Scanner scanner = new Scanner(new FileInputStream(gbmemoryFile));
+		    try {
+		      while (scanner.hasNextLine()){
+		        text.append(scanner.nextLine() + NL);
+		      }
+		    }
+		    finally{
+		      scanner.close();
+		    }
+//		    log("Text read in: " + text);
+		    
+		    m_gbmemory = IceXMLSerializer.fromXMLString(text.toString(), GBeliefMemory.class);
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	     catch (ClassNotFoundException e) {
-		// TODO Auto-generated catch block
-		  e.printStackTrace();
-	    }
 		 catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -241,7 +250,7 @@ public class PlanVerbalizer {
 
 		//m_preLexicalSub. put("m-location ^ via ", "m-through ^ through");
         // TODO find a solution for indirect speech
-		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>pres");
+		m_preLexicalSub. put("ascription ^ be", "ascription ^ be ^ <Mood>ind ^ <Tense>past");
 		//m_preLexicalSub. put("<ExecutionStatus>PENDING", "<Mood>ind ^ <Tense>fut ^ <Modifier>(will1_0:modal ^ will)");
 		
 		m_preLexicalSub.put("<ExecutionStatus>FAILED", "<Mood>ind ^ <Polarity>neg ^ <Modifier>(could1_0:modal ^ could)");
