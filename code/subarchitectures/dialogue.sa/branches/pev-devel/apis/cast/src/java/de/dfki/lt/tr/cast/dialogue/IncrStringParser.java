@@ -332,6 +332,8 @@ extends AbstractDialogueComponentUsingTaskManager {
 					// get the input string
 					PhonString phonString = (PhonString) data.getData();
 
+                                        getLogger().debug("got this string: \"" + phonString.wordSequence + "\", will trim it");
+                                        phonString.wordSequence = phonString.wordSequence.trim();
 					getLogger().debug("before preprocessing: \"" + phonString.wordSequence + "\"");
 					for (PhonStringPreprocessor pp : preprocessors) {
 						pp.apply(phonString);
