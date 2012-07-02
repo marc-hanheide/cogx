@@ -33,14 +33,16 @@ SETVAR SOIFilter_Params=<multiline>
     --coarse-source      "%(coarseSoiSource)"
     --fine-source        "%(fineSoiSource)"
     # Parameters for graph-cut
-    --objht 23
-    --objdt 30
-    --bght 30
+    --objht 35
+    --objdt 25
+    --bght 15
     --bgdt 9999
     --fixc 24
     --max-soi-dist 1.7
     --color-filter-thr 10
-    --erosion-iters 4
+    --obj-erosion-iters 5
+    --obj-dilation-iters 2
+    --bg-dilation-iters 7
 
     # Left camera from the fine point cloud server; used by the internal grabber for debugging
     %(SOIFilter_UseVideoserver)
