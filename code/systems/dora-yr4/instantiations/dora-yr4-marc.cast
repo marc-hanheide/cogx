@@ -47,16 +47,18 @@ VARDEFAULT feature_options=<multiline>
     visualization	
 </multiline>
 
+SETVAR display_doors=
+
+SETVAR patrol_config=--targets "5 10 6 0" --deadline 20
 
 SETVAR planning_goal="(exists (?o - visualobject) (and (= (label ?o) cerealbox) (kval ROBOT (related-to ?o)))); (forall (?p - place) (= (placestatus ?p) trueplace))"
 #SETVAR no_placeholders=--no-placeholders
 
 VARDEFAULT logged_types=<multiline>
-  motivation.slice.Motive,
   autogen.Planner.Action,
   autogen.Planner.PlanningTask,
-  eu.cogx.beliefs.slice.HypotheticalBelief,
-  eu.cogx.beliefs.slice.GroundedBelief
+  execution.slice.Action,
+  motivation.slice.Motive,
 </multiline>
 
 
