@@ -13,6 +13,10 @@ import cast.cdl.WorkingMemoryAddress;
 import castutils.castextensions.WMView;
 import de.dfki.lt.tr.beliefs.data.CASTIndependentFormulaDistributionsBelief;
 import de.dfki.lt.tr.beliefs.data.formulas.WMPointer;
+import de.dfki.lt.tr.beliefs.slice.distribs.BasicProbDistribution;
+import de.dfki.lt.tr.beliefs.slice.distribs.CondIndependentDistribs;
+import de.dfki.lt.tr.beliefs.slice.distribs.FormulaValues;
+import de.dfki.lt.tr.beliefs.slice.logicalcontent.ElementaryFormula;
 import de.dfki.lt.tr.beliefs.slice.sitbeliefs.dBelief;
 import de.dfki.lt.tr.beliefs.util.BeliefInvalidQueryException;
 import de.dfki.lt.tr.cast.dialogue.ComaReferringExpressionGeneration.ComaREGenerator;
@@ -129,7 +133,14 @@ public class ComaReferringExpressionGeneration extends
 						}						
 					} else if (referentdBelief instanceof HypotheticalBelief) {
 						HypotheticalBelief referentHyBelief = component.getMemoryEntry(request.obj, HypotheticalBelief.class);
-						
+						this.component.log("shortNP for HypotheticalBelief = " +referentHyBelief);
+						CondIndependentDistribs obj_distribs = (CondIndependentDistribs) referentHyBelief.content;
+						BasicProbDistribution prob_distribution_label = (BasicProbDistribution) obj_distribs.distribs.get("label");
+						FormulaValues formula_values_label = (FormulaValues) prob_distribution_label.values;
+						ElementaryFormula elementary_formula_label = (ElementaryFormula) formula_values_label.values.get(0).val;
+						return new ReferenceGenerationResult(requestAddr, 
+								"a" + " "
+								+ elementary_formula_label.prop); 
 					}
 
 					
@@ -140,17 +151,30 @@ public class ComaReferringExpressionGeneration extends
 				}
 			} else {
 				try {
-					GroundedBelief referentGBelief = component.getMemoryEntry(request.obj, GroundedBelief.class);
-					if (!request.spatialRelation) {
+					dBelief referentdBelief = component.getMemoryEntry(request.obj, dBelief.class);
+					if (referentdBelief instanceof GroundedBelief) {
+						GroundedBelief referentGBelief = component.getMemoryEntry(request.obj, GroundedBelief.class);
+						if (!request.spatialRelation) {
+							return new ReferenceGenerationResult(requestAddr, 
+									generateRefExFromGBeliefs(referentGBelief));
+						} else {
+							GroundedBelief gbOfRelatedObjectInWM = component.getMemoryEntry(ComaGBeliefHelper.
+									getGBeliefRelatee(referentGBelief).get().pointer, GroundedBelief.class);
+
+							return new ReferenceGenerationResult(requestAddr, 
+									ComaGBeliefHelper.getGBeliefRelation(referentGBelief)  + " " 
+											+ generateRefExFromGBeliefs(gbOfRelatedObjectInWM));
+						}
+					} else if (referentdBelief instanceof HypotheticalBelief) {
+						HypotheticalBelief referentHyBelief = component.getMemoryEntry(request.obj, HypotheticalBelief.class);
+						this.component.log("non-shortNP for HypotheticalBelief = " +referentHyBelief);
+						CondIndependentDistribs obj_distribs = (CondIndependentDistribs) referentHyBelief.content;
+						BasicProbDistribution prob_distribution_label = (BasicProbDistribution) obj_distribs.distribs.get("label");
+						FormulaValues formula_values_label = (FormulaValues) prob_distribution_label.values;
+						ElementaryFormula elementary_formula_label = (ElementaryFormula) formula_values_label.values.get(0).val;
 						return new ReferenceGenerationResult(requestAddr, 
-								generateRefExFromGBeliefs(referentGBelief));
-					} else {
-						GroundedBelief gbOfRelatedObjectInWM = component.getMemoryEntry(ComaGBeliefHelper.
-								getGBeliefRelatee(referentGBelief).get().pointer, GroundedBelief.class);
-						
-						return new ReferenceGenerationResult(requestAddr, 
-								ComaGBeliefHelper.getGBeliefRelation(referentGBelief)  + " " 
-								+ generateRefExFromGBeliefs(gbOfRelatedObjectInWM));
+								"a" + " "
+								+ elementary_formula_label.prop); 
 					}
 				} catch (DoesNotExistOnWMException e) {
 					this.component.logException(e);
@@ -161,8 +185,9 @@ public class ComaReferringExpressionGeneration extends
 				}				
 			}
 			
+			this.component.log("bogglewoggle!");
 			// we should only end here if sth was wrong...
-			return new ReferenceGenerationResult(requestAddr, "the thingy"); 
+			return new ReferenceGenerationResult(requestAddr, "the bogglewoggle"); 
 		}
 		
 		private String generateRefExFromGBeliefs(GroundedBelief referentGB) {
