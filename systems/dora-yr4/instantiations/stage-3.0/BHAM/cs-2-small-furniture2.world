@@ -31,6 +31,42 @@ p3dx_with_urg_and_blobfinder (
 	color "red"
 )
 
+# office 0 person
+
+ box2d
+ (
+ name "person1"
+ color "yellow"
+ pose [15.5 10.6 0 0]
+ )
+
+# office 1 person
+
+ box2d
+ (
+ name "person2"
+ color "yellow"
+ pose [22.85 9.9 0 0]
+ )
+
+# meeting room person
+
+ box2d
+ (
+ name "person3"
+ color "yellow"
+ pose [17.6 6.5 0 0]
+ )
+
+# cereal box
+
+ box2d
+ (
+ name "redbox1"
+ color "red"
+ pose [24.310 9.045 0 0]
+ )
+
 # cereal box
 
  box2d
