@@ -44,7 +44,10 @@ using namespace cogx::Math;
 
 #define INVERT_RED_BLUE false
 
-#define EROSION_ITER 3
+#define OBJ_EROSION_ITER 4
+#define OBJ_DILATION_ITER 2
+#define BG_DILATION_ITER 3
+
 namespace cast
 {
 
@@ -72,7 +75,9 @@ GraphCutSegmenter::GraphCutSegmenter()
   smoothCost = SMOOTH_COST;
   colFilThreshold = COLOR_FILTERING_THRESHOLD;
   m_invertRB = INVERT_RED_BLUE;
-  m_erosionIterations = EROSION_ITER;
+  m_objErosionIterations = OBJ_EROSION_ITER;
+  m_objDilationIterations = OBJ_DILATION_ITER;
+  m_bgDilationIterations = BG_DILATION_ITER;
 }
 
 void GraphCutSegmenter::configure(const map<string,string> & _config)
@@ -87,7 +92,9 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
   smoothCost = SMOOTH_COST;
   colFilThreshold = COLOR_FILTERING_THRESHOLD;
   m_invertRB = INVERT_RED_BLUE;
-  m_erosionIterations = EROSION_ITER;
+  m_objErosionIterations = OBJ_EROSION_ITER;
+  m_objDilationIterations = OBJ_DILATION_ITER;
+  m_bgDilationIterations = BG_DILATION_ITER;
 
   if((it = _config.find("--display")) != _config.end())
   {
@@ -141,10 +148,20 @@ void GraphCutSegmenter::configure(const map<string,string> & _config)
     str >> smoothCost;
   }
   
-  if((it = _config.find("--erosion-iters")) != _config.end())
+  if((it = _config.find("--obj-erosion-iters")) != _config.end())
   {
     istringstream str(it->second);
-    str >> m_erosionIterations;
+    str >> m_objErosionIterations;
+  }
+  if((it = _config.find("--obj-dilation-iters")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> m_objDilationIterations;
+  }
+  if((it = _config.find("--bg-dilation-iters")) != _config.end())
+  {
+    istringstream str(it->second);
+    str >> m_bgDilationIterations;
   }
 }
 
@@ -542,28 +559,90 @@ vector<SurfacePoint> GraphCutSegmenter::erode3DPoints(vector<SurfacePoint> surfP
   assert(surfPoints.size() == projPoints.size());
   
   IplImage *erodedPatch = cvCreateImage(cvGetSize(invPatch), IPL_DEPTH_8U, 1);
+  IplImage *erodedThrPatch = cvCreateImage(cvGetSize(invPatch), IPL_DEPTH_8U, 1);
   vector<SurfacePoint> fltPoints;
+  char tval;
   
-  // Since invPatch is inverted we use dilate instead of erode
-  cvDilate(invPatch, erodedPatch, NULL, erIter);
+  if(erIter > 0) {
+    // Since invPatch is inverted we use dilate instead of erode
+    // But first we erode to prevent the neutralize isolated pixels in the mask
+    IplImage *tmpPatch = cvCreateImage(cvGetSize(invPatch), IPL_DEPTH_8U, 1);
+    cvErode(invPatch, tmpPatch, NULL, m_objDilationIterations);
+    cvDilate(tmpPatch, erodedPatch, NULL, erIter);
+    cvReleaseImage(&tmpPatch);  
+    tval=0;
+  }
+  else if(erIter < 0) {
+    // For background points is the other way around
+    cvErode(invPatch, erodedPatch, NULL, -erIter);
+    tval=255;
+  }
+  else
+    erodedPatch = cvCloneImage(invPatch);
+  
+  cvThreshold(erodedPatch, erodedThrPatch, 0, 255, CV_THRESH_BINARY );
   
   vector<SurfacePoint>::iterator sit = surfPoints.begin();
   vector<CvPoint>::iterator pit;
-  int widthStep = erodedPatch->widthStep;
+  int widthStep = erodedThrPatch->widthStep; 
   
   for(pit=projPoints.begin(); pit!=projPoints.end(); pit++) {
-    if(erodedPatch->imageData[(int) (widthStep*pit->y + pit->x)] == 0)
+    int value = erodedThrPatch->imageData[(int) (widthStep*pit->y + pit->x)];
+    if( value == tval)
       fltPoints.push_back(*sit);
     sit++;  
    }
-      
+   
+  #ifdef FEAT_VISUALIZATION
+      if (pDisplay && erIter < 0)
+        pDisplay->setImage("soif.BackgroundColorFilteringMask", erodedThrPatch);
+      else if (pDisplay && erIter > 0)
+        pDisplay->setImage("soif.ObjectColorFilteringMask", erodedThrPatch);
+  #endif
+  
+  cvReleaseImage(&erodedThrPatch);    
   cvReleaseImage(&erodedPatch);
       
   return fltPoints;
 }
 
 
-IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints, vector<SurfacePoint> allSurfPoints, float hlsSigma, float distSigma, bool distcost)
+
+vector<SurfacePoint> GraphCutSegmenter::sampleFake3DPointsFromImg(IplImage *iplPatch, vector<CvPoint> &cvpoints, int nsamp)
+{
+  vector<SurfacePoint> fpoints;
+  cvpoints.clear();
+  
+  srand (time(NULL));
+  int w = iplPatch->width;
+  int h = iplPatch->height;
+  int wstep = iplPatch->widthStep;
+  
+  for(int i=0; i<nsamp; i++) {
+    int x = rand()%w;
+    int y = rand()%h;
+    
+    SurfacePoint *sp = new SurfacePoint();
+    sp->c.b = iplPatch->imageData[y*wstep + 3*x];
+    sp->c.g = iplPatch->imageData[y*wstep + 3*x + 1];
+    sp->c.r = iplPatch->imageData[y*wstep + 3*x + 2];
+    
+    sp->p.x = x;
+    sp->p.y = y;
+    sp->p.z = 0;
+    
+    cvpoints.push_back(cvPoint(x, y));
+    fpoints.push_back(*sp);
+    delete sp;
+  }
+  
+  return fpoints;
+}
+
+
+IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint> projPoints,
+  vector<SurfacePoint> allSurfPoints, float hlsSigma, float distSigma,
+  bool distcost, vector<CvPoint> distProjPoints)
 {
   IplImage *hlsPatch; // = cvCreateImage(cvGetSize(iplPatchHLS), IPL_DEPTH_8U, 3);
   CvSize size = cvGetSize(iplPatchHLS);
@@ -578,25 +657,19 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
   hlsPatch = cvCloneImage(iplPatchHLS);
 
   vector<SurfacePoint> surfPoints =  allSurfPoints;
-
-  if(distcost)
-  {
-    cvSet(samplePatch,cvScalar(1));
-    vector<CvPoint>::iterator itr;
-
-    for(itr = projPoints.begin(); itr != projPoints.end(); itr++)
-    { 
-      //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
-      if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
-        cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
-      // TODO> readd
-      //else
-      //     log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
-
-    }
-
-    cvDistTransform(samplePatch, distPatch, CV_DIST_C);
+  
+  cvSet(samplePatch,cvScalar(1));
+    
+  vector<CvPoint>::iterator itr;
+  for(itr = distProjPoints.begin(); itr != distProjPoints.end(); itr++) { 
+    //safety check --- points inside calculated ROI might be outside the actual ROI (outside image patch)
+    if(itr->x < samplePatch->width && itr->y < samplePatch->height && itr->x >= 0 && itr->y >= 0)
+      cvSet2D(samplePatch, itr->y, itr->x, cvScalar(0));
+    // log("WARNING: point <%i, %i> outside ROI <%i, %i>)", itr->y, itr->x, samplePatch->height, samplePatch->width);
   }
+  
+  if(distcost)
+    cvDistTransform(samplePatch, distPatch, CV_DIST_L2);
   else
     cvSet(distPatch, cvScalar(0));
 
@@ -604,13 +677,16 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
 
   if(filterFlag) //HACK
   {
-    surfPoints = erode3DPoints(surfPoints, projPoints, samplePatch, m_erosionIterations);
+    surfPoints = erode3DPoints(surfPoints, projPoints, samplePatch, m_objErosionIterations);
     if (surfPoints.size() > MAX_COLOR_SAMPLE)
       surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE);
   }
   else
-    if (surfPoints.size() > MAX_COLOR_SAMPLE*3/4)
-      surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE*3/4);
+  {
+    surfPoints = erode3DPoints(surfPoints, projPoints, samplePatch, -m_bgDilationIterations); //-m_erosionIterations);
+    if (surfPoints.size() > MAX_COLOR_SAMPLE)
+      surfPoints = sample3DPoints(surfPoints, MAX_COLOR_SAMPLE);
+  }
 
   int colorKval = min(surfPoints.size(), (size_t) MAX_COLOR_SAMPLE)/HSL_K_RATIO + 1;
 
@@ -622,13 +698,12 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
   {	
     int size = sortHlsList.size();
     int k = filterList.size()/HSL_K_RATIO + 1;
-    sortHlsList = colorFilter(sortHlsList, filterList, k, colFilThreshold);
+ //   sortHlsList = colorFilter(sortHlsList, filterList, k, colFilThreshold);
 
     colorKval = sortHlsList.size()/HSL_K_RATIO + 1;
 
     // log("Filtered out %i color samples", size - sortHlsList.size());
 
-    size = sortHlsList.size();
     if (size)
     {
       IplImage* src = cvCreateImage(cvSize(size, 1), IPL_DEPTH_8U, 3);
@@ -678,8 +753,6 @@ IplImage* GraphCutSegmenter::getCostImage(IplImage *iplPatchHLS, vector<CvPoint>
 
   return costImg;
 }
-
-
 
 vector<unsigned char> GraphCutSegmenter::graphCut(int width, int height, int num_labels, IplImage* costImg, IplImage* bgCostImg)
 {
@@ -835,16 +908,18 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
     cvCvtColor(iplPatch, iplPatchHLS, CV_RGB2HLS);
 
     vector<CvPoint> projPoints, bgProjPoints, errProjPoints;
-    vector<int>  hullPoints;    
+    vector<int>  hullPoints;
+    
+    vector<SurfacePoint> fakeSurfBgPoints = sampleFake3DPointsFromImg(iplPatch, bgProjPoints, 400);    
 
     //projectSOIPoints(*soiPtr, *roiPtr, projPoints, bgProjPoints, hullPoints, ratio, image.camPars);
     project3DPoints(soiPtr->points, *roiPtr, patchScale, image.camPars, projPoints, hullPoints);
-    project3DPoints(soiPtr->BGpoints, *roiPtr, patchScale, image.camPars, bgProjPoints, hullPoints);
+    //project3DPoints(soiPtr->BGpoints, *roiPtr, patchScale, image.camPars, bgProjPoints, hullPoints);
 
     // log("window size %i vs %i vs %i", soiPtr->BGpoints.size(), soiPtr->points.size(), MAX_COLOR_SAMPLE);
     CvSize colSize = cvSize(
         min(
-          (int) max(soiPtr->BGpoints.size(), soiPtr->points.size()),
+          (int) max(fakeSurfBgPoints.size(), soiPtr->points.size()),
           MAX_COLOR_SAMPLE)
         *COLOR_SAMPLE_IMG_WIDTH,
         COLOR_SAMPLE_IMG_HEIGHT*3);
@@ -854,11 +929,13 @@ bool GraphCutSegmenter::segmentObject(const SOIPtr soiPtr, Video::Image &imgPatc
 
     //  colorDest = bgColors; //HACK
     filterFlag = false;
-    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, soiPtr->BGpoints, bgHueTolerance, bgDistTolerance, false); 
+    IplImage *bgCostPatch = getCostImage(iplPatchHLS, bgProjPoints, fakeSurfBgPoints,
+      bgHueTolerance, bgDistTolerance, false, projPoints); 
 
     //  colorDest = objColors; //HACK
     filterFlag = true;
-    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points, objHueTolerance, objDistTolerance, true);
+    IplImage *costPatch = getCostImage(iplPatchHLS, projPoints, soiPtr->points,
+      objHueTolerance, objDistTolerance, true, projPoints);
 
     SegmentMask smallSegMask;
     smallSegMask.width  = iplPatch->width;   // == rect.width  * patchScale
