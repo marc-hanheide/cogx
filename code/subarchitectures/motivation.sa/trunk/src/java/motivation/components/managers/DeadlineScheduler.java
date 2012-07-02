@@ -70,11 +70,12 @@ public class DeadlineScheduler extends AbstractScheduler {
 								.isCancelled())) {
 					log("execution has finished... de-activate goals!");
 					setStatus(activeGoals, MotiveStatus.SURFACED);
+					
 					sleepComponent(1000);
-
 					log("flag achieved goals");
 					flagAchievedGoals();
-
+					sleepComponent(1000);
+					
 					executionFuture = null;
 					continue;
 				}

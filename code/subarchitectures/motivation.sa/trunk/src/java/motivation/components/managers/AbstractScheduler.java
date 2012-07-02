@@ -427,6 +427,8 @@ public abstract class AbstractScheduler extends ManagedComponent implements
 
 		for (Entry<WorkingMemoryAddress, Motive> m : copySet) {
 			Motive motive = m.getValue();
+			if (motive.status == MotiveStatus.COMPLETED) // skip it
+				continue;
 			if (PlannerFacade.get(this).isGoalAchieved(motive.goal.goalString)) {
 				WorkingMemoryAddress wma = m.getKey();
 
