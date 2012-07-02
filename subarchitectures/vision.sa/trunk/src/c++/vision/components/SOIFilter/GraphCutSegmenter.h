@@ -44,7 +44,9 @@ class GraphCutSegmenter
   int lblFixCost;
   int smoothCost;
   int colFilThreshold;
-  int m_erosionIterations;
+  int m_objErosionIterations;
+  int m_objDilationIterations;
+  int m_bgDilationIterations;
   
   IplImage *colorFiltering; //HACK
   bool filterFlag; //HACK
@@ -106,7 +108,7 @@ private:
 
   IplImage* getCostImage(IplImage *iplPatchHLS, std::vector<CvPoint> projPoints,
       std::vector<PointCloud::SurfacePoint> surfPoints, float hslmod,
-      float distmod, bool distcost);
+      float distmod, bool distcost, std::vector<CvPoint> distProjPoints);
 
   std::vector<PointCloud::SurfacePoint> erode3DPoints(
       std::vector<PointCloud::SurfacePoint> points, std::vector<CvPoint> projPoints,
@@ -114,6 +116,11 @@ private:
   
   std::vector<CvScalar> colorFilter(std::vector<CvScalar> colors,
       std::vector<CvScalar> filterColors, int k, int tolerance);
+      
+  std::vector<PointCloud::SurfacePoint>
+      sampleFake3DPointsFromImg(IplImage *iplPatch, std::vector<CvPoint> &cvpoints,
+       int nsamp);
+      
   void verifySetRoi(cv::Ptr<IplImage> imagePtr, CvRect rect, long line=-1);
   void verifySetRoi(IplImage *img, CvRect rect, long line=-1);
 };
