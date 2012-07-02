@@ -62,4 +62,6 @@ SETVAR feature_options=<multiline>
 
 SETVAR avs_cone_depth=2.0
 
+SERVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct-lowoffice.txt"
+
 INCLUDE dora-yr4.cast
