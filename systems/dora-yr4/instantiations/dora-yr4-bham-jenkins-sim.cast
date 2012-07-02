@@ -17,7 +17,7 @@ SETVAR feature_options=<multiline>
 # use peekabot
     peekabot
 # disable manual GUIs for navigation, PTZ, planning, etc.		
-	!man_ctrl
+    !man_ctrl
 # enable AVS view cone planning and relation manager
     avs			
 # enable execution framework to let the planner trigger actions
@@ -62,6 +62,6 @@ SETVAR feature_options=<multiline>
 
 SETVAR avs_cone_depth=2.0
 
-SERVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct-lowoffice.txt"
+SETVAR conceptual_defaults="instantiations/defaultprobs/defaultprobs-bham-yr4-direct-lowoffice.txt"
 
 INCLUDE dora-yr4.cast
