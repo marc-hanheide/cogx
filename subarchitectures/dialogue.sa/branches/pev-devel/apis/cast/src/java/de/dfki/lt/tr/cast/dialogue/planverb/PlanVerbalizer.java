@@ -168,27 +168,24 @@ public class PlanVerbalizer {
 		} else {*/
 		//GroundedBelief gbWME = m_gbmemory.getGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()), taskID, poplanID);
 
+		log("called getGBelief("+referentWMA.toString()+")");
 		GroundedBelief gbWME;
 		String[] beliefTempIndexWMA = referentWMA.id().split(",");
-		WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(beliefTempIndexWMA[1], referentWMA.subarchitecture());
-		String[] beliefTempIndices = beliefTempIndexWMA[0].split("_");
-		int beliefTaskID = Integer.parseInt(beliefTempIndices[0]);
-		int beliefPOPlanID = Integer.parseInt(beliefTempIndices[1]);
+		if (beliefTempIndexWMA.length>1) {
 
-		log("beliefWMA = " + beliefWMA.id + "@" + beliefWMA.subarchitecture + " - beliefTaskID = " + beliefTaskID + " - beliefPOPlanID = " + beliefPOPlanID);
+			WorkingMemoryAddress beliefWMA = new WorkingMemoryAddress(beliefTempIndexWMA[1], referentWMA.subarchitecture());
+			String[] beliefTempIndices = beliefTempIndexWMA[0].split("_");
+			int beliefTaskID = Integer.parseInt(beliefTempIndices[0]);
+			int beliefPOPlanID = Integer.parseInt(beliefTempIndices[1]);
 
-		log(m_gbmemory.getLastValidGBelief(beliefWMA).type);
+//			log("beliefWMA = " + beliefWMA.id + "@" + beliefWMA.subarchitecture + " - beliefTaskID = " + beliefTaskID + " - beliefPOPlanID = " + beliefPOPlanID);
 
-		//log(m_gbmemory.getTimeStamp(0, 1).toString());
-
-		//try {
 			gbWME = m_gbmemory.getValidGBelief(beliefWMA, beliefTaskID, beliefPOPlanID);
-		//} catch (NullPointerException npe) {
-			//logException(npe);
-			//log("NullPointer trying to access " + referentWMA.toString());
-			//gbWME = m_castComponent.getMemoryEntry(beliefWMA, GroundedBelief.class);
-			//log("Belief at " + referentWMA.toString() + " is of type " + gbWME.type);
-		//}
+		} else {
+			gbWME = m_gbmemory.getLastValidGBelief(new WorkingMemoryAddress(referentWMA.id(), referentWMA.subarchitecture()));
+		}
+
+		
 		return gbWME;
 	}
 
@@ -296,6 +293,7 @@ public class PlanVerbalizer {
 					log(log_sb.toString());
 					return "";
 				}
+				log("Current Message is a ProtoLFMessage:\n" + ((ProtoLFMessage) msg).getProtoLF());
 
 				// do GRE 
 				protoLF = doGRE(protoLF);
@@ -336,8 +334,9 @@ public class PlanVerbalizer {
 			} else if (msg instanceof StringMessage) {
 				String outputText = ((StringMessage) msg).getText();
 				log_sb.append("\n appending current Message, which is a StringMessage: \n " + outputText);
-
-				output_sb.append(outputText + ". \n");
+				// rhetorical markers are prepended to the subsequent sentence:
+				if ("after that".equals(outputText.toLowerCase())) output_sb.append(outputText + " "); // no full stop + line break
+				else output_sb.append(outputText + ". \n");
 			}
         }
     	log(log_sb.toString());
