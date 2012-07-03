@@ -36,82 +36,34 @@ namespace smlearning {
 *
 * \param concreteActor is a pointer to a concrete actor that is used as object shape
 */
-void ActorObject::setShape(golem::Scene& scene,ConcreteActor* concreteActor)
+void ActorObject::setShape(golem::Scene& scene,ConcreteActor* concreteActor, bool kinematic)
 {
 
 	Creator creator(scene);
-	concreteActor->setShape (creator,_desc.dimensions,_desc.width); // Create shape of the actor;
-	Actor::Desc* _shapeDesc =  concreteActor->getShape(); // Get shape of the actor;
+	Actor::Desc* _shapeDesc =  concreteActor->getShape(creator,_desc.dimensions,_desc.width); // Get shape o// f the actor;
 	_shapeDesc->nxActorDesc.globalPose.t.set(NxReal(_position.v1), NxReal(_position.v2), NxReal(_position.v3));		//-sets coordinates
 
 	_shapeDesc->nxActorDesc.globalPose.M.rotX(_desc.startRotation.v1); //-sets rotations	
 	_shapeDesc->nxActorDesc.globalPose.M.rotY(_desc.startRotation.v2);	
 	_shapeDesc->nxActorDesc.globalPose.M.rotZ(_desc.startRotation.v3);
+	_shapeDesc->kinematic = kinematic;
 
 	Actor::create(*_shapeDesc);
 
 	getPose().R.toEuler (_obRoll, _obPitch, _obYaw);
 
-	computeVectors();
+	computeVectors(concreteActor);
 
 
 }
-
-Mat34 ActorObject::getPose() const {
-	NxMat34 nxPose;
-	{
-		CriticalSectionWrapper csw(universe.getCSPhysX()); // Access to PhysX
-		nxPose = pNxActor->getGlobalPose();
-	}
-
-	Mat34 pose;
-	nxPose.M.getRowMajor(&pose.R.m11);
-	nxPose.t.get(&pose.p.v1);
-	// std::cout << "getPose "<<pose.p.v1 <<" "<<pose.p.v2<<" "<<pose.p.v3<<std::endl;
-	return pose;
-}
-
-void ActorObject::setPose(const Mat34& pose) {
-	if (!pNxActor->readBodyFlag(NX_BF_KINEMATIC)) {
-		context.getMessageStream()->write(Message::LEVEL_ERROR, "Actor::setPose(): Cannot change pose of dynamic actors");
-		return;
-	}
-
-	NxMat34 nxPose;
-	nxPose.M.setRowMajor(&pose.R.m11);
-	nxPose.t.set(&pose.p.v1);
-	std::cout << "setPose "<<pose.p.v1 <<" "<<pose.p.v2<<" "<<pose.p.v3<<std::endl;
-	CriticalSectionWrapper csw(universe.getCSPhysX()); // Access to PhysX
-	pNxActor->moveGlobalPose(nxPose);
-}
-
 
 ///////// Protected //////////
 /**\brief computes normal and orthogonal vector of the object and determines the position of the object 
 */
-void ActorObject::computeVectors(){
-	Mat34 curPolPos1;
-	Mat34 curPolPos2;
+void ActorObject::computeVectors(ConcreteActor* concreteActor){
 
-	golem::Bounds::SeqPtr curPol = getGlobalBoundsSeq();
-	//find out bounds of polyflap and compute the position of the polyflap
-	if (curPol->front()->getPose().p.v3 > curPol->back()->getPose().p.v3) {
-		curPolPos1 = curPol->front()->getPose();
-		curPolPos2 = curPol->back()->getPose();
-	}
-	else {
-		curPolPos1 = curPol->back()->getPose();
-		curPolPos2 = curPol->front()->getPose();
-	}
-		
-	_position.set(curPolPos1.p.v1, curPolPos1.p.v2, curPolPos2.p.v3);
-
-	//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
-	_normalVec =
-		computeNormalVector(
-			    Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
-			    Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
-			    );
+	//Normal vector with respect to object, and its orthogonal
+	_normalVec = concreteActor->computeNormalVector (getGlobalBoundsSeq());
 		
 	_orthogonalVec = computeOrthogonalVec(_normalVec);	
 }

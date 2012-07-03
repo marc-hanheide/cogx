@@ -36,21 +36,36 @@ namespace smlearning {
 */
 class Polyflap : public ConcreteActor
 {
-
 protected:
 	/** defines the concrete shape of a polyflap */
-	virtual void setShape(Creator & creator,const Vec3& dimensions,const Real& width)
+	virtual golem::Actor::Desc* getShape (golem::Creator& creator,const golem::Vec3& dimensions,const golem::Real& width)
 	{
+		return creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(width*0.5), REAL_PI_2);
+	}
+
+	virtual golem::Vec3 computeNormalVector (golem::Bounds::SeqPtr curPol)
+	{
+		golem::Mat34 curPolPos1;
+		golem::Mat34 curPolPos2;
+
+		//find out bounds of polyflap
+		if (curPol->front()->getPose().p.v3 > curPol->back()->getPose().p.v3) {
+			curPolPos1 = curPol->front()->getPose();
+			curPolPos2 = curPol->back()->getPose();
+		}
+		else {
+			curPolPos1 = curPol->back()->getPose();
+			curPolPos2 = curPol->front()->getPose();
+		}
 		
-		shapeDesc = creator.createSimple2FlapDesc(Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(dimensions.v1*0.5), Real(width*0.5), REAL_PI_2);
-		setupBounds ();
+		//Normal vector showing the direction of the lying part of polyflap, and it' orthogonal
+		golem::Vec3 normalVec =
+			smlearning::computeNormalVector(
+					    Vec3 (curPolPos1.p.v1, curPolPos1.p.v2, Real(0.0)),
+					    Vec3 (curPolPos2.p.v1, curPolPos2.p.v2, Real(0.0))
+					    );
+		return normalVec;
 	}
-
-	virtual Actor::Desc* getShape ()
-	{
-		return shapeDesc;
-	}
-
 
 	
 };

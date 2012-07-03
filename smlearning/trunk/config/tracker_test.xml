@@ -28,8 +28,8 @@
 
   <effector>
     <base_length>0.1848</base_length>
-    <finger_length>0.104</finger_length>
-    <finger_diameter>0.003</finger_diameter>
+    <finger_length>0.135</finger_length>
+    <finger_diameter>0.02</finger_diameter>
     <tip_radius>0.015</tip_radius>
   </effector>
 
@@ -57,15 +57,15 @@
 		<z>0.0</z>
 	</startRotation>
 	<ObjectDimensions> <!-- w,h,l -->
-		<x>0.1</x>
-		<y>0.1</y>
-		<z>0.1</z>
+		<x>0.158</x>
+		<y>0.065</y>
+		<z>0.074</z>
 		<width>0.002</width>
 	</ObjectDimensions>
 	<over>0.017</over>
 	<dist>0.05</dist>
 	<side>0.6</side>
-	<center>0.6</center>
+	<center>0.0</center>
 	<top>0.02</top>
 	<distance>0.2</distance>
 </ObjectInteraction>

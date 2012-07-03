@@ -154,6 +154,8 @@ public:
 	}
 };
 
+void set_point_coordinates(golem::Vec3& position, const golem::Vec3& normalVec, const golem::Vec3& orthogonalVec, const golem::Real& spacing, const golem::Real& horizontal, const golem::Real& vertical);
+
 ///
 ///calls set_point_coordinates for a discrete canonical number of different actions
 ///

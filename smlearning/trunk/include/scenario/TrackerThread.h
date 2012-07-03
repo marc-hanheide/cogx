@@ -77,7 +77,7 @@ public:
 	// virtual void run () /*{ OnTask (); }*/;
 	// void start ();
 	// returns the current object position by reference
-	TomGine::tgPose getPose() const;
+	TomGine::tgPose getPose();
 protected:
 	//golem::Thread thread;
 	//golem::CriticalSection cs;

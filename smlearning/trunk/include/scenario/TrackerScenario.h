@@ -26,6 +26,8 @@
 // #include <GL/glew.h>
 
 #include <scenario/Scenario.h>
+#include <scenario/Polyflap.h>
+#include <scenario/Box.h>
 
 // TODO a proper fix to the warnings!
 // #include <ThreadObject/CameraThread.h>
@@ -107,17 +109,18 @@ public:
 	static string getName () { return "TrackerScenario"; }
 protected:
 	// /** Renders the object. */
-	// virtual void render() {};
+	virtual void render();
 	// /** Releases resources */
 	// virtual void release() {};
-	// /** select a random action */
-	// virtual void chooseAction () {};
+	/** select a random action */
+	virtual void chooseAction ();
 	// /** calculate the start coordinates of the arm */
 	// virtual void calculateStartCoordinates() {};
-	// /** Describe the experiment trajectory */
-	// virtual void initMovement() {};
+	/** Describe the experiment trajectory */
+	virtual void initMovement();
 	/** (Post)processing function called AFTER every physics simulation step and before rendering. */
 	virtual void postprocess(golem::SecTmReal elapsedTime);
+	virtual void preprocess(golem::SecTmReal elapsedTime);
 	/** Description */
 	TrackerScenario::Desc desc;
 	// /** Tracker thread */
@@ -157,6 +160,11 @@ protected:
 	void closeGripper(Katana300Arm &arm);
 	/** calculate the start coordinates of the arm */
 	virtual void calculateStartCoordinates ();
+	/** default object bounds */
+	golem::Bounds::SeqPtr objectLocalBounds;
+	/** current object pose */
+	golem::Mat34 objectPose;
+
 
 };
 
