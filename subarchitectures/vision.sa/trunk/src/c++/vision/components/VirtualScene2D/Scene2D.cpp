@@ -15,6 +15,8 @@
  */
 #include "Scene2D.h"
 
+#include <Math.hpp>
+#include <CameraParameters.h> // projectPoint
 #include <cast/architecture/ChangeFilterFactory.hpp>
 #include <sstream>
 #include <iomanip>
@@ -61,6 +63,9 @@ bool CScene2D::CDisplayClient::getFormData(const std::string& id,
 
 CScene2D::CScene2D()
 {
+   m_objectList = "video.viewer";
+   m_videoServerName = "";
+   m_camid = -1;
 }
 
 void CScene2D::configure(const std::map<std::string,std::string> & _config)
@@ -68,9 +73,21 @@ void CScene2D::configure(const std::map<std::string,std::string> & _config)
    m_display.configureDisplayClient(_config);
    std::map<std::string,std::string>::const_iterator it;
 
-   m_objectList = "video.viewer";
    if ((it = _config.find("--v11n-objects")) != _config.end()) {
       m_objectList = it->second;
+   }
+
+   if ((it = _config.find("--videoname")) != _config.end()) {
+      m_videoServerName = it->second;
+   }
+
+   if ((it = _config.find("--camid")) != _config.end()) {
+      istringstream is(it->second);
+      is >> m_camid;
+   }
+
+   if ( (m_videoServerName != "") != (m_camid >= 0) ) {
+      error("Both --videoname and --camid have to be set to enable 3D->2D transformations.");
    }
 
    // TODO: ADD PARAMETER. The size of the video image so that we can draw in the right scale
@@ -96,6 +113,14 @@ void CScene2D::start()
    //addChangeFilter(createGlobalTypeFilter<SOI>(cdl::DELETE),
    //      new MemberFunctionChangeReceiver<CScene2D>(this, &CScene2D::onDelete_SOI));
 
+   Video::CameraMotionStatePtr mpState;
+   addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::ADD),
+         new MemberFunctionChangeReceiver<CScene2D>(this,
+            &CScene2D::onAdd_CameraMotionState));
+   addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::OVERWRITE),
+         new MemberFunctionChangeReceiver<CScene2D>(this,
+            &CScene2D::onChange_CameraMotionState));
+
    m_display.connectIceClient(*this);
    m_display.installEventReceiver();
 
@@ -111,6 +136,18 @@ void CScene2D::start()
 
    objects.push_back(OBJ_VISUAL_OBJECTS);
    m_display.createView("VirtualScene2D", Visualization::VtGraphics, objects);
+
+   if (m_camid >= 0 && m_videoServerName != "") {
+      println("Connecting to camera (id=%d) on '%s'", m_camid, m_videoServerName.c_str());
+      m_pVideoServer = getIceServer<Video::VideoInterface>(m_videoServerName);
+      sleepComponent(300);
+      if (m_pVideoServer.get()) {
+         int w, h;
+         m_pVideoServer->getImageSize(w, h);
+         m_outputWidth = w;
+         m_outputHeight = h;
+      }
+   }
 }
 
 IplImage* wrapMask(const VisionData::SegmentMask &img)
@@ -143,31 +180,167 @@ void releaseWrappedImage(IplImage** pImagePtr)
 #define YY(y) y
 #endif
 #if defined(HAS_LIBPLOT)
-void drawContours(Plotter& p, double x0, double y0, vector<vector<cv::Point> >&contours)
+class CContours
 {
-   vector<vector<cv::Point> >::iterator itpart;
-   vector<cv::Point>::iterator itpoint;
+   vector<vector<cv::Point> > mContours;
+   vector<cv::Vec4i> mHierarchy;
+public:
+   void drawContours(Plotter& p, double x0, double y0)
+   {
+      vector<vector<cv::Point> >::iterator itpart;
+      vector<cv::Point>::iterator itpoint;
 
-   for (itpart = contours.begin(); itpart != contours.end(); itpart++) {
-      itpoint = itpart->begin();
-      p.fmove(itpoint->x + x0, YY(itpoint->y + y0));
-      itpoint++;
-      while (itpoint != itpart->end()) {
-         p.fcont(itpoint->x + x0, YY(itpoint->y + y0));
+      for (itpart = mContours.begin(); itpart != mContours.end(); itpart++) {
+         itpoint = itpart->begin();
+         p.fmove(itpoint->x + x0, YY(itpoint->y + y0));
          itpoint++;
+         while (itpoint != itpart->end()) {
+            p.fcont(itpoint->x + x0, YY(itpoint->y + y0));
+            itpoint++;
+         }
+         itpoint = itpart->begin();
+         if (itpoint != itpart->end()) {
+            p.fcont(itpoint->x + x0, YY(itpoint->y + y0));
+         }
+         p.endsubpath();
       }
-      itpoint = itpart->begin();
-      if (itpoint != itpart->end()) {
-         p.fcont(itpoint->x + x0, YY(itpoint->y + y0));
-      }
-      p.endsubpath();
+      p.endpath();
    }
-   p.endpath();
-}
+
+   void findContours(VisionData::SegmentMask& bwMask)
+   {
+      IplImage* pImg = 0;
+      try {
+         pImg = wrapMask(bwMask);
+      }
+      catch (...) {
+         //println("wrapMask FAILED");
+         //sleepComponent(100);
+         throw;
+      }
+      if (pImg) {
+         cv::Mat imgMat(pImg); // XXX copy=true crashes; so we modify the original data.
+
+         // XXX: mask created in SOIFilter: 1-object, 2-background.
+         // findContours requires 0 for background, everything else is the object.
+         for (int i=0; i< bwMask.height; i++) {
+            unsigned char *prow = imgMat.ptr(i);
+            unsigned char *pend = prow + bwMask.width;
+            while(prow < pend) {
+               if (*prow != 1) *prow = 0;
+               prow++;
+            }
+         }
+         try {
+            cv::findContours( imgMat, mContours, mHierarchy,
+                  CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );
+         }
+         catch (...) {
+            //println("cv::findContours FAILED");
+            //sleepComponent(100);
+            releaseWrappedImage(&pImg);
+            throw;
+         }
+         releaseWrappedImage(&pImg);
+      }
+   }
+};
 #endif
 
-void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pVisObj,
-      const ProtoObjectPtr& pProtoObj)
+void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pVisObj)
+#if 1
+{
+   if (! m_pVideoServer.get()) {
+      debug("VideoServer is not set. Visual Object will not be drawn.");
+      return;
+   }
+
+   Video::CameraParameters camPars;
+   if (!m_pVideoServer->getCameraParameters(m_camid, camPars)) {
+      error("Could not obtain CameraParameters (id=%d) from '%s'",
+            m_camid, m_videoServerName.c_str());
+      return;
+   }
+
+#if 0
+   // ProtoObject provides position and outline
+   ProtoObjectPtr pProtoObj;
+   try {
+      cdl::WorkingMemoryPointerPtr pomp = pVisObj->protoObject;
+      if (pomp->type == cast::typeName<ProtoObject>()) {
+         pProtoObj = getMemoryEntry<ProtoObject>(pomp->address);
+      }
+   }
+   catch(DoesNotExistOnWMException){
+   };
+#endif
+
+   cogx::Math::Vector2 vop = projectPoint(camPars, pVisObj->pose.pos);
+
+   auto getBestLabel = [](std::vector<std::string>& labels, std::vector<double>& values) -> std::string
+   {
+      if (labels.size() < 1) return "";
+      if (values.size() < 1) return "";
+      std::vector<double>::iterator it = std::max_element(values.begin(), values.end());
+      int i = std::distance(values.begin(), it);
+      if (i > labels.size()) return "";
+      ostringstream ss;
+      ss << std::fixed << std::setprecision(2) << values[i] << " " << labels[i];
+      return ss.str();
+   };
+   std::string ident = getBestLabel(pVisObj->identLabels, pVisObj->identDistrib);
+   std::string color = getBestLabel(pVisObj->colorLabels, pVisObj->colorDistrib);
+   std::string shape = getBestLabel(pVisObj->shapeLabels, pVisObj->shapeDistrib);
+
+   //CContours ctrs;
+   // if (pProtoObj.get())
+   //ctrs.findContours(pProtoObj->mask);
+
+   //double w0 = pProtoObj->mask.width;
+   //double h0 = pProtoObj->mask.height;
+   double h0 = 0;
+   double x0 = vop.x; // - w0/2;
+   double y0 = vop.y; // - h0/2;
+   double ps = 1.0;
+   std::ostringstream ss;
+   cogx::display::CSvgStringPlotter p(ss);
+
+   p.openpl();
+   p.fscale(1.0, 1.0);
+   p.flinewidth(ps * 1.0);
+
+   double true_size = p.fontsize(ps * 12);
+   double dy = 0;
+
+   // if (pProtoObj.get()) {
+   //p.pencolorname("red");
+   //ctrs.drawContours(p, x0, y0);
+   // }
+
+   p.fontname("sans-serif");
+   p.pencolorname("yellow");
+   p.fframedtext(x0, YY(y0+h0/2+dy), id);
+   dy += true_size;
+   if (ident != "") {
+      p.fframedtext(x0, YY(y0+h0/2+dy), ident);
+      dy += true_size;
+   }
+   if (color != "") {
+      p.fframedtext(x0, YY(y0+h0/2+dy), color);
+      dy += true_size;
+   }
+   if (shape != "") {
+      p.fframedtext(x0, YY(y0+h0/2+dy), shape);
+      dy += true_size;
+   }
+   p.endpath();
+
+   p.closepl();
+   std::string svg = p.getScreenSvg();
+
+   m_display.setObject(OBJ_VISUAL_OBJECTS, id, svg);
+}
+#else
 {
 #if defined(HAS_LIBPLOT)
    struct _local_ {
@@ -267,6 +440,7 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    m_display.setObject(OBJ_VISUAL_OBJECTS, id, svg);
 #endif
 }
+#endif
 
 // TODO: We need left-camera parameters to project the SOI
 //void CScene2D::drawSoi(const std::string& id, const SOIPtr& pSoi)
@@ -317,12 +491,42 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
    VisualObjectPtr pVisObj;
    try {
       pVisObj = getMemoryEntry<VisualObject>(addr);
+      if (pVisObj.get()) {
+         mObjects[addr] = pVisObj;
+      }
    }
    catch(DoesNotExistOnWMException){
+      mObjects.erase(addr);
       //log("CScene2D: VisualObject %s deleted while working...", descAddr(addr).c_str());
       return;
    };
    if (! pVisObj.get()) return;
+
+   if (pVisObj->presence == VisionData::VopREMOVED) {
+      m_display.removePart(OBJ_VISUAL_OBJECTS, _wmc.address.id);
+      mObjects.erase(addr);
+      return;
+   }
+
+   try {
+      drawVisualObject(_wmc.address.id, pVisObj);
+   }
+   catch(const std::exception &e) {
+      println("drawVisualObject FAILED with: %s", e.what());
+      sleepComponent(100);
+   }
+   catch (...) {
+      println("drawVisualObject FAILED");
+      sleepComponent(100);
+   }
+
+   //queueRedraw(addr);
+
+#if 0
+   if (pVisObj->presence != VisionData::VopVISIBLE) {
+      m_display.removePart(OBJ_VISUAL_OBJECTS, _wmc.address.id);
+      return;
+   }
 
    // ProtoObject provides position and outline
    ProtoObjectPtr pProtoObj;
@@ -349,6 +553,7 @@ void CScene2D::onChange_VisualObject(const cdl::WorkingMemoryChange & _wmc)
       println("drawVisualObject FAILED");
       sleepComponent(100);
    }
+#endif
 
 }
 
@@ -360,8 +565,42 @@ void CScene2D::onAdd_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 void CScene2D::onDelete_VisualObject(const cdl::WorkingMemoryChange & _wmc)
 {
    m_display.removePart(OBJ_VISUAL_OBJECTS, _wmc.address.id);
+   mObjects.erase(_wmc.address);
 }
 
+void CScene2D::onAdd_CameraMotionState(const cdl::WorkingMemoryChange & _wmc)
+{
+   onChange_CameraMotionState(_wmc);
+}
+
+void CScene2D::onChange_CameraMotionState(const cdl::WorkingMemoryChange & _wmc)
+{
+   Video::CameraMotionStatePtr pState;
+   try {
+      pState = getMemoryEntry<Video::CameraMotionState>(_wmc.address);
+   }
+   catch(DoesNotExistOnWMException){
+      return;
+   }
+
+   if (pState->bMoving) {
+      // Hide all
+      for (auto ivo : mObjects) {
+         m_display.removePart(OBJ_VISUAL_OBJECTS, ivo.first.id);
+      }
+   }
+   else {
+      // Show all
+      for (auto ivo : mObjects) {
+         if (ivo.second.get()) {
+            if (ivo.second->presence == VisionData::VopVISIBLE)
+               drawVisualObject(ivo.first.id, ivo.second);
+            else
+               m_display.removePart(OBJ_VISUAL_OBJECTS, ivo.first.id);
+         }
+      }
+   }
+}
 
 //void CScene2D::onChange_SOI(const cdl::WorkingMemoryChange & _wmc)
 //{

@@ -19,12 +19,15 @@
 #include <cast/architecture/ManagedComponent.hpp>
 #include <CDisplayClient.hpp>
 #include <VisionData.hpp>
+#include <Video.hpp>
 
 namespace cogx { namespace vision {
 
 class CScene2D:
    public cast::ManagedComponent
 {
+   std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mObjects;
+
 private:
    class CDisplayClient: public cogx::display::CDisplayClient
    {
@@ -43,7 +46,30 @@ private:
 
    double m_outputWidth;
    double m_outputHeight;
-   std::string m_objectList; // param
+   std::string m_objectList;  // param: list of v11n objects to merge into the scene
+
+   std::string m_videoServerName; // param: video server for transformations (3D->2D)
+   int m_camid;                   // param: camera id for transformations (3D->2D)
+   Video::VideoInterfacePrx m_pVideoServer;
+
+private:
+#if 0 // maybe someday the objects will be drawn in runComponent()
+   bool mbHideAll;
+   struct CRedrawOp
+   {
+      enum ERedrawOp { Redraw, ShowAll, HideAll };
+      ERedrawOp mRedrawOp;
+      cast::cdl::WorkingMemoryAddress mAddr;
+      CRedrawOp(ERedrawOp op) { mRedrawOp = op; }
+      CRedrawOp(ERedrawOp op, cast::cdl::WorkingMemoryAddress& addr) {
+         mRedrawOp = op;
+         mAddr = addr;
+      }
+   };
+   void queueRedraw(cast::cdl::WorkingMemoryAddress& addr);
+   void queueShowAll();
+   void queueHideAll();
+#endif
 
 protected:
    // ManagedComponent overrides
@@ -55,8 +81,11 @@ protected:
    void onAdd_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onChange_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onDelete_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
-   void drawVisualObject(const std::string& id, const VisionData::VisualObjectPtr& pVisObj,
-         const VisionData::ProtoObjectPtr& pProtoObj);
+   void onAdd_CameraMotionState(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onChange_CameraMotionState(const cast::cdl::WorkingMemoryChange & _wmc);
+
+   void drawVisualObject(const std::string& id, const VisionData::VisualObjectPtr& pVisObj);
+         // , const VisionData::ProtoObjectPtr& pProtoObj);
 
 public:
    CScene2D();

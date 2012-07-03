@@ -13,12 +13,14 @@ endif(HAS_LIBPLOT)
 
 ENABLE_COGX_VISUALIZATION(TRUE)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 # Set the sources.
 SET(SOURCES Scene2D.cpp)
 
 add_cast_component(VirtualScene2D ${SOURCES})
 link_cast_component(${CAST_COMPONENT_NAME}
-   VisionData
+   VisionData Video
    ${OPENCV_LDFLAGS}
    ${VISUALIZATION_LIBRARIES}
    ${LIBPLOT_LIBS}
