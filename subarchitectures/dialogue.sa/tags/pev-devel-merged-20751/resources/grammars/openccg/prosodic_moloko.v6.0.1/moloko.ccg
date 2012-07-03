@@ -1,0 +1,4683 @@
+
+ 
+ 
+ ################################################################ 
+# I AM A GENERATED FILE (by merge-ccg.pl)                      #  
+# DO NOT EDIT ME DIRECTLY !!!                                  #
+# INSTEAD, EDIT THE SOURCE .CCG FILES IN ./ccg-files FOLDER    #
+################################################################ 
+ 
+ # Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+# This file contains a cats, families, and dicionary-forms for
+# important things (sentence, subject, coordination and particles). 
+# These items:
+#     1) don't deserve a file of their own
+#     2) are required by the following files, and hence (in DotCCG) must
+#        be defined before hand
+
+ 
+#########################
+# SENTENCE & EVENT CATS #
+#########################
+  
+  def EVENT(args)     { E:event( args ) }
+
+  def s(args)         { s<10> [E NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+  def from-s(args)    { s<~10>[E args] }
+
+###############
+# The SUBJECT #
+###############
+
+ 
+   def subj(args)        { np<9> [S nom NUM:NUM PERS:PERS args] }
+   def from-subj(args)   { np<~9>[S nom NUM:NUM PERS:PERS args] } 
+
+   def +subj(args)       { \! subj(args) } 
+   def +from-subj(args)  { \! from-subj(args) }
+
+   def -subj(args)       { /! subj(args) } 
+   def -from-subj(args)  { /! from-subj(args) }
+   # NOTE the ! : Verbs don't actually syntactically'take' their subjects.
+   #       This is done via rule for ind, via aux or wh-word for int, etc   
+ 
+  
+#############################
+## COORD CAT & DICT FORMS  ##
+#############################
+
+
+  # The syntactic categories for coordination, as well as the families,
+  # are located in their respective files.
+  #  e.g Noun & NP coord are in noun.ccg, prep in prep.ccg
+  #  Sentential & VP coord are in verb.ccg
+
+  def COORD(args)       { R( args <First>(F) ^ <Next>(N) ) }
+ 
+  # modify a given pos (adj, adv, prep, etc) on the given side (left, right)
+  #
+  def coord+(form, pos, class, args) {_coord+(form, form, pos, class, args) }
+  def _coord+(prd, form, pos, class, args) {
+    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd)
+	{form: args;}
+  } 
+  
+  def coord(form, pos, class) {_coord-ip(form, form,accentMark(form), pos, class) }
+  def _coord(form, form, pos, class) {_coord-ip(prd, form, accentMark(form),pos, class) }
+  def _coord-ip(prd, form,form_hs,form_ls,form_lphs, pos, class) {
+    word form."-coord-".pos : "Coord-" . pos."-" (class, pred=prd) {
+	form: e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+	form: e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+	form_hs: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_ls: e-focus-true e-uncontentious e-rheme-true e-speaker spkr ;
+	form_lphs: e-focus-true e-uncontentious e-rheme-false e-hearer hear ;
+
+	}
+  } 
+
+############
+# PARTICLE #
+############
+
+  # As in pick UP the ball , pick the ball UP.
+  # Currently not really being used much. But definitely should!
+
+  def prt(args)      { prt<25>[P args] }
+  family Particle    { entry:  prt(MARK= *) : P(*) ;}
+
+# Authors: Raveesh Meena (rame01@dfki.de), 2009
+# This file contains definition of Macros that are needed for prosodic grammar.
+
+## Definition of a no-sort 's' category 
+##  This is same as 's' of sort 'E' but for syntactic phrases like np, adjuncts to become intonation phrases they need to unify with boundaries of type s$\s$ 
+##  However this definiton of boundary is of type no-sort. i.e. bpundaries can combine with anything: phrase, adjunct phrases, events
+
+def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+def from-ips(args)    { s<~10>[args] }
+
+## Definition of a no-sort 's' category 
+## a simpler definition to typechanging np or adjuncts.
+
+def trs()         { s<10> [ACCENT OWNER]}
+def from-trs()    { s<~10>[args] }
+
+
+
+########################################################
+# Inflection Rules to mark words with prosodic details #
+########################################################
+
+# We do not want to enumerate all possible prosodic markers for words in the dictionary.
+# Using the following macro a input word could be marked with the pitch accents we are handeling in our grammar.
+# see also prosodicHandles(word) 
+
+def accentMark(word) { markWordHs(word),markWordLs(word),markWordLpHs(word)}
+
+# input is 'word', output is 'word@H*'
+def markWordHs(word) {
+    ifmatch(word, word, word .'@H*', word)
+  }
+
+# input is 'word', output is 'word@L*'
+def markWordLs(word) {
+    ifmatch(word, word, word .'@L*', word)
+  }
+
+# input is 'word', output is 'word@L+H*'
+def markWordLpHs(word) {
+    ifmatch(word, word, word .'@L+H*', word)
+  }
+
+# We will be required to enumerate the remaining other accents. That will also need changes at MACROS using them.
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the 'basic' semantic and syntactic features 
+# used by the grammar. 'Complex' features for word classes are located
+# in types-word-classes.ccg
+
+#####################
+# SEMANTIC FEATURES #
+#####################
+
+# Note: currently a 'redundancy' for proximity. Can't re-use feature-value names
+#       so must have , e.g., distal, e-distal and m-distal corresponding to
+#       THAT ball, who said THAT, OVER on the table (or THERE)
+#
+# NOTE: This could be resolved by changing all the relevant cats to having same
+#       Index, e.g. preps and deictic events could receive, respectively:
+#                  pp[T] / np[A]  :  T:modifier( * <Anchor>A:entity )
+#                  s[T]            : T:event(context)
+#       in other words, enforcing the index variables chosen is not at all important 
+
+feature{
+
+## ENTITY ##
+
+  NUMBER<T:Num>: sg pl;      
+  PROXIMITY<T:Proximity>: distal proximal;
+  DELIMINATION<T:Delimitation>: unique existential variable;
+  QUANTIFICATION<T:Quantification>: specific unspecific uncountable;
+
+## EVENT ##
+  
+  POLARITY<E:Polarity>: pos neg;
+  MOOD<E:Mood>: ind imp int;
+  TENSE<E:Tense>: past pres fut;
+  ASPECT<E:Aspect>: continuous perfect;
+  VOICE<E:Voice>: active passive;
+  E-PROXIMITY<E:Proximity>: e-distal e-proximal;
+
+## MOD ##
+
+  DEGREE<M:Degree>: no-degrees degrees{degree-base comparative superlative};
+  M-PROXIMITY<M:Proximity>: m-distal m-proximal;
+
+##Raveesh 10 Aug##
+## PROSODY ##
+ #TINFOSTAT<T:InfoStatus>: t-contrast t-new t-given;
+ #MINFOSTAT<M:InfoStatus>: m-contrast m-new m-given;
+ #EINFOSTAT<E:InfoStatus>: e-contrast e-new e-given;
+
+ TFOCUS<T:Focus>: t-focus-true t-focus-false;
+ MFOCUS<M:Focus>: m-focus-true m-focus-false;
+ EFOCUS<E:Focus>: e-focus-true e-focus-false;
+
+ TOWNER<T:Owner>: t-hearer t-speaker;
+ MOWNER<M:Owner>: m-hearer m-speaker;
+ EOWNER<E:Owner>: e-hearer e-speaker;
+
+ ThOWNERSHIP<E:ThOwner>: th-speaker th-hearer;
+ RhOWNERSHIP<E:RhOwner>: rh-speaker rh-hearer;
+ #DIRECTION<E:Discourse>: frwd-referring finality;
+
+ TUNCERTAINITY<T:Commitment>: t-contentious t-uncontentious;
+ MUNCERTAINITY<M:Commitment>: m-contentious m-uncontentious;
+ EUNCERTAINITY<E:Commitment>: e-contentious e-uncontentious;
+
+ RHEME<T:Rheme>: t-rheme-true t-rheme-false;
+ MRHEME<M:Rheme>: m-rheme-true m-rheme-false;
+ ERHEME<E:Rheme>: e-rheme-true e-rheme-false;
+
+ #TMARKED<T:Marked>: t-unmarker t-marked;
+ #MMARKED<M:Marked>: m-unmarker m-marked;
+ #EMARKED<E:Marked>: e-unmarker e-marked;
+
+ #TBELIEF<T:BeliefState>: t-mutual t-private t-addToMB;
+ #MBELIEF<M:BeliefState>: m-mutual m-private m-addToMB;
+ #EBELIEF<E:BeliefState>: e-mutual e-private e-addToMB;
+
+ #INTMEDPH<T:PhMarker>: t-LL% t-LH% t-HL% t-HH%;
+ #CURVE<T:F0Curve>: t-low-falling t-low-rising t-high-falling t-high-rising ;
+ #OWNERSHIP<T:Owner>: t-speaker t-hearer;
+ #DIRECTION<T:Discourse>: t-frwd-refering t-finality;
+
+ #M_INTMEDPH<M:PhMarker>: m-LL% m-LH% m-HL% m-HH%;
+ #M_CURVE<M:F0Curve>: m-low-falling m-low-rising m-high-falling m-high-rising ;
+ #M_OWNERSHIP<M:Owner>: m-speaker m-hearer;
+ #M_DIRECTION<M:Discourse>: m-frwd-refering m-finality;
+} # end feature
+
+# These are the semantic features which are used inside family definitions in the grammar
+# Although syntactic features can be used syntactic categories inside the grammar, semantic
+# ones can't be (i.e only as 'macros' in dicionary entries) 
+
+  def POS()  { <Polarity>(pos) }  def NEG()  { <Polarity>(neg) }
+  def SG()   { <Num>(sg) }        def PL()   { <Num>(pl) }
+
+  def UNCOUNTABLE()             { <Quantification>(uncountable) }
+  def UNSPECIFIC()              { <Quantification>(unspecific)  }
+  def SPECIFIC()                { <Quantification>(specific)    }
+
+  def UNIQUE()      { <Delimitation>(unique) }
+  def VARIABLE()    { <Delimitation>(variable) }
+  def EXISTENTIAL() { <Delimitation>(existential) }
+  
+  def IND() { <Mood>(ind) }   def IMP() { <Mood>(imp) }   def INT() { <Mood>(int) }
+######################
+# SYNTACTIC FEATURES #
+######################
+
+  # 15 is the feature id for nouns
+  # 9 is the feature id for the syntatic subject position
+  # 10 is the feature id for sentences
+  # 11 is the feature id for finites when 'selected' for by interrogative utterance templates
+  #       the finite determines subj agreement and pol, vform & fin.
+  # 42 is used for the np compliment in 'I am a man', used to block ' these are a ball'
+  # 
+feature{
+
+## Noun features ##
+  
+  NUM<15, 9, 10, 11, 42>:  s-sg s-pl {s-pl-sp s-pl-unsp} s-mass ;  # specific plural (as in 3 balls) or unspecific (balls)
+  PERS<15, 9, 10, 11>: non-3rd {1st 2nd} 3rd;
+  
+  CASE<15, 9>: nom acc-both{acc acc-loc}; # acc-loc is for here and there in 'on there', 'up here', 'closer to there' also 'before then' etc.                              
+  NFORM<15, 9, 11>: nf-real{full pro nf-ctxt} nf-dummy{dummy-there};  # full form vs pronoun vs none (as in 'I will take the green')
+  
+ 
+## Sentence/Verbal Features ##
+  
+  # Sept 7 added mood-mixed to handle the coordinate "I am sorry but could you help me"
+  #
+  MOOD<10>:   s-major{ s-ind s-imp s-int s-ind-ell s-mood-mixed}  s-minor s-dependent;  
+  POL<10,11>: s-pos s-prov-pos s-neg;
+   
+  # vf-be (am able to)  for-ing (thanks for helping me), fin-ctxt (I did), fin-deictic (I said that) , fin-full (all other finite events)
+  # Need two layers b/c any thing which wants a finite-s can take a deictic (I said that, before that, etc.) BUT must the ind-building rule
+  # only wants fin-ctxt or full
+  #
+  # Aug 20 added ell-subj as vform... may be useful. Should eventually take out of s-mood, me thinks.
+  
+  VFORM<10,11>: fin{ fin-clause{fin-ctxt fin-ell fin-full} fin-deictic} vf-base vf-to-imp inf ing pp vf-be for-ing;  
+  
+  # this will be important if we want 1) to handle tag questions 2) to cleanly & quickly handle 'ellipse responses' I did, you shouldn't, can I, etc.
+  #
+  FIN<10,11>:   be do can should will could would must have;  
+
+
+## Adj/Adv Features ##
+  
+  DEGREE<25>: s-no-degrees s-degrees{s-degree-base s-comparative s-superlative};
+
+## OTHER FEATURES ##
+
+  # Questionable=no   -> placed on np slots which cannot be questioned via standard wh udc construction
+  # Mark=??           -> placed on obliques and also dependent clauses
+  # COM= yes or no    -> used in coordination constructions to block spurious readings
+  #                      (only the single staircase reading remains)
+
+} # end feature
+
+
+
+feature {
+
+  CORRECTED<1,10,15,25,34>: default asr-correction ;
+
+######################
+## Prosodic Feature ##
+######################
+  ##Raveesh 10 Aug##
+  ## Sytactic Feature indicating pitch accent on nouns, verbs, finites(?) and ajectives
+  !ACCENT<15,9,10,11,25,42>: tone stressed[tone] unstressed[tone] rhthm[stressed] thmf[rhthm] lphs[thmf] lsph[thmf] rhmf[rhthm] hs[rhmf] ls[rhmf] hspl[rhmf] hpls [rhmf]; 
+  ## Feature indicating intonational phrases: pitch accent marked (pam) word, intermediate phrase(ip) and intonational phrase(cp)
+  !INTOPH<15,9,10,11,25>: nulltn pam{rhm thm} ip cp; 
+  #!OWNER<15,9,10,11,25,42>: owners hear[owners] spkr[owners];
+  !OWNER<15,9,10,11,25,42>: owners hear spkr;
+
+} 
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the semantic ontologies (type-heirarchies) 
+# used by the grammar (and by dictionary items)
+
+feature{
+
+###########
+## EVENT ##
+###########
+
+
+  ont-event: event{
+                  relational
+                  action {action-motion action-non-motion}
+                  state {presentational ascription}
+                  internal {perception cognition}
+                  modal
+                  communication
+                  symbolic
+                  };
+
+
+  # ! Only 'event' (top level) and 'state' are used in the grammar
+
+
+
+############
+## ENTITY ##
+############
+
+
+  ont-entity: entity{
+                     physical{ 
+                              animate{person}
+                              thing
+                              e-location{e-region e-place}
+  		             }
+                     e-substance {e-material}
+                     e-measure
+                     e-event
+                     e-time{e-time-point e-time-unit}
+                   
+  		     dummy
+  		    };
+
+
+  # ! Only 'entity' (top level), physical, e-time-point, e-time-unit
+  # ! are used in the grammar
+  # ! This is because very few 'semantic' selectional constraints
+  # ! have been included in the grammar
+
+
+
+#############
+## QUALITY ##
+#############
+
+  ont-quality: quality{
+                       q-physical{
+                                  q-size
+                                  q-shape
+                                  q-age
+                                  q-color
+                                  q-state
+                                  q-material
+                                 }
+                       q-position{
+                                  q-location
+                                  q-number {number-cardinal number-ordinal number-id}
+                                  q-temporal
+                                  q-discourse
+                                 }
+                       q-attitude
+                      };
+  
+  
+  # ! Only the top level 'quality' is used in the grammar
+
+##############
+## MODIFIER ##
+##############
+
+  ont-modifier: modifier{
+
+                         m-dynamic{ m-direction m-whereto m-wherefrom m-through }
+                         m-manner
+                         m-time {m-time-point m-time-sequence m-time-interval}
+                         m-location
+                         m-probability
+                         m-frequency     # sometimes, often, usually
+                         m-comment       # quite generic 'affect'
+                         m-serial		   # go get that
+                         m-accompaniment # with GJ...
+                         m-instrumental  # with the ball...
+                         m-benefactor    # for ...
+                         m-relational{m-cause m-result m-condition}
+                         m-purpose       # I went there 'to get it'
+  		         m-intensity
+  		         m-comparison
+  		         m-restriction   # ball that I picked up,  place where I saw you
+                        };
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT:  
+  #            'modifier' is used in the grammar. 
+  #
+  #            Moreover, any changes to this will require changes in these files:
+  #                  types-classes.ccg, prep.ccg, adv.ccg and (perhaps) verb.ccg
+  #            See these files for specifics.
+  #
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+					  
+###############
+## DISCOURSE ##
+###############
+
+  # this needs re-doing!
+  ont-discourse: marker{ d-units alignment cue greeting closing reject acknowledge evaluate };
+				
+###############
+## PROSODY ##
+###############
+  #ont-prosody: tunes{ rhm-thm {thmf rhmf} };
+
+}
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the more 'complex' features used in defining
+# word classes. Specifically, event modifier restriction classes for verbs
+# and syntactic behaviour classes for modifiers (and now some nouns too...)
+
+# In each case, a set of 'primatives/atoms' are defined, which are then collected
+# into classes (via multiple inheritance), i.e.
+#
+#     CLASS:    atom1 atom2 ... atomN
+#               class1 [atom1]  class2[atom1 atom2 atom5] ...
+
+##########################
+## Modifier Restriction ##
+##########################
+
+  # OpenCCG doesn't seem to like using the same feature-value names for differnt things, 
+  # so, I have created 3 versions.
+  #           1) m-#######, the ontological semantic sort (see types-ontology)
+  #           2) x-#######, placed on mod themselves, specifying one 'kind' of modifier they are
+  #           3) s-#######, placed on the s (or verb) to specify what 'kind' of modifiers it
+  #                         accepts.
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT:  
+  #            If the modifier section of the ontological hierarchy is changed, you will have to add
+  #            reflect these changes here
+  #
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+feature {
+
+  MOD-TYPE<25>:          x-dynamic{ x-direction x-whereto x-wherefrom x-through }
+                         x-manner
+                         x-time {x-time-point x-time-sequence x-time-interval}
+                         x-location
+                         x-probability
+                         x-frequency    
+                         x-comment      
+                         x-serial		   
+                         x-accompaniment
+                         x-instrumental
+  		         x-comparison 
+                         x-benefactor    
+                         x-relational{x-cause x-result x-condition}
+                         x-purpose       
+                         x-intensity;
+
+ 
+  # Note: These could in theory also be placed on Mod-Mods 
+  #       to limit the kinds of Mods they can modify.
+
+  MCLASS<10>:            s-dynamic{ s-direction s-whereto s-wherefrom s-through }
+                         s-manner
+                         s-time  {s-time-point s-time-sequence s-time-interval}
+                         s-location
+                         s-probability
+                         s-frequency    
+                         s-comment      
+                         s-serial		   
+                         s-accompaniment
+      		         s-instrumental
+  		         s-comparison 
+                         s-benefactor    
+                         s-relational{s-cause s-result s-condition}
+                         s-purpose       
+                         s-intensity
+  		         s-none
+
+  # These are the classes which verbs lexically select 
+  # Each is a collection of the 'primatives' defined immediately above.
+  # NEW CLASSES CAN EASILY BE ADDED HERE.
+
+  m-class-none  [s-none]
+  m-class-5     [                                       s-comment]
+  m-class-4     [s-relational s-frequency s-probability s-comment s-time]
+  m-class-3     [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison]
+  m-class-2x    [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison           s-location]
+  m-class-2     [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location]
+  m-class-1     [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location s-manner s-serial]
+  m-class-1x    [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose            s-manner s-serial s-dynamic]
+  m-class-all   [s-relational s-frequency s-probability s-comment s-time  s-instrumental s-accompaniment s-benefactor s-comparison s-purpose s-location s-manner s-serial s-dynamic]
+  ;
+
+
+#############################
+## Combinatorial Behaviour ##
+#############################
+
+  # These are the features which determine the syntactic behaviour of modifiers
+  # (where they can be). Each modifer POS (adv, pp) has a rule for each of 
+  # these saying, e.g, 'if you are allowed to pre-modify sentences, 
+  # then I'll turn you into a pre-modifier '
+  
+  # Each modifier lexically (in the dictionary) chooses its syntactic 'class'
+
+  CC-TYPE<25, 15>: post-s post-s-loose pre-s pre-vp post-vp 
+                   pre-cop-comp   # I am ALSO big,  it is CERTAINLY not a ball
+                   post-n pre-n
+    		   cc-none
+  		 	 
+                   ## Nominal behaviour                 
+   
+  		   compound-1st compound-head  # the two parts of noun-noun compounds
+  		   no-q  # for those that don't want 'quality' entities (color, size, shap, etc),
+                         # e.g. 'what size ball' but not 'what size color'
+			 
+   ## Adverb Classes ## (NEW CAN EASILY BE MODIFIED/EXTENDED)			 
+			 
+   adv-all  [pre-s pre-vp post-vp   post-s pre-cop-comp] 
+   adv-1    [pre-s pre-vp post-vp   post-s] #s or vp?
+   adv-2    [      pre-vp post-vp   post-s]
+   adv-3    [pre-s        post-vp   post-s]
+   adv-4    [             post-vp   post-s]
+   adv-5    [pre-s pre-vp                 ]
+   adv-6    [      pre-vp post-vp         ]
+   adv-7    [pre-s pre-vp post-vp   post-s]  
+
+   ## Prepositions Classes ## (NEW CAN EASILY BE MODIFIED/EXTENDED)
+			 
+   prep-all [post-n post-s post-vp pre-s]
+   prep-1   [post-n post-s post-vp      ]
+   prep-2   [       post-s post-vp      ]
+   prep-3   [post-n                     ]
+   prep-4   [       post-s post-vp pre-s]
+			 
+   ## Nominal Classes ##   
+
+   n-all [compound-1st compound-head no-q]
+   n-1   [compound-1st  no-q]
+   n-2   [compound-head no-q]
+   n-3   [compound-1st]
+   n-4   [no-q]
+  
+   ;
+
+} # end feature
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+# This file contains some important categories used by modifiers like
+# adjectives, adverbs and prepositions 
+#
+#    1) the complex-syntactic categories used in their type-changing rules
+#    2) the semantic dependency relations used for modifiers
+#    3) syn & sem categories for modifier arguments (like the np arg of prepositions)
+#    4) a generic dictionary-entry macro for modifier-modifiers.
+
+# Due to DotCCG ordering issues, this file also contains copula argument definitions
+
+####################################
+# SYNTACTIC COMPLEX-CAT CATEGORIES #
+####################################
+
+  # These correspond to the various CC-CAT values given to modifiers
+  # such as prepositions, adverbs, adjectives etc. (see types-word-classes.ccg)
+  #
+  # The 'mod' argument is the modifier-class corrisponding to the modifier-type of the
+  # modifier. This is restricts the type of sentences which can be modified.
+  # I have used MCLASS:mod vs. MCLASS=mod b/c we only want the sentence(verb) to 
+  # have a class which unifies with the modifier. We don't want to change its value. 
+  #
+  # The syn argument here corresponds to any arguments that the modifier 
+  # may have 'following it', e.g. the np arg of a preposition.
+  # The ordering here is crucial for incremental parsing:
+  #	For pre-modifiers, the modifier args will come first then the modifee
+  #     For post-modifiers, the modifee comes and then then the mod args
+
+
+  def post-s(mod, syn)          {  from-s() syn \* s(MCLASS:mod )  }
+  def post-s-loose(mod, syn)    {  from-s() syn \< s(MCLASS:mod )  }
+  def post-vp(mod, syn)         {  from-s() +from-subj()  syn \* ( s(MCLASS:mod) +subj() )  }
+    
+  def pre-s(mod, syn)           {  from-s() /^ s(MCLASS:mod )  syn   }
+  def pre-vp(mod, syn)          {  from-s() +from-subj() /^ ( s(MCLASS:mod) +subj() )  syn }  
+
+
+  # Added by plison
+  def post-s2(syn)          {  from-s() syn \* s()  }
+  def post-s-loose2(syn)    {  from-s() syn \< s()  }
+  def post-vp2(syn)         {  from-s() +from-subj()  syn \* ( s() +subj() )  }
+    
+  def pre-s2(syn)           {  from-s() /^ s()  syn   }
+  def pre-vp2(syn)          {  from-s() +from-subj() /^ ( s() +subj() )  syn }  
+  
+
+
+  # Added  Aug 19:
+  #   this is a hack to incrementally parse 'the ball that I just picked up'
+  #   Need to sort out incremental handling of this later!
+  
+  def pre-vp-in-rel-clause(mod, syn) {       n() / ( from-s() +from-subj() / np<56>[X] ) 
+                                        \^ ( n() / ( s(MCLASS:mod) +subj() / np<56>[X] ) ) 
+                                           syn
+                                     }
+ 
+  def post-n(args, syn)         {  from-n(args) syn \* n()  }
+ def post-n2(syn)         {  from-n() syn \* n()  }
+ def pre-n(args, syn)          {  from-n(args) / n() syn  }		
+
+########################################
+# SPECIAL MODIFIER 'SLOTS' FOR COPULA. #
+########################################
+
+  # These must be defined here because of DotCCG ORDERING ISSUES
+  #
+  # This handles I am ALSO big, it is DEFINITELY not a ball, etc.
+  # i.e. they occur before the compliment  of the copular
+  # NOTE: To avoid OVER-GENERATION (e.g. I gave him DEFINITELY the ball),
+  #        the allow compliment possiblities must be specifically defined
+  
+  # The three possible compliments
+
+  def +cop-np(args)  { /^ np<42>[X NUM:NUM ACCENT acc args] }    # the restr & Scope must share number (*these are a ball) 
+  def +cop-pp(args)  { /^ pp<2>[X args] } # it must be a preposition which can modify nouns. done semantically (see copula families)
+  def +cop-adj(args) { / adj<2>[X args] }
+  #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
+  def +cop-adj-ip(args) { /! adj(args) }
+
+  # Marked as fin=be to block, e.g. I moved CERTAINLY the ball...
+  def pre-cop-comp (moder, modee, arg)      { from-s(moder) arg \^ ( s(modee be) arg ) } 
+
+  # These are defined independently because copular negation uses these directly
+  #
+  def pre-cop-pp(moder, modee, arg)  { pre-cop-comp(moder, modee, +cop-pp() arg   ) }
+  def pre-cop-np(moder, modee, arg)  { pre-cop-comp(moder, modee, +cop-np() arg   ) }
+  def pre-cop-adj(moder, modee, arg) { pre-cop-comp(moder, modee, +cop-adj() arg  ) }
+
+  # This is invoked by the specific modifier type (e.g. adv) 
+  #
+  def mod-rule-pre-cop(atomicmod, arg, modee, sem){
+	# rule{ typechange: atomicmod arg => pre-cop-pp (, modee, arg) : sem ;}
+	 rule{ typechange: atomicmod arg => pre-cop-np (, modee, arg) : sem ;}
+         rule{ typechange: atomicmod arg => pre-cop-adj(, modee, arg) : sem ;}
+  }
+
+
+  def mod-rule-pre-cop2(atomicmod, arg, sem){
+	# rule{ typechange: atomicmod arg => pre-cop-pp (, , arg) : sem ;}
+	 rule{ typechange: atomicmod arg => pre-cop-np (, , arg) : sem ;}
+         rule{ typechange: atomicmod arg => pre-cop-adj(, , arg) : sem ;}
+  }
+
+
+#######################################
+# MODIFIER DEPENDENCY RELN SEMANTICS  #
+#######################################
+
+  # This is the generic dependency relation used by ALL MODIFIERS (all adj, pp, adv, etc) 
+  # when they are used as modifiers, i.e., this is added to the the semantics of the 
+  # modifee within all of the various complex category type changing rules used to 
+  # turn atomic modifiers into complex modifiers. 
+  #
+  # Note: further specification of the nature of relation (i.e location, frequency, etc.)
+  #       is handled using the semantic sort hierarchy (see types-ontology.ccg)
+
+  def MODIFIER(args) {<Modifier>(M  args) }
+  def RHMODIFIER(args) {<Modifier>(M args ^ <RhFocus>Hs) }
+
+  # This is the semantic dependency relation used by modifier modifiers,
+  #     e.g.  'really' big , 'over' on the table, etc. 
+  # The syntactic categories are defined locally in the appropriate
+  # modifier .ccg file 
+  
+  def M-MOD(args)        { <Modifier>(MM args) }
+
+
+#####################################
+# MODIFIER ARGUMENTS: SLOTS & ROLES # 
+#####################################
+
+  # These are the syntactic slots and corresponding semantic roles
+  # used for modifiers with arguments (ma = Modifier Argument)
+
+  # NP/OBL SLOT #
+  
+  def np_ma(args)            { np<30>[A args] }
+  def n_ma(args)             { n<30>[A args] }
+  def obl_ma(mrk, args)      { obl<30>[A MARK=mrk args] }
+  def obln_ma(mrk, args)     { obln<30>[A MARK=mrk args] }
+  
+  def ARG(args)              { <Anchor>(A args) }
+
+  # S SLOT #
+
+  def s_ma(args)             { s<31>[G args] }
+  def E-ARG(args)            { <Event>(G args) }
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  # modify a given pos (adj, adv, prep, etc) in the given position (pre, post) 
+
+  def modifier(form, pos, side, class) {  _modifier(form, form, pos, side, class)  }
+  def _modifier(prd, form, pos, side, class) {
+    word form.-mod-.side."-".pos."-".class : "Mod-" . side . "-" . pos ."-" ("m-".class, pred=prd)
+	{form;}
+  } 
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def n(args)         { n<15> [T CASE NUM PERS NFORM ACCENT OWNER args] }
+  def np(args)        { np<15>[T CASE NUM PERS NFORM ACCENT OWNER args] }
+  def -np(args)        {\! np<15>[T CASE NUM PERS NFORM ACCENT OWNER args] }
+   
+  def from-n(args)    { n<~15> [T args] }
+  def from-np(args)   { np<~15>[T args] }
+ 
+  # This is a 'case' marked np, like the 'with the ball' in 'play with the ball'
+  # verbs can specify what marking they recieve. See Markers.ccg for the oblique family
+  
+  def obl(mrk, args)  { obl<15>[T MARK=mrk args] }
+ 
+   
+##########################
+## SEMANTIC DEFINITIONS ##
+##########################
+
+  def ENTITY(args)      { T:entity(args) }
+  def OWNER(args)       { <Owner>(O:entity args) }
+   
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def n-cat(args, sem)         { n() args   :   ENTITY( sem) ; }
+  def np-cat(args, sem)        { np() args  :   ENTITY( sem) ; }
+ 
+  ## The Families ##
+ 
+  family Noun          { entry: n-cat (               , *         )  }
+  
+  # July 24, took out contextualized readings at GJ's request, didn't like em popping up in questions
+  #
+  family Noun+of-np-    { entry: n-cat ( / obl_ma(of, Questionable=no)  , * <Owner>(A:entity) ) }
+                      #   entry: n-cat (                                , * <Owner>(A:entity context) ) }
+  family Noun+of-n-     { entry: n-cat ( / obln_ma(of, Questionable=no) , * <Owner>(A:entity) )  }
+                      #   entry: n-cat (                                , * <Owner>(A:entity context) )  }
+  family Noun+number-   { entry: n-cat ( / number[N] , * <Id>(N:number-cardinal) )  } 
+
+  family Bare-np       { entry: np-cat(              , *        )  }
+ 
+  family Bare-np+of-np { entry: np-cat( / obl_ma(of, Questionable=no)   , * <Owner>(A) )  }
+
+  # These handle, e.g. 'the green', acting as a full referring expression.
+  #
+  family Context-np+modifier           { entry: np-cat ( , context MODIFIER(*) ) }
+  family Context-n+modifier            { entry: n-cat  ( , context MODIFIER(*) ) }
+
+  family Event-np                      { entry: s<10>[T] : T:event(*) ; }  # given index T to allow adding nominal marcos
+  
+  # The ugliness here is due to the fact that semantically, the number from the owner
+  # must be specified lexically, .i.e. 'mine' should have <Owner>( I ^ sg) and 'ours' <Owner>( I ^ pl)
+  # Therefore the <Owner> must have the variable T, not the 'owned', and thus other features must
+  # be specified here.
+  # The two entries are do to the fact that every owned-np is ambigous between singular and plural 
+  #	
+  family Owned-np      { entry: np<16>[T2 s-sg CASE 3rd full]     :  T2:entity(context SG() <Owner>(T *) UNIQUE() SPECIFIC );
+                         entry: np<16>[T2 s-pl CASE 3rd full]     :  T2:entity(context PL() <Owner>(T *) VARIABLE() UNSPECIFIC() ); }
+
+  # This is really a determiner, but the dictionary macro 'pronoun' below uses this, and dets have been defined yet...
+  #
+  family Owner-pro     { entry: np<~16>[T2 3rd] /^ n<16>[T2 s-sg]      :  T2:entity( <Owner>(T *) SG() UNIQUE() SPECIFIC()       );
+                         entry: np<~16>[T2 3rd] /^ n<16>[T2 s-pl-sp]   :  T2:entity( <Owner>(T *) PL() UNIQUE() SPECIFIC()       ); 
+                         entry: np<~16>[T2 3rd] /^ n<16>[T2 s-pl-unsp] :  T2:entity( <Owner>(T *) PL() UNIQUE() UNSPECIFIC()     ); }
+
+  # Negation and Coordination #  
+
+  family Negation-np-(indexRel=polarity)  { entry:  from-np() \ np() :  ENTITY( NEG()  )   ;}
+  family Coord-np-       { entry:  np(COM=yes) / np[N]  \* np[F COM=no]   : T( * <First>(F) ^ <Next>(N) ) ;}
+  family Coord-n-        { entry:  n(COM=yes)  / n[N]   \* n[F COM=no]    : T( * <First>(F) ^ <Next>(N) ) ;}
+
+
+###########
+## RULES ##
+###########
+
+	
+  # These essentially act as determiners, turning plural and mass nouns into np 
+  # with the appropriate semantic marking
+  
+  rule { typechange: n(s-pl-unsp)     =>  from-np(3rd)       :  ENTITY( VARIABLE() UNSPECIFIC() ) ; } 
+ # rule { typechange: n(s-pl-sp)       =>  from-np(3rd)       :  ENTITY( VARIABLE() SPECIFIC() ) ; }
+ # rule { typechange: n(s-mass)        =>  from-np(3rd s-sg)  :  ENTITY( VARIABLE() UNCOUNTABLE() ) ; } 
+
+  # This rule is for handling Compound Nouns. It turns any random noun into a pre-n modifier 
+  # The two nominals are marked with the appropriate CC-TYPE values allowing the restriction 
+  # of, e.g. 'the left ball' as compound (see types-word-classes.ccg)
+
+  # NOTE: Could (should?) extend this idea for handling multi-word expressions...
+    
+  rule { typechange: n[T2 full compound-1st]     =>  from-n(cc-none) /* n(compound-head)  :  ENTITY( <Compound>(T2) ) ; } 
+
+ #PROSG09
+ rule { typechange: np(args)$1 => trs()/! np()$1 ; }
+  
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  # Basic nouns, regular and irr
+  #
+  def  noun(sing, class, args)       { noun-irr-accnt(sing, pluralize(sing), accentMark(sing), class, args) }
+  def  noun-irr-accnt(sing,plur,sing_hs,sing_ls,sing_lphs, class, args) { _noun-irr(sing, sing, plur, sing_hs, sing_ls,sing_lphs,accentMark(plur),class,args) }
+
+  def _noun(prd, sing, class, args) { _noun-irr-accnt(prd, sing, pluralize(sing), accentMark(sing), class, args) }
+  def _noun-irr-accnt(prd, sing, plur, sing_hs, sing_ls,sing_lphs, class, args) { _noun-irr(prd, sing, plur, sing_hs,sing_ls,sing_lphs, accentMark(plur),class, args) }
+  
+  
+  def  noun-irr (sing, plur, class, args) { _noun-irr(sing, sing, plur, accentMark(sing),accentMark(plur),class, args) } 
+
+  def _noun-irr(prd, sing, plur, sing_hs,sing_ls, sing_lphs, plur_hs,plur_ls, plur_lphs, class, args) {
+    word sing.-noun-n:Noun(class, pred=prd) {
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
+      sing :  s-sg full t-uncontentious t-focus-false t-rheme-true t-hearer hear args;
+      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      sing_hs :  s-sg full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
+      sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
+      #sing_ls :  s-sg full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
+      sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
+      #sing_lphs :  s-sg full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-false t-hearer hear args;
+      plur :  s-pl-unsp full t-uncontentious t-focus-false t-rheme-true t-speaker spkr args;
+      #plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-hearer hear hs args;
+      plur_hs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs args;
+      #plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-hearer hear ls args;
+      plur_ls :  s-pl-unsp full t-contentious t-focus-true t-rheme-true t-speaker spkr ls args;
+      plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs args;
+      #plur_lphs :  s-pl-unsp full t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs args;
+    }
+  }
+  
+
+  # Basic nouns with argument (of-np or of-n) , regular and irr
+  #
+  def  noun+(arg, sing, class, args)      {  noun-irr+(arg, sing, pluralize(sing), class, args) }
+  def _noun+(arg, prd, sing, class, args) { _noun-irr+(arg, prd, sing, pluralize(sing), class, args) }
+
+  def  noun-irr+(arg, sing, plur, class, args) { _noun-irr+(arg, sing, sing, plur, class, args) }
+  def _noun-irr+(arg, prd, sing, plur, class, args) {
+   word sing.-noun-n-.arg:"Noun+".arg."-" (class, pred=prd) {
+      sing :  s-sg full args;
+      plur :  s-pl full args;
+    }
+  }
+
+  def  noun+of-n(sing, class, args)      {  noun-irr+of-n(sing, pluralize(sing), class, args) }
+  def _noun+of-n(prd, sing, class, args) { _noun-irr+of-n(prd, sing, pluralize(sing), class, args) }
+
+  def  noun-irr+of-n(sing, plur, class, args) { _noun-irr+of-n(sing, sing, plur, class, args) }
+  def _noun-irr+of-n(prd, sing, plur, class, args) {
+   word sing.-noun-n-of-n:Noun+of-n(class, pred=prd) {
+      sing :   s-sg full args;
+      plur :   s-pl full args;
+    }
+  }
+  
+  # Others
+  
+  def  noun-mass(form, class, args) { _noun-mass(form, form, class, args) }
+  def _noun-mass(prd, form, class, args) {
+    word form.-mass-n : Noun(class, pred=prd) {
+      form  :  s-mass  full args;
+    }
+  }
+
+  def name(form, class, args) { _name(form, form, class, args) }
+  def _name(prd, form, class, args) {
+    word form.-name:Bare-np(class, pred=prd) {
+      form :  s-sg 3rd full args;
+    }
+  }
+
+  #PROSG09 chnages for prosodic marking on pronouns: I_H*, me_L+H* 
+  def pronoun(prd, pers, num, nom-form, acc-form, owner, owned, class,) {pronoun_ip(prd, pers, num, nom-form,accentMark(nom-form),acc-form,accentMark(acc-form),owner,owned,class,)}
+
+ def pronoun_ip(prd, pers, num, nom-form,nom-form_hs,nom-form_ls,nom-form_lphs, acc-form,acc-form_hs,acc-form_ls,acc-form_lphs, owner, owned,class,) {
+    word prd.-pro-.pers-.num:Bare-np(class, pred=prd) {
+      #nom-form :  pers s-.num nom pro num ;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
+      #nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      #nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      nom-form :  pers s-.num nom pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
+      #nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
+      nom-form_hs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
+      nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
+      #nom-form_lphs :  pers s-.num nom pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
+      #acc-form :  pers s-.num acc pro num ;
+      #acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-speaker spkr;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-false t-hearer hear;
+      acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-speaker spkr;
+      #acc-form :  pers s-.num acc pro num t-uncontentious t-focus-false t-rheme-true t-hearer hear;
+      #acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-hearer hear hs;
+      acc-form_hs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-true t-speaker spkr hs;
+      acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-hearer hear lphs;
+      #acc-form_lphs :  pers s-.num acc pro num t-uncontentious t-focus-true t-rheme-false t-speaker spkr lphs;
+    }
+    word prd.-owner-.num:Owner-pro('entity', pred=prd) {
+      owner : num ;
+	}
+    word prd.-owned-.num:Owned-np('entity', pred=prd) {
+      owned : num ;
+	}
+  }
+
+
+ # I said THAT, I didn't do IT, etc. 
+ #
+ def context-s(form, args) {
+    word form.-deictic-pro-event : Event-np ('event', pred=context) {
+      form : fin-deictic m-class-none s-dependent args;    
+    }
+ }
+
+ # Context nouns and context nouns + modifiers (e.g. those three, the red, etc)
+ # are set to c-class n-4, meaning they can't interact with the n-n compound rule
+ # this blocks stupid readings for  'three balls' and for 'room 3'  
+ #
+ def context-n(form,class, args) {_context-n(form, form, class, args)}
+ def _context-n(prd, form, class, args) {
+    word form.-context-n : Noun (class, pred=context) {
+      form : args nf-ctxt n-4;    
+    }
+ }
+
+ # I don't want ONE. Given context pred
+ #
+ def context-np(form,class, args) {_context-np-ip(form, form, accentMark(form),class, args)}
+ def _context-np(form,form, class, args) {_context-np-ip(prd, form, accentMark(form),class, args)}
+ def _context-np-ip(prd, form, form_hs,form_ls,form_lphs,class, args) {
+    word form.-context-np : Bare-np (class, pred=context) {
+      form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-hearer hear ;    
+      form : 3rd args nf-ctxt t-uncontentious t-focus-false t-rheme-false t-speaker spkr ;    
+      form_hs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-speaker spkr;    
+      form_ls : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-true t-hearer hear;    
+      form_lphs : 3rd args nf-ctxt t-uncontentious t-focus-true t-rheme-false t-hearer hear;    
+    }
+ }
+
+ def context-n+modifier(form,class, args) {_context-n+modifier(form, form, class, args)}
+ def _context-n+modifier(prd, form, class, args) {
+    word form.prd.-context-n+modifier : Context-n+modifier (class, pred=prd) {
+      form : args nf-ctxt n-4;    
+    }
+ }
+
+ def context-np+modifier(form,class, args) {_context-np+modifier(form, form, class, args)}
+ def _context-np+modifier(prd, form, class, args) {
+    word form.prd.-context-n+modifierp : Context-np+modifier (class, pred=prd) {
+      form : 3rd args nf-ctxt;    
+    }
+ }
+
+  # Taken directly from Ben and Jasons' tiny.ccg grammar
+  # also used for third person present verbal forms (see verbs.ccg)
+  # 
+  def pluralize(word) {
+    ifmatch('^.*[aeiou][oy]$', word, word . s,
+      ifmatch('^.*([sxoy]|sh|ch)$', word, regsub('^(.*)y$', '\1i', word) . es,
+              word . s))
+  }
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#	 : grep change with: PROSG09
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def adj(args)         { adj<25>[M DEGREE ACCENT OWNER args] }
+  def from-adj(args)    { adj<~25>[M args] }
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def adj-cat(args, sem)   { adj() args  :  M(* sem) }
+  
+  ## The Families ##
+
+  family Adj                         { entry:  adj-cat(, ) ;}
+  family Adj+of-np                   { entry:  adj-cat( / obl_ma(of,), ARG() ) ;}
+  
+  ## Modifiers ##
+  
+  family Mod-pre-adj-                { entry:  from-adj() /^ adj()                :  M( M-MOD(*) ) ;}
+  family Mod-pre-adj-comparative-    { entry:  from-adj() /^ adj(s-comparative)   :  M( M-MOD(*) ) ;}
+  
+  family Mod-post-adj-               { entry:  from-adj() \ adj()                 :  M( M-MOD(*) ) ;}
+    
+  family More-adj(indexRel=degree)   { entry:  from-adj(s-comparative)  / adj(s-degree-base)   ;}
+  family Most-adj(indexRel=degree)   { entry:  from-adj(s-superlative)  / adj(s-degree-base)   ;}
+  
+  family Adj-er-than                 { entry:  from-adj() / np_ma() \* adj(s-comparative) : M( M-MOD(* ARG() )  ) ;}
+
+  ## Negation and Coordition ##
+  
+  family Negation-adj-(indexRel=polarity)  { entry:  from-adj() \ adj() :  M( NEG()  ) ;}
+  family Coord-adj-                  { entry:  adj[R COM=yes] / adj[N] \* adj[F COM=no] : COORD(*) ;}
+
+
+###########
+## RULES ##
+###########
+
+  # The following rule converts the 'base-generated' atomic cat versions of adjectives into
+  # their complex-cat form (i.e. the form that actually attach to and modify nouns)
+
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() )
+  # categories used in these rules  
+
+  rule { typechange: adj(pre-n)$1  =>  pre-n(, $1) :  ENTITY( MODIFIER() ) ; }  
+
+ #PROSG09 : Rule for allowing intonational phrase "red_H* LL%"
+  rule {typechange: adj(pre-n)$1 => trs() +cop-adj-ip()$1;}
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+  #PROSG09 : change in the number of arguments for prosodically inflected args e.g oval_H*
+  #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g oval_H*,oval_L+H*. 
+
+  def _adj-none_ip(prd, base,base_hs,base_ls,base_lphs, class, args) {
+    word base.prd.-adj:Adj(class, pred=prd) {
+      base : s-degree-base m-uncontentious m-focus-false m-rheme-true args;
+      base : s-degree-base m-uncontentious m-focus-false m-rheme-false args ;
+      base_hs : s-degree-base m-uncontentious m-focus-true m-rheme-true hs args ;
+      base_ls : s-degree-base m-contentious m-focus-true m-rheme-true ls args ;
+      base_lphs : s-degree-base m-uncontentious m-focus-true m-rheme-false lphs args ;
+    }
+  }
+  def adj-none(base, class, args) { _adj-none_ip(base, base, accentMark(base), class, args) }
+  def _adj-none(prd, base, class, args) { _adj-none_ip(base, base, accentMark(base), class, args) }
+
+  #PROSG09 : change in the number of arguments for prosodically inflected args e.g red_H*, redder_H*. 
+  #PROSG09 : there is no alternative way but to enumerate prosodic inflected args e.g red_H*,red_L+H*. 
+ def _adj-deg(prd, base, comp, sup, base_hs,base_ls, base_lphs, comp_hs, comp_ls,comp_lphs, sup_hs,sup_ls, sup_lphs,class, args) {
+    word base.-adj:Adj(class, pred=prd) {
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-speaker spkr args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-true m-hearer hear args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-speaker spkr args;
+      base : s-degree-base pre-n m-uncontentious m-focus-false m-rheme-false m-hearer hear args;
+      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
+      base_hs : s-degree-base pre-n  m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+      base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-hearer hear ls args;
+      base_ls : s-degree-base pre-n  m-focus-true m-contentious m-rheme-true m-speaker spkr ls args;
+      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
+      base_lphs : s-degree-base pre-n   m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-true args;
+	comp : s-comparative pre-n comparative m-uncontentious m-focus-false m-rheme-false args;
+	comp_hs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
+	comp_hs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+	comp_ls : s-comparative pre-n comparative   m-focus-true m-contentious m-rheme-true m-hearer hear ls args;
+	comp_ls : s-comparative pre-n comparative   m-focus-true m-contentious m-rheme-true m-speaker spkr ls args;
+	comp_lphs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
+	comp_lphs : s-comparative pre-n comparative   m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+	sup  : s-superlative pre-n superlative m-uncontentious m-focus-false m-rheme-true args;
+	sup  : s-superlative pre-n superlative m-uncontentious m-focus-false m-rheme-false args;
+	sup_hs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-false m-hearer hear hs args;
+	sup_hs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-false m-speaker spkr hs args;
+	sup_ls  : s-superlative pre-n superlative   m-focus-true m-contentious m-rheme-false m-hearer hear ls args;
+	sup_ls  : s-superlative pre-n superlative   m-focus-true m-contentious m-rheme-false m-speaker spkr ls args;
+	sup_lphs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-true m-hearer hear lphs args;
+	sup_lphs  : s-superlative pre-n superlative   m-focus-true m-uncontentious m-rheme-true m-speaker spkr lphs args;
+    }
+  }
+
+  #PROSG09 : A function markWord**(word) is used to inflect a word for prosody i.e. red->red_H*. 
+  def adj-deg(base, comp, sup, class, args) {_adj-deg(base, base, comp, sup, markWordHs(base),markWordLs(base), markWordLpHs(base),markWordHs(comp),markWordLs(comp),markWordLpHs(comp),markWordHs(sup),markWordLs(sup), markWordLpHs(sup), class, args) }
+
+# Authors: Raveesh Meena (rame01@dfki.de), 2009
+
+# This file contains definition of family, and dictionary entries for boundary tones as per Steedman 2000.
+
+#def ips(args)         { s<10> [NUM:NUM PERS:PERS MCLASS:MCLASS MOOD:MOOD POL:POL FIN:FIN VFORM:VFORM ACCENT OWNER args]}
+#def from-ips(args)    { s<~10>[args] }
+
+#rule { typechange: np(args)$1 => trs()/! np()$1 ; }
+
+
+##
+##########################
+## Syntactic Definition ##
+##########################
+# Boundary take intermediate phrase of type Rheme ans results into a Rheme intonation phrase.
+# Ownership of Rheme is indicated by semantic feature RhOwner in the LF.
+# Argument category, an intermediate phrase ("ip"), must bear ACCENT of type Rheme i.e. rhmf as per type definition
+# Resultant category is an intonation phrase("cp") with ACCENT of type rhthm as per type definition. 
+# This allows unification of two intonation phrases.
+
+#family IntmPhr_r(indexRel=RhOwner) {entry: (from-ips(cp rhthm)$1)\*(ips(ip rhmf)$1);}
+family IntmPhr_rs(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(ip rhmf owners)$1);}
+
+# Boundary take intermediate phrase of type Theme ans results into a Theme intonation phrase.
+# Ownership of Theme is indicated by semantic feature ThOwner in the LF.
+# Argument category, an intermediate phrase ("ip"), must bear ACCENT of type Theme i.e. thmf as per type definition
+# Resultant category is an intonation phrase("cp") with ACCENT of type rhthm as per type definition. 
+# This allows unification of two intonation phrases.
+
+#family IntmPhr_t(indexRel=ThOwner) {entry: (from-ips(cp rhthm)$1)\*(ips(ip thmf)$1);}
+family IntmPhr_th(indexRel="*NoSem*") {entry: (from-ips(cp rhthm owners)$1)\*(ips(ip thmf owners)$1);}
+
+################
+## DICTIONARY ##
+################
+
+##Steedman 2000,pg 15. Rhemes can be marked by all types of boundaries. 
+##Steedman 2000,pg 16-17. Ownership of Rhemes could be of speaker or hearer. 
+word r_intmphr:IntmPhr_rs{
+LL%: spkr;
+LH%: hear;
+HL%: spkr;
+HH%: hear;
+}
+
+##Steedman 2000,pg 15. Themes can be marked by all types of boundaries. 
+##Steedman 2000,pg 16-17. Ownership of Themes could be of speaker or hearer. 
+word t_intmphr:IntmPhr_th{
+LL%: spkr;
+LH%: hear;
+HL%: spkr;
+HH%: hear;
+}
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains the stuff necessary for determiners, both those
+# handled via features only (a, the, some, this, that) and those
+# with a semantic head (two balls, every ball, etc)
+# These are called Dets & SDets respectively
+
+# It also contains the stuff for handling:
+#  1) semantic groups like 'some of the balls over there' or 'the first of GJ's mugs'
+#  2) the possessive 's .
+#  3) identifying number like 'floor 3'
+
+# Possessive pronouns have been handled in the pronoun dictionary-macro
+# located in noun.ccg (this is due to ordering issues)
+  
+##########################
+## SEMANTIC DEFINITIONS ##
+##########################
+
+  def GROUP(sem)  { A( <Subgroup>(T:entity ^ subgroup ^ sem) ) }
+  # this replaces def GROUP(sem) { ENTITY(group <Set>(A) sem) }
+     
+##############
+## FAMILIES ##
+##############
+
+  family Det(indexRel=Delimitation)        { entry: from-np(3rd) /^ n()                   ;}
+  family Group-np(indexRel=Delimitation)   { entry: np<15>[A] /^ obl_ma(of, s-pl)    : GROUP  () ;}
+  
+  family SDet                              { entry: from-np(3rd) /^ n()              : ENTITY ( MODIFIER(*) ) ;}
+  
+  family SGroup-np                         { entry: np<15>[A full 3rd s-pl]    /^ obl_ma(of, s-pl) : GROUP  ( MODIFIER(*) ) ;}
+  
+  # used for 'all the balls', c.f. 'all of the balls'
+  #
+  family SGroup-np-no-of                   { entry: np<15>[A full 3rd s-pl]    /^ np_ma(s-pl)      : GROUP  ( MODIFIER(*) ) ;}
+  
+
+  # Words like ordinal numbers change plurals from unspecific to specific. For incrementality's sake, this is done
+  # only syntactically. the semantic feature is set by the "real" determiner, e.g. 'THE three balls' or rule, e.g. 
+  # the 'bare plural rule' in "I see three balls" c.f. (I see balls) defined in noun.ccg. In many senses then, these
+  # words are just a special type of adjective.
+  #
+  family Un-to-Spec-Det                    { entry: from-n(s-pl-sp) /^ n(s-pl-unsp)  : ENTITY ( MODIFIER(*) ) ;}
+  family SGroup-n                          { entry: n<15> [A full s-pl-sp]     /^ obl_ma(of, s-pl) : GROUP  ( MODIFIER(*) ) ;}
+
+  family Det-poss-s(indexRel=Owner)        { entry: from-np()    /^ n() \* np[O]     : ENTITY (<Owner>(O) )    ;}   
+
+  # cardinal numbers (one, two, three) are used in many ways (see the def macro number in closed dictionary)
+  # this is an entry used in the immediately following rule to handle, e.g. 'floor 3', 'office 101', etc.
+  # It functions as a determiner, taking a noun and turning it into an 'Id'd specific, singular np.
+  # 
+  family Number-id      { entry: nid<16>[M] : M(*) ; }
+  
+  # ****** This is NOT INCREMENTAL, i.e. 'go to floor' doesn't parse, but 'go to floor 3' does.
+  # This should be converted to a rule which turns n's into np's wanting a following number
+  # HOWEVER, b/c this rule was added mid-devil, I didn't want to add a generally applicable rule!
+  
+ # rule { typechange: nid[M]  =>  from-np(3rd) \* n(s-sg) :  ENTITY( <Modifier>(M) SPECIFIC() SG() UNIQUE() ) ; }
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  def det(form, args) {
+      word form.det: Det {
+        form : args;
+      }
+   }
+  
+  def group-np(form, args) {
+      word form.group-np: Group-np {
+        form : s-pl args;
+      }
+   }
+  
+  
+  def sdet(form, class, args) { _sdet(form, form, class, args) }
+  def _sdet(prd, form, class, args) {
+      word form.prd.sdet: SDet(class, pred=prd) {
+        form :  args;
+      }
+   }
+  
+  
+  def un-to-spec-det(form, class) { _un-to-spec-det(form, form, class) }
+  def _un-to-spec-det(prd, form, class) {
+      word form.prd."un-to-spec": Un-to-Spec-Det(class, pred=prd) {form;}
+   }
+  
+  
+  def sgroup-np(form, class, args) { _sgroup-np(form, form, class, args) }
+  def _sgroup-np(prd, form, class, args) {
+      word form.prd.sgroup-np: SGroup-np(class, pred=prd) {
+        form : s-pl args;
+      }
+   }
+
+  
+  def sgroup-np-no-of(form, class, args) { _sgroup-np-no-of(form, form, class, args) }
+  def _sgroup-np-no-of(prd, form, class, args) {
+      word form.prd.sgroup-np-no-of: SGroup-np-no-of(class, pred=prd) {
+        form : s-pl args;
+      }
+   }
+  
+  def sgroup-n(form, class, args) { _sgroup-n(form, form, class, args) }
+  def _sgroup-n(prd, form, class, args) {
+      word form.prd.sgroup-n: SGroup-n(class, pred=prd) {
+        form : args;
+      }
+   }
+  
+  def  number-id (form) { _number-id(form,form) } 
+  def _number-id(prd, form) {
+      word form."-number-id": Number-id("number-id", pred=prd) { form; }
+    }
+  
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def pp(args)            { pp<25> [M MOD-TYPE CC-TYPE args] }
+  def from-pp(args)       { pp<~25>[M args] }
+
+  # A preposition is a prep-phrase (pp) wanting a np argument
+  # This np is marked as 'case' acc-both which means it allows 'there' and 'here'
+  # so, 'on here' and 'under there' both parse.
+  #
+  def prep(p-arg, np-arg)      { pp(p-arg) /^ np_ma(np-arg acc-both) }
+  def prep+obl(p-arg, obl-arg) { pp(p-arg) /^ obl_ma(obl-arg, acc-both) }
+
+  def from-prep(p-arg, np-arg) { from-pp(p-arg) /^ np_ma(np-arg acc-both) }
+  def from-prep+obl(p-arg, obl-arg) { from-pp(p-arg) /^ obl_ma(obl-arg, acc-both) }
+
+ 
+##############
+## FAMILIES ##
+##############
+
+  # Currently, there are three semantically subcategorized versions of preps
+  # those with physical anchors (under the table), time unit anchors (for five minutes)
+  # and region anchors (to your right)
+  
+  ## The Families ##
+
+  family Prep             { entry:      prep(,)           :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+of-np-      { entry:      prep+obl(, of)    :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+to-np-      { entry:      prep+obl(, to)    :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+from-np-    { entry:      prep+obl(, from)  :  M(* <Anchor>(A:physical) ) ;}
+  family Prep+no-arg-     { entry:      pp()              :  M(*)        ;}
+ 
+  family Prep--time-unit  { entry:      prep(,)           :  M(* <Anchor>(A:e-time-unit) ) ;  }
+  
+  family Prep--region     { entry:      prep(, Questionable=no)           :  M(* <Anchor>(A:e-region) ) ;  }
+    # NOTE: blocked from being questionable, so that 'what is the ball to' doesn't parse...
+ 	   
+  # Modifiers #
+   
+  family Mod-pre-prep-   { entry:  from-pp() /^ pp()   :  M( M-MOD(*) ) ;}
+  family Mod-post-prep-  { entry:  from-pp() \ pp()    :  M( M-MOD(*) ) ;}
+    
+  # Negation and Coordition #
+  
+  family Negation-prep-(indexRel=polarity)  { entry:  from-pp() \ pp()             :  M( NEG() )  ;}
+  family Coord-prep-                        { entry:  pp<~51>[R COM=yes] /^ pp<~51>[N] \* pp<51>[F COM=no] :  COORD(*)    ;}  
+
+###########
+## RULES ##
+###########
+
+  # The following rules convert the 'base-generated' atomic cat versions of pps and turns them
+  # into their complex-cat form (i.e. the form that actually attach to and modify nouns and sentences)
+  # Remember, this combinatorial capacity is specified in the actual dictionary entry of the word
+  # by assigning it to a particular cc-class
+ 
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() ) categories
+  # used in these rules  
+	    
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT: If either the dependency relation name (e.g. <Modifier> ) or the
+  #            modifier section of the ontological hierarchy is changed, you will have to add
+  #            a new 'instance' of these rules for each.
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  ## Nominal Modifiying Rules ##
+ 
+  # All preps which can modify nouns, post-modify them ( 'the ball on the table', not 'the on the table ball')
+  #
+      rule { typechange: pp(post-n2)$1        =>     post-n2($1)   :  ENTITY( MODIFIER() ) ; }
+
+
+  ## Sentential Modifying Rules ##
+  #
+  # For each of the many sentential/clausal possibilities for prepositions, their is a corresponding rule.
+  # MODIFIED BY PLISON
+
+  #    rule { typechange: pp(pre-s2)$1           =>   pre-s2($1)         :  EVENT( MODIFIER() ) ; } 
+  #    rule { typechange: pp(pre-vp2)$1          =>   pre-vp2($1)        :  EVENT( MODIFIER() ) ; } 
+      rule { typechange: pp(post-s2)$1          =>   post-s2($1)        :  EVENT( MODIFIER() ) ; } 
+  #    rule { typechange: pp(post-vp2)$1         =>   post-vp2($1)       :  EVENT( MODIFIER() ) ; } 
+
+  
+   
+  ### Other Rules ###
+  
+  # These rules handle 
+  # 1) nested locationals such as 'It is in the room on the table'
+  #    c.f.   get me the ball on the table
+  #    Note that this does not give the underlying semantics  (ball on table, table in room) but must be
+  #    built grammar externally. This was due to problems in incrementally building 
+  #   'inside out' semantic structures like this. 
+  #
+  # 2) sequences of dynamics: go into the hall, down the corrider ....
+  # 
+
+
+ #  rule { typechange: pp<52>[F x-dynamic CC-TYPE:CC-TYPE COM=no]   =>    pp<53>[R x-dynamic CC-TYPE:CC-TYPE COM=yes] /^   pp<54>[N x-dynamic CC-TYPE:CC-TYPE]  
+ #                                                                 : R:m-dynamic( list <First>(F:m-dynamic) ^ <Next>(N:m-dynamic) ) ; }
+
+ #  rule { typechange: pp<52>[F x-location CC-TYPE:CC-TYPE COM=no]   =>   pp<53>[R x-location CC-TYPE:CC-TYPE COM=yes] /^  pp<54>[N x-location CC-TYPE:CC-TYPE] 
+ #																   : R:m-location( list <First>(F:m-location) ^ <Next>(N:m-location) ) ; }
+
+
+
+	   
+#######################
+## DICTIONARY FORMS  ##
+#######################
+ 
+ ## For Prepositions with Physical Anchors
+ ##
+ def _prp(prd, form, class, args) {
+    word form.-prep-.class :Prep(m-.class, pred=prd) {
+      form : x-.class args;
+    }
+  }
+ def prp(form, class, args) { _prp(form, form, class, args) }
+
+ ##   
+ def _prp+(arg, prd, form, class, args) {
+    word form."-prep+".arg."-".class :"Prep+".arg."-" (m-.class, pred=prd) {
+      form : x-.class args;
+    }
+  }
+ def prp+(arg, form, class, args) { _prp+(arg, form, form, class, args) }
+
+ ### With degrees (closer to, farthest from)
+ #
+ def _prp-deg+(arg, prd, form, comp, sup, class, args) {
+    word form."-prep-deg+".arg."-".class :"Prep+".arg."-" (m-.class, pred=prd) {
+      form : x-.class args;
+	  comp : x-.class comparative args;
+	  sup : x-.class superlative args;
+
+    }
+  }
+
+ def prp-deg+(arg, form, comp, sup, class, args) { _prp-deg+(arg, form, form, comp, sup, class, args) }
+
+ def _prp-deg(prd, form, comp, sup, class, args) {
+    word form."-prep-deg".class :Prep(m-.class, pred=prd) {
+      form : x-.class args;
+	  comp : x-.class comparative args;
+	  sup : x-.class superlative args;
+    }
+  }
+ def prp-deg(form, comp, sup, class, args) { _prp-deg(form, form, comp, sup, class, args) }
+
+
+ ## For prepositions with subcategorized Anchors
+ ##
+ def _prp--(subsort, prd, form, class, args) {
+    word form.-prep-.class.subsort :"Prep--".subsort(m-.class, pred=prd) {
+      form : x-.class args;
+    }
+  }
+ def prp--(subsort, form, class, args) { _prp--(subsort, form, form, class, args) }
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def adv(args)         { adv<25>[M DEGREE args] }
+  def from-adv(args)    { adv<~25>[M args] }
+
+##############
+## FAMILIES ##
+##############
+
+  ## Family Building Macros ##
+  	
+  def adv-cat(args, sem)   { adv() args  :  M(* sem) }
+  
+  ## The Families ##
+
+  family Adv                { entry:  adv-cat(,) ;}
+  family Adv+dep-clause-    { entry:  adv-cat( / s_ma(s-dependent MARK=none), E-ARG() ) ;}
+  
+  # These handle, e.g. I will watch you 'while working at my desk'.
+  # b/c typechange rules don't seem to allow a co-indexing of source and target sub-structures 
+  # (here the subject), these are not build using a basic cat, but directly.
+  #
+  family Adv+verb-ing-      { entry:  post-vp( MCLASS , / (s_ma(ing) +subj() ) )     : EVENT( <Modifier>(M * E-ARG() ))  ;}
+  family Adv+verb-base-     { entry:  post-vp( MCLASS , / (s_ma(vf-base) +subj() ) ) : EVENT( <Modifier>(M * E-ARG() ))  ;}
+
+  # Modifiers #
+  
+  family Mod-pre-adv-                { entry:  from-adv() /^ adv()   :  M( M-MOD(*) ) ;}
+  family Mod-post-adv-               { entry:  from-adv() \ adv()    :  M( M-MOD(*) ) ;}
+    
+  # Negation and Coordition #
+  
+  family Negation-adv-(indexRel=polarity)  { entry:  from-adv() \ adv() :  M( NEG()  ) ;}
+  family Coord-adv-                        { entry:  adv[R COM=yes] / adv[N] \* adv[F COM=no] : COORD(*) ;}
+
+###########
+## RULES ##
+###########
+
+ 
+  # The following rules convert the 'base-generated' atomic cat versions of advss and turns them
+  # into their complex-cat form (i.e. the form that actually attach to sentences/clauses/verbs)
+  # Remember, this combinatorial capacity is specified in the actual dictionary entry of the word
+  # by assigning it to a particular cc-class
+ 
+  # see modifiers.ccg for the syntactic ( post-n(), pre-s(), etc ) and semantic ( MODIFIER() ) categories
+  # used in these rules  
+ 
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT: If either the dependency relation name (e.g. <Modifier>  ) or the
+  #            modifier section of the ontological hierarchy is changed, you will have to add
+  #            a new 'instance' of these rules for each.
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  # Sentential Modifying Rules #
+  #
+  # For each of the many sentential/clausal possibilities for adverbs, their is a corresponding rule.
+
+    rule { typechange: adv(pre-s2)$1           =>   pre-s2($1)         :  EVENT( MODIFIER() ) ; } 
+    rule { typechange: adv(pre-vp2)$1          =>   pre-vp2($1)        :  EVENT( MODIFIER() ) ; } 
+   
+  #  rule { typechange: adv(post-s2)$1          =>   post-s2($1)        :  EVENT( MODIFIER() ) ; } 
+  #  rule { typechange: adv(post-vp2)$1         =>   post-vp2($1)       :  EVENT( MODIFIER() ) ; } 
+  
+	# HACK (see modifier.ccg)
+  #  rule { typechange: adv(pre-vp2)$1          =>   pre-vp-in-rel-clause($1)        :  EVENT( MODIFIER() ) ; } 
+   
+	
+    mod-rule-pre-cop2 ( adv(pre-cop-comp2) , $1, EVENT( MODIFIER() )   )
+	
+    #  rule { typechange: adv(post-s-loose2)$1   =>   post-s-loose2($1)  :  EVENT( MODIFIER() ) ; } 
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+ #PROSG09 changes
+ def adverb(base, class, cc-class, args)  { _adverb_ip(base, base,accentMark(base), class, cc-class, args) } 
+ def _adverb(base, base, class, cc-class, args) {_adverb_ip(prd, base, accentMark(base), class, cc-class, args) }
+ def _adverb_ip(prd, base, base_hs,base_ls,base_lphs, class, cc-class, args) {
+    word base.-adv:Adv("m-".class, pred=prd) {
+      base : s-degree-base x-.class cc-class args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-hearer hear hs args;
+      base_hs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-true m-speaker spkr hs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-hearer hear lphs args;
+      base_lphs : s-degree-base x-.class cc-class m-focus-true m-uncontentious m-rheme-false m-speaker spkr lphs args;
+
+    }
+  }
+
+ def adverb-deg(base, comp, sup, class, cc-class, args) { _adverb-deg(base, base, comp, sup, class, cc-class, args)}
+ def _adverb-deg(prd, base, comp, sup, class, cc-class, args) {
+    word base.-adv-deg:Adv("m-".class, pred=prd) {
+      base : s-degree-base x-.class cc-class args;
+	  comp : s-comparative x-.class cc-class comparative args;
+	  sup  : s-superlative x-.class cc-class superlative args;
+    }
+  }
+
+ # for those adverbs with arguments (now only dep-clause)
+ #
+ def adverb+(arg, form, class, cc-class, args) {_adverb+(arg, form, form, class, cc-class, args) } 
+ def _adverb+(arg, prd, form, class, cc-class, args) {
+    word form."adv+".arg : "Adv+".arg."-"("m-".class, pred=prd)
+	{form : x-.class cc-class args;}
+  } 
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# The mood of a clause is projected as early as possible. i.e. we don't wait for the verb.
+# Instead, the first 'core' element of the clause does this
+#   Indicative: a free standing, clause initial NP
+#   Imperative: a base form verb wanting a subject (see below for dropped subjects)
+#   Interrogative: auxillaries in Y/N & Wh-words in Wh cases
+#                 (see udc.ccg , verb-finite.ccg and verb-copula.ccg for more)  
+# See documentation for more information.
+
+# This file contains the mood rules for:
+#    1) indicatives 
+#          -standard: I gave the ball to GJ
+#          -fronted object: the mug I took myself but 'the ball I gave to GJ'
+#          - ellided subject:  I walked in  'gave the ball to GJ'
+#    2) standard positive imperatives: 'come here' 
+#    3) and dependent clauses: I said that 'I wanted it'
+
+
+  def SUBJECT(args)         { <Subject>(S:entity args) }
+
+  rule {
+    
+     no typeraise;  # b/c rules handle the building of standard indicative and subordiante clauses, no need for type-raise
+                    # (from another perspective, the rules below at semantics to this standard syntatic rule)
+
+     no sub;        # THIS ADDED TO KILL STUPID COLLAPSED ARG READINGS 'put this on the table' with this & table co-indexed.
+  
+  
+     # These rules create indicative clauses out of any old NP, either as the subject (in Systemic Functional Grammar sense)
+     # or as a Fronted-object as in 'this one I dont like'
+     #   
+     typechange: subj() $1     => 
+                 from-s(s-ind ) /  ( s(VFORM:fin-clause s-minor) +subj() )  $1   
+                 : EVENT( IND() SUBJECT() )             ; 
+    
+  #   typechange: np<12>[F acc nf-real] $1    =>
+  #               from-s(s-ind)  /  ( s(VFORM:fin-clause s-minor) +subj(nf-real) / np<12>[F]) /^ subj()  $1 
+  #               : EVENT( IND() SUBJECT() <Fronted>(F) ); 
+    
+     # this rule creates a dependent, moodless clause with MOOD=s-dependent (the form mimics that of ind above)
+     # It can be marked by 'that', 'if', 'whether', etc or not as in 'I hope you come'
+     #
+   #  typechange: subj() $1  =>  
+   #              from-s(s-dependent ) /  ( s(VFORM:fin-clause s-minor) +subj() )  $1      
+   #              : EVENT( SUBJECT() ) ;
+     
+   } # end rule
+
+   # These rules turn verbs wanting subjects into 1) imperatives and 
+   #                                              2) verbs with contextually 'ellighted' (i.e. dropped) subjects
+   # In verbs.ccg, each family makes a 'call' to this rule, creating a separate rule for that argument 
+   # structure/configuration 
+   # 
+   def imp-rule(args){ 
+        rule { typechange: s(vf-to-imp) +subj(nf-real) args     =>
+                           from-s(fin-full s-imp) args      : EVENT( IMP() SUBJECT(addressee) );  
+
+ #             typechange: s(fin) +subj(nf-real) args           => 
+ #                          from-s(fin-ell s-ind-ell) args   : EVENT( IND() SUBJECT(context) )  ;    
+             } 
+   }						 
+
+   def imp-set-rule(args){ 
+        rule { typechange: s(vf-to-imp) +subj(nf-real) {args}     =>
+                           from-s(fin-full s-imp) {args}      : EVENT( IMP() SUBJECT(addressee) );  
+
+ #             typechange: s(fin) +subj(nf-real) {args}           => 
+ #                          from-s(fin-ell s-ind-ell) {args}   : EVENT( IND() SUBJECT(context) )  ;    
+             } 
+    }						 
+ 
+   # Modifications:
+   # JULY 24  ADDED restriction that nf-real to block presentational, clefts, etc from getting contextualized missing 'dummy' subject readings
+   # AUG  5   ADDED vf-to-imp value, this allows verbs to  lexically select whether or not they receive an imp 
+   #                (see verb and verb-no-imp dictionary macros below)         
+   #
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+
+# This file contains everything necessary for standard verbs, and some
+# special verbs (thanks, it is made out_of metal, etc), but not for the copula
+# and aux/modal verbs.
+
+# It also contains verbal and sentential coordination.
+
+#################################
+# VERB ARGUMENTS: SLOTS & ROLES # 
+#################################
+
+  # These are the syntactic slots and corresponding semantic roles
+  # used for verbal arguments(compliments)
+  
+  # Semantic Role cats are, like all semantic cats, written in CAPS.
+  
+  # The general format for syn-cat names is type_slot# (args) for the bare compliment itself.
+  # For the comp plus its slash, +type_slot# (args)
+  
+  # The slots are numbered based on their left to right position after the verb itself, so
+  #	_SUBJ_	 VERB		_1_			_2_				_3_
+                          
+  # 1)	  I      slept  
+  # 2)	  I      hit		the ball
+  # 3)	  I      gave		him			the ball
+  # 4)	  I	 gave		it			to  him
+  # 5)	  I	 picked		it			up
+  # 6)	  I	 put		it			on the table
+  # 7)    I	 want								        to run
+  # 8)	  I	 want		him                     				to run
+  		 
+  # As you can see, the slot position is independent of the category (or kind) of the compliment.
+  # So in 3, 4, 5, 6 we have a NP, an OBLIQUE, a PARTICLE and a PP all in slot 3. Thus,
+  # the variable name for a given syntactic argument is a combination of category and slot position:
+  # Verb(vp) & Sentence comps are an exception, they are always in slot 3.. this was just a pragmatic
+  # decision to avoid doubling all of the cats.
+
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # IMPORTANT:  
+  #         Although there are no semantic constraints for entites (animacy, etc)
+  #         some of these verb-roles are restricting for modifiers (where-to and location, e.g.)
+  #         Changes to the modifier section of ontological hierarchy will need be reflected here
+  #
+  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+
+
+  ## SUBJECT SLOT ##
+  
+    def ACTOR(args)     { <Actor>(S:entity args) }
+  
+  ## COMP SLOT 1 ##
+  
+    def np_1(args)           { np<2>[X acc args] }            def +np_1(args)          { / np_1(args) }
+    #PROSG09
+    def +np_ip(args)          { /(trs()/! np_1(args)) }
+    def +np_1-subj(args)     { \ np<~2>[X nom] }  # this is for 'object-controlled vp comps' like 'I want him to get it'
+
+    def obl_1(frm, args)     { obl<2>[X acc MARK=frm args] }  def +obl_1(frm, args)    { / obl_1(frm, args) }
+    def adj_1(args)          { adj<2>[X args] }               def +adj_1(args)         { / adj_1(args) }
+    def pp_1(args)           { pp<2>[X args] }                def +pp_1(args)          { / pp_1(args) } 
+    def s_1(feats)           { s<2>[X feats] }                def +s_1(feats, args)    { / ( s_1(feats) args ) }
+	   
+    def PATIENT(args)        { <Patient>(X:entity args) }
+
+    def INSTRUMENT(args)     { <Modifier>(M:m-instrumental ^ with <Arg>(X:entity args) ) }  # used in family for 'use'  you can use the coffee maker to make coffee'
+
+  ## COMP SLOT 2 ##
+   
+    def np_2(args)           { np<3>[Y acc args] }            def +np_2(args)          { / np_2(args) }
+    def +np_2-subj(args)     { \ np<~3>[Y nom] }  
+    def obl_2(frm, args)     { obl<3>[Y acc MARK=frm args] }  def +obl_2(frm, args)    { / obl_2(frm, args) }
+    def adj_2(args)          { adj<3>[Y args] }               def +adj_2(args)         { / adj_2(args) }
+    def pp_2(args)           { pp<3>[Y args] }                def +pp_2(args)          { / pp_2(args) }
+    def prt_2(args)          { prt<3>[Y args] }               def +prt_2(args)         { / prt_2(args) }
+
+    def RECIPIENT(args)      { <Recipient>(Y:entity args) }
+    def PARTICLE(args)       { <Particle>(Y args) }
+	
+    # These are all given dependecy <Result>, but have different semantic resrictions on their arg
+    #
+    def R-LOC(args)            { <Result>(Y:m-location args) }
+    def R-WHERETO(args)        { <Result>(Y:m-dynamic args) }
+    def R-QUALITY(args)        { <Result>(Y:quality args) }
+	
+    def R-MODIFIER(args)       { <Result>(Y:modifier args) }
+    def R-ENTITY(args)         { <Result>(Y:entity args) }
+
+ ## COMP SLOT 3 ## 
+
+    def s_3(feats)              { s<4>[Z feats] }     
+    def +s_3(feats, args)       { / ( s_3(feats) args ) }
+    def +verb-subj-cont(feats)  { +s_3(feats, +subj() ) }
+    def +verb-obj-cont(feats)   { +s_3(feats, +np_1-subj() ) }
+
+    def ECOMP(args)          { <Event>(Z:event args) }
+
+
+##############
+## FAMILIES ##
+##############
+
+  #   There is currently an issue which must be resolved concerning extracting
+  # of 'internal' arguments for verbs with multi arguments, e.g. questionging IT
+  # in 'I put IT on the table'
+  #   One possible solution is to use SETARG for all, but 
+  # TYPE CHANGING RULES (here, imp-rules) DON'T WORK WITH SET-ARG (Jason confirmed this) 
+  #   The current solution is to give two reading, i.e. /np/pp & /pp/np,
+  # We get stupid double-bound readings for put on# (>S operator does it). This was
+  # solved by shutting of sub rules ( by adding 'no sub;', see mood-rules.ccg)
+  # Note, however, that this also leads to OVERGENERATION. We should eventually sort out
+  # a way of 'blocking' these readings from combining via ind and imp rules. 
+  # This could be done perhaps by adding another layer of mood features.
+
+
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+  
+ 
+  def vcat(args, sem)             {  s(s-minor) +subj(nf-real)   args    : EVENT(* ACTOR() sem)  }
+  def vcat-set(args, sem)         {  s(s-minor) +subj(nf-real) { args }  : EVENT(* ACTOR() sem)  } 
+    # for those with sets of args, currently not used, see above
+
+  # Creates a family with a single entry including given args and sem, plus creates relevant
+  # mood rules (for imp and ellided subj) (see mood-rules.ccg)
+  #
+  def vfam(name, args, sem){ 
+        
+           family name (V)  { entry: vcat(args , sem);  }
+           imp-rule(args)   
+  }
+
+  # In addition to its use in 'real' switchables (e.g. I picked up the ball, I picked the ball up)
+  # giving verbs with multiple arguments  a second entry with inverted, or switched, ordering allows
+  # 'extraction' of their patient np, e.g. for questioning. See above.
+  #
+  def vfam-swt(name, arg1, arg2, sem){ 
+        
+           family name (V)  {
+               entry: vcat( arg1 arg2 , sem); 
+               entry: vcat( arg2 arg1 , sem);
+           }
+           imp-rule(arg1 arg2)   
+           imp-rule(arg2 arg1)   
+  }
+
+  # This is used for two entry families where only difference is the syn-cat of one argument
+  # See, e.g. , v+dep-clause (that CLAUSE vs. CLAUSE )
+  #
+  def vfam-alt(name, arg1, arg2, sem){ 
+        
+           family name (V)  {
+               entry: vcat ( arg1 , sem); 
+               entry: vcat ( arg2 , sem);
+           }
+           imp-rule(arg1)   
+           imp-rule(arg2)   
+  }
+
+  #------------------------------
+  #--- The Standard Families ----
+  #------------------------------
+  #PROSG09: vfam is a macro for making family entries for all possible forms of a Verb. It takes verb forms like iv, tv, v+pp as 1st input argument. Too good Trevor.
+  vfam    ( iv              ,                   ,           )
+  vfam    ( tv              , +np_1()           , PATIENT() ) 		
+  #PROSG09 To handle "I don't know@L+H* LH% the color@H* LL%", we need a family entry "s\!np/(s/!np)" in the lies of current "s\!np/np" 
+  vfam    ( tv              , +np_ip()           , PATIENT() ) 		
+  vfam    ( v+Rec-np        , +np_2()           , RECIPIENT() )
+
+  def vfam-obl(word){ vfam( "v+".word."-np"  ,   +obl_1(word,)   ,   PATIENT() ) }
+   vfam-obl(of)
+   vfam-obl(with)
+   vfam-obl(for)
+   vfam-obl(to)
+   vfam-obl(from)
+	  
+  vfam    ( v+pp-whereto    , +pp_2()             , R-WHERETO()  )
+  vfam    ( v+pp-loc        , +pp_2()             , R-LOC()      )
+  vfam    ( v+pp            , +pp_2()             , R-MODIFIER()   )   
+              		            
+  vfam    ( v+adj           , +adj_2()            , R-QUALITY()   )  
+
+  vfam-swt( v+np+prt        , +prt_2() , +np_1()  , PATIENT() PARTICLE() ) 								  
+  vfam-swt( v+np+pp-whereto , +pp_2()  , +np_1()  , PATIENT() R-WHERETO() ) 
+  vfam-swt( v+np+pp-loc     , +pp_2()  , +np_1()  , PATIENT() R-LOC()     )
+  vfam-swt( v+np+adj        , +adj_2() , +np_1()  , PATIENT() R-QUALITY()   )
+
+  vfam    ( dtv            , +np_1() +np_2()    , PATIENT() RECIPIENT()   )
+  def vfam-dtv(word){ vfam-swt( "dtv-".word     ,   +obl_1(word,) , +np_2()  ,   PATIENT() RECIPIENT() ) }
+   vfam-dtv(for)
+   vfam-dtv(to)
+  						     
+
+  vfam    ( v+sent          , +s_3(fin,)                      , ECOMP()  )
+  vfam-alt( v+dep-clause    , +s_3(s-dependant,) 
+                            , +s_3(s-dependant MARK=that,)    , ECOMP()  )
+  vfam    ( v+deictic-event , +s_3(fin-deictic,)              , ECOMP()  )
+  vfam    ( v+verb-ing      , +verb-subj-cont(ing)            , ECOMP()  )
+  vfam    ( v+verb-inf      , +verb-subj-cont(inf)            , ECOMP()  )
+
+
+  vfam    ( v+np+sent       , +s_3(fin,) +np_1()                    , PATIENT() ECOMP()  )
+  vfam-alt( v+np+dep-clause , +s_3(s-dependant,) +np_1()
+                            , +s_3(s-dependant MARK=that,) +np_1()  , PATIENT() ECOMP()  )
+  vfam    ( v+np+verb-ing   , +verb-obj-cont(ing) +np_1()           , PATIENT() ECOMP()  )
+  vfam    ( v+np+verb-inf   , +verb-obj-cont(inf) +np_1()           , PATIENT() ECOMP()  )
+  vfam    ( v+np+verb-base  , +verb-obj-cont(vf-base) +np_1()       , PATIENT() ECOMP()  )
+
+  #-----------------------------
+  #--- Specialized Families ----
+  #-----------------------------
+  
+
+  # I made it from plastic, it is made of plastic, etc.
+  # 
+  def vfam-obl-result(word){ vfam-swt( "v+np+".word."-np-result" , +np_1(), +obl_2(word,) , PATIENT() R-ENTITY()   ) }
+   vfam-obl-result(of)
+   vfam-obl-result(from)
+   vfam-obl-result(out_of)  
+	  
+  # you use this to pick up balls
+  #
+  vfam   ( v+instrumental-np+verb-inf , +verb-subj-cont(inf) +np_1()      , PATIENT() ECOMP( INSTRUMENT() )  )
+  
+  # thank you for helping me  
+  #
+  vfam   ( v+Rec-np+for-verb-ing      , +verb-obj-cont(for-ing) +np_1()   , RECIPIENT() ECOMP()              )   
+
+  # don't be silly
+  family imp-do(V)               { entry: from-s(s-imp) / (s(vf-base) +subj()):  EVENT( IMP() <Subject>(S:entity addressee) ) ;}
+  family imp-lets(V)             { entry: from-s(s-imp) / (s(vf-base) +subj()):  EVENT( IMP() <Subject>(S:entity speaker+addressee) ) ;}
+
+  family Thanks(V)  { entry: s(s-ind) +s_3(for-ing, \ np_2(nom) )  : EVENT (* IND() <Actor>(A:entity speaker <Num>(sg) ) RECIPIENT(addressee) ECOMP() ) ;
+                      entry: s(s-ind)                              : EVENT (* IND() <Actor>(A:entity speaker <Num>(sg) ) RECIPIENT(addressee) ) ;  
+                      entry: s(s-ind) +obl_1(for,)                 : EVENT (* IND() <Actor>(A:entity speaker <Num>(sg) ) RECIPIENT(addressee) PATIENT() ) ;  
+  }
+
+  ##################################
+  ## VP & Sentential Coordination ##
+  ##################################
+    
+  # First entry handles coordinated vps, i.e. subject controlled vp chains.
+  # Every syn feature except for modifier class must be identical. If this weren't allowed to differ, 
+  # couldnt handle I walked in and picked it up, cuz walk and pick have dif m-classes. 
+  
+  # NOTE: Open question: what should the m-class of the result be? 
+  #          As it stands, we get multiple readings for all coordinated clauses involving modifiers,
+  #          one with mod of 2nd conjunct, one with result
+  
+  # Second entry handles general sentence coordination. The conjuncts must be mooded-clauses, 
+  # the result is of general s-major mood and 'fin' verb form (if you don't give it a verb form
+  # then some rules will grap a hold of it and make silly readings (e.g. see rules around imperatives)
+  #   NOTE: May 15 restricted these to being ind or int, not dropped subject ind (s-ind-ell) or imp.
+  #         This is because we want those to be handled using the vp-chains. This reduces number of parses
+  #         and looks more sexy, like Givon's(1995)   S[subj vp vp vp vp vp ...] treatment
+		   
+  def coord-s-entry(res, next, first) {
+         entry:    s<10>[R res fin COM=yes] /^ s<11>[N  next fin  ] \* s<12>[F first fin COM=no]  : COORD(*) ;  
+  } 
+
+  family Coord-s-  { 
+      entry:   ( s<10>[R VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS COM=yes] +subj() ) 
+                 / (s<11>[N VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS] +subj() ) 
+	   	 \ (s<12>[F VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS COM=no] +subj() ) : COORD(*) ; 
+       coord-s-entry(s-ind, s-ind, s-ind)
+       coord-s-entry(s-int, s-int, s-int)
+       coord-s-entry(s-dependent, s-dependent, s-dependent)
+       coord-s-entry(s-mood-mixed, s-ind, s-int)
+       coord-s-entry(s-mood-mixed, s-int, s-ind)
+       coord-s-entry(s-mood-mixed, s-int, s-imp)
+       coord-s-entry(s-mood-mixed, s-ind, s-imp)
+       coord-s-entry(s-ind, s-ind, s-ind)
+   }
+
+   # Added sept 18 to allow incremental parsing of coordinated imperatives. 
+   #    go and ...  walk over there and ...
+   # Is currently 'over generating' by also applying to pre-placable adverbs to receive
+   # an 'imp waiting for verb' reading
+
+   imp-rule ( / (s<11>[N VFORM:VFORM POL:POL FIN:FIN NUM:NUM PERS:PERS] +subj() ) )
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+
+  # This handles verbs which are perfectly regular ex. jump -> jumps, jumping, jumped (past), jumped (past participle)
+  #
+  def verb-reg(stem, mod, class, props)       {  verb(stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+  def _verb-reg(prd, stem, mod, class, props) { _verb(prd, stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+
+  # This handles verbs whose 3rd person present form is regular, but whose past and past particle aren't
+  #
+  def verb(stem, ving, pasttense, pastpart, mod, class, props)       {  verb-basic(stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+  def _verb(prd, stem, ving, pasttense, pastpart, mod, class, props) { _verb-basic(prd, stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+
+  # This handles irregular verbs, i.e. each form must be fully specified
+  #
+  #PROSG09 changes
+  def verb-basic(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(stem, stem,accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
+
+  def _verb-basic(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic_ip(prd, stem, accentMark(stem), 3sing,accentMark(3sing),ving,accentMark(ving), pasttense,accentMark(pasttense), pastpart,accentMark(pastpart), mod, class, props) }
+
+ #PROSG09 changes
+  def _verb-basic_ip(prd, stem,stem_hs,stem_ls,stem_lphs,3sing,3sing_hs,3sing_ls,3sing_lphs,ving,ving_hs,ving_ls,ving_lphs, pasttense,,pasttense_hs,pasttense_ls,pasttense_lphs, pastpart,pastpart_hs,pastpart_ls,pastpart_lpls, mod, class, props) {
+    word stem.-verb-.class.mod:props(class, pred=prd) {
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-true e-speaker spkr;  	
+      stem:      mod fin-full pres s-pos do non-3rd s-sg e-focus-false e-uncontentious e-rheme-false e-hearer hear;  	
+      stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-true e-hearer hear hs; 
+      stem_hs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-speaker spkr e-rheme-true hs;  	
+      stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;  	
+      stem_lphs:      mod fin-full pres s-pos do non-3rd s-sg e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;  	
+      3sing:     mod fin-full pres s-pos do 3rd     s-sg  ;
+      stem:      mod fin-full pres s-pos do         s-pl  ;
+      pasttense: mod fin-full past s-pos do               ;
+      pastpart:  mod pp                                   ;
+      ving:      mod ing                                  ;
+      stem:      mod vf-base e-focus-false e-uncontentious e-rheme-true e-speaker spkr;
+      stem:      mod vf-base e-focus-false e-uncontentious e-rheme-false e-hearer hear;
+      stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true e-hearer hear hs ;
+      stem_hs:   mod vf-base e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs ;
+      stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
+      stem_lphs:   mod vf-base e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;   # This entry gets turned into an imp via rule (see above)
+      stem:      mod vf-to-imp e-focus-false e-uncontentious e-rheme-false e-hearer hear ;   # This entry gets turned into an imp via rule (see above)
+
+    }
+  }
+
+  # This set is identical but DOES NOT have a to-imp reading
+  # Use these if you don't want this verb to receive an imperative reading.
+  #
+  #
+  def verb-reg-no-imp(stem, mod, class, props)       {  verb-no-imp(stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+  def _verb-reg-no-imp(prd, stem, mod, class, props) { _verb-no-imp(prd, stem, stem."ing", stem."ed", stem."ed", mod, class, props) }
+  def verb-no-imp(stem, ving, pasttense, pastpart, mod, class, props)       {  verb-basic-no-imp(stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+  def _verb-no-imp(prd, stem, ving, pasttense, pastpart, mod, class, props) { _verb-basic-no-imp(prd, stem, pluralize(stem), ving, pasttense, pastpart, mod, class, props) }
+  def verb-basic-no-imp(stem, 3sing, ving, pasttense, pastpart, mod, class, props) {_verb-basic-no-imp(stem, stem, 3sing, ving, pasttense, pastpart, mod, class, props) }
+  def _verb-basic-no-imp(prd, stem, 3sing, ving, pasttense, pastpart, mod, class, props) {
+    word stem.prd.-verb-.class.mod:props(class, pred=prd) {
+	  stem:      mod fin-full pres s-pos do non-3rd s-sg  ;  	
+          3sing:     mod fin-full pres s-pos do 3rd     s-sg  ;
+          stem:      mod fin-full pres s-pos do         s-pl  ;
+          pasttense: mod fin-full past s-pos do               ;
+	  pastpart:  mod pp                                   ;
+	  ving:      mod ing                                  ;
+	  stem:      mod vf-base                              ;
+    }
+  }
+
+
+ def adjectival-verb(stem, mod, class, props) {_adjectival-verb(stem, stem, mod, class, props) }
+ def _adjectival-verb(prd, stem, mod, class, props) {
+     word stem.-be-adj-to: props (class, pred=prd)
+     {stem: vf-be mod;}
+ }
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+ 
+# This file contains the families for various markers, including
+# nominal markers (obliques), verbal markers (infintival to) ,
+# and dependent clause markers (that/if etc)
+
+#########################
+# Obliques (NP markers) #
+#########################
+ 
+   family NP-marker (indexRel="*NoSem*")     { entry: obl<~55>[T MARK=*] /^ np<55>[T CASE=acc NUM PERS] ; 
+                                               entry: obln<~55>[T MARK=*] /^ n<55>[T NUM PERS] ; }
+
+#####################
+# Dep-clause markers  #
+#####################
+   
+   # Should we add semantics??
+
+   family Dep-clause-marker  { entry:  from-s(MARK= *) / s<10>[G s-dependent MARK=none]: EVENT( * <Scope>(G) ) ; }   
+   family Dep-clause-marker-no-sem (indexRel="*NoSem*")   { entry:  from-s(MARK= *) / s(s-dependent MARK=none) ; }
+
+#########################
+# Infinitive Marking To #
+#########################
+  
+   # Two Entries: 1st takes a vf-base vp and the second doesn't, adding context pred to this event 
+   #       If this turns out to be too promiscous. Add another VFORM value  inf-ctxt, i.e. this
+   #       allows whatever chooses inf vps to choose whether or not its inf can be contextualized
+   #
+   #
+   family Infinitive-to (indexRel="*NoSem*") {  entry: ( from-s(inf) +subj() ) / ( s(vf-base) +subj() ) ; 
+                                                entry: s(inf) +subj()          : EVENT(context)         ;   } 
+   # I am ready for verb+ing   
+   #
+   family For-verb-ing     (indexRel="*NoSem*") { entry: ( from-s(for-ing) +subj() ) / ( s(ing) +subj() ) ; } 
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+ 
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+ 
+# This file contains the stuff for the copular and presentational 
+# uses of 'be'. 
+
+# NOTE: see modifiers.ccg for compliment and modifier definitions 
+#       due to DotCCG ORDERING ISSUES, they had to be put there
+
+
+##############
+## FAMILIES ##
+##############
+
+  
+  #---  Family Building Macros ----
+  
+  # These reduce redundancy of following families
+  # Note that cop-sem doesnt include the <Cop-Scope>, this is added below
+  # to allow the proper semantic subcategorization
+  #
+  def cop-sem(sem)  { EVENT(* <Cop-Restr>(S:entity) sem ) } 
+  def pres-sem(sem) { EVENT(* <Presented>(S:entity) sem ) }
+
+  def cop-entry(arg, sem){
+      entry: s(s-minor) +subj(nf-real) arg      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+      entry: s(s-int) arg / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+      entry: cop<10>[E] arg / subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
+  }
+     # NOTE: doing (cop item) and allowing the cop entry to handle its own subject allows
+     #      'who is he with', 'what is he on', i.e. the subject comes after the unit is built.
+     # NOTE: this is NOT INCREMENTAL! (**sigh**)
+
+  #PROSG09 : Rule for permitting intonational phrase like "the box@L+H* is LH% red@H* LL%" 
+
+  def cop-entry-ip(arg, sem){
+       #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
+       entry: s(s-minor) +subj(nf-real) / (trs() arg)      : cop-sem(                 sem )  ; # used in ind, imp, etc.
+
+       #PROSG09 : Rule for allowing intonational phrase like "is the box@L+H* LH% red@L* HH%"
+       entry: s(s-int) /(trs() arg) / subj(nf-real)       : cop-sem( INT() SUBJECT() sem )  ; # used in y/n-int
+
+       #PROSG09 : for "What color@H* HH% is the box LH%". For such a  rheme-theme partitioning we need 
+       # what:- s/^(s/!(cop/^adj))/qclass besides what:- s/^(cop/^adj)/qclass, hence requires is:- s/!(cop/adj)/np 
+       entry: trs()/!(cop<10>[E] arg)/ subj(nf-real)     : cop-sem(       SUBJECT() sem )  ; # used in wh-int
+  }
+
+   #---  Families ----
+
+   family Copular(V){   
+    
+    # Need to sort out a way of having super semantic type 'm-mod-entity'
+    # which will then be subspecified when filled in
+    #
+    cop-entry( +cop-pp()  , <Cop-Scope>(X:m-benefactor) )  
+    cop-entry( +cop-pp()  , <Cop-Scope>(X:m-accompaniment) )  
+    cop-entry( +cop-pp()  , <Cop-Scope>(X:m-comparison) )
+  
+    cop-entry( +cop-adj() , <Cop-Scope>(X:quality) )  
+    #PROSG09 : Rule for allowing intonational phrase like "the box@L+H* is LH% red@H* LL%"
+    cop-entry-ip( +cop-adj-ip() , <Cop-Scope>(M:quality) )  
+    
+    # To avoid 'what is that' or 'what is a ball' getting 2 READINGS (in <Cop-Restr> and <Cop-Scope>), 
+    # we must block the subj from being questionable for entity scopes
+    #
+    entry: s(s-minor) +subj(nf-real Questionable=no) +cop-np()    : cop-sem(                 <Cop-Scope>(X:entity) )  ; 
+    #PROSG09 : Rule for allowing intonational phrase like "it is LH% a box_H* LL%"
+    entry: s(s-minor) +subj(nf-real Questionable=no) /^(trs()/! np())   : cop-sem(                 <Cop-Scope>(T:entity) )  ; 
+
+    entry: s(s-int) +cop-np() /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(X:entity) )  ; 
+    #PROSG09: Rule for permitting intonational phrase like "is this@L* HH% a box@L+H* LH%"
+    entry: s(s-int) /^(trs()/! np()) /^ subj(nf-real)                     : cop-sem( INT() SUBJECT() <Cop-Scope>(T:entity) )  ; 
+
+    entry: cop<10>[E] +cop-np(no-q) / subj(nf-real)               : cop-sem(       SUBJECT() <Cop-Scope>(X:entity) )  ;   # USED IN OPEN-QUESTIONS
+  }
+
+  # A second family to control locational modifiers (i.e. I am hungry at work, but I am in the kitchen at work, will combine)
+  #
+  family Copular-location(V) { cop-entry( +cop-pp()  , <Cop-Scope>(X:m-location) ) }
+ 
+ 		
+  family Presentational(V){
+
+       entry: s(s-minor) \! np[D dummy-there] / subj()         : pres-sem(                      );
+       entry: s(s-int)/ subj() / np[D dummy-there]             : pres-sem( INT() ^ <Subject>(D) ); 
+       entry: cop<10>[E] / subj() / np[D dummy-there]          : pres-sem(         <Subject>(D) );
+  } 
+									   
+  family Presentational-inverted(V){ 
+       
+       entry: s(s-ind) / subj(nf-real) \ pp_1(CC-TYPE:post-n)  : pres-sem( IND() ^ <Modifier>(X:m-location) )  ;
+  }
+
+ family Cop-negation (indexRel=Polarity) {
+      
+      entry: pre-cop-pp  (s-neg, s-prov-pos, )  ;  # This syn-cat is defined in modifiers.ccg
+      entry: pre-cop-np  (s-neg, s-prov-pos, )  ;
+      entry: pre-cop-adj (s-neg, s-prov-pos, )  ;
+  }					
+
+####################################
+# Wh-Interrogatives and the Copula #
+####################################
+ 
+  # The actual wh-cats are built in udc.ccg, i.e.
+  # the resquired entries are added to appropriate wh families defined there
+
+  # Questioning the <Cop-Scope>
+  # 
+  def wh-copular-entry(item, syn, sem)  {
+  	  entry: from-s(s-int)  /^ ( cop<10>[E] item  ) syn : E:state( INT() <Wh-Restr>(sem) ); 
+  	  #PROSG09 : for "What color@H* HH% is the box LH%". For such a  rheme-theme partitioning we need 
+	  # what:- s/^(s/!(cop/^adj))/qclass besides what:- s/^(cop/^adj)/qclass
+  	  entry: from-s(s-int)  /^ (trs()/!( cop<10>[E] item  )) syn : E:state( INT() <Wh-Restr>(sem) ); 
+  } 
+
+  # Handling Questions like 'when were you big' and 'where was there a ball',
+  # i.e. 's-modifier questions' for copula and presentational
+  #
+  def be-wh-sent-mod-entry(item){
+       entry: from-s(s-int) item  /^ subj() / vp-extr(be, item )
+            : E:state( INT() SUBJECT() WH-RESTR(V * <Scope>(E:event)) ); 
+  }
+ 
+  def be-wh-sent-mod-entries(){
+     be-wh-sent-mod-entry( +cop-pp() ) 
+     be-wh-sent-mod-entry( +cop-adj() ) 
+     be-wh-sent-mod-entry( / np() )    # either predicative np or presented
+
+  }
+
+ 
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+ 
+# This file contains the stuff for: 
+#    1) auxillaries : do, have, be (as progr, passive and predictival verb)
+#    2) modals      : can, should, will, etc.
+
+###########################
+## SYNTACTIC DEFINITIONS ##
+###########################
+
+  def aux(args)           { aux<11>[E NUM:NUM PERS:PERS VFORM:VFORM FIN:FIN POL:POL args] }
+
+##############
+## FAMILIES ##
+##############
+
+  #  NOTE: currently, contextualized predicates (e.g. I am, I can, can you, etc)
+  #        are restricted to m-class-4. 
+  #        This SHOULD be taken out (c.f. A: are you running? B: yeah 'I am, on the table'
+  #        but now done to block getting such readings (instead of just copular reading)
+  #
+
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+
+  # With semantics, i.e. <Modifier> (see modal family below)
+  #
+  def fin-entry+sem(arg, sem){
+      
+      entry:  ( s(fin-full MCLASS:MCLASS POL:POL) +subj() ) 
+	   /^ ( s<14>[E MCLASS:MCLASS POL:POL VFORM=arg] +subj() )  : EVENT(sem);  
+      entry:  s(fin-ctxt m-class-4 POL:POL) +subj()                 : EVENT(context sem) ;	  
+	 
+      entry: aux( VFORM=arg)                                        : EVENT(sem) ;
+      
+      entry: from-s( s-int fin-full) / ( s(arg) +subj() ) /^ subj() : EVENT(INT() SUBJECT() sem) ;              
+      entry: s( s-int m-class-4 fin-ctxt) /^ subj()                 : EVENT(INT() SUBJECT() context sem) ;              
+  }
+
+  ## With no semantics, must separate Y/N indicatives from others because 
+  #  only finite forms of auxs receive this i.e. I have BEEN sleeping but not BEEN I sleeping
+  #
+  def fin-entry-no-int(arg){
+  
+      # indicative, with vp and context    
+      #  
+      entry:    ( s(fin-full MCLASS:MCLASS POL:POL) +subj() ) 
+	     /^ ( s<14>[E MCLASS:MCLASS POL:POL VFORM=arg] +subj() )       ; 
+      entry:  s(fin-ctxt m-class-4 POL:POL) +subj()	  : EVENT(context) ;
+      
+      # aux cat used (selected) by, e.g. wh-questions
+      #   
+      entry: aux( VFORM=arg)      ; 
+		  
+  }
+
+  def fin-entry(arg){
+  
+      fin-entry-no-int(arg)
+  
+      # the Y-N question versions: with vp and context ##
+      #
+      entry: from-s( s-int fin-full ) / ( s(arg) +subj() ) /^ subj()  : EVENT(INT() SUBJECT() ) ;              
+      entry: s( s-int m-class-4 fin-ctxt) /^ subj()		      : EVENT(INT() SUBJECT() context) ;              
+  }
+
+  # For Passives
+  #
+  # In theory could create rule which changes passive vp's into vp / by-subj
+  # this would require a syntactic voice feature 
+  # This may be attractive cuz right now we're gonna need to duplicate this in Wh-forms anyway.. sigh.
+  
+  def pass-ind()       { ( s(fin-full MCLASS:MCLASS POL:POL) \! np[X] ) /^ ( s<14>[E MCLASS:MCLASS POL:POL VFORM=pp] +subj() / np[X] )  }
+  def pass-yn()        { s(fin-full s-int) / ( s<14>[E VFORM=pp] \! np[S] / np[X] ) /^ np<9>[X NUM:NUM PERS:PERS nom]  }  	   
+ 
+  def pass-ind-by()    { ( s(fin-full MCLASS:MCLASS) \! np[X] ) /^ obl[S MARK=by] /^ ( s<14>[E MCLASS:MCLASS VFORM=pp] +subj() / np[X] )    }
+  def pass-yn-by()     { s( s-int fin-full) /^ obl[S MARK=by] / ( s<14>[E VFORM=pp] \! np[S] / np[X] ) /^ np<9>[X NUM:NUM PERS:PERS nom]  }  	   
+ 
+     
+  #-----------------------
+  #---  The Families  ----
+  #-----------------------
+
+  family Modal-vf-base                       { fin-entry+sem(vf-base, MODIFIER(*) ) }
+  
+  family Aux-vf-base (indexRel=Tense)        { fin-entry(vf-base ) }
+  family Aux-no-int-vf-base (indexRel=Tense) { fin-entry-no-int(vf-base ) }
+  
+  family Aux-pp (indexRel=Aspect)            { fin-entry(pp) }
+  family Aux-no-int-pp (indexRel=Aspect)     { fin-entry-no-int(pp) }
+  
+  family Aux-ing (indexRel=Aspect)           { fin-entry(ing) }
+  family Aux-no-int-ing (indexRel=Aspect)    { fin-entry-no-int(ing) }
+  
+  family Aux-vf-be (indexRel=Tense)          { fin-entry(vf-be) }
+  family Aux-no-int-vf-be (indexRel=Tense)   { fin-entry-no-int(vf-be) }
+
+  # Should add 'context' readings here.
+  family Aux-no-int-passive(indexRel=Voice){
+           entry: pass-ind()      : S(context);        # the actor is markerked as 'unexpressed'
+       	   entry: pass-ind-by()   ; 
+           entry: aux( VFORM=pp)  ; 
+   }
+
+  family Aux-passive (indexRel=Voice){						  
+           entry: pass-ind()      : S(context);        # the actor is markerked as 'unexpressed'
+       	   entry: pass-ind-by()   ; 
+           entry: aux( VFORM=pp)  ; 
+           entry: pass-yn()     : EVENT( INT() <Subject>(X))  S(context) ;
+           entry: pass-yn-by()  : EVENT( INT() <Subject>(X) ) ;
+  }
+
+ # Could be cleaned up by making defs for these categories (since repetition of above)
+ #
+ family Aux-negation (indexRel=Polarity) {
+    
+    # Standard, indicative and Y-N Int
+    #
+    entry:     ( (from-s(s-neg) +subj() ) / (s<14> +subj() ) )
+             \ ( s(s-prov-pos) +subj()    / (s<14> +subj() ) ) ;  
+    entry:     ( from-s(s-neg) / ( s<14> +subj() ) )
+             \ ( s( s-int s-prov-pos) / ( s<14> +subj() ) ) ;     
+	   
+    # Passive, indicative and Y-N with and without 'by actor'
+    # 
+    entry:     ( (from-s(s-neg) \! np[X] ) / (s<14> +subj() / np[X] ) ) 
+             \ ( (s(s-prov-pos) \! np[X] ) / (s<14> +subj() / np[X] ) ) ;  # Pass Ind
+    entry:     ( (from-s(s-neg) \! np[X] )  /^ obl[S MARK=by] / (s<14> +subj() / np[X] ) )
+             \ ( (s(s-prov-pos) \! np[X] ) /^ obl[S MARK=by] / (s<14> +subj() / np[X] ) ) ;  # Pass Ind-by
+    entry:     ( from-s(s-neg) / ( s<13> \! np[S] / np[X] ) )
+             \ ( s( s-int s-prov-pos)  / ( s<13> \! np[S] / np[X] ) ) ;     
+    entry:     ( from-s(s-neg)  /^ obl[S MARK=by] / ( s<13> \! np[S] / np[X] ) )
+            \ ( s( s-int s-prov-pos) /^ obl[S MARK=by] / ( s<13> \! np[S] / np[X] ) ) ;     
+ }
+
+
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  # The auxillary verbs be, have, do are done 'by-hand' in dictionary-closed.ccg
+
+  def modal(form, class, args)  { modal-irr(form, form."n't", class, args) }
+
+  def modal-irr(pos-form, neg-form, class, args) {
+      word pos-form.-auxev : Modal-vf-base(class, pred=pos-form){
+	     pos-form : pos-form s-prov-pos args; 
+	     neg-form : pos-form s-neg neg args;
+	  }
+  }
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains various 'discourse related' families (e.g. Discourse Markers)
+# and also rules handling discourse phenomena like discourse 'fragments', 
+# Pre-NPs, Refernt-Negotiations(appositions), etc.
+
+# NOTE: these rules can easily be shut off by commenting them out
+
+ ######################
+ # Discourse Markers  #
+ ######################
+
+  def dm-entries(args, sem){
+      entry: du[A COM=no] args                                     :  A(* sem) ; 
+   #   entry: du[R COM=yes ] / du[N] args                           :  R:d-units(list <First>(F * sem) ^ <Next>(N:marker) ) ;
+   #   entry: du[R COM=yes ] / s<10>[N MOOD:s-major] args           :  R:d-units(list <First>(F * sem) ^ <Next>(N:event) ) ;
+    
+   }
+  
+  
+  family DM(du)  { 
+     dm-entries( , )
+  } 
+  family DM+np(du)  { 
+     dm-entries( / np() , <Addressee>(T:entity) )
+  } 
+
+
+  def _dis-marker(prd, form, class) {
+      word form."xx"."-du" : DM (class, pred=prd) {form ;}
+   }
+  def dis-marker(form, class) { _dis-marker(form, form, class)}
+
+  def _dis-marker+(prd, form, class, args) {
+      word form."xx"."-du" : DM (class, pred=prd) {form: args ;}
+   }
+  def dis-marker+(form, class, args) { _dis-marker(form, form, class)}
+
+
+  def dis-marker+np(form, class) {
+      word form."-du+np" : DM+np (class, pred=form) {form ;}
+   }
+
+
+ ##################### 
+ # DICTIONARY ENTRY  #
+ #####################
+
+    def discourse-marker(form, class) {
+      word form."-dis-marker" : Discourse-marker(class, pred=form) {form ;}
+    }
+
+
+
+
+ 
+###################
+# Discourse Rules #
+###################
+
+
+# Discourse units
+# 
+# Some, i.e. markers, begin their life as DUs... they have no scope. This could be changed.
+# The rest are 'created' by converting various 'full' syntactic units (np, s, adj, etc) into du.
+# There is one rule which linearly attaches all these chunks together.
+# Hence, it allows.   The ball the big one um get it for me ok Robot 
+
+def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1   ; } }
+
+#du-rule( np(full)   , du[T COM=no])
+#du-rule( s(s-major) , du[E COM=no])
+#du-rule( adj()      , du[M COM=no])
+
+#rule { typechange: du[F COM=no]                 =>  du[F COM=yes] / du[N]             :       F( <Next>(N) )              ; } 
+#rule { typechange: du[F COM=no]                 =>  du[R COM=yes] / du[N]              :       COORD( sequence)            ; } 
+#rule { typechange: du[F COM=no]                 =>  du[R COM=yes] / s(s-major)         :       COORD( sequence)            ; } 
+#rule { typechange: du[F COM=no]                 =>  du[R COM=yes] \* s(s-major)         :       COORD( sequence)            ; } 
+
+
+ 
+
+#family DUU(du)  { entry: du<50>[A COM=no] : A(*) ; }
+#family DUU+np(du)  { entry: du<50>[A COM=no]/np() : A(* <Anchor>(T) ) ; }
+
+#family DUU(du)     { entry: s<> / s() : EVENT( MODIFIER(*) ); }
+#family DUU+np(du)  { entry: du<50>[A COM=no]/np() : A(* <Anchor>(T) ) ; }
+
+
+#def _disc-unit(prd, form, class) {
+#      word form."-du" : DUU (class, pred=prd) {form ;}
+#   }
+#def disc-unit(form, class) { _disc-unit(form, form, class)}
+
+#def disc-unit+np(form, class) {
+#      word form."-du+np" : DUU+np (class, pred=form) {form ;}
+#   }
+
+
+
+# These were rules playing around with the idea of handling 'aborted' units, i.e. repair sequences.
+# Problem with the general one is it allowed the 'abortion' of completed units....
+# Also, it would give readings like  <I> <want the ball>
+#
+# Perhaps this should be a parser meta-rule. If you get something you don't expect, hack off
+# the args of previous. i.e. it should be backward looking!
+
+
+#du-rule( np()/n()   , du[T COM=no] : T(abort) )
+#rule { typechange: np() / n()                      =>   du[T COM=no] : T(abort)    ; } 
+#rule { typechange: du[F COM=no] $1                     =>  du[F COM=no]             :       F(abort <ABORTED>yes )    ; } 
+
+#rule { typechange: du[F COM=no] $1                 =>  du[R COM=yes] $1 / du[N COM=rep]            :       COORD( sequence)            ; } 
+#rule { typechange: du[F COM=no REP=no] $1            =>  du[R COM=no] / du[N COM=no REP=yes]      :   R(abort <ABORTED>(F) <Next>(N) )   ; } 
+
+
+# MAY 8: A lot of this should be done at the DISCOURSE LEVEL. I need to implement utt units which get sequentially concatinated.
+
+
+  # These handle extra-syntactic phenomena 'floating' phrases, pre and post nps.
+
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+# Changes: Raveesh Meena (rame01@dfki.de), 2009
+#        : Change Type: Additions
+#        : grep change with: PROSG09
+
+#   Wh-Words for questions ( WHO is he,  WHERE did you go, etc)
+#   Role-Defined Constituents  ( I picked up 'WHAT you wanted', I don't know 'WHO he is', etc)
+#   Relative Clauses (the ball THAT you picked up)   
+
+# For the sake of incremental parsing and early projection, all of these are treated 
+# as the semantic and syntactic head of their respective constituents. 
+
+###############
+### WH-WORDS ##
+###############
+
+  # There are two entries for most of the question words, one for copulars, 'Who am I' 
+  # and one for other verbs which must use an auxillary, 'What did you see'
+
+  # They assign mood (both syntactic and semantic), select for the clauses Subject, 
+  # and properly distribute the features dictated by the specifics of the question word
+
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+
+
+  def vp-extr(arg, item)  { ( s(VFORM:VFORM FIN:FIN POL:POL arg) +subj() item ) }
+  def WH-RESTR(arg)       { <Wh-Restr>(arg) }
+
+  # The first entry is for cases where the 'extracted' element is in the main clause (what did you want X), 
+  # The second is for when it is embedded (e.g. who did he want me to see X)
+  # 
+  def wh-auxe-entry(item, syn, sem)  {
+      entry: from-s(s-int fin-full)  / vp-extr(,item) /^ subj(nf-real) /  aux() syn                   
+		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
+      entry: from-s(s-int fin-full) / (s<13>[G] $1 item) / vp-extr(, / (s<13>[G] $1) ) /^ subj(nf-real) /  aux() syn                   
+		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
+      entry: from-s(s-int fin-full) / (s<13>[G] $1 item) / vp-extr(, / (s<13>[G] $1) ) /^ (trs()/! subj(nf-real)) /  aux() syn                   
+		   : EVENT( INT() SUBJECT() WH-RESTR(sem) ); 
+  } 
+
+	 
+  # For cases where the subject is being questioned.
+  # Note that the copular entry with /np is blocked so as to not allow subject questioning, 
+  # this means what is it only gets 1 instead of '2' question forms
+  #
+  def wh-subj-entry(syn, sem){
+            entry: from-s(s-int)  / ( s(fin) \ np[F nom 3rd s-sg nf-real Questionable=yes] ) syn   
+                 : EVENT( INT() <Subject>(F) WH-RESTR(sem) );   
+  }
+ 
+  # The following three collect the appropriate entry defns to reduce redundancy below
+  # NOTE:  wh-copula-entry defined in verb-copula.ccg
+  # 
+  def wh-comp-entries(item, syn, sem){
+         wh-auxe-entry ( item, syn, sem )
+         wh-copular-entry( item, syn, sem )
+  } 
+ 
+
+  def wh-all-entries(item, syn, sem) {
+         wh-auxe-entry ( item, syn, sem )
+         wh-copular-entry( item, syn, sem )
+   	 wh-subj-entry(  syn, sem )         
+  }
+
+  def wh-no-copular-entries(item, syn, sem) { 
+         wh-auxe-entry ( item, syn, sem )
+         wh-subj-entry(  syn, sem ) 
+  }
+
+    
+  #---------------------
+  #--- The Families ----
+  #---------------------
+
+   # NOTE: 'extracted' constituent set to ^ slash mode, 
+   #        this allows, e.g. 'what object did I put on the table' to parse incrementally,
+   #        using default > mode doesnt
+    
+   family Wh-np- (Wh)              { wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , F:entity * ) }
+    
+   family Wh-np-spec- (Wh)         { wh-all-entries ( /^ np<~12>[F Questionable=yes]   , / n<12>[F s-sg]            , V * <Scope>(F:entity SG() SPECIFIC() UNIQUE() ) ) 
+				     wh-all-entries ( /^ np<~12>[F Questionable=yes]   , / n<12>[F s-pl-unsp]       , V * <Scope>(F:entity PL() UNSPECIFIC() UNIQUE() ) )  }
+	
+   family Wh-np-spec-ctxt- (Wh)    { wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , V * <Scope>(F:entity context UNIQUE() ) )  }   
+     #
+     # Note: Two spec fams separated because we want 'what ball' = 'which ball', but 'which' != 'what' 	
+							   								   
+   family Wh-np-quant-count- (Wh)  { wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-pl]             , V *  <Scope>(F:entity         PL() UNSPECIFIC() VARIABLE() )          )
+                                     wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , V *  <Scope>(F:entity context PL() UNSPECIFIC() VARIABLE() ) ) }
+   
+   family Wh-np-quant-mass- (Wh)   { wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-mass]           , V *  <Scope>(F:entity          VARIABLE() UNCOUNTABLE() ) ) 
+                                     wh-all-entries ( /^ np<12>[F Questionable=yes]   ,                             , V *  <Scope>(F:entity context  VARIABLE() UNCOUNTABLE() ) ) }
+    
+   family Wh-np-qclass- (Wh)       { wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-sg no-q]  /qclass<13>[Q]        , V * <Scope>(Q <Scope>(F:entity SG() SPECIFIC() UNIQUE()) )  )
+                                     wh-all-entries ( /^ np<12>[F Questionable=yes]   , / n<12>[F s-pl-unsp no-q]  /qclass<13>[Q]   , V * <Scope>(Q <Scope>(F:entity PL() UNSPECIFIC() UNIQUE()) )  ) }
+	
+
+   family Wh-pp- (Wh)              { wh-comp-entries ( /^ pp<12>[F]  ,                             , F:modifier * )  }
+   
+   family Wh-sent- (Wh)            { wh-auxe-entry ( /^ s<12>[F]      ,                            , F:event *)          # for sentences (what did I say)
+                                     wh-auxe-entry ( /^ (s<12>[F inf] +subj())      ,              , F:event *)    }     # for inf-vp (what did I want)
+   
+   family Wh-adj- (Wh)             { wh-comp-entries ( /^ adj<12>[F] ,                             , F:quality * ) }
+   family Wh-adj-qclass- (Wh)      { wh-comp-entries ( /^ adj<12>[F] , / qclass<12>[F]             , V * <Scope>(F:quality)  ) }
+   family Wh-adj-degree- (Wh)      { wh-comp-entries ( /^ adj<12>[F] , / adj<12>[F]                , V * <Scope>(F:quality)  ) }
+  
+   # This use for special quality words used in questions 'which color/size/shape...'
+   # 
+   #PROSG09 : for "What color@H* HH% is the box LH%" the features in the LF have nominal type M, the presence of nominal C in qclass doesn't let m-focus-true features to generate color@H*
+   #family Quality-class            { entry: qclass<10>[C] : C(*) ; } 
+   family Quality-class            { entry: qclass<10>[M] : M(*) ; } 
+   
+
+   # This is for handling the questioning of modifiers (i.e. optional adjuncts, like location, manner, etc)
+   # There are three entries: 
+   #     The first is specifically for the copula, e.g. 'when was I happy'.
+   #     The second is for scoping on the main (top level) event of other verbs, e.g. 'where am is sitting' 
+   #     The third is for embedded events , e.g. 'where did I want to sit'
+   #
+   # Attachment of these modifiers is controlled by restricting the mclass of the scoped over (i.e. the 'questioned' event)
+   # This is handled lexically, i.e. 'where' specifies that the sentence must unify with s-location
+   # (note this fact explains the messiness of the 2nd entry, id 10, the typical sentence id must be associated
+   #  with the embedded, scoped over, sentence)
+   #
+   # Note: (June 17) Since we added s-no-mood, had to change top s to <~13> instead of <13>
+   #                 b/c the mood gets changed from s-no-mood to s-int
+   #
+   family Wh-sent-modifier- (Wh) {
+
+          be-wh-sent-mod-entries()   # defined in verb-copula.ccg
+          wh-auxe-entry( , , V *  <Scope>(E:event) ) 
+          entry: s<~13>[E s-int]   / (s<~10>[F] $1 )                                                     # the 'internal' s arg#
+ 	                           / ( s<13>[E VFORM:VFORM FIN:FIN POL:POL] +subj() / (s<10>[F] $1 )  ) 
+	                           /^ subj(NUM:NUM PERS:PERS nf-real)
+			           /  aux()
+               : EVENT( INT() SUBJECT() WH-RESTR(V *  <Scope>(F:event)) ); 
+   }
+
+
+
+
+#################################
+## 'Role-Defined' Constituents ##
+#################################
+
+  #  put it 'WHERE I told you to put it __' 
+  #  I picked up 'WHAT you wanted __'
+  #  I don't know 'WHO he is'
+  #  I am going 'WHERE GJ is sleeping'
+  #  'WHAT I got __' you got to give it to your mama  
+  #   (this is assuming Left-dislocation is handled )
+  #
+  # Each of these is semantically and syntactically the entity which would be placed in the __
+  # So, in the first case, this is a pp [M:m-location], the second  np[T:entity]   
+ 
+  #--------------------------------
+  #---  Family Building Macros ----
+  #--------------------------------
+
+  def extr-subj(rslt, syn, sem) { 
+  
+     entry: rslt    / ( s(fin s-minor) \ np[F 3rd s-sg nf-real] ) syn   
+		  : F( sem ^ <Scope-in>(E:event <Subject>(F) ) ) ; 
+  }
+
+  # The first one is for cases where the fronted element is in the main clause, 
+  # The second is for when it is embedded (e.g. who he wanted me to see X)
+  #
+  def extr-comp(rslt, item, syn, sem) { 
+  
+     entry: rslt  / (s<13>[G] $1 item) / vp-extr(fin-full s-minor, / (s<13>[G] $1)) /^ subj(nf-real)  syn                   
+	      :  F( sem ^ <Scope-in>(E:event SUBJECT() ) ) ; 
+     entry: rslt  / vp-extr(fin-full s-minor, item) /^ subj(nf-real)  syn                   
+	      :  F( sem ^ <Scope-in>(E:event SUBJECT() ) ) ; 
+   }
+
+  def extr-both (rslt, item, syn, sem)  {
+
+	  extr-subj(rslt, syn, sem) 
+	  extr-comp(rslt, item, syn, sem)
+  } 
+
+  #---------------------
+  #--- The Families ----
+  #---------------------
+
+   # The indices are chosen based on underlying POS (e.g. 15 for n/np, 25 for pp)
+   # This is because we need to lexically select features (i.e. via macros)
+   # Also, the Semantic Index is always F to allow a systematic def (see above) and 
+   # also to handle subject 'extraction' properly (all set to F)   
+
+   # QUESTION: FOR EACH FAMILY, how much do we want the 'extracted' item to inherit.
+   #   e.g. should an extracted direct object be accusitive...no.
+  
+   #  What you picked up
+   #
+   family Extr-np- (Wh)              { extr-both (np<15>[F],  /^ np<16>[F Questionable=yes] ,                      , F:entity *                      ) }
+   
+ 	       
+   # which (ball) you picked up
+   #
+   family Extr-np-spec- (Wh)         { extr-both (np<15>[F ], /^ np<~16>[F Questionable=yes] , / n<16>[F s-sg]           ,  F:entity <Restr>(V * ) SG() SPECIFIC() UNIQUE()   ) 
+                                       extr-both (np<15>[F ], /^ np<~16>[F Questionable=yes] , / n<16>[F s-pl-unsp]      ,  F:entity <Restr>(V * ) PL() UNSPECIFIC() UNIQUE() ) }
+
+   family Extr-np-spec-ctxt- (Wh)    { extr-both ( np<15>[F ]  ,  /^ np<16>[F Questionable=yes]   ,    ,  F:entity  context ^ <Restr>(V * ) UNIQUE()  )  }   
+ 
+									   
+   # how many (balls) you picked up								   								   
+   #
+   family Extr-np-quant-count- (Wh)  { extr-both (np<15>[F ], /^ np<16>[F Questionable=yes] , / n<16>[F s-pl]      ,  F:entity <Restr>(V * ) UNSPECIFIC() VARIABLE()            )
+                                       extr-both (np<15>[F ], /^ np<16>[F Questionable=yes] ,                      ,  F:entity context ^ <Restr>(V * ) UNSPECIFIC() VARIABLE()  ) } 
+
+   family Extr-np-quant-mass- (Wh)  { extr-both  (np<15>[F ], /^ np<16>[F] , / n<16>[F s-mass Questionable=yes]    ,  F:entity ^ <Restr>(V * ) VARIABLE() UNCOUNTABLE()          )
+                                      extr-both (np<15>[F ], /^ np<16>[F] ,                                        ,  F:entity context ^ <Restr>(V * ) VARIABLE() UNCOUNTABLE()  ) } 
+
+
+   # what color/shape/size (ball) you picked up
+   #
+   family Extr-np-qclass- (Wh)       { extr-both (np<15>[F ], / np<16>[F] , / n<16>[F]/ qclass<13>[Q]  , F:entity ^ <Restr>(V * <Scope>(Q) )               ) 
+                                       extr-both (np<15>[F ], / np<16>[F] , / qclass<13>[Q]            , F:entity context ^ <Restr>(V * <Scope>(Q) )     ) }
+
+   # where you put it
+   #
+   family Extr-pp- (Wh)              { extr-comp (pp<25>[F] ,  /^ pp<26>[F] ,                    , F:modifier *              )}
+
+  
+   # what he says,  what you are doing
+   # NOTE: B/C we are using <10>, i.e. 'main s' for the vp-extr, using lexical macros to set vf-deictic would also change that.
+   #       so instead, we do it here.
+   # 
+   family Extr-sent- (Wh)            { extr-comp (s<20>[F VFORM=fin-deictic], /^ s<21>[F] ,     , F:event *      )}  # MARK ME!!!
+  
+   # how did you make it (big, small, etc) 
+   #  
+   family Extr-adj- (Wh)             { extr-comp (adj<25>[F],  / adj<16>[F] ,                   , F:quality *    )}
+   
+   # what size did you make it
+   #
+   family Extr-adj-qclass- (Wh)      { extr-comp (adj<25>[F],  / adj<16>[F] , / qclass<13>[Q]   , F:modifer <Restr>(V * <Scope>(Q) )    )}
+   
+   # how big did you make it
+   #
+   family Extr-adj-degree- (Wh)      { extr-comp (adj<25>[F],  / adj<16>[F] , / adj<16>[F]      , F:modifer <Restr>(V *)        )}
+  
+  
+  # where I was walking, i.e. when there is no missing arg.
+  #
+  # Two entries and controlled by event's modifier class
+  # See above in Wh-questions, or docs, for more info
+  # 
+  family Extr-pp-sent-modifier- (Wh)    { 
+  
+      entry: pp<25>[F] /^ ( s(fin s-minor) +subj() ) /^ subj()                            
+             :  F( * ^ <Scope>(E) <Scope-in>(E:event SUBJECT() ) )  ;
+
+      entry: pp<25>[F]  /^ (s<~10>[E] $1 )                                                       # the 'internal' s arg
+ 		        /^ ( s<13>[G fin NUM:NUM PERS:PERS s-minor] +subj() /^ (s<10>[E]$1 )  )  # the external 'main sentence' wanting an s arg
+	                /^ subj()
+             :  F( * <Scope>(E:event) <Scope-in>(G:event SUBJECT() ) ) ;  
+  }
+
+  family Extr-adv-sent-modifier- (Wh)    { 
+  
+      entry: adv<25>[F] /^ ( s(fin s-minor) +subj() ) /^ subj()                            
+             :  F( * ^ <Scope>(E) <Scope-in>(E:event SUBJECT() ) )  ;
+
+      entry: adv<25>[F] /^ (s<~10>[E] $1 )                                                       # the 'internal' s arg
+ 		        /^ ( s<13>[G fin NUM:NUM PERS:PERS s-minor] +subj() /^ (s<10>[E]$1 )  )  # the external 'main sentence' wanting an s arg
+	                /^ subj()
+             :  F( * <Scope>(E:event) <Scope-in>(G:event SUBJECT() ) ) ;  
+  }
+
+
+#################################
+## Relative Clause Modifiers   ##
+#################################
+
+  #        the ball 'THAT I put on the table'   
+  #
+  #  basically uses the extracted-NP from above (c.f. what I put on the table) and 'sticks' it in 
+  #  a post-noun modifier  n / ABOVE SYNTAX \ n : T( <Scope-in>(ABOVE SEMANTICS) )
+  #
+  #        the room 'WHERE books can be found'  ,   the place 'WHERE I put it earlier'
+  # 
+  #  this is actually handled 'automatically' from the role-defined stuff above.
+  #  these are turned into pps, which then get run through the pp -> post-n modifer rule (see prep.ccg)
+  #  If we decide this isn't the right kind of semantics, we will have to put a syntactic feature
+  #  on the rules above 'shutting off' this rule (basically extend CC-TYPE feature) and then
+  #  add a comparible rule here.
+
+  family Rel-Clause-np- (indexRel=Scope-in)  { 
+	
+    entry: post-n(n-2 , /^ vp-extr(fin-full s-minor, / np<16>[T 3rd] ) /^ subj() ) # blocked form being 1st part of compound
+	   : T( <Scope-in>(E  SUBJECT() ) ) ; 
+    entry: post-n( , /^ ( s(fin-full s-minor) \ np[T 3rd s-sg] ) ) 																 
+           : T( <Scope-in>(E <Subject>(T) ) ) ;
+  }
+
+ 	   
+#######################
+## DICTIONARY FORMS  ##
+#######################
+
+  
+  def  wh-word (form, class, props) { _wh-word-ip(form, form, accentMark(form), class, props) } 
+  #def  _wh-word (form, class, props) { _wh-word-ip(form, form,accentMark(form), class, props) } 
+  def _wh-word-ip (prd, form, form_hs,form_ls,form_lphs, class, props) {
+    word form.-wh-word.class: props(class, pred=prd) { 
+        form;
+	#form :e-focus-false e-uncontentious e-rheme-false e-hearer hear ;
+	#form :e-focus-false e-uncontentious e-rheme-true e-speaker spkr ;
+        #form_hs: e-focus-true e-uncontentious e-rheme-true e-hearer hear hs;
+        #form_hs: e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs;
+	#form_ls: e-focus-true e-uncontentious e-rheme-true e-hearer hear ls;
+	#form_lphs: e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
+	#form_lphs: e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
+    }
+  }
+
+  def  wh-word+feat (form, class, props, args )  { _wh-word+feat(form, form, class, props, args )  } 
+  def _wh-word+feat (prd, form, class, props, args )  {
+    word form.-wh-word.class.props: props(class, pred=prd)  { form: args ; }
+  }
+
+  def  extr (form, class, props, args )  { _extr(form, form, class, props, args )  } 
+  def _extr (prd, form, class, props, args )  {
+    word form.-wh-comp.class.props: props(class, pred=prd)  { form: args ; }
+  }
+
+  def  quality-class (form) { _quality-class_ip(form, form, markWordHs(form), markWordLs(form), markWordLpHs(form)) } 
+
+  def _quality-class (prd, form) { _quality-class_ip(form, form, markWordHs(form), markWordLs(form), markWordLpHs(form)) } 
+  def _quality-class_ip (prd, form, prd_hs,prd_ls,prd_lphs) {
+    word form.prd.-quality-class: Quality-class(quality, pred=prd) { 
+	form; 
+        prd_hs : m-focus-true m-uncontentious m-rheme-true m-hearer hear hs;
+        prd_ls : m-focus-true m-contentious m-rheme-true m-hearer hear ls;
+	}
+  }
+
+
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# The vast majory of dictionary entries are in dictionary-open.ccg. 
+# Also, see this file for general info on adding dictionary items.
+
+# This file contains the 'core vocabulary' or 'closed class' words:
+#    Pro-forms  (pronouns, pro-verb 'do', pro-sentences (I said it), pro-locations (here, there) )
+#    Adjective related function words (more, most, bigger THAN) 
+#    Markers (obliques, infinitival to, subordinate-sentential clause markers, etc)
+#    Determiners, Possessive 's, Deictics, 'Group'-words, Numbers (ordinal & cardinal)
+#    Wh-words
+#    Auxillary & Modal Verbs
+
+# NOTE: MUST CLEAN UP WH and EXTR SECTION
+
+##############
+## PROFORMS ##
+##############
+
+  
+  #-- Nominals --#    
+ 
+  # pronoun(pers, sg-nom, sg-acc, pl-nom, pl-acc, posessed, class,)
+  #
+  pronoun(I,    1st, sg, I    , me   , my   , mine   , person,)
+  pronoun(I,    1st, pl, we   , us   , our  , ours   , person,)
+  pronoun(you,  2nd, sg, you  , you  , your , yours  , person,)
+#  pronoun(you,  2nd, pl, you  , you  , your , yours  , person,) 
+  pronoun(he,   3rd, sg, he   , him  , his  , his    , person,)
+  pronoun(she,  3rd, sg, she  , her  , her  , hers   , person,)
+  pronoun(it,   3rd, sg, it   , it   , its  , its    , thing,)
+  pronoun(they, 3rd, pl, they , them , their, theirs , entity,)
+
+  word it-pro-3rd-sg:Bare-np(thing, pred=it) { that :  3rd s-sg acc pro sg asr-correction; }
+ 
+
+  context-np(someone,  person, s-sg sg existential specific full)   _context-np(someone, somebody, person, s-sg sg existential specific full)
+  context-np(anyone,   person, s-sg sg variable    specific  full)   _context-np(anyone, anybody, person, s-sg sg  variable    specific full) 
+
+  context-np(something,  thing, s-sg sg existential  specific  full)   
+  context-np(anything,   thing, s-sg sg variable     specific  full)  
+
+  # deictics 'this' and 'that' defined with determiners below  
+
+
+  #-- Events --# 
+  
+  context-s(this, proximal specific unique)
+  context-s(that, distal   specific unique)
+  context-s(it, )
+  context-s(something, existential  specific )   
+  context-s(anything,  variable     specific )  
+
+  verb(do, doing, did, done, m-class-all, event,                v+deictic-event )
+
+
+  #-- Locations --#
+ 
+  _prp+(no-arg, context, there, location, prep-1 m-distal)
+  _prp+(no-arg, context, there, whereto,  prep-2 m-distal)
+  _prp+(no-arg, context, here,  location, prep-1 m-proximal)
+  _prp+(no-arg, context, here,  whereto,  prep-2 m-proximal)
+
+  # these are used as contexualized anchors for prepositions: 'I went in there', 'walk over to here'
+  # these use case loc-acc that only prepositions can accept
+
+  context-np(here, e-location, sg s-sg acc-loc proximal specific unique full) 
+  context-np(there, e-location, sg s-sg acc-loc distal specific  unique full)  
+    
+  prp+(no-arg, somewhere, location, prep-1 )  _prp+(no-arg, somewhere, anywhere, location, prep-1 )
+  prp+(no-arg, somewhere, whereto, prep-2 )  _prp+(no-arg, somewhere, anywhere, whereto, prep-2 )
+
+  #-- Temporal --#
+  
+  context-np(then, e-time, sg s-sg acc-loc specific unique full)  
+     
+
+#######################
+## ADJECTIVE RELATED ##
+#######################
+
+  word more : More-adj: comparative;
+  word most : Most-adj: superlative;
+  word than : Adj-er-than(m-comparison);
+
+################################################
+## MARKER (including dep and relative clauses ##
+################################################
+
+  word of  : NP-marker;
+  word by  : NP-marker;
+  word at  : NP-marker;
+  word to  : NP-marker;
+  word for : NP-marker;
+  word from : NP-marker;
+  word out_of : NP-marker;
+
+
+  word infinitive-to: Infinitive-to {to;}
+  word for-verb-ing: For-verb-ing {for;}
+  word that: Dep-clause-marker-no-sem;
+  word if: Dep-clause-marker;
+  word whether: Dep-clause-marker;
+
+  word that-RCn : Rel-Clause-np- {that ;}
+  word who-RCn  : Rel-Clause-np- {who ;}
+
+####################
+## DET and GROUPS ##
+####################
+  
+  word possessive-s: Det-poss-s { 
+		"'s": unique specific sg s-sg; 
+		"'s": unique specific pl s-pl; 
+  }	
+  
+  # These are higher order dictionary-entry macros
+  # which collect other dict-macros together to reduce redundancy in the grammar
+  #  
+  def det+context-np (form, args)  {
+      det(form, args) 
+      context-np(form,"entity",  args) 
+  }
+
+  def det+context-np+group-np  (form, args) {
+      det+context-np(form, args) 
+      group-np(form, args)
+  }
+
+  def sdet+context-np  (form, class, args) {
+      sdet(form, class, args)
+      context-np+modifier(form, class, args) 
+  }
+
+  def sdet+context-np+group-np (form, class, args) {
+        sdet+context-np(form, class,args) 
+	sgroup-np(form, class,args)
+  }
+
+  det                      (the,   s-sg      sg  unique      specific   )
+  det                      (the,   s-pl-sp   pl  unique      specific   ) 
+  det                      (the,   s-pl-unsp pl  unique      unspecific ) 
+  
+  det                      (a,     s-sg      sg  existential specific   )   
+  det                      (some,  s-sg      sg  existential specific   ) 
+  det+context-np+group-np  (some,  s-pl-unsp pl  existential unspecific )
+  det+context-np           (any,   s-sg      sg  variable    specific   )
+  det+context-np+group-np  (any,   s-pl-unsp pl  variable    unspecific )
+    
+  det+context-np           (this,  s-sg      sg  unique      specific   proximal)
+  det+context-np           (these, s-pl-unsp pl  unique      unspecific proximal)
+  det                      (these, s-pl-sp   pl  unique      specific   proximal)
+  det+context-np           (that,  s-sg      sg  unique      specific   distal  )
+  det+context-np           (those, s-pl-unsp pl  unique      unspecific distal  )
+  det                      (those, s-pl-sp   pl  unique      specific   distal  )
+
+  sdet+context-np+group-np (more, comparative, s-pl-unsp pl variable unspecific)
+  sdet+context-np+group-np (less, comparative, s-pl-unsp pl variable unspecific)
+  sdet+context-np+group-np (all,  quantity,    s-pl-sp      unique   unspecific)
+      sgroup-np-no-of      (all,  quantity,    s-pl-sp      unique   unspecific)
+   
+  sdet+context-np+group-np (both,     quantity, s-pl-sp    pl unique      specific)
+  sdet+context-np+group-np (another,  quantity, s-sg       sg existential specific)
+  sdet+context-np+group-np (the_rest, quantity, s-pl-unsp  pl unique      unspecific)
+  sdet+context-np+group-np (enough,   quantity, s-pl-unsp  pl variable    unspecific)
+  sdet+context-np+group-np (none,     quantity, s-pl-sp       variable    unspecific)
+  sdet+context-np+group-np (a_few,    quantity, s-pl-unsp  pl existential unspecific)  # FIX
+  sdet+context-np+group-np (several,  quantity, s-pl-unsp  pl existential unspecific)
+ 
+  sdet(No, quantity, s-sg    sg  variable specific   )
+  sdet(No, quantity, s-pl-sp pl  variable unspecific )
+  
+  sdet(every, quantity, s-sg     variable specific)
+
+#############
+## NUMBERS ##
+#############
+
+
+  # These dictionary entry macros handle the various uses of numbers
+  # Note that both numeric and "written out" versions are created 
+  # for both cardinal (1, 2, 3 ...) and ordinal numbers (1st, 2nd, 3rd ...)
+  #
+  def number(card, r-card) {number-irr (card, card."th", r-card, r-card."th") }
+  def number-irr(card, ord, r-card, r-ord) { number-basic (card, ord, r-card, r-ord, pl, s-pl-sp) }  
+  def number-basic (card, ord, r-card, r-ord, num, s-num) {
+		
+      	# CARDINAL		
+      	un-to-spec-det      (card,         "number-cardinal" ) # num s-num feat just repeated to fill slot
+      	un-to-spec-det      (r-card,       "number-cardinal" )
+      	_un-to-spec-det     (card, r-card, "number-cardinal" )
+  	_un-to-spec-det     (r-card, card, "number-cardinal" )
+      	
+      	sdet                (card,         "number-cardinal"  , num s-num existential specific)
+      	sdet                (r-card,       "number-cardinal"  , num s-num existential specific)
+      	_sdet               (card, r-card, "number-cardinal"  , num s-num existential specific)
+      	_sdet               (r-card, card, "number-cardinal"  , num s-num existential specific) 
+      	
+      	sgroup-np           (card,         "number-cardinal"  , num s-num existential specific)
+        sgroup-np           (r-card,       "number-cardinal"  , num s-num existential specific)
+        _sgroup-np          (card, r-card, "number-cardinal"  , num s-num existential specific)
+        _sgroup-np          (r-card, card, "number-cardinal"  , num s-num existential specific)
+
+      	context-n+modifier  (card,         "number-cardinal"  , s-num )
+      	context-n+modifier  (r-card,       "number-cardinal"  , s-num )
+      	_context-n+modifier (card, r-card, "number-cardinal"  , s-num )
+      	_context-n+modifier (r-card, card, "number-cardinal"  , s-num )
+      	
+      	context-np+modifier  (card,         "number-cardinal"  , num s-num  existential specific)
+      	context-np+modifier  (r-card,       "number-cardinal"  , num s-num existential specific)
+      	_context-np+modifier (card, r-card, "number-cardinal"  , num s-num existential specific)
+      	_context-np+modifier (r-card, card, "number-cardinal"  , num s-num existential specific)
+      	
+        number-id  (card )
+      	number-id  (r-card)
+      	_number-id (card, r-card)
+      	_number-id (r-card, card)
+
+	# ORDINAL (The predicate for ordinals is always the corresponding cardinal)
+      	
+        _adj-none           (card, ord,     "number-ordinal"   ,  ) 
+      	_adj-none           (r-card, r-ord, "number-ordinal"   ,  ) 
+      	_adj-none           (card, r-ord,   "number-ordinal"   ,  ) 
+      	_adj-none           (r-card, ord,   "number-ordinal"   ,  ) 
+      	
+      	_context-n+modifier (card, ord,     "number-ordinal"   , s-sg  )  
+      	_context-n+modifier (r-card, r-ord, "number-ordinal"   , s-sg  )  
+      	_context-n+modifier (card, r-ord,   "number-ordinal"   , s-sg  )  
+      	_context-n+modifier (r-card, ord,   "number-ordinal"   , s-sg  )  
+      	
+      	_sgroup-n            (card, ord,      "number-ordinal"   , s-sg  ) 
+        _sgroup-n            (r-card, r-ord,  "number-ordinal"   , s-sg  ) 
+  	_sgroup-n            (card, r-ord,    "number-ordinal"   , s-sg  ) 
+      	_sgroup-n            (r-card, ord,    "number-ordinal"   , s-sg  ) 
+  
+      	
+   
+ }
+  
+  number-basic(one, first, "1", "1st", s-sg, sg)
+     # This gives a reading equivalent to 'a ball'
+     det+context-np+group-np  (one,   s-sg sg  existential specific)        
+     # This is for handling the dummy noun for the contextual 'the ones on the table'
+	 context-n(ones, entity, s-pl full)  
+	 context-n(one, entity, s-sg full)
+	   
+  number-irr(two, second, "2", "2nd")
+  number-irr(three, third, "3", "3rd")
+  number(four, "4")
+  number-irr(five, fifth, "5", "5th")
+  number(six, "6")
+  number(seven, "7")
+  number-irr(eight, eighth, "8", "8th")
+  number(nine, "9")
+  number(ten, "10")
+  number(eleven, "11")
+  number(twelve, "12")
+  number(thirteen, "13")
+  number(fourteen, "14")
+  number(fifteen, "15")
+ 
+###############
+## ADVERBS   ##
+###############
+
+  # Purpose ascribing to, i.e. I went in to see him, I picked it up to play with it.
+
+  word to-purpose: Adv+verb-base- (m-purpose, pred=to)    {to: s-purpose ;}
+
+
+###############
+## PARTICLES ##
+###############
+
+  word up : Particle;
+
+  word cup: Particle (pred=up) {
+    cup: asr-correction ;
+  }
+
+###########
+## COORD ##
+###########
+
+  coord+(and, np,   entity, s-pl pl)
+  #coord+(and, n,    entity, s-pl pl)
+  coord+(then, np,   entity, s-pl pl) 
+#_coord+(then, and_then, np,   entity, s-pl pl)
+  #coord+(then, n,    entity, s-pl pl) 
+#_coord+(then, and_then,  n,   entity, s-pl pl)
+  
+  coord+(before, np,   entity, s-pl pl) 
+  #coord+(before, n,    entity, s-pl pl)
+  
+  coord+(after, np,   entity, s-pl pl) 
+  #coord+(after, n,    entity, s-pl pl)
+
+
+  coord+(or, np,   entity, s-sg)
+  #coord+(or, n,    entity, s-sg)
+
+  coord(and, s, event)
+  coord(but, s, event)
+  coord(then, s, event)   _coord(then, and_then, s, event)    
+  coord(or, s, event) 
+
+#  coord(and, prep, modifier)
+#  coord(but, prep, modifier)
+#  coord(then, prep, modifier) 
+# _coord(and, and_then, prep, modifier)
+#  coord(or, prep, modifier)
+
+  coord(and, adv, modifier)
+#  coord(but, adv, modifier)
+#  coord(then, adv, modifier)  
+#_coord(and, and_then, adv, modifier)
+  coord(or, adv, modifier)
+
+  coord(and, adj, quality)
+#  coord(but, adj, quality)
+#  coord(then, adj, quality) 
+# _coord(and, and_then, adj, quality)
+  coord(or, adj, quality)
+
+
+############
+# WH-WORDS #
+############
+
+  # This only handles a single family, not a list like 
+  # the underlying classes. This is due to string formation
+  #
+  def wh+extr(form, class, item, args) {
+    wh-word(form, class, "Wh-".item."-")
+  #  extr(form, class, "Extr-".item."-", args)
+  #  _extr(form, form."ever", class, "Extr-".item."-", args)  # must add features!
+  }
+  
+  def wh+extrrr(form, class, item, args) {
+    wh-word(form, class, "Wh-".item."-")
+    extr(form, class, "Extr-".item."-", args)
+    _extr(form, form."ever", class, "Extr-".item."-", args)  # must add features!
+  }
+  
+  wh+extrrr(who, animate, np , s-sg nf-real)
+  
+  wh+extrrr(what, entity, np , s-sg nf-real)
+  wh+extrrr(what, event, sent, fin)
+  
+  wh+extrrr(which, specifier, np-spec, nf-real)
+  wh+extrrr(which, specifier, np-spec-ctxt, nf-real)
+  
+  wh-word(which, specifier , Wh-np-spec-ctxt- Wh-np-qclass- Wh-adj-qclass-  )
+  #wh-word(which, specifier , Wh-np-spec- Wh-np-spec-ctxt- Wh-np-qclass- Wh-adj-qclass-  )
+  wh-word(what , specifier , Wh-np-spec- Wh-np-qclass- Wh-adj-qclass-  )
+  
+  wh-word(whose, owner , Wh-np-spec- Wh-np-spec-ctxt-)
+  
+  wh+extrrr(how_much, quantity, np-quant-mass  , s-sg nf-real)
+  wh+extrrr(how_many, quantity, np-quant-count , s-sg nf-real)
+  
+  # Adding degree-base here wasn't really 'intended'. It was to avoid having an
+  # empty arg slot in the wh+extr def
+  
+  wh+extr(how, quality, adj , s-degree-base cc-none)
+  wh+extr(how, quality, adj-degree , s-degree-base cc-none)
+  wh-word+feat(how, m-manner, Wh-sent-modifier-, s-manner)
+  extr(how, m-manner, Extr-adv-sent-modifier-, adv-2 s-manner x-manner)
+  
+  wh+extrrr(where, m-location, pp , prep-1 x-location )
+  wh-word+feat(where, m-location, Wh-sent-modifier-, s-location)
+  extr(where, m-location, Extr-pp-sent-modifier-,  prep-1 s-location x-location)
+  
+  wh+extrrr(where, m-dynamic, pp , x-dynamic prep-2 )
+  wh-word+feat(where, m-dynamic, Wh-sent-modifier-, s-dynamic)
+  extr(where, m-dynamic, Extr-pp-sent-modifier-,  prep-1 s-dynamic x-dynamic)
+  
+  # Time Questions
+  
+  wh-word+feat(when, m-time-point, Wh-sent-modifier-, s-time)
+  wh-word+feat(how_long, m-time-interval, Wh-sent-modifier-, s-time)
+  
+  
+  #wh-word(how, degree , Wh-adj-degree Extr-adj-degree )
+  #wh-word(how, quality, Wh-adj Extr-adj)
+  #wh-word+(how, m-manner, Wh-sent-modifier, s-manner)
+  #wh-word+(how, m-manner, Extr-adv-sent-modifier, adv-2 s-manner x-manner)
+  
+  # Prep-1 allows post-s, post-vp 
+  #        and post-n, i.e. it can handle 'the place where I put it', 'the room where I stayed' etc.
+   
+  #wh-word(where,  m-location, Wh-pp) 
+  #wh-word+(where, m-location, Wh-sent-modifier,        s-location)
+  #wh-word+(where, m-location, Extr-pp,                  prep-1 x-location)
+  #wh-word+(where, m-location, Extr-pp-sent-modifier,    prep-1 s-location x-location)
+  
+  #wh-word(where,  m-dynamic, Wh-pp)  
+  #wh-word+(where, m-dynamic, Wh-sent-modifier,     s-dynamic)
+  #wh-word+(where, m-dynamic, Extr-pp,               prep-1 x-dynamic)
+  #wh-word+(where, m-dynamic, Extr-pp-sent-modifier, prep-1 s-dynamic x-dynamic)
+  
+  quality-class(size)
+  quality-class(shape)
+  quality-class(color) _quality-class(color, colour)
+  quality-class(age)
+  quality-class(material)
+  quality-class(substance)
+  quality-class(temperature)
+  quality-class(orientation)
+  
+  
+  #wh-s-mod(where, m-location, s-location)
+  #wh-s-mod(blah, m-dynamic, s-dynamic)
+  #wh-s-mod(how, m-manner, s-manner)
+  
+
+
+############
+# BE-FORMS #
+############
+
+# These forms of the be verb are used by be as copular & as its various aux forms 
+# ( be + v+ing, be + passive )
+
+#PROSG09 :changes
+def be-forms (args) {
+    	am:        be  pres  1st     s-sg s-prov-pos      args;
+	are:       be  pres          s-pl s-prov-pos      args;
+        far:	   be  pres          s-pl s-prov-pos  asr-correction;
+	are:       be  pres  2nd     s-sg s-prov-pos      args;
+	"aren't":  be  pres          s-pl s-neg      neg  args;
+	"aren't":  be  pres  2nd     s-sg s-neg      neg  args;
+        is:        be  pres  3rd     s-sg s-prov-pos      e-focus-false e-uncontentious e-rheme-true e-speaker spkr args;
+        is:        be  pres  3rd     s-sg s-prov-pos      e-focus-false e-uncontentious e-rheme-false e-hearer hear args;
+        "is@H*":     be  pres  3rd     s-sg s-prov-pos     hs e-focus-true e-uncontentious e-rheme-true e-hearer hear args;
+        "is@H*":     be  pres  3rd     s-sg s-prov-pos     hs e-focus-true e-uncontentious e-rheme-true e-speaker spkr args;
+        "is@L+H*":   be  pres  3rd     s-sg s-prov-pos      e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs args;
+        "is@L+H*":   be  pres  3rd     s-sg s-prov-pos      e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs args;
+        "isn't":   be  pres  3rd     s-sg s-neg      neg  args;
+	"ain't":   be  pres               s-neg      neg  args;
+	was:       be  past  1st     s-sg s-prov-pos      args;
+	was:       be  past  3rd     s-sg s-prov-pos      args;
+	"wasn't":  be  past  1st     s-sg s-neg      neg  args;
+	"wasn't":  be  past  3rd     s-sg s-neg      neg  args;
+	were:      be  past  2nd     s-sg s-prov-pos      args;
+	were:      be  past          s-pl s-prov-pos      args;
+	"weren't": be  past  2nd     s-sg s-neg      neg  args; 
+	"weren't": be  past          s-pl s-neg      neg  args; 
+}
+
+
+###########
+# COPULAR #
+###########
+
+  # The copular and its negation
+  # There are two versions of this because the normal locational (I am here)
+  # is blocked from allowing additional post-modified locations
+  #
+  word be-copular: Copular(ascription, pred=be){
+  
+      be-forms(fin-full m-class-2x)
+  
+   	been:    pp        m-class-3; 
+        being:   ing       m-class-3;
+   	be:      vf-base   m-class-3; 
+  	be:      vf-to-imp m-class-3; 
+  
+  }
+  
+  word be-copular-loc: Copular-location(ascription, pred=be){
+  
+      be-forms(fin-full m-class-3)
+  
+      been:    pp        m-class-3; 
+      being:   ing       m-class-3;
+      be:      vf-base   m-class-3; 
+      be:      vf-to-imp m-class-3; 
+  
+  }
+  
+  
+  word not-cop-neg :Cop-negation{not: neg;}
+
+  word no-cop-neg :Cop-negation{No: neg asr-correction;}
+  
+  # The presentational there+be
+  # There are two versions of this because the inverted version
+  # is blocked from allowing additional post-modified locations
+  #
+  word be-presentational: Presentational(presentational, pred=be){
+  
+      be-forms(fin-full m-class-2)
+  
+      been:    pp      m-class-2; 
+      being:   ing     m-class-2;
+      be:      vf-base m-class-2; 
+  
+  }
+  
+  word be-presentational-inverted: Presentational-inverted(presentational, pred=be){
+  
+      be-forms(fin-full m-class-3)
+  
+      been:    pp      m-class-3; 
+      being:   ing     m-class-3;
+      be:      vf-base m-class-3; 
+  
+  }
+  
+   word dummy-there : Bare-np(dummy, pred=there){ there: nom dummy-there;}
+
+#####################
+## MODAL/AUX VERB ##
+#####################
+
+  # Modal Verbs #
+
+  modal(should, modal, pres)
+  modal(must,   modal, pres)
+  modal(would, modal, )
+  modal(could, modal, )
+  modal-irr(can,  "can't", modal, pres)
+  modal-irr(can,  "cannot", modal, pres)
+  modal-irr(will, "won't", modal, fut)
+   
+
+  # Auxilliary Verbs #
+
+  word not-aux-neg: Aux-negation {not: neg;}  # syntactic change from s-prov-pos to s-neg in family
+
+  # Note: currently  'I did go' is treated identically to 'I went'
+  #       and hence collapse. If we want emphatic do, it'll have to be
+  #       treated as a modal, and hence be given its own <Modal> dep reln.
+
+  word do-aux: Aux-vf-base(aux){
+    do:        do pres non-3rd s-sg  s-prov-pos e-focus-false e-uncontentious e-rheme-true e-speaker spkr;
+    do:        do pres non-3rd s-sg  s-prov-pos e-focus-false e-uncontentious e-rheme-false e-hearer hear;
+    "do@H*":   do pres non-3rd s-sg  s-prov-pos e-focus-true e-uncontentious e-rheme-true e-hearer hear hs;
+    "do@H*":   do pres non-3rd s-sg  s-prov-pos e-focus-true e-uncontentious e-rheme-true e-speaker spkr hs;
+    "do@L+H*": do pres non-3rd s-sg  s-prov-pos e-focus-true e-uncontentious e-rheme-false e-hearer hear lphs;
+    "do@L+H*": do pres non-3rd s-sg  s-prov-pos e-focus-true e-uncontentious e-rheme-false e-speaker spkr lphs;
+    "don't":   do pres non-3rd s-sg  s-neg      neg ;
+    do:        do pres         s-pl  s-prov-pos     ;
+    "don't":   do pres         s-pl  s-neg      neg ;
+    does:      do pres 3rd     s-sg  s-prov-pos     ;
+    "doesn't": do pres 3rd     s-sg  s-neg      neg ;
+    did:       do past               s-prov-pos	;
+    #did:       do past               s-prov-pos	e-focus-false e-uncontentious e-rheme-true e-speaker spkr;
+    #did:       do past               s-prov-pos	e-focus-false e-uncontentious e-rheme-false e-hearer hear    ;
+    "didn't":  do past               s-neg      neg ;
+  }
+  
+  word do-imp: imp-do {
+	do:        do   s-prov-pos     ;
+        "don't":   do   s-neg      neg ;
+  }
+
+  word lets-imp: imp-lets {
+      "let's":   do   s-pos      ;
+  }
+
+  word have-aux: Aux-pp(aux){   
+	have:      have pres perfect non-3rd s-sg  s-prov-pos      ;
+        "haven't": have pres perfect non-3rd s-sg  s-neg       neg ;
+	have:      have pres perfect         s-pl  s-prov-pos      ;
+        "haven't": have pres perfect         s-pl  s-neg       neg ;
+	has:       have pres perfect 3rd     s-sg  s-prov-pos      ;
+	"hasn't":  have pres perfect 3rd     s-sg  s-neg       neg ;
+	had:       have past perfect               s-prov-pos      ;
+	"hadn't":  have past perfect               s-neg       neg ;
+  }
+  word have-aux-no-int: Aux-no-int-pp(aux){  
+     have:   vf-base perfect;   # will have
+  }
+
+
+  word be-aux-vf-be: Aux-vf-be (aux) {
+    be-forms(nulltn)
+  }
+  word be-aux-vf-be-no-int: Aux-no-int-vf-be (aux) {
+    be:       vf-base  ;      # will be going, can be going, etc.
+    been:     pp       ;      # have been going
+  }
+
+  word be-aux-ing: Aux-ing (aux) {
+    be-forms(continuous)
+  }
+  word be-aux-ing-no-int: Aux-no-int-ing (aux) {
+    be:       vf-base  continuous;      # will be going, can be going, etc.
+    been:     pp       continuous;      # have been going
+  }
+
+
+  # Currently, no wh-questions can be handled in passsives, as this'll require
+  # adding a new 'passive' for for each...
+
+  word be-passive-aux: Aux-passive (aux) {
+     be-forms(passive)
+  } 
+  word be-passive-aux-no-int: Aux-no-int-passive (aux) {
+   be:      vf-base passive;       
+   being:   ing     passive;       
+   been:    pp      passive;            
+  } 
+
+ word get-passive-aux: Aux-no-int-passive (aux) {
+     get:      fin-full passive pres s-pos do non-3rd s-sg  ;  	
+     gets:     fin-full passive pres s-pos do 3rd     s-sg  ;
+     get:      fin-full passive pres s-pos do         s-pl  ;
+     got:      fin-full passive past s-pos do               ;
+     get:      vf-base  passive;       
+     getting:  ing      passive;       
+     got:      pp       passive;            
+  } 
+
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains most dictionary entries, specifically, the 'open class words' 
+#     i.e. nouns, verbs, adjectives, adverbs, prepositions, 
+#          discourse-markers, mod-modifiers (VERY big, OVER on the table, etc.)
+# It also includes some higher level macros for defining larger clusters of words
+# These are marked with --MACRO-- (see documentation)
+
+
+
+# The entries have been sorted first by 'Part of Speech' then by ontological sort (person, thing, etc)
+
+# All entries are entered using one of the 'dictionary-entry' macros (defs)
+# listed in the various .ccg files in the grammar proper. 
+
+# Although, of course, you must check the apporpriate file for specifics,
+# the standard convention for these dictionary-entry macros is 
+#
+#     macro-name( various forms, 
+#                 ontological sort (i.e. class),
+#                 other arguments (including feature-macros, family listing)
+#                )
+#
+# For alternate forms/variations, i.e. different entries with the same predicate
+# (e.g. forward, forwards) for each additional form, you must add a separate entry
+# using the alternate-form macro.
+#
+#     _macro-name( predicate,
+#                  various forms,
+#                  ontological sort (i.e. class),
+#                  other arguments (including feature-macros, family listing)
+#                ) 
+#
+# This is identical to the standard macro, except, it is prefaced with an underscore _, 
+# and the first element is the predicate, then the alternate variation in all of its forms
+# 
+#  e.g. Here are the entries for the adverbs 'slow' & alternate 'slowly' 
+#           adverb(slowly, manner, adv-all,) 
+#          _adverb(slowly, slow, manner, adv-all,)
+
+# NOTE:
+# There is currently, unlike in moloko.v4, no way of handling Multi-word expressions. 
+
+
+###########
+## NOUNS ##
+###########
+
+  # ----MACRO----
+  #   This gives every relevant proper name a Discourse Marker reading, 
+  #   allowing it to function as a vocative
+  #        e.g. GJ could you come here
+  #   NOTE: NO CO-INDEXING occurs for this in the grammar
+  #
+  def name+vocative(form, class) {_name+vocative(form, form, class) }
+  def _name+vocative(prd, form, class){
+     _name(prd, form, class,)
+     _dis-marker+(prd, form, class, fin-full) # blocks from getting 'GJ has a ball'... to parse as contextualized, 'GJ, has a ball been put here recently'
+  }
+
+  #-- Person --#
+
+  noun(person, person,)
+  noun(boy, person,)
+  noun(girl, person,)
+  noun(dad, person,)
+  noun(mom, person,)  _noun(mom, mamma, person,)
+  noun-irr(man, men, person,)
+  noun-irr(woman, women, person,)
+  noun-irr(child, children, person,)
+  noun(guy, person,)
+  noun(secretary, person,)
+  noun-irr(policeman, policemen, person,)
+  noun(janitor, person,)
+  noun(student, person,)
+  noun(researcher, person,)
+  noun(pirate, person,)
+
+  name+vocative(GJ, person,)
+  name+vocative(Trevor, person,)	
+  name+vocative(Hendrik, person,)	
+  name+vocative(Henrik, person,)	
+  name+vocative(Pierre, person,)
+  name+vocative(Patric, person,)		
+  name+vocative(Nick, person,)	
+  name+vocative(Michael, person,)	
+  name+vocative(Oscar, person,)	
+  name+vocative(Daniel, person,)	
+  name+vocative(Maria, person,)	  
+  name+vocative(Jeremy, person,)	
+  name+vocative(Aaron, person,)	
+  name+vocative(Chandana, person,)	
+   name+vocative(Hans, person,)
+   name+vocative(Dennis, person,)
+   name+vocative(George, person,)
+
+  _noun(Robot, rowboat, animate, asr-correction)
+
+
+  noun(Borland, entity,) 
+  
+  #-- Animate --#
+ 
+  name+vocative(Robot, animate) _name+vocative(Robot, robot, animate)
+   
+  noun(dog, animate,) 
+  noun(cat, animate,) 
+  noun-irr(fish, fish, animate,) 
+  noun(cow, animate,) 
+  noun(mouse,animate,)
+  noun(animal, animate,) 
+  noun(robot, animate,) 
+ 
+  #-- Thing --#
+  
+  noun(thing, thing,)
+  noun(object, thing,)
+  noun(entity, thing,)
+ 
+  noun(triangle, thing,) 
+  noun(square, thing,) 
+  noun(star, thing,) 
+  noun(circle, thing,) 
+ 
+  noun(cone,thing,)
+  noun(cylinder, thing,)
+  noun(boat, thing,)
+
+  noun(cable, thing,)
+  noun(fruit, thing,)  
+  noun(bed, thing,)
+  noun(pen, thing,)
+  noun(glue, thing,)
+  noun(row, thing,)
+  noun(curtain, thing,)
+  noun(mattress, thing,)
+  noun(mountain, thing,)
+  noun(arm, thing,)
+  noun(board, thing,)
+
+  noun(flag, thing,) 
+   
+  noun(game, thing,) 
+    
+  noun(car, thing,)
+  noun(wall, thing,)
+    
+  noun(pizza, thing,) 
+  noun(thing, thing,) 
+  noun(book, thing,) 
+  noun(ball, thing,) 
+  noun(block, thing,) 
+  noun(box, thing,) 
+
+  word box2-noun-n:Noun(thing, pred=box) { blocks :  s-sg full asr-correction; }
+  word box3-noun-n:Noun(thing, pred=box) { ball :  s-sg full asr-correction; }
+  word box4-noun-n:Noun(thing, pred=box) { books :  s-sg full asr-correction; }
+
+ 
+  noun(bucket, thing,) 
+  noun(pin, thing,) 
+  noun(cube, thing,) 
+
+  noun(trophy, thing,) 
+  noun-irr(tooth, teeth, thing,) 
+  noun(mug, thing,) 
+  noun(cup, thing,) 
+  noun(jug, thing,) 
+  noun(keyboard, thing,) 
+  noun(laptop, thing,) 
+  noun(screen, thing,) 
+  noun(computer, thing,) 
+  noun(mp3-player, thing,) 
+  noun(minidisc-recorder, thing,) 
+  noun(needle, thing,) 
+  noun(thread, thing,) 
+  noun-mass(thread, thing,) 
+  noun(flower, thing,) 
+  noun(phone, thing,) _noun(phone, telephone, thing,)
+  noun(mobile, thing,) _noun(mobile, cell, thing,) _noun(mobile, handy, thing,) _noun(mobile, cellphone, thing,)  
+  noun(letter, thing,) 
+  noun(mailbox, thing,) 
+  noun(copier, thing,) 
+  noun(fax, thing,) 
+  noun(printer, thing,) 
+  noun(column, thing,)  _noun(column, pillar, thing,)
+  noun-mass(furniture, thing,) 
+  noun(floor, thing,) 
+  noun(door, thing,) 
+  noun(couch, thing,) _noun(couch, sofa, thing,)
+  noun(tv, thing,)  _noun(tv, television, thing,)
+  noun(oven, thing,) _noun(oven, cooker, thing,) _noun(oven, stove, thing,)
+  noun(tabletop, thing,) _noun(tabletop, desktop, thing,)
+  noun(fridge, thing,)   _noun(fridge, refridgerator, thing,)
+  noun(microwave, thing,)   
+  noun-irr(shelf, shelves, thing,) 
+  noun(closet, thing,)
+  noun(desk, thing,)
+  noun(table, thing,)
+  noun(chair, thing,)   
+  noun(scenery, thing,) 
+  noun(fax, thing,)   
+  noun(machine, thing,) 
+  noun(kettle, thing,) 
+  noun-mass(scissors, thing,) 
+  noun-mass(food, thing,) 
+
+  # NOTE: How handle 'a water' and 'some water'??
+ 
+  noun(chocolate, thing,)
+  noun(tea, thing,) 
+  noun(coffee, thing,) 
+  noun(water, thing,) 
+   
+  #-- e-substance --#
+
+  noun-mass(tea, e-substance,)
+  noun-mass(coffee, e-substance,)
+  noun-mass(chocolate, e-substance,) 
+  noun-mass(water, e-substance,) 
+  
+  noun-mass(tee, e-substance,)
+  noun-mass(iron, e-substance,)
+
+  noun-mass(wood, e-material,) 
+  noun-mass(metal, e-material,) 
+  noun-mass(plastic, e-material,) 
+	  
+  #-- e-event --#
+
+  noun(event,       e-event,) 
+  noun(competition, e-event,) 
+  noun(interaction, e-event,) 
+
+  #-- e-location --#
+
+  noun(place, e-place,) 
+  noun(office, e-place,) 
+  noun(room, e-place,)   
+  noun(hall, e-place,)  _noun(hall, hallway, e-place,) _noun(hall, corridor, e-place,)
+  noun(bathroom, e-place,) _noun(bathroom, washroom, e-place,) _noun(bathroom, toilet, e-place,) _noun(bathroom, wc, e-place,)
+  noun(lab, e-place,)  _noun(lab, laboratory, e-place,) 
+  noun(kitchen, e-place,) 
+  noun(library, e-place,)
+  noun(livingroom, e-place,)
+  noun(recreationroom, e-place,)
+  noun(library, e-place,)
+  
+  noun(secretariat, e-place,)
+  noun(lobby, e-place,)
+  noun(entrance, e-place,)
+  noun(lift, e-place,) _noun(lift, elevator, e-place,)
+  noun(stairs, e-place,) _noun(stairs, starecase, e-place,)
+  noun(floor, e-place,)
+  noun(way, e-place,)
+  noun(direction, e-place,)
+  noun(university, e-place,)
+  noun(station, e-place,)   # must handle charging station
+
+  # feature values cc-none and n-1, n-2, n-3 restrict the noun's behaviour in Noun-Noun Compounds
+  #
+  noun(location, e-place,)   noun+(of-np, location, e-place, n-1)
+  noun(area, e-place,)       noun+(of-np, area, e-place, n-1)
+
+  name(DFKI, e-place,)		  noun(DFKI, e-place,)
+  name(Starbucks, e-place,) 	  noun(Starbucks, e-place,)
+
+  #-- e-region --#
+
+  noun(side, e-region,)    noun+(of-np, side, e-region, n-1)
+  noun(edge, e-region,)    noun+(of-np, edge, e-region, n-1)
+  noun(corner, e-region,)  noun+(of-np, corner, e-region, n-1)
+  noun(beginning, e-region,)  noun+(of-np, beginning, e-region, n-1)
+  noun(start, e-region,)   noun+(of-np, start, e-region, n-1)
+  noun(end, e-region,)     noun+(of-np, end, e-region, n-1)	      
+  noun(front, e-region,)   noun+(of-np, front, e-region, n-1)
+  noun(back, e-region,)    noun+(of-np, back, e-region, n-1)
+  noun(top, e-region,)     noun+(of-np, top, e-region, n-1)
+  noun(bottom, e-region,)  noun+(of-np, bottom, e-region, n-1)
+  noun(middle, e-region,)  noun+(of-np, middle, e-region, n-1)
+  noun(section, e-region,) noun+(of-np, section, e-region, n-1)
+  noun(part, e-region,)    noun+(of-np, part, e-region, n-1)
+  
+  #-- e-time --#
+  
+  noun(time, e-time,)
+  noun-mass(time, e-time,)
+  
+  noun(second, e-time-unit,)    _noun(second, sec, e-time-unit,)  
+  noun(minute, e-time-unit,)  
+  noun(hour, e-time-unit,)   
+  noun(week, e-time-unit,)   
+  noun(day, e-time-unit,)   
+  noun(month, e-time-unit,)   
+  noun(year, e-time-unit,)   
+
+  noun-mass(while, e-time-unit, cc-none)
+  noun-mass(bit, e-time-unit, cc-none)
+
+
+  #-- e-measure --#
+  
+  noun+(of-np, piece, e-measure, n-2)
+  noun+(of-np, set, e-measure, n-2)
+  noun+(of-np, pile, e-measure, n-2)
+  noun+(of-np, few, e-measure, n-2)
+  noun+(of-np, group, e-measure, n-2)
+  noun+(of-n, kind, e-measure, n-2) _noun+(of-n, kind, sort, e-measure, n-2) _noun+(of-n, kind, type, e-measure, n-2)
+
+  # ???? #   MUST BE GIVEN PROPER SORTS
+ 
+  noun(name, entity, )  noun+(of-np, name, entity, cc-none )
+  noun(case, entity, )  
+
+  noun(color, entity, n-3) noun+(of-np, color, entity, cc-none ) _noun(color, colour, entity, n-3 ) _noun+(of-np, color, colour, entity, cc-none )
+  noun(shape, entity, n-3) noun+(of-np, shape, entity, cc-none ) 
+  noun(size, entity, n-3)  noun+(of-np, size, entity, cc-none )
+
+  noun(question, entity, )    
+  noun(answer, entity, )    
+  noun(help, entity, )    
+  noun(guidance, entity, ) 
+  noun(aid, entity, ) 
+  noun(suggestion, entity, ) 
+
+  noun(look, entity, )   # used in 'take a look'
+  noun(peek, entity, )
+
+  
+
+################
+## ADJECTIVES ##
+################
+
+
+  #-- q-attitude --#
+
+  adj-deg(good, better, best, q-attitude,)
+  adj-deg(bad, worse, worst, q-attitude,)
+  adj-deg(sorry, sorrier, sorriest, q-attitude,)
+  adj-deg(cool, cooler, coolest , q-attitude,)
+  adj-deg(guilty, guiltier, guiltiest, q-attitude,)
+  adj-deg(happy, happier, happiest, q-attitude,)
+  adj-deg(sad, sadder, saddest, q-attitude,)
+  adj-deg(nice, nicer, nicest, q-attitude,)
+  adj-deg(great, greater, greatest, q-attitude,)
+  adj-deg(fine, finer, finest, q-attitude,)
+ 
+  adj-none(sure, q-attitude,)  
+  adj-none(ok, q-attitude,)  
+  adj-none(important, q-attitude,)  
+  adj-none(correct, q-attitude,)  
+  adj-none(incorrect, q-attitude,) 
+  adj-none(right, q-attitude,) 
+  adj-none(wrong, q-attitude,)  
+  adj-none(true, q-attitude,) 
+  adj-none(false, q-attitude,)  
+  
+  adj-none(elongated,q-shape,)
+
+  #-- q-size --#
+  
+  adj-deg(big, bigger, biggest, q-size,) 
+  adj-deg(small, smaller, smallest, q-size,)
+  adj-deg(tiny, tinier, tiniest, q-size,) 
+  adj-deg(huge, huger, hugest, q-size,) 
+  adj-deg(large, larger, largest, q-size,) 
+
+  #-- q-color --#
+
+  adj-deg(red, redder, reddest, q-color,)
+  adj-deg(blue, bluer, bluest, q-color,)
+  adj-deg(green, greener, greenest, q-color,)  
+  adj-deg(yellow, yellower, yellowest, q-color,)  
+  adj-deg(orange, oranger, orangest, q-color,)
+
+  adj-deg(pink, pinker, pinkest, q-color,)
+  adj-deg(black, blacker, blackest, q-color,)  
+  adj-deg(white, whiter, whitest, q-color,)
+  adj-deg(grey, greyer, greyest, q-color,)  
+  adj-deg(brown, browner, brownest, q-color,)
+  adj-deg(purple, purpler, purplest, q-color,)  
+
+  adj-deg(dark, darker, darkest, q-color,)
+  adj-deg(light, lighter, lightest, q-color,)  
+  
+  #-- q-shape --#
+  
+  adj-deg(long,longer,longest,q-shape,)
+  adj-deg(short,shorter,shortest,q-shape,)
+  adj-deg(tall,taller,tallest,q-shape,) 
+  adj-deg(narrow,narrower,narrowest,q-shape,)   
+  adj-deg(wide,wider,widest,q-shape,) 
+  adj-deg(fat,fatter,fattest,q-shape,)   
+  adj-deg(thin,thinner,thinnest,q-shape,) 
+  adj-deg(round,rounder,roundest,q-shape,)  
+  adj-none(oval,q-shape,) 
+  adj-none(cubic,q-shape,) 
+  adj-none(spherical,q-shape,) 
+  adj-none(square,q-shape,)   
+  adj-none(triangular,q-shape,)   
+  adj-none(compact,q-shape,)   
+  adj-none(elongated,q-shape,)   
+
+
+  #-- q-physical --#
+ 
+  adj-none(open,q-physical,) 
+  adj-none(closed,q-physical,) 
+  
+  adj-none(cluttered,q-physical,) 
+  adj-none(accessible,q-physical,) 
+  adj-none(inaccessible,q-physical,) 
+  adj-none(reachable,q-physical,) 
+  adj-none(unreachable,q-physical,) 
+  adj-none(visible,q-physical,) 
+  adj-none(invisible,q-physical,) 
+  adj-none(graspable,q-physical,) 
+  adj-none(ungraspable,q-physical,) 
+  
+  #-- q-location --#
+  
+  # NOTE: left & right, near & far are in directions (in prep) below
+  
+  adj-none(top,q-location,) 
+  adj-none(bottom,q-location,) 
+  adj-none(middle,q-location,) 
+ 
+  #-- q-age --#
+  
+  adj-deg(old, older, oldest, q-age,)  
+  adj-deg(young, younger, youngest, q-age,)
+   
+  #-- q-number --#
+    
+  # Numbers handled in dictionary-closed
+  
+  #-- q-position --#
+
+  adj-none(first,q-position,) 
+  adj-none(last,q-position,)
+  adj-none(next,q-position,)
+  adj-none(previous,q-position,)
+  adj-none(other,q-position,) 
+    
+  #-- q-state --#
+  
+  adj-none(empty,q-state,) 
+  adj-none(full,q-state,) 
+  adj-none(hungry,q-state,)   
+  adj-none(thirsty,q-state,)
+  adj-none(tired,q-state,) 
+  adj-none(finished,q-state,) 
+  adj-none(started,q-state,)   
+  adj-none(on,q-state,) 
+  adj-none(off,q-state,) 
+  adj-none(ready,q-state,)   
+ 	   	   
+  # ???? #   MUST BE GIVEN PROPER SORTS
+
+  adj-none(known,quality,)
+  adj-none(unknown,quality,)
+
+  adj-none(same,quality,)
+  adj-none(raw,quality,)
+
+
+############
+## VERBS  ##
+############
+  
+  # to block a verb from receiving an imperative reading, use ....-no-imp
+  # e.g. verb-no-imp or verb-reg-no-imp
+  
+  #-- action-motion --#
+  
+  verb(go, going, went, gone, m-class-all, action-motion,                iv )
+  verb(come, coming, came, come, m-class-all, action-motion,             iv )
+  verb-reg(return, m-class-all, action-motion,                           iv )
+  verb-reg(walk, m-class-all, action-motion,                             iv )
+  verb-reg(turn, m-class-all, action-motion,                             iv )
+  verb-reg(follow, m-class-all, action-motion,                           iv tv )
+  verb-reg(pass, m-class-all, action-motion,                             iv )
+  verb(move, moving, moved, moved, m-class-all, action-motion,           iv tv v+np+pp-whereto)
+  
+  verb(bring, bringing, brought, brought, m-class-all, action-motion,    iv )
+  
+ verb-reg(drive, m-class-all, action-motion,                           iv tv )
+
+    
+  #-- action-non-motion --#
+  
+  verb-reg(play, m-class-1, action-non-motion,                           iv tv) 
+     # NOTE: Changed to m-class 1, aug 20, to allow 'how did we play the colour game'. Which how was meant here???
+  verb(win, winning, won, won, m-class-2, action-non-motion,             iv tv)  
+  verb(lose, losing, lost, lost, m-class-2, action-non-motion,           iv tv) 
+  verb-reg(kill, m-class-2, action-non-motion,                           tv) 
+  verb-reg(bother, m-class-2, action-non-motion,                         tv)
+  
+  _verb-no-imp(go-loc, go, going, went, gone, m-class-3, action-non-motion,       v+pp-loc)  # they go on the table. where does this go
+  
+  verb(buy, buying, bought, bought, m-class-1, action-non-motion,        tv dtv )
+  verb(give, giving, gave, given, m-class-1, action-non-motion,          tv dtv dtv-to )
+  
+  #verb(get, getting, got, got, m-class-1, action-non-motion,             tv dtv dtv-to v+np+pp-whereto )
+  #verb(take, taking, took, taken, m-class-1, action-non-motion,          tv v+np+pp-whereto)
+  #verb(bring, bringing, brought, brought, m-class-1, action-non-motion,  tv dtv dtv-to v+np+pp-whereto )
+  #verb-reg(fetch, m-class-1, action-non-motion,  tv dtv)
+  
+     verb-reg(remove, m-class-all, action-non-motion,  tv dtv)
+     verb-reg(rotate, m-class-all, action-motion,  tv dtv)
+
+  # NOTE: Aug 20, changed to m-class-all to allow parsing 'from', i.e. get me the ball from the table
+  # 
+  verb(get, getting, got, got, m-class-all, action-non-motion,             tv dtv dtv-to v+np+pp-whereto )
+  verb(take, taking, took, taken, m-class-all, action-non-motion,          tv v+np+pp-whereto)
+  verb(bring, bringing, brought, brought, m-class-all, action-non-motion,  tv dtv dtv-to v+np+pp-whereto )
+  verb-reg(fetch, m-class-all, action-non-motion,  tv dtv)
+  
+  
+  verb(eat, eating, ate, ate, m-class-1, action-non-motion,              iv tv)
+  verb(drink, drinking, drank, drank, m-class-1, action-non-motion,      iv tv)
+  
+  verb(sleep, sleeping, slept, slept, m-class-1, action-non-motion,      iv )
+  
+  verb(stand, standing, stood, stood, m-class-1, action-non-motion,      iv )
+  verb(sit, sitting, sat, sat, m-class-1, action-non-motion,             iv )
+  verb-reg(wait, m-class-1, action-non-motion,                           iv v+for-np)
+  
+  verb(put, putting, put, put, m-class-1, action-non-motion,             v+np+pp-whereto )
+  
+  verb-reg(pick, m-class-1, action-non-motion,                           v+np+prt )
+  verb(make, making, made, made, m-class-1, action-non-motion,           tv v+np+verb-base v+np+adj v+np+of-np-result v+np+from-np-result v+np+out_of-np-result)
+  
+  verb(find, finding, found, found, m-class-2, action-non-motion,            tv dtv) 
+  verb(show, showing, shown, shown, m-class-2, action-non-motion,            tv dtv) 
+  verb(explore, exploring, explored, explored, m-class-2, action-non-motion, iv tv) 
+  verb-reg(search, m-class-2, action-non-motion,                             iv v+for-np)
+     _verb-reg(search, look, m-class-2, action-non-motion,                   iv v+for-np)
+  verb(find, finding, found, found, m-class-2, action-non-motion,            iv tv) 
+  
+  verb-reg(help, m-class-2, action-non-motion,                           tv v+np+verb-base)
+  verb(use, using, used, used, m-class-2, action-non-motion,             tv v+instrumental-np+verb-inf) 
+  verb-reg(fix, m-class-2, action-non-motion,                            tv)
+  verb(break, breaking, broke, broke, m-class-2, action-non-motion,      tv) 
+  
+  #-- cognition --#
+  
+  verb(know, knowing, knew, known, m-class-3, cognition, iv tv v+adj v+pp v+dep-clause)
+  verb(understand, understanding, understood, understood, m-class-3, cognition, iv tv v+adj v+pp v+dep-clause )
+  
+  # DO WE NEED TO SEPARATE THESE UP ON THEIR TYPE i.e. Modal vs Not
+  
+  verb(mean, meaning, meant, meant, m-class-3, cognition,         tv v+verb-inf v+dep-clause)
+  
+  verb-reg(want, m-class-3, cognition,                                    tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj) 
+  verb-reg(need, m-class-3, cognition,                                    tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj) 
+  verb(like, liking, liked, liked, m-class-3, cognition,                  tv v+verb-inf v+np+verb-inf v+np+pp-loc v+np+adj) 
+  verb(memorize, memorizing, memorized, memorized, m-class-3, cognition,  tv)
+  
+  verb(assume, assuming, assumed, assumed, m-class-3, cognition,         v+dep-clause)
+  verb(hope, hoping, hoped, hoped, m-class-3, cognition,                 v+dep-clause v+verb-inf) 
+  verb(suppose, supposing, supposed, supposed, m-class-3, cognition,     v+dep-clause v+verb-inf)
+  verb(think, thinking, thought, thought, m-class-3, cognition,          v+dep-clause)
+  verb(believe, believing, believed, believed, m-class-3, cognition,     v+dep-clause)
+  verb(imagine, imagining, imagined, imagined, m-class-3, cognition,     v+dep-clause)
+  verb(bet, betting, bet, bet, m-class-3, cognition,                     v+dep-clause)
+  verb-reg(guess, m-class-3, cognition,                                  v+dep-clause)
+  verb(figure, figuring, figured, figured, m-class-3, cognition,         v+dep-clause)
+  
+  #-- communication --#
+  
+  verb(tell, telling, told, told, m-class-2, communication,              tv v+np+verb-inf v+np+dep-clause dtv dtv-to v+np+pp-loc)
+  verb-reg(ask, m-class-2, communication,                                iv tv v+np+verb-inf v+np+dep-clause dtv dtv-to v+np+pp-loc)
+  verb(say, saying, said, said, m-class-2, communication,                iv v+dep-clause)
+  verb-reg(explain, m-class-2, communication,                            tv dtv dtv-to)
+  verb-reg(talk, m-class-2, communication,                               iv v+to-np v+with-np)
+  verb(speak, speaking, spoke, spoke, m-class-2, communication,          iv v+to-np v+with-np)
+  
+  verb (excuse, excusing, excused, excused, m-class-2, communication,    tv dtv-for v+Rec-np+for-verb-ing)
+  verb-reg(pardon, m-class-2, communication,                             tv dtv-for v+Rec-np+for-verb-ing)
+  verb(thank, thanking, thanked, thanked, m-class-2, communication,      dtv-for v+Rec-np+for-verb-ing)
+  word thanks-verb: Thanks(communication, pred=thank) { thanks: m-class-5 fin pres s-pos ; thank_you: m-class-5 fin pres s-pos;}
+     # special verb family which creates indicative with <recipient>addressee and <actor>speaker
+# m-class5 blocks all modification but comments
+
+#-- perception --#
+
+def per-fams() {iv tv v+np+verb-base v+np+verb-ing v+deictic-event} 
+  
+  verb(see, seeing, saw, seen, m-class-2, perception,                   per-fams() )
+  verb-reg(watch, m-class-2, perception,                                per-fams() )
+  verb-reg(look, m-class-2, perception,                                 per-fams() v+adj )
+  verb(observe, observing, observed, observed, m-class-2, perception,   per-fams() )
+  
+  verb-reg(listen, m-class-2, perception,          iv v+to-np)
+  verb(hear, hearing, heard, heard, m-class-2, perception,              per-fams() )
+  verb-reg(sound, m-class-2, perception,                                v+adj )
+  
+  verb-reg(touch, m-class-2, perception,                                tv)
+  verb(feel, feeling, felt, felt, m-class-2, perception,                tv v+adj)
+  
+  #-- symbolic --#
+  
+  verb-reg(call, m-class-2, symbolic,                           tv )
+  verb(name, naming, named, named, m-class-2, symbolic,         tv )
+  
+  #-- state --#
+  
+  verb-basic(have, has, having, had, had, m-class-2, ascription,           tv )
+  verb(feel, feeling, felt, felt, m-class-2, ascription,                   v+adj )
+  verb(get, getting, got, got, m-class-2, ascription,                      v+adj )
+  verb(become, becoming, became, become, m-class-2, ascription,            v+adj )
+  
+  #-- event --#
+  
+  verb-reg(happen, m-class-2x, event,   iv v+to-np )
+  
+  #-- modal/aspectual verbs --#
+  
+  # These verbs have two entries. 1 is for the case where the 'aspectualized' event is
+  # explicitly mentioned (e.g. I continued going down the hall). The second receives only
+  # an 'implicit' event, (e.g. I continued down the hall)
+  # The first is blocked to m-class-3 so that its event comp will receive the modifiers
+  # In the second case, since there is no explicit verb here, the aspect verb
+  # must be free for any kind of modification (m-class-all)
+  
+  verb(keep, keeping, kept, kept, m-class-3, modal,                    v+verb-ing v+np+verb-ing) 
+  verb(keep, keeping, kept, kept, m-class-all, modal,                  iv)
+  
+  verb(continue, continuing, continued, continued, m-class-3, modal,   v+verb-inf v+verb-ing ) 
+  verb(continue, continuing, continued, continued, m-class-all, modal, iv)
+  
+  verb(try, trying, tried, tried, m-class-3, modal,                    v+verb-inf v+verb-ing ) 
+  verb(try, trying, tried, tried, m-class-all, modal,                  iv) 
+  
+  verb-reg(start, m-class-3, modal,                                    v+verb-inf v+verb-ing v+np+verb-ing) 
+  verb-reg(start, m-class-all, modal,                                  iv)
+  
+  verb(begin, beginning, began, begun, m-class-3, modal,               v+verb-ing) 
+  verb(begin, beginning, began, begun, m-class-all, modal,             iv) 
+  
+  verb-reg(restart, m-class-3, modal,                                  v+verb-ing v+np+verb-ing) 
+  verb-reg(restart, m-class-all, modal,                                iv)
+   
+  verb-reg(finish, m-class-3, modal,                                   v+verb-ing v+deictic-event) 
+  verb-reg(finish, m-class-all, modal,                                 iv) 
+  
+  verb(stop, stopping, stopped, stopped, m-class-3, modal,             v+verb-ing v+np+verb-ing v+deictic-event) 
+  verb(stop, stopping, stopped, stopped, m-class-all, modal,           iv)
+   
+  verb(quit, quitting, quit, quit, m-class-3, modal,                   v+verb-ing v+deictic-event) 
+  verb(quit, quitting, quit, quit, m-class-all, modal,                 iv) 
+  
+  verb-reg(got, m-class-3, modal,                                      v+verb-inf)
+  verb(have, having, had, had, m-class-3, modal,                       v+verb-inf)
+  
+  verb-reg(happen, m-class-3, modal,                                   v+verb-inf)
+  verb-reg(seem, m-class-3, modal,                                     v+verb-inf)
+
+  verb(let, letting, let, let, m-class-4, modal,                       v+np+verb-base)
+  
+  adjectival-verb(able, m-class-3, modal,    v+verb-inf)
+  adjectival-verb(willing, m-class-3, modal, v+verb-inf)
+  adjectival-verb(supposd, m-class-3, modal, v+verb-inf)
+
+
+##################
+## PREPOSITIONS ##
+##################
+
+#-- Location & Dynamic --#
+
+  prp(at, location, prep-all)
+
+  prp(onto,  whereto, prep-2)
+  prp(into,  whereto, prep-2)
+  prp(toward,  whereto, prep-2) _prp(toward, towards, whereto, prep-2) 
+
+  prp(from, wherefrom, prep-2) # dynamic event reading      (I went from the office to the kitchen)
+ # prp(from, location, prep-3)  # static locational reading  (the girl from the office is nice)
+  prp(off, wherefrom, prep-2)
+  prp+(of-np, out, wherefrom, prep-2)
+
+  prp(through, through, prep-2)
+        prp+(no-arg, through, direction, prep-2)    
+  prp(across, through, prep-2)
+        prp+(no-arg, across, direction, prep-2)    
+
+  ## Restricts sort of anchor to e-region (i.e. to the right, to the corner)
+  prp--(region, to, location, prep-all)   prp(to,  whereto, prep-2)
+										      
+  prp(on, location, prep-all)        prp(on, whereto, prep-2)
+  prp(around, location, prep-all)    prp(around, whereto, prep-2)
+       prp+(no-arg, around, direction, prep-2)    
+  prp(beside, location, prep-all)    prp(beside, whereto, prep-2)
+  prp(over, location, prep-all)      prp(over, whereto, prep-2)
+  prp(above, location, prep-all)     prp(above, whereto, prep-2) 
+  prp(under, location, prep-all)     prp(under, whereto, prep-2) 
+     _prp(under, underneath, location, prep-all)             _prp(under, underneath, whereto, prep-2) 
+  prp(below, location, prep-all)     prp(below, whereto, prep-2) 
+  prp(by, location, prep-all)        prp(by, whereto, prep-2) 
+  prp(behind, location, prep-all)    prp(behind, whereto, prep-2) 
+  prp(up, location, prep-all)        prp(up, whereto, prep-2) 
+      prp+(no-arg, up, direction, prep-2)    
+  prp(down, location, prep-all)      prp(down, whereto, prep-2) 
+       prp+(no-arg, down, direction, prep-2)      
+  prp(along, location, prep-all)     prp(along, whereto, prep-2)
+     _prp(along, alongside, location, prep-all)             _prp(along, alongside, whereto, prep-2)  # alongside
+  prp(opposite, location, prep-all)  prp(opposite, whereto, prep-2) 
+  prp(between, location, prep-all)   prp(between, whereto, prep-2) 
+
+  prp+(to-np, next, location, prep-all)   prp+(to-np, next, whereto, prep-2) 
+
+  prp+(of-np, in_front, location, prep-all)   prp+(of-np, in_front, whereto, prep-2) 
+  prp+(of-np, in_back, location, prep-all)    prp+(of-np, in_back, whereto, prep-2) 
+  prp+(of-np, on_bottom, location, prep-all)    prp+(of-np, on_bottom, whereto, prep-2) 
+  
+  prp(in, location, prep-all)        prp(in, whereto, prep-2) 
+      prp+(no-arg, in, direction, prep-2) 
+      _prp(in, inside, location, prep-all)             _prp(in, inside, whereto, prep-2) 
+      _prp+(no-arg, in, inside, location, prep-all)    _prp+(no-arg, in, inside, whereto, prep-2) 
+
+  prp(out, location, prep-all)        prp(out, whereto, prep-2) 
+       prp+(no-arg, out, direction, prep-2)     
+      _prp(out, outside, location, prep-all)             _prp(out, outside, whereto, prep-2) 
+      _prp+(no-arg, out, outside, location, prep-all)    _prp+(no-arg, out, outside, whereto, prep-2) 
+
+  #----MACRO----
+  #
+  # This gives 1) right of the table  2) to the left of the table  3) to the right
+  #
+  def direction-word(loc) {
+           prp+(of-np, loc, location, prep-all)    prp+(of-np, loc, whereto, prep-2) 
+		   prp+(no-arg, loc, direction, prep-2)  
+	 	   noun+(of-np, loc, e-region, cc-none)
+		   noun(loc, e-region, cc-none)
+   	 	   adj-none(loc, q-location, )
+  }
+
+  direction-word(right)
+  direction-word(left)
+  direction-word(front)
+  direction-word(back)
+
+  prp+(no-arg, forward, direction, prep-2)  _prp+(no-arg, forward, forwards, direction, prep-2)
+  prp+(no-arg, backward, direction, prep-2) _prp+(no-arg, backward, backwards, direction, prep-2)
+  prp+(no-arg, straight, direction, prep-2) 
+  prp+(no-arg, aside, direction, prep-2) 
+  prp+(no-arg, away, direction, prep-2) 
+
+  #----MACRO----
+  #
+  # This gives 1) the near ball 2) push it nearer 3) push it nearer to you 4) I am nearest to you
+  #  
+  def prep-adj(base, er, est, obl-marker) {
+           prp-deg+(no-arg, base, er, est, location, prep-2)    prp-deg+(obl-marker."-np", base, er, est, location, prep-all) 
+		   prp-deg+(no-arg, base, er, est, whereto, prep-2)     prp-deg+(obl-marker."-np", base, er, est, whereto, prep-2) 
+		   adj-deg(base, er, est, q-location, )
+  }
+
+  prep-adj(far , farther , farthest, from) 
+  prep-adj(near, nearer, nearest, to)  
+        prp(near, location, prep-all)      prp(near, whereto, prep-2)  # near the stairs vs. near to the stairs
+  prep-adj(close , closer , closest, to)  
+
+
+  #-- time --#
+  
+  prp--(time-unit, for, time-interval, prep-4)
+  prp--(time-unit, in, time-point, prep-4)
+
+  #-- other --#
+  
+  prp(for,  benefactor, prep-1)
+  prp(with, accompaniment, prep-1)
+  prp(with, instrumental, prep-1)
+  prp(like, comparison, prep-1)
+
+  
+
+################
+## ADVERBS    ##
+################
+
+  #-- m-time --#
+
+  #---- time-point
+  
+  adverb(now, time-point, adv-1,)
+
+  word now2-adv:Adv(m-time-point, pred=now) {
+      No : x-time-point adv-1 asr-correction;
+    }
+
+  word now3-adv:Adv(m-time-point, pred=now) {
+      not : x-time-point adv-1 asr-correction;
+    }
+
+  adverb(today, time-point, adv-3,)
+  adverb(yesterday, time-point, adv-3,)
+  adverb(tomorrow, time-point, adv-3,)
+  adverb(yesterday, time-point, adv-3,)
+  adverb(tomorrow, time-point, adv-3,)
+  adverb+(dep-clause, when, time-point, adv-1,)
+  adverb+(dep-clause, until, time-point, adv-1,)
+      prp--(time-unit, until, time-sequence, prep-4)  # Time unit Preposition
+  adverb(since, time-point, adv-1,)	  
+  adverb+(dep-clause, since, time-point, adv-1,)
+      prp--(time-unit, since, time-point, prep-4,)
+	  
+  #---- time-sequence
+
+  adverb(next, time-sequence, adv-1,)
+  adverb(first, time-sequence, adv-1,)
+  adverb(then , time-sequence, adv-5,)
+
+  adverb(after , time-sequence, adv-4,) _adverb(after, afterwards, time-sequence, adv-1,)
+     adverb+(dep-clause, after, time-sequence, adv-1,)
+     adverb+(verb-ing, after, time-interval, adv-6,)   
+     prp--(time-unit, after, time-sequence, prep-4)
+  adverb(before , time-sequence, adv-4,) _adverb(before, previously, time-sequence, adv-1,)
+     adverb+(dep-clause, before, time-sequence, adv-1,)
+     adverb+(verb-ing, before, time-interval, adv-6,)
+     prp--(time-unit, before, time-sequence, prep-4)
+      
+
+  #---- time-interval
+
+  adverb+(dep-clause, while, time-interval, adv-1,)
+     adverb+(verb-ing, while, time-interval, adv-6,)
+ 
+  #---- other time
+
+  adverb-deg(soon, sooner, soonest, time, adv-all,)
+  adverb-deg(early, earlier, earliest, time, adv-3,)
+  adverb-deg(late, later, latest, time, adv-3,)
+
+  adverb(still, time, adv-all,)
+  adverb(already, time, adv-all,)
+  adverb(just, time, pre-vp,)
+  adverb(yet, time, adv-4,)
+  adverb(ever, time, adv-6,)
+
+  #-- m-manner --#
+ 
+  adverb(quickly, manner, adv-all,) _adverb(quickly, quick, manner, adv-all,) _adverb(quickly, fast, manner, adv-all,)
+  adverb(slowly, manner, adv-all,)  _adverb(slowly, slow, manner, adv-all,)
+
+  adverb(go, manner , adv-5,)
+  adverb(run, manner , adv-5,)
+  adverb(come, manner , adv-5,)  
+  
+  
+  #-- m-probability --# 
+
+  adverb(maybe, probability, adv-all,)
+  adverb(possibly, probability, adv-all,)
+  adverb(probably, probability, adv-all,)
+  adverb(perhaps, probability, adv-all,)
+  adverb(certainly, probability, adv-all,)
+  
+  #-- m-frequency --#
+  
+  adverb(normally, frequency, adv-all,)
+  adverb(usually, frequency, adv-all,)
+  adverb(occasionally, frequency, adv-all,)
+  adverb(often, frequency, adv-all,)
+  adverb(seldom, frequency, adv-all,) 
+  adverb(rarely, frequency, adv-all,)  
+  adverb(always, frequency, adv-all,)
+  adverb(never, frequency, adv-all,)
+  adverb(sometimes, frequency, adv-all,)
+  
+  adverb(again, frequency, adv-all,)
+  
+  #-- m-comment --#
+
+  adverb(please, comment, adv-7,)
+  adverb(kindly, comment, adv-7,)
+  adverb(actually, comment, adv-all,)
+  adverb(really, comment, adv-3,) 
+  adverb(also, comment, adv-all,) _adverb(also, too, comment, adv-2,)
+
+  #-- m-relational --#
+ 
+  adverb+(dep-clause, if, condition, adv-1,)
+  adverb+(dep-clause, because, cause, adv-1,)
+ # adverb+(dep-clause, so, result, adv-1,)
+      
+
+#######################
+## DISCOURSE MARKERS ##
+#######################
+
+
+  dis-marker(right, marker)
+  dis-marker(yes, marker)
+  dis-marker(ok, marker) _dis-marker(ok, okay, marker)
+  dis-marker(No, marker)
+  dis-marker(sure, marker)
+  dis-marker(alright, marker)
+  dis-marker(alrighty, marker)
+  dis-marker(okidokey, marker)
+  dis-marker(okido, marker)
+  dis-marker(well, marker)
+  dis-marker(huh, marker)
+  dis-marker(um, marker)
+  dis-marker(aha, marker)
+  dis-marker(hum, marker)
+  dis-marker(but, marker)
+  dis-marker(and, marker)
+  dis-marker(so, marker)
+
+ # dis-marker(now, marker)
+
+  _dis-marker+(and, then,marker,asr-correction)
+
+  dis-marker(fine, marker)
+
+  dis-marker(good, marker)
+  dis-marker( "," , marker)
+  dis-marker( sorry , marker)
+  dis-marker( hi , greeting)  dis-marker+np( hi , greeting)
+  dis-marker( hello , greeting)  dis-marker+np( hello , greeting)
+  dis-marker( bye , closing)  dis-marker+np( bye , closing)
+  dis-marker( ciao , closing)  dis-marker+np( ciao , closing)
+  dis-marker( good_bye , closing)  dis-marker+np( good_bye , closing)
+  dis-marker( so_long , closing)  dis-marker+np( so_long , closing)
+  
+
+###################
+## MOD-MODIFIERS ##
+###################
+
+  modifier(really, adj, pre, intensity )
+  modifier(really, adv, pre, intensity )
+  modifier(too, adj, pre, intensity )
+  modifier(too, adv, pre, intensity )
+  modifier(very, adj, pre, intensity )
+  modifier(very, adv, pre, intensity )
+
+  modifier(much, adj-comparative, pre, intensity)
+
+  modifier(over, prep, pre, direction )
+  modifier(away, prep, pre, direction )
+  modifier(up, prep, pre, direction )
+  modifier(down, prep, pre, direction )
+  modifier(straight, prep, pre, direction )
+  
+  modifier(right, prep, pre, manner )
+  modifier(up, prep, pre, manner )
+
+###################
+# Prosodic Tesbed #
+###################
+# I. Type of utterances we want to address:
+#  A. Assertions/Acknowledgements/Answers, e.g. "This is a red box." , "I see a red box."
+#  B. Clarifications/Verification, e.g. "Is the box red?"
+#  C. Disambiguation, e.g., "Is the box red or orange?"
+#  D. Information Questions, e.g. "What color is the box?"
+#
+# II. Information Structures variations that we want to address:
+#  1. Rheme only: When is an utterance theme only.
+#  2. Theme only: does a Theme only utterance makes sense?
+#  3. Theme(un/marked)-Rheme:
+#  4. Rheme-Theme(un/marked):
+#  5. Theme-Rheme-Theme:
+#
+# Below here we enumerate the possbile combinations of I. and II.
+#
+testbed {
+
+## A.1. ## Assertions, Rheme only ##
+box: 1;
+"box@H*" LL%:1;
+green box:1;
+green "box@H*" LL%:1;
+a green box:1;
+a green "box@H*" LL%:1;
+
+it is a green box:1;
+it is a "green@H*" box LL%: 1 ;
+it is a "green@H*" "box@H*" LL%: 1 ;
+it is a green "box@H*" LL%: 1 ;
+"it@H*" "is@H*" a "green@H*" "box@H*" LL%:1;
+
+this is a blue mug:1;
+this is a "blue@H*" mug LL%: 1 ;
+this is a "blue@H*" "mug@H*" LL%: 1 ;
+this is a blue "mug@H*" LL%: 1 ;
+this is a "blue@H*" "mug@H*" LL%: 1 ;
+
+#--in the following dark should have something more contrastive---#
+this is a "dark@H*" "blue@H*" "mug@H*" LL%: 1 ;
+
+I see a red ball:1;
+I see a "red@H*" ball LL%: 1 ;
+I see a "red@H*" "ball@H*" LL%: 1 ;
+I see a red "ball@H*" LL%: 1 ;
+
+the "box@H*" is "blue@H*" LL%:1;
+
+## A.2 ## Assertions, Theme only ##
+the "box@L+H*" is "blue@L+H*" LL%:1; ##What does it mean to have such a information/intonation structure.
+it is a "ball@L+H*" LL%:1; #compare with the next
+it is a "ball@L+H*" LH%:1;
+
+## A.3 ## Assertions, Theme(un/marked)-Rheme ##
+
+the box is green:1;
+the box LH% is "green@H*" LL%:1 ;
+the "box@L+H*" LH% is "green@H*" LL%:1 ;
+
+the "ball@L+H*" is LH% "red@H*" LL%:1;
+the ball is LH% "red@H*" LL%:1;
+
+#---what does the robot do?
+the robot LH% "moves@H*" the "box@H*" LL%:1 ;
+the "robot@L+H*" LH% "moves@H*" the "box@H*" LL%:1 ;
+
+#---what does the robot move?
+the robot moves LH% the "box@H*" LL%:1 ;
+the "robot@L+H*" "moves@L+H*" LH% the "box@H*" LL%:1 ;
+
+## A.4 ## Assertions, Rheme-Theme(un/marked) ##
+
+#--who moves the box?
+the "robot@H*" LL% moves the "box@L+H*" LH%:1 ;
+the "robot@H*" LL% moves the box LH%:1 ;
+the "robot@H*" LL% moves the box LL%:1 ;
+
+the "box@H*" LL% is "red@L+H*" LH%:1 ;
+the "box@H*" LL% is red LH%:1 ;
+the "box@H*" LL% is red LL%:1 ;
+
+## A.5 ## Assertion, Theme-Rheme-Theme ##
+
+#--what does the robot do with the box?
+the "robot@L+H*" LH% "moves@H*" LL% the "box@L+H*" LH%:1 ;
+the robot LH% "moves@H*" LL% the box LH%:1 ;
+
+the "box@L+H*" LH% "is@H*" LL% "green@L+H*" LH%:1;
+
+## B.1 ## Verification, Rheme Only ## 
+
+"box@L*" HH%:1;
+green "box@L*" HH%:1;
+a green "box@L*" HH%:1;
+is it a green box: 1 ;
+is it a green "box@L*" HH%: 1 ;
+is it a "green@L*" box HH%: 1 ;
+is it a "green@L*" "box@L*" HH%: 1 ;
+
+is this a red ball: 1 ;
+is this a red "ball@L*" HH%: 1 ;
+is this a "red@L*" ball HH%: 1 ;
+is this a "red@L*" "ball@L*" HH%: 1 ;
+
+is it a blue mug: 1 ;
+is it a blue "mug@L*" HH%:1 ;
+is it a "blue@L*" "mug@L*" HH%:1 ;
+is it a large blue "mug@L*" HH%:1 ;
+is it a large "blue@L*" mug HH%:1 ;
+is it a "large@L*" blue mug HH%:1 ;
+
+#--as response to dialogue(did you mean If I see a red box?), vs. a visual initiative--
+do I see a red "box@L*" HH%:1;
+do I see a "red@L*" box HH%:1;
+is that a red "box@L*" HH%:1;
+is that a "red@L*" box HH%:1;
+
+did you say red:1;
+did "you@L*" say red HH%:1;
+did you say "red@L*" HH%:1;
+"did@L*" you say red HH%:1;
+
+## B.2 ## Verification, Theme Only ## 
+
+## B.3 ## Verification, Theme(un/marked)-Rheme ## 
+is the box LH% "green@L*" HH%: 1 ;
+is the "box@L+H*" LH% "green@L*" HH%: 1 ;
+
+is this LH%  "red@L*" HH%:1;
+is "this@L+H*" LH%  "red@L*" HH%:1;
+is "this@L+H*" LH%  "round@L*" HH%:1;
+
+is the box LH%  "compact@L*" HH%:1;
+is the "box@L+H*" LH%  "compact@L*" HH%:1;
+
+is the box LH% "compact@L*" and "red@L*" HH%:1;
+is the "box@L+H*" LH% "compact@L*" and "red@L*" HH%:1;
+
+is the ball LH% "red@L*" HH%:1;
+is the "ball@L+H*" LH% "red@L*" HH%:1;
+"is@L+H*" the "ball@L+H*" LH% "red@L*" HH%:1;
+
+## B.4 ## Verification, Rheme-Theme(un/marked) ## 
+is the "box@L*" HH% green LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
+is the "box@L*" HH% "green@L+H*" LH%: 1 ;
+
+is "this@L*" HH%  red LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
+is "this@L*" HH%  "red@L+H*" LH%:1;
+
+is the "box@L*" HH%  compact LH%:1;
+is the "box@L*" HH%  "compact@L+H*" LH%:1;
+
+is the "box@L*" HH% compact and red LH%:1;
+is the "box@L*" HH% "compact@L+H*" and "red@L+H*" LH%:1;
+
+is "this@L*" HH% a box LH%:1;
+is "this@L*" HH% a "box@L+H*" LH%:1;
+
+## B.5 ## Verification, Theme-Rheme-Theme ## 
+
+## C.1 ## Disambiguation, Rheme only ##
+is the box "red@L*" or "orange@L*" HH%:1;
+is the box "compact@L*" or "elongated@L*" HH%:1;
+"which@L*" box is red HH%:1;
+
+
+## C.2 ## Disambiguation, Theme only ##
+
+## C.3 ## Disambiguation, Theme(un/marked)-Rheme ##
+is the box LH% "red@L*" or "orange@L*" HH%:1;
+is the "box@L+H*" LH% "red@L*" or "orange@L*" HH%:1;
+
+## C.4 ## Disambiguation, Rheme-Theme(un/marked) ##
+## C.5 ## Disambiguation, Rheme-Rheme-Theme(un/marked) ##
+
+## D.1 information requests ##
+"what@L*" is that HH%:1;
+"what@H*" is that HH%:1;
+what is "that@L*" HH%:1;
+what is "that@H*" HH%:1;
+
+what color is the mug:1;
+what "color@H*" is the mug HH%:1; ##Information Question.
+what "color@L*" is the mug HH%:1; ##Clarification Question.
+what color is the "mug@H*" HH%:1;
+what "color@H*" is "this@H*" mug HH%:1;
+what color is the bigger "mug@H*" HH%:1;
+what color is the "bigger@H*" mug HH%:1;
+what "color@H*" is the bigger mug HH%:1;
+"what@H*" color is the mug HH%:1;
+
+### following parses need to be constrained or not allowed ###
+is it a "red@H*" "box@L+H*" LH%: 0 ;
+is it a "red@L+H*" "box@H*" LH%: 0 ;
+is it a red box LL%: 0 ;        
+a red box LL%: 0 ;
+
+##### added while content planner testing ######
+the "box@L+H*" LH% is "blue@H*" LL%:1;
+the "box@L+H*" LH% "is@H*" "blue@H*" LL%:1;
+
+the "box@L+H*" is LH% "blue@H*" LL%:1;
+the "box@L+H*" "is@L+H*" LH% "blue@H*" LL%:1;
+
+the "box@H*" LL% is "blue@L+H*" LH%:1;
+the "box@H*" LL% "is@L+H*" "blue@L+H*" LH%:1;
+
+the "box@H*" is blue LL%:1;
+the box is "blue@H*" LL%:1;
+the box "is@H*" blue LL%:1;
+the "box@H*" "is@H*" "blue@H*" LL%:1;
+
+the "box@L+H*" "is@L+H*" "blue@L+H*" LH%:1;
+the "box@L+H*" is "blue@L+H*" LH%:1;
+the "box@L+H*" is blue LH%:1;
+the box is "blue@L+H*" LH%:1;
+the box "is@L+H*" blue LH%:1;
+
+the "box@L+H*" LH% "is@H*" LL% "blue@L+H*" LH%:1;
+
+##Demo scripts
+
+"I@L+H*" "see@L+H*" LH% a "car@H*" and a "blue@H*" "thing@H*" LL%:1;
+what color "is@H*" LH% the "box@L+H*" LH%:1;
+what "color@H*" is LH% the "box@L+H*" LH%:1;
+I see:1;
+"I@H*" "see@H*" LL%:1;
+let me see:1;
+let "me@H*" "see@H*" LL%:1;
+it is red:1;
+it "is@H*" red LL% :1;
+it is "red@H*" LL% :1;
+"itH*" is red LL% :1;
+"is@L+H*" the "box@L+H*" LH% "blue@L*" HH%:1;
+I "don't" know the color:1;
+"I@L+H*" "don't" "know@L+H*" the "color@L+H*" LH%:1;
+I "don't" know:1;
+"I@L+H*" "don't" "know@L+H*" LH%:1;
+it is a box:1;
+"it@L+H*" "is@L+H*" a "box@L+H*" LH%:1;
+I LL% "don't" know LH% the "color@H*" LL%:1;
+}
+
+
+rule { typechange: np[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: n[D x2du]  =>  du[D] :  ; } 
+
+rule { typechange: adj[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: adv[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: s[D x2du]  =>  du[D]  :  ; } 
+
+rule { typechange: pp[D x2du]  =>  du[D]  :  ; } 
+
+
+rule { typechange: du[A disclevelcomp] => du[B]/^du[C] : B:d-units (list <First>(A) ^ <Next>(C) ) ; }
+
+
+rule { typechange: np[B correction] => np[A]/^np[A]: A ( <Deleted>(B) ) ; }
+
+#rule { typechange: adj[B correction] => adj<99>[A]/^adj<99>[A]: A ( <Deleted>(B) ) ; }
+
+rule { typechange: n[B correction] => n<99>[A]/^n<99>[A]: A ( <Deleted>(B) ) ; }
+
+#rule { typechange: np[B correction]/^n => np<100>/^n<100>[A] /^ (np<100>/^n<100>[A]) : A ( <Deleted>(B) ) ; }
+
+#rule { typechange: pp[B correction]/^np => pp<100>/^np[A] /^ (pp<100>/^np[A]) : A ( <Deleted>(B) ) ; }
+

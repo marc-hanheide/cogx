@@ -1,0 +1,86 @@
+<policy>
+
+	<nodes>
+		<node id="startNode" isInitial="true" isFinal="false" action="resetALPHAAction,resetBETAAction" />
+		<node id="stopNode" isInitial="false" isFinal="true" action="stopAction,resetFlagEventAction" />
+
+		<node id="forwardALPHANode" isInitial="false" isFinal="true" action="forwardALPHAAction,resetFlagEventAction" />
+		<node id="askConfirmALPHANode" isInitial="false" isFinal="false" action="askConfirmALPHAAction,resetBETAAction" />
+		<node id="dropALPHANode" isInitial="false" isFinal="true" action="dropALPHAAction,resetFlagEventAction" />
+
+		<node id="forwardBETANode" isInitial="false" isFinal="true" action="forwardBETAAction,resetFlagEventAction" />
+		<node id="askConfirmBETANode" isInitial="false" isFinal="false" action="askConfirmBETAAction,resetALPHAAction" />
+		<node id="dropBETANode" isInitial="false" isFinal="true" action="dropBETAAction,resetFlagEventAction" />
+	</nodes>
+
+	<edges>
+		<!-- "stop": valid in every state -->
+		<edge id="stopEdge" source="*" target="stopNode" condition="stopCond" />
+
+		<!-- accept without confirmation -->
+		<edge id="acceptALPHAEdge" source="startNode" target="forwardALPHANode" condition="acceptALPHACond" />
+		<edge id="acceptBETAEdge" source="askConfirmALPHANode" target="forwardBETANode" condition="acceptBETACond" />
+		<edge id="acceptBETAToALPHAEdge" source="askConfirmBETANode" target="forwardALPHANode" condition="acceptALPHACond" />
+
+		<!-- ask for confirmation -->
+		<edge id="askConfirmALPHAEdge" source="startNode" target="askConfirmALPHANode" condition="askConfirmALPHACond" />
+		<edge id="askConfirmBETAEdge" source="askConfirmALPHANode" target="askConfirmBETANode" condition="askConfirmBETACond" />
+		<edge id="askConfirmBETAToALPHAEdge" source="askConfirmBETANode" target="askConfirmALPHANode" condition="askConfirmALPHACond" />
+
+		<!-- answers to the confirmation question -->
+		<edge id="posConfirmALPHAEdge" source="askConfirmALPHANode" target="forwardALPHANode" condition="posConfirmCond" />
+		<edge id="posConfirmBETAEdge" source="askConfirmBETANode" target="forwardBETANode" condition="posConfirmCond" />
+		<edge id="negConfirmALPHAEdge" source="askConfirmALPHANode" target="dropALPHANode" condition="negConfirmCond" />
+		<edge id="negConfirmBETAEdge" source="askConfirmBETANode" target="dropBETANode" condition="negConfirmCond" />
+
+		<!-- reset from final nodes to the initial one -->
+		<edge id="stopResetEdge" source="stopNode" target="startNode" condition="resetCond" />
+		<edge id="acceptALPHAResetEdge" source="forwardALPHANode" target="startNode" condition="resetCond" />
+		<edge id="acceptBETAResetEdge" source="forwardBETANode" target="startNode" condition="resetCond" />
+		<edge id="dropALPHAResetEdge" source="dropALPHANode" target="startNode" condition="resetCond" />
+		<edge id="dropBETAResetEdge" source="dropBETANode" target="startNode" condition="resetCond" />
+	</edges>
+
+	<conditions>
+		<!-- "stop" -->
+		<condition id="stopCond" content="(&lt;state&gt; (execution-stopped ^ &lt;agent&gt;(self)))" lowerProb="0.0" higherProb="1.0" type="intention" />
+
+		<!-- accept without confirmation -->
+		<condition id="acceptALPHACond" content="(&lt;state&gt;(%ALPHA))" lowerProb="0.6" higherProb="1.0" type="intention" />
+		<condition id="acceptBETACond" content="(&lt;state&gt;(%BETA))" lowerProb="0.6" higherProb="1.0" type="intention" />
+
+		<!-- ask for confirmation -->
+		<condition id="askConfirmALPHACond" content="(&lt;state&gt;(%ALPHA))" lowerProb="0.4" higherProb="0.6" type="intention" />
+		<condition id="askConfirmBETACond" content="(&lt;state&gt;(%BETA))" lowerProb="0.4" higherProb="0.6" type="intention" />
+
+		<!-- answers to the confirmation question -->
+		<condition id="posConfirmCond" content="(&lt;state&gt; (confirmed ^ &lt;agent&gt;(human) ^ &lt;discourse-ref&gt;(qud)))" lowerProb="0.0" higherProb="1.0" type="intention" />
+		<condition id="negConfirmCond" content="(&lt;state&gt; (disconfirmed ^ &lt;agent&gt;(human) ^ &lt;discourse-ref&gt;(qud)))" lowerProb="0.0" higherProb="1.0" type="intention" />
+
+		<!-- reset flag detected -->
+		<condition id="resetCond" type="event" content="reset-state" />
+	</conditions>
+
+	<actions>
+		<!-- forward the "stop" intention -->
+		<action id="stopAction" content="(&lt;state&gt; (execution-stopped ^ &lt;agent&gt;(self)))" type="intention" status="attributed" />
+
+		<!-- forward the intention -->
+		<action id="forwardALPHAAction" content="(&lt;state&gt;(%ALPHA))" type="intention" status="attributed" />
+		<action id="forwardBETAAction" content="(&lt;state&gt;(%BETA))" type="intention" status="attributed" />
+
+		<!-- inform about the dropping -->
+		<action id="dropALPHAAction" content="(&lt;state&gt;(dropped ^ &lt;state&gt;(%ALPHA)))" type="intention" status="communicative" />
+		<action id="dropBETAAction" content="(&lt;state&gt;(dropped ^ &lt;state&gt;(%BETA)))" type="intention" status="communicative" />
+
+		<!-- ask for confirmation -->
+		<action id="askConfirmALPHAAction" content="(&lt;state&gt;(confirmed ^ &lt;agent&gt;(human) ^ &lt;state&gt;(%ALPHA)))" type="intention" status="communicative" />
+		<action id="askConfirmBETAAction" content="(&lt;state&gt;(confirmed ^ &lt;agent&gt;(human) ^ &lt;state&gt;(%BETA)))" type="intention" status="communicative" />
+
+		<!-- emit the reset event & reset dialogue state -->
+		<action id="resetFlagEventAction" type="event" content="reset-state" />
+		<action id="resetALPHAAction" type="rmvar" content="ALPHA" />
+		<action id="resetBETAAction" type="rmvar" content="BETA" />
+	</actions>
+
+</policy>
