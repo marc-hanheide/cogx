@@ -1,7 +1,7 @@
 (define (domain dora-avs-iros11)
   (:requirements :mapl :adl :fluents :partial-observability :dynamic-objects :action-costs)
 
-;;LF __commit => @{step_?block_?step:cognition}(assume ^ <Actor>(?a:castreferent ^ ?a) ^ <Event>(
+;;LF __commit => @{step_?block_?step:cognition}(assume ^ <Actor>(?tid_?block_?step,?a:castreferent ^ ?tid_?block_?step,?a) ^ <Event>(
 
 ;;LF FAILED => @{step_?block_?step:action-non-motion}(fail ^ <Event>(a1:action ^ that) ^ <Modifier>(r1:reason ^ because ^ <Anchor>(
 
@@ -82,12 +82,12 @@
    ;; The result of applying the default knowledge.
    ;; E.g. category(r1) = kitchen AND (dora__in_room cornflakes kitchen) => (obj_exists cornflakes in kitchen)
    ;; Also see the rules below
-;;LF obj_exists => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:thing ^ =var  ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)))
+;;LF obj_exists => @{state_?block_?step:action-non-motion(find ^ <Mood>ind ^ <Tense>pres ^ <Voice>passive ^ <Actor>(context_?block_?step:entity ^ context) ^ <Modifier>(can_?block_?step:modal ^ can) ^ <Modifier>(=var_?block_?step:m-location ^ =var ^ <Anchor>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var)) ^ <Patient>(=var_?block_?step:thing ^ =var  ^ <Delimitation>variable ^ <Quantification>unspecific))
    (obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room)) - boolean
    (p-obj_exists ?l - label ?rel - spatial_relation  ?where - (either visualobject room) ?c - category) - number
 
    ;; === room properties ===
-;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(?tid_?block_?step,=var:castreferent ^ ?tid_?block_?step,=var) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
+;;LF category => @{state_?block_?step:ascription}(be ^ <Cop-Restr>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific) ^ <Cop-Scope>(=var_?block_?step:e-place ^ =var ^ <Delimitation>existential ^ <Num>sg ^ <Quantification>specific))
    (category ?r - room) - category
    (identity ?r - room) - category
    (roomid ?r - room) - number
