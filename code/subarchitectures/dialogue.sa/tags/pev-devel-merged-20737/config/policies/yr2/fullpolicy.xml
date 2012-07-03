@@ -1,0 +1,40 @@
+<policy>
+	<nodes>
+		<node id="startNode" isInitial="true" isFinal="false"/>
+		<node id="rootNode" isInitial="false" isFinal="true" action="forwardAction"/>
+		<node id="greetingNode" isFinal="true" isInitial="false" action="greetingAction"/>
+		<node id="thankingNode" action="thankAction" isFinal="true" isInitial="false"/>
+		<node id="closingNode" action="closingAction" isInitial="false" isFinal="true"/>
+		<node id="whAnswerNode" action="whAnswerAction" isInitial="false" isFinal="true"/>
+<!--		<node id="pAnswerNode" action="pAnswerAction" isInitial="false" isFinal="true"/> -->
+	</nodes>
+	
+	<edges>
+		<edge id="greetingEdge" source="*" target="greetingNode" condition="greetingCond"/>
+		<edge id="evalEdge" source="*" target="thankingNode" condition="evalCond"/>
+		<edge id="anyEdge" source="*" target="rootNode" condition="anyCond"/>	
+		<edge id="closingEdge" source="*" target="closingNode" condition="closingCond"/>
+		<edge id="whQuestionEdge" source="*" target="whAnswerNode" condition="whQuestionCond"/>
+	<!--	<edge id="pQuestionEdge" source="rootNode" target="pAnswerNode" condition="pQuestionCond"/> -->
+	</edges>
+	
+	<conditions>
+		<condition id="anyCond"  type="intention" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(&lt;ref&gt;(%2)))" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="greetingCond"  type="intention" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="evalCond" type="intention"  content="&lt;state&gt;(appreciated ^ &lt;agent&gt;human ^ &lt;patient&gt;self)" lowerProb="0.0" higherProb="1.0"/>
+		<condition id="closingCond" type="intention" lowerProb="0.0" higherProb="1.0" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(human) ^ &lt;agent&gt;(self))"/>
+		<condition id="whQuestionCond" type="intention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" />
+	<!--	<condition id="pQuestionCond" type="intention"
+			lowerProb="0.0" higherProb="1.0" content="&lt;pdddre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(question-answered ^ &lt;about&gt;(&lt;ref&gt;(%2)  ^ &lt;color&gt;(%3)) ^ &lt;feature&gt;(color)))" /> -->
+	</conditions>
+	
+	<actions>
+		<action id="forwardAction" content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;belief&gt;(%2))" type="intention" status="attributed"></action>
+		<action id="greetingAction" type="intention" status="communicative" content="&lt;state&gt;(engagement-open ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="thankAction" type="intention" status="communicative" content="&lt;state&gt;(thanked ^ &lt;agent&gt;human ^ &lt;patient&gt;self)"></action>
+		<action id="closingAction" type="intention" status="communicative" content="&lt;state&gt;(engagement-closed ^ &lt;agent&gt;(self) ^ &lt;agent&gt;(human))"></action>
+		<action id="whAnswerAction" type="intention" status="communicative"  content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" />
+<!--	    <action id="pAnswerAction" type="intention" status="communicative"  content="&lt;pre&gt;(%1) ^ &lt;post&gt;(&lt;state&gt;(grounded ^ &lt;about&gt;(%2) ^ &lt;content&gt;(&lt;color&gt;(%3))))" /> -->
+	</actions>
+</policy>

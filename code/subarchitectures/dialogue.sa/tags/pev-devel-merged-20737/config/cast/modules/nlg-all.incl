@@ -1,0 +1,10 @@
+VARDEFAULT irealize_abd_domain=subarchitectures/dialogue.sa/resources/abduction/cogx/current/INDEX.G.txt
+VARDEFAULT cplan_rules=subarchitectures/dialogue.sa/resources/contentplanning/allRuleFiles.trf
+VARDEFAULT realize_grammar=subarchitectures/dialogue.sa/grammars/openccg/moloko.v6/grammar.xml
+VARDEFAULT realize_ngrams=subarchitectures/dialogue.sa/resources/grammars/openccg/moloko.v6/ngram-corpus.txt
+
+
+# intention realisation
+JAVA MG	int-realizer         de.dfki.lt.tr.cast.dialogue.CommunicativeIntentionRealizer --ruleset %(irealize_abd_domain) --timeout 50000 --abd-host %(host:AbducerHost)  --dumpfile %(dump_file) --log true
+JAVA MG cplan                de.dfki.lt.tr.cast.dialogue.ContentPlanner --domainFile %(cplan_rules) --contentRel Content --log true
+JAVA MG realizer             de.dfki.lt.tr.cast.dialogue.CCGRealizer --ccg %(realize_grammar) --ngrams %(realize_ngrams) --log true

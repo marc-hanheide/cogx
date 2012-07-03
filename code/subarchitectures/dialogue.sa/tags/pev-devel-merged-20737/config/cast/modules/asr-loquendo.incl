@@ -1,0 +1,4 @@
+VARDEFAULT loquendo_server_endpoint="tcp -h localhost -p 9021"
+
+JAVA MG	asr-loquendo    de.dfki.lt.tr.cast.dialogue.LoquendoASR --serverName LoquendoASRServer --serverEndpoint %(loquendo_server_endpoint) --threshold .4 --log true
+JAVA MG asr-clarifier  de.dfki.lt.tr.cast.dialogue.ASRClarifier --threshold .6

@@ -1,0 +1,17 @@
+#JSGF V1.0 ISO8859-1 en;
+
+grammar de.dfki.lt.tr.cogx.dialogue.basics;
+
+/**
+ * Basic components for a JSFG grammar for spoken dialogue in HRI
+ */ 
+ 
+ 
+/**
+ * Greeting
+ * @example hello robot
+ */
+ 
+ public <greeting> = [ hello | hi | howdy ] (robot);
+ 
+ 
