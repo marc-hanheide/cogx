@@ -20,10 +20,6 @@ SETVAR feature_options=<multiline>
     categorisation
 # use visaul categorisation
     !categorisation-visual 
-# if enabled, categorical will save a data stream to file
-    !datasaving
-# if enabled, images will also be saved
-    !datasaving-visual
     !categorisation-size
 # if enabled, place properties will be saved and loaded
     place-property-persistence
@@ -31,9 +27,12 @@ SETVAR feature_options=<multiline>
     !datasaving
 # if enabled, images will also be saved
     !datasaving-visual
+    !simple_placeholder_exploration    
     planning_sa		
     debug			
     dialogue		
+    plan_verbalisation
+    hgv_verbalisation
     motivation	
     !motivation_external
     !motivation_explanation
