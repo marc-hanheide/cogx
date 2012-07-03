@@ -139,7 +139,7 @@ public class ComaReferringExpressionGeneration extends
 						FormulaValues formula_values_label = (FormulaValues) prob_distribution_label.values;
 						ElementaryFormula elementary_formula_label = (ElementaryFormula) formula_values_label.values.get(0).val;
 						return new ReferenceGenerationResult(requestAddr, 
-								"a" + " "
+								"the" + " "
 								+ elementary_formula_label.prop); 
 					}
 
@@ -173,7 +173,7 @@ public class ComaReferringExpressionGeneration extends
 						FormulaValues formula_values_label = (FormulaValues) prob_distribution_label.values;
 						ElementaryFormula elementary_formula_label = (ElementaryFormula) formula_values_label.values.get(0).val;
 						return new ReferenceGenerationResult(requestAddr, 
-								"a" + " "
+								"the" + " "
 								+ elementary_formula_label.prop); 
 					}
 				} catch (DoesNotExistOnWMException e) {
