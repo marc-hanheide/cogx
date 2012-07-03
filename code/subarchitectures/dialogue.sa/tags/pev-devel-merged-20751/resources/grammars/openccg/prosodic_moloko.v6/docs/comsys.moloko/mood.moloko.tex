@@ -1,0 +1,306 @@
+ 
+\sect{Mood}
+
+The 'interpersonal' feature of \diam{Mood} and its syntactic encoding have been given a quite detailed and slightly unorthodox treatment in the Moloko grammar: it is not uniformly specified by the first/main verb, but  has instead been distributed throughout the grammar, with each mood value receiving a different treatment. Before detailing how this has been done, I will briefly describe the motivation behind this choice.
+
+\subsection{Motivation: Mood in English}
+
+At least in English, the syntactic marking of mood is best thought of as clausal-level feature specified by the presence of and/or sequential ordering of the following core clausal elements: 
+\begin{enumerate}
+\item the grammatical subject
+\item the main verb
+\item the auxilliary verb
+\item a question (wh) word
+\end{enumerate}
+In Construction Grammar terms, the mood of a clause is specified by a number of Clause-Level Word-Order Constructions. Consider these simple clauses:
+\begin{itemize}
+\item I picked up the ball.
+\item pick up the ball.
+\item did you pick up the ball
+\item what did you pick up OR who picked up the ball
+\end{itemize}
+
+\begin{table}[htdp]
+\caption{Identifying Mood}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Mood}&\textbf{Initial Element}&\textbf{Example}\\ \hline
+Indicative&Noun-Phrase (in nominal case)&I\\ \hline
+Imperative&Verb (in base form)&pick\\ \hline
+Y/N-Interrogative&Auxiliary Verb(in finite form)&did\\ \hline
+Wh-Interrogative&Wh-Word&what \\ 
+\hline
+\end{tabular}
+\end{center}
+\label{tab-Identifying-Mood }
+\end{table}%
+Now consider the mood and initial core element of each clause (Table \ref{tab-Identifying-Mood}). Amazingly, in all 4 cases, we can identify the mood of the clause by considering only its first core element. In other words, the first core element of a clause serves as a cue, projecting the mood of the clause to come. This is important for increasing the effectiveness of incremental processing in two ways. 
+
+First, when the mood of a clause is known, a lot is known about its core behavior both syntactically and functionally. This is much like the case of verbs and their arguments: when we encounter the verb \emph{put}, we know that a \catg{np} (the patient) and a prepositional phrase (the result) are to follow. In the case of mood, an indicative clause, for example,  consists of the subject-np followed by a fine main verb (either an auxilliary or a lexical verb and its arguments). Thus, when we encounter an initial (nominative) \catg{np} , if it is the subject-np of an indicative clause, then necessarily the next expected (core) element is the 'verb phrase'. This fits with the general 'early projection' principle (see section \ref{sec-Forward-Projection}).
+
+Secondly, the mood of a clause is highly connected to the discourse function it may be playing (assertion, command, question, etc). Thus, this information should be integrated into the semantic representation as early as possible, allowing the possibility 1) greater expectation/predication at the discourse level and 2) for discourse expectation based pruning.
+
+\subsection{Implementing Mood}
+
+A number of organizational choices were required to allow for the early mood projection described above.  First, as the 'cue elements' described above are non-homogenous, the 'control' of mood had to be distributed throughout the grammar instead of residing solely with the main verb or auxiliary. This also lead to some rather unorthodox treatments. The specifics will be described below. 
+
+Second, because mood control has been moved away from the verbs themselves, they had to be blocked from creating their own moodless clauses. Thus, the subject-\catg{np} of verbs has been 'shut-off' or made inert. As an example of this, consider the verb \emph{put}. Here is what we could consider the 'indicative past-tense' entry in standard CCG:
+\begin{verbatim}
+   s \np /pp /np : 
+  @p1:action(put ^ 
+             <Mood>ind ^ 
+             <Tense>past ^ 
+             <Actor>x1:entity ^ 
+             <Patient>x2:entity ^ 
+             <Result>x3:m-whereto)
+\end{verbatim}
+Compare this to the corresponding Moloko entry.
+\begin{verbatim}
+   s \!np /pp /np : 
+  @p1:action(put ^ 
+             <Tense>past ^ 
+             <Actor>x1:entity ^ 
+             <Patient>x2:entity ^ 
+             <Result>x3:m-whereto)
+\end{verbatim}
+Instead of \catg{\backslash{} np} we have \catg{\backslash{!} np}. Whereas in the first case this lexical item could combine with a preceding \catg{np} to form an indicative clause, this is not possible in Moloko. Instead, this verb is selected for syntactically and semantically as a compliment by one of the mood-controlling constructions (which will also add the appropriate \diam{Mood} value). In essence, the Moloko grammar does not follow the standard treatment of verbs as the (only) syntactic and semantic head of the clause.
+
+Third, a 'semantic slot' was added to house the grammatical subject. This slot was attached to the top-level (i.e. clausal) event via a dependency relation named \diam{Subject}.\footnote{this has intentionally been removed from all of the semantic representations presented so far.}Despite its seemingly ad-hoc nature, this relation actually serves a number of important functions, though not all at  the ideational(propositional) level. First, in terms of Information Structure, the subject is nearly always the Primary Topic, both in active and passive clauses.  Second, at the interpersonal level, the subject along with the finite (see below) plays an important role in arguing the current proposition 'under negotiation' (see Mood analysis in Systemic Functional Grammar). e.g. \emph{\underline{I} am hungry, No \underline{you}  are not, Yes \underline{I} am, Well \underline{you} shouldn't be, Oh \underline{I} shouldn't, should \underline{I} ? How could \underline{you} possibly be?} Third, the subject serves as the semantic and syntactic controller of chained clauses etc.  \emph{\underline{he} walk\underline{s} into the room, pick\underline{s} up a ball and give\underline{s} it to GJ} (see section \ref{sec-Coordination} and also the the example of imperatives below). In all three cases, explicitly marking that this entity is playing all of these roles could very useful. Finally, and arguably most importantly this slot allows for the semantic integration of what would otherwise be two chunks (the projected clause/event and the np/entity), satisfying the 'one semantic chunk' principle (see section \ref{sec-Back-Integration}).
+
+
+\subsubsection{Indicatives}
+Currently, three types of indicative clauses are handled by the grammar:
+\begin{enumerate}
+\item Standard: \emph{he put the ball on the table}  
+\item Fronted/Topicalized np: \emph{the ball he put on the table} 
+\item Dropped/contextualized subject: \emph{put it on the table}
+\end{enumerate}
+Standard indicative clauses (1) have the following structure: subject-np + finite-verb. In essence, this has been handled by extending the standard syntactic type raising rule used for subject-verb integration, i.e.  \\
+
+\catg{np\id{T} } \arrow \catg{s\id{E} \enspace  \fwdsl{} (s\id{E} \backsl{} np\id{T} ) } \\\\
+has become \\
+\vspace{-1.5em} %% some negative vertical spacing
+\begin{align*}
+\catg{np\id{T} }  \arrow  \catg{s\id{E} \fwdsl{} (s\id{E} \backsl{!} np\id{T} )}  :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(ind) \\
+      & \wand\ \diam{Subject}(t1:entity ) )
+\end{align*}
+Syntactically, this rule performs a number of functions. First, it incrementally creates the proper clausal expectations: the clause initial \catg{np} becomes a \catg{s} missing its verb (i.e. \catg{ s \backsl{!} np }). Second, it properly distributes syntactic features among the various elements (e.g. the number and person of the \catg{np} are inherited by the vp, forcing agreement. see \ref{sec-Mood-Rules} for details). Semantically, we see first that the expected event  E has been built into the semantic structure explicitly, although of course in a fully general way (i.e. there are no expectations concerning its sub-sort, proposition, tense, thematic-roles, etc.). Second, this event is marked as indicative. Third, T, the index of the initial \catg{np} fills the \diam{Subject} role of this event. It is also co-indexed with the verb's own subject-\catg{np} (i.e. its  \backsl{!} np ) meaning that it will also play whatever thematic role the verb creates for it (e.g. \diam{Actor} or \diam{Cop-Restr}).
+Thus, for example, this rule will combine with the pronoun \emph{I} to create the following parse: \\
+
+parse: \catg{s \fwdsl{}  (s \backsl{!} np)  } 
+\vspace{-1.5em} %% some negative vertical spacing
+
+\begin{align*}
+\atsign{x1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(ind) \\
+      & \wand\ \diam{Subject}(i1:person \wand\ \prop{I} \wand\ \diam{Num}(sg)) )
+\end{align*}
+Again, although syntactic features are not shown the verb compliment is restricted to be in 1st person singular form. 
+
+Fronted NP clauses (2) have the following structure: fronted-np + subject-np + finite-verb-with-'missing'-np. This has also been handled by the following type-changing rule:
+\vspace{-1.5em} %% some negative vertical spacing
+
+\begin{align*}
+\catg{np\id{T} }  \arrow  \catg{s\id{E} \enspace \fwdsl{} (s\id{E} \backsl{!} np\id{S} \fwdsl{} np\id{T}) \enspace \fwdsl{}np\id{S}}  :  
+\atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(ind) \\
+      & \wand\ \diam{Fronted}(t1:entity ) )\\
+      & \wand\ \diam{Subject}(s1:entity ) )
+\end{align*}
+Note the ordering and co-indexing of the \catg{np}s. The initial \catg{np}, the one that undergoes this type-change, fills a construction specific role  \diam{Fronted} and co-indexes with the 'missing' \catg{np}. The second \catg{np}, the first complement of this construction, is the clausal subject and behaves identically to the case above. Thus, the clause \emph{the ball I haven't seen} (as in \emph{the mug is over on the table, but the ball I haven't seen} receives this parse:
+\begin{verbatim}
+  @s1:perception(see ^ 
+                 <Mood>ind ^ 
+                 <Polarity>neg ^ 
+                 <Tense>past ^ 
+                 <Aspect>perfect ^ 
+                 <Actor>(i1:person ^ I ^ 
+                         <Num>sg) ^ 
+                 <Patient>(b1:thing ^ ball ^ 
+                           <Delimination>unique ^ 
+                           <Num>sg ^ 
+                           <Quantification>specific) ^ 
+                 <Fronted>b1:thing ^ 
+                 <Subject>i1:person)
+\end{verbatim}
+Finally, dropped-subject indicatives have this structure:  finite-verb. As this structure is nearly identical to standard imperative clauses, I will delay discussing how it was syntactically handled until then. Semantically, this has been treated as a case of a contextualized semantic object (see section \ref{sec-contextualized}, in this case, the entity filling the \diam{Subject} role. Thus, the clause \emph {walks into the office} receives this parse:
+\begin{verbatim}
+ @w1:action-motion(walk ^ 
+                    <Mood>ind ^ 
+                    <Tense>pres ^ 
+                    <Actor>(c1:entity ^ context) ^ 
+                    <Modifier>(i1:m-whereto ^ into ^ 
+                               <Anchor>(o1:e-location ^ office ^ 
+                                        <Delimination>unique ^ 
+                                        <Num>sg ^ 
+                                        <Quantification>specific)) ^ 
+                    <Subject>c1:entity)
+\end{verbatim}
+
+\subsubsection{Imperatives}
+Currently, three types of imperative clauses are handled by the grammar:
+\begin{enumerate}
+\item Standard Addressee positive: \emph{put the ball on the table, be quiet}  
+\item Addressee negative: \emph{don't put the ball on the table, don't be so loud} 
+\item Speaker + Addressee: \emph{let's put it on the table, let's be quieter}
+\end{enumerate}
+The first standard imperative has this structure: base-form verb.\footnote{In fact, they must be of the verbal form 'vf-to-imp'. This allows verbs to be specified lexically whether or not they allow imperative readings. This is discussed in section \ref{sec-Mood-Rules}.} We have handled this via a series subject-removing rules.\footnote{The need for having multiple rules will be discussed in \ref{sec-Mood-Rules}.}As an example of such a rule, here is transitive clause version:
+\vspace{-1.5em} %% some negative vertical spacing
+
+\begin{align*}
+\catg{s\id{E} \enspace \fwdsl{}np\id{X} \enspace \backsl{!}np\id{S}}  \arrow \catg{s\id{E} \enspace \fwdsl{}np\id{X} \enspace}   :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(imp) \\
+      & \wand\ \diam{Subject}(a1:entity \wand\ \prop{addressee}  ) )
+\end{align*}
+It is crucial that the verb be in base form: only \emph{walk}, but not \emph{walks} or \emph{walked} can be used in imperative clauses. Dropped-subject indicatives (see above) are handled in the same manner, except in those cases the verbal form is constrained to being finite.
+
+An alternate way of handling these two moods would be to do so lexically: each verb would have a subject-less entry which would receive, in the case of imperatives, the feature \diam{Mood}(imp) and vform value \fv{vf-base}. Although this seems a priori more attractive, there are (at least) two reasons for preferring the rule approach instead. Both of these can be illustrated by considering Moloko's semantic representation for \emph{go to the office and wait there}: 
+\begin{verbatim}
+  @a1:event(and ^ 
+            <Mood>imp ^ 
+            <Subject>(a2:entity ^ addressee) ^
+            <First>(g1:action-motion ^ go ^ 
+                    <Actor>a2:entity ^ 
+                    <Modifier>(t1:m-whereto ^ to ^ 
+                               <Anchor>(o1:e-place ^ office ^ 
+                                        <Delimitation>unique ^ 
+                                        <Num>sg ^ 
+                                        <Quantification>specific))) ^ 
+            <Next>(w1:action-non-motion ^ wait ^ 
+                   <Actor>a2:entity ^ 
+                   <Modifier>(c1:m-location ^ context ^ 
+                              <Proximity>m-distal)))
+\end{verbatim}
+First, although imperative clauses do not have syntactic (i.e. 'surface realized') subjects, they still have an underlying semantic subject. In CCG, this can only be accessed (and hence controlled) by reference to the encoding \catg{np}. Consequently, the proper assignment of the referent \prop{a2} (the 'addressee') to both \diam{Actor} roles is possible only by first coordinating these two clauses (co-indexing their individual subjects) and only then applying the imperative rules to this resulting clause. Second, a lexical treatment would require treating this type of utterance as the coordination of two 'full' sentences, resulting in two separate \diam{Subject} roles and mood values. Instead, by allowing a single rule application, we receive this much more elegant representation, i.e. a single \diam{Subject} and a single mood value 'scoping over' the entire clausal chain (see section \ref{sec-Coordination} for more details).
+
+Negative imperatives have the structure: \emph{don't} + base-form-vp. Because of the lexical item \emph{don't} this was able to be handled lexically. Thus, \emph{don't} receives a lexical entry of this form:
+\vspace{-1.5em} %% some negative vertical spacing
+
+\begin{align*}
+\catg{s\id{E} \enspace \fwdsl{} (s\id{E} \backsl{!}np\id{S} )} :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(imp) \\
+      & \wand\ \diam{Polarity}(neg) \\
+      & \wand\ \diam{Subject}(a1:entity \wand\ \prop{addressee}  ) )
+\end{align*}
+Similarly Speaker+Addressee imperatives have the structure: \emph{let's} + base-form-vp, allowing a simple lexical entry for \emph{let's} of the form:
+\vspace{-1.5em} 
+
+\begin{align*}
+\catg{s\id{E} \enspace \fwdsl{} (s\id{E} \backsl{!}np\id{S} )} :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(imp) \\
+      & \wand\ \diam{Subject}(a1:entity \wand\ \prop{speaker+addressee}  ) )
+\end{align*}
+
+\subsubsection{Closed Interrogatives}
+
+Closed interrogative clauses are of the form:  aux-verb + subject-np + main-verb. These have been handled by giving all relevant verbs (copula,  auxiliary and modal) a lexical entry corresponding to this clause type. Here is the closed-int entry for the progressive auxiliary \emph{be} (as in \emph{I am sleeping} ) and the negative modal auxiliary \emph{can't} (see section \ref{sec-Modality} for the semantic treatment of modality):
+\vspace{-1.5em} 
+
+\begin{align*}
+\catg{s\id{E} \enspace \fwdsl{} (s\id{E} \backsl{!}np\id{S} ) \enspace \fwdsl{} np\id{S} } :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(int) \\
+      & \wand\ \diam{Aspect}(continuous) \\
+      & \wand\ \diam{Tense}(pres) \\
+      & \wand\ \diam{Subject}(s1:entity) )
+\end{align*}
+
+\begin{align*}
+\catg{s\id{E} \enspace \fwdsl{} (s\id{E} \backsl{!}np\id{S} ) \enspace \fwdsl{} np\id{S} } :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(int) \\
+      & \wand\ \diam{Polarity}(neg) \\
+      & \wand\ \diam{Tense}(pres) \\
+      & \wand\ \diam{Modifier}(c1:ability \wand\ \prop{can}) ) \\
+      & \wand\ \diam{Subject}(s1:entity) )
+\end{align*}
+In addition to these semantic differences, the vp compliment is restricted according to the lexical requirements of the particular auxiliary verb ( \emph{be} selects for the ing form and \emph{can't} selects for the base form)
+
+\subsubsection{Open Interrogatives} \label{sec-Open-Interrogatives}
+
+Open interrogative clauses are the most varied semantically and syntactically among the mood types. Consequently, the particulars of each type of question will not be discussed until section \ref{sec-Wh-Words}. In this section, we will reserve ourselves to briefly discussing some of the general principles. To begin, table \ref{tab-Open-Int} offers a few illustrating examples. Where relevant, long distance dependencies/extracted constituents are marked with an x.
+
+\begin{table}[htdp]
+\caption{Open Interrogative Examples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Question-Item}&\textbf{Auxilliary}&\textbf{Subject} &\textbf{Verbal Group} \\ \hline
+who & & " & picked up the ball \\ \hline
+who & & " & wants some coffee \\ \hline
+what & did & the robot & see x\\ \hline
+where & can & I & put it x\\ \hline
+what & are & you & doing x over there \\ \hline
+which ball & does & he & want x on the table\\ \hline
+what color ball & does & he & want me to have x\\ \hline
+how many balls & should & I & pick up x for you \\ \hline
+how big & should & I & make it x \\ \hline
+where & are & you & going \\ \hline
+where & did & he & want me to sit \\ \hline
+how quickly & did & he & walk \\ \hline
+\hline
+\end{tabular}
+\end{center}
+\label{tab-Open-Int}
+\end{table}%
+The initial core element of all of these clauses is a question item. This can be as simple as a single word (e.g. \emph{where} or \emph{who} ) or involve a head word plus restricting compliments  (e.g. \emph{\underline{what} color ball} or \emph{\underline{how} big}). Next, in all but the cases where the subject is being questioned, this is followed first by an auxiliary and then by the subject-\catg{np}. Finally, in all cases the verbal group is the final element. Typically, it is 'missing' the compliment  corresponding to the question item, except in those cases where it is a modifier which is being questioned.
+All of these examples have been handled by creating an appropriate lexical entry for the corresponding question item head. Thus, it is the 'wh-word' which controls the building of these clauses. Semantically, all open interrogative clauses have been given a dependency relation \diam{Wh-Restr} (abbr. of restrictor) which specifies the nature and the scope of the questioned item. As a first example, consider the entry for \emph{what} used in the question \emph{what did the robot see}.
+
+\vspace{-1.5em} 
+\begin{align*}
+\catg{s\id{E} \enspace \fwdsl{} (s\id{E} \backsl{!}np\id{S} \fwdsl{} np\id{W}) \enspace \fwdsl{} np\id{S} \enspace \fwdsl{} aux\id{A} } :  \atsign{e1}{event}(&   \\ 
+      & \wand\ \diam{Mood}(int) \\
+      & \wand\ \diam{Subject}(s1:entity)\\
+      & \wand\ \diam{Wh-Restr}(w1:entity \wand\ \prop{what}) )
+\end{align*}
+This construction has three complements, expected in the following order: an auxiliary, the subject-\catg{np} and finally a verb 'missing' a \catg{np}. The various syntactic and semantic features of the clause (agreement, tense, etc) are properly selected from and imposed by the subject and the auxiliary elements. In this case, the the \diam{Wh-Restr}  is quite simple:  it is an entity co-indexed with the missing \catg{np}, signifying that what is being questioned is an entity which is playing some thematic role in the event being built. As a slightly more complex example, consider the parse for \emph{which ball does he want on the table}.\footnote{\emph{what ball does he want on the table} receives an identical representation.} 
+\begin{verbatim}
+  @w1:cognition(want ^ 
+                <Mood>int ^ 
+                <Tense>pres ^ 
+                <Actor>(h1:person ^ he ^ 
+                        <Num>sg) ^ 
+                <Patient>(b1:thing ^ ball) ^ 
+                <Result>(o1:m-location ^ on ^ 
+                         <Anchor>(t1:thing ^ table ^ 
+                                  <Delimination>unique ^ 
+                                  <Num>sg ^ 
+                                  <Quantification>specific)) ^ 
+                <Subject>h1:person ^ 
+                <Wh-Restr>(w2:specifier ^ which ^ 
+                           <Scope>b1:thing))
+\end{verbatim}
+The entry for the question word \emph{which} is identical to the one above, except that it has a fourth complement: a noun specifying the class of the entity being questioned. The index corresponding to this noun fills a dependency relation which gives the scope of the \diam{Wh-Restr}. Finally, it is this index, not the index of the \diam{Wh-Restr} as a whole, which is co-indexed with a thematic role in the event. \emph{which} also allows a contextualized semantic head reading (see \ref{sec-Contextualized}), e.g.  \emph{which does he want on the table} would be identical except \diam{Scope}(c1:entity \wand\ \prop{context}). Note that this contrasts with \emph{what does he want on the table}.
+
+Some \diam{Wh-Restr} receive two levels of \diam{Scope}. For example, here is one of the semantic representations for \emph{what color ball do you want}:
+\begin{verbatim}
+  @w1:cognition(want ^ 
+                <Mood>int ^ 
+                <Tense>pres ^ 
+                <Actor>(y1:person ^ you ^ 
+                        <Num>sg) ^ 
+                <Patient>(b1:thing ^ ball ^ 
+                          <Delimitation>unique ^ 
+                          <Num>sg ^ 
+                          <Quantification>specific) ^ 
+                <Subject>y1:person ^ 
+                <Wh-Restr>(w2:specifier ^ what ^ 
+                           <Scope>(c1:quality ^ color ^ 
+                                   <Scope>b1:thing)))
+\end{verbatim}
+As one final example, consider the parse for \emph{where did he want me to sit}:
+\begin{verbatim}
+ @w1:cognition(want ^ 
+                <Mood>int ^ 
+                <Tense>past ^ 
+                <Actor>(h1:person ^ he ^ 
+                        <Num>sg) ^ 
+                <Event>(s1:action-non-motion ^ sleep ^ 
+                        <Actor>i1:person) ^ 
+                <Patient>(i1:person ^ I ^ 
+                          <Num>sg) ^ 
+                <Subject>h1:person ^ 
+                <Wh-Restr>(w2:m-location ^ where ^ 
+                           <Scope>s1:action-non-motion))
+\end{verbatim} 
+The syntax required to handle this is complex and will be discussed in \ref{sec-Questioning-an-Event-Modifier}. Semantically, notice that there is no 'missing' element: the \diam{Wh-Restr} is not 'taking the place' of anything. Instead, it is a functional operator which scopes over one of the thematic roles of the event, in this case the \diam{Event} role of the verb \emph{want}. What is crucially important in examples like this is that the wh-word itself is able to semantically restrict what kinds of events(verbs) it is allowed to scope over, i.e. to question. This is done using the modifier classes described in section \ref{sec-Event-Modifier-Restriction}.  In this case, the static locational entry for \emph{where} specifies that it can only question events which allow this type of modifier. Consequently, \emph{* where did he want me to believe} would not parse.

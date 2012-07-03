@@ -1,0 +1,5 @@
+lexicon.abd
+G.abd
+G-assertives.abd
+G-directives.abd
+G-expressives.abd

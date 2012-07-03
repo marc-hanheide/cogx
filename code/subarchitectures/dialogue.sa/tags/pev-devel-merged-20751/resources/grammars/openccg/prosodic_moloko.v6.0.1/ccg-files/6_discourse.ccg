@@ -1,0 +1,122 @@
+# Authors: Trevor (trevormbenjamin@yahoo.ca) and GJ (GJ@DFKI.de), 2008 
+
+# This file contains various 'discourse related' families (e.g. Discourse Markers)
+# and also rules handling discourse phenomena like discourse 'fragments', 
+# Pre-NPs, Refernt-Negotiations(appositions), etc.
+
+# NOTE: these rules can easily be shut off by commenting them out
+
+ ######################
+ # Discourse Markers  #
+ ######################
+
+  def dm-entries(args, sem){
+      entry: du[A COM=no] args                                     :  A(* sem) ; 
+   #   entry: du[R COM=yes ] / du[N] args                           :  R:d-units(list <First>(F * sem) ^ <Next>(N:marker) ) ;
+   #   entry: du[R COM=yes ] / s<10>[N MOOD:s-major] args           :  R:d-units(list <First>(F * sem) ^ <Next>(N:event) ) ;
+    
+   }
+  
+  
+  family DM(du)  { 
+     dm-entries( , )
+  } 
+  family DM+np(du)  { 
+     dm-entries( / np() , <Addressee>(T:entity) )
+  } 
+
+
+  def _dis-marker(prd, form, class) {
+      word form."xx"."-du" : DM (class, pred=prd) {form ;}
+   }
+  def dis-marker(form, class) { _dis-marker(form, form, class)}
+
+  def _dis-marker+(prd, form, class, args) {
+      word form."xx"."-du" : DM (class, pred=prd) {form: args ;}
+   }
+  def dis-marker+(form, class, args) { _dis-marker(form, form, class)}
+
+
+  def dis-marker+np(form, class) {
+      word form."-du+np" : DM+np (class, pred=form) {form ;}
+   }
+
+
+ ##################### 
+ # DICTIONARY ENTRY  #
+ #####################
+
+    def discourse-marker(form, class) {
+      word form."-dis-marker" : Discourse-marker(class, pred=form) {form ;}
+    }
+
+
+
+
+ 
+###################
+# Discourse Rules #
+###################
+
+
+# Discourse units
+# 
+# Some, i.e. markers, begin their life as DUs... they have no scope. This could be changed.
+# The rest are 'created' by converting various 'full' syntactic units (np, s, adj, etc) into du.
+# There is one rule which linearly attaches all these chunks together.
+# Hence, it allows.   The ball the big one um get it for me ok Robot 
+
+def du-rule(from, to)  { rule { typechange: from $1                   =>  to $1   ; } }
+
+#du-rule( np(full)   , du[T COM=no])
+#du-rule( s(s-major) , du[E COM=no])
+#du-rule( adj()      , du[M COM=no])
+
+#rule { typechange: du[F COM=no]                 =>  du[F COM=yes] / du[N]             :       F( <Next>(N) )              ; } 
+#rule { typechange: du[F COM=no]                 =>  du[R COM=yes] / du[N]              :       COORD( sequence)            ; } 
+#rule { typechange: du[F COM=no]                 =>  du[R COM=yes] / s(s-major)         :       COORD( sequence)            ; } 
+#rule { typechange: du[F COM=no]                 =>  du[R COM=yes] \* s(s-major)         :       COORD( sequence)            ; } 
+
+
+ 
+
+#family DUU(du)  { entry: du<50>[A COM=no] : A(*) ; }
+#family DUU+np(du)  { entry: du<50>[A COM=no]/np() : A(* <Anchor>(T) ) ; }
+
+#family DUU(du)     { entry: s<> / s() : EVENT( MODIFIER(*) ); }
+#family DUU+np(du)  { entry: du<50>[A COM=no]/np() : A(* <Anchor>(T) ) ; }
+
+
+#def _disc-unit(prd, form, class) {
+#      word form."-du" : DUU (class, pred=prd) {form ;}
+#   }
+#def disc-unit(form, class) { _disc-unit(form, form, class)}
+
+#def disc-unit+np(form, class) {
+#      word form."-du+np" : DUU+np (class, pred=form) {form ;}
+#   }
+
+
+
+# These were rules playing around with the idea of handling 'aborted' units, i.e. repair sequences.
+# Problem with the general one is it allowed the 'abortion' of completed units....
+# Also, it would give readings like  <I> <want the ball>
+#
+# Perhaps this should be a parser meta-rule. If you get something you don't expect, hack off
+# the args of previous. i.e. it should be backward looking!
+
+
+#du-rule( np()/n()   , du[T COM=no] : T(abort) )
+#rule { typechange: np() / n()                      =>   du[T COM=no] : T(abort)    ; } 
+#rule { typechange: du[F COM=no] $1                     =>  du[F COM=no]             :       F(abort <ABORTED>yes )    ; } 
+
+#rule { typechange: du[F COM=no] $1                 =>  du[R COM=yes] $1 / du[N COM=rep]            :       COORD( sequence)            ; } 
+#rule { typechange: du[F COM=no REP=no] $1            =>  du[R COM=no] / du[N COM=no REP=yes]      :   R(abort <ABORTED>(F) <Next>(N) )   ; } 
+
+
+# MAY 8: A lot of this should be done at the DISCOURSE LEVEL. I need to implement utt units which get sequentially concatinated.
+
+
+  # These handle extra-syntactic phenomena 'floating' phrases, pre and post nps.
+
+
