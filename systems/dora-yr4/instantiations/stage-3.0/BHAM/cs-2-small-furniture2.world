@@ -55,7 +55,7 @@ p3dx_with_urg_and_blobfinder (
  (
  name "person3"
  color "yellow"
- pose [17.6 6.5 0 0]
+ pose [17.71 6.74 0 0]
  )
 
 # cereal box
