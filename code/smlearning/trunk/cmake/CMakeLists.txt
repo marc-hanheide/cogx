@@ -206,6 +206,7 @@ SET(SCENARIO_HEADERS
 	${SMLEARNING_ROOT}/include/scenario/ConcreteActor.h
 	${SMLEARNING_ROOT}/include/metalearning/data_structs.h
 	${SMLEARNING_ROOT}/include/scenario/Polyflap.h
+	${SMLEARNING_ROOT}/include/scenario/Box.h
 	${SMLEARNING_ROOT}/include/scenario/PushingApplication.h
 	${SMLEARNING_ROOT}/include/scenario/Scenario.h
 	${SMLEARNING_ROOT}/include/scenario/PredictingScenario.h

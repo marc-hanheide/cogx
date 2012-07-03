@@ -166,7 +166,9 @@ BOOL TrackerThread::OnTask()
 		m_tracker->track(m_track_id);
 		
 		// store the updated position of the object
+		// m_mutex.Lock ();
 		m_tracker->getModelPose(m_track_id,m_track_pose);
+		// m_mutex.Unlock ();
 		// _new_position = true;
 
 		// Draw result
@@ -228,11 +230,11 @@ BOOL TrackerThread::OnTask()
 /////////////PUBLIC/////////////
 /** \brief returns the current position of the object as 3x3 rotation matrix and translation vector by reference
 */
-TomGine::tgPose TrackerThread::getPose(/*mat3& matrix, vec3& vector*/) const
+TomGine::tgPose TrackerThread::getPose(/*mat3& matrix, vec3& vector*/)
 {
 	// if (_new_position)
 	// {
-		return m_track_pose;
+	return m_track_pose;
 		// _new_position=false;
 	// }
 }

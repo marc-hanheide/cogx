@@ -56,18 +56,32 @@ bool TrackerScenario::create(const TrackerScenario::Desc& desc) {
 	fromCartesianPose (object_initial_pose, desc.descActorObject.startPosition, desc.descActorObject.startRotation);
 
 	tracker_th = new TrackerThread (desc.trackerConfig, desc.cameraCalibrationFile, desc.poseCalibrationFile, GolemToTracking (object_initial_pose));
+
+	// _concreteActor = new Polyflap;
+	_concreteActor = new Box;
 	
 	return true;
 }
 
+void TrackerScenario::preprocess (golem::SecTmReal elapsedTime)
+{
+}
+
 void TrackerScenario::postprocess (golem::SecTmReal elapsedTime)
 {
+	if (_concreteActor == NULL)
+		return;
+	if (object != NULL)
 	{
 		CriticalSectionWrapper csw (cs);
-		golem::Mat34 p = TrackingToGolem (tracker_th->getPose ());
+		objectPose = TrackingToGolem (tracker_th->getPose ());
+		// object->setPose (_concreteActor->getPose ());
 		Real obRoll, obPitch, obYaw;
-		p.R.toEuler (obRoll, obPitch, obYaw);
-		cout << p.p.v1 << ", " << p.p.v2 << ", " << p.p.v3 << ", " << obRoll << ", " << obPitch << ", " << obYaw << endl;
+		objectPose.R.toEuler (obRoll, obPitch, obYaw);
+		// cout << objectPose.p.v1 << ", " << objectPose.p.v2 << ", " << objectPose.p.v3 << ", " << obRoll << ", " << obPitch << ", " << obYaw << endl;
+		if (!isnan(obRoll) && !isnan(obPitch) && !isnan(obYaw))
+			object->setPose (objectPose);
+		// cout << object->getPose().p.v1 << ", " << object->getMyPose().p.v2 << ", " << object->getMyPose().p.v3 << endl;
 	}
 }
 
@@ -97,9 +111,22 @@ void TrackerScenario::closeGripper(Katana300Arm &arm) {
 	
 }
 
+void TrackerScenario::chooseAction ()
+{
+	arm->setPushDuration (5);
+	arm->setHorizontalAngle (chooseAngle(60.0, 120.0));
+}
+
 void TrackerScenario::calculateStartCoordinates ()
 {
-	positionTarget.set (Real(0.0),Real(0.2),Real(0.1));
+	golem::Vec3 position = object->getPosition ();
+	golem::Vec3 normal = object->getNormalVec ();
+	golem::Vec3 orthogonal = object->getOrthogonalVec ();
+	cout << "orig pos: " << position.v1 << ", " << position.v2 << ", " << position.v3 << endl;
+	// positionTarget.set (Real(0.0),Real(0.2),Real(0.05));
+	positionTarget.set (position.v1, position.v2, position.v3);
+	set_point_coordinates (positionTarget, normal, orthogonal, -desc.descActorObject.dist, 0.0, desc.descActorObject.center);
+	cout << "calc pos: " << positionTarget.v1 << ", " << positionTarget.v2 << ", " << positionTarget.v3 << ", " << orientationTarget.v1 << ", " << orientationTarget.v2 << ", " << orientationTarget.v3 << endl;
 	fromCartesianPose (target.pos, positionTarget, orientationTarget);
 
 	target.vel.setId(); // it doesn't move
@@ -107,17 +134,54 @@ void TrackerScenario::calculateStartCoordinates ()
 	target.t = context.getTimer().elapsed() + arm->getDeltaAsync() + desc.descArmActor.minDuration; // i.e. the movement will last at least 5 sec
 }
 
+void TrackerScenario::initMovement()
+{
+	// Trajectory duration calculated from a speed constant.
+
+	cout << "push duration: " << arm->getPushDuration() << endl;		
+	duration 		= arm->getPushDuration();
+	// Trajectory end pose equals begin + shift along Y axis
+	end 			= target.pos;	
+
+	Vec3 normal 		= object->getNormalVec();
+	Vec3 orthogonal 	= object->getOrthogonalVec();
+	Vec3 position		= object->getPosition();
+
+	Vec3 centerNormalVec =
+		computeNormalVector(
+				    Vec3 (positionTarget.v1, positionTarget.v2, positionTarget.v3),
+				    Vec3 (position.v1, position.v2, desc.descActorObject.center)
+				    );
+	//and it's orthogonal
+	Vec3 centerOrthogonalVec = computeOrthogonalVec(centerNormalVec);
+
+	setMovementAngle(arm->getHorizontalAngle(), end, desc.distance, centerNormalVec, centerOrthogonalVec);
+	cout << "Horizontal direction angle: " << arm->getHorizontalAngle() << " degrees" << endl;
+
+}
+
+
 void TrackerScenario::run (int argc, char* argv[])
 {
+	// Create arm
 	pKatana300Arm = static_cast<Katana300Arm*>(&(arm->getArm()->getArm()));
 	if (pKatana300Arm == NULL)
 	throw Message(Message::LEVEL_CRIT, "It is not Katana 300!");
 		
 	// Display arm information
 	armInfo(arm->getArm()->getArm());
+	Mat34 armPose = arm->getArm()->getArm().getGlobalPose();
+	std::cout << "armpose before: " << armPose.p.v1 << ", " << armPose.p.v2 << ", " << armPose.p.v3 << std::endl;
+	golem::Vec3 armoffset (0,0,0.006);
+	Mat34 armoffsetPose;
+	armoffsetPose.R = armPose.R;
+	armoffsetPose.p = armoffset;
+	armPose.multiply (armPose, armoffsetPose);
+	std::cout << "armpose after: " << armPose.p.v1 << ", " << armPose.p.v2 << ", " << armPose.p.v3 << std::endl;
+	arm->getArm()->getArm().setGlobalPose (armPose);
 	
 	// Close Gripper
-	// closeGripper(*pKatana300Arm);
+	closeGripper(*pKatana300Arm);
 
 	// Wait for some time
 	PerfTimer::sleep(SecTmReal(5.0));
@@ -129,18 +193,26 @@ void TrackerScenario::run (int argc, char* argv[])
         tracker_th->Event ();
 	// tracker_th->run ();
 	// tracker_th->start ();
-
-	for (unsigned int i=0; i<1; i++)
+	creator.setToDefault();
+	arm->setCollisionDetection(true);
+	object = dynamic_cast<ActorObject*>(scene.createObject(desc.descActorObject));
+	object->setShape(scene,_concreteActor,true);
+	
+	for (unsigned int i=0; i<2; i++)
 	{
 		// experiment main loops
-		creator.setToDefault();
 		std::cout <<"calculate starting coordinates "<<std::endl;
+		chooseAction ();
 		calculateStartCoordinates ();					
 		std::cout << "sending position ";
 		cout << Real(target.pos.p.v1) << " " << Real(target.pos.p.v2) << " " << Real(target.pos.p.v3) << endl;
-		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);	//move the finger to the beginnnig of experiment trajectory
+		//move the finger to the beginnnig of experiment trajectory
+		arm->sendPosition(context,target , ReacPlanner::ACTION_GLOBAL);
+		//compute direction and other features of trajectory
+		initMovement ();	
+		//move the finger along described experiment trajectory
+		arm->moveFinger(context,target, bStart,duration,end);
 		// wait for key
-		// tracking ();
 		evContinue.wait ();
 		evContinue.set(false);
 
@@ -151,7 +223,6 @@ void TrackerScenario::run (int argc, char* argv[])
 	arm->moveArmToStartPose(context); 	//move the arm to its initial position
 	// tracker_th->Stop ();
 
-	// tracking ();
 
 }
 
@@ -161,6 +232,7 @@ void TrackerScenario::finish() {
 	// glWindow.release();
 	//capture->finish();
 	delete tracker_th;
+	removeObject();						
 }
 
 void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
@@ -174,6 +246,20 @@ void TrackerScenario::keyboardHandler(unsigned char key, int x, int y) {
 		evContinue.set(true);
 		break;
 	}
+}
+
+void TrackerScenario::render ()
+{
+	CriticalSectionWrapper csw (cs);
+
+	if (_concreteActor == NULL)
+		return;
+
+	// golem::BoundsRenderer boundsRenderer;
+	// boundsRenderer.setMat (_concreteActor->getPose ());
+	// boundsRenderer.setWireColour (RGBA::RED);
+	// boundsRenderer.renderWire (objectLocalBounds->begin (), objectLocalBounds->end());
+
 }
 
 
@@ -204,18 +290,15 @@ bool XMLData(TrackerScenario::Desc &val, XMLContext* xmlcontext, Context *contex
 	pFingerRodShapeDesc->pose.p.v2 += baseLength + fingerLength/2.0;
 	pFingerRodShapeDesc->group = val.descArmActor.effectorGroup;
 	val.descArmActor.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerRodShapeDesc));
-	golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
+	/*golem::BoundingSphere::Desc* pFingerTipShapeDesc = new golem::BoundingSphere::Desc;
 	pFingerTipShapeDesc->radius = tipRadius;
 	pFingerTipShapeDesc->pose.p.v2 += golem::Real(baseLength + fingerLength);
 	pFingerTipShapeDesc->group = val.descArmActor.effectorGroup;
-	val.descArmActor.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));
+	val.descArmActor.fingerDesc.push_back(golem::Bounds::Desc::Ptr(pFingerTipShapeDesc));*/
 	
 	// end-effector reference pose
 	val.descArmActor.referencePose.setId();
 	val.descArmActor.referencePose.p.v2 += golem::Real(baseLength + fingerLength);
-
-
-
 	
 	//polyflap interaction settings
 
@@ -285,7 +368,7 @@ bool XMLData(TrackerScenario::Desc &val, XMLContext* xmlcontext, Context *contex
 	val.descActorObject.side = val.descActorObject.dimensions.v1*r;
 	//center of the polyflap
 	XMLData(r, xmlcontext->getContextFirst("ObjectInteraction center"));
-	val.descActorObject.center = val.descActorObject.dimensions.v2*r;
+	val.descActorObject.center = val.descActorObject.dimensions.v3*r;
 	//distance from the top of the polyflap
 	XMLData(r, xmlcontext->getContextFirst("ObjectInteraction top"));
 	val.descActorObject.top = val.descActorObject.dimensions.v2 - r;

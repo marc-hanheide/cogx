@@ -121,7 +121,7 @@ public:
 	/** returns the yaw of the object */
 	inline golem::Real getYaw() const {return _obYaw;}
 	/** sets the shape of the actor  */
-	void setShape(golem::Scene&,ConcreteActor*);
+	void setShape(golem::Scene&,ConcreteActor*, bool kinematic = false);
 	/** sets the description */
 	inline void setDescription(const ActorObject::Desc& desc){_desc=desc;}
 	/** sets the feature vector of the object */
@@ -134,13 +134,11 @@ public:
 	inline void setRoll(const golem::Real& newRoll){_obRoll=newRoll;}
 	/** sets the yaw of the object */
 	inline void setYaw(const golem::Real& newYaw){_obYaw=newYaw;}
-	Mat34 getPose() const;
-	void setPose(const Mat34&);
 protected:
 	/** specific ActorObject create function */
 	bool create(const ActorObject::Desc&, golem::Scene&);
 	/** computes normal and orthogonal vector of the object and determines the position of the object */
-	void computeVectors();
+	void computeVectors(ConcreteActor*);
 
 private:
 	/** concrete actor shape */
