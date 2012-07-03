@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import autogen.Planner.PlanningTask;
+
 import cast.CASTException;
 import cast.DoesNotExistOnWMException;
 import cast.SubarchitectureComponentException;
@@ -46,7 +48,6 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
   {
     super();
     hypotheticalBeliefs = new HashSet<HypotheticalBelief>();
-   
   }
   
   /** 
@@ -61,32 +62,63 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
   
   protected void start()
   {
+//    addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
+//        HypotheticalBelief.class, WorkingMemoryOperation.ADD),
+//        new WorkingMemoryChangeReceiver()
+//        {
+//          public void workingMemoryChanged(WorkingMemoryChange _wmc)
+//              throws CASTException
+//          {
+//            processAddedHypotheticalBelief(_wmc);
+//          }
+//        });
     addChangeFilter(ChangeFilterFactory.createGlobalTypeFilter(
-        HypotheticalBelief.class, WorkingMemoryOperation.ADD),
+        PlanningTask.class, WorkingMemoryOperation.OVERWRITE),
         new WorkingMemoryChangeReceiver()
         {
           public void workingMemoryChanged(WorkingMemoryChange _wmc)
               throws CASTException
           {
-            processAddedHypotheticalBelief(_wmc);
+            processPlanningTask(_wmc);
           }
         });
   }
   
-  private void processAddedHypotheticalBelief(WorkingMemoryChange _wmc)
+  private void processPlanningTask(WorkingMemoryChange _wmc)
   {
     try
     {
-      HypotheticalBelief hypothetical_belief = getMemoryEntry(_wmc.address, HypotheticalBelief.class);
-      hypotheticalBeliefs.add(hypothetical_belief);
-      if (hypotheticalBeliefs.size() == 2)
+      PlanningTask planning_task = getMemoryEntry(_wmc.address, PlanningTask.class);
+      if (planning_task.hypotheses.length > 0)
       {
-        // TODO wait for the "I have now found an explanation message"
-        verbaliseExplanation();
+        hypotheticalBeliefs.clear();
+        for (WorkingMemoryAddress _wma : planning_task.hypotheses) 
+        {
+          HypotheticalBelief hypothetical_belief = getMemoryEntry(_wma, HypotheticalBelief.class);
+          // for now, only store the beliefs of type visualobject
+          if ("visualobject".equals(hypothetical_belief.type))
+          {
+            hypotheticalBeliefs.add(hypothetical_belief);
+          }
+          else
+          {
+            // discard
+          }
+        }
+        
+        if (hypotheticalBeliefs.size() == 2)
+        {
+          // TODO perhaps wait for the "I have now found an explanation message"
+          verbaliseExplanation();
+        }
+        else
+        {
+          verbaliseCannedText("Please inspect the Hypothetical Beliefs in my working memory");
+        }
       }
       else
       {
-        // wait for the other belief
+        // nothing to do
       }
     }
     catch (DoesNotExistOnWMException e)
@@ -98,6 +130,32 @@ public class SimpleExplanationVerbalisation extends ManagedComponent
       logException(e);
     }
   }
+  
+//  private void processAddedHypotheticalBelief(WorkingMemoryChange _wmc)
+//  {
+//    try
+//    {
+//      HypotheticalBelief hypothetical_belief = getMemoryEntry(_wmc.address, HypotheticalBelief.class);
+//      hypotheticalBeliefs.add(hypothetical_belief);
+//      if (hypotheticalBeliefs.size() == 2)
+//      {
+//        // TODO wait for the "I have now found an explanation message"
+//        verbaliseExplanation();
+//      }
+//      else
+//      {
+//        // wait for the other belief
+//      }
+//    }
+//    catch (DoesNotExistOnWMException e)
+//    {
+//      logException(e);
+//    }
+//    catch (UnknownSubarchitectureException e)
+//    {
+//      logException(e);
+//    }
+//  }
   
   protected void findProposedObjectAndLocation()
   {

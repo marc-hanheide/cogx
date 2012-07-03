@@ -99,8 +99,8 @@ public class SimpleExplanationVerbalisationTest extends TestCase
     String in2 =
         "<eu.cogx.beliefs.slice.HypotheticalBelief>" +
         "  <frame class=\"de.dfki.lt.tr.beliefs.slice.framing.SpatioTemporalFrame\">" +
-        "<place></place> " +
-        "<existProb>0.0</existProb>" +
+        "    <place></place> " +
+        "    <existProb>0.0</existProb>" +
         "  </frame>" +
         "  <estatus class=\"de.dfki.lt.tr.beliefs.slice.epstatus.PrivateEpistemicStatus\">" +
         "    <agent>robot</agent>" +
