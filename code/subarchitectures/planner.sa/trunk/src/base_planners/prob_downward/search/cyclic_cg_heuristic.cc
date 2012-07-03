@@ -27,7 +27,7 @@ inline void CyclicCGHeuristic::add_to_heap(LocalProblemNode *node) {
     int bucket_no = node->priority();
     if (bucket_no < curr_priority) {
         cout << "warning: adjusted priority from " << bucket_no << " to " << curr_priority +1 << endl;
-        // node->owner->base_priority =  curr_priority +1 - node->cost;
+        node->owner->base_priority =  curr_priority +1 - node->cost;
         bucket_no = curr_priority +1;
     }
     if(bucket_no >= buckets.size()) {
@@ -82,6 +82,14 @@ inline void LocalTransition::try_to_fire() {
             assert(source->var == target->var);
             assert(source->owner == target->owner);
         }
+        else if (g_debug) {
+            cout << "    firing non-op " << " cost: " << target->cost << endl;
+            cout <<  "    " << target->cost << " -  " << target->owner->base_priority << endl;
+            // cout << "    from here ";
+            cout << "    transition "<< source->var << " " << source->value << " -> " << target->value << " (" << source << " -> " << target << ")"<< endl;
+            assert(source->var == target->var);
+            assert(source->owner == target->owner);
+        }
         // assert(target->priority() > source->priority());
         g_HACK->add_to_heap(target);
     }
@@ -132,6 +140,14 @@ void LocalTransition::on_source_expanded(const State &state) {
     const vector<LocalAssignment> &precond = label->precond;
     if (g_debug && label->op) {
         std::cout << "open:" << label->op->get_name()  << " - " << target_cost << " / " << target_prob << " / " << min_prob << std::endl;
+        if (source->reached_by) {
+            const ValueTransitionLabel* l = source->reached_by->label;
+            std::cout << "    reached by:" << l->op->get_name()  << " - " << source->cost << " / " << source->prob << std::endl;
+        }
+        std::cout << "    preconds:" << precond.size() << std::endl;
+    }
+    else if (g_debug) {
+        std::cout << "open non op"  << " - " << target_cost << " / " << target_prob << " / " << min_prob << std::endl;
         if (source->reached_by) {
             const ValueTransitionLabel* l = source->reached_by->label;
             std::cout << "    reached by:" << l->op->get_name()  << " - " << source->cost << " / " << source->prob << std::endl;
@@ -623,6 +639,11 @@ int CyclicCGHeuristic::compute_heuristic(const State &state) {
     for(int i = 0; i < local_problems.size(); i++)
         local_problems[i]->base_priority = -1;
     goal_problem->initialize(0, 0, state);
+    
+    if (g_debug) {
+        cout << "    initialize goal: " << &goal_problem->nodes[0] << " -> " << &goal_problem->nodes[1] <<endl;
+    }
+
     int heuristic = compute_costs(state);
     // cout << "h: " << heuristic << endl;
     // cout << heuristic << endl;
