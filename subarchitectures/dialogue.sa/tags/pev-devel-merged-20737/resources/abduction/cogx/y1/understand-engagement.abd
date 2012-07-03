@@ -1,0 +1,43 @@
+%-------------------------------------------------------------------------
+
+	% GREETINGS
+
+understand : event : uttered(h, Nom) <-
+	is_greeting(Nom),
+	intention : greeting(h, r) / 1.0.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+is_greeting(Nom) <-
+	d_units_list(Nom, FirstNom, SecondNom),
+	i : sort(FirstNom, greeting).
+
+is_greeting(Nom) <-
+	i : sort(Nom, greeting).
+
+%-------------------------------------------------------------------------
+
+	% POSITIVE (NON-VERIFYING) FEEDBACK
+
+understand : event : uttered(Ag, Nom) <-
+	i : sort(Nom, marker),
+	i : prop(Nom, Prop),
+	intention : positive_feedback(Ag) / 5.0.
+
+understand : event : uttered(Ag, Nom) <-
+	i : sort(Nom, 'q-attitude'),
+	i : prop(Nom, P),
+	positive_attitude(P),
+	intention : positive_feedback(Ag) / 2.0.
+
+positive_attitude(cool).
+positive_attitude(correct).
+positive_attitude(great).
+
+%-------------------------------------------------------------------------
+
+	% DISENGAGEMENT
+
+understand : event : uttered(Ag, Nom) <-
+	i : sort(Nom, closing),
+	intention : disengage(Ag) / 1.0.

@@ -1,0 +1,286 @@
+%-------------------------------------------------------------------------
+% FIXME: this will eventually have to be use probabilities exclusively.
+% For now, let's just use negative weights where we care about having
+% the given query/nominal in the resulting proof.
+%-------------------------------------------------------------------------
+
+% The following dummy facts are bound to nominals in the rules for generation.
+dummy_nom1(dn1_1).
+dummy_nom2(dn1_2).
+dummy_nom3(dn1_3).
+dummy_nom4(dn1_4).
+dummy_nom5(dn1_5).
+dummy_nom6(dn1_6).
+
+%-------------------------------------------------------------------------
+
+utt_head(Nom) <-
+	dummy_nom1(Nom),
+	i : sort(Nom, dvp) / p(1.0),
+	i : prop(Nom, 'c-goal') / p(1.0).
+
+%-------------------------------------------------------------------------
+% ERRORS & COMPLAINTS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['confirm'])),
+	i : feat_CannedText(Nom, 'would_like_you_to_confirm') / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['dropped'])),
+	i : feat_CannedText(Nom, 'okay_dropping_the_issue') / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+% CONFIRMATIONS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['confirmed', agent(H), State])),
+
+	valid_state(State),
+	action_of(State, Action),
+	argument_of(State, Arg),
+	canned_confirmation(Action, Arg, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['confirmed', agent(H), State])),
+
+	valid_state(State),
+	action_of(State, Action),
+	has_no_arguments(State),
+	canned_confirmation(Action, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+canned_confirmation('in-motion', 'direction-spatial'(left), 'confirm,_should_I_drive_to_the_left?').
+canned_confirmation('in-motion', 'direction-spatial'(right), 'confirm,_should_I_drive_to_the_right?').
+canned_confirmation('in-motion', 'direction-spatial'(forward), 'confirm,_should_I_drive_forward?').
+canned_confirmation('in-motion', 'direction-spatial'(back), 'confirm,_should_I_drive_back?').
+
+canned_confirmation('in-orientation', 'direction-spatial'(left), 'confirm,_should_I_turn_left?').
+canned_confirmation('in-orientation', 'direction-spatial'(right), 'confirm,_should_I_turn_right?').
+canned_confirmation('in-orientation', 'direction-spatial'(forward), 'confirm,_should_I_turn_forward?').
+canned_confirmation('in-orientation', 'direction-spatial'(back), 'confirm,_should_I_turn_around?').
+
+canned_confirmation('looking', 'direction-visual'(up), 'confirm_look_up').
+canned_confirmation('looking', 'direction-visual'(down), 'confirm_look_down').
+canned_confirmation('looking', 'direction-visual'(left), 'confirm_look_left').
+canned_confirmation('looking', 'direction-visual'(right), 'confirm_look_right').
+
+canned_confirmation('in-location', location(coordinates(_Loc)), 'confirm,_should_I_move_to_this_location?').
+canned_confirmation('in-location', location(landmark(_LM)), 'confirm,_should_I_move_to_this_car?').
+
+canned_confirmation(Action, Mod, 'confirm_last_message') <-
+	generate : confirm_not_implemented(Action, Mod) / 40.0.
+
+canned_confirmation('dialogue-on-hold', 'confirm,_should_I_go_on_standby?').
+
+canned_confirmation('execution-stopped', 'confirm,_should_I_stop?').
+canned_confirmation('execution-on-hold', 'confirm,_should_I_pause?').
+canned_confirmation('execution-resumed', 'confirm,_should_I_continue?').
+canned_confirmation('returned-to-base', 'confirm,_should_I_return_to_base?').
+
+canned_confirmation(Action, 'confirm_last_message') <-
+	generate : confirm_not_implemented(Action) / 40.0.
+
+%-------------------------------------------------------------------------
+% DROPPINGS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['dropped', State])),
+
+	valid_state(State),
+	action_of(State, Action),
+	argument_of(State, Arg),
+	canned_dropping(Action, Arg, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['dropped', State])),
+
+	valid_state(State),
+	action_of(State, Action),
+	has_no_arguments(State),
+	canned_dropping(Action, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+canned_dropping('in-motion', 'direction-spatial'(left), 'roger,_not_moving_left').
+canned_dropping('in-motion', 'direction-spatial'(right), 'roger,_not_moving_right').
+canned_dropping('in-motion', 'direction-spatial'(forward), 'roger,_not_moving_forward').
+canned_dropping('in-motion', 'direction-spatial'(back), 'roger,_not_moving_back').
+canned_dropping('in-location', location(coordinates(_Coords)), 'roger,_not_moving_to_that_location').
+canned_dropping('in-location', location(landmark(_LM)), 'roger,_not_moving_to_that_car').
+
+canned_dropping('in-orientation', 'direction-spatial'(left), 'roger,_not_turning_left').
+canned_dropping('in-orientation', 'direction-spatial'(right), 'roger,_not_turning_right').
+canned_dropping('in-orientation', 'direction-spatial'(forward), 'roger,_not_turning_forward').
+canned_dropping('in-orientation', 'direction-spatial'(back), 'roger,_not_turning_around').
+
+canned_dropping('looking', 'direction-visual'(up), 'roger_not_looking_up').
+canned_dropping('looking', 'direction-visual'(down), 'roger_not_looking_down').
+canned_dropping('looking', 'direction-visual'(left), 'roger_not_looking_left').
+canned_dropping('looking', 'direction-visual'(right), 'roger_not_looking_right').
+
+canned_dropping(Action, Mod, 'roger,_negative') <-
+	generate : drop_not_implemented(Action, Mod) / 40.0.
+
+canned_dropping('dialogue-on-hold', 'roger,_not_on_standby').
+
+canned_dropping('execution-stopped', 'roger,_not_stopping').
+canned_dropping('execution-on-hold', 'roger,_not_pausing').
+canned_dropping('execution-resumed', 'roger,_not_continuing').
+canned_dropping('returned-to-base', 'roger,_not_returning_to_base').
+
+canned_dropping(Action, 'roger,_negative') <-
+	generate : drop_not_implemented(Action) / 40.0.
+
+%-------------------------------------------------------------------------
+% ACKNOWLEDGMENTS
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, State),
+
+	valid_state(State),
+	action_of(State, Action),
+	argument_of(State, Arg),
+	canned_ack(Action, Arg, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, State),
+
+	valid_state(State),
+	action_of(State, Action),
+	has_no_arguments(State),
+	canned_ack(Action, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+canned_ack('in-motion', 'direction-spatial'(left), 'acknowledged,_will_drive_left').
+canned_ack('in-motion', 'direction-spatial'(right), 'acknowledged,_will_drive_right').
+canned_ack('in-motion', 'direction-spatial'(forward), 'acknowledged,_will_drive_forward').
+canned_ack('in-motion', 'direction-spatial'(back), 'acknowledged,_will_drive_back').
+canned_ack('in-location', location(coordinates(_Coords)), 'acknowledged,_will_drive_to_this_location').
+canned_ack('in-location', location(landmark(_LM)), 'acknowledged,_will_drive_to_the_car').
+
+canned_ack('in-orientation', 'direction-spatial'(left), 'acknowledged,_will_turn_left').
+canned_ack('in-orientation', 'direction-spatial'(right), 'acknowledged,_will_turn_right').
+canned_ack('in-orientation', 'direction-spatial'(forward), 'acknowledged,_will_turn_forward').
+canned_ack('in-orientation', 'direction-spatial'(back), 'acknowledged,_will_turn_around').
+
+canned_ack('looking', 'direction-visual'(up), 'wilco_look_up').
+canned_ack('looking', 'direction-visual'(down), 'wilco_look_down').
+canned_ack('looking', 'direction-visual'(left), 'wilco_look_left').
+canned_ack('looking', 'direction-visual'(right), 'wilco_look_right').
+
+canned_ack(Action, Mod, 'acknowledged') <-
+	generate : ack_not_implemented(Action, Mod) / 40.0.
+
+canned_ack('dialogue-on-hold', 'roger,_switching_to_standby_mode').
+
+canned_ack('execution-stopped', 'acknowledged,_stop').
+canned_ack('execution-on-hold', 'wilco,_pause').
+canned_ack('execution-resumed', 'wilco,_continue').
+canned_ack('returned-to-base', 'acknowledged,_will_return_to_base').
+
+canned_ack(Action, 'acknowledged') <-
+	generate : ack_not_implemented(Action) / 40.0.
+
+%-------------------------------------------------------------------------
+% RUNNING COMMENTARIES
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['visual-object-presented', type(Type), subtype(_)])),
+
+	canned_comment(Type, CannedText),
+
+	i : feat_CannedText(Nom, CannedText) / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+% fallback
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['visual-object-presented', type(_), subtype(_)])),
+
+	i : feat_CannedText(Nom, 'I_have_detected_an_object') / -1.0,
+	event : produce(r, Nom) / 25.0.
+
+%-------------------------------------------------------------------------
+
+canned_comment(car, 'I_have_detected_a_car').
+canned_comment(victim, 'I_see_a_victim').
+canned_comment(debris, 'I_see_some_debris').
+canned_comment(barrel, 'I_see_a_barrel').
+canned_comment(sign, 'I_see_a_sign').
+
+%-------------------------------------------------------------------------
+% MISC
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['referring-failure-announced'])),
+
+	i : feat_CannedText(Nom, 'repeat_please,_I_did_not_understand_the_target') / -1.0,
+	event : produce(r, Nom) / 20.0.
+
+%-------------------------------------------------------------------------
+
+generate : event : utter(S, _H, Int) <-
+	utt_head(Nom),
+	i : int : agent(Int, [S]),
+	i : int : post(Int, state(['dialogue-resumed'])),
+
+	i : feat_CannedText(Nom, 'awaiting_orders') / -1.0,
+	event : produce(r, Nom) / 20.0.

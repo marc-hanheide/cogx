@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<grammar root="root" version="1.0" xml:lang="en-us" xmlns="http://www.w3.org/2001/06/grammar" tag-format="semantics/1.0">
+
+	<rule id="root">
+		<one-of>
+			<item><ruleref uri="#greeting" /></item>
+			<item><ruleref uri="#goodbye" /></item>
+			<item><ruleref uri="#assertion" /></item>
+			<item><ruleref uri="#question" /></item>
+			<item><ruleref uri="#yesno" /></item>
+			<item><ruleref uri="#ack" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="greeting">
+		<one-of>
+			<item>hi</item>
+			<item>hello</item>
+		</one-of>
+		<ruleref uri="#name" />
+	</rule>
+
+	<rule id="goodbye">
+		<one-of>
+			<item>bye</item>
+			<item>bye bye</item>
+			<item>goodbye</item>
+		</one-of>
+		<ruleref uri="#name" />
+	</rule>
+
+	<rule id="ack">
+		<one-of>
+			<item>ok</item>
+			<item>I see</item>
+			<item>right</item>
+			<item>great</item>
+			<item>good</item>
+			<item>correct</item>
+		</one-of>
+	</rule>
+
+
+	<rule id="name">
+		<item repeat="0-1">
+			<one-of>
+				<item>robot</item>
+				<item>George</item>
+			</one-of>
+		</item>
+	</rule>
+
+	<rule id="assertion">
+	  <one-of>
+	    <item>there is a <item repeat="0-2"><ruleref uri="#propvalue" /></item><ruleref uri="#objtype" /> </item>
+	<item>	<ruleref uri="#objref" /> is <ruleref uri="#neg" /><ruleref uri="#propspec" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="question">
+		<one-of>
+			<item>is it <ruleref uri="#neg" /><ruleref uri="#propspec" /></item>
+			<item>is this <ruleref uri="#propspec"/></item>
+			<item>is the <ruleref uri="#objtype"/><ruleref uri="#propspec"/></item>
+			<item>what <ruleref uri="#propname" /> is <ruleref uri="#objref" /></item>
+			<item>what is this</item>
+			<item>do you know what this is</item>
+			<item>do you know the <ruleref uri="#propname" /> of <ruleref uri="#objref" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="yesno">
+		<one-of>
+			<item>yes</item>
+			<item>No</item>
+		</one-of>
+	</rule>
+
+	<rule id="neg">
+		<item repeat="0-1">not</item>
+	</rule>
+
+	<rule id="objref">
+		<one-of>
+			<item>this</item>
+			<item>it</item>
+			<item>
+				<one-of>
+				      <item>a</item>
+					<item>the</item>
+					<item>this</item>
+				</one-of>
+				<item repeat="0-2"><ruleref uri="#propvalue" /></item>
+				<ruleref uri="#objtype" />
+			</item>
+		</one-of>
+	</rule>
+
+	<rule id="objtype">
+		<one-of>
+			<item>object</item>
+			<item>ball</item>
+			<item>box</item>
+			<item>mug</item>
+			<item>thing</item>
+		</one-of>
+	</rule>
+
+	<rule id="propspec">
+		<one-of>
+			<item>
+				a <item repeat="0-1"><ruleref uri="#propvalue" /></item><ruleref uri="#objtype" />
+			</item>
+			<item><ruleref uri="#propvalue" /></item>
+		</one-of>
+	</rule>
+
+	<rule id="propname">
+		<one-of>
+			<item>color</item>
+			<item>shape</item>
+			<item>size</item>
+		</one-of>
+	</rule>
+
+	<rule id="propvalue">
+		<one-of>
+			<item>blue</item>
+			<item>red</item>
+			<item>compact</item>
+			<item>yellow</item>
+			<item>green</item>
+			<item>orange</item>
+			<item>round</item>
+			<item>elongated</item>
+			<item>small</item>
+			<item>big</item>
+			<item>black</item>
+		</one-of>
+	</rule>
+
+</grammar>

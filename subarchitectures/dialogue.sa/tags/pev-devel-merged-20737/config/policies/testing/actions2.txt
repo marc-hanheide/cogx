@@ -1,0 +1,4 @@
+start = wait
+greet = CI[<state>(engagement-open ^ <agent>robot ^ <agent>human)]
+close = CI[<state>(engagement-closed ^ <agent>robot ^ <agent>human)]
+sorry = CI[<state>(error-reported)]
