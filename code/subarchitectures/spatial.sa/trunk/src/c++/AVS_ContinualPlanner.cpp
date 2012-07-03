@@ -1815,7 +1815,7 @@ void AVS_ContinualPlanner::ViewConeUpdate(std::pair<int,
     log(
         "All cone groups for this location are processed return very high beta to Conceptual!");
 
-    result->beta = 0.99;
+    result->beta = 0.99999;
   } else {
     result->beta = m_locationToBeta[m_currentConeGroup->bloxelMapId]
         + lostProbability
