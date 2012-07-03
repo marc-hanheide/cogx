@@ -61,6 +61,7 @@ VARDEFAULT feature_options=<multiline>
 # enable dialogue
     dialogue
     plan_verbalisation
+    hgv_verbalisation
 # enable motivation base
     motivation
 # enable motivation via external goal infusion
@@ -649,6 +650,14 @@ IFOPTALL(%(feature_options), dialogue)
     
     JAVA MG diag-exe dialogue.execution.dora.DialogueActionInterface
     JAVA MG verbalisation verbalisation.DoraVerbalisation
+
+  IFOPTALL(%(feature_options), hgv_verbalisation)
+    ## Very simple verbalisation which assumes that the hypotheses will include two HypotheticalBeliefs of type visualobject:
+    # 1. A proposed object which is related-to a room (the corresponding GroundedBelief is assumed to be of type comaroom)
+    # 2. That the object that is being search for is related-to the other hypothetical belief
+    # example output: "Perhaps the magazine is in a container which is in room 2 which is most likely a meetingroom"
+    JAVA MG explanation.verbalisation verbalisation.SimpleExplanationVerbalisation
+  ENDIF
  
   IFOPTALL(%(feature_options), plan_verbalisation)
     ## Limit verbalisation (output) to requests made via the WM entry PlanVerbalisationRequest
