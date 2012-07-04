@@ -215,7 +215,7 @@ public class VisualSalienceReferenceResolution
 
             if (latestAddr != null) {
                 dFormula referent = new PointerFormula(0, latestAddr, "");
-                double score = 1.0;
+                double score = 10.0;
                 result.add(new EpistemicReferenceHypothesis(epst, referent, score));
             }
                 
