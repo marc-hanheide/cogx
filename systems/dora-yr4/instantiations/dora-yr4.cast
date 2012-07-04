@@ -264,11 +264,11 @@ VARDEFAULT avs_cone_depth=2
 VARDEFAULT max_viewcones=20
 
 # Smallest allowed ABSOLUTE probability of any one view cone
-VARDEFAULT min_cone_prob=0.01
+VARDEFAULT min_cone_prob=0
 
 # Smallest allowed RELATIVE probability of any one view cone
 # (i.e. its portion out of the total probability mass in a room)
-VARDEFAULT min_relative_cone_prob=0.02
+VARDEFAULT min_relative_cone_prob=0
 
 # Smallest allowed ABSOLUTE probability of any one cone group
 VARDEFAULT min_conegroup_prob=0.05
