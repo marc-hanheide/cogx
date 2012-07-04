@@ -26,7 +26,22 @@ namespace cogx { namespace vision {
 class CScene2D:
    public cast::ManagedComponent
 {
+   struct CBeliefContent
+   {
+      std::string colorName;
+      double colorProb;
+      std::string shapeName;
+      double shapeProb;
+      std::string identName;
+      double identProb;
+      CBeliefContent() {
+         colorProb = -1;
+         shapeProb = -1;
+         identProb = -1;
+      }
+   };
    std::map<cast::cdl::WorkingMemoryAddress, VisionData::VisualObjectPtr> mObjects;
+   std::map<cast::cdl::WorkingMemoryAddress, CBeliefContent> mObjectBeliefs;
 
 private:
    class CDisplayClient: public cogx::display::CDisplayClient
@@ -83,6 +98,8 @@ protected:
    void onDelete_VisualObject(const cast::cdl::WorkingMemoryChange & _wmc);
    void onAdd_CameraMotionState(const cast::cdl::WorkingMemoryChange & _wmc);
    void onChange_CameraMotionState(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onAdd_MergedBelief(const cast::cdl::WorkingMemoryChange & _wmc);
+   void onChange_MergedBelief(const cast::cdl::WorkingMemoryChange & _wmc);
 
    void drawVisualObject(const std::string& id, const VisionData::VisualObjectPtr& pVisObj);
          // , const VisionData::ProtoObjectPtr& pProtoObj);

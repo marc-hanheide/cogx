@@ -18,6 +18,7 @@
 #include <Math.hpp>
 #include <CameraParameters.h> // projectPoint
 #include <cast/architecture/ChangeFilterFactory.hpp>
+#include <beliefs_cogx.hpp>
 #include <sstream>
 #include <iomanip>
 #include <iterator>
@@ -38,6 +39,8 @@ extern "C"
 
 using namespace VisionData;
 using namespace cast;
+namespace beliefcore = de::dfki::lt::tr::beliefs::slice;
+namespace beliefcogx = eu::cogx::beliefs::slice;
 
 namespace cogx { namespace vision {
 
@@ -120,6 +123,13 @@ void CScene2D::start()
    addChangeFilter(createGlobalTypeFilter<Video::CameraMotionState>(cdl::OVERWRITE),
          new MemberFunctionChangeReceiver<CScene2D>(this,
             &CScene2D::onChange_CameraMotionState));
+
+   addChangeFilter(createGlobalTypeFilter<beliefcogx::MergedBelief>(cdl::ADD),
+         new MemberFunctionChangeReceiver<CScene2D>(this,
+            &CScene2D::onAdd_MergedBelief));
+   addChangeFilter(createGlobalTypeFilter<beliefcogx::MergedBelief>(cdl::OVERWRITE),
+         new MemberFunctionChangeReceiver<CScene2D>(this,
+            &CScene2D::onChange_MergedBelief));
 
    m_display.connectIceClient(*this);
    m_display.installEventReceiver();
@@ -263,7 +273,7 @@ void CScene2D::drawVisualObject(const std::string& id, const VisualObjectPtr& pV
    }
 
 #if 0
-   // ProtoObject provides position and outline
+   // ProtoObject provides segmentation outline
    ProtoObjectPtr pProtoObj;
    try {
       cdl::WorkingMemoryPointerPtr pomp = pVisObj->protoObject;
@@ -600,6 +610,110 @@ void CScene2D::onChange_CameraMotionState(const cdl::WorkingMemoryChange & _wmc)
          }
       }
    }
+}
+
+void CScene2D::onAdd_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
+{
+   onChange_MergedBelief(_wmc);
+}
+
+void CScene2D::onChange_MergedBelief(const cdl::WorkingMemoryChange & _wmc)
+{
+   beliefcogx::MergedBeliefPtr pbel;
+   try {
+      pbel = getMemoryEntry<beliefcogx::MergedBelief>(_wmc.address);
+      //std::string html = pbel->id + " = " + pbel->type;
+      //if (pbel->content.get()) {
+      //   html = html + " = " + pbel->content->ice_id();
+      //}
+      //m_display.setHtml("BELIEF-TESTING", pbel->id, html + "<br>");
+      if (pbel->type != "visualobject") {
+        return;
+      }
+   }
+   catch(DoesNotExistOnWMException){
+      log("Belief deleted before it could be read.");
+   }
+   if (!pbel.get() || !pbel->content.get()) {
+      return;
+   }
+
+   auto pmrgCont = dynamic_cast<beliefcore::distribs::CondIndependentDistribs*>(pbel->content.get());
+   if (! pmrgCont) {
+      return;
+   }
+   //m_display.setHtml("BELIEF-TESTING", pbel->id + "a", "YO-cast<br>");
+
+   CBeliefContent voProps;
+
+   //char ch = 'A';
+   // Visit all MergedBelief porperties from content
+   for (auto itdist : pmrgCont->distribs) { 
+      //m_display.setHtml("BELIEF-TESTING", pbel->id + "b" + ++ch,
+      //      "&nbsp;-" + itdist.first + " = " + itdist.second->ice_id() + "<br>");
+
+      // process only BasicProbDistribution properties
+      auto ppropdist = dynamic_cast<beliefcore::distribs::BasicProbDistribution*>(itdist.second.get());
+      if (!ppropdist) {
+         continue;
+      }
+      // key == itdist.first
+      //m_display.setHtml("BELIEF-TESTING", pbel->id + "b" + ch + "b",
+      //      "&nbsp;&nbsp;-> key= " + ppropdist->key + "<br>");
+
+      // ppropdist->values for color, shape, type: DistributionValues -> FormulaValues
+      // Look only for FormulaValues
+      auto ppropvlaues = dynamic_cast<beliefcore::distribs::FormulaValues*>(ppropdist->values.get());
+      if (!ppropvlaues) {
+         continue;
+      }
+      //m_display.setHtml("BELIEF-TESTING", pbel->id + "b" + ch + "c",
+      //      "&nbsp;&nbsp;-> values-ice_id = " + ppropdist->values->ice_id() + "<br>");
+
+      // Process each formula/float pair (FormulaProbPair) from FormulaValues
+      for (auto itpair : ppropvlaues->values) {
+         // Labels are in ElementaryFormula
+         auto pname = dynamic_cast<beliefcore::logicalcontent::ElementaryFormula*>(itpair.val.get());
+         if (pname) {
+            if (itdist.first == "color") voProps.colorName = pname->prop;
+            else if (itdist.first == "shape") voProps.shapeName = pname->prop;
+            else if (itdist.first == "objecttype") voProps.identName = pname->prop;
+         }
+
+         // Probabilities for labels are in FloatFormula
+         auto pval = dynamic_cast<beliefcore::logicalcontent::FloatFormula*>(itpair.val.get());
+         if (pval) {
+            if (itdist.first == "color-prob") voProps.colorProb = pval->val;
+            else if (itdist.first == "shape-prob") voProps.shapeProb = pval->val;
+            else if (itdist.first == "objecttype-prob") voProps.identProb = pval->val;
+         }
+      }
+      //ostringstream ss;
+      //ss << "&nbsp;&nbsp;&npsp; * ";
+      //ss << " co-" << voProps.colorName << "=" << voProps.colorProb;
+      //ss << " sh-" << voProps.shapeName << "=" << voProps.shapeProb;
+      //ss << " id-" << voProps.identName << "=" << voProps.identProb;
+      //ss << "<br>";
+      //m_display.setHtml("BELIEF-TESTING", pbel->id + "b" + ch + "d", ss.str());
+   }
+
+   // To get to the VO id:
+   //   this belief (A)
+   //   hist -> ancestors -> verified belief id (B)
+   //   verified belief -> ancestors -> grounded belief id (C)
+   //   grounded belief -> ancestors -> *visual-object id* (D)
+   //
+
+   // pbel->hist is of type: AbstractBeliefHistory->CASTBeliefHistory
+   auto pmrgHist = dynamic_cast<beliefcore::history::CASTBeliefHistory*>(pbel->hist.get());
+   if (pmrgHist) {
+      //m_display.setHtml("BELIEF-TESTING", pbel->id + "b", pmrgHist->ice_id());
+
+      // Go through all WM pointers in ancestors
+      for (auto pwmpAncestor : pmrgHist->ancestors) {
+      }
+   }
+   //beliefcogx
 }
 
 //void CScene2D::onChange_SOI(const cdl::WorkingMemoryChange & _wmc)
